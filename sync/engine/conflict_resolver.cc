@@ -11,9 +11,9 @@
 
 #include "base/location.h"
 #include "base/metrics/histogram.h"
+#include "sync/engine/conflict_util.h"
 #include "sync/engine/syncer.h"
 #include "sync/engine/syncer_util.h"
-#include "sync/protocol/nigori_specifics.pb.h"
 #include "sync/sessions/status_controller.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/mutable_entry.h"
@@ -46,25 +46,6 @@ ConflictResolver::ConflictResolver() {
 }
 
 ConflictResolver::~ConflictResolver() {
-}
-
-void ConflictResolver::IgnoreLocalChanges(MutableEntry* entry) {
-  // An update matches local actions, merge the changes.
-  // This is a little fishy because we don't actually merge them.
-  // In the future we should do a 3-way merge.
-  // With IS_UNSYNCED false, changes should be merged.
-  entry->Put(syncable::IS_UNSYNCED, false);
-}
-
-void ConflictResolver::OverwriteServerChanges(WriteTransaction* trans,
-                                              MutableEntry * entry) {
-  // This is similar to an overwrite from the old client.
-  // This is equivalent to a scenario where we got the update before we'd
-  // made our local client changes.
-  // TODO(chron): This is really a general property clobber. We clobber
-  // the server side property. Perhaps we should actually do property merging.
-  entry->Put(syncable::BASE_VERSION, entry->Get(syncable::SERVER_VERSION));
-  entry->Put(syncable::IS_UNAPPLIED_UPDATE, false);
 }
 
 ConflictResolver::ProcessSimpleConflictResult
@@ -221,70 +202,11 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
           base_server_specifics_match = true;
     }
 
-    // We manually merge nigori data.
-    if (entry.GetModelType() == NIGORI) {
-      // Create a new set of specifics based on the server specifics (which
-      // preserves their encryption keys).
-      sync_pb::EntitySpecifics specifics =
-          entry.Get(syncable::SERVER_SPECIFICS);
-      sync_pb::NigoriSpecifics* server_nigori = specifics.mutable_nigori();
-      // Store the merged set of encrypted types (cryptographer->Update(..) will
-      // have merged the local types already).
-      trans->directory()->GetNigoriHandler()->UpdateNigoriFromEncryptedTypes(
-          server_nigori,
-          trans);
-      // The cryptographer has the both the local and remote encryption keys
-      // (added at cryptographer->Update(..) time).
-      // If the cryptographer is ready, then it already merged both sets of keys
-      // and we can store them back in. In that case, the remote key was already
-      // part of the local keybag, so we preserve the local key as the default
-      // (including whether it's an explicit key).
-      // If the cryptographer is not ready, then the user will have to provide
-      // the passphrase to decrypt the pending keys. When they do so, the
-      // SetDecryptionPassphrase code will act based on whether the server
-      // update has an explicit passphrase or not.
-      // - If the server had an explicit passphrase, that explicit passphrase
-      //   will be preserved as the default encryption key.
-      // - If the server did not have an explicit passphrase, we assume the
-      //   local passphrase is the most up to date and preserve the local
-      //   default encryption key marked as an implicit passphrase.
-      // This works fine except for the case where we had locally set an
-      // explicit passphrase. In that case the nigori node will have the default
-      // key based on the local explicit passphassphrase, but will not have it
-      // marked as explicit. To fix this we'd have to track whether we have a
-      // explicit passphrase or not separate from the nigori, which would
-      // introduce even more complexity, so we leave it up to the user to
-      // reset that passphrase as an explicit one via settings. The goal here
-      // is to ensure both sets of encryption keys are preserved.
-      if (cryptographer->is_ready()) {
-        cryptographer->GetKeys(server_nigori->mutable_encrypted());
-        server_nigori->set_using_explicit_passphrase(
-            entry.Get(syncable::SPECIFICS).nigori().
-                using_explicit_passphrase());
-      }
-      // We deliberately leave the server's device information. This client will
-      // add its own device information on restart.
-      entry.Put(syncable::SPECIFICS, specifics);
-      DVLOG(1) << "Resolving simple conflict, merging nigori nodes: " << entry;
-      status->increment_num_server_overwrites();
-      OverwriteServerChanges(trans, &entry);
-      UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
-                                NIGORI_MERGE,
-                                CONFLICT_RESOLUTION_SIZE);
-    } else if (!entry_deleted && name_matches && parent_matches &&
-               specifics_match && !needs_reinsertion) {
+    if (!entry_deleted && name_matches && parent_matches && specifics_match &&
+        !needs_reinsertion) {
       DVLOG(1) << "Resolving simple conflict, everything matches, ignoring "
                << "changes for: " << entry;
-      // This unsets both IS_UNSYNCED and IS_UNAPPLIED_UPDATE, and sets the
-      // BASE_VERSION to match the SERVER_VERSION. If we didn't also unset
-      // IS_UNAPPLIED_UPDATE, then we would lose unsynced positional data from
-      // adjacent entries when the server update gets applied and the item is
-      // re-inserted into the PREV_ID/NEXT_ID linked list. This is primarily
-      // an issue because we commit after applying updates, and is most
-      // commonly seen when positional changes are made while a passphrase
-      // is required (and hence there will be many encryption conflicts).
-      OverwriteServerChanges(trans, &entry);
-      IgnoreLocalChanges(&entry);
+      IgnoreConflict(&entry);
       UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
                                 CHANGES_MATCH,
                                 CONFLICT_RESOLUTION_SIZE);
@@ -292,12 +214,12 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
       DVLOG(1) << "Resolving simple conflict, ignoring server encryption "
                << " changes for: " << entry;
       status->increment_num_server_overwrites();
-      OverwriteServerChanges(trans, &entry);
+      OverwriteServerChanges(&entry);
       UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
                                 IGNORE_ENCRYPTION,
                                 CONFLICT_RESOLUTION_SIZE);
     } else if (entry_deleted || !name_matches || !parent_matches) {
-      OverwriteServerChanges(trans, &entry);
+      OverwriteServerChanges(&entry);
       status->increment_num_server_overwrites();
       DVLOG(1) << "Resolving simple conflict, overwriting server changes "
                << "for: " << entry;
@@ -341,7 +263,7 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
       DCHECK_EQ(entry.Get(syncable::SERVER_VERSION), 0) << "For the server to "
           "know to re-create, client-tagged items should revert to version 0 "
           "when server-deleted.";
-      OverwriteServerChanges(trans, &entry);
+      OverwriteServerChanges(&entry);
       status->increment_num_server_overwrites();
       DVLOG(1) << "Resolving simple conflict, undeleting server entry: "
                << entry;
@@ -383,6 +305,14 @@ bool ConflictResolver::ResolveConflicts(syncable::WriteTransaction* trans,
     Id id = *conflicting_item_it;
     if (processed_items.count(id) > 0)
       continue;
+
+    // We don't resolve conflicts for control types here.
+    Entry conflicting_node(trans, syncable::GET_BY_ID, id);
+    CHECK(conflicting_node.good());
+    if (IsControlType(
+        GetModelTypeFromSpecifics(conflicting_node.Get(syncable::SPECIFICS)))) {
+      continue;
+    }
 
     // We have a simple conflict. In order check if positions have changed,
     // we need to process conflicting predecessors before successors. Traverse

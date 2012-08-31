@@ -26,14 +26,10 @@ using syncer::BOOKMARKS;
 using syncer::APPS;
 using syncer::PASSWORDS;
 using syncer::PREFERENCES;
+using syncer::NIGORI;
 using testing::_;
 using testing::Mock;
 using testing::ResultOf;
-
-enum NigoriState {
-  WITH_NIGORI,
-  WITHOUT_NIGORI
-};
 
 // Fake BackendDataTypeConfigurer implementation that simply stores away the
 // callback passed into ConfigureDataTypes.
@@ -80,8 +76,7 @@ DataTypeManager::ConfigureStatus GetStatus(
 
 // The actual test harness class, parametrized on nigori state (i.e., tests are
 // run both configuring with nigori, and configuring without).
-class SyncDataTypeManagerImplTest
-    : public testing::TestWithParam<NigoriState> {
+class SyncDataTypeManagerImplTest : public testing::Test {
  public:
   SyncDataTypeManagerImplTest()
       : ui_thread_(content::BrowserThread::UI, &ui_loop_) {}
@@ -91,11 +86,6 @@ class SyncDataTypeManagerImplTest
 
  protected:
   virtual void SetUp() {
-  }
-
-  // A clearer name for the param accessor.
-  NigoriState GetNigoriState() {
-    return GetParam();
   }
 
   void SetConfigureStartExpectation() {
@@ -113,13 +103,7 @@ class SyncDataTypeManagerImplTest
   // Configure the given DTM with the given desired types.
   void Configure(DataTypeManagerImpl* dtm,
                  const DataTypeManager::TypeSet& desired_types) {
-    const syncer::ConfigureReason kReason =
-        syncer::CONFIGURE_REASON_RECONFIGURATION;
-    if (GetNigoriState() == WITH_NIGORI) {
-      dtm->Configure(desired_types, kReason);
-    } else {
-      dtm->ConfigureWithoutNigori(desired_types, kReason);
-    }
+    dtm->Configure(desired_types, syncer::CONFIGURE_REASON_RECONFIGURATION);
   }
 
   // Finish downloading for the given DTM.  Should be done only after
@@ -159,7 +143,7 @@ class SyncDataTypeManagerImplTest
 
 // Set up a DTM with no controllers, configure it, finish downloading,
 // and then stop it.
-TEST_P(SyncDataTypeManagerImplTest, NoControllers) {
+TEST_F(SyncDataTypeManagerImplTest, NoControllers) {
   DataTypeManagerImpl dtm(&configurer_, &controllers_, &observer_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK);
@@ -176,7 +160,7 @@ TEST_P(SyncDataTypeManagerImplTest, NoControllers) {
 
 // Set up a DTM with a single controller, configure it, finish
 // downloading, finish starting the controller, and then stop the DTM.
-TEST_P(SyncDataTypeManagerImplTest, ConfigureOne) {
+TEST_F(SyncDataTypeManagerImplTest, ConfigureOne) {
   AddController(BOOKMARKS);
 
   DataTypeManagerImpl dtm(&configurer_, &controllers_, &observer_);
@@ -198,7 +182,7 @@ TEST_P(SyncDataTypeManagerImplTest, ConfigureOne) {
 
 // Set up a DTM with 2 controllers. configure it. One of them finishes loading
 // after the  timeout. Make sure eventually all are configured.
-TEST_P(SyncDataTypeManagerImplTest, ConfigureSlowLoadingType) {
+TEST_F(SyncDataTypeManagerImplTest, ConfigureSlowLoadingType) {
   AddController(BOOKMARKS);
   AddController(APPS);
 
@@ -245,7 +229,7 @@ TEST_P(SyncDataTypeManagerImplTest, ConfigureSlowLoadingType) {
 // Set up a DTM with a single controller, configure it, but stop it
 // before finishing the download.  It should still be safe to run the
 // download callback even after the DTM is stopped and destroyed.
-TEST_P(SyncDataTypeManagerImplTest, ConfigureOneStopWhileDownloadPending) {
+TEST_F(SyncDataTypeManagerImplTest, ConfigureOneStopWhileDownloadPending) {
   AddController(BOOKMARKS);
 
   {
@@ -267,7 +251,7 @@ TEST_P(SyncDataTypeManagerImplTest, ConfigureOneStopWhileDownloadPending) {
 // downloading, but stop the DTM before the controller finishes
 // starting up.  It should still be safe to finish starting up the
 // controller even after the DTM is stopped and destroyed.
-TEST_P(SyncDataTypeManagerImplTest, ConfigureOneStopWhileStartingModel) {
+TEST_F(SyncDataTypeManagerImplTest, ConfigureOneStopWhileStartingModel) {
   AddController(BOOKMARKS);
 
   {
@@ -293,7 +277,7 @@ TEST_P(SyncDataTypeManagerImplTest, ConfigureOneStopWhileStartingModel) {
 // the controller finishes starting up.  It should still be safe to
 // finish starting up the controller even after the DTM is stopped and
 // destroyed.
-TEST_P(SyncDataTypeManagerImplTest, ConfigureOneStopWhileAssociating) {
+TEST_F(SyncDataTypeManagerImplTest, ConfigureOneStopWhileAssociating) {
   AddController(BOOKMARKS);
   {
     DataTypeManagerImpl dtm(&configurer_, &controllers_, &observer_);
@@ -322,7 +306,7 @@ TEST_P(SyncDataTypeManagerImplTest, ConfigureOneStopWhileAssociating) {
 //   5) Finish the download for step 4.
 //   6) Finish starting the controller successfully.
 //   7) Stop the DTM.
-TEST_P(SyncDataTypeManagerImplTest, OneWaitingForCrypto) {
+TEST_F(SyncDataTypeManagerImplTest, OneWaitingForCrypto) {
   AddController(PASSWORDS);
 
   DataTypeManagerImpl dtm(&configurer_, &controllers_, &observer_);
@@ -372,7 +356,7 @@ TEST_P(SyncDataTypeManagerImplTest, OneWaitingForCrypto) {
 //   5) Finish the download for step 4.
 //   6) Finish starting the second controller.
 //   7) Stop the DTM.
-TEST_P(SyncDataTypeManagerImplTest, ConfigureOneThenBoth) {
+TEST_F(SyncDataTypeManagerImplTest, ConfigureOneThenBoth) {
   AddController(BOOKMARKS);
   AddController(PREFERENCES);
 
@@ -422,7 +406,7 @@ TEST_P(SyncDataTypeManagerImplTest, ConfigureOneThenBoth) {
 //   5) Finish the download for step 4.
 //   6) Finish starting the second controller.
 //   7) Stop the DTM.
-TEST_P(SyncDataTypeManagerImplTest, ConfigureOneThenSwitch) {
+TEST_F(SyncDataTypeManagerImplTest, ConfigureOneThenSwitch) {
   AddController(BOOKMARKS);
   AddController(PREFERENCES);
 
@@ -472,7 +456,7 @@ TEST_P(SyncDataTypeManagerImplTest, ConfigureOneThenSwitch) {
 //   5) Finish the download for step 3.
 //   6) Finish starting the second controller.
 //   7) Stop the DTM.
-TEST_P(SyncDataTypeManagerImplTest, ConfigureWhileOneInFlight) {
+TEST_F(SyncDataTypeManagerImplTest, ConfigureWhileOneInFlight) {
   AddController(BOOKMARKS);
   AddController(PREFERENCES);
 
@@ -518,7 +502,7 @@ TEST_P(SyncDataTypeManagerImplTest, ConfigureWhileOneInFlight) {
 // Set up a DTM with one controller.  Then configure, finish
 // downloading, and start the controller with an unrecoverable error.
 // The unrecoverable error should cause the DTM to stop.
-TEST_P(SyncDataTypeManagerImplTest, OneFailingController) {
+TEST_F(SyncDataTypeManagerImplTest, OneFailingController) {
   AddController(BOOKMARKS);
 
   DataTypeManagerImpl dtm(&configurer_, &controllers_, &observer_);
@@ -544,7 +528,7 @@ TEST_P(SyncDataTypeManagerImplTest, OneFailingController) {
 //   4) Finish starting the second controller with an unrecoverable error.
 //
 // The failure from step 4 should cause the DTM to stop.
-TEST_P(SyncDataTypeManagerImplTest, SecondControllerFails) {
+TEST_F(SyncDataTypeManagerImplTest, SecondControllerFails) {
   AddController(BOOKMARKS);
   AddController(PREFERENCES);
 
@@ -582,7 +566,7 @@ TEST_P(SyncDataTypeManagerImplTest, SecondControllerFails) {
 //
 // TODO(akalin): Check that the data type that failed association is
 // recorded in the CONFIGURE_DONE notification.
-TEST_P(SyncDataTypeManagerImplTest, OneControllerFailsAssociation) {
+TEST_F(SyncDataTypeManagerImplTest, OneControllerFailsAssociation) {
   AddController(BOOKMARKS);
   AddController(PREFERENCES);
 
@@ -620,7 +604,7 @@ TEST_P(SyncDataTypeManagerImplTest, OneControllerFailsAssociation) {
 //   4) Finish the download for step 2.
 //   5) Finish starting both controllers.
 //   6) Stop the DTM.
-TEST_P(SyncDataTypeManagerImplTest, ConfigureWhileDownloadPending) {
+TEST_F(SyncDataTypeManagerImplTest, ConfigureWhileDownloadPending) {
   AddController(BOOKMARKS);
   AddController(PREFERENCES);
 
@@ -672,7 +656,7 @@ TEST_P(SyncDataTypeManagerImplTest, ConfigureWhileDownloadPending) {
 //
 // The failure from step 3 should be ignored since there's a
 // reconfigure pending from step 2.
-TEST_P(SyncDataTypeManagerImplTest, ConfigureWhileDownloadPendingWithFailure) {
+TEST_F(SyncDataTypeManagerImplTest, ConfigureWhileDownloadPendingWithFailure) {
   AddController(BOOKMARKS);
   AddController(PREFERENCES);
 
@@ -713,12 +697,102 @@ TEST_P(SyncDataTypeManagerImplTest, ConfigureWhileDownloadPendingWithFailure) {
   EXPECT_EQ(DataTypeManager::STOPPED, dtm.state());
 }
 
-INSTANTIATE_TEST_CASE_P(
-    WithoutNigori, SyncDataTypeManagerImplTest,
-    ::testing::Values(WITHOUT_NIGORI));
+// Tests a Purge then Configure.  This is similar to the sequence of
+// operations that would be invoked by the BackendMigrator.
+TEST_F(SyncDataTypeManagerImplTest, MigrateAll) {
+  AddController(BOOKMARKS);
 
-INSTANTIATE_TEST_CASE_P(
-    WithNigori, SyncDataTypeManagerImplTest,
-    ::testing::Values(WITH_NIGORI));
+  DataTypeManagerImpl dtm(&configurer_, &controllers_, &observer_);
+  SetConfigureStartExpectation();
+  SetConfigureDoneExpectation(DataTypeManager::OK);
+
+  // Initial setup.
+  Configure(&dtm, ModelTypeSet(BOOKMARKS));
+  FinishDownload(dtm, ModelTypeSet());
+  GetController(BOOKMARKS)->FinishStart(DataTypeController::OK);
+
+  // We've now configured bookmarks and (implicitly) the control types.
+  EXPECT_EQ(DataTypeManager::CONFIGURED, dtm.state());
+  Mock::VerifyAndClearExpectations(&observer_);
+
+  // Pretend we were told to migrate all types.
+  ModelTypeSet to_migrate;
+  to_migrate.Put(BOOKMARKS);
+  to_migrate.PutAll(syncer::ControlTypes());
+
+  SetConfigureStartExpectation();
+  SetConfigureDoneExpectation(DataTypeManager::OK);
+  dtm.PurgeForMigration(to_migrate,
+                        syncer::CONFIGURE_REASON_MIGRATION);
+  EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm.state());
+
+  // The DTM will call ConfigureDataTypes(), even though it is unnecessary.
+  FinishDownload(dtm, ModelTypeSet());
+  EXPECT_EQ(DataTypeManager::CONFIGURED, dtm.state());
+  Mock::VerifyAndClearExpectations(&observer_);
+
+  // Re-enable the migrated types.
+  SetConfigureStartExpectation();
+  SetConfigureDoneExpectation(DataTypeManager::OK);
+  Configure(&dtm, to_migrate);
+  FinishDownload(dtm, ModelTypeSet());
+  GetController(BOOKMARKS)->FinishStart(DataTypeController::OK);
+  EXPECT_EQ(DataTypeManager::CONFIGURED, dtm.state());
+}
+
+// Test receipt of a Configure request while a purge is in flight.
+TEST_F(SyncDataTypeManagerImplTest, ConfigureDuringPurge) {
+  AddController(BOOKMARKS);
+  AddController(PREFERENCES);
+
+  DataTypeManagerImpl dtm(&configurer_, &controllers_, &observer_);
+
+  // Initial configure.
+  SetConfigureStartExpectation();
+  SetConfigureDoneExpectation(DataTypeManager::OK);
+  Configure(&dtm, ModelTypeSet(BOOKMARKS));
+  FinishDownload(dtm, ModelTypeSet());
+  GetController(BOOKMARKS)->FinishStart(DataTypeController::OK);
+  EXPECT_EQ(DataTypeManager::CONFIGURED, dtm.state());
+  Mock::VerifyAndClearExpectations(&observer_);
+
+  // Purge the Nigori type.
+  SetConfigureStartExpectation();
+  dtm.PurgeForMigration(ModelTypeSet(NIGORI),
+                        syncer::CONFIGURE_REASON_MIGRATION);
+  EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm.state());
+  Mock::VerifyAndClearExpectations(&observer_);
+
+  // Before the backend configuration completes, ask for a different
+  // set of types.  This request asks for
+  // - BOOKMARKS: which is redundant because it was already enabled,
+  // - PREFERENCES: which is new and will need to be downloaded, and
+  // - NIGORI: (added implicitly because it is a control type) which
+  //   the DTM is part-way through purging.
+  SetConfigureBlockedExpectation();
+  Configure(&dtm, ModelTypeSet(BOOKMARKS, PREFERENCES));
+  EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm.state());
+
+  // Invoke the callback we've been waiting for since we asked to purge NIGORI.
+  FinishDownload(dtm, ModelTypeSet());
+  EXPECT_EQ(DataTypeManager::BLOCKED, dtm.state());
+  Mock::VerifyAndClearExpectations(&observer_);
+
+  SetConfigureDoneExpectation(DataTypeManager::OK);
+  // Pump the loop to run the posted DTMI::ConfigureImpl() task from
+  // DTMI::ProcessReconfigure().
+  ui_loop_.RunAllPending();
+  EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm.state());
+
+  // Now invoke the callback for the second configure request.
+  FinishDownload(dtm, ModelTypeSet());
+  EXPECT_EQ(DataTypeManager::CONFIGURING, dtm.state());
+
+  // Start the preferences controller.  We don't need to start controller for
+  // the NIGORI because it has none.  We don't need to start the controller for
+  // the BOOKMARKS because it was never stopped.
+  GetController(PREFERENCES)->FinishStart(DataTypeController::OK);
+  EXPECT_EQ(DataTypeManager::CONFIGURED, dtm.state());
+}
 
 }  // namespace browser_sync

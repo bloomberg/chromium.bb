@@ -14,11 +14,9 @@ SyncEncryptionHandler::~SyncEncryptionHandler() {}
 
 // Static.
 ModelTypeSet SyncEncryptionHandler::SensitiveTypes() {
-  // Both of these have their own encryption schemes, but we include them
-  // anyways.
+  // It has its own encryption scheme, but we include it anyway.
   ModelTypeSet types;
   types.Put(PASSWORDS);
-  types.Put(NIGORI);
   return types;
 }
 

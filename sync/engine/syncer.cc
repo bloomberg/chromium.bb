@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "build/build_config.h"
+#include "sync/engine/apply_control_data_updates.h"
 #include "sync/engine/apply_updates_command.h"
 #include "sync/engine/build_commit_command.h"
 #include "sync/engine/commit.h"
@@ -158,6 +159,9 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         break;
       }
       case APPLY_UPDATES: {
+        // These include encryption updates that should be applied early.
+        ApplyControlDataUpdates(session->context()->directory());
+
         ApplyUpdatesCommand apply_updates;
         apply_updates.Execute(session);
         session->SendEventNotification(SyncEngineEvent::STATUS_CHANGED);

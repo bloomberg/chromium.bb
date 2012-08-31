@@ -101,22 +101,10 @@ bool BackendMigrator::TryStart() {
 void BackendMigrator::RestartMigration() {
   // We'll now disable any running types that need to be migrated.
   ChangeState(DISABLING_TYPES);
-  const ModelTypeSet full_set = service_->GetPreferredDataTypes();
-  const ModelTypeSet difference = Difference(full_set, to_migrate_);
-  bool configure_with_nigori = !to_migrate_.Has(syncer::NIGORI);
   SDVLOG(1) << "BackendMigrator disabling types "
-            << ModelTypeSetToString(to_migrate_) << "; configuring "
-            << ModelTypeSetToString(difference)
-            << (configure_with_nigori ? " with nigori" : " without nigori");
+            << ModelTypeSetToString(to_migrate_);
 
-  // Add nigori for config or not based upon if the server told us to migrate
-  // nigori or not.
-  if (configure_with_nigori) {
-    manager_->Configure(difference, syncer::CONFIGURE_REASON_MIGRATION);
-  } else {
-    manager_->ConfigureWithoutNigori(difference,
-                                     syncer::CONFIGURE_REASON_MIGRATION);
-  }
+  manager_->PurgeForMigration(to_migrate_, syncer::CONFIGURE_REASON_MIGRATION);
 }
 
 void BackendMigrator::OnConfigureDone(

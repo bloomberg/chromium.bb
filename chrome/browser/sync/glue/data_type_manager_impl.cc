@@ -46,15 +46,15 @@ DataTypeManagerImpl::~DataTypeManagerImpl() {}
 
 void DataTypeManagerImpl::Configure(TypeSet desired_types,
                                     syncer::ConfigureReason reason) {
-  desired_types.Put(syncer::NIGORI);
+  desired_types.PutAll(syncer::ControlTypes());
   ConfigureImpl(desired_types, reason);
 }
 
-void DataTypeManagerImpl::ConfigureWithoutNigori(
-    TypeSet desired_types,
+void DataTypeManagerImpl::PurgeForMigration(
+    TypeSet undesired_types,
     syncer::ConfigureReason reason) {
-  DCHECK(!desired_types.Has(syncer::NIGORI));
-  ConfigureImpl(desired_types, reason);
+  TypeSet remainder = Difference(last_requested_types_, undesired_types);
+  ConfigureImpl(remainder, reason);
 }
 
 void DataTypeManagerImpl::ConfigureImpl(
@@ -114,8 +114,8 @@ void DataTypeManagerImpl::Restart(syncer::ConfigureReason reason) {
            controllers_->begin(); it != controllers_->end(); ++it) {
     all_types.Put(it->first);
   }
-  // NIGORI has no controller.  We must add it manually.
-  all_types.Put(syncer::NIGORI);
+  // These have no controller.  We must add them manually.
+  all_types.PutAll(syncer::ControlTypes());
   const syncer::ModelTypeSet types_to_add = last_requested_types_;
   // Check that types_to_add \subseteq all_types.
   DCHECK(all_types.HasAll(types_to_add));

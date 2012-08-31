@@ -65,10 +65,6 @@ class ConflictResolver {
     SYNC_PROGRESS,     // Progress made.
   };
 
-  void IgnoreLocalChanges(syncable::MutableEntry* entry);
-  void OverwriteServerChanges(syncable::WriteTransaction* trans,
-                              syncable::MutableEntry* entry);
-
   ProcessSimpleConflictResult ProcessSimpleConflict(
       syncable::WriteTransaction* trans,
       const syncable::Id& id,

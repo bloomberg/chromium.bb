@@ -204,7 +204,7 @@ class SyncBackendHostTest : public testing::Test {
   // Synchronously configures the backend's datatypes.
   void ConfigureDataTypes(syncer::ModelTypeSet types_to_add,
                           syncer::ModelTypeSet types_to_remove) {
-    types_to_add.Put(syncer::NIGORI);
+    types_to_add.PutAll(syncer::ControlTypes());
     backend_->ConfigureDataTypes(
         syncer::CONFIGURE_REASON_RECONFIGURATION,
         types_to_add,
@@ -247,28 +247,28 @@ class SyncBackendHostTest : public testing::Test {
 TEST_F(SyncBackendHostTest, InitShutdown) {
   InitializeBackend();
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().Equals(
-      syncer::ModelTypeSet(syncer::NIGORI)));
+      syncer::ControlTypes()));
   EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Equals(
-      syncer::ModelTypeSet(syncer::NIGORI)));
+      syncer::ControlTypes()));
   EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
-      syncer::ModelTypeSet(syncer::NIGORI)).Empty());
+      syncer::ControlTypes()).Empty());
 }
 
 // Test first time sync scenario. All types should be properly configured.
 TEST_F(SyncBackendHostTest, FirstTimeSync) {
   InitializeBackend();
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().Equals(
-      syncer::ModelTypeSet(syncer::NIGORI)));
+      syncer::ControlTypes()));
   EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Equals(
-      syncer::ModelTypeSet(syncer::NIGORI)));
+      syncer::ControlTypes()));
   EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
-      syncer::ModelTypeSet(syncer::NIGORI)).Empty());
+      syncer::ControlTypes()).Empty());
 
   ConfigureDataTypes(enabled_types_,
                      Difference(syncer::ModelTypeSet::All(),
                                 enabled_types_));
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().HasAll(
-      enabled_types_));
+      Difference(enabled_types_, syncer::ControlTypes())));
   EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Equals(enabled_types_));
   EXPECT_TRUE(fake_manager_->GetAndResetEnabledTypes().Equals(enabled_types_));
   EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
@@ -348,12 +348,12 @@ TEST_F(SyncBackendHostTest, LostDB) {
   // left untouched.
   InitializeBackend();
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().Equals(
-      syncer::ModelTypeSet(syncer::NIGORI)));
+      syncer::ModelTypeSet(syncer::ControlTypes())));
   EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Equals(
-      syncer::ModelTypeSet(syncer::NIGORI)));
+      syncer::ModelTypeSet(syncer::ControlTypes())));
   EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
       enabled_types_).Equals(
-          Difference(enabled_types_, syncer::ModelTypeSet(syncer::NIGORI))));
+          Difference(enabled_types_, syncer::ControlTypes())));
 
   // The database was empty, so any cleaning is entirely optional.  We want to
   // reset this value before running the next part of the test, though.
@@ -364,7 +364,7 @@ TEST_F(SyncBackendHostTest, LostDB) {
                      Difference(syncer::ModelTypeSet::All(),
                                 enabled_types_));
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().HasAll(
-      enabled_types_));
+      Difference(enabled_types_, syncer::ControlTypes())));
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
                            enabled_types_).Empty());
   EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Equals(enabled_types_));

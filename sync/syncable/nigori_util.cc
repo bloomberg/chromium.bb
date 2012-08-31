@@ -70,7 +70,7 @@ bool EntryNeedsEncryption(ModelTypeSet encrypted_types,
   if (!entry.Get(UNIQUE_SERVER_TAG).empty())
     return false;  // We don't encrypt unique server nodes.
   ModelType type = entry.GetModelType();
-  if (type == PASSWORDS || type == NIGORI)
+  if (type == PASSWORDS || IsControlType(type))
     return false;
   // Checking NON_UNIQUE_NAME is not necessary for the correctness of encrypting
   // the data, nor for determining if data is encrypted. We simply ensure it has
@@ -83,7 +83,7 @@ bool EntryNeedsEncryption(ModelTypeSet encrypted_types,
 bool SpecificsNeedsEncryption(ModelTypeSet encrypted_types,
                               const sync_pb::EntitySpecifics& specifics) {
   const ModelType type = GetModelTypeFromSpecifics(specifics);
-  if (type == PASSWORDS || type == NIGORI)
+  if (type == PASSWORDS || IsControlType(type))
     return false;  // These types have their own encryption schemes.
   if (!encrypted_types.Has(type))
     return false;  // This type does not require encryption
@@ -96,7 +96,7 @@ bool VerifyDataTypeEncryptionForTest(
     ModelType type,
     bool is_encrypted) {
   Cryptographer* cryptographer = trans->directory()->GetCryptographer(trans);
-  if (type == PASSWORDS || type == NIGORI) {
+  if (type == PASSWORDS || IsControlType(type)) {
     NOTREACHED();
     return true;
   }

@@ -1349,7 +1349,7 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
       initialization_state_ = DOWNLOADING_NIGORI;
       ConfigureDataTypes(
           syncer::CONFIGURE_REASON_NEW_CLIENT,
-          syncer::ModelTypeSet(syncer::NIGORI),
+          syncer::ModelTypeSet(syncer::ControlTypes()),
           syncer::ModelTypeSet(),
           // Calls back into this function.
           base::Bind(

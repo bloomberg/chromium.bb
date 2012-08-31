@@ -144,6 +144,14 @@ int GetSpecificsFieldNumberFromModelType(ModelType model_type) {
   return 0;
 }
 
+FullModelTypeSet ToFullModelTypeSet(ModelTypeSet in) {
+  FullModelTypeSet out;
+  for (ModelTypeSet::Iterator i = in.First(); i.Good(); i.Inc()) {
+    out.Put(i.Get());
+  }
+  return out;
+}
+
 // Note: keep this consistent with GetModelType in syncable.cc!
 ModelType GetModelType(const sync_pb::SyncEntity& sync_entity) {
   DCHECK(!IsRoot(sync_entity));  // Root shouldn't ever go over the wire.
@@ -224,6 +232,26 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
 
 bool ShouldMaintainPosition(ModelType model_type) {
   return model_type == BOOKMARKS;
+}
+
+ModelTypeSet UserTypes() {
+  ModelTypeSet set;
+  for (int i = FIRST_USER_MODEL_TYPE; i <= LAST_USER_MODEL_TYPE; ++i) {
+    set.Put(ModelTypeFromInt(i));
+  }
+  return set;
+}
+
+ModelTypeSet ControlTypes() {
+  ModelTypeSet set;
+  for (int i = FIRST_CONTROL_MODEL_TYPE; i <= LAST_CONTROL_MODEL_TYPE; ++i) {
+    set.Put(ModelTypeFromInt(i));
+  }
+  return set;
+}
+
+bool IsControlType(ModelType model_type) {
+  return ControlTypes().Has(model_type);
 }
 
 const char* ModelTypeToString(ModelType model_type) {

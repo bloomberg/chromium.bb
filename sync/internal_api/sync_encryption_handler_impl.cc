@@ -375,14 +375,14 @@ void SyncEncryptionHandlerImpl::EnableEncryptEverything() {
   ModelTypeSet* encrypted_types =
       &UnlockVaultMutable(trans.GetWrappedTrans())->encrypted_types;
   if (encrypt_everything_) {
-    DCHECK(encrypted_types->Equals(ModelTypeSet::All()));
+    DCHECK(encrypted_types->Equals(UserTypes()));
     return;
   }
   DVLOG(1) << "Enabling encrypt everything.";
   encrypt_everything_ = true;
   // Change |encrypted_types_| directly to avoid sending more than one
   // notification.
-  *encrypted_types = ModelTypeSet::All();
+  *encrypted_types = UserTypes();
   FOR_EACH_OBSERVER(
       Observer, observers_,
       OnEncryptedTypesChanged(*encrypted_types, encrypt_everything_));
@@ -477,7 +477,7 @@ void SyncEncryptionHandlerImpl::ReEncryptEverything(
   for (ModelTypeSet::Iterator iter =
            UnlockVault(trans->GetWrappedTrans()).encrypted_types.First();
        iter.Good(); iter.Inc()) {
-    if (iter.Get() == PASSWORDS || iter.Get() == NIGORI)
+    if (iter.Get() == PASSWORDS || IsControlType(iter.Get()))
       continue; // These types handle encryption differently.
 
     ReadNode type_root(trans);
@@ -662,13 +662,13 @@ bool SyncEncryptionHandlerImpl::UpdateEncryptedTypesFromNigori(
   if (nigori.encrypt_everything()) {
     if (!encrypt_everything_) {
       encrypt_everything_ = true;
-      *encrypted_types = ModelTypeSet::All();
+      *encrypted_types = UserTypes();
       DVLOG(1) << "Enabling encrypt everything via nigori node update";
       FOR_EACH_OBSERVER(
           Observer, observers_,
           OnEncryptedTypesChanged(*encrypted_types, encrypt_everything_));
     }
-    DCHECK(encrypted_types->Equals(ModelTypeSet::All()));
+    DCHECK(encrypted_types->Equals(UserTypes()));
     return true;
   }
 
@@ -683,12 +683,12 @@ bool SyncEncryptionHandlerImpl::UpdateEncryptedTypesFromNigori(
       !Difference(nigori_encrypted_types, SensitiveTypes()).Empty()) {
     if (!encrypt_everything_) {
       encrypt_everything_ = true;
-      *encrypted_types = ModelTypeSet::All();
+      *encrypted_types = UserTypes();
       FOR_EACH_OBSERVER(
           Observer, observers_,
           OnEncryptedTypesChanged(*encrypted_types, encrypt_everything_));
     }
-    DCHECK(encrypted_types->Equals(ModelTypeSet::All()));
+    DCHECK(encrypted_types->Equals(UserTypes()));
     return false;
   }
 
@@ -767,6 +767,10 @@ void SyncEncryptionHandlerImpl::MergeEncryptedTypes(
     ModelTypeSet new_encrypted_types,
     syncable::BaseTransaction* const trans) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Only UserTypes may be encrypted.
+  DCHECK(UserTypes().HasAll(new_encrypted_types));
+
   ModelTypeSet* encrypted_types = &UnlockVaultMutable(trans)->encrypted_types;
   if (!encrypted_types->HasAll(new_encrypted_types)) {
     *encrypted_types = new_encrypted_types;

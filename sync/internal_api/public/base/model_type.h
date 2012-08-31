@@ -52,7 +52,8 @@ enum ModelType {
   //
   // A bookmark folder or a bookmark URL object.
   BOOKMARKS,
-  FIRST_REAL_MODEL_TYPE = BOOKMARKS,  // Declared 2nd, for debugger prettiness.
+  FIRST_USER_MODEL_TYPE = BOOKMARKS,  // Declared 2nd, for debugger prettiness.
+  FIRST_REAL_MODEL_TYPE = FIRST_USER_MODEL_TYPE,
 
   // A preference folder or a preference object.
   PREFERENCES,
@@ -69,8 +70,6 @@ enum ModelType {
   TYPED_URLS,
   // An extension folder or an extension object.
   EXTENSIONS,
-  // An object representing a set of Nigori keys.
-  NIGORI,
   // An object representing a custom search engine.
   SEARCH_ENGINES,
   // An object representing a browser session.
@@ -83,7 +82,14 @@ enum ModelType {
   EXTENSION_SETTINGS,
   // App notifications.
   APP_NOTIFICATIONS,
-  LAST_REAL_MODEL_TYPE = APP_NOTIFICATIONS,
+  LAST_USER_MODEL_TYPE = APP_NOTIFICATIONS,
+
+  // An object representing a set of Nigori keys.
+  NIGORI,
+  FIRST_CONTROL_MODEL_TYPE = NIGORI,
+  LAST_CONTROL_MODEL_TYPE = NIGORI,
+
+  LAST_REAL_MODEL_TYPE = LAST_CONTROL_MODEL_TYPE,
 
   // If you are adding a new sync datatype that is exposed to the user via the
   // sync preferences UI, be sure to update the list in
@@ -124,6 +130,27 @@ SYNC_EXPORT ModelType GetModelTypeFromSpecifics(
 // value (sibling ordering) for this item.
 bool ShouldMaintainPosition(ModelType model_type);
 
+// These are the user-selectable data types.  Note that some of these share a
+// preference flag, so not all of them are individually user-selectable.
+ModelTypeSet UserTypes();
+
+// Returns a list of all control types.
+//
+// The control types are intended to contain metadata nodes that are essential
+// for the normal operation of the syncer.  As such, they have the following
+// special properties:
+// - They are downloaded early during SyncBackend initialization.
+// - They are always enabled.  Users may not disable these types.
+// - Their contents are not encrypted automatically.
+// - They support custom update application and conflict resolution logic.
+// - All change processing occurs on the sync thread (GROUP_PASSIVE).
+ModelTypeSet ControlTypes();
+
+// Returns true if this is a control type.
+//
+// See comment above for more information on what makes these types special.
+bool IsControlType(ModelType model_type);
+
 // Determine a model type from the field number of its associated
 // EntitySpecifics field.
 ModelType GetModelTypeFromSpecificsFieldNumber(int field_number);
@@ -134,6 +161,8 @@ ModelType GetModelTypeFromSpecificsFieldNumber(int field_number);
 // Used by tests outside of sync.
 SYNC_EXPORT int GetSpecificsFieldNumberFromModelType(
     ModelType model_type);
+
+FullModelTypeSet ToFullModelTypeSet(ModelTypeSet in);
 
 // TODO(sync): The functions below badly need some cleanup.
 

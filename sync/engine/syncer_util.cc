@@ -16,14 +16,11 @@
 #include "sync/engine/syncer_types.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
-#include "sync/protocol/nigori_specifics.pb.h"
 #include "sync/protocol/password_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/entry.h"
 #include "sync/syncable/mutable_entry.h"
-#include "sync/syncable/nigori_handler.h"
-#include "sync/syncable/nigori_util.h"
 #include "sync/syncable/read_transaction.h"
 #include "sync/syncable/syncable_changes_version.h"
 #include "sync/syncable/syncable_proto_util.h"
@@ -194,51 +191,6 @@ UpdateAttemptResponse AttemptToUpdateEntry(
     return SUCCESS;  // No work to do.
   syncable::Id id = entry->Get(ID);
   const sync_pb::EntitySpecifics& specifics = entry->Get(SERVER_SPECIFICS);
-
-  // We intercept updates to the Nigori node, update the Cryptographer and
-  // encrypt any unsynced changes here because there is no Nigori
-  // ChangeProcessor. We never put the nigori node in a state of
-  // conflict_encryption.
-  //
-  // We always update the cryptographer with the server's nigori node,
-  // even if we have a locally modified nigori node (we manually merge nigori
-  // data in the conflict resolver in that case). This handles the case where
-  // two clients both set a different passphrase. The second client to attempt
-  // to commit will go into a state of having pending keys, unioned the set of
-  // encrypted types, and eventually re-encrypt everything with the passphrase
-  // of the first client and commit the set of merged encryption keys. Until the
-  // second client provides the pending passphrase, the cryptographer will
-  // preserve the encryption keys based on the local passphrase, while the
-  // nigori node will preserve the server encryption keys.
-  //
-  // If non-encryption changes are made to the nigori node, they will be
-  // lost as part of conflict resolution. This is intended, as we place a higher
-  // priority on preserving the server's passphrase change to preserving local
-  // non-encryption changes. Next time the non-encryption changes are made to
-  // the nigori node (e.g. on restart), they will commit without issue.
-  if (specifics.has_nigori()) {
-    const sync_pb::NigoriSpecifics& nigori = specifics.nigori();
-    trans->directory()->GetNigoriHandler()->ApplyNigoriUpdate(nigori, trans);
-
-    // Make sure any unsynced changes are properly encrypted as necessary.
-    // We only perform this if the cryptographer is ready. If not, these are
-    // re-encrypted at SetDecryptionPassphrase time (via ReEncryptEverything).
-    // This logic covers the case where the nigori update marked new datatypes
-    // for encryption, but didn't change the passphrase.
-    if (cryptographer->is_ready()) {
-      // Note that we don't bother to encrypt any data for which IS_UNSYNCED
-      // == false here. The machine that turned on encryption should know about
-      // and re-encrypt all synced data. It's possible it could get interrupted
-      // during this process, but we currently reencrypt everything at startup
-      // as well, so as soon as a client is restarted with this datatype marked
-      // for encryption, all the data should be updated as necessary.
-
-      // If this fails, something is wrong with the cryptographer, but there's
-      // nothing we can do about it here.
-      DVLOG(1) << "Received new nigori, encrypting unsynced changes.";
-      syncable::ProcessUnsyncedChangesForEncryption(trans);
-    }
-  }
 
   // Only apply updates that we can decrypt. If we can't decrypt the update, it
   // is likely because the passphrase has not arrived yet. Because the

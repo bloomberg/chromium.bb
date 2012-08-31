@@ -36,8 +36,8 @@ class DataTypeManagerImpl : public DataTypeManager,
                          syncer::ConfigureReason reason) OVERRIDE;
 
   // Needed only for backend migration.
-  virtual void ConfigureWithoutNigori(
-      TypeSet desired_types,
+  virtual void PurgeForMigration(
+      TypeSet undesired_types,
       syncer::ConfigureReason reason) OVERRIDE;
 
   virtual void Stop() OVERRIDE;

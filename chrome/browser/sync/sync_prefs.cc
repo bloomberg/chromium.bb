@@ -336,15 +336,15 @@ void SyncPrefs::RegisterPreferences() {
                                      enable_by_default,
                                      PrefService::UNSYNCABLE_PREF);
 
+  syncer::ModelTypeSet user_types = syncer::UserTypes();
+
   // Treat bookmarks specially.
   RegisterDataTypePreferredPref(syncer::BOOKMARKS, true);
-  for (int i = syncer::PREFERENCES; i < syncer::MODEL_TYPE_COUNT; ++i) {
-    const syncer::ModelType type = syncer::ModelTypeFromInt(i);
-    // Also treat nigori specially.
-    if (type == syncer::NIGORI) {
-      continue;
-    }
-    RegisterDataTypePreferredPref(type, enable_by_default);
+  user_types.Remove(syncer::BOOKMARKS);
+
+  for (syncer::ModelTypeSet::Iterator it = user_types.First();
+       it.Good(); it.Inc()) {
+    RegisterDataTypePreferredPref(it.Get(), enable_by_default);
   }
 
   pref_service_->RegisterBooleanPref(prefs::kSyncManaged,

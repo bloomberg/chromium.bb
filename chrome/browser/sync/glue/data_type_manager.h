@@ -93,8 +93,8 @@ class DataTypeManager {
   virtual void Configure(TypeSet desired_types,
                          syncer::ConfigureReason reason) = 0;
 
-  virtual void ConfigureWithoutNigori(TypeSet desired_types,
-                                      syncer::ConfigureReason reason) = 0;
+  virtual void PurgeForMigration(TypeSet undesired_types,
+                                 syncer::ConfigureReason reason) = 0;
 
   // Synchronously stops all registered data types.  If called after
   // Configure() is called but before it finishes, it will abort the

@@ -57,6 +57,10 @@ SyncerError ApplyUpdatesCommand::ModelChangingExecuteImpl(
     }
   }
 
+  // Don't process control type updates here.  They will be handled elsewhere.
+  FullModelTypeSet control_types = ToFullModelTypeSet(ControlTypes());
+  server_type_restriction.RemoveAll(control_types);
+
   std::vector<int64> handles;
   dir->GetUnappliedUpdateMetaHandles(
       &trans, server_type_restriction, &handles);
@@ -77,6 +81,10 @@ SyncerError ApplyUpdatesCommand::ModelChangingExecuteImpl(
   if (status.ServerSaysNothingMoreToDownload()) {
     for (ModelTypeSet::Iterator it =
              status.updates_request_types().First(); it.Good(); it.Inc()) {
+      // Don't set the flag for control types.  We didn't process them here.
+      if (IsControlType(it.Get()))
+        continue;
+
       // This gets persisted to the directory's backing store.
       dir->set_initial_sync_ended_for_type(it.Get(), true);
     }
