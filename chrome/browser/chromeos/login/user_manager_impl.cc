@@ -34,6 +34,7 @@
 #include "chrome/browser/chromeos/login/user_image.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/ownership_service.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -202,7 +203,7 @@ UserManagerImpl::UserManagerImpl()
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   MigrateWallpaperData();
-  registrar_.Add(this, chrome::NOTIFICATION_OWNERSHIP_STATUS_CHANGED,
+  registrar_.Add(this, chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED,
       content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,
       content::NotificationService::AllSources());
@@ -211,7 +212,7 @@ UserManagerImpl::UserManagerImpl()
 
 UserManagerImpl::~UserManagerImpl() {
   // Can't use STLDeleteElements because of the private destructor of User.
-  for (size_t i = 0; i < users_.size(); ++i)
+  for (size_t i = 0; i < users_.size();++i)
     delete users_[i];
   users_.clear();
   if (is_current_user_ephemeral_)
@@ -584,9 +585,13 @@ void UserManagerImpl::Observe(int type,
                               const content::NotificationSource& source,
                               const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_OWNERSHIP_STATUS_CHANGED:
-      CheckOwnership();
-      RetrieveTrustedDevicePolicies();
+    case chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED:
+      BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                              base::Bind(&UserManagerImpl::CheckOwnership,
+                                         base::Unretained(this)));
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+          base::Bind(&UserManagerImpl::RetrieveTrustedDevicePolicies,
+          base::Unretained(this)));
       break;
     case chrome::NOTIFICATION_PROFILE_ADDED:
       if (IsUserLoggedIn() && !IsLoggedInAsGuest()) {
@@ -613,13 +618,13 @@ void UserManagerImpl::OnStateChanged() {
       state != AuthError::CONNECTION_FAILED &&
       state != AuthError::SERVICE_UNAVAILABLE &&
       state != AuthError::REQUEST_CANCELED) {
-    // Invalidate OAuth token to force Gaia sign-in flow. This is needed
-    // because sign-out/sign-in solution is suggested to the user.
-    // TODO(altimofeev): this code isn't needed after crosbug.com/25978 is
-    // implemented.
-    DVLOG(1) << "Invalidate OAuth token because of a sync error.";
-    SaveUserOAuthStatus(GetLoggedInUser().email(),
-                        User::OAUTH_TOKEN_STATUS_INVALID);
+      // Invalidate OAuth token to force Gaia sign-in flow. This is needed
+      // because sign-out/sign-in solution is suggested to the user.
+      // TODO(altimofeev): this code isn't needed after crosbug.com/25978 is
+      // implemented.
+      DVLOG(1) << "Invalidate OAuth token because of a sync error.";
+      SaveUserOAuthStatus(GetLoggedInUser().email(),
+                          User::OAUTH_TOKEN_STATUS_INVALID);
   }
 }
 
@@ -693,12 +698,12 @@ bool UserManagerImpl::IsEphemeralUser(const std::string& email) const {
               HasSwitch(switches::kLoginManager));
 }
 
-void UserManagerImpl::AddObserver(UserManager::Observer* obs) {
+void UserManagerImpl::AddObserver(Observer* obs) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observer_list_.AddObserver(obs);
 }
 
-void UserManagerImpl::RemoveObserver(UserManager::Observer* obs) {
+void UserManagerImpl::RemoveObserver(Observer* obs) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observer_list_.RemoveObserver(obs);
 }
@@ -710,8 +715,10 @@ const gfx::ImageSkia& UserManagerImpl::DownloadedProfileImage() const {
 
 void UserManagerImpl::NotifyLocalStateChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  FOR_EACH_OBSERVER(UserManager::Observer, observer_list_,
-                    LocalStateChanged(this));
+  FOR_EACH_OBSERVER(
+    Observer,
+    observer_list_,
+    LocalStateChanged(this));
 }
 
 FilePath UserManagerImpl::GetImagePathForUser(const std::string& username) {
@@ -888,9 +895,10 @@ void UserManagerImpl::NotifyOnLogin() {
 
   CrosLibrary::Get()->GetCertLibrary()->LoadKeyStore();
 
-  // Indicate to DeviceSettingsService that the owner key may have become
-  // available.
-  DeviceSettingsService::Get()->SetUsername(logged_in_user_->email());
+  // Schedules current user ownership check on file thread.
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          base::Bind(&UserManagerImpl::CheckOwnership,
+                                     base::Unretained(this)));
 }
 
 void UserManagerImpl::SetInitialUserImage(const std::string& username) {
@@ -1147,18 +1155,32 @@ void UserManagerImpl::DeleteUserImage(const FilePath& image_path) {
   }
 }
 
-void UserManagerImpl::UpdateOwnership(
-    DeviceSettingsService::OwnershipStatus status,
-    bool is_owner) {
-  VLOG(1) << "Current user " << (is_owner ? "is owner" : "is not owner");
+void UserManagerImpl::UpdateOwnership(bool is_owner) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   SetCurrentUserIsOwner(is_owner);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_OWNERSHIP_CHECKED,
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
+  if (is_owner) {
+    // Also update cached value.
+    CrosSettings::Get()->SetString(kDeviceOwner, GetLoggedInUser().email());
+  }
 }
 
 void UserManagerImpl::CheckOwnership() {
-  DeviceSettingsService::Get()->GetOwnershipStatusAsync(
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  bool is_owner = OwnershipService::GetSharedInstance()->IsCurrentUserOwner();
+  VLOG(1) << "Current user " << (is_owner ? "is owner" : "is not owner");
+
+  // UserManagerImpl should be accessed only on UI thread.
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
       base::Bind(&UserManagerImpl::UpdateOwnership,
-                 base::Unretained(this)));
+                 base::Unretained(this),
+                 is_owner));
 }
 
 // ProfileDownloaderDelegate override.

@@ -10,7 +10,6 @@
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -56,8 +55,6 @@ class KioskModeIdleLogoutTest : public ash::test::AshTestBase {
   }
 
   content::TestBrowserThread ui_thread_;
-
-  ScopedDeviceSettingsTestHelper device_settings_test_helper_;
 
   KioskModeIdleLogout* idle_logout_;
   content::NotificationRegistrar registrar_;

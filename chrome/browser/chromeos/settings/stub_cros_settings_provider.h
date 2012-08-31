@@ -26,6 +26,7 @@ class StubCrosSettingsProvider : public CrosSettingsProvider {
   virtual TrustedStatus PrepareTrustedValues(
       const base::Closure& callback) OVERRIDE;
   virtual bool HandlesSetting(const std::string& path) const OVERRIDE;
+  virtual void Reload() OVERRIDE;
 
  private:
   // CrosSettingsProvider implementation:

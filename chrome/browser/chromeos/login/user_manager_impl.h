@@ -20,18 +20,17 @@
 #include "chrome/browser/chromeos/login/user_image_loader.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/image/image_skia.h"
 
+class SkBitmap;
 class FilePath;
 class PrefService;
 class ProfileDownloader;
 class ProfileSyncService;
-class SkBitmap;
 
 namespace chromeos {
 
@@ -94,8 +93,8 @@ class UserManagerImpl : public UserManager,
   virtual bool IsLoggedInAsStub() const OVERRIDE;
   virtual bool IsSessionStarted() const OVERRIDE;
   virtual bool IsEphemeralUser(const std::string& email) const OVERRIDE;
-  virtual void AddObserver(UserManager::Observer* obs) OVERRIDE;
-  virtual void RemoveObserver(UserManager::Observer* obs) OVERRIDE;
+  virtual void AddObserver(Observer* obs) OVERRIDE;
+  virtual void RemoveObserver(Observer* obs) OVERRIDE;
   virtual void NotifyLocalStateChanged() OVERRIDE;
   virtual const gfx::ImageSkia& DownloadedProfileImage() const OVERRIDE;
 
@@ -214,10 +213,9 @@ class UserManagerImpl : public UserManager,
   void DeleteUserImage(const FilePath& image_path);
 
   // Updates current user ownership on UI thread.
-  void UpdateOwnership(DeviceSettingsService::OwnershipStatus status,
-                       bool is_owner);
+  void UpdateOwnership(bool is_owner);
 
-  // Triggers an asynchronous ownership check.
+  // Checks current user's ownership on file thread.
   void CheckOwnership();
 
   // ProfileDownloaderDelegate implementation.
@@ -283,7 +281,7 @@ class UserManagerImpl : public UserManager,
   // service, so do NOT use it outside |OnStateChanged| method.
   ProfileSyncService* observed_sync_service_;
 
-  ObserverList<UserManager::Observer> observer_list_;
+  ObserverList<Observer> observer_list_;
 
   // Download user profile image on login to update it if it's changed.
   scoped_ptr<ProfileDownloader> profile_image_downloader_;

@@ -15,6 +15,9 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/ownership_service.h"
+#include "chrome/browser/chromeos/settings/signed_settings_helper.h"
 #include "chrome/browser/policy/app_pack_updater.h"
 #include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/enterprise_install_attributes.h"
@@ -35,6 +38,69 @@ using google::protobuf::RepeatedPtrField;
 namespace em = enterprise_management;
 
 namespace {
+
+// Stores policy, updates the owner key if required and reports the status
+// through a callback.
+class StorePolicyOperation : public chromeos::OwnerManager::KeyUpdateDelegate {
+ public:
+  typedef base::Callback<void(chromeos::SignedSettings::ReturnCode)> Callback;
+
+  StorePolicyOperation(chromeos::SignedSettingsHelper* signed_settings_helper,
+                       const em::PolicyFetchResponse& policy,
+                       const Callback& callback)
+      : signed_settings_helper_(signed_settings_helper),
+        policy_(policy),
+        callback_(callback),
+        weak_ptr_factory_(this) {
+    signed_settings_helper_->StartStorePolicyOp(
+        policy,
+        base::Bind(&StorePolicyOperation::OnStorePolicyCompleted,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+  virtual ~StorePolicyOperation() {
+  }
+
+  void OnStorePolicyCompleted(chromeos::SignedSettings::ReturnCode code) {
+    if (code != chromeos::SignedSettings::SUCCESS) {
+      callback_.Run(code);
+      delete this;
+      return;
+    }
+
+    if (policy_.has_new_public_key()) {
+      // The session manager has successfully done a key rotation. Replace the
+      // owner key also in chrome.
+      const std::string& new_key = policy_.new_public_key();
+      const std::vector<uint8> new_key_data(new_key.c_str(),
+                                            new_key.c_str() + new_key.size());
+      chromeos::OwnershipService::GetSharedInstance()->StartUpdateOwnerKey(
+          new_key_data, this);
+      return;
+    } else {
+      chromeos::CrosSettings::Get()->ReloadProviders();
+      callback_.Run(chromeos::SignedSettings::SUCCESS);
+      delete this;
+      return;
+    }
+  }
+
+  // OwnerManager::KeyUpdateDelegate implementation:
+  virtual void OnKeyUpdated() OVERRIDE {
+    chromeos::CrosSettings::Get()->ReloadProviders();
+    callback_.Run(chromeos::SignedSettings::SUCCESS);
+    delete this;
+  }
+
+ private:
+
+  chromeos::SignedSettingsHelper* signed_settings_helper_;
+  em::PolicyFetchResponse policy_;
+  Callback callback_;
+
+  base::WeakPtrFactory<StorePolicyOperation> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(StorePolicyOperation);
+};
 
 // Decodes a protobuf integer to an IntegerValue. The caller assumes ownership
 // of the return Value*. Returns NULL in case the input value is out of bounds.
@@ -73,30 +139,29 @@ DevicePolicyCache::DevicePolicyCache(
     EnterpriseInstallAttributes* install_attributes)
     : data_store_(data_store),
       install_attributes_(install_attributes),
-      device_settings_service_(chromeos::DeviceSettingsService::Get()),
+      signed_settings_helper_(chromeos::SignedSettingsHelper::Get()),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       policy_fetch_pending_(false) {
-  device_settings_service_->AddObserver(this);
 }
 
 DevicePolicyCache::DevicePolicyCache(
     CloudPolicyDataStore* data_store,
     EnterpriseInstallAttributes* install_attributes,
-    chromeos::DeviceSettingsService* device_settings_service)
+    chromeos::SignedSettingsHelper* signed_settings_helper)
     : data_store_(data_store),
       install_attributes_(install_attributes),
-      device_settings_service_(device_settings_service),
+      signed_settings_helper_(signed_settings_helper),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       policy_fetch_pending_(false) {
-  device_settings_service_->AddObserver(this);
 }
 
 DevicePolicyCache::~DevicePolicyCache() {
-  device_settings_service_->RemoveObserver(this);
 }
 
 void DevicePolicyCache::Load() {
-  DeviceSettingsUpdated();
+  signed_settings_helper_->StartRetrievePolicyOp(
+      base::Bind(&DevicePolicyCache::OnRetrievePolicyCompleted,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool DevicePolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
@@ -140,11 +205,11 @@ bool DevicePolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
   set_last_policy_refresh_time(base::Time::NowFromSystemTime());
 
   // Start a store operation.
-  policy_fetch_pending_ = true;
-  device_settings_service_->Store(
-      policy.SerializeAsString(),
+  StorePolicyOperation::Callback callback =
       base::Bind(&DevicePolicyCache::PolicyStoreOpCompleted,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr());
+  new StorePolicyOperation(signed_settings_helper_, policy, callback);
+  policy_fetch_pending_ = true;
   return true;
 }
 
@@ -160,27 +225,17 @@ void DevicePolicyCache::SetFetchingDone() {
     CloudPolicyCacheBase::SetFetchingDone();
 }
 
-void DevicePolicyCache::OwnershipStatusChanged() {}
-
-void DevicePolicyCache::DeviceSettingsUpdated() {
+void DevicePolicyCache::OnRetrievePolicyCompleted(
+    chromeos::SignedSettings::ReturnCode code,
+    const em::PolicyFetchResponse& policy) {
   DCHECK(CalledOnValidThread());
-  chromeos::DeviceSettingsService::Status status =
-      device_settings_service_->status();
-  const em::PolicyData* policy_data = device_settings_service_->policy_data();
-  if (status == chromeos::DeviceSettingsService::STORE_SUCCESS &&
-      !policy_data) {
-    // Initial policy load is still pending.
-    return;
-  }
-
   if (!IsReady()) {
     std::string device_token;
-    InstallInitialPolicy(status, policy_data, &device_token);
+    InstallInitialPolicy(code, policy, &device_token);
     SetTokenAndFlagReady(device_token);
   } else {  // In other words, IsReady() == true
-    if (status != chromeos::DeviceSettingsService::STORE_SUCCESS ||
-        !policy_data) {
-      if (status == chromeos::DeviceSettingsService::STORE_VALIDATION_ERROR) {
+    if (code != chromeos::SignedSettings::SUCCESS) {
+      if (code == chromeos::SignedSettings::BAD_SIGNATURE) {
         UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchBadSignature,
                                   kMetricPolicySize);
         InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
@@ -192,16 +247,14 @@ void DevicePolicyCache::DeviceSettingsUpdated() {
                        CloudPolicySubsystem::POLICY_LOCAL_ERROR);
       }
     } else {
-      em::PolicyFetchResponse policy_response;
-      CHECK(policy_data->SerializeToString(
-          policy_response.mutable_policy_data()));
-      bool ok = SetPolicyInternal(policy_response, NULL, false);
+      bool ok = SetPolicyInternal(policy, NULL, false);
       if (ok) {
         UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchOK,
                                   kMetricPolicySize);
       }
     }
   }
+  CheckFetchingDone();
 }
 
 bool DevicePolicyCache::DecodePolicyData(const em::PolicyData& policy_data,
@@ -215,14 +268,13 @@ bool DevicePolicyCache::DecodePolicyData(const em::PolicyData& policy_data,
   return true;
 }
 
-void DevicePolicyCache::PolicyStoreOpCompleted() {
+void DevicePolicyCache::PolicyStoreOpCompleted(
+    chromeos::SignedSettings::ReturnCode code) {
   DCHECK(CalledOnValidThread());
-  chromeos::DeviceSettingsService::Status status =
-      device_settings_service_->status();
-  if (status != chromeos::DeviceSettingsService::STORE_SUCCESS) {
+  if (code != chromeos::SignedSettings::SUCCESS) {
     UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyStoreFailed,
                               kMetricPolicySize);
-    if (status == chromeos::DeviceSettingsService::STORE_VALIDATION_ERROR) {
+    if (code == chromeos::SignedSettings::BAD_SIGNATURE) {
       UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchBadSignature,
                                 kMetricPolicySize);
       InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
@@ -238,21 +290,24 @@ void DevicePolicyCache::PolicyStoreOpCompleted() {
   }
   UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyStoreSucceeded,
                             kMetricPolicySize);
-
-  CheckFetchingDone();
+  signed_settings_helper_->StartRetrievePolicyOp(
+      base::Bind(&DevicePolicyCache::OnRetrievePolicyCompleted,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DevicePolicyCache::InstallInitialPolicy(
-    chromeos::DeviceSettingsService::Status status,
-    const em::PolicyData* policy_data,
+    chromeos::SignedSettings::ReturnCode code,
+    const em::PolicyFetchResponse& policy,
     std::string* device_token) {
-  if (status == chromeos::DeviceSettingsService::STORE_NO_POLICY ||
-      status == chromeos::DeviceSettingsService::STORE_KEY_UNAVAILABLE) {
+  if (code == chromeos::SignedSettings::NOT_FOUND ||
+      code == chromeos::SignedSettings::KEY_UNAVAILABLE ||
+      !policy.has_policy_data()) {
     InformNotifier(CloudPolicySubsystem::UNENROLLED,
                    CloudPolicySubsystem::NO_DETAILS);
     return;
   }
-  if (!policy_data) {
+  em::PolicyData policy_data;
+  if (!policy_data.ParseFromString(policy.policy_data())) {
     LOG(WARNING) << "Failed to parse PolicyData protobuf.";
     UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyLoadFailed,
                               kMetricPolicySize);
@@ -260,8 +315,8 @@ void DevicePolicyCache::InstallInitialPolicy(
                    CloudPolicySubsystem::POLICY_LOCAL_ERROR);
     return;
   }
-  if (!policy_data->has_request_token() ||
-      policy_data->request_token().empty()) {
+  if (!policy_data.has_request_token() ||
+      policy_data.request_token().empty()) {
     SetUnmanagedInternal(base::Time::NowFromSystemTime());
     InformNotifier(CloudPolicySubsystem::UNMANAGED,
                    CloudPolicySubsystem::NO_DETAILS);
@@ -270,7 +325,7 @@ void DevicePolicyCache::InstallInitialPolicy(
     // SetPolicyInternal() here.
     return;
   }
-  if (!policy_data->has_username() || !policy_data->has_device_id()) {
+  if (!policy_data.has_username() || !policy_data.has_device_id()) {
     UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyLoadFailed,
                               kMetricPolicySize);
     InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
@@ -279,17 +334,26 @@ void DevicePolicyCache::InstallInitialPolicy(
   }
   UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyLoadSucceeded,
                             kMetricPolicySize);
-  data_store_->set_user_name(policy_data->username());
-  data_store_->set_device_id(policy_data->device_id());
-  *device_token = policy_data->request_token();
+  data_store_->set_user_name(policy_data.username());
+  data_store_->set_device_id(policy_data.device_id());
+  *device_token = policy_data.request_token();
   base::Time timestamp;
-  em::PolicyFetchResponse policy_response;
-  CHECK(policy_data->SerializeToString(policy_response.mutable_policy_data()));
-  if (SetPolicyInternal(policy_response, &timestamp, true))
+  if (SetPolicyInternal(policy, &timestamp, true))
     set_last_policy_refresh_time(timestamp);
 }
 
 void DevicePolicyCache::SetTokenAndFlagReady(const std::string& device_token) {
+  // Make sure that we only start device policy fetches once device settings are
+  // available in order to ensure the first device policy fetch uploads the
+  // configured reporting bits.
+  if (chromeos::CrosSettingsProvider::TEMPORARILY_UNTRUSTED ==
+      chromeos::CrosSettings::Get()->PrepareTrustedValues(
+          base::Bind(&DevicePolicyCache::SetTokenAndFlagReady,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     device_token))) {
+    return;
+  }
+
   // We need to call SetDeviceToken unconditionally to indicate the cache has
   // finished loading.
   data_store_->SetDeviceToken(device_token, true);

@@ -20,7 +20,7 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/password_changed_view.h"
 #include "chrome/browser/chromeos/login/user.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/chromeos/settings/ownership_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
@@ -28,8 +28,8 @@
 
 namespace chromeos {
 
-class CrosSettings;
 class LoginDisplayHost;
+class CrosSettings;
 
 // ExistingUserController is used to handle login when someone has
 // already logged into the machine.
@@ -149,9 +149,8 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // Handles result of ownership check and starts enterprise enrollment if
   // applicable.
-  void OnEnrollmentOwnershipCheckCompleted(
-      DeviceSettingsService::OwnershipStatus status,
-      bool current_user_is_owner);
+  void OnEnrollmentOwnershipCheckCompleted(OwnershipService::Status status,
+                                           bool current_user_is_owner);
 
   // Enters the enterprise enrollment screen. |forced| is true if this is the
   // result of an auto-enrollment check, and the user shouldn't be able to
@@ -162,13 +161,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Invoked to complete login. Login might be suspended if auto-enrollment
   // has to be performed, and will resume once auto-enrollment completes.
   void CompleteLoginInternal(std::string username, std::string password);
-
-  // Creates |login_performer_| if necessary and calls login() on it.
-  void PerformLogin(const std::string& username,
-                    const std::string& password,
-                    LoginPerformer::AuthorizationMode auth_mode,
-                    DeviceSettingsService::OwnershipStatus ownership_status,
-                    bool is_owner);
 
   void set_login_performer_delegate(LoginPerformer::Delegate* d) {
     login_performer_delegate_.reset(d);

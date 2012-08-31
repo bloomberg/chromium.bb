@@ -60,6 +60,11 @@ bool SystemSettingsProvider::HandlesSetting(const std::string& path) const {
   return path == kSystemTimezone;
 }
 
+void SystemSettingsProvider::Reload() {
+  // TODO(pastarmovj): We can actually cache the timezone here to make returning
+  // it faster.
+}
+
 void SystemSettingsProvider::TimezoneChanged(const icu::TimeZone& timezone) {
   // Fires system setting change notification.
   timezone_value_.reset(base::Value::CreateStringValue(

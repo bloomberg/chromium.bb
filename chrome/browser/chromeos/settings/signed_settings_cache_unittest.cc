@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/settings/device_settings_cache.h"
+#include "chrome/browser/chromeos/settings/signed_settings_cache.h"
 
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
@@ -14,7 +14,7 @@ namespace em = enterprise_management;
 
 namespace chromeos {
 
-class DeviceSettingsCacheTest : public testing::Test {
+class SignedSettingsCacheTest : public testing::Test {
  protected:
   virtual void SetUp() {
     // prepare some data.
@@ -23,18 +23,18 @@ class DeviceSettingsCacheTest : public testing::Test {
     pol.mutable_allow_new_users()->set_allow_new_users(false);
     policy_.set_policy_value(pol.SerializeAsString());
 
-    device_settings_cache::RegisterPrefs(&local_state_);
+    signed_settings_cache::RegisterPrefs(&local_state_);
   }
 
   TestingPrefService local_state_;
   em::PolicyData policy_;
 };
 
-TEST_F(DeviceSettingsCacheTest, Basic) {
-  EXPECT_TRUE(device_settings_cache::Store(policy_, &local_state_));
+TEST_F(SignedSettingsCacheTest, Basic) {
+  EXPECT_TRUE(signed_settings_cache::Store(policy_, &local_state_));
 
   em::PolicyData policy_out;
-  EXPECT_TRUE(device_settings_cache::Retrieve(&policy_out, &local_state_));
+  EXPECT_TRUE(signed_settings_cache::Retrieve(&policy_out, &local_state_));
 
   EXPECT_TRUE(policy_out.has_policy_type());
   EXPECT_TRUE(policy_out.has_policy_value());
@@ -45,13 +45,13 @@ TEST_F(DeviceSettingsCacheTest, Basic) {
   EXPECT_FALSE(pol.allow_new_users().allow_new_users());
 }
 
-TEST_F(DeviceSettingsCacheTest, CorruptData) {
-  EXPECT_TRUE(device_settings_cache::Store(policy_, &local_state_));
+TEST_F(SignedSettingsCacheTest, CorruptData) {
+  EXPECT_TRUE(signed_settings_cache::Store(policy_, &local_state_));
 
-  local_state_.SetString(prefs::kDeviceSettingsCache, "blaaa");
+  local_state_.SetString(prefs::kSignedSettingsCache, "blaaa");
 
   em::PolicyData policy_out;
-  EXPECT_FALSE(device_settings_cache::Retrieve(&policy_out, &local_state_));
+  EXPECT_FALSE(signed_settings_cache::Retrieve(&policy_out, &local_state_));
 }
 
 }  // namespace chromeos

@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -288,10 +287,9 @@ class LoginUtilsTest : public testing::Test,
   }
 
   void PrepareProfile(const std::string& username) {
-    ScopedDeviceSettingsTestHelper device_settings_test_helper;
-    MockSessionManagerClient* session_manager_client =
+    MockSessionManagerClient* session_managed_client =
         mock_dbus_thread_manager_.mock_session_manager_client();
-    EXPECT_CALL(*session_manager_client, StartSession(_));
+    EXPECT_CALL(*session_managed_client, StartSession(_));
     EXPECT_CALL(*cryptohome_, GetSystemSalt())
         .WillRepeatedly(Return(std::string("stub_system_salt")));
     EXPECT_CALL(*mock_async_method_caller_, AsyncMount(_, _, _, _))
@@ -305,7 +303,6 @@ class LoginUtilsTest : public testing::Test,
 
     LoginUtils::Get()->PrepareProfile(username, std::string(), "password",
                                       false, true, false, this);
-    device_settings_test_helper.Flush();
     RunAllPending();
   }
 

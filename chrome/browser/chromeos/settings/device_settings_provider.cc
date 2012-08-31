@@ -15,15 +15,19 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
-#include "chrome/browser/chromeos/settings/device_settings_cache.h"
+#include "chrome/browser/chromeos/settings/signed_settings_cache.h"
+#include "chrome/browser/chromeos/settings/signed_settings_helper.h"
 #include "chrome/browser/policy/app_pack_updater.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
-#include "chrome/browser/policy/proto/device_management_backend.pb.h"
+#include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/ui/options/options_util.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "content/public/browser/notification_service.h"
 
 using google::protobuf::RepeatedPtrField;
 
@@ -60,6 +64,9 @@ const char* kKnownSettings[] = {
   kSystemTimezonePolicy,
 };
 
+// Upper bound for number of retries to fetch a signed setting.
+static const int kNumRetriesLimit = 9;
+
 // Legacy policy file location. Used to detect migration from pre v12 ChromeOS.
 const char kLegacyPolicyFile[] = "/var/lib/whitelist/preferences";
 
@@ -81,30 +88,43 @@ bool HasOldMetricsFile() {
 
 DeviceSettingsProvider::DeviceSettingsProvider(
     const NotifyObserversCallback& notify_cb,
-    DeviceSettingsService* device_settings_service)
+    SignedSettingsHelper* signed_settings_helper)
     : CrosSettingsProvider(notify_cb),
-      device_settings_service_(device_settings_service),
-      trusted_status_(TEMPORARILY_UNTRUSTED),
-      ownership_status_(device_settings_service_->GetOwnershipStatus()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(store_callback_factory_(this)) {
-  device_settings_service_->AddObserver(this);
-
-  if (!UpdateFromService()) {
-    // Make sure we have at least the cache data immediately.
-    RetrieveCachedData();
-  }
+      signed_settings_helper_(signed_settings_helper),
+      ownership_status_(OwnershipService::GetSharedInstance()->GetStatus(true)),
+      migration_helper_(new SignedSettingsMigrationHelper()),
+      retries_left_(kNumRetriesLimit),
+      trusted_status_(TEMPORARILY_UNTRUSTED) {
+  // Register for notification when ownership is taken so that we can update
+  // the |ownership_status_| and reload if needed.
+  registrar_.Add(this, chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED,
+                 content::NotificationService::AllSources());
+  // Make sure we have at least the cache data immediately.
+  RetrieveCachedData();
+  // Start prefetching preferences.
+  Reload();
 }
 
 DeviceSettingsProvider::~DeviceSettingsProvider() {
-  device_settings_service_->RemoveObserver(this);
+}
+
+void DeviceSettingsProvider::Reload() {
+  // While fetching we can't trust the cache anymore.
+  trusted_status_ = TEMPORARILY_UNTRUSTED;
+  if (ownership_status_ == OwnershipService::OWNERSHIP_NONE) {
+    RetrieveCachedData();
+  } else {
+    // Retrieve the real data.
+    signed_settings_helper_->StartRetrievePolicyOp(
+        base::Bind(&DeviceSettingsProvider::OnRetrievePolicyCompleted,
+                   base::Unretained(this)));
+  }
 }
 
 void DeviceSettingsProvider::DoSet(const std::string& path,
                                    const base::Value& in_value) {
-  // Make sure that either the current user is the device owner or the
-  // device doesn't have an owner yet.
-  if (!(device_settings_service_->HasPrivateOwnerKey() ||
-        ownership_status_ == DeviceSettingsService::OWNERSHIP_NONE)) {
+  if (!UserManager::Get()->IsCurrentUserOwner() &&
+      ownership_status_ != OwnershipService::OWNERSHIP_NONE) {
     LOG(WARNING) << "Changing settings from non-owner, setting=" << path;
 
     // Revert UI change.
@@ -114,60 +134,43 @@ void DeviceSettingsProvider::DoSet(const std::string& path,
 
   if (IsControlledSetting(path)) {
     pending_changes_.push_back(PendingQueueElement(path, in_value.DeepCopy()));
-    if (!store_callback_factory_.HasWeakPtrs())
+    if (pending_changes_.size() == 1)
       SetInPolicy();
   } else {
     NOTREACHED() << "Try to set unhandled cros setting " << path;
   }
 }
 
-void DeviceSettingsProvider::OwnershipStatusChanged() {
-  DeviceSettingsService::OwnershipStatus new_ownership_status =
-      device_settings_service_->GetOwnershipStatus();
-
-  // If the device just became owned, write the settings accumulated in the
-  // cache to device settings proper. It is important that writing only happens
-  // in this case, as during normal operation, the contents of the cache should
-  // never overwrite actual device settings.
-  if (new_ownership_status == DeviceSettingsService::OWNERSHIP_TAKEN &&
-      ownership_status_ == DeviceSettingsService::OWNERSHIP_NONE &&
-      device_settings_service_->HasPrivateOwnerKey()) {
-
-    // There shouldn't be any pending writes, since the cache writes are all
-    // immediate.
-    DCHECK(!store_callback_factory_.HasWeakPtrs());
-
-    // Apply the locally-accumulated device settings on top of the initial
-    // settings from the service and write back the result.
-    if (device_settings_service_->device_settings()) {
-      em::ChromeDeviceSettingsProto new_settings(
-          *device_settings_service_->device_settings());
-      new_settings.MergeFrom(device_settings_);
-      device_settings_.Swap(&new_settings);
-    }
-    StoreDeviceSettings();
+void DeviceSettingsProvider::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  if (type == chrome::NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED) {
+    // Reload the policy blob once the owner key has been loaded or updated.
+    ownership_status_ = OwnershipService::OWNERSHIP_TAKEN;
+    Reload();
   }
-
-  // The owner key might have become available, allowing migration to happen.
-  AttemptMigration();
-
-  ownership_status_ = new_ownership_status;
 }
 
-void DeviceSettingsProvider::DeviceSettingsUpdated() {
-  if (!store_callback_factory_.HasWeakPtrs())
-    UpdateAndProceedStoring();
+const em::PolicyData DeviceSettingsProvider::policy() const {
+  return policy_;
 }
 
 void DeviceSettingsProvider::RetrieveCachedData() {
-  em::PolicyData policy_data;
-  if (!device_settings_cache::Retrieve(&policy_data,
-                                       g_browser_process->local_state()) ||
-      !device_settings_.ParseFromString(policy_data.policy_value())) {
-    VLOG(1) << "Can't retrieve temp store, possibly not created yet.";
+  // If there is no owner yet, this function will pull the policy cache from the
+  // temp storage and use that instead.
+  em::PolicyData policy;
+  if (!signed_settings_cache::Retrieve(&policy,
+                                       g_browser_process->local_state())) {
+    VLOG(1) << "Can't retrieve temp store possibly not created yet.";
+    // Prepare empty data for the case we don't have temp cache yet.
+    policy.set_policy_type(kDevicePolicyType);
+    em::ChromeDeviceSettingsProto pol;
+    policy.set_policy_value(pol.SerializeAsString());
   }
 
-  UpdateValuesCache(policy_data, device_settings_);
+  policy_ = policy;
+  UpdateValuesCache();
 }
 
 void DeviceSettingsProvider::SetInPolicy() {
@@ -176,44 +179,62 @@ void DeviceSettingsProvider::SetInPolicy() {
     return;
   }
 
-  if (RequestTrustedEntity() != TRUSTED) {
-    // Re-sync device settings before proceeding.
-    device_settings_service_->Load();
+  const std::string& prop = pending_changes_[0].first;
+  base::Value* value = pending_changes_[0].second;
+  if (prop == kDeviceOwner) {
+    // Just store it in the memory cache without trusted checks or persisting.
+    std::string owner;
+    if (value->GetAsString(&owner)) {
+      policy_.set_username(owner);
+      // In this case the |value_cache_| takes the ownership of |value|.
+      values_cache_.SetValue(prop, value);
+      NotifyObservers(prop);
+      // We can't trust this value anymore until we reload the real username.
+      trusted_status_ = TEMPORARILY_UNTRUSTED;
+      pending_changes_.erase(pending_changes_.begin());
+      if (!pending_changes_.empty())
+        SetInPolicy();
+    } else {
+      NOTREACHED();
+    }
     return;
   }
 
-  std::string prop(pending_changes_.front().first);
-  scoped_ptr<base::Value> value(pending_changes_.front().second);
-  pending_changes_.pop_front();
+  if (RequestTrustedEntity() != TRUSTED) {
+    // Otherwise we should first reload and apply on top of that.
+    signed_settings_helper_->StartRetrievePolicyOp(
+        base::Bind(&DeviceSettingsProvider::FinishSetInPolicy,
+                   base::Unretained(this)));
+    return;
+  }
 
   trusted_status_ = TEMPORARILY_UNTRUSTED;
+  em::PolicyData data = policy();
+  em::ChromeDeviceSettingsProto pol;
+  pol.ParseFromString(data.policy_value());
   if (prop == kAccountsPrefAllowNewUser) {
-    em::AllowNewUsersProto* allow =
-        device_settings_.mutable_allow_new_users();
+    em::AllowNewUsersProto* allow = pol.mutable_allow_new_users();
     bool allow_value;
     if (value->GetAsBoolean(&allow_value))
       allow->set_allow_new_users(allow_value);
     else
       NOTREACHED();
   } else if (prop == kAccountsPrefAllowGuest) {
-    em::GuestModeEnabledProto* guest =
-        device_settings_.mutable_guest_mode_enabled();
+    em::GuestModeEnabledProto* guest = pol.mutable_guest_mode_enabled();
     bool guest_value;
     if (value->GetAsBoolean(&guest_value))
       guest->set_guest_mode_enabled(guest_value);
     else
       NOTREACHED();
   } else if (prop == kAccountsPrefShowUserNamesOnSignIn) {
-    em::ShowUserNamesOnSigninProto* show =
-        device_settings_.mutable_show_user_names();
+    em::ShowUserNamesOnSigninProto* show = pol.mutable_show_user_names();
     bool show_value;
     if (value->GetAsBoolean(&show_value))
       show->set_show_user_names(show_value);
     else
       NOTREACHED();
   } else if (prop == kSignedDataRoamingEnabled) {
-    em::DataRoamingEnabledProto* roam =
-        device_settings_.mutable_data_roaming_enabled();
+    em::DataRoamingEnabledProto* roam = pol.mutable_data_roaming_enabled();
     bool roaming_value = false;
     if (value->GetAsBoolean(&roaming_value))
       roam->set_data_roaming_enabled(roaming_value);
@@ -225,23 +246,20 @@ void DeviceSettingsProvider::SetInPolicy() {
     std::string proxy_value;
     if (value->GetAsString(&proxy_value)) {
       bool success =
-          device_settings_.mutable_device_proxy_settings()->ParseFromString(
-              proxy_value);
+          pol.mutable_device_proxy_settings()->ParseFromString(proxy_value);
       DCHECK(success);
     } else {
       NOTREACHED();
     }
   } else if (prop == kReleaseChannel) {
-    em::ReleaseChannelProto* release_channel =
-        device_settings_.mutable_release_channel();
+    em::ReleaseChannelProto* release_channel = pol.mutable_release_channel();
     std::string channel_value;
     if (value->GetAsString(&channel_value))
       release_channel->set_release_channel(channel_value);
     else
       NOTREACHED();
   } else if (prop == kStatsReportingPref) {
-    em::MetricsEnabledProto* metrics =
-        device_settings_.mutable_metrics_enabled();
+    em::MetricsEnabledProto* metrics = pol.mutable_metrics_enabled();
     bool metrics_value = false;
     if (value->GetAsBoolean(&metrics_value))
       metrics->set_metrics_enabled(metrics_value);
@@ -249,8 +267,7 @@ void DeviceSettingsProvider::SetInPolicy() {
       NOTREACHED();
     ApplyMetricsSetting(false, metrics_value);
   } else if (prop == kAccountsPrefUsers) {
-    em::UserWhitelistProto* whitelist_proto =
-        device_settings_.mutable_user_whitelist();
+    em::UserWhitelistProto* whitelist_proto = pol.mutable_user_whitelist();
     whitelist_proto->clear_user_whitelist();
     base::ListValue& users = static_cast<base::ListValue&>(*value);
     for (base::ListValue::const_iterator i = users.begin();
@@ -261,19 +278,17 @@ void DeviceSettingsProvider::SetInPolicy() {
     }
   } else if (prop == kAccountsPrefEphemeralUsersEnabled) {
     em::EphemeralUsersEnabledProto* ephemeral_users_enabled =
-        device_settings_.mutable_ephemeral_users_enabled();
+        pol.mutable_ephemeral_users_enabled();
     bool ephemeral_users_enabled_value = false;
-    if (value->GetAsBoolean(&ephemeral_users_enabled_value)) {
+    if (value->GetAsBoolean(&ephemeral_users_enabled_value))
       ephemeral_users_enabled->set_ephemeral_users_enabled(
           ephemeral_users_enabled_value);
-    } else {
+    else
       NOTREACHED();
-    }
   } else {
     // The remaining settings don't support Set(), since they are not
     // intended to be customizable by the user:
     //   kAppPack
-    //   kDeviceOwner
     //   kIdleLogoutTimeout
     //   kIdleLogoutWarningDuration
     //   kReleaseChannelDelegated
@@ -286,27 +301,46 @@ void DeviceSettingsProvider::SetInPolicy() {
     //   kStartUpUrls
     //   kSystemTimezonePolicy
 
-    LOG(FATAL) << "Device setting " << prop << " is read-only.";
+    NOTREACHED();
   }
-
-  em::PolicyData data;
-  data.set_username(device_settings_service_->GetUsername());
-  CHECK(device_settings_.SerializeToString(data.mutable_policy_value()));
-
+  data.set_policy_value(pol.SerializeAsString());
   // Set the cache to the updated value.
-  UpdateValuesCache(data, device_settings_);
+  policy_ = data;
+  UpdateValuesCache();
 
-  if (!device_settings_cache::Store(data, g_browser_process->local_state()))
+  if (!signed_settings_cache::Store(data, g_browser_process->local_state()))
     LOG(ERROR) << "Couldn't store to the temp storage.";
 
-  if (ownership_status_ == DeviceSettingsService::OWNERSHIP_TAKEN) {
-    StoreDeviceSettings();
+  if (ownership_status_ == OwnershipService::OWNERSHIP_TAKEN) {
+    em::PolicyFetchResponse policy_envelope;
+    policy_envelope.set_policy_data(policy_.SerializeAsString());
+    signed_settings_helper_->StartStorePolicyOp(
+        policy_envelope,
+        base::Bind(&DeviceSettingsProvider::OnStorePolicyCompleted,
+                   base::Unretained(this)));
   } else {
     // OnStorePolicyCompleted won't get called in this case so proceed with any
     // pending operations immediately.
+    delete pending_changes_[0].second;
+    pending_changes_.erase(pending_changes_.begin());
     if (!pending_changes_.empty())
       SetInPolicy();
   }
+}
+
+void DeviceSettingsProvider::FinishSetInPolicy(
+    SignedSettings::ReturnCode code,
+    const em::PolicyFetchResponse& policy) {
+  if (code != SignedSettings::SUCCESS) {
+    LOG(ERROR) << "Can't serialize to policy error code: " << code;
+    Reload();
+    return;
+  }
+  // Update the internal caches and set the trusted flag to true so that we
+  // can pass the trustedness check in the second call to SetInPolicy.
+  OnRetrievePolicyCompleted(code, policy);
+
+  SetInPolicy();
 }
 
 void DeviceSettingsProvider::DecodeLoginPolicies(
@@ -504,19 +538,21 @@ void DeviceSettingsProvider::DecodeGenericPolicies(
   }
 }
 
-void DeviceSettingsProvider::UpdateValuesCache(
-    const em::PolicyData& policy_data,
-    const em::ChromeDeviceSettingsProto& settings) {
+void DeviceSettingsProvider::UpdateValuesCache() {
+  const em::PolicyData data = policy();
   PrefValueMap new_values_cache;
 
-  if (policy_data.has_username() && !policy_data.has_request_token())
-    new_values_cache.SetString(kDeviceOwner, policy_data.username());
+  if (data.has_username() && !data.has_request_token())
+    new_values_cache.SetString(kDeviceOwner, data.username());
 
-  DecodeLoginPolicies(settings, &new_values_cache);
-  DecodeKioskPolicies(settings, &new_values_cache);
-  DecodeNetworkPolicies(settings, &new_values_cache);
-  DecodeReportingPolicies(settings, &new_values_cache);
-  DecodeGenericPolicies(settings, &new_values_cache);
+  em::ChromeDeviceSettingsProto pol;
+  pol.ParseFromString(data.policy_value());
+
+  DecodeLoginPolicies(pol, &new_values_cache);
+  DecodeKioskPolicies(pol, &new_values_cache);
+  DecodeNetworkPolicies(pol, &new_values_cache);
+  DecodeReportingPolicies(pol, &new_values_cache);
+  DecodeGenericPolicies(pol, &new_values_cache);
 
   // Collect all notifications but send them only after we have swapped the
   // cache so that if somebody actually reads the cache will be already valid.
@@ -543,18 +579,18 @@ void DeviceSettingsProvider::UpdateValuesCache(
 }
 
 void DeviceSettingsProvider::ApplyMetricsSetting(bool use_file,
-                                                 bool new_value) {
+                                                 bool new_value) const {
   // TODO(pastarmovj): Remove this once migration is not needed anymore.
   // If the value is not set we should try to migrate legacy consent file.
   if (use_file) {
     new_value = HasOldMetricsFile();
     // Make sure the values will get eventually written to the policy file.
-    migration_values_.SetValue(kStatsReportingPref,
-                               base::Value::CreateBooleanValue(new_value));
-    AttemptMigration();
+    migration_helper_->AddMigrationValue(
+        kStatsReportingPref, base::Value::CreateBooleanValue(new_value));
+    migration_helper_->MigrateValues();
     LOG(INFO) << "No metrics policy set will revert to checking "
-              << "consent file which is "
-              << (new_value ? "on." : "off.");
+                 << "consent file which is "
+                 << (new_value ? "on." : "off.");
   }
   VLOG(1) << "Metrics policy is being set to : " << new_value
           << "(use file : " << use_file << ")";
@@ -563,7 +599,7 @@ void DeviceSettingsProvider::ApplyMetricsSetting(bool use_file,
   OptionsUtil::ResolveMetricsReportingEnabled(new_value);
 }
 
-void DeviceSettingsProvider::ApplyRoamingSetting(bool new_value) {
+void DeviceSettingsProvider::ApplyRoamingSetting(bool new_value) const {
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   const NetworkDevice* cellular = cros->FindCellularDevice();
   if (cellular) {
@@ -578,26 +614,25 @@ void DeviceSettingsProvider::ApplyRoamingSetting(bool new_value) {
   }
 }
 
-void DeviceSettingsProvider::ApplySideEffects(
-    const em::ChromeDeviceSettingsProto& settings) {
+void DeviceSettingsProvider::ApplySideEffects() const {
+  const em::PolicyData data = policy();
+  em::ChromeDeviceSettingsProto pol;
+  pol.ParseFromString(data.policy_value());
   // First migrate metrics settings as needed.
-  if (settings.has_metrics_enabled())
-    ApplyMetricsSetting(false, settings.metrics_enabled().metrics_enabled());
+  if (pol.has_metrics_enabled())
+    ApplyMetricsSetting(false, pol.metrics_enabled().metrics_enabled());
   else
     ApplyMetricsSetting(true, false);
-
   // Next set the roaming setting as needed.
-  ApplyRoamingSetting(
-      settings.has_data_roaming_enabled() ?
-          settings.data_roaming_enabled().data_roaming_enabled() :
-          false);
+  ApplyRoamingSetting(pol.has_data_roaming_enabled() ?
+      pol.data_roaming_enabled().data_roaming_enabled() : false);
 }
 
 bool DeviceSettingsProvider::MitigateMissingPolicy() {
   // First check if the device has been owned already and if not exit
   // immediately.
   if (g_browser_process->browser_policy_connector()->GetDeviceMode() !=
-          policy::DEVICE_MODE_CONSUMER) {
+      policy::DEVICE_MODE_CONSUMER) {
     return false;
   }
 
@@ -610,15 +645,17 @@ bool DeviceSettingsProvider::MitigateMissingPolicy() {
   LOG(ERROR) << "Corruption of the policy data has been detected."
              << "Switching to \"safe-mode\" policies until the owner logs in "
              << "to regenerate the policy data.";
-
-  device_settings_.Clear();
-  device_settings_.mutable_allow_new_users()->set_allow_new_users(true);
-  device_settings_.mutable_guest_mode_enabled()->set_guest_mode_enabled(true);
-  em::PolicyData empty_policy_data;
-  UpdateValuesCache(empty_policy_data, device_settings_);
+  values_cache_.SetBoolean(kAccountsPrefAllowNewUser, true);
+  values_cache_.SetBoolean(kAccountsPrefAllowGuest, true);
   values_cache_.SetBoolean(kPolicyMissingMitigationMode, true);
   trusted_status_ = TRUSTED;
-
+  // Make sure we will recreate the policy once the owner logs in.
+  // Any value not in this list will be left to the default which is fine as
+  // we repopulate the whitelist with the owner and all other existing users
+  // every time the owner enables whitelist filtering on the UI.
+  migration_helper_->AddMigrationValue(
+      kAccountsPrefAllowNewUser, base::Value::CreateBooleanValue(true));
+  migration_helper_->MigrateValues();
   return true;
 }
 
@@ -648,93 +685,83 @@ bool DeviceSettingsProvider::HandlesSetting(const std::string& path) const {
 
 DeviceSettingsProvider::TrustedStatus
     DeviceSettingsProvider::RequestTrustedEntity() {
-  if (ownership_status_ == DeviceSettingsService::OWNERSHIP_NONE)
+  if (ownership_status_ == OwnershipService::OWNERSHIP_NONE)
     return TRUSTED;
   return trusted_status_;
 }
 
-void DeviceSettingsProvider::UpdateAndProceedStoring() {
-  // Re-sync the cache from the service.
-  UpdateFromService();
-
-  // Trigger the next change if necessary.
-  if (trusted_status_ == TRUSTED &&
-      !store_callback_factory_.HasWeakPtrs() &&
-      !pending_changes_.empty()) {
-    SetInPolicy();
+void DeviceSettingsProvider::OnStorePolicyCompleted(
+    SignedSettings::ReturnCode code) {
+  // In any case reload the policy cache to now.
+  if (code != SignedSettings::SUCCESS) {
+    Reload();
+  } else {
+    trusted_status_ = TRUSTED;
+    // TODO(pastarmovj): Make those side effects responsibility of the
+    // respective subsystems.
+    ApplySideEffects();
+    // Notify the observers we are done.
+    std::vector<base::Closure> callbacks;
+    callbacks.swap(callbacks_);
+    for (size_t i = 0; i < callbacks.size(); ++i)
+      callbacks[i].Run();
   }
+
+  // Clear the finished task and proceed with any other stores that could be
+  // pending by now.
+  delete pending_changes_[0].second;
+  pending_changes_.erase(pending_changes_.begin());
+  if (!pending_changes_.empty())
+    SetInPolicy();
 }
 
-bool DeviceSettingsProvider::UpdateFromService() {
-  bool settings_loaded = false;
-  switch (device_settings_service_->status()) {
-    case DeviceSettingsService::STORE_SUCCESS: {
-      const em::PolicyData* policy_data =
-          device_settings_service_->policy_data();
-      const em::ChromeDeviceSettingsProto* device_settings =
-          device_settings_service_->device_settings();
-      if (policy_data && device_settings) {
-        UpdateValuesCache(*policy_data, *device_settings);
-        device_settings_ = *device_settings;
-        trusted_status_ = TRUSTED;
-
-        // TODO(pastarmovj): Make those side effects responsibility of the
-        // respective subsystems.
-        ApplySideEffects(*device_settings);
-
-        settings_loaded = true;
-      } else {
-        // Initial policy load is still pending.
-        trusted_status_ = TEMPORARILY_UNTRUSTED;
-      }
+void DeviceSettingsProvider::OnRetrievePolicyCompleted(
+    SignedSettings::ReturnCode code,
+    const em::PolicyFetchResponse& policy_data) {
+  VLOG(1) << "OnRetrievePolicyCompleted. Error code: " << code
+          << ", trusted status : " << trusted_status_
+          << ", ownership status : " << ownership_status_;
+  switch (code) {
+    case SignedSettings::SUCCESS: {
+      DCHECK(policy_data.has_policy_data());
+      policy_.ParseFromString(policy_data.policy_data());
+      signed_settings_cache::Store(policy(),
+                                   g_browser_process->local_state());
+      UpdateValuesCache();
+      trusted_status_ = TRUSTED;
+      // TODO(pastarmovj): Make those side effects responsibility of the
+      // respective subsystems.
+      ApplySideEffects();
       break;
     }
-    case DeviceSettingsService::STORE_NO_POLICY:
+    case SignedSettings::NOT_FOUND:
       if (MitigateMissingPolicy())
         break;
-      // fall through.
-    case DeviceSettingsService::STORE_KEY_UNAVAILABLE:
-      VLOG(1) << "No policies present yet, will use the temp storage.";
+    case SignedSettings::KEY_UNAVAILABLE: {
+      if (ownership_status_ != OwnershipService::OWNERSHIP_TAKEN)
+        NOTREACHED() << "No policies present yet, will use the temp storage.";
       trusted_status_ = PERMANENTLY_UNTRUSTED;
       break;
-    case DeviceSettingsService::STORE_POLICY_ERROR:
-    case DeviceSettingsService::STORE_VALIDATION_ERROR:
-    case DeviceSettingsService::STORE_INVALID_POLICY:
-    case DeviceSettingsService::STORE_OPERATION_FAILED:
-      LOG(ERROR) << "Failed to retrieve cros policies. Reason: "
-                 << device_settings_service_->status();
+    }
+    case SignedSettings::BAD_SIGNATURE:
+    case SignedSettings::OPERATION_FAILED: {
+      LOG(ERROR) << "Failed to retrieve cros policies. Reason:" << code;
+      if (retries_left_ > 0) {
+        trusted_status_ = TEMPORARILY_UNTRUSTED;
+        retries_left_ -= 1;
+        Reload();
+        return;
+      }
+      LOG(ERROR) << "No retries left";
       trusted_status_ = PERMANENTLY_UNTRUSTED;
       break;
+    }
   }
-
   // Notify the observers we are done.
   std::vector<base::Closure> callbacks;
   callbacks.swap(callbacks_);
   for (size_t i = 0; i < callbacks.size(); ++i)
     callbacks[i].Run();
-
-  return settings_loaded;
-}
-
-void DeviceSettingsProvider::StoreDeviceSettings() {
-  // Mute all previous callbacks to guarantee the |pending_changes_| queue is
-  // processed serially.
-  store_callback_factory_.InvalidateWeakPtrs();
-
-  device_settings_service_->SignAndStore(
-      scoped_ptr<em::ChromeDeviceSettingsProto>(
-          new em::ChromeDeviceSettingsProto(device_settings_)),
-      base::Bind(&DeviceSettingsProvider::UpdateAndProceedStoring,
-                 store_callback_factory_.GetWeakPtr()));
-}
-
-void DeviceSettingsProvider::AttemptMigration() {
-  if (device_settings_service_->HasPrivateOwnerKey()) {
-    PrefValueMap::const_iterator i;
-    for (i = migration_values_.begin(); i != migration_values_.end(); ++i)
-      DoSet(i->first, *i->second);
-    migration_values_.Clear();
-  }
 }
 
 }  // namespace chromeos

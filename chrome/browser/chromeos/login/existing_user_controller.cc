@@ -229,11 +229,10 @@ void ExistingUserController::Observe(
   }
   if (type == chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED ||
       type == chrome::NOTIFICATION_POLICY_USER_LIST_CHANGED) {
-    if (host_ != NULL) {
-      // Signed settings or user list changed. Notify views and update them.
-      UpdateLoginDisplay(chromeos::UserManager::Get()->GetUsers());
-      return;
-    }
+    // Signed settings or user list changed. Notify views and update them.
+    const chromeos::UserList& users = chromeos::UserManager::Get()->GetUsers();
+    UpdateLoginDisplay(users);
+    return;
   }
   if (type == chrome::NOTIFICATION_AUTH_SUPPLIED) {
     // Possibly the user has authenticated against a proxy server and we might
@@ -340,10 +339,22 @@ void ExistingUserController::CompleteLoginInternal(std::string username,
                                                    std::string password) {
   resume_login_callback_.Reset();
 
-  DeviceSettingsService::Get()->GetOwnershipStatusAsync(
-      base::Bind(&ExistingUserController::PerformLogin,
-                 weak_factory_.GetWeakPtr(), username, password,
-                 LoginPerformer::AUTH_MODE_EXTENSION));
+  if (!login_performer_.get()) {
+    LoginPerformer::Delegate* delegate = this;
+    if (login_performer_delegate_.get())
+      delegate = login_performer_delegate_.get();
+    // Only one instance of LoginPerformer should exist at a time.
+    login_performer_.reset(new LoginPerformer(delegate));
+  }
+
+  // If the device is not owned yet, successfully logged in user will be owner.
+  is_owner_login_ = OwnershipService::GetSharedInstance()->GetStatus(true) ==
+      OwnershipService::OWNERSHIP_NONE;
+
+  is_login_in_progress_ = true;
+  login_performer_->CompleteLogin(username, password);
+  accessibility::MaybeSpeak(
+      l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNING_IN));
 }
 
 void ExistingUserController::Login(const std::string& username,
@@ -352,6 +363,10 @@ void ExistingUserController::Login(const std::string& username,
     return;
   // Disable clicking on other windows.
   login_display_->SetUIEnabled(false);
+
+  // If the device is not owned yet, successfully logged in user will be owner.
+  is_owner_login_ = OwnershipService::GetSharedInstance()->GetStatus(true) ==
+      OwnershipService::OWNERSHIP_NONE;
 
   BootTimesLoader::Get()->RecordLoginAttempted();
 
@@ -364,21 +379,6 @@ void ExistingUserController::Login(const std::string& username,
   }
   num_login_attempts_++;
 
-  DeviceSettingsService::Get()->GetOwnershipStatusAsync(
-      base::Bind(&ExistingUserController::PerformLogin,
-                 weak_factory_.GetWeakPtr(), username, password,
-                 LoginPerformer::AUTH_MODE_INTERNAL));
-}
-
-void ExistingUserController::PerformLogin(
-    const std::string& username,
-    const std::string& password,
-    LoginPerformer::AuthorizationMode auth_mode,
-    DeviceSettingsService::OwnershipStatus ownership_status,
-    bool is_owner) {
-  // If the device is not owned yet, successfully logged in user will be owner.
-  is_owner_login_ = ownership_status == DeviceSettingsService::OWNERSHIP_NONE;
-
   // Use the same LoginPerformer for subsequent login as it has state
   // such as Authenticator instance.
   if (!login_performer_.get() || num_login_attempts_ <= 1) {
@@ -389,9 +389,8 @@ void ExistingUserController::PerformLogin(
     login_performer_.reset(NULL);
     login_performer_.reset(new LoginPerformer(delegate));
   }
-
   is_login_in_progress_ = true;
-  login_performer_->PerformLogin(username, password, auth_mode);
+  login_performer_->Login(username, password);
   accessibility::MaybeSpeak(
       l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNING_IN));
 }
@@ -466,17 +465,17 @@ void ExistingUserController::OnUserSelected(const std::string& username) {
 }
 
 void ExistingUserController::OnStartEnterpriseEnrollment() {
-  DeviceSettingsService::Get()->GetOwnershipStatusAsync(
+  OwnershipService::GetSharedInstance()->GetStatusAsync(
       base::Bind(&ExistingUserController::OnEnrollmentOwnershipCheckCompleted,
                  weak_factory_.GetWeakPtr()));
 }
 
 void ExistingUserController::OnEnrollmentOwnershipCheckCompleted(
-    DeviceSettingsService::OwnershipStatus status,
+    OwnershipService::Status status,
     bool current_user_is_owner) {
-  if (status == DeviceSettingsService::OWNERSHIP_NONE) {
+  if (status == OwnershipService::OWNERSHIP_NONE) {
     ShowEnrollmentScreen(false, std::string());
-  } else if (status == DeviceSettingsService::OWNERSHIP_TAKEN) {
+  } else if (status == OwnershipService::OWNERSHIP_TAKEN) {
     // On a device that is already owned we might want to allow users to
     // re-enroll if the policy information is invalid.
     CrosSettingsProvider::TrustedStatus trusted_status =

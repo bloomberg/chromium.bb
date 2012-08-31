@@ -262,7 +262,7 @@ void BaseLoginDisplayHost::CheckForAutoEnrollment() {
 
   // Start by checking if the device has already been owned.
   pointer_factory_.InvalidateWeakPtrs();
-  DeviceSettingsService::Get()->GetOwnershipStatusAsync(
+  OwnershipService::GetSharedInstance()->GetStatusAsync(
       base::Bind(&BaseLoginDisplayHost::OnOwnershipStatusCheckDone,
                  pointer_factory_.GetWeakPtr()));
 }
@@ -407,9 +407,9 @@ void BaseLoginDisplayHost::StartAnimation() {
 }
 
 void BaseLoginDisplayHost::OnOwnershipStatusCheckDone(
-    DeviceSettingsService::OwnershipStatus status,
+    OwnershipService::Status status,
     bool current_user_is_owner) {
-  if (status != DeviceSettingsService::OWNERSHIP_NONE) {
+  if (status != OwnershipService::OWNERSHIP_NONE) {
     // The device is already owned. No need for auto-enrollment checks.
     VLOG(1) << "CheckForAutoEnrollment: device already owned";
     return;

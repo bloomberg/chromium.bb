@@ -58,6 +58,9 @@ class CrosSettingsProvider {
   // Gets the namespace prefix provided by this provider.
   virtual bool HandlesSetting(const std::string& path) const = 0;
 
+  // Reloads the caches if the provider has any.
+  virtual void Reload() = 0;
+
   void SetNotifyObserversCallback(const NotifyObserversCallback& notify_cb);
 
  protected:

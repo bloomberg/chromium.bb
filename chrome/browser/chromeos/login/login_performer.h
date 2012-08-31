@@ -54,13 +54,6 @@ class LoginPerformer : public LoginStatusConsumer,
                        public content::NotificationObserver,
                        public OnlineAttemptHost::Delegate {
  public:
-  typedef enum AuthorizationMode {
-    // Authorization performed internally by Chrome.
-    AUTH_MODE_INTERNAL,
-    // Authorization performed by an extension.
-    AUTH_MODE_EXTENSION
-  } AuthorizationMode;
-
   // Delegate class to get notifications from the LoginPerformer.
   class Delegate : public LoginStatusConsumer {
    public:
@@ -91,12 +84,12 @@ class LoginPerformer : public LoginStatusConsumer,
   virtual void OnOffTheRecordLoginSuccess() OVERRIDE;
   virtual void OnPasswordChangeDetected() OVERRIDE;
 
-  // Performs a login for |username| and |password|. If auth_mode is
-  // AUTH_MODE_EXTENSION, there are no further auth checks, AUTH_MODE_INTERNAL
-  // will perform auth checks.
-  void PerformLogin(const std::string& username,
-                    const std::string& password,
-                    AuthorizationMode auth_mode);
+  // Completes login process that has already been authenticated with
+  // provided |username| and |password|.
+  void CompleteLogin(const std::string& username, const std::string& password);
+
+  // Performs login with the |username| and |password| specified.
+  void Login(const std::string& username, const std::string& password);
 
   // Performs login for the demo user.
   void LoginDemoUser();
@@ -134,6 +127,12 @@ class LoginPerformer : public LoginStatusConsumer,
 
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
+  typedef enum AuthorizationMode {
+    // Authorization performed internally by Chrome.
+    AUTH_MODE_INTERNAL,
+    // Authorization performed by an extension.
+    AUTH_MODE_EXTENSION
+  } AuthorizationMode;
   AuthorizationMode auth_mode() const { return auth_mode_; }
 
  protected:

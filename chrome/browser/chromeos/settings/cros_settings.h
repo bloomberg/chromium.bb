@@ -91,16 +91,12 @@ class CrosSettings : public base::NonThreadSafe {
   // Returns the provider that handles settings with the |path| or prefix.
   CrosSettingsProvider* GetProvider(const std::string& path) const;
 
+  // Forces all providers to reload their caches from the respective backing
+  // stores if they have any.
+  void ReloadProviders();
+
  private:
   friend struct base::DefaultLazyInstanceTraits<CrosSettings>;
-  friend class CrosSettingsTest;
-
-  // Public for testing.
-  CrosSettings();
-  ~CrosSettings();
-
-  // Fires system setting change notification.
-  void FireObservers(const std::string& path);
 
   // List of ChromeOS system settings providers.
   std::vector<CrosSettingsProvider*> providers_;
@@ -112,6 +108,12 @@ class CrosSettings : public base::NonThreadSafe {
   typedef base::hash_map<std::string, NotificationObserverList*>
       SettingsObserverMap;
   SettingsObserverMap settings_observers_;
+
+  CrosSettings();
+  ~CrosSettings();
+
+  // Fires system setting change notification.
+  void FireObservers(const std::string& path);
 
   DISALLOW_COPY_AND_ASSIGN(CrosSettings);
 };

@@ -43,7 +43,6 @@
 #include "chrome/browser/ui/options/options_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "ui/base/accelerators/accelerator.h"

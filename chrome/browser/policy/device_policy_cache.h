@@ -6,8 +6,18 @@
 #define CHROME_BROWSER_POLICY_DEVICE_POLICY_CACHE_H_
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/chromeos/settings/signed_settings.h"
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
+
+namespace chromeos {
+class SignedSettingsHelper;
+}  // namespace chromeos
+
+namespace enterprise_management {
+class ChromeDeviceSettingsProto;
+class PolicyData;
+class PolicyFetchResponse;
+}  // namespace enterprise_management
 
 namespace policy {
 
@@ -16,9 +26,8 @@ class EnterpriseInstallAttributes;
 class PolicyMap;
 
 // CloudPolicyCacheBase implementation that persists policy information
-// to ChromeOS' session manager (via DeviceSettingsService).
-class DevicePolicyCache : public CloudPolicyCacheBase,
-                          public chromeos::DeviceSettingsService::Observer {
+// to ChromeOS' session manager (via SignedSettingsHelper).
+class DevicePolicyCache : public CloudPolicyCacheBase {
  public:
   DevicePolicyCache(CloudPolicyDataStore* data_store,
                     EnterpriseInstallAttributes* install_attributes);
@@ -31,28 +40,27 @@ class DevicePolicyCache : public CloudPolicyCacheBase,
   virtual void SetUnmanaged() OVERRIDE;
   virtual void SetFetchingDone() OVERRIDE;
 
-  // DeviceSettingsService::Observer implementation:
-  virtual void OwnershipStatusChanged() OVERRIDE;
-  virtual void DeviceSettingsUpdated() OVERRIDE;
+  void OnRetrievePolicyCompleted(
+      chromeos::SignedSettings::ReturnCode code,
+      const enterprise_management::PolicyFetchResponse& policy);
 
  private:
   friend class DevicePolicyCacheTest;
   friend class DevicePolicyCacheTestHelper;
 
-  // Alternate c'tor allowing tests to mock out the DeviceSettingsService
+  // Alternate c'tor allowing tests to mock out the SignedSettingsHelper
   // singleton.
   DevicePolicyCache(
       CloudPolicyDataStore* data_store,
       EnterpriseInstallAttributes* install_attributes,
-      chromeos::DeviceSettingsService* device_settings_service);
+      chromeos::SignedSettingsHelper* signed_settings_helper);
 
   // CloudPolicyCacheBase implementation:
   virtual bool DecodePolicyData(
       const enterprise_management::PolicyData& policy_data,
       PolicyMap* policies) OVERRIDE;
 
-  // Handles completion of policy store operations.
-  void PolicyStoreOpCompleted();
+  void PolicyStoreOpCompleted(chromeos::SignedSettings::ReturnCode code);
 
   // Checks with immutable attributes whether this is an enterprise device and
   // read the registration user if this is the case.
@@ -61,8 +69,8 @@ class DevicePolicyCache : public CloudPolicyCacheBase,
   // Tries to install the initial device policy retrieved from signed settings.
   // Fills in |device_token| if it could be extracted from the loaded protobuf.
   void InstallInitialPolicy(
-      chromeos::DeviceSettingsService::Status status,
-      const enterprise_management::PolicyData* policy_data,
+      chromeos::SignedSettings::ReturnCode code,
+      const enterprise_management::PolicyFetchResponse& policy,
       std::string* device_token);
 
   // Ensures that CrosSettings has established trust on the reporting prefs and
@@ -104,7 +112,7 @@ class DevicePolicyCache : public CloudPolicyCacheBase,
   CloudPolicyDataStore* data_store_;
   EnterpriseInstallAttributes* install_attributes_;
 
-  chromeos::DeviceSettingsService* device_settings_service_;
+  chromeos::SignedSettingsHelper* signed_settings_helper_;
 
   base::WeakPtrFactory<DevicePolicyCache> weak_ptr_factory_;
 

@@ -73,6 +73,9 @@ bool StubCrosSettingsProvider::HandlesSetting(const std::string& path) const {
   return std::find(kHandledSettings, end, path) != end;
 }
 
+void StubCrosSettingsProvider::Reload() {
+}
+
 void StubCrosSettingsProvider::DoSet(const std::string& path,
                                      const base::Value& value) {
   values_.SetValue(path, value.DeepCopy());
