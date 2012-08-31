@@ -152,6 +152,11 @@ class UI_EXPORT ResourceBundle {
   // Same as above but using an already open file.
   void AddDataPackFromFile(base::PlatformFile file, ScaleFactor scale_factor);
 
+  // Same as AddDataPackFromPath but does not log an error if the pack fails to
+  // load.
+  void AddOptionalDataPackFromPath(const FilePath& path,
+                                   ScaleFactor scale_factor);
+
   // Changes the locale for an already-initialized ResourceBundle, returning the
   // name of the newly-loaded locale.  Future calls to get strings will return
   // the strings for this new locale.  This has no effect on existing or future
@@ -255,6 +260,12 @@ class UI_EXPORT ResourceBundle {
 
   // Load the main resources.
   void LoadCommonResources();
+
+  // Implementation for AddDataPackFromPath and AddOptionalDataPackFromPath, if
+  // the pack is not |optional| logs an error on failure to load.
+  void AddDataPackFromPathInternal(const FilePath& path,
+                                   ScaleFactor scale_factor,
+                                   bool optional);
 
   // Try to load the locale specific strings from an external data module.
   // Returns the locale that is loaded.

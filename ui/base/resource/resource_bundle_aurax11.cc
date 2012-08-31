@@ -51,9 +51,9 @@ void ResourceBundle::LoadCommonResources() {
     // 2x non touch
     // TODO(flackr): Don't log an error message if these are not found as this
     // is an expected case in ChromeOS.
-    AddDataPackFromPath(GetResourcesPakFilePath(
-                        "chrome_200_percent.pak"),
-                        SCALE_FACTOR_200P);
+    AddOptionalDataPackFromPath(GetResourcesPakFilePath(
+                                "chrome_200_percent.pak"),
+                                SCALE_FACTOR_200P);
   }
 }
 

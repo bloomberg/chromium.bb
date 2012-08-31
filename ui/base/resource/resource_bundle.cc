@@ -202,26 +202,12 @@ bool ResourceBundle::LocaleDataPakExists(const std::string& locale) {
 
 void ResourceBundle::AddDataPackFromPath(const FilePath& path,
                                          ScaleFactor scale_factor) {
-  // Do not pass an empty |path| value to this method. If the absolute path is
-  // unknown pass just the pack file name.
-  DCHECK(!path.empty());
+  AddDataPackFromPathInternal(path, scale_factor, false);
+}
 
-  FilePath pack_path = path;
-  if (delegate_)
-    pack_path = delegate_->GetPathForResourcePack(pack_path, scale_factor);
-
-  // Don't try to load empty values or values that are not absolute paths.
-  if (pack_path.empty() || !pack_path.IsAbsolute())
-    return;
-
-  scoped_ptr<DataPack> data_pack(
-      new DataPack(scale_factor));
-  if (data_pack->LoadFromPath(pack_path)) {
-    data_packs_.push_back(data_pack.release());
-  } else {
-    LOG(ERROR) << "Failed to load " << pack_path.value()
-               << "\nSome features may not be available.";
-  }
+void ResourceBundle::AddOptionalDataPackFromPath(const FilePath& path,
+                                         ScaleFactor scale_factor) {
+  AddDataPackFromPathInternal(path, scale_factor, true);
 }
 
 void ResourceBundle::AddDataPackFromFile(base::PlatformFile file,
@@ -524,6 +510,31 @@ ResourceBundle::~ResourceBundle() {
 
 void ResourceBundle::FreeImages() {
   images_.clear();
+}
+
+void ResourceBundle::AddDataPackFromPathInternal(const FilePath& path,
+                                                 ScaleFactor scale_factor,
+                                                 bool optional) {
+  // Do not pass an empty |path| value to this method. If the absolute path is
+  // unknown pass just the pack file name.
+  DCHECK(!path.empty());
+
+  FilePath pack_path = path;
+  if (delegate_)
+    pack_path = delegate_->GetPathForResourcePack(pack_path, scale_factor);
+
+  // Don't try to load empty values or values that are not absolute paths.
+  if (pack_path.empty() || !pack_path.IsAbsolute())
+    return;
+
+  scoped_ptr<DataPack> data_pack(
+      new DataPack(scale_factor));
+  if (data_pack->LoadFromPath(pack_path)) {
+    data_packs_.push_back(data_pack.release());
+  } else if (!optional) {
+    LOG(ERROR) << "Failed to load " << pack_path.value()
+               << "\nSome features may not be available.";
+  }
 }
 
 void ResourceBundle::LoadFontsIfNecessary() {
