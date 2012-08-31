@@ -23,7 +23,6 @@
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/base/event.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -154,8 +153,6 @@ class SystemGestureEventFilterTest : public AshTestBase {
   virtual void SetUp() OVERRIDE {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         ash::switches::kAshEnableAdvancedGestures);
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableBezelTouch);
     test::AshTestBase::SetUp();
   }
 
@@ -262,7 +259,8 @@ void MoveToDeviceControlBezelStartPosition(
 }
 
 // Ensure that the device control operation gets properly handled.
-TEST_F(SystemGestureEventFilterTest, DeviceControl) {
+// Disabled: http://crbug.com/145892.
+TEST_F(SystemGestureEventFilterTest, DISABLED_DeviceControl) {
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
 
   gfx::Rect screen = gfx::Screen::GetPrimaryDisplay().bounds();
