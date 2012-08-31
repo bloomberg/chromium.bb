@@ -1142,6 +1142,7 @@
         'browser/chromeos/gdata/mock_gdata_uploader.cc',
         'browser/chromeos/gdata/mock_gdata_uploader.h',
         'browser/chromeos/gdata/operation_registry_unittest.cc',
+        'browser/chromeos/gdata/stale_cache_files_remover_unittest.cc',
         'browser/chromeos/gview_request_interceptor_unittest.cc',
         'browser/chromeos/imageburner/burn_manager_unittest.cc',
         'browser/chromeos/input_method/browser_state_monitor_unittest.cc',

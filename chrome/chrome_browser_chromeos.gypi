@@ -280,6 +280,8 @@
         'browser/chromeos/gdata/operation_runner.h',
         'browser/chromeos/gdata/operations_base.cc',
         'browser/chromeos/gdata/operations_base.h',
+        'browser/chromeos/gdata/stale_cache_files_remover.cc',
+        'browser/chromeos/gdata/stale_cache_files_remover.h',
         'browser/chromeos/gdata/task_util.cc',
         'browser/chromeos/gdata/task_util.h',
         'browser/chromeos/gview_request_interceptor.cc',
