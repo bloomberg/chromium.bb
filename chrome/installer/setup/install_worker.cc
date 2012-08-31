@@ -13,6 +13,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -23,6 +24,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -30,6 +32,7 @@
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/callback_work_item.h"
 #include "chrome/installer/util/conditional_work_item_list.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
 #include "chrome/installer/util/google_update_constants.h"
@@ -1113,6 +1116,36 @@ void AddChromeFrameWorkItems(const InstallationState& original_state,
   }
 }
 
+// Probes COM machinery to get an instance of delegate_execute.exe's
+// CommandExecuteImpl class.  This is required so that COM purges its cache of
+// the path to the binary, which changes on updates.  This callback
+// unconditionally returns true since an install should not be aborted if the
+// probe fails.
+bool ProbeCommandExecuteCallback(const string16& command_execute_id,
+                                 const CallbackWorkItem& work_item) {
+  // Noop on rollback.
+  if (work_item.IsRollback())
+    return true;
+
+  CLSID class_id = {};
+
+  HRESULT hr = CLSIDFromString(command_execute_id.c_str(), &class_id);
+  if (FAILED(hr)) {
+    LOG(DFATAL) << "Failed converting \"" << command_execute_id << "\" to "
+                   "CLSID; hr=0x" << std::hex << hr;
+  } else {
+    base::win::ScopedComPtr<IUnknown> command_execute_impl;
+    hr = command_execute_impl.CreateInstance(class_id, NULL,
+                                             CLSCTX_LOCAL_SERVER);
+    if (hr != REGDB_E_CLASSNOTREG) {
+      LOG(ERROR) << "Unexpected result creating CommandExecuteImpl; hr=0x"
+                 << std::hex << hr;
+    }
+  }
+
+  return true;
+}
+
 void AddDelegateExecuteWorkItems(const InstallerState& installer_state,
                                  const FilePath& src_path,
                                  const Version& new_version,
@@ -1141,6 +1174,11 @@ void AddDelegateExecuteWorkItems(const InstallerState& installer_state,
   string16 interface_path(L"Software\\Classes\\Interface\\");
   interface_path.append(interface_uuid);
 
+  VLOG(1) << "Adding unregistration items for DelegateExecute verb handler.";
+  list->AddDeleteRegKeyWorkItem(root, delegate_execute_path);
+  list->AddDeleteRegKeyWorkItem(root, typelib_path);
+  list->AddDeleteRegKeyWorkItem(root, interface_path);
+
   // Add work items to register the handler iff it is present.  Remove its
   // registration otherwise since builds after r132190 included it when it
   // wasn't strictly necessary.
@@ -1150,6 +1188,9 @@ void AddDelegateExecuteWorkItems(const InstallerState& installer_state,
       file_util::PathExists(src_path.AppendASCII(new_version.GetString())
           .Append(kDelegateExecuteExe))) {
     VLOG(1) << "Adding registration items for DelegateExecute verb handler.";
+
+    list->AddCallbackWorkItem(base::Bind(&ProbeCommandExecuteCallback,
+                                         handler_class_uuid));
 
     // The path to the exe (in the version directory).
     FilePath delegate_execute(
@@ -1226,13 +1267,6 @@ void AddDelegateExecuteWorkItems(const InstallerState& installer_state,
     list->AddSetRegValueWorkItem(root, subkey, L"", type_lib_uuid, true);
     list->AddSetRegValueWorkItem(root, subkey, L"Version", type_lib_version,
                                  true);
-
-  } else {
-    VLOG(1) << "Adding unregistration items for DelegateExecute verb handler.";
-
-    list->AddDeleteRegKeyWorkItem(root, delegate_execute_path);
-    list->AddDeleteRegKeyWorkItem(root, typelib_path);
-    list->AddDeleteRegKeyWorkItem(root, interface_path);
   }
 }
 

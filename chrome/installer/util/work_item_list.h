@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/installer/util/work_item.h"
 
@@ -35,6 +36,10 @@ class WorkItemList : public WorkItem {
   // A WorkItem can only be added to the list before the list's DO() is called.
   // Once a WorkItem is added to the list. The list owns the WorkItem.
   virtual void AddWorkItem(WorkItem* work_item);
+
+  // Add a CallbackWorkItem that invokes a callback.
+  virtual WorkItem* AddCallbackWorkItem(
+      base::Callback<bool(const CallbackWorkItem&)> callback);
 
   // Add a CopyRegKeyWorkItem that recursively copies a given registry key.
   virtual WorkItem* AddCopyRegKeyWorkItem(HKEY predefined_root,

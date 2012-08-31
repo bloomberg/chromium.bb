@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/file_path.h"
 #include "chrome/installer/util/logging_installer.h"
+#include "chrome/installer/util/callback_work_item.h"
 #include "chrome/installer/util/copy_reg_key_work_item.h"
 #include "chrome/installer/util/copy_tree_work_item.h"
 #include "chrome/installer/util/create_dir_work_item.h"
@@ -71,6 +72,13 @@ void WorkItemList::Rollback() {
 void WorkItemList::AddWorkItem(WorkItem* work_item) {
   DCHECK(status_ == ADD_ITEM);
   list_.push_back(work_item);
+}
+
+WorkItem* WorkItemList::AddCallbackWorkItem(
+    base::Callback<bool(const CallbackWorkItem&)> callback) {
+  WorkItem* item = WorkItem::CreateCallbackWorkItem(callback);
+  AddWorkItem(item);
+  return item;
 }
 
 WorkItem* WorkItemList::AddCopyRegKeyWorkItem(

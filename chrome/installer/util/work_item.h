@@ -15,7 +15,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 
+class CallbackWorkItem;
 class CopyRegKeyWorkItem;
 class CopyTreeWorkItem;
 class CreateDirWorkItem;
@@ -57,6 +59,10 @@ class WorkItem {
   };
 
   virtual ~WorkItem();
+
+  // Create a CallbackWorkItem that invokes a callback.
+  static CallbackWorkItem* CreateCallbackWorkItem(
+      base::Callback<bool(const CallbackWorkItem&)> callback);
 
   // Create a CopyRegKeyWorkItem that recursively copies a given registry key.
   static CopyRegKeyWorkItem* CreateCopyRegKeyWorkItem(
@@ -176,6 +182,11 @@ class WorkItem {
     ignore_failure_ = ignore_failure;
   }
 
+  // Returns true if this WorkItem should ignore failures.
+  bool ignore_failure() const {
+    return ignore_failure_;
+  }
+
   // Sets an optional log message that a work item may use to print additional
   // instance-specific information.
   void set_log_message(const std::string& log_message) {
@@ -183,7 +194,7 @@ class WorkItem {
   }
 
   // Retrieves the optional log message. The retrieved string may be empty.
-  std::string log_message() { return log_message_; }
+  const std::string& log_message() const { return log_message_; }
 
  protected:
   WorkItem();

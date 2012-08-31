@@ -4,6 +4,7 @@
 
 #include "chrome/installer/util/work_item.h"
 
+#include "chrome/installer/util/callback_work_item.h"
 #include "chrome/installer/util/conditional_work_item_list.h"
 #include "chrome/installer/util/copy_reg_key_work_item.h"
 #include "chrome/installer/util/copy_tree_work_item.h"
@@ -21,6 +22,11 @@ WorkItem::WorkItem() : ignore_failure_(false) {
 }
 
 WorkItem::~WorkItem() {
+}
+
+CallbackWorkItem* WorkItem::CreateCallbackWorkItem(
+    base::Callback<bool(const CallbackWorkItem&)> callback) {
+  return new CallbackWorkItem(callback);
 }
 
 CopyRegKeyWorkItem* WorkItem::CreateCopyRegKeyWorkItem(

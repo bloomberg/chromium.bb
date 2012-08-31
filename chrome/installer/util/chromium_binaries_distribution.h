@@ -49,6 +49,11 @@ class ChromiumBinariesDistribution : public BrowserDistribution {
 
   virtual bool GetChromeChannel(string16* channel) OVERRIDE;
 
+  virtual bool GetDelegateExecuteHandlerData(string16* handler_class_uuid,
+                                             string16* type_lib_uuid,
+                                             string16* type_lib_version,
+                                             string16* interface_uuid) OVERRIDE;
+
  protected:
   friend class BrowserDistribution;
 

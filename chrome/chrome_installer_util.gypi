@@ -19,6 +19,8 @@
           'installer/util/auto_launch_util.h',
           'installer/util/browser_distribution.cc',
           'installer/util/browser_distribution.h',
+          'installer/util/callback_work_item.cc',
+          'installer/util/callback_work_item.h',
           'installer/util/channel_info.cc',
           'installer/util/channel_info.h',
           'installer/util/chrome_app_host_distribution.cc',
