@@ -5896,30 +5896,6 @@
    fun:_ZN14ProfileManager10AddProfileEP7Profile
 }
 {
-   bug_145706
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN10extensions46PlatformAppBrowserTest_AppWithContextMenu_Test19RunTestOnMainThreadEv
-   fun:_ZN20InProcessBrowserTest23RunTestOnMainThreadLoopEv
-   fun:_ZN7content15BrowserTestBase28ProxyRunTestOnMainThreadLoopEv
-}
-{
-   bug_145706b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN10extensions53PlatformAppBrowserTest_AppWithContextMenuClicked_Test19RunTestOnMainThreadEv
-   fun:_ZN20InProcessBrowserTest23RunTestOnMainThreadLoopEv
-   fun:_ZN7content15BrowserTestBase28ProxyRunTestOnMainThreadLoopEv
-}
-{
-   bug_145706c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN10extensions44PlatformAppBrowserTest_EmptyContextMenu_Test19RunTestOnMainThreadEv
-   fun:_ZN20InProcessBrowserTest23RunTestOnMainThreadLoopEv
-   fun:_ZN7content15BrowserTestBase28ProxyRunTestOnMainThreadLoopEv
-}
-{
    bug_145708
    Memcheck:Leak
    fun:_Znw*

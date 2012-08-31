@@ -22,6 +22,7 @@ using content::WebContents;
 namespace extensions {
 
 namespace {
+
 // Non-abstract RenderViewContextMenu class.
 class PlatformAppContextMenu : public RenderViewContextMenu {
  public:
@@ -34,15 +35,17 @@ class PlatformAppContextMenu : public RenderViewContextMenu {
   }
 
  protected:
-  // These two functions implement pure virtual methods of
-  // RenderViewContextMenu.
-  virtual bool GetAcceleratorForCommandId(int command_id,
-                                          ui::Accelerator* accelerator) {
+  // RenderViewContextMenu implementation.
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      ui::Accelerator* accelerator) OVERRIDE {
     return false;
   }
-  virtual void PlatformInit() {}
-  virtual void PlatformCancel() {}
+  virtual void PlatformInit() OVERRIDE {}
+  virtual void PlatformCancel() OVERRIDE {}
 };
+
+const char kTestFilePath[] = "platform_apps/launch_files/test.txt";
 
 }  // namespace
 
@@ -79,8 +82,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, EmptyContextMenu) {
   ASSERT_TRUE(web_contents);
   WebKit::WebContextMenuData data;
   content::ContextMenuParams params(data);
-  PlatformAppContextMenu* menu = new PlatformAppContextMenu(web_contents,
-      params);
+  scoped_ptr<PlatformAppContextMenu> menu;
+  menu.reset(new PlatformAppContextMenu(web_contents, params));
   menu->Init();
   ASSERT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
   ASSERT_TRUE(menu->HasCommandWithId(IDC_RELOAD));
@@ -102,8 +105,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenu) {
   ASSERT_TRUE(web_contents);
   WebKit::WebContextMenuData data;
   content::ContextMenuParams params(data);
-  PlatformAppContextMenu* menu = new PlatformAppContextMenu(web_contents,
-      params);
+  scoped_ptr<PlatformAppContextMenu> menu;
+  menu.reset(new PlatformAppContextMenu(web_contents, params));
   menu->Init();
   ASSERT_TRUE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST));
   ASSERT_TRUE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST + 1));
@@ -129,8 +132,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuTextField) {
   WebKit::WebContextMenuData data;
   content::ContextMenuParams params(data);
   params.is_editable = true;
-  PlatformAppContextMenu* menu = new PlatformAppContextMenu(web_contents,
-      params);
+  scoped_ptr<PlatformAppContextMenu> menu;
+  menu.reset(new PlatformAppContextMenu(web_contents, params));
   menu->Init();
   ASSERT_TRUE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST));
   ASSERT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
@@ -156,8 +159,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuSelection) {
   WebKit::WebContextMenuData data;
   content::ContextMenuParams params(data);
   params.selection_text = ASCIIToUTF16("Hello World");
-  PlatformAppContextMenu* menu = new PlatformAppContextMenu(web_contents,
-      params);
+  scoped_ptr<PlatformAppContextMenu> menu;
+  menu.reset(new PlatformAppContextMenu(web_contents, params));
   menu->Init();
   ASSERT_TRUE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST));
   ASSERT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
@@ -182,8 +185,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuClicked) {
   WebKit::WebContextMenuData data;
   content::ContextMenuParams params(data);
   params.page_url = GURL("http://foo.bar");
-  PlatformAppContextMenu* menu = new PlatformAppContextMenu(web_contents,
-      params);
+  scoped_ptr<PlatformAppContextMenu> menu;
+  menu.reset(new PlatformAppContextMenu(web_contents, params));
   menu->Init();
   ASSERT_TRUE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST));
 
@@ -300,7 +303,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ExtensionWindowingApis) {
 // Tests that command line parameters get passed through to platform apps
 // via launchData correctly when launching with a file.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithFile) {
-  SetCommandLineArg( "platform_apps/launch_files/test.txt");
+  SetCommandLineArg(kTestFilePath);
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_file"))
       << message_;
 }
@@ -313,8 +316,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithRelativeFile) {
   // Setup the command line
   ClearCommandLineArgs();
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  FilePath relative_test_doc = FilePath::FromUTF8Unsafe(
-      "platform_apps/launch_files/test.txt");
+  FilePath relative_test_doc = FilePath::FromUTF8Unsafe(kTestFilePath);
   relative_test_doc = relative_test_doc.NormalizePathSeparators();
   command_line->AppendArgPath(relative_test_doc);
 
@@ -341,7 +343,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithRelativeFile) {
 // Tests that no launch data is sent through if the platform app provides
 // an intent with the wrong action.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithWrongIntent) {
-  SetCommandLineArg("platform_apps/launch_files/test.txt");
+  SetCommandLineArg(kTestFilePath);
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_wrong_intent"))
       << message_;
 }
@@ -349,7 +351,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithWrongIntent) {
 // Tests that no launch data is sent through if the file is of the wrong MIME
 // type.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithWrongType) {
-  SetCommandLineArg("platform_apps/launch_files/test.txt");
+  SetCommandLineArg(kTestFilePath);
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_wrong_type"))
       << message_;
 }
@@ -357,7 +359,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithWrongType) {
 // Tests that no launch data is sent through if the platform app does not
 // provide an intent.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithNoIntent) {
-  SetCommandLineArg("platform_apps/launch_files/test.txt");
+  SetCommandLineArg(kTestFilePath);
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch_no_intent"))
       << message_;
 }
@@ -395,7 +397,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithNothing) {
 // Test that platform apps can use the chrome.fileSystem.getDisplayPath
 // function to get the native file system path of a file they are launched with.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, GetDisplayPath) {
-  SetCommandLineArg("platform_apps/launch_files/test.txt");
+  SetCommandLineArg(kTestFilePath);
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/get_display_path"))
       << message_;
 }
