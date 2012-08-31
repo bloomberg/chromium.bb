@@ -385,6 +385,8 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_NEW_TAB_OTHER_SESSIONS_OPEN_ALL));
   load_time_data.SetString("learn_more",
       l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+  load_time_data.SetString("tile_grid_screenreader_accessible_description",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_TILE_GRID_ACCESSIBLE_DESCRIPTION));
 
   // On Mac OS X 10.7+, horizontal scrolling can be treated as a back or
   // forward gesture. Pass through a flag that indicates whether or not that

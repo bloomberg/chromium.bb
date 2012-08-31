@@ -216,6 +216,7 @@ cr.define('ntp', function() {
       this.appData = appData;
       assert(this.appData_.id, 'Got an app without an ID');
       this.id = this.appData_.id;
+      this.setAttribute('role', 'menuitem');
 
       this.className = 'app focusable';
 

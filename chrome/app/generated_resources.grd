@@ -10088,7 +10088,10 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
          desc="Tooltip text for the button that removes/blacklists the thumbnail. Once removed the thumbnail will not show up on the new tab page again.">
         Don't show on this page
       </message>
-
+      <message name="IDS_NEW_TAB_TILE_GRID_ACCESSIBLE_DESCRIPTION"
+         desc="Help message for screenreader users, spoken when navigating to a tile grid for the first time.">
+        Use left and right arrow keys to navigate.
+      </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_NEW_TAB_APP_OPTIONS"
                  desc="Text for the context menu item that takes the user to the options of an app. (In sentence case.)">

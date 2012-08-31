@@ -429,6 +429,11 @@ cr.define('ntp', function() {
       this.tileGrid_ = this.ownerDocument.createElement('div');
       this.tileGrid_.className = 'tile-grid';
       this.tileGrid_.style.minWidth = this.gridValues_.narrowWidth + 'px';
+      this.tileGrid_.setAttribute('role', 'menu');
+      this.tileGrid_.setAttribute('aria-label',
+          loadTimeData.getString(
+              'tile_grid_screenreader_accessible_description'));
+
       this.content_.appendChild(this.tileGrid_);
 
       // Ordered list of our tiles.
@@ -592,6 +597,10 @@ cr.define('ntp', function() {
       this.heightChanged_();
 
       this.repositionTiles_();
+
+      // If this is the first tile being added, make it focusable after add.
+      if (this.focusableElements_.length == 1)
+        this.updateFocusableElement_();
       this.fireAddedEvent(wrapperDiv, index, animate);
     },
 
@@ -658,7 +667,7 @@ cr.define('ntp', function() {
      * @private
      */
     handleCardSelection_: function(e) {
-      this.tabIndex = 1;
+      this.updateFocusableElement_();
 
       // When we are selected, we re-calculate the layout values. (See comment
       // in doDrop.)
@@ -671,7 +680,6 @@ cr.define('ntp', function() {
      * @private
      */
     handleCardDeselection_: function(e) {
-      this.tabIndex = -1;
       if (this.currentFocusElement_)
         this.currentFocusElement_.tabIndex = -1;
     },
@@ -761,11 +769,17 @@ cr.define('ntp', function() {
     },
 
     /**
-     * Focuses the element for |this.focusElementIndex_|. Makes the current
-     * focus element, if any, no longer eligible for focus.
+     * Ensure 0 <= this.focusElementIndex_ < this.focusableElements_.length,
+     * make the focusable element at this.focusElementIndex_ (if any) eligible
+     * for tab focus, and the previously-focused element not eligible.
      * @private
      */
-    updateFocusElement_: function() {
+    updateFocusableElement_: function() {
+      if (this.focusableElements_.length == 0) {
+        this.focusElementIndex_ = -1;
+        return;
+      }
+
       this.focusElementIndex_ = Math.min(this.focusableElements_.length - 1,
                                          this.focusElementIndex_);
       this.focusElementIndex_ = Math.max(0, this.focusElementIndex_);
@@ -776,8 +790,17 @@ cr.define('ntp', function() {
         lastFocusElement.tabIndex = -1;
 
       newFocusElement.tabIndex = 1;
-      newFocusElement.focus();
-      this.tabIndex = -1;
+    },
+
+    /**
+     * Focuses the element at |this.focusElementIndex_|. Makes the previous
+     * focus element, if any, no longer eligible for tab focus.
+     * @private
+     */
+    updateFocusElement_: function() {
+      this.updateFocusableElement_();
+      if (this.focusElementIndex_ >= 0)
+        this.focusableElements_[this.focusElementIndex_].focus();
     },
 
     /**
