@@ -362,12 +362,17 @@ bool ChromeContentUtilityClient::RenderPDFToWinMetafile(
 
 void ChromeContentUtilityClient::OnRobustJPEGDecodeImage(
     const std::vector<unsigned char>& encoded_data) {
-  scoped_ptr<SkBitmap> decoded_image(gfx::JPEGCodec::Decode(
-      &encoded_data[0], encoded_data.size()));
-  if (decoded_image->empty()) {
-    Send(new ChromeUtilityHostMsg_DecodeImage_Failed());
+  // Our robust jpeg decoding is using IJG libjpeg.
+  if (gfx::JPEGCodec::JpegLibraryVariant() == gfx::JPEGCodec::IJG_LIBJPEG) {
+    scoped_ptr<SkBitmap> decoded_image(gfx::JPEGCodec::Decode(
+        &encoded_data[0], encoded_data.size()));
+    if (!decoded_image.get() || decoded_image->empty()) {
+      Send(new ChromeUtilityHostMsg_DecodeImage_Failed());
+    } else {
+      Send(new ChromeUtilityHostMsg_DecodeImage_Succeeded(*decoded_image));
+    }
   } else {
-    Send(new ChromeUtilityHostMsg_DecodeImage_Succeeded(*decoded_image));
+    Send(new ChromeUtilityHostMsg_DecodeImage_Failed());
   }
   content::UtilityThread::Get()->ReleaseProcessIfNeeded();
 }

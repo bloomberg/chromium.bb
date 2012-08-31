@@ -28,7 +28,7 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
   // Callback used to indicate that image has been loaded.
   typedef base::Callback<void(const UserImage& user_image)> LoadedCallback;
 
-  UserImageLoader();
+  explicit UserImageLoader(ImageDecoder::ImageCodec image_codec);
 
   // Start reading the image from |filepath| on the file thread. Calls
   // |loaded_cb| when image has been successfully loaded.
@@ -64,6 +64,9 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
 
   // The message loop object of the thread in which we notify the delegate.
   MessageLoop* target_message_loop_;
+
+  // Specify how the file should be decoded in the utility process.
+  const ImageDecoder::ImageCodec image_codec_;
 
   // Holds info structures about all images we're trying to decode.
   // Accessed only on FILE thread.

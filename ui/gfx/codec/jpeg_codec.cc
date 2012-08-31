@@ -42,6 +42,17 @@ void ErrorExit(jpeg_common_struct* cinfo) {
 
 }  // namespace
 
+// This method helps identify at run time which library chromium is using.
+JPEGCodec::LibraryVariant JPEGCodec::JpegLibraryVariant() {
+#if defined(USE_SYSTEM_LIBJPEG)
+  return SYSTEM_LIBJPEG;
+#elif defined(USE_LIBJPEG_TURBO)
+  return LIBJPEG_TURBO;
+#else
+  return IJG_LIBJPEG;
+#endif
+}
+
 // Encoder ---------------------------------------------------------------------
 //
 // This code is based on nsJPEGEncoder from Mozilla.

@@ -37,6 +37,15 @@ class UI_EXPORT JPEGCodec {
     FORMAT_SkBitmap
   };
 
+  enum LibraryVariant {
+    SYSTEM_LIBJPEG = 0,
+    LIBJPEG_TURBO,
+    IJG_LIBJPEG,
+  };
+
+  // This method helps identify at run time which library chromium is using.
+  static LibraryVariant JpegLibraryVariant();
+
   // Encodes the given raw 'input' data, with each pixel being represented as
   // given in 'format'. The encoded JPEG data will be written into the supplied
   // vector and true will be returned on success. On failure (false), the

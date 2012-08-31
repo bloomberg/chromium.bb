@@ -30,8 +30,9 @@ UserImageLoader::ImageInfo::ImageInfo(int size,
 UserImageLoader::ImageInfo::~ImageInfo() {
 }
 
-UserImageLoader::UserImageLoader()
-    : target_message_loop_(NULL) {
+UserImageLoader::UserImageLoader(ImageDecoder::ImageCodec image_codec)
+    : target_message_loop_(NULL),
+      image_codec_(image_codec) {
 }
 
 UserImageLoader::~UserImageLoader() {
@@ -56,7 +57,7 @@ void UserImageLoader::LoadImage(const std::string& filepath,
   file_util::ReadFileToString(FilePath(filepath), &image_data);
 
   scoped_refptr<ImageDecoder> image_decoder =
-      new ImageDecoder(this, image_data, ImageDecoder::DEFAULT_CODEC);
+      new ImageDecoder(this, image_data, image_codec_);
   image_info_map_.insert(std::make_pair(image_decoder.get(), image_info));
   image_decoder->Start();
 }
@@ -104,6 +105,17 @@ void UserImageLoader::OnImageDecoded(const ImageDecoder* decoder,
 
 void UserImageLoader::OnDecodeImageFailed(const ImageDecoder* decoder) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  ImageInfoMap::iterator info_it = image_info_map_.find(decoder);
+  if (info_it == image_info_map_.end()) {
+    NOTREACHED();
+    return;
+  }
+
+  const ImageInfo& image_info = info_it->second;
+  target_message_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(image_info.loaded_cb, UserImage()));
   image_info_map_.erase(decoder);
 }
 

@@ -188,7 +188,7 @@ void RemoveUserInternal(const std::string& user_email,
 }  // namespace
 
 UserManagerImpl::UserManagerImpl()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(image_loader_(new UserImageLoader)),
+    : image_loader_(new UserImageLoader(ImageDecoder::DEFAULT_CODEC)),
       logged_in_user_(NULL),
       session_started_(false),
       is_current_user_owner_(false),

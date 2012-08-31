@@ -110,7 +110,8 @@ WallpaperManager* WallpaperManager::Get() {
 }
 
 WallpaperManager::WallpaperManager()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(wallpaper_loader_(new UserImageLoader)),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(wallpaper_loader_(
+          new UserImageLoader(ImageDecoder::ROBUST_JPEG_CODEC))),
       current_user_wallpaper_type_(User::UNKNOWN),
       ALLOW_THIS_IN_INITIALIZER_LIST(current_user_wallpaper_index_(
           ash::GetInvalidWallpaperIndex())),
@@ -509,15 +510,8 @@ void WallpaperManager::SetUserWallpaper(const std::string& email) {
       SetUserWallpaperProperties(email, User::DAILY, index,
                                  ShouldPersistDataForUser(email));
     } else if (type == User::CUSTOMIZED) {
-      // For security reason, use default wallpaper instead of custom wallpaper
-      // at login screen. The security issue is tracked in issue 143198. Once it
-      // fixed, we should then only use custom wallpaper.
-      if (!UserManager::Get()->IsUserLoggedIn()) {
-        index = ash::GetDefaultWallpaperIndex();
-      } else {
-        GetCustomWallpaper(email);
-        return;
-      }
+      GetCustomWallpaper(email);
+      return;
     }
     ash::Shell::GetInstance()->desktop_background_controller()->
         SetDefaultWallpaper(index, false);
