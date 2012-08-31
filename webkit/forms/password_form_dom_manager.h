@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/memory/scoped_ptr.h"
 #include "webkit/forms/form_data.h"
 #include "webkit/forms/password_form.h"
 #include "webkit/forms/webkit_forms_export.h"
@@ -43,7 +44,7 @@ class PasswordFormDomManager {
   // custom metadata to DOM nodes, so we have to do this every time an event
   // happens with a given form and compare against previously Create'd forms
   // to identify..which sucks.
-  WEBKIT_FORMS_EXPORT static PasswordForm* CreatePasswordForm(
+  WEBKIT_FORMS_EXPORT static scoped_ptr<PasswordForm> CreatePasswordForm(
       const WebKit::WebFormElement& form);
 
   // Create a FillData structure in preparation for autofilling a form,

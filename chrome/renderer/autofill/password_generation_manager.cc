@@ -165,10 +165,10 @@ WebKit::WebCString PasswordGenerationManager::imageNameForReadOnlyState() {
 
 void PasswordGenerationManager::handleClick(WebKit::WebInputElement& element) {
   gfx::Rect rect(element.decorationElementFor(this).boundsInViewportSpace());
-  webkit::forms::PasswordForm* password_form(
+  scoped_ptr<webkit::forms::PasswordForm> password_form(
       webkit::forms::PasswordFormDomManager::CreatePasswordForm(
           element.form()));
-  if (password_form) {
+  if (password_form.get()) {
     Send(new AutofillHostMsg_ShowPasswordGenerationPopup(routing_id(),
                                                          rect,
                                                          element.maxLength(),

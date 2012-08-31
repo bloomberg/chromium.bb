@@ -22,12 +22,12 @@ PasswordFormFillData::PasswordFormFillData() : wait_for_username(false) {
 PasswordFormFillData::~PasswordFormFillData() {
 }
 
-PasswordForm* PasswordFormDomManager::CreatePasswordForm(
+scoped_ptr<PasswordForm> PasswordFormDomManager::CreatePasswordForm(
     const WebFormElement& webform) {
   WebPasswordFormData web_password_form(webform);
   if (web_password_form.isValid())
-    return new PasswordForm(web_password_form);
-  return NULL;
+    return scoped_ptr<PasswordForm>(new PasswordForm(web_password_form));
+  return scoped_ptr<PasswordForm>();
 }
 
 // static

@@ -31,8 +31,9 @@ DocumentState::DocumentState()
 
 DocumentState::~DocumentState() {}
 
-void DocumentState::set_password_form_data(webkit::forms::PasswordForm* data) {
-  password_form_data_.reset(data);
+void DocumentState::set_password_form_data(
+    scoped_ptr<webkit::forms::PasswordForm> data) {
+  password_form_data_.reset(data.release());
 }
 
 void DocumentState::set_alt_error_page_fetcher(

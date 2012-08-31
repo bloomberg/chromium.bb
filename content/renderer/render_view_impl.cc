@@ -2825,16 +2825,15 @@ void RenderViewImpl::willSubmitForm(WebFrame* frame,
   document_state->set_searchable_form_url(web_searchable_form_data.url());
   document_state->set_searchable_form_encoding(
       web_searchable_form_data.encoding().utf8());
-  PasswordForm* password_form_data =
+  scoped_ptr<PasswordForm> password_form_data =
       PasswordFormDomManager::CreatePasswordForm(form);
-  document_state->set_password_form_data(password_form_data);
 
   // In order to save the password that the user actually typed and not one
   // that may have gotten transformed by the site prior to submit, recover it
   // from the form contents already stored by |willSendSubmitEvent| into the
   // dataSource's NavigationState (as opposed to the provisionalDataSource's,
   // which is what we're storing into now.)
-  if (password_form_data) {
+  if (password_form_data.get()) {
     DocumentState* old_document_state =
         DocumentState::FromDataSource(frame->dataSource());
     if (old_document_state) {
@@ -2843,6 +2842,8 @@ void RenderViewImpl::willSubmitForm(WebFrame* frame,
         password_form_data->password_value = old_form_data->password_value;
     }
   }
+
+  document_state->set_password_form_data(password_form_data.Pass());
 
   FOR_EACH_OBSERVER(
       RenderViewObserver, observers_, WillSubmitForm(frame, form));

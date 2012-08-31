@@ -5972,25 +5972,6 @@
    fun:_ZN2pp25CompletionCallbackFactoryI15TestingInstanceNS_22ThreadSafeThreadTraitsEE12CallbackDataINS3_11Dispatcher0IMS1_FviEEEE5ThunkEPvi
 }
 {
-   bug_145711
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN6webkit5forms22PasswordFormDomManager18CreatePasswordFormERKN6WebKit14WebFormElementE
-   fun:_ZN8autofill25PasswordGenerationManager11handleClickERN6WebKit15WebInputElementE
-   fun:_ZN6WebKit22TextFieldDecoratorImpl11handleClickEPN7WebCore16HTMLInputElementE
-   fun:_ZN7WebCore26TextFieldDecorationElement19defaultEventHandlerEPNS_5EventE
-   fun:_ZN7WebCore15EventDispatcher24dispatchEventPostProcessEN3WTF10PassRefPtrINS_5EventEEEPv
-   fun:_ZN7WebCore15EventDispatcher13dispatchEventEN3WTF10PassRefPtrINS_5EventEEE
-}
-{
-   bug_145712
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN6WebKit25NotificationPresenterImpl17requestPermissionEPN7WebCore22ScriptExecutionContextEN3WTF10PassRefPtrINS1_12VoidCallbackEEE
-   fun:_ZN7WebCore18NotificationCenter17requestPermissionEN3WTF10PassRefPtrINS_12VoidCallbackEEE
-   fun:_ZN7WebCore20V8NotificationCenter25requestPermissionCallbackERKN2v89ArgumentsE
-}
-{
    bug_145723
    Memcheck:Leak
    fun:_Znw*
