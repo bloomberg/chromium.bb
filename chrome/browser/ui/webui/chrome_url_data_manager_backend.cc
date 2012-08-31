@@ -161,6 +161,10 @@ class ChromeURLXFrameOptionsExceptionSet
     insert(chrome::kChromeUIHistoryFrameHost);
     insert(chrome::kChromeUISettingsFrameHost);
     insert(chrome::kChromeUIUberFrameHost);
+#if defined(OS_CHROMEOS)
+    // chrome://terms page is embedded in iframe to chrome://oobe.
+    insert(chrome::kChromeUITermsHost);
+#endif
   }
 };
 
