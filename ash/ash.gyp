@@ -349,6 +349,7 @@
         'wm/workspace/frame_maximize_button.h',
         'wm/workspace/managed_workspace.cc',
         'wm/workspace/managed_workspace.h',
+        'wm/workspace/maximize_bubble_frame_state.h',
         'wm/workspace/maximized_workspace.cc',
         'wm/workspace/maximized_workspace.h',
         'wm/workspace/multi_window_resize_controller.cc',

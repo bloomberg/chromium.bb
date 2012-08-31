@@ -177,13 +177,12 @@ TEST_F(BaseLayoutManagerTest, BoundsWithScreenEdgeVisible) {
   EXPECT_EQ(max_bounds.ToString(), window->bounds().ToString());
 }
 
-// Verifies maximizing always resets the restore bounds, and similarly restoring
-// resets the restore bounds.
-TEST_F(BaseLayoutManagerTest, MaximizeResetsRestoreBounds) {
+// Verifies maximizing sets the restore bounds, and restoring
+// restores the bounds.
+TEST_F(BaseLayoutManagerTest, MaximizeSetsRestoreBounds) {
   scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(1, 2, 3, 4)));
-  SetRestoreBoundsInParent(window.get(), gfx::Rect(10, 11, 12, 13));
 
-  // Maximize it, which should reset restore bounds.
+  // Maximize it, which will keep the previous restore bounds.
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   EXPECT_EQ("1,2 3x4", GetRestoreBoundsInParent(window.get()).ToString());
 
@@ -191,6 +190,16 @@ TEST_F(BaseLayoutManagerTest, MaximizeResetsRestoreBounds) {
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
   EXPECT_EQ("1,2 3x4", window->bounds().ToString());
   EXPECT_TRUE(GetRestoreBoundsInScreen(window.get()) == NULL);
+}
+
+// Verifies maximizing keeps the restore bounds if set.
+TEST_F(BaseLayoutManagerTest, MaximizeResetsRestoreBounds) {
+  scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(1, 2, 3, 4)));
+  SetRestoreBoundsInParent(window.get(), gfx::Rect(10, 11, 12, 13));
+
+  // Maximize it, which will keep the previous restore bounds.
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  EXPECT_EQ("10,11 12x13", GetRestoreBoundsInParent(window.get()).ToString());
 }
 
 // Verifies that the restore bounds do not get reset when restoring to a
