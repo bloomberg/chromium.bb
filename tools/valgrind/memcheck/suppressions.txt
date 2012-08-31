@@ -4538,12 +4538,6 @@
    fun:_ZN7WebCore13RenderSVGRoot*paint*PaintInfoERKNS_*
 }
 {
-   bug_109613
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN34AutofillProfileSyncableServiceTest5SetUpEv
-}
-{
    bug_109872
    Memcheck:Leak
    fun:_Znw*
