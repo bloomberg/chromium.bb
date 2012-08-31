@@ -36,6 +36,7 @@
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/low_memory_observer.h"
+#include "chrome/browser/chromeos/mtp/media_transfer_protocol_manager.h"
 #include "chrome/browser/chromeos/net/cros_network_change_notifier_factory.h"
 #include "chrome/browser/chromeos/net/network_change_notifier_chromeos.h"
 #include "chrome/browser/chromeos/oom_priority_manager.h"
@@ -208,6 +209,7 @@ ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
   if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
     chromeos::ShutdownKioskModeScreensaver();
   cryptohome::AsyncMethodCaller::Shutdown();
+  chromeos::mtp::MediaTransferProtocolManager::Shutdown();
   chromeos::disks::DiskMountManager::Shutdown();
 
   // CrosLibrary is shut down before DBusThreadManager even though the former
@@ -297,6 +299,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   session_manager_observer_.reset(new chromeos::SessionManagerObserver);
 
   chromeos::disks::DiskMountManager::Initialize();
+  chromeos::mtp::MediaTransferProtocolManager::Initialize();
   cryptohome::AsyncMethodCaller::Initialize();
 
   // Initialize the network change notifier for Chrome OS. The network

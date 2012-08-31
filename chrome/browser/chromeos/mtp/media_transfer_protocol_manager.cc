@@ -1,0 +1,417 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/chromeos/mtp/media_transfer_protocol_manager.h"
+
+#include <map>
+#include <queue>
+#include <set>
+#include <utility>
+
+#include "base/bind.h"
+#include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
+#include "base/stl_util.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "content/public/browser/browser_thread.h"
+
+using content::BrowserThread;
+
+namespace chromeos {
+namespace mtp {
+
+namespace {
+
+MediaTransferProtocolManager* g_media_transfer_protocol_manager = NULL;
+
+// The MediaTransferProtocolManager implementation.
+class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
+ public:
+  MediaTransferProtocolManagerImpl() : weak_ptr_factory_(this) {
+    DBusThreadManager* dbus_thread_manager = DBusThreadManager::Get();
+    mtp_client_ = dbus_thread_manager->GetMediaTransferProtocolDaemonClient();
+
+    // Set up signals and start initializing |storage_info_map_|.
+    mtp_client_->SetUpConnections(
+        base::Bind(&MediaTransferProtocolManagerImpl::OnStorageChanged,
+                   weak_ptr_factory_.GetWeakPtr()));
+    mtp_client_->EnumerateStorage(
+        base::Bind(&MediaTransferProtocolManagerImpl::OnEnumerateStorage,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&base::DoNothing));
+  }
+
+  virtual ~MediaTransferProtocolManagerImpl() {
+  }
+
+  // MediaTransferProtocolManager override.
+  virtual void AddObserver(Observer* observer) OVERRIDE {
+    observers_.AddObserver(observer);
+  }
+
+  // MediaTransferProtocolManager override.
+  virtual void RemoveObserver(Observer* observer) OVERRIDE {
+    observers_.RemoveObserver(observer);
+  }
+
+  // MediaTransferProtocolManager override.
+  const std::vector<std::string> GetStorages() const OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    std::vector<std::string> storages;
+    for (StorageInfoMap::const_iterator it = storage_info_map_.begin();
+         it != storage_info_map_.end();
+         ++it) {
+      storages.push_back(it->first);
+    }
+    return storages;
+  }
+
+  // MediaTransferProtocolManager override.
+  virtual const StorageInfo* GetStorageInfo(
+      const std::string& storage_name) const OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    StorageInfoMap::const_iterator it = storage_info_map_.find(storage_name);
+    if (it == storage_info_map_.end())
+      return NULL;
+    return &it->second;
+  }
+
+  // MediaTransferProtocolManager override.
+  virtual void OpenStorage(const std::string& storage_name,
+                           OpenStorageMode mode,
+                           const OpenStorageCallback& callback) OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (!ContainsKey(storage_info_map_, storage_name)) {
+      callback.Run("", true);
+      return;
+    }
+    open_storage_callbacks_.push(callback);
+    mtp_client_->OpenStorage(
+        storage_name,
+        mode,
+        base::Bind(&MediaTransferProtocolManagerImpl::OnOpenStorage,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&MediaTransferProtocolManagerImpl::OnOpenStorageError,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  // MediaTransferProtocolManager override.
+  virtual void CloseStorage(const std::string& storage_handle,
+                            const CloseStorageCallback& callback) OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (!ContainsKey(handles_, storage_handle)) {
+      callback.Run(true);
+      return;
+    }
+    close_storage_callbacks_.push(std::make_pair(callback, storage_handle));
+    mtp_client_->CloseStorage(
+        storage_handle,
+        base::Bind(&MediaTransferProtocolManagerImpl::OnCloseStorage,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&MediaTransferProtocolManagerImpl::OnCloseStorageError,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  // MediaTransferProtocolManager override.
+  virtual void ReadDirectoryByPath(
+      const std::string& storage_handle,
+      const std::string& path,
+      const ReadDirectoryCallback& callback) OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (!ContainsKey(handles_, storage_handle)) {
+      callback.Run(std::vector<FileEntry>(), true);
+      return;
+    }
+    read_directory_callbacks_.push(callback);
+    mtp_client_->ReadDirectoryByPath(
+        storage_handle,
+        path,
+        base::Bind(&MediaTransferProtocolManagerImpl::OnReadDirectory,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&MediaTransferProtocolManagerImpl::OnReadDirectoryError,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  // MediaTransferProtocolManager override.
+  virtual void ReadDirectoryById(
+      const std::string& storage_handle,
+      uint32 file_id,
+      const ReadDirectoryCallback& callback) OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (!ContainsKey(handles_, storage_handle)) {
+      callback.Run(std::vector<FileEntry>(), true);
+      return;
+    }
+    read_directory_callbacks_.push(callback);
+    mtp_client_->ReadDirectoryById(
+        storage_handle,
+        file_id,
+        base::Bind(&MediaTransferProtocolManagerImpl::OnReadDirectory,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&MediaTransferProtocolManagerImpl::OnReadDirectoryError,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  // MediaTransferProtocolManager override.
+  virtual void ReadFileByPath(const std::string& storage_handle,
+                              const std::string& path,
+                              const ReadFileCallback& callback) OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (!ContainsKey(handles_, storage_handle)) {
+      callback.Run(std::string(), true);
+      return;
+    }
+    read_file_callbacks_.push(callback);
+    mtp_client_->ReadFileByPath(
+        storage_handle,
+        path,
+        base::Bind(&MediaTransferProtocolManagerImpl::OnReadFile,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&MediaTransferProtocolManagerImpl::OnReadFileError,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  // MediaTransferProtocolManager override.
+  virtual void ReadFileById(const std::string& storage_handle,
+                            uint32 file_id,
+                            const ReadFileCallback& callback) OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (!ContainsKey(handles_, storage_handle)) {
+      callback.Run(std::string(), true);
+      return;
+    }
+    read_file_callbacks_.push(callback);
+    mtp_client_->ReadFileById(
+        storage_handle,
+        file_id,
+        base::Bind(&MediaTransferProtocolManagerImpl::OnReadFile,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&MediaTransferProtocolManagerImpl::OnReadFileError,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  virtual void GetFileInfoByPath(const std::string& storage_handle,
+                                 const std::string& path,
+                                 const GetFileInfoCallback& callback) OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (!ContainsKey(handles_, storage_handle)) {
+      callback.Run(FileEntry(), true);
+      return;
+    }
+    get_file_info_callbacks_.push(callback);
+    mtp_client_->GetFileInfoByPath(
+        storage_handle,
+        path,
+        base::Bind(&MediaTransferProtocolManagerImpl::OnGetFileInfo,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&MediaTransferProtocolManagerImpl::OnGetFileInfoError,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  virtual void GetFileInfoById(const std::string& storage_handle,
+                               uint32 file_id,
+                               const GetFileInfoCallback& callback) OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (!ContainsKey(handles_, storage_handle)) {
+      callback.Run(FileEntry(), true);
+      return;
+    }
+    get_file_info_callbacks_.push(callback);
+    mtp_client_->GetFileInfoById(
+        storage_handle,
+        file_id,
+        base::Bind(&MediaTransferProtocolManagerImpl::OnGetFileInfo,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&MediaTransferProtocolManagerImpl::OnGetFileInfoError,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
+ private:
+  // Map of storage names to storage info.
+  typedef std::map<std::string, StorageInfo> StorageInfoMap;
+  // Callback queues - DBus communication is in-order, thus callbacks are
+  // received in the same order as the requests.
+  typedef std::queue<OpenStorageCallback> OpenStorageCallbackQueue;
+  // (callback, handle)
+  typedef std::queue<std::pair<CloseStorageCallback, std::string>
+                    > CloseStorageCallbackQueue;
+  typedef std::queue<ReadDirectoryCallback> ReadDirectoryCallbackQueue;
+  typedef std::queue<ReadFileCallback> ReadFileCallbackQueue;
+  typedef std::queue<GetFileInfoCallback> GetFileInfoCallbackQueue;
+
+  void OnStorageChanged(bool is_attach, const std::string& storage_name) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (is_attach) {
+      mtp_client_->GetStorageInfo(
+          storage_name,
+          base::Bind(&MediaTransferProtocolManagerImpl::OnGetStorageInfo,
+                     weak_ptr_factory_.GetWeakPtr()),
+          base::Bind(&base::DoNothing));
+      return;
+    }
+
+    // Detach case.
+    StorageInfoMap::iterator it = storage_info_map_.find(storage_name);
+    if (it == storage_info_map_.end()) {
+      // This might happen during initialization when |storage_info_map_| has
+      // not been fully populated yet?
+      return;
+    }
+    storage_info_map_.erase(it);
+    FOR_EACH_OBSERVER(Observer,
+                      observers_,
+                      StorageChanged(false /* detach */, storage_name));
+  }
+
+  void OnEnumerateStorage(const std::vector<std::string>& storage_names) {
+    for (size_t i = 0; i < storage_names.size(); ++i) {
+      mtp_client_->GetStorageInfo(
+          storage_names[i],
+          base::Bind(&MediaTransferProtocolManagerImpl::OnGetStorageInfo,
+                     weak_ptr_factory_.GetWeakPtr()),
+          base::Bind(&base::DoNothing));
+    }
+  }
+
+  void OnGetStorageInfo(const StorageInfo& storage_info) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    const std::string& storage_name = storage_info.storage_name();
+    if (ContainsKey(storage_info_map_, storage_name)) {
+      // This should not happen, since MediaTransferProtocolManagerImpl should
+      // only call EnumerateStorage() once, which populates |storage_info_map_|
+      // with the already-attached devices.
+      // After that, all incoming signals are either for new storage
+      // attachments, which should not be in |storage_info_map_|, or for
+      // storage detachements, which do not add to |storage_info_map_|.
+      NOTREACHED();
+      return;
+    }
+
+    // New storage. Add it and let the observers know.
+    storage_info_map_.insert(std::make_pair(storage_name, storage_info));
+    FOR_EACH_OBSERVER(Observer,
+                      observers_,
+                      StorageChanged(true /* is attach */, storage_name));
+  }
+
+  void OnOpenStorage(const std::string& handle) {
+    if (!ContainsKey(handles_, handle)) {
+      handles_.insert(handle);
+      open_storage_callbacks_.front().Run(handle, false);
+    } else {
+      NOTREACHED();
+      open_storage_callbacks_.front().Run("", true);
+    }
+    open_storage_callbacks_.pop();
+  }
+
+  void OnOpenStorageError() {
+    open_storage_callbacks_.front().Run("", true);
+    open_storage_callbacks_.pop();
+  }
+
+  void OnCloseStorage() {
+    const std::string& handle = close_storage_callbacks_.front().second;
+    if (ContainsKey(handles_, handle)) {
+      handles_.erase(handle);
+      close_storage_callbacks_.front().first.Run(false);
+    } else {
+      NOTREACHED();
+      close_storage_callbacks_.front().first.Run(true);
+    }
+    close_storage_callbacks_.pop();
+  }
+
+  void OnCloseStorageError() {
+    close_storage_callbacks_.front().first.Run(true);
+    close_storage_callbacks_.pop();
+  }
+
+  void OnReadDirectory(const std::vector<FileEntry>& file_entries) {
+    read_directory_callbacks_.front().Run(file_entries, false);
+    read_directory_callbacks_.pop();
+  }
+
+  void OnReadDirectoryError() {
+    read_directory_callbacks_.front().Run(std::vector<FileEntry>(), true);
+    read_directory_callbacks_.pop();
+  }
+
+  void OnReadFile(const std::string& data) {
+    read_file_callbacks_.front().Run(data, false);
+    read_file_callbacks_.pop();
+  }
+
+  void OnReadFileError() {
+    read_file_callbacks_.front().Run(std::string(), true);
+    read_file_callbacks_.pop();
+  }
+
+  void OnGetFileInfo(const FileEntry& entry) {
+    get_file_info_callbacks_.front().Run(entry, false);
+    get_file_info_callbacks_.pop();
+  }
+
+  void OnGetFileInfoError() {
+    get_file_info_callbacks_.front().Run(FileEntry(), true);
+    get_file_info_callbacks_.pop();
+  }
+
+  // Mtpd DBus client.
+  MediaTransferProtocolDaemonClient* mtp_client_;
+
+  // Device attachment / detachment observers.
+  ObserverList<Observer> observers_;
+
+  base::WeakPtrFactory<MediaTransferProtocolManagerImpl> weak_ptr_factory_;
+
+  // Everything below is only accessed on the UI thread.
+
+  // Map to keep track of attached storages by name.
+  StorageInfoMap storage_info_map_;
+
+  // Set of open storage handles.
+  std::set<std::string> handles_;
+
+  // Queued callbacks.
+  OpenStorageCallbackQueue open_storage_callbacks_;
+  CloseStorageCallbackQueue close_storage_callbacks_;
+  ReadDirectoryCallbackQueue read_directory_callbacks_;
+  ReadFileCallbackQueue read_file_callbacks_;
+  GetFileInfoCallbackQueue get_file_info_callbacks_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaTransferProtocolManagerImpl);
+};
+
+}  // namespace
+
+// static
+void MediaTransferProtocolManager::Initialize() {
+  if (g_media_transfer_protocol_manager) {
+    LOG(WARNING) << "MediaTransferProtocolManager was already initialized";
+    return;
+  }
+  g_media_transfer_protocol_manager = new MediaTransferProtocolManagerImpl();
+  VLOG(1) << "MediaTransferProtocolManager initialized";
+}
+
+// static
+void MediaTransferProtocolManager::Shutdown() {
+  if (!g_media_transfer_protocol_manager) {
+    LOG(WARNING) << "MediaTransferProtocolManager::Shutdown() called with "
+                 << "NULL manager";
+    return;
+  }
+  delete g_media_transfer_protocol_manager;
+  g_media_transfer_protocol_manager = NULL;
+  VLOG(1) << "MediaTransferProtocolManager Shutdown completed";
+}
+
+// static
+MediaTransferProtocolManager* MediaTransferProtocolManager::GetInstance() {
+  return g_media_transfer_protocol_manager;
+}
+
+}  // namespace mtp
+}  // namespace chromeos
