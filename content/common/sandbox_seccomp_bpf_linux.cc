@@ -1241,7 +1241,7 @@ ErrorCode GpuProcessPolicy_x86_64(int sysno) {
   }
 }
 
-ErrorCode RendererProcessPolicy_x86_64(int sysno) {
+ErrorCode RendererOrWorkerProcessPolicy_x86_64(int sysno) {
   switch (sysno) {
     case __NR_ioctl:  // TODO(jln) investigate legitimate use in the renderer
                       // and see if alternatives can be used.
@@ -1360,13 +1360,11 @@ Sandbox::EvaluateSyscall GetProcessSyscallPolicy(
     return FlashProcessPolicy_x86_64;
   }
 
-  if (process_type == switches::kRendererProcess) {
-    return RendererProcessPolicy_x86_64;
+  if (process_type == switches::kRendererProcess ||
+      process_type == switches::kWorkerProcess) {
+    return RendererOrWorkerProcessPolicy_x86_64;
   }
 
-  if (process_type == switches::kWorkerProcess) {
-    return BlacklistDebugAndNumaPolicy;
-  }
   NOTREACHED();
   // This will be our default if we need one.
   return AllowAllPolicy;
