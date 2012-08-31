@@ -9,13 +9,12 @@
 #include "ui/views/controls/button/menu_button_listener.h"
 
 class Browser;
-class Profile;
 
 // ActionBoxButtonView displays a plus button with associated menu.
 class ActionBoxButtonView : public views::MenuButton,
                             public views::MenuButtonListener {
  public:
-  explicit ActionBoxButtonView(Browser* browser, Profile* profile);
+  explicit ActionBoxButtonView(Browser* browser);
   virtual ~ActionBoxButtonView();
 
   SkColor GetBackgroundColor();
@@ -32,7 +31,6 @@ class ActionBoxButtonView : public views::MenuButton,
                                    const gfx::Point& point) OVERRIDE;
 
   Browser* browser_;
-  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ActionBoxButtonView);
 };

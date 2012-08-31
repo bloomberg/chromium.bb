@@ -112,7 +112,7 @@ LocationBarViewMac::LocationBarViewMac(
           content::PAGE_TRANSITION_FROM_ADDRESS_BAR)),
       weak_ptr_factory_(this) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableActionBox)) {
-    plus_decoration_.reset(new PlusDecoration(this, command_updater, browser_));
+    plus_decoration_.reset(new PlusDecoration(this, browser_));
   }
 
   for (size_t i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {

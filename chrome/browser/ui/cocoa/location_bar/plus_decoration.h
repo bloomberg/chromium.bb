@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/cocoa/location_bar/image_decoration.h"
 
 class Browser;
-class CommandUpdater;
 class LocationBarViewMac;
 
 // Note: this file is under development (see crbug.com/138118).
@@ -19,9 +18,7 @@ class LocationBarViewMac;
 // Plus icon on the right side of the location bar.
 class PlusDecoration : public ImageDecoration {
  public:
-  PlusDecoration(LocationBarViewMac* owner,
-      CommandUpdater* command_updater,
-      Browser* browser);
+  PlusDecoration(LocationBarViewMac* owner, Browser* browser);
   virtual ~PlusDecoration();
 
   // Helper to get where the action box menu and bubble point should be
@@ -36,8 +33,6 @@ class PlusDecoration : public ImageDecoration {
  private:
   // Owner of the decoration, used to obtain the menu.
   LocationBarViewMac* owner_;
-
-  CommandUpdater* command_updater_;  // Weak, owned by Browser.
 
   Browser* browser_;
 

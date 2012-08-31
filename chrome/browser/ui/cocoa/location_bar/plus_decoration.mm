@@ -4,8 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/location_bar/plus_decoration.h"
 
-#include "chrome/browser/command_updater.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
@@ -25,9 +23,8 @@ const CGFloat kAnchorPointFrameHeight = 23.0;
 }  // namespace
 
 PlusDecoration::PlusDecoration(LocationBarViewMac* owner,
-    CommandUpdater* command_updater, Browser* browser)
+                               Browser* browser)
     : owner_(owner),
-      command_updater_(command_updater),
       browser_(browser) {
   SetVisible(true);
 
@@ -45,9 +42,7 @@ bool PlusDecoration::AcceptsMousePress() {
 }
 
 bool PlusDecoration::OnMousePressed(NSRect frame) {
-  ExtensionService* extension_service = extensions::ExtensionSystem::Get(
-      browser_->profile())->extension_service();
-  ActionBoxMenuModel menu_model(browser_, extension_service);
+  ActionBoxMenuModel menu_model(browser_);
 
   // Controller for the menu attached to the plus decoration.
   scoped_nsobject<MenuController> menu_controller(

@@ -7,9 +7,7 @@
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/command_updater.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/toolbar/action_box_menu_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/action_box_menu.h"
@@ -35,10 +33,9 @@ const SkColor kPushedBorderColor = SkColorSetRGB(191, 191, 191);
 }  // namespace
 
 
-ActionBoxButtonView::ActionBoxButtonView(Browser* browser, Profile* profile)
+ActionBoxButtonView::ActionBoxButtonView(Browser* browser)
     : views::MenuButton(NULL, string16(), this, false),
-      browser_(browser),
-      profile_(profile) {
+      browser_(browser) {
   set_id(VIEW_ID_ACTION_BOX_BUTTON);
   SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_ACTION_BOX_BUTTON));
   SetIcon(*ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
@@ -84,10 +81,7 @@ void ActionBoxButtonView::GetAccessibleState(ui::AccessibleViewState* state) {
 
 void ActionBoxButtonView::OnMenuButtonClicked(View* source,
                                               const gfx::Point& point) {
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-
-  ActionBoxMenuModel model(browser_, extension_service);
+  ActionBoxMenuModel model(browser_);
   ActionBoxMenu action_box_menu(browser_, &model);
   action_box_menu.Init();
   action_box_menu.RunMenu(this);

@@ -6,8 +6,16 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/chrome_to_mobile_service.h"
+#include "chrome/browser/chrome_to_mobile_service_factory.h"
+#include "chrome/browser/command_updater.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
@@ -27,25 +35,27 @@ const int kFirstExtensionCommandId = 0xE000;
 ////////////////////////////////////////////////////////////////////////////////
 // ActionBoxMenuModel
 
-ActionBoxMenuModel::ActionBoxMenuModel(Browser* browser,
-                                       ExtensionService* extension_service)
+ActionBoxMenuModel::ActionBoxMenuModel(Browser* browser)
     : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
-      browser_(browser),
-      extension_service_(extension_service) {
+      browser_(browser) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  InsertItemWithStringIdAt(0, IDC_CHROME_TO_MOBILE_PAGE,
-                           IDS_CHROME_TO_MOBILE_BUBBLE_TOOLTIP);
-  SetIcon(0, rb.GetNativeImageNamed(IDR_MOBILE));
-
-  TabContents* current_tab_contents = chrome::GetActiveTabContents(browser);
+  if (ChromeToMobileServiceFactory::GetForProfile(browser_->profile())->
+      HasMobiles()) {
+    AddItemWithStringId(IDC_CHROME_TO_MOBILE_PAGE,
+                        IDS_CHROME_TO_MOBILE_BUBBLE_TOOLTIP);
+    SetIcon(GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE),
+            rb.GetNativeImageNamed(IDR_MOBILE));
+  }
+  TabContents* current_tab_contents = chrome::GetActiveTabContents(browser_);
   bool starred = current_tab_contents->bookmark_tab_helper()->is_starred();
-  InsertItemWithStringIdAt(1, IDC_BOOKMARK_PAGE,
-                           starred ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR);
-  SetIcon(1, rb.GetNativeImageNamed(starred ? IDR_STAR_LIT : IDR_STAR));
+  AddItemWithStringId(IDC_BOOKMARK_PAGE,
+                      starred ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR);
+  SetIcon(GetIndexOfCommandId(IDC_BOOKMARK_PAGE),
+          rb.GetNativeImageNamed(starred ? IDR_STAR_LIT : IDR_STAR));
 
   // Adds extensions to the model.
   int command_id = kFirstExtensionCommandId;
-  const extensions::ExtensionList& action_box_items = action_box_menu_items();
+  const extensions::ExtensionList& action_box_items = GetActionBoxMenuItems();
   if (!action_box_items.empty()) {
     AddSeparator(ui::NORMAL_SEPARATOR);
     for (size_t i = 0; i < action_box_items.size(); ++i) {
@@ -75,8 +85,10 @@ const extensions::Extension* ActionBoxMenuModel::GetExtensionAt(int index) {
       id_to_extension_id_map_.find(command_id);
   if (it == id_to_extension_id_map_.end())
     return NULL;
-
-  return extension_service_->GetExtensionById(it->second, false);
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(browser_->profile())->
+          extension_service();
+  return extension_service->GetExtensionById(it->second, false);
 }
 
 bool ActionBoxMenuModel::IsCommandIdChecked(int command_id) const {
@@ -96,6 +108,13 @@ bool ActionBoxMenuModel::GetAcceleratorForCommandId(
 void ActionBoxMenuModel::ExecuteCommand(int command_id) {
   if (command_id < kFirstExtensionCommandId)
     chrome::ExecuteCommand(browser_, command_id);
+}
+
+const extensions::ExtensionList& ActionBoxMenuModel::GetActionBoxMenuItems() {
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(browser_->profile())->
+          extension_service();
+  return extension_service->toolbar_model()->action_box_menu_items();
 }
 
 void ActionBoxMenuModel::Observe(int type,

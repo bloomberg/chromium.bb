@@ -7,16 +7,11 @@
 
 #include <map>
 
+#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_observer.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/ui/browser_commands.h"
 #include "ui/base/models/simple_menu_model.h"
 
 class Browser;
-
-namespace extensions {
-class Extension;
-}
 
 // A menu model that builds the contents of the action box menu. This model
 // should be built on demand since its content reflects the state of the browser
@@ -25,8 +20,7 @@ class ActionBoxMenuModel : public ui::SimpleMenuModel,
                            public ui::SimpleMenuModel::Delegate,
                            public content::NotificationObserver {
  public:
-  ActionBoxMenuModel(Browser* browser,
-                     ExtensionService* extension_service);
+  explicit ActionBoxMenuModel(Browser* browser);
   virtual ~ActionBoxMenuModel();
 
   // Returns true if item associated with an extension.
@@ -45,9 +39,7 @@ class ActionBoxMenuModel : public ui::SimpleMenuModel,
   virtual void ExecuteCommand(int command_id) OVERRIDE;
 
  private:
-  const extensions::ExtensionList& action_box_menu_items() {
-    return extension_service_->toolbar_model()->action_box_menu_items();
-  }
+  const extensions::ExtensionList& GetActionBoxMenuItems();
 
   typedef std::map<int, std::string> IdToEntensionIdMap;
 
@@ -57,7 +49,6 @@ class ActionBoxMenuModel : public ui::SimpleMenuModel,
                        const content::NotificationDetails& details) OVERRIDE;
 
   Browser* browser_;
-  ExtensionService* extension_service_;
 
   IdToEntensionIdMap id_to_extension_id_map_;
 

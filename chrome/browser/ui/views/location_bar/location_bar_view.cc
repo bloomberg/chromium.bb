@@ -296,7 +296,7 @@ void LocationBarView::Init(views::View* popup_parent_view) {
     star_view_->SetVisible(true);
   }
   if (ActionBoxButtonView::IsActionBoxEnabled() && browser_) {
-    action_box_button_view_ = new ActionBoxButtonView(browser_, profile_);
+    action_box_button_view_ = new ActionBoxButtonView(browser_);
     AddChildView(action_box_button_view_);
     if (star_view_)
       star_view_->SetVisible(false);
