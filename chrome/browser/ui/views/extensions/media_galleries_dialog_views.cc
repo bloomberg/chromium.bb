@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/text_button.h"
@@ -25,7 +26,18 @@ namespace {
 // Heading font size correction.
 const int kHeadingFontSizeDelta = 1;
 
-const int kContentWidth = 450;
+// A border with zero left inset.
+class MediaGalleriesCheckboxBorder : public views::TextButtonNativeThemeBorder {
+ public:
+  explicit MediaGalleriesCheckboxBorder(views::NativeThemeDelegate* delegate)
+      : views::TextButtonNativeThemeBorder(delegate) {}
+  virtual ~MediaGalleriesCheckboxBorder() {}
+
+  virtual void GetInsets(gfx::Insets* insets) const OVERRIDE {
+    views::TextButtonNativeThemeBorder::GetInsets(insets);
+    insets->Set(insets->top(), 0, insets->bottom(), insets->right());
+  }
+};
 
 }  // namespace
 
@@ -35,7 +47,7 @@ MediaGalleriesDialogViews::MediaGalleriesDialogViews(
       window_(NULL),
       contents_(new views::View()),
       checkbox_container_(NULL),
-      add_gallery_(NULL),
+      add_gallery_container_(NULL),
       confirm_available_(false),
       accepted_(false) {
   InitChildViews();
@@ -58,7 +70,8 @@ void MediaGalleriesDialogViews::InitChildViews() {
                      views::GridLayout::LEADING,
                      1,
                      views::GridLayout::FIXED,
-                     kContentWidth,
+                     views::Widget::GetLocalizedContentsWidth(
+                         IDS_MEDIA_GALLERIES_DIALOG_CONTENT_WIDTH_CHARS),
                      0);
   contents_->SetLayoutManager(layout);
 
@@ -82,8 +95,7 @@ void MediaGalleriesDialogViews::InitChildViews() {
   checkbox_container_ = new views::View();
   checkbox_container_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical,
-                           views::kPanelHorizIndentation,
-                           0,
+                           0, 0,
                            views::kRelatedControlSmallVerticalSpacing));
   layout->StartRowWithPadding(0, column_set_id,
                               0, views::kRelatedControlVerticalSpacing);
@@ -96,12 +108,7 @@ void MediaGalleriesDialogViews::InitChildViews() {
   }
   confirm_available_ = controller_->HasPermittedGalleries();
 
-  // Add Gallery button.
-  add_gallery_ = new views::NativeTextButton(
-      this, l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY));
-  layout->StartRowWithPadding(0, column_set_id,
-                              0, views::kRelatedControlVerticalSpacing);
-  layout->AddView(add_gallery_);
+  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 }
 
 void MediaGalleriesDialogViews::UpdateGallery(
@@ -122,6 +129,7 @@ bool MediaGalleriesDialogViews::AddOrUpdateGallery(
   }
 
   views::Checkbox* checkbox = new views::Checkbox(gallery->display_name);
+  checkbox->set_border(new MediaGalleriesCheckboxBorder(checkbox));
   checkbox->set_listener(this);
   checkbox->SetTooltipText(gallery->path.LossyDisplayName());
   checkbox_container_->AddChildView(checkbox);
@@ -159,6 +167,19 @@ bool MediaGalleriesDialogViews::IsDialogButtonEnabled(
   return button != ui::DIALOG_BUTTON_OK || confirm_available_;
 }
 
+views::View* MediaGalleriesDialogViews::GetExtraView() {
+  if (!add_gallery_container_) {
+    views::View* button = new views::NativeTextButton(this,
+        l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY));
+    add_gallery_container_ = new views::View();
+    add_gallery_container_->SetLayoutManager(
+        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
+    add_gallery_container_->AddChildView(button);
+  }
+
+  return add_gallery_container_;
+}
+
 bool MediaGalleriesDialogViews::Cancel() {
   return true;
 }
@@ -173,7 +194,7 @@ void MediaGalleriesDialogViews::ButtonPressed(views::Button* sender,
   confirm_available_ = true;
   GetWidget()->client_view()->AsDialogClientView()->UpdateDialogButtons();
 
-  if (sender == add_gallery_) {
+  if (sender->parent() == add_gallery_container_) {
     controller_->OnAddFolderClicked();
     return;
   }

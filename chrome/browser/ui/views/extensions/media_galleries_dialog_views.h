@@ -40,6 +40,7 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
   virtual views::View* GetContentsView() OVERRIDE;
   virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
+  virtual views::View* GetExtraView() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
 
@@ -69,7 +70,7 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
   CheckboxMap checkbox_map_;
 
   views::View* checkbox_container_;
-  views::Button* add_gallery_;
+  views::View* add_gallery_container_;
 
   // This tracks whether the confirm button can be clicked. It starts as false
   // if no checkboxes are ticked. After there is any interaction, or some
