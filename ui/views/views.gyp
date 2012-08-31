@@ -453,17 +453,6 @@
             'widget/widget_message_filter.h',
           ],
         }],
-        ['use_aura==1 or OS!="win"', {
-          'sources!': [
-            'win/fullscreen_handler.cc',
-            'win/fullscreen_handler.h',
-            'win/hwnd_message_handler.cc',
-            'win/hwnd_message_handler.h',
-            'win/hwnd_message_handler_delegate.h',
-            'win/scoped_fullscreen_visibility.cc',
-            'win/scoped_fullscreen_visibility.h',
-          ],
-        }],
         ['OS!="win"', {
           'sources!': [
             'win/fullscreen_handler.cc',

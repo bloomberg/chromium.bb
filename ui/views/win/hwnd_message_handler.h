@@ -75,7 +75,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public ui::WindowImpl,
   gfx::Rect GetRestoredBounds() const;
   void GetWindowPlacement(gfx::Rect* bounds,
                           ui::WindowShowState* show_state) const;
-  gfx::Rect GetWorkAreaBoundsInScreen() const;
 
   void SetBounds(const gfx::Rect& bounds);
   void SetSize(const gfx::Size& size);
@@ -125,8 +124,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public ui::WindowImpl,
   FullscreenHandler* fullscreen_handler() { return fullscreen_handler_.get(); }
 
   void SetVisibilityChangedAnimationsEnabled(bool enabled);
-
-  InputMethod* CreateInputMethod();
 
   void SetTitle(const string16& title);
 
