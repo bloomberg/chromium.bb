@@ -535,6 +535,9 @@ cr.define('options', function() {
         section.classList.add('sliding');
         section.style.height =
             container.offsetHeight + 'px';
+        // Force an update of the list of paired Bluetooth devices.
+        if (cr.isChromeOS)
+           $('bluetooth-paired-devices-list').refresh();
       }, 0);
     },
 
