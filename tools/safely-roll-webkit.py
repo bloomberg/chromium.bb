@@ -49,10 +49,14 @@ def main():
                     help='(default) Put change in commit queue on upload.')
   parser.add_option('--no-commit', action='store_false', dest='commit',
                     help='Don\'t put change in commit queue on upload.')
+  parser.add_option('-r', '--reviewers', default='',
+                    help='Add given users as either reviewers or TBR as'
+                    ' appropriate.')
   parser.add_option('--upstream', default='origin/master',
                     help='(default "%default") Use given start point for change'
                     ' to upload. For instance, if you use the old git workflow,'
                     ' you might set it to "origin/trunk".')
+  parser.add_option('--cc', help='CC email addresses for issue.')
 
   options, args = parser.parse_args()
   logging.basicConfig(
@@ -79,12 +83,19 @@ def main():
       ['git', 'checkout', '-b', 'webkit_roll', options.upstream])
   try:
     old_rev = process_deps(os.path.join(root_dir, 'DEPS'), new_rev)
-    commit_msg = 'Webkit roll %s:%s\n\nTBR=\n' % (old_rev, new_rev)
+    review_field = 'TBR' if options.commit else 'R'
+    commit_msg = 'Webkit roll %s:%s\n\n%s=%s\n' % (old_rev, new_rev,
+                                                   review_field,
+                                                   options.reviewers)
     subprocess2.check_output(['git', 'commit', '-m', commit_msg, 'DEPS'])
     subprocess2.check_call(['git', 'diff', options.upstream])
     upload_cmd = ['git', 'cl', 'upload']
     if options.commit:
       upload_cmd.append('--use-commit-queue')
+    if options.reviewers:
+      upload_cmd.append('--send-mail')
+    if options.cc:
+      upload_cmd.extend(['--cc', options.cc])
     subprocess2.check_call(upload_cmd)
   finally:
     subprocess2.check_output(['git', 'checkout', old_branch])
