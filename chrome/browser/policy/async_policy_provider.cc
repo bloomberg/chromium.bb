@@ -16,14 +16,6 @@ using content::BrowserThread;
 
 namespace policy {
 
-namespace {
-
-// Helper for a PostTaskAndReply used as a synchronization point between the
-// main thread and FILE thread. See AsyncPolicyProvider::RefreshPolicies.
-void Nop() {}
-
-}  // namespace
-
 AsyncPolicyProvider::AsyncPolicyProvider(scoped_ptr<AsyncPolicyLoader> loader)
     : loader_(loader.release()),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
@@ -67,7 +59,7 @@ void AsyncPolicyProvider::RefreshPolicies() {
                  base::Unretained(this)));
   BrowserThread::PostTaskAndReply(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(Nop),
+      base::Bind(base::DoNothing),
       refresh_callback_.callback());
 }
 
