@@ -6,9 +6,9 @@
  * Parse a very small subset of HTML.  This ensures that insecure HTML /
  * javascript cannot be injected into the new tab page.
  * @param {string} s The string to parse.
- * @param {array=} extraTags Extra allowed tags.
- * @param {object=} extraAttrs Extra allowed attributes (all tags are run
- *     through these).
+ * @param {Array.<string>=} opt_extraTags Optional extra allowed tags.
+ * @param {Object.<string, function(Node, string):boolean>=} opt_extraAttrs
+ *     Optional extra allowed attributes (all tags are run through these).
  * @throws {Error} In case of non supported markup.
  * @return {DocumentFragment} A document fragment containing the DOM tree.
  */
@@ -18,7 +18,7 @@ var parseHtmlSubset = (function() {
   var allowedAttributes = {
     'href': function(node, value) {
       // Only allow a[href] starting with http:// and https://
-      return node.tagName == 'A' && (value.indexOf('http://') == 0 ||
+      return node.tagName == 'A' && (value.indexOf('chrome://') == 0 ||
           value.indexOf('https://') == 0);
     },
     'target': function(node, value) {
@@ -32,7 +32,8 @@ var parseHtmlSubset = (function() {
 
   /**
    * Whitelist of tag names allowed in parseHtmlSubset.
-   * @type {[string]}
+   * @type {!Array.<string>}
+   * @const
    */
   var allowedTags = ['A', 'B', 'STRONG'];
 
@@ -68,9 +69,11 @@ var parseHtmlSubset = (function() {
       throw Error(node.tagName + '[' + n + '="' + v + '"] is not supported');
   }
 
-  return function(s, extraTags, extraAttrs) {
+  return function(s, opt_extraTags, opt_extraAttrs) {
+    var extraTags =
+        (opt_extraTags || []).map(function(str) { return str.toUpperCase(); });
     var tags = allowedTags.concat(extraTags);
-    var attrs = merge(allowedAttributes, extraAttrs);
+    var attrs = merge(allowedAttributes, opt_extraAttrs || {});
 
     var r = document.createRange();
     r.selectNode(document.body);
