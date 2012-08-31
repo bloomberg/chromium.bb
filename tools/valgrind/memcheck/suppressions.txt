@@ -1074,6 +1074,21 @@
    ...
    fun:_ZN4base*StatisticsRecorderTest_*_Test8TestBodyEv
 }
+{
+   # This test simulates a ppapi plugin that fails to decrement a reference
+   # count. In that case, the ppapi runtime will clean up its internal data
+   # structures, but intentionally does not delete the plugin object's
+   # desctructor, because we don't want them to have the opportunity to do
+   # anything at that part of shutdown.
+   bug_145710 (Intentional)
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12TestInstance27TestLeakedObjectDestructorsEv
+   fun:_ZN12TestInstance8RunTestsERKSs
+   fun:_ZN15TestingInstance12ExecuteTestsEi
+   fun:_ZN2pp25CompletionCallbackFactoryI15TestingInstanceNS_22ThreadSafeThreadTraitsEE11Dispatcher0IMS1_FviEEclEPS1_i
+   fun:_ZN2pp25CompletionCallbackFactoryI15TestingInstanceNS_22ThreadSafeThreadTraitsEE12CallbackDataINS3_11Dispatcher0IMS1_FviEEEE5ThunkEPvi
+}
 
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
@@ -5904,16 +5919,6 @@
    fun:_ZN17ExtensionFunction3RunEv
    fun:_ZN27ExtensionFunctionDispatcher8DispatchERK31ExtensionHostMsg_Request_ParamsPN7content14RenderViewHostE
    fun:_ZN10extensions13ExtensionHost9OnRequestERK31ExtensionHostMsg_Request_Params
-}
-{
-   bug_145710
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN12TestInstance27TestLeakedObjectDestructorsEv
-   fun:_ZN12TestInstance8RunTestsERKSs
-   fun:_ZN15TestingInstance12ExecuteTestsEi
-   fun:_ZN2pp25CompletionCallbackFactoryI15TestingInstanceNS_22ThreadSafeThreadTraitsEE11Dispatcher0IMS1_FviEEclEPS1_i
-   fun:_ZN2pp25CompletionCallbackFactoryI15TestingInstanceNS_22ThreadSafeThreadTraitsEE12CallbackDataINS3_11Dispatcher0IMS1_FviEEEE5ThunkEPvi
 }
 {
    bug_145723
