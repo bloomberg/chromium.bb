@@ -55,6 +55,7 @@
           'sources': [
             'seccomp-bpf/bpf_tests.cc',
             'seccomp-bpf/bpf_tests.h',
+            'seccomp-bpf/errorcode_unittest.cc',
             'seccomp-bpf/sandbox_bpf_unittest.cc',
           ],
         }],
@@ -66,6 +67,8 @@
       'sources': [
         'seccomp-bpf/die.cc',
         'seccomp-bpf/die.h',
+        'seccomp-bpf/errorcode.cc',
+        'seccomp-bpf/errorcode.h',
         'seccomp-bpf/sandbox_bpf.cc',
         'seccomp-bpf/sandbox_bpf.h',
         'seccomp-bpf/verifier.cc',

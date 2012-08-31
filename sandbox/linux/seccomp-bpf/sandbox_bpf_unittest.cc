@@ -40,17 +40,17 @@ SANDBOX_TEST(SandboxBpf, CallSupportsTwice) {
 
 // A simple blacklist test
 
-Sandbox::ErrorCode BlacklistNanosleepPolicy(int sysno) {
+ErrorCode BlacklistNanosleepPolicy(int sysno) {
   if (sysno < static_cast<int>(MIN_SYSCALL) ||
       sysno > static_cast<int>(MAX_SYSCALL)) {
     // FIXME: we should really not have to do that in a trivial policy
-    return ENOSYS;
+    return ErrorCode(ENOSYS);
   }
   switch (sysno) {
     case __NR_nanosleep:
-      return EACCES;
+      return ErrorCode(EACCES);
     default:
-      return Sandbox::SB_ALLOWED;
+      return ErrorCode(ErrorCode::ERR_ALLOWED);
   }
 }
 
@@ -64,13 +64,13 @@ BPF_TEST(SandboxBpf, ApplyBasicBlacklistPolicy, BlacklistNanosleepPolicy) {
 
 // Now do a simple whitelist test
 
-Sandbox::ErrorCode WhitelistGetpidPolicy(int sysno) {
+ErrorCode WhitelistGetpidPolicy(int sysno) {
   switch (sysno) {
     case __NR_getpid:
     case __NR_exit_group:
-      return Sandbox::SB_ALLOWED;
+      return ErrorCode(ErrorCode::ERR_ALLOWED);
     default:
-      return ENOMEM;
+      return ErrorCode(ENOMEM);
   }
 }
 
@@ -99,18 +99,18 @@ intptr_t EnomemHandler(const struct arch_seccomp_data& args, void *aux) {
   return -ENOMEM;
 }
 
-Sandbox::ErrorCode BlacklistNanosleepPolicySigsys(int sysno) {
+ErrorCode BlacklistNanosleepPolicySigsys(int sysno) {
   if (sysno < static_cast<int>(MIN_SYSCALL) ||
       sysno > static_cast<int>(MAX_SYSCALL)) {
     // FIXME: we should really not have to do that in a trivial policy
-    return ENOSYS;
+    return ErrorCode(ENOSYS);
   }
   switch (sysno) {
     case __NR_nanosleep:
-      return Sandbox::ErrorCode(EnomemHandler,
+      return Sandbox::Trap(EnomemHandler,
                  static_cast<void *>(&BlacklistNanosleepPolicySigsysAuxData));
     default:
-      return Sandbox::SB_ALLOWED;
+      return ErrorCode(ErrorCode::ERR_ALLOWED);
   }
 }
 
@@ -147,11 +147,11 @@ int SysnoToRandomErrno(int sysno) {
   return ((sysno & ~3) >> 2) % 29 + 1;
 }
 
-Sandbox::ErrorCode SyntheticPolicy(int sysno) {
+ErrorCode SyntheticPolicy(int sysno) {
   if (sysno < static_cast<int>(MIN_SYSCALL) ||
       sysno > static_cast<int>(MAX_SYSCALL)) {
     // FIXME: we should really not have to do that in a trivial policy.
-    return ENOSYS;
+    return ErrorCode(ENOSYS);
   }
 
   // TODO(jorgelo): remove this restriction once crbug.com/141694 is fixed.
@@ -166,9 +166,9 @@ Sandbox::ErrorCode SyntheticPolicy(int sysno) {
   if (sysno == __NR_exit_group /* || sysno == __NR_write */) {
     // exit_group() is special, we really need it to work.
     // write() is needed for BPF_ASSERT() to report a useful error message.
-    return Sandbox::SB_ALLOWED;
+    return ErrorCode(ErrorCode::ERR_ALLOWED);
   } else {
-    return SysnoToRandomErrno(sysno);
+    return ErrorCode(SysnoToRandomErrno(sysno));
   }
 }
 

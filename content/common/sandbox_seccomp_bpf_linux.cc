@@ -34,6 +34,10 @@
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/services/linux_syscalls.h"
 
+using playground2::arch_seccomp_data;
+using playground2::ErrorCode;
+using playground2::Sandbox;
+
 namespace {
 
 inline bool IsChromeOS() {
@@ -1181,37 +1185,37 @@ bool IsBaselinePolicyWatched_x86_64(int sysno) {
 }
 
 // x86_64 only for now. Needs to be adapted and tested for i386.
-playground2::Sandbox::ErrorCode BaselinePolicy_x86_64(int sysno) {
+ErrorCode BaselinePolicy_x86_64(int sysno) {
   if (IsBaselinePolicyAllowed_x86_64(sysno)) {
-    return playground2::Sandbox::SB_ALLOWED;
+    return ErrorCode(ErrorCode::ERR_ALLOWED);
   }
   // TODO(jln): some system calls in those sets are not supposed to
   // return ENOENT. Return the appropriate error.
   if (IsFileSystem(sysno) || IsCurrentDirectory(sysno)) {
-    return ENOENT;
+    return ErrorCode(ENOENT);
   }
 
   if (IsUmask(sysno) || IsDeniedFileSystemAccessViaFd(sysno)) {
-    return EPERM;
+    return ErrorCode(EPERM);
   }
 
   if (IsBaselinePolicyWatched_x86_64(sysno)) {
     // Previously unseen syscalls. TODO(jln): some of these should
     // be denied gracefully right away.
-    return playground2::Sandbox::ErrorCode(CrashSIGSYS_Handler, NULL);
+    return Sandbox::Trap(CrashSIGSYS_Handler, NULL);
   }
   // In any other case crash the program with our SIGSYS handler
-  return playground2::Sandbox::ErrorCode(CrashSIGSYS_Handler, NULL);
+  return Sandbox::Trap(CrashSIGSYS_Handler, NULL);
 }
 
 // x86_64 only for now. Needs to be adapted and tested for i386.
-playground2::Sandbox::ErrorCode GpuProcessPolicy_x86_64(int sysno) {
+ErrorCode GpuProcessPolicy_x86_64(int sysno) {
   switch(sysno) {
     case __NR_ioctl:
-      return playground2::Sandbox::SB_ALLOWED;
+      return ErrorCode(ErrorCode::ERR_ALLOWED);
 #if defined(__x86_64__)
     case __NR_socket:
-      return EACCES;  // Nvidia binary driver.
+      return ErrorCode(EACCES);  // Nvidia binary driver.
 #endif
     case __NR_open:
       // Accelerated video decode is enabled by default only on Chrome OS.
@@ -1221,23 +1225,23 @@ playground2::Sandbox::ErrorCode GpuProcessPolicy_x86_64(int sysno) {
         // Allow open() even though it severely weakens the sandbox,
         // to test the sandboxing mechanism in general.
         // TODO(jorgelo): remove this once we solve the libva issue.
-        return playground2::Sandbox::SB_ALLOWED;
+        return ErrorCode(ErrorCode::ERR_ALLOWED);
       } else {
         // Hook open() in the GPU process to allow opening /etc/drirc,
         // needed by Mesa.
         // The hook needs dup(), lseek(), and close() to be allowed.
-        return playground2::Sandbox::ErrorCode(GpuOpenSIGSYS_Handler, NULL);
+        return Sandbox::Trap(GpuOpenSIGSYS_Handler, NULL);
       }
     default:
       if (IsEventFd(sysno))
-        return playground2::Sandbox::SB_ALLOWED;
+        return ErrorCode(ErrorCode::ERR_ALLOWED);
 
       // Default on the baseline policy.
       return BaselinePolicy_x86_64(sysno);
   }
 }
 
-playground2::Sandbox::ErrorCode RendererProcessPolicy_x86_64(int sysno) {
+ErrorCode RendererProcessPolicy_x86_64(int sysno) {
   switch (sysno) {
     case __NR_ioctl:  // TODO(jln) investigate legitimate use in the renderer
                       // and see if alternatives can be used.
@@ -1257,11 +1261,11 @@ playground2::Sandbox::ErrorCode RendererProcessPolicy_x86_64(int sysno) {
     case __NR_sysinfo:
     case __NR_times:
     case __NR_uname:
-      return playground2::Sandbox::SB_ALLOWED;
+      return ErrorCode(ErrorCode::ERR_ALLOWED);
     default:
 #if defined(__x86_64__)
       if (IsSystemVSharedMemory(sysno))
-        return playground2::Sandbox::SB_ALLOWED;
+        return ErrorCode(ErrorCode::ERR_ALLOWED);
 #endif
 
       // Default on the baseline policy.
@@ -1270,24 +1274,24 @@ playground2::Sandbox::ErrorCode RendererProcessPolicy_x86_64(int sysno) {
 }
 
 // x86_64 only for now. Needs to be adapted and tested for i386.
-playground2::Sandbox::ErrorCode FlashProcessPolicy_x86_64(int sysno) {
+ErrorCode FlashProcessPolicy_x86_64(int sysno) {
   switch (sysno) {
     case __NR_sched_getaffinity:
     case __NR_sched_setscheduler:
     case __NR_times:
-      return playground2::Sandbox::SB_ALLOWED;
+      return ErrorCode(ErrorCode::ERR_ALLOWED);
     case __NR_ioctl:
-      return ENOTTY;  // Flash Access.
+      return ErrorCode(ENOTTY);  // Flash Access.
 #if defined(__x86_64__)
     case __NR_socket:
-      return EACCES;
+      return ErrorCode(EACCES);
 #endif
     default:
 #if defined(__x86_64__)
       // These are under investigation, and hopefully not here for the long
       // term.
       if (IsSystemVSharedMemory(sysno))
-        return playground2::Sandbox::SB_ALLOWED;
+        return ErrorCode(ErrorCode::ERR_ALLOWED);
 #endif
 
       // Default on the baseline policy.
@@ -1295,34 +1299,34 @@ playground2::Sandbox::ErrorCode FlashProcessPolicy_x86_64(int sysno) {
   }
 }
 
-playground2::Sandbox::ErrorCode BlacklistDebugAndNumaPolicy(int sysno) {
+ErrorCode BlacklistDebugAndNumaPolicy(int sysno) {
   if (sysno < static_cast<int>(MIN_SYSCALL) ||
       sysno > static_cast<int>(MAX_SYSCALL)) {
     // TODO(jln) we should not have to do that in a trivial policy.
-    return ENOSYS;
+    return ErrorCode(ENOSYS);
   }
 
   if (IsDebug(sysno) || IsNuma(sysno))
-    return playground2::Sandbox::ErrorCode(CrashSIGSYS_Handler, NULL);
+    return Sandbox::Trap(CrashSIGSYS_Handler, NULL);
 
-  return playground2::Sandbox::SB_ALLOWED;
+  return ErrorCode(ErrorCode::ERR_ALLOWED);
 }
 
 // Allow all syscalls.
 // This will still deny x32 or IA32 calls in 64 bits mode or
 // 64 bits system calls in compatibility mode.
-playground2::Sandbox::ErrorCode AllowAllPolicy(int sysno) {
+ErrorCode AllowAllPolicy(int sysno) {
   if (sysno < static_cast<int>(MIN_SYSCALL) ||
       sysno > static_cast<int>(MAX_SYSCALL)) {
     // TODO(jln) we should not have to do that in a trivial policy.
-    return ENOSYS;
+    return ErrorCode(ENOSYS);
   } else {
-    return playground2::Sandbox::SB_ALLOWED;
+    return ErrorCode(ErrorCode::ERR_ALLOWED);
   }
 }
 
 // Warms up/preloads resources needed by the policies.
-void WarmupPolicy(playground2::Sandbox::EvaluateSyscall policy) {
+void WarmupPolicy(Sandbox::EvaluateSyscall policy) {
 #if defined(__x86_64__)
   if (policy == GpuProcessPolicy_x86_64) {
     OpenWithCache(kDriRcPath, O_RDONLY);
@@ -1338,7 +1342,7 @@ void WarmupPolicy(playground2::Sandbox::EvaluateSyscall policy) {
 #endif
 }
 
-playground2::Sandbox::EvaluateSyscall GetProcessSyscallPolicy(
+Sandbox::EvaluateSyscall GetProcessSyscallPolicy(
     const CommandLine& command_line,
     const std::string& process_type) {
 #if defined(__x86_64__)
@@ -1377,14 +1381,14 @@ playground2::Sandbox::EvaluateSyscall GetProcessSyscallPolicy(
 // Initialize the seccomp-bpf sandbox.
 bool StartBpfSandbox(const CommandLine& command_line,
                      const std::string& process_type) {
-  playground2::Sandbox::EvaluateSyscall SyscallPolicy =
+  Sandbox::EvaluateSyscall SyscallPolicy =
       GetProcessSyscallPolicy(command_line, process_type);
 
   // Warms up resources needed by the policy we're about to enable.
   WarmupPolicy(SyscallPolicy);
 
-  playground2::Sandbox::setSandboxPolicy(SyscallPolicy, NULL);
-  playground2::Sandbox::startSandbox();
+  Sandbox::setSandboxPolicy(SyscallPolicy, NULL);
+  Sandbox::startSandbox();
 
   return true;
 }
@@ -1422,8 +1426,8 @@ bool SandboxSeccompBpf::SupportsSandbox() {
 #if defined(SECCOMP_BPF_SANDBOX)
   // TODO(jln): pass the saved proc_fd_ from the LinuxSandbox singleton
   // here.
-  if (playground2::Sandbox::supportsSeccompSandbox(-1) ==
-      playground2::Sandbox::STATUS_AVAILABLE) {
+  if (Sandbox::supportsSeccompSandbox(-1) ==
+      Sandbox::STATUS_AVAILABLE) {
     return true;
   }
 #endif

@@ -36,11 +36,11 @@ bool Verifier::verifyBPF(const std::vector<struct sock_filter>& program,
 #endif
 
     struct arch_seccomp_data data = { sysnum, SECCOMP_ARCH };
-    Sandbox::ErrorCode code = evaluateSyscall(sysnum);
+    ErrorCode code = evaluateSyscall(sysnum);
     uint32_t computedRet = evaluateBPF(program, data, err);
     if (*err) {
       return false;
-    } else if (computedRet != code) {
+    } else if (computedRet != code.err()) {
       *err = "Exit code from BPF program doesn't match";
       return false;
     }

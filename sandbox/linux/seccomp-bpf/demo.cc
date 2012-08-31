@@ -28,6 +28,8 @@
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/seccomp-bpf/util.h"
 
+using playground2::arch_seccomp_data;
+using playground2::ErrorCode;
 using playground2::Sandbox;
 using playground2::Util;
 
@@ -135,7 +137,7 @@ static intptr_t defaultHandler(const struct arch_seccomp_data& data,
   return -ERR;
 }
 
-static Sandbox::ErrorCode evaluator(int sysno) {
+static ErrorCode evaluator(int sysno) {
   switch (sysno) {
   #if defined(__NR_accept)
     case __NR_accept: case __NR_accept4:
@@ -220,7 +222,7 @@ static Sandbox::ErrorCode evaluator(int sysno) {
     case __NR_time:
     case __NR_uname:
     case __NR_write: case __NR_writev:
-      return Sandbox::SB_ALLOWED;
+      return ErrorCode(ErrorCode::ERR_ALLOWED);
 
   // The following system calls are temporarily permitted. This must be
   // tightened later. But we currently don't implement enough of the sandboxing
@@ -252,11 +254,11 @@ static Sandbox::ErrorCode evaluator(int sysno) {
   case __NR_clone:
   case __NR_munmap: case __NR_mprotect: case __NR_madvise:
   case __NR_remap_file_pages:
-      return Sandbox::SB_ALLOWED;
+    return ErrorCode(ErrorCode::ERR_ALLOWED);
 
   // Everything that isn't explicitly allowed is denied.
   default:
-    return Sandbox::ErrorCode(defaultHandler, NULL);
+    return Sandbox::Trap(defaultHandler, NULL);
   }
 }
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VERIFIER_H__
-#define VERIFIER_H__
+#ifndef SANDBOX_LINUX_SECCOMP_BPF_VERIFIER_H__
+#define SANDBOX_LINUX_SECCOMP_BPF_VERIFIER_H__
 
 #include <linux/filter.h>
 
@@ -72,4 +72,4 @@ class Verifier {
 
 }  // namespace
 
-#endif  // VERIFIER_H__
+#endif  // SANDBOX_LINUX_SECCOMP_BPF_VERIFIER_H__

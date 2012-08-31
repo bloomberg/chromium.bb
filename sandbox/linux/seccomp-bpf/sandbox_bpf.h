@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_BPF_H__
-#define SANDBOX_BPF_H__
+#ifndef SANDBOX_LINUX_SECCOMP_BPF_SANDBOX_BPF_H__
+#define SANDBOX_LINUX_SECCOMP_BPF_SANDBOX_BPF_H__
 
 #include <endian.h>
 #include <errno.h>
@@ -44,6 +44,13 @@
 #include "base/eintr_wrapper.h"
 #include "base/logging.h"
 #endif
+
+#if defined(SECCOMP_BPF_VALGRIND_HACKS)
+#ifndef SECCOMP_BPF_STANDALONE
+#include "base/third_party/valgrind/valgrind.h"
+#endif
+#endif
+
 
 // The Seccomp2 kernel ABI is not part of older versions of glibc.
 // As we can't break compilation with these versions of the library,
@@ -145,7 +152,9 @@
 #endif
 
 #include "sandbox/linux/seccomp-bpf/die.h"
+#include "sandbox/linux/seccomp-bpf/errorcode.h"
 
+namespace playground2 {
 
 struct arch_seccomp_data {
   int      nr;
@@ -160,7 +169,7 @@ struct arch_sigsys {
   unsigned int arch;
 };
 
-#ifdef SECCOMP_BPF_STANDALONE
+#if defined(SECCOMP_BPF_STANDALONE)
 #define arraysize(x) sizeof(x)/sizeof(*(x)))
 #define HANDLE_EINTR TEMP_FAILURE_RETRY
 #define DISALLOW_IMPLICIT_CONSTRUCTORS(TypeName) \
@@ -168,9 +177,6 @@ struct arch_sigsys {
   TypeName(const TypeName&);                     \
   void operator=(const TypeName&)
 #endif
-
-
-namespace playground2 {
 
 class Sandbox {
  public:
@@ -182,17 +188,6 @@ class Sandbox {
     STATUS_ENABLED       // The sandbox is now active
   };
 
-  enum {
-    SB_INVALID       = -1,
-    SB_ALLOWED       = 0x0000,
-    SB_INSPECT_ARG_1 = 0x8001,
-    SB_INSPECT_ARG_2 = 0x8002,
-    SB_INSPECT_ARG_3 = 0x8004,
-    SB_INSPECT_ARG_4 = 0x8008,
-    SB_INSPECT_ARG_5 = 0x8010,
-    SB_INSPECT_ARG_6 = 0x8020
-  };
-
   // TrapFnc is a pointer to a function that handles Seccomp traps in
   // user-space. The seccomp policy can request that a trap handler gets
   // installed; it does so by returning a suitable ErrorCode() from the
@@ -202,67 +197,6 @@ class Sandbox {
   // async-signal safe:
   // http://pubs.opengroup.org/onlinepubs/009695399/functions/xsh_chap02_04.html
   typedef intptr_t (*TrapFnc)(const struct arch_seccomp_data& args, void *aux);
-
-  class ErrorCode {
-    friend class Sandbox;
-  public:
-    // We can either wrap a symbolic ErrorCode (i.e. enum values), an errno
-    // value (in the range 1..4095), or a pointer to a TrapFnc callback
-    // handling a SECCOMP_RET_TRAP trap.
-    // All of these different values are stored in the "err_" field. So, code
-    // that is using the ErrorCode class typically operates on a single 32bit
-    // field.
-    // This is not only quiet efficient, it also makes the API really easy to
-    // use.
-    ErrorCode(int err = SB_INVALID)
-        : id_(0),
-          fnc_(NULL),
-          aux_(NULL) {
-      switch (err) {
-      case SB_INVALID:
-        err_ = SECCOMP_RET_INVALID;
-        break;
-      case SB_ALLOWED:
-        err_ = SECCOMP_RET_ALLOW;
-        break;
-      case SB_INSPECT_ARG_1...SB_INSPECT_ARG_6:
-        SANDBOX_DIE("Not implemented");
-        break;
-      case 1 ... 4095:
-        err_ = SECCOMP_RET_ERRNO + err;
-        break;
-      default:
-        SANDBOX_DIE("Invalid use of ErrorCode object");
-      }
-    }
-
-    // If we are wrapping a callback, we must assign a unique id. This id is
-    // how the kernel tells us which one of our different SECCOMP_RET_TRAP
-    // cases has been triggered.
-    // The getTrapId() function assigns one unique id (starting at 1) for
-    // each distinct pair of TrapFnc and auxiliary data.
-    ErrorCode(TrapFnc fnc, const void *aux, int id = 0) :
-      id_(id ? id : getTrapId(fnc, aux)),
-      fnc_(fnc),
-      aux_(const_cast<void *>(aux)),
-      err_(SECCOMP_RET_TRAP + id_) {
-    }
-
-    // Destructor doesn't need to do anything.
-    ~ErrorCode() { }
-
-    // Always return the value that goes into the BPF filter program.
-    operator uint32_t() const { return err_; }
-
-  protected:
-    // Fields needed for SECCOMP_RET_TRAP callbacks
-    int      id_;
-    TrapFnc  fnc_;
-    void     *aux_;
-
-    // 32bit field used for all possible types of ErrorCode values
-    uint32_t err_;
-  };
 
   enum Operation {
     OP_NOP, OP_EQUAL, OP_NOTEQUAL, OP_LESS,
@@ -311,18 +245,25 @@ class Sandbox {
   static void setSandboxPolicy(EvaluateSyscall syscallEvaluator,
                                EvaluateArguments argumentEvaluator);
 
+  // We can use ErrorCode to request calling of a trap handler. This method
+  // performs the required wrapping of the callback function into an
+  // ErrorCode object.
+  static ErrorCode Trap(ErrorCode::TrapFnc fnc, const void *aux);
+
+  // Kill the program and print an error message.
+  static ErrorCode Kill(const char *msg);
+
   // This is the main public entry point. It finds all system calls that
   // need rewriting, sets up the resources needed by the sandbox, and
   // enters Seccomp mode.
   static void startSandbox() { startSandboxInternal(false); }
 
- protected:
-  // Get a file descriptor pointing to "/proc", if currently available.
-  static int getProcFd() { return proc_fd_; }
-
  private:
+  friend class ErrorCode;
   friend class Util;
   friend class Verifier;
+
+
   struct Range {
     Range(uint32_t f, uint32_t t, const ErrorCode& e) :
       from(f),
@@ -341,8 +282,12 @@ class Sandbox {
   typedef std::vector<Range> Ranges;
   typedef std::map<uint32_t, std::vector<FixUp> > RetInsns;
   typedef std::vector<struct sock_filter> Program;
+  typedef std::map<uint32_t, ErrorCode> ErrMap;
   typedef std::vector<ErrorCode> Traps;
   typedef std::map<std::pair<TrapFnc, const void *>, int> TrapIds;
+
+  // Get a file descriptor pointing to "/proc", if currently available.
+  static int proc_fd() { return proc_fd_; }
 
   static ErrorCode probeEvaluator(int signo) __attribute__((const));
   static void      probeProcess(void);
@@ -354,6 +299,7 @@ class Sandbox {
                                        int proc_fd);
   static void      startSandboxInternal(bool quiet);
   static bool      isSingleThreaded(int proc_fd);
+  static bool      isDenied(const ErrorCode& code);
   static bool      disableFilesystem();
   static void      policySanityChecks(EvaluateSyscall syscallEvaluator,
                                       EvaluateArguments argumentEvaluator);
@@ -370,6 +316,7 @@ class Sandbox {
   static SandboxStatus status_;
   static int           proc_fd_;
   static Evaluators    evaluators_;
+  static ErrMap        errMap_;
   static Traps         *traps_;
   static TrapIds       trapIds_;
   static ErrorCode     *trapArray_;
@@ -379,4 +326,4 @@ class Sandbox {
 
 }  // namespace
 
-#endif  // SANDBOX_BPF_H__
+#endif  // SANDBOX_LINUX_SECCOMP_BPF_SANDBOX_BPF_H__

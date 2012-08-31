@@ -118,7 +118,7 @@ bool Util::getFds(int transport, void *buf, size_t *len, ...) {
 void Util::closeAllBut(int fd, ...) {
   int proc_fd;
   int fdir;
-  if ((proc_fd = Sandbox::getProcFd()) < 0 ||
+  if ((proc_fd = Sandbox::proc_fd()) < 0 ||
       (fdir = openat(proc_fd, "self/fd", O_RDONLY|O_DIRECTORY)) < 0) {
     SANDBOX_DIE("Cannot access \"/proc/self/fd\"");
   }

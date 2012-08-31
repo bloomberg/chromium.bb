@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UTIL_H__
-#define UTIL_H__
+#ifndef SANDBOX_LINUX_SECCOMP_BPF_UTIL_H__
+#define SANDBOX_LINUX_SECCOMP_BPF_UTIL_H__
 
 namespace playground2 {
 
@@ -16,4 +16,4 @@ class Util {
 
 }  // namespace
 
-#endif  // UTIL_H__
+#endif  // SANDBOX_LINUX_SECCOMP_BPF_UTIL_H__
