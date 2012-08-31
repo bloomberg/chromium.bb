@@ -994,9 +994,11 @@ class BuildTargetStage(BoardSpecificBuilderStage):
         'pgo_generate' in self._build_config['useflags']):
       root_boost = 400
 
+    rootfs_verification = self._build_config['rootfs_verification']
     commands.BuildImage(self._build_root,
                         self._current_board,
                         list(images_to_build),
+                        rootfs_verification=rootfs_verification,
                         version=self._version,
                         root_boost=root_boost,
                         extra_env=self._env)

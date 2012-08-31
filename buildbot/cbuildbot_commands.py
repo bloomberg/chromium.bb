@@ -334,8 +334,8 @@ def Build(buildroot, board, build_autotest, usepkg, skip_toolchain_update,
                   enter_chroot=True)
 
 
-def BuildImage(buildroot, board, images_to_build, version='', extra_env=None,
-               root_boost=None):
+def BuildImage(buildroot, board, images_to_build, version='',
+               rootfs_verification=True, extra_env=None, root_boost=None):
   # Default to base if images_to_build is passed empty.
   if not images_to_build: images_to_build = ['base']
   version_str = '--version=%s' % version
@@ -343,6 +343,10 @@ def BuildImage(buildroot, board, images_to_build, version='', extra_env=None,
   cmd = ['./build_image', '--board=%s' % board, '--replace', version_str]
   if root_boost is not None:
     cmd += ['--rootfs_boost_size=%d' % root_boost]
+
+  if not rootfs_verification:
+    cmd += ['--noenable_rootfs_verification']
+
   cmd += images_to_build
   _RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
 
@@ -885,7 +889,7 @@ def UpdateUploadedList(last_uploaded, archive_path, upload_url, debug):
 
   # Append to the uploaded list.
   filename = _UPLOADED_LIST_FILENAME
-  AppendToFile(os.path.join(archive_path, filename), last_uploaded+'\n')
+  AppendToFile(os.path.join(archive_path, filename), last_uploaded + '\n')
 
   # Upload the updated list to Google Storage.
   UploadArchivedFile(archive_path, upload_url, filename, debug,

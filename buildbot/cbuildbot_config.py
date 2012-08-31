@@ -320,6 +320,9 @@ _settings = dict(
 # Upload dev installer prebuilts.
   dev_installer_prebuilts=False,
 
+# Enable rootfs verification on the image.
+  rootfs_verification=True,
+
 # =============================================================================
 )
 
@@ -474,7 +477,7 @@ paladin = _config(
   manifest_version=True,
   trybot_list=True,
   description='Commit Queue',
-  hw_tests_timeout=30*60,
+  hw_tests_timeout=30 * 60,
 )
 
 incremental = _config(
@@ -605,7 +608,7 @@ chrome_pfq = internal_chromium_pfq.derive(
   #hw_tests=['PGO_record'],
   hw_tests_num=1,
   hw_tests_pool=constants.HWTEST_CHROME_PFQ_POOL,
-  hw_tests_timeout=90*60,
+  hw_tests_timeout=90 * 60,
   description='Preflight Chrome build (internal)',
 )
 
@@ -740,6 +743,16 @@ incremental.add_config('amd64-generic-asan',
   chroot_replace=True,
   profile='asan',
   description='Build with Address Sanitizer (Clang)',
+)
+
+incremental_arm = incremental.derive(arm)
+incremental_arm.add_config('beaglebone-incremental',
+  boards=['beaglebone'],
+  images=['dev'],
+  trybot_list=True,
+  build_tests=False,
+  rootfs_verification=False,
+  description='Incremental Beaglebone Builder',
 )
 
 #

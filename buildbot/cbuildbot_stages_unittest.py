@@ -913,6 +913,7 @@ class BuildTargetStageTest(AbstractStageTest):
 
     commands.BuildImage(self.build_root, self._current_board,
                         ['test', 'base', 'dev'], version=self.version,
+                        rootfs_verification=True,
                         root_boost=None, extra_env=proper_env)
     commands.BuildVMImageForTesting(self.build_root, self._current_board,
                                     extra_env=proper_env)
@@ -949,7 +950,8 @@ class BuildTargetStageTest(AbstractStageTest):
                    extra_env={})
     self.archive_stage_mock.AutotestTarballsReady(None)
     commands.BuildImage(self.build_root, self._current_board, ['test'],
-                        root_boost=None, version=self.version, extra_env={})
+                        root_boost=None, rootfs_verification=True,
+                        version=self.version, extra_env={})
     self.archive_stage_mock.SetVersion(self.branch_version)
 
     self.mox.ReplayAll()
@@ -981,6 +983,7 @@ class BuildTargetStageTest(AbstractStageTest):
                    extra_env=proper_env)
     self.archive_stage_mock.AutotestTarballsReady(None)
     commands.BuildImage(self.build_root, self._current_board, ['test'],
+                        rootfs_verification=True,
                         root_boost=None, version=self.version,
                         extra_env=proper_env)
     self.archive_stage_mock.SetVersion(self.branch_version)
@@ -1030,7 +1033,9 @@ class BuildTargetStageTest(AbstractStageTest):
                    extra_env=proper_env)
 
     commands.BuildImage(self.build_root, self._current_board,
-                        ['test', 'base', 'dev'], version='', root_boost=None,
+                        ['test', 'base', 'dev'],
+                        rootfs_verification=True,
+                        version='', root_boost=None,
                         extra_env=proper_env)
     commands.BuildVMImageForTesting(self.build_root, self._current_board,
                                     extra_env=proper_env)
