@@ -16,7 +16,10 @@ using content::BrowserThread;
 
 namespace contacts {
 
-ContactManagerStub::ContactManagerStub(Profile* profile) : profile_(profile) {}
+ContactManagerStub::ContactManagerStub(Profile* profile)
+    : profile_(profile),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+}
 
 ContactManagerStub::~ContactManagerStub() {}
 
@@ -28,6 +31,11 @@ void ContactManagerStub::NotifyObserversAboutUpdatedContacts() {
 
 void ContactManagerStub::SetContacts(const ContactPointers& contacts) {
   test::CopyContacts(contacts, &contacts_);
+}
+
+base::WeakPtr<ContactManagerInterface> ContactManagerStub::GetWeakPtr() {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 void ContactManagerStub::AddObserver(ContactManagerObserver* observer,

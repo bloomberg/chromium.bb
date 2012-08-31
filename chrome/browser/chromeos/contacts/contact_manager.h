@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/contacts/contact_store_observer.h"
@@ -33,6 +34,9 @@ class ContactManagerInterface {
  public:
   ContactManagerInterface() {}
   virtual ~ContactManagerInterface() {}
+
+  // Returns a weak pointer tied to the lifetime of this object.
+  virtual base::WeakPtr<ContactManagerInterface> GetWeakPtr() = 0;
 
   // Adds or removes an observer for changes to |profile|'s contacts.
   virtual void AddObserver(ContactManagerObserver* observer,
@@ -71,6 +75,7 @@ class ContactManager : public ContactManagerInterface,
   void Init();
 
   // ContactManagerInterface overrides:
+  virtual base::WeakPtr<ContactManagerInterface> GetWeakPtr() OVERRIDE;
   virtual void AddObserver(ContactManagerObserver* observer,
                            Profile* profile) OVERRIDE;
   virtual void RemoveObserver(ContactManagerObserver* observer,
@@ -117,6 +122,10 @@ class ContactManager : public ContactManagerInterface,
 
   // Deletes values in |contact_stores_|.
   STLValueDeleter<ContactStoreMap> contact_stores_deleter_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<ContactManagerInterface> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ContactManager);
 };

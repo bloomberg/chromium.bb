@@ -37,7 +37,8 @@ ContactManager* ContactManager::GetInstance() {
 ContactManager::ContactManager()
     : profile_observers_deleter_(&profile_observers_),
       contact_store_factory_(new GoogleContactStoreFactory),
-      contact_stores_deleter_(&contact_stores_) {
+      contact_stores_deleter_(&contact_stores_),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!g_instance);
   g_instance = this;
@@ -46,6 +47,7 @@ ContactManager::ContactManager()
 ContactManager::~ContactManager() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(g_instance, this);
+  weak_ptr_factory_.InvalidateWeakPtrs();
   g_instance = NULL;
   for (ContactStoreMap::const_iterator it = contact_stores_.begin();
        it != contact_stores_.end(); ++it) {
@@ -75,6 +77,11 @@ void ContactManager::Init() {
       g_browser_process->profile_manager()->GetLoadedProfiles());
   for (size_t i = 0; i < profiles.size(); ++i)
     HandleProfileCreated(profiles[i]);
+}
+
+base::WeakPtr<ContactManagerInterface> ContactManager::GetWeakPtr() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 void ContactManager::AddObserver(ContactManagerObserver* observer,

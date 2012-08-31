@@ -220,7 +220,7 @@ void ContactDatabase::SaveContactsFromTaskRunner(
   DCHECK(IsRunByTaskRunner());
   DCHECK(success);
   VLOG(1) << "Saving " << contacts->size() << " contact(s) to database as "
-          << (is_full_update ? "full" : "partial") << " update";
+          << (is_full_update ? "full" : "incremental") << " update";
 
   *success = false;
 

@@ -25,6 +25,7 @@ class ContactManagerStub : public ContactManagerInterface {
   void NotifyObserversAboutUpdatedContacts();
 
   // ContactManagerInterface overrides:
+  virtual base::WeakPtr<ContactManagerInterface> GetWeakPtr() OVERRIDE;
   virtual void AddObserver(ContactManagerObserver* observer, Profile* profile)
       OVERRIDE;
   virtual void RemoveObserver(ContactManagerObserver* observer,
@@ -43,6 +44,10 @@ class ContactManagerStub : public ContactManagerInterface {
 
   // Contacts that will be returned by GetAllContacts() and GetContactById().
   ScopedVector<Contact> contacts_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<ContactManagerInterface> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ContactManagerStub);
 };

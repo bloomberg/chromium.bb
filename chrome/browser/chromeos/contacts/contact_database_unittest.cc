@@ -201,7 +201,7 @@ TEST_F(ContactDatabaseTest, SaveAndReload) {
   EXPECT_EQ(kNewLastUpdateTime, loaded_metadata->last_update_start_time());
 }
 
-TEST_F(ContactDatabaseTest, FullAndPartialUpdates) {
+TEST_F(ContactDatabaseTest, FullAndIncrementalUpdates) {
   // Do a full update that inserts two contacts into the database.
   const std::string kContactId1 = "contact_id_1";
   const std::string kSharedEmail = "foo@example.org";
@@ -228,7 +228,7 @@ TEST_F(ContactDatabaseTest, FullAndPartialUpdates) {
   EXPECT_EQ(VarContactsToString(2, contact1.get(), contact2.get()),
             ContactsToString(*loaded_contacts));
 
-  // Do a partial update including just the second contact.
+  // Do an incremental update including just the second contact.
   InitContact(kContactId2, "2b", false, contact2.get());
   AddPostalAddress("postal_1", Contact_AddressType_Relation_HOME,
                    "", true, contact2.get());
@@ -240,7 +240,8 @@ TEST_F(ContactDatabaseTest, FullAndPartialUpdates) {
   EXPECT_EQ(VarContactsToString(2, contact1.get(), contact2.get()),
             ContactsToString(*loaded_contacts));
 
-  // Do an empty partial update and check that the metadata is still updated.
+  // Do an empty incremental update and check that the metadata is still
+  // updated.
   contacts_to_save.reset(new ContactPointers);
   metadata_to_save.reset(new UpdateMetadata);
   const int64 kLastUpdateTime = 1234;

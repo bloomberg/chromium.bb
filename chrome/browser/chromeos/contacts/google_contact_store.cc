@@ -305,15 +305,18 @@ void GoogleContactStore::OnDownloadSuccess(
   MergeContacts(is_full_update, updated_contacts.Pass());
   last_successful_update_start_time_ = update_start_time;
 
-  if (is_full_update || got_updates > 0) {
+  if (is_full_update || got_updates) {
     FOR_EACH_OBSERVER(ContactStoreObserver,
                       observers_,
                       OnContactsUpdated(this));
   }
 
   if (db_) {
+    // Even if this was an incremental update and we didn't get any updated
+    // contacts, we still want to write updated metadata containing
+    // |update_start_time|.
     VLOG(1) << "Saving " << contacts_to_save_to_db->size() << " contact(s) to "
-            << "database as " << (is_full_update ? "full" : "partial")
+            << "database as " << (is_full_update ? "full" : "incremental")
             << " update";
     scoped_ptr<UpdateMetadata> metadata(new UpdateMetadata);
     metadata->set_last_update_start_time(update_start_time.ToInternalValue());
