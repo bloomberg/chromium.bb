@@ -180,7 +180,7 @@ class HandlebarDictGenerator(object):
         dst_dict['enum_values'].append({'name': enum_value})
       if len(dst_dict['enum_values']) > 0:
         dst_dict['enum_values'][-1]['last'] = True
-    elif property_.instance_of:
+    elif property_.instance_of is not None:
       dst_dict['simple_type'] = property_.instance_of.lower()
     else:
       dst_dict['simple_type'] = property_.type_.name.lower()

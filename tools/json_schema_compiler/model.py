@@ -321,6 +321,9 @@ class _PropertyTypeInfo(object):
   def __repr__(self):
     return self.name
 
+  def __eq__(self, other):
+    return isinstance(other, _PropertyTypeInfo) and self.name == other.name
+
 class PropertyType(object):
   """Enum of different types of properties/parameters.
   """
