@@ -197,14 +197,15 @@ TEST(SkBitmapOperationsTest, CreateMaskedBitmap) {
       SkColor masked_pixel = *masked.getAddr32(x, y);
 
       int alpha_value = SkAlphaMul(SkColorGetA(src_pixel),
-                                   SkColorGetA(alpha_pixel));
+                                   SkAlpha255To256(SkColorGetA(alpha_pixel)));
+      int alpha_value_256 = SkAlpha255To256(alpha_value);
       SkColor expected_pixel = SkColorSetARGB(
           alpha_value,
-          SkAlphaMul(SkColorGetR(src_pixel), alpha_value),
-          SkAlphaMul(SkColorGetG(src_pixel), alpha_value),
-          SkAlphaMul(SkColorGetB(src_pixel), alpha_value));
+          SkAlphaMul(SkColorGetR(src_pixel), alpha_value_256),
+          SkAlphaMul(SkColorGetG(src_pixel), alpha_value_256),
+          SkAlphaMul(SkColorGetB(src_pixel), alpha_value_256));
 
-      EXPECT_TRUE(ColorsClose(expected_pixel, masked_pixel));
+      EXPECT_EQ(expected_pixel, masked_pixel);
     }
   }
 }

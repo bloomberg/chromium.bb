@@ -136,7 +136,7 @@ class TransparentImageSource : public gfx::ImageSkiaSource {
                     static_cast<int>(image_.size().width() * scale),
                     static_cast<int>(image_.size().height() * scale));
     alpha.allocPixels();
-    alpha.eraseColor(SkColorSetARGB(alpha_ * 256, 0, 0, 0));
+    alpha.eraseColor(SkColorSetARGB(alpha_ * 255, 0, 0, 0));
     return ImageSkiaRep(SkBitmapOperations::CreateMaskedBitmap(
         image_rep.sk_bitmap(), alpha),
                         image_rep.scale_factor());
