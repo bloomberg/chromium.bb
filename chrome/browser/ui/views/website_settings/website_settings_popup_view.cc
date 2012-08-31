@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/collected_cookies_views.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_view.h"
@@ -261,11 +262,13 @@ void WebsiteSettingsPopupView::ShowPopup(views::View* anchor_view,
                                          Profile* profile,
                                          TabContents* tab_contents,
                                          const GURL& url,
-                                         const content::SSLStatus& ssl) {
+                                         const content::SSLStatus& ssl,
+                                         Browser* browser) {
   if (InternalChromePage(url))
     new InternalPageInfoPopupView(anchor_view);
   else
-    new WebsiteSettingsPopupView(anchor_view, profile, tab_contents, url, ssl);
+    new WebsiteSettingsPopupView(anchor_view, profile, tab_contents, url, ssl,
+                                 browser);
 }
 
 WebsiteSettingsPopupView::WebsiteSettingsPopupView(
@@ -273,9 +276,11 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
     Profile* profile,
     TabContents* tab_contents,
     const GURL& url,
-    const content::SSLStatus& ssl)
+    const content::SSLStatus& ssl,
+    Browser* browser)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
       tab_contents_(tab_contents),
+      browser_(browser),
       header_(NULL),
       tabbed_pane_(NULL),
       site_data_content_(NULL),
@@ -285,6 +290,7 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
       identity_info_content_(NULL),
       certificate_dialog_link_(NULL),
       cert_id_(0),
+      help_center_link_(NULL),
       connection_info_content_(NULL),
       page_info_content_(NULL) {
   // Compensate for built-in vertical padding in the anchor view's image.
@@ -370,6 +376,13 @@ void WebsiteSettingsPopupView::LinkClicked(views::Link* source,
     gfx::NativeWindow parent =
         anchor_view() ? anchor_view()->GetWidget()->GetNativeWindow() : NULL;
     ShowCertificateViewerByID(tab_contents_->web_contents(), parent, cert_id_);
+  } else if (source == help_center_link_) {
+    browser_->OpenURL(content::OpenURLParams(
+        GURL(chrome::kPageInfoHelpCenterURL),
+        content::Referrer(),
+        NEW_FOREGROUND_TAB,
+        content::PAGE_TRANSITION_LINK,
+        false));
   }
   // The popup closes automatically when the collected cookies dialog or the
   // certificate viewer opens.
@@ -593,6 +606,20 @@ views::View* WebsiteSettingsPopupView::CreateConnectionTab() {
   page_info_content_ = new views::View();
   pane->AddChildView(page_info_content_);
 
+  // Add help center link.
+  pane->AddChildView(new views::Separator());
+  help_center_link_ = new views::Link(
+      l10n_util::GetStringUTF16(IDS_PAGE_INFO_HELP_CENTER_LINK));
+  help_center_link_->set_listener(this);
+  views::View* link_section = new views::View();
+  const int kLinkMarginTop = 4;
+  link_section->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kHorizontal,
+                           kConnectionSectionPaddingLeft,
+                           kLinkMarginTop,
+                           0));
+  link_section->AddChildView(help_center_link_);
+  pane->AddChildView(link_section);
   return pane;
 }
 

@@ -16,6 +16,7 @@
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane_listener.h"
 
+class Browser;
 class GURL;
 class PermissionSelectorView;
 class PopupHeaderView;
@@ -47,14 +48,16 @@ class WebsiteSettingsPopupView
                         Profile* profile,
                         TabContents* tab_contents,
                         const GURL& url,
-                        const content::SSLStatus& ssl);
+                        const content::SSLStatus& ssl,
+                        Browser* browser);
 
  private:
   WebsiteSettingsPopupView(views::View* anchor_view,
                            Profile* profile,
                            TabContents* tab_contents,
                            const GURL& url,
-                           const content::SSLStatus& ssl);
+                           const content::SSLStatus& ssl,
+                           Browser* browser);
 
   // PermissionSelectorViewObserver implementation.
   virtual void OnPermissionChanged(
@@ -116,6 +119,9 @@ class WebsiteSettingsPopupView
   // tab.
   TabContents* tab_contents_;
 
+  // The Browser is used to load the help center page.
+  Browser* browser_;
+
   // The presenter that controlls the Website Settings UI.
   scoped_ptr<WebsiteSettings> presenter_;
 
@@ -145,6 +151,10 @@ class WebsiteSettingsPopupView
   // The id of the certificate provided by the site. If the site does not
   // provide a certificate then |cert_id_| is 0.
   int cert_id_;
+
+  // The link to open the help center page that contains more information about
+  // the connection status icons.
+  views::Link* help_center_link_;
 
   views::View* connection_info_content_;
   views::View* page_info_content_;

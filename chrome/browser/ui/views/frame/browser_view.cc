@@ -1208,7 +1208,7 @@ void BrowserView::ShowWebsiteSettings(Profile* profile,
                                       bool show_history) {
   WebsiteSettingsPopupView::ShowPopup(
       GetLocationBarView()->location_icon_view(), profile,
-      tab_contents, url, ssl);
+      tab_contents, url, ssl, browser_.get());
 }
 
 void BrowserView::ShowAppMenu() {
