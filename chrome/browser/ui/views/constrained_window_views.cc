@@ -640,7 +640,9 @@ void ConstrainedWindowViews::FocusConstrainedWindow() {
     widget_delegate()->GetInitiallyFocusedView()->RequestFocus();
   }
 #if defined(USE_ASH)
-  GetNativeView()->Focus();
+  // We don't necessarily have a RootWindow yet.
+  if (GetNativeView()->GetRootWindow())
+    GetNativeView()->Focus();
 #endif
 }
 

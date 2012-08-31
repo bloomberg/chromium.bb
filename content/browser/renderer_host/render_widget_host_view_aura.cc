@@ -338,7 +338,11 @@ void RenderWidgetHostViewAura::MovePluginWindows(
 }
 
 void RenderWidgetHostViewAura::Focus() {
-  window_->Focus();
+  // Make sure we have a FocusManager before attempting to Focus(). In some
+  // situations we may not yet be in a valid Window hierarchy (such as reloading
+  // after out of memory discared the tab).
+  if (window_->GetFocusManager())
+    window_->Focus();
 }
 
 void RenderWidgetHostViewAura::Blur() {

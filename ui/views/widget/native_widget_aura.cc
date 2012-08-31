@@ -546,8 +546,11 @@ bool NativeWidgetAura::IsVisible() const {
 }
 
 void NativeWidgetAura::Activate() {
-  aura::client::GetActivationClient(window_->GetRootWindow())->ActivateWindow(
-      window_);
+  // We don't necessarily have a root window yet. This can happen with
+  // constrained windows.
+  if (window_->GetRootWindow())
+    aura::client::GetActivationClient(window_->GetRootWindow())->ActivateWindow(
+        window_);
 }
 
 void NativeWidgetAura::Deactivate() {
@@ -1002,7 +1005,7 @@ void NativeWidgetPrivate::GetAllChildWidgets(gfx::NativeView native_view,
     // Code expects widget for |native_view| to be added to |children|.
     NativeWidgetAura* native_widget = static_cast<NativeWidgetAura*>(
         GetNativeWidgetForNativeView(native_view));
-    if (native_widget->GetWidget())
+    if (native_widget && native_widget->GetWidget())
       children->insert(native_widget->GetWidget());
   }
 

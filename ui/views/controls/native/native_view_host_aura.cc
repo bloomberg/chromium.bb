@@ -35,6 +35,8 @@ void NativeViewHostAura::NativeViewDetaching(bool destroyed) {
   if (!destroyed) {
     host_->native_view()->RemoveObserver(this);
     host_->native_view()->Hide();
+    if (host_->native_view()->parent())
+      host_->native_view()->parent()->RemoveChild(host_->native_view());
   }
 }
 
