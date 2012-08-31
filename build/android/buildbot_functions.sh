@@ -95,6 +95,10 @@ function bb_baseline_setup {
     fi
   fi
 
+  # Sdk key expires, delete android folder to be sure it is fresh
+  # crbug.com/145860
+  rm -rf ~/.android
+
   # Should be called only after envsetup is done.
   bb_run_gclient_hooks
 }
@@ -115,7 +119,7 @@ function bb_setup_goma_internal {
 
   goma_dir=${goma_dir:-/b/build/goma}
   if [ -f ${goma_dir}/goma.key ]; then
-    export GOMA_API_KEY_FILE=${GOMA_DIR}/goma.key
+    export GOMA_API_KEY_FILE=${goma_dir}/goma.key
   fi
   local goma_ctl=$(which goma_ctl.sh)
   if [ "${goma_ctl}" != "" ]; then
