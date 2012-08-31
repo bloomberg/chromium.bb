@@ -5,6 +5,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Only run outside chroot.
+if [ -f /etc/debian_chroot ]; then
+  echo "This script must be run outside the chroot."
+  exit 1
+fi
+
 # This is a less lazy way to get all the unittests running at once, but
 # took longer to write.
 
