@@ -3015,11 +3015,6 @@ def AddImplicitLibs(env):
     if not env.Bit('built_elsewhere'):
       if env.Bit('enable_chrome_side'):
         implicit_libs += ['libpnacl_irt_shim.a']
-      else:
-        if env.Bit('pnacl_generate_pexe'):
-          env.Append(TRANSLATEFLAGS=['--noirtshim'])
-        else:
-          env.Append(LINKFLAGS=['--pnacl-allow-native', '-Wt,--noirtshim'])
 
   if not env.Bit('nacl_glibc'):
     # These are automatically linked in by the compiler, either directly
