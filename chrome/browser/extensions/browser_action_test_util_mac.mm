@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "browser_action_test_util.h"
+#include "chrome/browser/extensions/browser_action_test_util.h"
 
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
