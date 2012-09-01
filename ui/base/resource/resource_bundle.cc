@@ -79,7 +79,8 @@ class ResourceBundle::ResourceBundleImageSource : public gfx::ImageSkiaSource {
   virtual ~ResourceBundleImageSource() {}
 
   // gfx::ImageSkiaSource overrides:
-  virtual gfx::ImageSkiaRep GetImageForScale(ui::ScaleFactor scale_factor) {
+  virtual gfx::ImageSkiaRep GetImageForScale(
+      ui::ScaleFactor scale_factor) OVERRIDE {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
     scoped_ptr<SkBitmap> result(rb.LoadBitmap(resource_id_, scale_factor));

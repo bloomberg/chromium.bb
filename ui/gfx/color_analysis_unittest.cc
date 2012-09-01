@@ -108,7 +108,7 @@ class MockKMeanImageSampler : public color_utils::KMeanImageSampler {
     current_result_index_ = 0;
   }
 
-  virtual int GetSample(int width, int height) {
+  virtual int GetSample(int width, int height) OVERRIDE {
     if (current_result_index_ >= prebaked_sample_results_.size()) {
       current_result_index_ = 0;
     }

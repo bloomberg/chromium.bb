@@ -33,7 +33,7 @@ class TestAnimation : public LinearAnimation {
       : LinearAnimation(20, 20, delegate) {
   }
 
-  virtual void AnimateToState(double state) {
+  virtual void AnimateToState(double state) OVERRIDE {
   }
 
  private:

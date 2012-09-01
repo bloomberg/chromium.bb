@@ -281,7 +281,7 @@ class ExtractSubsetImageSource: public gfx::ImageSkiaSource {
         subset_bounds_(subset_bounds) {
   }
 
-  ~ExtractSubsetImageSource() {
+  virtual ~ExtractSubsetImageSource() {
   }
 
   // gfx::ImageSkiaSource overrides:

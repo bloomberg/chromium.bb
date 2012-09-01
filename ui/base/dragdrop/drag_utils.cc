@@ -39,7 +39,7 @@ class FileDragImageSource : public gfx::CanvasImageSource {
   }
 
   // Overridden from gfx::CanvasImageSource.
-  void Draw(gfx::Canvas* canvas) OVERRIDE {
+  virtual void Draw(gfx::Canvas* canvas) OVERRIDE {
     // Set up our text portion
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     gfx::Font font = rb.GetFont(ResourceBundle::BaseFont);
