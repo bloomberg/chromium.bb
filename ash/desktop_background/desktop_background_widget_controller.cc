@@ -34,10 +34,6 @@ DesktopBackgroundWidgetController::~DesktopBackgroundWidgetController() {
     layer_.reset(NULL);
 }
 
-void DesktopBackgroundWidgetController::CleanupWidget() {
-  widget_ = NULL;
-}
-
 void DesktopBackgroundWidgetController::SetBounds(gfx::Rect bounds) {
   if (widget_)
     widget_->SetBounds(bounds);
