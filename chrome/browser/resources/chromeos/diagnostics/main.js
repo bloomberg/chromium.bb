@@ -24,10 +24,10 @@ cr.define('diag', function() {
    * List of network adapter types.
    */
   DiagPage.AdapterType = [
-      {adapter: 'wlan0', name: localStrings.getString('wlan0')},
-      {adapter: 'eth0', name: localStrings.getString('eth0')},
-      {adapter: 'eth1', name: localStrings.getString('eth1')},
-      {adapter: 'wwan0', name: localStrings.getString('wwan0')},
+      {adapter: 'wlan0', name: localStrings.getString('wlan0'), kind: 'wifi'},
+      {adapter: 'eth0', name: localStrings.getString('eth0'), kind: 'ethernet'},
+      {adapter: 'eth1', name: localStrings.getString('eth1'), kind: 'ethernet'},
+      {adapter: 'wwan0', name: localStrings.getString('wwan0'), kind: '3g'},
   ];
 
   /**
@@ -45,6 +45,20 @@ cr.define('diag', function() {
   };
 
   /**
+   * List of ping test status.
+   * The numeric value assigned to each status reflects how much progress has
+   * been made for the ping test.
+   *
+   * @enum {int}
+   */
+  DiagPage.PingTestStatus = {
+      NOT_STARTED: 0,
+      IN_PROGRESS: 1,
+      FAILED: 2,
+      SUCCEEDED: 3
+  };
+
+  /**
    * Image elements for icons.
    */
   DiagPage.FailIconElement = document.createElement('img');
@@ -57,23 +71,50 @@ cr.define('diag', function() {
      * Perform initial setup.
      */
     initialize: function() {
+      // Reset the diag page state.
+      this.reset_();
+
+      // Register event handlers.
+      $('connectivity-refresh').addEventListener('click', function() {
+        if (!this.getNetifStatusInProgress_)
+          this.reset_();
+      }.bind(this));
+    },
+
+    /**
+     * Resets the diag page state.
+     */
+    reset_: function() {
       // Initialize member variables.
       this.activeAdapter_ = -1;
       this.adapterStatus_ = new Array();
+      if (!this.pingTestStatus_ ||
+          this.pingTestStatus_ != DiagPage.PingTestStatus.IN_PROGRESS) {
+        this.pingTestStatus_ = DiagPage.PingTestStatus.NOT_STARTED;
+      }
 
-      // Attempt to update.
-      chrome.send('pageLoaded');
+      // Initialize the UI with "loading" message.
+      $('loading').hidden = false;
+      $('choose-adapter').hidden = true;
+      removeChildren($('adapter-selection'));
+      removeChildren($('connectivity-status'));
+
+      // Call into Chrome to get network interfaces status.
+      chrome.send('getNetworkInterfaces');
+      this.getNetifStatusInProgress_ = true;
     },
 
     /**
      * Updates the connectivity status with netif information.
-     * @param {String} netifStatus Dictionary of network adapter status.
+     * @param {Object} netifStatus Dictionary of network adapter status.
      */
     setNetifStatus_: function(netifStatus) {
-      // Hide the "loading" message.
+      // Hide the "loading" message and show the "choose-adapter" message.
       $('loading').hidden = true;
+      $('choose-adapter').hidden = false;
 
       // Update netif state.
+      var found_valid_ip = false;
       for (var i = 0; i < DiagPage.AdapterType.length; i++) {
         var adapterType = DiagPage.AdapterType[i];
         var status = netifStatus[adapterType.adapter];
@@ -85,10 +126,42 @@ cr.define('diag', function() {
           this.adapterStatus_[i] = DiagPage.AdapterStatus.NO_IP;
         else
           this.adapterStatus_[i] = DiagPage.AdapterStatus.VALID_IP;
+
+        if (this.adapterStatus_[i] == DiagPage.AdapterStatus.VALID_IP)
+          found_valid_ip = true;
+      }
+
+      // If we have valid IP, start ping test.
+      if (found_valid_ip &&
+          this.pingTestStatus_ == DiagPage.PingTestStatus.NOT_STARTED) {
+        this.pingTestStatus_ == DiagPage.PingTestStatus.IN_PROGRESS;
+        chrome.send('testICMP', [String('8.8.8.8')]);
       }
 
       // Update UI
       this.updateAdapterSelection_();
+      this.updateConnectivityStatus_();
+
+      // Clear the getNetifStatusInProgress flag.
+      this.getNetifStatusInProgress_ = false;
+    },
+
+    /**
+     * Updates the ICMP connectivity status.
+     * @param {Object} testICMPStatus Dictionary of ICMP connectivity status.
+     */
+    setTestICMPStatus_: function(testICMPStatus) {
+      // Update the ping test state.
+      for (var prop in testICMPStatus) {
+        var status = testICMPStatus[prop];
+        if (status.sent && status.recvd && status.sent == status.recvd)
+          this.pingTestStatus_ = DiagPage.PingTestStatus.SUCCEEDED;
+        else
+          this.pingTestStatus_ = DiagPage.PingTestStatus.FAILED;
+        break;
+      }
+
+      // Update UI
       this.updateConnectivityStatus_();
     },
 
@@ -127,9 +200,10 @@ cr.define('diag', function() {
       // Determine active adapter.
       if (this.activeAdapter_ == -1)
         this.activeAdapter_ = this.getActiveAdapter_();
-      // Create HTML radio input elements.
+      // Clear adapter selection section.
       var adapterSelectionElement = $('adapter-selection');
       removeChildren(adapterSelectionElement);
+      // Create HTML radio input elements.
       for (var i = 0; i < DiagPage.AdapterType.length; i++) {
         if (this.adapterStatus_[i] == DiagPage.AdapterStatus.NOT_FOUND)
           continue;
@@ -162,6 +236,7 @@ cr.define('diag', function() {
       var adapter = this.activeAdapter_;
       var status = this.adapterStatus_[adapter];
       var name = DiagPage.AdapterType[adapter].name;
+      var kind = DiagPage.AdapterType[adapter].kind;
 
       // Status messages for individual tests.
       var connectivityStatusElement = $('connectivity-status');
@@ -205,7 +280,7 @@ cr.define('diag', function() {
           errorElement.appendChild(document.createTextNode(
               localStrings.getStringF('adapter-no-ip', name)));
           recommendationElement.innerHTML =
-              localStrings.getStringF('fix-connection-to-router');
+              localStrings.getStringF('fix-no-ip-' + kind);
           connectivityStatusElement.insertBefore(errorElement,
               testStatusElements[2]);
           connectivityStatusElement.insertBefore(recommendationElement,
@@ -215,8 +290,24 @@ cr.define('diag', function() {
           testStatusElements[1].appendChild(
               DiagPage.TickIconElement.cloneNode());
           testStatusElements[2].className = 'test-performed';
-          testStatusElements[2].appendChild(
-              DiagPage.TickIconElement.cloneNode());
+          if (this.pingTestStatus_ == DiagPage.PingTestStatus.NOT_STARTED ||
+              this.pingTestStatus_ == DiagPage.PingTestStatus.IN_PROGRESS) {
+            // TODO(hshi): make the ellipsis below i18n-friendly.
+            testStatusElements[2].innerHTML += '...';
+          } else {
+            if (this.pingTestStatus_ == DiagPage.PingTestStatus.FAILED) {
+              errorElement.appendChild(DiagPage.FailIconElement.cloneNode());
+              errorElement.appendChild(document.createTextNode(
+                localStrings.getString('gateway-not-connected-to-internet')));
+              recommendationElement.innerHTML =
+                localStrings.getStringF('fix-gateway-connection');
+              connectivityStatusElement.appendChild(errorElement);
+              connectivityStatusElement.appendChild(recommendationElement);
+            } else {
+              testStatusElements[2].appendChild(
+                DiagPage.TickIconElement.cloneNode());
+            }
+          }
         }
       }
     }
@@ -224,6 +315,10 @@ cr.define('diag', function() {
 
   DiagPage.setNetifStatus = function(netifStatus) {
     DiagPage.getInstance().setNetifStatus_(netifStatus);
+  }
+
+  DiagPage.setTestICMPStatus = function(testICMPStatus) {
+    DiagPage.getInstance().setTestICMPStatus_(testICMPStatus);
   }
 
   // Export

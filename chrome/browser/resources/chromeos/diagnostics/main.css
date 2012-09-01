@@ -7,6 +7,10 @@ body {
   padding: 0;
 }
 
+.navigation {
+  color: rgb(92, 97, 102);
+}
+
 .navigation h1 {
   margin: 0;
   padding: 21px 23px 13px;
@@ -46,6 +50,16 @@ body {
   padding: 21px 0 13px;
 }
 
+.page header > button {
+  position: absolute;
+  right: 20px;
+  top: 21px;
+}
+
+html[dri=rtl] .page header > button {
+  left: 20px;
+}
+
 /* Create a border under the h1 (but before anything that gets appended
  * to the end of the header, such as the managed prefs banner). */
 .page header > h1::after {
@@ -62,22 +76,38 @@ body {
   line-height: 29px;
 }
 
+.page img {
+  vertical-align: middle;
+}
+
+.page input {
+  -webkit-margin-end: 4px;
+}
+
+/* TODO(hshi): the layout is wrong in RTL. */
 #connectivity-status div {
   clear: both;
   float: left;
   position: relative;
 }
 
+#choose-adapter {
+  font-size: 14px;
+}
+
 .test-performed {
   color: rgb(70, 78, 90);
+  font-size: 14px;
 }
 
 .test-pending {
   color: rgb(153, 153, 153);
+  font-size: 14px;
 }
 
 .test-error {
   color: rgb(206, 57, 38);
+  top: -13px;
 }
 
 div.recommendation {
@@ -86,5 +116,8 @@ div.recommendation {
                                to(rgb(94, 191, 107)));
   border: 1px solid rgb(17, 102, 27);
   line-height: 16px;
+  margin-bottom: 13px;
+  margin-top: -13px;
+  max-width: 600px;
   padding: 2px;
 }
