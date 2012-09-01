@@ -599,15 +599,17 @@ class ExtensionServiceTest
   // method directly.  Instead, use InstallCrx(), which waits for
   // the crx to be installed and does extra error checking.
   void StartCRXInstall(const FilePath& crx_path) {
-    StartCRXInstall(crx_path, false);
+    StartCRXInstall(crx_path, Extension::NO_FLAGS);
   }
 
-  void StartCRXInstall(const FilePath& crx_path, bool from_webstore) {
+  void StartCRXInstall(const FilePath& crx_path, int creation_flags) {
     ASSERT_TRUE(file_util::PathExists(crx_path))
         << "Path does not exist: "<< crx_path.value().c_str();
     scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(service_, NULL));
-    installer->set_allow_silent_install(true);
-    installer->set_is_gallery_install(from_webstore);
+    installer->set_creation_flags(creation_flags);
+    if (!(creation_flags & Extension::WAS_INSTALLED_BY_DEFAULT)) {
+      installer->set_allow_silent_install(true);
+    }
     installer->InstallCrx(crx_path);
   }
 
@@ -619,32 +621,47 @@ class ExtensionServiceTest
 
   const Extension* PackAndInstallCRX(const FilePath& dir_path,
                                      const FilePath& pem_path,
-                                     InstallState install_state) {
+                                     InstallState install_state,
+                                     int creation_flags) {
     FilePath crx_path;
     ScopedTempDir temp_dir;
     EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
     crx_path = temp_dir.path().AppendASCII("temp.crx");
 
     PackCRX(dir_path, pem_path, crx_path);
-    return InstallCRX(crx_path, install_state);
+    return InstallCRX(crx_path, install_state, creation_flags);
+  }
+
+  const Extension* PackAndInstallCRX(const FilePath& dir_path,
+                                     const FilePath& pem_path,
+                                     InstallState install_state) {
+    return PackAndInstallCRX(dir_path, pem_path, install_state,
+                             Extension::NO_FLAGS);
   }
 
   const Extension* PackAndInstallCRX(const FilePath& dir_path,
                                      InstallState install_state) {
-    return PackAndInstallCRX(dir_path, FilePath(), install_state);
+    return PackAndInstallCRX(dir_path, FilePath(), install_state,
+                             Extension::NO_FLAGS);
+  }
+
+  const Extension* InstallCRX(const FilePath& path,
+                              InstallState install_state,
+                              int creation_flags) {
+    StartCRXInstall(path, creation_flags);
+    return WaitForCrxInstall(path, install_state);
   }
 
   // Attempts to install an extension. Use INSTALL_FAILED if the installation
   // is expected to fail.
   const Extension* InstallCRX(const FilePath& path,
                               InstallState install_state) {
-    StartCRXInstall(path);
-    return WaitForCrxInstall(path, install_state);
+    return InstallCRX(path, install_state, Extension::NO_FLAGS);
   }
 
   const Extension* InstallCRXFromWebStore(const FilePath& path,
                                           InstallState install_state) {
-    StartCRXInstall(path, true);
+    StartCRXInstall(path, Extension::FROM_WEBSTORE);
     return WaitForCrxInstall(path, install_state);
   }
 
@@ -1505,6 +1522,51 @@ TEST_F(ExtensionServiceTest, GrantedPermissions) {
   EXPECT_FALSE(known_perms->HasEffectiveFullAccess());
   EXPECT_EQ(expected_host_perms, known_perms->effective_hosts());
 }
+
+
+#if !defined(OS_CHROMEOS)
+// This tests that the granted permissions preferences are correctly set for
+// default apps.
+TEST_F(ExtensionServiceTest, DefaultAppsGrantedPermissions) {
+  InitializeEmptyExtensionService();
+  InitializeRequestContext();
+  FilePath path = data_dir_
+      .AppendASCII("permissions");
+
+  FilePath pem_path = path.AppendASCII("unknown.pem");
+  path = path.AppendASCII("unknown");
+
+  ASSERT_TRUE(file_util::PathExists(pem_path));
+  ASSERT_TRUE(file_util::PathExists(path));
+
+  ExtensionPrefs* prefs = service_->extension_prefs();
+
+  APIPermissionSet expected_api_perms;
+  URLPatternSet expected_host_perms;
+
+  // Make sure there aren't any granted permissions before the
+  // extension is installed.
+  scoped_refptr<PermissionSet> known_perms(
+      prefs->GetGrantedPermissions(permissions_crx));
+  EXPECT_FALSE(known_perms.get());
+
+  const Extension* extension = PackAndInstallCRX(
+      path, pem_path, INSTALL_NEW, Extension::WAS_INSTALLED_BY_DEFAULT);
+
+  EXPECT_EQ(0u, GetErrors().size());
+  ASSERT_EQ(1u, service_->extensions()->size());
+  EXPECT_EQ(permissions_crx, extension->id());
+
+  // Verify that the valid API permissions have been recognized.
+  expected_api_perms.insert(APIPermission::kTab);
+
+  known_perms = prefs->GetGrantedPermissions(extension->id());
+  EXPECT_TRUE(known_perms.get());
+  EXPECT_FALSE(known_perms->IsEmpty());
+  EXPECT_EQ(expected_api_perms, known_perms->apis());
+  EXPECT_FALSE(known_perms->HasEffectiveFullAccess());
+}
+#endif
 
 #if !defined(OS_CHROMEOS)
 // Tests that the granted permissions full_access bit gets set correctly when

@@ -917,13 +917,18 @@ void ExtensionService::DisableExtension(
 
 void ExtensionService::GrantPermissionsAndEnableExtension(
     const Extension* extension, bool record_oauth2_grant) {
-  CHECK(extension);
+  GrantPermissions(extension, record_oauth2_grant);
   RecordPermissionMessagesHistogram(
       extension, "Extensions.Permissions_ReEnable");
-  extensions::PermissionsUpdater perms_updater(profile());
-  perms_updater.GrantActivePermissions(extension, record_oauth2_grant);
   extension_prefs_->SetDidExtensionEscalatePermissions(extension, false);
   EnableExtension(extension->id());
+}
+
+void ExtensionService::GrantPermissions(const Extension* extension,
+                                        bool record_oauth2_grant) {
+  CHECK(extension);
+  extensions::PermissionsUpdater perms_updater(profile());
+  perms_updater.GrantActivePermissions(extension, record_oauth2_grant);
 }
 
 // static
@@ -2031,7 +2036,10 @@ void ExtensionService::InitializePermissions(const Extension* extension) {
 
   // We only need to compare the granted permissions to the current permissions
   // if the extension is not allowed to silently increase its permissions.
-  if (!extension->CanSilentlyIncreasePermissions()) {
+  bool is_default_app_install =
+      (!is_extension_upgrade && extension->was_installed_by_default());
+  if (!(extension->CanSilentlyIncreasePermissions()
+        || is_default_app_install)) {
     // Add all the recognized permissions if the granted permissions list
     // hasn't been initialized yet.
     scoped_refptr<PermissionSet> granted_permissions =
@@ -2045,6 +2053,12 @@ void ExtensionService::InitializePermissions(const Extension* extension) {
     is_privilege_increase =
         granted_permissions->HasLessPrivilegesThan(
             extension->GetActivePermissions());
+  }
+
+  // Silently grant all active permissions to default apps only on install.
+  // After install they should behave like other apps.
+  if (is_default_app_install) {
+    GrantPermissions(extension, true);
   }
 
   if (is_extension_upgrade) {
