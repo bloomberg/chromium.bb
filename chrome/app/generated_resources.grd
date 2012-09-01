@@ -4491,7 +4491,7 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
         Write to files that you have opened in the application
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_ALL_GALLERIES" desc="Permission string for access to all of the user's media galleries.">
-        Access all known media files on your device
+        Access photos, music, and other media from your computer
       </message>
 
       <!-- Extension/App error messages -->
@@ -17356,14 +17356,14 @@ Battery full
 
     <!-- Media Galleries. -->
     <message name="IDS_MEDIA_GALLERIES_DIALOG_HEADER" desc="Header for media gallery permissions dialog.">
-      Media Galleries settings for <ph name="EXTENSION">$1<ex>PhotoEditr</ex></ph>
+      Media access settings for <ph name="EXTENSION">$1<ex>PhotoEditr</ex></ph>
     </message>
-    <message name="IDS_MEDIA_GALLERIES_DIALOG_READ_SUBTEXT" desc="Explanatory text for the read permission.">
-      <ph name="EXTENSION">$1<ex>PhotoEditr</ex></ph> will be able to read the media files in any gallery you select.
+    <message name="IDS_MEDIA_GALLERIES_DIALOG_SUBTEXT" desc="Explanatory text for the media gallery access permission.">
+      Which media (folders and collections of folders) can <ph name="EXTENSION">$1<ex>PhotoEditr</ex></ph> read and write?
     </message>
     <if expr="pp_ifdef('use_titlecase')">
       <message name="IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY" desc="In title case: Button for adding a new gallery by choosing a folder.">
-        Add Gallery
+        Add...
       </message>
       <message name="IDS_MEDIA_GALLERIES_DIALOG_CANCEL" desc="In title case: The text for the cancel button on the media galleries configuration dialog.">
         Cancel
@@ -17375,7 +17375,7 @@ Battery full
     <if expr="not pp_ifdef('use_titlecase')">
       <message name="IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY" desc="In sentence case: Button for adding a new gallery by choosing a folder."
                meaning="In sentence case: Button for adding a new gallery by choosing a folder.">
-        Add gallery
+        Add...
       </message>
       <message name="IDS_MEDIA_GALLERIES_DIALOG_CANCEL" desc="In sentence case: The text for the cancel button on the media galleries configuration dialog.">
         Cancel

@@ -51,13 +51,9 @@ string16 MediaGalleriesDialogController::GetHeader() const {
 }
 
 string16 MediaGalleriesDialogController::GetSubtext() const {
-  if (extension_ && extension_->HasAPIPermission(
-          extensions::APIPermission::kMediaGalleriesRead)) {
-    return l10n_util::GetStringFUTF16(IDS_MEDIA_GALLERIES_DIALOG_READ_SUBTEXT,
-                                      UTF8ToUTF16(extension_->name()));
-  }
-  // TODO(estade): handle write et al.
-  return string16();
+  std::string extension_name(extension_ ? extension_->name() : "");
+  return l10n_util::GetStringFUTF16(IDS_MEDIA_GALLERIES_DIALOG_SUBTEXT,
+                                    UTF8ToUTF16(extension_name));
 }
 
 bool MediaGalleriesDialogController::HasPermittedGalleries() const {
