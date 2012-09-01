@@ -24,7 +24,7 @@ class AwResourceDispatcherHostDelegate
       int child_id,
       int route_id,
       bool is_continuation_of_transferred_request,
-      ScopedVector<content::ResourceThrottle>* throttles);
+      ScopedVector<content::ResourceThrottle>* throttles) OVERRIDE;
 
  private:
   friend struct base::DefaultLazyInstanceTraits<
