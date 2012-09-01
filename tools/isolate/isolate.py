@@ -270,7 +270,8 @@ def recreate_tree(outdir, indir, infiles, action, as_sha1):
   assert action in (
       run_test_from_archive.HARDLINK,
       run_test_from_archive.SYMLINK,
-      run_test_from_archive.COPY)
+      run_test_from_archive.COPY,
+      run_test_from_archive.COPY_READABLE_ALL)
   outdir = os.path.normpath(outdir)
   if not os.path.isdir(outdir):
     logging.info ('Creating %s' % outdir)
@@ -694,7 +695,7 @@ def CMDhashtable(args):
         outdir=options.outdir,
         indir=complete_state.root_dir,
         infiles=complete_state.result.files,
-        action=run_test_from_archive.HARDLINK,
+        action=run_test_from_archive.COPY_READABLE_ALL,
         as_sha1=True)
 
     complete_state.save_files()
@@ -716,7 +717,8 @@ def CMDhashtable(args):
         return 0
 
     run_test_from_archive.link_file(
-        outfile, complete_state.result_file, run_test_from_archive.HARDLINK)
+        outfile, complete_state.result_file,
+        run_test_from_archive.COPY_READABLE_ALL)
     success = True
     return 0
   finally:

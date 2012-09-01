@@ -27,7 +27,7 @@ import urllib
 
 
 # Types of action accepted by recreate_tree().
-HARDLINK, SYMLINK, COPY = range(1, 4)
+HARDLINK, SYMLINK, COPY, COPY_READABLE_ALL = range(1, 5)
 
 RE_IS_SHA1 = re.compile(r'^[a-fA-F0-9]{40}$')
 
@@ -55,7 +55,7 @@ def os_link(source, link_name):
 def link_file(outfile, infile, action):
   """Links a file. The type of link depends on |action|."""
   logging.debug('Mapping %s to %s' % (infile, outfile))
-  if action not in (HARDLINK, SYMLINK, COPY):
+  if action not in (HARDLINK, SYMLINK, COPY, COPY_READABLE_ALL):
     raise ValueError('Unknown mapping action %s' % action)
   if not os.path.isfile(infile):
     raise MappingError('%s is missing' % infile)
@@ -64,8 +64,12 @@ def link_file(outfile, infile, action):
         '%s already exist; insize:%d; outsize:%d' %
         (outfile, os.stat(infile).st_size, os.stat(outfile).st_size))
 
-  if action == COPY:
+  if action in (COPY, COPY_READABLE_ALL):
     shutil.copy(infile, outfile)
+    if action == COPY_READABLE_ALL:
+      read_enabled_mode = (os.stat(outfile).st_mode | stat.S_IRUSR |
+                           stat.S_IRGRP | stat.S_IROTH)
+      os.chmod(outfile, read_enabled_mode)
   elif action == SYMLINK and sys.platform != 'win32':
     # On windows, symlink are converted to hardlink and fails over to copy.
     os.symlink(infile, outfile)
