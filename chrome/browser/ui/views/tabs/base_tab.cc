@@ -374,7 +374,7 @@ void BaseTab::OnMouseReleased(const ui::MouseEvent& event) {
   // releases happen off the element).
   if (event.IsMiddleMouseButton()) {
     if (HitTestPoint(event.location())) {
-      controller()->CloseTab(this);
+      controller()->CloseTab(this, CLOSE_TAB_FROM_MOUSE);
     } else if (closing_) {
       // We're animating closed and a middle mouse button was pushed on us but
       // we don't contain the mouse anymore. We assume the user is clicking
@@ -382,7 +382,7 @@ void BaseTab::OnMouseReleased(const ui::MouseEvent& event) {
       // the mouse.
       BaseTab* closest_tab = controller()->GetTabAt(this, event.location());
       if (closest_tab)
-        controller()->CloseTab(closest_tab);
+        controller()->CloseTab(closest_tab, CLOSE_TAB_FROM_MOUSE);
     }
   } else if (event.IsOnlyLeftMouseButton() && !event.IsShiftDown() &&
              !event.IsControlDown()) {
@@ -583,8 +583,12 @@ void BaseTab::AnimationEnded(const ui::Animation* animation) {
 }
 
 void BaseTab::ButtonPressed(views::Button* sender, const ui::Event& event) {
+  const CloseTabSource source =
+      (event.type() == ui::ET_MOUSE_RELEASED &&
+       (event.flags() & ui::EF_FROM_TOUCH) == 0) ? CLOSE_TAB_FROM_MOUSE :
+      CLOSE_TAB_FROM_TOUCH;
   DCHECK(sender == close_button_);
-  controller()->CloseTab(this);
+  controller()->CloseTab(this, source);
 }
 
 void BaseTab::ShowContextMenuForView(views::View* source,

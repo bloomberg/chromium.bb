@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_CONTROLLER_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_CONTROLLER_H_
 
-#include "chrome/browser/ui/views/tabs/end_drag_reason.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_types.h"
 
 class BaseTab;
 class TabStripSelectionModel;
@@ -38,7 +38,7 @@ class TabController {
   virtual void AddSelectionFromAnchorTo(BaseTab* tab) = 0;
 
   // Closes the tab.
-  virtual void CloseTab(BaseTab* tab) = 0;
+  virtual void CloseTab(BaseTab* tab, CloseTabSource source) = 0;
 
   // Shows a context menu for the tab at the specified point in screen coords.
   virtual void ShowContextMenuForTab(BaseTab* tab, const gfx::Point& p) = 0;

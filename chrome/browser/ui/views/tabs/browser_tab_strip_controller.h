@@ -61,7 +61,7 @@ class BrowserTabStripController
   virtual void ExtendSelectionTo(int model_index) OVERRIDE;
   virtual void ToggleSelected(int model_index) OVERRIDE;
   virtual void AddSelectionFromAnchorTo(int model_index) OVERRIDE;
-  virtual void CloseTab(int model_index) OVERRIDE;
+  virtual void CloseTab(int model_index, CloseTabSource source) OVERRIDE;
   virtual void ShowContextMenuForTab(BaseTab* tab,
                                      const gfx::Point& p) OVERRIDE;
   virtual void UpdateLoadingAnimations() OVERRIDE;

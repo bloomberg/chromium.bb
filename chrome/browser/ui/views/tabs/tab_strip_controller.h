@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_CONTROLLER_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_CONTROLLER_H_
 
+#include "chrome/browser/ui/views/tabs/tab_strip_types.h"
+
 class BaseTab;
 class GURL;
 class TabStrip;
@@ -58,7 +60,7 @@ class TabStripController {
   virtual void AddSelectionFromAnchorTo(int index) = 0;
 
   // Closes the tab at the specified index in the model.
-  virtual void CloseTab(int index) = 0;
+  virtual void CloseTab(int index, CloseTabSource source) = 0;
 
   // Shows a context menu for the tab at the specified point in screen coords.
   virtual void ShowContextMenuForTab(BaseTab* tab, const gfx::Point& p) = 0;

@@ -25,7 +25,7 @@ class FakeTabController : public TabController {
   virtual void ExtendSelectionTo(BaseTab* tab) OVERRIDE {}
   virtual void ToggleSelected(BaseTab* tab) OVERRIDE {}
   virtual void AddSelectionFromAnchorTo(BaseTab* tab) OVERRIDE {}
-  virtual void CloseTab(BaseTab* tab) OVERRIDE {}
+  virtual void CloseTab(BaseTab* tab, CloseTabSource source) OVERRIDE {}
   virtual void ShowContextMenuForTab(BaseTab* tab,
                                      const gfx::Point& p) OVERRIDE {}
   virtual bool IsActiveTab(const BaseTab* tab) const OVERRIDE { return false; }

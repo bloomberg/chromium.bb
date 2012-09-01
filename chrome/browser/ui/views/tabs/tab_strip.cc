@@ -103,6 +103,9 @@ const int kMouseMoveCountBeforeConsiderReal = 3;
 const char kNewTabButtonFieldTrialName[] = "NewTabButton";
 const char kNewTabButtonFieldTrialPlusGroupName[] = "Plus";
 
+// Amount of time we delay before resizing after a close from a touch.
+const int kTouchResizeLayoutTimeMS = 2000;
+
 // Horizontal offset for the new tab button to bring it closer to the
 // rightmost tab.
 int newtab_button_h_offset() {
@@ -744,7 +747,7 @@ void TabStrip::SetTabData(int model_index, const TabRendererData& data) {
   SwapLayoutIfNecessary();
 }
 
-void TabStrip::PrepareForCloseAt(int model_index) {
+void TabStrip::PrepareForCloseAt(int model_index, CloseTabSource source) {
   if (!in_tab_close_ && IsAnimating()) {
     // Cancel any current animations. We do this as remove uses the current
     // ideal bounds and we need to know ideal bounds is in a good state.
@@ -752,14 +755,6 @@ void TabStrip::PrepareForCloseAt(int model_index) {
   }
 
   if (!GetWidget())
-    return;
-
-  // If the user closes the tab from a touch device don't wait for the mouse to
-  // move out of the tab strip (it may never happen).
-  // TODO: maybe we should use a delay on touch devices.
-  const ui::Event* event = GetWidget()->GetCurrentEvent();
-  if (event && event->type() == ui::ET_MOUSE_RELEASED &&
-      event->flags() & ui::EF_FROM_TOUCH)
     return;
 
   int model_count = GetModelCount();
@@ -779,7 +774,12 @@ void TabStrip::PrepareForCloseAt(int model_index) {
   }
 
   in_tab_close_ = true;
-  AddMessageLoopObserver();
+  resize_layout_timer_.Stop();
+  if (source == CLOSE_TAB_FROM_TOUCH) {
+    StartResizeLayoutTabsFromTouchTimer();
+  } else {
+    AddMessageLoopObserver();
+  }
 }
 
 void TabStrip::SetSelection(const TabStripSelectionModel& old_selection,
@@ -937,7 +937,7 @@ void TabStrip::AddSelectionFromAnchorTo(BaseTab* tab) {
     controller_->AddSelectionFromAnchorTo(model_index);
 }
 
-void TabStrip::CloseTab(BaseTab* tab) {
+void TabStrip::CloseTab(BaseTab* tab, CloseTabSource source) {
   if (tab->closing()) {
     // If the tab is already closing, close the next tab. We do this so that the
     // user can rapidly close tabs by clicking the close button and not have
@@ -948,7 +948,7 @@ void TabStrip::CloseTab(BaseTab* tab) {
           std::find(i->second.begin(), i->second.end(), tab);
       if (j != i->second.end()) {
         if (i->first + 1 < GetModelCount())
-          controller_->CloseTab(i->first + 1);
+          controller_->CloseTab(i->first + 1, source);
         return;
       }
     }
@@ -959,7 +959,7 @@ void TabStrip::CloseTab(BaseTab* tab) {
   }
   int model_index = GetModelIndexOfBaseTab(tab);
   if (IsValidModelIndex(model_index))
-    controller_->CloseTab(model_index);
+    controller_->CloseTab(model_index, source);
 }
 
 void TabStrip::ShowContextMenuForTab(BaseTab* tab, const gfx::Point& p) {
@@ -2010,6 +2010,21 @@ void TabStrip::ResizeLayoutTabs() {
   // size.
   if (abs(first_tab->width() - w) > 1)
     StartResizeLayoutAnimation();
+}
+
+void TabStrip::ResizeLayoutTabsFromTouch() {
+  // Don't resize if the user is interacting with the tabstrip.
+  if (!drag_controller_.get())
+    ResizeLayoutTabs();
+  else
+    StartResizeLayoutTabsFromTouchTimer();
+}
+
+void TabStrip::StartResizeLayoutTabsFromTouchTimer() {
+  resize_layout_timer_.Stop();
+  resize_layout_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromMilliseconds(kTouchResizeLayoutTimeMS),
+      this, &TabStrip::ResizeLayoutTabsFromTouch);
 }
 
 void TabStrip::SetTabBoundsForDrag(const std::vector<gfx::Rect>& tab_bounds) {

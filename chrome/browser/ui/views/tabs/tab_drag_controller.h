@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/tabs/dock_info.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_selection_model.h"
-#include "chrome/browser/ui/views/tabs/end_drag_reason.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"

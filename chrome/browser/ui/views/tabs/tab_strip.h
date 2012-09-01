@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/timer.h"
 #include "chrome/browser/ui/tabs/tab_strip_layout_type.h"
 #include "chrome/browser/ui/views/tabs/base_tab.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
@@ -94,7 +95,7 @@ class TabStrip : public views::View,
   // (the user clicked the tab close button or middle clicked the tab). This is
   // invoked from Close. Because of unload handlers Close is not always
   // immediately followed by RemoveTabAt.
-  void PrepareForCloseAt(int model_index);
+  void PrepareForCloseAt(int model_index, CloseTabSource source);
 
   // Invoked when the selection changes from |old_selection| to
   // |new_selection|.
@@ -167,7 +168,7 @@ class TabStrip : public views::View,
   virtual void ExtendSelectionTo(BaseTab* tab) OVERRIDE;
   virtual void ToggleSelected(BaseTab* tab) OVERRIDE;
   virtual void AddSelectionFromAnchorTo(BaseTab* tab) OVERRIDE;
-  virtual void CloseTab(BaseTab* tab) OVERRIDE;
+  virtual void CloseTab(BaseTab* tab, CloseTabSource source) OVERRIDE;
   virtual void ShowContextMenuForTab(BaseTab* tab,
                                      const gfx::Point& p) OVERRIDE;
   virtual bool IsActiveTab(const BaseTab* tab) const OVERRIDE;
@@ -385,6 +386,13 @@ class TabStrip : public views::View,
   // Perform an animated resize-relayout of the TabStrip immediately.
   void ResizeLayoutTabs();
 
+  // Invokes ResizeLayoutTabs() as long as we're not in a drag session. If we
+  // are in a drag session this restarts the timer.
+  void ResizeLayoutTabsFromTouch();
+
+  // Restarts |resize_layout_timer_|.
+  void StartResizeLayoutTabsFromTouchTimer();
+
   // Sets the bounds of the tabs to |tab_bounds|.
   void SetTabBoundsForDrag(const std::vector<gfx::Rect>& tab_bounds);
 
@@ -558,6 +566,10 @@ class TabStrip : public views::View,
 
   // Number of mouse moves.
   int mouse_move_count_;
+
+  // Timer used when a tab is closed and we need to relayout. Only used when a
+  // tab close comes from a touch device.
+  base::OneShotTimer<TabStrip> resize_layout_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStrip);
 };

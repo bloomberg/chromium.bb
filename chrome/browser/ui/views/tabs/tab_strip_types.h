@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_TABS_END_DRAG_REASON_H_
-#define CHROME_BROWSER_UI_VIEWS_TABS_END_DRAG_REASON_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_TYPES_H_
+#define CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_TYPES_H_
 
 // Enum passed to EndDrag().
 enum EndDragReason {
@@ -17,4 +17,10 @@ enum EndDragReason {
   END_DRAG_CAPTURE_LOST,
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_TABS_END_DRAG_REASON_H_
+// Source of the call to CloseTab().
+enum CloseTabSource {
+  CLOSE_TAB_FROM_MOUSE,
+  CLOSE_TAB_FROM_TOUCH,
+};
+
+#endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_TYPES_H_

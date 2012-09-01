@@ -67,7 +67,7 @@ void FakeBaseTabStripController::ToggleSelected(int index) {
 void FakeBaseTabStripController::AddSelectionFromAnchorTo(int index) {
 }
 
-void FakeBaseTabStripController::CloseTab(int index) {
+void FakeBaseTabStripController::CloseTab(int index, CloseTabSource source) {
 }
 
 void FakeBaseTabStripController::ShowContextMenuForTab(BaseTab* tab,
