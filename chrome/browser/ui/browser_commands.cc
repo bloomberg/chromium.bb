@@ -62,10 +62,12 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/common/content_restriction.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
+#include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_MACOSX)
@@ -657,6 +659,18 @@ void ShowChromeToMobileBubble(Browser* browser) {
   // weird situations where the bubble is deleted as soon as it is shown.
   if (browser->window()->IsActive())
     browser->window()->ShowChromeToMobileBubble();
+}
+
+void ShareCurrentPage(Browser* browser) {
+  const GURL& current_url = chrome::GetActiveWebContents(browser)->GetURL();
+  webkit_glue::WebIntentData intent_data(
+      ASCIIToUTF16("http://webintents.org/share"),
+      ASCIIToUTF16("text/uri-list"),
+      UTF8ToUTF16(current_url.spec()));
+  scoped_ptr<content::WebIntentsDispatcher> dispatcher(
+      content::WebIntentsDispatcher::Create(intent_data));
+  static_cast<content::WebContentsDelegate*>(browser)->
+      WebIntentDispatch(NULL, dispatcher.release());
 }
 
 void Print(Browser* browser) {

@@ -100,6 +100,7 @@ void ShowPageInfo(Browser* browser,
                   const content::SSLStatus& ssl,
                   bool show_history);
 void ShowChromeToMobileBubble(Browser* browser);
+void ShareCurrentPage(Browser* browser);
 void Print(Browser* browser);
 bool CanPrint(const Browser* browser);
 void AdvancedPrint(Browser* browser);
