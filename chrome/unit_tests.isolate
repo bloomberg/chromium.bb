@@ -406,8 +406,6 @@
       'test/data/page_cycler/about_url',
       'test/data/page_cycler/errors_expected',
       'test/data/printing/cloud_print_unittest.pdf',
-      'test/data/profiles/complex_theme/Default/Extensions/mblmlcbknbnfebdfjnolmcapmdofhmme/1.1/manifest.json',
-      'test/data/profiles/typical_history/Default/History',
       'test/data/safe_browsing/download_protection/issuer.pem',
       'test/data/safe_browsing/download_protection/test_c.pem',
       'test/data/safe_browsing/download_protection/test_cn.pem',
