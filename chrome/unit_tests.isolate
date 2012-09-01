@@ -510,7 +510,6 @@
       'test/data/osdd/url_with_no_attributes.xml',
       'test/data/osdd/wikipedia.xml',
       'test/data/pref_service/',
-      'test/data/profiles/complex_theme/Default/Extensions/mblmlcbknbnfebdfjnolmcapmdofhmme/1.1/i/',
       'test/data/top_sites/',
       'test/data/web_database/',
       'test/data/zip/test/foo/bar/',
