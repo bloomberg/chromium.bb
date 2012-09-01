@@ -8,13 +8,15 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/time.h"
 
 namespace tracing {
 
+// Called from UI thread.
 // Begin tracing specified categories on the browser.
-// |categories| is a comma-delimited list of category wildcards.
-// A category can have an optional '-' prefix to make it an excluded category.
-// Either all categories must be included or all must be excluded.
+// |categories| is a comma-delimited list of category wildcards. A category can
+// have an optional '-' prefix to make it an excluded category. Either all
+// categories must be included or all must be excluded.
 //
 // Example: BeginTracing("test_MyTest*");
 // Example: BeginTracing("test_MyTest*,test_OtherStuff");
@@ -24,6 +26,22 @@ namespace tracing {
 // categories.
 bool BeginTracing(const std::string& categories) WARN_UNUSED_RESULT;
 
+// Called from UI thread.
+// Specify a watch event in order to use the WaitForWatchEvent function.
+// After |num_occurrences| of the given event have been seen on a particular
+// process, WaitForWatchEvent will return.
+bool BeginTracingWithWatch(const std::string& categories,
+                           const std::string& category_name,
+                           const std::string& event_name,
+                           int num_occurrences) WARN_UNUSED_RESULT;
+
+// Called from UI thread.
+// Wait on the event set with BeginTracingWithWatch. If non-zero, return after
+// |timeout| regardless of watch event notification. Returns true if watch event
+// occurred, false if it timed out.
+bool WaitForWatchEvent(base::TimeDelta timeout) WARN_UNUSED_RESULT;
+
+// Called from UI thread.
 // End trace and collect the trace output as a json string.
 bool EndTracing(std::string* json_trace_output) WARN_UNUSED_RESULT;
 

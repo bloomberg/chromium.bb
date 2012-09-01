@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/debug/trace_event.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
@@ -1204,6 +1205,8 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
 
   // In case LoadRequest failed before DidCreateDataSource was called.
   pending_navigation_params_.reset();
+
+  UNSHIPPED_TRACE_EVENT_INSTANT0("test_tracing", "RenderViewImpl::OnNavigate");
 }
 
 bool RenderViewImpl::IsBackForwardToStaleEntry(

@@ -68,6 +68,16 @@ class TraceController {
   //   the caller is not the current subscriber.
   virtual bool GetTraceBufferPercentFullAsync(TraceSubscriber* subscriber) = 0;
 
+  // |subscriber->OnEventWatchNotification()| will be called every time the
+  // given event occurs on any process.
+  virtual bool SetWatchEvent(TraceSubscriber* subscriber,
+                             const std::string& category_name,
+                             const std::string& event_name) = 0;
+
+  // Cancel the watch event. If tracing is enabled, this may race with the
+  // watch event notification firing.
+  virtual bool CancelWatchEvent(TraceSubscriber* subscriber) = 0;
+
   // Cancel the subscriber so that it will not be called when EndTracingAsync is
   // acked by all child processes. This will also call EndTracingAsync
   // internally if necessary.

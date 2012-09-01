@@ -47,8 +47,8 @@ bool TraceMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_EndTracingAck, OnEndTracingAck)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_TraceDataCollected,
                         OnTraceDataCollected)
-    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_TraceBufferFull,
-                        OnTraceBufferFull)
+    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_TraceNotification,
+                        OnTraceNotification)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_TraceBufferPercentFullReply,
                         OnTraceBufferPercentFullReply)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -78,6 +78,15 @@ void TraceMessageFilter::SendGetTraceBufferPercentFull() {
   Send(new ChildProcessMsg_GetTraceBufferPercentFull);
 }
 
+void TraceMessageFilter::SendSetWatchEvent(const std::string& category_name,
+                                           const std::string& event_name) {
+  Send(new ChildProcessMsg_SetWatchEvent(category_name, event_name));
+}
+
+void TraceMessageFilter::SendCancelWatchEvent() {
+  Send(new ChildProcessMsg_CancelWatchEvent);
+}
+
 TraceMessageFilter::~TraceMessageFilter() {}
 
 void TraceMessageFilter::OnChildSupportsTracing() {
@@ -103,8 +112,8 @@ void TraceMessageFilter::OnTraceDataCollected(const std::string& data) {
   TraceControllerImpl::GetInstance()->OnTraceDataCollected(data_ptr);
 }
 
-void TraceMessageFilter::OnTraceBufferFull() {
-  TraceControllerImpl::GetInstance()->OnTraceBufferFull();
+void TraceMessageFilter::OnTraceNotification(int notification) {
+  TraceControllerImpl::GetInstance()->OnTraceNotification(notification);
 }
 
 void TraceMessageFilter::OnTraceBufferPercentFullReply(float percent_full) {

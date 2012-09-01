@@ -20,6 +20,9 @@ namespace content {
 
 namespace {
 
+base::LazyInstance<TraceControllerImpl>::Leaky g_controller =
+    LAZY_INSTANCE_INITIALIZER;
+
 class AutoStopTraceSubscriberStdio : public content::TraceSubscriberStdio {
  public:
   AutoStopTraceSubscriberStdio(const FilePath& file_path)
@@ -52,18 +55,19 @@ TraceControllerImpl::TraceControllerImpl() :
     maximum_bpf_(0.0f),
     is_tracing_(false),
     is_get_categories_(false) {
-  TraceLog::GetInstance()->SetOutputCallback(
-      base::Bind(&TraceControllerImpl::OnTraceDataCollected,
+  TraceLog::GetInstance()->SetNotificationCallback(
+      base::Bind(&TraceControllerImpl::OnTraceNotification,
                  base::Unretained(this)));
 }
 
 TraceControllerImpl::~TraceControllerImpl() {
-  if (TraceLog* trace_log = TraceLog::GetInstance())
-    trace_log->SetOutputCallback(TraceLog::OutputCallback());
+  // No need to SetNotificationCallback(nil) on the TraceLog since this is a
+  // Leaky instance.
+  NOTREACHED();
 }
 
 TraceControllerImpl* TraceControllerImpl::GetInstance() {
-  return Singleton<TraceControllerImpl>::get();
+  return g_controller.Pointer();
 }
 
 void TraceControllerImpl::InitStartupTracing(const CommandLine& command_line) {
@@ -204,6 +208,38 @@ bool TraceControllerImpl::GetTraceBufferPercentFullAsync(
   return true;
 }
 
+bool TraceControllerImpl::SetWatchEvent(TraceSubscriber* subscriber,
+                                        const std::string& category_name,
+                                        const std::string& event_name) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (subscriber != subscriber_)
+    return false;
+
+  watch_category_ = category_name;
+  watch_name_ = event_name;
+
+  TraceLog::GetInstance()->SetWatchEvent(category_name, event_name);
+  for (FilterMap::iterator it = filters_.begin(); it != filters_.end(); ++it)
+    it->get()->SendSetWatchEvent(category_name, event_name);
+
+  return true;
+}
+
+bool TraceControllerImpl::CancelWatchEvent(TraceSubscriber* subscriber) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (subscriber != subscriber_)
+    return false;
+
+  watch_category_.clear();
+  watch_name_.clear();
+
+  TraceLog::GetInstance()->CancelWatchEvent();
+  for (FilterMap::iterator it = filters_.begin(); it != filters_.end(); ++it)
+    it->get()->SendCancelWatchEvent();
+
+  return true;
+}
+
 void TraceControllerImpl::CancelSubscriber(TraceSubscriber* subscriber) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -226,6 +262,8 @@ void TraceControllerImpl::AddFilter(TraceMessageFilter* filter) {
   filters_.insert(filter);
   if (is_tracing_enabled()) {
     filter->SendBeginTracing(included_categories_, excluded_categories_);
+    if (!watch_category_.empty())
+      filter->SendSetWatchEvent(watch_category_, watch_name_);
   }
 }
 
@@ -272,11 +310,16 @@ void TraceControllerImpl::OnEndTracingAck(
     // All acks have been received.
     is_tracing_ = false;
 
-    // Disable local trace. During this call, our OnTraceDataCollected will be
+    // Disable local trace.
+    TraceLog::GetInstance()->SetDisabled();
+
+    // During this call, our OnTraceDataCollected will be
     // called with the last of the local trace data. Since we are on the UI
     // thread, the call to OnTraceDataCollected will be synchronous, so we can
     // immediately call OnEndTracingComplete below.
-    TraceLog::GetInstance()->SetEnabled(false);
+    TraceLog::GetInstance()->Flush(
+        base::Bind(&TraceControllerImpl::OnTraceDataCollected,
+                   base::Unretained(this)));
 
     // Trigger callback if one is set.
     if (subscriber_) {
@@ -318,19 +361,25 @@ void TraceControllerImpl::OnTraceDataCollected(
     subscriber_->OnTraceDataCollected(events_str_ptr);
 }
 
-void TraceControllerImpl::OnTraceBufferFull() {
-  // OnTraceBufferFull may be called from any browser thread, either by the
+void TraceControllerImpl::OnTraceNotification(int notification) {
+  // OnTraceNotification may be called from any browser thread, either by the
   // local event trace system or from child processes via TraceMessageFilter.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&TraceControllerImpl::OnTraceBufferFull,
-                   base::Unretained(this)));
+        base::Bind(&TraceControllerImpl::OnTraceNotification,
+                   base::Unretained(this), notification));
     return;
   }
 
-  // EndTracingAsync may return false if tracing is already in the process of
-  // being ended. That is ok.
-  EndTracingAsync(subscriber_);
+  if (notification & base::debug::TraceLog::TRACE_BUFFER_FULL) {
+    // EndTracingAsync may return false if tracing is already in the process
+    // of being ended. That is ok.
+    EndTracingAsync(subscriber_);
+  }
+  if (notification & base::debug::TraceLog::EVENT_WATCH_NOTIFICATION) {
+    if (subscriber_)
+      subscriber_->OnEventWatchNotification();
+  }
 }
 
 void TraceControllerImpl::OnTraceBufferPercentFullReply(float percent_full) {

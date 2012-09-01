@@ -29,6 +29,9 @@ class TraceMessageFilter : public content::BrowserMessageFilter {
                         const std::vector<std::string>& excluded_categories);
   void SendEndTracing();
   void SendGetTraceBufferPercentFull();
+  void SendSetWatchEvent(const std::string& category_name,
+                         const std::string& event_name);
+  void SendCancelWatchEvent();
 
  protected:
   virtual ~TraceMessageFilter();
@@ -37,7 +40,7 @@ class TraceMessageFilter : public content::BrowserMessageFilter {
   // Message handlers.
   void OnChildSupportsTracing();
   void OnEndTracingAck(const std::vector<std::string>& known_categories);
-  void OnTraceBufferFull();
+  void OnTraceNotification(int notification);
   void OnTraceBufferPercentFullReply(float percent_full);
   void OnTraceDataCollected(const std::string& data);
 

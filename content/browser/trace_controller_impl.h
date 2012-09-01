@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/debug/trace_event.h"
-#include "base/memory/singleton.h"
+#include "base/lazy_instance.h"
 #include "content/public/browser/trace_controller.h"
 
 class CommandLine;
@@ -46,12 +46,16 @@ class TraceControllerImpl : public TraceController {
   virtual  bool EndTracingAsync(TraceSubscriber* subscriber) OVERRIDE;
   virtual bool GetTraceBufferPercentFullAsync(
       TraceSubscriber* subscriber) OVERRIDE;
+  virtual bool SetWatchEvent(TraceSubscriber* subscriber,
+                             const std::string& category_name,
+                             const std::string& event_name) OVERRIDE;
+  virtual bool CancelWatchEvent(TraceSubscriber* subscriber) OVERRIDE;
   virtual void CancelSubscriber(TraceSubscriber* subscriber) OVERRIDE;
 
  private:
   typedef std::set<scoped_refptr<TraceMessageFilter> > FilterMap;
 
-  friend struct DefaultSingletonTraits<TraceControllerImpl>;
+  friend struct base::DefaultLazyInstanceTraits<TraceControllerImpl>;
   friend class ::TraceMessageFilter;
 
   TraceControllerImpl();
@@ -85,7 +89,7 @@ class TraceControllerImpl : public TraceController {
   void OnEndTracingAck(const std::vector<std::string>& known_categories);
   void OnTraceDataCollected(
       const scoped_refptr<base::RefCountedString>& events_str_ptr);
-  void OnTraceBufferFull();
+  void OnTraceNotification(int notification);
   void OnTraceBufferPercentFullReply(float percent_full);
 
   FilterMap filters_;
@@ -100,6 +104,8 @@ class TraceControllerImpl : public TraceController {
   std::set<std::string> known_categories_;
   std::vector<std::string> included_categories_;
   std::vector<std::string> excluded_categories_;
+  std::string watch_category_;
+  std::string watch_name_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceControllerImpl);
 };

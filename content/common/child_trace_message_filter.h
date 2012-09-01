@@ -30,11 +30,14 @@ class ChildTraceMessageFilter : public IPC::ChannelProxy::MessageFilter {
                       const std::vector<std::string>& excluded_categories);
   void OnEndTracing();
   void OnGetTraceBufferPercentFull();
+  void OnSetWatchEvent(const std::string& category_name,
+                       const std::string& event_name);
+  void OnCancelWatchEvent();
 
   // Callback from trace subsystem.
   void OnTraceDataCollected(
       const scoped_refptr<base::RefCountedString>& events_str_ptr);
-  void OnTraceBufferFull();
+  void OnTraceNotification(int notification);
 
   IPC::Channel* channel_;
 

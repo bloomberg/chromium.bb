@@ -83,6 +83,14 @@ IPC_MESSAGE_CONTROL0(ChildProcessMsg_EndTracing)
 // Sent to all child processes to get trace buffer fullness.
 IPC_MESSAGE_CONTROL0(ChildProcessMsg_GetTraceBufferPercentFull)
 
+// Sent to all child processes to set watch event.
+IPC_MESSAGE_CONTROL2(ChildProcessMsg_SetWatchEvent,
+                     std::string /* category_name */,
+                     std::string /* event_name */)
+
+// Sent to all child processes to clear watch event.
+IPC_MESSAGE_CONTROL0(ChildProcessMsg_CancelWatchEvent)
+
 // Tell the child process to enable or disable the profiler status.
 IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetProfilerStatus,
                      tracked_objects::ThreadData::Status /* profiler status */)
@@ -117,7 +125,8 @@ IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_EndTracingAck,
                      std::vector<std::string> /* known_categories */)
 
 // Sent if the trace buffer becomes full.
-IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_TraceBufferFull)
+IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_TraceNotification,
+                     int /* base::debug::TraceLog::Notification */)
 
 // Child processes send trace data back in JSON chunks.
 IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_TraceDataCollected,

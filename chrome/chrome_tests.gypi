@@ -3079,6 +3079,7 @@
         'test/base/chrome_render_view_test.cc',
         'test/base/chrome_render_view_test.h',
         'test/base/chrome_test_launcher.cc',
+        'test/base/tracing_browsertest.cc',
         'test/data/webui/assertions.js',
         'test/data/webui/async_gen.cc',
         'test/data/webui/async_gen.h',

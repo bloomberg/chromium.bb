@@ -11,7 +11,8 @@
 
 namespace content {
 
-// Objects interested in receiving trace data derive from TraceSubscriber.
+// Objects interested in receiving trace data derive from TraceSubscriber. All
+// callbacks occur on the UI thread.
 // See also: trace_message_filter.h
 // See also: child_trace_message_filter.h
 class TraceSubscriber {
@@ -30,6 +31,8 @@ class TraceSubscriber {
       const std::set<std::string>& known_categories) {}
 
   virtual void OnTraceBufferPercentFullReply(float percent_full) {}
+
+  virtual void OnEventWatchNotification() {}
 
  protected:
   virtual ~TraceSubscriber() {}
