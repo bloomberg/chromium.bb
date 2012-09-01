@@ -1,6 +1,5 @@
 <h1>Network Communications</h1>
 
-
 <p>
 Packaged apps can act as a network client
 for TCP and UDP connections.
@@ -8,7 +7,7 @@ This doc shows you how to use TCP and UDP
 to send and receive data over the network.
 For more information,
 see the 
-<a href="experimental.socket.html">Sockets API</a>.
+<a href="socket.html">Sockets API</a>.
 </p>
 
 <p class="note">
@@ -23,16 +22,46 @@ and <a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/udp"
 
 <p>
 For packaged apps that use TCP or UDP,
-add the "experimental" and "socket" permissions
-to the manifest:
+add the "socket" permission to the manifest
+and specify the IP end point permission rules.
+For example:
 </p>
 
 <pre>
 "permissions": [
-   "experimental",
-   "socket"
- ]
+    {"socket": [
+      "rule1",
+      "rule2",
+      ...
+    ]}
+  ]
 </pre>
+
+<p>
+The syntax of socket permission rules follows these patterns:
+</p>
+
+<pre>
+&lt;socket-permission-rule>
+     := &lt;op> | &lt;op> ':' &lt;host> | &lt;op> ':' ':' &lt;port> |
+        &lt;op> ':' &lt;host> ':' &lt;port>
+ &lt;op> := 'tcp-connect' | 'tcp-listen' | 'udp-bind' | 'udp-send-to'
+ &lt;host> := '*' | '*.' &lt;anychar except '/' and '*'>+
+ &lt;port> := '*' | &lt;port number between 1 and 65535>)
+</pre>
+
+<p>
+Examples of socket permission rules:
+</p>
+
+<ul>
+  <li>"tcp-connect:*:23" &ndash; connecting on port 23 of any hosts</li>
+  <li>"tcp-connect:www.example.com:23" &ndash; connecting port 23 of <em>www.example.com</em></li>
+  <li>"tcp-connect" &ndash; connecting any ports of any hosts</li>
+  <li>"udp-send-to::99" &ndash; sending UDP packet to port 99 of any hosts</li>
+  <li>"udp-bind::8899" &ndash; binding local port 8899 to receive UDP package</li>
+  <li>"tcp-listen::8080" &ndash; TCP listening on local port 8080</li>
+</ul>
 
 <h2 id="tcp">Using TCP</h2>
 
@@ -61,7 +90,7 @@ you can later read and write to this socket.
 chrome.socket.write(socketId, arrayBuffer, onWriteCompleteCallback);
 </pre>
 
-<h3>Reading to and writing from a socket</h3>
+<h3>Reading to & writing from a socket</h3>
 
 <p>
 Reading and writing from a socket uses ArrayBuffer objects.
@@ -96,13 +125,13 @@ over the network using UDP:
 
 <pre>
 // Create the Socket
-chrome.experimental.socket.create('udp', '127.0.0.1', 1337, {},
+chrome.socket.create('udp', '127.0.0.1', 1337, {},
  function(socketInfo) {
    // The socket is created, now we want to connect to the service
    var socketId = socketInfo.socketId;
-   chrome.experimental.socket.connect(socketId, function(result) {
+   chrome.socket.connect(socketId, function(result) {
      // We are now connected to the socket so send it some data
-     chrome.experimental.socket.write(socketId, arrayBuffer,
+     chrome.socket.write(socketId, arrayBuffer,
        function(sendInfo) {
          console.log("wrote " + sendInfo.bytesWritten);
        }
@@ -125,18 +154,18 @@ that will be called when data is available on the port.
 <pre>
 // Handle the data response
 var handleDataEvent = function(d) {
-  var data = chrome.experimental.socket.read(d.socketId);
+  var data = chrome.socket.read(d.socketId);
   console.log(data);
 };
 
 // Create the Socket
-chrome.experimental.socket.create('udp', '127.0.0.1', 1337, { onEvent: handleDataEvent },
+chrome.socket.create('udp', '127.0.0.1', 1337, { onEvent: handleDataEvent },
  function(socketInfo) {
    // The socket is created, now we want to connect to the service
    var socketId = socketInfo.socketId;
-   chrome.experimental.socket.connect(socketId, function(result) {
+   chrome.socket.connect(socketId, function(result) {
      // We are now connected to the socket so send it some data
-     chrome.experimental.socket.write(socketId, arrayBuffer,
+     chrome.socket.write(socketId, arrayBuffer,
        function(sendInfo) {
          console.log("wrote " + sendInfo.bytesWritten);
        }
