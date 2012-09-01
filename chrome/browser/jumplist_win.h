@@ -161,8 +161,10 @@ class JumpList : public TabRestoreServiceObserver,
                  size_t max_items);
 
   // Starts loading a favicon for each URL in |icon_urls_|.
-  // This function just sends a query to HistoryService.
-  bool StartLoadingFavicon();
+  // This function sends a query to HistoryService.
+  // When finishing loading all favicons, this function posts a task that
+  // decompresses collected favicons and updates a JumpList.
+  void StartLoadingFavicon();
 
   // A callback function for HistoryService that notify when the "Most Visited"
   // list is available.
@@ -175,8 +177,6 @@ class JumpList : public TabRestoreServiceObserver,
   // is available.
   // To avoid file operations, this function just attaches the given data to
   // a ShellLinkItem object.
-  // When finishing loading all favicons, this function posts a task that
-  // decompresses collected favicons and updates a JumpList.
   void OnFaviconDataAvailable(
       HistoryService::Handle handle,
       const history::FaviconImageResult& image_result);

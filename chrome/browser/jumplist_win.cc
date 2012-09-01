@@ -690,12 +690,18 @@ void JumpList::AddWindow(const TabRestoreService::Window* window,
   }
 }
 
-bool JumpList::StartLoadingFavicon() {
+void JumpList::StartLoadingFavicon() {
   GURL url;
   {
     base::AutoLock auto_lock(list_lock_);
-    if (icon_urls_.empty())
-      return false;
+    if (icon_urls_.empty()) {
+      // No more favicons are needed by the application JumpList. Schedule a
+      // RunUpdate call.
+      BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          base::Bind(&JumpList::RunUpdate, this));
+      return;
+    }
     // Ask FaviconService if it has a favicon of a URL.
     // When FaviconService has one, it will call OnFaviconDataAvailable().
     url = GURL(icon_urls_.front().first);
@@ -705,7 +711,6 @@ bool JumpList::StartLoadingFavicon() {
   handle_ = favicon_service->GetFaviconImageForURL(
       profile_, url, history::FAVICON, gfx::kFaviconSize, &favicon_consumer_,
       base::Bind(&JumpList::OnFaviconDataAvailable, base::Unretained(this)));
-  return true;
 }
 
 void JumpList::OnFaviconDataAvailable(
@@ -727,16 +732,8 @@ void JumpList::OnFaviconDataAvailable(
     if (!icon_urls_.empty())
       icon_urls_.pop_front();
   }
-  // if we need to load more favicons, we send another query and exit.
-  if (StartLoadingFavicon())
-    return;
-
-  // Finished loading all favicons needed by the application JumpList.
-  // We use a RunnableMethod that creates icon files, and we post it to
-  // the file thread.
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&JumpList::RunUpdate, this));
+  // Check whether we need to load more favicons.
+  StartLoadingFavicon();
 }
 
 void JumpList::RunUpdate() {
