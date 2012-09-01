@@ -13,18 +13,24 @@ class PrefService;
 
 namespace web_intents {
 
-namespace action {
+enum ActionId {
+  ACTION_ID_CUSTOM = 1,  // for all unrecognized types
+  ACTION_ID_EDIT,
+  ACTION_ID_PICK,
+  ACTION_ID_SAVE,
+  ACTION_ID_SHARE,
+  ACTION_ID_SUBSCRIBE,
+  ACTION_ID_VIEW,
+};
 
 // "Recognized" action strings. These are basically the
 // actions we're reporting via UMA.
-const char kEdit[] = "http://webintents.org/edit";
-const char kPick[] = "http://webintents.org/pick";
-const char kSave[] = "http://webintents.org/save";
-const char kShare[] = "http://webintents.org/share";
-const char kSubscribe[] = "http://webintents.org/subscribe";
-const char kView[] = "http://webintents.org/view";
-
-}
+const char kActionEdit[] = "http://webintents.org/edit";
+const char kActionPick[] = "http://webintents.org/pick";
+const char kActionSave[] = "http://webintents.org/save";
+const char kActionShare[] = "http://webintents.org/share";
+const char kActionSubscribe[] = "http://webintents.org/subscribe";
+const char kActionView[] = "http://webintents.org/view";
 
 // Registers the preferences related to Web Intents.
 void RegisterUserPrefs(PrefService* user_prefs);
@@ -44,6 +50,10 @@ Browser* GetBrowserForBackgroundWebIntentDelivery(Profile* profile);
 // Returns the recognized action (the one described at
 // webintents.org) or an empty string if the action is not recognized.
 bool IsRecognizedAction(const string16& action);
+
+// Returns the action::Id corresponding to |action| or ACTION_ID_CUSTOM
+// if |action| is not recognized.
+ActionId ToActionId(const string16& action);
 
 }  // namespace web_intents
 

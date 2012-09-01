@@ -14,20 +14,34 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/common/content_switches.h"
 
+namespace web_intents {
 namespace {
 
-const char* kRecognizedActions[] = {
-  web_intents::action::kShare,
-  web_intents::action::kPick,
-  web_intents::action::kEdit,
-  web_intents::action::kView,
-  web_intents::action::kSubscribe,
-  web_intents::action::kSave,
+struct ActionMapping {
+  const char* name;
+  const ActionId id;
 };
 
-}  // namespace
+const ActionMapping kActionMap[] = {
+  { kActionEdit, ACTION_ID_EDIT },
+  { kActionPick, ACTION_ID_PICK },
+  { kActionSave, ACTION_ID_SAVE },
+  { kActionShare, ACTION_ID_SHARE},
+  { kActionSubscribe, ACTION_ID_SUBSCRIBE },
+  { kActionView, ACTION_ID_VIEW },
+};
 
-namespace web_intents {
+// Returns the ActionMapping for |action| if one exists, or NULL.
+const ActionMapping* FindActionMapping(const string16& action) {
+  for (size_t i = 0; i < arraysize(kActionMap); ++i) {
+    if (EqualsASCII(action, kActionMap[i].name)) {
+      return &kActionMap[i];
+    }
+  }
+  return NULL;
+}
+
+}  // namespace
 
 void RegisterUserPrefs(PrefService* user_prefs) {
   user_prefs->RegisterBooleanPref(prefs::kWebIntentsEnabled, true,
@@ -50,12 +64,13 @@ Browser* GetBrowserForBackgroundWebIntentDelivery(Profile* profile) {
 }
 
 bool IsRecognizedAction(const string16& action) {
-  for (size_t i = 0; i < arraysize(kRecognizedActions); ++i) {
-    if (EqualsASCII(action, kRecognizedActions[i])) {
-      return true;
-    }
-  }
-  return false;
+  const ActionMapping* mapping = FindActionMapping(action);
+  return mapping != NULL;
+}
+
+ActionId ToActionId(const string16& action) {
+  const ActionMapping* mapping = FindActionMapping(action);
+  return mapping != NULL ? mapping->id : ACTION_ID_CUSTOM;
 }
 
 }  // namespace web_intents

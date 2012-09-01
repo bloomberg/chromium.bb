@@ -16,6 +16,7 @@
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/intents/cws_intents_registry.h"
 #include "chrome/browser/intents/web_intents_registry.h"
+#include "chrome/browser/intents/web_intents_reporting.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -275,6 +276,12 @@ class WebIntentPickerController
 
   // Timer factory for minimum display time of "waiting" dialog.
   base::WeakPtrFactory<WebIntentPickerController> timer_factory_;
+
+  // Bucket identifier for UMA reporting. Saved off in a field
+  // to avoid repeated calculation of the bucket across
+  // multiple UMA calls. Should be recalculated each time
+  // |intents_dispatcher_| is set.
+  web_intents::UMABucket uma_bucket_;
 
   DISALLOW_COPY_AND_ASSIGN(WebIntentPickerController);
 };

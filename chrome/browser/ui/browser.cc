@@ -63,6 +63,7 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/intents/device_attached_intent_source.h"
 #include "chrome/browser/intents/register_intent_handler_infobar_delegate.h"
+#include "chrome/browser/intents/web_intents_reporting.h"
 #include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/media/media_stream_devices_controller.h"
@@ -1650,10 +1651,12 @@ void Browser::RegisterIntentHandler(
 void Browser::WebIntentDispatch(
     WebContents* web_contents,
     content::WebIntentsDispatcher* intents_dispatcher) {
-  if (!web_intents::IsWebIntentsEnabledForProfile(profile_))
+  if (!web_intents::IsWebIntentsEnabledForProfile(profile_)) {
+    web_intents::RecordIntentsDispatchDisabled();
     return;
+  }
 
-  UMA_HISTOGRAM_COUNTS("WebIntents.Dispatch", 1);
+  web_intents::RecordIntentDispatchRequested();
 
   if (!web_contents) {
     // Intent is system-caused and the picker will show over the currently

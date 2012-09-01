@@ -9,39 +9,44 @@
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace web_intents {
 namespace {
 
 bool IsRecognized(const std::string& value) {
   return web_intents::IsRecognizedAction(ASCIIToUTF16(value));
 }
 
-}  // namespace
-
-namespace web_intents {
-
-TEST(WebIntentsUtilTest, GetRecognizedAction) {
-  EXPECT_TRUE(IsRecognized(action::kShare));
-  EXPECT_TRUE(IsRecognized(action::kEdit));
-  EXPECT_TRUE(IsRecognized(action::kView));
-  EXPECT_TRUE(IsRecognized(action::kPick));
-  EXPECT_TRUE(IsRecognized(action::kSubscribe));
-  EXPECT_TRUE(IsRecognized(action::kSave));
+ActionId ToAction(const std::string& value) {
+  return web_intents::ToActionId(ASCIIToUTF16(value));
 }
 
-TEST(WebIntentsUtilTest, GetRecognizedActionFailure) {
-  EXPECT_FALSE(IsRecognized(std::string(action::kPick) + "lezooka"));
+}  // namespace
+
+TEST(WebIntentsUtilTest, IsRecognizedAction) {
+  EXPECT_TRUE(IsRecognized(kActionEdit));
+  EXPECT_FALSE(IsRecognized("http://webintents.org/eDit"));  // case matters
+  EXPECT_TRUE(IsRecognized(kActionPick));
+  EXPECT_TRUE(IsRecognized(kActionSave));
+  EXPECT_TRUE(IsRecognized(kActionShare));
+  EXPECT_TRUE(IsRecognized(kActionSubscribe));
+  EXPECT_TRUE(IsRecognized(kActionView));
+}
+
+TEST(WebIntentsUtilTest, IsRecognizedActionFailure) {
+  EXPECT_FALSE(IsRecognized(std::string(kActionPick) + "lezooka"));
   EXPECT_FALSE(IsRecognized("Chrome LAX"));
   EXPECT_FALSE(IsRecognized("_zoom "));
   EXPECT_FALSE(IsRecognized("  "));
   EXPECT_FALSE(IsRecognized(""));
-
-  // case variation is intentionally not supported
-  EXPECT_FALSE(IsRecognized("http://webintents.org/Share"));
-  EXPECT_FALSE(IsRecognized("http://webintents.org/eDit"));
-  EXPECT_FALSE(IsRecognized("http://webintents.org/viEw"));
-  EXPECT_FALSE(IsRecognized("http://webintents.org/picK"));
-  EXPECT_FALSE(IsRecognized("http://webintents.org/subsCribe"));
-  EXPECT_FALSE(IsRecognized("http://webintents.org/SAVE"));
 }
 
+TEST(WebIntentsUtilTest, ToActionId) {
+  EXPECT_EQ(ACTION_ID_EDIT, ToAction(kActionEdit));
+  EXPECT_EQ(ACTION_ID_PICK, ToAction(kActionPick));
+  EXPECT_EQ(ACTION_ID_SAVE, ToAction(kActionSave));
+  EXPECT_EQ(ACTION_ID_SHARE, ToAction(kActionShare));
+  EXPECT_EQ(ACTION_ID_SUBSCRIBE, ToAction(kActionSubscribe));
+  EXPECT_EQ(ACTION_ID_VIEW, ToAction(kActionView));
 }
+
+}  // namepsace web_intents

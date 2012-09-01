@@ -1381,6 +1381,7 @@
         'browser/intents/default_web_intent_service_unittest.cc',
         'browser/intents/register_intent_handler_infobar_delegate_unittest.cc',
         'browser/intents/web_intents_registry_unittest.cc',
+        'browser/intents/web_intents_reporting_unittest.cc',
         'browser/intents/web_intents_util_unittest.cc',
         'browser/internal_auth_unittest.cc',
         'browser/language_usage_metrics_unittest.cc',

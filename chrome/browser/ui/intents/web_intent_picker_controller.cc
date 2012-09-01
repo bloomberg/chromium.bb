@@ -18,6 +18,7 @@
 #include "chrome/browser/intents/cws_intents_registry_factory.h"
 #include "chrome/browser/intents/default_web_intent_service.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
+#include "chrome/browser/intents/web_intents_reporting.h"
 #include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -81,17 +82,17 @@ CWSIntentsRegistry* GetCWSIntentsRegistry(TabContents* tab_contents) {
 
 // Returns the action-specific string for |action|.
 string16 GetIntentActionString(const std::string& action) {
-  if (!action.compare(web_intents::action::kShare))
+  if (!action.compare(web_intents::kActionShare))
     return l10n_util::GetStringUTF16(IDS_WEB_INTENTS_ACTION_SHARE);
-  else if (!action.compare(web_intents::action::kEdit))
+  else if (!action.compare(web_intents::kActionEdit))
     return l10n_util::GetStringUTF16(IDS_WEB_INTENTS_ACTION_EDIT);
-  else if (!action.compare(web_intents::action::kView))
+  else if (!action.compare(web_intents::kActionView))
     return l10n_util::GetStringUTF16(IDS_WEB_INTENTS_ACTION_VIEW);
-  else if (!action.compare(web_intents::action::kPick))
+  else if (!action.compare(web_intents::kActionPick))
     return l10n_util::GetStringUTF16(IDS_WEB_INTENTS_ACTION_PICK);
-  else if (!action.compare(web_intents::action::kSubscribe))
+  else if (!action.compare(web_intents::kActionSubscribe))
     return l10n_util::GetStringUTF16(IDS_WEB_INTENTS_ACTION_SUBSCRIBE);
-  else if (!action.compare(web_intents::action::kSave))
+  else if (!action.compare(web_intents::kActionSave))
     return l10n_util::GetStringUTF16(IDS_WEB_INTENTS_ACTION_SAVE);
   else
     return l10n_util::GetStringUTF16(IDS_INTENT_PICKER_CHOOSE_SERVICE);
@@ -184,9 +185,16 @@ void WebIntentPickerController::SetIntentsDispatcher(
   intents_dispatcher_->RegisterReplyNotification(
       base::Bind(&WebIntentPickerController::OnSendReturnMessage,
                  weak_ptr_factory_.GetWeakPtr()));
+
+  // Initialize the reporting bucket.
+  const webkit_glue::WebIntentData& intent = intents_dispatcher_->GetIntent();
+  uma_bucket_ = web_intents::ToUMABucket(intent.action, intent.type);
 }
+
+// TODO(smckay): rename this "StartActivity".
 void WebIntentPickerController::ShowDialog(const string16& action,
                                            const string16& type) {
+  web_intents::RecordIntentDispatched(uma_bucket_);
 
   // Only show a picker once.
   // TODO(gbillock): There's a hole potentially admitting multiple
@@ -283,9 +291,12 @@ void WebIntentPickerController::Observe(
 void WebIntentPickerController::OnServiceChosen(
     const GURL& url,
     webkit_glue::WebIntentServiceData::Disposition disposition) {
+  web_intents::RecordServiceInvoke(uma_bucket_);
   ExtensionService* service = tab_contents_->profile()->GetExtensionService();
   DCHECK(service);
   const extensions::Extension* extension = service->GetInstalledApp(url);
+
+  // TODO(smckay): this basically smells like another disposition.
   if (extension && extension->is_platform_app()) {
     extensions::LaunchPlatformAppWithWebIntent(tab_contents_->profile(),
         extension, intents_dispatcher_->GetIntent());
@@ -394,6 +405,7 @@ void WebIntentPickerController::OnPickerClosed() {
   } else {
     intents_dispatcher_->SendReplyMessage(
         webkit_glue::WEB_INTENT_PICKER_CANCELLED, string16());
+    web_intents::RecordPickerCancel(uma_bucket_);
   }
 
   ClosePicker();
@@ -401,7 +413,7 @@ void WebIntentPickerController::OnPickerClosed() {
 
 void WebIntentPickerController::OnChooseAnotherService() {
   DCHECK(intents_dispatcher_);
-
+  web_intents::RecordChooseAnotherService(uma_bucket_);
   intents_dispatcher_->ResetDispatch();
 }
 
@@ -915,13 +927,13 @@ void WebIntentPickerController::SetDialogState(WebIntentPickerState state) {
     CreatePicker();
 }
 
-
 void WebIntentPickerController::CreatePicker() {
   // If picker is non-NULL, it was set by a test.
   if (picker_ == NULL)
     picker_ = WebIntentPicker::Create(tab_contents_, this, picker_model_.get());
   picker_->SetActionString(GetIntentActionString(
       UTF16ToUTF8(picker_model_->action())));
+  web_intents::RecordPickerShow(uma_bucket_);
   picker_shown_ = true;
 }
 
