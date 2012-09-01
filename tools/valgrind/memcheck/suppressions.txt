@@ -3724,20 +3724,6 @@
    obj:*
 }
 {
-   bug_98967_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base5Value17CreateStringValueERKSs
-   fun:_ZN40V8ValueConverterImplTest_WeirdTypes_Test8TestBodyEv
-}
-{
-   bug_98967_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base5Value17CreateDoubleValueEd
-   fun:_ZN40V8ValueConverterImplTest_WeirdTypes_Test8TestBodyEv
-}
-{
    bug_99166
    Memcheck:Leak
    ...

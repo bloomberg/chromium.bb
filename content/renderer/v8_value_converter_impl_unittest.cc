@@ -110,11 +110,11 @@ class V8ValueConverterImplTest : public testing::Test {
   void TestWeirdType(const V8ValueConverterImpl& converter,
                      v8::Handle<v8::Value> val,
                      base::Value::Type expected_type,
-                     Value* expected_value) {
+                     scoped_ptr<Value> expected_value) {
     scoped_ptr<Value> raw(converter.FromV8Value(val, context_));
     ASSERT_TRUE(raw.get());
     EXPECT_EQ(expected_type, raw->GetType());
-    if (expected_value)
+    if (expected_value.get())
       EXPECT_TRUE(expected_value->Equals(raw.get()));
 
     v8::Handle<v8::Object> object(v8::Object::New());
@@ -127,7 +127,7 @@ class V8ValueConverterImplTest : public testing::Test {
     Value* temp = NULL;
     ASSERT_TRUE(dictionary->Get("test", &temp));
     EXPECT_EQ(expected_type, temp->GetType());
-    if (expected_value)
+    if (expected_value.get())
       EXPECT_TRUE(expected_value->Equals(temp));
 
     v8::Handle<v8::Array> array(v8::Array::New());
@@ -138,7 +138,7 @@ class V8ValueConverterImplTest : public testing::Test {
     ASSERT_TRUE(list.get());
     ASSERT_TRUE(list->Get(0, &temp));
     EXPECT_EQ(expected_type, temp->GetType());
-    if (expected_value)
+    if (expected_value.get())
       EXPECT_TRUE(expected_value->Equals(temp));
   }
 
@@ -300,20 +300,24 @@ TEST_F(V8ValueConverterImplTest, WeirdTypes) {
       v8::RegExp::New(v8::String::New("."), v8::RegExp::kNone));
 
   V8ValueConverterImpl converter;
-  TestWeirdType(converter, v8::Undefined(), Value::TYPE_NULL, NULL);
-  TestWeirdType(converter, v8::Date::New(1000), Value::TYPE_DICTIONARY, NULL);
-  TestWeirdType(converter, regex, Value::TYPE_DICTIONARY, NULL);
+  TestWeirdType(converter, v8::Undefined(), Value::TYPE_NULL,
+                scoped_ptr<Value>(NULL));
+  TestWeirdType(converter, v8::Date::New(1000), Value::TYPE_DICTIONARY,
+                scoped_ptr<Value>(NULL));
+  TestWeirdType(converter, regex, Value::TYPE_DICTIONARY,
+                scoped_ptr<Value>(NULL));
 
   converter.SetUndefinedAllowed(true);
-  TestWeirdType(converter, v8::Undefined(), Value::TYPE_NULL, NULL);
+  TestWeirdType(converter, v8::Undefined(), Value::TYPE_NULL,
+                scoped_ptr<Value>(NULL));
 
   converter.SetDateAllowed(true);
   TestWeirdType(converter, v8::Date::New(1000), Value::TYPE_DOUBLE,
-                Value::CreateDoubleValue(1));
+                scoped_ptr<Value>(Value::CreateDoubleValue(1)));
 
   converter.SetRegexpAllowed(true);
   TestWeirdType(converter, regex, Value::TYPE_STRING,
-                Value::CreateStringValue("/./"));
+                scoped_ptr<Value>(Value::CreateStringValue("/./")));
 }
 
 TEST_F(V8ValueConverterImplTest, Prototype) {

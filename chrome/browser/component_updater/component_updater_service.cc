@@ -219,7 +219,7 @@ CrxComponent::~CrxComponent() {}
 //////////////////////////////////////////////////////////////////////////////
 // The one and only implementation of the ComponentUpdateService interface. In
 // charge of running the show. The main method is ProcessPendingItems() which
-// is called periodically to do the updgrades/installs or the update checks.
+// is called periodically to do the upgrades/installs or the update checks.
 // An important consideration here is to be as "low impact" as we can to the
 // rest of the browser, so even if we have many components registered and
 // eligible for update, we only do one thing at a time with pauses in between
