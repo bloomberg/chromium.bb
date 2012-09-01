@@ -11,7 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/size.h"
-#include "ui/views/views_export.h"
+#include "ui/views/controls/webview/webview_export.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/client_view.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
@@ -37,10 +37,10 @@ class WebView;
 // TODO(akalin): Make WebDialogView contain an WebDialogWebContentsDelegate
 // instead of inheriting from it to avoid violating the "no multiple
 // inheritance" rule.
-class VIEWS_EXPORT WebDialogView : public views::ClientView,
-                                   public ui::WebDialogWebContentsDelegate,
-                                   public ui::WebDialogDelegate,
-                                   public views::WidgetDelegate {
+class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
+                                     public ui::WebDialogWebContentsDelegate,
+                                     public ui::WebDialogDelegate,
+                                     public views::WidgetDelegate {
  public:
   // |handler| must not be NULL and this class takes the ownership.
   WebDialogView(content::BrowserContext* context,

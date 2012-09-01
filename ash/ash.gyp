@@ -33,6 +33,7 @@
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
         '../ui/ui.gyp:ui_resources_wallpapers',
+        '../ui/views/controls/webview/webview.gyp:webview',
         '../ui/views/views.gyp:views',
         '../ui/web_dialogs/web_dialogs.gyp:web_dialogs',
       ],

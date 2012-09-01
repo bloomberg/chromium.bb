@@ -5,20 +5,22 @@
 #ifndef UI_VIEWS_CONTROLS_WEBVIEW_WEBVIEW_H_
 #define UI_VIEWS_CONTROLS_WEBVIEW_WEBVIEW_H_
 
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "ui/views/controls/webview/webview_export.h"
 #include "ui/views/view.h"
 
 namespace views {
 
 class NativeViewHost;
 
-class VIEWS_EXPORT WebView : public View,
-                             public content::NotificationObserver,
-                             public content::WebContentsDelegate {
+class WEBVIEW_EXPORT WebView : public View,
+                               public content::NotificationObserver,
+                               public content::WebContentsDelegate {
  public:
   static const char kViewClassName[];
 
@@ -111,7 +113,6 @@ class VIEWS_EXPORT WebView : public View,
   content::WebContents* CreateWebContents(
       content::BrowserContext* browser_context,
       content::SiteInstance* site_instance);
-
 
   NativeViewHost* wcv_holder_;
   scoped_ptr<content::WebContents> wc_owner_;

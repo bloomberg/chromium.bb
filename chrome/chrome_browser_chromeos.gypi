@@ -89,6 +89,7 @@
         '../ui/ui.gyp:ui_resources',
         '../ui/web_dialogs/web_dialogs.gyp:web_dialogs',
         '../v8/tools/gyp/v8.gyp:v8',
+        '../ui/views/controls/webview/webview.gyp:webview',
         '../webkit/support/webkit_support.gyp:appcache',
         '../webkit/support/webkit_support.gyp:blob',
         '../webkit/support/webkit_support.gyp:database',

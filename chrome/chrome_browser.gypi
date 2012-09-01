@@ -4736,9 +4736,11 @@
             '../google_update/google_update.gyp:google_update',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
+            '../ui/views/controls/webview/webview.gyp:webview',
             '../ui/views/views.gyp:views',
           ],
           'export_dependent_settings': [
+            '../ui/views/controls/webview/webview.gyp:webview',
             '../ui/views/views.gyp:views',
           ],
           'sources': [
@@ -4797,6 +4799,7 @@
                 '../build/linux/system.gyp:fontconfig',
                 '../build/linux/system.gyp:x11',
                 '../dbus/dbus.gyp:dbus',
+                '../ui/views/controls/webview/webview.gyp:webview',
                 '../ui/views/views.gyp:views',
               ],
               'include_dirs': [

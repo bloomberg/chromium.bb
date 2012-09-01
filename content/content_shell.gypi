@@ -163,6 +163,7 @@
           'dependencies': [
             '../ui/aura/aura.gyp:aura',
             '../ui/base/strings/ui_strings.gyp:ui_strings',
+            '../ui/views/controls/webview/webview.gyp:webview',
             '../ui/views/views.gyp:views',
             '../ui/ui.gyp:ui_resources',
           ],
