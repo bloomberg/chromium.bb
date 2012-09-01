@@ -6,6 +6,7 @@
 
 #include "android_webview/lib/aw_browser_dependency_factory_impl.h"
 #include "android_webview/lib/aw_content_browser_client.h"
+#include "android_webview/renderer/aw_render_view_ext.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "chrome/common/chrome_paths.h"
@@ -15,9 +16,22 @@
 
 namespace android_webview {
 
+namespace {
+
+// TODO(joth): Remove chrome/ dependency; move into android_webview/renderer
+class AwContentRendererClient : public chrome::ChromeContentRendererClient {
+ public:
+  virtual void RenderViewCreated(content::RenderView* render_view) {
+    chrome::ChromeContentRendererClient::RenderViewCreated(render_view);
+    AwRenderViewExt::RenderViewCreated(render_view);
+  }
+};
+
+}
+
 base::LazyInstance<AwContentBrowserClient>
     g_webview_content_browser_client = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<chrome::ChromeContentRendererClient>
+base::LazyInstance<AwContentRendererClient>
     g_webview_content_renderer_client = LAZY_INSTANCE_INITIALIZER;
 
 AwMainDelegate::AwMainDelegate() {

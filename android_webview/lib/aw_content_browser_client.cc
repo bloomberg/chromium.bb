@@ -16,6 +16,7 @@ AwContentBrowserClient::~AwContentBrowserClient() {
 }
 
 void AwContentBrowserClient::ResourceDispatcherHostCreated() {
+  ChromeContentBrowserClient::ResourceDispatcherHostCreated();
   AwResourceDispatcherHostDelegate::ResourceDispatcherHostCreated();
 }
 

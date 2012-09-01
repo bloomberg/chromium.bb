@@ -22,6 +22,12 @@
         '<(DEPTH)/skia/config',
       ],
       'sources': [
+        'common/android_webview_message_generator.cc',
+        'common/android_webview_message_generator.h',
+        'common/render_view_messages.cc',
+        'common/render_view_messages.h',
+        'browser/renderer_host/aw_render_view_host_ext.cc',
+        'browser/renderer_host/aw_render_view_host_ext.h',
         'browser/renderer_host/aw_resource_dispatcher_host_delegate.cc',
         'browser/renderer_host/aw_resource_dispatcher_host_delegate.h',
         'lib/aw_browser_dependency_factory_impl.cc',
@@ -32,6 +38,8 @@
         'lib/main/aw_main_delegate.h',
         'lib/main/webview_entry_point.cc',
         'lib/main/webview_stubs.cc',
+        'renderer/aw_render_view_ext.cc',
+        'renderer/aw_render_view_ext.h',
       ],
     },
     {

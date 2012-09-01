@@ -19,6 +19,7 @@ class WebContents;
 namespace android_webview {
 
 class AwContentsContainer;
+class AwRenderViewHostExt;
 class AwWebContentsDelegate;
 
 // Native side of java-class of same name.
@@ -39,11 +40,13 @@ class AwContents {
   // Methods called from Java.
   jint GetWebContents(JNIEnv* env, jobject obj);
   void Destroy(JNIEnv* env, jobject obj);
+  void DocumentHasImages(JNIEnv* env, jobject obj, jobject message);
 
  private:
   JavaObjectWeakGlobalRef java_ref_;
   scoped_ptr<AwContentsContainer> contents_container_;
   scoped_ptr<AwWebContentsDelegate> web_contents_delegate_;
+  scoped_ptr<AwRenderViewHostExt> render_view_host_ext_;
 
   DISALLOW_COPY_AND_ASSIGN(AwContents);
 };

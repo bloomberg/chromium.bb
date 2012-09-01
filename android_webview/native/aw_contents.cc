@@ -4,11 +4,14 @@
 
 #include "android_webview/native/aw_contents.h"
 
+#include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
 #include "android_webview/native/aw_browser_dependency_factory.h"
 #include "android_webview/native/aw_contents_container.h"
 #include "android_webview/native/aw_web_contents_delegate.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/supports_user_data.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
@@ -16,6 +19,8 @@
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF16ToJavaString;
+using base::android::ScopedJavaGlobalRef;
+using base::android::ScopedJavaLocalRef;
 using content::ContentViewCore;
 using content::WebContents;
 
@@ -64,6 +69,7 @@ AwContents::AwContents(JNIEnv* env,
       dependency_factory->GetJavaScriptDialogCreator());
   web_contents->SetUserData(kAwContentsUserDataKey,
                             new AwContentsUserData(this));
+  render_view_host_ext_.reset(new AwRenderViewHostExt(web_contents));
 }
 
 AwContents::~AwContents() {
@@ -78,6 +84,24 @@ jint AwContents::GetWebContents(JNIEnv* env, jobject obj) {
 
 void AwContents::Destroy(JNIEnv* env, jobject obj) {
   delete this;
+}
+
+namespace {
+// |message| is passed as base::Owned, so it will automatically be deleted
+// when the callback goes out of scope.
+void DocumentHasImagesCallback(ScopedJavaGlobalRef<jobject>* message,
+                               bool has_images) {
+  Java_AwContents_onDocumentHasImagesResponse(AttachCurrentThread(),
+                                              has_images,
+                                              message->obj());
+}
+}  // namespace
+
+void AwContents::DocumentHasImages(JNIEnv* env, jobject obj, jobject message) {
+  render_view_host_ext_->DocumentHasImages(
+      base::Bind(&DocumentHasImagesCallback,
+                 base::Owned(new ScopedJavaGlobalRef<jobject>(
+                    ScopedJavaLocalRef<jobject>(env, message)))));
 }
 
 static jint Init(JNIEnv* env,

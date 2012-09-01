@@ -5,7 +5,9 @@
 package org.chromium.android_webview;
 
 import android.view.ViewGroup;
+import android.os.Message;
 
+import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.common.CleanupReference;
@@ -78,12 +80,6 @@ public class AwContents {
         mCleanupReference.cleanupNow();
     }
 
-    private native int nativeInit(AwWebContentsDelegate webViewWebContentsDelegate,
-            boolean privateBrowsing);
-    private static native void nativeDestroy(int nativeAwContents);
-
-    private native int nativeGetWebContents(int nativeAwContents);
-
     /**
      * @return load progress of the WebContents
      */
@@ -91,4 +87,34 @@ public class AwContents {
         // WebContentsDelegateAndroid conveniently caches the most recent notified value for us.
         return mContentsClient.getWebContentsDelegate().getMostRecentProgress();
     }
+
+    //--------------------------------------------------------------------------------------------
+    //  WebView[Provider] method implementations (where not provided by ContentViewCore)
+    //--------------------------------------------------------------------------------------------
+
+    public void documentHasImages(Message message) {
+      nativeDocumentHasImages(mNativeAwContents, message);
+    }
+
+    //--------------------------------------------------------------------------------------------
+    //  Methods called from native via JNI
+    //--------------------------------------------------------------------------------------------
+
+    @CalledByNative
+    private static void onDocumentHasImagesResponse(boolean result, Message message) {
+        message.arg1 = result ? 1 : 0;
+        message.sendToTarget();
+    }
+
+    //--------------------------------------------------------------------------------------------
+    //  Native methods
+    //--------------------------------------------------------------------------------------------
+
+    private native int nativeInit(AwWebContentsDelegate webViewWebContentsDelegate,
+            boolean privateBrowsing);
+    private static native void nativeDestroy(int nativeAwContents);
+
+    private native int nativeGetWebContents(int nativeAwContents);
+
+    private native void nativeDocumentHasImages(int nativeAwContents, Message message);
 }
