@@ -914,10 +914,12 @@ class NinjaWriter:
       extra_bindings.append(('lib',
                             gyp.common.EncodePOSIXShellArgument(output)))
       if self.flavor == 'win':
-        self.target.import_lib = output + '.lib'
         extra_bindings.append(('dll', output))
-        extra_bindings.append(('implib', self.target.import_lib))
-        output = [output, self.target.import_lib]
+        if '/NOENTRY' not in ldflags:
+          self.target.import_lib = output + '.lib'
+          extra_bindings.append(('implibflag',
+                                 '/IMPLIB:%s' % self.target.import_lib))
+          output = [output, self.target.import_lib]
       else:
         output = [output, output + '.TOC']
 
@@ -1520,7 +1522,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
         rspfile_content='$in_newline $libflags')
     dlldesc = 'LINK(DLL) $dll'
     dllcmd = ('%s gyp-win-tool link-wrapper $arch '
-              '$ld /nologo /IMPLIB:$implib /DLL /OUT:$dll '
+              '$ld /nologo $implibflag /DLL /OUT:$dll '
               '/PDB:$dll.pdb @$dll.rsp' % sys.executable)
     dllcmd += (' && %s gyp-win-tool manifest-wrapper $arch '
                '$mt -nologo -manifest $manifests -out:$dll.manifest' %
