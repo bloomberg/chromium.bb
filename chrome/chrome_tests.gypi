@@ -2184,6 +2184,7 @@
         }],
         ['configuration_policy==0', {
           'sources!': [
+            'browser/managed_mode_url_filter_unittest.cc',
             'browser/prefs/proxy_policy_unittest.cc',
             'browser/ui/webui/policy_ui_unittest.cc',
             'browser/value_store/policy_value_store_unittest.cc',
