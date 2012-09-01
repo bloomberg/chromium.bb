@@ -19,6 +19,7 @@
 #include "base/stringprintf.h"
 #include "grit/ui_resources.h"
 #include "ui/aura/client/capture_client.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/user_action_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -634,10 +635,20 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
       bounds_ = bounds;
       // Update barrier and mouse location when the root window has
       // moved/resized.
-      if (pointer_barriers_.get()) {
+      if (pointer_barriers_.get() && (size_changed || origin_changed)) {
         UnConfineCursor();
-        gfx::Point p = gfx::Screen::GetCursorScreenPoint();
-        XWarpPointer(xdisplay_, None,  xwindow_, 0, 0, 0, 0, p.x(), p.y());
+        RootWindow* root = delegate_->AsRootWindow();
+        client::ScreenPositionClient* client =
+            client::GetScreenPositionClient(root);
+        if (client) {
+          gfx::Point p = gfx::Screen::GetCursorScreenPoint();
+          client->ConvertPointFromScreen(root, &p);
+          if (root->ContainsPoint(p)) {
+            root->ConvertPointToNativeScreen(&p);
+            XWarpPointer(
+                xdisplay_, None, x_root_window_, 0, 0, 0, 0, p.x(), p.y());
+          }
+        }
         ConfineCursorToRootWindow();
       }
       if (size_changed)
