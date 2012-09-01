@@ -304,7 +304,8 @@ void DomStorageContext::StartScavengingUnusedSessionStorage() {
 
 void DomStorageContext::FindUnusedNamespaces() {
   DCHECK(session_storage_database_.get());
-  DCHECK(!scavenging_started_);
+  if (scavenging_started_)
+    return;
   scavenging_started_ = true;
   std::set<std::string> namespace_ids_in_use;
   for (StorageNamespaceMap::const_iterator it = namespaces_.begin();
@@ -355,6 +356,8 @@ void DomStorageContext::DeleteNextUnusedNamespace() {
 }
 
 void DomStorageContext::DeleteNextUnusedNamespaceInCommitSequence() {
+  if (deletable_persistent_namespace_ids_.empty())
+    return;
   const std::string& persistent_id = deletable_persistent_namespace_ids_.back();
   session_storage_database_->DeleteNamespace(persistent_id);
   deletable_persistent_namespace_ids_.pop_back();
