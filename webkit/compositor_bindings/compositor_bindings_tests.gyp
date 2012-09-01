@@ -6,7 +6,7 @@
   'variables': {
     'chromium_code': 0,
     'use_libcc_for_compositor%': 0,
-    'webkit_compositor_tests_sources': [
+    'webkit_compositor_bindings_tests_sources': [
       'LayerChromiumTest.cpp',
       'TextureCopierTest.cpp',
       'TextureLayerChromiumTest.cpp',
@@ -26,23 +26,31 @@
       'test/WebLayerTreeViewTestCommon.h',
     ],
   },
-  'conditions': [
-    ['use_libcc_for_compositor==1 and component!="shared_library"', {
-      'targets': [
-        {
-          'target_name': 'webkit_compositor_unittests',
-          'type' : 'executable',
+  'targets': [
+    {
+      'target_name': 'webkit_compositor_bindings_unittests',
+      'type' : 'executable',
+      'dependencies': [
+        '../../base/base.gyp:test_support_base',
+        '../../testing/gmock.gyp:gmock',
+        '../../testing/gtest.gyp:gtest',
+      ],
+      'sources': [
+        'test/run_all_unittests.cc',
+      ],
+      'conditions': [
+        ['use_libcc_for_compositor==1 and component!="shared_library"', {
+          'defines': [
+            'USE_LIBCC_FOR_COMPOSITOR',
+          ],
           'dependencies': [
-            '../../base/base.gyp:test_support_base',
             '../../cc/cc.gyp:cc',
             '../../cc/cc_tests.gyp:cc_test_support',
             '../../skia/skia.gyp:skia',
-            '../../testing/gmock.gyp:gmock',
-            '../../testing/gtest.gyp:gtest',
             '../../third_party/WebKit/Source/Platform/Platform.gyp/Platform.gyp:webkit_platform',
             '../../third_party/WebKit/Source/WTF/WTF.gyp/WTF.gyp:wtf',
             '../../webkit/support/webkit_support.gyp:webkit_support',
-            'compositor.gyp:webkit_compositor',
+            'compositor_bindings.gyp:webkit_compositor_bindings',
           ],
           'include_dirs': [
             '.',
@@ -52,18 +60,10 @@
             '<(DEPTH)/cc/test',
           ],
           'sources': [
-            '<@(webkit_compositor_tests_sources)',
-            'test/run_all_unittests.cc',
+            '<@(webkit_compositor_bindings_tests_sources)',
           ]
-        },
+        }],
       ],
-    }, {
-      'targets': [
-        {
-          'target_name': 'webkit_compositor_unittests',
-          'type' : 'none',
-        }
-      ],
-    }],
+    },
   ],
 }

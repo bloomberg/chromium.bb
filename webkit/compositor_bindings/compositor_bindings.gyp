@@ -6,7 +6,7 @@
   'variables': {
     'chromium_code': 0,
     'use_libcc_for_compositor%': 0,
-    'webkit_compositor_sources': [
+    'webkit_compositor_bindings_sources': [
       'CCThreadImpl.cpp',
       'CCThreadImpl.h',
       'PlatformGestureCurve.h',
@@ -49,7 +49,7 @@
     ['use_libcc_for_compositor==1', {
       'targets': [
         {
-          'target_name': 'webkit_compositor',
+          'target_name': 'webkit_compositor_bindings',
           'type': 'static_library',
           'dependencies': [
             '../../base/base.gyp:base',
@@ -69,7 +69,7 @@
             '../../third_party/WebKit/Source/WebKit/chromium/public',
           ],
           'sources': [
-            '<@(webkit_compositor_sources)',
+            '<@(webkit_compositor_bindings_sources)',
             'stubs/AnimationIdVendor.h',
             'stubs/public/WebTransformationMatrix',
           ],

@@ -335,4 +335,4 @@ webkit/tools/test_shell/resources/README.txt
 webkit/tools/test_shell/resources/test_shell.rc
 # String "Copyright" used in comments.
 cc/copyfiles.py
-webkit/compositor/copyfiles.py
+webkit/compositor_bindings/copyfiles.py

@@ -61,13 +61,13 @@ def FixCopyrightHeader(filepath):
     f.write(fixed_text)
 
 def Main():
-  files = Readfile("compositor.gyp")['variables']['webkit_compositor_sources']
+  files = Readfile("compositor_bindings.gyp")['variables']['webkit_compositor_bindings_sources']
   for f in files:
     dst = Copy(f)
     FixCopyrightHeader(dst)
 
-  variables = Readfile("compositor_tests.gyp")['variables']
-  files = variables['webkit_compositor_tests_sources']
+  variables = Readfile("compositor_bindings_tests.gyp")['variables']
+  files = variables['webkit_compositor_bindings_tests_sources']
   for f in files:
     dst = Copy(f)
     FixCopyrightHeader(dst)
