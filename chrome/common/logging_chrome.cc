@@ -327,8 +327,8 @@ void InitChromeLogging(const CommandLine& command_line,
   // we want process and thread IDs because we have a lot of things running
   logging::SetLogItems(true,  // enable_process_id
                        true,  // enable_thread_id
-                       false, // enable_timestamp
-                       true); // enable_tickcount
+                       true,  // enable_timestamp
+                       false);  // enable_tickcount
 
   // We call running in unattended mode "headless", and allow
   // headless mode to be configured either by the Environment
