@@ -13,18 +13,17 @@
 #include "base/process.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/browser/browser_process_impl.h"
-#include "chrome_frame/test/ie_configurator.h"
-#include "chrome_frame/test/net/process_singleton_subclass.h"
 #include "chrome_frame/test/net/test_automation_provider.h"
 #include "chrome_frame/test/test_server.h"
 #include "chrome_frame/test_utils.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_test_suite.h"
-#include "net/url_request/url_request_test_util.h"
 
+class CommandLine;
 class FakeBrowserProcessImpl;
 class ProcessSingleton;
+class ScopedCustomUrlRequestTestHttpHost;
 
 namespace content {
 class NotificationService;
@@ -33,6 +32,10 @@ class NotificationService;
 namespace logging_win {
 class FileLogger;
 }  // namespace logging_win
+
+namespace chrome_frame_test {
+class IEConfigurator;
+}  // namespace chrome_frame_test
 
 class FakeExternalTab {
  public:
@@ -53,7 +56,6 @@ class FakeExternalTab {
   scoped_ptr<FakeBrowserProcessImpl> browser_process_;
   FilePath overridden_user_dir_;
   FilePath user_data_dir_;
-  scoped_ptr<ProcessSingleton> process_singleton_;
   scoped_ptr<content::NotificationService> notificaton_service_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeExternalTab);
@@ -68,7 +70,6 @@ class FakeExternalTab {
 // lifetime events.
 class CFUrlRequestUnittestRunner
     : public NetTestSuite,
-      public ProcessSingletonSubclassDelegate,
       public TestAutomationProviderDelegate,
       public content::BrowserMainParts {
  public:
@@ -82,10 +83,6 @@ class CFUrlRequestUnittestRunner
   // Overrides to not call icu initialize
   virtual void Initialize();
   virtual void Shutdown();
-
-  // ProcessSingletonSubclassDelegate.
-  virtual void OnConnectAutomationProviderToChannel(
-      const std::string& channel_id);
 
   // TestAutomationProviderDelegate.
   virtual void OnInitialTabLoaded();
@@ -132,7 +129,6 @@ class CFUrlRequestUnittestRunner
 
   // The fake chrome instance.
   scoped_ptr<FakeExternalTab> fake_chrome_;
-  scoped_ptr<ProcessSingletonSubclass> pss_subclass_;
   ScopedChromeFrameRegistrar registrar_;
   int test_result_;
 
@@ -148,9 +144,13 @@ class CFUrlRequestUnittestRunner
   void StartInitializationTimeout();
   void OnInitializationTimeout();
 
+  bool ProcessSingletonNotificationCallback(const CommandLine& command_line,
+                                            const FilePath& current_directory);
+
   bool launch_browser_;
   bool prompt_after_setup_;
   bool tests_ran_;
+  scoped_ptr<ProcessSingleton> process_singleton_;
   base::CancelableClosure timeout_closure_;
   scoped_ptr<logging_win::FileLogger> file_logger_;
   FilePath log_file_;

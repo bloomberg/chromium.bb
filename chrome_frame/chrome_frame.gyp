@@ -418,8 +418,6 @@
         'test/win_event_receiver.h',
         'test/net/fake_external_tab.cc',
         'test/net/fake_external_tab.h',
-        'test/net/process_singleton_subclass.cc',
-        'test/net/process_singleton_subclass.h',
         'test/net/test_automation_provider.cc',
         'test/net/test_automation_provider.h',
         'test/net/test_automation_resource_message_filter.cc',

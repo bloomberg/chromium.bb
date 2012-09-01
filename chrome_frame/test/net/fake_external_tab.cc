@@ -51,6 +51,7 @@
 #include "chrome/test/logging/win/test_log_collector.h"
 #include "chrome_frame/crash_server_init.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
+#include "chrome_frame/test/ie_configurator.h"
 #include "chrome_frame/test/net/test_automation_resource_message_filter.h"
 #include "chrome_frame/test/simulate_input.h"
 #include "chrome_frame/test/win_event_receiver.h"
@@ -63,6 +64,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
 #include "net/base/net_util.h"
+#include "net/url_request/url_request_test_util.h"
 #include "sandbox/win/src/sandbox_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -441,7 +443,6 @@ FakeExternalTab::FakeExternalTab() {
 
   PathService::Get(chrome::DIR_USER_DATA, &overridden_user_dir_);
   PathService::Override(chrome::DIR_USER_DATA, user_data_dir_);
-  process_singleton_.reset(new ProcessSingleton(user_data_dir_));
 }
 
 FakeExternalTab::~FakeExternalTab() {
@@ -490,7 +491,6 @@ void FakeExternalTab::InitializePostThreadsCreated() {
 void FakeExternalTab::Shutdown() {
   browser_process_.reset();
   g_browser_process = NULL;
-  process_singleton_.reset();
 
   ResourceBundle::CleanupSharedInstance();
 }
@@ -590,17 +590,6 @@ void CFUrlRequestUnittestRunner::Shutdown() {
   DCHECK(::GetCurrentThreadId() == test_thread_id_);
   NetTestSuite::Shutdown();
   OleUninitialize();
-}
-
-void CFUrlRequestUnittestRunner::OnConnectAutomationProviderToChannel(
-    const std::string& channel_id) {
-  Profile* profile = g_browser_process->profile_manager()->
-      GetDefaultProfile(fake_chrome_->user_data());
-
-  AutomationProviderList* list = g_browser_process->GetAutomationProviderList();
-  DCHECK(list);
-  list->AddProvider(
-      TestAutomationProvider::NewAutomationProvider(profile, channel_id, this));
 }
 
 void CFUrlRequestUnittestRunner::OnInitialTabLoaded() {
@@ -750,15 +739,42 @@ int CFUrlRequestUnittestRunner::PreCreateThreads() {
   fake_chrome_.reset(new FakeExternalTab());
   fake_chrome_->Initialize();
   fake_chrome_->browser_process()->PreCreateThreads();
-
-  pss_subclass_.reset(new ProcessSingletonSubclass(this));
-  EXPECT_TRUE(pss_subclass_->Subclass(fake_chrome_->user_data()));
-  StartChromeFrameInHostBrowser();
+  process_singleton_.reset(new ProcessSingleton(fake_chrome_->user_data()));
+  process_singleton_->Lock(NULL);
   return 0;
+}
+
+bool CFUrlRequestUnittestRunner::ProcessSingletonNotificationCallback(
+    const CommandLine& command_line, const FilePath& current_directory) {
+  std::string channel_id = command_line.GetSwitchValueASCII(
+      switches::kAutomationClientChannelID);
+  EXPECT_FALSE(channel_id.empty());
+
+  Profile* profile = g_browser_process->profile_manager()->GetDefaultProfile(
+      fake_chrome_->user_data());
+
+  AutomationProviderList* list = g_browser_process->GetAutomationProviderList();
+  DCHECK(list);
+  list->AddProvider(
+      TestAutomationProvider::NewAutomationProvider(profile, channel_id, this));
+  return true;
 }
 
 void CFUrlRequestUnittestRunner::PreMainMessageLoopRun() {
   fake_chrome_->InitializePostThreadsCreated();
+  ProcessSingleton::NotificationCallback callback(
+      base::Bind(
+          &CFUrlRequestUnittestRunner::ProcessSingletonNotificationCallback,
+          base::Unretained(this)));
+  if (!process_singleton_->Create(callback)) {
+    LOG(FATAL) << "Failed to start up ProcessSingleton. Is another test "
+               << "executable or Chrome Frame running?";
+    if (crash_service_)
+      base::KillProcess(crash_service_, 0, false);
+    ::ExitProcess(1);
+  }
+
+  StartChromeFrameInHostBrowser();
 }
 
 bool CFUrlRequestUnittestRunner::MainMessageLoopRun(int* result_code) {
@@ -767,12 +783,13 @@ bool CFUrlRequestUnittestRunner::MainMessageLoopRun(int* result_code) {
 
   // We need to allow IO on the main thread for these tests.
   base::ThreadRestrictions::SetIOAllowed(true);
-
+  process_singleton_->Unlock();
   StartInitializationTimeout();
   return false;
 }
 
 void CFUrlRequestUnittestRunner::PostMainMessageLoopRun() {
+  process_singleton_->Cleanup();
   fake_chrome_->browser_process()->StartTearDown();
 
   // Must do this separately as the mock profile_manager_ is not the
@@ -787,6 +804,7 @@ void CFUrlRequestUnittestRunner::PostMainMessageLoopRun() {
 }
 
 void CFUrlRequestUnittestRunner::PostDestroyThreads() {
+  process_singleton_.reset();
   fake_chrome_->browser_process()->PostDestroyThreads();
   fake_chrome_->Shutdown();
   fake_chrome_.reset();
