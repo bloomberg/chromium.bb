@@ -8,6 +8,7 @@
 
 #destination-search.transparent {
   opacity: 0;
+  overflow: hidden;
   pointer-events: none;
 }
 
