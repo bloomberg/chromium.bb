@@ -96,6 +96,6 @@ STDMETHODIMP UrlmonUploadDataStream::Stat(STATSTG *stat_stg,
     lstrcpy(stat_stg->pwcsName, kStreamBuffer);
   }
   stat_stg->type = STGTY_STREAM;
-  stat_stg->cbSize.QuadPart = upload_data_->GetContentLengthSync();
+  stat_stg->cbSize.QuadPart = request_body_stream_->size();
   return S_OK;
 }

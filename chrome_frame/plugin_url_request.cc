@@ -43,11 +43,13 @@ bool PluginUrlRequest::Initialize(PluginUrlRequestDelegate* delegate,
     if (FAILED(hr)) {
       NOTREACHED();
     } else {
-      post_data_len_ = upload_data->GetContentLengthSync();
       upload_stream->AddRef();
       upload_stream->Initialize(upload_data);
       upload_data_.Attach(upload_stream);
       is_chunked_upload_ = upload_data->is_chunked();
+      STATSTG stat;
+      upload_stream->Stat(&stat, STATFLAG_NONAME);
+      post_data_len_ = stat.cbSize.QuadPart;
     }
   }
 
