@@ -23,10 +23,46 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace ash {
 namespace internal {
 namespace {
+
+class DesktopBackgroundViewCleanup : public views::WidgetDelegate {
+ public:
+  DesktopBackgroundViewCleanup(views::Widget* widget,
+                               aura::RootWindow* root_window)
+      : widget_(widget_),
+        root_window_(root_window) {
+  }
+
+  // Called when the window closes. The delegate MUST NOT delete itself during
+  // this call, since it can be called afterwards. See DeleteDelegate().
+  virtual void WindowClosing() OVERRIDE  {
+    DesktopBackgroundController* controller = ash::Shell::GetInstance()->
+        desktop_background_controller();
+    controller->CleanupView(root_window_);
+  }
+
+  virtual const views::Widget* GetWidget() OVERRIDE const {
+    return widget_;
+  }
+
+  virtual views::Widget* GetWidget() OVERRIDE {
+    return widget_;
+  }
+
+  virtual void DeleteDelegate() OVERRIDE {
+    delete this;
+  }
+
+ private:
+  views::Widget* widget_;
+  aura::RootWindow* root_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(DesktopBackgroundViewCleanup);
+};
 
 class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver {
  public:
@@ -149,12 +185,15 @@ views::Widget* CreateDesktopBackground(aura::RootWindow* root_window,
   DesktopBackgroundController* controller = ash::Shell::GetInstance()->
       desktop_background_controller();
   views::Widget* desktop_widget = new views::Widget;
+  DesktopBackgroundViewCleanup* cleanup;
+  cleanup = new DesktopBackgroundViewCleanup(desktop_widget, root_window);
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   DesktopBackgroundView* view = new DesktopBackgroundView();
   params.delegate = view;
   if (controller->GetWallpaper().isNull())
     params.transparent = true;
+  params.delegate = cleanup;
   params.parent = root_window->GetChildById(container_id);
   desktop_widget->Init(params);
   desktop_widget->SetContentsView(view);
