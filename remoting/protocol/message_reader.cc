@@ -38,7 +38,6 @@ void MessageReader::Init(net::Socket* socket,
 }
 
 MessageReader::~MessageReader() {
-  CHECK_EQ(pending_messages_, 0);
 }
 
 void MessageReader::DoRead() {
