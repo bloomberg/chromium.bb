@@ -268,7 +268,8 @@ std::string JsonHostConfig::GetSerializedData() const {
 - (void)mainViewDidLoad {
   [authorization_view_ setDelegate:self];
   [authorization_view_ setString:kAuthorizationRightExecute];
-  [authorization_view_ setAutoupdate:YES];
+  [authorization_view_ setAutoupdate:YES
+                            interval:60];
   confirm_pin_view_ = [[Me2MePreferencePaneConfirmPin alloc] init];
   [confirm_pin_view_ setDelegate:self];
   disable_view_ = [[Me2MePreferencePaneDisable alloc] init];
