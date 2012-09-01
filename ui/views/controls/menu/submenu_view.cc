@@ -123,18 +123,31 @@ gfx::Size SubmenuView::GetPreferredSize() {
     return gfx::Size();
 
   max_accelerator_width_ = 0;
-  int max_width = 0;
+  // The maximum width of items which contain maybe a label and multiple views.
+  int max_complex_width = 0;
+  // The max. width of items which contain a label and maybe an accelerator.
+  int max_simple_width = 0;
   int height = 0;
   for (int i = 0; i < child_count(); ++i) {
     View* child = child_at(i);
-    gfx::Size child_pref_size = child->visible() ? child->GetPreferredSize()
-                                                 : gfx::Size();
-    max_width = std::max(max_width, child_pref_size.width());
-    height += child_pref_size.height();
+    if (!child->visible())
+      continue;
     if (child->id() == MenuItemView::kMenuItemViewID) {
       MenuItemView* menu = static_cast<MenuItemView*>(child);
+      MenuItemView::MenuItemDimensions dimensions =
+          menu->GetPreferredDimensions();
+      max_simple_width = std::max(
+          max_simple_width, dimensions.standard_width);
       max_accelerator_width_ =
-          std::max(max_accelerator_width_, menu->GetAcceleratorTextWidth());
+          std::max(max_accelerator_width_, dimensions.accelerator_width);
+      max_complex_width = std::max(max_complex_width,
+          dimensions.standard_width + dimensions.children_width);
+      height += dimensions.height;
+    } else {
+      gfx::Size child_pref_size =
+          child->visible() ? child->GetPreferredSize() : gfx::Size();
+      max_complex_width = std::max(max_complex_width, child_pref_size.width());
+      height += child_pref_size.height();
     }
   }
   if (max_accelerator_width_ > 0) {
@@ -143,8 +156,10 @@ gfx::Size SubmenuView::GetPreferredSize() {
   }
   gfx::Insets insets = GetInsets();
   return gfx::Size(
-      std::max(max_width + max_accelerator_width_ + insets.width(),
-               minimum_preferred_width_ - 2 * insets.width()),
+      std::max(max_complex_width,
+               std::max(max_simple_width + max_accelerator_width_ +
+                        insets.width(),
+               minimum_preferred_width_ - 2 * insets.width())),
       height + insets.height());
 }
 

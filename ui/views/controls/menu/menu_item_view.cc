@@ -542,11 +542,6 @@ void MenuItemView::Layout() {
   }
 }
 
-int MenuItemView::GetAcceleratorTextWidth() {
-  string16 text = GetAcceleratorText();
-  return text.empty() ? 0 : GetFont().GetStringWidth(text);
-}
-
 void MenuItemView::SetMargins(int top_margin, int bottom_margin) {
   top_margin_ = top_margin;
   bottom_margin_ = bottom_margin;
@@ -809,21 +804,39 @@ gfx::Size MenuItemView::GetChildPreferredSize() {
   return gfx::Size(width, height);
 }
 
-gfx::Size MenuItemView::CalculatePreferredSize() {
+MenuItemView::MenuItemDimensions MenuItemView::GetPreferredDimensions() {
   gfx::Size child_size = GetChildPreferredSize();
-  if (IsContainer()) {
-    return gfx::Size(
-        child_size.width(),
-        child_size.height() + GetBottomMargin() + GetTopMargin());
-  }
 
+  MenuItemDimensions dimensions;
+  // Get the container height.
+  dimensions.children_width = child_size.width();
+  dimensions.height = child_size.height() + GetBottomMargin() + GetTopMargin();
+
+  // In case of a container, only the container size needs to be filled.
+  if (IsContainer())
+    return dimensions;
+
+  // Determine the length of the label text.
   const gfx::Font& font = GetFont();
-  int menu_item_height = std::max(font.GetHeight(), child_size.height()) +
-                             GetBottomMargin() + GetTopMargin();
-  return gfx::Size(
-      font.GetStringWidth(title_) + label_start_ +
-          item_right_margin_ + child_size.width(),
-      std::max(menu_item_height, MenuConfig::instance().item_min_height));
+  dimensions.standard_width = font.GetStringWidth(title_) + label_start_ +
+      item_right_margin_;
+  // Determine the length of the accelerator text.
+  string16 text = GetAcceleratorText();
+  dimensions.accelerator_width =
+      text.empty() ? 0 : GetFont().GetStringWidth(text);
+
+  // Determine the height to use.
+  dimensions.height = std::max(dimensions.height,
+      font.GetHeight() + GetBottomMargin() + GetTopMargin());
+  dimensions.height = std::max(dimensions.height,
+      MenuConfig::instance().item_min_height);
+  return dimensions;
+}
+
+gfx::Size MenuItemView::CalculatePreferredSize() {
+  MenuItemView::MenuItemDimensions dimensions = GetPreferredDimensions();
+  return gfx::Size(dimensions.standard_width + dimensions.children_width,
+                   dimensions.height);
 }
 
 string16 MenuItemView::GetAcceleratorText() {

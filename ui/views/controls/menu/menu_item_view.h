@@ -104,6 +104,24 @@ class VIEWS_EXPORT MenuItemView : public View {
     POSITION_BELOW_BOUNDS
   };
 
+  // The data structure which is used for the menu size
+  struct MenuItemDimensions {
+    // Width of everything except the accelerator and children views.
+    int standard_width;
+    // The width of all contained views of the item.
+    int children_width;
+    // The amount of space needed to accommodate the accelerator.
+    int accelerator_width;
+    // The height of the menu item.
+    int height;
+
+    MenuItemDimensions()
+        : standard_width(0),
+          children_width(0),
+          accelerator_width(0),
+          height(0) {}
+  };
+
   // Constructor for use with the top level menu item. This menu is never
   // shown to the user, rather its use as the parent for all menu items.
   explicit MenuItemView(MenuDelegate* delegate);
@@ -252,6 +270,9 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Returns the preferred size of this item.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
+  // Return the preferred dimensions of the item in pixel.
+  MenuItemDimensions GetPreferredDimensions();
+
   // Returns the object responsible for controlling showing the menu.
   MenuController* GetMenuController();
   const MenuController* GetMenuController() const;
@@ -284,10 +305,6 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Sizes any child views.
   virtual void Layout() OVERRIDE;
-
-  // Returns the amount of space needed to accommodate the accelerator. The
-  // space needed for the accelerator is NOT included in the preferred width.
-  int GetAcceleratorTextWidth();
 
   // Returns true if the menu has mnemonics. This only useful on the root menu
   // item.
