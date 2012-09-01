@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 
-#include "base/string_split.h"
+#include <string>
+
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/browser_process.h"
@@ -12,9 +13,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
-#include "chrome/browser/themes/theme_service.h"
-#include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
@@ -26,6 +24,11 @@
 #include "unicode/uchar.h"
 #include "unicode/uscript.h"
 #include "webkit/glue/webpreferences.h"
+
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && defined(ENABLE_THEMES)
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
+#endif
 
 using content::WebContents;
 using webkit_glue::WebPreferences;
@@ -324,11 +327,11 @@ const int kPrefsToMigrateLength = ARRAYSIZE_UNSAFE(kPrefNamesToMigrate);
 static void MigratePreferences(PrefService* prefs) {
   RegisterPrefsToMigrate(prefs);
   for (int i = 0; i < kPrefsToMigrateLength; ++i) {
-    const PrefService::Preference *pref =
+    const PrefService::Preference* pref =
         prefs->FindPreference(kPrefNamesToMigrate[i].from);
     if (!pref) continue;
     if (!pref->IsDefaultValue()) {
-      prefs->Set(kPrefNamesToMigrate[i].to, *pref->GetValue()->DeepCopy());
+      prefs->Set(kPrefNamesToMigrate[i].to, *pref->GetValue());
     }
     prefs->ClearPref(kPrefNamesToMigrate[i].from);
     prefs->UnregisterPreference(kPrefNamesToMigrate[i].from);

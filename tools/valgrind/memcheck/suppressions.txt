@@ -5931,17 +5931,6 @@
    fun:_ZN10extensions13ExtensionHost9OnRequestERK31ExtensionHostMsg_Request_Params
 }
 {
-   bug_145728
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base5Value17CreateStringValueERKSs
-   fun:_ZNK4base8internal12_GLOBAL__N_115JSONStringValue8DeepCopyEv
-   fun:_ZN12_GLOBAL__N_1L18MigratePreferencesEP11PrefService
-   fun:_ZN14PrefsTabHelper17RegisterUserPrefsEP11PrefService
-   fun:_ZN6chrome17RegisterUserPrefsEP11PrefService
-   fun:_ZN11ProfileImpl13OnPrefsLoadedEb
-}
-{
    bug_145733
    Memcheck:Leak
    fun:_Znw*
