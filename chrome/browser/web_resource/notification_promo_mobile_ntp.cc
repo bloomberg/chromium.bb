@@ -16,6 +16,9 @@ NotificationPromoMobileNtp::NotificationPromoMobileNtp(Profile* profile)
       notification_promo_(profile) {
 }
 
+NotificationPromoMobileNtp::~NotificationPromoMobileNtp() {
+}
+
 bool NotificationPromoMobileNtp::InitFromPrefs() {
   notification_promo_.InitFromPrefs(NotificationPromo::MOBILE_NTP_SYNC_PROMO);
   return InitFromNotificationPromo();

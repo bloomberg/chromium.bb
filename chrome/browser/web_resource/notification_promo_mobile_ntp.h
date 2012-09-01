@@ -21,6 +21,7 @@ class ListValue;
 class NotificationPromoMobileNtp {
  public:
   explicit NotificationPromoMobileNtp(Profile* profile_);
+  ~NotificationPromoMobileNtp();
 
   // Initialize from prefs/JSON.
   // Return true if the mobile NTP promotion is valid.
