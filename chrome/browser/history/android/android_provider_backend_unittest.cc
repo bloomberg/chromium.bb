@@ -1148,17 +1148,17 @@ TEST_F(AndroidProviderBackendTest, UpdateFavicon) {
   ASSERT_TRUE(delegate_.favicon_details()->urls.end() !=
               delegate_.favicon_details()->urls.find(row1.url()));
 
-  IconMapping icon_mapping;
-  EXPECT_TRUE(thumbnail_db_.GetIconMappingForPageURL(row1.url(), FAVICON,
-                                                     &icon_mapping));
-  Time last_updated;
-  scoped_refptr<base::RefCountedMemory> png_icon_data;
-  EXPECT_TRUE(thumbnail_db_.GetFavicon(icon_mapping.icon_id, &last_updated,
-                                       &png_icon_data, NULL, NULL));
-  std::string png_icon_data_as_string(png_icon_data->front(),
-      png_icon_data->front() + png_icon_data->size());
-  EXPECT_EQ(1u, png_icon_data_as_string.size());
-  EXPECT_EQ('1', png_icon_data_as_string[0]);
+  std::vector<IconMapping> icon_mappings;
+  EXPECT_TRUE(thumbnail_db_.GetIconMappingsForPageURL(row1.url(), FAVICON,
+                                                      &icon_mappings));
+  EXPECT_EQ(1u, icon_mappings.size());
+  std::vector<FaviconBitmap> favicon_bitmaps;
+  EXPECT_TRUE(thumbnail_db_.GetFaviconBitmaps(icon_mappings[0].icon_id,
+                                              &favicon_bitmaps));
+  EXPECT_EQ(1u, favicon_bitmaps.size());
+  EXPECT_TRUE(favicon_bitmaps[0].bitmap_data.get());
+  EXPECT_EQ(1u, favicon_bitmaps[0].bitmap_data->size());
+  EXPECT_EQ('1', *favicon_bitmaps[0].bitmap_data->front());
 
   // Remove favicon.
   HistoryAndBookmarkRow update_row2;
@@ -1178,8 +1178,8 @@ TEST_F(AndroidProviderBackendTest, UpdateFavicon) {
   ASSERT_TRUE(delegate_.favicon_details()->urls.end() !=
               delegate_.favicon_details()->urls.find(row1.url()));
 
-  EXPECT_FALSE(thumbnail_db_.GetIconMappingForPageURL(row1.url(), FAVICON,
-                                                      NULL));
+  EXPECT_FALSE(thumbnail_db_.GetIconMappingsForPageURL(row1.url(), FAVICON,
+                                                       NULL));
 }
 
 TEST_F(AndroidProviderBackendTest, UpdateSearchTermTable) {

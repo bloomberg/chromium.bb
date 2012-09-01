@@ -319,15 +319,17 @@ void ExpireHistoryTest::AddExampleSourceData(const GURL& url, URLID* id) {
 bool ExpireHistoryTest::HasFavicon(FaviconID favicon_id) {
   if (!thumb_db_.get() || favicon_id == 0)
     return false;
-  GURL icon_url;
-  return thumb_db_->GetFaviconHeader(favicon_id, &icon_url, NULL, NULL);
+  return thumb_db_->GetFaviconHeader(favicon_id, NULL, NULL, NULL);
 }
 
 FaviconID ExpireHistoryTest::GetFavicon(const GURL& page_url,
                                         IconType icon_type) {
-  IconMapping icon_mapping;
-  thumb_db_->GetIconMappingForPageURL(page_url, icon_type, &icon_mapping);
-  return icon_mapping.icon_id;
+  std::vector<IconMapping> icon_mappings;
+  if (thumb_db_->GetIconMappingsForPageURL(page_url, icon_type,
+                                           &icon_mappings)) {
+    return icon_mappings[0].icon_id;
+  }
+  return 0;
 }
 
 bool ExpireHistoryTest::HasThumbnail(URLID url_id) {

@@ -124,9 +124,9 @@ class ThumbnailDatabase {
 
   // Favicons ------------------------------------------------------------------
 
-  // Updates the sizes associated with a favicon to |sizes|. See the comment
-  // at the top of the .cc file for the format of the |sizes| parameter.
-  bool SetFaviconSizes(FaviconID icon_id, const std::string& sizes);
+  // Updates the favicon sizes associated with a favicon to |favicon_sizes|.
+  // See comment in history_types.h for description of |favicon_sizes|.
+  bool SetFaviconSizes(FaviconID icon_id, const FaviconSizes& favicon_sizes);
 
   // Sets the the favicon as out of date. This will set |last_updated| for all
   // of the bitmaps for |icon_id| to be out of date.
@@ -143,29 +143,21 @@ class ThumbnailDatabase {
                                       int required_icon_type,
                                       IconType* icon_type);
 
-  // Gets the png encoded favicon, last updated time, icon_url and icon_type for
-  // the specified favicon id.
-  // TODO(pkotwicz): Remove this function.
-  bool GetFavicon(FaviconID icon_id,
-                  base::Time* last_updated,
-                  scoped_refptr<base::RefCountedMemory>* png_icon_data,
-                  GURL* icon_url,
-                  IconType* icon_type);
-
   // Gets the icon_url, icon_type and sizes for the specified |icon_id|.
   bool GetFaviconHeader(FaviconID icon_id,
                         GURL* icon_url,
                         IconType* icon_type,
-                        std::string* sizes);
+                        FaviconSizes* favicon_sizes);
 
-  // Adds the favicon URL and icon type to the favicon db, returning its id.
+  // Adds favicon with |icon_url| and |icon_type| to the favicon db, returning
+  // its id.
   FaviconID AddFavicon(const GURL& icon_url, IconType icon_type);
 
   // Adds a favicon with a single bitmap. This call is equivalent to calling
   // AddFavicon, SetFaviconSizes, and AddFaviconBitmap.
   FaviconID AddFavicon(const GURL& icon_url,
                        IconType icon_type,
-                       const std::string& sizes,
+                       const FaviconSizes& favicon_sizes,
                        const scoped_refptr<base::RefCountedMemory>& icon_data,
                        base::Time time,
                        const gfx::Size& pixel_size);
@@ -179,9 +171,17 @@ class ThumbnailDatabase {
   // icon type.
   // The matched icon mapping is returned in the icon_mapping parameter if it is
   // not NULL.
-  bool GetIconMappingForPageURL(const GURL& page_url,
-                                IconType required_icon_type,
-                                IconMapping* icon_mapping);
+
+  // Returns true if there are icon mappings for the given page and icon types.
+  // If |required_icon_types| contains multiple icon types and there is more
+  // than one matched icon type in the database, icons of only a single type
+  // will be returned in the priority of TOUCH_PRECOMPOSED_ICON, TOUCH_ICON,
+  // and FAVICON.
+  // The matched icon mappings are returned in the |mapping_data| parameter if
+  // it is not NULL.
+  bool GetIconMappingsForPageURL(const GURL& page_url,
+                                 int required_icon_types,
+                                 std::vector<IconMapping>* mapping_data);
 
   // Returns true if there is any matched icon mapping for the given page.
   // All matched icon mappings are returned in descent order of IconType if
@@ -207,7 +207,7 @@ class ThumbnailDatabase {
 
   // Clones the existing mappings from |old_page_url| if |new_page_url| has no
   // mappings. Otherwise, will leave mappings alone.
-  bool CloneIconMapping(const GURL& old_page_url, const GURL& new_page_url);
+  bool CloneIconMappings(const GURL& old_page_url, const GURL& new_page_url);
 
   // The class to enumerate icon mappings. Use InitIconMappingEnumerator to
   // initialize.
@@ -279,6 +279,7 @@ class ThumbnailDatabase {
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, UpgradeToVersion4);
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, UpgradeToVersion5);
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, UpgradeToVersion6);
+  FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, FaviconSizesToAndFromString);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, MigrationIconMapping);
 
   // Creates the thumbnail table, returning true if the table already exists
@@ -350,6 +351,23 @@ class ThumbnailDatabase {
 
   // Returns True if the current database is latest.
   bool IsLatestVersion();
+
+  // Converts the vector representation of favicon sizes as passed into
+  // SetFaviconSizes to a string to store in the |favicons| database table.
+  // Format:
+  //   Each widthxheight pair is separated by a space.
+  //   Width and height are separated by a space.
+  // For instance, if sizes contains pixel sizes (16x16, 32x32), the
+  // string representation is "16 16 32 32".
+  static void FaviconSizesToDatabaseString(const FaviconSizes& favicon_sizes,
+                                           std::string* favicon_sizes_string);
+
+  // Converts the string representation of favicon sizes as stored in the
+  // |favicons| database table to a vector. Returns an empty vector if there
+  // were parsing errors.
+  static void DatabaseStringToFaviconSizes(
+      const std::string& favicon_sizes_string,
+      FaviconSizes* favicon_sizes);
 
   sql::Connection db_;
   sql::MetaTable meta_table_;

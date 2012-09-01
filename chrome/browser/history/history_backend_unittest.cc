@@ -209,10 +209,10 @@ class HistoryBackendTest : public testing::Test {
   }
 
   FaviconID GetFavicon(const GURL& url, IconType icon_type) {
-    IconMapping icon_mapping;
-    if (backend_->thumbnail_db_->GetIconMappingForPageURL(url, icon_type,
-                                                          &icon_mapping))
-      return icon_mapping.icon_id;
+    std::vector<IconMapping> icon_mappings;
+    if (backend_->thumbnail_db_->GetIconMappingsForPageURL(url, icon_type,
+                                                           &icon_mappings))
+      return icon_mappings[0].icon_id;
     else
       return 0;
   }
@@ -529,7 +529,7 @@ TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
   FaviconID favicon1 = backend_->thumbnail_db_->AddFavicon(
       favicon_url1,
       FAVICON,
-      "0 0",
+      GetDefaultFaviconSizes(),
       new base::RefCountedBytes(data),
       Time::Now(),
       gfx::Size());
@@ -538,7 +538,7 @@ TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
   FaviconID favicon2 = backend_->thumbnail_db_->AddFavicon(
       favicon_url2,
       FAVICON,
-      "0 0",
+      GetDefaultFaviconSizes(),
       new base::RefCountedBytes(data),
       Time::Now(),
       gfx::Size());
@@ -711,7 +711,7 @@ TEST_F(HistoryBackendTest, ImportedFaviconsTest) {
   FaviconID favicon1 = backend_->thumbnail_db_->AddFavicon(
       favicon_url1,
       FAVICON,
-      "0 0",
+      GetDefaultFaviconSizes(),
       base::RefCountedBytes::TakeVector(&data),
       Time::Now(),
       gfx::Size());
@@ -1134,19 +1134,19 @@ TEST_F(HistoryBackendTest, SetFaviconMapping) {
   // Add a favicon
   backend_->SetFavicon(
       url1, icon_url, base::RefCountedBytes::TakeVector(&data), FAVICON);
-  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingForPageURL(
+  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingsForPageURL(
       url1, FAVICON, NULL));
-  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingForPageURL(
+  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingsForPageURL(
       url2, FAVICON, NULL));
 
   // Add a touch_icon
   backend_->SetFavicon(
       url1, icon_url, base::RefCountedBytes::TakeVector(&data), TOUCH_ICON);
-  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingForPageURL(
+  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingsForPageURL(
       url1, TOUCH_ICON, NULL));
-  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingForPageURL(
+  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingsForPageURL(
       url2, TOUCH_ICON, NULL));
-  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingForPageURL(
+  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingsForPageURL(
       url1, FAVICON, NULL));
 
   // Add a TOUCH_PRECOMPOSED_ICON
@@ -1155,24 +1155,24 @@ TEST_F(HistoryBackendTest, SetFaviconMapping) {
                        base::RefCountedBytes::TakeVector(&data),
                        TOUCH_PRECOMPOSED_ICON);
   // The touch_icon was replaced.
-  EXPECT_FALSE(backend_->thumbnail_db_->GetIconMappingForPageURL(
+  EXPECT_FALSE(backend_->thumbnail_db_->GetIconMappingsForPageURL(
       url1, TOUCH_ICON, NULL));
-  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingForPageURL(
+  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingsForPageURL(
       url1, FAVICON, NULL));
-  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingForPageURL(
+  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingsForPageURL(
       url1, TOUCH_PRECOMPOSED_ICON, NULL));
-  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingForPageURL(
+  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingsForPageURL(
       url2, TOUCH_PRECOMPOSED_ICON, NULL));
 
   // Add a touch_icon
   backend_->SetFavicon(
       url1, icon_url, base::RefCountedBytes::TakeVector(&data), TOUCH_ICON);
-  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingForPageURL(
+  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingsForPageURL(
       url1, TOUCH_ICON, NULL));
-  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingForPageURL(
+  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingsForPageURL(
       url1, FAVICON, NULL));
   // The TOUCH_PRECOMPOSED_ICON was replaced.
-  EXPECT_FALSE(backend_->thumbnail_db_->GetIconMappingForPageURL(
+  EXPECT_FALSE(backend_->thumbnail_db_->GetIconMappingsForPageURL(
       url1, TOUCH_PRECOMPOSED_ICON, NULL));
 
   // Add a favicon
@@ -1284,13 +1284,13 @@ TEST_F(HistoryBackendTest, GetFaviconForURL) {
   // Add a favicon
   backend_->SetFavicon(
       url, icon_url, bytes.get(), FAVICON);
-  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingForPageURL(
+  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingsForPageURL(
       url, FAVICON, NULL));
 
   // Add a touch_icon
   backend_->SetFavicon(
       url, icon_url, bytes.get(), TOUCH_ICON);
-  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingForPageURL(
+  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingsForPageURL(
       url, TOUCH_ICON, NULL));
 
   // Test the Fav icon for this URL.
@@ -1332,7 +1332,7 @@ TEST_F(HistoryBackendTest, CloneFaviconIsRestrictedToSameDomain) {
   scoped_refptr<base::RefCountedBytes> bytes(new base::RefCountedBytes(data));
   backend_->SetFavicon(
       url, icon_url, bytes.get(), FAVICON);
-  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingForPageURL(
+  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingsForPageURL(
       url, FAVICON, NULL));
 
   // Validate starting state.

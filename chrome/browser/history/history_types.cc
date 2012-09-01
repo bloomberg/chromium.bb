@@ -412,6 +412,15 @@ FaviconImageResult::FaviconImageResult() {
 FaviconImageResult::~FaviconImageResult() {
 }
 
+// FaviconSizes --------------------------------------------------------------
+
+const FaviconSizes& GetDefaultFaviconSizes() {
+  CR_DEFINE_STATIC_LOCAL(FaviconSizes, kDefaultFaviconSizes, ());
+  if (kDefaultFaviconSizes.empty())
+    kDefaultFaviconSizes.push_back(gfx::Size());
+  return kDefaultFaviconSizes;
+}
+
 // FaviconBitmap --------------------------------------------------------------
 
 FaviconBitmap::FaviconBitmap()

@@ -1807,7 +1807,7 @@ void HistoryBackend::CloneFavicon(const GURL& old_page_url,
   if (old_page_url.GetOrigin() != new_page_url.GetOrigin())
     return;
 
-  thumbnail_db_->CloneIconMapping(old_page_url, new_page_url);
+  thumbnail_db_->CloneIconMappings(old_page_url, new_page_url);
   ScheduleCommit();
 }
 
@@ -1830,7 +1830,7 @@ void HistoryBackend::SetImportedFavicons(
       favicon_id = thumbnail_db_->AddFavicon(
           favicon_usage[i].favicon_url,
           history::FAVICON,
-          std::string("0 0"),
+          GetDefaultFaviconSizes(),
           new base::RefCountedBytes(favicon_usage[i].png_data),
           now,
           gfx::Size());
@@ -1858,7 +1858,7 @@ void HistoryBackend::SetImportedFavicons(
           favicons_changed.insert(*url);
         }
       } else {
-        if (!thumbnail_db_->GetIconMappingForPageURL(*url, FAVICON, NULL)) {
+        if (!thumbnail_db_->GetIconMappingsForPageURL(*url, FAVICON, NULL)) {
           // URL is present in history, update the favicon *only* if it is not
           // set already.
           thumbnail_db_->AddIconMapping(*url, favicon_id);
@@ -1960,7 +1960,7 @@ void HistoryBackend::SetFavicon(
   if (!id) {
     id = thumbnail_db_->AddFavicon(icon_url,
                                    icon_type,
-                                   "0 0",
+                                   GetDefaultFaviconSizes(),
                                    data,
                                    Time::Now(),
                                    gfx::Size());
@@ -2478,15 +2478,20 @@ bool HistoryBackend::GetFaviconFromDB(
     std::vector<history::FaviconBitmapResult>* favicon_bitmap_results) {
   FaviconBitmapResult bitmap_result;
   Time last_updated;
-  if (!thumbnail_db_->GetFavicon(favicon_id,
-                                 &last_updated,
-                                 &bitmap_result.bitmap_data,
-                                 &bitmap_result.icon_url,
-                                 &bitmap_result.icon_type)) {
+  if (!thumbnail_db_->GetFaviconHeader(favicon_id,
+                                       &bitmap_result.icon_url,
+                                       &bitmap_result.icon_type,
+                                       NULL)) {
     return false;
   }
 
-  bitmap_result.expired = (Time::Now() - last_updated) >
+  std::vector<FaviconBitmap> favicon_bitmaps;
+  thumbnail_db_->GetFaviconBitmaps(favicon_id, &favicon_bitmaps);
+  if (favicon_bitmaps.empty())
+    return false;
+
+  bitmap_result.bitmap_data = favicon_bitmaps[0].bitmap_data;
+  bitmap_result.expired = (Time::Now() - favicon_bitmaps[0].last_updated) >
       TimeDelta::FromDays(kFaviconRefetchDays);
 
   favicon_bitmap_results->clear();

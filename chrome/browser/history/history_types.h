@@ -723,15 +723,21 @@ struct FaviconImageResult {
   GURL icon_url;
 };
 
-// A map from an icon URL to a vector of the sizes of the favicon bitmaps at
-// that URL. There are several sizes for an icon URL only if the icon URL is
-// for a .ico file. The sizes for an icon URL represent the sizes that a
-// favicon is available from the web, not the sizes at which bitmaps are
-// cached in the thumbnail database for the icon URL. For instance, if an icon
-// URL represents a .ico file with 16x16 and 32x32 bitmaps, the sizes vector
-// will have both sizes regardless of whether either of these bitmaps is cached
-// in the thumbnail database.
-typedef std::map<GURL, std::vector<gfx::Size> > IconURLSizesMap;
+// FaviconSizes represents the sizes that the thumbnail database knows a
+// favicon is available from the web. FaviconSizes has several entries
+// only if FaviconSizes is for an .ico file. FaviconSizes can be different
+// from the pixel sizes of the entries in the |favicon_bitmaps| table. For
+// instance, if a web page has a .ico favicon with bitmaps of pixel sizes
+// (16x16, 32x32), FaviconSizes will have both sizes regardless of whether
+// either of these bitmaps is cached in the favicon_bitmaps database table.
+typedef std::vector<gfx::Size> FaviconSizes;
+
+// Returns the default FaviconSizes to use if the favicon sizes for a FaviconID
+// are unknown.
+const FaviconSizes& GetDefaultFaviconSizes();
+
+// A map from an icon URL to the FaviconSizes for that URL.
+typedef std::map<GURL, FaviconSizes> IconURLSizesMap;
 
 // Defines a favicon bitmap stored in the history backend.
 struct FaviconBitmap {

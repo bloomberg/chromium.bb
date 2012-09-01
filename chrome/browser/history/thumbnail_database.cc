@@ -10,6 +10,8 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/string_number_conversions.h"
+#include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -70,8 +72,6 @@
 //  image_data        PNG encoded data of the favicon.
 //  width             Pixel width of |image_data|.
 //  height            Pixel height of |image_data|.
-
-
 
 static void FillIconMapping(const sql::Statement& statement,
                             const GURL& page_url,
@@ -512,10 +512,13 @@ bool ThumbnailDatabase::DeleteFaviconBitmapsForFavicon(FaviconID icon_id) {
 }
 
 bool ThumbnailDatabase::SetFaviconSizes(FaviconID icon_id,
-                                        const std::string& sizes) {
+                                        const FaviconSizes& favicon_sizes) {
+  std::string favicon_sizes_as_string;
+  FaviconSizesToDatabaseString(favicon_sizes, &favicon_sizes_as_string);
+
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "UPDATE favicons SET sizes=? WHERE id=?"));
-  statement.BindString(0, sizes);
+  statement.BindString(0, favicon_sizes_as_string);
   statement.BindInt64(1, icon_id);
 
   return statement.Run();
@@ -547,34 +550,11 @@ FaviconID ThumbnailDatabase::GetFaviconIDForFaviconURL(const GURL& icon_url,
   return statement.ColumnInt64(0);
 }
 
-bool ThumbnailDatabase::GetFavicon(
-    FaviconID icon_id,
-    base::Time* last_updated,
-    scoped_refptr<base::RefCountedMemory>* png_icon_data,
-    GURL* icon_url,
-    IconType* icon_type) {
-  DCHECK(icon_id);
-
-  std::vector<FaviconBitmap> favicon_bitmaps;
-  if (!GetFaviconBitmaps(icon_id, &favicon_bitmaps))
-    return false;
-
-  if (favicon_bitmaps.empty())
-    return false;
-
-  if (last_updated)
-    *last_updated = favicon_bitmaps[0].last_updated;
-
-  *png_icon_data = favicon_bitmaps[0].bitmap_data;
-
-  return GetFaviconHeader(icon_id, icon_url, icon_type, NULL);
-}
-
 bool ThumbnailDatabase::GetFaviconHeader(
     FaviconID icon_id,
     GURL* icon_url,
     IconType* icon_type,
-    std::string* sizes) {
+    FaviconSizes* favicon_sizes) {
   DCHECK(icon_id);
 
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
@@ -588,8 +568,8 @@ bool ThumbnailDatabase::GetFaviconHeader(
     *icon_url = GURL(statement.ColumnString(0));
   if (icon_type)
     *icon_type = static_cast<history::IconType>(statement.ColumnInt(1));
-  if (sizes)
-    *sizes = statement.ColumnString(2);
+  if (favicon_sizes)
+    DatabaseStringToFaviconSizes(statement.ColumnString(2), favicon_sizes);
 
   return true;
 }
@@ -610,13 +590,13 @@ FaviconID ThumbnailDatabase::AddFavicon(const GURL& icon_url,
 FaviconID ThumbnailDatabase::AddFavicon(
     const GURL& icon_url,
     IconType icon_type,
-    const std::string& sizes,
+    const FaviconSizes& favicon_sizes,
     const scoped_refptr<base::RefCountedMemory>& icon_data,
     base::Time time,
     const gfx::Size& pixel_size) {
   FaviconID icon_id = AddFavicon(icon_url, icon_type);
   if (!icon_id ||
-      !SetFaviconSizes(icon_id, sizes) ||
+      !SetFaviconSizes(icon_id, favicon_sizes) ||
       !AddFaviconBitmap(icon_id, icon_data, time, pixel_size)) {
     return 0;
   }
@@ -637,23 +617,25 @@ bool ThumbnailDatabase::DeleteFavicon(FaviconID id) {
   return statement.Run();
 }
 
-bool ThumbnailDatabase::GetIconMappingForPageURL(const GURL& page_url,
-                                                 IconType required_icon_type,
-                                                 IconMapping* icon_mapping) {
-  std::vector<IconMapping> icon_mappings;
-  if (!GetIconMappingsForPageURL(page_url, &icon_mappings))
+bool ThumbnailDatabase::GetIconMappingsForPageURL(
+    const GURL& page_url,
+    int required_icon_types,
+    std::vector<IconMapping>* filtered_mapping_data) {
+  std::vector<IconMapping> mapping_data;
+  if (!GetIconMappingsForPageURL(page_url, &mapping_data))
     return false;
 
-  for (std::vector<IconMapping>::iterator m = icon_mappings.begin();
-      m != icon_mappings.end(); ++m) {
-    if (m->icon_type == required_icon_type) {
-      if (icon_mapping != NULL)
-        *icon_mapping = *m;
-      return true;
+  bool result = false;
+  for (std::vector<IconMapping>::iterator m = mapping_data.begin();
+       m != mapping_data.end(); ++m) {
+    if (m->icon_type & required_icon_types) {
+      result = true;
+      if (!filtered_mapping_data)
+        return result;
+      filtered_mapping_data->push_back(*m);
     }
   }
-
-  return false;
+  return result;
 }
 
 bool ThumbnailDatabase::GetIconMappingsForPageURL(
@@ -713,8 +695,8 @@ bool ThumbnailDatabase::HasMappingFor(FaviconID id) {
   return statement.Step();
 }
 
-bool ThumbnailDatabase::CloneIconMapping(const GURL& old_page_url,
-                                         const GURL& new_page_url) {
+bool ThumbnailDatabase::CloneIconMappings(const GURL& old_page_url,
+                                          const GURL& new_page_url) {
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "SELECT icon_id FROM icon_mapping "
       "WHERE page_url=?"));
@@ -1015,6 +997,41 @@ bool ThumbnailDatabase::UpgradeToVersion6() {
   meta_table_.SetVersionNumber(6);
   meta_table_.SetCompatibleVersionNumber(std::min(6, kCompatibleVersionNumber));
   return true;
+}
+
+// static
+void ThumbnailDatabase::FaviconSizesToDatabaseString(
+    const FaviconSizes& favicon_sizes,
+    std::string* favicon_sizes_string) {
+  std::vector<std::string> parts;
+  for (FaviconSizes::const_iterator it = favicon_sizes.begin();
+       it != favicon_sizes.end(); ++it) {
+    parts.push_back(base::IntToString(it->width()));
+    parts.push_back(base::IntToString(it->height()));
+  }
+  *favicon_sizes_string = JoinString(parts, ' ');
+}
+
+// static
+void ThumbnailDatabase::DatabaseStringToFaviconSizes(
+    const std::string& favicon_sizes_string,
+    FaviconSizes* favicon_sizes) {
+  bool parsing_errors = false;
+
+  StringTokenizer t(favicon_sizes_string, " ");
+  while (t.GetNext() && !parsing_errors) {
+    int width, height = 0;
+    parsing_errors |= !base::StringToInt(t.token(), &width);
+    if (!t.GetNext()) {
+      parsing_errors = true;
+      break;
+    }
+    parsing_errors |= !base::StringToInt(t.token(), &height);
+    favicon_sizes->push_back(gfx::Size(width, height));
+  }
+
+  if (parsing_errors)
+    favicon_sizes->clear();
 }
 
 }  // namespace history

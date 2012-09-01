@@ -39,7 +39,7 @@ bool FaviconSQLHandler::Update(const HistoryAndBookmarkRow& row,
     favicon_id = thumbnail_db_->AddFavicon(
         GURL(),
         history::FAVICON,
-        std::string("0 0"),
+        history::GetDefaultFaviconSizes(),
         row.favicon(),
         Time::Now(),
         gfx::Size());
@@ -51,11 +51,11 @@ bool FaviconSQLHandler::Update(const HistoryAndBookmarkRow& row,
   std::vector<FaviconID> favicon_ids;
   for (TableIDRows::const_iterator i = ids_set.begin();
        i != ids_set.end(); ++i) {
-    IconMapping icon_mapping;
-    if (thumbnail_db_->GetIconMappingForPageURL(i->url, FAVICON,
-                                                &icon_mapping)) {
+    std::vector<IconMapping> icon_mappings;
+    if (thumbnail_db_->GetIconMappingsForPageURL(i->url, FAVICON,
+                                                 &icon_mappings)) {
       if (favicon_id) {
-        if (!thumbnail_db_->UpdateIconMapping(icon_mapping.mapping_id,
+        if (!thumbnail_db_->UpdateIconMapping(icon_mappings[0].mapping_id,
                                               favicon_id))
           return false;
       } else {
@@ -64,7 +64,7 @@ bool FaviconSQLHandler::Update(const HistoryAndBookmarkRow& row,
           return false;
       }
       // Keep the old icon for deleting it later if possible.
-      favicon_ids.push_back(icon_mapping.icon_id);
+      favicon_ids.push_back(icon_mappings[0].icon_id);
     } else if (favicon_id) {
       // The URL doesn't have icon before, add the icon mapping.
       if (!thumbnail_db_->AddIconMapping(i->url, favicon_id))
@@ -82,17 +82,13 @@ bool FaviconSQLHandler::Delete(const TableIDRows& ids_set) {
   std::vector<FaviconID> favicon_ids;
   for (TableIDRows::const_iterator i = ids_set.begin();
        i != ids_set.end(); ++i) {
-    // Since the URL was delete, we delete all type of icon mapping.
-    IconMapping icon_mapping;
-    if (thumbnail_db_->GetIconMappingForPageURL(i->url, FAVICON,
-                                                &icon_mapping))
-      favicon_ids.push_back(icon_mapping.icon_id);
-    if (thumbnail_db_->GetIconMappingForPageURL(i->url, TOUCH_ICON,
-                                                &icon_mapping))
-      favicon_ids.push_back(icon_mapping.icon_id);
-    if (thumbnail_db_->GetIconMappingForPageURL(i->url,
-            TOUCH_PRECOMPOSED_ICON, &icon_mapping))
-      favicon_ids.push_back(icon_mapping.icon_id);
+    // Since the URL was deleted, we delete all types of icon mappings.
+    std::vector<IconMapping> icon_mappings;
+    thumbnail_db_->GetIconMappingsForPageURL(i->url, &icon_mappings);
+    for (std::vector<IconMapping>::const_iterator m = icon_mappings.begin();
+         m != icon_mappings.end(); ++m) {
+      favicon_ids.push_back(m->icon_id);
+    }
     if (!thumbnail_db_->DeleteIconMappings(i->url))
       return false;
   }
@@ -118,7 +114,7 @@ bool FaviconSQLHandler::Insert(HistoryAndBookmarkRow* row) {
   FaviconID id = thumbnail_db_->AddFavicon(
       GURL(),
       history::FAVICON,
-      std::string("0 0"),
+      history::GetDefaultFaviconSizes(),
       row->favicon(),
       Time::Now(),
       gfx::Size());
