@@ -615,7 +615,7 @@ button#detail-view:not([disabled]) {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-transition: height 70ms linear;
-  background-image: url(chrome://resources/images/clouds.png);
+  background-image: url('../images/files/ui/clouds.png');
   background-repeat: repeat-x;
   background-size: 150px 44px;
   border-top: 1px solid rgba(0, 0, 0, 0.1);
