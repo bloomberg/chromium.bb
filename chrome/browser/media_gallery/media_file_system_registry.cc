@@ -148,13 +148,6 @@ void MediaFileSystemRegistry::Observe(
   UnregisterForRPHGoneNotifications(rph);
 }
 
-std::string MediaFileSystemRegistry::GetDeviceIdFromPath(
-    const FilePath& path) const {
-  // TODO(vandebo) Do something better here, at least iterate system monitor
-  // attached media devices looking for a match.  If not, return the path.
-  return path.AsUTF8Unsafe();
-}
-
 /******************
  * Private methods
  ******************/

@@ -92,12 +92,10 @@ class MediaGalleriesPreferences : public ProfileKeyedService {
   // Teaches the registry about a new gallery.
   MediaGalleryPrefId AddGallery(const std::string& device_id,
                                 const string16& display_name,
-                                const FilePath& path,
+                                const FilePath& relative_path,
                                 bool user_added);
 
-  // Deprecated: Teach the registry about a user added registry simply from
-  // the path.
-  // TODO(vandebo) remove once webui/options doesn't use this anymore.
+  // Teach the registry about a user added registry simply from the path.
   MediaGalleryPrefId AddGalleryByPath(const FilePath& path);
 
   // Removes the gallery identified by |id| from the store.
@@ -121,10 +119,6 @@ class MediaGalleriesPreferences : public ProfileKeyedService {
 
   // Returns true if the media gallery UI is turned on.
   static bool UserInteractionIsEnabled();
-
- protected:
-  // For testing.
-  static string16 ComputeDisplayName(const FilePath& path);
 
  private:
   typedef std::map<std::string /*device id*/, MediaGalleryPrefIdSet>

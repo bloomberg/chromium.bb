@@ -13,24 +13,35 @@
 namespace chrome {
 
 // static
-void MediaStorageUtil::GetDeviceInfoFromPath(
-    const FilePath& path, const DeviceInfoCallback& callback) {
+void MediaStorageUtil::GetDeviceInfoFromPathImpl(const FilePath& path,
+                                                 std::string* device_id,
+                                                 string16* device_name,
+                                                 FilePath* relative_path) {
   RemovableDeviceNotificationsLinux* device_tracker =
       RemovableDeviceNotificationsLinux::GetInstance();
   DCHECK(device_tracker);
   base::SystemMonitor::RemovableStorageInfo device_info;
   bool found_device = device_tracker->GetDeviceInfoForPath(path, &device_info);
 
-  FilePath relative_path;
   if (found_device && IsRemovableDevice(device_info.device_id)) {
-    FilePath mount_point(device_info.location);
-    mount_point.AppendRelativePath(path, &relative_path);
-  } else {
-    device_info.device_id =
-        MakeDeviceId(FIXED_MASS_STORAGE, path.AsUTF8Unsafe());
-    device_info.name = path.BaseName().LossyDisplayName();
+    if (device_id)
+      *device_id = device_info.device_id;
+    if (device_name)
+      *device_name = device_info.name;
+    if (relative_path) {
+      *relative_path = FilePath();
+      FilePath mount_point(device_info.location);
+      mount_point.AppendRelativePath(path, relative_path);
+    }
+    return;
   }
-  callback.Run(device_info.device_id, relative_path, device_info.name);
+
+  if (device_id)
+    *device_id = MakeDeviceId(FIXED_MASS_STORAGE, path.AsUTF8Unsafe());
+  if (device_name)
+    *device_name = path.BaseName().LossyDisplayName();
+  if (relative_path)
+    *relative_path = FilePath();
 }
 
 }  // namespace chrome

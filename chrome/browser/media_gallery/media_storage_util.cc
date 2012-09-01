@@ -29,6 +29,10 @@ const char kRemovableMassStorageNoDCIMPrefix[] = "nodcim:";
 const char kFixedMassStoragePrefix[] = "path:";
 const char kMtpPtpPrefix[] = "mtp:";
 
+static void (*g_test_get_device_info_from_path_function)(
+    const FilePath& path, std::string* device_id, string16* device_name,
+    FilePath* relative_path) = NULL;
+
 void EmptyPathIsFalseCallback(const MediaStorageUtil::BoolCallback& callback,
                               FilePath path) {
   callback.Run(!path.empty());
@@ -55,27 +59,6 @@ FilePath::StringType FindRemovableStorageLocationById(
       return it->location;
   }
   return FilePath::StringType();
-}
-
-// TODO(vandebo) use FilePath::AppendRelativePath instead
-// Make |path| a relative path, i.e. strip the drive letter and leading /.
-FilePath MakePathRelative(const FilePath& path) {
-  if (!path.IsAbsolute())
-    return path;
-
-  FilePath relative;
-  std::vector<FilePath::StringType> components;
-  path.GetComponents(&components);
-
-  // On Windows, the first component may be the drive letter with the second
-  // being \\.
-  int start = 1;
-  if (components[1].size() == 1 && FilePath::IsSeparator(components[1][0]))
-    start = 2;
-
-  for (size_t i = start; i < components.size(); i++)
-    relative = relative.Append(components[i]);
-  return relative;
 }
 
 }  // namespace
@@ -169,24 +152,18 @@ void MediaStorageUtil::IsDeviceAttached(const std::string& device_id,
   callback.Run(false);
 }
 
-#if !defined(OS_LINUX) || defined(OS_CHROMEOS)
 // static
-void MediaStorageUtil::GetDeviceInfoFromPath(
-    const FilePath& path, const DeviceInfoCallback& callback) {
-  // TODO(vandebo) This needs to be implemented per platform.  Below is no
-  // worse than what the code already does.
-  // * Find mount point parent (determines relative file path)
-  // * Search System monitor, just in case.
-  // * If it's a removable device, generate device id, else use device root
-  //   path as id
-  std::string device_id =
-      MakeDeviceId(FIXED_MASS_STORAGE, path.AsUTF8Unsafe());
-  FilePath relative_path = MakePathRelative(path);
-  string16 display_name = path.BaseName().LossyDisplayName();
-
-  callback.Run(device_id, relative_path, display_name);
+void MediaStorageUtil::GetDeviceInfoFromPath(const FilePath& path,
+                                             std::string* device_id,
+                                             string16* device_name,
+                                             FilePath* relative_path) {
+  if (g_test_get_device_info_from_path_function) {
+    g_test_get_device_info_from_path_function(path, device_id, device_name,
+                                              relative_path);
+  } else {
+    GetDeviceInfoFromPathImpl(path, device_id, device_name, relative_path);
+  }
 }
-#endif
 
 // static
 void MediaStorageUtil::FindDevicePathById(const std::string& device_id,
@@ -217,6 +194,33 @@ void MediaStorageUtil::FindDevicePathById(const std::string& device_id,
   callback.Run(FilePath());
 }
 
+// static
+void MediaStorageUtil::SetGetDeviceInfoFromPathFunctionForTesting(
+    GetDeviceInfoFromPathFunction function) {
+  g_test_get_device_info_from_path_function = function;
+}
+
 MediaStorageUtil::MediaStorageUtil() {}
+
+#if !defined(OS_LINUX) || defined(OS_CHROMEOS)
+// static
+void MediaStorageUtil::GetDeviceInfoFromPathImpl(const FilePath& path,
+                                                 std::string* device_id,
+                                                 string16* device_name,
+                                                 FilePath* relative_path) {
+  // TODO(vandebo) This needs to be implemented per platform.  Below is no
+  // worse than what the code already does.
+  // * Find mount point parent (determines relative file path)
+  // * Search System monitor, just in case.
+  // * If it's a removable device, generate device id, else use device root
+  //   path as id
+  if (device_id)
+    *device_id = MakeDeviceId(FIXED_MASS_STORAGE, path.AsUTF8Unsafe());
+  if (device_name)
+    *device_name = path.BaseName().LossyDisplayName();
+  if (relative_path)
+    *relative_path = FilePath();
+}
+#endif
 
 }  // namespace chrome

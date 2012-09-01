@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/media_gallery/media_file_system_registry.h"
+#include "chrome/browser/media_gallery/media_storage_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -116,25 +117,6 @@ DictionaryValue* CreateGalleryPrefInfoDictionary(
   return dict;
 }
 
-FilePath MakePathRelative(FilePath path) {
-  if (!path.IsAbsolute())
-    return path;
-
-  FilePath relative;
-  std::vector<FilePath::StringType> components;
-  path.GetComponents(&components);
-
-  // On Windows, the first component may be the drive letter with the second
-  // being \\.
-  int start = 1;
-  if (components[1].size() == 1 && FilePath::IsSeparator(components[1][0]))
-    start = 2;
-
-  for (size_t i = start; i < components.size(); i++)
-    relative = relative.Append(components[i]);
-  return relative;
-}
-
 }  // namespace
 
 MediaGalleryPrefInfo::MediaGalleryPrefInfo()
@@ -150,10 +132,12 @@ MediaGalleriesPreferences::MediaGalleriesPreferences(Profile* profile)
   if (current_id == kInvalidMediaGalleryPrefId + 1) {
     FilePath pictures_path;
     if (PathService::Get(chrome::DIR_USER_PICTURES, &pictures_path)) {
-      std::string device_id = MediaFileSystemRegistry::GetInstance()->
-          GetDeviceIdFromPath(pictures_path);
-      string16 display_name = ComputeDisplayName(pictures_path);
-      AddGallery(device_id, display_name, pictures_path, false /*user added*/);
+      std::string device_id;
+      string16 display_name;
+      FilePath relative_path;
+      MediaStorageUtil::GetDeviceInfoFromPath(pictures_path, &device_id,
+                                              &display_name, &relative_path);
+      AddGallery(device_id, display_name, relative_path, false /*user added*/);
     }
   }
   InitFromPrefs();
@@ -186,11 +170,14 @@ void MediaGalleriesPreferences::InitFromPrefs() {
 bool MediaGalleriesPreferences::LookUpGalleryByPath(
     const FilePath& path,
     MediaGalleryPrefInfo* gallery_info) const {
-  std::string device_id =
-      MediaFileSystemRegistry::GetInstance()->GetDeviceIdFromPath(path);
-  FilePath relative_path = MakePathRelative(path);
+  std::string device_id;
+  string16 device_name;
+  FilePath relative_path;
+  MediaStorageUtil::GetDeviceInfoFromPath(path, &device_id, &device_name,
+                                          &relative_path);
+  relative_path = relative_path.NormalizePathSeparators();
   MediaGalleryPrefIdSet galleries_on_device =
-    LookUpGalleriesByDeviceId(device_id);
+      LookUpGalleriesByDeviceId(device_id);
   for (MediaGalleryPrefIdSet::const_iterator it = galleries_on_device.begin();
        it != galleries_on_device.end();
        ++it) {
@@ -205,7 +192,7 @@ bool MediaGalleriesPreferences::LookUpGalleryByPath(
 
   if (gallery_info) {
     gallery_info->pref_id = kInvalidMediaGalleryPrefId;
-    gallery_info->display_name = ComputeDisplayName(path);
+    gallery_info->display_name = device_name;
     gallery_info->device_id = device_id;
     gallery_info->path = relative_path;
     gallery_info->type = MediaGalleryPrefInfo::kUserAdded;
@@ -227,15 +214,15 @@ MediaGalleryPrefIdSet MediaGalleriesPreferences::LookUpGalleriesByDeviceId(
 
 MediaGalleryPrefId MediaGalleriesPreferences::AddGallery(
     const std::string& device_id, const string16& display_name,
-    const FilePath& path, bool user_added) {
+    const FilePath& relative_path, bool user_added) {
   DCHECK(display_name.length() > 0);
-  FilePath relative_path = MakePathRelative(path);
+  FilePath normalized_relative_path = relative_path.NormalizePathSeparators();
   MediaGalleryPrefIdSet galleries_on_device =
     LookUpGalleriesByDeviceId(device_id);
   for (MediaGalleryPrefIdSet::const_iterator it = galleries_on_device.begin();
        it != galleries_on_device.end();
        ++it) {
-    if (known_galleries_[*it].path != relative_path)
+    if (known_galleries_[*it].path != normalized_relative_path)
       continue;
 
     const MediaGalleryPrefInfo& existing = known_galleries_[*it];
@@ -269,7 +256,7 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGallery(
   prefs->SetUint64(prefs::kMediaGalleriesUniqueId, gallery_info.pref_id + 1);
   gallery_info.display_name = display_name;
   gallery_info.device_id = device_id;
-  gallery_info.path = relative_path;
+  gallery_info.path = normalized_relative_path;
   gallery_info.type = MediaGalleryPrefInfo::kAutoDetected;
   if (user_added)
     gallery_info.type = MediaGalleryPrefInfo::kUserAdded;
@@ -284,10 +271,12 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGallery(
 
 MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryByPath(
     const FilePath& path) {
-  std::string device_id =
-      MediaFileSystemRegistry::GetInstance()->GetDeviceIdFromPath(path);
-  string16 display_name = ComputeDisplayName(path);
-  return AddGallery(device_id, display_name, path, true);
+  MediaGalleryPrefInfo gallery_info;
+  if (LookUpGalleryByPath(path, &gallery_info))
+    return gallery_info.pref_id;
+  DCHECK_EQ(kInvalidMediaGalleryPrefId, gallery_info.pref_id);
+  return AddGallery(gallery_info.device_id, gallery_info.display_name,
+                    gallery_info.path, true /*user added*/);
 }
 
 void MediaGalleriesPreferences::ForgetGalleryById(MediaGalleryPrefId pref_id) {
@@ -387,12 +376,6 @@ void MediaGalleriesPreferences::Shutdown() {
 bool MediaGalleriesPreferences::UserInteractionIsEnabled() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableMediaGalleryUI);
-}
-
-// static
-string16 MediaGalleriesPreferences::ComputeDisplayName(const FilePath& path) {
-  // Assumes that path is a directory and not a file.
-  return path.BaseName().LossyDisplayName();
 }
 
 // static

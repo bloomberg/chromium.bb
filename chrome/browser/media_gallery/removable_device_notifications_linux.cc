@@ -257,6 +257,7 @@ RemovableDeviceNotificationsLinux::~RemovableDeviceNotificationsLinux() {
 // static
 RemovableDeviceNotificationsLinux*
 RemovableDeviceNotificationsLinux::GetInstance() {
+  DCHECK(g_removable_device_notifications_linux != NULL);
   return g_removable_device_notifications_linux;
 }
 

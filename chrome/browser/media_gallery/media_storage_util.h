@@ -31,9 +31,6 @@ class MediaStorageUtil {
 
   typedef base::Callback<void(bool)> BoolCallback;
   typedef base::Callback<void(FilePath)> FilePathCallback;
-  typedef base::Callback<void(std::string /*device id*/,
-                              FilePath /*path relative to device root*/,
-                              string16 /*display name*/)> DeviceInfoCallback;
 
   // Returns a device id given properties of the device. A prefix dependent on
   // |type| is added so |unique_id| need only be unique within the given type.
@@ -57,19 +54,37 @@ class MediaStorageUtil {
   static void IsDeviceAttached(const std::string& device_id,
                                const BoolCallback& callback);
 
-  // Given |path|, get the device_id, relative path from the root of the
-  // device, and the device name.
+  // Given |path|, fill in |device_id|, |device_name|, and |relative_path|
+  // (from the root of the device) if they are not NULL.
   static void GetDeviceInfoFromPath(const FilePath& path,
-                                    const DeviceInfoCallback& callback);
+                                    std::string* device_id,
+                                    string16* device_name,
+                                    FilePath* relative_path);
 
   // Get a FilePath for the given |device_id|.  If the device isn't connected
   // or isn't a mass storage type, the FilePath will be empty.
   static void FindDevicePathById(const std::string& device_id,
                                  const FilePathCallback& callback);
 
+ protected:
+  typedef void (*GetDeviceInfoFromPathFunction)(const FilePath& path,
+                                                std::string* device_id,
+                                                string16* device_name,
+                                                FilePath* relative_path);
+
+  // Set the implementation of GetDeviceInfoFromPath for testing.
+  static void SetGetDeviceInfoFromPathFunctionForTesting(
+      GetDeviceInfoFromPathFunction function);
+
  private:
   // All methods are static, this class should not be instantiated.
   MediaStorageUtil();
+
+  // Per platform implementation.
+  static void GetDeviceInfoFromPathImpl(const FilePath& path,
+                                        std::string* device_id,
+                                        string16* device_name,
+                                        FilePath* relative_path);
 
   DISALLOW_COPY_AND_ASSIGN(MediaStorageUtil);
 };
