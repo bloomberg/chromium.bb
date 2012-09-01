@@ -921,7 +921,7 @@ void DragTabToWindowInSeparateDisplayStep2(
 
   // Move it close to the beginning of the target tabstrip.
   target_point.set_x(
-      target_point.x() - target_tab_strip->tab_at(0)->width() / 2 + 5);
+      target_point.x() - target_tab_strip->tab_at(0)->width() / 2 + 10);
   ASSERT_TRUE(test->DragInputToAsync(target_point));
 }
 

@@ -25,6 +25,12 @@ const char kAshEnableWorkspace2[] = "ash-enable-workspace2";
 // Disable using Ash notifications.
 const char kAshNotifyDisabled[] = "ash-notify-disabled";
 
+// Specifies the layout mode and offsets for the secondary display for
+// testing. The format is "<t|r|b|l>,<offset>" where t=TOP, r=RIGHT,
+// b=BOTTOM and L=LEFT. For example, 'r,-100' means the secondary display
+// is positioned on the right with -100 offset. (above than primary)
+const char kAshSecondaryDisplayLayout[] = "ash-secondary-display-layout";
+
 // Enables the heads-up display for tracking touch points.
 const char kAshTouchHud[] = "ash-touch-hud";
 

@@ -417,8 +417,7 @@ void Shell::Init() {
     AddEnvEventFilter(touch_observer_hud_.get());
   }
 
-  mouse_cursor_filter_.reset(
-      new internal::MouseCursorEventFilter(display_controller_.get()));
+  mouse_cursor_filter_.reset(new internal::MouseCursorEventFilter());
   AddEnvEventFilter(mouse_cursor_filter_.get());
 
   // Create Controllers that may need root window.

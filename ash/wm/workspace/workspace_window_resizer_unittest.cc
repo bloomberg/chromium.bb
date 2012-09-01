@@ -4,7 +4,7 @@
 
 #include "ash/wm/workspace/workspace_window_resizer.h"
 
-#include "ash/display/display_controller.h"
+#include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -655,47 +655,57 @@ TEST_F(WorkspaceWindowResizerTest, MAYBE_PhantomStyle) {
   }
 }
 
-// Verifies if the resizer sets and resets DisplayController::dont_warp_mouse_
-// as expected.
+// Verifies if the resizer sets and resets
+// MouseCursorEventFilter::mouse_warp_mode_ as expected.
 TEST_F(WorkspaceWindowResizerTest, WarpMousePointer) {
-  DisplayController* controller = Shell::GetInstance()->display_controller();
-  ASSERT_TRUE(controller);
+  MouseCursorEventFilter* event_filter =
+      Shell::GetInstance()->mouse_cursor_filter();
+  ASSERT_TRUE(event_filter);
   window_->SetBounds(gfx::Rect(0, 0, 50, 60));
 
-  EXPECT_FALSE(controller->dont_warp_mouse_);
+  EXPECT_EQ(MouseCursorEventFilter::WARP_ALWAYS,
+            event_filter->mouse_warp_mode_);
   {
     scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
         window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
     // While dragging a window, warp should be allowed.
-    EXPECT_FALSE(controller->dont_warp_mouse_);
+    EXPECT_EQ(MouseCursorEventFilter::WARP_DRAG,
+              event_filter->mouse_warp_mode_);
     resizer->CompleteDrag(0);
   }
-  EXPECT_FALSE(controller->dont_warp_mouse_);
+  EXPECT_EQ(MouseCursorEventFilter::WARP_ALWAYS,
+            event_filter->mouse_warp_mode_);
 
   {
     scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
         window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
-    EXPECT_FALSE(controller->dont_warp_mouse_);
+    EXPECT_EQ(MouseCursorEventFilter::WARP_DRAG,
+              event_filter->mouse_warp_mode_);
     resizer->RevertDrag();
   }
-  EXPECT_FALSE(controller->dont_warp_mouse_);
+  EXPECT_EQ(MouseCursorEventFilter::WARP_ALWAYS,
+            event_filter->mouse_warp_mode_);
 
   {
     scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
         window_.get(), gfx::Point(), HTRIGHT, empty_windows()));
     // While resizing a window, warp should NOT be allowed.
-    EXPECT_TRUE(controller->dont_warp_mouse_);
+    EXPECT_EQ(MouseCursorEventFilter::WARP_NONE,
+              event_filter->mouse_warp_mode_);
     resizer->CompleteDrag(0);
   }
-  EXPECT_FALSE(controller->dont_warp_mouse_);
+  EXPECT_EQ(MouseCursorEventFilter::WARP_ALWAYS,
+            event_filter->mouse_warp_mode_);
 
   {
     scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
         window_.get(), gfx::Point(), HTRIGHT, empty_windows()));
-    EXPECT_TRUE(controller->dont_warp_mouse_);
+    EXPECT_EQ(MouseCursorEventFilter::WARP_NONE,
+              event_filter->mouse_warp_mode_);
     resizer->RevertDrag();
   }
-  EXPECT_FALSE(controller->dont_warp_mouse_);
+  EXPECT_EQ(MouseCursorEventFilter::WARP_ALWAYS,
+            event_filter->mouse_warp_mode_);
 }
 
 // Verifies windows are correctly restacked when reordering multiple windows.
@@ -737,6 +747,8 @@ TEST_F(WorkspaceWindowResizerTest, RestackAttached) {
 TEST_F(WorkspaceWindowResizerTest, DontDragOffBottom) {
   Shell::GetInstance()->SetDisplayWorkAreaInsets(
       Shell::GetPrimaryRootWindow(), gfx::Insets(0, 0, 10, 0));
+
+  ASSERT_EQ(1, gfx::Screen::GetNumDisplays());
 
   window_->SetBounds(gfx::Rect(100, 200, 300, 400));
   SetGridSize(0);
@@ -894,5 +906,5 @@ TEST_F(WorkspaceWindowResizerTest, CtrlCompleteDragMoveToExactPosition) {
   EXPECT_EQ("106,124 320x160", window_->bounds().ToString());
 }
 
-}  // namespace test
+}  // namespace internal
 }  // namespace ash

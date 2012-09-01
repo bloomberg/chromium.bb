@@ -39,8 +39,7 @@ const int kMinimumOverlapForInvalidOffset = 50;
 
 DisplayController::DisplayController()
     : secondary_display_layout_(RIGHT),
-      secondary_display_offset_(0),
-      dont_warp_mouse_(false) {
+      secondary_display_offset_(0) {
   aura::Env::GetInstance()->display_manager()->AddObserver(this);
 }
 
@@ -72,6 +71,24 @@ void DisplayController::InitSecondaryDisplays() {
     const gfx::Display* display = display_manager->GetDisplayAt(i);
     aura::RootWindow* root = AddRootWindowForDisplay(*display);
     Shell::GetInstance()->InitRootWindowForSecondaryDisplay(root);
+  }
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kAshSecondaryDisplayLayout)) {
+    std::string value = command_line->GetSwitchValueASCII(
+        switches::kAshSecondaryDisplayLayout);
+    char layout;
+    int offset;
+    if (sscanf(value.c_str(), "%c,%d", &layout, &offset) == 2) {
+      if (layout == 't')
+        secondary_display_layout_ = TOP;
+      else if (layout == 'b')
+        secondary_display_layout_ = BOTTOM;
+      else if (layout == 'r')
+        secondary_display_layout_ = RIGHT;
+      else if (layout == 'l')
+        secondary_display_layout_ = LEFT;
+      secondary_display_offset_ = offset;
+    }
   }
   UpdateDisplayBoundsForLayout();
 }
@@ -139,52 +156,6 @@ void DisplayController::SetSecondaryDisplayOffset(int offset) {
   UpdateDisplayBoundsForLayout();
 }
 
-bool DisplayController::WarpMouseCursorIfNecessary(
-    aura::RootWindow* current_root,
-    const gfx::Point& point_in_root) {
-  if (root_windows_.size() < 2 || dont_warp_mouse_)
-    return false;
-  const float scale = ui::GetDeviceScaleFactor(current_root->layer());
-
-  // The pointer might be outside the |current_root|. Get the root window where
-  // the pointer is currently on.
-  std::pair<aura::RootWindow*, gfx::Point> actual_location =
-      wm::GetRootWindowRelativeToWindow(current_root, point_in_root);
-  current_root = actual_location.first;
-  // Don't use |point_in_root| below. Instead, use |actual_location.second|
-  // which is in |actual_location.first|'s coordinates.
-
-  gfx::Rect root_bounds = current_root->bounds();
-  int offset_x = 0;
-  int offset_y = 0;
-  if (actual_location.second.x() <= root_bounds.x()) {
-    // Use -2, not -1, to avoid infinite loop of pointer warp.
-    offset_x = -2 * scale;
-  } else if (actual_location.second.x() >= root_bounds.right() - 1) {
-    offset_x = 2 * scale;
-  } else if (actual_location.second.y() <= root_bounds.y()) {
-    offset_y = -2 * scale;
-  } else if (actual_location.second.y() >= root_bounds.bottom() - 1) {
-    offset_y = 2 * scale;
-  } else {
-    return false;
-  }
-
-  gfx::Point point_in_screen(actual_location.second);
-  wm::ConvertPointToScreen(current_root, &point_in_screen);
-  point_in_screen.Offset(offset_x, offset_y);
-
-  aura::RootWindow* dst_root = wm::GetRootWindowAt(point_in_screen);
-  gfx::Point point_in_dst_root(point_in_screen);
-  wm::ConvertPointFromScreen(dst_root, &point_in_dst_root);
-
-  if (dst_root->bounds().Contains(point_in_dst_root)) {
-    DCHECK_NE(dst_root, current_root);
-    dst_root->MoveCursorTo(point_in_dst_root);
-    return true;
-  }
-  return false;
-}
 
 void DisplayController::OnDisplayBoundsChanged(const gfx::Display& display) {
   root_windows_[display.id()]->SetHostBounds(display.bounds_in_pixel());
@@ -192,11 +163,7 @@ void DisplayController::OnDisplayBoundsChanged(const gfx::Display& display) {
 }
 
 void DisplayController::OnDisplayAdded(const gfx::Display& display) {
-  if (root_windows_.empty()) {
-    root_windows_[display.id()] = Shell::GetPrimaryRootWindow();
-    Shell::GetPrimaryRootWindow()->SetHostBounds(display.bounds_in_pixel());
-    return;
-  }
+  DCHECK(!root_windows_.empty());
   aura::RootWindow* root = AddRootWindowForDisplay(display);
   Shell::GetInstance()->InitRootWindowForSecondaryDisplay(root);
   UpdateDisplayBoundsForLayout();
@@ -206,15 +173,15 @@ void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
   aura::RootWindow* root = root_windows_[display.id()];
   DCHECK(root);
   // Primary display should never be removed by DisplayManager.
-  DCHECK(root != Shell::GetPrimaryRootWindow());
+  DCHECK(root != GetPrimaryRootWindow());
   // Display for root window will be deleted when the Primary RootWindow
   // is deleted by the Shell.
-  if (root != Shell::GetPrimaryRootWindow()) {
+  if (root != GetPrimaryRootWindow()) {
     root_windows_.erase(display.id());
     internal::RootWindowController* controller =
         GetRootWindowController(root);
     if (controller) {
-      controller->MoveWindowsTo(Shell::GetPrimaryRootWindow());
+      controller->MoveWindowsTo(GetPrimaryRootWindow());
       delete controller;
     } else {
       delete root;

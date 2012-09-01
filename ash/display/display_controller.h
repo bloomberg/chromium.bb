@@ -11,7 +11,6 @@
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/gtest_prod_util.h"
 #include "ui/aura/display_observer.h"
 #include "ui/aura/display_manager.h"
 
@@ -72,18 +71,6 @@ class ASH_EXPORT DisplayController : public aura::DisplayObserver {
   }
   void SetSecondaryDisplayOffset(int offset);
 
-  void set_dont_warp_mouse(bool dont_warp_mouse) {
-    dont_warp_mouse_ = dont_warp_mouse;
-  }
-
-  // Warps the mouse cursor to an alternate root window when the
-  // |point_in_root|, which is the location of the mouse cursor,
-  // hits or exceeds the edge of the |root_window| and the mouse cursor
-  // is considered to be in an alternate display. Returns true if
-  // the cursor was moved.
-  bool WarpMouseCursorIfNecessary(aura::RootWindow* root_window,
-                                  const gfx::Point& point_in_root);
-
   // aura::DisplayObserver overrides:
   virtual void OnDisplayBoundsChanged(
       const gfx::Display& display) OVERRIDE;
@@ -91,8 +78,6 @@ class ASH_EXPORT DisplayController : public aura::DisplayObserver {
   virtual void OnDisplayRemoved(const gfx::Display& display) OVERRIDE;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(WorkspaceWindowResizerTest, WarpMousePointer);
-
   // Creates a root window for |display| and stores it in the |root_windows_|
   // map.
   aura::RootWindow* AddRootWindowForDisplay(const gfx::Display& display);
@@ -107,9 +92,6 @@ class ASH_EXPORT DisplayController : public aura::DisplayObserver {
   // The offset of the position of the secondary display.  The offset is
   // based on the top/left edge of the primary display.
   int secondary_display_offset_;
-
-  // If true, the mouse pointer can't move from one display to another.
-  bool dont_warp_mouse_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayController);
 };

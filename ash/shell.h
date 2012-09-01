@@ -277,6 +277,9 @@ class ASH_EXPORT Shell : ash::CursorDelegate {
   internal::DisplayController* display_controller() {
     return display_controller_.get();
   }
+  internal::MouseCursorEventFilter* mouse_cursor_filter() {
+    return mouse_cursor_filter_.get();
+  }
   CursorManager* cursor_manager() { return &cursor_manager_; }
 
   ShellDelegate* delegate() { return delegate_.get(); }

@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include "ash/display/display_controller.h"
+#include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/wm/coordinate_conversion.h"
@@ -70,7 +71,9 @@ const int WorkspaceWindowResizer::kMinOnscreenHeight = 32;
 
 WorkspaceWindowResizer::~WorkspaceWindowResizer() {
   Shell* shell = Shell::GetInstance();
-  shell->display_controller()->set_dont_warp_mouse(false);
+  shell->mouse_cursor_filter()->set_mouse_warp_mode(
+      MouseCursorEventFilter::WARP_ALWAYS);
+  shell->mouse_cursor_filter()->HideSharedEdgeIndicator();
   shell->cursor_manager()->UnlockCursor();
 
   // Delete phantom controllers first so that they will never see the deleted
@@ -205,6 +208,7 @@ void WorkspaceWindowResizer::RevertDrag() {
   window()->layer()->SetOpacity(details_.initial_opacity);
   drag_phantom_window_controller_.reset();
   snap_phantom_window_controller_.reset();
+  Shell::GetInstance()->mouse_cursor_filter()->HideSharedEdgeIndicator();
 
   if (!did_move_or_resize_)
     return;
@@ -251,9 +255,16 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
   // The pointer should be confined in one display during resizing a window
   // because the window cannot span two displays at the same time anyway. The
   // exception is window/tab dragging operation. During that operation,
-  // |dont_warp_mouse_| should be set to false so that the user could move a
+  // |mouse_warp_mode_| should be set to WARP_DRAG so that the user could move a
   // window/tab to another display.
-  shell->display_controller()->set_dont_warp_mouse(!ShouldAllowMouseWarp());
+  MouseCursorEventFilter* mouse_cursor_filter = shell->mouse_cursor_filter();
+  mouse_cursor_filter->set_mouse_warp_mode(
+      ShouldAllowMouseWarp() ?
+      MouseCursorEventFilter::WARP_DRAG : MouseCursorEventFilter::WARP_NONE);
+  if (ShouldAllowMouseWarp()) {
+    mouse_cursor_filter->ShowSharedEdgeIndicator(
+        details.window->GetRootWindow());
+  }
 
   // Only support attaching to the right/bottom.
   DCHECK(attached_windows_.empty() ||
