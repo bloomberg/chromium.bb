@@ -200,3 +200,12 @@
   fun:testing::Test::DeleteSelf_
   fun:testing::internal::HandleExceptionsInMethodIfSupported
 }
+
+{
+  bug_146119
+  ThreadSanitizer:Race
+  ...
+  fun:GetAdaptersAddresses
+  ...
+  fun:base::internal::RunnableAdapter::Run
+}
