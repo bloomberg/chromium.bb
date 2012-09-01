@@ -25,7 +25,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/metrics/variations/variations_util.h"
-#include "net/http/http_network_layer.h"
 #include "net/http/http_stream_factory.h"
 #include "net/socket/client_socket_pool_base.h"
 #include "net/socket/client_socket_pool_manager.h"
@@ -275,62 +274,6 @@ void ChromeBrowserFieldTrials::ProxyConnectionsFieldTrial() {
 //           default group: no npn or spdy is involved. The "old" non-spdy
 //                          chrome behavior.
 void ChromeBrowserFieldTrials::SpdyFieldTrial() {
-  bool use_field_trial = true;
-  if (parsed_command_line_.HasSwitch(switches::kUseSpdy)) {
-    std::string spdy_mode =
-        parsed_command_line_.GetSwitchValueASCII(switches::kUseSpdy);
-    net::HttpNetworkLayer::EnableSpdy(spdy_mode);
-    use_field_trial = false;
-  }
-  if (parsed_command_line_.HasSwitch(switches::kEnableSpdy3)) {
-    net::HttpStreamFactory::EnableNpnSpdy3();
-    use_field_trial = false;
-  } else if (parsed_command_line_.HasSwitch(switches::kEnableNpn)) {
-    net::HttpStreamFactory::EnableNpnSpdy();
-    use_field_trial = false;
-  } else if (parsed_command_line_.HasSwitch(switches::kEnableNpnHttpOnly)) {
-    net::HttpStreamFactory::EnableNpnHttpOnly();
-    use_field_trial = false;
-  }
-  if (use_field_trial) {
-    const base::FieldTrial::Probability kSpdyDivisor = 100;
-    // Enable SPDY/3 for 95% of the users, HTTP (no SPDY) for 1% of the users
-    // and SPDY/2 for 4% of the users.
-    base::FieldTrial::Probability npnhttp_probability = 1;
-    base::FieldTrial::Probability spdy3_probability = 95;
-
-#if defined(OS_CHROMEOS)
-    // Always enable SPDY (spdy/2 or spdy/3) on Chrome OS
-    npnhttp_probability = 0;
-#endif  // !defined(OS_CHROMEOS)
-
-    // NPN with spdy support is the default.
-    int npn_spdy_grp = -1;
-
-    // After June 30, 2013 builds, it will always be in default group.
-    scoped_refptr<base::FieldTrial> trial(
-        base::FieldTrialList::FactoryGetFieldTrial(
-            "SpdyImpact", kSpdyDivisor, "npn_with_spdy", 2013, 6, 30,
-            &npn_spdy_grp));
-
-    // NPN with only http support, no spdy.
-    int npn_http_grp = trial->AppendGroup("npn_with_http", npnhttp_probability);
-
-    // NPN with http/1.1, spdy/2, and spdy/3 support.
-    int spdy3_grp = trial->AppendGroup("spdy3", spdy3_probability);
-
-    int trial_grp = trial->group();
-    if (trial_grp == npn_spdy_grp) {
-      net::HttpStreamFactory::EnableNpnSpdy();
-    } else if (trial_grp == npn_http_grp) {
-      net::HttpStreamFactory::EnableNpnHttpOnly();
-    } else if (trial_grp == spdy3_grp) {
-      net::HttpStreamFactory::EnableNpnSpdy3();
-    } else {
-      NOTREACHED();
-    }
-  }
-
   // Setup SPDY CWND Field trial.
   const base::FieldTrial::Probability kSpdyCwndDivisor = 100;
   const base::FieldTrial::Probability kSpdyCwnd16 = 20;     // fixed at 16

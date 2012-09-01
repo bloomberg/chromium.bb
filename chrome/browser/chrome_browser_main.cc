@@ -110,6 +110,7 @@
 #include "net/base/net_module.h"
 #include "net/base/sdch_manager.h"
 #include "net/cookies/cookie_monster.h"
+#include "net/http/http_network_layer.h"
 #include "net/http/http_stream_factory.h"
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_session_pool.h"
@@ -253,6 +254,27 @@ void InitializeNetworkOptions(const CommandLine& parsed_command_line) {
             switches::kTestingFixedHttpsPort),
         &value);
     net::HttpStreamFactory::set_testing_fixed_https_port(value);
+  }
+
+  bool used_spdy_switch = false;
+  if (parsed_command_line.HasSwitch(switches::kUseSpdy)) {
+    std::string spdy_mode =
+        parsed_command_line.GetSwitchValueASCII(switches::kUseSpdy);
+    net::HttpNetworkLayer::EnableSpdy(spdy_mode);
+    used_spdy_switch = true;
+  }
+  if (parsed_command_line.HasSwitch(switches::kEnableSpdy3)) {
+    net::HttpStreamFactory::EnableNpnSpdy3();
+    used_spdy_switch = true;
+  } else if (parsed_command_line.HasSwitch(switches::kEnableNpn)) {
+    net::HttpStreamFactory::EnableNpnSpdy();
+    used_spdy_switch = true;
+  } else if (parsed_command_line.HasSwitch(switches::kEnableNpnHttpOnly)) {
+    net::HttpStreamFactory::EnableNpnHttpOnly();
+    used_spdy_switch = true;
+  }
+  if (!used_spdy_switch) {
+    net::HttpStreamFactory::EnableNpnSpdy3();
   }
 }
 
