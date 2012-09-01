@@ -221,7 +221,8 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
       const gfx::Rect& paint_bounds,
       TransportDIB** dib,
       gfx::Rect* dib_bounds,
-      gfx::Rect* clip);
+      gfx::Rect* clip,
+      float* scale_factor);
 
   // Tracks all live PluginObjects.
   void AddPluginObject(PluginObject* plugin_object);

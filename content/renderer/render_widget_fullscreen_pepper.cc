@@ -409,11 +409,12 @@ RenderWidgetFullscreenPepper::GetBitmapForOptimizedPluginPaint(
     const gfx::Rect& paint_bounds,
     TransportDIB** dib,
     gfx::Rect* location,
-    gfx::Rect* clip) {
-  if (plugin_ &&
-      plugin_->GetBitmapForOptimizedPluginPaint(paint_bounds, dib,
-                                                location, clip))
+    gfx::Rect* clip,
+    float* scale_factor) {
+  if (plugin_ && plugin_->GetBitmapForOptimizedPluginPaint(
+          paint_bounds, dib, location, clip, scale_factor)) {
     return plugin_;
+  }
   return NULL;
 }
 

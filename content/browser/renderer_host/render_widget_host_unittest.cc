@@ -83,7 +83,7 @@ class RenderWidgetHostProcess : public MockRenderProcessHost {
   // message reply. False implies timeout.
   bool update_msg_should_reply_;
 
-  // Indicates the flags that should be sent with a the repaint request. This
+  // Indicates the flags that should be sent with a repaint request. This
   // only has an effect when update_msg_should_reply_ is true.
   int update_msg_reply_flags_;
 
@@ -106,6 +106,7 @@ void RenderWidgetHostProcess::InitUpdateRectParams(
   params->view_size = gfx::Size(w, h);
   params->flags = update_msg_reply_flags_;
   params->needs_ack = true;
+  params->scale_factor = 1;
 }
 
 bool RenderWidgetHostProcess::WaitForBackingStoreMsg(
@@ -1091,3 +1092,17 @@ TEST_F(RenderWidgetHostTest, MultipleInputEvents) {
   MessageLoop::current()->Run();
   EXPECT_TRUE(host_->unresponsive_timer_fired());
 }
+
+// This test is not valid for Windows because getting the shared memory
+// size doesn't work.
+#if !defined(OS_WIN)
+TEST_F(RenderWidgetHostTest, IncorrectBitmapScaleFactor) {
+  ViewHostMsg_UpdateRect_Params params;
+  process_->InitUpdateRectParams(&params);
+  params.scale_factor = params.scale_factor * 2;
+
+  EXPECT_EQ(0, process_->bad_msg_count());
+  host_->OnMsgUpdateRect(params);
+  EXPECT_EQ(1, process_->bad_msg_count());
+}
+#endif

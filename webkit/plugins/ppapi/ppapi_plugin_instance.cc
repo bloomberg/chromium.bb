@@ -982,7 +982,8 @@ bool PluginInstance::GetBitmapForOptimizedPluginPaint(
     const gfx::Rect& paint_bounds,
     TransportDIB** dib,
     gfx::Rect* location,
-    gfx::Rect* clip) {
+    gfx::Rect* clip,
+    float* scale_factor) {
   if (!always_on_top_)
     return false;
   if (!GetBoundGraphics2D() || !GetBoundGraphics2D()->is_always_opaque())
@@ -1009,6 +1010,7 @@ bool PluginInstance::GetBitmapForOptimizedPluginPaint(
   *dib = image_data->PlatformImage()->GetTransportDIB();
   *location = plugin_backing_store_rect;
   *clip = clip_page;
+  *scale_factor = GetBoundGraphics2D()->GetScale();
   return true;
 }
 

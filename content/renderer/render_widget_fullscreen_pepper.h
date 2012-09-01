@@ -80,7 +80,8 @@ class RenderWidgetFullscreenPepper :
       const gfx::Rect& paint_bounds,
       TransportDIB** dib,
       gfx::Rect* location,
-      gfx::Rect* clip) OVERRIDE;
+      gfx::Rect* clip,
+      float* scale_factor) OVERRIDE;
   virtual void OnResize(const gfx::Size& new_size,
                         const gfx::Rect& resizer_rect,
                         bool is_fullscreen) OVERRIDE;

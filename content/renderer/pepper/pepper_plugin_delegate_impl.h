@@ -116,7 +116,8 @@ class PepperPluginDelegateImpl
       const gfx::Rect& paint_bounds,
       TransportDIB** dib,
       gfx::Rect* location,
-      gfx::Rect* clip);
+      gfx::Rect* clip,
+      float* scale_factor);
 
   // Called by RenderView when ViewMsg_AsyncOpenFile_ACK.
   void OnAsyncFileOpened(base::PlatformFileError error_code,

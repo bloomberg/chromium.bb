@@ -668,10 +668,12 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
   // First see if this rect is a plugin that can paint itself faster.
   TransportDIB* optimized_dib = NULL;
   gfx::Rect optimized_copy_rect, optimized_copy_location;
+  float dib_scale_factor;
   webkit::ppapi::PluginInstance* optimized_instance =
       GetBitmapForOptimizedPluginPaint(rect, &optimized_dib,
                                        &optimized_copy_location,
-                                       &optimized_copy_rect);
+                                       &optimized_copy_rect,
+                                       &dib_scale_factor);
   if (optimized_instance) {
     // This plugin can be optimize-painted and we can just ask it to paint
     // itself. We don't actually need the TransportDIB in this case.
@@ -931,6 +933,7 @@ void RenderWidget::DoDeferredUpdate() {
   // case where there may be multiple invalid regions.
   TransportDIB* dib = NULL;
   gfx::Rect optimized_copy_rect, optimized_copy_location;
+  float dib_scale_factor = 1;
   DCHECK(!pending_update_params_.get());
   pending_update_params_.reset(new ViewHostMsg_UpdateRect_Params);
   pending_update_params_->dx = update.scroll_delta.x();
@@ -948,12 +951,14 @@ void RenderWidget::DoDeferredUpdate() {
   if (update.scroll_rect.IsEmpty() &&
       !is_accelerated_compositing_active_ &&
       GetBitmapForOptimizedPluginPaint(bounds, &dib, &optimized_copy_location,
-                                       &optimized_copy_rect)) {
+                                       &optimized_copy_rect,
+                                       &dib_scale_factor)) {
     // Only update the part of the plugin that actually changed.
     optimized_copy_rect = optimized_copy_rect.Intersect(bounds);
     pending_update_params_->bitmap = dib->id();
     pending_update_params_->bitmap_rect = optimized_copy_location;
     pending_update_params_->copy_rects.push_back(optimized_copy_rect);
+    pending_update_params_->scale_factor = dib_scale_factor;
   } else if (!is_accelerated_compositing_active_) {
     // Compute a buffer for painting and cache it.
     gfx::Rect pixel_bounds = bounds.Scale(device_scale_factor_);
@@ -1557,7 +1562,8 @@ webkit::ppapi::PluginInstance* RenderWidget::GetBitmapForOptimizedPluginPaint(
     const gfx::Rect& paint_bounds,
     TransportDIB** dib,
     gfx::Rect* location,
-    gfx::Rect* clip) {
+    gfx::Rect* clip,
+    float* scale_factor) {
   // Bare RenderWidgets don't support optimized plugin painting.
   return NULL;
 }

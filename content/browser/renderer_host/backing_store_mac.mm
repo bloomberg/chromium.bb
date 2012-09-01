@@ -87,9 +87,13 @@ void BackingStoreMac::PaintToBackingStore(
   gfx::Size pixel_size = size().Scale(device_scale_factor_);
   gfx::Rect pixel_bitmap_rect = bitmap_rect.Scale(scale_factor);
 
+  size_t bitmap_byte_count =
+      pixel_bitmap_rect.width() * pixel_bitmap_rect.height() * 4;
+  DCHECK_GE(dib->size(), bitmap_byte_count);
+
   base::mac::ScopedCFTypeRef<CGDataProviderRef> data_provider(
       CGDataProviderCreateWithData(NULL, dib->memory(),
-      pixel_bitmap_rect.width() * pixel_bitmap_rect.height() * 4, NULL));
+      bitmap_byte_count, NULL));
 
   base::mac::ScopedCFTypeRef<CGImageRef> bitmap_image(
       CGImageCreate(pixel_bitmap_rect.width(), pixel_bitmap_rect.height(),

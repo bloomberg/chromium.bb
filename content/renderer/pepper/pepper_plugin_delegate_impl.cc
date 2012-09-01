@@ -536,13 +536,14 @@ PepperPluginDelegateImpl::GetBitmapForOptimizedPluginPaint(
     const gfx::Rect& paint_bounds,
     TransportDIB** dib,
     gfx::Rect* location,
-    gfx::Rect* clip) {
+    gfx::Rect* clip,
+    float* scale_factor) {
   for (std::set<webkit::ppapi::PluginInstance*>::iterator i =
            active_instances_.begin();
        i != active_instances_.end(); ++i) {
     webkit::ppapi::PluginInstance* instance = *i;
     if (instance->GetBitmapForOptimizedPluginPaint(
-            paint_bounds, dib, location, clip))
+            paint_bounds, dib, location, clip, scale_factor))
       return *i;
   }
   return NULL;

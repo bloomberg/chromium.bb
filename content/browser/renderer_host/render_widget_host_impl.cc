@@ -1401,8 +1401,8 @@ void RenderWidgetHostImpl::OnMsgUpdateRect(
   // and backing store is never used.
   if (dib) {
     DCHECK(!params.bitmap_rect.IsEmpty());
-    const size_t size = params.bitmap_rect.height() *
-        params.bitmap_rect.width() * 4;
+    gfx::Size pixel_size = params.bitmap_rect.size().Scale(params.scale_factor);
+    const size_t size = pixel_size.height() * pixel_size.width() * 4;
     if (dib->size() < size) {
       DLOG(WARNING) << "Transport DIB too small for given rectangle";
       RecordAction(UserMetricsAction("BadMessageTerminate_RWH1"));

@@ -772,7 +772,8 @@ class RenderViewImpl : public RenderWidget,
       const gfx::Rect& paint_bounds,
       TransportDIB** dib,
       gfx::Rect* location,
-      gfx::Rect* clip) OVERRIDE;
+      gfx::Rect* clip,
+      float* scale_factor) OVERRIDE;
   virtual gfx::Point GetScrollOffset() OVERRIDE;
   virtual void DidHandleKeyEvent() OVERRIDE;
   virtual bool WillHandleMouseEvent(
