@@ -413,10 +413,11 @@ void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
   if (star_view_ && !ActionBoxButtonView::IsActionBoxEnabled())
     star_view_->SetVisible(star_enabled);
 
-  bool enabled = ChromeToMobileService::IsChromeToMobileEnabled() &&
-      !model_->input_in_progress() &&
-      ChromeToMobileServiceFactory::GetForProfile(profile_)->HasMobiles();
-  command_updater_->UpdateCommandEnabled(IDC_CHROME_TO_MOBILE_PAGE, enabled);
+  ChromeToMobileService* chrome_to_mobile_service =
+      ChromeToMobileServiceFactory::GetForProfile(profile_);
+  command_updater_->UpdateCommandEnabled(IDC_CHROME_TO_MOBILE_PAGE,
+      !model_->input_in_progress() && chrome_to_mobile_service &&
+          chrome_to_mobile_service->HasMobiles());
 
   // Don't Update in app launcher mode so that the location entry does not show
   // a URL or security background.

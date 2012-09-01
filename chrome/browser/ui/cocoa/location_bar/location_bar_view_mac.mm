@@ -725,10 +725,11 @@ bool LocationBarViewMac::IsStarEnabled() {
 }
 
 void LocationBarViewMac::UpdateChromeToMobileEnabled() {
-  bool enabled = ChromeToMobileService::IsChromeToMobileEnabled() &&
+  ChromeToMobileService* chrome_to_mobile_service =
+      ChromeToMobileServiceFactory::GetForProfile(profile_);
+  command_updater_->UpdateCommandEnabled(IDC_CHROME_TO_MOBILE_PAGE,
       [field_ isEditable] && !toolbar_model_->input_in_progress() &&
-      ChromeToMobileServiceFactory::GetForProfile(profile_)->HasMobiles();
-  command_updater_->UpdateCommandEnabled(IDC_CHROME_TO_MOBILE_PAGE, enabled);
+      chrome_to_mobile_service && chrome_to_mobile_service->HasMobiles());
 }
 
 void LocationBarViewMac::UpdateZoomDecoration() {
