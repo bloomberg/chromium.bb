@@ -18,7 +18,7 @@ namespace WebKit {
 
 class WebFloatAnimationCurveImpl : public WebFloatAnimationCurve {
 public:
-    explicit WebFloatAnimationCurveImpl(PassOwnPtr<WebCore::CCKeyframedFloatAnimationCurve>);
+    WebFloatAnimationCurveImpl();
     virtual ~WebFloatAnimationCurveImpl();
 
     // WebAnimationCurve implementation.

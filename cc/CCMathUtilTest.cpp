@@ -6,7 +6,7 @@
 
 #include "CCMathUtil.h"
 
-#include "CCLayerTreeTestCommon.h"
+#include "CCGeometryTestUtils.h"
 #include "FloatRect.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>

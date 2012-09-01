@@ -8,15 +8,11 @@
 #include <public/WebIOSurfaceLayer.h>
 #include <wtf/OwnPtr.h>
 
-namespace WebCore {
-class IOSurfaceLayerChromium;
-}
-
 namespace WebKit {
 
 class WebIOSurfaceLayerImpl : public WebIOSurfaceLayer {
 public:
-    explicit WebIOSurfaceLayerImpl(PassRefPtr<WebCore::IOSurfaceLayerChromium>);
+    WebIOSurfaceLayerImpl();
     virtual ~WebIOSurfaceLayerImpl();
 
     // WebIOSurfaceLayer implementation.

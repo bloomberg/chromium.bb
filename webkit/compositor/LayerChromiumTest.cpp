@@ -6,9 +6,9 @@
 
 #include "LayerChromium.h"
 
+#include "CCGeometryTestUtils.h"
 #include "CCLayerImpl.h"
 #include "CCLayerTreeHost.h"
-#include "CCLayerTreeTestCommon.h"
 #include "CCSingleThreadProxy.h"
 #include "FakeCCLayerTreeHostClient.h"
 #include "LayerPainterChromium.h"
