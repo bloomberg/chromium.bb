@@ -305,7 +305,7 @@ ModelTypeSet SyncManagerImpl::GetTypesWithEmptyProgressMarkerToken(
 
 void SyncManagerImpl::ConfigureSyncer(
     ConfigureReason reason,
-    const ModelTypeSet& types_to_config,
+    ModelTypeSet types_to_config,
     const ModelSafeRoutingInfo& new_routing_info,
     const base::Closure& ready_task,
     const base::Closure& retry_task) {
@@ -651,8 +651,7 @@ void SyncManagerImpl::UpdateCredentials(
   scheduler_->OnCredentialsUpdated();
 }
 
-void SyncManagerImpl::UpdateEnabledTypes(
-    const ModelTypeSet& enabled_types) {
+void SyncManagerImpl::UpdateEnabledTypes(ModelTypeSet enabled_types) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(initialized_);
   invalidator_->UpdateRegisteredIds(

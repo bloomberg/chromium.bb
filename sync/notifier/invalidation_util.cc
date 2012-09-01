@@ -72,7 +72,7 @@ std::string ObjectIdToString(
   return str;
 }
 
-ObjectIdSet ModelTypeSetToObjectIdSet(const ModelTypeSet& model_types) {
+ObjectIdSet ModelTypeSetToObjectIdSet(ModelTypeSet model_types) {
   ObjectIdSet ids;
   for (ModelTypeSet::Iterator it = model_types.First(); it.Good(); it.Inc()) {
     invalidation::ObjectId model_type_as_id;

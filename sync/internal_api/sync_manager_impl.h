@@ -86,8 +86,7 @@ class SyncManagerImpl : public SyncManager,
       ModelTypeSet types) OVERRIDE;
   virtual bool PurgePartiallySyncedTypes() OVERRIDE;
   virtual void UpdateCredentials(const SyncCredentials& credentials) OVERRIDE;
-  virtual void UpdateEnabledTypes(
-      const ModelTypeSet& enabled_types) OVERRIDE;
+  virtual void UpdateEnabledTypes(ModelTypeSet enabled_types) OVERRIDE;
   virtual void RegisterInvalidationHandler(
       InvalidationHandler* handler) OVERRIDE;
   virtual void UpdateRegisteredInvalidationIds(
@@ -99,7 +98,7 @@ class SyncManagerImpl : public SyncManager,
       const ModelSafeRoutingInfo& routing_info) OVERRIDE;
   virtual void ConfigureSyncer(
       ConfigureReason reason,
-      const ModelTypeSet& types_to_config,
+      ModelTypeSet types_to_config,
       const ModelSafeRoutingInfo& new_routing_info,
       const base::Closure& ready_task,
       const base::Closure& retry_task) OVERRIDE;

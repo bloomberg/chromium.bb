@@ -29,7 +29,7 @@ struct ConfigurationParams {
   ConfigurationParams();
   ConfigurationParams(
       const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource& source,
-      const ModelTypeSet& types_to_download,
+      ModelTypeSet types_to_download,
       const ModelSafeRoutingInfo& routing_info,
       const base::Closure& ready_task);
   ~ConfigurationParams();

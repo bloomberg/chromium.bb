@@ -149,7 +149,7 @@ SyncerError VerifyUpdatesCommand::ModelChangingExecuteImpl(
 
 VerifyUpdatesCommand::VerifyUpdateResult VerifyUpdatesCommand::VerifyUpdate(
     syncable::WriteTransaction* trans, const sync_pb::SyncEntity& entry,
-    const ModelTypeSet& requested_types,
+    ModelTypeSet requested_types,
     const ModelSafeRoutingInfo& routes) {
   syncable::Id id = SyncableIdFromProto(entry.id_string());
   VerifyUpdateResult result = {VERIFY_FAIL, GROUP_PASSIVE};

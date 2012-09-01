@@ -72,7 +72,7 @@ void PumpLoop() {
   RunLoop();
 }
 
-ModelSafeRoutingInfo TypesToRoutingInfo(const ModelTypeSet& types) {
+ModelSafeRoutingInfo TypesToRoutingInfo(ModelTypeSet types) {
   ModelSafeRoutingInfo routes;
   for (ModelTypeSet::Iterator iter = types.First(); iter.Good(); iter.Inc()) {
     routes[iter.Get()] = GROUP_PASSIVE;

@@ -69,7 +69,7 @@ ConfigurationParams::ConfigurationParams()
     : source(GetUpdatesCallerInfo::UNKNOWN) {}
 ConfigurationParams::ConfigurationParams(
     const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource& source,
-    const ModelTypeSet& types_to_download,
+    ModelTypeSet types_to_download,
     const ModelSafeRoutingInfo& routing_info,
     const base::Closure& ready_task)
     : source(source),
@@ -294,7 +294,7 @@ namespace {
 // Helper to extract the routing info and workers corresponding to types in
 // |types| from |current_routes| and |current_workers|.
 void BuildModelSafeParams(
-    const ModelTypeSet& types_to_download,
+    ModelTypeSet types_to_download,
     const ModelSafeRoutingInfo& current_routes,
     const std::vector<ModelSafeWorker*>& current_workers,
     ModelSafeRoutingInfo* result_routes,

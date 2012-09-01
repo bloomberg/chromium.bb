@@ -158,7 +158,7 @@ void FakeSyncManager::UpdateCredentials(const SyncCredentials& credentials) {
   NOTIMPLEMENTED();
 }
 
-void FakeSyncManager::UpdateEnabledTypes(const ModelTypeSet& types) {
+void FakeSyncManager::UpdateEnabledTypes(ModelTypeSet types) {
   enabled_types_ = types;
 }
 
@@ -185,7 +185,7 @@ void FakeSyncManager::StartSyncingNormally(
 
 void FakeSyncManager::ConfigureSyncer(
     ConfigureReason reason,
-    const ModelTypeSet& types_to_config,
+    ModelTypeSet types_to_config,
     const ModelSafeRoutingInfo& new_routing_info,
     const base::Closure& ready_task,
     const base::Closure& retry_task) {

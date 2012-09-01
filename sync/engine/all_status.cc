@@ -139,7 +139,7 @@ void AllStatus::SetEncryptedTypes(ModelTypeSet types) {
   status_.encrypted_types = types;
 }
 
-void AllStatus::SetThrottledTypes(const ModelTypeSet& types) {
+void AllStatus::SetThrottledTypes(ModelTypeSet types) {
   ScopedStatusLock lock(this);
   status_.throttled_types = types;
 }

@@ -52,7 +52,7 @@ bool ObjectIdFromValue(const base::DictionaryValue& value,
 
 std::string ObjectIdToString(const invalidation::ObjectId& object_id);
 
-ObjectIdSet ModelTypeSetToObjectIdSet(const ModelTypeSet& models);
+ObjectIdSet ModelTypeSetToObjectIdSet(ModelTypeSet models);
 ModelTypeSet ObjectIdSetToModelTypeSet(const ObjectIdSet& ids);
 
 std::string InvalidationToString(

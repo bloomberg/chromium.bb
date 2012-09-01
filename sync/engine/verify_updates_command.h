@@ -38,7 +38,7 @@ class VerifyUpdatesCommand : public ModelChangingSyncerCommand {
   };
   VerifyUpdateResult VerifyUpdate(syncable::WriteTransaction* trans,
                                   const sync_pb::SyncEntity& entry,
-                                  const ModelTypeSet& requested_types,
+                                  ModelTypeSet requested_types,
                                   const ModelSafeRoutingInfo& routes);
   DISALLOW_COPY_AND_ASSIGN(VerifyUpdatesCommand);
 };
