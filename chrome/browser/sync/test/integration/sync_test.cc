@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/google/google_url_tracker.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/profiles/profile.h"
@@ -280,6 +281,8 @@ bool SyncTest::SetupClients() {
   verifier_ = MakeProfile(FILE_PATH_LITERAL("Verifier"));
   ui_test_utils::WaitForBookmarkModelToLoad(
       BookmarkModelFactory::GetForProfile(verifier()));
+  ui_test_utils::WaitForHistoryToLoad(HistoryServiceFactory::GetForProfile(
+      verifier(), Profile::EXPLICIT_ACCESS));
   ui_test_utils::WaitForTemplateURLServiceToLoad(
       TemplateURLServiceFactory::GetForProfile(verifier()));
   return (verifier_ != NULL);
@@ -303,7 +306,8 @@ void SyncTest::InitializeInstance(int index) {
 
   ui_test_utils::WaitForBookmarkModelToLoad(
       BookmarkModelFactory::GetForProfile(GetProfile(index)));
-
+  ui_test_utils::WaitForHistoryToLoad(HistoryServiceFactory::GetForProfile(
+      GetProfile(index), Profile::EXPLICIT_ACCESS));
   ui_test_utils::WaitForTemplateURLServiceToLoad(
       TemplateURLServiceFactory::GetForProfile(GetProfile(index)));
 }

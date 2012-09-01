@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/file_util_proxy.h"
 #include "base/json/json_file_value_serializer.h"
@@ -17,9 +18,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_source.h"
 
 using base::TimeTicks;
 using content::BrowserThread;
@@ -83,8 +82,7 @@ void LoadCallback(const FilePath& path,
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&BookmarkStorage::OnLoadFinished, storage,
-                 bookmark_file_exists, path));
+      base::Bind(&BookmarkStorage::OnLoadFinished, storage));
 }
 
 }  // namespace
@@ -111,12 +109,10 @@ BookmarkLoadDetails::~BookmarkLoadDetails() {
 // BookmarkStorage -------------------------------------------------------------
 
 BookmarkStorage::BookmarkStorage(Profile* profile, BookmarkModel* model)
-    : profile_(profile),
-      model_(model),
+    : model_(model),
       writer_(profile->GetPath().Append(chrome::kBookmarksFileName),
-              BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)),
-      tmp_history_path_(
-          profile->GetPath().Append(chrome::kHistoryBookmarksFileName)) {
+              BrowserThread::GetMessageLoopProxyForThread(
+                  BrowserThread::FILE)) {
   writer_.set_commit_interval(base::TimeDelta::FromMilliseconds(kSaveDelayMS));
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                           base::Bind(&BackupCallback, writer_.path()));
@@ -131,43 +127,8 @@ void BookmarkStorage::LoadBookmarks(BookmarkLoadDetails* details) {
   DCHECK(!details_.get());
   DCHECK(details);
   details_.reset(details);
-  DoLoadBookmarks(writer_.path());
-}
-
-void BookmarkStorage::DoLoadBookmarks(const FilePath& path) {
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&LoadCallback, path, make_scoped_refptr(this),
-                 details_.get()));
-}
-
-void BookmarkStorage::MigrateFromHistory() {
-  // We need to wait until history has finished loading before reading
-  // from generated bookmarks file.
-  HistoryService* history =
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
-  if (!history) {
-    // This happens in unit tests.
-    if (model_)
-      model_->DoneLoading(details_.release());
-    return;
-  }
-  if (!history->BackendLoaded()) {
-    // The backend isn't finished loading. Wait for it.
-    notification_registrar_.Add(this, chrome::NOTIFICATION_HISTORY_LOADED,
-                                content::Source<Profile>(profile_));
-  } else {
-    DoLoadBookmarks(tmp_history_path_);
-  }
-}
-
-void BookmarkStorage::OnHistoryFinishedWriting() {
-  notification_registrar_.Remove(this, chrome::NOTIFICATION_HISTORY_LOADED,
-                                 content::Source<Profile>(profile_));
-
-  // This is used when migrating bookmarks data from database to file.
-  // History wrote the file for us, and now we want to load data from it.
-  DoLoadBookmarks(tmp_history_path_);
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
+      &LoadCallback, writer_.path(), make_scoped_refptr(this), details_.get()));
 }
 
 void BookmarkStorage::ScheduleSave() {
@@ -190,47 +151,11 @@ bool BookmarkStorage::SerializeData(std::string* output) {
   return serializer.Serialize(*(value.get()));
 }
 
-void BookmarkStorage::OnLoadFinished(bool file_exists, const FilePath& path) {
-  if (path == writer_.path() && !file_exists) {
-    // The file doesn't exist. This means one of two things:
-    // 1. A clean profile.
-    // 2. The user is migrating from an older version where bookmarks were
-    //    saved in history.
-    // We assume step 2. If history had the bookmarks, it will write the
-    // bookmarks to a file for us.
-    MigrateFromHistory();
-    return;
-  }
-
+void BookmarkStorage::OnLoadFinished() {
   if (!model_)
     return;
 
   model_->DoneLoading(details_.release());
-
-  if (path == tmp_history_path_) {
-    // We just finished migration from history. Save now to new file,
-    // after the model is created and done loading.
-    SaveNow();
-
-    // Clean up after migration from history.
-    base::FileUtilProxy::Delete(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-        tmp_history_path_, false, base::FileUtilProxy::StatusCallback());
-  }
-}
-
-void BookmarkStorage::Observe(int type,
-                              const content::NotificationSource& source,
-                              const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_HISTORY_LOADED:
-      OnHistoryFinishedWriting();
-      break;
-
-    default:
-      NOTREACHED();
-      break;
-  }
 }
 
 bool BookmarkStorage::SaveNow() {

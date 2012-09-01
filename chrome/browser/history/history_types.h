@@ -40,8 +40,6 @@ typedef std::map<GURL, scoped_refptr<RefCountedVector<GURL> > > RedirectMap;
 // Container for a list of URLs.
 typedef std::vector<GURL> RedirectList;
 
-typedef int64 StarID;  // Unique identifier for star entries.
-typedef int64 UIStarID;  // Identifier for star entries that come from the UI.
 typedef int64 DownloadID;   // Identifier for a download.
 typedef int64 FaviconID;  // For favicons.
 typedef int64 FaviconBitmapID; // Identifier for a bitmap in a favicon.
@@ -283,79 +281,6 @@ typedef std::pair<base::Time, content::PageTransition> VisitInfo;
 struct PageVisit {
   URLID page_id;
   base::Time visit_time;
-};
-
-// StarredEntry ---------------------------------------------------------------
-
-// StarredEntry represents either a starred page, or a folder (where a folder
-// consists of child starred entries). Use the type to determine the type of a
-// particular entry.
-//
-// The database internally uses the id field to uniquely identify a starred
-// entry. On the other hand, the UI, which is anything routed through
-// HistoryService and HistoryBackend (including BookmarkBarView), uses the
-// url field to uniquely identify starred entries of type URL and the folder_id
-// field to uniquely identify starred entries of type USER_FOLDER. For example,
-// HistoryService::UpdateStarredEntry identifies the entry by url (if the
-// type is URL) or folder_id (if the type is not URL).
-struct StarredEntry {
-  enum Type {
-    // Type represents a starred URL.
-    URL,
-
-    // The bookmark bar folder.
-    BOOKMARK_BAR,
-
-    // User created folder.
-    USER_FOLDER,
-
-    // The "other bookmarks" folder that holds uncategorized bookmarks.
-    OTHER,
-
-    // The mobile folder.
-    MOBILE,
-  };
-
-  StarredEntry();
-  ~StarredEntry();
-
-  void Swap(StarredEntry* other);
-
-  // Unique identifier of this entry.
-  StarID id;
-
-  // Title.
-  string16 title;
-
-  // When this was added.
-  base::Time date_added;
-
-  // Folder ID of the folder this entry is in. If 0, this entry is not in a
-  // folder.
-  UIStarID parent_folder_id;
-
-  // Unique identifier for folders. This is assigned by the UI.
-  //
-  // WARNING: this is NOT the same as id, id is assigned by the database,
-  // this is assigned by the UI. See note about StarredEntry for more info.
-  UIStarID folder_id;
-
-  // Visual order within the parent. Only valid if folder_id is not 0.
-  int visual_order;
-
-  // Type of this entry (see enum).
-  Type type;
-
-  // If type == URL, this is the URL of the page that was starred.
-  GURL url;
-
-  // If type == URL, this is the ID of the URL of the primary page that was
-  // starred.
-  URLID url_id;
-
-  // Time the entry was last modified. This is only used for folders and
-  // indicates the last time a URL was added as a child to the folder.
-  base::Time date_folder_modified;
 };
 
 // URLResult -------------------------------------------------------------------

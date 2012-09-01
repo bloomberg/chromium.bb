@@ -90,33 +90,6 @@ VisitRow::VisitRow(URLID arg_url_id,
 VisitRow::~VisitRow() {
 }
 
-// StarredEntry ----------------------------------------------------------------
-
-StarredEntry::StarredEntry()
-    : id(0),
-      parent_folder_id(0),
-      folder_id(0),
-      visual_order(0),
-      type(URL),
-      url_id(0) {
-}
-
-StarredEntry::~StarredEntry() {
-}
-
-void StarredEntry::Swap(StarredEntry* other) {
-  std::swap(id, other->id);
-  title.swap(other->title);
-  std::swap(date_added, other->date_added);
-  std::swap(parent_folder_id, other->parent_folder_id);
-  std::swap(folder_id, other->folder_id);
-  std::swap(visual_order, other->visual_order);
-  std::swap(type, other->type);
-  url.Swap(&other->url);
-  std::swap(url_id, other->url_id);
-  std::swap(date_folder_modified, other->date_folder_modified);
-}
-
 // URLResult -------------------------------------------------------------------
 
 URLResult::URLResult() {
