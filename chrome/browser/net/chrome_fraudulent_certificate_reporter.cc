@@ -56,7 +56,7 @@ static std::string BuildReport(
 
 net::URLRequest* ChromeFraudulentCertificateReporter::CreateURLRequest(
       net::URLRequestContext* context) {
-  net::URLRequest* request = new net::URLRequest(upload_url_, this, context);
+  net::URLRequest* request = context->CreateRequest(upload_url_, this);
   request->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES |
                           net::LOAD_DO_NOT_SAVE_COOKIES);
   return request;

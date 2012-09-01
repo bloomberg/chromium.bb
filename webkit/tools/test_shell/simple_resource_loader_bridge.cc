@@ -59,6 +59,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job.h"
 #include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/blob/blob_storage_controller.h"
@@ -416,7 +417,7 @@ class RequestProxy
   // actions performed on the owner's thread.
 
   void AsyncStart(RequestParams* params) {
-    request_.reset(new net::URLRequest(params->url, this, g_request_context));
+    request_.reset(g_request_context->CreateRequest(params->url, this));
     request_->set_method(params->method);
     request_->set_first_party_for_cookies(params->first_party_for_cookies);
     request_->set_referrer(params->referrer.spec());

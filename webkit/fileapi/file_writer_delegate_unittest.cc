@@ -113,9 +113,8 @@ class FileWriterDelegateTest : public PlatformTest {
     result_.reset(new Result());
     file_writer_delegate_.reset(
         CreateWriterDelegate("test", offset, allowed_growth, result_.get()));
-    request_.reset(new net::URLRequest(blob_url,
-                                       file_writer_delegate_.get(),
-                                       &empty_context_));
+    request_.reset(empty_context_.CreateRequest(
+        blob_url, file_writer_delegate_.get()));
   }
 
   static net::URLRequest::ProtocolFactory Factory;
@@ -344,9 +343,8 @@ TEST_F(FileWriterDelegateTest, MAYBE_WriteSuccessWithoutQuotaLimitConcurrent) {
   result2.reset(new Result());
   file_writer_delegate2.reset(CreateWriterDelegate(
       "test2", 0, quota::QuotaManager::kNoLimit, result2.get()));
-  request2.reset(new net::URLRequest(kBlobURL2,
-                                     file_writer_delegate2.get(),
-                                     &empty_context_));
+  request2.reset(empty_context_.CreateRequest(
+      kBlobURL2, file_writer_delegate2.get()));
 
   ASSERT_EQ(0, test_helper_.GetCachedOriginUsage());
   file_writer_delegate_->Start(request_.Pass());

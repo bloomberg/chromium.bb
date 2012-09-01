@@ -26,6 +26,7 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 
 using content::BrowserContext;
@@ -45,10 +46,8 @@ void BeginDownload(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   ResourceDispatcherHost* rdh = ResourceDispatcherHost::Get();
-  scoped_ptr<net::URLRequest> request(new net::URLRequest(
-      url,
-      NULL,
-      resource_context->GetRequestContext()));
+  scoped_ptr<net::URLRequest> request(
+      resource_context->GetRequestContext()->CreateRequest(url, NULL));
   net::Error error = rdh->BeginDownload(
       request.Pass(),
       false,  // is_content_initiated

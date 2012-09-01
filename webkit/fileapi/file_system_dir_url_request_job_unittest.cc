@@ -84,9 +84,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   void TestRequestHelper(const GURL& url, bool run_to_completion) {
     delegate_.reset(new TestDelegate());
     delegate_->set_quit_on_redirect(true);
-    request_.reset(new net::URLRequest(url,
-                                       delegate_.get(),
-                                       &empty_context_));
+    request_.reset(empty_context_.CreateRequest(url, delegate_.get()));
     job_ = new FileSystemDirURLRequestJob(
         request_.get(),
         empty_context_.network_delegate(),

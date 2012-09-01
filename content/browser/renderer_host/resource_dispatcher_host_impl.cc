@@ -933,10 +933,9 @@ void ResourceDispatcherHostImpl::BeginRequest(
     // chance to reset some state before we complete the transfer.
     deferred_loader->WillCompleteTransfer();
   } else {
-    new_request.reset(new net::URLRequest(
-        request_data.url,
-        NULL,
-        filter_->GetURLRequestContext(request_data.resource_type)));
+    net::URLRequestContext* context =
+        filter_->GetURLRequestContext(request_data.resource_type);
+    new_request.reset(context->CreateRequest(request_data.url, NULL));
     request = new_request.get();
 
     request->set_method(request_data.method);
@@ -1256,7 +1255,7 @@ void ResourceDispatcherHostImpl::BeginSaveFile(
   }
 
   scoped_ptr<net::URLRequest> request(
-      new net::URLRequest(url, NULL, request_context));
+      request_context->CreateRequest(url, NULL));
   request->set_method("GET");
   request->set_referrer(MaybeStripReferrer(referrer.url).spec());
   webkit_glue::ConfigureURLRequestForReferrerPolicy(request.get(),

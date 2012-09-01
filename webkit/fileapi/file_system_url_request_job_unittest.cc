@@ -111,8 +111,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
     // Make delegate_ exit the MessageLoop when the request is done.
     delegate_->set_quit_on_complete(true);
     delegate_->set_quit_on_redirect(true);
-    request_.reset(
-        new net::URLRequest(url, delegate_.get(), &empty_context_));
+    request_.reset(empty_context_.CreateRequest(url, delegate_.get()));
     if (headers)
       request_->SetExtraRequestHeaders(*headers);
     ASSERT_TRUE(!job_);

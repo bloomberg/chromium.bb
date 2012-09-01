@@ -41,6 +41,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "net/base/load_flags.h"
 #include "net/base/upload_data.h"
+#include "net/url_request/url_request_context.h"
 #include "webkit/glue/webkit_glue.h"
 
 using content::BrowserThread;
@@ -79,10 +80,9 @@ void BeginDownload(content::DownloadUrlParameters* params) {
   // ResourceDispatcherHost{Base} is-not-a URLRequest::Delegate, and
   // DownloadUrlParameters can-not include resource_dispatcher_host_impl.h, so
   // we must down cast. RDHI is the only subclass of RDH as of 2012 May 4.
-  scoped_ptr<net::URLRequest> request(new net::URLRequest(
-      params->url(),
-      NULL,
-      params->resource_context()->GetRequestContext()));
+  scoped_ptr<net::URLRequest> request(
+      params->resource_context()->GetRequestContext()->CreateRequest(
+          params->url(), NULL));
   request->set_referrer(params->referrer().url.spec());
   webkit_glue::ConfigureURLRequestForReferrerPolicy(
       request.get(), params->referrer().policy);

@@ -243,9 +243,8 @@ class BlobURLRequestJobTest : public testing::Test {
                    const net::HttpRequestHeaders& extra_headers,
                    BlobData* blob_data) {
     // This test has async steps.
-    request_.reset(new net::URLRequest(GURL("blob:blah"),
-                                       url_request_delegate_.get(),
-                                       &empty_context_));
+    request_.reset(empty_context_.CreateRequest(
+        GURL("blob:blah"), url_request_delegate_.get()));
     request_->set_method(method);
     blob_url_request_job_ = new BlobURLRequestJob(
         request_.get(),

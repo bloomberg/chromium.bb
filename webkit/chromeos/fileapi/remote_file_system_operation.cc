@@ -9,6 +9,7 @@
 #include "base/platform_file.h"
 #include "base/values.h"
 #include "googleurl/src/gurl.h"
+#include "net/url_request/url_request_context.h"
 #include "webkit/chromeos/fileapi/remote_file_stream_writer.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_url.h"
@@ -126,8 +127,8 @@ void RemoteFileSystemOperation::Write(
                                                   url,
                                                   offset))));
 
-  scoped_ptr<net::URLRequest> blob_request(new net::URLRequest(
-      blob_url, file_writer_delegate_.get(), url_request_context));
+  scoped_ptr<net::URLRequest> blob_request(url_request_context->CreateRequest(
+      blob_url, file_writer_delegate_.get()));
 
   file_writer_delegate_->Start(blob_request.Pass());
 }

@@ -402,9 +402,7 @@ void ConnectionTester::TestRunner::ProxyConfigServiceCreated(
     return;
   }
   // Fetch a request using the experimental context.
-  request_.reset(new net::URLRequest(experiment.url,
-                                     this,
-                                     request_context_.get()));
+  request_.reset(request_context_->CreateRequest(experiment.url, this));
   request_->Start();
 }
 

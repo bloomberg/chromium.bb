@@ -21,6 +21,7 @@
 #include "net/http/http_version.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_service.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace chrome_browser_net {
@@ -88,9 +89,8 @@ Request::Request(int request_id,
                  net::URLRequestContext* url_request_context)
     : delegate_(delegate),
       request_id_(request_id),
-      url_request_(new net::URLRequest(GURL(base_url + info.filename),
-                                       this,
-                                       url_request_context)),
+      url_request_(url_request_context->CreateRequest(
+          GURL(base_url + info.filename), this)),
       info_(info),
       response_code_(0) {
   url_request_->set_load_flags(net::LOAD_BYPASS_CACHE |
