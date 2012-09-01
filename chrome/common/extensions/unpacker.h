@@ -86,6 +86,7 @@ class Unpacker {
 
   // Set the error message.
   void SetError(const std::string& error);
+  void SetUTF16Error(const string16& error);
 
   // The extension to unpack.
   FilePath extension_path_;

@@ -4655,6 +4655,18 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       <message name="IDS_EXTENSION_CONTAINS_PRIVATE_KEY" desc="Error message when an extension includes a file containing a private key.">
         This extension includes the key file '<ph name="KEY_PATH">$1<ex>relative/path/to/file.pem</ex></ph>'. You probably don't want to do that.
       </message>
+      <message name="IDS_EXTENSION_PACKAGE_DIRECTORY_ERROR" desc="Message for when an error occurs while trying to create the temporary directory needed to unzip a packaged extension or app.">
+        Could not create directory for unzipping: '<ph name="DIRECTORY_PATH">$1<ex>profile/Extensions/CRX_INSTALL</ex></ph>'
+      </message>
+      <message name="IDS_EXTENSION_PACKAGE_UNZIP_ERROR" desc="Message for when an error occurs while unzipping a packaged extension or app.">
+        Could not unzip extension
+      </message>
+      <message name="IDS_EXTENSION_PACKAGE_IMAGE_PATH_ERROR" desc="Error message for when a packaged extension or app contains a reference to an image that could be outside the package.">
+        Illegal path (absolute or relative with '..'): '<ph name="IMAGE_PATH">$1<ex>../image.png</ex></ph>'
+      </message>
+      <message name="IDS_EXTENSION_PACKAGE_IMAGE_ERROR" desc="Message for when an error occurs while trying to decode an image found within a packaged extension or app.">
+        Could not decode image: '<ph name="IMAGE_NAME">$1<ex>image.png</ex></ph>'
+      </message>
 
       <!-- This version of the message is used temporarily, until we have the
            blog post up describing the transition process. -->

@@ -9,12 +9,14 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/unpacker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace errors = extension_manifest_errors;
+namespace filenames = extension_filenames;
 namespace keys = extension_manifest_keys;
 
 namespace extensions {
@@ -189,6 +191,81 @@ TEST_F(UnpackerTest, MAYBE_NoL10n) {
   EXPECT_TRUE(unpacker_->Run());
   EXPECT_TRUE(unpacker_->error_message().empty());
   EXPECT_EQ(0U, unpacker_->parsed_catalogs()->size());
+}
+
+// Disabled on Windows because it probably crashes intermittently as described
+// in <http://crbug.com/109238>. However, because the logic being testing here
+// is platform-independant, this test should still provide good coverage.
+#if defined(OS_WIN)
+#define MAYBE_UnzipDirectoryError DISABLED_UnzipDirectoryError
+#else
+#define MAYBE_UnzipDirectoryError UnzipDirectoryError
+#endif
+TEST_F(UnpackerTest, MAYBE_UnzipDirectoryError) {
+  const char* kExpected = "Could not create directory for unzipping: ";
+  SetupUnpacker("good_package.crx");
+  FilePath path = temp_dir_.path().AppendASCII(filenames::kTempExtensionName);
+  ASSERT_TRUE(file_util::WriteFile(path, "foo", 3));
+  EXPECT_FALSE(unpacker_->Run());
+  EXPECT_TRUE(StartsWith(unpacker_->error_message(),
+              ASCIIToUTF16(kExpected),
+              false)) << "Expected prefix: \"" << kExpected
+                      << "\", actual error: \"" << unpacker_->error_message()
+                      << "\"";
+}
+
+// Disabled on Windows because it probably crashes intermittently as described
+// in <http://crbug.com/109238>. However, because the logic being testing here
+// is platform-independant, this test should still provide good coverage.
+#if defined(OS_WIN)
+#define MAYBE_UnzipError DISABLED_UnzipError
+#else
+#define MAYBE_UnzipError UnzipError
+#endif
+TEST_F(UnpackerTest, MAYBE_UnzipError) {
+  const char* kExpected = "Could not unzip extension";
+  SetupUnpacker("bad_zip.crx");
+  EXPECT_FALSE(unpacker_->Run());
+  EXPECT_EQ(ASCIIToUTF16(kExpected), unpacker_->error_message());
+}
+
+// Disabled on Windows because it probably crashes intermittently as described
+// in <http://crbug.com/109238>. However, because the logic being testing here
+// is platform-independant, this test should still provide good coverage.
+#if defined(OS_WIN)
+#define MAYBE_BadPathError DISABLED_BadPathError
+#else
+#define MAYBE_BadPathError BadPathError
+#endif
+TEST_F(UnpackerTest, MAYBE_BadPathError) {
+  const char* kExpected = "Illegal path (absolute or relative with '..'): ";
+  SetupUnpacker("bad_path.crx");
+  EXPECT_FALSE(unpacker_->Run());
+  EXPECT_TRUE(StartsWith(unpacker_->error_message(),
+              ASCIIToUTF16(kExpected),
+              false)) << "Expected prefix: \"" << kExpected
+                      << "\", actual error: \"" << unpacker_->error_message()
+                      << "\"";
+}
+
+
+// Disabled on Windows because it probably crashes intermittently as described
+// in <http://crbug.com/109238>. However, because the logic being testing here
+// is platform-independant, this test should still provide good coverage.
+#if defined(OS_WIN)
+#define MAYBE_ImageDecodingError DISABLED_ImageDecodingError
+#else
+#define MAYBE_ImageDecodingError ImageDecodingError
+#endif
+TEST_F(UnpackerTest, MAYBE_ImageDecodingError) {
+  const char* kExpected = "Could not decode image: ";
+  SetupUnpacker("bad_image.crx");
+  EXPECT_FALSE(unpacker_->Run());
+  EXPECT_TRUE(StartsWith(unpacker_->error_message(),
+              ASCIIToUTF16(kExpected),
+              false)) << "Expected prefix: \"" << kExpected
+                      << "\", actual error: \"" << unpacker_->error_message()
+                      << "\"";
 }
 
 }  // namespace extensions

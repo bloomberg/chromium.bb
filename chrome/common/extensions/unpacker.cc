@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/file_util.h"
+#include "base/i18n/rtl.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/memory/scoped_handle.h"
 #include "base/scoped_temp_dir.h"
@@ -21,9 +22,11 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/zip.h"
 #include "content/public/common/common_param_traits.h"
+#include "grit/generated_resources.h"
 #include "ipc/ipc_message_utils.h"
 #include "net/base/file_stream.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/image_decoder.h"
 
 namespace errors = extension_manifest_errors;
@@ -31,14 +34,6 @@ namespace keys = extension_manifest_keys;
 namespace filenames = extension_filenames;
 
 namespace {
-
-// Errors
-const char* kCouldNotCreateDirectoryError =
-    "Could not create directory for unzipping: ";
-const char* kCouldNotDecodeImageError = "Could not decode theme image.";
-const char* kCouldNotUnzipExtension = "Could not unzip extension.";
-const char* kPathNamesMustBeAbsoluteOrLocalError =
-    "Path names must not be absolute or contain '..'.";
 
 // A limit to stop us passing dangerously large canvases to the browser.
 const int kMaxImageCanvas = 4096 * 4096;
@@ -153,23 +148,21 @@ bool Unpacker::ReadAllMessageCatalogs(const std::string& default_locale) {
 bool Unpacker::Run() {
   DVLOG(1) << "Installing extension " << extension_path_.value();
 
-  // <profile>/Extensions/INSTALL_TEMP/<version>
+  // <profile>/Extensions/CRX_INSTALL
   temp_install_dir_ =
-    extension_path_.DirName().AppendASCII(filenames::kTempExtensionName);
+      extension_path_.DirName().AppendASCII(filenames::kTempExtensionName);
 
   if (!file_util::CreateDirectory(temp_install_dir_)) {
-#if defined(OS_WIN)
-    std::string dir_string = WideToUTF8(temp_install_dir_.value());
-#else
-    std::string dir_string = temp_install_dir_.value();
-#endif
-
-    SetError(kCouldNotCreateDirectoryError + dir_string);
+    SetUTF16Error(
+        l10n_util::GetStringFUTF16(
+            IDS_EXTENSION_PACKAGE_DIRECTORY_ERROR,
+            base::i18n::GetDisplayStringInLTRDirectionality(
+                temp_install_dir_.LossyDisplayName())));
     return false;
   }
 
   if (!zip::Unzip(extension_path_, temp_install_dir_)) {
-    SetError(kCouldNotUnzipExtension);
+    SetUTF16Error(l10n_util::GetStringUTF16(IDS_EXTENSION_PACKAGE_UNZIP_ERROR));
     return false;
   }
 
@@ -277,13 +270,21 @@ bool Unpacker::ReadMessageCatalogsFromFile(const FilePath& extension_path,
 bool Unpacker::AddDecodedImage(const FilePath& path) {
   // Make sure it's not referencing a file outside the extension's subdir.
   if (path.IsAbsolute() || PathContainsParentDirectory(path)) {
-    SetError(kPathNamesMustBeAbsoluteOrLocalError);
+    SetUTF16Error(
+        l10n_util::GetStringFUTF16(
+            IDS_EXTENSION_PACKAGE_IMAGE_PATH_ERROR,
+            base::i18n::GetDisplayStringInLTRDirectionality(
+                path.LossyDisplayName())));
     return false;
   }
 
   SkBitmap image_bitmap = DecodeImage(temp_install_dir_.Append(path));
   if (image_bitmap.isNull()) {
-    SetError(kCouldNotDecodeImageError);
+    SetUTF16Error(
+        l10n_util::GetStringFUTF16(
+            IDS_EXTENSION_PACKAGE_IMAGE_ERROR,
+            base::i18n::GetDisplayStringInLTRDirectionality(
+                path.BaseName().LossyDisplayName())));
     return false;
   }
 
@@ -328,7 +329,11 @@ bool Unpacker::ReadMessageCatalog(const FilePath& message_path) {
 }
 
 void Unpacker::SetError(const std::string &error) {
-  error_message_ = UTF8ToUTF16(error);
+  SetUTF16Error(UTF8ToUTF16(error));
+}
+
+void Unpacker::SetUTF16Error(const string16 &error) {
+  error_message_ = error;
 }
 
 }  // namespace extensions
