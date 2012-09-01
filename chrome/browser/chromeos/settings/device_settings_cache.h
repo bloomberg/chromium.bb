@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_SETTINGS_SIGNED_SETTINGS_CACHE_H_
-#define CHROME_BROWSER_CHROMEOS_SETTINGS_SIGNED_SETTINGS_CACHE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_SETTINGS_DEVICE_SETTINGS_CACHE_H_
+#define CHROME_BROWSER_CHROMEOS_SETTINGS_DEVICE_SETTINGS_CACHE_H_
 
 namespace enterprise_management {
 class PolicyData;
@@ -13,11 +13,11 @@ class PrefService;
 
 namespace chromeos {
 
-// There is need (metrics at OOBE stage) to store settings
-// (that normally would go into SignedSettings storage)
-// before owner has been assigned (hence no key is available).
-// This set of functions serves as a transient storage in that case.
-namespace signed_settings_cache {
+// There is need (metrics at OOBE stage) to store settings (that normally would
+// go into DeviceSettings storage) before owner has been assigned (hence no key
+// is available). This set of functions serves as a transient storage in that
+// case.
+namespace device_settings_cache {
 // Registers required pref section.
 void RegisterPrefs(PrefService* local_state);
 
@@ -29,11 +29,11 @@ bool Store(const enterprise_management::PolicyData &policy,
 bool Retrieve(enterprise_management::PolicyData *policy,
               PrefService* local_state);
 
-// Call this after owner has been assigned to persist settings
-// into SignedSettings storage.
+// Call this after owner has been assigned to persist settings into
+// DeviceSettings storage.
 void Finalize(PrefService* local_state);
-}  // namespace signed_settings_cache
+}  // namespace device_settings_cache
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_SETTINGS_SIGNED_SETTINGS_CACHE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_SETTINGS_DEVICE_SETTINGS_CACHE_H_

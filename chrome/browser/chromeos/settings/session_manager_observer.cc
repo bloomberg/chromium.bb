@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/settings/session_manager_observer.h"
 
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/settings/device_settings_cache.h"
 #include "chrome/browser/chromeos/settings/signed_settings.h"
-#include "chrome/browser/chromeos/settings/signed_settings_cache.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -60,7 +60,7 @@ void SessionManagerObserver::OwnerKeySet(bool success) {
   // Now owner is assigned and key is generated and we should persist
   // those settings into signed storage.
   if (success && g_browser_process && g_browser_process->local_state())
-    signed_settings_cache::Finalize(g_browser_process->local_state());
+    device_settings_cache::Finalize(g_browser_process->local_state());
 
   // Whether we exported the public key or not, send a notification
   // indicating that we're done with this attempt.

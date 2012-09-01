@@ -226,8 +226,9 @@ void ScreenLocker::Authenticate(const string16& password) {
   // initial online login phase is still active.
   if (LoginPerformer::default_performer()) {
     DVLOG(1) << "Delegating authentication to LoginPerformer.";
-    LoginPerformer::default_performer()->Login(user_.email(),
-                                               UTF16ToUTF8(password));
+    LoginPerformer::default_performer()->PerformLogin(
+        user_.email(), UTF16ToUTF8(password),
+        LoginPerformer::AUTH_MODE_INTERNAL);
   } else {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,

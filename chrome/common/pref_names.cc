@@ -1735,9 +1735,9 @@ const char kGSSAPILibraryName[] = "auth.gssapi_library_name";
 const char kAllowCrossOriginAuthPrompt[] = "auth.allow_cross_origin_prompt";
 
 #if defined(OS_CHROMEOS)
-// Dictionary for transient storage of settings that should go into signed
+// Dictionary for transient storage of settings that should go into device
 // settings storage before owner has been assigned.
-const char kSignedSettingsCache[] = "signed_settings_cache";
+const char kDeviceSettingsCache[] = "signed_settings_cache";
 
 // The hardware keyboard layout of the device. This should look like
 // "xkb:us::eng".

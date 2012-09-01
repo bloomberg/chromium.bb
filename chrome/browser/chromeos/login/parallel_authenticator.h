@@ -12,11 +12,12 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
-#include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/auth_attempt_state.h"
 #include "chrome/browser/chromeos/login/auth_attempt_state_resolver.h"
+#include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/online_attempt.h"
 #include "chrome/browser/chromeos/login/test_attempt_state.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 
 class LoginFailure;
@@ -219,9 +220,9 @@ class ParallelAuthenticator : public Authenticator,
   // Returns true if the owner check has been successful or if it is not needed.
   bool VerifyOwner();
 
-  // checks if the current mounted home contains the owner case and either
-  // continues or fails the log-in. Used for policy lost mitigation "safe-mode".
-  void FinishVerifyOwnerOnFileThread();
+  // Handles completion of the ownership check and continues login.
+  void OnOwnershipChecked(DeviceSettingsService::OwnershipStatus status,
+                          bool is_owner);
 
   // Records OAuth1 access token verification failure for |user_account|.
   void RecordOAuthCheckFailure(const std::string& user_account);
@@ -252,8 +253,6 @@ class ParallelAuthenticator : public Authenticator,
   // of it.
   bool owner_is_verified_;
   bool user_can_login_;
-  // A lock for |owner_is_verified_| and |user_can_login_|.
-  base::Lock owner_verified_lock_;
 
   // True if we use OAuth-based authentication flow.
   bool using_oauth_;

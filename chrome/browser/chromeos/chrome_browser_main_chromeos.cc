@@ -51,8 +51,8 @@
 #include "chrome/browser/chromeos/power/screen_lock_observer.h"
 #include "chrome/browser/chromeos/power/user_activity_notifier.h"
 #include "chrome/browser/chromeos/power/video_activity_notifier.h"
-#include "chrome/browser/chromeos/settings/ownership_service.h"
-#include "chrome/browser/chromeos/settings/session_manager_observer.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/chromeos/settings/owner_key_util.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/chromeos/upgrade_detector_chromeos.h"
@@ -302,9 +302,11 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
 
   chromeos::CrosDBusService::Initialize();
 
-  // Initialize the session manager observer so that we'll take actions
-  // per signals sent from the session manager.
-  session_manager_observer_.reset(new chromeos::SessionManagerObserver);
+  // Initialize the device settings service so that we'll take actions per
+  // signals sent from the session manager.
+  chromeos::DeviceSettingsService::Get()->Initialize(
+      chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
+      chromeos::OwnerKeyUtil::Create());
 
   chromeos::disks::DiskMountManager::Initialize();
   chromeos::mtp::MediaTransferProtocolManager::Initialize();
@@ -357,7 +359,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   chromeos::BootTimesLoader::Get()->RecordChromeMainStats();
 
   // Trigger prefetching of ownership status.
-  chromeos::OwnershipService::GetSharedInstance()->Prewarm();
+  chromeos::DeviceSettingsService::Get()->Load();
 
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- just before CreateProfile().
@@ -528,9 +530,11 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   if (chromeos::CrosNetworkChangeNotifierFactory::GetInstance())
     chromeos::CrosNetworkChangeNotifierFactory::GetInstance()->Shutdown();
 
+  // Tell DeviceSettingsService to stop talking to session_manager.
+  chromeos::DeviceSettingsService::Get()->Shutdown();
+
   // We should remove observers attached to D-Bus clients before
   // DBusThreadManager is shut down.
-  session_manager_observer_.reset();
   screen_lock_observer_.reset();
   resume_observer_.reset();
   brightness_observer_.reset();

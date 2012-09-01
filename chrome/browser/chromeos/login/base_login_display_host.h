@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
-#include "chrome/browser/chromeos/settings/ownership_service.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/rect.h"
@@ -74,8 +74,8 @@ class BaseLoginDisplayHost : public LoginDisplayHost,
   // Start sign in transition animation.
   void StartAnimation();
 
-  // Callback for completion of the |ownership_status_checker_|.
-  void OnOwnershipStatusCheckDone(OwnershipService::Status status,
+  // Callback for the ownership status check.
+  void OnOwnershipStatusCheckDone(DeviceSettingsService::OwnershipStatus status,
                                   bool current_user_is_owner);
 
   // Callback for completion of the |auto_enrollment_client_|.

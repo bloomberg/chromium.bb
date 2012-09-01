@@ -5,18 +5,20 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SETTINGS_DEVICE_SETTINGS_PROVIDER_H_
 #define CHROME_BROWSER_CHROMEOS_SETTINGS_DEVICE_SETTINGS_PROVIDER_H_
 
+#include <deque>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/gtest_prod_util.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/settings/cros_settings_provider.h"
-#include "chrome/browser/chromeos/settings/ownership_service.h"
-#include "chrome/browser/chromeos/settings/signed_settings_migration_helper.h"
-#include "chrome/browser/policy/proto/device_management_backend.pb.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/prefs/pref_value_map.h"
-#include "content/public/browser/notification_registrar.h"
+#include "chrome/browser/prefs/pref_value_map.h"
 
 namespace base {
 class Value;
@@ -28,12 +30,12 @@ class ChromeDeviceSettingsProto;
 
 namespace chromeos {
 
-// CrosSettingsProvider implementation that works with SignedSettings.
+// CrosSettingsProvider implementation that works with device settings.
 class DeviceSettingsProvider : public CrosSettingsProvider,
-                               public content::NotificationObserver {
+                               public DeviceSettingsService::Observer {
  public:
   DeviceSettingsProvider(const NotifyObserversCallback& notify_cb,
-                         SignedSettingsHelper* signed_settings_helper);
+                         DeviceSettingsService* device_settings_service);
   virtual ~DeviceSettingsProvider();
 
   // CrosSettingsProvider implementation.
@@ -41,34 +43,25 @@ class DeviceSettingsProvider : public CrosSettingsProvider,
   virtual TrustedStatus PrepareTrustedValues(
       const base::Closure& callback) OVERRIDE;
   virtual bool HandlesSetting(const std::string& path) const OVERRIDE;
-  virtual void Reload() OVERRIDE;
 
  private:
   // CrosSettingsProvider implementation:
   virtual void DoSet(const std::string& path,
                      const base::Value& value) OVERRIDE;
 
-  // content::NotificationObserver implementation:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
-  const enterprise_management::PolicyData policy() const;
+  // DeviceSettingsService::Observer implementation:
+  virtual void OwnershipStatusChanged() OVERRIDE;
+  virtual void DeviceSettingsUpdated() OVERRIDE;
 
   // Populates in-memory cache from the local_state cache that is used to store
-  // signed settings before the device is owned and to speed up policy
+  // device settings before the device is owned and to speed up policy
   // availability before the policy blob is fetched on boot.
   void RetrieveCachedData();
 
-  // Stores a value from the |pending_changes_| queue in the signed settings.
+  // Stores a value from the |pending_changes_| queue in the device settings.
   // If the device is not owned yet the data ends up only in the local_state
   // cache and is serialized once ownership is acquired.
   void SetInPolicy();
-
-  // Finalizes stores to the policy file if the cache is dirty.
-  void FinishSetInPolicy(
-      SignedSettings::ReturnCode code,
-      const enterprise_management::PolicyFetchResponse& policy);
 
   // Decode the various groups of policies.
   void DecodeLoginPolicies(
@@ -87,18 +80,21 @@ class DeviceSettingsProvider : public CrosSettingsProvider,
       const enterprise_management::ChromeDeviceSettingsProto& policy,
       PrefValueMap* new_values_cache) const;
 
-  // Parses the policy cache and fills the cache of base::Value objects.
-  void UpdateValuesCache();
+  // Parses the policy data and fills in |values_cache_|.
+  void UpdateValuesCache(
+      const enterprise_management::PolicyData& policy_data,
+      const enterprise_management::ChromeDeviceSettingsProto& settings);
 
   // Applies the metrics policy and if not set migrates the legacy file.
-  void ApplyMetricsSetting(bool use_file, bool new_value) const;
+  void ApplyMetricsSetting(bool use_file, bool new_value);
 
   // Applies the data roaming policy.
-  void ApplyRoamingSetting(bool new_value) const;
+  void ApplyRoamingSetting(bool new_value);
 
   // Applies any changes of the policies that are not handled by the respective
   // subsystems.
-  void ApplySideEffects() const;
+  void ApplySideEffects(
+      const enterprise_management::ChromeDeviceSettingsProto& settings);
 
   // In case of missing policy blob we should verify if this is upgrade of
   // machine owned from pre version 12 OS and the user never touched the device
@@ -106,58 +102,55 @@ class DeviceSettingsProvider : public CrosSettingsProvider,
   // comes and changes that.
   bool MitigateMissingPolicy();
 
-  // Called right before boolean property is changed.
-  void OnBooleanPropertyChange(const std::string& path, bool new_value);
-
   // Checks if the current cache value can be trusted for being representative
   // for the disk cache.
   TrustedStatus RequestTrustedEntity();
 
-  // Called right after signed value was checked.
-  void OnPropertyRetrieve(const std::string& path,
-                          const base::Value* value,
-                          bool use_default_value);
+  // Invokes UpdateFromService() to synchronize with |device_settings_service_|,
+  // then triggers the next store operation if applicable.
+  void UpdateAndProceedStoring();
 
-  // Callback of StorePolicyOp for ordinary policy stores.
-  void OnStorePolicyCompleted(SignedSettings::ReturnCode code);
+  // Re-reads state from |device_settings_service_|, adjusts
+  // |trusted_status_| and calls UpdateValuesCache() if applicable. Returns true
+  // if new settings have been loaded.
+  bool UpdateFromService();
 
-  // Callback of RetrievePolicyOp for ordinary policy [re]loads.
-  void OnRetrievePolicyCompleted(
-      SignedSettings::ReturnCode code,
-      const enterprise_management::PolicyFetchResponse& policy);
+  // Sends |device_settings_| to |device_settings_service_| for signing and
+  // storage in session_manager.
+  void StoreDeviceSettings();
 
-  // These setters are for test use only.
-  void set_ownership_status(OwnershipService::Status status) {
-    ownership_status_ = status;
-  }
-  void set_trusted_status(TrustedStatus status) {
-    trusted_status_ = status;
-  }
-  void set_retries_left(int retries) {
-    retries_left_ = retries;
-  }
+  // Checks the current ownership status to see whether the device owner is
+  // logged in and writes the data accumulated in |migration_values_| to proper
+  // device settings.
+  void AttemptMigration();
 
   // Pending callbacks that need to be invoked after settings verification.
   std::vector<base::Closure> callbacks_;
 
-  SignedSettingsHelper* signed_settings_helper_;
-  OwnershipService::Status ownership_status_;
-  mutable scoped_ptr<SignedSettingsMigrationHelper> migration_helper_;
+  DeviceSettingsService* device_settings_service_;
+  mutable PrefValueMap migration_values_;
 
-  content::NotificationRegistrar registrar_;
-
-  // In order to guard against occasional failure to fetch a property
-  // we allow for some number of retries.
-  int retries_left_;
-
-  enterprise_management::PolicyData policy_;
   TrustedStatus trusted_status_;
+  DeviceSettingsService::OwnershipStatus ownership_status_;
 
+  // The device settings as currently reported through the CrosSettingsProvider
+  // interface. This may be different from the actual current device settings
+  // (which can be obtained from |device_settings_service_|) in case the device
+  // does not have an owner yet or there are pending changes that have not yet
+  // been written to session_manager.
+  enterprise_management::ChromeDeviceSettingsProto device_settings_;
+
+  // A cache of values, indexed by the settings keys served through the
+  // CrosSettingsProvider interface. This is always kept in sync with the raw
+  // data found in |device_settings_|.
   PrefValueMap values_cache_;
 
   // This is a queue for set requests, because those need to be sequential.
   typedef std::pair<std::string, base::Value*> PendingQueueElement;
-  std::vector<PendingQueueElement> pending_changes_;
+  std::deque<PendingQueueElement> pending_changes_;
+
+  // Weak pointer factory for creating store operation callbacks.
+  base::WeakPtrFactory<DeviceSettingsProvider> store_callback_factory_;
 
   friend class DeviceSettingsProviderTest;
   FRIEND_TEST_ALL_PREFIXES(DeviceSettingsProviderTest,

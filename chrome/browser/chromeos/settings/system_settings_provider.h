@@ -30,7 +30,6 @@ class SystemSettingsProvider : public CrosSettingsProvider,
   virtual TrustedStatus PrepareTrustedValues(
       const base::Closure& callback) OVERRIDE;
   virtual bool HandlesSetting(const std::string& path) const OVERRIDE;
-  virtual void Reload() OVERRIDE;
 
   // TimezoneSettings::Observer implementation.
   virtual void TimezoneChanged(const icu::TimeZone& timezone) OVERRIDE;

@@ -2,21 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/settings/signed_settings.h"
-
 #include <map>
 #include <string>
 
 #include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
-#include "chrome/browser/chromeos/settings/signed_settings_cache.h"
+#include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
+#include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -24,10 +22,8 @@
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::AnyNumber;
-using ::testing::Return;
-
 namespace em = enterprise_management;
+
 namespace chromeos {
 
 class CrosSettingsTest : public testing::Test {
@@ -35,28 +31,15 @@ class CrosSettingsTest : public testing::Test {
   CrosSettingsTest()
       : message_loop_(MessageLoop::TYPE_UI),
         ui_thread_(content::BrowserThread::UI, &message_loop_),
-        file_thread_(content::BrowserThread::FILE, &message_loop_),
-        pointer_factory_(this),
-        local_state_(static_cast<TestingBrowserProcess*>(g_browser_process)) {
-  }
+        local_state_(static_cast<TestingBrowserProcess*>(g_browser_process)),
+        weak_factory_(this) {}
 
-  virtual ~CrosSettingsTest() {
-  }
+  virtual ~CrosSettingsTest() {}
 
-  virtual void SetUp() {
-    EXPECT_CALL(*mock_user_manager_.user_manager(), IsCurrentUserOwner())
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(true));
-    // Reset the cache between tests.
-    ApplyEmptyPolicy();
-  }
-
-  virtual void TearDown() {
-    message_loop_.RunAllPending();
+  virtual void TearDown() OVERRIDE {
     ASSERT_TRUE(expected_props_.empty());
-    // Reset the cache between tests.
-    ApplyEmptyPolicy();
     STLDeleteValues(&expected_props_);
+    expected_props_.clear();
   }
 
   void FetchPref(const std::string& pref) {
@@ -65,12 +48,12 @@ class CrosSettingsTest : public testing::Test {
       return;
 
     if (CrosSettingsProvider::TRUSTED ==
-        CrosSettings::Get()->PrepareTrustedValues(
-            base::Bind(&CrosSettingsTest::FetchPref,
-                       pointer_factory_.GetWeakPtr(), pref))) {
+            settings_.PrepareTrustedValues(
+                base::Bind(&CrosSettingsTest::FetchPref,
+                           weak_factory_.GetWeakPtr(), pref))) {
       scoped_ptr<base::Value> expected_value(
           expected_props_.find(pref)->second);
-      const base::Value* pref_value = CrosSettings::Get()->GetPref(pref);
+      const base::Value* pref_value = settings_.GetPref(pref);
       if (expected_value.get()) {
         ASSERT_TRUE(pref_value);
         ASSERT_TRUE(expected_value->Equals(pref_value));
@@ -83,7 +66,7 @@ class CrosSettingsTest : public testing::Test {
 
   void SetPref(const std::string& pref_name, const base::Value* value) {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    CrosSettings::Get()->Set(pref_name, *value);
+    settings_.Set(pref_name, *value);
   }
 
   void AddExpectation(const std::string& pref_name, base::Value* value) {
@@ -96,7 +79,7 @@ class CrosSettingsTest : public testing::Test {
     // Prepare some policy blob.
     em::PolicyFetchResponse response;
     em::ChromeDeviceSettingsProto pol;
-    policy->set_policy_type(chromeos::kDevicePolicyType);
+    policy->set_policy_type(policy::dm_protocol::kChromeDevicePolicyType);
     policy->set_username("me@owner");
     policy->set_policy_value(pol.SerializeAsString());
     // Wipe the signed settings store.
@@ -104,25 +87,16 @@ class CrosSettingsTest : public testing::Test {
     response.set_policy_data_signature("false");
   }
 
-  void ApplyEmptyPolicy() {
-    em::PolicyData fake_pol;
-    PrepareEmptyPolicy(&fake_pol);
-    signed_settings_cache::Store(fake_pol, local_state_.Get());
-    CrosSettings::Get()->ReloadProviders();
-  }
-
-  std::map<std::string, base::Value*> expected_props_;
-
   MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
-
-  base::WeakPtrFactory<CrosSettingsTest> pointer_factory_;
 
   ScopedTestingLocalState local_state_;
+  ScopedDeviceSettingsTestHelper device_settings_test_helper_;
+  CrosSettings settings_;
 
-  ScopedMockUserManagerEnabler mock_user_manager_;
-  ScopedStubCrosEnabler stub_cros_enabler_;
+  base::WeakPtrFactory<CrosSettingsTest> weak_factory_;
+
+  std::map<std::string, base::Value*> expected_props_;
 };
 
 TEST_F(CrosSettingsTest, SetPref) {
@@ -131,7 +105,6 @@ TEST_F(CrosSettingsTest, SetPref) {
                  base::Value::CreateBooleanValue(false));
   SetPref(kAccountsPrefAllowGuest, expected_props_[kAccountsPrefAllowGuest]);
   FetchPref(kAccountsPrefAllowGuest);
-  message_loop_.RunAllPending();
   ASSERT_TRUE(expected_props_.empty());
 }
 
@@ -163,7 +136,7 @@ TEST_F(CrosSettingsTest, SetWhitelistWithListOps) {
                  base::Value::CreateBooleanValue(false));
   AddExpectation(kAccountsPrefUsers, whitelist);
   // Add some user to the whitelist.
-  CrosSettings::Get()->AppendToList(kAccountsPrefUsers, &hacky_user);
+  settings_.AppendToList(kAccountsPrefUsers, &hacky_user);
   FetchPref(kAccountsPrefAllowNewUser);
   FetchPref(kAccountsPrefUsers);
 }
@@ -181,11 +154,10 @@ TEST_F(CrosSettingsTest, SetWhitelistWithListOps2) {
   SetPref(kAccountsPrefUsers, &whitelist);
   FetchPref(kAccountsPrefAllowNewUser);
   FetchPref(kAccountsPrefUsers);
-  message_loop_.RunAllPending();
   ASSERT_TRUE(expected_props_.empty());
   // Now try to remove one element from that list.
   AddExpectation(kAccountsPrefUsers, expected_list);
-  CrosSettings::Get()->RemoveFromList(kAccountsPrefUsers, &lamy_user);
+  settings_.RemoveFromList(kAccountsPrefUsers, &lamy_user);
   FetchPref(kAccountsPrefAllowNewUser);
   FetchPref(kAccountsPrefUsers);
 }
@@ -227,13 +199,6 @@ TEST_F(CrosSettingsTest, SetAllowNewUsers) {
   FetchPref(kAccountsPrefAllowNewUser);
 }
 
-TEST_F(CrosSettingsTest, SetOwner) {
-  base::StringValue hacky_owner("h@xxor");
-  AddExpectation(kDeviceOwner, base::Value::CreateStringValue("h@xxor"));
-  SetPref(kDeviceOwner, &hacky_owner);
-  FetchPref(kDeviceOwner);
-}
-
 TEST_F(CrosSettingsTest, SetEphemeralUsersEnabled) {
   base::FundamentalValue ephemeral_users_enabled(true);
   AddExpectation(kAccountsPrefEphemeralUsersEnabled,
@@ -249,7 +214,7 @@ TEST_F(CrosSettingsTest, FindEmailInList) {
   list.Append(base::Value::CreateStringValue("with.dots@gmail.com"));
   list.Append(base::Value::CreateStringValue("Upper@example.com"));
 
-  CrosSettings* cs = CrosSettings::Get();
+  CrosSettings* cs = &settings_;
   cs->Set(kAccountsPrefUsers, list);
 
   EXPECT_TRUE(cs->FindEmailInList(kAccountsPrefUsers, "user@example.com"));
