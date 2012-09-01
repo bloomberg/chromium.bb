@@ -38,6 +38,7 @@
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/constants.h"
 #include "remoting/host/desktop_environment.h"
+#include "remoting/host/dns_blackhole_checker.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/heartbeat_sender.h"
 #include "remoting/host/host_key_pair.h"
@@ -220,8 +221,10 @@ class SimpleHost : public HeartbeatSender::Listener {
     signal_strategy_.reset(new XmppSignalStrategy(
         context_.url_request_context_getter(),
         xmpp_login_, xmpp_auth_token_, xmpp_auth_service_));
+    scoped_ptr<DnsBlackholeChecker> dns_blackhole_checker(
+        new DnsBlackholeChecker(&context_, kDefaultHostTalkGadgetPrefix));
     signaling_connector_.reset(new SignalingConnector(
-        signal_strategy_.get(),
+        signal_strategy_.get(), &context_, dns_blackhole_checker.Pass(),
         base::Bind(&SimpleHost::OnAuthFailed, base::Unretained(this))));
 
     if (fake_) {
@@ -304,6 +307,7 @@ class SimpleHost : public HeartbeatSender::Listener {
     log_to_server_.reset();
     heartbeat_sender_.reset();
     signaling_connector_.reset();
+    dns_blackhole_checker_.reset();
     signal_strategy_.reset();
 
     message_loop_.PostTask(FROM_HERE, MessageLoop::QuitClosure());
@@ -327,6 +331,7 @@ class SimpleHost : public HeartbeatSender::Listener {
   std::string xmpp_auth_service_;
 
   scoped_ptr<XmppSignalStrategy> signal_strategy_;
+  scoped_ptr<DnsBlackholeChecker> dns_blackhole_checker_;
   scoped_ptr<SignalingConnector> signaling_connector_;
   scoped_ptr<DesktopEnvironment> desktop_environment_;
   scoped_ptr<LogToServer> log_to_server_;

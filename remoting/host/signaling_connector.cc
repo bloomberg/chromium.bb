@@ -6,7 +6,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "net/url_request/url_fetcher.h"
 #include "remoting/host/chromoting_host_context.h"
+#include "remoting/host/constants.h"
+#include "remoting/host/dns_blackhole_checker.h"
 #include "remoting/host/url_request_context.h"
 
 namespace remoting {
@@ -33,12 +36,17 @@ SignalingConnector::OAuthCredentials::OAuthCredentials(
 
 SignalingConnector::SignalingConnector(
     XmppSignalStrategy* signal_strategy,
+    ChromotingHostContext* context,
+    scoped_ptr<DnsBlackholeChecker> dns_blackhole_checker,
     const base::Closure& auth_failed_callback)
     : signal_strategy_(signal_strategy),
+      context_(context),
       auth_failed_callback_(auth_failed_callback),
+      dns_blackhole_checker_(dns_blackhole_checker.Pass()),
       reconnect_attempts_(0),
       refreshing_oauth_token_(false) {
   DCHECK(!auth_failed_callback_.is_null());
+  DCHECK(dns_blackhole_checker_.get());
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
   signal_strategy_->AddListener(this);
@@ -52,11 +60,10 @@ SignalingConnector::~SignalingConnector() {
 }
 
 void SignalingConnector::EnableOAuth(
-    scoped_ptr<OAuthCredentials> oauth_credentials,
-    net::URLRequestContextGetter* url_context) {
+    scoped_ptr<OAuthCredentials> oauth_credentials) {
   oauth_credentials_ = oauth_credentials.Pass();
   gaia_oauth_client_.reset(new GaiaOAuthClient(
-      OAuthProviderInfo::GetDefault(), url_context));
+      OAuthProviderInfo::GetDefault(), context_->url_request_context_getter()));
 }
 
 void SignalingConnector::OnSignalStrategyStateChange(
@@ -85,12 +92,6 @@ bool SignalingConnector::OnSignalStrategyIncomingStanza(
   return false;
 }
 
-void SignalingConnector::OnIPAddressChanged() {
-  DCHECK(CalledOnValidThread());
-  LOG(INFO) << "IP address has changed.";
-  ResetAndTryReconnect();
-}
-
 void SignalingConnector::OnConnectionTypeChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
   DCHECK(CalledOnValidThread());
@@ -98,6 +99,12 @@ void SignalingConnector::OnConnectionTypeChanged(
     LOG(INFO) << "Network state changed to online.";
     ResetAndTryReconnect();
   }
+}
+
+void SignalingConnector::OnIPAddressChanged() {
+  DCHECK(CalledOnValidThread());
+  LOG(INFO) << "IP address has changed.";
+  ResetAndTryReconnect();
 }
 
 void SignalingConnector::OnRefreshTokenResponse(const std::string& user_email,
@@ -147,7 +154,7 @@ void SignalingConnector::ScheduleTryReconnect() {
   DCHECK(CalledOnValidThread());
   if (timer_.IsRunning() || net::NetworkChangeNotifier::IsOffline())
     return;
-  int delay_s = std::min(1 << (reconnect_attempts_ * 2),
+  int delay_s = std::min(1 << reconnect_attempts_,
                          kMaxReconnectDelaySeconds);
   timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(delay_s),
                this, &SignalingConnector::TryReconnect);
@@ -163,6 +170,29 @@ void SignalingConnector::ResetAndTryReconnect() {
 
 void SignalingConnector::TryReconnect() {
   DCHECK(CalledOnValidThread());
+  DCHECK(dns_blackhole_checker_.get());
+
+  // This will check if this machine is allowed to access the chromoting
+  // host talkgadget.
+  dns_blackhole_checker_->CheckForDnsBlackhole(
+      base::Bind(&SignalingConnector::OnDnsBlackholeCheckerDone,
+                 base::Unretained(this)));
+}
+
+void SignalingConnector::OnDnsBlackholeCheckerDone(bool allow) {
+  DCHECK(CalledOnValidThread());
+
+  // Unable to access the host talkgadget. Don't allow the connection, but
+  // schedule a reconnect in case this is a transient problem rather than
+  // an outright block.
+  if (!allow) {
+    reconnect_attempts_++;
+    LOG(INFO) << "Talkgadget check failed. Scheduling reconnect. Attempt "
+              << reconnect_attempts_;
+    ScheduleTryReconnect();
+    return;
+  }
+
   if (signal_strategy_->GetState() == SignalStrategy::DISCONNECTED) {
     bool need_new_auth_token = oauth_credentials_.get() &&
         (auth_token_expiry_time_.is_null() ||

@@ -36,6 +36,7 @@
 #include "remoting/host/composite_host_config.h"
 #include "remoting/host/constants.h"
 #include "remoting/host/desktop_environment.h"
+#include "remoting/host/dns_blackhole_checker.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/heartbeat_sender.h"
 #include "remoting/host/host_config.h"
@@ -392,6 +393,11 @@ class HostProcess
             &bool_value)) {
       OnCurtainPolicyUpdate(bool_value);
     }
+    if (policies->GetString(
+            policy_hack::PolicyWatcher::kHostTalkGadgetPrefixPolicyName,
+            &string_value)) {
+      OnHostTalkGadgetPrefixPolicyUpdate(string_value);
+    }
   }
 
   void OnHostDomainPolicyUpdate(const std::string& host_domain) {
@@ -459,47 +465,63 @@ class HostProcess
 #endif
   }
 
+  void OnHostTalkGadgetPrefixPolicyUpdate(
+      const std::string& talkgadget_prefix) {
+    if (!context_->network_task_runner()->BelongsToCurrentThread()) {
+      context_->network_task_runner()->PostTask(FROM_HERE, base::Bind(
+          &HostProcess::OnHostTalkGadgetPrefixPolicyUpdate,
+          base::Unretained(this), talkgadget_prefix));
+      return;
+    }
+
+    if (talkgadget_prefix != talkgadget_prefix_) {
+      LOG(INFO) << "Restarting host due to updated talkgadget policy:";
+      talkgadget_prefix_ = talkgadget_prefix;
+      RestartHost();
+    }
+  }
+
   void StartHost() {
     DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
     DCHECK(!host_);
+    DCHECK(!signal_strategy_.get());
 
     if (shutting_down_)
       return;
 
-    if (!signal_strategy_.get()) {
-      signal_strategy_.reset(
-          new XmppSignalStrategy(context_->url_request_context_getter(),
-                                 xmpp_login_, xmpp_auth_token_,
-                                 xmpp_auth_service_));
+    signal_strategy_.reset(
+        new XmppSignalStrategy(context_->url_request_context_getter(),
+                               xmpp_login_, xmpp_auth_token_,
+                               xmpp_auth_service_));
 
-      signaling_connector_.reset(new SignalingConnector(
-          signal_strategy_.get(),
-          base::Bind(&HostProcess::OnAuthFailed, base::Unretained(this))));
+    scoped_ptr<DnsBlackholeChecker> dns_blackhole_checker(
+        new DnsBlackholeChecker(context_.get(), talkgadget_prefix_));
 
-      if (!oauth_refresh_token_.empty()) {
-        OAuthClientInfo client_info = {
-          kUnofficialOAuth2ClientId,
-          kUnofficialOAuth2ClientSecret
-        };
+    signaling_connector_.reset(new SignalingConnector(
+        signal_strategy_.get(), context_.get(), dns_blackhole_checker.Pass(),
+        base::Bind(&HostProcess::OnAuthFailed, base::Unretained(this))));
+
+    if (!oauth_refresh_token_.empty()) {
+      OAuthClientInfo client_info = {
+        kUnofficialOAuth2ClientId,
+        kUnofficialOAuth2ClientSecret
+      };
 
 #ifdef OFFICIAL_BUILD
-        if (oauth_use_official_client_id_) {
-          OAuthClientInfo official_client_info = {
-            kOfficialOAuth2ClientId,
-            kOfficialOAuth2ClientSecret
-          };
+      if (oauth_use_official_client_id_) {
+        OAuthClientInfo official_client_info = {
+          kOfficialOAuth2ClientId,
+          kOfficialOAuth2ClientSecret
+        };
 
-          client_info = official_client_info;
-        }
+        client_info = official_client_info;
+      }
 #endif  // OFFICIAL_BUILD
 
-        scoped_ptr<SignalingConnector::OAuthCredentials> oauth_credentials(
-            new SignalingConnector::OAuthCredentials(
-                xmpp_login_, oauth_refresh_token_, client_info));
-        signaling_connector_->EnableOAuth(
-            oauth_credentials.Pass(),
-            context_->url_request_context_getter());
-      }
+      scoped_ptr<SignalingConnector::OAuthCredentials> oauth_credentials(
+          new SignalingConnector::OAuthCredentials(
+              xmpp_login_, oauth_refresh_token_, client_info));
+      signaling_connector_->EnableOAuth(oauth_credentials.Pass());
     }
 
     if (!desktop_environment_.get()) {
@@ -577,9 +599,7 @@ class HostProcess
 
     restarting_ = false;
     host_ = NULL;
-    log_to_server_.reset();
-    host_event_logger_.reset();
-    heartbeat_sender_.reset();
+    ResetHost();
 
     StartHost();
   }
@@ -605,13 +625,19 @@ class HostProcess
 
     // Destroy networking objects while we are on the network thread.
     host_ = NULL;
+    ResetHost();
+
+    message_loop_.PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  }
+
+  void ResetHost() {
+    DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+
     host_event_logger_.reset();
     log_to_server_.reset();
     heartbeat_sender_.reset();
     signaling_connector_.reset();
     signal_strategy_.reset();
-
-    message_loop_.PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
 
   MessageLoop message_loop_;
@@ -634,6 +660,8 @@ class HostProcess
 
   scoped_ptr<policy_hack::PolicyWatcher> policy_watcher_;
   bool allow_nat_traversal_;
+  std::string talkgadget_prefix_;
+
   scoped_ptr<base::files::FilePathWatcher> config_watcher_;
   scoped_ptr<base::DelayTimer<HostProcess> > config_updated_timer_;
 

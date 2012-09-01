@@ -14,10 +14,14 @@
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 
 namespace net {
+class URLFetcher;
 class URLRequestContextGetter;
 }  // namespace net
 
 namespace remoting {
+
+class ChromotingHostContext;
+class DnsBlackholeChecker;
 
 // SignalingConnector listens for SignalStrategy status notifications
 // and attempts to keep it connected when possible. When signalling is
@@ -52,13 +56,14 @@ class SignalingConnector
 
   // The |auth_failed_callback| is called when authentication fails.
   SignalingConnector(XmppSignalStrategy* signal_strategy,
+                     ChromotingHostContext* context,
+                     scoped_ptr<DnsBlackholeChecker> dns_blackhole_checker,
                      const base::Closure& auth_failed_callback);
   virtual ~SignalingConnector();
 
   // May be called immediately after the constructor to enable OAuth
   // access token updating.
-  void EnableOAuth(scoped_ptr<OAuthCredentials> oauth_credentials,
-                   net::URLRequestContextGetter* url_context);
+  void EnableOAuth(scoped_ptr<OAuthCredentials> oauth_credentials);
 
   // SignalStrategy::Listener interface.
   virtual void OnSignalStrategyStateChange(
@@ -66,12 +71,12 @@ class SignalingConnector
   virtual bool OnSignalStrategyIncomingStanza(
       const buzz::XmlElement* stanza) OVERRIDE;
 
-  // NetworkChangeNotifier::IPAddressObserver interface.
-  virtual void OnIPAddressChanged() OVERRIDE;
-
   // NetworkChangeNotifier::ConnectionTypeObserver interface.
   virtual void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
+
+  // NetworkChangeNotifier::IPAddressObserver interface.
+  virtual void OnIPAddressChanged() OVERRIDE;
 
   // GaiaOAuthClient::Delegate interface.
   virtual void OnRefreshTokenResponse(const std::string& user_email,
@@ -84,14 +89,17 @@ class SignalingConnector
   void ScheduleTryReconnect();
   void ResetAndTryReconnect();
   void TryReconnect();
+  void OnDnsBlackholeCheckerDone(bool allow);
 
   void RefreshOAuthToken();
 
   XmppSignalStrategy* signal_strategy_;
+  ChromotingHostContext* context_;
   base::Closure auth_failed_callback_;
 
   scoped_ptr<OAuthCredentials> oauth_credentials_;
   scoped_ptr<GaiaOAuthClient> gaia_oauth_client_;
+  scoped_ptr<DnsBlackholeChecker> dns_blackhole_checker_;
 
   // Number of times we tried to connect without success.
   int reconnect_attempts_;

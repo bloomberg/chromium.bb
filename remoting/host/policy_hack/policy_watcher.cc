@@ -15,7 +15,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/time.h"
 #include "base/values.h"
-#include "remoting/host/constants.h"
+#include "remoting/host/dns_blackhole_checker.h"
 
 namespace remoting {
 namespace policy_hack {
@@ -96,7 +96,8 @@ scoped_ptr<base::DictionaryValue> AddDefaultValuesWhenNecessary(
                       PolicyWatcher::kHostDomainPolicyName, "", "");
   CopyStringOrDefault(to.get(), from,
                       PolicyWatcher::kHostTalkGadgetPrefixPolicyName,
-                      kDefaultTalkGadgetPrefix, kDefaultTalkGadgetPrefix);
+                      kDefaultHostTalkGadgetPrefix,
+                      kDefaultHostTalkGadgetPrefix);
   CopyBooleanOrDefault(to.get(), from,
                        PolicyWatcher::kHostRequireCurtainPolicyName,
                        false, false);

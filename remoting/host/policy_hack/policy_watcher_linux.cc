@@ -33,7 +33,9 @@ namespace policy_hack {
 namespace {
 
 const FilePath::CharType kPolicyDir[] =
-    FILE_PATH_LITERAL("/etc/opt/chrome/policies/managed");
+  // Always read the Chrome policies (even on Chromium) so that policy
+  // enforcement can't be bypassed by running Chromium.
+  FILE_PATH_LITERAL("/etc/opt/chrome/policies/managed");
 
 // Amount of time we wait for the files on disk to settle before trying to load
 // them. This alleviates the problem of reading partially written files and

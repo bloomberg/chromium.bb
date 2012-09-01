@@ -9,11 +9,6 @@
 
 namespace remoting {
 
-// This is the default prefix that is prepended to ".talkgadget.google.com"
-// to form the complete talkgadget domain name. Policy settings allow admins
-// to change the prefix that is used.
-extern const char kDefaultTalkGadgetPrefix[];
-
 // Known host exit codes.
 // Please keep this enum in sync with:
 // remoting/host/installer/mac/PrivilegedHelperTools/
