@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/common/chrome_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using google_util::IsGoogleDomainUrl;
@@ -320,6 +322,22 @@ TEST(GoogleUtilTest, GoogleDomains) {
                                  google_util::DISALLOW_SUBDOMAIN));
   EXPECT_FALSE(IsGoogleDomainUrl("doesnotexist://www.google.com",
                                  google_util::DISALLOW_SUBDOMAIN));
+
+  // Test overriding with --instant-url works.
+  EXPECT_FALSE(IsGoogleDomainUrl("http://test.foo.com",
+                                 google_util::DISALLOW_SUBDOMAIN));
+  EXPECT_FALSE(IsGoogleDomainUrl("http://test.foo.com:1234",
+                                 google_util::DISALLOW_SUBDOMAIN));
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kInstantURL, "http://test.foo.com:1234/bar");
+  EXPECT_FALSE(IsGoogleDomainUrl("http://test.foo.com",
+                                 google_util::DISALLOW_SUBDOMAIN));
+  EXPECT_TRUE(IsGoogleDomainUrl("http://test.foo.com:1234",
+                                google_util::DISALLOW_SUBDOMAIN));
+  EXPECT_FALSE(IsGoogleDomainUrl("file://test.foo.com:1234",
+                                 google_util::DISALLOW_SUBDOMAIN));
+  EXPECT_TRUE(IsGoogleDomainUrl("http://www.google.com",
+                                google_util::DISALLOW_SUBDOMAIN));
 }
 
 TEST(GoogleUtilTest, SearchTerms) {
