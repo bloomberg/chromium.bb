@@ -1704,7 +1704,7 @@ frame_menu_func(struct window *window, int index, void *data)
 		break;
 	case 3: /* move to workspace below */
 		display = window->display;
-		if (display->workspace < display->workspace_count)
+		if (display->workspace < display->workspace_count - 1)
 			workspace_manager_move_surface(display->workspace_manager,
 						       window->surface,
 						       display->workspace + 1);

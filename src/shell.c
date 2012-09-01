@@ -548,6 +548,7 @@ static struct workspace *
 get_workspace(struct desktop_shell *shell, unsigned int index)
 {
 	struct workspace **pws = shell->workspaces.array.data;
+	assert(index < shell->workspaces.num);
 	pws += index;
 	return *pws;
 }
@@ -848,6 +849,9 @@ move_surface_to_workspace(struct desktop_shell *shell,
 
 	if (workspace == shell->workspaces.current)
 		return;
+
+	if (workspace >= shell->workspaces.num)
+		workspace = shell->workspaces.num - 1;
 
 	from = get_current_workspace(shell);
 	to = get_workspace(shell, workspace);
