@@ -1452,8 +1452,7 @@ TEST_F(NavigationControllerTest, InPage) {
   EXPECT_TRUE(notifications.Check1AndReset(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED));
   EXPECT_TRUE(details.is_in_page);
-  // TODO(tsepez): check why |did_replace_entry| is returned as false.
-  EXPECT_FALSE(details.did_replace_entry);
+  EXPECT_TRUE(details.did_replace_entry);
   EXPECT_EQ(1, controller.GetEntryCount());
 
   // Fragment navigation to a new page_id.

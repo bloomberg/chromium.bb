@@ -222,7 +222,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   // whether the last entry has been replaced or not.
   // See LoadCommittedDetails.did_replace_entry.
   void RendererDidNavigateToNewPage(
-      const ViewHostMsg_FrameNavigate_Params& params, bool* did_replace_entry);
+      const ViewHostMsg_FrameNavigate_Params& params, bool replace_entry);
   void RendererDidNavigateToExistingPage(
       const ViewHostMsg_FrameNavigate_Params& params);
   void RendererDidNavigateToSamePage(
