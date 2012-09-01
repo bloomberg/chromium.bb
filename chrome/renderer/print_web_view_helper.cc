@@ -809,6 +809,18 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
     return;
   }
 
+  // Print page onto entire page not just printable area. Preview PDF already
+  // has content in correct position taking into account page size and printable
+  // area.
+  // TODO(vitalybuka) : Make this consistent on all platform. This change
+  // affects Windows only. On Linux and OSX RenderPagesForPrint does not use
+  // printable_area. Also we can't change printable_area deeper inside
+  // RenderPagesForPrint for Windows, because it's used also by native
+  // printing and it expects real printable_area value.
+  // See http://crbug.com/123408
+  PrintMsg_Print_Params& print_params = print_pages_params_->params;
+  print_params.printable_area = gfx::Rect(print_params.page_size);
+
   // Render Pages for printing.
   if (!RenderPagesForPrint(pdf_frame, pdf_element)) {
     LOG(ERROR) << "RenderPagesForPrint failed";
