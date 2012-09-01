@@ -12,6 +12,10 @@ fun_r:*CryptAcquireContext*
 obj:*WINHTTP.dll
 obj:*imagehlp.dll
 
+# Instrumenting IP Helper API causes crashes.
+# TODO(szym): investigate http://crbug.com/146119
+obj:*IPHLPAPI.dll
+
 # Use less detailed instrumentation of STL
 fun_hist:*std::*<*
 # Don't instrument some stl internals - they shouldn't be useful

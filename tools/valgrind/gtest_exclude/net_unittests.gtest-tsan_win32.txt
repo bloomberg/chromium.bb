@@ -24,8 +24,5 @@ SSLClientSocketTest.*
 # See http://crbug.com/104805
 HostResolverImplTest.AbortOnlyExistingRequestsOnIPAddressChange
 
-# Fails, see http://crbug.com/118874
-DnsConfigServiceTest.*GetSystemConfig
-
 # Times out occasionally, http://crbug.com/124452
 HostResolverImplTest.StartWithinCallback
