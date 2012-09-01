@@ -192,9 +192,6 @@ const wchar_t kInstallerDir[] = L"Installer";
 const wchar_t kInstallTempDir[] = L"Temp";
 const wchar_t kInstallUserDataDir[] = L"User Data";
 const wchar_t kNaClExe[] = L"nacl64.exe";
-// The CLSID of the proxy stub OLE Automation universal marshaler, the default
-// marshaler for all interfaces.
-const wchar_t kPSOAInterfaceUuid[] = L"{00020424-0000-0000-C000-000000000046}";
 const wchar_t kSetupExe[] = L"setup.exe";
 const wchar_t kSxSSuffix[] = L" SxS";
 const wchar_t kUninstallStringField[] = L"UninstallString";

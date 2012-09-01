@@ -1152,43 +1152,49 @@ void AddDelegateExecuteWorkItems(const InstallerState& installer_state,
                                  const Product& product,
                                  WorkItemList* list) {
   string16 handler_class_uuid;
-  string16 type_lib_uuid;
-  string16 type_lib_version;
-  string16 interface_uuid;
   BrowserDistribution* distribution = product.distribution();
-  if (!distribution->GetDelegateExecuteHandlerData(
-          &handler_class_uuid, &type_lib_uuid, &type_lib_version,
-          &interface_uuid)) {
+  if (!distribution->GetCommandExecuteImplClsid(&handler_class_uuid)) {
     VLOG(1) << "No DelegateExecute verb handler processing to do for "
             << distribution->GetAppShortCutName();
     return;
   }
 
   HKEY root = installer_state.root_key();
-  const bool is_install =
-      (installer_state.operation() != InstallerState::UNINSTALL);
   string16 delegate_execute_path(L"Software\\Classes\\CLSID\\");
   delegate_execute_path.append(handler_class_uuid);
-  string16 typelib_path(L"Software\\Classes\\TypeLib\\");
-  typelib_path.append(type_lib_uuid);
-  string16 interface_path(L"Software\\Classes\\Interface\\");
-  interface_path.append(interface_uuid);
 
+  // Unconditionally remove registration regardless of whether or not it is
+  // needed since builds after r132190 included it when it wasn't strictly
+  // necessary.  Do this removal before adding in the new key to ensure that
+  // the COM probe/flush below does its job.
   VLOG(1) << "Adding unregistration items for DelegateExecute verb handler.";
   list->AddDeleteRegKeyWorkItem(root, delegate_execute_path);
-  list->AddDeleteRegKeyWorkItem(root, typelib_path);
-  list->AddDeleteRegKeyWorkItem(root, interface_path);
 
-  // Add work items to register the handler iff it is present.  Remove its
-  // registration otherwise since builds after r132190 included it when it
-  // wasn't strictly necessary.
-  // TODO(grt): remove the extra check for the .exe when it's ever-present;
-  // see also shell_util.cc's GetProgIdEntries.
-  if (is_install &&
+  // In the past, the ICommandExecuteImpl interface and a TypeLib were both
+  // registered.  Remove these since this operation may be updating a machine
+  // that had the old registrations.
+  list->AddDeleteRegKeyWorkItem(root,
+                                L"Software\\Classes\\Interface\\"
+                                L"{0BA0D4E9-2259-4963-B9AE-A839F7CB7544}");
+  list->AddDeleteRegKeyWorkItem(root,
+                                L"Software\\Classes\\TypeLib\\"
+#if defined(GOOGLE_CHROME_BUILD)
+                                L"{4E805ED8-EBA0-4601-9681-12815A56EBFD}"
+#else
+                                L"{7779FB70-B399-454A-AA1A-BAA850032B10}"
+#endif
+                                );
+
+  // Add work items to register the handler iff it is present.
+  // TODO(grt): Remove the extra check for the .exe when it is no longer
+  // possible to build Chrome without the DelegateExecute verb handler.
+  // See also shell_util.cc's GetProgIdEntries.
+  if (installer_state.operation() != InstallerState::UNINSTALL &&
       file_util::PathExists(src_path.AppendASCII(new_version.GetString())
           .Append(kDelegateExecuteExe))) {
     VLOG(1) << "Adding registration items for DelegateExecute verb handler.";
 
+    // Force COM to flush its cache containing the path to the old handler.
     list->AddCallbackWorkItem(base::Bind(&ProbeCommandExecuteCallback,
                                          handler_class_uuid));
 
@@ -1201,8 +1207,7 @@ void AddDelegateExecuteWorkItems(const InstallerState& installer_state,
     string16 command(1, L'"');
     command.append(delegate_execute.value()).append(1, L'"');
 
-    // Register the CommandExecuteImpl class at
-    // Software\Classes\CLSID\{5C65F4B0-3651-4514-B207-D10CB699B14B}
+    // Register the CommandExecuteImpl class in Software\Classes\CLSID\...
     list->AddCreateRegKeyWorkItem(root, delegate_execute_path);
     list->AddSetRegValueWorkItem(root, delegate_execute_path, L"",
                                  L"CommandExecuteImpl Class", true);
@@ -1215,58 +1220,6 @@ void AddDelegateExecuteWorkItems(const InstallerState& installer_state,
 
     subkey.assign(delegate_execute_path).append(L"\\Programmable");
     list->AddCreateRegKeyWorkItem(root, subkey);
-
-    subkey.assign(delegate_execute_path).append(L"\\TypeLib");
-    list->AddCreateRegKeyWorkItem(root, subkey);
-    list->AddSetRegValueWorkItem(root, subkey, L"", type_lib_uuid, true);
-
-    subkey.assign(delegate_execute_path).append(L"\\Version");
-    list->AddCreateRegKeyWorkItem(root, subkey);
-    list->AddSetRegValueWorkItem(root, subkey, L"", type_lib_version, true);
-
-    // Register the DelegateExecuteLib type library at
-    // Software\Classes\TypeLib\{4E805ED8-EBA0-4601-9681-12815A56EBFD}
-    list->AddCreateRegKeyWorkItem(root, typelib_path);
-
-    string16 version_key(typelib_path);
-    version_key.append(1, L'\\').append(type_lib_version);
-    list->AddCreateRegKeyWorkItem(root, version_key);
-    list->AddSetRegValueWorkItem(root, version_key, L"", L"DelegateExecuteLib",
-                                 true);
-
-    subkey.assign(version_key).append(L"\\FLAGS");
-    const DWORD flags = LIBFLAG_FRESTRICTED | LIBFLAG_FCONTROL;
-    list->AddCreateRegKeyWorkItem(root, subkey);
-    list->AddSetRegValueWorkItem(root, subkey, L"", flags, true);
-
-    subkey.assign(version_key).append(L"\\0");
-    list->AddCreateRegKeyWorkItem(root, subkey);
-
-    subkey.append(L"\\win32");
-    list->AddCreateRegKeyWorkItem(root, subkey);
-    list->AddSetRegValueWorkItem(root, subkey, L"", delegate_execute.value(),
-                                 true);
-
-    subkey.assign(version_key).append(L"\\HELPDIR");
-    list->AddCreateRegKeyWorkItem(root, subkey);
-    list->AddSetRegValueWorkItem(root, subkey, L"",
-                                 delegate_execute.DirName().value(), true);
-
-    // Register to ICommandExecuteImpl interface at
-    // Software\Classes\Interface\{0BA0D4E9-2259-4963-B9AE-A839F7CB7544}
-    list->AddCreateRegKeyWorkItem(root, interface_path);
-    list->AddSetRegValueWorkItem(root, interface_path, L"",
-                                 L"ICommandExecuteImpl", true);
-
-    subkey.assign(interface_path).append(L"\\ProxyStubClsid32");
-    list->AddCreateRegKeyWorkItem(root, subkey);
-    list->AddSetRegValueWorkItem(root, subkey, L"", kPSOAInterfaceUuid, true);
-
-    subkey.assign(interface_path).append(L"\\TypeLib");
-    list->AddCreateRegKeyWorkItem(root, subkey);
-    list->AddSetRegValueWorkItem(root, subkey, L"", type_lib_uuid, true);
-    list->AddSetRegValueWorkItem(root, subkey, L"Version", type_lib_version,
-                                 true);
   }
 }
 

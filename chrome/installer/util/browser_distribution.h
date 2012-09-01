@@ -126,15 +126,9 @@ class BrowserDistribution {
   virtual bool GetChromeChannel(string16* channel);
 
   // Returns true if the distribution includes a DelegateExecute verb handler,
-  // and provides the COM registration data if so:
-  // |handler_class_uuid| is the CommandExecuteImpl class UUID.
-  // |type_lib_uuid| and |type_lib_version| identify its type library.
-  // |interface_uuid| is the ICommandExecuteImpl interface UUID.
-  // Only non-null parameters will be set, others will be ignored.
-  virtual bool GetDelegateExecuteHandlerData(string16* handler_class_uuid,
-                                             string16* type_lib_uuid,
-                                             string16* type_lib_version,
-                                             string16* interface_uuid);
+  // and provides the CommandExecuteImpl class UUID if |handler_class_uuid| is
+  // non-NULL.
+  virtual bool GetCommandExecuteImplClsid(string16* handler_class_uuid);
 
   virtual void UpdateInstallStatus(bool system_install,
       installer::ArchiveType archive_type,

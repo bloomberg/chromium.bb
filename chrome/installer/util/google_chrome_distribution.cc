@@ -52,11 +52,6 @@ const wchar_t kChromeGuid[] = L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
 const wchar_t kBrowserAppId[] = L"Chrome";
 const wchar_t kCommandExecuteImplUuid[] =
     L"{5C65F4B0-3651-4514-B207-D10CB699B14B}";
-const wchar_t kDelegateExecuteLibUuid[] =
-    L"{4E805ED8-EBA0-4601-9681-12815A56EBFD}";
-const wchar_t kDelegateExecuteLibVersion[] = L"1.0";
-const wchar_t kICommandExecuteImplUuid[] =
-    L"{0BA0D4E9-2259-4963-B9AE-A839F7CB7544}";
 
 // The following strings are the possible outcomes of the toast experiment
 // as recorded in the |client| field.
@@ -543,19 +538,10 @@ string16 GoogleChromeDistribution::GetVersionKey() {
   return key;
 }
 
-bool GoogleChromeDistribution::GetDelegateExecuteHandlerData(
-    string16* handler_class_uuid,
-    string16* type_lib_uuid,
-    string16* type_lib_version,
-    string16* interface_uuid) {
+bool GoogleChromeDistribution::GetCommandExecuteImplClsid(
+    string16* handler_class_uuid) {
   if (handler_class_uuid)
     *handler_class_uuid = kCommandExecuteImplUuid;
-  if (type_lib_uuid)
-    *type_lib_uuid = kDelegateExecuteLibUuid;
-  if (type_lib_version)
-    *type_lib_version = kDelegateExecuteLibVersion;
-  if (interface_uuid)
-    *interface_uuid = kICommandExecuteImplUuid;
   return true;
 }
 

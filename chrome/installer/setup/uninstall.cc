@@ -775,8 +775,8 @@ const wchar_t kChromeExtProgId[] = L"ChromiumExt";
 
 // Builds and executes a work item list to remove DelegateExecute verb handler
 // work items for |product|.  This will be a noop for products whose
-// corresponding BrowserDistribution implementations do not publish
-// DelegateExecute data via an implementation of GetDelegateExecuteHandlerData.
+// corresponding BrowserDistribution implementations do not publish a CLSID via
+// GetCommandExecuteImplClsid.
 bool ProcessDelegateExecuteWorkItems(const InstallerState& installer_state,
                                      const Product& product) {
   scoped_ptr<WorkItemList> item_list(WorkItem::CreateNoRollbackWorkItemList());

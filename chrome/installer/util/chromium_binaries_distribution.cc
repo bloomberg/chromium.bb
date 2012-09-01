@@ -103,10 +103,7 @@ bool ChromiumBinariesDistribution::GetChromeChannel(string16* channel) {
   return false;
 }
 
-bool ChromiumBinariesDistribution::GetDelegateExecuteHandlerData(
-    string16* handler_class_uuid,
-    string16* type_lib_uuid,
-    string16* type_lib_version,
-    string16* interface_uuid) {
+bool ChromiumBinariesDistribution::GetCommandExecuteImplClsid(
+    string16* handler_class_uuid) {
   return false;
 }

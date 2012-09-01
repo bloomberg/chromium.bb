@@ -189,7 +189,6 @@ extern const wchar_t kInstallerDir[];
 extern const wchar_t kInstallTempDir[];
 extern const wchar_t kInstallUserDataDir[];
 extern const wchar_t kNaClExe[];
-extern const wchar_t kPSOAInterfaceUuid[];
 extern const wchar_t kSetupExe[];
 extern const wchar_t kSxSSuffix[];
 extern const wchar_t kUninstallArgumentsField[];

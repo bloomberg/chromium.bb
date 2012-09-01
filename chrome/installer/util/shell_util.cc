@@ -221,7 +221,7 @@ class RegistryEntry {
     // see also install_worker.cc's AddDelegateExecuteWorkItems.
     bool set_delegate_execute =
         IsChromeMetroSupported() &&
-        dist->GetDelegateExecuteHandlerData(&delegate_guid, NULL, NULL, NULL) &&
+        dist->GetCommandExecuteImplClsid(&delegate_guid) &&
         InstallUtil::HasDelegateExecuteHandler(dist, chrome_exe);
 
     // DelegateExecute ProgId. Needed for Chrome Metro in Windows 8.
@@ -755,9 +755,7 @@ uint32 ConvertShellUtilShortcutOptionsToFileUtil(uint32 options) {
 void RemoveBadWindows8RegistrationIfNeeded(
     BrowserDistribution* dist,
     const string16& chrome_exe) {
-  string16 handler_guid;
-
-  if (dist->GetDelegateExecuteHandlerData(&handler_guid, NULL, NULL, NULL) &&
+  if (dist->GetCommandExecuteImplClsid(NULL) &&
       (!InstallUtil::HasDelegateExecuteHandler(dist, chrome_exe) ||
        !IsChromeMetroSupported())) {
     // There's no need to rollback, so forgo the usual work item lists and just
