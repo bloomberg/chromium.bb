@@ -24,26 +24,18 @@ class AudioCapturer;
 class AudioEncoder;
 class AudioPacket;
 
-// A class for controlling AudioCapturer and forwarding audio packets to the
-// client.
-//
-// THREADING
-//
-// This class works on two threads: the capture and network threads.
-// Any encoding that is done on the audio samples will be done on the capture
-// thread.
-//
-// AudioScheduler is responsible for:
-// 1. managing the AudioCapturer.
-// 2. sending packets of audio samples over the network to the client.
+// AudioScheduler is responsible for fetching audio data from the AudioCapturer
+// and encoding it before passing it to the AudioStub for delivery to the
+// client. Audio is captured and encoded on the audio thread and then passed to
+// AudioStub on the network thread.
 class AudioScheduler : public base::RefCountedThreadSafe<AudioScheduler> {
  public:
-  // Construct an AudioScheduler. TaskRunners are used for message passing
-  // among the capturer and network threads. The caller is responsible for
-  // ensuring that the |audio_capturer| and |audio_stub| outlive the
-  // AudioScheduler.
+  // Audio capture and encoding tasks are dispatched via the
+  // |audio_task_runner|. |audio_stub| tasks are dispatched via the
+  // |network_task_runner|. The caller must ensure that the |audio_capturer| and
+  // |audio_stub| exist until the scheduler is stopped using Stop() method.
   AudioScheduler(
-      scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
       AudioCapturer* audio_capturer,
       scoped_ptr<AudioEncoder> audio_encoder,
@@ -72,7 +64,7 @@ class AudioScheduler : public base::RefCountedThreadSafe<AudioScheduler> {
   // Called when an AudioPacket has been delivered to the client.
   void OnCaptureCallbackNotified();
 
-  scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
   AudioCapturer* audio_capturer_;

@@ -49,6 +49,9 @@ class ChromotingHostContext {
   // Task runner for the thread used to encode video streams.
   virtual base::SingleThreadTaskRunner* encode_task_runner();
 
+  // Task runner for the thread used for audio capture and encoding.
+  virtual base::SingleThreadTaskRunner* audio_task_runner();
+
   // Task runner for the thread used for network IO. This thread runs
   // a libjingle message loop, and is the only thread on which
   // libjingle code may be run.
@@ -79,6 +82,9 @@ class ChromotingHostContext {
 
   // A thread that hosts all encode operations.
   base::Thread encode_thread_;
+
+  // A thread that hosts audio capture and encoding.
+  base::Thread audio_thread_;
 
   // A thread that hosts input injection.
   base::Thread desktop_thread_;

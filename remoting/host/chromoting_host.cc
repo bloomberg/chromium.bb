@@ -238,7 +238,7 @@ void ChromotingHost::OnSessionChannelsConnected(ClientSession* client) {
     scoped_ptr<AudioEncoder> audio_encoder =
         CreateAudioEncoder(client->connection()->session()->config());
     audio_scheduler_ = new AudioScheduler(
-        context_->capture_task_runner(),
+        context_->audio_task_runner(),
         context_->network_task_runner(),
         desktop_environment_->audio_capturer(),
         audio_encoder.Pass(),

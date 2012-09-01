@@ -17,6 +17,7 @@ ChromotingHostContext::ChromotingHostContext(
     : network_thread_("ChromotingNetworkThread"),
       capture_thread_("ChromotingCaptureThread"),
       encode_thread_("ChromotingEncodeThread"),
+      audio_thread_("ChromotingAudioThread"),
       desktop_thread_("ChromotingDesktopThread"),
       file_thread_("ChromotingFileIOThread"),
       ui_task_runner_(ui_task_runner) {
@@ -28,6 +29,8 @@ ChromotingHostContext::~ChromotingHostContext() {
 bool ChromotingHostContext::Start() {
   // Start all the threads.
   bool started = capture_thread_.Start() && encode_thread_.Start() &&
+      audio_thread_.StartWithOptions(base::Thread::Options(
+          MessageLoop::TYPE_IO, 0)) &&
       network_thread_.StartWithOptions(base::Thread::Options(
           MessageLoop::TYPE_IO, 0)) &&
       desktop_thread_.Start() &&
@@ -48,6 +51,10 @@ base::SingleThreadTaskRunner* ChromotingHostContext::capture_task_runner() {
 
 base::SingleThreadTaskRunner* ChromotingHostContext::encode_task_runner() {
   return encode_thread_.message_loop_proxy();
+}
+
+base::SingleThreadTaskRunner* ChromotingHostContext::audio_task_runner() {
+  return audio_thread_.message_loop_proxy();
 }
 
 base::SingleThreadTaskRunner* ChromotingHostContext::network_task_runner() {
