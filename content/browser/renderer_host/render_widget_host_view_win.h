@@ -394,6 +394,10 @@ class RenderWidgetHostViewWin
   // Set window to raw touch events. Returns whether registering was successful.
   bool SetToTouchMode();
 
+  // Configures the enable/disable state of |ime_input_| to match with the
+  // current |text_input_type_|.
+  void UpdateIMEState();
+
   // The associated Model.  While |this| is being Destroyed,
   // |render_widget_host_| is NULL and the Windows message loop is run one last
   // time. Message handlers must check for a NULL |render_widget_host_|.
