@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_DISK_CACHE_HASH_H__
-#define NET_DISK_CACHE_HASH_H__
+#ifndef BASE_HASH_H_
+#define BASE_HASH_H_
 
 #include <string>
 
+#include "base/base_export.h"
 #include "base/basictypes.h"
-#include "net/base/net_export.h"
 
-namespace disk_cache {
+namespace base {
 
 // From http://www.azillionmonkeys.com/qed/hash.html
 // This is the hash used on WebCore/platform/stringhash
-NET_EXPORT_PRIVATE uint32 SuperFastHash(const char * data, int len);
+BASE_EXPORT uint32 SuperFastHash(const char * data, int len);
 
 inline uint32 Hash(const char* key, size_t length) {
   return SuperFastHash(key, static_cast<int>(length));
@@ -26,6 +26,6 @@ inline uint32 Hash(const std::string& key) {
   return SuperFastHash(key.data(), static_cast<int>(key.size()));
 }
 
-}  // namespace disk_cache
+}  // namespace base
 
-#endif  // NET_DISK_CACHE_HASH_H__
+#endif  // BASE_HASH_H_

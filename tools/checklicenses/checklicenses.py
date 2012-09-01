@@ -87,6 +87,9 @@ WHITELISTED_LICENSES = [
 
 
 PATH_SPECIFIC_WHITELISTED_LICENSES = {
+    'base/hash.cc': [  # http://crbug.com/98100
+        'UNKNOWN',
+    ],
     'base/third_party/icu': [  # http://crbug.com/98087
         'UNKNOWN',
     ],
@@ -140,9 +143,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'GPL (v3.1,)',
 
         'GPL (v3 or later)',
-    ],
-    'net/disk_cache/hash.cc': [  # http://crbug.com/98100
-        'UNKNOWN',
     ],
     'net/tools/spdyshark': [
         'GPL (v2 or later)',

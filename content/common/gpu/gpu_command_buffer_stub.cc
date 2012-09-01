@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
+#include "base/hash.h"
 #include "base/shared_memory.h"
 #include "base/time.h"
 #include "build/build_config.h"
@@ -25,7 +26,6 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
-#include "net/disk_cache/hash.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_switches.h"
 
@@ -123,8 +123,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       sync_point_wait_count_(0),
       delayed_work_scheduled_(false),
       active_url_(active_url) {
-  active_url_hash_ =
-      disk_cache::Hash(active_url.possibly_invalid_spec());
+  active_url_hash_ = base::Hash(active_url.possibly_invalid_spec());
   FastSetActiveURL(active_url_, active_url_hash_);
   if (share_group) {
     context_group_ = share_group->context_group_;

@@ -1,11 +1,11 @@
 // From http://www.azillionmonkeys.com/qed/hash.html
 
-#include "net/disk_cache/hash.h"
+#include "base/hash.h"
 
 typedef uint32 uint32_t;
 typedef uint16 uint16_t;
 
-namespace disk_cache {
+namespace base {
 
 #undef get16bits
 #if (defined(__GNUC__) && defined(__i386__)) || defined(__WATCOMC__) \
@@ -70,4 +70,4 @@ uint32 SuperFastHash(const char * data, int len) {
   return hash;
 }
 
-}  // namespace disk_cache
+}  // namespace base
