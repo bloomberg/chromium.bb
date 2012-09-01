@@ -2013,7 +2013,7 @@ pointer_handle_motion(void *data, struct wl_pointer *pointer,
 	else
 		widget = input->focus_widget;
 	if (widget && widget->motion_handler)
-		cursor = widget->motion_handler(input->focus_widget,
+		cursor = widget->motion_handler(widget,
 						input, time, sx, sy,
 						widget->user_data);
 
