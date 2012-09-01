@@ -54,7 +54,6 @@
       'passwords',
       'policy',
       'policy_prefs_ui',
-      'popups',
       'prefs',
       'prefs_ui',
       'pyauto_webdriver',
@@ -103,10 +102,6 @@
       '-policy.PolicyTest.testEnabledPlugins',
       # crbug.com/118123
       '-policy.PolicyTest.testExtensionInstallFromForceList',
-      # crbug.com/47935
-      '-popups.PopupsTest.testBlockedPopupNotShowInHistory',
-      # crbug.com/83827
-      '-popups.PopupsTest.testUnblockedPopupAddedToOmnibox',
       # crbug.com/85600
       '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
       # crbug.com/112051
@@ -318,8 +313,6 @@
       '-passwords.PasswordTest.testClearFetchedCredForNewUserName',
       '-passwords.PasswordTest.testSavedPasswordInTabsAndWindows',
       # onunload popups get created in the same window on chromeos
-      # crosbug.com/14924
-      '-popups.PopupsTest.testPopupsLaunchWhenTabIsClosed',
       # Session restore not working with PyAuto.  crosbug.com/12648
       '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
       '-prefs.PrefsTest.testSessionRestoreURLs',
@@ -383,8 +376,6 @@
       '-passwords.PasswordTest.testLoginCredsNotShownInIncognito',
       '-passwords.PasswordTest.testNeverSavePasswords',
       '-passwords.PasswordTest.testPasswordInfobarShowsForBlockedDomain',
-      '-popups.PopupsTest.testMultiplePopups',
-      '-popups.PopupsTest.testPopupBlockedEverySec',
     ],
 
     'win': [
@@ -771,8 +762,6 @@
       '-policy_prefs_ui.PolicyPrefsUITest.testNoUserPoliciesNoBanner',
       '-policy_prefs_ui.PolicyPrefsUITest.testToggleUserPolicyTogglesBanner',
       '-policy_prefs_ui.PolicyPrefsUITest.testUserPoliciesShowBanner',
-      '-popups.PopupsTest.testMultiplePopups',
-      '-popups.PopupsTest.testPopupBlockedEverySec',
       '-search_engines.SearchEnginesTest.testDiscoverSearchEngine',
       '-ntp.NTPTest.testUninstallApp',
       '-ntp.NTPTest.testLaunchAppWithDefaultSettings',

@@ -22,6 +22,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -41,6 +42,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
+#include "chrome/browser/ui/omnibox/location_bar.h"
+#include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -440,6 +443,20 @@ void DownloadURL(Browser* browser, const GURL& download_url) {
 
   ui_test_utils::NavigateToURL(browser, download_url);
   observer->WaitForFinished();
+}
+
+void SendToOmniboxAndSubmit(LocationBar* location_bar,
+                            const std::string& input) {
+  OmniboxView* omnibox = location_bar->GetLocationEntry();
+  omnibox->model()->OnSetFocus(false);
+  omnibox->SetUserText(ASCIIToUTF16(input));
+  location_bar->AcceptInput();
+  while (!omnibox->model()->autocomplete_controller()->done()) {
+    content::WindowedNotificationObserver observer(
+        chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,
+        content::NotificationService::AllSources());
+    observer.Wait();
+  }
 }
 
 bool GetNativeWindow(const Browser* browser, gfx::NativeWindow* native_window) {

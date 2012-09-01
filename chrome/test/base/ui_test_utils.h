@@ -36,6 +36,7 @@ class AppModalDialog;
 class BookmarkModel;
 class Browser;
 class FilePath;
+class LocationBar;
 class Profile;
 class SkBitmap;
 class TabContents;
@@ -171,6 +172,10 @@ void WaitForHistoryToLoad(HistoryService* history_service);
 
 // Download the given file and waits for the download to complete.
 void DownloadURL(Browser* browser, const GURL& download_url);
+
+// Send the given text to the omnibox and wait until it's updated.
+void SendToOmniboxAndSubmit(LocationBar* location_bar,
+                            const std::string& input);
 
 // Brings the native window for |browser| to the foreground. Returns true on
 // success.

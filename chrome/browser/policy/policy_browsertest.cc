@@ -117,19 +117,6 @@ void CheckURLIsBlocked(Browser* browser, const GURL& url) {
   EXPECT_TRUE(result);
 }
 
-void SendToOmniboxAndSubmit(LocationBar* location_bar, const string16& input) {
-  OmniboxView* omnibox = location_bar->GetLocationEntry();
-  omnibox->model()->OnSetFocus(false);
-  omnibox->SetUserText(input);
-  location_bar->AcceptInput();
-  while (!omnibox->model()->autocomplete_controller()->done()) {
-    content::WindowedNotificationObserver observer(
-        chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,
-        content::NotificationService::AllSources());
-    observer.Wait();
-  }
-}
-
 // Downloads a file named |file| and expects it to be saved to |dir|, which
 // must be empty.
 void DownloadAndVerifyFile(
@@ -274,7 +261,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   // Verify that searching from the omnibox uses kSearchURL.
   chrome::FocusLocationBar(browser());
   LocationBar* location_bar = browser()->window()->GetLocationBar();
-  SendToOmniboxAndSubmit(location_bar, ASCIIToUTF16("stuff to search for"));
+  ui_test_utils::SendToOmniboxAndSubmit(location_bar, "stuff to search for");
   OmniboxEditModel* model = location_bar->GetLocationEntry()->model();
   EXPECT_TRUE(model->CurrentMatch().destination_url.is_valid());
   content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
@@ -288,7 +275,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   EXPECT_TRUE(service->GetDefaultSearchProvider());
   provider_.UpdateChromePolicy(policies);
   EXPECT_FALSE(service->GetDefaultSearchProvider());
-  SendToOmniboxAndSubmit(location_bar, ASCIIToUTF16("should not work"));
+  ui_test_utils::SendToOmniboxAndSubmit(location_bar, "should not work");
   // This means that submitting won't trigger any action.
   EXPECT_FALSE(model->CurrentMatch().destination_url.is_valid());
   EXPECT_EQ(GURL("about:blank"), web_contents->GetURL());

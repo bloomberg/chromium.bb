@@ -516,18 +516,6 @@ class TestingAutomationProvider : public AutomationProvider,
                          base::DictionaryValue* args,
                          IPC::Message* reply_message);
 
-  // Get info about blocked popups in a tab.
-  // Uses the JSON interface for input/output.
-  void GetBlockedPopupsInfo(Browser* browser,
-                            base::DictionaryValue* args,
-                            IPC::Message* reply_message);
-
-  // Launch a blocked popup.
-  // Uses the JSON interface for input/output.
-  void UnblockAndLaunchBlockedPopup(Browser* browser,
-                                    base::DictionaryValue* args,
-                                    IPC::Message* reply_message);
-
   // Get info about theme.
   // Uses the JSON interface for input/output.
   void GetThemeInfo(Browser* browser,

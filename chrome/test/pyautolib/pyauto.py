@@ -3192,37 +3192,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict)['passwords']
 
-  def GetBlockedPopupsInfo(self, tab_index=0, windex=0):
-    """Get info about blocked popups in a tab.
-
-    Args:
-      tab_index: 0-based tab index. Default: 0
-      windex: 0-based window index. Default: 0
-
-    Returns:
-      [a list of property dictionaries for each blocked popup]
-      Property dictionary contains: title, url
-    """
-    cmd_dict = {
-      'command': 'GetBlockedPopupsInfo',
-      'tab_index': tab_index,
-    }
-    return self._GetResultFromJSONRequest(cmd_dict,
-                                          windex=windex)['blocked_popups']
-
-  def UnblockAndLaunchBlockedPopup(self, popup_index, tab_index=0, windex=0):
-    """Unblock/launch a poup at the given index.
-
-    This is equivalent to clicking on a blocked popup in the UI available
-    from the omnibox.
-    """
-    cmd_dict = {
-      'command': 'UnblockAndLaunchBlockedPopup',
-      'popup_index': popup_index,
-      'tab_index': tab_index,
-    }
-    self._GetResultFromJSONRequest(cmd_dict, windex=windex)
-
   def ResetToDefaultTheme(self, windex=0):
     """Reset to default theme.
 

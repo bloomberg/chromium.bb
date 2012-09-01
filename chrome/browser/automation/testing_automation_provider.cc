@@ -93,7 +93,6 @@
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
-#include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -103,6 +102,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
+#include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
 #include "chrome/browser/ui/login/login_prompt.h"
@@ -1931,10 +1931,6 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
   browser_handler_map_["GetSavedPasswords"] =
       &TestingAutomationProvider::GetSavedPasswords;
 
-  browser_handler_map_["GetBlockedPopupsInfo"] =
-      &TestingAutomationProvider::GetBlockedPopupsInfo;
-  browser_handler_map_["UnblockAndLaunchBlockedPopup"] =
-      &TestingAutomationProvider::UnblockAndLaunchBlockedPopup;
   handler_map_["ResetToDefaultTheme"] =
       &TestingAutomationProvider::ResetToDefaultTheme;
 
@@ -3711,69 +3707,6 @@ void TestingAutomationProvider::IsFindInPageVisible(
   DictionaryValue dict;
   dict.SetBoolean("is_visible", visible);
   reply.SendSuccess(&dict);
-}
-
-// Sample json input: { "command": "GetBlockedPopupsInfo",
-//                      "tab_index": 1 }
-// Refer GetBlockedPopupsInfo() in pyauto.py for sample output.
-void TestingAutomationProvider::GetBlockedPopupsInfo(
-    Browser* browser,
-    DictionaryValue* args,
-    IPC::Message* reply_message) {
-  AutomationJSONReply reply(this, reply_message);
-  std::string error_message;
-  TabContents* tab_contents = GetTabContentsFromDict(
-      browser, args, &error_message);
-  if (!tab_contents) {
-    reply.SendError(error_message);
-    return;
-  }
-  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  BlockedContentTabHelper* blocked_content =
-      tab_contents->blocked_content_tab_helper();
-  ListValue* blocked_popups_list = new ListValue;
-  std::vector<TabContents*> blocked_contents;
-  blocked_content->GetBlockedContents(&blocked_contents);
-  for (std::vector<TabContents*>::const_iterator it =
-           blocked_contents.begin(); it != blocked_contents.end(); ++it) {
-    DictionaryValue* item = new DictionaryValue;
-    item->SetString("url", (*it)->web_contents()->GetURL().spec());
-    item->SetString("title", (*it)->web_contents()->GetTitle());
-    blocked_popups_list->Append(item);
-  }
-  return_value->Set("blocked_popups", blocked_popups_list);
-  reply.SendSuccess(return_value.get());
-}
-
-// Refer UnblockAndLaunchBlockedPopup() in pyauto.py for sample input.
-void TestingAutomationProvider::UnblockAndLaunchBlockedPopup(
-    Browser* browser,
-    DictionaryValue* args,
-    IPC::Message* reply_message) {
-  AutomationJSONReply reply(this, reply_message);
-  std::string error_message;
-  TabContents* tab_contents = GetTabContentsFromDict(
-      browser, args, &error_message);
-  if (!tab_contents) {
-    reply.SendError(error_message);
-    return;
-  }
-  int popup_index;
-  if (!args->GetInteger("popup_index", &popup_index)) {
-    reply.SendError("Need popup_index arg");
-    return;
-  }
-  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  BlockedContentTabHelper* blocked_content =
-      tab_contents->blocked_content_tab_helper();
-  if (popup_index >= (int)blocked_content->GetBlockedContentsCount()) {
-    reply.SendError(StringPrintf("No popup at index %d", popup_index));
-    return;
-  }
-  std::vector<TabContents*> blocked_contents;
-  blocked_content->GetBlockedContents(&blocked_contents);
-  blocked_content->LaunchForContents(blocked_contents[popup_index]);
-  reply.SendSuccess(NULL);
 }
 
 // Sample json input: { "command": "GetThemeInfo" }

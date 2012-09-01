@@ -1,0 +1,16 @@
+<html>
+<head>
+<title>Popup created using window.open</title>
+<script>
+function popup() {
+  window.open("data:text/html,<title>Popup Success!</title>" +
+  "you should not see this message if popup blocker is enabled",
+  "_blank", "menubar=1, resizable=1, width=350, height=250");
+}
+
+</script>
+</head>
+<body onunload="popup()">
+pop-up test page
+</body>
+</html>
