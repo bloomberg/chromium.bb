@@ -7,13 +7,8 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/process_util.h"
+#include "chrome/browser/extensions/app_host/binaries_installer.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
-
-namespace {
-
-const wchar_t kChromeExe[] = L"chrome.exe";
-
-}  // namespace
 
 int main(int /* argc */, char* /* argv[] */) {
   base::AtExitManager exit_manager;
@@ -24,9 +19,19 @@ int main(int /* argc */, char* /* argv[] */) {
   FilePath chrome_exe(chrome_launcher_support::GetAnyChromePath());
 
   if (chrome_exe.empty()) {
-    LOG(ERROR) << "No Chrome executable could be found.";
-    // TODO(erikwright): install Chrome.
-    return 1;
+    LOG(INFO) << "No Chrome executable could be found. Let's install it.";
+    HRESULT hr = app_host::InstallBinaries();
+    if (FAILED(hr)) {
+      LOG(ERROR) << "Failed to install the Chrome Binaries. Error: " << hr;
+      return 1;
+    } else {
+      chrome_exe = chrome_launcher_support::GetAnyChromePath();
+      if (chrome_exe.empty()) {
+        LOG(ERROR) << "Failed to find the Chrome Binaries despite a "
+                   << "'successful' installation.";
+        return 1;
+      }
+    }
   }
 
   CommandLine chrome_exe_command_line(chrome_exe);

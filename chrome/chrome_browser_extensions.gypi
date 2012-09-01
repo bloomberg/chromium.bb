@@ -779,10 +779,15 @@
           'dependencies': [
             '<(DEPTH)/base/base.gyp:base',
             '<(DEPTH)/chrome/chrome.gyp:launcher_support',
+            '<(DEPTH)/google_update/google_update.gyp:google_update',
           ],
           'sources': [
-            'browser/extensions/app_host.rc',
-            'browser/extensions/app_host_stub_main.cc',
+            'browser/extensions/app_host/app_host.rc',
+            'browser/extensions/app_host/app_host_main.cc',
+            'browser/extensions/app_host/binaries_installer.cc',
+            'browser/extensions/app_host/binaries_installer.h',
+            'browser/extensions/app_host/binaries_installer_internal.cc',
+            'browser/extensions/app_host/binaries_installer_internal.h',
           ],
         },
       ],
