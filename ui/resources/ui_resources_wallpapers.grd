@@ -85,26 +85,26 @@
       </if>
 
       <!-- Wallpapers (gradients) used by Ash. -->
-      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT1_LARGE" file="aura/wallpapers/large/5-gradient1.png" type="BINDATA" />
-      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT1_SMALL" file="aura/wallpapers/small/5-gradient1.png" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT1_LARGE" file="aura/wallpapers/large/5-gradient1.jpg" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT1_SMALL" file="aura/wallpapers/small/5-gradient1.jpg" type="BINDATA" />
       <include name="IDR_AURA_WALLPAPERS_5_GRADIENT1_THUMB" file="aura/wallpapers/5-gradient1_thumb.png" type="BINDATA" />
-      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT2_LARGE" file="aura/wallpapers/large/5-gradient2.png" type="BINDATA" />
-      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT2_SMALL" file="aura/wallpapers/small/5-gradient2.png" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT2_LARGE" file="aura/wallpapers/large/5-gradient2.jpg" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT2_SMALL" file="aura/wallpapers/small/5-gradient2.jpg" type="BINDATA" />
       <include name="IDR_AURA_WALLPAPERS_5_GRADIENT2_THUMB" file="aura/wallpapers/5-gradient2_thumb.png" type="BINDATA" />
-      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT3_LARGE" file="aura/wallpapers/large/5-gradient3.png" type="BINDATA" />
-      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT3_SMALL" file="aura/wallpapers/small/5-gradient3.png" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT3_LARGE" file="aura/wallpapers/large/5-gradient3.jpg" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT3_SMALL" file="aura/wallpapers/small/5-gradient3.jpg" type="BINDATA" />
       <include name="IDR_AURA_WALLPAPERS_5_GRADIENT3_THUMB" file="aura/wallpapers/5-gradient3_thumb.png" type="BINDATA" />
-      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT4_LARGE" file="aura/wallpapers/large/5-gradient4.png" type="BINDATA" />
-      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT4_SMALL" file="aura/wallpapers/small/5-gradient4.png" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT4_LARGE" file="aura/wallpapers/large/5-gradient4.jpg" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT4_SMALL" file="aura/wallpapers/small/5-gradient4.jpg" type="BINDATA" />
       <include name="IDR_AURA_WALLPAPERS_5_GRADIENT4_THUMB" file="aura/wallpapers/5-gradient4_thumb.png" type="BINDATA" />
-      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT5_LARGE" file="aura/wallpapers/large/5-gradient5.png" type="BINDATA" />
-      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT5_SMALL" file="aura/wallpapers/small/5-gradient5.png" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT5_LARGE" file="aura/wallpapers/large/5-gradient5.jpg" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT5_SMALL" file="aura/wallpapers/small/5-gradient5.jpg" type="BINDATA" />
       <include name="IDR_AURA_WALLPAPERS_5_GRADIENT5_THUMB" file="aura/wallpapers/5-gradient5_thumb.png" type="BINDATA" />
-      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT6_LARGE" file="aura/wallpapers/large/5-gradient6.png" type="BINDATA" />
-      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT6_SMALL" file="aura/wallpapers/small/5-gradient6.png" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT6_LARGE" file="aura/wallpapers/large/5-gradient6.jpg" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT6_SMALL" file="aura/wallpapers/small/5-gradient6.jpg" type="BINDATA" />
       <include name="IDR_AURA_WALLPAPERS_5_GRADIENT6_THUMB" file="aura/wallpapers/5-gradient6_thumb.png" type="BINDATA" />
-      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT7_LARGE" file="aura/wallpapers/large/5-gradient7.png" type="BINDATA" />
-      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT7_SMALL" file="aura/wallpapers/small/5-gradient7.png" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT7_LARGE" file="aura/wallpapers/large/5-gradient7.jpg" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT7_SMALL" file="aura/wallpapers/small/5-gradient7.jpg" type="BINDATA" />
       <include name="IDR_AURA_WALLPAPERS_5_GRADIENT7_THUMB" file="aura/wallpapers/5-gradient7_thumb.png" type="BINDATA" />
     </includes>
   </release>
