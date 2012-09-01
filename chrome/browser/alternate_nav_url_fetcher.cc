@@ -184,15 +184,14 @@ void AlternateNavURLFetcher::OnURLFetchComplete(
 
 void AlternateNavURLFetcher::StartFetch(NavigationController* controller) {
   controller_ = controller;
-  registrar_.Add(
-      this,
-      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-      content::Source<content::WebContents>(controller_->GetWebContents()));
+  content::WebContents* web_contents = controller_->GetWebContents();
+  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                 content::Source<content::WebContents>(web_contents));
 
   DCHECK_EQ(NOT_STARTED, state_);
   state_ = IN_PROGRESS;
-  fetcher_.reset(net::URLFetcher::Create(
-      GURL(alternate_nav_url_), net::URLFetcher::HEAD, this));
+  fetcher_.reset(net::URLFetcher::Create(GURL(alternate_nav_url_),
+                                         net::URLFetcher::HEAD, this));
   fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
   fetcher_->SetRequestContext(
       controller_->GetBrowserContext()->GetRequestContext());
@@ -221,16 +220,14 @@ void AlternateNavURLFetcher::SetStatusFromURLFetch(
 }
 
 void AlternateNavURLFetcher::ShowInfobarIfPossible() {
-  if (!navigated_to_entry_ || state_ != SUCCEEDED) {
-    if (state_ == FAILED)
-      delete this;
+  if (navigated_to_entry_ && (state_ == SUCCEEDED)) {
+    InfoBarTabHelper* infobar_helper =
+        TabContents::FromWebContents(controller_->GetWebContents())->
+            infobar_tab_helper();
+    infobar_helper->AddInfoBar(
+        new AlternateNavInfoBarDelegate(infobar_helper, alternate_nav_url_));
+  } else if (state_ != FAILED) {
     return;
   }
-
-  InfoBarTabHelper* infobar_helper =
-      TabContents::FromWebContents(controller_->GetWebContents())->
-          infobar_tab_helper();
-  infobar_helper->AddInfoBar(
-      new AlternateNavInfoBarDelegate(infobar_helper, alternate_nav_url_));
   delete this;
 }

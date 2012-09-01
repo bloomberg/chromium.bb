@@ -421,17 +421,13 @@ void TaskManagerTabContentsResourceProvider::StopUpdating() {
   updating_ = false;
 
   // Then we unregister for notifications to get new tabs.
-  registrar_.Remove(
-      this, content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
+  registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
       content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Remove(
-      this, content::NOTIFICATION_WEB_CONTENTS_SWAPPED,
+  registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_SWAPPED,
       content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Remove(
-      this, content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
+  registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
       content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Remove(
-      this, chrome::NOTIFICATION_INSTANT_COMMITTED,
+  registrar_.Remove(this, chrome::NOTIFICATION_INSTANT_COMMITTED,
       content::NotificationService::AllBrowserContextsAndSources());
 
   // Delete all the resources.

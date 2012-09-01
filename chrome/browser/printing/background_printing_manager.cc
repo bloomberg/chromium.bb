@@ -56,14 +56,12 @@ void BackgroundPrintingManager::OwnPrintPreviewTab(TabContents* preview_tab) {
   //
   // Multiple sites may share the same RenderProcessHost, so check if this
   // notification has already been added.
-  content::RenderProcessHost* rph =
-      preview_tab->web_contents()->GetRenderProcessHost();
+  content::Source<content::RenderProcessHost> rph_source(
+      preview_tab->web_contents()->GetRenderProcessHost());
   if (!registrar_.IsRegistered(this,
-                               content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                               content::Source<content::RenderProcessHost>(
-                                  rph))) {
+      content::NOTIFICATION_RENDERER_PROCESS_CLOSED, rph_source)) {
     registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                   content::Source<content::RenderProcessHost>(rph));
+                   rph_source);
   }
 
   // Activate the initiator tab.
@@ -82,24 +80,14 @@ void BackgroundPrintingManager::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
-      OnRendererProcessClosed(
-          content::Source<content::RenderProcessHost>(source).ptr());
-      break;
-    }
-    case chrome::NOTIFICATION_PRINT_JOB_RELEASED: {
-      OnPrintJobReleased(content::Source<TabContents>(source).ptr());
-      break;
-    }
-    case chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
-      OnTabContentsDestroyed(content::Source<TabContents>(source).ptr());
-      break;
-    }
-    default: {
-      NOTREACHED();
-      break;
-    }
+  if (type == content::NOTIFICATION_RENDERER_PROCESS_CLOSED) {
+    OnRendererProcessClosed(
+        content::Source<content::RenderProcessHost>(source).ptr());
+  } else if (type == chrome::NOTIFICATION_PRINT_JOB_RELEASED) {
+    OnPrintJobReleased(content::Source<TabContents>(source).ptr());
+  } else {
+    DCHECK_EQ(chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED, type);
+    OnTabContentsDestroyed(content::Source<TabContents>(source).ptr());
   }
 }
 

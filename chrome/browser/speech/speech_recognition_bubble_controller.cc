@@ -71,7 +71,8 @@ bool SpeechRecognitionBubbleController::IsShowingMessage() const {
 }
 
 void SpeechRecognitionBubbleController::SetBubbleInputVolume(
-    float volume, float noise_volume) {
+    float volume,
+    float noise_volume) {
   UIRequest request(REQUEST_SET_INPUT_VOLUME);
   request.volume = volume;
   request.noise_volume = noise_volume;
@@ -88,29 +89,27 @@ int SpeechRecognitionBubbleController::GetActiveSessionID() const {
 }
 
 bool SpeechRecognitionBubbleController::IsShowingBubbleForRenderView(
-    int render_process_id, int render_view_id) {
+    int render_process_id,
+    int render_view_id) {
   return (current_bubble_session_id_ != kInvalidSessionId) &&
-         (current_bubble_render_process_id_ == render_process_id) &&
-         (current_bubble_render_view_id_ == render_view_id);
+      (current_bubble_render_process_id_ == render_process_id) &&
+      (current_bubble_render_view_id_ == render_view_id);
 }
 
 void SpeechRecognitionBubbleController::InfoBubbleButtonClicked(
     SpeechRecognitionBubble::Button button) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
       base::Bind(
-          &SpeechRecognitionBubbleController::InvokeDelegateButtonClicked,
-          this, button));
+          &SpeechRecognitionBubbleController::InvokeDelegateButtonClicked, this,
+          button));
 }
 
 void SpeechRecognitionBubbleController::InfoBubbleFocusChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(
-          &SpeechRecognitionBubbleController::InvokeDelegateFocusChanged,
-          this));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+      base::Bind(&SpeechRecognitionBubbleController::InvokeDelegateFocusChanged,
+                 this));
 }
 
 void SpeechRecognitionBubbleController::InvokeDelegateButtonClicked(
@@ -130,10 +129,9 @@ void SpeechRecognitionBubbleController::ProcessRequestInUiThread(
     const UIRequest& request) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     last_request_issued_ = request.type;
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-        &SpeechRecognitionBubbleController::ProcessRequestInUiThread,
-        this,
-        request));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+        base::Bind(&SpeechRecognitionBubbleController::ProcessRequestInUiThread,
+                   this, request));
     return;
   }
 
@@ -144,14 +142,13 @@ void SpeechRecognitionBubbleController::ProcessRequestInUiThread(
       bubble_.reset(SpeechRecognitionBubble::Create(
           tab_util::GetWebContentsByID(request.render_process_id,
                                        request.render_view_id),
-          this,
-          request.element_rect));
+          this, request.element_rect));
 
       if (!bubble_.get()) {
         // Could be null if tab or display rect were invalid.
         // Simulate the cancel button being clicked to inform the delegate.
-        BrowserThread::PostTask(
-            BrowserThread::IO, FROM_HERE, base::Bind(
+        BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+            base::Bind(
                 &SpeechRecognitionBubbleController::InvokeDelegateButtonClicked,
                 this, SpeechRecognitionBubble::BUTTON_CANCEL));
         return;

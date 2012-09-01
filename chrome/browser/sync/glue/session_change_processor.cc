@@ -140,9 +140,8 @@ void SessionChangeProcessor::Observe(
     case chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
       TabContents* tab_contents = content::Source<TabContents>(source).ptr();
       SyncedTabDelegate* tab = tab_contents->synced_tab_delegate();
-      if (!tab || tab->profile() != profile_) {
+      if (!tab || tab->profile() != profile_)
         return;
-      }
       modified_tabs.push_back(tab);
       DVLOG(1) << "Received NOTIFICATION_TAB_CONTENTS_DESTROYED for profile "
                << profile_;

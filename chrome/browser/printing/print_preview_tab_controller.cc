@@ -279,30 +279,17 @@ void PrintPreviewTabController::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
-      OnRendererProcessClosed(
-          content::Source<content::RenderProcessHost>(source).ptr());
-      break;
-    }
-    case chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
-      OnTabContentsDestroyed(content::Source<TabContents>(source).ptr());
-      break;
-    }
-    case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
-      NavigationController* controller =
-          content::Source<NavigationController>(source).ptr();
-      TabContents* tab = TabContents::FromWebContents(
-          controller->GetWebContents());
-      content::LoadCommittedDetails* load_details =
-          content::Details<content::LoadCommittedDetails>(details).ptr();
-      OnNavEntryCommitted(tab, load_details);
-      break;
-    }
-    default: {
-      NOTREACHED();
-      break;
-    }
+  if (type == content::NOTIFICATION_RENDERER_PROCESS_CLOSED) {
+    OnRendererProcessClosed(
+        content::Source<content::RenderProcessHost>(source).ptr());
+  } else if (type == chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED) {
+    OnTabContentsDestroyed(content::Source<TabContents>(source).ptr());
+  } else {
+    DCHECK_EQ(content::NOTIFICATION_NAV_ENTRY_COMMITTED, type);
+    TabContents* tab = TabContents::FromWebContents(
+        content::Source<NavigationController>(source)->GetWebContents());
+    OnNavEntryCommitted(tab,
+        content::Details<content::LoadCommittedDetails>(details).ptr());
   }
 }
 
@@ -471,42 +458,38 @@ void PrintPreviewTabController::SetInitiatorTabURLAndTitle(
 }
 
 void PrintPreviewTabController::AddObservers(TabContents* tab) {
-  WebContents* contents = tab->web_contents();
+  WebContents* web_contents = tab->web_contents();
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                  content::Source<TabContents>(tab));
-  registrar_.Add(
-      this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<NavigationController>(&contents->GetController()));
+  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::Source<NavigationController>(&web_contents->GetController()));
 
   // Multiple sites may share the same RenderProcessHost, so check if this
   // notification has already been added.
-  content::RenderProcessHost* rph = tab->web_contents()->GetRenderProcessHost();
+  content::Source<content::RenderProcessHost> rph_source(
+      web_contents->GetRenderProcessHost());
   if (!registrar_.IsRegistered(this,
-                               content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                               content::Source<content::RenderProcessHost>(
-                                  rph))) {
+      content::NOTIFICATION_RENDERER_PROCESS_CLOSED, rph_source)) {
     registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                   content::Source<content::RenderProcessHost>(rph));
+                   rph_source);
   }
 }
 
 void PrintPreviewTabController::RemoveObservers(TabContents* tab) {
-  WebContents* contents = tab->web_contents();
+  WebContents* web_contents = tab->web_contents();
   registrar_.Remove(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                     content::Source<TabContents>(tab));
-  registrar_.Remove(
-      this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<NavigationController>(&contents->GetController()));
+  registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::Source<NavigationController>(&web_contents->GetController()));
 
   // Multiple sites may share the same RenderProcessHost, so check if this
   // notification has already been added.
-  content::RenderProcessHost* rph = tab->web_contents()->GetRenderProcessHost();
+  content::Source<content::RenderProcessHost> rph_source(
+      web_contents->GetRenderProcessHost());
   if (registrar_.IsRegistered(this,
-                              content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                              content::Source<content::RenderProcessHost>(
-                                  rph))) {
+      content::NOTIFICATION_RENDERER_PROCESS_CLOSED, rph_source)) {
     registrar_.Remove(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                      content::Source<content::RenderProcessHost>(rph));
+                      rph_source);
   }
 }
 

@@ -224,11 +224,10 @@ class OmniboxViewTest : public InProcessBrowserTest,
       return;
 
     content::NotificationRegistrar registrar;
-    registrar.Add(
-        this,
-        tab_count < expected_tab_count
-            ? static_cast<int>(chrome::NOTIFICATION_TAB_PARENTED)
-            : static_cast<int>(content::NOTIFICATION_WEB_CONTENTS_DESTROYED),
+    registrar.Add(this,
+        (tab_count < expected_tab_count) ?
+            static_cast<int>(chrome::NOTIFICATION_TAB_PARENTED) :
+            static_cast<int>(content::NOTIFICATION_WEB_CONTENTS_DESTROYED),
         content::NotificationService::AllSources());
 
     while (!HasFailure() && browser->tab_count() != expected_tab_count)

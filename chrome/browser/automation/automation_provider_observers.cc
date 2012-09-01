@@ -383,20 +383,16 @@ void TabStripNotificationObserver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == notification_) {
-    if (type == chrome::NOTIFICATION_TAB_PARENTED) {
-      ObserveTab(&(content::Source<TabContents>(source).ptr()->
-                     web_contents()->GetController()));
-    } else if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED) {
-      ObserveTab(&(content::Source<content::WebContents>(source).ptr()->
-                     GetController()));
-    } else {
-      ObserveTab(content::Source<NavigationController>(source).ptr());
-    }
-    delete this;
+  DCHECK_EQ(notification_, type);
+  if (type == chrome::NOTIFICATION_TAB_PARENTED) {
+    ObserveTab(&content::Source<TabContents>(source)->web_contents()->
+        GetController());
+  } else if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED) {
+    ObserveTab(&content::Source<content::WebContents>(source)->GetController());
   } else {
-    NOTREACHED();
+    ObserveTab(content::Source<NavigationController>(source).ptr());
   }
+  delete this;
 }
 
 TabAppendedNotificationObserver::TabAppendedNotificationObserver(
@@ -438,11 +434,9 @@ TabClosedNotificationObserver::TabClosedNotificationObserver(
     bool wait_until_closed,
     IPC::Message* reply_message,
     bool use_json_interface)
-    : TabStripNotificationObserver(
-      wait_until_closed
-          ? static_cast<int>(content::NOTIFICATION_WEB_CONTENTS_DESTROYED)
-          : static_cast<int>(chrome::NOTIFICATION_TAB_CLOSING),
-          automation),
+    : TabStripNotificationObserver((wait_until_closed ?
+          static_cast<int>(content::NOTIFICATION_WEB_CONTENTS_DESTROYED) :
+          static_cast<int>(chrome::NOTIFICATION_TAB_CLOSING)), automation),
       reply_message_(reply_message),
       use_json_interface_(use_json_interface),
       for_browser_command_(false) {
@@ -807,7 +801,8 @@ BrowserOpenedNotificationObserver::~BrowserOpenedNotificationObserver() {
 }
 
 void BrowserOpenedNotificationObserver::Observe(
-    int type, const content::NotificationSource& source,
+    int type,
+    const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (!automation_) {
     delete this;
@@ -819,7 +814,8 @@ void BrowserOpenedNotificationObserver::Observe(
     // to stop loading.
     new_window_id_ = ExtensionTabUtil::GetWindowId(
         content::Source<Browser>(source).ptr());
-  } else if (type == content::NOTIFICATION_LOAD_STOP) {
+  } else {
+    DCHECK_EQ(content::NOTIFICATION_LOAD_STOP, type);
     // Only send the result if the loaded tab is in the new window.
     NavigationController* controller =
         content::Source<NavigationController>(source).ptr();
@@ -840,8 +836,6 @@ void BrowserOpenedNotificationObserver::Observe(
       delete this;
       return;
     }
-  } else {
-    NOTREACHED();
   }
 }
 
@@ -868,7 +862,7 @@ BrowserClosedNotificationObserver::~BrowserClosedNotificationObserver() {}
 void BrowserClosedNotificationObserver::Observe(
     int type, const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_BROWSER_CLOSED);
+  DCHECK_EQ(chrome::NOTIFICATION_BROWSER_CLOSED, type);
 
   if (!automation_) {
     delete this;
@@ -1171,16 +1165,15 @@ void DomOperationObserver::Observe(
       OnDomOperationCompleted(dom_op_details->json);
   } else if (type == chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN) {
     OnModalDialogShown();
-  } else if (type == chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED) {
+  } else {
+    DCHECK_EQ(chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED, type);
     WebContents* web_contents = content::Source<WebContents>(source).ptr();
     if (web_contents) {
       TabContents* tab_contents = TabContents::FromWebContents(web_contents);
-      if (tab_contents &&
-          tab_contents->content_settings() &&
+      if (tab_contents && tab_contents->content_settings() &&
           tab_contents->content_settings()->IsContentBlocked(
-              CONTENT_SETTINGS_TYPE_JAVASCRIPT)) {
+              CONTENT_SETTINGS_TYPE_JAVASCRIPT))
         OnJavascriptBlocked();
-      }
     }
   }
 }
@@ -2092,36 +2085,23 @@ AppLaunchObserver::~AppLaunchObserver() {}
 void AppLaunchObserver::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
-  if (type == content::NOTIFICATION_LOAD_STOP) {
-    if (launch_container_ == extension_misc::LAUNCH_TAB) {
-      // The app has been launched in the new tab.
-      if (automation_) {
-        AutomationJSONReply(automation_,
-                            reply_message_.release()).SendSuccess(NULL);
-      }
-      delete this;
-      return;
-    } else {
-      // The app has launched only if the loaded tab is in the new window.
-      NavigationController* controller =
-          content::Source<NavigationController>(source).ptr();
-      TabContents* tab =
-          TabContents::FromWebContents(controller->GetWebContents());
-      int window_id = tab ? tab->session_tab_helper()->window_id().id() : -1;
-      if (window_id == new_window_id_) {
-        if (automation_) {
-          AutomationJSONReply(automation_,
-                              reply_message_.release()).SendSuccess(NULL);
-        }
-        delete this;
-        return;
-      }
+  if (type == chrome::NOTIFICATION_BROWSER_WINDOW_READY) {
+    new_window_id_ =
+        ExtensionTabUtil::GetWindowId(content::Source<Browser>(source).ptr());
+    return;
+  }
+
+  DCHECK_EQ(content::NOTIFICATION_LOAD_STOP, type);
+  TabContents* tab = TabContents::FromWebContents(
+      content::Source<NavigationController>(source)->GetWebContents());
+  if ((launch_container_ == extension_misc::LAUNCH_TAB) ||
+      (tab &&
+          (tab->session_tab_helper()->window_id().id() == new_window_id_))) {
+    if (automation_) {
+      AutomationJSONReply(automation_,
+                          reply_message_.release()).SendSuccess(NULL);
     }
-  } else if (type == chrome::NOTIFICATION_BROWSER_WINDOW_READY) {
-    new_window_id_ = ExtensionTabUtil::GetWindowId(
-        content::Source<Browser>(source).ptr());
-  } else {
-    NOTREACHED();
+    delete this;
   }
 }
 
@@ -2757,7 +2737,8 @@ void BrowserOpenedWithNewProfileNotificationObserver::Observe(
     // to stop loading.
     new_window_id_ = ExtensionTabUtil::GetWindowId(
         content::Source<Browser>(source).ptr());
-  } else if (type == content::NOTIFICATION_LOAD_STOP) {
+  } else {
+    DCHECK_EQ(content::NOTIFICATION_LOAD_STOP, type);
     // Only send the result if the loaded tab is in the new window.
     NavigationController* controller =
         content::Source<NavigationController>(source).ptr();
@@ -2771,8 +2752,6 @@ void BrowserOpenedWithNewProfileNotificationObserver::Observe(
       }
       delete this;
     }
-  } else {
-    NOTREACHED();
   }
 }
 

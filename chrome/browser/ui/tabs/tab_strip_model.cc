@@ -69,11 +69,9 @@ TabStripModel::TabStripModel(TabStripModelDelegate* delegate, Profile* profile)
       closing_all_(false),
       order_controller_(NULL) {
   DCHECK(delegate_);
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
+  registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
                  content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile_));
   order_controller_ = new TabStripModelOrderController(this);
 }
@@ -360,23 +358,16 @@ TabContents* TabStripModel::GetTabContentsAt(int index) const {
 }
 
 int TabStripModel::GetIndexOfTabContents(const TabContents* contents) const {
-  int index = 0;
-  TabContentsDataVector::const_iterator iter = contents_data_.begin();
-  for (; iter != contents_data_.end(); ++iter, ++index) {
-    if ((*iter)->contents == contents)
-      return index;
+  for (size_t i = 0; i < contents_data_.size(); ++i) {
+    if (contents_data_[i]->contents == contents)
+      return i;
   }
   return kNoTab;
 }
 
 int TabStripModel::GetIndexOfWebContents(const WebContents* contents) const {
-  int index = 0;
-  TabContentsDataVector::const_iterator iter = contents_data_.begin();
-  for (; iter != contents_data_.end(); ++iter, ++index) {
-    if ((*iter)->contents->web_contents() == contents)
-      return index;
-  }
-  return kNoTab;
+  return contents ?
+      GetIndexOfTabContents(TabContents::FromWebContents(contents)) : kNoTab;
 }
 
 void TabStripModel::UpdateTabContentsStateAt(int index,
@@ -405,8 +396,8 @@ bool TabStripModel::CloseTabContentsAt(int index, uint32 close_types) {
 }
 
 bool TabStripModel::TabsAreLoading() const {
-  TabContentsDataVector::const_iterator iter = contents_data_.begin();
-  for (; iter != contents_data_.end(); ++iter) {
+  for (TabContentsDataVector::const_iterator iter = contents_data_.begin();
+       iter != contents_data_.end(); ++iter) {
     if ((*iter)->contents->web_contents()->IsLoading())
       return true;
   }
@@ -447,7 +438,8 @@ int TabStripModel::GetIndexOfNextTabContentsOpenedBy(
 }
 
 int TabStripModel::GetIndexOfFirstTabContentsOpenedBy(
-    const NavigationController* opener, int start_index) const {
+    const NavigationController* opener,
+    int start_index) const {
   DCHECK(opener);
   DCHECK(ContainsIndex(start_index));
 
@@ -459,20 +451,14 @@ int TabStripModel::GetIndexOfFirstTabContentsOpenedBy(
 }
 
 int TabStripModel::GetIndexOfLastTabContentsOpenedBy(
-    const NavigationController* opener, int start_index) const {
+    const NavigationController* opener,
+    int start_index) const {
   DCHECK(opener);
   DCHECK(ContainsIndex(start_index));
 
-  TabContentsDataVector::const_iterator end =
-      contents_data_.begin() + start_index;
-  TabContentsDataVector::const_iterator iter = contents_data_.end();
-  TabContentsDataVector::const_iterator next;
-  for (; iter != end; --iter) {
-    next = iter - 1;
-    if (next == end)
-      break;
-    if ((*next)->opener == opener)
-      return static_cast<int>(next - contents_data_.begin());
+  for (int i = contents_data_.size() - 1; i > start_index; --i) {
+    if (contents_data_[i]->opener == opener)
+      return i;
   }
   return kNoTab;
 }
@@ -502,8 +488,8 @@ void TabStripModel::TabNavigating(TabContents* contents,
 void TabStripModel::ForgetAllOpeners() {
   // Forget all opener memories so we don't do anything weird with tab
   // re-selection ordering.
-  TabContentsDataVector::const_iterator iter = contents_data_.begin();
-  for (; iter != contents_data_.end(); ++iter)
+  for (TabContentsDataVector::const_iterator iter = contents_data_.begin();
+       iter != contents_data_.end(); ++iter)
     (*iter)->ForgetOpener();
 }
 
@@ -1147,8 +1133,7 @@ bool TabStripModel::InternalCloseTabs(const std::vector<int>& indices,
 
     // Try to fast shutdown the tabs that can close.
     for (std::map<content::RenderProcessHost*, size_t>::iterator iter =
-            processes.begin();
-        iter != processes.end(); ++iter) {
+         processes.begin(); iter != processes.end(); ++iter) {
       iter->first->FastShutdownForPageCount(iter->second);
     }
   }

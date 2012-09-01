@@ -217,9 +217,12 @@ void WebView::DetachWebContents() {
     wcv_holder_->Detach();
 #if defined(OS_WIN) && !defined(USE_AURA)
     // TODO(beng): This should either not be necessary, or be done implicitly by
-    //             NativeViewHostWin on Detach(). As it stands, this is needed
-    //             so that the view of the detached contents knows to tell the
-    //             renderer its been hidden.
+    // NativeViewHostWin on Detach(). As it stands, this is needed so that the
+    // view of the detached contents knows to tell the renderer it's been
+    // hidden.
+    //
+    // Moving this out of here would also mean we wouldn't be potentially
+    // calling member functions on a half-destroyed WebContents.
     ShowWindow(web_contents_->GetNativeView(), SW_HIDE);
 #endif
   }
