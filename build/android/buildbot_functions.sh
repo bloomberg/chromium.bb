@@ -21,6 +21,7 @@ function bb_parse_args {
     case "$1" in
       --factory-properties=*)
         FACTORY_PROPERTIES="$(echo "$1" | sed 's/^[^=]*=//')"
+        BUILDTYPE=$(bb_get_json_prop "$FACTORY_PROPERTIES" target)
         ;;
       --build-properties=*)
         BUILD_PROPERTIES="$(echo "$1" | sed 's/^[^=]*=//')"
@@ -82,6 +83,11 @@ function bb_baseline_setup {
 
   if [ ! "$BUILDBOT_CLOBBER" = "" ]; then
     NEED_CLOBBER=1
+  fi
+
+  local BUILDTOOL=$(bb_get_json_prop "$FACTORY_PROPERTIES" buildtool)
+  if [ $BUILDTOOL = "ninja" ]; then
+    export GYP_GENERATORS=ninja
   fi
 
   . build/android/envsetup.sh
@@ -155,14 +161,11 @@ function bb_stop_goma_internal {
 # $@: make args.
 # Use goma if possible; degrades to non-Goma if needed.
 function bb_goma_make {
-  bb_setup_goma_internal
-
   if [ "${GOMA_DIR}" = "" ]; then
     make -j${JOBS} "$@"
     return
   fi
 
-  BUILDTYPE=$(bb_get_json_prop "$FACTORY_PROPERTIES" target)
   HOST_CC=$GOMA_DIR/gcc
   HOST_CXX=$GOMA_DIR/g++
   TARGET_CC=$(/bin/ls $ANDROID_TOOLCHAIN/*-gcc | head -n1)
@@ -189,8 +192,13 @@ function bb_goma_make {
     "$@"
 
   local make_exit_code=$?
-  bb_stop_goma_internal
   return $make_exit_code
+}
+
+# Build using ninja.
+function bb_goma_ninja {
+  echo "Using ninja to build."
+  ninja -C out/$BUILDTYPE -j120 -l20 All
 }
 
 # Compile step
@@ -198,7 +206,17 @@ function bb_compile {
   # This must be named 'compile', not 'Compile', for CQ interaction.
   # Talk to maruel for details.
   echo "@@@BUILD_STEP compile@@@"
-  bb_goma_make
+
+  bb_setup_goma_internal
+
+  BUILDTOOL=$(bb_get_json_prop "$FACTORY_PROPERTIES" buildtool)
+  if [ $BUILDTOOL = "ninja" ]; then
+    bb_goma_ninja
+  else
+    bb_goma_make
+  fi
+
+  bb_stop_goma_internal
 }
 
 # Experimental compile step; does not turn the tree red if it fails.
@@ -337,5 +355,5 @@ function bb_get_json_prop {
   local JSON="$1"
   local PROP="$2"
 
-  python -c "import json; print json.loads('$JSON')['$PROP']"
+  python -c "import json; print json.loads('$JSON').get('$PROP')"
 }
