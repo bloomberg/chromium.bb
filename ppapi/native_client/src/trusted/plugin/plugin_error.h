@@ -13,6 +13,8 @@
 
 #include <string>
 
+#include "native_client/src/include/nacl_macros.h"
+
 namespace plugin {
 
 // These error codes are reported via UMA so, if you edit them:

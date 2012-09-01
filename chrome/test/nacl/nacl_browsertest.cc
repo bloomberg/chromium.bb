@@ -5,6 +5,8 @@
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/values.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -13,9 +15,12 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/javascript_test_observer.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/histogram_fetcher.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/web_contents.h"
+#include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 #include "net/base/net_util.h"
+#include "ppapi/native_client/src/trusted/plugin/plugin_error.h"
 #include "webkit/plugins/webplugininfo.h"
 
 namespace {
@@ -225,6 +230,105 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestNewlib, SimpleLoadTest) {
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestGLibc, SimpleLoadTest) {
   RunLoadTest(FILE_PATH_LITERAL("nacl_load_test.html"));
 }
+
+class HistogramHelper {
+ public:
+  HistogramHelper() {}
+
+  // Each child process may have its own histogram data, make sure this data
+  // gets accumulated into the browser process before we examine the histograms.
+  void Fetch() {
+    base::Closure callback = base::Bind(&HistogramHelper::FetchCallback,
+                                        base::Unretained(this));
+
+    content::FetchHistogramsAsynchronously(
+        MessageLoop::current(),
+        callback,
+        // Give up after 60 seconds, which is longer than the 45 second timeout
+        // for browser tests.  If this call times out, it means that a child
+        // process is not responding which is something we should not ignore.
+        base::TimeDelta::FromMilliseconds(60000));
+    content::RunMessageLoop();
+  }
+
+  // We know the exact number of samples in a bucket, and that no other bucket
+  // should have samples.
+  void ExpectUniqueSample(const std::string& name, size_t bucket_id,
+                          base::Histogram::Count expected_count) {
+    base::Histogram* histogram = base::StatisticsRecorder::FindHistogram(name);
+    ASSERT_NE(static_cast<base::Histogram*>(NULL), histogram) <<
+        "Histogram \"" << name << "\" does not exist.";
+
+    base::Histogram::SampleSet samples;
+    histogram->SnapshotSample(&samples);
+    CheckBucketCount(name, bucket_id, expected_count, samples);
+    CheckTotalCount(name, expected_count, samples);
+  }
+
+  // We don't know the values of the samples, but we know how many there are.
+  void ExpectTotalCount(const std::string& name, base::Histogram::Count count) {
+    base::Histogram* histogram = base::StatisticsRecorder::FindHistogram(name);
+    ASSERT_NE((base::Histogram*)NULL, histogram) << "Histogram \"" << name <<
+        "\" does not exist.";
+
+    base::Histogram::SampleSet samples;
+    histogram->SnapshotSample(&samples);
+    CheckTotalCount(name, count, samples);
+  }
+
+ private:
+  void FetchCallback() {
+    MessageLoopForUI::current()->Quit();
+  }
+
+  void CheckBucketCount(const std::string& name, size_t bucket_id,
+                        base::Histogram::Count expected_count,
+                        base::Histogram::SampleSet& samples) {
+    EXPECT_EQ(expected_count, samples.counts(bucket_id)) << "Histogram \"" <<
+        name << "\" does not have the right number of samples (" <<
+        expected_count << ") in the expected bucket (" << bucket_id << ").";
+  }
+
+  void CheckTotalCount(const std::string& name,
+                       base::Histogram::Count expected_count,
+                       base::Histogram::SampleSet& samples) {
+    EXPECT_EQ(expected_count, samples.TotalCount()) << "Histogram \"" << name <<
+        "\" does not have the right total number of samples (" <<
+        expected_count << ").";
+  }
+};
+
+// TODO(ncbray) create multiple variants (newlib, glibc, pnacl) of the same test
+// via macros.
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestNewlib, UMALoadTest) {
+  // Sanity check.
+  ASSERT_TRUE(base::StatisticsRecorder::IsActive());
+
+  // Load a NaCl module to generate UMA data.
+  RunLoadTest(FILE_PATH_LITERAL("nacl_load_test.html"));
+
+  // Make sure histograms from child processes have been accumulated in the
+  // browser brocess.
+  HistogramHelper histograms;
+  histograms.Fetch();
+
+  // Did the plugin report success?
+  histograms.ExpectUniqueSample("NaCl.LoadStatus.Plugin",
+                                plugin::ERROR_LOAD_SUCCESS, 1);
+
+  // Did the sel_ldr report success?
+  histograms.ExpectUniqueSample("NaCl.LoadStatus.SelLdr",
+                                LOAD_OK, 1);
+
+  // Make sure we have other important histograms.
+  histograms.ExpectTotalCount("NaCl.Perf.StartupTime.LoadModule", 1);
+  histograms.ExpectTotalCount("NaCl.Perf.StartupTime.Total", 1);
+  histograms.ExpectTotalCount("NaCl.Perf.Size.Manifest", 1);
+  histograms.ExpectTotalCount("NaCl.Perf.Size.Nexe", 1);
+}
+
+// TODO(ncbray) convert the rest of nacl_uma.py (currently in the NaCl repo.)
+// Test validation failures and crashes.
 
 #endif  // !(defined(ADDRESS_SANITIZER) && defined(OS_LINUX))
 
