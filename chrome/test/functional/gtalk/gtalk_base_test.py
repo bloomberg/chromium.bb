@@ -72,7 +72,8 @@ class GTalkBaseTest(pyauto.PyUITest):
     Returns:
       The resulting value from executing the javascript.
     """
-    return self._RunInTab(self.GetMoleInfo(mole_index), js, '//iframe[1]')
+    return self._RunInRenderView(self.GetMoleInfo(mole_index), js,
+        '//iframe[1]')
 
   def RunInRoster(self, js):
     """Execute javascript in the chat roster.
@@ -83,7 +84,8 @@ class GTalkBaseTest(pyauto.PyUITest):
     Returns:
       The resulting value from executing the javascript.
     """
-    return self._RunInTab(self.GetViewerInfo(), js, '//iframe[1]\n//iframe[1]')
+    return self._RunInRenderView(self.GetViewerInfo(), js,
+        '//iframe[1]\n//iframe[1]')
 
   def RunInLoginPage(self, js, xpath=''):
     """Execute javascript in the gaia login popup.
@@ -107,7 +109,7 @@ class GTalkBaseTest(pyauto.PyUITest):
     Returns:
       The resulting value from executing the javascript.
     """
-    return self._RunInTab(self.GetViewerInfo(), js, xpath)
+    return self._RunInRenderView(self.GetViewerInfo(), js, xpath)
 
   def RunInBackground(self, js, xpath=''):
     """Execute javascript in the GTalk viewer window.
@@ -120,10 +122,7 @@ class GTalkBaseTest(pyauto.PyUITest):
       The resulting value from executing the javascript.
     """
     background_view = self.GetBackgroundInfo()
-    value = self.ExecuteJavascriptInRenderView(
-        self._WrapJs(js), background_view['view'])
-    self._LogRun(js, value)
-    return value
+    return self._RunInRenderView(background_view['view'], js, xpath)
 
   def GetMoleInfo(self, mole_index=0):
     """Get the data object about a given chat mole.
@@ -135,14 +134,14 @@ class GTalkBaseTest(pyauto.PyUITest):
       Data object describing mole.
     """
     extension = self.GetGTalkExtensionInfo()
-    return self._GetTabInfo(
+    return self._GetExtensionViewInfo(
         'chrome-extension://%s/panel.html' % extension['id'],
         mole_index)
 
   def GetViewerInfo(self):
     """Get the data object about the GTalk viewer dialog."""
     extension = self.GetGTalkExtensionInfo()
-    return self._GetTabInfo(
+    return self._GetExtensionViewInfo(
         'chrome-extension://%s/viewer.html' % extension['id'])
 
   def GetLoginPageInfo(self):
@@ -219,7 +218,32 @@ class GTalkBaseTest(pyauto.PyUITest):
 
     value = self.ExecuteJavascript(
         self._WrapJs(js),
+        tab_index = tab['index'],
         windex = tab['windex'],
+        frame_xpath = xpath)
+    self._LogRun(js, value)
+    return value
+
+  def _RunInRenderView(self, view, js, xpath=''):
+    """Execute javascript in a given render view.
+
+    Args:
+      view: The data object for the Chrome render view returned by
+          _GetExtensionViewInfo.
+      js: The javascript to run.
+      xpath: The xpath to the frame in which to execute the javascript.
+
+    Returns:
+      The resulting value from executing the javascript.
+    """
+    if not view:
+      logging.debug('View not found: %s' % view)
+      return False
+    logging.info('Run in view: %s' % js)
+
+    value = self.ExecuteJavascriptInRenderView(
+        self._WrapJs(js),
+        view,
         frame_xpath = xpath)
     self._LogRun(js, value)
     return value
@@ -258,6 +282,25 @@ class GTalkBaseTest(pyauto.PyUITest):
           if i == index:
             return tab
           i = i + 1
+    return None
+
+  def _GetExtensionViewInfo(self, url_query, index=0):
+    """Get the data object for a given extension view.
+
+    Args:
+      url_query: The substring of the URL to search for.
+      index: The index within the list of matches to return.
+
+    Returns:
+      The data object for the tab.
+    """
+    extension_views = self.GetBrowserInfo()['extension_views']
+    i = 0
+    for extension_view in extension_views:
+      if extension_view['url'] and url_query in extension_view['url']:
+        if i == index:
+           return extension_view['view']
+        i = i + 1
     return None
 
   def _GetInjectedJs(self):
