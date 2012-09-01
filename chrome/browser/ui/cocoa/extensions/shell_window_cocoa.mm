@@ -50,6 +50,16 @@
     shellWindow_->WindowDidResignKey();
 }
 
+- (void)windowDidResize:(NSNotification*)notification {
+  if (shellWindow_)
+    shellWindow_->WindowDidResize();
+}
+
+- (void)windowDidMove:(NSNotification*)notification {
+  if (shellWindow_)
+    shellWindow_->WindowDidMove();
+}
+
 - (void)gtm_systemRequestsVisibilityForView:(NSView*)view {
   [[self window] makeKeyAndOrderFront:self];
 }
@@ -136,6 +146,17 @@ ShellWindowCocoa::ShellWindowCocoa(ShellWindow* shell_window,
   NSRect cocoa_bounds = NSMakeRect(params.bounds.x(),
       NSHeight(main_screen_rect) - params.bounds.y() - params.bounds.height(),
       params.bounds.width(), params.bounds.height());
+
+  // If coordinates are < 0, center window on primary screen
+  if (params.bounds.x() < 0) {
+    cocoa_bounds.origin.x =
+        (NSWidth(main_screen_rect) - NSWidth(cocoa_bounds)) / 2;
+  }
+  if (params.bounds.y() < 0) {
+    cocoa_bounds.origin.y =
+        (NSHeight(main_screen_rect) - NSHeight(cocoa_bounds)) / 2;
+  }
+
   NSUInteger style_mask = NSTitledWindowMask | NSClosableWindowMask |
                           NSMiniaturizableWindowMask | NSResizableWindowMask |
                           NSTexturedBackgroundWindowMask;
@@ -429,6 +450,7 @@ bool ShellWindowCocoa::IsAlwaysOnTop() const {
 
 void ShellWindowCocoa::WindowWillClose() {
   [window_controller_ setShellWindow:NULL];
+  shell_window_->SaveWindowPosition();
   shell_window_->OnNativeClose();
 }
 
@@ -451,6 +473,14 @@ void ShellWindowCocoa::WindowDidResignKey() {
       web_contents()->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->SetActive(false);
+}
+
+void ShellWindowCocoa::WindowDidResize() {
+  shell_window_->SaveWindowPosition();
+}
+
+void ShellWindowCocoa::WindowDidMove() {
+  shell_window_->SaveWindowPosition();
 }
 
 ShellWindowCocoa::~ShellWindowCocoa() {

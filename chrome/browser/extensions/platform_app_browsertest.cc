@@ -420,8 +420,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MutationEventsDisabled) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/mutation_events")) << message_;
 }
 
-// Only implemented in GTK so far.
-#if defined(TOOLKIT_GTK)
+// Only implemented in GTK and OSX so far.
+#if defined(TOOLKIT_GTK) || defined(OS_MACOSX)
 // Test that windows created with an id will remember and restore their
 // geometry when opening new windows.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ShellWindowRestorePosition) {
@@ -489,6 +489,6 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ShellWindowRestorePosition) {
   // and explicitly specified coordinates.
   ASSERT_TRUE(done3_listener.WaitUntilSatisfied());
 }
-#endif  // defined(TOOLKIT_GTK)
+#endif  // defined(TOOLKIT_GTK) || defined(OS_MACOSX)
 
 }  // namespace extensions

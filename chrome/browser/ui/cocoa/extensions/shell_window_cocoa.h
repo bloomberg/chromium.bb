@@ -73,6 +73,12 @@ class ShellWindowCocoa : public NativeShellWindow {
   // Called when the window is defocused.
   void WindowDidResignKey();
 
+  // Called when the window is resized.
+  void WindowDidResize();
+
+  // Called when the window is moved.
+  void WindowDidMove();
+
  protected:
   // NativeShellWindow implementation.
   virtual void SetFullscreen(bool fullscreen) OVERRIDE;
