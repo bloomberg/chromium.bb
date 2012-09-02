@@ -480,7 +480,6 @@
         '..',
       ],
       'sources': [
-        'test/test_tooltip_client.h',
         'test/test_views_delegate.cc',
         'test/test_views_delegate.h',
         'test/views_test_base.cc',
