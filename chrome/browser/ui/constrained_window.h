@@ -30,8 +30,8 @@ class ConstrainedWindow {
   static const ui::ResourceBundle::FontStyle kTitleFontStyle =
       ui::ResourceBundle::MediumFont;
 
-  SkColor GetBackgroundColor();  // Dialog background color.
-  SkColor GetTextColor();  // Dialog text color.
+  static SkColor GetBackgroundColor();  // Dialog background color.
+  static SkColor GetTextColor();  // Dialog text color.
 
   // Makes the Constrained Window visible. Only one Constrained Window is shown
   // at a time per tab.

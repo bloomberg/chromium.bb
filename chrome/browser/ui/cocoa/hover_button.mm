@@ -58,9 +58,10 @@
 - (void)setTrackingEnabled:(BOOL)enabled {
   if (enabled) {
     trackingArea_.reset(
-        [[CrTrackingArea alloc] initWithRect:[self bounds]
+        [[CrTrackingArea alloc] initWithRect:NSZeroRect
                                      options:NSTrackingMouseEnteredAndExited |
-                                             NSTrackingActiveAlways
+                                             NSTrackingActiveAlways |
+                                             NSTrackingInVisibleRect
                                        owner:self
                                     userInfo:nil]);
     [self addTrackingArea:trackingArea_.get()];
