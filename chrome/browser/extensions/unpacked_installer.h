@@ -41,6 +41,15 @@ class UnpackedInstaller
   bool prompt_for_plugins() { return prompt_for_plugins_; }
   void set_prompt_for_plugins(bool val) { prompt_for_plugins_ = val; }
 
+  // Allows overriding of whether modern manifest versions are required;
+  // intended for testing.
+  bool require_modern_manifest_version() const {
+    return require_modern_manifest_version_;
+  }
+  void set_require_modern_manifest_version(bool val) {
+    require_modern_manifest_version_ = val;
+  }
+
  private:
   friend class base::RefCountedThreadSafe<UnpackedInstaller>;
 
@@ -59,13 +68,16 @@ class UnpackedInstaller
   // what file access flags to pass to extension_file_util::LoadExtension.
   void GetAbsolutePath();
   void CheckExtensionFileAccess();
-  void LoadWithFileAccess(bool allow_file_access);
+  void LoadWithFileAccess(int flags);
 
   // Notify the frontend that there was an error loading an extension.
   void ReportExtensionLoadError(const std::string& error);
 
   // Called when an unpacked extension has been loaded and installed.
   void OnLoaded(const scoped_refptr<const Extension>& extension);
+
+  // Helper to get the Extension::CreateFlags for the installing extension.
+  int GetFlags();
 
   base::WeakPtr<ExtensionService> service_weak_;
 
@@ -76,6 +88,10 @@ class UnpackedInstaller
   // If true and the extension contains plugins, we prompt the user before
   // loading.
   bool prompt_for_plugins_;
+
+  // Whether to require the extension installed to have a modern manifest
+  // version.
+  bool require_modern_manifest_version_;
 
   DISALLOW_COPY_AND_ASSIGN(UnpackedInstaller);
 };

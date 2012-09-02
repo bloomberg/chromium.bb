@@ -4668,18 +4668,6 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
         Could not decode image: '<ph name="IMAGE_NAME">$1<ex>image.png</ex></ph>'
       </message>
 
-      <!-- This version of the message is used temporarily, until we have the
-           blog post up describing the transition process. -->
-      <message name="IDS_EXTENSION_MANIFEST_VERSION_OLD" desc="Warning message when a developer tries to load an extension that uses a manifest version that will soon be disallowed.">
-        Support for manifest version 1 is being phased out. Please <ph name="LINK_START">$1<ex>&lt;a&gt;</ex></ph>upgrade to version 2<ph name="LINK_END">$2<ex>&lt;/a&gt;</ex></ph>.
-      </message>
-
-      <!-- We'll switch to this version of the message once we have a blog post
-           written for the first link. -->
-      <message name="IDS_EXTENSION_MANIFEST_VERSION_OLD_2_LINKS" desc="Warning message when a developer tries to load an extension that uses a manifest version that will soon be disallowed.">
-        Support for manifest version 1 is being <ph name="LINK_START_1">$1<ex>&lt;a&gt;</ex></ph>phased out<ph name="LINK_END_1">$2<ex>&lt;/a&gt;</ex></ph>. Please <ph name="LINK_START_2">$3<ex>&lt;a&gt;</ex></ph>upgrade to version 2<ph name="LINK_END_2">$4<ex>&lt;/a&gt;</ex></ph>.
-      </message>
-
       <!-- Extension installed bubble -->
       <message name="IDS_EXTENSION_BUNDLE_INSTALLED_HEADING_EXTENSIONS" desc="First line in the content area of the extension bundle installed bubble. Instructs which extensions were installed.">
         The following extensions are now installed:

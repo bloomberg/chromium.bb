@@ -22,7 +22,7 @@ PackExtensionJob::PackExtensionJob(Client* client,
                                    const FilePath& key_file,
                                    int run_flags)
     : client_(client), key_file_(key_file), asynchronous_(true),
-      run_flags_(run_flags) {
+      run_flags_(run_flags | ExtensionCreator::kRequireModernManifestVersion) {
   root_directory_ = root_directory.StripTrailingSeparators();
   CHECK(BrowserThread::GetCurrentThreadIdentifier(&client_thread_id_));
 }

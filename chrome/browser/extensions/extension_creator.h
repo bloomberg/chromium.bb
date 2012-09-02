@@ -30,7 +30,8 @@ class ExtensionCreator {
   // Settings to specify treatment of special or ignorable error conditions.
   enum RunFlags {
     kNoRunFlags = 0x0,
-    kOverwriteCRX = 0x1
+    kOverwriteCRX = 0x1,
+    kRequireModernManifestVersion = 0x2,
   };
 
   // Categories of error that may need special handling on the UI end.
@@ -63,7 +64,8 @@ class ExtensionCreator {
 
   // Validates the manifest by trying to load the extension.
   bool ValidateManifest(const FilePath& extension_dir,
-                        crypto::RSAPrivateKey* key_pair);
+                        crypto::RSAPrivateKey* key_pair,
+                        int run_flags);
 
   // Reads private key from |private_key_path|.
   crypto::RSAPrivateKey* ReadInputKey(const FilePath& private_key_path);

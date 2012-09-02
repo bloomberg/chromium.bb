@@ -124,7 +124,15 @@ bool ExtensionApiTest::RunExtensionTestIncognito(const char* extension_name) {
 bool ExtensionApiTest::RunExtensionTestIgnoreManifestWarnings(
     const char* extension_name) {
   return RunExtensionTestImpl(
-      extension_name, "", kFlagEnableFileAccess | kFlagIgnoreManifestWarnings);
+      extension_name, "", kFlagIgnoreManifestWarnings);
+}
+
+bool ExtensionApiTest::RunExtensionTestAllowOldManifestVersion(
+    const char* extension_name) {
+  return RunExtensionTestImpl(
+      extension_name,
+      "",
+      kFlagEnableFileAccess | kFlagAllowOldManifestVersions);
 }
 
 bool ExtensionApiTest::RunComponentExtensionTest(const char* extension_name) {
@@ -194,6 +202,10 @@ bool ExtensionApiTest::RunExtensionTestImpl(const char* extension_name,
         browser_test_flags |= ExtensionBrowserTest::kFlagEnableFileAccess;
       if (flags & kFlagIgnoreManifestWarnings)
         browser_test_flags |= ExtensionBrowserTest::kFlagIgnoreManifestWarnings;
+      if (flags & kFlagAllowOldManifestVersions) {
+        browser_test_flags |=
+            ExtensionBrowserTest::kFlagAllowOldManifestVersions;
+      }
       extension = LoadExtensionWithFlags(extension_path, browser_test_flags);
     }
     if (!extension) {

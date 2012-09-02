@@ -82,6 +82,8 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithFlags(
     scoped_refptr<extensions::UnpackedInstaller> installer(
         extensions::UnpackedInstaller::Create(service));
     installer->set_prompt_for_plugins(false);
+    installer->set_require_modern_manifest_version(
+        (flags & kFlagAllowOldManifestVersions) == 0);
     installer->Load(path);
     content::RunMessageLoop();
   }

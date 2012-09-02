@@ -329,7 +329,11 @@ const char kInvalidLaunchValueContainer[] =
 const char kInvalidManifest[] =
     "Manifest file is invalid.";
 const char kInvalidManifestVersion[] =
-    "The 'manifest_version' key must be present and set to 2 (without quotes).";
+    "Invalid value for 'manifest_version'. Must be an integer greater than "
+    "zero.";
+const char kInvalidManifestVersionOld[] =
+    "The 'manifest_version' key must be present and set to * (without quotes). "
+    "See developer.chrome.com/extensions/manifestVersion.html for details.";
 const char kInvalidMatch[] =
     "Invalid value for 'content_scripts[*].matches[*]': *";
 const char kInvalidMatchCount[] =

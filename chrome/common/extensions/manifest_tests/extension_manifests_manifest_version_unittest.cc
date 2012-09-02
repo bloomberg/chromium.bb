@@ -11,7 +11,7 @@ using extensions::Extension;
 
 namespace errors = extension_manifest_errors;
 
-TEST_F(ExtensionManifestTest, ManifestVersionWarning) {
+TEST_F(ExtensionManifestTest, ManifestVersionError) {
   scoped_ptr<DictionaryValue> manifest1(new DictionaryValue());
   manifest1->SetString("name", "Miles");
   manifest1->SetString("version", "0.55");
@@ -24,39 +24,34 @@ TEST_F(ExtensionManifestTest, ManifestVersionWarning) {
 
   struct {
     const char* test_name;
+    bool require_modern_manifest_version;
     DictionaryValue* manifest;
-    bool expect_warning;
+    bool expect_error;
   } test_data[] = {
-    { "default_manifest_version", manifest1.get(), true },
-    { "manifest_version_1", manifest2.get(), true },
-    { "manifest_version_2", manifest3.get(), false }
+    { "require_modern_with_default", true, manifest1.get(), true },
+    { "require_modern_with_v1", true, manifest2.get(), true },
+    { "require_modern_with_v2", true, manifest3.get(), false },
+    { "dont_require_modern_with_default", false, manifest1.get(), false },
+    { "dont_require_modern_with_v1", false, manifest2.get(), false },
+    { "dont_require_modern_with_v2", false, manifest3.get(), false },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
-    scoped_refptr<Extension> extension(
-        LoadAndExpectSuccess(Manifest(test_data[i].manifest,
-                                      test_data[i].test_name),
-                             Extension::LOAD));
-    if (test_data[i].expect_warning) {
-      EXPECT_THAT(
-          extension->install_warnings(),
-          testing::Contains(
-              testing::Field(
-                  &Extension::InstallWarning::message,
-                  testing::HasSubstr(
-                      "Support for manifest version 1 is being phased out."))))
-          << test_data[i].test_name;
+    int create_flags = Extension::NO_FLAGS;
+    if (test_data[i].require_modern_manifest_version)
+      create_flags |= Extension::REQUIRE_MODERN_MANIFEST_VERSION;
+    if (test_data[i].expect_error) {
+        LoadAndExpectError(
+            Manifest(test_data[i].manifest,
+                     test_data[i].test_name),
+            errors::kInvalidManifestVersionOld,
+            Extension::LOAD,
+            create_flags);
     } else {
-      EXPECT_THAT(
-          extension->install_warnings(),
-          testing::Not(
-              testing::Contains(
-                  testing::Field(
-                      &Extension::InstallWarning::message,
-                      testing::HasSubstr(
-                          "Support for manifest version 1 is being phased "
-                          "out.")))))
-          << test_data[i].test_name;
+      LoadAndExpectSuccess(Manifest(test_data[i].manifest,
+                                    test_data[i].test_name),
+                           Extension::LOAD,
+                           create_flags);
     }
   }
 }

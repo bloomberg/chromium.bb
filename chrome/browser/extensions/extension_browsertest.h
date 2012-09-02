@@ -37,7 +37,11 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
 
     // Don't fail when the loaded manifest has warnings (should only be used
     // when testing deprecated features).
-    kFlagIgnoreManifestWarnings = 1 << 2
+    kFlagIgnoreManifestWarnings = 1 << 2,
+
+    // Allow older manifest versions (typically these can't be loaded - we allow
+    // them for testing).
+    kFlagAllowOldManifestVersions = 1 << 3,
   };
 
   ExtensionBrowserTest();

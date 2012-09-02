@@ -67,7 +67,8 @@ class PackExtensionJob : public base::RefCountedThreadSafe<PackExtensionJob> {
   FilePath crx_file_out_;
   FilePath key_file_out_;
   bool asynchronous_;
-  int run_flags_;  // Bitset of ExtensionCreator::RunFlags values
+  int run_flags_;  // Bitset of ExtensionCreator::RunFlags values - we always
+                   // assume kRequireModernManifestVersion, though.
 
   DISALLOW_COPY_AND_ASSIGN(PackExtensionJob);
 };

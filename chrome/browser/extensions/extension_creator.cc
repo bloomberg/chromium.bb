@@ -84,7 +84,8 @@ bool ExtensionCreator::InitializeInput(
 }
 
 bool ExtensionCreator::ValidateManifest(const FilePath& extension_dir,
-                                        crypto::RSAPrivateKey* key_pair) {
+                                        crypto::RSAPrivateKey* key_pair,
+                                        int run_flags) {
   std::vector<uint8> public_key_bytes;
   if (!key_pair->ExportPublicKey(&public_key_bytes)) {
     error_message_ =
@@ -102,12 +103,17 @@ bool ExtensionCreator::ValidateManifest(const FilePath& extension_dir,
 
   // Load the extension once. We don't really need it, but this does a lot of
   // useful validation of the structure.
+  int create_flags =
+      Extension::FOLLOW_SYMLINKS_ANYWHERE | Extension::ERROR_ON_PRIVATE_KEY;
+  if (run_flags & kRequireModernManifestVersion)
+    create_flags |= Extension::REQUIRE_MODERN_MANIFEST_VERSION;
+
   scoped_refptr<Extension> extension(
       extension_file_util::LoadExtension(
           extension_dir,
           extension_id,
           Extension::INTERNAL,
-          Extension::FOLLOW_SYMLINKS_ANYWHERE | Extension::ERROR_ON_PRIVATE_KEY,
+          create_flags,
           &error_message_));
   return !!extension.get();
 }
@@ -297,7 +303,9 @@ bool ExtensionCreator::Run(const FilePath& extension_dir,
     return false;
 
   // Perform some extra validation by loading the extension.
-  if (!ValidateManifest(extension_dir, key_pair.get()))
+  // TODO(aa): Can this go before creating the key pair? This would mean not
+  // passing ID into LoadExtension which seems OK.
+  if (!ValidateManifest(extension_dir, key_pair.get(), run_flags))
     return false;
 
   ScopedTempDir temp_dir;

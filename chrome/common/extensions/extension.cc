@@ -73,7 +73,7 @@ namespace extensions {
 
 namespace {
 
-const int kModernManifestVersion = 1;
+const int kModernManifestVersion = 2;
 const int kPEMOutputColumns = 65;
 
 const char kOverrideExtentUrlPatternFormat[] = "chrome://%s/*";
@@ -1358,18 +1358,10 @@ bool Extension::LoadManifestVersion(string16* error) {
       manifest_version_ < kModernManifestVersion &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAllowLegacyExtensionManifests)) {
-      *error = ASCIIToUTF16(errors::kInvalidManifestVersion);
-      return false;
-  }
-
-  if (location() == LOAD && manifest_version_ == 1) {
-    install_warnings_.push_back(Extension::InstallWarning(
-        Extension::InstallWarning::FORMAT_HTML,
-        l10n_util::GetStringFUTF8(
-            IDS_EXTENSION_MANIFEST_VERSION_OLD,
-            ASCIIToUTF16("<a href='http://code.google.com/chrome/extensions/"
-                         "manifestVersion.html' target='_blank'>"),
-            ASCIIToUTF16("</a>"))));
+    *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+        errors::kInvalidManifestVersionOld,
+        base::IntToString(kModernManifestVersion));
+    return false;
   }
 
   return true;

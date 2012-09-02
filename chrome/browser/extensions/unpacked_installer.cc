@@ -89,7 +89,8 @@ scoped_refptr<UnpackedInstaller> UnpackedInstaller::Create(
 
 UnpackedInstaller::UnpackedInstaller(ExtensionService* extension_service)
     : service_weak_(extension_service->AsWeakPtr()),
-      prompt_for_plugins_(true) {
+      prompt_for_plugins_(true),
+      require_modern_manifest_version_(true) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -119,21 +120,11 @@ void UnpackedInstaller::LoadFromCommandLine(const FilePath& path_in) {
     return;
   }
 
-  std::string id = Extension::GenerateIdForPath(extension_path_);
-  bool allow_file_access =
-      Extension::ShouldAlwaysAllowFileAccess(Extension::LOAD);
-  if (service_weak_->extension_prefs()->HasAllowFileAccessSetting(id))
-    allow_file_access = service_weak_->extension_prefs()->AllowFileAccess(id);
-
-  int flags = Extension::REQUIRE_MODERN_MANIFEST_VERSION;
-  if (allow_file_access)
-    flags |= Extension::ALLOW_FILE_ACCESS;
-
   std::string error;
   scoped_refptr<const Extension> extension(extension_file_util::LoadExtension(
       extension_path_,
       Extension::LOAD,
-      flags | Extension::FOLLOW_SYMLINKS_ANYWHERE,
+      GetFlags(),
       &error));
 
   if (!extension) {
@@ -142,6 +133,22 @@ void UnpackedInstaller::LoadFromCommandLine(const FilePath& path_in) {
   }
 
   OnLoaded(extension);
+}
+
+int UnpackedInstaller::GetFlags() {
+  std::string id = Extension::GenerateIdForPath(extension_path_);
+  bool allow_file_access =
+      Extension::ShouldAlwaysAllowFileAccess(Extension::LOAD);
+  if (service_weak_->extension_prefs()->HasAllowFileAccessSetting(id))
+    allow_file_access = service_weak_->extension_prefs()->AllowFileAccess(id);
+
+  int result = Extension::FOLLOW_SYMLINKS_ANYWHERE;
+  if (allow_file_access)
+    result |= Extension::ALLOW_FILE_ACCESS;
+  if (require_modern_manifest_version_)
+    result |= Extension::REQUIRE_MODERN_MANIFEST_VERSION;
+
+  return result;
 }
 
 bool UnpackedInstaller::IsLoadingUnpackedAllowed() const {
@@ -171,30 +178,19 @@ void UnpackedInstaller::CheckExtensionFileAccess() {
     return;
   }
 
-  std::string id = Extension::GenerateIdForPath(extension_path_);
-  // Unpacked extensions default to allowing file access, but if that has been
-  // overridden, don't reset the value.
-  bool allow_file_access =
-      Extension::ShouldAlwaysAllowFileAccess(Extension::LOAD);
-  if (service_weak_->extension_prefs()->HasAllowFileAccessSetting(id))
-    allow_file_access = service_weak_->extension_prefs()->AllowFileAccess(id);
-
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(
-          &UnpackedInstaller::LoadWithFileAccess,
-          this, allow_file_access));
+          &UnpackedInstaller::LoadWithFileAccess, this, GetFlags()));
 }
 
-void UnpackedInstaller::LoadWithFileAccess(bool allow_file_access) {
+void UnpackedInstaller::LoadWithFileAccess(int flags) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  int flags = Extension::REQUIRE_MODERN_MANIFEST_VERSION;
-  if (allow_file_access)
-    flags |= Extension::ALLOW_FILE_ACCESS;
+
   std::string error;
   scoped_refptr<const Extension> extension(extension_file_util::LoadExtension(
       extension_path_,
       Extension::LOAD,
-      flags | Extension::FOLLOW_SYMLINKS_ANYWHERE,
+      flags,
       &error));
 
   if (!extension) {

@@ -246,6 +246,7 @@ namespace extension_manifest_errors {
   extern const char kInvalidLaunchValueContainer[];
   extern const char kInvalidManifest[];
   extern const char kInvalidManifestVersion[];
+  extern const char kInvalidManifestVersionOld[];
   extern const char kInvalidMatch[];
   extern const char kInvalidMatchCount[];
   extern const char kInvalidMatches[];
