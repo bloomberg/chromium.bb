@@ -17,6 +17,7 @@
   scoped_nsobject<NSWindow> sheet_;
   scoped_nsobject<NSView> parentView_;
   scoped_nsobject<NSWindow> overlayWindow_;
+  scoped_nsobject<NSAnimation> animation_;
   NSRect oldSheetFrame_;
   BOOL oldSheetAutoresizesSubviews_;
 }
@@ -24,6 +25,7 @@
 @property(nonatomic, readonly) NSWindow* sheet;
 @property(nonatomic, readonly) NSWindow* parentView;
 @property(nonatomic, readonly) NSWindow* overlayWindow;
+@property(nonatomic, retain) NSAnimation* animation;
 
 // Initializes a info object with for the given |sheet| and associated
 // |parentView| and |overlayWindow|.

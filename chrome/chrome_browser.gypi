@@ -2214,6 +2214,8 @@
         'browser/ui/cocoa/constrained_web_dialog_delegate_mac.mm',
         'browser/ui/cocoa/constrained_window/constrained_window_alert.h',
         'browser/ui/cocoa/constrained_window/constrained_window_alert.mm',
+        'browser/ui/cocoa/constrained_window/constrained_window_animation.h',
+        'browser/ui/cocoa/constrained_window/constrained_window_animation.mm',
         'browser/ui/cocoa/constrained_window/constrained_window_button.h',
         'browser/ui/cocoa/constrained_window/constrained_window_button.mm',
         'browser/ui/cocoa/constrained_window/constrained_window_custom_window.h',

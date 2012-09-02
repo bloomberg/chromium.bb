@@ -30,7 +30,19 @@
   return overlayWindow_;
 }
 
+- (void)setAnimation:(NSAnimation*)animation {
+  animation_.reset([animation retain]);
+}
+
+- (NSAnimation*)animation {
+  return animation_;
+}
+
 - (void)hideSheet {
+  // Stop any pending animations.
+  [animation_ stopAnimation];
+  animation_.reset();
+
   // Hide the sheet by setting alpha to 0 and sizing it to 1x1. This is better
   // than calling orderOut: because that could cause Spaces activation or
   // window ordering changes.
