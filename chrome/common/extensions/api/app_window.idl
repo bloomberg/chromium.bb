@@ -55,7 +55,29 @@ namespace app.window {
   };
 
   callback CreateWindowCallback =
-      void ([instanceOf=global] object created_window);
+      void ([instanceOf=AppWindow] object created_window);
+
+  dictionary AppWindow {
+    // Focus the window.
+    static void focus();
+
+    // Minimize the window.
+    static void minimize();
+
+    // Maximize the window.
+    static void maximize();
+
+    // Restore the window.
+    static void restore();
+
+    // Move the window to the position (|x|, |y|).
+    static void moveTo(long x, long y);
+
+    // Move the window to the position (|x|, |y|).
+    static void resizeTo(long x, long y);
+
+    [instanceOf=global] object dom;
+  };
 
   interface Functions {
     // The size and position of a window can be specified in a number of
@@ -87,11 +109,6 @@ namespace app.window {
                        optional CreateWindowOptions options,
                        optional CreateWindowCallback callback);
 
-    static void focus();
-    static void maximize();
-    static void minimize();
-    static void restore();
-    [nocompile] static void moveTo(long x, long y);
-    [nocompile] static void resizeTo(long width, long height);
+    [nocompile] static AppWindow current();
   };
 };

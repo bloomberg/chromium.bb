@@ -78,6 +78,8 @@
         'browser/extensions/api/alarms/alarms_api.h',
         'browser/extensions/api/app/app_api.cc',
         'browser/extensions/api/app/app_api.h',
+        'browser/extensions/api/app_current_window_internal/app_current_window_internal_api.cc',
+        'browser/extensions/api/app_current_window_internal/app_current_window_internal_api.h',
         'browser/extensions/api/app_runtime/app_runtime_api.cc',
         'browser/extensions/api/app_runtime/app_runtime_api.h',
         'browser/extensions/api/app_window/app_window_api.cc',

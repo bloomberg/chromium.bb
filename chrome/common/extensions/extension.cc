@@ -3134,6 +3134,7 @@ bool Extension::InitFromValue(int flags, string16* error) {
   // app.window API to platform apps, with no dependency on any permissions.
   // See http://crbug.com/120069.
   if (is_platform_app()) {
+    api_permissions.insert(APIPermission::kAppCurrentWindowInternal);
     api_permissions.insert(APIPermission::kAppRuntime);
     api_permissions.insert(APIPermission::kAppWindow);
   }

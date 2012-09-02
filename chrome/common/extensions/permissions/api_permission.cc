@@ -268,6 +268,7 @@ void APIPermissionInfo::RegisterAllPermissions(
     { APIPermission::kSerial, "serial", kFlagCannotBeOptional },
     { APIPermission::kSocket, "socket", kFlagCannotBeOptional, 0,
       PermissionMessage::kNone, &::CreateAPIPermission<SocketPermission> },
+    { APIPermission::kAppCurrentWindowInternal, "app.currentWindowInternal" },
     { APIPermission::kAppRuntime, "app.runtime" },
     { APIPermission::kAppWindow, "app.window" },
     { APIPermission::kAudioCapture, "audioCapture", kFlagNone,

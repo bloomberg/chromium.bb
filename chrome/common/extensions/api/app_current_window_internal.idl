@@ -1,0 +1,21 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// File-level comment to appease parser. Eventually this will not be necessary.
+
+[internal, nodoc] namespace app.currentWindowInternal {
+  interface Functions {
+    // Focus the window.
+    static void focus();
+
+    // Minimize the window.
+    static void minimize();
+
+    // Maximize the window.
+    static void maximize();
+
+    // Restore the window.
+    static void restore();
+  };
+};

@@ -6,11 +6,9 @@
 
 #include "base/time.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/extensions/api/app_window.h"
-#include "chrome/common/extensions/extension_error_utils.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -23,28 +21,9 @@ namespace Create = app_window::Create;
 namespace extensions {
 
 namespace app_window_constants {
-const char kNoAssociatedShellWindow[] =
-    "The context from which the function was called did not have an "
-    "associated shell window.";
 const char kInvalidWindowId[] =
     "The window id can not be more than 256 characters long.";
 };
-
-bool AppWindowExtensionFunction::RunImpl() {
-  ShellWindowRegistry* registry = ShellWindowRegistry::Get(profile());
-  CHECK(registry);
-  content::RenderViewHost* rvh = render_view_host();
-  if (!rvh)
-    // No need to set an error, since we won't return to the caller anyway if
-    // there's no RVH.
-    return false;
-  ShellWindow* window = registry->GetShellWindowForRenderViewHost(rvh);
-  if (!window) {
-    error_ = app_window_constants::kNoAssociatedShellWindow;
-    return false;
-  }
-  return RunWithWindow(window);
-}
 
 const char kNoneFrameOption[] = "none";
 
@@ -140,26 +119,6 @@ bool AppWindowCreateFunction::RunImpl() {
   int view_id = created_contents->GetRenderViewHost()->GetRoutingID();
 
   SetResult(base::Value::CreateIntegerValue(view_id));
-  return true;
-}
-
-bool AppWindowFocusFunction::RunWithWindow(ShellWindow* window) {
-  window->GetBaseWindow()->Activate();
-  return true;
-}
-
-bool AppWindowMaximizeFunction::RunWithWindow(ShellWindow* window) {
-  window->GetBaseWindow()->Maximize();
-  return true;
-}
-
-bool AppWindowMinimizeFunction::RunWithWindow(ShellWindow* window) {
-  window->GetBaseWindow()->Minimize();
-  return true;
-}
-
-bool AppWindowRestoreFunction::RunWithWindow(ShellWindow* window) {
-  window->GetBaseWindow()->Restore();
   return true;
 }
 

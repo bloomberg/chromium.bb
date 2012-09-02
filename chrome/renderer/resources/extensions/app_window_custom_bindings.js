@@ -7,6 +7,7 @@
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var sendRequest = require('sendRequest').sendRequest;
 var appWindowNatives = requireNative('app_window');
+var forEach = require('utils').forEach;
 var GetView = appWindowNatives.GetView;
 
 chromeHidden.registerCustomHook('app.window', function(bindingsAPI) {
@@ -16,14 +17,19 @@ chromeHidden.registerCustomHook('app.window', function(bindingsAPI) {
     if (viewId)
       view = GetView(viewId);
     if (request.callback) {
-      request.callback(view);
+      request.callback(view.chrome.app.window.current());
       delete request.callback;
     }
   })
-  apiFunctions.setHandleRequest('moveTo', function(x, y) {
-    window.moveTo(x, y);
-  })
-  apiFunctions.setHandleRequest('resizeTo', function(width, height) {
-    window.resizeTo(width, height);
+  var AppWindow = function() {};
+  forEach(chromeHidden.internalAPIs.app.currentWindowInternal, function(fn) {
+    AppWindow.prototype[fn] =
+        chromeHidden.internalAPIs.app.currentWindowInternal[fn];
+  });
+  AppWindow.prototype.moveTo = window.moveTo.bind(window);
+  AppWindow.prototype.resizeTo = window.resizeTo.bind(window);
+  AppWindow.prototype.dom = window;
+  apiFunctions.setHandleRequest('current', function() {
+    return new AppWindow;
   })
 });

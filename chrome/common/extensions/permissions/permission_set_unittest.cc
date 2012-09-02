@@ -662,6 +662,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kAppNotifications);
   skip.insert(APIPermission::kAppRuntime);
   skip.insert(APIPermission::kAppWindow);
+  skip.insert(APIPermission::kAppCurrentWindowInternal);
   skip.insert(APIPermission::kBrowserTag);
   skip.insert(APIPermission::kBrowsingData);
   skip.insert(APIPermission::kContextMenus);
