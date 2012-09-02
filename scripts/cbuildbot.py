@@ -35,6 +35,7 @@ from chromite.buildbot import trybot_patch_pool
 
 from chromite.lib import cgroups
 from chromite.lib import cleanup
+from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import sudo
@@ -673,14 +674,6 @@ def _CheckGerritChromeOption(_option, _opt_str, value, parser):
   parser.values.gerrit_chrome = True
 
 
-class CustomParser(optparse.OptionParser):
-  def add_remote_option(self, *args, **kwargs):
-    """For arguments that are passed-through to remote trybot."""
-    return optparse.OptionParser.add_option(self, *args,
-                                            remote_pass_through=True,
-                                            **kwargs)
-
-
 class CustomGroup(optparse.OptionGroup):
   def add_remote_option(self, *args, **kwargs):
     """For arguments that are passed-through to remote trybot."""
@@ -689,44 +682,19 @@ class CustomGroup(optparse.OptionGroup):
                                            **kwargs)
 
 
-# pylint: disable=W0613
-def check_path(option, opt, value):
-  """Expand paths and make them absolute."""
-  expanded = osutils.ExpandPath(value)
-  if expanded == '/':
-    raise optparse.OptionValueError('Invalid path %s specified for %s'
-                                    % (expanded, opt))
+class CustomOption(commandline.Option):
+  """Subclass Option class to implement pass-through."""
 
-  return expanded
-
-# pylint: disable=W0613
-def check_gs_path(option, opt, value):
-  """Expand paths and make them absolute."""
-  value = value.strip().rstrip('/')
-  if not value.startswith('gs://'):
-    raise optparse.OptionValueError('Invalid gs path %s specified for %s'
-                                    % (value, opt))
-
-  return value
-
-
-class CustomOption(optparse.Option):
-  """Subclass Option class to implement pass-through and path evaluation."""
-  TYPES = optparse.Option.TYPES + ('path', 'gs_path')
-  TYPE_CHECKER = optparse.Option.TYPE_CHECKER.copy()
-  TYPE_CHECKER['path'] = check_path
-  TYPE_CHECKER['gs_path'] = check_gs_path
-
-  ACTIONS = optparse.Option.ACTIONS + ('extend',)
-  STORE_ACTIONS = optparse.Option.STORE_ACTIONS + ('extend',)
-  TYPED_ACTIONS = optparse.Option.TYPED_ACTIONS + ('extend',)
-  ALWAYS_TYPED_ACTIONS = optparse.Option.ALWAYS_TYPED_ACTIONS + ('extend',)
+  ACTIONS = commandline.Option.ACTIONS + ('extend',)
+  STORE_ACTIONS = commandline.Option.STORE_ACTIONS + ('extend',)
+  TYPED_ACTIONS = commandline.Option.TYPED_ACTIONS + ('extend',)
+  ALWAYS_TYPED_ACTIONS = commandline.Option.ALWAYS_TYPED_ACTIONS + ('extend',)
 
   def __init__(self, *args, **kwargs):
     # The remote_pass_through argument specifies whether we should directly
     # pass the argument (with its value) onto the remote trybot.
     self.pass_through = kwargs.pop('remote_pass_through', False)
-    optparse.Option.__init__(self, *args, **kwargs)
+    commandline.Option.__init__(self, *args, **kwargs)
 
   def take_action(self, action, dest, opt, value, values, parser):
     if action == 'extend':
@@ -751,11 +719,22 @@ class CustomOption(optparse.Option):
         parser.values.pass_through_args.append(str(value))
 
 
+class CustomParser(commandline.OptionParser):
+
+  DEFAULT_OPTION_CLASS = CustomOption
+
+  def add_remote_option(self, *args, **kwargs):
+    """For arguments that are passed-through to remote trybot."""
+    return commandline.OptionParser.add_option(self, *args,
+                                               remote_pass_through=True,
+                                               **kwargs)
+
+
 def _CreateParser():
   """Generate and return the parser with all the options."""
   # Parse options
   usage = "usage: %prog [options] buildbot_config"
-  parser = CustomParser(usage=usage, option_class=CustomOption)
+  parser = CustomParser(usage=usage)
 
   # Main options
   # The remote_pass_through parameter to add_option is implemented by the

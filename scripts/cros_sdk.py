@@ -7,12 +7,12 @@
 """
 
 import logging
-import optparse
 import os
 import urlparse
 
 from chromite.buildbot import constants
 from chromite.lib import cgroups
+from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import locking
 from chromite.lib import sudo
@@ -269,7 +269,7 @@ Action taken is the following:
 --delete            .. Removes a chroot
 """
   sdk_latest_version = GetLatestVersion()
-  parser = optparse.OptionParser(usage)
+  parser = commandline.OptionParser(usage)
   # Actions:
   parser.add_option('--bootstrap',
                     action='store_true', dest='bootstrap', default=False,
@@ -290,17 +290,18 @@ Action taken is the following:
                     help=('Enter the SDK chroot, possibly (re)create first'))
 
   # Global options:
-  parser.add_option('--chroot',
-                    dest='chroot', default=constants.DEFAULT_CHROOT_DIR,
+  default_chroot = os.path.join(SRC_ROOT, constants.DEFAULT_CHROOT_DIR)
+  parser.add_option('--chroot', dest='chroot', default=default_chroot,
+                    type='path',
                     help=('SDK chroot dir name [%s]' %
                           constants.DEFAULT_CHROOT_DIR))
 
   # Additional options:
   parser.add_option('--chrome_root',
-                    dest='chrome_root', default='',
+                    dest='chrome_root', default=None, type='path',
                     help=('Mount this chrome root into the SDK chroot'))
   parser.add_option('--chrome_root_mount',
-                    dest='chrome_root_mount', default='',
+                    dest='chrome_root_mount', default=None, type='path',
                     help=('Mount chrome into this path inside SDK chroot'))
   parser.add_option('-r', '--replace',
                     action='store_true', dest='replace', default=False,
@@ -309,11 +310,11 @@ Action taken is the following:
                     action='store_true', dest='nousepkg', default=False,
                     help=('Do not use binary packages when creating a chroot'))
   parser.add_option('-u', '--url',
-                    dest='sdk_url', default='',
+                    dest='sdk_url', default=None,
                     help=('''Use sdk tarball located at this url.
                              Use file:// for local files.'''))
   parser.add_option('-v', '--version',
-                    dest='sdk_version', default='',
+                    dest='sdk_version', default=None,
                     help=('Use this sdk version [%s]' % sdk_latest_version))
   parser.add_option('--debug', action='store_true', default=False,
                     help="Show debugging messages.")
@@ -366,46 +367,42 @@ Action taken is the following:
   if options.bootstrap and options.sdk_version:
     parser.error("Cannot use --version when bootstrapping")
 
-  chroot_path = os.path.join(SRC_ROOT, options.chroot)
-  chroot_path = os.path.abspath(chroot_path)
-  chroot_path = os.path.normpath(chroot_path)
-
   if not options.sdk_version:
     sdk_version = sdk_latest_version
   else:
     sdk_version = options.sdk_version
 
-  if options.delete and not os.path.exists(chroot_path):
+  if options.delete and not os.path.exists(options.chroot):
     print "Not doing anything. The chroot you want to remove doesn't exist."
     return 0
 
-  lock_path = os.path.dirname(chroot_path)
+  lock_path = os.path.dirname(options.chroot)
   lock_path = os.path.join(lock_path,
-                           '.%s_lock' % os.path.basename(chroot_path))
+                           '.%s_lock' % os.path.basename(options.chroot))
   with sudo.SudoKeepAlive(ttyless_sudo=False):
     with cgroups.SimpleContainChildren('cros_sdk'):
       _CreateLockFile(lock_path)
       with locking.FileLock(lock_path, 'chroot lock') as lock:
         if options.delete:
           lock.write_lock()
-          DeleteChroot(chroot_path)
+          DeleteChroot(options.chroot)
           return 0
 
         # Print a suggestion for replacement, but not if running just --enter.
-        if os.path.exists(chroot_path) and not options.replace and \
+        if os.path.exists(options.chroot) and not options.replace and \
             (options.bootstrap or options.download):
           print "Chroot already exists. Run with --replace to re-create."
 
         # Chroot doesn't exist or asked to replace.
-        if not os.path.exists(chroot_path) or options.replace:
+        if not os.path.exists(options.chroot) or options.replace:
           lock.write_lock()
           if options.bootstrap:
-            BootstrapChroot(chroot_path, options.sdk_url,
+            BootstrapChroot(options.chroot, options.sdk_url,
                             options.replace)
           else:
             CreateChroot(options.sdk_url, sdk_version,
-                         chroot_path, options.replace, options.nousepkg)
+                         options.chroot, options.replace, options.nousepkg)
         if options.enter:
           lock.read_lock()
-          EnterChroot(chroot_path, options.chrome_root,
+          EnterChroot(options.chroot, options.chrome_root,
                       options.chrome_root_mount, remaining_arguments)
