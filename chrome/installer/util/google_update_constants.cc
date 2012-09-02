@@ -19,6 +19,7 @@ const wchar_t kRegPathGoogleUpdate[] = L"Software\\Google\\Update";
 const wchar_t kRegCommandsKey[] = L"Commands";
 
 const wchar_t kRegApField[] = L"ap";
+const wchar_t kRegAutoRunOnOSUpgradeField[] = L"AutoRunOnOSUpgrade";
 const wchar_t kRegBrandField[] = L"brand";
 const wchar_t kRegBrowserField[] = L"browser";
 const wchar_t kRegCFEndTempOptOutCmdField[] = L"CFEndTempOptOutCmd";

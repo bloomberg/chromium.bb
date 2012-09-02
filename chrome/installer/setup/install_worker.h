@@ -147,7 +147,7 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
                                    WorkItemList* install_list,
                                    const Product& product);
 
-// Create Version key for a product (if not already present) and sets the new
+// Creates Version key for a product (if not already present) and sets the new
 // product version as the last step.  If |add_language_identifier| is true, the
 // "lang" value is also set according to the currently selected translation.
 void AddVersionKeyWorkItems(HKEY root,
@@ -174,7 +174,7 @@ void AppendUninstallCommandLineFlags(const InstallerState& installer_state,
 // Refreshes the elevation policy on platforms where it is supported.
 void RefreshElevationPolicy();
 
-// Add work items to add or remove the "quick-enable-cf" to the multi-installer
+// Adds work items to add or remove the "quick-enable-cf" to the multi-installer
 // binaries' version key on the basis of the current operation (represented in
 // |installer_state|) and the pre-existing machine configuration (represented in
 // |machine_state|).  |setup_path| (the path to the executable currently being
@@ -187,7 +187,7 @@ void AddQuickEnableChromeFrameWorkItems(const InstallerState& installer_state,
                                         const Version* new_version,
                                         WorkItemList* work_item_list);
 
-// Add work items to add or remove the "quick-enable-application-host" command
+// Adds work items to add or remove the "quick-enable-application-host" command
 // to the multi-installer binaries' version key on the basis of the current
 // operation (represented in |installer_state|) and the pre-existing machine
 // configuration (represented in |machine_state|).  |setup_path| (the path to
@@ -200,6 +200,17 @@ void AddQuickEnableApplicationHostWorkItems(
     const FilePath* setup_path,
     const Version* new_version,
     WorkItemList* work_item_list);
+
+// Adds work items to add or remove the "on-os-upgrade" command to |product|'s
+// version key on the basis of the current operation (represented in
+// |installer_state|).  |new_version| (the version of the product(s)
+// currently being installed) is required when processing product
+// installation; it is unused (and may therefore be NULL) when uninstalling.
+void AddOsUpgradeWorkItems(const InstallerState& installer_state,
+                           const FilePath* setup_path,
+                           const Version* new_version,
+                           const Product& product,
+                           WorkItemList* install_list);
 
 }  // namespace installer
 

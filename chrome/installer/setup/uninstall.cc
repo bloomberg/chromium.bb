@@ -127,6 +127,17 @@ void ProcessGoogleUpdateItems(
   }
 }
 
+void ProcessOnOsUpgradeWorkItems(
+    const installer::InstallerState& installer_state,
+    const installer::Product& product) {
+  scoped_ptr<WorkItemList> work_item_list(
+      WorkItem::CreateNoRollbackWorkItemList());
+  AddOsUpgradeWorkItems(installer_state, NULL, NULL, product,
+                        work_item_list.get());
+  if (!work_item_list->Do())
+    LOG(ERROR) << "Failed to remove on-os-upgrade command.";
+}
+
 // Adds or removes the quick-enable-cf command to the binaries' version key in
 // the registry as needed.
 void ProcessQuickEnableWorkItems(
@@ -1071,6 +1082,8 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     }
 
     ProcessDelegateExecuteWorkItems(installer_state, product);
+
+    ProcessOnOsUpgradeWorkItems(installer_state, product);
 
 // TODO(gab): This is only disabled for M22 as the shortcut CL using Active
 // Setup will not make it in M22.

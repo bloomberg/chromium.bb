@@ -1170,6 +1170,15 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
           HKEY_LOCAL_MACHINE, suffix, installer_state->target_path(), &tmp);
     }
     *exit_code = tmp;
+  } else if (cmd_line.HasSwitch(installer::switches::kOnOsUpgrade)) {
+    const Product* chrome_install =
+        installer_state->FindProduct(BrowserDistribution::CHROME_BROWSER);
+    if (chrome_install) {
+      installer::HandleOsUpgradeForBrowser(*installer_state,
+                                           *chrome_install,
+                                           cmd_line.GetProgram());
+    }
+    *exit_code = InstallUtil::GetInstallReturnCode(installer::INSTALL_REPAIRED);
   } else if (cmd_line.HasSwitch(installer::switches::kInactiveUserToast)) {
     // Launch the inactive user toast experiment.
     int flavor = -1;

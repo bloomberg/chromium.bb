@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <set>
+#include <string>
 
 #include "base/logging.h"
 #include "base/version.h"
@@ -241,6 +242,46 @@ void InstallationValidator::ValidateInstallAppCommand(
   }
 }
 
+// Validates the "on-os-upgrade" Google Update internal command.
+void InstallationValidator::ValidateOnOsUpgradeCommand(
+    const ProductContext& ctx,
+    const AppCommand& command,
+    bool* is_valid) {
+  DCHECK(is_valid);
+
+  CommandLine the_command(CommandLine::FromString(command.command_line()));
+
+  ValidateSetupPath(ctx, the_command.GetProgram(), "on os upgrade", is_valid);
+
+  SwitchExpectations expected;
+  expected.push_back(std::make_pair(std::string(switches::kOnOsUpgrade), true));
+  expected.push_back(std::make_pair(std::string(switches::kSystemLevel),
+                                    ctx.system_install));
+  expected.push_back(std::make_pair(std::string(switches::kMultiInstall),
+                                    ctx.state.is_multi_install()));
+  // Expecting kChrome if and only if kMultiInstall.
+  expected.push_back(std::make_pair(std::string(switches::kChrome),
+                                    ctx.state.is_multi_install()));
+
+  ValidateCommandExpectations(ctx, the_command, expected, "on os upgrade",
+                              is_valid);
+
+  if (!command.is_auto_run_on_os_upgrade()) {
+    *is_valid = false;
+    LOG(ERROR) << "On-os-upgrade command is not marked to run on OS upgrade.";
+  }
+
+  if (command.sends_pings()) {
+    *is_valid = false;
+    LOG(ERROR) << "On-os-upgrade command should not be able to send pings.";
+  }
+
+  if (command.is_web_accessible()) {
+    *is_valid = false;
+    LOG(ERROR) << "On-os-upgrade command should not be web accessible.";
+  }
+}
+
 // Validates the "quick-enable-cf" Google Update product command.
 void InstallationValidator::ValidateQuickEnableCfCommand(
     const ProductContext& ctx,
@@ -331,7 +372,7 @@ void InstallationValidator::ValidateAppCommandExpectations(
       ctx.state.commands().GetIterators());
   CommandExpectations::iterator expectation;
   for (; cmd_iterators.first != cmd_iterators.second; ++cmd_iterators.first) {
-    const std::wstring& cmd_id = cmd_iterators.first->first;
+    const string16& cmd_id = cmd_iterators.first->first;
     // Do we have an expectation for this command?
     expectation = the_expectations.find(cmd_id);
     if (expectation != the_expectations.end()) {
@@ -488,14 +529,8 @@ void InstallationValidator::ValidateBinaries(
   }
 
   ChromeBinariesRules binaries_rules;
-  ProductContext ctx = {
-    machine_state,
-    system_install,
-    BrowserDistribution::GetSpecificDistribution(
-        BrowserDistribution::CHROME_BINARIES),
-    binaries_state,
-    binaries_rules
-  };
+  ProductContext ctx(machine_state, system_install, binaries_state,
+                     binaries_rules);
 
   ValidateBinariesCommands(ctx, is_valid);
 
@@ -691,6 +726,9 @@ void InstallationValidator::ValidateAppCommands(
   if (ctx.dist->GetType() == BrowserDistribution::CHROME_APP_HOST) {
     expectations[kCmdInstallApp] = &ValidateInstallAppCommand;
   }
+  if (ctx.dist->GetType() == BrowserDistribution::CHROME_BROWSER) {
+    expectations[kCmdOnOsUpgrade] = &ValidateOnOsUpgradeCommand;
+  }
 
   ValidateAppCommandExpectations(ctx, expectations, is_valid);
 }
@@ -722,20 +760,15 @@ void InstallationValidator::ValidateProduct(
     const ProductRules& rules,
     bool* is_valid) {
   DCHECK(is_valid);
-  ProductContext ctx = {
-    machine_state,
-    system_install,
-    BrowserDistribution::GetSpecificDistribution(rules.distribution_type()),
-    product_state,
-    rules
-  };
 
-  ValidateUninstallCommand(ctx, product_state.uninstall_command(),
+  ProductContext ctx(machine_state, system_install, product_state, rules);
+
+  ValidateUninstallCommand(ctx, ctx.state.uninstall_command(),
                            "Google Update uninstall command", is_valid);
 
   ValidateOldVersionValues(ctx, is_valid);
 
-  if (product_state.is_multi_install())
+  if (ctx.state.is_multi_install())
     ValidateMultiInstallProduct(ctx, is_valid);
 
   ValidateAppCommands(ctx, is_valid);

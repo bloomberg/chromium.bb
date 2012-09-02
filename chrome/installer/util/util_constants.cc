@@ -109,6 +109,9 @@ const char kMultiInstall[] = "multi-install";
 // specifies the full path where updated setup.exe will be stored.
 const char kNewSetupExe[] = "new-setup-exe";
 
+// Notify the installer that the OS has been upgraded.
+const char kOnOsUpgrade[] = "on-os-upgrade";
+
 // Register Chrome as a valid browser on the current sytem. This option
 // requires that setup.exe is running as admin. If this option is specified,
 // options kInstallArchive and kUninstall are ignored.
@@ -181,6 +184,7 @@ const wchar_t kChromeLauncherExe[] = L"chrome_launcher.exe";
 const wchar_t kChromeNewExe[] = L"new_chrome.exe";
 const wchar_t kChromeOldExe[] = L"old_chrome.exe";
 const wchar_t kCmdInstallApp[] = L"install-application";
+const wchar_t kCmdOnOsUpgrade[] = L"on-os-upgrade";
 const wchar_t kCmdQuickEnableApplicationHost[] =
     L"quick-enable-application-host";
 const wchar_t kCmdQuickEnableCf[] = L"quick-enable-cf";

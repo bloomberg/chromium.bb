@@ -86,6 +86,10 @@ class FakeProductState : public ProductState {
                                Level install_level,
                                const char* version,
                                int channel_modifiers);
+  void AddOsUpgradeCommand(BrowserDistribution::Type dist_type,
+                           Level install_level,
+                           const char* version,
+                           int channel_modifiers);
   void set_multi_install(bool is_multi_install) {
     multi_install_ = is_multi_install;
   }
@@ -210,8 +214,10 @@ void FakeProductState::AddQuickEnableApplicationHostCommand(
                                        channel_modifiers));
   cmd_line.AppendSwitch(installer::switches::kMultiInstall);
   cmd_line.AppendSwitch(installer::switches::kChromeAppHost);
-  commands_.Set(installer::kCmdQuickEnableApplicationHost,
-                AppCommand(cmd_line.GetCommandLineString(), true, true));
+  AppCommand app_cmd(cmd_line.GetCommandLineString());
+  app_cmd.set_sends_pings(true);
+  app_cmd.set_is_web_accessible(true);
+  commands_.Set(installer::kCmdQuickEnableApplicationHost, app_cmd);
 }
 
 // Adds the "quick-enable-cf" Google Update product command.
@@ -229,8 +235,34 @@ void FakeProductState::AddQuickEnableCfCommand(
   if (install_level == SYSTEM_LEVEL)
     cmd_line.AppendSwitch(installer::switches::kSystemLevel);
   cmd_line.AppendSwitch(installer::switches::kChromeFrameQuickEnable);
-  commands_.Set(installer::kCmdQuickEnableCf,
-                AppCommand(cmd_line.GetCommandLineString(), true, true));
+  AppCommand app_cmd(cmd_line.GetCommandLineString());
+  app_cmd.set_sends_pings(true);
+  app_cmd.set_is_web_accessible(true);
+  commands_.Set(installer::kCmdQuickEnableCf, app_cmd);
+}
+
+// Adds the "on-os-upgrade" Google Update product command.
+void FakeProductState::AddOsUpgradeCommand(BrowserDistribution::Type dist_type,
+                                           Level install_level,
+                                           const char* version,
+                                           int channel_modifiers) {
+  // Right now only Chrome browser uses this.
+  DCHECK_EQ(dist_type, BrowserDistribution::CHROME_BROWSER);
+
+  CommandLine cmd_line(GetSetupExePath(dist_type, install_level, version,
+                                       channel_modifiers));
+  cmd_line.AppendSwitch(installer::switches::kOnOsUpgrade);
+  // Imitating ChromeBrowserOperations::AppendProductFlags().
+  if ((channel_modifiers & CM_MULTI) != 0) {
+    cmd_line.AppendSwitch(installer::switches::kMultiInstall);
+    cmd_line.AppendSwitch(installer::switches::kChrome);
+  }
+  if (install_level == SYSTEM_LEVEL)
+    cmd_line.AppendSwitch(installer::switches::kSystemLevel);
+  cmd_line.AppendSwitch(installer::switches::kVerboseLogging);
+  AppCommand app_cmd(cmd_line.GetCommandLineString());
+  app_cmd.set_is_auto_run_on_os_upgrade(true);
+  commands_.Set(installer::kCmdOnOsUpgrade, app_cmd);
 }
 
 }  // namespace
@@ -429,6 +461,12 @@ void InstallationValidatorTest::MakeProductState(
                                                 install_level,
                                                 chrome::kChromeVersion,
                                                 channel_modifiers);
+  }
+  if (prod_type == BrowserDistribution::CHROME_BROWSER) {
+    state->AddOsUpgradeCommand(prod_type,
+                               install_level,
+                               chrome::kChromeVersion,
+                               channel_modifiers);
   }
 }
 

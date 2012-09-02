@@ -174,7 +174,7 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
       chrome_frame->AppendProductFlags(&uninstall_arguments);
   }
 
-  std::wstring update_state_key(browser_dist->GetStateKey());
+  string16 update_state_key(browser_dist->GetStateKey());
   install_list->AddCreateRegKeyWorkItem(reg_root, update_state_key);
   install_list->AddSetRegValueWorkItem(reg_root, update_state_key,
       installer::kUninstallStringField, installer_path.value(), true);
@@ -189,7 +189,7 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
     DCHECK_EQ(quoted_uninstall_cmd.GetCommandLineString()[0], '"');
     quoted_uninstall_cmd.AppendArguments(uninstall_arguments, false);
 
-    std::wstring uninstall_reg = browser_dist->GetUninstallRegPath();
+    string16 uninstall_reg = browser_dist->GetUninstallRegPath();
     install_list->AddCreateRegKeyWorkItem(reg_root, uninstall_reg);
     install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
         installer::kUninstallDisplayNameField,
@@ -204,7 +204,7 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
                                          true);
 
     // DisplayIcon, NoModify and NoRepair
-    std::wstring chrome_icon = ShellUtil::GetChromeIcon(
+    string16 chrome_icon = ShellUtil::GetChromeIcon(
         product.distribution(),
         install_path.Append(installer::kChromeExe).value());
     install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
@@ -253,10 +253,10 @@ void AddVersionKeyWorkItems(HKEY root,
                             WorkItemList* list) {
   // Create Version key for each distribution (if not already present) and set
   // the new product version as the last step.
-  std::wstring version_key(dist->GetVersionKey());
+  string16 version_key(dist->GetVersionKey());
   list->AddCreateRegKeyWorkItem(root, version_key);
 
-  std::wstring product_name(dist->GetAppShortCutName());
+  string16 product_name(dist->GetAppShortCutName());
   list->AddSetRegValueWorkItem(root, version_key, google_update::kRegNameField,
                                product_name, true);  // overwrite name also
   list->AddSetRegValueWorkItem(root, version_key,
@@ -267,7 +267,7 @@ void AddVersionKeyWorkItems(HKEY root,
     // Write the language identifier of the current translation.  Omaha's set of
     // languages is a superset of Chrome's set of translations with this one
     // exception: what Chrome calls "en-us", Omaha calls "en".  sigh.
-    std::wstring language(GetCurrentTranslation());
+    string16 language(GetCurrentTranslation());
     if (LowerCaseEqualsASCII(language, "en-us"))
       language.resize(2);
     list->AddSetRegValueWorkItem(root, version_key,
@@ -288,7 +288,7 @@ void AddInstallAppCommandWorkItems(const InstallerState& installer_state,
                                    WorkItemList* work_item_list) {
   DCHECK(product.is_chrome_app_host());
 
-  std::wstring cmd_key(product.distribution()->GetVersionKey());
+  string16 cmd_key(product.distribution()->GetVersionKey());
   cmd_key.append(1, L'\\').append(google_update::kRegCommandsKey)
       .append(1, L'\\').append(kCmdInstallApp);
 
@@ -297,7 +297,9 @@ void AddInstallAppCommandWorkItems(const InstallerState& installer_state,
     CommandLine cmd_line(target_path.Append(installer::kChromeAppHostExe));
     cmd_line.AppendSwitchASCII(::switches::kAppsInstallFromManifestURL, "%1");
 
-    AppCommand cmd(cmd_line.GetCommandLineString(), true, true);
+    AppCommand cmd(cmd_line.GetCommandLineString());
+    cmd.set_sends_pings(true);
+    cmd.set_is_web_accessible(true);
     cmd.AddWorkItems(installer_state.root_key(), cmd_key, work_item_list);
   } else {
     work_item_list->AddDeleteRegKeyWorkItem(installer_state.root_key(),
@@ -322,6 +324,10 @@ void AddProductSpecificWorkItems(const InstallationState& original_state,
       AddInstallAppCommandWorkItems(installer_state, original_state,
                                     &setup_path, &new_version, p, list);
     }
+    if (p.is_chrome()) {
+      AddOsUpgradeWorkItems(installer_state, &setup_path, &new_version, p,
+                            list);
+    }
   }
 }
 
@@ -337,7 +343,7 @@ void AddOemInstallWorkItems(const InstallationState& original_state,
   if (!original_state.GetProductState(system_install,
                                       BrowserDistribution::CHROME_BINARIES)) {
     const HKEY root_key = installer_state.root_key();
-    std::wstring multi_key(
+    string16 multi_key(
         installer_state.multi_package_binaries_distribution()->GetStateKey());
 
     // Copy the value from Chrome unless Chrome isn't installed or being
@@ -356,7 +362,7 @@ void AddOemInstallWorkItems(const InstallationState& original_state,
     const ProductState* source_product =
         original_state.GetNonVersionedProductState(system_install, source_type);
 
-    std::wstring oem_install;
+    string16 oem_install;
     if (source_product->GetOemInstall(&oem_install)) {
       VLOG(1) << "Mirroring oeminstall=\"" << oem_install << "\" from "
               << BrowserDistribution::GetSpecificDistribution(source_type)
@@ -386,7 +392,7 @@ void AddEulaAcceptedWorkItems(const InstallationState& original_state,
   if (!original_state.GetProductState(system_install,
                                       BrowserDistribution::CHROME_BINARIES)) {
     const HKEY root_key = installer_state.root_key();
-    std::wstring multi_key(
+    string16 multi_key(
         installer_state.multi_package_binaries_distribution()->GetStateKey());
 
     // Copy the value from the product with the greatest value.
@@ -440,7 +446,7 @@ void AddGoogleUpdateWorkItems(const InstallationState& original_state,
 
   const bool system_install = installer_state.system_install();
   const HKEY root_key = installer_state.root_key();
-  std::wstring multi_key(
+  string16 multi_key(
       installer_state.multi_package_binaries_distribution()->GetStateKey());
 
   // For system-level installs, make sure the ClientStateMedium key for the
@@ -460,7 +466,7 @@ void AddGoogleUpdateWorkItems(const InstallationState& original_state,
         original_state.GetNonVersionedProductState(
             system_install, BrowserDistribution::CHROME_BROWSER);
 
-    const std::wstring& brand(chrome_product_state->brand());
+    const string16& brand(chrome_product_state->brand());
     if (!brand.empty()) {
       install_list->AddCreateRegKeyWorkItem(root_key, multi_key);
       // Write Chrome's brand code to the multi key. Never overwrite the value
@@ -509,7 +515,7 @@ void AddUsageStatsWorkItems(const InstallationState& original_state,
   // If a value was found, write it in the appropriate location for the
   // binaries and remove all values from the products.
   if (value_found) {
-    std::wstring state_key(
+    string16 state_key(
         installer_state.multi_package_binaries_distribution()->GetStateKey());
     install_list->AddCreateRegKeyWorkItem(root_key, state_key);
     // Overwrite any existing value so that overinstalls (where Omaha writes a
@@ -554,7 +560,7 @@ void AddDeleteUninstallShortcutsForMSIWorkItems(
 
   // First attempt to delete the old installation's ARP dialog entry.
   HKEY reg_root = installer_state.root_key();
-  std::wstring uninstall_reg(product.distribution()->GetUninstallRegPath());
+  string16 uninstall_reg(product.distribution()->GetUninstallRegPath());
 
   WorkItem* delete_reg_key = work_item_list->AddDeleteRegKeyWorkItem(
       reg_root, uninstall_reg);
@@ -632,7 +638,7 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
     if (installer_state.verbose_logging())
       rename.AppendSwitch(switches::kVerboseLogging);
 
-    std::wstring version_key;
+    string16 version_key;
     for (size_t i = 0; i < products.size(); ++i) {
       BrowserDistribution* dist = products[i]->distribution();
       version_key = dist->GetVersionKey();
@@ -683,7 +689,7 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
     // Since this was not an in-use-update, delete 'opv', 'cpv', and 'cmd' keys.
     for (size_t i = 0; i < products.size(); ++i) {
       BrowserDistribution* dist = products[i]->distribution();
-      std::wstring version_key(dist->GetVersionKey());
+      string16 version_key(dist->GetVersionKey());
       regular_update_work_items->AddDeleteRegValueWorkItem(root, version_key,
           google_update::kRegOldVersionField);
       regular_update_work_items->AddDeleteRegValueWorkItem(root, version_key,
@@ -990,7 +996,7 @@ void AddChromeFrameWorkItems(const InstallationState& original_state,
     return;
   }
 
-  std::wstring version_key(product.distribution()->GetVersionKey());
+  string16 version_key(product.distribution()->GetVersionKey());
   bool ready_mode = product.HasOption(kOptionReadyMode);
   HKEY root = installer_state.root_key();
   const bool is_install =
@@ -1285,7 +1291,7 @@ const wchar_t kElevationPolicyKeyPath[] =
     L"SOFTWARE\\Microsoft\\Internet Explorer\\Low Rights\\ElevationPolicy\\";
 
 void GetIELowRightsElevationPolicyKeyPath(ElevationPolicyId policy,
-                                          std::wstring* key_path) {
+                                          string16* key_path) {
   DCHECK(policy == CURRENT_ELEVATION_POLICY || policy == OLD_ELEVATION_POLICY);
 
   key_path->assign(kElevationPolicyKeyPath,
@@ -1308,7 +1314,7 @@ void AddDeleteOldIELowRightsPolicyWorkItems(
     WorkItemList* install_list) {
   DCHECK(install_list);
 
-  std::wstring key_path;
+  string16 key_path;
   GetIELowRightsElevationPolicyKeyPath(OLD_ELEVATION_POLICY, &key_path);
   install_list->AddDeleteRegKeyWorkItem(installer_state.root_key(), key_path);
 }
@@ -1322,8 +1328,8 @@ void AddCopyIELowRightsPolicyWorkItems(const InstallerState& installer_state,
                                        WorkItemList* install_list) {
   DCHECK(install_list);
 
-  std::wstring current_key_path;
-  std::wstring old_key_path;
+  string16 current_key_path;
+  string16 old_key_path;
 
   GetIELowRightsElevationPolicyKeyPath(CURRENT_ELEVATION_POLICY,
                                        &current_key_path);
@@ -1385,7 +1391,7 @@ void AddGenericQuickEnableWorkItems(const InstallerState& installer_state,
                                     WorkItemList* work_item_list,
                                     bool have_child_product,
                                     const CommandLine& child_product_switches,
-                                    const std::wstring& command_id) {
+                                    const string16& command_id) {
   DCHECK(setup_path ||
          installer_state.operation() == InstallerState::UNINSTALL);
   DCHECK(new_version ||
@@ -1466,7 +1472,7 @@ void AddGenericQuickEnableWorkItems(const InstallerState& installer_state,
     BrowserDistribution* binaries =
         BrowserDistribution::GetSpecificDistribution(
             BrowserDistribution::CHROME_BINARIES);
-    std::wstring cmd_key(binaries->GetVersionKey());
+    string16 cmd_key(binaries->GetVersionKey());
     cmd_key.append(1, L'\\').append(google_update::kRegCommandsKey)
         .append(1, L'\\').append(command_id);
 
@@ -1477,7 +1483,9 @@ void AddGenericQuickEnableWorkItems(const InstallerState& installer_state,
                                false);  // include_program
       if (installer_state.verbose_logging())
         cmd_line.AppendSwitch(switches::kVerboseLogging);
-      AppCommand cmd(cmd_line.GetCommandLineString(), true, true);
+      AppCommand cmd(cmd_line.GetCommandLineString());
+      cmd.set_sends_pings(true);
+      cmd.set_is_web_accessible(true);
       cmd.AddWorkItems(installer_state.root_key(), cmd_key, work_item_list);
     } else {
       DCHECK(operation == REMOVE_COMMAND);
@@ -1578,6 +1586,42 @@ void AddQuickEnableApplicationHostWorkItems(
                                  false,  // have_child_product
                                  cmd_line,
                                  kCmdQuickEnableApplicationHost);
+}
+
+void AddOsUpgradeWorkItems(const InstallerState& installer_state,
+                           const FilePath* setup_path,
+                           const Version* new_version,
+                           const Product& product,
+                           WorkItemList* install_list) {
+  const HKEY root_key = installer_state.root_key();
+  string16 cmd_key(product.distribution()->GetVersionKey());
+  cmd_key.append(1, FilePath::kSeparators[0])
+      .append(google_update::kRegCommandsKey)
+      .append(1, FilePath::kSeparators[0])
+      .append(kCmdOnOsUpgrade);
+
+  // This will make Google Update call setup.exe with --on-os-upgrade switch.
+  // For Chrome, this leads to HandleOsUpgradeForBrowser() being called.
+  if (installer_state.operation() != InstallerState::UNINSTALL) {
+    CommandLine cmd_line(installer_state
+        .GetInstallerDirectory(*new_version)
+        .Append(setup_path->BaseName()));
+    // Add the main option to indicate OS upgrade flow.
+    cmd_line.AppendSwitch(installer::switches::kOnOsUpgrade);
+    // Add product-specific options.
+    product.AppendProductFlags(&cmd_line);
+    if (installer_state.system_install())
+      cmd_line.AppendSwitch(installer::switches::kSystemLevel);
+    // Log everything for now.
+    cmd_line.AppendSwitch(installer::switches::kVerboseLogging);
+
+    AppCommand cmd(cmd_line.GetCommandLineString());
+    cmd.set_is_auto_run_on_os_upgrade(true);
+    cmd.AddWorkItems(installer_state.root_key(), cmd_key, install_list);
+  } else {
+    install_list->AddDeleteRegKeyWorkItem(root_key, cmd_key)
+        ->set_log_message("Removing OS upgrade command");
+  }
 }
 
 }  // namespace installer

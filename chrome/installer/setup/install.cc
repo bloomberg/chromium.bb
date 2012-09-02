@@ -552,4 +552,21 @@ InstallStatus InstallOrUpdateProduct(
   return result;
 }
 
+void HandleOsUpgradeForBrowser(const InstallerState& installer_state,
+                               const Product& chrome,
+                               const FilePath& setup_exe) {
+  DCHECK(chrome.is_chrome());
+  // Upon upgrading to Windows 8, we need to fix Chrome shortcuts and register
+  // Chrome, so that Metro Chrome would work if Chrome is the default browser.
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    VLOG(1) << "Updating and registering shortcuts.";
+    uint32 shortcut_options = ShellUtil::SHORTCUT_DUAL_MODE;
+    CreateOrUpdateDesktopAndQuickLaunchShortcuts(
+        installer_state, chrome, shortcut_options);
+    CreateOrUpdateStartMenuAndTaskbarShortcuts(
+        installer_state, setup_exe, chrome, shortcut_options);
+    RegisterChromeOnMachine(installer_state, chrome, false);
+  }
+}
+
 }  // namespace installer

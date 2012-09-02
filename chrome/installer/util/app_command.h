@@ -7,7 +7,7 @@
 
 #include <windows.h>
 
-#include <string>
+#include "base/string16.h"
 
 class WorkItemList;
 
@@ -25,8 +25,9 @@ namespace installer {
 class AppCommand {
  public:
   AppCommand();
-  AppCommand(const std::wstring& command_line, bool send_pings,
-             bool is_web_accessible);
+  // Constructs a new command that will execute the given |command_line|.
+  // All other properties default to false.
+  explicit AppCommand(const string16& command_line);
   // The implicit dtor, copy ctor and assignment operator are desired.
 
   // Initializes an instance from the command in |key|.
@@ -35,14 +36,14 @@ class AppCommand {
   // Adds to |item_list| work items to write this object to the key named
   // |command_path| under |predefined_root|.
   void AddWorkItems(HKEY predefined_root,
-                    const std::wstring& command_path,
+                    const string16& command_path,
                     WorkItemList* item_list) const;
 
   // Returns the command-line for the app command as it is represented in the
   // registry.  Use CommandLine::FromString() on this value to check arguments
   // or to launch the command.
-  const std::wstring& command_line() const { return command_line_; }
-  void set_command_line(const std::wstring& command_line) {
+  const string16& command_line() const { return command_line_; }
+  void set_command_line(const string16& command_line) {
     command_line_ = command_line;
   }
 
@@ -54,10 +55,16 @@ class AppCommand {
     is_web_accessible_ = is_web_accessible;
   }
 
+  bool is_auto_run_on_os_upgrade() const { return is_auto_run_on_os_upgrade_; }
+  void set_is_auto_run_on_os_upgrade(bool is_auto_run_on_os_upgrade) {
+    is_auto_run_on_os_upgrade_ = is_auto_run_on_os_upgrade;
+  }
+
  protected:
-  std::wstring command_line_;
+  string16 command_line_;
   bool sends_pings_;
   bool is_web_accessible_;
+  bool is_auto_run_on_os_upgrade_;
 };
 
 }  // namespace installer

@@ -6,12 +6,12 @@
 #define CHROME_INSTALLER_UTIL_INSTALLATION_VALIDATOR_H_
 
 #include <map>
-#include <string>
 #include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/string16.h"
 #include "chrome/installer/util/browser_distribution.h"
 
 class CommandLine;
@@ -97,7 +97,7 @@ class InstallationValidator {
   typedef void (*CommandValidatorFn)(const ProductContext& ctx,
                                      const AppCommand& command,
                                      bool* is_valid);
-  typedef std::map<std::wstring, CommandValidatorFn> CommandExpectations;
+  typedef std::map<string16, CommandValidatorFn> CommandExpectations;
 
   // An interface to product-specific validation rules.
   class ProductRules {
@@ -191,6 +191,18 @@ class InstallationValidator {
   };
 
   struct ProductContext {
+    ProductContext(const InstallationState& machine_state_in,
+                   bool system_install_in,
+                   const ProductState& state_in,
+                   const ProductRules& rules_in)
+        : machine_state(machine_state_in),
+          system_install(system_install_in),
+          dist(BrowserDistribution::GetSpecificDistribution(
+              rules_in.distribution_type())),
+          state(state_in),
+          rules(rules_in) {
+    }
+
     const InstallationState& machine_state;
     bool system_install;
     BrowserDistribution* dist;
@@ -198,9 +210,12 @@ class InstallationValidator {
     const ProductRules& rules;
   };
 
+  static void ValidateOnOsUpgradeCommand(const ProductContext& ctx,
+                                         const AppCommand& command,
+                                         bool* is_valid);
   static void ValidateInstallAppCommand(const ProductContext& ctx,
-                                           const AppCommand& command,
-                                           bool* is_valid);
+                                        const AppCommand& command,
+                                        bool* is_valid);
   static void ValidateQuickEnableCfCommand(const ProductContext& ctx,
                                            const AppCommand& command,
                                            bool* is_valid);

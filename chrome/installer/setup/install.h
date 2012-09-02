@@ -102,6 +102,11 @@ InstallStatus InstallOrUpdateProduct(
     const installer::MasterPreferences& prefs,
     const Version& new_version);
 
+// Performs installation-related tasks following an OS upgrade.
+void HandleOsUpgradeForBrowser(const InstallerState& installer_state,
+                               const Product& chrome,
+                               const FilePath& setup_exe);
+
 }  // namespace installer
 
 #endif  // CHROME_INSTALLER_SETUP_INSTALL_H_
