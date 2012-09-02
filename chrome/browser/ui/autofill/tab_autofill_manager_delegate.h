@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_AUTOFILL_TAB_AUTOFILL_MANAGER_DELEGATE_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/autofill/api/autofill_manager_delegate.h"
+#include "chrome/browser/autofill/autofill_manager_delegate.h"
 
 class TabContents;
 
