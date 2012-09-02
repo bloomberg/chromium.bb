@@ -76,12 +76,12 @@ class Target {
   // This function causes the target to track the state
   // of the specified thread and make it availible to
   // a connected host.
-  void TrackThread(port::IThread *thread);
+  void TrackThread(struct NaClAppThread *natp);
 
   // This function causes the target to stop tracking the
   // state of the specified thread, which will no longer
   // be visible to the host.
-  void IgnoreThread(port::IThread *thread);
+  void IgnoreThread(struct NaClAppThread *natp);
 
   // Send exit packet to gdb.
   void Exit(int err_code);
@@ -108,6 +108,10 @@ class Target {
   port::IThread *GetRegThread();
   port::IThread *GetRunThread();
   port::IThread *GetThread(uint32_t id);
+
+  void SuspendAllThreads();
+  void ResumeAllThreads();
+  void UnqueueAnyFaultedThread(uint32_t *thread_id, int8_t *signal);
 
  private:
   struct NaClApp *nap_;

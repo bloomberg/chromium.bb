@@ -21,6 +21,8 @@ namespace port {
 
 class IThread {
  public:
+  virtual ~IThread() {}
+
   virtual uint32_t GetId() = 0;
 
   virtual bool SetStep(bool on) = 0;
@@ -28,22 +30,19 @@ class IThread {
   virtual bool GetRegister(uint32_t index, void *dst, uint32_t len) = 0;
   virtual bool SetRegister(uint32_t index, void *src, uint32_t len) = 0;
 
+  virtual void CopyRegistersFromAppThread() = 0;
+  virtual void CopyRegistersToAppThread() = 0;
+
+  virtual void SuspendThread() = 0;
+  virtual void ResumeThread() = 0;
+  virtual bool HasThreadFaulted() = 0;
+  virtual void UnqueueFaultedThread(int8_t *signal) = 0;
+
   virtual struct NaClSignalContext *GetContext() = 0;
+  virtual struct NaClAppThread *GetAppThread() = 0;
 
   static IThread *Create(uint32_t id, struct NaClAppThread *natp);
-  static IThread *Acquire(uint32_t id);
-  static void Release(IThread *thread);
-  static void SuspendAllThreads();
-  static void ResumeAllThreads();
-  static void SuspendSingleThread(uint32_t thread_id);
-  static void ResumeSingleThread(uint32_t thread_id);
-  static bool HasThreadFaulted(uint32_t thread_id);
-  static void UnqueueSpecificFaultedThread(uint32_t thread_id, int8_t *signal);
-  static void UnqueueAnyFaultedThread(uint32_t *thread_id, int8_t *signal);
   static int ExceptionToSignal(int exception_code);
-
- protected:
-  virtual ~IThread() {}  // Prevent delete of base pointer
 };
 
 }  // namespace port

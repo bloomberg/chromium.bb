@@ -24,10 +24,14 @@ const int kX86TrapFlag = 1 << 8;
 
 namespace port {
 
+// TODO(mseaborn): Merge Thread and IThread into a single class,
+// because there is only one implementation of IThread and the methods
+// do not need to be virtual.
+
 class Thread : public IThread {
  public:
   Thread(uint32_t id, struct NaClAppThread *natp)
-      : ref_(1), id_(id), natp_(natp) {}
+      : id_(id), natp_(natp) {}
   ~Thread() {}
 
   uint32_t GetId() {
@@ -84,145 +88,52 @@ class Thread : public IThread {
     return false;
   }
 
+  virtual void CopyRegistersFromAppThread() {
+    NaClAppThreadGetSuspendedRegisters(natp_, &context_);
+  }
+
+  virtual void CopyRegistersToAppThread() {
+    NaClAppThreadSetSuspendedRegisters(natp_, &context_);
+  }
+
+  virtual void SuspendThread() {
+    NaClUntrustedThreadSuspend(natp_, /* save_registers= */ 1);
+    CopyRegistersFromAppThread();
+  }
+
+  virtual void ResumeThread() {
+    CopyRegistersToAppThread();
+    NaClUntrustedThreadResume(natp_);
+  }
+
+  // HasThreadFaulted() returns whether the given thread has been
+  // blocked as a result of faulting.  The thread does not need to be
+  // currently suspended.
+  virtual bool HasThreadFaulted() {
+    return natp_->fault_signal != 0;
+  }
+
+  // UnqueueFaultedThread() takes a thread that has been blocked as a
+  // result of faulting and unblocks it, returning the type of fault
+  // via |signal|.  As a precondition, the thread must be currently
+  // suspended.
+  virtual void UnqueueFaultedThread(int8_t *signal) {
+    int exception_code;
+    CHECK(NaClAppThreadUnblockIfFaulted(natp_, &exception_code));
+    *signal = IThread::ExceptionToSignal(exception_code);
+  }
+
   virtual struct NaClSignalContext *GetContext() { return &context_; }
+  virtual struct NaClAppThread *GetAppThread() { return natp_; }
 
  private:
-  uint32_t ref_;
   uint32_t id_;
   struct NaClAppThread *natp_;
   struct NaClSignalContext context_;
-
-  friend class IThread;
 };
 
-
-typedef std::map<uint32_t, Thread*> ThreadMap_t;
-
-static ThreadMap_t *ThreadGetMap() {
-  static ThreadMap_t *map_ = new ThreadMap_t;
-  return map_;
-}
-
-static IMutex *ThreadGetLock() {
-  static IMutex *mutex_ = IMutex::Allocate();
-  return mutex_;
-}
-
 IThread *IThread::Create(uint32_t id, struct NaClAppThread *natp) {
-  MutexLock lock(ThreadGetLock());
-  ThreadMap_t &map = *ThreadGetMap();
-
-  CHECK(map.count(id) == 0);
-
-  Thread *thread = new Thread(id, natp);
-  map[id] = thread;
-  return thread;
-}
-
-IThread *IThread::Acquire(uint32_t id) {
-  MutexLock lock(ThreadGetLock());
-  ThreadMap_t &map = *ThreadGetMap();
-
-  CHECK(map.count(id) != 0);
-
-  Thread *thread = map[id];
-  thread->ref_++;
-  return thread;
-}
-
-void IThread::Release(IThread *ithread) {
-  MutexLock lock(ThreadGetLock());
-  Thread *thread = static_cast<Thread*>(ithread);
-  thread->ref_--;
-
-  if (thread->ref_ == 0) {
-    ThreadGetMap()->erase(thread->id_);
-    delete static_cast<IThread*>(thread);
-  }
-}
-
-void IThread::SuspendAllThreads() {
-  MutexLock lock(ThreadGetLock());
-  ThreadMap_t &map = *ThreadGetMap();
-
-  CHECK(!map.empty());
-
-  NaClUntrustedThreadsSuspendAll(map.begin()->second->natp_->nap,
-                                 /* save_registers= */ 1);
-
-  for (ThreadMap_t::iterator it = map.begin(); it != map.end(); ++it) {
-    Thread *thread = it->second;
-    NaClAppThreadGetSuspendedRegisters(thread->natp_, &thread->context_);
-  }
-}
-
-void IThread::ResumeAllThreads() {
-  MutexLock lock(ThreadGetLock());
-  ThreadMap_t &map = *ThreadGetMap();
-
-  CHECK(!map.empty());
-
-  for (ThreadMap_t::iterator it = map.begin(); it != map.end(); ++it) {
-    Thread *thread = it->second;
-    NaClAppThreadSetSuspendedRegisters(thread->natp_, &thread->context_);
-  }
-
-  NaClUntrustedThreadsResumeAll(map.begin()->second->natp_->nap);
-}
-
-void IThread::SuspendSingleThread(uint32_t thread_id) {
-  MutexLock lock(ThreadGetLock());
-  Thread *thread = (*ThreadGetMap())[thread_id];
-  NaClUntrustedThreadSuspend(thread->natp_, /* save_registers= */ 1);
-  NaClAppThreadGetSuspendedRegisters(thread->natp_, &thread->context_);
-}
-
-void IThread::ResumeSingleThread(uint32_t thread_id) {
-  MutexLock lock(ThreadGetLock());
-  Thread *thread = (*ThreadGetMap())[thread_id];
-  NaClAppThreadSetSuspendedRegisters(thread->natp_, &thread->context_);
-  NaClUntrustedThreadResume(thread->natp_);
-}
-
-// HasThreadFaulted() returns whether the given thread has been
-// blocked as a result of faulting.  The thread does not need to be
-// currently suspended.
-bool IThread::HasThreadFaulted(uint32_t thread_id) {
-  MutexLock lock(ThreadGetLock());
-  Thread *thread = (*ThreadGetMap())[thread_id];
-  return thread->natp_->fault_signal != 0;
-}
-
-// UnqueueSpecificFaultedThread() takes a thread that has been blocked
-// as a result of faulting and unblocks it, returning the type of
-// fault via |signal|.  As a precondition, the thread must be
-// currently suspended.
-void IThread::UnqueueSpecificFaultedThread(uint32_t thread_id,
-                                           int8_t *signal) {
-  MutexLock lock(ThreadGetLock());
-  Thread *thread = (*ThreadGetMap())[thread_id];
-  int exception_code;
-  CHECK(NaClAppThreadUnblockIfFaulted(thread->natp_, &exception_code));
-  *signal = IThread::ExceptionToSignal(exception_code);
-}
-
-// UnqueueAnyFaultedThread() picks a thread that has been blocked as a
-// result of faulting and unblocks it.  It returns the thread's ID via
-// |thread_id| and the type of fault via |signal|.  As a precondition,
-// all threads must be currently suspended.
-void IThread::UnqueueAnyFaultedThread(uint32_t *thread_id, int8_t *signal) {
-  MutexLock lock(ThreadGetLock());
-  ThreadMap_t *map = ThreadGetMap();
-  for (ThreadMap_t::iterator it = map->begin(); it != map->end(); ++it) {
-    Thread *thread = it->second;
-    int exception_code;
-    if (NaClAppThreadUnblockIfFaulted(thread->natp_, &exception_code)) {
-      *signal = IThread::ExceptionToSignal(exception_code);
-      *thread_id = thread->GetId();
-      return;
-    }
-  }
-  NaClLog(LOG_FATAL, "UnqueueAnyFaultedThread: No threads queued\n");
+  return new Thread(id, natp);
 }
 
 }  // namespace port

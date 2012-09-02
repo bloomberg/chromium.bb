@@ -175,7 +175,8 @@ void Target::Run(Session *ses) {
       // This is why we must check the status of a specific thread --
       // we cannot call UnqueueAnyFaultedThread() and expect it to
       // return step_over_breakpoint_thread_.
-      if (!IThread::HasThreadFaulted(step_over_breakpoint_thread_)) {
+      IThread *thread = threads_[step_over_breakpoint_thread_];
+      if (!thread->HasThreadFaulted()) {
         // The thread has not faulted.  Nothing to do, so try again.
         // Note that we do not respond to input from GDB while in this
         // state.
@@ -184,9 +185,8 @@ void Target::Run(Session *ses) {
       }
       // All threads but one are already suspended.  We only need to
       // suspend the single thread that we allowed to run.
-      IThread::SuspendSingleThread(step_over_breakpoint_thread_);
-      IThread::UnqueueSpecificFaultedThread(step_over_breakpoint_thread_,
-                                            &cur_signal_);
+      thread->SuspendThread();
+      thread->UnqueueFaultedThread(&cur_signal_);
       sig_thread_ = step_over_breakpoint_thread_;
       reg_thread_ = step_over_breakpoint_thread_;
       step_over_breakpoint_thread_ = 0;
@@ -194,8 +194,8 @@ void Target::Run(Session *ses) {
       // At least one untrusted thread has got an exception.  First we
       // need to ensure that all threads are suspended.  Then we can
       // retrieve a thread from the set of faulted threads.
-      IThread::SuspendAllThreads();
-      IThread::UnqueueAnyFaultedThread(&sig_thread_, &cur_signal_);
+      SuspendAllThreads();
+      UnqueueAnyFaultedThread(&sig_thread_, &cur_signal_);
       reg_thread_ = sig_thread_;
       RemoveTemporaryBreakpoints(threads_[sig_thread_]);
     } else {
@@ -212,7 +212,7 @@ void Target::Run(Session *ses) {
       // TODO(eaeltsin): or pick any thread? Add a test.
       // See http://code.google.com/p/nativeclient/issues/detail?id=2743
       sig_thread_ = 0;
-      IThread::SuspendAllThreads();
+      SuspendAllThreads();
     }
 
     if (sig_thread_ != 0) {
@@ -257,10 +257,10 @@ void Target::Run(Session *ses) {
     // TODO(eaeltsin): it might make sense to resume signaled thread before
     // others, though it is not required by GDB docs.
     if (step_over_breakpoint_thread_ == 0) {
-      IThread::ResumeAllThreads();
+      ResumeAllThreads();
     } else {
       // Resume one thread while leaving all others suspended.
-      IThread::ResumeSingleThread(step_over_breakpoint_thread_);
+      threads_[step_over_breakpoint_thread_]->ResumeThread();
     }
 
     // Continue running until the connection is lost.
@@ -691,19 +691,23 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
 }
 
 
-void Target::TrackThread(IThread* thread) {
-  uint32_t id = thread->GetId();
+void Target::TrackThread(struct NaClAppThread *natp) {
+  // natp->thread_num values are 0-based indexes, but we treat 0 as
+  // "not a thread ID", so we add 1.
+  uint32_t id = natp->thread_num + 1;
   mutex_->Lock();
-  threads_[id] = thread;
+  CHECK(threads_[id] == 0);
+  threads_[id] = IThread::Create(id, natp);
   mutex_->Unlock();
 }
 
-void Target::IgnoreThread(IThread* thread) {
-  uint32_t id = thread->GetId();
+void Target::IgnoreThread(struct NaClAppThread *natp) {
+  uint32_t id = natp->thread_num + 1;
   mutex_->Lock();
-  ThreadMap_t::iterator itr = threads_.find(id);
-
-  if (itr != threads_.end()) threads_.erase(itr);
+  ThreadMap_t::iterator iter = threads_.find(id);
+  CHECK(iter != threads_.end());
+  delete iter->second;
+  threads_.erase(iter);
   mutex_->Unlock();
 }
 
@@ -763,5 +767,42 @@ IThread* Target::GetThread(uint32_t id) {
   return NULL;
 }
 
+void Target::SuspendAllThreads() {
+  NaClUntrustedThreadsSuspendAll(nap_, /* save_registers= */ 1);
+  for (ThreadMap_t::const_iterator iter = threads_.begin();
+       iter != threads_.end();
+       ++iter) {
+    iter->second->CopyRegistersFromAppThread();
+  }
+}
+
+void Target::ResumeAllThreads() {
+  for (ThreadMap_t::const_iterator iter = threads_.begin();
+       iter != threads_.end();
+       ++iter) {
+    iter->second->CopyRegistersToAppThread();
+  }
+  NaClUntrustedThreadsResumeAll(nap_);
+}
+
+// UnqueueAnyFaultedThread() picks a thread that has been blocked as a
+// result of faulting and unblocks it.  It returns the thread's ID via
+// |thread_id| and the type of fault via |signal|.  As a precondition,
+// all threads must be currently suspended.
+void Target::UnqueueAnyFaultedThread(uint32_t *thread_id, int8_t *signal) {
+  for (ThreadMap_t::const_iterator iter = threads_.begin();
+       iter != threads_.end();
+       ++iter) {
+    IThread *thread = iter->second;
+    int exception_code;
+    if (NaClAppThreadUnblockIfFaulted(thread->GetAppThread(),
+                                      &exception_code)) {
+      *signal = IThread::ExceptionToSignal(exception_code);
+      *thread_id = thread->GetId();
+      return;
+    }
+  }
+  NaClLog(LOG_FATAL, "UnqueueAnyFaultedThread: No threads queued\n");
+}
 
 }  // namespace gdb_rsp
