@@ -55,9 +55,9 @@ void MouseCursorEventFilter::ShowSharedEdgeIndicator(
   }
   drag_source_root_ = from;
 
-  DisplayController::SecondaryDisplayLayout layout =
-      Shell::GetInstance()->display_controller()->secondary_display_layout();
-  if (layout == DisplayController::TOP || layout == DisplayController::BOTTOM)
+  DisplayLayout::Position position = Shell::GetInstance()->
+      display_controller()->default_display_layout().position;
+  if (position == DisplayLayout::TOP || position == DisplayLayout::BOTTOM)
     UpdateHorizontalIndicatorWindowBounds();
   else
     UpdateVerticalIndicatorWindowBounds();
@@ -165,8 +165,8 @@ void MouseCursorEventFilter::UpdateHorizontalIndicatorWindowBounds() {
   const gfx::Rect& primary_bounds = display_manager->GetDisplayAt(0)->bounds();
   const gfx::Rect& secondary_bounds =
       display_manager->GetDisplayAt(1)->bounds();
-  DisplayController::SecondaryDisplayLayout layout =
-      Shell::GetInstance()->display_controller()->secondary_display_layout();
+  DisplayLayout::Position position = Shell::GetInstance()->
+      display_controller()->default_display_layout().position;
 
   src_indicator_bounds_.set_x(
       std::max(primary_bounds.x(), secondary_bounds.x()));
@@ -175,14 +175,14 @@ void MouseCursorEventFilter::UpdateHorizontalIndicatorWindowBounds() {
       src_indicator_bounds_.x());
   src_indicator_bounds_.set_height(kIndicatorThickness);
   src_indicator_bounds_.set_y(
-      layout == DisplayController::TOP ?
+      position == DisplayLayout::TOP ?
       primary_bounds.y() - (from_primary ? 0 : kIndicatorThickness) :
       primary_bounds.bottom() - (from_primary ? kIndicatorThickness : 0));
 
   dst_indicator_bounds_ = src_indicator_bounds_;
   dst_indicator_bounds_.set_height(kIndicatorThickness);
   dst_indicator_bounds_.set_y(
-      layout == DisplayController::TOP ?
+      position == DisplayLayout::TOP ?
       primary_bounds.y() - (from_primary ? kIndicatorThickness : 0) :
       primary_bounds.bottom() - (from_primary ? 0 : kIndicatorThickness));
 }
@@ -194,15 +194,15 @@ void MouseCursorEventFilter::UpdateVerticalIndicatorWindowBounds() {
   const gfx::Rect& primary_bounds = display_manager->GetDisplayAt(0)->bounds();
   const gfx::Rect& secondary_bounds =
       display_manager->GetDisplayAt(1)->bounds();
-  DisplayController::SecondaryDisplayLayout layout =
-      Shell::GetInstance()->display_controller()->secondary_display_layout();
+  DisplayLayout::Position position = Shell::GetInstance()->
+      display_controller()->default_display_layout().position;
 
   int upper_shared_y = std::max(primary_bounds.y(), secondary_bounds.y());
   int lower_shared_y = std::min(primary_bounds.bottom(),
                                 secondary_bounds.bottom());
   int shared_height = lower_shared_y - upper_shared_y;
 
-  int dst_x = layout == DisplayController::LEFT ?
+  int dst_x = position == DisplayLayout::LEFT ?
       primary_bounds.x() - (in_primary ? kIndicatorThickness : 0) :
       primary_bounds.right() - (in_primary ? 0 : kIndicatorThickness);
   dst_indicator_bounds_.SetRect(
@@ -211,7 +211,7 @@ void MouseCursorEventFilter::UpdateVerticalIndicatorWindowBounds() {
   // The indicator on the source display.
   src_indicator_bounds_.set_width(kIndicatorThickness);
   src_indicator_bounds_.set_x(
-      layout == DisplayController::LEFT ?
+      position == DisplayLayout::LEFT ?
       primary_bounds.x() - (in_primary ? 0 : kIndicatorThickness) :
       primary_bounds.right() - (in_primary ? kIndicatorThickness : 0));
 

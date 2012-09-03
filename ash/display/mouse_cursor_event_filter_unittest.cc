@@ -38,8 +38,9 @@ TEST_F(MouseCursorEventFilterTest, WarpMouse) {
   MouseCursorEventFilter* event_filter =
       Shell::GetInstance()->mouse_cursor_filter();
   ASSERT_EQ(
-      DisplayController::RIGHT,
-      Shell::GetInstance()->display_controller()->secondary_display_layout());
+      DisplayLayout::RIGHT,
+      Shell::GetInstance()->
+          display_controller()->default_display_layout().position);
 
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   bool is_warped = event_filter->WarpMouseCursorIfNecessary(root_windows[0],
@@ -97,8 +98,9 @@ TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentSizeDisplays) {
   MouseCursorEventFilter* event_filter =
       Shell::GetInstance()->mouse_cursor_filter();
   ASSERT_EQ(
-      DisplayController::RIGHT,
-      Shell::GetInstance()->display_controller()->secondary_display_layout());
+      DisplayLayout::RIGHT,
+      Shell::GetInstance()->
+          display_controller()->default_display_layout().position);
 
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   aura::Env::GetInstance()->SetLastMouseLocation(*root_windows[1],
@@ -154,8 +156,8 @@ TEST_F(MouseCursorEventFilterTest, IndicatorBoundsTestOnRight) {
 
   DisplayController* controller =
       Shell::GetInstance()->display_controller();
-  controller->SetSecondaryDisplayLayout(DisplayController::RIGHT);
-  controller->SetSecondaryDisplayOffset(0);
+  DisplayLayout default_layout(DisplayLayout::RIGHT, 0);
+  controller->SetDefaultDisplayLayout(default_layout);
   ash::internal::MouseCursorEventFilter* event_filter =
       Shell::GetInstance()->mouse_cursor_filter();
   event_filter->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
@@ -166,7 +168,8 @@ TEST_F(MouseCursorEventFilterTest, IndicatorBoundsTestOnRight) {
   EXPECT_EQ("350,0 10x360", event_filter->dst_indicator_bounds_.ToString());
 
   // Move 2nd display downwards a bit.
-  controller->SetSecondaryDisplayOffset(50);
+  default_layout.offset = 50;
+  controller->SetDefaultDisplayLayout(default_layout);
   event_filter->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   // This is same as before because the 2nd display's y is above
   // the warp hole's x.
@@ -178,7 +181,8 @@ TEST_F(MouseCursorEventFilterTest, IndicatorBoundsTestOnRight) {
 
   // Move it down further so that the shared edge is shorter than
   // minimum hole size (160).
-  controller->SetSecondaryDisplayOffset(200);
+  default_layout.offset = 200;
+  controller->SetDefaultDisplayLayout(default_layout);
   event_filter->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   EXPECT_EQ("350,200 10x160", event_filter->src_indicator_bounds_.ToString());
   EXPECT_EQ("360,200 10x160", event_filter->dst_indicator_bounds_.ToString());
@@ -187,7 +191,8 @@ TEST_F(MouseCursorEventFilterTest, IndicatorBoundsTestOnRight) {
   EXPECT_EQ("350,200 10x160", event_filter->dst_indicator_bounds_.ToString());
 
   // Now move 2nd display upwards
-  controller->SetSecondaryDisplayOffset(-80);
+  default_layout.offset = -80;
+  controller->SetDefaultDisplayLayout(default_layout);
   event_filter->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   EXPECT_EQ("350,80 10x200", event_filter->src_indicator_bounds_.ToString());
   EXPECT_EQ("360,0 10x360", event_filter->dst_indicator_bounds_.ToString());
@@ -206,8 +211,8 @@ TEST_F(MouseCursorEventFilterTest, IndicatorBoundsTestOnLeft) {
 
   DisplayController* controller =
       Shell::GetInstance()->display_controller();
-  controller->SetSecondaryDisplayLayout(DisplayController::LEFT);
-  controller->SetSecondaryDisplayOffset(0);
+  DisplayLayout default_layout(DisplayLayout::LEFT, 0);
+  controller->SetDefaultDisplayLayout(default_layout);
   ash::internal::MouseCursorEventFilter* event_filter =
       Shell::GetInstance()->mouse_cursor_filter();
   event_filter->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
@@ -217,7 +222,8 @@ TEST_F(MouseCursorEventFilterTest, IndicatorBoundsTestOnLeft) {
   EXPECT_EQ("-10,100 10x260", event_filter->src_indicator_bounds_.ToString());
   EXPECT_EQ("0,0 10x360", event_filter->dst_indicator_bounds_.ToString());
 
-  controller->SetSecondaryDisplayOffset(300);
+  default_layout.offset = 300;
+  controller->SetDefaultDisplayLayout(default_layout);
   event_filter->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   EXPECT_EQ("0,300 10x60", event_filter->src_indicator_bounds_.ToString());
   EXPECT_EQ("-10,300 10x60", event_filter->dst_indicator_bounds_.ToString());
@@ -233,8 +239,8 @@ TEST_F(MouseCursorEventFilterTest, IndicatorBoundsTestOnTopBottom) {
 
   DisplayController* controller =
       Shell::GetInstance()->display_controller();
-  controller->SetSecondaryDisplayLayout(DisplayController::TOP);
-  controller->SetSecondaryDisplayOffset(0);
+  DisplayLayout default_layout(DisplayLayout::TOP, 0);
+  controller->SetDefaultDisplayLayout(default_layout);
   ash::internal::MouseCursorEventFilter* event_filter =
       Shell::GetInstance()->mouse_cursor_filter();
   event_filter->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
@@ -244,7 +250,8 @@ TEST_F(MouseCursorEventFilterTest, IndicatorBoundsTestOnTopBottom) {
   EXPECT_EQ("0,-10 360x10", event_filter->src_indicator_bounds_.ToString());
   EXPECT_EQ("0,0 360x10", event_filter->dst_indicator_bounds_.ToString());
 
-  controller->SetSecondaryDisplayOffset(300);
+  default_layout.offset = 300;
+  controller->SetDefaultDisplayLayout(default_layout);
   event_filter->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   EXPECT_EQ("300,0 60x10", event_filter->src_indicator_bounds_.ToString());
   EXPECT_EQ("300,-10 60x10", event_filter->dst_indicator_bounds_.ToString());
@@ -252,8 +259,9 @@ TEST_F(MouseCursorEventFilterTest, IndicatorBoundsTestOnTopBottom) {
   EXPECT_EQ("300,-10 60x10", event_filter->src_indicator_bounds_.ToString());
   EXPECT_EQ("300,0 60x10", event_filter->dst_indicator_bounds_.ToString());
 
-  controller->SetSecondaryDisplayLayout(DisplayController::BOTTOM);
-  controller->SetSecondaryDisplayOffset(0);
+  default_layout.position = DisplayLayout::BOTTOM;
+  default_layout.offset = 0;
+  controller->SetDefaultDisplayLayout(default_layout);
   event_filter->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   EXPECT_EQ("0,350 360x10", event_filter->src_indicator_bounds_.ToString());
   EXPECT_EQ("0,360 360x10", event_filter->dst_indicator_bounds_.ToString());

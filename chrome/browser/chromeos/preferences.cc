@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/preferences.h"
 
-#include "ash/display/display_controller.h"
-#include "ash/shell.h"
 #include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
@@ -15,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
@@ -48,8 +47,6 @@ bool IsLumpy() {
 }
 
 }  // namespace
-
-using ash::internal::DisplayController;
 
 static const char kFallbackInputMethodLocale[] = "en-US";
 
@@ -248,15 +245,6 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
                              false,
                              PrefService::SYNCABLE_PREF);
 
-  // Secondary display layout.
-  prefs->RegisterIntegerPref(prefs::kSecondaryDisplayLayout,
-                             static_cast<int>(DisplayController::RIGHT),
-                             PrefService::UNSYNCABLE_PREF);
-  // The offset of the secondary display position from the primary display.
-  prefs->RegisterIntegerPref(prefs::kSecondaryDisplayOffset,
-                             0,
-                             PrefService::UNSYNCABLE_PREF);
-
   // Mobile plan notifications default to on.
   prefs->RegisterBooleanPref(prefs::kShowPlanNotifications,
                              true,
@@ -290,6 +278,8 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kExternalStorageDisabled,
                              false,
                              PrefService::UNSYNCABLE_PREF);
+
+  RegisterDisplayPrefs(prefs);
 }
 
 void Preferences::InitUserPrefs(PrefService* prefs) {
@@ -364,9 +354,6 @@ void Preferences::InitUserPrefs(PrefService* prefs) {
 
   enable_screen_lock_.Init(prefs::kEnableScreenLock, prefs, this);
 
-  secondary_display_layout_.Init(prefs::kSecondaryDisplayLayout, prefs, this);
-  secondary_display_offset_.Init(prefs::kSecondaryDisplayOffset, prefs, this);
-
   enable_drm_.Init(prefs::kEnableCrosDRM, prefs, this);
 }
 
@@ -381,6 +368,8 @@ void Preferences::Init(PrefService* prefs) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession)) {
     LoginUtils::Get()->SetFirstLoginPrefs(prefs);
   }
+
+  NotifyDisplayPrefChanged(prefs);
 }
 
 void Preferences::InitUserPrefsForTesting(PrefService* prefs) {
@@ -582,21 +571,6 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref_name || *pref_name == prefs::kEnableScreenLock) {
     system::power_manager_settings::EnableScreenLock(
         enable_screen_lock_.GetValue());
-  }
-
-  if (!pref_name || *pref_name == prefs::kSecondaryDisplayLayout) {
-    int layout = secondary_display_layout_.GetValue();
-    if (static_cast<int>(DisplayController::TOP) <= layout &&
-        layout <= static_cast<int>(DisplayController::LEFT)) {
-      ash::Shell::GetInstance()->display_controller()->
-          SetSecondaryDisplayLayout(
-              static_cast<DisplayController::SecondaryDisplayLayout>(layout));
-    }
-  }
-
-  if (!pref_name || *pref_name == prefs::kSecondaryDisplayOffset) {
-    ash::Shell::GetInstance()->display_controller()->
-        SetSecondaryDisplayOffset(secondary_display_offset_.GetValue());
   }
 
   // Init or update protected content (DRM) support.

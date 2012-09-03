@@ -741,6 +741,11 @@ const char kSecondaryDisplayLayout[] = "settings.display.secondary_layout";
 // An integer pref that specifies how far the secondary display is positioned
 // from the edge of the primary display.
 const char kSecondaryDisplayOffset[] = "settings.display.secondary_offset";
+
+// A dictionary pref that specifies per-display layout/offset information.
+// Its key is the ID of the display and its value is a dictionary for the
+// layout/offset information.
+const char kSecondaryDisplays[] = "settings.display.secondary_displays";
 #endif  // defined(OS_CHROMEOS)
 
 // The disabled messages in IPC logging.

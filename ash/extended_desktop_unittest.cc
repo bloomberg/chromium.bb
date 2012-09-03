@@ -44,6 +44,14 @@ views::Widget* CreateTestWidget(const gfx::Rect& bounds) {
   return CreateTestWidgetWithParent(NULL, bounds, false);
 }
 
+void SetSecondaryDisplayLayout(DisplayLayout::Position position) {
+  DisplayController* display_controller =
+      Shell::GetInstance()->display_controller();
+  DisplayLayout layout = display_controller->default_display_layout();
+  layout.position = position;
+  display_controller->SetDefaultDisplayLayout(layout);
+}
+
 class ModalWidgetDelegate : public views::WidgetDelegateView {
  public:
   ModalWidgetDelegate() {}
@@ -242,8 +250,7 @@ TEST_F(ExtendedDesktopTest, CycleWindows) {
 
 TEST_F(ExtendedDesktopTest, GetRootWindowAt) {
   UpdateDisplay("700x500,500x500");
-  Shell::GetInstance()->display_controller()->SetSecondaryDisplayLayout(
-      internal::DisplayController::LEFT);
+  SetSecondaryDisplayLayout(DisplayLayout::LEFT);
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
   EXPECT_EQ(root_windows[1], wm::GetRootWindowAt(gfx::Point(-400, 100)));
@@ -261,8 +268,7 @@ TEST_F(ExtendedDesktopTest, GetRootWindowAt) {
 
 TEST_F(ExtendedDesktopTest, GetRootWindowMatching) {
   UpdateDisplay("700x500,500x500");
-  Shell::GetInstance()->display_controller()->SetSecondaryDisplayLayout(
-      internal::DisplayController::LEFT);
+  SetSecondaryDisplayLayout(DisplayLayout::LEFT);
 
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
@@ -504,8 +510,7 @@ TEST_F(ExtendedDesktopTest, ConvertPoint) {
   EXPECT_EQ("-1010,-10", p.ToString());
 
   // Move the 2nd display to the bottom and test again.
-  Shell::GetInstance()->display_controller()->SetSecondaryDisplayLayout(
-      internal::DisplayController::BOTTOM);
+  SetSecondaryDisplayLayout(DisplayLayout::BOTTOM);
 
   display_2 = GetDisplayManager()->FindDisplayForRootWindow(root_windows[1]);
   EXPECT_EQ("0,600", display_2.bounds().origin().ToString());

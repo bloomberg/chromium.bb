@@ -14,7 +14,7 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/display/output_configurator.h"
@@ -28,8 +28,6 @@
 
 namespace chromeos {
 namespace options {
-
-using ash::internal::DisplayController;
 
 DisplayOptionsHandler::DisplayOptionsHandler() {
   aura::Env::GetInstance()->display_manager()->AddObserver(this);
@@ -103,6 +101,8 @@ void DisplayOptionsHandler::UpdateDisplaySectionVisibility() {
 void DisplayOptionsHandler::SendDisplayInfo() {
   aura::DisplayManager* display_manager =
       aura::Env::GetInstance()->display_manager();
+  ash::DisplayController* display_controller =
+      ash::Shell::GetInstance()->display_controller();
   chromeos::OutputConfigurator* output_configurator =
       ash::Shell::GetInstance()->output_configurator();
   base::FundamentalValue mirroring(
@@ -122,15 +122,20 @@ void DisplayOptionsHandler::SendDisplayInfo() {
     displays.Set(i, js_display);
   }
 
-  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
-  base::FundamentalValue layout(
-      pref_service->GetInteger(prefs::kSecondaryDisplayLayout));
-  base::FundamentalValue offset(
-      pref_service->GetInteger(prefs::kSecondaryDisplayOffset));
+  scoped_ptr<base::Value> layout_value(base::Value::CreateNullValue());
+  scoped_ptr<base::Value> offset_value(base::Value::CreateNullValue());
+  if (display_manager->GetNumDisplays() > 1) {
+    const std::string& secondary_display_name =
+        display_manager->GetDisplayNameAt(1);
+    const ash::DisplayLayout& layout =
+        display_controller->GetLayoutForDisplayName(secondary_display_name);
+    layout_value.reset(new base::FundamentalValue(layout.position));
+    offset_value.reset(new base::FundamentalValue(layout.offset));
+  }
 
   web_ui()->CallJavascriptFunction(
       "options.DisplayOptions.setDisplayInfo",
-      mirroring, displays, layout, offset);
+      mirroring, displays, *layout_value.get(), *offset_value.get());
 }
 
 void DisplayOptionsHandler::FadeOutForMirroringFinished(bool is_mirroring) {
@@ -146,8 +151,15 @@ void DisplayOptionsHandler::FadeOutForMirroringFinished(bool is_mirroring) {
 void DisplayOptionsHandler::FadeOutForDisplayLayoutFinished(
     int layout, int offset) {
   PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
-  pref_service->SetInteger(prefs::kSecondaryDisplayLayout, layout);
-  pref_service->SetInteger(prefs::kSecondaryDisplayOffset, offset);
+  aura::DisplayManager* display_manager =
+      aura::Env::GetInstance()->display_manager();
+  // Assumes that there are two displays at most and the second item is the
+  // secondary display.
+  if (display_manager->GetNumDisplays() > 1) {
+    gfx::Display* display = display_manager->GetDisplayAt(1);
+    SetDisplayLayoutPref(pref_service, *display, layout, offset);
+  }
+
   SendDisplayInfo();
   ash::Shell::GetInstance()->output_configurator_animation()->
       StartFadeInAnimation();
@@ -177,8 +189,8 @@ void DisplayOptionsHandler::HandleDisplayLayout(const base::ListValue* args) {
     SendDisplayInfo();
     return;
   }
-  DCHECK_LE(DisplayController::TOP, layout);
-  DCHECK_GE(DisplayController::LEFT, layout);
+  DCHECK_LE(ash::DisplayLayout::TOP, layout);
+  DCHECK_GE(ash::DisplayLayout::LEFT, layout);
   ash::Shell::GetInstance()->output_configurator_animation()->
       StartFadeOutAnimation(base::Bind(
           &DisplayOptionsHandler::FadeOutForDisplayLayoutFinished,

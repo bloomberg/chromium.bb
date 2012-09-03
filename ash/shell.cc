@@ -367,7 +367,7 @@ void Shell::Init() {
       new internal::ActivationController(focus_manager_.get()));
 
   screen_position_controller_.reset(new internal::ScreenPositionController);
-  display_controller_.reset(new internal::DisplayController);
+  display_controller_.reset(new DisplayController);
   display_controller_->InitPrimaryDisplay();
   aura::RootWindow* root_window = display_controller_->GetPrimaryRootWindow();
   active_root_window_ = root_window;

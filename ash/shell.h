@@ -61,6 +61,7 @@ namespace ash {
 class AcceleratorController;
 class CapsLockDelegate;
 class DesktopBackgroundController;
+class DisplayController;
 class HighContrastController;
 class Launcher;
 class NestedDispatcherController;
@@ -80,7 +81,6 @@ class AcceleratorFilter;
 class ActivationController;
 class AppListController;
 class CaptureController;
-class DisplayController;
 class DragDropController;
 class EventRewriterEventFilter;
 class FocusCycler;
@@ -274,7 +274,7 @@ class ASH_EXPORT Shell : ash::CursorDelegate {
   internal::FocusCycler* focus_cycler() {
     return focus_cycler_.get();
   }
-  internal::DisplayController* display_controller() {
+  DisplayController* display_controller() {
     return display_controller_.get();
   }
   internal::MouseCursorEventFilter* mouse_cursor_filter() {
@@ -436,7 +436,7 @@ class ASH_EXPORT Shell : ash::CursorDelegate {
   scoped_ptr<VideoDetector> video_detector_;
   scoped_ptr<WindowCycleController> window_cycle_controller_;
   scoped_ptr<internal::FocusCycler> focus_cycler_;
-  scoped_ptr<internal::DisplayController> display_controller_;
+  scoped_ptr<DisplayController> display_controller_;
   scoped_ptr<HighContrastController> high_contrast_controller_;
   scoped_ptr<internal::MagnificationController> magnification_controller_;
   scoped_ptr<aura::FocusManager> focus_manager_;

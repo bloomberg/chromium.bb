@@ -17,8 +17,9 @@ class RootWindow;
 }
 
 namespace ash {
-namespace internal {
 class DisplayController;
+
+namespace internal {
 class SharedDisplayEdgeIndicator;
 
 // An event filter that controls mouse location in extended desktop

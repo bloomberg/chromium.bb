@@ -26,6 +26,14 @@ gfx::Display GetSecondaryDisplay() {
       Shell::GetAllRootWindows()[1]);
 }
 
+void SetSecondaryDisplayLayout(DisplayLayout::Position position) {
+  DisplayController* display_controller =
+      Shell::GetInstance()->display_controller();
+  DisplayLayout layout = display_controller->default_display_layout();
+  layout.position = position;
+  display_controller->SetDefaultDisplayLayout(layout);
+}
+
 }  // namespace
 
 typedef test::AshTestBase DisplayControllerTest;
@@ -51,22 +59,19 @@ TEST_F(DisplayControllerTest, MAYBE_SecondaryDisplayLayout) {
   EXPECT_EQ("505,5 390x390", GetSecondaryDisplay().work_area().ToString());
 
   // Layout the secondary display to the bottom of the primary.
-  Shell::GetInstance()->display_controller()->SetSecondaryDisplayLayout(
-      internal::DisplayController::BOTTOM);
+  SetSecondaryDisplayLayout(DisplayLayout::BOTTOM);
   EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
   EXPECT_EQ("0,500 400x400", GetSecondaryDisplay().bounds().ToString());
   EXPECT_EQ("5,505 390x390", GetSecondaryDisplay().work_area().ToString());
 
   // Layout the secondary display to the left of the primary.
-  Shell::GetInstance()->display_controller()->SetSecondaryDisplayLayout(
-      internal::DisplayController::LEFT);
+  SetSecondaryDisplayLayout(DisplayLayout::LEFT);
   EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
   EXPECT_EQ("-400,0 400x400", GetSecondaryDisplay().bounds().ToString());
   EXPECT_EQ("-395,5 390x390", GetSecondaryDisplay().work_area().ToString());
 
   // Layout the secondary display to the top of the primary.
-  Shell::GetInstance()->display_controller()->SetSecondaryDisplayLayout(
-      internal::DisplayController::TOP);
+  SetSecondaryDisplayLayout(DisplayLayout::TOP);
   EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
   EXPECT_EQ("0,-400 400x400", GetSecondaryDisplay().bounds().ToString());
   EXPECT_EQ("5,-395 390x390", GetSecondaryDisplay().work_area().ToString());
@@ -77,8 +82,7 @@ TEST_F(DisplayControllerTest, MAYBE_SecondaryDisplayLayout) {
 // always been incorrect, but is now visibly broken now that we're processing
 // X11 configuration events while waiting for the MapNotify.
 TEST_F(DisplayControllerTest, DISABLED_BoundsUpdated) {
-  Shell::GetInstance()->display_controller()->SetSecondaryDisplayLayout(
-      internal::DisplayController::BOTTOM);
+  SetSecondaryDisplayLayout(DisplayLayout::BOTTOM);
   UpdateDisplay("500x500,400x400");
   gfx::Display* secondary_display =
       aura::Env::GetInstance()->display_manager()->GetDisplayAt(1);

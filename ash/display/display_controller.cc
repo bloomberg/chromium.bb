@@ -15,6 +15,9 @@
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
+#include "base/json/json_value_converter.h"
+#include "base/string_piece.h"
+#include "base/values.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -28,18 +31,102 @@
 #endif
 
 namespace ash {
-namespace internal {
 namespace {
+
+// The maximum value for 'offset' in DisplayLayout in case of outliers.  Need
+// to change this value in case to support even larger displays.
+const int kMaxValidOffset = 10000;
 
 // The number of pixels to overlap between the primary and secondary displays,
 // in case that the offset value is too large.
 const int kMinimumOverlapForInvalidOffset = 50;
 
+bool GetPositionFromString(const base::StringPiece& position,
+                           DisplayLayout::Position* field) {
+  if (position == "top") {
+    *field = DisplayLayout::TOP;
+    return true;
+  } else if (position == "bottom") {
+    *field = DisplayLayout::BOTTOM;
+    return true;
+  } else if (position == "right") {
+    *field = DisplayLayout::RIGHT;
+    return true;
+  } else if (position == "left") {
+    *field = DisplayLayout::LEFT;
+    return true;
+  }
+  LOG(ERROR) << "Invalid position value: " << position;
+
+  return false;
 }
 
-DisplayController::DisplayController()
-    : secondary_display_layout_(RIGHT),
-      secondary_display_offset_(0) {
+}  // namespace
+
+DisplayLayout::DisplayLayout()
+    : position(RIGHT),
+      offset(0) {}
+
+DisplayLayout::DisplayLayout(DisplayLayout::Position position, int offset)
+    : position(position),
+      offset(offset) {
+  DCHECK_LE(TOP, position);
+  DCHECK_GE(LEFT, position);
+
+  // Set the default value to |position| in case position is invalid.  DCHECKs
+  // above doesn't stop in Release builds.
+  if (TOP > position || LEFT < position)
+    this->position = RIGHT;
+
+  DCHECK_GE(kMaxValidOffset, abs(offset));
+}
+
+// static
+bool DisplayLayout::ConvertFromValue(const base::Value& value,
+                                     DisplayLayout* layout) {
+  base::JSONValueConverter<DisplayLayout> converter;
+  return converter.Convert(value, layout);
+}
+
+// static
+bool DisplayLayout::ConvertToValue(const DisplayLayout& layout,
+                                   base::Value* value) {
+  base::DictionaryValue* dict_value = NULL;
+  if (!value->GetAsDictionary(&dict_value) || dict_value == NULL)
+    return false;
+
+  std::string position_value;
+  switch (layout.position) {
+    case TOP:
+      position_value = "top";
+      break;
+    case BOTTOM:
+      position_value = "bottom";
+      break;
+    case RIGHT:
+      position_value = "right";
+      break;
+    case LEFT:
+      position_value = "left";
+      break;
+    default:
+      return false;
+  }
+
+  dict_value->SetString("position", position_value);
+  dict_value->SetInteger("offset", layout.offset);
+  return true;
+}
+
+// static
+void DisplayLayout::RegisterJSONConverter(
+    base::JSONValueConverter<DisplayLayout>* converter) {
+  converter->RegisterCustomField<Position>(
+      "position", &DisplayLayout::position, &GetPositionFromString);
+  converter->RegisterIntField("offset", &DisplayLayout::offset);
+}
+
+DisplayController::DisplayController() {
   aura::Env::GetInstance()->display_manager()->AddObserver(this);
 }
 
@@ -80,14 +167,14 @@ void DisplayController::InitSecondaryDisplays() {
     int offset;
     if (sscanf(value.c_str(), "%c,%d", &layout, &offset) == 2) {
       if (layout == 't')
-        secondary_display_layout_ = TOP;
+        default_display_layout_.position = DisplayLayout::TOP;
       else if (layout == 'b')
-        secondary_display_layout_ = BOTTOM;
+        default_display_layout_.position = DisplayLayout::BOTTOM;
       else if (layout == 'r')
-        secondary_display_layout_ = RIGHT;
+        default_display_layout_.position = DisplayLayout::RIGHT;
       else if (layout == 'l')
-        secondary_display_layout_ = LEFT;
-      secondary_display_offset_ = offset;
+        default_display_layout_.position = DisplayLayout::LEFT;
+      default_display_layout_.offset = offset;
     }
   }
   UpdateDisplayBoundsForLayout();
@@ -145,17 +232,26 @@ DisplayController::GetAllRootWindowControllers() {
   return controllers;
 }
 
-void DisplayController::SetSecondaryDisplayLayout(
-    SecondaryDisplayLayout layout) {
-  secondary_display_layout_ = layout;
+void DisplayController::SetDefaultDisplayLayout(const DisplayLayout& layout) {
+  default_display_layout_ = layout;
   UpdateDisplayBoundsForLayout();
 }
 
-void DisplayController::SetSecondaryDisplayOffset(int offset) {
-  secondary_display_offset_ = offset;
+void DisplayController::SetLayoutForDisplayName(const std::string& name,
+                                                const DisplayLayout& layout) {
+  secondary_layouts_[name] = layout;
   UpdateDisplayBoundsForLayout();
 }
 
+const DisplayLayout& DisplayController::GetLayoutForDisplayName(
+    const std::string& name) {
+  std::map<std::string, DisplayLayout>::const_iterator it =
+      secondary_layouts_.find(name);
+
+  if (it != secondary_layouts_.end())
+    return it->second;
+  return default_display_layout_;
+}
 
 void DisplayController::OnDisplayBoundsChanged(const gfx::Display& display) {
   root_windows_[display.id()]->SetHostBounds(display.bounds_in_pixel());
@@ -215,13 +311,22 @@ void DisplayController::UpdateDisplayBoundsForLayout() {
       aura::Env::GetInstance()->display_manager();
   const gfx::Rect& primary_bounds = display_manager->GetDisplayAt(0)->bounds();
   gfx::Display* secondary_display = display_manager->GetDisplayAt(1);
+  const std::string& secondary_name = display_manager->GetDisplayNameAt(1);
   const gfx::Rect& secondary_bounds = secondary_display->bounds();
   gfx::Point new_secondary_origin = primary_bounds.origin();
 
+  const DisplayLayout* layout = &default_display_layout_;
+  std::map<std::string, DisplayLayout>::const_iterator iter =
+      secondary_layouts_.find(secondary_name);
+  if (iter != secondary_layouts_.end())
+    layout = &iter->second;
+
+  DisplayLayout::Position position = layout->position;
+
   // Ignore the offset in case the secondary display doesn't share edges with
   // the primary display.
-  int offset = secondary_display_offset_;
-  if (secondary_display_layout_ == TOP || secondary_display_layout_ == BOTTOM) {
+  int offset = layout->offset;
+  if (position == DisplayLayout::TOP || position == DisplayLayout::BOTTOM) {
     offset = std::min(
         offset, primary_bounds.width() - kMinimumOverlapForInvalidOffset);
     offset = std::max(
@@ -232,17 +337,17 @@ void DisplayController::UpdateDisplayBoundsForLayout() {
     offset = std::max(
         offset, -secondary_bounds.height() + kMinimumOverlapForInvalidOffset);
   }
-  switch (secondary_display_layout_) {
-    case TOP:
+  switch (position) {
+    case DisplayLayout::TOP:
       new_secondary_origin.Offset(offset, -secondary_bounds.height());
       break;
-    case RIGHT:
+    case DisplayLayout::RIGHT:
       new_secondary_origin.Offset(primary_bounds.width(), offset);
       break;
-    case BOTTOM:
+    case DisplayLayout::BOTTOM:
       new_secondary_origin.Offset(offset, primary_bounds.height());
       break;
-    case LEFT:
+    case DisplayLayout::LEFT:
       new_secondary_origin.Offset(-secondary_bounds.width(), offset);
       break;
   }
@@ -252,5 +357,4 @@ void DisplayController::UpdateDisplayBoundsForLayout() {
   secondary_display->UpdateWorkAreaFromInsets(insets);
 }
 
-}  // namespace internal
 }  // namespace ash

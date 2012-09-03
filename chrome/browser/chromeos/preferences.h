@@ -144,9 +144,6 @@ class Preferences : public content::NotificationObserver {
 
   BooleanPrefMember enable_screen_lock_;
 
-  IntegerPrefMember secondary_display_layout_;
-  IntegerPrefMember secondary_display_offset_;
-
   BooleanPrefMember enable_drm_;
 
   DISALLOW_COPY_AND_ASSIGN(Preferences);
