@@ -1973,6 +1973,7 @@
         'common/extensions/manifest_tests/extension_manifests_chromepermission_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_command_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_contentscript_unittest.cc',
+        'common/extensions/manifest_tests/extension_manifests_contentsecuritypolicy_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_default_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_devtools_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_excludematches_unittest.cc',

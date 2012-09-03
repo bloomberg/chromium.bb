@@ -2716,7 +2716,7 @@ bool Extension::LoadContentSecurityPolicy(string16* error) {
     }
     if (manifest_version_ >= 2 &&
         !ContentSecurityPolicyIsSecure(content_security_policy)) {
-      *error = ASCIIToUTF16(errors::kInvalidContentSecurityPolicy);
+      *error = ASCIIToUTF16(errors::kInsecureContentSecurityPolicy);
       return false;
     }
 
