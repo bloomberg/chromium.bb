@@ -35,6 +35,9 @@ SyncNewNonFrontendDataTypeControllerTest.StartAfterSyncShutdown
 # Randomly fails on the linux heapcheck bot
 HistoryQuickProviderTest.*
 
+# http://crbug.com/146265
+InMemoryURLIndexTest.*
+
 # Don't run FLAKY or FAILS tests under the heapchecker.
 # They may cause flaky leak reports and timeouts.
 *FLAKY_*
