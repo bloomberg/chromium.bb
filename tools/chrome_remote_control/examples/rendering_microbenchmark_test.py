@@ -5,18 +5,17 @@
 import os
 import re
 import sys
-import time
-import optparse
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 import chrome_remote_control
 
 def Main(args):
-  parser = chrome_remote_control.BrowserOptions.CreateParser(
+  options = chrome_remote_control.BrowserOptions()
+  parser = options.CreateParser(
       "rendering_microbenchmark_test.py <sitelist>")
   # TODO(nduca): Add test specific options here, if any.
-  options, args = parser.parse_args()
+  options, args = parser.parse_args(args)
   if len(args) != 1:
     parser.print_usage()
     return 255
@@ -73,4 +72,4 @@ def Main(args):
   return 0
 
 if __name__ == "__main__":
-  sys.exit(Main(sys.argv))
+  sys.exit(Main(sys.argv[1:]))

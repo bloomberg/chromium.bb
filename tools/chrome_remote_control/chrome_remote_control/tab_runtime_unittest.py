@@ -11,8 +11,10 @@ class TabRuntimeTest(unittest.TestCase):
   def setUp(self):
     self._browser = None
     self._tab = None
-    options = browser_options.BrowserOptions()
+    options = browser_options.options_for_unittests
     browser_to_create = browser_finder.FindBestPossibleBrowser(options)
+    if not browser_to_create:
+      raise Exception('No browser found, cannot continue test.')
     try:
       self._browser = browser_to_create.Create()
       self._tab = self._browser.ConnectToNthTab(0)
@@ -35,9 +37,13 @@ class TabRuntimeTest(unittest.TestCase):
                       lambda: self._tab.runtime.Evaluate("fsdfsdfsf"))
 
   def testRuntimeEvaluateOfSomethingThatCantJSONize(self):
+    # TODO(nduca): This fails on Android. I wonder why?
     self.assertRaises(tab_runtime.EvaluateException,
                       lambda: self._tab.runtime.Evaluate("window"))
+    pass
 
-  def testRuntimeLoadURL(self):
-    self._tab.BeginToLoadURL("http://www.google.com")
+  def testRuntimeExecuteOfSomethingThatCantJSONize(self):
+    self._tab.runtime.Execute("window");
 
+  def testRuntimeLoadUrl(self):
+    self._tab.BeginToLoadUrl("http://www.google.com")

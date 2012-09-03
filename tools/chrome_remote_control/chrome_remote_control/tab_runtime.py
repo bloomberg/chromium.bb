@@ -20,7 +20,25 @@ class TabRuntime(object):
   def _OnClose(self):
     pass
 
+  def Execute(self, expr):
+    """Executes expr
+
+    If the expression failed to evaluate, EvaluateException will be raised.
+    """
+    self.Evaluate(expr + "; 0;");
+
   def Evaluate(self, expr):
+    """Evalutes expr and returns the JSONized result.
+
+    Consider using Execute for cases where the result of the expression is not
+    needed.
+
+    If evaluation throws in javascript, a python EvaluateException will
+    be raised.
+
+    If the result of the evaluation cannot be JSONized, then an
+    EvaluationException will be raised.
+    """
     request = {
       "method": "Runtime.evaluate",
       "params": {
@@ -30,7 +48,7 @@ class TabRuntime(object):
       }
     res = self._inspector_backend.SyncRequest(request)
     if "error" in res:
-      raise inspector_backend.InspectorException(res["error"]["message"])
+      raise EvaluateException(res["error"]["message"])
 
     if res["result"]["wasThrown"]:
       # TODO(nduca): propagate stacks from javascript up to the python

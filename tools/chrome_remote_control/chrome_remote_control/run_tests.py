@@ -7,6 +7,8 @@ import sys
 import traceback
 import unittest
 
+import browser_options
+
 def Discover(start_dir, pattern = "test*.py", top_level_dir = None):
   if hasattr(unittest.defaultTestLoader, 'discover'):
     return unittest.defaultTestLoader.discover(start_dir,
@@ -65,8 +67,7 @@ def FilterSuite(suite, predicate):
 
   return new_suite
 
-'''Unit test suite that collects all test cases for chrome_remote_control.'''
-def Main(argv):
+def DiscoverAndRunTests(args):
   dir_name = os.path.join(os.path.dirname(__file__), "..")
   olddir = os.getcwd()
   try:
@@ -74,9 +75,9 @@ def Main(argv):
     suite = Discover("chrome_remote_control", "*_unittest.py", ".")
 
     def IsTestSelected(test):
-      if len(argv) == 1:
+      if len(args) == 0:
         return True
-      for name in argv[1:]:
+      for name in args:
         if str(test).find(name) != -1:
           return True
       return False
@@ -90,5 +91,19 @@ def Main(argv):
     os.chdir(olddir)
   return 1
 
+def Main(args):
+  """Unit test suite that collects all test cases for chrome_remote_control."""
+  default_options = browser_options.BrowserOptions()
+  parser = default_options.CreateParser("run_tests [options] [test names]")
+  _, args = parser.parse_args(args)
+
+  browser_options.options_for_unittests = default_options
+  try:
+    DiscoverAndRunTests(args)
+  finally:
+    browser_options.options_for_unittests = None
+
+
+
 if __name__ == "__main__":
-  sys.exit(Main(sys.argv))
+  sys.exit(Main(sys.argv[1:]))

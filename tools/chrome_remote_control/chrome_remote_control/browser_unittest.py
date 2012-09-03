@@ -8,9 +8,13 @@ import browser_options
 
 class BrowserTest(unittest.TestCase):
   def testBasic(self):
-    options = browser_options.BrowserOptions()
-    options.browser_to_use = browser_options.ALL_BROWSER_TYPES
+    options = browser_options.options_for_unittests
+    options.browser_to_use = browser_finder.ALL_BROWSER_TYPES
     browser_to_create = browser_finder.FindBestPossibleBrowser(options)
+    if not browser_to_create:
+      raise Exception('No browser found, cannot continue test.')
     with browser_to_create.Create() as b:
       self.assertEquals(1, b.num_tabs)
-      self.assertEquals("chrome://newtab/", b.GetNthTabUrl(0))
+
+      # Different browsers boot up to different things
+      assert b.GetNthTabUrl(0)

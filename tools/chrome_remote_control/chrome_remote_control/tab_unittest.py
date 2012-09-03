@@ -11,8 +11,10 @@ class TabTest(unittest.TestCase):
   def setUp(self):
     self._browser = None
     self._tab = None
-    options = browser_options.BrowserOptions()
+    options = browser_options.options_for_unittests
     browser_to_create = browser_finder.FindBestPossibleBrowser(options)
+    if not browser_to_create:
+      raise Exception('No browser found, cannot continue test.')
     try:
       self._browser = browser_to_create.Create()
       self._tab = self._browser.ConnectToNthTab(0)
@@ -26,10 +28,10 @@ class TabTest(unittest.TestCase):
     if self._browser:
       self._browser.Close()
 
-  def testLoadURLAndWaitToForCompleteState(self):
-    self._tab.BeginToLoadURL("http://www.google.com")
+  def testLoadUrlAndWaitToForCompleteState(self):
+    self._tab.BeginToLoadUrl("http://www.google.com")
     self._tab.WaitForDocumentReadyStateToBeComplete()
 
-  def testLoadURLAndWaitToForInteractiveState(self):
-    self._tab.BeginToLoadURL("http://www.google.com")
+  def testLoadUrlAndWaitToForInteractiveState(self):
+    self._tab.BeginToLoadUrl("http://www.google.com")
     self._tab.WaitForDocumentReadyStateToBeInteractiveOrBetter()
