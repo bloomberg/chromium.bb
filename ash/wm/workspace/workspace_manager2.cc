@@ -265,6 +265,13 @@ void WorkspaceManager2::SetActiveWorkspace(Workspace2* workspace,
   Workspace2* last_active = active_workspace_;
   active_workspace_ = workspace;
 
+  // Move the active workspace to the top. We don't do this for the desktop as
+  // it animates up.
+  if (active_workspace_ != desktop_workspace()) {
+    active_workspace_->window()->parent()->StackChildAtTop(
+        active_workspace_->window());
+  }
+
   destroy_background_timer_.Stop();
   if (active_workspace_ == desktop_workspace()) {
     destroy_background_timer_.Start(

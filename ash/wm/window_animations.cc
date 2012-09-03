@@ -701,10 +701,10 @@ class CrossFadeObserver : public ui::CompositorObserver,
 namespace {
 
 // Duration of cross fades when workspace2 is enabled.
-const int kWorkspaceCrossFadeDurationMs = 300;
+const int kWorkspaceCrossFadeDurationMs = 333;
 
 // Amount of time for animating a workspace in or out.
-const int kWorkspaceSwitchTimeMS = 300;
+const int kWorkspaceSwitchTimeMS = 333;
 
 // Scales for workspaces above/below current workspace.
 const float kWorkspaceScaleAbove = 1.1f;

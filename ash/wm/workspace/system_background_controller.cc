@@ -25,9 +25,6 @@ class SystemBackgroundController::View : public views::WidgetDelegateView {
   // WidgetDelegate overrides:
   virtual views::View* GetContentsView() OVERRIDE;
 
-  // View overrides:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-
  private:
   SystemBackgroundController* controller_;
 
@@ -52,11 +49,6 @@ views::View* SystemBackgroundController::View::GetContentsView() {
   return this;
 }
 
-void SystemBackgroundController::View::OnPaint(gfx::Canvas* canvas) {
-  // TODO: get image!
-  canvas->DrawColor(SK_ColorBLACK);
-}
-
 SystemBackgroundController::SystemBackgroundController(aura::RootWindow* root)
     : ALLOW_THIS_IN_INITIALIZER_LIST(view_(new View(this))) {
   views::Widget* widget = new views::Widget;
@@ -64,7 +56,13 @@ SystemBackgroundController::SystemBackgroundController(aura::RootWindow* root)
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.delegate = view_;
   params.parent = root->GetChildById(kShellWindowId_SystemBackgroundContainer);
+  params.can_activate = false;
+  params.accept_events = false;
+  // WARNING: because of a bug using anything but a solid color here causes
+  // flicker.
+  params.layer_type = ui::LAYER_SOLID_COLOR;
   widget->Init(params);
+  widget->GetNativeView()->layer()->SetColor(SK_ColorBLACK);
   widget->SetBounds(params.parent->bounds());
   widget->Show();
   widget->GetNativeView()->SetName("SystemBackground");
