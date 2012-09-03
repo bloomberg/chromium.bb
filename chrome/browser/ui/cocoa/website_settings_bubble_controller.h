@@ -61,6 +61,11 @@ class WebsiteSettingsUIBridge;
   NSImageView* firstVisitIcon_;
   NSTextField* firstVisitHeaderField_;
   NSTextField* firstVisitDescriptionField_;
+  NSView* separatorAfterFirstVisit_;
+
+  // The link button for launch the help center article explaining the
+  // connection info.
+  NSButton* helpButton_;
 
   // The UI translates user actions to specific events and forwards them to the
   // |presenter_|. The |presenter_| handles these events and updates the UI.

@@ -18,6 +18,7 @@
 - (NSImageView*)connectionStatusIcon;
 - (NSTextField*)connectionStatusDescriptionField;
 - (NSTextField*)firstVisitDescriptionField;
+- (NSButton*)helpButton;
 @end
 
 @implementation WebsiteSettingsBubbleController (ExposedForTesting)
@@ -53,6 +54,10 @@
 
 - (NSTextField*)firstVisitDescriptionField {
   return firstVisitDescriptionField_;
+}
+
+- (NSButton*)helpButton {
+  return helpButton_;
 }
 @end
 
@@ -123,12 +128,13 @@ class WebsiteSettingsBubbleControllerTest : public CocoaTest {
     return nil;
   }
 
-  NSView* FindSubviewOfClass(NSView* parent_view, Class a_class) {
+  NSMutableArray* FindAllSubviewsOfClass(NSView* parent_view, Class a_class) {
+    NSMutableArray* views = [NSMutableArray array];
     for (NSView* view in [parent_view subviews]) {
       if ([view isKindOfClass:a_class])
-        return view;
+        [views addObject:view];
     }
-    return nil;
+    return views;
   }
 
   WebsiteSettingsBubbleController* controller_;  // Weak, owns self.
@@ -191,10 +197,17 @@ TEST_F(WebsiteSettingsBubbleControllerTest, SetIdentityInfo) {
   // Icons should be the same when they are both unknown.
   EXPECT_EQ(identity_icon, connection_icon);
 
-  // Ensure that the link button for certificate info is not there.
-  NSView* link_button = FindSubviewOfClass(
+  // Ensure that the link button for certificate info is not there -- the
+  // help link button should be the first one found.
+  NSMutableArray* buttons = FindAllSubviewsOfClass(
       [controller_ connectionTabContentView], [NSButton class]);
-  EXPECT_FALSE(link_button);
+  ASSERT_EQ(1U, [buttons count]);
+  EXPECT_NSEQ([controller_ helpButton], [buttons objectAtIndex:0]);
+
+  // Check that it has a target and action linked up.
+  NSButton* link_button = static_cast<NSButton*>([buttons objectAtIndex:0]);
+  EXPECT_NSEQ(controller_, [link_button target]);
+  EXPECT_TRUE([link_button action] == @selector(showHelpPage:));
 
   info.identity_status = WebsiteSettings::SITE_IDENTITY_STATUS_CERT;
   info.connection_status = WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED;
@@ -205,13 +218,15 @@ TEST_F(WebsiteSettingsBubbleControllerTest, SetIdentityInfo) {
   EXPECT_NE(connection_icon, [[controller_ connectionStatusIcon] image]);
 
   // The certificate info button should be there now.
-  link_button = FindSubviewOfClass(
+  buttons = FindAllSubviewsOfClass(
       [controller_ connectionTabContentView], [NSButton class]);
-  EXPECT_TRUE(link_button);
+  ASSERT_EQ(2U, [buttons count]);
+  EXPECT_NSNE([controller_ helpButton], [buttons objectAtIndex:1]);
 
   // Check that it has a target and action linked up.
-  EXPECT_TRUE([static_cast<NSButton*>(link_button) target]);
-  EXPECT_TRUE([static_cast<NSButton*>(link_button) action]);
+  link_button = static_cast<NSButton*>([buttons objectAtIndex:1]);
+  EXPECT_NSEQ(controller_, [link_button target]);
+  EXPECT_TRUE([link_button action] == @selector(showCertificateInfo:));
 }
 
 TEST_F(WebsiteSettingsBubbleControllerTest, SetFirstVisit) {

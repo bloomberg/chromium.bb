@@ -14,7 +14,10 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/cert_store.h"
+#include "content/public/browser/page_navigator.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -447,6 +450,16 @@ NSColor* IdentityVerifiedTextColor() {
                             certificateId_);
 }
 
+// Handler for the link to show help information about the connection tab.
+- (void)showHelpPage:(id)sender {
+  tabContents_->web_contents()->OpenURL(content::OpenURLParams(
+      GURL(chrome::kPageInfoHelpCenterURL),
+      content::Referrer(),
+      NEW_FOREGROUND_TAB,
+      content::PAGE_TRANSITION_LINK,
+      false));
+}
+
 // Create the contents of the Connection tab and add it to the given tab view.
 // Returns a weak reference to the tab view item's view.
 - (NSView*)addConnectionTabToTabView:(NSTabView*)tabView {
@@ -500,6 +513,14 @@ NSColor* IdentityVerifiedTextColor() {
                bold:NO
              toView:contentView.get()
             atPoint:textPosition];
+
+  separatorAfterFirstVisit_ = [self addSeparatorToView:contentView];
+  NSString* helpButtonText = l10n_util::GetNSString(
+      IDS_PAGE_INFO_HELP_CENTER_LINK);
+  helpButton_ = [self addLinkButtonWithText:helpButtonText
+                                     toView:contentView];
+  [helpButton_ setTarget:self];
+  [helpButton_ setAction:@selector(showHelpPage:)];
 
   [item setView:contentView.get()];
   [tabView_ insertTabViewItem:item.get()
@@ -573,7 +594,11 @@ NSColor* IdentityVerifiedTextColor() {
   yPos = [self setYPositionOfView:firstVisitHeaderField_ to:yPos];
   yPos += kHeadlineSpacing;
   [self sizeTextFieldHeightToFit:firstVisitDescriptionField_];
-  [self setYPositionOfView:firstVisitDescriptionField_ to:yPos];
+  yPos = [self setYPositionOfView:firstVisitDescriptionField_ to:yPos];
+  yPos = [self setYPositionOfView:separatorAfterFirstVisit_
+                               to:yPos + kVerticalSpacing];
+  yPos += kVerticalSpacing;
+  [self setYPositionOfView:helpButton_ to:yPos];
 
   // Adjust the tab view size and place it below the identity status.
 
