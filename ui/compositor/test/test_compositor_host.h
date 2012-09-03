@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_COMPOSITOR_TEST_TEST_COMPOSITOR_HOST_H_
-#define UI_GFX_COMPOSITOR_TEST_TEST_COMPOSITOR_HOST_H_
+#ifndef UI_COMPOSITOR_TEST_TEST_COMPOSITOR_HOST_H_
+#define UI_COMPOSITOR_TEST_TEST_COMPOSITOR_HOST_H_
 
 #include "base/message_loop.h"
 
@@ -30,4 +30,4 @@ class TestCompositorHost {
 
 }  // namespace ui
 
-#endif  // UI_GFX_COMPOSITOR_TEST_TEST_COMPOSITOR_HOST_H_
+#endif  // UI_COMPOSITOR_TEST_TEST_COMPOSITOR_HOST_H_
