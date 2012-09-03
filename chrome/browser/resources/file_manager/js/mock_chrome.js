@@ -552,6 +552,8 @@ chrome.fileBrowserPrivate = {
       COPY_BUTTON_LABEL: 'Copy',
       CUT_BUTTON_LABEL: 'Cut',
 
+      OPEN_WITH_BUTTON_LABEL: 'Open with...',
+
       UNMOUNT_FAILED: 'Unable to eject: $1',
       UNMOUNT_DEVICE_BUTTON_LABEL: 'Unmount',
       FORMAT_DEVICE_BUTTON_LABEL: 'Format',

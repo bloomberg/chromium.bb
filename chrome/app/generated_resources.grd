@@ -11363,6 +11363,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_CUT_BUTTON_LABEL" desc="Button Label.">
         Cut
       </message>
+      
+      <message name="IDS_FILE_BROWSER_OPEN_WITH_BUTTON_LABEL" desc="Menu item label, showing dialog to choose application to open selected files">
+        Open with...
+      </message>
 
       <message name="IDS_FILE_BROWSER_TRANSFER_ITEMS_REMAINING" desc="File Manager status message. 'Item' is used here as a generic term for file or directory. 'Transferring' is used in the sense 'copying or moving files'.">
         Transferring $1 items.

@@ -37,6 +37,14 @@ FileTasks.NO_ACTION_FOR_FILE_URL = 'http://support.google.com/chromeos/bin/' +
     'answer.py?answer=1700055&topic=29026&ctx=topic';
 
 /**
+ * Returns amount of tasks.
+ * @return {Number=} amount of tasks.
+ */
+FileTasks.prototype.size = function() {
+  return (this.tasks_ && this.tasks_.length) || 0;
+};
+
+/**
  * Callback when tasks found.
  * @param {Array.<Object>} tasks The tasks.
  * @private
@@ -445,6 +453,30 @@ FileTasks.prototype.display_ = function(combobutton) {
   combobutton.hidden = false;
   combobutton.defaultItem = this.createCombobuttonItem_(this.defaultTask_);
 
+  var items = this.createItems_();
+
+  if (items.length > 1) {
+    var defaultIdx = 0;
+
+    for (var j = 0; j < items.length; j++) {
+      combobutton.addDropDownItem(items[j]);
+      if (items[j].task.taskId == this.defaultTask_.taskId)
+        defaultIdx = j;
+    }
+
+    combobutton.addSeparator();
+    combobutton.addDropDownItem({
+          label: loadTimeData.getString('CHANGE_DEFAULT_MENU_ITEM')
+        });
+  }
+};
+
+/**
+ * Creates sorted array of available task descriptions such as title and icon.
+ * @return {Array} created array can be used to feed combobox, menus and so on.
+ * @private
+ */
+FileTasks.prototype.createItems_ = function() {
   var items = [];
   var title = this.defaultTask_.title + ' ' +
               loadTimeData.getString('DEFAULT_ACTION_LABEL');
@@ -456,25 +488,11 @@ FileTasks.prototype.display_ = function(combobutton) {
       items.push(this.createCombobuttonItem_(task));
   }
 
-  if (items.length > 1) {
-    items.sort(function(a, b) {
-      return a.label.localeCompare(b.label);
-    });
+  items.sort(function(a, b) {
+    return a.label.localeCompare(b.label);
+  });
 
-    var defaultIdx = 0;
-    for (var j = 0; j < items.length; j++) {
-      combobutton.addDropDownItem(items[j]);
-      if (items[j].task.taskId == this.defaultTask_.taskId)
-        defaultIdx = j;
-    }
-
-    combobutton.addSeparator();
-    combobutton.addDropDownItem({
-          label: loadTimeData.getString('CHANGE_DEFAULT_MENU_ITEM'),
-          items: items,
-          defaultIdx: defaultIdx
-        });
-  }
+  return items;
 };
 
 /**
@@ -482,7 +500,8 @@ FileTasks.prototype.display_ = function(combobutton) {
  * @private
  */
 FileTasks.prototype.updateMenuItem_ = function() {
-  this.fileManager_.setDefaultActionMenuItem(this.defaultTask_);
+  this.fileManager_.updateContextMenuActionItems(this.defaultTask_,
+      this.tasks_.length > 1);
 };
 
 /**
@@ -538,6 +557,31 @@ FileTasks.decorate = function(method) {
     }
     return this;
   };
+};
+
+/**
+ * Shows modal action picker dialog with currently available list of tasks.
+ *
+ * @param {DefaultActionDialog} actionDialog Action dialog to show and update.
+ * @param {String} title Title to use.
+ * @param {String} message Message to use.
+ * @param {function(Object)} onSuccess Callback to pass selected task.
+ */
+FileTasks.prototype.showTaskPicker = function(actionDialog, title, message,
+                                              onSuccess) {
+  var items = this.createItems_();
+
+  var defaultIdx = 0;
+  for (var j = 0; j < items.length; j++) {
+    if (items[j].task.taskId == this.defaultTask_.taskId)
+      defaultIdx = j;
+  }
+
+  actionDialog.show(
+      title,
+      message,
+      items, defaultIdx,
+      onSuccess);
 };
 
 FileTasks.decorate('display');

@@ -649,6 +649,10 @@ FileManager.prototype = {
 
     this.defaultActionMenuItem_ =
         this.dialogDom_.querySelector('#default-action');
+
+    this.openWithCommand_ =
+            this.dialogDom_.querySelector('#open-with');
+
     this.defaultActionMenuItem_.addEventListener('activate',
         this.dispatchSelectionAction_.bind(this));
 
@@ -947,6 +951,9 @@ FileManager.prototype = {
         return this.isRenamingInProgress() ?
                this.document_.queryCommandEnabled(commandId) :
                !readonly && this.selection && this.selection.totalCount > 0;
+
+      case 'open-with':
+          return this.selection.tasks && this.selection.tasks.size() > 1;
 
       case 'newfolder':
         return !readonly &&
@@ -1307,6 +1314,17 @@ FileManager.prototype = {
 
       case 'gdata-clear-local-cache':
         chrome.fileBrowserPrivate.clearDriveCache();
+        return;
+
+      case 'open-with':
+        if (this.selection.tasks) {
+          this.selection.tasks.showTaskPicker(this.defaultTaskPicker,
+              str('OPEN_WITH_BUTTON_LABEL'),
+              null,
+              function(task) {
+                this.selection.tasks.execute(task.taskId);
+              }.bind(this));
+        }
         return;
     }
   };
@@ -2208,7 +2226,7 @@ FileManager.prototype = {
         FileManager.THUMBNAIL_SHOW_DELAY);
     onThumbnailLoaded();
 
-    this.setDefaultActionMenuItem(null);
+    this.updateContextMenuActionItems(null, false);
 
     function getTasksAndFinish() {
       if (self.dialogType_ == FileManager.DialogType.FULL_PAGE &&
@@ -2416,6 +2434,8 @@ FileManager.prototype = {
    * @param {Object} event Event containing task which was clicked.
    */
   FileManager.prototype.onTaskItemClicked_ = function(event) {
+    if (!this.selection.tasks) return;
+
     if (event.item.task) {
       // Task field doesn't exist on change-default dropdown item.
       this.selection.tasks.execute(event.item.task.taskId);
@@ -2439,9 +2459,9 @@ FileManager.prototype = {
       }
 
       // Change default was clicked. We should open "change default" dialog.
-      this.defaultTaskPicker.show(
+      this.selection.tasks.showTaskPicker(this.defaultTaskPicker,
+          loadTimeData.getString('CHANGE_DEFAULT_MENU_ITEM'),
           strf('CHANGE_DEFAULT_CAPTION', format),
-          event.item.items, event.item.defaultIdx,
           this.onDefaultTaskDone_.bind(this));
     }
   };
@@ -2635,7 +2655,7 @@ FileManager.prototype = {
     this.deleteEntries(this.selection.entries);
     event.preventDefault();
     event.stopPropagation();
-  },
+  };
 
   FileManager.prototype.onDeleteButtonKeyPress_ = function(event) {
     switch (util.getKeyModifiers(event) + event.keyCode) {
@@ -2646,7 +2666,7 @@ FileManager.prototype = {
         event.stopPropagation();
         break;
     }
-  },
+  };
 
   FileManager.prototype.blinkSelection = function() {
     if (!this.selection || this.selection.totalCount == 0)
@@ -4181,11 +4201,13 @@ FileManager.prototype = {
   /**
    * Updates default action menu item to match passed taskItem(icon,
    * label and action).
-   * @param {Object} taskItem - taskItem to match.
+   *
+   * @param {Object} defaultItem - taskItem to match.
+   * @param {boolean} isMultiple - if multiple tasks available.
    */
-  FileManager.prototype.setDefaultActionMenuItem = function(defaultItem) {
+  FileManager.prototype.updateContextMenuActionItems = function(defaultItem,
+                                                               isMultiple) {
     if (defaultItem) {
-
       if (defaultItem.iconType) {
         this.defaultActionMenuItem_.style.backgroundImage = '';
         this.defaultActionMenuItem_.setAttribute('file-type-icon',
@@ -4204,6 +4226,10 @@ FileManager.prototype = {
     var defaultActionSeparator =
         this.dialogDom_.querySelector('#default-action-separator');
 
+    // TODO(dzvorygin): Here we use this hack, since 'hidden' is standard
+    // attribute and we can't use it's setter as usual.
+    this.openWithCommand_.__lookupSetter__('hidden').
+        call(this.openWithCommand_, !(defaultItem && isMultiple));
     this.defaultActionMenuItem_.hidden = !defaultItem;
     defaultActionSeparator.hidden = !defaultItem;
   };

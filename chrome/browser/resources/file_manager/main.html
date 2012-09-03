@@ -115,10 +115,14 @@
           ></command>
       <command id="gdata-clear-local-cache"
           i18n-values="label:GDATA_CLEAR_LOCAL_CACHE"></command>
+      <command id="open-with"
+          i18n-values="label:OPEN_WITH_BUTTON_LABEL"></command>
     </commands>
 
     <menu class="file-context-menu chrome-menu">
       <menuitem id="default-action"
+          visibleif="full-page" hidden></menuitem>
+      <menuitem command="#open-with"
           visibleif="full-page" hidden></menuitem>
       <hr id="default-action-separator" visibleif="full-page" hidden>
       <menuitem command="#cut" visibleif="full-page"></menuitem>

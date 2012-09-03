@@ -18,6 +18,8 @@ cr.define('cr.filebrowser', function() {
   function DefaultActionDialog(parentNode) {
     cr.ui.dialogs.BaseDialog.call(this, parentNode);
 
+    this.frame_.id = 'default-action-dialog';
+
     this.list_ = new cr.ui.List();
     this.list_.id = 'default-actions-list';
     this.frame_.insertBefore(this.list_, this.text_.nextSibling);
@@ -79,6 +81,7 @@ cr.define('cr.filebrowser', function() {
   /**
    * Shows dialog.
    *
+   * @param {String} title Title in dialog caption.
    * @param {String} message Message in dialog caption.
    * @param {Array} items Items to render in list
    * @param {int} defaultIndex Item to select by default.
@@ -86,11 +89,17 @@ cr.define('cr.filebrowser', function() {
    * @param {Function} onCancel Callback function.
    * @param {Function} onShow Callback function.
    */
-  DefaultActionDialog.prototype.show = function(message, items, defaultIndex,
-      onOk, onCancel, onShow) {
+  DefaultActionDialog.prototype.show = function(title, message, items,
+      defaultIndex, onOk, onCancel, onShow) {
 
-    cr.ui.dialogs.BaseDialog.prototype.show.apply(this,
-        [message, onOk, onCancel, onShow]);
+    cr.ui.dialogs.BaseDialog.prototype.showWithTitle.apply(this,
+        [title, message, onOk, onCancel, onShow]);
+
+    if (!message) {
+      this.text_.setAttribute('hidden', 'hidden');
+    } else {
+      this.text_.removeAttribute('hidden');
+    }
 
     this.list_.startBatchUpdates();
 
