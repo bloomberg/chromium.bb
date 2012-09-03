@@ -83,6 +83,42 @@ const quota::StorageType kPersistent = quota::kStorageTypePersistent;
 const quota::QuotaClient::ID kClientFile = quota::QuotaClient::kFileSystem;
 const quota::QuotaClient::ID kClientDB = quota::QuotaClient::kIndexedDatabase;
 
+void PopulateTestQuotaManagedNonBrowsingData(quota::MockQuotaManager* manager) {
+  manager->AddOrigin(kOriginDevTools, kTemporary, kClientFile, base::Time());
+  manager->AddOrigin(kOriginDevTools, kPersistent, kClientFile, base::Time());
+  manager->AddOrigin(kOriginExt, kTemporary, kClientFile, base::Time());
+  manager->AddOrigin(kOriginExt, kPersistent, kClientFile, base::Time());
+}
+
+void PopulateTestQuotaManagedPersistentData(quota::MockQuotaManager* manager) {
+  manager->AddOrigin(kOrigin2, kPersistent, kClientFile, base::Time());
+  manager->AddOrigin(kOrigin3, kPersistent, kClientFile,
+      base::Time::Now() - base::TimeDelta::FromDays(1));
+
+  EXPECT_FALSE(manager->OriginHasData(kOrigin1, kPersistent, kClientFile));
+  EXPECT_TRUE(manager->OriginHasData(kOrigin2, kPersistent, kClientFile));
+  EXPECT_TRUE(manager->OriginHasData(kOrigin3, kPersistent, kClientFile));
+}
+
+void PopulateTestQuotaManagedTemporaryData(quota::MockQuotaManager* manager) {
+  manager->AddOrigin(kOrigin1, kTemporary, kClientFile, base::Time::Now());
+  manager->AddOrigin(kOrigin3, kTemporary, kClientFile,
+      base::Time::Now() - base::TimeDelta::FromDays(1));
+
+  EXPECT_TRUE(manager->OriginHasData(kOrigin1, kTemporary, kClientFile));
+  EXPECT_FALSE(manager->OriginHasData(kOrigin2, kTemporary, kClientFile));
+  EXPECT_TRUE(manager->OriginHasData(kOrigin3, kTemporary, kClientFile));
+}
+
+void PopulateTestQuotaManagedData(quota::MockQuotaManager* manager) {
+  // Set up kOrigin1 with a temporary quota, kOrigin2 with a persistent
+  // quota, and kOrigin3 with both. kOrigin1 is modified now, kOrigin2
+  // is modified at the beginning of time, and kOrigin3 is modified one day
+  // ago.
+  PopulateTestQuotaManagedPersistentData(manager);
+  PopulateTestQuotaManagedTemporaryData(manager);
+}
+
 }  // namespace
 
 class BrowsingDataRemoverTester : public BrowsingDataRemover::Observer {
@@ -437,44 +473,6 @@ class RemoveQuotaManagedDataTester : public BrowsingDataRemoverTester {
  public:
   RemoveQuotaManagedDataTester() {}
   virtual ~RemoveQuotaManagedDataTester() {}
-
-  void PopulateTestQuotaManagedData(quota::MockQuotaManager* manager) {
-    // Set up kOrigin1 with a temporary quota, kOrigin2 with a persistent
-    // quota, and kOrigin3 with both. kOrigin1 is modified now, kOrigin2
-    // is modified at the beginning of time, and kOrigin3 is modified one day
-    // ago.
-    PopulateTestQuotaManagedPersistentData(manager);
-    PopulateTestQuotaManagedTemporaryData(manager);
-  }
-
-  void PopulateTestQuotaManagedNonBrowsingData(
-      quota::MockQuotaManager* manager) {
-    manager->AddOrigin(kOriginDevTools, kTemporary, kClientFile, base::Time());
-    manager->AddOrigin(kOriginDevTools, kPersistent, kClientFile, base::Time());
-    manager->AddOrigin(kOriginExt, kTemporary, kClientFile, base::Time());
-    manager->AddOrigin(kOriginExt, kPersistent, kClientFile, base::Time());
-  }
-
-  void PopulateTestQuotaManagedPersistentData(
-      quota::MockQuotaManager* manager) {
-    manager->AddOrigin(kOrigin2, kPersistent, kClientFile, base::Time());
-    manager->AddOrigin(kOrigin3, kPersistent, kClientFile,
-        base::Time::Now() - base::TimeDelta::FromDays(1));
-
-    EXPECT_FALSE(manager->OriginHasData(kOrigin1, kPersistent, kClientFile));
-    EXPECT_TRUE(manager->OriginHasData(kOrigin2, kPersistent, kClientFile));
-    EXPECT_TRUE(manager->OriginHasData(kOrigin3, kPersistent, kClientFile));
-  }
-
-  void PopulateTestQuotaManagedTemporaryData(quota::MockQuotaManager* manager) {
-    manager->AddOrigin(kOrigin1, kTemporary, kClientFile, base::Time::Now());
-    manager->AddOrigin(kOrigin3, kTemporary, kClientFile,
-        base::Time::Now() - base::TimeDelta::FromDays(1));
-
-    EXPECT_TRUE(manager->OriginHasData(kOrigin1, kTemporary, kClientFile));
-    EXPECT_FALSE(manager->OriginHasData(kOrigin2, kTemporary, kClientFile));
-    EXPECT_TRUE(manager->OriginHasData(kOrigin3, kTemporary, kClientFile));
-  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RemoveQuotaManagedDataTester);
@@ -841,7 +839,7 @@ TEST_F(BrowsingDataRemoverTest, QuotaClientMaskGeneration) {
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverBoth) {
   RemoveQuotaManagedDataTester tester;
-  tester.PopulateTestQuotaManagedData(GetMockManager());
+  PopulateTestQuotaManagedData(GetMockManager());
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
       BrowsingDataRemover::REMOVE_FILE_SYSTEMS |
       BrowsingDataRemover::REMOVE_WEBSQL |
@@ -869,7 +867,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverBoth) {
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverOnlyTemporary) {
   RemoveQuotaManagedDataTester tester;
-  tester.PopulateTestQuotaManagedTemporaryData(GetMockManager());
+  PopulateTestQuotaManagedTemporaryData(GetMockManager());
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
       BrowsingDataRemover::REMOVE_FILE_SYSTEMS |
       BrowsingDataRemover::REMOVE_WEBSQL |
@@ -897,7 +895,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverOnlyTemporary) {
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverOnlyPersistent) {
   RemoveQuotaManagedDataTester tester;
-  tester.PopulateTestQuotaManagedPersistentData(GetMockManager());
+  PopulateTestQuotaManagedPersistentData(GetMockManager());
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
       BrowsingDataRemover::REMOVE_FILE_SYSTEMS |
       BrowsingDataRemover::REMOVE_WEBSQL |
@@ -954,7 +952,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverNeither) {
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverSpecificOrigin) {
   RemoveQuotaManagedDataTester tester;
-  tester.PopulateTestQuotaManagedData(GetMockManager());
+  PopulateTestQuotaManagedData(GetMockManager());
 
   // Remove Origin 1.
   BlockUntilOriginDataRemoved(BrowsingDataRemover::EVERYTHING,
@@ -984,7 +982,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverSpecificOrigin) {
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForLastHour) {
   RemoveQuotaManagedDataTester tester;
-  tester.PopulateTestQuotaManagedData(GetMockManager());
+  PopulateTestQuotaManagedData(GetMockManager());
 
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::LAST_HOUR,
       BrowsingDataRemover::REMOVE_FILE_SYSTEMS |
@@ -1013,7 +1011,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForLastHour) {
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForLastWeek) {
   RemoveQuotaManagedDataTester tester;
-  tester.PopulateTestQuotaManagedData(GetMockManager());
+  PopulateTestQuotaManagedData(GetMockManager());
 
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::LAST_WEEK,
       BrowsingDataRemover::REMOVE_FILE_SYSTEMS |
@@ -1048,7 +1046,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedUnprotectedOrigins) {
   GetProfile()->SetExtensionSpecialStoragePolicy(mock_policy);
 
   RemoveQuotaManagedDataTester tester;
-  tester.PopulateTestQuotaManagedData(GetMockManager());
+  PopulateTestQuotaManagedData(GetMockManager());
 
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
       BrowsingDataRemover::REMOVE_FILE_SYSTEMS |
@@ -1083,7 +1081,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedProtectedSpecificOrigin) {
   GetProfile()->SetExtensionSpecialStoragePolicy(mock_policy);
 
   RemoveQuotaManagedDataTester tester;
-  tester.PopulateTestQuotaManagedData(GetMockManager());
+  PopulateTestQuotaManagedData(GetMockManager());
 
   // Try to remove kOrigin1. Expect failure.
   BlockUntilOriginDataRemoved(BrowsingDataRemover::EVERYTHING,
@@ -1119,7 +1117,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedProtectedOrigins) {
   GetProfile()->SetExtensionSpecialStoragePolicy(mock_policy);
 
   RemoveQuotaManagedDataTester tester;
-  tester.PopulateTestQuotaManagedData(GetMockManager());
+  PopulateTestQuotaManagedData(GetMockManager());
 
   // Try to remove kOrigin1. Expect success.
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
@@ -1150,7 +1148,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedProtectedOrigins) {
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedIgnoreExtensionsAndDevTools) {
   RemoveQuotaManagedDataTester tester;
-  tester.PopulateTestQuotaManagedNonBrowsingData(GetMockManager());
+  PopulateTestQuotaManagedNonBrowsingData(GetMockManager());
 
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
       BrowsingDataRemover::REMOVE_APPCACHE |
