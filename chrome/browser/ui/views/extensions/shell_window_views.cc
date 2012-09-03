@@ -146,8 +146,17 @@ gfx::Rect ShellWindowFrameView::GetBoundsForClientView() const {
 
 gfx::Rect ShellWindowFrameView::GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const {
-  if (window_->frameless())
-    return client_bounds;
+  if (window_->frameless()) {
+    gfx::Rect window_bounds = client_bounds;
+    // Enforce minimum size (1, 1) in case that client_bounds is passed with
+    // empty size. This could occur when the frameless window is being
+    // initialized.
+    if (window_bounds.IsEmpty()) {
+      window_bounds.set_width(1);
+      window_bounds.set_height(1);
+    }
+    return window_bounds;
+  }
 
   int closeButtonOffsetX =
       (kCaptionHeight - close_button_->height()) / 2;
