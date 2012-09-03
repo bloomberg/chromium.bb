@@ -4,33 +4,38 @@
  * found in the LICENSE file.
  */
 
+/* DFA for instruction generators. */
+
 %%{
   machine one_instruction_x86_64;
   alphtype unsigned char;
 
-  # We need to know where DISP, IMM, and REL fields can be found
-  action disp8_operand_begin { }
-  action disp8_operand_end { }
-  action disp32_operand_begin { }
-  action disp32_operand_end { }
-  action disp64_operand_begin { }
-  action disp64_operand_end { }
+  include byte_machine "byte_machines.rl";
 
-  action imm8_operand_begin { }
-  action imm8_operand_end { }
-  action imm16_operand_begin { }
-  action imm16_operand_end { }
-  action imm32_operand_begin { }
-  action imm32_operand_end { }
-  action imm64_operand_begin { }
-  action imm64_operand_end { }
-
-  action rel8_operand_begin { }
-  action rel8_operand_end { }
-  action rel16_operand_begin { }
-  action rel16_operand_end { }
-  action rel32_operand_begin { }
-  action rel32_operand_end { }
+  include prefix_actions
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include prefixes_parsing
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include rex_actions
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include rex_parsing
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include vex_actions_amd64
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include vex_parsing_amd64
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include modrm_actions_amd64
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include modrm_parsing_amd64
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include displacement_fields_mark
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include immediate_fields_mark
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include relative_fields_mark_amd64
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include cpuid_actions
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
 
   action last_byte_is_not_immediate { }
 

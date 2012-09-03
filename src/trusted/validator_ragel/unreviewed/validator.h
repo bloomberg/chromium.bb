@@ -41,7 +41,7 @@ enum validation_callback_info {
   /* Was restricted from previous instruction used in the current one?  */
   RESTRICTED_REGISTER_USED      = 0x00002000,
   /* Mask to select all validation errors.  */
-  VALIDATION_ERRORS_MASK        = 0x03ffc000,
+  VALIDATION_ERRORS_MASK        = 0x01ffc000,
   /* Unrecognized instruction: fatal error, processing stops here.  */
   UNRECOGNIZED_INSTRUCTION      = 0x00004000,
   /* Direct jump to unaligned address outside of given region.  */
@@ -52,22 +52,23 @@ enum validation_callback_info {
   FORBIDDEN_BASE_REGISTER       = 0x00020000,
   /* Index must be restricted if present.  */
   UNRESTRICTED_INDEX_REGISTER   = 0x00040000,
+  BAD_RSP_RBP_PROCESSING_MASK   = 0x00380000,
   /* Operations with %ebp must be followed with sandboxing immediately.  */
   RESTRICTED_RBP_UNPROCESSED    = 0x00080000,
   /* Attemp to "sandbox" %rbp without restricting it first.  */
-  UNRESTRICTED_RBP_PROCESSED    = 0x00100000,
+  UNRESTRICTED_RBP_PROCESSED    = 0x00180000,
   /* Operations with %esp must be followed with sandboxing immediately.  */
-  RESTRICTED_RSP_UNPROCESSED    = 0x00200000,
+  RESTRICTED_RSP_UNPROCESSED    = 0x00280000,
   /* Attemp to "sandbox" %rsp without restricting it first.  */
-  UNRESTRICTED_RSP_PROCESSED    = 0x00400000,
+  UNRESTRICTED_RSP_PROCESSED    = 0x00380000,
   /* Operations with %r15 are forbidden.  */
-  R15_MODIFIED                  = 0x00800000,
+  R15_MODIFIED                  = 0x00400000,
   /* Operations with SPL are forbidden for compatibility with old validator.  */
-  BPL_MODIFIED                  = 0x01000000,
+  BPL_MODIFIED                  = 0x00800000,
   /* Operations with SPL are forbidden for compatibility with old validator.  */
-  SPL_MODIFIED                  = 0x02000000,
+  SPL_MODIFIED                  = 0x01000000,
   /* Bad call alignment: "call" must end at the end of the bundle.  */
-  BAD_CALL_ALIGNMENT            = 0x04000000,
+  BAD_CALL_ALIGNMENT            = 0x02000000,
   /* Instruction is modifiable by nacl_dyncode_modify.  */
   MODIFIABLE_INSTRUCTION        = 0x08000000,
   /* Special instruction.  Uses different, non-standard validation rules.  */

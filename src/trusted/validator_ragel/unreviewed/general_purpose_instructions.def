@@ -473,7 +473,8 @@ div =E, 0xf6 /6
 # AMD/Intel manual but it does complex manipulations and is very rarely used
 # (GCC, in particular, never use it).  As a rule we don't allow complex and
 # rarely used instructions such as “aaa” or “bound”.  Disable it for now.
-enter iw =Ib, 0xc8, nacl-forbidden
+enter iw =Ib, 0xc8, norexw nacl-forbidden
+enterq iw =Ib, rexw 0xc8, amd64 nacl-forbidden
 ######## IDIV ##################################################################
 # “idiv” is not marked as nacl-amd64-zero-extends because we never allowed it.
 idiv =E, 0xf6 /7
@@ -859,13 +860,15 @@ rcr E, 0xd0 /3
 rcr cb E, 0xd2 /3
 rcr Ib E, 0xc0 /3
 ######## RET (Near) ############################################################
-ret =Iw, 0xc2, nacl-forbidden
 ret, 0xc3, rep ia32 nacl-forbidden
+ret =Iw, 0xc2, norexw nacl-forbidden
 retq, 0xc3, rep amd64 nacl-forbidden
+retq =Iw, rexw 0xc2, amd64 nacl-forbidden
 ######## RET (Far) #############################################################
 lret, 0xcb, norexw nacl-forbidden
+lret =Iw, 0xca, norexw nacl-forbidden
 lretq, rexw 0xcb, amd64 nacl-forbidden
-lret =Iw, 0xca, nacl-forbidden
+lretq =Iw, rexw 0xca, amd64 nacl-forbidden
 ######## ROL ###################################################################
 # “rol” is not marked as nacl-amd64-zero-extends out of caution.  We assume that
 # this instruction is used for bit manipulation rather than computing viable

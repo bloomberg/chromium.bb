@@ -150,8 +150,9 @@ if generate:
         target=c_file,
         source=['unreviewed/%s_x86_%s.rl' % (automaton, bits),
                 '%s/byte_machines.rl' % rl_src_dir,
+                'unreviewed/parse_instruction.rl',
                 rl_file],
-        action=['%s %s -LL -I%s ${SOURCES[0]} -o ${TARGET}' % (
+        action=['%s %s -LL -I.. -I%s ${SOURCES[0]} -o ${TARGET}' % (
             ragel_binary, ragel_flags, rl_src_dir)]
     )
 
@@ -187,24 +188,22 @@ if generate:
 
   decoder32 = MakeAutomaton(
       '32', 'decoder',
-      'check_access,opcode,parse_operands_states,mark_data_fields',
+      'check_access,opcode,parse_operands_states',
       '-T0')
   validator32 = MakeAutomaton(
       '32', 'validator',
       ('check_access,opcode,parse_operands,parse_operands_states,'
-       'instruction_name,mark_data_fields,nacl-forbidden,'
-       'rel_operand_action'),
+       'instruction_name,nacl-forbidden'),
       '-G2')
   decoder64 = MakeAutomaton(
       '64', 'decoder',
-      'check_access,opcode,parse_operands_states,mark_data_fields',
+      'check_access,opcode,parse_operands_states',
       '-T0')
   validator64 = MakeAutomaton(
       '64', 'validator',
-      ('opcode,instruction_name,mark_data_fields,rel_operand_action,'
-       'nacl-forbidden,parse_nonwrite_registers,parse_x87_operands,'
-       'parse_mmx_operands,parse_xmm_operands,parse_ymm_operands,'
-       'parse_relative_operands,parse_immediate_operands,'
+      ('opcode,instruction_name,nacl-forbidden,parse_nonwrite_registers,'
+       'parse_x87_operands,parse_mmx_operands,parse_xmm_operands,'
+       'parse_ymm_operands,parse_relative_operands,parse_immediate_operands,'
        'parse_operands_states,parse_operand_positions'),
       '-GT2')
 
@@ -249,8 +248,8 @@ if generate:
         target='one_valid_instruction_x86_%s.rl' % bits,
         source=[gen_dfa] + INST_DEFS,
         action=('${SOURCES[0]} -o ${TARGET} %s '
-                '-d check_access,rex_prefix,vex_prefix,opcode '
-                '-d parse_operands_states,parse_operands,instruction_name '
+                '-d check_access,vex_prefix,opcode,parse_operands_states '
+                '-d parse_operands,instruction_name '
                 '-m %s') % (
                ' '.join('${SOURCES[%d]}' % (i + 1)
                         for i in range(len(INST_DEFS))),
@@ -265,7 +264,7 @@ if generate:
             'unreviewed/one_instruction_x86_%s.rl' % bits,
             one_valid_instr_rl],
         action=[
-            '%s -V -I%s ${SOURCES[0]} -o ${TARGET}' %
+            '%s -V -I%s -I.. ${SOURCES[0]} -o ${TARGET}' %
             (ragel_binary, include_dir)]
     )
 

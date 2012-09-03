@@ -27,6 +27,26 @@
   variable eof end_of_bundle;
   variable cs current_state;
 
+  include byte_machine "byte_machines.rl";
+
+  include prefix_actions
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include prefixes_parsing
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include vex_actions_ia32
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include vex_parsing_ia32
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include displacement_fields_actions
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include displacement_fields_parsing
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include modrm_parsing_ia32_noactions
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include immediate_fields_actions
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include immediate_fields_parsing_ia32
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   action rel8_operand {
     rel8_operand(current_position + 1, data, jump_dests, size,
                  &instruction_info_collected);
@@ -38,6 +58,10 @@
     rel32_operand(current_position + 1, data, jump_dests, size,
                   &instruction_info_collected);
   }
+  include relative_fields_parsing
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include cpuid_actions
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
 
   action last_byte_is_not_immediate {
     instruction_info_collected |= LAST_BYTE_IS_NOT_IMMEDIATE;

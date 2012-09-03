@@ -180,9 +180,7 @@ tr15:
      }
 	goto st247;
 tr19:
-	{
-    SET_CPU_FEATURE(CPUFeature_3DNOW);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_3DNOW); }
 	{
        if ((instruction_info_collected &
                                (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
@@ -198,9 +196,7 @@ tr19:
      }
 	goto st247;
 tr27:
-	{
-    SET_CPU_FEATURE(CPUFeature_TSC);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_TSC); }
 	{
        if ((instruction_info_collected &
                                (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
@@ -216,9 +212,7 @@ tr27:
      }
 	goto st247;
 tr36:
-	{
-    SET_CPU_FEATURE(CPUFeature_MMX);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_MMX); }
 	{
        if ((instruction_info_collected &
                                (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
@@ -234,9 +228,7 @@ tr36:
      }
 	goto st247;
 tr50:
-	{
-    SET_CPU_FEATURE(CPUFeature_MON);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_MON); }
 	{
        if ((instruction_info_collected &
                                (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
@@ -252,9 +244,7 @@ tr50:
      }
 	goto st247;
 tr51:
-	{
-    SET_CPU_FEATURE(CPUFeature_FXSR);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_FXSR); }
 	{
        if ((instruction_info_collected &
                                (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
@@ -270,9 +260,7 @@ tr51:
      }
 	goto st247;
 tr52:
-	{
-    SET_CPU_FEATURE(CPUFeature_3DPRFTCH);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_3DPRFTCH); }
 	{
        if ((instruction_info_collected &
                                (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
@@ -291,9 +279,7 @@ tr64:
 	{
     instruction_info_collected |= LAST_BYTE_IS_NOT_IMMEDIATE;
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_E3DNOW);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_E3DNOW); }
 	{
        if ((instruction_info_collected &
                                (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
@@ -312,9 +298,7 @@ tr65:
 	{
     instruction_info_collected |= LAST_BYTE_IS_NOT_IMMEDIATE;
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_3DNOW);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_3DNOW); }
 	{
        if ((instruction_info_collected &
                                (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
@@ -330,9 +314,7 @@ tr65:
      }
 	goto st247;
 tr71:
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE); }
 	{
        if ((instruction_info_collected &
                                (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
@@ -367,9 +349,7 @@ tr95:
      }
 	goto st247;
 tr98:
-	{
-    SET_CPU_FEATURE(CPUFeature_CLFLUSH);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_CLFLUSH); }
 	{
        if ((instruction_info_collected &
                                (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
@@ -385,9 +365,7 @@ tr98:
      }
 	goto st247;
 tr107:
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE2);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
 	{
        if ((instruction_info_collected &
                                (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
@@ -403,9 +381,7 @@ tr107:
      }
 	goto st247;
 tr108:
-	{
-    SET_CPU_FEATURE(CPUFeature_EMMXSSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
 	{
        if ((instruction_info_collected &
                                (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
@@ -421,9 +397,7 @@ tr108:
      }
 	goto st247;
 tr115:
-	{
-    SET_CPU_FEATURE(CPUFeature_CX8);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_CX8); }
 	{
        if ((instruction_info_collected &
                                (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
@@ -513,9 +487,7 @@ tr250:
      }
 	goto st247;
 tr263:
-	{
-    SET_CPU_FEATURE(CPUFeature_TBM);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_TBM); }
 	{
        if ((instruction_info_collected &
                                (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
@@ -531,9 +503,7 @@ tr263:
      }
 	goto st247;
 tr270:
-	{
-    SET_CPU_FEATURE(CPUFeature_LWP);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_LWP); }
 	{
        if ((instruction_info_collected &
                                (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
@@ -549,9 +519,7 @@ tr270:
      }
 	goto st247;
 tr304:
-	{
-    SET_CPU_FEATURE(CPUFeature_AVX);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_AVX); }
 	{
        if ((instruction_info_collected &
                                (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
@@ -567,9 +535,7 @@ tr304:
      }
 	goto st247;
 tr331:
-	{
-    SET_CPU_FEATURE(CPUFeature_BMI1);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
 	{
        if ((instruction_info_collected &
                                (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
@@ -604,9 +570,7 @@ tr357:
      }
 	goto st247;
 tr381:
-	{
-    SET_CPU_FEATURE(CPUFeature_x87);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_x87); }
 	{
        if ((instruction_info_collected &
                                (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
@@ -622,9 +586,7 @@ tr381:
      }
 	goto st247;
 tr387:
-	{
-    SET_CPU_FEATURE(CPUFeature_CMOVx87);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_CMOVx87); }
 	{
        if ((instruction_info_collected &
                                (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
@@ -746,9 +708,7 @@ tr443:
 	{
        BitmapSetBit(valid_targets, current_position - data);
      }
-	{
-    SET_CPU_FEATURE(CPUFeature_x87);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_x87); }
 	{
        if ((instruction_info_collected &
                                (VALIDATION_ERRORS_MASK | BAD_CALL_ALIGNMENT)) ||
@@ -892,192 +852,136 @@ case 247:
 		goto tr428;
 	goto tr16;
 tr21:
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE); }
 	goto st1;
 tr26:
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE2);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
 	goto st1;
 tr30:
-	{
-    SET_CPU_FEATURE(CPUFeature_CMOV);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_CMOV); }
 	goto st1;
 tr32:
-	{
-    SET_CPU_FEATURE(CPUFeature_MMX);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_MMX); }
 	goto st1;
 tr47:
-	{
-    SET_CPU_FEATURE(CPUFeature_EMMXSSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
 	goto st1;
 tr77:
-	{
-    SET_CPU_FEATURE(CPUFeature_SSSE3);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSSE3); }
 	goto st1;
 tr145:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE2);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
 	goto st1;
 tr155:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE3);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE3); }
 	goto st1;
 tr164:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSSE3);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSSE3); }
 	goto st1;
 tr165:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE41);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE41); }
 	goto st1;
 tr167:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE42);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE42); }
 	goto st1;
 tr168:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_AES);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_AES); }
 	goto st1;
 tr210:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE42);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE42); }
 	goto st1;
 tr212:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_POPCNT);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_POPCNT); }
 	goto st1;
 tr213:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_TZCNT);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_TZCNT); }
 	goto st1;
 tr214:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_LZCNT);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_LZCNT); }
 	goto st1;
 tr262:
-	{
-    SET_CPU_FEATURE(CPUFeature_XOP);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_XOP); }
 	goto st1;
 tr329:
-	{
-    SET_CPU_FEATURE(CPUFeature_BMI1);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
 	goto st1;
 tr301:
-	{
-    SET_CPU_FEATURE(CPUFeature_AVX);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_AVX); }
 	goto st1;
 tr337:
-	{
-    SET_CPU_FEATURE(CPUFeature_FMA);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_FMA); }
 	goto st1;
 tr338:
-	{
-    SET_CPU_FEATURE(CPUFeature_AESAVX);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_AESAVX);  }
 	goto st1;
 tr339:
-	{
-    SET_CPU_FEATURE(CPUFeature_F16C);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_F16C); }
 	goto st1;
 tr397:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE2);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
 	goto st1;
 tr398:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE3);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE3); }
 	goto st1;
 tr404:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE); }
 	goto st1;
 tr412:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE); }
 	goto st1;
 tr413:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE3);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE3); }
 	goto st1;
 tr415:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE2);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
 	goto st1;
 tr428:
 	{
@@ -1129,49 +1033,31 @@ case 1:
 		goto st7;
 	goto tr0;
 tr72:
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE); }
 	goto st2;
 tr53:
-	{
-    SET_CPU_FEATURE(CPUFeature_3DPRFTCH);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_3DPRFTCH); }
 	goto st2;
 tr96:
-	{
-    SET_CPU_FEATURE(CPUFeature_FXSR);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_FXSR); }
 	goto st2;
 tr99:
-	{
-    SET_CPU_FEATURE(CPUFeature_CLFLUSH);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_CLFLUSH); }
 	goto st2;
 tr116:
-	{
-    SET_CPU_FEATURE(CPUFeature_CX8);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_CX8); }
 	goto st2;
 tr264:
-	{
-    SET_CPU_FEATURE(CPUFeature_TBM);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_TBM); }
 	goto st2;
 tr332:
-	{
-    SET_CPU_FEATURE(CPUFeature_BMI1);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
 	goto st2;
 tr305:
-	{
-    SET_CPU_FEATURE(CPUFeature_AVX);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_AVX); }
 	goto st2;
 tr382:
-	{
-    SET_CPU_FEATURE(CPUFeature_x87);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_x87); }
 	goto st2;
 st2:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -1213,49 +1099,31 @@ case 2:
 	}
 	goto tr0;
 tr73:
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE); }
 	goto st3;
 tr54:
-	{
-    SET_CPU_FEATURE(CPUFeature_3DPRFTCH);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_3DPRFTCH); }
 	goto st3;
 tr97:
-	{
-    SET_CPU_FEATURE(CPUFeature_FXSR);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_FXSR); }
 	goto st3;
 tr100:
-	{
-    SET_CPU_FEATURE(CPUFeature_CLFLUSH);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_CLFLUSH); }
 	goto st3;
 tr117:
-	{
-    SET_CPU_FEATURE(CPUFeature_CX8);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_CX8); }
 	goto st3;
 tr265:
-	{
-    SET_CPU_FEATURE(CPUFeature_TBM);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_TBM); }
 	goto st3;
 tr333:
-	{
-    SET_CPU_FEATURE(CPUFeature_BMI1);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
 	goto st3;
 tr306:
-	{
-    SET_CPU_FEATURE(CPUFeature_AVX);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_AVX); }
 	goto st3;
 tr383:
-	{
-    SET_CPU_FEATURE(CPUFeature_x87);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_x87); }
 	goto st3;
 tr444:
 	{
@@ -1283,49 +1151,31 @@ st6:
 case 6:
 	goto tr9;
 tr74:
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE); }
 	goto st7;
 tr55:
-	{
-    SET_CPU_FEATURE(CPUFeature_3DPRFTCH);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_3DPRFTCH); }
 	goto st7;
 tr101:
-	{
-    SET_CPU_FEATURE(CPUFeature_FXSR);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_FXSR); }
 	goto st7;
 tr103:
-	{
-    SET_CPU_FEATURE(CPUFeature_CLFLUSH);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_CLFLUSH); }
 	goto st7;
 tr118:
-	{
-    SET_CPU_FEATURE(CPUFeature_CX8);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_CX8); }
 	goto st7;
 tr266:
-	{
-    SET_CPU_FEATURE(CPUFeature_TBM);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_TBM); }
 	goto st7;
 tr334:
-	{
-    SET_CPU_FEATURE(CPUFeature_BMI1);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
 	goto st7;
 tr307:
-	{
-    SET_CPU_FEATURE(CPUFeature_AVX);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_AVX); }
 	goto st7;
 tr384:
-	{
-    SET_CPU_FEATURE(CPUFeature_x87);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_x87); }
 	goto st7;
 st7:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -1333,49 +1183,31 @@ st7:
 case 7:
 	goto tr10;
 tr75:
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE); }
 	goto st8;
 tr56:
-	{
-    SET_CPU_FEATURE(CPUFeature_3DPRFTCH);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_3DPRFTCH); }
 	goto st8;
 tr102:
-	{
-    SET_CPU_FEATURE(CPUFeature_FXSR);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_FXSR); }
 	goto st8;
 tr104:
-	{
-    SET_CPU_FEATURE(CPUFeature_CLFLUSH);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_CLFLUSH); }
 	goto st8;
 tr119:
-	{
-    SET_CPU_FEATURE(CPUFeature_CX8);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_CX8); }
 	goto st8;
 tr267:
-	{
-    SET_CPU_FEATURE(CPUFeature_TBM);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_TBM); }
 	goto st8;
 tr335:
-	{
-    SET_CPU_FEATURE(CPUFeature_BMI1);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
 	goto st8;
 tr308:
-	{
-    SET_CPU_FEATURE(CPUFeature_AVX);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_AVX); }
 	goto st8;
 tr385:
-	{
-    SET_CPU_FEATURE(CPUFeature_x87);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_x87); }
 	goto st8;
 st8:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -1383,49 +1215,31 @@ st8:
 case 8:
 	goto st7;
 tr76:
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE); }
 	goto st9;
 tr57:
-	{
-    SET_CPU_FEATURE(CPUFeature_3DPRFTCH);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_3DPRFTCH); }
 	goto st9;
 tr105:
-	{
-    SET_CPU_FEATURE(CPUFeature_FXSR);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_FXSR); }
 	goto st9;
 tr106:
-	{
-    SET_CPU_FEATURE(CPUFeature_CLFLUSH);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_CLFLUSH); }
 	goto st9;
 tr120:
-	{
-    SET_CPU_FEATURE(CPUFeature_CX8);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_CX8); }
 	goto st9;
 tr268:
-	{
-    SET_CPU_FEATURE(CPUFeature_TBM);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_TBM); }
 	goto st9;
 tr336:
-	{
-    SET_CPU_FEATURE(CPUFeature_BMI1);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
 	goto st9;
 tr309:
-	{
-    SET_CPU_FEATURE(CPUFeature_AVX);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_AVX); }
 	goto st9;
 tr386:
-	{
-    SET_CPU_FEATURE(CPUFeature_x87);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_x87); }
 	goto st9;
 st9:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -1433,14 +1247,10 @@ st9:
 case 9:
 	goto st3;
 tr91:
-	{
-    SET_CPU_FEATURE(CPUFeature_MMX);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_MMX); }
 	goto st10;
 tr109:
-	{
-    SET_CPU_FEATURE(CPUFeature_EMMXSSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
 	goto st10;
 tr89:
 	{
@@ -1458,30 +1268,22 @@ tr181:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE2);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
 	goto st10;
 tr175:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE41);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE41); }
 	goto st10;
 tr182:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE); }
 	goto st10;
 tr312:
-	{
-    SET_CPU_FEATURE(CPUFeature_AVX);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_AVX); }
 	goto st10;
 tr408:
 	{
@@ -1512,9 +1314,7 @@ tr225:
   }
 	goto st11;
 tr274:
-	{
-    SET_CPU_FEATURE(CPUFeature_LWP);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_LWP); }
 	goto st11;
 tr430:
 	{
@@ -1918,69 +1718,49 @@ case 28:
 		goto tr74;
 	goto tr71;
 tr23:
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE); }
 	goto st29;
 tr42:
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE2);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
 	goto st29;
 tr48:
-	{
-    SET_CPU_FEATURE(CPUFeature_EMMXSSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
 	goto st29;
 tr78:
-	{
-    SET_CPU_FEATURE(CPUFeature_MOVBE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_MOVBE); }
 	goto st29;
 tr146:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE2);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
 	goto st29;
 tr166:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE41);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE41); }
 	goto st29;
 tr302:
-	{
-    SET_CPU_FEATURE(CPUFeature_AVX);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_AVX); }
 	goto st29;
 tr406:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE3);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE3); }
 	goto st29;
 tr399:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE4A);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE4A); }
 	goto st29;
 tr414:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE4A);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE4A); }
 	goto st29;
 tr441:
 	{
@@ -2110,116 +1890,82 @@ case 33:
 		goto tr79;
 	goto tr16;
 tr41:
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE); }
 	goto st34;
 tr33:
-	{
-    SET_CPU_FEATURE(CPUFeature_EMMXSSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
 	goto st34;
 tr79:
-	{
-    SET_CPU_FEATURE(CPUFeature_SSSE3);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSSE3); }
 	goto st34;
 tr151:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE2);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
 	goto st34;
 tr170:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSSE3);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSSE3); }
 	goto st34;
 tr169:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE41);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE41); }
 	goto st34;
 tr173:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE42);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE42); }
 	goto st34;
 tr174:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_AES);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_AES); }
 	goto st34;
 tr172:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_CLMUL);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_CLMUL); }
 	goto st34;
 tr243:
-	{
-    SET_CPU_FEATURE(CPUFeature_XOP);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_XOP); }
 	goto st34;
 tr303:
-	{
-    SET_CPU_FEATURE(CPUFeature_AVX);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_AVX); }
 	goto st34;
 tr350:
-	{
-    SET_CPU_FEATURE(CPUFeature_AESAVX);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_AESAVX);  }
 	goto st34;
 tr364:
-	{
-    SET_CPU_FEATURE(CPUFeature_F16C);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_F16C); }
 	goto st34;
 tr346:
-	{
-    SET_CPU_FEATURE(CPUFeature_CLMULAVX);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_CLMULAVX); }
 	goto st34;
 tr401:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE2);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
 	goto st34;
 tr417:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE); }
 	goto st34;
 tr416:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE2);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
 	goto st34;
 tr438:
 	{
@@ -2271,30 +2017,22 @@ case 34:
 		goto st40;
 	goto st10;
 tr110:
-	{
-    SET_CPU_FEATURE(CPUFeature_EMMXSSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
 	goto st35;
 tr176:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE41);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE41); }
 	goto st35;
 tr183:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE); }
 	goto st35;
 tr317:
-	{
-    SET_CPU_FEATURE(CPUFeature_AVX);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_AVX); }
 	goto st35;
 st35:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -2336,30 +2074,22 @@ case 35:
 	}
 	goto st10;
 tr111:
-	{
-    SET_CPU_FEATURE(CPUFeature_EMMXSSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
 	goto st36;
 tr177:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE41);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE41); }
 	goto st36;
 tr184:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE); }
 	goto st36;
 tr318:
-	{
-    SET_CPU_FEATURE(CPUFeature_AVX);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_AVX); }
 	goto st36;
 st36:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -2382,30 +2112,22 @@ st39:
 case 39:
 	goto tr89;
 tr112:
-	{
-    SET_CPU_FEATURE(CPUFeature_EMMXSSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
 	goto st40;
 tr178:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE41);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE41); }
 	goto st40;
 tr185:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE); }
 	goto st40;
 tr319:
-	{
-    SET_CPU_FEATURE(CPUFeature_AVX);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_AVX); }
 	goto st40;
 st40:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -2413,30 +2135,22 @@ st40:
 case 40:
 	goto tr90;
 tr113:
-	{
-    SET_CPU_FEATURE(CPUFeature_EMMXSSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
 	goto st41;
 tr179:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE41);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE41); }
 	goto st41;
 tr186:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE); }
 	goto st41;
 tr320:
-	{
-    SET_CPU_FEATURE(CPUFeature_AVX);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_AVX); }
 	goto st41;
 st41:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -2444,30 +2158,22 @@ st41:
 case 41:
 	goto st40;
 tr114:
-	{
-    SET_CPU_FEATURE(CPUFeature_EMMXSSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
 	goto st42;
 tr180:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE41);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE41); }
 	goto st42;
 tr187:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE); }
 	goto st42;
 tr321:
-	{
-    SET_CPU_FEATURE(CPUFeature_AVX);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_AVX); }
 	goto st42;
 st42:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -2475,64 +2181,46 @@ st42:
 case 42:
 	goto st36;
 tr31:
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE); }
 	goto st43;
 tr46:
-	{
-    SET_CPU_FEATURE(CPUFeature_EMMXSSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
 	goto st43;
 tr49:
-	{
-    SET_CPU_FEATURE(CPUFeature_EMMX);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_EMMX); }
 	goto st43;
 tr150:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE2);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
 	goto st43;
 tr154:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE4A);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE4A); }
 	goto st43;
 tr313:
-	{
-    SET_CPU_FEATURE(CPUFeature_AVX);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_AVX); }
 	goto st43;
 tr405:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE2);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
 	goto st43;
 tr403:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE4A);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE4A); }
 	goto st43;
 tr418:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE2);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
 	goto st43;
 st43:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -2711,22 +2399,16 @@ case 51:
 		goto tr112;
 	goto tr109;
 tr44:
-	{
-    SET_CPU_FEATURE(CPUFeature_EMMXSSE);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_EMMXSSE); }
 	goto st52;
 tr157:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE2);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE2); }
 	goto st52;
 tr316:
-	{
-    SET_CPU_FEATURE(CPUFeature_AVX);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_AVX); }
 	goto st52;
 st52:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -3911,9 +3593,7 @@ case 110:
 		goto st7;
 	goto tr16;
 tr280:
-	{
-    SET_CPU_FEATURE(CPUFeature_BMI1);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_BMI1); }
 	goto st111;
 tr437:
 	{
@@ -3965,9 +3645,7 @@ case 111:
 		goto st117;
 	goto st11;
 tr275:
-	{
-    SET_CPU_FEATURE(CPUFeature_LWP);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_LWP); }
 	goto st112;
 st112:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -4009,9 +3687,7 @@ case 112:
 	}
 	goto st11;
 tr276:
-	{
-    SET_CPU_FEATURE(CPUFeature_LWP);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_LWP); }
 	goto st113;
 st113:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -4034,9 +3710,7 @@ st116:
 case 116:
 	goto tr224;
 tr277:
-	{
-    SET_CPU_FEATURE(CPUFeature_LWP);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_LWP); }
 	goto st117;
 st117:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -4044,9 +3718,7 @@ st117:
 case 117:
 	goto tr225;
 tr278:
-	{
-    SET_CPU_FEATURE(CPUFeature_LWP);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_LWP); }
 	goto st118;
 st118:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -4054,9 +3726,7 @@ st118:
 case 118:
 	goto st117;
 tr279:
-	{
-    SET_CPU_FEATURE(CPUFeature_LWP);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_LWP); }
 	goto st119;
 st119:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -4378,19 +4048,13 @@ case 124:
 		goto tr242;
 	goto tr16;
 tr242:
-	{
-    SET_CPU_FEATURE(CPUFeature_XOP);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_XOP); }
 	goto st125;
 tr348:
-	{
-    SET_CPU_FEATURE(CPUFeature_AVX);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_AVX); }
 	goto st125;
 tr349:
-	{
-    SET_CPU_FEATURE(CPUFeature_FMA4);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_FMA4); }
 	goto st125;
 st125:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -5996,9 +5660,7 @@ case 183:
 		goto tr348;
 	goto tr16;
 tr347:
-	{
-    SET_CPU_FEATURE(CPUFeature_XOP);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_XOP); }
 	goto st184;
 st184:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -6249,9 +5911,7 @@ case 195:
 		goto tr347;
 	goto tr16;
 tr363:
-	{
-    SET_CPU_FEATURE(CPUFeature_AVX);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_AVX); }
 	goto st196;
 st196:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -7313,9 +6973,7 @@ tr402:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE4A);
-  }
+	{ SET_CPU_FEATURE(CPUFeature_SSE4A); }
 	goto st225;
 st225:
 	if ( ++( current_position) == ( end_of_bundle) )

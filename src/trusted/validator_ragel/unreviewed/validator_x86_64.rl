@@ -23,11 +23,34 @@
   variable eof end_of_bundle;
   variable cs current_state;
 
-  action check_access {
-    check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &instruction_info_collected);
-  }
+  include byte_machine "byte_machines.rl";
 
+  include prefix_actions
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include prefixes_parsing
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include rex_actions
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include rex_parsing
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include vex_actions_amd64
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include vex_parsing_amd64
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include displacement_fields_actions
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include displacement_fields_parsing
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include modrm_actions_amd64
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include modrm_parsing_amd64
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include operand_actions_amd64
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include immediate_fields_actions
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include immediate_fields_parsing_amd64
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   action rel8_operand {
     rel8_operand(current_position + 1, data, jump_dests, size,
                  &instruction_info_collected);
@@ -38,6 +61,15 @@
   action rel32_operand {
     rel32_operand(current_position + 1, data, jump_dests, size,
                   &instruction_info_collected);
+  }
+  include relative_fields_parsing
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include cpuid_actions
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+
+  action check_access {
+    check_access(instruction_start - data, base, index, restricted_register,
+                 valid_targets, &instruction_info_collected);
   }
 
   action last_byte_is_not_immediate {

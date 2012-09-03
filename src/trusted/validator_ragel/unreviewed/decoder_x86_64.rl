@@ -24,6 +24,41 @@
   variable eof end_of_data;
   variable cs current_state;
 
+  include byte_machine "byte_machines.rl";
+
+  include prefix_actions
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include prefixes_parsing
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include rex_actions
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include rex_parsing
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include vex_actions_amd64
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include vex_parsing_amd64
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include displacement_fields_actions
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include displacement_fields_parsing
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include modrm_actions_amd64
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include modrm_parsing_amd64
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include operand_actions_amd64
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include immediate_fields_actions
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include immediate_fields_parsing_amd64
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include relative_fields_actions
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include relative_fields_parsing
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include cpuid_actions
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+
   include decode_x86_64 "decoder_x86_64_instruction.rl";
 
   main := (one_instruction
