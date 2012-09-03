@@ -299,11 +299,7 @@ void WebIntentPickerController::OnServiceChosen(
   // TODO(smckay): this basically smells like another disposition.
   if (extension && extension->is_platform_app()) {
     extensions::LaunchPlatformAppWithWebIntent(tab_contents_->profile(),
-        extension, intents_dispatcher_->GetIntent());
-    // TODO(benwells): hook up return pathway to allow platform app to post
-    // success or failure.
-    intents_dispatcher_->SendReplyMessage(
-        webkit_glue::WEB_INTENT_REPLY_SUCCESS, string16());
+        extension, intents_dispatcher_, tab_contents_->web_contents());
     ClosePicker();
     return;
   }

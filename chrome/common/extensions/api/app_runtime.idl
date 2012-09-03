@@ -33,4 +33,21 @@ namespace app.runtime {
     static void onLaunched(optional LaunchData launchData);
   };
 
+  dictionary IntentResponse {
+    // Identifies the intent.
+    long intentId;
+
+    // Was this intent successful? (i.e., postSuccess vs postFailure).
+    boolean success;
+
+    // Data associated with the intent response.
+    any data;
+  };
+
+  interface Functions {
+    // postIntentResponse is an internal method to responds to an intent
+    // previously sent to a packaged app. This is identified by intentId, and
+    // should only be invoked at most once per intentId.
+    [nodoc] static void postIntentResponse(IntentResponse intentResponse);
+  };
 };

@@ -580,6 +580,8 @@
         'browser/extensions/webstore_install_helper.h',
         'browser/extensions/webstore_installer.cc',
         'browser/extensions/webstore_installer.h',
+        'browser/extensions/web_intent_callbacks.cc',
+        'browser/extensions/web_intent_callbacks.h',
         'browser/extensions/window_controller.cc',
         'browser/extensions/window_controller.h',
         'browser/extensions/window_controller_list.cc',

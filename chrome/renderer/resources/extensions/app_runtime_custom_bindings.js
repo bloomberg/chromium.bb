@@ -9,12 +9,31 @@ var fileSystemHelpers = requireNative('file_system_natives');
 var GetIsolatedFileSystem = fileSystemHelpers.GetIsolatedFileSystem;
 var appNatives = requireNative('app_runtime');
 var DeserializeString = appNatives.DeserializeString;
+var SerializeToString = appNatives.SerializeToString;
 var CreateBlob = appNatives.CreateBlob;
 
 chromeHidden.Event.registerArgumentMassager('app.runtime.onLaunched',
     function(args, dispatch) {
   var launchData = args[0];
   var intentData = args[1];
+  var intentId = args[2];
+
+  if (launchData) {
+    if (intentId) {
+      var fn = function(success, data) {
+        chrome.app.runtime.postIntentResponse({
+          'intentId': intentId,
+          'success': success,
+          'data': SerializeToString(data)
+        });
+      };
+      launchData.intent.postResult = fn.bind(undefined, true);
+      launchData.intent.postFailure = fn.bind(undefined, false);
+    } else {
+      launchData.intent.postResult = function() {};
+      launchData.intent.postFailure = function() {};
+    }
+  }
 
   if (launchData && intentData) {
     switch(intentData.format) {
@@ -23,8 +42,6 @@ chromeHidden.Event.registerArgumentMassager('app.runtime.onLaunched',
         try {
           fs.root.getFile(intentData.baseName, {}, function(fileEntry) {
             launchData.intent.data = fileEntry;
-            launchData.intent.postResult = function() {};
-            launchData.intent.postFailure = function() {};
             dispatch([launchData]);
           }, function(fileError) {
             console.error('Error getting fileEntry, code: ' + fileError.code);
@@ -45,16 +62,12 @@ chromeHidden.Event.registerArgumentMassager('app.runtime.onLaunched',
       case('serialized'):
         var deserializedData = DeserializeString(intentData.data);
         launchData.intent.data = deserializedData;
-        launchData.intent.postResult = function() {};
-        launchData.intent.postFailure = function() {};
         dispatch([launchData]);
         break;
       case('blob'):
         var blobData = CreateBlob(intentData.blobFilePath,
                                   intentData.blobLength);
         launchData.intent.data = blobData;
-        launchData.intent.postResult = function() {};
-        launchData.intent.postFailure = function() {};
         dispatch([launchData]);
         break;
       default:

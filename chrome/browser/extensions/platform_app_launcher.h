@@ -9,8 +9,9 @@ class CommandLine;
 class FilePath;
 class Profile;
 
-namespace webkit_glue {
-struct WebIntentData;
+namespace content {
+class WebContents;
+class WebIntentsDispatcher;
 }
 
 namespace extensions {
@@ -32,7 +33,8 @@ void LaunchPlatformApp(Profile* profile,
 void LaunchPlatformAppWithWebIntent(
     Profile* profile,
     const Extension* extension,
-    const webkit_glue::WebIntentData& web_intent_data);
+    content::WebIntentsDispatcher* intents_dispatcher,
+    content::WebContents* source);
 
 }  // namespace extensions
 

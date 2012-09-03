@@ -22,6 +22,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_intents_dispatcher.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 #include "webkit/fileapi/file_system_types.h"
@@ -233,12 +235,16 @@ class PlatformAppCommandLineLauncher
 class PlatformAppWebIntentLauncher
     : public base::RefCountedThreadSafe<PlatformAppWebIntentLauncher> {
  public:
-  PlatformAppWebIntentLauncher(Profile* profile,
-                               const Extension* extension,
-                               const webkit_glue::WebIntentData& data)
+  PlatformAppWebIntentLauncher(
+      Profile* profile,
+      const Extension* extension,
+      content::WebIntentsDispatcher* intents_dispatcher,
+      content::WebContents* source)
       : profile_(profile),
         extension_(extension),
-        data_(data) {}
+        intents_dispatcher_(intents_dispatcher),
+        source_(source),
+        data_(intents_dispatcher->GetIntent()) {}
 
   void Launch() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -311,14 +317,18 @@ class PlatformAppWebIntentLauncher
 
   void InternalLaunch() {
     extensions::AppEventRouter::DispatchOnLaunchedEventWithWebIntent(
-        profile_, extension_, data_);
+        profile_, extension_, intents_dispatcher_, source_);
   }
 
   // The profile the app should be run in.
   Profile* profile_;
   // The extension providing the app.
   const Extension* extension_;
-  // The WebIntent data to be passed through to the app.
+  // The dispatcher so that platform apps can respond to this intent.
+  content::WebIntentsDispatcher* intents_dispatcher_;
+  // The source of this intent.
+  content::WebContents* source_;
+  // The WebIntent data from the dispatcher.
   const webkit_glue::WebIntentData data_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformAppWebIntentLauncher);
@@ -342,9 +352,11 @@ void LaunchPlatformApp(Profile* profile,
 void LaunchPlatformAppWithWebIntent(
     Profile* profile,
     const Extension* extension,
-    const webkit_glue::WebIntentData& web_intent_data) {
+    content::WebIntentsDispatcher* intents_dispatcher,
+    content::WebContents* source) {
   scoped_refptr<PlatformAppWebIntentLauncher> launcher =
-      new PlatformAppWebIntentLauncher(profile, extension, web_intent_data);
+      new PlatformAppWebIntentLauncher(
+          profile, extension, intents_dispatcher, source);
   launcher->Launch();
 }
 

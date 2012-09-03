@@ -7,6 +7,7 @@
 #include "base/string_number_conversions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBlob.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
 using WebKit::WebBlob;
@@ -24,6 +25,16 @@ v8::Handle<v8::Value> DeserializeString(const v8::Arguments &args) {
   WebSerializedScriptValue serialized =
       WebSerializedScriptValue::fromString(data_webstring);
   return serialized.deserialize();
+}
+
+v8::Handle<v8::Value> SerializeToString(const v8::Arguments &args) {
+  DCHECK(args.Length() == 1);
+  WebSerializedScriptValue data =
+      WebSerializedScriptValue::serialize(args[0]);
+  WebString data_webstring = data.toString();
+
+  std::string v = std::string(data_webstring.utf8());
+  return v8::String::New(v.c_str());
 }
 
 v8::Handle<v8::Value> CreateBlob(const v8::Arguments &args) {
@@ -47,6 +58,7 @@ namespace extensions {
 AppRuntimeCustomBindings::AppRuntimeCustomBindings()
     : ChromeV8Extension(NULL) {
   RouteStaticFunction("DeserializeString", &DeserializeString);
+  RouteStaticFunction("SerializeToString", &SerializeToString);
   RouteStaticFunction("CreateBlob", &CreateBlob);
 }
 

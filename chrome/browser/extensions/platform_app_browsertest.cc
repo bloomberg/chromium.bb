@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/automation/automation_util.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
+#include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
+#include "chrome/browser/extensions/platform_app_launcher.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -18,6 +21,9 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_intents_dispatcher.h"
+#include "googleurl/src/gurl.h"
+#include "webkit/glue/web_intent_data.h"
 
 using content::WebContents;
 
@@ -47,6 +53,52 @@ class PlatformAppContextMenu : public RenderViewContextMenu {
   virtual void PlatformCancel() OVERRIDE {}
 };
 
+// State holder for the LaunchReply test. This provides an WebIntentsDispatcher
+// that will, when used to launch a Web Intent, will return its reply via this
+// class. The result may then be waited on via WaitUntilReply().
+class LaunchReplyHandler {
+ public:
+  explicit LaunchReplyHandler(webkit_glue::WebIntentData& data)
+      : data_(data),
+        replied_(false),
+        weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+    intents_dispatcher_ = content::WebIntentsDispatcher::Create(data);
+    intents_dispatcher_->RegisterReplyNotification(base::Bind(
+        &LaunchReplyHandler::OnReply, weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  content::WebIntentsDispatcher* intents_dispatcher() {
+    return intents_dispatcher_;
+  }
+
+  // Waits until a reply to this Web Intent is provided via the
+  // WebIntentsDispatcher.
+  bool WaitUntilReply() {
+    if (replied_)
+      return true;
+    waiting_ = true;
+    content::RunMessageLoop();
+    waiting_ = false;
+    return replied_;
+  }
+
+ private:
+  void OnReply(webkit_glue::WebIntentReplyType reply) {
+    // Note that the ReplyNotification registered on WebIntentsDispatcher does
+    // not include the result data: this is reserved for the source page (which
+    // we don't care about).
+    replied_ = true;
+    if (waiting_)
+      MessageLoopForUI::current()->Quit();
+  }
+
+  webkit_glue::WebIntentData data_;
+  bool replied_;
+  bool waiting_;
+  content::WebIntentsDispatcher* intents_dispatcher_;
+  base::WeakPtrFactory<LaunchReplyHandler> weak_ptr_factory_;
+};
+
 const char kTestFilePath[] = "platform_apps/launch_files/test.txt";
 
 }  // namespace
@@ -63,6 +115,35 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, CreateAndCloseShellWindow) {
 // Tests that platform apps received the "launch" event when launched.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, OnLaunchedEvent) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch")) << message_;
+}
+
+// Tests that platform apps can reply to "launch" events that contain a Web
+// Intent. This test does not test the mechanics of invoking a Web Intent
+// from a source page, and short-circuits to LaunchPlatformAppWithWebIntent.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchReply) {
+  FilePath path = test_data_dir_.AppendASCII("platform_apps/launch_reply");
+  const extensions::Extension* extension = LoadExtension(path);
+  ASSERT_TRUE(extension) << "Failed to load extension.";
+
+  webkit_glue::WebIntentData data(
+      UTF8ToUTF16("http://webintents.org/view"),
+      UTF8ToUTF16("text/plain"),
+      UTF8ToUTF16("irrelevant unserialized string data"));
+  LaunchReplyHandler handler(data);
+
+  // Navigate to a boring page: we don't care what it is, but we require some
+  // source WebContents to launch the Web Intent "from".
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  ASSERT_TRUE(web_contents);
+
+  extensions::LaunchPlatformAppWithWebIntent(
+      browser()->profile(),
+      extension,
+      handler.intents_dispatcher(),
+      web_contents);
+
+  ASSERT_TRUE(handler.WaitUntilReply());
 }
 
 // Tests that platform apps cannot use certain disabled window properties, but

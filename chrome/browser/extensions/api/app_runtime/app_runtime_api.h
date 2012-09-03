@@ -6,11 +6,13 @@
 #define CHROME_BROWSER_EXTENSIONS_API_APP_RUNTIME_APP_RUNTIME_API_H_
 
 #include "base/string16.h"
+#include "chrome/browser/extensions/extension_function.h"
 
 class Profile;
 
-namespace webkit_glue {
-struct WebIntentData;
+namespace content {
+class WebContents;
+class WebIntentsDispatcher;
 }
 
 namespace extensions {
@@ -52,7 +54,17 @@ class AppEventRouter {
   static void DispatchOnLaunchedEventWithWebIntent(
       Profile* profile,
       const Extension* extension,
-      const webkit_glue::WebIntentData web_intent_data);
+      content::WebIntentsDispatcher* intents_dispatcher,
+      content::WebContents* source);
+};
+
+class AppRuntimePostIntentResponseFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("app.runtime.postIntentResponse");
+
+ protected:
+  virtual ~AppRuntimePostIntentResponseFunction() {}
+  virtual bool RunImpl() OVERRIDE;
 };
 
 }  // namespace extensions

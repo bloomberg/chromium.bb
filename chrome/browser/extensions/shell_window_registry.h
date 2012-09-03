@@ -50,7 +50,7 @@ class ShellWindowRegistry : public ProfileKeyedService {
   virtual ~ShellWindowRegistry();
 
   // Returns the instance for the given profile, or NULL if none. This is
-  // a convenience wrapper around ShellWindowRegistryFactory::GetForProfile.
+  // a convenience wrapper around ShellWindowRegistry::Factory::GetForProfile.
   static ShellWindowRegistry* Get(Profile* profile);
 
   void AddShellWindow(ShellWindow* shell_window);
