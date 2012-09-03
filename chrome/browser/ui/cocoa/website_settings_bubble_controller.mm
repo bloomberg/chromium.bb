@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/website_settings_bubble_controller.h"
 
+#include <cmath>
+
 #include "base/string_number_conversions.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/certificate_viewer.h"
@@ -30,7 +32,7 @@ namespace {
 
 // The width of the window, in view coordinates. The height will be determined
 // by the content.
-const CGFloat kWindowWidth = 380;
+const CGFloat kWindowWidth = 310;
 
 // Spacing in between sections.
 const CGFloat kVerticalSpacing = 10;
@@ -41,8 +43,8 @@ const CGFloat kFramePadding = 20;
 // Padding between the window frame and content for the internal page bubble.
 const CGFloat kInternalPageFramePadding = 10;
 
-// Spacing between the optional headline and description text views.
-const CGFloat kHeadlineSpacing = 2;
+// Spacing between the headlines and description text on the Connection tab.
+const CGFloat kConnectionHeadlineSpacing = 2;
 
 // Spacing between images on the Connection tab and the text.
 const CGFloat kConnectionImageSpacing = 10;
@@ -67,7 +69,10 @@ const CGFloat kPermissionImageYAdjust = 1;
 const CGFloat kPermissionImageSpacing = 3;
 
 // The spacing between individual items in the Permissions tab.
-const CGFloat kPermissionsTabSpacing = 8;
+const CGFloat kPermissionsTabSpacing = 12;
+
+// Extra spacing after a headline on the Permissions tab.
+const CGFloat kPermissionsHeadlineSpacing = 2;
 
 // The extra space to the left of the first tab in the tab strip.
 const CGFloat kTabStripXPadding = kFramePadding - 1;
@@ -193,8 +198,9 @@ NSColor* IdentityVerifiedTextColor() {
     rect.origin.x += [self widthForSegment:i];
   }
   int xAdjust = segment == 0 ? kTabStripXPadding : 0;
-  rect.size.width = [self widthForSegment:segment] - kTabSpacing - xAdjust;
-  rect.origin.x += kTabSpacing / 2 + xAdjust;
+  rect.size.width = std::floor(
+      [self widthForSegment:segment] - kTabSpacing - xAdjust);
+  rect.origin.x = std::floor(rect.origin.x + kTabSpacing / 2 + xAdjust);
 
   return rect;
 }
@@ -333,7 +339,8 @@ NSColor* IdentityVerifiedTextColor() {
                             bold:YES
                           toView:contentView_
                          atPoint:controlOrigin];
-  controlOrigin.y += NSHeight([identityField_ frame]) + kHeadlineSpacing;
+  controlOrigin.y +=
+      NSHeight([identityField_ frame]) + kConnectionHeadlineSpacing;
 
   // Create a text field to identity status (e.g. verified, not verified).
   identityStatusField_ = [self addText:string16()
@@ -544,7 +551,7 @@ NSColor* IdentityVerifiedTextColor() {
   // Place the identity status immediately below the identity.
   [self sizeTextFieldHeightToFit:identityField_];
   [self sizeTextFieldHeightToFit:identityStatusField_];
-  CGFloat yPos = NSMaxY([identityField_ frame]) + kHeadlineSpacing;
+  CGFloat yPos = NSMaxY([identityField_ frame]) + kConnectionHeadlineSpacing;
   yPos = [self setYPositionOfView:identityStatusField_ to:yPos];
 
   // Lay out the Permissions tab.
@@ -592,7 +599,7 @@ NSColor* IdentityVerifiedTextColor() {
   [self setYPositionOfView:firstVisitIcon_ to:yPos];
   [self sizeTextFieldHeightToFit:firstVisitHeaderField_];
   yPos = [self setYPositionOfView:firstVisitHeaderField_ to:yPos];
-  yPos += kHeadlineSpacing;
+  yPos += kConnectionHeadlineSpacing;
   [self sizeTextFieldHeightToFit:firstVisitDescriptionField_];
   yPos = [self setYPositionOfView:firstVisitDescriptionField_ to:yPos];
   yPos = [self setYPositionOfView:separatorAfterFirstVisit_
@@ -875,7 +882,7 @@ NSColor* IdentityVerifiedTextColor() {
   // Align the icon with the text.
   [self alignPermissionIcon:imageView withTextField:label];
 
-  return std::max(NSHeight([label frame]), NSHeight([button frame]));
+  return NSHeight([label frame]);
 }
 
 // Align an image with a text field by vertically centering the image on
@@ -981,7 +988,7 @@ NSColor* IdentityVerifiedTextColor() {
                                toView:cookiesView_
                               atPoint:controlOrigin];
   [self sizeTextFieldHeightToFit:header];
-  controlOrigin.y += NSHeight([header frame]);
+  controlOrigin.y += NSHeight([header frame]) + kPermissionsHeadlineSpacing;
 
   for (CookieInfoList::const_iterator it = cookieInfoList.begin();
        it != cookieInfoList.end();
@@ -1010,7 +1017,7 @@ NSColor* IdentityVerifiedTextColor() {
                                toView:permissionsView_
                               atPoint:controlOrigin];
   [self sizeTextFieldHeightToFit:header];
-  controlOrigin.y += NSHeight([header frame]);
+  controlOrigin.y += NSHeight([header frame]) + kPermissionsHeadlineSpacing;
 
   for (PermissionInfoList::const_iterator permission =
            permissionInfoList.begin();
