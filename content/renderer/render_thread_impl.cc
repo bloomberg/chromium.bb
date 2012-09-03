@@ -159,21 +159,40 @@ class RenderViewZoomer : public content::RenderViewVisitor {
   DISALLOW_COPY_AND_ASSIGN(RenderViewZoomer);
 };
 
-}  // namespace
+std::string HostToCustomHistogramSuffix(const std::string& host) {
+  if (host == "mail.google.com")
+    return ".gmail";
+  if (host == "docs.google.com" || host == "drive.google.com")
+    return ".docs";
+  if (host == "plus.google.com")
+    return ".plus";
+  return "";
+}
 
-static void* CreateHistogram(
+void* CreateHistogram(
     const char *name, int min, int max, size_t buckets) {
   if (min <= 0)
     min = 1;
+  std::string histogram_name;
+  RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
+  if (render_thread_impl) {  // Can be null in tests.
+    histogram_name = render_thread_impl->
+        histogram_customizer()->ConvertToCustomHistogramName(name);
+  } else {
+    histogram_name = std::string(name);
+  }
   base::Histogram* histogram = base::Histogram::FactoryGet(
-      name, min, max, buckets, base::Histogram::kUmaTargetedHistogramFlag);
+      histogram_name, min, max, buckets,
+      base::Histogram::kUmaTargetedHistogramFlag);
   return histogram;
 }
 
-static void AddHistogramSample(void* hist, int sample) {
+void AddHistogramSample(void* hist, int sample) {
   base::Histogram* histogram = static_cast<base::Histogram*>(hist);
   histogram->Add(sample);
 }
+
+}  // namespace
 
 class RenderThreadImpl::GpuVDAContextLostCallback
     : public WebKit::WebGraphicsContext3D::WebGraphicsContextLostCallback {
@@ -185,6 +204,45 @@ class RenderThreadImpl::GpuVDAContextLostCallback
         &RenderThreadImpl::OnGpuVDAContextLoss));
   }
 };
+
+RenderThreadImpl::HistogramCustomizer::HistogramCustomizer() {
+  custom_histograms_.insert("V8.MemoryExternalFragmentationTotal");
+  custom_histograms_.insert("V8.MemoryHeapSampleTotalCommitted");
+  custom_histograms_.insert("V8.MemoryHeapSampleTotalUsed");
+}
+
+RenderThreadImpl::HistogramCustomizer::~HistogramCustomizer() {}
+
+void RenderThreadImpl::HistogramCustomizer::RenderViewNavigatedToHost(
+    const std::string& host, size_t view_count) {
+  // Check if all RenderViews are displaying a page from the same host. If there
+  // is only one RenderView, the common host is this view's host. If there are
+  // many, check if this one shares the common host of the other
+  // RenderViews. It's ok to not detect some cases where the RenderViews share a
+  // common host. This information is only used for producing custom histograms.
+  if (view_count == 1)
+    SetCommonHost(host);
+  else if (host != common_host_)
+    SetCommonHost(std::string());
+}
+
+std::string RenderThreadImpl::HistogramCustomizer::ConvertToCustomHistogramName(
+    const char* histogram_name) const {
+  std::string name(histogram_name);
+  if (!common_host_histogram_suffix_.empty() &&
+      custom_histograms_.find(name) != custom_histograms_.end())
+    name += common_host_histogram_suffix_;
+  return name;
+}
+
+void RenderThreadImpl::HistogramCustomizer::SetCommonHost(
+    const std::string& host) {
+  if (host != common_host_) {
+    common_host_ = host;
+    common_host_histogram_suffix_ = HostToCustomHistogramSuffix(host);
+    v8::V8::SetCreateHistogramFunction(CreateHistogram);
+  }
+}
 
 RenderThreadImpl* RenderThreadImpl::current() {
   return lazy_tls.Pointer()->Get();

@@ -238,6 +238,52 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   // first call.
   content::AudioRendererMixerManager* GetAudioRendererMixerManager();
 
+  // For producing custom V8 histograms. Custom histograms are produced if all
+  // RenderViews share the same host, and the host is in the pre-specified set
+  // of hosts we want to produce custom diagrams for. The name for a custom
+  // diagram is the name of the corresponding generic diagram plus a
+  // host-specific suffix.
+  class CONTENT_EXPORT HistogramCustomizer {
+   public:
+    HistogramCustomizer();
+    ~HistogramCustomizer();
+
+    // Called when a top frame of a RenderView navigates. This function updates
+    // RenderThreadImpl's information about whether all RenderViews are
+    // displaying a page from the same host. |host| is the host where a
+    // RenderView navigated, and |view_count| is the number of RenderViews in
+    // this process.
+    void RenderViewNavigatedToHost(const std::string& host, size_t view_count);
+
+    // Used for customizing some histograms if all RenderViews share the same
+    // host. Returns the current custom histogram name to use for
+    // |histogram_name|, or |histogram_name| if it shouldn't be customized.
+    std::string ConvertToCustomHistogramName(const char* histogram_name) const;
+
+   private:
+    friend class RenderThreadImplUnittest;
+
+    // Used for updating the information on which is the common host which all
+    // RenderView's share (if any). If there is no common host, this function is
+    // called with an empty string.
+    void SetCommonHost(const std::string& host);
+
+    // The current common host of the RenderViews; empty string if there is no
+    // common host.
+    std::string common_host_;
+    // The corresponding suffix.
+    std::string common_host_histogram_suffix_;
+    // Set of histograms for which we want to produce a custom histogram if
+    // possible.
+    std::set<std::string> custom_histograms_;
+
+    DISALLOW_COPY_AND_ASSIGN(HistogramCustomizer);
+  };
+
+  HistogramCustomizer* histogram_customizer() {
+    return &histogram_customizer_;
+  }
+
  private:
   virtual bool OnControlMessageReceived(const IPC::Message& msg) OVERRIDE;
 
@@ -317,6 +363,8 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> gpu_vda_context3d_;
 
   scoped_ptr<content::AudioRendererMixerManager> audio_renderer_mixer_manager_;
+
+  HistogramCustomizer histogram_customizer_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThreadImpl);
 };
