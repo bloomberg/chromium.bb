@@ -28,7 +28,7 @@ def main():
   parser.add_option(
       '-e',
       '--email',
-      help='Email address for authenticating with Rietveld')
+      help='IGNORED: Kept for compatibility.')
   parser.add_option(
       '-i', '--issue', type='int', help='Rietveld issue number')
   parser.add_option(
@@ -56,15 +56,16 @@ def main():
   if not options.server:
     parser.error('Require a valid server')
 
-  # TODO(rogerta): Remove me, it's ugly.
-  if options.email == '=':
-    options.email = ''
-
-  obj = rietveld.Rietveld(options.server, options.email, None)
+  obj = rietveld.Rietveld(options.server, '', None)
+  try:
+    properties = obj.get_issue_properties(options.issue, False)
+  except rietveld.upload.ClientLoginError:
+    # Requires login.
+    obj = rietveld.Rietveld(options.server, None, None)
+    properties = obj.get_issue_properties(options.issue, False)
 
   if not options.patchset:
-    options.patchset = obj.get_issue_properties(
-        options.issue, False)['patchsets'][-1]
+    options.patchset = properties['patchsets'][-1]
     print('No patchset specified. Using patchset %d' % options.patchset)
 
   print('Downloading the patch.')
