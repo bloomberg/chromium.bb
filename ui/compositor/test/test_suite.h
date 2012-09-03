@@ -2,27 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_COMPOSITOR_TEST_TEST_SUITE_H_
-#define UI_GFX_COMPOSITOR_TEST_TEST_SUITE_H_
+#ifndef UI_COMPOSITOR_TEST_TEST_SUITE_H_
+#define UI_COMPOSITOR_TEST_TEST_SUITE_H_
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/test/test_suite.h"
 
 class MessageLoop;
 
+namespace ui {
+namespace test {
+
 class CompositorTestSuite : public base::TestSuite {
  public:
   CompositorTestSuite(int argc, char** argv);
   virtual ~CompositorTestSuite();
 
- protected:
+ private:
   // base::TestSuite:
   virtual void Initialize() OVERRIDE;
   virtual void Shutdown() OVERRIDE;
 
- private:
   scoped_ptr<MessageLoop> message_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(CompositorTestSuite);
 };
 
-#endif  // UI_GFX_COMPOSITOR_TEST_TEST_SUITE_H_
+}  // namespace test
+}  // namespace ui
+
+#endif  // UI_COMPOSITOR_TEST_TEST_SUITE_H_

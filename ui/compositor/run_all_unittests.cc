@@ -5,5 +5,5 @@
 #include "ui/compositor/test/test_suite.h"
 
 int main(int argc, char** argv) {
-  return CompositorTestSuite(argc, argv).Run();
+  return ui::test::CompositorTestSuite(argc, argv).Run();
 }
