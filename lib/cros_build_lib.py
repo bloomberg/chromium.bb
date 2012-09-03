@@ -477,7 +477,7 @@ def Die(message, *args):
   Args:
     message: The message to be emitted before exiting.
   """
-  logger.exception(message, *args)
+  logger.error(message, *args)
   raise DieSystemExit(1)
 
 
