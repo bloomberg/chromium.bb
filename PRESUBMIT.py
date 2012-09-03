@@ -580,21 +580,23 @@ def GetPreferredTrySlaves(project, change):
     return []
 
   if all(re.search('\.(m|mm)$|[/_]mac[/_.]', f) for f in files):
-    return ['mac_rel']
+    return ['mac_rel', 'mac_asan']
   if all(re.search('[/_]win[/_.]', f) for f in files):
     return ['win_rel']
   if all(re.search('[/_]android[/_.]', f) for f in files):
     return ['android']
 
   trybots = ['win_rel', 'linux_rel', 'mac_rel', 'linux_clang:compile',
-             'linux_chromeos', 'android']
+             'linux_chromeos', 'android', 'linux_asan', 'mac_asan']
 
   # Match things like path/aura/file.cc and path/file_aura.cc.
   # Same for ash and chromeos.
   if any(re.search('[/_](ash|aura)', f) for f in files):
-    trybots += ['linux_chromeos', 'linux_chromeos_clang:compile', 'win_aura']
+    trybots += ['linux_chromeos', 'linux_chromeos_clang:compile', 'win_aura',
+                'linux_chromeos_asan']
   else:
     if any(re.search('[/_]chromeos', f) for f in files):
-      trybots += ['linux_chromeos', 'linux_chromeos_clang:compile']
+      trybots += ['linux_chromeos', 'linux_chromeos_clang:compile',
+                  'linux_chromeos_asan']
 
   return trybots
