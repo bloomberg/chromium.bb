@@ -1510,3 +1510,9 @@
    fun:KioskModeIdleLogoutTest_CheckObserversBeforeUserLogin_Test
    fun:testing::internal::TestFactoryImpl::CreateTest
 }
+{
+   bug_146222
+   Heapcheck:Leak
+   ...
+   fun:content::TestHyphenatorMessageFilter::OnOpenDictionary
+}
