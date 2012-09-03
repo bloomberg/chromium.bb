@@ -5,15 +5,18 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/values.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string16.h"
-#include "base/utf_string_conversions.h"
 #include "base/test/test_file_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -45,6 +48,7 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -58,6 +62,13 @@
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_CHROMEOS)
+#include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_table.h"
+#include "ash/shell.h"
+#include "ash/shell_delegate.h"
+#endif
 
 using content::BrowserThread;
 using testing::Return;
@@ -142,6 +153,20 @@ void DownloadAndVerifyFile(
   EXPECT_EQ(FilePath(), enumerator.Next());
 }
 
+#if defined(OS_CHROMEOS)
+int CountScreenshots() {
+  DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(
+      ash::Shell::GetInstance()->delegate()->GetCurrentBrowserContext());
+  file_util::FileEnumerator enumerator(download_prefs->DownloadPath(),
+                                       false, file_util::FileEnumerator::FILES,
+                                       "Screenshot*");
+  int count = 0;
+  while (!enumerator.Next().empty())
+    count++;
+  return count;
+}
+#endif
+
 }  // namespace
 
 class PolicyTest : public InProcessBrowserTest {
@@ -159,6 +184,77 @@ class PolicyTest : public InProcessBrowserTest {
         BrowserThread::IO, FROM_HERE,
         base::Bind(chrome_browser_net::SetUrlRequestMocksEnabled, true));
   }
+
+  void SetScreenshotPolicy(bool enabled) {
+    PolicyMap policies;
+    policies.Set(key::kDisableScreenshots, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, base::Value::CreateBooleanValue(!enabled));
+    provider_.UpdateChromePolicy(policies);
+  }
+
+  void TestScreenshotFeedback(bool enabled) {
+    SetScreenshotPolicy(enabled);
+
+    // Wait for feedback page to load.
+    content::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
+    EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_FEEDBACK));
+    observer.Wait();
+    content::WebContents* web_contents =
+        static_cast<content::Source<content::NavigationController> >(
+            observer.source())->GetWebContents();
+
+    // Wait for feedback page to fully initialize.
+    // setupCurrentScreenshot is called when feedback page loads and (among
+    // other things) adds current-screenshots-thumbnailDiv-0-image element.
+    // The code below executes either before setupCurrentScreenshot was called
+    // (setupCurrentScreenshot is replaced with our hook) or after it has
+    // completed (in that case send result immediately).
+    bool result = false;
+    EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
+        web_contents->GetRenderViewHost(),
+        std::wstring(),
+        L"function btest_initCompleted(url) {"
+        L"  var img = new Image();"
+        L"  img.src = url;"
+        L"  img.onload = function() {"
+        L"    domAutomationController.send(img.width * img.height > 0);"
+        L"  };"
+        L"  img.onerror = function() {"
+        L"    domAutomationController.send(false);"
+        L"  };"
+        L"}"
+        L"function setupCurrentScreenshot(url) {"
+        L"  btest_initCompleted(url);"
+        L"}"
+        L"var img = document.getElementById("
+        L"    'current-screenshots-thumbnailDiv-0-image');"
+        L"if (img)"
+        L"  btest_initCompleted(img.src);",
+        &result));
+    EXPECT_EQ(enabled, result);
+
+    // Feedback page is a singleton page, so close so future calls to this
+    // function work as expected.
+    web_contents->Close();
+  }
+
+#if defined(OS_CHROMEOS)
+  void TestScreenshotFile(bool enabled) {
+    SetScreenshotPolicy(enabled);
+    ash::Shell::GetInstance()->accelerator_controller()->PerformAction(
+        ash::TAKE_SCREENSHOT, ui::Accelerator());
+
+    // TAKE_SCREENSHOT handler posts write file task on success, wait for it.
+    BrowserThread::PostTaskAndReply(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(base::DoNothing),
+        MessageLoop::QuitClosure());
+    content::RunMessageLoop();
+  }
+#endif
 
   MockConfigurationPolicyProvider provider_;
 };
@@ -465,5 +561,28 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
   CheckCanOpenURL(browser(), kSUB_BBB);
   CheckCanOpenURL(browser(), kBBB_PATH);
 }
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, DisableScreenshotsFeedback) {
+  // Make sure current screenshot can be taken and displayed on feedback page.
+  TestScreenshotFeedback(true);
+
+  // Check if banning screenshots disabled feedback page's ability to grab a
+  // screenshot.
+  TestScreenshotFeedback(false);
+}
+
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(PolicyTest, DisableScreenshotsFile) {
+  int screenshot_count = CountScreenshots();
+
+  // Make sure screenshots are counted correctly.
+  TestScreenshotFile(true);
+  ASSERT_EQ(CountScreenshots(), screenshot_count + 1);
+
+  // Check if trying to take a screenshot fails when disabled by policy.
+  TestScreenshotFile(false);
+  ASSERT_EQ(CountScreenshots(), screenshot_count + 1);
+}
+#endif
 
 }  // namespace policy

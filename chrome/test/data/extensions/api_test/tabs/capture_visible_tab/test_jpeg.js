@@ -1,3 +1,7 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 // API test for chrome.tabs.captureVisibleTab(), capturing JPEG images.
 // browser_tests.exe --gtest_filter=ExtensionApiTest.CaptureVisibleTabJpeg
 

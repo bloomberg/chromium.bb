@@ -172,6 +172,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleNoFile) {
       ExtensionApiTest::kFlagNone)) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleDisabled) {
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kDisableScreenshots,
+                                               true);
+  ASSERT_TRUE(RunExtensionSubtest("tabs/capture_visible_tab",
+                                  "test_disabled.html")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsOnUpdated) {
   ASSERT_TRUE(RunExtensionTest("tabs/on_updated")) << message_;
 }
