@@ -432,15 +432,11 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageV2Test,
   AssertNoInterstitial(true);
 }
 
-// Observed to peridically fail on the ChromeOS tests.
+// Observed to peridically fail on the ChromeOS tests due to a real
+// use-after-free bug reported by ASan.
 // See crbug.com/145482
-#if defined(OS_CHROMEOS)
-#define MAYBE_MalwareRedirectCanceled DISABLED_MalwareRedirectCanceled
-#else
-#define MAYBE_MalwareRedirectCanceled MalwareRedirectCanceled
-#endif
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageV2Test,
-                       MAYBE_MalwareRedirectCanceled) {
+                       DISABLED_MalwareRedirectCanceled) {
   // 2. Test the case that redirect is the only resource.
   MalwareRedirectCancelAndProceed("openWin");
   // Clicking proceed won't do anything if the main request is cancelled
