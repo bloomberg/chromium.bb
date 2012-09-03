@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
 #include "base/process.h"
+#include "content/browser/renderer_host/ime_adapter_android.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "ui/gfx/size.h"
 
@@ -104,8 +105,11 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
 
   void SetContentViewCore(ContentViewCoreImpl* content_view_core);
 
+  void SendKeyEvent(const NativeWebKeyboardEvent& event);
   void TouchEvent(const WebKit::WebTouchEvent& event);
   void GestureEvent(const WebKit::WebGestureEvent& event);
+
+  int GetNativeImeAdapter();
 
  private:
   // The model object.
@@ -120,6 +124,8 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   // The size that we want the renderer to be.  We keep this in a separate
   // variable because resizing is async.
   gfx::Size requested_size_;
+
+  ImeAdapterAndroid ime_adapter_android_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAndroid);
 };

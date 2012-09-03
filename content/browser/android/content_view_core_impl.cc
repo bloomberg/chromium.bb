@@ -476,6 +476,13 @@ int ContentViewCoreImpl::GetNavigationHistory(JNIEnv* env,
   return controller.GetCurrentEntryIndex();
 }
 
+int ContentViewCoreImpl::GetNativeImeAdapter(JNIEnv* env, jobject obj) {
+  RenderWidgetHostViewAndroid* rwhva = GetRenderWidgetHostViewAndroid();
+  if (!rwhva)
+    return 0;
+  return rwhva->GetNativeImeAdapter();
+}
+
 // --------------------------------------------------------------------------
 // Methods called from native code
 // --------------------------------------------------------------------------
@@ -515,6 +522,28 @@ jint EvaluateJavaScript(JNIEnv* env, jobject obj, jstring script) {
 
 void ContentViewCoreImpl::OnTabCrashed(const base::ProcessHandle handle) {
   NOTIMPLEMENTED() << "not upstreamed yet";
+}
+
+void ContentViewCoreImpl::ImeUpdateAdapter(int native_ime_adapter,
+                                           int text_input_type,
+                                           const std::string& text,
+                                           int selection_start,
+                                           int selection_end,
+                                           int composition_start,
+                                           int composition_end,
+                                           bool show_ime_if_needed) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  ScopedJavaLocalRef<jstring> jstring_text = ConvertUTF8ToJavaString(env, text);
+  Java_ContentViewCore_imeUpdateAdapter(env, obj.obj(),
+                                        native_ime_adapter, text_input_type,
+                                        jstring_text.obj(),
+                                        selection_start, selection_end,
+                                        composition_start, composition_end,
+                                        show_ime_if_needed);
 }
 
 void ContentViewCoreImpl::SetTitle(const string16& title) {

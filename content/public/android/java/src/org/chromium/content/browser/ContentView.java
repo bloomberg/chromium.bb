@@ -14,6 +14,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 import android.webkit.DownloadListener;
 import android.widget.FrameLayout;
 
@@ -398,6 +400,16 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
     }
 
     @Override
+    public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
+        return mContentViewCore.onCreateInputConnection(outAttrs);
+    }
+
+    @Override
+    public boolean onCheckIsTextEditor() {
+        return mContentViewCore.onCheckIsTextEditor();
+    }
+
+    @Override
     public boolean onTouchEvent(MotionEvent event) {
         return mContentViewCore.onTouchEvent(event);
     }
@@ -577,7 +589,7 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
 
     @Override
     public void super_onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
+        mContentViewCore.onConfigurationChanged(newConfig);
     }
 
     @Override

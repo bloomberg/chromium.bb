@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.ResultReceiver;
 import android.util.Log;
 import android.view.ActionMode;
 import android.view.KeyEvent;
@@ -18,6 +19,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
+import android.view.inputmethod.InputMethodManager;
 import android.webkit.DownloadListener;
 
 import org.chromium.base.CalledByNative;
@@ -171,6 +175,10 @@ public class ContentViewCore implements MotionEventDelegate {
 
     // Only valid when focused on a text / password field.
     private ImeAdapter mImeAdapter;
+    private ImeAdapter.AdapterInputConnection mInputConnection;
+
+    private SelectionHandleController mSelectionHandleController;
+    private InsertionHandleController mInsertionHandleController;
 
     // Tracks whether a selection is currently active.  When applied to selected text, indicates
     // whether the last selected text is still highlighted.
@@ -186,8 +194,13 @@ public class ContentViewCore implements MotionEventDelegate {
     // over DownloadListener.
     private ContentViewDownloadDelegate mDownloadDelegate;
 
+    // Whether a physical keyboard is connected.
+    private boolean mKeyboardConnected;
+
     // The AccessibilityInjector that handles loading Accessibility scripts into the web page.
     private final AccessibilityInjector mAccessibilityInjector;
+
+    private boolean mNeedUpdateOrientationChanged;
 
     /**
      * Enable multi-process ContentView. This should be called by the application before
@@ -267,6 +280,40 @@ public class ContentViewCore implements MotionEventDelegate {
         return mContainerView;
     }
 
+   private ImeAdapter createImeAdapter(Context context) {
+        return new ImeAdapter(context, getSelectionHandleController(),
+                getInsertionHandleController(),
+                new ImeAdapter.ViewEmbedder() {
+                    @Override
+                    public void onImeEvent(boolean isFinish) {
+                        getContentViewClient().onImeEvent();
+                        // TODO(olilan): Add undoScrollFocusedEditableNodeIntoViewIfNeeded
+                        // call when available.
+                    }
+
+                    @Override
+                    public void onSetFieldValue() {
+                    }
+
+                    @Override
+                    public void onDismissInput() {
+                    }
+
+                    @Override
+                    public View getAttachedView() {
+                        return mContainerView;
+                    }
+
+                    @Override
+                    public ResultReceiver getNewShowKeyboardReceiver() {
+                        // TODO(olilan): Add receiver when scrollFocusedEditableNodeIntoView
+                        // is upstreamed.
+                        return null;
+                    }
+                }
+        );
+    }
+
     // TODO(jrg): incomplete; upstream the rest of this method.
     private void initialize(Context context, int nativeWebContents, int personality,
             boolean isAccessFromFileURLsGrantedByDefault) {
@@ -298,6 +345,10 @@ public class ContentViewCore implements MotionEventDelegate {
         mContentViewGestureHandler = new ContentViewGestureHandler(context, this, mZoomManager);
 
         initPopupZoomer(mContext);
+
+        mImeAdapter = createImeAdapter(context);
+        mKeyboardConnected = mContainerView.getResources().getConfiguration().keyboard
+                != Configuration.KEYBOARD_NOKEYS;
 
         Log.i(TAG, "mNativeContentView=0x"+ Integer.toHexString(mNativeContentViewCore));
     }
@@ -714,6 +765,49 @@ public class ContentViewCore implements MotionEventDelegate {
         setAccessibilityState(false);
     }
 
+    /**
+     * @see View#onCreateInputConnection(EditorInfo)
+     */
+    public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
+        if (!mImeAdapter.hasTextInputType()) {
+            // Although onCheckIsTextEditor will return false in this case, the EditorInfo
+            // is still used by the InputMethodService. Need to make sure the IME doesn't
+            // enter fullscreen mode.
+            outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_FULLSCREEN;
+        }
+        mInputConnection = ImeAdapter.AdapterInputConnection.getInstance(
+                mContainerView, mImeAdapter, outAttrs);
+        return mInputConnection;
+    }
+
+    /**
+     * @see View#onCheckIsTextEditor()
+     */
+    public boolean onCheckIsTextEditor() {
+        return mImeAdapter.hasTextInputType();
+    }
+
+    /**
+     * @see View#onConfigurationChanged(Configuration)
+     */
+    @SuppressWarnings("javadoc")
+    public void onConfigurationChanged(Configuration newConfig) {
+        TraceEvent.begin();
+
+        mKeyboardConnected = newConfig.keyboard != Configuration.KEYBOARD_NOKEYS;
+
+        if (mKeyboardConnected) {
+            mImeAdapter.attach(nativeGetNativeImeAdapter(mNativeContentViewCore),
+                    ImeAdapter.sTextInputTypeNone);
+            InputMethodManager manager = (InputMethodManager)
+                    getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            manager.restartInput(mContainerView);
+        }
+        mContainerViewInternals.super_onConfigurationChanged(newConfig);
+        mNeedUpdateOrientationChanged = true;
+        TraceEvent.end();
+    }
+
     // End FrameLayout overrides.
 
     /**
@@ -827,6 +921,28 @@ public class ContentViewCore implements MotionEventDelegate {
         return mDownloadDelegate;
     }
 
+    private SelectionHandleController getSelectionHandleController() {
+        if (mSelectionHandleController == null) {
+            mSelectionHandleController = new SelectionHandleController(getContainerView());
+            // TODO(olilan): add specific method implementations.
+
+            mSelectionHandleController.hideAndDisallowAutomaticShowing();
+        }
+
+        return mSelectionHandleController;
+    }
+
+    private InsertionHandleController getInsertionHandleController() {
+        if (mInsertionHandleController == null) {
+            mInsertionHandleController = new InsertionHandleController(getContainerView());
+            // TODO(olilan): add specific method implementations.
+
+            mInsertionHandleController.hideAndDisallowAutomaticShowing();
+        }
+
+        return mInsertionHandleController;
+    }
+
     private void showSelectActionBar() {
         if (mActionMode != null) {
             mActionMode.invalidate();
@@ -893,6 +1009,34 @@ public class ContentViewCore implements MotionEventDelegate {
     }
 
     // The following methods are called by native through jni
+
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void imeUpdateAdapter(int nativeImeAdapterAndroid, int textInputType,
+            String text, int selectionStart, int selectionEnd,
+            int compositionStart, int compositionEnd, boolean showImeIfNeeded) {
+        TraceEvent.begin();
+
+        // Non-breaking spaces can cause the IME to get confused. Replace with normal spaces.
+        text = text.replace('\u00A0', ' ');
+
+        mSelectionEditable = (textInputType != ImeAdapter.sTextInputTypeNone);
+        if (!mKeyboardConnected || InputDialogContainer.isDialogInputType(textInputType)) {
+            mImeAdapter.attachAndShowIfNeeded(nativeImeAdapterAndroid, textInputType,
+                    text, showImeIfNeeded);
+        }
+        if (mInputConnection != null) {
+            // In WebKit if there's a composition then the selection will usually be the
+            // same as the composition, whereas Android IMEs expect the selection to be
+            // just a caret at the end of the composition.
+            if (selectionStart == compositionStart && selectionEnd == compositionEnd) {
+                selectionStart = selectionEnd;
+            }
+            mInputConnection.setEditableText(text, selectionStart, selectionEnd,
+                    compositionStart, compositionEnd);
+        }
+        TraceEvent.end();
+    }
 
     /**
      * Called (from native) when the <select> popup needs to be shown.
@@ -1247,6 +1391,8 @@ public class ContentViewCore implements MotionEventDelegate {
     private native void nativeClearHistory(int nativeContentViewCoreImpl);
 
     private native int nativeEvaluateJavaScript(String script);
+
+    private native int nativeGetNativeImeAdapter(int nativeContentViewCore);
 
     private native void nativeAddJavascriptInterface(int nativeContentViewCoreImpl, Object object,
                                                      String name, boolean requireAnnotation);

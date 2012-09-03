@@ -1011,6 +1011,8 @@ IPC_MESSAGE_ROUTED0(ViewMsg_Delete)
 IPC_MESSAGE_ROUTED0(ViewMsg_SelectAll)
 
 // Replaces all text in the current input field with the specified string.
+IPC_MESSAGE_ROUTED1(ViewMsg_ReplaceAll,
+                    string16 /* text */)
 IPC_MESSAGE_ROUTED0(ViewMsg_Unselect)
 
 // Requests the renderer to select the region between two points.
@@ -1173,6 +1175,25 @@ IPC_MESSAGE_ROUTED4(
 IPC_MESSAGE_ROUTED2(ViewMsg_ImeConfirmComposition,
                     string16 /* text */,
                     ui::Range /* replacement_range */)
+
+// Sets the text composition to be between the given start and end offsets
+// in the currently focused editable field.
+IPC_MESSAGE_ROUTED3(ViewMsg_SetCompositionFromExistingText,
+    int /* start */,
+    int /* end */,
+    std::vector<WebKit::WebCompositionUnderline> /* underlines */)
+
+// Selects between the given start and end offsets in the currently focused
+// editable field.
+IPC_MESSAGE_ROUTED2(ViewMsg_SetEditableSelectionOffsets,
+                    int /* start */,
+                    int /* end */)
+
+// Deletes the current selection plus the specified number of characters before
+// and after the selection or caret.
+IPC_MESSAGE_ROUTED2(ViewMsg_ExtendSelectionAndDelete,
+                    int /* before */,
+                    int /* after */)
 
 // Used to notify the render-view that we have received a target URL. Used
 // to prevent target URLs spamming the browser.

@@ -113,6 +113,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   void ClearHistory(JNIEnv* env, jobject obj);
   void SetClient(JNIEnv* env, jobject obj, jobject jclient);
   jint EvaluateJavaScript(JNIEnv* env, jobject obj, jstring script);
+  virtual int GetNativeImeAdapter(JNIEnv* env, jobject obj) OVERRIDE;
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject() OVERRIDE;
   void AddJavascriptInterface(JNIEnv* env,
                               jobject obj,
@@ -135,6 +136,11 @@ class ContentViewCoreImpl : public ContentViewCore,
                            bool multiple);
 
   void OnTabCrashed(const base::ProcessHandle handle);
+  void ImeUpdateAdapter(int native_ime_adapter, int text_input_type,
+                        const std::string& text,
+                        int selection_start, int selection_end,
+                        int composition_start, int composition_end,
+                        bool show_ime_if_needed);
   void SetTitle(const string16& title);
 
   bool HasFocus();

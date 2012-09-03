@@ -26,7 +26,8 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       // ContentViewCore.  It being NULL means that it is not attached to the
       // View system yet, so we treat it as hidden.
       is_hidden_(!content_view_core),
-      content_view_core_(content_view_core) {
+      content_view_core_(content_view_core),
+      ime_adapter_android_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   host_->SetView(this);
   // RenderWidgetHost is initialized as visible. If is_hidden_ is true, tell
   // RenderWidgetHost to hide.
@@ -178,10 +179,23 @@ void RenderWidgetHostViewAndroid::SetIsLoading(bool is_loading) {
 
 void RenderWidgetHostViewAndroid::TextInputStateChanged(
     const ViewHostMsg_TextInputState_Params& params) {
-  NOTIMPLEMENTED();
+  if (is_hidden_)
+    return;
+
+  content_view_core_->ImeUpdateAdapter(
+      GetNativeImeAdapter(),
+      static_cast<int>(params.type),
+      params.value, params.selection_start, params.selection_end,
+      params.composition_start, params.composition_end,
+      false /* show_ime_if_needed */);
+}
+
+int RenderWidgetHostViewAndroid::GetNativeImeAdapter() {
+  return reinterpret_cast<int>(&ime_adapter_android_);
 }
 
 void RenderWidgetHostViewAndroid::ImeCancelComposition() {
+  ime_adapter_android_.CancelComposition();
 }
 
 void RenderWidgetHostViewAndroid::DidUpdateBackingStore(
@@ -335,6 +349,14 @@ bool RenderWidgetHostViewAndroid::LockMouse() {
 
 void RenderWidgetHostViewAndroid::UnlockMouse() {
   NOTIMPLEMENTED();
+}
+
+// Methods called from the host to the render
+
+void RenderWidgetHostViewAndroid::SendKeyEvent(
+    const NativeWebKeyboardEvent& event) {
+  if (host_)
+    host_->ForwardKeyboardEvent(event);
 }
 
 void RenderWidgetHostViewAndroid::TouchEvent(
