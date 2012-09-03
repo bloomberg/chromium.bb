@@ -84,7 +84,7 @@ NativeTextfieldWin::ScopedSuspendUndo::~ScopedSuspendUndo() {
 ///////////////////////////////////////////////////////////////////////////////
 // NativeTextfieldWin
 
-bool NativeTextfieldWin::did_load_library_ = false;
+HMODULE NativeTextfieldWin::loaded_libarary_module_ = false;
 
 NativeTextfieldWin::NativeTextfieldWin(Textfield* textfield)
     : textfield_(textfield),
@@ -97,8 +97,11 @@ NativeTextfieldWin::NativeTextfieldWin(Textfield* textfield)
       ime_composition_length_(0),
       container_view_(new NativeViewHost),
       bg_color_(0) {
-  if (!did_load_library_)
-    did_load_library_ = !!LoadLibrary(L"riched20.dll");
+  if (!loaded_libarary_module_) {
+    // msftedit.dll is RichEdit ver 4.1.
+    // This version is available from WinXP SP1 and has TSF support.
+    loaded_libarary_module_ = LoadLibrary(L"msftedit.dll");
+  }
 
   DWORD style = kDefaultEditStyle | ES_AUTOHSCROLL;
   if (textfield_->style() & Textfield::STYLE_OBSCURED)
@@ -563,6 +566,15 @@ void NativeTextfieldWin::OnCopy() {
         ui::Clipboard::BUFFER_STANDARD);
     scw.WriteText(text);
   }
+}
+
+LRESULT NativeTextfieldWin::OnCreate(const CREATESTRUCTW* /*create_struct*/) {
+  if (base::win::IsTsfAwareRequired()) {
+    // Enable TSF support of RichEdit.
+    SetEditStyle(SES_USECTF, SES_USECTF);
+  }
+  SetMsgHandled(FALSE);
+  return 0;
 }
 
 void NativeTextfieldWin::OnCut() {

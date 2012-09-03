@@ -44,7 +44,7 @@ class NativeTextfieldWin
       public NativeTextfieldWrapper,
       public ui::SimpleMenuModel::Delegate {
  public:
-  DECLARE_WND_CLASS(L"ViewsTextfieldEdit");
+  DECLARE_WND_SUPERCLASS(L"ViewsTextfieldEdit", MSFTEDIT_CLASS);
 
   explicit NativeTextfieldWin(Textfield* parent);
   ~NativeTextfieldWin();
@@ -119,6 +119,7 @@ class NativeTextfieldWin
     MSG_WM_CHAR(OnChar)
     MSG_WM_CONTEXTMENU(OnContextMenu)
     MSG_WM_COPY(OnCopy)
+    MSG_WM_CREATE(OnCreate)
     MSG_WM_CUT(OnCut)
     MESSAGE_HANDLER_EX(WM_GETOBJECT, OnGetObject)
     MESSAGE_HANDLER_EX(WM_IME_CHAR, OnImeChar)
@@ -183,6 +184,7 @@ class NativeTextfieldWin
   void OnChar(TCHAR key, UINT repeat_count, UINT flags);
   void OnContextMenu(HWND window, const POINT& point);
   void OnCopy();
+  LRESULT OnCreate(const CREATESTRUCTW* create_struct);
   void OnCut();
   LRESULT OnGetObject(UINT message, WPARAM wparam, LPARAM lparam);
   LRESULT OnImeChar(UINT message, WPARAM wparam, LPARAM lparam);
@@ -250,6 +252,8 @@ class NativeTextfieldWin
   // Generates the contents of the context menu.
   void BuildContextMenu();
 
+  static HMODULE loaded_libarary_module_;
+
   // The Textfield this object is bound to.
   Textfield* textfield_;
 
@@ -268,8 +272,6 @@ class NativeTextfieldWin
 
   // If true, the mouse is over the edit.
   bool contains_mouse_;
-
-  static bool did_load_library_;
 
   // The contents of the context menu for the edit.
   scoped_ptr<ui::SimpleMenuModel> context_menu_contents_;
