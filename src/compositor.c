@@ -1317,6 +1317,32 @@ repaint_region(struct weston_surface *es, pixman_region32_t *region,
 	ec->vtxcnt.size = 0;
 }
 
+static void
+weston_compositor_use_shader(struct weston_compositor *compositor,
+			     struct weston_shader *shader)
+{
+	if (compositor->current_shader == shader)
+		return;
+
+	glUseProgram(shader->program);
+	compositor->current_shader = shader;
+}
+
+static void
+weston_shader_uniforms(struct weston_shader *shader,
+		       struct weston_surface *surface,
+		       struct weston_output *output)
+{
+	int i;
+
+	glUniformMatrix4fv(shader->proj_uniform,
+			   1, GL_FALSE, output->matrix.d);
+	glUniform4fv(shader->color_uniform, 1, surface->color);
+	glUniform1f(shader->alpha_uniform, surface->alpha);
+
+	for (i = 0; i < surface->num_textures; i++)
+		glUniform1i(shader->tex_uniforms[i], i);
+}
 
 WL_EXPORT void
 weston_surface_draw(struct weston_surface *es, struct weston_output *output,
@@ -1331,8 +1357,6 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output,
 	int i;
 
 	pixman_region32_init(&repaint);
-	pixman_region32_init(&surface_blend);
-
 	pixman_region32_intersect(&repaint,
 				  &es->transform.boundingbox, damage);
 	pixman_region32_subtract(&repaint, &repaint, &es->clip);
@@ -1345,22 +1369,8 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output,
 
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
-	/* blended region is whole surface minus opaque region: */
-	pixman_region32_init_rect(&surface_blend, 0, 0,
-				  es->geometry.width, es->geometry.height);
-	if (es->alpha >= 1.0)
-		pixman_region32_subtract(&surface_blend, &surface_blend,
-					 &es->opaque);
-
-	if (ec->current_shader != es->shader) {
-		glUseProgram(es->shader->program);
-		ec->current_shader = es->shader;
-	}
-
-	glUniformMatrix4fv(es->shader->proj_uniform,
-			   1, GL_FALSE, output->matrix.d);
-	glUniform4fv(es->shader->color_uniform, 1, es->color);
-	glUniform1f(es->shader->alpha_uniform, es->alpha);
+	weston_compositor_use_shader(ec, es->shader);
+	weston_shader_uniforms(es->shader, es, output);
 
 	if (es->transform.enabled || output->zoom.active)
 		filter = GL_LINEAR;
@@ -1368,26 +1378,46 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output,
 		filter = GL_NEAREST;
 
 	for (i = 0; i < es->num_textures; i++) {
-		glUniform1i(es->shader->tex_uniforms[i], i);
 		glActiveTexture(GL_TEXTURE0 + i);
 		glBindTexture(es->target, es->textures[i]);
 		glTexParameteri(es->target, GL_TEXTURE_MIN_FILTER, filter);
 		glTexParameteri(es->target, GL_TEXTURE_MAG_FILTER, filter);
 	}
 
-	if (pixman_region32_not_empty(&es->opaque) && es->alpha >= 1.0) {
-		glDisable(GL_BLEND);
+	/* blended region is whole surface minus opaque region: */
+	pixman_region32_init_rect(&surface_blend, 0, 0,
+				  es->geometry.width, es->geometry.height);
+	pixman_region32_subtract(&surface_blend, &surface_blend, &es->opaque);
+
+	if (pixman_region32_not_empty(&es->opaque)) {
+		if (es->shader == &ec->texture_shader_rgba) {
+			/* Special case for RGBA textures with possibly
+			 * bad data in alpha channel: use the shader
+			 * that forces texture alpha = 1.0.
+			 * Xwayland surfaces need this.
+			 */
+			weston_compositor_use_shader(ec, &ec->texture_shader_rgbx);
+			weston_shader_uniforms(&ec->texture_shader_rgbx, es, output);
+		}
+
+		if (es->alpha < 1.0)
+			glEnable(GL_BLEND);
+		else
+			glDisable(GL_BLEND);
+
 		repaint_region(es, &repaint, &es->opaque);
 	}
 
 	if (pixman_region32_not_empty(&surface_blend)) {
+		weston_compositor_use_shader(ec, es->shader);
 		glEnable(GL_BLEND);
 		repaint_region(es, &repaint, &surface_blend);
 	}
 
+	pixman_region32_fini(&surface_blend);
+
 out:
 	pixman_region32_fini(&repaint);
-	pixman_region32_fini(&surface_blend);
 }
 
 WL_EXPORT void
