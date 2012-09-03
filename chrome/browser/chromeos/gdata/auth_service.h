@@ -8,9 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop_proxy.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 #include "chrome/browser/chromeos/gdata/operations_base.h"
@@ -70,12 +68,6 @@ class AuthService : public content::NotificationObserver {
   // Clears OAuth2 access token.
   void ClearAccessToken() { access_token_.clear(); }
 
-  // Callback for AuthOperation (InternalAuthStatusCallback).
-  void OnAuthCompleted(scoped_refptr<base::MessageLoopProxy> relay_proxy,
-                       const AuthStatusCallback& callback,
-                       GDataErrorCode error,
-                       const std::string& access_token);
-
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -88,10 +80,13 @@ class AuthService : public content::NotificationObserver {
 
  private:
   // Helper function for StartAuthentication() call.
-  void StartAuthenticationOnUIThread(
-      OperationRegistry* registry,
-      scoped_refptr<base::MessageLoopProxy> relay_proxy,
-      const AuthStatusCallback& callback);
+  void StartAuthenticationOnUIThread(OperationRegistry* registry,
+                                     const AuthStatusCallback& callback);
+
+  // Callback for AuthOperation (InternalAuthStatusCallback).
+  void OnAuthCompleted(const AuthStatusCallback& callback,
+                       GDataErrorCode error,
+                       const std::string& access_token);
 
   Profile* profile_;
   std::string refresh_token_;

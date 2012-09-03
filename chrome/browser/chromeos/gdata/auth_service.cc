@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
 #include "chrome/browser/chromeos/gdata/operations_base.h"
+#include "chrome/browser/chromeos/gdata/task_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
@@ -65,11 +66,10 @@ void AuthService::StartAuthentication(OperationRegistry* registry,
         base::Bind(&AuthService::StartAuthenticationOnUIThread,
                    weak_ptr_factory_.GetWeakPtr(),
                    registry,
-                   relay_proxy,
-                   base::Bind(&AuthService::OnAuthCompleted,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              relay_proxy,
-                              callback)));
+                   CreateRelayCallback(
+                       base::Bind(&AuthService::OnAuthCompleted,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  callback))));
   } else {
     relay_proxy->PostTask(FROM_HERE,
         base::Bind(callback, gdata::HTTP_UNAUTHORIZED, std::string()));
@@ -78,26 +78,23 @@ void AuthService::StartAuthentication(OperationRegistry* registry,
 
 void AuthService::StartAuthenticationOnUIThread(
     OperationRegistry* registry,
-    scoped_refptr<base::MessageLoopProxy> relay_proxy,
     const AuthStatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // We have refresh token, let's gets authenticated.
   (new AuthOperation(registry, callback, scopes_, refresh_token_))->Start();
 }
 
-void AuthService::OnAuthCompleted(
-    scoped_refptr<base::MessageLoopProxy> relay_proxy,
-    const AuthStatusCallback& callback,
-    GDataErrorCode error,
-    const std::string& access_token) {
+void AuthService::OnAuthCompleted(const AuthStatusCallback& callback,
+                                  GDataErrorCode error,
+                                  const std::string& access_token) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   if (error == HTTP_SUCCESS)
     access_token_ = access_token;
 
   // TODO(zelidrag): Add retry, back-off logic when things go wrong here.
-  if (!callback.is_null())
-    relay_proxy->PostTask(FROM_HERE, base::Bind(callback, error, access_token));
+  callback.Run(error, access_token);
 }
 
 void AuthService::AddObserver(Observer* observer) {
