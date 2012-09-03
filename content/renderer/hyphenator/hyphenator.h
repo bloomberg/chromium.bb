@@ -11,6 +11,8 @@
 #include "base/platform_file.h"
 #include "base/string16.h"
 #include "content/common/content_export.h"
+#include "content/public/renderer/render_process_observer.h"
+#include "ipc/ipc_platform_file.h"
 
 namespace file_util {
 class MemoryMappedFile;
@@ -19,33 +21,47 @@ class MemoryMappedFile;
 typedef struct _HyphenDict HyphenDict;
 
 namespace content {
+class RenderThread;
 
 // A class that hyphenates a word. This class encapsulates the hyphen library
 // and manages resources used by the library. When this class uses a huge
 // dictionary, it takes lots of memory (~1.3MB for English). A renderer should
 // create this object only when it renders a page that needs hyphenation and
 // deletes it when it moves to a page that does not need hyphenation.
-class CONTENT_EXPORT Hyphenator {
+class CONTENT_EXPORT Hyphenator : public RenderProcessObserver {
  public:
   explicit Hyphenator(base::PlatformFile file);
-  ~Hyphenator();
+  virtual ~Hyphenator();
 
   // Initializes the hyphen library and allocates resources needed for
   // hyphenation.
   bool Initialize();
+
+  bool Attach(content::RenderThread* thread, const string16& locale);
+
+  // Returns whether this object can hyphenate words. When this object does not
+  // have a dictionary file attached, this function sends an IPC request to open
+  // the file.
+  bool CanHyphenate(const string16& locale);
 
   // Returns the last hyphenation point, the position where we can insert a
   // hyphen, before the given position. If there are not any hyphenation points,
   // this function returns 0.
   size_t ComputeLastHyphenLocation(const string16& word, size_t before_index);
 
+  // RenderProcessObserver implementation.
+  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
+
  private:
+  void OnSetDictionary(IPC::PlatformFileForTransit rule_file);
+
   // The dictionary used by the hyphen library.
   HyphenDict* dictionary_;
 
   // The dictionary file and its memory-mapping object. (Our copy of the hyphen
   // library uses a memory-mapped file opened by a browser so renderers can use
   // it without opening the file.)
+  string16 locale_;
   base::PlatformFile rule_file_;
   scoped_ptr<file_util::MemoryMappedFile> rule_map_;
 

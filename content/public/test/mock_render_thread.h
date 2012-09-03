@@ -148,6 +148,9 @@ class MockRenderThread : public RenderThread {
 
   // The last known good deserializer for sync messages.
   scoped_ptr<IPC::MessageReplyDeserializer> reply_deserializer_;
+
+  // A list of message filters added to this thread.
+  std::vector<scoped_refptr<IPC::ChannelProxy::MessageFilter> > filters_;
 };
 
 }  // namespace content

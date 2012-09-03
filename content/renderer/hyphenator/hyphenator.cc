@@ -9,6 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "content/common/hyphenator_messages.h"
+#include "content/public/renderer/render_thread.h"
 #include "third_party/hyphen/hyphen.h"
 #include "unicode/uscript.h"
 
@@ -189,23 +191,42 @@ Hyphenator::Hyphenator(base::PlatformFile file)
 Hyphenator::~Hyphenator() {
   if (dictionary_)
     hnj_hyphen_free(dictionary_);
+  if (rule_file_ != base::kInvalidPlatformFileValue)
+    base::ClosePlatformFile(rule_file_);
 }
 
 bool Hyphenator::Initialize() {
   if (dictionary_)
     return true;
 
+  // Attach the dictionary file to the MemoryMappedFile object. When it
+  // succeeds, this class does not have to close this file because it is closed
+  // by the MemoryMappedFile class. To prevent this class from closing this
+  // file, we reset its handle.
   rule_map_.reset(new file_util::MemoryMappedFile);
   if (!rule_map_->Initialize(rule_file_))
     return false;
+  rule_file_ = base::kInvalidPlatformFileValue;
 
   dictionary_ = hnj_hyphen_load(rule_map_->data(), rule_map_->length());
   return !!dictionary_;
 }
 
+bool Hyphenator::Attach(content::RenderThread* thread, const string16& locale) {
+  if (!thread)
+    return false;
+  locale_.assign(locale);
+  thread->AddObserver(this);
+  return thread->Send(new HyphenatorHostMsg_OpenDictionary(locale));
+}
+
+bool Hyphenator::CanHyphenate(const string16& locale) {
+  return !locale_.compare(locale);
+}
+
 size_t Hyphenator::ComputeLastHyphenLocation(const string16& word,
                                              size_t before_index) {
-  if (!dictionary_ || word.empty())
+  if (!Initialize() || word.empty())
     return 0;
 
   // Call the hyphen library to get all hyphenation points, i.e. positions where
@@ -226,6 +247,34 @@ size_t Hyphenator::ComputeLastHyphenLocation(const string16& word,
       return *it;
   }
   return 0;
+}
+
+bool Hyphenator::OnControlMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(Hyphenator, message)
+    IPC_MESSAGE_HANDLER(HyphenatorMsg_SetDictionary, OnSetDictionary)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void Hyphenator::OnSetDictionary(IPC::PlatformFileForTransit file) {
+  base::PlatformFile rule_file =
+      IPC::PlatformFileForTransitToPlatformFile(file);
+  if (rule_file == base::kInvalidPlatformFileValue)
+    return;
+  // Delete the current dictionary and save the given file to this object. We
+  // initialize the hyphen library the first time when WebKit actually
+  // hyphenates a word, i.e. when WebKit calls the ComputeLastHyphenLocation
+  // function. (WebKit does not always hyphenate words even when it calls the
+  // CanHyphenate function, e.g. WebKit does not have to hyphenate words when it
+  // does not have to break text into lines.)
+  if (dictionary_) {
+    hnj_hyphen_free(dictionary_);
+    dictionary_ = NULL;
+  }
+  rule_map_.reset();
+  rule_file_ = rule_file;
 }
 
 }  // namespace content

@@ -98,10 +98,21 @@ int MockRenderThread::GenerateRoutingID() {
 
 void MockRenderThread::AddFilter(IPC::ChannelProxy::MessageFilter* filter) {
   filter->OnFilterAdded(&sink());
+  // Add this filter to a vector so the MockRenderThread::RemoveFilter function
+  // can check if this filter is added.
+  filters_.push_back(make_scoped_refptr(filter));
 }
 
 void MockRenderThread::RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) {
-  filter->OnFilterRemoved();
+  // Emulate the IPC::ChannelProxy::OnRemoveFilter function.
+  for (size_t i = 0; i < filters_.size(); ++i) {
+    if (filters_[i].get() == filter) {
+      filter->OnFilterRemoved();
+      filters_.erase(filters_.begin() + i);
+      return;
+    }
+  }
+  NOTREACHED() << "filter to be removed not found";
 }
 
 void MockRenderThread::SetOutgoingMessageFilter(

@@ -273,6 +273,7 @@
         'browser/geolocation/win7_location_provider_unittest_win.cc',
         'browser/gpu/gpu_data_manager_impl_unittest.cc',
         'browser/host_zoom_map_impl_unittest.cc',
+        'browser/hyphenator/hyphenator_message_filter_unittest.cc',
         'browser/in_process_webkit/indexed_db_quota_client_unittest.cc',
         'browser/in_process_webkit/indexed_db_unittest.cc',
         'browser/in_process_webkit/webkit_thread_unittest.cc',

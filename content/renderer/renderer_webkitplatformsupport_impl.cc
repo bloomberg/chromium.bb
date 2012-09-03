@@ -25,6 +25,7 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/gamepad_shared_memory_reader.h"
+#include "content/renderer/hyphenator/hyphenator.h"
 #include "content/renderer/media/audio_hardware.h"
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
 #include "content/renderer/render_thread_impl.h"
@@ -707,4 +708,36 @@ bool RendererWebKitPlatformSupportImpl::SetSandboxEnabledForTesting(
 GpuChannelHostFactory*
 RendererWebKitPlatformSupportImpl::GetGpuChannelHostFactory() {
   return RenderThreadImpl::current();
+}
+
+//------------------------------------------------------------------------------
+
+bool RendererWebKitPlatformSupportImpl::canHyphenate(
+    const WebKit::WebString& locale) {
+  // Return false unless WebKit asks for US English dictionaries because WebKit
+  // can currently hyphenate only English words.
+  if (!locale.isEmpty() && !locale.equals("en-US"))
+    return false;
+
+  // Create a hyphenator object and attach it to the render thread so it can
+  // receive a dictionary file opened by a browser.
+  if (!hyphenator_.get()) {
+    hyphenator_.reset(new content::Hyphenator(base::kInvalidPlatformFileValue));
+    if (!hyphenator_.get())
+      return false;
+    return hyphenator_->Attach(RenderThreadImpl::current(), locale);
+  }
+  return hyphenator_->CanHyphenate(locale);
+}
+
+size_t RendererWebKitPlatformSupportImpl::computeLastHyphenLocation(
+    const char16* characters,
+    size_t length,
+    size_t before_index,
+    const WebKit::WebString& locale) {
+  // Crash if WebKit calls this function when canHyphenate returns false.
+  DCHECK(locale.isEmpty() || locale.equals("en-US"));
+  DCHECK(hyphenator_.get());
+  return hyphenator_->ComputeLastHyphenLocation(string16(characters, length),
+                                                before_index);
 }

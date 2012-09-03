@@ -101,7 +101,9 @@ void MockRenderProcessHost::DumpHandles() {
 }
 
 base::ProcessHandle MockRenderProcessHost::GetHandle() {
-  return base::kNullProcessHandle;
+  // Return the current-process handle for the IPC::GetFileHandleForProcess
+  // function.
+  return base::Process::Current().handle();
 }
 
 bool MockRenderProcessHost::Send(IPC::Message* msg) {

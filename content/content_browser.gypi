@@ -448,6 +448,8 @@
     'browser/histogram_synchronizer.h',
     'browser/host_zoom_map_impl.cc',
     'browser/host_zoom_map_impl.h',
+    'browser/hyphenator/hyphenator_message_filter.cc',
+    'browser/hyphenator/hyphenator_message_filter.h',
     'browser/in_process_webkit/browser_webkitplatformsupport_impl.cc',
     'browser/in_process_webkit/browser_webkitplatformsupport_impl.h',
     'browser/in_process_webkit/indexed_db_callbacks.cc',

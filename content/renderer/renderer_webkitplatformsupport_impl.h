@@ -18,6 +18,7 @@ class WebFileSystemImpl;
 
 namespace content {
 class GamepadSharedMemoryReader;
+class Hyphenator;
 }
 
 namespace webkit_glue {
@@ -84,6 +85,11 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
       WebKit::WebPeerConnection00HandlerClient* client) OVERRIDE;
   virtual WebKit::WebMediaStreamCenter* createMediaStreamCenter(
       WebKit::WebMediaStreamCenterClient* client) OVERRIDE;
+  virtual bool canHyphenate(const WebKit::WebString& locale) OVERRIDE;
+  virtual size_t computeLastHyphenLocation(const char16* characters,
+      size_t length,
+      size_t before_index,
+      const WebKit::WebString& locale) OVERRIDE;
 
   // Disables the WebSandboxSupport implementation for testing.
   // Tests that do not set up a full sandbox environment should call
@@ -132,6 +138,8 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   scoped_ptr<WebKit::WebBlobRegistry> blob_registry_;
 
   scoped_ptr<content::GamepadSharedMemoryReader> gamepad_shared_memory_reader_;
+
+  scoped_ptr<content::Hyphenator> hyphenator_;
 };
 
 #endif  // CONTENT_RENDERER_RENDERER_WEBKITPLATFORMSUPPORT_IMPL_H_
