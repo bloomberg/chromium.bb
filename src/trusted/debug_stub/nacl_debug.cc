@@ -131,12 +131,6 @@ int NaClDebugInit(struct NaClApp *nap) {
   NaClThread *thread = new NaClThread;
   CHECK(thread != NULL);
 
-  /* Add a temp breakpoint. */
-  if (0 != nap->user_entry_pt) {
-    g_target->AddTemporaryBreakpoint(nap->user_entry_pt + nap->mem_start);
-  }
-  g_target->AddTemporaryBreakpoint(nap->initial_entry_pt + nap->mem_start);
-
   NaClLog(LOG_WARNING, "nacl_debug(%d) : Debugging started.\n", __LINE__);
   CHECK(NaClThreadCtor(thread, NaClStubThread, g_target,
                        NACL_KERN_STACK_SIZE));

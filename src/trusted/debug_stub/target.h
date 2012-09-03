@@ -50,7 +50,7 @@ class Target {
 
   typedef std::map<uint32_t, port::IThread*> ThreadMap_t;
   typedef std::map<std::string, std::string> PropertyMap_t;
-  typedef std::map<uint64_t, uint8_t*> BreakMap_t;
+  typedef std::map<uint32_t, uint8_t*> BreakpointMap_t;
 
  public:
   // Contruct a Target object.  By default use the native ABI.
@@ -60,13 +60,6 @@ class Target {
   // Init must be the first function called to correctlty
   // build the Target internal structures.
   bool Init();
-
-  // Add and remove temporary breakpoints.  These breakpoints
-  // must be added just before we start running, and removed
-  // just before we stop running to prevent the debugger from
-  // seeing the modified memory.
-  bool AddTemporaryBreakpoint(uint64_t address);
-  bool RemoveTemporaryBreakpoints(port::IThread *thread);
 
   // This function will spin on a session, until it closes.  If an
   // exception is caught, it will signal the exception thread by
@@ -109,6 +102,11 @@ class Target {
   port::IThread *GetRunThread();
   port::IThread *GetThread(uint32_t id);
 
+  bool AddBreakpoint(uint32_t user_address);
+  bool RemoveBreakpoint(uint32_t user_address);
+  void AdjustSignalForBreakpoint(port::IThread *thread);
+  void RemoveInitialBreakpoint();
+
   void SuspendAllThreads();
   void ResumeAllThreads();
   void UnqueueAnyFaultedThread(uint32_t *thread_id, int8_t *signal);
@@ -124,8 +122,10 @@ class Target {
 
   ThreadMap_t threads_;
   ThreadMap_t::const_iterator threadItr_;
-  BreakMap_t breakMap_;
-
+  BreakpointMap_t breakpoint_map_;
+  // If non-zero, an initial breakpoint is set at the given untrusted
+  // code address.
+  uint32_t initial_breakpoint_addr_;
 
   PropertyMap_t properties_;
 

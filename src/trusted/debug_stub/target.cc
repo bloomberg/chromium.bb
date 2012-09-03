@@ -41,6 +41,7 @@ Target::Target(struct NaClApp *nap, const Abi* abi)
     abi_(abi),
     mutex_(NULL),
     session_(NULL),
+    initial_breakpoint_addr_(0),
     ctx_(NULL),
     cur_signal_(0),
     sig_thread_(0),
@@ -71,6 +72,9 @@ bool Target::Init() {
     Destroy();
     return false;
   }
+  initial_breakpoint_addr_ = (uint32_t) nap_->initial_entry_pt;
+  if (!AddBreakpoint(initial_breakpoint_addr_))
+    return false;
   return true;
 }
 
@@ -80,73 +84,83 @@ void Target::Destroy() {
   delete[] ctx_;
 }
 
-bool Target::AddTemporaryBreakpoint(uint64_t address) {
+bool Target::AddBreakpoint(uint32_t user_address) {
   const Abi::BPDef *bp = abi_->GetBreakpointDef();
 
-  // If this ABI does not support breakpoints then fail
-  if (NULL == bp) return false;
+  // If we already have a breakpoint here then don't add it
+  if (breakpoint_map_.find(user_address) != breakpoint_map_.end())
+    return false;
 
-  // If we alreay have a breakpoint here then don't add it
-  BreakMap_t::iterator itr = breakMap_.find(address);
-  if (itr != breakMap_.end()) return false;
+  uintptr_t sysaddr = NaClUserToSysAddr(nap_, user_address);
+  if (sysaddr == kNaClBadAddress)
+    return false;
 
+  // We add the breakpoint by overwriting the start of an instruction
+  // with a breakpoint instruction.  (At least, we assume that we have
+  // been given the address of the start of an instruction.)  In order
+  // to be able to remove the breakpoint later, we save a copy of the
+  // locations we are overwriting into breakpoint_map_.
   uint8_t *data = new uint8_t[bp->size_];
-  if (NULL == data) return false;
+  if (NULL == data)
+    return false;
 
   // Copy the old code from here
-  if (IPlatform::GetMemory(address, bp->size_, data) == false) {
+  if (!IPlatform::GetMemory(sysaddr, bp->size_, data)) {
     delete[] data;
     return false;
   }
-  if (IPlatform::SetMemory(nap_, address, bp->size_, bp->code_) == false) {
+  if (!IPlatform::SetMemory(nap_, sysaddr, bp->size_, bp->code_)) {
     delete[] data;
     return false;
   }
 
-  breakMap_[address] = data;
+  breakpoint_map_[user_address] = data;
   return true;
 }
 
-bool Target::RemoveTemporaryBreakpoints(IThread *thread) {
+bool Target::RemoveBreakpoint(uint32_t user_address) {
   const Abi::BPDef *bp_def = abi_->GetBreakpointDef();
-  uintptr_t prog_ctr = thread->GetContext()->prog_ctr;
 
-  // If this ABI does not support breakpoints then fail.
-  if (!bp_def) {
+  BreakpointMap_t::iterator iter = breakpoint_map_.find(user_address);
+  if (iter == breakpoint_map_.end())
+    return false;
+
+  uintptr_t sysaddr = NaClUserToSys(nap_, user_address);
+  uint8_t *data = iter->second;
+  // Copy back the old code, and free the data
+  if (!IPlatform::SetMemory(nap_, sysaddr, bp_def->size_, data)) {
+    NaClLog(LOG_ERROR, "Failed to undo breakpoint.\n");
     return false;
   }
+  delete[] data;
+  breakpoint_map_.erase(iter);
+  return true;
+}
 
-  // Iterate through the map, removing breakpoints
-  while (!breakMap_.empty()) {
-    // Copy the key/value locally
-    BreakMap_t::iterator cur = breakMap_.begin();
-    uint64_t addr = cur->first;
-    uint8_t *data = cur->second;
-
-    // Then remove it from the map
-    breakMap_.erase(cur);
-
-    // Copy back the old code, and free the data
-    if (!IPlatform::SetMemory(nap_, addr, bp_def->size_, data))
-      NaClLog(LOG_ERROR, "Failed to undo breakpoint.\n");
-    delete[] data;
-
-    uintptr_t sys_prog_ctr;
-    if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32) {
-      sys_prog_ctr = NaClUserToSysAddr(nap_, prog_ctr);
-    } else {
-      sys_prog_ctr = prog_ctr;
-    }
-    // If we hit the breakpoint, ensure that it is reported as SIGTRAP
-    // rather than SIGSEGV.
-    if (addr == sys_prog_ctr && cur_signal_ == NACL_ABI_SIGSEGV) {
+void Target::AdjustSignalForBreakpoint(IThread *thread) {
+  // If we hit the breakpoint, ensure that it is reported as SIGTRAP
+  // rather than SIGSEGV.  This is necessary because we use HLT (which
+  // produces SIGSEGV) rather than the more usual INT3 (which produces
+  // SIGTRAP) on x86, in order to work around a Mac OS X bug.
+  if (cur_signal_ == NACL_ABI_SIGSEGV) {
+    // Casting to uint32_t is necessary to drop the top 32 bits of
+    // %rip on x86-64.
+    uint32_t prog_ctr = (uint32_t) thread->GetContext()->prog_ctr;
+    if (breakpoint_map_.find(prog_ctr) != breakpoint_map_.end()) {
       cur_signal_ = NACL_ABI_SIGTRAP;
     }
   }
-
-  return true;
 }
 
+void Target::RemoveInitialBreakpoint() {
+  if (initial_breakpoint_addr_ != 0) {
+    if (!RemoveBreakpoint(initial_breakpoint_addr_)) {
+      NaClLog(LOG_FATAL,
+              "RemoveInitialBreakpoint: Failed to remove breakpoint\n");
+    }
+    initial_breakpoint_addr_ = 0;
+  }
+}
 
 void Target::Run(Session *ses) {
   bool first = true;
@@ -197,7 +211,6 @@ void Target::Run(Session *ses) {
       SuspendAllThreads();
       UnqueueAnyFaultedThread(&sig_thread_, &cur_signal_);
       reg_thread_ = sig_thread_;
-      RemoveTemporaryBreakpoints(threads_[sig_thread_]);
     } else {
       // Otherwise look for messages from GDB.
       if (!ses->DataAvailable()) {
@@ -218,6 +231,8 @@ void Target::Run(Session *ses) {
     if (sig_thread_ != 0) {
       // Reset single stepping.
       threads_[sig_thread_]->SetStep(false);
+      AdjustSignalForBreakpoint(threads_[sig_thread_]);
+      RemoveInitialBreakpoint();
     }
 
     // Next update the current thread info
