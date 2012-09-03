@@ -36,6 +36,7 @@ bool RcdBetterThan(const std::string& a, const std::string& b) {
 // permissions section of the manifest.
 const char* kNonPermissionModuleNames[] = {
   "browserAction",
+  "commands",
   "devtools",
   "events",
   "extension",

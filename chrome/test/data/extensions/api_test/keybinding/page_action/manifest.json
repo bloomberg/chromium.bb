@@ -6,7 +6,7 @@
     "scripts": ["background.js"]
   },
   "permissions": [
-    "tabs", "http://*/*", "commands"
+    "tabs", "http://*/*"
   ],
   "page_action": {
     "default_title": "Make this page red",

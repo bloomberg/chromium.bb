@@ -52,7 +52,6 @@ class APIPermission {
     kClipboardRead,
     kClipboardWrite,
     kCloudPrintPrivate,
-    kCommands,
     kContentSettings,
     kContextMenus,
     kCookie,

@@ -10,25 +10,16 @@ or sending a command to the extension.
 
 <h2 id="manifest">Manifest</h2>
 <p>
-You must declare the "commands" permission in your extension's manifest to use
-this API and set manifest_version to (at least) 2.
+To use this API you must set manifest_version to (at least) 2.
 </p>
-
-<pre>{
-  "name": "My extension",
-  ...
-<b>  "permissions": [
-    "commands",
-  ]</b>,
-  ...
-}</pre>
 
 <h2 id="usage">Usage</h2>
 <p>The commands API allows you to define specific commands, and bind them to a
 default key combination. Each command your extension accepts must be listed in
 the manifest as an attribute of the 'commands' manifest key. Note: Combinations
 that involve Ctrl+Alt are not permitted in order to avoid conflicts with the
-AltGr key.</p>
+AltGr key. Also note that on Mac 'Ctrl' is automatically converted to
+'Command'. If you want 'Ctrl' instead, please specify 'MacCtrl'.</p>
 
 <pre>{
   "name": "My extension",

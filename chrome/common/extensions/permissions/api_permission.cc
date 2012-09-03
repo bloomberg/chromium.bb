@@ -176,7 +176,6 @@ void APIPermissionInfo::RegisterAllPermissions(
       PermissionMessage::kBookmarks },
     { APIPermission::kBrowserTag, "browserTag", kFlagCannotBeOptional },
     { APIPermission::kBrowsingData, "browsingData" },
-    { APIPermission::kCommands, "commands" },
     { APIPermission::kContentSettings, "contentSettings", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_CONTENT_SETTINGS,
       PermissionMessage::kContentSettings },

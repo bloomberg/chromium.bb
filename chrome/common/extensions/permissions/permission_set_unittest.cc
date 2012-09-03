@@ -694,10 +694,6 @@ TEST(PermissionsTest, PermissionMessages) {
   // so we won't prompt for it for now.
   skip.insert(APIPermission::kFileBrowserHandler);
 
-  // This permission requires explicit user action (shortcut) so we don't
-  // prompt for it.
-  skip.insert(APIPermission::kCommands);
-
   // These permissions require explicit user action (configuration dialog)
   // so we don't prompt for them at install time.
   skip.insert(APIPermission::kMediaGalleries);

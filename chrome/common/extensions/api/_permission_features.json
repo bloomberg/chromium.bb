@@ -79,10 +79,6 @@
     // CloudPrint
     "whitelist": ["mfehgcgbbipciphmccgaenjidiccnmng"]
   },
-  "commands": {
-    "channel": "beta",
-    "extension_types": ["extension", "packaged_app"]
-  },
   "contentSettings": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]

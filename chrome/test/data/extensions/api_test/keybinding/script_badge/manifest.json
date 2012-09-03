@@ -11,7 +11,7 @@
     }
   },
   "permissions": [
-    "tabs", "http://*/*", "commands"
+    "tabs", "http://*/*"
   ],
   "script_badge": {
     "default_popup": "popup.html"
