@@ -59,8 +59,11 @@ def main():
   obj = rietveld.Rietveld(options.server, '', None)
   try:
     properties = obj.get_issue_properties(options.issue, False)
-  except rietveld.upload.ClientLoginError:
-    # Requires login.
+  except rietveld.upload.ClientLoginError, e:
+    if sys.stdout.closed:
+      print >> sys.stderr, 'Accessing the issue requires login.'
+      return 1
+    print('Accessing the issue requires login.')
     obj = rietveld.Rietveld(options.server, None, None)
     properties = obj.get_issue_properties(options.issue, False)
 
@@ -86,7 +89,7 @@ def main():
   elif scm_type == 'git':
     scm_obj = checkout.GitCheckoutBase(options.root_dir, None, None)
   elif scm_type == None:
-    scm_obj = checkout.RawCheckout(options.root_dir, None)
+    scm_obj = checkout.RawCheckout(options.root_dir, None, None)
   else:
     parser.error('Couldn\'t determine the scm')
 
