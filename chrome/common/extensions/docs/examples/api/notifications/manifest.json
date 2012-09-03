@@ -7,5 +7,10 @@
   "permissions": ["tabs", "notifications"],
   "options_page": "options.html",
   "background": { "scripts": ["background.js"] },
-  "manifest_version": 2
+  "manifest_version": 2,
+
+  // crbug.com/134315
+  "web_accessible_resources": [
+    "48.png"
+  ]
 }

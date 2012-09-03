@@ -28,32 +28,55 @@ an HTML page packaged inside your extension.
 </p>
 
 
-<h2 id="manifest">Manifest</h2>
+<h2 id="example">Example</h2>
 
-<p>
-You can request the notification permission
-in the <a href="manifest.html">extension manifest</a>,
-like this:
-</p>
-
-<pre>{
+<p>First, declare the <code>notifications</code> permission in your manifest:</p>
+<pre>
+{
   "name": "My extension",
+  "manifest_version": 2,
   ...
 <b>  "permissions": [
     "notifications"
   ]</b>,
   ...
-}</pre>
+  // <strong>Note:</strong> Because of <a href="http://code.google.com/p/chromium/issues/detail?id=134315">bug 134315</a>, you must declare any images you
+  // want to use with createNotification() as a web accessible resource.
+<b>  "web_accessible_resources": [
+    "48.png"
+  ]</b>,
+}
+</pre>
 
-<p class="note">
-<b>Note:</b> Extensions that declare
-the <code>notifications</code> permission
-are always allowed to create notifications.
-There is no need to call
-<code>webkitNotifications.checkPermission()</code>.
-</p>
+<p>Then, use <code>webkitNotifications</code> object to create notifications:</p>
 
-<h2 id="communication">Communicating with other views</h2>
+<pre>
+// <strong>Note:</strong> There's no need to call webkitNotifications.checkPermission().
+// Extensions that declare the <em>notifications</em> permission are always
+// allowed create notifications.
+
+// Create a simple text notification:
+var notification = webkitNotifications.createNotification(
+  '48.png',  // icon url - can be relative
+  'Hello!',  // notification title
+  'Lorem ipsum...'  // notification body text
+);
+
+// Or create an HTML notification:
+var notification = webkitNotifications.createHTMLNotification(
+  'notification.html'  // html url - can be relative
+);
+
+// Then show the notification.
+notification.show();
+</pre>
+
+<h2>API Reference</h2>
+
+<p>See the <a href="http://dev.chromium.org/developers/design-documents/desktop-notifications/api-specification">Desktop Notifications Draft Specification</a>.</p>
+
+
+<h2 id="communication">Communicating with Other Views</h2>
 
 <p>
 You can communicate between a notification
@@ -73,7 +96,7 @@ chrome.extension.getViews({type:"notification"}).forEach(function(win) {
 </pre>
 
 
-<h2 id="examples"> Examples </h2>
+<h2 id="examples">More Examples</h2>
 
 <p>
 You can find a simple example
@@ -91,35 +114,3 @@ Also see html5rocks.com's
 Ignore the permission-related code;
 it's unnecessary if you declare the "notifications" permission.
 </p>
-
-<h2 id="api">API</h2>
-
-<p>
-The desktop notification API for extensions
-is the same one that
-is available to normal web pages.
-As the following code shows,
-you first create either a simple text notification
-or an HTML notification,
-and then you show the notification.
-</p>
-
-<pre>
-// Create a simple text notification:
-var notification = webkitNotifications.createNotification(
-  '48.png',  // icon url - can be relative
-  'Hello!',  // notification title
-  'Lorem ipsum...'  // notification body text
-);
-
-// Or create an HTML notification:
-var notification = webkitNotifications.createHTMLNotification(
-  'notification.html'  // html url - can be relative
-);
-
-// Then show the notification.
-notification.show();
-</pre>
-
-<p>For complete API details,
-see the <a href="http://dev.chromium.org/developers/design-documents/desktop-notifications/api-specification">Desktop notifications draft specification</a>.</p>

@@ -130,12 +130,14 @@ code {
 pre {
   font-size: 10pt;
   background-color: #F5F5F5;
-  border-top: 1px solid #DDD;
-  border-left: 1px solid #DDD;
   margin: 1em 0 0 0;
   padding: .99em;
   overflow: auto;
   word-wrap: break-word;
+}
+
+pre a {
+  text-decoration: underline!important;
 }
 
 pre b {
