@@ -24,8 +24,10 @@ void TraceMarker::CreateTraceMarker() {
 }
 
 void TraceMarker::DeleteTraceMarker() {
-  if (trace_marker_count_ == 1)
+  if (trace_marker_count_ == 1) {
     delete trace_marker_;
+    trace_marker_ = NULL;
+  }
   trace_marker_count_--;
   if (trace_marker_count_ < 0)
     trace_marker_count_ = 0;

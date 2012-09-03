@@ -60,6 +60,7 @@ TEST_OBJECTS=\
 	$(OBJDIR)/split_correcting_filter_interpreter_unittest.o \
 	$(OBJDIR)/stuck_button_inhibitor_filter_interpreter_unittest.o \
 	$(OBJDIR)/t5r2_correcting_filter_interpreter_unittest.o \
+	$(OBJDIR)/trace_marker_unittest.o \
 	$(OBJDIR)/tracer_unittest.o \
 	$(OBJDIR)/util_unittest.o
 
