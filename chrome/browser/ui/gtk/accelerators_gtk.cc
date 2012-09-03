@@ -135,7 +135,7 @@ const struct AcceleratorMapping {
   { GDK_u, IDC_VIEW_SOURCE, GDK_CONTROL_MASK },
   { GDK_i, IDC_DEV_TOOLS,
     GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
-  { GDK_F12, IDC_DEV_TOOLS, GdkModifierType(0) },
+  { GDK_F12, IDC_DEV_TOOLS_TOGGLE, GdkModifierType(0) },
   { GDK_j, IDC_DEV_TOOLS_CONSOLE,
     GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
   { GDK_c, IDC_DEV_TOOLS_INSPECT,

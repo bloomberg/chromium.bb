@@ -383,7 +383,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
   void OpenDevToolsWindowForSharedWorker(WorkerData* worker_data) {
     Profile* profile = browser()->profile();
     window_ = DevToolsWindow::CreateDevToolsWindowForWorker(profile);
-    window_->Show(DEVTOOLS_TOGGLE_ACTION_NONE);
+    window_->Show(DEVTOOLS_TOGGLE_ACTION_SHOW);
     DevToolsAgentHost* agent_host =
         DevToolsAgentHostRegistry::GetDevToolsAgentHostForWorker(
             worker_data->worker_process_id,

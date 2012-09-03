@@ -103,15 +103,7 @@ TabContents* DevToolsWindow::GetDevToolsContents(WebContents* inspected_tab) {
 
 // static
 bool DevToolsWindow::IsDevToolsWindow(RenderViewHost* window_rvh) {
-  if (g_instances == NULL)
-    return false;
-  DevToolsWindowList& instances = g_instances.Get();
-  for (DevToolsWindowList::iterator it = instances.begin();
-       it != instances.end(); ++it) {
-    if ((*it)->tab_contents_->web_contents()->GetRenderViewHost() == window_rvh)
-      return true;
-  }
-  return false;
+  return AsDevToolsWindow(window_rvh) != NULL;
 }
 
 // static
@@ -131,7 +123,7 @@ DevToolsWindow* DevToolsWindow::OpenDevToolsWindowForWorker(
         worker_agent,
         window->frontend_host_);
   }
-  window->Show(DEVTOOLS_TOGGLE_ACTION_NONE);
+  window->Show(DEVTOOLS_TOGGLE_ACTION_SHOW);
   return window;
 }
 
@@ -145,16 +137,23 @@ DevToolsWindow* DevToolsWindow::CreateDevToolsWindowForWorker(
 DevToolsWindow* DevToolsWindow::OpenDevToolsWindow(
     RenderViewHost* inspected_rvh) {
   return ToggleDevToolsWindow(inspected_rvh, true,
-                              DEVTOOLS_TOGGLE_ACTION_NONE);
+                              DEVTOOLS_TOGGLE_ACTION_SHOW);
 }
 
 // static
 DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
-    RenderViewHost* inspected_rvh,
+    Browser* browser,
     DevToolsToggleAction action) {
+  if (action == DEVTOOLS_TOGGLE_ACTION_TOGGLE && browser->is_devtools()) {
+    chrome::CloseAllTabs(browser);
+    return NULL;
+  }
+  RenderViewHost* inspected_rvh =
+      chrome::GetActiveWebContents(browser)->GetRenderViewHost();
+
   return ToggleDevToolsWindow(inspected_rvh,
-                              action == DEVTOOLS_TOGGLE_ACTION_INSPECT,
-                              action);
+                       action == DEVTOOLS_TOGGLE_ACTION_INSPECT,
+                       action);
 }
 
 void DevToolsWindow::InspectElement(RenderViewHost* inspected_rvh,
@@ -197,7 +196,7 @@ DevToolsWindow::DevToolsWindow(TabContents* tab_contents,
       browser_(NULL),
       docked_(docked),
       is_loaded_(false),
-      action_on_load_(DEVTOOLS_TOGGLE_ACTION_NONE) {
+      action_on_load_(DEVTOOLS_TOGGLE_ACTION_SHOW) {
   frontend_host_ = DevToolsClientHost::CreateDevToolsFrontendHost(
       tab_contents->web_contents(),
       this);
@@ -349,7 +348,7 @@ void DevToolsWindow::RequestSetDocked(bool docked) {
       inspected_window = NULL;
     }
   }
-  Show(DEVTOOLS_TOGGLE_ACTION_NONE);
+  Show(DEVTOOLS_TOGGLE_ACTION_SHOW);
 }
 
 RenderViewHost* DevToolsWindow::GetRenderViewHost() {
@@ -514,13 +513,14 @@ void DevToolsWindow::DoAction() {
       break;
     case DEVTOOLS_TOGGLE_ACTION_INSPECT:
       CallClientFunction("InspectorFrontendAPI.enterInspectElementMode", NULL);
-    case DEVTOOLS_TOGGLE_ACTION_NONE:
+    case DEVTOOLS_TOGGLE_ACTION_SHOW:
+    case DEVTOOLS_TOGGLE_ACTION_TOGGLE:
       // Do nothing.
       break;
     default:
       NOTREACHED();
   }
-  action_on_load_ = DEVTOOLS_TOGGLE_ACTION_NONE;
+  action_on_load_ = DEVTOOLS_TOGGLE_ACTION_SHOW;
 }
 
 std::string SkColorToRGBAString(SkColor color) {
@@ -623,7 +623,7 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
   DevToolsManager* manager = DevToolsManager::GetInstance();
   DevToolsClientHost* host = manager->GetDevToolsClientHostFor(agent);
   DevToolsWindow* window = AsDevToolsWindow(host);
-  if (host != NULL && window == NULL) {
+  if (host && !window) {
     // Break remote debugging / extension debugging session.
     manager->UnregisterDevToolsClientHostFor(agent);
   }
@@ -660,6 +660,19 @@ DevToolsWindow* DevToolsWindow::AsDevToolsWindow(
   for (DevToolsWindowList::iterator it = instances.begin();
        it != instances.end(); ++it) {
     if ((*it)->frontend_host_ == client_host)
+      return *it;
+  }
+  return NULL;
+}
+
+// static
+DevToolsWindow* DevToolsWindow::AsDevToolsWindow(RenderViewHost* window_rvh) {
+  if (g_instances == NULL)
+    return NULL;
+  DevToolsWindowList& instances = g_instances.Get();
+  for (DevToolsWindowList::iterator it = instances.begin();
+       it != instances.end(); ++it) {
+    if ((*it)->tab_contents_->web_contents()->GetRenderViewHost() == window_rvh)
       return *it;
   }
   return NULL;

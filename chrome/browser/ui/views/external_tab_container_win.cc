@@ -1069,17 +1069,26 @@ bool ExternalTabContainerWin::AcceleratorPressed(
     case IDC_DEV_TOOLS:
       DevToolsWindow::ToggleDevToolsWindow(
           tab_contents_->web_contents()->GetRenderViewHost(),
-          DEVTOOLS_TOGGLE_ACTION_NONE);
+          false,
+          DEVTOOLS_TOGGLE_ACTION_SHOW);
       break;
     case IDC_DEV_TOOLS_CONSOLE:
       DevToolsWindow::ToggleDevToolsWindow(
           tab_contents_->web_contents()->GetRenderViewHost(),
+          false,
           DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE);
       break;
     case IDC_DEV_TOOLS_INSPECT:
       DevToolsWindow::ToggleDevToolsWindow(
           tab_contents_->web_contents()->GetRenderViewHost(),
+          false,
           DEVTOOLS_TOGGLE_ACTION_INSPECT);
+      break;
+    case IDC_DEV_TOOLS_TOGGLE:
+      DevToolsWindow::ToggleDevToolsWindow(
+          tab_contents_->web_contents()->GetRenderViewHost(),
+          false,
+          DEVTOOLS_TOGGLE_ACTION_TOGGLE);
       break;
     default:
       NOTREACHED() << "Unsupported accelerator: " << command_id;

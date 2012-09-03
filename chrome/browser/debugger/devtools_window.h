@@ -57,7 +57,13 @@ class DevToolsWindow : private content::NotificationObserver,
   static DevToolsWindow* OpenDevToolsWindow(
       content::RenderViewHost* inspected_rvh);
   static DevToolsWindow* ToggleDevToolsWindow(
+      Browser* browser,
+      DevToolsToggleAction action);
+
+  // Exposed for testing, normal clients should not use this method.
+  static DevToolsWindow* ToggleDevToolsWindow(
       content::RenderViewHost* inspected_rvh,
+      bool force_open,
       DevToolsToggleAction action);
   static void InspectElement(
       content::RenderViewHost* inspected_rvh, int x, int y);
@@ -129,11 +135,8 @@ class DevToolsWindow : private content::NotificationObserver,
 
   virtual void FrameNavigating(const std::string& url) OVERRIDE {}
 
-  static DevToolsWindow* ToggleDevToolsWindow(
-      content::RenderViewHost* inspected_rvh,
-      bool force_open,
-      DevToolsToggleAction action);
   static DevToolsWindow* AsDevToolsWindow(content::DevToolsClientHost*);
+  static DevToolsWindow* AsDevToolsWindow(content::RenderViewHost*);
 
   // content::DevToolsClientHandlerDelegate overrides.
   virtual void ActivateWindow() OVERRIDE;
