@@ -494,7 +494,9 @@ const char kNetworkPredictionEnabled[] = "dns_prefetching.enabled";
 const char kDefaultAppsInstallState[] = "default_apps_install_state";
 
 #if defined(OS_CHROMEOS)
-// An integer pref to initially mute volume if 1.
+// An integer pref to initially mute volume if 1. This pref is ignored if
+// |kAudioOutputAllowed| is set to false, but its value is preserved, therefore
+// when the policy is lifted the original mute state is restored.
 const char kAudioMute[] = "settings.audio.mute";
 
 // TODO(derat): This is deprecated in favor of |kAudioVolumePercent|; remove it
@@ -1779,6 +1781,15 @@ const char kSyncSpareBootstrapToken[] = "sync.spare_bootstrap_token";
 // A pref holding the value of the policy used to disable mounting of external
 // storage for the user.
 const char kExternalStorageDisabled[] = "hardware.external_storage_disabled";
+
+// A pref holding the value of the policy used to disable playing audio on
+// ChromeOS devices. This pref overrides |kAudioMute| but does not overwrite
+// it, therefore when the policy is lifted the original mute state is restored.
+const char kAudioOutputAllowed[] = "hardware.audio_output_enabled";
+
+// A pref holding the value of the policy used to disable capturing audio on
+// ChromeOS devices.
+const char kAudioCaptureAllowed[] = "hardware.audio_capture_enabled";
 
 // A dictionary that maps usernames to wallpaper properties.
 const char kUsersWallpaperInfo[] = "user_wallpaper_info";

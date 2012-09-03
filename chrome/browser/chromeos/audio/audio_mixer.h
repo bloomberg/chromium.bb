@@ -29,8 +29,30 @@ class AudioMixer {
   // Is the device currently muted?
   virtual bool IsMuted() = 0;
 
-  // Mutes or unmutes the device, possibly asynchronously.
+  // Mutes or unmutes the device, possibly asynchronously.  The caller must
+  // first verify that the mute state is not locked by calling IsMuteLocked.
   virtual void SetMuted(bool mute) = 0;
+
+  // Is the device's mute state currently locked?
+  virtual bool IsMuteLocked() = 0;
+
+  // Locks the mute state of the device to whatever state it currently is in.
+  // Call SetMuteLocked with false to allow changing the mute state again.
+  virtual void SetMuteLocked(bool locked) = 0;
+
+  // Is the capture device currently muted?
+  virtual bool IsCaptureMuted() = 0;
+
+  // Mutes or unmutes the capture device, possible asynchronously.  The caller
+  // must first verify that the mute state is not locked by calling
+  // IsCaptureMuteLocked.
+  virtual void SetCaptureMuted(bool mute) = 0;
+
+  // Is the capture device's mute state currently locked?
+  virtual bool IsCaptureMuteLocked() = 0;
+
+  // Locks the capture mute state of the device.
+  virtual void SetCaptureMuteLocked(bool locked) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioMixer);

@@ -9,16 +9,22 @@
 #include "base/observer_list.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
+#include "chrome/browser/api/prefs/pref_change_registrar.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_source.h"
 
 template <typename T> struct DefaultSingletonTraits;
 
+class PrefChangeRegistrar;
 class PrefService;
 
 namespace chromeos {
 
 class AudioMixer;
 
-class AudioHandler {
+class AudioHandler : public content::NotificationObserver {
  public:
   class VolumeObserver {
    public:
@@ -58,8 +64,19 @@ class AudioHandler {
   // Mutes or unmutes all audio.
   void SetMuted(bool do_mute);
 
+  // Is the capture volume currently muted?
+  bool IsCaptureMuted();
+
+  // Mutes or unmutes all capture devices.
+  void SetCaptureMuted(bool do_mute);
+
   void AddVolumeObserver(VolumeObserver* observer);
   void RemoveVolumeObserver(VolumeObserver* observer);
+
+  // Overridden from content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   // Defines the delete on exit Singleton traits we like.  Best to have this
@@ -70,11 +87,21 @@ class AudioHandler {
   explicit AudioHandler(AudioMixer* mixer);
   virtual ~AudioHandler();
 
+  // Initializes the observers for the policy prefs.
+  void InitializePrefObservers();
+
+  // Applies the audio muting policies whenever the user logs in or policy
+  // change notification is received.
+  void ApplyAudioPolicy();
+
   scoped_ptr<AudioMixer> mixer_;
 
   ObserverList<VolumeObserver> volume_observers_;
 
-  PrefService* prefs_;  // not owned
+  PrefService* local_state_;  // not owned
+
+  PrefChangeRegistrar pref_change_registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioHandler);
 };

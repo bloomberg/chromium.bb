@@ -34,13 +34,40 @@ class MockAudioMixer : public chromeos::AudioMixer {
     return is_muted_;
   }
 
-  virtual void SetMuted(bool do_mute) OVERRIDE {
-    is_muted_ = do_mute;
+  virtual void SetMuted(bool mute) OVERRIDE {
+    is_muted_ = mute;
+  }
+
+  bool IsMuteLocked() OVERRIDE {
+    return is_mute_locked_;
+  }
+
+  void SetMuteLocked(bool locked) OVERRIDE {
+    is_mute_locked_ = locked;
+  }
+
+  bool IsCaptureMuted() OVERRIDE {
+    return is_capture_muted_;
+  }
+
+  void SetCaptureMuted(bool mute) OVERRIDE {
+    is_capture_muted_ = mute;
+  }
+
+  bool IsCaptureMuteLocked() OVERRIDE {
+    return is_capture_mute_locked_;
+  }
+
+  void SetCaptureMuteLocked(bool locked) OVERRIDE {
+    is_capture_mute_locked_ = locked;
   }
 
  private:
   double volume_;
   bool is_muted_;
+  bool is_mute_locked_;
+  bool is_capture_muted_;
+  bool is_capture_mute_locked_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAudioMixer);
 };

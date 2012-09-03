@@ -29,7 +29,13 @@ class AudioMixerCras : public AudioMixer {
   virtual double GetVolumePercent() OVERRIDE;
   virtual void SetVolumePercent(double percent) OVERRIDE;
   virtual bool IsMuted() OVERRIDE;
-  virtual void SetMuted(bool muted) OVERRIDE;
+  virtual void SetMuted(bool mute) OVERRIDE;
+  virtual bool IsMuteLocked() OVERRIDE;
+  virtual void SetMuteLocked(bool locked) OVERRIDE;
+  virtual bool IsCaptureMuted() OVERRIDE;
+  virtual void SetCaptureMuted(bool mute) OVERRIDE;
+  virtual bool IsCaptureMuteLocked() OVERRIDE;
+  virtual void SetCaptureMuteLocked(bool locked) OVERRIDE;
 
  private:
   // Tries to connect to CRAS.  On failure, posts a delayed Connect() task to
@@ -39,6 +45,10 @@ class AudioMixerCras : public AudioMixer {
   // Updates |client_| for current values of |volume_percent_| and
   // |is_muted_|. No-op if not connected.
   void ApplyState();
+
+  // Calls ApplyState on the proper thread only if no other call is currently
+  // pending.
+  void ApplyStateIfNeeded();
 
   // Interfaces to the audio server.
   struct cras_client *client_;
@@ -53,6 +63,9 @@ class AudioMixerCras : public AudioMixer {
 
   // Most recently-requested muting state.
   bool is_muted_;
+  bool is_mute_locked_;
+  bool is_capture_muted_;
+  bool is_capture_mute_locked_;
 
   // Is there already a pending call to ApplyState() scheduled on |thread_|?
   bool apply_is_pending_;
@@ -60,7 +73,8 @@ class AudioMixerCras : public AudioMixer {
   // Background thread used for interacting with CRAS.
   scoped_ptr<base::Thread> thread_;
 
-  // Guards |volume_percent_|, |is_muted_|, and |apply_is_pending_|.
+  // Guards |volume_percent_|, |is_muted_|, |is_mute_locked_|,
+  // |is_capture_muted_|, |is_capture_mute_locked_|, and |apply_is_pending_|.
   base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioMixerCras);

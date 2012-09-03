@@ -659,6 +659,8 @@ extern const char kDeviceLocation[];
 extern const char kSyncSpareBootstrapToken[];
 extern const char kExternalStorageDisabled[];
 extern const char kUsersWallpaperInfo[];
+extern const char kAudioOutputAllowed[];
+extern const char kAudioCaptureAllowed[];
 #endif
 
 extern const char kClearPluginLSODataEnabled[];

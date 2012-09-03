@@ -320,6 +320,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kExternalStorageDisabled,
     prefs::kExternalStorageDisabled,
     Value::TYPE_BOOLEAN },
+  { key::kAudioOutputAllowed,
+    prefs::kAudioOutputAllowed,
+    Value::TYPE_BOOLEAN },
+  { key::kAudioCaptureAllowed,
+    prefs::kAudioCaptureAllowed,
+    Value::TYPE_BOOLEAN },
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)

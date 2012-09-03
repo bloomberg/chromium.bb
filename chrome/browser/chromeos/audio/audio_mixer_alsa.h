@@ -32,7 +32,13 @@ class AudioMixerAlsa : public AudioMixer {
   virtual double GetVolumePercent() OVERRIDE;
   virtual void SetVolumePercent(double percent) OVERRIDE;
   virtual bool IsMuted() OVERRIDE;
-  virtual void SetMuted(bool muted) OVERRIDE;
+  virtual void SetMuted(bool mute) OVERRIDE;
+  virtual bool IsMuteLocked() OVERRIDE;
+  virtual void SetMuteLocked(bool locked) OVERRIDE;
+  virtual bool IsCaptureMuted() OVERRIDE;
+  virtual void SetCaptureMuted(bool mute) OVERRIDE;
+  virtual bool IsCaptureMuteLocked() OVERRIDE;
+  virtual void SetCaptureMuteLocked(bool locked) OVERRIDE;
 
  private:
   // Tries to connect to ALSA.  On failure, posts a delayed Connect() task to
@@ -75,7 +81,12 @@ class AudioMixerAlsa : public AudioMixer {
   double DbToPercent(double db) const;
   double PercentToDb(double percent) const;
 
+  // Calls ApplyState on the proper thread only if no other call is currently
+  // pending.
+  void ApplyStateIfNeeded();
+
   // Guards |min_volume_db_|, |max_volume_db_|, |volume_db_|, |is_muted_|,
+  // |is_mute_locked_|, |is_capture_muted_|, |is_capture_mute_locked_|,
   // |apply_is_pending_|, and |initial_volume_percent_|.
   base::Lock lock_;
 
@@ -90,6 +101,14 @@ class AudioMixerAlsa : public AudioMixer {
 
   // Most recently-requested muting state.
   bool is_muted_;
+  bool is_capture_muted_;
+
+  // If set to true the mute state of the respective channel is locked and can
+  // not be changed until it is unlocked.  We don't have control over ALSA so
+  // other sound clients might unmute channels but we can do best effort to
+  // mimic CRAS's locking functionality.
+  bool is_mute_locked_;
+  bool is_capture_mute_locked_;
 
   // Is there already a pending call to ApplyState() scheduled on |thread_|?
   bool apply_is_pending_;
@@ -108,6 +127,10 @@ class AudioMixerAlsa : public AudioMixer {
 
   // PCM mixer.  May be NULL if the driver doesn't expose one.
   _snd_mixer_elem* pcm_element_;
+
+  // Mic mixers.  Used to mute capture.  Both might be NULL on some drivers.
+  _snd_mixer_elem* mic_element_;
+  _snd_mixer_elem* front_mic_element_;
 
   // Signalled after Disconnect() finishes (which is itself invoked by the
   // d'tor).

@@ -270,6 +270,8 @@ class PolicyPrefsTestCases(object):
         (None, True, [], ['chromeos']),
     'PinnedLauncherApps': (None, [], [], ['chromeos']),
     'ExternalStorageDisabled': (None, True, [], ['chromeos']),
+    'AudioOutputAllowed': (None, True, [], ['chromeos']),
+    'AudioCaptureAllowed': (None, True, [], ['chromeos']),
 
     # ChromeOS Device policies:
     'DevicePolicyRefreshRate': (None, 300000, [], ['chromeos']),
