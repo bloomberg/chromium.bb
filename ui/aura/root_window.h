@@ -17,6 +17,7 @@
 #include "ui/aura/root_window_host_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/events/event_dispatcher.h"
 #include "ui/base/events.h"
 #include "ui/base/gestures/gesture_recognizer.h"
 #include "ui/base/gestures/gesture_types.h"
@@ -77,6 +78,7 @@ class AURA_EXPORT CompositorLock
 class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
                                public ui::CompositorObserver,
                                public Window,
+                               public ui::EventDispatcher,
                                public ui::GestureEventHelper,
                                public ui::LayerAnimationObserver,
                                public aura::client::CaptureDelegate,
@@ -291,6 +293,11 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // |destroyed| is set to true when the window is being destroyed.
   void OnWindowHidden(Window* invisible, bool destroyed);
 
+  // Overridden from ui::EventDispatcher.
+  virtual bool CanDispatchToTarget(EventTarget* target) OVERRIDE;
+  virtual void ProcessPreTargetList(ui::EventHandlerList* list) OVERRIDE;
+  virtual void ProcessPostTargetList(ui::EventHandlerList* list) OVERRIDE;
+
   // Overridden from ui::GestureEventHelper.
   virtual bool DispatchLongPressGestureEvent(ui::GestureEvent* event) OVERRIDE;
   virtual bool DispatchCancelTouchEvent(ui::TouchEvent* event) OVERRIDE;
@@ -372,6 +379,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   Window* mouse_pressed_handler_;
   Window* mouse_moved_handler_;
   Window* mouse_event_dispatch_target_;
+  Window* event_dispatch_target_;
   FocusManager* focus_manager_;
 
   // The gesture_recognizer_ for this.

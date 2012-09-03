@@ -635,16 +635,12 @@ TEST_F(RootWindowTest, HoldMouseMove) {
 class DeletingEventFilter : public EventFilter {
  public:
   DeletingEventFilter()
-      : delete_during_pre_handle_(false),
-        got_post_handle_(false) {}
+      : delete_during_pre_handle_(false) {}
   virtual ~DeletingEventFilter() {}
 
   void Reset(bool delete_during_pre_handle) {
-    got_post_handle_ = false;
     delete_during_pre_handle_ = delete_during_pre_handle;
   }
-
-  bool got_post_handle() const { return got_post_handle_; }
 
  private:
   // Overridden from EventFilter:
@@ -654,14 +650,15 @@ class DeletingEventFilter : public EventFilter {
       delete target;
     return false;
   }
-  virtual bool PostHandleKeyEvent(Window* target,
-                                  ui::KeyEvent* event) OVERRIDE {
-    got_post_handle_ = true;
+
+  virtual bool PreHandleMouseEvent(Window* target,
+                                   ui::MouseEvent* event) OVERRIDE {
+    if (delete_during_pre_handle_)
+      delete target;
     return false;
   }
 
   bool delete_during_pre_handle_;
-  bool got_post_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(DeletingEventFilter);
 };
@@ -690,6 +687,13 @@ class DeletingWindowDelegate : public test::TestWindowDelegate {
     return false;
   }
 
+  virtual bool OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+    if (delete_during_handle_)
+      delete window_;
+    got_event_ = true;
+    return false;
+  }
+
   Window* window_;
   bool delete_during_handle_;
   bool got_event_;
@@ -701,7 +705,6 @@ TEST_F(RootWindowTest, DeleteWindowDuringDispatch) {
   // Verifies that we can delete a window during each phase of event handling.
   // Deleting the window should not cause a crash, only prevent further
   // processing from occurring.
-
   scoped_ptr<Window> w1(CreateWindow(1, root_window(), NULL));
   DeletingWindowDelegate* d11 = new DeletingWindowDelegate;
   Window* w11 = CreateWindow(11, w1.get(), d11);
@@ -716,10 +719,10 @@ TEST_F(RootWindowTest, DeleteWindowDuringDispatch) {
   tracker.Add(w11);
   d11->Reset(w11, false);
 
-  generator.PressKey(ui::VKEY_A, 0);
+  generator.PressLeftButton();
   EXPECT_TRUE(tracker.Contains(w11));
   EXPECT_TRUE(d11->got_event());
-  EXPECT_TRUE(w1_filter->got_post_handle());
+  generator.ReleaseLeftButton();
 
   // Delegate deletes w11. This will prevent the post-handle step from applying.
   w1_filter->Reset(false);
@@ -727,17 +730,15 @@ TEST_F(RootWindowTest, DeleteWindowDuringDispatch) {
   generator.PressKey(ui::VKEY_A, 0);
   EXPECT_FALSE(tracker.Contains(w11));
   EXPECT_TRUE(d11->got_event());
-  EXPECT_FALSE(w1_filter->got_post_handle());
 
   // Pre-handle step deletes w11. This will prevent the delegate and the post-
   // handle steps from applying.
   w11 = CreateWindow(11, w1.get(), d11);
   w1_filter->Reset(true);
   d11->Reset(w11, false);
-  generator.PressKey(ui::VKEY_A, 0);
+  generator.PressLeftButton();
   EXPECT_FALSE(tracker.Contains(w11));
   EXPECT_FALSE(d11->got_event());
-  EXPECT_FALSE(w1_filter->got_post_handle());
 }
 
 }  // namespace aura

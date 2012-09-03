@@ -71,6 +71,7 @@ Window::Window(WindowDelegate* delegate)
       // problems for code that adds an observer as part of an observer
       // notification (such as the workspace code).
       observers_(ObserverList<WindowObserver>::NOTIFY_EXISTING_ONLY) {
+  set_target_handler(delegate_);
 }
 
 Window::~Window() {
@@ -455,7 +456,10 @@ gfx::NativeCursor Window::GetCursor(const gfx::Point& point) const {
 }
 
 void Window::SetEventFilter(EventFilter* event_filter) {
+  if (event_filter_.get())
+    RemovePreTargetHandler(event_filter_.get());
   event_filter_.reset(event_filter);
+  AddPreTargetHandler(event_filter);
 }
 
 void Window::AddObserver(WindowObserver* observer) {
@@ -933,6 +937,14 @@ void Window::OnPaintLayer(gfx::Canvas* canvas) {
 base::Closure Window::PrepareForLayerBoundsChange() {
   return base::Bind(&Window::OnLayerBoundsChanged, base::Unretained(this),
                     bounds(), ContainsMouse());
+}
+
+bool Window::CanAcceptEvents() {
+  return CanReceiveEvents();
+}
+
+ui::EventTarget* Window::GetParentTarget() {
+  return parent_;
 }
 
 void Window::UpdateLayerName(const std::string& name) {

@@ -16,6 +16,7 @@
 #include "base/string16.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/client/window_types.h"
+#include "ui/base/events/event_target.h"
 #include "ui/base/events.h"
 #include "ui/base/gestures/gesture_types.h"
 #include "ui/compositor/layer_animator.h"
@@ -56,6 +57,7 @@ struct WindowProperty;
 // TODO(beng): resolve ownership.
 class AURA_EXPORT Window : public ui::LayerDelegate,
                            public ui::LayerOwner,
+                           public ui::EventTarget,
                            public ui::GestureConsumer {
  public:
   typedef std::vector<Window*> Windows;
@@ -429,6 +431,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Overridden from ui::LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
   virtual base::Closure PrepareForLayerBoundsChange() OVERRIDE;
+
+  // Overridden from ui::EventTarget:
+  virtual bool CanAcceptEvents() OVERRIDE;
+  virtual EventTarget* GetParentTarget() OVERRIDE;
 
   // Updates the layer name with a name based on the window's name and id.
   void UpdateLayerName(const std::string& name);

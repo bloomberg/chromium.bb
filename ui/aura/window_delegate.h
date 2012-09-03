@@ -5,8 +5,10 @@
 #ifndef UI_AURA_WINDOW_DELEGATE_H_
 #define UI_AURA_WINDOW_DELEGATE_H_
 
+#include "base/compiler_specific.h"
 #include "ui/aura/aura_export.h"
 #include "ui/base/events.h"
+#include "ui/base/events/event_handler.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
@@ -27,7 +29,7 @@ class TouchEvent;
 namespace aura {
 
 // Delegate interface for aura::Window.
-class AURA_EXPORT WindowDelegate {
+class AURA_EXPORT WindowDelegate : public ui::EventHandler {
  public:
   // Returns the window's minimum size, or size 0,0 if there is no limit.
   virtual gfx::Size GetMinimumSize() const = 0;
@@ -102,6 +104,17 @@ class AURA_EXPORT WindowDelegate {
 
  protected:
   virtual ~WindowDelegate() {}
+
+  virtual ui::EventResult OnKeyEvent(ui::EventTarget* target,
+                                     ui::KeyEvent* event) OVERRIDE;
+  virtual ui::EventResult OnMouseEvent(ui::EventTarget* target,
+                                       ui::MouseEvent* event) OVERRIDE;
+  virtual ui::EventResult OnScrollEvent(ui::EventTarget* target,
+                                        ui::ScrollEvent* event) OVERRIDE;
+  virtual ui::TouchStatus OnTouchEvent(ui::EventTarget* target,
+                                       ui::TouchEvent* event) OVERRIDE;
+  virtual ui::EventResult OnGestureEvent(ui::EventTarget* target,
+                                         ui::GestureEvent* event) OVERRIDE;
 };
 
 }  // namespace aura
