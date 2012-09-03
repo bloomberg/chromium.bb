@@ -30,6 +30,7 @@ class SequencedTaskRunner;
 
 namespace gdata {
 
+class DriveFunctionRemove;
 class DriveServiceInterface;
 class DriveWebAppsRegistryInterface;
 class GDataUploaderInterface;
@@ -137,6 +138,8 @@ class DriveFileSystem : public DriveFileSystemInterface,
   virtual void OnDirectoryChanged(const FilePath& directory_path) OVERRIDE;
   virtual void OnDocumentFeedFetched(int num_accumulated_entries) OVERRIDE;
   virtual void OnFeedFromServerLoaded() OVERRIDE;
+
+  DriveResourceMetadata* ResourceMetadata() { return resource_metadata_.get(); }
 
   // Used in tests to load the root feed from the cache.
   void LoadRootFeedFromCacheForTesting();
@@ -556,14 +559,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
                                        GDataErrorCode status,
                                        const GURL& document_url);
 
-  // Callback for DriveServiceInterface::DeleteDocument. Removes the entry with
-  // |resource_id| from the local snapshot of the filesystem and the cache.
-  // |document_url| is unused. |callback| must not be null.
-  void RemoveResourceLocally(const FileOperationCallback& callback,
-                             const std::string& resource_id,
-                             GDataErrorCode status,
-                             const GURL& document_url);
-
   // Callback when an entry is moved to another directory on the client side.
   // Notifies the directory change and runs |callback|.
   // |callback| must not be null.
@@ -785,6 +780,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
                       const FilePath& dest_file_path,
                       const FileOperationCallback& callback);
   void RemoveOnUIThread(const FilePath& file_path,
+                        bool is_recursive,
                         const FileOperationCallback& callback);
   void CreateDirectoryOnUIThread(const FilePath& directory_path,
                                  bool is_exclusive,
@@ -869,14 +865,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
     const FileOperationCallback& callback,
     scoped_ptr<EntryInfoPairResult> result);
 
-  // Part of RemoveOnUIThread(). Called after GetEntryInfoByPath() is
-  // complete.
-  // |callback| must not be null.
-  void RemoveOnUIThreadAfterGetEntryInfo(
-      const FileOperationCallback& callback,
-      DriveFileError error,
-      scoped_ptr<DriveEntryProto> entry_proto);
-
   // Part of RequestDirectoryRefreshOnUIThread(). Called after
   // GetEntryInfoByPath() is complete.
   void RequestDirectoryRefreshOnUIThreadAfterGetEntryInfo(
@@ -951,6 +939,8 @@ class DriveFileSystem : public DriveFileSystemInterface,
   ObserverList<DriveFileSystemInterface::Observer> observers_;
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+
+  scoped_ptr<DriveFunctionRemove> remove_function_;
 
   // WeakPtrFactory and WeakPtr bound to the UI thread.
   // Note: These should remain the last member so they'll be destroyed and

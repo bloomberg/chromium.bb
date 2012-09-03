@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/drive_api_parser.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system.h"
+#include "chrome/browser/chromeos/gdata/drive_function_remove.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata_test_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
@@ -36,6 +37,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::AnyNumber;
 using ::testing::AtLeast;
 using ::testing::Eq;
 using ::testing::NotNull;
@@ -288,21 +290,12 @@ class DriveFileSystemTest : public testing::Test {
   }
 
   bool RemoveEntry(const FilePath& file_path) {
-    file_system_->GetEntryInfoByPath(
-        file_path,
-        base::Bind(&CallbackHelper::GetEntryInfoCallback,
-                   callback_helper_.get()));
-    test_util::RunBlockingPoolTask();
-
-    if (callback_helper_->last_error_ != DRIVE_FILE_OK)
-      return false;
-
     DriveFileError error;
-    file_system_->RemoveResourceLocally(
-        base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error),
-        callback_helper_->entry_proto_->resource_id(),
-        HTTP_SUCCESS,
-        GURL());
+    EXPECT_CALL(*mock_drive_service_, DeleteDocument(_, _)).Times(AnyNumber());
+    file_system_->remove_function_->Remove(
+        file_path, false,
+        base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+
     test_util::RunBlockingPoolTask();
     return error == DRIVE_FILE_OK;
   }

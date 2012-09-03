@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/drive_api_parser.h"
 #include "chrome/browser/chromeos/gdata/drive_files.h"
+#include "chrome/browser/chromeos/gdata/drive_function_remove.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/chromeos/gdata/drive_system_service.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
@@ -399,6 +400,8 @@ DriveFileSystem::DriveFileSystem(
       update_timer_(true /* retain_user_task */, true /* is_repeating */),
       hide_hosted_docs_(false),
       blocking_task_runner_(blocking_task_runner),
+      remove_function_(new DriveFunctionRemove(
+          drive_service, ALLOW_THIS_IN_INITIALIZER_LIST(this), cache_)),
       ALLOW_THIS_IN_INITIALIZER_LIST(ui_weak_ptr_factory_(this)),
       ui_weak_ptr_(ui_weak_ptr_factory_.GetWeakPtr()) {
   // Should be created from the file browser extension API on UI thread.
@@ -1209,49 +1212,18 @@ void DriveFileSystem::Remove(const FilePath& file_path,
   RunTaskOnUIThread(base::Bind(&DriveFileSystem::RemoveOnUIThread,
                                ui_weak_ptr_,
                                file_path,
+                               is_recursive,
                                CreateRelayCallback(callback)));
 }
 
 void DriveFileSystem::RemoveOnUIThread(
     const FilePath& file_path,
+    bool is_recursive,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // Get the edit URL of an entry at |file_path|.
-  resource_metadata_->GetEntryInfoByPath(
-      file_path,
-      base::Bind(
-          &DriveFileSystem::RemoveOnUIThreadAfterGetEntryInfo,
-          ui_weak_ptr_,
-          callback));
-}
-
-void DriveFileSystem::RemoveOnUIThreadAfterGetEntryInfo(
-    const FileOperationCallback& callback,
-    DriveFileError error,
-    scoped_ptr<DriveEntryProto> entry_proto) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (error != DRIVE_FILE_OK) {
-    callback.Run(error);
-    return;
-  }
-  DCHECK(entry_proto.get());
-
-  // The edit URL can be empty for some reason.
-  if (entry_proto->edit_url().empty()) {
-    callback.Run(DRIVE_FILE_ERROR_NOT_FOUND);
-    return;
-  }
-
-  drive_service_->DeleteDocument(
-      GURL(entry_proto->edit_url()),
-      base::Bind(&DriveFileSystem::RemoveResourceLocally,
-                 ui_weak_ptr_,
-                 callback,
-                 entry_proto->resource_id()));
+  remove_function_->Remove(file_path, is_recursive, callback);
 }
 
 void DriveFileSystem::CreateDirectory(
@@ -2420,29 +2392,6 @@ void DriveFileSystem::OnMoveEntryFromRootDirectoryCompleted(
   }
 
   callback.Run(error);
-}
-
-void DriveFileSystem::RemoveResourceLocally(
-    const FileOperationCallback& callback,
-    const std::string& resource_id,
-    GDataErrorCode status,
-    const GURL& /* document_url */) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  DriveFileError error = util::GDataToDriveFileError(status);
-  if (error != DRIVE_FILE_OK) {
-    callback.Run(error);
-    return;
-  }
-
-  resource_metadata_->RemoveEntryFromParent(
-      resource_id,
-      base::Bind(&DriveFileSystem::OnDirectoryChangeFileMoveCallback,
-                 ui_weak_ptr_,
-                 callback));
-
-  cache_->RemoveOnUIThread(resource_id, CacheOperationCallback());
 }
 
 void DriveFileSystem::OnFileDownloaded(
