@@ -882,6 +882,12 @@ NSColor* IdentityVerifiedTextColor() {
   // Align the icon with the text.
   [self alignPermissionIcon:imageView withTextField:label];
 
+  // Permissions specified by policy or an extension cannot be changed.
+  if (permissionInfo.source == content_settings::SETTING_SOURCE_EXTENSION ||
+      permissionInfo.source == content_settings::SETTING_SOURCE_POLICY) {
+    [button setEnabled:NO];
+  }
+
   return NSHeight([label frame]);
 }
 

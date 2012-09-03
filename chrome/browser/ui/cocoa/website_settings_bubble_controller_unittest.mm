@@ -313,15 +313,24 @@ TEST_F(WebsiteSettingsBubbleControllerTest, SetPermissionInfo) {
   // The section header ("Permissions") will also be found, hence the +1.
   EXPECT_EQ(arraysize(kTestPermissionTypes) + 1, [labels count]);
 
-  // Ensure that the button labels are distinct.
+  // Ensure that the button labels are distinct, and look for the correct
+  // number of disabled buttons.
+  int disabled_count = 0;
   [labels removeAllObjects];
   for (NSView* view in subviews) {
     if ([view isKindOfClass:[NSPopUpButton class]]) {
       NSPopUpButton* button = static_cast<NSPopUpButton*>(view);
       [labels addObject:[[button selectedCell] title]];
+
+      if (![button isEnabled])
+        ++disabled_count;
     }
   }
   EXPECT_EQ(arraysize(kTestPermissionTypes), [labels count]);
+
+  // 4 of the buttons should be disabled -- the ones that have a setting source
+  // of SETTING_SOURCE_POLICY or SETTING_SOURCE_EXTENSION.
+  EXPECT_EQ(4, disabled_count);
 }
 
 TEST_F(WebsiteSettingsBubbleControllerTest, SetSelectedTab) {
