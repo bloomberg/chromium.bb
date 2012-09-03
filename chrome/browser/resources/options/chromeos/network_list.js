@@ -466,7 +466,7 @@ cr.define('options.network', function() {
           entry.command = function() {
             options.Preferences.setBooleanPref(
                 'cros.signed.data_roaming_enabled',
-                !enableDataRoaming_);
+                !enableDataRoaming_, true);
             // Force revalidation of the menu the next time it is displayed.
             self.menu_ = null;
           };

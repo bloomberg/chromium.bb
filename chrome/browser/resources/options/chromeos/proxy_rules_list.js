@@ -93,7 +93,7 @@ cr.define('options.proxyexceptions', function() {
      * Updates backend.
      */
     updateBackend_: function() {
-      Preferences.setListPref(this.pref, this.dataModel.slice());
+      Preferences.setListPref(this.pref, this.dataModel.slice(), true);
     }
   };
 

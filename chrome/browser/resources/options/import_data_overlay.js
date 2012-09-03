@@ -164,7 +164,7 @@ cr.define('options', function() {
                          'import_saved_passwords',
                          'import_search_engine'];
       for (var i = 0; i < importPrefs.length; i++)
-        Preferences.clearPref(importPrefs[i], undefined);
+        Preferences.clearPref(importPrefs[i], true);
     },
 
     /**

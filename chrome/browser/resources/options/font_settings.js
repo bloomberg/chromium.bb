@@ -32,18 +32,18 @@ cr.define('options', function() {
       var standardFontRange = $('standard-font-size');
       standardFontRange.valueMap = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20,
           22, 24, 26, 28, 30, 32, 34, 36, 40, 44, 48, 56, 64, 72];
-      standardFontRange.continuous = false;
-      standardFontRange.notifyChange = this.standardRangeChanged_.bind(this);
-      standardFontRange.notifyPrefChange =
-          this.standardFontSizeChanged_.bind(this);
+      standardFontRange.addEventListener(
+          'change', this.standardRangeChanged_.bind(this, standardFontRange));
+      standardFontRange.customChangeHandler =
+          this.standardFontSizeChanged_.bind(standardFontRange);
 
       var minimumFontRange = $('minimum-font-size');
       minimumFontRange.valueMap = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
           18, 20, 22, 24];
-      minimumFontRange.continuous = false;
-      minimumFontRange.notifyChange = this.minimumRangeChanged_.bind(this);
-      minimumFontRange.notifyPrefChange =
-          this.minimumFontSizeChanged_.bind(this);
+      minimumFontRange.addEventListener(
+          'change', this.minimumRangeChanged_.bind(this, minimumFontRange));
+      minimumFontRange.customChangeHandler =
+          this.minimumFontSizeChanged_.bind(minimumFontRange);
 
       var placeholder = loadTimeData.getString('fontSettingsPlaceholder');
       var elements = [$('standard-font-family'), $('serif-font-family'),
@@ -74,13 +74,15 @@ cr.define('options', function() {
     },
 
     /**
-     * Called as the user changes the standard font size.  This allows for
-     * reflecting the change in the UI before the preference has been changed.
+     * Handler that is called when the user changes the position of the standard
+     * font size slider. This allows the UI to show a preview of the change
+     * before the slider has been released and the associated prefs updated.
      * @param {Element} el The slider input element.
-     * @param {number} value The mapped value currently set by the slider.
+     * @param {Event} event Change event.
      * @private
      */
-    standardRangeChanged_: function(el, value) {
+    standardRangeChanged_: function(el, event) {
+      var value = el.mapValueToRange(el.value);
       var fontSampleEl = $('standard-font-sample');
       this.setUpFontSample_(fontSampleEl, value, fontSampleEl.style.fontFamily,
                             true);
@@ -100,41 +102,45 @@ cr.define('options', function() {
     },
 
     /**
-     * Sets the 'default_fixed_font_size' preference when the standard font
-     * size has been changed by the user.
-     * @param {Element} el The slider input element.
-     * @param {number} value The mapped value that has been saved.
+     * Sets the 'default_fixed_font_size' preference when the user changes the
+     * standard font size.
+     * @param {Event} event Change event.
      * @private
      */
-    standardFontSizeChanged_: function(el, value) {
+    standardFontSizeChanged_: function(event) {
+      var value = this.mapValueToRange(this.value);
       Preferences.setIntegerPref(
         'webkit.webprefs.default_fixed_font_size',
-        value - OptionsPage.SIZE_DIFFERENCE_FIXED_STANDARD, '');
+        value - OptionsPage.SIZE_DIFFERENCE_FIXED_STANDARD, true);
+      return false;
     },
 
     /**
-     * Called as the user changes the miniumum font size.  This allows for
-     * reflecting the change in the UI before the preference has been changed.
+     * Handler that is called when the user changes the position of the minimum
+     * font size slider. This allows the UI to show a preview of the change
+     * before the slider has been released and the associated prefs updated.
      * @param {Element} el The slider input element.
-     * @param {number} value The mapped value currently set by the slider.
+     * @param {Event} event Change event.
      * @private
      */
-    minimumRangeChanged_: function(el, value) {
+    minimumRangeChanged_: function(el, event) {
+      var value = el.mapValueToRange(el.value);
       var fontSampleEl = $('minimum-font-sample');
       this.setUpFontSample_(fontSampleEl, value, fontSampleEl.style.fontFamily,
                             true);
     },
 
     /**
-     * Sets the 'minimum_logical_font_size' preference when the minimum font
-     * size has been changed by the user.
-     * @param {Element} el The slider input element.
-     * @param {number} value The mapped value that has been saved.
+     * Sets the 'minimum_logical_font_size' preference when the user changes the
+     * minimum font size.
+     * @param {Event} event Change event.
      * @private
      */
-    minimumFontSizeChanged_: function(el, value) {
+    minimumFontSizeChanged_: function(event) {
+      var value = this.mapValueToRange(this.value);
       Preferences.setIntegerPref(
-        'webkit.webprefs.minimum_logical_font_size', value, '');
+        'webkit.webprefs.minimum_logical_font_size', value, true);
+      return false;
     },
 
     /**

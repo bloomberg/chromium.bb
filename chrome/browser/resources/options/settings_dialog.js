@@ -43,10 +43,11 @@ cr.define('options', function() {
     handleConfirm: function() {
       OptionsPage.closeOverlay();
 
+      var prefs = Preferences.getInstance();
       var els = this.pageDiv.querySelectorAll('[dialog-pref]');
       for (var i = 0; i < els.length; i++) {
-        if (els[i].savePrefState)
-          els[i].savePrefState();
+        if (els[i].pref)
+          prefs.commitPref(els[i].pref, els[i].metric);
       }
     },
 
@@ -56,10 +57,11 @@ cr.define('options', function() {
     handleCancel: function() {
       OptionsPage.closeOverlay();
 
+      var prefs = Preferences.getInstance();
       var els = this.pageDiv.querySelectorAll('[dialog-pref]');
       for (var i = 0; i < els.length; i++) {
-        if (els[i].resetPrefState)
-          els[i].resetPrefState();
+        if (els[i].pref)
+          prefs.rollbackPref(els[i].pref);
       }
     },
   };

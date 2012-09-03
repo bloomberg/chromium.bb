@@ -403,14 +403,14 @@ cr.define('options', function() {
       // Encode the language codes into a CSV string.
       if (cr.isChromeOS)
         Preferences.setStringPref(this.preferredLanguagesPref,
-                                  this.dataModel.slice().join(','));
+                                  this.dataModel.slice().join(','), true);
       // Save the same language list as accept languages preference as
       // well, but we need to expand the language list, to make it more
       // acceptable. For instance, some web sites don't understand 'en-US'
       // but 'en'. See crosbug.com/9884.
       var acceptLanguages = this.expandLanguageCodes(this.dataModel.slice());
       Preferences.setStringPref(this.acceptLanguagesPref,
-                                acceptLanguages.join(','));
+                                acceptLanguages.join(','), true);
       cr.dispatchSimpleEvent(this, 'save');
     },
 

@@ -629,7 +629,7 @@ cr.define('options', function() {
       var languageCode = e.target.languageCode;
       // Save the preference.
       Preferences.setStringPref(this.spellCheckDictionaryPref,
-                                languageCode);
+                                languageCode, true);
       chrome.send('spellCheckLanguageChange', [languageCode]);
     },
 
@@ -690,7 +690,7 @@ cr.define('options', function() {
      */
     savePreloadEnginesPref_: function() {
       Preferences.setStringPref(this.preloadEnginesPref,
-                                this.preloadEngines_.join(','));
+                                this.preloadEngines_.join(','), true);
     },
 
     /**

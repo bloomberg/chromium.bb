@@ -32,8 +32,10 @@ cr.define('options', function() {
     /** @inheritDoc */
     handleConfirm: function() {
       SettingsDialog.prototype.handleConfirm.call(this);
-      Preferences.setBooleanPref('spellcheck.use_spelling_service', true);
-      Preferences.setBooleanPref('spellcheck.confirm_dialog_shown', true);
+      Preferences.setBooleanPref('spellcheck.use_spelling_service',
+                                 true, true);
+      Preferences.setBooleanPref('spellcheck.confirm_dialog_shown',
+                                 true, true);
     },
 
     /** @inheritDoc */

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,89 +17,127 @@ cr.define('options', function() {
   cr.addSingletonGetter(Preferences);
 
   /**
-   * Sets value of a boolean preference.
-   * and signals its changed value.
+   * Sets a Boolean preference and signals its new value.
    * @param {string} name Preference name.
    * @param {boolean} value New preference value.
+   * @param {boolean} commit Whether to commit the change to Chrome.
    * @param {string} metric User metrics identifier.
    */
-  Preferences.setBooleanPref = function(name, value, metric) {
+  Preferences.setBooleanPref = function(name, value, commit, metric) {
+    if (!commit) {
+      Preferences.getInstance().setPrefNoCommit_(name, 'bool', Boolean(value));
+      return;
+    }
+
     var argumentList = [name, Boolean(value)];
     if (metric != undefined) argumentList.push(metric);
     chrome.send('setBooleanPref', argumentList);
   };
 
   /**
-   * Sets value of an integer preference.
-   * and signals its changed value.
+   * Sets an integer preference and signals its new value.
    * @param {string} name Preference name.
    * @param {number} value New preference value.
+   * @param {boolean} commit Whether to commit the change to Chrome.
    * @param {string} metric User metrics identifier.
    */
-  Preferences.setIntegerPref = function(name, value, metric) {
+  Preferences.setIntegerPref = function(name, value, commit, metric) {
+    if (!commit) {
+      Preferences.getInstance().setPrefNoCommit_(name, 'int', Number(value));
+      return;
+    }
+
     var argumentList = [name, Number(value)];
     if (metric != undefined) argumentList.push(metric);
     chrome.send('setIntegerPref', argumentList);
   };
 
   /**
-   * Sets value of a double-valued preference.
-   * and signals its changed value.
+   * Sets a double-valued preference and signals its new value.
    * @param {string} name Preference name.
    * @param {number} value New preference value.
+   * @param {boolean} commit Whether to commit the change to Chrome.
    * @param {string} metric User metrics identifier.
    */
-  Preferences.setDoublePref = function(name, value, metric) {
+  Preferences.setDoublePref = function(name, value, commit, metric) {
+    if (!commit) {
+      Preferences.getInstance().setPrefNoCommit_(name, 'double', Number(value));
+      return;
+    }
+
     var argumentList = [name, Number(value)];
     if (metric != undefined) argumentList.push(metric);
     chrome.send('setDoublePref', argumentList);
   };
 
   /**
-   * Sets value of a string preference.
-   * and signals its changed value.
+   * Sets a string preference and signals its new value.
    * @param {string} name Preference name.
    * @param {string} value New preference value.
+   * @param {boolean} commit Whether to commit the change to Chrome.
    * @param {string} metric User metrics identifier.
    */
-  Preferences.setStringPref = function(name, value, metric) {
+  Preferences.setStringPref = function(name, value, commit, metric) {
+    if (!commit) {
+      Preferences.getInstance().setPrefNoCommit_(name, 'string', String(value));
+      return;
+    }
+
     var argumentList = [name, String(value)];
     if (metric != undefined) argumentList.push(metric);
     chrome.send('setStringPref', argumentList);
   };
 
   /**
-   * Sets value of a string preference that represents a URL
-   * and signals its changed value. The value will be fixed to be a valid URL.
+   * Sets a string preference that represents a URL and signals its new value.
+   * The value will be fixed to be a valid URL when it gets committed to Chrome.
    * @param {string} name Preference name.
    * @param {string} value New preference value.
+   * @param {boolean} commit Whether to commit the change to Chrome.
    * @param {string} metric User metrics identifier.
    */
-  Preferences.setURLPref = function(name, value, metric) {
+  Preferences.setURLPref = function(name, value, commit, metric) {
+    if (!commit) {
+      Preferences.getInstance().setPrefNoCommit_(name, 'url', String(value));
+      return;
+    }
+
     var argumentList = [name, String(value)];
     if (metric != undefined) argumentList.push(metric);
     chrome.send('setURLPref', argumentList);
   };
 
   /**
-   * Sets value of a JSON list preference.
-   * and signals its changed value.
+   * Sets a JSON list preference and signals its new value.
    * @param {string} name Preference name.
    * @param {Array} value New preference value.
+   * @param {boolean} commit Whether to commit the change to Chrome.
    * @param {string} metric User metrics identifier.
    */
-  Preferences.setListPref = function(name, value, metric) {
+  Preferences.setListPref = function(name, value, commit, metric) {
+    if (!commit) {
+      Preferences.getInstance().setPrefNoCommit_(name, 'list', value);
+      return;
+    }
+
     var argumentList = [name, JSON.stringify(value)];
     if (metric != undefined) argumentList.push(metric);
     chrome.send('setListPref', argumentList);
   };
 
   /**
-   * Clears value of a JSON preference.
+   * Clears the user setting for a preference and signals its new effective
+   * value.
    * @param {string} name Preference name.
+   * @param {boolean} commit Whether to commit the change to Chrome.
    * @param {string} metric User metrics identifier.
    */
-  Preferences.clearPref = function(name, metric) {
+  Preferences.clearPref = function(name, commit, metric) {
+    if (!commit) {
+      Preferences.getInstance().clearPrefNoCommit_(name);
+      return;
+    }
+
     var argumentList = [name];
     if (metric != undefined) argumentList.push(metric);
     chrome.send('clearPref', argumentList);
@@ -119,7 +157,8 @@ cr.define('options', function() {
      */
     addEventListener: function(type, handler) {
       cr.EventTarget.prototype.addEventListener.call(this, type, handler);
-      this.registeredPreferences_[type] = true;
+      if (!(type in this.registeredPreferences_))
+        this.registeredPreferences_[type] = {};
     },
 
     /**
@@ -141,6 +180,7 @@ cr.define('options', function() {
      * callback.
      * @param {string} prefix Preference name prefix.
      * @param {object} dict Map with preference values.
+     * @private
      */
     flattenMapAndDispatchEvent_: function(prefix, dict) {
       for (var prefName in dict) {
@@ -150,10 +190,119 @@ cr.define('options', function() {
               dict[prefName]);
         } else {
           var event = new cr.Event(prefix + prefName);
+          this.registeredPreferences_[prefix + prefName].orig = dict[prefName];
           event.value = dict[prefName];
           this.dispatchEvent(event);
         }
       }
+    },
+
+    /**
+     * Sets a preference and signals its new value. The change is propagated
+     * throughout the UI code but is not committed to Chrome yet. The new value
+     * and its data type are stored so that commitPref() can later be used to
+     * invoke the appropriate set*Pref() method and actually commit the change.
+     * @param {string} name Preference name.
+     * @param {string} type Preference data type.
+     * @param {*} value New preference value.
+     * @private
+     */
+     setPrefNoCommit_: function(name, type, value) {
+      var pref = this.registeredPreferences_[name];
+      pref.action = 'set';
+      pref.type = type;
+      pref.value = value;
+
+      var event = new cr.Event(name);
+      // Decorate pref value as CoreOptionsHandler::CreateValueForPref() does.
+      event.value = {
+        value: value,
+        recommendedValue: pref.orig.recommendedValue,
+        disabled: pref.orig.disabled,
+      };
+      this.dispatchEvent(event);
+    },
+
+    /**
+     * Clears a preference and signals its new value. The change is propagated
+     * throughout the UI code but is not committed to Chrome yet.
+     * @param {string} name Preference name.
+     * @private
+     */
+    clearPrefNoCommit_: function(name) {
+      var pref = this.registeredPreferences_[name];
+      pref.action = 'clear';
+      delete pref.type;
+      delete pref.value;
+
+      var event = new cr.Event(name);
+      // Decorate pref value as CoreOptionsHandler::CreateValueForPref() does.
+      event.value = {
+        value: pref.orig.recommendedValue,
+        controlledBy: 'recommended',
+        recommendedValue: pref.orig.recommendedValue,
+        disabled: pref.orig.disabled,
+      };
+      this.dispatchEvent(event);
+    },
+
+    /**
+     * Commits a preference change to Chrome and signals the new preference
+     * value. Does nothing if there is no uncommitted change.
+     * @param {string} name Preference name.
+     * @param {string} metric User metrics identifier.
+     */
+    commitPref: function(name, metric) {
+      var pref = this.registeredPreferences_[name];
+      switch (pref.action) {
+        case 'set':
+          switch (pref.type) {
+            case 'bool':
+              Preferences.setBooleanPref(name, pref.value, true, metric);
+              break;
+            case 'int':
+              Preferences.setIntegerPref(name, pref.value, true, metric);
+              break;
+            case 'double':
+              Preferences.setDoublePref(name, pref.value, true, metric);
+              break;
+            case 'string':
+              Preferences.setStringPref(name, pref.value, true, metric);
+              break;
+            case 'url':
+              Preferences.setURLPref(name, pref.value, true, metric);
+              break;
+            case 'list':
+              Preferences.setListPref(name, pref.value, true, metric);
+              break;
+          }
+          break;
+        case 'clear':
+          Preferences.clearPref(name, true, metric);
+          break;
+      }
+      delete pref.action;
+      delete pref.type;
+      delete pref.value;
+    },
+
+    /**
+     * Rolls back a preference change and signals the original preference value.
+     * Does nothing if there is no uncommitted change.
+     * @param {string} name Preference name.
+     */
+    rollbackPref: function(name) {
+      var pref = this.registeredPreferences_[name];
+      if (!pref.action)
+        return;
+
+      delete pref.action;
+      delete pref.type;
+      delete pref.value;
+
+      var event = new cr.Event(name);
+      event.value = pref.orig;
+      this.dispatchEvent(event);
     }
   };
 
@@ -174,7 +323,9 @@ cr.define('options', function() {
   Preferences.prefsChangedCallback = function(notification) {
     var event = new cr.Event(notification[0]);
     event.value = notification[1];
-    Preferences.getInstance().dispatchEvent(event);
+    prefs = Preferences.getInstance();
+    prefs.registeredPreferences_[notification[0]] = {orig: notification[1]};
+    prefs.dispatchEvent(event);
   };
 
   // Export

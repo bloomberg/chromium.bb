@@ -109,7 +109,7 @@ cr.define('options', function() {
         action.addEventListener(
             'click',
             function(e) {
-              Preferences.clearPref(pref);
+              Preferences.clearPref(pref, self.dialogPref);
             });
         container.appendChild(action);
         bubbleText.appendChild(container);
@@ -130,6 +130,16 @@ cr.define('options', function() {
   cr.defineProperty(ControlledSettingIndicator, 'controlledBy',
                     cr.PropertyKind.ATTR,
                     ControlledSettingIndicator.prototype.close);
+
+  /**
+   * A special preference type specific to dialogs. Changes take effect in the
+   * settings UI immediately but are only actually committed when the user
+   * confirms the dialog. If the user cancels the dialog instead, the changes
+   * are rolled back in the settings UI and never committed.
+   * @type {boolean}
+   */
+  cr.defineProperty(ControlledSettingIndicator, 'dialogPref',
+                    cr.PropertyKind.BOOL_ATTR);
 
   // Export.
   return {

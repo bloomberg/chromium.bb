@@ -284,6 +284,10 @@ DictionaryValue* CoreOptionsHandler::CreateValueForPref(
   } else if (controlling_pref->IsRecommended()) {
     dict->SetString("controlledBy", "recommended");
   }
+  const base::Value* recommended_value =
+      controlling_pref->GetRecommendedValue();
+  if (recommended_value)
+    dict->Set("recommendedValue", recommended_value->DeepCopy());
   dict->SetBoolean("disabled", !controlling_pref->IsUserModifiable());
   return dict;
 }
