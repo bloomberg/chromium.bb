@@ -15,4 +15,4 @@ BB_SRC_ROOT="$(cd "$(dirname $0)/../.."; pwd)"
 
 bb_baseline_setup "$BB_SRC_ROOT" "$@"
 bb_compile
-
+bb_zip_build
