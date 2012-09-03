@@ -399,7 +399,6 @@ struct weston_surface {
 	struct wl_list layer_link;
 	struct weston_shader *shader;
 	GLfloat color[4];
-	GLfloat opaque_rect[4];
 	GLfloat alpha;
 	struct weston_plane *plane;
 

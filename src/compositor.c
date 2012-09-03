@@ -243,10 +243,6 @@ weston_surface_create(struct weston_compositor *compositor)
 
 	surface->compositor = compositor;
 	surface->alpha = 1.0;
-	surface->opaque_rect[0] = 0.0;
-	surface->opaque_rect[1] = 0.0;
-	surface->opaque_rect[2] = 0.0;
-	surface->opaque_rect[3] = 0.0;
 	surface->pitch = 1;
 
 	surface->num_textures = 0;
