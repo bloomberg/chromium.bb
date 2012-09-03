@@ -1269,7 +1269,7 @@ triangle_fan_debug(struct weston_surface *surface, int first, int count)
 	glUniform4fv(compositor->solid_shader.color_uniform, 1,
 			color[color_idx++ % ARRAY_SIZE(color)]);
 	glDrawElements(GL_LINES, nelems, GL_UNSIGNED_SHORT, buffer);
-	glUseProgram(surface->shader->program);
+	glUseProgram(compositor->current_shader->program);
 	free(buffer);
 }
 
@@ -1368,6 +1368,11 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output,
 				 &ec->primary_plane.damage, &repaint);
 
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+	if (ec->fan_debug) {
+		weston_compositor_use_shader(ec, &ec->solid_shader);
+		weston_shader_uniforms(&ec->solid_shader, es, output);
+	}
 
 	weston_compositor_use_shader(ec, es->shader);
 	weston_shader_uniforms(es->shader, es, output);
