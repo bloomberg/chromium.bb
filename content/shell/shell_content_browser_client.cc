@@ -14,6 +14,7 @@
 #include "content/shell/shell_devtools_delegate.h"
 #include "content/shell/shell_resource_dispatcher_host_delegate.h"
 #include "content/shell/shell_switches.h"
+#include "content/shell/shell_web_contents_view_delegate_creator.h"
 #include "content/shell/webkit_test_runner_host.h"
 #include "googleurl/src/gurl.h"
 
@@ -61,6 +62,15 @@ void ShellContentBrowserClient::ResourceDispatcherHostCreated() {
 
 std::string ShellContentBrowserClient::GetDefaultDownloadName() {
   return "download";
+}
+
+WebContentsViewDelegate* ShellContentBrowserClient::GetWebContentsViewDelegate(
+    WebContents* web_contents) {
+#if defined(TOOLKIT_GTK)
+  return CreateShellWebContentsViewDelegate(web_contents);
+#endif
+  NOTIMPLEMENTED();
+  return NULL;
 }
 
 #if defined(OS_ANDROID)

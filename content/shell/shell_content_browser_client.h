@@ -32,6 +32,8 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   virtual void ResourceDispatcherHostCreated() OVERRIDE;
   virtual AccessTokenStore* CreateAccessTokenStore() OVERRIDE;
   virtual std::string GetDefaultDownloadName() OVERRIDE;
+  virtual WebContentsViewDelegate* GetWebContentsViewDelegate(
+      WebContents* web_contents) OVERRIDE;
 
 #if defined(OS_ANDROID)
   virtual void GetAdditionalMappedFilesForChildProcess(
