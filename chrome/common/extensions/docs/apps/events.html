@@ -284,7 +284,7 @@ each other or need to be executed in a specific order.</p>
 <h3 id="eventobjects">Event objects</h3>
 <p>
 <a href="events.html">Event objects</a> may support rules. These event objects
-don't call a callback function when events happer but test whether any
+don't call a callback function when events happen but test whether any
 registered rule has at least one fulfilled condition and execute the actions
 associated with this rule. Event objects supporting the declarative API have
 three relevant methods: <a href="#method-addRules"><code>addRules()</code></a>,
@@ -1011,7 +1011,7 @@ matching.</p>
                 </div>
               </em>
           </dt>
-          <dd>Matches if the host name of the URL contains a specified string.</dd>
+          <dd>Matches if the host name of the URL contains a specified string. To test whether a host name component has a prefix 'foo', use hostContains: '.foo'. This matches 'www.foobar.com' and 'foo.com', because an implicit dot is added at the beginning of the host name. Similarly, hostContains can be used to match against component suffix ('foo.') and to exactly match against components ('.foo.'). Suffix- and exact-matching for the last components need to be done separately using hostSuffix, because no implicit dot is added at the end of the host name.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
