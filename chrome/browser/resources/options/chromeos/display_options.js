@@ -53,7 +53,6 @@ cr.define('options', function() {
         chrome.send('setMirroring', [this.mirroring_]);
       }).bind(this);
 
-      $('display-options-apply').onclick = this.applyResult_.bind(this);
       chrome.send('getDisplayInfo');
     },
 
@@ -279,6 +278,7 @@ cr.define('options', function() {
           draggingDiv.style.left = left + 'px';
         }
         this.dragging_ = null;
+        this.applyResult_();
       }
       this.updateSelectedDisplayDescription_();
       return false;
