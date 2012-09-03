@@ -94,8 +94,11 @@ class WebRequestRulesRegistry : public RulesRegistryWithCache {
 
  protected:
   virtual ~WebRequestRulesRegistry();
+
+  // Virtual for testing:
   virtual base::Time GetExtensionInstallationTime(
       const std::string& extension_id) const;
+  virtual void ClearCacheOnNavigation();
 
  private:
   typedef std::map<URLMatcherConditionSet::ID, WebRequestRule*> RuleTriggers;

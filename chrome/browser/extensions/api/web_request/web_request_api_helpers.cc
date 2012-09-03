@@ -10,7 +10,9 @@
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
+#include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/net_log.h"
 #include "net/cookies/parsed_cookie.h"
 #include "net/http/http_util.h"
@@ -57,6 +59,10 @@ static ResourceType::Type kResourceTypeValues[] = {
 COMPILE_ASSERT(
     arraysize(kResourceTypeStrings) == arraysize(kResourceTypeValues),
     keep_resource_types_in_sync);
+
+void ClearCacheOnNavigationOnUI() {
+  WebCacheManager::GetInstance()->ClearCacheOnNavigation();
+}
 
 }  // namespace
 
@@ -1015,6 +1021,15 @@ bool CanExtensionAccessURL(const extensions::Extension* extension,
   return (url.SchemeIs(chrome::kAboutScheme) ||
           extension->HasHostPermission(url) ||
           url.GetOrigin() == extension->url());
+}
+
+void ClearCacheOnNavigation() {
+  if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
+    ClearCacheOnNavigationOnUI();
+  } else {
+    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                     base::Bind(&ClearCacheOnNavigationOnUI));
+  }
 }
 
 }  // namespace extension_web_request_api_helpers

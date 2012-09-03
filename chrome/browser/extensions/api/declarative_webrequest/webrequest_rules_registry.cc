@@ -165,6 +165,8 @@ std::string WebRequestRulesRegistry::AddRulesImpl(
   }
   url_matcher_.AddConditionSets(all_new_condition_sets);
 
+  ClearCacheOnNavigation();
+
   return "";
 }
 
@@ -200,6 +202,8 @@ std::string WebRequestRulesRegistry::RemoveRulesImpl(
   // Clear URLMatcher based on condition_set_ids that are not needed any more.
   url_matcher_.RemoveConditionSets(remove_from_url_matcher);
 
+  ClearCacheOnNavigation();
+
   return "";
 }
 
@@ -214,6 +218,8 @@ std::string WebRequestRulesRegistry::RemoveAllRulesImpl(
       rule_identifiers.push_back(global_rule_id.second);
   }
 
+  // No need to call ClearCacheOnNavigation() here because RemoveRulesImpl
+  // takes care of that.
   return RemoveRulesImpl(extension_id, rule_identifiers);
 }
 
@@ -234,6 +240,10 @@ base::Time WebRequestRulesRegistry::GetExtensionInstallationTime(
     return base::Time();
 
   return extension_info_map_->GetInstallTime(extension_id);
+}
+
+void WebRequestRulesRegistry::ClearCacheOnNavigation() {
+  extension_web_request_api_helpers::ClearCacheOnNavigation();
 }
 
 }  // namespace extensions

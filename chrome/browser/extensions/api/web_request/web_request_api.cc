@@ -30,7 +30,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
-#include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/common/extensions/api/web_request.h"
 #include "chrome/common/extensions/event_filtering_info.h"
 #include "chrome/common/extensions/extension.h"
@@ -245,10 +244,6 @@ void NotifyWebRequestAPIUsed(void* profile_id, const Extension* extension) {
     if (host->GetBrowserContext() == browser_context)
       SendExtensionWebRequestStatusToHost(host);
   }
-}
-
-void ClearCacheOnNavigationOnUI() {
-  WebCacheManager::GetInstance()->ClearCacheOnNavigation();
 }
 
 }  // namespace
@@ -1060,8 +1055,7 @@ void ExtensionWebRequestEventRouter::RemoveEventListener(
 
   listeners_[profile][event_name].erase(listener);
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&ClearCacheOnNavigationOnUI));
+  helpers::ClearCacheOnNavigation();
 }
 
 void ExtensionWebRequestEventRouter::OnOTRProfileCreated(
@@ -1675,8 +1669,7 @@ bool WebRequestAddEventListener::RunImpl() {
           extra_info_spec, ipc_sender_weak());
   EXTENSION_FUNCTION_VALIDATE(success);
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&ClearCacheOnNavigationOnUI));
+  helpers::ClearCacheOnNavigation();
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
       &NotifyWebRequestAPIUsed,
@@ -1825,8 +1818,7 @@ void WebRequestHandlerBehaviorChanged::OnQuotaExceeded(
 }
 
 bool WebRequestHandlerBehaviorChanged::RunImpl() {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&ClearCacheOnNavigationOnUI));
+  helpers::ClearCacheOnNavigation();
   return true;
 }
 
