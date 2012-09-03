@@ -1764,11 +1764,11 @@ namespace {
           auto Lbit = opcode.find(".L.");
           if (Lbit != opcode.npos) {
             opcode[++Lbit] = '1';
+            print_one_size_definition(instruction.replace_opcodes(opcodes));
+            opcode[Lbit] = '0';
             print_one_size_definition(instruction.
                                       replace_opcodes(opcodes).
                                       replace_operands(operands));
-            opcode[Lbit] = '0';
-            print_one_size_definition(instruction.replace_opcodes(opcodes));
             return;
           }
         }

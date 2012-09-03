@@ -131,10 +131,12 @@
 
   # Special %rbp modifications without required sandboxing
   rsp_modifications =
-    (b_0100_10x0 0x89 0xec)                       | # mov %rbp,%rsp
-    (b_0100_10x0 0x8b 0xe5)                       | # mov %rbp,%rsp
-    (b_0100_1xx0 0x81 0xe4 any{3} (0x80 .. 0xff)) | # and $XXX,%rsp
-    (b_0100_1xx0 0x83 0xe4 (0x80 .. 0xff))          # and $XXX,%rsp
+    (b_0100_10x0 0x89 0xec)                        | # mov %rbp,%rsp
+    (b_0100_10x0 0x8b 0xe5)                        | # mov %rbp,%rsp
+    #(b_0100_1xx0 0x81 0xe4 any{3} (0x80 .. 0xff)) | # and $XXX,%rsp
+    #Superfluous bits are not supported:
+    # http://code.google.com/p/nativeclient/issues/detail?id=3012
+    (b_0100_1000 0x83 0xe4 (0x80 .. 0xff))          # and $XXX,%rsp
     @process_0_operands;
 
   # Special instructions used for %rbp sandboxing

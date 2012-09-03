@@ -830,7 +830,7 @@
   action disp64_operand_begin { }
   action disp64_operand_end { }
 
-  disp8  = any >disp8_operand_begin @disp8_operand_end;;
+  disp8  = any >disp8_operand_begin @disp8_operand_end;
   disp32 = any{4} @~disp32_operand_begin @disp32_operand_end;
   disp64 = any{8} @~disp64_operand_begin @disp64_operand_end;
 }%%

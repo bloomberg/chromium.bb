@@ -425,6 +425,30 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
             strcmp(instruction_name, "movlps") &&
             strcmp(instruction_name, "movntsd") &&
             strcmp(instruction_name, "mwait") &&
+            strcmp(instruction_name, "pf2id") &&
+            strcmp(instruction_name, "pf2iw") &&
+            strcmp(instruction_name, "pavgusb") &&
+            strcmp(instruction_name, "pfacc") &&
+            strcmp(instruction_name, "pfadd") &&
+            strcmp(instruction_name, "pfcmpge") &&
+            strcmp(instruction_name, "pfcmpgt") &&
+            strcmp(instruction_name, "pfcmpeq") &&
+            strcmp(instruction_name, "pfmax") &&
+            strcmp(instruction_name, "pfmin") &&
+            strcmp(instruction_name, "pfmul") &&
+            strcmp(instruction_name, "pfnacc") &&
+            strcmp(instruction_name, "pfpnacc") &&
+            strcmp(instruction_name, "pfrcp") &&
+            strcmp(instruction_name, "pfrcpit1") &&
+            strcmp(instruction_name, "pfrcpit2") &&
+            strcmp(instruction_name, "pfrsqit1") &&
+            strcmp(instruction_name, "pfrsqrt") &&
+            strcmp(instruction_name, "pfsub") &&
+            strcmp(instruction_name, "pfsubr") &&
+            strcmp(instruction_name, "pi2fd") &&
+            strcmp(instruction_name, "pi2fw") &&
+            strcmp(instruction_name, "pmulhrw") &&
+            strcmp(instruction_name, "pswapd") &&
             strcmp(instruction_name, "pop") &&
             strcmp(instruction_name, "push")) {
           ++rex_bits;
@@ -570,6 +594,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
   if (show_name_suffix == 'b') {
     /* "cflush", "int", "invlpg", "prefetch*", and "setcc" never use suffix. */
     if ((!strcmp(instruction_name, "clflush")) ||
+        (!strcmp(instruction_name, "enterq")) ||
         (!strcmp(instruction_name, "int")) ||
         (!strcmp(instruction_name, "invlpg")) ||
         (!strcmp(instruction_name, "nop/reserved")) ||
@@ -629,7 +654,9 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
     if ((!strcmp(instruction_name, "lldt")) ||
         (!strcmp(instruction_name, "lmsw")) ||
         (!strcmp(instruction_name, "lret")) ||
+        (!strcmp(instruction_name, "lretq")) ||
         (!strcmp(instruction_name, "ltr")) ||
+        (!strcmp(instruction_name, "retq")) ||
         (!strcmp(instruction_name, "smsw")) ||
         (!strcmp(instruction_name, "verr")) ||
         (!strcmp(instruction_name, "verw"))) {
@@ -723,6 +750,14 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
   if (!strncmp(instruction_name, "data32 ", 7)) {
     print_name("data32 ");
     instruction_name += 7;
+  }
+  /* Dirty hack: both AMD manual and Intel manual agree that mov from general
+     purpose register to segment register has signature "mov Ew Sw", but
+     objdump insist on 32bit/64 bit.  This is clearly error in objdump so we
+     fix it here and not in decoder.  */
+  if ((begin[0] >= 0x48) && (begin[0] <= 0x4f) &&
+      (begin[1] == 0x8e) && (begin[2] >= 0xc0)) {
+    ++rex_bits;
   }
   i = (rex_prefix & 0x01) +
       ((rex_prefix & 0x02) >> 1) +
@@ -854,10 +889,13 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
     }
     /* Dirty hack: both AMD manual and Intel manual agree that mov from general
        purpose register to segment register has signature "mov Ew Sw", but
-       objdump insist on 32bit.  This is clearly error in objdump so we fix it
-       here and not in decoder.  */
-    if (((begin[0] == 0x8e) ||
-         ((begin[0] >= 0x40) && (begin[0] <= 0x4f) && (begin[1] == 0x8e))) &&
+       objdump insist on 32bit/64 bit.  This is clearly error in objdump so we
+       fix it here and not in decoder.  */
+    if ((begin[0] >= 0x48) && (begin[0] <= 0x4f) && (begin[1] == 0x8e) &&
+        (instruction->operands[i].type == OperandSize16bit)) {
+      operand_type = OperandSize64bit;
+    } else if (((begin[0] == 0x8e) ||
+       ((begin[0] >= 0x40) && (begin[0] <= 0x4f) && (begin[1] == 0x8e))) &&
         (instruction->operands[i].type == OperandSize16bit)) {
       operand_type = OperandSize32bit;
     } else {

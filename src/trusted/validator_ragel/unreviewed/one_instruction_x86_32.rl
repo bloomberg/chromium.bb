@@ -20,15 +20,15 @@
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include vex_parsing_ia32
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
+  include displacement_fields_mark
+    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include modrm_actions_ia32
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include modrm_parsing_ia32
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
-  include displacement_fields_mark
+  include immediate_fields_mark_ia32
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
-  include immediate_fields_mark
-    "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
-  include relative_fields_mark_ia32
+  include relative_fields_mark
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
   include cpuid_actions
     "native_client/src/trusted/validator_ragel/unreviewed/parse_instruction.rl";
