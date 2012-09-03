@@ -11203,6 +11203,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_GALLERY_DELETE" desc="In the Gallery, the title on the button that deletes selected images.">
         Delete
       </message>
+      <message name="IDS_FILE_BROWSER_SEND_TO_DRIVE" desc="Title of the action for copying file to Drive.">
+        Send to Google Drive
+      </message>
 
       <message name="IDS_FILE_BROWSER_GALLERY_EDIT" desc="In the Gallery, the title on the button shows/hides editing buttons.">
         Edit

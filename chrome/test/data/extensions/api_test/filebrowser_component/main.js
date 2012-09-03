@@ -13,6 +13,7 @@ This component extension test does the following:
 */
 
 var cleanupError = 'Got unexpected error while cleaning up test directory.';
+var kFileManagerExtensionId = 'hhaomjibdihmijegdhdafkllkbggdgoj';
 
 // Class specified by the client running the TestRunner.
 // |expectedTasks| should contain list of actions defined for abc files defined
@@ -129,8 +130,19 @@ TestRunner.prototype.onGetTasks_ = function(fileUrl, tasks) {
 
   console.log('DONE fetching ' + tasks.length + ' tasks');
 
+  tasks = this.filterTasks_(tasks);
   chrome.fileBrowserPrivate.executeTask(tasks[0].taskId, [fileUrl]);
-}
+};
+
+TestRunner.prototype.filterTasks_ = function(tasks) {
+  var result = [];
+  for (var i = 0; i < tasks.length; i++) {
+    if (tasks[i].taskId.split('|')[0] != kFileManagerExtensionId) {
+      result.push(tasks[i]);
+    }
+  }
+  return result;
+};
 
 TestRunner.prototype.errorCallback_ = function(error) {
   var msg = '';

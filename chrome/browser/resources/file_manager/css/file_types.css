@@ -23,6 +23,12 @@
     url('../images/files/file_types/2x/audio.png') 2x);
 }
 
+*[file-type-icon='drive'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/drive.png') 1x,
+    url('../images/files/file_types/2x/drive.png') 2x);
+}
+
 *[file-type-icon='excel'] {
   background-image: -webkit-image-set(
     url('../images/files/file_types/excel.png') 1x,

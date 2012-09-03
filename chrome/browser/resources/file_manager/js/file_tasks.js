@@ -109,6 +109,12 @@ FileTasks.prototype.processTasks_ = function(tasks) {
       } else if (task_parts[1] == 'install-crx') {
         task.iconType = 'generic';
         task.title = loadTimeData.getString('INSTALL_CRX');
+      } else if (task_parts[1] == 'send-to-drive') {
+        if (!this.fileManager_.fileTransferController_ ||
+            this.fileManager_.isOnGData())
+          continue;
+        task.iconType = 'drive';
+        task.title = loadTimeData.getString('SEND_TO_DRIVE');
       }
     }
 
@@ -295,6 +301,22 @@ FileTasks.prototype.executeInternalTask_ = function(id, urls) {
     });
     return;
   }
+
+  if (id == 'send-to-drive') {
+    var files = urls.map(function(url) {
+      return util.extractFilePath(url) || '';
+    }).join('\n');
+    var operationInfo = {
+      isCut: false,
+      isOnGData: false,
+      sourceDir: null,
+      directories: '',
+      files: files
+    };
+    this.fileManager_.copyManager_.paste(
+        operationInfo, RootDirectory.GDATA, true);
+    return;
+  }
 };
 
 /**
@@ -310,13 +332,9 @@ FileTasks.prototype.mountArchives_ = function(urls) {
 
   fm.resolveSelectResults_(urls, function(urls) {
     for (var index = 0; index < urls.length; ++index) {
-      // TODO(kaznacheev): Encapsulate URL to path conversion.
-      var path =
-          /^filesystem:[\w-]*:\/\/[\w]*\/(external|persistent)(\/.*)$/.
-              exec(urls[index])[2];
+      var path = util.extractFilePath(urls[index]);
       if (!path)
         continue;
-      path = decodeURIComponent(path);
 
       fm.volumeManager_.mountArchive(path, function(mountPath) {
         console.log('Mounted at: ', mountPath);

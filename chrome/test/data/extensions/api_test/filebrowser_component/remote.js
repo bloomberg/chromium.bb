@@ -23,6 +23,7 @@ var kExpectedAfterTruncateShort = 'hello';
 var kTruncateLongLength = 7;
 var kExpectedAfterTruncateLong = 'hello\0\0';
 var kNewDirectoryPath = 'drive/FolderNew';
+var kFileManagerExtensionId = 'hhaomjibdihmijegdhdafkllkbggdgoj';
 
 // Gets local filesystem used in tests.
 TestRunner.prototype.init = function() {
@@ -121,6 +122,7 @@ TestRunner.prototype.runExecuteReadTask = function() {
   var fileURL = this.fileEntry_.toURL();
   chrome.fileBrowserPrivate.getFileTasks([fileURL], [],
     function(tasks) {
+      tasks = self.filterTasks_(tasks);
       if (!tasks || !tasks.length) {
         self.errorCallback_({message: 'No tasks registered'},
                             'Error fetching tasks: ');
@@ -131,6 +133,17 @@ TestRunner.prototype.runExecuteReadTask = function() {
       // file handler that will execute it.
       chrome.fileBrowserPrivate.executeTask(tasks[0].taskId, [fileURL]);
     });
+};
+
+TestRunner.prototype.filterTasks_ = function(tasks) {
+  if (!tasks) return tasks;
+  var result = [];
+  for (var i = 0; i < tasks.length; i++) {
+    if (tasks[i].taskId.split('|')[0] != kFileManagerExtensionId) {
+      result.push(tasks[i]);
+    }
+  }
+  return result;
 };
 
 TestRunner.prototype.runCancelTest = function(fileName, type) {
