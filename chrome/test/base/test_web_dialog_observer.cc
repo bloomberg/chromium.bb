@@ -4,7 +4,7 @@
 
 #include "chrome/test/base/test_web_dialog_observer.h"
 
-#include "chrome/test/base/ui_test_utils.h"
+#include "base/logging.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_details.h"
@@ -72,7 +72,7 @@ void TestWebDialogObserver::OnDialogShown(
 
 content::WebUI* TestWebDialogObserver::GetWebUI() {
   if (!done_) {
-    EXPECT_FALSE(running_);
+    DCHECK(running_ == false);
     running_ = true;
     message_loop_runner_ = new content::MessageLoopRunner;
     message_loop_runner_->Run();
