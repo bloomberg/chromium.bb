@@ -54,6 +54,11 @@ void test_step_from_function_start(int arg) {
   global_ptr = alloca(arg);
 }
 
+int test_call_from_gdb(int arg) {
+  global_var = 2 * arg;
+  return 3 * arg;
+}
+
 int main(int argc, char **argv) {
   assert(argc >= 2);
 
@@ -76,6 +81,10 @@ int main(int argc, char **argv) {
     global_var = 0;
     test_step_from_function_start(2);
     return 0;
+  }
+  if (strcmp(argv[1], "call_from_gdb") == 0) {
+    /* Call function so that it doesn't get optimized away. */
+    return test_call_from_gdb(0);
   }
   return 1;
 }

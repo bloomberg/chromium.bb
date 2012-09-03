@@ -98,7 +98,7 @@ bool Target::AddTemporaryBreakpoint(uint64_t address) {
     delete[] data;
     return false;
   }
-  if (IPlatform::SetMemory(address, bp->size_, bp->code_) == false) {
+  if (IPlatform::SetMemory(nap_, address, bp->size_, bp->code_) == false) {
     delete[] data;
     return false;
   }
@@ -127,7 +127,7 @@ bool Target::RemoveTemporaryBreakpoints(IThread *thread) {
     breakMap_.erase(cur);
 
     // Copy back the old code, and free the data
-    if (!IPlatform::SetMemory(addr, bp_def->size_, data))
+    if (!IPlatform::SetMemory(nap_, addr, bp_def->size_, data))
       NaClLog(LOG_ERROR, "Failed to undo breakpoint.\n");
     delete[] data;
 
@@ -490,7 +490,7 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
         nacl::scoped_array<uint8_t> block(new uint8_t[len]);
         pktIn->GetBlock(block.get(), len);
 
-        if (!port::IPlatform::SetMemory(sys_addr, len, block.get())) {
+        if (!port::IPlatform::SetMemory(nap_, sys_addr, len, block.get())) {
           err = FAILED;
           break;
         }

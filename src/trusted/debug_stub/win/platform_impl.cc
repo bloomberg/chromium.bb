@@ -11,6 +11,7 @@
 
 #include <exception>
 
+#include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/debug_stub/abi.h"
 #include "native_client/src/trusted/debug_stub/platform.h"
@@ -47,7 +48,9 @@ bool IPlatform::GetMemory(uint64_t virt, uint32_t len, void *dst) {
   return true;
 }
 
-bool IPlatform::SetMemory(uint64_t virt, uint32_t len, void *src) {
+bool IPlatform::SetMemory(struct NaClApp *nap, uint64_t virt, uint32_t len,
+                          void *src) {
+  UNREFERENCED_PARAMETER(nap);
   uint32_t oldFlags = Reprotect(reinterpret_cast<void*>(virt),
                                 len, PAGE_EXECUTE_READWRITE);
 

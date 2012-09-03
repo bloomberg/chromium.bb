@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2010 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -17,6 +17,8 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/debug_stub/transport.h"
 
+struct NaClApp;
+
 namespace port {
 
 class IPlatform {
@@ -29,7 +31,8 @@ class IPlatform {
   //    page if needed to provide access.  It should only return false if
   //    the page is not mapped into the debugged process.
   static bool GetMemory(uint64_t address, uint32_t length, void *dst);
-  static bool SetMemory(uint64_t address, uint32_t length, void *src);
+  static bool SetMemory(struct NaClApp *nap, uint64_t address, uint32_t length,
+                        void *src);
 };
 
 }  // namespace port

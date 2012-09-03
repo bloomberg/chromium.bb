@@ -67,26 +67,32 @@ bool IPlatform::GetMemory(uint64_t virt, uint32_t len, void *dst) {
   return SafeMemoryCopy(dst, reinterpret_cast<void*>(virt), len);
 }
 
-bool IPlatform::SetMemory(uint64_t virt, uint32_t len, void *src) {
+bool IPlatform::SetMemory(struct NaClApp *nap, uint64_t virt, uint32_t len,
+                          void *src) {
   uintptr_t page_mask = NACL_PAGESIZE - 1;
   uintptr_t page = virt & ~page_mask;
   uintptr_t mapping_size = ((virt + len + page_mask) & ~page_mask) - page;
-  if (mprotect(reinterpret_cast<void*>(page), mapping_size,
-               PROT_READ | PROT_WRITE) != 0) {
-    return false;
+  bool is_code = virt + len <= nap->mem_start + nap->dynamic_text_end;
+  if (is_code) {
+    if (mprotect(reinterpret_cast<void*>(page), mapping_size,
+                 PROT_READ | PROT_WRITE) != 0) {
+      return false;
+    }
   }
   bool succeeded = SafeMemoryCopy(reinterpret_cast<void*>(virt), src, len);
-  // TODO(mseaborn): We assume here that SetMemory() is being used to
-  // set or remove a breakpoint in the code area, so that PROT_READ |
-  // PROT_EXEC are the correct flags to restore the mapping to.
-  // The earlier mprotect() does not tell us what the original flags
-  // were.  To find this out we could either:
-  //  * read /proc/self/maps (not available inside outer sandbox); or
-  //  * use service_runtime's own mapping tables.
-  // Alternatively, we could modify code the same way nacl_text.c does.
-  if (mprotect(reinterpret_cast<void*>(page), mapping_size,
-               PROT_READ | PROT_EXEC) != 0) {
-    return false;
+  // We use mprotect() only to modify code area, so PROT_READ | PROT_EXEC are
+  // the correct flags to restore the mapping to in most cases. However, this
+  // does not behave correctly for non-allocated pages in code area (where
+  // we will make zeroed bytes executable) and zero page (where we additionally
+  // prevent some null pointer exceptions).
+  //
+  // TODO(mseaborn): Handle those cases correctly. We might do that by modifying
+  // code via the dynamic code area the same way nacl_text.c does.
+  if (is_code) {
+    if (mprotect(reinterpret_cast<void*>(page), mapping_size,
+                 PROT_READ | PROT_EXEC) != 0) {
+      return false;
+    }
   }
   // Flush the instruction cache in case we just modified code to add
   // or remove a breakpoint, otherwise breakpoints will not behave
