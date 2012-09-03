@@ -1397,7 +1397,7 @@
 {
    bug_19463
    Memcheck:Leak
-   fun:_Znw*
+   ...
    fun:_ZN4base19MessagePumpLibevent4InitEv
    fun:_ZN4base19MessagePumpLibeventC1Ev
    fun:_ZN11MessageLoopC1ENS_4TypeE
@@ -5979,7 +5979,6 @@
    fun:_ZN7content23HyphenatorMessageFilter14SendDictionaryEv
    fun:_ZN7content27TestHyphenatorMessageFilter16OnOpenDictionaryERKSbItN4base20string16_char_traitsESaItEE
 }
-
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
 
