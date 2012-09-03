@@ -65,7 +65,8 @@ var rule = {
 <p>In addition to conditions and actions you may give each rule an identifier,
 which simplifies unregistering previously registered rules, and a priority to
 define precedences among rules. Priorities are only considered if rules conflict
-each other or need to be executed in a specific order.</p>
+each other or need to be executed in a specific order. Actions are executed in
+decendending order of the priority of their rules.</p>
 
 <pre>
 var rule = {
@@ -112,6 +113,15 @@ rules are added and the <a
 the callback function is called. Each rule in <code>rule_list</code> must
 contain a unique identifier that is not currently used by another rule or an
 empty identifier.
+</p>
+
+<p class="note">
+<strong>Note:</strong> Rules are persistent across browsing sessions. Therefore,
+you should install rules during extension installation time using the
+<code><a href="runtime.html#event-onInstalled">chrome.runtime.onInstalled</a></code>
+event. Note that this event is also triggered when an extension is updated.
+Therefore, you should first clear previously installed rules and then register
+new rules.
 </p>
 
 <h3 id="removingrules">Removing rules</h3>
