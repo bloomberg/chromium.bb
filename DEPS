@@ -253,7 +253,7 @@ deps = {
     "/trunk/deps/third_party/speex@149334",
 
   "src/third_party/yasm/source/patched-yasm":
-    "/trunk/deps/third_party/yasm/patched-yasm@134927",
+    "/trunk/deps/third_party/yasm/patched-yasm@154697",
 
   "src/third_party/libjpeg_turbo":
     "/trunk/deps/third_party/libjpeg_turbo@149334",
