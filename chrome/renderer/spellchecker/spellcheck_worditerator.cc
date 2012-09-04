@@ -64,7 +64,7 @@ void SpellcheckCharAttribute::CreateRuleSets(const std::string& language) {
       // For instance, U+05F4 is MidLetter. So, this may be
       // better, but it leads to an empty set error in Thai.
       // "$ALetter   = [[\\p{script=%s}] & [\\p{Word_Break = ALetter}]];"
-      "$ALetter      = [\\p{script=%s} [0123456789]];"
+      "$ALetter      = [\\p{script=%s}%s];"
       "$MidNumLet    = [\\p{Word_Break = MidNumLet}];"
       "$MidLetter    = [\\p{Word_Break = MidLetter}%s];"
       "$MidNum       = [\\p{Word_Break = MidNum}];"
@@ -154,6 +154,11 @@ void SpellcheckCharAttribute::CreateRuleSets(const std::string& language) {
   if (script_code_ == USCRIPT_HANGUL || script_code_ == USCRIPT_THAI)
     aletter_plus = kWithDictionary;
 
+  // Treat numbers as word characters except for Arabic and Hebrew.
+  const char* aletter_extra = " [0123456789]";
+  if (script_code_ == USCRIPT_HEBREW || script_code_ == USCRIPT_ARABIC)
+    aletter_extra = "";
+
   const char kMidLetterExtra[] = "";
   // For Hebrew, treat single/double quoation marks as MidLetter.
   const char kMidLetterExtraHebrew[] = "\"'";
@@ -171,12 +176,14 @@ void SpellcheckCharAttribute::CreateRuleSets(const std::string& language) {
   ruleset_allow_contraction_ = ASCIIToUTF16(
       base::StringPrintf(kRuleTemplate,
                          aletter,
+                         aletter_extra,
                          midletter_extra,
                          aletter_plus,
                          kAllowContraction));
   ruleset_disallow_contraction_ = ASCIIToUTF16(
       base::StringPrintf(kRuleTemplate,
                          aletter,
+                         aletter_extra,
                          midletter_extra,
                          aletter_plus,
                          kDisallowContraction));
