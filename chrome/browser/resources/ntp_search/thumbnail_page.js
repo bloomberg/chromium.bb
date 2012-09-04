@@ -50,7 +50,9 @@ cr.define('ntp', function() {
      */
     reset: function() {
       this.innerHTML =
-          '<span class="thumbnail-image"></span>' +
+          '<span class="thumbnail-wrapper">' +
+            '<span class="thumbnail-image thumbnail-card"></span>' +
+          '</span>' +
           '<span class="title"></span>';
 
       this.tabIndex = -1;
@@ -88,11 +90,44 @@ cr.define('ntp', function() {
       // Sets the tooltip.
       this.title = data.title;
 
-      var thumbnailUrl = ntp.getThumbnailUrl(data.url);
-      this.querySelector('.thumbnail-image').style.backgroundImage =
-          url(thumbnailUrl);
+      var dataUrl = data.url;
+      // Allow an empty string href (e.g. for a multiple tab thumbnail).
+      this.href = typeof data.href != 'undefined' ? data.href : dataUrl;
 
-      this.href = data.href || data.url;
+      var thumbnailImage = this.querySelector('.thumbnail-image');
+
+      var banner = thumbnailImage.querySelector('.thumbnail-banner');
+      if (banner)
+        thumbnailImage.removeChild(banner);
+
+      var favicon = thumbnailImage.querySelector('.thumbnail-favicon');
+      if (favicon)
+        thumbnailImage.removeChild(favicon);
+
+      var self = this;
+      var image = new Image();
+
+      // If the thumbnail image fails to load, show the favicon and URL instead.
+      // TODO(jeremycho): Move to a separate function?
+      image.onerror = function() {
+        banner = self.ownerDocument.createElement('div');
+        banner.className = 'thumbnail-banner';
+
+        // For now, just strip leading http://www and trailing backslash.
+        // TODO(jeremycho): Consult with UX on URL truncation.
+        banner.textContent = dataUrl.replace(/^(http:\/\/)?(www\.)?|\/$/gi, '');
+        thumbnailImage.appendChild(banner);
+
+        favicon = self.ownerDocument.createElement('div');
+        favicon.className = 'thumbnail-favicon';
+        favicon.style.backgroundImage =
+            url('chrome://favicon/size/16/' + dataUrl);
+        thumbnailImage.appendChild(favicon);
+      }
+
+      var thumbnailUrl = ntp.getThumbnailUrl(dataUrl);
+      thumbnailImage.style.backgroundImage = url(thumbnailUrl);
+      image.src = thumbnailUrl;
     },
   });
 
@@ -193,4 +228,3 @@ cr.define('ntp', function() {
     ThumbnailPage: ThumbnailPage
   };
 });
-

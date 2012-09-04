@@ -20,11 +20,12 @@
   box-shadow: 0 1px 0 rgba(255, 255, 255, .7);
   display: block;
   height: 78px;
-  position: relative;
+  position: absolute;
   width: 130px;
 }
 
-.thumbnail-page .tile-cell .tile:hover {
+.thumbnail-page .tile-cell .tile:hover,
+.thumbnail-page .tile-cell .tile:hover .thumbnail-card {
   /* TODO(pedrosimonetti): Confirm value with Marcin. */
   border-color: rgb(127, 127, 127);
 }
@@ -43,14 +44,11 @@
 ----------------------------------------------------------------------------- */
 
 .thumbnail .thumbnail-image {
-  background-size: 100%;
-  display: block;
-  height: 100%;
-  position: absolute;
-  width: 100%;
+  background-size: 130px 81px;
 }
 
-.thumbnail .title {
+.thumbnail .title,
+.thumbnail-banner {
   color: #777;
   display: none;
   font-size: 0.9167em;
@@ -62,7 +60,53 @@
   width: 100%;
 }
 
+.thumbnail,
+.thumbnail-wrapper,
+.thumbnail-card {
+  -webkit-background-clip: padding-box;
+}
+
 .thumbnail:hover .title {
   bottom: -18px;
   display: block;
+}
+
+.thumbnail-wrapper {
+  display: block;
+  height: 100%;
+  overflow: hidden;
+  width: 100%;
+}
+
+.thumbnail-banner {
+  bottom: 18px;
+  display: block;
+  font-size: 1.14em;
+  margin: 0 7px;
+  width: 88%;
+}
+
+.thumbnail-favicon {
+  height: 16px;
+  margin: 0 auto;
+  position: relative;
+  top: 22px;
+  width: 16px;
+}
+
+.thumbnail-card {
+  /* This gives a 3px offset between consecutive thumbnails on the stack and
+     should be kept in sync with RecentlyClosed's STACK_OFFSET. */
+  -webkit-margin-start: -129px;
+  border: 1px solid silver;
+  border-radius: 2px;
+  display: inline-block;
+  height: 100%;
+  margin-top: -1px;
+  position: relative;
+  width: 100%;
+}
+
+.thumbnail-card:first-child {
+  -webkit-margin-start: -1px;
 }

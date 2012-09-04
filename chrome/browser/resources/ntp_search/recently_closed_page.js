@@ -8,6 +8,21 @@ cr.define('ntp', function() {
   var Thumbnail = ntp.Thumbnail;
   var ThumbnailPage = ntp.ThumbnailPage;
 
+ /**
+  * The maximum number of thumbnails to render in a stack.
+  * @type {number}
+  * @const
+  */
+ var MAX_STACK_SIZE = 10;
+
+ /**
+  * The offset (in pixels) between two consecutive thumbnails on a stack.  This
+  * should be kept in sync with .thumbnail-card's -webkit-margin-start.
+  * @type {number}
+  * @const
+  */
+ var STACK_OFFSET = 3;
+
   /**
    * Creates a new Recently Closed object for tiling.
    * @constructor
@@ -42,15 +57,37 @@ cr.define('ntp', function() {
      */
     formatThumbnail_: function(data) {
       var newData = {};
+
+      // Delete any existing blank thumbnails and reset image width.
+      var thumbnailWrapper = this.querySelector('.thumbnail-wrapper');
+      var blanks = thumbnailWrapper.querySelectorAll(
+          '.thumbnail-card:not(.thumbnail-image)');
+      for (var i = 0, length = blanks.length; i < length; ++i)
+        thumbnailWrapper.removeChild(blanks[i]);
+
+      var thumbnailImage = thumbnailWrapper.querySelector('.thumbnail-image');
+      thumbnailImage.style.width = '100%';
+
       if (data.type == 'window') {
         newData.title = formatTabsText(data.tabs.length);
         newData.direction = isRTL() ? 'rtl' : 'ltr';
         newData.href = '';
 
-        // For now, we show the thumbnail of the first tab of the closed window.
-        // TODO(jeremycho): Show a stack of thumbnails instead with the last
-        // focused thumbnail on top.
+        // Show a stack of blank thumbnails with the first tab on top.
+        // TODO(jeremycho): Show the last focused tab on top instead.
         newData.url = data.tabs[0].url;
+
+        var blanksCount = Math.min(data.tabs.length, MAX_STACK_SIZE) - 1;
+        for (var i = 0; i < blanksCount; ++i) {
+          var blank = this.ownerDocument.createElement('span');
+          blank.className = 'thumbnail-card';
+          thumbnailWrapper.insertBefore(blank, thumbnailImage);
+        }
+        // Thumbnail width - offset induced by the blank thumbnails.
+        // TODO(jeremycho): Get the width from the config, either by storing the
+        // object here or moving this function to TilePage.
+        thumbnailImage.style.width = 130 - blanksCount * STACK_OFFSET + 'px';
+
       } else {
         newData = data;
       }
