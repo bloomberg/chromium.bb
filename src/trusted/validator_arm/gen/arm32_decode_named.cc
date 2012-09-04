@@ -1725,6 +1725,16 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_signed_multiply_signed_a
       (insn.Bits() & 0x0000F000) == 0x0000F000 /* A(15:12) == 1111 */)
     return Binary3RegisterOpAltA_Smusd_Rule_181_P360_instance_;
 
+  if ((insn.Bits() & 0x00700000) == 0x00100000 /* op1(22:20) == 001 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5) == 000 */ &&
+      (insn.Bits() & 0x0000F000) == 0x0000F000 /* $pattern(31:0) == xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */)
+    return Binary3RegisterOpAltA_Sdiv_Rule_A1_instance_;
+
+  if ((insn.Bits() & 0x00700000) == 0x00300000 /* op1(22:20) == 011 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5) == 000 */ &&
+      (insn.Bits() & 0x0000F000) == 0x0000F000 /* $pattern(31:0) == xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */)
+    return Binary3RegisterOpAltA_Udiv_Rule_A1_instance_;
+
   if ((insn.Bits() & 0x00700000) == 0x00400000 /* op1(22:20) == 100 */ &&
       (insn.Bits() & 0x000000C0) == 0x00000000 /* op2(7:5) == 00x */)
     return Binary4RegisterDualResult_Smlald_Rule_170_P336_instance_;

@@ -1215,15 +1215,15 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | 000        00x      ~1111    = Binary4RegisterDualOp
                                  => Defs16To19CondsDontCareRdRaRmRnNotPc
                                  Smlad_Rule_167_P332
-                                 cccc01110000ddddaaaammmm00x1nnnn
-                                 NotRaIsPcAndRegsNotPc (v6T2)
+                                 cccc01110000ddddaaaammmm00m1nnnn
+                                 RegsNotPc (v6)
                                  # Implements Smuad and Smuadx, where
                                  # the x form is chosen if bit 5 is 1.
 | "          "        1111     = Binary3RegisterOpAltA
                                  => Defs16To19CondsDontCareRdRmRnNotPc
                                  Smuad_Rule_177_P352
-                                 cccc01110000dddd1111mmmm00x1nnnn
-                                 RegsNotPc (v6T2)
+                                 cccc01110000dddd1111mmmm00m1nnnn
+                                 RegsNotPc (v6)
                                  # Implements Smlsd and Smlsdx, where
                                  # the x form is chosen if bit 5 is 1.
                                  # Note: This rule has the constraint that
@@ -1233,58 +1233,66 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | "          01x      ~1111    = Binary4RegisterDualOp
                                  => Defs16To19CondsDontCareRdRaRmRnNotPc
                                  Smlsd_Rule_172_P342
-                                 cccc01110000ddddaaaammmm01x1nnnn
-                                 NotRaIsPcAndRegsNotPc (v6T2)
+                                 cccc01110000ddddaaaammmm01m1nnnn
+                                 RegsNotPc (v6)
                                  # Implements Smusd and Smusdx, where
                                  # the x form is chosen if bit 5 is 1.
 | "          "        1111     = Binary3RegisterOpAltA
                                  => Defs16To19CondsDontCareRdRmRnNotPc
                                  Smusd_Rule_181_P360
-                                 cccc01110000dddd1111mmmm01x1nnnn
-                                 RegsNotPc (v6T2)
-# TODO(jfb) Some of the the v7 implementations can implement UDIV and SDIV,
-#           see ARM ARM for details. Those look like:
-# 001        000      -          SDIV
-# 011        "        -          UDIV
+                                 cccc01110000dddd1111mmmm01m1nnnn
+                                 RegsNotPc (v6)
+| 001        000      -        = Binary3RegisterOpAltA
+                                 => Defs16To19CondsDontCareRdRmRnNotPc
+                                 Sdiv_Rule_A1
+                                 cccc01110001dddd1111mmmm0001nnnn
+                                 # TODO(jfb) In v7VE, optional in v7-A/v7-R.
+                                 (v7VEoptv7A_v7R)
+| 011        "        -        = Binary3RegisterOpAltA
+                                 => Defs16To19CondsDontCareRdRmRnNotPc
+                                 Udiv_Rule_A1
+                                 cccc01110011dddd1111mmmm0001nnnn
+                                 # TODO(jfb) In v7VE, optional in v7-A/v7-R.
+                                 (v7VEoptv7A_v7R)
                                  # Implements Smalad and Smaladx, where
                                  # the x form is chosen if bit 5 is 1.
 | 100        00x      -        = Binary4RegisterDualResult
                                  => Defs12To19CondsDontCareRdRmRnNotPc
                                  Smlald_Rule_170_P336
-                                 cccc01110100hhhhllllmmmm00x1nnnn
-                                 RegsNotPc (v6T2)
+                                 cccc01110100hhhhllllmmmm00m1nnnn
+                                 RegsNotPc (v6)
                                  # Implements Smlsld and Smlsldx, where
                                  # the x form is chosen if bit 5 is 1.
 | "          01x      -        = Binary4RegisterDualResult
                                  => Defs12To19CondsDontCareRdRmRnNotPc
                                  Smlsld_Rule_173_P344
-                                 cccc01110100hhhhllllmmmm01x1nnnn
-                                 RegsNotPc (v6T2)
+                                 cccc01110100hhhhllllmmmm01m1nnnn
+                                 RegsNotPc (v6)
                                  # Implements Smmla and Smmlar, where
                                  # the r form is chosen if bit 5 is 1.
                                  # Note: This rule has the constraint that
                                  # Ra!=1111, but we did not test it since
-                                 # its checked by the pattern (column A)
+                                 # it's checked by the pattern (column A)
                                  # for this instruction.
 | 101        00x      ~1111    = Binary4RegisterDualOp
                                  => Defs16To19CondsDontCareRdRaRmRnNotPc
                                  Smmla_Rule_174_P346
-                                 cccc01110101ddddaaaammmm00x1nnnn
-                                 NotRaIsPcAndRegsNotPc (v6T2)
+                                 cccc01110101ddddaaaammmm00r1nnnn
+                                 RegsNotPc (v6)
                                  # Implements Smmul and Smmulr, where
                                  # the r form is chosen if bit 5 is 1.
 | "          "        1111     = Binary3RegisterOpAltA
                                  => Defs16To19CondsDontCareRdRmRnNotPc
                                  Smmul_Rule_176_P350
-                                 cccc01110101dddd1111mmmm00x1nnnn
-                                 RegsNotPc (v6T2)
+                                 cccc01110101dddd1111mmmm00r1nnnn
+                                 RegsNotPc (v6)
                                  # Implements Smmls and Smmlsr, where
                                  # the r form is chosen if bit 5 is 1.
 | "          11x      -        = Binary4RegisterDualOp
                                  => Defs16To19CondsDontCareRdRaRmRnNotPc
                                  Smmls_Rule_175_P348
-                                 cccc01110101ddddaaaammmm11x1nnnn
-                                 RegsNotPc (v6T2)
+                                 cccc01110101ddddaaaammmm11r1nnnn
+                                 RegsNotPc (v6)
 | else:                        = Undefined  # Note on page A5-26
 +--
 

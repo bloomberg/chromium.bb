@@ -1502,6 +1502,12 @@ const ClassDecoder& Arm32DecoderState::decode_signed_multiply_signed_and_unsigne
     return Defs16To19CondsDontCareRdRaRmRnNotPc_instance_;
   }
 
+  if ((insn.Bits() & 0x00500000) == 0x00100000 /* op1(22:20) == 0x1 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5) == 000 */ &&
+      (insn.Bits() & 0x0000F000) == 0x0000F000 /* $pattern(31:0) == xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
+    return Defs16To19CondsDontCareRdRmRnNotPc_instance_;
+  }
+
   if (true) {
     return Undefined_instance_;
   }
