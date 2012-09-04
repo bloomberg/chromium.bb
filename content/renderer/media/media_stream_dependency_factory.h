@@ -34,6 +34,7 @@ class VideoCaptureModule;
 }
 
 class VideoCaptureImplManager;
+class WebRtcAudioDeviceImpl;
 
 // Object factory for MediaStreamImpl and PeerConnectionHandler.
 class CONTENT_EXPORT MediaStreamDependencyFactory {
@@ -79,9 +80,12 @@ class CONTENT_EXPORT MediaStreamDependencyFactory {
       int sdp_mline_index,
       const std::string& sdp);
 
+  virtual void SetAudioDeviceSessionId(int session_id);
+
  private:
   talk_base::scoped_refptr<webrtc::PeerConnectionFactoryInterface> pc_factory_;
   scoped_refptr<VideoCaptureImplManager> vc_manager_;
+  scoped_refptr<WebRtcAudioDeviceImpl> audio_device_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDependencyFactory);
 };

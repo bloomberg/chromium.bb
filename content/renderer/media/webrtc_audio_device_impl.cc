@@ -775,10 +775,8 @@ int32_t WebRtcAudioDeviceImpl::StartRecording() {
   }
 
   if (session_id_ <= 0) {
-    LOG(WARNING) << session_id_ << " is an invalid session id.";
-    // TODO(xians): enable the return -1 when MediaStreamManager can handle
-    // AudioInputDeviceManager.
-    // return -1;
+    LOG(ERROR) << session_id_ << " is an invalid session id.";
+    return -1;
   }
 
   base::AutoLock auto_lock(lock_);
