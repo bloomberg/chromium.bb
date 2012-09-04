@@ -81,6 +81,7 @@ CONTENT_EXPORT extern const char kEnableScriptedSpeech[];
 extern const char kSpeechRecognitionWebserviceURL[];
 extern const char kSpeechRecognitionWebserviceKey[];
 CONTENT_EXPORT extern const char kDisableThreadedAnimation[];
+CONTENT_EXPORT extern const char kDisableVideoTrack[];
 #if defined(OS_ANDROID)
 CONTENT_EXPORT extern const char kEnableWebAudio[];
 #else
@@ -128,7 +129,6 @@ CONTENT_EXPORT extern const char kEnableThreadedCompositing[];
 CONTENT_EXPORT extern const char kDisableThreadedCompositing[];
 CONTENT_EXPORT extern const char kEnableTcpFastOpen[];
 CONTENT_EXPORT extern const char kDisableAcceleratedVideoDecode[];
-CONTENT_EXPORT extern const char kEnableVideoTrack[];
 extern const char kEnableViewport[];
 CONTENT_EXPORT extern const char kExperimentalLocationFeatures[];
 CONTENT_EXPORT extern const char kExtraPluginDir[];

@@ -218,6 +218,9 @@ const char kSpeechRecognitionWebserviceKey[] = "speech-service-key";
 // Disables animation on the compositor thread.
 const char kDisableThreadedAnimation[]      = "disable-threaded-animation";
 
+// Disables video text tracks.
+const char kDisableVideoTrack[]             = "disable-video-track";
+
 #if defined(OS_ANDROID)
 // Enable web audio API.
 const char kEnableWebAudio[]                = "enable-webaudio";
@@ -379,10 +382,6 @@ const char kEnableTcpFastOpen[]             = "enable-tcp-fastopen";
 // Disables hardware acceleration of video decode, where available.
 const char kDisableAcceleratedVideoDecode[] =
     "disable-accelerated-video-decode";
-
-// Enables support for video tracks. Current implementation is
-// incomplete and this flag is used for development and testing.
-const char kEnableVideoTrack[]              = "enable-video-track";
 
 // Enables the use of the viewport meta tag, which allows
 // pages to control aspects of their own layout. This also turns on touch-screen

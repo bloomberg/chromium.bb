@@ -754,6 +754,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableSpeechInput,
     switches::kEnableScriptedSpeech,
     switches::kDisableThreadedAnimation,
+    switches::kDisableVideoTrack,
 #if defined(OS_ANDROID)
     switches::kEnableWebAudio,
 #else
@@ -792,7 +793,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableThreadedCompositing,
     switches::kDisableThreadedCompositing,
     switches::kEnableTouchEvents,
-    switches::kEnableVideoTrack,
     switches::kEnableViewport,
     switches::kForceDeviceScaleFactor,
     switches::kFullMemoryCrashReport,

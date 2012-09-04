@@ -654,7 +654,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
       !command_line.HasSwitch(switches::kDisablePointerLock));
 
   WebKit::WebRuntimeFeatures::enableVideoTrack(
-      command_line.HasSwitch(switches::kEnableVideoTrack));
+      !command_line.HasSwitch(switches::kDisableVideoTrack));
 
   WebKit::WebRuntimeFeatures::enableEncryptedMedia(
       command_line.HasSwitch(switches::kEnableEncryptedMedia));
