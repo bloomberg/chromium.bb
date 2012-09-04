@@ -7,7 +7,9 @@ cr.define('cr.ui', function() {
   /** @const */ var MenuItem = cr.ui.MenuItem;
 
   /**
-   * Creates a new menu element.
+   * Creates a new menu element. Menu dispatches all commands on the element it
+   * was shown for.
+   *
    * @param {Object=} opt_propertyBag Optional properties.
    * @constructor
    * @extends {HTMLMenuElement}
@@ -18,6 +20,11 @@ cr.define('cr.ui', function() {
     __proto__: HTMLMenuElement.prototype,
 
     selectedIndex_: -1,
+
+    /**
+     * Element for which menu is being shown.
+     */
+    contextElement: null,
 
     /**
      * Initializes the menu element.
@@ -182,6 +189,17 @@ cr.define('cr.ui', function() {
       }
 
       return false;
+    },
+
+    /**
+     * Updates menu items command according to context.
+     * @param {Node=} node Node for which to actuate commands state.
+     */
+    updateCommands: function(node) {
+      var children = this.children;
+
+      for (var i = 0, child; child = children[i]; i++)
+        child.updateCommand(node);
     }
   };
 
@@ -193,6 +211,7 @@ cr.define('cr.ui', function() {
     if (item)
       item.selected = true;
   }
+
   /**
    * The selected menu item.
    * @type {number}

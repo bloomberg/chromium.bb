@@ -48,7 +48,7 @@ cr.define('cr.ui', function() {
 
   KeyboardShortcut.prototype = {
     /**
-     * Wether the keyboard shortcut object mathes a keyboard event.
+     * Whether the keyboard shortcut object matches a keyboard event.
      * @param {!Event} e The keyboard event object.
      * @return {boolean} Whether we found a match or not.
      */
@@ -79,29 +79,37 @@ cr.define('cr.ui', function() {
      */
     decorate: function() {
       CommandManager.init(this.ownerDocument);
+
+      if (this.hasAttribute('shortcut'))
+        this.shortcut = this.getAttribute('shortcut');
     },
 
     /**
-     * Executes the command. This dispatches a command event on the active
-     * element. If the command is {@code disabled} this does nothing.
+     * Executes the command by dispatching a command event on the given element.
+     * If |element| isn't given, the active element is used instead.
+     * If the command is {@code disabled} this does nothing.
+     * @param {HTMLElement=} opt_element Optional element to dispatch event on.
      */
-    execute: function() {
+    execute: function(opt_element) {
       if (this.disabled)
         return;
       var doc = this.ownerDocument;
       if (doc.activeElement) {
         var e = new cr.Event('command', true, false);
         e.command = this;
-        doc.activeElement.dispatchEvent(e);
+
+        (opt_element || doc.activeElement).dispatchEvent(e);
       }
     },
 
     /**
      * Call this when there have been changes that might change whether the
      * command can be executed or not.
+     * @param {Node=} opt_node Node for which to actuate command state.
      */
-    canExecuteChange: function() {
-      dispatchCanExecuteEvent(this, this.ownerDocument.activeElement);
+    canExecuteChange: function(opt_node) {
+      dispatchCanExecuteEvent(this,
+                              opt_node || this.ownerDocument.activeElement);
     },
 
     /**
@@ -215,7 +223,7 @@ cr.define('cr.ui', function() {
     if (!(uid in commandManagers)) {
       commandManagers[uid] = new CommandManager(doc);
     }
-  },
+  };
 
   CommandManager.prototype = {
 
@@ -260,6 +268,8 @@ cr.define('cr.ui', function() {
    * The event type used for canExecute events.
    * @param {!cr.ui.Command} command The command that we are evaluating.
    * @extends {Event}
+   * @constructor
+   * @class
    */
   function CanExecuteEvent(command) {
     var e = command.ownerDocument.createEvent('Event');

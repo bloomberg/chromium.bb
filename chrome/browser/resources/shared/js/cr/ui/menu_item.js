@@ -114,19 +114,32 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Handles mouseup events. This dispatches an active event and if there
-     * is an assiciated command then that is executed.
-     * @param {Event} The mouseup event object.
+     * Handles mouseup events. This dispatches an activate event; if there is an
+     * associated command, that command is executed.
+     * @param {Event} e The mouseup event object.
      * @private
      */
     handleMouseUp_: function(e) {
       if (!this.disabled && !this.isSeparator() && this.selected) {
+        // Store |contextElement| since it'll be removed by {Menu} on handling
+        // 'activate' event.
+        var contextElement = this.parentNode.contextElement;
         // Dispatch command event followed by executing the command object.
         if (cr.dispatchSimpleEvent(this, 'activate', true, true)) {
           var command = this.command;
           if (command)
-            command.execute();
+            command.execute(contextElement);
         }
+      }
+    },
+
+    /**
+     * Updates command according to the node on which this menu was invoked.
+     * @param {Node=} opt_node Node on which menu was opened.
+     */
+    updateCommand: function(opt_node) {
+      if (this.command_) {
+        this.command_.canExecuteChange(opt_node);
       }
     },
 

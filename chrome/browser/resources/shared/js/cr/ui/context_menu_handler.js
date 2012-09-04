@@ -31,7 +31,9 @@ cr.define('cr.ui', function() {
      */
     showMenu: function(e, menu) {
       this.menu_ = menu;
+      menu.updateCommands(e.currentTarget);
       menu.hidden = false;
+      menu.contextElement = e.currentTarget;
 
       // when the menu is shown we steal all keyboard events.
       var doc = menu.ownerDocument;
@@ -53,6 +55,7 @@ cr.define('cr.ui', function() {
         return;
 
       menu.hidden = true;
+      menu.contextElement = null;
       var doc = menu.ownerDocument;
       doc.removeEventListener('keydown', this, true);
       doc.removeEventListener('mousedown', this, true);
