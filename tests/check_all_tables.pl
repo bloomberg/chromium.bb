@@ -37,7 +37,7 @@ foreach my $table (@tables) {
     } else {
 	die "cannot fork: $!" unless defined($pid);
 	alarm $timeout;
-	exec ("lou_checktable $table --quiet");
+	exec ("../tools/lou_checktable $table --quiet");
 	die "Exec of lou_checktable failed: $!";
     }
 }

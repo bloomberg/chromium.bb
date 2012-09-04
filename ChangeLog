@@ -1,3 +1,11 @@
+2012-09-04  Christian Egli  <christian.egli@sbs.ch>
+
+	* tests/check_all_tables.pl:
+	* tests/check_endless_loop.pl:
+	* tests/multiple_table_path.pl: When doing VPATH builds (such as
+	in `make distcheck`) the binary for lou_checktable is not found.
+	Just use a relative path to find it.
+
 2012-07-10  Christian Egli  <christian.egli@sbs.ch>
 
 	* doc/liblouis.texi (How to Write Translation Tables): Document
