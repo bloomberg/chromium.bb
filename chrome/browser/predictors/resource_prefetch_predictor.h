@@ -82,8 +82,6 @@ class ResourcePrefetchPredictor
     int max_resources_per_entry;  // Default 50
     // The number of consecutive misses after we stop tracking a resource Url.
     int max_consecutive_misses;  // Default 3
-    // The number of resources we should report accuracy stats on.
-    int num_resources_assumed_prefetched;  // Default 25
   };
 
   // Stores the data that we need to get from the URLRequest.
@@ -196,6 +194,10 @@ class ResourcePrefetchPredictor
   void LearnUrlNavigation(const GURL& main_frame_url,
                           const std::vector<URLRequestSummary>& new_value);
   void MaybeReportAccuracyStats(const NavigationID& navigation_id) const;
+  void ReportAccuracyHistograms(const UrlTableRowVector& predicted,
+                                const std::map<GURL, bool>& actual_resources,
+                                int total_resources_fetched_from_network,
+                                int max_assumed_prefetched) const;
 
   void SetTablesForTesting(
       scoped_refptr<ResourcePrefetchPredictorTables> tables);

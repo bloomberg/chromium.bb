@@ -11,6 +11,7 @@
 #include "base/stringprintf.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_table.h"
+#include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -47,6 +48,7 @@ class PredictorDatabaseInternal
   // Cancels pending DB transactions. Should only be called on the UI thread.
   void SetCancelled();
 
+  bool is_resource_prefetch_predictor_enabled_;
   FilePath db_path_;
   sql::Connection db_;
 
@@ -63,6 +65,8 @@ PredictorDatabaseInternal::PredictorDatabaseInternal(Profile* profile)
     : db_path_(profile->GetPath().Append(kPredictorDatabaseName)),
       autocomplete_table_(new AutocompleteActionPredictorTable()),
       resource_prefetch_tables_(new ResourcePrefetchPredictorTables()) {
+  is_resource_prefetch_predictor_enabled_ =
+      ResourcePrefetchPredictor::IsEnabled(profile);
 }
 
 PredictorDatabaseInternal::~PredictorDatabaseInternal() {
@@ -99,7 +103,8 @@ void PredictorDatabaseInternal::LogDatabaseStats() {
                           static_cast<int>(db_size / 1024));
 
   autocomplete_table_->LogDatabaseStats();
-  resource_prefetch_tables_->LogDatabaseStats();
+  if (is_resource_prefetch_predictor_enabled_)
+    resource_prefetch_tables_->LogDatabaseStats();
 }
 
 PredictorDatabase::PredictorDatabase(Profile* profile)

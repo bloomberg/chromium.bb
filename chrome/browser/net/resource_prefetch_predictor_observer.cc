@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/metrics/histogram.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "googleurl/src/gurl.h"
@@ -16,18 +17,51 @@ using predictors::ResourcePrefetchPredictor;
 
 namespace {
 
+// Enum for measuring statistics pertaining to observed request, responses and
+// redirects.
+enum RequestStats {
+  REQUEST_STATS_TOTAL_RESPONSES = 0,
+  REQUEST_STATS_TOTAL_PROCESSED_RESPONSES = 1,
+  REQUEST_STATS_NO_RESOURCE_REQUEST_INFO = 2,
+  REQUEST_STATS_NO_RENDER_VIEW_ID_FROM_REQUEST_INFO = 3,
+  REQUEST_STATS_MAX = 4,
+};
+
+// Specific to main frame requests.
+enum MainFrameRequestStats {
+  MAIN_FRAME_REQUEST_STATS_TOTAL_REQUESTS = 0,
+  MAIN_FRAME_REQUEST_STATS_PROCESSED_REQUESTS = 1,
+  MAIN_FRAME_REQUEST_STATS_TOTAL_REDIRECTS = 2,
+  MAIN_FRAME_REQUEST_STATS_PROCESSED_REDIRECTS = 3,
+  MAIN_FRAME_REQUEST_STATS_TOTAL_RESPONSES = 4,
+  MAIN_FRAME_REQUEST_STATS_PROCESSED_RESPONSES = 5,
+  MAIN_FRAME_REQUEST_STATS_MAX = 6,
+};
+
+void ReportRequestStats(RequestStats stat) {
+  UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.RequestStats",
+                            stat,
+                            REQUEST_STATS_MAX);
+}
+
+void ReportMainFrameRequestStats(MainFrameRequestStats stat) {
+  UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.MainFrameRequestStats",
+                            stat,
+                            MAIN_FRAME_REQUEST_STATS_MAX);
+}
+
 bool SummarizeResponse(net::URLRequest* request,
                        ResourcePrefetchPredictor::URLRequestSummary* summary) {
   const content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request);
   if (!info) {
-    LOG(ERROR) << "No ResourceRequestInfo in request";
+    ReportRequestStats(REQUEST_STATS_NO_RESOURCE_REQUEST_INFO);
     return false;
   }
 
   int render_process_id, render_view_id;
   if (!info->GetAssociatedRenderView(&render_process_id, &render_view_id)) {
-    LOG(ERROR) << "Could not get RenderViewId from request info.";
+    ReportRequestStats(REQUEST_STATS_NO_RENDER_VIEW_ID_FROM_REQUEST_INFO);
     return false;
   }
 
@@ -73,6 +107,9 @@ void ResourcePrefetchPredictorObserver::OnRequestStarted(
     int route_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
+  if (resource_type == ResourceType::MAIN_FRAME)
+    ReportMainFrameRequestStats(MAIN_FRAME_REQUEST_STATS_TOTAL_REQUESTS);
+
   if (!ResourcePrefetchPredictor::ShouldRecordRequest(request, resource_type))
     return;
 
@@ -89,12 +126,22 @@ void ResourcePrefetchPredictorObserver::OnRequestStarted(
       base::Bind(&ResourcePrefetchPredictor::RecordURLRequest,
                  predictor_,
                  summary));
+
+  if (resource_type == ResourceType::MAIN_FRAME)
+    ReportMainFrameRequestStats(MAIN_FRAME_REQUEST_STATS_PROCESSED_REQUESTS);
 }
 
 void ResourcePrefetchPredictorObserver::OnRequestRedirected(
     const GURL& redirect_url,
     net::URLRequest* request) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  const content::ResourceRequestInfo* request_info =
+      content::ResourceRequestInfo::ForRequest(request);
+  if (request_info &&
+      request_info->GetResourceType() == ResourceType::MAIN_FRAME) {
+    ReportMainFrameRequestStats(MAIN_FRAME_REQUEST_STATS_TOTAL_REDIRECTS);
+  }
 
   if (!ResourcePrefetchPredictor::ShouldRecordRedirect(request))
     return;
@@ -111,11 +158,25 @@ void ResourcePrefetchPredictorObserver::OnRequestRedirected(
       base::Bind(&ResourcePrefetchPredictor::RecordUrlRedirect,
                  predictor_,
                  summary));
+
+  if (request_info &&
+      request_info->GetResourceType() == ResourceType::MAIN_FRAME) {
+    ReportMainFrameRequestStats(MAIN_FRAME_REQUEST_STATS_PROCESSED_REDIRECTS);
+  }
 }
 
 void ResourcePrefetchPredictorObserver::OnResponseStarted(
     net::URLRequest* request) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  ReportRequestStats(REQUEST_STATS_TOTAL_RESPONSES);
+
+  const content::ResourceRequestInfo* request_info =
+      content::ResourceRequestInfo::ForRequest(request);
+  if (request_info &&
+      request_info->GetResourceType() == ResourceType::MAIN_FRAME) {
+    ReportMainFrameRequestStats(MAIN_FRAME_REQUEST_STATS_TOTAL_RESPONSES);
+  }
 
   if (!ResourcePrefetchPredictor::ShouldRecordResponse(request))
     return;
@@ -129,6 +190,12 @@ void ResourcePrefetchPredictorObserver::OnResponseStarted(
       base::Bind(&ResourcePrefetchPredictor::RecordUrlResponse,
                  predictor_,
                  summary));
+
+  ReportRequestStats(REQUEST_STATS_TOTAL_PROCESSED_RESPONSES);
+  if (request_info &&
+      request_info->GetResourceType() == ResourceType::MAIN_FRAME) {
+    ReportMainFrameRequestStats(MAIN_FRAME_REQUEST_STATS_PROCESSED_RESPONSES);
+  }
 }
 
 }  // namespace chrome_browser_net

@@ -275,7 +275,7 @@ void ConfigureSpeculativePrefetching() {
 }
 
 bool IsSpeculativeResourcePrefetchingLearningEnabled(Profile* profile) {
-  if (!profile)
+  if (!profile || profile->IsOffTheRecord())
     return false;
 
   // Override any field trial groups if the user has set a command line flag.

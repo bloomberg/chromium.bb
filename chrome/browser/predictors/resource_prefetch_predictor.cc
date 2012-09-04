@@ -11,6 +11,8 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
+#include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/time.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
@@ -44,14 +46,6 @@ namespace {
 // Don't store subresources whose Urls are longer than this.
 size_t kMaxSubresourceUrlLengthBytes = 1000;
 
-// For reporting histograms about navigation status.
-enum NavigationStatus {
-  NAVIGATION_STATUS_COMPLETE = 0,
-  NAVIGATION_STATUS_COMPLETE_ABANDONED = 1,
-  NAVIGATION_STATUS_ABANDONED = 2,
-  NAVIGATION_STATUS_COUNT = 3
-};
-
 // For reporting whether a subresource is handled or not, and for what reasons.
 enum ResourceStatus {
   RESOURCE_STATUS_HANDLED = 0,
@@ -65,6 +59,26 @@ enum ResourceStatus {
   RESOURCE_STATUS_MAX = 128,
 };
 
+// For reporting various interesting events that occur during the loading of a
+// single main frame.
+enum NavigationEvent {
+  NAVIGATION_EVENT_REQUEST_STARTED = 0,
+  NAVIGATION_EVENT_REQUEST_REDIRECTED = 1,
+  NAVIGATION_EVENT_REQUEST_REDIRECTED_EMPTY_URL = 2,
+  NAVIGATION_EVENT_REQUEST_EXPIRED = 3,
+  NAVIGATION_EVENT_RESPONSE_STARTED = 4,
+  NAVIGATION_EVENT_ONLOAD = 5,
+  NAVIGATION_EVENT_ONLOAD_EMPTY_URL = 6,
+  NAVIGATION_EVENT_ONLOAD_UNTRACKED_URL = 7,
+  NAVIGATION_EVENT_ONLOAD_TRACKED_URL = 8,
+  NAVIGATION_EVENT_SHOULD_TRACK_URL = 9,
+  NAVIGATION_EVENT_SHOULD_NOT_TRACK_URL = 10,
+  NAVIGATION_EVENT_URL_TABLE_FULL = 11,
+  NAVIGATION_EVENT_HAVE_PREDICTIONS_FOR_URL = 12,
+  NAVIGATION_EVENT_NO_PREDICTIONS_FOR_URL = 13,
+  NAVIGATION_EVENT_COUNT = 14,
+};
+
 }  // namespace
 
 namespace predictors {
@@ -74,8 +88,7 @@ ResourcePrefetchPredictor::Config::Config()
       max_urls_to_track(500),
       min_url_visit_count(3),
       max_resources_per_entry(50),
-      max_consecutive_misses(3),
-      num_resources_assumed_prefetched(25) {
+      max_consecutive_misses(3) {
 }
 
 ResourcePrefetchPredictor::URLRequestSummary::URLRequestSummary()
@@ -157,6 +170,9 @@ void ResourcePrefetchPredictor::CreateCaches(
        it != url_rows->end(); ++it) {
     url_table_cache_[it->main_frame_url].rows.push_back(*it);
   }
+
+  UMA_HISTOGRAM_COUNTS("ResourcePrefetchPredictor.UrlTableMainFrameUrlCount",
+                       url_table_cache_.size());
 
   // Score and sort the database caches.
   // TODO(shishir): The following would be much more efficient if we used
@@ -330,6 +346,10 @@ void ResourcePrefetchPredictor::OnMainFrameRequest(
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(INITIALIZED, initialization_state_);
 
+  UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
+                            NAVIGATION_EVENT_REQUEST_STARTED,
+                            NAVIGATION_EVENT_COUNT);
+
   // Cleanup older navigations.
   CleanupAbandonedNavigations(request.navigation_id);
 
@@ -342,12 +362,20 @@ void ResourcePrefetchPredictor::OnMainFrameResponse(
     const URLRequestSummary& response) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
+                            NAVIGATION_EVENT_RESPONSE_STARTED,
+                            NAVIGATION_EVENT_COUNT);
+
   // TODO(shishir): The prefreshing will be stopped here.
 }
 
 void ResourcePrefetchPredictor::OnMainFrameRedirect(
     const URLRequestSummary& response) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
+                            NAVIGATION_EVENT_REQUEST_REDIRECTED,
+                            NAVIGATION_EVENT_COUNT);
 
   // Remove the older navigation.
   inflight_navigations_.erase(response.navigation_id);
@@ -356,8 +384,12 @@ void ResourcePrefetchPredictor::OnMainFrameRedirect(
   // redirect url as a new navigation.
 
   // The redirect url may be empty if the url was invalid.
-  if (response.redirect_url.is_empty())
+  if (response.redirect_url.is_empty()) {
+    UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
+                              NAVIGATION_EVENT_REQUEST_REDIRECTED_EMPTY_URL,
+                              NAVIGATION_EVENT_COUNT);
     return;
+  }
 
   NavigationID navigation_id(response.navigation_id);
   navigation_id.main_frame_url = response.redirect_url;
@@ -405,9 +437,9 @@ void ResourcePrefetchPredictor::CleanupAbandonedNavigations(
     if (it->first.IsSameRenderer(navigation_id) ||
         (time_now - it->first.creation_time > max_navigation_age)) {
       inflight_navigations_.erase(it++);
-      UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationStatus",
-                                NAVIGATION_STATUS_ABANDONED,
-                                NAVIGATION_STATUS_COUNT);
+      UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
+                                NAVIGATION_EVENT_REQUEST_EXPIRED,
+                                NAVIGATION_EVENT_COUNT);
     } else {
       ++it;
     }
@@ -422,13 +454,22 @@ void ResourcePrefetchPredictor::Observe(
 
   switch (type) {
     case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME: {
+      UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
+                                NAVIGATION_EVENT_ONLOAD,
+                                NAVIGATION_EVENT_COUNT);
       const content::WebContents* web_contents =
           content::Source<content::WebContents>(source).ptr();
       NavigationID navigation_id(*web_contents);
       // WebContents can return an empty URL if the navigation entry
       // corresponding to the navigation has not been created yet.
-      if (!navigation_id.main_frame_url.is_empty())
+      if (navigation_id.main_frame_url.is_empty()) {
+        UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
+                                  NAVIGATION_EVENT_ONLOAD_EMPTY_URL,
+                                  NAVIGATION_EVENT_COUNT);
+
+      } else {
         OnNavigationComplete(navigation_id);
+      }
       break;
     }
 
@@ -496,11 +537,21 @@ void ResourcePrefetchPredictor::OnHistoryAndCacheLoaded() {
         ++it;
       }
     }
-    if (!urls_to_delete.empty())
+
+    if (!urls_to_delete.empty()) {
+      UMA_HISTOGRAM_COUNTS(
+          "ResourcePrefetchPredictor.UrlTableMainFrameUrlsDeletedNotInHistory",
+          urls_to_delete.size());
+      UMA_HISTOGRAM_PERCENTAGE(
+          "ResourcePrefetchPredictor."
+              "UrlTableMainFrameUrlsDeletedNotInHistoryPercent",
+          urls_to_delete.size() * 100.0 / url_table_cache_.size());
+
       BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
           base::Bind(&ResourcePrefetchPredictorTables::DeleteRowsForUrls,
                      tables_,
                      urls_to_delete));
+    }
   }
 
   notification_registrar_.Add(this,
@@ -531,8 +582,14 @@ bool ResourcePrefetchPredictor::ShouldTrackUrl(const GURL& url) {
     return false;
 
   history::URLRow url_row;
-  return url_db->GetRowForURL(url, &url_row) != 0 &&
-      url_row.visit_count() >= config_.min_url_visit_count;
+  int visit_count = 0;
+  if (url_db->GetRowForURL(url, &url_row) != 0)
+    visit_count = url_row.visit_count();
+
+  UMA_HISTOGRAM_COUNTS("ResourcePrefetchPredictor.HistoryVisitCountForUrl",
+                       visit_count);
+
+  return visit_count >= config_.min_url_visit_count;
 }
 
 void ResourcePrefetchPredictor::OnNavigationComplete(
@@ -541,23 +598,31 @@ void ResourcePrefetchPredictor::OnNavigationComplete(
 
   if (inflight_navigations_.find(navigation_id) ==
       inflight_navigations_.end()) {
-    UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationStatus",
-                              NAVIGATION_STATUS_COMPLETE_ABANDONED,
-                              NAVIGATION_STATUS_COUNT);
+    UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
+                              NAVIGATION_EVENT_ONLOAD_UNTRACKED_URL,
+                              NAVIGATION_EVENT_COUNT);
     return;
   }
 
-  UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationStatus",
-                            NAVIGATION_STATUS_COMPLETE,
-                            NAVIGATION_STATUS_COUNT);
+  UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
+                            NAVIGATION_EVENT_ONLOAD_TRACKED_URL,
+                            NAVIGATION_EVENT_COUNT);
 
   // Report any stats.
   MaybeReportAccuracyStats(navigation_id);
 
   // Update the URL table.
   const GURL& main_frame_url = navigation_id.main_frame_url;
-  if (ShouldTrackUrl(main_frame_url))
+  if (ShouldTrackUrl(main_frame_url)) {
+    UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
+                              NAVIGATION_EVENT_SHOULD_TRACK_URL,
+                              NAVIGATION_EVENT_COUNT);
     LearnUrlNavigation(main_frame_url, inflight_navigations_[navigation_id]);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
+                              NAVIGATION_EVENT_SHOULD_NOT_TRACK_URL,
+                              NAVIGATION_EVENT_COUNT);
+  }
 
   // Remove the navigation.
   inflight_navigations_.erase(navigation_id);
@@ -678,6 +743,10 @@ void ResourcePrefetchPredictor::RemoveAnEntryFromUrlDB() {
   if (url_table_cache_.empty())
     return;
 
+  UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
+                            NAVIGATION_EVENT_URL_TABLE_FULL,
+                            NAVIGATION_EVENT_COUNT);
+
   // TODO(shishir): Maybe use a heap to do this more efficiently.
   base::Time oldest_time;
   GURL url_to_erase;
@@ -705,10 +774,16 @@ void ResourcePrefetchPredictor::MaybeReportAccuracyStats(
 
   bool have_predictions_for_url =
       url_table_cache_.find(main_frame_url) != url_table_cache_.end();
-  UMA_HISTOGRAM_BOOLEAN("ResourcePrefetchPredictor.HavePredictionsForUrl",
-                        have_predictions_for_url);
-  if (!have_predictions_for_url)
+  if (have_predictions_for_url) {
+    UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
+                              NAVIGATION_EVENT_HAVE_PREDICTIONS_FOR_URL,
+                              NAVIGATION_EVENT_COUNT);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
+                              NAVIGATION_EVENT_NO_PREDICTIONS_FOR_URL,
+                              NAVIGATION_EVENT_COUNT);
     return;
+  }
 
   const std::vector<URLRequestSummary>& actual =
       inflight_navigations_.find(navigation_id)->second;
@@ -716,35 +791,85 @@ void ResourcePrefetchPredictor::MaybeReportAccuracyStats(
       url_table_cache_.find(main_frame_url)->second.rows;
 
   std::map<GURL, bool> actual_resources;
+  int from_network = 0;
   for (std::vector<URLRequestSummary>::const_iterator it = actual.begin();
        it != actual.end(); ++it) {
     actual_resources[it->resource_url] = it->was_cached;
+    if (!it->was_cached)
+      ++from_network;
   }
 
+  // Measure the accuracy at 25, 50 predicted resources.
+  ReportAccuracyHistograms(predicted, actual_resources, from_network, 25);
+  ReportAccuracyHistograms(predicted, actual_resources, from_network, 50);
+}
+
+void ResourcePrefetchPredictor::ReportAccuracyHistograms(
+    const UrlTableRowVector& predicted,
+    const std::map<GURL, bool>& actual_resources,
+    int total_resources_fetched_from_network,
+    int max_assumed_prefetched) const {
   int prefetch_cached = 0, prefetch_network = 0, prefetch_missed = 0;
-  int num_assumed_prefetched = std::min(
-      static_cast<int>(predicted.size()),
-      config_.num_resources_assumed_prefetched);
+  int num_assumed_prefetched = std::min(static_cast<int>(predicted.size()),
+                                        max_assumed_prefetched);
   for (int i = 0; i < num_assumed_prefetched; ++i) {
     const UrlTableRow& row = predicted[i];
-    if (actual_resources.find(row.resource_url) == actual_resources.end()) {
+    std::map<GURL, bool>::const_iterator it = actual_resources.find(
+        row.resource_url);
+    if (it == actual_resources.end()) {
       ++prefetch_missed;
-    } else if (actual_resources[row.resource_url]) {
+    } else if (it->second) {
       ++prefetch_cached;
     } else {
       ++prefetch_network;
     }
   }
 
-  UMA_HISTOGRAM_PERCENTAGE(
-      "ResourcePrefetchPredictor.PredictedPrefetchMisses",
+  std::string prefix = "ResourcePrefetchPredictor.Predicted";
+  std::string suffix = "_" + base::IntToString(max_assumed_prefetched);
+
+  // Macros to avoid using the STATIC_HISTOGRAM_POINTER_BLOCK in UMA_HISTOGRAM
+  // definitions.
+#define RPP_PREDICTED_HISTOGRAM_COUNTS(name, value) \
+  { \
+    std::string full_name = prefix + name + suffix; \
+    base::Histogram* histogram = base::Histogram::FactoryGet( \
+        full_name, 1, 1000000, 50, \
+        base::Histogram::kUmaTargetedHistogramFlag); \
+    histogram->Add(value); \
+  }
+
+#define RPP_PREDICTED_HISTOGRAM_PERCENTAGE(name, value) \
+  { \
+    std::string full_name = prefix + name + suffix; \
+    base::Histogram* histogram = base::LinearHistogram::FactoryGet( \
+        full_name, 1, 101, 102, base::Histogram::kUmaTargetedHistogramFlag); \
+    histogram->Add(value); \
+  }
+
+  RPP_PREDICTED_HISTOGRAM_COUNTS("PrefetchCount", num_assumed_prefetched);
+  RPP_PREDICTED_HISTOGRAM_COUNTS("PrefetchMisses_Count", prefetch_missed);
+  RPP_PREDICTED_HISTOGRAM_COUNTS("PrefetchFromCache_Count", prefetch_cached);
+  RPP_PREDICTED_HISTOGRAM_COUNTS("PrefetchFromNetwork_Count", prefetch_network);
+
+  RPP_PREDICTED_HISTOGRAM_PERCENTAGE(
+      "PrefetchMisses_PercentOfTotalPrefetched",
       prefetch_missed * 100.0 / num_assumed_prefetched);
-  UMA_HISTOGRAM_PERCENTAGE(
-      "ResourcePrefetchPredictor.PredictedPrefetchFromCache",
+  RPP_PREDICTED_HISTOGRAM_PERCENTAGE(
+      "PrefetchFromCache_PercentOfTotalPrefetched",
       prefetch_cached * 100.0 / num_assumed_prefetched);
-  UMA_HISTOGRAM_PERCENTAGE(
-      "ResourcePrefetchPredictor.PredictedPrefetchFromNetwork",
+  RPP_PREDICTED_HISTOGRAM_PERCENTAGE(
+      "PrefetchFromNetwork_PercentOfTotalPrefetched",
       prefetch_network * 100.0 / num_assumed_prefetched);
+
+  // Measure the ratio of total number of resources prefetched from network vs
+  // the total number of resources fetched by the page from the network.
+  RPP_PREDICTED_HISTOGRAM_PERCENTAGE(
+      "PrefetchFromNetworkPercentOfTotalFromNetwork",
+      prefetch_network * 100.0 / total_resources_fetched_from_network);
+
+#undef RPP_PREDICTED_HISTOGRAM_PERCENTAGE
+#undef RPP_PREDICTED_HISTOGRAM_COUNTS
 }
 
 void ResourcePrefetchPredictor::DeleteAllUrls() {
