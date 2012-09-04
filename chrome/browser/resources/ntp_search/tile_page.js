@@ -214,6 +214,9 @@ cr.define('ntp', function() {
       this.tileGrid_.addEventListener('webkitTransitionEnd',
           this.onTileGridTransitionEnd_.bind(this));
 
+      $('page-list').addEventListener('webkitTransitionEnd',
+          this.onPageListTransitionEnd_.bind(this));
+
       this.eventTracker = new EventTracker();
       this.eventTracker.add(window, 'resize', this.onResize_.bind(this));
       this.eventTracker.add(window, 'keyup', this.onKeyUp_.bind(this));
@@ -353,7 +356,6 @@ cr.define('ntp', function() {
      * @private
      */
     handleCardSelection_: function(e) {
-      // When we are selected, we re-layout the page.
       this.layout_();
     },
 
@@ -399,15 +401,15 @@ cr.define('ntp', function() {
     // -------------------------------------------------------------------------
 
     // The number of columns.
-    colCount_: 5,
+    colCount_: 0,
     // The number of rows.
-    rowCount_: 2,
-    // The number of visible rows. We initialize this value with undefined so
+    rowCount_: 0,
+    // The number of visible rows. We initialize this value with zero so
     // we can detect when the first time the page is rendered.
-    numOfVisibleRows_: undefined,
+    numOfVisibleRows_: 0,
     // The number of the last column being animated. We initialize this value
-    // with undefined so we can detect when the first time the page is rendered.
-    animatingColCount_: undefined,
+    // with zero so we can detect when the first time the page is rendered.
+    animatingColCount_: 0,
     // The index of the topmost row visible.
     pageOffset_: 0,
 
@@ -420,7 +422,6 @@ cr.define('ntp', function() {
     appendTile: function(tile) {
       var index = this.tiles_.length;
       this.tiles_.push(tile);
-      this.renderGrid_();
       this.fireAddedEvent(tile, index);
     },
 
@@ -433,7 +434,6 @@ cr.define('ntp', function() {
      */
     addTileAt: function(tile, index) {
       this.tiles_.splice(index, 0, tile);
-      this.renderGrid_();
       this.fireAddedEvent(tile, index);
     },
 
@@ -499,6 +499,13 @@ cr.define('ntp', function() {
      */
     getAvailableColCount_: function() {
       return this.getColCountForWidth_(this.getBottomPanelWidth_());
+    },
+
+    /**
+     * @return {boolean} Whether the page has been rendered.
+     */
+    hasBeenRendered: function() {
+      return this.numOfVisibleRows_ != 0 || this.animatingColCount_ != 0;
     },
 
     // rendering
@@ -596,8 +603,9 @@ cr.define('ntp', function() {
      * @private
      */
     layout_: function() {
-      // Only adjusts the layout if the page is currently selected.
-      if (!this.selected)
+      // Only adjusts the layout if the page is currently selected, and we have
+      // tiles to render.
+      if (!this.selected || this.tiles_.length == 0)
         return;
 
       var bottomPanelWidth = this.getBottomPanelWidth_();
@@ -607,10 +615,9 @@ cr.define('ntp', function() {
 
       var windowHeight = cr.doc.documentElement.clientHeight;
 
-      // We should not animate the very first layout, that is, when both
-      // numOfVisibleRows_ and animatingColCount_ are undefined.
-      var shouldAnimate = this.numOfVisibleRows_ !== undefined ||
-          this.animatingColCount_ !== undefined;
+      // We should not animate the very first layout, that is, when the page
+      // has not been rendered.
+      var shouldAnimate = this.hasBeenRendered();
 
       // TODO(pedrosimonetti): Add constants?
       // If the number of visible rows has changed, then we need to resize the
@@ -771,7 +778,7 @@ cr.define('ntp', function() {
     },
 
     /**
-     * Handles the end of the horizontal and vertical tile grid transitions.
+     * Handles the end of the horizontal tile grid transition.
      * @param {Event} e The tile grid webkitTransitionEnd event.
      */
     onTileGridTransitionEnd_: function(e) {
@@ -795,9 +802,16 @@ cr.define('ntp', function() {
         if (this.onTileGridTransitionEndHandler_)
           this.onTileGridTransitionEndHandler_();
       }
+    },
 
-      // For the same reason as above, we need to remove the class
-      // 'animate-page-height' when the vertical transition ends.
+    /**
+     * Handles the end of the vertical page list transition.
+     * @param {Event} e The tile grid webkitTransitionEnd event.
+     */
+    onPageListTransitionEnd_: function(e) {
+      // For the same reason as explained in onTileGridTransitionEnd_, we need
+      // to remove the class 'animate-page-height' when the vertical transition
+      // ends.
       var pageList = $('page-list');
       if (event.target == pageList &&
           pageList.classList.contains('animate-page-height')) {

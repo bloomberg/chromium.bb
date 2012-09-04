@@ -188,6 +188,9 @@ cr.define('ntp', function() {
      * Update the tiles after a change to |data_|.
      */
     updateTiles_: function() {
+      if (!this.hasBeenRendered())
+        this.layout_();
+
       var maxTileCount = this.config_.maxTileCount;
       var data = this.data_;
       var tiles = this.tiles;

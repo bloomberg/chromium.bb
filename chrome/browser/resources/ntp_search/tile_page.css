@@ -50,7 +50,9 @@
 
 .animate-page-height {
   /* TODO(pedrosimonetti): Confirm the easing function with Marcin. */
-  -webkit-transition: height 200ms ease-in-out;
+  /* TODO(pedrosimonetti): Add a new element so we can animate it without
+   * interfering with the CardSlider. See crbug.com/145337. */
+  -webkit-transition: height 200ms, -webkit-transform 200ms !important;
 }
 
 /* -----------------------------------------------------------------------------
