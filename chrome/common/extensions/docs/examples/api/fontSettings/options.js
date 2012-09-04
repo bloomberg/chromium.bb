@@ -16,7 +16,8 @@ var sampleTextDivIds = [
   'standardFontSample',
   'serifFontSample',
   'sansSerifFontSample',
-  'fixedFontSample'
+  'fixedFontSample',
+  'minFontSample'
 ];
 
 var defaultSampleText = 'Lorem ipsum dolor sit amat.';

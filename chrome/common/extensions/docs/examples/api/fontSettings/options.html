@@ -4,22 +4,30 @@
   <meta charset="utf-8">
   <title>Font Settings Sample Extension</title>
   <script src="options.js"></script>
+  <link rel="stylesheet" href="css/chrome_shared.css">
+  <link rel="stylesheet" href="css/widgets.css">
+  <link rel="stylesheet" href="css/uber_shared.css">
   <style>
+    body.uber-frame {
+      font-family: sans-serif;
+      -webkit-margin-start: 30px;
+    }
+
     .font-setting-container {
-      -webkit-box-flex: 1;
       display: -webkit-box;
     }
 
     .font-input-div {
-      -webkit-margin-end: 1em;
-      margin-left: 10px;
+      -webkit-margin-end: 3em;
+      width: 12em;
     }
   </style>
 </head>
-<body>
+<body class="uber-frame">
   <div style="min-width: 600px;">
-  <h3>Font Settings Sample Extension</h3>
-    <div>Script</div>
+    <h1>Font Settings Sample Extension</h1>
+    <section>
+    <h3>Script</h3>
     <div>
     <select id="scriptList">
       <option value="Zyyy">Default</option>
@@ -57,7 +65,8 @@
     </select>
     </div>
     <div style="margin-left: 20px; overflow-x: auto;">
-      <div>Standard</div>
+      <section>
+      <h3>Standard</h3>
       <div class="font-setting-container">
         <div class="font-input-div">
           <select id="standardFontList"></select>
@@ -66,7 +75,9 @@
           Lorem ipsum dolor sit amat.
         </div>
       </div>
-      <div>Serif</div>
+      </section>
+      <section>
+      <h3>Serif</h3>
       <div class="font-setting-container">
         <div class="font-input-div">
           <select id="serifFontList"></select>
@@ -75,7 +86,9 @@
           Lorem ipsum dolor sit amat.
         </div>
       </div>
-      <div>Sans-Serif</div>
+      </section>
+      <section>
+      <h3>Sans-Serif</h3>
       <div class="font-setting-container">
         <div class="font-input-div">
           <select id="sansSerifFontList"></select>
@@ -84,7 +97,9 @@
           Lorem ipsum dolor sit amat.
         </div>
       </div>
-      <div>Fixed</div>
+      </section>
+      <section>
+      <h3>Fixed</h3>
       <div class="font-setting-container">
         <div class="font-input-div">
           <select id="fixedFontList"></select>
@@ -93,21 +108,37 @@
           Lorem ipsum dolor sit amat.
         </div>
       </div>
+      </section>
     </div>
-    <div class="font-setting-container">Default Font Size</div>
-    <div class="font-input-div"><input type="text" id="defaultFontSize"></div>
-    <div class="font-setting-container">Default Fixed Font Size</div>
-    <div class="font-input-div">
-      <input type="text" id="defaultFixedFontSize">
+    </section>
+    <section>
+    <h3>Default Font Size</h3>
+    <div class="font-setting-container">
+      <div class="font-input-div"><input type="text" id="defaultFontSize"></div>
     </div>
-    <div>Minimum Font Size</div>
+    </section>
+    <section>
+    <h3>Default Fixed Font Size</h3>
+    <div class="font-setting-container">
+      <div class="font-input-div">
+        <input type="text" id="defaultFixedFontSize">
+      </div>
+    </div>
+    </section>
+    <section>
+    <h3>Minimum Font Size</h3>
     <div class="font-setting-container">
       <div class="font-input-div"><input type="text" id="minFontSize"></div>
       <div id="minFontSample" style="font-family: standard; font-size: 1px;">
         Lorem ipsum dolor sit amat.
       </div>
     </div>
-    <button id="clearButton">Clear All Settings</button>
+    </section>
+    <section>
+    <h3>
+      <button id="clearButton">Clear All Settings</button>
+    </h3>
+    </section>
   </div>
 </div>
 </body>
