@@ -44,6 +44,8 @@
     }],
     ['chromeos==0', {
       'sources!': [
+        'character_composer.cc',
+        'character_composer.h',
         'ibus_client.cc',
         'ibus_client.h',
         'input_method_ibus.cc',
