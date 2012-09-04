@@ -133,7 +133,7 @@ this.cr = (function() {
       case PropertyKind.JS:
         var privateName = name + '_';
         return function(value) {
-          var oldValue = this[privateName];
+          var oldValue = this[name];
           if (value !== oldValue) {
             this[privateName] = value;
             if (opt_setHook)
@@ -145,7 +145,7 @@ this.cr = (function() {
       case PropertyKind.ATTR:
         var attributeName = getAttributeName(name);
         return function(value) {
-          var oldValue = this[attributeName];
+          var oldValue = this[name];
           if (value !== oldValue) {
             if (value == undefined)
               this.removeAttribute(attributeName);
@@ -160,7 +160,7 @@ this.cr = (function() {
       case PropertyKind.BOOL_ATTR:
         var attributeName = getAttributeName(name);
         return function(value) {
-          var oldValue = this[attributeName];
+          var oldValue = this[name];
           if (value !== oldValue) {
             if (value)
               this.setAttribute(attributeName, name);
