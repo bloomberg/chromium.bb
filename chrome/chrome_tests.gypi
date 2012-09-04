@@ -4496,6 +4496,17 @@
             },
           ],  # actions
         },  # target 'pyautolib'
+        {
+          # Required for WebRTC PyAuto tests.
+          'target_name': 'webrtc_test_tools',
+          'type': 'none',
+          'dependencies': [
+            'pyautolib',
+            '../third_party/libjingle/libjingle.gyp:peerconnection_server',
+            '../third_party/webrtc/tools/tools.gyp:frame_analyzer',
+            '../third_party/webrtc/tools/tools.gyp:rgba_to_i420_converter',
+          ],
+        },  # target 'webrtc_test_tools'
       ]  # targets
     }],
     # To enable the coverage targets, do

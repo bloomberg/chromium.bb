@@ -717,6 +717,7 @@
       'media_stream_infobar',
       'webrtc_brutality_test',
       'webrtc_call',
+      'webrtc_video_quality',
     ],
   },
 

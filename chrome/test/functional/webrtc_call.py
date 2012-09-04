@@ -11,10 +11,6 @@ import pyauto
 import webrtc_test_base
 
 
-class MissingRequiredBinaryException(Exception):
-  pass
-
-
 class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
   """Test we can set up a WebRTC call and disconnect it.
 
@@ -29,29 +25,12 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
   trunk/talk/examples/peerconnection/server).
   """
 
-  def ExtraChromeFlags(self):
-    """Adds flags to the Chrome command line."""
-    extra_flags = ['--enable-media-stream', '--enable-peer-connection']
-    return pyauto.PyUITest.ExtraChromeFlags(self) + extra_flags
-
   def setUp(self):
     pyauto.PyUITest.setUp(self)
-
-    # Start the peerconnection_server. This must be built before running the
-    # test, and we assume the binary ends up next to the Chrome binary.
-    binary_path = os.path.join(self.BrowserPath(), 'peerconnection_server')
-    if self.IsWin():
-      binary_path += '.exe'
-    if not os.path.exists(binary_path):
-      raise MissingRequiredBinaryException(
-        'Could not locate peerconnection_server. Have you built the '
-        'peerconnection_server target? We expect to have a '
-        'peerconnection_server binary next to the chrome binary.')
-
-    self._server_process = subprocess.Popen(binary_path)
+    self.StartPeerConnectionServer()
 
   def tearDown(self):
-    self._server_process.kill()
+    self.StopPeerConnectionServer()
 
     pyauto.PyUITest.tearDown(self)
     self.assertEquals('', self.CheckErrorsAndCrashes())
@@ -84,21 +63,21 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
 
     self.assertEquals('ok-got-stream', self.GetUserMedia(tab_index=0))
     self.assertEquals('ok-got-stream', self.GetUserMedia(tab_index=1))
-    self._Connect('user_1', tab_index=0)
-    self._Connect('user_2', tab_index=1)
+    self.Connect('user_1', tab_index=0)
+    self.Connect('user_2', tab_index=1)
 
-    self._EstablishCall(from_tab_with_index=0)
+    self.EstablishCall(from_tab_with_index=0)
 
     self._StartDetectingVideo(tab_index=0, video_element='remote_view')
 
     self._WaitForVideoToPlay()
 
     # The hang-up will automatically propagate to the second tab.
-    self._HangUp(from_tab_with_index=0)
-    self._WaitUntilHangUpVerified(tab_index=1)
+    self.HangUp(from_tab_with_index=0)
+    self.VerifyHungUp(tab_index=1)
 
-    self._Disconnect(tab_index=0)
-    self._Disconnect(tab_index=1)
+    self.Disconnect(tab_index=0)
+    self.Disconnect(tab_index=1)
 
     # Ensure we didn't miss any errors.
     self.AssertNoFailures(tab_index=0)
@@ -131,48 +110,15 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
 
     self.GetUserMedia(tab_index=0)
     self.GetUserMedia(tab_index=1)
-    self._Connect("user_1", tab_index=0)
-    self._Connect("user_2", tab_index=1)
+    self.Connect("user_1", tab_index=0)
+    self.Connect("user_2", tab_index=1)
 
-    self._EstablishCall(from_tab_with_index=0)
+    self.EstablishCall(from_tab_with_index=0)
 
     self.assertEquals('failed-with-error-1',
                       self.GetUserMedia(tab_index=0, action='deny'))
     self.assertEquals('failed-with-error-1',
                       self.GetUserMedia(tab_index=0, action='dismiss'))
-
-  def _Connect(self, user_name, tab_index):
-    self.assertEquals('ok-connected', self.ExecuteJavascript(
-        'connect("http://localhost:8888", "%s")' % user_name,
-        tab_index=tab_index))
-    self.AssertNoFailures(tab_index)
-
-  def _EstablishCall(self, from_tab_with_index):
-    self.assertEquals('ok-call-established', self.ExecuteJavascript(
-        'call()', tab_index=from_tab_with_index))
-    self.AssertNoFailures(from_tab_with_index)
-
-    # Double-check the call reached the other side.
-    self.assertEquals('yes', self.ExecuteJavascript(
-        'is_call_active()', tab_index=from_tab_with_index))
-
-  def _HangUp(self, from_tab_with_index):
-    self.assertEquals('ok-call-hung-up', self.ExecuteJavascript(
-        'hangUp()', tab_index=from_tab_with_index))
-    self._WaitUntilHangUpVerified(tab_index=from_tab_with_index)
-    self.AssertNoFailures(tab_index=from_tab_with_index)
-
-  def _WaitUntilHangUpVerified(self, tab_index):
-    hung_up = self.WaitUntil(
-        function=lambda: self.ExecuteJavascript('is_call_active()',
-                                                tab_index=tab_index),
-        expect_retval='no')
-    self.assertTrue(hung_up,
-                    msg='Timed out while waiting for hang-up to be confirmed.')
-
-  def _Disconnect(self, tab_index):
-    self.assertEquals('ok-disconnected', self.ExecuteJavascript(
-        'disconnect()', tab_index=tab_index))
 
   def _StartDetectingVideo(self, tab_index, video_element):
     self.assertEquals('ok-started', self.ExecuteJavascript(

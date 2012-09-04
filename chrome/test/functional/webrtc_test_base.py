@@ -3,11 +3,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
+import subprocess
+
 import pyauto
 
 
+class MissingRequiredBinaryException(Exception):
+  pass
+
+
 class WebrtcTestBase(pyauto.PyUITest):
-  """This base class provides helpers for getUserMedia calls."""
+  """This base class provides helpers for WebRTC calls."""
+
+  def ExtraChromeFlags(self):
+    """Adds flags to the Chrome command line."""
+    extra_flags = ['--enable-media-stream', '--enable-peer-connection']
+    return pyauto.PyUITest.ExtraChromeFlags(self) + extra_flags
 
   def GetUserMedia(self, tab_index, action='allow'):
     """Acquires webcam or mic for one tab and returns the result.
@@ -64,3 +76,69 @@ class WebrtcTestBase(pyauto.PyUITest):
     """
     self.assertEquals('ok-no-errors', self.ExecuteJavascript(
         'getAnyTestFailures()', tab_index=tab_index))
+
+  def Connect(self, user_name, tab_index):
+    self.assertEquals('ok-connected', self.ExecuteJavascript(
+        'connect("http://localhost:8888", "%s")' % user_name,
+        tab_index=tab_index))
+    self.AssertNoFailures(tab_index)
+
+  def EstablishCall(self, from_tab_with_index):
+    self.assertEquals('ok-call-established', self.ExecuteJavascript(
+        'call()', tab_index=from_tab_with_index))
+    self.AssertNoFailures(from_tab_with_index)
+
+    # Double-check the call reached the other side.
+    self.assertEquals('yes', self.ExecuteJavascript(
+        'is_call_active()', tab_index=from_tab_with_index))
+
+  def HangUp(self, from_tab_with_index):
+    self.assertEquals('ok-call-hung-up', self.ExecuteJavascript(
+        'hangUp()', tab_index=from_tab_with_index))
+    self.VerifyHungUp(from_tab_with_index)
+    self.AssertNoFailures(from_tab_with_index)
+
+  def VerifyHungUp(self, tab_index):
+    self.assertEquals('no', self.ExecuteJavascript(
+        'is_call_active()', tab_index=tab_index))
+
+  def Disconnect(self, tab_index):
+    self.assertEquals('ok-disconnected', self.ExecuteJavascript(
+        'disconnect()', tab_index=tab_index))
+
+  def BinPathForPlatform(self, path):
+    """Form a platform specific path to a binary.
+
+    Args:
+      path(string): The path to the binary without an extension.
+    Return:
+      (string): The platform-specific bin path.
+    """
+    if self.IsWin():
+      path += '.exe'
+    return path
+
+  def StartPeerConnectionServer(self):
+    """Starts peerconnection_server.
+
+    Peerconnection_server is a custom binary allowing two WebRTC clients to find
+    each other. For more details, see the source code which is available at the
+    site http://code.google.com/p/libjingle/source/browse/ (make sure to browse
+    to trunk/talk/examples/peerconnection/server).
+    """
+    # Start the peerconnection_server. It should be next to chrome.
+    binary_path = os.path.join(self.BrowserPath(), 'peerconnection_server')
+    binary_path = self.BinPathForPlatform(binary_path)
+
+    if not os.path.exists(binary_path):
+      raise MissingRequiredBinaryException(
+        'Could not locate peerconnection_server. Have you built the '
+        'peerconnection_server target? We expect to have a '
+        'peerconnection_server binary next to the chrome binary.')
+
+    self._server_process = subprocess.Popen(binary_path)
+
+  def StopPeerConnectionServer(self):
+    """Stops the peerconnection_server."""
+    assert self._server_process
+    self._server_process.kill()
