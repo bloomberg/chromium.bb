@@ -578,6 +578,15 @@
   fun:base::internal::RunnableAdapter::Run
 }
 {
+  bug_93932_k
+  ThreadSanitizer:Race
+  ...
+  fun:media::FFmpegVideoDecoder::Decode
+  fun:media::FFmpegVideoDecoder::DecodeBuffer
+  fun:media::FFmpegVideoDecoder::DoDecryptOrDecodeBuffer
+  fun:media::FFmpegVideoDecoder::DoDecryptOrDecodeBuffer
+}
+{
   bug_100020
   ThreadSanitizer:Race
   fun:linked_ptr_internal::join
@@ -987,4 +996,13 @@
   fun:media::ChunkDemuxer::AppendData
   fun:media::MockMediaSource::AppendAtTime
   fun:media::PipelineIntegrationTest_MediaSource_ConfigChange_WebM_Test::TestBody
+}
+{
+  bug_146322
+  ThreadSanitizer:Race
+  ...
+  fun:sql::Connection::StatementRefCreated
+  fun:sql::Connection::StatementRef::StatementRef
+  fun:sql::Connection::GetUniqueStatement
+  fun:history::InMemoryURLIndexTest::SetUp
 }
