@@ -347,6 +347,12 @@ surface_compute_bbox(struct weston_surface *surface, int32_t sx, int32_t sy,
 	GLfloat int_x, int_y;
 	int i;
 
+	if (width == 0 || height == 0) {
+		/* avoid rounding empty bbox to 1x1 */
+		pixman_region32_init(bbox);
+		return;
+	}
+
 	for (i = 0; i < 4; ++i) {
 		GLfloat x, y;
 		weston_surface_to_global_float(surface,
