@@ -160,7 +160,7 @@ create_text_model(int fd, struct display *display)
 	char buf[64];
 	int len;
 
-	display->text_model = text_model_factory_create_text_model(display->factory);
+	display->text_model = text_model_factory_create_text_model(display->factory, display->surface);
 	text_model_add_listener(display->text_model, &text_model_listener, display);
 	wl_display_flush(display->display);
 
