@@ -388,6 +388,9 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
 HWNDMessageHandler::~HWNDMessageHandler() {
   if (destroyed_ != NULL)
     *destroyed_ = true;
+  // Prevent calls back into this class via WNDPROC now that we've been
+  // destroyed.
+  ClearUserData();
 }
 
 void HWNDMessageHandler::Init(HWND parent, const gfx::Rect& bounds) {
