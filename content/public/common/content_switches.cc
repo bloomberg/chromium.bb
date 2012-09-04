@@ -116,6 +116,9 @@ const char kDisableFlashStage3d[]           = "disable-flash-stage3d";
 // Suppresses support for the Geolocation javascript API.
 const char kDisableGeolocation[]            = "disable-geolocation";
 
+// Disable Gesture Tap Highlight
+const char kDisableGestureTapHighlight[]    = "disable-gesture-tap-highlight";
+
 // Disable GL multisampling.
 const char kDisableGLMultisampling[]        = "disable-gl-multisampling";
 

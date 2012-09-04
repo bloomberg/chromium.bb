@@ -92,6 +92,7 @@ WebPreferences::WebPreferences()
       deferred_2d_canvas_enabled(false),
       accelerated_painting_enabled(false),
       accelerated_filters_enabled(false),
+      gesture_tap_highlight_enabled(true),
       accelerated_plugins_enabled(false),
       memory_info_enabled(false),
       fullscreen_enabled(false),
@@ -341,6 +342,9 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   // Enable gpu-accelerated filters if requested on the command line.
   settings->setAcceleratedFiltersEnabled(accelerated_filters_enabled);
+
+  // Enable gesture tap highlight if requested on the command line.
+  settings->setGestureTapHighlightEnabled(gesture_tap_highlight_enabled);
 
   // Enabling accelerated layers from the command line enabled accelerated
   // 3D CSS, Video, and Animations.
