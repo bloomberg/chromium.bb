@@ -48,6 +48,7 @@ class PanelHost;
 class PasswordManager;
 class PasswordManagerDelegate;
 class PDFTabObserver;
+class PepperBrokerObserver;
 class PluginObserver;
 class PrefsTabHelper;
 class Profile;
@@ -411,6 +412,7 @@ class TabContents : public content::WebContentsObserver {
   scoped_ptr<OneClickSigninHelper> one_click_signin_helper_;
 #endif
   scoped_ptr<PDFTabObserver> pdf_tab_observer_;
+  scoped_ptr<PepperBrokerObserver> pepper_broker_observer_;
   scoped_ptr<PluginObserver> plugin_observer_;
   scoped_ptr<printing::PrintPreviewMessageHandler> print_preview_;
   scoped_ptr<safe_browsing::SafeBrowsingTabObserver>

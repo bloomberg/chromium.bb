@@ -44,7 +44,7 @@
         </div>
         <div class="settings-row">
           <button class="exceptions-list-button" contentType="cookies"
-              i18n-content="manage_exceptions"></button>
+              i18n-content="manageExceptions"></button>
           <button id="show-cookies-button"
               i18n-content="cookies_show_cookies"></button>
           <button id="show-app-cookies-button"
@@ -70,7 +70,7 @@
         </div>
         <div class="settings-row">
           <button class="exceptions-list-button" contentType="images"
-              i18n-content="manage_exceptions"></button>
+              i18n-content="manageExceptions"></button>
         </div>
       </div>
     </section>
@@ -92,7 +92,7 @@
         </div>
         <div class="settings-row">
           <button class="exceptions-list-button" contentType="javascript"
-              i18n-content="manage_exceptions"></button>
+              i18n-content="manageExceptions"></button>
         </div>
       </div>
     </section>
@@ -144,7 +144,7 @@
         </div>
         <div class="settings-row">
           <button class="exceptions-list-button" contentType="plugins"
-              i18n-content="manage_exceptions"></button>
+              i18n-content="manageExceptions"></button>
         </div>
         <div id="disable-plugins-container">
           <a href="chrome://plugins" i18n-content="disableIndividualPlugins"
@@ -170,7 +170,7 @@
         </div>
         <div class="settings-row">
           <button class="exceptions-list-button" contentType="popups"
-              i18n-content="manage_exceptions"></button>
+              i18n-content="manageExceptions"></button>
         </div>
       </div>
     </section>
@@ -198,7 +198,7 @@
         </div>
         <div class="settings-row">
           <button class="exceptions-list-button" contentType="location"
-              i18n-content="manage_exceptions"></button>
+              i18n-content="manageExceptions"></button>
         </div>
       </div>
     </section>
@@ -226,7 +226,7 @@
         </div>
         <div class="settings-row">
           <button class="exceptions-list-button" contentType="notifications"
-              i18n-content="manage_exceptions"></button>
+              i18n-content="manageExceptions"></button>
         </div>
       </div>
     </section>
@@ -235,7 +235,7 @@
       <h3 i18n-content="fullscreen_tab_label"></h3>
       <div class="settings-row">
         <button class="exceptions-list-button" contentType="fullscreen"
-            i18n-content="manage_exceptions"></button>
+            i18n-content="manageExceptions"></button>
       </div>
     </section>
     <!-- Mouse Lock filter -->
@@ -262,7 +262,7 @@
         </div>
         <div class="settings-row">
           <button class="exceptions-list-button" contentType="mouselock"
-              i18n-content="manage_exceptions"></button>
+              i18n-content="manageExceptions"></button>
         </div>
       </div>
     </section>
@@ -296,7 +296,7 @@
         <div class="settings-row">
           <button class="exceptions-list-button"
               contentType="pepper-flash-cameramic"
-              i18n-content="manage_exceptions"></button>
+              i18n-content="manageExceptions"></button>
         </div>
       </div>
     </section>
@@ -336,8 +336,34 @@
         </div>
         <div class="settings-row">
           <button class="exceptions-list-button" contentType="media-stream"
-              i18n-content="manage_exceptions"></button>
+              i18n-content="manageExceptions"></button>
         </div>
+      </div>
+    </section>
+    <!-- PPAPI broker -->
+    <section>
+      <h3 i18n-content="ppapi_broker_tab_label"></h3>
+      <div>
+        <div class="radio">
+          <label>
+            <input type="radio" name="ppapi-broker" value="allow">
+            <span i18n-content="ppapi_broker_allow"></span>
+          </label>
+        </div>
+        <div class="radio">
+          <label>
+            <input type="radio" name="ppapi-broker" value="ask">
+            <span i18n-content="ppapi_broker_ask"></span>
+          </label>
+        </div>
+        <div class="radio">
+          <label>
+            <input type="radio" name="ppapi-broker" value="block">
+            <span i18n-content="ppapi_broker_block"></span>
+          </label>
+        </div>
+        <button class="exceptions-list-button" contentType="media-stream"
+            i18n-content="manageExceptions"></button>
       </div>
     </section>
     <section id="media-galleries-section" hidden>

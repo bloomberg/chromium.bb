@@ -12,14 +12,21 @@
 #include "base/string_util.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
+#include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/infobars/infobar.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/test/test_renderer_host.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
@@ -73,6 +80,41 @@ void PPAPITestMessageHandler::Reset() {
   message_.clear();
 }
 
+PPAPITestBase::InfoBarObserver::InfoBarObserver() {
+  registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
+                 content::NotificationService::AllSources());
+}
+
+PPAPITestBase::InfoBarObserver::~InfoBarObserver() {
+  EXPECT_EQ(0u, expected_infobars_.size()) << "Missing an expected infobar";
+}
+
+void PPAPITestBase::InfoBarObserver::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  ASSERT_EQ(chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED, type);
+  InfoBarDelegate* info_bar_delegate =
+      content::Details<InfoBarAddedDetails>(details).ptr();
+  ConfirmInfoBarDelegate* confirm_info_bar_delegate =
+      info_bar_delegate->AsConfirmInfoBarDelegate();
+  ASSERT_TRUE(confirm_info_bar_delegate);
+
+  ASSERT_FALSE(expected_infobars_.empty()) << "Unexpected infobar";
+  if (expected_infobars_.front())
+    confirm_info_bar_delegate->Accept();
+  else
+    confirm_info_bar_delegate->Cancel();
+  expected_infobars_.pop_front();
+
+  // TODO(bauerb): We should close the infobar.
+}
+
+void PPAPITestBase::InfoBarObserver::ExpectInfoBarAndAccept(
+    bool should_accept) {
+  expected_infobars_.push_back(should_accept);
+}
+
 PPAPITestBase::PPAPITestBase() {
 }
 
@@ -95,6 +137,12 @@ void PPAPITestBase::SetUpCommandLine(CommandLine* command_line) {
 
   // Smooth scrolling confuses the scrollbar test.
   command_line->AppendSwitch(switches::kDisableSmoothScrolling);
+}
+
+void PPAPITestBase::SetUpOnMainThread() {
+  // Always allow access to the PPAPI broker.
+  browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_PPAPI_BROKER, CONTENT_SETTING_ALLOW);
 }
 
 GURL PPAPITestBase::GetTestFileUrl(const std::string& test_case) {
@@ -302,3 +350,7 @@ std::string PPAPINaClTestDisallowedSockets::BuildQuery(
                       test_case.c_str());
 }
 
+void PPAPIBrokerInfoBarTest::SetUpOnMainThread() {
+  // The default content setting for the PPAPI broker is ASK. We purposefully
+  // don't call PPAPITestBase::SetUpOnMainThread() to keep it that way.
+}

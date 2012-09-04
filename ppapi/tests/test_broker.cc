@@ -214,6 +214,14 @@ void TestBroker::RunTests(const std::string& filter) {
   RUN_TEST(GetHandleFailure, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(ConnectFailure, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(ConnectAndPipe, filter);
+
+  // The following tests require special setup, so only run them if they're
+  // explicitly specified by the filter.
+  if (filter.empty())
+    return;
+
+  RUN_TEST(ConnectPermissionDenied, filter);
+  RUN_TEST(ConnectPermissionGranted, filter);
 }
 
 std::string TestBroker::TestCreate() {
@@ -278,3 +286,34 @@ std::string TestBroker::TestConnectAndPipe() {
 
   PASS();
 }
+
+std::string TestBroker::TestConnectPermissionDenied() {
+  // This assumes that the browser side is set up to deny access to the broker.
+  PP_Resource broker = broker_interface_->CreateTrusted(
+      instance_->pp_instance());
+  ASSERT_TRUE(broker);
+
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+  callback.WaitForResult(broker_interface_->Connect(broker,
+      callback.GetCallback().pp_completion_callback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_ERROR_NOACCESS, callback.result());
+
+  PASS();
+}
+
+std::string TestBroker::TestConnectPermissionGranted() {
+  // This assumes that the browser side is set up to allow access to the broker.
+  PP_Resource broker = broker_interface_->CreateTrusted(
+      instance_->pp_instance());
+  ASSERT_TRUE(broker);
+
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+  callback.WaitForResult(broker_interface_->Connect(broker,
+      callback.GetCallback().pp_completion_callback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_OK, callback.result());
+
+  PASS();
+}
+

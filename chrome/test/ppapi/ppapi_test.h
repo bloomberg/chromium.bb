@@ -5,6 +5,7 @@
 #ifndef CHROME_TEST_PPAPI_PPAPI_TEST_H_
 #define CHROME_TEST_PPAPI_PPAPI_TEST_H_
 
+#include <list>
 #include <string>
 
 #include "base/basictypes.h"
@@ -38,7 +39,9 @@ class PPAPITestBase : public InProcessBrowserTest {
  public:
   PPAPITestBase();
 
+  // InProcessBrowserTest:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual void SetUpOnMainThread() OVERRIDE;
 
   virtual std::string BuildQuery(const std::string& base,
                                  const std::string& test_case) = 0;
@@ -57,6 +60,22 @@ class PPAPITestBase : public InProcessBrowserTest {
   std::string StripPrefixes(const std::string& test_name);
 
  protected:
+  class InfoBarObserver : public content::NotificationObserver {
+   public:
+    InfoBarObserver();
+    ~InfoBarObserver();
+
+    virtual void Observe(int type,
+                         const content::NotificationSource& source,
+                         const content::NotificationDetails& details) OVERRIDE;
+
+    void ExpectInfoBarAndAccept(bool should_accept);
+
+   private:
+    content::NotificationRegistrar registrar_;
+    std::list<bool> expected_infobars_;
+  };
+
   // Runs the test for a tab given the tab that's already navigated to the
   // given URL.
   void RunTestURL(const GURL& test_url);
@@ -118,6 +137,12 @@ class PPAPINaClTestDisallowedSockets : public PPAPITestBase {
 
   virtual std::string BuildQuery(const std::string& base,
                                  const std::string& test_case) OVERRIDE;
+};
+
+class PPAPIBrokerInfoBarTest : public PPAPITest {
+ public:
+  // PPAPITestBase override:
+  virtual void SetUpOnMainThread() OVERRIDE;
 };
 
 #endif  // CHROME_TEST_PPAPI_PPAPI_TEST_H_

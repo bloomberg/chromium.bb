@@ -360,6 +360,7 @@ bool HostContentSettingsMap::IsSettingAllowedForType(
     case CONTENT_SETTINGS_TYPE_INTENTS:
     case CONTENT_SETTINGS_TYPE_MOUSELOCK:
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
+    case CONTENT_SETTINGS_TYPE_PPAPI_BROKER:
       return setting == CONTENT_SETTING_ASK;
     default:
       return false;

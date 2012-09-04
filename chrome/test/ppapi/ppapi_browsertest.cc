@@ -6,6 +6,8 @@
 
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -135,6 +137,60 @@ using content::RenderViewHost;
 TEST_PPAPI_IN_PROCESS(Broker)
 // Flaky, http://crbug.com/111355
 TEST_PPAPI_OUT_OF_PROCESS(DISABLED_Broker)
+
+IN_PROC_BROWSER_TEST_F(PPAPIBrokerInfoBarTest, Accept) {
+  // Accepting the infobar should grant permission to access the PPAPI broker.
+  InfoBarObserver observer;
+  observer.ExpectInfoBarAndAccept(true);
+
+  GURL url = GetTestFileUrl("Broker_ConnectPermissionGranted");
+  RunTestURL(url);
+
+  // It should also set a content settings exception for the site.
+  HostContentSettingsMap* content_settings =
+      browser()->profile()->GetHostContentSettingsMap();
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            content_settings->GetContentSetting(
+                url, url, CONTENT_SETTINGS_TYPE_PPAPI_BROKER, std::string()));
+}
+
+IN_PROC_BROWSER_TEST_F(PPAPIBrokerInfoBarTest, Deny) {
+  // Canceling the infobar should deny permission to access the PPAPI broker.
+  InfoBarObserver observer;
+  observer.ExpectInfoBarAndAccept(false);
+
+  GURL url = GetTestFileUrl("Broker_ConnectPermissionDenied");
+  RunTestURL(url);
+
+  // It should *not* set a content settings exception for the site.
+  HostContentSettingsMap* content_settings =
+      browser()->profile()->GetHostContentSettingsMap();
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            content_settings->GetContentSetting(
+                url, url, CONTENT_SETTINGS_TYPE_PPAPI_BROKER, std::string()));
+}
+
+IN_PROC_BROWSER_TEST_F(PPAPIBrokerInfoBarTest, Blocked) {
+  // Block access to the PPAPI broker.
+  browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_PPAPI_BROKER, CONTENT_SETTING_BLOCK);
+
+  // We shouldn't see an infobar.
+  InfoBarObserver observer;
+
+  RunTest("Broker_ConnectPermissionDenied");
+}
+
+IN_PROC_BROWSER_TEST_F(PPAPIBrokerInfoBarTest, Allowed) {
+  // Always allow access to the PPAPI broker.
+  browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_PPAPI_BROKER, CONTENT_SETTING_ALLOW);
+
+  // We shouldn't see an infobar.
+  InfoBarObserver observer;
+
+  RunTest("Broker_ConnectPermissionGranted");
+}
 
 TEST_PPAPI_IN_PROCESS(Core)
 TEST_PPAPI_OUT_OF_PROCESS(Core)

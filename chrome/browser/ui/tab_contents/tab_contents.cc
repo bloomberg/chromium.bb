@@ -22,6 +22,7 @@
 #include "chrome/browser/omnibox_search_hint.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate_impl.h"
+#include "chrome/browser/pepper_broker_observer.h"
 #include "chrome/browser/plugin_observer.h"
 #include "chrome/browser/prerender/prerender_tab_helper.h"
 #include "chrome/browser/printing/print_preview_message_handler.h"
@@ -165,15 +166,15 @@ TabContents::TabContents(WebContents* contents)
   // Create the per-tab observers.
   alternate_error_page_tab_observer_.reset(
       new AlternateErrorPageTabObserver(contents, profile()));
-  webnavigation_observer_.reset(
-      new extensions::WebNavigationTabObserver(contents));
   external_protocol_observer_.reset(new ExternalProtocolObserver(contents));
   navigation_metrics_recorder_.reset(new NavigationMetricsRecorder(contents));
   pdf_tab_observer_.reset(new PDFTabObserver(this));
+  pepper_broker_observer_.reset(new PepperBrokerObserver(contents));
+  plugin_observer_.reset(new PluginObserver(this));
   safe_browsing_tab_observer_.reset(
       new safe_browsing::SafeBrowsingTabObserver(this));
-
-  plugin_observer_.reset(new PluginObserver(this));
+    webnavigation_observer_.reset(
+        new extensions::WebNavigationTabObserver(contents));
 
 #if !defined(OS_ANDROID)
   if (OmniboxSearchHint::IsEnabled(profile()))

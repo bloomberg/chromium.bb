@@ -62,7 +62,8 @@ TEST_F(ContentSettingBubbleControllerTest, Init) {
         i == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE ||
         i == CONTENT_SETTINGS_TYPE_FULLSCREEN ||
         i == CONTENT_SETTINGS_TYPE_MOUSELOCK ||
-        i == CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
+        i == CONTENT_SETTINGS_TYPE_MEDIASTREAM ||
+        i == CONTENT_SETTINGS_TYPE_PPAPI_BROKER) {
       // These types have no bubble.
       continue;
     }

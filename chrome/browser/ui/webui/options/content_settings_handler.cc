@@ -343,6 +343,7 @@ const ContentSettingsHandler::ExContentSettingsTypeNameEntry
   {CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS, "register-protocol-handler"},
   {EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC, "pepper-flash-cameramic"},
   {CONTENT_SETTINGS_TYPE_MEDIASTREAM, "media-stream"},
+  {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, "ppapi-broker"},
 };
 
 ContentSettingsHandler::ContentSettingsHandler() {
@@ -362,7 +363,7 @@ void ContentSettingsHandler::GetLocalizedValues(
     { "askException", IDS_EXCEPTIONS_ASK_BUTTON },
     { "otr_exceptions_explanation", IDS_EXCEPTIONS_OTR_LABEL },
     { "addNewExceptionInstructions", IDS_EXCEPTIONS_ADD_NEW_INSTRUCTIONS },
-    { "manage_exceptions", IDS_EXCEPTIONS_MANAGE },
+    { "manageExceptions", IDS_EXCEPTIONS_MANAGE },
     { "manage_handlers", IDS_HANDLERS_MANAGE },
     { "exceptionPatternHeader", IDS_EXCEPTIONS_PATTERN_HEADER },
     { "exceptionBehaviorHeader", IDS_EXCEPTIONS_ACTION_HEADER },
@@ -443,6 +444,11 @@ void ContentSettingsHandler::GetLocalizedValues(
     { "media-stream_header", IDS_MEDIA_STREAM_HEADER },
     { "mediaStreamAsk", IDS_MEDIA_STREAM_ASK_RADIO },
     { "mediaStreamBlock", IDS_MEDIA_STREAM_BLOCK_RADIO },
+    // PPAPI broker filter.
+    { "ppapi_broker_tab_label", IDS_PPAPI_BROKER_TAB_LABEL },
+    { "ppapi_broker_allow", IDS_PPAPI_BROKER_ALLOW_RADIO },
+    { "ppapi_broker_ask", IDS_PPAPI_BROKER_ASK_RADIO },
+    { "ppapi_broker_block", IDS_PPAPI_BROKER_BLOCK_RADIO },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));

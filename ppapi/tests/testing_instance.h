@@ -25,11 +25,12 @@ class TestCase;
 // How signaling works:
 //
 // We want to signal to the Chrome browser test harness
-// (chrome/test/ui/ppapi_uitest.cc) that we're making progress and when we're
-// done. This is done using the DOM controlller. The browser test waits for a
-// message from it. We don't want to have a big wait for all tests in a TestCase
-// since they can take a while and it might timeout.  So we send it pings
-// between each test to tell it that we're still running tests and aren't stuck.
+// (chrome/test/ppapi/ppapi_browsertest.cc) that we're making progress and when
+// we're done. This is done using the DOM controlller. The browser test waits
+// for a message from it. We don't want to have a big wait for all tests in a
+// TestCase since they can take a while and it might timeout.  So we send it
+// pings between each test to tell it that we're still running tests and aren't
+// stuck.
 //
 // If the value of the message is "..." then that tells the test runner that
 // the test is progressing. It then waits for the next message until it either

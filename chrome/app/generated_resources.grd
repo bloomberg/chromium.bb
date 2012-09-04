@@ -7309,6 +7309,18 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
           Run protected content (computer restart may be required)
         </message>
       </if>
+      <message name="IDS_PPAPI_BROKER_TAB_LABEL" desc="Label for PPAPI broker tab on Content Settings dialog">
+        Unsandboxed plug-in access
+      </message>
+      <message name="IDS_PPAPI_BROKER_ALLOW_RADIO" desc="A radio button in Content Settings dialog to allow all sites to access the PPAPI broker.">
+        Allow all sites to use a plug-in to access my computer
+      </message>
+      <message name="IDS_PPAPI_BROKER_BLOCK_RADIO" desc="A radio button in Content Settings dialog to deny all sites to access the PPAPI broker.">
+        Do not allow any sites to use a plug-in to access my computer
+      </message>
+      <message name="IDS_PPAPI_BROKER_ASK_RADIO" desc="A radio button in Content Settings dialog to allow site to query the permision to access the PPAPI broker.">
+        Ask me when a site wants to use a plug-in to access my computer (recommended)
+      </message>
 
       <message name="IDS_EXCEPTIONS_MANAGE" desc="The label on the button that launches the exceptions management page for a given content type">
         Manage exceptions...
@@ -13200,6 +13212,17 @@ Some features may be unavailable.  Please check that the profile exists and you 
     </message>
     <message name="IDS_REGISTER_PROTOCOL_HANDLER_TOOLTIP" desc="Location bar icon tooltip text when a page wants to use registerProtocolHandler.">
       This page wants to install a service handler.
+    </message>
+
+    <!-- PPAPI broker -->
+    <message name="IDS_PPAPI_BROKER_INFOBAR_QUESTION" desc="Question asked on the infobar when a site wan">
+      <ph name="plugin">$1<ex>Flash</ex></ph> on <ph name="site">$2<ex>google.com</ex></ph> wants to access your computer.
+    </message>
+    <message name="IDS_PPAPI_BROKER_ALLOW_BUTTON" desc="A button in the PPAPI broker infobar for allowing access to the PPAPI broker for a given site.">
+      Allow
+    </message>
+    <message name="IDS_PPAPI_BROKER_DENY_BUTTON" desc="A button in the PPAPI broker infobar for allowing access to the PPAPI broker for a given site.">
+      Deny
     </message>
 
     <!-- ProcessSingleton -->

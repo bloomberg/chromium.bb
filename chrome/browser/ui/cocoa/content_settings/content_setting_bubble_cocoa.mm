@@ -133,7 +133,16 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
       nibPath = @"ContentBlockedMixedScript"; break;
     case CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS:
       nibPath = @"ContentProtocolHandlers"; break;
-    default:
+    // These content types have no bubble:
+    case CONTENT_SETTINGS_TYPE_DEFAULT:
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+    case CONTENT_SETTINGS_TYPE_INTENTS:
+    case CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE:
+    case CONTENT_SETTINGS_TYPE_FULLSCREEN:
+    case CONTENT_SETTINGS_TYPE_MOUSELOCK:
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
+    case CONTENT_SETTINGS_TYPE_PPAPI_BROKER:
+    case CONTENT_SETTINGS_NUM_TYPES:
       NOTREACHED();
   }
   if ((self = [super initWithWindowNibPath:nibPath

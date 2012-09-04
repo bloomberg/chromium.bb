@@ -1156,6 +1156,8 @@
         'browser/password_manager/password_store_win.h',
         'browser/password_manager/password_store_x.cc',
         'browser/password_manager/password_store_x.h',
+        'browser/pepper_broker_observer.cc',
+        'browser/pepper_broker_observer.h',
         'browser/pepper_flash_settings_manager.cc',
         'browser/pepper_flash_settings_manager.h',
         'browser/pepper_gtalk_message_filter.cc',
