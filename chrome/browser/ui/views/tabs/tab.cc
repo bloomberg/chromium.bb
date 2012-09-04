@@ -453,7 +453,11 @@ void Tab::Layout() {
 
     int title_width;
     if (close_button()->visible()) {
-      title_width = std::max(close_button()->x() -
+      // The close button has an empty border with some padding (see details
+      // above where the close-button's bounds is set). Allow the title to
+      // overlap the empty padding.
+      title_width = std::max(close_button()->x() +
+                             close_button()->GetInsets().left() -
                              kTitleCloseButtonSpacing - title_left, 0);
     } else {
       title_width = std::max(lb.width() - title_left, 0);
