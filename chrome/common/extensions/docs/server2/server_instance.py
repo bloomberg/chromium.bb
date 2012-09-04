@@ -53,6 +53,7 @@ class ServerInstance(object):
     else:
       content = templates.Render(path)
 
+    response.headers['x-frame-options'] = 'sameorigin'
     if content:
       response.headers['cache-control'] = 'max-age=300'
       response.out.write(content)
