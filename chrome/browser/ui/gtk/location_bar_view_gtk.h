@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -366,6 +367,8 @@ class LocationBarViewGtk : public OmniboxEditController,
                        GtkAllocation*);
   CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean, OnZoomButtonPress,
                        GdkEventButton*);
+  CHROMEGTK_CALLBACK_1(LocationBarViewGtk, void, OnStarButtonSizeAllocate,
+                       GtkAllocation*);
   CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean, OnStarButtonPress,
                        GdkEventButton*);
 
@@ -425,6 +428,11 @@ class LocationBarViewGtk : public OmniboxEditController,
   ui::OwnedWidgetGtk star_;
   GtkWidget* star_image_;
   bool starred_;
+  bool star_sized_;  // True after a size-allocate signal to the star widget.
+
+  // Action to execute after the star icon has been sized, can refer to a NULL
+  // function to indicate no such action should be taken.
+  base::Closure on_star_sized_;
 
   // An icon to the left of the address bar.
   GtkWidget* site_type_alignment_;

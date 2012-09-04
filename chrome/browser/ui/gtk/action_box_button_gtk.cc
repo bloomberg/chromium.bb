@@ -6,9 +6,9 @@
 
 #include <gtk/gtk.h>
 
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
+#include "chrome/browser/ui/toolbar/action_box_menu_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -23,8 +23,8 @@ ActionBoxButtonGtk::ActionBoxButtonGtk(Browser* browser) : browser_(browser) {
   gtk_widget_set_tooltip_text(widget(),
       l10n_util::GetStringUTF8(IDS_TOOLTIP_ACTION_BOX_BUTTON).c_str());
 
-  g_signal_connect(widget(), "clicked",
-                   G_CALLBACK(OnClickThunk), this);
+  g_signal_connect(widget(), "button-press-event",
+                   G_CALLBACK(OnButtonPressThunk), this);
 
   ViewIDUtil::SetID(widget(), VIEW_ID_ACTION_BOX_BUTTON);
 }
@@ -32,11 +32,22 @@ ActionBoxButtonGtk::ActionBoxButtonGtk(Browser* browser) : browser_(browser) {
 ActionBoxButtonGtk::~ActionBoxButtonGtk() {
 }
 
+bool ActionBoxButtonGtk::AlwaysShowIconForCmd(int command_id) const {
+  return true;
+}
+
 GtkWidget* ActionBoxButtonGtk::widget() {
   return button_->widget();
 }
 
-void ActionBoxButtonGtk::OnClick(GtkWidget* widget) {
-  // TODO(mpcomplete): show the menu. See back_forward_button_gtk for menu
-  // stuff.
+gboolean ActionBoxButtonGtk::OnButtonPress(GtkWidget* widget,
+                                           GdkEventButton* event) {
+  if (event->button != 1)
+    return FALSE;
+
+  model_.reset(new ActionBoxMenuModel(browser_));
+  menu_.reset(new MenuGtk(this, model_.get()));
+  menu_->PopupForWidget(button_->widget(), event->button, event->time);
+
+  return FALSE;
 }

@@ -390,6 +390,7 @@ LocationBarViewGtk::LocationBarViewGtk(Browser* browser)
     : zoom_image_(NULL),
       star_image_(NULL),
       starred_(false),
+      star_sized_(false),
       site_type_alignment_(NULL),
       site_type_event_box_(NULL),
       location_icon_image_(NULL),
@@ -557,7 +558,9 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
 
     gtk_box_pack_end(GTK_BOX(hbox_.get()), alignment,
                      FALSE, FALSE, 0);
-  } else if (browser_defaults::bookmarks_enabled && !ShouldOnlyShowLocation()) {
+  }
+
+  if (browser_defaults::bookmarks_enabled && !ShouldOnlyShowLocation()) {
     // Hide the star icon in popups, app windows, etc.
     CreateStarButton();
     gtk_box_pack_end(GTK_BOX(hbox_.get()), star_.get(), FALSE, FALSE, 0);
@@ -842,6 +845,10 @@ void LocationBarViewGtk::CreateStarButton() {
                              VIEW_ID_STAR_BUTTON,
                              IDS_TOOLTIP_STAR,
                              OnStarButtonPressThunk));
+  // We need to track when the star button is resized to show any bubble
+  // attached to it at this time.
+  g_signal_connect(star_image_, "size-allocate",
+                   G_CALLBACK(&OnStarButtonSizeAllocateThunk), this);
 }
 
 void LocationBarViewGtk::OnInputInProgress(bool in_progress) {
@@ -1459,6 +1466,15 @@ gboolean LocationBarViewGtk::OnZoomButtonPress(GtkWidget* widget,
   return FALSE;
 }
 
+void LocationBarViewGtk::OnStarButtonSizeAllocate(GtkWidget* sender,
+                                                  GtkAllocation* allocation) {
+  if (!on_star_sized_.is_null()) {
+    on_star_sized_.Run();
+    on_star_sized_.Reset();
+  }
+  star_sized_ = true;
+}
+
 gboolean LocationBarViewGtk::OnStarButtonPress(GtkWidget* widget,
                                                GdkEventButton* event) {
   if (event->button == 1) {
@@ -1480,8 +1496,14 @@ void LocationBarViewGtk::ShowStarBubble(const GURL& url,
   if (!star_.get())
     return;
 
-  BookmarkBubbleGtk::Show(star_.get(), browser_->profile(), url,
-                          newly_bookmarked);
+  if (star_sized_) {
+    BookmarkBubbleGtk::Show(star_.get(), browser_->profile(), url,
+                            newly_bookmarked);
+  } else {
+    on_star_sized_ = base::Bind(&BookmarkBubbleGtk::Show,
+                                star_.get(), browser_->profile(),
+                                url, newly_bookmarked);
+  }
 }
 
 void LocationBarViewGtk::ShowChromeToMobileBubble() {
@@ -1532,15 +1554,21 @@ void LocationBarViewGtk::UpdateZoomIcon() {
 void LocationBarViewGtk::UpdateStarIcon() {
   if (!star_.get())
     return;
+  // Indicate the star icon is not correctly sized. It will be marked as sized
+  // when the next size-allocate signal is received by the star widget.
+  star_sized_ = false;
   bool star_enabled = !toolbar_model_->input_in_progress() &&
                       edit_bookmarks_enabled_.GetValue();
   command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableActionBox) &&
+      !starred_) {
+    star_enabled = false;
+  }
   if (star_enabled) {
     gtk_widget_show_all(star_.get());
     int id = starred_ ? IDR_STAR_LIT : IDR_STAR;
-    gtk_image_set_from_pixbuf(
-        GTK_IMAGE(star_image_),
-        theme_service_->GetImageNamed(id)->ToGdkPixbuf());
+    gtk_image_set_from_pixbuf(GTK_IMAGE(star_image_),
+                              theme_service_->GetImageNamed(id)->ToGdkPixbuf());
   } else {
     gtk_widget_hide_all(star_.get());
   }
