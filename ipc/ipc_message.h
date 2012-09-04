@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/debug/trace_event.h"
 #include "base/pickle.h"
 #include "ipc/ipc_export.h"
 
@@ -49,14 +50,16 @@ class IPC_EXPORT Message : public Pickle {
   };
 
   // Bit values used in the flags field.
+  // Upper 24 bits of flags store a reference number, so this enum is limited to
+  // 8 bits.
   enum {
-    PRIORITY_MASK     = 0x0003,  // Low 2 bits of store the priority value.
-    SYNC_BIT          = 0x0004,
-    REPLY_BIT         = 0x0008,
-    REPLY_ERROR_BIT   = 0x0010,
-    UNBLOCK_BIT       = 0x0020,
-    PUMPING_MSGS_BIT  = 0x0040,
-    HAS_SENT_TIME_BIT = 0x0080,
+    PRIORITY_MASK     = 0x03,  // Low 2 bits of store the priority value.
+    SYNC_BIT          = 0x04,
+    REPLY_BIT         = 0x08,
+    REPLY_ERROR_BIT   = 0x10,
+    UNBLOCK_BIT       = 0x20,
+    PUMPING_MSGS_BIT  = 0x40,
+    HAS_SENT_TIME_BIT = 0x80,
   };
 
   virtual ~Message();
@@ -220,6 +223,11 @@ class IPC_EXPORT Message : public Pickle {
   void set_dont_log() const { dont_log_ = true; }
   bool dont_log() const { return dont_log_; }
 #endif
+
+  // Called at various points between send and receive to track message.
+  void TraceMessageStep() {
+    TRACE_EVENT_ASYNC_BEGIN_STEP0("ipc", "IPC", header()->flags, NULL);
+  }
 
  protected:
   friend class Channel;

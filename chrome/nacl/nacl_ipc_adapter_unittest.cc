@@ -74,6 +74,7 @@ TEST_F(NaClIPCAdapterTest, SimpleReceiveRewriting) {
   int routing_id = 0x89898989;
   uint32 type = 0x55555555;
   IPC::Message input(routing_id, type, IPC::Message::PRIORITY_NORMAL);
+  uint32 flags = input.flags();
 
   int value = 0x12345678;
   input.WriteInt(value);
@@ -92,8 +93,7 @@ TEST_F(NaClIPCAdapterTest, SimpleReceiveRewriting) {
   EXPECT_EQ(sizeof(int), output_header->payload_size);
   EXPECT_EQ(routing_id, output_header->routing);
   EXPECT_EQ(type, output_header->type);
-  EXPECT_EQ(static_cast<uint32>(IPC::Message::PRIORITY_NORMAL),
-            output_header->flags);
+  EXPECT_EQ(flags, output_header->flags);
   EXPECT_EQ(0u, output_header->num_fds);
   EXPECT_EQ(0u, output_header->pad);
 

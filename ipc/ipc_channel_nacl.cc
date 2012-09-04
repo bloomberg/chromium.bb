@@ -193,6 +193,7 @@ bool Channel::ChannelImpl::Send(Message* message) {
   Logging::GetInstance()->OnSendMessage(message_ptr.get(), "");
 #endif  // IPC_MESSAGE_LOG_ENABLED
 
+  message->TraceMessageStep();
   output_queue_.push_back(linked_ptr<Message>(message_ptr.release()));
   if (!waiting_connect_)
     return ProcessOutgoingMessages();

@@ -69,6 +69,7 @@ bool ChannelReader::DispatchInputData(const char* input_data,
       if (!WillDispatchInputMessage(&m))
         return false;
 
+      m.TraceMessageStep();
       if (IsHelloMessage(m))
         HandleHelloMessage(m);
       else

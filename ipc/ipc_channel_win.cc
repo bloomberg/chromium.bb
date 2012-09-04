@@ -88,6 +88,7 @@ bool Channel::ChannelImpl::Send(Message* message) {
   Logging::GetInstance()->OnSendMessage(message, "");
 #endif
 
+  message->TraceMessageStep();
   output_queue_.push(message);
   // ensure waiting to write
   if (!waiting_connect_) {
