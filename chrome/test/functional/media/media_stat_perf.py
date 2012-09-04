@@ -22,12 +22,19 @@ import pyauto_utils
 _TEST_HTML_PATH = os.path.join('media', 'html', 'media_stat_perf.html')
 
 # Path under data path for test files.
-_TEST_MEDIA_PATH = os.path.join('pyauto_private', 'media', 'crowd')
+_TEST_MEDIA_PATH_CROWD = os.path.join('pyauto_private', 'media', 'crowd')
+
+# Path under data path for test files.
+_TEST_MEDIA_PATH_TULIP = os.path.join('media', 'avperf', 'tulip')
 
 # The media files used for testing.
-_TEST_VIDEOS = [
+_TEST_VIDEOS = [os.path.join(_TEST_MEDIA_PATH_CROWD, name) for name in [
     'crowd2160.webm', 'crowd1080.webm', 'crowd720.webm', 'crowd480.webm',
-    'crowd360.webm']
+    'crowd360.webm']]
+
+_TEST_VIDEOS.extend([os.path.join(_TEST_MEDIA_PATH_TULIP, name) for name in [
+    'tulip2.webm', 'tulip2.wav', 'tulip2.ogv', 'tulip2.ogg', 'tulip2.mp4',
+    'tulip2.mp3', 'tulip2.m4a']])
 
 
 class MediaStatsPerfTest(pyauto.PyUITest):
@@ -46,8 +53,7 @@ class MediaStatsPerfTest(pyauto.PyUITest):
       # Append a tab and delete it at the end of the test to free its memory.
       self.AppendTab(pyauto.GURL(self.GetFileURLForDataPath(_TEST_HTML_PATH)))
 
-      file_url = self.GetFileURLForDataPath(
-          os.path.join(_TEST_MEDIA_PATH, file_name))
+      file_url = self.GetFileURLForDataPath(file_name)
       logging.debug('Running perf test for %s.', file_url)
 
       renderer_process = self._GetChromeRendererProcess()

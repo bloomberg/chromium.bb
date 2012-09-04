@@ -20,6 +20,12 @@
       if (video.readyState <= HTMLMediaElement.HAVE_CURRENT_DATA ||
           video.paused || video.ended)
         return;
+      // Not all test files have same duration, so to make the tests run shorter
+      // we need a time limit.
+      // From aggregated data, 5 seconds is enough time to get reliable results.
+      if (video.currentTime > 5) {
+        video.currentTime = video.duration;
+      }
 
       currentTime = new Date().getTime();
       deltaTime = (currentTime - startTime) / 1000;
