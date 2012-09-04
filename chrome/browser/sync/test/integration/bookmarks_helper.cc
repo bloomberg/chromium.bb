@@ -13,9 +13,8 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
-#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
@@ -42,13 +41,10 @@ class FaviconChangeObserver : public BookmarkModelObserver {
   virtual ~FaviconChangeObserver() {
     model_->RemoveObserver(this);
   }
-  void WaitForFaviconLoad() {
+  void WaitForGetFavicon() {
     wait_for_load_ = true;
-    content::RunAllPendingInMessageLoop();
-    model_->GetFavicon(node_);
     content::RunMessageLoop();
     ASSERT_TRUE(node_->is_favicon_loaded());
-    ASSERT_FALSE(model_->GetFavicon(node_).IsEmpty());
   }
   void WaitForSetFavicon() {
     wait_for_load_ = false;
@@ -79,12 +75,8 @@ class FaviconChangeObserver : public BookmarkModelObserver {
       BookmarkModel* model,
       const BookmarkNode* node) OVERRIDE {
     if (model == model_ && node == node_) {
-      if (!wait_for_load_ ||
-          (wait_for_load_ &&
-           node->is_favicon_loaded() &&
-           !model->GetFavicon(node).IsEmpty())) {
+      if (!wait_for_load_ || (wait_for_load_ && node->is_favicon_loaded()))
         MessageLoopForUI::current()->Quit();
-      }
     }
   }
 
@@ -156,12 +148,12 @@ gfx::Image GetFavicon(BookmarkModel* model, const BookmarkNode* node) {
   }
   // If a favicon was explicitly set, we may need to wait for it to be loaded
   // via BookmarkModel::GetFavicon(), which is an asynchronous operation.
-  if (!node->is_favicon_loaded() || model->GetFavicon(node).IsEmpty()) {
+  if (!node->is_favicon_loaded()) {
     FaviconChangeObserver observer(model, node);
-    observer.WaitForFaviconLoad();
+    model->GetFavicon(node);
+    observer.WaitForGetFavicon();
   }
   EXPECT_TRUE(node->is_favicon_loaded());
-  EXPECT_FALSE(model->GetFavicon(node).IsEmpty());
   return model->GetFavicon(node);
 }
 
@@ -400,23 +392,13 @@ void SetFavicon(int profile,
     const BookmarkNode* v_node = NULL;
     FindNodeInVerifier(GetBookmarkModel(profile), node, &v_node);
     FaviconChangeObserver v_observer(GetVerifierBookmarkModel(), v_node);
-    FaviconService* verifier_favicon_service =
-        FaviconServiceFactory::GetForProfile(test()->verifier(),
-                                             Profile::EXPLICIT_ACCESS);
-    verifier_favicon_service->SetFavicon(v_node->url(),
-                                         v_node->url(),
-                                         icon_bytes_vector,
-                                         history::FAVICON);
+    browser_sync::BookmarkChangeProcessor::ApplyBookmarkFavicon(
+        v_node, test()->verifier(), icon_bytes_vector);
     v_observer.WaitForSetFavicon();
   }
   FaviconChangeObserver observer(GetBookmarkModel(profile), node);
-  FaviconService* favicon_service =
-      FaviconServiceFactory::GetForProfile(test()->GetProfile(profile),
-                                           Profile::EXPLICIT_ACCESS);
-  favicon_service->SetFavicon(node->url(),
-                              node->url(),
-                              icon_bytes_vector,
-                              history::FAVICON);
+  browser_sync::BookmarkChangeProcessor::ApplyBookmarkFavicon(
+      node, test()->GetProfile(profile), icon_bytes_vector);
   observer.WaitForSetFavicon();
 }
 
