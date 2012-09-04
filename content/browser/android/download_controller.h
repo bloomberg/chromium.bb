@@ -73,9 +73,9 @@ class DownloadController : public DownloadItem::Observer {
     int64 total_bytes;
     std::string content_disposition;
     std::string original_mime_type;
-
     std::string user_agent;
     std::string cookie;
+    std::string referer;
 
     WebContents* web_contents;
     // Default copy constructor is used for passing this struct by value.

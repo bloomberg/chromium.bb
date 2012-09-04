@@ -54,19 +54,18 @@ class DownloadController {
     @CalledByNative
     public void newHttpGetDownload(ContentViewCore view, String url,
             String userAgent, String contentDisposition, String mimetype,
-            String cookie, long contentLength) {
+            String cookie, String referer, long contentLength) {
         ContentViewDownloadDelegate downloadDelagate = downloadDelegateFromView(view);
 
         if (downloadDelagate != null) {
-            downloadDelagate.requestHttpGetDownload(url, userAgent,
-                    contentDisposition, mimetype, cookie, contentLength);
+            downloadDelagate.requestHttpGetDownload(url, userAgent, contentDisposition,
+                    mimetype, cookie, referer, contentLength);
             return;
         }
 
         DownloadListener listener = listenerFromView(view);
         if (listener != null) {
-            listener.onDownloadStart(url, userAgent, contentDisposition,
-                    mimetype, contentLength);
+            listener.onDownloadStart(url, userAgent, contentDisposition, mimetype, contentLength);
         }
     }
 

@@ -15,13 +15,13 @@ public interface ContentViewDownloadDelegate {
      * @param userAgent the user agent to be used for the download.
      * @param contentDisposition Content-disposition http header, if
      *                           present.
-     * @param mimetype The mimetype of the content reported by the server
+     * @param mimetype The mimetype of the content reported by the server.
      * @param cookie The cookie
-     * @param contentLength The file size reported by the server
+     * @param referer Referer http header.
+     * @param contentLength The file size reported by the server.
      */
-    void requestHttpGetDownload(String url, String userAgent,
-            String contentDisposition, String mimetype, String cookie,
-            long contentLength);
+    void requestHttpGetDownload(String url, String userAgent, String contentDisposition,
+            String mimetype, String cookie, String referer, long contentLength);
 
     /**
      * Notify the host application that a POST download is started.
