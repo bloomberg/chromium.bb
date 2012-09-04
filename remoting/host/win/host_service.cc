@@ -24,6 +24,7 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/wrapped_window_proc.h"
+#include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/breakpad.h"
 #include "remoting/base/scoped_sc_handle_win.h"
 #include "remoting/base/stoppable.h"
@@ -92,6 +93,10 @@ void usage(const FilePath& program_name) {
                             UTF16ToWide(program_name.value()).c_str());
 }
 
+void QuitMessageLoop(MessageLoop* message_loop) {
+  message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+}
+
 }  // namespace
 
 namespace remoting {
@@ -120,7 +125,7 @@ void HostService::RemoveWtsConsoleObserver(WtsConsoleObserver* observer) {
 
 void HostService::OnChildStopped() {
   child_.reset(NULL);
-  main_task_runner_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  main_task_runner_ = NULL;
 }
 
 void HostService::OnSessionChange() {
@@ -196,21 +201,14 @@ int HostService::Run() {
   return (this->*run_routine_)();
 }
 
-void HostService::RunMessageLoop(MessageLoop* message_loop) {
-  // Launch the I/O thread.
-  base::Thread io_thread(kIoThreadName);
-  base::Thread::Options io_thread_options(MessageLoop::TYPE_IO, 0);
-  if (!io_thread.StartWithOptions(io_thread_options)) {
-    LOG(ERROR) << "Failed to start the I/O thread";
-    stopped_event_.Signal();
-    return;
-  }
+void HostService::CreateLauncher(
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
 
 #if defined(REMOTING_MULTI_PROCESS)
 
   child_ = DaemonProcess::Create(
       main_task_runner_,
-      io_thread.message_loop_proxy(),
+      io_task_runner,
       base::Bind(&HostService::OnChildStopped,
                  base::Unretained(this))).PassAs<Stoppable>();
 
@@ -221,15 +219,25 @@ void HostService::RunMessageLoop(MessageLoop* message_loop) {
       base::Bind(&HostService::OnChildStopped, base::Unretained(this)),
       this,
       main_task_runner_,
-      io_thread.message_loop_proxy()));
+      io_task_runner));
 
 #endif  // !defined(REMOTING_MULTI_PROCESS)
+}
+
+void HostService::RunMessageLoop(MessageLoop* message_loop) {
+  // Launch the I/O thread.
+  base::Thread io_thread(kIoThreadName);
+  base::Thread::Options io_thread_options(MessageLoop::TYPE_IO, 0);
+  if (!io_thread.StartWithOptions(io_thread_options)) {
+    LOG(FATAL) << "Failed to start the I/O thread";
+    return;
+  }
+
+  CreateLauncher(new AutoThreadTaskRunner(io_thread.message_loop_proxy(),
+                                          main_task_runner_));
 
   // Run the service.
   message_loop->Run();
-
-  // Release the control handler.
-  stopped_event_.Signal();
 }
 
 int HostService::Elevate() {
@@ -279,8 +287,11 @@ int HostService::RunAsService() {
 int HostService::RunInConsole() {
   MessageLoop message_loop(MessageLoop::TYPE_UI);
 
-  // Allow other threads to post to our message loop.
-  main_task_runner_ = message_loop.message_loop_proxy();
+  // Keep a reference to the main message loop while it is used. Once the last
+  // reference is dropped, QuitClosure() will be posted to the loop.
+  main_task_runner_ =
+      new AutoThreadTaskRunner(message_loop.message_loop_proxy(),
+                               base::Bind(&QuitMessageLoop, &message_loop));
 
   int result = kErrorExitCode;
 
@@ -326,6 +337,9 @@ int HostService::RunInConsole() {
                                      NOTIFY_FOR_ALL_SESSIONS) != FALSE) {
     // Run the service.
     RunMessageLoop(&message_loop);
+
+    // Release the control handler.
+    stopped_event_.Signal();
 
     WTSUnRegisterSessionNotification(window);
     result = kSuccessExitCode;
@@ -375,11 +389,14 @@ DWORD WINAPI HostService::ServiceControlHandler(DWORD control,
 }
 
 VOID WINAPI HostService::ServiceMain(DWORD argc, WCHAR* argv[]) {
-  MessageLoop message_loop;
+  MessageLoop message_loop(MessageLoop::TYPE_DEFAULT);
 
-  // Allow other threads to post to our message loop.
+  // Keep a reference to the main message loop while it is used. Once the last
+  // reference is dropped QuitClosure() will be posted to the loop.
   HostService* self = HostService::GetInstance();
-  self->main_task_runner_ = message_loop.message_loop_proxy();
+  self->main_task_runner_ =
+      new AutoThreadTaskRunner(message_loop.message_loop_proxy(),
+                               base::Bind(&QuitMessageLoop, &message_loop));
 
   // Register the service control handler.
   self->service_status_handle_ =
@@ -415,6 +432,9 @@ VOID WINAPI HostService::ServiceMain(DWORD argc, WCHAR* argv[]) {
 
   // Run the service.
   self->RunMessageLoop(&message_loop);
+
+  // Release the control handler.
+  self->stopped_event_.Signal();
 
   // Tell SCM that the service is stopped.
   service_status.dwCurrentState = SERVICE_STOPPED;

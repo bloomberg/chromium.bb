@@ -32,6 +32,7 @@
 #include "crypto/nss_util.h"
 #include "net/base/network_change_notifier.h"
 #include "net/socket/ssl_server_socket.h"
+#include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/constants.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -97,7 +98,7 @@ class SimpleHost : public HeartbeatSender::Listener {
  public:
   SimpleHost()
       : message_loop_(MessageLoop::TYPE_UI),
-        context_(message_loop_.message_loop_proxy()),
+        context_(new AutoThreadTaskRunner(message_loop_.message_loop_proxy())),
         fake_(false),
         is_it2me_(false),
         shutting_down_(false),

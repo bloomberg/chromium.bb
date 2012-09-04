@@ -6,6 +6,7 @@
 
 #include "base/message_loop_proxy.h"
 #include "net/base/ip_endpoint.h"
+#include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/transport.h"
@@ -59,7 +60,8 @@ scoped_ptr<LocalInputMonitor> LocalInputMonitor::Create() {
 }
 
 MockChromotingHostContext::MockChromotingHostContext()
-    : ChromotingHostContext(base::MessageLoopProxy::current()) {
+    : ChromotingHostContext(new AutoThreadTaskRunner(
+          base::MessageLoopProxy::current())) {
 }
 
 MockChromotingHostContext::~MockChromotingHostContext() {}

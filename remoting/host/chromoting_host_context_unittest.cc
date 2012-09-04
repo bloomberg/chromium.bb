@@ -4,6 +4,7 @@
 
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
+#include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -13,7 +14,8 @@ namespace remoting {
 // operates properly and all threads and message loops are valid.
 TEST(ChromotingHostContextTest, StartAndStop) {
   MessageLoopForUI message_loop;
-  ChromotingHostContext context(base::MessageLoopProxy::current());
+  ChromotingHostContext context(new AutoThreadTaskRunner(
+      base::MessageLoopProxy::current()));
 
   context.Start();
   EXPECT_TRUE(context.network_task_runner());

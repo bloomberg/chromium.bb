@@ -8,22 +8,34 @@
 
 #include "base/bind.h"
 #include "base/threading/thread.h"
+#include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/url_request_context.h"
 
 namespace remoting {
 
 ChromotingHostContext::ChromotingHostContext(
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
-    : network_thread_("ChromotingNetworkThread"),
+    scoped_refptr<AutoThreadTaskRunner> ui_task_runner)
+    : audio_thread_("ChromotingAudioThread"),
       capture_thread_("ChromotingCaptureThread"),
-      encode_thread_("ChromotingEncodeThread"),
-      audio_thread_("ChromotingAudioThread"),
       desktop_thread_("ChromotingDesktopThread"),
+      encode_thread_("ChromotingEncodeThread"),
       file_thread_("ChromotingFileIOThread"),
+      network_thread_("ChromotingNetworkThread"),
       ui_task_runner_(ui_task_runner) {
 }
 
 ChromotingHostContext::~ChromotingHostContext() {
+}
+
+void ChromotingHostContext::ReleaseTaskRunners() {
+  url_request_context_getter_ = NULL;
+  audio_task_runner_ = NULL;
+  capture_task_runner_ = NULL;
+  desktop_task_runner_ = NULL;
+  encode_task_runner_ = NULL;
+  file_task_runner_ = NULL;
+  network_task_runner_ = NULL;
+  ui_task_runner_ = NULL;
 }
 
 bool ChromotingHostContext::Start() {
@@ -39,38 +51,60 @@ bool ChromotingHostContext::Start() {
   if (!started)
     return false;
 
+  // Wrap worker threads with |AutoThreadTaskRunner| and have them reference
+  // the main thread via |ui_task_runner_|, to ensure that it remain active to
+  // Stop() them when no references remain.
+  audio_task_runner_ =
+      new AutoThreadTaskRunner(audio_thread_.message_loop_proxy(),
+                               ui_task_runner_);
+  capture_task_runner_ =
+      new AutoThreadTaskRunner(capture_thread_.message_loop_proxy(),
+                               ui_task_runner_);
+  desktop_task_runner_ =
+      new AutoThreadTaskRunner(desktop_thread_.message_loop_proxy(),
+                               ui_task_runner_);
+  encode_task_runner_ =
+      new AutoThreadTaskRunner(encode_thread_.message_loop_proxy(),
+                               ui_task_runner_);
+  file_task_runner_ =
+      new AutoThreadTaskRunner(file_thread_.message_loop_proxy(),
+                               ui_task_runner_);
+
+  network_task_runner_ =
+      new AutoThreadTaskRunner(network_thread_.message_loop_proxy(),
+                               ui_task_runner_);
   url_request_context_getter_ = new URLRequestContextGetter(
       ui_task_runner(), network_task_runner(),
       static_cast<MessageLoopForIO*>(file_thread_.message_loop()));
   return true;
 }
 
-base::SingleThreadTaskRunner* ChromotingHostContext::capture_task_runner() {
-  return capture_thread_.message_loop_proxy();
-}
-
-base::SingleThreadTaskRunner* ChromotingHostContext::encode_task_runner() {
-  return encode_thread_.message_loop_proxy();
-}
-
 base::SingleThreadTaskRunner* ChromotingHostContext::audio_task_runner() {
-  return audio_thread_.message_loop_proxy();
+  return audio_task_runner_;
 }
 
-base::SingleThreadTaskRunner* ChromotingHostContext::network_task_runner() {
-  return network_thread_.message_loop_proxy();
+base::SingleThreadTaskRunner* ChromotingHostContext::capture_task_runner() {
+  return capture_task_runner_;
 }
 
 base::SingleThreadTaskRunner* ChromotingHostContext::desktop_task_runner() {
-  return desktop_thread_.message_loop_proxy();
+  return desktop_task_runner_;
+}
+
+base::SingleThreadTaskRunner* ChromotingHostContext::encode_task_runner() {
+  return encode_task_runner_;
+}
+
+base::SingleThreadTaskRunner* ChromotingHostContext::file_task_runner() {
+  return file_task_runner_;
+}
+
+base::SingleThreadTaskRunner* ChromotingHostContext::network_task_runner() {
+  return network_task_runner_;
 }
 
 base::SingleThreadTaskRunner* ChromotingHostContext::ui_task_runner() {
   return ui_task_runner_;
-}
-
-base::SingleThreadTaskRunner* ChromotingHostContext::file_task_runner() {
-  return file_thread_.message_loop_proxy();
 }
 
 const scoped_refptr<net::URLRequestContextGetter>&

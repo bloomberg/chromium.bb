@@ -368,6 +368,7 @@ class ChromotingHostTest : public testing::Test {
  protected:
   MessageLoop message_loop_;
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
+  MockChromotingHostContext context_;
   MockConnectionToClientEventHandler handler_;
   MockSignalStrategy signal_strategy_;
   MockEventExecutor* event_executor_;
@@ -375,7 +376,6 @@ class ChromotingHostTest : public testing::Test {
   scoped_ptr<It2MeHostUserInterface> it2me_host_user_interface_;
   scoped_refptr<ChromotingHost> host_;
   MockHostStatusObserver host_status_observer_;
-  MockChromotingHostContext context_;
   protocol::MockSessionManager* session_manager_;
   std::string xmpp_login_;
   MockConnectionToClient* connection1_;

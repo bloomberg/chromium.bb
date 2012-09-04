@@ -1124,6 +1124,8 @@
       # depend on chromotocol_proto_lib for headers.
       'hard_dependency': 1,
       'sources': [
+        'base/auto_thread_task_runner.cc',
+        'base/auto_thread_task_runner.h',
         'base/auth_token_util.cc',
         'base/auth_token_util.h',
         'base/capture_data.cc',
@@ -1731,6 +1733,7 @@
       ],
       'sources': [
         'base/auth_token_util_unittest.cc',
+        'base/auto_thread_task_runner_unittest.cc',
         'base/breakpad_win_unittest.cc',
         'base/compound_buffer_unittest.cc',
         'base/compressor_zlib_unittest.cc',

@@ -28,6 +28,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "net/base/network_change_notifier.h"
 #include "net/socket/ssl_server_socket.h"
+#include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/breakpad.h"
 #include "remoting/base/constants.h"
 #include "remoting/host/branding.h"
@@ -95,6 +96,10 @@ const char kOfficialOAuth2ClientId[] =
     "440925447803-avn2sj1kc099s0r7v62je5s339mu0am1.apps.googleusercontent.com";
 const char kOfficialOAuth2ClientSecret[] = "Bgur6DFiOMM1h8x-AQpuTQlK";
 
+void QuitMessageLoop(MessageLoop* message_loop) {
+  message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+}
+
 }  // namespace
 
 namespace remoting {
@@ -103,8 +108,8 @@ class HostProcess
     : public HeartbeatSender::Listener,
       public IPC::Listener {
  public:
-  HostProcess()
-      : message_loop_(MessageLoop::TYPE_UI),
+  HostProcess(scoped_ptr<ChromotingHostContext> context)
+      : context_(context.Pass()),
 #ifdef OFFICIAL_BUILD
         oauth_use_official_client_id_(true),
 #else
@@ -121,9 +126,6 @@ class HostProcess
                             base::Unretained(this)))
 #endif
   {
-    context_.reset(
-        new ChromotingHostContext(message_loop_.message_loop_proxy()));
-    context_->Start();
     network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
     config_updated_timer_.reset(new base::DelayTimer<HostProcess>(
         FROM_HERE, base::TimeDelta::FromSeconds(2), this,
@@ -162,7 +164,7 @@ class HostProcess
   }
 
   void ConfigUpdated() {
-    DCHECK(message_loop_.message_loop_proxy()->BelongsToCurrentThread());
+    DCHECK(context_->ui_task_runner()->BelongsToCurrentThread());
 
     // Call ConfigUpdatedDelayed after a short delay, so that this object won't
     // try to read the updated configuration file before it has been
@@ -173,7 +175,7 @@ class HostProcess
   }
 
   void ConfigUpdatedDelayed() {
-    DCHECK(message_loop_.message_loop_proxy()->BelongsToCurrentThread());
+    DCHECK(context_->ui_task_runner()->BelongsToCurrentThread());
 
     if (LoadConfig()) {
       // PostTask to create new authenticator factory in case PIN has changed.
@@ -218,7 +220,7 @@ class HostProcess
 #elif defined(OS_WIN)
     scoped_refptr<base::files::FilePathWatcher::Delegate> delegate(
         new ConfigChangedDelegate(
-            message_loop_.message_loop_proxy(),
+            context_->ui_task_runner(),
             base::Bind(&HostProcess::ConfigUpdated, base::Unretained(this))));
     config_watcher_.reset(new base::files::FilePathWatcher());
     if (!config_watcher_->Watch(host_config_path_, delegate)) {
@@ -241,9 +243,16 @@ class HostProcess
     return false;
   }
 
-  int Run() {
-    if (!LoadConfig()) {
-      return kInvalidHostConfigurationExitCode;
+  void StartHostProcess() {
+    DCHECK(context_->ui_task_runner()->BelongsToCurrentThread());
+
+    if (!InitWithCommandLine(CommandLine::ForCurrentProcess()) ||
+        !LoadConfig()) {
+      context_->network_task_runner()->PostTask(
+          FROM_HERE,
+          base::Bind(&HostProcess::Shutdown, base::Unretained(this),
+                     kInvalidHostConfigurationExitCode));
+      return;
     }
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
@@ -275,19 +284,28 @@ class HostProcess
         base::Bind(&HostProcess::ListenForConfigChanges,
                    base::Unretained(this)));
 #endif
-    message_loop_.Run();
+  }
+
+  int get_exit_code() const { return exit_code_; }
+
+ private:
+  void ShutdownHostProcess() {
+    DCHECK(context_->ui_task_runner()->BelongsToCurrentThread());
+
+    daemon_channel_.reset();
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
     host_user_interface_.reset();
 #endif
 
-    daemon_channel_.reset();
-    base::WaitableEvent done_event(true, false);
-    policy_watcher_->StopWatching(&done_event);
-    done_event.Wait();
-    policy_watcher_.reset();
+    if (policy_watcher_.get()) {
+      base::WaitableEvent done_event(true, false);
+      policy_watcher_->StopWatching(&done_event);
+      done_event.Wait();
+      policy_watcher_.reset();
+    }
 
-    return exit_code_;
+    context_.reset();
   }
 
   // Overridden from HeartbeatSender::Listener
@@ -296,7 +314,6 @@ class HostProcess
     Shutdown(kInvalidHostIdExitCode);
   }
 
- private:
   void StartWatchingPolicy() {
     policy_watcher_.reset(
         policy_hack::PolicyWatcher::Create(context_->file_task_runner()));
@@ -306,7 +323,7 @@ class HostProcess
 
   // Read host config, returning true if successful.
   bool LoadConfig() {
-    DCHECK(message_loop_.message_loop_proxy()->BelongsToCurrentThread());
+    DCHECK(context_->ui_task_runner()->BelongsToCurrentThread());
 
     // TODO(sergeyu): There is a potential race condition: this function is
     // called on the main thread while the class members it mutates are used on
@@ -575,7 +592,7 @@ class HostProcess
   // Invoked when the user uses the Disconnect windows to terminate
   // the sessions.
   void OnDisconnectRequested() {
-    DCHECK(message_loop_.message_loop_proxy()->BelongsToCurrentThread());
+    DCHECK(context_->ui_task_runner()->BelongsToCurrentThread());
 
     host_->DisconnectAllClients();
   }
@@ -627,12 +644,17 @@ class HostProcess
     host_ = NULL;
     ResetHost();
 
-    message_loop_.PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    // Complete the rest of shutdown on the main thread.
+    context_->ui_task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&HostProcess::ShutdownHostProcess,
+                   base::Unretained(this)));
   }
 
   void ResetHost() {
     DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
+    desktop_environment_.reset();
     host_event_logger_.reset();
     log_to_server_.reset();
     heartbeat_sender_.reset();
@@ -640,7 +662,6 @@ class HostProcess
     signal_strategy_.reset();
   }
 
-  MessageLoop message_loop_;
   scoped_ptr<ChromotingHostContext> context_;
   scoped_ptr<IPC::ChannelProxy> daemon_channel_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
@@ -716,12 +737,11 @@ int main(int argc, char** argv) {
               logging::APPEND_TO_OLD_LOG_FILE,
               logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
 
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-
 #if defined(TOOLKIT_GTK)
   // Required for any calls into GTK functions, such as the Disconnect and
   // Continue windows, though these should not be used for the Me2Me case
   // (crbug.com/104377).
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   gfx::GtkInitFromCommandLine(*cmd_line);
 #endif  // TOOLKIT_GTK
 
@@ -730,15 +750,28 @@ int main(int argc, char** argv) {
   net::EnableSSLServerSockets();
 
 #if defined(OS_LINUX)
-    remoting::VideoFrameCapturer::EnableXDamage(true);
+  remoting::VideoFrameCapturer::EnableXDamage(true);
 #endif
 
-  remoting::HostProcess me2me_host;
-  if (!me2me_host.InitWithCommandLine(cmd_line)) {
-    return remoting::kInvalidHostConfigurationExitCode;
-  }
+  // Create the main message loop and start helper threads.
+  MessageLoop message_loop(MessageLoop::TYPE_UI);
+  base::Closure quit_message_loop = base::Bind(&QuitMessageLoop, &message_loop);
+  scoped_ptr<remoting::ChromotingHostContext> context(
+      new remoting::ChromotingHostContext(
+          new remoting::AutoThreadTaskRunner(message_loop.message_loop_proxy(),
+                                             quit_message_loop)));
+  if (!context->Start())
+    return remoting::kHostInitializationFailed;
 
-  return me2me_host.Run();
+  // Create the host process instance and run the rest of the initialization on
+  // the main message loop.
+  remoting::HostProcess me2me_host(context.Pass());
+  message_loop.PostTask(
+      FROM_HERE,
+      base::Bind(&remoting::HostProcess::StartHostProcess,
+                 base::Unretained(&me2me_host)));
+  message_loop.Run();
+  return me2me_host.get_exit_code();
 }
 
 #if defined(OS_WIN)
