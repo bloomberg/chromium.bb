@@ -674,9 +674,7 @@ void AutomationProvider::OnSetPageFontSize(int tab_handle,
 
 void AutomationProvider::RemoveBrowsingData(int remove_mask) {
   BrowsingDataRemover* remover;
-  remover = new BrowsingDataRemover(profile(),
-      BrowsingDataRemover::EVERYTHING,  // All time periods.
-      base::Time());
+  remover = BrowsingDataRemover::CreateForUnboundedRange(profile());
   remover->Remove(remove_mask, BrowsingDataHelper::UNPROTECTED_WEB);
   // BrowsingDataRemover deletes itself.
 }

@@ -182,8 +182,8 @@ void BrowsingDataExtensionFunction::StartRemoving() {
   // that we're notified after removal) and call remove() with the arguments
   // we've generated above. We can use a raw pointer here, as the browsing data
   // remover is responsible for deleting itself once data removal is complete.
-  BrowsingDataRemover* remover = new BrowsingDataRemover(profile(),
-      remove_since_, base::Time::Now());
+  BrowsingDataRemover* remover = BrowsingDataRemover::CreateForRange(profile(),
+      remove_since_, base::Time::Max());
   remover->AddObserver(this);
   remover->Remove(removal_mask_, origin_set_mask_);
 }

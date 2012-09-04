@@ -74,7 +74,7 @@ using content::DOMStorageContext;
 using content::DownloadManager;
 using content::UserMetricsAction;
 
-bool BrowsingDataRemover::removing_ = false;
+bool BrowsingDataRemover::is_removing_ = false;
 
 BrowsingDataRemover::NotificationDetails::NotificationDetails()
     : removal_begin(base::Time()),
@@ -100,7 +100,26 @@ BrowsingDataRemover::NotificationDetails::NotificationDetails(
 
 BrowsingDataRemover::NotificationDetails::~NotificationDetails() {}
 
-// TODO(mkwst): We should have one constructor, not two. http://crbug.com/130732
+// Static.
+BrowsingDataRemover* BrowsingDataRemover::CreateForUnboundedRange(
+    Profile* profile) {
+  return new BrowsingDataRemover(profile, base::Time(), base::Time::Max());
+}
+
+// Static.
+BrowsingDataRemover* BrowsingDataRemover::CreateForRange(Profile* profile,
+    base::Time start, base::Time end) {
+  return new BrowsingDataRemover(profile, start, end);
+}
+
+// Static.
+BrowsingDataRemover* BrowsingDataRemover::CreateForPeriod(Profile* profile,
+    TimePeriod period) {
+  return new BrowsingDataRemover(profile,
+      BrowsingDataRemover::CalculateBeginDeleteTime(period),
+      base::Time::Max());
+}
+
 BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
                                          base::Time delete_begin,
                                          base::Time delete_end)
@@ -131,48 +150,11 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       origin_set_mask_(0) {
   DCHECK(profile);
   // crbug.com/140910: Many places were calling this with base::Time() as
-  // delete_end, even though they should've used base::Time::Now(). Work around
-  // it here. New code should use base::Time::Now().
+  // delete_end, even though they should've used base::Time::Max(). Work around
+  // it here. New code should use base::Time::Max().
   DCHECK(delete_end_ != base::Time());
   if (delete_end_ == base::Time())
-    delete_end_ = base::Time::Now();
-}
-
-BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
-                                         TimePeriod time_period,
-                                         base::Time delete_end)
-    : profile_(profile),
-      quota_manager_(NULL),
-      dom_storage_context_(NULL),
-      special_storage_policy_(profile->GetExtensionSpecialStoragePolicy()),
-      delete_begin_(CalculateBeginDeleteTime(time_period)),
-      delete_end_(delete_end),
-      next_cache_state_(STATE_NONE),
-      cache_(NULL),
-      main_context_getter_(profile->GetRequestContext()),
-      media_context_getter_(profile->GetMediaRequestContext()),
-      deauthorize_content_licenses_request_id_(0),
-      waiting_for_clear_cache_(false),
-      waiting_for_clear_nacl_cache_(false),
-      waiting_for_clear_cookies_count_(0),
-      waiting_for_clear_history_(false),
-      waiting_for_clear_local_storage_(false),
-      waiting_for_clear_networking_history_(false),
-      waiting_for_clear_server_bound_certs_(false),
-      waiting_for_clear_plugin_data_(false),
-      waiting_for_clear_quota_managed_data_(false),
-      waiting_for_clear_content_licenses_(false),
-      waiting_for_clear_form_(false),
-      remove_mask_(0),
-      remove_origin_(GURL()),
-      origin_set_mask_(0) {
-  DCHECK(profile);
-  // crbug.com/140910: Many places were calling this with base::Time() as
-  // delete_end, even though they should've used base::Time::Now(). Work around
-  // it here. New code should use base::Time::Now().
-  DCHECK(delete_end_ != base::Time());
-  if (delete_end_ == base::Time())
-    delete_end_ = base::Time::Now();
+    delete_end_ = base::Time::Max();
 }
 
 BrowsingDataRemover::~BrowsingDataRemover() {
@@ -180,9 +162,9 @@ BrowsingDataRemover::~BrowsingDataRemover() {
 }
 
 // Static.
-void BrowsingDataRemover::set_removing(bool removing) {
-  DCHECK(removing_ != removing);
-  removing_ = removing;
+void BrowsingDataRemover::set_removing(bool is_removing) {
+  DCHECK(is_removing_ != is_removing);
+  is_removing_ = is_removing;
 }
 
 // Static.

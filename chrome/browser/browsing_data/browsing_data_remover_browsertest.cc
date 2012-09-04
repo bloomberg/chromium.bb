@@ -55,10 +55,9 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
   void RemoveAndWait(int remove_mask) {
     content::WindowedNotificationObserver signal(
         chrome::NOTIFICATION_BROWSING_DATA_REMOVED,
-        content::Source<Profile>(browser()->profile()));  
-    BrowsingDataRemover* remover = new BrowsingDataRemover(
-        browser()->profile(), BrowsingDataRemover::LAST_HOUR,
-        base::Time::Now() + base::TimeDelta::FromMilliseconds(10));
+        content::Source<Profile>(browser()->profile()));
+    BrowsingDataRemover* remover = BrowsingDataRemover::CreateForPeriod(
+        browser()->profile(), BrowsingDataRemover::LAST_HOUR);
     remover->Remove(remove_mask, BrowsingDataHelper::UNPROTECTED_WEB);
     signal.Wait();
   }

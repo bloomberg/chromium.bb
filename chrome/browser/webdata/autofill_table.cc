@@ -405,7 +405,7 @@ bool AutofillTable::RemoveFormElementsAddedBetween(
       "WHERE ad.date_created >= ? AND ad.date_created < ?"));
   s.BindInt64(0, delete_begin.ToTimeT());
   s.BindInt64(1,
-              delete_end.is_null() ?
+              (delete_end.is_null() || delete_end == base::Time::Max()) ?
                   std::numeric_limits<int64>::max() :
                   delete_end.ToTimeT());
 
@@ -1144,9 +1144,9 @@ bool AutofillTable::RemoveAutofillProfilesAndCreditCardsModifiedBetween(
   DCHECK(delete_end.is_null() || delete_begin < delete_end);
 
   time_t delete_begin_t = delete_begin.ToTimeT();
-  time_t delete_end_t = delete_end.is_null() ?
-      std::numeric_limits<time_t>::max() :
-      delete_end.ToTimeT();
+  time_t delete_end_t =
+      (delete_end.is_null() || delete_end == base::Time::Max()) ?
+          std::numeric_limits<time_t>::max() : delete_end.ToTimeT();
 
   // Remember Autofill profiles in the time range.
   sql::Statement s_profiles_get(db_->GetUniqueStatement(

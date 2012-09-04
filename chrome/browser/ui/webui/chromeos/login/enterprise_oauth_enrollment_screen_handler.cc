@@ -491,9 +491,7 @@ void EnterpriseOAuthEnrollmentScreenHandler::ResetAuth() {
   Profile* profile = Profile::FromBrowserContext(
       web_ui()->GetWebContents()->GetBrowserContext());
   browsing_data_remover_ =
-      new BrowsingDataRemover(profile,
-                              BrowsingDataRemover::EVERYTHING,
-                              base::Time::Now());
+      BrowsingDataRemover::CreateForUnboundedRange(profile);
   browsing_data_remover_->AddObserver(this);
   browsing_data_remover_->Remove(BrowsingDataRemover::REMOVE_SITE_DATA,
       BrowsingDataHelper::UNPROTECTED_WEB);

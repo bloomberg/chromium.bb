@@ -503,11 +503,8 @@ class BrowsingDataRemoverTest : public testing::Test,
   void BlockUntilBrowsingDataRemoved(BrowsingDataRemover::TimePeriod period,
                                      int remove_mask,
                                      bool include_protected_origins) {
-    BrowsingDataRemover* remover = new BrowsingDataRemover(
-        profile_.get(), period,
-        // Pick a time that's a bit into the future, since there could be
-        // pending writes.
-        base::Time::Now() + base::TimeDelta::FromSeconds(10));
+    BrowsingDataRemover* remover = BrowsingDataRemover::CreateForPeriod(
+        profile_.get(), period);
     remover->OverrideQuotaManagerForTesting(GetMockManager());
 
     AwaitCompletionHelper await_completion;
@@ -526,9 +523,8 @@ class BrowsingDataRemoverTest : public testing::Test,
   void BlockUntilOriginDataRemoved(BrowsingDataRemover::TimePeriod period,
                                    int remove_mask,
                                    const GURL& remove_origin) {
-    BrowsingDataRemover* remover = new BrowsingDataRemover(
-        profile_.get(), period,
-        base::Time::Now() + base::TimeDelta::FromMilliseconds(10));
+    BrowsingDataRemover* remover = BrowsingDataRemover::CreateForPeriod(
+        profile_.get(), period);
     remover->OverrideQuotaManagerForTesting(GetMockManager());
 
     AwaitCompletionHelper await_completion;
@@ -1194,7 +1190,7 @@ TEST_F(BrowsingDataRemoverTest, OriginAndTimeBasedHistoryRemoval) {
 }
 
 // Verify that clearing autofill form data works.
-TEST_F(BrowsingDataRemoverTest, AutofillRemoval) {
+TEST_F(BrowsingDataRemoverTest, AutofillRemovalLastHour) {
   GetProfile()->CreateWebDataService();
   RemoveAutofillTester tester(GetProfile());
 
@@ -1204,6 +1200,23 @@ TEST_F(BrowsingDataRemoverTest, AutofillRemoval) {
 
   BlockUntilBrowsingDataRemoved(
       BrowsingDataRemover::LAST_HOUR,
+      BrowsingDataRemover::REMOVE_FORM_DATA, false);
+
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_FORM_DATA, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
+  ASSERT_FALSE(tester.HasProfile());
+}
+
+TEST_F(BrowsingDataRemoverTest, AutofillRemovalEverything) {
+  GetProfile()->CreateWebDataService();
+  RemoveAutofillTester tester(GetProfile());
+
+  ASSERT_FALSE(tester.HasProfile());
+  tester.AddProfile();
+  ASSERT_TRUE(tester.HasProfile());
+
+  BlockUntilBrowsingDataRemoved(
+      BrowsingDataRemover::EVERYTHING,
       BrowsingDataRemover::REMOVE_FORM_DATA, false);
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_FORM_DATA, GetRemovalMask());

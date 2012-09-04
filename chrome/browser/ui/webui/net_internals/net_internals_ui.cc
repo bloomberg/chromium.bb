@@ -719,10 +719,8 @@ void NetInternalsMessageHandler::OnRendererReady(const ListValue* list) {
 }
 
 void NetInternalsMessageHandler::OnClearBrowserCache(const ListValue* list) {
-  BrowsingDataRemover* remover =
-      new BrowsingDataRemover(Profile::FromWebUI(web_ui()),
-                              BrowsingDataRemover::EVERYTHING,
-                              base::Time::Now());
+  BrowsingDataRemover* remover = BrowsingDataRemover::CreateForUnboundedRange(
+      Profile::FromWebUI(web_ui()));
   remover->Remove(BrowsingDataRemover::REMOVE_CACHE,
                   BrowsingDataHelper::UNPROTECTED_WEB);
   // BrowsingDataRemover deletes itself.
