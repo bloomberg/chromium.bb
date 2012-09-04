@@ -11,7 +11,6 @@ import browser_backend
 import browser_finder
 import inspector_backend
 import tab
-import util
 
 DEFAULT_PORT = 9273
 
@@ -19,8 +18,8 @@ class DesktopBrowserBackend(browser_backend.BrowserBackend):
   """The backend for controlling a locally-executed browser instance, on Linux,
   Mac or Windows.
   """
-  def __init__(self, options, executable, is_content_shell):
-    super(DesktopBrowserBackend, self).__init__(is_content_shell)
+  def __init__(self, options, executable):
+    super(DesktopBrowserBackend, self).__init__()
 
     # Initialize fields so that an explosion during init doesn't break in Close.
     self._proc = None
@@ -31,12 +30,12 @@ class DesktopBrowserBackend(browser_backend.BrowserBackend):
     if not self._executable:
       raise Exception("Cannot create browser, no executable found!")
 
+    self._tmpdir = tempfile.mkdtemp()
     self._port = DEFAULT_PORT
     args = [self._executable,
             "--no-first-run",
             "--remote-debugging-port=%i" % self._port]
     if not options.dont_override_profile:
-      self._tmpdir = tempfile.mkdtemp()
       args.append("--user-data-dir=%s" % self._tmpdir)
     args.extend(options.extra_browser_args)
     if options.hide_stdout:
@@ -61,34 +60,12 @@ class DesktopBrowserBackend(browser_backend.BrowserBackend):
 
   def Close(self):
     if self._proc:
-
-      def IsClosed():
-        if not self._proc:
-          return True
-        return self._proc.poll() != None
-
-      # Try to politely shutdown, first.
       self._proc.terminate()
-      try:
-        util.WaitFor(IsClosed, timeout=1)
-        self._proc = None
-      except util.TimeoutException:
-        pass
+      self._proc.wait()
+      self._proc = None
 
-      # Kill it.
-      if not IsClosed():
-        self._proc.kill()
-        try:
-          util.WaitFor(IsClosed, timeout=5)
-          self._proc = None
-        except util.TimeoutException:
-          self._proc = None
-          raise Exception("Could not shutdown the browser.")
-
-    if self._tmpdir and os.path.exists(self._tmpdir):
+    if os.path.exists(self._tmpdir):
       shutil.rmtree(self._tmpdir, ignore_errors=True)
-      self._tmpdir = None
 
     if self._devnull:
       self._devnull.close()
-      self._devnull = None

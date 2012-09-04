@@ -19,7 +19,7 @@ class StubSubprocess(object):
       raise Exception('Should not be reached.')
     return self.call_hook(*args, **kwargs)
 
-class StubADBCommands(object):
+class StubAndroidCommands(object):
   def __init__(self, module, device):
     self._module = module
     self._device = device
@@ -31,17 +31,14 @@ class StubADBCommands(object):
     handler = self._module.shell_command_handlers[args[0]]
     return handler(args)
 
-class StubADBCommandsModule(object):
+class StubAndroidCommandsModule(object):
   def __init__(self):
     self.attached_devices = []
     self.shell_command_handlers = {}
 
-    def StubADBCommandsConstructor(device=None):
-      return StubADBCommands(self, device)
-    self.ADBCommands = StubADBCommandsConstructor
-
-  def IsAndroidSupported(self):
-    return True
+    def StubAndroidCommandsConstructor(device=None):
+      return StubAndroidCommands(self, device)
+    self.AndroidCommands = StubAndroidCommandsConstructor
 
   def GetAttachedDevices(self):
     return self.attached_devices
@@ -63,9 +60,9 @@ class AndroidBrowserFinderTest(unittest.TestCase):
 
     subprocess_stub = StubSubprocess()
     subprocess_stub.call_hook = lambda *args, **kargs: 0
-    adb_commands_module_stub = StubADBCommandsModule()
+    android_commands_module_stub = StubAndroidCommandsModule()
     browsers = android_browser_finder.FindAllAvailableBrowsers(
-        options, subprocess_stub, adb_commands_module_stub)
+        options, subprocess_stub, android_commands_module_stub)
     self.assertEquals(0, len(browsers))
 
   def test_adb_two_devices(self):
@@ -73,8 +70,8 @@ class AndroidBrowserFinderTest(unittest.TestCase):
 
     subprocess_stub = StubSubprocess()
     subprocess_stub.call_hook = lambda *args, **kargs: 0
-    adb_commands_module_stub = StubADBCommandsModule()
-    adb_commands_module_stub.attached_devices = ['015d14fec128220c',
+    android_commands_module_stub = StubAndroidCommandsModule()
+    android_commands_module_stub.attached_devices = ['015d14fec128220c',
                                                      '015d14fec128220d']
 
     warnings = []
@@ -89,7 +86,7 @@ class AndroidBrowserFinderTest(unittest.TestCase):
       logger.addFilter(temp_filter)
 
       browsers = android_browser_finder.FindAllAvailableBrowsers(
-          options, subprocess_stub, adb_commands_module_stub)
+          options, subprocess_stub, android_commands_module_stub)
     finally:
       logger.removeFilter(temp_filter)
     self.assertEquals(1, len(warnings))
@@ -100,8 +97,8 @@ class AndroidBrowserFinderTest(unittest.TestCase):
 
     subprocess_stub = StubSubprocess()
     subprocess_stub.call_hook = lambda *args, **kargs: 0
-    adb_commands_module_stub = StubADBCommandsModule()
-    adb_commands_module_stub.attached_devices = ['015d14fec128220c']
+    android_commands_module_stub = StubAndroidCommandsModule()
+    android_commands_module_stub.attached_devices = ['015d14fec128220c']
 
     def OnPM(args):
       assert args[0] == 'pm'
@@ -110,8 +107,8 @@ class AndroidBrowserFinderTest(unittest.TestCase):
       return ['package:org.chromium.content_shell',
               'package.com.google.android.setupwizard']
 
-    adb_commands_module_stub.shell_command_handlers['pm'] = OnPM
+    android_commands_module_stub.shell_command_handlers['pm'] = OnPM
 
     browsers = android_browser_finder.FindAllAvailableBrowsers(
-        options, subprocess_stub, adb_commands_module_stub)
+        options, subprocess_stub, android_commands_module_stub)
     self.assertEquals(1, len(browsers))

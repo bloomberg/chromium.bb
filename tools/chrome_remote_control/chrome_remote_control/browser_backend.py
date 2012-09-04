@@ -15,8 +15,8 @@ class BrowserGoneException(Exception):
 class BrowserBackend(object):
   """A base class for broser backends. Provides basic functionality
   once a remote-debugger port has been established."""
-  def __init__(self, is_content_shell):
-    self.is_content_shell = is_content_shell
+  def __init__(self):
+    pass
 
   def __del__(self):
     self.Close()
@@ -31,10 +31,7 @@ class BrowserBackend(object):
         return False
       else:
         return True
-    try:
-      util.WaitFor(IsBrowserUp, timeout=15)
-    except util.TimeoutException:
-      raise BrowserGoneException()
+    util.WaitFor(IsBrowserUp)
 
   def _ListTabs(self, timeout=None):
     if timeout:

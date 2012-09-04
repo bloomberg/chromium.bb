@@ -13,11 +13,11 @@ import browser_finder
 class Browser(object):
   """A running browser instance that can be controled in a limited way.
 
-  To create a browser instance, use browser_finder.FindBrowser.
+  To create a browser instance, use browser_finder.FindBestPossibleBrowser.
 
   Be sure to clean up after yourself by calling Close() when you are done with
   the browser. Or better yet:
-    browser_to_create = FindBrowser(options)
+    browser_to_create = FindBestPossibleBrowser(options)
     with browser_to_create.Create() as browser:
       ... do all your operations on browser here
   """

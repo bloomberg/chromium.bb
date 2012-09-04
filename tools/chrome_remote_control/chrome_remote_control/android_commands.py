@@ -14,18 +14,11 @@ import sys
 
 # Get build/android scripts into our path.
 sys.path.append(
-    os.path.abspath(
-        os.path.join(os.path.dirname(__file__),
-                     "../../../build/android")))
-try:
-  from pylib import android_commands as real_android_commands
-  from pylib import cmd_helper as real_cmd_helper
-except:
-  import traceback; traceback.print_exc()
-  real_android_commands = None
+    os.path.join(os.path.dirname(__file__),
+                      "../../../build/android"))
+from pylib import android_commands as real_android_commands
+from pylib import cmd_helper as real_cmd_helper
 
-def IsAndroidSupported():
-  return real_android_commands
 
 def GetAttachedDevices():
   """Returns a list of attached, online android devices.
@@ -34,7 +27,7 @@ def GetAttachedDevices():
   the returned list."""
   return real_android_commands.GetAttachedDevices()
 
-class ADBCommands(object):
+class AndroidCommands(object):
   """A thin wrapper around ADB"""
 
   def __init__(self, device):
@@ -105,6 +98,3 @@ class ADBCommands(object):
                     action,
                     category, data,
                     extras, trace_file_name)
-
-  def Push(self, local, remote):
-    return self._adb.Adb().Push(local, remote)
