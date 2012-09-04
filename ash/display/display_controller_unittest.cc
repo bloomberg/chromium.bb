@@ -42,8 +42,10 @@ typedef test::AshTestBase DisplayControllerTest;
 // TOD(oshima): Windows creates a window with smaller client area.
 // Fix this and enable tests.
 #define MAYBE_SecondaryDisplayLayout DISABLED_SecondaryDisplayLayout
+#define MAYBE_BoundsUpdated DISABLED_BoundsUpdated
 #else
 #define MAYBE_SecondaryDisplayLayout SecondaryDisplayLayout
+#define MAYBE_BoundsUpdated BoundsUpdated
 #endif
 
 TEST_F(DisplayControllerTest, MAYBE_SecondaryDisplayLayout) {
@@ -77,40 +79,36 @@ TEST_F(DisplayControllerTest, MAYBE_SecondaryDisplayLayout) {
   EXPECT_EQ("5,-395 390x390", GetSecondaryDisplay().work_area().ToString());
 }
 
-// TODO(oshima,erg): I suspect this test is now failing because I've changed
-// the timing of the RootWindow::Show to be synchronous. If true, this test has
-// always been incorrect, but is now visibly broken now that we're processing
-// X11 configuration events while waiting for the MapNotify.
-TEST_F(DisplayControllerTest, DISABLED_BoundsUpdated) {
+TEST_F(DisplayControllerTest, MAYBE_BoundsUpdated) {
   SetSecondaryDisplayLayout(DisplayLayout::BOTTOM);
-  UpdateDisplay("500x500,400x400");
+  UpdateDisplay("200x200,300x300");
   gfx::Display* secondary_display =
       aura::Env::GetInstance()->display_manager()->GetDisplayAt(1);
   gfx::Insets insets(5, 5, 5, 5);
   secondary_display->UpdateWorkAreaFromInsets(insets);
 
-  EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
-  EXPECT_EQ("0,500 400x400", GetSecondaryDisplay().bounds().ToString());
-  EXPECT_EQ("5,505 390x390", GetSecondaryDisplay().work_area().ToString());
+  EXPECT_EQ("0,0 200x200", GetPrimaryDisplay().bounds().ToString());
+  EXPECT_EQ("0,200 300x300", GetSecondaryDisplay().bounds().ToString());
+  EXPECT_EQ("5,205 290x290", GetSecondaryDisplay().work_area().ToString());
 
-  UpdateDisplay("600x600,400x400");
-  EXPECT_EQ("0,0 600x600", GetPrimaryDisplay().bounds().ToString());
-  EXPECT_EQ("0,600 400x400", GetSecondaryDisplay().bounds().ToString());
-  EXPECT_EQ("5,605 390x390", GetSecondaryDisplay().work_area().ToString());
+  UpdateDisplay("400x400,200x200");
+  EXPECT_EQ("0,0 400x400", GetPrimaryDisplay().bounds().ToString());
+  EXPECT_EQ("0,400 200x200", GetSecondaryDisplay().bounds().ToString());
+  EXPECT_EQ("5,405 190x190", GetSecondaryDisplay().work_area().ToString());
 
-  UpdateDisplay("600x600,500x500");
-  EXPECT_EQ("0,0 600x600", GetPrimaryDisplay().bounds().ToString());
-  EXPECT_EQ("0,600 500x500", GetSecondaryDisplay().bounds().ToString());
-  EXPECT_EQ("5,605 490x490", GetSecondaryDisplay().work_area().ToString());
+  UpdateDisplay("400x400,300x300");
+  EXPECT_EQ("0,0 400x400", GetPrimaryDisplay().bounds().ToString());
+  EXPECT_EQ("0,400 300x300", GetSecondaryDisplay().bounds().ToString());
+  EXPECT_EQ("5,405 290x290", GetSecondaryDisplay().work_area().ToString());
 
-  UpdateDisplay("600x600");
-  EXPECT_EQ("0,0 600x600", GetPrimaryDisplay().bounds().ToString());
+  UpdateDisplay("400x400");
+  EXPECT_EQ("0,0 400x400", GetPrimaryDisplay().bounds().ToString());
   EXPECT_EQ(1, gfx::Screen::GetNumDisplays());
 
-  UpdateDisplay("700x700,1000x1000");
+  UpdateDisplay("500x500,700x700");
   ASSERT_EQ(2, gfx::Screen::GetNumDisplays());
-  EXPECT_EQ("0,0 700x700", GetPrimaryDisplay().bounds().ToString());
-  EXPECT_EQ("0,700 1000x1000", GetSecondaryDisplay().bounds().ToString());
+  EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
+  EXPECT_EQ("0,500 700x700", GetSecondaryDisplay().bounds().ToString());
 }
 
 }  // namespace test
