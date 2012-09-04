@@ -1406,6 +1406,9 @@ const char kDisableLoginAnimations[]        = "disable-login-animations";
 // Disables new OOBE/sign in design.
 const char kDisableNewOobe[]                = "disable-new-oobe";
 
+// Disables the new wallpaper picker UI.
+const char kDisableNewWallpaperUI[]         = "disable-new-wallpaper-picker-ui";
+
 // Avoid doing animations upon oobe.
 const char kDisableOobeAnimation[]          = "disable-oobe-animation";
 
@@ -1428,9 +1431,6 @@ const char kEnableGView[]                   = "enable-gview";
 
 // Enable Kiosk mode for ChromeOS
 const char kEnableKioskMode[]               = "enable-kiosk-mode";
-
-// Enables the new wallpaper picker UI.
-const char kEnableNewWallpaperUI[]          = "enable-new-wallpaper-ui";
 
 // Enables static ip configuration. This flag should be removed when it's on by
 // default.

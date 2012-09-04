@@ -312,8 +312,8 @@ void ComponentLoader::AddDefaultComponentExtensions() {
 #endif
 
 #if defined(OS_CHROMEOS)
-  if (CommandLine::ForCurrentProcess()->
-          HasSwitch(switches::kEnableNewWallpaperUI)) {
+  if (!CommandLine::ForCurrentProcess()->
+          HasSwitch(switches::kDisableNewWallpaperUI)) {
     Add(IDR_WALLPAPERMANAGER_MANIFEST,
         FilePath(FILE_PATH_LITERAL("chromeos/wallpaper_manager")));
   }
