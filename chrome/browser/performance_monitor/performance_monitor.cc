@@ -45,6 +45,8 @@ const uint32 kAccessFlags = base::kProcessAccessDuplicateHandle |
                             base::kProcessAccessTerminate |
                             base::kProcessAccessWaitForTermination;
 
+bool g_started_initialization = false;
+
 std::string TimeToString(base::Time time) {
   int64 time_int64 = time.ToInternalValue();
   return base::Int64ToString(time_int64);
@@ -91,6 +93,13 @@ PerformanceMonitor* PerformanceMonitor::GetInstance() {
 }
 
 void PerformanceMonitor::Start() {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Avoid responding to multiple calls to Start().
+  if (g_started_initialization)
+    return;
+
+  g_started_initialization = true;
   util::PostTaskToDatabaseThreadAndReply(
       FROM_HERE,
       base::Bind(&PerformanceMonitor::InitOnBackgroundThread,

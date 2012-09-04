@@ -12,9 +12,10 @@
 namespace performance_monitor {
 
 // IMPORTANT: This is used as an indication of the event type within the
-// performance monitor database; do not change the order! If you add new events
-// to this list, place them above EVENT_NUMBER_OF_EVENTS and add a string to
-// kEventTypeNames in the cc file.
+// performance monitor database; do not change the order! If you add new
+// event types to this list, place them above NUMBER_OF_EVENTS and add the
+// appropriate messages/functions in generated_resources.grd and in
+// chrome/browser/ui/webui/performance_monitor/l10n_util.
 enum EventType {
   EVENT_UNDEFINED,
   EVENT_EXTENSION_INSTALL,

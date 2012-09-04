@@ -7,32 +7,6 @@
 #include "base/logging.h"
 
 namespace performance_monitor {
-namespace {
-
-// Keep this array synced with EventTypes in the header file.
-// TODO(mtytel): i18n.
-const char* kEventTypeNames[] = {
-  "Undefined",
-  "Extension Installs",
-  "Extension Uninstalls",
-  "Extension Updates",
-  "Extension Enables",
-  "Extension Disables",
-  "Chrome Updates",
-  "Renderer Freezes",
-  "Renderer Crashes",
-  "Out of Memory Crashes",
-  "Unclean Shutdowns"
-};
-COMPILE_ASSERT(ARRAYSIZE_UNSAFE(kEventTypeNames) == EVENT_NUMBER_OF_EVENTS,
-               event_names_incorrect_size);
-
-}  // namespace
-
-const char* EventTypeToString(EventType event_type) {
-  DCHECK_GT(EVENT_NUMBER_OF_EVENTS, event_type);
-  return kEventTypeNames[event_type];
-}
 
 Event::Event(const EventType& type,
              const base::Time& time,

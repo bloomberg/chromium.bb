@@ -12,7 +12,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/time.h"
 #include "chrome/browser/performance_monitor/database.h"
-#include "chrome/browser/performance_monitor/metric_details.h"
+#include "chrome/browser/performance_monitor/metric.h"
 #include "chrome/browser/performance_monitor/performance_monitor_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"

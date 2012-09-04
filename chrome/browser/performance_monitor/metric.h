@@ -13,7 +13,8 @@ namespace performance_monitor {
 // IMPORTANT: This is used as an indication of the metric type within the
 // performance monitor database; do not change the order! If you add new
 // metric types to this list, place them above METRIC_NUMBER_OF_METRICS and add
-// the appropriate constants to metric_details.
+// the appropriate messages/functions in generated_resources.grd and in
+// chrome/browser/ui/webui/performance_monitor/l10n_util.
 enum MetricType {
 METRIC_CPU_USAGE,
 METRIC_PRIVATE_MEMORY_USAGE,

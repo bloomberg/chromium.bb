@@ -38,17 +38,17 @@ class WebUIHandler : public content::WebUIMessageHandler,
   // |args| contains a start and an end time.
   void HandleGetActiveIntervals(const base::ListValue* args);
 
-  // Callback for the "getAllEventTypes" message.
+  // Callback for the "getEventTypes" message.
   // |args| is unused.
-  void HandleGetAllEventTypes(const base::ListValue* args);
+  void HandleGetEventTypes(const base::ListValue* args);
 
   // Callback for the "getEvents" message.
   // |args| contains an EventType id to collect and a start and end time.
   void HandleGetEvents(const base::ListValue* args);
 
-  // Callback for the "getAllMetricTypes" message.
+  // Callback for the "getMetricTypes" message.
   // |args| is unused.
-  void HandleGetAllMetricTypes(const base::ListValue* args);
+  void HandleGetMetricTypes(const base::ListValue* args);
 
   // Callback for the "getMetric" message.
   // |args| contains a MetricType id to collect, a start and end time, and a
