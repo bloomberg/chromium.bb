@@ -631,6 +631,9 @@ bool EventRewriter::RewriteBackspaceAndArrowKeys(ui::KeyEvent* event) {
 
 void EventRewriter::RewriteLocatedEvent(ui::LocatedEvent* event) {
 #if defined(OS_CHROMEOS)
+  if (event->flags() & ui::EF_IS_SYNTHESIZED)
+    return;
+
   XEvent* xevent = event->native_event();
   if (!xevent || xevent->type != GenericEvent)
     return;
