@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
+#include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -37,8 +38,6 @@ namespace extensions {
 
 namespace {
 
-const char kViewIntent[] = "http://webintents.org/view";
-
 bool MakePathAbsolute(const FilePath& current_directory,
                       FilePath* file_path) {
   DCHECK(file_path);
@@ -55,84 +54,94 @@ bool MakePathAbsolute(const FilePath& current_directory,
   return true;
 }
 
-// Class to handle launching of platform apps with command line information.
+bool GetAbsolutePathFromCommandLine(const CommandLine* command_line,
+                                    const FilePath& current_directory,
+                                    FilePath* path) {
+  if (!command_line || !command_line->GetArgs().size())
+    return false;
+
+  FilePath relative_path(command_line->GetArgs()[0]);
+  FilePath absolute_path(relative_path);
+  if (!MakePathAbsolute(current_directory, &absolute_path)) {
+    LOG(WARNING) << "Cannot make absolute path from " << relative_path.value();
+    return false;
+  }
+  *path = absolute_path;
+  return true;
+}
+
+// Helper method to launch the platform app |extension| with no data. This
+// should be called in the fallback case, where it has been impossible to
+// load or obtain file launch data.
+void LaunchPlatformAppWithNoData(Profile* profile, const Extension* extension) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  extensions::AppEventRouter::DispatchOnLaunchedEvent(profile, extension);
+}
+
+// Class to handle launching of platform apps to open a specific path.
 // An instance of this class is created for each launch. The lifetime of these
 // instances is managed by reference counted pointers. As long as an instance
 // has outstanding tasks on a message queue it will be retained; once all
 // outstanding tasks are completed it will be deleted.
-class PlatformAppCommandLineLauncher
-    : public base::RefCountedThreadSafe<PlatformAppCommandLineLauncher> {
+class PlatformAppPathLauncher
+    : public base::RefCountedThreadSafe<PlatformAppPathLauncher> {
  public:
-  PlatformAppCommandLineLauncher(Profile* profile,
-                                 const Extension* extension,
-                                 const CommandLine* command_line,
-                                 const FilePath& current_directory)
+  PlatformAppPathLauncher(Profile* profile,
+                          const Extension* extension,
+                          const FilePath& file_path)
       : profile_(profile),
         extension_(extension),
-        command_line_(command_line),
-        current_directory_(current_directory) {}
+        file_path_(file_path) {}
 
   void Launch() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    if (!command_line_ || !command_line_->GetArgs().size()) {
-      LaunchWithNoLaunchData();
+    if (file_path_.empty()) {
+      LaunchPlatformAppWithNoData(profile_, extension_);
       return;
     }
 
-    FilePath file_path(command_line_->GetArgs()[0]);
+    DCHECK(file_path_.IsAbsolute());
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
-            &PlatformAppCommandLineLauncher::GetMimeTypeAndLaunch,
-            this, file_path));
+            &PlatformAppPathLauncher::GetMimeTypeAndLaunch, this));
   }
 
  private:
-  friend class base::RefCountedThreadSafe<PlatformAppCommandLineLauncher>;
+  friend class base::RefCountedThreadSafe<PlatformAppPathLauncher>;
 
-  virtual ~PlatformAppCommandLineLauncher() {}
+  virtual ~PlatformAppPathLauncher() {}
 
-  void LaunchWithNoLaunchData() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    extensions::AppEventRouter::DispatchOnLaunchedEvent(profile_, extension_);
-  }
-
-  void GetMimeTypeAndLaunch(const FilePath& file_path) {
+  void GetMimeTypeAndLaunch() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-    // If we cannot construct an absolute path, launch with no launch data.
-    FilePath absolute_path(file_path);
-    if (!MakePathAbsolute(current_directory_, &absolute_path)) {
-      LOG(WARNING) << "Cannot make absolute path from " << file_path.value();
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-              &PlatformAppCommandLineLauncher::LaunchWithNoLaunchData, this));
-      return;
-    }
-
     // If the file doesn't exist, or is a directory, launch with no launch data.
-    if (!file_util::PathExists(absolute_path) ||
-        file_util::DirectoryExists(absolute_path)) {
-      LOG(WARNING) << "No file exists with path " << absolute_path.value();
+    if (!file_util::PathExists(file_path_) ||
+        file_util::DirectoryExists(file_path_)) {
+      LOG(WARNING) << "No file exists with path " << file_path_.value();
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-              &PlatformAppCommandLineLauncher::LaunchWithNoLaunchData, this));
+              &PlatformAppPathLauncher::LaunchWithNoLaunchData, this));
       return;
     }
 
     std::string mime_type;
     // If we cannot obtain the MIME type, launch with no launch data.
-    if (!net::GetMimeTypeFromFile(absolute_path, &mime_type)) {
+    if (!net::GetMimeTypeFromFile(file_path_, &mime_type)) {
       LOG(WARNING) << "Could not obtain MIME type for "
-                   << absolute_path.value();
+                   << file_path_.value();
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-              &PlatformAppCommandLineLauncher::LaunchWithNoLaunchData, this));
+              &PlatformAppPathLauncher::LaunchWithNoLaunchData, this));
       return;
     }
 
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-            &PlatformAppCommandLineLauncher::LaunchWithMimeTypeAndPath,
-            this, absolute_path, mime_type));
+            &PlatformAppPathLauncher::LaunchWithMimeType, this, mime_type));
   }
 
-  void LaunchWithMimeTypeAndPath(const FilePath& file_path,
-                                 const std::string& mime_type) {
+  void LaunchWithNoLaunchData() {
+    // This method is required as an entry point on the UI thread.
+    LaunchPlatformAppWithNoData(profile_, extension_);
+  }
+
+  void LaunchWithMimeType(const std::string& mime_type) {
     // Find the intent service from the platform app for the file being opened.
     webkit_glue::WebIntentServiceData service;
     bool found_service = false;
@@ -141,7 +150,7 @@ class PlatformAppCommandLineLauncher
         extension_->intents_services();
     for (size_t i = 0; i < services.size(); i++) {
       std::string service_type_ascii = UTF16ToASCII(services[i].type);
-      if (services[i].action == ASCIIToUTF16(kViewIntent) &&
+      if (services[i].action == ASCIIToUTF16(web_intents::kActionView) &&
           net::MatchesMimeType(service_type_ascii, mime_type)) {
         service = services[i];
         found_service = true;
@@ -153,7 +162,7 @@ class PlatformAppCommandLineLauncher
     // no launch data.
     if (!found_service) {
       LOG(WARNING) << "Extension does not provide a valid intent for "
-                   << file_path.value();
+                   << file_path_.value();
       LaunchWithNoLaunchData();
       return;
     }
@@ -167,8 +176,8 @@ class PlatformAppCommandLineLauncher
         ExtensionSystem::Get(profile_)->lazy_background_task_queue();
     if (queue->ShouldEnqueueTask(profile_, extension_)) {
       queue->AddPendingTask(profile_, extension_->id(), base::Bind(
-              &PlatformAppCommandLineLauncher::GrantAccessToFileAndLaunch,
-              this, file_path, mime_type));
+              &PlatformAppPathLauncher::GrantAccessToFileAndLaunch,
+              this, mime_type));
       return;
     }
 
@@ -177,11 +186,10 @@ class PlatformAppCommandLineLauncher
     extensions::ExtensionHost* host =
         process_manager->GetBackgroundHostForExtension(extension_->id());
     DCHECK(host);
-    GrantAccessToFileAndLaunch(file_path, mime_type, host);
+    GrantAccessToFileAndLaunch(mime_type, host);
   }
 
-  void GrantAccessToFileAndLaunch(const FilePath& file_path,
-                                  const std::string& mime_type,
+  void GrantAccessToFileAndLaunch(const std::string& mime_type,
                                   extensions::ExtensionHost* host) {
     // If there was an error loading the app page, |host| will be NULL.
     if (!host) {
@@ -197,34 +205,32 @@ class PlatformAppCommandLineLauncher
     // If the renderer already has permission to read these paths, it is not
     // regranted, as this would overwrite any other permissions which the
     // renderer may already have.
-    if (!policy->CanReadFile(renderer_id, file_path))
-      policy->GrantReadFile(renderer_id, file_path);
+    if (!policy->CanReadFile(renderer_id, file_path_))
+      policy->GrantReadFile(renderer_id, file_path_);
 
     std::string registered_name;
     fileapi::IsolatedContext* isolated_context =
         fileapi::IsolatedContext::GetInstance();
     DCHECK(isolated_context);
     std::string filesystem_id = isolated_context->RegisterFileSystemForPath(
-        fileapi::kFileSystemTypeNativeLocal, file_path, &registered_name);
+        fileapi::kFileSystemTypeNativeLocal, file_path_, &registered_name);
     // Granting read file system permission as well to allow file-system
     // read operations.
     policy->GrantReadFileSystem(renderer_id, filesystem_id);
 
     extensions::AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
-        profile_, extension_, ASCIIToUTF16(kViewIntent), filesystem_id,
-        registered_name);
+        profile_, extension_, ASCIIToUTF16(web_intents::kActionView),
+        filesystem_id, registered_name);
   }
 
   // The profile the app should be run in.
   Profile* profile_;
   // The extension providing the app.
   const Extension* extension_;
-  // The command line to be passed through to the app, or NULL.
-  const CommandLine* command_line_;
-  // If non-empty, this is used to expand relative paths.
-  const FilePath current_directory_;
+  // The path to be passed through to the app.
+  const FilePath file_path_;
 
-  DISALLOW_COPY_AND_ASSIGN(PlatformAppCommandLineLauncher);
+  DISALLOW_COPY_AND_ASSIGN(PlatformAppPathLauncher);
 };
 
 // Class to handle launching of platform apps with WebIntent data.
@@ -340,12 +346,23 @@ void LaunchPlatformApp(Profile* profile,
                        const Extension* extension,
                        const CommandLine* command_line,
                        const FilePath& current_directory) {
+  FilePath path;
+  if (!GetAbsolutePathFromCommandLine(command_line, current_directory, &path)) {
+    LaunchPlatformAppWithNoData(profile, extension);
+    return;
+  }
+
+  LaunchPlatformAppWithPath(profile, extension, path);
+}
+
+void LaunchPlatformAppWithPath(Profile* profile,
+                               const Extension* extension,
+                               const FilePath& file_path) {
   // launcher will be freed when nothing has a reference to it. The message
   // queue will retain a reference for any outstanding task, so when the
   // launcher has finished it will be freed.
-  scoped_refptr<PlatformAppCommandLineLauncher> launcher =
-      new PlatformAppCommandLineLauncher(profile, extension, command_line,
-                                         current_directory);
+  scoped_refptr<PlatformAppPathLauncher> launcher =
+      new PlatformAppPathLauncher(profile, extension, file_path);
   launcher->Launch();
 }
 
