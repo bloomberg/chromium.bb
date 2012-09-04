@@ -265,7 +265,7 @@ namespace {
     std::set<std::string> flags;
 
    private:
-    static void check_flag_valid(const std::string &flag) {
+    static void check_flag_valid(const std::string& flag) {
       if (all_instruction_flags.find(flag) == end(all_instruction_flags)) {
         fprintf(stderr, "%s: unknown flag: '%s'\n",
                 short_program_name, flag.c_str());
@@ -273,7 +273,7 @@ namespace {
       }
     }
 
-    void add_flag(const std::string &flag) {
+    void add_flag(const std::string& flag) {
       check_flag_valid(flag);
       flags.insert(flag);
     }
@@ -315,21 +315,21 @@ namespace {
       result.flags = flags;
       return result;
     }
-    bool has_flag(const std::string &flag) const {
+    bool has_flag(const std::string& flag) const {
       check_flag_valid(flag);
       return flags.find(flag) != end(flags);
     }
   };
   std::vector<Instruction> instructions;
 
-  FILE *out_file = stdout;
-  FILE *const_file = stdout;
-  const char *out_file_name = nullptr;
-  const char *const_file_name = nullptr;
+  FILE* out_file = stdout;
+  FILE* const_file = stdout;
+  const char* out_file_name = nullptr;
+  const char* const_file_name = nullptr;
 
   auto ia32_mode = true;
 
-  std::string read_file(const char *filename) {
+  std::string read_file(const char* filename) {
     std::string file_content;
     auto file = open(filename, O_RDONLY);
     char buf[1024];
@@ -374,10 +374,10 @@ namespace {
    * text by whitespace and returns it.  Respects quoted text.
    */
   std::vector<std::string> split_till_comma(
-      std::string::const_iterator *it_out,
-      const std::string::const_iterator &line_end) {
+      std::string::const_iterator* it_out,
+      const std::string::const_iterator& line_end) {
     std::vector<std::string> ret;
-    std::string::const_iterator &it = *it_out;
+    std::string::const_iterator& it = *it_out;
     std::string str;
 
     for (; it != line_end; ++it) {
@@ -413,11 +413,11 @@ namespace {
     Instruction* instruction;
     const std::vector<std::string>& operation;
 
-    extract_operand(Instruction *i, const std::vector<std::string> &o)
+    extract_operand(Instruction* i, const std::vector<std::string>& o)
       : instruction(i), operation(o) {
     }
 
-    void operator()(const std::string &str) {
+    void operator()(const std::string& str) {
       Instruction::Operand operand;
       switch (str[0]) {
         case '\'':
@@ -450,7 +450,7 @@ namespace {
     }
   };
 
-  void load_instructions(const char *filename) {
+  void load_instructions(const char* filename) {
     const std::string file_content = read_file(filename);
     auto it = begin(file_content);
     while (it != end(file_content)) {
@@ -462,10 +462,10 @@ namespace {
       if (*it == '#') {
         it = std::find_if(it, end(file_content), is_eol);
       } else {
-        auto line_end = std::find_if(it, end(file_content), is_eol);
         /* Note: initialization list makes sure flags are toggled to zero.  */
         Instruction instruction { };
-        auto operation = split_till_comma(&it, line_end);
+        auto line_end = std::find_if(it, end(file_content), is_eol);
+       auto operation = split_till_comma(&it, line_end);
         /* Line with just whitespaces is ignored.  */
         if (operation.size() != 0) {
           for_each(operation.rbegin(),
@@ -540,47 +540,43 @@ namespace {
         select_name);
       std::sort(begin(names), end(names), compare_names);
       for (auto name_it = begin(names); name_it != end(names); ++name_it) {
-        auto &name = *name_it;
+        auto& name = *name_it;
         if (instruction_names[name] == 0) {
           for (decltype(name.length()) p = 1; p < name.length(); ++p) {
             auto it = instruction_names.find(std::string(name, p));
-            if (it != end(instruction_names)) {
+            if (it != end(instruction_names))
               it->second = 1;
-            }
           }
         }
       }
       size_t offset = 0;
       for (auto pair_it = begin(instruction_names);
            pair_it != end(instruction_names); ++pair_it) {
-        auto &pair = *pair_it;
-        if (pair.second != 1) {
-          pair.second = offset;
+        auto& pair = *pair_it;
+        if (pair.second != 1)
+          pair.second = offset,
           offset += pair.first.length() + 1;
-        }
       }
       for (auto name_it = begin(names); name_it != end(names); ++name_it) {
-        auto &name = *name_it;
+        auto& name = *name_it;
         auto offset = instruction_names[name];
-        if (offset != 1) {
+        if (offset != 1)
           for (decltype(name.length()) p = 1; p < name.length(); ++p) {
             auto it = instruction_names.find(std::string(name, p));
-            if ((it != end(instruction_names)) && (it->second == 1)) {
+            if ((it != end(instruction_names)) && (it->second == 1))
               it->second = offset + p;
-            }
           }
-        }
       }
       offset = 0;
       auto delimiter = "static const char instruction_names[] = {\n  ";
       for (auto pair_it = begin(instruction_names);
            pair_it != end(instruction_names); ++pair_it) {
-        auto &pair = *pair_it;
+        auto& pair = *pair_it;
         if (pair.second == offset) {
           fprintf(const_file, "%s", delimiter);
           for (auto c_it = begin(pair.first);
                c_it != end(pair.first); ++c_it) {
-            auto &c = *c_it;
+            auto& c = *c_it;
             fprintf(const_file, "0x%02x, ", static_cast<int>(c));
           }
           fprintf(const_file, "\'\\0\',  /* ");
@@ -607,11 +603,10 @@ namespace {
     for (auto c_it = begin(text); c_it != end(text); ++c_it) {
       auto c = *c_it;
       if (('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z') ||
-          ('0' <= c && c <= '9')) {
+          ('0' <= c && c <= '9'))
         name.push_back(c);
-      } else {
+      else
         name.push_back('_');
-      }
     }
     return name;
   }
@@ -619,7 +614,7 @@ namespace {
   void print_name_actions(void) {
     for (auto pair_it = begin(instruction_names);
          pair_it != end(instruction_names); ++pair_it) {
-      auto &pair = *pair_it;
+      auto& pair = *pair_it;
       fprintf(out_file, "  action instruction_%s"
         " { SET_INSTRUCTION_NAME(instruction_names + %zd); }\n",
                                  c_identifier(pair.first).c_str(), pair.second);
@@ -664,7 +659,7 @@ namespace {
       /* If register is stored in opcode we need to expand opcode now.  */
       for (auto operand_it = begin(operands);
            operand_it != end(operands); ++operand_it) {
-        auto &operand = *operand_it;
+        auto& operand = *operand_it;
         if (operand.source == 'r') {
           auto opcode = opcodes.rbegin();
           for (; opcode != opcodes.rend(); ++opcode) {
@@ -793,7 +788,7 @@ namespace {
           auto& operand = *operand_it;
           if (operand.size == "v" || operand.size == "z")
             operand.size = "w";
-          if (operand.size == "y")
+          else if (operand.size == "y")
             operand.size = "d";
         }
       return result;
@@ -832,7 +827,7 @@ namespace {
         auto& operand = *operand_it;
         if (operand.size == "v" || operand.size == "y")
           operand.size = "q";
-        if (operand.size == "z")
+        else if (operand.size == "z")
           operand.size = "d";
       }
       return result;
@@ -938,7 +933,7 @@ namespace {
             auto delimiter = '(';
             for (auto prefix_it = begin(permutations);
                  prefix_it != end(permutations); ++prefix_it) {
-              auto &prefix = *prefix_it;
+              auto& prefix = *prefix_it;
               fprintf(out_file, "%c%s", delimiter, prefix.c_str());
               delimiter = ' ';
             }
@@ -991,12 +986,12 @@ namespace {
           if (third_byte[i] == 'X')
             for (auto byte_it = begin(bytes);
                  byte_it != end(bytes); ++byte_it) {
-              auto &byte = *byte_it;
+              auto& byte = *byte_it;
               bytes.insert(byte & ~p);
             }
         auto delimiter = "(";
         for (auto byte_it = begin(bytes); byte_it != end(bytes); ++byte_it) {
-          auto &byte = *byte_it;
+          auto& byte = *byte_it;
           fprintf(out_file, "%s0x%02x", delimiter, byte);
           delimiter = " | ";
         }
@@ -1058,7 +1053,7 @@ namespace {
     auto third_byte_ok = (arraysize(third_byte_check) == third_byte.length());
     if (third_byte_ok)
       for (size_t set_it = 0; set_it < arraysize(third_byte_check); ++set_it) {
-        auto &set = third_byte_check[set_it];
+        auto& set = third_byte_check[set_it];
         if (set.find(third_byte[&set - third_byte_check]) == end(set)) {
           third_byte_ok = false;
           break;
@@ -1132,7 +1127,7 @@ namespace {
       auto operand_index = 0;
       for (auto operand_it = begin(operands);
            operand_it != end(operands); ++operand_it) {
-        auto &operand = *operand_it;
+        auto& operand = *operand_it;
         if (operand.enabled && operand.source == 'r') {
           if (operand.size == "x87") {
             if (enabled(Actions::kParseX87Operands)) {
@@ -1153,7 +1148,7 @@ namespace {
     const auto& opcodes = instruction.get_opcodes();
     for (auto opcode_it = begin(opcodes);
            opcode_it != end(opcodes); ++opcode_it) {
-        auto &opcode = *opcode_it;
+        auto& opcode = *opcode_it;
       if (opcode == "/")
           print_opcode = true;
       else if (print_opcode)
@@ -1175,7 +1170,7 @@ namespace {
     const auto& required_prefixes = instruction.get_required_prefixes();
     for (auto prefix_it = begin(required_prefixes);
            prefix_it != end(required_prefixes); ++prefix_it) {
-      auto &prefix = *prefix_it;
+      auto& prefix = *prefix_it;
       if (prefix == "0x66") {
         fprintf(out_file, " @not_data16_prefix");
         break;
@@ -1183,7 +1178,7 @@ namespace {
     }
     for (auto prefix_it = begin(required_prefixes);
          prefix_it != end(required_prefixes); ++prefix_it) {
-      auto &prefix = *prefix_it;
+      auto& prefix = *prefix_it;
       if (prefix == "0xf2") {
         fprintf(out_file, " @not_repnz_prefix");
         break;
@@ -1191,7 +1186,7 @@ namespace {
     }
     for (auto prefix_it = begin(required_prefixes);
          prefix_it != end(required_prefixes); ++prefix_it) {
-      auto &prefix = *prefix_it;
+      auto& prefix = *prefix_it;
       if (prefix == "0xf3") {
         fprintf(out_file, " @not_repz_prefix");
         break;
@@ -1208,7 +1203,7 @@ namespace {
       fprintf(out_file, " @modifiable_instruction");
     const auto& flags = instruction.get_flags();
     for (auto flag_it = begin(flags); flag_it != end(flags); ++flag_it) {
-        auto &flag = *flag_it;
+        auto& flag = *flag_it;
       if (!strncmp(flag.c_str(), "CPUFeature_", 11))
         fprintf(out_file, " @%s", flag.c_str());
     }
@@ -1219,7 +1214,7 @@ namespace {
       int operand_index = 0;
       for (auto operand_it = begin(operands);
            operand_it != end(operands); ++operand_it) {
-        auto &operand = *operand_it;
+        auto& operand = *operand_it;
         if (operand.enabled)
           if (enabled(Actions::kParseOperandPositions) ||
               (((operand.source != 'E') && (operand.source != 'M') &&
@@ -1263,7 +1258,7 @@ namespace {
       auto operand_index = 0;
       for (auto operand_it = begin(operands);
            operand_it != end(operands); ++operand_it) {
-        auto &operand = *operand_it;
+        auto& operand = *operand_it;
         if (operand.enabled) {
           if (operand.write)
             if (operand.read)
@@ -1289,7 +1284,7 @@ namespace {
     auto operand_index = 0;
     for (auto operand_it = begin(operands);
          operand_it != end(operands); ++operand_it) {
-      auto &operand = *operand_it;
+      auto& operand = *operand_it;
       if (operand.enabled || enabled(Actions::kParseOperandPositions))
         ++operand_index;
     }
@@ -1350,11 +1345,11 @@ namespace {
     const auto& required_prefixes = instruction.get_required_prefixes();
     for (auto prefix_it = begin(required_prefixes);
            prefix_it != end(required_prefixes); ++prefix_it) {
-      auto &prefix = *prefix_it;
+      auto& prefix = *prefix_it;
       if (prefix == "0xf0") {
         for (auto operand_it = begin(operands);
              operand_it != end(operands); ++operand_it) {
-          auto &operand = *operand_it;
+          auto& operand = *operand_it;
           if (operand.source == 'C') {
             fprintf(out_file, " @not_lock_prefix%zd",
                                                   &operand - &*begin(operands));
@@ -1472,7 +1467,7 @@ namespace {
 
   void print_one_size_definition_modrm_memory(
                                       const MarkedInstruction& instruction) {
-    typedef std::tuple<const char *, bool, bool> T;
+    typedef std::tuple<const char*, bool, bool> T;
     static const T modes[] = {
       T { " operand_disp",            false,  true    },
       T { " operand_rip",             false,  false   },
@@ -1760,15 +1755,15 @@ namespace {
         auto opcodes = instruction.get_opcodes();
         for (auto opcode_it = begin(opcodes);
                opcode_it != end(opcodes); ++opcode_it) {
-          auto &opcode = *opcode_it;
+          auto& opcode = *opcode_it;
           auto Lbit = opcode.find(".L.");
           if (Lbit != opcode.npos) {
             opcode[++Lbit] = '1';
-            print_one_size_definition(instruction.replace_opcodes(opcodes));
-            opcode[Lbit] = '0';
             print_one_size_definition(instruction.
                                       replace_opcodes(opcodes).
                                       replace_operands(operands));
+            opcode[Lbit] = '0';
+            print_one_size_definition(instruction.replace_opcodes(opcodes));
             return;
           }
         }
@@ -1874,7 +1869,7 @@ namespace {
 
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   /* basename(3) may change the passed argument thus we are using copy
      of argv[0].  This creates tiny memory leak but since we only do that
      once per program invocation it's contained.  */
@@ -1962,13 +1957,13 @@ int main(int argc, char *argv[]) {
     size_t current_dir_name_len = strlen(current_dir_name);
     if (out_file_name && !const_file_name) {
       const_name_len = strlen(out_file_name) + 10;
-      const_file_name = static_cast<char *>(malloc(const_name_len));
-      strcpy(const_cast<char *>(const_file_name), out_file_name);
+      const_file_name = static_cast<char*>(malloc(const_name_len));
+      strcpy(const_cast<char*>(const_file_name), out_file_name);
       const char* dot_position = strrchr(const_file_name, '.');
       if (!dot_position) {
         dot_position = strrchr(const_file_name, '\0');
       }
-      strcpy(const_cast<char *>(dot_position), "_consts.c");
+      strcpy(const_cast<char*>(dot_position), "_consts.c");
     }
     if (!(const_file = fopen(const_file_name, "w"))) {
       fprintf(stderr, "%s: can not open '%s' file (%s)\n",
@@ -1990,7 +1985,7 @@ int main(int argc, char *argv[]) {
              const_file_name + current_dir_name_len + 1,
            ia32_mode ? "ia32" : "x86-64");
     if (const_name_len) {
-      free(const_cast<char *>(const_file_name));
+      free(const_cast<char*>(const_file_name));
       const_file_name = NULL;
     }
   }
