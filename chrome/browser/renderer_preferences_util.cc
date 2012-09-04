@@ -106,7 +106,7 @@ void UpdateFromSystemSettings(
 #endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-  const gfx::FontRenderParams& params = gfx::GetDefaultFontRenderParams();
+  const gfx::FontRenderParams& params = gfx::GetDefaultWebKitFontRenderParams();
   prefs->should_antialias_text = params.antialiasing;
   prefs->use_subpixel_positioning = params.subpixel_positioning;
   prefs->hinting = GetRendererPreferencesHintingEnum(params.hinting);

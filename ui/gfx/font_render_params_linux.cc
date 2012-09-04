@@ -18,8 +18,9 @@ namespace gfx {
 
 namespace {
 
-// Initializes |params| with the system's default settings.
-void LoadDefaults(FontRenderParams* params) {
+// Initializes |params| with the system's default settings. |renderer| is true
+// when setting WebKit renderer defaults.
+void LoadDefaults(FontRenderParams* params, bool renderer) {
 #if defined(TOOLKIT_GTK)
   params->antialiasing = true;
   params->subpixel_positioning = false;
@@ -105,15 +106,17 @@ void LoadDefaults(FontRenderParams* params) {
       params->subpixel_rendering = FontRenderParams::SUBPIXEL_RENDERING_NONE;
   }
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableTextSubpixelPositioning)) {
-    // To enable subpixel positioning, we need to disable hinting.
-    params->subpixel_positioning = true;
+  params->subpixel_positioning =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          renderer ?
+          switches::kEnableWebkitTextSubpixelPositioning :
+          switches::kEnableBrowserTextSubpixelPositioning);
+
+  // To enable subpixel positioning, we need to disable hinting.
+  if (params->subpixel_positioning)
     params->hinting = FontRenderParams::HINTING_NONE;
-  } else {
-    params->subpixel_positioning = false;
+  else
     params->hinting = FontRenderParams::HINTING_SLIGHT;
-  }
 #endif
 }
 
@@ -123,7 +126,17 @@ const FontRenderParams& GetDefaultFontRenderParams() {
   static bool loaded_defaults = false;
   static FontRenderParams default_params;
   if (!loaded_defaults)
-    LoadDefaults(&default_params);
+    LoadDefaults(&default_params, /* renderer */ false);
+  loaded_defaults = true;
+  return default_params;
+}
+
+const FontRenderParams& GetDefaultWebKitFontRenderParams() {
+  static bool loaded_defaults = false;
+  static FontRenderParams default_params;
+  if (!loaded_defaults)
+    LoadDefaults(&default_params, /* renderer */ true);
+  loaded_defaults = true;
   return default_params;
 }
 

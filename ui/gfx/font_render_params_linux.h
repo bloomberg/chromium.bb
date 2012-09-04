@@ -56,6 +56,9 @@ struct UI_EXPORT FontRenderParams {
 // Returns the system's default parameters for font rendering.
 UI_EXPORT const FontRenderParams& GetDefaultFontRenderParams();
 
+// Returns the system's default parameters for WebKit font rendering.
+UI_EXPORT const FontRenderParams& GetDefaultWebKitFontRenderParams();
+
 }  // namespace gfx
 
 #endif  // UI_GFX_FONT_RENDER_PARAMS_LINUX_H_

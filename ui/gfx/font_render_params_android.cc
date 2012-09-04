@@ -29,7 +29,12 @@ const FontRenderParams& GetDefaultFontRenderParams() {
   static FontRenderParams default_params;
   if (!loaded_defaults)
     LoadDefaults(&default_params);
+  loaded_defaults = true;
   return default_params;
+}
+
+const FontRenderParams& GetDefaultWebKitFontRenderParams() {
+  return GetDefaultFontRenderParams();
 }
 
 }  // namespace gfx

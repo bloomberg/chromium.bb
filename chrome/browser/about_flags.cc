@@ -702,6 +702,13 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kTouchOptimizedUIChoices)
   },
   {
+    "enable-webkit-text-subpixel-positioning",
+    IDS_FLAGS_ENABLE_WEBKIT_TEXT_SUBPIXEL_POSITIONING_NAME,
+    IDS_FLAGS_ENABLE_WEBKIT_TEXT_SUBPIXEL_POSITIONING_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableWebkitTextSubpixelPositioning)
+  },
+  {
     "enable-touch-events",
     IDS_ENABLE_TOUCH_EVENTS_NAME,
     IDS_ENABLE_TOUCH_EVENTS_DESCRIPTION,

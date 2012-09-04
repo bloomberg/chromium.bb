@@ -6056,6 +6056,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_ACCELERATED_VIDEO_DECODE_DESCRIPTION" desc="Description for the flag to disable accelerated video decode where available.">
         Disables hardware-accelerated video decode where available.
       </message>
+      <message name="IDS_FLAGS_ENABLE_WEBKIT_TEXT_SUBPIXEL_POSITIONING_NAME" desc="Name of the flag to enable subpixel text positioning on web pages.">
+        Enable webpage text sub-pixel positioning.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_WEBKIT_TEXT_SUBPIXEL_POSITIONING_DESCRIPTION" desc="Description for the flag to set when subpixel text positioning is enabled on web pages.">
+        Allows text glyphs on web pages to have X positions which aren't snapped to the pixel grid.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

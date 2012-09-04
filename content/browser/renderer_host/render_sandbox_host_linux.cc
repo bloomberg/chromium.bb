@@ -76,7 +76,7 @@ class SandboxIPCProcess  {
         // positioning, so just pass false here to avoid the issue.
         false
 #else
-        gfx::GetDefaultFontRenderParams().subpixel_positioning
+        gfx::GetDefaultWebKitFontRenderParams().subpixel_positioning
 #endif
         );
   }
