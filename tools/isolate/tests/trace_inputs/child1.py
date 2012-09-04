@@ -14,12 +14,13 @@ def child():
   """
   print 'child from %s' % os.getcwd()
   # Force file opening with a non-normalized path.
-  open(os.path.join('data', '..', 'trace_inputs.py'), 'rb').close()
-  open(os.path.join('data', '..', 'trace_inputs_smoke_test.py'), 'rb').close()
+  open(os.path.join('tests', '..', 'trace_inputs.py'), 'rb').close()
+  open(os.path.join(
+      'tests', '..', 'tests', 'trace_inputs_smoke_test.py'), 'rb').close()
   # Do not wait for the child to exit.
   # Use relative directory.
   subprocess.Popen(
-      ['python', 'child2.py'], cwd=os.path.join('data', 'trace_inputs'))
+      ['python', 'child2.py'], cwd=os.path.join('tests', 'trace_inputs'))
   return 0
 
 
@@ -30,7 +31,7 @@ def child_gyp():
   print 'child_gyp from %s' % os.getcwd()
   # Force file opening.
   open(os.path.join('..', 'trace_inputs.py'), 'rb').close()
-  open(os.path.join('..', 'trace_inputs_smoke_test.py'), 'rb').close()
+  open(os.path.join('..', 'tests', 'trace_inputs_smoke_test.py'), 'rb').close()
   # Do not wait for the child to exit.
   # Use relative directory.
   subprocess.Popen(['python', 'child2.py'], cwd='trace_inputs')

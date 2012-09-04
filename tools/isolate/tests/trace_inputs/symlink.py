@@ -16,8 +16,8 @@ def main():
     'foo': 'Bar\n',
   }
 
-  if not os.path.basename(os.getcwd()) == 'data':
-    print 'Start this script from inside "data"'
+  if not os.path.basename(os.getcwd()) == 'tests':
+    print 'Start this script from inside "tests"'
     return 1
 
   root = os.path.join('trace_inputs', 'files2')

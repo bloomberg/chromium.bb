@@ -8,10 +8,12 @@ import os
 import sys
 import unittest
 
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT_DIR)
+
 import run_test_cases
 
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-SLEEP = os.path.join(ROOT_DIR, 'data', 'run_test_cases', 'sleep.py')
+SLEEP = os.path.join(ROOT_DIR, 'tests', 'run_test_cases', 'sleep.py')
 
 
 def to_native_eol(string):
@@ -98,7 +100,7 @@ class RunTestCases(unittest.TestCase):
 
   def test_gtest_filter(self):
     old = run_test_cases.run_test_cases
-    exe = os.path.join(ROOT_DIR, 'data', 'gtest_fake', 'gtest_fake_pass.py')
+    exe = os.path.join(ROOT_DIR, 'tests', 'gtest_fake', 'gtest_fake_pass.py')
     def expect(executable, test_cases, jobs, timeout, run_all, result_file):
       self.assertEquals(exe, executable)
       self.assertEquals(['Foo.Bar1', 'Foo.Bar3'], test_cases)

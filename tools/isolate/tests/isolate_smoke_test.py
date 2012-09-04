@@ -16,10 +16,12 @@ import sys
 import tempfile
 import unittest
 
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT_DIR)
+
 import isolate
 import run_test_from_archive
 
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 VERBOSE = False
 SHA_1_NULL = hashlib.sha1().hexdigest()
 
@@ -46,7 +48,7 @@ RELATIVE_CWD = {
   'symlink_full': '.',
   'symlink_partial': '.',
   'touch_only': '.',
-  'touch_root': os.path.join('data', 'isolate'),
+  'touch_root': os.path.join('tests', 'isolate'),
   'with_flag': '.',
 }
 
@@ -79,7 +81,7 @@ DEPENDENCIES = {
     os.path.join('files1', 'test_file1.txt'),
   ],
   'touch_root': [
-    os.path.join('data', 'isolate', 'touch_root.py'),
+    os.path.join('tests', 'isolate', 'touch_root.py'),
     'isolate.py',
   ],
   'with_flag': [
@@ -190,7 +192,7 @@ class IsolateModeBase(IsolateBase):
     """
     root_dir = ROOT_DIR
     if RELATIVE_CWD[self.case()] == '.':
-      root_dir = os.path.join(root_dir, 'data', 'isolate')
+      root_dir = os.path.join(root_dir, 'tests', 'isolate')
 
     files = dict((unicode(f), {}) for f in DEPENDENCIES[self.case()])
 
@@ -316,7 +318,7 @@ class IsolateModeBase(IsolateBase):
   def filename(self):
     """Returns the filename corresponding to this test case."""
     filename = os.path.join(
-        ROOT_DIR, 'data', 'isolate', self.case() + '.isolate')
+        ROOT_DIR, 'tests', 'isolate', self.case() + '.isolate')
     self.assertTrue(os.path.isfile(filename), filename)
     return filename
 
@@ -346,7 +348,7 @@ class Isolate(unittest.TestCase):
     # This is a bit redundant but make sure all combinations are tested.
     files = sorted(
       i[:-len('.isolate')]
-      for i in os.listdir(os.path.join(ROOT_DIR, 'data', 'isolate'))
+      for i in os.listdir(os.path.join(ROOT_DIR, 'tests', 'isolate'))
       if i.endswith('.isolate')
     )
     self.assertEquals(sorted(RELATIVE_CWD), files)
@@ -662,7 +664,7 @@ class Isolate_trace_read_merge(IsolateModeBase):
 
   def _check_merge(self, filename):
     filepath = isolate.trace_inputs.get_native_path_case(
-        os.path.join(ROOT_DIR, 'data', 'isolate', filename))
+        os.path.join(ROOT_DIR, 'tests', 'isolate', filename))
     expected = 'Updating %s\n' % filepath
     with open(filepath, 'rb') as f:
       old_content = f.read()
@@ -703,7 +705,7 @@ class Isolate_trace_read_merge(IsolateModeBase):
     expected = (
       '\n'
       'Error: Input directory %s must have a trailing slash\n' %
-          os.path.join(ROOT_DIR, 'data', 'isolate', 'files1')
+          os.path.join(ROOT_DIR, 'tests', 'isolate', 'files1')
     )
     self.assertEquals(expected, out)
 
@@ -719,7 +721,7 @@ class Isolate_trace_read_merge(IsolateModeBase):
     expected = (
       '\n'
       'Error: Input file %s doesn\'t exist\n' %
-          os.path.join(ROOT_DIR, 'data', 'isolate', 'A_file_that_do_not_exist')
+          os.path.join(ROOT_DIR, 'tests', 'isolate', 'A_file_that_do_not_exist')
     )
     self.assertEquals(expected, out)
 
@@ -843,11 +845,11 @@ class IsolateNoOutdir(IsolateBase):
   def setUp(self):
     super(IsolateNoOutdir, self).setUp()
     self.root = os.path.join(self.tempdir, 'root')
-    os.makedirs(os.path.join(self.root, 'data', 'isolate'))
+    os.makedirs(os.path.join(self.root, 'tests', 'isolate'))
     for i in ('touch_root.isolate', 'touch_root.py'):
       shutil.copy(
-          os.path.join(ROOT_DIR, 'data', 'isolate', i),
-          os.path.join(self.root, 'data', 'isolate', i))
+          os.path.join(ROOT_DIR, 'tests', 'isolate', i),
+          os.path.join(self.root, 'tests', 'isolate', i))
       shutil.copy(
           os.path.join(ROOT_DIR, 'isolate.py'),
           os.path.join(self.root, 'isolate.py'))
@@ -896,19 +898,19 @@ class IsolateNoOutdir(IsolateBase):
 
   def filename(self):
     """Returns the filename corresponding to this test case."""
-    filename = os.path.join(self.root, 'data', 'isolate', 'touch_root.isolate')
+    filename = os.path.join(self.root, 'tests', 'isolate', 'touch_root.isolate')
     self.assertTrue(os.path.isfile(filename), filename)
     return filename
 
   def test_check(self):
     self._execute('check', ['--isolate', self.filename()], False)
-    files = [
+    files = sorted([
       'isolate_smoke_test.results',
       'isolate_smoke_test.state',
-      os.path.join('root', 'data', 'isolate', 'touch_root.isolate'),
-      os.path.join('root', 'data', 'isolate', 'touch_root.py'),
+      os.path.join('root', 'tests', 'isolate', 'touch_root.isolate'),
+      os.path.join('root', 'tests', 'isolate', 'touch_root.py'),
       os.path.join('root', 'isolate.py'),
-    ]
+    ])
     self.assertEquals(files, list_files_tree(self.tempdir))
 
   def test_hashtable(self):
@@ -919,36 +921,36 @@ class IsolateNoOutdir(IsolateBase):
       os.path.join(
           'hashtable',
           calc_sha1(
-              os.path.join(ROOT_DIR, 'data', 'isolate', 'touch_root.py'))),
+              os.path.join(ROOT_DIR, 'tests', 'isolate', 'touch_root.py'))),
       os.path.join('hashtable', calc_sha1(os.path.join(self.result))),
       'isolate_smoke_test.results',
       'isolate_smoke_test.state',
-      os.path.join('root', 'data', 'isolate', 'touch_root.isolate'),
-      os.path.join('root', 'data', 'isolate', 'touch_root.py'),
+      os.path.join('root', 'tests', 'isolate', 'touch_root.isolate'),
+      os.path.join('root', 'tests', 'isolate', 'touch_root.py'),
       os.path.join('root', 'isolate.py'),
     ])
     self.assertEquals(files, list_files_tree(self.tempdir))
 
   def test_remap(self):
     self._execute('remap', ['--isolate', self.filename()], False)
-    files = [
+    files = sorted([
       'isolate_smoke_test.results',
       'isolate_smoke_test.state',
-      os.path.join('root', 'data', 'isolate', 'touch_root.isolate'),
-      os.path.join('root', 'data', 'isolate', 'touch_root.py'),
+      os.path.join('root', 'tests', 'isolate', 'touch_root.isolate'),
+      os.path.join('root', 'tests', 'isolate', 'touch_root.py'),
       os.path.join('root', 'isolate.py'),
-    ]
+    ])
     self.assertEquals(files, list_files_tree(self.tempdir))
 
   def test_run(self):
     self._execute('run', ['--isolate', self.filename()], False)
-    files = [
+    files = sorted([
       'isolate_smoke_test.results',
       'isolate_smoke_test.state',
-      os.path.join('root', 'data', 'isolate', 'touch_root.isolate'),
-      os.path.join('root', 'data', 'isolate', 'touch_root.py'),
+      os.path.join('root', 'tests', 'isolate', 'touch_root.isolate'),
+      os.path.join('root', 'tests', 'isolate', 'touch_root.py'),
       os.path.join('root', 'isolate.py'),
-    ]
+    ])
     self.assertEquals(files, list_files_tree(self.tempdir))
 
   def test_trace_read_merge(self):
@@ -966,7 +968,7 @@ class IsolateNoOutdir(IsolateBase):
 
     output = self._execute('merge', [], True)
     expected = 'Updating %s\n' % isolate.trace_inputs.get_native_path_case(
-        os.path.join(self.root, 'data', 'isolate', 'touch_root.isolate'))
+        os.path.join(self.root, 'tests', 'isolate', 'touch_root.isolate'))
     self.assertEquals(expected, output)
     # In theory the file is going to be updated but in practice its content
     # won't change.
@@ -974,13 +976,13 @@ class IsolateNoOutdir(IsolateBase):
     # Clean the directory from the logs, which are OS-specific.
     isolate.trace_inputs.get_api().clean_trace(
         os.path.join(self.tempdir, 'isolate_smoke_test.results.log'))
-    files = [
+    files = sorted([
       'isolate_smoke_test.results',
       'isolate_smoke_test.state',
-      os.path.join('root', 'data', 'isolate', 'touch_root.isolate'),
-      os.path.join('root', 'data', 'isolate', 'touch_root.py'),
+      os.path.join('root', 'tests', 'isolate', 'touch_root.isolate'),
+      os.path.join('root', 'tests', 'isolate', 'touch_root.py'),
       os.path.join('root', 'isolate.py'),
-    ]
+    ])
     self.assertEquals(files, list_files_tree(self.tempdir))
 
 

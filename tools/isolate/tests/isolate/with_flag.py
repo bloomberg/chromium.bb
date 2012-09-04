@@ -39,12 +39,12 @@ def main():
   if mode == 'trace':
     # Verify the parent directory.
     parent_dir, base2 = os.path.split(parent_dir)
-    if base != 'isolate' or base2 != 'data':
+    if base != 'isolate' or base2 != 'tests':
       print 'mode trace: Invalid root dir %s' % root_dir
       return 4
   else:
     # Verify that we are not inside a checkout.
-    if base == 'data':
+    if base == 'tests':
       print 'mode run: Invalid root dir %s' % root_dir
       return 5
   return 0

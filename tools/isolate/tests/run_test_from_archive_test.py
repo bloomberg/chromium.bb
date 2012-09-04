@@ -5,8 +5,12 @@
 
 import json
 import logging
+import os
 import sys
 import unittest
+
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT_DIR)
 
 import run_test_from_archive
 

@@ -11,14 +11,15 @@ import subprocess
 import sys
 import unittest
 
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT_DIR)
+sys.path.append(os.path.join(ROOT_DIR, 'tests', 'gtest_fake'))
 
-sys.path.append(os.path.join(ROOT_DIR, 'data', 'gtest_fake'))
 import gtest_fake_base
 
 
 def RunTest(test_file, extra_flags):
-  target = os.path.join(ROOT_DIR, 'data', 'gtest_fake', test_file)
+  target = os.path.join(ROOT_DIR, 'tests', 'gtest_fake', test_file)
   cmd = [
       sys.executable,
       os.path.join(ROOT_DIR, 'run_test_cases.py'),

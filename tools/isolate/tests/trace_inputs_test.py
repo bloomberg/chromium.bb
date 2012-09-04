@@ -8,8 +8,11 @@ import os
 import unittest
 import sys
 
-FILE_NAME = os.path.abspath(__file__)
-ROOT_DIR = os.path.dirname(FILE_NAME)
+BASE_DIR = unicode(os.path.dirname(os.path.abspath(__file__)))
+ROOT_DIR = os.path.dirname(BASE_DIR)
+sys.path.insert(0, ROOT_DIR)
+
+FILE_PATH = unicode(os.path.abspath(__file__))
 
 import trace_inputs
 
@@ -114,47 +117,47 @@ class TraceInputs(unittest.TestCase):
       self.assertEquals(expected, actual)
 
       actual = trace_inputs.split_at_symlink(
-          None, os.path.join(ROOT_DIR, 'data', 'trace_inputs'))
+          None, os.path.join(BASE_DIR, 'trace_inputs'))
       expected = (
-          os.path.join(ROOT_DIR, 'data', 'trace_inputs'), None, None)
+          os.path.join(BASE_DIR, 'trace_inputs'), None, None)
       self.assertEquals(expected, actual)
 
       actual = trace_inputs.split_at_symlink(
-          None, os.path.join(ROOT_DIR, 'data', 'trace_inputs', 'files2'))
+          None, os.path.join(BASE_DIR, 'trace_inputs', 'files2'))
       expected = (
-          os.path.join(ROOT_DIR, 'data', 'trace_inputs'), 'files2', '')
+          os.path.join(BASE_DIR, 'trace_inputs'), 'files2', '')
       self.assertEquals(expected, actual)
 
       actual = trace_inputs.split_at_symlink(
-          ROOT_DIR, os.path.join('data', 'trace_inputs', 'files2'))
+          ROOT_DIR, os.path.join('tests', 'trace_inputs', 'files2'))
       expected = (
-          os.path.join('data', 'trace_inputs'), 'files2', '')
+          os.path.join('tests', 'trace_inputs'), 'files2', '')
       self.assertEquals(expected, actual)
       actual = trace_inputs.split_at_symlink(
-          ROOT_DIR, os.path.join('data', 'trace_inputs', 'files2', 'bar'))
+          ROOT_DIR, os.path.join('tests', 'trace_inputs', 'files2', 'bar'))
       expected = (
-          os.path.join('data', 'trace_inputs'), 'files2', '/bar')
+          os.path.join('tests', 'trace_inputs'), 'files2', '/bar')
       self.assertEquals(expected, actual)
 
     def test_native_case_symlink_right_case(self):
       actual = trace_inputs.get_native_path_case(
-          os.path.join(ROOT_DIR, 'data', 'trace_inputs'))
+          os.path.join(BASE_DIR, 'trace_inputs'))
       self.assertEquals('trace_inputs', os.path.basename(actual))
 
       # Make sure the symlink is not resolved.
       actual = trace_inputs.get_native_path_case(
-          os.path.join(ROOT_DIR, 'data', 'trace_inputs', 'files2'))
+          os.path.join(BASE_DIR, 'trace_inputs', 'files2'))
       self.assertEquals('files2', os.path.basename(actual))
 
   if sys.platform == 'darwin':
     def test_native_case_symlink_wrong_case(self):
       actual = trace_inputs.get_native_path_case(
-          os.path.join(ROOT_DIR, 'data', 'trace_inputs'))
+          os.path.join(BASE_DIR, 'trace_inputs'))
       self.assertEquals('trace_inputs', os.path.basename(actual))
 
       # Make sure the symlink is not resolved.
       actual = trace_inputs.get_native_path_case(
-          os.path.join(ROOT_DIR, 'data', 'trace_inputs', 'Files2'))
+          os.path.join(BASE_DIR, 'trace_inputs', 'Files2'))
       self.assertEquals('files2', os.path.basename(actual))
 
 
@@ -246,9 +249,9 @@ if sys.platform != 'win32':
             '|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7f5350f829d0) = %d' %
             self._GRAND_CHILD_PID),
         (self._GRAND_CHILD_PID,
-          'open("%s", O_RDONLY)       = 76' % os.path.basename(FILE_NAME)),
+          'open("%s", O_RDONLY)       = 76' % os.path.basename(FILE_PATH)),
       ]
-      size = os.stat(FILE_NAME).st_size
+      size = os.stat(FILE_PATH).st_size
       expected = {
         'root': {
           'children': [
@@ -260,29 +263,29 @@ if sys.platform != 'win32':
                   'executable': None,
                   'files': [
                     {
-                      'path': unicode(FILE_NAME),
+                      'path': FILE_PATH,
                       'size': size,
                     },
                   ],
-                  'initial_cwd': ROOT_DIR,
+                  'initial_cwd': BASE_DIR,
                   'pid': self._GRAND_CHILD_PID,
                 },
               ],
               'command': None,
               'executable': None,
               'files': [],
-              'initial_cwd': ROOT_DIR,
+              'initial_cwd': BASE_DIR,
               'pid': self._CHILD_PID,
             },
           ],
           'command': None,
           'executable': None,
           'files': [],
-          'initial_cwd': ROOT_DIR,
+          'initial_cwd': BASE_DIR,
           'pid': self._ROOT_PID,
         },
       }
-      self.assertEquals(expected, self._load_context(lines, ROOT_DIR))
+      self.assertEquals(expected, self._load_context(lines, BASE_DIR))
 
     def test_clone_chdir(self):
       # Grand-child with relative directory.

@@ -9,9 +9,10 @@ import sys
 import tempfile
 import unittest
 
-import isolate
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT_DIR)
 
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+import isolate
 
 
 class Isolate(unittest.TestCase):
@@ -87,7 +88,7 @@ class Isolate(unittest.TestCase):
     directory = tempfile.mkdtemp(prefix='isolate_')
     try:
       isolate_file = os.path.join(
-            ROOT_DIR, 'data', 'isolate', 'touch_root.isolate')
+            ROOT_DIR, 'tests', 'isolate', 'touch_root.isolate')
       class Options(object):
         result = os.path.join(directory, 'result')
         outdir = os.path.join(directory, '0utdir')
@@ -104,7 +105,7 @@ class Isolate(unittest.TestCase):
             "size": 538,
             "timestamp": 1335146921,
           },
-          os.path.join('data', 'isolate', 'touch_root.py'): {
+          os.path.join('tests', 'isolate', 'touch_root.py'): {
             "mode": 488,
             "sha-1": "invalid",
             "size": 538,
@@ -128,16 +129,16 @@ class Isolate(unittest.TestCase):
       expected_result = {
         'command': ['python', 'touch_root.py'],
         'files': {
-          os.path.join(u'data', 'isolate', 'touch_root.py'): {
+          os.path.join(u'tests', 'isolate', 'touch_root.py'): {
             'mode': 488,
-            'size': self._size('data', 'isolate', 'touch_root.py'),
+            'size': self._size('tests', 'isolate', 'touch_root.py'),
           },
           'isolate.py': {
             'mode': 488,
             'size': self._size('isolate.py'),
           },
         },
-        'relative_cwd': os.path.join('data', 'isolate'),
+        'relative_cwd': os.path.join('tests', 'isolate'),
       }
       if sys.platform == 'win32':
         # 'mode' are not saved in windows.

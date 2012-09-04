@@ -5,8 +5,12 @@
 
 import cStringIO
 import logging
+import os
 import unittest
 import sys
+
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT_DIR)
 
 import isolate_common
 

@@ -12,7 +12,7 @@ def main():
   root_dir = os.path.dirname(os.path.abspath(__file__))
   parent_dir, base = os.path.split(root_dir)
   parent_dir, base2 = os.path.split(parent_dir)
-  if base != 'isolate' or base2 != 'data':
+  if base != 'isolate' or base2 != 'tests':
     print 'Invalid root dir %s' % root_dir
     return 4
 

@@ -13,8 +13,9 @@ import sys
 import tempfile
 import unittest
 
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT_DIR)
 
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 VERBOSE = False
 
 
@@ -69,7 +70,7 @@ class RunTestFromArchive(unittest.TestCase):
     # The slave-side cache.
     self.cache = os.path.join(self.tempdir, 'cache')
 
-    self.data_dir = os.path.join(ROOT_DIR, 'data', 'run_test_from_archive')
+    self.data_dir = os.path.join(ROOT_DIR, 'tests', 'run_test_from_archive')
 
   def tearDown(self):
     shutil.rmtree(self.tempdir)

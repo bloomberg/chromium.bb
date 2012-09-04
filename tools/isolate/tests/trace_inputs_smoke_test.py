@@ -12,11 +12,13 @@ import sys
 import tempfile
 import unittest
 
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT_DIR)
+
 import run_test_cases
 
-FULLNAME = os.path.abspath(__file__)
-ROOT_DIR = os.path.dirname(FULLNAME)
 FILENAME = os.path.basename(__file__)
+REL_DATA = os.path.join(u'tests', 'trace_inputs')
 VERBOSE = False
 
 
@@ -42,7 +44,7 @@ class TraceInputsBase(unittest.TestCase):
     # Wraps up all the differences between OSes here.
     # - Windows doesn't track initial_cwd.
     # - OSX replaces /usr/bin/python with /usr/bin/python2.7.
-    self.cwd = os.path.join(ROOT_DIR, u'data')
+    self.cwd = os.path.join(ROOT_DIR, u'tests')
     self.initial_cwd = unicode(self.cwd)
     self.expected_cwd = unicode(ROOT_DIR)
     if sys.platform == 'win32':
@@ -84,12 +86,12 @@ class TraceInputsBase(unittest.TestCase):
     cmd = [sys.executable]
     if from_data:
       # When the gyp argument is specified, the command is started from --cwd
-      # directory. In this case, 'data'.
+      # directory. In this case, 'tests'.
       cmd.extend([os.path.join('trace_inputs', 'child1.py'), '--child-gyp'])
     else:
       # When the gyp argument is not specified, the command is started from
       # --root-dir directory.
-      cmd.extend([os.path.join('data', 'trace_inputs', 'child1.py'), '--child'])
+      cmd.extend([os.path.join(REL_DATA, 'child1.py'), '--child'])
     return cmd
 
   @staticmethod
@@ -124,7 +126,7 @@ class TraceInputs(TraceInputsBase):
 
   def _trace(self, from_data):
     if from_data:
-      cwd = os.path.join(ROOT_DIR, 'data')
+      cwd = os.path.join(ROOT_DIR, 'tests')
     else:
       cwd = ROOT_DIR
     return self._execute('trace', self.get_child_command(from_data), cwd=cwd)
@@ -134,12 +136,12 @@ class TraceInputs(TraceInputsBase):
       'Total: 7',
       'Non existent: 0',
       'Interesting: 7 reduced to 6',
-      '  data/trace_inputs/child1.py'.replace('/', os.path.sep),
-      '  data/trace_inputs/child2.py'.replace('/', os.path.sep),
-      '  data/trace_inputs/files1/'.replace('/', os.path.sep),
-      '  data/trace_inputs/test_file.txt'.replace('/', os.path.sep),
+      '  tests/trace_inputs/child1.py'.replace('/', os.path.sep),
+      '  tests/trace_inputs/child2.py'.replace('/', os.path.sep),
+      '  tests/trace_inputs/files1/'.replace('/', os.path.sep),
+      '  tests/trace_inputs/test_file.txt'.replace('/', os.path.sep),
+      '  tests/%s' % FILENAME,
       '  trace_inputs.py',
-      '  %s' % FILENAME,
     )) + '\n'
     trace_expected = '\n'.join((
       'child from %s' % ROOT_DIR,
@@ -168,20 +170,20 @@ class TraceInputs(TraceInputsBase):
             u'executable': self.naked_executable,
             u'files': [
               {
-                u'path': os.path.join(u'data', 'trace_inputs', 'child2.py'),
-                u'size': self._size('data', 'trace_inputs', 'child2.py'),
+                u'path': os.path.join(REL_DATA, 'child2.py'),
+                u'size': self._size(REL_DATA, 'child2.py'),
               },
               {
-                u'path': os.path.join(u'data', 'trace_inputs', 'files1', 'bar'),
-                u'size': self._size('data', 'trace_inputs', 'files1', 'bar'),
+                u'path': os.path.join(REL_DATA, 'files1', 'bar'),
+                u'size': self._size(REL_DATA, 'files1', 'bar'),
               },
               {
-                u'path': os.path.join(u'data', 'trace_inputs', 'files1', 'foo'),
-                u'size': self._size('data', 'trace_inputs', 'files1', 'foo'),
+                u'path': os.path.join(REL_DATA, 'files1', 'foo'),
+                u'size': self._size(REL_DATA, 'files1', 'foo'),
               },
               {
-                u'path': os.path.join(u'data', 'trace_inputs', 'test_file.txt'),
-                u'size': self._size('data', 'trace_inputs', 'test_file.txt'),
+                u'path': os.path.join(REL_DATA, 'test_file.txt'),
+                u'size': self._size(REL_DATA, 'test_file.txt'),
               },
             ],
             u'initial_cwd': self.initial_cwd,
@@ -196,16 +198,16 @@ class TraceInputs(TraceInputsBase):
         u'executable': self.real_executable,
         u'files': [
           {
-            u'path': os.path.join(u'data', 'trace_inputs', 'child1.py'),
-            u'size': self._size('data', 'trace_inputs', 'child1.py'),
+            u'path': os.path.join(REL_DATA, 'child1.py'),
+            u'size': self._size(REL_DATA, 'child1.py'),
+          },
+          {
+            u'path': os.path.join(u'tests', u'trace_inputs_smoke_test.py'),
+            u'size': self._size('tests', 'trace_inputs_smoke_test.py'),
           },
           {
             u'path': u'trace_inputs.py',
             u'size': self._size('trace_inputs.py'),
-          },
-          {
-            u'path': u'trace_inputs_smoke_test.py',
-            u'size': self._size('trace_inputs_smoke_test.py'),
           },
         ],
         u'initial_cwd': self.initial_cwd,
@@ -213,7 +215,7 @@ class TraceInputs(TraceInputsBase):
       },
     }
     trace_expected = '\n'.join((
-      'child_gyp from %s' % os.path.join(ROOT_DIR, 'data'),
+      'child_gyp from %s' % os.path.join(ROOT_DIR, 'tests'),
       'child2',
     )) + '\n'
     trace_actual = self._trace(True)
@@ -269,7 +271,7 @@ class TraceInputsImport(TraceInputsBase):
         'children': [],
         'command': [
           self.executable,
-          os.path.join('data', 'trace_inputs', 'child1.py'),
+          os.path.join(REL_DATA, 'child1.py'),
           '--child',
         ],
         'executable': self.real_executable,
@@ -291,20 +293,20 @@ class TraceInputsImport(TraceInputsBase):
             'executable': self.naked_executable,
             'files': [
               {
-                'path': os.path.join(u'data', 'trace_inputs', 'child2.py'),
-                'size': self._size(u'data', 'trace_inputs', 'child2.py'),
+                'path': os.path.join(REL_DATA, 'child2.py'),
+                'size': self._size(REL_DATA, 'child2.py'),
               },
               {
-                'path': os.path.join(u'data', 'trace_inputs', 'files1', 'bar'),
-                'size': self._size(u'data', 'trace_inputs', 'files1', 'bar'),
+                'path': os.path.join(REL_DATA, 'files1', 'bar'),
+                'size': self._size(REL_DATA, 'files1', 'bar'),
               },
               {
-                'path': os.path.join(u'data', 'trace_inputs', 'files1', 'foo'),
-                'size': self._size(u'data', 'trace_inputs', 'files1', 'foo'),
+                'path': os.path.join(REL_DATA, 'files1', 'foo'),
+                'size': self._size(REL_DATA, 'files1', 'foo'),
               },
               {
-                'path': os.path.join(u'data', 'trace_inputs', 'test_file.txt'),
-                'size': self._size(u'data', 'trace_inputs', 'test_file.txt'),
+                'path': os.path.join(REL_DATA, 'test_file.txt'),
+                'size': self._size(REL_DATA, 'test_file.txt'),
               },
             ],
             'initial_cwd': self.expected_cwd,
@@ -312,22 +314,22 @@ class TraceInputsImport(TraceInputsBase):
         ],
         'command': [
           self.executable,
-          os.path.join('data', 'trace_inputs', 'child1.py'),
+          os.path.join(REL_DATA, 'child1.py'),
           '--child',
         ],
         'executable': self.real_executable,
         'files': [
           {
-            'path': os.path.join(u'data', 'trace_inputs', 'child1.py'),
-            'size': self._size(u'data', 'trace_inputs', 'child1.py'),
+            'path': os.path.join(REL_DATA, 'child1.py'),
+            'size': self._size(REL_DATA, 'child1.py'),
+          },
+          {
+            u'path': os.path.join(u'tests', u'trace_inputs_smoke_test.py'),
+            'size': self._size('tests', 'trace_inputs_smoke_test.py'),
           },
           {
             'path': u'trace_inputs.py',
             'size': self._size('trace_inputs.py'),
-          },
-          {
-            'path': u'trace_inputs_smoke_test.py',
-            'size': self._size('trace_inputs_smoke_test.py'),
           },
         ],
         'initial_cwd': self.expected_cwd,
@@ -335,7 +337,7 @@ class TraceInputsImport(TraceInputsBase):
     }
 
   def _gen_dict_full_gyp(self):
-    """Returns the expected flattened Results when child1.py is called with
+    """Returns the expected flattened results when child1.py is called with
     --child-gyp.
     """
     return {
@@ -347,20 +349,20 @@ class TraceInputsImport(TraceInputsBase):
             'executable': self.naked_executable,
             'files': [
               {
-                'path': os.path.join(u'data', 'trace_inputs', 'child2.py'),
-                'size': self._size('data', 'trace_inputs', 'child2.py'),
+                'path': os.path.join(REL_DATA, 'child2.py'),
+                'size': self._size(REL_DATA, 'child2.py'),
               },
               {
-                'path': os.path.join(u'data', 'trace_inputs', 'files1', 'bar'),
-                'size': self._size('data', 'trace_inputs', 'files1', 'bar'),
+                'path': os.path.join(REL_DATA, 'files1', 'bar'),
+                'size': self._size(REL_DATA, 'files1', 'bar'),
               },
               {
-                'path': os.path.join(u'data', 'trace_inputs', 'files1', 'foo'),
-                'size': self._size('data', 'trace_inputs', 'files1', 'foo'),
+                'path': os.path.join(REL_DATA, 'files1', 'foo'),
+                'size': self._size(REL_DATA, 'files1', 'foo'),
               },
               {
-                'path': os.path.join(u'data', 'trace_inputs', 'test_file.txt'),
-                'size': self._size('data', 'trace_inputs', 'test_file.txt'),
+                'path': os.path.join(REL_DATA, 'test_file.txt'),
+                'size': self._size(REL_DATA, 'test_file.txt'),
               },
             ],
             'initial_cwd': self.initial_cwd,
@@ -374,16 +376,16 @@ class TraceInputsImport(TraceInputsBase):
         'executable': self.real_executable,
         'files': [
           {
-            'path': os.path.join(u'data', 'trace_inputs', 'child1.py'),
-            'size': self._size('data', 'trace_inputs', 'child1.py'),
+            'path': os.path.join(REL_DATA, 'child1.py'),
+            'size': self._size(REL_DATA, 'child1.py'),
+          },
+          {
+            'path': os.path.join(u'tests', u'trace_inputs_smoke_test.py'),
+            'size': self._size('tests', 'trace_inputs_smoke_test.py'),
           },
           {
             'path': u'trace_inputs.py',
             'size': self._size('trace_inputs.py'),
-          },
-          {
-            'path': u'trace_inputs_smoke_test.py',
-            'size': self._size('trace_inputs_smoke_test.py'),
           },
         ],
         'initial_cwd': self.initial_cwd,
@@ -392,8 +394,8 @@ class TraceInputsImport(TraceInputsBase):
 
   def test_trace_wrong_path(self):
     # Deliberately start the trace from the wrong path. Starts it from the
-    # directory 'data' so 'data/data/trace_inputs/child1.py' is not accessible,
-    # so child2.py process is not started.
+    # directory 'tests' so 'tests/tests/trace_inputs/child1.py' is not
+    # accessible, so child2.py process is not started.
     results = self._execute_trace(self.get_child_command(False))
     expected = self._gen_dict_wrong_path()
     actual = results.flatten()
@@ -408,12 +410,12 @@ class TraceInputsImport(TraceInputsBase):
     self.assertTrue(actual['root']['children'][0].pop('pid'))
     self.assertEquals(expected, actual)
     files = [
-      u'data/trace_inputs/child1.py'.replace('/', os.path.sep),
-      u'data/trace_inputs/child2.py'.replace('/', os.path.sep),
-      u'data/trace_inputs/files1/'.replace('/', os.path.sep),
-      u'data/trace_inputs/test_file.txt'.replace('/', os.path.sep),
+      u'tests/trace_inputs/child1.py'.replace('/', os.path.sep),
+      u'tests/trace_inputs/child2.py'.replace('/', os.path.sep),
+      u'tests/trace_inputs/files1/'.replace('/', os.path.sep),
+      u'tests/trace_inputs/test_file.txt'.replace('/', os.path.sep),
+      u'tests/trace_inputs_smoke_test.py',
       u'trace_inputs.py',
-      u'trace_inputs_smoke_test.py',
     ]
     def blacklist(f):
       return f.endswith(('.pyc', 'do_not_care.txt', '.git', '.svn'))
@@ -422,17 +424,17 @@ class TraceInputsImport(TraceInputsBase):
     self.assertEquals(files, [f.path for f in simplified])
 
   def test_trace_multiple(self):
-    # Starts PARALLEL threads and trace PARALLEL child processes simultaneously.
-    # Some are started from 'data' directory, others from this script's
+    # Starts parallel threads and trace parallel child processes simultaneously.
+    # Some are started from 'tests' directory, others from this script's
     # directory. One trace fails. Verify everything still goes one.
-    PARALLEL = 8
+    parallel = 8
 
     def trace(tracer, cmd, cwd, tracename):
       resultcode, output = tracer.trace(
           cmd, cwd, tracename, True)
       return (tracename, resultcode, output)
 
-    with run_test_cases.ThreadPool(PARALLEL) as pool:
+    with run_test_cases.ThreadPool(parallel) as pool:
       api = self.trace_inputs.get_api()
       with api.get_tracer(self.log) as tracer:
         pool.add_task(
@@ -479,12 +481,12 @@ class TraceInputsImport(TraceInputsBase):
 
     # See the comment above about the trace that fails because it's started from
     # the wrong directory.
-    BUSTED = 4
+    busted = 4
     for index, key in enumerate(sorted(actual_results)):
       self.assertEquals('trace%d' % (index + 1), key)
       self.assertEquals(2, len(trace_results[key]))
       # returncode
-      self.assertEquals(0 if index != BUSTED else 2, trace_results[key][0])
+      self.assertEquals(0 if index != busted else 2, trace_results[key][0])
       # output
       self.assertEquals(actual_results[key]['output'], trace_results[key][1])
 
@@ -493,7 +495,7 @@ class TraceInputsImport(TraceInputsBase):
       results = results.strip_root(ROOT_DIR)
       actual = results.flatten()
       self.assertTrue(actual['root'].pop('pid'))
-      if index != BUSTED:
+      if index != busted:
         self.assertTrue(actual['root']['children'][0].pop('pid'))
       self.assertEquals(expected_results[index], actual)
 
@@ -509,16 +511,16 @@ class TraceInputsImport(TraceInputsBase):
           'executable': self.real_executable,
           'files': [
             {
-              'path': os.path.join(u'data', 'trace_inputs', 'files2', 'bar'),
-              'size': self._size('data', 'trace_inputs', 'files2', 'bar'),
+              'path': os.path.join(REL_DATA, 'files2', 'bar'),
+              'size': self._size(REL_DATA, 'files2', 'bar'),
             },
             {
-              'path': os.path.join(u'data', 'trace_inputs', 'files2', 'foo'),
-              'size': self._size('data', 'trace_inputs', 'files2', 'foo'),
+              'path': os.path.join(REL_DATA, 'files2', 'foo'),
+              'size': self._size(REL_DATA, 'files2', 'foo'),
             },
             {
-              'path': os.path.join(u'data', 'trace_inputs', 'symlink.py'),
-              'size': self._size('data', 'trace_inputs', 'symlink.py'),
+              'path': os.path.join(REL_DATA, 'symlink.py'),
+              'size': self._size(REL_DATA, 'symlink.py'),
             },
           ],
           'initial_cwd': self.initial_cwd,
@@ -531,8 +533,8 @@ class TraceInputsImport(TraceInputsBase):
       self.assertEquals(expected, actual)
       files = [
         # In particular, the symlink is *not* resolved.
-        u'data/trace_inputs/files2/'.replace('/', os.path.sep),
-        u'data/trace_inputs/symlink.py'.replace('/', os.path.sep),
+        u'tests/trace_inputs/files2/'.replace('/', os.path.sep),
+        u'tests/trace_inputs/symlink.py'.replace('/', os.path.sep),
       ]
       def blacklist(f):
         return f.endswith(('.pyc', '.svn', 'do_not_care.txt'))
@@ -560,7 +562,7 @@ class TraceInputsImport(TraceInputsBase):
     self.assertEquals(expected, actual)
 
   def _touch_expected(self, command):
-    # Look for file that were touched but not opened, using different APIs.
+    # Looks for file that were touched but not opened, using different apis.
     results = self._execute_trace(
       [sys.executable, os.path.join('trace_inputs', 'touch_only.py'), command])
     expected = {
@@ -574,12 +576,12 @@ class TraceInputsImport(TraceInputsBase):
         'executable': self.real_executable,
         'files': [
           {
-            'path': os.path.join(u'data', 'trace_inputs', 'test_file.txt'),
+            'path': os.path.join(REL_DATA, 'test_file.txt'),
             'size': 0,
           },
           {
-            'path': os.path.join(u'data', 'trace_inputs', 'touch_only.py'),
-            'size': self._size('data', 'trace_inputs', 'touch_only.py'),
+            'path': os.path.join(REL_DATA, 'touch_only.py'),
+            'size': self._size(REL_DATA, 'touch_only.py'),
           },
         ],
         'initial_cwd': self.initial_cwd,

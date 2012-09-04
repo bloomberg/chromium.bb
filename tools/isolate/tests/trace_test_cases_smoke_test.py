@@ -12,13 +12,15 @@ import sys
 import tempfile
 import unittest
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.dirname(BASE_DIR)
+sys.path.insert(0, ROOT_DIR)
+
 import trace_inputs
 
 FILE_PATH = os.path.realpath(unicode(os.path.abspath(__file__)))
-ROOT_DIR = os.path.dirname(FILE_PATH)
-TARGET_UTIL_PATH = os.path.join(ROOT_DIR, 'data', 'gtest_fake',
-                                'gtest_fake_base.py')
-TARGET_PATH = os.path.join(ROOT_DIR, 'data', 'gtest_fake', 'gtest_fake_fail.py')
+TARGET_UTIL_PATH = os.path.join(BASE_DIR, 'gtest_fake', 'gtest_fake_base.py')
+TARGET_PATH = os.path.join(BASE_DIR, 'gtest_fake', 'gtest_fake_fail.py')
 
 
 class TraceTestCases(unittest.TestCase):
@@ -65,12 +67,12 @@ class TraceTestCases(unittest.TestCase):
           u'executable': self.real_executable,
           u'files': [
             {
-              u'path': os.path.join(u'data', 'gtest_fake',
+              u'path': os.path.join(u'tests', 'gtest_fake',
                                     'gtest_fake_base.py'),
               u'size': os.stat(TARGET_UTIL_PATH).st_size,
             },
             {
-              u'path': os.path.join(u'data', 'gtest_fake',
+              u'path': os.path.join(u'tests', 'gtest_fake',
                                     'gtest_fake_fail.py'),
               u'size': os.stat(TARGET_PATH).st_size,
             },
@@ -110,7 +112,7 @@ class TraceTestCases(unittest.TestCase):
         '--timeout', '0',
         '--out', self.temp_file,
         '--root-dir', ROOT_DIR,
-        '--variable', 'PRODUCT_DIR', 'data',
+        '--variable', 'PRODUCT_DIR', 'tests',
         TARGET_PATH,
     ]
     if VERBOSE:
