@@ -55,9 +55,6 @@
 #include "../shared/os-compatibility.h"
 #include "git-version.h"
 
-#define ARRAY_SIZE(array) (sizeof(array) / sizeof(array[0]))
-
-
 static struct wl_list child_process_list;
 static struct weston_compositor *segv_compositor;
 
@@ -1246,7 +1243,7 @@ triangle_fan_debug(struct weston_surface *surface, int first, int count)
 
 	glUseProgram(compositor->solid_shader.program);
 	glUniform4fv(compositor->solid_shader.color_uniform, 1,
-			color[color_idx++ % ARRAY_SIZE(color)]);
+			color[color_idx++ % ARRAY_LENGTH(color)]);
 	glDrawElements(GL_LINES, nelems, GL_UNSIGNED_SHORT, buffer);
 	glUseProgram(compositor->current_shader->program);
 	free(buffer);
