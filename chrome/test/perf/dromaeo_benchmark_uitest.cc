@@ -34,6 +34,8 @@ class DromaeoTest : public UIPerfTest {
   }
 
   void RunTest(const std::string& suite) {
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunDromaeo))
+      return;
     FilePath test_path = GetDromaeoDir();
     std::string query_string = suite + "&automated";
     test_path = test_path.Append(FILE_PATH_LITERAL("index.html"));
@@ -141,31 +143,131 @@ class DromaeoReferenceTest : public DromaeoTest {
 #define MAYBE_DOMCorePerf DOMCorePerf
 #endif
 TEST_F(DromaeoTest, MAYBE_DOMCorePerf) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunDromaeo))
-    return;
-
   RunTest("dom");
+}
+
+TEST_F(DromaeoTest, DOMCoreAttrPerf) {
+  RunTest("dom-attr");
+}
+
+TEST_F(DromaeoTest, DOMCoreModifyPerf) {
+  RunTest("dom-modify");
+}
+
+TEST_F(DromaeoTest, DOMCoreQueryPerf) {
+  RunTest("dom-query");
+}
+
+TEST_F(DromaeoTest, DOMCoreTraversePerf) {
+  RunTest("dom-traverse");
 }
 
 TEST_F(DromaeoTest, JSLibPerf) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunDromaeo))
-    return;
-
   RunTest("jslib");
+}
+
+TEST_F(DromaeoTest, JSLibAttrJqueryPerf) {
+  RunTest("jslib-attr-jquery");
+}
+
+TEST_F(DromaeoTest, JSLibAttrPrototypePerf) {
+  RunTest("jslib-attr-prototype");
+}
+
+TEST_F(DromaeoTest, JSLibEventJqueryPerf) {
+  RunTest("jslib-event-jquery");
+}
+
+TEST_F(DromaeoTest, JSLibEventPrototypePerf) {
+  RunTest("jslib-event-prototype");
+}
+
+TEST_F(DromaeoTest, JSLibModifyJqueryPerf) {
+  RunTest("jslib-modify-jquery");
+}
+
+TEST_F(DromaeoTest, JSLibModifyPrototypePerf) {
+  RunTest("jslib-modify-prototype");
+}
+
+TEST_F(DromaeoTest, JSLibTraverseJqueryPerf) {
+  RunTest("jslib-traverse-jquery");
+}
+
+TEST_F(DromaeoTest, JSLibTraversePrototypePerf) {
+  RunTest("jslib-traverse-prototype");
+}
+
+TEST_F(DromaeoTest, JSLibStyleJqueryPerf) {
+  RunTest("jslib-style-jquery");
+}
+
+TEST_F(DromaeoTest, JSLibStylePrototypePerf) {
+  RunTest("jslib-style-prototype");
 }
 
 TEST_F(DromaeoReferenceTest, MAYBE_DOMCorePerf) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunDromaeo))
-    return;
-
   RunTest("dom");
 }
 
-TEST_F(DromaeoReferenceTest, JSLibPerf) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(kRunDromaeo))
-    return;
+TEST_F(DromaeoReferenceTest, DOMCoreAttrPerf) {
+  RunTest("dom-attr");
+}
 
+TEST_F(DromaeoReferenceTest, DOMCoreModifyPerf) {
+  RunTest("dom-modify");
+}
+
+TEST_F(DromaeoReferenceTest, DOMCoreQueryPerf) {
+  RunTest("dom-query");
+}
+
+TEST_F(DromaeoReferenceTest, DOMCoreTraversePerf) {
+  RunTest("dom-traverse");
+}
+
+TEST_F(DromaeoReferenceTest, JSLibPerf) {
   RunTest("jslib");
+}
+
+TEST_F(DromaeoReferenceTest, JSLibAttrJqueryPerf) {
+  RunTest("jslib-attr-jquery");
+}
+
+TEST_F(DromaeoReferenceTest, JSLibAttrPrototypePerf) {
+  RunTest("jslib-attr-prototype");
+}
+
+TEST_F(DromaeoReferenceTest, JSLibEventJqueryPerf) {
+  RunTest("jslib-event-jquery");
+}
+
+TEST_F(DromaeoReferenceTest, JSLibEventPrototypePerf) {
+  RunTest("jslib-event-prototype");
+}
+
+TEST_F(DromaeoReferenceTest, JSLibModifyJqueryPerf) {
+  RunTest("jslib-modify-jquery");
+}
+
+TEST_F(DromaeoReferenceTest, JSLibModifyPrototypePerf) {
+  RunTest("jslib-modify-prototype");
+}
+
+TEST_F(DromaeoReferenceTest, JSLibTraverseJqueryPerf) {
+  RunTest("jslib-traverse-jquery");
+}
+
+TEST_F(DromaeoReferenceTest, JSLibTraversePrototypePerf) {
+  RunTest("jslib-traverse-prototype");
+}
+
+TEST_F(DromaeoReferenceTest, JSLibStyleJqueryPerf) {
+  RunTest("jslib-style-jquery");
+}
+
+TEST_F(DromaeoReferenceTest, JSLibStylePrototypePerf) {
+  RunTest("jslib-style-prototype");
 }
 
 
