@@ -25,11 +25,26 @@ namespace experimental.systemInfo.storage {
     double availableCapacity;
   };
 
+  dictionary StorageChangeInfo {
+    // The uniue id of the storage unit already changed.
+    DOMString id;
+    // The new value of the available capacity.
+    double availableCapacity;
+  };
+
   callback StorageInfoCallback = void (StorageUnitInfo[] info);
 
   interface Functions {
-    // Get the storage information from the system.
+    // Get the storage information from the system. The argument passed to the
+    // callback is an array of StorageUnitInfo objects.
     static void get(StorageInfoCallback callback);
   };
+
+  interface Events {
+    // Fired when the storage information is updated.
+    // |info|   : The changed information for the specified storage unit
+    static void onAvailableCapacityChanged(StorageChangeInfo info);
+  };
+ 
 };
 

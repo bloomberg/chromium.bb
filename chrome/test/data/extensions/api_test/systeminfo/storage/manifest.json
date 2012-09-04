@@ -3,10 +3,5 @@
   "version": "0.1",
   "manifest_version": 2,
   "description": "Test systeminfo.cpu API",
-  "permissions": ["experimental"],
-  "app": {
-    "background": {
-       "scripts": ["test_storage_api.js"]
-      }
-    }
+  "permissions": ["experimental"]
 }

@@ -554,6 +554,8 @@
         'browser/extensions/system/system_api.cc',
         'browser/extensions/system/system_api.h',
         'browser/extensions/system_info_provider.h',
+        'browser/extensions/system_info_event_router.cc',
+        'browser/extensions/system_info_event_router.h',
         'browser/extensions/tab_helper.cc',
         'browser/extensions/tab_helper.h',
         'browser/extensions/theme_installed_infobar_delegate.cc',
@@ -713,7 +715,6 @@
                 ['include', '^browser/extensions/'],
 
                 # Other excluded stuff.
-                ['exclude', '^browser/extensions/api/system_info_storage/storage_info_provider_win.cc'],
                 ['exclude', '^browser/extensions/browser_action_test_util_gtk.cc'],
                 ['exclude', '^browser/extensions/extension_host_mac.h'],
                 ['exclude', '^browser/extensions/extension_host_mac.mm'],

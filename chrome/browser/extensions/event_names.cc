@@ -70,6 +70,11 @@ const char kBluetoothOnPowerChanged[] =
 
 const char kOnPushMessage[] = "experimental.pushMessaging.onMessage";
 
+const char kOnStorageAvailableCapacityChanged[] =
+     "experimental.systemInfo.storage.onAvailableCapacityChanged";
+const char kOnStorageAdded[] = "experimental.systemInfo.storage.onAdded";
+const char kOnStorageRemoved[] = "experimental.systemInfo.storage.onRemoved";
+
 }  // namespace event_names
 
 }  // namespace extensions

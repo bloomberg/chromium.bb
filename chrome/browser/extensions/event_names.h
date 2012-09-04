@@ -76,6 +76,11 @@ extern const char kBluetoothOnPowerChanged[];
 // Push messaging.
 extern const char kOnPushMessage[];
 
+// SystemInfo storage
+extern const char kOnStorageAvailableCapacityChanged[];
+extern const char kOnStorageAdded[];
+extern const char kOnStorageRemoved[];
+
 }  // namespace event_names
 
 }  // namespace extensions

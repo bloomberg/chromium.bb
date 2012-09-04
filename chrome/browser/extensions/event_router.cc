@@ -18,8 +18,10 @@
 #include "chrome/browser/extensions/extension_processes_api_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
 #include "chrome/browser/extensions/process_map.h"
+#include "chrome/browser/extensions/system_info_event_router.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -159,6 +161,9 @@ void EventRouter::OnListenerAdded(const EventListener* listener) {
       event_name.compare(
           extension_processes_api_constants::kOnUpdatedWithMemory) == 0)
     ExtensionProcessesEventRouter::GetInstance()->ListenerAdded();
+
+  if (SystemInfoEventRouter::IsSystemInfoEvent(event_name))
+    SystemInfoEventRouter::GetInstance()->AddEventListener(event_name);
 }
 
 void EventRouter::OnListenerRemoved(const EventListener* listener) {
@@ -183,6 +188,9 @@ void EventRouter::OnListenerRemoved(const EventListener* listener) {
       BrowserThread::IO, FROM_HERE,
       base::Bind(&NotifyEventListenerRemovedOnIOThread,
                  profile_, listener->extension_id, listener->event_name));
+
+  if (SystemInfoEventRouter::IsSystemInfoEvent(event_name))
+    SystemInfoEventRouter::GetInstance()->RemoveEventListener(event_name);
 }
 
 void EventRouter::AddLazyEventListener(const std::string& event_name,

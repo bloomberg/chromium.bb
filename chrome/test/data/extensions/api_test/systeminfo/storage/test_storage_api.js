@@ -16,5 +16,21 @@ chrome.test.runTests([
       chrome.test.assertTrue(unit.capacity == 4098);
       chrome.test.assertTrue(unit.availableCapacity == 1024);
     }));
-  }
+  },
+  function testChangedEvent() {
+    chrome.test.sendMessage("ready", function() {
+      var numOfChangedEvent = 0;
+      var base = 10000;
+      var step = 10;
+      var doneChangedEvent = chrome.test.listenForever(
+        chrome.systemInfo.storage.onAvailableCapacityChanged,
+        function listener(changedInfo) {
+          chrome.test.assertTrue(changedInfo.id == "/dev/sda1");
+          chrome.test.assertTrue(
+            changedInfo.availableCapacity == (base - step*numOfChangedEvent));
+          if (++numOfChangedEvent > 5)
+            doneChangedEvent();
+        });
+      });
+    }
 ]);
