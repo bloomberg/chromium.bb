@@ -745,7 +745,7 @@ GDataProvider.prototype.convert_ = function(data) {
 
   if ('thumbnailUrl' in data) {
     result.thumbnail = {
-      url: data.thumbnailUrl.replace(/s220/, 's320'),
+      url: data.thumbnailUrl.replace(/s220/, 's500'),
       transform: null
     };
   }

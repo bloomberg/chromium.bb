@@ -55,6 +55,9 @@ Ribbon.prototype.enable = function() {
   this.firstVisibleIndex_ = 0;
   this.lastVisibleIndex_ = -1;  // Zero thumbnails
 
+  this.onContentBound_ = this.onContentChange_.bind(this);
+  this.dataModel_.addEventListener('content', this.onContentBound_);
+
   this.onSpliceBound_ = this.onSplice_.bind(this);
   this.dataModel_.addEventListener('splice', this.onSpliceBound_);
 
@@ -68,6 +71,7 @@ Ribbon.prototype.enable = function() {
  * Disable ribbon.
  */
 Ribbon.prototype.disable = function() {
+  this.dataModel_.removeEventListener('content', this.onContentBound_);
   this.dataModel_.removeEventListener('splice', this.onSpliceBound_);
   this.selectionModel_.removeEventListener('change', this.onSelectionBound_);
 
@@ -282,7 +286,7 @@ Ribbon.prototype.renderThumbnail_ = function(index) {
   var thumbnail = this.ownerDocument.createElement('div');
   thumbnail.className = 'ribbon-image';
   thumbnail.addEventListener('click', function() {
-    var index = this.dataModel_.slice().indexOf(item);
+    var index = this.dataModel_.indexOf(item);
     this.selectionModel_.unselectAll();
     this.selectionModel_.setIndexSelected(index, true);
   }.bind(this));
@@ -313,15 +317,18 @@ Ribbon.prototype.setThumbnailImage_ = function(thumbnail, url, metadata) {
 };
 
 /**
- * Update the thumbnail image.
+ * Content change handler.
  *
- * @param {string} url Image url.
- * @param {Object} metadata Metadata.
+ * @param {Event} event Event.
+ * @private
  */
-Ribbon.prototype.updateThumbnail = function(url, metadata) {
+Ribbon.prototype.onContentChange_ = function(event) {
+  var url = event.item.getUrl();
+  this.remapCache_(event.oldUrl, url);
+
   var thumbnail = this.renderCache_[url];
-  if (thumbnail)
-    this.setThumbnailImage_(thumbnail, url, metadata);
+  if (thumbnail && event.metadata)
+    this.setThumbnailImage_(thumbnail, url, event.metadata);
 };
 
 /**
@@ -329,8 +336,9 @@ Ribbon.prototype.updateThumbnail = function(url, metadata) {
  *
  * @param {string} oldUrl Old url.
  * @param {string} newUrl New url.
+ * @private
  */
-Ribbon.prototype.remapCache = function(oldUrl, newUrl) {
+Ribbon.prototype.remapCache_ = function(oldUrl, newUrl) {
   if (oldUrl != newUrl && (oldUrl in this.renderCache_)) {
     this.renderCache_[newUrl] = this.renderCache_[oldUrl];
     delete this.renderCache_[oldUrl];

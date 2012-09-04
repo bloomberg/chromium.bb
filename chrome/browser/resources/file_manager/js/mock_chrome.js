@@ -803,6 +803,8 @@ chrome.mediaPlayerPrivate = {
 
   onPlaylistChanged: new MockEventSource(),
 
+  onTogglePlayState: new MockEventSource(),
+
   play: function(urls, position) {
     this.playlist_ = { items: urls, position: position };
 

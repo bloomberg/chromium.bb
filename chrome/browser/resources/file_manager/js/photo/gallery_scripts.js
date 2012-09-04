@@ -49,5 +49,6 @@
 
 //<include src="gallery.js">
 //<include src="gallery_item.js">
+//<include src="mosaic_mode.js">
 //<include src="slide_mode.js">
 //<include src="ribbon.js">

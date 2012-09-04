@@ -655,12 +655,12 @@ body {
     url('../images/gallery/icon_mosaic_selected.png') 1x);
 }
 
-.gallery[mode='grid'] > .toolbar > .button.mode {
+.gallery[mode='mosaic'] > .toolbar > .button.mode {
   background-image: -webkit-image-set(
     url('../images/gallery/icon_1up.png') 1x);
 }
 
-.gallery[mode='grid'] > .toolbar > .button.mode:active {
+.gallery[mode='mosaic'] > .toolbar > .button.mode:active {
   background-image: -webkit-image-set(
     url('../images/gallery/icon_1up_selected.png') 1x);
 }
@@ -1085,37 +1085,67 @@ body {
   display: none;
 }
 
-.thumbnail-grid {
-  bottom: 56px;  /* Avoid overlapping with the toolbar. */
+.mosaic {
+  background-color: #333;  /* We want black images to stand out. */
+  bottom: 56px;  /* Make space for the toolbar. */
   left: 0;
-  overflow-y: auto;
+  overflow-x: scroll;
+  overflow-y: hidden;
   position: absolute;
   right: 0;
-  top: 56px;  /* Same as bottom. */
+  top: 0;
 }
 
-.thumbnail-grid::-webkit-scrollbar {
-  background: black;
+.mosaic::-webkit-scrollbar {
+  background: transparent;
 }
 
-.thumbnail-grid::-webkit-scrollbar-thumb {
+.mosaic::-webkit-scrollbar-thumb {
   background: rgb(31, 31, 31);
 }
 
-.thumbnail-item {
-  background-color: rgba(0, 0, 0, 0) !important;
-  background-image: none !important;
-  border: none !important;
-  height: 184px;
-  margin-left: 8px;
-  margin-top: 7px;
-  overflow: hidden;
-  padding: 0;
-  width: 244px;
+.mosaic-tile {
+  position: absolute;
 }
 
-.thumbnail-item .img-container {
-  border: 2px solid transparent;  /* Make room for the img border */
+.mosaic-tile[zooming] {
+  -webkit-transition-property: -webkit-transform;
+  -webkit-transition-timing-function: ease-in-out;
+  z-index: 2;
+}
+
+.mosaic-tile:not([zooming]) {
+  -webkit-transition: opacity 280ms linear;
+}
+
+.mosaic:not([enabled]) .mosaic-tile:not([zooming]) {
+  opacity: 0;
+}
+
+/* Must be in sync with mosaic_mode.js.
+  Mosaic.Layout.SPACING should be equal to
+    top + bottom + border-top-width + border-bottom-width AND
+    left + right + border-left-width + border-right-width */
+.mosaic-tile .img-border {
+  border: 1px solid transparent;  /* Space between the outline and the image. */
+  bottom: 4px;
+  left: 4px;
+  outline: 2px solid transparent;
+  overflow: hidden;
+  position: absolute;
+  right: 4px;
+  top: 4px;
+}
+
+.mosaic-tile[selected]:not([zooming]) .img-border {
+  outline-color: rgb(51, 153, 255);
+}
+
+.mosaic-tile:hover:not([selected]):not([zooming]) .img-border {
+  outline-color: rgb(182, 212, 252);
+}
+
+.mosaic-tile .img-wrapper {
   bottom: 0;
   left: 0;
   position: absolute;
@@ -1123,32 +1153,12 @@ body {
   top: 0;
 }
 
-/* Smaller box around the generic icon. */
-.thumbnail-item .img-container[generic-thumbnail] {
-  bottom: 25px;
-  left: 55px;
-  right: 55px;
-  top: 25px;
-}
-
-.thumbnail-item[selected] .img-container[generic-thumbnail],
-.thumbnail-item:hover .img-container[generic-thumbnail] {
-  border-color: rgb(51, 153, 255);
-}
-
-.thumbnail-item img {
+.mosaic-tile img {
   -webkit-user-drag: none;
-  border: 2px solid transparent;
-  box-sizing: border-box;
   position: absolute;
 }
 
-.thumbnail-item[selected] img,
-.thumbnail-item:hover img {
-  outline: 2px solid rgb(51, 153, 255);
-}
-
-.gallery:not([mode='grid']) .thumbnail-grid,
+.gallery:not([mode='mosaic']) .mosaic,
 .gallery:not([mode='slide']) .image-container,
 .gallery:not([mode='slide']) .ribbon,
 .gallery:not([mode='slide']) .arrow-box {
