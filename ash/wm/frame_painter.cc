@@ -579,6 +579,11 @@ int FramePainter::GetHeaderOpacity(HeaderMode header_mode,
   if (theme_frame_overlay)
     return kFullyOpaque;
 
+  // Maximized windows with workspace2 are totally transparent.
+  if (frame_->IsMaximized() &&
+      internal::WorkspaceController::IsWorkspace2Enabled())
+    return 0;
+
   // Single browser window is very transparent.
   if (UseSoloWindowHeader())
     return kSoloWindowOpacity;
