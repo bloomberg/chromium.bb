@@ -64,23 +64,13 @@
   [[self window] makeKeyAndOrderFront:self];
 }
 
-- (void)attachConstrainedWindow:(ConstrainedWindowMac*)window {
+- (GTMWindowSheetController*)sheetController {
   if (!sheetController_.get()) {
     sheetController_.reset([[GTMWindowSheetController alloc]
         initWithWindow:[self window]
               delegate:self]);
   }
-
-  NSView* tabContentsView =
-      [window->owner()->web_contents()->GetNativeView() superview];
-  window->delegate()->RunSheet(sheetController_, tabContentsView);
-}
-
-- (void)removeConstrainedWindow:(ConstrainedWindowMac*)window {
-}
-
-- (BOOL)canAttachConstrainedWindow {
-  return YES;
+  return sheetController_;
 }
 
 - (void)executeCommand:(int)command {

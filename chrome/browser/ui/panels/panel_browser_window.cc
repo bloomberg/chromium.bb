@@ -431,6 +431,11 @@ gfx::Rect PanelBrowserWindow::GetInstantBounds() {
   return gfx::Rect();
 }
 
+bool PanelBrowserWindow::IsInstantTabShowing() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 WindowOpenDisposition PanelBrowserWindow::GetDispositionForPopupBounds(
     const gfx::Rect& bounds) {
 #if defined(USE_AURA)

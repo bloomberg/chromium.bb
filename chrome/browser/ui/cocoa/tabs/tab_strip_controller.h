@@ -22,7 +22,6 @@
 @class TabStripView;
 
 class Browser;
-class ConstrainedWindowMac;
 class TabContents;
 class TabStripModelObserverBridge;
 class TabStripModel;
@@ -253,11 +252,9 @@ class TabStripModel;
 // Returns the currently active TabContentsController.
 - (TabContentsController*)activeTabContentsController;
 
-  // See comments in browser_window_controller.h for documentation about these
-  // functions.
-- (void)attachConstrainedWindow:(ConstrainedWindowMac*)window;
-- (void)removeConstrainedWindow:(ConstrainedWindowMac*)window;
-
 @end
+
+// Returns the parent view to use when showing a sheet for a given tab contents.
+NSView* GetSheetParentViewForTabContents(TabContents* tab_contents);
 
 #endif  // CHROME_BROWSER_UI_COCOA_TABS_TAB_STRIP_CONTROLLER_H_

@@ -22,15 +22,7 @@ class TabContents;
 // implement this protocol.
 @protocol ConstrainedWindowSupport
 
-// Requests that |window| is opened as a per-tab sheet to the current tab.
-- (void)attachConstrainedWindow:(ConstrainedWindowMac*)window;
-
-// Closes the tab sheet |window| and potentially shows the next sheet in the
-// tab's sheet queue.
-- (void)removeConstrainedWindow:(ConstrainedWindowMac*)window;
-
-// Returns NO if constrained windows cannot be attached to this window.
-- (BOOL)canAttachConstrainedWindow;
+- (GTMWindowSheetController*)sheetController;
 
 @end
 
@@ -132,6 +124,7 @@ class ConstrainedWindowMac : public ConstrainedWindow {
   // Overridden from ConstrainedWindow:
   virtual void ShowConstrainedWindow() OVERRIDE;
   virtual void CloseConstrainedWindow() OVERRIDE;
+  virtual bool CanShowConstrainedWindow() OVERRIDE;
 
   // Returns the TabContents that constrains this Constrained Window.
   TabContents* owner() const { return tab_contents_; }

@@ -19,6 +19,10 @@ SkColor ConstrainedWindow::GetTextColor() {
 void ConstrainedWindow::FocusConstrainedWindow() {
 }
 
+bool ConstrainedWindow::CanShowConstrainedWindow() {
+  return true;
+}
+
 gfx::NativeWindow ConstrainedWindow::GetNativeWindow() {
   NOTREACHED();
   return NULL;

@@ -43,6 +43,9 @@ class ConstrainedWindow {
   // Sets focus on the Constrained Window.
   virtual void FocusConstrainedWindow();
 
+  // Checks if the constrained window can be shown.
+  virtual bool CanShowConstrainedWindow();
+
   // Returns the native window of the constrained window.
   virtual gfx::NativeWindow GetNativeWindow();
 

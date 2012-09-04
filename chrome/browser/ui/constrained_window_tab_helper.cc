@@ -32,7 +32,7 @@ void ConstrainedWindowTabHelper::AddConstrainedDialog(
     ConstrainedWindow* window) {
   child_windows_.push_back(window);
 
-  if (child_windows_.size() == 1) {
+  if (child_windows_.size() == 1 && window->CanShowConstrainedWindow()) {
     window->ShowConstrainedWindow();
     BlockTabContent(true);
   }

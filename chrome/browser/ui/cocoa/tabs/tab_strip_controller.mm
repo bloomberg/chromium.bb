@@ -2076,55 +2076,15 @@ private:
     tabStripModel_->ActivateTabAt(index, false /* not a user gesture */);
 }
 
-- (void)attachConstrainedWindow:(ConstrainedWindowMac*)window {
-  // TODO(thakis, avi): Figure out how to make this work when tabs are dragged
-  // out or if fullscreen mode is toggled.
+@end
 
+NSView* GetSheetParentViewForTabContents(TabContents* tab_contents) {
   // View hierarchy of the contents view:
   // NSView  -- switchView, same for all tabs
   // +- NSView  -- TabContentsController's view
   //    +- TabContentsViewCocoa
-  // Changing it? Do not forget to modify removeConstrainedWindow too.
-  // We use the TabContentsController's view in |swapInTabAtIndex|, so we have
-  // to pass it to the sheet controller here.
-  NSView* tabContentsView =
-      [window->owner()->web_contents()->GetNativeView() superview];
-  window->delegate()->RunSheet([self sheetController], tabContentsView);
-
-  // TODO(avi, thakis): GTMWindowSheetController has no api to move tabsheets
-  // between windows. Until then, we have to prevent having to move a tabsheet
-  // between windows, e.g. no tearing off of tabs.
-  NSInteger modelIndex = [self modelIndexForContentsView:tabContentsView];
-  NSInteger index = [self indexFromModelIndex:modelIndex];
-  BrowserWindowController* controller =
-      (BrowserWindowController*)[[switchView_ window] windowController];
-  DCHECK(controller != nil);
-  DCHECK(index >= 0);
-  if (index >= 0) {
-    [controller setTab:[self viewAtIndex:index] isDraggable:NO];
-  }
+  //
+  // Changing it? Do not forget to modify
+  // -[TabStripController swapInTabAtIndex:] too.
+  return [tab_contents->web_contents()->GetNativeView() superview];
 }
-
-- (void)removeConstrainedWindow:(ConstrainedWindowMac*)window {
-  NSView* tabContentsView =
-      [window->owner()->web_contents()->GetNativeView() superview];
-
-  // TODO(avi, thakis): GTMWindowSheetController has no api to move tabsheets
-  // between windows. Until then, we have to prevent having to move a tabsheet
-  // between windows, e.g. no tearing off of tabs.
-  NSInteger modelIndex = [self modelIndexForContentsView:tabContentsView];
-  if (modelIndex < 0) {
-    // This can happen during shutdown where the tab contents view has already
-    // removed itself.
-    return;
-  }
-  NSInteger index = [self indexFromModelIndex:modelIndex];
-  BrowserWindowController* controller =
-      (BrowserWindowController*)[[switchView_ window] windowController];
-  DCHECK(index >= 0);
-  if (index >= 0) {
-    [controller setTab:[self viewAtIndex:index] isDraggable:YES];
-  }
-}
-
-@end

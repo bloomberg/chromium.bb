@@ -1148,6 +1148,10 @@ gfx::Rect BrowserWindowGtk::GetInstantBounds() {
   return ui::GetWidgetScreenBounds(contents_container_->widget());
 }
 
+bool BrowserWindowGtk::IsInstantTabShowing() {
+  return contents_container_->HasPreview();
+}
+
 WindowOpenDisposition BrowserWindowGtk::GetDispositionForPopupBounds(
     const gfx::Rect& bounds) {
   return NEW_POPUP;

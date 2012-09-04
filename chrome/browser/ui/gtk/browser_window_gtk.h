@@ -159,6 +159,7 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual void ShowInstant(TabContents* preview) OVERRIDE;
   virtual void HideInstant() OVERRIDE;
   virtual gfx::Rect GetInstantBounds() OVERRIDE;
+  virtual bool IsInstantTabShowing() OVERRIDE;
   virtual WindowOpenDisposition GetDispositionForPopupBounds(
       const gfx::Rect& bounds) OVERRIDE;
   virtual FindBar* CreateFindBar() OVERRIDE;

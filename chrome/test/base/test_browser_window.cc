@@ -125,6 +125,10 @@ WindowOpenDisposition TestBrowserWindow::GetDispositionForPopupBounds(
   return NEW_POPUP;
 }
 
+bool TestBrowserWindow::IsInstantTabShowing() {
+  return false;
+}
+
 FindBar* TestBrowserWindow::CreateFindBar() {
   return NULL;
 }

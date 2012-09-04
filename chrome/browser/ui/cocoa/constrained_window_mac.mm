@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/cocoa/constrained_window_mac.h"
 
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/web_contents.h"
@@ -122,7 +125,7 @@ void ConstrainedWindowMac::ShowConstrainedWindow() {
   // protocol.
   DCHECK(!window || window_controller);
 
-  if ([window_controller canAttachConstrainedWindow])
+  if (window_controller)
     Realize(window_controller);
 }
 
@@ -135,13 +138,18 @@ void ConstrainedWindowMac::CloseConstrainedWindow() {
 
   closing_ = true;
 
-  // Note: controller_ can be `nil` here if the sheet was never realized. That's
-  // ok.
-  [controller_ removeConstrainedWindow:this];
   delegate_->DeleteDelegate();
   tab_contents_->constrained_window_tab_helper()->WillClose(this);
 
   delete this;
+}
+
+bool ConstrainedWindowMac::CanShowConstrainedWindow() {
+  Browser* browser =
+      browser::FindBrowserWithWebContents(tab_contents_->web_contents());
+  if (!browser)
+    return true;
+  return !browser->window()->IsInstantTabShowing();
 }
 
 void ConstrainedWindowMac::Realize(
@@ -158,6 +166,7 @@ void ConstrainedWindowMac::Realize(
   // Remember the controller we're adding ourselves to, so that we can later
   // remove us from it.
   controller_ = controller;
-  [controller_ attachConstrainedWindow:this];
+  delegate_->RunSheet([controller_ sheetController],
+                      GetSheetParentViewForTabContents(tab_contents_));
   delegate_->set_sheet_open(true);
 }

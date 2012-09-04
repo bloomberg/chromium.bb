@@ -63,6 +63,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
+#include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -526,18 +527,6 @@ enum {
   [self performSelector:@selector(autorelease)
              withObject:nil
              afterDelay:0];
-}
-
-- (void)attachConstrainedWindow:(ConstrainedWindowMac*)window {
-  [tabStripController_ attachConstrainedWindow:window];
-}
-
-- (void)removeConstrainedWindow:(ConstrainedWindowMac*)window {
-  [tabStripController_ removeConstrainedWindow:window];
-}
-
-- (BOOL)canAttachConstrainedWindow {
-  return ![previewableContentsController_ isShowingPreview];
 }
 
 - (void)updateDevToolsForContents:(WebContents*)contents {
@@ -1532,6 +1521,17 @@ enum {
   return [self supportsWindowFeature:Browser::FEATURE_TABSTRIP];
 }
 
+- (BOOL)isTabDraggable:(NSView*)tabView {
+  // TODO(avi, thakis): GTMWindowSheetController has no api to move tabsheets
+  // between windows. Until then, we have to prevent having to move a tabsheet
+  // between windows, e.g. no tearing off of tabs.
+  int index = [tabStripController_ modelIndexForTabView:tabView];
+  TabContents* contents = chrome::GetTabContentsAt(browser_.get(), index);
+  if (!contents)
+    return NO;
+  return !contents->constrained_window_tab_helper()->constrained_window_count();
+}
+
 // TabStripControllerDelegate protocol.
 - (void)onActivateTabWithContents:(WebContents*)contents {
   // Update various elements that are interested in knowing the current
@@ -1920,6 +1920,10 @@ willAnimateFromState:(bookmarks::VisualState)oldState
     instant->CommitCurrentPreview(INSTANT_COMMIT_FOCUS_LOST);
 }
 
+- (BOOL)isInstantTabShowing {
+  return previewableContentsController_ &&
+      [previewableContentsController_ isShowingPreview];
+}
 
 - (NSRect)instantFrame {
   // The view's bounds are in its own coordinate system.  Convert that to the

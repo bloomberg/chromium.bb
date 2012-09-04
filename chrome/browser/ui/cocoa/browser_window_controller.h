@@ -304,14 +304,6 @@ class WebContents;
 // for the per-tab sheets.
 - (GTMWindowSheetController*)sheetController;
 
-// Requests that |window| is opened as a per-tab sheet to the current tab.
-- (void)attachConstrainedWindow:(ConstrainedWindowMac*)window;
-// Closes the tab sheet |window| and potentially shows the next sheet in the
-// tab's sheet queue.
-- (void)removeConstrainedWindow:(ConstrainedWindowMac*)window;
-// Returns NO if constrained windows cannot be attached to this window.
-- (BOOL)canAttachConstrainedWindow;
-
 // Shows or hides the docked web inspector depending on |contents|'s state.
 - (void)updateDevToolsForContents:(content::WebContents*)contents;
 
@@ -335,6 +327,7 @@ class WebContents;
 - (void)showInstant:(content::WebContents*)previewContents;
 - (void)hideInstant;
 - (void)commitInstant;
+- (BOOL)isInstantTabShowing;
 
 // Returns the frame, in Cocoa (unflipped) screen coordinates, of the area where
 // Instant results are.  If Instant is not showing, returns the frame of where
