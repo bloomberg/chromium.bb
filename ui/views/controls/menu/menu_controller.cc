@@ -521,17 +521,17 @@ bool MenuController::OnMouseWheel(SubmenuView* source,
 }
 #endif
 
-ui::GestureStatus MenuController::OnGestureEvent(
+ui::EventResult MenuController::OnGestureEvent(
     SubmenuView* source,
     const ui::GestureEvent& event) {
   MenuPart part = GetMenuPart(source, event.location());
   if (event.type() == ui::ET_GESTURE_TAP_DOWN) {
     SetSelectionOnPointerDown(source, event);
-    return ui::GESTURE_STATUS_CONSUMED;
+    return ui::ER_CONSUMED;
   } else if (event.type() == ui::ET_GESTURE_LONG_PRESS) {
     if (part.type == MenuPart::MENU_ITEM && part.menu) {
       if (ShowContextMenu(part.menu, source, event))
-        return ui::GESTURE_STATUS_CONSUMED;
+        return ui::ER_CONSUMED;
     }
   } else if (event.type() == ui::ET_GESTURE_TAP) {
     if (!part.is_scroll() && part.menu &&
@@ -540,16 +540,16 @@ ui::GestureStatus MenuController::OnGestureEvent(
           part.menu, event)) {
         Accept(part.menu, 0);
       }
-      return ui::GESTURE_STATUS_CONSUMED;
+      return ui::ER_CONSUMED;
     } else if (part.type == MenuPart::MENU_ITEM) {
       // User either tapped on empty space, or a menu that has children.
       SetSelection(part.menu ? part.menu : state_.item,
                    SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
-      return ui::GESTURE_STATUS_CONSUMED;
+      return ui::ER_CONSUMED;
     }
   }
   if (!part.submenu)
-    return ui::GESTURE_STATUS_UNKNOWN;
+    return ui::ER_UNHANDLED;
   return part.submenu->OnGestureEvent(event);
 }
 

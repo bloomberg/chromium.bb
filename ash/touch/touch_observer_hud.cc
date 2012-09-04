@@ -213,10 +213,10 @@ ui::TouchStatus TouchObserverHUD::PreHandleTouchEvent(
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
-ui::GestureStatus TouchObserverHUD::PreHandleGestureEvent(
+ui::EventResult TouchObserverHUD::PreHandleGestureEvent(
     aura::Window* target,
     ui::GestureEvent* event) {
-  return ui::GESTURE_STATUS_UNKNOWN;
+  return ui::ER_UNHANDLED;
 }
 
 void TouchObserverHUD::OnWidgetClosing(views::Widget* widget) {

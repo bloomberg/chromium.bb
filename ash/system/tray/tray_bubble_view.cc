@@ -476,10 +476,10 @@ ui::TouchStatus TrayBubbleView::Host::PreHandleTouchEvent(
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
-ui::GestureStatus TrayBubbleView::Host::PreHandleGestureEvent(
+ui::EventResult TrayBubbleView::Host::PreHandleGestureEvent(
     aura::Window* target,
     ui::GestureEvent* event) {
-  return ui::GESTURE_STATUS_UNKNOWN;
+  return ui::ER_UNHANDLED;
 }
 
 void TrayBubbleView::Host::ProcessLocatedEvent(

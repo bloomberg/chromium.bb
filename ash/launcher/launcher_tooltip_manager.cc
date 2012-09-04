@@ -342,7 +342,7 @@ ui::TouchStatus LauncherTooltipManager::PreHandleTouchEvent(
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
-ui::GestureStatus LauncherTooltipManager::PreHandleGestureEvent(
+ui::EventResult LauncherTooltipManager::PreHandleGestureEvent(
     aura::Window* target, ui::GestureEvent* event) {
   if (widget_ && widget_->IsVisible()) {
     // Because this mouse event may arrive to |view_|, here we just schedule
@@ -350,7 +350,7 @@ ui::GestureStatus LauncherTooltipManager::PreHandleGestureEvent(
     CloseSoon();
   }
 
-  return ui::GESTURE_STATUS_UNKNOWN;
+  return ui::ER_UNHANDLED;
 }
 
 void LauncherTooltipManager::WillDeleteShelf() {

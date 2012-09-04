@@ -37,11 +37,11 @@ ui::TouchStatus SystemModalContainerEventFilter::PreHandleTouchEvent(
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
-ui::GestureStatus SystemModalContainerEventFilter::PreHandleGestureEvent(
+ui::EventResult SystemModalContainerEventFilter::PreHandleGestureEvent(
     aura::Window* target,
     ui::GestureEvent* event) {
   // TODO(sad):
-  return ui::GESTURE_STATUS_UNKNOWN;
+  return ui::ER_UNHANDLED;
 }
 
 }  // namespace internal

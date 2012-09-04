@@ -124,7 +124,7 @@ ui::TouchStatus ToplevelWindowEventFilter::PreHandleTouchEvent(
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
-ui::GestureStatus ToplevelWindowEventFilter::PreHandleGestureEvent(
+ui::EventResult ToplevelWindowEventFilter::PreHandleGestureEvent(
     aura::Window* target,
     ui::GestureEvent* event) {
   switch (event->type()) {
@@ -133,7 +133,7 @@ ui::GestureStatus ToplevelWindowEventFilter::PreHandleGestureEvent(
           target->delegate()->GetNonClientComponent(event->location());
       if (WindowResizer::GetBoundsChangeForWindowComponent(component) == 0) {
         window_resizer_.reset();
-        return ui::GESTURE_STATUS_UNKNOWN;
+        return ui::ER_UNHANDLED;
       }
       in_gesture_resize_ = true;
       gfx::Point location_in_parent(
@@ -144,13 +144,13 @@ ui::GestureStatus ToplevelWindowEventFilter::PreHandleGestureEvent(
     }
     case ui::ET_GESTURE_SCROLL_UPDATE: {
       if (!in_gesture_resize_)
-        return ui::GESTURE_STATUS_UNKNOWN;
+        return ui::ER_UNHANDLED;
       HandleDrag(target, event);
       break;
     }
     case ui::ET_GESTURE_SCROLL_END:
     case ui::ET_SCROLL_FLING_START: {
-      ui::GestureStatus status = ui::GESTURE_STATUS_UNKNOWN;
+      ui::EventResult status = ui::ER_UNHANDLED;
       if (in_gesture_resize_) {
         // If the window was being resized, then just complete the resize.
         CompleteDrag(DRAG_COMPLETE, event->flags());
@@ -159,7 +159,7 @@ ui::GestureStatus ToplevelWindowEventFilter::PreHandleGestureEvent(
           in_move_loop_ = false;
         }
         in_gesture_resize_ = false;
-        status = ui::GESTURE_STATUS_CONSUMED;
+        status = ui::ER_CONSUMED;
       }
 
       if (event->type() == ui::ET_GESTURE_SCROLL_END)
@@ -168,9 +168,9 @@ ui::GestureStatus ToplevelWindowEventFilter::PreHandleGestureEvent(
       int component =
           target->delegate()->GetNonClientComponent(event->location());
       if (WindowResizer::GetBoundsChangeForWindowComponent(component) == 0)
-        return ui::GESTURE_STATUS_UNKNOWN;
+        return ui::ER_UNHANDLED;
       if (!wm::IsWindowNormal(target))
-        return ui::GESTURE_STATUS_UNKNOWN;
+        return ui::ER_UNHANDLED;
 
       if (fabs(event->details().velocity_y()) >
           kMinVertVelocityForWindowMinimize) {
@@ -196,10 +196,10 @@ ui::GestureStatus ToplevelWindowEventFilter::PreHandleGestureEvent(
       break;
     }
     default:
-      return ui::GESTURE_STATUS_UNKNOWN;
+      return ui::ER_UNHANDLED;
   }
 
-  return ui::GESTURE_STATUS_CONSUMED;
+  return ui::ER_CONSUMED;
 }
 
 void ToplevelWindowEventFilter::RunMoveLoop(aura::Window* source,

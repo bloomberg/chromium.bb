@@ -124,16 +124,16 @@ gfx::Size ContentSettingImageView::GetPreferredSize() {
   return preferred_size;
 }
 
-ui::GestureStatus ContentSettingImageView::OnGestureEvent(
+ui::EventResult ContentSettingImageView::OnGestureEvent(
     const ui::GestureEvent& event) {
   if (event.type() == ui::ET_GESTURE_TAP) {
     OnClick();
-    return ui::GESTURE_STATUS_CONSUMED;
+    return ui::ER_CONSUMED;
   } else if (event.type() == ui::ET_GESTURE_TAP_DOWN) {
-    return ui::GESTURE_STATUS_CONSUMED;
+    return ui::ER_CONSUMED;
   }
 
-  return ui::GESTURE_STATUS_UNKNOWN;
+  return ui::ER_UNHANDLED;
 }
 
 

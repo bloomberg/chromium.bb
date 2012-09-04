@@ -40,7 +40,7 @@ class AURA_EXPORT InputMethodEventFilter
   virtual ui::TouchStatus PreHandleTouchEvent(
       Window* target,
       ui::TouchEvent* event) OVERRIDE;
-  virtual ui::GestureStatus PreHandleGestureEvent(
+  virtual ui::EventResult PreHandleGestureEvent(
       Window* target,
       ui::GestureEvent* event) OVERRIDE;
 

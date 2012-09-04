@@ -101,9 +101,9 @@ ui::TouchStatus PanelWindowEventFilter::PreHandleTouchEvent(
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
-ui::GestureStatus PanelWindowEventFilter::PreHandleGestureEvent(
+ui::EventResult PanelWindowEventFilter::PreHandleGestureEvent(
     aura::Window* target, ui::GestureEvent* event) {
-  return ui::GESTURE_STATUS_UNKNOWN;
+  return ui::ER_UNHANDLED;
 }
 
 

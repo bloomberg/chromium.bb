@@ -41,7 +41,7 @@ class ASH_EXPORT StatusAreaWidgetDelegate : public views::AccessiblePaneView,
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
-  virtual ui::GestureStatus OnGestureEvent(
+  virtual ui::EventResult OnGestureEvent(
       const ui::GestureEvent& event) OVERRIDE;
 
   // views::WidgetDelegate overrides:

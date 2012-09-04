@@ -45,7 +45,7 @@ class VIEWS_EXPORT NativeScrollBar : public ScrollBar {
 
   // Overrideen from View for keyboard UI purpose.
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
-  virtual ui::GestureStatus OnGestureEvent(const ui::GestureEvent& e) OVERRIDE;
+  virtual ui::EventResult OnGestureEvent(const ui::GestureEvent& e) OVERRIDE;
   virtual bool OnMouseWheel(const ui::MouseWheelEvent& e) OVERRIDE;
 
   // Overridden from ScrollBar.

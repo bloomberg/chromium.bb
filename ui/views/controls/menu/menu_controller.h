@@ -118,7 +118,7 @@ class VIEWS_EXPORT MenuController
 #if defined(OS_LINUX)
   bool OnMouseWheel(SubmenuView* source, const ui::MouseWheelEvent& event);
 #endif
-  ui::GestureStatus OnGestureEvent(SubmenuView* source,
+  ui::EventResult OnGestureEvent(SubmenuView* source,
                                    const ui::GestureEvent& event);
 
   bool GetDropFormats(

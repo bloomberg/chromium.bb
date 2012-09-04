@@ -295,7 +295,7 @@ void InlineOmniboxPopupView::OnMouseExited(
   model_->SetHoveredLine(OmniboxPopupModel::kNoMatch);
 }
 
-ui::GestureStatus InlineOmniboxPopupView::OnGestureEvent(
+ui::EventResult InlineOmniboxPopupView::OnGestureEvent(
     const ui::GestureEvent& event) {
   switch (event.type()) {
     case ui::ET_GESTURE_TAP_DOWN:
@@ -308,9 +308,9 @@ ui::GestureStatus InlineOmniboxPopupView::OnGestureEvent(
       OpenSelectedLine(event, CURRENT_TAB);
       break;
     default:
-      return ui::GESTURE_STATUS_UNKNOWN;
+      return ui::ER_UNHANDLED;
   }
-  return ui::GESTURE_STATUS_CONSUMED;
+  return ui::ER_CONSUMED;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

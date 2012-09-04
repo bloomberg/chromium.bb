@@ -258,7 +258,7 @@ void LauncherButton::OnMouseExited(const ui::MouseEvent& event) {
   host_->MouseExitedButton(this);
 }
 
-ui::GestureStatus LauncherButton::OnGestureEvent(
+ui::EventResult LauncherButton::OnGestureEvent(
     const ui::GestureEvent& event) {
   switch (event.type()) {
     case ui::ET_GESTURE_TAP_DOWN:
@@ -269,13 +269,13 @@ ui::GestureStatus LauncherButton::OnGestureEvent(
       return CustomButton::OnGestureEvent(event);
     case ui::ET_GESTURE_SCROLL_BEGIN:
       host_->PointerPressedOnButton(this, LauncherButtonHost::TOUCH, event);
-      return ui::GESTURE_STATUS_CONSUMED;
+      return ui::ER_CONSUMED;
     case ui::ET_GESTURE_SCROLL_UPDATE:
       host_->PointerDraggedOnButton(this, LauncherButtonHost::TOUCH, event);
-      return ui::GESTURE_STATUS_CONSUMED;
+      return ui::ER_CONSUMED;
     case ui::ET_GESTURE_SCROLL_END:
       host_->PointerReleasedOnButton(this, LauncherButtonHost::TOUCH, false);
-      return ui::GESTURE_STATUS_CONSUMED;
+      return ui::ER_CONSUMED;
     default:
       return CustomButton::OnGestureEvent(event);
   }

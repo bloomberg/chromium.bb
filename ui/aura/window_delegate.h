@@ -62,7 +62,7 @@ class AURA_EXPORT WindowDelegate : public ui::EventHandler {
 
   virtual ui::TouchStatus OnTouchEvent(ui::TouchEvent* event) = 0;
 
-  virtual ui::GestureStatus OnGestureEvent(ui::GestureEvent* event) = 0;
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) = 0;
 
   // Returns true of the window can be focused.
   virtual bool CanFocus() = 0;

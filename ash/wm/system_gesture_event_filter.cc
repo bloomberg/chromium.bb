@@ -79,7 +79,7 @@ ui::TouchStatus SystemGestureEventFilter::PreHandleTouchEvent(
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
-ui::GestureStatus SystemGestureEventFilter::PreHandleGestureEvent(
+ui::EventResult SystemGestureEventFilter::PreHandleGestureEvent(
     aura::Window* target,
     ui::GestureEvent* event) {
   touch_uma_.RecordGestureEvent(target, *event);
@@ -88,18 +88,18 @@ ui::GestureStatus SystemGestureEventFilter::PreHandleGestureEvent(
 
   if (!target || target == target->GetRootWindow()) {
     bezel_gestures_->ProcessGestureEvent(target, *event);
-    return ui::GESTURE_STATUS_CONSUMED;
+    return ui::ER_CONSUMED;
   }
 
   if (two_finger_drag_->ProcessGestureEvent(target, *event))
-    return ui::GESTURE_STATUS_CONSUMED;
+    return ui::ER_CONSUMED;
 
   if (!system_gestures_enabled_)
-    return ui::GESTURE_STATUS_UNKNOWN;
+    return ui::ER_UNHANDLED;
 
   aura::Window* system_target = GetTargetForSystemGestureEvent(target);
   if (!system_target)
-    return ui::GESTURE_STATUS_UNKNOWN;
+    return ui::ER_UNHANDLED;
 
   RootWindowController* root_controller =
       GetRootWindowController(system_target->GetRootWindow());
@@ -115,9 +115,9 @@ ui::GestureStatus SystemGestureEventFilter::PreHandleGestureEvent(
       ash::AcceleratorController* accelerator =
           ash::Shell::GetInstance()->accelerator_controller();
       if (accelerator->PerformAction(CYCLE_FORWARD_MRU, ui::Accelerator()))
-        return ui::GESTURE_STATUS_CONSUMED;
+        return ui::ER_CONSUMED;
     }
-    return ui::GESTURE_STATUS_UNKNOWN;
+    return ui::ER_UNHANDLED;
   }
 
   WindowPinchHandlerMap::iterator find = pinch_handlers_.find(system_target);
@@ -126,18 +126,18 @@ ui::GestureStatus SystemGestureEventFilter::PreHandleGestureEvent(
         (*find).second->ProcessGestureEvent(*event);
     if (status == SYSTEM_GESTURE_END)
       ClearGestureHandlerForWindow(system_target);
-    return ui::GESTURE_STATUS_CONSUMED;
+    return ui::ER_CONSUMED;
   } else {
     if (event->type() == ui::ET_GESTURE_BEGIN &&
         event->details().touch_points() >=
         SystemPinchHandler::kSystemGesturePoints) {
       pinch_handlers_[system_target] = new SystemPinchHandler(system_target);
       system_target->AddObserver(this);
-      return ui::GESTURE_STATUS_CONSUMED;
+      return ui::ER_CONSUMED;
     }
   }
 
-  return ui::GESTURE_STATUS_UNKNOWN;
+  return ui::ER_UNHANDLED;
 }
 
 void SystemGestureEventFilter::OnWindowVisibilityChanged(aura::Window* window,

@@ -39,7 +39,7 @@ class VIEWS_EXPORT Link : public Label {
   virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
-  virtual ui::GestureStatus OnGestureEvent(
+  virtual ui::EventResult OnGestureEvent(
       const ui::GestureEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual bool SkipDefaultKeyEventProcessing(

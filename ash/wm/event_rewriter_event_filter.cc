@@ -63,9 +63,9 @@ ui::TouchStatus EventRewriterEventFilter::PreHandleTouchEvent(
   return ui::TOUCH_STATUS_UNKNOWN;  // Not handled.
 }
 
-ui::GestureStatus EventRewriterEventFilter::PreHandleGestureEvent(
+ui::EventResult EventRewriterEventFilter::PreHandleGestureEvent(
     aura::Window* target, ui::GestureEvent* event) {
-  return ui::GESTURE_STATUS_UNKNOWN;  // Not handled.
+  return ui::ER_UNHANDLED;  // Not handled.
 }
 
 }  // namespace internal

@@ -62,12 +62,12 @@ void StarView::OnMouseReleased(const ui::MouseEvent& event) {
     command_updater_->ExecuteCommand(IDC_BOOKMARK_PAGE);
 }
 
-ui::GestureStatus StarView::OnGestureEvent(const ui::GestureEvent& event) {
+ui::EventResult StarView::OnGestureEvent(const ui::GestureEvent& event) {
   if (event.type() == ui::ET_GESTURE_TAP) {
     command_updater_->ExecuteCommand(IDC_BOOKMARK_PAGE);
-    return ui::GESTURE_STATUS_CONSUMED;
+    return ui::ER_CONSUMED;
   }
-  return ui::GESTURE_STATUS_UNKNOWN;
+  return ui::ER_UNHANDLED;
 }
 
 bool StarView::OnKeyPressed(const ui::KeyEvent& event) {

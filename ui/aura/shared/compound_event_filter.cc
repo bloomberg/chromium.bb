@@ -133,14 +133,14 @@ ui::TouchStatus CompoundEventFilter::PreHandleTouchEvent(
   return status;
 }
 
-ui::GestureStatus CompoundEventFilter::PreHandleGestureEvent(
+ui::EventResult CompoundEventFilter::PreHandleGestureEvent(
     Window* target,
     ui::GestureEvent* event) {
-  ui::GestureStatus status = ui::GESTURE_STATUS_UNKNOWN;
+  ui::EventResult status = ui::ER_UNHANDLED;
   if (filters_.might_have_observers()) {
     ObserverListBase<EventFilter>::Iterator it(filters_);
     EventFilter* filter;
-    while (status == ui::GESTURE_STATUS_UNKNOWN &&
+    while (status == ui::ER_UNHANDLED &&
         (filter = it.GetNext()) != NULL) {
       status = filter->PreHandleGestureEvent(target, event);
     }
@@ -148,7 +148,7 @@ ui::GestureStatus CompoundEventFilter::PreHandleGestureEvent(
 
   if (event->type() == ui::ET_GESTURE_BEGIN &&
       event->details().touch_points() == 1 &&
-      status != ui::GESTURE_STATUS_CONSUMED &&
+      status != ui::ER_CONSUMED &&
       target->GetRootWindow() &&
       GetActiveWindow(target) != target) {
     target->GetFocusManager()->SetFocusedWindow(

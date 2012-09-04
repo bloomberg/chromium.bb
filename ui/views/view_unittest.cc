@@ -232,7 +232,7 @@ class TestView : public View {
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
   virtual ui::TouchStatus OnTouchEvent(const ui::TouchEvent& event) OVERRIDE;
   // Ignores GestureEvent by default.
-  virtual ui::GestureStatus OnGestureEvent(
+  virtual ui::EventResult OnGestureEvent(
       const ui::GestureEvent& event) OVERRIDE;
   virtual void Paint(gfx::Canvas* canvas) OVERRIDE;
   virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE;
@@ -285,11 +285,11 @@ class TestViewConsumeGesture : public TestView {
   virtual ~TestViewConsumeGesture() {}
 
  protected:
-  virtual ui::GestureStatus OnGestureEvent(
+  virtual ui::EventResult OnGestureEvent(
       const ui::GestureEvent& event) OVERRIDE {
     last_gesture_event_type_ = event.type();
     location_.SetPoint(event.x(), event.y());
-    return ui::GESTURE_STATUS_CONSUMED;
+    return ui::ER_CONSUMED;
   }
 
  private:
@@ -303,9 +303,9 @@ class TestViewIgnoreGesture: public TestView {
   virtual ~TestViewIgnoreGesture() {}
 
  private:
-  virtual ui::GestureStatus OnGestureEvent(
+  virtual ui::EventResult OnGestureEvent(
       const ui::GestureEvent& event) OVERRIDE {
-    return ui::GESTURE_STATUS_UNKNOWN;
+    return ui::ER_UNHANDLED;
   }
 
   DISALLOW_COPY_AND_ASSIGN(TestViewIgnoreGesture);
@@ -319,10 +319,10 @@ class TestViewIgnoreScrollGestures : public TestViewConsumeGesture {
   virtual ~TestViewIgnoreScrollGestures() {}
 
  private:
-  virtual ui::GestureStatus OnGestureEvent(
+  virtual ui::EventResult OnGestureEvent(
       const ui::GestureEvent& event) OVERRIDE {
     if (event.IsScrollGestureEvent())
-      return ui::GESTURE_STATUS_UNKNOWN;
+      return ui::ER_UNHANDLED;
     return TestViewConsumeGesture::OnGestureEvent(event);
   }
 
@@ -589,8 +589,8 @@ TEST_F(ViewTest, TouchEvent) {
   widget->CloseNow();
 }
 
-ui::GestureStatus TestView::OnGestureEvent(const ui::GestureEvent& event) {
-  return ui::GESTURE_STATUS_UNKNOWN;
+ui::EventResult TestView::OnGestureEvent(const ui::GestureEvent& event) {
+  return ui::ER_UNHANDLED;
 }
 
 TEST_F(ViewTest, GestureEvent) {

@@ -101,14 +101,14 @@ bool WorkspaceEventFilter::PreHandleMouseEvent(aura::Window* target,
   return ToplevelWindowEventFilter::PreHandleMouseEvent(target, event);
 }
 
-ui::GestureStatus WorkspaceEventFilter::PreHandleGestureEvent(
+ui::EventResult WorkspaceEventFilter::PreHandleGestureEvent(
     aura::Window* target,
     ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_DOUBLE_TAP &&
       target->delegate()->GetNonClientComponent(event->location()) ==
       HTCAPTION) {
     ToggleMaximizedState(target);  // |this| may be destroyed from here.
-    return ui::GESTURE_STATUS_CONSUMED;
+    return ui::ER_CONSUMED;
   }
   return ToplevelWindowEventFilter::PreHandleGestureEvent(target, event);
 }

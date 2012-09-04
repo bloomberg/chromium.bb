@@ -132,7 +132,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   const gfx::Rect& bounding_box() const { return bounding_box_; }
   int tap_count() const { return tap_count_; }
 
-  virtual ui::GestureStatus OnGestureEvent(
+  virtual ui::EventResult OnGestureEvent(
       ui::GestureEvent* gesture) OVERRIDE {
     bounding_box_ = gesture->details().bounding_box();
     switch (gesture->type()) {
@@ -201,7 +201,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
       default:
         NOTREACHED();
     }
-    return ui::GESTURE_STATUS_CONSUMED;
+    return ui::ER_CONSUMED;
   }
 
  private:

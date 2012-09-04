@@ -302,8 +302,8 @@ bool RootWindow::DispatchGestureEvent(ui::GestureEvent* event) {
 
   if (target) {
     event->ConvertLocationToTarget(static_cast<Window*>(this), target);
-    ui::GestureStatus status = ProcessGestureEvent(target, event);
-    return status != ui::GESTURE_STATUS_UNKNOWN;
+    ui::EventResult status = ProcessGestureEvent(target, event);
+    return status != ui::ER_UNHANDLED;
   }
 
   return false;
@@ -672,14 +672,12 @@ ui::TouchStatus RootWindow::ProcessTouchEvent(Window* target,
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
-ui::GestureStatus RootWindow::ProcessGestureEvent(Window* target,
-                                                  ui::GestureEvent* event) {
+ui::EventResult RootWindow::ProcessGestureEvent(Window* target,
+                                                ui::GestureEvent* event) {
   if (!target)
     target = this;
   AutoReset<Window*> reset(&event_dispatch_target_, target);
-  if (ProcessEvent(target, event) != ui::ER_UNHANDLED)
-    return ui::GESTURE_STATUS_CONSUMED;
-  return ui::GESTURE_STATUS_UNKNOWN;
+  return static_cast<ui::EventResult>(ProcessEvent(target, event));
 }
 
 bool RootWindow::ProcessGestures(ui::GestureRecognizer::Gestures* gestures) {
@@ -688,7 +686,7 @@ bool RootWindow::ProcessGestures(ui::GestureRecognizer::Gestures* gestures) {
   bool handled = false;
   for (unsigned int i = 0; i < gestures->size(); i++) {
     ui::GestureEvent* gesture = gestures->get().at(i);
-    if (DispatchGestureEvent(gesture) != ui::GESTURE_STATUS_UNKNOWN)
+    if (DispatchGestureEvent(gesture) != ui::ER_UNHANDLED)
       handled = true;
   }
   return handled;

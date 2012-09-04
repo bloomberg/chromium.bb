@@ -748,9 +748,9 @@ gfx::Size LauncherView::GetPreferredSize() {
                    last_button_bounds.bottom() + leading_inset());
 }
 
-ui::GestureStatus LauncherView::OnGestureEvent(const ui::GestureEvent& event) {
+ui::EventResult LauncherView::OnGestureEvent(const ui::GestureEvent& event) {
   return gesture_handler_.ProcessGestureEvent(event) ?
-      ui::GESTURE_STATUS_CONSUMED : ui::GESTURE_STATUS_UNKNOWN;
+      ui::ER_CONSUMED : ui::ER_UNHANDLED;
 }
 
 void LauncherView::OnBoundsChanged(const gfx::Rect& previous_bounds) {

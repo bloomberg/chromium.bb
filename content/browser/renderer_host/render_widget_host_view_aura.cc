@@ -1297,14 +1297,14 @@ ui::TouchStatus RenderWidgetHostViewAura::OnTouchEvent(
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
-ui::GestureStatus RenderWidgetHostViewAura::OnGestureEvent(
+ui::EventResult RenderWidgetHostViewAura::OnGestureEvent(
     ui::GestureEvent* event) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnGestureEvent");
   // Pinch gestures are currently disabled by default. See crbug.com/128477.
   if ((event->type() == ui::ET_GESTURE_PINCH_BEGIN ||
       event->type() == ui::ET_GESTURE_PINCH_UPDATE ||
       event->type() == ui::ET_GESTURE_PINCH_END) && !ShouldSendPinchGesture()) {
-    return ui::GESTURE_STATUS_CONSUMED;
+    return ui::ER_CONSUMED;
   }
 
   RenderViewHostDelegate* delegate = NULL;
@@ -1345,7 +1345,7 @@ ui::GestureStatus RenderWidgetHostViewAura::OnGestureEvent(
   // (e.g. generates synthetic mouse events). So CONSUMED should be returned
   // from here to avoid any duplicate synthetic mouse-events being generated
   // from aura.
-  return ui::GESTURE_STATUS_CONSUMED;
+  return ui::ER_CONSUMED;
 }
 
 bool RenderWidgetHostViewAura::CanFocus() {

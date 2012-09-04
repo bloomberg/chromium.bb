@@ -73,7 +73,7 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
 
   // Keyboard events
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
-  virtual ui::GestureStatus OnGestureEvent(
+  virtual ui::EventResult OnGestureEvent(
       const ui::GestureEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const ui::MouseWheelEvent& e) OVERRIDE;
 

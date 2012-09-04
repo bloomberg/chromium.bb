@@ -829,8 +829,8 @@ ui::TouchStatus View::OnTouchEvent(const ui::TouchEvent& event) {
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
-ui::GestureStatus View::OnGestureEvent(const ui::GestureEvent& event) {
-  return ui::GESTURE_STATUS_UNKNOWN;
+ui::EventResult View::OnGestureEvent(const ui::GestureEvent& event) {
+  return ui::ER_UNHANDLED;
 }
 
 void View::SetMouseHandler(View* new_mouse_handler) {
@@ -1965,14 +1965,14 @@ ui::TouchStatus View::ProcessTouchEvent(const ui::TouchEvent& event) {
   return OnTouchEvent(event);
 }
 
-ui::GestureStatus View::ProcessGestureEvent(const ui::GestureEvent& event) {
+ui::EventResult View::ProcessGestureEvent(const ui::GestureEvent& event) {
   if (context_menu_controller_ &&
       (event.type() == ui::ET_GESTURE_LONG_PRESS ||
        event.type() == ui::ET_GESTURE_TWO_FINGER_TAP)) {
     gfx::Point location(event.location());
     ConvertPointToScreen(this, &location);
     ShowContextMenu(location, true);
-    return ui::GESTURE_STATUS_CONSUMED;
+    return ui::ER_CONSUMED;
   }
   return OnGestureEvent(event);
 }

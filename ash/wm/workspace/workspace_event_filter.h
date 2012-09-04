@@ -25,7 +25,7 @@ class WorkspaceEventFilter : public ToplevelWindowEventFilter {
   // Overridden from ToplevelWindowEventFilter:
   virtual bool PreHandleMouseEvent(aura::Window* target,
                                    ui::MouseEvent* event) OVERRIDE;
-  virtual ui::GestureStatus PreHandleGestureEvent(
+  virtual ui::EventResult PreHandleGestureEvent(
       aura::Window* target,
       ui::GestureEvent* event) OVERRIDE;
 

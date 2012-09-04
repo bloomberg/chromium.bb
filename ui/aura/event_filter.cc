@@ -21,9 +21,9 @@ ui::TouchStatus EventFilter::PreHandleTouchEvent(Window* target,
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
-ui::GestureStatus EventFilter::PreHandleGestureEvent(Window* target,
-                                                     ui::GestureEvent* event) {
-  return ui::GESTURE_STATUS_UNKNOWN;
+ui::EventResult EventFilter::PreHandleGestureEvent(Window* target,
+                                                   ui::GestureEvent* event) {
+  return ui::ER_UNHANDLED;
 }
 
 ui::EventResult EventFilter::OnKeyEvent(ui::EventTarget* target,
@@ -50,8 +50,7 @@ ui::TouchStatus EventFilter::OnTouchEvent(ui::EventTarget* target,
 
 ui::EventResult EventFilter::OnGestureEvent(ui::EventTarget* target,
                                             ui::GestureEvent* event) {
-  return PreHandleGestureEvent(static_cast<Window*>(target), event) ==
-      ui::GESTURE_STATUS_CONSUMED ? ui::ER_CONSUMED : ui::ER_UNHANDLED;
+  return PreHandleGestureEvent(static_cast<Window*>(target), event);
 }
 
 }  // namespace aura

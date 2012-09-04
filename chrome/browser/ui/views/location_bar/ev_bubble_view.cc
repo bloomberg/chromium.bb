@@ -26,11 +26,11 @@ void EVBubbleView::OnMouseReleased(const ui::MouseEvent& event) {
   page_info_helper_.ProcessEvent(event);
 }
 
-ui::GestureStatus EVBubbleView::OnGestureEvent(
+ui::EventResult EVBubbleView::OnGestureEvent(
     const ui::GestureEvent& event) {
   if (event.type() == ui::ET_GESTURE_TAP) {
     page_info_helper_.ProcessEvent(event);
-    return ui::GESTURE_STATUS_CONSUMED;
+    return ui::ER_CONSUMED;
   }
-  return ui::GESTURE_STATUS_UNKNOWN;
+  return ui::ER_UNHANDLED;
 }

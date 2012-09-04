@@ -90,12 +90,12 @@ class BaseTab::TabCloseButton : public views::ImageButton {
     CustomButton::OnMouseReleased(event);
   }
 
-  virtual ui::GestureStatus OnGestureEvent(
+  virtual ui::EventResult OnGestureEvent(
       const ui::GestureEvent& event) OVERRIDE {
     // Consume all gesture events here so that the parent (BaseTab) does not
     // start consuming gestures.
     ImageButton::OnGestureEvent(event);
-    return ui::GESTURE_STATUS_CONSUMED;
+    return ui::ER_CONSUMED;
   }
 
  private:
@@ -411,14 +411,14 @@ void BaseTab::OnMouseExited(const ui::MouseEvent& event) {
   hover_controller_.Hide();
 }
 
-ui::GestureStatus BaseTab::OnGestureEvent(const ui::GestureEvent& event) {
+ui::EventResult BaseTab::OnGestureEvent(const ui::GestureEvent& event) {
   if (!controller())
-    return ui::GESTURE_STATUS_CONSUMED;
+    return ui::ER_CONSUMED;
 
   switch (event.type()) {
     case ui::ET_GESTURE_BEGIN: {
       if (event.details().touch_points() != 1)
-        return ui::GESTURE_STATUS_UNKNOWN;
+        return ui::ER_UNHANDLED;
 
       TabStripSelectionModel original_selection;
       original_selection.Copy(controller()->GetSelectionModel());
@@ -441,7 +441,7 @@ ui::GestureStatus BaseTab::OnGestureEvent(const ui::GestureEvent& event) {
     default:
       break;
   }
-  return ui::GESTURE_STATUS_CONSUMED;
+  return ui::ER_CONSUMED;
 }
 
 bool BaseTab::GetTooltipText(const gfx::Point& p, string16* tooltip) const {

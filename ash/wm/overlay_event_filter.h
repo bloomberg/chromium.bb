@@ -56,7 +56,7 @@ class OverlayEventFilter : public aura::EventFilter,
       aura::Window* target, ui::MouseEvent* event) OVERRIDE;
   virtual ui::TouchStatus PreHandleTouchEvent(
       aura::Window* target, ui::TouchEvent* event) OVERRIDE;
-  virtual ui::GestureStatus PreHandleGestureEvent(
+  virtual ui::EventResult PreHandleGestureEvent(
       aura::Window* target, ui::GestureEvent* event) OVERRIDE;
 
   // ShellObserver overrides:

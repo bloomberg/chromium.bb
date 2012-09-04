@@ -1126,7 +1126,7 @@ ui::TouchStatus Widget::OnTouchEvent(const ui::TouchEvent& event) {
   return GetRootView()->OnTouchEvent(event);
 }
 
-ui::GestureStatus Widget::OnGestureEvent(const ui::GestureEvent& event) {
+ui::EventResult Widget::OnGestureEvent(const ui::GestureEvent& event) {
   ScopedEvent scoped(this, event);
   switch (event.type()) {
     case ui::ET_GESTURE_TAP_DOWN:

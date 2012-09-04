@@ -70,10 +70,10 @@ class TestEventFilterWindowDelegate : public test::TestWindowDelegate {
     // TODO(sadrul): !
     return ui::TOUCH_STATUS_UNKNOWN;
   }
-  virtual ui::GestureStatus OnGestureEvent(
+  virtual ui::EventResult OnGestureEvent(
       ui::GestureEvent* event) OVERRIDE {
     // TODO(sadrul): !
-    return ui::GESTURE_STATUS_UNKNOWN;
+    return ui::ER_UNHANDLED;
   }
 
  private:

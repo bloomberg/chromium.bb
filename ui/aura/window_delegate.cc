@@ -28,8 +28,7 @@ ui::TouchStatus WindowDelegate::OnTouchEvent(ui::EventTarget* target,
 
 ui::EventResult WindowDelegate::OnGestureEvent(ui::EventTarget* target,
                                                ui::GestureEvent* event) {
-  return OnGestureEvent(event) == ui::GESTURE_STATUS_CONSUMED ?
-      ui::ER_CONSUMED : ui::ER_UNHANDLED;
+  return OnGestureEvent(event);
 }
 
 }  // namespace aura

@@ -95,6 +95,16 @@ enum MouseEventFlags {
                                     // from an unconsumed touch/gesture event.
 };
 
+// Result of dispatching an event.
+enum EventResult {
+  ER_UNHANDLED = 0,  // The event hasn't been handled. The event can be
+                     // propagated to other handlers.
+  ER_HANDLED,        // The event has already been handled, but it can still be
+                     // propagated to other handlers.
+  ER_CONSUMED,       // The event has been handled, and it should not be
+                     // propagated to other handlers.
+};
+
 enum TouchStatus {
   TOUCH_STATUS_UNKNOWN = 0,  // Unknown touch status. This is used to indicate
                              // that the touch event was not handled.
@@ -117,13 +127,6 @@ enum TouchStatus {
 
 // Updates the list of devices for cached properties.
 UI_EXPORT void UpdateDeviceList();
-
-enum GestureStatus {
-  GESTURE_STATUS_UNKNOWN = 0,  // Unknown Gesture status. This is used to
-                               // indicate that the Gesture event was not
-                               // handled.
-  GESTURE_STATUS_CONSUMED,     // The Gesture event got consumed.
-};
 
 // Get the EventType from a native event.
 UI_EXPORT EventType EventTypeFromNative(const base::NativeEvent& native_event);

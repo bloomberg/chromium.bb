@@ -64,9 +64,9 @@ ui::TouchStatus TestWindowDelegate::OnTouchEvent(ui::TouchEvent* event) {
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
-ui::GestureStatus TestWindowDelegate::OnGestureEvent(
+ui::EventResult TestWindowDelegate::OnGestureEvent(
     ui::GestureEvent* event) {
-  return ui::GESTURE_STATUS_UNKNOWN;
+  return ui::ER_UNHANDLED;
 }
 
 bool TestWindowDelegate::CanFocus() {

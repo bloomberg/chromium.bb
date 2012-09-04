@@ -143,7 +143,7 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
       const gfx::Point& location) OVERRIDE;
   virtual bool OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
   virtual ui::TouchStatus OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
-  virtual ui::GestureStatus OnGestureEvent(
+  virtual ui::EventResult OnGestureEvent(
       ui::GestureEvent* event) OVERRIDE;
   virtual bool CanFocus() OVERRIDE;
   virtual void OnCaptureLost() OVERRIDE;

@@ -641,7 +641,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   virtual bool OnMouseEvent(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
   virtual ui::TouchStatus OnTouchEvent(const ui::TouchEvent& event) OVERRIDE;
-  virtual ui::GestureStatus OnGestureEvent(
+  virtual ui::EventResult OnGestureEvent(
       const ui::GestureEvent& event) OVERRIDE;
   virtual bool ExecuteCommand(int command_id) OVERRIDE;
   virtual InputMethod* GetInputMethodDirect() OVERRIDE;

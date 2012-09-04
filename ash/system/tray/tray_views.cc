@@ -148,13 +148,13 @@ void ActionableView::OnPaintFocusBorder(gfx::Canvas* canvas) {
     DrawBorder(canvas, GetLocalBounds());
 }
 
-ui::GestureStatus ActionableView::OnGestureEvent(
+ui::EventResult ActionableView::OnGestureEvent(
     const ui::GestureEvent& event) {
   if (event.type() == ui::ET_GESTURE_TAP) {
-    return PerformAction(event) ? ui::GESTURE_STATUS_CONSUMED :
-                                  ui::GESTURE_STATUS_UNKNOWN;
+    return PerformAction(event) ? ui::ER_CONSUMED :
+                                  ui::ER_UNHANDLED;
   }
-  return ui::GESTURE_STATUS_UNKNOWN;
+  return ui::ER_UNHANDLED;
 }
 
 void ActionableView::GetAccessibleState(ui::AccessibleViewState* state) {

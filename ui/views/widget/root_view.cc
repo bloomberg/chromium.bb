@@ -455,8 +455,8 @@ ui::TouchStatus RootView::OnTouchEvent(const ui::TouchEvent& event) {
   return status;
 }
 
-ui::GestureStatus RootView::OnGestureEvent(const ui::GestureEvent& event) {
-  ui::GestureStatus status = ui::GESTURE_STATUS_UNKNOWN;
+ui::EventResult RootView::OnGestureEvent(const ui::GestureEvent& event) {
+  ui::EventResult status = ui::ER_UNHANDLED;
 
   if (gesture_handler_) {
     // |gesture_handler_| (or |scroll_gesture_handler_|) can be deleted during
@@ -466,7 +466,7 @@ ui::GestureStatus RootView::OnGestureEvent(const ui::GestureEvent& event) {
             scroll_gesture_handler_ : gesture_handler_;
     ui::GestureEvent handler_event(event, static_cast<View*>(this), handler);
 
-    ui::GestureStatus status = handler->ProcessGestureEvent(handler_event);
+    ui::EventResult status = handler->ProcessGestureEvent(handler_event);
 
     if (event.type() == ui::ET_GESTURE_END &&
         event.details().touch_points() <= 1)
@@ -476,10 +476,10 @@ ui::GestureStatus RootView::OnGestureEvent(const ui::GestureEvent& event) {
                                     event.type() == ui::ET_SCROLL_FLING_START))
       scroll_gesture_handler_ = NULL;
 
-    if (status == ui::GESTURE_STATUS_CONSUMED)
+    if (status == ui::ER_CONSUMED)
       return status;
 
-    DCHECK_EQ(ui::GESTURE_STATUS_UNKNOWN, status);
+    DCHECK_EQ(ui::ER_UNHANDLED, status);
 
     if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN &&
         !scroll_gesture_handler_) {
@@ -493,13 +493,13 @@ ui::GestureStatus RootView::OnGestureEvent(const ui::GestureEvent& event) {
         ui::GestureEvent gesture_event(event, static_cast<View*>(this),
                                        scroll_gesture_handler_);
         status = scroll_gesture_handler_->ProcessGestureEvent(gesture_event);
-        if (status == ui::GESTURE_STATUS_CONSUMED)
+        if (status == ui::ER_CONSUMED)
           return status;
       }
       scroll_gesture_handler_ = NULL;
     }
 
-    return ui::GESTURE_STATUS_UNKNOWN;
+    return ui::ER_UNHANDLED;
   }
 
   // Walk up the tree until we find a view that wants the gesture event.
@@ -508,7 +508,7 @@ ui::GestureStatus RootView::OnGestureEvent(const ui::GestureEvent& event) {
       gesture_handler_ = gesture_handler_->parent()) {
     if (!gesture_handler_->enabled()) {
       // Disabled views eat events but are treated as not handled.
-      return ui::GESTURE_STATUS_UNKNOWN;
+      return ui::ER_UNHANDLED;
     }
 
     // See if this view wants to handle the Gesture.
@@ -520,9 +520,9 @@ ui::GestureStatus RootView::OnGestureEvent(const ui::GestureEvent& event) {
     // OnGestureEvent(). So handle as per OnMousePressed. NB: we
     // assume that the RootView itself cannot be so removed.
     if (!gesture_handler_)
-      return ui::GESTURE_STATUS_UNKNOWN;
+      return ui::ER_UNHANDLED;
 
-    if (status == ui::GESTURE_STATUS_CONSUMED) {
+    if (status == ui::ER_CONSUMED) {
       if (gesture_event.type() == ui::ET_GESTURE_SCROLL_BEGIN)
         scroll_gesture_handler_ = gesture_handler_;
       return status;
@@ -530,7 +530,7 @@ ui::GestureStatus RootView::OnGestureEvent(const ui::GestureEvent& event) {
 
     // The gesture event wasn't processed. Go up the view hierarchy and
     // dispatch the gesture event.
-    DCHECK_EQ(ui::GESTURE_STATUS_UNKNOWN, status);
+    DCHECK_EQ(ui::ER_UNHANDLED, status);
   }
 
   gesture_handler_ = NULL;

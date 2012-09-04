@@ -62,10 +62,10 @@ const views::Widget* StatusAreaWidgetDelegate::GetWidget() const {
   return View::GetWidget();
 }
 
-ui::GestureStatus StatusAreaWidgetDelegate::OnGestureEvent(
+ui::EventResult StatusAreaWidgetDelegate::OnGestureEvent(
     const ui::GestureEvent& event) {
   if (gesture_handler_.ProcessGestureEvent(event))
-    return ui::GESTURE_STATUS_CONSUMED;
+    return ui::ER_CONSUMED;
 
   return views::AccessiblePaneView::OnGestureEvent(event);
 }

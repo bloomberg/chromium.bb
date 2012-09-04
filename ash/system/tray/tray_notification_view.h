@@ -54,7 +54,7 @@ class TrayNotificationView : public views::View,
 
   // Overridden from views::View.
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
-  virtual ui::GestureStatus OnGestureEvent(
+  virtual ui::EventResult OnGestureEvent(
       const ui::GestureEvent& event) OVERRIDE;
 
  protected:

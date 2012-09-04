@@ -44,11 +44,11 @@ ui::TouchStatus TestEventFilter::PreHandleTouchEvent(
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
-ui::GestureStatus TestEventFilter::PreHandleGestureEvent(
+ui::EventResult TestEventFilter::PreHandleGestureEvent(
     Window* target,
     ui::GestureEvent* event) {
   // TODO(sadrul): !
-  return ui::GESTURE_STATUS_UNKNOWN;
+  return ui::ER_UNHANDLED;
 }
 
 }  // namespace test

@@ -146,10 +146,10 @@ void NativeTextfieldViews::OnMouseReleased(const ui::MouseEvent& event) {
   OnAfterUserAction();
 }
 
-ui::GestureStatus NativeTextfieldViews::OnGestureEvent(
+ui::EventResult NativeTextfieldViews::OnGestureEvent(
     const ui::GestureEvent& event) {
-  ui::GestureStatus status = textfield_->OnGestureEvent(event);
-  if (status != ui::GESTURE_STATUS_UNKNOWN)
+  ui::EventResult status = textfield_->OnGestureEvent(event);
+  if (status != ui::ER_UNHANDLED)
     return status;
 
   switch (event.type()) {
@@ -162,16 +162,16 @@ ui::GestureStatus NativeTextfieldViews::OnGestureEvent(
           MoveCursorTo(event.location(), false))
         SchedulePaint();
       OnAfterUserAction();
-      return ui::GESTURE_STATUS_CONSUMED;
+      return ui::ER_CONSUMED;
     case ui::ET_GESTURE_DOUBLE_TAP:
       SelectAll(false);
-      return ui::GESTURE_STATUS_CONSUMED;
+      return ui::ER_CONSUMED;
     case ui::ET_GESTURE_SCROLL_UPDATE:
       OnBeforeUserAction();
       if (MoveCursorTo(event.location(), true))
         SchedulePaint();
       OnAfterUserAction();
-      return ui::GESTURE_STATUS_CONSUMED;
+      return ui::ER_CONSUMED;
     default:
       break;
   }

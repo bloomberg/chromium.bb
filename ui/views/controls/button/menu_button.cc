@@ -219,11 +219,11 @@ void MenuButton::OnMouseExited(const ui::MouseEvent& event) {
   }
 }
 
-ui::GestureStatus MenuButton::OnGestureEvent(const ui::GestureEvent& event) {
+ui::EventResult MenuButton::OnGestureEvent(const ui::GestureEvent& event) {
   if (state() != BS_DISABLED && event.type() == ui::ET_GESTURE_TAP) {
     if (Activate())
-      return ui::GESTURE_STATUS_CONSUMED;
-    return ui::GESTURE_STATUS_UNKNOWN;
+      return ui::ER_CONSUMED;
+    return ui::ER_UNHANDLED;
   }
   return TextButton::OnGestureEvent(event);
 }

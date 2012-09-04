@@ -496,16 +496,16 @@ bool DownloadItemView::OnKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
-ui::GestureStatus DownloadItemView::OnGestureEvent(
+ui::EventResult DownloadItemView::OnGestureEvent(
     const ui::GestureEvent& event) {
   if (event.type() == ui::ET_GESTURE_TAP_DOWN) {
     HandlePressEvent(event, true);
-    return ui::GESTURE_STATUS_CONSUMED;
+    return ui::ER_CONSUMED;
   }
 
   if (event.type() == ui::ET_GESTURE_TAP) {
     HandleClickEvent(event, true);
-    return ui::GESTURE_STATUS_CONSUMED;
+    return ui::ER_CONSUMED;
   }
 
   SetState(NORMAL, NORMAL);

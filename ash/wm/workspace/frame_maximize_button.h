@@ -61,7 +61,7 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton,
   virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
-  virtual ui::GestureStatus OnGestureEvent(
+  virtual ui::EventResult OnGestureEvent(
       const ui::GestureEvent& event) OVERRIDE;
 
   // Unit test overwrite: Change the UI delay used for the bubble show up.

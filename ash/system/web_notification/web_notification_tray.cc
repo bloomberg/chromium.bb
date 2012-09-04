@@ -492,16 +492,16 @@ class WebNotificationView : public views::View,
     return true;
   }
 
-  virtual ui::GestureStatus OnGestureEvent(
+  virtual ui::EventResult OnGestureEvent(
       const ui::GestureEvent& event) OVERRIDE {
     if (event.type() == ui::ET_GESTURE_TAP) {
       tray_->OnClicked(notification_.id);
-      return ui::GESTURE_STATUS_CONSUMED;
+      return ui::ER_CONSUMED;
     }
 
     if (event.type() == ui::ET_GESTURE_LONG_PRESS) {
       ShowMenu(event.location());
-      return ui::GESTURE_STATUS_CONSUMED;
+      return ui::ER_CONSUMED;
     }
 
     if (event.type() == ui::ET_SCROLL_FLING_START) {
@@ -515,11 +515,11 @@ class WebNotificationView : public views::View,
         RestoreVisualState();
         scroller_->OnGestureEvent(event);
       }
-      return ui::GESTURE_STATUS_CONSUMED;
+      return ui::ER_CONSUMED;
     }
 
     if (!event.IsScrollGestureEvent())
-      return ui::GESTURE_STATUS_UNKNOWN;
+      return ui::ER_UNHANDLED;
 
     if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN) {
       gesture_scroll_amount_ = 0.f;
@@ -544,7 +544,7 @@ class WebNotificationView : public views::View,
 
     if (scroller_)
       scroller_->OnGestureEvent(event);
-    return ui::GESTURE_STATUS_CONSUMED;
+    return ui::ER_CONSUMED;
   }
 
   // Overridden from ButtonListener.

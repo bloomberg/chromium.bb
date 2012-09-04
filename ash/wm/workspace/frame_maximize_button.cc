@@ -55,7 +55,7 @@ class FrameMaximizeButton::EscapeEventFilter : public aura::EventFilter {
   virtual ui::TouchStatus PreHandleTouchEvent(
       aura::Window* target,
       ui::TouchEvent* event) OVERRIDE;
-  virtual ui::GestureStatus PreHandleGestureEvent(
+  virtual ui::EventResult PreHandleGestureEvent(
       aura::Window* target,
       ui::GestureEvent* event) OVERRIDE;
 
@@ -97,10 +97,10 @@ ui::TouchStatus FrameMaximizeButton::EscapeEventFilter::PreHandleTouchEvent(
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
-ui::GestureStatus FrameMaximizeButton::EscapeEventFilter::PreHandleGestureEvent(
+ui::EventResult FrameMaximizeButton::EscapeEventFilter::PreHandleGestureEvent(
     aura::Window* target,
     ui::GestureEvent* event) {
-  return ui::GESTURE_STATUS_UNKNOWN;
+  return ui::ER_UNHANDLED;
 }
 
 // FrameMaximizeButton ---------------------------------------------------------
@@ -259,12 +259,12 @@ void FrameMaximizeButton::OnMouseCaptureLost() {
   ImageButton::OnMouseCaptureLost();
 }
 
-ui::GestureStatus FrameMaximizeButton::OnGestureEvent(
+ui::EventResult FrameMaximizeButton::OnGestureEvent(
     const ui::GestureEvent& event) {
   if (event.type() == ui::ET_GESTURE_TAP_DOWN) {
     is_snap_enabled_ = true;
     ProcessStartEvent(event);
-    return ui::GESTURE_STATUS_CONSUMED;
+    return ui::ER_CONSUMED;
   }
 
   if (event.type() == ui::ET_GESTURE_TAP ||
@@ -276,7 +276,7 @@ ui::GestureStatus FrameMaximizeButton::OnGestureEvent(
     if (event.type() == ui::ET_GESTURE_TAP)
       snap_type_ = SnapTypeForLocation(event.location());
     ProcessEndEvent(event);
-    return ui::GESTURE_STATUS_CONSUMED;
+    return ui::ER_CONSUMED;
   }
 
   if (is_snap_enabled_) {
@@ -287,13 +287,13 @@ ui::GestureStatus FrameMaximizeButton::OnGestureEvent(
       ProcessUpdateEvent(event);
       snap_type_ = SnapTypeForLocation(event.location());
       ProcessEndEvent(event);
-      return ui::GESTURE_STATUS_CONSUMED;
+      return ui::ER_CONSUMED;
     }
 
     if (event.type() == ui::ET_GESTURE_SCROLL_UPDATE ||
         event.type() == ui::ET_GESTURE_SCROLL_BEGIN) {
       ProcessUpdateEvent(event);
-      return ui::GESTURE_STATUS_CONSUMED;
+      return ui::ER_CONSUMED;
     }
   }
 

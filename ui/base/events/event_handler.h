@@ -20,15 +20,6 @@ class TouchEvent;
 
 class EventTarget;
 
-enum EventResult {
-  ER_UNHANDLED = 0,  // The event hasn't been handled. The event can be
-                     // propagated to other handlers.
-  ER_HANDLED,        // The event has already been handled, but it can still be
-                     // propagated to other handlers.
-  ER_CONSUMED,       // The event has been handled, and it should not be
-                     // propagated to other handlers.
-};
-
 // Dispatches events to appropriate targets.
 class UI_EXPORT EventHandler {
  public:

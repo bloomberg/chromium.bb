@@ -70,10 +70,10 @@ class ConsumeGestureEventFilter : public EventFilter {
     return ui::TOUCH_STATUS_UNKNOWN;
   }
 
-  virtual ui::GestureStatus PreHandleGestureEvent(
+  virtual ui::EventResult PreHandleGestureEvent(
       Window* target,
       ui::GestureEvent* event) OVERRIDE {
-    return ui::GESTURE_STATUS_CONSUMED;
+    return ui::ER_CONSUMED;
   }
 
   DISALLOW_COPY_AND_ASSIGN(ConsumeGestureEventFilter);

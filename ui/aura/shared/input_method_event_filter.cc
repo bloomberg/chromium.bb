@@ -67,10 +67,10 @@ ui::TouchStatus InputMethodEventFilter::PreHandleTouchEvent(
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
-ui::GestureStatus InputMethodEventFilter::PreHandleGestureEvent(
+ui::EventResult InputMethodEventFilter::PreHandleGestureEvent(
     aura::Window* target,
     ui::GestureEvent* event) {
-  return ui::GESTURE_STATUS_UNKNOWN;
+  return ui::ER_UNHANDLED;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

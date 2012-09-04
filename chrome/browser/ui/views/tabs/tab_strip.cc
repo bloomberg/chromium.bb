@@ -305,7 +305,7 @@ class NewTabButton : public views::ImageButton {
 #if defined(OS_WIN) && !defined(USE_AURA)
   void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
 #endif
-  virtual ui::GestureStatus OnGestureEvent(
+  virtual ui::EventResult OnGestureEvent(
       const ui::GestureEvent& event) OVERRIDE;
   void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
@@ -374,12 +374,12 @@ void NewTabButton::OnMouseReleased(const ui::MouseEvent& event) {
 }
 #endif
 
-ui::GestureStatus NewTabButton::OnGestureEvent(
+ui::EventResult NewTabButton::OnGestureEvent(
     const ui::GestureEvent& event) {
   // Consume all gesture events here so that the parent (BaseTab) does not
   // start consuming gestures.
   views::ImageButton::OnGestureEvent(event);
-  return ui::GESTURE_STATUS_CONSUMED;
+  return ui::ER_CONSUMED;
 }
 
 void NewTabButton::OnPaint(gfx::Canvas* canvas) {
@@ -1433,7 +1433,7 @@ void TabStrip::OnMouseEntered(const ui::MouseEvent& event) {
   SetResetToShrinkOnExit(true);
 }
 
-ui::GestureStatus TabStrip::OnGestureEvent(
+ui::EventResult TabStrip::OnGestureEvent(
     const ui::GestureEvent& event) {
   SetResetToShrinkOnExit(false);
   switch (event.type()) {
@@ -1461,7 +1461,7 @@ ui::GestureStatus TabStrip::OnGestureEvent(
     default:
       break;
   }
-  return ui::GESTURE_STATUS_CONSUMED;
+  return ui::ER_CONSUMED;
 }
 
 void TabStrip::GetCurrentTabWidths(double* unselected_width,

@@ -31,7 +31,6 @@ class MouseEvent;
 
 namespace ui {
 class SlideAnimation;
-enum GestureStatus;
 }
 
 class ContentSettingsDelegateView;
@@ -52,7 +51,7 @@ class ContentSettingImageView : public views::ImageView,
 
   // views::View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual ui::GestureStatus OnGestureEvent(
+  virtual ui::EventResult OnGestureEvent(
       const ui::GestureEvent& event) OVERRIDE;
 
   // ui::AnimationDelegate overrides:

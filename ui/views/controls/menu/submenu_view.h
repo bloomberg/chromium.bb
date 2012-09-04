@@ -76,7 +76,7 @@ class VIEWS_EXPORT SubmenuView : public View,
   virtual bool OnMouseWheel(const ui::MouseWheelEvent& e) OVERRIDE;
 
   // Scrolls on menu item boundaries.
-  virtual ui::GestureStatus OnGestureEvent(const ui::GestureEvent& e) OVERRIDE;
+  virtual ui::EventResult OnGestureEvent(const ui::GestureEvent& e) OVERRIDE;
 
   // Returns true if the menu is showing.
   bool IsShowing();
