@@ -39,7 +39,11 @@ class LinkLock(object):
     assert self.mutex
     result = windll.kernel32.WaitForSingleObject(
         self.mutex, wintypes.c_int(0xFFFFFFFF))
-    assert result == 0
+    # 0x80 means another process was killed without releasing the mutex, but
+    # that this process has been given ownership. This is fine for our
+    # purposes.
+    assert result in (0, 0x80), (
+        "%s, %s" % (result, windll.kernel32.GetLastError()))
 
   def __exit__(self, type, value, traceback):
     windll.kernel32.ReleaseMutex(self.mutex)
