@@ -784,16 +784,14 @@ NSColor* IdentityVerifiedTextColor() {
 
   // Create the popup menu.
 
-  [button addItemWithTitle:l10n_util::GetNSStringF(
-      IDS_WEBSITE_SETTINGS_PERMISSION_LABEL,
-      WebsiteSettingsUI::PermissionValueToUIString(CONTENT_SETTING_ALLOW))];
+  [button addItemWithTitle:
+      l10n_util::GetNSString(IDS_WEBSITE_SETTINGS_MENU_ITEM_ALLOW)];
   [[button lastItem] setTag:CONTENT_SETTING_ALLOW];
 
   // Fullscreen permission does not support "Always block".
   if (permissionInfo.type != CONTENT_SETTINGS_TYPE_FULLSCREEN) {
-    [button addItemWithTitle:l10n_util::GetNSStringF(
-        IDS_WEBSITE_SETTINGS_PERMISSION_LABEL,
-        WebsiteSettingsUI::PermissionValueToUIString(CONTENT_SETTING_BLOCK))];
+    [button addItemWithTitle:
+        l10n_util::GetNSString(IDS_WEBSITE_SETTINGS_MENU_ITEM_BLOCK)];
     [[button lastItem] setTag:CONTENT_SETTING_BLOCK];
   }
 
