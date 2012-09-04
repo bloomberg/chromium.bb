@@ -46,8 +46,6 @@
 #include "google_breakpad/common/minidump_format.h"
 #include "processor/scoped_ptr.h"
 
-struct sigaction;
-
 namespace google_breakpad {
 
 // ExceptionHandler
@@ -194,8 +192,11 @@ class ExceptionHandler {
   // Force signal handling for the specified signal.
   bool SimulateSignalDelivery(int sig);
  private:
-  bool InstallHandlers();
-  void UninstallHandlers();
+  // Save the old signal handlers and install new ones.
+  static bool InstallHandlersLocked();
+  // Restore the old signal handlers.
+  static void RestoreHandlersLocked();
+
   void PreresolveSymbols();
   bool GenerateDump(CrashContext *context);
   void SendContinueSignalToChild();
@@ -221,12 +222,7 @@ class ExceptionHandler {
   // multiple ExceptionHandler instances in a process. Each will have itself
   // registered in this stack.
   static std::vector<ExceptionHandler*> *handler_stack_;
-  // The index of the handler that should handle the next exception.
-  static unsigned handler_stack_index_;
   static pthread_mutex_t handler_stack_mutex_;
-
-  // A vector of the old signal handlers.
-  std::vector<std::pair<int, struct sigaction *> > old_handlers_;
 
   // We need to explicitly enable ptrace of parent processes on some
   // kernels, but we need to know the PID of the cloned process before we

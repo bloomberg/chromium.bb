@@ -108,17 +108,86 @@ static int tgkill(pid_t tgid, pid_t tid, int sig) {
 
 namespace google_breakpad {
 
+namespace {
 // The list of signals which we consider to be crashes. The default action for
 // all these signals must be Core (see man 7 signal) because we rethrow the
 // signal after handling it and expect that it'll be fatal.
-static const int kExceptionSignals[] = {
-  SIGSEGV, SIGABRT, SIGFPE, SIGILL, SIGBUS, -1
+const int kExceptionSignals[] = {
+  SIGSEGV, SIGABRT, SIGFPE, SIGILL, SIGBUS
 };
+const int kNumHandledSignals =
+    sizeof(kExceptionSignals) / sizeof(kExceptionSignals[0]);
+struct sigaction old_handlers[kNumHandledSignals] = {0};
+bool handlers_installed = false;
+
+// InstallAlternateStackLocked will store the newly installed stack in new_stack
+// and (if it exists) the previously installed stack in old_stack.
+stack_t old_stack;
+stack_t new_stack;
+bool stack_installed = false;
+
+// Create an alternative stack to run the signal handlers on. This is done since
+// the signal might have been caused by a stack overflow.
+// Runs before crashing: normal context.
+void InstallAlternateStackLocked() {
+  if (stack_installed)
+    return;
+
+  memset(&old_stack, 0, sizeof(old_stack));
+  memset(&new_stack, 0, sizeof(new_stack));
+
+  // SIGSTKSZ may be too small to prevent the signal handlers from overrunning
+  // the alternative stack. Ensure that the size of the alternative stack is
+  // large enough.
+  static const unsigned kSigStackSize = std::max(8192, SIGSTKSZ);
+
+  // Only set an alternative stack if there isn't already one, or if the current
+  // one is too small.
+  if (sys_sigaltstack(NULL, &old_stack) == -1 || !old_stack.ss_sp ||
+      old_stack.ss_size < kSigStackSize) {
+    new_stack.ss_sp = malloc(kSigStackSize);
+    new_stack.ss_size = kSigStackSize;
+
+    if (sys_sigaltstack(&new_stack, NULL) == -1) {
+      free(new_stack.ss_sp);
+      return;
+    }
+    stack_installed = true;
+  }
+}
+
+// Runs before crashing: normal context.
+void RestoreAlternateStackLocked() {
+  if (!stack_installed)
+    return;
+
+  stack_t current_stack;
+  if (sys_sigaltstack(NULL, &current_stack) == -1)
+    return;
+
+  // Only restore the old_stack if the current alternative stack is the one
+  // installed by the call to InstallAlternateStackLocked.
+  if (current_stack.ss_sp == new_stack.ss_sp) {
+    if (old_stack.ss_sp) {
+      if (sys_sigaltstack(&old_stack, NULL) == -1)
+        return;
+    } else {
+      stack_t disable_stack;
+      disable_stack.ss_flags = SS_DISABLE;
+      if (sys_sigaltstack(&disable_stack, NULL) == -1)
+        return;
+    }
+  }
+
+  free(new_stack.ss_sp);
+  stack_installed = false;
+}
+
+}  // namespace
 
 // We can stack multiple exception handlers. In that case, this is the global
 // which holds the stack.
 std::vector<ExceptionHandler*>* ExceptionHandler::handler_stack_ = NULL;
-unsigned ExceptionHandler::handler_stack_index_ = 0;
 pthread_mutex_t ExceptionHandler::handler_stack_mutex_ =
     PTHREAD_MUTEX_INITIALIZER;
 
@@ -137,43 +206,42 @@ ExceptionHandler::ExceptionHandler(const MinidumpDescriptor& descriptor,
   if (server_fd >= 0)
     crash_generation_client_.reset(CrashGenerationClient::TryCreate(server_fd));
 
-  if (install_handler)
-    InstallHandlers();
-
   if (!IsOutOfProcess() && !minidump_descriptor_.IsFD())
     minidump_descriptor_.UpdatePath();
 
   pthread_mutex_lock(&handler_stack_mutex_);
   if (!handler_stack_)
     handler_stack_ = new std::vector<ExceptionHandler*>;
+  if (install_handler) {
+    InstallAlternateStackLocked();
+    InstallHandlersLocked();
+  }
   handler_stack_->push_back(this);
   pthread_mutex_unlock(&handler_stack_mutex_);
 }
 
 // Runs before crashing: normal context.
 ExceptionHandler::~ExceptionHandler() {
-  UninstallHandlers();
+  pthread_mutex_lock(&handler_stack_mutex_);
+  std::vector<ExceptionHandler*>::iterator handler =
+      std::find(handler_stack_->begin(), handler_stack_->end(), this);
+  handler_stack_->erase(handler);
+  if (handler_stack_->empty()) {
+    RestoreAlternateStackLocked();
+    RestoreHandlersLocked();
+  }
+  pthread_mutex_unlock(&handler_stack_mutex_);
 }
 
 // Runs before crashing: normal context.
-bool ExceptionHandler::InstallHandlers() {
-  // We run the signal handlers on an alternative stack because we might have
-  // crashed because of a stack overflow.
+// static
+bool ExceptionHandler::InstallHandlersLocked() {
+  if (handlers_installed)
+    return false;
 
-  // We use this value rather than SIGSTKSZ because we would end up overrunning
-  // such a small stack.
-  static const unsigned kSigStackSize = 8192;
-
-  stack_t stack;
-  // Only set an alternative stack if there isn't already one, or if the current
-  // one is too small.
-  if (sys_sigaltstack(NULL, &stack) == -1 || !stack.ss_sp ||
-      stack.ss_size < kSigStackSize) {
-    memset(&stack, 0, sizeof(stack));
-    stack.ss_sp = malloc(kSigStackSize);
-    stack.ss_size = kSigStackSize;
-
-    if (sys_sigaltstack(&stack, NULL) == -1)
+  // Fail if unable to store all the old handlers.
+  for (unsigned i = 0; i < kNumHandledSignals; ++i) {
+    if (sigaction(kExceptionSignals[i], NULL, &old_handlers[i]) == -1)
       return false;
   }
 
@@ -181,36 +249,36 @@ bool ExceptionHandler::InstallHandlers() {
   memset(&sa, 0, sizeof(sa));
   sigemptyset(&sa.sa_mask);
 
-  // mask all exception signals when we're handling one of them.
-  for (unsigned i = 0; kExceptionSignals[i] != -1; ++i)
+  // Mask all exception signals when we're handling one of them.
+  for (unsigned i = 0; i < kNumHandledSignals; ++i)
     sigaddset(&sa.sa_mask, kExceptionSignals[i]);
 
   sa.sa_sigaction = SignalHandler;
   sa.sa_flags = SA_ONSTACK | SA_SIGINFO;
 
-  for (unsigned i = 0; kExceptionSignals[i] != -1; ++i) {
-    struct sigaction* old = new struct sigaction;
-    if (sigaction(kExceptionSignals[i], &sa, old) == -1)
-      return false;
-    old_handlers_.push_back(std::make_pair(kExceptionSignals[i], old));
+  for (unsigned i = 0; i < kNumHandledSignals; ++i) {
+    if (sigaction(kExceptionSignals[i], &sa, NULL) == -1) {
+      // At this point it is impractical to back out changes, and so failure to
+      // install a signal is intentionally ignored.
+    }
   }
+  handlers_installed = true;
   return true;
 }
 
-// Runs before crashing: normal context.
-void ExceptionHandler::UninstallHandlers() {
-  for (unsigned i = 0; i < old_handlers_.size(); ++i) {
-    struct sigaction *action =
-        reinterpret_cast<struct sigaction*>(old_handlers_[i].second);
-    sigaction(old_handlers_[i].first, action, NULL);
-    delete action;
+// This function runs in a compromised context: see the top of the file.
+// Runs on the crashing thread.
+// static
+void ExceptionHandler::RestoreHandlersLocked() {
+  if (!handlers_installed)
+    return;
+
+  for (unsigned i = 0; i < kNumHandledSignals; ++i) {
+    if (sigaction(kExceptionSignals[i], &old_handlers[i], NULL) == -1) {
+      signal(kExceptionSignals[i], SIG_DFL);
+    }
   }
-  pthread_mutex_lock(&handler_stack_mutex_);
-  std::vector<ExceptionHandler*>::iterator handler =
-      std::find(handler_stack_->begin(), handler_stack_->end(), this);
-  handler_stack_->erase(handler);
-  pthread_mutex_unlock(&handler_stack_mutex_);
-  old_handlers_.clear();
+  handlers_installed = false;
 }
 
 // void ExceptionHandler::set_crash_handler(HandlerCallback callback) {
@@ -224,18 +292,20 @@ void ExceptionHandler::SignalHandler(int sig, siginfo_t* info, void* uc) {
   // All the exception signals are blocked at this point.
   pthread_mutex_lock(&handler_stack_mutex_);
 
-  if (!handler_stack_->size()) {
-    pthread_mutex_unlock(&handler_stack_mutex_);
-    return;
+  bool handled = false;
+  for (int i = handler_stack_->size() - 1; !handled && i >= 0; --i) {
+    handled = (*handler_stack_)[i]->HandleSignal(sig, info, uc);
   }
 
-  for (int i = handler_stack_->size() - 1; i >= 0; --i) {
-    if ((*handler_stack_)[i]->HandleSignal(sig, info, uc)) {
-      // successfully handled: We are in an invalid state since an exception
-      // signal has been delivered. We don't call the exit handlers because
-      // they could end up corrupting on-disk state.
-      break;
-    }
+  // Upon returning from this signal handler, sig will become unmasked and then
+  // it will be retriggered. If one of the ExceptionHandlers handled it
+  // successfully, restore the default handler. Otherwise, restore the
+  // previously installed handler. Then, when the signal is retriggered, it will
+  // be delivered to the appropriate handler.
+  if (handled) {
+    signal(sig, SIG_DFL);
+  } else {
+    RestoreHandlersLocked();
   }
 
   pthread_mutex_unlock(&handler_stack_mutex_);
@@ -255,13 +325,6 @@ void ExceptionHandler::SignalHandler(int sig, siginfo_t* info, void* uc) {
     // No need to reissue the signal. It will automatically trigger again,
     // when we return from the signal handler.
   }
-
-  // As soon as we return from the signal handler, our signal will become
-  // unmasked. At that time, we will  get terminated with the same signal that
-  // was triggered originally. This allows our parent to know that we crashed.
-  // The default action for all the signals which we catch is Core, so
-  // this is the end of us.
-  signal(sig, SIG_DFL);
 }
 
 struct ThreadArgument {
@@ -313,8 +376,7 @@ bool ExceptionHandler::HandleSignal(int sig, siginfo_t* info, void* uc) {
 #endif
   context.tid = syscall(__NR_gettid);
   if (crash_handler_ != NULL) {
-    if (crash_handler_(&context, sizeof(context),
-                       callback_context_)) {
+    if (crash_handler_(&context, sizeof(context), callback_context_)) {
       return true;
     }
   }

@@ -202,6 +202,180 @@ TEST(ExceptionHandlerTest, ChildCrashWithFD) {
   ASSERT_NO_FATAL_FAILURE(ChildCrash(true));
 }
 
+static bool DoneCallbackReturnFalse(const MinidumpDescriptor& descriptor,
+                                    void* context,
+                                    bool succeeded) {
+  return false;
+}
+
+static bool DoneCallbackReturnTrue(const MinidumpDescriptor& descriptor,
+                                   void* context,
+                                   bool succeeded) {
+  return true;
+}
+
+static bool DoneCallbackRaiseSIGKILL(const MinidumpDescriptor& descriptor,
+                                     void* context,
+                                     bool succeeded) {
+  raise(SIGKILL);
+}
+
+static bool FilterCallbackReturnFalse(void* context) {
+  return false;
+}
+
+static bool FilterCallbackReturnTrue(void* context) {
+  return true;
+}
+
+// SIGKILL cannot be blocked and a handler cannot be installed for it. In the
+// following tests, if the child dies with signal SIGKILL, then the signal was
+// redelivered to this handler. If the child dies with SIGSEGV then it wasn't.
+static void RaiseSIGKILL(int sig) {
+  raise(SIGKILL);
+}
+
+static bool InstallRaiseSIGKILL() {
+  struct sigaction sa;
+  memset(&sa, 0, sizeof(sa));
+  sa.sa_handler = RaiseSIGKILL;
+  return sigaction(SIGSEGV, &sa, NULL) != -1;
+}
+
+static void CrashWithCallbacks(ExceptionHandler::FilterCallback filter,
+                               ExceptionHandler::MinidumpCallback done,
+                               string path) {
+  ExceptionHandler handler(
+      MinidumpDescriptor(path), filter, done, NULL, true, -1);
+  // Crash with the exception handler in scope.
+  *reinterpret_cast<volatile int*>(NULL) = 0;
+}
+
+TEST(ExceptionHandlerTest, RedeliveryOnFilterCallbackFalse) {
+  AutoTempDir temp_dir;
+
+  const pid_t child = fork();
+  if (child == 0) {
+    ASSERT_TRUE(InstallRaiseSIGKILL());
+    CrashWithCallbacks(FilterCallbackReturnFalse, NULL, temp_dir.path());
+  }
+
+  ASSERT_NO_FATAL_FAILURE(WaitForProcessToTerminate(child, SIGKILL));
+}
+
+TEST(ExceptionHandlerTest, RedeliveryOnDoneCallbackFalse) {
+  AutoTempDir temp_dir;
+
+  const pid_t child = fork();
+  if (child == 0) {
+    ASSERT_TRUE(InstallRaiseSIGKILL());
+    CrashWithCallbacks(NULL, DoneCallbackReturnFalse, temp_dir.path());
+  }
+
+  ASSERT_NO_FATAL_FAILURE(WaitForProcessToTerminate(child, SIGKILL));
+}
+
+TEST(ExceptionHandlerTest, NoRedeliveryOnDoneCallbackTrue) {
+  AutoTempDir temp_dir;
+
+  const pid_t child = fork();
+  if (child == 0) {
+    ASSERT_TRUE(InstallRaiseSIGKILL());
+    CrashWithCallbacks(NULL, DoneCallbackReturnTrue, temp_dir.path());
+  }
+
+  ASSERT_NO_FATAL_FAILURE(WaitForProcessToTerminate(child, SIGSEGV));
+}
+
+TEST(ExceptionHandlerTest, NoRedeliveryOnFilterCallbackTrue) {
+  AutoTempDir temp_dir;
+
+  const pid_t child = fork();
+  if (child == 0) {
+    ASSERT_TRUE(InstallRaiseSIGKILL());
+    CrashWithCallbacks(FilterCallbackReturnTrue, NULL, temp_dir.path());
+  }
+
+  ASSERT_NO_FATAL_FAILURE(WaitForProcessToTerminate(child, SIGSEGV));
+}
+
+TEST(ExceptionHandlerTest, RedeliveryToDefaultHandler) {
+  AutoTempDir temp_dir;
+
+  const pid_t child = fork();
+  if (child == 0) {
+    CrashWithCallbacks(FilterCallbackReturnFalse, NULL, temp_dir.path());
+  }
+
+  // As RaiseSIGKILL wasn't installed, the redelivery should just kill the child
+  // with SIGSEGV.
+  ASSERT_NO_FATAL_FAILURE(WaitForProcessToTerminate(child, SIGSEGV));
+}
+
+TEST(ExceptionHandlerTest, StackedHandlersDeliveredToTop) {
+  AutoTempDir temp_dir;
+
+  const pid_t child = fork();
+  if (child == 0) {
+    ExceptionHandler bottom(MinidumpDescriptor(temp_dir.path()),
+                            NULL,
+                            NULL,
+                            NULL,
+                            true,
+                            -1);
+    CrashWithCallbacks(NULL, DoneCallbackRaiseSIGKILL, temp_dir.path());
+  }
+  ASSERT_NO_FATAL_FAILURE(WaitForProcessToTerminate(child, SIGKILL));
+}
+
+TEST(ExceptionHandlerTest, StackedHandlersNotDeliveredToBottom) {
+  AutoTempDir temp_dir;
+
+  const pid_t child = fork();
+  if (child == 0) {
+    ExceptionHandler bottom(MinidumpDescriptor(temp_dir.path()),
+                            NULL,
+                            DoneCallbackRaiseSIGKILL,
+                            NULL,
+                            true,
+                            -1);
+    CrashWithCallbacks(NULL, NULL, temp_dir.path());
+  }
+  ASSERT_NO_FATAL_FAILURE(WaitForProcessToTerminate(child, SIGSEGV));
+}
+
+TEST(ExceptionHandlerTest, StackedHandlersFilteredToBottom) {
+  AutoTempDir temp_dir;
+
+  const pid_t child = fork();
+  if (child == 0) {
+    ExceptionHandler bottom(MinidumpDescriptor(temp_dir.path()),
+                            NULL,
+                            DoneCallbackRaiseSIGKILL,
+                            NULL,
+                            true,
+                            -1);
+    CrashWithCallbacks(FilterCallbackReturnFalse, NULL, temp_dir.path());
+  }
+  ASSERT_NO_FATAL_FAILURE(WaitForProcessToTerminate(child, SIGKILL));
+}
+
+TEST(ExceptionHandlerTest, StackedHandlersUnhandledToBottom) {
+  AutoTempDir temp_dir;
+
+  const pid_t child = fork();
+  if (child == 0) {
+    ExceptionHandler bottom(MinidumpDescriptor(temp_dir.path()),
+                            NULL,
+                            DoneCallbackRaiseSIGKILL,
+                            NULL,
+                            true,
+                            -1);
+    CrashWithCallbacks(NULL, DoneCallbackReturnFalse, temp_dir.path());
+  }
+  ASSERT_NO_FATAL_FAILURE(WaitForProcessToTerminate(child, SIGKILL));
+}
+
 // Test that memory around the instruction pointer is written
 // to the dump as a MinidumpMemoryRegion.
 TEST(ExceptionHandlerTest, InstructionPointerMemory) {
