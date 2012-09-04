@@ -261,7 +261,7 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   // calling sendmsg(). We can thus not reliably look for with with
   // FindProcessHoldingSocket(). But by necessity, it has to keep the
   // partner_fd open until the crashdump is complete.
-  uint64_t inode_number;
+  ino_t inode_number;
   if (!base::FileDescriptorGetInode(&inode_number, partner_fd)) {
     LOG(WARNING) << "Failed to get inode number for passed socket";
     (void) HANDLE_EINTR(close(partner_fd));
