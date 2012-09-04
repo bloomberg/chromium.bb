@@ -197,7 +197,8 @@ function bb_goma_make {
 # Build using ninja.
 function bb_goma_ninja {
   echo "Using ninja to build."
-  ninja -C out/$BUILDTYPE -j120 -l20 All
+  local TARGET=$1
+  ninja -C out/$BUILDTYPE -j120 -l20 $TARGET
 }
 
 # Compile step
@@ -210,7 +211,7 @@ function bb_compile {
 
   BUILDTOOL=$(bb_get_json_prop "$FACTORY_PROPERTIES" buildtool)
   if [ $BUILDTOOL = "ninja" ]; then
-    bb_goma_ninja
+    bb_goma_ninja All
   else
     bb_goma_make
   fi
@@ -225,7 +226,11 @@ function bb_compile_experimental {
   for target in ${EXPERIMENTAL_TARGETS} ; do
     echo "@@@BUILD_STEP Experimental Compile $target @@@"
     set +e
-    bb_goma_make -k "${target}"
+    if [ $BUILDTOOL = "ninja" ]; then
+      bb_goma_ninja "${target}"
+    else
+      bb_goma_make -k "${target}"
+    fi
     if [ $? -ne 0 ] ; then
       echo "@@@STEP_WARNINGS@@@"
     fi
