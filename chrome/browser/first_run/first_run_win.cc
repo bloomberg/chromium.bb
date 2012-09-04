@@ -135,8 +135,7 @@ bool CreateChromeQuickLaunchShortcut() {
 }
 
 void PlatformSetup(Profile* profile) {
-  if (CreateChromeDesktopShortcut())
-    profile->GetPrefs()->SetBoolean(prefs::kProfileShortcutCreated, true);
+  CreateChromeDesktopShortcut();
 
   // Windows 7 has deprecated the quick launch bar.
   if (base::win::GetVersion() < base::win::VERSION_WIN7)

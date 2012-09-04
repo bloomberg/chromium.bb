@@ -103,21 +103,8 @@ void AvatarMenuModel::EditProfile(size_t index) {
 }
 
 void AvatarMenuModel::AddNewProfile() {
-  // Temporarily generate a random icon/name pair to create the profile with
-  // instead of opening a dialog for creating a profile.
-  // Remove on completion of BUG 134904.
-  if (ProfileShortcutManager::IsFeatureEnabled()) {
-    ProfileManager* profile_manager = g_browser_process->profile_manager();
-    ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
-    size_t icon_index = cache.ChooseAvatarIconIndexForNewProfile();
-
-    g_browser_process->profile_manager()->CreateMultiProfileAsync(
-        cache.ChooseNameForNewProfile(icon_index),
-        ASCIIToUTF16(cache.GetDefaultAvatarIconUrl(icon_index)));
-  } else {
-    ProfileManager::CreateMultiProfileAsync(string16(), string16());
-  }
-
+  ProfileManager::CreateMultiProfileAsync(
+      string16(), string16(), ProfileManager::CreateCallback());
   ProfileMetrics::LogProfileAddNewUser(ProfileMetrics::ADD_NEW_USER_ICON);
 }
 

@@ -152,8 +152,10 @@ void QueueProfileDirectoryForDeletion(const FilePath& path) {
 // Called upon completion of profile creation. This function takes care of
 // launching a new browser window and signing the user in to their Google
 // account.
-void OnOpenWindowForNewProfile(Profile* profile,
-                               Profile::CreateStatus status) {
+void OnOpenWindowForNewProfile(
+    const ProfileManager::CreateCallback& callback,
+    Profile* profile,
+    Profile::CreateStatus status) {
   if (status == Profile::CREATE_STATUS_INITIALIZED) {
     ProfileManager::FindOrCreateNewWindowForProfile(
         profile,
@@ -161,6 +163,8 @@ void OnOpenWindowForNewProfile(Profile* profile,
         chrome::startup::IS_FIRST_RUN,
         false);
   }
+  if (!callback.is_null())
+    callback.Run(profile, status);
 }
 
 #if defined(OS_CHROMEOS)
@@ -268,9 +272,9 @@ ProfileManager::ProfileManager(const FilePath& user_data_dir)
       chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED,
       content::NotificationService::AllSources());
 
-  if (ProfileShortcutManager::IsFeatureEnabled())
+  if (ProfileShortcutManager::IsFeatureEnabled() && !user_data_dir.empty())
     profile_shortcut_manager_.reset(ProfileShortcutManager::Create(
-                                    &GetProfileInfoCache()));
+                                   this));
 }
 
 ProfileManager::~ProfileManager() {
@@ -419,10 +423,11 @@ Profile* ProfileManager::GetProfile(const FilePath& profile_dir) {
   return profile;
 }
 
-void ProfileManager::CreateProfileAsync(const FilePath& profile_path,
-                                        const CreateCallback& callback,
-                                        const string16& name,
-                                        const string16& icon_url) {
+void ProfileManager::CreateProfileAsync(
+    const FilePath& profile_path,
+    const CreateCallback& callback,
+    const string16& name,
+    const string16& icon_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Make sure that this profile is not pending deletion.
@@ -468,8 +473,8 @@ void ProfileManager::CreateDefaultProfileAsync(const CreateCallback& callback) {
   default_profile_dir = default_profile_dir.Append(
       profile_manager->GetInitialProfileDir());
 
-  profile_manager->CreateProfileAsync(default_profile_dir, callback,
-                                      string16(), string16());
+  profile_manager->CreateProfileAsync(
+      default_profile_dir, callback, string16(), string16());
 }
 
 bool ProfileManager::AddProfile(Profile* profile) {
@@ -489,8 +494,9 @@ bool ProfileManager::AddProfile(Profile* profile) {
   return true;
 }
 
-ProfileManager::ProfileInfo* ProfileManager::RegisterProfile(Profile* profile,
-                                                             bool created) {
+ProfileManager::ProfileInfo* ProfileManager::RegisterProfile(
+    Profile* profile,
+    bool created) {
   ProfileInfo* info = new ProfileInfo(profile, created);
   profiles_info_.insert(std::make_pair(profile->GetPath(), info));
   return info;
@@ -789,8 +795,10 @@ FilePath ProfileManager::GenerateNextProfileDirectoryPath() {
 }
 
 // static
-void ProfileManager::CreateMultiProfileAsync(const string16& name,
-                                             const string16& icon_url) {
+void ProfileManager::CreateMultiProfileAsync(
+    const string16& name,
+    const string16& icon_url,
+    const CreateCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -798,7 +806,8 @@ void ProfileManager::CreateMultiProfileAsync(const string16& name,
   FilePath new_path = profile_manager->GenerateNextProfileDirectoryPath();
 
   profile_manager->CreateProfileAsync(new_path,
-                                      base::Bind(&OnOpenWindowForNewProfile),
+                                      base::Bind(&OnOpenWindowForNewProfile,
+                                          callback),
                                       name, icon_url);
 }
 
@@ -834,6 +843,10 @@ ProfileInfoCache& ProfileManager::GetProfileInfoCache() {
   return *profile_info_cache_.get();
 }
 
+ProfileShortcutManager* ProfileManager::profile_shortcut_manager() {
+  return profile_shortcut_manager_.get();
+}
+
 void ProfileManager::AddProfileToCache(Profile* profile) {
   ProfileInfoCache& cache = GetProfileInfoCache();
   if (profile->GetPath().DirName() != cache.GetUserDataDir())
@@ -866,7 +879,7 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
     return;
 
   // Initialize the user preferences (name and avatar) only if the profile
-  // doesn't have default preferenc values for them.
+  // doesn't have default preference values for them.
   if (HasAnyDefaultUserPrefs(profile)) {
     size_t profile_cache_index =
         cache.GetIndexOfProfileWithPath(profile->GetPath());
@@ -913,8 +926,8 @@ void ProfileManager::ScheduleProfileForDeletion(const FilePath& profile_dir) {
   if (cache.GetNumberOfProfiles() == 1) {
     FilePath new_path = GenerateNextProfileDirectoryPath();
 
-    CreateProfileAsync(new_path, base::Bind(&OnOpenWindowForNewProfile),
-                       string16(), string16());
+    CreateProfileAsync(new_path, base::Bind(&OnOpenWindowForNewProfile,
+                       CreateCallback()), string16(), string16());
   }
 
   // Update the last used profile pref before closing browser windows. This way
@@ -1004,7 +1017,9 @@ void ProfileManager::RunCallbacks(const std::vector<CreateCallback>& callbacks,
     callbacks[i].Run(profile, status);
 }
 
-ProfileManager::ProfileInfo::ProfileInfo(Profile* profile, bool created)
+ProfileManager::ProfileInfo::ProfileInfo(
+    Profile* profile,
+    bool created)
     : profile(profile),
       created(created) {
 }

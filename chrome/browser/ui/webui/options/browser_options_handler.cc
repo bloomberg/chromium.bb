@@ -30,10 +30,10 @@
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -807,6 +807,15 @@ void BrowserOptionsHandler::OnTemplateURLServiceChanged() {
                                    *default_managed);
 }
 
+// static
+void BrowserOptionsHandler::CreateDesktopShortcutForProfile(
+     Profile* profile, Profile::CreateStatus status) {
+  ProfileShortcutManager* shortcut_manager =
+      g_browser_process->profile_manager()->profile_shortcut_manager();
+  if (shortcut_manager)
+    shortcut_manager->CreateProfileShortcut(profile->GetPath());
+}
+
 void BrowserOptionsHandler::SetDefaultSearchEngine(const ListValue* args) {
   int selected_index = -1;
   if (!ExtractIntegerValue(args, &selected_index)) {
@@ -944,10 +953,19 @@ void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
   if (!ProfileManager::IsMultipleProfilesEnabled())
     return;
   string16 name, icon;
-  if (args->GetString(0, &name) && args->GetString(1, &icon))
-    ProfileManager::CreateMultiProfileAsync(name, icon);
-  else
-    ProfileManager::CreateMultiProfileAsync(string16(), string16());
+  bool create_box_checked;
+  if (args->GetString(0, &name) && args->GetString(1, &icon)) {
+    if (args->GetBoolean(2, &create_box_checked) && create_box_checked) {
+      ProfileManager::CreateMultiProfileAsync(
+        name, icon, base::Bind(&CreateDesktopShortcutForProfile));
+    } else {
+      ProfileManager::CreateMultiProfileAsync(
+        name, icon, ProfileManager::CreateCallback());
+    }
+  } else {
+    ProfileManager::CreateMultiProfileAsync(
+        string16(), string16(), ProfileManager::CreateCallback());
+  }
 }
 
 void BrowserOptionsHandler::CreateProfileInfo(const ListValue* args) {

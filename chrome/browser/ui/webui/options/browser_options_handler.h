@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_handler.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
@@ -61,6 +62,10 @@ class BrowserOptionsHandler
 
   // TemplateURLServiceObserver implementation.
   virtual void OnTemplateURLServiceChanged() OVERRIDE;
+
+  // Create a Windows' profile specific desktop shortcut.
+  static void CreateDesktopShortcutForProfile(
+      Profile* profile, Profile::CreateStatus status);
 
  private:
   // content::NotificationObserver implementation.

@@ -77,13 +77,19 @@ cr.define('options', function() {
         // wish to customize their profile.
         var name = $('create-profile-name').value;
         var icon_url = createIconGrid.selectedItem;
-        chrome.send('createProfile', [name, icon_url]);
+        chrome.send('createProfile', [name, icon_url,
+                                      $('create-shortcut').checked]);
       };
     },
 
     /** @inheritDoc */
     didShowPage: function() {
       chrome.send('requestDefaultProfileIcons');
+
+      if ($('create-shortcut'))
+        $('create-shortcut').checked = true;
+      if ($('manage-shortcut'))
+        $('manage-shortcut').checked = false;
 
       // Just ignore the manage profile dialog on Chrome OS, they use /accounts.
       if (!cr.isChromeOS && window.location.pathname == '/manageProfile')
@@ -212,7 +218,8 @@ cr.define('options', function() {
       var name = $('manage-profile-name').value;
       var iconURL = $('manage-profile-icon-grid').selectedItem;
       chrome.send('setProfileNameAndIcon',
-                  [this.profileInfo_.filePath, name, iconURL]);
+                  [this.profileInfo_.filePath, name, iconURL,
+                  $('manage-shortcut').checked]);
     },
 
     /**

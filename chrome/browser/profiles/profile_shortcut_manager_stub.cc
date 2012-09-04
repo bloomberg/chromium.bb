@@ -11,6 +11,6 @@ bool ProfileShortcutManager::IsFeatureEnabled() {
 
 // static
 ProfileShortcutManager* ProfileShortcutManager::Create(
-    ProfileInfoCache* cache) {
+    ProfileManager* manager) {
   return NULL;
 }

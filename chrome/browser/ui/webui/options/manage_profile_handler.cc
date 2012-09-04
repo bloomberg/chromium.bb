@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
+#include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -169,10 +170,21 @@ void ManageProfileHandler::SetProfileNameAndIcon(const ListValue* args) {
   if (!profile)
     return;
 
+  bool shortcut_checked;
+  if (!args->GetBoolean(3, &shortcut_checked))
+    return;
+  if (shortcut_checked) {
+    ProfileShortcutManager* shortcut_manager =
+        g_browser_process->profile_manager()->profile_shortcut_manager();
+    if (shortcut_manager) {
+       shortcut_manager->CreateProfileShortcut(
+           cache.GetPathOfProfileAtIndex(profile_index));
+    }
+  }
+
   string16 new_profile_name;
   if (!args->GetString(1, &new_profile_name))
     return;
-
   if (new_profile_name == cache.GetGAIANameOfProfileAtIndex(profile_index)) {
     // Set the profile to use the GAIA name as the profile name. Note, this
     // is a little weird if the user typed their GAIA name manually but
@@ -226,7 +238,6 @@ void ManageProfileHandler::SetProfileNameAndIcon(const ListValue* args) {
     pref_service->SetInteger(prefs::kProfileAvatarIndex, new_icon_index);
     cache.SetIsUsingGAIAPictureOfProfileAtIndex(profile_index, false);
   }
-
   ProfileMetrics::LogProfileUpdate(profile_file_path);
 }
 

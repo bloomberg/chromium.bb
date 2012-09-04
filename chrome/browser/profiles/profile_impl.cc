@@ -210,9 +210,6 @@ void ProfileImpl::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kSavingBrowserHistoryDisabled,
                              false,
                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kProfileShortcutCreated,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kProfileAvatarIndex,
                              -1,
                              PrefService::SYNCABLE_PREF);

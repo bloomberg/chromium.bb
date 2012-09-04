@@ -8,6 +8,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/shell_util.h"
@@ -59,9 +60,6 @@ class ProfileShortcutManagerTest : public testing::Test {
         static_cast<TestingBrowserProcess*>(g_browser_process);
     profile_manager_.reset(new TestingProfileManager(browser_process));
     ASSERT_TRUE(profile_manager_->SetUp());
-    // Profile shortcut manager will be NULL for non-windows platforms
-    profile_shortcut_manager_.reset(ProfileShortcutManager::Create(
-        profile_manager_->profile_info_cache()));
 
     dest_path_ = profile_manager_->profile_info_cache()->GetUserDataDir();
     dest_path_ = dest_path_.Append(FILE_PATH_LITERAL("My profile"));
@@ -109,6 +107,8 @@ class ProfileShortcutManagerTest : public testing::Test {
 
     profile_manager_->profile_info_cache()->AddProfileToCache(
         dest_path_, profile_name_, string16(), 0);
+    profile_manager_->profile_manager()->profile_shortcut_manager()->
+        CreateProfileShortcut(dest_path_);
     MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     MessageLoop::current()->Run();
     // We now have 1 profile, so we expect a new shortcut with no profile
@@ -128,7 +128,10 @@ class ProfileShortcutManagerTest : public testing::Test {
         dest_path_, profile_name_, string16(), 0);
     profile_manager_->profile_info_cache()->AddProfileToCache(
         second_dest_path_, second_profile_name_, string16(), 0);
-
+    profile_manager_->profile_manager()->profile_shortcut_manager()->
+        CreateProfileShortcut(dest_path_);
+    profile_manager_->profile_manager()->profile_shortcut_manager()->
+        CreateProfileShortcut(second_dest_path_);
     MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     MessageLoop::current()->Run();
     EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_SUCCESS,
@@ -141,7 +144,6 @@ class ProfileShortcutManagerTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   scoped_ptr<TestingProfileManager> profile_manager_;
-  scoped_ptr<ProfileShortcutManager> profile_shortcut_manager_;
   FilePath dest_path_;
   string16 profile_name_;
   FilePath second_dest_path_;
@@ -149,12 +151,14 @@ class ProfileShortcutManagerTest : public testing::Test {
 };
 
 TEST_F(ProfileShortcutManagerTest, DesktopShortcutsCreate) {
-  if (!profile_shortcut_manager_.get())
+  if (!profile_manager_->profile_manager()->profile_shortcut_manager())
     return;
   ProfileShortcutManagerTest::SetupDefaultProfileShortcut();
 
   profile_manager_->profile_info_cache()->AddProfileToCache(
       second_dest_path_, second_profile_name_, string16(), 0);
+  profile_manager_->profile_manager()->profile_shortcut_manager()->
+      CreateProfileShortcut(second_dest_path_);
   MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   MessageLoop::current()->Run();
 
@@ -167,7 +171,7 @@ TEST_F(ProfileShortcutManagerTest, DesktopShortcutsCreate) {
 }
 
 TEST_F(ProfileShortcutManagerTest, DesktopShortcutsUpdate) {
-  if (!profile_shortcut_manager_.get())
+  if (!profile_manager_->profile_manager()->profile_shortcut_manager())
     return;
   ProfileShortcutManagerTest::SetupDefaultProfileShortcut();
 
@@ -176,6 +180,8 @@ TEST_F(ProfileShortcutManagerTest, DesktopShortcutsUpdate) {
 
   profile_manager_->profile_info_cache()->AddProfileToCache(
       second_dest_path_, second_profile_name_, string16(), 0);
+  profile_manager_->profile_manager()->profile_shortcut_manager()->
+      CreateProfileShortcut(second_dest_path_);
   MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   MessageLoop::current()->Run();
   EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_SUCCESS,
@@ -197,7 +203,7 @@ TEST_F(ProfileShortcutManagerTest, DesktopShortcutsUpdate) {
 }
 
 TEST_F(ProfileShortcutManagerTest, DesktopShortcutsDeleteSecondToLast) {
-  if (!profile_shortcut_manager_.get())
+  if (!profile_manager_->profile_manager()->profile_shortcut_manager())
     return;
   ProfileShortcutManagerTest::SetupAndCreateTwoShortcuts();
 
@@ -219,7 +225,7 @@ TEST_F(ProfileShortcutManagerTest, DesktopShortcutsDeleteSecondToLast) {
 }
 
 TEST_F(ProfileShortcutManagerTest, DesktopShortcutsCreateSecond) {
-  if (!profile_shortcut_manager_.get())
+  if (!profile_manager_->profile_manager()->profile_shortcut_manager())
     return;
   ProfileShortcutManagerTest::SetupAndCreateTwoShortcuts();
 
@@ -240,7 +246,8 @@ TEST_F(ProfileShortcutManagerTest, DesktopShortcutsCreateSecond) {
   // Create a second profile and shortcut
   profile_manager_->profile_info_cache()->AddProfileToCache(
        second_dest_path_, second_profile_name_, string16(), 0);
-
+  profile_manager_->profile_manager()->profile_shortcut_manager()->
+      CreateProfileShortcut(second_dest_path_);
   MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   MessageLoop::current()->Run();
   EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_SUCCESS,

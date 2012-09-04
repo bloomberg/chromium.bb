@@ -163,8 +163,10 @@ class ProfileManager : public base::NonThreadSafe,
   // Directories are named "profile_1", "profile_2", etc., in sequence of
   // creation. (Because directories can be removed, however, it may be the case
   // that at some point the list of numbered profiles is not continuous.)
-  static void CreateMultiProfileAsync(const string16& name,
-                                     const string16& icon_url);
+  static void CreateMultiProfileAsync(
+      const string16& name,
+      const string16& icon_url,
+      const CreateCallback& callback);
 
   // Register multi-profile related preferences in Local State.
   static void RegisterPrefs(PrefService* prefs);
@@ -172,6 +174,10 @@ class ProfileManager : public base::NonThreadSafe,
   // Returns a ProfileInfoCache object which can be used to get information
   // about profiles without having to load them from disk.
   ProfileInfoCache& GetProfileInfoCache();
+
+  // Returns a ProfileShortcut Manager that enables the caller to create
+  // profile specfic desktop shortcuts.
+  ProfileShortcutManager* profile_shortcut_manager();
 
   // Schedules the profile at the given path to be deleted on shutdown.
   void ScheduleProfileForDeletion(const FilePath& profile_dir);
@@ -220,6 +226,8 @@ class ProfileManager : public base::NonThreadSafe,
     scoped_ptr<Profile> profile;
     // Whether profile has been fully loaded (created and initialized).
     bool created;
+    // Whether or not this profile should have a shortcut.
+    bool create_shortcut;
     // List of callbacks to run when profile initialization is done. Note, when
     // profile is fully loaded this vector will be empty.
     std::vector<CreateCallback> callbacks;

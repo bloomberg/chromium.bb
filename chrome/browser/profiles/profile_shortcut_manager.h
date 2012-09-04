@@ -9,12 +9,16 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "ui/gfx/image/image.h"
 
+class ProfileManager;
+
 class ProfileShortcutManager {
  public:
   virtual ~ProfileShortcutManager();
 
+  virtual void CreateProfileShortcut(const FilePath& profile_path) = 0;
+
   static bool IsFeatureEnabled();
-  static ProfileShortcutManager* Create(ProfileInfoCache* cache);
+  static ProfileShortcutManager* Create(ProfileManager* manager);
 
  protected:
   ProfileShortcutManager();
