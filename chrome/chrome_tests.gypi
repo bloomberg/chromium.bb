@@ -3163,6 +3163,9 @@
             ['disable_nacl_untrusted==0', {
               'sources': [
                 'test/nacl/nacl_browsertest.cc',
+                'test/nacl/nacl_browsertest_uma.cc',
+                'test/nacl/nacl_browsertest_util.cc',
+                'test/nacl/nacl_browsertest_util.h',
               ],
               'dependencies': [
                 'test/data/nacl/nacl_test_data.gyp:nacl_tests',
