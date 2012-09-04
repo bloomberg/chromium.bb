@@ -15,8 +15,7 @@
       'type': 'executable',
       'dependencies': [
         '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:sel_ldr_launcher',
-        '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
-        '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:sel',
+        '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:sel_main_chrome',
       ],
       'sources': [
         'sel_main_chrome_test.cc',
@@ -36,8 +35,7 @@
           },
           'dependencies': [
             '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:sel_ldr_launcher64',
-            '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib64',
-            '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:sel64',
+            '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:sel_main_chrome64',
           ],
           'sources': [
             'sel_main_chrome_test.cc',

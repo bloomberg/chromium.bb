@@ -63,9 +63,6 @@ ldr_inputs = [
     'sel_ldr.c',
     'sel_ldr_standard.c',
     'sel_ldr_thread_interface.c',
-    # sel_main_chrome.c is compile-tested and link-tested here but not
-    # otherwise used in the Scons build.
-    'sel_main_chrome.c',
     'sel_mem.c',
     'sel_qualify.c',
     'sel_validate_image.c',
@@ -253,6 +250,8 @@ syscall_gen_flags = '-a ${TARGET_ARCHITECTURE} -s ${TARGET_SUBARCH}'
 env.Append(SYSCALL_GEN_FLAGS=syscall_gen_flags)
 
 env.DualLibrary('sel', ldr_inputs)
+
+env.DualLibrary('sel_main_chrome', ['sel_main_chrome.c'])
 
 env.DualLibrary('env_cleanser', ['env_cleanser.c'])
 

@@ -16,7 +16,7 @@ if env.Bit('pnacl_generate_pexe'):
 
 sel_main_chrome_test = trusted_env.ComponentProgram(
     'sel_main_chrome_test', ['sel_main_chrome_test.cc'],
-    EXTRA_LIBS=['nonnacl_util', 'sel', 'debug_stub'])
+    EXTRA_LIBS=['nonnacl_util', 'sel_main_chrome'])
 
 env_vars = []
 # The check for no-execute page protection does not work under

@@ -60,6 +60,9 @@
           'sel_ldr.c',
           'sel_ldr_standard.c',
           'sel_ldr_thread_interface.c',
+          # TODO(mseaborn): Move sel_main_chrome.c to the
+          # "sel_main_chrome" library once Chromium is changed to
+          # depend on that rather than on "sel".
           'sel_main_chrome.c',
           'sel_mem.c',
           'sel_qualify.c',
@@ -230,6 +233,7 @@
         '<(DEPTH)/native_client/src/trusted/gio/gio_wrapped_desc.gyp:gio_wrapped_desc',
         '<(DEPTH)/native_client/src/trusted/interval_multiset/interval_multiset.gyp:nacl_interval',
         '<(DEPTH)/native_client/src/trusted/perf_counter/perf_counter.gyp:nacl_perf_counter',
+        '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
         '<(DEPTH)/native_client/src/trusted/manifest_name_service_proxy/manifest_name_service_proxy.gyp:manifest_proxy',
         '<(DEPTH)/native_client/src/trusted/simple_service/simple_service.gyp:simple_service',
         '<(DEPTH)/native_client/src/trusted/threading/threading.gyp:thread_interface',
@@ -278,13 +282,18 @@
         'env_cleanser.c',
       ],
     }, {
+      'target_name': 'sel_main_chrome',
+      'type': 'none',
+      'dependencies': [
+        'sel',
+      ],
+    }, {
       'target_name': 'sel_ldr',
       'type': 'executable',
       'dependencies': [
         'sel',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
         '<(DEPTH)/native_client/src/trusted/gio/gio_wrapped_desc.gyp:gio_wrapped_desc',
-        '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
       ],
       'sources': [
         'sel_main.c',
@@ -322,6 +331,7 @@
             '<(DEPTH)/native_client/src/trusted/gio/gio_wrapped_desc.gyp:gio_wrapped_desc64',
             '<(DEPTH)/native_client/src/trusted/interval_multiset/interval_multiset.gyp:nacl_interval64',
             '<(DEPTH)/native_client/src/trusted/perf_counter/perf_counter.gyp:nacl_perf_counter64',
+            '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib64',
             '<(DEPTH)/native_client/src/trusted/manifest_name_service_proxy/manifest_name_service_proxy.gyp:manifest_proxy64',
             '<(DEPTH)/native_client/src/trusted/simple_service/simple_service.gyp:simple_service64',
             '<(DEPTH)/native_client/src/trusted/threading/threading.gyp:thread_interface64',
@@ -361,6 +371,16 @@
           ],
         },
         {
+          'target_name': 'sel_main_chrome64',
+          'type': 'none',
+          'variables': {
+            'win_target': 'x64',
+          },
+          'dependencies': [
+            'sel64',
+          ],
+        },
+        {
           'target_name': 'sel_ldr64',
           'type': 'executable',
           'variables': {
@@ -370,7 +390,6 @@
             'sel64',
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
             '<(DEPTH)/native_client/src/trusted/gio/gio_wrapped_desc.gyp:gio_wrapped_desc64',
-            '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib64',
           ],
           'sources': [
             'sel_main.c',
