@@ -224,8 +224,19 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
         restrict_urls.insert(remove_origin_);
       content::RecordAction(UserMetricsAction("ClearBrowsingData_History"));
       waiting_for_clear_history_ = true;
+
+      // The HistoryService special-cases an end time of base::Time() to
+      // efficiently remove the whole history database. Support that here by
+      // passing base::Time() into HistoryService::ExpireHistoryBetween rather
+      // than base::Time::Max().
+      //
+      // TODO(sky?): Adjust HistoryService so that it understands Time::Max()
+      //     and deals well with non-max/non-null time periods: see
+      //     http://crbug.com/145680 for details.
+      base::Time history_end_ = delete_end_ == base::Time::Max() ?
+            base::Time() : delete_end_;
       history_service->ExpireHistoryBetween(restrict_urls,
-          delete_begin_, delete_end_,
+          delete_begin_, history_end_,
           &request_consumer_,
           base::Bind(&BrowsingDataRemover::OnHistoryDeletionDone,
                      base::Unretained(this)));
