@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/ui/idle_logout_dialog_view.h"
 
-#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/time.h"
@@ -152,15 +151,8 @@ void IdleLogoutDialogView::Show() {
 
   UpdateCountdown();
 
-  // If the apps list is displayed, we should show as it's child. Not doing
-  // so will cause the apps list to disappear.
-  gfx::NativeWindow app_list = ash::Shell::GetInstance()->GetAppListWindow();
-  if (app_list) {
-    views::Widget::CreateWindowWithParent(this, app_list);
-  } else {
-    views::Widget::CreateWindow(this);
-    GetWidget()->SetAlwaysOnTop(true);
-  }
+  views::Widget::CreateWindow(this);
+  GetWidget()->SetAlwaysOnTop(true);
   GetWidget()->Show();
 
   // Update countdown every 1 second.
