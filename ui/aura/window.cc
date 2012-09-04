@@ -459,7 +459,8 @@ void Window::SetEventFilter(EventFilter* event_filter) {
   if (event_filter_.get())
     RemovePreTargetHandler(event_filter_.get());
   event_filter_.reset(event_filter);
-  AddPreTargetHandler(event_filter);
+  if (event_filter)
+    AddPreTargetHandler(event_filter);
 }
 
 void Window::AddObserver(WindowObserver* observer) {
