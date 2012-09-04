@@ -112,6 +112,43 @@ bool GetLRUOriginOnDBThread(StorageType type,
   return true;
 }
 
+bool DeleteOriginInfoOnDBThread(const GURL& origin,
+                                StorageType type,
+                                QuotaDatabase* database) {
+  DCHECK(database);
+  return database->DeleteOriginInfo(origin, type);
+}
+
+bool InitializeTemporaryOriginsInfoOnDBThread(const std::set<GURL>* origins,
+                                              QuotaDatabase* database) {
+  DCHECK(database);
+  if (database->IsOriginDatabaseBootstrapped())
+    return true;
+
+  // Register existing origins with 0 last time access.
+  if (database->RegisterInitialOriginInfo(*origins, kStorageTypeTemporary)) {
+    database->SetOriginDatabaseBootstrapped(true);
+    return true;
+  }
+  return false;
+}
+
+bool UpdateAccessTimeOnDBThread(const GURL& origin,
+                                StorageType type,
+                                base::Time accessed_time,
+                                QuotaDatabase* database) {
+  DCHECK(database);
+  return database->SetOriginLastAccessTime(origin, type, accessed_time);
+}
+
+bool UpdateModifiedTimeOnDBThread(const GURL& origin,
+                                  StorageType type,
+                                  base::Time modified_time,
+                                  QuotaDatabase* database) {
+  DCHECK(database);
+  return database->SetOriginLastModifiedTime(origin, type, modified_time);
+}
+
 }  // anonymous namespace
 
 const int64 QuotaManager::kNoLimit = kint64max;
@@ -702,110 +739,6 @@ class QuotaManager::HostDataDeleter : public QuotaTask {
   DISALLOW_COPY_AND_ASSIGN(HostDataDeleter);
 };
 
-class QuotaManager::DatabaseTaskBase : public QuotaThreadTask {
- public:
-  explicit DatabaseTaskBase(QuotaManager* manager)
-      : QuotaThreadTask(manager, manager->db_thread_),
-        manager_(manager),
-        database_(manager->database_.get()),
-        db_disabled_(false) {
-    DCHECK(database_);
-  }
-
- protected:
-  virtual ~DatabaseTaskBase() {}
-
-  virtual void DatabaseTaskCompleted() = 0;
-
-  // QuotaThreadTask:
-  virtual void Completed() OVERRIDE {
-    manager_->db_disabled_ = db_disabled_;
-    DatabaseTaskCompleted();
-  }
-
-  bool db_disabled() const { return db_disabled_; }
-  void set_db_disabled(bool db_disabled) {
-    db_disabled_ = db_disabled;
-  }
-
-  QuotaManager* manager() const { return manager_; }
-  QuotaDatabase* database() const { return database_; }
-
- private:
-  QuotaManager* manager_;
-  QuotaDatabase* database_;
-  bool db_disabled_;
-};
-
-class QuotaManager::DeleteOriginInfo
-    : public QuotaManager::DatabaseTaskBase {
- public:
-  DeleteOriginInfo(
-      QuotaManager* manager,
-      const GURL& origin,
-      StorageType type)
-      : DatabaseTaskBase(manager),
-        origin_(origin),
-        type_(type) {}
-
- protected:
-  virtual ~DeleteOriginInfo() {}
-
-  // QuotaThreadTask:
-  virtual void RunOnTargetThread() OVERRIDE {
-    if (!database()->DeleteOriginInfo(origin_, type_)) {
-      set_db_disabled(true);
-    }
-  }
-
-  // DatabaseTaskBase:
-  virtual void DatabaseTaskCompleted() OVERRIDE {}
-
- private:
-  GURL origin_;
-  StorageType type_;
-};
-
-class QuotaManager::InitializeTemporaryOriginsInfoTask
-    : public QuotaManager::DatabaseTaskBase {
- public:
-  InitializeTemporaryOriginsInfoTask(
-      QuotaManager* manager,
-      UsageTracker* temporary_usage_tracker)
-      : DatabaseTaskBase(manager),
-        has_registered_origins_(false) {
-    DCHECK(temporary_usage_tracker);
-    temporary_usage_tracker->GetCachedOrigins(&origins_);
-  }
-
- protected:
-  virtual ~InitializeTemporaryOriginsInfoTask() {}
-
-  // QuotaThreadTask:
-  virtual void RunOnTargetThread() OVERRIDE {
-    if (!database()->IsOriginDatabaseBootstrapped()) {
-      // Register existing origins with 0 last time access.
-      if (!database()->RegisterInitialOriginInfo(
-              origins_, kStorageTypeTemporary)) {
-        set_db_disabled(true);
-      } else {
-        has_registered_origins_ = true;
-        database()->SetOriginDatabaseBootstrapped(true);
-      }
-    }
-  }
-
-  // DatabaseTaskBase:
-  virtual void DatabaseTaskCompleted() OVERRIDE {
-    if (has_registered_origins_)
-      manager()->StartEviction();
-  }
-
- private:
-  std::set<GURL> origins_;
-  bool has_registered_origins_;
-};
-
 class QuotaManager::AvailableSpaceQueryTask : public QuotaThreadTask {
  public:
   AvailableSpaceQueryTask(
@@ -842,203 +775,94 @@ class QuotaManager::AvailableSpaceQueryTask : public QuotaThreadTask {
   AvailableSpaceCallback callback_;
 };
 
-class QuotaManager::UpdateAccessTimeTask
-    : public QuotaManager::DatabaseTaskBase {
+class QuotaManager::GetModifiedSinceHelper {
  public:
-  UpdateAccessTimeTask(
-      QuotaManager* manager,
-      const GURL& origin,
-      StorageType type,
-      base::Time accessed_time)
-      : DatabaseTaskBase(manager),
-        origin_(origin),
-        type_(type),
-        accessed_time_(accessed_time) {}
+  bool GetModifiedSinceOnDBThread(StorageType type,
+                                  base::Time modified_since,
+                                  QuotaDatabase* database) {
+    DCHECK(database);
+    return database->GetOriginsModifiedSince(type, &origins_, modified_since);
+  }
 
- protected:
-  virtual ~UpdateAccessTimeTask() {}
-
-  // QuotaThreadTask:
-  virtual void RunOnTargetThread() OVERRIDE {
-    if (!database()->SetOriginLastAccessTime(origin_, type_, accessed_time_)) {
-      set_db_disabled(true);
+  void DidGetModifiedSince(QuotaManager* manager,
+                           const GetOriginsCallback& callback,
+                           StorageType type,
+                           bool success) {
+    if (!manager) {
+      // The operation was aborted.
+      callback.Run(std::set<GURL>(), type);
+      return;
     }
-  }
-
-  // DatabaseTaskBase:
-  virtual void DatabaseTaskCompleted() OVERRIDE {}
-
- private:
-  GURL origin_;
-  StorageType type_;
-  base::Time accessed_time_;
-};
-
-class QuotaManager::UpdateModifiedTimeTask
-    : public QuotaManager::DatabaseTaskBase {
- public:
-  UpdateModifiedTimeTask(
-      QuotaManager* manager,
-      const GURL& origin,
-      StorageType type,
-      base::Time modified_time)
-      : DatabaseTaskBase(manager),
-        origin_(origin),
-        type_(type),
-        modified_time_(modified_time) {}
-
- protected:
-  virtual ~UpdateModifiedTimeTask() {}
-
-  // QuotaThreadTask:
-  virtual void RunOnTargetThread() OVERRIDE {
-    if (!database()->SetOriginLastModifiedTime(
-            origin_, type_, modified_time_)) {
-      set_db_disabled(true);
-    }
-  }
-
-  // DatabaseTaskBase:
-  virtual void DatabaseTaskCompleted() OVERRIDE {}
-
- private:
-  GURL origin_;
-  StorageType type_;
-  base::Time modified_time_;
-};
-
-class QuotaManager::GetModifiedSinceTask
-    : public QuotaManager::DatabaseTaskBase {
- public:
-  GetModifiedSinceTask(
-      QuotaManager* manager,
-      StorageType type,
-      base::Time modified_since,
-      GetOriginsCallback callback)
-      : DatabaseTaskBase(manager),
-        type_(type),
-        modified_since_(modified_since),
-        callback_(callback) {}
-
- protected:
-  virtual ~GetModifiedSinceTask() {}
-
-  // QuotaThreadTask:
-  virtual void RunOnTargetThread() OVERRIDE {
-    if (!database()->GetOriginsModifiedSince(
-            type_, &origins_, modified_since_)) {
-      set_db_disabled(true);
-    }
-  }
-
-  virtual void Aborted() OVERRIDE {
-    callback_.Run(std::set<GURL>(), type_);
-  }
-
-  // DatabaseTaskBase:
-  virtual void DatabaseTaskCompleted() OVERRIDE {
-    callback_.Run(origins_, type_);
+    manager->DidDatabaseWork(success);
+    callback.Run(origins_, type);
   }
 
  private:
-  StorageType type_;
-  base::Time modified_since_;
   std::set<GURL> origins_;
-  GetOriginsCallback callback_;
 };
 
-class QuotaManager::DumpQuotaTableTask
-    : public QuotaManager::DatabaseTaskBase {
+class QuotaManager::DumpQuotaTableHelper {
+ public:
+  bool DumpQuotaTableOnDBThread(QuotaDatabase* database) {
+    DCHECK(database);
+    return database->DumpQuotaTable(
+        new TableCallback(base::Bind(&DumpQuotaTableHelper::AppendEntry,
+                                     base::Unretained(this))));
+  }
+
+  void DidDumpQuotaTable(QuotaManager* manager,
+                         const DumpQuotaTableCallback& callback,
+                         bool success) {
+    if (!manager) {
+      // The operation was aborted.
+      callback.Run(QuotaTableEntries());
+      return;
+    }
+    manager->DidDatabaseWork(success);
+    callback.Run(entries_);
+  }
+
  private:
-  typedef QuotaManager::DumpQuotaTableTask self_type;
-  typedef QuotaManager::DumpQuotaTableCallback Callback;
-  typedef QuotaManager::QuotaTableEntry TableEntry;
-  typedef QuotaManager::QuotaTableEntries TableEntries;
   typedef QuotaDatabase::QuotaTableCallback TableCallback;
 
- public:
-  DumpQuotaTableTask(
-      QuotaManager* manager,
-      const Callback& callback)
-      : DatabaseTaskBase(manager),
-        callback_(callback) {
-  }
-
- protected:
-  virtual ~DumpQuotaTableTask() {}
-
-  // QuotaThreadTask:
-  virtual void RunOnTargetThread() OVERRIDE {
-    if (!database()->DumpQuotaTable(
-            new TableCallback(
-                base::Bind(&self_type::AppendEntry, this))))
-      set_db_disabled(true);
-  }
-
-  virtual void Aborted() OVERRIDE {
-    callback_.Run(TableEntries());
-  }
-
-  // DatabaseTaskBase:
-  virtual void DatabaseTaskCompleted() OVERRIDE {
-    callback_.Run(entries_);
-  }
-
- private:
-  bool AppendEntry(const TableEntry& entry) {
+  bool AppendEntry(const QuotaTableEntry& entry) {
     entries_.push_back(entry);
     return true;
   }
 
-  Callback callback_;
-  TableEntries entries_;
+  QuotaTableEntries entries_;
 };
 
-class QuotaManager::DumpOriginInfoTableTask
-    : public QuotaManager::DatabaseTaskBase {
+class QuotaManager::DumpOriginInfoTableHelper {
+ public:
+  bool DumpOriginInfoTableOnDBThread(QuotaDatabase* database) {
+    DCHECK(database);
+    return database->DumpOriginInfoTable(
+        new TableCallback(base::Bind(&DumpOriginInfoTableHelper::AppendEntry,
+                                     base::Unretained(this))));
+  }
+
+  void DidDumpOriginInfoTable(QuotaManager* manager,
+                              const DumpOriginInfoTableCallback& callback,
+                              bool success) {
+    if (!manager) {
+      // The operation was aborted.
+      callback.Run(OriginInfoTableEntries());
+      return;
+    }
+    manager->DidDatabaseWork(success);
+    callback.Run(entries_);
+  }
+
  private:
-  typedef QuotaManager::DumpOriginInfoTableTask self_type;
-  typedef QuotaManager::DumpOriginInfoTableCallback Callback;
-  typedef QuotaManager::OriginInfoTableEntry TableEntry;
-  typedef QuotaManager::OriginInfoTableEntries TableEntries;
   typedef QuotaDatabase::OriginInfoTableCallback TableCallback;
 
- public:
-  DumpOriginInfoTableTask(
-      QuotaManager* manager,
-      const Callback& callback)
-      : DatabaseTaskBase(manager),
-        callback_(callback) {
-  }
-
- protected:
-  virtual ~DumpOriginInfoTableTask() {}
-
-  // QuotaThreadTask:
-  virtual void RunOnTargetThread() OVERRIDE {
-    if (!database()->DumpOriginInfoTable(
-            new TableCallback(
-                base::Bind(&self_type::AppendEntry, this))))
-      set_db_disabled(true);
-  }
-
-  virtual void Aborted() OVERRIDE {
-    callback_.Run(TableEntries());
-  }
-
-  // DatabaseTaskBase:
-  virtual void DatabaseTaskCompleted() OVERRIDE {
-    callback_.Run(entries_);
-  }
-
- private:
-  bool AppendEntry(const TableEntry& entry) {
+  bool AppendEntry(const OriginInfoTableEntry& entry) {
     entries_.push_back(entry);
     return true;
   }
 
-  Callback callback_;
-  TableEntries entries_;
+  OriginInfoTableEntries entries_;
 };
 
 // QuotaManager ---------------------------------------------------------------
@@ -1272,8 +1096,18 @@ void QuotaManager::GetOriginsModifiedSince(StorageType type,
                                            base::Time modified_since,
                                            const GetOriginsCallback& callback) {
   LazyInitialize();
-  make_scoped_refptr(new GetModifiedSinceTask(
-      this, type, modified_since, callback))->Start();
+  GetModifiedSinceHelper* helper = new GetModifiedSinceHelper;
+  PostTaskAndReplyWithResultForDBThread(
+      FROM_HERE,
+      base::Bind(&GetModifiedSinceHelper::GetModifiedSinceOnDBThread,
+                 base::Unretained(helper),
+                 type,
+                 modified_since),
+      base::Bind(&GetModifiedSinceHelper::DidGetModifiedSince,
+                 base::Owned(helper),
+                 weak_factory_.GetWeakPtr(),
+                 callback,
+                 type));
 }
 
 bool QuotaManager::ResetUsageTracker(StorageType type) {
@@ -1381,8 +1215,11 @@ void QuotaManager::NotifyStorageAccessedInternal(
 
   if (db_disabled_)
     return;
-  make_scoped_refptr(new UpdateAccessTimeTask(
-      this, origin, type, accessed_time))->Start();
+  PostTaskAndReplyWithResultForDBThread(
+      FROM_HERE,
+      base::Bind(&UpdateAccessTimeOnDBThread, origin, type, accessed_time),
+      base::Bind(&QuotaManager::DidDatabaseWork,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void QuotaManager::NotifyStorageModifiedInternal(
@@ -1393,8 +1230,12 @@ void QuotaManager::NotifyStorageModifiedInternal(
     base::Time modified_time) {
   LazyInitialize();
   GetUsageTracker(type)->UpdateUsageCache(client_id, origin, delta);
-  make_scoped_refptr(new UpdateModifiedTimeTask(
-      this, origin, type, modified_time))->Start();
+
+  PostTaskAndReplyWithResultForDBThread(
+      FROM_HERE,
+      base::Bind(&UpdateModifiedTimeOnDBThread, origin, type, modified_time),
+      base::Bind(&QuotaManager::DidDatabaseWork,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void QuotaManager::GetUsageAndQuotaInternal(
@@ -1438,12 +1279,28 @@ void QuotaManager::GetUsageAndQuotaInternal(
 }
 
 void QuotaManager::DumpQuotaTable(const DumpQuotaTableCallback& callback) {
-  make_scoped_refptr(new DumpQuotaTableTask(this, callback))->Start();
+  DumpQuotaTableHelper* helper = new DumpQuotaTableHelper;
+  PostTaskAndReplyWithResultForDBThread(
+      FROM_HERE,
+      base::Bind(&DumpQuotaTableHelper::DumpQuotaTableOnDBThread,
+                 base::Unretained(helper)),
+      base::Bind(&DumpQuotaTableHelper::DidDumpQuotaTable,
+                 base::Owned(helper),
+                 weak_factory_.GetWeakPtr(),
+                 callback));
 }
 
 void QuotaManager::DumpOriginInfoTable(
     const DumpOriginInfoTableCallback& callback) {
-  make_scoped_refptr(new DumpOriginInfoTableTask(this, callback))->Start();
+  DumpOriginInfoTableHelper* helper = new DumpOriginInfoTableHelper;
+  PostTaskAndReplyWithResultForDBThread(
+      FROM_HERE,
+      base::Bind(&DumpOriginInfoTableHelper::DumpOriginInfoTableOnDBThread,
+                 base::Unretained(helper)),
+      base::Bind(&DumpOriginInfoTableHelper::DidDumpOriginInfoTable,
+                 base::Owned(helper),
+                 weak_factory_.GetWeakPtr(),
+                 callback));
 }
 
 void QuotaManager::StartEviction() {
@@ -1461,9 +1318,12 @@ void QuotaManager::DeleteOriginFromDatabase(
   LazyInitialize();
   if (db_disabled_)
     return;
-  scoped_refptr<DeleteOriginInfo> task =
-      new DeleteOriginInfo(this, origin, type);
-  task->Start();
+
+  PostTaskAndReplyWithResultForDBThread(
+      FROM_HERE,
+      base::Bind(&DeleteOriginInfoOnDBThread, origin, type),
+      base::Bind(&QuotaManager::DidDatabaseWork,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void QuotaManager::DidOriginDataEvicted(QuotaStatusCode status) {
@@ -1605,7 +1465,7 @@ void QuotaManager::DidSetTemporaryGlobalOverrideQuota(
     const int64* new_quota,
     bool success) {
   QuotaStatusCode status = kQuotaErrorInvalidAccess;
-  db_disabled_ = !success;
+  DidDatabaseWork(success);
   if (success) {
     temporary_quota_override_ = *new_quota;
     status = kQuotaStatusOk;
@@ -1621,7 +1481,7 @@ void QuotaManager::DidGetPersistentHostQuota(const HostQuotaCallback& callback,
                                              const std::string& host,
                                              const int64* quota,
                                              bool success) {
-  db_disabled_ = !success;
+  DidDatabaseWork(success);
   callback.Run(kQuotaStatusOk, host, kStorageTypePersistent, *quota);
 }
 
@@ -1629,7 +1489,7 @@ void QuotaManager::DidSetPersistentHostQuota(const std::string& host,
                                              const HostQuotaCallback& callback,
                                              const int64* new_quota,
                                              bool success) {
-  db_disabled_ = !success;
+  DidDatabaseWork(success);
   callback.Run(success ? kQuotaStatusOk : kQuotaErrorInvalidAccess,
                host, kStorageTypePersistent, *new_quota);
 }
@@ -1640,7 +1500,7 @@ void QuotaManager::DidInitialize(int64* temporary_quota_override,
   temporary_quota_override_ = *temporary_quota_override;
   desired_available_space_ = *desired_available_space;
   temporary_quota_initialized_ = true;
-  db_disabled_ = !success;
+  DidDatabaseWork(success);
 
   histogram_timer_.Start(FROM_HERE,
                          base::TimeDelta::FromMilliseconds(
@@ -1667,7 +1527,7 @@ void QuotaManager::DidInitialize(int64* temporary_quota_override,
 
 void QuotaManager::DidGetLRUOrigin(const GURL* origin,
                                    bool success) {
-  db_disabled_ = !success;
+  DidDatabaseWork(success);
   // Make sure the returned origin is (still) not in the origin_in_use_ set
   // and has not been accessed since we posted the task.
   if (origins_in_use_.find(*origin) != origins_in_use_.end() ||
@@ -1686,10 +1546,26 @@ void QuotaManager::DidGetInitialTemporaryGlobalQuota(
   if (eviction_disabled_)
     return;
 
+  std::set<GURL>* origins = new std::set<GURL>;
+  temporary_usage_tracker_->GetCachedOrigins(origins);
   // This will call the StartEviction() when initial origin registration
   // is completed.
-  make_scoped_refptr(new InitializeTemporaryOriginsInfoTask(
-      this, temporary_usage_tracker_.get()))->Start();
+  PostTaskAndReplyWithResultForDBThread(
+      FROM_HERE,
+      base::Bind(&InitializeTemporaryOriginsInfoOnDBThread,
+                 base::Owned(origins)),
+      base::Bind(&QuotaManager::DidInitializeTemporaryOriginsInfo,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void QuotaManager::DidInitializeTemporaryOriginsInfo(bool success) {
+  DidDatabaseWork(success);
+  if (success)
+    StartEviction();
+}
+
+void QuotaManager::DidDatabaseWork(bool success) {
+  db_disabled_ = !success;
 }
 
 void QuotaManager::DeleteOnCorrectThread() const {

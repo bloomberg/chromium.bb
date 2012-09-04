@@ -222,13 +222,6 @@ class QuotaManager : public QuotaTaskObserver,
   friend class QuotaTemporaryStorageEvictor;
   friend struct QuotaManagerDeleter;
 
-  class DatabaseTaskBase;
-  class DeleteOriginInfo;
-  class InitializeTemporaryOriginsInfoTask;
-  class UpdateAccessTimeTask;
-  class UpdateModifiedTimeTask;
-  class GetModifiedSinceTask;
-
   class GetUsageInfoTask;
   class UsageAndQuotaDispatcherTask;
   class UsageAndQuotaDispatcherTaskForTemporary;
@@ -239,8 +232,9 @@ class QuotaManager : public QuotaTaskObserver,
   class HostDataDeleter;
 
   class AvailableSpaceQueryTask;
-  class DumpQuotaTableTask;
-  class DumpOriginInfoTableTask;
+  class GetModifiedSinceHelper;
+  class DumpQuotaTableHelper;
+  class DumpOriginInfoTableHelper;
 
   typedef QuotaDatabase::QuotaTableEntry QuotaTableEntry;
   typedef QuotaDatabase::OriginInfoTableEntry OriginInfoTableEntry;
@@ -356,6 +350,8 @@ class QuotaManager : public QuotaTaskObserver,
   void DidGetInitialTemporaryGlobalQuota(QuotaStatusCode status,
                                          StorageType type,
                                          int64 quota_unused);
+  void DidInitializeTemporaryOriginsInfo(bool success);
+  void DidDatabaseWork(bool success);
 
   void DeleteOnCorrectThread() const;
 
