@@ -142,10 +142,10 @@ void WallpaperManager::AddObservers() {
 }
 
 void WallpaperManager::EnsureLoggedInUserWallpaperLoaded() {
-  bool new_wallpaper_ui_disabled = CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kDisableNewWallpaperUI);
+  bool new_wallpaper_ui_enabled = CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kEnableNewWallpaperUI);
   WallpaperInfo info;
-  if (!new_wallpaper_ui_disabled &&
+  if (new_wallpaper_ui_enabled &&
       GetLoggedInUserWallpaperInfo(&info)) {
     if (info == current_user_wallpaper_info_)
       return;
@@ -409,9 +409,9 @@ void WallpaperManager::SetInitialUserWallpaper(const std::string& username,
   else
     current_user_wallpaper_index_ = ash::GetDefaultWallpaperIndex();
 
-  bool new_wallpaper_ui_disabled = CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kDisableNewWallpaperUI);
-  if (!new_wallpaper_ui_disabled) {
+  bool new_wallpaper_ui_enabled = CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kEnableNewWallpaperUI);
+  if (new_wallpaper_ui_enabled) {
     current_user_wallpaper_info_.file_name = "";
     current_user_wallpaper_info_.layout = ash::CENTER_CROPPED;
     current_user_wallpaper_info_.type = User::DEFAULT;
@@ -471,12 +471,12 @@ void WallpaperManager::SetUserWallpaper(const std::string& email) {
   if (!UserManager::Get()->IsKnownUser(email))
     return;
 
-  bool new_wallpaper_ui_disabled = CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kDisableNewWallpaperUI);
+  bool new_wallpaper_ui_enabled = CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kEnableNewWallpaperUI);
 
   WallpaperInfo info;
 
-  if (!new_wallpaper_ui_disabled &&
+  if (new_wallpaper_ui_enabled &&
       GetUserWallpaperInfo(email, &info)) {
     if (info.type == User::CUSTOMIZED) {
       if (!UserManager::Get()->IsUserLoggedIn()) {
@@ -515,7 +515,7 @@ void WallpaperManager::SetUserWallpaper(const std::string& email) {
     }
     ash::Shell::GetInstance()->desktop_background_controller()->
         SetDefaultWallpaper(index, false);
-    if (!new_wallpaper_ui_disabled)
+    if (new_wallpaper_ui_enabled)
       MigrateBuiltInWallpaper(email);
   }
   SetLastSelectedUser(email);
@@ -591,10 +591,10 @@ void WallpaperManager::CacheAllUsersWallpapers() {
 }
 
 void WallpaperManager::CacheUserWallpaper(const std::string& email) {
-  bool new_wallpaper_ui_disabled = CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kDisableNewWallpaperUI);
+  bool new_wallpaper_ui_enabled = CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kEnableNewWallpaperUI);
 
-  if (!new_wallpaper_ui_disabled) {
+  if (new_wallpaper_ui_enabled) {
     if (wallpaper_cache_.find(email) == wallpaper_cache_.end())
       return;
     WallpaperInfo info;
