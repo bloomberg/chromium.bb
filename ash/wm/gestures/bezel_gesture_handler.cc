@@ -72,6 +72,11 @@ void BezelGestureHandler::ProcessGestureEvent(aura::Window* target,
   switch (event.type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN:
       HandleBezelGestureStart(target, event);
+
+      // TODO(sad|skuhne): Fix the bezel gestures for when the shelf is on the
+      //                   left/right of the screen.
+      if (start_location_ == BEZEL_START_BOTTOM)
+        shelf_handler_.ProcessGestureEvent(event);
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
       // Check if a valid start position has been set.
@@ -82,6 +87,9 @@ void BezelGestureHandler::ProcessGestureEvent(aura::Window* target,
         HandleBezelGestureUpdate(target, event);
       break;
     case ui::ET_GESTURE_SCROLL_END:
+    case ui::ET_SCROLL_FLING_START:
+      if (start_location_ == BEZEL_START_BOTTOM)
+        shelf_handler_.ProcessGestureEvent(event);
       HandleBezelGestureEnd();
       break;
     default:
@@ -120,18 +128,11 @@ bool BezelGestureHandler::HandleDeviceControl(
   return false;
 }
 
-bool BezelGestureHandler::HandleLauncherControl(
-    const ui::GestureEvent& event) {
-  if (start_location_ == BEZEL_START_BOTTOM &&
-      event.details().scroll_y() < 0) {
-    ash::AcceleratorController* accelerator =
-        ash::Shell::GetInstance()->accelerator_controller();
-    accelerator->PerformAction(FOCUS_LAUNCHER, ui::Accelerator());
-  } else {
-    return false;
-  }
-  // No further notifications for this gesture.
-  return true;
+bool BezelGestureHandler::HandleLauncherControl(const ui::GestureEvent& event) {
+  CHECK_EQ(BEZEL_START_BOTTOM, start_location_);
+  shelf_handler_.ProcessGestureEvent(event);
+  return event.type() == ui::ET_GESTURE_SCROLL_END ||
+         event.type() == ui::ET_SCROLL_FLING_START;
 }
 
 bool BezelGestureHandler::HandleApplicationControl(

@@ -52,7 +52,7 @@ bool ShelfGestureHandler::ProcessGestureEvent(const ui::GestureEvent& event) {
 
   if (event.type() == ui::ET_GESTURE_SCROLL_END ||
       event.type() == ui::ET_SCROLL_FLING_START) {
-    shelf->HideFromGestureDrag(event);
+    shelf->CompleteGestureDrag(event);
     return true;
   }
 

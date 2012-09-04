@@ -7,6 +7,8 @@
 
 #include "base/basictypes.h"
 
+#include "ash/wm/gestures/shelf_gesture_handler.h"
+
 namespace aura {
 class Window;
 }
@@ -113,6 +115,8 @@ class BezelGestureHandler {
 
   // True if device control bezel operations (brightness, volume) are enabled.
   bool enable_bezel_device_control_;
+
+  ShelfGestureHandler shelf_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(BezelGestureHandler);
 };

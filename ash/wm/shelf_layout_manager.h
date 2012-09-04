@@ -151,7 +151,7 @@ class ASH_EXPORT ShelfLayoutManager :
   // Gesture dragging related functions:
   void StartGestureDrag(const ui::GestureEvent& gesture);
   void UpdateGestureDrag(const ui::GestureEvent& gesture);
-  void HideFromGestureDrag(const ui::GestureEvent& gesture);
+  void CompleteGestureDrag(const ui::GestureEvent& gesture);
   void CancelGestureDrag();
 
   // Overridden from aura::LayoutManager:
@@ -295,13 +295,16 @@ class ASH_EXPORT ShelfLayoutManager :
   enum GestureDragStatus {
     GESTURE_DRAG_NONE,
     GESTURE_DRAG_IN_PROGRESS,
-    GESTURE_DRAG_HIDE_IN_PROGRESS
+    GESTURE_DRAG_COMPLETE_IN_PROGRESS
   };
   GestureDragStatus gesture_drag_status_;
 
   // Tracks the amount of the drag. The value is only valid when
   // |gesture_drag_status_| is set to GESTURE_DRAG_IN_PROGRESS.
   float gesture_drag_amount_;
+
+  // Manage the auto-hide state during the gesture.
+  AutoHideState gesture_drag_auto_hide_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManager);
 };

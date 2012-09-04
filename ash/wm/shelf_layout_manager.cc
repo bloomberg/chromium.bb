@@ -131,7 +131,8 @@ ShelfLayoutManager::ShelfLayoutManager(views::Widget* status)
       workspace_controller_(NULL),
       window_overlaps_shelf_(false),
       gesture_drag_status_(GESTURE_DRAG_NONE),
-      gesture_drag_amount_(0.f) {
+      gesture_drag_amount_(0.f),
+      gesture_drag_auto_hide_state_(AUTO_HIDE_SHOWN) {
   Shell::GetInstance()->AddShellObserver(this);
   aura::client::GetActivationClient(root_window_)->AddObserver(this);
 }
@@ -231,7 +232,7 @@ void ShelfLayoutManager::UpdateVisibilityState() {
   ShellDelegate* delegate = Shell::GetInstance()->delegate();
   if (delegate && delegate->IsScreenLocked()) {
     SetState(VISIBLE);
-  } else if (gesture_drag_status_ == GESTURE_DRAG_HIDE_IN_PROGRESS) {
+  } else if (gesture_drag_status_ == GESTURE_DRAG_COMPLETE_IN_PROGRESS) {
     SetState(AUTO_HIDE);
   } else {
     WorkspaceWindowState window_state(workspace_controller_->GetWindowState());
@@ -297,6 +298,8 @@ void ShelfLayoutManager::RemoveObserver(Observer* observer) {
 void ShelfLayoutManager::StartGestureDrag(const ui::GestureEvent& gesture) {
   gesture_drag_status_ = GESTURE_DRAG_IN_PROGRESS;
   gesture_drag_amount_ = 0.f;
+  gesture_drag_auto_hide_state_ = visibility_state() == AUTO_HIDE ?
+      auto_hide_state() : AUTO_HIDE_SHOWN;
   UpdateShelfBackground(internal::BackgroundAnimator::CHANGE_ANIMATE);
 }
 
@@ -307,37 +310,44 @@ void ShelfLayoutManager::UpdateGestureDrag(const ui::GestureEvent& gesture) {
   LayoutShelf();
 }
 
-void ShelfLayoutManager::HideFromGestureDrag(const ui::GestureEvent& gesture) {
+void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {
   bool horizontal = alignment() == SHELF_ALIGNMENT_BOTTOM;
-  bool should_hide = false;
+  bool should_change = false;
   if (gesture.type() == ui::ET_GESTURE_SCROLL_END) {
     // If the shelf was dragged X% towards the correct direction, then it is
-    // hidden.
+    // hidden/shown.
     const float kDragHideThreshold = 0.4f;
     gfx::Rect bounds = GetIdealBounds();
+    float drag_amount = gesture_drag_auto_hide_state_ == AUTO_HIDE_SHOWN ?
+        gesture_drag_amount_ : -gesture_drag_amount_;
     if (horizontal)
-      should_hide = gesture_drag_amount_ > kDragHideThreshold * bounds.height();
+      should_change = drag_amount > kDragHideThreshold * bounds.height();
     else if (alignment() == SHELF_ALIGNMENT_LEFT)
-      should_hide = -gesture_drag_amount_ > kDragHideThreshold * bounds.width();
+      should_change = -drag_amount > kDragHideThreshold * bounds.width();
     else
-      should_hide = gesture_drag_amount_ > kDragHideThreshold * bounds.width();
+      should_change = drag_amount > kDragHideThreshold * bounds.width();
   } else if (gesture.type() == ui::ET_SCROLL_FLING_START) {
     if (horizontal)
-      should_hide = gesture.details().velocity_y() > 0;
+      should_change = gesture.details().velocity_y() > 0;
     else if (alignment() == SHELF_ALIGNMENT_LEFT)
-      should_hide = gesture.details().velocity_x() < 0;
+      should_change = gesture.details().velocity_x() < 0;
     else
-      should_hide = gesture.details().velocity_x() > 0;
+      should_change = gesture.details().velocity_x() > 0;
+    if (gesture_drag_auto_hide_state_ == AUTO_HIDE_HIDDEN)
+      should_change = !should_change;
   } else {
     NOTREACHED();
   }
 
-  if (!should_hide) {
+  if (!should_change) {
     CancelGestureDrag();
     return;
   }
 
-  gesture_drag_status_ = GESTURE_DRAG_HIDE_IN_PROGRESS;
+  gesture_drag_status_ = GESTURE_DRAG_COMPLETE_IN_PROGRESS;
+  gesture_drag_auto_hide_state_ =
+      gesture_drag_auto_hide_state_ == AUTO_HIDE_SHOWN ? AUTO_HIDE_HIDDEN :
+                                                         AUTO_HIDE_SHOWN;
   if (launcher_widget())
     launcher_widget()->Deactivate();
   status_->Deactivate();
@@ -349,13 +359,14 @@ void ShelfLayoutManager::HideFromGestureDrag(const ui::GestureEvent& gesture) {
 }
 
 void ShelfLayoutManager::CancelGestureDrag() {
-  gesture_drag_status_ = GESTURE_DRAG_NONE;
+  gesture_drag_status_ = GESTURE_DRAG_COMPLETE_IN_PROGRESS;
   ui::ScopedLayerAnimationSettings
       launcher_settings(GetLayer(launcher_widget())->GetAnimator()),
       status_settings(GetLayer(status_)->GetAnimator());
   LayoutShelf();
   UpdateVisibilityState();
   UpdateShelfBackground(internal::BackgroundAnimator::CHANGE_ANIMATE);
+  gesture_drag_status_ = GESTURE_DRAG_NONE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -598,8 +609,29 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     resist = gesture_drag_amount_ < 0;
 
   const float kDragResistanceFactor = 0.25f;
-  float translate = resist ? gesture_drag_amount_ * kDragResistanceFactor :
-                             gesture_drag_amount_;
+  float translate = 0.f;
+  if (gesture_drag_auto_hide_state_ == AUTO_HIDE_HIDDEN) {
+    // If the shelf was hidden when the drag started, then allow the drag some
+    // resistance-free region at first to make sure the shelf sticks with the
+    // finger until the shelf is visible.
+    int resistance_free_region = horizontal ?
+        target_bounds->launcher_bounds_in_root.height() :
+        target_bounds->launcher_bounds_in_root.width();
+    resist = resist && fabsf(gesture_drag_amount_) > resistance_free_region;
+    if (resist) {
+      float diff = fabsf(gesture_drag_amount_) - resistance_free_region;
+      if (gesture_drag_amount_ < 0)
+        translate = -resistance_free_region - diff * kDragResistanceFactor;
+      else
+        translate = resistance_free_region + diff * kDragResistanceFactor;
+    } else {
+      translate = gesture_drag_amount_;
+    }
+  } else {
+    translate = resist ? gesture_drag_amount_ * kDragResistanceFactor :
+                         gesture_drag_amount_;
+  }
+
   if (horizontal) {
     target_bounds->launcher_bounds_in_root.Offset(0, translate);
     target_bounds->status_bounds_in_root.Offset(0, translate);
@@ -637,8 +669,8 @@ ShelfLayoutManager::AutoHideState ShelfLayoutManager::CalculateAutoHideState(
   if (visibility_state != AUTO_HIDE || !launcher_widget())
     return AUTO_HIDE_HIDDEN;
 
-  if (gesture_drag_status_ == GESTURE_DRAG_HIDE_IN_PROGRESS)
-    return AUTO_HIDE_HIDDEN;
+  if (gesture_drag_status_ == GESTURE_DRAG_COMPLETE_IN_PROGRESS)
+    return gesture_drag_auto_hide_state_;
 
   Shell* shell = Shell::GetInstance();
   if (shell->GetAppListTargetVisibility())
