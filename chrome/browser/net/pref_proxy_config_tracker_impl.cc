@@ -314,6 +314,10 @@ void PrefProxyConfigTrackerImpl::Observe(
 
 ProxyPrefs::ConfigState PrefProxyConfigTrackerImpl::ReadPrefConfig(
     net::ProxyConfig* config) {
+#if defined(OS_IOS)
+  return ProxyPrefs::CONFIG_UNSET;
+#else
+
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Clear the configuration and source.
@@ -342,4 +346,5 @@ ProxyPrefs::ConfigState PrefProxyConfigTrackerImpl::ReadPrefConfig(
   }
 
   return config_state;
+#endif  // defined(OS_IOS)
 }
