@@ -263,7 +263,7 @@ bool GetWindowFunction::RunImpl() {
     return false;
 
   if (populate_tabs)
-    SetResult(controller->CreateWindowValueWithTabs());
+    SetResult(controller->CreateWindowValueWithTabs(GetExtension()));
   else
     SetResult(controller->CreateWindowValue());
   return true;
@@ -284,7 +284,7 @@ bool GetCurrentWindowFunction::RunImpl() {
     return false;
   }
   if (populate_tabs)
-    SetResult(controller->CreateWindowValueWithTabs());
+    SetResult(controller->CreateWindowValueWithTabs(GetExtension()));
   else
     SetResult(controller->CreateWindowValue());
   return true;
@@ -311,7 +311,7 @@ bool GetLastFocusedWindowFunction::RunImpl() {
   WindowController* controller =
       browser->extension_window_controller();
   if (populate_tabs)
-    SetResult(controller->CreateWindowValueWithTabs());
+    SetResult(controller->CreateWindowValueWithTabs(GetExtension()));
   else
     SetResult(controller->CreateWindowValue());
   return true;
@@ -334,7 +334,7 @@ bool GetAllWindowsFunction::RunImpl() {
     if (!this->CanOperateOnWindow(*iter))
       continue;
     if (populate_tabs)
-      window_list->Append((*iter)->CreateWindowValueWithTabs());
+      window_list->Append((*iter)->CreateWindowValueWithTabs(GetExtension()));
     else
       window_list->Append((*iter)->CreateWindowValue());
   }
@@ -586,7 +586,8 @@ bool CreateWindowFunction::RunImpl() {
         panel->Show();
 
     SetResult(
-        panel->extension_window_controller()->CreateWindowValueWithTabs());
+        panel->extension_window_controller()->CreateWindowValueWithTabs(
+            GetExtension()));
     return true;
   }
 #endif
@@ -638,7 +639,8 @@ bool CreateWindowFunction::RunImpl() {
     SetResult(Value::CreateNullValue());
   } else {
     SetResult(
-        new_window->extension_window_controller()->CreateWindowValueWithTabs());
+        new_window->extension_window_controller()->CreateWindowValueWithTabs(
+            GetExtension()));
   }
 
   return true;
@@ -819,7 +821,8 @@ bool GetSelectedTabFunction::RunImpl() {
   }
   SetResult(ExtensionTabUtil::CreateTabValue(contents->web_contents(),
                                              tab_strip,
-                                             tab_strip->active_index()));
+                                             tab_strip->active_index(),
+                                             GetExtension()));
   return true;
 }
 
@@ -833,7 +836,7 @@ bool GetAllTabsInWindowFunction::RunImpl() {
   if (!GetBrowserFromWindowID(this, window_id, &browser))
     return false;
 
-  SetResult(ExtensionTabUtil::CreateTabList(browser));
+  SetResult(ExtensionTabUtil::CreateTabList(browser, GetExtension()));
 
   return true;
 }
@@ -944,7 +947,7 @@ bool QueryTabsFunction::RunImpl() {
         continue;
 
       result->Append(ExtensionTabUtil::CreateTabValue(
-          web_contents, tab_strip, i));
+          web_contents, tab_strip, i, GetExtension()));
     }
   }
 
@@ -1019,13 +1022,11 @@ bool CreateTabFunction::RunImpl() {
   // be used instead).
   bool active = true;
   if (args->HasKey(keys::kSelectedKey))
-    EXTENSION_FUNCTION_VALIDATE(
-        args->GetBoolean(keys::kSelectedKey, &active));
+    EXTENSION_FUNCTION_VALIDATE(args->GetBoolean(keys::kSelectedKey, &active));
 
   // The 'active' property has replaced the 'selected' property.
   if (args->HasKey(keys::kActiveKey))
-    EXTENSION_FUNCTION_VALIDATE(
-        args->GetBoolean(keys::kActiveKey, &active));
+    EXTENSION_FUNCTION_VALIDATE(args->GetBoolean(keys::kActiveKey, &active));
 
   // Default to not pinning the tab. Setting the 'pinned' property to true
   // will override this default.
@@ -1081,7 +1082,7 @@ bool CreateTabFunction::RunImpl() {
   if (has_callback()) {
     SetResult(ExtensionTabUtil::CreateTabValue(
         params.target_contents->web_contents(),
-        tab_strip, new_index));
+        tab_strip, new_index, GetExtension()));
   }
 
   return true;
@@ -1100,7 +1101,8 @@ bool GetTabFunction::RunImpl() {
 
   SetResult(ExtensionTabUtil::CreateTabValue(contents->web_contents(),
                                              tab_strip,
-                                             tab_index));
+                                             tab_index,
+                                             GetExtension()));
   return true;
 }
 
@@ -1109,7 +1111,7 @@ bool GetCurrentTabFunction::RunImpl() {
 
   WebContents* contents = dispatcher()->delegate()->GetAssociatedWebContents();
   if (contents)
-    SetResult(ExtensionTabUtil::CreateTabValue(contents));
+    SetResult(ExtensionTabUtil::CreateTabValue(contents, GetExtension()));
 
   return true;
 }
@@ -1166,7 +1168,8 @@ bool HighlightTabsFunction::RunImpl() {
   selection.set_active(active_index);
   browser->tab_strip_model()->SetSelectionFromModel(selection);
   SetResult(
-      browser->extension_window_controller()->CreateWindowValueWithTabs());
+      browser->extension_window_controller()->CreateWindowValueWithTabs(
+          GetExtension()));
   return true;
 }
 
@@ -1342,11 +1345,8 @@ void UpdateTabFunction::PopulateResult() {
   if (!has_callback())
     return;
 
-  if (GetExtension()->HasAPIPermission(extensions::APIPermission::kTab)) {
-    SetResult(ExtensionTabUtil::CreateTabValue(tab_contents_->web_contents()));
-  } else {
-    SetResult(Value::CreateNullValue());
-  }
+  SetResult(ExtensionTabUtil::CreateTabValue(tab_contents_->web_contents(),
+                                             GetExtension()));
 }
 
 void UpdateTabFunction::OnExecuteCodeFinished(const std::string& error,
@@ -1438,9 +1438,13 @@ bool MoveTabsFunction::RunImpl() {
         target_tab_strip->InsertTabContentsAt(
             new_index, contents, TabStripModel::ADD_NONE);
 
-        if (has_callback())
+        if (has_callback()) {
           tab_values.Append(ExtensionTabUtil::CreateTabValue(
-              contents->web_contents(), target_tab_strip, new_index));
+              contents->web_contents(),
+              target_tab_strip,
+              new_index,
+              GetExtension()));
+        }
 
         continue;
       }
@@ -1456,9 +1460,11 @@ bool MoveTabsFunction::RunImpl() {
     if (new_index != tab_index)
       source_tab_strip->MoveTabContentsAt(tab_index, new_index, false);
 
-    if (has_callback())
+    if (has_callback()) {
       tab_values.Append(ExtensionTabUtil::CreateTabValue(
-          contents->web_contents(), source_tab_strip, new_index));
+          contents->web_contents(), source_tab_strip, new_index,
+          GetExtension()));
+    }
   }
 
   if (!has_callback())

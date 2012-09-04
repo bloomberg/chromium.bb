@@ -48,10 +48,12 @@ BrowserExtensionWindowController::CreateWindowValue() const {
 }
 
 base::DictionaryValue*
-BrowserExtensionWindowController::CreateWindowValueWithTabs() const {
+BrowserExtensionWindowController::CreateWindowValueWithTabs(
+    const extensions::Extension* extension) const {
   DictionaryValue* result = CreateWindowValue();
 
-  result->Set(keys::kTabsKey, ExtensionTabUtil::CreateTabList(browser_));
+  result->Set(keys::kTabsKey, ExtensionTabUtil::CreateTabList(browser_,
+                                                              extension));
 
   return result;
 }

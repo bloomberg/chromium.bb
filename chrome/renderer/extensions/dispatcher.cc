@@ -1066,19 +1066,7 @@ bool Dispatcher::CheckCurrentContextAccessToExtensionAPI(
     return false;
   }
 
-  // We need to whitelist tabs.executeScript and tabs.insertCSS because they
-  // are granted under special circumstances with the activeTab permission
-  // (note that the browser checks too, so this isn't a security problem).
-  //
-  // Only the browser knows which tab this call will be sent to... sometimes we
-  // *could* figure it out (if the extension gives an explicit tab ID in the
-  // call), but the expected case will be the extension passing through -1,
-  // meaning the active tab, and only the browser safely knows what this is.
-  bool skip_permission_check = (function_name == "tabs.executeScript") ||
-                               (function_name == "tabs.insertCSS");
-
-  if (!skip_permission_check &&
-      !context->extension()->HasAPIPermission(function_name)) {
+  if (!context->extension()->HasAPIPermission(function_name)) {
     static const char kMessage[] =
         "You do not have permission to use '%s'. Be sure to declare"
         " in your manifest what permissions you need.";

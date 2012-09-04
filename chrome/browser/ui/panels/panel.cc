@@ -38,6 +38,10 @@
 using content::RenderViewHost;
 using content::UserMetricsAction;
 
+namespace extensions {
+class Extension;
+}
+
 namespace panel_internal {
 
 class PanelExtensionWindowController : public extensions::WindowController {
@@ -48,7 +52,8 @@ class PanelExtensionWindowController : public extensions::WindowController {
   // Overridden from extensions::WindowController.
   virtual int GetWindowId() const OVERRIDE;
   virtual std::string GetWindowTypeText() const OVERRIDE;
-  virtual base::DictionaryValue* CreateWindowValueWithTabs() const OVERRIDE;
+  virtual base::DictionaryValue* CreateWindowValueWithTabs(
+      const extensions::Extension* extension) const OVERRIDE;
   virtual bool CanClose(Reason* reason) const OVERRIDE;
   virtual void SetFullscreenMode(bool is_fullscreen,
                                  const GURL& extension_url) const OVERRIDE;
@@ -80,12 +85,11 @@ std::string PanelExtensionWindowController::GetWindowTypeText() const {
 }
 
 base::DictionaryValue*
-PanelExtensionWindowController::CreateWindowValueWithTabs() const {
+PanelExtensionWindowController::CreateWindowValueWithTabs(
+    const extensions::Extension* extension) const {
   base::DictionaryValue* result = CreateWindowValue();
 
-  // Safe to include info about the web contents as this is only called
-  // by the extension that owns this window. See IsVisibleToExtension().
-  // TODO(jennb): DCHECK this after chebert's patch 10829186 lands.
+  DCHECK(IsVisibleToExtension(extension));
   content::WebContents* web_contents = panel_->GetWebContents();
   if (web_contents) {
     DictionaryValue* tab_value = new DictionaryValue();

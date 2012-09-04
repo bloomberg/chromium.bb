@@ -57,7 +57,8 @@ class WindowController {
   virtual base::DictionaryValue* CreateWindowValue() const;
 
   // Populates a dictionary for the Window object, including a list of tabs.
-  virtual base::DictionaryValue* CreateWindowValueWithTabs() const = 0;
+  virtual base::DictionaryValue* CreateWindowValueWithTabs(
+      const extensions::Extension* extension) const = 0;
 
   // Returns false if the window is in a state where closing the window is not
   // permitted and sets |reason| if not NULL.

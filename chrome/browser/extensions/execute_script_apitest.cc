@@ -36,8 +36,7 @@ IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptPermissions) {
 }
 
 // If failing, mark disabled and update http://crbug.com/84760.
-IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest,
-                       ExecuteScriptFileAfterClose) {
+IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptFileAfterClose) {
   host_resolver()->AddRule("b.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("executescript/file_after_close")) << message_;

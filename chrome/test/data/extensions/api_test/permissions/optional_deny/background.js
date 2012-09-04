@@ -6,8 +6,8 @@ var assertFalse = chrome.test.assertFalse;
 var assertTrue = chrome.test.assertTrue;
 var pass = chrome.test.callbackPass;
 
-var NO_TABS_PERMISSION =
-    "You do not have permission to use 'windows.getAll'.";
+var NO_BOOKMARKS_PERMISSION =
+    "You do not have permission to use 'bookmarks.getTree'.";
 
 chrome.test.getConfig(function(config) {
 
@@ -37,7 +37,7 @@ chrome.test.getConfig(function(config) {
   chrome.test.runTests([
     function denyRequest() {
       chrome.permissions.request(
-          {permissions: ['tabs'], origins: ['http://*.c.com/*']},
+          {permissions: ['bookmarks'], origins: ['http://*.c.com/*']},
           pass(function(granted) {
             // They were not granted, and there should be no error.
             assertFalse(granted);
@@ -45,15 +45,15 @@ chrome.test.getConfig(function(config) {
 
             // Make sure they weren't granted...
             chrome.permissions.contains(
-                {permissions: ['tabs'], origins:['http://*.c.com/*']},
+                {permissions: ['bookmarks'], origins:['http://*.c.com/*']},
                 pass(function(result) { assertFalse(result); }));
 
             try {
-              chrome.windows.getAll({populate: true}, function() {
-                chrome.test.fail("Should not have tabs API permission.");
+              chrome.bookmarks.getTree(function() {
+                chrome.test.fail("Should not have bookmarks API permission.");
               });
             } catch (e) {
-              assertTrue(e.message.indexOf(NO_TABS_PERMISSION) == 0);
+              assertTrue(e.message.indexOf(NO_BOOKMARKS_PERMISSION) == 0);
             }
 
             doReq('http://b.c.com/', pass(function(result) {

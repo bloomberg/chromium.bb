@@ -189,7 +189,8 @@ class PanelExtensionWindowController : public extensions::WindowController {
   virtual int GetWindowId() const OVERRIDE;
   virtual std::string GetWindowTypeText() const OVERRIDE;
   virtual base::DictionaryValue* CreateWindowValue() const OVERRIDE;
-  virtual base::DictionaryValue* CreateWindowValueWithTabs() const OVERRIDE;
+  virtual base::DictionaryValue* CreateWindowValueWithTabs(
+      const extensions::Extension* extension) const OVERRIDE;
   virtual bool CanClose(Reason* reason) const OVERRIDE;
   virtual void SetFullscreenMode(bool is_fullscreen,
                                  const GURL& extension_url) const OVERRIDE;
@@ -231,7 +232,8 @@ PanelExtensionWindowController::CreateWindowValue() const {
 }
 
 base::DictionaryValue*
-PanelExtensionWindowController::CreateWindowValueWithTabs() const {
+PanelExtensionWindowController::CreateWindowValueWithTabs(
+    const extensions::Extension* extension) const {
   DictionaryValue* result = CreateWindowValue();
 
   // TODO(stevenjb): Implement tab interface for Aura panels.

@@ -3,7 +3,7 @@
   "version": "1.0",
   "background": { "scripts": ["background.js"] },
   "permissions": [
-    "tabs", "http://*/*"
+    "http://*/*"
   ],
   "browser_action": {
     "name": "Make this page red",

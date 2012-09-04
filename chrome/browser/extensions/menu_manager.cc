@@ -644,7 +644,7 @@ void MenuManager::ExecuteCommand(Profile* profile,
   if (!extension || !extension->is_platform_app()) {
     // Note: web_contents only NULL in unit tests :(
     if (web_contents)
-      args->Append(ExtensionTabUtil::CreateTabValue(web_contents));
+      args->Append(ExtensionTabUtil::CreateTabValue(web_contents, extension));
     else
       args->Append(new DictionaryValue());
   }

@@ -219,8 +219,10 @@ void MessageService::OpenChannelToExtension(
   // Include info about the opener's tab (if it was a tab).
   std::string tab_json = "null";
   if (source_contents) {
-    scoped_ptr<DictionaryValue> tab_value(
-        ExtensionTabUtil::CreateTabValue(source_contents));
+    scoped_ptr<DictionaryValue> tab_value(ExtensionTabUtil::CreateTabValue(
+            source_contents,
+            profile->GetExtensionService()->extensions()->GetByID(
+                source_extension_id)));
     base::JSONWriter::Write(tab_value.get(), &tab_json);
   }
 
@@ -271,8 +273,10 @@ void MessageService::OpenChannelToTab(
   // Include info about the opener's tab (if it was a tab).
   std::string tab_json = "null";
   if (source_contents) {
-    scoped_ptr<DictionaryValue> tab_value(
-        ExtensionTabUtil::CreateTabValue(source_contents));
+    scoped_ptr<DictionaryValue> tab_value(ExtensionTabUtil::CreateTabValue(
+            source_contents,
+            profile->GetExtensionService()->extensions()->GetByID(
+                extension_id)));
     base::JSONWriter::Write(tab_value.get(), &tab_json);
   }
 

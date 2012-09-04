@@ -12,8 +12,8 @@ var listenOnce = chrome.test.listenOnce;
 var NOT_OPTIONAL_ERROR =
     "Optional permissions must be listed in extension manifest.";
 
-var NO_TABS_PERMISSION =
-    "You do not have permission to use 'windows.getAll'.";
+var NO_BOOKMARKS_PERMISSION =
+    "You do not have permission to use 'bookmarks.getTree'.";
 
 var REQUIRED_ERROR =
     "You cannot remove required permissions.";
@@ -31,8 +31,8 @@ var initialPermissions = {
   origins: ['http://a.com/*']
 };
 
-var permissionsWithTabs = {
-  permissions: ['management', 'tabs'],
+var permissionsWithBookmarks = {
+  permissions: ['management', 'bookmarks'],
   origins: ['http://a.com/*']
 }
 
@@ -116,41 +116,42 @@ chrome.test.getConfig(function(config) {
     // defined in "optional_permissions".
     function requestNonOptional() {
       chrome.permissions.request(
-          {permissions: ['bookmarks']}, fail(NOT_OPTIONAL_ERROR));
+          {permissions: ['history']}, fail(NOT_OPTIONAL_ERROR));
       chrome.permissions.request(
           {origins: ['http://*.b.com/*']}, fail(NOT_OPTIONAL_ERROR));
       chrome.permissions.request(
-          {permissions: ['tabs'], origins: ['http://*.b.com/*']},
+          {permissions: ['history'], origins: ['http://*.b.com/*']},
           fail(NOT_OPTIONAL_ERROR));
     },
 
-    // We should be able to request the tabs API since it's in the granted
+    // We should be able to request the bookmarks API since it's in the granted
     // permissions list (see permissions_apitest.cc).
-    function requestTabs() {
-      // chrome.windows is a optional permission, so the API definition should
+    function requestBookmarks() {
+      // chrome.bookmarks is a optional permission, so the API definition should
       // exist but its use disallowed.
-      assertTrue(!!chrome.windows);
+      assertTrue(!!chrome.bookmarks);
       try {
-        chrome.windows.getAll({populate: true}, function() {
-          chrome.test.fail("Should not have tabs API permission.");
+        chrome.bookmarks.getTree(function() {
+          chrome.test.fail("Should not have bookmarks API permission.");
         });
       } catch (e) {
-        assertTrue(e.message.indexOf(NO_TABS_PERMISSION) == 0);
+        assertTrue(e.message.indexOf(NO_BOOKMARKS_PERMISSION) == 0);
       }
       listenOnce(chrome.permissions.onAdded,
                  function(permissions) {
         assertTrue(permissions.permissions.length == 1);
-        assertTrue(permissions.permissions[0] == 'tabs');
+        assertTrue(permissions.permissions[0] == 'bookmarks');
       });
       chrome.permissions.request(
-          {permissions:['tabs']},
+          {permissions:['bookmarks']},
           pass(function(granted) {
             assertTrue(granted);
-            chrome.windows.getAll({populate: true}, pass(function(windows) {
+            chrome.bookmarks.getTree(pass(function(result) {
               assertTrue(true);
             }));
             chrome.permissions.getAll(pass(function(permissions) {
-              assertTrue(checkPermSetsEq(permissionsWithTabs, permissions));
+              assertTrue(checkPermSetsEq(permissionsWithBookmarks,
+                                         permissions));
             }));
       }));
     },
@@ -172,7 +173,7 @@ chrome.test.getConfig(function(config) {
       chrome.permissions.remove(
           {origins: ['http://a.com/*']}, fail(REQUIRED_ERROR));
       chrome.permissions.remove(
-          {permissions: ['tabs'], origins: ['http://a.com/*']},
+          {permissions: ['bookmarks'], origins: ['http://a.com/*']},
           fail(REQUIRED_ERROR));
     },
 
@@ -189,27 +190,27 @@ chrome.test.getConfig(function(config) {
           pass(function(removed) { assertTrue(removed); }));
     },
 
-    function removeTabs() {
-      chrome.windows.getAll({populate: true}, pass(function(windows) {
+    function removeBookmarks() {
+      chrome.bookmarks.getTree(pass(function(result) {
         assertTrue(true);
       }));
       listenOnce(chrome.permissions.onRemoved,
                  function(permissions) {
         assertTrue(permissions.permissions.length == 1);
-        assertTrue(permissions.permissions[0] == 'tabs');
+        assertTrue(permissions.permissions[0] == 'bookmarks');
       });
       chrome.permissions.remove(
-          {permissions:['tabs']},
+          {permissions:['bookmarks']},
           pass(function() {
             chrome.permissions.getAll(pass(function(permissions) {
               assertTrue(checkPermSetsEq(initialPermissions, permissions));
             }));
             try {
-              chrome.windows.getAll({populate: true}, function() {
-                chrome.test.fail("Should not have tabs API permission.");
+              chrome.bookmarks.getTree(function() {
+                chrome.test.fail("Should not have bookmarks API permission.");
               });
             } catch (e) {
-              assertTrue(e.message.indexOf(NO_TABS_PERMISSION) == 0);
+              assertTrue(e.message.indexOf(NO_BOOKMARKS_PERMISSION) == 0);
             }
       }));
     },
@@ -298,26 +299,26 @@ chrome.test.getConfig(function(config) {
     function eventListenerPermissions() {
       listenOnce(chrome.permissions.onAdded,
                  function(permissions) {
-        chrome.windows.getAll({populate: true}, pass(function() {
+        chrome.bookmarks.getTree(pass(function() {
           assertTrue(true);
         }));
       });
       listenOnce(chrome.permissions.onRemoved,
                  function(permissions) {
         try {
-          chrome.windows.getAll({populate: true}, function() {
-            chrome.test.fail("Should not have tabs API permission.");
+          chrome.bookmarks.getTree(function() {
+            chrome.test.fail("Should not have bookmakrs API permission.");
           });
         } catch (e) {
-          assertTrue(e.message.indexOf(NO_TABS_PERMISSION) == 0);
+          assertTrue(e.message.indexOf(NO_BOOKMARKS_PERMISSION) == 0);
         }
       });
 
       chrome.permissions.request(
-          {permissions: ['tabs', 'management']}, pass(function(granted) {
+          {permissions: ['bookmarks', 'management']}, pass(function(granted) {
         assertTrue(granted);
         chrome.permissions.remove(
-            {permissions: ['tabs']}, pass(function() {
+            {permissions: ['bookmarks']}, pass(function() {
           assertTrue(true);
         }));
       }));

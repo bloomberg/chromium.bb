@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// All of the calls to chrome.* functions should fail, since this extension
-// has requested no permissions.
+// All of the calls to chrome.* functions should fail, with the exception of
+// chrome.tabs.*, since this extension has requested no permissions.
 
 chrome.test.runTests([
   function history() {
@@ -27,13 +27,17 @@ chrome.test.runTests([
     }
   },
 
+  // Tabs functionality should be enabled even if the tabs permissions are not
+  // present.
   function tabs() {
     try {
-      chrome.tabs.getSelected(null, function(results) {
-        chrome.test.fail();
+      chrome.tabs.create({'url': '1'}, function(tab) {
+        // Tabs strip sensitive data without permissions.
+        chrome.test.assertFalse('url' in tab);
+        chrome.test.succeed();
       });
     } catch (e) {
-      chrome.test.succeed();
+      chrome.test.fail();
     }
   },
 

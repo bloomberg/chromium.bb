@@ -10,7 +10,7 @@ chrome.test.getConfig(function(config) {
   chrome.test.runTests([
     function testGesture() {
       chrome.permissions.request(
-          {permissions: ['tabs']},
+          {permissions: ['bookmarks']},
           fail(GESTURE_ERROR));
     }
   ]);

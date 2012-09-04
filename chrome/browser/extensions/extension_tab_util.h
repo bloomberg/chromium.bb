@@ -42,17 +42,22 @@ class ExtensionTabUtil {
   static int GetTabId(const content::WebContents* web_contents);
   static std::string GetTabStatusText(bool is_loading);
   static int GetWindowIdOfTab(const content::WebContents* web_contents);
-  static base::ListValue* CreateTabList(const Browser* browser);
+  static base::ListValue* CreateTabList(
+      const Browser* browser,
+      const extensions::Extension* extension);
   static base::DictionaryValue* CreateTabValue(
-      const content::WebContents* web_contents);
+      const content::WebContents* web_contents,
+      const extensions::Extension* extension);
   static base::DictionaryValue* CreateTabValue(
       const content::WebContents* web_contents,
       TabStripModel* tab_strip,
-      int tab_index);
+      int tab_index,
+      const extensions::Extension* extension);
   // Create a tab value, overriding its kSelectedKey to the provided boolean.
   static base::DictionaryValue* CreateTabValueActive(
       const content::WebContents* web_contents,
-      bool active);
+      bool active,
+      const extensions::Extension* extension);
 
   // Gets the |tab_strip_model| and |tab_index| for the given |web_contents|.
   static bool GetTabStripModel(const content::WebContents* web_contents,

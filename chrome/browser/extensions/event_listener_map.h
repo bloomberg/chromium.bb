@@ -93,8 +93,11 @@ class EventListenerMap {
   bool RemoveListener(const EventListener* listener);
 
   // Returns the set of listeners that want to be notified of |event|.
-  std::set<const EventListener*> GetEventListeners(
-      const Event& event);
+  std::set<const EventListener*> GetEventListeners(const Event& event);
+
+  const ListenerList& GetEventListenersByName(const std::string& event_name) {
+    return listeners_[event_name];
+  }
 
   // Removes all listeners with process equal to |process|.
   void RemoveListenersForProcess(const content::RenderProcessHost* process);

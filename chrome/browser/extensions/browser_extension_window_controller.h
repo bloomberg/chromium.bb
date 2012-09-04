@@ -9,6 +9,10 @@
 
 class Browser;
 
+namespace extensions {
+class Extension;
+}
+
 class BrowserExtensionWindowController : public extensions::WindowController {
  public:
   explicit BrowserExtensionWindowController(Browser* browser);
@@ -18,7 +22,8 @@ class BrowserExtensionWindowController : public extensions::WindowController {
   virtual int GetWindowId() const OVERRIDE;
   virtual std::string GetWindowTypeText() const OVERRIDE;
   virtual base::DictionaryValue* CreateWindowValue() const OVERRIDE;
-  virtual base::DictionaryValue* CreateWindowValueWithTabs() const OVERRIDE;
+  virtual base::DictionaryValue* CreateWindowValueWithTabs(
+      const extensions::Extension* extension) const OVERRIDE;
   virtual bool CanClose(Reason* reason) const OVERRIDE;
   virtual void SetFullscreenMode(bool is_fullscreen,
                                  const GURL& extension_url) const OVERRIDE;

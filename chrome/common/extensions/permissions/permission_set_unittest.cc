@@ -764,20 +764,21 @@ TEST(PermissionsTest, DefaultFunctionAccess) {
     { "bookmarks",      false },
     { "cookies",        false },
     { "history",        false },
-    { "tabs.onUpdated", false },
     // Make sure we find the module name after stripping '.' and '/'.
     { "browserAction/abcd/onClick",  true },
     { "browserAction.abcd.onClick",  true },
     // Test Tabs functions.
     { "tabs.create",      true},
     { "tabs.update",      true},
-    { "tabs.getSelected", false},
+    { "tabs.getSelected", true},
+    { "tabs.onUpdated",   true },
   };
 
   scoped_refptr<PermissionSet> empty = new PermissionSet();
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {
     EXPECT_EQ(kTests[i].expect_success,
-              empty->HasAccessToFunction(kTests[i].permission_name));
+              empty->HasAccessToFunction(kTests[i].permission_name))
+                  << "Permission being tested: " << kTests[i].permission_name;
   }
 }
 

@@ -523,9 +523,10 @@ void EventRouter::DispatchPendingEvent(const linked_ptr<Event>& event,
     return;
 
   if (listeners_.HasProcessListener(host->render_process_host(),
-                                    host->extension()->id()))
+                                    host->extension()->id())) {
     DispatchEventToProcess(host->extension()->id(),
                            host->render_process_host(), event);
+  }
 }
 
 void EventRouter::Observe(int type,

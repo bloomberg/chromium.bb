@@ -17,7 +17,9 @@ chrome.browserAction.onClicked.addListener(function() {
 
 chrome.webNavigation.onCompleted.addListener(function(details) {
   inject(function() {
-    chrome.test.assertLastError("Access to extension API denied.");
+    chrome.test.assertLastError('Cannot access contents of url "' +
+        details.url +
+        '". Extension manifest must request permission to access this host.');
     if (details.url.indexOf("final_page") >= 0)
       theOnlyTestDone();
     else

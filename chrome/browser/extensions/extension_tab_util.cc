@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
@@ -30,6 +31,8 @@ namespace keys = extensions::tabs_constants;
 
 using content::NavigationEntry;
 using content::WebContents;
+using extensions::APIPermission;
+using extensions::Extension;
 
 int ExtensionTabUtil::GetWindowId(const Browser* browser) {
   return browser->session_id().id();
@@ -58,38 +61,49 @@ int ExtensionTabUtil::GetWindowIdOfTab(const WebContents* web_contents) {
       TabContents::FromWebContents(web_contents));
 }
 
-DictionaryValue* ExtensionTabUtil::CreateTabValue(const WebContents* contents) {
+DictionaryValue* ExtensionTabUtil::CreateTabValue(
+    const WebContents* contents,
+    const Extension* extension) {
   // Find the tab strip and index of this guy.
   TabStripModel* tab_strip = NULL;
   int tab_index;
-  if (ExtensionTabUtil::GetTabStripModel(contents, &tab_strip, &tab_index))
-    return ExtensionTabUtil::CreateTabValue(contents, tab_strip, tab_index);
+  if (ExtensionTabUtil::GetTabStripModel(contents, &tab_strip, &tab_index)) {
+    return ExtensionTabUtil::CreateTabValue(contents,
+                                            tab_strip,
+                                            tab_index,
+                                            extension);
+  }
 
   // Couldn't find it.  This can happen if the tab is being dragged.
-  return ExtensionTabUtil::CreateTabValue(contents, NULL, -1);
+  return ExtensionTabUtil::CreateTabValue(contents, NULL, -1, extension);
 }
 
-ListValue* ExtensionTabUtil::CreateTabList(const Browser* browser) {
+ListValue* ExtensionTabUtil::CreateTabList(
+    const Browser* browser,
+    const Extension* extension) {
   ListValue* tab_list = new ListValue();
   TabStripModel* tab_strip = browser->tab_strip_model();
   for (int i = 0; i < tab_strip->count(); ++i) {
-    tab_list->Append(ExtensionTabUtil::CreateTabValue(
-        tab_strip->GetTabContentsAt(i)->web_contents(), tab_strip, i));
+    tab_list->Append(CreateTabValue(
+        tab_strip->GetTabContentsAt(i)->web_contents(),
+        tab_strip,
+        i,
+        extension));
   }
 
   return tab_list;
 }
 
-DictionaryValue* ExtensionTabUtil::CreateTabValue(const WebContents* contents,
-                                                  TabStripModel* tab_strip,
-                                                  int tab_index) {
+DictionaryValue* ExtensionTabUtil::CreateTabValue(
+    const WebContents* contents,
+    TabStripModel* tab_strip,
+    int tab_index,
+    const Extension* extension) {
   DictionaryValue* result = new DictionaryValue();
   bool is_loading = contents->IsLoading();
-  result->SetInteger(keys::kIdKey, ExtensionTabUtil::GetTabId(contents));
+  result->SetInteger(keys::kIdKey, GetTabId(contents));
   result->SetInteger(keys::kIndexKey, tab_index);
-  result->SetInteger(keys::kWindowIdKey,
-                     ExtensionTabUtil::GetWindowIdOfTab(contents));
-  result->SetString(keys::kUrlKey, contents->GetURL().spec());
+  result->SetInteger(keys::kWindowIdKey, GetWindowIdOfTab(contents));
   result->SetString(keys::kStatusKey, GetTabStatusText(is_loading));
   result->SetBoolean(keys::kActiveKey,
                      tab_strip && tab_index == tab_strip->active_index());
@@ -99,24 +113,42 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(const WebContents* contents,
                    tab_strip && tab_strip->IsTabSelected(tab_index));
   result->SetBoolean(keys::kPinnedKey,
                      tab_strip && tab_strip->IsTabPinned(tab_index));
-  result->SetString(keys::kTitleKey, contents->GetTitle());
   result->SetBoolean(keys::kIncognitoKey,
                      contents->GetBrowserContext()->IsOffTheRecord());
+
+  // Only add privacy-sensitive data if the requesting extension has the tabs
+  // permission.
+  bool has_permission = false;
+  if (extension) {
+    if (tab_index >= 0) {
+      has_permission =
+          extension->HasAPIPermissionForTab(
+              tab_index, APIPermission::kTab) ||
+          extension->HasAPIPermissionForTab(
+              tab_index, APIPermission::kWebNavigation);
+    } else {
+      has_permission =
+          extension->HasAPIPermission(APIPermission::kTab) ||
+          extension->HasAPIPermission(APIPermission::kWebNavigation);
+    }
+  }
+
+  if (has_permission) {
+    result->SetString(keys::kUrlKey, contents->GetURL().spec());
+    result->SetString(keys::kTitleKey, contents->GetTitle());
+    if (!is_loading) {
+      NavigationEntry* entry = contents->GetController().GetActiveEntry();
+      if (entry && entry->GetFavicon().valid)
+        result->SetString(keys::kFaviconUrlKey, entry->GetFavicon().url.spec());
+    }
+  }
 
   if (tab_strip) {
     content::NavigationController* opener =
         tab_strip->GetOpenerOfTabContentsAt(tab_index);
     if (opener) {
       result->SetInteger(keys::kOpenerTabIdKey,
-                         ExtensionTabUtil::GetTabId(opener->GetWebContents()));
-    }
-  }
-
-  if (!is_loading) {
-    NavigationEntry* entry = contents->GetController().GetActiveEntry();
-    if (entry) {
-      if (entry->GetFavicon().valid)
-        result->SetString(keys::kFaviconUrlKey, entry->GetFavicon().url.spec());
+                         GetTabId(opener->GetWebContents()));
     }
   }
 
@@ -125,8 +157,9 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(const WebContents* contents,
 
 DictionaryValue* ExtensionTabUtil::CreateTabValueActive(
     const WebContents* contents,
-    bool active) {
-  DictionaryValue* result = ExtensionTabUtil::CreateTabValue(contents);
+    bool active,
+    const extensions::Extension* extension) {
+  DictionaryValue* result = CreateTabValue(contents, extension);
   result->SetBoolean(keys::kSelectedKey, active);
   return result;
 }
@@ -161,7 +194,7 @@ bool ExtensionTabUtil::GetDefaultTab(Browser* browser,
   *contents = chrome::GetActiveTabContents(browser);
   if (*contents) {
     if (tab_id)
-      *tab_id = ExtensionTabUtil::GetTabId((*contents)->web_contents());
+      *tab_id = GetTabId((*contents)->web_contents());
     return true;
   }
 

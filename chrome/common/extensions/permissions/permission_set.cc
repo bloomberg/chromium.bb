@@ -47,8 +47,10 @@ const char* kNonPermissionModuleNames[] = {
   "permissions",
   "runtime",
   "scriptBadge",
+  "tabs",
   "test",
-  "types"
+  "types",
+  "windows"
 };
 const size_t kNumNonPermissionModuleNames =
     arraysize(kNonPermissionModuleNames);
@@ -64,10 +66,6 @@ const char* kNonPermissionFunctionNames[] = {
   "app.installState",
   "app.runningState",
   "management.getPermissionWarningsByManifest",
-  "tabs.create",
-  "tabs.onRemoved",
-  "tabs.remove",
-  "tabs.update",
 };
 const size_t kNumNonPermissionFunctionNames =
     arraysize(kNonPermissionFunctionNames);

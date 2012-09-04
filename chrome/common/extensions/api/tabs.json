@@ -19,9 +19,9 @@
           "highlighted": {"type": "boolean", "description": "Whether the tab is highlighted."},
           "active": {"type": "boolean", "description": "Whether the tab is active in its window."},
           "pinned": {"type": "boolean", "description": "Whether the tab is pinned."},
-          "url": {"type": "string", "description": "The URL the tab is displaying."},
-          "title": {"type": "string", "optional": true, "description": "The title of the tab. This may not be available if the tab is loading."},
-          "favIconUrl": {"type": "string", "optional": true, "description": "The URL of the tab's favicon. This may not be available if the tab is loading."},
+          "url": {"type": "string", "optional": true, "description": "The URL the tab is displaying. This will only be present if the extension has the 'tabs' or 'webNavigation' permission."},
+          "title": {"type": "string", "optional": true, "optional": true, "description": "The title of the tab. This will only be present if the extension has the 'tabs' or 'webNavigation' permission. It may also be an empty string if the tab is loading."},
+          "favIconUrl": {"type": "string", "optional": true, "optional": true, "description": "The URL of the tab's favicon. This will only be present if the extension has the 'tabs' or 'webNavigation' permission. It may also be an empty string if the tab is loading."},
           "status": {"type": "string", "optional": true, "description": "Either <em>loading</em> or <em>complete</em>."},
           "incognito": {"type": "boolean", "description": "Whether the tab is in an incognito window."}
         }

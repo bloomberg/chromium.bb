@@ -68,6 +68,8 @@ class EventRouter : public content::NotificationObserver,
                            content::RenderProcessHost* process,
                            const std::string& extension_id);
 
+  EventListenerMap& listeners() { return listeners_; }
+
   // Add or remove the extension as having a lazy background page that listens
   // to the event. The difference from the above methods is that these will be
   // remembered even after the process goes away. We use this list to decide

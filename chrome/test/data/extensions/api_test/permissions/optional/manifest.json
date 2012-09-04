@@ -12,7 +12,7 @@
      "http://a.com/*"
    ],
    "optional_permissions": [
-     "tabs",
+     "bookmarks",
      "management",
      "notifications",
      "background",

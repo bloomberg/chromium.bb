@@ -8,15 +8,16 @@ chrome.test.runTests([
   function attachAndDetachNoPermisssions() {
     function dummy() {};
     try {
-      chrome.tabs.onUpdated.addListener(dummy);
+      chrome.management.onEnabled.addListener(dummy);
       chrome.test.fail();
     } catch (e) {
       chrome.test.assertTrue(
           e.message.search("You do not have permission") >= 0,
           e.message);
     }
-    chrome.test.assertFalse(chrome.tabs.onUpdated.hasListeners());
-    chrome.tabs.onUpdated.removeListener(dummy);  // browser should not DCHECK
+    chrome.test.assertFalse(chrome.management.onEnabled.hasListeners());
+    // Browser should not DCHECK.
+    chrome.management.onEnabled.removeListener(dummy);
     chrome.test.succeed();
   },
 

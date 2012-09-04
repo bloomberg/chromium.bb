@@ -7,5 +7,5 @@
      "scripts": ["background.js"]
    },
    "permissions": ["http://a.com/*", "management"],
-   "optional_permissions": ["tabs", "management", "http://*.c.com/*"]
+   "optional_permissions": ["bookmarks", "management", "http://*.c.com/*"]
 }

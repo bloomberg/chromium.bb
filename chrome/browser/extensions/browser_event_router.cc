@@ -384,18 +384,35 @@ void BrowserEventRouter::DispatchEventWithTab(
     const char* event_name,
     const WebContents* web_contents,
     bool active,
-    EventRouter::UserGestureState user_gesture) {
+    EventRouter::UserGestureState user_gesture,
+    scoped_ptr<ListValue> event_args) {
   if (!profile_->IsSameProfile(profile))
     return;
 
-  scoped_ptr<ListValue> args(new ListValue());
-  args->Append(ExtensionTabUtil::CreateTabValueActive(
-      web_contents, active));
   if (!extension_id.empty()) {
-    DispatchEventToExtension(profile, extension_id, event_name, args.Pass(),
-                             user_gesture);
+    event_args->Append(ExtensionTabUtil::CreateTabValueActive(
+        web_contents,
+        active,
+        profile->GetExtensionService()->extensions()->GetByID(extension_id)));
+    DispatchEventToExtension(profile, extension_id, event_name,
+                             event_args.Pass(), user_gesture);
   } else {
-    DispatchEvent(profile, event_name, args.Pass(), user_gesture);
+    const EventListenerMap::ListenerList& listeners(
+        ExtensionSystem::Get(profile)->event_router()->
+        listeners().GetEventListenersByName(event_name));
+
+    for (EventListenerMap::ListenerList::const_iterator it = listeners.begin();
+         it != listeners.end();
+         ++it) {
+      scoped_ptr<ListValue> args(event_args->DeepCopy());
+      args->Append(ExtensionTabUtil::CreateTabValueActive(
+          web_contents,
+          active,
+          profile->GetExtensionService()->extensions()->GetByID(
+              (*it)->extension_id)));
+      DispatchEventToExtension(profile, (*it)->extension_id, event_name,
+                               args.Pass(), user_gesture);
+    }
   }
 }
 
@@ -427,11 +444,10 @@ void BrowserEventRouter::DispatchTabUpdatedEvent(
   args->Append(changed_properties);
 
   // Third arg: An object containing the state of the tab.
-  args->Append(ExtensionTabUtil::CreateTabValue(contents));
-
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  DispatchEvent(profile, events::kOnTabUpdated, args.Pass(),
-                EventRouter::USER_GESTURE_UNKNOWN);
+
+  DispatchEventWithTab(profile, "", events::kOnTabUpdated, contents, true,
+                       EventRouter::USER_GESTURE_UNKNOWN, args.Pass());
 }
 
 BrowserEventRouter::TabEntry* BrowserEventRouter::GetTabEntry(

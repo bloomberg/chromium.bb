@@ -127,7 +127,20 @@ class BrowserEventRouter : public TabStripModelObserver,
                             const char* event_name,
                             const content::WebContents* web_contents,
                             bool active,
-                            EventRouter::UserGestureState user_gesture);
+                            EventRouter::UserGestureState user_gesture,
+                            scoped_ptr<ListValue> event_args);
+
+  // DispatchEvent with a tab value appended as the last argument.
+  void DispatchEventWithTab(Profile* profile,
+                            const std::string& extension_id,
+                            const char* event_name,
+                            const content::WebContents* web_contents,
+                            bool active,
+                            EventRouter::UserGestureState user_gesture) {
+    DispatchEventWithTab(profile, extension_id, event_name, web_contents,
+                         active, user_gesture,
+                         scoped_ptr<ListValue>(new ListValue).Pass());
+  }
 
   void DispatchSimpleBrowserEvent(Profile* profile,
                                   const int window_id,
