@@ -1,4 +1,4 @@
-/* native_client//home/khim/work/nacl/native_client/src/trusted/validator_ragel/gen/validator_x86_32.c
+/* native_client/src/trusted/validator_ragel/gen/validator_x86_32.c
  * THIS FILE IS AUTO-GENERATED. DO NOT EDIT.
  * Compiled for ia32 mode.
  */

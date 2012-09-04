@@ -173,7 +173,8 @@ if generate:
             ('/* native_client/%s\n'
              ' * THIS FILE IS AUTO-GENERATED. DO NOT EDIT.\n'
              ' * Compiled for %s mode.\n'
-             ' */') % (target_filename, architecture))
+             ' */') % (target_filename[::-1].split('/tneilc_evitan/')[0][::-1],
+                       architecture))
 
         target_file.write(rest)
 
