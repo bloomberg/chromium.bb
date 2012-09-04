@@ -53,7 +53,7 @@ ActionBoxMenuModel::ActionBoxMenuModel(Browser* browser)
   SetIcon(GetIndexOfCommandId(IDC_BOOKMARK_PAGE),
           rb.GetNativeImageNamed(starred ? IDR_STAR_LIT : IDR_STAR));
 
-  InsertItemWithStringIdAt(2, IDC_SHARE_PAGE, IDS_SHARE_PAGE);
+  AddItemWithStringId(IDC_SHARE_PAGE, IDS_SHARE_PAGE);
   // TODO(skare, stromme): Obtain an icon from UX.
 
   // Adds extensions to the model.
