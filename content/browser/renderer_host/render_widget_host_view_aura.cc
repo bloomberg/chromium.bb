@@ -30,6 +30,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/screen_position_client.h"
+#include "ui/aura/client/stacking_client.h"
 #include "ui/aura/client/tooltip_client.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/env.h"
@@ -247,7 +248,7 @@ void RenderWidgetHostViewAura::InitAsChild(
 
 void RenderWidgetHostViewAura::InitAsPopup(
     RenderWidgetHostView* parent_host_view,
-    const gfx::Rect& pos) {
+    const gfx::Rect& bounds_in_display) {
   popup_parent_host_view_ =
       static_cast<RenderWidgetHostViewAura*>(parent_host_view);
   popup_parent_host_view_->popup_child_host_view_ = this;
@@ -255,8 +256,18 @@ void RenderWidgetHostViewAura::InitAsPopup(
   window_->Init(ui::LAYER_TEXTURED);
   window_->SetName("RenderWidgetHostViewAura");
 
-  window_->SetParent(NULL);
-  SetBounds(pos);
+  aura::Window* parent = NULL;
+  aura::RootWindow* root = popup_parent_host_view_->window_->GetRootWindow();
+  aura::client::ScreenPositionClient* screen_position_client =
+      aura::client::GetScreenPositionClient(root);
+  if (screen_position_client) {
+    gfx::Point origin_in_screen(bounds_in_display.origin());
+    screen_position_client->ConvertPointToScreen(root, &origin_in_screen);
+    parent = aura::client::GetStackingClient()->GetDefaultParent(
+        window_, gfx::Rect(origin_in_screen, bounds_in_display.size()));
+  }
+  window_->SetParent(parent);
+  SetBounds(bounds_in_display);
   Show();
 }
 
