@@ -349,11 +349,11 @@ PP_Resource GetResourceImageForScale(PP_Instance instance_id,
   if (!content::GetHostGlobals()->GetInstance(instance_id))
     return 0;
 
-  if (!res_image_skia->HasRepresentation(scale_factor))
-    return 0;
-
   gfx::ImageSkiaRep image_skia_rep = res_image_skia->GetRepresentation(
       scale_factor);
+
+  if (image_skia_rep.is_null() || image_skia_rep.scale_factor() != scale_factor)
+    return 0;
 
   scoped_refptr<webkit::ppapi::PPB_ImageData_Impl> image_data(
       new webkit::ppapi::PPB_ImageData_Impl(
