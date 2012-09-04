@@ -4,12 +4,22 @@
 
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 
+#if !defined(MAC_OS_X_VERSION_10_7) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+
+@interface NSView (LionAPI)
+- (NSSize)convertSizeFromBacking:(NSSize)size;
+@end
+
+#endif  // 10.7
+
 @implementation NSView (ChromeAdditions)
 
 - (CGFloat)cr_lineWidth {
-  // NOTE: This is a correct use of base coordinate system, to perform pixel
-  // alignment.
-  return [self convertSizeFromBase:NSMakeSize(1, 1)].width;
+  // All shipping retina macs run at least 10.7.
+  if (![self respondsToSelector:@selector(convertSizeFromBacking:)])
+    return 1;
+  return [self convertSizeFromBacking:NSMakeSize(1, 1)].width;
 }
 
 - (BOOL)cr_isMouseInView {
