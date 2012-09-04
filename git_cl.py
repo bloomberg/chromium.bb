@@ -926,13 +926,16 @@ def CMDpresubmit(parser, args):
   """run presubmit tests on the current changelist"""
   parser.add_option('--upload', action='store_true',
                     help='Run upload hook instead of the push/dcommit hook')
+  parser.add_option('--force', action='store_true',
+                    help='Run checks even if tree is dirty')
   (options, args) = parser.parse_args(args)
 
   # Make sure index is up-to-date before running diff-index.
   RunGit(['update-index', '--refresh', '-q'], error_ok=True)
-  if RunGit(['diff-index', 'HEAD']):
+  if not options.force and RunGit(['diff-index', 'HEAD']):
     # TODO(maruel): Is this really necessary?
-    print 'Cannot presubmit with a dirty tree.  You must commit locally first.'
+    print ('Cannot presubmit with a dirty tree.\n'
+          'You must commit locally first (or use --force).')
     return 1
 
   cl = Changelist()

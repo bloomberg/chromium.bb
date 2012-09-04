@@ -819,7 +819,7 @@ def TryChange(argv,
             checkouts[0].checkout_root,
             root_presubmit,
             options.project,
-            False,
+            options.verbose,
             sys.stdout)
       except ImportError:
         pass
