@@ -190,6 +190,8 @@ convenience for the application's rendering mechanism.
                                                   the font
     embolden       FC_EMBOLDEN            Bool    Rasterizer should
                                                   synthetically embolden the font
+    fontfeatures   FC_FONT_FEATURES       String  List of the feature tags in
+                                                  OpenType to be enabled
     namelang       FC_NAMELANG            String  Language name to be used for the
                                                   default value of familylang,
                                                   stylelang and fullnamelang
