@@ -116,6 +116,14 @@ cr.define('extensions', function() {
 
       extensions.ExtensionFocusManager.getInstance().initialize();
 
+      var path = document.location.pathname;
+      if (path.length > 1) {
+        // Skip starting slash and remove trailing slash (if any).
+        var overlayName = path.slice(1).replace(/\/$/, '');
+        if (overlayName == 'configureCommands')
+          this.showExtensionCommandsConfigUi_();
+      }
+
       preventDefaultOnPoundLinkClicks();  // From shared/js/util.js.
     },
 
@@ -144,14 +152,23 @@ cr.define('extensions', function() {
     },
 
     /**
+     * Shows the Extension Commands configuration UI.
+     * @param {Event} e Change event.
+     * @private
+     */
+    showExtensionCommandsConfigUi_: function(e) {
+      ExtensionSettings.showOverlay($('extensionCommandsOverlay'));
+      chrome.send('coreOptionsUserMetricsAction',
+                  ['Options_ExtensionCommands']);
+    },
+
+    /**
      * Handles the Configure (Extension) Commands link.
      * @param {Event} e Change event.
      * @private
      */
     handleExtensionCommandsConfig_: function(e) {
-      ExtensionSettings.showOverlay($('extensionCommandsOverlay'));
-      chrome.send('coreOptionsUserMetricsAction',
-                  ['Options_ExtensionCommands']);
+      this.showExtensionCommandsConfigUi_();
     },
 
     /**
