@@ -9,6 +9,8 @@
 
 namespace ash {
 
+// TODO: we're using this in random places outside of ash, it shouldn't be in
+// internal.
 namespace internal {
 
 // A higher-level container that holds all of the containers stacked below
@@ -97,6 +99,9 @@ const int kShellWindowId_SettingBubbleContainer = 20;
 // The container for special components overlaid onscreen, such as the
 // region selector for partial screenshots.
 const int kShellWindowId_OverlayContainer = 21;
+
+// ID of the window created by PhantomWindowController.
+const int kShellWindowId_PhantomWindow = 22;
 
 }  // namespace internal
 

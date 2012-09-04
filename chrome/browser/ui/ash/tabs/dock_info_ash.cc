@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/tabs/dock_info.h"
 
+#include "ash/shell_window_ids.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/root_window.h"
@@ -22,6 +23,9 @@ aura::Window* GetLocalProcessWindowAtPointImpl(
     return NULL;
 
   if (!window->IsVisible())
+    return NULL;
+
+  if (window->id() == ash::internal::kShellWindowId_PhantomWindow)
     return NULL;
 
   if (window->layer()->type() == ui::LAYER_TEXTURED) {

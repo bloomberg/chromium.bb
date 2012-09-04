@@ -166,6 +166,7 @@ void PhantomWindowController::CreatePhantomWidget(const gfx::Rect& bounds,
   phantom_widget_->Init(params);
   phantom_widget_->SetVisibilityChangedAnimationsEnabled(false);
   phantom_widget_->GetNativeWindow()->SetName("PhantomWindow");
+  phantom_widget_->GetNativeWindow()->set_id(kShellWindowId_PhantomWindow);
   if (style_ == STYLE_SHADOW) {
     views::View* content_view = new views::View;
     content_view->set_background(
