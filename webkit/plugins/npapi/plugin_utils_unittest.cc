@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/plugins/npapi/plugin_group.h"
+#include "webkit/plugins/npapi/plugin_utils.h"
 
 #include <string>
 #include <vector>
@@ -15,7 +15,7 @@
 namespace webkit {
 namespace npapi {
 
-TEST(PluginGroupTest, VersionExtraction) {
+TEST(PluginUtilsTest, VersionExtraction) {
   // Some real-world plugin versions (spaces, commata, parentheses, 'r', oh my)
   const char* versions[][2] = {
     { "7.6.6 (1671)", "7.6.6.1671" },  // Quicktime
@@ -33,8 +33,7 @@ TEST(PluginGroupTest, VersionExtraction) {
 
   for (size_t i = 0; i < arraysize(versions); i++) {
     Version version;
-    PluginGroup::CreateVersionFromString(ASCIIToUTF16(versions[i][0]),
-                                         &version);
+    CreateVersionFromString(ASCIIToUTF16(versions[i][0]), &version);
 
     ASSERT_TRUE(version.IsValid());
     EXPECT_EQ(versions[i][1], version.GetString());

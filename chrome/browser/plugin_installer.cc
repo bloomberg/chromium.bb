@@ -28,6 +28,8 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "webkit/plugins/npapi/plugin_group.h"
+#include "webkit/plugins/npapi/plugin_utils.h"
+#include "webkit/plugins/webplugininfo.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -98,7 +100,7 @@ PluginInstaller::SecurityStatus PluginInstaller::GetSecurityStatus(
     return SECURITY_STATUS_REQUIRES_AUTHORIZATION;
 
   Version version;
-  webkit::npapi::PluginGroup::CreateVersionFromString(plugin.version, &version);
+  webkit::npapi::CreateVersionFromString(plugin.version, &version);
   if (!version.IsValid())
     version = Version("0");
 

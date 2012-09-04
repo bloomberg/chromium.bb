@@ -85,11 +85,6 @@ class WEBKIT_PLUGINS_EXPORT PluginGroup {
   // in has disappeared from the pc (or in the process of updating).
   bool IsEmpty() const;
 
-  // Parse a version string as used by a plug-in. This method is more lenient
-  // in accepting weird version strings than Version::GetFromString().
-  static void CreateVersionFromString(const string16& version_string,
-                                      Version* version);
-
   const std::vector<webkit::WebPluginInfo>& web_plugin_infos() const {
     return web_plugin_infos_;
   }
@@ -128,11 +123,6 @@ class WEBKIT_PLUGINS_EXPORT PluginGroup {
   std::vector<webkit::WebPluginInfo>& GetPluginsContainer() {
     return web_plugin_infos_;
   }
-
-  // Removes leading zeros from each of the components of a version string.
-  // The input version string should be in this format: XXX.YYY.ZZZ...etc.
-  static std::string RemoveLeadingZerosFromVersionComponents(
-      const std::string& version);
 
   std::string identifier_;
   string16 group_name_;

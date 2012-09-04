@@ -206,6 +206,8 @@
         '../plugins/npapi/plugin_stream_win.cc',
         '../plugins/npapi/plugin_string_stream.cc',
         '../plugins/npapi/plugin_string_stream.h',
+        '../plugins/npapi/plugin_utils.cc',
+        '../plugins/npapi/plugin_utils.h',
         '../plugins/npapi/plugin_web_event_converter_mac.h',
         '../plugins/npapi/plugin_web_event_converter_mac.mm',
         '../plugins/npapi/webplugin.cc',
