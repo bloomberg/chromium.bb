@@ -429,7 +429,10 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
   AssertNoInterstitial(true);
 }
 
-IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareRedirectCanceled) {
+// Disabled because of a use-after-free reported by ASan, see
+// http://crbug.com/145482.
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
+                       DISABLED_MalwareRedirectCanceled) {
   // 2. Test the case that redirect is the only resource.
   MalwareRedirectCancelAndProceed("openWin");
   // Clicking proceed won't do anything if the main request is cancelled
