@@ -19,6 +19,9 @@ namespace extensions {
 namespace {
 
 const int kNumberOfSubchannels = 4;
+// TODO(dcheng): This is hardcoded for now since the svn export is not done yet.
+// Once it's done, use ipc::invalidation::ObjectSource::CHROME_PUSH_MESSAGING.
+const int kSourceId = 1030;
 
 // Chrome push messaging object IDs currently have the following format:
 // <format type>/<GAIA ID>/<extension ID>/<subchannel>
@@ -31,10 +34,8 @@ syncer::ObjectIdSet ExtensionIdToObjectIds(const std::string& extension_id) {
     name += extension_id;
     name += "/";
     name += base::IntToString(i);
-    // TODO(dcheng): CHROME_COMPONENTS is temporary, we need to update this once
-    // we roll cacheinvalidation.
     object_ids.insert(invalidation::ObjectId(
-        ipc::invalidation::ObjectSource::CHROME_COMPONENTS,
+        kSourceId,
         name));
   }
   return object_ids;
@@ -44,10 +45,7 @@ syncer::ObjectIdSet ExtensionIdToObjectIds(const std::string& extension_id) {
 bool ObjectIdToExtensionAndSubchannel(const invalidation::ObjectId& object_id,
                                       std::string* extension_id,
                                       int* subchannel) {
-    // TODO(dcheng): CHROME_COMPONENTS is temporary, we need to update this once
-    // we roll cacheinvalidation.
-  if (object_id.source() !=
-      ipc::invalidation::ObjectSource::CHROME_COMPONENTS) {
+  if (object_id.source() != kSourceId) {
     DLOG(WARNING) << "Invalid source: " << object_id.source();
     return false;
   }
