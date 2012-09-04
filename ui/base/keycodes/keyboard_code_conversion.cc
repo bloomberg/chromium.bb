@@ -4,7 +4,7 @@
 
 #include "ui/base/keycodes/keyboard_code_conversion.h"
 
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 
 namespace ui {
 

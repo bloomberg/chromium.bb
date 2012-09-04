@@ -11,7 +11,7 @@
 #undef None
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/gfx/point.h"
 
 namespace ui {

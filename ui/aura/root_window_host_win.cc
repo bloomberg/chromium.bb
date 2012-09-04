@@ -12,7 +12,7 @@
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/base/view_prop.h"
 
 using std::max;

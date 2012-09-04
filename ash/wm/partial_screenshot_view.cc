@@ -10,7 +10,7 @@
 #include "ash/wm/overlay_event_filter.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/view.h"

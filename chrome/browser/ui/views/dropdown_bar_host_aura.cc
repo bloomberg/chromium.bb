@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "ui/aura/window.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/views/widget/widget.h"
 
 using content::NativeWebKeyboardEvent;

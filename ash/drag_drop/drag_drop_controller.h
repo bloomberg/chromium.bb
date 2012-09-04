@@ -11,7 +11,7 @@
 #include "ui/aura/event_filter.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/point.h"
 

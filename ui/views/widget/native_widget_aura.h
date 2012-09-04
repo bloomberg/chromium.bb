@@ -10,7 +10,7 @@
 #include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/window_delegate.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/views/ime/input_method_delegate.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/native_widget_private.h"

@@ -8,8 +8,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/aura_export.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/base/events/event_handler.h"
-#include "ui/base/events.h"
 
 namespace ui {
 class GestureEvent;

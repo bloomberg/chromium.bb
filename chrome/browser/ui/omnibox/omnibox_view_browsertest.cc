@@ -36,7 +36,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/mock_host_resolver.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/point.h"
 

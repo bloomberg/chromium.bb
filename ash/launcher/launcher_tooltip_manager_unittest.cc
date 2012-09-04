@@ -11,8 +11,8 @@
 #include "base/time.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/root_window.h"
-#include "ui/base/event.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/views/widget/widget.h"
 

@@ -8,7 +8,7 @@
 
 #include "ui/app_list/app_list_item_view.h"
 #include "ui/app_list/pagination_model.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/views/border.h"
 
 namespace {

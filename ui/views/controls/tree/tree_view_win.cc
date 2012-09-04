@@ -13,7 +13,7 @@
 #include "grit/ui_resources.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accessibility/accessible_view_state.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util_win.h"

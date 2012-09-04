@@ -26,7 +26,7 @@
 #include "chromeos/dbus/ibus/ibus_client.h"
 #include "chromeos/dbus/ibus/ibus_input_context_client.h"
 #include "chromeos/dbus/ibus/ibus_text.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/base/ime/ibus_client.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/keycodes/keyboard_code_conversion.h"

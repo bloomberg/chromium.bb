@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_EVENT_H_
-#define UI_BASE_EVENT_H_
+#ifndef UI_BASE_EVENTS_EVENT_CONSTANTS_EVENT_H_
+#define UI_BASE_EVENTS_EVENT_CONSTANTS_EVENT_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/time.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/base/gestures/gesture_types.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/ui_export.h"
@@ -601,4 +601,4 @@ class UI_EXPORT GestureEvent : public LocatedEvent {
 
 }  // namespace ui
 
-#endif  // UI_BASE_EVENT_H_
+#endif  // UI_BASE_EVENTS_EVENT_CONSTANTS_EVENT_H_

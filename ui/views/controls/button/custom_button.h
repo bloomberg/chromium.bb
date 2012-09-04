@@ -6,7 +6,7 @@
 #define UI_VIEWS_CONTROLS_BUTTON_CUSTOM_BUTTON_H_
 
 #include "ui/base/animation/animation_delegate.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/views/controls/button/button.h"
 
 namespace ui {

@@ -5,15 +5,15 @@
 #include "ash/wm/workspace/workspace_layout_manager.h"
 
 #include "ash/screen_ash.h"
-#include "ash/wm/window_util.h"
 #include "ash/wm/window_properties.h"
+#include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace.h"
 #include "ash/wm/workspace/workspace_manager.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
 

@@ -12,7 +12,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "ui/aura/root_window.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/base/keycodes/keyboard_code_conversion.h"
 
 #if defined(OS_CHROMEOS)

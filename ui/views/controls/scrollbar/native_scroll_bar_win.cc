@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/message_loop.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/window_impl.h"

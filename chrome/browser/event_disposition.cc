@@ -5,7 +5,7 @@
 #include "chrome/browser/event_disposition.h"
 
 #include "chrome/browser/disposition_utils.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 
 namespace chrome {
 

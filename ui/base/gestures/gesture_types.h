@@ -7,7 +7,7 @@
 
 #include "base/logging.h"
 #include "base/time.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/gfx/rect.h"
 
 namespace ui {

@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/memory/scoped_vector.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/base/gestures/gesture_types.h"
 #include "ui/base/ui_export.h"
 

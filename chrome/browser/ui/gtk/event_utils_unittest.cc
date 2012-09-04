@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/gtk/event_utils.h"
 
 #include "base/stringprintf.h"
-#include "ui/base/events.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/events/event_constants.h"
 
 namespace event_utils {
 

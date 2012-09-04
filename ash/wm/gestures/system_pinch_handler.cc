@@ -11,7 +11,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/snap_sizer.h"
 #include "ui/aura/window.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/base/gestures/gesture_types.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/rect.h"

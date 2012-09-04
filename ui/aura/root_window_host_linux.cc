@@ -4,13 +4,13 @@
 
 #include "ui/aura/root_window_host_linux.h"
 
+#include <X11/cursorfont.h>
+#include <X11/extensions/Xfixes.h>
+#include <X11/extensions/XInput2.h>
+#include <X11/extensions/Xrandr.h>
 #include <X11/Xatom.h>
 #include <X11/Xcursor/Xcursor.h>
 #include <X11/Xlib.h>
-#include <X11/cursorfont.h>
-#include <X11/extensions/XInput2.h>
-#include <X11/extensions/Xfixes.h>
-#include <X11/extensions/Xrandr.h>
 #include <algorithm>
 
 #include "base/command_line.h"
@@ -24,7 +24,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/touch/touch_factory.h"

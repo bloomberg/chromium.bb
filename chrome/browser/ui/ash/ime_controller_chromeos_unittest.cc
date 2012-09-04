@@ -8,7 +8,7 @@
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
 class ImeControllerTest : public testing::Test {

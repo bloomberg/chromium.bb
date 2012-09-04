@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/app_menu_button_win.h"
 
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/views/widget/widget.h"
 

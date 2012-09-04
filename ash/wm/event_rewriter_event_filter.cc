@@ -6,7 +6,7 @@
 
 #include "ash/event_rewriter_delegate.h"
 #include "base/logging.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 
 namespace ash {
 namespace internal {

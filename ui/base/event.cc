@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>
@@ -11,8 +11,8 @@
 #include <cstring>
 
 #include "ui/base/keycodes/keyboard_code_conversion.h"
-#include "ui/gfx/point3.h"
 #include "ui/gfx/interpolated_transform.h"
+#include "ui/gfx/point3.h"
 #include "ui/gfx/transform.h"
 
 #if defined(USE_X11)

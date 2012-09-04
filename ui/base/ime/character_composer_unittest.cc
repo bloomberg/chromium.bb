@@ -7,7 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/gtk+/gdk/gdkkeysyms.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/base/glib/glib_integers.h"
 
 namespace ui {

@@ -13,7 +13,7 @@
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/search_box_view.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/gfx/insets.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/textfield/textfield.h"

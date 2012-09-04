@@ -15,8 +15,8 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/render_view_impl.h"
-#include "content/shell/shell_content_client.h"
 #include "content/shell/shell_content_browser_client.h"
+#include "content/shell/shell_content_client.h"
 #include "content/shell/shell_main_delegate.h"
 #include "content/test/mock_keyboard.h"
 #include "net/base/net_errors.h"
@@ -40,12 +40,12 @@
 #endif
 
 #if defined(USE_AURA)
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #endif
 
 #if defined(USE_AURA) && defined(USE_X11)
 #include <X11/Xlib.h>
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/base/keycodes/keyboard_code_conversion.h"
 #include "ui/base/x/x11_util.h"
 #endif

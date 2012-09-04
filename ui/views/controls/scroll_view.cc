@@ -5,7 +5,7 @@
 #include "ui/views/controls/scroll_view.h"
 
 #include "base/logging.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/views/controls/scrollbar/native_scroll_bar.h"
 #include "ui/views/widget/root_view.h"
 

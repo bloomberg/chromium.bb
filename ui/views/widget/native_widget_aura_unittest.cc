@@ -15,7 +15,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_helper.h"
 #include "ui/aura/window.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/root_view.h"

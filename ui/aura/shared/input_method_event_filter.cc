@@ -6,7 +6,7 @@
 
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
 

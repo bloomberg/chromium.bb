@@ -12,8 +12,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string16.h"
-#include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
@@ -30,7 +30,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 
 class RedirectTest : public InProcessBrowserTest {
  public:

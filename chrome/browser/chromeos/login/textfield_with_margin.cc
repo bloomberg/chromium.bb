@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/login/textfield_with_margin.h"
 
 #include "chrome/browser/chromeos/login/helper.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
 namespace {

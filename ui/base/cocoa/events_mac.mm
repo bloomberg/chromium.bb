@@ -4,7 +4,7 @@
 
 #include <Cocoa/Cocoa.h>
 
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 
 #include "base/logging.h"
 #include "base/time.h"

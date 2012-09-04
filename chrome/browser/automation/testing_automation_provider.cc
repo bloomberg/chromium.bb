@@ -149,7 +149,7 @@
 #include "content/public/common/ssl_status.h"
 #include "net/cookies/cookie_store.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/ui_controls/ui_controls.h"

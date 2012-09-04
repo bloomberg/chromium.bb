@@ -32,7 +32,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "googleurl/src/gurl.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 #include "unicode/timezone.h"
 
 namespace chromeos {

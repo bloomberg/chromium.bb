@@ -6,7 +6,7 @@
 
 #include "ash/wm/property_util.h"
 #include "ash/wm/user_activity_observer.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 
 namespace ash {
 

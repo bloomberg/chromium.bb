@@ -9,7 +9,7 @@
 #include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"

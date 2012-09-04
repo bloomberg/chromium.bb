@@ -12,7 +12,7 @@
 #include "base/hash_tables.h"
 #include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
 using content::BrowserThread;

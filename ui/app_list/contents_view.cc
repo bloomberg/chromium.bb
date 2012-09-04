@@ -11,7 +11,7 @@
 #include "ui/app_list/page_switcher.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/search_result_list_view.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/view_model.h"
 #include "ui/views/view_model_utils.h"

@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 
 namespace chrome {
 

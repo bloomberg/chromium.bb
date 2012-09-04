@@ -15,7 +15,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/ui_controls/ui_controls.h"
 #include "ui/views/controls/menu/menu_listener.h"

@@ -6,7 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/root_window.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>

@@ -14,7 +14,7 @@
 #include "ash/wm/workspace_controller.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/root_window.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 
 namespace ash {
 

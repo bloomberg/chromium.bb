@@ -8,7 +8,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ui/aura/root_window.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/gfx/screen.h"
 
 namespace {

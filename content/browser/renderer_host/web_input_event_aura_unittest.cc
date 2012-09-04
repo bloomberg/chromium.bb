@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 
 #if defined(USE_X11)
 #include <X11/keysym.h>

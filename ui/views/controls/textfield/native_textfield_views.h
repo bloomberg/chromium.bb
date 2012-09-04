@@ -7,7 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/font.h"

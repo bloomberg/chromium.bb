@@ -6,7 +6,7 @@
 
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/webui/instant_ui.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/fill_layout.h"
 

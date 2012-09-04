@@ -7,11 +7,11 @@
 #include <cmath>
 
 #include "base/basictypes.h"
-#include "ui/base/event.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/base/gestures/gesture_configuration.h"
-#include "ui/base/gestures/gesture_util.h"
 #include "ui/base/gestures/gesture_types.h"
+#include "ui/base/gestures/gesture_util.h"
 
 namespace ui {
 

@@ -5,7 +5,7 @@
 #include "ui/views/controls/table/table_view_views.h"
 
 #include "base/i18n/rtl.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/base/models/table_model.h"
 #include "ui/base/native_theme/native_theme.h"
 #include "ui/gfx/canvas.h"

@@ -9,7 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkXfermode.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/rect.h"

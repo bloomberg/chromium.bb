@@ -13,7 +13,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/image_view.h"

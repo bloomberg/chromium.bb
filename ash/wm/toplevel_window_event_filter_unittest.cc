@@ -17,7 +17,7 @@
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_activation_client.h"
 #include "ui/aura/test/test_window_delegate.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/screen.h"
 

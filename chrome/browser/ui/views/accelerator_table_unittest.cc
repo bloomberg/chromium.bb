@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "chrome/browser/ui/views/accelerator_table.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 
 #if defined(USE_ASH)
 #include "ash/accelerators/accelerator_table.h"

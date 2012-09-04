@@ -12,7 +12,7 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/throb_animation.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"

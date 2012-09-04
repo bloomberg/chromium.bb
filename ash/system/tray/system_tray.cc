@@ -35,7 +35,7 @@
 #include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"
 #include "ui/aura/root_window.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"

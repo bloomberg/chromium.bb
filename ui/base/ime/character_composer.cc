@@ -12,7 +12,7 @@
 // Note for Gtk removal: gdkkeysyms.h only contains a set of
 // '#define GDK_KeyName 0xNNNN' macros and does not #include any Gtk headers.
 #include "third_party/gtk+/gdk/gdkkeysyms.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/base/glib/glib_integers.h"
 
 namespace {

@@ -5,12 +5,12 @@
 #include "ash/wm/workspace/workspace_layout_manager2.h"
 
 #include "ash/ash_switches.h"
-#include "ash/shell.h"
 #include "ash/screen_ash.h"
+#include "ash/shell.h"
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/window_animations.h"
-#include "ash/wm/window_util.h"
 #include "ash/wm/window_properties.h"
+#include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace2.h"
 #include "ash/wm/workspace/workspace_manager2.h"
 #include "base/auto_reset.h"
@@ -19,7 +19,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/base/ui_base_types.h"
 
 using aura::Window;

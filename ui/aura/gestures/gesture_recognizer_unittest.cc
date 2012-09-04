@@ -11,7 +11,7 @@
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/base/gestures/gesture_configuration.h"
 #include "ui/base/gestures/gesture_recognizer_impl.h"
 #include "ui/base/gestures/gesture_sequence.h"

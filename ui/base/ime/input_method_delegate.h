@@ -6,7 +6,7 @@
 #define UI_BASE_IME_INPUT_METHOD_DELEGATE_H_
 
 #include "base/event_types.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/base/ui_export.h"
 
 namespace ui {

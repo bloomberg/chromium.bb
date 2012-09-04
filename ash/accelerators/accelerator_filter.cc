@@ -8,9 +8,9 @@
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/root_window.h"
-#include "ui/base/event.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
+#include "ui/base/events/event.h"
 
 namespace ash {
 namespace {

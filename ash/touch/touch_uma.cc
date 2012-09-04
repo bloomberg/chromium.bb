@@ -10,7 +10,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 
 #if defined(USE_XI2_MT)
 #include <X11/extensions/XInput2.h>

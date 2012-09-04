@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_font_util.h"
 #include "ui/base/resource/resource_bundle.h"

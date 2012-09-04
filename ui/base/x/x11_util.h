@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/base/ui_export.h"
 #include "ui/gfx/point.h"
 

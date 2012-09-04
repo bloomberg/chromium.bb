@@ -19,7 +19,7 @@
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "ui/aura/root_window.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_CHROMEOS)

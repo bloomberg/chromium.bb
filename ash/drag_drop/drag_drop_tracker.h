@@ -8,7 +8,7 @@
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 
 namespace aura {
 class RootWindow;

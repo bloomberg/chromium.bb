@@ -23,7 +23,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "net/base/net_util.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/text_button.h"

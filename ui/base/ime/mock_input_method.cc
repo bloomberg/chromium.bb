@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/string16.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/base/glib/glib_integers.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/text_input_client.h"

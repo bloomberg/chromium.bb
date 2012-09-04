@@ -10,7 +10,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace content {
@@ -75,7 +75,7 @@ struct CONTENT_EXPORT NativeWebKeyboardEvent :
 #endif
 };
 
-// Returns a bitmak of values from ui/base/events.h.
+// Returns a bitmak of values from ui/base/events/event_constants.h.
 CONTENT_EXPORT int GetModifiersFromNativeWebKeyboardEvent(
     const NativeWebKeyboardEvent& event);
 

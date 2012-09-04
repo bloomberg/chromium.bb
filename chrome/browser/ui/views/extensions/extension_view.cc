@@ -12,7 +12,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/views/widget/widget.h"
 
 ExtensionView::ExtensionView(extensions::ExtensionHost* host, Browser* browser)

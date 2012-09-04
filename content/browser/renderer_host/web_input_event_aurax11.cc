@@ -37,17 +37,17 @@
 
 #include "content/browser/renderer_host/web_input_event_aura.h"
 
-#include <cstdlib>
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <cstdlib>
 
 #include "base/event_types.h"
 #include "base/logging.h"
-#include "ui/base/event.h"
-#include "ui/base/events.h"
-#include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/events/event.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 
 namespace content {
 

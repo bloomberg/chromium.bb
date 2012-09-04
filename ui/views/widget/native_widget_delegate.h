@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/views/views_export.h"
 
 namespace gfx {

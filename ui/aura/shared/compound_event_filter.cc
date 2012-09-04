@@ -11,7 +11,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_tracker.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/base/hit_test.h"
 
 namespace aura {

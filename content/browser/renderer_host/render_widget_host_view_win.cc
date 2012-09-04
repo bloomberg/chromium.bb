@@ -51,7 +51,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/win/WebInputEventFactory.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/text/text_elider.h"

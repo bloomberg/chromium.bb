@@ -16,7 +16,7 @@
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"

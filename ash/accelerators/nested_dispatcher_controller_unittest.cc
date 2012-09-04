@@ -15,7 +15,7 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>

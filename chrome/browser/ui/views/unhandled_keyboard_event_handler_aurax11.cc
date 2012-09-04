@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "content/public/browser/native_web_keyboard_event.h"
-#include "ui/base/event.h"
+#include "ui/base/events/event.h"
 #include "ui/views/focus/focus_manager.h"
 
 using content::NativeWebKeyboardEvent;

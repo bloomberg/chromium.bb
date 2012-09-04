@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/cocoa/event_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-#include "ui/base/events.h"
+#include "ui/base/events/event_constants.h"
 #include "ui/base/test/cocoa_test_event_utils.h"
 
 // We provide a donor class with a specially modified |modifierFlags|
