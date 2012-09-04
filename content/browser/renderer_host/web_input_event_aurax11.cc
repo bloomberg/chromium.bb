@@ -263,9 +263,13 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
   switch (event->type()) {
     case ui::ET_SCROLL:
       webkit_event.type = WebKit::WebInputEvent::GestureScrollUpdate;
+      webkit_event.data.scrollUpdate.deltaX = event->x_offset();
+      webkit_event.data.scrollUpdate.deltaY = event->y_offset();
       break;
     case ui::ET_SCROLL_FLING_START:
       webkit_event.type = WebKit::WebInputEvent::GestureFlingStart;
+      webkit_event.data.flingStart.velocityX = event->x_offset();
+      webkit_event.data.flingStart.velocityY = event->y_offset();
       break;
     case ui::ET_SCROLL_FLING_CANCEL:
       webkit_event.type = WebKit::WebInputEvent::GestureFlingCancel;
@@ -276,6 +280,8 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
 
   webkit_event.modifiers = EventFlagsToWebEventModifiers(event->flags());
   webkit_event.timeStampSeconds = event->time_stamp().InSecondsF();
+
+  // TODO(rbyers): deltaX/deltaY fields going away. crbug.com/143237
   webkit_event.deltaX = event->x_offset();
   webkit_event.deltaY = event->y_offset();
 

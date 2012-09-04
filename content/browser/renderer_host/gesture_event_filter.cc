@@ -170,6 +170,11 @@ void GestureEventFilter::MergeOrInsertScrollEvent(
   if (coalesced_gesture_events_.size() > 1 &&
       last_gesture_event->type == gesture_event.type &&
       last_gesture_event->modifiers == gesture_event.modifiers) {
+    last_gesture_event->data.scrollUpdate.deltaX +=
+        gesture_event.data.scrollUpdate.deltaX;
+    last_gesture_event->data.scrollUpdate.deltaY +=
+        gesture_event.data.scrollUpdate.deltaY;
+    // TODO(rbyers): deltaX/deltaY fields going away. crbug.com/143237
     last_gesture_event->deltaX += gesture_event.deltaX;
     last_gesture_event->deltaY += gesture_event.deltaY;
     DLOG_IF(WARNING,

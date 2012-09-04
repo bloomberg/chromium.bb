@@ -751,16 +751,12 @@ static WebGestureEvent MakeGestureEvent(WebInputEvent::Type type,
                                         double timestamp_seconds,
                                         int x,
                                         int y,
-                                        float delta_x,
-                                        float delta_y,
                                         int modifiers) {
   WebGestureEvent result;
 
   result.type = type;
   result.x = x;
   result.y = y;
-  result.deltaX = delta_x;
-  result.deltaY = delta_y;
   result.timeStampSeconds = timestamp_seconds;
   result.modifiers = modifiers;
 
@@ -780,17 +776,23 @@ void RenderWidgetHostImpl::SimulateTouchGestureWithMouse(
         startY = y;
         ForwardGestureEvent(MakeGestureEvent(
             WebInputEvent::GestureScrollBegin, mouse_event.timeStampSeconds,
-            x, y, 0, 0, 0));
+            x, y, 0));
       }
       if (dx != 0 || dy != 0) {
-        ForwardGestureEvent(MakeGestureEvent(
+        WebGestureEvent event = MakeGestureEvent(
             WebInputEvent::GestureScrollUpdate, mouse_event.timeStampSeconds,
-            x, y, dx, dy, 0));
+            x, y, 0);
+        event.data.scrollUpdate.deltaX = dx;
+        event.data.scrollUpdate.deltaY = dy;
+        // TODO(rbyers): deltaX/deltaY fields going away. crbug.com/143237
+        event.deltaX = dx;
+        event.deltaY = dy;
+        ForwardGestureEvent(event);
       }
       if (mouse_event.type == WebInputEvent::MouseUp) {
         ForwardGestureEvent(MakeGestureEvent(
             WebInputEvent::GestureScrollEnd, mouse_event.timeStampSeconds,
-            x, y, dx, dy, 0));
+            x, y, 0));
       }
       break;
     case WebMouseEvent::ButtonMiddle:
@@ -799,12 +801,12 @@ void RenderWidgetHostImpl::SimulateTouchGestureWithMouse(
         startY = y;
         ForwardGestureEvent(MakeGestureEvent(
             WebInputEvent::GestureTapDown, mouse_event.timeStampSeconds,
-            x, y, 0, 0, 0));
+            x, y, 0));
       }
       if (mouse_event.type == WebInputEvent::MouseUp) {
         ForwardGestureEvent(MakeGestureEvent(
             WebInputEvent::GestureTap, mouse_event.timeStampSeconds,
-            x, y, dx, dy, 0));
+            x, y, 0));
       }
       break;
     case WebMouseEvent::ButtonRight:
@@ -813,19 +815,21 @@ void RenderWidgetHostImpl::SimulateTouchGestureWithMouse(
         startY = y;
         ForwardGestureEvent(MakeGestureEvent(
             WebInputEvent::GesturePinchBegin, mouse_event.timeStampSeconds,
-            x, y, 1, 1, 0));
+            x, y, 0));
       }
       if (dx != 0 || dy != 0) {
         dx = pow(dy < 0 ? 0.998f : 1.002f, fabs(dy));
-        dy = dx;
-        ForwardGestureEvent(MakeGestureEvent(
+        WebGestureEvent event = MakeGestureEvent(
             WebInputEvent::GesturePinchUpdate, mouse_event.timeStampSeconds,
-            startX, startY, dx, dy, 0));
+            startX, startY, 0);
+        event.data.pinchUpdate.scale = dx;
+        event.deltaX = dx;
+        ForwardGestureEvent(event);
       }
       if (mouse_event.type == WebInputEvent::MouseUp) {
         ForwardGestureEvent(MakeGestureEvent(
             WebInputEvent::GesturePinchEnd, mouse_event.timeStampSeconds,
-            x, y, dx, dy, 0));
+            x, y, 0));
       }
       break;
     case WebMouseEvent::ButtonNone:
