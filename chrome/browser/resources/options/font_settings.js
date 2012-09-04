@@ -82,22 +82,22 @@ cr.define('options', function() {
      * @private
      */
     standardRangeChanged_: function(el, event) {
-      var value = el.mapValueToRange(el.value);
+      var size = el.mapPositionToPref(el.value);
       var fontSampleEl = $('standard-font-sample');
-      this.setUpFontSample_(fontSampleEl, value, fontSampleEl.style.fontFamily,
+      this.setUpFontSample_(fontSampleEl, size, fontSampleEl.style.fontFamily,
                             true);
 
       fontSampleEl = $('serif-font-sample');
-      this.setUpFontSample_(fontSampleEl, value, fontSampleEl.style.fontFamily,
+      this.setUpFontSample_(fontSampleEl, size, fontSampleEl.style.fontFamily,
                             true);
 
       fontSampleEl = $('sans-serif-font-sample');
-      this.setUpFontSample_(fontSampleEl, value, fontSampleEl.style.fontFamily,
+      this.setUpFontSample_(fontSampleEl, size, fontSampleEl.style.fontFamily,
                             true);
 
       fontSampleEl = $('fixed-font-sample');
       this.setUpFontSample_(fontSampleEl,
-                            value - OptionsPage.SIZE_DIFFERENCE_FIXED_STANDARD,
+                            size - OptionsPage.SIZE_DIFFERENCE_FIXED_STANDARD,
                             fontSampleEl.style.fontFamily, false);
     },
 
@@ -108,10 +108,10 @@ cr.define('options', function() {
      * @private
      */
     standardFontSizeChanged_: function(event) {
-      var value = this.mapValueToRange(this.value);
+      var size = this.mapPositionToPref(this.value);
       Preferences.setIntegerPref(
         'webkit.webprefs.default_fixed_font_size',
-        value - OptionsPage.SIZE_DIFFERENCE_FIXED_STANDARD, true);
+        size - OptionsPage.SIZE_DIFFERENCE_FIXED_STANDARD, true);
       return false;
     },
 
@@ -124,9 +124,9 @@ cr.define('options', function() {
      * @private
      */
     minimumRangeChanged_: function(el, event) {
-      var value = el.mapValueToRange(el.value);
+      var size = el.mapPositionToPref(el.value);
       var fontSampleEl = $('minimum-font-sample');
-      this.setUpFontSample_(fontSampleEl, value, fontSampleEl.style.fontFamily,
+      this.setUpFontSample_(fontSampleEl, size, fontSampleEl.style.fontFamily,
                             true);
     },
 
@@ -137,9 +137,9 @@ cr.define('options', function() {
      * @private
      */
     minimumFontSizeChanged_: function(event) {
-      var value = this.mapValueToRange(this.value);
+      var size = this.mapPositionToPref(this.value);
       Preferences.setIntegerPref(
-        'webkit.webprefs.minimum_logical_font_size', value, true);
+        'webkit.webprefs.minimum_logical_font_size', size, true);
       return false;
     },
 

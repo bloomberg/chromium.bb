@@ -284,10 +284,7 @@ class WebUIActionsParser(HTMLParser):
     is_boolean = ('dataType' in attrs and attrs['dataType'] == 'boolean')
     if 'type' in attrs and attrs['type'] in ('checkbox', 'radio'):
       if attrs['type'] == 'checkbox':
-        # Checkboxes are boolean by default.  However, their 'value-type' can
-        # instead be set to 'integer'.
-        if 'value-type' not in attrs or attrs['value-type'] in ['', 'boolean']:
-          is_boolean = True
+        is_boolean = True
       else:
         # Radio buttons are boolean if and only if their values are 'true' or
         # 'false'.
