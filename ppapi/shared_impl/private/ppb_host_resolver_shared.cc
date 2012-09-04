@@ -8,7 +8,9 @@
 #include <cstring>
 
 #include "base/memory/scoped_ptr.h"
+#if !defined(OS_NACL)
 #include "net/base/address_list.h"
+#endif
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
 #include "ppapi/shared_impl/var.h"
@@ -16,6 +18,7 @@
 
 namespace ppapi {
 
+#if !defined(OS_NACL) && !defined(NACL_WIN64)
 NetAddressList* CreateNetAddressListFromAddressList(
     const net::AddressList& list) {
   scoped_ptr<NetAddressList> net_address_list(new NetAddressList());
@@ -29,6 +32,7 @@ NetAddressList* CreateNetAddressListFromAddressList(
 
   return net_address_list.release();
 }
+#endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
 
 PPB_HostResolver_Shared::PPB_HostResolver_Shared(PP_Instance instance)
     : Resource(OBJECT_IS_IMPL, instance),

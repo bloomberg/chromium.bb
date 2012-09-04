@@ -550,6 +550,7 @@ bool ParamTraits<ppapi::proxy::SerializedFlashMenu>::Read(const Message* m,
 void ParamTraits<ppapi::proxy::SerializedFlashMenu>::Log(const param_type& p,
                                                          std::string* l) {
 }
+#endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
 
 // PPB_X509Certificate_Fields --------------------------------------------------
 
@@ -571,6 +572,5 @@ bool ParamTraits<ppapi::PPB_X509Certificate_Fields>::Read(const Message* m,
 void ParamTraits<ppapi::PPB_X509Certificate_Fields>::Log(const param_type& p,
                                                          std::string* l) {
 }
-#endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
 
 }  // namespace IPC

@@ -27,8 +27,10 @@ struct HostPortPair {
 
 typedef std::vector<PP_NetAddress_Private> NetAddressList;
 
+#if !defined(OS_NACL) && !defined(NACL_WIN64)
 PPAPI_SHARED_EXPORT NetAddressList*
     CreateNetAddressListFromAddressList(const net::AddressList& list);
+#endif
 
 class PPAPI_SHARED_EXPORT PPB_HostResolver_Shared
     : public thunk::PPB_HostResolver_Private_API,

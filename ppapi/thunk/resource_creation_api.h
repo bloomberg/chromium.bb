@@ -116,6 +116,11 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateGraphics3DRaw(PP_Instance instance,
                                           PP_Resource share_context,
                                           const int32_t* attrib_list) = 0;
+  virtual PP_Resource CreateHostResolverPrivate(PP_Instance instance) = 0;
+  virtual PP_Resource CreateTCPServerSocketPrivate(PP_Instance instance) = 0;
+  virtual PP_Resource CreateTCPSocketPrivate(PP_Instance instace) = 0;
+  virtual PP_Resource CreateUDPSocketPrivate(PP_Instance instace) = 0;
+  virtual PP_Resource CreateX509CertificatePrivate(PP_Instance instance) = 0;
 #if !defined(OS_NACL)
   virtual PP_Resource CreateAudioInput0_1(
       PP_Instance instance,
@@ -137,7 +142,6 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateFlashMenu(PP_Instance instance,
                                       const PP_Flash_Menu* menu_data) = 0;
   virtual PP_Resource CreateFlashMessageLoop(PP_Instance instance) = 0;
-  virtual PP_Resource CreateHostResolverPrivate(PP_Instance instance) = 0;
   virtual PP_Resource CreateNetworkMonitor(
       PP_Instance instance,
       PPB_NetworkMonitor_Callback callback,
@@ -145,9 +149,6 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateScrollbar(PP_Instance instance,
                                       PP_Bool vertical) = 0;
   virtual PP_Resource CreateTalk(PP_Instance instance) = 0;
-  virtual PP_Resource CreateTCPServerSocketPrivate(PP_Instance instance) = 0;
-  virtual PP_Resource CreateTCPSocketPrivate(PP_Instance instace) = 0;
-  virtual PP_Resource CreateUDPSocketPrivate(PP_Instance instace) = 0;
   virtual PP_Resource CreateVideoCapture(PP_Instance instance) = 0;
   virtual PP_Resource CreateVideoDecoder(
       PP_Instance instance,
@@ -156,7 +157,6 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateVideoLayer(PP_Instance instance,
                                        PP_VideoLayerMode_Dev mode) = 0;
   virtual PP_Resource CreateWebSocket(PP_Instance instance) = 0;
-  virtual PP_Resource CreateX509CertificatePrivate(PP_Instance instance) = 0;
 #endif  // !defined(OS_NACL)
 
   static const ApiID kApiID = API_ID_RESOURCE_CREATION;
