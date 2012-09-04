@@ -25,6 +25,13 @@ class PluginInstaller;
 
 class PluginFinder {
  public:
+  typedef std::vector<webkit::WebPluginInfo> PluginVector;
+  typedef base::Callback<void(const PluginVector&, PluginFinder*)>
+      CombinedCallback;
+  // Gets PluginFinder and vector of Plugins asynchronously. It then
+  // calls |cb| once both are fetched.
+  static void GetPluginsAndPluginFinder(const CombinedCallback& cb);
+
   static void Get(const base::Callback<void(PluginFinder*)>& cb);
 
   // Finds a plug-in for the given MIME type and language (specified as an IETF
