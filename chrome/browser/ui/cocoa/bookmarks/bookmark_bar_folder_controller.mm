@@ -278,6 +278,8 @@ struct LayoutMetrics {
     [button setTarget:nil];
     [button setAction:nil];
   }
+  [buttonMenu_ setDelegate:nil];
+  [folderMenu_ setDelegate:nil];
 
   // Note: we don't need to
   //   [NSObject cancelPreviousPerformRequestsWithTarget:self];
