@@ -65,6 +65,7 @@ class MediaStatsPerfTest(pyauto.PyUITest):
 
       cpu_usage = renderer_process.get_cpu_percent()
       mem_usage_mb = renderer_process.get_memory_info()[0] / 1024
+      file_name = os.path.basename(file_name)
       pyauto_utils.PrintPerfResult('cpu', file_name, cpu_usage, '%')
       pyauto_utils.PrintPerfResult('memory', file_name, mem_usage_mb, 'KB')
 
