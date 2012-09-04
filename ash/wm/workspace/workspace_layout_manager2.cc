@@ -131,10 +131,6 @@ void WorkspaceLayoutManager2::OnWindowPropertyChanged(Window* window,
     ui::WindowShowState old_state = static_cast<ui::WindowShowState>(old);
     ui::WindowShowState new_state =
         window->GetProperty(aura::client::kShowStateKey);
-    if (old_state == ui::SHOW_STATE_MINIMIZED) {
-      window->layer()->SetOpacity(1.0f);
-      window->layer()->SetTransform(ui::Transform());
-    }
     if (old_state != ui::SHOW_STATE_MINIMIZED &&
         GetRestoreBoundsInScreen(window) == NULL &&
         WorkspaceManager2::IsMaximizedState(new_state) &&
