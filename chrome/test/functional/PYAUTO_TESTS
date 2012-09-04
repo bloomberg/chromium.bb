@@ -138,8 +138,6 @@
       '-omnibox.OmniboxTest.testIncognitoAppSearchWithVeryLongAppName',
       # crbug.com/117569
       '-passwords.PasswordTest.testSavedPasswordInTabsAndWindows',
-      # crbug.com/103379
-      '-policy.PolicyTest.testDisable3DAPIs',
       # crbug.com/104227
       '-sync.SyncIntegrationTest',
       # crbug.com/88679
@@ -233,8 +231,6 @@
       # ==================================================
       # crbug.com/91033
       '-omnibox.OmniboxTest.testOmniboxSearchHistory',
-      # crbug.com/103379
-      '-policy.PolicyTest.testDisable3DAPIs',
       # Gnome / kwallet popups on linux break sync tests.  crbug.com/80329
       '-sync',
       # crbug.com/66072
