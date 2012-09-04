@@ -42,7 +42,6 @@ function bb_force_bot_green_and_exit {
 }
 
 function bb_run_gclient_hooks {
-  echo "@@@BUILD_STEP runhooks android@@@"
   gclient runhooks
 }
 
@@ -247,7 +246,6 @@ function bb_run_unit_tests {
   rm -rf "$LOGCAT_DUMP_DIR"
   python build/android/adb_logcat_monitor.py "$LOGCAT_DUMP_DIR" &
 
-  echo "@@@BUILD_STEP Run Tests on actual hardware@@@"
   build/android/run_tests.py --xvfb --verbose
 
   echo "@@@BUILD_STEP Logcat dump@@@"
@@ -261,9 +259,6 @@ function bb_run_unit_tests {
 function bb_run_instrumentation_test {
   local TEST_APK=${1}
   local EXTRA_FLAGS=${2}
-  local APK_NAME=$(basename ${TEST_APK})
-  echo "@@@BUILD_STEP Android Instrumentation ${APK_NAME} ${EXTRA_FLAGS} "\
-       "on actual hardware@@@"
   local INSTRUMENTATION_FLAGS="-vvv"
   INSTRUMENTATION_FLAGS+=" --test-apk ${TEST_APK}"
   INSTRUMENTATION_FLAGS+=" ${EXTRA_FLAGS}"
