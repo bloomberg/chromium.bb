@@ -5,6 +5,8 @@
 
 import os
 
+# pylint: disable=C0301
+# This file contains lines longer than 80
 
 #
 # Default macros for various platforms.
@@ -294,6 +296,10 @@ class MakeRules(object):
 
   def __init__(self, tc, cfg=None, arch=None):
     self.tc = tc
+    self.project = ''
+    self.cfg = ''
+    self.arch = ''
+    self.ptype = ''
     self.defines = []
     self.includes = []
     self.libraries = []
@@ -332,7 +338,7 @@ class MakeRules(object):
     self.vars['<EXT>'] = EXT
     out = '<tc>/<config>/%s_<ARCH>.o : %s $(THIS_MAKE) | <tc>/<config>\n' % (
         os.path.splitext(src)[0], src)
-    out+= BUILD_RULES[self.tc][EXT][self.cfg] + '\n\n'
+    out += BUILD_RULES[self.tc][EXT][self.cfg] + '\n\n'
     return self.Replace(out)
 
   def BuildLinkRule(self):
@@ -396,7 +402,6 @@ class MakeRules(object):
     self.SetLibraries(libs)
 
   def SetSource(self, src):
-    self.source = source
     self.vars['<src>'] = src
 
   def SetToolchain(self, tc):
@@ -421,7 +426,6 @@ class MakeRules(object):
     # Add other passed in replacements
     for key in kwargs:
       self.vars['<%s>' % key] = kwargs[key]
-    self.var_set = kwargs
 
   def Replace(self, text):
     return Replace(text, self.vars)

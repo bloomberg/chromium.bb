@@ -186,7 +186,7 @@ def SVNRevision():
     p = subprocess.Popen('git svn info', shell=True, stdout=subprocess.PIPE,
                          cwd=run_path)
     if p.wait() != 0:
-      raise AssertionError('Cannot determine SVN revision of this repository');
+      raise AssertionError('Cannot determine SVN revision of this repository')
 
   svn_info = p.communicate()[0]
   m = re.search('Revision: ([0-9]+)', svn_info)

@@ -2,14 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Utility functions for sdk_update.py and sdk_update_main.py."""
+
 import errno
 import os
 import shutil
 import subprocess
 import sys
 import time
-
-"""Utility functions for sdk_update.py and sdk_update_main.py."""
 
 
 class Error(Exception):
@@ -36,7 +36,7 @@ def RemoveDir(outdir):
 
   try:
     shutil.rmtree(outdir)
-  except:
+  except OSError:
     if not os.path.exists(outdir):
       return
     # On Windows this could be an issue with junctions, so try again with rmdir
@@ -49,6 +49,7 @@ def RenameDir(srcdir, destdir):
      rename if it already exists."""
 
   max_tries = 5
+  num_tries = 0
   for num_tries in xrange(max_tries):
     try:
       RemoveDir(destdir)
@@ -61,8 +62,9 @@ def RenameDir(srcdir, destdir):
       # handling a Windows flaky access error.  Sleep one second and try
       # again.
       time.sleep(num_tries + 1)
+
   # end of while loop -- could not RenameDir
-  raise Error('Could not RenameDir %s => %s after %d tries.\n' %
+  raise Error('Could not RenameDir %s => %s after %d tries.\n'
               'Please check that no shells or applications '
               'are accessing files in %s.'
               % (srcdir, destdir, num_tries, destdir))

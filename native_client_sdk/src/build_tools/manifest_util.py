@@ -47,9 +47,9 @@ def GetHostOS():
       }[sys.platform]
 
 
-def DictToJSON(dict):
+def DictToJSON(pydict):
   """Convert a dict to a JSON-formatted string."""
-  pretty_string = json.dumps(dict, sort_keys=False, indent=2)
+  pretty_string = json.dumps(pydict, sort_keys=False, indent=2)
   # json.dumps sometimes returns trailing whitespace and does not put
   # a newline at the end.  This code fixes these problems.
   pretty_lines = pretty_string.split('\n')
@@ -108,13 +108,13 @@ class Archive(dict):
     """ Create a new archive for the given host-os name. """
     self['host_os'] = host_os_name
 
-  def CopyFrom(self, dict):
+  def CopyFrom(self, src):
     """Update the content of the archive by copying values from the given
        dictionary.
 
     Args:
-      dict: The dictionary whose values must be copied to the archive."""
-    for key, value in dict.items():
+      src: The dictionary whose values must be copied to the archive."""
+    for key, value in src.items():
       self[key] = value
 
   def Validate(self):

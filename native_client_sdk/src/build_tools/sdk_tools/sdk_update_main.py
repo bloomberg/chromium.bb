@@ -48,10 +48,10 @@ Example Usage:
   naclsdk help update
   naclsdk sources --list'''
 
-CONFIG_FILENAME='naclsdk_config.json'
-MANIFEST_FILENAME='naclsdk_manifest2.json'
-SDK_TOOLS='sdk_tools'  # the name for this tools directory
-USER_DATA_DIR='sdk_cache'
+CONFIG_FILENAME = 'naclsdk_config.json'
+MANIFEST_FILENAME = 'naclsdk_manifest2.json'
+SDK_TOOLS = 'sdk_tools'  # the name for this tools directory
+USER_DATA_DIR = 'sdk_cache'
 
 HTTP_CONTENT_LENGTH = 'Content-Length'  # HTTP Header field for content length
 
@@ -134,7 +134,8 @@ def ExtractInstaller(installer, outdir):
     curpath = os.getcwd()
     try:
       tar_file = cygtar.CygTar(installer, 'r', verbose=True)
-      if outdir: os.chdir(outdir)
+      if outdir:
+        os.chdir(outdir)
       tar_file.Extract()
     finally:
       if tar_file:
@@ -202,7 +203,8 @@ def DownloadArchiveToFile(archive, dest_path):
                     'Expected %s bytes but got %s' %
                     (archive.url, content_length, size))
     finally:
-      if from_stream: from_stream.close()
+      if from_stream:
+        from_stream.close()
   return sha1, size
 
 
@@ -235,8 +237,7 @@ def LoadManifestFromURLs(urls):
       raise Error('Unable to open %s. [%s]' % (url, e))
 
     manifest_stream = cStringIO.StringIO()
-    sha1, size = manifest_util.DownloadAndComputeHash(url_stream,
-                                                      manifest_stream)
+    manifest_util.DownloadAndComputeHash(url_stream, manifest_stream)
     temp_manifest = manifest_util.SDKManifest()
     temp_manifest.LoadDataFromString(manifest_stream.getvalue())
 
@@ -491,8 +492,8 @@ def Update(options, argv, config):
     bundle_name: Install/Update only the given bundle
   '''
   DebugPrint("Running Update command with: %s, %s" % (options, argv))
-  ALL='all'  # Update all bundles
-  RECOMMENDED='recommended'  # Only update the bundles with recommended=yes
+  ALL = 'all'  # Update all bundles
+  RECOMMENDED = 'recommended'  # Only update the bundles with recommended=yes
 
   parser = optparse.OptionParser(usage=Update.__doc__)
   parser.add_option(
@@ -536,7 +537,7 @@ def Update(options, argv, config):
     def UpdateBundle():
       '''Helper to install a bundle'''
       archive = bundle.GetHostOSArchive()
-      (scheme, host, path, _, _, _) = urlparse.urlparse(archive['url'])
+      (_, _, path, _, _, _) = urlparse.urlparse(archive['url'])
       dest_filename = os.path.join(options.user_data_dir, path.split('/')[-1])
       sha1, size = DownloadArchiveToFile(archive, dest_filename)
       if sha1 != archive.GetChecksum():
@@ -598,7 +599,7 @@ def Sources(options, argv, config):
       '-l', '--list', dest='do_list',
       default=False, action='store_true',
       help='List additional package sources')
-  (source_options, args) = parser.parse_args(argv)
+  source_options, _ = parser.parse_args(argv)
 
   write_config = False
   if source_options.url_to_add:

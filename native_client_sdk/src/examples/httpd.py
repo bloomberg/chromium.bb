@@ -19,16 +19,17 @@ import sys
 import urlparse
 
 
-EXAMPLE_PATH=os.path.dirname(os.path.abspath(__file__))
+EXAMPLE_PATH = os.path.dirname(os.path.abspath(__file__))
 NACL_SDK_ROOT = os.getenv('NACL_SDK_ROOT', os.path.dirname(EXAMPLE_PATH))
 
 
 if os.path.exists(NACL_SDK_ROOT):
   sys.path.append(os.path.join(NACL_SDK_ROOT, 'tools'))
+  # pylint: disable=F0401
   import decode_dump
   import getos
 else:
-  NACL_SDK_ROOT=None
+  NACL_SDK_ROOT = None
 
 last_nexe = None
 last_nmf = None
@@ -63,6 +64,8 @@ def SanityCheckDirectory():
 # faster responses.
 class QuittableHTTPServer(SocketServer.ThreadingMixIn,
                           BaseHTTPServer.HTTPServer):
+  is_running = False
+
   def serve_forever(self, timeout=0.5):
     self.is_running = True
     self.timeout = timeout
@@ -77,13 +80,13 @@ class QuittableHTTPServer(SocketServer.ThreadingMixIn,
 
 
 # "Safely" split a string at |sep| into a [key, value] pair.  If |sep| does not
-# exist in |str|, then the entire |str| is the key and the value is set to an
+# exist in |pair|, then the entire |pair| is the key and the value is set to an
 # empty string.
-def KeyValuePair(str, sep='='):
-  if sep in str:
-    return str.split(sep)
+def KeyValuePair(pair, sep='='):
+  if sep in pair:
+    return pair.split(sep)
   else:
-    return [str, '']
+    return [pair, '']
 
 
 # A small handler that looks for '?quit=1' query in the path and shuts itself
@@ -103,28 +106,28 @@ class QuittableHTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     path = self.translate_path(self.path)
     f = None
     if os.path.isdir(path):
-        if not self.path.endswith('/'):
-            # redirect browser - doing basically what apache does
-            self.send_response(301)
-            self.send_header("Location", self.path + "/")
-            self.end_headers()
-            return None
-        for index in "index.html", "index.htm":
-            index = os.path.join(path, index)
-            if os.path.exists(index):
-                path = index
-                break
-        else:
-            return self.list_directory(path)
+      if not self.path.endswith('/'):
+        # redirect browser - doing basically what apache does
+        self.send_response(301)
+        self.send_header("Location", self.path + "/")
+        self.end_headers()
+        return None
+      for index in "index.html", "index.htm":
+        index = os.path.join(path, index)
+        if os.path.exists(index):
+          path = index
+          break
+      else:
+        return self.list_directory(path)
     ctype = self.guess_type(path)
     try:
-        # Always read in binary mode. Opening files in text mode may cause
-        # newline translations, making the actual size of the content
-        # transmitted *less* than the content-length!
-        f = open(path, 'rb')
+      # Always read in binary mode. Opening files in text mode may cause
+      # newline translations, making the actual size of the content
+      # transmitted *less* than the content-length!
+      f = open(path, 'rb')
     except IOError:
-        self.send_error(404, "File not found")
-        return None
+      self.send_error(404, "File not found")
+      return None
     self.send_response(200)
     self.send_header("Content-type", ctype)
     fs = os.fstat(f.fileno())
@@ -156,7 +159,6 @@ class QuittableHTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 
   def do_POST(self):
-    (_, _,path, query, _) = urlparse.urlsplit(self.path)
     if 'Content-Length' in self.headers:
       if not NACL_SDK_ROOT:
         self.wfile('Could not find NACL_SDK_ROOT to decode trace.')

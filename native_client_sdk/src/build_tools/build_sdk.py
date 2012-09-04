@@ -129,9 +129,9 @@ def GetBuildArgs(tcname, tcpath, outdir, arch, xarch=None):
   mode = '--mode=opt-host,nacl'
   arch_name = GetArchName(arch, xarch)
   plat = 'platform=' + arch_name
-  bin = 'bindir=' + os.path.join(outdir, 'tools')
+  binarg = 'bindir=' + os.path.join(outdir, 'tools')
   lib = 'libdir=' + GetToolchainNaClLib(tcname, tcpath, arch, xarch)
-  args = [scons, mode, plat, bin, lib, '-j10',
+  args = [scons, mode, plat, binarg, lib, '-j10',
           'install_bin', 'install_lib']
   if tcname == 'glibc':
     args.append('--nacl_glibc')
@@ -310,29 +310,29 @@ def InstallHeaders(tc_dst_inc, pepper_ver, tc_name):
 
   # Copy in the gles2 headers
   buildbot_common.MakeDir(os.path.join(ppapi, 'gles2'))
-  buildbot_common.CopyDir(os.path.join(PPAPI_DIR,'lib','gl','gles2','*.h'),
+  buildbot_common.CopyDir(os.path.join(PPAPI_DIR, 'lib', 'gl', 'gles2', '*.h'),
           os.path.join(ppapi, 'gles2'))
 
   # Copy the EGL headers
   buildbot_common.MakeDir(os.path.join(tc_dst_inc, 'EGL'))
   buildbot_common.CopyDir(
-          os.path.join(PPAPI_DIR,'lib','gl','include','EGL', '*.h'),
+          os.path.join(PPAPI_DIR, 'lib', 'gl', 'include', 'EGL', '*.h'),
           os.path.join(tc_dst_inc, 'EGL'))
 
   # Copy the GLES2 headers
   buildbot_common.MakeDir(os.path.join(tc_dst_inc, 'GLES2'))
   buildbot_common.CopyDir(
-          os.path.join(PPAPI_DIR,'lib','gl','include','GLES2', '*.h'),
+          os.path.join(PPAPI_DIR, 'lib', 'gl', 'include', 'GLES2', '*.h'),
           os.path.join(tc_dst_inc, 'GLES2'))
 
   # Copy the KHR headers
   buildbot_common.MakeDir(os.path.join(tc_dst_inc, 'KHR'))
   buildbot_common.CopyDir(
-          os.path.join(PPAPI_DIR,'lib','gl','include','KHR', '*.h'),
+          os.path.join(PPAPI_DIR, 'lib', 'gl', 'include', 'KHR', '*.h'),
           os.path.join(tc_dst_inc, 'KHR'))
 
   # Copy the lib files
-  buildbot_common.CopyDir(os.path.join(PPAPI_DIR,'lib'), 
+  buildbot_common.CopyDir(os.path.join(PPAPI_DIR, 'lib'), 
           os.path.join(tc_dst_inc, 'ppapi'))
 
 
@@ -398,11 +398,10 @@ def BuildStepCopyBuildHelpers(pepperdir, platform):
                                os.path.join(pepperdir, 'tools' ,'make.exe'))
     rename_list = ['ncval_x86_32', 'ncval_x86_64',
                    'sel_ldr_x86_32', 'sel_ldr_x86_64']
-    tools = os.path.join(pepperdir, 'tools')
     for name in rename_list:
-        src = os.path.join(pepperdir, 'tools', name)
-        dst = os.path.join(pepperdir, 'tools', name + '.exe')
-        buildbot_common.Move(src, dst)
+      src = os.path.join(pepperdir, 'tools', name)
+      dst = os.path.join(pepperdir, 'tools', name + '.exe')
+      buildbot_common.Move(src, dst)
 
 
 EXAMPLE_LIST = [

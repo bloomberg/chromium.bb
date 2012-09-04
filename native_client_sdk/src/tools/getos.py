@@ -17,7 +17,7 @@ import subprocess
 import sys
 
 
-TOOL_PATH=os.path.dirname(os.path.abspath(__file__))
+TOOL_PATH = os.path.dirname(os.path.abspath(__file__))
 
 
 def ErrOut(text):
@@ -59,10 +59,10 @@ def GetSystemArch(platform):
 
   if platform in ['mac', 'linux']:
     try:
-      pobj = subprocess.Popen(['uname', '-m'],stdout= subprocess.PIPE)
-      arch, serr = pobj.communicate()
+      pobj = subprocess.Popen(['uname', '-m'], stdout= subprocess.PIPE)
+      arch = pobj.communicate()[0]
       arch = arch.split()[0]
-    except:
+    except Exception:
       arch = None
   return arch
 
@@ -82,13 +82,13 @@ def GetChromeArch(platform):
       pobj = subprocess.Popen(['objdump', '-f', chrome_path],
                               stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE)
-      arch, serr = pobj.communicate()
-      format = re.compile(r'(file format) ([a-zA-Z0-9_\-]+)')
-      arch = format.search(arch).group(2)
+      arch = pobj.communicate()[0]
+      file_format = re.compile(r'(file format) ([a-zA-Z0-9_\-]+)')
+      arch = file_format.search(arch).group(2)
       if '64' in arch:
         return 'x86_64'
       return 'x86_32'
-    except:
+    except Exception:
       print "FAILED"
       arch = None
   return arch

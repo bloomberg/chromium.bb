@@ -95,8 +95,8 @@ class TestZip(unittest.TestCase):
     self.assertEqual(self.zipfile.namelist()[0], file1)
 
   def testAddFilesWithGlob(self):
-    file1 = self.MakeFile('file1', 1024)
-    file2 = self.MakeFile('file2', 3354)
+    self.MakeFile('file1', 1024)
+    self.MakeFile('file2', 3354)
     self.RunZip([self.zipname, 'file*'])
     self.OpenZipFile()
     self.assertEqual(len(self.zipfile.namelist()), 2)
@@ -155,7 +155,7 @@ class TestZip(unittest.TestCase):
     os.mkdir(self.GetTempPath('dir1'))
     file1 = self.MakeFile(os.path.join('dir1', 'file1'), 256)
     os.mkdir(self.GetTempPath(os.path.join('dir1', 'dir2')))
-    file2 = self.MakeFile(os.path.join('dir1', 'dir2', 'file2'), 1234)
+    self.MakeFile(os.path.join('dir1', 'dir2', 'file2'), 1234)
     self.RunZip([self.zipname, '-r', 'dir1'])
     self.OpenZipFile()
     self.assertEqual(len(self.zipfile.namelist()), 4)
@@ -189,5 +189,5 @@ def main():
   return int(not result.wasSuccessful())
 
 
-if __name__=='__main__':
+if __name__ == '__main__':
   sys.exit(main())

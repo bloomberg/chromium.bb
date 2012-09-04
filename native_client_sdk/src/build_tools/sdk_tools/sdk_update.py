@@ -3,13 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import os
-import re
-import subprocess
-from sdk_update_common import *
-import sys
-import tempfile
-
 """Shim script for the SDK updater, to allow automatic updating.
 
 The purpose of this script is to be a shim which automatically updates
@@ -19,6 +12,12 @@ run.
 When the sdk_tools bundle has been updated to the most recent version, this
 script forwards its arguments to sdk_updater_main.py.
 """
+
+import os
+import subprocess
+from sdk_update_common import *
+import sys
+import tempfile
 
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))

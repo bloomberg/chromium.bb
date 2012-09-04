@@ -15,7 +15,8 @@ GS_MANIFEST_PATH = 'gs://nativeclient-mirror/nacl/nacl_sdk/'
 SDK_MANIFEST = 'naclsdk_manifest2.json'
 MONO_MANIFEST = 'naclmono_manifest.json' 
 
-def build_and_upload_mono(sdk_revision, pepper_revision, sdk_url, upload_path, args):
+def build_and_upload_mono(sdk_revision, pepper_revision, sdk_url,
+                          upload_path, args):
   install_dir = 'naclmono'
   buildbot_common.RemoveDir(install_dir)
 
@@ -111,7 +112,6 @@ def update_mono_sdk_json(infos):
   mono_manifest = json.loads(manifest_file.read())
   manifest_file.close()
 
-  newbundles = {}
   for info in infos:
     bundle = {}
     bundle['name'] = info['naclmono_name']

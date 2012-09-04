@@ -25,7 +25,7 @@ sys.path.append(os.path.join(NACL_DIR, 'build'))
 
 import sdk_update
 
-HELP='''"Usage: %prog [-b bundle] [options]"
+HELP = '''"Usage: %prog [-b bundle] [options]"
 
 Actions for particular bundles:
   sdk_tools: Upload the most recently built nacl_sdk.zip and sdk_tools.tgz
@@ -84,7 +84,7 @@ def UpdateBundle(bundle, options):
     option_val = getattr(options, option_key, None)
     if option_val is not None:
       bundle[attribute_key] = option_val
-      delattr(options, option_key);
+      delattr(options, option_key)
   # Validate what we have so far; we may just avoid going through a lengthy
   # download, just to realize that some other trivial stuff is missing.
   bundle.Validate()
@@ -93,7 +93,7 @@ def UpdateBundle(bundle, options):
     platform_url = getattr(options, option_key, None)
     if platform_url is not None:
       bundle.UpdateArchive(host_os, platform_url)
-      delattr(options, option_key);
+      delattr(options, option_key)
 
 
 class UpdateSDKManifest(sdk_update.SDKManifest):
@@ -154,7 +154,7 @@ class UpdateSDKManifest(sdk_update.SDKManifest):
           raise Error('Unused option "%s" for bundle "%s"' % (key, bundle_name))
         else:
           raise Error('No bundle name specified')
-    return True;
+    return True
 
   def UpdateManifest(self, options):
     ''' Update the manifest object with values from the command-line options

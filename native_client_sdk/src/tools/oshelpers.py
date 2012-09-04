@@ -22,8 +22,8 @@ def IncludeFiles(filters, files):
   if not filters: 
     return files
   match = set()
-  for filter in filters:
-    match |= set(fnmatch.filter(files, filter))
+  for file_filter in filters:
+    match |= set(fnmatch.filter(files, file_filter))
   return [name for name in files if name in match]
 
 
@@ -35,8 +35,8 @@ def ExcludeFiles(filters, files):
   if not filters: 
     return files
   match = set()
-  for filter in filters:
-    excludes = set(fnmatch.filter(files, filter))
+  for file_filter in filters:
+    excludes = set(fnmatch.filter(files, file_filter))
     match |= excludes
   return [name for name in files if name not in match]
 
@@ -163,7 +163,7 @@ def Mkdir(args):
       print 'mkdir ' + dst
     try:
       os.makedirs(dst)
-    except OSError as error:
+    except OSError:
       if os.path.isdir(dst):
         if options.parents:
           continue
@@ -192,7 +192,7 @@ def MovePath(options, src, dst):
         raise OSError('mv: FAILED TO REMOVE ' + dst)
     else:
       raise OSError('mv: already exists ' + dst)
-  for i in range(5):
+  for _ in range(5):
     try:
       os.rename(src, dst)
       return
@@ -216,11 +216,12 @@ def Move(args):
   options, files = parser.parse_args(args)
   if len(files) < 2:
     parser.error('ERROR: expecting SOURCE... and DEST.')
-  if options.verbose:
-    print 'mv %s %s' % (src, dst)
 
   srcs = files[:-1]
   dst = files[-1]
+
+  if options.verbose:
+    print 'mv %s %s' % (' '.join(srcs), dst)
 
   for src in srcs:
     MovePath(options, src, dst)
@@ -366,10 +367,10 @@ def Zip(args):
       src_files.append(src_file)
       if options.recursive and os.path.isdir(src_file):
         for root, dirs, files in os.walk(src_file):
-          for dir in dirs:
-            src_files.append(os.path.join(root, dir))
-          for file in files:
-            src_files.append(os.path.join(root, file))
+          for dirname in dirs:
+            src_files.append(os.path.join(root, dirname))
+          for filename in files:
+            src_files.append(os.path.join(root, filename))
 
   zip_stream = None
   # zip_data represents a list of the data to be written or appended to the

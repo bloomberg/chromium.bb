@@ -9,7 +9,6 @@ __author__ = 'gwink@google.com (Georges Winkenbach)'
 
 import optparse
 import os
-import re
 import subprocess
 import sys
 
