@@ -50,31 +50,47 @@ class InstantController : public InstantLoaderDelegate {
   static const int kInlineAutocompleteFadeInTimeMS = 300;
 
   // InstantController may operate in one of these modes:
-  //   INSTANT: The default search engine is preloaded when the omnibox gets
+  //   EXTENDED: The default search engine is preloaded when the omnibox gets
   //       focus. Queries are issued as the user types. Predicted queries are
-  //       inline autocompleted into the omnibox. Result previews are shown.
+  //       inline autocompleted into the omnibox. Previews of search results
+  //       as well as predicted URLs are shown. Search suggestions are rendered
+  //       within the search results preview.
+  //   INSTANT: Same as EXTENDED, without URL previews. Search suggestions are
+  //       rendered by the omnibox drop down, and not by the preview page.
   //   SUGGEST: Same as INSTANT, without visible previews.
   //   HIDDEN: Same as SUGGEST, without the inline autocompletion.
   //   SILENT: Same as HIDDEN, without issuing queries as the user types. The
   //       query is sent only after the user presses <Enter>.
-  //   EXTENDED: Similar to INSTANT, but with extended functionality, such as
-  //       rendering suggestions within the preview and previews of URLs.
+  //   DISABLED: Instant is disabled.
   enum Mode {
+    EXTENDED,
     INSTANT,
     SUGGEST,
     HIDDEN,
     SILENT,
-    EXTENDED,
+    DISABLED,
   };
 
-  InstantController(InstantControllerDelegate* delegate, Mode mode);
   virtual ~InstantController();
+
+  // Creates a new InstantController. Caller owns the returned object. The
+  // |profile| pointer is not cached, so the underlying profile object need not
+  // live beyond this call. ***NOTE***: May return NULL, which means that
+  // Instant is disabled in this profile.
+  static InstantController* CreateInstant(Profile* profile,
+                                          InstantControllerDelegate* delegate);
+
+  // Returns true if Instant is enabled and supports the extended API.
+  static bool IsExtendedAPIEnabled(Profile* profile);
+
+  // Returns true if Instant is enabled in a visible, preview-showing mode.
+  static bool IsInstantEnabled(Profile* profile);
+
+  // Returns true if Instant will provide autocomplete suggestions.
+  static bool IsSuggestEnabled(Profile* profile);
 
   // Registers Instant related preferences.
   static void RegisterUserPrefs(PrefService* prefs);
-
-  // Returns true if Instant is enabled for the given |profile|.
-  static bool IsEnabled(Profile* profile);
 
   // Invoked as the user types into the omnibox. |user_text| is what the user
   // has typed. |full_text| is what the omnibox is showing. These may differ if
@@ -154,6 +170,8 @@ class InstantController : public InstantLoaderDelegate {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(InstantTest, InstantLoaderRefresh);
+
+  InstantController(InstantControllerDelegate* delegate, Mode mode);
 
   // Creates a new loader if necessary (for example, if the |instant_url| has
   // changed since the last time we created the loader).

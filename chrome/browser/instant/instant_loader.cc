@@ -202,9 +202,8 @@ void InstantLoader::WebContentsDelegateImpl::OnSetSuggestions(
          loader_->preview_contents_->web_contents());
   // TODO(sreeram): Remove this 'if' bandaid once bug 141875 is confirmed fixed.
   if (!loader_->preview_contents() ||
-      !loader_->preview_contents_->web_contents()) {
+      !loader_->preview_contents_->web_contents())
     return;
-  }
   content::NavigationEntry* entry = loader_->preview_contents_->web_contents()->
                                         GetController().GetActiveEntry();
   if (entry && page_id == entry->GetPageID()) {
@@ -220,9 +219,8 @@ void InstantLoader::WebContentsDelegateImpl::OnInstantSupportDetermined(
          loader_->preview_contents_->web_contents());
   // TODO(sreeram): Remove this 'if' bandaid once bug 141875 is confirmed fixed.
   if (!loader_->preview_contents() ||
-      !loader_->preview_contents_->web_contents()) {
+      !loader_->preview_contents_->web_contents())
     return;
-  }
   content::NavigationEntry* entry = loader_->preview_contents_->web_contents()->
                                         GetController().GetActiveEntry();
   if (entry && page_id == entry->GetPageID())
@@ -315,11 +313,10 @@ TabContents* InstantLoader::ReleasePreviewContents(InstantCommitType type,
                                                    const string16& text) {
   content::RenderViewHost* rvh =
       preview_contents_->web_contents()->GetRenderViewHost();
-  if (type == INSTANT_COMMIT_PRESSED_ENTER) {
+  if (type == INSTANT_COMMIT_PRESSED_ENTER)
     rvh->Send(new ChromeViewMsg_SearchBoxSubmit(rvh->GetRoutingID(), text));
-  } else {
+  else
     rvh->Send(new ChromeViewMsg_SearchBoxCancel(rvh->GetRoutingID(), text));
-  }
   CleanupPreviewContents();
   return preview_contents_.release();
 }
@@ -334,9 +331,8 @@ void InstantLoader::Observe(int type,
 #if defined(OS_MACOSX)
   if (type == content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED) {
     if (content::RenderWidgetHostView* rwhv =
-            preview_contents_->web_contents()->GetRenderWidgetHostView()) {
+            preview_contents_->web_contents()->GetRenderWidgetHostView())
       rwhv->SetTakesFocusOnlyOnMouseDown(true);
-    }
     return;
   }
   NOTREACHED();
@@ -364,9 +360,8 @@ void InstantLoader::SetupPreviewContents() {
   // SetTakesFocusOnlyOnMouseDown() as a result of the RENDER_VIEW_HOST_CHANGED
   // notification.
   if (content::RenderWidgetHostView* rwhv =
-          new_contents->GetRenderWidgetHostView()) {
+          new_contents->GetRenderWidgetHostView())
     rwhv->SetTakesFocusOnlyOnMouseDown(true);
-  }
   registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
                  content::Source<content::NavigationController>(
                      &new_contents->GetController()));
@@ -387,9 +382,8 @@ void InstantLoader::CleanupPreviewContents() {
 
 #if defined(OS_MACOSX)
   if (content::RenderWidgetHostView* rwhv =
-          old_contents->GetRenderWidgetHostView()) {
+          old_contents->GetRenderWidgetHostView())
     rwhv->SetTakesFocusOnlyOnMouseDown(false);
-  }
   registrar_.Remove(this, content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
                     content::Source<content::NavigationController>(
                         &old_contents->GetController()));

@@ -17,6 +17,7 @@
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -210,8 +211,7 @@ void SearchProviderTest::QueryForInputAndSetWYTMatch(
   QueryForInput(text, string16(), false);
   profile_.BlockUntilHistoryProcessesPendingRequests();
   ASSERT_NO_FATAL_FAILURE(FinishDefaultSuggestQuery());
-  EXPECT_NE(profile_.GetPrefs()->GetBoolean(prefs::kInstantEnabled),
-            provider_->done());
+  EXPECT_NE(InstantController::IsSuggestEnabled(&profile_), provider_->done());
   if (!wyt_match)
     return;
   ASSERT_GE(provider_->matches().size(), 1u);

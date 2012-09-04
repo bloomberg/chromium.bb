@@ -19,6 +19,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -60,11 +61,12 @@ const int kStaleLoaderTimeoutMS = 3 * 3600 * 1000;
 
 std::string ModeToString(InstantController::Mode mode) {
   switch (mode) {
+    case InstantController::EXTENDED: return "_Extended";
     case InstantController::INSTANT:  return "_Instant";
     case InstantController::SUGGEST:  return "_Suggest";
     case InstantController::HIDDEN:   return "_Hidden";
     case InstantController::SILENT:   return "_Silent";
-    case InstantController::EXTENDED: return "_Extended";
+    case InstantController::DISABLED: return "_Disabled";
   }
 
   NOTREACHED();
@@ -109,22 +111,45 @@ void AddSessionStorageHistogram(InstantController::Mode mode,
   histogram->AddBoolean(is_session_storage_the_same);
 }
 
-}  // namespace
+InstantController::Mode GetModeForProfile(Profile* profile) {
+  if (!profile || profile->IsOffTheRecord() || !profile->GetPrefs() ||
+      !profile->GetPrefs()->GetBoolean(prefs::kInstantEnabled))
+    return InstantController::DISABLED;
 
-InstantController::InstantController(InstantControllerDelegate* delegate,
-                                     Mode mode)
-    : delegate_(delegate),
-      mode_(mode),
-      last_active_tab_(NULL),
-      last_verbatim_(false),
-      last_transition_type_(content::PAGE_TRANSITION_LINK),
-      is_showing_(false),
-      loader_processed_last_update_(false) {
+  return chrome::search::IsInstantExtendedAPIEnabled(profile) ?
+      InstantController::EXTENDED : InstantController::INSTANT;
 }
+
+}  // namespace
 
 InstantController::~InstantController() {
   if (GetPreviewContents())
     AddPreviewUsageForHistogram(mode_, PREVIEW_DELETED);
+}
+
+// static
+InstantController* InstantController::CreateInstant(
+    Profile* profile,
+    InstantControllerDelegate* delegate) {
+  const Mode mode = GetModeForProfile(profile);
+  return mode == DISABLED ? NULL : new InstantController(delegate, mode);
+}
+
+// static
+bool InstantController::IsExtendedAPIEnabled(Profile* profile) {
+  return GetModeForProfile(profile) == EXTENDED;
+}
+
+// static
+bool InstantController::IsInstantEnabled(Profile* profile) {
+  const Mode mode = GetModeForProfile(profile);
+  return mode == EXTENDED || mode == INSTANT;
+}
+
+// static
+bool InstantController::IsSuggestEnabled(Profile* profile) {
+  const Mode mode = GetModeForProfile(profile);
+  return mode == EXTENDED || mode == INSTANT || mode == SUGGEST;
 }
 
 // static
@@ -135,15 +160,8 @@ void InstantController::RegisterUserPrefs(PrefService* prefs) {
                              PrefService::SYNCABLE_PREF);
 
   // TODO(jamescook): Move this to search controller.
-  prefs->RegisterDoublePref(prefs::kInstantAnimationScaleFactor,
-                            1.0,
+  prefs->RegisterDoublePref(prefs::kInstantAnimationScaleFactor, 1.0,
                             PrefService::UNSYNCABLE_PREF);
-}
-
-// static
-bool InstantController::IsEnabled(Profile* profile) {
-  const PrefService* prefs = profile ? profile->GetPrefs() : NULL;
-  return prefs && prefs->GetBoolean(prefs::kInstantEnabled);
 }
 
 bool InstantController::Update(const AutocompleteMatch& match,
@@ -182,8 +200,8 @@ bool InstantController::Update(const AutocompleteMatch& match,
   // In EXTENDED mode, we send only |user_text| as the query text. In all other
   // modes, we use the entire |full_text|.
   const string16& query_text = mode_ == EXTENDED ? user_text : full_text;
-  string16 last_query_text =
-      mode_ == EXTENDED ? last_user_text_ : last_full_text_;
+  string16 last_query_text = mode_ == EXTENDED ?
+      last_user_text_ : last_full_text_;
   last_user_text_ = user_text;
   last_full_text_ = full_text;
 
@@ -200,9 +218,8 @@ bool InstantController::Update(const AutocompleteMatch& match,
     // 3. User arrows-up to Q or types Q again. The last text we processed is
     //    still Q, so we don't Update() the loader, but we do need to Show().
     if (loader_processed_last_update_ &&
-        (mode_ == INSTANT || mode_ == EXTENDED)) {
+        (mode_ == INSTANT || mode_ == EXTENDED))
       Show();
-    }
     return true;
   }
 
@@ -465,11 +482,10 @@ void InstantController::SetSuggestions(
   string16 suggestion_lower = base::i18n::ToLower(suggestion.text);
   string16 user_text_lower = base::i18n::ToLower(last_user_text_);
   if (user_text_lower.size() >= suggestion_lower.size() ||
-      suggestion_lower.compare(0, user_text_lower.size(), user_text_lower)) {
+      suggestion_lower.compare(0, user_text_lower.size(), user_text_lower))
     suggestion.text.clear();
-  } else {
+  else
     suggestion.text.erase(0, last_user_text_.size());
-  }
 
   last_suggestion_ = suggestion;
   if (!last_verbatim_)
@@ -532,6 +548,17 @@ void InstantController::InstantLoaderContentsFocused(InstantLoader* loader) {
   if (is_showing_ && !IsOutOfDate())
     delegate_->InstantPreviewFocused();
 #endif
+}
+
+InstantController::InstantController(InstantControllerDelegate* delegate,
+                                     Mode mode)
+    : delegate_(delegate),
+      mode_(mode),
+      last_active_tab_(NULL),
+      last_verbatim_(false),
+      last_transition_type_(content::PAGE_TRANSITION_LINK),
+      is_showing_(false),
+      loader_processed_last_update_(false) {
 }
 
 void InstantController::ResetLoader(const std::string& instant_url,
@@ -610,9 +637,8 @@ void InstantController::Show() {
 
 void InstantController::SendBoundsToPage() {
   if (last_omnibox_bounds_ == omnibox_bounds_ || IsOutOfDate() ||
-      !GetPreviewContents() || loader_->IsPointerDownFromActivate()) {
+      !GetPreviewContents() || loader_->IsPointerDownFromActivate())
     return;
-  }
 
   last_omnibox_bounds_ = omnibox_bounds_;
   gfx::Rect preview_bounds = delegate_->GetInstantBounds();
@@ -682,9 +708,8 @@ bool InstantController::GetInstantURL(const TemplateURL* template_url,
   std::map<std::string, int>::const_iterator iter =
       blacklisted_urls_.find(*instant_url);
   if (iter != blacklisted_urls_.end() &&
-      iter->second > kMaxInstantSupportFailures) {
+      iter->second > kMaxInstantSupportFailures)
     return false;
-  }
 
   return true;
 }
