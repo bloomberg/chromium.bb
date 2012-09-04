@@ -25,4 +25,5 @@ lou_debug_SOURCES = \
 lou_translate_SOURCES = \
 	lou_translate.c
 
-bin_SCRIPTS = lou_harnessGenerator
+# distribute the harness generator but do not install it
+dist_noinst_SCRIPTS = lou_harnessGenerator
