@@ -163,7 +163,7 @@ void Target::RemoveInitialBreakpoint() {
 }
 
 void Target::Run(Session *ses) {
-  bool first = true;
+  bool initial_breakpoint_seen = false;
   mutex_->Lock();
   session_ = ses;
   mutex_->Unlock();
@@ -212,8 +212,14 @@ void Target::Run(Session *ses) {
       UnqueueAnyFaultedThread(&sig_thread_, &cur_signal_);
       reg_thread_ = sig_thread_;
     } else {
-      // Otherwise look for messages from GDB.
-      if (!ses->DataAvailable()) {
+      // Otherwise look for messages from GDB.  To fix a potential
+      // race condition, we don't do this on the first run, because in
+      // that case we are waiting for the initial breakpoint to be
+      // reached.  We don't want GDB to observe states where the
+      // (internal) initial breakpoint is still registered or where
+      // the initial thread is suspended in NaClStartThreadInApp()
+      // before executing its first untrusted instruction.
+      if (!initial_breakpoint_seen || !ses->DataAvailable()) {
         // No input from GDB.  Nothing to do, so try again.
         continue;
       }
@@ -240,9 +246,9 @@ void Target::Run(Session *ses) {
     snprintf(tmp, sizeof(tmp), "QC%x", sig_thread_);
     properties_["C"] = tmp;
 
-    if (first) {
-      // First time on a connection, we don't sent the signal
-      first = false;
+    if (!initial_breakpoint_seen) {
+      // First time on a connection, we don't send the signal
+      initial_breakpoint_seen = true;
     } else {
       // All other times, send the signal that triggered us
       Packet pktOut;
