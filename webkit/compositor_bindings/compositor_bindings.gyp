@@ -44,7 +44,45 @@
       'WebVideoLayerImpl.h',
       'WheelFlingPlatformGestureCurve.h',
     ],
+    'conditions': [
+      ['inside_chromium_build==0', {
+        'webkit_src_dir': '../../../../..',
+      },{
+        'webkit_src_dir': '../../third_party/WebKit',
+      }],
+    ],
+
+
   },
+  'targets': [
+    {
+      'target_name': 'webkit_compositor_support',
+      'type': 'static_library',
+      'dependencies': [
+        '../../skia/skia.gyp:skia',
+      ],
+      'sources': [
+        'web_compositor_support_impl.cc',
+        'web_compositor_support_impl.h',
+      ],
+      'include_dirs': [
+        '../..',
+        '<(webkit_src_dir)/Source/Platform/chromium',
+      ],
+      'conditions': [
+        ['use_libcc_for_compositor==1', {
+          'include_dirs': [
+            '../../cc',
+            '../../cc/stubs',
+          ],
+          'dependencies': [
+            'webkit_compositor_bindings',
+            '../../third_party/WebKit/Source/WTF/WTF.gyp/WTF.gyp:wtf',
+          ],
+        }],
+      ],
+    },
+  ],
   'conditions': [
     ['use_libcc_for_compositor==1', {
       'targets': [
@@ -73,7 +111,7 @@
             'stubs/AnimationIdVendor.h',
             'stubs/public/WebTransformationMatrix',
           ],
-        }
+        },
       ],
     }],
   ],

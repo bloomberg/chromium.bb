@@ -11,6 +11,8 @@
         'webkit_src_dir': '../../third_party/WebKit',
       }],
     ],
+
+    'use_libcc_for_compositor%': 0,
   },
   'target_defaults': {
      # Disable narrowing-conversion-in-initialization-list warnings in that we
@@ -140,6 +142,7 @@
         '<(DEPTH)/ui/gl/gl.gyp:gl',
         '<(DEPTH)/ui/ui.gyp:ui',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
+        '<(DEPTH)/webkit/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
         '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
         'blob',
         'fileapi',
@@ -520,6 +523,7 @@
           'sources!': [
             'plugins/plugin_stubs.cc',
           ],
+          'msvs_disabled_warnings': [ 4800 ],
           'conditions': [
             ['inside_chromium_build==1 and component=="shared_library"', {
               'dependencies': [
@@ -535,6 +539,11 @@
         ['inside_chromium_build==0', {
           'dependencies': [
             '<(DEPTH)/webkit/support/setup_third_party.gyp:third_party_headers',
+          ],
+        }],
+        ['use_libcc_for_compositor==1', {
+          'defines': [
+            'USE_LIBCC_FOR_COMPOSITOR',
           ],
         }],
       ],
