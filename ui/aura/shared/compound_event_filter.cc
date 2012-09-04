@@ -83,82 +83,6 @@ size_t CompoundEventFilter::GetFilterCount() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// CompoundEventFilter, EventFilter implementation:
-
-bool CompoundEventFilter::PreHandleKeyEvent(Window* target,
-                                            ui::KeyEvent* event) {
-  return FilterKeyEvent(target, event);
-}
-
-bool CompoundEventFilter::PreHandleMouseEvent(Window* target,
-                                              ui::MouseEvent* event) {
-  WindowTracker window_tracker;
-  window_tracker.Add(target);
-
-  // We must always update the cursor, otherwise the cursor can get stuck if an
-  // event filter registered with us consumes the event.
-  // It should also update the cursor for clicking and wheels for ChromeOS boot.
-  // When ChromeOS is booted, it hides the mouse cursor but immediate mouse
-  // operation will show the cursor.
-  if (event->type() == ui::ET_MOUSE_MOVED ||
-      event->type() == ui::ET_MOUSE_PRESSED ||
-      event->type() == ui::ET_MOUSEWHEEL) {
-    SetCursorVisibilityOnEvent(target, event, true);
-    UpdateCursor(target, event);
-  }
-
-  if (FilterMouseEvent(target, event) ||
-      !window_tracker.Contains(target) ||
-      !target->GetRootWindow()) {
-    return true;
-  }
-
-  if (event->type() == ui::ET_MOUSE_PRESSED &&
-      GetActiveWindow(target) != target) {
-    target->GetFocusManager()->SetFocusedWindow(
-        FindFocusableWindowFor(target), event);
-  }
-
-  return false;
-}
-
-ui::TouchStatus CompoundEventFilter::PreHandleTouchEvent(
-    Window* target,
-    ui::TouchEvent* event) {
-  ui::TouchStatus status = FilterTouchEvent(target, event);
-  if (status == ui::TOUCH_STATUS_UNKNOWN &&
-      event->type() == ui::ET_TOUCH_PRESSED) {
-    SetCursorVisibilityOnEvent(target, event, false);
-  }
-  return status;
-}
-
-ui::EventResult CompoundEventFilter::PreHandleGestureEvent(
-    Window* target,
-    ui::GestureEvent* event) {
-  ui::EventResult status = ui::ER_UNHANDLED;
-  if (filters_.might_have_observers()) {
-    ObserverListBase<EventFilter>::Iterator it(filters_);
-    EventFilter* filter;
-    while (status == ui::ER_UNHANDLED &&
-        (filter = it.GetNext()) != NULL) {
-      status = filter->PreHandleGestureEvent(target, event);
-    }
-  }
-
-  if (event->type() == ui::ET_GESTURE_BEGIN &&
-      event->details().touch_points() == 1 &&
-      status != ui::ER_CONSUMED &&
-      target->GetRootWindow() &&
-      GetActiveWindow(target) != target) {
-    target->GetFocusManager()->SetFocusedWindow(
-        FindFocusableWindowFor(target), event);
-  }
-
-  return status;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // CompoundEventFilter, private:
 
 void CompoundEventFilter::UpdateCursor(Window* target, ui::MouseEvent* event) {
@@ -176,27 +100,28 @@ void CompoundEventFilter::UpdateCursor(Window* target, ui::MouseEvent* event) {
   }
 }
 
-bool CompoundEventFilter::FilterKeyEvent(Window* target, ui::KeyEvent* event) {
-  bool handled = false;
+ui::EventResult CompoundEventFilter::FilterKeyEvent(ui::EventTarget* target,
+                                                    ui::KeyEvent* event) {
+  int result = ui::ER_UNHANDLED;
   if (filters_.might_have_observers()) {
     ObserverListBase<EventFilter>::Iterator it(filters_);
     EventFilter* filter;
-    while (!handled && (filter = it.GetNext()) != NULL)
-      handled = filter->PreHandleKeyEvent(target, event);
+    while (!(result & ui::ER_CONSUMED) && (filter = it.GetNext()) != NULL)
+      result |= filter->OnKeyEvent(target, event);
   }
-  return handled;
+  return static_cast<ui::EventResult>(result);
 }
 
-bool CompoundEventFilter::FilterMouseEvent(Window* target,
-                                           ui::MouseEvent* event) {
-  bool handled = false;
+ui::EventResult CompoundEventFilter::FilterMouseEvent(ui::EventTarget* target,
+                                                      ui::MouseEvent* event) {
+  int result = ui::ER_UNHANDLED;
   if (filters_.might_have_observers()) {
     ObserverListBase<EventFilter>::Iterator it(filters_);
     EventFilter* filter;
-    while (!handled && (filter = it.GetNext()) != NULL)
-      handled = filter->PreHandleMouseEvent(target, event);
+    while (!(result & ui::ER_CONSUMED) && (filter = it.GetNext()) != NULL)
+      result |= filter->OnMouseEvent(target, event);
   }
-  return handled;
+  return static_cast<ui::EventResult>(result);
 }
 
 ui::TouchStatus CompoundEventFilter::FilterTouchEvent(
@@ -208,7 +133,7 @@ ui::TouchStatus CompoundEventFilter::FilterTouchEvent(
     EventFilter* filter;
     while (status == ui::TOUCH_STATUS_UNKNOWN &&
         (filter = it.GetNext()) != NULL) {
-      status = filter->PreHandleTouchEvent(target, event);
+      status = filter->OnTouchEvent(target, event);
     }
   }
   return status;
@@ -223,6 +148,97 @@ void CompoundEventFilter::SetCursorVisibilityOnEvent(aura::Window* target,
     if (client)
       client->ShowCursor(show);
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// CompoundEventFilter, EventFilter implementation:
+
+ui::TouchStatus CompoundEventFilter::PreHandleTouchEvent(
+    Window* target,
+    ui::TouchEvent* event) {
+  // TODO(sad): Move the implementation into OnTouchEvent once touch-events are
+  // hooked up to go through EventDispatcher.
+  ui::TouchStatus status = FilterTouchEvent(target, event);
+  if (status == ui::TOUCH_STATUS_UNKNOWN &&
+      event->type() == ui::ET_TOUCH_PRESSED) {
+    SetCursorVisibilityOnEvent(target, event, false);
+  }
+  return status;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// CompoundEventFilter, ui::EventHandler implementation:
+
+ui::EventResult CompoundEventFilter::OnKeyEvent(ui::EventTarget* target,
+                                                ui::KeyEvent* event) {
+  return FilterKeyEvent(target, event);
+}
+
+ui::EventResult CompoundEventFilter::OnMouseEvent(ui::EventTarget* target,
+                                                  ui::MouseEvent* event) {
+  Window* window = static_cast<Window*>(target);
+  WindowTracker window_tracker;
+  window_tracker.Add(window);
+
+  // We must always update the cursor, otherwise the cursor can get stuck if an
+  // event filter registered with us consumes the event.
+  // It should also update the cursor for clicking and wheels for ChromeOS boot.
+  // When ChromeOS is booted, it hides the mouse cursor but immediate mouse
+  // operation will show the cursor.
+  if (event->type() == ui::ET_MOUSE_MOVED ||
+      event->type() == ui::ET_MOUSE_PRESSED ||
+      event->type() == ui::ET_MOUSEWHEEL) {
+    SetCursorVisibilityOnEvent(window, event, true);
+    UpdateCursor(window, event);
+  }
+
+  ui::EventResult result = FilterMouseEvent(window, event);
+  if ((result & ui::ER_CONSUMED) ||
+      !window_tracker.Contains(window) ||
+      !window->GetRootWindow()) {
+    return result;
+  }
+
+  if (event->type() == ui::ET_MOUSE_PRESSED &&
+      GetActiveWindow(window) != window) {
+    window->GetFocusManager()->SetFocusedWindow(
+        FindFocusableWindowFor(window), event);
+  }
+
+  return result;
+}
+
+ui::EventResult CompoundEventFilter::OnScrollEvent(ui::EventTarget* target,
+                                                   ui::ScrollEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::TouchStatus CompoundEventFilter::OnTouchEvent(ui::EventTarget* target,
+                                                  ui::TouchEvent* event) {
+  return EventFilter::OnTouchEvent(target, event);
+}
+
+ui::EventResult CompoundEventFilter::OnGestureEvent(ui::EventTarget* target,
+                                                    ui::GestureEvent* event) {
+  int result = ui::ER_UNHANDLED;
+  if (filters_.might_have_observers()) {
+    ObserverListBase<EventFilter>::Iterator it(filters_);
+    EventFilter* filter;
+    while (!(result & ui::ER_CONSUMED) && (filter = it.GetNext()) != NULL)
+      result |= filter->OnGestureEvent(target, event);
+  }
+
+  Window* window = static_cast<Window*>(target);
+  if (event->type() == ui::ET_GESTURE_BEGIN &&
+      event->details().touch_points() == 1 &&
+      !(result & ui::ER_CONSUMED) &&
+      window->GetRootWindow() &&
+      GetActiveWindow(window) != window) {
+    window->GetFocusManager()->SetFocusedWindow(
+        FindFocusableWindowFor(window), event);
+  }
+
+  return static_cast<ui::EventResult>(result);
 }
 
 }  // namespace shared

@@ -31,8 +31,8 @@ class TestEventFilterWindowDelegate : public test::TestWindowDelegate {
       : key_event_count_(0),
         mouse_event_count_(0),
         touch_event_count_(0),
-        consumes_key_events_(true),
-        consumes_mouse_events_(true),
+        key_event_handling_result_(ui::ER_UNHANDLED),
+        mouse_event_handling_result_(ui::ER_UNHANDLED),
         consumes_touch_events_(true) {}
   virtual ~TestEventFilterWindowDelegate() {}
 
@@ -46,11 +46,11 @@ class TestEventFilterWindowDelegate : public test::TestWindowDelegate {
   int mouse_event_count() const { return mouse_event_count_; }
   int touch_event_count() const { return touch_event_count_; }
 
-  void set_consumes_key_events(bool consumes_key_events) {
-    consumes_key_events_ = consumes_key_events;
+  void set_key_event_handling_result(ui::EventResult result) {
+    key_event_handling_result_ = result;
   }
-  void set_consumes_mouse_events(bool consumes_mouse_events) {
-    consumes_mouse_events_ = consumes_mouse_events;
+  void set_mouse_event_handling_result(ui::EventResult result) {
+    mouse_event_handling_result_ = result;
   }
   void set_consumes_touch_events(bool consumes_touch_events) {
     consumes_touch_events_ = consumes_touch_events;
@@ -58,12 +58,10 @@ class TestEventFilterWindowDelegate : public test::TestWindowDelegate {
 
   // Overridden from TestWindowDelegate:
   virtual bool OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
-    ++key_event_count_;
-    return consumes_key_events_;
+    return key_event_handling_result_ != ui::ER_UNHANDLED;
   }
   virtual bool OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
-    ++mouse_event_count_;
-    return consumes_mouse_events_;
+    return mouse_event_handling_result_ != ui::ER_UNHANDLED;
   }
   virtual ui::TouchStatus OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
     ++touch_event_count_;
@@ -76,12 +74,29 @@ class TestEventFilterWindowDelegate : public test::TestWindowDelegate {
     return ui::ER_UNHANDLED;
   }
 
+  // Overridden from EventHandler:
+  virtual ui::EventResult OnKeyEvent(ui::EventTarget* target,
+                                     ui::KeyEvent* event) OVERRIDE {
+    ++key_event_count_;
+    if (key_event_handling_result_ & ui::ER_CONSUMED)
+      return key_event_handling_result_;
+    return WindowDelegate::OnKeyEvent(target, event);
+  }
+
+  virtual ui::EventResult OnMouseEvent(ui::EventTarget* target,
+                                       ui::MouseEvent* event) OVERRIDE {
+    ++mouse_event_count_;
+    if (mouse_event_handling_result_ & ui::ER_CONSUMED)
+      return mouse_event_handling_result_;
+    return WindowDelegate::OnMouseEvent(target, event);
+  }
+
  private:
   int key_event_count_;
   int mouse_event_count_;
   int touch_event_count_;
-  bool consumes_key_events_;
-  bool consumes_mouse_events_;
+  ui::EventResult key_event_handling_result_;
+  ui::EventResult mouse_event_handling_result_;
   bool consumes_touch_events_;
 
   DISALLOW_COPY_AND_ASSIGN(TestEventFilterWindowDelegate);
@@ -148,8 +163,8 @@ TEST_F(EventFilterTest, PreHandle) {
   w111_filter->ResetCounts();
 
   // Now make w1's EF consume the event.
-  w1_filter->set_consumes_key_events(true);
-  w1_filter->set_consumes_mouse_events(true);
+  w1_filter->set_key_event_handling_result(ui::ER_CONSUMED);
+  w1_filter->set_mouse_event_handling_result(ui::ER_CONSUMED);
 
   generator.ReleaseLeftButton();
   root_window()->AsRootWindowHostDelegate()->OnHostKeyEvent(&key_event);
@@ -186,12 +201,13 @@ TEST_F(EventFilterTest, PostHandle) {
   w1->GetFocusManager()->SetFocusedWindow(w11.get(), NULL);
 
   // TODO(sadrul): TouchEvent/GestureEvent!
-  // To start with, no one is going to consume any events. The pre-
+
+  // To start with, no one is going to consume any events. The post-
   // event filters and w11's delegate will be notified.
   test::EventGenerator generator(root_window(), w11.get());
 
-  d11->set_consumes_key_events(false);
-  d11->set_consumes_mouse_events(false);
+  d11->set_key_event_handling_result(ui::ER_UNHANDLED);
+  d11->set_mouse_event_handling_result(ui::ER_UNHANDLED);
   d11->set_consumes_touch_events(false);
 
   generator.PressKey(ui::VKEY_A, 0);
@@ -208,23 +224,36 @@ TEST_F(EventFilterTest, PostHandle) {
   d11->ResetCounts();
   generator.set_flags(0);
 
-  // Let |w1_filter| consume an event. So the root-window's bubble-filter
-  // should no longer receive the event.
-  w1_filter->set_consumes_mouse_events(true);
+  // Let |w1_filter| handle (but not consume) an event. The root-window's
+  // post-target filter should still receive the event.
+  w1_filter->set_mouse_event_handling_result(ui::ER_HANDLED);
   generator.PressLeftButton();
   EXPECT_EQ(1, d11->mouse_event_count());
   EXPECT_EQ(1, w1_filter->mouse_event_count());
-  EXPECT_EQ(0, root_window_filter->mouse_event_count());
+  EXPECT_EQ(1, root_window_filter->mouse_event_count());
 
-  // Now we'll have the delegate consume the events.
   root_window_filter->ResetCounts();
   w1_filter->ResetCounts();
   d11->ResetCounts();
   generator.set_flags(0);
 
-  w1_filter->set_consumes_mouse_events(false);
-  d11->set_consumes_key_events(true);
-  d11->set_consumes_mouse_events(true);
+  // Let |w1_filter| consume an event. So the root-window's post-target
+  // filter should no longer receive the event.
+  w1_filter->set_mouse_event_handling_result(ui::ER_CONSUMED);
+  generator.PressLeftButton();
+  EXPECT_EQ(1, d11->mouse_event_count());
+  EXPECT_EQ(1, w1_filter->mouse_event_count());
+  EXPECT_EQ(0, root_window_filter->mouse_event_count());
+
+  // Now we'll have the delegate handle the events.
+  root_window_filter->ResetCounts();
+  w1_filter->ResetCounts();
+  d11->ResetCounts();
+  generator.set_flags(0);
+
+  w1_filter->set_mouse_event_handling_result(ui::ER_UNHANDLED);
+  d11->set_key_event_handling_result(ui::ER_HANDLED);
+  d11->set_mouse_event_handling_result(ui::ER_HANDLED);
   d11->set_consumes_touch_events(true);
 
   generator.PressKey(ui::VKEY_A, 0);
@@ -232,8 +261,30 @@ TEST_F(EventFilterTest, PostHandle) {
 
   EXPECT_EQ(1, d11->key_event_count());
   EXPECT_EQ(1, d11->mouse_event_count());
-  // The delegate processed the event. So it shouldn't bubble up to the bubble
-  // filter.
+  // The delegate processed the event. But it should still bubble up to the
+  // post-target filters.
+  EXPECT_EQ(1, w1_filter->key_event_count());
+  EXPECT_EQ(1, root_window_filter->key_event_count());
+  EXPECT_EQ(1, w1_filter->mouse_event_count());
+  EXPECT_EQ(1, root_window_filter->mouse_event_count());
+
+  // Now we'll have the delegate consume the events.
+  root_window_filter->ResetCounts();
+  w1_filter->ResetCounts();
+  d11->ResetCounts();
+  generator.set_flags(0);
+
+  d11->set_key_event_handling_result(ui::ER_CONSUMED);
+  d11->set_mouse_event_handling_result(ui::ER_CONSUMED);
+  d11->set_consumes_touch_events(true);
+
+  generator.PressKey(ui::VKEY_A, 0);
+  generator.PressLeftButton();
+
+  EXPECT_EQ(1, d11->key_event_count());
+  EXPECT_EQ(1, d11->mouse_event_count());
+  // The delegate consumed the event. So it should no longer reach the
+  // post-target filters.
   EXPECT_EQ(0, w1_filter->key_event_count());
   EXPECT_EQ(0, root_window_filter->key_event_count());
   EXPECT_EQ(0, w1_filter->mouse_event_count());
@@ -246,12 +297,12 @@ TEST_F(EventFilterTest, PostHandle) {
   d11->ResetCounts();
   generator.set_flags(0);
 
-  d11->set_consumes_key_events(false);
-  d11->set_consumes_mouse_events(false);
+  d11->set_key_event_handling_result(ui::ER_UNHANDLED);
+  d11->set_mouse_event_handling_result(ui::ER_UNHANDLED);
   d11->set_consumes_touch_events(false);
 
-  w1_filter->set_consumes_key_events(true);
-  w1_filter->set_consumes_mouse_events(true);
+  w1_filter->set_key_event_handling_result(ui::ER_CONSUMED);
+  w1_filter->set_mouse_event_handling_result(ui::ER_CONSUMED);
   w1_filter->set_consumes_touch_events(true);
 
   generator.PressKey(ui::VKEY_A, 0);

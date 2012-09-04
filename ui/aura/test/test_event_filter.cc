@@ -11,9 +11,9 @@ TestEventFilter::TestEventFilter()
     : key_event_count_(0),
       mouse_event_count_(0),
       touch_event_count_(0),
-      consumes_key_events_(false),
-      consumes_mouse_events_(false),
-      consumes_touch_events_(false) {
+      key_event_handling_result_(ui::ER_UNHANDLED),
+      mouse_event_handling_result_(ui::ER_UNHANDLED),
+      consumes_touch_event_(false) {
 }
 
 TestEventFilter::~TestEventFilter() {
@@ -25,28 +25,32 @@ void TestEventFilter::ResetCounts() {
   touch_event_count_ = 0;
 }
 
-bool TestEventFilter::PreHandleKeyEvent(Window* target, ui::KeyEvent* event) {
+ui::EventResult TestEventFilter::OnKeyEvent(ui::EventTarget* target,
+                                            ui::KeyEvent* event) {
   ++key_event_count_;
-  return consumes_key_events_;
+  return key_event_handling_result_;
 }
 
-bool TestEventFilter::PreHandleMouseEvent(Window* target,
-                                          ui::MouseEvent* event) {
+ui::EventResult TestEventFilter::OnMouseEvent(ui::EventTarget* target,
+                                              ui::MouseEvent* event) {
   ++mouse_event_count_;
-  return consumes_mouse_events_;
+  return mouse_event_handling_result_;
 }
 
-ui::TouchStatus TestEventFilter::PreHandleTouchEvent(
-    Window* target,
-    ui::TouchEvent* event) {
+ui::EventResult TestEventFilter::OnScrollEvent(ui::EventTarget* target,
+                                               ui::ScrollEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::TouchStatus TestEventFilter::OnTouchEvent(ui::EventTarget* target,
+                                              ui::TouchEvent* event) {
   ++touch_event_count_;
   // TODO(sadrul): !
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
-ui::EventResult TestEventFilter::PreHandleGestureEvent(
-    Window* target,
-    ui::GestureEvent* event) {
+ui::EventResult TestEventFilter::OnGestureEvent(ui::EventTarget* target,
+                                                ui::GestureEvent* event) {
   // TODO(sadrul): !
   return ui::ER_UNHANDLED;
 }

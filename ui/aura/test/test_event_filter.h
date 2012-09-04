@@ -28,35 +28,35 @@ class TestEventFilter : public EventFilter {
   int mouse_event_count() const { return mouse_event_count_; }
   int touch_event_count() const { return touch_event_count_; }
 
-  void set_consumes_key_events(bool consumes_key_events) {
-    consumes_key_events_ = consumes_key_events;
+  void set_key_event_handling_result(ui::EventResult result) {
+    key_event_handling_result_ = result;
   }
-  void set_consumes_mouse_events(bool consumes_mouse_events) {
-    consumes_mouse_events_ = consumes_mouse_events;
+  void set_mouse_event_handling_result(ui::EventResult result) {
+    mouse_event_handling_result_ = result;
   }
-  void set_consumes_touch_events(bool consumes_touch_events) {
-    consumes_touch_events_ = consumes_touch_events;
+  void set_consumes_touch_events(bool consumes) {
+    consumes_touch_event_ = consumes;
   }
 
-  // Overridden from EventFilter:
-  virtual bool PreHandleKeyEvent(Window* target, ui::KeyEvent* event) OVERRIDE;
-  virtual bool PreHandleMouseEvent(Window* target,
-                                   ui::MouseEvent* event) OVERRIDE;
-  virtual ui::TouchStatus PreHandleTouchEvent(
-      Window* target,
-      ui::TouchEvent* event) OVERRIDE;
-  virtual ui::EventResult PreHandleGestureEvent(
-      Window* target,
-      ui::GestureEvent* event) OVERRIDE;
-
+  // Overridden from ui::EventHandler:
+  virtual ui::EventResult OnKeyEvent(ui::EventTarget* target,
+                                     ui::KeyEvent* event) OVERRIDE;
+  virtual ui::EventResult OnMouseEvent(ui::EventTarget* target,
+                                       ui::MouseEvent* event) OVERRIDE;
+  virtual ui::EventResult OnScrollEvent(ui::EventTarget* target,
+                                        ui::ScrollEvent* event) OVERRIDE;
+  virtual ui::TouchStatus OnTouchEvent(ui::EventTarget* target,
+                                       ui::TouchEvent* event) OVERRIDE;
+  virtual ui::EventResult OnGestureEvent(ui::EventTarget* target,
+                                         ui::GestureEvent* event) OVERRIDE;
  private:
   int key_event_count_;
   int mouse_event_count_;
   int touch_event_count_;
 
-  bool consumes_key_events_;
-  bool consumes_mouse_events_;
-  bool consumes_touch_events_;
+  ui::EventResult key_event_handling_result_;
+  ui::EventResult mouse_event_handling_result_;
+  bool consumes_touch_event_;
 
   DISALLOW_COPY_AND_ASSIGN(TestEventFilter);
 };

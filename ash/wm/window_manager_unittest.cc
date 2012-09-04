@@ -555,8 +555,8 @@ TEST_F(WindowManagerTest, AdditionalFilters) {
   f2->ResetCounts();
 
   // Makes f1 consume events.
-  f1->set_consumes_key_events(true);
-  f1->set_consumes_mouse_events(true);
+  f1->set_key_event_handling_result(ui::ER_CONSUMED);
+  f1->set_mouse_event_handling_result(ui::ER_CONSUMED);
 
   // Dispatches events.
   root_window->AsRootWindowHostDelegate()->OnHostKeyEvent(&key_event);
