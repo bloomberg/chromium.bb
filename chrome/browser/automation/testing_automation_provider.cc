@@ -2269,9 +2269,7 @@ void TestingAutomationProvider::PerformActionOnInfobar(
         return;
       }
 
-      media_stream_infobar->Accept(audio_devices[0].device_id,
-                                   video_devices[0].device_id,
-                                   false);
+      media_stream_infobar->Accept();
       infobar_helper->RemoveInfoBar(infobar);
     } else if ("deny" == action) {
       media_stream_infobar->Deny();

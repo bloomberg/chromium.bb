@@ -18,8 +18,7 @@ class MediaStreamInfoBarDelegate;
 class MediaStreamDevicesMenuModel : public ui::SimpleMenuModel,
                                     public ui::SimpleMenuModel::Delegate {
  public:
-  explicit MediaStreamDevicesMenuModel(
-      const MediaStreamInfoBarDelegate* delegate);
+  explicit MediaStreamDevicesMenuModel(MediaStreamInfoBarDelegate* delegate);
   virtual ~MediaStreamDevicesMenuModel();
 
   // Returns the |device_id| for the selected device of type |type|. Returns
@@ -28,8 +27,6 @@ class MediaStreamDevicesMenuModel : public ui::SimpleMenuModel,
   bool GetSelectedDeviceId(
       content::MediaStreamDeviceType type,
       std::string* device_id) const;
-
-  bool always_allow() const { return always_allow_; }
 
   // ui::SimpleMenuModel::Delegate implementation:
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
@@ -51,12 +48,7 @@ class MediaStreamDevicesMenuModel : public ui::SimpleMenuModel,
   // Map of command IDs to devices.
   CommandMap commands_;
 
-  // These are the command IDs (key of above |commands_| map) of the selected
-  // devices entries in the menu, or -1 if there is no selected ID.
-  int selected_command_id_audio_;
-  int selected_command_id_video_;
-
-  bool always_allow_;
+  MediaStreamInfoBarDelegate* media_stream_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDevicesMenuModel);
 };

@@ -67,15 +67,7 @@ InfoBar* MediaStreamInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
 
 // Called when "Allow" button is pressed.
 - (void)ok:(id)sender {
-  std::string audioId, videoId;
-  deviceMenuModel_->GetSelectedDeviceId(
-      content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE, &audioId);
-  deviceMenuModel_->GetSelectedDeviceId(
-      content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE, &videoId);
-  bool alwaysAllow = deviceMenuModel_->always_allow();
-
-  static_cast<MediaStreamInfoBarDelegate*>([self delegate])->Accept(
-      audioId, videoId, alwaysAllow);
+  static_cast<MediaStreamInfoBarDelegate*>([self delegate])->Accept();
 
   // Remove the infobar, we're done.
   [super removeSelf];

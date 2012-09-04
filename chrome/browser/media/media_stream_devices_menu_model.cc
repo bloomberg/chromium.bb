@@ -14,23 +14,17 @@
 #include "ui/base/l10n/l10n_util.h"
 
 MediaStreamDevicesMenuModel::MediaStreamDevicesMenuModel(
-    const MediaStreamInfoBarDelegate* delegate)
+    MediaStreamInfoBarDelegate* delegate)
     : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
-      selected_command_id_audio_(-1),
-      selected_command_id_video_(-1),
-      always_allow_(false) {
+      media_stream_delegate_(delegate) {
   bool audio = delegate->HasAudio() && !delegate->GetAudioDevices().empty();
   bool video = delegate->HasVideo() && !delegate->GetVideoDevices().empty();
   if (video) {
-    // The default command ID is the first element that will be inserted.
-    selected_command_id_video_ = commands_.size();
     AddDevices(delegate->GetVideoDevices());
     if (audio)
       AddSeparator(ui::NORMAL_SEPARATOR);
   }
   if (audio) {
-    // The default command ID is the first element that will be inserted.
-    selected_command_id_audio_ = commands_.size();
     AddDevices(delegate->GetAudioDevices());
   }
 
@@ -42,25 +36,16 @@ MediaStreamDevicesMenuModel::MediaStreamDevicesMenuModel(
 MediaStreamDevicesMenuModel::~MediaStreamDevicesMenuModel() {
 }
 
-bool MediaStreamDevicesMenuModel::GetSelectedDeviceId(
-    content::MediaStreamDeviceType type,
-    std::string* device_id) const {
-  int command_id = (type == content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE) ?
-      selected_command_id_audio_ : selected_command_id_video_;
-  CommandMap::const_iterator it = commands_.find(command_id);
-  if (it != commands_.end())
-    *device_id = it->second.device_id;
-  return (it != commands_.end());
-}
-
 bool MediaStreamDevicesMenuModel::IsCommandIdChecked(int command_id) const {
-  switch (command_id) {
-    case IDC_MEDIA_STREAM_DEVICE_ALWAYS_ALLOW:
-      return always_allow_;
-    default:
-      return (selected_command_id_audio_ == command_id ||
-              selected_command_id_video_ == command_id);
-  }
+  if (command_id == IDC_MEDIA_STREAM_DEVICE_ALWAYS_ALLOW)
+    return media_stream_delegate_->always_allow();
+
+  CommandMap::const_iterator it = commands_.find(command_id);
+  DCHECK(it != commands_.end());
+
+  const std::string& device_id = it->second.device_id;
+  return (device_id == media_stream_delegate_->selected_audio_device() ||
+          device_id == media_stream_delegate_->selected_video_device());
 }
 
 bool MediaStreamDevicesMenuModel::IsCommandIdEnabled(int command_id) const {
@@ -74,20 +59,17 @@ bool MediaStreamDevicesMenuModel::GetAcceleratorForCommandId(
 }
 
 void MediaStreamDevicesMenuModel::ExecuteCommand(int command_id) {
-  switch (command_id) {
-    case IDC_MEDIA_STREAM_DEVICE_ALWAYS_ALLOW:
-      always_allow_ = !always_allow_;
-      break;
-    default:
-      CommandMap::iterator it = commands_.find(command_id);
-      DCHECK(it != commands_.end());
-
-      if (it->second.type == content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE)
-        selected_command_id_audio_ = command_id;
-      else
-        selected_command_id_video_ = command_id;
-      break;
+  if (command_id == IDC_MEDIA_STREAM_DEVICE_ALWAYS_ALLOW) {
+    media_stream_delegate_->toggle_always_allow();
+    return;
   }
+
+  CommandMap::const_iterator it = commands_.find(command_id);
+  DCHECK(it != commands_.end());
+  if (it->second.type == content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE)
+    media_stream_delegate_->set_selected_audio_device(it->second.device_id);
+  else
+    media_stream_delegate_->set_selected_video_device(it->second.device_id);
 }
 
 void MediaStreamDevicesMenuModel::AddDevices(

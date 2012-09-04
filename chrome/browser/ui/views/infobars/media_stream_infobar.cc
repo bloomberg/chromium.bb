@@ -96,13 +96,7 @@ void MediaStreamInfoBar::ButtonPressed(views::Button* sender,
   if (!owned())
     return;  // We're closing; don't call anything, it might access the owner.
   if (sender == allow_button_) {
-    std::string audio_id, video_id;
-    devices_menu_model_.GetSelectedDeviceId(
-        content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE, &audio_id);
-    devices_menu_model_.GetSelectedDeviceId(
-        content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE, &video_id);
-    bool always_allow = devices_menu_model_.always_allow();
-    GetDelegate()->Accept(audio_id, video_id, always_allow);
+    GetDelegate()->Accept();
     RemoveSelf();
   } else if (sender == deny_button_) {
     GetDelegate()->Deny();

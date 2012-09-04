@@ -10,11 +10,19 @@
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
+// TODO(xians): Register to the system monitor to get a device changed
+// notification, update the selected devices based on the new device lists.
 MediaStreamInfoBarDelegate::MediaStreamInfoBarDelegate(
     InfoBarTabHelper* tab_helper,
     MediaStreamDevicesController* controller)
     : InfoBarDelegate(tab_helper),
-      controller_(controller) {
+      controller_(controller),
+      always_allow_(false) {
+  if (HasAudio())
+    selected_audio_device_ = GetAudioDevices().begin()->device_id;
+  if (HasVideo())
+    selected_video_device_ = GetVideoDevices().begin()->device_id;
+
   DCHECK(controller_.get());
 }
 
@@ -42,10 +50,12 @@ const GURL& MediaStreamInfoBarDelegate::GetSecurityOrigin() const {
   return controller_->GetSecurityOrigin();
 }
 
-void MediaStreamInfoBarDelegate::Accept(const std::string& audio_id,
-                                        const std::string& video_id,
-                                        bool always_allow) {
-  controller_->Accept(audio_id, video_id, always_allow);
+void MediaStreamInfoBarDelegate::Accept() {
+  DCHECK_NE(HasAudio(), selected_audio_device_.empty());
+  DCHECK_NE(HasVideo(), selected_video_device_.empty());
+
+  controller_->Accept(selected_audio_device_, selected_video_device_,
+                      always_allow_);
 }
 
 void MediaStreamInfoBarDelegate::Deny() {
