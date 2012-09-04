@@ -1160,10 +1160,10 @@ texture_region(struct weston_surface *es, pixman_region32_t *region,
 	rects = pixman_region32_rectangles(region, &nrects);
 	surf_rects = pixman_region32_rectangles(surf_region, &nsurf);
 
-	/* worst case we can have 10 vertices per rect (ie. clipped into
+	/* worst case we can have 8 vertices per rect (ie. clipped into
 	 * an octagon):
 	 */
-	v = wl_array_add(&ec->vertices, nrects * nsurf * 10 * 4 * sizeof *v);
+	v = wl_array_add(&ec->vertices, nrects * nsurf * 8 * 4 * sizeof *v);
 	vtxcnt = wl_array_add(&ec->vtxcnt, nrects * nsurf * sizeof *vtxcnt);
 
 	inv_width = 1.0 / es->pitch;
@@ -1173,26 +1173,14 @@ texture_region(struct weston_surface *es, pixman_region32_t *region,
 		pixman_box32_t *rect = &rects[i];
 		for (j = 0; j < nsurf; j++) {
 			pixman_box32_t *surf_rect = &surf_rects[j];
-			GLfloat cx, cy;
+			GLfloat sx, sy;
 			GLfloat ex[8], ey[8];          /* edge points in screen space */
 			int n;
 
-			void emit_vertex(GLfloat gx, GLfloat gy)
-			{
-				GLfloat sx, sy;
-				surface_from_global_float(es, gx, gy, &sx, &sy);
-				/* In groups of 4 attributes, first two are 'position', 2nd two
-				 * are 'texcoord'.
-				 */
-				*(v++) = gx;
-				*(v++) = gy;
-				*(v++) = sx * inv_width;
-				*(v++) = sy * inv_height;
-			}
-
 			/* The transformed surface, after clipping to the clip region,
 			 * can have as many as eight sides, emitted as a triangle-fan.
-			 * The first vertex is the center, followed by each corner.
+			 * The first vertex in the triangle fan can be chosen arbitrarily,
+			 * since the area is guaranteed to be convex.
 			 *
 			 * If a corner of the transformed surface falls outside of the
 			 * clip region, instead of emitting one vertex for the corner
@@ -1201,33 +1189,24 @@ texture_region(struct weston_surface *es, pixman_region32_t *region,
 			 *
 			 * To do this, we first calculate the (up to eight) points that
 			 * form the intersection of the clip rect and the transformed
-			 * surface. After that we calculate the average to determine
-			 * the center point, and emit the center and edge vertices of
-			 * the fan.
+			 * surface.
 			 */
 			n = calculate_edges(es, rect, surf_rect, ex, ey);
 			if (n < 3)
 				continue;
 
-			/* calculate/emit center point: */
-			cx = 0;
-			cy = 0;
+			/* emit edge points: */
 			for (k = 0; k < n; k++) {
-				cx += ex[k];
-				cy += ey[k];
+				surface_from_global_float(es, ex[k], ey[k], &sx, &sy);
+				/* position: */
+				*(v++) = ex[k];
+				*(v++) = ey[k];
+				/* texcoord: */
+				*(v++) = sx * inv_width;
+				*(v++) = sy * inv_height;
 			}
-			cx /= n;
-			cy /= n;
-			emit_vertex(cx, cy);
 
-			/* then emit edge points: */
-			for (k = 0; k < n; k++)
-				emit_vertex(ex[k], ey[k]);
-
-			/* and close the fan: */
-			emit_vertex(ex[0], ey[0]);
-
-			vtxcnt[nvtx++] = n + 2;
+			vtxcnt[nvtx++] = n;
 		}
 	}
 
@@ -1285,10 +1264,10 @@ repaint_region(struct weston_surface *es, pixman_region32_t *region,
 	/* The final region to be painted is the intersection of
 	 * 'region' and 'surf_region'. However, 'region' is in the global
 	 * coordinates, and 'surf_region' is in the surface-local
-	 * corodinates. texture_region() will iterate over all pairs of
+	 * coordinates. texture_region() will iterate over all pairs of
 	 * rectangles from both regions, compute the intersection
 	 * polygon for each pair, and store it as a triangle fan if
-	 * it has a non-zero area.
+	 * it has a non-zero area (at least 3 vertices, actually).
 	 */
 	nfans = texture_region(es, region, surf_region);
 
