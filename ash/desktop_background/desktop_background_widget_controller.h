@@ -28,6 +28,9 @@ class DesktopBackgroundWidgetController {
 
   ~DesktopBackgroundWidgetController();
 
+  // Drop widget reference. widget is not owned.
+  void CleanupWidget();
+
   // Set bounds of component that draws background.
   void SetBounds(gfx::Rect bounds);
 

@@ -246,6 +246,15 @@ void DesktopBackgroundController::MoveDesktopToLockedContainer() {
                             GetBackgroundContainerId(true));
 }
 
+void DesktopBackgroundController::CleanupView(aura::RootWindow* root_window) {
+  internal::ComponentWrapper* wrapper =
+      root_window->GetProperty(internal::kComponentWrapper);
+  if (NULL == wrapper)
+    return;
+  if (wrapper->GetComponent(false))
+    wrapper->GetComponent(false)->CleanupWidget();
+}
+
 void DesktopBackgroundController::MoveDesktopToUnlockedContainer() {
   if (!locked_)
     return;

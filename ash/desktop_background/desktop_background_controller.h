@@ -125,6 +125,10 @@ class ASH_EXPORT DesktopBackgroundController : public aura::WindowObserver {
   // Move all desktop widgets to unlocked container.
   void MoveDesktopToUnlockedContainer();
 
+  // Drop references to background view for |root_window|, because the view
+  // was deleted.
+  void CleanupView(aura::RootWindow* root_window);
+
   // WindowObserver implementation.
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
