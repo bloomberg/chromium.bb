@@ -106,6 +106,13 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
   // animation sequences.
   void ScheduleTogether(const std::vector<LayerAnimationSequence*>& animations);
 
+  // Schedules a pause for length |duration| of all the specified properties.
+  // End the list with -1.
+  void SchedulePauseForProperties(
+      base::TimeDelta duration,
+      LayerAnimationElement::AnimatableProperty property,
+      ...);
+
   // Returns true if there is an animation in the queue (animations remain in
   // the queue until they complete, so this includes running animations).
   bool is_animating() const { return !animation_queue_.empty(); }

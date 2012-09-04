@@ -1160,4 +1160,16 @@ TEST(LayerAnimatorTest, GetTargetGrayscale) {
   }
 }
 
+// Verifies SchedulePauseForProperties().
+TEST(LayerAnimatorTest, SchedulePauseForProperties) {
+  scoped_ptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
+  animator->set_preemption_strategy(LayerAnimator::ENQUEUE_NEW_ANIMATION);
+  animator->SchedulePauseForProperties(base::TimeDelta::FromMilliseconds(100),
+                                       LayerAnimationElement::TRANSFORM,
+                                       LayerAnimationElement::BOUNDS, -1);
+  EXPECT_TRUE(animator->IsAnimatingProperty(LayerAnimationElement::TRANSFORM));
+  EXPECT_TRUE(animator->IsAnimatingProperty(LayerAnimationElement::BOUNDS));
+  EXPECT_FALSE(animator->IsAnimatingProperty(LayerAnimationElement::OPACITY));
+}
+
 }  // namespace ui

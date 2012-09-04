@@ -452,15 +452,11 @@ void AddLayerAnimationsForMinimize(aura::Window* window, bool show) {
   window->layer()->GetAnimator()->ScheduleAnimation(
       new ui::LayerAnimationSequence(transition.release()));
 
-  // When hiding a window, turn off blending until the animation is
-  // 3 / 4 done to save bandwidth and reduce jank
+  // When hiding a window, turn off blending until the animation is 3 / 4 done
+  // to save bandwidth and reduce jank
   if (!show) {
-    ui::LayerAnimationElement::AnimatableProperties properties_to_pause;
-    properties_to_pause.insert(ui::LayerAnimationElement::OPACITY);
-    window->layer()->GetAnimator()->ScheduleAnimation(
-      new ui::LayerAnimationSequence(
-          ui::LayerAnimationElement::CreatePauseElement(
-              properties_to_pause, (duration * 3 ) / 4)));
+    window->layer()->GetAnimator()->SchedulePauseForProperties(
+        (duration * 3 ) / 4, ui::LayerAnimationElement::OPACITY, -1);
   }
 
   // Fade in and out quickly when the window is small to reduce jank

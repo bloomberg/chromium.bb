@@ -217,6 +217,23 @@ void LayerAnimator::ScheduleTogether(
   UpdateAnimationState();
 }
 
+void LayerAnimator::SchedulePauseForProperties(
+    base::TimeDelta duration,
+    LayerAnimationElement::AnimatableProperty property,
+    ...) {
+  ui::LayerAnimationElement::AnimatableProperties properties_to_pause;
+  va_list marker;
+  va_start(marker, property);
+  for (int p = static_cast<int>(property); p != -1; p = va_arg(marker, int)) {
+    properties_to_pause.insert(
+        static_cast<LayerAnimationElement::AnimatableProperty>(p));
+  }
+  va_end(marker);
+  ScheduleAnimation(new ui::LayerAnimationSequence(
+                        ui::LayerAnimationElement::CreatePauseElement(
+                            properties_to_pause, duration)));
+}
+
 bool LayerAnimator::IsAnimatingProperty(
     LayerAnimationElement::AnimatableProperty property) const {
   for (AnimationQueue::const_iterator queue_iter = animation_queue_.begin();
