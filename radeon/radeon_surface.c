@@ -963,9 +963,16 @@ static void si_surf_minify_linear_aligned(struct radeon_surface *surf,
     surf->level[level].npix_x = mip_minify(surf->npix_x, level);
     surf->level[level].npix_y = mip_minify(surf->npix_y, level);
     surf->level[level].npix_z = mip_minify(surf->npix_z, level);
-    surf->level[level].nblk_x = (surf->level[level].npix_x + surf->blk_w - 1) / surf->blk_w;
-    surf->level[level].nblk_y = (surf->level[level].npix_y + surf->blk_h - 1) / surf->blk_h;
-    surf->level[level].nblk_z = (surf->level[level].npix_z + surf->blk_d - 1) / surf->blk_d;
+
+    if (level == 0 && surf->last_level > 0) {
+        surf->level[level].nblk_x = (next_power_of_two(surf->level[level].npix_x) + surf->blk_w - 1) / surf->blk_w;
+        surf->level[level].nblk_y = (next_power_of_two(surf->level[level].npix_y) + surf->blk_h - 1) / surf->blk_h;
+        surf->level[level].nblk_z = (next_power_of_two(surf->level[level].npix_z) + surf->blk_d - 1) / surf->blk_d;
+    } else {
+        surf->level[level].nblk_x = (surf->level[level].npix_x + surf->blk_w - 1) / surf->blk_w;
+        surf->level[level].nblk_y = (surf->level[level].npix_y + surf->blk_h - 1) / surf->blk_h;
+        surf->level[level].nblk_z = (surf->level[level].npix_z + surf->blk_d - 1) / surf->blk_d;
+    }
 
     /* XXX: Second smallest level uses larger pitch, not sure of the real reason,
      * my best guess so far: rows evenly distributed across slice
