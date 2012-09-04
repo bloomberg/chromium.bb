@@ -264,7 +264,11 @@ void TouchUMA::RecordGestureEvent(aura::Window* target,
   if (event.type() == ui::ET_GESTURE_END &&
       event.details().touch_points() == 2) {
     WindowTouchDetails* details = target->GetProperty(kWindowTouchDetails);
-    CHECK(details) << "Window received gesture but no touch events?";
+    if (!details) {
+      LOG(ERROR) << "Window received gesture events without receiving any touch"
+                    " events";
+      return;
+    }
     details->last_mt_time_ = event.time_stamp();
   }
 }
