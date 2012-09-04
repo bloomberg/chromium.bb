@@ -116,6 +116,21 @@ void InvalidatorStorage::SetMaxVersion(const invalidation::ObjectId& id,
                      max_versions_list);
 }
 
+void InvalidatorStorage::Forget(const syncer::ObjectIdSet& ids) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  CHECK(pref_service_);
+  InvalidationVersionMap max_versions = GetAllMaxVersions();
+  for (syncer::ObjectIdSet::const_iterator it = ids.begin(); it != ids.end();
+       ++it) {
+    max_versions.erase(*it);
+  }
+
+  base::ListValue max_versions_list;
+  SerializeToList(max_versions, &max_versions_list);
+  pref_service_->Set(prefs::kInvalidatorMaxInvalidationVersions,
+                     max_versions_list);
+}
+
 // static
 void InvalidatorStorage::DeserializeFromList(
     const base::ListValue& max_versions_list,

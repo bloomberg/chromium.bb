@@ -72,6 +72,25 @@ TEST_F(InvalidatorStorageTest, MaxInvalidationVersions) {
   EXPECT_EQ(expected_max_versions, storage.GetAllMaxVersions());
 }
 
+// Forgetting an entry should cause that entry to be deleted.
+TEST_F(InvalidatorStorageTest, Forget) {
+  InvalidatorStorage storage(&pref_service_);
+  EXPECT_TRUE(storage.GetAllMaxVersions().empty());
+
+  InvalidationVersionMap expected_max_versions;
+  expected_max_versions[kBookmarksId_] = 2;
+  expected_max_versions[kPreferencesId_] = 5;
+  storage.SetMaxVersion(kBookmarksId_, 2);
+  storage.SetMaxVersion(kPreferencesId_, 5);
+  EXPECT_EQ(expected_max_versions, storage.GetAllMaxVersions());
+
+  expected_max_versions.erase(kPreferencesId_);
+  syncer::ObjectIdSet to_forget;
+  to_forget.insert(kPreferencesId_);
+  storage.Forget(to_forget);
+  EXPECT_EQ(expected_max_versions, storage.GetAllMaxVersions());
+}
+
 // Clearing the storage should result in an empty version map.
 TEST_F(InvalidatorStorageTest, Clear) {
   InvalidatorStorage storage(&pref_service_);

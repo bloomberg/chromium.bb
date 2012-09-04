@@ -66,7 +66,7 @@ RegistrationManager::~RegistrationManager() {
   STLDeleteValues(&registration_statuses_);
 }
 
-void RegistrationManager::UpdateRegisteredIds(const ObjectIdSet& ids) {
+ObjectIdSet RegistrationManager::UpdateRegisteredIds(const ObjectIdSet& ids) {
   DCHECK(CalledOnValidThread());
 
   const ObjectIdSet& old_ids = GetRegisteredIds();
@@ -92,6 +92,8 @@ void RegistrationManager::UpdateRegisteredIds(const ObjectIdSet& ids) {
       TryRegisterId(*it, false /* is-retry */);
     }
   }
+
+  return to_unregister;
 }
 
 void RegistrationManager::MarkRegistrationLost(

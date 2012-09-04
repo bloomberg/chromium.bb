@@ -14,6 +14,12 @@ FakeInvalidationStateTracker::FakeInvalidationStateTracker() {}
 
 FakeInvalidationStateTracker::~FakeInvalidationStateTracker() {}
 
+int64 FakeInvalidationStateTracker::GetMaxVersion(
+    const invalidation::ObjectId& id) const {
+  InvalidationVersionMap::const_iterator it = versions_.find(id);
+  return (it == versions_.end()) ? kMinVersion : it->second;
+}
+
 InvalidationVersionMap
 FakeInvalidationStateTracker::GetAllMaxVersions() const {
   return versions_;
@@ -29,10 +35,10 @@ void FakeInvalidationStateTracker::SetMaxVersion(
   versions_[id] = max_version;
 }
 
-int64 FakeInvalidationStateTracker::GetMaxVersion(
-    const invalidation::ObjectId& id) const {
-  InvalidationVersionMap::const_iterator it = versions_.find(id);
-  return (it == versions_.end()) ? kMinVersion : it->second;
+void FakeInvalidationStateTracker::Forget(const ObjectIdSet& ids) {
+  for (ObjectIdSet::const_iterator it = ids.begin(); it != ids.end(); ++it) {
+    versions_.erase(*it);
+  }
 }
 
 void FakeInvalidationStateTracker::SetInvalidationState(

@@ -68,8 +68,9 @@ class RegistrationManager : public base::NonThreadSafe {
   virtual ~RegistrationManager();
 
   // Registers all object IDs included in the given set (that are not
-  // already disabled) and unregisters all other object IDs.
-  void UpdateRegisteredIds(const ObjectIdSet& ids);
+  // already disabled) and unregisters all other object IDs. The return value is
+  // the set of IDs that was unregistered.
+  ObjectIdSet UpdateRegisteredIds(const ObjectIdSet& ids);
 
   // Marks the registration for the |id| lost and re-registers
   // it (unless it's disabled).

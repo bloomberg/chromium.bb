@@ -238,13 +238,19 @@ TEST_F(RegistrationManagerTest, UpdateRegisteredIds) {
   EXPECT_TRUE(fake_registration_manager_.GetRegisteredIdsForTest().empty());
   EXPECT_TRUE(fake_invalidation_client_.GetRegisteredIdsForTest().empty());
 
-  fake_registration_manager_.UpdateRegisteredIds(ids);
+  ObjectIdSet expected_unregistered_ids;
+
+  ObjectIdSet unregistered_ids =
+      fake_registration_manager_.UpdateRegisteredIds(ids);
+  EXPECT_EQ(expected_unregistered_ids, unregistered_ids);
   EXPECT_EQ(ids, fake_registration_manager_.GetRegisteredIdsForTest());
   EXPECT_EQ(ids, fake_invalidation_client_.GetRegisteredIdsForTest());
 
   ids.insert(GetIdForIndex(kObjectIdsCount - 1));
   ids.erase(GetIdForIndex(kObjectIdsCount - 2));
-  fake_registration_manager_.UpdateRegisteredIds(ids);
+  unregistered_ids = fake_registration_manager_.UpdateRegisteredIds(ids);
+  expected_unregistered_ids.insert(GetIdForIndex(kObjectIdsCount - 2));
+  EXPECT_EQ(expected_unregistered_ids, unregistered_ids);
   EXPECT_EQ(ids, fake_registration_manager_.GetRegisteredIdsForTest());
   EXPECT_EQ(ids, fake_invalidation_client_.GetRegisteredIdsForTest());
 }

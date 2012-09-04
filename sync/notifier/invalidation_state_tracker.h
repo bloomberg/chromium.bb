@@ -29,6 +29,8 @@ class InvalidationStateTracker {
   // version for |model_type|.
   virtual void SetMaxVersion(const invalidation::ObjectId& id,
                              int64 max_version) = 0;
+  // Removes all state tracked for |ids|.
+  virtual void Forget(const ObjectIdSet& ids) = 0;
 
   // Used by InvalidationClient for persistence. |state| is opaque data we can
   // present back to the client (e.g. after a restart) for it to bootstrap

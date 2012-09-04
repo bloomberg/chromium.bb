@@ -45,6 +45,7 @@ class InvalidatorStorage : public base::SupportsWeakPtr<InvalidatorStorage>,
       OVERRIDE;
   virtual void SetMaxVersion(const invalidation::ObjectId& id,
                              int64 max_version) OVERRIDE;
+  virtual void Forget(const syncer::ObjectIdSet& ids) OVERRIDE;
   // TODO(tim): These are not yet used. Bug 124140.
   virtual void SetInvalidationState(const std::string& state) OVERRIDE;
   virtual std::string GetInvalidationState() const OVERRIDE;

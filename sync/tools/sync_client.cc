@@ -83,6 +83,12 @@ class NullInvalidationStateTracker
             << ObjectIdToString(id) << " to " << max_invalidation_version;
   }
 
+  virtual void Forget(const ObjectIdSet& ids) OVERRIDE {
+    for (ObjectIdSet::const_iterator it = ids.begin(); it != ids.end(); ++it) {
+      VLOG(1) << "Forgetting invalidation state for " << ObjectIdToString(*it);
+    }
+  }
+
   virtual std::string GetInvalidationState() const OVERRIDE {
     return std::string();
   }

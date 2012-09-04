@@ -109,9 +109,8 @@ void ChromeInvalidationClient::UpdateRegisteredIds(const ObjectIdSet& ids) {
   // working XMPP connection (as observed by us), so check it instead
   // of GetState() (see http://crbug.com/139424).
   if (ticl_state_ == NO_NOTIFICATION_ERROR && registration_manager_.get()) {
-    registration_manager_->UpdateRegisteredIds(registered_ids_);
+    DoRegistrationUpdate();
   }
-  // TODO(akalin): Clear invalidation versions for unregistered types.
 }
 
 void ChromeInvalidationClient::Ready(
@@ -120,7 +119,7 @@ void ChromeInvalidationClient::Ready(
   DCHECK_EQ(client, invalidation_client_.get());
   ticl_state_ = NO_NOTIFICATION_ERROR;
   EmitStateChange();
-  registration_manager_->UpdateRegisteredIds(registered_ids_);
+  DoRegistrationUpdate();
 }
 
 void ChromeInvalidationClient::Invalidate(
@@ -244,10 +243,14 @@ void ChromeInvalidationClient::InformRegistrationFailure(
     // |registration_manager_| handle the registration backoff policy.
     registration_manager_->MarkRegistrationLost(object_id);
   } else {
-    // Non-transient failures are permanent, so block any future
-    // registration requests for |model_type|.  (This happens if the
-    // server doesn't recognize the data type, which could happen for
-    // brand-new data types.)
+    // Non-transient failures require an action to resolve. This could happen
+    // because:
+    // - the server doesn't yet recognize the data type, which could happen for
+    //   brand-new data types.
+    // - the user has changed his password and hasn't updated it yet locally.
+    // Either way, block future registration attempts for |object_id|. However,
+    // we don't forget any saved invalidation state since we may use it once the
+    // error is addressed.
     registration_manager_->DisableId(object_id);
   }
 }
@@ -283,6 +286,14 @@ void ChromeInvalidationClient::WriteState(const std::string& state) {
   DVLOG(1) << "WriteState";
   invalidation_state_tracker_.Call(
       FROM_HERE, &InvalidationStateTracker::SetInvalidationState, state);
+}
+
+void ChromeInvalidationClient::DoRegistrationUpdate() {
+  DCHECK(CalledOnValidThread());
+  const ObjectIdSet& unregistered_ids =
+      registration_manager_->UpdateRegisteredIds(registered_ids_);
+  invalidation_state_tracker_.Call(
+      FROM_HERE, &InvalidationStateTracker::Forget, unregistered_ids);
 }
 
 void ChromeInvalidationClient::StopForTest() {

@@ -130,6 +130,8 @@ class ChromeInvalidationClient
 
   void StopForTest();
 
+  void DoRegistrationUpdate();
+
  private:
   void Stop();
 
