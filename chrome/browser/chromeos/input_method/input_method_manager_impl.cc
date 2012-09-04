@@ -248,7 +248,17 @@ void InputMethodManagerImpl::ChangeInputMethodInternal(
     FOR_EACH_OBSERVER(InputMethodManager::Observer,
                       observers_,
                       InputMethodPropertyChanged(this));
-    ibus_controller_->Reset();
+    // Hack for fixing http://crosbug.com/p/12798
+    // We should notify IME switching to ibus-daemon, otherwise
+    // IBusPreeditFocusMode does not work. To achieve it, change engine to
+    // itself if the next engine is XKB layout.
+    const std::string current_input_method_id = current_input_method_.id();
+    if (current_input_method_id.empty() ||
+        InputMethodUtil::IsKeyboardLayout(current_input_method_id)) {
+      ibus_controller_->Reset();
+    } else {
+      ibus_controller_->ChangeInputMethod(current_input_method_id);
+    }
   } else {
     ibus_controller_->ChangeInputMethod(input_method_id_to_switch);
   }

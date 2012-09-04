@@ -984,9 +984,13 @@ TEST_F(InputMethodManagerImplTest, TestReset) {
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ(1, controller_->reset_count_);
   manager_->ChangeInputMethod("mozc");
+  EXPECT_EQ(1, controller_->change_input_method_count_);
+  EXPECT_EQ("mozc", controller_->change_input_method_id_);
   EXPECT_EQ(1, controller_->reset_count_);
   manager_->ChangeInputMethod("xkb:us::eng");
-  EXPECT_EQ(2, controller_->reset_count_);
+  EXPECT_EQ(2, controller_->change_input_method_count_);
+  EXPECT_EQ("mozc", controller_->change_input_method_id_);
+  EXPECT_EQ(1, controller_->reset_count_);
 }
 
 }  // namespace input_method
