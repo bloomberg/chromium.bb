@@ -250,7 +250,7 @@ handle_global(struct wl_display *_display, uint32_t id,
 			wl_display_bind(display->display,
 					id, &wl_compositor_interface);
 	} else if (strcmp(interface, "wl_seat") == 0) {
-		input = malloc(sizeof *input);
+		input = calloc(1, sizeof *input);
 		input->seat = wl_display_bind(display->display, id,
 					      &wl_seat_interface);
 		input->pointer_focus = NULL;
