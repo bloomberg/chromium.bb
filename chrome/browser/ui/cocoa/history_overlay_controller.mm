@@ -92,6 +92,11 @@ const CGFloat kGestureCompleteProgress = 0.3;
   return self;
 }
 
+- (void)dealloc {
+  [self.view removeFromSuperview];
+  [super dealloc];
+}
+
 - (void)loadView {
   const gfx::Image& image =
       ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
@@ -164,7 +169,9 @@ const CGFloat kGestureCompleteProgress = 0.3;
 }
 
 - (void)animationDidStop:(CAAnimation*)theAnimation finished:(BOOL)finished {
-  [self.view removeFromSuperview];
+  // Destroy the CAAnimation and its strong reference to its delegate (this
+  // class).
+  [self.view setAnimations:nil];
 }
 
 @end

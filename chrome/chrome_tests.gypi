@@ -1775,6 +1775,7 @@
         'browser/ui/cocoa/gradient_button_cell_unittest.mm',
         'browser/ui/cocoa/history_menu_bridge_unittest.mm',
         'browser/ui/cocoa/history_menu_cocoa_controller_unittest.mm',
+        'browser/ui/cocoa/history_overlay_controller_unittest.mm',
         'browser/ui/cocoa/hover_image_button_unittest.mm',
         'browser/ui/cocoa/hung_renderer_controller_unittest.mm',
         'browser/ui/cocoa/hyperlink_button_cell_unittest.mm',

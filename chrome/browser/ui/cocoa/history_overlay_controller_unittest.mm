@@ -1,0 +1,89 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#import "chrome/browser/ui/cocoa/history_overlay_controller.h"
+
+#import <QuartzCore/QuartzCore.h>
+
+#include "base/memory/ref_counted.h"
+#include "base/message_pump_mac.h"
+#import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#import "third_party/ocmock/gtest_support.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
+
+class HistoryOverlayControllerTest : public CocoaTest {
+ public:
+  void SetUp() {
+    CocoaTest::SetUp();
+
+    // The overlay controller shows the panel in the superview of a given
+    // view, so create the given view.
+    test_view_.reset([[NSView alloc] initWithFrame:NSMakeRect(10, 10, 10, 10)]);
+    [[test_window() contentView] addSubview:test_view_];
+  }
+
+  NSView* test_view() {
+    return test_view_;
+  }
+
+ private:
+  scoped_nsobject<NSView> test_view_;
+};
+
+// Tests that the controller's view gets removed from the hierarchy when the
+// controller is deallocated.
+TEST_F(HistoryOverlayControllerTest, RemovedViewWhenDeallocated) {
+  NSView* content_view = [test_window() contentView];
+  EXPECT_EQ(1u, [[content_view subviews] count]);
+
+  scoped_nsobject<HistoryOverlayController> controller(
+      [[HistoryOverlayController alloc] initForMode:kHistoryOverlayModeBack]);
+  [controller showPanelForView:test_view()];
+  EXPECT_EQ(2u, [[content_view subviews] count]);
+
+  controller.reset();
+  EXPECT_EQ(1u, [[content_view subviews] count]);
+}
+
+// Tests that when the controller is |-dismiss|ed, the animation runs and then
+// is removed when the animation completes.
+TEST_F(HistoryOverlayControllerTest, DismissClearsAnimations) {
+  scoped_nsobject<HistoryOverlayController> controller(
+      [[HistoryOverlayController alloc] initForMode:kHistoryOverlayModeBack]);
+  [controller showPanelForView:test_view()];
+
+  scoped_refptr<base::MessagePumpNSRunLoop> message_pump(
+      new base::MessagePumpNSRunLoop);
+
+  id mock = [OCMockObject partialMockForObject:controller];
+  [mock setExpectationOrderMatters:YES];
+  [[[mock expect] andForwardToRealObject] dismiss];
+
+  // Called after |-animationDidStop:finished:|.
+  void (^quit_loop)(NSInvocation* invocation) = ^(NSInvocation* invocation) {
+      message_pump->Quit();
+  };
+  // Set up the mock to first forward to the real implementation and then call
+  // the above block to quit the run loop.
+  [[[[mock expect] andForwardToRealObject] andDo:quit_loop]
+      animationDidStop:[OCMArg isNotNil] finished:YES];
+
+  // CAAnimations must be committed within a run loop. It is not sufficient
+  // to commit them and activate the loop after the fact. Schedule a block to
+  // dismiss the controller from within the run loop, which begins the
+  // animation.
+  CFRunLoopPerformBlock(CFRunLoopGetCurrent(),
+                        kCFRunLoopDefaultMode,
+                        ^(void) {
+      [mock dismiss];
+  });
+
+  // Run the loop, which will dismiss the overlay.
+  message_pump->Run(NULL);
+
+  EXPECT_OCMOCK_VERIFY(mock);
+
+  // After the animation runs, there should be no more animations.
+  EXPECT_FALSE([[controller view] animations]);
+}
