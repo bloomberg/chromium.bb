@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/webstore_private/webstore_private_api.h"
 
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_vector.h"
@@ -477,7 +478,8 @@ bool SetStoreLoginFunction::RunImpl() {
 GetWebGLStatusFunction::GetWebGLStatusFunction() {
   feature_checker_ = new GPUFeatureChecker(
       content::GPU_FEATURE_TYPE_WEBGL,
-      base::Bind(&GetWebGLStatusFunction::OnFeatureCheck, this));
+      base::Bind(&GetWebGLStatusFunction::OnFeatureCheck,
+          base::Unretained(this)));
 }
 
 GetWebGLStatusFunction::~GetWebGLStatusFunction() {}
