@@ -20,14 +20,14 @@ class TabRuntime(object):
   def _OnClose(self):
     pass
 
-  def Execute(self, expr):
+  def Execute(self, expr, timeout=60):
     """Executes expr
 
     If the expression failed to evaluate, EvaluateException will be raised.
     """
-    self.Evaluate(expr + "; 0;");
+    self.Evaluate(expr + "; 0;", timeout=60);
 
-  def Evaluate(self, expr):
+  def Evaluate(self, expr, timeout=60):
     """Evalutes expr and returns the JSONized result.
 
     Consider using Execute for cases where the result of the expression is not
@@ -46,7 +46,7 @@ class TabRuntime(object):
         "returnByValue": True
         }
       }
-    res = self._inspector_backend.SyncRequest(request)
+    res = self._inspector_backend.SyncRequest(request, timeout)
     if "error" in res:
       raise EvaluateException(res["error"]["message"])
 

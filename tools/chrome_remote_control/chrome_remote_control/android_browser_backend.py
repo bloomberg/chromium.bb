@@ -18,9 +18,9 @@ class AndroidBrowserBackend(browser_backend.BrowserBackend):
   """The backend for controlling a browser instance running on Android.
   """
   def __init__(self, type, options, adb,
-               package, cmdline_file, activity,
+               package, is_content_shell, cmdline_file, activity,
                devtools_remote_port):
-    super(AndroidBrowserBackend, self).__init__()
+    super(AndroidBrowserBackend, self).__init__(is_content_shell)
     # Initialize fields so that an explosion during init doesn't break in Close.
     self._options = options
     self._adb = adb
@@ -30,17 +30,32 @@ class AndroidBrowserBackend(browser_backend.BrowserBackend):
     self._port = 9222
     self._devtools_remote_port = devtools_remote_port
 
-    args = [type,
-            "--disable-fre",
-            "--remote-debugging-port=%i" % 9222]
-    if not options.dont_override_profile:
-      logging.warning("Overriding of profile is not yet supported on android.")
-    args.extend(options.extra_browser_args)
+    # Beginnings of a basic command line.
+    if is_content_shell:
+      pseudo_exec_name = "content_shell"
+    else:
+      pseudo_exec_name = "chrome"
+    args = [pseudo_exec_name,
+            "--disable-fre", "--no-first-run"]
 
     # Kill old broser.
     self._adb.KillAll(self._package)
     self._adb.KillAll('forawrder')
     self._adb.Forward('tcp:9222', self._devtools_remote_port)
+
+    # Set up temporary dir if needed. As far as we can tell, content_shell
+    # doesn't have persisted data, so --user-data-dir isn't needed.
+    if not is_content_shell and not options.dont_override_profile:
+      self._tmpdir = "/sdcard/chrome_remote_control_data"
+      self._adb.RunShellCommand('rm -r %s' %  self._tmpdir)
+      args.append("--user-data-dir=%s" % self._tmpdir)
+
+    # Set up the command line.
+    args.extend(options.extra_browser_args)
+    with tempfile.NamedTemporaryFile() as f:
+      f.write(" ".join(args))
+      f.flush()
+      self._adb.Push(f.name, cmdline_file)
 
     # Start it up!
     self._adb.StartActivity(self._package,

@@ -6,7 +6,7 @@ import os
 import chrome_remote_control
 import scroll_results
 
-def Scroll(tab):
+def Scroll(page, tab):
   scroll_js_path = os.path.join(os.path.dirname(__file__), 'scroll.js')
   scroll_js = open(scroll_js_path, 'r').read()
 
@@ -22,7 +22,7 @@ def Scroll(tab):
 
   # Poll for scroll result.
   chrome_remote_control.WaitFor(
-      lambda: tab.runtime.Evaluate('window.__scrollTestResult'))
+      lambda: tab.runtime.Evaluate('window.__scrollTestResult'), 60)
 
   # Get scroll results.
   url = tab.runtime.Evaluate('document.location.href')

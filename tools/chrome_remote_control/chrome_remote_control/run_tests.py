@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import fnmatch
+import logging
 import os
 import sys
 import traceback
@@ -15,7 +16,6 @@ def Discover(start_dir, pattern = "test*.py", top_level_dir = None):
                                                pattern,
                                                top_level_dir)
 
-  # TODO(nduca): Do something with top_level_dir non-None
   modules = []
   for (dirpath, dirnames, filenames) in os.walk(start_dir):
     for filename in filenames:
@@ -28,7 +28,9 @@ def Discover(start_dir, pattern = "test*.py", top_level_dir = None):
       if filename.startswith('.') or filename.startswith('_'):
         continue
       name,ext = os.path.splitext(filename)
-      fqn = dirpath.replace('/', '.') + '.' + name
+
+      relpath = os.path.relpath(dirpath, top_level_dir)
+      fqn = relpath.replace('/', '.') + '.' + name
 
       # load the module
       try:
@@ -67,43 +69,53 @@ def FilterSuite(suite, predicate):
 
   return new_suite
 
-def DiscoverAndRunTests(args):
-  dir_name = os.path.join(os.path.dirname(__file__), "..")
-  olddir = os.getcwd()
-  try:
-    os.chdir(dir_name)
-    suite = Discover("chrome_remote_control", "*_unittest.py", ".")
+def DiscoverAndRunTests(dir_name, args, top_level_dir):
+  suite = Discover(dir_name, "*_unittest.py", top_level_dir)
 
-    def IsTestSelected(test):
-      if len(args) == 0:
+  def IsTestSelected(test):
+    if len(args) == 0:
+      return True
+    for name in args:
+      if str(test).find(name) != -1:
         return True
-      for name in args:
-        if str(test).find(name) != -1:
-          return True
-      return False
+    return False
 
-    filtered_suite = FilterSuite(suite, IsTestSelected)
-    runner = unittest.TextTestRunner(verbosity = 2)
-    test_result = runner.run(filtered_suite)
-    return len(test_result.errors) + len(test_result.failures)
+  filtered_suite = FilterSuite(suite, IsTestSelected)
+  runner = unittest.TextTestRunner(verbosity = 2)
+  test_result = runner.run(filtered_suite)
+  return len(test_result.errors) + len(test_result.failures)
 
-  finally:
-    os.chdir(olddir)
-  return 1
-
-def Main(args):
+def Main(args, start_dir, top_level_dir):
   """Unit test suite that collects all test cases for chrome_remote_control."""
   default_options = browser_options.BrowserOptions()
+  default_options.browser_type = 'any'
+
   parser = default_options.CreateParser("run_tests [options] [test names]")
+  parser.add_option(
+      '-v', '--verbose', action='count', dest="verbosity",
+      help='Increase verbosity level (repeat as needed)')
+  parser.add_option('--repeat-count', dest='run_test_repeat_count',
+                    type='int', default=1,
+                    help="Repeats each a provided number of times.")
+
   _, args = parser.parse_args(args)
 
+  if default_options.verbosity >= 2:
+    logging.basicConfig(level=logging.DEBUG)
+  elif default_options.verbosity:
+    logging.basicConfig(level=logging.INFO)
+  else:
+    logging.basicConfig(level=logging.WARNING)
+
   browser_options.options_for_unittests = default_options
+  olddir = os.getcwd()
+  num_errors = 0
   try:
-    DiscoverAndRunTests(args)
+    os.chdir(top_level_dir)
+    for i in range(default_options.run_test_repeat_count):
+      num_errors += DiscoverAndRunTests(start_dir, args, top_level_dir)
   finally:
+    os.chdir(olddir)
     browser_options.options_for_unittests = None
 
-
-
-if __name__ == "__main__":
-  sys.exit(Main(sys.argv[1:]))
+  return num_errors

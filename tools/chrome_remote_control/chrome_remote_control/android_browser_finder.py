@@ -6,8 +6,8 @@ import sys as real_sys
 import subprocess as real_subprocess
 import logging
 
-import android_browser_backend
-import android_commands as real_android_commands
+import chrome_remote_control.android_browser_backend as android_browser_backend
+import chrome_remote_control.adb_commands as real_adb_commands
 import browser
 import possible_browser
 
@@ -15,7 +15,6 @@ import possible_browser
 """Finds android browsers that can be controlled by chrome_remote_control."""
 
 ALL_BROWSER_TYPES = 'android-content-shell'
-DEFAULT_BROWSER_TYPES_TO_RUN = 'android-content-shell'
 
 # Commmand line
 #  content-shell: /data/local/tmp/content-shell-command-line
@@ -40,7 +39,7 @@ CHROME_DEVTOOLS_REMOTE_PORT = 'localabstract:chrome_devtools-remote'
 
 CONTENT_SHELL_PACKAGE = 'org.chromium.content_shell'
 CONTENT_SHELL_ACTIVITY = '.ContentShellActivity'
-CONTENT_SHELL_COMMAND_LINE = '/data/local/chrome-command-line'
+CONTENT_SHELL_COMMAND_LINE = '/data/local/tmp/content-shell-command-line'
 CONTENT_SHELL_DEVTOOLS_REMOTE_PORT = (
     'localabstract:content_shell_devtools_remote')
 
@@ -67,8 +66,10 @@ class PossibleAndroidBrowser(possible_browser.PossibleBrowser):
 
 def FindAllAvailableBrowsers(options,
                              subprocess = real_subprocess,
-                             android_commands = real_android_commands):
+                             adb_commands = real_adb_commands):
   """Finds all the desktop browsers available on this machine."""
+  if not adb_commands.IsAndroidSupported():
+    return []
   browsers = []
 
   # See if adb even works.
@@ -82,7 +83,7 @@ def FindAllAvailableBrowsers(options,
 
   device = None
   if not options.android_device:
-    devices = android_commands.GetAttachedDevices()
+    devices = adb_commands.GetAttachedDevices()
   else:
     devices = []
 
@@ -97,13 +98,13 @@ def FindAllAvailableBrowsers(options,
 
   device = devices[0]
 
-  adb = android_commands.AndroidCommands(device=device)
+  adb = adb_commands.ADBCommands(device=device)
 
   packages = adb.RunShellCommand('pm list packages')
   if 'package:' + CONTENT_SHELL_PACKAGE in packages:
     b = PossibleAndroidBrowser('android-content-shell',
                                options, adb,
-                               CONTENT_SHELL_PACKAGE,
+                               CONTENT_SHELL_PACKAGE, True,
                                CONTENT_SHELL_COMMAND_LINE,
                                CONTENT_SHELL_ACTIVITY,
                                CONTENT_SHELL_DEVTOOLS_REMOTE_PORT)

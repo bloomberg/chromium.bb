@@ -1,6 +1,8 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import logging
+
 import android_browser_finder
 import desktop_browser_finder
 
@@ -10,19 +12,42 @@ ALL_BROWSER_TYPES = (
     desktop_browser_finder.ALL_BROWSER_TYPES + "," +
     android_browser_finder.ALL_BROWSER_TYPES)
 
-DEFAULT_BROWSER_TYPES_TO_RUN = (
-    desktop_browser_finder.DEFAULT_BROWSER_TYPES_TO_RUN + "," +
-    android_browser_finder.DEFAULT_BROWSER_TYPES_TO_RUN)
+class BrowserTypeRequiredException(Exception):
+  pass
 
-def FindBestPossibleBrowser(options):
+def FindBrowser(options):
   """Finds the best PossibleBrowser object to run given the provided
   BrowserOptions object. The returned possiblity object can then be used to
   connect to and control the located browser."""
+  if options.browser_type == 'exact' and options.browser_executable == None:
+    raise Exception("browser_type=exact requires browser_executable be set.")
 
-  browsers = FindAllPossibleBrowsers(options)
-  if len(browsers):
-    return browsers[0]
-  return None
+  if options.browser_type != 'exact' and options.browser_executable != None:
+    raise Exception("browser_executable requires browser_executable=exact.")
+
+  if options.browser_type == None:
+    raise BrowserTypeRequiredException("browser_type must be specified")
+
+  browsers = []
+  browsers.extend(desktop_browser_finder.FindAllAvailableBrowsers(options))
+  browsers.extend(android_browser_finder.FindAllAvailableBrowsers(options))
+
+  if options.browser_type == 'any':
+    if len(browsers) >= 1:
+      return browsers[0]
+    else:
+      return None
+
+  matching_browsers = [b for b in browsers if b.type == options.browser_type]
+
+  if len(matching_browsers) == 1:
+    return matching_browsers[0]
+  elif len(matching_browsers) > 1:
+    logging.warning('Multiple browsers of the same type found: %s' % (
+                    repr(matching_browsers)))
+    return matching_browsers[0]
+  else:
+    return None
 
 def GetAllAvailableBrowserTypes(options):
   """Returns an array of browser types supported on this system."""
@@ -36,10 +61,6 @@ def FindAllPossibleBrowsers(options):
   """Finds all browsers that can be created given the options. Returns an array
   of PossibleBrowser objects, sorted and filtered by
   options.browser_types_to_use."""
-  browsers = []
-  browsers.extend(desktop_browser_finder.FindAllAvailableBrowsers(options))
-  browsers.extend(android_browser_finder.FindAllAvailableBrowsers(options))
-
   selected_browsers = [browser
                        for browser in browsers
                        if browser.type in options.browser_types_to_use]

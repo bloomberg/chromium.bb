@@ -29,7 +29,7 @@ def Main(args):
       urls.append(url)
 
   options.extra_browser_args.append("--enable-gpu-benchmarking")
-  browser_to_create = chrome_remote_control.FindBestPossibleBrowser(options)
+  browser_to_create = chrome_remote_control.FindBrowser(options)
   if not browser_to_create:
     sys.stderr.write("No browser found! Supported types: %s" %
         chrome_remote_control.GetAllAvailableBrowserTypes())
@@ -37,7 +37,8 @@ def Main(args):
   with browser_to_create.Create() as b:
     with b.ConnectToNthTab(0) as tab:
       # Check browser for benchmark API. Can only be done on non-chrome URLs.
-      tab.BeginToLoadUrl("http://www.google.com")
+      tab.page.Navigate("http://www.google.com")
+      import time; time.sleep(2)
       tab.WaitForDocumentReadyStateToBeComplete()
       if tab.runtime.Evaluate("window.chrome.gpuBenchmarking === undefined"):
         print "Browser does not support gpu benchmarks API."
@@ -63,7 +64,7 @@ def Main(args):
         print ",".join(cols)
 
       for u in urls:
-        tab.BeginToLoadUrl(u)
+        tab.page.Navigate(u)
         tab.WaitForDocumentReadyStateToBeInteractiveOrBetter()
         results = tab.runtime.Evaluate(
             "window.chrome.gpuBenchmarking.runRenderingBenchmarks();")

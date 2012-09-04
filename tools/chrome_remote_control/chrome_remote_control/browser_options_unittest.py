@@ -6,20 +6,47 @@ import unittest
 import browser_options
 
 class BrowserOptionsTest(unittest.TestCase):
-  def testDirectMutability(self):
+  def testDefaults(self):
     options = browser_options.BrowserOptions()
-    # Should be possible to add new fields to the options object.
-    options.x = 3
-    self.assertEquals(3, options.x)
+    parser = options.CreateParser()
+    parser.add_option('-x', action='store', default=3)
+    parser.parse_args(['--browser', 'any'])
+    self.assertEquals(options.x, 3)
 
-    # Unset fields on the options object should default to None.
-    self.assertEquals(None, options.y)
+  def testDefaultsPlusOverride(self):
+    options = browser_options.BrowserOptions()
+    parser = options.CreateParser()
+    parser.add_option('-x', action='store', default=3)
+    parser.parse_args(['--browser', 'any', '-x', 10])
+    self.assertEquals(options.x, 10)
+
+  def testDefaultsDontClobberPresetValue(self):
+    options = browser_options.BrowserOptions()
+    setattr(options, 'x', 7)
+    parser = options.CreateParser()
+    parser.add_option('-x', action='store', default=3)
+    parser.parse_args(['--browser', 'any'])
+    self.assertEquals(options.x, 7)
+
+  def testCount0(self):
+    options = browser_options.BrowserOptions()
+    parser = options.CreateParser()
+    parser.add_option('-v', action='count', dest='v')
+    parser.parse_args(['--browser', 'any'])
+    self.assertEquals(options.v, None)
+
+  def testCount2(self):
+    options = browser_options.BrowserOptions()
+    parser = options.CreateParser()
+    parser.add_option('-v', action='count', dest='v')
+    parser.parse_args(['--browser', 'any', '-vv'])
+    self.assertEquals(options.v, 2)
 
   def testOptparseMutabilityWhenSpecified(self):
     options = browser_options.BrowserOptions()
     parser = options.CreateParser()
-    parser.add_option("-v", dest="verbosity", action="store_true")
-    options_ret, args = parser.parse_args(["-v"])
+    parser.add_option('-v', dest='verbosity', action='store_true')
+    options_ret, args = parser.parse_args(['--browser', 'any', '-v'])
     self.assertEquals(options_ret, options)
     self.assertTrue(options.verbosity)
 
@@ -27,7 +54,7 @@ class BrowserOptionsTest(unittest.TestCase):
     options = browser_options.BrowserOptions()
 
     parser = options.CreateParser()
-    parser.add_option("-v", dest="verbosity", action="store_true")
-    options_ret, args = parser.parse_args([])
+    parser.add_option('-v', dest='verbosity', action='store_true')
+    options_ret, args = parser.parse_args(['--browser', 'any'])
     self.assertEquals(options_ret, options)
     self.assertFalse(options.verbosity)

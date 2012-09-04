@@ -2,9 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import json
+import logging
+import socket
 import time
 import websocket
-import socket
 
 class InspectorException(Exception):
   pass
@@ -15,7 +16,6 @@ class InspectorBackend(object):
     self._descriptor = descriptor
     self._socket = websocket.create_connection(
         descriptor["webSocketDebuggerUrl"]);
-    self._socket.settimeout(0.5)
     self._next_request_id = 0
     self._domain_handlers = {}
 
@@ -28,19 +28,44 @@ class InspectorBackend(object):
     self._socket = None
     self._backend = None
 
-  def SyncRequest(self, req):
+  def DispatchNotifications(self):
+    try:
+      data = self._socket.recv()
+    except socket.error:
+      return None
+
+    res = json.loads(data)
+    logging.debug("got [%s]", data)
+    if "method" not in res:
+      return
+
+    mname = res["method"]
+    dot_pos = mname.find(".")
+    domain_name = mname[:dot_pos]
+    if domain_name in self._domain_handlers:
+      try:
+        self._domain_handlers[domain_name][0](res)
+      except:
+        import traceback
+        traceback.print_exc()
+
+  def SendAndIgnoreResponse(self, req):
     req["id"] = self._next_request_id
     self._next_request_id += 1
     self._socket.send(json.dumps(req))
+
+  def SyncRequest(self, req, timeout=60):
+    # TODO(nduca): Listen to the timeout argument
+    # self._socket.settimeout(timeout)
+    req["id"] = self._next_request_id
+    self._next_request_id += 1
+    self._socket.send(json.dumps(req))
+
     while True:
-      try:
-        data = self._socket.recv()
-      except socket.error:
-        req["id"] = self._next_request_id
-        self._next_request_id += 1
-        self._socket.send(json.dumps(req))
-        continue
+      data = self._socket.recv()
+
       res = json.loads(data)
+      logging.debug("got [%s]", data)
       if "method" in res:
         mname = res["method"]
         dot_pos = mname.find(".")
@@ -54,6 +79,7 @@ class InspectorBackend(object):
         continue
 
       if res["id"] != req["id"]:
+        logging.debug("Dropped reply: %s", json.dumps(res))
         continue
       return res
 
