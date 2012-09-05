@@ -998,11 +998,22 @@
   fun:media::PipelineIntegrationTest_MediaSource_ConfigChange_WebM_Test::TestBody
 }
 {
-  bug_146322
+  bug_146322_a
   ThreadSanitizer:Race
   ...
   fun:sql::Connection::StatementRefCreated
   fun:sql::Connection::StatementRef::StatementRef
   fun:sql::Connection::GetUniqueStatement
+  fun:history::*
+}
+{
+  bug_146322_b
+  ThreadSanitizer:Race
+  ...
+  fun:sql::Connection::StatementRefDeleted
+  fun:sql::Connection::StatementRef::~StatementRef
+  fun:base::RefCounted::Release
+  fun:scoped_refptr::~scoped_refptr
+  fun:sql::Statement::~Statement
   fun:history::InMemoryURLIndexTest::SetUp
 }
