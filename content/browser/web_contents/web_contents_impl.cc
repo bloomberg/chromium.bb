@@ -677,6 +677,10 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER(ViewHostMsg_RegisterProtocolHandler,
                         OnRegisterProtocolHandler)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Find_Reply, OnFindReply)
+#if defined(OS_ANDROID)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_FindMatchRects_Reply,
+                        OnFindMatchRectsReply)
+#endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_CrashedPlugin, OnCrashedPlugin)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AppCacheAccessed, OnAppCacheAccessed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenColorChooser, OnOpenColorChooser)
@@ -2199,6 +2203,16 @@ void WebContentsImpl::OnFindReply(int request_id,
                          active_match_ordinal, final_update);
   }
 }
+
+#if defined(OS_ANDROID)
+void WebContentsImpl::OnFindMatchRectsReply(
+    int version,
+    const std::vector<gfx::RectF>& rects,
+    const gfx::RectF& active_rect) {
+  if (delegate_)
+    delegate_->FindMatchRectsReply(this, version, rects, active_rect);
+}
+#endif
 
 void WebContentsImpl::OnCrashedPlugin(const FilePath& plugin_path) {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,

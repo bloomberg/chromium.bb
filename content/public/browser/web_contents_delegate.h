@@ -18,6 +18,7 @@
 #include "content/public/common/window_container_type.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/rect_f.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class FilePath;
@@ -393,6 +394,15 @@ class CONTENT_EXPORT WebContentsDelegate {
                          const gfx::Rect& selection_rect,
                          int active_match_ordinal,
                          bool final_update) {}
+
+#if defined(OS_ANDROID)
+  // Provides the rects of the current find-in-page matches.
+  // Sent as a reply to RequestFindMatchRects.
+  virtual void FindMatchRectsReply(WebContents* web_contents,
+                                   int version,
+                                   const std::vector<gfx::RectF>& rects,
+                                   const gfx::RectF& active_rect) {}
+#endif
 
   // Invoked when the preferred size of the contents has been changed.
   virtual void UpdatePreferredSize(WebContents* web_contents,

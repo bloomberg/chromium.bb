@@ -206,6 +206,9 @@
 #include "content/renderer/android/phone_number_detector.h"
 #include "content/renderer/media/stream_texture_factory_impl_android.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebHitTestResult.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFloatPoint.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFloatRect.h"
+#include "ui/gfx/rect_f.h"
 #include "webkit/media/android/webmediaplayer_android.h"
 #include "webkit/media/android/webmediaplayer_manager_android.h"
 #elif defined(OS_WIN)
@@ -330,6 +333,8 @@ using content::ContentDetector;
 using content::EmailDetector;
 using content::PhoneNumberDetector;
 using WebKit::WebContentDetectionResult;
+using WebKit::WebFloatPoint;
+using WebKit::WebFloatRect;
 using WebKit::WebHitTestResult;
 #endif
 
@@ -959,6 +964,12 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_ExecuteEditCommand, OnExecuteEditCommand)
     IPC_MESSAGE_HANDLER(ViewMsg_Find, OnFind)
     IPC_MESSAGE_HANDLER(ViewMsg_StopFinding, OnStopFinding)
+#if defined(OS_ANDROID)
+    IPC_MESSAGE_HANDLER(ViewMsg_ActivateNearestFindResult,
+                        OnActivateNearestFindResult)
+    IPC_MESSAGE_HANDLER(ViewMsg_FindMatchRects,
+                        OnFindMatchRects)
+#endif
     IPC_MESSAGE_HANDLER(ViewMsg_Zoom, OnZoom)
     IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevel, OnSetZoomLevel)
     IPC_MESSAGE_HANDLER(ViewMsg_ZoomFactor, OnZoomFactor)
@@ -4647,6 +4658,56 @@ void RenderViewImpl::OnStopFinding(content::StopFindAction action) {
     }
   }
 }
+
+#if defined(OS_ANDROID)
+void RenderViewImpl::OnActivateNearestFindResult(int request_id,
+                                                 float x, float y) {
+  if (!webview())
+      return;
+
+  WebFrame* main_frame = webview()->mainFrame();
+  WebRect selection_rect;
+  int ordinal = main_frame->selectNearestFindMatch(WebFloatPoint(x, y),
+                                                   &selection_rect);
+  if (ordinal == -1) {
+    // Something went wrong, so send a no-op reply (force the main_frame to
+    // report the current match count) in case the host is waiting for a
+    // response due to rate-limiting).
+    main_frame->increaseMatchCount(0, request_id);
+    return;
+  }
+
+  Send(new ViewHostMsg_Find_Reply(routing_id_,
+                                  request_id,
+                                  -1 /* number_of_matches */,
+                                  selection_rect,
+                                  ordinal,
+                                  true /* final_update */));
+}
+
+void RenderViewImpl::OnFindMatchRects(int current_version) {
+  if (!webview())
+      return;
+
+  WebFrame* main_frame = webview()->mainFrame();
+  std::vector<gfx::RectF> match_rects;
+
+  int rects_version = main_frame->findMatchMarkersVersion();
+  if (current_version != rects_version) {
+    WebVector<WebFloatRect> web_match_rects;
+    main_frame->findMatchRects(web_match_rects);
+    match_rects.reserve(web_match_rects.size());
+    for (size_t i = 0; i < web_match_rects.size(); ++i)
+      match_rects.push_back(gfx::RectF(web_match_rects[i]));
+  }
+
+  gfx::RectF active_rect = main_frame->activeFindMatchRect();
+  Send(new ViewHostMsg_FindMatchRects_Reply(routing_id_,
+                                               rects_version,
+                                               match_rects,
+                                               active_rect));
+}
+#endif
 
 void RenderViewImpl::OnZoom(content::PageZoom zoom) {
   if (!webview())  // Not sure if this can happen, but no harm in being safe.

@@ -492,6 +492,18 @@ int RenderViewHostImpl::GetPendingRequestId() {
   return pending_request_id_;
 }
 
+#if defined(OS_ANDROID)
+void RenderViewHostImpl::ActivateNearestFindResult(int request_id,
+                                                   float x,
+                                                   float y) {
+  Send(new ViewMsg_ActivateNearestFindResult(GetRoutingID(), request_id, x, y));
+}
+
+void RenderViewHostImpl::RequestFindMatchRects(int current_version) {
+  Send(new ViewMsg_FindMatchRects(GetRoutingID(), current_version));
+}
+#endif
+
 void RenderViewHostImpl::DragTargetDragEnter(
     const WebDropData& drop_data,
     const gfx::Point& client_pt,

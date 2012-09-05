@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import org.chromium.base.CalledByNative;
 import org.chromium.chrome.browser.component.web_contents_delegate_android.WebContentsDelegateAndroid;
 
 /**
@@ -13,4 +14,12 @@ import org.chromium.chrome.browser.component.web_contents_delegate_android.WebCo
  * These methods belong to the Chromium Android port but not to WebView.
  */
 public class ChromeWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
+
+    @CalledByNative
+    public void onFindResultAvailable(FindNotificationDetails result) {
+    }
+
+    @CalledByNative
+    public void onFindMatchRectsAvailable(FindMatchRectsDetails result) {
+    }
 }

@@ -24,6 +24,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
 #include "net/base/load_states.h"
+#include "ui/gfx/rect_f.h"
 #include "ui/gfx/size.h"
 #include "webkit/glue/resource_type.h"
 
@@ -525,9 +526,16 @@ class CONTENT_EXPORT WebContentsImpl
                                  const GURL& url,
                                  const string16& title,
                                  bool user_gesture);
-  void OnFindReply(int request_id, int number_of_matches,
-                   const gfx::Rect& selection_rect, int active_match_ordinal,
+  void OnFindReply(int request_id,
+                   int number_of_matches,
+                   const gfx::Rect& selection_rect,
+                   int active_match_ordinal,
                    bool final_update);
+#if defined(OS_ANDROID)
+  void OnFindMatchRectsReply(int version,
+                             const std::vector<gfx::RectF>& rects,
+                             const gfx::RectF& active_rect);
+#endif
   void OnCrashedPlugin(const FilePath& plugin_path);
   void OnAppCacheAccessed(const GURL& manifest_url, bool blocked_by_policy);
   void OnOpenColorChooser(int color_chooser_id, SkColor color);

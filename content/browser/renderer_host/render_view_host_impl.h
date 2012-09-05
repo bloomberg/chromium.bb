@@ -220,6 +220,13 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual void UpdateWebkitPreferences(
       const webkit_glue::WebPreferences& prefs) OVERRIDE;
 
+#if defined(OS_ANDROID)
+  virtual void ActivateNearestFindResult(int request_id,
+                                         float x,
+                                         float y) OVERRIDE;
+  virtual void RequestFindMatchRects(int current_version) OVERRIDE;
+#endif
+
   void set_delegate(RenderViewHostDelegate* d) {
     CHECK(d);  // http://crbug.com/82827
     delegate_ = d;

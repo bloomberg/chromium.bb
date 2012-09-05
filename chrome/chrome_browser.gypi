@@ -4456,6 +4456,8 @@
             'chrome_browser_jni_headers',
           ],
           'sources': [
+            'browser/ui/find_bar/find_match_rects_details.cc',
+            'browser/ui/find_bar/find_match_rects_details.h',
             'browser/ui/webui/ntp/android/bookmarks_handler.cc',
             'browser/ui/webui/ntp/android/bookmarks_handler.h',
             'browser/ui/webui/ntp/android/context_menu_handler.cc',
@@ -5052,6 +5054,7 @@
           'sources': [
             'android/java/src/org/chromium/chrome/browser/AndroidProtocolAdapter.java',
             'android/java/src/org/chromium/chrome/browser/ChromeHttpAuthHandler.java',
+            'android/java/src/org/chromium/chrome/browser/ChromeWebContentsDelegateAndroid.java',
             'android/java/src/org/chromium/chrome/browser/ContentViewUtil.java',
             'android/java/src/org/chromium/chrome/browser/IntentHelper.java',
             'android/java/src/org/chromium/chrome/browser/JavascriptAppModalDialog.java',

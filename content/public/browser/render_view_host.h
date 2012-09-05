@@ -265,6 +265,16 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   // Passes a list of Webkit preferences to the renderer.
   virtual void UpdateWebkitPreferences(
       const webkit_glue::WebPreferences& prefs) = 0;
+
+#if defined(OS_ANDROID)
+  // Selects and zooms to the find result nearest to the point (x,y)
+  // defined in find-in-page coordinates.
+  virtual void ActivateNearestFindResult(int request_id, float x, float y) = 0;
+
+  // Asks the renderer to send the rects of the current find matches.
+  virtual void RequestFindMatchRects(int current_version) = 0;
+#endif
+
 };
 
 }  // namespace content

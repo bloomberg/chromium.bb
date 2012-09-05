@@ -9,6 +9,10 @@
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "content/public/browser/web_contents_observer.h"
 
+namespace gfx {
+class RectF;
+}
+
 // Per-tab find manager. Handles dealing with the life cycle of find sessions.
 class FindTabHelper : public content::WebContentsObserver {
  public:
@@ -56,6 +60,15 @@ class FindTabHelper : public content::WebContentsObserver {
   const FindNotificationDetails& find_result() const {
     return last_search_result_;
   }
+
+#if defined(OS_ANDROID)
+  // Selects and zooms to the find result nearest to the point (x,y)
+  // defined in find-in-page coordinates.
+  void ActivateNearestFindResult(float x, float y);
+
+  // Asks the renderer to send the rects of the current find matches.
+  void RequestFindMatchRects(int current_version);
+#endif
 
   void HandleFindReply(int request_id,
                        int number_of_matches,

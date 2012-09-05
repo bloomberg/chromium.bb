@@ -52,13 +52,6 @@ public class ContentViewCore implements MotionEventDelegate {
     public static final int PAGE_TRANSITION_AUTO_BOOKMARK = 2;
     public static final int PAGE_TRANSITION_START_PAGE = 6;
 
-    /** Translate the find selection into a normal selection. */
-    public static final int FIND_SELECTION_ACTION_KEEP_SELECTION = 0;
-    /** Clear the find selection. */
-    public static final int FIND_SELECTION_ACTION_CLEAR_SELECTION = 1;
-    /** Focus and click the selected node (for links). */
-    public static final int FIND_SELECTION_ACTION_ACTIVATE_SELECTION = 2;
-
     // Personality of the ContentView.
     private int mPersonality;
     // Used when ContentView implements a standalone View.

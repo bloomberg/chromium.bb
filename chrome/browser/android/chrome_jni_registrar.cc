@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
+#include "chrome/browser/android/chrome_web_contents_delegate_android.h"
 #include "chrome/browser/android/content_view_util.h"
 #include "chrome/browser/android/intent_helper.h"
 #include "chrome/browser/android/process_utils.h"
@@ -17,6 +18,8 @@ namespace chrome {
 namespace android {
 
 static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
+  { "ChromeWebContentsDelegateAndroid",
+      RegisterChromeWebContentsDelegateAndroid },
   { "ContentViewUtil", RegisterContentViewUtil },
   { "IntentHelper", RegisterIntentHelper },
   { "JavascriptAppModalDialog",

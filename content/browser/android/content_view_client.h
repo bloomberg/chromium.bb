@@ -13,8 +13,6 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 
-class FindHelper;
-
 namespace content {
 
 class DownloadItem;

@@ -5,6 +5,7 @@
 #ifndef CHROME_COMMON_CHROME_NOTIFICATION_TYPES_H_
 #define CHROME_COMMON_CHROME_NOTIFICATION_TYPES_H_
 
+#include "build/build_config.h"
 #include "content/public/browser/notification_types.h"
 
 namespace chrome {
@@ -197,6 +198,14 @@ enum NotificationType {
   // Details encompass a FindNotificationDetail object that tells whether the
   // match was found or not found.
   NOTIFICATION_FIND_RESULT_AVAILABLE,
+
+#if defined(OS_ANDROID)
+  // This notification is sent when the match rects of a find-in-page search
+  // are available. The source is a Source<WebContents>. Details encompass a
+  // FindMatchRectsDetails object that contains the result version and the
+  // rects information.
+  NOTIFICATION_FIND_MATCH_RECTS_AVAILABLE,
+#endif
 
   // BackgroundContents ------------------------------------------------------
 

@@ -905,6 +905,9 @@ class RenderViewImpl : public RenderWidget,
   // The documentation for these functions should be in
   // render_messages_internal.h for the message that the function is handling.
 
+#if defined(OS_ANDROID)
+  void OnActivateNearestFindResult(int request_id, float x, float y);
+#endif
   CONTENT_EXPORT void OnAllowBindings(int enabled_bindings_flags);
   void OnAllowScriptToClose(bool script_can_close);
   void OnAsyncFileOpened(base::PlatformFileError error_code,
@@ -961,6 +964,9 @@ class RenderViewImpl : public RenderWidget,
       const std::vector<ui::SelectedFileInfo>& files);
   void OnFind(int request_id, const string16&, const WebKit::WebFindOptions&);
   void OnGetAllSavableResourceLinksForCurrentPage(const GURL& page_url);
+#if defined(OS_ANDROID)
+  void OnFindMatchRects(int current_version);
+#endif
   void OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(
       const std::vector<GURL>& links,
       const std::vector<FilePath>& local_paths,
