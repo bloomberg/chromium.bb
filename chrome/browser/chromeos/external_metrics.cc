@@ -19,6 +19,7 @@
 #include "base/bind.h"
 #include "base/eintr_wrapper.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/perftimer.h"
 #include "base/time.h"
 #include "chrome/browser/browser_process.h"
@@ -42,6 +43,14 @@ class SystemHistogram : public base::Histogram {
                           size_t bucket_count) {
     return base::Histogram::InspectConstructionArguments(
         name, &minimum, &maximum, &bucket_count);
+  }
+  static bool CheckLinearValues(const std::string& name, int maximum) {
+    if (!CheckValues(name, 1, maximum, maximum + 1))
+      return false;
+    Histogram* histogram = base::StatisticsRecorder::FindHistogram(name);
+    if (!histogram)
+      return true;
+    return histogram->HasConstructionArguments(1, maximum, maximum + 1);
   }
 };
 
@@ -124,7 +133,7 @@ void ExternalMetrics::RecordLinearHistogram(const char* histogram_data) {
     return;
   }
 
-  if (!SystemHistogram::CheckValues(name, 1, max, max + 1)) {
+  if (!SystemHistogram::CheckLinearValues(name, max)) {
     LOG(ERROR) << "Invalid linear histogram " << name
                << ", max=" << max;
     return;
