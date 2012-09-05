@@ -282,7 +282,8 @@ cr.define('uber', function() {
 
     if (container.dataset.title)
       document.title = container.dataset.title;
-    $('favicon').href = container.dataset.favicon;
+    $('favicon').href = 'chrome://theme/' + container.dataset.favicon;
+    $('favicon2x').href = 'chrome://theme/' + container.dataset.favicon + '@2x';
 
     updateNavigationControls();
   }
