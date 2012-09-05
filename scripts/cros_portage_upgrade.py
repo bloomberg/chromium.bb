@@ -1558,8 +1558,8 @@ class Upgrader(object):
   def Commit(self):
     """Commit whatever has been prepared in the stable repo."""
     # Trying to create commit message body lines that look like these:
-    # Upgraded foo/bar-1.2.3 to version 1.2.4
-    # Upgraded foo/bar-1.2.3 to version 1.2.4 (arm) AND version 1.2.4-r1 (x86)
+    # Upgraded foo/bar-1.2.3 to version 1.2.4 on x86
+    # Upgraded foo/baz to version 2 on arm AND version 3 on amd64, x86
 
     commit_lines = [] # Lines for the body of the commit message
     pkg_overlays = {} # Overlays for upgraded packages in non-portage overlays.
@@ -1577,14 +1577,12 @@ class Upgrader(object):
       pkg_commit_line = None
 
       # First determine how many unique upgraded versions there are.
-      upgraded_versset = set()
-      upgraded_verslist = []
+      upgraded_versarch = {}
       for arch in self._master_archs:
         upgraded_ver = row[upgraded_cols[arch]]
         if upgraded_ver:
           # This package has been upgraded for this arch.
-          upgraded_versset.add(upgraded_ver)
-          upgraded_verslist.append(upgraded_ver)
+          upgraded_versarch.setdefault(upgraded_ver, []).append(arch)
 
           # Save the overlay this package is originally from, if the overlay
           # is not a Portage overlay (e.g. chromiumos-overlay).
@@ -1596,22 +1594,11 @@ class Upgrader(object):
               ovrly != self.STABLE_OVERLAY_NAME):
             pkg_overlays[pkg] = ovrly
 
-      if len(upgraded_versset) == 1:
-        # Upgrade is the same across all archs.
-        upgraded_ver = upgraded_versset.pop()
-        arch_str = ', '.join(sorted(self._master_archs))
-        pkg_commit_line = ('%s %s to version %s on %s' %
-                           (UPGRADED, pkg, upgraded_ver, arch_str))
-
-      elif len(upgraded_versset) > 1:
-        # Iterate again, and specify arch for each upgraded version.
-        tokens = []
-        for upgraded_ver in upgraded_verslist:
-          tokens.append('%s on %s' % (upgraded_ver, arch))
-        pkg_commit_line = ('%s %s to versions %s' %
-                           (UPGRADED, pkg, ' AND '.join(tokens)))
-
-      if pkg_commit_line:
+      if upgraded_versarch:
+        pkg_commit_line = '%s %s to ' % (UPGRADED, pkg)
+        pkg_commit_line += ' AND '.join(
+            'version %s on %s' % (upgraded_ver, ', '.join(sorted(archlist)))
+            for upgraded_ver, archlist in upgraded_versarch.iteritems())
         commit_lines.append(pkg_commit_line)
 
     if commit_lines:
