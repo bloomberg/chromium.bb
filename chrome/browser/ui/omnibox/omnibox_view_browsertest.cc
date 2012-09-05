@@ -1383,8 +1383,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_EscapeToDefaultMatch) {
   EscapeToDefaultMatchTest();
 }
 
-// http://crbug.com/133370
-#if defined(OS_LINUX)
+// http://crbug.com/131179, http://crbug.com/146619
+#if defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_BasicTextOperations DISABLED_BasicTextOperations
 #else
 #define MAYBE_BasicTextOperations BasicTextOperations
