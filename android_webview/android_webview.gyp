@@ -128,6 +128,16 @@
         'outputs': ['<(PRODUCT_DIR)/android_webview/java/libs/chromium_content.jar'],
         'action': ['cp', '<@(_inputs)', '<@(_outputs)'],
       },
+      # TODO: This should be removed once we stop sharing the chrome/ layer JNI
+      # registration code.  We currently include this because we reuse the
+      # chrome/ layer JNI registration code (which will crash if these classes
+      # are not present in the APK).
+      {
+        'action_name': 'copy_chrome_jar',
+        'inputs': ['<(PRODUCT_DIR)/lib.java/chromium_chrome.jar'],
+        'outputs': ['<(PRODUCT_DIR)/android_webview/java/libs/chromium_chrome.jar'],
+        'action': ['cp', '<@(_inputs)', '<@(_outputs)'],
+      },
       {
         'action_name': 'copy_web_contents_delegate_android_java',
         'inputs': ['<(PRODUCT_DIR)/lib.java/chromium_web_contents_delegate_android.jar'],
@@ -193,6 +203,7 @@
           '<(PRODUCT_DIR)/android_webview/java/libs/chromium_net.jar',
           '<(PRODUCT_DIR)/android_webview/java/libs/chromium_media.jar',
           '<(PRODUCT_DIR)/android_webview/java/libs/chromium_content.jar',
+          '<(PRODUCT_DIR)/android_webview/java/libs/chromium_chrome.jar',
           '<(SHARED_INTERMEDIATE_DIR)/repack/chrome.pak',
           '<(SHARED_INTERMEDIATE_DIR)/repack/chrome_100_percent.pak',
           '<(SHARED_INTERMEDIATE_DIR)/repack/resources.pak',

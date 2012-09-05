@@ -21,6 +21,7 @@
 
   <path id="out.dex.jar.input.ref">
     <fileset file="${out.dir}/java/libs/chromium_base.jar"/>
+    <fileset file="${out.dir}/java/libs/chromium_chrome.jar"/>
     <fileset file="${out.dir}/java/libs/chromium_content.jar"/>
     <fileset file="${out.dir}/java/libs/chromium_media.jar"/>
     <fileset file="${out.dir}/java/libs/chromium_net.jar"/>
