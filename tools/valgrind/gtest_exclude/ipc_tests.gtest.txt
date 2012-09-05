@@ -6,3 +6,4 @@ IPCChannelTest.ChannelTest
 IPCSyncChannelTest.Multiple
 # Crashes under Valgrind. See http://crbug.com/140442
 IPCSyncChannelTest.RestrictedDispatch4WayDeadlock
+IPCSyncChannelTest.ReentrantReply
