@@ -539,15 +539,9 @@
           '../third_party/tlslite/tlslite/utils/PyCrypto_TripleDES.py',
           '../third_party/tlslite/tlslite/utils/TripleDES.py',
           '<(PRODUCT_DIR)/chrome.pak',
-          '<(PRODUCT_DIR)/chrome_100_percent.pak',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/pyproto/google/__init__.py',
           '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
-          'test/data/extensions/api_test/webrequest/declarative/headers.html',
-          'test/data/extensions/api_test/webrequest/declarative/headers.html.mock-http-headers',
-          'test/data/extensions/extension_icon_image/16.png',
-          'test/data/extensions/extension_icon_image/48.png',
-          'test/data/extensions/extension_icon_image/app.json',
           'test/data/extensions/unpacked/manifest_no_key.json',
           'test/data/extensions/unpacked/manifest_with_key.json',
           'test/data/extensions/unpacked/symlinks_allowed/manifest.json',
@@ -622,7 +616,13 @@
     }, {
       'variables': {
         'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/chrome_100_percent.pak',
           '<(PRODUCT_DIR)/locales/en-US.pak',
+          'test/data/extensions/api_test/webrequest/declarative/headers.html',
+          'test/data/extensions/api_test/webrequest/declarative/headers.html.mock-http-headers',
+          'test/data/extensions/extension_icon_image/16.png',
+          'test/data/extensions/extension_icon_image/48.png',
+          'test/data/extensions/extension_icon_image/app.json',
         ],
         'isolate_dependency_untracked': [
           'test/data/firefox2_nss/',
@@ -768,6 +768,8 @@
           '<(PRODUCT_DIR)/avformat-54.dll',
           '<(PRODUCT_DIR)/avutil-51.dll',
           '<(PRODUCT_DIR)/icudt.dll',
+          'test/data/profiles/profile_with_complex_theme/Default/Extensions/mblmlcbknbnfebdfjnolmcapmdofhmme/1.1/manifest.json',
+          'test/data/profiles/profile_with_default_theme/Default/History',
           'test/data/safe_browsing/download_protection/signed.exe',
           'test/data/safe_browsing/download_protection/unsigned.exe',
           'test/data/safe_browsing/download_protection/wow_helper.exe',
@@ -788,6 +790,7 @@
           '../third_party/python_26/Lib/xml/parsers/',
           '../ui/base/glib/',
           'test/data/components/flapper/windows/',
+          'test/data/profiles/profile_with_complex_theme/Default/Extensions/mblmlcbknbnfebdfjnolmcapmdofhmme/1.1/i/',
         ],
       },
     }, {
