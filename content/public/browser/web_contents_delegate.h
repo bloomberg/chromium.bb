@@ -58,6 +58,10 @@ struct WebIntentData;
 struct WebIntentServiceData;
 }
 
+namespace WebKit {
+class WebLayer;
+}
+
 namespace content {
 
 struct OpenURLParams;
@@ -308,12 +312,6 @@ class CONTENT_EXPORT WebContentsDelegate {
   // changed.
   virtual void ContentRestrictionsChanged(WebContents* source) {}
 
-#if defined(OS_ANDROID)
-  // Returns true if the delegate wants to handle the url instead. Default
-  // returns false.
-  virtual bool ShouldOverrideLoading(const GURL& url);
-#endif
-
   // Notification that the tab is hung.
   virtual void RendererUnresponsive(WebContents* source) {}
 
@@ -437,6 +435,22 @@ class CONTENT_EXPORT WebContentsDelegate {
       WebContents* web_contents,
       const MediaStreamRequest* request,
       const MediaResponseCallback& callback) {}
+
+#if defined(OS_ANDROID)
+  // Returns true if the delegate wants to handle the url instead. Default
+  // returns false.
+  virtual bool ShouldOverrideLoading(const GURL& url);
+
+  // Called when a compositing layer becomes available for this web contents
+  // so the delegate can add it to the layer tree.
+  virtual void AttachLayer(WebContents* web_contents,
+                           WebKit::WebLayer* layer) {}
+
+  // Called before a compositing layer becomes invalid so the delegate can
+  // remove it from the layer tree.
+  virtual void RemoveLayer(WebContents* web_contents,
+                           WebKit::WebLayer* layer) {}
+#endif
 
  protected:
   virtual ~WebContentsDelegate();

@@ -15,6 +15,7 @@
 #include "content/common/android/device_info.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 
 namespace content {
 
@@ -27,12 +28,15 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       // View system yet, so we treat it as hidden.
       is_hidden_(!content_view_core),
       content_view_core_(content_view_core),
-      ime_adapter_android_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      ime_adapter_android_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      texture_layer_(WebKit::WebExternalTextureLayer::create()) {
   host_->SetView(this);
   // RenderWidgetHost is initialized as visible. If is_hidden_ is true, tell
   // RenderWidgetHost to hide.
   if (is_hidden_)
     host_->WasHidden();
+  texture_layer_->layer()->setDrawsContent(!is_hidden_);
+  host_->AttachLayer(texture_layer_->layer());
 }
 
 RenderWidgetHostViewAndroid::~RenderWidgetHostViewAndroid() {
@@ -86,6 +90,7 @@ void RenderWidgetHostViewAndroid::SetSize(const gfx::Size& size) {
     requested_size_ = gfx::Size(size.width(), size.height());
     host_->WasResized();
   }
+  texture_layer_->layer()->setBounds(size);
 }
 
 void RenderWidgetHostViewAndroid::SetBounds(const gfx::Rect& rect) {
@@ -142,11 +147,11 @@ bool RenderWidgetHostViewAndroid::IsSurfaceAvailableForCopy() const {
 }
 
 void RenderWidgetHostViewAndroid::Show() {
-  // nothing to do
+  texture_layer_->layer()->setDrawsContent(true);
 }
 
 void RenderWidgetHostViewAndroid::Hide() {
-  // nothing to do
+  texture_layer_->layer()->setDrawsContent(false);
 }
 
 bool RenderWidgetHostViewAndroid::IsShowing() {
@@ -210,6 +215,8 @@ void RenderWidgetHostViewAndroid::RenderViewGone(
 }
 
 void RenderWidgetHostViewAndroid::Destroy() {
+  host_->RemoveLayer(texture_layer_->layer());
+
   content_view_core_ = NULL;
 
   // The RenderWidgetHost's destruction led here, so don't call it.
@@ -270,6 +277,12 @@ void RenderWidgetHostViewAndroid::OnAcceleratedCompositingStateChange() {
 void RenderWidgetHostViewAndroid::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
     int gpu_host_id) {
+  texture_layer_->setTextureId(params.surface_handle);
+  texture_layer_->layer()->invalidate();
+  // TODO(sievers): The view and layer should get sized proactively.
+  if (((gfx::Size)texture_layer_->layer()->bounds()).IsEmpty())
+    texture_layer_->layer()->setBounds(
+        DrawDelegateImpl::GetInstance()->GetBounds());
   DrawDelegateImpl::GetInstance()->OnSurfaceUpdated(
       params.surface_handle,
       this,

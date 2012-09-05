@@ -373,6 +373,11 @@ class CONTENT_EXPORT RenderViewHostImpl
       const NativeWebKeyboardEvent& key_event) OVERRIDE;
   virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
 
+#if defined(OS_ANDROID)
+  virtual void AttachLayer(WebKit::WebLayer* layer) OVERRIDE;
+  virtual void RemoveLayer(WebKit::WebLayer* layer) OVERRIDE;
+#endif
+
   // Creates a new RenderView with the given route id.
   void CreateNewWindow(
       int route_id,

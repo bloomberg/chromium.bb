@@ -45,6 +45,12 @@ struct WebCompositionUnderline;
 struct WebScreenInfo;
 }
 
+#if defined(OS_ANDROID)
+namespace WebKit {
+class WebLayer;
+}
+#endif
+
 namespace content {
 class BackingStore;
 class GestureEventFilter;
@@ -395,6 +401,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void set_allow_privileged_mouse_lock(bool allow) {
     allow_privileged_mouse_lock_ = allow;
   }
+
+#if defined(OS_ANDROID)
+  virtual void AttachLayer(WebKit::WebLayer* layer) {}
+  virtual void RemoveLayer(WebKit::WebLayer* layer) {}
+#endif
 
  protected:
   virtual RenderWidgetHostImpl* AsRenderWidgetHostImpl() OVERRIDE;

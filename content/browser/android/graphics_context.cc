@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/browser/android/graphics_context.h"
+#include "content/browser/android/graphics_context.h"
 
-#include "base/memory/scoped_ptr.h"
 #include "content/browser/android/draw_delegate_impl.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
@@ -18,50 +17,37 @@
 
 using content::BrowserGpuChannelHostFactory;
 
-namespace {
-
-// GraphicsContext implementation using a gpu command buffer.
-class CmdBufferGraphicsContext : public content::GraphicsContext {
- public:
-  CmdBufferGraphicsContext(WebGraphicsContext3DCommandBufferImpl* context,
-                           int surface_id,
-                           ANativeWindow* window,
-                           int texture_id1,
-                           int texture_id2)
-      : context_(context),
-        surface_id_(surface_id),
-        window_(window) {
-    texture_id_[0] = texture_id1;
-    texture_id_[1] = texture_id2;
-  }
-
-  virtual ~CmdBufferGraphicsContext() {
-    context_->makeContextCurrent();
-    context_->deleteTexture(texture_id_[0]);
-    context_->deleteTexture(texture_id_[1]);
-    context_->finish();
-    GpuSurfaceTracker* tracker = GpuSurfaceTracker::Get();
-    tracker->RemoveSurface(surface_id_);
-    ANativeWindow_release(window_);
-  }
-
-  virtual WebKit::WebGraphicsContext3D* GetContext3D() {
-    return context_.get();
-  }
-  virtual uint32 InsertSyncPoint() {
-    return context_->insertSyncPoint();
-  }
-
- private:
-  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context_;
-  int surface_id_;
-  ANativeWindow* window_;
-  int texture_id_[2];
-};
-
-}  // anonymous namespace
-
 namespace content {
+
+GraphicsContext::GraphicsContext(WebGraphicsContext3DCommandBufferImpl* context,
+                                 int surface_id,
+                                 ANativeWindow* window,
+                                 int texture_id1,
+                                 int texture_id2)
+    : context_(context),
+      surface_id_(surface_id),
+      window_(window) {
+  texture_id_[0] = texture_id1;
+  texture_id_[1] = texture_id2;
+}
+
+GraphicsContext::~GraphicsContext() {
+  context_->makeContextCurrent();
+  context_->deleteTexture(texture_id_[0]);
+  context_->deleteTexture(texture_id_[1]);
+  context_->finish();
+  GpuSurfaceTracker* tracker = GpuSurfaceTracker::Get();
+  tracker->RemoveSurface(surface_id_);
+  ANativeWindow_release(window_);
+}
+
+uint32 GraphicsContext::InsertSyncPoint() {
+  return context_->insertSyncPoint();
+}
+
+int GraphicsContext::GetSurfaceID() {
+  return surface_id_;
+}
 
 // static
 GraphicsContext* GraphicsContext::CreateForUI(
@@ -83,7 +69,7 @@ GraphicsContext* GraphicsContext::CreateForUI(
   base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> swap_client;
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
       new WebGraphicsContext3DCommandBufferImpl(
-          surface_id,
+          0,
           url,
           factory,
           swap_client));
@@ -107,7 +93,7 @@ GraphicsContext* GraphicsContext::CreateForUI(
 
   DrawDelegateImpl::GetInstance()->SetDrawSurface(handle);
 
-  return new CmdBufferGraphicsContext(
+  return new GraphicsContext(
       context.release(), surface_id, window,
       handle.parent_texture_id[0],
       handle.parent_texture_id[1]);

@@ -103,6 +103,10 @@ class Shell : public WebContentsDelegate,
   virtual void LoadingStateChanged(WebContents* source) OVERRIDE;
 #if defined(OS_ANDROID)
   virtual void LoadProgressChanged(double progress) OVERRIDE;
+  virtual void AttachLayer(WebContents* web_contents,
+                           WebKit::WebLayer* layer) OVERRIDE;
+  virtual void RemoveLayer(WebContents* web_contents,
+                           WebKit::WebLayer* layer) OVERRIDE;
 #endif
   virtual void CloseContents(WebContents* source) OVERRIDE;
   virtual void WebContentsCreated(WebContents* source_contents,

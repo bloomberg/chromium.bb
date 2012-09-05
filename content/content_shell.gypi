@@ -575,8 +575,6 @@
             '<(SHARED_INTERMEDIATE_DIR)/content/shell',
           ],
           'sources': [
-            'shell/android/draw_context.cc',
-            'shell/android/draw_context.h',
             'shell/android/shell_library_loader.cc',
             'shell/android/shell_library_loader.h',
             'shell/android/shell_manager.cc',

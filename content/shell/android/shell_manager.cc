@@ -9,42 +9,51 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_content_browser_client.h"
+#include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/draw_delegate.h"
-#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/shell/android/draw_context.h"
 #include "content/shell/shell.h"
 #include "googleurl/src/gurl.h"
 #include "jni/ShellManager_jni.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
 #include "ui/gfx/size.h"
 
 #include <android/native_window_jni.h>
 
 using base::android::ScopedJavaLocalRef;
-using content::DrawContext;
+using content::Compositor;
 using content::DrawDelegate;
 
 namespace {
 
 struct GlobalState {
-  GlobalState()
-      : context(NULL) {
-  }
   base::android::ScopedJavaGlobalRef<jobject> j_obj;
-  DrawContext* context;
+  scoped_ptr<content::Compositor> compositor;
+  scoped_ptr<WebKit::WebLayer> root_layer;
 };
 
 base::LazyInstance<GlobalState> g_global_state = LAZY_INSTANCE_INITIALIZER;
+
+content::Compositor* GetCompositor() {
+  return g_global_state.Get().compositor.get();
+}
+
+static void SurfacePresented(
+    const DrawDelegate::SurfacePresentedCallback& callback,
+    uint32 sync_point) {
+  callback.Run(sync_point);
+}
 
 static void SurfaceUpdated(
     uint64 texture,
     content::RenderWidgetHostView* view,
     const DrawDelegate::SurfacePresentedCallback& callback) {
-  uint32 sync_point = g_global_state.Get().context->Draw(texture);
-  callback.Run(sync_point);
+  GetCompositor()->OnSurfaceUpdated(base::Bind(
+      &SurfacePresented, callback));
 }
 
 } // anonymous namespace
@@ -53,6 +62,12 @@ namespace content {
 
 jobject CreateShellView() {
   JNIEnv* env = base::android::AttachCurrentThread();
+  if (!GetCompositor()) {
+    Compositor::Initialize();
+    g_global_state.Get().compositor.reset(Compositor::Create());
+    DCHECK(!g_global_state.Get().root_layer.get());
+    g_global_state.Get().root_layer.reset(WebKit::WebLayer::create());
+  }
   return Java_ShellManager_createShell(
       env, g_global_state.Get().j_obj.obj()).Release();
 }
@@ -74,25 +89,21 @@ static void SurfaceCreated(
     JNIEnv* env, jclass clazz, jobject jsurface) {
   ANativeWindow* native_window = ANativeWindow_fromSurface(env, jsurface);
   if (native_window) {
-    if (g_global_state.Get().context)
-      delete g_global_state.Get().context;
-
-    g_global_state.Get().context = new DrawContext(native_window);
+    GetCompositor()->SetWindowSurface(native_window);
     ANativeWindow_release(native_window);
+    GetCompositor()->SetRootLayer(g_global_state.Get().root_layer.get());
   }
 }
 
 static void SurfaceDestroyed(JNIEnv* env, jclass clazz) {
-  if (g_global_state.Get().context)
-    delete g_global_state.Get().context;
+  GetCompositor()->SetWindowSurface(NULL);
 }
 
 static void SurfaceSetSize(
     JNIEnv* env, jclass clazz, jint width, jint height) {
   gfx::Size size = gfx::Size(width, height);
   DrawDelegate::GetInstance()->SetBounds(size);
-  DCHECK(g_global_state.Get().context);
-  g_global_state.Get().context->Reshape(width, height);
+  GetCompositor()->SetWindowBounds(size);
 }
 
 void LaunchShell(JNIEnv* env, jclass clazz, jstring jurl) {
@@ -105,6 +116,15 @@ void LaunchShell(JNIEnv* env, jclass clazz, jstring jurl) {
                          NULL,
                          MSG_ROUTING_NONE,
                          NULL);
+}
+
+void ShellAttachLayer(WebKit::WebLayer* layer) {
+  g_global_state.Get().root_layer->addChild(layer);
+}
+
+
+void ShellRemoveLayer(WebKit::WebLayer* layer) {
+  layer->removeFromParent();
 }
 
 }  // namespace content

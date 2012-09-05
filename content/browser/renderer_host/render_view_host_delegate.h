@@ -47,6 +47,10 @@ class Rect;
 class Size;
 }
 
+namespace WebKit {
+class WebLayer;
+}
+
 namespace content {
 
 class BrowserContext;
@@ -408,6 +412,11 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   virtual void RequestMediaAccessPermission(
       const MediaStreamRequest* request,
       const MediaResponseCallback& callback) {}
+
+#if defined(OS_ANDROID)
+  virtual void AttachLayer(WebKit::WebLayer* layer) {}
+  virtual void RemoveLayer(WebKit::WebLayer* layer) {}
+#endif
 
  protected:
   virtual ~RenderViewHostDelegate() {}

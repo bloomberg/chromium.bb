@@ -1572,17 +1572,14 @@ void RenderViewHostImpl::ForwardKeyboardEvent(
   RenderWidgetHostImpl::ForwardKeyboardEvent(key_event);
 }
 
-#if defined(OS_MACOSX)
-void RenderViewHostImpl::DidSelectPopupMenuItem(int selected_index) {
-  Send(new ViewMsg_SelectPopupMenuItem(GetRoutingID(), selected_index));
-}
-
-void RenderViewHostImpl::DidCancelPopupMenu() {
-  Send(new ViewMsg_SelectPopupMenuItem(GetRoutingID(), -1));
-}
-#endif
-
 #if defined(OS_ANDROID)
+void RenderViewHostImpl::AttachLayer(WebKit::WebLayer* layer) {
+  delegate_->AttachLayer(layer);
+}
+
+void RenderViewHostImpl::RemoveLayer(WebKit::WebLayer* layer) {
+  delegate_->RemoveLayer(layer);
+}
 void RenderViewHostImpl::DidSelectPopupMenuItems(
     const std::vector<int>& selected_indices) {
   Send(new ViewMsg_SelectPopupMenuItems(GetRoutingID(), false,
@@ -1592,6 +1589,16 @@ void RenderViewHostImpl::DidSelectPopupMenuItems(
 void RenderViewHostImpl::DidCancelPopupMenu() {
   Send(new ViewMsg_SelectPopupMenuItems(GetRoutingID(), true,
                                         std::vector<int>()));
+}
+#endif
+
+#if defined(OS_MACOSX)
+void RenderViewHostImpl::DidSelectPopupMenuItem(int selected_index) {
+  Send(new ViewMsg_SelectPopupMenuItem(GetRoutingID(), selected_index));
+}
+
+void RenderViewHostImpl::DidCancelPopupMenu() {
+  Send(new ViewMsg_SelectPopupMenuItem(GetRoutingID(), -1));
 }
 #endif
 

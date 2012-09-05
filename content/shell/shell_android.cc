@@ -70,6 +70,14 @@ void Shell::Close() {
   NOTIMPLEMENTED();
 }
 
+void Shell::AttachLayer(WebContents* web_contents, WebKit::WebLayer* layer) {
+  ShellAttachLayer(layer);
+}
+
+void Shell::RemoveLayer(WebContents* web_contents, WebKit::WebLayer* layer) {
+  ShellRemoveLayer(layer);
+}
+
 // static
 bool Shell::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);

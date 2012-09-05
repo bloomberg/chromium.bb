@@ -1442,6 +1442,18 @@ void WebContentsImpl::RequestMediaAccessPermission(
     callback.Run(content::MediaStreamDevices());
 }
 
+#if defined(OS_ANDROID)
+void WebContentsImpl::AttachLayer(WebKit::WebLayer* layer) {
+  if (delegate_)
+    delegate_->AttachLayer(this, layer);
+}
+
+void WebContentsImpl::RemoveLayer(WebKit::WebLayer* layer) {
+  if (delegate_)
+    delegate_->RemoveLayer(this, layer);
+}
+#endif
+
 void WebContentsImpl::UpdatePreferredSize(const gfx::Size& pref_size) {
   preferred_size_ = pref_size;
   if (delegate_)

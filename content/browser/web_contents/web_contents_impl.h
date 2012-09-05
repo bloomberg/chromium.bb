@@ -411,6 +411,11 @@ class CONTENT_EXPORT WebContentsImpl
       const content::MediaStreamRequest* request,
       const content::MediaResponseCallback& callback) OVERRIDE;
 
+#if defined(OS_ANDROID)
+  virtual void AttachLayer(WebKit::WebLayer* layer) OVERRIDE;
+  virtual void RemoveLayer(WebKit::WebLayer* layer) OVERRIDE;
+#endif
+
   // RenderWidgetHostDelegate --------------------------------------------------
 
   virtual bool PreHandleKeyboardEvent(

@@ -7,9 +7,11 @@
 
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/process.h"
 #include "content/browser/renderer_host/ime_adapter_android.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebExternalTextureLayer.h"
 #include "ui/gfx/size.h"
 
 struct ViewHostMsg_TextInputState_Params;
@@ -126,6 +128,9 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   gfx::Size requested_size_;
 
   ImeAdapterAndroid ime_adapter_android_;
+
+  // The texture layer for this view when using browser-side compositing.
+  scoped_ptr<WebKit::WebExternalTextureLayer> texture_layer_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAndroid);
 };
