@@ -510,10 +510,13 @@ void CrxInstaller::CompleteInstall() {
       extension_->creation_flags() | Extension::REQUIRE_KEY,
       &error);
 
-  LOG_ASSERT(error.empty()) << error << " " << extension_id << " "
-                            << download_url_.spec();
+  if (extension_) {
+    ReportSuccessFromFileThread();
+  } else {
+    LOG(ERROR) << error << " " << extension_id << " " << download_url_.spec();
+    ReportFailureFromFileThread(CrxInstallerError(UTF8ToUTF16(error)));
+  }
 
-  ReportSuccessFromFileThread();
 }
 
 void CrxInstaller::ReportFailureFromFileThread(const CrxInstallerError& error) {
