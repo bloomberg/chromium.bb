@@ -76,12 +76,6 @@ bool AppWindowCreateFunction::RunImpl() {
       create_params.restore_position = false;
     }
 
-    if (options->frame.get()) {
-      create_params.frame = *options->frame == kNoneFrameOption ?
-          ShellWindow::CreateParams::FRAME_NONE :
-          ShellWindow::CreateParams::FRAME_CHROME;
-    }
-
     gfx::Size& minimum_size = create_params.minimum_size;
     if (options->min_width.get())
       minimum_size.set_width(*options->min_width);

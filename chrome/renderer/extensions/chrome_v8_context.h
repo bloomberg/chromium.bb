@@ -59,6 +59,8 @@ class ChromeV8Context {
     module_system_ = module_system.Pass();
   }
 
+  ModuleSystem* module_system() { return module_system_.get(); }
+
   // Returns the ID of the extension associated with this context, or empty
   // string if there is no such extension.
   std::string GetExtensionID();

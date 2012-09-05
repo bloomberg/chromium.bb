@@ -64,7 +64,7 @@ void SuspendRenderViewHost(RenderViewHost* rvh) {
 }  // namespace
 
 ShellWindow::CreateParams::CreateParams()
-  : frame(ShellWindow::CreateParams::FRAME_CHROME),
+  : frame(ShellWindow::CreateParams::FRAME_NONE),
     bounds(-1, -1, kDefaultWidth, kDefaultHeight),
     restore_position(true), restore_size(true) {
 }

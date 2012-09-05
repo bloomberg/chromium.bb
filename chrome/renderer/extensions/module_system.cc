@@ -149,6 +149,33 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
   return handle_scope.Close(exports);
 }
 
+void ModuleSystem::CallModuleMethod(const std::string& module_name,
+                                    const std::string& method_name) {
+  v8::HandleScope handle_scope;
+  v8::Local<v8::Value> module =
+      v8::Local<v8::Value>::New(
+          RequireForJsInner(v8::String::New(module_name.c_str())));
+  if (module.IsEmpty() || !module->IsObject())
+    return;
+  v8::Local<v8::Value> value =
+      v8::Handle<v8::Object>::Cast(module)->Get(
+          v8::String::New(method_name.c_str()));
+  if (value.IsEmpty() || !value->IsFunction())
+    return;
+  v8::Handle<v8::Function> func =
+      v8::Handle<v8::Function>::Cast(value);
+  // TODO(jeremya/koz): refer to context_ here, not the current context.
+  v8::Handle<v8::Object> global(v8::Context::GetCurrent()->Global());
+  {
+    WebKit::WebScopedMicrotaskSuppression suppression;
+    v8::TryCatch try_catch;
+    try_catch.SetCaptureMessage(true);
+    func->Call(global, 0, NULL);
+    if (try_catch.HasCaught())
+      DumpException(try_catch);
+  }
+}
+
 void ModuleSystem::RegisterNativeHandler(const std::string& name,
     scoped_ptr<NativeHandler> native_handler) {
   native_handler_map_[name] =

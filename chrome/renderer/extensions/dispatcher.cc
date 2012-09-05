@@ -671,6 +671,7 @@ void Dispatcher::PopulateSourceMap() {
   // Platform app sources that are not API-specific..
   source_map_.RegisterSource("browserTag", IDR_BROWSER_TAG_JS);
   source_map_.RegisterSource("platformApp", IDR_PLATFORM_APP_JS);
+  source_map_.RegisterSource("injectAppTitlebar", IDR_INJECT_APP_TITLEBAR_JS);
 }
 
 void Dispatcher::PopulateLazyBindingsMap() {

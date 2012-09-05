@@ -74,6 +74,7 @@ without changes to the corresponding grd file. fb9 -->
         <!-- Platform app support. -->
         <include name="IDR_PLATFORM_APP_CSS" file="resources\extensions\platform_app.css" type="BINDATA" />
         <include name="IDR_PLATFORM_APP_JS" file="resources\extensions\platform_app.js" type="BINDATA" />
+        <include name="IDR_INJECT_APP_TITLEBAR_JS" file="resources\extensions\inject_app_titlebar.js" type="BINDATA" />
       </if>
     </includes>
   </release>

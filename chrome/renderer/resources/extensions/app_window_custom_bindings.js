@@ -14,8 +14,10 @@ chromeHidden.registerCustomHook('app.window', function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
   apiFunctions.setCustomCallback('create', function(name, request, viewId) {
     var view = null;
-    if (viewId)
-      view = GetView(viewId);
+    if (viewId) {
+      var shouldShowFrame = !request.args[1] || request.args[1].frame != 'none';
+      view = GetView(viewId, !!shouldShowFrame);
+    }
     if (request.callback) {
       request.callback(view.chrome.app.window.current());
       delete request.callback;

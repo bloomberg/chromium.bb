@@ -69,6 +69,11 @@ class ModuleSystem : public NativeHandler {
   v8::Handle<v8::Value> RequireForJs(const v8::Arguments& args);
   v8::Handle<v8::Value> RequireForJsInner(v8::Handle<v8::String> module_name);
 
+  // Calls the specified method exported by the specified module. This is
+  // equivalent to calling require('module_name').method_name() from JS.
+  void CallModuleMethod(const std::string& module_name,
+                        const std::string& method_name);
+
   // Register |native_handler| as a potential target for requireNative(), so
   // calls to requireNative(|name|) from JS will return a new object created by
   // |native_handler|.

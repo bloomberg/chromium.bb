@@ -6,31 +6,50 @@
 
 #include <string>
 
-#include "base/string_util.h"
-#include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/url_constants.h"
+#include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/dispatcher.h"
-#include "chrome/renderer/extensions/extension_helper.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
-#include "grit/renderer_resources.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebNavigationPolicy.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebWindowFeatures.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
-#include "v8/include/v8.h"
-#include "webkit/glue/webkit_glue.h"
-
-#include "content/public/renderer/render_view.h"
+#include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_visitor.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "v8/include/v8.h"
 
 namespace extensions {
 
+class DidCreateDocumentElementObserver : public content::RenderViewObserver {
+ public:
+  DidCreateDocumentElementObserver(
+      content::RenderView* view, Dispatcher* dispatcher)
+      : content::RenderViewObserver(view), dispatcher_(dispatcher) {
+  }
+
+  virtual void DidCreateDocumentElement(WebKit::WebFrame* frame) OVERRIDE {
+    v8::HandleScope handle_scope;
+    DCHECK(frame);
+    DCHECK(dispatcher_);
+    ChromeV8Context* v8_context =
+        dispatcher_->v8_context_set().GetByV8Context(
+            frame->mainWorldScriptContext());
+
+    if (!v8_context)
+      return;
+    v8::Context::Scope context_scope(v8_context->v8_context());
+    v8_context->module_system()->CallModuleMethod(
+        "injectAppTitlebar", "didCreateDocumentElement");
+  }
+
+ private:
+  Dispatcher* dispatcher_;
+};
+
 AppWindowCustomBindings::AppWindowCustomBindings(Dispatcher* dispatcher)
     : ChromeV8Extension(dispatcher) {
-  RouteStaticFunction("GetView", &GetView);
+  RouteFunction("GetView",
+      base::Bind(&AppWindowCustomBindings::GetView,
+                 base::Unretained(this)));
 }
 
 namespace {
@@ -60,13 +79,18 @@ v8::Handle<v8::Value> AppWindowCustomBindings::GetView(
     const v8::Arguments& args) {
   // TODO(jeremya): convert this to IDL nocompile to get validation, and turn
   // these argument checks into CHECK().
-  if (args.Length() != 1)
+  if (args.Length() != 2)
     return v8::Undefined();
 
   if (!args[0]->IsInt32())
     return v8::Undefined();
 
+  if (!args[1]->IsBoolean())
+    return v8::Undefined();
+
   int view_id = args[0]->Int32Value();
+
+  bool inject_titlebar = args[1]->BooleanValue();
 
   if (view_id == MSG_ROUTING_NONE)
     return v8::Undefined();
@@ -81,6 +105,9 @@ v8::Handle<v8::Value> AppWindowCustomBindings::GetView(
   content::RenderView* view = view_finder.view();
   if (!view)
     return v8::Undefined();
+
+  if (inject_titlebar)
+    new DidCreateDocumentElementObserver(view, dispatcher());
 
   // TODO(jeremya): it doesn't really make sense to set the opener here, but we
   // need to make sure the security origin is set up before returning the DOM

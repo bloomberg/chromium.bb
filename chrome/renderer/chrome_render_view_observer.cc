@@ -520,6 +520,10 @@ bool ChromeRenderViewObserver::allowWebComponents(const WebDocument& document,
     return true;
 
   if (const extensions::Extension* extension = GetExtension(origin)) {
+    // Titlebars in app windows are implmented via Shadow DOM.
+    if (extension->HasAPIPermission(APIPermission::kAppWindow))
+      return true;
+
     // The <browser> tag is implemented via Shadow DOM.
     if (extension->HasAPIPermission(APIPermission::kBrowserTag))
       return true;
