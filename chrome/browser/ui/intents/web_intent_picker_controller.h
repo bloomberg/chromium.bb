@@ -165,7 +165,7 @@ class WebIntentPickerController
   // when dispatching explicit intents. Gets |services|
   // from the WebIntentsRegistry to check for known urls/extensions and find
   // disposition data.
-  void WebIntentServicesForExplicitIntent(
+  void OnWebIntentServicesAvailableForExplicitIntent(
       const std::vector<webkit_glue::WebIntentServiceData>& services);
 
   // Called when a favicon is returned from the FaviconService.

@@ -242,8 +242,10 @@ void WebIntentPickerController::ShowDialog(const string16& action,
       // required to find disposition set by service.)
       pending_async_count_++;
       GetWebIntentsRegistry(tab_contents_)->GetIntentServices(
-          action, type, base::Bind(
-              &WebIntentPickerController::WebIntentServicesForExplicitIntent,
+          action, type,
+          base::Bind(
+              &WebIntentPickerController::
+                  OnWebIntentServicesAvailableForExplicitIntent,
               weak_ptr_factory_.GetWeakPtr()));
       return;
     }
@@ -521,7 +523,7 @@ void WebIntentPickerController::OnWebIntentServicesAvailable(
   AsyncOperationFinished();
 }
 
-void WebIntentPickerController::WebIntentServicesForExplicitIntent(
+void WebIntentPickerController::OnWebIntentServicesAvailableForExplicitIntent(
     const std::vector<webkit_glue::WebIntentServiceData>& services) {
   DCHECK(intents_dispatcher_);
   DCHECK(intents_dispatcher_->GetIntent().service.is_valid());
