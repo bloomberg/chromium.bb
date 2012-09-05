@@ -24,6 +24,7 @@ class AuraDisplayChangeListener
   virtual void OnWindowBoundsChanged(aura::Window* window,
                                      const gfx::Rect& old_bounds,
                                      const gfx::Rect& new_bounds) OVERRIDE;
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
  private:
   MenuRunner* menu_runner_;
@@ -50,6 +51,12 @@ void AuraDisplayChangeListener::OnWindowBoundsChanged(
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds) {
   menu_runner_->Cancel();
+}
+
+void AuraDisplayChangeListener::OnWindowDestroying(aura::Window* window) {
+  DCHECK_EQ(window, root_window_);
+  root_window_->RemoveObserver(this);
+  root_window_ = NULL;
 }
 
 // static
