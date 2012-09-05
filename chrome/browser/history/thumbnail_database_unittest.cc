@@ -167,7 +167,8 @@ TEST_F(ThumbnailDatabaseTest, GetFaviconAfterMigrationToTopSites) {
 
   EXPECT_EQ(bitmap1_id, favicon_bitmap1.bitmap_id);
   EXPECT_EQ(icon_id, favicon_bitmap1.icon_id);
-  EXPECT_EQ(time.ToTimeT(), favicon_bitmap1.last_updated.ToTimeT());
+  EXPECT_EQ(time.ToInternalValue(),
+            favicon_bitmap1.last_updated.ToInternalValue());
   EXPECT_EQ(data.size(), favicon_bitmap1.bitmap_data->size());
   EXPECT_TRUE(std::equal(data.begin(),
                          data.end(),
@@ -176,7 +177,8 @@ TEST_F(ThumbnailDatabaseTest, GetFaviconAfterMigrationToTopSites) {
 
   EXPECT_EQ(bitmap2_id, favicon_bitmap2.bitmap_id);
   EXPECT_EQ(icon_id, favicon_bitmap2.icon_id);
-  EXPECT_EQ(time.ToTimeT(), favicon_bitmap2.last_updated.ToTimeT());
+  EXPECT_EQ(time.ToInternalValue(),
+            favicon_bitmap2.last_updated.ToInternalValue());
   EXPECT_EQ(data.size(), favicon_bitmap2.bitmap_data->size());
   EXPECT_TRUE(std::equal(data.begin(),
                          data.end(),
@@ -392,7 +394,7 @@ TEST_F(ThumbnailDatabaseTest, UpgradeToVersion6) {
 
   int favicon_id = 1;
   GURL url("http://google.com");
-  time_t last_updated = Time::Now().ToTimeT();
+  int64 last_updated = Time::Now().ToInternalValue();
   std::vector<unsigned char> data(blob1, blob1 + sizeof(blob1));
   scoped_refptr<base::RefCountedBytes> bitmap_data(
       new base::RefCountedBytes(data));

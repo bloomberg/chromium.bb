@@ -373,7 +373,7 @@ bool ThumbnailDatabase::SetPageThumbnail(
     statement.BindDouble(1, score.boring_score);
     statement.BindBool(2, score.good_clipping);
     statement.BindBool(3, score.at_top);
-    statement.BindInt64(4, score.time_at_snapshot.ToTimeT());
+    statement.BindInt64(4, score.time_at_snapshot.ToInternalValue());
     statement.BindBlob(5, &jpeg_data[0],
                        static_cast<int>(jpeg_data.size()));
 
@@ -441,7 +441,7 @@ bool ThumbnailDatabase::ThumbnailScoreForId(URLID id,
   bool current_clipping = select_statement.ColumnBool(1);
   bool current_at_top = select_statement.ColumnBool(2);
   base::Time last_updated =
-      base::Time::FromTimeT(select_statement.ColumnInt64(3));
+      base::Time::FromInternalValue(select_statement.ColumnInt64(3));
   *score = ThumbnailScore(current_boring_score, current_clipping,
                           current_at_top, last_updated);
   return true;
@@ -466,7 +466,7 @@ bool ThumbnailDatabase::GetFaviconBitmaps(
     favicon_bitmap.bitmap_id = statement.ColumnInt64(0);
     favicon_bitmap.icon_id = icon_id;
     favicon_bitmap.last_updated =
-        base::Time::FromTimeT(statement.ColumnInt64(1));
+        base::Time::FromInternalValue(statement.ColumnInt64(1));
     if (statement.ColumnByteLength(2) > 0) {
       scoped_refptr<base::RefCountedBytes> data(new base::RefCountedBytes());
       statement.ColumnBlobAsVector(2, &data->data());
@@ -495,7 +495,7 @@ FaviconBitmapID ThumbnailDatabase::AddFaviconBitmap(
   } else {
     statement.BindNull(1);
   }
-  statement.BindInt64(2, time.ToTimeT());
+  statement.BindInt64(2, time.ToInternalValue());
   statement.BindInt(3, pixel_size.width());
   statement.BindInt(4, pixel_size.height());
 

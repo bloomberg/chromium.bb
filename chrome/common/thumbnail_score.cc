@@ -62,13 +62,10 @@ ThumbnailScore::~ThumbnailScore() {
 }
 
 bool ThumbnailScore::Equals(const ThumbnailScore& rhs) const {
-  // When testing equality we use ToTimeT() because that's the value
-  // stuck in the SQL database, so we need to test equivalence with
-  // that lower resolution.
   return boring_score == rhs.boring_score &&
       good_clipping == rhs.good_clipping &&
       at_top == rhs.at_top &&
-      time_at_snapshot.ToTimeT() == rhs.time_at_snapshot.ToTimeT() &&
+      time_at_snapshot == rhs.time_at_snapshot &&
       redirect_hops_from_dest == rhs.redirect_hops_from_dest;
 }
 
