@@ -1303,9 +1303,9 @@ void UserManagerImpl::RemoveUserFromListInternal(const std::string& email) {
                                                kUserWallpapersProperties);
   prefs_wallpapers_update->RemoveWithoutPathExpansion(email, NULL);
 
-  bool new_wallpaper_ui_enabled = CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kEnableNewWallpaperUI);
-  if (new_wallpaper_ui_enabled) {
+  bool new_wallpaper_ui_disabled = CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kDisableNewWallpaperUI);
+  if (!new_wallpaper_ui_disabled) {
     DictionaryPrefUpdate prefs_wallpapers_info_update(prefs,
         prefs::kUsersWallpaperInfo);
     prefs_wallpapers_info_update->RemoveWithoutPathExpansion(email, NULL);

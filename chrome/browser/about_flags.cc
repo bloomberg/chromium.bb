@@ -807,11 +807,11 @@ const Experiment kExperiments[] = {
 #endif  // defined(USE_ASH)
 #if defined(OS_CHROMEOS)
   {
-    "new-wallpaper-ui",
-    IDS_FLAGS_NEW_WALLPAPER_UI_NAME,
-    IDS_FLAGS_NEW_WALLPAPER_UI_DESCRIPTION,
+    "disable-new-wallpaper-picker-ui",
+    IDS_FLAGS_DISABLE_NEW_WALLPAPER_UI_NAME,
+    IDS_FLAGS_DISABLE_NEW_WALLPAPER_UI_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnableNewWallpaperUI)
+    SINGLE_VALUE_TYPE(switches::kDisableNewWallpaperUI)
   },
   {
     "enable-drive-v2-api",

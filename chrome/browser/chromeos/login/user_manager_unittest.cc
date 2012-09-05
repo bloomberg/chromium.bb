@@ -60,6 +60,9 @@ class UserManagerTest : public testing::Test {
     reinterpret_cast<TestingBrowserProcess*>(g_browser_process)
         ->SetLocalState(local_state_.get());
     UserManager::RegisterPrefs(local_state_.get());
+    // Wallpaper manager pref is also used by the unit test when new wallpaper
+    // picker ui is enabled.
+    WallpaperManager::RegisterPrefs(local_state_.get());
 
     old_user_manager_ = UserManager::Get();
     ResetUserManager();
