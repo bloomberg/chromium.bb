@@ -5966,15 +5966,6 @@
    fun:_ZN20TranslateManagerTest31SimulateTranslateScriptURLFetchEb
 }
 {
-   bug_146465
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN2ui15GestureSequence27ProcessTouchEventForGestureERKNS_10TouchEventENS_11TouchStatusE
-   fun:_ZN2ui21GestureRecognizerImpl22AdvanceTouchQueueByOneEPNS_15GestureConsumerENS_11TouchStatusE
-   fun:_ZN2ui21GestureRecognizerImpl17AdvanceTouchQueueEPNS_15GestureConsumerEb
-   fun:_ZN4aura10RootWindow23AdvanceQueuedTouchEventEPNS_6WindowEb
-}
-{
    bug_146500
    Memcheck:Unaddressable
    ...

@@ -1532,20 +1532,3 @@
    fun:KioskModeIdleLogoutTest_CheckObserversBeforeUserLogin_Test
    fun:testing::internal::TestFactoryImpl::CreateTest
 }
-{
-   bug_146465_a
-   Heapcheck:Leak
-   fun:ui::GestureSequence::ProcessTouchEventForGesture
-   fun:ui::GestureRecognizerImpl::AdvanceTouchQueueByOne
-   fun:ui::GestureRecognizerImpl::AdvanceTouchQueue
-   fun:aura::RootWindow::AdvanceQueuedTouchEvent
-}
-{
-   bug_146465_b
-   Heapcheck:Leak
-   ...
-   fun:ui::GestureSequence::ProcessTouchEventForGesture
-   fun:ui::GestureRecognizerImpl::AdvanceTouchQueueByOne
-   fun:ui::GestureRecognizerImpl::AdvanceTouchQueue
-   fun:aura::RootWindow::AdvanceQueuedTouchEvent
-}
