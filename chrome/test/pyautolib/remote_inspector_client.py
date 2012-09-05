@@ -701,6 +701,54 @@ class _V8HeapSnapshotParser(object):
     return result
 
 
+class NativeMemorySnapshot(object):
+  """Class representing native memory snapshot captured by Chromium DevTools.
+
+  It is just a convenient wrapper around the snapshot structure returned over
+  the remote debugging protocol. The raw snapshot structure is defined in
+  WebKit/Source/WebCore/inspector/Inspector.json
+
+  Public Methods:
+    GetProcessPrivateMemorySize: The process total size.
+    GetUnknownSize: Size of not instrumented parts.
+    FindMemoryBlock: Given an array of memory block names return the block.
+  """
+  def __init__(self, root_block):
+    self._root = root_block
+
+  def GetProcessPrivateMemorySize(self):
+    return self._root['size']
+
+  def GetUnknownSize(self):
+    """Size of the memory whose owner is unknown to DevTools."""
+    known_size = 0
+    for child in self._root['children']:
+      known_size += child['size']
+    return self.GetProcessPrivateMemorySize() - known_size
+
+  def FindMemoryBlock(self, path):
+    """Find memory block with given path.
+
+    Args:
+      path: Array of block names, first element is the root block
+            name, last one is the name of the block to find.
+
+    Returns:
+      Memory block with given path or None.
+    """
+    result = None
+    children = [self._root]
+    for name in path:
+      if not children:
+        return None
+      result = None
+      for child in children:
+        if name == child.get('name'):
+          result = child
+          children = child.get('children')
+    return result
+
+
 # TODO(dennisjeffrey): The "verbose" option used in this file should re-use
 # pyauto's verbose flag.
 class RemoteInspectorClient(object):
@@ -963,6 +1011,52 @@ class RemoteInspectorClient(object):
       'DOMNodeCount': self._dom_node_count,
       'EventListenerCount': self._event_listener_count,
     }
+
+  def GetProcessMemoryDistribution(self):
+    """Retrieves info about memory distribution between renderer components.
+
+    Returns:
+      An object representing the native memory snapshot.
+    """
+    MEMORY_DISTRIBUTION_MESSAGES = [
+      ('Profiler.collectGarbage', {}),
+      ('Memory.getProcessMemoryDistribution', {})
+    ]
+
+    reply_holder = [None]
+    done_condition = threading.Condition()
+    def HandleReply(reply_dict):
+      """Processes a reply message received from the remote Chrome instance.
+
+      Args:
+        reply_dict: A dictionary object representing the reply message received
+                    from the remote Chrome instance.
+      """
+      request_id = reply_dict['id']
+      # GC command will have id = 0, the second command id = 1
+      if request_id == 0:
+        logging.info('Did garbage collection')
+        return
+      if request_id != 1:
+        raise RuntimeError('Unexpected request_id: %d' % request_id)
+      reply_holder[0] = reply_dict
+      done_condition.acquire()
+      done_condition.notify()
+      done_condition.release()
+
+    # Tell the remote inspector to perform garbage collection and capture native
+    # memory snapshot.
+    self._remote_inspector_thread.PerformAction(MEMORY_DISTRIBUTION_MESSAGES,
+                                                HandleReply)
+
+    done_condition.acquire()
+    done_condition.wait()
+    done_condition.release()
+    reply = reply_holder[0]
+    if 'result' in reply:
+      return NativeMemorySnapshot(reply_holder[0]['result']['distribution'])
+    raise RuntimeError('Unexpected protocol error: ' +
+                       reply['error']['message'])
 
   def CollectGarbage(self):
     """Forces a garbage collection."""
