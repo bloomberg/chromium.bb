@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/observer_list.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/gdata/auth_service.h"
@@ -25,7 +26,8 @@ class OperationRunner;
 // DocumentsList API).
 // Details of API call are abstracted in each operation class and this class
 // works as a thin wrapper for the API.
-class GDataWapiService : public DriveServiceInterface {
+class GDataWapiService : public DriveServiceInterface,
+                         public AuthService::Observer {
  public:
   // Instance is usually created by DriveSystemServiceFactory and owned by
   // DriveFileSystem.
@@ -36,7 +38,10 @@ class GDataWapiService : public DriveServiceInterface {
 
   // DriveServiceInterface Overrides
   virtual void Initialize(Profile* profile) OVERRIDE;
+  virtual void AddObserver(DriveServiceObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(DriveServiceObserver* observer) OVERRIDE;
   virtual OperationRegistry* operation_registry() const OVERRIDE;
+  virtual bool CanStartOperation() const OVERRIDE;
   virtual void CancelAll() OVERRIDE;
   virtual void Authenticate(const AuthStatusCallback& callback) OVERRIDE;
   virtual bool HasAccessToken() const OVERRIDE;
@@ -92,9 +97,12 @@ class GDataWapiService : public DriveServiceInterface {
                             const GetDataCallback& callback) OVERRIDE;
 
  private:
-  Profile* profile_;
+  // AuthService::Observer override.
+  virtual void OnOAuth2RefreshTokenChanged() OVERRIDE;
 
+  Profile* profile_;
   scoped_ptr<OperationRunner> runner_;
+  ObserverList<DriveServiceObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataWapiService);
 };

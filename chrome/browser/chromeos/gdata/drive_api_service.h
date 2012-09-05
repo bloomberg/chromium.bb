@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/observer_list.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/gdata/auth_service.h"
@@ -24,7 +25,8 @@ class OperationRunner;
 // This class provides documents feed service calls for Drive V2 API.
 // Details of API call are abstracted in each operation class and this class
 // works as a thin wrapper for the API.
-class DriveAPIService : public DriveServiceInterface {
+class DriveAPIService : public DriveServiceInterface,
+                        public AuthService::Observer {
  public:
   // Instance is usually created by DriveSystemServiceFactory and owned by
   // DriveFileSystem.
@@ -33,7 +35,10 @@ class DriveAPIService : public DriveServiceInterface {
 
   // DriveServiceInterface Overrides
   virtual void Initialize(Profile* profile) OVERRIDE;
+  virtual void AddObserver(DriveServiceObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(DriveServiceObserver* observer) OVERRIDE;
   virtual OperationRegistry* operation_registry() const OVERRIDE;
+  virtual bool CanStartOperation() const OVERRIDE;
   virtual void CancelAll() OVERRIDE;
   virtual void Authenticate(const AuthStatusCallback& callback) OVERRIDE;
   virtual bool HasAccessToken() const OVERRIDE;
@@ -95,21 +100,25 @@ class DriveAPIService : public DriveServiceInterface {
   // |start_changestamp| specifies the starting point of change list or 0 if
   // all changes are necessary.
   // Upon completion, invokes |callback| with results on calling thread.
-  virtual void GetChangelist(const GURL& url,
-                             int64 start_changestamp,
-                             const GetDataCallback& callback);
+  void GetChangelist(const GURL& url,
+                     int64 start_changestamp,
+                     const GetDataCallback& callback);
 
   // Fetches a filelist from |url| with |search_query|, using Drive V2 API. If
   // this URL is empty the call will use the default URL. Specify |url| when
   // pagenated request should be issued.
   // |search_query| specifies query string, whose syntax is described at
   // https://developers.google.com/drive/search-parameters
-  virtual void GetFilelist(const GURL& url,
-                           const std::string& search_query,
-                           const GetDataCallback& callback);
+  void GetFilelist(const GURL& url,
+                   const std::string& search_query,
+                   const GetDataCallback& callback);
+
+  // AuthService::Observer override.
+  virtual void OnOAuth2RefreshTokenChanged() OVERRIDE;
 
   Profile* profile_;
   scoped_ptr<OperationRunner> runner_;
+  ObserverList<DriveServiceObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveAPIService);
 };

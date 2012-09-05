@@ -26,7 +26,10 @@ class MockDriveService : public DriveServiceInterface {
 
   // DriveServiceInterface overrides.
   MOCK_METHOD1(Initialize, void(Profile* profile));
+  MOCK_METHOD1(AddObserver, void(DriveServiceObserver* observer));
+  MOCK_METHOD1(RemoveObserver, void(DriveServiceObserver* observer));
   MOCK_CONST_METHOD0(operation_registry, OperationRegistry*());
+  MOCK_CONST_METHOD0(CanStartOperation, bool());
   MOCK_METHOD0(CancelAll, void(void));
   MOCK_METHOD1(Authenticate, void(const AuthStatusCallback& callback));
   MOCK_METHOD5(GetDocuments, void(const GURL& feed_url,

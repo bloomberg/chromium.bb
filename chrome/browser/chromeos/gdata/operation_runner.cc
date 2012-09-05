@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/gdata/operation_runner.h"
 
 #include "base/bind.h"
+#include "chrome/browser/chromeos/gdata/auth_service.h"
 #include "chrome/browser/chromeos/gdata/operations_base.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -20,12 +21,10 @@ OperationRunner::OperationRunner(Profile* profile,
       operation_registry_(new OperationRegistry()),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  auth_service_->AddObserver(this);
 }
 
 OperationRunner::~OperationRunner() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  auth_service_->RemoveObserver(this);
 }
 
 void OperationRunner::Initialize() {
@@ -93,10 +92,6 @@ void OperationRunner::RetryOperation(
   // User authentication might have expired - rerun the request to force
   // auth token refresh.
   StartOperation(operation);
-}
-
-void OperationRunner::OnOAuth2RefreshTokenChanged() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 }  // namespace gdata

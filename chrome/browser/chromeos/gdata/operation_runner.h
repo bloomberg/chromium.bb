@@ -11,19 +11,20 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/gdata/auth_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
+#include "chrome/browser/chromeos/gdata/operations_base.h"
 
 class Profile;
 
 namespace gdata {
 
 class AuthenticatedOperationInterface;
+class AuthService;
 class OperationRegistry;
 
 // Helper class that runs AuthenticatedOperationInterface objects, handling
 // retries and authentication.
-class OperationRunner : public AuthService::Observer {
+class OperationRunner {
  public:
   OperationRunner(Profile* profile, const std::vector<std::string>& scopes);
   virtual ~OperationRunner();
@@ -63,9 +64,6 @@ class OperationRunner : public AuthService::Observer {
   void RetryOperation(AuthenticatedOperationInterface* operation);
 
  private:
-  // AuthService::Observer override.
-  virtual void OnOAuth2RefreshTokenChanged() OVERRIDE;
-
   Profile* profile_;  // not owned
 
   scoped_ptr<AuthService> auth_service_;

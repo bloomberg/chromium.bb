@@ -38,6 +38,8 @@ DriveAPIService::DriveAPIService()
 
 DriveAPIService::~DriveAPIService() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (runner_.get())
+    runner_->auth_service()->RemoveObserver(this);
 }
 
 void DriveAPIService::Initialize(Profile* profile) {
@@ -49,10 +51,26 @@ void DriveAPIService::Initialize(Profile* profile) {
   scopes.push_back(kDriveAppsReadonlyScope);
   runner_.reset(new OperationRunner(profile, scopes));
   runner_->Initialize();
+
+  runner_->auth_service()->AddObserver(this);
+}
+
+void DriveAPIService::AddObserver(DriveServiceObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void DriveAPIService::RemoveObserver(DriveServiceObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 OperationRegistry* DriveAPIService::operation_registry() const {
   return runner_->operation_registry();
+}
+
+bool DriveAPIService::CanStartOperation() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  return HasRefreshToken();
 }
 
 void DriveAPIService::CancelAll() {
@@ -226,7 +244,6 @@ void DriveAPIService::ResumeUpload(const ResumeUploadParams& params,
   NOTREACHED();
 }
 
-
 void DriveAPIService::AuthorizeApp(const GURL& resource_url,
                                    const std::string& app_ids,
                                    const GetDataCallback& callback) {
@@ -246,6 +263,12 @@ bool DriveAPIService::HasRefreshToken() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   return runner_->auth_service()->HasRefreshToken();
+}
+
+void DriveAPIService::OnOAuth2RefreshTokenChanged() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  FOR_EACH_OBSERVER(
+      DriveServiceObserver, observers_, OnOperationReadinessChanged());
 }
 
 }  // namespace gdata

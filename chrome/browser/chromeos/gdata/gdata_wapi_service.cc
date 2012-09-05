@@ -74,6 +74,8 @@ GDataWapiService::GDataWapiService()
 
 GDataWapiService::~GDataWapiService() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (runner_.get())
+    runner_->auth_service()->RemoveObserver(this);
 }
 
 AuthService* GDataWapiService::auth_service_for_testing() {
@@ -92,10 +94,26 @@ void GDataWapiService::Initialize(Profile* profile) {
   scopes.push_back(kDriveAppsScope);
   runner_.reset(new OperationRunner(profile, scopes));
   runner_->Initialize();
+
+  runner_->auth_service()->AddObserver(this);
+}
+
+void GDataWapiService::AddObserver(DriveServiceObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void GDataWapiService::RemoveObserver(DriveServiceObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 OperationRegistry* GDataWapiService::operation_registry() const {
   return runner_->operation_registry();
+}
+
+bool GDataWapiService::CanStartOperation() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  return HasRefreshToken();
 }
 
 void GDataWapiService::CancelAll() {
@@ -274,7 +292,6 @@ void GDataWapiService::ResumeUpload(const ResumeUploadParams& params,
       new ResumeUploadOperation(operation_registry(), callback, params));
 }
 
-
 void GDataWapiService::AuthorizeApp(const GURL& resource_url,
                                     const std::string& app_ids,
                                     const GetDataCallback& callback) {
@@ -295,6 +312,12 @@ bool GDataWapiService::HasRefreshToken() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   return runner_->auth_service()->HasRefreshToken();
+}
+
+void GDataWapiService::OnOAuth2RefreshTokenChanged() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  FOR_EACH_OBSERVER(
+      DriveServiceObserver, observers_, OnOperationReadinessChanged());
 }
 
 }  // namespace gdata

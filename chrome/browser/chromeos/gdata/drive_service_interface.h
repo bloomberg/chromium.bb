@@ -41,6 +41,16 @@ enum DocumentExportFormat {
            // is returned in TSV by default.
 };
 
+// Observer interface for DriveServiceInterface.
+class DriveServiceObserver {
+ public:
+  // Triggered when the operaton readiness is changed.
+  virtual void OnOperationReadinessChanged() = 0;
+
+ protected:
+  virtual ~DriveServiceObserver() {}
+};
+
 // This defines an interface for sharing by DocumentService and
 // MockDocumentService so that we can do testing of clients of DocumentService.
 //
@@ -58,8 +68,17 @@ class DriveServiceInterface {
   // Initializes the documents service tied with |profile|.
   virtual void Initialize(Profile* profile) = 0;
 
+  // Adds an observer.
+  virtual void AddObserver(DriveServiceObserver* observer) = 0;
+
+  // Removes an observer.
+  virtual void RemoveObserver(DriveServiceObserver* observer) = 0;
+
   // Retrieves the operation registry.
   virtual OperationRegistry* operation_registry() const = 0;
+
+  // True if ready to start operations.
+  virtual bool CanStartOperation() const = 0;
 
   // Cancels all in-flight operations.
   virtual void CancelAll() = 0;
