@@ -80,6 +80,7 @@ table_files = \
 	es-translation.ctb \
 	et.ctb \
 	et-g0.utb \
+	ethio-g1.ctb \
 	eurodefs.cti \
 	fi1.ctb \
 	fi2.ctb \
