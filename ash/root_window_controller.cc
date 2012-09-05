@@ -132,12 +132,31 @@ void SetUsesScreenCoordinates(aura::Window* container) {
 void CreateContainersInRootWindow(aura::RootWindow* root_window) {
   // These containers are just used by PowerButtonController to animate groups
   // of containers simultaneously without messing up the current transformations
-  // on those containers.  These are direct children of the root window; all of
+  // on those containers. These are direct children of the root window; all of
   // the other containers are their children.
+  // Desktop and lock screen background containers are not part of the
+  // lock animation so they are not included in those animate groups.
+  // When screen is locked desktop background is moved to lock screen background
+  // container (moved back on unlock). We want to make sure that there's an
+  // opaque layer occluding the non-lock-screen layers.
+
+  aura::Window* desktop_background_containers = CreateContainer(
+      internal::kShellWindowId_DesktopBackgroundContainer,
+      "DesktopBackgroundContainer",
+      root_window);
+  SetChildWindowVisibilityChangesAnimated(desktop_background_containers);
+
   aura::Window* non_lock_screen_containers = CreateContainer(
       internal::kShellWindowId_NonLockScreenContainersContainer,
       "NonLockScreenContainersContainer",
       root_window);
+
+  aura::Window* lock_background_containers = CreateContainer(
+      internal::kShellWindowId_LockScreenBackgroundContainer,
+      "LockScreenBackgroundContainer",
+      root_window);
+  SetChildWindowVisibilityChangesAnimated(lock_background_containers);
+
   aura::Window* lock_screen_containers = CreateContainer(
       internal::kShellWindowId_LockScreenContainersContainer,
       "LockScreenContainersContainer",
@@ -153,12 +172,6 @@ void CreateContainersInRootWindow(aura::RootWindow* root_window) {
 
   CreateContainer(internal::kShellWindowId_SystemBackgroundContainer,
                   "SystemBackgroundContainer", non_lock_screen_containers);
-
-  aura::Window* desktop_background_containers = CreateContainer(
-      internal::kShellWindowId_DesktopBackgroundContainer,
-      "DesktopBackgroundContainer",
-      non_lock_screen_containers);
-  SetChildWindowVisibilityChangesAnimated(desktop_background_containers);
 
   aura::Window* default_container = CreateContainer(
       internal::kShellWindowId_DefaultContainer,
@@ -210,13 +223,6 @@ void CreateContainersInRootWindow(aura::RootWindow* root_window) {
       "InputMethodContainer",
       non_lock_screen_containers);
   SetUsesScreenCoordinates(input_method_container);
-
-  aura::Window* lock_background_containers = CreateContainer(
-      internal::kShellWindowId_LockScreenBackgroundContainer,
-      "LockScreenBackgroundContainer",
-      lock_screen_containers);
-
-  SetChildWindowVisibilityChangesAnimated(lock_background_containers);
 
   // TODO(beng): Figure out if we can make this use
   // SystemModalContainerEventFilter instead of stops_event_propagation.
