@@ -376,15 +376,33 @@ TEST(WebRequestConditionAttributeTest, Headers) {
   MatchAndCheck(tests, keys::kResponseHeadersKey, &url_request, &result);
   EXPECT_TRUE(result);
 
-  // 1.h. -- Values are case-sensitive, this should fail
+  // 1.h. -- Values are case-sensitive, this should fail.
   const std::string kLowercase[] = {
     keys::kNameEqualsKey, "Custom-header-b",
-    keys::kValueEqualsKey, "valuea"  // valuea != valueA
+    keys::kValuePrefixKey, "valueb",  // valueb != valueB
+    keys::kNameEqualsKey, "Custom-header-b",
+    keys::kValueSuffixKey, "valueb",
+    keys::kNameEqualsKey, "Custom-header-b",
+    keys::kValueContainsKey, "valueb",
+    keys::kNameEqualsKey, "Custom-header-b",
+    keys::kValueEqualsKey, "valueb"
   };
-  const size_t kLowercaseSizes[] = { arraysize(kLowercase) };
-  GetArrayAsVector(kLowercase, kLowercaseSizes, 1u, &tests);
+  const size_t kLowercaseSizes[] = { 4u, 4u, 4u, 4u };  // As disjunction.
+  GetArrayAsVector(kLowercase, kLowercaseSizes, 4u, &tests);
   MatchAndCheck(tests, keys::kResponseHeadersKey, &url_request, &result);
   EXPECT_FALSE(result);
+
+  // 1.i. -- Names are case-insensitive, this should pass.
+  const std::string kUppercase[] = {
+    keys::kNamePrefixKey, "CUSTOM-HEADER-B",
+    keys::kNameSuffixKey, "CUSTOM-HEADER-B",
+    keys::kNameEqualsKey, "CUSTOM-HEADER-B",
+    keys::kNameContainsKey, "CUSTOM-HEADER-B"
+  };
+  const size_t kUppercaseSizes[] = { arraysize(kUppercase) };  // Conjunction.
+  GetArrayAsVector(kUppercase, kUppercaseSizes, 1u, &tests);
+  MatchAndCheck(tests, keys::kResponseHeadersKey, &url_request, &result);
+  EXPECT_TRUE(result);
 
   // 2.a. -- This should pass as disjunction, because one of the tests passes.
   const std::string kDisjunction[] = {
