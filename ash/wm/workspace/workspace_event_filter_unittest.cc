@@ -135,5 +135,39 @@ TEST_F(WorkspaceEventFilterTest, DoubleTapCaptionTogglesMaximize) {
   EXPECT_EQ(bounds.ToString(), window->bounds().ToString());
 }
 
+// Verifies deleting the window while dragging doesn't crash.
+TEST_F(WorkspaceEventFilterTest, DeleteWhenDragging) {
+  // Create a large window in the background. This is necessary so that when we
+  // delete |window| WorkspaceEventFilter is still the active EventFilter.
+  aura::test::TestWindowDelegate wd2;
+  scoped_ptr<aura::Window> window2(
+      CreateTestWindow(&wd2, gfx::Rect(0, 0, 500, 500)));
+
+  aura::test::TestWindowDelegate wd;
+  const gfx::Rect bounds(10, 20, 30, 40);
+  scoped_ptr<aura::Window> window(CreateTestWindow(&wd, bounds));
+  wd.set_window_component(HTCAPTION);
+  aura::test::EventGenerator generator(window->GetRootWindow());
+  generator.MoveMouseToCenterOf(window.get());
+  generator.PressLeftButton();
+  generator.MoveMouseTo(generator.current_location().Add(gfx::Point(50, 50)));
+  DCHECK_NE(bounds.origin().ToString(), window->bounds().origin().ToString());
+  window.reset();
+  generator.MoveMouseTo(generator.current_location().Add(gfx::Point(50, 50)));
+}
+
+// Verifies deleting the window while in a run loop doesn't crash.
+TEST_F(WorkspaceEventFilterTest, DeleteWhileInRunLoop) {
+  aura::test::TestWindowDelegate wd;
+  const gfx::Rect bounds(10, 20, 30, 40);
+  scoped_ptr<aura::Window> window(CreateTestWindow(&wd, bounds));
+  wd.set_window_component(HTCAPTION);
+
+  ASSERT_TRUE(aura::client::GetWindowMoveClient(window->parent()));
+  MessageLoop::current()->DeleteSoon(FROM_HERE, window.get());
+  aura::client::GetWindowMoveClient(window->parent())->RunMoveLoop(
+      window.release(), gfx::Point());
+}
+
 }  // namespace internal
 }  // namespace ash

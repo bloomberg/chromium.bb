@@ -235,6 +235,10 @@ void WorkspaceWindowResizer::RevertDrag() {
   }
 }
 
+aura::Window* WorkspaceWindowResizer::GetTarget() {
+  return details_.window;
+}
+
 WorkspaceWindowResizer::WorkspaceWindowResizer(
     const Details& details,
     const std::vector<aura::Window*>& attached_windows)

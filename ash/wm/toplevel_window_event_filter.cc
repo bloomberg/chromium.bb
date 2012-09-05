@@ -18,6 +18,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/events/event.h"
 #include "ui/base/gestures/gesture_recognizer.h"
@@ -43,7 +44,55 @@ gfx::Point ConvertPointToParent(aura::Window* window,
   return result;
 }
 
+}  // namespace
+
+// ScopedWindowResizer ---------------------------------------------------------
+
+// Wraps a WindowResizer and installs an observer on its target window.  When
+// the window is destroyed ResizerWindowDestroyed() is invoked back on the
+// ToplevelWindowEventFilter to clean up.
+class ToplevelWindowEventFilter::ScopedWindowResizer
+    : public aura::WindowObserver {
+ public:
+  ScopedWindowResizer(ToplevelWindowEventFilter* filter,
+                      WindowResizer* resizer);
+  virtual ~ScopedWindowResizer();
+
+  WindowResizer* resizer() { return resizer_.get(); }
+
+  // WindowObserver overrides:
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+
+ private:
+  ToplevelWindowEventFilter* filter_;
+  scoped_ptr<WindowResizer> resizer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedWindowResizer);
+};
+
+ToplevelWindowEventFilter::ScopedWindowResizer::ScopedWindowResizer(
+    ToplevelWindowEventFilter* filter,
+    WindowResizer* resizer)
+    : filter_(filter),
+      resizer_(resizer) {
+  if (resizer_.get())
+    resizer_->GetTarget()->AddObserver(this);
 }
+
+ToplevelWindowEventFilter::ScopedWindowResizer::~ScopedWindowResizer() {
+  if (resizer_.get())
+    resizer_->GetTarget()->RemoveObserver(this);
+}
+
+void ToplevelWindowEventFilter::ScopedWindowResizer::OnWindowDestroying(
+    aura::Window* window) {
+  DCHECK(resizer_.get());
+  DCHECK_EQ(resizer_->GetTarget(), window);
+  filter_->ResizerWindowDestroyed();
+}
+
+
+// ToplevelWindowEventFilter ---------------------------------------------------
 
 ToplevelWindowEventFilter::ToplevelWindowEventFilter(aura::Window* owner)
     : in_move_loop_(false),
@@ -82,8 +131,7 @@ bool ToplevelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
           WindowResizer::GetBoundsChangeForWindowComponent(component)) {
         gfx::Point location_in_parent(
             ConvertPointToParent(target, event->location()));
-        window_resizer_.reset(
-            CreateWindowResizer(target, location_in_parent, component));
+        CreateScopedWindowResizer(target, location_in_parent, component);
       } else {
         window_resizer_.reset();
       }
@@ -138,8 +186,7 @@ ui::EventResult ToplevelWindowEventFilter::PreHandleGestureEvent(
       in_gesture_resize_ = true;
       gfx::Point location_in_parent(
           ConvertPointToParent(target, event->location()));
-      window_resizer_.reset(
-          CreateWindowResizer(target, location_in_parent, component));
+      CreateScopedWindowResizer(target, location_in_parent, component);
       break;
     }
     case ui::ET_GESTURE_SCROLL_UPDATE: {
@@ -219,8 +266,7 @@ void ToplevelWindowEventFilter::RunMoveLoop(aura::Window* source,
     aura::Window::ConvertPointToTarget(
         root_window, source->parent(), &drag_location);
   }
-  window_resizer_.reset(
-      CreateWindowResizer(source, drag_location, HTCAPTION));
+  CreateScopedWindowResizer(source, drag_location, HTCAPTION);
   source->GetRootWindow()->SetCursor(ui::kCursorPointer);
 #if !defined(OS_MACOSX)
   MessageLoopForUI* loop = MessageLoopForUI::current();
@@ -238,7 +284,7 @@ void ToplevelWindowEventFilter::EndMoveLoop() {
 
   in_move_loop_ = false;
   if (window_resizer_.get()) {
-    window_resizer_->RevertDrag();
+    window_resizer_->resizer()->RevertDrag();
     window_resizer_.reset();
   }
   quit_closure_.Run();
@@ -255,14 +301,26 @@ WindowResizer* ToplevelWindowEventFilter::CreateWindowResizer(
       window, point_in_parent, window_component);
 }
 
+
+void ToplevelWindowEventFilter::CreateScopedWindowResizer(
+    aura::Window* window,
+    const gfx::Point& point_in_parent,
+    int window_component) {
+  window_resizer_.reset();
+  WindowResizer* resizer =
+      CreateWindowResizer(window, point_in_parent, window_component);
+  if (resizer)
+    window_resizer_.reset(new ScopedWindowResizer(this, resizer));
+}
+
 void ToplevelWindowEventFilter::CompleteDrag(DragCompletionStatus status,
                                              int event_flags) {
-  scoped_ptr<WindowResizer> resizer(window_resizer_.release());
+  scoped_ptr<ScopedWindowResizer> resizer(window_resizer_.release());
   if (resizer.get()) {
     if (status == DRAG_COMPLETE)
-      resizer->CompleteDrag(event_flags);
+      resizer->resizer()->CompleteDrag(event_flags);
     else
-      resizer->RevertDrag();
+      resizer->resizer()->RevertDrag();
   }
 }
 
@@ -276,8 +334,8 @@ bool ToplevelWindowEventFilter::HandleDrag(aura::Window* target,
 
   if (!window_resizer_.get())
     return false;
-  window_resizer_->Drag(ConvertPointToParent(target, event->location()),
-                        event->flags());
+  window_resizer_->resizer()->Drag(
+      ConvertPointToParent(target, event->location()), event->flags());
   return true;
 }
 
@@ -306,6 +364,15 @@ bool ToplevelWindowEventFilter::HandleMouseExited(aura::Window* target,
   if (controller)
     controller->HideShadow(target);
   return false;
+}
+
+void ToplevelWindowEventFilter::ResizerWindowDestroyed() {
+  // We explicitly don't invoke RevertDrag() since that may do things to window.
+  // Instead we destroy the resizer.
+  window_resizer_.reset();
+
+  // End the move loop. This does nothing if we're not in a move loop.
+  EndMoveLoop();
 }
 
 }  // namespace ash

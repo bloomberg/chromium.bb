@@ -57,6 +57,9 @@ class ASH_EXPORT WindowResizer {
   // Reverts the drag.
   virtual void RevertDrag() = 0;
 
+  // Returns the target window the resizer was created for.
+  virtual aura::Window* GetTarget() = 0;
+
  protected:
   struct Details {
     Details();

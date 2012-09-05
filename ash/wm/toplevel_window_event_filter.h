@@ -7,12 +7,12 @@
 
 #include <set>
 
+#include "ash/ash_export.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/window_move_client.h"
 #include "ui/aura/event_filter.h"
-#include "ash/ash_export.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 
@@ -28,8 +28,8 @@ namespace ash {
 
 class WindowResizer;
 
-class ASH_EXPORT ToplevelWindowEventFilter :
-      public aura::EventFilter,
+class ASH_EXPORT ToplevelWindowEventFilter
+    : public aura::EventFilter,
       public aura::client::WindowMoveClient {
  public:
   explicit ToplevelWindowEventFilter(aura::Window* owner);
@@ -65,10 +65,16 @@ class ASH_EXPORT ToplevelWindowEventFilter :
                                              int window_component);
 
  private:
+  class ScopedWindowResizer;
+
   enum DragCompletionStatus {
     DRAG_COMPLETE,
     DRAG_REVERT
   };
+
+  void CreateScopedWindowResizer(aura::Window* window,
+                                 const gfx::Point& point_in_parent,
+                                 int window_component);
 
   // Finishes the drag.
   void CompleteDrag(DragCompletionStatus status, int event_flags);
@@ -85,6 +91,9 @@ class ASH_EXPORT ToplevelWindowEventFilter :
   // Return value is returned by OnMouseEvent() above.
   bool HandleMouseExited(aura::Window* target, ui::LocatedEvent* event);
 
+  // Invoked from ScopedWindowResizer if the window is destroyed.
+  void ResizerWindowDestroyed();
+
   // Are we running a nested message loop from RunMoveLoop().
   bool in_move_loop_;
 
@@ -94,7 +103,7 @@ class ASH_EXPORT ToplevelWindowEventFilter :
   // See description above setter.
   int grid_size_;
 
-  scoped_ptr<WindowResizer> window_resizer_;
+  scoped_ptr<ScopedWindowResizer> window_resizer_;
 
   base::Closure quit_closure_;
 
