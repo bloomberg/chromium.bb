@@ -179,7 +179,7 @@ std::string CollectDriverVersionNVidia() {
   }
   int event_base = 0, error_base = 0;
   if (!XNVCTRLQueryExtension(display, &event_base, &error_base)) {
-    LOG(INFO) << "NVCtrl extension does not exits.";
+    LOG(INFO) << "NVCtrl extension does not exist.";
     return std::string();
   }
   int screen_count = ScreenCount(display);
