@@ -16,6 +16,8 @@
 #include "TextStream.h"
 
 #include <public/WebAnimationDelegate.h>
+#include <public/WebLayerScrollClient.h>
+#include <public/WebSize.h>
 
 using namespace std;
 using WebKit::WebTransformationMatrix;
@@ -65,7 +67,7 @@ LayerChromium::LayerChromium()
     , m_screenSpaceTransformIsAnimating(false)
     , m_contentsScale(1.0)
     , m_layerAnimationDelegate(0)
-    , m_layerScrollDelegate(0)
+    , m_layerScrollClient(0)
 {
     if (m_layerId < 0) {
         s_nextLayerId = 1;
@@ -369,6 +371,8 @@ void LayerChromium::setScrollPosition(const IntPoint& scrollPosition)
     if (m_scrollPosition == scrollPosition)
         return;
     m_scrollPosition = scrollPosition;
+    if (m_layerScrollClient)
+        m_layerScrollClient->didScroll();
     setNeedsCommit();
 }
 
@@ -411,13 +415,6 @@ void LayerChromium::setNonFastScrollableRegion(const Region& region)
     m_nonFastScrollableRegion = region;
     m_nonFastScrollableRegionChanged = true;
     setNeedsCommit();
-}
-
-void LayerChromium::scrollBy(const IntSize& scrollDelta)
-{
-    setScrollPosition(scrollPosition() + scrollDelta);
-    if (m_layerScrollDelegate)
-        m_layerScrollDelegate->didScroll(scrollDelta);
 }
 
 void LayerChromium::setDrawCheckerboardForMissingTiles(bool checkerboard)

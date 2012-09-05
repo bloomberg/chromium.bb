@@ -116,6 +116,7 @@ TEST(CCSchedulerStateMachineTest, TestNextActionBeginsFrameIfNeeded)
 TEST(CCSchedulerStateMachineTest, TestSetForcedRedrawDoesNotSetsNormalRedraw)
 {
     CCSchedulerStateMachine state;
+    state.setCanDraw(true);
     state.setNeedsForcedRedraw();
     EXPECT_FALSE(state.redrawPending());
     EXPECT_TRUE(state.vsyncCallbackNeeded());
@@ -126,6 +127,7 @@ TEST(CCSchedulerStateMachineTest, TestFailedDrawSetsNeedsCommitAndDoesNotDrawAga
     CCSchedulerStateMachine state;
     state.setCanBeginFrame(true);
     state.setVisible(true);
+    state.setCanDraw(true);
     state.setNeedsRedraw();
     EXPECT_TRUE(state.redrawPending());
     EXPECT_TRUE(state.vsyncCallbackNeeded());
@@ -151,6 +153,7 @@ TEST(CCSchedulerStateMachineTest, TestSetNeedsRedrawDuringFailedDrawDoesNotRemov
     CCSchedulerStateMachine state;
     state.setCanBeginFrame(true);
     state.setVisible(true);
+    state.setCanDraw(true);
     state.setNeedsRedraw();
     EXPECT_TRUE(state.redrawPending());
     EXPECT_TRUE(state.vsyncCallbackNeeded());
@@ -179,6 +182,7 @@ TEST(CCSchedulerStateMachineTest, TestCommitAfterFailedDrawAllowsDrawInSameFrame
     CCSchedulerStateMachine state;
     state.setCanBeginFrame(true);
     state.setVisible(true);
+    state.setCanDraw(true);
 
     // Start a commit.
     state.setNeedsCommit();
@@ -219,6 +223,7 @@ TEST(CCSchedulerStateMachineTest, TestCommitAfterFailedAndSuccessfulDrawDoesNotA
     CCSchedulerStateMachine state;
     state.setCanBeginFrame(true);
     state.setVisible(true);
+    state.setCanDraw(true);
 
     // Start a commit.
     state.setNeedsCommit();
@@ -270,6 +275,7 @@ TEST(CCSchedulerStateMachineTest, TestFailedDrawsWillEventuallyForceADrawAfterTh
     CCSchedulerStateMachine state;
     state.setCanBeginFrame(true);
     state.setVisible(true);
+    state.setCanDraw(true);
     state.setMaximumNumberOfFailedDrawsBeforeDrawIsForced(1);
 
     // Start a commit.
@@ -312,6 +318,7 @@ TEST(CCSchedulerStateMachineTest, TestFailedDrawIsRetriedNextVSync)
     CCSchedulerStateMachine state;
     state.setCanBeginFrame(true);
     state.setVisible(true);
+    state.setCanDraw(true);
 
     // Start a draw.
     state.setNeedsRedraw();
@@ -341,6 +348,7 @@ TEST(CCSchedulerStateMachineTest, TestDoestDrawTwiceInSameFrame)
 {
     CCSchedulerStateMachine state;
     state.setVisible(true);
+    state.setCanDraw(true);
     state.setNeedsRedraw();
     EXPECT_TRUE(state.vsyncCallbackNeeded());
     state.didEnterVSync();
@@ -393,6 +401,7 @@ TEST(CCSchedulerStateMachineTest, TestNextActionDrawsOnVSync)
     for (size_t i = 0; i < numCommitStates; ++i) {
         for (unsigned j = 0; j < 2; ++j) {
             StateMachine state;
+            state.setCanDraw(true);
             state.setCommitState(allCommitStates[i]);
             bool forcedDraw = j;
             if (!forcedDraw) {
@@ -505,6 +514,28 @@ TEST(CCSchedulerStateMachineTest, TestCanRedrawWithWaitingForFirstDrawMakesProgr
     EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
 }
 
+TEST(CCSchedulerStateMachineTest, TestVsyncCallbackNeededOnCanDrawAndResourceUpdates)
+{
+    StateMachine state;
+    state.setCommitState(CCSchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_DRAW);
+    state.setCanBeginFrame(true);
+    state.setNeedsCommit(true);
+    state.setNeedsRedraw(true);
+    state.setUpdateMoreResourcesPending(false);
+    state.setVisible(true);
+    state.setCanDraw(false);
+    EXPECT_FALSE(state.vsyncCallbackNeeded());
+
+    state.setUpdateMoreResourcesPending(true);
+    EXPECT_TRUE(state.vsyncCallbackNeeded());
+
+    state.setUpdateMoreResourcesPending(false);
+    EXPECT_FALSE(state.vsyncCallbackNeeded());
+
+    state.setCanDraw(true);
+    EXPECT_TRUE(state.vsyncCallbackNeeded());
+}
+
 TEST(CCSchedulerStateMachineTest, TestUpdates_NoRedraw_OneRoundOfUpdates)
 {
     StateMachine state;
@@ -512,6 +543,7 @@ TEST(CCSchedulerStateMachineTest, TestUpdates_NoRedraw_OneRoundOfUpdates)
     state.setNeedsRedraw(false);
     state.setUpdateMoreResourcesPending(false);
     state.setVisible(true);
+    state.setCanDraw(true);
 
     // Verify we begin update, both for vsync and not vsync.
     EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_UPDATE_MORE_RESOURCES, state.nextAction());
@@ -540,6 +572,7 @@ TEST(CCSchedulerStateMachineTest, TestUpdates_NoRedraw_TwoRoundsOfUpdates)
     state.setNeedsRedraw(false);
     state.setUpdateMoreResourcesPending(false);
     state.setVisible(true);
+    state.setCanDraw(true);
 
     // Verify the update begins, both for vsync and not vsync.
     state.didEnterVSync();
@@ -579,6 +612,7 @@ TEST(CCSchedulerStateMachineTest, TestUpdates_NoRedraw_TwoRoundsOfUpdates)
 TEST(CCSchedulerStateMachineTest, TestVSyncNeededWhenUpdatesPendingButInvisible)
 {
     StateMachine state;
+    state.setCanDraw(true);
     state.setCommitState(CCSchedulerStateMachine::COMMIT_STATE_UPDATING_RESOURCES);
     state.setNeedsRedraw(false);
     state.setVisible(false);
@@ -596,6 +630,7 @@ TEST(CCSchedulerStateMachineTest, TestUpdates_WithRedraw_OneRoundOfUpdates)
     state.setNeedsRedraw(true);
     state.setUpdateMoreResourcesPending(false);
     state.setVisible(true);
+    state.setCanDraw(true);
     EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_UPDATE_MORE_RESOURCES, state.nextAction());
 
     // Begin an update.
@@ -643,6 +678,7 @@ TEST(CCSchedulerStateMachineTest, TestSetNeedsCommitIsNotLost)
     state.setCanBeginFrame(true);
     state.setNeedsCommit(true);
     state.setVisible(true);
+    state.setCanDraw(true);
 
     // Begin the frame.
     EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
@@ -685,6 +721,7 @@ TEST(CCSchedulerStateMachineTest, TestFullCycle)
     StateMachine state;
     state.setCanBeginFrame(true);
     state.setVisible(true);
+    state.setCanDraw(true);
 
     // Start clean and set commit.
     state.setNeedsCommit(true);
@@ -733,6 +770,7 @@ TEST(CCSchedulerStateMachineTest, TestFullCycleWithCommitRequestInbetween)
     StateMachine state;
     state.setCanBeginFrame(true);
     state.setVisible(true);
+    state.setCanDraw(true);
 
     // Start clean and set commit.
     state.setNeedsCommit(true);
@@ -792,6 +830,7 @@ TEST(CCSchedulerStateMachineTest, TestGoesInvisibleBeforeBeginFrameCompletes)
     StateMachine state;
     state.setCanBeginFrame(true);
     state.setVisible(true);
+    state.setCanDraw(true);
 
     // Start clean and set commit.
     state.setNeedsCommit(true);
@@ -830,6 +869,7 @@ TEST(CCSchedulerStateMachineTest, TestContextLostWhenCompletelyIdle)
     StateMachine state;
     state.setCanBeginFrame(true);
     state.setVisible(true);
+    state.setCanDraw(true);
 
     state.didLoseContext();
 
@@ -852,6 +892,7 @@ TEST(CCSchedulerStateMachineTest, TestContextLostWhenIdleAndCommitRequestedWhile
     StateMachine state;
     state.setCanBeginFrame(true);
     state.setVisible(true);
+    state.setCanDraw(true);
 
     state.didLoseContext();
 
@@ -888,6 +929,7 @@ TEST(CCSchedulerStateMachineTest, TestContextLostWhileCommitInProgress)
     StateMachine state;
     state.setCanBeginFrame(true);
     state.setVisible(true);
+    state.setCanDraw(true);
 
     // Get a commit in flight.
     state.setNeedsCommit(true);
@@ -929,6 +971,7 @@ TEST(CCSchedulerStateMachineTest, TestContextLostWhileCommitInProgressAndAnother
     StateMachine state;
     state.setCanBeginFrame(true);
     state.setVisible(true);
+    state.setCanDraw(true);
 
     // Get a commit in flight.
     state.setNeedsCommit(true);
@@ -979,6 +1022,7 @@ TEST(CCSchedulerStateMachineTest, TestFinishAllRenderingWhileContextLost)
 {
     StateMachine state;
     state.setVisible(true);
+    state.setCanDraw(true);
 
     // Cause a lost context lost.
     state.didLoseContext();
@@ -1017,6 +1061,7 @@ TEST(CCSchedulerStateMachineTest, TestBeginFrameWhenCanBeginFrameFalseAndForceCo
 {
     StateMachine state;
     state.setVisible(true);
+    state.setCanDraw(true);
     state.setNeedsCommit(true);
     state.setNeedsForcedCommit(true);
     EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
@@ -1049,6 +1094,7 @@ TEST(CCSchedulerStateMachineTest, TestBeginFrameWhenContextLost)
     StateMachine state;
     state.setCanBeginFrame(true);
     state.setVisible(true);
+    state.setCanDraw(true);
     state.setNeedsCommit(true);
     state.setNeedsForcedCommit(true);
     state.didLoseContext();

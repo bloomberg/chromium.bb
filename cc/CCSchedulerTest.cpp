@@ -24,14 +24,12 @@ public:
     {
         m_actions.clear();
         m_hasMoreResourceUpdates = false;
-        m_canDraw = true;
         m_drawWillHappen = true;
         m_swapWillHappenIfDrawHappens = true;
         m_numDraws = 0;
     }
 
     void setHasMoreResourceUpdates(bool b) { m_hasMoreResourceUpdates = b; }
-    void setCanDraw(bool b) { m_canDraw = b; }
 
     int numDraws() const { return m_numDraws; }
     int numActions() const { return static_cast<int>(m_actions.size()); }
@@ -45,8 +43,8 @@ public:
         return false;
     }
 
-    virtual bool canDraw() OVERRIDE { return m_canDraw; }
     virtual bool hasMoreResourceUpdates() const OVERRIDE { return m_hasMoreResourceUpdates; }
+
     virtual void scheduledActionBeginFrame() OVERRIDE { m_actions.push_back("scheduledActionBeginFrame"); }
     virtual CCScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapIfPossible() OVERRIDE
     {
@@ -71,7 +69,6 @@ public:
 
 protected:
     bool m_hasMoreResourceUpdates;
-    bool m_canDraw;
     bool m_drawWillHappen;
     bool m_swapWillHappenIfDrawHappens;
     int m_numDraws;
@@ -85,6 +82,7 @@ TEST(CCSchedulerTest, RequestCommit)
     OwnPtr<CCScheduler> scheduler = CCScheduler::create(&client, adoptPtr(new CCFrameRateController(timeSource)));
     scheduler->setCanBeginFrame(true);
     scheduler->setVisible(true);
+    scheduler->setCanDraw(true);
 
     // SetNeedsCommit should begin the frame.
     scheduler->setNeedsCommit();
@@ -119,6 +117,7 @@ TEST(CCSchedulerTest, RequestCommitAfterBeginFrame)
     OwnPtr<CCScheduler> scheduler = CCScheduler::create(&client, adoptPtr(new CCFrameRateController(timeSource)));
     scheduler->setCanBeginFrame(true);
     scheduler->setVisible(true);
+    scheduler->setCanDraw(true);
 
     // SetNedsCommit should begin the frame.
     scheduler->setNeedsCommit();
@@ -152,6 +151,7 @@ TEST(CCSchedulerTest, TextureAcquisitionCollision)
     OwnPtr<CCScheduler> scheduler = CCScheduler::create(&client, adoptPtr(new CCFrameRateController(timeSource)));
     scheduler->setCanBeginFrame(true);
     scheduler->setVisible(true);
+    scheduler->setCanDraw(true);
 
     scheduler->setNeedsCommit();
     scheduler->setMainThreadNeedsLayerTextures();
@@ -190,6 +190,7 @@ TEST(CCSchedulerTest, VisibilitySwitchWithTextureAcquisition)
     OwnPtr<CCScheduler> scheduler = CCScheduler::create(&client, adoptPtr(new CCFrameRateController(timeSource)));
     scheduler->setCanBeginFrame(true);
     scheduler->setVisible(true);
+    scheduler->setCanDraw(true);
 
     scheduler->setNeedsCommit();
     scheduler->beginFrameComplete();
@@ -253,6 +254,7 @@ TEST(CCSchedulerTest, RequestRedrawInsideDraw)
     client.setScheduler(scheduler.get());
     scheduler->setCanBeginFrame(true);
     scheduler->setVisible(true);
+    scheduler->setCanDraw(true);
 
     scheduler->setNeedsRedraw();
     EXPECT_TRUE(scheduler->redrawPending());
@@ -279,6 +281,7 @@ TEST(CCSchedulerTest, RequestRedrawInsideFailedDraw)
     client.setScheduler(scheduler.get());
     scheduler->setCanBeginFrame(true);
     scheduler->setVisible(true);
+    scheduler->setCanDraw(true);
     client.setDrawWillHappen(false);
 
     scheduler->setNeedsRedraw();
@@ -351,6 +354,7 @@ TEST(CCSchedulerTest, RequestCommitInsideDraw)
     client.setScheduler(scheduler.get());
     scheduler->setCanBeginFrame(true);
     scheduler->setVisible(true);
+    scheduler->setCanDraw(true);
 
     scheduler->setNeedsRedraw();
     EXPECT_TRUE(scheduler->redrawPending());
@@ -378,6 +382,7 @@ TEST(CCSchedulerTest, RequestCommitInsideFailedDraw)
     client.setScheduler(scheduler.get());
     scheduler->setCanBeginFrame(true);
     scheduler->setVisible(true);
+    scheduler->setCanDraw(true);
     client.setDrawWillHappen(false);
 
     scheduler->setNeedsRedraw();
@@ -420,6 +425,7 @@ TEST(CCSchedulerTest, NoBeginFrameWhenDrawFails)
     client.setScheduler(scheduler.get());
     scheduler->setCanBeginFrame(true);
     scheduler->setVisible(true);
+    scheduler->setCanDraw(true);
 
     EXPECT_EQ(0, controllerPtr->numFramesPending());
 

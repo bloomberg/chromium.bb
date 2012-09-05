@@ -50,6 +50,7 @@ public:
     double nextTickTimeIfActivated();
 
     void setTimebaseAndInterval(double timebase, double intervalSeconds);
+    void setSwapBuffersCompleteSupported(bool);
 
 protected:
     friend class CCFrameRateControllerTimeSourceAdapter;
@@ -66,6 +67,7 @@ protected:
     RefPtr<CCTimeSource> m_timeSource;
     OwnPtr<CCFrameRateControllerTimeSourceAdapter> m_timeSourceClientAdapter;
     bool m_active;
+    bool m_swapBuffersCompleteSupported;
 
     // Members for unthrottled frame-rate.
     bool m_isTimeSourceThrottling;
