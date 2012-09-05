@@ -1429,7 +1429,7 @@
    Heapcheck:Leak
    ...
    fun:gfx::::LoadDefaults
-   fun:gfx::GetDefaultFontRenderParams
+   fun:gfx::GetDefaultWebKitFontRenderParams
    fun:renderer_preferences_util::UpdateFromSystemSettings
    fun:PrefsTabHelper::PrefsTabHelper
    fun:TabContents::TabContents
