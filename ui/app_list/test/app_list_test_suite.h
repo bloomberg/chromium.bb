@@ -16,8 +16,8 @@ class AppListTestSuite : public base::TestSuite {
  public:
   AppListTestSuite(int argc, char** argv);
 
- protected:
-  // base::TestSuite overrides:
+ private:
+  // Overridden from base::TestSuite:
   virtual void Initialize() OVERRIDE;
   virtual void Shutdown() OVERRIDE;
 

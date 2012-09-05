@@ -11,7 +11,7 @@ namespace app_list {
 namespace test {
 
 AppListTestSuite::AppListTestSuite(int argc, char** argv)
-    : TestSuite(argc, argv) {
+    : base::TestSuite(argc, argv) {
 }
 
 void AppListTestSuite::Initialize() {
