@@ -1815,11 +1815,11 @@ TEST_F(GestureRecognizerTest, GestureEventTouchLockSelectsCorrectWindow) {
   ui::GestureConfiguration::
       set_max_separation_for_gesture_touches_in_pixels(499);
 
-  scoped_array<gfx::Rect*> window_bounds(new gfx::Rect*[kNumWindows]);
-  window_bounds[0] = new gfx::Rect(0, 0, 1, 1);
-  window_bounds[1] = new gfx::Rect(500, 0, 1, 1);
-  window_bounds[2] = new gfx::Rect(0, 500, 1, 1);
-  window_bounds[3] = new gfx::Rect(500, 500, 1, 1);
+  scoped_array<gfx::Rect> window_bounds(new gfx::Rect[kNumWindows]);
+  window_bounds[0] = gfx::Rect(0, 0, 1, 1);
+  window_bounds[1] = gfx::Rect(500, 0, 1, 1);
+  window_bounds[2] = gfx::Rect(0, 500, 1, 1);
+  window_bounds[3] = gfx::Rect(500, 500, 1, 1);
 
   scoped_array<aura::Window*> windows(new aura::Window*[kNumWindows]);
 
@@ -1828,9 +1828,9 @@ TEST_F(GestureRecognizerTest, GestureEventTouchLockSelectsCorrectWindow) {
   for (int i = 0; i < kNumWindows; ++i) {
     delegates[i] = new GestureEventConsumeDelegate();
     windows[i] = CreateTestWindowWithDelegate(
-        delegates[i], i, *window_bounds[i], NULL);
+        delegates[i], i, window_bounds[i], NULL);
     windows[i]->set_id(i);
-    ui::TouchEvent press(ui::ET_TOUCH_PRESSED, window_bounds[i]->origin(),
+    ui::TouchEvent press(ui::ET_TOUCH_PRESSED, window_bounds[i].origin(),
                              i, GetTime());
     root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
   }
@@ -1877,6 +1877,12 @@ TEST_F(GestureRecognizerTest, GestureEventTouchLockSelectsCorrectWindow) {
 
   target = gesture_recognizer->GetTargetForLocation(gfx::Point(1000, 1000));
   EXPECT_EQ("2", WindowIDAsString(target));
+
+  for (int i = 0; i < kNumWindows; ++i) {
+    // Delete windows before deleting delegates.
+    delete windows[i];
+    delete delegates[i];
+  }
 }
 
 // Check that touch events outside the root window are still handled

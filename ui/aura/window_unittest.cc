@@ -463,7 +463,8 @@ TEST_F(WindowTest, HitTest) {
 }
 
 TEST_F(WindowTest, HitTestMask) {
-  Window w1(new MaskedWindowDelegate(gfx::Rect(5, 6, 20, 30)));
+  MaskedWindowDelegate d1(gfx::Rect(5, 6, 20, 30));
+  Window w1(&d1);
   w1.Init(ui::LAYER_NOT_DRAWN);
   w1.SetBounds(gfx::Rect(10, 20, 50, 60));
   w1.Show();

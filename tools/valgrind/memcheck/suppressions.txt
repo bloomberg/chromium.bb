@@ -5959,6 +5959,17 @@
    fun:_ZN16TranslateManager18OnURLFetchCompleteEPKN3net10URLFetcherE
    fun:_ZN20TranslateManagerTest31SimulateTranslateScriptURLFetchEb
 }
+{
+   bug_146465
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN2ui15GestureSequence27ProcessTouchEventForGestureERKNS_10TouchEventENS_11TouchStatusE
+   fun:_ZN2ui21GestureRecognizerImpl22AdvanceTouchQueueByOneEPNS_15GestureConsumerENS_11TouchStatusE
+   fun:_ZN2ui21GestureRecognizerImpl17AdvanceTouchQueueEPNS_15GestureConsumerEb
+   fun:_ZN4aura10RootWindow23AdvanceQueuedTouchEventEPNS_6WindowEb
+}
+
+
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
 
@@ -5986,4 +5997,15 @@
    fun:malloc
    obj:/bin/grep
    obj:/bin/grep
+}
+{
+   bug_146464
+   Memcheck:Leak
+   fun:realloc
+   fun:add_codeset.isra.10
+   ...
+   fun:XCreatePixmap
+   fun:XCreateBitmapFromData
+   ...
+   fun:_ZN4aura19RootWindowHostLinuxC1EPNS_22RootWindowHostDelegateERKN3gfx4RectE
 }

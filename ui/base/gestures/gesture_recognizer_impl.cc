@@ -332,6 +332,8 @@ GestureSequence::Gestures* GestureRecognizerImpl::AdvanceTouchQueue(
       } else {
         gestures->insert(gestures->end(), current_gestures->begin(),
                                           current_gestures->end());
+        // current_gestures leaks here, but deleting it causes
+        // double free on some memory. crbug.com/146465.
       }
     }
   }

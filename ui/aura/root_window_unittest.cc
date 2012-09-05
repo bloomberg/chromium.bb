@@ -126,8 +126,9 @@ class EventCountFilter : public EventFilter {
 };
 
 Window* CreateWindow(int id, Window* parent, WindowDelegate* delegate) {
-  Window* window =
-      new Window(delegate ? delegate : new test::TestWindowDelegate);
+  Window* window = new Window(
+      delegate ? delegate :
+      test::TestWindowDelegate::CreateSelfDestroyingDelegate());
   window->set_id(id);
   window->Init(ui::LAYER_TEXTURED);
   window->SetParent(parent);
@@ -706,8 +707,8 @@ TEST_F(RootWindowTest, DeleteWindowDuringDispatch) {
   // Deleting the window should not cause a crash, only prevent further
   // processing from occurring.
   scoped_ptr<Window> w1(CreateWindow(1, root_window(), NULL));
-  DeletingWindowDelegate* d11 = new DeletingWindowDelegate;
-  Window* w11 = CreateWindow(11, w1.get(), d11);
+  DeletingWindowDelegate d11;
+  Window* w11 = CreateWindow(11, w1.get(), &d11);
   WindowTracker tracker;
   DeletingEventFilter* w1_filter = new DeletingEventFilter;
   w1->SetEventFilter(w1_filter);
@@ -717,28 +718,28 @@ TEST_F(RootWindowTest, DeleteWindowDuringDispatch) {
 
   // First up, no one deletes anything.
   tracker.Add(w11);
-  d11->Reset(w11, false);
+  d11.Reset(w11, false);
 
   generator.PressLeftButton();
   EXPECT_TRUE(tracker.Contains(w11));
-  EXPECT_TRUE(d11->got_event());
+  EXPECT_TRUE(d11.got_event());
   generator.ReleaseLeftButton();
 
   // Delegate deletes w11. This will prevent the post-handle step from applying.
   w1_filter->Reset(false);
-  d11->Reset(w11, true);
+  d11.Reset(w11, true);
   generator.PressKey(ui::VKEY_A, 0);
   EXPECT_FALSE(tracker.Contains(w11));
-  EXPECT_TRUE(d11->got_event());
+  EXPECT_TRUE(d11.got_event());
 
   // Pre-handle step deletes w11. This will prevent the delegate and the post-
   // handle steps from applying.
-  w11 = CreateWindow(11, w1.get(), d11);
+  w11 = CreateWindow(11, w1.get(), &d11);
   w1_filter->Reset(true);
-  d11->Reset(w11, false);
+  d11.Reset(w11, false);
   generator.PressLeftButton();
   EXPECT_FALSE(tracker.Contains(w11));
-  EXPECT_FALSE(d11->got_event());
+  EXPECT_FALSE(d11.got_event());
 }
 
 }  // namespace aura

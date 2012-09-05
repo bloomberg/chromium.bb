@@ -177,6 +177,28 @@
    fun:aura::Env::Init
    fun:aura::Env::GetInstance
 }
+{
+   bug_146464_a
+   Heapcheck:Leak
+   fun:get_peer_sock_name
+   fun:base::MessagePumpAuraX11::GetDefaultXDisplay
+}
+{
+   bug_146464_b
+   Heapcheck:Leak
+   fun:add_codeset.isra.10
+   ...
+   fun:RootWindowHostLinux
+   fun:aura::RootWindowHost::Create
+}
+{
+   bug_146464_c
+   Heapcheck:Leak
+   fun:??
+   ...
+   fun:RootWindowHostLinux
+   fun:aura::RootWindowHost::Create
+}
 
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
@@ -1509,4 +1531,21 @@
    fun:KioskModeIdleLogoutTest
    fun:KioskModeIdleLogoutTest_CheckObserversBeforeUserLogin_Test
    fun:testing::internal::TestFactoryImpl::CreateTest
+}
+{
+   bug_146465_a
+   Heapcheck:Leak
+   fun:ui::GestureSequence::ProcessTouchEventForGesture
+   fun:ui::GestureRecognizerImpl::AdvanceTouchQueueByOne
+   fun:ui::GestureRecognizerImpl::AdvanceTouchQueue
+   fun:aura::RootWindow::AdvanceQueuedTouchEvent
+}
+{
+   bug_146465_b
+   Heapcheck:Leak
+   ...
+   fun:ui::GestureSequence::ProcessTouchEventForGesture
+   fun:ui::GestureRecognizerImpl::AdvanceTouchQueueByOne
+   fun:ui::GestureRecognizerImpl::AdvanceTouchQueue
+   fun:aura::RootWindow::AdvanceQueuedTouchEvent
 }

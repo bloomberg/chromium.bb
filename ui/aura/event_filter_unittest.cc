@@ -103,8 +103,9 @@ class TestEventFilterWindowDelegate : public test::TestWindowDelegate {
 };
 
 Window* CreateWindow(int id, Window* parent, WindowDelegate* delegate) {
-  Window* window =
-      new Window(delegate ? delegate : new test::TestWindowDelegate);
+  Window* window = new Window(
+      delegate ? delegate :
+      test::TestWindowDelegate::CreateSelfDestroyingDelegate());
   window->set_id(id);
   window->Init(ui::LAYER_TEXTURED);
   window->SetParent(parent);
@@ -124,8 +125,8 @@ TEST_F(EventFilterTest, PreHandle) {
   scoped_ptr<Window> w1(CreateWindow(1, root_window(), NULL));
   scoped_ptr<Window> w11(CreateWindow(11, w1.get(), NULL));
   scoped_ptr<Window> w111(CreateWindow(111, w11.get(), NULL));
-  TestEventFilterWindowDelegate* d1111 = new TestEventFilterWindowDelegate;
-  scoped_ptr<Window> w1111(CreateWindow(1111, w111.get(), d1111));
+  TestEventFilterWindowDelegate d1111;
+  scoped_ptr<Window> w1111(CreateWindow(1111, w111.get(), &d1111));
 
   test::TestEventFilter* root_window_filter = new test::TestEventFilter;
   test::TestEventFilter* w1_filter = new test::TestEventFilter;
@@ -147,17 +148,17 @@ TEST_F(EventFilterTest, PreHandle) {
   EXPECT_EQ(1, root_window_filter->key_event_count());
   EXPECT_EQ(1, w1_filter->key_event_count());
   EXPECT_EQ(1, w111_filter->key_event_count());
-  EXPECT_EQ(1, d1111->key_event_count());
+  EXPECT_EQ(1, d1111.key_event_count());
   EXPECT_EQ(1, root_window_filter->mouse_event_count());
   EXPECT_EQ(1, w1_filter->mouse_event_count());
   EXPECT_EQ(1, w111_filter->mouse_event_count());
-  EXPECT_EQ(1, d1111->mouse_event_count());
+  EXPECT_EQ(1, d1111.mouse_event_count());
   EXPECT_EQ(0, root_window_filter->touch_event_count());
   EXPECT_EQ(0, w1_filter->touch_event_count());
   EXPECT_EQ(0, w111_filter->touch_event_count());
-  EXPECT_EQ(0, d1111->touch_event_count());
+  EXPECT_EQ(0, d1111.touch_event_count());
 
-  d1111->ResetCounts();
+  d1111.ResetCounts();
   root_window_filter->ResetCounts();
   w1_filter->ResetCounts();
   w111_filter->ResetCounts();
@@ -173,15 +174,15 @@ TEST_F(EventFilterTest, PreHandle) {
   EXPECT_EQ(1, root_window_filter->key_event_count());
   EXPECT_EQ(1, w1_filter->key_event_count());
   EXPECT_EQ(0, w111_filter->key_event_count());
-  EXPECT_EQ(0, d1111->key_event_count());
+  EXPECT_EQ(0, d1111.key_event_count());
   EXPECT_EQ(1, root_window_filter->mouse_event_count());
   EXPECT_EQ(1, w1_filter->mouse_event_count());
   EXPECT_EQ(0, w111_filter->mouse_event_count());
-  EXPECT_EQ(0, d1111->mouse_event_count());
+  EXPECT_EQ(0, d1111.mouse_event_count());
   EXPECT_EQ(0, root_window_filter->touch_event_count());
   EXPECT_EQ(0, w1_filter->touch_event_count());
   EXPECT_EQ(0, w111_filter->touch_event_count());
-  EXPECT_EQ(0, d1111->touch_event_count());
+  EXPECT_EQ(0, d1111.touch_event_count());
 }
 
 // Tests PostHandle* methods for this hierarchy:
@@ -190,12 +191,12 @@ TEST_F(EventFilterTest, PreHandle) {
 //   w11 <-- target window
 TEST_F(EventFilterTest, PostHandle) {
   scoped_ptr<Window> w1(CreateWindow(1, root_window(), NULL));
-  TestEventFilterWindowDelegate* d11 = new TestEventFilterWindowDelegate;
-  scoped_ptr<Window> w11(CreateWindow(11, w1.get(), d11));
+  TestEventFilterWindowDelegate d11;
+  scoped_ptr<Window> w11(CreateWindow(11, w1.get(), &d11));
 
-  test::TestEventFilter* root_window_filter = new test::TestEventFilter;
+  test::TestEventFilter root_window_filter;
   test::TestEventFilter* w1_filter = new test::TestEventFilter;
-  root_window()->AddPostTargetHandler(root_window_filter);
+  root_window()->AddPostTargetHandler(&root_window_filter);
   w1->AddPostTargetHandler(w1_filter);
 
   w1->GetFocusManager()->SetFocusedWindow(w11.get(), NULL);
@@ -206,100 +207,100 @@ TEST_F(EventFilterTest, PostHandle) {
   // event filters and w11's delegate will be notified.
   test::EventGenerator generator(root_window(), w11.get());
 
-  d11->set_key_event_handling_result(ui::ER_UNHANDLED);
-  d11->set_mouse_event_handling_result(ui::ER_UNHANDLED);
-  d11->set_consumes_touch_events(false);
+  d11.set_key_event_handling_result(ui::ER_UNHANDLED);
+  d11.set_mouse_event_handling_result(ui::ER_UNHANDLED);
+  d11.set_consumes_touch_events(false);
 
   generator.PressKey(ui::VKEY_A, 0);
   generator.PressLeftButton();
 
   EXPECT_EQ(1, w1_filter->key_event_count());
   EXPECT_EQ(1, w1_filter->mouse_event_count());
-  EXPECT_EQ(1, root_window_filter->mouse_event_count());
-  EXPECT_EQ(1, d11->key_event_count());
-  EXPECT_EQ(1, d11->mouse_event_count());
+  EXPECT_EQ(1, root_window_filter.mouse_event_count());
+  EXPECT_EQ(1, d11.key_event_count());
+  EXPECT_EQ(1, d11.mouse_event_count());
 
-  root_window_filter->ResetCounts();
+  root_window_filter.ResetCounts();
   w1_filter->ResetCounts();
-  d11->ResetCounts();
+  d11.ResetCounts();
   generator.set_flags(0);
 
   // Let |w1_filter| handle (but not consume) an event. The root-window's
   // post-target filter should still receive the event.
   w1_filter->set_mouse_event_handling_result(ui::ER_HANDLED);
   generator.PressLeftButton();
-  EXPECT_EQ(1, d11->mouse_event_count());
+  EXPECT_EQ(1, d11.mouse_event_count());
   EXPECT_EQ(1, w1_filter->mouse_event_count());
-  EXPECT_EQ(1, root_window_filter->mouse_event_count());
+  EXPECT_EQ(1, root_window_filter.mouse_event_count());
 
-  root_window_filter->ResetCounts();
+  root_window_filter.ResetCounts();
   w1_filter->ResetCounts();
-  d11->ResetCounts();
+  d11.ResetCounts();
   generator.set_flags(0);
 
   // Let |w1_filter| consume an event. So the root-window's post-target
   // filter should no longer receive the event.
   w1_filter->set_mouse_event_handling_result(ui::ER_CONSUMED);
   generator.PressLeftButton();
-  EXPECT_EQ(1, d11->mouse_event_count());
+  EXPECT_EQ(1, d11.mouse_event_count());
   EXPECT_EQ(1, w1_filter->mouse_event_count());
-  EXPECT_EQ(0, root_window_filter->mouse_event_count());
+  EXPECT_EQ(0, root_window_filter.mouse_event_count());
 
   // Now we'll have the delegate handle the events.
-  root_window_filter->ResetCounts();
+  root_window_filter.ResetCounts();
   w1_filter->ResetCounts();
-  d11->ResetCounts();
+  d11.ResetCounts();
   generator.set_flags(0);
 
   w1_filter->set_mouse_event_handling_result(ui::ER_UNHANDLED);
-  d11->set_key_event_handling_result(ui::ER_HANDLED);
-  d11->set_mouse_event_handling_result(ui::ER_HANDLED);
-  d11->set_consumes_touch_events(true);
+  d11.set_key_event_handling_result(ui::ER_HANDLED);
+  d11.set_mouse_event_handling_result(ui::ER_HANDLED);
+  d11.set_consumes_touch_events(true);
 
   generator.PressKey(ui::VKEY_A, 0);
   generator.PressLeftButton();
 
-  EXPECT_EQ(1, d11->key_event_count());
-  EXPECT_EQ(1, d11->mouse_event_count());
+  EXPECT_EQ(1, d11.key_event_count());
+  EXPECT_EQ(1, d11.mouse_event_count());
   // The delegate processed the event. But it should still bubble up to the
   // post-target filters.
   EXPECT_EQ(1, w1_filter->key_event_count());
-  EXPECT_EQ(1, root_window_filter->key_event_count());
+  EXPECT_EQ(1, root_window_filter.key_event_count());
   EXPECT_EQ(1, w1_filter->mouse_event_count());
-  EXPECT_EQ(1, root_window_filter->mouse_event_count());
+  EXPECT_EQ(1, root_window_filter.mouse_event_count());
 
   // Now we'll have the delegate consume the events.
-  root_window_filter->ResetCounts();
+  root_window_filter.ResetCounts();
   w1_filter->ResetCounts();
-  d11->ResetCounts();
+  d11.ResetCounts();
   generator.set_flags(0);
 
-  d11->set_key_event_handling_result(ui::ER_CONSUMED);
-  d11->set_mouse_event_handling_result(ui::ER_CONSUMED);
-  d11->set_consumes_touch_events(true);
+  d11.set_key_event_handling_result(ui::ER_CONSUMED);
+  d11.set_mouse_event_handling_result(ui::ER_CONSUMED);
+  d11.set_consumes_touch_events(true);
 
   generator.PressKey(ui::VKEY_A, 0);
   generator.PressLeftButton();
 
-  EXPECT_EQ(1, d11->key_event_count());
-  EXPECT_EQ(1, d11->mouse_event_count());
+  EXPECT_EQ(1, d11.key_event_count());
+  EXPECT_EQ(1, d11.mouse_event_count());
   // The delegate consumed the event. So it should no longer reach the
   // post-target filters.
   EXPECT_EQ(0, w1_filter->key_event_count());
-  EXPECT_EQ(0, root_window_filter->key_event_count());
+  EXPECT_EQ(0, root_window_filter.key_event_count());
   EXPECT_EQ(0, w1_filter->mouse_event_count());
-  EXPECT_EQ(0, root_window_filter->mouse_event_count());
+  EXPECT_EQ(0, root_window_filter.mouse_event_count());
 
   // Now we'll have the pre-filter methods consume the events.
   w1->RemovePostTargetHandler(w1_filter);
   w1->SetEventFilter(w1_filter);
   w1_filter->ResetCounts();
-  d11->ResetCounts();
+  d11.ResetCounts();
   generator.set_flags(0);
 
-  d11->set_key_event_handling_result(ui::ER_UNHANDLED);
-  d11->set_mouse_event_handling_result(ui::ER_UNHANDLED);
-  d11->set_consumes_touch_events(false);
+  d11.set_key_event_handling_result(ui::ER_UNHANDLED);
+  d11.set_mouse_event_handling_result(ui::ER_UNHANDLED);
+  d11.set_consumes_touch_events(false);
 
   w1_filter->set_key_event_handling_result(ui::ER_CONSUMED);
   w1_filter->set_mouse_event_handling_result(ui::ER_CONSUMED);
@@ -309,9 +310,9 @@ TEST_F(EventFilterTest, PostHandle) {
   generator.PressLeftButton();
 
   EXPECT_EQ(1, w1_filter->key_event_count());
-  EXPECT_EQ(0, d11->key_event_count());
+  EXPECT_EQ(0, d11.key_event_count());
   EXPECT_EQ(1, w1_filter->mouse_event_count());
-  EXPECT_EQ(0, d11->mouse_event_count());
+  EXPECT_EQ(0, d11.mouse_event_count());
 }
 
 }  // namespace aura

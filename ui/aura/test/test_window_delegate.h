@@ -21,6 +21,10 @@ class TestWindowDelegate : public WindowDelegate {
   TestWindowDelegate();
   virtual ~TestWindowDelegate();
 
+  // Returns a TestWindowDelegate that delete itself when
+  // the associated window is destroyed.
+  static TestWindowDelegate* CreateSelfDestroyingDelegate();
+
   void set_window_component(int window_component) {
     window_component_ = window_component;
   }
@@ -53,6 +57,7 @@ class TestWindowDelegate : public WindowDelegate {
 
  private:
   int window_component_;
+  bool delete_on_destroyed_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowDelegate);
 };

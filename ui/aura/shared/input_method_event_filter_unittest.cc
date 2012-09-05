@@ -48,9 +48,6 @@ TEST_F(InputMethodEventFilterTest, TestInputMethodProperty) {
 // Tests if InputMethodEventFilter dispatches a ui::ET_TRANSLATED_KEY_* event to
 // the root window.
 TEST_F(InputMethodEventFilterTest, TestInputMethodKeyEventPropagation) {
-  aura::client::SetActivationClient(root_window(),
-                                    new TestActivationClient(root_window()));
-
   aura::shared::CompoundEventFilter* root_filter =
       new shared::CompoundEventFilter;
   root_window()->SetEventFilter(root_filter);

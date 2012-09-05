@@ -18,10 +18,19 @@ namespace test {
 ////////////////////////////////////////////////////////////////////////////////
 // TestWindowDelegate
 
-TestWindowDelegate::TestWindowDelegate() : window_component_(HTCLIENT) {
+TestWindowDelegate::TestWindowDelegate()
+    : window_component_(HTCLIENT),
+      delete_on_destroyed_(false) {
 }
 
 TestWindowDelegate::~TestWindowDelegate() {
+}
+
+// static
+TestWindowDelegate* TestWindowDelegate::CreateSelfDestroyingDelegate() {
+  TestWindowDelegate* delegate = new TestWindowDelegate;
+  delegate->delete_on_destroyed_ = true;
+  return delegate;
 }
 
 gfx::Size TestWindowDelegate::GetMinimumSize() const {
@@ -87,6 +96,8 @@ void TestWindowDelegate::OnWindowDestroying() {
 }
 
 void TestWindowDelegate::OnWindowDestroyed() {
+  if (delete_on_destroyed_)
+    delete this;
 }
 
 void TestWindowDelegate::OnWindowTargetVisibilityChanged(bool visible) {

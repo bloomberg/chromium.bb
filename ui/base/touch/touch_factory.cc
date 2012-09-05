@@ -54,6 +54,7 @@ TouchFactory::TouchFactory()
                                        nodata, 8, 8);
   invisible_cursor_ = XCreatePixmapCursor(display, blank, blank,
                                           &black, &black, 0, 0);
+  XFreePixmap(display, blank);
   arrow_cursor_ = XCreateFontCursor(display, XC_arrow);
 
   SetCursorVisible(false, false);
