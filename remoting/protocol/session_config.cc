@@ -163,26 +163,21 @@ scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateFrom(
 scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateDefault() {
   scoped_ptr<CandidateSessionConfig> result = CreateEmpty();
 
-  // MUX transport is temporarily disabled because M21 builds fail to parse
-  // session configs with mux-stream transport.
-  // TODO(sergeyu): Reenable multiplexing once M22 becomes stable.
-  // http://crbug.com/137135.
-
   // Control channel.
-  // result->mutable_control_configs()->push_back(
-  //     ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
-  //                   kDefaultStreamVersion,
-  //                   ChannelConfig::CODEC_UNDEFINED));
+  result->mutable_control_configs()->push_back(
+      ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
+                    kDefaultStreamVersion,
+                    ChannelConfig::CODEC_UNDEFINED));
   result->mutable_control_configs()->push_back(
       ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
                     kDefaultStreamVersion,
                     ChannelConfig::CODEC_UNDEFINED));
 
   // Event channel.
-  // result->mutable_event_configs()->push_back(
-  //     ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
-  //                   kDefaultStreamVersion,
-  //                   ChannelConfig::CODEC_UNDEFINED));
+  result->mutable_event_configs()->push_back(
+      ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
+                    kDefaultStreamVersion,
+                    ChannelConfig::CODEC_UNDEFINED));
   result->mutable_event_configs()->push_back(
       ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
                     kDefaultStreamVersion,
@@ -207,18 +202,18 @@ scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateDefault() {
 void CandidateSessionConfig::EnableAudioChannel(
   CandidateSessionConfig* config) {
   config->mutable_audio_configs()->clear();
-  // config->mutable_audio_configs()->push_back(
-  //     ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
-  //                   kDefaultStreamVersion,
-  //                   ChannelConfig::CODEC_SPEEX));
+  config->mutable_audio_configs()->push_back(
+      ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
+                    kDefaultStreamVersion,
+                    ChannelConfig::CODEC_SPEEX));
   config->mutable_audio_configs()->push_back(
       ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
                     kDefaultStreamVersion,
                     ChannelConfig::CODEC_SPEEX));
-  // config->mutable_audio_configs()->push_back(
-  //     ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
-  //                   kDefaultStreamVersion,
-  //                   ChannelConfig::CODEC_VERBATIM));
+  config->mutable_audio_configs()->push_back(
+      ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
+                    kDefaultStreamVersion,
+                    ChannelConfig::CODEC_VERBATIM));
   config->mutable_audio_configs()->push_back(
       ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
                     kDefaultStreamVersion,
