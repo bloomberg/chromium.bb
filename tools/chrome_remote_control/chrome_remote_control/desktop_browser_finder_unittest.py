@@ -145,7 +145,6 @@ class LinuxFindTest(FindTestBase):
     self.assertEquals([], self.DoFindAllTypes())
 
   def testFindUsingRelease(self):
-    self._options.browser_types_to_use.append("debug")
     self.assertTrue("release" in self.DoFindAllTypes())
 
 class WinFindTest(FindTestBase):

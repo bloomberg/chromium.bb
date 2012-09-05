@@ -13,21 +13,21 @@ import possible_browser
 """Finds desktop browsers that can be controlled by chrome_remote_control."""
 
 ALL_BROWSER_TYPES = "exact,release,debug,canary,system"
-DEFAULT_BROWSER_TYPES_TO_RUN = "exact,release,canary,system"
 
 class PossibleDesktopBrowser(possible_browser.PossibleBrowser):
   """A desktop browser that can be controlled."""
 
-  def __init__(self, type, options, executable):
+  def __init__(self, type, options, executable, is_content_shell):
     super(PossibleDesktopBrowser, self).__init__(type, options)
     self._local_executable = executable
+    self._is_content_shell = is_content_shell
 
   def __repr__(self):
     return "PossibleDesktopBrowser(type=%s)" % self.type
 
   def Create(self):
     backend = desktop_browser_backend.DesktopBrowserBackend(
-        self._options, self._local_executable)
+        self._options, self._local_executable, self._is_content_shell)
     return browser.Browser(backend)
 
 def FindAllAvailableBrowsers(options,
@@ -46,7 +46,7 @@ def FindAllAvailableBrowsers(options,
   if options.browser_executable:
     if os.path.exists(options.browser_executable):
       browsers.append(PossibleDesktopBrowser("exact", options,
-                                      options.browser_executable))
+                                      options.browser_executable, False))
 
   # Look for a browser in the standard chrome build locations.
   if options.chrome_root:
@@ -70,11 +70,13 @@ def FindAllAvailableBrowsers(options,
 
   debug_app = os.path.join(chrome_root, build_dir, "Debug", app_name)
   if os.path.exists(debug_app):
-    browsers.append(PossibleDesktopBrowser("debug", options, debug_app))
+    browsers.append(PossibleDesktopBrowser("debug", options,
+                                           debug_app, False))
 
   release_app = os.path.join(chrome_root, build_dir, "Release", app_name)
   if os.path.exists(release_app):
-    browsers.append(PossibleDesktopBrowser("release", options, release_app))
+    browsers.append(PossibleDesktopBrowser("release", options,
+                                           release_app, False))
 
   # Mac-specific options.
   if sys.platform == 'darwin':
@@ -82,10 +84,12 @@ def FindAllAvailableBrowsers(options,
                  "Contents/MacOS/Google Chrome Canary")
     mac_system = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
     if os.path.exists(mac_canary):
-      browsers.append(PossibleDesktopBrowser("canary", options, mac_canary))
+      browsers.append(PossibleDesktopBrowser("canary", options,
+                                             mac_canary, False))
 
     if os.path.exists(mac_system):
-      browsers.append(PossibleDesktopBrowser("system", options, mac_system))
+      browsers.append(PossibleDesktopBrowser("system", options,
+                                             mac_system, False))
 
   # Linux specific options.
   if sys.platform.startswith('linux'):
@@ -99,7 +103,8 @@ def FindAllAvailableBrowsers(options,
       pass
     if found:
       browsers.append(
-          PossibleDesktopBrowser("system", options, 'google-chrome'))
+          PossibleDesktopBrowser("system", options,
+                                 'google-chrome', False))
 
   # Win32-specific options.
   if sys.platform.startswith('win') and os.getenv('LOCALAPPDATA'):
@@ -109,10 +114,12 @@ def FindAllAvailableBrowsers(options,
     win_system = os.path.join(local_app_data,
                               'Google\\Chrome\\Application\\chrome.exe')
     if os.path.exists(win_canary):
-      browsers.append(PossibleDesktopBrowser("canary", options, win_canary))
+      browsers.append(PossibleDesktopBrowser("canary", options,
+                                             win_canary, False))
 
     if os.path.exists(win_system):
-      browsers.append(PossibleDesktopBrowser("system", options, win_system))
+      browsers.append(PossibleDesktopBrowser("system", options,
+                                             win_system, False))
 
   if len(browsers) and not has_display:
     logging.warning('Found (%s), but you have a DISPLAY environment set.' %
