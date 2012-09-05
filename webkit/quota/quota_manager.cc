@@ -739,42 +739,6 @@ class QuotaManager::HostDataDeleter : public QuotaTask {
   DISALLOW_COPY_AND_ASSIGN(HostDataDeleter);
 };
 
-class QuotaManager::AvailableSpaceQueryTask : public QuotaThreadTask {
- public:
-  AvailableSpaceQueryTask(
-      QuotaManager* manager,
-      const AvailableSpaceCallback& callback)
-      : QuotaThreadTask(manager, manager->db_thread_),
-        profile_path_(manager->profile_path_),
-        space_(-1),
-        get_disk_space_fn_(manager->get_disk_space_fn_),
-        callback_(callback) {
-    DCHECK(get_disk_space_fn_);
-  }
-
- protected:
-  virtual ~AvailableSpaceQueryTask() {}
-
-  // QuotaThreadTask:
-  virtual void RunOnTargetThread() OVERRIDE {
-    space_ = get_disk_space_fn_(profile_path_);
-  }
-
-  virtual void Aborted() OVERRIDE {
-    callback_.Reset();
-  }
-
-  virtual void Completed() OVERRIDE {
-    callback_.Run(kQuotaStatusOk, space_);
-  }
-
- private:
-  FilePath profile_path_;
-  int64 space_;
-  GetAvailableDiskSpaceFn get_disk_space_fn_;
-  AvailableSpaceCallback callback_;
-};
-
 class QuotaManager::GetModifiedSinceHelper {
  public:
   bool GetModifiedSinceOnDBThread(StorageType type,
@@ -965,7 +929,14 @@ void QuotaManager::GetAvailableSpace(const AvailableSpaceCallback& callback) {
     callback.Run(kQuotaStatusOk, kIncognitoDefaultTemporaryQuota);
     return;
   }
-  make_scoped_refptr(new AvailableSpaceQueryTask(this, callback))->Start();
+
+  PostTaskAndReplyWithResult(
+      db_thread_,
+      FROM_HERE,
+      base::Bind(get_disk_space_fn_, profile_path_),
+      base::Bind(&QuotaManager::DidGetAvailableSpace,
+                 weak_factory_.GetWeakPtr(),
+                 callback));
 }
 
 void QuotaManager::GetTemporaryGlobalQuota(const QuotaCallback& callback) {
@@ -1562,6 +1533,11 @@ void QuotaManager::DidInitializeTemporaryOriginsInfo(bool success) {
   DidDatabaseWork(success);
   if (success)
     StartEviction();
+}
+
+void QuotaManager::DidGetAvailableSpace(const AvailableSpaceCallback& callback,
+                                        int64 space) {
+  callback.Run(kQuotaStatusOk, space);
 }
 
 void QuotaManager::DidDatabaseWork(bool success) {

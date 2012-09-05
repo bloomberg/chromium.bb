@@ -231,7 +231,6 @@ class QuotaManager : public QuotaTaskObserver,
   class OriginDataDeleter;
   class HostDataDeleter;
 
-  class AvailableSpaceQueryTask;
   class GetModifiedSinceHelper;
   class DumpQuotaTableHelper;
   class DumpOriginInfoTableHelper;
@@ -351,6 +350,8 @@ class QuotaManager : public QuotaTaskObserver,
                                          StorageType type,
                                          int64 quota_unused);
   void DidInitializeTemporaryOriginsInfo(bool success);
+  void DidGetAvailableSpace(const AvailableSpaceCallback& callback,
+                            int64 space);
   void DidDatabaseWork(bool success);
 
   void DeleteOnCorrectThread() const;
