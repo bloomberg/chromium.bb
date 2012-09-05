@@ -91,6 +91,16 @@ class FILEAPI_EXPORT FileSystemURL {
 
   bool operator==(const FileSystemURL& that) const;
 
+  bool operator<(const FileSystemURL& that) const {
+    DCHECK(is_valid_ && that.is_valid_);
+    if (origin_ < that.origin_) return true;
+    if (type_ < that.type_) return true;
+    // Compares the virtual path, i.e. the path() part of the original URL
+    // so that this reflects the virtual path relationship (rather than
+    // that of cracked paths).
+    return virtual_path_ < that.virtual_path_;
+  }
+
  private:
   void MayCrackIsolatedPath();
 
