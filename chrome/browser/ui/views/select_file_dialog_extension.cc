@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/file_browser_private_api.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
@@ -307,12 +308,23 @@ void SelectFileDialogExtension::SelectFileImpl(
     return;
   }
 
+  FilePath default_dialog_path;
+
+  const PrefService* pref_service = profile_->GetPrefs();
+
+  if (default_path.empty() && pref_service) {
+    default_dialog_path =
+        pref_service->GetFilePath(prefs::kDownloadDefaultDirectory);
+  } else {
+    default_dialog_path = default_path;
+  }
+
   FilePath virtual_path;
   if (file_manager_util::ConvertFileToRelativeFileSystemPath(
-          profile_, default_path, &virtual_path)) {
+          profile_, default_dialog_path, &virtual_path)) {
     virtual_path = FilePath("/").Append(virtual_path);
   } else {
-    virtual_path = default_path.BaseName();
+    virtual_path = default_dialog_path.BaseName();
   }
 
   has_multiple_file_type_choices_ =
