@@ -468,6 +468,13 @@ TEST_F(WorkspaceManager2Test, ShelfStateUpdated) {
   w1->SetBounds(touches_shelf_bounds);
   EXPECT_FALSE(GetWindowOverlapsShelf());
 
+  // A visible ignored window should not trigger the overlap.
+  scoped_ptr<Window> w_ignored(CreateTestWindow());
+  w_ignored->SetBounds(touches_shelf_bounds);
+  SetIgnoredByShelf(&(*w_ignored), true);
+  w_ignored->Show();
+  EXPECT_FALSE(GetWindowOverlapsShelf());
+
   // Make it visible, since visible shelf overlaps should be true.
   w1->Show();
   EXPECT_TRUE(GetWindowOverlapsShelf());

@@ -47,6 +47,11 @@ enum WindowPersistsAcrossAllWorkspacesType {
   WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_YES,
 };
 
+// Sets whether |window| is ignored when determining whether the shelf should
+// be darkened when overlapped.
+ASH_EXPORT void SetIgnoredByShelf(aura::Window* window, bool value);
+ASH_EXPORT bool GetIgnoredByShelf(aura::Window* window);
+
 // Sets whether the specified window is tracked by workspace code. Default is
 // true. If set to false the workspace does not switch the current workspace,
 // nor does it attempt to impose constraints on the bounds of the window. This

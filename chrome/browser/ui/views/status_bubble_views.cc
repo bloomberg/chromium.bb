@@ -31,6 +31,10 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(USE_ASH)
+#include "ash/wm/property_util.h"
+#endif
+
 using views::Widget;
 
 // The alpha and color of the bubble's shadow.
@@ -580,6 +584,9 @@ void StatusBubbleViews::Init() {
     popup_->SetVisibilityChangedAnimationsEnabled(false);
     popup_->SetOpacity(0x00);
     popup_->SetContentsView(view_);
+#if defined(USE_ASH)
+    ash::SetIgnoredByShelf(popup_->GetNativeWindow(), true);
+#endif
     Reposition();
   }
 }

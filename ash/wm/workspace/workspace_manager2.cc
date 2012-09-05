@@ -169,6 +169,8 @@ WorkspaceWindowState WorkspaceManager2::GetWindowState() const {
   bool has_maximized_window = false;
   for (Window::Windows::const_iterator i = windows.begin();
        i != windows.end(); ++i) {
+    if (GetIgnoredByShelf(*i))
+      continue;
     ui::Layer* layer = (*i)->layer();
     if (!layer->GetTargetVisibility() || layer->GetTargetOpacity() == 0.0f)
       continue;

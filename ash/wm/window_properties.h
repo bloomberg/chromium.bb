@@ -33,6 +33,11 @@ extern const aura::WindowProperty<internal::AlwaysOnTopController*>* const
 extern const aura::WindowProperty<bool>* const
     kChildWindowVisibilityChangesAnimatedKey;
 
+// True if the window is ignored by the shelf layout manager for purposes of
+// darkening the shelf.
+extern const aura::WindowProperty<bool>* const
+    kIgnoredByShelfKey;
+
 // Used to remember the show state before the window was minimized.
 extern const aura::WindowProperty<ui::WindowShowState>* const
     kRestoreShowStateKey;

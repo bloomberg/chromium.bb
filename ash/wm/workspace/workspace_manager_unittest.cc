@@ -28,6 +28,14 @@ using aura::Window;
 namespace ash {
 namespace internal {
 
+namespace {
+
+bool GetWindowOverlapsShelf() {
+  return Shell::GetInstance()->shelf()->window_overlaps_shelf();
+}
+
+}  // namespace
+
 class WorkspaceManagerTest : public test::AshTestBase {
  public:
   WorkspaceManagerTest() : manager_(NULL) {}
@@ -460,10 +468,29 @@ TEST_F(WorkspaceManagerTest, ShelfStateUpdated) {
 
   // Two windows, w1 normal, w2 maximized.
   scoped_ptr<Window> w1(CreateTestWindow());
-  w1->SetBounds(gfx::Rect(0, 1, 101, 102));
-  w1->Show();
-
+  const gfx::Rect w1_bounds(0, 1, 101, 102);
   ShelfLayoutManager* shelf = Shell::GetInstance()->shelf();
+  const gfx::Rect touches_shelf_bounds(
+      0, shelf->GetIdealBounds().y() - 10, 101, 102);
+  // Move |w1| to overlap the shelf.
+  w1->SetBounds(touches_shelf_bounds);
+  EXPECT_FALSE(GetWindowOverlapsShelf());
+
+  // A visible ignored window should not trigger the overlap.
+  scoped_ptr<Window> w_ignored(CreateTestWindow());
+  w_ignored->SetBounds(touches_shelf_bounds);
+  SetIgnoredByShelf(&(*w_ignored), true);
+  w_ignored->Show();
+  EXPECT_FALSE(GetWindowOverlapsShelf());
+
+  // Make it visible, since visible shelf overlaps should be true.
+  w1->Show();
+  EXPECT_TRUE(GetWindowOverlapsShelf());
+
+  wm::ActivateWindow(w1.get());
+  w1->SetBounds(w1_bounds);
+  w1->Show();
+  wm::ActivateWindow(w1.get());
 
   EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
 

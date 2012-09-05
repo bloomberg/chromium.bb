@@ -61,6 +61,8 @@ class StatusBubbleViews : public StatusBubble {
                           bool left_content) OVERRIDE;
   virtual void UpdateDownloadShelfVisibility(bool visible) OVERRIDE;
 
+  views::Widget* GetPopupForTest() { return popup(); }
+
  protected:
   views::Widget* popup() { return popup_.get(); }
 
