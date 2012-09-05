@@ -114,7 +114,17 @@ expand_input_file() {
 
   if [ "$intype" = "bzip2" ]; then
     # Expand to the bzip2ed file within
-    zlogs="$(bzcat "$infile" | uudecode -o - | tar xvf -)"
+    local raw_text_log="raw_text_log.txt"
+    bzcat "$infile" > "$raw_text_log"
+    if fgrep -q hack-33025-touchpad_activity "$raw_text_log"; then
+      # Expand the hack touchpad activity log
+      awk "/hack-33025-touchpad_activity/{found=1} found{print}" \
+          "$raw_text_log" > "$raw_text_log".tmp
+      mv "$raw_text_log".tmp "$raw_text_log"
+    fi
+
+    zlogs="$(cat "$raw_text_log" | uudecode -o - | tar xvf -)"
+    rm "$raw_text_log"
     # take newest log and reduce to next case
     cp "$(ls -t $zlogs | grep touchpad_activity | head -n 1)" log.gz
 
