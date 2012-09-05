@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/renderer/searchbox/searchbox.h"
 #include "content/public/renderer/render_view.h"
+#include "content/public/renderer/v8_string_conversions.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
@@ -32,17 +33,6 @@ void SplitLeadingNumberToken(std::string* number, std::string* suffix) {
     ++i;
   suffix->assign(*number, i, number->size() - i);
   number->resize(i);
-}
-
-// Converts a V8 value to a string16.
-string16 V8ValueToUTF16(v8::Handle<v8::Value> v) {
-  v8::String::Value s(v);
-  return string16(reinterpret_cast<const char16*>(*s), s.length());
-}
-
-// Converts string16 to V8 String.
-v8::Handle<v8::String> UTF16ToV8String(const string16& s) {
-  return v8::String::New(reinterpret_cast<const uint16_t*>(s.data()), s.size());
 }
 
 }  // namespace
@@ -253,7 +243,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetQuery(
     const v8::Arguments& args) {
   content::RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
-  return UTF16ToV8String(SearchBox::Get(render_view)->query());
+  return content::UTF16ToV8String(SearchBox::Get(render_view)->query());
 }
 
 // static
@@ -324,9 +314,9 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetAutocompleteResults(
   for (size_t i = 0; i < results.size(); ++i) {
     v8::Handle<v8::Object> result = v8::Object::New();
     result->Set(v8::String::New("provider"),
-                UTF16ToV8String(results[i].provider));
+                content::UTF16ToV8String(results[i].provider));
     result->Set(v8::String::New("contents"),
-                UTF16ToV8String(results[i].contents));
+                content::UTF16ToV8String(results[i].contents));
     result->Set(v8::String::New("destination_url"),
                 v8::String::New(results[i].destination_url.spec().c_str()));
     result->Set(v8::String::New("rid"), v8::Uint32::New(results_base + i));
@@ -390,7 +380,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetSuggestions(
         v8::Handle<v8::Value> suggestion_object_value =
             suggestion_object->Get(v8::String::New("value"));
         if (!suggestion_object_value->IsString()) continue;
-        string16 text = V8ValueToUTF16(suggestion_object_value);
+        string16 text = content::V8ValueToUTF16(suggestion_object_value);
 
         suggestions.push_back(InstantSuggestion(text, behavior, type));
       }
@@ -406,7 +396,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetSuggestions(
 v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetQuerySuggestion(
     const v8::Arguments& args) {
   if (1 <= args.Length() && args.Length() <= 2 && args[0]->IsString()) {
-    string16 text = V8ValueToUTF16(args[0]);
+    string16 text = content::V8ValueToUTF16(args[0]);
     InstantCompleteBehavior behavior = INSTANT_COMPLETE_NOW;
     InstantSuggestionType type = INSTANT_SUGGESTION_URL;
 
@@ -468,7 +458,7 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetQuery(
     const v8::Arguments& args) {
   // TODO(sreeram): Make the second argument (type) mandatory.
   if (1 <= args.Length() && args.Length() <= 2 && args[0]->IsString()) {
-    string16 text = V8ValueToUTF16(args[0]);
+    string16 text = content::V8ValueToUTF16(args[0]);
     InstantCompleteBehavior behavior = INSTANT_COMPLETE_REPLACE;
     InstantSuggestionType type = INSTANT_SUGGESTION_SEARCH;
 
