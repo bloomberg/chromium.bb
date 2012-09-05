@@ -6009,3 +6009,11 @@
    ...
    fun:_ZN4aura19RootWindowHostLinuxC1EPNS_22RootWindowHostDelegateERKN3gfx4RectE
 }
+{
+   bug_146500
+   Memcheck:Unaddressable
+   ...
+   fun:_ZN11EventSender17replaySavedEventsEv
+   fun:_ZN11EventSender7mouseUpERKN3WTF6VectorI10CppVariantLm0EEEPS2_
+   fun:_ZN13CppBoundClass14MemberCallbackI11EventSenderE3runERKN3WTF6VectorI10CppVariantLm0EEEPS5_
+}
