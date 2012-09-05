@@ -33,7 +33,7 @@
 }
 
 .tile-row {
-  -webkit-transition: opacity 200ms ease-in-out;
+  -webkit-transition: opacity 200ms;
   height: 105px;
   text-align: start;
   white-space: nowrap;
@@ -74,7 +74,7 @@
 ----------------------------------------------------------------------------- */
 
 .animate-grid-width .tile-cell {
-  -webkit-transition: margin 200ms ease-out;
+  -webkit-transition: margin 200ms;
   -webkit-transition-property: margin, opacity, width;
 }
 

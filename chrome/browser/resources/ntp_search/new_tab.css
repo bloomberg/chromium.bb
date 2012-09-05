@@ -17,11 +17,17 @@ body {
 }
 
 #card-slider-frame {
+  -webkit-transition: opacity 250ms, -webkit-transform 250ms;
   bottom: 0;
   overflow: hidden;
   position: absolute;
   text-align: center;
   width: 100%;
+}
+
+.hide-card-slider {
+  -webkit-transform: translate3d(0, 170px, 0);
+  opacity: 0;
 }
 
 #page-list {

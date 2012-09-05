@@ -55,7 +55,6 @@
     var data = loadTimeData.data_;
     document.documentElement.dir = data.textdirection;
     document.body.style.fontSize = data.fontsize;
-    document.body.style.fontFamily = data.fontfamily;
   }
 
   function namespace(str, data) {
@@ -187,6 +186,7 @@
   var debugArgs = {};
   var debugStylesheet = null;
   var animationSelectorSpeedMap = {
+    '#card-slider-frame': 250,
     '.dot': 200,
     '.animate-page-height': 200,
     '.animate-grid-width': 200,

@@ -6,6 +6,60 @@ cr.define('ntp', function() {
   'use strict';
 
   //----------------------------------------------------------------------------
+  // Constants
+  //----------------------------------------------------------------------------
+
+  /**
+   * The height required to show 2 rows of Tiles in the Bottom Panel.
+   * @type {number}
+   * @const
+   */
+  var HEIGHT_FOR_TWO_ROWS = 275;
+
+  /**
+   * The height required to show the Bottom Panel.
+   * @type {number}
+   * @const
+   */
+  var HEIGHT_FOR_BOTTOM_PANEL = 170;
+
+  /**
+   * The Bottom Panel width required to show 5 cols of Tiles, which is used
+   * in the width computation.
+   * @type {number}
+   * @const
+   */
+  var MAX_BOTTOM_PANEL_WIDTH = 948;
+
+  /**
+   * The normal Bottom Panel width. If the window width is greater than or
+   * equal to this value, then the width of the Bottom Panel's content will be
+   * the available width minus side margin. If the available width is smaller
+   * than this value, then the width of the Bottom Panel's content will be an
+   * interpolation between the normal width, and the minimum width defined by
+   * the constant MIN_BOTTOM_PANEL_CONTENT_WIDTH.
+   * @type {number}
+   * @const
+   */
+  var NORMAL_BOTTOM_PANEL_WIDTH = 500;
+
+  /**
+   * The minimum Bottom Panel width. If the available width is smaller than
+   * this value, then the width of the Bottom Panel's content will be fixed to
+   * MIN_BOTTOM_PANEL_CONTENT_WIDTH.
+   * @type {number}
+   * @const
+   */
+  var MIN_BOTTOM_PANEL_WIDTH = 300;
+
+  /**
+   * The minimum width of the Bottom Panel's content.
+   * @type {number}
+   * @const
+   */
+  var MIN_BOTTOM_PANEL_CONTENT_WIDTH = 200;
+
+  //----------------------------------------------------------------------------
   // Tile
   //----------------------------------------------------------------------------
 
@@ -478,17 +532,22 @@ cr.define('ntp', function() {
      */
     getBottomPanelWidth_: function() {
       var windowWidth = cr.doc.documentElement.clientWidth;
+      var margin = 2 * this.config_.bottomPanelHorizontalMargin;
       var width;
-      // TODO(pedrosimonetti): Add constants?
-      if (windowWidth >= 948)
-        width = 748;
-      else if (windowWidth >= 500)
-        width = windowWidth - 2 * this.config_.bottomPanelHorizontalMargin;
-      else if (windowWidth >= 300)
-        // TODO(pedrosimonetti): Check specification.
-        width = Math.floor(((windowWidth - 300) / 200) * 100 + 200);
-      else
-        width = 200;
+      if (windowWidth >= MAX_BOTTOM_PANEL_WIDTH) {
+        width = MAX_BOTTOM_PANEL_WIDTH - margin;
+      } else if (windowWidth >= NORMAL_BOTTOM_PANEL_WIDTH) {
+        width = windowWidth - margin;
+      } else if (windowWidth >= MIN_BOTTOM_PANEL_WIDTH) {
+        // Interpolation between the previous and next states.
+        var minMargin = MIN_BOTTOM_PANEL_WIDTH - MIN_BOTTOM_PANEL_CONTENT_WIDTH;
+        var factor = (windowWidth - MIN_BOTTOM_PANEL_WIDTH) /
+            (NORMAL_BOTTOM_PANEL_WIDTH - MIN_BOTTOM_PANEL_WIDTH);
+        var interpolatedMargin = minMargin + factor * (margin - minMargin);
+        width = windowWidth - interpolatedMargin;
+      } else {
+        width = MIN_BOTTOM_PANEL_CONTENT_WIDTH;
+      }
 
       return width;
     },
@@ -619,13 +678,15 @@ cr.define('ntp', function() {
       // has not been rendered.
       var shouldAnimate = this.hasBeenRendered();
 
+      this.showBottomPanel_(windowHeight >= HEIGHT_FOR_BOTTOM_PANEL);
+
       // TODO(pedrosimonetti): Add constants?
       // If the number of visible rows has changed, then we need to resize the
       // grid and animate the affected rows. We also need to keep track of
       // whether the number of visible rows has changed because we might have
       // to render the grid when the number of columns hasn't changed.
       var numberOfRowsHasChanged = false;
-      var numOfVisibleRows = windowHeight > 500 ? 2 : 1;
+      var numOfVisibleRows = windowHeight > HEIGHT_FOR_TWO_ROWS ? 2 : 1;
       if (numOfVisibleRows != this.numOfVisibleRows_) {
         this.numOfVisibleRows_ = numOfVisibleRows;
         numberOfRowsHasChanged = true;
@@ -710,6 +771,15 @@ cr.define('ntp', function() {
 
     // animation helpers
     // -------------------------------------------------------------------------
+
+    /**
+     * Animates the display the Bottom Panel.
+     * @param {boolean} show Whether or not to show the Bottom Panel.
+     */
+    showBottomPanel_: function(show) {
+      $('card-slider-frame').classList[show ? 'remove' : 'add'](
+          'hide-card-slider');
+    },
 
     /**
      * Animates the display of a row. TODO(pedrosimonetti): Make it local?
