@@ -91,11 +91,12 @@ void NavigationObserver::InstallUIProceed() {
 
   in_progress_prompt_extension_id_ = "";
   in_progress_prompt_navigation_controller_ = NULL;
+  bool record_oauth2_grant = extension_install_prompt_->record_oauth2_grant();
   extension_install_prompt_.reset();
 
   // Grant permissions, re-enable the extension, and then reload the tab.
   extension_service->GrantPermissionsAndEnableExtension(
-      extension, extension_install_prompt_->record_oauth2_grant());
+      extension, record_oauth2_grant);
   nav_controller->Reload(true);
 }
 
