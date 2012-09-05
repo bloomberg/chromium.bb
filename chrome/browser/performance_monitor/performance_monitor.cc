@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/stl_util.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -131,8 +133,26 @@ void PerformanceMonitor::FinishInit() {
       base::Bind(&PerformanceMonitor::CheckForVersionUpdateOnBackgroundThread,
                  base::Unretained(this)));
 
+  int gather_interval_in_seconds = kDefaultGatherIntervalInSeconds;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kPerformanceMonitorGathering) &&
+      !CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kPerformanceMonitorGathering).empty()) {
+    int specified_interval = 0;
+    if (!base::StringToInt(
+            CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                switches::kPerformanceMonitorGathering),
+            &specified_interval) || specified_interval <= 0) {
+      LOG(ERROR) << "Invalid value for switch: '"
+                 << switches::kPerformanceMonitorGathering
+                 << "'; please use an integer greater than 0.";
+    } else {
+      gather_interval_in_seconds = specified_interval;
+    }
+  }
+
   timer_.Start(FROM_HERE,
-               base::TimeDelta::FromMinutes(kGatherIntervalInMinutes),
+               base::TimeDelta::FromSeconds(gather_interval_in_seconds),
                this,
                &PerformanceMonitor::DoTimedCollections);
 

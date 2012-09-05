@@ -1494,7 +1494,7 @@ bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
 #endif
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kRunPerformanceMonitor)) {
+          switches::kPerformanceMonitorGathering)) {
     performance_monitor::PerformanceMonitor::GetInstance()->Start();
   }
 

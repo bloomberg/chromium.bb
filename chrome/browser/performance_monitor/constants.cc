@@ -15,8 +15,10 @@ const char kMetricNotFoundError[] = "Metric details not found.";
 // its activity.
 const char kProcessChromeAggregate[] = "chrome_aggregate";
 
-// The interval at which PerformanceMonitor performs its timed collections.
-const int kGatherIntervalInMinutes = 2;
+// The default interval at which PerformanceMonitor performs its timed
+// collections; this can be overridden by using the kPerformanceMonitorGathering
+// switch with an associated (positive integer) value.
+const int kDefaultGatherIntervalInSeconds = 120;
 
 // Tokens to retrieve state values from the database.
 

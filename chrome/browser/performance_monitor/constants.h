@@ -13,7 +13,7 @@ namespace performance_monitor {
 
 extern const char kMetricNotFoundError[];
 extern const char kProcessChromeAggregate[];
-extern const int kGatherIntervalInMinutes;
+extern const int kDefaultGatherIntervalInSeconds;
 
 // State tokens
 extern const char kStateChromeVersion[];
