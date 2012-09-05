@@ -303,6 +303,33 @@ class Rietveld(object):
         yield i
       cursor = '&cursor=%s' % data['cursor']
 
+  def trigger_try_jobs(
+      self, issue, patchset, reason, clobber, revision, builders_and_tests):
+    """Requests new try jobs.
+
+    |builders_and_tests| is a map of builders: [tests] to run.
+
+    Returns the keys of the new TryJobResult entites.
+    """
+    params = [
+      ('reason', reason),
+      ('clobber', 'True' if clobber else 'False'),
+      ('revision', revision if revision else 'HEAD'),
+      ('builders', json.dumps(builders_and_tests)),
+      ('xsrf_token', self.xsrf_token()),
+    ]
+    return self.post('/%d/try/%d' % (issue, patchset), params)
+
+  def get_pending_try_jobs(self, cursor=None, limit=100):
+    """Retrieves the try job requests in pending state.
+
+    Returns a tuple of the list of try jobs and the cursor for the next request.
+    """
+    url = '/get_pending_try_patchsets?limit=%d' % limit
+    extra = ('&cursor=' + cursor) if cursor else ''
+    data = json.loads(self.get(url + extra))
+    return data['jobs'], data['cursor']
+
   def get(self, request_path, **kwargs):
     kwargs.setdefault('payload', None)
     return self._send(request_path, **kwargs)
