@@ -177,7 +177,7 @@
       {
         'action_name': 'copy_en_pak',
         'inputs': ['<(SHARED_INTERMEDIATE_DIR)/repack/en-US.pak'],
-        'outputs': ['<(PRODUCT_DIR)/android_webview/assets/en.pak'],
+        'outputs': ['<(PRODUCT_DIR)/android_webview/assets/en-US.pak'],
         'action': ['cp', '<@(_inputs)', '<@(_outputs)'],
       },
       {
