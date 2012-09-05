@@ -177,6 +177,7 @@ extern const char kEnableRestoreSessionState[];
 extern const char kEnableScriptBadges[];
 extern const char kEnableSdch[];
 extern const char kEnableSpdy3[];
+extern const char kEnableSpdyCredentialFrames[];
 extern const char kEnableSpdyFlowControl[];
 extern const char kEnableStackedTabStrip[];
 extern const char kEnableSuggestionsTabPage[];

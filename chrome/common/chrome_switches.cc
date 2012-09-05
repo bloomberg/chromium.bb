@@ -632,6 +632,9 @@ const char kEnableSdch[]                    = "enable-sdch";
 // Enable SPDY/3. This is a temporary testing flag.
 const char kEnableSpdy3[]                   = "enable-spdy3";
 
+// Enable SPDY CREDENTIAL frame support.  This is a temporary testing flag.
+const char kEnableSpdyCredentialFrames[]    = "enable-spdy-credential-frames";
+
 // Enables the stacked tabstrip.
 const char kEnableStackedTabStrip[]         = "enable-stacked-tab-strip";
 

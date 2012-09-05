@@ -221,6 +221,9 @@ void InitializeNetworkOptions(const CommandLine& parsed_command_line) {
   if (parsed_command_line.HasSwitch(switches::kDisableIPPooling))
     net::SpdySessionPool::enable_ip_pooling(false);
 
+  if (parsed_command_line.HasSwitch(switches::kEnableSpdyCredentialFrames))
+    net::SpdySession::set_enable_credential_frames(true);
+
   if (parsed_command_line.HasSwitch(switches::kMaxSpdySessionsPerDomain)) {
     int value;
     base::StringToInt(
