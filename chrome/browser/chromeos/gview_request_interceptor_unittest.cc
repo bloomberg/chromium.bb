@@ -44,6 +44,11 @@ const char kPdfUrlIntercepted[] =
 const char kPptUrlIntercepted[] =
     "http://docs.google.com/gview?url=http%3A//foo.com/file.ppt";
 
+void AssertPluginEnabled(bool did_enable) {
+  ASSERT_TRUE(did_enable);
+  MessageLoop::current()->QuitWhenIdle();
+}
+
 class GViewURLRequestTestJob : public net::URLRequestTestJob {
  public:
   GViewURLRequestTestJob(net::URLRequest* request,
@@ -206,7 +211,8 @@ TEST_F(GViewRequestInterceptorTest, DoNotInterceptDownload) {
 
 TEST_F(GViewRequestInterceptorTest, DoNotInterceptPdfWhenEnabled) {
   ASSERT_NO_FATAL_FAILURE(SetPDFPluginLoadedState(true));
-  plugin_prefs_->EnablePlugin(true, pdf_path_, MessageLoop::QuitClosure());
+  plugin_prefs_->EnablePlugin(true, pdf_path_,
+                              base::Bind(&AssertPluginEnabled));
   MessageLoop::current()->Run();
 
   net::URLRequest request(
@@ -220,7 +226,8 @@ TEST_F(GViewRequestInterceptorTest, DoNotInterceptPdfWhenEnabled) {
 
 TEST_F(GViewRequestInterceptorTest, InterceptPdfWhenDisabled) {
   ASSERT_NO_FATAL_FAILURE(SetPDFPluginLoadedState(true));
-  plugin_prefs_->EnablePlugin(false, pdf_path_, MessageLoop::QuitClosure());
+  plugin_prefs_->EnablePlugin(false, pdf_path_,
+                              base::Bind(&AssertPluginEnabled));
   MessageLoop::current()->Run();
 
   net::URLRequest request(

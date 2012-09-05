@@ -84,7 +84,8 @@ class ChromePluginTest : public InProcessBrowserTest {
     PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile);
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
-    plugin_prefs->EnablePlugin(enable, flash_path, runner->QuitClosure());
+    plugin_prefs->EnablePlugin(enable, flash_path,
+                               base::Bind(&AssertPluginEnabled, runner));
     runner->Run();
   }
 
@@ -131,6 +132,13 @@ class ChromePluginTest : public InProcessBrowserTest {
       }
     }
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit_task);
+  }
+
+  static void AssertPluginEnabled(
+      scoped_refptr<content::MessageLoopRunner> runner,
+      bool did_enable) {
+    ASSERT_TRUE(did_enable);
+    runner->Quit();
   }
 };
 

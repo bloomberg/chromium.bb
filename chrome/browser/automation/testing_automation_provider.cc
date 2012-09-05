@@ -204,6 +204,22 @@ void SendSuccessReply(base::WeakPtr<AutomationProvider> automation,
     AutomationJSONReply(automation.get(), reply_message).SendSuccess(NULL);
 }
 
+// Helper to process the result of CanEnablePlugin.
+void DidEnablePlugin(base::WeakPtr<AutomationProvider> automation,
+                     IPC::Message* reply_message,
+                     const FilePath::StringType& path,
+                     const std::string& error_msg,
+                     bool did_enable) {
+  if (did_enable) {
+    SendSuccessReply(automation, reply_message);
+  } else {
+    if (automation) {
+      AutomationJSONReply(automation.get(), reply_message).SendError(
+          StringPrintf(error_msg.c_str(), path.c_str()));
+    }
+  }
+}
+
 // Helper to resolve the overloading of PostTask.
 void PostTask(BrowserThread::ID id, const base::Closure& callback) {
   BrowserThread::PostTask(id, FROM_HERE, callback);
@@ -3316,14 +3332,9 @@ void TestingAutomationProvider::EnablePlugin(Browser* browser,
     return;
   }
   PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(browser->profile());
-  if (!plugin_prefs->CanEnablePlugin(true, FilePath(path))) {
-    AutomationJSONReply(this, reply_message).SendError(
-        StringPrintf("Could not enable plugin for path %s.", path.c_str()));
-    return;
-  }
-  plugin_prefs->EnablePlugin(
-      true, FilePath(path),
-      base::Bind(SendSuccessReply, AsWeakPtr(), reply_message));
+  plugin_prefs->EnablePlugin(true, FilePath(path),
+      base::Bind(&DidEnablePlugin, AsWeakPtr(), reply_message,
+                 path, "Could not enable plugin for path %s."));
 }
 
 // Sample json input:
@@ -3338,14 +3349,9 @@ void TestingAutomationProvider::DisablePlugin(Browser* browser,
     return;
   }
   PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(browser->profile());
-  if (!plugin_prefs->CanEnablePlugin(false, FilePath(path))) {
-    AutomationJSONReply(this, reply_message).SendError(
-        StringPrintf("Could not disable plugin for path %s.", path.c_str()));
-    return;
-  }
-  plugin_prefs->EnablePlugin(
-      false, FilePath(path),
-      base::Bind(SendSuccessReply, AsWeakPtr(), reply_message));
+  plugin_prefs->EnablePlugin(false, FilePath(path),
+      base::Bind(&DidEnablePlugin, AsWeakPtr(), reply_message,
+                 path, "Could not disable plugin for path %s."));
 }
 
 // Sample json input:

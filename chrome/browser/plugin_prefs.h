@@ -13,6 +13,7 @@
 #include "base/file_path.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/api/prefs/pref_change_registrar.h"
+#include "chrome/browser/plugin_finder.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
@@ -65,16 +66,13 @@ class PluginPrefs : public RefcountedProfileKeyedService,
   // Enable or disable a plugin group.
   void EnablePluginGroup(bool enable, const string16& group_name);
 
-  // Returns true if the plug-in state can be enabled or disabled according to
-  // |enable|, false if the plug-in state cannot be changed because of a policy.
-  bool CanEnablePlugin(bool enable, const FilePath& file_path);
-
-  // Enables or disables a specific plugin file, and calls |callback|
-  // afterwards.
-  // If the plug-in state cannot be changed because of a policy (as indicated
-  // by |CanEnablePlugin|), it will be silently ignored.
+  // Enables or disables a specific plug-in file, if possible.
+  // If the plug-in state can't be changed (because of a policy for example)
+  // then enabling/disabling the plug-in is ignored and |callback| is run
+  // with 'false' passed to it. Otherwise the plug-in state is changed
+  // and |callback| is run with 'true' passed to it.
   void EnablePlugin(bool enable, const FilePath& file_path,
-                    const base::Closure& callback);
+                    const base::Callback<void(bool)>& callback);
 
   // Enables or disables a plug-in in all profiles, and calls |callback|
   // afterwards. This sets a default for profiles which are created later as
@@ -83,7 +81,7 @@ class PluginPrefs : public RefcountedProfileKeyedService,
   // it will be silently ignored.
   // This method should only be called on the UI thread.
   static void EnablePluginGlobally(bool enable, const FilePath& file_path,
-                                   const base::Closure& callback);
+                                   const base::Callback<void(bool)>& callback);
 
   // Returns whether there is a policy enabling or disabling plug-ins of the
   // given name.
@@ -125,20 +123,22 @@ class PluginPrefs : public RefcountedProfileKeyedService,
   void EnablePluginGroupInternal(
       bool enabled,
       const string16& group_name,
-      const std::vector<webkit::npapi::PluginGroup>& groups);
+      PluginFinder* plugin_finder,
+      const std::vector<webkit::WebPluginInfo>& plugins);
   void EnablePluginInternal(
       bool enabled,
       const FilePath& path,
-      const base::Closure& callback,
-      const std::vector<webkit::npapi::PluginGroup>& groups);
+      PluginFinder* plugin_finder,
+      const base::Callback<void(bool)>& callback,
+      const std::vector<webkit::WebPluginInfo>& plugins);
 
   // Called on the file thread to get the data necessary to update the saved
   // preferences.
   void GetPreferencesDataOnFileThread();
 
   // Called on the UI thread with the plugin data to save the preferences.
-  void OnUpdatePreferences(
-      const std::vector<webkit::npapi::PluginGroup>& groups);
+  void OnUpdatePreferences(const std::vector<webkit::WebPluginInfo>& plugins,
+                           PluginFinder* finder);
 
   // Sends the notification that plugin data has changed.
   void NotifyPluginStatusChanged();
@@ -149,6 +149,23 @@ class PluginPrefs : public RefcountedProfileKeyedService,
   // Checks if |name| matches any of the patterns in |pattern_set|.
   static bool IsStringMatchedInSet(const string16& name,
                                    const std::set<string16>& pattern_set);
+
+  // Callback method called by 'EnablePlugin' method.
+  // It performs the logic to check if a plug-in can be enabled.
+  void EnablePluginIfPossibleCallback(
+      bool enabled, const FilePath& path,
+      const base::Callback<void(bool)>& canEnableCallback,
+      PluginFinder* finder);
+
+  // Callback method that takes in the asynchronously created
+  // plug-in finder instance. It is called by 'EnablePluginGroup'.
+  void GetPluginFinderForEnablePluginGroup(bool enabled,
+                                           const string16& group_name,
+                                           PluginFinder* finder);
+
+  // Callback method that takes in the asynchronously created plug-in finder
+  // instance. It is called by 'GetPreferencesDataOnFileThread'.
+  void GetPluginFinderForGetPreferencesDataOnFileThread(PluginFinder* finder);
 
   // Guards access to the following data structures.
   mutable base::Lock lock_;

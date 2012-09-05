@@ -4881,10 +4881,7 @@
         }],
         ['enable_plugin_installation==0', {
           'sources!': [
-            'browser/plugin_finder.cc',
-            'browser/plugin_finder.h',
-            'browser/plugin_installer.cc',
-            'browser/plugin_installer.h',
+            # TODO(ibraaaa): Return plugin_installer.{h/cc}.
             'browser/plugin_installer_observer.cc',
             'browser/plugin_installer_observer.h',
           ],

@@ -21,6 +21,15 @@
 using content::BrowserThread;
 using content::PluginService;
 
+namespace {
+
+void CanEnablePluginCallback(bool did_enable) {
+  ASSERT_TRUE(did_enable);
+  MessageLoop::current()->QuitWhenIdle();
+}
+
+}  // namespace
+
 class PluginPrefsTest : public ::testing::Test {
  public:
   virtual void SetUp() OVERRIDE {
@@ -164,8 +173,9 @@ TEST_F(PluginPrefsTest, DisableGlobally) {
                                ASCIIToUTF16("1.0.0"),
                                ASCIIToUTF16("Foo plug-in"));
   plugin_list.AddPluginToLoad(plugin);
-  PluginPrefs::EnablePluginGlobally(false, plugin.path,
-                                    MessageLoop::QuitClosure());
+  PluginPrefs::EnablePluginGlobally(
+      false, plugin.path,
+      base::Bind(&CanEnablePluginCallback));
 
   message_loop.Run();
 

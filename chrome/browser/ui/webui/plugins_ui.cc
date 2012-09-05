@@ -19,6 +19,8 @@
 #include "base/values.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/plugin_finder.h"
+#include "chrome/browser/plugin_installer.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -48,15 +50,6 @@
 #include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
 #endif
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
-#include "chrome/browser/plugin_finder.h"
-#include "chrome/browser/plugin_installer.h"
-#else
-// Forward-declare PluginFinder. It's never actually used, but we pass a NULL
-// pointer instead.
-class PluginFinder;
-#endif
-
 using content::PluginService;
 using content::WebContents;
 using content::WebUIMessageHandler;
@@ -64,6 +57,11 @@ using webkit::npapi::PluginGroup;
 using webkit::WebPluginInfo;
 
 namespace {
+
+// Callback function to process result of EnablePlugin method.
+void AssertPluginEnabled(bool did_enable) {
+  DCHECK(did_enable);
+}
 
 ChromeWebUIDataSource* CreatePluginsUIHTMLSource() {
   ChromeWebUIDataSource* source =
@@ -173,11 +171,16 @@ class PluginsDOMHandler : public WebUIMessageHandler,
 
   // Called on the UI thread when the plugin information is ready.
   void PluginsLoaded(PluginFinder* plugin_finder,
-                     const std::vector<PluginGroup>& groups);
+                     const std::vector<webkit::WebPluginInfo>& plugins);
 
   content::NotificationRegistrar registrar_;
 
   base::WeakPtrFactory<PluginsDOMHandler> weak_ptr_factory_;
+
+  // Holds grouped plug-ins. The key is the group identifier and
+  // the value is the list of plug-ins belonging to the group.
+  typedef base::hash_map<std::string, std::vector<const WebPluginInfo*> >
+      PluginGroups;
 
   // This pref guards the value whether about:plugins is in the details mode or
   // not.
@@ -265,9 +268,9 @@ void PluginsDOMHandler::HandleEnablePluginMessage(const ListValue* args) {
       NOTREACHED();
       return;
     }
-    DCHECK(plugin_prefs->CanEnablePlugin(enable, FilePath(file_path)));
+
     plugin_prefs->EnablePlugin(enable, FilePath(file_path),
-                               base::Bind(&base::DoNothing));
+                               base::Bind(&AssertPluginEnabled));
   }
 }
 
@@ -324,41 +327,48 @@ void PluginsDOMHandler::GetPluginFinder() {
   if (weak_ptr_factory_.HasWeakPtrs())
     return;
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
   PluginFinder::Get(base::Bind(&PluginsDOMHandler::LoadPlugins,
                                weak_ptr_factory_.GetWeakPtr()));
-#else
-  LoadPlugins(NULL);
-#endif
 }
 
 void PluginsDOMHandler::LoadPlugins(PluginFinder* plugin_finder) {
-  PluginService::GetInstance()->GetPluginGroups(
+  PluginService::GetInstance()->GetPlugins(
       base::Bind(&PluginsDOMHandler::PluginsLoaded,
           weak_ptr_factory_.GetWeakPtr(), plugin_finder));
 }
 
-void PluginsDOMHandler::PluginsLoaded(PluginFinder* plugin_finder,
-                                      const std::vector<PluginGroup>& groups) {
+void PluginsDOMHandler::PluginsLoaded(
+    PluginFinder* plugin_finder,
+    const std::vector<webkit::WebPluginInfo>& plugins) {
   Profile* profile = Profile::FromWebUI(web_ui());
   PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile);
 
   ContentSettingsPattern wildcard = ContentSettingsPattern::Wildcard();
 
-  // Construct DictionaryValues to return to the UI
+  // Group plug-ins by identifier. This is done to be able to display
+  // the plug-ins in UI in a grouped fashion.
+  PluginGroups groups;
+  for (size_t i = 0; i < plugins.size(); ++i) {
+    PluginInstaller* installer = plugin_finder->GetPluginInstaller(plugins[i]);
+    groups[installer->identifier()].push_back(&plugins[i]);
+  }
+
+  // Construct DictionaryValues to return to UI.
   ListValue* plugin_groups_data = new ListValue();
-  for (size_t i = 0; i < groups.size(); ++i) {
-    const PluginGroup& group = groups[i];
-    if (group.IsEmpty())
-      continue;
+  for (PluginGroups::const_iterator it = groups.begin();
+      it != groups.end(); ++it) {
+    const std::vector<const WebPluginInfo*>& group_plugins = it->second;
     ListValue* plugin_files = new ListValue();
-    string16 group_name = group.GetGroupName();
+    PluginInstaller* plugin_installer =
+        plugin_finder->GetPluginInstaller(*group_plugins[0]);
+    string16 group_name = plugin_installer->name();
+    std::string group_identifier = plugin_installer->identifier();
     bool group_enabled = false;
     bool all_plugins_enabled_by_policy = true;
     bool all_plugins_disabled_by_policy = true;
     const WebPluginInfo* active_plugin = NULL;
-    for (size_t j = 0; j < group.web_plugin_infos().size(); ++j) {
-      const WebPluginInfo& group_plugin = group.web_plugin_infos()[j];
+    for (size_t j = 0; j < group_plugins.size(); ++j) {
+      const WebPluginInfo& group_plugin = *group_plugins[j];
 
       DictionaryValue* plugin_file = new DictionaryValue();
       plugin_file->SetString("name", group_plugin.name);
@@ -403,7 +413,7 @@ void PluginsDOMHandler::PluginsLoaded(PluginFinder* plugin_finder,
       } else {
         all_plugins_enabled_by_policy = false;
         if (plugin_status == PluginPrefs::POLICY_DISABLED ||
-          group_status == PluginPrefs::POLICY_DISABLED) {
+            group_status == PluginPrefs::POLICY_DISABLED) {
           enabled_mode = "disabledByPolicy";
         } else {
           all_plugins_disabled_by_policy = false;
@@ -422,13 +432,13 @@ void PluginsDOMHandler::PluginsLoaded(PluginFinder* plugin_finder,
 
     group_data->Set("plugin_files", plugin_files);
     group_data->SetString("name", group_name);
-    group_data->SetString("id", group.identifier());
+    group_data->SetString("id", group_identifier);
     group_data->SetString("description", active_plugin->desc);
     group_data->SetString("version", active_plugin->version);
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
     PluginInstaller* installer =
-        plugin_finder->FindPluginWithIdentifier(group.identifier());
+        plugin_finder->FindPluginWithIdentifier(group_identifier);
     if (installer) {
       bool out_of_date = installer->GetSecurityStatus(*active_plugin) ==
                          PluginInstaller::SECURITY_STATUS_OUT_OF_DATE;
@@ -453,7 +463,7 @@ void PluginsDOMHandler::PluginsLoaded(PluginFinder* plugin_finder,
     if (group_enabled) {
       const DictionaryValue* whitelist = profile->GetPrefs()->GetDictionary(
           prefs::kContentSettingsPluginWhitelist);
-      whitelist->GetBoolean(group.identifier(), &always_allowed);
+      whitelist->GetBoolean(group_identifier, &always_allowed);
     }
     group_data->SetBoolean("alwaysAllowed", always_allowed);
 

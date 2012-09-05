@@ -11,6 +11,8 @@
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/plugin_finder.h"
+#include "chrome/browser/plugin_installer.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -35,15 +37,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "webkit/plugins/npapi/plugin_group.h"
-
-#if defined(ENABLE_PLUGIN_INSTALLATION)
-#include "chrome/browser/plugin_finder.h"
-#include "chrome/browser/plugin_installer.h"
-#else
-// Forward-declare PluginFinder. It's never actually used, but we pass a NULL
-// pointer instead.
-class PluginFinder;
-#endif
 
 using content::InterstitialPage;
 using content::OpenURLParams;
@@ -385,10 +378,10 @@ void PDFUnsupportedFeatureInfoBarDelegate::OnNo() {
                         UserMetricsAction("PDF_InstallReaderInfoBarCancel"));
 }
 
-void GotPluginGroupsCallback(int process_id,
-                             int routing_id,
-                             PluginFinder* plugin_finder,
-                             const std::vector<PluginGroup>& groups) {
+void GotPluginsCallback(int process_id,
+                        int routing_id,
+                        PluginFinder* plugin_finder,
+                        const std::vector<webkit::WebPluginInfo>& plugins) {
   WebContents* web_contents =
       tab_util::GetWebContentsByID(process_id, routing_id);
   if (!web_contents)
@@ -407,13 +400,11 @@ void GotPluginGroupsCallback(int process_id,
   }
 
   const webkit::WebPluginInfo* reader = NULL;
-  for (size_t i = 0; i < groups.size(); ++i) {
-    if (groups[i].GetGroupName() == reader_group_name) {
-      const std::vector<WebPluginInfo>& plugins =
-          groups[i].web_plugin_infos();
-      DCHECK_EQ(plugins.size(), 1u);
-      reader = &plugins[0];
-      break;
+  for (size_t i = 0; i < plugins.size(); ++i) {
+    PluginInstaller* installer = plugin_finder->GetPluginInstaller(plugins[i]);
+    if (reader_group_name == installer->name()) {
+      DCHECK(!reader);
+      reader = &plugins[i];
     }
   }
 
@@ -424,9 +415,9 @@ void GotPluginGroupsCallback(int process_id,
 void GotPluginFinderCallback(int process_id,
                              int routing_id,
                              PluginFinder* plugin_finder) {
-  PluginService::GetInstance()->GetPluginGroups(
-      base::Bind(&GotPluginGroupsCallback, process_id, routing_id,
-                                           base::Unretained(plugin_finder)));
+  PluginService::GetInstance()->GetPlugins(
+      base::Bind(&GotPluginsCallback, process_id, routing_id,
+                 base::Unretained(plugin_finder)));
 }
 
 }  // namespace

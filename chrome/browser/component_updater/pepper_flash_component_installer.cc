@@ -165,6 +165,10 @@ bool MakePepperFlashPluginInfo(const FilePath& flash_path,
   return true;
 }
 
+void CanEnablePluginCallbackDoNothing(bool dummy) {
+  // Ignore the state-change check result.
+}
+
 // If it is a |fresh_install| we enable or disable it by default in some
 // configurations. See IsPepperFlashEnabledByDefault() for more information.
 void RegisterPepperFlashWithChrome(const FilePath& path,
@@ -176,8 +180,10 @@ void RegisterPepperFlashWithChrome(const FilePath& path,
     return;
   bool enable_by_default = IsPepperFlashEnabledByDefault();
   if (fresh_install)
-    PluginPrefs::EnablePluginGlobally(enable_by_default, plugin_info.path,
-                                      base::Bind(&base::DoNothing));
+    PluginPrefs::EnablePluginGlobally(
+        enable_by_default,
+        plugin_info.path,
+        base::Bind(&CanEnablePluginCallbackDoNothing));
 
   bool add_to_front = enable_by_default;
   PluginService::GetInstance()->RegisterInternalPlugin(
