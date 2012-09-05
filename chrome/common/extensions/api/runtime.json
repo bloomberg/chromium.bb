@@ -26,35 +26,6 @@
         "unprivileged": true
       }
     },
-    "types": [
-      {
-        "id": "ManifestDetails",
-        "description": "Details from the manifest for the current extension/app.",
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "The name of the extension/app"
-          },
-          "version": {
-            "type":"string",
-            "description": "The version of the extension/app"
-          },
-          "manifest_version": {
-            "optional": true,
-            "type": "integer"
-          },
-          "permissions": {
-            "optional": true,
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "additionalProperties": { "type": "any" }
-      }
-    ],
     "functions": [
       {
         "name": "getBackgroundPage",
@@ -81,12 +52,14 @@
       },
       {
         "name": "getManifest",
-        "description": "Returns details about the app or extension from the manifest",
+        "description": "Returns details about the app or extension from the manifest. The object returned is a serialization of the full <a href=\"manifest.html\">manifest file</a>.",
         "type": "function",
         "unprivileged": true,
         "parameters": [],
         "returns": {
-          "$ref": "ManifestDetails",
+          "type": "object",
+          "properties": {},
+          "additionalProperties": { "type": "any" },
           "description": "The manifest details."
         }
       },
