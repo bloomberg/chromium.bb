@@ -454,7 +454,7 @@ cr.define('ntp', function() {
    * @param {string} id The ID of a node.
    * @param {string} color The color represented as a CSS string.
    */
-  function setStripeColor(id, color) {
+  function setFaviconDominantColor(id, color) {
     var node = $(id);
     if (node)
       node.stripeColor = color;
@@ -585,7 +585,7 @@ cr.define('ntp', function() {
     setMostVisitedPages: setMostVisitedPages,
     setSuggestionsPages: setSuggestionsPages,
     setRecentlyClosedTabs: setRecentlyClosedTabs,
-    setStripeColor: setStripeColor,
+    setFaviconDominantColor: setFaviconDominantColor,
     showNotification: showNotification,
     themeChanged: themeChanged,
     updateLogin: updateLogin
