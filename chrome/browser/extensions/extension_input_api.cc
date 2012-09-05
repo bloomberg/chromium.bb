@@ -10,13 +10,10 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/key_identifier_conversion_views.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/top_level_widget.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "ui/base/events/event.h"
 #include "ui/views/ime/input_method.h"
-#include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -63,18 +60,6 @@ uint16 UnicodeIdentifierStringToInt(const std::string& key_identifier) {
   return character;
 }
 
-views::Widget* GetTopLevelWidget(Browser* browser) {
-  if (!browser)
-    return NULL;
-
-  BrowserWindow* window = browser->window();
-  if (!window)
-    return NULL;
-
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  return browser_view ? browser_view->GetWidget() : NULL;
-}
-
 }  // namespace
 
 bool SendKeyboardEventInputFunction::RunImpl() {
@@ -117,7 +102,8 @@ bool SendKeyboardEventInputFunction::RunImpl() {
     return false;
   }
 
-  views::Widget* widget = GetTopLevelWidget(GetCurrentBrowser());
+  views::Widget* widget =
+      chrome::GetTopLevelWidgetForBrowser(GetCurrentBrowser());
   if (!widget) {
     error_ = kNoValidRecipientError;
     return false;
