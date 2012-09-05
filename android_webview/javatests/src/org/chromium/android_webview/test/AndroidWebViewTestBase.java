@@ -137,14 +137,11 @@ public class AndroidWebViewTestBase
     protected AwTestContainerView createAwTestContainerView(final boolean incognito,
             final AwTestContainerView testContainerView,
             final AwContentsClient contentsClient) {
-        int nativeWebContents = AndroidWebViewUtil.createNativeWebContents(incognito);
-        ContentViewCore contentViewCore =
-            new ContentViewCore(getActivity(), testContainerView,
-                    testContainerView.getInternalAccessDelegate(), nativeWebContents,
-                    ContentViewCore.PERSONALITY_VIEW);
+        ContentViewCore contentViewCore = new ContentViewCore(
+                getActivity(), ContentViewCore.PERSONALITY_VIEW);
         testContainerView.initialize(contentViewCore,
                 new AwContents(testContainerView, testContainerView.getInternalAccessDelegate(),
-                            contentViewCore, contentsClient, incognito, false));
+                contentViewCore, contentsClient, incognito, false));
         getActivity().addView(testContainerView);
         return testContainerView;
     }
@@ -158,7 +155,7 @@ public class AndroidWebViewTestBase
             final boolean incognito,
             final AwContentsClient client) throws Exception {
         final AtomicReference<AwTestContainerView> testContainerView =
-            new AtomicReference<AwTestContainerView>();
+                new AtomicReference<AwTestContainerView>();
         final Context context = getActivity();
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override

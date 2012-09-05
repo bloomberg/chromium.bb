@@ -147,7 +147,8 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
             int personality) {
         super(context, attrs, defStyle);
 
-        mContentViewCore = new ContentViewCore(context, this, this, nativeWebContents, personality);
+        mContentViewCore = new ContentViewCore(context, personality);
+        mContentViewCore.initialize(this, this, true, nativeWebContents, false);
     }
 
     /**

@@ -68,29 +68,25 @@ struct ContentViewCoreImpl::JavaObject {
 
 };
 
-// ----------------------------------------------------------------------------
-// Implementation of static ContentViewCore public interfaces
-
-ContentViewCore* ContentViewCore::Create(JNIEnv* env, jobject obj,
-                                         WebContents* web_contents) {
-  return new ContentViewCoreImpl(env, obj, web_contents);
-}
-
 ContentViewCore* ContentViewCore::GetNativeContentViewCore(JNIEnv* env,
                                                            jobject obj) {
   return reinterpret_cast<ContentViewCore*>(
       env->GetIntField(obj, g_native_content_view));
 }
 
-// ----------------------------------------------------------------------------
 
 ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
+                                         bool hardware_accelerated,
+                                         bool take_ownership_of_web_contents,
                                          WebContents* web_contents)
     : java_ref_(env, obj),
       web_contents_(static_cast<WebContentsImpl*>(web_contents)),
+      owns_web_contents_(take_ownership_of_web_contents),
       tab_crashed_(false) {
   DCHECK(web_contents) <<
       "A ContentViewCoreImpl should be created with a valid WebContents.";
+
+  // TODO(leandrogracia): make use of the hardware_accelerated argument.
 
   InitJNI(env, obj);
 
@@ -534,9 +530,13 @@ void ContentViewCoreImpl::PostLoadUrl(const GURL& url) {
 // ----------------------------------------------------------------------------
 
 // This is called for each ContentViewCore.
-jint Init(JNIEnv* env, jobject obj, jint native_web_contents) {
-  ContentViewCore* view = ContentViewCore::Create(
-      env, obj, reinterpret_cast<WebContents*>(native_web_contents));
+jint Init(JNIEnv* env, jobject obj,
+          jboolean hardware_accelerated,
+          jboolean take_ownership_of_web_contents,
+          jint native_web_contents) {
+  ContentViewCoreImpl* view = new ContentViewCoreImpl(
+      env, obj, hardware_accelerated, take_ownership_of_web_contents,
+      reinterpret_cast<WebContents*>(native_web_contents));
   return reinterpret_cast<jint>(view);
 }
 

@@ -34,6 +34,8 @@ class ContentViewCoreImpl : public ContentViewCore,
  public:
   ContentViewCoreImpl(JNIEnv* env,
                       jobject obj,
+                      bool hardware_accelerated,
+                      bool take_ownership_of_web_contents,
                       WebContents* web_contents);
 
   // ContentViewCore overrides
@@ -205,6 +207,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   // Reference to the current WebContents used to determine how and what to
   // display in the ContentViewCore.
   WebContentsImpl* web_contents_;
+  bool owns_web_contents_;
 
   // We only set this to be the delegate of the web_contents if we own it.
   scoped_ptr<ContentViewClient> content_view_client_;
