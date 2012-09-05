@@ -46,6 +46,8 @@
   [gfx::SkColorToCalibratedNSColor(
       ConstrainedWindow::GetBackgroundColor()) set];
   [path fill];
+
+  [[self window] invalidateShadow];
 }
 
 @end
