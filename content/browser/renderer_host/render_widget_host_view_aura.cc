@@ -1521,7 +1521,10 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
   if (is_loading_)
     cursor = ui::kCursorPointer;
 
-  root_window->SetCursor(cursor);
+  aura::client::CursorClient* cursor_client =
+      aura::client::GetCursorClient(root_window);
+  if (cursor_client)
+    cursor_client->SetCursor(cursor);
 }
 
 ui::InputMethod* RenderWidgetHostViewAura::GetInputMethod() const {
