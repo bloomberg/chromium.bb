@@ -60,18 +60,6 @@ class PolicyTest(policy_base.PolicyTestBase):
         return x['pid']
     return None
 
-  def _IsJavascriptEnabled(self):
-    """Returns true if Javascript is enabled, false otherwise."""
-    try:
-      ret = self.ExecuteJavascript('domAutomationController.send("done");')
-      return ret == 'done'
-    except pyauto_errors.JSONInterfaceError as e:
-      if 'Javascript execution was blocked' == str(e):
-        logging.debug('The previous failure was expected')
-        return False
-      else:
-        raise e
-
   def setUp(self):
     policy_base.PolicyTestBase.setUp(self)
     if self.IsChromeOS():
@@ -99,66 +87,6 @@ class PolicyTest(policy_base.PolicyTestBase):
       total += 1
     self.assertFalse(fails, msg='%d of %d policies failed.\n%s' %
                      (len(fails), total, '\n'.join(fails)))
-
-  def testJavascriptPolicies(self):
-    """Tests the Javascript policies."""
-    # The navigation to about:blank after each policy reset is to reset the
-    # content settings state.
-    policy = {}
-    self.SetUserPolicy(policy)
-    self.assertTrue(self._IsJavascriptEnabled())
-    self.assertTrue(self.IsMenuCommandEnabled(pyauto.IDC_DEV_TOOLS))
-    self.assertTrue(self.IsMenuCommandEnabled(pyauto.IDC_DEV_TOOLS_CONSOLE))
-
-    policy['DeveloperToolsDisabled'] = True
-    self.SetUserPolicy(policy)
-    self.assertTrue(self._IsJavascriptEnabled())
-    self.assertFalse(self.IsMenuCommandEnabled(pyauto.IDC_DEV_TOOLS))
-    self.assertFalse(self.IsMenuCommandEnabled(pyauto.IDC_DEV_TOOLS_CONSOLE))
-
-    policy['DeveloperToolsDisabled'] = False
-    self.SetUserPolicy(policy)
-    self.assertTrue(self._IsJavascriptEnabled())
-    self.assertTrue(self.IsMenuCommandEnabled(pyauto.IDC_DEV_TOOLS))
-    self.assertTrue(self.IsMenuCommandEnabled(pyauto.IDC_DEV_TOOLS_CONSOLE))
-
-    # The Developer Tools still work when javascript is disabled.
-    policy['JavascriptEnabled'] = False
-    self.SetUserPolicy(policy)
-    self.NavigateToURL('about:blank')
-    self.assertFalse(self._IsJavascriptEnabled())
-    self.assertTrue(self.IsMenuCommandEnabled(pyauto.IDC_DEV_TOOLS))
-    self.assertTrue(self.IsMenuCommandEnabled(pyauto.IDC_DEV_TOOLS_CONSOLE))
-    # Javascript is always enabled for internal Chrome pages.
-    self.NavigateToURL('chrome://settings-frame')
-    self.assertTrue(self._IsJavascriptEnabled())
-
-    # The Developer Tools can be explicitly disabled.
-    policy['DeveloperToolsDisabled'] = True
-    self.SetUserPolicy(policy)
-    self.NavigateToURL('about:blank')
-    self.assertFalse(self._IsJavascriptEnabled())
-    self.assertFalse(self.IsMenuCommandEnabled(pyauto.IDC_DEV_TOOLS))
-    self.assertFalse(self.IsMenuCommandEnabled(pyauto.IDC_DEV_TOOLS_CONSOLE))
-
-    # Javascript can also be disabled with content settings policies.
-    policy = {
-      'DefaultJavaScriptSetting': 2,
-    }
-    self.SetUserPolicy(policy)
-    self.NavigateToURL('about:blank')
-    self.assertFalse(self._IsJavascriptEnabled())
-    self.assertTrue(self.IsMenuCommandEnabled(pyauto.IDC_DEV_TOOLS))
-    self.assertTrue(self.IsMenuCommandEnabled(pyauto.IDC_DEV_TOOLS_CONSOLE))
-
-    # The content setting overrides JavascriptEnabled.
-    policy = {
-      'DefaultJavaScriptSetting': 1,
-      'JavascriptEnabled': False,
-    }
-    self.SetUserPolicy(policy)
-    self.NavigateToURL('about:blank')
-    self.assertTrue(self._IsJavascriptEnabled())
 
   def testStartupOptionsURLs(self):
     """Verify that user cannot modify the startup page options if "Open the
@@ -228,22 +156,6 @@ class PolicyTest(policy_base.PolicyTestBase):
       # TODO(sunandt): Try changing the application locale to another language.
     else:
       raise NotImplementedError()
-
-  def testDeveloperToolsDisabled(self):
-    """Verify that devtools window cannot be launched."""
-    # DevTools process can be seen by PyAuto only when it's undocked.
-    policy = {'DeveloperToolsDisabled': True}
-    self.SetUserPolicy(policy)
-    self.SetPrefs(pyauto.kDevToolsOpenDocked, False)
-    self.assertRaises(pyauto_errors.JSONInterfaceError,
-                      lambda: self.ApplyAccelerator(pyauto.IDC_DEV_TOOLS))
-    self.assertEquals(1, len(self.GetBrowserInfo()['windows']),
-                      msg='Devtools window launched.')
-    policy = {'DeveloperToolsDisabled': False}
-    self.SetUserPolicy(policy)
-    self.ApplyAccelerator(pyauto.IDC_DEV_TOOLS)
-    self.assertEquals(2, len(self.GetBrowserInfo()['windows']),
-                      msg='Devtools window not launched.')
 
   def testDisableSPDY(self):
     """Verify that SPDY is disabled."""

@@ -16,6 +16,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/net/url_request_mock_util.h"
@@ -40,6 +41,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -51,6 +53,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -180,6 +183,17 @@ bool IsWebGLEnabled(content::WebContents* contents) {
       L"domAutomationController.send(context != null);",
       &result));
   return result;
+}
+
+bool IsJavascriptEnabled(content::WebContents* contents) {
+  content::RenderViewHost* rvh = contents->GetRenderViewHost();
+  base::Value* value = rvh->ExecuteJavascriptAndGetValue(
+      string16(),
+      ASCIIToUTF16("123"));
+  int result = 0;
+  if (!value->GetAsInteger(&result))
+    EXPECT_EQ(base::Value::TYPE_NULL, value->GetType());
+  return result == 123;
 }
 
 }  // namespace
@@ -418,6 +432,26 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, Disable3DAPIs) {
 }
 #endif
 
+IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabled) {
+  // Verifies that access to the developer tools can be disabled.
+
+  // Open devtools.
+  EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_DEV_TOOLS));
+  content::WebContents* contents = chrome::GetActiveWebContents(browser());
+  EXPECT_TRUE(DevToolsWindow::GetDevToolsContents(contents));
+
+  // Disable devtools via policy.
+  PolicyMap policies;
+  policies.Set(key::kDeveloperToolsDisabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
+  provider_.UpdateChromePolicy(policies);
+  // The existing devtools window should have closed.
+  EXPECT_FALSE(DevToolsWindow::GetDevToolsContents(contents));
+  // And it's not possible to open it again.
+  EXPECT_FALSE(chrome::ExecuteCommand(browser(), IDC_DEV_TOOLS));
+  EXPECT_FALSE(DevToolsWindow::GetDevToolsContents(contents));
+}
+
 // This policy isn't available on Chrome OS.
 #if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(PolicyTest, DownloadDirectory) {
@@ -473,6 +507,39 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, IncognitoEnabled) {
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_NEW_INCOGNITO_WINDOW));
   EXPECT_EQ(2u, BrowserList::size());
   EXPECT_TRUE(BrowserList::IsOffTheRecordSessionActive());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, Javascript) {
+  // Verifies that Javascript can be disabled.
+  content::WebContents* contents = chrome::GetActiveWebContents(browser());
+  EXPECT_TRUE(IsJavascriptEnabled(contents));
+  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_DEV_TOOLS));
+  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_DEV_TOOLS_CONSOLE));
+
+  // Disable Javascript via policy.
+  PolicyMap policies;
+  policies.Set(key::kJavascriptEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));
+  provider_.UpdateChromePolicy(policies);
+  // Reload the page.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  EXPECT_FALSE(IsJavascriptEnabled(contents));
+  // Developer tools still work when javascript is disabled.
+  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_DEV_TOOLS));
+  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_DEV_TOOLS_CONSOLE));
+  // Javascript is always enabled for the internal pages.
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://settings"));
+  EXPECT_TRUE(IsJavascriptEnabled(contents));
+
+  // The javascript content setting policy overrides the javascript policy.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  EXPECT_FALSE(IsJavascriptEnabled(contents));
+  policies.Set(key::kDefaultJavaScriptSetting, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               base::Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
+  provider_.UpdateChromePolicy(policies);
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  EXPECT_TRUE(IsJavascriptEnabled(contents));
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, SavingBrowserHistoryDisabled) {
