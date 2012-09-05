@@ -360,7 +360,7 @@ void WebDialogWindowDelegateBridge::HandleKeyboardEvent(
   tabContents_->web_contents()->GetController().LoadURL(
       delegate_->GetDialogContentURL(),
       content::Referrer(),
-      content::PAGE_TRANSITION_START_PAGE,
+      content::PAGE_TRANSITION_AUTO_TOPLEVEL,
       std::string());
 
   // TODO(akalin): add accelerator for ESC to close the dialog box.

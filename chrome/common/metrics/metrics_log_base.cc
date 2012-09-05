@@ -348,8 +348,8 @@ void MetricsLogBase::RecordLoadEvent(int window_id,
       origin_string = "global-history";
       break;
 
-    case content::PAGE_TRANSITION_START_PAGE:
-      origin_string = "start-page";
+    case content::PAGE_TRANSITION_AUTO_TOPLEVEL:
+      origin_string = "auto-toplevel";
       break;
 
     case content::PAGE_TRANSITION_FORM_SUBMIT:

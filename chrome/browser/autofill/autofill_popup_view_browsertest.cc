@@ -84,7 +84,7 @@ IN_PROC_BROWSER_TEST_F(AutofillPopupViewBrowserTest,
       content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
       content::Source<content::WebContents>(web_contents_));
   chrome::AddSelectedTabWithURL(browser(), GURL(chrome::kAboutBlankURL),
-                                content::PAGE_TRANSITION_START_PAGE);
+                                content::PAGE_TRANSITION_AUTO_TOPLEVEL);
   observer.Wait();
 
   // The mock verifies that the call was made.

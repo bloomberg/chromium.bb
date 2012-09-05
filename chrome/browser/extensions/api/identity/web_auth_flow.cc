@@ -98,7 +98,7 @@ void WebAuthFlow::Start() {
   controller->LoadURL(
       provider_url_,
       content::Referrer(),
-      content::PAGE_TRANSITION_START_PAGE,
+      content::PAGE_TRANSITION_AUTO_TOPLEVEL,
       std::string());
 }
 

@@ -54,7 +54,7 @@ content::WebContents* WebIntentInlineDispositionDelegate::OpenURLFromTab(
 
   // Load in place.
   source->GetController().LoadURL(params.url, content::Referrer(),
-      content::PAGE_TRANSITION_START_PAGE, std::string());
+      content::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
 
   // Remove previous history entries - users should not navigate in intents.
   source->GetController().PruneAllButActive();

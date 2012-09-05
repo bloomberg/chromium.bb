@@ -43,7 +43,7 @@ const char* GetPageTransitionString(
     ENUM_CASE(sync_pb::SyncEnums, AUTO_SUBFRAME);
     ENUM_CASE(sync_pb::SyncEnums, MANUAL_SUBFRAME);
     ENUM_CASE(sync_pb::SyncEnums, GENERATED);
-    ENUM_CASE(sync_pb::SyncEnums, START_PAGE);
+    ENUM_CASE(sync_pb::SyncEnums, AUTO_TOPLEVEL);
     ENUM_CASE(sync_pb::SyncEnums, FORM_SUBMIT);
     ENUM_CASE(sync_pb::SyncEnums, RELOAD);
     ENUM_CASE(sync_pb::SyncEnums, KEYWORD);

@@ -66,7 +66,7 @@ void WebView::SetWebContents(content::WebContents* web_contents) {
 
 void WebView::LoadInitialURL(const GURL& url) {
   GetWebContents()->GetController().LoadURL(
-      url, content::Referrer(), content::PAGE_TRANSITION_START_PAGE,
+      url, content::Referrer(), content::PAGE_TRANSITION_AUTO_TOPLEVEL,
       std::string());
 }
 

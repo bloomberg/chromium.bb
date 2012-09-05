@@ -381,7 +381,7 @@ void PrintPreviewTabController::OnNavEntryCommitted(
 
       // New |preview_tab| is created. Don't update/erase map entry.
       if (waiting_for_new_preview_page_ &&
-          transition_type == content::PAGE_TRANSITION_START_PAGE &&
+          transition_type == content::PAGE_TRANSITION_AUTO_TOPLEVEL &&
           nav_type == content::NAVIGATION_TYPE_NEW_PAGE) {
         waiting_for_new_preview_page_ = false;
         SetInitiatorTabURLAndTitle(preview_tab);

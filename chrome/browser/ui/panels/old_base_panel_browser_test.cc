@@ -327,7 +327,7 @@ Panel* OldBasePanelBrowserTest::CreatePanelWithParams(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
     chrome::AddSelectedTabWithURL(panel_browser, params.url,
-                                  content::PAGE_TRANSITION_START_PAGE);
+                                  content::PAGE_TRANSITION_AUTO_TOPLEVEL);
     observer.Wait();
   }
 

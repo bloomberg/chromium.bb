@@ -45,7 +45,7 @@ ConstrainedWebDialogDelegateBase::ConstrainedWebDialogDelegateBase(
 
   web_contents->GetController().LoadURL(delegate->GetDialogContentURL(),
                                         content::Referrer(),
-                                        content::PAGE_TRANSITION_START_PAGE,
+                                        content::PAGE_TRANSITION_AUTO_TOPLEVEL,
                                         std::string());
 }
 

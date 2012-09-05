@@ -46,7 +46,7 @@ class WEBVIEW_EXPORT WebView : public View,
   // Loads the initial URL to display in the attached WebContents. Creates the
   // WebContents if none is attached yet. Note that this is intended as a
   // convenience for loading the initial URL, and so URLs are navigated with
-  // PAGE_TRANSITION_START_PAGE, so this is not intended as a general purpose
+  // PAGE_TRANSITION_AUTO_TOPLEVEL, so this is not intended as a general purpose
   // navigation method - use WebContents' API directly.
   void LoadInitialURL(const GURL& url);
 

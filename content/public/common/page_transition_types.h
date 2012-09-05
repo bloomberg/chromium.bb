@@ -57,8 +57,12 @@ enum PageTransition {
   // See also KEYWORD.
   PAGE_TRANSITION_GENERATED = 5,
 
-  // The page was specified in the command line or is the start page.
-  PAGE_TRANSITION_START_PAGE = 6,
+  // This is a toplevel navigation. This is any content that is automatically
+  // loaded in a toplevel frame.  For example, opening a tab to show the ASH
+  // screen saver, opening the devtools window, opening the NTP after the safe
+  // browsing warning, opening web-based dialog boxes are examples of
+  // AUTO_TOPLEVEL navigations.
+  PAGE_TRANSITION_AUTO_TOPLEVEL = 6,
 
   // The user filled out values in a form and submitted it. NOTE that in
   // some situations submitting a form does not result in this transition

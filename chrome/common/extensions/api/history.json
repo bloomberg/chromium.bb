@@ -30,7 +30,7 @@
           "referringVisitId": {"type": "string", "description": "The visit ID of the referrer."},
           "transition": {
             "type": "string",
-            "enum": ["link", "typed", "auto_bookmark", "auto_subframe", "manual_subframe", "generated", "start_page", "form_submit", "reload", "keyword", "keyword_generated"],
+            "enum": ["link", "typed", "auto_bookmark", "auto_subframe", "manual_subframe", "generated", "auto_toplevel", "form_submit", "reload", "keyword", "keyword_generated"],
             "description": "The <a href='#transition_types'>transition type</a> for this visit from its referrer."
           }
         }

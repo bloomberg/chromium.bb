@@ -181,7 +181,7 @@ DevToolsWindow* DevToolsWindow::Create(
   tab_contents->web_contents()->GetController().LoadURL(
       GetDevToolsUrl(profile, docked, shared_worker_frontend),
       content::Referrer(),
-      content::PAGE_TRANSITION_START_PAGE,
+      content::PAGE_TRANSITION_AUTO_TOPLEVEL,
       std::string());
   return new DevToolsWindow(tab_contents, profile, inspected_rvh, docked);
 }
@@ -381,7 +381,7 @@ void DevToolsWindow::CreateDevToolsBrowser() {
 
   browser_ = new Browser(Browser::CreateParams::CreateForDevTools(profile_));
   browser_->tab_strip_model()->AddTabContents(
-      tab_contents_, -1, content::PAGE_TRANSITION_START_PAGE,
+      tab_contents_, -1, content::PAGE_TRANSITION_AUTO_TOPLEVEL,
       TabStripModel::ADD_ACTIVE);
 }
 

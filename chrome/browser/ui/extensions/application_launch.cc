@@ -110,7 +110,7 @@ WebContents* OpenApplicationWindow(
     *app_browser = browser;
 
   TabContents* tab_contents = chrome::AddSelectedTabWithURL(
-      browser, url, content::PAGE_TRANSITION_START_PAGE);
+      browser, url, content::PAGE_TRANSITION_AUTO_TOPLEVEL);
   WebContents* contents = tab_contents->web_contents();
   contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
   contents->GetRenderViewHost()->SyncRendererPrefs();
@@ -166,7 +166,7 @@ WebContents* OpenApplicationTab(Profile* profile,
   // TODO(erikkay): START_PAGE doesn't seem like the right transition in all
   // cases.
   chrome::NavigateParams params(browser, extension_url,
-                                content::PAGE_TRANSITION_START_PAGE);
+                                content::PAGE_TRANSITION_AUTO_TOPLEVEL);
   params.tabstrip_add_types = add_type;
   params.disposition = disposition;
 

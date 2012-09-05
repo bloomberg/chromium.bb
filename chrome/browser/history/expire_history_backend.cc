@@ -103,7 +103,7 @@ bool ShouldArchiveVisit(const VisitRow& visit) {
   // to see them.
   if (no_qualifier == content::PAGE_TRANSITION_TYPED ||
       no_qualifier == content::PAGE_TRANSITION_AUTO_BOOKMARK ||
-      no_qualifier == content::PAGE_TRANSITION_START_PAGE)
+      no_qualifier == content::PAGE_TRANSITION_AUTO_TOPLEVEL)
     return true;
 
   // Only archive these "less important" transitions when they were the final

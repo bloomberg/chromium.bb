@@ -215,7 +215,7 @@ gfx::NativeWindow WebDialogGtk::InitDialog() {
   tab_->web_contents()->GetController().LoadURL(
       GetDialogContentURL(),
       content::Referrer(),
-      content::PAGE_TRANSITION_START_PAGE,
+      content::PAGE_TRANSITION_AUTO_TOPLEVEL,
       std::string());
   GtkDialogFlags flags = GTK_DIALOG_NO_SEPARATOR;
   if (delegate_->GetDialogModalType() != ui::MODAL_TYPE_NONE)

@@ -58,7 +58,7 @@ const char* PageTransitionGetCoreTransitionString(PageTransition type) {
     case PAGE_TRANSITION_AUTO_SUBFRAME: return "auto_subframe";
     case PAGE_TRANSITION_MANUAL_SUBFRAME: return "manual_subframe";
     case PAGE_TRANSITION_GENERATED: return "generated";
-    case PAGE_TRANSITION_START_PAGE: return "start_page";
+    case PAGE_TRANSITION_AUTO_TOPLEVEL: return "auto_toplevel";
     case PAGE_TRANSITION_FORM_SUBMIT: return "form_submit";
     case PAGE_TRANSITION_RELOAD: return "reload";
     case PAGE_TRANSITION_KEYWORD: return "keyword";

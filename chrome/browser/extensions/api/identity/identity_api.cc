@@ -186,7 +186,7 @@ void IdentityGetAuthTokenFunction::ShowLoginPopup() {
                                                  true));
     chrome::NavigateParams params(browser,
                                   signin_url,
-                                  content::PAGE_TRANSITION_START_PAGE);
+                                  content::PAGE_TRANSITION_AUTO_TOPLEVEL);
     params.disposition = CURRENT_TAB;
     params.window_action = chrome::NavigateParams::SHOW_WINDOW;
     chrome::Navigate(&params);

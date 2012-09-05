@@ -1111,7 +1111,7 @@ void ExternalTabContainerWin::Navigate(const GURL& url, const GURL& referrer) {
 
   tab_contents_->web_contents()->GetController().LoadURL(
       url, content::Referrer(referrer, WebKit::WebReferrerPolicyDefault),
-      content::PAGE_TRANSITION_START_PAGE, std::string());
+      content::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
 }
 
 bool ExternalTabContainerWin::OnGoToEntryOffset(int offset) {

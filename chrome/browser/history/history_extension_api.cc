@@ -88,8 +88,8 @@ scoped_ptr<VisitItem> GetVisitItem(const history::VisitRow& row) {
     case content::PAGE_TRANSITION_GENERATED:
       transition = VisitItem::TRANSITION_GENERATED;
       break;
-    case content::PAGE_TRANSITION_START_PAGE:
-      transition = VisitItem::TRANSITION_START_PAGE;
+    case content::PAGE_TRANSITION_AUTO_TOPLEVEL:
+      transition = VisitItem::TRANSITION_AUTO_TOPLEVEL;
       break;
     case content::PAGE_TRANSITION_FORM_SUBMIT:
       transition = VisitItem::TRANSITION_FORM_SUBMIT;

@@ -302,7 +302,7 @@ void WebIntentPickerGtk::OnInlineDisposition(const string16& title,
   tab_contents_container_->SetTab(inline_disposition_tab_contents_.get());
 
   inline_disposition_tab_contents_->web_contents()->GetController().LoadURL(
-      url, content::Referrer(), content::PAGE_TRANSITION_START_PAGE,
+      url, content::Referrer(), content::PAGE_TRANSITION_AUTO_TOPLEVEL,
       std::string());
 
   // Replace the picker contents with the inline disposition.

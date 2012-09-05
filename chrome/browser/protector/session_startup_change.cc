@@ -210,7 +210,7 @@ void SessionStartupChange::OpenPinnedTabs(Browser* browser,
                                           const StartupTabs& tabs) {
   for (size_t i = 0; i < tabs.size(); ++i) {
     chrome::NavigateParams params(browser, tabs[i].url,
-                                  content::PAGE_TRANSITION_START_PAGE);
+                                  content::PAGE_TRANSITION_AUTO_TOPLEVEL);
     params.disposition = NEW_BACKGROUND_TAB;
     params.tabstrip_index = -1;
     params.tabstrip_add_types = TabStripModel::ADD_PINNED;

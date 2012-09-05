@@ -43,7 +43,7 @@ message SyncEnums {
     AUTO_SUBFRAME = 3;
     MANUAL_SUBFRAME = 4;
     GENERATED = 5;
-    START_PAGE = 6;
+    AUTO_TOPLEVEL = 6;
     FORM_SUBMIT = 7;
     RELOAD = 8;
     KEYWORD = 9;

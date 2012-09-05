@@ -459,7 +459,7 @@ void Navigate(NavigateParams* params) {
       base_transition == content::PAGE_TRANSITION_TYPED ||
       base_transition == content::PAGE_TRANSITION_AUTO_BOOKMARK ||
       base_transition == content::PAGE_TRANSITION_GENERATED ||
-      base_transition == content::PAGE_TRANSITION_START_PAGE ||
+      base_transition == content::PAGE_TRANSITION_AUTO_TOPLEVEL ||
       base_transition == content::PAGE_TRANSITION_RELOAD ||
       base_transition == content::PAGE_TRANSITION_KEYWORD;
 

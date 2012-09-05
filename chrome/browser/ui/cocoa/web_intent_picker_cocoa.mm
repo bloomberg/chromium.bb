@@ -176,7 +176,7 @@ void WebIntentPickerCocoa::OnInlineDisposition(const string16& title,
   inline_disposition_tab_contents_->web_contents()->GetController().LoadURL(
       url,
       content::Referrer(),
-      content::PAGE_TRANSITION_START_PAGE,
+      content::PAGE_TRANSITION_AUTO_TOPLEVEL,
       std::string());
   [sheet_controller_ setInlineDispositionTitle:
       base::SysUTF16ToNSString(title)];
