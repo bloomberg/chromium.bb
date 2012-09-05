@@ -5942,15 +5942,6 @@
    fun:cupsGetDests2
 }
 {
-   bug_145742
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN10extensions35ExtensionWebstoreGetWebGLStatusTest7RunTestEb
-   fun:_ZN10extensions48ExtensionWebstoreGetWebGLStatusTest*Test19RunTestOnMainThreadEv
-   fun:_ZN20InProcessBrowserTest23RunTestOnMainThreadLoopEv
-   fun:_ZN7content15BrowserTestBase28ProxyRunTestOnMainThreadLoopEv
-}
-{
    bug_145747a
    Memcheck:Leak
    fun:_Znw*
