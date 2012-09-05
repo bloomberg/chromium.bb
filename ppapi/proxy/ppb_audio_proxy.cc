@@ -323,6 +323,8 @@ void PPB_Audio_Proxy::OnMsgNotifyAudioStreamCreated(
         IPC::PlatformFileForTransitToPlatformFile(socket_handle.descriptor()));
     base::SharedMemory temp_mem(handle.shmem(), false);
   } else {
+    EnterResourceNoLock<PPB_AudioConfig_API> config(
+        static_cast<Audio*>(enter.object())->GetCurrentConfig(), true);
     // See the comment above about how we must call
     // TotalSharedMemorySizeInBytes to get the actual size of the buffer. Here,
     // we must call PacketSizeInBytes to get back the size of the audio buffer,
@@ -330,7 +332,8 @@ void PPB_Audio_Proxy::OnMsgNotifyAudioStreamCreated(
     static_cast<Audio*>(enter.object())->SetStreamInfo(
         enter.resource()->pp_instance(), handle.shmem(),
         media::PacketSizeInBytes(handle.size()),
-        IPC::PlatformFileForTransitToPlatformFile(socket_handle.descriptor()));
+        IPC::PlatformFileForTransitToPlatformFile(socket_handle.descriptor()),
+        config.object()->GetSampleFrameCount());
   }
 }
 

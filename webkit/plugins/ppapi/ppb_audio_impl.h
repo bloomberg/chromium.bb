@@ -76,6 +76,9 @@ class PPB_Audio_Impl : public ::ppapi::Resource,
   // own this pointer but are responsible for calling Shutdown on it.
   PluginDelegate::PlatformAudioOutput* audio_;
 
+  // Track frame count for passing on to PPB_Audio_Shared::SetStreamInfo().
+  int sample_frame_count_;
+
   DISALLOW_COPY_AND_ASSIGN(PPB_Audio_Impl);
 };
 

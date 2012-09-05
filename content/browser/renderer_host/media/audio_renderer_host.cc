@@ -13,6 +13,8 @@
 #include "content/common/media/audio_messages.h"
 #include "content/public/browser/media_observer.h"
 #include "media/audio/shared_memory_util.h"
+#include "media/base/audio_bus.h"
+#include "media/base/limits.h"
 
 using content::BrowserMessageFilter;
 using content::BrowserThread;
@@ -197,9 +199,10 @@ void AudioRendererHost::OnCreateStream(
   DCHECK(LookupById(stream_id) == NULL);
 
   media::AudioParameters audio_params(params);
-  DCHECK_GT(audio_params.frames_per_buffer(), 0);
-
-  uint32 buffer_size = audio_params.GetBytesPerBuffer();
+  uint32 buffer_size = media::AudioBus::CalculateMemorySize(audio_params);
+  DCHECK_GT(buffer_size, 0U);
+  DCHECK_LE(buffer_size,
+            static_cast<uint32>(media::limits::kMaxPacketSizeInBytes));
 
   scoped_ptr<AudioEntry> entry(new AudioEntry());
 
@@ -214,7 +217,7 @@ void AudioRendererHost::OnCreateStream(
 
   // Create sync reader and try to initialize it.
   scoped_ptr<AudioSyncReader> reader(
-      new AudioSyncReader(&entry->shared_memory));
+      new AudioSyncReader(&entry->shared_memory, params));
 
   if (!reader->Init()) {
     SendErrorMessage(stream_id);

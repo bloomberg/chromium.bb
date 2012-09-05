@@ -12,6 +12,7 @@
 #include "native_client/src/include/ref_counted.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_resource.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "media/base/audio_bus.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/ppb_audio.h"
 
@@ -59,6 +60,11 @@ class PluginAudio : public PluginResource {
   bool thread_active_;
   PPB_Audio_Callback user_callback_;
   void* user_data_;
+  // AudioBus for shuttling data across the shared memory.
+  scoped_ptr<media::AudioBus> audio_bus_;
+  // Internal buffer for client's integer audio data.
+  int client_buffer_size_bytes_;
+  scoped_array<uint8_t> client_buffer_;
 
   IMPLEMENT_RESOURCE(PluginAudio);
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginAudio);

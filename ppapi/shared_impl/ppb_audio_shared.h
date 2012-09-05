@@ -9,6 +9,7 @@
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
 #include "base/threading/simple_thread.h"
+#include "media/base/audio_bus.h"
 #include "ppapi/c/ppb_audio.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_audio_api.h"
@@ -53,7 +54,8 @@ class PPAPI_SHARED_EXPORT PPB_Audio_Shared
   void SetStreamInfo(PP_Instance instance,
                      base::SharedMemoryHandle shared_memory_handle,
                      size_t shared_memory_size,
-                     base::SyncSocket::Handle socket_handle);
+                     base::SyncSocket::Handle socket_handle,
+                     int sample_frame_count);
 
 #if defined(OS_NACL)
   // NaCl has a special API for IRT code to create threads that can call back
@@ -101,6 +103,13 @@ class PPAPI_SHARED_EXPORT PPB_Audio_Shared
 
   // User data pointer passed verbatim to the callback function.
   void* user_data_;
+
+  // AudioBus for shuttling data across the shared memory.
+  scoped_ptr<media::AudioBus> audio_bus_;
+
+  // Internal buffer for client's integer audio data.
+  int client_buffer_size_bytes_;
+  scoped_array<uint8_t> client_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Audio_Shared);
 };

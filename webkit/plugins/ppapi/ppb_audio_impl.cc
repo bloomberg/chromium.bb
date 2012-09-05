@@ -30,7 +30,8 @@ namespace ppapi {
 
 PPB_Audio_Impl::PPB_Audio_Impl(PP_Instance instance)
     : Resource(::ppapi::OBJECT_IS_IMPL, instance),
-      audio_(NULL) {
+      audio_(NULL),
+      sample_frame_count_(0) {
 }
 
 PPB_Audio_Impl::~PPB_Audio_Impl() {
@@ -81,6 +82,7 @@ bool PPB_Audio_Impl::Init(PP_Resource config,
   audio_ = plugin_delegate->CreateAudioOutput(
       enter.object()->GetSampleRate(), enter.object()->GetSampleFrameCount(),
       this);
+  sample_frame_count_ = enter.object()->GetSampleFrameCount();
   return audio_ != NULL;
 }
 
@@ -153,7 +155,7 @@ void PPB_Audio_Impl::OnSetStreamInfo(
     size_t shared_memory_size,
     base::SyncSocket::Handle socket_handle) {
   SetStreamInfo(pp_instance(), shared_memory_handle, shared_memory_size,
-                socket_handle);
+                socket_handle, sample_frame_count_);
 }
 
 }  // namespace ppapi
