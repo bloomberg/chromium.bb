@@ -435,6 +435,7 @@ void WebIntentPickerController::OnExtensionInstallSuccess(
 
 void WebIntentPickerController::DispatchToInstalledExtension(
     const std::string& extension_id) {
+  web_intents::RecordCWSExtensionInstalled(uma_bucket_);
   picker_->OnExtensionInstallSuccess(extension_id);
   WebIntentsRegistry::IntentServiceList services;
   GetWebIntentsRegistry(tab_contents_)->GetIntentServicesForExtensionFilter(
@@ -931,7 +932,8 @@ void WebIntentPickerController::CreatePicker() {
     picker_ = WebIntentPicker::Create(tab_contents_, this, picker_model_.get());
   picker_->SetActionString(GetIntentActionString(
       UTF16ToUTF8(picker_model_->action())));
-  web_intents::RecordPickerShow(uma_bucket_);
+  web_intents::RecordPickerShow(
+      uma_bucket_, picker_model_->GetInstalledServiceCount());
   picker_shown_ = true;
 }
 

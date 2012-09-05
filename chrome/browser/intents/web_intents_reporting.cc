@@ -41,6 +41,25 @@ TypeId ToTypeId(const string16& type) {
   return TYPE_ID_CUSTOM;
 }
 
+// Records the number of services installed at the time the picker
+// is shown to the user. Drops the size into one of several buckets.
+void RecordInstalledServiceCount(const UMABucket bucket, size_t installed) {
+  DCHECK(installed >= 0);
+  if (installed == 0) {
+    UMA_HISTOGRAM_ENUMERATION("WebIntents.Service.NumInstalled.0.v0",
+        bucket, kMaxActionTypeHistogramValue);
+  } else if (installed >= 1 && installed <= 4) {
+    UMA_HISTOGRAM_ENUMERATION("WebIntents.Service.NumInstalled.1-4.v0",
+        bucket, kMaxActionTypeHistogramValue);
+  } else if (installed >= 5 && installed <= 8) {
+    UMA_HISTOGRAM_ENUMERATION("WebIntents.Service.NumInstalled.5-8.v0",
+        bucket, kMaxActionTypeHistogramValue);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("WebIntents.Service.NumInstalled.9+.v0",
+        bucket, kMaxActionTypeHistogramValue);
+  }
+}
+
 }  // namespace
 
 UMABucket ToUMABucket(const string16& action, const string16& type) {
@@ -64,9 +83,10 @@ void RecordIntentDispatched(const UMABucket bucket) {
       bucket, kMaxActionTypeHistogramValue);
 }
 
-void RecordPickerShow(const UMABucket bucket) {
+void RecordPickerShow(const UMABucket bucket, size_t installed) {
   UMA_HISTOGRAM_ENUMERATION("WebIntents.Picker.Show.v0",
       bucket, kMaxActionTypeHistogramValue);
+  RecordInstalledServiceCount(bucket, installed);
 }
 
 void RecordPickerCancel(const UMABucket bucket) {
@@ -81,6 +101,11 @@ void RecordServiceInvoke(const UMABucket bucket) {
 
 void RecordChooseAnotherService(const UMABucket bucket) {
   UMA_HISTOGRAM_ENUMERATION("WebIntents.Service.ChooseAnother.v0",
+      bucket, kMaxActionTypeHistogramValue);
+}
+
+void RecordCWSExtensionInstalled(const UMABucket bucket) {
+  UMA_HISTOGRAM_ENUMERATION("WebIntents.Service.CWSInstall.v0",
       bucket, kMaxActionTypeHistogramValue);
 }
 

@@ -119,11 +119,14 @@ UMABucket ToUMABucket(const string16& action, const string16& type);
 void RecordIntentsDispatchDisabled();
 void RecordIntentDispatchRequested();
 void RecordIntentDispatched(const UMABucket bucket);
-void RecordPickerShow(const UMABucket bucket);
+
+// Records the fact that the picker was shown and records the
+// number of services installed at the time the picker was shown
+void RecordPickerShow(const UMABucket bucket, size_t installed);
 void RecordPickerCancel(const UMABucket bucket);
 void RecordServiceInvoke(const UMABucket bucket);
 void RecordChooseAnotherService(const UMABucket bucket);
-
+void RecordCWSExtensionInstalled(const UMABucket bucket);
 }  // namespace web_intents
 
 #endif  // CHROME_BROWSER_INTENTS_WEB_INTENTS_REPORTING_H_
