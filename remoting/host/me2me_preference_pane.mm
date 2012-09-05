@@ -524,17 +524,8 @@ std::string JsonHostConfig::GetSerializedData() const {
 
   have_new_config_ = NO;
 
-  // If the service is running, send a signal to cause it to reload its
-  // configuration, otherwise start the service.
-  if (is_service_running_) {
-    pid_t job_pid = base::mac::PIDForJob(remoting::kServiceName);
-    if (job_pid > 0) {
-      kill(job_pid, SIGHUP);
-    } else {
-      NSLog(@"Failed to obtain PID of service %s", remoting::kServiceName);
-      [self showError];
-    }
-  } else {
+  // Ensure the service is started.
+  if (!is_service_running_) {
     [self sendJobControlMessage:LAUNCH_KEY_STARTJOB];
   }
 

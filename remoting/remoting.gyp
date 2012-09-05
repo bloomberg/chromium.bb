@@ -593,6 +593,8 @@
             'host/branding.h',
             'host/chromoting_messages.cc',
             'host/chromoting_messages.h',
+            'host/config_file_watcher.cc',
+            'host/config_file_watcher.h',
             'host/constants.h',
             'host/constants_win.cc',
             'host/daemon_process.cc',
@@ -612,6 +614,7 @@
             'host/win/wts_console_observer.h',
             'host/win/wts_session_process_launcher.cc',
             'host/win/wts_session_process_launcher.h',
+            'host/worker_process_ipc_delegate.h',
           ],
           'msvs_settings': {
             'VCLinkerTool': {
@@ -1209,8 +1212,6 @@
         'host/clipboard_linux.cc',
         'host/clipboard_mac.mm',
         'host/clipboard_win.cc',
-        'host/composite_host_config.cc',
-        'host/composite_host_config.h',
         'host/constants.h',
         'host/constants_mac.cc',
         'host/constants_mac.h',
@@ -1446,13 +1447,13 @@
       'sources': [
         'host/branding.cc',
         'host/branding.h',
-        'host/posix/sighup_listener.cc',
-        'host/posix/sighup_listener.h',
+        'host/config_file_watcher.cc',
+        'host/config_file_watcher.h',
+        'host/curtain_mode_mac.h',
+        'host/curtain_mode_mac.cc',
         'host/remoting_me2me_host.cc',
         'host/usage_stats_consent.h',
         'host/usage_stats_consent_win.cc',
-        'host/curtain_mode_mac.h',
-        'host/curtain_mode_mac.cc',
       ],
       'conditions': [
         ['os_posix != 1', {

@@ -29,6 +29,8 @@ class Message;
 
 namespace remoting {
 
+class WorkerProcessIpcDelegate;
+
 // Launches a worker process that is controlled via an IPC channel. All
 // interaction with the spawned process is through the IPC::Listener and Send()
 // method. In case of error the channel is closed and the worker process is
@@ -53,25 +55,18 @@ class WorkerProcessLauncher
 
     // Terminates the worker process with the given exit code.
     virtual void DoKillProcess(DWORD exit_code) = 0;
-
-    // Notifies that a client has been connected to the channel.
-    virtual void OnChannelConnected() = 0;
-
-    // Processes messages sent by the client.
-    virtual bool OnMessageReceived(const IPC::Message& message) = 0;
   };
 
-  // Creates the launcher.
-  // |delegate| will be able to receive messages sent over the channel once
-  // the worker has been started and until it is stopped by Stop() or an error
-  // occurs.
+  // Creates the launcher that will use |launcher_delegate| to manage the worker
+  // process and |worker_delegate| to handle IPCs.
   //
   // |stopped_callback| and |main_task_runner| are passed to the underlying
   // |Stoppable| implementation. The caller should call all the methods on this
   // class on the |main_task_runner| thread. |ipc_task_runner| is used to
   // perform background IPC I/O.
   WorkerProcessLauncher(
-      Delegate* delegate,
+      Delegate* launcher_delegate,
+      WorkerProcessIpcDelegate* worker_delegate,
       const base::Closure& stopped_callback,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner);
@@ -80,8 +75,9 @@ class WorkerProcessLauncher
   // Starts the worker process.
   void Start(const std::string& pipe_sddl);
 
-  // Sends an IPC message to the worker process. This method can be called only
-  // after successful Start() and until Stop() is called or an error occurred.
+  // Sends an IPC message to the worker process. The message will be silently
+  // dropped if Send() is called before Start() or after stutdown has been
+  // initiated.
   void Send(IPC::Message* message);
 
   // base::win::ObjectWatcher::Delegate implementation.
@@ -105,7 +101,8 @@ class WorkerProcessLauncher
   // Generates random channel ID.
   std::string GenerateRandomChannelId();
 
-  Delegate* delegate_;
+  Delegate* launcher_delegate_;
+  WorkerProcessIpcDelegate* worker_delegate_;
 
   // The main service message loop.
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;

@@ -20,7 +20,6 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/path_service.h"
-#include "base/process_util.h"
 #include "base/rand_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
@@ -49,19 +48,19 @@ const FilePath::CharType kMe2meHostBinaryName[] =
 const FilePath::CharType kMe2meServiceBinaryName[] =
     FILE_PATH_LITERAL("remoting_service.exe");
 
-// The IPC channel name is passed to the host in the command line.
-const char kChromotingIpcSwitchName[] = "chromoting-ipc";
+// The command line switch specifying the name of the daemon IPC endpoint.
+const char kDaemonIpcSwitchName[] = "daemon-pipe";
 
 const char kElevateSwitchName[] = "elevate";
 
 // The command line parameters that should be copied from the service's command
 // line to the host process.
 const char* kCopiedSwitchNames[] = {
-    "auth-config", "host-config", switches::kV, switches::kVModule };
+    "host-config", switches::kV, switches::kVModule };
 
-// The security descriptor of the Chromoting IPC channel. It gives full access
+// The security descriptor of the daemon IPC endpoint. It gives full access
 // to LocalSystem and denies access by anyone else.
-const char kChromotingChannelSecurityDescriptor[] = "O:SYG:SYD:(A;;GA;;;SY)";
+const char kDaemonIpcSecurityDescriptor[] = "O:SYG:SYD:(A;;GA;;;SY)";
 
 } // namespace
 
@@ -94,8 +93,8 @@ WtsSessionProcessLauncher::WtsSessionProcessLauncher(
 
 WtsSessionProcessLauncher::~WtsSessionProcessLauncher() {
   // Make sure that the object is completely stopped. The same check exists
-  // in Stoppable::~Stoppable() but this one allows us to examine the state of
-  // the object before destruction.
+  // in Stoppable::~Stoppable() but this one helps us to fail early and
+  // predictably.
   CHECK_EQ(stoppable_state(), Stoppable::kStopped);
 
   monitor_->RemoveWtsConsoleObserver(this);
@@ -141,7 +140,7 @@ bool WtsSessionProcessLauncher::DoLaunchProcess(
   // to use and copying known switches from the service's command line.
   CommandLine command_line(service_binary);
   command_line.AppendSwitchPath(kElevateSwitchName, host_binary);
-  command_line.AppendSwitchNative(kChromotingIpcSwitchName,
+  command_line.AppendSwitchNative(kDaemonIpcSwitchName,
                                   UTF8ToWide(channel_name));
   command_line.CopySwitchesFrom(*CommandLine::ForCurrentProcess(),
                                 kCopiedSwitchNames,
@@ -375,12 +374,12 @@ void WtsSessionProcessLauncher::LaunchProcess() {
 
   launch_time_ = base::Time::Now();
   launcher_.reset(new WorkerProcessLauncher(
-      this,
+      this, this,
       base::Bind(&WtsSessionProcessLauncher::OnLauncherStopped,
                  base::Unretained(this)),
       main_message_loop_,
       ipc_message_loop_));
-  launcher_->Start(kChromotingChannelSecurityDescriptor);
+  launcher_->Start(kDaemonIpcSecurityDescriptor);
 }
 
 void WtsSessionProcessLauncher::OnLauncherStopped() {

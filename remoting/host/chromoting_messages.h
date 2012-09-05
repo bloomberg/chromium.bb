@@ -8,3 +8,9 @@
 #include "ipc/ipc_message_macros.h"
 
 #define IPC_MESSAGE_START ChromotingMsgStart
+
+//-----------------------------------------------------------------------------
+// Daemon to Network messages
+
+// Delivers the host configuration (and updates) to the network process.
+IPC_MESSAGE_CONTROL1(ChromotingDaemonNetworkMsg_Configuration, std::string)

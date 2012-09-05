@@ -29,6 +29,10 @@ class JsonHostConfig : public InMemoryHostConfig {
 
   std::string GetSerializedData();
 
+  // Sets the configuration from serialized JSON data. Returns false if the data
+  // could not be parsed.
+  bool SetSerializedData(const std::string& config);
+
  private:
   FilePath filename_;
 

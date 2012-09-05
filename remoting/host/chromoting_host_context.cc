@@ -69,10 +69,10 @@ bool ChromotingHostContext::Start() {
   file_task_runner_ =
       new AutoThreadTaskRunner(file_thread_.message_loop_proxy(),
                                ui_task_runner_);
-
   network_task_runner_ =
       new AutoThreadTaskRunner(network_thread_.message_loop_proxy(),
                                ui_task_runner_);
+
   url_request_context_getter_ = new URLRequestContextGetter(
       ui_task_runner(), network_task_runner(),
       static_cast<MessageLoopForIO*>(file_thread_.message_loop()));

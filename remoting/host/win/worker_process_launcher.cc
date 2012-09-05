@@ -21,6 +21,7 @@
 #include "base/win/scoped_handle.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message.h"
+#include "remoting/host/worker_process_ipc_delegate.h"
 
 using base::win::ScopedHandle;
 
@@ -38,12 +39,14 @@ WorkerProcessLauncher::Delegate::~Delegate() {
 }
 
 WorkerProcessLauncher::WorkerProcessLauncher(
-    Delegate* delegate,
+    Delegate* launcher_delegate,
+    WorkerProcessIpcDelegate* worker_delegate,
     const base::Closure& stopped_callback,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner)
     : Stoppable(main_task_runner, stopped_callback),
-      delegate_(delegate),
+      launcher_delegate_(launcher_delegate),
+      worker_delegate_(worker_delegate),
       main_task_runner_(main_task_runner),
       ipc_task_runner_(ipc_task_runner) {
 }
@@ -70,12 +73,13 @@ void WorkerProcessLauncher::Start(const std::string& pipe_sddl) {
 
     // Launch the process and attach an object watcher to the returned process
     // handle so that we get notified if the process terminates.
-    if (delegate_->DoLaunchProcess(channel_name, &process_exit_event_)) {
+    if (launcher_delegate_->DoLaunchProcess(channel_name,
+                                            &process_exit_event_)) {
       if (process_watcher_.StartWatching(process_exit_event_, this)) {
         return;
       }
 
-      delegate_->DoKillProcess(CONTROL_C_EXIT);
+      launcher_delegate_->DoKillProcess(CONTROL_C_EXIT);
     }
   }
 
@@ -85,7 +89,11 @@ void WorkerProcessLauncher::Start(const std::string& pipe_sddl) {
 void WorkerProcessLauncher::Send(IPC::Message* message) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  ipc_channel_->Send(message);
+  if (ipc_channel_.get()) {
+    ipc_channel_->Send(message);
+  } else {
+    delete message;
+  }
 }
 
 void WorkerProcessLauncher::OnObjectSignaled(HANDLE object) {
@@ -101,7 +109,7 @@ bool WorkerProcessLauncher::OnMessageReceived(const IPC::Message& message) {
   DCHECK(pipe_.IsValid());
   DCHECK(process_exit_event_.IsValid());
 
-  return delegate_->OnMessageReceived(message);
+  return worker_delegate_->OnMessageReceived(message);
 }
 
 void WorkerProcessLauncher::OnChannelConnected(int32 peer_pid) {
@@ -118,7 +126,7 @@ void WorkerProcessLauncher::OnChannelConnected(int32 peer_pid) {
   // If we'd like to be able to launch low-privileged workers and let them
   // connect back, the pipe handle should be passed to the worker instead of
   // the pipe name.
-  delegate_->OnChannelConnected();
+  worker_delegate_->OnChannelConnected();
 }
 
 void WorkerProcessLauncher::OnChannelError() {
@@ -144,7 +152,7 @@ void WorkerProcessLauncher::DoStop() {
 
   // Kill the process if it has been started already.
   if (process_watcher_.GetWatchedObject() != NULL) {
-    delegate_->DoKillProcess(CONTROL_C_EXIT);
+    launcher_delegate_->DoKillProcess(CONTROL_C_EXIT);
     return;
   }
 

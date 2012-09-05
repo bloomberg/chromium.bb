@@ -21,8 +21,8 @@ class Stoppable {
  public:
   // Constructs an object and stores the callback to be posted to |task_runner|
   // once the object has been shutdown completely.
-  explicit Stoppable(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                     const base::Closure& stopped_callback);
+  Stoppable(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+            const base::Closure& stopped_callback);
   virtual ~Stoppable();
 
   // Initiates shutdown. It can be called by both the owner of the object and

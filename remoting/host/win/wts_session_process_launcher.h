@@ -9,6 +9,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -20,15 +22,11 @@
 #include "remoting/base/stoppable.h"
 #include "remoting/host/win/worker_process_launcher.h"
 #include "remoting/host/win/wts_console_observer.h"
+#include "remoting/host/worker_process_ipc_delegate.h"
 
 namespace base {
 class SingleThreadTaskRunner;
 } // namespace base
-
-namespace IPC {
-class ChannelProxy;
-class Message;
-} // namespace IPC
 
 namespace remoting {
 
@@ -37,6 +35,7 @@ class WtsConsoleMonitor;
 class WtsSessionProcessLauncher
     : public base::MessagePumpForIO::IOHandler,
       public Stoppable,
+      public WorkerProcessIpcDelegate,
       public WorkerProcessLauncher::Delegate,
       public WtsConsoleObserver {
  public:
@@ -57,13 +56,15 @@ class WtsSessionProcessLauncher
                              DWORD bytes_transferred,
                              DWORD error) OVERRIDE;
 
+  // WorkerProcessIpcDelegate implementation.
+  virtual void OnChannelConnected() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
   // WorkerProcessLauncher::Delegate implementation.
   virtual bool DoLaunchProcess(
       const std::string& channel_name,
       base::win::ScopedHandle* process_exit_event_out) OVERRIDE;
   virtual void DoKillProcess(DWORD exit_code) OVERRIDE;
-  virtual void OnChannelConnected() OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // WtsConsoleObserver implementation.
   virtual void OnSessionAttached(uint32 session_id) OVERRIDE;

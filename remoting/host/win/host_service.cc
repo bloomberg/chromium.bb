@@ -80,8 +80,7 @@ const wchar_t kUsageMessage[] =
 // The command line parameters that should be copied from the service's command
 // line when launching an elevated child.
 const char* kCopiedSwitchNames[] = {
-    "auth-config", "host-config", "chromoting-ipc", switches::kV,
-    switches::kVModule };
+    "host-config", "daemon-pipe", switches::kV, switches::kVModule };
 
 // Exit codes:
 const int kSuccessExitCode = 0;

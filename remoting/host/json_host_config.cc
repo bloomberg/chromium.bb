@@ -30,16 +30,7 @@ bool JsonHostConfig::Read() {
     return false;
   }
 
-  scoped_ptr<Value> value(
-      base::JSONReader::Read(file_content, base::JSON_ALLOW_TRAILING_COMMAS));
-  if (value.get() == NULL || !value->IsType(Value::TYPE_DICTIONARY)) {
-    LOG(WARNING) << "Failed to parse " << filename_.value();
-    return false;
-  }
-
-  DictionaryValue* dictionary = static_cast<DictionaryValue*>(value.release());
-  values_.reset(dictionary);
-  return true;
+  return SetSerializedData(file_content);
 }
 
 bool JsonHostConfig::Save() {
@@ -56,6 +47,19 @@ std::string JsonHostConfig::GetSerializedData() {
   std::string data;
   base::JSONWriter::Write(values_.get(), &data);
   return data;
+}
+
+bool JsonHostConfig::SetSerializedData(const std::string& config) {
+  scoped_ptr<Value> value(
+      base::JSONReader::Read(config, base::JSON_ALLOW_TRAILING_COMMAS));
+  if (value.get() == NULL || !value->IsType(Value::TYPE_DICTIONARY)) {
+    LOG(WARNING) << "Failed to parse " << filename_.value();
+    return false;
+  }
+
+  DictionaryValue* dictionary = static_cast<DictionaryValue*>(value.release());
+  values_.reset(dictionary);
+  return true;
 }
 
 }  // namespace remoting
