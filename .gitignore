@@ -26,6 +26,9 @@
 
 # Ignore unittest related files.
 /testing_support/_rietveld
+/tests/git-svn-submodule/
 /tests/subversion_config/README.txt
 /tests/subversion_config/auth
 /tests/subversion_config/servers
+/tests/svn/
+/tests/svnrepo/
