@@ -59,6 +59,11 @@ int test_call_from_gdb(int arg) {
   return 3 * arg;
 }
 
+void test_change_variable(int arg) {
+  int local_var = 2 * arg;
+  global_var += local_var + arg;
+}
+
 int main(int argc, char **argv) {
   assert(argc >= 2);
 
@@ -85,6 +90,11 @@ int main(int argc, char **argv) {
   if (strcmp(argv[1], "call_from_gdb") == 0) {
     /* Call function so that it doesn't get optimized away. */
     return test_call_from_gdb(0);
+  }
+  if (strcmp(argv[1], "change_variable") == 0) {
+    global_var = 0;
+    test_change_variable(1);
+    return 0;
   }
   return 1;
 }
