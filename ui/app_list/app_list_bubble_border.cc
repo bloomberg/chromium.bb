@@ -7,6 +7,7 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/app_list/app_list_constants.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
@@ -14,7 +15,6 @@
 namespace {
 
 const SkColor kSearchBoxBackground = SK_ColorWHITE;
-const SkColor kContentsBackground = SkColorSetRGB(0xF5, 0xF5, 0xF5);
 
 // Colors and sizes of top separator between searchbox and grid view.
 const SkColor kTopSeparatorColor = SkColorSetRGB(0xF0, 0xF0, 0xF0);
@@ -58,7 +58,7 @@ void AppListBubbleBorder::PaintBackground(gfx::Canvas* canvas,
                           bounds.width(),
                           bounds.bottom() - seperator_rect.bottom());
 
-  paint.setColor(kContentsBackground);
+  paint.setColor(kContentsBackgroundColor);
   canvas->DrawRect(contents_rect, paint);
 }
 

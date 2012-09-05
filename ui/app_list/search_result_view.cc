@@ -4,6 +4,7 @@
 
 #include "ui/app_list/search_result_view.h"
 
+#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/search_result.h"
 #include "ui/app_list/search_result_list_view.h"
 #include "ui/gfx/canvas.h"
@@ -38,7 +39,6 @@ const SkColor kDefaultTextColor = SkColorSetRGB(0x33, 0x33, 0x33);
 const SkColor kDimmedTextColor = SkColorSetRGB(0x96, 0x96, 0x96);
 const SkColor kURLTextColor = SkColorSetRGB(0x00, 0x99, 0x33);
 
-const SkColor kBackgroundColor = SkColorSetRGB(0xF5, 0xF5, 0xF5);
 const SkColor kSelectedBorderColor = kBorderColor;
 const SkColor kSelectedBackgroundColor = SkColorSetARGB(0x0F, 0x4D, 0x90, 0xFE);
 const SkColor kHoverAndPushedColor = SkColorSetARGB(0x05, 0, 0, 0);
@@ -190,7 +190,7 @@ void SearchResultView::OnPaint(gfx::Canvas* canvas) {
   gfx::Rect content_rect(rect);
   content_rect.set_height(rect.height() - kBorderSize);
 
-  canvas->FillRect(content_rect, kBackgroundColor);
+  canvas->FillRect(content_rect, kContentsBackgroundColor);
 
   bool selected = list_view_->IsResultViewSelected(this);
   if (selected) {

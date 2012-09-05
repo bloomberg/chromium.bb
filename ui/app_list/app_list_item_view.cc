@@ -11,6 +11,7 @@
 #include "base/synchronization/cancellation_flag.h"
 #include "base/threading/worker_pool.h"
 #include "base/utf_string_conversions.h"
+#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_item_model.h"
 #include "ui/app_list/apps_grid_view.h"
 #include "ui/app_list/drop_shadow_label.h"
@@ -260,6 +261,7 @@ void AppListItemView::OnPaint(gfx::Canvas* canvas) {
 
   bool selected = apps_grid_view_->IsSelectedItem(this);
 
+  canvas->FillRect(rect, kContentsBackgroundColor);
   if (model_->highlighted()) {
     canvas->FillRect(rect, kHighlightedColor);
   } else if (hover_animation_->is_animating()) {
