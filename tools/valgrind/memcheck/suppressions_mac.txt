@@ -2457,15 +2457,3 @@
    fun:_ZN8remoting13DecoderTester14ReceivedPacketEPNS_11VideoPacketE
    fun:_ZN8remoting13DecoderTester20ReceivedScopedPacketE10scoped_ptrINS_11VideoPacketEE
 }
-{
-   bug_114700
-   Memcheck:Uninitialized
-   fun:_ZN5mediaL21ToInterleavedInternalIsiEEvPKNS_8AudioBusEiPv
-   fun:_ZNK5media8AudioBus13ToInterleavedEiiPv
-   fun:_ZN5media28PCMQueueOutAudioOutputStream14RenderCallbackEPvP16OpaqueAudioQueueP16AudioQueueBuffer
-   fun:_ZN5media28PCMQueueOutAudioOutputStream5StartEPNS_17AudioOutputStream19AudioSourceCallbackE
-   fun:_ZN5media25AudioOutputDispatcherImpl11StartStreamEPNS_17AudioOutputStream19AudioSourceCallbackEPNS_16AudioOutputProxyE
-   fun:_ZN5media16AudioOutputProxy5StartEPNS_17AudioOutputStream19AudioSourceCallbackE
-   fun:_ZN5media21AudioOutputController11StartStreamEv
-   fun:_ZN5media21AudioOutputController23PollAndStartIfDataReadyEv
-}
