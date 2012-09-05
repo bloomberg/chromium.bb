@@ -22,14 +22,16 @@ namespace content {
 // started.
 // |client_context| is the pointer to StartSandboxedProcessCallback which was
 // passed in from StartSandboxedProcess.
-// |handle| is the processID of the child process as originated in Java.
+// |handle| is the processID of the child process as originated in Java, 0 if
+// the SandboxedProcess could not be created.
 static void OnSandboxedProcessStarted(JNIEnv*,
                                       jclass,
                                       jint client_context,
                                       jint handle) {
   StartSandboxedProcessCallback* callback =
       reinterpret_cast<StartSandboxedProcessCallback*>(client_context);
-  callback->Run(static_cast<base::ProcessHandle>(handle));
+  if (handle)
+    callback->Run(static_cast<base::ProcessHandle>(handle));
   delete callback;
 }
 

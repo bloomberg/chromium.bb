@@ -180,6 +180,8 @@ public class SandboxedProcessLauncher {
         if (allocatedConnection == null) {
             allocatedConnection = allocateBoundConnection(context, commandLine);
             if (allocatedConnection == null) {
+                // Notify the native code so it can free the heap allocated callback.
+                nativeOnSandboxedProcessStarted(clientContext, 0);
                 return;
             }
         }
