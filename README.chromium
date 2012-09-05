@@ -220,6 +220,7 @@ Short Directions:
 
      On Mac run
        ./chromium/scripts/build_ffmpeg.sh mac ia32 <absolute path to ..>
+       ./chromium/scripts/build_ffmpeg.sh mac x64 <absolute path to ..>
 
      On Windows run
        ./chromium/scripts/build_ffmpeg.sh win ia32 <absolute path to ..>

@@ -18,7 +18,7 @@ if [ "$3" = "" -o "$4" != "" ]; then
   echo
   echo "Valid combinations are linux [ia32|x64|arm|arm-neon]"
   echo "                       win   [ia32]"
-  echo "                       mac   [ia32]"
+  echo "                       mac   [ia32|x64]"
   echo
   echo " linux ia32/x64 - script can be run on a normal Ubuntu box."
   echo " linux arm/arm-neon should be run inside of CrOS chroot."
@@ -74,9 +74,14 @@ case $(uname -sm) in
     HOST_ARCH=x64
     JOBS=$(grep processor /proc/cpuinfo | wc -l)
     ;;
-  Darwin*)
+  Darwin\ i386)
     HOST_OS=mac
     HOST_ARCH=ia32
+    JOBS=$(sysctl -n hw.ncpu)
+    ;;
+  Darwin\ x86_64)
+    HOST_OS=mac
+    HOST_ARCH=x64
     JOBS=$(sysctl -n hw.ncpu)
     ;;
   MINGW*)
@@ -366,13 +371,17 @@ fi
 # Should be run on Mac.
 if [ "$TARGET_OS" = "mac" ]; then
   if [ "$HOST_OS" = "mac" ]; then
+    add_flag_common --enable-yasm
+    add_flag_common --cc=clang
+    add_flag_common --cxx=clang++
     if [ "$TARGET_ARCH" = "ia32" ]; then
       add_flag_common --arch=i686
-      add_flag_common --enable-yasm
       add_flag_common --extra-cflags=-m32
       add_flag_common --extra-ldflags=-m32
-      add_flag_common --cc=clang
-      add_flag_common --cxx=clang++
+    elif [ "$TARGET_ARCH" = "x64" ]; then
+      add_flag_common --arch=x86_64
+      add_flag_common --extra-cflags=-m64
+      add_flag_common --extra-ldflags=-m64
     else
       echo "Error: Unknown TARGET_ARCH=$TARGET_ARCH for TARGET_OS=$TARGET_OS!"
       exit 1
