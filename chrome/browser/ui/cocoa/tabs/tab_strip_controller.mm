@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
 #import "chrome/browser/ui/cocoa/constrained_window_mac.h"
 #include "chrome/browser/ui/cocoa/drag_util.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
@@ -555,11 +556,17 @@ private:
     [sheetController_ setActiveView:newView];
   }
 
+  NSWindow* parentWindow = [switchView_ window];
+  ConstrainedWindowSheetController* sheetController =
+      [ConstrainedWindowSheetController
+          controllerForParentWindow:parentWindow];
+  [sheetController parentViewDidBecomeActive:newView];
+
   // Make sure the new tabs's sheets are visible (necessary when a background
   // tab opened a sheet while it was in the background and now becomes active).
   TabContents* newTab = tabStripModel_->GetTabContentsAt(modelIndex);
   DCHECK(newTab);
-  if (newTab) {
+  if (newTab && ![sheetController sheetCount]) {
     ConstrainedWindowTabHelper::ConstrainedWindowList::iterator it, end;
     end = newTab->constrained_window_tab_helper()->constrained_window_end();
     NSWindowController* controller = [[newView window] windowController];
