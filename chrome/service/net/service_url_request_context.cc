@@ -25,6 +25,7 @@
 #include "net/http/http_server_properties_impl.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_service.h"
+#include "net/url_request/url_request_throttler_manager.h"
 
 namespace {
 // Copied from webkit/glue/user_agent.cc. We don't want to pull in a dependency
@@ -123,6 +124,7 @@ ServiceURLRequestContext::ServiceURLRequestContext(
       net::HttpAuthHandlerFactory::CreateDefault(host_resolver()));
   storage_.set_http_server_properties(new net::HttpServerPropertiesImpl);
   storage_.set_transport_security_state(new net::TransportSecurityState);
+  storage_.set_throttler_manager(new net::URLRequestThrottlerManager);
 
   net::HttpNetworkSession::Params session_params;
   session_params.host_resolver = host_resolver();
