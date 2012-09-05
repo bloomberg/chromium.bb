@@ -64,6 +64,7 @@
   float: left;  /* Box will shrink to fit its content. */
   /* An odd line-height ensures a consistent baseline on all platforms. */
   line-height: 1.75em;
+  margin-bottom: 6px;
   /* The box should be no bigger than its parent. */
   max-width: 100%;
   overflow: hidden;
@@ -151,7 +152,7 @@ html[dir='rtl'] .entry .title {
 }
 
 /* Checkboxes are shown when checked or focused, or when the entry is hovered.
-   Fade in on focus, but not on hover, because it makes the UI feel laggy. */
+ * Fade in on focus, but not on hover, because it makes the UI feel laggy. */
 .entry input[type=checkbox]:not(:checked) {
   opacity: 0;
 }
@@ -220,4 +221,8 @@ html[dir='rtl'] .entry .title {
 .menu-button.drop-down {
   position: relative;
   top: 2px;
+}
+
+#action-menu > :not(hr) {
+  line-height: 28px;
 }
