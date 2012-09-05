@@ -95,13 +95,13 @@ const char kDefaultContentSecurityPolicy[] =
     "script-src 'self' chrome-extension-resource:; object-src 'self'";
 
 #define PLATFORM_APP_LOCAL_CSP_SOURCES \
-    "'self' blob: data: filesystem: chrome-extension-resource:"
+    "'self' data: chrome-extension-resource:"
 const char kDefaultPlatformAppContentSecurityPolicy[] =
     // Platform apps can only use local resources by default.
     "default-src 'self' chrome-extension-resource:;"
     // For remote resources, they can fetch them via XMLHttpRequest.
     "connect-src *;"
-    // And serve them via blob:, data: or filesystem: URLs
+    // And serve them via data: or same-origin (blob:, filesystem:) URLs
     "style-src " PLATFORM_APP_LOCAL_CSP_SOURCES " 'unsafe-inline';"
     "img-src " PLATFORM_APP_LOCAL_CSP_SOURCES ";"
     "frame-src " PLATFORM_APP_LOCAL_CSP_SOURCES ";"
