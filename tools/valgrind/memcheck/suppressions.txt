@@ -5714,6 +5714,12 @@
    fun:_ZL21cachedDeviceLuminancef
 }
 {
+   bug_145244
+   Memcheck:Uninitialized
+   fun:_ZN7WebCore15StyleRuleImport17requestStyleSheetEPNS_13CSSStyleSheetERKNS_16CSSParserContextE
+   fun:_ZN7WebCore18StyleSheetContents26requestImportedStyleSheetsEPNS_13CSSStyleSheetE
+}
+{
    bug_145644a
    Memcheck:Leak
    fun:_Znw*
@@ -5968,6 +5974,14 @@
    fun:_ZN2ui21GestureRecognizerImpl17AdvanceTouchQueueEPNS_15GestureConsumerEb
    fun:_ZN4aura10RootWindow23AdvanceQueuedTouchEventEPNS_6WindowEb
 }
+{
+   bug_146500
+   Memcheck:Unaddressable
+   ...
+   fun:_ZN11EventSender17replaySavedEventsEv
+   fun:_ZN11EventSender7mouseUpERKN3WTF6VectorI10CppVariantLm0EEEPS2_
+   fun:_ZN13CppBoundClass14MemberCallbackI11EventSenderE3runERKN3WTF6VectorI10CppVariantLm0EEEPS5_
+}
 
 
 #-----------------------------------------------------------------------
@@ -6008,12 +6022,4 @@
    fun:XCreateBitmapFromData
    ...
    fun:_ZN4aura19RootWindowHostLinuxC1EPNS_22RootWindowHostDelegateERKN3gfx4RectE
-}
-{
-   bug_146500
-   Memcheck:Unaddressable
-   ...
-   fun:_ZN11EventSender17replaySavedEventsEv
-   fun:_ZN11EventSender7mouseUpERKN3WTF6VectorI10CppVariantLm0EEEPS2_
-   fun:_ZN13CppBoundClass14MemberCallbackI11EventSenderE3runERKN3WTF6VectorI10CppVariantLm0EEEPS5_
 }
