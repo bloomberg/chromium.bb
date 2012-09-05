@@ -1,3 +1,8 @@
+2012-09-05  Christian Egli  <christian.egli@sbs.ch>
+
+	* tables/de-de-comp8.ctb: Added more unicode definitions. Thanks
+	to Aliminator83@gmail.com.
+
 2012-09-04  Christian Egli  <christian.egli@sbs.ch>
 
 	* tests/check_all_tables.pl:
