@@ -3128,8 +3128,6 @@
         'browser/ui/views/ash/browser_non_client_frame_view_ash.cc',
         'browser/ui/views/ash/chrome_browser_main_extra_parts_ash.cc',
         'browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h',
-        'browser/ui/views/ash/panel_view_aura.cc',
-        'browser/ui/views/ash/panel_view_aura.h',
         'browser/ui/views/avatar_menu_bubble_view.cc',
         'browser/ui/views/avatar_menu_bubble_view.h',
         'browser/ui/views/avatar_menu_button.cc',

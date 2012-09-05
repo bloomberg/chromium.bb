@@ -74,11 +74,6 @@
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
 
-#if defined(USE_ASH)
-#include "ash/ash_switches.h"
-#include "chrome/browser/ui/views/ash/panel_view_aura.h"
-#endif
-
 #if defined(OS_WIN)
 #include "base/win/metro.h"
 #endif  // OS_WIN
