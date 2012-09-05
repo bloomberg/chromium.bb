@@ -20,11 +20,11 @@ class FilePath;
 namespace gdata {
 
 class DriveCache;
+class DriveDownloadObserver;
 class DriveFileSystemInterface;
 class DriveServiceInterface;
 class DriveWebAppsRegistry;
 class FileWriteHelper;
-class GDataDownloadObserver;
 class GDataSyncClient;
 class GDataUploader;
 
@@ -80,7 +80,7 @@ class DriveSystemService : public ProfileKeyedService  {
   scoped_ptr<DriveWebAppsRegistry> webapps_registry_;
   scoped_ptr<DriveFileSystemInterface> file_system_;
   scoped_ptr<FileWriteHelper> file_write_helper_;
-  scoped_ptr<GDataDownloadObserver> download_observer_;
+  scoped_ptr<DriveDownloadObserver> download_observer_;
   scoped_ptr<GDataSyncClient> sync_client_;
   base::WeakPtrFactory<DriveSystemService> weak_ptr_factory_;
 

@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
+#include "chrome/browser/chromeos/gdata/drive_download_observer.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -24,14 +24,14 @@ namespace {
 // exists only for testing.
 bool g_should_prompt_for_filename = true;
 
-// Trampoline callback between GetGDataTempDownloadPath() and |callback|.
-void ContinueSettingUpGDataDownload(
+// Trampoline callback between GetDriveTempDownloadPath() and |callback|.
+void ContinueSettingUpDriveDownload(
     const content::SavePackagePathPickedCallback& callback,
-    const FilePath& gdata_path,
-    const FilePath& gdata_tmp_download_path) {
-  callback.Run(gdata_tmp_download_path, content::SAVE_PAGE_TYPE_AS_MHTML,
-               base::Bind(&gdata::GDataDownloadObserver::SetDownloadParams,
-                          gdata_path));
+    const FilePath& drive_path,
+    const FilePath& drive_tmp_download_path) {
+  callback.Run(drive_tmp_download_path, content::SAVE_PAGE_TYPE_AS_MHTML,
+               base::Bind(&gdata::DriveDownloadObserver::SetDownloadParams,
+                          drive_path));
 }
 
 }  // anonymous namespace
@@ -92,13 +92,13 @@ void SavePackageFilePickerChromeOS::FileSelectedWithExtraInfo(
 
   if (gdata::util::IsUnderGDataMountPoint(selected_path)) {
     // Here's a map to the callback chain:
-    // GetGDataTempDownloadPath ->
-    //   ContinueSettingUpGDataDownload ->
+    // GetDriveTempDownloadPath ->
+    //   ContinueSettingUpDriveDownload ->
     //     callback_ = SavePackage::OnPathPicked ->
     //       download_created_callback = OnSavePackageDownloadCreated
-    gdata::GDataDownloadObserver::SubstituteGDataDownloadPath(
+    gdata::DriveDownloadObserver::SubstituteDriveDownloadPath(
         profile, selected_path, NULL,
-        base::Bind(&ContinueSettingUpGDataDownload, callback_, selected_path));
+        base::Bind(&ContinueSettingUpDriveDownload, callback_, selected_path));
   } else {
     callback_.Run(selected_path, content::SAVE_PAGE_TYPE_AS_MHTML,
                   content::SavePackageDownloadCreatedCallback());

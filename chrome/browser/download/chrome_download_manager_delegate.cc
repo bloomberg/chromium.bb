@@ -54,7 +54,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
+#include "chrome/browser/chromeos/gdata/drive_download_observer.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/download/download_file_picker_chromeos.h"
 #include "chrome/browser/download/save_package_file_picker_chromeos.h"
@@ -302,7 +302,7 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
 #if defined(OS_CHROMEOS)
   // If there's a GData upload associated with this download, we wait until that
   // is complete before allowing the download item to complete.
-  if (!gdata::GDataDownloadObserver::IsReadyToComplete(
+  if (!gdata::DriveDownloadObserver::IsReadyToComplete(
         item, internal_complete_callback))
     return false;
 #endif
@@ -754,10 +754,10 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
   }
 
 #if defined (OS_CHROMEOS)
-  gdata::GDataDownloadObserver::SubstituteGDataDownloadPath(
+  gdata::DriveDownloadObserver::SubstituteDriveDownloadPath(
       profile_, suggested_path, download,
       base::Bind(
-          &ChromeDownloadManagerDelegate::SubstituteGDataDownloadPathCallback,
+          &ChromeDownloadManagerDelegate::SubstituteDriveDownloadPathCallback,
           this, download->GetId(), callback, should_prompt, is_forced_path,
           danger_type));
 #else
@@ -772,7 +772,7 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
 
 #if defined (OS_CHROMEOS)
 // TODO(asanka): Merge this logic with the logic in DownloadFilePickerChromeOS.
-void ChromeDownloadManagerDelegate::SubstituteGDataDownloadPathCallback(
+void ChromeDownloadManagerDelegate::SubstituteDriveDownloadPathCallback(
     int32 download_id,
     const content::DownloadTargetCallback& callback,
     bool should_prompt,

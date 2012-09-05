@@ -176,11 +176,11 @@ class ChromeDownloadManagerDelegate
       bool visited_referrer_before);
 
 #if defined (OS_CHROMEOS)
-  // GDataDownloadObserver::SubstituteGDataDownloadPath callback. Calls
+  // DriveDownloadObserver::SubstituteDriveDownloadPath callback. Calls
   // |DownloadPathReservationTracker::GetReservedPath| to get a reserved path
   // for the download. The path is then passed into
   // OnPathReservationAvailable().
-  void SubstituteGDataDownloadPathCallback(
+  void SubstituteDriveDownloadPathCallback(
       int32 download_id,
       const content::DownloadTargetCallback& callback,
       bool should_prompt,

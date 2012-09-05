@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_DOWNLOAD_OBSERVER_H_
-#define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_DOWNLOAD_OBSERVER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_DOWNLOAD_OBSERVER_H_
+#define CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_DOWNLOAD_OBSERVER_H_
 
 #include <map>
 
@@ -24,42 +24,42 @@ class DriveFileSystemInterface;
 class GDataUploader;
 struct UploadFileInfo;
 
-// Observes downloads to temporary local gdata folder. Schedules these
-// downloads for upload to gdata service.
-class GDataDownloadObserver : public content::DownloadManager::Observer,
+// Observes downloads to temporary local drive folder. Schedules these
+// downloads for upload to drive service.
+class DriveDownloadObserver : public content::DownloadManager::Observer,
                               public content::DownloadItem::Observer {
  public:
-  GDataDownloadObserver(GDataUploader* uploader,
+  DriveDownloadObserver(GDataUploader* uploader,
                         DriveFileSystemInterface* file_system);
-  virtual ~GDataDownloadObserver();
+  virtual ~DriveDownloadObserver();
 
   // Become an observer of  DownloadManager.
   void Initialize(content::DownloadManager* download_manager,
-                  const FilePath& gdata_tmp_download_path);
+                  const FilePath& drive_tmp_download_path);
 
   typedef base::Callback<void(const FilePath&)>
-    SubstituteGDataDownloadPathCallback;
-  static void SubstituteGDataDownloadPath(Profile* profile,
-      const FilePath& gdata_path, content::DownloadItem* download,
-      const SubstituteGDataDownloadPathCallback& callback);
+    SubstituteDriveDownloadPathCallback;
+  static void SubstituteDriveDownloadPath(Profile* profile,
+      const FilePath& drive_path, content::DownloadItem* download,
+      const SubstituteDriveDownloadPathCallback& callback);
 
-  // Sets gdata path, for example, '/special/drive/MyFolder/MyFile',
+  // Sets drive path, for example, '/special/drive/MyFolder/MyFile',
   // to external data in |download|. Also sets display name and
   // makes |download| a temporary.
-  static void SetDownloadParams(const FilePath& gdata_path,
+  static void SetDownloadParams(const FilePath& drive_path,
                                 content::DownloadItem* download);
 
-  // Gets the gdata_path from external data in |download|.
-  // GetGDataPath may return an empty path in case SetGDataPath was not
+  // Gets the drive_path from external data in |download|.
+  // GetDrivePath may return an empty path in case SetDrivePath was not
   // previously called or there was some other internal error
   // (there is a DCHECK for this).
-  static FilePath GetGDataPath(content::DownloadItem* download);
+  static FilePath GetDrivePath(content::DownloadItem* download);
 
-  // Checks if there is a GData upload associated with |download|
-  static bool IsGDataDownload(content::DownloadItem* download);
+  // Checks if there is a Drive upload associated with |download|
+  static bool IsDriveDownload(content::DownloadItem* download);
 
   // Checks if |download| is ready to complete. Returns true if |download| has
-  // no GData upload associated with it or if the GData upload has already
+  // no Drive upload associated with it or if the Drive upload has already
   // completed. This method is called by the ChromeDownloadManagerDelegate to
   // check if the download is ready to complete.  If the download is not yet
   // ready to complete and |complete_callback| is not null, then
@@ -78,11 +78,11 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
   // progress is unknown, returns -1.
   static int PercentComplete(content::DownloadItem* download);
 
-  // Create a temporary file |gdata_tmp_download_path| in
-  // |gdata_tmp_download_dir|. Must be called on a thread that allows file
+  // Create a temporary file |drive_tmp_download_path| in
+  // |drive_tmp_download_dir|. Must be called on a thread that allows file
   // operations.
-  static void GetGDataTempDownloadPath(const FilePath& gdata_tmp_download_dir,
-                                       FilePath* gdata_tmp_download_path);
+  static void GetDriveTempDownloadPath(const FilePath& drive_tmp_download_dir,
+                                       FilePath* drive_tmp_download_path);
 
  private:
   // DownloadManager overrides.
@@ -145,8 +145,8 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
                         DriveFileError error,
                         scoped_ptr<UploadFileInfo> upload_file_info);
 
-  // Moves the downloaded file to gdata cache.
-  // Must be called after GDataDownloadObserver receives COMPLETE notification.
+  // Moves the downloaded file to drive cache.
+  // Must be called after DriveDownloadObserver receives COMPLETE notification.
   void MoveFileToDriveCache(content::DownloadItem* download);
 
   // Private data.
@@ -158,7 +158,7 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
   content::DownloadManager* download_manager_;
 
   // Temporary download location directory.
-  FilePath gdata_tmp_download_path_;
+  FilePath drive_tmp_download_path_;
 
   // Map of pending downloads.
   typedef std::map<int32, content::DownloadItem*> DownloadMap;
@@ -166,11 +166,11 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<GDataDownloadObserver> weak_ptr_factory_;
+  base::WeakPtrFactory<DriveDownloadObserver> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(GDataDownloadObserver);
+  DISALLOW_COPY_AND_ASSIGN(DriveDownloadObserver);
 };
 
 }  // namespace gdata
 
-#endif  // CHROME_BROWSER_CHROMEOS_GDATA_GDATA_DOWNLOAD_OBSERVER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_DOWNLOAD_OBSERVER_H_
