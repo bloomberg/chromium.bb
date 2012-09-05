@@ -40,6 +40,8 @@ class InProcessBrowserLayoutTest : public content::ContentBrowserTest {
                              const GURL& url);
   void WriteModifiedFile(const std::string& test_case_file_name,
                          FilePath* test_path);
+  std::string SaveResults(const std::string& expected,
+                          const std::string& actual);
 
   FilePath our_original_layout_test_dir_;
   FilePath test_parent_dir_;

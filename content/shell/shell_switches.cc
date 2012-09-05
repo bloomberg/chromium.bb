@@ -21,4 +21,7 @@ const char kDumpRenderTree[] = "dump-render-tree";
 // Disables the timeout for layout tests.
 const char kNoTimeout[] = "no-timeout";
 
+// Save results when layout-as-browser tests fail.
+const char kOutputLayoutTestDifferences[] = "output-layout-test-differences";
+
 }  // namespace switches
