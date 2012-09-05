@@ -16,6 +16,7 @@
 #include "base/timer.h"
 #include "chromeos/dbus/power_state_control.pb.h"
 #include "chromeos/dbus/power_supply_properties.pb.h"
+#include "chromeos/dbus/video_activity_update.pb.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -225,12 +226,18 @@ class PowerManagerClientImpl : public PowerManagerClient {
   }
 
   virtual void NotifyVideoActivity(
-      const base::TimeTicks& last_activity_time) OVERRIDE {
+      const base::TimeTicks& last_activity_time,
+      bool is_fullscreen) OVERRIDE {
     dbus::MethodCall method_call(
         power_manager::kPowerManagerInterface,
         power_manager::kHandleVideoActivityMethod);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendInt64(last_activity_time.ToInternalValue());
+
+    VideoActivityUpdate protobuf;
+    protobuf.set_last_activity_time(last_activity_time.ToInternalValue());
+    protobuf.set_is_fullscreen(is_fullscreen);
+
+    writer.AppendProtoAsArrayOfBytes(protobuf);
     power_manager_proxy_->CallMethod(
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
@@ -590,7 +597,8 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
   virtual void NotifyUserActivity(
       const base::TimeTicks& last_activity_time) OVERRIDE {}
   virtual void NotifyVideoActivity(
-      const base::TimeTicks& last_activity_time) OVERRIDE {}
+      const base::TimeTicks& last_activity_time,
+      bool is_fullscreen) OVERRIDE {}
   virtual void RequestPowerStateOverrides(
       uint32 request_id,
       uint32 duration,

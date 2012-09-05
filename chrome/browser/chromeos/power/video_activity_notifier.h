@@ -19,7 +19,7 @@ class VideoActivityNotifier : public ash::VideoDetectorObserver {
   virtual ~VideoActivityNotifier();
 
   // ash::VideoDetectorObserver implementation.
-  virtual void OnVideoDetected() OVERRIDE;
+  virtual void OnVideoDetected(bool is_fullscreen) OVERRIDE;
 
  private:
   // Last time that the power manager was notified.
