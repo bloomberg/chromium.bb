@@ -4,23 +4,14 @@
 
 {
   'dependencies': [
-    'browser/debugger/devtools_resources.gyp:devtools_resources',
     'browser/speech/proto/speech_proto.gyp:speech_proto',
     '../base/base.gyp:base_static',
     '../crypto/crypto.gyp:crypto',
-    '../net/net.gyp:http_server',
     '../net/net.gyp:net',
-    '../ppapi/ppapi_internal.gyp:ppapi_ipc',
     '../skia/skia.gyp:skia',
-    '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
-    '../third_party/smhasher/smhasher.gyp:pmurhash',
     '../third_party/zlib/zlib.gyp:zlib',
-    '../ui/surface/surface.gyp:surface',
     '../ui/ui.gyp:ui',
     '../ui/ui.gyp:ui_resources',
-    '../webkit/support/webkit_support.gyp:dom_storage',
-    '../webkit/support/webkit_support.gyp:webkit_resources',
-    '../webkit/support/webkit_support.gyp:webkit_strings',
   ],
   'include_dirs': [
     '..',
@@ -838,6 +829,24 @@
         'browser/gamepad/platform_data_fetcher.cc',
       ]
     }],
+    ['OS!="ios"', {
+      'dependencies': [
+        'browser/debugger/devtools_resources.gyp:devtools_resources',
+        '../net/net.gyp:http_server',
+        '../ppapi/ppapi_internal.gyp:ppapi_ipc',
+        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '../third_party/smhasher/smhasher.gyp:pmurhash',
+        '../ui/surface/surface.gyp:surface',
+        '../webkit/support/webkit_support.gyp:dom_storage',
+        '../webkit/support/webkit_support.gyp:webkit_resources',
+        '../webkit/support/webkit_support.gyp:webkit_strings',
+      ],
+    }],
+    ['OS!="mac" and OS!="ios"', {
+      'dependencies': [
+        '../sandbox/sandbox.gyp:sandbox',
+      ],
+    }],
     ['enable_webrtc==1', {
       'sources': [
         'browser/renderer_host/p2p/socket_host.cc',
@@ -951,10 +960,6 @@
       'dependencies': [
         '../third_party/sudden_motion_sensor/sudden_motion_sensor.gyp:sudden_motion_sensor',
       ],
-    }, { # OS!="mac"
-      'dependencies': [
-        '../sandbox/sandbox.gyp:sandbox',
-      ],
     }],
     ['chromeos==1', {
       'dependencies': [
@@ -1021,6 +1026,21 @@
     ['input_speech==0', {
       'sources/': [
         ['exclude', '^browser/speech/'],
+      ],
+    }],
+    ['OS=="ios"', {
+      'sources/': [
+        # iOS only needs a small portion of content; exclude all the
+        # implementation, and re-include what is used.
+        ['exclude', '\\.cc$'],
+        ['exclude', '\\.mm$'],
+        ['include', '_ios\\.(cc|mm)$'],
+        ['include', '^public/browser/notification_registrar\\.cc$'],
+        ['include', '^public/browser/speech_recognition_'],
+        ['include', '^browser/notification_service_impl\\.cc$'],
+        # Pull in all but one file from speech.
+        ['include', '^browser/speech/'],
+        ['exclude', '^browser/speech/input_tag_speech_dispatcher_host\\.cc$$'],
       ],
     }],
   ],
