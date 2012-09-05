@@ -5263,7 +5263,7 @@
    fun:_ZN45BrowserThemePackTest_CanBuildAndReadPack_Test8TestBodyEv
 }
 {
-   bug_127931
+   bug_129620
    Memcheck:Unaddressable
    fun:_ZN4base6Thread10ThreadMainEv
    fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
