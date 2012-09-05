@@ -485,8 +485,15 @@ void BufferedDataSource::ProgressCallback(int64 position) {
   if (stop_signal_received_)
     return;
 
-  if (host() && position > last_read_start_)
-    host()->AddBufferedByteRange(last_read_start_, position);
+  if (position > last_read_start_)
+    ReportOrQueueBufferedBytes(last_read_start_, position);
+}
+
+void BufferedDataSource::ReportOrQueueBufferedBytes(int64 start, int64 end) {
+  if (host())
+    host()->AddBufferedByteRange(start, end);
+  else
+    queued_buffered_byte_ranges_.Add(start, end);
 }
 
 void BufferedDataSource::UpdateHostState_Locked() {
@@ -494,6 +501,12 @@ void BufferedDataSource::UpdateHostState_Locked() {
 
   if (!host())
     return;
+
+  for (size_t i = 0; i < queued_buffered_byte_ranges_.size(); ++i) {
+    host()->AddBufferedByteRange(queued_buffered_byte_ranges_.start(i),
+                                 queued_buffered_byte_ranges_.end(i));
+  }
+  queued_buffered_byte_ranges_.clear();
 
   if (total_bytes_ == kPositionNotSpecified)
     return;

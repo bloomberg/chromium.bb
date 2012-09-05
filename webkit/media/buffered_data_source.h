@@ -12,6 +12,7 @@
 #include "base/synchronization/lock.h"
 #include "googleurl/src/gurl.h"
 #include "media/base/data_source.h"
+#include "media/base/ranges.h"
 #include "webkit/media/buffered_resource_loader.h"
 #include "webkit/media/preload.h"
 
@@ -129,6 +130,10 @@ class BufferedDataSource : public media::DataSource {
   void LoadingStateChangedCallback(BufferedResourceLoader::LoadingState state);
   void ProgressCallback(int64 position);
 
+  // Report a buffered byte range [start,end] or queue it for later
+  // reporting if set_host() hasn't been called yet.
+  void ReportOrQueueBufferedBytes(int64 start, int64 end);
+
   void UpdateHostState_Locked();
 
   // URL of the resource requested.
@@ -209,6 +214,9 @@ class BufferedDataSource : public media::DataSource {
 
   // Current playback rate.
   float playback_rate_;
+
+  // Buffered byte ranges awaiting set_host() being called to report to host().
+  media::Ranges<int64> queued_buffered_byte_ranges_;
 
   scoped_refptr<media::MediaLog> media_log_;
 
