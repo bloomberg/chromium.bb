@@ -323,8 +323,11 @@ void RenderWidgetHostViewAura::SetSize(const gfx::Size& size) {
 void RenderWidgetHostViewAura::SetBounds(const gfx::Rect& rect) {
   if (window_->bounds().size() != rect.size() &&
       host_->is_accelerated_compositing_active()) {
-    resize_locks_.push_back(make_linked_ptr(
-        new ResizeLock(window_->GetRootWindow(), rect.size())));
+    aura::RootWindow* root_window = window_->GetRootWindow();
+    if (root_window) {
+      resize_locks_.push_back(make_linked_ptr(
+          new ResizeLock(root_window, rect.size())));
+    }
   }
   window_->SetBounds(rect);
   host_->WasResized();
