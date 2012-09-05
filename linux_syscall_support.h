@@ -119,6 +119,19 @@ extern "C" {
 #endif
 #endif
 
+/* The Android NDK's <sys/stat.h> #defines these macros as aliases
+ * to their non-64 counterparts. To avoid naming conflict, remove them. */
+#ifdef __ANDROID__
+  /* These are restored by the corresponding #pragma pop_macro near
+   * the end of this file. */
+# pragma push_macro("stat64")
+# pragma push_macro("fstat64")
+# pragma push_macro("lstat64")
+# undef stat64
+# undef fstat64
+# undef lstat64
+#endif
+
 /* As glibc often provides subtly incompatible data structures (and implicit
  * wrapper functions that convert them), we provide our own kernel data
  * structures for use by the system calls.
@@ -3033,11 +3046,8 @@ struct kernel_statfs {
     #define __NR__sigprocmask __NR_sigprocmask
     #define __NR__sigsuspend  __NR_sigsuspend
     #define __NR__socketcall  __NR_socketcall
-#if ! defined(__ANDROID__)
-    /* The Android NDK #defines stat64 stat, so avoid multiple-definition */
     LSS_INLINE _syscall2(int, fstat64,             int, f,
                          struct kernel_stat64 *, b)
-#endif
     LSS_INLINE _syscall5(int, _llseek,     uint, fd,
                          unsigned long, hi, unsigned long, lo,
                          loff_t *, res, uint, wh)
@@ -3062,11 +3072,8 @@ struct kernel_statfs {
                          int,                      b,
                          unsigned long,            s)
     #endif
-#if ! defined(__ANDROID__)
-    /* The Android NDK #defines stat64 stat, so avoid multiple-definition */
     LSS_INLINE _syscall2(int, stat64,              const char *, p,
                          struct kernel_stat64 *, b)
-#endif
 
     LSS_INLINE int LSS_NAME(sigaction)(int signum,
                                        const struct kernel_sigaction *act,
@@ -3512,6 +3519,14 @@ struct kernel_statfs {
       return LSS_NAME(_readahead)(fd, LSS_LLARG_PAD o.arg[0], o.arg[1], len);
     }
   #endif
+#endif
+
+#ifdef __ANDROID__
+  /* These restore the original values of these macros saved by the
+   * corresponding #pragma push_macro near the top of this file. */
+# pragma pop_macro("stat64")
+# pragma pop_macro("fstat64")
+# pragma pop_macro("lstat64")
 #endif
 
 #if defined(__cplusplus) && !defined(SYS_CPLUSPLUS)
