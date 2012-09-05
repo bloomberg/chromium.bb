@@ -3595,6 +3595,7 @@
       ],
       'sources': [
         'app/chrome_dll.rc',
+        'browser/safe_browsing/local_safebrowsing_test_server.cc',
         'browser/safe_browsing/safe_browsing_test.cc',
         'test/base/chrome_test_launcher.cc',
       ],
