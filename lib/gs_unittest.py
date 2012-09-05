@@ -112,7 +112,7 @@ class GSContextTest(cros_test_lib.TempDirMixin, mox.MoxTestBase):
   def assertGSCommand(self, context, cmd, **kwds):
     return context._DoCommand(cmd, **kwds)
 
-  def testCopyTo(self, functor=None, filename=None):
+  def testCopy(self, functor=None, filename=None):
     """Test CopyTo functionality."""
 
     local_path = lambda  x: '/tmp/file%s' % x
@@ -157,7 +157,7 @@ class GSContextTest(cros_test_lib.TempDirMixin, mox.MoxTestBase):
 
     self.mox.ReplayAll()
     if functor is None:
-      functor = lambda ctx:ctx.CopyTo
+      functor = lambda ctx:ctx.Copy
     functor(ctx1)(local_path(1), given_remote(1))
     functor(ctx2)(local_path(2), given_remote(2))
     functor(ctx3)(local_path('brass'), given_remote('brass'),
@@ -175,7 +175,7 @@ class GSContextTest(cros_test_lib.TempDirMixin, mox.MoxTestBase):
   def testCopyInto(self):
     def functor(ctx):
       return lambda *args, **kwds:ctx.CopyInto(*args, filename='blah', **kwds)
-    self.testCopyTo(functor=functor, filename='blah')
+    self.testCopy(functor=functor, filename='blah')
 
   def testDoCommand(self):
     """Verify the internal DoCommand function works correctly."""
@@ -193,8 +193,8 @@ class GSContextTest(cros_test_lib.TempDirMixin, mox.MoxTestBase):
        sleep=ctx2._sleep_time, extra_env={'BOTO_CONFIG':self.boto_file})
 
     self.mox.ReplayAll()
-    ctx1.CopyTo('/blah', 'gs://foon')
-    ctx2.CopyTo('/blah', 'gs://foon', version=1)
+    ctx1.Copy('/blah', 'gs://foon')
+    ctx2.Copy('/blah', 'gs://foon', version=1)
     self.mox.VerifyAll()
 
   def testSetAcl(self):

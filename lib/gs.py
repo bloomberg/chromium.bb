@@ -95,20 +95,6 @@ class GSContext(object):
     if not os.path.isfile(afile):
       raise GSContextException('%s, %s is not a file' % (errmsg, afile))
 
-  def CopyTo(self, local_path, remote_path, acl=None, version=None):
-    """Upload a file to a specific google storage url.
-
-    Args:
-      local_path: Local file path to copy.
-      remote_path: Full gs:// url to copy to.
-      acl: If given, a canned ACL.
-      version: If given, the sequence-number; essentially the version we intend
-        to replace/update.  This is useful for distributed reasons- for example,
-        to ensure you don't overwrite someone else's creation, a version of
-        0 states "only update if no version exists".
-    """
-    return self._Copy(local_path, remote_path, acl=acl, version=version)
-
   def CopyInto(self, local_path, remote_dir, filename=None, acl=None,
                version=None):
     """Upload a local file into a directory in google storage.
@@ -127,12 +113,16 @@ class GSContext(object):
     filename = filename if filename is not None else local_path
     # Basename it even if an explicit filename was given; we don't want
     # people using filename as a multi-directory path fragment.
-    return self._Copy(local_path,
+    return self.Copy(local_path,
                       '%s/%s' % (remote_dir, os.path.basename(filename)),
                       acl=acl, version=version)
 
   def _DoCommand(self, gsutil_cmd, headers=()):
-    """Run a gsutil command, suppressing output, and setting retry/sleep."""
+    """Run a gsutil command, suppressing output, and setting retry/sleep.
+
+    Returns:
+      A RunCommandResult object.
+    """
     cmd = [self.gsutil_bin]
     for header in headers:
       cmd += ['-h', header]
@@ -141,12 +131,12 @@ class GSContext(object):
     if self.dry_run:
       logging.debug("%s: would've ran %r", self.__class__.__name__, cmd)
     else:
-      cros_build_lib.RetryCommand(
+      return cros_build_lib.RetryCommand(
           cros_build_lib.RunCommandCaptureOutput, self._retries, cmd,
           sleep=self._sleep_time, extra_env={'BOTO_CONFIG': self.boto_file})
 
-  def _Copy(self, local_file, remote_path, acl=None, version=None):
-    """Upload to GS bucket.
+  def Copy(self, src_path, dest_path, acl=None, version=None):
+    """Copy to/from GS bucket.
 
     Canned ACL permissions can be specified on the gsutil cp command line.
 
@@ -154,16 +144,19 @@ class GSContext(object):
     https://developers.google.com/storage/docs/accesscontrol#applyacls
 
     Args:
-      local_file: Fully qualified path of local file.
-      remote_file: Full gs:// path of remote_file.
+      src_path: Fully qualified local path or full gs:// path of the src file.
+      dest_path: Fully qualified local path or full gs:// path of the dest
+                 file.
       acl: One of the google storage canned_acls to apply.
       version: If given, the sequence-number; essentially the version we intend
         to replace/update.  This is useful for distributed reasons- for example,
         to ensure you don't overwrite someone else's creation, a version of
         0 states "only update if no version exists".
 
+    Raises:
+      RunCommandError if the command failed despite retries.
     Returns:
-       Return the arg tuple of two if the upload failed.
+      Return the CommandResult from the run.
     """
     cmd, headers = [], []
 
@@ -176,13 +169,12 @@ class GSContext(object):
     if acl is not None:
       cmd += ['-a', acl]
 
-    cmd += ['--', local_file, remote_path]
+    cmd += ['--', src_path, dest_path]
 
     try:
       # For ease of testing, only pass headers if we got some.
       kwds = {'headers': headers} if headers else {}
-      self._DoCommand(cmd, **kwds)
-
+      return self._DoCommand(cmd, **kwds)
     # gsutil uses the same exit code for any failure, so we are left to
     # parse the output as needed.
     except cros_build_lib.RunCommandError as e:
