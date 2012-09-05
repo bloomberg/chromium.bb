@@ -76,8 +76,6 @@ class ChromeosVolume(pyauto.PyUITest):
     self.assertEqual(after_login, after_logout,
         msg='Before logout : %s and after logout : %s, volume states are not '
             'matching' % (after_login, after_logout))
-    # For successive tests
-    self._Login()
 
   def testLoginLockoutVolume(self):
     """Test that volume changes on the lock screen, are preserved"""
