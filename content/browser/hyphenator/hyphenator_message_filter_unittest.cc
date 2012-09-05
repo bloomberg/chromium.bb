@@ -46,6 +46,7 @@ class TestHyphenatorMessageFilter : public content::HyphenatorMessageFilter {
     IPC::PlatformFileForTransit file;
     IPC::ParamTraits<IPC::PlatformFileForTransit>::Read(message, &iter, &file);
     file_ = IPC::PlatformFileForTransitToPlatformFile(file);
+    delete message;
     return true;
   }
 

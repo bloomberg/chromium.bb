@@ -5959,13 +5959,6 @@
    fun:_ZN16TranslateManager18OnURLFetchCompleteEPKN3net10URLFetcherE
    fun:_ZN20TranslateManagerTest31SimulateTranslateScriptURLFetchEb
 }
-{
-   bug_146222
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7content23HyphenatorMessageFilter14SendDictionaryEv
-   fun:_ZN7content27TestHyphenatorMessageFilter16OnOpenDictionaryERKSbItN4base20string16_char_traitsESaItEE
-}
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
 
