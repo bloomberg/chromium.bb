@@ -19,6 +19,7 @@ class AutocompleteControllerDelegate;
 class KeywordProvider;
 class Profile;
 class SearchProvider;
+class ZeroSuggestProvider;
 
 // The AutocompleteController is the center of the autocomplete system.  A
 // class creates an instance of the controller, which in turn creates a set of
@@ -108,6 +109,16 @@ class AutocompleteController : public AutocompleteProviderListener {
   // If |clear_result| is true, the controller will also erase the result set.
   void Stop(bool clear_result);
 
+  // Begin asynchronously fetching zero-suggest suggestions for |url|.
+  // |user_text| is the text entered in the omnibox, which may be non-empty if
+  // the user previously focused in the omnibox during this interaction.
+  // TODO(jered): Rip out |user_text| once the first match is decoupled from
+  // the current typing in the omnibox.
+  void StartZeroSuggest(const GURL& url, const string16& user_text);
+
+  // Cancels any pending zero-suggest fetch.
+  void StopZeroSuggest();
+
   // Asks the relevant provider to delete |match|, and ensures observers are
   // notified of resulting changes immediately.  This should only be called when
   // no query is running.
@@ -188,6 +199,8 @@ class AutocompleteController : public AutocompleteProviderListener {
 
   SearchProvider* search_provider_;
 
+  ZeroSuggestProvider* zero_suggest_provider_;
+
   // Input passed to Start.
   AutocompleteInput input_;
 
@@ -204,6 +217,9 @@ class AutocompleteController : public AutocompleteProviderListener {
   // Are we in Start()? This is used to avoid updating |result_| and sending
   // notifications until Start() has been invoked on all providers.
   bool in_start_;
+
+  // Has StartZeroSuggest() been called but not Start()?
+  bool in_zero_suggest_;
 
   Profile* profile_;
 

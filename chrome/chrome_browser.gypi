@@ -189,6 +189,8 @@
         'browser/autocomplete/shortcuts_provider.h',
         'browser/autocomplete/url_prefix.cc',
         'browser/autocomplete/url_prefix.h',
+        'browser/autocomplete/zero_suggest_provider.cc',
+        'browser/autocomplete/zero_suggest_provider.h',
         'browser/autofill/address.cc',
         'browser/autofill/address.h',
         'browser/autofill/address_field.cc',

@@ -526,9 +526,10 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
         base::TimeTicks::Now() - time_user_first_modified_omnibox_,
         0,  // inline autocomplete length; possibly set later
         result());
-    DCHECK(user_input_in_progress_) << "We didn't get here through the "
-        "expected series of calls.  time_user_first_modified_omnibox_ is "
-        "not set correctly and other things may be wrong.";
+    DCHECK(user_input_in_progress_ || match.provider->name() == "ZeroSuggest")
+        << "We didn't get here through the expected series of calls. "
+        << "time_user_first_modified_omnibox_ is not set correctly and other "
+        << "things may be wrong. Match provider: " << match.provider->name();
     if (index != OmniboxPopupModel::kNoMatch)
       log.selected_index = index;
     else if (!has_temporary_text_)
@@ -691,6 +692,17 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
   if (instant)
     instant->OnAutocompleteGotFocus();
 
+  TabContents* tab_contents = controller_->GetTabContents();
+  if (tab_contents) {
+    // TODO(jered): We may want to merge this into Start() and just call that
+    // here rather than having a special entry point for zero-suggest.  Note
+    // that we avoid PermanentURL() here because it's not guaranteed to give us
+    // the actual underlying current URL, e.g. if we're on the NTP and the
+    // |permanent_text_| is empty.
+    autocomplete_controller_->StartZeroSuggest(
+        tab_contents->web_contents()->GetURL(), user_text_);
+  }
+
   NotifySearchTabHelper();
 }
 
@@ -700,6 +712,8 @@ void OmniboxEditModel::OnWillKillFocus(gfx::NativeView view_gaining_focus) {
   if (InstantController* instant = controller_->GetInstant())
     instant->OnAutocompleteLostFocus(view_gaining_focus);
 
+  // TODO(jered): Rip this out along with StartZeroSuggest.
+  autocomplete_controller_->StopZeroSuggest();
   NotifySearchTabHelper();
 }
 

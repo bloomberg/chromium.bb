@@ -673,6 +673,11 @@ const char kEnableWebSocketOverSpdy[]       = "enable-websocket-over-spdy";
 const char kExperimentalSpellcheckerFeatures[] =
     "experimental-spellchecker-features";
 
+// If nonempty, fetch experimental zero-suggest suggestions by appending to
+// this prefix of a URL.
+const char kExperimentalZeroSuggestURLPrefix[] =
+    "experimental-zero-suggest-url-prefix";
+
 // Explicitly allows additional ports using a comma-separated list of port
 // numbers.
 const char kExplicitlyAllowedPorts[]        = "explicitly-allowed-ports";

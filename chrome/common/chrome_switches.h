@@ -188,6 +188,7 @@ extern const char kEnableWebSocketOverSpdy[];
 extern const char kEventPageIdleTime[];
 extern const char kEventPageUnloadingTime[];
 extern const char kExperimentalSpellcheckerFeatures[];
+extern const char kExperimentalZeroSuggestURLPrefix[];
 extern const char kExplicitlyAllowedPorts[];
 extern const char kExtensionProcess[];
 extern const char kExtensionsUpdateFrequency[];

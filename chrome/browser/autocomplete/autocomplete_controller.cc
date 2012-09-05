@@ -7,6 +7,7 @@
 #include <set>
 #include <string>
 
+#include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -22,9 +23,11 @@
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/autocomplete/search_provider.h"
 #include "chrome/browser/autocomplete/shortcuts_provider.h"
+#include "chrome/browser/autocomplete/zero_suggest_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -76,8 +79,10 @@ AutocompleteController::AutocompleteController(
     AutocompleteControllerDelegate* delegate)
     : delegate_(delegate),
       keyword_provider_(NULL),
+      zero_suggest_provider_(NULL),
       done_(true),
       in_start_(false),
+      in_zero_suggest_(false),
       profile_(profile) {
   search_provider_ = new SearchProvider(this, profile);
   providers_.push_back(search_provider_);
@@ -101,6 +106,13 @@ AutocompleteController::AutocompleteController(
   providers_.push_back(new HistoryContentsProvider(this, profile, hqp_enabled));
   providers_.push_back(new BuiltinProvider(this, profile));
   providers_.push_back(new ExtensionAppProvider(this, profile));
+  // Create ZeroSuggest if its switch is present.
+  CommandLine* cl = CommandLine::ForCurrentProcess();
+  if (cl->HasSwitch(switches::kExperimentalZeroSuggestURLPrefix)) {
+    zero_suggest_provider_ = new ZeroSuggestProvider(this, profile,
+        cl->GetSwitchValueASCII(switches::kExperimentalZeroSuggestURLPrefix));
+    providers_.push_back(zero_suggest_provider_);
+  }
   for (ACProviders::iterator i(providers_.begin()); i != providers_.end(); ++i)
     (*i)->AddRef();
 }
@@ -149,6 +161,7 @@ void AutocompleteController::Start(
   expire_timer_.Stop();
 
   // Start the new query.
+  in_zero_suggest_ = false;
   in_start_ = true;
   base::TimeTicks start_time = base::TimeTicks::Now();
   for (ACProviders::iterator i(providers_.begin()); i != providers_.end();
@@ -189,6 +202,23 @@ void AutocompleteController::Stop(bool clear_result) {
   }
 }
 
+void AutocompleteController::StartZeroSuggest(
+    const GURL& url,
+    const string16& user_text) {
+  if (zero_suggest_provider_ != NULL) {
+    DCHECK(!in_start_);  // We should not be already running a query.
+    in_zero_suggest_ = true;
+    zero_suggest_provider_->StartZeroSuggest(url, user_text);
+  }
+}
+
+void AutocompleteController::StopZeroSuggest() {
+  if (zero_suggest_provider_ != NULL) {
+    DCHECK(!in_start_);  // We should not be already running a query.
+    zero_suggest_provider_->Stop(false);
+  }
+}
+
 void AutocompleteController::DeleteMatch(const AutocompleteMatch& match) {
   DCHECK(match.deletable);
   match.provider->DeleteMatch(match);  // This may synchronously call back to
@@ -210,11 +240,20 @@ void AutocompleteController::ExpireCopiedEntries() {
 }
 
 void AutocompleteController::OnProviderUpdate(bool updated_matches) {
-  CheckIfDone();
-  // Multiple providers may provide synchronous results, so we only update the
-  // results if we're not in Start().
-  if (!in_start_ && (updated_matches || done_))
-    UpdateResult(false);
+  if (in_zero_suggest_) {
+    // We got ZeroSuggest results before Start(). Show only those results,
+    // because results from other providers are stale.
+    result_.Reset();
+    result_.AppendMatches(zero_suggest_provider_->matches());
+    result_.SortAndCull(input_);
+    NotifyChanged(true);
+  } else {
+    CheckIfDone();
+    // Multiple providers may provide synchronous results, so we only update the
+    // results if we're not in Start().
+    if (!in_start_ && (updated_matches || done_))
+      UpdateResult(false);
+  }
 }
 
 void AutocompleteController::AddProvidersInfo(
