@@ -21,7 +21,6 @@ try:
   from pylib import android_commands as real_android_commands
   from pylib import cmd_helper as real_cmd_helper
 except:
-  import traceback; traceback.print_exc()
   real_android_commands = None
 
 def IsAndroidSupported():
