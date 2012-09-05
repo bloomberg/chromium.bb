@@ -439,13 +439,16 @@ gfx::Rect NativeWidgetAura::GetClientAreaBoundsInScreen() const {
 
 gfx::Rect NativeWidgetAura::GetRestoredBounds() const {
   // Restored bounds should only be relevant if the window is minimized or
-  // maximized. However, in some places the code expectes GetRestoredBounds()
+  // maximized. However, in some places the code expects GetRestoredBounds()
   // to return the current window bounds if the window is not in either state.
-  if (!IsMinimized() && !IsMaximized() && !IsFullscreen())
-    return window_->bounds();
-  gfx::Rect* restore_bounds =
-      window_->GetProperty(aura::client::kRestoreBoundsKey);
-  return restore_bounds ? *restore_bounds : window_->bounds();
+  if (IsMinimized() || IsMaximized() || IsFullscreen()) {
+    // Restore bounds are in screen coordinates, no need to convert.
+    gfx::Rect* restore_bounds =
+        window_->GetProperty(aura::client::kRestoreBoundsKey);
+    if (restore_bounds)
+      return *restore_bounds;
+  }
+  return window_->GetBoundsInScreen();
 }
 
 void NativeWidgetAura::SetBounds(const gfx::Rect& bounds) {
