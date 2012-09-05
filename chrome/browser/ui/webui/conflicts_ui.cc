@@ -171,10 +171,11 @@ ConflictsUI::ConflictsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 }
 
 // static
-base::RefCountedMemory* ConflictsUI::GetFaviconResourceBytes() {
+base::RefCountedMemory* ConflictsUI::GetFaviconResourceBytes(
+      ui::ScaleFactor scale_factor) {
   return static_cast<base::RefCountedMemory*>(
       ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-          IDR_CONFLICT_FAVICON, ui::SCALE_FACTOR_NONE));
+          IDR_CONFLICT_FAVICON, scale_factor));
 }
 
 #endif
