@@ -146,11 +146,6 @@ class ShellIntegration {
   // see http://crbug.com/28104
   static void MigrateChromiumShortcuts();
 
-  // Activates Chrome in metro-mode on Windows 8.  Returns false if called on
-  // earlier versions of Windows, if called from within metro-mode, if Chrome
-  // is not the default browser, or if an actual error occurs.
-  static bool ActivateMetroChrome();
-
   // Returns the path to the Start Menu shortcut for the given Chrome.
   static FilePath GetStartMenuShortcut(const FilePath& chrome_exe);
 #endif  // defined(OS_WIN)
