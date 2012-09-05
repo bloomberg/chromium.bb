@@ -9,7 +9,7 @@
 #include "base/file_util.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
-#include "chrome/browser/chromeos/gdata/gdata_util.h"
+#include "chrome/browser/chromeos/gdata/drive_file_system_util.h"
 
 namespace gdata {
 

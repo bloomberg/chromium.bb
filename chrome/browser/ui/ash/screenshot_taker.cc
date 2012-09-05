@@ -30,7 +30,7 @@
 #include "ui/aura/window.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/gdata/gdata_util.h"
+#include "chrome/browser/chromeos/gdata/drive_file_system_util.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #endif
 

@@ -7,8 +7,8 @@
 #include "base/file_util.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
+#include "chrome/browser/chromeos/gdata/drive_file_system_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_test_util.h"
-#include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gdata {

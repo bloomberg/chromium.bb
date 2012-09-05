@@ -55,7 +55,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/gdata/drive_download_observer.h"
-#include "chrome/browser/chromeos/gdata/gdata_util.h"
+#include "chrome/browser/chromeos/gdata/drive_file_system_util.h"
 #include "chrome/browser/download/download_file_picker_chromeos.h"
 #include "chrome/browser/download/save_package_file_picker_chromeos.h"
 #endif

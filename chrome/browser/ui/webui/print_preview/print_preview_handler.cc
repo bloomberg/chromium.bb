@@ -62,7 +62,7 @@
 #ifdef OS_CHROMEOS
 // TODO(kinaba): provide more non-intrusive way for handling local/remote
 // distinction and remove these ugly #ifdef's. http://crbug.com/140425
-#include "chrome/browser/chromeos/gdata/gdata_util.h"
+#include "chrome/browser/chromeos/gdata/drive_file_system_util.h"
 #endif
 
 #if !defined(OS_MACOSX)

@@ -243,6 +243,8 @@
         'browser/chromeos/gdata/drive_file_system_interface.h',
         'browser/chromeos/gdata/drive_file_system_proxy.cc',
         'browser/chromeos/gdata/drive_file_system_proxy.h',
+        'browser/chromeos/gdata/drive_file_system_util.cc',
+        'browser/chromeos/gdata/drive_file_ststem_util.h',
         'browser/chromeos/gdata/drive_files.cc',
         'browser/chromeos/gdata/drive_files.h',
         'browser/chromeos/gdata/drive_function_remove.cc',
