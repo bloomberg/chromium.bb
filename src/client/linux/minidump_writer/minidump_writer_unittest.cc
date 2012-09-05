@@ -329,8 +329,8 @@ TEST(MinidumpWriterTest, DeletedBinary) {
   // Copy binary to a temp file.
   AutoTempDir temp_dir;
   string binpath = temp_dir.path() + "/linux-dumper-unittest-helper";
-  ASSERT_EQ(true, CopyFile(helper_path.c_str(), binpath.c_str())) \
-    << "Failed to copy " << helper_path << " to " << binpath;
+  ASSERT_TRUE(CopyFile(helper_path.c_str(), binpath.c_str()))
+      << "Failed to copy " << helper_path << " to " << binpath;
   ASSERT_EQ(0, chmod(binpath.c_str(), 0755));
 
   int fds[2];

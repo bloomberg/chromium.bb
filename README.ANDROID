@@ -5,13 +5,8 @@ This document explains how to use the Google Breakpad client library
 on Android, and later generate valid stack traces from the minidumps
 it generates.
 
-Note that this release only supports ARM-based Android systems.
-We're working on adding support for x86 and MIPS, but that might
-require an udpated NDK release.
-
-IMPORTANT: Currently, Minidump generation only works when a signal is
-           handled by Breakpad. I.e. calling WriteMinidump() directly
-           at runtime will not work.
+This release supports ARM and x86 based Android systems. MIPS is not
+currently supported by Breakpad.
 
 I. Building the client library:
 ===============================
