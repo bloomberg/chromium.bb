@@ -217,8 +217,12 @@ Downloads.prototype.isUpdateNeeded = function(downloads) {
     size++;
   if (size != downloads.length)
     return true;
-  for (var i in this.downloads_) {
-    if (this.downloads_[i].url_ != downloads[i].url)
+  // Since there are the same number of items in the incoming list as
+  // |this.downloads_|, there won't be any removed downloads without some
+  // downloads having been inserted.  So check only for new downloads in
+  // deciding whether to update.
+  for (var i = 0; i < downloads.length; i++) {
+    if (!this.downloads_[downloads[i].id])
       return true;
   }
   return false;
