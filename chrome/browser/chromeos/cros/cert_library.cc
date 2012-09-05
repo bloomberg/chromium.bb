@@ -52,21 +52,27 @@ std::string DecryptTokenWithKey(
     const std::string& salt,
     const std::string& encrypted_token_hex) {
   std::vector<uint8> encrypted_token_bytes;
-  if (!base::HexStringToBytes(encrypted_token_hex, &encrypted_token_bytes))
+  if (!base::HexStringToBytes(encrypted_token_hex, &encrypted_token_bytes)) {
+    LOG(WARNING) << "Corrupt encrypted token found.";
     return std::string();
+  }
 
   std::string encrypted_token(
       reinterpret_cast<char*>(encrypted_token_bytes.data()),
       encrypted_token_bytes.size());
   crypto::Encryptor encryptor;
-  if (!encryptor.Init(key, crypto::Encryptor::CTR, std::string()))
+  if (!encryptor.Init(key, crypto::Encryptor::CTR, std::string())) {
+    LOG(WARNING) << "Failed to initialize Encryptor.";
     return std::string();
+  }
 
   std::string nonce = salt.substr(0, kKeySize);
   std::string token;
   CHECK(encryptor.SetCounter(nonce));
-  if (!encryptor.Decrypt(encrypted_token, &token))
+  if (!encryptor.Decrypt(encrypted_token, &token)) {
+    LOG(WARNING) << "Failed to decrypt token.";
     return std::string();
+  }
   return token;
 }
 
@@ -195,19 +201,25 @@ class CertLibraryImpl
   }
 
   virtual std::string EncryptToken(const std::string& token) OVERRIDE {
-    if (!LoadSupplementalUserKey())
+    if (!LoadSupplementalUserKey()) {
+      LOG(WARNING) << "Supplemental user key is not available for encrypt.";
       return std::string();
+    }
     crypto::Encryptor encryptor;
     if (!encryptor.Init(supplemental_user_key_.get(), crypto::Encryptor::CTR,
-                        std::string()))
+                        std::string())) {
+      LOG(WARNING) << "Failed to initialize Encryptor.";
       return std::string();
+    }
     std::string salt =
         CrosLibrary::Get()->GetCryptohomeLibrary()->GetSystemSalt();
     std::string nonce = salt.substr(0, kKeySize);
     std::string encoded_token;
     CHECK(encryptor.SetCounter(nonce));
-    if (!encryptor.Encrypt(token, &encoded_token))
+    if (!encryptor.Encrypt(token, &encoded_token)) {
+      LOG(WARNING) << "Failed to encrypt token.";
       return std::string();
+    }
 
     return StringToLowerASCII(base::HexEncode(
         reinterpret_cast<const void*>(encoded_token.data()),
@@ -216,8 +228,10 @@ class CertLibraryImpl
 
   virtual std::string DecryptToken(
       const std::string& encrypted_token_hex) OVERRIDE {
-    if (!LoadSupplementalUserKey())
+    if (!LoadSupplementalUserKey()) {
+      LOG(WARNING) << "Supplemental user key is not available for decrypt.";
       return std::string();
+    }
     return DecryptTokenWithKey(supplemental_user_key_.get(),
         CrosLibrary::Get()->GetCryptohomeLibrary()->GetSystemSalt(),
         encrypted_token_hex);

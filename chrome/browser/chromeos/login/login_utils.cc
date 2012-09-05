@@ -1053,17 +1053,28 @@ void LoginUtilsImpl::StoreOAuth1AccessToken(Profile* user_profile,
                                             const std::string& token,
                                             const std::string& secret) {
   // First store OAuth1 token + service for the current user profile...
+  std::string encrypted_token =
+      CrosLibrary::Get()->GetCertLibrary()->EncryptToken(token);
+  std::string encrypted_secret =
+      CrosLibrary::Get()->GetCertLibrary()->EncryptToken(secret);
   PrefService* pref_service = user_profile->GetPrefs();
-  pref_service->SetString(prefs::kOAuth1Token,
-      CrosLibrary::Get()->GetCertLibrary()->EncryptToken(token));
-  pref_service->SetString(prefs::kOAuth1Secret,
-      CrosLibrary::Get()->GetCertLibrary()->EncryptToken(secret));
+  if (!encrypted_token.empty() && !encrypted_secret.empty()) {
+    pref_service->SetString(prefs::kOAuth1Token, encrypted_token);
+    pref_service->SetString(prefs::kOAuth1Secret, encrypted_secret);
 
-  // ...then record the presence of valid OAuth token for this account in local
-  // state as well.
-  UserManager::Get()->SaveUserOAuthStatus(
-      UserManager::Get()->GetLoggedInUser().email(),
-      User::OAUTH_TOKEN_STATUS_VALID);
+    // ...then record the presence of valid OAuth token for this account in
+    // local state as well.
+    UserManager::Get()->SaveUserOAuthStatus(
+        UserManager::Get()->GetLoggedInUser().email(),
+        User::OAUTH_TOKEN_STATUS_VALID);
+  } else {
+    LOG(WARNING) << "Failed to get OAuth1 token/secret encrypted.";
+    // Set the OAuth status invalid so that the user will go through full
+    // GAIA login next time.
+    UserManager::Get()->SaveUserOAuthStatus(
+        UserManager::Get()->GetLoggedInUser().email(),
+        User::OAUTH_TOKEN_STATUS_INVALID);
+  }
 }
 
 void LoginUtilsImpl::VerifyOAuth1AccessToken(Profile* user_profile,
