@@ -261,16 +261,16 @@
       ((0xc4 (VEX_RB & VEX_map00001) 0x79 @vex_prefix3) |
       (0xc5 (0x79 | 0xf9) @vex_prefix_short)) 0xf7
       @CPUFeature_AVX modrm_registers;
-  mmx_sse_rdi_instructions = maskmovq | maskmovdqu | vmaskmovdqu;
+  mmx_sse_rdi_instruction = maskmovq | maskmovdqu | vmaskmovdqu;
 
   # String instructions which use only %ds:(%rsi)
-  string_instructions_rsi_no_rdi =
+  string_instruction_rsi_no_rdi =
     (rep? 0xac                 | # lods   %ds:(%rsi),%al
      data16rep 0xad            | # lods   %ds:(%rsi),%ax
      rep? REXW_NONE? 0xad)     ; # lods   %ds:(%rsi),%eax/%rax
 
   # String instructions which use only %ds:(%rdi)
-  string_instructions_rdi_no_rsi =
+  string_instruction_rdi_no_rsi =
     condrep? 0xae             | # scas   %es:(%rdi),%al
     data16condrep 0xaf        | # scas   %es:(%rdi),%ax
     condrep? REXW_NONE? 0xaf  | # scas   %es:(%rdi),%eax/%rax
@@ -280,7 +280,7 @@
     rep? REXW_NONE? 0xab      ; # stos   %eax/%rax,%es:(%rdi)
 
   # String instructions which use both %ds:(%rsi) and %ds:(%rdi)
-  string_instructions_rsi_rdi =
+  string_instruction_rsi_rdi =
     condrep? 0xa6            | # cmpsb    %es:(%rdi),%ds:(%rsi)
     data16condrep 0xa7       | # cmpsw    %es:(%rdi),%ds:(%rsi)
     condrep? REXW_NONE? 0xa7 | # cmps[lq] %es:(%rdi),%ds:(%rsi)
@@ -289,10 +289,10 @@
     data16rep 0xa5           | # movsw    %es:(%rdi),%ds:(%rsi)
     rep? REXW_NONE? 0xa5     ; # movs[lq] %es:(%rdi),%ds:(%rsi)
 
-  sandbox_instructions_rsi_no_rdi =
+  sandbox_instruction_rsi_no_rdi =
     (0x89 | 0x8b) 0xf6       . # mov %esi,%esi
     0x49 0x8d 0x34 0x37      . # lea (%r15,%rsi,1),%rsi
-    string_instructions_rsi_no_rdi
+    string_instruction_rsi_no_rdi
     @{
        instruction_start -= 6;
        BitmapClearBit(valid_targets, (instruction_start - data) + 2);
@@ -302,7 +302,7 @@
 
     REX_X (0x89 | 0x8b) 0xf6 . # mov %esi,%esi
     0x49 0x8d 0x34 0x37      . # lea (%r15,%rsi,1),%rsi
-    string_instructions_rsi_no_rdi
+    string_instruction_rsi_no_rdi
     @{
        instruction_start -= 7;
        BitmapClearBit(valid_targets, (instruction_start - data) + 3);
@@ -310,14 +310,10 @@
        restricted_register = NO_REG;
     };
 
-  sandbox_instructions_rdi_no_rsi =
+  sandbox_instruction_rdi_no_rsi =
     (0x89 | 0x8b) 0xff       . # mov %edi,%edi
     0x49 0x8d 0x3c 0x3f      . # lea (%r15,%rdi,1),%rdi
-    (
-        string_instructions_rdi_no_rsi |
-        maskmovq |
-        maskmovdqu
-    )
+    (string_instruction_rdi_no_rsi | mmx_sse_rdi_instruction)
     @{
        instruction_start -= 6;
        BitmapClearBit(valid_targets, (instruction_start - data) + 2);
@@ -327,7 +323,7 @@
 
     REX_X (0x89 | 0x8b) 0xff . # mov %edi,%edi
     0x49 0x8d 0x3c 0x3f      . # lea (%r15,%rdi,1),%rdi
-    string_instructions_rdi_no_rsi
+    (string_instruction_rdi_no_rsi | mmx_sse_rdi_instruction)
     @{
        instruction_start -= 7;
        BitmapClearBit(valid_targets, (instruction_start - data) + 3);
@@ -337,12 +333,12 @@
 
 
   # String instructions which use both %ds:(%rsi) and %ds:(%rdi)
-  sandbox_instructions_rsi_rdi =
+  sandbox_instruction_rsi_rdi =
     (0x89 | 0x8b) 0xf6       . # mov %esi,%esi
     0x49 0x8d 0x34 0x37      . # lea (%r15,%rsi,1),%rsi
     (0x89 | 0x8b) 0xff       . # mov %edi,%edi
     0x49 0x8d 0x3c 0x3f      . # lea (%r15,%rdi,1),%rdi
-    string_instructions_rsi_rdi
+    string_instruction_rsi_rdi
     @{
        instruction_start -= 12;
        BitmapClearBit(valid_targets, (instruction_start - data) + 2);
@@ -356,7 +352,7 @@
     0x49 0x8d 0x34 0x37      . # lea (%r15,%rsi,1),%rsi
     REX_X (0x89 | 0x8b) 0xff . # mov %edi,%edi
     0x49 0x8d 0x3c 0x3f      . # lea (%r15,%rdi,1),%rdi
-    string_instructions_rsi_rdi
+    string_instruction_rsi_rdi
     @{
        instruction_start -= 13;
        BitmapClearBit(valid_targets, (instruction_start - data) + 2);
@@ -370,7 +366,7 @@
     0x49 0x8d 0x34 0x37      . # lea (%r15,%rsi,1),%rsi
     (0x89 | 0x8b) 0xff       . # mov %edi,%edi
     0x49 0x8d 0x3c 0x3f      . # lea (%r15,%rdi,1),%rdi
-    string_instructions_rsi_rdi
+    string_instruction_rsi_rdi
     @{
        instruction_start -= 13;
        BitmapClearBit(valid_targets, (instruction_start - data) + 3);
@@ -384,7 +380,7 @@
     0x49 0x8d 0x34 0x37      . # lea (%r15,%rsi,1),%rsi
     REX_X (0x89 | 0x8b) 0xff . # mov %edi,%edi
     0x49 0x8d 0x3c 0x3f      . # lea (%r15,%rdi,1),%rdi
-    string_instructions_rsi_rdi
+    string_instruction_rsi_rdi
     @{
        instruction_start -= 14;
        BitmapClearBit(valid_targets, (instruction_start - data) + 3);
@@ -400,9 +396,9 @@
      rbp_sandboxing |
      rsp_sandboxing |
      naclcall_or_nacljmp |
-     sandbox_instructions_rsi_no_rdi |
-     sandbox_instructions_rdi_no_rsi |
-     sandbox_instructions_rsi_rdi)
+     sandbox_instruction_rsi_no_rdi |
+     sandbox_instruction_rdi_no_rsi |
+     sandbox_instruction_rsi_rdi)
     @{
        instruction_info_collected |= SPECIAL_INSTRUCTION;
     };
