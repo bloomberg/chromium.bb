@@ -4,6 +4,8 @@
 
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
@@ -97,7 +99,8 @@ class PepperWidget : public WebWidget {
 
     size_ = size;
     WebRect plugin_rect(0, 0, size_.width, size_.height);
-    widget_->plugin()->ViewChanged(plugin_rect, plugin_rect);
+    widget_->plugin()->ViewChanged(plugin_rect, plugin_rect,
+                                   std::vector<gfx::Rect>());
     widget_->Invalidate();
   }
 

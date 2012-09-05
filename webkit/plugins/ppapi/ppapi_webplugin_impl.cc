@@ -159,8 +159,12 @@ void WebPluginImpl::updateGeometry(
     const WebVector<WebRect>& cut_outs_rects,
     bool is_visible) {
   plugin_rect_ = window_rect;
-  if (!instance_->FlashIsFullscreenOrPending())
-    instance_->ViewChanged(plugin_rect_, clip_rect);
+  if (!instance_->FlashIsFullscreenOrPending()) {
+    std::vector<gfx::Rect> cut_outs;
+    for (size_t i = 0; i < cut_outs_rects.size(); ++i)
+      cut_outs.push_back(cut_outs_rects[i]);
+    instance_->ViewChanged(plugin_rect_, clip_rect, cut_outs);
+  }
 }
 
 void WebPluginImpl::updateFocus(bool focused) {

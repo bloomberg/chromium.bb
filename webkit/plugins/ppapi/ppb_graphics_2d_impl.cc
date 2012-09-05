@@ -544,7 +544,7 @@ void PPB_Graphics2D_Impl::Paint(WebKit::WebCanvas* canvas,
       plugin_rect.height();
   bounds.size.width = plugin_rect.width();
   bounds.size.height = plugin_rect.height();
-
+  // TODO(yzshen): We should take |paint_rect| into consideration as well.
   CGContextClipToRect(canvas, bounds);
 
   // TODO(jhorwich) Figure out if this code is even active anymore, and if so
@@ -556,13 +556,14 @@ void PPB_Graphics2D_Impl::Paint(WebKit::WebCanvas* canvas,
 
   CGContextDrawImage(canvas, bitmap_rect, image);
 #else
-  SkRect sk_plugin_rect = SkRect::MakeXYWH(
-      SkIntToScalar(plugin_rect.origin().x()),
-      SkIntToScalar(plugin_rect.origin().y()),
-      SkIntToScalar(plugin_rect.width()),
-      SkIntToScalar(plugin_rect.height()));
-  canvas->save();
-  canvas->clipRect(sk_plugin_rect);
+  gfx::Rect invalidate_rect = plugin_rect.Intersect(paint_rect);
+  SkRect sk_invalidate_rect = SkRect::MakeXYWH(
+      SkIntToScalar(invalidate_rect.origin().x()),
+      SkIntToScalar(invalidate_rect.origin().y()),
+      SkIntToScalar(invalidate_rect.width()),
+      SkIntToScalar(invalidate_rect.height()));
+  SkAutoCanvasRestore auto_restore(canvas, true);
+  canvas->clipRect(sk_invalidate_rect);
 
   PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(this);
   if (!plugin_instance)
@@ -574,7 +575,7 @@ void PPB_Graphics2D_Impl::Paint(WebKit::WebCanvas* canvas,
     // show white (typically less jarring) rather than black or uninitialized.
     // We don't do this for non-full-frame plugins since we specifically want
     // the page background to show through.
-    canvas->save();
+    SkAutoCanvasRestore auto_restore(canvas, true);
     SkRect image_data_rect = SkRect::MakeXYWH(
         SkIntToScalar(plugin_rect.origin().x()),
         SkIntToScalar(plugin_rect.origin().y()),
@@ -585,8 +586,7 @@ void PPB_Graphics2D_Impl::Paint(WebKit::WebCanvas* canvas,
     SkPaint paint;
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);
     paint.setColor(SK_ColorWHITE);
-    canvas->drawRect(sk_plugin_rect, paint);
-    canvas->restore();
+    canvas->drawRect(sk_invalidate_rect, paint);
   }
 
   SkBitmap image;
@@ -612,7 +612,6 @@ void PPB_Graphics2D_Impl::Paint(WebKit::WebCanvas* canvas,
     canvas->scale(scale_, scale_);
   }
   canvas->drawBitmap(image, origin.x(), origin.y(), &paint);
-  canvas->restore();
 #endif
 }
 

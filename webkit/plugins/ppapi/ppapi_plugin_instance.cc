@@ -877,7 +877,8 @@ PP_Var PluginInstance::GetInstanceObject() {
 }
 
 void PluginInstance::ViewChanged(const gfx::Rect& position,
-                                 const gfx::Rect& clip) {
+                                 const gfx::Rect& clip,
+                                 const std::vector<gfx::Rect>& cut_outs_rects) {
   // WebKit can give weird (x,y) positions for empty clip rects (since the
   // position technically doesn't matter). But we want to make these
   // consistent since this is given to the plugin, so force everything to 0
@@ -885,6 +886,8 @@ void PluginInstance::ViewChanged(const gfx::Rect& position,
   gfx::Rect new_clip;
   if (!clip.IsEmpty())
     new_clip = clip;
+
+  cut_outs_rects_ = cut_outs_rects;
 
   ViewData previous_view = view_data_;
 
@@ -997,18 +1000,32 @@ bool PluginInstance::GetBitmapForOptimizedPluginPaint(
   // optimized this way.
   if (!image_data->PlatformImage())
     return false;
+
+  gfx::Point plugin_origin = PP_ToGfxPoint(view_data_.rect.point);
+  // Convert |paint_bounds| to be relative to the left-top corner of the plugin.
+  gfx::Rect relative_paint_bounds(paint_bounds);
+  relative_paint_bounds.Offset(-plugin_origin.x(), -plugin_origin.y());
+
   gfx::Rect plugin_backing_store_rect(
-      PP_ToGfxPoint(view_data_.rect.point),
-      gfx::Size(image_data->width(), image_data->height()));
+      0, 0, image_data->width(), image_data->height());
 
   gfx::Rect clip_page = PP_ToGfxRect(view_data_.clip_rect);
-  clip_page.Offset(PP_ToGfxPoint(view_data_.rect.point));
   gfx::Rect plugin_paint_rect = plugin_backing_store_rect.Intersect(clip_page);
-  if (!plugin_paint_rect.Contains(paint_bounds))
+  if (!plugin_paint_rect.Contains(relative_paint_bounds))
     return false;
 
+  // Don't do optimized painting if the area to paint intersects with the
+  // cut-out rects, otherwise we will paint over them.
+  for (std::vector<gfx::Rect>::const_iterator iter = cut_outs_rects_.begin();
+       iter != cut_outs_rects_.end(); ++iter) {
+    if (relative_paint_bounds.Intersects(*iter))
+      return false;
+  }
+
   *dib = image_data->PlatformImage()->GetTransportDIB();
+  plugin_backing_store_rect.Offset(plugin_origin);
   *location = plugin_backing_store_rect;
+  clip_page.Offset(plugin_origin);
   *clip = clip_page;
   *scale_factor = GetBoundGraphics2D()->GetScale();
   return true;
