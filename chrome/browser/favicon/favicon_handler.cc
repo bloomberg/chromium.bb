@@ -14,6 +14,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/icon_messages.h"
 #include "content/public/browser/favicon_status.h"
@@ -21,6 +22,7 @@
 #include "skia/ext/image_operations.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_util.h"
 
 using content::NavigationEntry;
@@ -232,10 +234,13 @@ void FaviconHandler::SetFavicon(
 }
 
 void FaviconHandler::UpdateFavicon(NavigationEntry* entry,
-                                   scoped_refptr<base::RefCountedMemory> data) {
-  scoped_ptr<gfx::Image> image(gfx::ImageFromPNGEncodedData(data->front(),
-                                                            data->size()));
-  UpdateFavicon(entry, image.get());
+    const std::vector<history::FaviconBitmapResult>& favicon_bitmap_results) {
+  gfx::Image resized_image = FaviconUtil::SelectFaviconFramesFromPNGs(
+      favicon_bitmap_results,
+      ui::GetSupportedScaleFactors(),
+      preferred_icon_size());
+  if (!resized_image.IsEmpty())
+    UpdateFavicon(entry, &resized_image);
 }
 
 void FaviconHandler::UpdateFavicon(NavigationEntry* entry,
@@ -441,7 +446,7 @@ void FaviconHandler::OnFaviconDataForInitialURL(
     // user doesn't see a flash of the default favicon.
     entry->GetFavicon().url = bitmap_result.icon_url;
     if (bitmap_result.is_valid())
-      UpdateFavicon(entry, bitmap_result.bitmap_data);
+      UpdateFavicon(entry, favicon_bitmap_results);
     entry->GetFavicon().valid = true;
   }
 
@@ -516,7 +521,7 @@ void FaviconHandler::OnFaviconData(
       // There is a favicon, set it now. If expired we'll download the current
       // one again, but at least the user will get some icon instead of the
       // default and most likely the current one is fine anyway.
-      UpdateFavicon(entry, bitmap_result.bitmap_data);
+      UpdateFavicon(entry, favicon_bitmap_results);
     }
     if (HasExpiredFaviconResult(favicon_bitmap_results)) {
       // The favicon is out of date. Request the current one.

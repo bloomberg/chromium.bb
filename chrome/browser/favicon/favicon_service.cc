@@ -4,6 +4,7 @@
 
 #include "chrome/browser/favicon/favicon_service.h"
 
+#include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/favicon/select_favicon_frames.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_backend.h"
@@ -229,24 +230,13 @@ void FaviconService::GetFaviconImageCallback(
     Handle handle,
     std::vector<history::FaviconBitmapResult> favicon_bitmap_results,
     history::IconURLSizesMap icon_url_sizes_map) {
-  std::vector<SkBitmap> sk_bitmaps;
-  for (size_t i = 0; i < favicon_bitmap_results.size(); ++i) {
-    if (favicon_bitmap_results[i].is_valid()) {
-      scoped_refptr<base::RefCountedMemory> bitmap_data =
-          favicon_bitmap_results[i].bitmap_data;
-      SkBitmap out_bitmap;
-      if (gfx::PNGCodec::Decode(bitmap_data->front(), bitmap_data->size(),
-                                &out_bitmap)) {
-        sk_bitmaps.push_back(out_bitmap);
-      }
-    }
-  }
   history::FaviconImageResult image_result;
-  image_result.image = gfx::Image(SelectFaviconFrames(
-      sk_bitmaps, ui::GetSupportedScaleFactors(), desired_size_in_dip, NULL));
-  image_result.icon_url = favicon_bitmap_results.empty() ?
+  image_result.image = FaviconUtil::SelectFaviconFramesFromPNGs(
+      favicon_bitmap_results,
+      ui::GetSupportedScaleFactors(),
+      desired_size_in_dip);
+  image_result.icon_url = image_result.image.IsEmpty() ?
       GURL() : favicon_bitmap_results[0].icon_url;
-
   callback.Run(handle, image_result);
 }
 

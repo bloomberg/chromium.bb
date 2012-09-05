@@ -242,7 +242,7 @@ class FaviconHandler {
   // If the WebContents has a delegate, it is notified of the new favicon
   // (INVALIDATE_FAVICON).
   void UpdateFavicon(content::NavigationEntry* entry,
-                     scoped_refptr<base::RefCountedMemory> data);
+      const std::vector<history::FaviconBitmapResult>& favicon_bitmap_results);
   void UpdateFavicon(content::NavigationEntry* entry, const gfx::Image* image);
 
   // If the image is not already at its preferred size, scales the image such
