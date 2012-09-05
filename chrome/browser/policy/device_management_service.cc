@@ -320,6 +320,9 @@ void DeviceManagementRequestJobImpl::HandleResponse(
     return;
   }
 
+  if (response_code != kSuccess)
+    LOG(WARNING) << "DMServer sent an error response: " << response_code;
+
   switch (response_code) {
     case kSuccess: {
       em::DeviceManagementResponse response;
@@ -363,8 +366,6 @@ void DeviceManagementRequestJobImpl::HandleResponse(
       ReportError(DM_STATUS_SERVICE_DEVICE_ID_CONFLICT);
       return;
     default:
-      VLOG(1) << "Unexpected HTTP status in response from DMServer : "
-              << response_code << ".";
       // Handle all unknown 5xx HTTP error codes as temporary and any other
       // unknown error as one that needs more time to recover.
       if (response_code >= 500 && response_code <= 599)
