@@ -946,7 +946,7 @@ SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
       AutocompleteMatch match;
       classifier->Classify(i->term, string16(), false, false, &match, NULL);
       prevent_inline_autocomplete =
-          match.transition == content::PAGE_TRANSITION_TYPED;
+          !AutocompleteMatch::IsSearchType(match.type);
     }
 
     int relevance = CalculateRelevanceForHistory(i->time, is_keyword,

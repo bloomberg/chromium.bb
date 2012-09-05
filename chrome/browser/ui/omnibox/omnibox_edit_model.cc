@@ -334,7 +334,7 @@ bool OmniboxEditModel::CurrentTextIsURL() const {
 
   AutocompleteMatch match;
   GetInfoForCurrentText(&match, NULL);
-  return match.transition == content::PAGE_TRANSITION_TYPED;
+  return !AutocompleteMatch::IsSearchType(match.type);
 }
 
 AutocompleteMatch::Type OmniboxEditModel::CurrentTextType() const {
@@ -369,7 +369,7 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
   AutocompleteMatch match;
   AutocompleteClassifierFactory::GetForProfile(profile_)->Classify(*text,
         string16(), KeywordIsSelected(), true, &match, NULL);
-  if (match.transition != content::PAGE_TRANSITION_TYPED)
+  if (AutocompleteMatch::IsSearchType(match.type))
     return;
   *url = match.destination_url;
 
@@ -466,7 +466,7 @@ void OmniboxEditModel::PasteAndGo(const string16& text) {
 bool OmniboxEditModel::IsPasteAndSearch(const string16& text) const {
   AutocompleteMatch match;
   ClassifyStringForPasteAndGo(text, &match, NULL);
-  return (match.transition != content::PAGE_TRANSITION_TYPED);
+  return AutocompleteMatch::IsSearchType(match.type);
 }
 
 void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,

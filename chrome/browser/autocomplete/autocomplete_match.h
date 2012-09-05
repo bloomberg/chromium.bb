@@ -164,6 +164,10 @@ struct AutocompleteMatch {
   // or |description|.
   static string16 SanitizeString(const string16& text);
 
+  // Convenience function to check if |type| is a search (as opposed to a URL or
+  // an extension).
+  static bool IsSearchType(Type type);
+
   // Copies the destination_url with "www." stripped off to
   // |stripped_destination_url|.  This method is invoked internally by the
   // AutocompleteController and does not normally need to be invoked.

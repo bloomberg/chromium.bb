@@ -58,21 +58,6 @@ enum DatabaseAction {
   DATABASE_ACTION_COUNT
 };
 
-bool IsAutocompleteMatchSearchType(const AutocompleteMatch& match) {
-  switch (match.type) {
-    // Matches using the user's default search engine.
-    case AutocompleteMatch::SEARCH_WHAT_YOU_TYPED:
-    case AutocompleteMatch::SEARCH_HISTORY:
-    case AutocompleteMatch::SEARCH_SUGGEST:
-    // A match that uses a non-default search engine (e.g. for tab-to-search).
-    case AutocompleteMatch::SEARCH_OTHER_ENGINE:
-      return true;
-
-    default:
-      return false;
-  }
-}
-
 }  // namespace
 
 namespace predictors {
@@ -207,7 +192,7 @@ AutocompleteActionPredictor::Action
   // handle being prerendered and until they are we should avoid it.
   // http://crbug.com/117495
   if (action == ACTION_PRERENDER &&
-      (IsAutocompleteMatchSearchType(match) ||
+      (AutocompleteMatch::IsSearchType(match.type) ||
        !prerender::IsOmniboxEnabled(profile_))) {
     action = ACTION_PRECONNECT;
   }
@@ -220,7 +205,7 @@ AutocompleteActionPredictor::Action
 // static
 bool AutocompleteActionPredictor::IsPreconnectable(
     const AutocompleteMatch& match) {
-  return IsAutocompleteMatchSearchType(match);
+  return AutocompleteMatch::IsSearchType(match.type);
 }
 
 void AutocompleteActionPredictor::Observe(

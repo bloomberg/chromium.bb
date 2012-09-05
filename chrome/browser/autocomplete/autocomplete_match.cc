@@ -288,6 +288,14 @@ string16 AutocompleteMatch::SanitizeString(const string16& text) {
   return result;
 }
 
+// static
+bool AutocompleteMatch::IsSearchType(Type type) {
+  return type == SEARCH_WHAT_YOU_TYPED ||
+         type == SEARCH_HISTORY ||
+         type == SEARCH_SUGGEST ||
+         type == SEARCH_OTHER_ENGINE;
+}
+
 void AutocompleteMatch::ComputeStrippedDestinationURL() {
   static const char prefix[] = "www.";
   static const size_t prefix_len = arraysize(prefix) - 1;

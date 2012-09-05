@@ -197,9 +197,7 @@ void OmniboxSearchHint::Observe(int type,
     AutocompleteLog* log = content::Details<AutocompleteLog>(details).ptr();
     AutocompleteMatch::Type type =
         log->result.match_at(log->selected_index).type;
-    if (type == AutocompleteMatch::SEARCH_WHAT_YOU_TYPED ||
-        type == AutocompleteMatch::SEARCH_HISTORY ||
-        type == AutocompleteMatch::SEARCH_SUGGEST) {
+    if (AutocompleteMatch::IsSearchType(type)) {
       // The user performed a search from the omnibox, don't show the infobar
       // again.
       DisableHint();

@@ -354,11 +354,9 @@ void AutocompleteController::UpdateKeywordDescriptions(
   string16 last_keyword;
   for (AutocompleteResult::iterator i(result->begin()); i != result->end();
        ++i) {
-    if (((i->provider == keyword_provider_) && !i->keyword.empty()) ||
-        ((i->provider == search_provider_) &&
-         (i->type == AutocompleteMatch::SEARCH_WHAT_YOU_TYPED ||
-          i->type == AutocompleteMatch::SEARCH_HISTORY ||
-          i->type == AutocompleteMatch::SEARCH_SUGGEST))) {
+    if ((i->provider == keyword_provider_ && !i->keyword.empty()) ||
+        (i->provider == search_provider_ &&
+         AutocompleteMatch::IsSearchType(i->type))) {
       i->description.clear();
       i->description_class.clear();
       DCHECK(!i->keyword.empty());

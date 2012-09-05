@@ -136,7 +136,7 @@ void AutocompleteResult::SortAndCull(const AutocompleteInput& input) {
   if (((input.type() == AutocompleteInput::UNKNOWN) ||
        (input.type() == AutocompleteInput::REQUESTED_URL)) &&
       (default_match_ != end()) &&
-      (default_match_->transition != content::PAGE_TRANSITION_TYPED) &&
+      AutocompleteMatch::IsSearchType(default_match_->type) &&
       (default_match_->transition != content::PAGE_TRANSITION_KEYWORD) &&
       (input.canonicalized_url() != default_match_->destination_url))
     alternate_nav_url_ = input.canonicalized_url();
