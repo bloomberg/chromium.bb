@@ -41,6 +41,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_context.h"
@@ -51,6 +52,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_utils.h"
@@ -167,6 +169,19 @@ int CountScreenshots() {
 }
 #endif
 
+// Checks if WebGL is enabled in the given WebContents.
+bool IsWebGLEnabled(content::WebContents* contents) {
+  bool result = false;
+  EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
+      contents->GetRenderViewHost(),
+      std::wstring(),
+      L"var canvas = document.createElement('canvas');"
+      L"var context = canvas.getContext('experimental-webgl');"
+      L"domAutomationController.send(context != null);",
+      &result));
+  return result;
+}
+
 }  // namespace
 
 class PolicyTest : public InProcessBrowserTest {
@@ -277,7 +292,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, BookmarkBarEnabled) {
   EXPECT_EQ(BookmarkBar::SHOW, browser()->bookmark_bar_state());
 
   // The NTP has special handling of the bookmark bar.
-  ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab"));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   EXPECT_EQ(BookmarkBar::SHOW, browser()->bookmark_bar_state());
 
   policies.Set(key::kBookmarkBarEnabled, POLICY_LEVEL_MANDATORY,
@@ -365,7 +380,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   EXPECT_EQ(expected, web_contents->GetURL());
 
   // Verify that searching from the omnibox can be disabled.
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kAboutBlankURL));
   policies.Set(key::kDefaultSearchProviderEnabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));
   EXPECT_TRUE(service->GetDefaultSearchProvider());
@@ -374,8 +389,34 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   ui_test_utils::SendToOmniboxAndSubmit(location_bar, "should not work");
   // This means that submitting won't trigger any action.
   EXPECT_FALSE(model->CurrentMatch().destination_url.is_valid());
-  EXPECT_EQ(GURL("about:blank"), web_contents->GetURL());
+  EXPECT_EQ(GURL(chrome::kAboutBlankURL), web_contents->GetURL());
 }
+
+// The linux and win  bots can't create a GL context. http://crbug.com/103379
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(PolicyTest, Disable3DAPIs) {
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kAboutBlankURL));
+  // WebGL is enabled by default.
+  content::WebContents* contents = chrome::GetActiveWebContents(browser());
+  EXPECT_TRUE(IsWebGLEnabled(contents));
+  // Disable with a policy.
+  PolicyMap policies;
+  policies.Set(key::kDisable3DAPIs, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
+  provider_.UpdateChromePolicy(policies);
+  // Crash and reload the tab to get a new renderer.
+  content::CrashTab(contents);
+  EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_RELOAD));
+  EXPECT_FALSE(IsWebGLEnabled(contents));
+  // Enable with a policy.
+  policies.Set(key::kDisable3DAPIs, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));
+  provider_.UpdateChromePolicy(policies);
+  content::CrashTab(contents);
+  EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_RELOAD));
+  EXPECT_TRUE(IsWebGLEnabled(contents));
+}
+#endif
 
 // This policy isn't available on Chrome OS.
 #if !defined(OS_CHROMEOS)
