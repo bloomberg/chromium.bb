@@ -291,6 +291,7 @@ TEST_F(PowerButtonControllerTest, LockAndUnlock) {
   controller_->OnLockStateChanged(false);
   EXPECT_TRUE(
       test_api_->ContainersAreAnimated(
+          PowerButtonController::DESKTOP_BACKGROUND |
           PowerButtonController::NON_LOCK_SCREEN_CONTAINERS,
           PowerButtonController::ANIMATION_RESTORE));
   EXPECT_FALSE(test_api_->BlackLayerIsVisible());
@@ -542,6 +543,34 @@ TEST_F(PowerButtonControllerTest, RequestShutdownFromLockScreen) {
   EXPECT_TRUE(test_api_->real_shutdown_timer_is_running());
   test_api_->trigger_real_shutdown_timeout();
   EXPECT_EQ(1, delegate_->num_shutdown_requests());
+}
+
+TEST_F(PowerButtonControllerTest, RequestAndCancelShutdownFromLockScreen) {
+  controller_->OnLoginStateChanged(user::LOGGED_IN_USER);
+  controller_->OnLockStateChanged(true);
+
+  // Press the power button and check that we start the shutdown timer.
+  controller_->OnPowerButtonEvent(true, base::TimeTicks::Now());
+  EXPECT_FALSE(test_api_->lock_timer_is_running());
+  EXPECT_TRUE(test_api_->shutdown_timer_is_running());
+  EXPECT_TRUE(
+      test_api_->ContainersAreAnimated(
+          PowerButtonController::GetAllContainersMask(),
+          PowerButtonController::ANIMATION_SLOW_CLOSE));
+  EXPECT_TRUE(test_api_->BlackLayerIsVisible());
+
+  // Release the power button before the shutdown timer fires.
+  controller_->OnPowerButtonEvent(false, base::TimeTicks::Now());
+  EXPECT_FALSE(test_api_->shutdown_timer_is_running());
+  EXPECT_TRUE(
+      test_api_->ContainersAreAnimated(
+          PowerButtonController::GetAllLockScreenContainersMask(),
+          PowerButtonController::ANIMATION_UNDO_SLOW_CLOSE));
+  EXPECT_TRUE(
+      test_api_->ContainersAreAnimated(
+          PowerButtonController::DESKTOP_BACKGROUND,
+          PowerButtonController::ANIMATION_RESTORE));
+  EXPECT_TRUE(test_api_->BlackLayerIsVisible());
 }
 
 // Test that the black layer is resized in response to root window resizes.

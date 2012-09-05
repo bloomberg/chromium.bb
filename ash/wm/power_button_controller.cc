@@ -354,7 +354,8 @@ void PowerButtonController::OnLockStateChanged(bool locked) {
           this, &PowerButtonController::OnLockToShutdownTimeout);
     }
   } else {
-    StartAnimation(NON_LOCK_SCREEN_CONTAINERS, ANIMATION_RESTORE);
+    StartAnimation(DESKTOP_BACKGROUND | NON_LOCK_SCREEN_CONTAINERS,
+                   ANIMATION_RESTORE);
     HideBlackLayer();
   }
 }
@@ -414,11 +415,17 @@ void PowerButtonController::OnPowerButtonEvent(
       else
         StartShutdownTimer();
     } else {  // Button is up.
-      if (lock_timer_.IsRunning() || shutdown_timer_.IsRunning())
+      if (lock_timer_.IsRunning() || shutdown_timer_.IsRunning()) {
+        if (login_status_ == user::LOGGED_IN_LOCKED) {
+          // If we've already started shutdown transition at lock screen
+          // desktop background needs to be restored immediately.
+          StartAnimation(DESKTOP_BACKGROUND, ANIMATION_RESTORE);
+        }
         StartAnimation(
             (login_status_ == user::LOGGED_IN_LOCKED) ?
             GetAllLockScreenContainersMask() : GetAllContainersMask(),
             ANIMATION_UNDO_SLOW_CLOSE);
+      }
 
       // Drop the black layer after the undo animation finishes.
       if (lock_timer_.IsRunning() ||
