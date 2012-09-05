@@ -974,10 +974,15 @@ static void si_surf_minify_linear_aligned(struct radeon_surface *surf,
         surf->level[level].nblk_z = (surf->level[level].npix_z + surf->blk_d - 1) / surf->blk_d;
     }
 
-    /* XXX: Second smallest level uses larger pitch, not sure of the real reason,
-     * my best guess so far: rows evenly distributed across slice
+    /* XXX: Texture sampling uses unexpectedly large pitches in some cases,
+     * these are just guesses for the rules behind those
      */
-    xalign = MAX2(xalign, slice_align / surf->bpe / surf->level[level].npix_y);
+    if (level == 0 && surf->last_level == 0)
+        /* Non-mipmap pitch padded to slice alignment */
+        xalign = MAX2(xalign, slice_align / surf->bpe);
+    else
+        /* Small rows evenly distributed across slice */
+        xalign = MAX2(xalign, slice_align / surf->bpe / surf->level[level].npix_y);
 
     surf->level[level].nblk_x  = ALIGN(surf->level[level].nblk_x, xalign);
     surf->level[level].nblk_y  = ALIGN(surf->level[level].nblk_y, yalign);
