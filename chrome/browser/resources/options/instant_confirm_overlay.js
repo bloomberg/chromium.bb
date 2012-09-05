@@ -32,8 +32,8 @@ cr.define('options', function() {
     /** @inheritDoc */
     handleConfirm: function() {
       SettingsDialog.prototype.handleConfirm.call(this);
-      Preferences.setBooleanPref('instant.confirm_dialog_shown', true);
-      Preferences.setBooleanPref('instant.enabled', true);
+      Preferences.setBooleanPref('instant.confirm_dialog_shown', true, true);
+      Preferences.setBooleanPref('instant.enabled', true, true);
     },
 
     /** @inheritDoc */
