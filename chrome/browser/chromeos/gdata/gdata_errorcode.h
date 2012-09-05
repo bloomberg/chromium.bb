@@ -28,6 +28,7 @@ enum GDataErrorCode {
   GDATA_CANCELLED            = -102,
   GDATA_OTHER_ERROR          = -103,
   GDATA_NO_CONNECTION        = -104,
+  GDATA_NOT_READY            = -105,
 };
 
 enum DriveFileError {

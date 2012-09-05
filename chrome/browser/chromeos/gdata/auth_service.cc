@@ -72,7 +72,7 @@ void AuthService::StartAuthentication(OperationRegistry* registry,
                                   callback))));
   } else {
     relay_proxy->PostTask(FROM_HERE,
-        base::Bind(callback, gdata::HTTP_UNAUTHORIZED, std::string()));
+        base::Bind(callback, gdata::GDATA_NOT_READY, std::string()));
   }
 }
 
