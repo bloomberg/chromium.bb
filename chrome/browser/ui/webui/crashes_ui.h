@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_CRASHES_UI_H_
 
 #include "content/public/browser/web_ui_controller.h"
+#include "ui/base/layout.h"
 
 namespace base {
 class RefCountedMemory;
@@ -15,7 +16,8 @@ class CrashesUI : public content::WebUIController {
  public:
   explicit CrashesUI(content::WebUI* web_ui);
 
-  static base::RefCountedMemory* GetFaviconResourceBytes();
+  static base::RefCountedMemory* GetFaviconResourceBytes(
+      ui::ScaleFactor scale_factor);
 
   // Whether crash reporting has been enabled.
   static bool CrashReportingEnabled();

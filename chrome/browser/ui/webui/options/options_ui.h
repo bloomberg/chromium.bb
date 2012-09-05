@@ -16,6 +16,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "ui/base/layout.h"
 
 class AutocompleteResult;
 
@@ -114,7 +115,8 @@ class OptionsUI : public content::WebUIController,
       const AutocompleteResult& result,
       base::ListValue* const suggestions);
 
-  static base::RefCountedMemory* GetFaviconResourceBytes();
+  static base::RefCountedMemory* GetFaviconResourceBytes(
+      ui::ScaleFactor scale_factor);
 
   // Overridden from OptionsPageUIHandlerHost:
   virtual void InitializeHandlers() OVERRIDE;

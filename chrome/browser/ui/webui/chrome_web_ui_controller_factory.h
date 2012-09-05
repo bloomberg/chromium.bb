@@ -51,7 +51,8 @@ class ChromeWebUIControllerFactory : public content::WebUIControllerFactory {
 
   // Gets the data for the favicon for a WebUI page. Returns NULL if the WebUI
   // does not have a favicon.
-  base::RefCountedMemory* GetFaviconResourceBytes(const GURL& page_url) const;
+  base::RefCountedMemory* GetFaviconResourceBytes(
+      const GURL& page_url, ui::ScaleFactor scale_factor) const;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeWebUIControllerFactory);
 };

@@ -480,7 +480,8 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
       url.host() != extension_misc::kBookmarkManagerId) {
     ExtensionWebUI::GetFaviconForURL(profile, request, url);
   } else {
-    scoped_refptr<base::RefCountedMemory> bitmap(GetFaviconResourceBytes(url));
+    scoped_refptr<base::RefCountedMemory> bitmap(GetFaviconResourceBytes(
+          url, ui::SCALE_FACTOR_100P));
     std::vector<history::FaviconBitmapResult> favicon_bitmap_results;
     if (bitmap.get() && bitmap->size()) {
       history::FaviconBitmapResult bitmap_result;
@@ -506,11 +507,11 @@ ChromeWebUIControllerFactory::~ChromeWebUIControllerFactory() {
 }
 
 base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
-    const GURL& page_url) const {
+    const GURL& page_url, ui::ScaleFactor scale_factor) const {
   // The bookmark manager is a chrome extension, so we have to check for it
   // before we check for extension scheme.
   if (page_url.host() == extension_misc::kBookmarkManagerId)
-    return BookmarksUI::GetFaviconResourceBytes();
+    return BookmarksUI::GetFaviconResourceBytes(scale_factor);
 
   // The extension scheme is handled in GetFaviconForURL.
   if (page_url.SchemeIs(chrome::kExtensionScheme)) {
@@ -523,34 +524,34 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
 
 #if defined(OS_WIN)
   if (page_url.host() == chrome::kChromeUIConflictsHost)
-    return ConflictsUI::GetFaviconResourceBytes();
+    return ConflictsUI::GetFaviconResourceBytes(scale_factor);
 #endif
 
   if (page_url.host() == chrome::kChromeUICrashesHost)
-    return CrashesUI::GetFaviconResourceBytes();
+    return CrashesUI::GetFaviconResourceBytes(scale_factor);
 
   if (page_url.host() == chrome::kChromeUIHistoryHost)
-    return HistoryUI::GetFaviconResourceBytes();
+    return HistoryUI::GetFaviconResourceBytes(scale_factor);
 
   if (page_url.host() == chrome::kChromeUIFlashHost)
-    return FlashUI::GetFaviconResourceBytes();
+    return FlashUI::GetFaviconResourceBytes(scale_factor);
 
 #if !defined(OS_ANDROID)
   // Android uses the native download manager.
   if (page_url.host() == chrome::kChromeUIDownloadsHost)
-    return DownloadsUI::GetFaviconResourceBytes();
+    return DownloadsUI::GetFaviconResourceBytes(scale_factor);
 
   // chrome://flags is currently unsupported on Android.
   if (page_url.host() == chrome::kChromeUIFlagsHost)
-    return FlagsUI::GetFaviconResourceBytes();
+    return FlagsUI::GetFaviconResourceBytes(scale_factor);
 
   // Android doesn't use the Options pages.
   if (page_url.host() == chrome::kChromeUISettingsFrameHost)
-    return options::OptionsUI::GetFaviconResourceBytes();
+    return options::OptionsUI::GetFaviconResourceBytes(scale_factor);
 
   // Android doesn't use the plugins pages.
   if (page_url.host() == chrome::kChromeUIPluginsHost)
-    return PluginsUI::GetFaviconResourceBytes();
+    return PluginsUI::GetFaviconResourceBytes(scale_factor);
 #endif
 
   return NULL;

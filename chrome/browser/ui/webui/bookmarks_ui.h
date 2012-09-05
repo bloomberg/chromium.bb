@@ -9,6 +9,7 @@
 
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "content/public/browser/web_ui_controller.h"
+#include "ui/base/layout.h"
 
 namespace base {
 class RefCountedMemory;
@@ -38,7 +39,8 @@ class BookmarksUI : public content::WebUIController {
  public:
   explicit BookmarksUI(content::WebUI* web_ui);
 
-  static base::RefCountedMemory* GetFaviconResourceBytes();
+  static base::RefCountedMemory* GetFaviconResourceBytes(
+      ui::ScaleFactor scale_factor);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BookmarksUI);

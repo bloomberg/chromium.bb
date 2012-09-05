@@ -24,7 +24,6 @@
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserContext;
@@ -106,8 +105,8 @@ DownloadsUI::DownloadsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 }
 
 // static
-base::RefCountedMemory* DownloadsUI::GetFaviconResourceBytes() {
+base::RefCountedMemory* DownloadsUI::GetFaviconResourceBytes(
+      ui::ScaleFactor scale_factor) {
   return ResourceBundle::GetSharedInstance().
-      LoadDataResourceBytes(IDR_DOWNLOADS_FAVICON,
-                            ui::SCALE_FACTOR_NONE);
+      LoadDataResourceBytes(IDR_DOWNLOADS_FAVICON, scale_factor);
 }

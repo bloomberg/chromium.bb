@@ -57,7 +57,6 @@
 #include "grit/options_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/escape.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
@@ -349,9 +348,10 @@ void OptionsUI::ProcessAutocompleteSuggestions(
 }
 
 // static
-base::RefCountedMemory* OptionsUI::GetFaviconResourceBytes() {
+base::RefCountedMemory* OptionsUI::GetFaviconResourceBytes(
+      ui::ScaleFactor scale_factor) {
   return ui::ResourceBundle::GetSharedInstance().
-      LoadDataResourceBytes(IDR_SETTINGS_FAVICON, ui::SCALE_FACTOR_100P);
+      LoadDataResourceBytes(IDR_SETTINGS_FAVICON, scale_factor);
 }
 
 void OptionsUI::InitializeHandlers() {

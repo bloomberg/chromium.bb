@@ -14,6 +14,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "ui/base/layout.h"
 
 // The handler for Javascript messages related to the "history" view.
 class BrowsingHistoryHandler : public content::WebUIMessageHandler,
@@ -85,7 +86,8 @@ class HistoryUI : public content::WebUIController {
   // Return the URL for a given search term.
   static const GURL GetHistoryURLWithSearchText(const string16& text);
 
-  static base::RefCountedMemory* GetFaviconResourceBytes();
+  static base::RefCountedMemory* GetFaviconResourceBytes(
+      ui::ScaleFactor scale_factor);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HistoryUI);

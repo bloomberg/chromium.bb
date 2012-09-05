@@ -47,7 +47,6 @@
 #include "grit/theme_resources.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_ANDROID)
@@ -495,8 +494,8 @@ const GURL HistoryUI::GetHistoryURLWithSearchText(const string16& text) {
 }
 
 // static
-base::RefCountedMemory* HistoryUI::GetFaviconResourceBytes() {
+base::RefCountedMemory* HistoryUI::GetFaviconResourceBytes(
+      ui::ScaleFactor scale_factor) {
   return ResourceBundle::GetSharedInstance().
-      LoadDataResourceBytes(IDR_HISTORY_FAVICON,
-                            ui::SCALE_FACTOR_100P);
+      LoadDataResourceBytes(IDR_HISTORY_FAVICON, scale_factor);
 }

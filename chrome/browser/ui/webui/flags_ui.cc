@@ -28,7 +28,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
@@ -167,9 +166,10 @@ FlagsUI::FlagsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 }
 
 // static
-base::RefCountedMemory* FlagsUI::GetFaviconResourceBytes() {
+base::RefCountedMemory* FlagsUI::GetFaviconResourceBytes(
+      ui::ScaleFactor scale_factor) {
   return ResourceBundle::GetSharedInstance().
-      LoadDataResourceBytes(IDR_FLAGS, ui::SCALE_FACTOR_100P);
+      LoadDataResourceBytes(IDR_FLAGS, scale_factor);
 }
 
 // static

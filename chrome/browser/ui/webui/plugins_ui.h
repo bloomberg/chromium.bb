@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_PLUGINS_UI_H_
 
 #include "content/public/browser/web_ui_controller.h"
+#include "ui/base/layout.h"
 
 class PrefService;
 
@@ -17,7 +18,8 @@ class PluginsUI : public content::WebUIController {
  public:
   explicit PluginsUI(content::WebUI* web_ui);
 
-  static base::RefCountedMemory* GetFaviconResourceBytes();
+  static base::RefCountedMemory* GetFaviconResourceBytes(
+      ui::ScaleFactor scale_factor);
   static void RegisterUserPrefs(PrefService* prefs);
 
  private:
