@@ -35,6 +35,8 @@ without changes to the corresponding grd file. -->
                file="shared/images/x.png" type="BINDATA" />
       <include name="IDR_SHARED_IMAGES_X_HOVER"
                file="shared/images/x-hover.png" type="BINDATA" />
+      <include name="IDR_SHARED_IMAGES_CLOUDS"
+               file="shared/images/clouds.png" type="BINDATA" />
     </includes>
     <structures>
       <structure name="IDR_SHARED_CSS_ABOUT"

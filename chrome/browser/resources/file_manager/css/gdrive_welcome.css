@@ -5,7 +5,7 @@
 /* Google Drive welcome banners.*/
 .gdrive-welcome-wrapper {
   /* This image looks good in high DPI as is. */
-  background-image: url('../images/files/ui/clouds.png');
+  background-image: url(chrome://resources/images/clouds.png);
   background-repeat: repeat-x;
   color: #333;
 }
