@@ -57,8 +57,8 @@ WorkspaceController::~WorkspaceController() {
 
 // static
 bool WorkspaceController::IsWorkspace2Enabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAshEnableWorkspace2);
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAshDisableWorkspace2);
 }
 
 bool WorkspaceController::IsInMaximizedMode() const {

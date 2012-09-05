@@ -66,22 +66,16 @@ TEST_F(DragDropTrackerTest, MAYBE_GetTarget) {
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ(2U, root_windows.size());
 
-  aura::Window* default_container0 =
-      ash::Shell::GetContainer(root_windows[0],
-                               ash::internal::kShellWindowId_DefaultContainer);
-  EXPECT_TRUE(NULL != default_container0);
+  Shell::GetInstance()->set_active_root_window(root_windows[0]);
 
   scoped_ptr<aura::Window> window0(
-      CreateTestWindow(gfx::Rect(0, 0, 100, 100), default_container0));
+      CreateTestWindow(gfx::Rect(0, 0, 100, 100), NULL));
   window0->Show();
 
-  aura::Window* default_container1 =
-      ash::Shell::GetContainer(root_windows[1],
-                               ash::internal::kShellWindowId_DefaultContainer);
-  EXPECT_TRUE(NULL != default_container1);
+  Shell::GetInstance()->set_active_root_window(root_windows[1]);
 
   scoped_ptr<aura::Window> window1(
-      CreateTestWindow(gfx::Rect(100, 100, 100, 100), default_container1));
+      CreateTestWindow(gfx::Rect(100, 100, 100, 100), NULL));
   window1->Show();
 
   // Start tracking from the RootWindow0 and check the point on RootWindow0 that
@@ -133,22 +127,14 @@ TEST_F(DragDropTrackerTest, MAYBE_ConvertMouseEvent) {
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ(2U, root_windows.size());
 
-  aura::Window* default_container0 =
-      ash::Shell::GetContainer(root_windows[0],
-                               ash::internal::kShellWindowId_DefaultContainer);
-  EXPECT_TRUE(NULL != default_container0);
-
+  Shell::GetInstance()->set_active_root_window(root_windows[0]);
   scoped_ptr<aura::Window> window0(
-      CreateTestWindow(gfx::Rect(0, 0, 100, 100), default_container0));
+      CreateTestWindow(gfx::Rect(0, 0, 100, 100), NULL));
   window0->Show();
 
-  aura::Window* default_container1 =
-      ash::Shell::GetContainer(root_windows[1],
-                               ash::internal::kShellWindowId_DefaultContainer);
-  EXPECT_TRUE(NULL != default_container1);
-
+  Shell::GetInstance()->set_active_root_window(root_windows[1]);
   scoped_ptr<aura::Window> window1(
-      CreateTestWindow(gfx::Rect(100, 100, 100, 100), default_container1));
+      CreateTestWindow(gfx::Rect(100, 100, 100, 100), NULL));
   window1->Show();
 
   // Start tracking from the RootWindow0 and converts the mouse event into

@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/window_resizer.h"
@@ -599,20 +598,16 @@ TEST_F(WindowSizerTest,
 // window.
 TEST_F(WindowSizerTestWithBrowser, PlaceNewWindowOverOldWindow) {
   // Create a dummy window.
-  aura::Window* default_container =
-      ash::Shell::GetContainer(
-          ash::Shell::GetPrimaryRootWindow(),
-          ash::internal::kShellWindowId_DefaultContainer);
   scoped_ptr<aura::Window> window(
-      aura::test::CreateTestWindowWithId(0, default_container));
+      aura::test::CreateTestWindowWithId(0, NULL));
   window->SetBounds(gfx::Rect(16, 32, 640, 320));
 
   scoped_ptr<aura::Window> popup(
-      aura::test::CreateTestWindowWithId(1, default_container));
+      aura::test::CreateTestWindowWithId(1, NULL));
   popup->SetBounds(gfx::Rect(16, 32, 128, 256));
 
   scoped_ptr<aura::Window> panel(
-      aura::test::CreateTestWindowWithId(2, default_container));
+      aura::test::CreateTestWindowWithId(2, NULL));
   panel->SetBounds(gfx::Rect(32, 48, 256, 512));
 
   // Create a browser which we can use to pass into the GetWindowBounds

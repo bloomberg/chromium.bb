@@ -13,14 +13,14 @@ const char kAshConstrainPointerToRoot[] = "ash-constrain-pointer-to-root";
 // Enable keyboard shortcuts useful for debugging.
 const char kAshDebugShortcuts[] = "ash-debug-shortcuts";
 
+// Disables Workspace2.
+const char kAshDisableWorkspace2[] = "ash-disable-workspace2";
+
 // Enable advanced gestures (e.g. for window management).
 const char kAshEnableAdvancedGestures[] = "ash-enable-advanced-gestures";
 
 // Enables the Oak tree viewer.
 const char kAshEnableOak[] = "ash-enable-oak";
-
-// Enables Workspace2.
-const char kAshEnableWorkspace2[] = "ash-enable-workspace2";
 
 // Disable using Ash notifications.
 const char kAshNotifyDisabled[] = "ash-notify-disabled";

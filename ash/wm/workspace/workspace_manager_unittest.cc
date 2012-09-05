@@ -4,6 +4,7 @@
 
 #include "ash/wm/workspace/workspace_manager.h"
 
+#include "ash/ash_switches.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -15,6 +16,7 @@
 #include "ash/wm/workspace/workspace.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace_controller_test_helper.h"
+#include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
@@ -82,6 +84,8 @@ class WorkspaceManagerTest : public test::AshTestBase {
 
   // Overridden from AshTestBase:
   virtual void SetUp() OVERRIDE {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kAshDisableWorkspace2);
     test::AshTestBase::SetUp();
     WorkspaceControllerTestHelper workspace_helper(
         Shell::TestApi(Shell::GetInstance()).workspace_controller());

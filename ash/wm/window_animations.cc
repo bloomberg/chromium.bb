@@ -788,6 +788,15 @@ void CrossFadeImpl(aura::Window* window,
   }
 }
 
+// Returns a TimeDelta from |time_ms|. If animations are disabled this returns
+// a TimeDelta of 0 (so the animation completes immediately).
+base::TimeDelta AdjustAnimationTime(int time_ms) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kAshWindowAnimationsDisabled))
+    time_ms = 0;
+  return base::TimeDelta::FromMilliseconds(time_ms);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -903,8 +912,7 @@ void AnimateWorkspaceIn(aura::Window* window,
   {
     ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
     settings.SetTweenType(ui::Tween::EASE_OUT);
-    settings.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(kWorkspaceSwitchTimeMS));
+    settings.SetTransitionDuration(AdjustAnimationTime(kWorkspaceSwitchTimeMS));
     window->layer()->SetTransform(ui::Transform());
     window->layer()->SetOpacity(1.0f);
   }
@@ -915,7 +923,7 @@ void AnimateWorkspaceOut(aura::Window* window,
   {
     ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
     settings.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(kWorkspaceSwitchTimeMS));
+        AdjustAnimationTime(kWorkspaceSwitchTimeMS));
     ApplyWorkspaceScale(window->layer(),
                         direction == WORKSPACE_ANIMATE_UP ?
                             WORKSPACE_SCALE_ABOVE : WORKSPACE_SCALE_BELOW);
@@ -938,7 +946,7 @@ namespace internal {
 TimeDelta GetCrossFadeDuration(const gfx::Rect& old_bounds,
                                const gfx::Rect& new_bounds) {
   if (WorkspaceController::IsWorkspace2Enabled())
-    return base::TimeDelta::FromMilliseconds(kWorkspaceCrossFadeDurationMs);
+    return AdjustAnimationTime(kWorkspaceCrossFadeDurationMs);
 
   int old_area = old_bounds.width() * old_bounds.height();
   int new_area = new_bounds.width() * new_bounds.height();

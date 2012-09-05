@@ -88,14 +88,12 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
     AshTestBase::TearDown();
   }
 
-  // Returns a string identifying the z-order of each of the known windows.
-  // The returned string constains the id of the known windows and is ordered
-  // from topmost to bottomost windows.
-  std::string WindowOrderAsString() const {
+  // Returns a string identifying the z-order of each of the known child windows
+  // of |parent|.  The returned string constains the id of the known windows and
+  // is ordered from topmost to bottomost windows.
+  std::string WindowOrderAsString(aura::Window* parent) const {
     std::string result;
-    aura::Window* default_container = Shell::GetContainer(
-        Shell::GetPrimaryRootWindow(), kShellWindowId_DefaultContainer);
-    const aura::Window::Windows& windows = default_container->children();
+    const aura::Window::Windows& windows = parent->children();
     for (aura::Window::Windows::const_reverse_iterator i = windows.rbegin();
          i != windows.rend(); ++i) {
       if (*i == window_.get() || *i == window2_.get() || *i == window3_.get()) {
@@ -725,7 +723,7 @@ TEST_F(WorkspaceWindowResizerTest, RestackAttached) {
     resizer->Drag(CalculateDragPoint(*resizer, 100, -10), 0);
 
     // 2 should be topmost since it's initially the highest in the stack.
-    EXPECT_EQ("2 1 3", WindowOrderAsString());
+    EXPECT_EQ("2 1 3", WindowOrderAsString(window_->parent()));
   }
 
   {
@@ -739,7 +737,7 @@ TEST_F(WorkspaceWindowResizerTest, RestackAttached) {
     resizer->Drag(CalculateDragPoint(*resizer, 100, -10), 0);
 
     // 2 should be topmost since it's initially the highest in the stack.
-    EXPECT_EQ("2 3 1", WindowOrderAsString());
+    EXPECT_EQ("2 3 1", WindowOrderAsString(window_->parent()));
   }
 }
 

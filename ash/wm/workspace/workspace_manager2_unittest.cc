@@ -118,8 +118,6 @@ class WorkspaceManager2Test : public test::AshTestBase {
 
   // Overridden from AshTestBase:
   virtual void SetUp() OVERRIDE {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kAshEnableWorkspace2);
     test::AshTestBase::SetUp();
     WorkspaceControllerTestHelper workspace_helper(
         Shell::TestApi(Shell::GetInstance()).workspace_controller());

@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/ash/window_positioner.h"
 
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/window_resizer.h"
@@ -121,14 +120,11 @@ WindowPositionerTest::~WindowPositionerTest() {
 void WindowPositionerTest::SetUp() {
   AshTestBase::SetUp();
   // Create some default dummy windows.
-  aura::Window* default_container = ash::Shell::GetContainer(
-      ash::Shell::GetPrimaryRootWindow(),
-      ash::internal::kShellWindowId_DefaultContainer);
-  window_.reset(aura::test::CreateTestWindowWithId(0, default_container));
+  window_.reset(aura::test::CreateTestWindowWithId(0, NULL));
   window_->SetBounds(gfx::Rect(16, 32, 640, 320));
-  popup_.reset(aura::test::CreateTestWindowWithId(1, default_container));
+  popup_.reset(aura::test::CreateTestWindowWithId(1, NULL));
   popup_->SetBounds(gfx::Rect(16, 32, 128, 256));
-  panel_.reset(aura::test::CreateTestWindowWithId(2, default_container));
+  panel_.reset(aura::test::CreateTestWindowWithId(2, NULL));
   panel_->SetBounds(gfx::Rect(32, 48, 256, 512));
 
   // Create a browser for the window.

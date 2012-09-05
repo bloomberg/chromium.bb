@@ -849,11 +849,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableBootAnimation),
   },
   {
-    "enable-workspace2",
-    IDS_FLAGS_ENABLE_WORKSPACE2,
-    IDS_FLAGS_ENABLE_WORKSPACE2_DESCRIPTION,
+    "disable-workspace2",
+    IDS_FLAGS_DISABLE_WORKSPACE2,
+    IDS_FLAGS_DISABLE_WORKSPACE2_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(ash::switches::kAshEnableWorkspace2),
+    SINGLE_VALUE_TYPE(ash::switches::kAshDisableWorkspace2),
   },
 #endif
   {

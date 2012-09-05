@@ -6,6 +6,7 @@
 
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/workspace_controller.h"
 #include "base/time.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
@@ -189,6 +190,9 @@ TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
 }
 
 TEST_F(WindowAnimationsTest, GetCrossFadeDuration) {
+  if (WorkspaceController::IsWorkspace2Enabled())
+    return;
+
   gfx::Rect empty;
   gfx::Rect screen(0, 0, 1000, 500);
 
