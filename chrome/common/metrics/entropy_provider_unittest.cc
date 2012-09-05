@@ -12,6 +12,7 @@
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
 #include "chrome/common/metrics/entropy_provider.h"
+#include "chrome/common/metrics/metrics_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace metrics {
@@ -308,7 +309,7 @@ TEST_F(EntropyProviderTest, SeededRandGeneratorIsUniform) {
   const int kMaxAttempts = 1000000;
 
   for (size_t i = 0; i < arraysize(kTestTrialNames); ++i) {
-    const uint32 seed = internal::HashName(kTestTrialNames[i]);
+    const uint32 seed = HashName(kTestTrialNames[i]);
     internal::SeededRandGenerator rand_generator(seed);
 
     double cumulative_average = 0.0;

@@ -2031,6 +2031,7 @@
         'common/metrics/entropy_provider_unittest.cc',
         'common/metrics/metrics_log_base_unittest.cc',
         'common/metrics/metrics_log_manager_unittest.cc',
+        'common/metrics/metrics_util_unittest.cc',
         'common/metrics/variations/variations_util_unittest.cc',
         'common/multi_process_lock_unittest.cc',
         'common/net/url_util_unittest.cc',

@@ -32,11 +32,6 @@ struct SeededRandGenerator : std::unary_function<uint32, uint32> {
   MersenneTwister mersenne_twister_;
 };
 
-// Creates unique identifier for the trial by hashing a name string, whether
-// it's for the field trial or the group name.
-// TODO(asvitkine): Share the implementation with variations_util.cc.
-uint32 HashName(const std::string& name);
-
 // Fills |mapping| to create a bijection of values in the range of
 // [0, |mapping.size()|), permuted based on |trial_name|.
 void PermuteMappingUsingTrialName(const std::string& trial_name,

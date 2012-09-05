@@ -240,6 +240,8 @@
         'common/metrics/metrics_log_manager.h',
         'common/metrics/metrics_service_base.cc',
         'common/metrics/metrics_service_base.h',
+        'common/metrics/metrics_util.cc',
+        'common/metrics/metrics_util.h',
         'common/metrics/variations/variations_util.cc',
         'common/metrics/variations/variations_util.h',
         'common/multi_process_lock.h',

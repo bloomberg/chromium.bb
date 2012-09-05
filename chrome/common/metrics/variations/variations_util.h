@@ -109,18 +109,16 @@ void GenerateVariationChunks(const std::vector<string16>& variation_strings,
 // them to the child process logging module so it can save it for crash dumps.
 void SetChildProcessLoggingVariationList();
 
-}  // namespace chrome_variations
-
 // Expose some functions for testing. These functions just wrap functionality
 // that is implemented above.
 namespace testing {
 
 void TestGetFieldTrialSelectedGroupIdsForSelectedGroups(
     const base::FieldTrial::SelectedGroups& selected_groups,
-    std::vector<chrome_variations::SelectedGroupId>* name_group_ids);
-
-uint32 TestHashName(const std::string& name);
+    std::vector<SelectedGroupId>* name_group_ids);
 
 }  // namespace testing
+
+}  // namespace chrome_variations
 
 #endif  // CHROME_COMMON_METRICS_VARIATIONS_VARIATIONS_UTIL_H_

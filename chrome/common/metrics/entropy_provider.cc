@@ -12,6 +12,7 @@
 #include "base/rand_util.h"
 #include "base/sha1.h"
 #include "base/sys_byteorder.h"
+#include "chrome/common/metrics/metrics_util.h"
 
 namespace metrics {
 
@@ -41,21 +42,6 @@ uint32 SeededRandGenerator::operator()(uint32 range) {
   } while (value > max_acceptable_value);
 
   return value % range;
-}
-
-uint32 HashName(const std::string& name) {
-  // SHA-1 is designed to produce a uniformly random spread in its output space,
-  // even for nearly-identical inputs.
-  unsigned char sha1_hash[base::kSHA1Length];
-  base::SHA1HashBytes(reinterpret_cast<const unsigned char*>(name.c_str()),
-                      name.size(),
-                      sha1_hash);
-
-  uint32 bits;
-  COMPILE_ASSERT(sizeof(bits) < sizeof(sha1_hash), need_more_data);
-  memcpy(&bits, sha1_hash, sizeof(bits));
-
-  return base::ByteSwapToLE32(bits);
 }
 
 void PermuteMappingUsingTrialName(const std::string& trial_name,
