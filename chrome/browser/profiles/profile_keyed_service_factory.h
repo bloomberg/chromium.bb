@@ -94,6 +94,9 @@ class ProfileKeyedServiceFactory : public ProfileKeyedBaseFactory {
   friend class ProfileDependencyManager;
   friend class ProfileDependencyManagerUnittests;
 
+  typedef std::map<Profile*, ProfileKeyedService*> ProfileKeyedServices;
+  typedef std::map<Profile*, FactoryFunction> ProfileOverriddenFunctions;
+
   // The mapping between a Profile and its service.
   std::map<Profile*, ProfileKeyedService*> mapping_;
 

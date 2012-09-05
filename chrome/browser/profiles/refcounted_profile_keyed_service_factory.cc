@@ -5,12 +5,10 @@
 #include "chrome/browser/profiles/refcounted_profile_keyed_service_factory.h"
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
-#include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
 
 void RefcountedProfileKeyedServiceFactory::SetTestingFactory(
     Profile* profile,
@@ -62,30 +60,27 @@ RefcountedProfileKeyedServiceFactory::GetServiceForProfile(
 
   // NOTE: If you modify any of the logic below, make sure to update the
   // non-refcounted version in profile_keyed_service_factory.cc!
-  scoped_refptr<RefcountedProfileKeyedService> service;
   RefCountedStorage::const_iterator it = mapping_.find(profile);
-  if (it != mapping_.end()) {
+  if (it != mapping_.end())
     return it->second;
-  } else if (create) {
-    // Object not found, and we must create it.
-    //
-    // Check to see if we have a per-Profile testing factory that we should use
-    // instead of default behavior.
-    std::map<Profile*, FactoryFunction>::iterator jt = factories_.find(profile);
-    if (jt != factories_.end()) {
-      if (jt->second) {
-        if (!profile->IsOffTheRecord())
-          RegisterUserPrefsOnProfile(profile);
-        service = jt->second(profile);
-      } else {
-        service = NULL;
-      }
-    } else {
-      service = BuildServiceInstanceFor(profile);
+
+  // Object not found.
+  if (!create)
+    return NULL;  // And we're forbidden from creating one.
+
+  // Create new object.
+  // Check to see if we have a per-Profile testing factory that we should use
+  // instead of default behavior.
+  scoped_refptr<RefcountedProfileKeyedService> service;
+  ProfileOverriddenFunctions::const_iterator jt = factories_.find(profile);
+  if (jt != factories_.end()) {
+    if (jt->second) {
+      if (!profile->IsOffTheRecord())
+        RegisterUserPrefsOnProfile(profile);
+      service = jt->second(profile);
     }
   } else {
-    // Object not found, and we're forbidden from creating one.
-    return NULL;
+    service = BuildServiceInstanceFor(profile);
   }
 
   Associate(profile, service);
@@ -95,7 +90,7 @@ RefcountedProfileKeyedServiceFactory::GetServiceForProfile(
 void RefcountedProfileKeyedServiceFactory::Associate(
     Profile* profile,
     const scoped_refptr<RefcountedProfileKeyedService>& service) {
-  DCHECK(mapping_.find(profile) == mapping_.end());
+  DCHECK(!ContainsKey(mapping_, profile));
   mapping_.insert(std::make_pair(profile, service));
 }
 
@@ -106,12 +101,9 @@ void RefcountedProfileKeyedServiceFactory::ProfileShutdown(Profile* profile) {
 }
 
 void RefcountedProfileKeyedServiceFactory::ProfileDestroyed(Profile* profile) {
-  RefCountedStorage::iterator it = mapping_.find(profile);
-  if (it != mapping_.end()) {
-    // We "merely" drop our reference to the service. Hopefully this will cause
-    // the service to be destroyed. If not, oh well.
-    mapping_.erase(it);
-  }
+  // We "merely" drop our reference to the service. Hopefully this will cause
+  // the service to be destroyed. If not, oh well.
+  mapping_.erase(profile);
 
   // For unit tests, we also remove the factory function both so we don't
   // maintain a big map of dead pointers, but also since we may have a second

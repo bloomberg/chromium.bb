@@ -6,7 +6,8 @@
 
 #include <map>
 
-#include "base/memory/singleton.h"
+#include "base/logging.h"
+#include "base/stl_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
@@ -57,31 +58,27 @@ ProfileKeyedService* ProfileKeyedServiceFactory::GetServiceForProfile(
 
   // NOTE: If you modify any of the logic below, make sure to update the
   // refcounted version in refcounted_profile_keyed_service_factory.cc!
-  ProfileKeyedService* service = NULL;
-  std::map<Profile*, ProfileKeyedService*>::const_iterator it =
-      mapping_.find(profile);
-  if (it != mapping_.end()) {
+  ProfileKeyedServices::const_iterator it = mapping_.find(profile);
+  if (it != mapping_.end())
     return it->second;
-  } else if (create) {
-    // Object not found, and we must create it.
-    //
-    // Check to see if we have a per-Profile testing factory that we should use
-    // instead of default behavior.
-    std::map<Profile*, FactoryFunction>::iterator jt = factories_.find(profile);
-    if (jt != factories_.end()) {
-      if (jt->second) {
-        if (!profile->IsOffTheRecord())
-          RegisterUserPrefsOnProfile(profile);
-        service = jt->second(profile);
-      } else {
-        service = NULL;
-      }
-    } else {
-      service = BuildServiceInstanceFor(profile);
+
+  // Object not found.
+  if (!create)
+    return NULL;  // And we're forbidden from creating one.
+
+  // Create new object.
+  // Check to see if we have a per-Profile testing factory that we should use
+  // instead of default behavior.
+  ProfileKeyedService* service = NULL;
+  ProfileOverriddenFunctions::const_iterator jt = factories_.find(profile);
+  if (jt != factories_.end()) {
+    if (jt->second) {
+      if (!profile->IsOffTheRecord())
+        RegisterUserPrefsOnProfile(profile);
+      service = jt->second(profile);
     }
   } else {
-    // Object not found, and we're forbidden from creating one.
-    return NULL;
+    service = BuildServiceInstanceFor(profile);
   }
 
   Associate(profile, service);
@@ -90,20 +87,18 @@ ProfileKeyedService* ProfileKeyedServiceFactory::GetServiceForProfile(
 
 void ProfileKeyedServiceFactory::Associate(Profile* profile,
                                            ProfileKeyedService* service) {
-  DCHECK(mapping_.find(profile) == mapping_.end());
+  DCHECK(!ContainsKey(mapping_, profile));
   mapping_.insert(std::make_pair(profile, service));
 }
 
 void ProfileKeyedServiceFactory::ProfileShutdown(Profile* profile) {
-  std::map<Profile*, ProfileKeyedService*>::iterator it =
-      mapping_.find(profile);
+  ProfileKeyedServices::iterator it = mapping_.find(profile);
   if (it != mapping_.end() && it->second)
     it->second->Shutdown();
 }
 
 void ProfileKeyedServiceFactory::ProfileDestroyed(Profile* profile) {
-  std::map<Profile*, ProfileKeyedService*>::iterator it =
-      mapping_.find(profile);
+  ProfileKeyedServices::iterator it = mapping_.find(profile);
   if (it != mapping_.end()) {
     delete it->second;
     mapping_.erase(it);

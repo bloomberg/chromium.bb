@@ -70,12 +70,13 @@ class RefcountedProfileKeyedServiceFactory : public ProfileKeyedBaseFactory {
  private:
   typedef std::map<Profile*, scoped_refptr<RefcountedProfileKeyedService> >
       RefCountedStorage;
+  typedef std::map<Profile*, FactoryFunction> ProfileOverriddenFunctions;
 
   // The mapping between a Profile and its refcounted service.
   RefCountedStorage mapping_;
 
   // The mapping between a Profile and its overridden FactoryFunction.
-  std::map<Profile*, FactoryFunction> factories_;
+  ProfileOverriddenFunctions factories_;
 
   DISALLOW_COPY_AND_ASSIGN(RefcountedProfileKeyedServiceFactory);
 };
