@@ -227,13 +227,6 @@ void PanelGtk::Init() {
   gtk_widget_add_events(GTK_WIDGET(window_), GDK_BUTTON_PRESS_MASK |
                                              GDK_POINTER_MOTION_MASK);
   gtk_window_set_decorated(window_, false);
-  // Keep the window always on top.
-  gtk_window_set_keep_above(window_, TRUE);
-  // Show the window on all the virtual desktops.
-  gtk_window_stick(window_);
-  // Do not show an icon in the task bar.  Window operations such as close,
-  // minimize etc. can only be done from the panel UI.
-  gtk_window_set_skip_taskbar_hint(window_, TRUE);
 
   // Disable the resize gripper on Ubuntu.
   gtk_window_util::DisableResizeGrip(window_);
@@ -980,6 +973,17 @@ void PanelGtk::EnsurePanelFullyVisible() {
 
 void PanelGtk::SetPanelAlwaysOnTop(bool on_top) {
   gtk_window_set_keep_above(window_, on_top);
+
+  // Do not show an icon in the task bar for always-on-top windows.
+  // Window operations such as close, minimize etc. can only be done
+  // from the panel UI.
+  gtk_window_set_skip_taskbar_hint(window_, on_top);
+
+  // Show always-on-top windows on all the virtual desktops.
+  if (on_top)
+    gtk_window_stick(window_);
+  else
+    gtk_window_unstick(window_);
 }
 
 void PanelGtk::EnableResizeByMouse(bool enable) {
