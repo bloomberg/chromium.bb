@@ -569,8 +569,6 @@ void NetworkIcon::GenerateImage() {
 }
 
 bool NetworkIcon::ShouldShowInTray() const {
-  if (type_ == TYPE_VPN)
-    return false;
   if (type_ != TYPE_ETHERNET)
     return true;
   if (!Network::IsConnectedState(state_))
