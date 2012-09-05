@@ -69,7 +69,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/gdata/gdata_protocol_handler.h"
+#include "chrome/browser/chromeos/gdata/drive_protocol_handler.h"
 #include "chrome/browser/chromeos/gview_request_interceptor.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -613,7 +613,7 @@ void ProfileIOData::SetUpJobFactoryDefaults(
 #if defined(OS_CHROMEOS)
   if (!is_incognito()) {
     set_protocol = job_factory->SetProtocolHandler(
-        chrome::kDriveScheme, new gdata::GDataProtocolHandler());
+        chrome::kDriveScheme, new gdata::DriveProtocolHandler());
     DCHECK(set_protocol);
   }
 #if !defined(GOOGLE_CHROME_BUILD)

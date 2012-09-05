@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/gdata/gdata_protocol_handler.h"
+#include "chrome/browser/chromeos/gdata/drive_protocol_handler.h"
 
 #include <algorithm>
 #include <string>
@@ -116,20 +116,20 @@ void GetFileSystemOnUIThread(DriveFileSystemInterface** file_system) {
   *file_system = system_service ? system_service->file_system() : NULL;
 }
 
-// Helper function to cancel GData download operation on UI thread.
-void CancelGDataDownloadOnUIThread(const FilePath& gdata_file_path) {
+// Helper function to cancel Drive download operation on UI thread.
+void CancelDriveDownloadOnUIThread(const FilePath& gdata_file_path) {
   DriveSystemService* system_service = GetSystemService();
   if (system_service)
     system_service->drive_service()->operation_registry()->CancelForFilePath(
         gdata_file_path);
 }
 
-// GDataURLRequesetJob is the gateway between network-level drive://...
-// requests for gdata resources and GDataFileSytem.  It exposes content URLs
+// DriveURLRequesetJob is the gateway between network-level drive://...
+// requests for gdata resources and DriveFileSytem.  It exposes content URLs
 // formatted as drive://<resource-id>.
-class GDataURLRequestJob : public net::URLRequestJob {
+class DriveURLRequestJob : public net::URLRequestJob {
  public:
-  GDataURLRequestJob(net::URLRequest* request,
+  DriveURLRequestJob(net::URLRequest* request,
                      net::NetworkDelegate* network_delegate);
 
   // net::URLRequestJob overrides:
@@ -143,7 +143,7 @@ class GDataURLRequestJob : public net::URLRequestJob {
                            int* bytes_read) OVERRIDE;
 
  protected:
-  virtual ~GDataURLRequestJob();
+  virtual ~DriveURLRequestJob();
 
  private:
   // Helper for Start() to let us start asynchronously.
@@ -222,11 +222,11 @@ class GDataURLRequestJob : public net::URLRequestJob {
 
   // This should remain the last member so it'll be destroyed first and
   // invalidate its weak pointers before other members are destroyed.
-  base::WeakPtrFactory<GDataURLRequestJob> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(GDataURLRequestJob);
+  base::WeakPtrFactory<DriveURLRequestJob> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(DriveURLRequestJob);
 };
 
-GDataURLRequestJob::GDataURLRequestJob(net::URLRequest* request,
+DriveURLRequestJob::DriveURLRequestJob(net::URLRequest* request,
                                        net::NetworkDelegate* network_delegate)
     : net::URLRequestJob(request, network_delegate),
       file_system_(NULL),
@@ -242,7 +242,7 @@ GDataURLRequestJob::GDataURLRequestJob(net::URLRequest* request,
       download_growable_buf_, download_growable_buf_->capacity());
 }
 
-void GDataURLRequestJob::Start() {
+void DriveURLRequestJob::Start() {
   DVLOG(1) << "Starting request";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -275,7 +275,7 @@ void GDataURLRequestJob::Start() {
   //                                     GetContentCallback.
   //         - OnURLFetchDownloadData(): invokes non-null
   //                                     GetContentCallback
-  //    7.3) GDataProtolHandler::OnURLFetchDownloadData (i.e. this class)
+  //    7.3) DriveProtolHandler::OnURLFetchDownloadData (i.e. this class)
   //         is at the end of the invocation chain and actually implements the
   //         method.
   //    7.4) Copies the formal download data into a growable-drainable dowload
@@ -308,12 +308,12 @@ void GDataURLRequestJob::Start() {
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(&GetFileSystemOnUIThread, file_system),
-      base::Bind(&GDataURLRequestJob::StartAsync,
+      base::Bind(&DriveURLRequestJob::StartAsync,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Owned(file_system)));
 }
 
-void GDataURLRequestJob::Kill() {
+void DriveURLRequestJob::Kill() {
   DVLOG(1) << "Killing request";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -336,7 +336,7 @@ void GDataURLRequestJob::Kill() {
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
-        base::Bind(&CancelGDataDownloadOnUIThread,
+        base::Bind(&CancelDriveDownloadOnUIThread,
                    gdata_file_path_));
   }
 
@@ -344,19 +344,19 @@ void GDataURLRequestJob::Kill() {
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
-bool GDataURLRequestJob::GetMimeType(std::string* mime_type) const {
+bool DriveURLRequestJob::GetMimeType(std::string* mime_type) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   mime_type->assign(FixupMimeType(mime_type_));
   return !mime_type->empty();
 }
 
-void GDataURLRequestJob::GetResponseInfo(net::HttpResponseInfo* info) {
+void DriveURLRequestJob::GetResponseInfo(net::HttpResponseInfo* info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (response_info_.get())
     *info = *response_info_;
 }
 
-int GDataURLRequestJob::GetResponseCode() const {
+int DriveURLRequestJob::GetResponseCode() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!response_info_.get())
     return -1;
@@ -364,7 +364,7 @@ int GDataURLRequestJob::GetResponseCode() const {
   return response_info_->headers->response_code();
 }
 
-bool GDataURLRequestJob::ReadRawData(net::IOBuffer* dest,
+bool DriveURLRequestJob::ReadRawData(net::IOBuffer* dest,
                                      int dest_size,
                                      int* bytes_read) {
   // ReadRawData splits into 2 logic paths: streaming downloaded file or reading
@@ -465,15 +465,15 @@ bool GDataURLRequestJob::ReadRawData(net::IOBuffer* dest,
   return rc;
 }
 
-//======================= GDataURLRequestJob protected methods ================
+//======================= DriveURLRequestJob protected methods ================
 
-GDataURLRequestJob::~GDataURLRequestJob() {
+DriveURLRequestJob::~DriveURLRequestJob() {
   CloseFileStream();
 }
 
-//======================= GDataURLRequestJob private methods ===================
+//======================= DriveURLRequestJob private methods ===================
 
-void GDataURLRequestJob::StartAsync(DriveFileSystemInterface** file_system) {
+void DriveURLRequestJob::StartAsync(DriveFileSystemInterface** file_system) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   file_system_ = *file_system;
@@ -503,12 +503,12 @@ void GDataURLRequestJob::StartAsync(DriveFileSystemInterface** file_system) {
 
   file_system_->GetEntryInfoByResourceId(
       resource_id,
-      base::Bind(&GDataURLRequestJob::OnGetEntryInfoByResourceId,
+      base::Bind(&DriveURLRequestJob::OnGetEntryInfoByResourceId,
                  weak_ptr_factory_.GetWeakPtr(),
                  resource_id));
 }
 
-void GDataURLRequestJob::OnGetEntryInfoByResourceId(
+void DriveURLRequestJob::OnGetEntryInfoByResourceId(
     const std::string& resource_id,
     DriveFileError error,
     const FilePath& gdata_file_path,
@@ -531,13 +531,13 @@ void GDataURLRequestJob::OnGetEntryInfoByResourceId(
   DVLOG(1) << "Getting file for resource id";
   file_system_->GetFileByResourceId(
       resource_id,
-      base::Bind(&GDataURLRequestJob::OnGetFileByResourceId,
+      base::Bind(&DriveURLRequestJob::OnGetFileByResourceId,
                  weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&GDataURLRequestJob::OnUrlFetchDownloadData,
+      base::Bind(&DriveURLRequestJob::OnUrlFetchDownloadData,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void GDataURLRequestJob::OnUrlFetchDownloadData(
+void DriveURLRequestJob::OnUrlFetchDownloadData(
     GDataErrorCode error,
     scoped_ptr<std::string> download_data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -594,7 +594,7 @@ void GDataURLRequestJob::OnUrlFetchDownloadData(
   }
 }
 
-bool GDataURLRequestJob::ContinueReadFromDownloadData(int* bytes_read) {
+bool DriveURLRequestJob::ContinueReadFromDownloadData(int* bytes_read) {
   // Continue to read if there's more to read from download data or read buffer
   // is not filled up.
   if (remaining_bytes_ > 0 && read_buf_->BytesRemaining() > 0) {
@@ -614,7 +614,7 @@ bool GDataURLRequestJob::ContinueReadFromDownloadData(int* bytes_read) {
   return true;
 }
 
-bool GDataURLRequestJob::ReadFromDownloadData() {
+bool DriveURLRequestJob::ReadFromDownloadData() {
   DCHECK(streaming_download_);
 
   // If download buffer is empty or there's no read buffer, return false.
@@ -655,7 +655,7 @@ bool GDataURLRequestJob::ReadFromDownloadData() {
   return read_buf_->BytesRemaining() == 0 || remaining_bytes_ == 0;
 }
 
-void GDataURLRequestJob::OnGetFileByResourceId(
+void DriveURLRequestJob::OnGetFileByResourceId(
     DriveFileError error,
     const FilePath& local_file_path,
     const std::string& mime_type,
@@ -685,12 +685,12 @@ void GDataURLRequestJob::OnGetFileByResourceId(
       base::Bind(&GetFileSizeOnBlockingPool,
                  local_file_path_,
                  base::Unretained(file_size)),
-      base::Bind(&GDataURLRequestJob::OnGetFileSize,
+      base::Bind(&DriveURLRequestJob::OnGetFileSize,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Owned(file_size)));
 }
 
-void GDataURLRequestJob::OnGetFileSize(int64 *file_size) {
+void DriveURLRequestJob::OnGetFileSize(int64 *file_size) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (*file_size == kInvalidFileSize) {
@@ -706,7 +706,7 @@ void GDataURLRequestJob::OnGetFileSize(int64 *file_size) {
   NotifySuccess();
 }
 
-bool GDataURLRequestJob::ContinueReadFromFile(int* bytes_read) {
+bool DriveURLRequestJob::ContinueReadFromFile(int* bytes_read) {
   // Continue to read if there's more to read from file or read buffer is not
   // filled up.
   if (remaining_bytes_ > 0 && read_buf_->BytesRemaining() > 0) {
@@ -723,7 +723,7 @@ bool GDataURLRequestJob::ContinueReadFromFile(int* bytes_read) {
   return true;
 }
 
-void GDataURLRequestJob::ReadFromFile() {
+void DriveURLRequestJob::ReadFromFile() {
   int bytes_to_read = std::min(read_buf_->BytesRemaining(),
                                static_cast<int>(remaining_bytes_));
 
@@ -739,7 +739,7 @@ void GDataURLRequestJob::ReadFromFile() {
       local_file_path_,
       base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ |
       base::PLATFORM_FILE_ASYNC,
-      base::Bind(&GDataURLRequestJob::OnFileOpen,
+      base::Bind(&DriveURLRequestJob::OnFileOpen,
                  weak_ptr_factory_.GetWeakPtr(),
                  bytes_to_read));
 
@@ -754,7 +754,7 @@ void GDataURLRequestJob::ReadFromFile() {
   }
 }
 
-void GDataURLRequestJob::OnFileOpen(int bytes_to_read, int open_result) {
+void DriveURLRequestJob::OnFileOpen(int bytes_to_read, int open_result) {
   if (open_result != net::OK) {
     LOG(WARNING) << "Failed to open " << local_file_path_.value();
     NotifyFailure(net::ERR_FILE_NOT_FOUND);
@@ -768,13 +768,13 @@ void GDataURLRequestJob::OnFileOpen(int bytes_to_read, int open_result) {
   ReadFileStream(bytes_to_read);
 }
 
-void GDataURLRequestJob::ReadFileStream(int bytes_to_read) {
+void DriveURLRequestJob::ReadFileStream(int bytes_to_read) {
   DCHECK(stream_.get());
   DCHECK(stream_->IsOpen());
   DCHECK_GE(read_buf_->BytesRemaining(), bytes_to_read);
 
   int result = stream_->Read(read_buf_, bytes_to_read,
-                             base::Bind(&GDataURLRequestJob::OnReadFileStream,
+                             base::Bind(&DriveURLRequestJob::OnReadFileStream,
                                         weak_ptr_factory_.GetWeakPtr()));
 
   // If IO is pending, we just need to wait.
@@ -792,7 +792,7 @@ void GDataURLRequestJob::ReadFileStream(int bytes_to_read) {
   }
 }
 
-void GDataURLRequestJob::OnReadFileStream(int bytes_read) {
+void DriveURLRequestJob::OnReadFileStream(int bytes_read) {
   if (bytes_read <= 0) {
     LOG(WARNING) << "Failed to read " << local_file_path_.value();
     NotifyFailure(net::ERR_FAILED);
@@ -825,13 +825,13 @@ void GDataURLRequestJob::OnReadFileStream(int bytes_read) {
   }
 }
 
-int GDataURLRequestJob::BytesReadCompleted() {
+int DriveURLRequestJob::BytesReadCompleted() {
   int bytes_read = read_buf_->BytesConsumed();
   read_buf_ = NULL;
   return bytes_read;
 }
 
-void GDataURLRequestJob::RecordBytesRead(int bytes_read) {
+void DriveURLRequestJob::RecordBytesRead(int bytes_read) {
   DCHECK_GT(bytes_read, 0);
 
   // Subtract the remaining bytes.
@@ -843,7 +843,7 @@ void GDataURLRequestJob::RecordBytesRead(int bytes_read) {
   DCHECK_GE(read_buf_->BytesRemaining(), 0);
 }
 
-void GDataURLRequestJob::CloseFileStream() {
+void DriveURLRequestJob::CloseFileStream() {
   if (!stream_.get())
     return;
   stream_->Close(base::Bind(&EmptyCompletionCallback));
@@ -852,11 +852,11 @@ void GDataURLRequestJob::CloseFileStream() {
   stream_.reset(NULL);
 }
 
-void GDataURLRequestJob::NotifySuccess() {
+void DriveURLRequestJob::NotifySuccess() {
   HeadersCompleted(kHTTPOk, kHTTPOkText);
 }
 
-void GDataURLRequestJob::NotifyFailure(int error_code) {
+void DriveURLRequestJob::NotifyFailure(int error_code) {
   error_ = true;
 
   // If we already return the headers on success, we can't change the headers
@@ -892,7 +892,7 @@ void GDataURLRequestJob::NotifyFailure(int error_code) {
   HeadersCompleted(status_code, status_txt);
 }
 
-void GDataURLRequestJob::HeadersCompleted(int status_code,
+void DriveURLRequestJob::HeadersCompleted(int status_code,
                                           const std::string& status_text) {
   std::string status("HTTP/1.1 ");
   status.append(base::IntToString(status_code));
@@ -927,18 +927,18 @@ void GDataURLRequestJob::HeadersCompleted(int status_code,
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
-// GDataProtocolHandler class
+// DriveProtocolHandler class
 
-GDataProtocolHandler::GDataProtocolHandler() {
+DriveProtocolHandler::DriveProtocolHandler() {
 }
 
-GDataProtocolHandler::~GDataProtocolHandler() {
+DriveProtocolHandler::~DriveProtocolHandler() {
 }
 
-net::URLRequestJob* GDataProtocolHandler::MaybeCreateJob(
+net::URLRequestJob* DriveProtocolHandler::MaybeCreateJob(
     net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
   DVLOG(1) << "Handling url: " << request->url().spec();
-  return new GDataURLRequestJob(request, network_delegate);
+  return new DriveURLRequestJob(request, network_delegate);
 }
 
 }  // namespace gdata
