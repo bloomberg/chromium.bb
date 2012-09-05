@@ -285,6 +285,9 @@ extern const char kInternetOptionsSubPage[];
 extern const char kBluetoothAddDeviceSubPage[];
 #endif
 
+// Extensions sub pages.
+extern const char kExtensionConfigureCommandsSubPage[];
+
 extern const char kSyncGoogleDashboardURL[];
 
 // "Learn more" URL for the auto password generation.

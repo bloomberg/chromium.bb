@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/views/browser_action_view.h"
 #include "chrome/browser/ui/views/browser_actions_container.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -27,6 +28,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/chromium_strings.h"
@@ -102,7 +104,8 @@ class InstalledBubbleContent : public views::View,
         bubble_(bubble),
         type_(type),
         info_(NULL),
-        manage_(NULL) {
+        manage_(NULL),
+       manage_shortcut_(NULL) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     const gfx::Font& font = rb.GetFont(ui::ResourceBundle::BaseFont);
 
@@ -167,6 +170,10 @@ class InstalledBubbleContent : public views::View,
         info_->SetMultiLine(true);
         info_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
         AddChildView(info_);
+
+        manage_shortcut_ = new views::Link(
+            l10n_util::GetStringUTF16(
+            IDS_EXTENSION_INSTALLED_MANAGE_SHORTCUTS));
         break;
       }
       case ExtensionInstalledBubble::PAGE_ACTION: {
@@ -186,6 +193,9 @@ class InstalledBubbleContent : public views::View,
           info_ = new views::Label(l10n_util::GetStringFUTF16(
               IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO_WITH_SHORTCUT,
               page_action_command.accelerator().GetShortcutText()));
+          manage_shortcut_ = new views::Link(
+              l10n_util::GetStringUTF16(
+                  IDS_EXTENSION_INSTALLED_MANAGE_SHORTCUTS));
         }
 
         info_->SetFont(font);
@@ -220,7 +230,8 @@ class InstalledBubbleContent : public views::View,
     }
 
     if (has_keybinding) {
-      // TODO(finnur): Show the shortcut link.
+      manage_shortcut_->set_listener(this);
+      AddChildView(manage_shortcut_);
     } else if (type_ != ExtensionInstalledBubble::APP) {
       manage_ = new views::Label(
           l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_MANAGE_INFO));
@@ -250,7 +261,16 @@ class InstalledBubbleContent : public views::View,
   // Implements the views::LinkListener interface.
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE {
     GetWidget()->Close();
-    ExtensionInstallUI::OpenAppInstalledUI(browser_, extension_id_);
+    if (source == manage_shortcut_) {
+      std::string configure_url = chrome::kChromeUIExtensionsURL;
+      configure_url += chrome::kExtensionConfigureCommandsSubPage;
+      chrome::NavigateParams params(
+          chrome::GetSingletonTabNavigateParams(
+              browser_, GURL(configure_url.c_str())));
+      chrome::Navigate(&params);
+    } else {
+      ExtensionInstallUI::OpenAppInstalledUI(browser_, extension_id_);
+    }
   }
 
  private:
@@ -272,6 +292,11 @@ class InstalledBubbleContent : public views::View,
 
     if (manage_) {
       height += manage_->GetHeightForWidth(kRightColumnWidth);
+      height += kVertOuterMargin;
+    }
+
+    if (manage_shortcut_) {
+      height += manage_shortcut_->GetHeightForWidth(kRightColumnWidth);
       height += kVertOuterMargin;
     }
 
@@ -309,6 +334,16 @@ class InstalledBubbleContent : public views::View,
       y += kVertInnerMargin;
     }
 
+    if (manage_shortcut_) {
+      gfx::Size sz = manage_shortcut_->GetPreferredSize();
+      manage_shortcut_->SetBounds(width() - 2 * kHorizOuterMargin - sz.width(),
+                                  y,
+                                  sz.width(),
+                                  sz.height());
+      y += manage_shortcut_->height();
+      y += kVertInnerMargin;
+    }
+
     gfx::Size sz;
     x += kRightColumnWidth + 2 * views::kPanelHorizMargin + kHorizOuterMargin -
         close_button_->GetPreferredSize().width();
@@ -333,6 +368,7 @@ class InstalledBubbleContent : public views::View,
   views::Label* heading_;
   views::Label* info_;
   views::Label* manage_;
+  views::Link* manage_shortcut_;
   views::ImageButton* close_button_;
 
   DISALLOW_COPY_AND_ASSIGN(InstalledBubbleContent);

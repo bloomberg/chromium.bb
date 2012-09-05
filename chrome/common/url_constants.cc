@@ -298,6 +298,9 @@ const char kInternetOptionsSubPage[] = "internet";
 const char kBluetoothAddDeviceSubPage[] = "bluetooth";
 #endif
 
+// Extension sub pages.
+const char kExtensionConfigureCommandsSubPage[] = "configureCommands";
+
 const char kSyncGoogleDashboardURL[] = "https://www.google.com/dashboard/";
 
 const char kAutoPasswordGenerationLearnMoreURL[] =

@@ -80,6 +80,9 @@ class ExtensionInstalledBubbleGtk
   static void OnButtonClick(GtkWidget* button,
                             ExtensionInstalledBubbleGtk* toolbar);
 
+  // Link button callbacks.
+  CHROMEGTK_CALLBACK_0(ExtensionInstalledBubbleGtk, void, OnLinkClicked);
+
   const extensions::Extension* extension_;
   Browser* browser_;
   SkBitmap icon_;

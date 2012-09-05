@@ -21,9 +21,11 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
+#include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/chromium_strings.h"
@@ -292,7 +294,14 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
   }
 
   if (has_keybinding) {
-    // TODO(finnur): Show the shortcut link.
+    GtkWidget* manage_link = theme_provider->BuildChromeLinkButton(
+        l10n_util::GetStringUTF8(IDS_EXTENSION_INSTALLED_MANAGE_SHORTCUTS));
+    GtkWidget* link_hbox = gtk_hbox_new(FALSE, 0);
+    // Stick it in an hbox so it doesn't expand to the whole width.
+    gtk_box_pack_end(GTK_BOX(link_hbox), manage_link, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(text_column), link_hbox, FALSE, FALSE, 0);
+    g_signal_connect(manage_link, "clicked",
+                     G_CALLBACK(OnLinkClickedThunk), this);
   } else {
     // Manage label.
     GtkWidget* manage_label = gtk_label_new(
@@ -349,6 +358,18 @@ void ExtensionInstalledBubbleGtk::OnButtonClick(GtkWidget* button,
     NOTREACHED();
   }
 }
+
+void ExtensionInstalledBubbleGtk::OnLinkClicked(GtkWidget* widget) {
+  bubble_->Close();
+
+  std::string configure_url = chrome::kChromeUIExtensionsURL;
+  configure_url += chrome::kExtensionConfigureCommandsSubPage;
+  chrome::NavigateParams params(
+      chrome::GetSingletonTabNavigateParams(
+      browser_, GURL(configure_url.c_str())));
+  chrome::Navigate(&params);
+}
+
 void ExtensionInstalledBubbleGtk::BubbleClosing(BubbleGtk* bubble,
                                                 bool closed_by_escape) {
   if (extension_ && type_ == PAGE_ACTION) {
