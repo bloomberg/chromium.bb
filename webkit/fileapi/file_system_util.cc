@@ -12,7 +12,6 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/escape.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
@@ -31,62 +30,6 @@ const char kTemporaryName[] = "Temporary";
 const char kIsolatedName[] = "Isolated";
 const char kExternalName[] = "External";
 const char kTestName[] = "Test";
-
-bool CrackFileSystemURL(const GURL& url, GURL* origin_url, FileSystemType* type,
-                        FilePath* file_path) {
-  GURL origin;
-  FileSystemType file_system_type = kFileSystemTypeUnknown;
-
-  if (!url.is_valid() || !url.SchemeIsFileSystem())
-    return false;
-  DCHECK(url.inner_url());
-
-  std::string inner_path = url.inner_url()->path();
-
-  const struct {
-    FileSystemType type;
-    const char* dir;
-  } kValidTypes[] = {
-    { kFileSystemTypePersistent, kPersistentDir },
-    { kFileSystemTypeTemporary, kTemporaryDir },
-    { kFileSystemTypeIsolated, kIsolatedDir },
-    { kFileSystemTypeExternal, kExternalDir },
-    { kFileSystemTypeTest, kTestDir },
-  };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kValidTypes); ++i) {
-    if (StartsWithASCII(inner_path, kValidTypes[i].dir, true)) {
-      file_system_type = kValidTypes[i].type;
-      break;
-    }
-  }
-
-  if (file_system_type == kFileSystemTypeUnknown)
-    return false;
-
-  std::string path = net::UnescapeURLComponent(url.path(),
-      net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS |
-      net::UnescapeRule::CONTROL_CHARS);
-
-  // Ensure the path is relative.
-  while (!path.empty() && path[0] == '/')
-    path.erase(0, 1);
-
-  FilePath converted_path = FilePath::FromUTF8Unsafe(path);
-
-  // All parent references should have been resolved in the renderer.
-  if (converted_path.ReferencesParent())
-    return false;
-
-  if (origin_url)
-    *origin_url = url.GetOrigin();
-  if (type)
-    *type = file_system_type;
-  if (file_path)
-    *file_path = converted_path.NormalizePathSeparators().
-        StripTrailingSeparators();
-
-  return true;
-}
 
 // TODO(ericu): Consider removing support for '\', even on Windows, if possible.
 // There's a lot of test code that will need reworking, and we may have trouble

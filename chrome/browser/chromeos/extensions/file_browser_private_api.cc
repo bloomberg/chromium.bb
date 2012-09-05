@@ -757,11 +757,9 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
     if (mime_types_list->GetSize() != 0 &&
         !mime_types_list->GetString(i, &info.mime_type))
       return false;
-    fileapi::FileSystemType type = fileapi::kFileSystemTypeUnknown;
-    FilePath file_path;
-    if (fileapi::CrackFileSystemURL(info.file_url, NULL, &type, &file_path) &&
-        type == fileapi::kFileSystemTypeExternal) {
-      info.file_path = file_path;
+    fileapi::FileSystemURL file_system_url(info.file_url);
+    if (chromeos::CrosMountPointProvider::CanHandleURL(file_system_url)) {
+      info.file_path = file_system_url.path();
     }
     info_list.push_back(info);
   }

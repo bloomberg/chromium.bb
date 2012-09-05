@@ -23,26 +23,12 @@ extern const char kPersistentDir[];
 extern const char kTemporaryDir[];
 extern const char kExternalDir[];
 extern const char kIsolatedDir[];
+extern const char kTestDir[];
 extern const char kPersistentName[];
 extern const char kTemporaryName[];
 extern const char kExternalName[];
 extern const char kIsolatedName[];
-
-// Cracks the given filesystem |url| and populates |origin_url|, |type|
-// and |file_path|.  Returns true if the given |url| is a valid filesystem
-// url and the routine could successfully crack it, returns false otherwise.
-// The file_path this returns will be using '/' as a path separator, no matter
-// what platform you're on.
-// TODO(ericu): Look into making file_path [and all FileSystem API virtual
-// paths] just an std::string, to prevent platform-specific FilePath behavior
-// from getting invoked by accident.  Currently the FilePath returned here needs
-// special treatment, as it may contain paths that are illegal on the current
-// platform.  To avoid problems, use VirtualPath::BaseName and
-// VirtualPath::GetComponents instead of the FilePath methods.
-FILEAPI_EXPORT bool CrackFileSystemURL(const GURL& url,
-                                       GURL* origin_url,
-                                       FileSystemType* type,
-                                       FilePath* file_path);
+extern const char kTestName[];
 
 class FILEAPI_EXPORT VirtualPath {
  public:

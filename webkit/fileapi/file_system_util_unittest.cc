@@ -12,72 +12,7 @@
 namespace fileapi {
 namespace {
 
-class FileSystemUtilTest : public testing::Test {
- protected:
-  bool CrackFileSystemURL(const char* url) {
-    return fileapi::CrackFileSystemURL(
-        GURL(url), &origin_url_, &type_, &file_path_);
-  }
-
-  GURL origin_url_;
-  FileSystemType type_;
-  FilePath file_path_;
-};
-
-TEST_F(FileSystemUtilTest, ParsePersistent) {
-  ASSERT_TRUE(CrackFileSystemURL(
-      "filesystem:http://chromium.org/persistent/directory/file"));
-  EXPECT_EQ("http://chromium.org/", origin_url_.spec());
-  EXPECT_EQ(kFileSystemTypePersistent, type_);
-  EXPECT_EQ(FILE_PATH_LITERAL("file"),
-      VirtualPath::BaseName(file_path_).value());
-  EXPECT_EQ(FILE_PATH_LITERAL("directory"), file_path_.DirName().value());
-}
-
-TEST_F(FileSystemUtilTest, ParseTemporary) {
-  ASSERT_TRUE(CrackFileSystemURL(
-      "filesystem:http://chromium.org/temporary/directory/file"));
-  EXPECT_EQ("http://chromium.org/", origin_url_.spec());
-  EXPECT_EQ(kFileSystemTypeTemporary, type_);
-  EXPECT_EQ(FILE_PATH_LITERAL("file"),
-      VirtualPath::BaseName(file_path_).value());
-  EXPECT_EQ(FILE_PATH_LITERAL("directory"), file_path_.DirName().value());
-}
-
-TEST_F(FileSystemUtilTest, EnsureFilePathIsRelative) {
-  ASSERT_TRUE(CrackFileSystemURL(
-      "filesystem:http://chromium.org/temporary/////directory/file"));
-  EXPECT_EQ("http://chromium.org/", origin_url_.spec());
-  EXPECT_EQ(kFileSystemTypeTemporary, type_);
-  EXPECT_EQ(FILE_PATH_LITERAL("file"),
-      VirtualPath::BaseName(file_path_).value());
-  EXPECT_EQ(FILE_PATH_LITERAL("directory"), file_path_.DirName().value());
-  EXPECT_FALSE(file_path_.IsAbsolute());
-}
-
-TEST_F(FileSystemUtilTest, RejectBadSchemes) {
-  EXPECT_FALSE(CrackFileSystemURL("http://chromium.org/"));
-  EXPECT_FALSE(CrackFileSystemURL("https://chromium.org/"));
-  EXPECT_FALSE(CrackFileSystemURL("file:///foo/bar"));
-  EXPECT_FALSE(CrackFileSystemURL("foobar:///foo/bar"));
-}
-
-TEST_F(FileSystemUtilTest, UnescapePath) {
-  ASSERT_TRUE(CrackFileSystemURL(
-      "filesystem:http://chromium.org/persistent/%7Echromium/space%20bar"));
-  EXPECT_EQ(FILE_PATH_LITERAL("space bar"),
-      VirtualPath::BaseName(file_path_).value());
-  EXPECT_EQ(FILE_PATH_LITERAL("~chromium"), file_path_.DirName().value());
-}
-
-TEST_F(FileSystemUtilTest, RejectBadType) {
-  EXPECT_FALSE(CrackFileSystemURL("filesystem:http://c.org/foobar/file"));
-}
-
-TEST_F(FileSystemUtilTest, RejectMalformedURL) {
-  EXPECT_FALSE(CrackFileSystemURL("filesystem:///foobar/file"));
-  EXPECT_FALSE(CrackFileSystemURL("filesystem:foobar/file"));
-}
+class FileSystemUtilTest : public testing::Test {};
 
 TEST_F(FileSystemUtilTest, GetTempFileSystemRootURI) {
   GURL origin_url("http://chromium.org");

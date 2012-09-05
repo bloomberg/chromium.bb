@@ -395,6 +395,7 @@
         '../webkit/fileapi/file_system_mount_point_provider_unittest.cc',
         '../webkit/fileapi/file_system_origin_database_unittest.cc',
         '../webkit/fileapi/file_system_quota_client_unittest.cc',
+        '../webkit/fileapi/file_system_url_unittest.cc',
         '../webkit/fileapi/file_system_url_request_job_unittest.cc',
         '../webkit/fileapi/file_system_usage_cache_unittest.cc',
         '../webkit/fileapi/file_system_util_unittest.cc',
