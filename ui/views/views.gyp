@@ -18,6 +18,9 @@
                       ['exclude', '_x\\.(h|cc)$'] ],
         'dependencies': [ '../aura/aura.gyp:aura', ],
       }],
+      ['OS!="linux" or chromeos==1', {
+        'sources/': [ ['exclude', '_linux\\.(h|cc)$'] ],
+      }],
     ],
   },
   'targets': [
@@ -310,8 +313,15 @@
         'widget/child_window_message_processor.h',
         'widget/default_theme_provider.cc',
         'widget/default_theme_provider.h',
+        'widget/desktop_native_widget_aura.cc',
+        'widget/desktop_native_widget_aura.h',
         'widget/desktop_native_widget_helper_aura.cc',
         'widget/desktop_native_widget_helper_aura.h',
+        'widget/desktop_root_window_host.h',
+        'widget/desktop_root_window_host_linux.cc',
+        'widget/desktop_root_window_host_linux.h',
+        'widget/desktop_root_window_host_win.cc',
+        'widget/desktop_root_window_host_win.h',
         'widget/drop_helper.cc',
         'widget/drop_helper.h',
         'widget/drop_target_win.cc',
@@ -408,11 +418,33 @@
                 ['exclude', 'widget/tooltip_manager_views.cc'],
               ],
             }],
+            ['OS=="win"', {
+              'sources/': [
+                ['include', 'widget/desktop_root_window_host_win.cc'],
+                ['include', 'widget/desktop_root_window_host_win.h'],
+              ],
+            }],
+          ],
+        }],
+        ['chromeos==1', {
+          'sources!': [
+            'widget/desktop_root_window_host.h',
+            'widget/desktop_root_window_host_linux.cc',
+            'widget/desktop_root_window_host_linux.h',
+            'widget/desktop_native_widget_aura.cc',
+            'widget/desktop_native_widget_aura.h',
           ],
         }],
         ['use_aura==0', {
           'sources!': [
             'widget/tooltip_manager_views.cc',
+            'widget/desktop_root_window_host.h',
+            'widget/desktop_root_window_host_linux.cc',
+            'widget/desktop_root_window_host_linux.h',
+            'widget/desktop_root_window_host_win.cc',
+            'widget/desktop_root_window_host_win.h',
+            'widget/desktop_native_widget_aura.cc',
+            'widget/desktop_native_widget_aura.h',
           ],
         }],
         ['use_aura==0 and OS=="win"', {

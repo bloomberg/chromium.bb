@@ -8,10 +8,17 @@
 #include "ui/views/views_export.h"
 
 namespace gfx {
+class Canvas;
 class Insets;
 class Path;
 class Point;
 class Size;
+}
+
+namespace ui {
+class Accelerator;
+class KeyEvent;
+class MouseEvent;
 }
 
 namespace views {
