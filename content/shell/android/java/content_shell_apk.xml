@@ -10,6 +10,12 @@
   </description>
   <import file="../../../../build/android/ant/common.xml"/>
   <import file="../../../../build/android/ant/sdk-targets.xml"/>
+
+  <!-- Convert the buildtype to lowercase. E.g Debug -> debug, Release -> release.  -->
+  <script language="javascript">
+    project.setProperty("configuration.name",
+                        project.getProperty("CONFIGURATION_NAME").toLowerCase())
+  </script>
   <property-value name="target.abi" value="${APP_ABI}"/>
   <property-location name="out.dir" location="${PRODUCT_DIR}/content_shell"
       check-exists="false"/>
