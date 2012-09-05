@@ -274,20 +274,16 @@ jboolean ContentViewCoreImpl::TouchEvent(JNIEnv* env,
   return false;
 }
 
-void ContentViewCoreImpl::SendGestureEvent(WebInputEvent::Type type,
-                                           long time_ms, int x, int y,
-                                           float dx, float dy,
-                                           bool disambiguation_popup_tap) {
-  WebKit::WebGestureEvent event = WebInputEventFactory::gestureEvent(
-      type, time_ms / 1000.0, x, y, dx, dy, 0);
-
+int ContentViewCoreImpl::GetTouchPadding()
+{
   // TODO(trchen): derive a proper padding value from device dpi
-  const int touchPadding = 48;
-  if ((type == WebInputEvent::GestureTap
-      || type == WebInputEvent::GestureLongPress)
-      && !disambiguation_popup_tap)
-    event.boundingBox = WebKit::WebRect(x - touchPadding, y - touchPadding,
-                                        2 * touchPadding, 2 * touchPadding);
+  return 48;
+}
+
+void ContentViewCoreImpl::SendGestureEvent(WebInputEvent::Type type,
+                                           long time_ms, int x, int y) {
+  WebKit::WebGestureEvent event = WebInputEventFactory::gestureEvent(
+      type, time_ms / 1000.0, x, y, 0, 0, 0);
 
   if (GetRenderWidgetHostViewAndroid())
     GetRenderWidgetHostViewAndroid()->GestureEvent(event);
@@ -296,75 +292,110 @@ void ContentViewCoreImpl::SendGestureEvent(WebInputEvent::Type type,
 void ContentViewCoreImpl::ScrollBegin(JNIEnv* env, jobject obj, jlong time_ms,
                                       jint x, jint y) {
   SendGestureEvent(
-      WebInputEvent::GestureScrollBegin, time_ms, x, y, 0, 0, false);
+      WebInputEvent::GestureScrollBegin, time_ms, x, y);
 }
 
 void ContentViewCoreImpl::ScrollEnd(JNIEnv* env, jobject obj, jlong time_ms) {
-  SendGestureEvent(WebInputEvent::GestureScrollEnd, time_ms, 0, 0, 0, 0, false);
+  SendGestureEvent(WebInputEvent::GestureScrollEnd, time_ms, 0, 0);
 }
 
 void ContentViewCoreImpl::ScrollBy(JNIEnv* env, jobject obj, jlong time_ms,
                                    jint x, jint y, jint dx, jint dy) {
-  SendGestureEvent(
-      WebInputEvent::GestureScrollUpdate, time_ms, x, y, -dx, -dy, false);
+  // TODO(rbyers): Stop setting generic deltaX/deltaY, crbug.com/143237
+  WebKit::WebGestureEvent event = WebInputEventFactory::gestureEvent(
+      WebInputEvent::GestureScrollUpdate, time_ms / 1000.0, x, y, -dx, -dy, 0);
+
+  event.data.scrollUpdate.deltaX = -dx;
+  event.data.scrollUpdate.deltaY = -dy;
+
+  if (GetRenderWidgetHostViewAndroid())
+    GetRenderWidgetHostViewAndroid()->GestureEvent(event);
 }
 
 void ContentViewCoreImpl::FlingStart(JNIEnv* env, jobject obj, jlong time_ms,
                                      jint x, jint y, jint vx, jint vy) {
-  SendGestureEvent(
-      WebInputEvent::GestureFlingStart, time_ms, x, y, vx, vy, false);
+  WebKit::WebGestureEvent event = WebInputEventFactory::gestureEvent(
+      WebInputEvent::GestureFlingStart, time_ms / 1000.0, x, y, vx, vy, 0);
+  event.data.flingStart.velocityX = vx;
+  event.data.flingStart.velocityY = vy;
+
+  if (GetRenderWidgetHostViewAndroid())
+    GetRenderWidgetHostViewAndroid()->GestureEvent(event);
 }
 
 void ContentViewCoreImpl::FlingCancel(JNIEnv* env, jobject obj, jlong time_ms) {
-  SendGestureEvent(
-      WebInputEvent::GestureFlingCancel, time_ms, 0, 0, 0, 0, false);
+  SendGestureEvent(WebInputEvent::GestureFlingCancel, time_ms, 0, 0);
 }
 
 void ContentViewCoreImpl::SingleTap(JNIEnv* env, jobject obj, jlong time_ms,
                                     jint x, jint y,
                                     jboolean disambiguation_popup_tap) {
-  SendGestureEvent(
-      WebInputEvent::GestureTap, time_ms, x, y, 0, 0, disambiguation_popup_tap);
+  WebKit::WebGestureEvent event = WebInputEventFactory::gestureEvent(
+      WebInputEvent::GestureTap, time_ms / 1000.0, x, y, 0, 0, 0);
+
+  event.data.tap.tapCount = 1;
+  if (!disambiguation_popup_tap) {
+    int touchPadding = GetTouchPadding();
+    event.data.tap.width = touchPadding;
+    event.data.tap.height = touchPadding;
+    // TODO(rbyers): Stop setting boundingBox, crbug.com/143237
+    event.boundingBox = WebKit::WebRect(x - touchPadding, y - touchPadding,
+                                        2 * touchPadding, 2 * touchPadding);
+  }
+
+  if (GetRenderWidgetHostViewAndroid())
+    GetRenderWidgetHostViewAndroid()->GestureEvent(event);
 }
 
 void ContentViewCoreImpl::ShowPressState(JNIEnv* env, jobject obj,
                                          jlong time_ms,
                                          jint x, jint y) {
-  SendGestureEvent(WebInputEvent::GestureTapDown, time_ms, x, y, 0, 0, false);
+  SendGestureEvent(WebInputEvent::GestureTapDown, time_ms, x, y);
 }
 
 void ContentViewCoreImpl::DoubleTap(JNIEnv* env, jobject obj, jlong time_ms,
                                     jint x, jint y) {
-  SendGestureEvent(WebInputEvent::GestureDoubleTap, time_ms, x, y, 0, 0, false);
+  SendGestureEvent(WebInputEvent::GestureDoubleTap, time_ms, x, y);
 }
 
 void ContentViewCoreImpl::LongPress(JNIEnv* env, jobject obj, jlong time_ms,
                                     jint x, jint y,
                                     jboolean disambiguation_popup_tap) {
-  SendGestureEvent(
-      WebInputEvent::GestureLongPress, time_ms, x, y, 0, 0,
-      disambiguation_popup_tap);
+  WebKit::WebGestureEvent event = WebInputEventFactory::gestureEvent(
+      WebInputEvent::GestureLongPress, time_ms / 1000.0, x, y, 0, 0, 0);
+
+  if (!disambiguation_popup_tap) {
+    int touchPadding = GetTouchPadding();
+    event.data.longPress.width = touchPadding;
+    event.data.longPress.height = touchPadding;
+    // TODO(rbyers): Stop setting boundingBox, crbug.com/143237
+    event.boundingBox = WebKit::WebRect(x - touchPadding, y - touchPadding,
+                                        2 * touchPadding, 2 * touchPadding);
+  }
+
+  if (GetRenderWidgetHostViewAndroid())
+    GetRenderWidgetHostViewAndroid()->GestureEvent(event);
 }
 
 void ContentViewCoreImpl::PinchBegin(JNIEnv* env, jobject obj, jlong time_ms,
                                      jint x, jint y) {
   SendGestureEvent(
-      WebInputEvent::GesturePinchBegin, time_ms, x, y, 0, 0, false);
+      WebInputEvent::GesturePinchBegin, time_ms, x, y);
 }
 
 void ContentViewCoreImpl::PinchEnd(JNIEnv* env, jobject obj, jlong time_ms) {
-  SendGestureEvent(WebInputEvent::GesturePinchEnd, time_ms, 0, 0, 0, 0, false);
+  SendGestureEvent(WebInputEvent::GesturePinchEnd, time_ms, 0, 0);
 }
 
 void ContentViewCoreImpl::PinchBy(JNIEnv* env, jobject obj, jlong time_ms,
                                   jint anchor_x, jint anchor_y, jfloat delta) {
-  SendGestureEvent(WebInputEvent::GesturePinchUpdate,
-                   time_ms,
-                   anchor_x,
-                   anchor_y,
-                   delta,
-                   delta,
-                   false);
+  WebKit::WebGestureEvent event = WebInputEventFactory::gestureEvent(
+      WebInputEvent::GesturePinchUpdate, time_ms / 1000.0, anchor_x, anchor_y,
+      delta, delta, 0);
+  event.data.pinchUpdate.scale = delta;
+
+  if (GetRenderWidgetHostViewAndroid())
+    GetRenderWidgetHostViewAndroid()->GestureEvent(event);
 }
 
 jboolean ContentViewCoreImpl::CanGoBack(JNIEnv* env, jobject obj) {

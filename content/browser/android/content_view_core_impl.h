@@ -187,9 +187,10 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid();
 
+  int GetTouchPadding();
+
   void SendGestureEvent(WebKit::WebInputEvent::Type type, long time_ms,
-                        int x, int y,
-                        float dx, float dy, bool disambiguation_popup_tap);
+                        int x, int y);
 
   void PostLoadUrl(const GURL& url);
 
