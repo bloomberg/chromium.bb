@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_SRC_TARGET_PROCESS_H__
-#define SANDBOX_SRC_TARGET_PROCESS_H__
+#ifndef SANDBOX_WIN_SRC_TARGET_PROCESS_H_
+#define SANDBOX_WIN_SRC_TARGET_PROCESS_H_
 
 #include <windows.h>
 
@@ -24,6 +24,7 @@ class StartupInformation;
 
 namespace sandbox {
 
+class AttributeList;
 class SharedMemIPCServer;
 class ThreadProvider;
 
@@ -127,4 +128,4 @@ TargetProcess* MakeTestTargetProcess(HANDLE process, HMODULE base_address);
 
 }  // namespace sandbox
 
-#endif  // SANDBOX_SRC_TARGET_PROCESS_H__
+#endif  // SANDBOX_WIN_SRC_TARGET_PROCESS_H_

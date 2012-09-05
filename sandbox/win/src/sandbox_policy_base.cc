@@ -7,6 +7,8 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/win/windows_version.h"
+#include "sandbox/win/src/app_container.h"
 #include "sandbox/win/src/filesystem_dispatcher.h"
 #include "sandbox/win/src/filesystem_policy.h"
 #include "sandbox/win/src/handle_dispatcher.h"
@@ -151,21 +153,21 @@ ResultCode PolicyBase::SetAlternateDesktop(bool alternate_winstation) {
   return CreateAlternateDesktop(alternate_winstation);
 }
 
-std::wstring PolicyBase::GetAlternateDesktop() const {
+string16 PolicyBase::GetAlternateDesktop() const {
   // No alternate desktop or winstation. Return an empty string.
   if (!use_alternate_desktop_ && !use_alternate_winstation_) {
-    return std::wstring();
+    return string16();
   }
 
   // The desktop and winstation should have been created by now.
   // If we hit this scenario, it means that the user ignored the failure
   // during SetAlternateDesktop, so we ignore it here too.
   if (use_alternate_desktop_ && !alternate_desktop_handle_) {
-    return std::wstring();
+    return string16();
   }
   if (use_alternate_winstation_ && (!alternate_desktop_handle_ ||
                                     !alternate_winstation_handle_)) {
-    return std::wstring();
+    return string16();
   }
 
   return GetFullDesktopName(alternate_winstation_handle_,
@@ -249,6 +251,31 @@ ResultCode PolicyBase::SetDelayedIntegrityLevel(
   return SBOX_ALL_OK;
 }
 
+ResultCode PolicyBase::SetAppContainer(const wchar_t* sid) {
+  if (base::win::OSInfo::GetInstance()->version() < base::win::VERSION_WIN8)
+    return SBOX_ALL_OK;
+
+  // Windows refuses to work with an impersonation token for a process inside
+  // an AppContainer. If the caller wants to use a more privileged initial
+  // token, or if the lockdown level will prevent the process from starting,
+  // we have to fail the operation.
+  if (lockdown_level_ < USER_LIMITED || lockdown_level_ != initial_level_)
+    return SBOX_ERROR_CANNOT_INIT_APPCONTAINER;
+
+  DCHECK(!appcontainer_list_.get());
+  appcontainer_list_.reset(new AppContainerAttributes);
+  ResultCode rv = appcontainer_list_->SetAppContainer(sid, capabilities_);
+  if (rv != SBOX_ALL_OK)
+    return rv;
+
+  return SBOX_ALL_OK;
+}
+
+ResultCode PolicyBase::SetCapability(const wchar_t* sid) {
+  capabilities_.push_back(sid);
+  return SBOX_ALL_OK;
+}
+
 void PolicyBase::SetStrictInterceptions() {
   relaxed_interceptions_ = false;
 }
@@ -325,7 +352,7 @@ ResultCode PolicyBase::AddRule(SubSystem subsystem, Semantics semantics,
 }
 
 ResultCode PolicyBase::AddDllToUnload(const wchar_t* dll_name) {
-  blacklisted_dlls_.push_back(std::wstring(dll_name));
+  blacklisted_dlls_.push_back(dll_name);
   return SBOX_ALL_OK;
 }
 
@@ -370,25 +397,36 @@ bool PolicyBase::SetupService(InterceptionManager* manager, int service) {
   return dispatch->SetupService(manager, service);
 }
 
-DWORD PolicyBase::MakeJobObject(HANDLE* job) {
+ResultCode PolicyBase::MakeJobObject(HANDLE* job) {
   // Create the windows job object.
   Job job_obj;
   DWORD result = job_obj.Init(job_level_, NULL, ui_exceptions_);
   if (ERROR_SUCCESS != result) {
-    return result;
+    return SBOX_ERROR_GENERIC;
   }
   *job = job_obj.Detach();
-  return ERROR_SUCCESS;
+  return SBOX_ALL_OK;
 }
 
-DWORD PolicyBase::MakeTokens(HANDLE* initial, HANDLE* lockdown) {
+ResultCode PolicyBase::MakeTokens(HANDLE* initial, HANDLE* lockdown) {
   // Create the 'naked' token. This will be the permanent token associated
   // with the process and therefore with any thread that is not impersonating.
   DWORD result = CreateRestrictedToken(lockdown, lockdown_level_,
                                        integrity_level_, PRIMARY);
   if (ERROR_SUCCESS != result) {
-    return result;
+    return SBOX_ERROR_GENERIC;
   }
+
+  if (appcontainer_list_.get() && appcontainer_list_->HasAppContainer()) {
+    // Windows refuses to work with an impersonation token. See SetAppContainer
+    // implementation for more details.
+    if (lockdown_level_ < USER_LIMITED || lockdown_level_ != initial_level_)
+      return SBOX_ERROR_CANNOT_INIT_APPCONTAINER;
+
+    *initial = INVALID_HANDLE_VALUE;
+    return SBOX_ALL_OK;
+  }
+
   // Create the 'better' token. We use this token as the one that the main
   // thread uses when booting up the process. It should contain most of
   // what we need (before reaching main( ))
@@ -396,9 +434,16 @@ DWORD PolicyBase::MakeTokens(HANDLE* initial, HANDLE* lockdown) {
                                  integrity_level_, IMPERSONATION);
   if (ERROR_SUCCESS != result) {
     ::CloseHandle(*lockdown);
-    return result;
+    return SBOX_ERROR_GENERIC;
   }
   return SBOX_ALL_OK;
+}
+
+const AppContainerAttributes* PolicyBase::GetAppContainer() {
+  if (!appcontainer_list_.get() || !appcontainer_list_->HasAppContainer())
+    return NULL;
+
+  return appcontainer_list_.get();
 }
 
 bool PolicyBase::AddTarget(TargetProcess* target) {
@@ -516,7 +561,7 @@ bool PolicyBase::SetupAllInterceptions(TargetProcess* target) {
   }
 
   if (!blacklisted_dlls_.empty()) {
-    std::vector<std::wstring>::iterator it = blacklisted_dlls_.begin();
+    std::vector<string16>::iterator it = blacklisted_dlls_.begin();
     for (; it != blacklisted_dlls_.end(); ++it) {
       manager.AddToUnloadModules(it->c_str());
     }

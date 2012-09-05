@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_SRC_SANDBOX_TYPES_H_
-#define SANDBOX_SRC_SANDBOX_TYPES_H_
+#ifndef SANDBOX_WIN_SRC_SANDBOX_TYPES_H_
+#define SANDBOX_WIN_SRC_SANDBOX_TYPES_H_
 
 namespace sandbox {
 
@@ -37,6 +37,12 @@ enum ResultCode {
   SBOX_ERROR_CANNOT_CREATE_WINSTATION = 12,
   // Failed to switch back to the interactive window station.
   SBOX_ERROR_FAILED_TO_SWITCH_BACK_WINSTATION = 13,
+  // The supplied AppContainer is not valid.
+  SBOX_ERROR_INVALID_APP_CONTAINER = 14,
+  // The supplied capability is not valid.
+  SBOX_ERROR_INVALID_CAPABILITY = 15,
+  // There is a failure initializing the AppContainer.
+  SBOX_ERROR_CANNOT_INIT_APPCONTAINER = 16,
   // Placeholder for last item of the enum.
   SBOX_ERROR_LAST
 };
@@ -78,4 +84,4 @@ enum InterceptionType {
 
 }  // namespace sandbox
 
-#endif  // SANDBOX_SRC_SANDBOX_TYPES_H_
+#endif  // SANDBOX_WIN_SRC_SANDBOX_TYPES_H_

@@ -10,6 +10,8 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
 #include "base/win/startup_information.h"
+#include "base/win/windows_version.h"
+#include "sandbox/win/src/app_container.h"
 #include "sandbox/win/src/sandbox_policy_base.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/target_process.h"
@@ -296,22 +298,19 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   // with the soon to be created target process.
   HANDLE initial_token_temp;
   HANDLE lockdown_token_temp;
-  DWORD win_result = policy_base->MakeTokens(&initial_token_temp,
-                                             &lockdown_token_temp);
-  if (ERROR_SUCCESS != win_result)
-    return SBOX_ERROR_GENERIC;
+  ResultCode result = policy_base->MakeTokens(&initial_token_temp,
+                                              &lockdown_token_temp);
+  if (SBOX_ALL_OK != result)
+    return result;
 
   base::win::ScopedHandle initial_token(initial_token_temp);
   base::win::ScopedHandle lockdown_token(lockdown_token_temp);
 
   HANDLE job_temp;
-  win_result = policy_base->MakeJobObject(&job_temp);
+  result = policy_base->MakeJobObject(&job_temp);
   base::win::ScopedHandle job(job_temp);
-  if (ERROR_SUCCESS != win_result)
-    return SBOX_ERROR_GENERIC;
-
-  if (ERROR_ALREADY_EXISTS == ::GetLastError())
-    return SBOX_ERROR_GENERIC;
+  if (SBOX_ALL_OK != result)
+    return result;
 
   // Initialize the startup information from the policy.
   base::win::StartupInformation startup_info;
@@ -319,6 +318,14 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   if (!desktop.empty()) {
     startup_info.startup_info()->lpDesktop =
         const_cast<wchar_t*>(desktop.c_str());
+  }
+
+  const AppContainerAttributes* app_container = policy_base->GetAppContainer();
+  if (app_container) {
+    startup_info.InitializeProcThreadAttributeList(1);
+    result = app_container->ShareForStartup(&startup_info);
+    if (SBOX_ALL_OK != result)
+      return result;
   }
 
   // Construct the thread pool here in case it is expensive.
@@ -334,8 +341,8 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
                                             job,
                                             thread_pool_);
 
-  win_result = target->Create(exe_path, command_line,
-                              startup_info, &process_info);
+  DWORD win_result = target->Create(exe_path, command_line, startup_info,
+                                    &process_info);
   if (ERROR_SUCCESS != win_result)
     return SpawnCleanup(target, win_result);
 
@@ -406,6 +413,32 @@ ResultCode BrokerServicesBase::AddTargetPeer(HANDLE peer_process) {
   // Release the pointer since it will be cleaned up by the callback.
   peer.release();
   return SBOX_ALL_OK;
+}
+
+ResultCode BrokerServicesBase::InstallAppContainer(const wchar_t* sid,
+                                                   const wchar_t* name) {
+  if (base::win::OSInfo::GetInstance()->version() < base::win::VERSION_WIN8)
+    return SBOX_ERROR_UNSUPPORTED;
+
+  string16 old_name = LookupAppContainer(sid);
+  if (old_name.empty())
+    return CreateAppContainer(sid, name);
+
+  if (old_name != name)
+    return SBOX_ERROR_INVALID_APP_CONTAINER;
+
+  return SBOX_ALL_OK;
+}
+
+ResultCode BrokerServicesBase::UninstallAppContainer(const wchar_t* sid) {
+  if (base::win::OSInfo::GetInstance()->version() < base::win::VERSION_WIN8)
+    return SBOX_ERROR_UNSUPPORTED;
+
+  string16 name =  LookupAppContainer(sid);
+  if (name.empty())
+    return SBOX_ERROR_INVALID_APP_CONTAINER;
+
+  return DeleteAppContainer(sid);
 }
 
 }  // namespace sandbox

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_SRC_SANDBOX_POLICY_H_
-#define SANDBOX_SRC_SANDBOX_POLICY_H_
+#ifndef SANDBOX_WIN_SRC_SANDBOX_POLICY_H_
+#define SANDBOX_WIN_SRC_SANDBOX_POLICY_H_
 
 #include <string>
 
@@ -71,7 +71,8 @@ class TargetPolicy {
   //   is used by the process from the creation of the process until the moment
   //   the process calls TargetServices::LowerToken() or the process calls
   //   win32's ReverToSelf(). Once this happens the initial token is no longer
-  //   available and the lockdown token is in effect.
+  //   available and the lockdown token is in effect. Using an initial token is
+  //   not compatible with AppContainer, see SetAppContainer.
   // lockdown: the security level for the token that comes into force after the
   //   process calls TargetServices::LowerToken() or the process calls
   //   ReverToSelf(). See the explanation of each level in the TokenLevel
@@ -137,19 +138,31 @@ class TargetPolicy {
   virtual void DestroyAlternateDesktop() = 0;
 
   // Sets the integrity level of the process in the sandbox. Both the initial
-  // token and the main token will be affected by this. This is valid only
-  // on Vista. It is silently ignored on other OSes. If you set the integrity
-  // level to a level higher than your current level, the sandbox will fail
+  // token and the main token will be affected by this. If the integrity level
+  // is set to a level higher than the current level, the sandbox will fail
   // to start.
   virtual ResultCode SetIntegrityLevel(IntegrityLevel level) = 0;
 
   // Sets the integrity level of the process in the sandbox. The integrity level
   // will not take effect before you call LowerToken. User Interface Privilege
   // Isolation is not affected by this setting and will remain off for the
-  // process in the sandbox.  This flag is valid on Vista only, it is silently
-  // ignored on other OSes.  If you set the integrity level to a level higher
-  // than your current level, the sandbox will fail to start.
+  // process in the sandbox. If the integrity level is set to a level higher
+  // than the current level, the sandbox will fail to start.
   virtual ResultCode SetDelayedIntegrityLevel(IntegrityLevel level) = 0;
+
+  // Sets the AppContainer to be used for the sandboxed process. Any capability
+  // to be enabled for the process should be added before this method is invoked
+  // (by calling SetCapability() as many times as needed).
+  // The desired AppContainer must be already installed on the system, otherwise
+  // launching the sandboxed process will fail. See BrokerServices for details
+  // about installing an AppContainer.
+  // Note that currently Windows restricts the use of impersonation within
+  // AppContainers, so this function is incompatible with the use of an initial
+  // token.
+  virtual ResultCode SetAppContainer(const wchar_t* sid) = 0;
+
+  // Sets a capability to be enabled for the sandboxed process' AppContainer.
+  virtual ResultCode SetCapability(const wchar_t* sid) = 0;
 
   // Sets the interceptions to operate in strict mode. By default, interceptions
   // are performed in "relaxed" mode, where if something inside NTDLL.DLL is
@@ -187,4 +200,4 @@ class TargetPolicy {
 }  // namespace sandbox
 
 
-#endif  // SANDBOX_SRC_SANDBOX_POLICY_H_
+#endif  // SANDBOX_WIN_SRC_SANDBOX_POLICY_H_

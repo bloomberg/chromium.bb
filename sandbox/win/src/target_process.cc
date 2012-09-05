@@ -172,19 +172,19 @@ DWORD TargetProcess::Create(const wchar_t* exe_path,
 
   DWORD win_result = ERROR_SUCCESS;
 
-  // Assign the suspended target to the windows job object
+  // Assign the suspended target to the windows job object.
   if (!::AssignProcessToJobObject(job_, process_info.process_handle())) {
     win_result = ::GetLastError();
     // It might be a security breach if we let the target run outside the job
-    // so kill it before it causes damage
+    // so kill it before it causes damage.
     ::TerminateProcess(process_info.process_handle(), 0);
     return win_result;
   }
 
-  // Change the token of the main thread of the new process for the
-  // impersonation token with more rights. This allows the target to start;
-  // otherwise it will crash too early for us to help.
-  {
+  if (initial_token_.IsValid()) {
+    // Change the token of the main thread of the new process for the
+    // impersonation token with more rights. This allows the target to start;
+    // otherwise it will crash too early for us to help.
     HANDLE temp_thread = process_info.thread_handle();
     if (!::SetThreadToken(&temp_thread, initial_token_)) {
       win_result = ::GetLastError();

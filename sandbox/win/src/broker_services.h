@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_SRC_BROKER_SERVICES_H__
-#define SANDBOX_SRC_BROKER_SERVICES_H__
+#ifndef SANDBOX_WIN_SRC_BROKER_SERVICES_H_
+#define SANDBOX_WIN_SRC_BROKER_SERVICES_H_
 
 #include <list>
 #include <map>
 #include <set>
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/win/scoped_handle.h"
 #include "sandbox/win/src/crosscall_server.h"
 #include "sandbox/win/src/job.h"
@@ -42,19 +43,18 @@ class BrokerServicesBase : public BrokerServices,
 
   ~BrokerServicesBase();
 
-  // The next five methods are the BrokerServices interface
-  virtual ResultCode Init();
-
-  virtual TargetPolicy* CreatePolicy();
-
+  // BrokerServices interface.
+  virtual ResultCode Init() OVERRIDE;
+  virtual TargetPolicy* CreatePolicy() OVERRIDE;
   virtual ResultCode SpawnTarget(const wchar_t* exe_path,
                                  const wchar_t* command_line,
                                  TargetPolicy* policy,
-                                 PROCESS_INFORMATION* target);
-
-  virtual ResultCode WaitForAllTargets();
-
-  virtual ResultCode AddTargetPeer(HANDLE peer_process);
+                                 PROCESS_INFORMATION* target) OVERRIDE;
+  virtual ResultCode WaitForAllTargets() OVERRIDE;
+  virtual ResultCode AddTargetPeer(HANDLE peer_process) OVERRIDE;
+  virtual ResultCode InstallAppContainer(const wchar_t* sid,
+                                         const wchar_t* name) OVERRIDE;
+  virtual ResultCode UninstallAppContainer(const wchar_t* sid) OVERRIDE;
 
   // Checks if the supplied process ID matches one of the broker's active
   // target processes
@@ -110,4 +110,4 @@ class BrokerServicesBase : public BrokerServices,
 }  // namespace sandbox
 
 
-#endif  // SANDBOX_SRC_BROKER_SERVICES_H__
+#endif  // SANDBOX_WIN_SRC_BROKER_SERVICES_H_

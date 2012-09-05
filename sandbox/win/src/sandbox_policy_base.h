@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_SRC_SANDBOX_POLICY_BASE_H_
-#define SANDBOX_SRC_SANDBOX_POLICY_BASE_H_
+#ifndef SANDBOX_WIN_SRC_SANDBOX_POLICY_BASE_H_
+#define SANDBOX_WIN_SRC_SANDBOX_POLICY_BASE_H_
 
 #include <windows.h>
 
@@ -23,6 +23,7 @@
 
 namespace sandbox {
 
+class AppContainerAttributes;
 class LowLevelPolicy;
 class TargetProcess;
 struct PolicyGlobal;
@@ -43,12 +44,14 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
   virtual ResultCode SetJobLevel(JobLevel job_level,
                                  uint32 ui_exceptions) OVERRIDE;
   virtual ResultCode SetAlternateDesktop(bool alternate_winstation) OVERRIDE;
-  virtual std::wstring GetAlternateDesktop() const OVERRIDE;
+  virtual string16 GetAlternateDesktop() const OVERRIDE;
   virtual ResultCode CreateAlternateDesktop(bool alternate_winstation) OVERRIDE;
   virtual void DestroyAlternateDesktop() OVERRIDE;
   virtual ResultCode SetIntegrityLevel(IntegrityLevel integrity_level) OVERRIDE;
   virtual ResultCode SetDelayedIntegrityLevel(
       IntegrityLevel integrity_level) OVERRIDE;
+  virtual ResultCode SetAppContainer(const wchar_t* sid) OVERRIDE;
+  virtual ResultCode SetCapability(const wchar_t* sid) OVERRIDE;
   virtual void SetStrictInterceptions() OVERRIDE;
   virtual ResultCode AddRule(SubSystem subsystem, Semantics semantics,
                              const wchar_t* pattern) OVERRIDE;
@@ -62,12 +65,14 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
   virtual bool SetupService(InterceptionManager* manager, int service) OVERRIDE;
 
   // Creates a Job object with the level specified in a previous call to
-  // SetJobLevel(). Returns the standard windows of ::GetLastError().
-  DWORD MakeJobObject(HANDLE* job);
+  // SetJobLevel().
+  ResultCode MakeJobObject(HANDLE* job);
 
   // Creates the two tokens with the levels specified in a previous call to
-  // SetTokenLevel(). Returns the standard windows of ::GetLastError().
-  DWORD MakeTokens(HANDLE* initial, HANDLE* lockdown);
+  // SetTokenLevel().
+  ResultCode MakeTokens(HANDLE* initial, HANDLE* lockdown);
+
+  const AppContainerAttributes* GetAppContainer();
 
   // Adds a target process to the internal list of targets. Internally a
   // call to TargetProcess::Init() is issued.
@@ -122,11 +127,13 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
   // Memory structure that stores the low level policy.
   PolicyGlobal* policy_;
   // The list of dlls to unload in the target process.
-  std::vector<std::wstring> blacklisted_dlls_;
+  std::vector<string16> blacklisted_dlls_;
   // This is a map of handle-types to names that we need to close in the
   // target process. A null set means we need to close all handles of the
   // given type.
   HandleCloser handle_closer_;
+  std::vector<string16> capabilities_;
+  scoped_ptr<AppContainerAttributes> appcontainer_list_;
 
   static HDESK alternate_desktop_handle_;
   static HWINSTA alternate_winstation_handle_;
@@ -136,4 +143,4 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
 
 }  // namespace sandbox
 
-#endif  // SANDBOX_SRC_SANDBOX_POLICY_BASE_H_
+#endif  // SANDBOX_WIN_SRC_SANDBOX_POLICY_BASE_H_
