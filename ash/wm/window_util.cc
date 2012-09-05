@@ -103,18 +103,13 @@ void CenterWindow(aura::Window* window) {
 }
 
 ui::Layer* RecreateWindowLayers(aura::Window* window) {
-  const gfx::Rect bounds = window->bounds();
   ui::Layer* old_layer = window->RecreateLayer();
   DCHECK(old_layer);
   for (aura::Window::Windows::const_iterator it = window->children().begin();
        it != window->children().end();
        ++it) {
-    aura::Window* child = *it;
-    const gfx::Rect child_bounds = child->bounds();
-    ui::Layer* old_child_layer = RecreateWindowLayers(child);
     // Maintain the hierarchy of the detached layers.
-    old_layer->Add(old_child_layer);
-    child->SetBounds(child_bounds);  // Resize the child window too.
+    old_layer->Add(RecreateWindowLayers(*it));
   }
   return old_layer;
 }
