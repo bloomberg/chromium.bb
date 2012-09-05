@@ -60,6 +60,7 @@
       'type': 'static_library',
       'dependencies': [
         '../../skia/skia.gyp:skia',
+        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'sources': [
         'web_compositor_support_impl.cc',
