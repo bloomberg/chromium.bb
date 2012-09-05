@@ -12,6 +12,9 @@ modules both operate in terms of these classes.
 
 NUM_INST_BITS = 32
 
+NEWLINE_STR="""
+"""
+
 def _popcount(int):
     """Returns the number of 1 bits in the input."""
     count = 0
@@ -19,23 +22,103 @@ def _popcount(int):
         count = count + ((int >> bit) & 1)
     return count
 
-# Note: For historical reasons, columns are a 3-tuple of the
-# form (name, hi_bit, lo_bit). The following accessors try to
-# hide the implementation details of how columns are modeled.
+class BitExpr(object):
+  """Define a bit expression."""
 
-def column_name(col):
-  """Returns the name of the column."""
-  return col[0]
+  def to_bool(self, options={}):
+    """Returns a string describing this as a C++ boolean expression."""
+    raise Exception("to_bool not defined.")
 
-def column_hi(col):
-  """Returns the hi bit of the column."""
-  return col[1]
+  def to_register(self, options={}):
+    """Returns a string describing this as a C++ Register expression."""
+    raise Exception("to_register not defined.")
 
-def column_lo(col):
-  """Returns the low bit of the column."""
-  return col[2]
+  def to_register_list(self, options={}):
+    """Returns a string describing this as a C++ RegisterList expression."""
+    raise Exception("to_register_list not defined.")
 
-class BitPattern(object):
+  def to_uint32(self, options={}):
+    """Returns a string describing this as a C++ uint32_t expression."""
+    raise Exception("to_uint32 not defined.")
+
+  def default_inst(self):
+    """Returns the default text to use if 'inst' is not defined as an option."""
+    return 'inst.Bits()'
+
+class BitField(object):
+  """Defines a bitfield within an instruction."""
+
+  def __init__(self, name, hi, lo):
+    self.name = name
+    self.hi = hi
+    self.lo = lo
+
+  def __repr__(self):
+    if self.hi == self.lo:
+      return '%s(%s)' % (self.name, self.hi)
+    else:
+      return '%s(%s:%s)' % (self.name, self.hi, self.lo)
+
+class SymbolTable(object):
+  """Holds mapping from names to corresponding value."""
+
+  def __init__(self):
+    self.inherits = None
+    self.dict = {}
+
+  def copy(self):
+    """Returns a copy of the symbol table"""
+    st = SymbolTable()
+    st.inherits = self.inherits
+    for k in self.dict:
+      st.dict[k] = self.dict[k]
+    return st
+
+  def find(self, name):
+    value = self.dict.get(name)
+    if value: return value
+    if self.inherits:
+      return self.inherits.find(name)
+    else:
+      return None
+
+  def define(self, name, value, fail_if_defined = True):
+    """Adds (name, value) pair to symbol table if not already defined.
+       Returns True if added, otherwise False.
+       """
+    if self.dict.get(name):
+      if fail_if_defined:
+        raise Exception('%s: multiple definitions' % name)
+      return False
+    else:
+      self.dict[name] = value
+      return True
+
+  def __hash__(self):
+    return (sum([ hash(k) + hash(self.dict[k]) for k in self.dict.keys()]) +
+            hash(self.inherits))
+
+  def __cmp__(self, other):
+    value = cmp(self.inherits, other.inherits)
+    if value != 0: return value
+    return cmp(self.dict, other.dict)
+
+  def __repr__(self):
+    dict_rep = '{'
+    is_first = True
+    for k in sorted(self.dict.keys()):
+      if is_first:
+        is_first = False
+      else:
+        dict_rep = '%s,%s  ' % (dict_rep, NEWLINE_STR)
+      dict_rep = "%s%s: %s" % (dict_rep, k, repr(self.dict[k]))
+    dict_rep += '}'
+    if (self.inherits):
+      return '%s inherits %s' % (dict_rep, repr(self.inherits))
+    else:
+      return dict_rep
+
+class BitPattern(BitExpr):
     """A pattern for matching strings of bits.  See parse() for syntax."""
 
     @staticmethod
@@ -60,8 +143,8 @@ class BitPattern(object):
         Raises:
             Exception: the input didn't meet the rules described above.
         """
-        hi_bit = column_hi(column)
-        lo_bit = column_lo(column)
+        hi_bit = column.hi
+        lo_bit = column.lo
         num_bits = hi_bit - lo_bit + 1
         # Convert - into a full-width don't-care pattern.
         if pattern == '-':
@@ -264,6 +347,18 @@ class BitPattern(object):
         else:
             return BitPattern.always_matches(self.column)
 
+    def to_bool(self, options={}):
+      inst = options.get('inst')
+      if not inst:
+        inst = self.default_inst()
+      # Generate expression corresponding to bit pattern.
+      if self.mask == 0:
+        value = 'true'
+      else:
+        value = ('(%s & 0x%08X) %s 0x%08X'
+                 % (inst, self.mask, self.op, self.value))
+      return value
+
     def to_c_expr(self, input):
         """Converts this pattern to a C expression.
         Args:
@@ -272,27 +367,17 @@ class BitPattern(object):
         Returns:
             A string containing a C expression.
         """
-        # Generate expression corresponding to bit pattern.
-        if self.mask == 0:
-            value = 'true'
-        else:
-            value = ('(%s & 0x%08X) %s 0x%08X'
-                     % (input, self.mask, self.op, self.value))
+        value = self.to_bool({'inst': input})
         if self.column:
           # Add comment describing test if column is known.
-          return ("%s /* %s(%s:%s) == %s%s */"
-                  % (value,
-                     column_name(self.column),
-                     column_hi(self.column),
-                     column_lo(self.column),
-                     '' if self.is_equal_op() else '~',
-                     self.bitstring()))
+          return "%s /* %s */" % (value, self)
         return value
 
     def bitstring(self):
       """Returns a string describing the bitstring of the pattern."""
       bits = self._bits_repr()
-      bits = bits[column_lo(self.column) : column_hi(self.column) + 1]
+      if self.column:
+        bits = bits[self.column.lo : self.column.hi + 1]
       bits.reverse()
       return ''.join(bits)
 
@@ -327,9 +412,9 @@ class BitPattern(object):
       """
       if self.column: return self
       for c in columns:
-        name = column_name(c)
-        hi_bit = column_hi(c)
-        lo_bit = column_lo(c)
+        name = c.name
+        hi_bit = c.hi
+        lo_bit = c.lo
         index = self.first_bit()
         if index is None : continue
         if index >= lo_bit and index <= hi_bit:
@@ -351,22 +436,30 @@ class BitPattern(object):
 
     def __repr__(self):
         """Returns the printable string for the bit pattern."""
-        rep = ''.join(reversed(self._bits_repr()))
-        if self.op == '!=':
-          rep = '~' + rep
-        return rep
+        if self.column:
+          return '%s=%s%s' % (repr(self.column),
+                              '' if self.is_equal_op() else'~',
+                              self.bitstring())
+        else:
+          return self.bitstring()
 
 class RuleRestrictions(object):
   """A rule restriction defines zero or more (anded) bit patterns, and
-     an optional safety restriction to be used when testing.
+     an optional other (i.e. base class) restriction to be used when testing.
      """
 
-  def __init__(self, restrictions, safety):
-    self.restrictions = restrictions
-    self.safety = safety
+  def __init__(self, restrictions=[], other=None):
+    self.restrictions = restrictions[:]
+    self.other = other
 
   def __hash__(self):
-    return sum([hash(r) for r in self.restrictions]) + hash(self.safety)
+    return sum([hash(r) for r in self.restrictions]) + hash(self.other)
+
+  def IsEmpty(self):
+    return not self.restrictions and not self.other
+
+  def add(self, restriction):
+    self.restrictions = self.restrictions + [restriction]
 
   def __repr__(self):
     """ Returns the printable string for the restrictions. """
@@ -375,8 +468,20 @@ class RuleRestrictions(object):
       for r in self.restrictions:
         rep += '& ' + r
       rep += ' '
-    return rep + ("%s" % self.safety)
+    if self.other:
+      rep += ('& other: %s' % self.other)
+    return rep
 
+  def __cmp__(self, v):
+    value = cmp(self.other, v.other)
+    if value != 0: return value
+    return cmp(self.restrictions, v.restrictions)
+
+TABLE_FORMAT="""
+Table %s
+%s
+%s
+"""
 class Table(object):
     """A table in the instruction set definition.  Each table contains 1+
     columns, and 1+ rows.  Each row contains a bit pattern for each column, plus
@@ -397,22 +502,12 @@ class Table(object):
     def columns(self):
       return self._columns[:]
 
-    def add_column(self, name, hi_bit, lo_bit):
-        """Adds a column to the table. Returns true if successful.
-
-        Because we don't use the column information for very much, we don't give
-        it a type -- we store it as a list of tuples.
-
-        Args:
-            name: the name of the column (for diagnostic purposes only).
-            hi_bit: the leftmost bit included.
-            lo_bit: the rightmost bit included.
-        """
-        column = (name, hi_bit, lo_bit)
+    def add_column(self, column):
+        """Adds a column to the table. Returns true if successful."""
         for col in self._columns:
           if col == column:
             return False
-        self._columns.append( (name, hi_bit, lo_bit) )
+        self._columns.append(column)
         return True
 
     def rows(self, default_also = True):
@@ -424,25 +519,25 @@ class Table(object):
           r.append(self.default_row)
         return r
 
-    def add_default_row(self, action, arch):
+    def add_default_row(self, action):
         """Adds a default action to use if none of the rows apply.
            Returns True if able to define.
         """
         if self.default_row: return False
-        self.default_row = Row([BitPattern.always_matches()], action, arch)
+        self.default_row = Row([BitPattern.always_matches()], action)
         return True
 
-    def add_row(self, patterns, action, arch):
+    def add_row(self, patterns, action):
         """Adds a row to the table.
         Args:
             patterns: a list containing a BitPattern for every column in the
                 table.
             action: The action associated  with the row. Must either be
                 a DecoderAction or a DecoderMethod.
-            arch: a string defining the architectures it applies to. None
-                implies all.
         """
-        self._rows.append(Row(patterns, action, arch))
+        row = Row(patterns, action)
+        self._rows.append(row)
+        return row
 
     def remove_table(self, name):
       """Removes method calls to the given table name from the table"""
@@ -463,10 +558,9 @@ class Table(object):
         table = Table(self.name, self.citation)
         table._columns = self._columns
         for r in self._rows:
-          table.add_row(r.patterns, r.action.action_filter(names), r.arch)
+          table.add_row(r.patterns, r.action.action_filter(names))
         if self.default_row:
-          table.add_default_row(self.default_row.action.action_filter(names),
-                                self.default_row.arch)
+          table.add_default_row(self.default_row.action.action_filter(names))
         return table
 
     def add_column_to_rows(self, rows):
@@ -478,7 +572,7 @@ class Table(object):
         new_patterns = []
         for p in r.patterns:
           new_patterns.append(p.add_column_info(self._columns))
-        new_rows.append(Row(new_patterns, r.action, r.arch))
+        new_rows.append(Row(new_patterns, r.action))
       return new_rows
 
     def methods(self):
@@ -489,45 +583,58 @@ class Table(object):
           methods.add(r.action)
       return sorted(methods)
 
+    def __repr__(self):
+      return TABLE_FORMAT % (self.name,
+                             ' '.join([repr(c) for c in self._columns]),
+                             NEWLINE_STR.join([repr(r) for r in self._rows]))
+
 class DecoderAction:
   """An action defining a class decoder to apply.
-
-  Corresponds to the parsed decoder action:
-      decoder_action ::= id (id (word (id)?)?)?
-
-  Fields are:
-      baseline - Name of class decoder used in the baseline.
-      actual - Name of the class decoder to use in the validator.
-      rule - Name of the rule in ARM manual that defines
-             the decoder action.
-      pattern - The placement of 0/1's within any instruction
-             that is matched by the corresponding rule.
-      constraints - Additional constraints that apply to the rule.
+     Fields are:
+       baseline - Name of class decoder used in the baseline.
+       actual - Name of the class decoder to use in the validator.
+       st - Symbol table of other information stored on the decoder action.
   """
-  def __init__(self, baseline, actual, rule, pattern, constraints):
+  def __init__(self, baseline, actual):
     self.baseline = baseline
     self.actual = actual
-    self.rule = rule
-    self.pattern = pattern
-    self.constraints = constraints
+    self.st = SymbolTable()
+    self.st.dict['constraints'] = RuleRestrictions()
 
   def action_filter(self, names):
-    return DecoderAction(
+    action = DecoderAction(
         self.baseline if 'baseline' in names else None,
         self.actual if ('actual' in names or
                         ('actual-not-baseline' in names and
-                         self.actual != self.baseline)) else None,
-        self.rule if 'rule' in names else None,
-        self.pattern if 'pattern' in names else None,
-        self.constraints if 'constraints' in names else None)
+                         self.actual != self.baseline)) else None)
+    for n in names:
+      value = self.st.dict.get(n)
+      if value:
+        action.st.dict[n] = value
+    return action
+
+  def pattern(self):
+    """Returns the pattern associated with the action."""
+    return self.st.dict.get('pattern')
+
+  def rule(self):
+    """Returns the rule associated with the action."""
+    return self.st.dict.get('rule')
+
+  def constraints(self):
+    """Returns the pattern restrictions associated with the action."""
+    return self.st.dict.get('constraints')
+
+  def safety(self):
+    """Returns the safety associated with the action."""
+    s = self.st.dict.get('safety')
+    return s if s else []
 
   def __eq__(self, other):
-    return (other.__class__.__name__ == 'DecoderAction'
+    return (isinstance(other, DecoderAction)
             and self.baseline == other.baseline
             and self.actual == other.actual
-            and self.rule == other.rule
-            and self.pattern == other.pattern
-            and self.constraints == other.constraints)
+            and self.st == other.st)
 
   def __cmp__(self, other):
     # Order lexicographically on type/fields.
@@ -537,24 +644,16 @@ class DecoderAction:
     if value != 0: return value
     value = cmp(self.actual, other.actual)
     if value != 0: return value
-    value = cmp(self.rule, other.rule)
-    if value != 0: return value
-    value = cmp(self.pattern, other.pattern)
-    if value != 0: return value
-    return cmp(self.constraints, other.constraints)
+    return cmp(self.st, other.st)
 
   def __hash__(self):
     return (hash('DecoderAction') + hash(self.baseline) +
-            hash(self.actual) + hash(self.rule) +
-            hash(self.pattern) + hash(self.constraints))
+            hash(self.actual) + hash(self.st))
 
   def __repr__(self):
-    if self.actual:
-      return '= %s => %s %s %s %s' % (self.baseline, self.actual, self.rule,
-                                      self.pattern, self.constraints)
-    else:
-      return '= %s %s %s %s' % (self.baseline, self.rule,
-                               self.pattern, self.constraints)
+    class_name = (("%s => %s" % (self.baseline, self.actual))
+                   if self.actual else self.baseline)
+    return '= %s %s' % (class_name, self.st)
 
 class DecoderMethod(object):
   """An action defining a parse method to call.
@@ -587,21 +686,19 @@ class DecoderMethod(object):
     return hash('DecoderMethod') + hash(self.name)
 
   def __repr__(self):
-    return '->%s' % self.name
+    return '-> %s' % self.name
 
 class Row(object):
     """ A row in a Table."""
-    def __init__(self, patterns, action, arch):
+    def __init__(self, patterns, action):
         """Initializes a Row.
         Args:
             patterns: a list of BitPatterns that must match for this Row to
                 match.
             action: the action to be taken if this Row matches.
-            arch: the minimum architecture that this Row can match.
         """
         self.patterns = patterns
         self.action = action
-        self.arch = arch
 
         self.significant_bits = 0
         for p in patterns:
@@ -617,8 +714,7 @@ class Row(object):
          """
       if (isinstance(self.action, DecoderMethod) and
           self.action.name == name):
-        self.action = DecoderAction('NotImplemented', 'NotImplemented', None,
-                                    None, None)
+        self.action = DecoderAction('NotImplemented', 'NotImplemented')
 
     def strictly_overlaps_bits(self, bitpat):
       """Checks if bitpat strictly overlaps a bit pattern in the row."""
@@ -629,7 +725,7 @@ class Row(object):
 
     def can_merge(self, other):
         """Determines if we can merge two Rows."""
-        if self.action != other.action or self.arch != other.arch:
+        if self.action != other.action:
             return False
 
         equal_columns = 0
@@ -647,10 +743,16 @@ class Row(object):
         return (equal_columns == cols
             or (equal_columns == cols - 1 and compat_columns == 1))
 
+    def copy_with_action(self, action):
+      return Row(self.patterns, action)
+
+    def copy_with_patterns(self, patterns):
+      return Row(patterns, self.action)
+
     def __add__(self, other):
         assert self.can_merge(other)  # Caller is expected to check!
         return Row([a + b for (a, b) in zip(self.patterns, other.patterns)],
-            self.action, self.arch)
+            self.action)
 
     def __cmp__(self, other):
         """Compares two rows, so we can order pattern matches by specificity.
@@ -659,7 +761,15 @@ class Row(object):
             or cmp(self.action, other.action))
 
     def __repr__(self):
-        return 'Row(%s, %s)' % (repr(self.patterns), repr(self.action))
+        return (ROW_PATTERN_ACTION_FORMAT %
+                (' & '.join([repr(p) for p in self.patterns]),
+                 repr(self.action).replace(NEWLINE_STR, ROW_ACTION_INDENT)))
+
+ROW_PATTERN_ACTION_FORMAT="""%s
+    %s"""
+
+ROW_ACTION_INDENT="""
+   """
 
 class Decoder(object):
   """Defines a class decoder which consists of set of tables.
@@ -766,8 +876,8 @@ class Decoder(object):
     decoders = set()
     for t in self._tables:
         for r in t.rows(True):
-            if r.action.__class__.__name__ == 'DecoderAction':
-                decoders.add(r.action)
+            if isinstance(r.action, DecoderAction):
+              decoders.add(r.action)
     return sorted(decoders)
 
   def rules(self):
@@ -775,3 +885,10 @@ class Decoder(object):
        the rule field.
     """
     return sorted(filter(lambda (r): r.rule, self.decoders()))
+
+  def show_table(self, table):
+    tbl = self.get_table(table)
+    if tbl != None:
+      print "%s" % tbl
+    else:
+      raise Exception("Can't find table %s" % table)

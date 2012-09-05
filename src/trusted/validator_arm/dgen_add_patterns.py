@@ -48,7 +48,7 @@ def _add_rule_pattern_constraints_to_table(decoder, table):
     if _trace and _process_table(table):
       print "*** processing table: %s ***" % table.name
     constraint_col = len(table.columns())
-    table.add_column('$pattern', 31, 0)
+    table.add_column(dgen_core.BitField('$pattern', 31, 0))
     for row in table.rows():
        _add_rule_pattern_constraints_to_row(
            decoder, table, row, constraint_col)
@@ -63,7 +63,7 @@ def _add_rule_pattern_constraints_to_row(decoder, table, row, constraint_col):
       print "consider: %s" % repr(row)
     action = row.action
     if action and action.__class__.__name__ == 'DecoderAction':
-        pattern = action.pattern
+        pattern = action.pattern()
         if pattern:
           rule_pattern = table.define_pattern(pattern, constraint_col)
           if _process_table(table):

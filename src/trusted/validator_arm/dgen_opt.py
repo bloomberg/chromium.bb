@@ -17,10 +17,10 @@ def optimize_rows(rows):
     """
     rows_by_action = dict()
     for row in rows:
-        if (row.action, row.arch) in rows_by_action:
-            rows_by_action[(row.action, row.arch)].append(row)
+        if row.action in rows_by_action:
+            rows_by_action[row.action].append(row)
         else:
-            rows_by_action[(row.action, row.arch)] = [row]
+            rows_by_action[row.action] = [row]
 
     optimized_rows = []
     for row_group in rows_by_action.itervalues():

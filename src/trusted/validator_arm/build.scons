@@ -95,6 +95,7 @@ def _generate_source(filename):
                       'dgen_input.py',
                       'dgen_opt.py',
                       'dgen_output.py',
+                      'dgen_add_patterns.py',
                       'dgen_decoder_output.py',
                       'dgen_test_output.py',
                       ],

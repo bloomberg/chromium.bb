@@ -171,15 +171,16 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                               cccc0000xx1xxxxxxxxxxxxx11x1xxxx
 | 1      ~10xx0     -        ->data_processing_immediate
 | "      10000      -        = Unary1RegisterImmediateOp => Defs12To15 # MOVW A8-194
-                               Mov_Rule_96_A2_P194
-                               cccc00110000iiiiddddIIIIIIIIIIII
-                               RegsNotPc
-                               (v6T2)
+                               rule: Mov_Rule_96_A2_P194
+                               pattern: cccc00110000iiiiddddIIIIIIIIIIII
+                               safety: RegsNotPc
+                               arch: v6T2
 | "      10100      -        = Unary1RegisterImmediateOp => Defs12To15 # MOVT A8-200
-                               Mov_Rule_99_A1_P200
-                               cccc00110100iiiiddddIIIIIIIIIIII
-                               RegsNotPc
-                               (v6T2)
+                               { Rd(15:12) }
+                               rule: Mov_Rule_99_A1_P200
+                               pattern: cccc00110100iiiiddddIIIIIIIIIIII
+                               safety: Rd=~1111
+                               arch: v6T2
 | "      10x10      -        ->msr_immediate_and_hints
 +--
 

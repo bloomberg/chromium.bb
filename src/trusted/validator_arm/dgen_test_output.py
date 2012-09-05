@@ -166,6 +166,12 @@ import dgen_output
 """The current command line arguments to use"""
 _cl_args = {}
 
+NEWLINE_STR="""
+"""
+
+COMMENTED_NEWLINE_STR="""
+//"""
+
 # The following defines naming conventions used for identifiers.
 # Note: DECODER will be replaced by 'actual' and 'baseline', defining
 # how both types of symbols are generated.
@@ -173,9 +179,11 @@ _cl_args = {}
 CLASS = '%(DECODER)s_%(rule)s'
 NAMED_CLASS = 'Named%(DECODER)s_%(rule)s'
 INSTANCE = '%(DECODER_class)s_instance_'
-BASE_TESTER='%(decoder_base)sTester%(row_name)s%(safety)s%(restrictions)s'
-BASE_BASE_TESTER='%(decoder_base)sTester%(safety)s'
-DECODER_TESTER='%(baseline)sTester_%(row_name)s%(safety)s%(restrictions)s_%(rule)s'
+BASE_TESTER=('%(decoder_base)sTester%(row_name)s%(qualifier)s%(safety)s'
+             '%(restrictions)s')
+BASE_BASE_TESTER='%(decoder_base)sTester%(qualifier)s'
+DECODER_TESTER=('%(baseline)sTester_%(row_name)s%(qualifier)s'
+                '%(safety)s%(restrictions)s_%(rule)s')
 
 def _negated_constraint(constraint):
   """Returns the negated pattern for the pattern text passed in."""
@@ -200,20 +208,21 @@ def _constraints_name(restrictions):
 def _pattern_column_name(pattern):
   """Returns an identifier describing the column name of the pattern."""
   if pattern.column:
-    if (dgen_core.column_hi(pattern.column) ==
-        dgen_core.column_lo(pattern.column)):
-      return '%s_%s' % (dgen_core.column_name(pattern.column),
-                        dgen_core.column_hi(pattern.column))
-    return "%s_%sTo%s" % (dgen_core.column_name(pattern.column),
-                          dgen_core.column_hi(pattern.column),
-                          dgen_core.column_lo(pattern.column))
+    if (pattern.column.hi == pattern.column.lo):
+      return '%s_%s' % (pattern.column.name, pattern.column.hi)
+    return "%s_%sTo%s" % (pattern.column.name,
+                          pattern.column.hi,
+                          pattern.column.lo)
   else:
     return 'Bits31To0'
 
 def _pattern_name(pattern):
   """Returns an identifier describing the pattern."""
-  name = _pattern_column_name(pattern)
-  return name
+  col_name = _pattern_column_name(pattern)
+  if pattern.is_equal_op():
+    return "%sIs%s" % (col_name, pattern.bitstring())
+  else:
+    return "%sIsNot%s" % (col_name, pattern.bitstring())
 
 def _pattern_row_name(row):
   """Returns an identifier describing the row pattern entries."""
@@ -224,21 +233,26 @@ def _pattern_row_name(row):
       first_pat = False
     else:
       row_name += '_'
-    col_name = _pattern_column_name(pat)
-    if pat.is_equal_op():
-      col_name = "%sIs%s" % (col_name, pat.bitstring())
-    else:
-      col_name = "Not%sIs%s" % (col_name, pat.bitstring())
-    row_name += col_name
+    row_name += _pattern_name(pat)
   return row_name
+
+def _safety_to_check(safety):
+  return [s for s in safety if isinstance(s, dgen_core.BitPattern)]
 
 def _interesting_patterns(patterns):
   """ Filters out non-interesting patterns."""
   # Only include rows not corresponding to rule pattern,
   # and not always true.
   return [ p for p in patterns if (
-      (not p.column or dgen_core.column_name(p.column) != '$pattern')
+      (not p.column or p.column.name != '$pattern')
       and not p.matches_any())]
+
+def _safety_name(safety):
+  """Returns an identifier identifying the given safety."""
+  if isinstance(s, dgen_core.BitPattern):
+    return _pattern_name(safety)
+  else:
+    return safety
 
 def _install_action(decoder, action, values, row_name = ''):
   """Install common names needed to generate code for the given action,
@@ -252,15 +266,23 @@ def _install_action(decoder, action, values, row_name = ''):
   values['baseline'] = action.baseline
   values['actual'] = action.actual
   values['decoder_base'] = decoder.base_class(values['baseline'])
-  values['rule'] = action.rule
-  if action.constraints:
-    values['safety'] = (action.constraints.safety
-                        if action.constraints.safety else '')
-    values['restrictions'] = _constraints_name(action.constraints.restrictions)
+  values['rule'] = action.rule()
+  values['constraints'] = action.constraints()
+  values['qualifier'] = ''.join([s for s in action.safety()
+                                 if not isinstance(s, dgen_core.BitPattern)])
+  if action.constraints():
+    values['qualifier'] += (action.constraints().other
+                            if action.constraints().other else '')
+    values['restrictions'] = _constraints_name(
+        action.constraints().restrictions)
   else:
-    values['safety'] = ''
+    values['qualifier'] =''
     values['restrictions'] = ''
-  values['pattern'] = action.pattern
+  values['safety'] = '_'.join([_pattern_name(s) for s in action.safety()
+                               if isinstance(s, dgen_core.BitPattern)])
+  if values['safety']:
+    values['safety'] = 'Safety_' + values['safety']
+  values['pattern'] = action.pattern()
   values['baseline_class'] =  _decoder_replace(CLASS, 'baseline') % values
   values['actual_class'] = _decoder_replace(CLASS, 'actual') % values
   _install_baseline_and_actuals('named_DECODER_class', NAMED_CLASS, values)
@@ -680,20 +702,31 @@ namespace nacl_arm_test {
 // This is done so that it can be used to make sure that the
 // corresponding pattern is not tested for cases that would be excluded
 //  due to row checks, or restrictions specified by the row restrictions.
+
 """
 
 CONSTRAINT_TESTER_CLASS_HEADER="""
+// %(row_comment)s
 class %(base_tester)s
     : public %(base_base_tester)s {
  public:
   %(base_tester)s(const NamedClassDecoder& decoder)
-    : %(base_base_tester)s(decoder) {}
+    : %(base_base_tester)s(decoder) {}"""
+
+CONSTRAINT_TESTER_RESTRICTIONS_HEADER="""
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
-      const NamedClassDecoder& decoder);
+      const NamedClassDecoder& decoder);"""
 
+CONSTRAINT_TESTER_SANITY_HEADER="""
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);"""
+
+CONSTRAINT_TESTER_CLASS_CLOSE="""
 };
+"""
 
+CONSTRAINT_TESTER_PARSE_HEADER="""
 bool %(base_tester)s
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
@@ -718,6 +751,21 @@ CONSTRAINT_TESTER_CLASS_FOOTER="""
 }
 """
 
+SAFETY_TESTER_HEADER="""
+bool %(base_tester)s
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(%(base_base_tester)s::ApplySanityChecks(inst, decoder));
+"""
+
+SAFETY_TESTER_CHECK="""
+  EXPECT_TRUE(%s);"""
+
+SAFETY_TESTER_FOOTER="""
+  return true;
+}
+"""
+
 TESTER_CLASS_HEADER="""
 // The following are derived class decoder testers for decoder actions
 // associated with a pattern of an action. These derived classes introduce
@@ -726,6 +774,7 @@ TESTER_CLASS_HEADER="""
 """
 
 TESTER_CLASS="""
+// %(row_comment)s
 class %(decoder_tester)s
     : public %(base_tester)s {
  public:
@@ -748,6 +797,7 @@ class %(decoder_name)sTests : public ::testing::Test {
 """
 
 TEST_FUNCTION_ACTUAL_VS_BASELINE="""
+// %(row_comment)s
 TEST_F(%(decoder_name)sTests,
        %(decoder_tester)s_%(pattern)s_Test) {
   %(decoder_tester)s baseline_tester;
@@ -758,6 +808,7 @@ TEST_F(%(decoder_name)sTests,
 """
 
 TEST_FUNCTION_BASELINE="""
+// %(row_comment)s
 TEST_F(%(decoder_name)sTests,
        %(decoder_tester)s_%(pattern)s_Test) {
   %(decoder_tester)s tester;
@@ -795,7 +846,8 @@ def generate_tests_cc(decoder, decoder_name, out, cl_args, tables):
   _generate_test_patterns(decoder, values, out)
   out.write(TEST_CC_FOOTER % values)
 
-def _install_test_row(row, decoder, values, with_patterns=False):
+def _install_test_row(row, decoder, values,
+                      with_patterns=False, with_rules=True):
   """Installs data associated with the given row into the values map.
 
      Installs the baseline class, rule name, and constraints associated
@@ -803,15 +855,19 @@ def _install_test_row(row, decoder, values, with_patterns=False):
      actual class information is also inserted.
      """
   if with_patterns:
-    action_fields = ['actual', 'baseline', 'rule', 'pattern', 'constraints']
+    action_fields = ['actual', 'baseline', 'pattern', 'constraints', 'safety']
   else:
-    action_fields = ['baseline', 'rule', 'constraints']
+    action_fields = ['baseline', 'constraints', 'safety']
+  if with_rules:
+    action_fields += ['rule']
   action = row.action.action_filter(action_fields)
+  values['row_comment'] = (repr(row.copy_with_action(action)).
+                           replace(NEWLINE_STR, COMMENTED_NEWLINE_STR))
   _install_action(decoder, action, values,
                   row_name = _pattern_row_name(row))
   return action
 
-def _rows_to_test(decoder, values, with_patterns=False):
+def _rows_to_test(decoder, values, with_patterns=False, with_rules=True):
   """Returns the rows of the decoder that define enough information
      that testing can be done.
      """
@@ -820,41 +876,61 @@ def _rows_to_test(decoder, values, with_patterns=False):
   for table in decoder.tables():
     for row in table.rows():
       if (isinstance(row.action, dgen_core.DecoderAction) and
-          row.action.pattern):
-        _install_test_row(row, decoder, values, with_patterns)
+          row.action.pattern()):
+        new_row = row.copy_with_action(
+            _install_test_row(row, decoder, values, with_patterns, with_rules))
         constraint_tester = values['base_tester']
         if constraint_tester not in generated_names:
           generated_names.add(constraint_tester)
-          rows.append(row)
+          rows.append(new_row)
   return rows
+
+def _row_filter_interesting_patterns(row):
+  """Builds a copy of the row, removing uninteresting column patterns."""
+  return row.copy_with_patterns(_interesting_patterns(row.patterns))
 
 def _generate_constraint_testers(decoder, values, out):
   """Generates the testers needed to implement the constraints
      associated with each row having a pattern.
      """
-  for row in _rows_to_test(decoder, values):
+  for r in _rows_to_test(decoder, values, with_rules=False):
+    row = _row_filter_interesting_patterns(r)
     action = _install_test_row(row, decoder, values)
+    safety_to_check = _safety_to_check(action.safety())
     out.write(CONSTRAINT_TESTER_CLASS_HEADER % values)
-    row_patterns = _interesting_patterns(row.patterns)
-    if row_patterns:
-      out.write(ROW_CONSTRAINTS_HEADER % values);
-      for p in row_patterns:
-        out.write(CONSTRAINT_CHECK % p.negate().to_c_expr('inst.Bits()'))
-    if action.constraints.restrictions:
-      out.write(PATTERN_CONSTRAINT_RESTRICTIONS_HEADER)
-      for c in action.constraints.restrictions:
-        out.write(CONSTRAINT_CHECK %
-                  dgen_core.BitPattern.parse(_negated_constraint(c),
-                                             ('constraint', 31, 0)).
-                  to_c_expr('inst.Bits()'))
-    out.write(CONSTRAINT_TESTER_CLASS_FOOTER % values)
+    if row.patterns or action.constraints().restrictions:
+      out.write(CONSTRAINT_TESTER_RESTRICTIONS_HEADER % values);
+    if safety_to_check:
+      out.write(CONSTRAINT_TESTER_SANITY_HEADER % values)
+    out.write(CONSTRAINT_TESTER_CLASS_CLOSE % values)
+    if row.patterns or action.constraints().restrictions:
+      out.write(CONSTRAINT_TESTER_PARSE_HEADER % values)
+      if row.patterns:
+        out.write(ROW_CONSTRAINTS_HEADER % values);
+        for p in row.patterns:
+          out.write(CONSTRAINT_CHECK % p.negate().to_c_expr('inst.Bits()'))
+      if action.constraints().restrictions:
+        out.write(PATTERN_CONSTRAINT_RESTRICTIONS_HEADER)
+        for c in action.constraints().restrictions:
+          out.write(CONSTRAINT_CHECK %
+                    dgen_core.BitPattern.parse(
+                        _negated_constraint(c),
+                        dgen_core.BitField('constraint', 31, 0))
+                    .to_c_expr('inst.Bits()'))
+      out.write(CONSTRAINT_TESTER_CLASS_FOOTER % values)
+    if safety_to_check:
+      out.write(SAFETY_TESTER_HEADER % values)
+      for check in safety_to_check:
+        out.write(SAFETY_TESTER_CHECK % check.to_c_expr('inst.Bits()'));
+      out.write(SAFETY_TESTER_FOOTER % values)
 
 def _generate_rule_testers(decoder, values, out):
   """Generates the testers that tests the rule associated with
      each row having a pattern.
      """
   out.write(TESTER_CLASS_HEADER % values)
-  for row in _rows_to_test(decoder, values):
+  for r in _rows_to_test(decoder, values):
+    row = _row_filter_interesting_patterns(r)
     _install_test_row(row, decoder, values)
     out.write(TESTER_CLASS % values)
 
@@ -874,7 +950,8 @@ def _generate_test_patterns(decoder, values, out):
   """Generates a test function for each row having a pattern associated
      with the table row.
      """
-  for row in _rows_to_test(decoder, values, with_patterns=True):
+  for r in _rows_to_test(decoder, values, with_patterns=True):
+    row = _row_filter_interesting_patterns(r)
     action = _install_test_row(row, decoder, values, with_patterns=True)
     if action.actual == action.baseline:
       out.write(TEST_FUNCTION_BASELINE % values)

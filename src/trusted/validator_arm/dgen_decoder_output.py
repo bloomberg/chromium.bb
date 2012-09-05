@@ -128,7 +128,7 @@ def generate_h(decoder, decoder_name, filename, out, cl_args):
       values['table_name'] = table.name
       out.write(DECODER_DECLARE_METHOD % values)
     out.write(DECODER_DECLARE_FIELD_COMMENTS)
-    for action in decoder.decoders():
+    for action in decoder.action_filter('actual').decoders():
       values['decoder'] = action.actual;
       out.write(DECODER_DECLARE_FIELD % values)
     out.write(DECODER_DECLARE_FOOTER % values)
