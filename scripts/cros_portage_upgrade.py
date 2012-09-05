@@ -16,6 +16,7 @@ import re
 import shutil
 import tempfile
 
+from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import operation
@@ -88,8 +89,7 @@ class PInfo(object):
 class Upgrader(object):
   """A class to perform various tasks related to updating Portage packages."""
 
-  PORTAGE_GIT_URL = ('ssh://gerrit.chromium.org:29418/'
-                     'chromiumos/overlays/portage.git')
+  PORTAGE_GIT_URL = constants.GIT_HTTP_URL + '/chromiumos/overlays/portage.git'
   ORIGIN_GENTOO = 'origin/gentoo'
   UPSTREAM_TMP_REPO = '/tmp/cros_portage_upgrade-gentoo-portage'
   UPSTREAM_OVERLAY_NAME = 'portage'
