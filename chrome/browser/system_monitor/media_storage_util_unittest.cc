@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "chrome/browser/media_gallery/media_storage_util.h"
+#include "chrome/browser/system_monitor/media_storage_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome {

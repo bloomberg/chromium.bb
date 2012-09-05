@@ -6,8 +6,8 @@
 // the SystemMonitor about the addition and deletion of media devices, and
 // answers queries about mounted devices.
 
-#ifndef CHROME_BROWSER_MEDIA_GALLERY_REMOVABLE_DEVICE_NOTIFICATIONS_LINUX_H_
-#define CHROME_BROWSER_MEDIA_GALLERY_REMOVABLE_DEVICE_NOTIFICATIONS_LINUX_H_
+#ifndef CHROME_BROWSER_SYSTEM_MONITOR_REMOVABLE_DEVICE_NOTIFICATIONS_LINUX_H_
+#define CHROME_BROWSER_SYSTEM_MONITOR_REMOVABLE_DEVICE_NOTIFICATIONS_LINUX_H_
 
 #if defined(OS_CHROMEOS)
 #error "Use the ChromeOS-specific implementation instead."
@@ -140,4 +140,4 @@ class RemovableDeviceNotificationsLinux
 
 }  // namespace chrome
 
-#endif  // CHROME_BROWSER_MEDIA_GALLERY_REMOVABLE_DEVICE_NOTIFICATIONS_LINUX_H_
+#endif  // CHROME_BROWSER_SYSTEM_MONITOR_REMOVABLE_DEVICE_NOTIFICATIONS_LINUX_H_

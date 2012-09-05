@@ -4,7 +4,7 @@
 
 // RemovableDeviceNotificationsLinux implementation.
 
-#include "chrome/browser/media_gallery/removable_device_notifications_linux.h"
+#include "chrome/browser/system_monitor/removable_device_notifications_linux.h"
 
 #include <libudev.h>
 #include <mntent.h>
@@ -22,9 +22,9 @@
 #include "base/stringprintf.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/media_gallery/media_device_notifications_utils.h"
-#include "chrome/browser/media_gallery/media_gallery_constants.h"
-#include "chrome/browser/media_gallery/media_storage_util.h"
+#include "chrome/browser/system_monitor/media_device_notifications_utils.h"
+#include "chrome/browser/system_monitor/removable_device_constants.h"
+#include "chrome/browser/system_monitor/media_storage_util.h"
 
 namespace chrome {
 

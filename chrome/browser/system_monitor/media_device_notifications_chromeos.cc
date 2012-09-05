@@ -4,7 +4,7 @@
 
 // chromeos::MediaDeviceNotifications implementation.
 
-#include "chrome/browser/media_gallery/media_device_notifications_chromeos.h"
+#include "chrome/browser/system_monitor/media_device_notifications_chromeos.h"
 
 #include "base/file_path.h"
 #include "base/logging.h"
@@ -12,8 +12,8 @@
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/media_gallery/media_device_notifications_utils.h"
-#include "chrome/browser/media_gallery/media_storage_util.h"
+#include "chrome/browser/system_monitor/media_device_notifications_utils.h"
+#include "chrome/browser/system_monitor/media_storage_util.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {

@@ -12,7 +12,7 @@
 #include "base/path_service.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/media_gallery/media_storage_util.h"
+#include "chrome/browser/system_monitor/media_storage_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension.h"

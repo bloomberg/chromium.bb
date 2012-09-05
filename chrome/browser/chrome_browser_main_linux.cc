@@ -5,7 +5,7 @@
 #include "chrome/browser/chrome_browser_main_linux.h"
 
 #if !defined(OS_CHROMEOS)
-#include "chrome/browser/media_gallery/removable_device_notifications_linux.h"
+#include "chrome/browser/system_monitor/removable_device_notifications_linux.h"
 #endif
 
 #if defined(USE_LINUX_BREAKPAD)

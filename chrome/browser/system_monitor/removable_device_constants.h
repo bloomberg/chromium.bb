@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEDIA_GALLERY_MEDIA_GALLERY_CONSTANTS_H_
-#define CHROME_BROWSER_MEDIA_GALLERY_MEDIA_GALLERY_CONSTANTS_H_
+#ifndef CHROME_BROWSER_SYSTEM_MONITOR_REMOVABLE_DEVICE_CONSTANTS_H_
+#define CHROME_BROWSER_SYSTEM_MONITOR_REMOVABLE_DEVICE_CONSTANTS_H_
 
 namespace chrome {
 
@@ -17,4 +17,4 @@ extern const char kSpaceDelim[];
 
 }  // namespace chrome
 
-#endif  // CHROME_BROWSER_MEDIA_GALLERY_MEDIA_GALLERY_CONSTANTS_H_
+#endif  // CHROME_BROWSER_SYSTEM_MONITOR_REMOVABLE_DEVICE_CONSTANTS_H_

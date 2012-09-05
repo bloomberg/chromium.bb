@@ -1388,15 +1388,10 @@
         'browser/managed_mode_unittest.cc',
         'browser/managed_mode_url_filter_unittest.cc',
         'browser/media/media_internals_unittest.cc',
-        'browser/media_gallery/media_device_notifications_chromeos_unittest.cc',
-        'browser/media_gallery/media_device_notifications_utils_unittest.cc',
-        'browser/media_gallery/media_device_notifications_window_win_unittest.cc',
         'browser/media_gallery/media_galleries_dialog_controller_mock.cc',
         'browser/media_gallery/media_galleries_dialog_controller_mock.h',
         'browser/media_gallery/media_galleries_preferences_unittest.cc',
         'browser/media_gallery/media_gallery_database_unittest.cc',
-        'browser/media_gallery/media_storage_util_unittest.cc',
-        'browser/media_gallery/removable_device_notifications_linux_unittest.cc',
         'browser/metrics/metrics_log_unittest.cc',
         'browser/metrics/metrics_log_serializer_unittest.cc',
         'browser/metrics/metrics_service_unittest.cc',
@@ -1670,6 +1665,11 @@
         'browser/sync/test/test_http_bridge_factory.h',
         'browser/sync/test_profile_sync_service.cc',
         'browser/sync/test_profile_sync_service.h',
+        'browser/system_monitor/media_device_notifications_chromeos_unittest.cc',
+        'browser/system_monitor/media_device_notifications_utils_unittest.cc',
+        'browser/system_monitor/media_device_notifications_window_win_unittest.cc',
+        'browser/system_monitor/media_storage_util_unittest.cc',
+        'browser/system_monitor/removable_device_notifications_linux_unittest.cc',
         'browser/tab_contents/render_view_context_menu_unittest.cc',
         'browser/tab_contents/thumbnail_generator_unittest.cc',
         'browser/tab_contents/web_contents_user_data_unittest.cc',
@@ -2246,13 +2246,13 @@
         }],
         ['chromeos==1', {
           'sources/': [
-            ['exclude', '^browser/media_gallery/removable_device_notifications_linux_unittest.cc'],
             ['exclude', '^browser/password_manager/native_backend_gnome_x_unittest.cc'],
             ['exclude', '^browser/password_manager/native_backend_kwallet_x_unittest.cc'],
             ['exclude', '^browser/policy/user_cloud_policy_store_unittest.cc'],
             ['exclude', '^browser/policy/user_policy_signin_service_unittest.cc'],
 
             ['exclude', '^browser/safe_browsing/download_protection_service_unittest.cc' ],
+            ['exclude', '^browser/system_monitor/removable_device_notifications_linux_unittest.cc'],
           ],
           'sources': [
             'browser/ui/webui/feedback_ui_unittest.cc',
@@ -2260,7 +2260,6 @@
         }, { # else: chromeos == 0
           'sources/': [
             ['exclude', '^browser/chromeos/'],
-            ['exclude', '^browser/media_gallery/media_device_notifications_chromeos_unittest.cc'],
             ['exclude', '^browser/net/gaia/gaia_oauth_fetcher_unittest.cc'],
             ['exclude', '^browser/policy/auto_enrollment_client_unittest.cc' ],
             ['exclude', '^browser/policy/configuration_policy_handler_chromeos_unittest.cc' ],
@@ -2270,6 +2269,7 @@
             ['exclude', '^browser/policy/enterprise_install_attributes_unittest.cc' ],
             ['exclude', '^browser/policy/network_configuration_updater_unittest.cc' ],
             ['exclude', '^browser/policy/user_cloud_policy_store_chromeos_unittest.cc'],
+            ['exclude', '^browser/system_monitor/media_device_notifications_chromeos_unittest.cc'],
             ['exclude', '^browser/ui/ash/ime_controller_chromeos_unittest.cc'],
             ['exclude', '^browser/ui/webui/chromeos/imageburner/'],
             ['exclude', '^browser/ui/webui/chromeos/login'],

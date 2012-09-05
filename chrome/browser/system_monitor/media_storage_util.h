@@ -5,8 +5,8 @@
 // chrome::MediaStorageUtil provides information about storage devices attached
 // to the computer.
 
-#ifndef CHROME_BROWSER_MEDIA_GALLERY_MEDIA_STORAGE_UTIL_H_
-#define CHROME_BROWSER_MEDIA_GALLERY_MEDIA_STORAGE_UTIL_H_
+#ifndef CHROME_BROWSER_SYSTEM_MONITOR_MEDIA_STORAGE_UTIL_H_
+#define CHROME_BROWSER_SYSTEM_MONITOR_MEDIA_STORAGE_UTIL_H_
 
 #include <string>
 
@@ -91,4 +91,4 @@ class MediaStorageUtil {
 
 }  // namespace chrome
 
-#endif  // CHROME_BROWSER_MEDIA_GALLERY_MEDIA_STORAGE_UTIL_H_
+#endif  // CHROME_BROWSER_SYSTEM_MONITOR_MEDIA_STORAGE_UTIL_H_

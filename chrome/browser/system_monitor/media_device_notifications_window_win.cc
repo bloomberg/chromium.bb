@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media_gallery/media_device_notifications_window_win.h"
+#include "chrome/browser/system_monitor/media_device_notifications_window_win.h"
 
 #include <windows.h>
 #include <dbt.h>
@@ -13,8 +13,8 @@
 #include "base/string_number_conversions.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/win/wrapped_window_proc.h"
-#include "chrome/browser/media_gallery/media_device_notifications_utils.h"
-#include "chrome/browser/media_gallery/media_storage_util.h"
+#include "chrome/browser/system_monitor/media_device_notifications_utils.h"
+#include "chrome/browser/system_monitor/media_storage_util.h"
 #include "content/public/browser/browser_thread.h"
 
 using base::SystemMonitor;

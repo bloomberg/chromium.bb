@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media_gallery/media_device_notifications_utils.h"
+#include "chrome/browser/system_monitor/media_device_notifications_utils.h"
 
 #include "base/file_path.h"
 #include "base/file_util.h"

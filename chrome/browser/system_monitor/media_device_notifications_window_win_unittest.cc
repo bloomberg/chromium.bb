@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media_gallery/media_device_notifications_window_win.h"
+#include "chrome/browser/system_monitor/media_device_notifications_window_win.h"
 
 #include <dbt.h>
 
@@ -16,7 +16,7 @@
 #include "base/string_number_conversions.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/test/mock_devices_changed_observer.h"
-#include "chrome/browser/media_gallery/media_storage_util.h"
+#include "chrome/browser/system_monitor/media_storage_util.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

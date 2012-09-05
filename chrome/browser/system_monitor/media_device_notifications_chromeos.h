@@ -5,8 +5,8 @@
 // chromeos::MediaDeviceNotifications listens for mount point changes and
 // notifies the SystemMonitor about the addition and deletion of media devices.
 
-#ifndef CHROME_BROWSER_MEDIA_GALLERY_MEDIA_DEVICE_NOTIFICATIONS_CHROMEOS_H_
-#define CHROME_BROWSER_MEDIA_GALLERY_MEDIA_DEVICE_NOTIFICATIONS_CHROMEOS_H_
+#ifndef CHROME_BROWSER_SYSTEM_MONITOR_MEDIA_DEVICE_NOTIFICATIONS_CHROMEOS_H_
+#define CHROME_BROWSER_SYSTEM_MONITOR_MEDIA_DEVICE_NOTIFICATIONS_CHROMEOS_H_
 
 #if !defined(OS_CHROMEOS)
 #error "Should only be used on ChromeOS."
@@ -70,4 +70,4 @@ class MediaDeviceNotifications
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_MEDIA_GALLERY_MEDIA_DEVICE_NOTIFICATIONS_CHROMEOS_H_
+#endif  // CHROME_BROWSER_SYSTEM_MONITOR_MEDIA_DEVICE_NOTIFICATIONS_CHROMEOS_H_

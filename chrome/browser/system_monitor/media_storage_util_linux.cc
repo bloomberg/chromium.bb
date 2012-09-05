@@ -4,11 +4,11 @@
 
 // Linux specific implementation of chrome::MediaStorageUtil.
 
-#include "chrome/browser/media_gallery/media_storage_util.h"
+#include "chrome/browser/system_monitor/media_storage_util.h"
 
 #include "base/callback.h"
 #include "base/system_monitor/system_monitor.h"
-#include "chrome/browser/media_gallery/removable_device_notifications_linux.h"
+#include "chrome/browser/system_monitor/removable_device_notifications_linux.h"
 
 namespace chrome {
 
