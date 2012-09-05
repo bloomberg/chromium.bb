@@ -12,7 +12,6 @@
 #include <sstream>
 
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/debug_stub/mutex.h"
 #include "native_client/src/trusted/debug_stub/packet.h"
 #include "native_client/src/trusted/debug_stub/platform.h"
 #include "native_client/src/trusted/debug_stub/session.h"
@@ -21,8 +20,6 @@
 
 using port::IPlatform;
 using port::ITransport;
-using port::IMutex;
-using port::MutexLock;
 
 // Use a timeout of 1 second
 int const kSessionTimeoutMs = 1000;
@@ -30,23 +27,18 @@ int const kSessionTimeoutMs = 1000;
 namespace gdb_rsp {
 
 Session::Session()
-  : mutex_(NULL),
-    io_(NULL),
+  : io_(NULL),
     flags_(0),
     seq_(0),
     connected_(false) {
 }
 
 Session::~Session() {
-  if (mutex_) IMutex::Free(mutex_);
 }
 
 
 bool Session::Init(port::ITransport *transport) {
   if (NULL == transport) return false;
-
-  mutex_ = IMutex::Allocate();
-  if (NULL == mutex_) return false;
 
   connected_ = true;
   io_ = transport;
@@ -95,7 +87,6 @@ bool Session::GetChar(char *ch) {
 
 
 bool Session::SendPacket(Packet *pkt) {
-  MutexLock lock(mutex_);
   char ch;
 
   do {
@@ -115,8 +106,6 @@ bool Session::SendPacket(Packet *pkt) {
 
 
 bool Session::SendPacketOnly(Packet *pkt) {
-  MutexLock lock(mutex_);
-
   const char *ptr;
   char ch;
   std::stringstream outstr;
@@ -165,8 +154,6 @@ bool Session::SendPacketOnly(Packet *pkt) {
   return SendStream(outstr.str().data());
 }
 
-// We do not take the mutex here since we already have it
-// this function is protected so it can't be called directly.
 bool Session::SendStream(const char *out) {
   int32_t len = static_cast<int32_t>(strlen(out));
   int32_t sent = 0;
@@ -195,8 +182,6 @@ bool Session::SendStream(const char *out) {
 // Attempt to receive a packet
 bool Session::GetPacket(Packet *pkt) {
   assert(io_);
-
-  MutexLock lock(mutex_);
 
   char run_xsum, fin_xsum, ch;
   std::string in;

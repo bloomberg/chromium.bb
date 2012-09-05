@@ -19,19 +19,41 @@
 #include <assert.h>
 #include <stddef.h>
 
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
+
 namespace port {
 
+// TODO(mseaborn): This is no longer an interface class so it could
+// be renamed from "IMutex" to "Mutex".  Or we could simply remove it
+// and inline the methods in the source.
 class IMutex {
  public:
-  virtual void Lock() = 0;       // Block until the mutex is taken
-  virtual void Unlock() = 0;     // Unlock the mutext
-  virtual bool Try() = 0;        // Try to lock, but return immediately
+  inline IMutex() {
+    NaClXMutexCtor(&mutex_);
+  }
 
-  static IMutex *Allocate();      // Allocate a mutex
-  static void Free(IMutex *mtx);  // Free a mutex
+  inline void Lock() {
+    NaClXMutexLock(&mutex_);
+  }
 
- protected:
-  virtual ~IMutex() {}            // Prevent delete of base pointer
+  inline void Unlock() {
+    NaClXMutexUnlock(&mutex_);
+  }
+
+  static inline IMutex *Allocate() {
+    return new IMutex();
+  }
+
+  static inline void Free(IMutex *mtx) {
+    delete mtx;
+  }
+
+ private:
+  inline ~IMutex() {
+    NaClMutexDtor(&mutex_);
+  }
+
+  struct NaClMutex mutex_;
 };
 
 

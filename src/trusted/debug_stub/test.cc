@@ -18,18 +18,6 @@ void IPlatform::Relinquish(uint32_t msec) {
   (void) msec;
   return;
 }
-
-//  The unit tests are singly threaded, so we just do nothing
-//  for synchronization
-class MutexMock : public IMutex {
-  void Lock() {}
-  void Unlock() {}
-  bool Try() { return true; }
-};
-
-IMutex* IMutex::Allocate() { return new MutexMock; }
-void IMutex::Free(IMutex* mtx) { delete static_cast<MutexMock*>(mtx); }
-
 }  // End of namespace port
 
 int main(int argc, const char *argv[]) {

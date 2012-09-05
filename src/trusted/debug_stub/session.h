@@ -30,7 +30,6 @@
 #include <sstream>
 
 #include "native_client/src/include/portability.h"
-#include "native_client/src/trusted/debug_stub/mutex.h"
 #include "native_client/src/trusted/debug_stub/transport.h"
 
 namespace gdb_rsp {
@@ -39,6 +38,8 @@ class Packet;
 
 // Session is not inteded to be derived from, protected members are
 // protected only for unit testing purposes.
+//
+// Note that the Session object is not thread-safe.
 class Session {
  public:
   Session();
@@ -73,7 +74,6 @@ class Session {
   Session &operator=(const Session&);
 
  protected:
-  port::IMutex *mutex_;     // Lock to enforce correct response order.
   port::ITransport *io_;    // Transport object not owned by the Session.
   uint32_t flags_;          // Session flags for Sequence/Ack generation.
   uint8_t seq_;             // Next sequence number to use or -1.

@@ -30,7 +30,6 @@
       ['OS=="linux" or OS=="mac"', {
         'platform_sources': [
           'posix/debug_stub_posix.cc',
-          'posix/mutex_impl.cc',
           'posix/platform_impl.cc',
           'posix/thread_impl.cc',
         ],
@@ -38,7 +37,6 @@
       ['OS=="win"', {
         'platform_sources': [
           'win/debug_stub_win.cc',
-          'win/mutex_impl.cc',
           'win/platform_impl.cc',
           'win/thread_impl.cc',
         ],
