@@ -211,9 +211,8 @@ FaviconService::Handle FaviconService::GetFaviconForURLImpl(
   FaviconService::Handle handle = request->handle();
   if (page_url.SchemeIs(chrome::kChromeUIScheme) ||
       page_url.SchemeIs(chrome::kExtensionScheme)) {
-    // TODO(pkotwicz): Pass in desired size and desired scale factors.
     ChromeWebUIControllerFactory::GetInstance()->GetFaviconForURL(
-        profile, request, page_url);
+        profile, request, page_url, desired_scale_factors);
   } else {
     // TODO(pkotwicz): Pass in desired size and desired scale factors.
     if (history_service_)

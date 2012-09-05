@@ -467,7 +467,8 @@ WebUIController* ChromeWebUIControllerFactory::CreateWebUIControllerForURL(
 void ChromeWebUIControllerFactory::GetFaviconForURL(
     Profile* profile,
     FaviconService::GetFaviconRequest* request,
-    const GURL& page_url) const {
+    const GURL& page_url,
+    const std::vector<ui::ScaleFactor>& scale_factors) const {
   // Before determining whether page_url is an extension url, we must handle
   // overrides. This changes urls in |kChromeUIScheme| to extension urls, and
   // allows to use ExtensionWebUI::GetFaviconForURL.
@@ -480,14 +481,16 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
       url.host() != extension_misc::kBookmarkManagerId) {
     ExtensionWebUI::GetFaviconForURL(profile, request, url);
   } else {
-    scoped_refptr<base::RefCountedMemory> bitmap(GetFaviconResourceBytes(
-          url, ui::SCALE_FACTOR_100P));
     std::vector<history::FaviconBitmapResult> favicon_bitmap_results;
-    if (bitmap.get() && bitmap->size()) {
-      history::FaviconBitmapResult bitmap_result;
-      bitmap_result.bitmap_data = bitmap;
-      bitmap_result.icon_type = history::FAVICON;
-      favicon_bitmap_results.push_back(bitmap_result);
+    for (size_t i = 0; i < scale_factors.size(); ++i) {
+      scoped_refptr<base::RefCountedMemory> bitmap(GetFaviconResourceBytes(
+            url, scale_factors[i]));
+      if (bitmap.get() && bitmap->size()) {
+        history::FaviconBitmapResult bitmap_result;
+        bitmap_result.bitmap_data = bitmap;
+        bitmap_result.icon_type = history::FAVICON;
+        favicon_bitmap_results.push_back(bitmap_result);
+      }
     }
     request->ForwardResultAsync(request->handle(), favicon_bitmap_results,
                                 history::IconURLSizesMap());
