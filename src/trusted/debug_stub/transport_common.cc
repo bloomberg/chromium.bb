@@ -196,34 +196,6 @@ static bool BuildSockAddr(const char *addr, struct sockaddr_in *sockaddr) {
   return StringToIPv4(addrstr, pip, pport);
 }
 
-ITransport* ITransport::Connect(const char *addr) {
-  if (!SocketsAvailable()) return NULL;
-
-  SOCKET_HANDLE s = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-  if (s == -1) {
-    NaClLog(LOG_ERROR, "Failed to create connection socket.\n");
-    return NULL;
-  }
-
-  struct sockaddr_in saddr;
-  // Clearing sockaddr_in first appears to be necessary on Mac OS X.
-  memset(&saddr, 0, sizeof(saddr));
-  saddr.sin_family = AF_INET;
-  saddr.sin_addr.s_addr = htonl(0x7F000001);
-  saddr.sin_port = htons(4014);
-
-  // Override portions address that are provided
-  if (addr) BuildSockAddr(addr, &saddr);
-
-  if (::connect(s, reinterpret_cast<sockaddr*>(&saddr), sizeof(saddr)) != 0) {
-    closesocket(s);
-    NaClLog(LOG_ERROR, "Failed to connect.\n");
-    return NULL;
-  }
-
-  return new Transport(s);
-}
-
 ITransport* ITransport::Accept(const char *addr) {
   static bool listening = false;
   if (!SocketsAvailable()) return NULL;

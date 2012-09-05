@@ -31,8 +31,7 @@ class ITransport {
   // Disconnect the transport, R/W and Select will now throw an exception
   virtual void Disconnect() = 0;
 
-  // Attempt to connect to, or accept connection at the specified address
-  static ITransport *Connect(const char *addr);
+  // Attempt to accept connection at the specified address
   static ITransport *Accept(const char *addr);
   static void Free(ITransport *transport);
 
