@@ -1,5 +1,10 @@
 2012-09-05  Christian Egli  <christian.egli@sbs.ch>
 
+	* tests/runHarness.py (test_allCases): Add some code to enable the
+	harness to return the result of the tests. Disable it for now as
+	there are still some tables that fail that we cannot fix before
+	release.
+
 	* tables/de-de-comp8.ctb: Added more unicode definitions. Thanks
 	to Aliminator83@gmail.com.
 
