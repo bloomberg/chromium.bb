@@ -9,17 +9,16 @@
 #include "IntSize.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
+#ifdef NO_ERROR
+#undef NO_ERROR
+#endif
+
 namespace WebCore {
 
 class GraphicsContext3D {
 public:
     enum SourceDataFormat { SourceFormatRGBA8, SourceFormatBGRA8 };
-    static bool computeFormatAndTypeParameters(unsigned, unsigned, unsigned* componentsPerPixel, unsigned* bytesPerComponent)
-    {
-        *componentsPerPixel = 4;
-        *bytesPerComponent = 1;
-        return true;
-    }
+    static bool computeFormatAndTypeParameters(unsigned, unsigned, unsigned* componentsPerPixel, unsigned* bytesPerComponent);
 
     enum {
         ARRAY_BUFFER = GL_ARRAY_BUFFER,

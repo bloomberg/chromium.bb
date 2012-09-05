@@ -5,6 +5,8 @@
 #ifndef WEBKIT_COMPOSITOR_STUBS_WEBTRANSFORMATIONMATRIX_H_
 #define WEBKIT_COMPOSITOR_STUBS_WEBTRANSFORMATIONMATRIX_H_
 
+#include <public/WebCommon.h>
+
 #undef WEBKIT_IMPLEMENTATION
 #include "third_party/WebKit/Source/Platform/chromium/public/WebTransformationMatrix.h"
 #undef WEBKIT_IMPLEMENTATION

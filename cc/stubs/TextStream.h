@@ -9,12 +9,13 @@
 
 namespace WebCore {
 
+// These symbols are all defined inside WebCore.
 class TextStream {
 public:
-    TextStream& operator<<(const String&) { return *this; }
-    TextStream& operator<<(const char*) { return *this; }
-    TextStream& operator<<(int) { return *this; }
-    String release() { return ""; }
+    TextStream& operator<<(const String&);
+    TextStream& operator<<(const char*);
+    TextStream& operator<<(int);
+    String release();
 };
 
 }

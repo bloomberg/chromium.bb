@@ -108,9 +108,15 @@
           ],
           'sources': [
             '<@(webkit_compositor_bindings_sources)',
-            'stubs/AnimationIdVendor.h',
-            'stubs/public/WebTransformationMatrix',
+            'stubs/public/WebTransformationMatrix.h',
           ],
+          'conditions': [
+            ['component=="shared_library"', {
+              'defines': [
+                'WEBKIT_DLL',
+              ],
+            }],
+          ]
         },
       ],
     }],
