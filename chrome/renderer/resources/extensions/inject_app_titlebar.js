@@ -23,8 +23,8 @@ exports.didCreateDocumentElement = function() {
       "AyIfAQbiZ+QHyDL/QLxqvx4MWDB+MvFAWMAuKsacmmSjkQSDbQ2Z3Z3WkQzsBHDOQ7owgs" +
       "MdUacTGmi3BeIFYcNycgciGlfFRVtcd3qoojz/PmdV0XOD8RGy1iCoQgT5G8IyREjni7IC" +
       "cg58ilwA7A8i4BwgMUxkKIV9M0PggTAoFlJpnwLhO5iEuFapq2s20CyoWIGbpeaRICyrI8" +
-      "89FtA tqwGxdQ65yYsV8NcwVN5obR/uTJW4mQsfp2fgToGjPqbBjWeoJVfNRsbSskSO7+7" +
-      "BsAiznZdgu6Qe97lH+htysv+AA10msRAt5JYQAAAABJRU5ErkJggg==); }\n" +
+      "89FtAtqwGxdQ65yYsV8NcwVN5obR/uTJW4mQsfp2fgToGjPqbBjWeoJVfNRsbSskSO7+7B" +
+      "sAiznZdgu6Qe97lH+htysv+AA10msRAt5JYQAAAABJRU5ErkJggg==); }\n" +
       "button.close:hover { background-image: url(data:image/png;base64," +
       "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABTElEQVQ4T2NkoBAwUqifAc" +
       "WA////KwANFAPiV4yMjA+QDcclBzcApCA6Otpz2bJluQkJCf3z58/fDTMEnxyyAWZADQuA" +
