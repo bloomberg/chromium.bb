@@ -5982,6 +5982,49 @@
    fun:_ZN11EventSender7mouseUpERKN3WTF6VectorI10CppVariantLm0EEEPS2_
    fun:_ZN13CppBoundClass14MemberCallbackI11EventSenderE3runERKN3WTF6VectorI10CppVariantLm0EEEPS5_
 }
+{
+   bug_146503_a
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN3WTF10StringImpl19createUninitializedEjRPh
+   fun:_ZN3WTF10StringImpl6createEPKhj
+   fun:_ZN3WTF6StringC1EPKhj
+   fun:_ZNK7WebCore15CSSParserStringcvN3WTF6StringEEv
+   ...
+   fun:_ZN7WebCore9CSSParser10parseValueENS_13CSSPropertyIDEb
+   fun:_Z10cssyyparsePN7WebCore9CSSParserE
+   fun:_ZN7WebCore9CSSParser10parseValueEPNS_16StylePropertySetENS_13CSSPropertyIDERKN3WTF6StringEbPNS_18StyleSheetContentsE
+   fun:_ZN7WebCore9CSSParser10parseValueEPNS_16StylePropertySetENS_13CSSPropertyIDERKN3WTF6StringEbPNS_8DocumentE
+}
+{
+   bug_146503_b
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN3WTF10RefCountedIN7WebCore15DashboardRegionEEnwEm
+   fun:_ZN7WebCore15DashboardRegion6createEv
+   fun:_ZN7WebCore9CSSParser21parseDashboardRegionsENS_13CSSPropertyIDEb
+   fun:_ZN7WebCore9CSSParser10parseValueENS_13CSSPropertyIDEb
+   fun:_Z10cssyyparsePN7WebCore9CSSParserE
+   fun:_ZN7WebCore9CSSParser10parseValueEPNS_16StylePropertySetENS_13CSSPropertyIDERKN3WTF6StringEbPNS_18StyleSheetContentsE
+   fun:_ZN7WebCore9CSSParser10parseValueEPNS_16StylePropertySetENS_13CSSPropertyIDERKN3WTF6StringEbNS_13CSSParserModeEPNS_18StyleSheetContentsE
+}
+{
+   bug_146503_c
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN3WTF10StringImpl19createUninitializedEjRPh
+   fun:_ZN3WTF10StringImpl6createEPKhj
+   fun:_ZN3WTF6StringC1EPKhj
+   fun:_ZNK7WebCore15CSSParserStringcvN3WTF6StringEEv
+   fun:_ZN7WebCore14CSSParserValue14createCSSValueEv
+   fun:_ZN7WebCore9CSSParser24storeVariableDeclarationERKNS_15CSSParserStringEN3WTF10PassOwnPtrINS_18CSSParserValueListEEEb
+   fun:_Z10cssyyparsePN7WebCore9CSSParserE
+   fun:_ZN7WebCore9CSSParser10parseSheetEPNS_18StyleSheetContentsERKN3WTF6StringEiPNS3_6VectorINS3_6RefPtrINS_17CSSRuleSourceDataEEELm0EEE
+}
+
 
 
 #-----------------------------------------------------------------------
