@@ -64,7 +64,7 @@ BEGIN
     "I",            IDC_DEV_TOOLS,              VIRTKEY, CONTROL, SHIFT
     "J",            IDC_DEV_TOOLS_CONSOLE,      VIRTKEY, CONTROL, SHIFT
     "C",            IDC_DEV_TOOLS_INSPECT,      VIRTKEY, CONTROL, SHIFT
-    VK_F12,         IDC_DEV_TOOLS,              VIRTKEY
+    VK_F12,         IDC_DEV_TOOLS_TOGGLE,       VIRTKEY
     "N",            IDC_NEW_INCOGNITO_WINDOW,   VIRTKEY, CONTROL, SHIFT
     "T",            IDC_NEW_TAB,                VIRTKEY, CONTROL
     "N",            IDC_NEW_WINDOW,             VIRTKEY, CONTROL
