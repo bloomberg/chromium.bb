@@ -535,10 +535,6 @@ MediaStreamImpl::CreateNativeLocalMediaStream(
             UTF16ToUTF8(audio_sources[i].id()), NULL));
     native_stream->AddTrack(audio_track);
   }
-  // TODO(xians): If the track contains a source, we should set the session id
-  // for the source of the local audio track instead.
-  int audio_session_id = media_stream_dispatcher_->audio_session_id(label, 0);
-  dependency_factory_->SetAudioDeviceSessionId(audio_session_id);
 
   // Add video tracks.
   for (size_t i = 0; i < video_sources.size(); ++i) {

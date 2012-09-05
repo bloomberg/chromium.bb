@@ -318,6 +318,3 @@ MockMediaStreamDependencyFactory::CreateIceCandidate(
     const std::string& sdp) {
   return new webrtc::MockIceCandidate(sdp_mid, sdp_mline_index, sdp);
 }
-
-void MockMediaStreamDependencyFactory::SetAudioDeviceSessionId(int session_id) {
-}
