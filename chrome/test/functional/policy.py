@@ -72,6 +72,22 @@ class PolicyTest(policy_base.PolicyTestBase):
       else:
         raise e
 
+  def _IsWebGLEnabled(self):
+    """Returns true if WebGL is enabled, false otherwise."""
+    ret = self.GetDOMValue("""
+        document.createElement('canvas').
+            getContext('experimental-webgl') ? 'ok' : ''
+    """)
+    return ret == 'ok'
+
+  def _RestartRenderer(self, windex=0):
+    """Kills the current renderer, and reloads it again."""
+    info = self.GetBrowserInfo()
+    tab = self.GetActiveTabIndex()
+    pid = info['windows'][windex]['tabs'][tab]['renderer_pid']
+    self.KillRendererProcess(pid)
+    self.ReloadActiveTab()
+
   def setUp(self):
     policy_base.PolicyTestBase.setUp(self)
     if self.IsChromeOS():
@@ -159,6 +175,19 @@ class PolicyTest(policy_base.PolicyTestBase):
     self.SetUserPolicy(policy)
     self.NavigateToURL('about:blank')
     self.assertTrue(self._IsJavascriptEnabled())
+
+  def testDisable3DAPIs(self):
+    """Tests the policy that disables the 3D APIs."""
+    self.assertFalse(self.GetPrefsInfo().Prefs(pyauto.kDisable3DAPIs))
+    self.assertTrue(self._IsWebGLEnabled())
+
+    self.SetUserPolicy({
+        'Disable3DAPIs': True
+    })
+    self.assertTrue(self.GetPrefsInfo().Prefs(pyauto.kDisable3DAPIs))
+    # The Disable3DAPIs policy only applies updated values to new renderers.
+    self._RestartRenderer()
+    self.assertFalse(self._IsWebGLEnabled())
 
   def testStartupOptionsURLs(self):
     """Verify that user cannot modify the startup page options if "Open the
