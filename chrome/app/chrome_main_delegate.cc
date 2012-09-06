@@ -30,7 +30,6 @@
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/utility/chrome_content_utility_client.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_debug_logging.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "ui/base/ui_base_switches.h"
@@ -370,46 +369,6 @@ struct MainFunction {
   int (*function)(const content::MainFunctionParams&);
 };
 
-// Limit message count and size to prevent rogue processes from
-// bloating memory use.
-const size_t kMaxBugMessages = 20;
-const size_t kMaxMessageSize = 64;
-
-// Locks g_messages.
-static base::LazyInstance<base::Lock>::Leaky
-    g_messages_lock = LAZY_INSTANCE_INITIALIZER;
-
-// Map bug ids to messages for that bug.
-// TODO(shess): Would multimap<> maintain the items in order added?
-base::LazyInstance<std::map<int, std::vector<std::string> > >
-    g_messages = LAZY_INSTANCE_INITIALIZER;
-
-void RecordMsg(int bug_id, const std::string& msg) {
-  // Only record information about specific bugs to prevent rogue
-  // processes from bloating memory usage.
-  CHECK(bug_id == 97285 || bug_id == 141055);
-
-  // Make sure legitimate clients know that things are getting too big
-  // to handle.
-  DCHECK_LE(msg.size(), kMaxMessageSize);
-
-  base::AutoLock pin(g_messages_lock.Get());
-  std::vector<std::string>& bug_messages = g_messages.Get()[bug_id];
-  bug_messages.push_back(msg.substr(0, kMaxMessageSize));
-
-  // Should only remove a single item.
-  while (bug_messages.size() > kMaxBugMessages)
-    bug_messages.erase(bug_messages.begin());
-}
-
-bool GetMessages(int bug_id, std::vector<std::string>* msgs) {
-  CHECK(bug_id == 97285 || bug_id == 141055);
-
-  base::AutoLock pin(g_messages_lock.Get());
-  *msgs = g_messages.Get()[bug_id];
-  return !msgs->empty();
-}
-
 }  // namespace
 
 ChromeMainDelegate::ChromeMainDelegate() {
@@ -565,10 +524,6 @@ void ChromeMainDelegate::PreSandboxStartup() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
-
-  // TODO(shess): Could this be registered earlier?
-  if (process_type.empty())
-    content::debug::RegisterMessageHandlers(RecordMsg, GetMessages);
 
   chrome::RegisterPathProvider();
 

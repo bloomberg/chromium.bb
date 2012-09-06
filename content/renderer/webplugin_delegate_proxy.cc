@@ -59,10 +59,7 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "base/mac/crash_logging.h"
 #include "base/mac/mac_util.h"
-#include "base/sys_string_conversions.h"
-#include "content/public/common/content_debug_logging.h"
 #endif
 
 #if defined(OS_WIN)
@@ -193,22 +190,6 @@ class ResourceClientProxy : public webkit::npapi::WebPluginResourceClient {
   // For e.g. response for a HTTP byte range request.
   bool multibyte_response_expected_;
 };
-
-#if defined(OS_MACOSX)
-// Helper to load the breakpad information for the given bug, and also
-// log errors.
-void LoadKeysAndLogForBug(int bug_id) {
-  std::vector<std::string> messages;
-
-  CHECK(content::debug::GetMessages(bug_id, &messages));
-  for (size_t i = 0; i < messages.size(); i++) {
-    std::string key(base::StringPrintf("bug-%d-%lu", bug_id, i));
-    base::mac::SetCrashKeyValue(base::SysUTF8ToNSString(key),
-                                base::SysUTF8ToNSString(messages[i]));
-    LOG(ERROR) << "messages-" << bug_id << "[" << i << "]: " << messages[i];
-  }
-}
-#endif
 
 }  // namespace
 
@@ -344,11 +325,6 @@ bool WebPluginDelegateProxy::Initialize(
             &channel_handle, &info_))) {
       continue;
     }
-#if defined(OS_MACOSX)
-    content::debug::RecordMsg(97285, base::StringPrintf(
-        "OpenChannelToPlugin() {%s, %d}",
-        channel_handle.name.c_str(), channel_handle.socket.fd));
-#endif
 
     if (channel_handle.name.empty()) {
       // We got an invalid handle.  Either the plugin couldn't be found (which
@@ -370,48 +346,19 @@ bool WebPluginDelegateProxy::Initialize(
         PluginChannelHost::GetPluginChannelHost(
             channel_handle, ChildProcess::current()->io_message_loop_proxy());
     if (!channel_host.get()) {
-#if defined(OS_MACOSX)
-      if (channel_handle.socket.fd == -1) {
-        LOG(ERROR) << "http://crbug.com/97285 detected.";
-        LoadKeysAndLogForBug(97285);
-
-        // Upload the data.  This crash used to be in NPChannelBase::Init().
-        // This point can only be MODE_CLIENT.
-        CHECK_NE(channel_handle.socket.fd, -1);
-      }
-#endif
       LOG(ERROR) << "Couldn't get PluginChannelHost";
       continue;
     }
 #if defined(OS_MACOSX)
-    content::debug::RecordMsg(141055, base::StringPrintf(
-        "GetPCH() {%s, %d} from {*, %d}, %svalid",
-        channel_host->channel_handle().name.c_str(),
-        channel_host->channel_handle().socket.fd,
-        channel_handle.socket.fd,
-        channel_host->channel_valid() ? "" : "in"));
     track_nested_removes.reset();
 #endif
 
     {
       // TODO(bauerb): Debugging for http://crbug.com/141055.
-#if defined(OS_MACOSX)
       ScopedLogLevel log_level(-2);  // Equivalent to --v=2
-#endif
       result = channel_host->Send(new PluginMsg_CreateInstance(
           mime_type_, &instance_id));
       if (!result) {
-#if defined(OS_MACOSX)
-        // Don't crash, but load the info into breakpad on the off
-        // chance that the renderer will crash in the future.  Even if
-        // it doesn't, the log messages might be reported.
-        // TODO(shess): The renderer may not survive long enough to
-        // crash.  Could have the browser load breakpad instead.
-        LOG(ERROR) << "http://crbug.com/141055 possibly detected.";
-        LoadKeysAndLogForBug(141055);
-        LoadKeysAndLogForBug(97285);
-#endif
-
         LOG(ERROR) << "Couldn't send PluginMsg_CreateInstance";
         continue;
       }

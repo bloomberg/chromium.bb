@@ -472,14 +472,6 @@ IPC_MESSAGE_ROUTED2(PluginHostMsg_URLRedirectResponse,
                     bool /* allow */,
                     int  /* resource_id */)
 
-// Forward client content_debug_logging to the host process's implementation.
-IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_ContentDebugRecordMsg,
-                     int /* bug_id */,
-                     std::string /* msg */)
-IPC_SYNC_MESSAGE_CONTROL1_2(PluginProcessHostMsg_ContentDebugGetMessages,
-                            int /* bug_id */,
-                            bool /* handled */,
-                            std::vector<std::string> /* msgs */)
 
 //-----------------------------------------------------------------------------
 // NPObject messages

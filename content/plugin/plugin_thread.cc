@@ -23,7 +23,6 @@
 #include "content/common/child_process.h"
 #include "content/common/npobject_util.h"
 #include "content/common/plugin_messages.h"
-#include "content/public/common/content_debug_logging.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/plugin/content_plugin_client.h"
 #include "ipc/ipc_channel_handle.h"
@@ -69,19 +68,6 @@ class EnsureTerminateMessageFilter : public IPC::ChannelProxy::MessageFilter {
   }
 };
 
-void RecordMsg(int bug_id, const std::string& msg) {
-  PluginThread::current()->Send(
-      new PluginProcessHostMsg_ContentDebugRecordMsg(bug_id, msg));
-}
-
-bool GetMessages(int bug_id, std::vector<std::string>* msgs) {
-  bool handled = false;
-  PluginThread::current()->Send(
-      new PluginProcessHostMsg_ContentDebugGetMessages(
-          bug_id, &handled, msgs));
-  return handled;
-}
-
 }  // namespace
 
 static base::LazyInstance<base::ThreadLocalPointer<PluginThread> > lazy_tls =
@@ -120,8 +106,6 @@ PluginThread::PluginThread()
 
   ui::SetDefaultX11ErrorHandlers();
 #endif
-
-  content::debug::RegisterMessageHandlers(RecordMsg, GetMessages);
 
   PatchNPNFunctions();
 
@@ -193,11 +177,6 @@ void PluginThread::OnCreateChannel(int renderer_id,
     channel->set_incognito(incognito);
   }
 
-#if defined(OS_MACOSX)
-  content::debug::RecordMsg(97285, base::StringPrintf(
-      "OnCreateChannel({%s, %d})",
-      channel_handle.name.c_str(), channel_handle.socket.fd));
-#endif
   Send(new PluginProcessHostMsg_ChannelCreated(channel_handle));
 }
 

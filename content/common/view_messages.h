@@ -2347,12 +2347,3 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_FindMatchRects_Reply,
                     std::vector<gfx::RectF> /* rects */,
                     gfx::RectF /* active_rect */)
 #endif
-
-// Forward client content_debug_logging to the host process's implementation.
-IPC_MESSAGE_CONTROL2(ViewHostMsg_ContentDebugRecordMsg,
-                     int /* bug_id */,
-                     std::string /* msg */)
-IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_ContentDebugGetMessages,
-                            int /* bug_id */,
-                            bool /* handled */,
-                            std::vector<std::string> /* msgs */)

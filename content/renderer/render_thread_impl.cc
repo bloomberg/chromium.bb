@@ -42,7 +42,6 @@
 #include "content/common/web_database_observer_impl.h"
 #include "content/public/common/compositor_util.h"
 #include "content/public/common/content_constants.h"
-#include "content/public/common/content_debug_logging.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/renderer_preferences.h"
@@ -193,18 +192,6 @@ void AddHistogramSample(void* hist, int sample) {
   histogram->Add(sample);
 }
 
-void RecordMsg(int bug_id, const std::string& msg) {
-  RenderThreadImpl::current()->Send(
-      new ViewHostMsg_ContentDebugRecordMsg(bug_id, msg));
-}
-
-bool GetMessages(int bug_id, std::vector<std::string>* msgs) {
-  bool handled = false;
-  RenderThreadImpl::current()->Send(
-      new ViewHostMsg_ContentDebugGetMessages(bug_id, &handled, msgs));
-  return handled;
-}
-
 }  // namespace
 
 class RenderThreadImpl::GpuVDAContextLostCallback
@@ -285,8 +272,6 @@ void RenderThreadImpl::Init() {
 #endif
 
   lazy_tls.Pointer()->Set(this);
-
-  content::debug::RegisterMessageHandlers(RecordMsg, GetMessages);
 
 #if defined(OS_WIN)
   // If you are running plugins in this thread you need COM active but in
