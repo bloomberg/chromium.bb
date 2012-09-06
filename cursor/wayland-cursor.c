@@ -181,6 +181,71 @@ wl_cursor_destroy(struct wl_cursor *cursor)
 	free(cursor);
 }
 
+#include "cursor_data.c"
+
+static struct wl_cursor *
+wl_cursor_create_from_data(struct cursor_metadata *metadata,
+			   struct wl_cursor_theme *theme)
+{
+	struct cursor *cursor;
+	struct cursor_image *image;
+	int size;
+
+	cursor = malloc(sizeof *cursor);
+	if (!cursor)
+		return NULL;
+
+	cursor->cursor.image_count = 1;
+	cursor->cursor.images = malloc(sizeof *cursor->cursor.images);
+	if (!cursor->cursor.images) {
+		free(cursor);
+		return NULL;
+	}
+
+	cursor->cursor.name = strdup(metadata->name);
+	cursor->total_delay = 0;
+
+	image = malloc(sizeof *image);
+	if (!image) {
+		free(cursor->cursor.name);
+		free(cursor->cursor.images);
+		free(cursor);
+		return NULL;
+	}
+
+	cursor->cursor.images[0] = (struct wl_cursor_image *) image;
+	image->theme = theme;
+	image->buffer = NULL;
+	image->image.width = metadata->width;
+	image->image.height = metadata->height;
+	image->image.hotspot_x = metadata->hotspot_x;
+	image->image.hotspot_y = metadata->hotspot_y;
+	image->image.delay = 0;
+
+	size = metadata->width * metadata->height * sizeof(uint32_t);
+	image->offset = shm_pool_allocate(theme->pool, size);
+	memcpy(theme->pool->data + image->offset,
+	       cursor_data + metadata->offset, size);
+
+	return &cursor->cursor;
+}
+
+static void
+load_default_theme(struct wl_cursor_theme *theme)
+{
+	uint32_t i;
+
+	free(theme->name);
+	theme->name = strdup("default");
+
+	theme->cursor_count = ARRAY_LENGTH(cursor_metadata);;
+	theme->cursors = malloc(theme->cursor_count * sizeof(*theme->cursors));
+
+	for (i = 0; i < theme->cursor_count; ++i)
+		theme->cursors[i] =
+			wl_cursor_create_from_data(&cursor_metadata[i], theme);
+}
+
 static struct wl_cursor *
 wl_cursor_create_from_xcursor_images(XcursorImages *images,
 				     struct wl_cursor_theme *theme)
@@ -261,7 +326,8 @@ load_callback(XcursorImages *images, void *data)
  * \param shm The compositor's shm interface.
  *
  * \return An object representing the theme that should be destroyed with
- * wl_cursor_theme_destroy() or %NULL on error.
+ * wl_cursor_theme_destroy() or %NULL on error. If no theme with the given
+ * name exists, a default theme will be loaded.
  */
 WL_EXPORT struct wl_cursor_theme *
 wl_cursor_theme_load(const char *name, int size, struct wl_shm *shm)
@@ -289,6 +355,9 @@ wl_cursor_theme_load(const char *name, int size, struct wl_shm *shm)
 	}
 
 	xcursor_load_theme(name, size, load_callback, theme);
+
+	if (theme->cursor_count == 0)
+		load_default_theme(theme);
 
 	return theme;
 }
