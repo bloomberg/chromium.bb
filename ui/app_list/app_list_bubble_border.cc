@@ -17,7 +17,7 @@ namespace {
 const SkColor kSearchBoxBackground = SK_ColorWHITE;
 
 // Colors and sizes of top separator between searchbox and grid view.
-const SkColor kTopSeparatorColor = SkColorSetRGB(0xF0, 0xF0, 0xF0);
+const SkColor kTopSeparatorColor = SkColorSetRGB(0xE5, 0xE5, 0xE5);
 const int kTopSeparatorSize = 1;
 
 }  // namespace
