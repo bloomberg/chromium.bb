@@ -585,6 +585,10 @@ FileManager.prototype = {
     this.document_.addEventListener('contextmenu',
                                     function(e) { e.preventDefault() });
 
+    this.document_.addEventListener('canExecute', function(e) {
+      e.canExecute = this.canExecute_(e.command.id);
+    }.bind(this));
+
     this.renameInput_ = this.document_.createElement('input');
     this.renameInput_.className = 'rename';
 
