@@ -18,7 +18,6 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/trusted/debug_stub/debug_stub.h"
-#include "native_client/src/trusted/debug_stub/nacl_debug.h"
 #include "native_client/src/trusted/debug_stub/platform.h"
 #include "native_client/src/trusted/debug_stub/session.h"
 #include "native_client/src/trusted/debug_stub/target.h"
@@ -62,12 +61,6 @@ using gdb_rsp::Target;
   }
 
 
-static const struct NaClDebugCallbacks debug_callbacks = {
-  NaClDebugThreadPrepDebugging,
-  NaClDebugThreadStopDebugging,
-  NaClDebugStop,
-};
-
 static Target *g_target = NULL;
 
 void WINAPI NaClStubThread(void *ptr) {
@@ -96,20 +89,26 @@ void WINAPI NaClStubThread(void *ptr) {
   }
 }
 
-void NaClDebugThreadPrepDebugging(struct NaClAppThread *natp) throw() {
+static void ThreadCreateHook(struct NaClAppThread *natp) throw() {
   g_target->TrackThread(natp);
 }
 
-void NaClDebugThreadStopDebugging(struct NaClAppThread *natp) throw() {
+static void ThreadExitHook(struct NaClAppThread *natp) throw() {
   g_target->IgnoreThread(natp);
 }
 
-void NaClDebugStop(int ErrCode) throw() {
+static void ProcessExitHook(int ErrCode) throw() {
   g_target->Exit(ErrCode);
   try {
     NaClDebugStubFini();
   } DBG_CATCH_ALL
 }
+
+static const struct NaClDebugCallbacks debug_callbacks = {
+  ThreadCreateHook,
+  ThreadExitHook,
+  ProcessExitHook,
+};
 
 /*
  * This function is implemented for the service runtime.  The service runtime
