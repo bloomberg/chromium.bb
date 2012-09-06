@@ -82,8 +82,7 @@ class SiteInstanceTestClient : public TestContentClient {
   }
 };
 
-class SiteInstanceTestBrowserClient :
-    public content::TestContentBrowserClient {
+class SiteInstanceTestBrowserClient : public content::TestContentBrowserClient {
  public:
   SiteInstanceTestBrowserClient()
       : privileged_process_id_(-1) {
@@ -135,6 +134,17 @@ class SiteInstanceTest : public testing::Test {
 
     content::GetContentClient()->set_browser_for_testing(old_browser_client_);
     content::SetContentClient(old_client_);
+
+    // http://crbug.com/143565 found SiteInstanceTest leaking an
+    // AppCacheDatabase. This happens because some part of the test indirectly
+    // calls StoragePartitionImplMap::PostCreateInitialization(), which posts
+    // a task to the IO thread to create the AppCacheDatabase. Since the
+    // message loop is not running, the AppCacheDatabase ends up getting
+    // created when DrainMessageLoops() gets called at the end of a test case.
+    // Immediately after, the test case ends and the AppCacheDatabase gets
+    // scheduled for deletion. Here, call DrainMessageLoops() again so the
+    // AppCacheDatabase actually gets deleted.
+    DrainMessageLoops();
   }
 
   void set_privileged_process_id(int process_id) {

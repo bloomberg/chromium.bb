@@ -5668,14 +5668,6 @@
    fun:_ZN34TaskManagerTest_RefreshCalled_Test8TestBodyEv
 }
 {
-   bug_143565
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8appcache19AppCacheStorageImpl10InitializeERK8FilePathPN4base16MessageLoopProxyES6_
-   fun:_ZN8appcache15AppCacheService10InitializeERK8FilePathPN4base16MessageLoopProxyES6_
-   fun:_ZN21ChromeAppCacheService20InitializeOnIOThreadERK8FilePathPN7content15ResourceContextE13scoped_refptrIN5quota20SpecialStoragePolicyEE
-}
-{
    bug_144913
    Memcheck:Leak
    fun:_Znw*
