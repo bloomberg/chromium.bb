@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/time.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/common_decoder.h"
 #include "ui/gfx/size.h"
@@ -172,6 +173,10 @@ class GPU_EXPORT GLES2Decoder : public CommonDecoder {
 
   // A callback for messages from the decoder.
   virtual void SetMsgCallback(const MsgCallback& callback) = 0;
+
+  virtual uint32 GetTextureUploadCount() = 0;
+  virtual base::TimeDelta GetTotalTextureUploadTime() = 0;
+  virtual base::TimeDelta GetTotalProcessingCommandsTime() = 0;
 
   static bool IsAngle();
 

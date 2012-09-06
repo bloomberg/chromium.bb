@@ -38,6 +38,10 @@ namespace base {
 class MessageLoopProxy;
 }
 
+namespace content {
+struct GpuRenderingStats;
+}
+
 namespace IPC {
 class SyncMessageFilter;
 }
@@ -130,6 +134,10 @@ class GpuChannelHost : public IPC::Sender,
 
   // Destroy a command buffer created by this channel.
   void DestroyCommandBuffer(CommandBufferProxy* command_buffer);
+
+  // Collect rendering stats from GPU process.
+  bool CollectRenderingStatsForSurface(
+      int surface_id, content::GpuRenderingStats* stats);
 
   // Add a route for the current message loop.
   void AddRoute(int route_id, base::WeakPtr<IPC::Listener> listener);

@@ -48,6 +48,7 @@ class WebWidget;
 }
 
 namespace content {
+struct GpuRenderingStats;
 class RenderWidgetTest;
 }
 
@@ -160,6 +161,12 @@ class CONTENT_EXPORT RenderWidget
   // This call is relatively expensive in threaded compositing mode,
   // as it blocks on the compositor thread.
   void GetRenderingStats(WebKit::WebRenderingStats&) const;
+
+  // Fills in a GpuRenderingStats struct containing information about
+  // GPU rendering, e.g. count of texture uploads performed, time spent
+  // uploading.
+  // This call is relatively expensive as it blocks on the GPU process
+  bool GetGpuRenderingStats(content::GpuRenderingStats*) const;
 
   // Callback for use with BeginSmoothScroll.
   typedef base::Callback<void()> SmoothScrollCompletionCallback;

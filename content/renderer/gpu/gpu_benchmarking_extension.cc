@@ -10,6 +10,7 @@
 #include "base/file_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/string_number_conversions.h"
+#include "content/public/common/gpu_rendering_stats.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/all_rendering_benchmarks.h"
 #include "content/renderer/render_view_impl.h"
@@ -151,6 +152,9 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     WebRenderingStats stats;
     render_view_impl->GetRenderingStats(stats);
 
+    content::GpuRenderingStats gpu_stats;
+    render_view_impl->GetGpuRenderingStats(&gpu_stats);
+
     v8::Handle<v8::Object> stats_object = v8::Object::New();
     stats_object->Set(v8::String::New("numAnimationFrames"),
                       v8::Integer::New(stats.numAnimationFrames));
@@ -162,6 +166,25 @@ class GpuBenchmarkingWrapper : public v8::Extension {
                       v8::Number::New(stats.totalPaintTimeInSeconds));
     stats_object->Set(v8::String::New("totalRasterizeTimeInSeconds"),
                       v8::Number::New(stats.totalRasterizeTimeInSeconds));
+    stats_object->Set(v8::String::New("globalTextureUploadCount"),
+                      v8::Number::New(gpu_stats.global_texture_upload_count));
+    stats_object->Set(
+        v8::String::New("globalTotalTextureUploadTimeInSeconds"),
+        v8::Number::New(
+            gpu_stats.global_total_texture_upload_time.InSecondsF()));
+    stats_object->Set(v8::String::New("textureUploadCount"),
+                      v8::Number::New(gpu_stats.texture_upload_count));
+    stats_object->Set(
+        v8::String::New("totalTextureUploadTimeInSeconds"),
+        v8::Number::New(gpu_stats.total_texture_upload_time.InSecondsF()));
+    stats_object->Set(
+        v8::String::New("globalTotalProcessingCommandsTimeInSeconds"),
+        v8::Number::New(
+            gpu_stats.global_total_processing_commands_time.InSecondsF()));
+    stats_object->Set(
+        v8::String::New("totalProcessingCommandsTimeInSeconds"),
+        v8::Number::New(
+            gpu_stats.total_processing_commands_time.InSecondsF()));
     return stats_object;
   }
 

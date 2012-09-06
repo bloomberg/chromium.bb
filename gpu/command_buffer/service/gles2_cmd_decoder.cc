@@ -318,6 +318,18 @@ class ScopedResolvedFrameBufferBinder {
   DISALLOW_COPY_AND_ASSIGN(ScopedResolvedFrameBufferBinder);
 };
 
+// This class records texture upload time when in scope.
+class ScopedTextureUploadTimer {
+ public:
+  explicit ScopedTextureUploadTimer(GLES2DecoderImpl* decoder);
+  ~ScopedTextureUploadTimer();
+
+ private:
+  GLES2DecoderImpl* decoder_;
+  base::TimeTicks begin_time_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedTextureUploadTimer);
+};
+
 // Encapsulates an OpenGL texture.
 class Texture {
  public:
@@ -520,6 +532,10 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   virtual uint32 GetGLError() OVERRIDE;
 
+  virtual uint32 GetTextureUploadCount() OVERRIDE;
+  virtual base::TimeDelta GetTotalTextureUploadTime() OVERRIDE;
+  virtual base::TimeDelta GetTotalProcessingCommandsTime() OVERRIDE;
+
   // Restores the current state to the user's settings.
   void RestoreCurrentFramebufferBindings();
   void RestoreCurrentRenderbufferBindings();
@@ -542,6 +558,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
  private:
   friend class ScopedGLErrorSuppressor;
   friend class ScopedResolvedFrameBufferBinder;
+  friend class ScopedTextureUploadTimer;
   friend class Texture;
   friend class RenderBuffer;
   friend class FrameBuffer;
@@ -1585,6 +1602,11 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   GLsizei viewport_width_, viewport_height_;
   GLsizei viewport_max_width_, viewport_max_height_;
 
+  // Command buffer stats.
+  int texture_upload_count_;
+  base::TimeDelta total_texture_upload_time_;
+  base::TimeDelta total_processing_commands_time_;
+
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderImpl);
 };
 
@@ -1698,6 +1720,17 @@ ScopedResolvedFrameBufferBinder::~ScopedResolvedFrameBufferBinder() {
   if (decoder_->enable_scissor_test_) {
     glEnable(GL_SCISSOR_TEST);
   }
+}
+
+ScopedTextureUploadTimer::ScopedTextureUploadTimer(GLES2DecoderImpl* decoder)
+    : decoder_(decoder),
+      begin_time_(base::TimeTicks::HighResNow()) {
+}
+
+ScopedTextureUploadTimer::~ScopedTextureUploadTimer() {
+  decoder_->texture_upload_count_++;
+  decoder_->total_texture_upload_time_ +=
+      base::TimeTicks::HighResNow() - begin_time_;
 }
 
 Texture::Texture(GLES2DecoderImpl* decoder)
@@ -1990,7 +2023,8 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       viewport_width_(0),
       viewport_height_(0),
       viewport_max_width_(0),
-      viewport_max_height_(0) {
+      viewport_max_height_(0),
+      texture_upload_count_(0) {
   DCHECK(group);
 
   GLES2DecoderImpl* this_temp = this;
@@ -2836,6 +2870,18 @@ bool GLES2DecoderImpl::GetServiceTextureId(uint32 client_texture_id,
   return false;
 }
 
+uint32 GLES2DecoderImpl::GetTextureUploadCount() {
+  return texture_upload_count_;
+}
+
+base::TimeDelta GLES2DecoderImpl::GetTotalTextureUploadTime() {
+  return total_texture_upload_time_;
+}
+
+base::TimeDelta GLES2DecoderImpl::GetTotalProcessingCommandsTime() {
+  return total_processing_commands_time_;
+}
+
 void GLES2DecoderImpl::Destroy(bool have_context) {
   DCHECK(!have_context || context_->IsCurrent(NULL));
 
@@ -3213,6 +3259,7 @@ error::Error GLES2DecoderImpl::DoCommand(
     unsigned int arg_count,
     const void* cmd_data) {
   error::Error result = error::kNoError;
+  base::TimeTicks begin_time(base::TimeTicks::HighResNow());
   if (log_commands()) {
     // TODO(notme): Change this to a LOG/VLOG that works in release. Tried
     // LOG(INFO), tried VLOG(1), no luck.
@@ -3257,6 +3304,8 @@ error::Error GLES2DecoderImpl::DoCommand(
       result = current_decoder_error_;
       current_decoder_error_ = error::kNoError;
   }
+  total_processing_commands_time_ +=
+      base::TimeTicks::HighResNow() - begin_time;
   return result;
 }
 
@@ -7803,17 +7852,20 @@ void GLES2DecoderImpl::DoTexSubImage2D(
       SetGLError(GL_OUT_OF_MEMORY, "glTexSubImage2D", "dimensions too big");
       return;
     }
+    ScopedTextureUploadTimer timer(this);
     glTexSubImage2D(
         target, level, xoffset, yoffset, width, height, format, type, data);
     return;
   }
 
   if (teximage2d_faster_than_texsubimage2d_ && !info->IsImmutable()) {
+    ScopedTextureUploadTimer timer(this);
     // NOTE: In OpenGL ES 2.0 border is always zero and format is always the
     // same as internal_foramt. If that changes we'll need to look them up.
     WrappedTexImage2D(
         target, level, format, width, height, 0, format, type, data);
   } else {
+    ScopedTextureUploadTimer timer(this);
     glTexSubImage2D(
         target, level, xoffset, yoffset, width, height, format, type, data);
   }

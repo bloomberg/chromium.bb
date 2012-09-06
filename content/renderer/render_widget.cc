@@ -1830,6 +1830,15 @@ void RenderWidget::GetRenderingStats(WebKit::WebRenderingStats& stats) const {
   stats.totalPaintTimeInSeconds += software_stats_.totalPaintTimeInSeconds;
 }
 
+bool RenderWidget::GetGpuRenderingStats(
+    content::GpuRenderingStats* stats) const {
+  GpuChannelHost* gpu_channel = RenderThreadImpl::current()->GetGpuChannel();
+  if (!gpu_channel)
+    return false;
+
+  return gpu_channel->CollectRenderingStatsForSurface(surface_id(), stats);
+}
+
 void RenderWidget::BeginSmoothScroll(
     bool down,
     bool scroll_far,

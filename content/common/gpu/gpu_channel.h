@@ -157,6 +157,10 @@ class GpuChannel : public IPC::Listener,
       int32 primary_id, int32 secondary_id);
 #endif
 
+  // Collect rendering stats.
+  void OnCollectRenderingStatsForSurface(
+      int32 surface_id, IPC::Message* reply_message);
+
   // The lifetime of objects of this class is managed by a GpuChannelManager.
   // The GpuChannelManager destroy all the GpuChannels that they own when they
   // are destroyed. So a raw pointer is safe.

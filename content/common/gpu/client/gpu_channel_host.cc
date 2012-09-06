@@ -214,6 +214,14 @@ void GpuChannelHost::DestroyCommandBuffer(
 #endif
 }
 
+bool GpuChannelHost::CollectRenderingStatsForSurface(
+    int surface_id, content::GpuRenderingStats* stats) {
+  TRACE_EVENT0("gpu", "GpuChannelHost::CollectRenderingStats");
+
+  return Send(new GpuChannelMsg_CollectRenderingStatsForSurface(surface_id,
+                                                                stats));
+}
+
 void GpuChannelHost::AddRoute(
     int route_id, base::WeakPtr<IPC::Listener> listener) {
   DCHECK(MessageLoopProxy::current());

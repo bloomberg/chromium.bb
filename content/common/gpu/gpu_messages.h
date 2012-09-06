@@ -15,6 +15,7 @@
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/gpu_info.h"
 #include "content/public/common/gpu_memory_stats.h"
+#include "content/public/common/gpu_rendering_stats.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/ipc/gpu_command_buffer_traits.h"
@@ -193,6 +194,15 @@ IPC_ENUM_TRAITS(gfx::GpuPreference)
 IPC_ENUM_TRAITS(gpu::error::ContextLostReason)
 
 IPC_ENUM_TRAITS(media::VideoCodecProfile)
+
+IPC_STRUCT_TRAITS_BEGIN(content::GpuRenderingStats)
+  IPC_STRUCT_TRAITS_MEMBER(global_texture_upload_count)
+  IPC_STRUCT_TRAITS_MEMBER(global_total_texture_upload_time)
+  IPC_STRUCT_TRAITS_MEMBER(texture_upload_count)
+  IPC_STRUCT_TRAITS_MEMBER(total_texture_upload_time)
+  IPC_STRUCT_TRAITS_MEMBER(global_total_processing_commands_time)
+  IPC_STRUCT_TRAITS_MEMBER(total_processing_commands_time)
+IPC_STRUCT_TRAITS_END()
 
 //------------------------------------------------------------------------------
 // GPU Messages
@@ -378,7 +388,14 @@ IPC_MESSAGE_CONTROL4(GpuChannelMsg_EstablishStreamTexture,
                      /* type */
                      int32, /* primary_id */
                      int32 /* secondary_id */)
+#endif
 
+// Tells the GPU process to collect rendering stats.
+IPC_SYNC_MESSAGE_CONTROL1_1(GpuChannelMsg_CollectRenderingStatsForSurface,
+                            int32 /* surface_id */,
+                            content::GpuRenderingStats /* stats */)
+
+#if defined(OS_ANDROID)
 //------------------------------------------------------------------------------
 // Stream Texture Messages
 // Inform the renderer that a new frame is available.

@@ -400,6 +400,9 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(GpuChannelMsg_EstablishStreamTexture,
                         OnEstablishStreamTexture)
 #endif
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(
+        GpuChannelMsg_CollectRenderingStatsForSurface,
+        OnCollectRenderingStatsForSurface)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled) << msg.type();
@@ -537,3 +540,32 @@ void GpuChannel::OnEstablishStreamTexture(
 }
 #endif
 
+void GpuChannel::OnCollectRenderingStatsForSurface(
+    int32 surface_id, IPC::Message* reply_message) {
+  content::GpuRenderingStats stats;
+
+  for (StubMap::Iterator<GpuCommandBufferStub> it(&stubs_);
+       !it.IsAtEnd(); it.Advance()) {
+    int texture_upload_count =
+        it.GetCurrentValue()->decoder()->GetTextureUploadCount();
+    base::TimeDelta total_texture_upload_time =
+        it.GetCurrentValue()->decoder()->GetTotalTextureUploadTime();
+    base::TimeDelta total_processing_commands_time =
+        it.GetCurrentValue()->decoder()->GetTotalProcessingCommandsTime();
+
+    stats.global_texture_upload_count += texture_upload_count;
+    stats.global_total_texture_upload_time += total_texture_upload_time;
+    stats.global_total_processing_commands_time +=
+        total_processing_commands_time;
+    if (it.GetCurrentValue()->surface_id() == surface_id) {
+      stats.texture_upload_count += texture_upload_count;
+      stats.total_texture_upload_time += total_texture_upload_time;
+      stats.total_processing_commands_time += total_processing_commands_time;
+    }
+  }
+
+  GpuChannelMsg_CollectRenderingStatsForSurface::WriteReplyParams(
+      reply_message,
+      stats);
+  Send(reply_message);
+}
