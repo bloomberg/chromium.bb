@@ -2,6 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// File method ordering: Methods in this file are in the same order
+// as in download_item_impl.h, with the following exception: The public
+// interfaces DelayedDownloadOpened, OnDownloadTargetDetermined, and
+// OnDownloadCompleting are placed in chronological order with the other
+// (private) routines that together define a DownloadItem's state transitions
+// as the download progresses.  See "Download progression cascade" later in
+// this file.
+
+// A regular DownloadItem (created for a download in this session of the
+// browser) normally goes through the following states:
+//      * Created (when download starts)
+//      * Destination filename determined
+//      * Entered into the history database.
+//      * Made visible in the download shelf.
+//      * All the data is saved.  Note that the actual data download occurs
+//        in parallel with the above steps, but until those steps are
+//        complete, the state of the data save will be ignored.
+//      * Download file is renamed to its final name, and possibly
+//        auto-opened.
+
 #include "content/browser/download/download_item_impl.h"
 
 #include <vector>
@@ -37,23 +57,6 @@ using content::DownloadItem;
 using content::DownloadManager;
 using content::DownloadPersistentStoreInfo;
 using content::WebContents;
-
-// A DownloadItem normally goes through the following states:
-//      * Created (when download starts)
-//      * Made visible to consumers (e.g. Javascript) after the
-//        destination file has been determined.
-//      * Entered into the history database.
-//      * Made visible in the download shelf.
-//      * All data is saved.  Note that the actual data download occurs
-//        in parallel with the above steps, but until those steps are
-//        complete, completion of the data download will be ignored.
-//      * Download file is renamed to its final name, and possibly
-//        auto-opened.
-// TODO(rdsmith): This progress should be reflected in
-// DownloadItem::DownloadState and a state transition table/state diagram.
-//
-// TODO(rdsmith): This description should be updated to reflect the cancel
-// pathways.
 
 namespace {
 
@@ -315,16 +318,95 @@ void DownloadItemImpl::UpdateObservers() {
   FOR_EACH_OBSERVER(Observer, observers_, OnDownloadUpdated(this));
 }
 
-bool DownloadItemImpl::CanShowInFolder() {
-  return !IsCancelled() && !file_externally_removed_;
+void DownloadItemImpl::DangerousDownloadValidated() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_EQ(DANGEROUS, GetSafetyState());
+
+  UMA_HISTOGRAM_ENUMERATION("Download.DangerousDownloadValidated",
+                            GetDangerType(),
+                            content::DOWNLOAD_DANGER_TYPE_MAX);
+
+  safety_state_ = DANGEROUS_BUT_VALIDATED;
+
+  bound_net_log_.AddEvent(
+      net::NetLog::TYPE_DOWNLOAD_ITEM_SAFETY_STATE_UPDATED,
+      base::Bind(&download_net_logs::ItemCheckedCallback,
+                 GetDangerType(), GetSafetyState()));
+
+  UpdateObservers();
+
+  delegate_->MaybeCompleteDownload(this);
 }
 
-bool DownloadItemImpl::CanOpenDownload() {
-  return !file_externally_removed_;
+void DownloadItemImpl::TogglePause() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DCHECK(IsInProgress());
+  if (is_paused_)
+    request_handle_->ResumeRequest();
+  else
+    request_handle_->PauseRequest();
+  is_paused_ = !is_paused_;
+  UpdateObservers();
 }
 
-bool DownloadItemImpl::ShouldOpenFileBasedOnExtension() {
-  return delegate_->ShouldOpenFileBasedOnExtension(GetUserVerifiedFilePath());
+void DownloadItemImpl::Cancel(bool user_cancel) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  last_reason_ = user_cancel ?
+      content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED :
+      content::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN;
+
+  VLOG(20) << __FUNCTION__ << "() download = " << DebugString(true);
+  if (!IsPartialDownload()) {
+    // Small downloads might be complete before this method has
+    // a chance to run.
+    return;
+  }
+
+  download_stats::RecordDownloadCount(download_stats::CANCELLED_COUNT);
+
+  TransitionTo(CANCELLED);
+  if (user_cancel)
+    delegate_->DownloadStopped(this);
+}
+
+void DownloadItemImpl::Delete(DeleteReason reason) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  switch (reason) {
+    case DELETE_DUE_TO_USER_DISCARD:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Download.UserDiscard", GetDangerType(),
+          content::DOWNLOAD_DANGER_TYPE_MAX);
+      break;
+    case DELETE_DUE_TO_BROWSER_SHUTDOWN:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Download.Discard", GetDangerType(),
+          content::DOWNLOAD_DANGER_TYPE_MAX);
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  // TODO(asanka): Avoid deleting a file that is still owned by DownloadFile.
+  if (!current_path_.empty())
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                            base::Bind(&DeleteDownloadedFile, current_path_));
+  Remove();
+  // We have now been deleted.
+}
+
+void DownloadItemImpl::Remove() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  delegate_->AssertStateConsistent(this);
+  Cancel(true);
+  delegate_->AssertStateConsistent(this);
+
+  NotifyRemoved();
+  delegate_->DownloadRemoved(this);
+  // We have now been deleted.
 }
 
 void DownloadItemImpl::OpenDownload() {
@@ -365,39 +447,439 @@ void DownloadItemImpl::ShowDownloadInShell() {
   content::GetContentClient()->browser()->ShowItemInFolder(GetFullPath());
 }
 
-void DownloadItemImpl::DangerousDownloadValidated() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(DANGEROUS, GetSafetyState());
-
-  UMA_HISTOGRAM_ENUMERATION("Download.DangerousDownloadValidated",
-                            GetDangerType(),
-                            content::DOWNLOAD_DANGER_TYPE_MAX);
-
-  safety_state_ = DANGEROUS_BUT_VALIDATED;
-
-  bound_net_log_.AddEvent(
-      net::NetLog::TYPE_DOWNLOAD_ITEM_SAFETY_STATE_UPDATED,
-      base::Bind(&download_net_logs::ItemCheckedCallback,
-                 GetDangerType(), GetSafetyState()));
-
-  UpdateObservers();
-
-  delegate_->MaybeCompleteDownload(this);
+int32 DownloadItemImpl::GetId() const {
+  return download_id_.local();
 }
 
-void DownloadItemImpl::ProgressComplete(int64 bytes_so_far,
-                                        const std::string& final_hash) {
+DownloadId DownloadItemImpl::GetGlobalId() const {
+  return download_id_;
+}
+
+int64 DownloadItemImpl::GetDbHandle() const {
+  return db_handle_;
+}
+
+DownloadItem::DownloadState DownloadItemImpl::GetState() const {
+  return state_;
+}
+
+content::DownloadInterruptReason DownloadItemImpl::GetLastReason() const {
+  return last_reason_;
+}
+
+bool DownloadItemImpl::IsPaused() const {
+  return is_paused_;
+}
+
+bool DownloadItemImpl::IsTemporary() const {
+  return is_temporary_;
+}
+
+bool DownloadItemImpl::IsPersisted() const {
+  return is_persisted_;
+}
+
+// TODO(ahendrickson) -- Move |INTERRUPTED| from |IsCancelled()| to
+// |IsPartialDownload()|, when resuming interrupted downloads is implemented.
+bool DownloadItemImpl::IsPartialDownload() const {
+  return (state_ == IN_PROGRESS);
+}
+
+bool DownloadItemImpl::IsInProgress() const {
+  return (state_ == IN_PROGRESS);
+}
+
+bool DownloadItemImpl::IsCancelled() const {
+  return (state_ == CANCELLED) ||
+         (state_ == INTERRUPTED);
+}
+
+bool DownloadItemImpl::IsInterrupted() const {
+  return (state_ == INTERRUPTED);
+}
+
+bool DownloadItemImpl::IsComplete() const {
+  return (state_ == COMPLETE);
+}
+
+const GURL& DownloadItemImpl::GetURL() const {
+  return url_chain_.empty() ?
+             GURL::EmptyGURL() : url_chain_.back();
+}
+
+const std::vector<GURL>& DownloadItemImpl::GetUrlChain() const {
+  return url_chain_;
+}
+
+const GURL& DownloadItemImpl::GetOriginalUrl() const {
+  return url_chain_.front();
+}
+
+const GURL& DownloadItemImpl::GetReferrerUrl() const {
+  return referrer_url_;
+}
+
+std::string DownloadItemImpl::GetSuggestedFilename() const {
+  return suggested_filename_;
+}
+
+std::string DownloadItemImpl::GetContentDisposition() const {
+  return content_disposition_;
+}
+
+std::string DownloadItemImpl::GetMimeType() const {
+  return mime_type_;
+}
+
+std::string DownloadItemImpl::GetOriginalMimeType() const {
+  return original_mime_type_;
+}
+
+std::string DownloadItemImpl::GetReferrerCharset() const {
+  return referrer_charset_;
+}
+
+std::string DownloadItemImpl::GetRemoteAddress() const {
+  return remote_address_;
+}
+
+bool DownloadItemImpl::HasUserGesture() const {
+  return has_user_gesture_;
+};
+
+content::PageTransition DownloadItemImpl::GetTransitionType() const {
+  return transition_type_;
+};
+
+const std::string& DownloadItemImpl::GetLastModifiedTime() const {
+  return last_modified_time_;
+}
+
+const std::string& DownloadItemImpl::GetETag() const {
+  return etag_;
+}
+
+const FilePath& DownloadItemImpl::GetFullPath() const {
+  return current_path_;
+}
+
+const FilePath& DownloadItemImpl::GetTargetFilePath() const {
+  return target_path_;
+}
+
+FilePath DownloadItemImpl::GetTargetName() const {
+  return target_path_.BaseName();
+}
+
+const FilePath& DownloadItemImpl::GetForcedFilePath() const {
+  // TODO(asanka): Get rid of GetForcedFilePath(). We should instead just
+  // require that clients respect GetTargetFilePath() if it is already set.
+  return forced_file_path_;
+}
+
+FilePath DownloadItemImpl::GetUserVerifiedFilePath() const {
+  return (safety_state_ == DownloadItem::SAFE) ?
+      GetTargetFilePath() : GetFullPath();
+}
+
+FilePath DownloadItemImpl::GetFileNameToReportUser() const {
+  if (!display_name_.empty())
+    return display_name_;
+  return target_path_.BaseName();
+}
+
+DownloadItem::TargetDisposition DownloadItemImpl::GetTargetDisposition() const {
+  return target_disposition_;
+}
+
+const std::string& DownloadItemImpl::GetHash() const {
+  return hash_;
+}
+
+const std::string& DownloadItemImpl::GetHashState() const {
+  return hash_state_;
+}
+
+bool DownloadItemImpl::GetFileExternallyRemoved() const {
+  return file_externally_removed_;
+}
+
+// TODO(asanka): Unify GetSafetyState() and IsDangerous().
+DownloadItem::SafetyState DownloadItemImpl::GetSafetyState() const {
+  return safety_state_;
+}
+
+bool DownloadItemImpl::IsDangerous() const {
+  // TODO(noelutz): At this point only the windows views UI supports
+  // warnings based on dangerous content.
+#ifdef OS_WIN
+  return (danger_type_ == content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE ||
+          danger_type_ == content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL ||
+          danger_type_ == content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT ||
+          danger_type_ == content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT);
+#else
+  return (danger_type_ == content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE ||
+          danger_type_ == content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL);
+#endif
+}
+
+content::DownloadDangerType DownloadItemImpl::GetDangerType() const {
+  return danger_type_;
+}
+
+bool DownloadItemImpl::TimeRemaining(base::TimeDelta* remaining) const {
+  if (total_bytes_ <= 0)
+    return false;  // We never received the content_length for this download.
+
+  int64 speed = CurrentSpeed();
+  if (speed == 0)
+    return false;
+
+  *remaining = base::TimeDelta::FromSeconds(
+      (total_bytes_ - received_bytes_) / speed);
+  return true;
+}
+
+int64 DownloadItemImpl::CurrentSpeed() const {
+  if (is_paused_)
+    return 0;
+  return bytes_per_sec_;
+}
+
+int DownloadItemImpl::PercentComplete() const {
+  // If the delegate is delaying completion of the download, then we have no
+  // idea how long it will take.
+  if (delegate_delayed_complete_ || total_bytes_ <= 0)
+    return -1;
+
+  return static_cast<int>(received_bytes_ * 100.0 / total_bytes_);
+}
+
+bool DownloadItemImpl::AllDataSaved() const {
+  return all_data_saved_;
+}
+
+int64 DownloadItemImpl::GetTotalBytes() const {
+  return total_bytes_;
+}
+
+int64 DownloadItemImpl::GetReceivedBytes() const {
+  return received_bytes_;
+}
+
+base::Time DownloadItemImpl::GetStartTime() const {
+  return start_time_;
+}
+
+base::Time DownloadItemImpl::GetEndTime() const {
+  return end_time_;
+}
+
+bool DownloadItemImpl::CanShowInFolder() {
+  return !IsCancelled() && !file_externally_removed_;
+}
+
+bool DownloadItemImpl::CanOpenDownload() {
+  return !file_externally_removed_;
+}
+
+bool DownloadItemImpl::ShouldOpenFileBasedOnExtension() {
+  return delegate_->ShouldOpenFileBasedOnExtension(GetUserVerifiedFilePath());
+}
+
+bool DownloadItemImpl::GetOpenWhenComplete() const {
+  return open_when_complete_;
+}
+
+bool DownloadItemImpl::GetAutoOpened() {
+  return auto_opened_;
+}
+
+bool DownloadItemImpl::GetOpened() const {
+  return opened_;
+}
+
+bool DownloadItemImpl::MatchesQuery(const string16& query) const {
+  if (query.empty())
+    return true;
+
+  DCHECK_EQ(query, base::i18n::ToLower(query));
+
+  string16 url_raw(UTF8ToUTF16(GetURL().spec()));
+  if (base::i18n::StringSearchIgnoringCaseAndAccents(query, url_raw))
+    return true;
+
+  // TODO(phajdan.jr): write a test case for the following code.
+  // A good test case would be:
+  //   "/\xe4\xbd\xa0\xe5\xa5\xbd\xe4\xbd\xa0\xe5\xa5\xbd",
+  //   L"/\x4f60\x597d\x4f60\x597d",
+  //   "/%E4%BD%A0%E5%A5%BD%E4%BD%A0%E5%A5%BD"
+  std::string languages;
+  languages = content::GetContentClient()->browser()->GetAcceptLangs(
+      GetBrowserContext());
+  string16 url_formatted(net::FormatUrl(GetURL(), languages));
+  if (base::i18n::StringSearchIgnoringCaseAndAccents(query, url_formatted))
+    return true;
+
+  // TODO(asanka): Change this to GetTargetFilePath() once DownloadQuery has
+  //               been modified to work with target paths.
+  string16 path(GetFullPath().LossyDisplayName());
+  return base::i18n::StringSearchIgnoringCaseAndAccents(query, path);
+}
+
+DownloadPersistentStoreInfo DownloadItemImpl::GetPersistentStoreInfo() const {
+  // TODO(asanka): Persist GetTargetFilePath() as well.
+  return DownloadPersistentStoreInfo(GetFullPath(),
+                                     GetURL(),
+                                     GetReferrerUrl(),
+                                     GetStartTime(),
+                                     GetEndTime(),
+                                     GetReceivedBytes(),
+                                     GetTotalBytes(),
+                                     GetState(),
+                                     GetDbHandle(),
+                                     GetOpened());
+}
+
+content::BrowserContext* DownloadItemImpl::GetBrowserContext() const {
+  return delegate_->GetBrowserContext();
+}
+
+WebContents* DownloadItemImpl::GetWebContents() const {
+  // TODO(rdsmith): Remove null check after removing GetWebContents() from
+  // paths that might be used by DownloadItems created from history import.
+  // Currently such items have null request_handle_s, where other items
+  // (regular and SavePackage downloads) have actual objects off the pointer.
+  if (request_handle_.get())
+    return request_handle_->GetWebContents();
+  return NULL;
+}
+
+void DownloadItemImpl::OnContentCheckCompleted(
+    content::DownloadDangerType danger_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(AllDataSaved());
+  SetDangerType(danger_type);
+  UpdateObservers();
+}
 
-  hash_ = final_hash;
-  hash_state_ = "";
+void DownloadItemImpl::SetOpenWhenComplete(bool open) {
+  open_when_complete_ = open;
+}
 
-  received_bytes_ = bytes_so_far;
+void DownloadItemImpl::SetIsTemporary(bool temporary) {
+  is_temporary_ = temporary;
+}
 
-  // If we've received more data than we were expecting (bad server info?),
-  // revert to 'unknown size mode'.
-  if (received_bytes_ > total_bytes_)
-    total_bytes_ = 0;
+void DownloadItemImpl::SetOpened(bool opened) {
+  opened_ = opened;
+}
+
+void DownloadItemImpl::SetDisplayName(const FilePath& name) {
+  display_name_ = name;
+}
+
+std::string DownloadItemImpl::DebugString(bool verbose) const {
+  std::string description =
+      base::StringPrintf("{ id = %d"
+                         " state = %s",
+                         download_id_.local(),
+                         DebugDownloadStateString(GetState()));
+
+  // Construct a string of the URL chain.
+  std::string url_list("<none>");
+  if (!url_chain_.empty()) {
+    std::vector<GURL>::const_iterator iter = url_chain_.begin();
+    std::vector<GURL>::const_iterator last = url_chain_.end();
+    url_list = (*iter).spec();
+    ++iter;
+    for ( ; verbose && (iter != last); ++iter) {
+      url_list += " ->\n\t";
+      const GURL& next_url = *iter;
+      url_list += next_url.spec();
+    }
+  }
+
+  if (verbose) {
+    description += base::StringPrintf(
+        " db_handle = %" PRId64
+        " total = %" PRId64
+        " received = %" PRId64
+        " reason = %s"
+        " paused = %c"
+        " safety = %s"
+        " last_modified = '%s'"
+        " etag = '%s'"
+        " url_chain = \n\t\"%s\"\n\t"
+        " full_path = \"%" PRFilePath "\""
+        " target_path = \"%" PRFilePath "\"",
+        GetDbHandle(),
+        GetTotalBytes(),
+        GetReceivedBytes(),
+        InterruptReasonDebugString(last_reason_).c_str(),
+        IsPaused() ? 'T' : 'F',
+        DebugSafetyStateString(GetSafetyState()),
+        GetLastModifiedTime().c_str(),
+        GetETag().c_str(),
+        url_list.c_str(),
+        GetFullPath().value().c_str(),
+        GetTargetFilePath().value().c_str());
+  } else {
+    description += base::StringPrintf(" url = \"%s\"", url_list.c_str());
+  }
+
+  description += " }";
+
+  return description;
+}
+
+void DownloadItemImpl::MockDownloadOpenForTesting() {
+  open_enabled_ = false;
+}
+
+void DownloadItemImpl::NotifyRemoved() {
+  FOR_EACH_OBSERVER(Observer, observers_, OnDownloadRemoved(this));
+}
+
+void DownloadItemImpl::OnDownloadedFileRemoved() {
+  file_externally_removed_ = true;
+  UpdateObservers();
+}
+
+void DownloadItemImpl::OffThreadCancel() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  request_handle_->CancelRequest();
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&DownloadFileManager::CancelDownload,
+                 delegate_->GetDownloadFileManager(), download_id_));
+}
+
+// An error occurred somewhere.
+void DownloadItemImpl::Interrupt(content::DownloadInterruptReason reason) {
+  // Somewhat counter-intuitively, it is possible for us to receive an
+  // interrupt after we've already been interrupted.  The generation of
+  // interrupts from the file thread Renames and the generation of
+  // interrupts from disk writes go through two different mechanisms (driven
+  // by rename requests from UI thread and by write requests from IO thread,
+  // respectively), and since we choose not to keep state on the File thread,
+  // this is the place where the races collide.  It's also possible for
+  // interrupts to race with cancels.
+
+  // Whatever happens, the first one to hit the UI thread wins.
+  if (!IsInProgress())
+    return;
+
+  last_reason_ = reason;
+  TransitionTo(INTERRUPTED);
+  download_stats::RecordDownloadInterrupted(
+      reason, received_bytes_, total_bytes_);
+  delegate_->DownloadStopped(this);
+}
+
+void DownloadItemImpl::SetTotalBytes(int64 total_bytes) {
+  total_bytes_ = total_bytes;
 }
 
 // Updates from the download thread may have been posted while this download
@@ -438,63 +920,6 @@ void DownloadItemImpl::UpdateProgress(int64 bytes_so_far,
   UpdateObservers();
 }
 
-// Triggered by a user action.
-void DownloadItemImpl::Cancel(bool user_cancel) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  last_reason_ = user_cancel ?
-      content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED :
-      content::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN;
-
-  VLOG(20) << __FUNCTION__ << "() download = " << DebugString(true);
-  if (!IsPartialDownload()) {
-    // Small downloads might be complete before this method has
-    // a chance to run.
-    return;
-  }
-
-  download_stats::RecordDownloadCount(download_stats::CANCELLED_COUNT);
-
-  TransitionTo(CANCELLED);
-  if (user_cancel)
-    delegate_->DownloadStopped(this);
-}
-
-// An error occurred somewhere.
-void DownloadItemImpl::Interrupt(content::DownloadInterruptReason reason) {
-  // Somewhat counter-intuitively, it is possible for us to receive an
-  // interrupt after we've already been interrupted.  The generation of
-  // interrupts from the file thread Renames and the generation of
-  // interrupts from disk writes go through two different mechanisms (driven
-  // by rename requests from UI thread and by write requests from IO thread,
-  // respectively), and since we choose not to keep state on the File thread,
-  // this is the place where the races collide.  It's also possible for
-  // interrupts to race with cancels.
-
-  // Whatever happens, the first one to hit the UI thread wins.
-  if (!IsInProgress())
-    return;
-
-  last_reason_ = reason;
-  TransitionTo(INTERRUPTED);
-  download_stats::RecordDownloadInterrupted(
-      reason, received_bytes_, total_bytes_);
-  delegate_->DownloadStopped(this);
-}
-
-void DownloadItemImpl::MarkAsComplete() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  DCHECK(all_data_saved_);
-  end_time_ = base::Time::Now();
-  TransitionTo(COMPLETE);
-}
-
-void DownloadItemImpl::DelayedDownloadOpened(bool auto_opened) {
-  auto_opened_ = auto_opened;
-  Completed();
-}
-
 void DownloadItemImpl::OnAllDataSaved(
     int64 size, const std::string& final_hash) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -505,14 +930,201 @@ void DownloadItemImpl::OnAllDataSaved(
   UpdateObservers();
 }
 
-void DownloadItemImpl::OnDownloadedFileRemoved() {
-  file_externally_removed_ = true;
-  UpdateObservers();
+void DownloadItemImpl::MarkAsComplete() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DCHECK(all_data_saved_);
+  end_time_ = base::Time::Now();
+  TransitionTo(COMPLETE);
+}
+
+void DownloadItemImpl::SetIsPersisted() {
+  is_persisted_ = true;
+}
+
+void DownloadItemImpl::SetDbHandle(int64 handle) {
+  db_handle_ = handle;
+
+  bound_net_log_.AddEvent(
+      net::NetLog::TYPE_DOWNLOAD_ITEM_IN_HISTORY,
+      net::NetLog::Int64Callback("db_handle", db_handle_));
+}
+
+// **** Download progression cascade
+
+void DownloadItemImpl::Init(bool active,
+                            download_net_logs::DownloadType download_type) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (active)
+    download_stats::RecordDownloadCount(download_stats::START_COUNT);
+
+  if (target_path_.empty())
+    target_path_ = current_path_;
+  std::string file_name;
+  if (download_type == download_net_logs::SRC_HISTORY_IMPORT) {
+    // target_path_ works for History and Save As versions.
+    file_name = target_path_.AsUTF8Unsafe();
+  } else {
+    // See if it's set programmatically.
+    file_name = forced_file_path_.AsUTF8Unsafe();
+    // Possibly has a 'download' attribute for the anchor.
+    if (file_name.empty())
+      file_name = suggested_filename_;
+    // From the URL file name.
+    if (file_name.empty())
+      file_name = GetURL().ExtractFileName();
+  }
+
+  bound_net_log_.BeginEvent(
+      net::NetLog::TYPE_DOWNLOAD_ITEM_ACTIVE,
+      base::Bind(&download_net_logs::ItemActivatedCallback,
+                 this, download_type, &file_name));
+
+  // If this is not an active download, end the ACTIVE event now.
+  if (!active) {
+    bound_net_log_.AddEvent(
+        net::NetLog::TYPE_DOWNLOAD_ITEM_IN_HISTORY,
+        net::NetLog::Int64Callback("db_handle", db_handle_));
+
+    bound_net_log_.EndEvent(net::NetLog::TYPE_DOWNLOAD_ITEM_ACTIVE);
+  }
+
+  VLOG(20) << __FUNCTION__ << "() " << DebugString(true);
+}
+
+// Called by DownloadManagerImpl when the download target path has been
+// determined.
+void DownloadItemImpl::OnDownloadTargetDetermined(
+    const FilePath& target_path,
+    TargetDisposition disposition,
+    content::DownloadDangerType danger_type,
+    const FilePath& intermediate_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // If the |target_path| is empty, then we consider this download to be
+  // canceled.
+  if (target_path.empty()) {
+    Cancel(true);
+    return;
+  }
+
+  target_path_ = target_path;
+  target_disposition_ = disposition;
+  SetDangerType(danger_type);
+  // TODO(asanka): SetDangerType() doesn't need to send a notification here.
+
+  // We want the intermediate and target paths to refer to the same directory so
+  // that they are both on the same device and subject to same
+  // space/permission/availability constraints.
+  DCHECK(intermediate_path.DirName() == target_path.DirName());
+
+  // Rename to intermediate name.
+  // TODO(asanka): Skip this rename if AllDataSaved() is true. This avoids a
+  //               spurious rename when we can just rename to the final
+  //               filename. Unnecessary renames may cause bugs like
+  //               http://crbug.com/74187.
+  DownloadFileManager::RenameCompletionCallback callback =
+      base::Bind(&DownloadItemImpl::OnDownloadRenamedToIntermediateName,
+                 weak_ptr_factory_.GetWeakPtr());
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&DownloadFileManager::RenameDownloadFile,
+                 delegate_->GetDownloadFileManager(), GetGlobalId(),
+                 intermediate_path, false, callback));
+}
+
+void DownloadItemImpl::OnDownloadRenamedToIntermediateName(
+    content::DownloadInterruptReason reason,
+    const FilePath& full_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (content::DOWNLOAD_INTERRUPT_REASON_NONE != reason) {
+    Interrupt(reason);
+  } else {
+    SetFullPath(full_path);
+    UpdateObservers();
+  }
+
+  delegate_->DownloadRenamedToIntermediateName(this);
 }
 
 void DownloadItemImpl::MaybeCompleteDownload() {
   // TODO(rdsmith): Move logic for this function here.
   delegate_->MaybeCompleteDownload(this);
+}
+
+// Called by DownloadManagerImpl::MaybeCompleteDownload() when it has
+// determined that the download is ready for completion.
+void DownloadItemImpl::OnDownloadCompleting() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  VLOG(20) << __FUNCTION__ << "()"
+           << " needs rename = " << NeedsRename()
+           << " " << DebugString(true);
+  DCHECK(!GetTargetName().empty());
+  DCHECK_NE(DANGEROUS, GetSafetyState());
+
+  if (NeedsRename()) {
+    DownloadFileManager::RenameCompletionCallback callback =
+        base::Bind(&DownloadItemImpl::OnDownloadRenamedToFinalName,
+                   weak_ptr_factory_.GetWeakPtr());
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&DownloadFileManager::RenameDownloadFile,
+                   delegate_->GetDownloadFileManager(), GetGlobalId(),
+                   GetTargetFilePath(), true, callback));
+  } else {
+    // Complete the download and release the DownloadFile.
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&DownloadFileManager::CompleteDownload,
+                   delegate_->GetDownloadFileManager(), GetGlobalId(),
+                   base::Bind(&DownloadItemImpl::OnDownloadFileReleased,
+                              weak_ptr_factory_.GetWeakPtr())));
+  }
+}
+
+void DownloadItemImpl::OnDownloadRenamedToFinalName(
+    content::DownloadInterruptReason reason,
+    const FilePath& full_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  VLOG(20) << __FUNCTION__ << "()"
+           << " full_path = \"" << full_path.value() << "\""
+           << " needed rename = " << NeedsRename()
+           << " " << DebugString(false);
+  DCHECK(NeedsRename());
+
+  if (content::DOWNLOAD_INTERRUPT_REASON_NONE != reason) {
+    Interrupt(reason);
+    return;
+  }
+
+  // full_path is now the current and target file path.
+  DCHECK(!full_path.empty());
+  target_path_ = full_path;
+  SetFullPath(full_path);
+  delegate_->DownloadRenamedToFinalName(this);
+
+  // Complete the download and release the DownloadFile.
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&DownloadFileManager::CompleteDownload,
+                 delegate_->GetDownloadFileManager(), GetGlobalId(),
+                 base::Bind(&DownloadItemImpl::OnDownloadFileReleased,
+                            weak_ptr_factory_.GetWeakPtr())));
+}
+
+void DownloadItemImpl::OnDownloadFileReleased() {
+  if (delegate_->ShouldOpenDownload(this))
+    Completed();
+  else
+    delegate_delayed_complete_ = true;
+}
+
+void DownloadItemImpl::DelayedDownloadOpened(bool auto_opened) {
+  auto_opened_ = auto_opened;
+  Completed();
 }
 
 void DownloadItemImpl::Completed() {
@@ -540,6 +1152,28 @@ void DownloadItemImpl::Completed() {
     auto_opened_ = true;
     UpdateObservers();
   }
+}
+
+// **** End of Download progression cascade
+
+bool DownloadItemImpl::NeedsRename() const {
+  DCHECK(target_path_.DirName() == current_path_.DirName());
+  return target_path_ != current_path_;
+}
+
+void DownloadItemImpl::ProgressComplete(int64 bytes_so_far,
+                                        const std::string& final_hash) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  hash_ = final_hash;
+  hash_state_ = "";
+
+  received_bytes_ = bytes_so_far;
+
+  // If we've received more data than we were expecting (bad server info?),
+  // revert to 'unknown size mode'.
+  if (received_bytes_ > total_bytes_)
+    total_bytes_ = 0;
 }
 
 void DownloadItemImpl::TransitionTo(DownloadState new_state) {
@@ -611,553 +1245,6 @@ void DownloadItemImpl::SetFullPath(const FilePath& new_path) {
                  &current_path_, &new_path));
 }
 
-void DownloadItemImpl::Delete(DeleteReason reason) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  switch (reason) {
-    case DELETE_DUE_TO_USER_DISCARD:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Download.UserDiscard", GetDangerType(),
-          content::DOWNLOAD_DANGER_TYPE_MAX);
-      break;
-    case DELETE_DUE_TO_BROWSER_SHUTDOWN:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Download.Discard", GetDangerType(),
-          content::DOWNLOAD_DANGER_TYPE_MAX);
-      break;
-    default:
-      NOTREACHED();
-  }
 
-  // TODO(asanka): Avoid deleting a file that is still owned by DownloadFile.
-  if (!current_path_.empty())
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                            base::Bind(&DeleteDownloadedFile, current_path_));
-  Remove();
-  // We have now been deleted.
-}
 
-void DownloadItemImpl::Remove() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  delegate_->AssertStateConsistent(this);
-  Cancel(true);
-  delegate_->AssertStateConsistent(this);
-
-  NotifyRemoved();
-  delegate_->DownloadRemoved(this);
-  // We have now been deleted.
-}
-
-void DownloadItemImpl::NotifyRemoved() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnDownloadRemoved(this));
-}
-
-bool DownloadItemImpl::TimeRemaining(base::TimeDelta* remaining) const {
-  if (total_bytes_ <= 0)
-    return false;  // We never received the content_length for this download.
-
-  int64 speed = CurrentSpeed();
-  if (speed == 0)
-    return false;
-
-  *remaining = base::TimeDelta::FromSeconds(
-      (total_bytes_ - received_bytes_) / speed);
-  return true;
-}
-
-int64 DownloadItemImpl::CurrentSpeed() const {
-  if (is_paused_)
-    return 0;
-  return bytes_per_sec_;
-}
-
-int DownloadItemImpl::PercentComplete() const {
-  // If the delegate is delaying completion of the download, then we have no
-  // idea how long it will take.
-  if (delegate_delayed_complete_ || total_bytes_ <= 0)
-    return -1;
-
-  return static_cast<int>(received_bytes_ * 100.0 / total_bytes_);
-}
-
-void DownloadItemImpl::TogglePause() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  DCHECK(IsInProgress());
-  if (is_paused_)
-    request_handle_->ResumeRequest();
-  else
-    request_handle_->PauseRequest();
-  is_paused_ = !is_paused_;
-  UpdateObservers();
-}
-
-void DownloadItemImpl::OnDownloadCompleting() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  VLOG(20) << __FUNCTION__ << "()"
-           << " needs rename = " << NeedsRename()
-           << " " << DebugString(true);
-  DCHECK(!GetTargetName().empty());
-  DCHECK_NE(DANGEROUS, GetSafetyState());
-
-  if (NeedsRename()) {
-    DownloadFileManager::RenameCompletionCallback callback =
-        base::Bind(&DownloadItemImpl::OnDownloadRenamedToFinalName,
-                   weak_ptr_factory_.GetWeakPtr());
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&DownloadFileManager::RenameDownloadFile,
-                   delegate_->GetDownloadFileManager(), GetGlobalId(),
-                   GetTargetFilePath(), true, callback));
-  } else {
-    // Complete the download and release the DownloadFile.
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&DownloadFileManager::CompleteDownload,
-                   delegate_->GetDownloadFileManager(), GetGlobalId(),
-                   base::Bind(&DownloadItemImpl::OnDownloadFileReleased,
-                              weak_ptr_factory_.GetWeakPtr())));
-  }
-}
-
-void DownloadItemImpl::OnDownloadRenamedToFinalName(
-    content::DownloadInterruptReason reason,
-    const FilePath& full_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  VLOG(20) << __FUNCTION__ << "()"
-           << " full_path = \"" << full_path.value() << "\""
-           << " needed rename = " << NeedsRename()
-           << " " << DebugString(false);
-  DCHECK(NeedsRename());
-
-  if (content::DOWNLOAD_INTERRUPT_REASON_NONE != reason) {
-    Interrupt(reason);
-    return;
-  }
-
-  // full_path is now the current and target file path.
-  DCHECK(!full_path.empty());
-  target_path_ = full_path;
-  SetFullPath(full_path);
-  delegate_->DownloadRenamedToFinalName(this);
-
-  // Complete the download and release the DownloadFile.
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DownloadFileManager::CompleteDownload,
-                 delegate_->GetDownloadFileManager(), GetGlobalId(),
-                 base::Bind(&DownloadItemImpl::OnDownloadFileReleased,
-                            weak_ptr_factory_.GetWeakPtr())));
-}
-
-void DownloadItemImpl::OnDownloadFileReleased() {
-  if (delegate_->ShouldOpenDownload(this))
-    Completed();
-  else
-    delegate_delayed_complete_ = true;
-}
-
-void DownloadItemImpl::OnDownloadRenamedToIntermediateName(
-    content::DownloadInterruptReason reason,
-    const FilePath& full_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (content::DOWNLOAD_INTERRUPT_REASON_NONE != reason) {
-    Interrupt(reason);
-  } else {
-    SetFullPath(full_path);
-    UpdateObservers();
-  }
-
-  delegate_->DownloadRenamedToIntermediateName(this);
-}
-
-bool DownloadItemImpl::MatchesQuery(const string16& query) const {
-  if (query.empty())
-    return true;
-
-  DCHECK_EQ(query, base::i18n::ToLower(query));
-
-  string16 url_raw(UTF8ToUTF16(GetURL().spec()));
-  if (base::i18n::StringSearchIgnoringCaseAndAccents(query, url_raw))
-    return true;
-
-  // TODO(phajdan.jr): write a test case for the following code.
-  // A good test case would be:
-  //   "/\xe4\xbd\xa0\xe5\xa5\xbd\xe4\xbd\xa0\xe5\xa5\xbd",
-  //   L"/\x4f60\x597d\x4f60\x597d",
-  //   "/%E4%BD%A0%E5%A5%BD%E4%BD%A0%E5%A5%BD"
-  std::string languages;
-  languages = content::GetContentClient()->browser()->GetAcceptLangs(
-      GetBrowserContext());
-  string16 url_formatted(net::FormatUrl(GetURL(), languages));
-  if (base::i18n::StringSearchIgnoringCaseAndAccents(query, url_formatted))
-    return true;
-
-  // TODO(asanka): Change this to GetTargetFilePath() once DownloadQuery has
-  //               been modified to work with target paths.
-  string16 path(GetFullPath().LossyDisplayName());
-  return base::i18n::StringSearchIgnoringCaseAndAccents(query, path);
-}
-
-content::DownloadDangerType DownloadItemImpl::GetDangerType() const {
-  return danger_type_;
-}
-
-// TODO(asanka): Unify GetSafetyState() and IsDangerous().
-bool DownloadItemImpl::IsDangerous() const {
-  // TODO(noelutz): At this point only the windows views UI supports
-  // warnings based on dangerous content.
-#ifdef OS_WIN
-  return (danger_type_ == content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE ||
-          danger_type_ == content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL ||
-          danger_type_ == content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT ||
-          danger_type_ == content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT);
-#else
-  return (danger_type_ == content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE ||
-          danger_type_ == content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL);
-#endif
-}
-
-DownloadPersistentStoreInfo DownloadItemImpl::GetPersistentStoreInfo() const {
-  // TODO(asanka): Persist GetTargetFilePath() as well.
-  return DownloadPersistentStoreInfo(GetFullPath(),
-                                     GetURL(),
-                                     GetReferrerUrl(),
-                                     GetStartTime(),
-                                     GetEndTime(),
-                                     GetReceivedBytes(),
-                                     GetTotalBytes(),
-                                     GetState(),
-                                     GetDbHandle(),
-                                     GetOpened());
-}
-
-WebContents* DownloadItemImpl::GetWebContents() const {
-  // TODO(rdsmith): Remove null check after removing GetWebContents() from
-  // paths that might be used by DownloadItems created from history import.
-  // Currently such items have null request_handle_s, where other items
-  // (regular and SavePackage downloads) have actual objects off the pointer.
-  if (request_handle_.get())
-    return request_handle_->GetWebContents();
-  return NULL;
-}
-
-content::BrowserContext* DownloadItemImpl::GetBrowserContext() const {
-  return delegate_->GetBrowserContext();
-}
-
-const FilePath& DownloadItemImpl::GetTargetFilePath() const {
-  return target_path_;
-}
-
-DownloadItem::TargetDisposition DownloadItemImpl::GetTargetDisposition() const {
-  return target_disposition_;
-}
-
-void DownloadItemImpl::OnDownloadTargetDetermined(
-    const FilePath& target_path,
-    TargetDisposition disposition,
-    content::DownloadDangerType danger_type,
-    const FilePath& intermediate_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // If the |target_path| is empty, then we consider this download to be
-  // canceled.
-  if (target_path.empty()) {
-    Cancel(true);
-    return;
-  }
-
-  target_path_ = target_path;
-  target_disposition_ = disposition;
-  SetDangerType(danger_type);
-  // TODO(asanka): SetDangerType() doesn't need to send a notification here.
-
-  // We want the intermediate and target paths to refer to the same directory so
-  // that they are both on the same device and subject to same
-  // space/permission/availability constraints.
-  DCHECK(intermediate_path.DirName() == target_path.DirName());
-
-  // Rename to intermediate name.
-  // TODO(asanka): Skip this rename if AllDataSaved() is true. This avoids a
-  //               spurious rename when we can just rename to the final
-  //               filename. Unnecessary renames may cause bugs like
-  //               http://crbug.com/74187.
-  DownloadFileManager::RenameCompletionCallback callback =
-      base::Bind(&DownloadItemImpl::OnDownloadRenamedToIntermediateName,
-                 weak_ptr_factory_.GetWeakPtr());
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DownloadFileManager::RenameDownloadFile,
-                 delegate_->GetDownloadFileManager(), GetGlobalId(),
-                 intermediate_path, false, callback));
-}
-
-void DownloadItemImpl::OnContentCheckCompleted(
-    content::DownloadDangerType danger_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(AllDataSaved());
-  SetDangerType(danger_type);
-  UpdateObservers();
-}
-
-const FilePath& DownloadItemImpl::GetFullPath() const {
-  return current_path_;
-}
-
-FilePath DownloadItemImpl::GetFileNameToReportUser() const {
-  if (!display_name_.empty())
-    return display_name_;
-  return target_path_.BaseName();
-}
-
-void DownloadItemImpl::SetDisplayName(const FilePath& name) {
-  display_name_ = name;
-}
-
-FilePath DownloadItemImpl::GetUserVerifiedFilePath() const {
-  return (safety_state_ == DownloadItem::SAFE) ?
-      GetTargetFilePath() : GetFullPath();
-}
-
-void DownloadItemImpl::OffThreadCancel() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  request_handle_->CancelRequest();
-
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DownloadFileManager::CancelDownload,
-                 delegate_->GetDownloadFileManager(), download_id_));
-}
-
-void DownloadItemImpl::Init(bool active,
-                            download_net_logs::DownloadType download_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (active)
-    download_stats::RecordDownloadCount(download_stats::START_COUNT);
-
-  if (target_path_.empty())
-    target_path_ = current_path_;
-  std::string file_name;
-  if (download_type == download_net_logs::SRC_HISTORY_IMPORT) {
-    // target_path_ works for History and Save As versions.
-    file_name = target_path_.AsUTF8Unsafe();
-  } else {
-    // See if it's set programmatically.
-    file_name = forced_file_path_.AsUTF8Unsafe();
-    // Possibly has a 'download' attribute for the anchor.
-    if (file_name.empty())
-      file_name = suggested_filename_;
-    // From the URL file name.
-    if (file_name.empty())
-      file_name = GetURL().ExtractFileName();
-  }
-
-  bound_net_log_.BeginEvent(
-      net::NetLog::TYPE_DOWNLOAD_ITEM_ACTIVE,
-      base::Bind(&download_net_logs::ItemActivatedCallback,
-                 this, download_type, &file_name));
-
-  // If this is not an active download, end the ACTIVE event now.
-  if (!active) {
-    bound_net_log_.AddEvent(
-        net::NetLog::TYPE_DOWNLOAD_ITEM_IN_HISTORY,
-        net::NetLog::Int64Callback("db_handle", db_handle_));
-
-    bound_net_log_.EndEvent(net::NetLog::TYPE_DOWNLOAD_ITEM_ACTIVE);
-  }
-
-  VLOG(20) << __FUNCTION__ << "() " << DebugString(true);
-}
-
-bool DownloadItemImpl::NeedsRename() const {
-  DCHECK(target_path_.DirName() == current_path_.DirName());
-  return target_path_ != current_path_;
-}
-
-// TODO(ahendrickson) -- Move |INTERRUPTED| from |IsCancelled()| to
-// |IsPartialDownload()|, when resuming interrupted downloads is implemented.
-bool DownloadItemImpl::IsPartialDownload() const {
-  return (state_ == IN_PROGRESS);
-}
-
-bool DownloadItemImpl::IsInProgress() const {
-  return (state_ == IN_PROGRESS);
-}
-
-bool DownloadItemImpl::IsCancelled() const {
-  return (state_ == CANCELLED) ||
-         (state_ == INTERRUPTED);
-}
-
-bool DownloadItemImpl::IsInterrupted() const {
-  return (state_ == INTERRUPTED);
-}
-
-bool DownloadItemImpl::IsComplete() const {
-  return (state_ == COMPLETE);
-}
-
-const GURL& DownloadItemImpl::GetURL() const {
-  return url_chain_.empty() ?
-             GURL::EmptyGURL() : url_chain_.back();
-}
-
-std::string DownloadItemImpl::DebugString(bool verbose) const {
-  std::string description =
-      base::StringPrintf("{ id = %d"
-                         " state = %s",
-                         download_id_.local(),
-                         DebugDownloadStateString(GetState()));
-
-  // Construct a string of the URL chain.
-  std::string url_list("<none>");
-  if (!url_chain_.empty()) {
-    std::vector<GURL>::const_iterator iter = url_chain_.begin();
-    std::vector<GURL>::const_iterator last = url_chain_.end();
-    url_list = (*iter).spec();
-    ++iter;
-    for ( ; verbose && (iter != last); ++iter) {
-      url_list += " ->\n\t";
-      const GURL& next_url = *iter;
-      url_list += next_url.spec();
-    }
-  }
-
-  if (verbose) {
-    description += base::StringPrintf(
-        " db_handle = %" PRId64
-        " total = %" PRId64
-        " received = %" PRId64
-        " reason = %s"
-        " paused = %c"
-        " safety = %s"
-        " last_modified = '%s'"
-        " etag = '%s'"
-        " url_chain = \n\t\"%s\"\n\t"
-        " full_path = \"%" PRFilePath "\""
-        " target_path = \"%" PRFilePath "\"",
-        GetDbHandle(),
-        GetTotalBytes(),
-        GetReceivedBytes(),
-        InterruptReasonDebugString(last_reason_).c_str(),
-        IsPaused() ? 'T' : 'F',
-        DebugSafetyStateString(GetSafetyState()),
-        GetLastModifiedTime().c_str(),
-        GetETag().c_str(),
-        url_list.c_str(),
-        GetFullPath().value().c_str(),
-        GetTargetFilePath().value().c_str());
-  } else {
-    description += base::StringPrintf(" url = \"%s\"", url_list.c_str());
-  }
-
-  description += " }";
-
-  return description;
-}
-
-bool DownloadItemImpl::AllDataSaved() const { return all_data_saved_; }
-DownloadItem::DownloadState DownloadItemImpl::GetState() const {
-  return state_;
-}
-const std::vector<GURL>& DownloadItemImpl::GetUrlChain() const {
-  return url_chain_;
-}
-const GURL& DownloadItemImpl::GetOriginalUrl() const {
-  return url_chain_.front();
-}
-const GURL& DownloadItemImpl::GetReferrerUrl() const { return referrer_url_; }
-std::string DownloadItemImpl::GetSuggestedFilename() const {
-  return suggested_filename_;
-}
-std::string DownloadItemImpl::GetContentDisposition() const {
-  return content_disposition_;
-}
-std::string DownloadItemImpl::GetMimeType() const { return mime_type_; }
-std::string DownloadItemImpl::GetOriginalMimeType() const {
-  return original_mime_type_;
-}
-std::string DownloadItemImpl::GetReferrerCharset() const {
-  return referrer_charset_;
-}
-std::string DownloadItemImpl::GetRemoteAddress() const {
-  return remote_address_;
-}
-int64 DownloadItemImpl::GetTotalBytes() const { return total_bytes_; }
-void DownloadItemImpl::SetTotalBytes(int64 total_bytes) {
-  total_bytes_ = total_bytes;
-}
-const std::string& DownloadItemImpl::GetHash() const { return hash_; }
-int64 DownloadItemImpl::GetReceivedBytes() const { return received_bytes_; }
-const std::string& DownloadItemImpl::GetHashState() const {
-  return hash_state_;
-}
-int32 DownloadItemImpl::GetId() const { return download_id_.local(); }
-DownloadId DownloadItemImpl::GetGlobalId() const { return download_id_; }
-base::Time DownloadItemImpl::GetStartTime() const { return start_time_; }
-base::Time DownloadItemImpl::GetEndTime() const { return end_time_; }
-
-void DownloadItemImpl::SetIsPersisted() {
-  is_persisted_ = true;
-}
-
-bool DownloadItemImpl::IsPersisted() const {
-  return is_persisted_;
-}
-
-void DownloadItemImpl::SetDbHandle(int64 handle) {
-  db_handle_ = handle;
-
-  bound_net_log_.AddEvent(
-      net::NetLog::TYPE_DOWNLOAD_ITEM_IN_HISTORY,
-      net::NetLog::Int64Callback("db_handle", db_handle_));
-}
-
-int64 DownloadItemImpl::GetDbHandle() const { return db_handle_; }
-bool DownloadItemImpl::IsPaused() const { return is_paused_; }
-bool DownloadItemImpl::GetOpenWhenComplete() const {
-  return open_when_complete_;
-}
-void DownloadItemImpl::SetOpenWhenComplete(bool open) {
-  open_when_complete_ = open;
-}
-bool DownloadItemImpl::GetFileExternallyRemoved() const {
-  return file_externally_removed_;
-}
-DownloadItem::SafetyState DownloadItemImpl::GetSafetyState() const {
-  return safety_state_;
-}
-bool DownloadItemImpl::GetAutoOpened() { return auto_opened_; }
-FilePath DownloadItemImpl::GetTargetName() const {
-  return target_path_.BaseName();
-}
-const FilePath& DownloadItemImpl::GetForcedFilePath() const {
-  // TODO(asanka): Get rid of GetForcedFilePath(). We should instead just
-  // require that clients respect GetTargetFilePath() if it is already set.
-  return forced_file_path_;
-}
-bool DownloadItemImpl::HasUserGesture() const {
-  return has_user_gesture_;
-};
-content::PageTransition DownloadItemImpl::GetTransitionType() const {
-  return transition_type_;
-};
-bool DownloadItemImpl::IsTemporary() const { return is_temporary_; }
-void DownloadItemImpl::SetIsTemporary(bool temporary) {
-  is_temporary_ = temporary;
-}
-void DownloadItemImpl::SetOpened(bool opened) { opened_ = opened; }
-bool DownloadItemImpl::GetOpened() const { return opened_; }
-const std::string& DownloadItemImpl::GetLastModifiedTime() const {
-  return last_modified_time_;
-}
-const std::string& DownloadItemImpl::GetETag() const { return etag_; }
-content::DownloadInterruptReason DownloadItemImpl::GetLastReason() const {
-  return last_reason_;
-}
-void DownloadItemImpl::MockDownloadOpenForTesting() { open_enabled_ = false; }

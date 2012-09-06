@@ -57,7 +57,94 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
 
   virtual ~DownloadItemImpl();
 
-  // Implementation functions (not part of the DownloadItem interface).
+  // DownloadItem
+  virtual void AddObserver(DownloadItem::Observer* observer) OVERRIDE;
+  virtual void RemoveObserver(DownloadItem::Observer* observer) OVERRIDE;
+  virtual void UpdateObservers() OVERRIDE;
+  virtual void DangerousDownloadValidated() OVERRIDE;
+  virtual void TogglePause() OVERRIDE;
+  virtual void Cancel(bool user_cancel) OVERRIDE;
+  virtual void Delete(DeleteReason reason) OVERRIDE;
+  virtual void Remove() OVERRIDE;
+  virtual void OpenDownload() OVERRIDE;
+  virtual void ShowDownloadInShell() OVERRIDE;
+  virtual int32 GetId() const OVERRIDE;
+  virtual content::DownloadId GetGlobalId() const OVERRIDE;
+  virtual int64 GetDbHandle() const OVERRIDE;
+  virtual DownloadState GetState() const OVERRIDE;
+  virtual content::DownloadInterruptReason GetLastReason() const OVERRIDE;
+  virtual bool IsPaused() const OVERRIDE;
+  virtual bool IsTemporary() const OVERRIDE;
+  virtual bool IsPersisted() const OVERRIDE;
+  virtual bool IsPartialDownload() const OVERRIDE;
+  virtual bool IsInProgress() const OVERRIDE;
+  virtual bool IsCancelled() const OVERRIDE;
+  virtual bool IsInterrupted() const OVERRIDE;
+  virtual bool IsComplete() const OVERRIDE;
+  virtual const GURL& GetURL() const OVERRIDE;
+  virtual const std::vector<GURL>& GetUrlChain() const OVERRIDE;
+  virtual const GURL& GetOriginalUrl() const OVERRIDE;
+  virtual const GURL& GetReferrerUrl() const OVERRIDE;
+  virtual std::string GetSuggestedFilename() const OVERRIDE;
+  virtual std::string GetContentDisposition() const OVERRIDE;
+  virtual std::string GetMimeType() const OVERRIDE;
+  virtual std::string GetOriginalMimeType() const OVERRIDE;
+  virtual std::string GetReferrerCharset() const OVERRIDE;
+  virtual std::string GetRemoteAddress() const OVERRIDE;
+  virtual bool HasUserGesture() const OVERRIDE;
+  virtual content::PageTransition GetTransitionType() const OVERRIDE;
+  virtual const std::string& GetLastModifiedTime() const OVERRIDE;
+  virtual const std::string& GetETag() const OVERRIDE;
+  virtual const FilePath& GetFullPath() const OVERRIDE;
+  virtual const FilePath& GetTargetFilePath() const OVERRIDE;
+  virtual FilePath GetTargetName() const OVERRIDE;
+  virtual const FilePath& GetForcedFilePath() const OVERRIDE;
+  virtual FilePath GetUserVerifiedFilePath() const OVERRIDE;
+  virtual FilePath GetFileNameToReportUser() const OVERRIDE;
+  virtual TargetDisposition GetTargetDisposition() const OVERRIDE;
+  virtual const std::string& GetHash() const OVERRIDE;
+  virtual const std::string& GetHashState() const OVERRIDE;
+  virtual bool GetFileExternallyRemoved() const OVERRIDE;
+  virtual SafetyState GetSafetyState() const OVERRIDE;
+  virtual bool IsDangerous() const OVERRIDE;
+  virtual content::DownloadDangerType GetDangerType() const OVERRIDE;
+  virtual bool TimeRemaining(base::TimeDelta* remaining) const OVERRIDE;
+  virtual int64 CurrentSpeed() const OVERRIDE;
+  virtual int PercentComplete() const OVERRIDE;
+  virtual bool AllDataSaved() const OVERRIDE;
+  virtual int64 GetTotalBytes() const OVERRIDE;
+  virtual int64 GetReceivedBytes() const OVERRIDE;
+  virtual base::Time GetStartTime() const OVERRIDE;
+  virtual base::Time GetEndTime() const OVERRIDE;
+  virtual bool CanShowInFolder() OVERRIDE;
+  virtual bool CanOpenDownload() OVERRIDE;
+  virtual bool ShouldOpenFileBasedOnExtension() OVERRIDE;
+  virtual bool GetOpenWhenComplete() const OVERRIDE;
+  virtual bool GetAutoOpened() OVERRIDE;
+  virtual bool GetOpened() const OVERRIDE;
+  virtual bool MatchesQuery(const string16& query) const OVERRIDE;
+  virtual content::DownloadPersistentStoreInfo
+      GetPersistentStoreInfo() const OVERRIDE;
+  virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
+  virtual content::WebContents* GetWebContents() const OVERRIDE;
+  virtual void DelayedDownloadOpened(bool auto_opened) OVERRIDE;
+  virtual void OnContentCheckCompleted(
+      content::DownloadDangerType danger_type) OVERRIDE;
+  virtual void SetOpenWhenComplete(bool open) OVERRIDE;
+  virtual void SetIsTemporary(bool temporary) OVERRIDE;
+  virtual void SetOpened(bool opened) OVERRIDE;
+  virtual void SetDisplayName(const FilePath& name) OVERRIDE;
+  virtual std::string DebugString(bool verbose) const OVERRIDE;
+  virtual void MockDownloadOpenForTesting() OVERRIDE;
+
+  // All remaining public interfaces virtual to allow for DownloadItemImpl
+  // mocks.
+
+  // Main entry points for regular downloads, in order -------------------------
+
+  // TODO(rdsmith): Fold the process that uses these fully into
+  // DownloadItemImpl and pass callbacks to the delegate so that all of
+  // these can be made private
 
   // Called when the target path has been determined. |target_path| is the
   // suggested target path. |disposition| indicates how the target path should
@@ -70,16 +157,23 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
       content::DownloadDangerType danger_type,
       const FilePath& intermediate_path);
 
-  // Indicate that an error has occurred on the download.
-  virtual void Interrupt(content::DownloadInterruptReason reason);
+  // Called when the download is ready to complete.
+  // This may perform final rename if necessary and will eventually call
+  // DownloadItem::Completed().
+  virtual void OnDownloadCompleting();
 
-  // Mark the item as having been persisted.
-  virtual void SetIsPersisted();
+  // Needed because of interwining with DownloadManagerImpl --------------------
 
-  // Set the item's DB handle.
-  virtual void SetDbHandle(int64 handle);
+  // TODO(rdsmith): Unwind DownloadManagerImpl and DownloadItemImpl,
+  // removing these from the public interface.
 
-  // Cancels the off-thread aspects of the download.
+  // Notify observers that this item is being removed by the user.
+  virtual void NotifyRemoved();
+
+  virtual void OnDownloadedFileRemoved();
+
+  // Cancels the off-thread aspects of the download (such as
+  // the corresponding URLRequest).
   // TODO(rdsmith): This should be private and only called from
   // DownloadItem::Cancel/Interrupt; it isn't now because we can't
   // call those functions from
@@ -87,130 +181,68 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   // rewrites of the DownloadManager queues.
   virtual void OffThreadCancel();
 
-  // Called when the downloaded file is removed.
-  virtual void OnDownloadedFileRemoved();
+  // Indicate that an error has occurred on the download.
+  virtual void Interrupt(content::DownloadInterruptReason reason);
 
-  // Called when the download is ready to complete.
-  // This may perform final rename if necessary and will eventually call
-  // DownloadItem::Completed().
-  virtual void OnDownloadCompleting();
+  // DownloadItemImpl routines only needed by SavePackage ----------------------
 
-  // Called periodically from the download thread, or from the UI thread
-  // for saving packages.
+  // Called by SavePackage to set the total number of bytes on the item.
+  virtual void SetTotalBytes(int64 total_bytes);
+
+  // Indicate progress in saving data to its destination.
   // |bytes_so_far| is the number of bytes received so far.
   // |hash_state| is the current hash state.
   virtual void UpdateProgress(int64 bytes_so_far,
                               int64 bytes_per_sec,
                               const std::string& hash_state);
 
+  virtual void OnAllDataSaved(int64 size, const std::string& final_hash);
+
   // Called by SavePackage to display progress when the DownloadItem
   // should be considered complete.
   virtual void MarkAsComplete();
 
-  // Called when all data has been saved. Only has display effects.
-  virtual void OnAllDataSaved(int64 size, const std::string& final_hash);
+  // Interactions with persistence system --------------------------------------
 
-  // Called by SavePackage to set the total number of bytes on the item.
-  virtual void SetTotalBytes(int64 total_bytes);
-
-  // Notify observers that this item is being removed by the user.
-  virtual void NotifyRemoved();
-
-  // Overridden from DownloadItem.
-  virtual void AddObserver(DownloadItem::Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(DownloadItem::Observer* observer) OVERRIDE;
-  virtual void UpdateObservers() OVERRIDE;
-  virtual bool CanShowInFolder() OVERRIDE;
-  virtual bool CanOpenDownload() OVERRIDE;
-  virtual bool ShouldOpenFileBasedOnExtension() OVERRIDE;
-  virtual void OpenDownload() OVERRIDE;
-  virtual void ShowDownloadInShell() OVERRIDE;
-  virtual void DangerousDownloadValidated() OVERRIDE;
-  virtual void Cancel(bool user_cancel) OVERRIDE;
-  virtual void DelayedDownloadOpened(bool auto_opened) OVERRIDE;
-  virtual void Delete(DeleteReason reason) OVERRIDE;
-  virtual void Remove() OVERRIDE;
-  virtual bool TimeRemaining(base::TimeDelta* remaining) const OVERRIDE;
-  virtual int64 CurrentSpeed() const OVERRIDE;
-  virtual int PercentComplete() const OVERRIDE;
-  virtual bool AllDataSaved() const OVERRIDE;
-  virtual void TogglePause() OVERRIDE;
-  virtual bool MatchesQuery(const string16& query) const OVERRIDE;
-  virtual bool IsPartialDownload() const OVERRIDE;
-  virtual bool IsInProgress() const OVERRIDE;
-  virtual bool IsCancelled() const OVERRIDE;
-  virtual bool IsInterrupted() const OVERRIDE;
-  virtual bool IsComplete() const OVERRIDE;
-  virtual DownloadState GetState() const OVERRIDE;
-  virtual const FilePath& GetFullPath() const OVERRIDE;
-  virtual const FilePath& GetTargetFilePath() const OVERRIDE;
-  virtual TargetDisposition GetTargetDisposition() const OVERRIDE;
-  virtual void OnContentCheckCompleted(
-      content::DownloadDangerType danger_type) OVERRIDE;
-  virtual const GURL& GetURL() const OVERRIDE;
-  virtual const std::vector<GURL>& GetUrlChain() const OVERRIDE;
-  virtual const GURL& GetOriginalUrl() const OVERRIDE;
-  virtual const GURL& GetReferrerUrl() const OVERRIDE;
-  virtual std::string GetSuggestedFilename() const OVERRIDE;
-  virtual std::string GetContentDisposition() const OVERRIDE;
-  virtual std::string GetMimeType() const OVERRIDE;
-  virtual std::string GetOriginalMimeType() const OVERRIDE;
-  virtual std::string GetReferrerCharset() const OVERRIDE;
-  virtual std::string GetRemoteAddress() const OVERRIDE;
-  virtual int64 GetTotalBytes() const OVERRIDE;
-  virtual const std::string& GetHash() const OVERRIDE;
-  virtual int64 GetReceivedBytes() const OVERRIDE;
-  virtual const std::string& GetHashState() const OVERRIDE;
-  virtual int32 GetId() const OVERRIDE;
-  virtual content::DownloadId GetGlobalId() const OVERRIDE;
-  virtual base::Time GetStartTime() const OVERRIDE;
-  virtual base::Time GetEndTime() const OVERRIDE;
-  virtual bool IsPersisted() const OVERRIDE;
-  virtual int64 GetDbHandle() const OVERRIDE;
-  virtual bool IsPaused() const OVERRIDE;
-  virtual bool GetOpenWhenComplete() const OVERRIDE;
-  virtual void SetOpenWhenComplete(bool open) OVERRIDE;
-  virtual bool GetFileExternallyRemoved() const OVERRIDE;
-  virtual SafetyState GetSafetyState() const OVERRIDE;
-  virtual content::DownloadDangerType GetDangerType() const OVERRIDE;
-  virtual bool IsDangerous() const OVERRIDE;
-  virtual bool GetAutoOpened() OVERRIDE;
-  virtual FilePath GetTargetName() const OVERRIDE;
-  virtual const FilePath& GetForcedFilePath() const OVERRIDE;
-  virtual bool HasUserGesture() const OVERRIDE;
-  virtual content::PageTransition GetTransitionType() const OVERRIDE;
-  virtual bool IsTemporary() const OVERRIDE;
-  virtual void SetIsTemporary(bool temporary) OVERRIDE;
-  virtual void SetOpened(bool opened) OVERRIDE;
-  virtual bool GetOpened() const OVERRIDE;
-  virtual const std::string& GetLastModifiedTime() const OVERRIDE;
-  virtual const std::string& GetETag() const OVERRIDE;
-  virtual content::DownloadInterruptReason GetLastReason() const OVERRIDE;
-  virtual content::DownloadPersistentStoreInfo
-      GetPersistentStoreInfo() const OVERRIDE;
-  virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
-  virtual content::WebContents* GetWebContents() const OVERRIDE;
-  virtual FilePath GetFileNameToReportUser() const OVERRIDE;
-  virtual void SetDisplayName(const FilePath& name) OVERRIDE;
-  virtual FilePath GetUserVerifiedFilePath() const OVERRIDE;
-  virtual std::string DebugString(bool verbose) const OVERRIDE;
-  virtual void MockDownloadOpenForTesting() OVERRIDE;
+  // TODO(benjhayden): Remove when DownloadHistory becomes an observer.
+  virtual void SetIsPersisted();
+  virtual void SetDbHandle(int64 handle);
 
  private:
+  // Normal progression of a download ------------------------------------------
+
+  // These are listed in approximately chronological order.  There are also
+  // public methods involved in normal download progression; see
+  // the implementation ordering in download_item_impl.cc.
+
   // Construction common to all constructors. |active| should be true for new
   // downloads and false for downloads from the history.
   // |download_type| indicates to the net log system what kind of download
   // this is.
   void Init(bool active, download_net_logs::DownloadType download_type);
 
-  // Returns true if the download still needs to be renamed to
-  // GetTargetFilePath().
-  bool NeedsRename() const;
+  void OnDownloadRenamedToIntermediateName(
+      content::DownloadInterruptReason reason, const FilePath& full_path);
 
-  // If all pre-requisites have been met, complete download processing, i.e.  do
+  // If all pre-requisites have been met, complete download processing, i.e. do
   // internal cleanup, file rename, and potentially auto-open.  (Dangerous
   // downloads still may block on user acceptance after this point.)
   void MaybeCompleteDownload();
+
+  void OnDownloadRenamedToFinalName(content::DownloadInterruptReason reason,
+                                    const FilePath& full_path);
+
+  void OnDownloadFileReleased();
+
+  // Called when the entire download operation (including renaming etc)
+  // is completed.
+  void Completed();
+
+  // Helper routines -----------------------------------------------------------
+
+  // Returns true if the download still needs to be renamed to
+  // GetTargetFilePath().
+  bool NeedsRename() const;
 
   // Internal helper for maintaining consistent received and total sizes, and
   // setting the final hash.
@@ -218,30 +250,13 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   void ProgressComplete(int64 bytes_so_far,
                         const std::string& final_hash);
 
-  // Called when the entire download operation (including renaming etc)
-  // is completed.
-  void Completed();
-
   // Call to transition state; all state transitions should go through this.
   void TransitionTo(DownloadState new_state);
 
   // Set the |danger_type_| and invoke obserers if necessary.
   void SetDangerType(content::DownloadDangerType danger_type);
 
-  // Set the |current_path_| to |new_path|.
   void SetFullPath(const FilePath& new_path);
-
-  // Callback invoked when the download has been renamed to its final name.
-  void OnDownloadRenamedToFinalName(content::DownloadInterruptReason reason,
-                                    const FilePath& full_path);
-
-  // Callback invoked when the download has been renamed to its intermediate
-  // name.
-  void OnDownloadRenamedToIntermediateName(
-      content::DownloadInterruptReason reason, const FilePath& full_path);
-
-  // Callback from file thread when we release the DownloadFile.
-  void OnDownloadFileReleased();
 
   // The handle to the request information.  Used for operations outside the
   // download system.
