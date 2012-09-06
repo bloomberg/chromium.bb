@@ -6,8 +6,8 @@
 
 #include <vector>
 
+#include "content/renderer/media/rtc_video_capturer.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
-#include "content/renderer/media/video_capture_module_impl.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/p2p/ipc_network_manager.h"
 #include "content/renderer/p2p/ipc_socket_factory.h"
@@ -125,13 +125,12 @@ talk_base::scoped_refptr<webrtc::LocalVideoTrackInterface>
 MediaStreamDependencyFactory::CreateLocalVideoTrack(
     const std::string& label,
     int video_session_id) {
-  webrtc::VideoCaptureModule* vcm = new VideoCaptureModuleImpl(
-      video_session_id,
-      vc_manager_.get());
+  RtcVideoCapturer* capturer = new RtcVideoCapturer(video_session_id,
+                                                    vc_manager_.get());
 
-  // The video capturer takes ownership of |vcm|.
+  // The video track takes ownership of |capturer|.
   return pc_factory_->CreateLocalVideoTrack(label,
-                                            webrtc::CreateVideoCapturer(vcm));
+                                            capturer);
 }
 
 talk_base::scoped_refptr<webrtc::LocalAudioTrackInterface>

@@ -310,8 +310,8 @@
     ['enable_webrtc==1', {
       'dependencies': [
         '../third_party/libjingle/libjingle.gyp:libjingle_peerconnection',
-        '../third_party/webrtc/modules/modules.gyp:video_capture_module',
         '../third_party/webrtc/system_wrappers/source/system_wrappers.gyp:system_wrappers',
+        '../third_party/webrtc/modules/modules.gyp:audio_device',        
         '../third_party/webrtc/video_engine/video_engine.gyp:video_engine_core',
         '../third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine_core',
       ],
@@ -324,8 +324,10 @@
         'renderer/media/peer_connection_handler_base.h',
         'renderer/media/peer_connection_handler_jsep.cc',
         'renderer/media/peer_connection_handler_jsep.h',
-        'renderer/media/video_capture_module_impl.cc',
-        'renderer/media/video_capture_module_impl.h',
+        'renderer/media/rtc_video_capture_delegate.cc',
+        'renderer/media/rtc_video_capture_delegate.h',
+        'renderer/media/rtc_video_capturer.cc',
+        'renderer/media/rtc_video_capturer.h',                
         'renderer/media/webrtc_audio_device_impl.cc',
         'renderer/media/webrtc_audio_device_impl.h',
         'renderer/p2p/host_address_request.cc',
