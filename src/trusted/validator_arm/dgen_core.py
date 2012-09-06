@@ -225,12 +225,22 @@ class BitPattern(BitExpr):
         self.mask = mask
         self.value = value
         self.op = op
-        self.significant_bits = _popcount(mask)
         self.column = column
+
+    def signif_bits(self):
+      """Returns the number of signifcant bits in the pattern (i.e. occurrences
+         of 0/1 in the pattern."""
+      return _popcount(self.mask)
 
     def copy(self):
       """Returns a copy of the given bit pattern."""
       return BitPattern(self.mask, self.value, self.op, self.column)
+
+    def union_mask_and_value(self, other):
+      """Returns a new bit pattern unioning the mask and value of the
+         other bit pattern."""
+      return BitPattern(self.mask | other.mask, self.value | other.value,
+                        self.op, self.column)
 
     def is_equal_op(self):
       """Returns true if the bit pattern is an equals (rather than a
@@ -390,7 +400,7 @@ class BitPattern(BitExpr):
 
         This is also used for equality comparison using ==.
         """
-        return (cmp(other.significant_bits, self.significant_bits)
+        return (cmp(other.signif_bits(), self.signif_bits())
             or cmp(self.mask, other.mask)
             or cmp(self.value, other.value)
             or cmp(self.op, other.op)
@@ -702,7 +712,7 @@ class Row(object):
 
         self.significant_bits = 0
         for p in patterns:
-            self.significant_bits += p.significant_bits
+            self.significant_bits += p.signif_bits()
 
     def add_pattern(self, pattern):
         """Adds a pattern to the row."""

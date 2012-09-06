@@ -417,35 +417,6 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_register(
     return Defs12To15_instance_;
   }
 
-  if ((insn.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20)=1101x */ &&
-      (insn.Bits() & 0x00000060) == 0x00000000 /* op3(6:5)=00 */ &&
-      (insn.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
-    return Defs12To15_instance_;
-  }
-
-  if ((insn.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20)=1101x */ &&
-      (insn.Bits() & 0x00000060) == 0x00000020 /* op3(6:5)=01 */ &&
-      (insn.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
-    return Defs12To15_instance_;
-  }
-
-  if ((insn.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20)=1101x */ &&
-      (insn.Bits() & 0x00000060) == 0x00000040 /* op3(6:5)=10 */ &&
-      (insn.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
-    return Defs12To15_instance_;
-  }
-
-  if ((insn.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20)=1101x */ &&
-      (insn.Bits() & 0x00000060) == 0x00000060 /* op3(6:5)=11 */ &&
-      (insn.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
-    return Defs12To15_instance_;
-  }
-
-  if ((insn.Bits() & 0x01E00000) == 0x01E00000 /* op1(24:20)=1111x */ &&
-      (insn.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
-    return Defs12To15_instance_;
-  }
-
   if ((insn.Bits() & 0x00E00000) == 0x00C00000 /* op1(24:20)=x110x */) {
     return Defs12To15_instance_;
   }
@@ -460,6 +431,11 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_register(
   }
 
   if ((insn.Bits() & 0x01A00000) == 0x00000000 /* op1(24:20)=00x0x */) {
+    return Defs12To15_instance_;
+  }
+
+  if ((insn.Bits() & 0x01A00000) == 0x01A00000 /* op1(24:20)=11x1x */ &&
+      (insn.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
     return Defs12To15_instance_;
   }
 
@@ -485,16 +461,6 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_register_shifted_r
     return Defs12To15RdRnRsRmNotPc_instance_;
   }
 
-  if ((insn.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20)=1101x */ &&
-      (insn.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
-    return Defs12To15RdRmRnNotPc_instance_;
-  }
-
-  if ((insn.Bits() & 0x01E00000) == 0x01E00000 /* op1(24:20)=1111x */ &&
-      (insn.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
-    return Defs12To15RdRmRnNotPc_instance_;
-  }
-
   if ((insn.Bits() & 0x00E00000) == 0x00C00000 /* op1(24:20)=x110x */) {
     return Defs12To15RdRnRsRmNotPc_instance_;
   }
@@ -510,6 +476,11 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_register_shifted_r
 
   if ((insn.Bits() & 0x01A00000) == 0x00000000 /* op1(24:20)=00x0x */) {
     return Defs12To15RdRnRsRmNotPc_instance_;
+  }
+
+  if ((insn.Bits() & 0x01A00000) == 0x01A00000 /* op1(24:20)=11x1x */ &&
+      (insn.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
+    return Defs12To15RdRmRnNotPc_instance_;
   }
 
   if ((insn.Bits() & 0x01C00000) == 0x00800000 /* op1(24:20)=010xx */) {

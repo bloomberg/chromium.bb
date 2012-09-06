@@ -234,13 +234,11 @@ class RulePatternLookup(object):
         print "row:      %s" % repr(row)
       if row == self.row:
         # We've reached the row in the table that we are trying to
-        # reach. Hance, significant bits remaining in unmatched_pattern
+        # reach. Ssignificant bits remaining in unmatched_pattern
         # still need to be tested. Union them into the reaching pattern.
         old_reaching = self.reaching_pattern.copy()
-        self.reaching_pattern.mask = (self.reaching_pattern.mask |
-                                      self.unmatched_pattern.mask)
-        self.reaching_pattern.value = (self.reaching_pattern.value |
-                                       self.unmatched_pattern.value)
+        self.reaching_pattern = self.reaching_pattern.union_mask_and_value(
+            self.unmatched_pattern)
         if self._trace_pattern():
           print ("  reaching pattern: %s => %s" %
                  (repr(old_reaching), repr(self.reaching_pattern)))
