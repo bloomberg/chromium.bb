@@ -291,7 +291,8 @@ void ChromeResourceDispatcherHostDelegate::AppendChromeMetricsHeaders(
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
   if (io_data->is_incognito() ||
       !google_util::IsGoogleDomainUrl(request->url().spec(),
-                                      google_util::ALLOW_SUBDOMAIN))
+                                      google_util::ALLOW_SUBDOMAIN,
+                                      google_util::ALLOW_NON_STANDARD_PORTS))
     return;
 
   if (io_data->GetMetricsEnabledStateOnIOThread())

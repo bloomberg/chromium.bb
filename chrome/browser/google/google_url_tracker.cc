@@ -285,7 +285,8 @@ void GoogleURLTracker::OnURLFetchComplete(const net::URLFetcher* source) {
   if (!url.is_valid() || (url.path().length() > 1) || url.has_query() ||
       url.has_ref() ||
       !google_util::IsGoogleDomainUrl(url.spec(),
-                                      google_util::DISALLOW_SUBDOMAIN))
+                                      google_util::DISALLOW_SUBDOMAIN,
+                                      google_util::DISALLOW_NON_STANDARD_PORTS))
     return;
 
   std::swap(url, fetched_google_url_);

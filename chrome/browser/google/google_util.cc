@@ -198,7 +198,9 @@ string16 GetSearchTermsFromGoogleSearchURL(const std::string& url) {
   return string16();
 }
 
-bool IsGoogleDomainUrl(const std::string& url, SubdomainPermission permission) {
+bool IsGoogleDomainUrl(const std::string& url,
+                       SubdomainPermission subdomain_permission,
+                       PortPermission port_permission) {
   GURL original_url(url);
   if (!original_url.is_valid() ||
       !(original_url.SchemeIs("http") || original_url.SchemeIs("https")))
@@ -215,12 +217,13 @@ bool IsGoogleDomainUrl(const std::string& url, SubdomainPermission permission) {
       return true;
   }
 
-  return original_url.port().empty() &&
-      google_util::IsGoogleHostname(original_url.host(), permission);
+  return (original_url.port().empty() ||
+      port_permission == ALLOW_NON_STANDARD_PORTS) &&
+      google_util::IsGoogleHostname(original_url.host(), subdomain_permission);
 }
 
 bool IsGoogleHostname(const std::string& host,
-                      SubdomainPermission permission) {
+                      SubdomainPermission subdomain_permission) {
   size_t tld_length =
       net::RegistryControlledDomainService::GetRegistryLength(host, false);
   if ((tld_length == 0) || (tld_length == std::string::npos))
@@ -228,7 +231,7 @@ bool IsGoogleHostname(const std::string& host,
   std::string host_minus_tld(host, 0, host.length() - tld_length);
   if (LowerCaseEqualsASCII(host_minus_tld, "google."))
     return true;
-  if (permission == ALLOW_SUBDOMAIN)
+  if (subdomain_permission == ALLOW_SUBDOMAIN)
     return EndsWith(host_minus_tld, ".google.", false);
   return LowerCaseEqualsASCII(host_minus_tld, "www.google.");
 }
@@ -237,7 +240,7 @@ bool IsGoogleHomePageUrl(const std::string& url) {
   GURL original_url(url);
 
   // First check to see if this has a Google domain.
-  if (!IsGoogleDomainUrl(url, DISALLOW_SUBDOMAIN))
+  if (!IsGoogleDomainUrl(url, DISALLOW_SUBDOMAIN, DISALLOW_NON_STANDARD_PORTS))
     return false;
 
   // Make sure the path is a known home page path.
@@ -254,7 +257,7 @@ bool IsGoogleSearchUrl(const std::string& url) {
   GURL original_url(url);
 
   // First check to see if this has a Google domain.
-  if (!IsGoogleDomainUrl(url, DISALLOW_SUBDOMAIN))
+  if (!IsGoogleDomainUrl(url, DISALLOW_SUBDOMAIN, DISALLOW_NON_STANDARD_PORTS))
     return false;
 
   // Make sure the path is a known search path.
