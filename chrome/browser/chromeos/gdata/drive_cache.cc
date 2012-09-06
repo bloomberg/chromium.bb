@@ -256,15 +256,13 @@ void RunCacheOperationCallback(const CacheOperationCallback& callback,
 // Used to implement *OnUIThread methods.
 void RunGetFileFromCacheCallback(const GetFileFromCacheCallback& callback,
                                  DriveFileError* error,
-                                 const std::string& resource_id,
-                                 const std::string& md5,
                                  FilePath* cache_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(error);
   DCHECK(cache_file_path);
 
   if (!callback.is_null())
-    callback.Run(*error, resource_id, md5, *cache_file_path);
+    callback.Run(*error, *cache_file_path);
 }
 
 // Runs callback with pointers dereferenced.
@@ -483,8 +481,6 @@ void DriveCache::GetFileOnUIThread(const std::string& resource_id,
       base::Bind(&RunGetFileFromCacheCallback,
                  callback,
                  base::Owned(error),
-                 resource_id,
-                 md5,
                  base::Owned(cache_file_path)));
 }
 
@@ -596,8 +592,6 @@ void DriveCache::MarkDirtyOnUIThread(const std::string& resource_id,
       base::Bind(&RunGetFileFromCacheCallback,
                  callback,
                  base::Owned(error),
-                 resource_id,
-                 md5,
                  base::Owned(cache_file_path)));
 }
 

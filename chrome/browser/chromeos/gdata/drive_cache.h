@@ -42,8 +42,6 @@ typedef base::Callback<void(DriveFileError error,
 
 // Callback for GetFileFromCache.
 typedef base::Callback<void(DriveFileError error,
-                            const std::string& resource_id,
-                            const std::string& md5,
                             const FilePath& cache_file_path)>
     GetFileFromCacheCallback;
 

@@ -277,9 +277,12 @@ class DriveCacheTest : public testing::Test {
     expected_file_extension_ = expected_file_extension;
 
     cache_->GetFileOnUIThread(
-        resource_id, md5,
+        resource_id,
+        md5,
         base::Bind(&DriveCacheTest::VerifyGetFromCache,
-                   base::Unretained(this)));
+                   base::Unretained(this),
+                   resource_id,
+                   md5));
 
     test_util::RunBlockingPoolTask();
   }
@@ -304,9 +307,9 @@ class DriveCacheTest : public testing::Test {
     test_util::RunBlockingPoolTask();
   }
 
-  void VerifyGetFromCache(DriveFileError error,
-                          const std::string& resource_id,
+  void VerifyGetFromCache(const std::string& resource_id,
                           const std::string& md5,
+                          DriveFileError error,
                           const FilePath& cache_file_path) {
     ++num_callback_invocations_;
 
@@ -481,16 +484,19 @@ class DriveCacheTest : public testing::Test {
     expect_outgoing_symlink_ = false;
 
     cache_->MarkDirtyOnUIThread(
-        resource_id, md5,
+        resource_id,
+        md5,
         base::Bind(&DriveCacheTest::VerifyMarkDirty,
-                   base::Unretained(this)));
+                   base::Unretained(this),
+                   resource_id,
+                   md5));
 
     test_util::RunBlockingPoolTask();
   }
 
-  void VerifyMarkDirty(DriveFileError error,
-                       const std::string& resource_id,
+  void VerifyMarkDirty(const std::string& resource_id,
                        const std::string& md5,
+                       DriveFileError error,
                        const FilePath& cache_file_path) {
     VerifyCacheFileState(error, resource_id, md5);
 

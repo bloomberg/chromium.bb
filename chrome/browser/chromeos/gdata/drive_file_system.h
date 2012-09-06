@@ -467,8 +467,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // Must be called on UI thread.
   void OnMarkDirtyInCacheCompleteForOpenFile(const OpenFileCallback& callback,
                                              DriveFileError error,
-                                             const std::string& resource_id,
-                                             const std::string& md5,
                                              const FilePath& cache_file_path);
 
   // Callback for handling document copy attempt.
@@ -626,8 +624,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // GetFileByPath() request.
   void OnGetFileFromCache(const GetFileFromCacheParams& params,
                           DriveFileError error,
-                          const std::string& resource_id,
-                          const std::string& md5,
                           const FilePath& cache_file_path);
 
   // Callback for |drive_service_->GetDocumentEntry|.
@@ -716,10 +712,9 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // Called when DriveCache::GetFileOnUIThread() is completed for
   // UpdateFileByResourceId().
   // |callback| must not be null.
-  void OnGetFileCompleteForUpdateFile(const FileOperationCallback& callback,
+  void OnGetFileCompleteForUpdateFile(const std::string& resource_id,
+                                      const FileOperationCallback& callback,
                                       DriveFileError error,
-                                      const std::string& resource_id,
-                                      const std::string& md5,
                                       const FilePath& cache_file_path);
 
   // Part of UpdateFileByResourceId().
@@ -880,8 +875,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
       scoped_ptr<DriveEntryProto> entry_proto,
       const GetEntryInfoCallback& callback,
       DriveFileError error,
-      const std::string& resource_id,
-      const std::string& md5,
       const FilePath& local_cache_path);
   void CheckLocalModificationAndRunAfterGetFileInfo(
       scoped_ptr<DriveEntryProto> entry_proto,

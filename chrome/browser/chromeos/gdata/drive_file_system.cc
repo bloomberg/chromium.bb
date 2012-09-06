@@ -1564,8 +1564,6 @@ void DriveFileSystem::GetFileByResourceIdAfterGetEntry(
 void DriveFileSystem::OnGetFileFromCache(
     const GetFileFromCacheParams& in_params,
     DriveFileError error,
-    const std::string& resource_id,
-    const std::string& md5,
     const FilePath& cache_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!in_params.get_file_callback.is_null());
@@ -1593,7 +1591,7 @@ void DriveFileSystem::OnGetFileFromCache(
   GetFileFromCacheParams params(in_params);
   params.cache_file_path = cache_file_path;
   drive_service_->GetDocumentEntry(
-      resource_id,
+      params.resource_id,
       base::Bind(&DriveFileSystem::OnGetDocumentEntry,
                  ui_weak_ptr_,
                  params));
@@ -1949,14 +1947,14 @@ void DriveFileSystem::UpdateFileByEntryInfo(
       entry_proto->file_specific_info().file_md5(),
       base::Bind(&DriveFileSystem::OnGetFileCompleteForUpdateFile,
                  ui_weak_ptr_,
+                 entry_proto->resource_id(),
                  callback));
 }
 
 void DriveFileSystem::OnGetFileCompleteForUpdateFile(
+    const std::string& resource_id,
     const FileOperationCallback& callback,
     DriveFileError error,
-    const std::string& resource_id,
-    const std::string& /* md5 */,
     const FilePath& cache_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -2949,8 +2947,6 @@ void DriveFileSystem::OnGetFileCompleteForOpenFile(
 void DriveFileSystem::OnMarkDirtyInCacheCompleteForOpenFile(
     const OpenFileCallback& callback,
     DriveFileError error,
-    const std::string& resource_id,
-    const std::string& md5,
     const FilePath& cache_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -3124,8 +3120,6 @@ void DriveFileSystem::CheckLocalModificationAndRunAfterGetCacheFile(
     scoped_ptr<DriveEntryProto> entry_proto,
     const GetEntryInfoCallback& callback,
     DriveFileError error,
-    const std::string& resource_id,
-    const std::string& md5,
     const FilePath& local_cache_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());

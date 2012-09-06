@@ -442,16 +442,19 @@ class DriveFileSystemTest : public testing::Test {
     expect_outgoing_symlink_ = false;
 
     cache_->MarkDirtyOnUIThread(
-        resource_id, md5,
+        resource_id,
+        md5,
         base::Bind(&DriveFileSystemTest::VerifyMarkDirty,
-                   base::Unretained(this)));
+                   base::Unretained(this),
+                   resource_id,
+                   md5));
 
     test_util::RunBlockingPoolTask();
   }
 
-  void VerifyMarkDirty(DriveFileError error,
-                       const std::string& resource_id,
+  void VerifyMarkDirty(const std::string& resource_id,
                        const std::string& md5,
+                       DriveFileError error,
                        const FilePath& cache_file_path) {
     VerifyCacheFileState(error, resource_id, md5);
 
@@ -499,7 +502,7 @@ class DriveFileSystemTest : public testing::Test {
                              test_util::TEST_CACHE_STATE_PERSISTENT);
     expected_sub_dir_type_ = DriveCache::CACHE_TYPE_PERSISTENT;
     expect_outgoing_symlink_ = false;
-    VerifyMarkDirty(error, resource_id, md5, cache_file_path);
+    VerifyMarkDirty(resource_id, md5, error, cache_file_path);
   }
 
   // Verify the file identified by |resource_id| and |md5| is in the expected
