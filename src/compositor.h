@@ -482,6 +482,9 @@ weston_surface_to_global_float(struct weston_surface *surface,
 			       GLfloat sx, GLfloat sy, GLfloat *x, GLfloat *y);
 
 void
+weston_surface_from_global_float(struct weston_surface *surface,
+				 GLfloat x, GLfloat y, GLfloat *sx, GLfloat *sy);
+void
 weston_surface_from_global(struct weston_surface *surface,
 			   int32_t x, int32_t y, int32_t *sx, int32_t *sy);
 void
@@ -500,10 +503,6 @@ weston_spring_done(struct weston_spring *spring);
 void
 weston_surface_activate(struct weston_surface *surface,
 			struct weston_seat *seat);
-void
-weston_surface_draw(struct weston_surface *es,
-		    struct weston_output *output, pixman_region32_t *damage);
-
 void
 notify_motion(struct weston_seat *seat, uint32_t time,
 	      wl_fixed_t x, wl_fixed_t y);
