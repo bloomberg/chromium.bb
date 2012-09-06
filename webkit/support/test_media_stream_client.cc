@@ -45,8 +45,7 @@ scoped_refptr<media::VideoDecoder> TestMediaStreamClient::GetVideoDecoder(
     return NULL;
 
   return new media::VideoFrameGenerator(
-      message_loop_factory->GetMessageLoop(
-          media::MessageLoopFactory::kVideoDecoder),
+      message_loop_factory->GetMessageLoop(media::MessageLoopFactory::kDecoder),
       gfx::Size(kVideoCaptureWidth, kVideoCaptureHeight),
       base::TimeDelta::FromMilliseconds(kVideoCaptureFrameDurationMs));
 }

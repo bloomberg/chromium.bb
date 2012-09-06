@@ -2511,7 +2511,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
     collection->GetVideoDecoders()->push_back(new media::GpuVideoDecoder(
         base::Bind(&media::MessageLoopFactory::GetMessageLoop,
                    base::Unretained(message_loop_factory),
-                   media::MessageLoopFactory::kVideoDecoder),
+                   media::MessageLoopFactory::kDecoder),
         factories_loop,
         new RendererGpuVideoDecoderFactories(
             gpu_channel_host, factories_loop, context3d)));

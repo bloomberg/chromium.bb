@@ -120,11 +120,11 @@ bool InitPipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
   collection->AddAudioDecoder(new media::FFmpegAudioDecoder(
       base::Bind(&media::MessageLoopFactory::GetMessageLoop,
                  base::Unretained(message_loop_factory),
-                 media::MessageLoopFactory::kAudioDecoder)));
+                 media::MessageLoopFactory::kDecoder)));
   collection->GetVideoDecoders()->push_back(new media::FFmpegVideoDecoder(
       base::Bind(&media::MessageLoopFactory::GetMessageLoop,
                  base::Unretained(message_loop_factory),
-                 media::MessageLoopFactory::kVideoDecoder),
+                 media::MessageLoopFactory::kDecoder),
       NULL));
 
   // Create our video renderer and save a reference to it for painting.
