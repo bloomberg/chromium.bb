@@ -125,6 +125,9 @@ class SearchViewController
   // Invoked when the visibility of the omnibox popup changes.
   void PopupVisibilityChanged();
 
+  // Hide the overlay, when suggestions are showing and Instant is enabled.
+  void MaybeHideOverlay();
+
   // Access active search model.
   chrome::search::SearchModel* search_model();
 

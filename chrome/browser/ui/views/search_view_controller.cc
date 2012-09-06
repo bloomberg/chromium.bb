@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/search_view_controller.h"
 
+#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/search_engine_type.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -301,6 +302,7 @@ void SearchViewController::OnImplicitAnimationsCompleted() {
   DCHECK_EQ(STATE_NTP_ANIMATING, state_);
   state_ = STATE_SUGGESTIONS;
   ntp_container_->SetVisible(false);
+  MaybeHideOverlay();
   // While |ntp_container_| was fading out, location bar was animating from the
   // middle of the NTP page to the top toolbar, at the same rate.
   // Suggestions need to be aligned with the final location of the location bar.
@@ -473,10 +475,12 @@ void SearchViewController::CreateViews(State state) {
   search_container_->SetLayoutManager(new views::FillLayout);
   search_container_->layer()->SetMasksToBounds(true);
 
-  if (state == STATE_SUGGESTIONS)
-    ntp_container_->SetVisible(false);
-
   contents_container_->SetOverlay(search_container_);
+
+  if (state == STATE_SUGGESTIONS) {
+    ntp_container_->SetVisible(false);
+    MaybeHideOverlay();
+  }
 }
 
 views::View* SearchViewController::GetLogoView() const {
@@ -522,6 +526,12 @@ void SearchViewController::PopupVisibilityChanged() {
     if (!omnibox_popup_parent_->is_child_visible())
       toolbar_search_animator_->OnOmniboxPopupClosed();
   }
+}
+
+void SearchViewController::MaybeHideOverlay() {
+  search_container_->SetVisible(
+      !InstantController::IsInstantEnabled(
+          Profile::FromBrowserContext(browser_context_)));
 }
 
 chrome::search::SearchModel* SearchViewController::search_model() {
