@@ -41,14 +41,14 @@ void GoogleURLTrackerFactory::RegisterUserPrefs(PrefService* user_prefs) {
                                  PrefService::UNSYNCABLE_PREF);
 }
 
-bool GoogleURLTrackerFactory::ServiceRedirectedInIncognito() {
+bool GoogleURLTrackerFactory::ServiceRedirectedInIncognito() const {
   return true;
 }
 
-bool GoogleURLTrackerFactory::ServiceIsCreatedWithProfile() {
+bool GoogleURLTrackerFactory::ServiceIsCreatedWithProfile() const {
   return true;
 }
 
-bool GoogleURLTrackerFactory::ServiceIsNULLWhileTesting() {
+bool GoogleURLTrackerFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }

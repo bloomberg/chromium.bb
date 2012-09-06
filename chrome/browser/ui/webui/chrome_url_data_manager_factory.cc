@@ -22,7 +22,7 @@ ChromeURLDataManagerFactory* ChromeURLDataManagerFactory::GetInstance() {
 
 ChromeURLDataManagerFactory::ChromeURLDataManagerFactory()
     : ProfileKeyedServiceFactory("ChromeURLDataManager",
-                                 ProfileDependencyManager::GetInstance()){
+                                 ProfileDependencyManager::GetInstance()) {
 }
 
 ChromeURLDataManagerFactory::~ChromeURLDataManagerFactory() {
@@ -34,6 +34,6 @@ ProfileKeyedService* ChromeURLDataManagerFactory::BuildServiceInstanceFor(
       profile->GetChromeURLDataManagerBackendGetter());
 }
 
-bool ChromeURLDataManagerFactory::ServiceHasOwnInstanceInIncognito() {
+bool ChromeURLDataManagerFactory::ServiceHasOwnInstanceInIncognito() const {
   return true;
 }

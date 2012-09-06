@@ -39,7 +39,7 @@ WebDataServiceFactory* WebDataServiceFactory::GetInstance() {
   return Singleton<WebDataServiceFactory>::get();
 }
 
-bool WebDataServiceFactory::ServiceRedirectedInIncognito() {
+bool WebDataServiceFactory::ServiceRedirectedInIncognito() const {
   return true;
 }
 
@@ -56,6 +56,6 @@ WebDataServiceFactory::BuildServiceInstanceFor(Profile* profile) const {
   return wds.get();
 }
 
-bool WebDataServiceFactory::ServiceIsNULLWhileTesting() {
+bool WebDataServiceFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }

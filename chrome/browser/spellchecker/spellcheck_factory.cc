@@ -78,10 +78,10 @@ void SpellCheckFactory::RegisterUserPrefs(PrefService* user_prefs) {
                                   PrefService::UNSYNCABLE_PREF);
 }
 
-bool SpellCheckFactory::ServiceRedirectedInIncognito() {
+bool SpellCheckFactory::ServiceRedirectedInIncognito() const {
   return true;
 }
 
-bool SpellCheckFactory::ServiceIsNULLWhileTesting() {
+bool SpellCheckFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }

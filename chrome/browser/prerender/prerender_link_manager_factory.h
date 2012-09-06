@@ -28,10 +28,9 @@ class PrerenderLinkManagerFactory : public ProfileKeyedServiceFactory {
 
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
-  virtual bool ServiceHasOwnInstanceInIncognito() OVERRIDE;
+  virtual bool ServiceHasOwnInstanceInIncognito() const OVERRIDE;
 };
 
 }  // namespace prerender
 
 #endif  // CHROME_BROWSER_PRERENDER_PRERENDER_LINK_MANAGER_FACTORY_H_
-

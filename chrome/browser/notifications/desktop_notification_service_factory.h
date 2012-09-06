@@ -33,7 +33,7 @@ class DesktopNotificationServiceFactory : public ProfileKeyedServiceFactory {
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
   // Use a separate desktop notification service for incognito.
-  virtual bool ServiceHasOwnInstanceInIncognito() OVERRIDE;
+  virtual bool ServiceHasOwnInstanceInIncognito() const OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_DESKTOP_NOTIFICATION_SERVICE_FACTORY_H_

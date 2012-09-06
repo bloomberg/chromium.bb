@@ -34,7 +34,7 @@ class CWSIntentsRegistryFactory : public ProfileKeyedServiceFactory {
   // ProfileKeyedServiceFactory implementation.
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
-  virtual bool ServiceRedirectedInIncognito() OVERRIDE;
+  virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(CWSIntentsRegistryFactory);
 };

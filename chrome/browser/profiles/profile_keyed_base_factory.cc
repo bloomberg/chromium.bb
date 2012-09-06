@@ -81,23 +81,19 @@ void ProfileKeyedBaseFactory::RegisterUserPrefsOnProfile(Profile* profile) {
   }
 }
 
-void ProfileKeyedBaseFactory::ForceRegisterPrefsForTest(PrefService* prefs) {
-  RegisterUserPrefs(prefs);
-}
-
-bool ProfileKeyedBaseFactory::ServiceRedirectedInIncognito() {
+bool ProfileKeyedBaseFactory::ServiceRedirectedInIncognito() const {
   return false;
 }
 
-bool ProfileKeyedBaseFactory::ServiceHasOwnInstanceInIncognito() {
+bool ProfileKeyedBaseFactory::ServiceHasOwnInstanceInIncognito() const {
   return false;
 }
 
-bool ProfileKeyedBaseFactory::ServiceIsCreatedWithProfile() {
+bool ProfileKeyedBaseFactory::ServiceIsCreatedWithProfile() const {
   return false;
 }
 
-bool ProfileKeyedBaseFactory::ServiceIsNULLWhileTesting() {
+bool ProfileKeyedBaseFactory::ServiceIsNULLWhileTesting() const {
   return false;
 }
 
@@ -109,7 +105,7 @@ void ProfileKeyedBaseFactory::ProfileDestroyed(Profile* profile) {
   registered_preferences_.erase(profile);
 }
 
-bool ProfileKeyedBaseFactory::ArePreferencesSetOn(Profile* profile) {
+bool ProfileKeyedBaseFactory::ArePreferencesSetOn(Profile* profile) const {
   return registered_preferences_.find(profile) !=
       registered_preferences_.end();
 }

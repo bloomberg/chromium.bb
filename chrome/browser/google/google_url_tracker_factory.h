@@ -31,9 +31,9 @@ class GoogleURLTrackerFactory : public ProfileKeyedServiceFactory {
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
   virtual void RegisterUserPrefs(PrefService* user_prefs) OVERRIDE;
-  virtual bool ServiceRedirectedInIncognito() OVERRIDE;
-  virtual bool ServiceIsCreatedWithProfile() OVERRIDE;
-  virtual bool ServiceIsNULLWhileTesting() OVERRIDE;
+  virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
+  virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
+  virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleURLTrackerFactory);
 };

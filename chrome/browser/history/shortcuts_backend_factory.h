@@ -45,7 +45,7 @@ class ShortcutsBackendFactory : public RefcountedProfileKeyedServiceFactory {
   // ProfileKeyedServiceFactory:
   virtual scoped_refptr<RefcountedProfileKeyedService> BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
-  virtual bool ServiceIsNULLWhileTesting() OVERRIDE;
+  virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_HISTORY_SHORTCUTS_BACKEND_FACTORY_H_

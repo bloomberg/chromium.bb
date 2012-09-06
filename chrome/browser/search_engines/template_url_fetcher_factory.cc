@@ -41,6 +41,6 @@ ProfileKeyedService* TemplateURLFetcherFactory::BuildServiceInstanceFor(
   return new TemplateURLFetcher(profile);
 }
 
-bool TemplateURLFetcherFactory::ServiceRedirectedInIncognito() {
+bool TemplateURLFetcherFactory::ServiceRedirectedInIncognito() const {
   return true;
 }

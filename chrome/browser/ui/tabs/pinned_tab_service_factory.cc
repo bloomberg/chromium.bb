@@ -32,10 +32,10 @@ ProfileKeyedService* PinnedTabServiceFactory::BuildServiceInstanceFor(
   return new PinnedTabService(profile);
 }
 
-bool PinnedTabServiceFactory::ServiceIsCreatedWithProfile() {
+bool PinnedTabServiceFactory::ServiceIsCreatedWithProfile() const {
   return true;
 }
 
-bool PinnedTabServiceFactory::ServiceIsNULLWhileTesting() {
+bool PinnedTabServiceFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }

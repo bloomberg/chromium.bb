@@ -41,6 +41,7 @@ ProfileKeyedService* DesktopNotificationServiceFactory::BuildServiceInstanceFor(
   return service;
 }
 
-bool DesktopNotificationServiceFactory::ServiceHasOwnInstanceInIncognito() {
+bool
+DesktopNotificationServiceFactory::ServiceHasOwnInstanceInIncognito() const {
   return true;
 }

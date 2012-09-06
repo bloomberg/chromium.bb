@@ -42,11 +42,11 @@ AutocompleteClassifierFactory::AutocompleteClassifierFactory()
 AutocompleteClassifierFactory::~AutocompleteClassifierFactory() {
 }
 
-bool AutocompleteClassifierFactory::ServiceRedirectedInIncognito() {
+bool AutocompleteClassifierFactory::ServiceRedirectedInIncognito() const {
   return true;
 }
 
-bool AutocompleteClassifierFactory::ServiceIsNULLWhileTesting() {
+bool AutocompleteClassifierFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }
 

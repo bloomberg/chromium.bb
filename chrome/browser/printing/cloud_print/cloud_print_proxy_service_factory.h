@@ -32,7 +32,7 @@ class CloudPrintProxyServiceFactory : public ProfileKeyedServiceFactory {
   // ProfileKeyedServiceFactory:
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
-  virtual bool ServiceIsNULLWhileTesting() OVERRIDE;
+  virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_PRINTING_CLOUD_PRINT_CLOUD_PRINT_PROXY_SERVICE_FACTORY_H_

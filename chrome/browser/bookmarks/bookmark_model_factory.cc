@@ -50,10 +50,10 @@ void BookmarkModelFactory::RegisterUserPrefs(PrefService* prefs) {
                           PrefService::UNSYNCABLE_PREF);
 }
 
-bool BookmarkModelFactory::ServiceRedirectedInIncognito() {
+bool BookmarkModelFactory::ServiceRedirectedInIncognito() const {
   return true;
 }
 
-bool BookmarkModelFactory::ServiceIsNULLWhileTesting() {
+bool BookmarkModelFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }

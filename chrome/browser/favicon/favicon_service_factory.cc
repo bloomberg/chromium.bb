@@ -50,6 +50,6 @@ ProfileKeyedService* FaviconServiceFactory::BuildServiceInstanceFor(
   return new FaviconService(history_service);
 }
 
-bool FaviconServiceFactory::ServiceIsNULLWhileTesting() {
+bool FaviconServiceFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }

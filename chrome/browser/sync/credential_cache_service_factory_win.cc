@@ -67,7 +67,7 @@ bool CredentialCacheServiceFactory::IsDefaultAlternateProfileForTest(
          ProfileManager::GetDefaultProfileDir(alternate_user_data_dir);
 }
 
-bool CredentialCacheServiceFactory::ServiceIsCreatedWithProfile() {
+bool CredentialCacheServiceFactory::ServiceIsCreatedWithProfile() const {
   return true;
 }
 

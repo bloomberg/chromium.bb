@@ -34,10 +34,10 @@ class WebDataServiceFactory : public RefcountedProfileKeyedServiceFactory {
   virtual ~WebDataServiceFactory();
 
   // |ProfileKeyedBaseFactory| methods:
-  virtual bool ServiceRedirectedInIncognito() OVERRIDE;
+  virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
   virtual scoped_refptr<RefcountedProfileKeyedService> BuildServiceInstanceFor(
         Profile* profile) const OVERRIDE;
-  virtual bool ServiceIsNULLWhileTesting() OVERRIDE;
+  virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_WEBDATA_WEB_DATA_SERVICE_FACTORY_H__

@@ -34,6 +34,6 @@ ProfileKeyedService* CloudPrintProxyServiceFactory::BuildServiceInstanceFor(
   return service;
 }
 
-bool CloudPrintProxyServiceFactory::ServiceIsNULLWhileTesting() {
+bool CloudPrintProxyServiceFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }

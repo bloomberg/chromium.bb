@@ -37,9 +37,9 @@ class PluginPrefsFactory : public RefcountedProfileKeyedServiceFactory {
 
   // ProfileKeyedServiceFactory methods:
   virtual void RegisterUserPrefs(PrefService* prefs) OVERRIDE;
-  virtual bool ServiceRedirectedInIncognito() OVERRIDE;
-  virtual bool ServiceIsNULLWhileTesting() OVERRIDE;
-  virtual bool ServiceIsCreatedWithProfile() OVERRIDE;
+  virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
+  virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
+  virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_PLUGIN_PREFS_FACTORY_H_

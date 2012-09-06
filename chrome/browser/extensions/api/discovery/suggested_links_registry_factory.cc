@@ -22,7 +22,7 @@ SuggestedLinksRegistryFactory* SuggestedLinksRegistryFactory::GetInstance() {
   return Singleton<SuggestedLinksRegistryFactory>::get();
 }
 
-bool SuggestedLinksRegistryFactory::ServiceIsCreatedWithProfile() {
+bool SuggestedLinksRegistryFactory::ServiceIsCreatedWithProfile() const {
   return true;
 }
 
@@ -40,7 +40,7 @@ ProfileKeyedService* SuggestedLinksRegistryFactory::BuildServiceInstanceFor(
   return new SuggestedLinksRegistry();
 }
 
-bool SuggestedLinksRegistryFactory::ServiceRedirectedInIncognito() {
+bool SuggestedLinksRegistryFactory::ServiceRedirectedInIncognito() const {
   return true;
 }
 

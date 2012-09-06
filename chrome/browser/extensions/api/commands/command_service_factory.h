@@ -22,7 +22,7 @@ class CommandServiceFactory : public ProfileKeyedServiceFactory {
   static CommandServiceFactory* GetInstance();
 
   // Overridden from ProfileKeyedBaseFactory:
-  virtual bool ServiceIsCreatedWithProfile() OVERRIDE;
+  virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<CommandServiceFactory>;
@@ -33,7 +33,7 @@ class CommandServiceFactory : public ProfileKeyedServiceFactory {
   // ProfileKeyedServiceFactory:
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
-  virtual bool ServiceRedirectedInIncognito() OVERRIDE;
+  virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(CommandServiceFactory);
 };

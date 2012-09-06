@@ -39,6 +39,6 @@ ProfileKeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
   return service;
 }
 
-bool DownloadServiceFactory::ServiceHasOwnInstanceInIncognito() {
+bool DownloadServiceFactory::ServiceHasOwnInstanceInIncognito() const {
   return true;
 }

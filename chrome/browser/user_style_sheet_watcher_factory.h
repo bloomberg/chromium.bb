@@ -29,8 +29,8 @@ class UserStyleSheetWatcherFactory
   // ProfileKeyedServiceFactory:
   virtual scoped_refptr<RefcountedProfileKeyedService> BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
-  virtual bool ServiceRedirectedInIncognito() OVERRIDE;
-  virtual bool ServiceIsNULLWhileTesting() OVERRIDE;
+  virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
+  virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(UserStyleSheetWatcherFactory);
 };

@@ -41,7 +41,7 @@ ProfileKeyedService* UserPolicySigninServiceFactory::BuildServiceInstanceFor(
                                      profile->GetUserCloudPolicyManager());
 }
 
-bool UserPolicySigninServiceFactory::ServiceIsCreatedWithProfile() {
+bool UserPolicySigninServiceFactory::ServiceIsCreatedWithProfile() const {
   // Create this object when the profile is created so it can track any
   // user signin activity.
   return true;

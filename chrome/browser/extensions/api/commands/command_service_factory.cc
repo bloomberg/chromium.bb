@@ -22,7 +22,7 @@ CommandServiceFactory* CommandServiceFactory::GetInstance() {
   return Singleton<CommandServiceFactory>::get();
 }
 
-bool CommandServiceFactory::ServiceIsCreatedWithProfile() {
+bool CommandServiceFactory::ServiceIsCreatedWithProfile() const {
   return true;
 }
 
@@ -40,7 +40,7 @@ ProfileKeyedService* CommandServiceFactory::BuildServiceInstanceFor(
   return new CommandService(profile);
 }
 
-bool CommandServiceFactory::ServiceRedirectedInIncognito() {
+bool CommandServiceFactory::ServiceRedirectedInIncognito() const {
   return true;
 }
 

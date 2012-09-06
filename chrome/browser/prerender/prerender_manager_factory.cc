@@ -55,7 +55,7 @@ ProfileKeyedService* PrerenderManagerFactory::BuildServiceInstanceFor(
   return prerender_manager;
 }
 
-bool PrerenderManagerFactory::ServiceHasOwnInstanceInIncognito() {
+bool PrerenderManagerFactory::ServiceHasOwnInstanceInIncognito() const {
   return true;
 }
 

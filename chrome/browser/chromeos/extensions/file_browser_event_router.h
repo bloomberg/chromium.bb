@@ -227,7 +227,7 @@ class FileBrowserEventRouterFactory
 
  protected:
   // ProfileKeyedBasedFactory overrides:
-  virtual bool ServiceHasOwnInstanceInIncognito() OVERRIDE;
+  virtual bool ServiceHasOwnInstanceInIncognito() const OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<FileBrowserEventRouterFactory>;

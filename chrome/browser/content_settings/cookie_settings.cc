@@ -70,7 +70,7 @@ void CookieSettings::Factory::RegisterUserPrefs(PrefService* user_prefs) {
                                   PrefService::SYNCABLE_PREF);
 }
 
-bool CookieSettings::Factory::ServiceRedirectedInIncognito() {
+bool CookieSettings::Factory::ServiceRedirectedInIncognito() const {
   return true;
 }
 

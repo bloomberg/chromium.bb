@@ -66,6 +66,6 @@ ShortcutsBackendFactory::BuildServiceInstanceFor(Profile* profile) const {
   return NULL;
 }
 
-bool ShortcutsBackendFactory::ServiceIsNULLWhileTesting() {
+bool ShortcutsBackendFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }

@@ -78,6 +78,6 @@ void ThemeServiceFactory::RegisterUserPrefs(PrefService* prefs) {
                                 PrefService::UNSYNCABLE_PREF);
 }
 
-bool ThemeServiceFactory::ServiceRedirectedInIncognito() {
+bool ThemeServiceFactory::ServiceRedirectedInIncognito() const {
   return true;
 }

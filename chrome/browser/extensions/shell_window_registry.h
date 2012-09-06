@@ -87,8 +87,8 @@ class ShellWindowRegistry : public ProfileKeyedService {
     // ProfileKeyedServiceFactory
     virtual ProfileKeyedService* BuildServiceInstanceFor(
         Profile* profile) const OVERRIDE;
-    virtual bool ServiceIsCreatedWithProfile() OVERRIDE;
-    virtual bool ServiceIsNULLWhileTesting() OVERRIDE;
+    virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
+    virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
   };
 
   ShellWindowSet shell_windows_;

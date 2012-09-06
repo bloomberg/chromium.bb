@@ -51,7 +51,7 @@ ProfileKeyedService* ExtensionSystemSharedFactory::BuildServiceInstanceFor(
   return new ExtensionSystemImpl::Shared(profile);
 }
 
-bool ExtensionSystemSharedFactory::ServiceRedirectedInIncognito() {
+bool ExtensionSystemSharedFactory::ServiceRedirectedInIncognito() const {
   return true;
 }
 
@@ -83,11 +83,11 @@ ProfileKeyedService* ExtensionSystemFactory::BuildServiceInstanceFor(
   return new ExtensionSystemImpl(profile);
 }
 
-bool ExtensionSystemFactory::ServiceHasOwnInstanceInIncognito() {
+bool ExtensionSystemFactory::ServiceHasOwnInstanceInIncognito() const {
   return true;
 }
 
-bool ExtensionSystemFactory::ServiceIsCreatedWithProfile() {
+bool ExtensionSystemFactory::ServiceIsCreatedWithProfile() const {
   return true;
 }
 

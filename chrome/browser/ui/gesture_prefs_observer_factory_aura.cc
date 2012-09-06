@@ -253,17 +253,17 @@ void GesturePrefsObserverFactoryAura::RegisterUserPrefs(PrefService* prefs) {
       PrefService::UNSYNCABLE_PREF);
 }
 
-bool GesturePrefsObserverFactoryAura::ServiceIsCreatedWithProfile() {
+bool GesturePrefsObserverFactoryAura::ServiceIsCreatedWithProfile() const {
   // Create the observer as soon as the profile is created.
   return true;
 }
 
-bool GesturePrefsObserverFactoryAura::ServiceRedirectedInIncognito() {
+bool GesturePrefsObserverFactoryAura::ServiceRedirectedInIncognito() const {
   // Use same gesture preferences on incognito windows.
   return true;
 }
 
-bool GesturePrefsObserverFactoryAura::ServiceIsNULLWhileTesting() {
+bool GesturePrefsObserverFactoryAura::ServiceIsNULLWhileTesting() const {
   // Some tests replace the PrefService of the TestingProfile after the
   // GesturePrefsObserver has been created, which makes Shutdown()
   // remove the registrar from a non-existent PrefService.

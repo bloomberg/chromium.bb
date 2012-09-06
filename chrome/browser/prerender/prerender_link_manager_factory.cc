@@ -41,7 +41,7 @@ ProfileKeyedService* PrerenderLinkManagerFactory::BuildServiceInstanceFor(
   return prerender_link_manager;
 }
 
-bool PrerenderLinkManagerFactory::ServiceHasOwnInstanceInIncognito() {
+bool PrerenderLinkManagerFactory::ServiceHasOwnInstanceInIncognito() const {
   return true;
 }
 

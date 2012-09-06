@@ -35,7 +35,7 @@ ProfileKeyedService* CaptivePortalServiceFactory::BuildServiceInstanceFor(
   return new CaptivePortalService(profile);
 }
 
-bool CaptivePortalServiceFactory::ServiceHasOwnInstanceInIncognito() {
+bool CaptivePortalServiceFactory::ServiceHasOwnInstanceInIncognito() const {
   return true;
 }
 

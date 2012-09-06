@@ -97,9 +97,9 @@ class SpeechInputExtensionManager::Factory : public ProfileKeyedServiceFactory {
   // ProfileKeyedServiceFactory methods:
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
-  virtual bool ServiceRedirectedInIncognito() OVERRIDE { return false; }
-  virtual bool ServiceIsNULLWhileTesting() OVERRIDE { return true; }
-  virtual bool ServiceIsCreatedWithProfile() OVERRIDE { return true; }
+  virtual bool ServiceRedirectedInIncognito() const OVERRIDE { return false; }
+  virtual bool ServiceIsNULLWhileTesting() const OVERRIDE { return true; }
+  virtual bool ServiceIsCreatedWithProfile() const OVERRIDE { return true; }
 
   DISALLOW_COPY_AND_ASSIGN(Factory);
 };

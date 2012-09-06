@@ -112,11 +112,11 @@ ProfileKeyedService* ShellWindowRegistry::Factory::BuildServiceInstanceFor(
   return new ShellWindowRegistry();
 }
 
-bool ShellWindowRegistry::Factory::ServiceIsCreatedWithProfile() {
+bool ShellWindowRegistry::Factory::ServiceIsCreatedWithProfile() const {
   return true;
 }
 
-bool ShellWindowRegistry::Factory::ServiceIsNULLWhileTesting() {
+bool ShellWindowRegistry::Factory::ServiceIsNULLWhileTesting() const {
   return false;
 }
 

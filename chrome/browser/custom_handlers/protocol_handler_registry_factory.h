@@ -27,9 +27,9 @@ class ProtocolHandlerRegistryFactory : public ProfileKeyedServiceFactory {
 
  protected:
   // ProfileKeyedServiceFactory implementation.
-  virtual bool ServiceIsCreatedWithProfile() OVERRIDE;
-  virtual bool ServiceRedirectedInIncognito() OVERRIDE;
-  virtual bool ServiceIsNULLWhileTesting() OVERRIDE;
+  virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
+  virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
+  virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<ProtocolHandlerRegistryFactory>;

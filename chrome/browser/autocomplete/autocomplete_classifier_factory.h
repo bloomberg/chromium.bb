@@ -30,8 +30,8 @@ class AutocompleteClassifierFactory : public ProfileKeyedServiceFactory {
   virtual ~AutocompleteClassifierFactory();
 
   // ProfileKeyedServiceFactory:
-  virtual bool ServiceRedirectedInIncognito() OVERRIDE;
-  virtual bool ServiceIsNULLWhileTesting() OVERRIDE;
+  virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
+  virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
 

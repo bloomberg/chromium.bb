@@ -43,7 +43,7 @@ class ThemeServiceFactory : public ProfileKeyedServiceFactory {
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
   virtual void RegisterUserPrefs(PrefService* prefs) OVERRIDE;
-  virtual bool ServiceRedirectedInIncognito() OVERRIDE;
+  virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ThemeServiceFactory);
 };

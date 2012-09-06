@@ -39,6 +39,6 @@ ProfileKeyedService* TabRestoreServiceFactory::BuildServiceInstanceFor(
   return service;
 }
 
-bool TabRestoreServiceFactory::ServiceIsNULLWhileTesting() {
+bool TabRestoreServiceFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }

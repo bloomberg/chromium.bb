@@ -36,7 +36,7 @@ class CredentialCacheServiceFactory : public ProfileKeyedServiceFactory {
   virtual ~CredentialCacheServiceFactory();
 
   // ProfileKeyedServiceFactory implementation.
-  virtual bool ServiceIsCreatedWithProfile() OVERRIDE;
+  virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
 
   // ProfileKeyedServiceFactory implementation.
   virtual ProfileKeyedService* BuildServiceInstanceFor(

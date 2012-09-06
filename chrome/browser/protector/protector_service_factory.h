@@ -31,8 +31,8 @@ class ProtectorServiceFactory : public ProfileKeyedServiceFactory {
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
   virtual void RegisterUserPrefs(PrefService* user_prefs) OVERRIDE;
-  virtual bool ServiceIsCreatedWithProfile() OVERRIDE;
-  virtual bool ServiceRedirectedInIncognito() OVERRIDE;
+  virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
+  virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ProtectorServiceFactory);
 };

@@ -69,14 +69,14 @@ void PluginPrefsFactory::RegisterUserPrefs(PrefService* prefs) {
                           PrefService::UNSYNCABLE_PREF);
 }
 
-bool PluginPrefsFactory::ServiceRedirectedInIncognito() {
+bool PluginPrefsFactory::ServiceRedirectedInIncognito() const {
   return true;
 }
 
-bool PluginPrefsFactory::ServiceIsNULLWhileTesting() {
+bool PluginPrefsFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }
 
-bool PluginPrefsFactory::ServiceIsCreatedWithProfile() {
+bool PluginPrefsFactory::ServiceIsCreatedWithProfile() const {
   return true;
 }

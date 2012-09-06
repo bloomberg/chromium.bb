@@ -29,7 +29,7 @@ class UserPolicySigninServiceFactory : public ProfileKeyedServiceFactory {
       Profile* profile) const OVERRIDE;
 
   // Overridden to cause this object to be created when the profile is created.
-  virtual bool ServiceIsCreatedWithProfile() OVERRIDE;
+  virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
 
   // Register the preferences related to cloud-based user policy.
   virtual void RegisterUserPrefs(PrefService* user_prefs) OVERRIDE;

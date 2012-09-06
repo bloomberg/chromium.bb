@@ -392,7 +392,7 @@ void FileBrowserEventRouter::Observe(
     // make it available.
     if (*pref_name == prefs::kExternalStorageDisabled &&
         profile_->GetPrefs()->GetBoolean(prefs::kExternalStorageDisabled)) {
-      DiskMountManager *manager = DiskMountManager::GetInstance();
+      DiskMountManager* manager = DiskMountManager::GetInstance();
       DiskMountManager::MountPointMap mounts(manager->mount_points());
       for (DiskMountManager::MountPointMap::const_iterator it = mounts.begin();
            it != mounts.end(); ++it) {
@@ -861,7 +861,7 @@ FileBrowserEventRouterFactory::BuildServiceInstanceFor(Profile* profile) const {
       new FileBrowserEventRouter(profile));
 }
 
-bool FileBrowserEventRouterFactory::ServiceHasOwnInstanceInIncognito() {
+bool FileBrowserEventRouterFactory::ServiceHasOwnInstanceInIncognito() const {
   // Explicitly and always allow this router in guest login mode.   see
   // chrome/browser/profiles/profile_keyed_base_factory.h comment
   // for the details.

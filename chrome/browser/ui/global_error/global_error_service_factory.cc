@@ -31,6 +31,6 @@ ProfileKeyedService* GlobalErrorServiceFactory::BuildServiceInstanceFor(
   return new GlobalErrorService(profile);
 }
 
-bool GlobalErrorServiceFactory::ServiceRedirectedInIncognito() {
+bool GlobalErrorServiceFactory::ServiceRedirectedInIncognito() const {
   return true;
 }

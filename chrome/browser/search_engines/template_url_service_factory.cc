@@ -80,11 +80,11 @@ void TemplateURLServiceFactory::RegisterUserPrefs(PrefService* prefs) {
                             PrefService::UNSYNCABLE_PREF);
 }
 
-bool TemplateURLServiceFactory::ServiceRedirectedInIncognito() {
+bool TemplateURLServiceFactory::ServiceRedirectedInIncognito() const {
   return true;
 }
 
-bool TemplateURLServiceFactory::ServiceIsNULLWhileTesting() {
+bool TemplateURLServiceFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }
 

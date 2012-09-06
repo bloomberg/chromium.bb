@@ -45,6 +45,6 @@ ProfileKeyedService* FindBarStateFactory::BuildServiceInstanceFor(
   return new FindBarState;
 }
 
-bool FindBarStateFactory::ServiceHasOwnInstanceInIncognito() {
+bool FindBarStateFactory::ServiceHasOwnInstanceInIncognito() const {
   return true;
 }

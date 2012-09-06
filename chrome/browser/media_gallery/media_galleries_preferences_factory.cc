@@ -35,6 +35,6 @@ void MediaGalleriesPreferencesFactory::RegisterUserPrefs(PrefService* prefs) {
     chrome::MediaGalleriesPreferences::RegisterUserPrefs(prefs);
 }
 
-bool MediaGalleriesPreferencesFactory::ServiceRedirectedInIncognito() {
+bool MediaGalleriesPreferencesFactory::ServiceRedirectedInIncognito() const {
   return true;
 }

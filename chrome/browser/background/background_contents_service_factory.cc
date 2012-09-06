@@ -44,14 +44,15 @@ void BackgroundContentsServiceFactory::RegisterUserPrefs(
                                      PrefService::UNSYNCABLE_PREF);
 }
 
-bool BackgroundContentsServiceFactory::ServiceHasOwnInstanceInIncognito() {
+bool
+BackgroundContentsServiceFactory::ServiceHasOwnInstanceInIncognito() const {
   return true;
 }
 
-bool BackgroundContentsServiceFactory::ServiceIsCreatedWithProfile() {
+bool BackgroundContentsServiceFactory::ServiceIsCreatedWithProfile() const {
   return true;
 }
 
-bool BackgroundContentsServiceFactory::ServiceIsNULLWhileTesting() {
+bool BackgroundContentsServiceFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }

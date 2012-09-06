@@ -205,10 +205,10 @@ void PasswordStoreFactory::RegisterUserPrefs(PrefService* prefs) {
 #endif
 }
 
-bool PasswordStoreFactory::ServiceRedirectedInIncognito() {
+bool PasswordStoreFactory::ServiceRedirectedInIncognito() const {
   return true;
 }
 
-bool PasswordStoreFactory::ServiceIsNULLWhileTesting() {
+bool PasswordStoreFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }

@@ -49,11 +49,9 @@
 #include "chrome/browser/extensions/test_management_policy.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
-#include "chrome/browser/plugin_prefs_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
-#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -245,7 +243,6 @@ class MockExtensionProvider : public extensions::ExternalProviderInterface {
 class MockProviderVisitor
     : public extensions::ExternalProviderInterface::VisitorInterface {
  public:
-
   // The provider will return |fake_base_path| from
   // GetBaseCrxFilePath().  User can test the behavior with
   // and without an empty path using this parameter.
@@ -410,25 +407,22 @@ ExtensionServiceTestBase::~ExtensionServiceTestBase() {
 }
 
 void ExtensionServiceTestBase::InitializeExtensionService(
-    const FilePath& pref_file, const FilePath& extensions_install_dir,
+    const FilePath& profile_path,
+    const FilePath& pref_file,
+    const FilePath& extensions_install_dir,
     bool autoupdate_enabled) {
-  TestingProfile* profile = new TestingProfile();
+  TestingProfile::Builder profile_builder;
   // Create a PrefService that only contains user defined preference values.
-  PrefService* prefs =
-      PrefServiceMockBuilder().WithUserFilePrefs(pref_file).Create();
-  Profile::RegisterUserPrefs(prefs);
-  chrome::RegisterUserPrefs(prefs);
-  profile->SetPrefService(prefs);
-
-#if defined(ENABLE_THEMES)
-  ThemeServiceFactory::GetInstance()->ForceRegisterPrefsForTest(prefs);
-#endif
-  PluginPrefsFactory::GetInstance()->ForceRegisterPrefsForTest(prefs);
-
-  profile_.reset(profile);
+  scoped_ptr<PrefService> prefs(
+      PrefServiceMockBuilder().WithUserFilePrefs(pref_file).Create());
+  Profile::RegisterUserPrefs(prefs.get());
+  chrome::RegisterUserPrefs(prefs.get());
+  profile_builder.SetPrefService(prefs.Pass());
+  profile_builder.SetPath(profile_path);
+  profile_ = profile_builder.Build();
 
   service_ = static_cast<extensions::TestExtensionSystem*>(
-      ExtensionSystem::Get(profile))->CreateExtensionService(
+      ExtensionSystem::Get(profile_.get()))->CreateExtensionService(
           CommandLine::ForCurrentProcess(),
           extensions_install_dir,
           autoupdate_enabled);
@@ -436,7 +430,7 @@ void ExtensionServiceTestBase::InitializeExtensionService(
   service_->set_show_extensions_prompts(false);
 
   management_policy_ = static_cast<extensions::TestExtensionSystem*>(
-      ExtensionSystem::Get(profile))->CreateManagementPolicy();
+      ExtensionSystem::Get(profile_.get()))->CreateManagementPolicy();
 
   // When we start up, we want to make sure there is no external provider,
   // since the ExtensionService on Windows will use the Registry as a default
@@ -451,18 +445,18 @@ void ExtensionServiceTestBase::InitializeExtensionService(
 void ExtensionServiceTestBase::InitializeInstalledExtensionService(
     const FilePath& prefs_file, const FilePath& source_install_dir) {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  FilePath path_ = temp_dir_.path();
-  path_ = path_.Append(FILE_PATH_LITERAL("TestingExtensionsPath"));
-  file_util::Delete(path_, true);
-  file_util::CreateDirectory(path_);
-  FilePath temp_prefs = path_.Append(FILE_PATH_LITERAL("Preferences"));
+  FilePath path = temp_dir_.path();
+  path = path.Append(FILE_PATH_LITERAL("TestingExtensionsPath"));
+  file_util::Delete(path, true);
+  file_util::CreateDirectory(path);
+  FilePath temp_prefs = path.Append(FILE_PATH_LITERAL("Preferences"));
   file_util::CopyFile(prefs_file, temp_prefs);
 
-  extensions_install_dir_ = path_.Append(FILE_PATH_LITERAL("Extensions"));
+  extensions_install_dir_ = path.Append(FILE_PATH_LITERAL("Extensions"));
   file_util::Delete(extensions_install_dir_, true);
   file_util::CopyDirectory(source_install_dir, extensions_install_dir_, true);
 
-  InitializeExtensionService(temp_prefs, extensions_install_dir_, false);
+  InitializeExtensionService(path, temp_prefs, extensions_install_dir_, false);
 }
 
 void ExtensionServiceTestBase::InitializeEmptyExtensionService() {
@@ -483,17 +477,16 @@ void ExtensionServiceTestBase::InitializeExtensionServiceWithUpdater() {
 void ExtensionServiceTestBase::InitializeExtensionServiceHelper(
     bool autoupdate_enabled) {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  FilePath path_ = temp_dir_.path();
-  path_ = path_.Append(FILE_PATH_LITERAL("TestingExtensionsPath"));
-  file_util::Delete(path_, true);
-  file_util::CreateDirectory(path_);
-  FilePath prefs_filename = path_
-      .Append(FILE_PATH_LITERAL("TestPreferences"));
-  extensions_install_dir_ = path_.Append(FILE_PATH_LITERAL("Extensions"));
+  FilePath path = temp_dir_.path();
+  path = path.Append(FILE_PATH_LITERAL("TestingExtensionsPath"));
+  file_util::Delete(path, true);
+  file_util::CreateDirectory(path);
+  FilePath prefs_filename = path.Append(FILE_PATH_LITERAL("TestPreferences"));
+  extensions_install_dir_ = path.Append(FILE_PATH_LITERAL("Extensions"));
   file_util::Delete(extensions_install_dir_, true);
   file_util::CreateDirectory(extensions_install_dir_);
 
-  InitializeExtensionService(prefs_filename, extensions_install_dir_,
+  InitializeExtensionService(path, prefs_filename, extensions_install_dir_,
                              autoupdate_enabled);
 }
 
@@ -1037,7 +1030,6 @@ void PackExtensionTestClient::OnPackFailure(const std::string& error_message,
      FAIL() << "Packing should not fail.";
   else
      FAIL() << "Existing CRX should have been overwritten.";
-
 }
 
 // Test loading good extensions from the profile directory.
@@ -4625,8 +4617,7 @@ TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettingsOnExtensionMoved) {
     ASSERT_EQ(list.size(), 3U);
 
     extensions::AppSyncData data[kAppCount];
-    for (size_t i = 0; i < kAppCount; ++i)
-    {
+    for (size_t i = 0; i < kAppCount; ++i) {
       data[i] = extensions::AppSyncData(list[i]);
     }
 

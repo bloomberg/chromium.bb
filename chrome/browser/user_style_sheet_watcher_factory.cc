@@ -37,10 +37,10 @@ UserStyleSheetWatcherFactory::BuildServiceInstanceFor(Profile* profile) const {
   return user_style_sheet_watcher;
 }
 
-bool UserStyleSheetWatcherFactory::ServiceRedirectedInIncognito() {
+bool UserStyleSheetWatcherFactory::ServiceRedirectedInIncognito() const {
   return true;
 }
 
-bool UserStyleSheetWatcherFactory::ServiceIsNULLWhileTesting() {
+bool UserStyleSheetWatcherFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }

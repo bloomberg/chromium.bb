@@ -90,10 +90,6 @@ class PluginPrefs : public RefcountedProfileKeyedService,
   // Returns whether the plugin is enabled or not.
   bool IsPluginEnabled(const webkit::WebPluginInfo& plugin) const;
 
-  // Registers the preferences used by this class.
-  // This method should only be called on the UI thread.
-  static void RegisterPrefs(PrefService* prefs);
-
   void set_profile(Profile* profile) { profile_ = profile; }
 
   // RefCountedProfileKeyedBase method override.

@@ -41,6 +41,6 @@ ProfileKeyedService* WebIntentsRegistryFactory::BuildServiceInstanceFor(
   return registry;
 }
 
-bool WebIntentsRegistryFactory::ServiceRedirectedInIncognito() {
+bool WebIntentsRegistryFactory::ServiceRedirectedInIncognito() const {
   return false;
 }

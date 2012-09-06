@@ -36,7 +36,7 @@ class PrerenderManagerFactory : public ProfileKeyedServiceFactory {
       Profile* profile) const OVERRIDE;
 
   // Prerendering is allowed in incognito.
-  virtual bool ServiceHasOwnInstanceInIncognito() OVERRIDE;
+  virtual bool ServiceHasOwnInstanceInIncognito() const OVERRIDE;
 };
 
 }  // namespace prerender

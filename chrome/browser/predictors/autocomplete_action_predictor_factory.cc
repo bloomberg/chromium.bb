@@ -34,7 +34,8 @@ AutocompleteActionPredictorFactory::AutocompleteActionPredictorFactory()
 
 AutocompleteActionPredictorFactory::~AutocompleteActionPredictorFactory() {}
 
-bool AutocompleteActionPredictorFactory::ServiceHasOwnInstanceInIncognito() {
+bool
+AutocompleteActionPredictorFactory::ServiceHasOwnInstanceInIncognito() const {
   return true;
 }
 

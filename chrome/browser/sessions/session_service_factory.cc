@@ -65,10 +65,10 @@ ProfileKeyedService* SessionServiceFactory::BuildServiceInstanceFor(
   return service;
 }
 
-bool SessionServiceFactory::ServiceIsCreatedWithProfile() {
+bool SessionServiceFactory::ServiceIsCreatedWithProfile() const {
   return true;
 }
 
-bool SessionServiceFactory::ServiceIsNULLWhileTesting() {
+bool SessionServiceFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }

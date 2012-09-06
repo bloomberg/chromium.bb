@@ -42,8 +42,8 @@ class HistoryServiceFactory
   // ProfileKeyedServiceFactory:
   virtual scoped_refptr<RefcountedProfileKeyedService> BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
-  virtual bool ServiceRedirectedInIncognito() OVERRIDE;
-  virtual bool ServiceIsNULLWhileTesting() OVERRIDE;
+  virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
+  virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_HISTORY_HISTORY_SERVICE_FACTORY_H_

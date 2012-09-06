@@ -33,19 +33,19 @@ ProtocolHandlerRegistryFactory::~ProtocolHandlerRegistryFactory() {
 // Will be created when initializing profile_io_data, so we might
 // as well have the framework create this along with other
 // PKSs to preserve orderly civic conduct :)
-bool ProtocolHandlerRegistryFactory::ServiceIsCreatedWithProfile() {
+bool ProtocolHandlerRegistryFactory::ServiceIsCreatedWithProfile() const {
   return true;
 }
 
 // Allows the produced registry to be used in incognito mode.
-bool ProtocolHandlerRegistryFactory::ServiceRedirectedInIncognito() {
+bool ProtocolHandlerRegistryFactory::ServiceRedirectedInIncognito() const {
   return true;
 }
 
 // Do not create this service for tests. MANY tests will fail
 // due to the threading requirements of this service. ALSO,
 // not creating this increases test isolation (which is GOOD!)
-bool ProtocolHandlerRegistryFactory::ServiceIsNULLWhileTesting() {
+bool ProtocolHandlerRegistryFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }
 

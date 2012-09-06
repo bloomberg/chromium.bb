@@ -74,10 +74,10 @@ HistoryServiceFactory::BuildServiceInstanceFor(Profile* profile) const {
   return history_service;
 }
 
-bool HistoryServiceFactory::ServiceRedirectedInIncognito() {
+bool HistoryServiceFactory::ServiceRedirectedInIncognito() const {
   return true;
 }
 
-bool HistoryServiceFactory::ServiceIsNULLWhileTesting() {
+bool HistoryServiceFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }

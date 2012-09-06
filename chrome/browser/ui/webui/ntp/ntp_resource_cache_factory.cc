@@ -35,6 +35,6 @@ ProfileKeyedService* NTPResourceCacheFactory::BuildServiceInstanceFor(
   return new NTPResourceCache(profile);
 }
 
-bool NTPResourceCacheFactory::ServiceRedirectedInIncognito() {
+bool NTPResourceCacheFactory::ServiceRedirectedInIncognito() const {
   return true;
 }

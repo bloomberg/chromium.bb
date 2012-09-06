@@ -34,7 +34,7 @@ ProfileKeyedService* CWSIntentsRegistryFactory::BuildServiceInstanceFor(
   return registry;
 }
 
-bool CWSIntentsRegistryFactory::ServiceRedirectedInIncognito() {
+bool CWSIntentsRegistryFactory::ServiceRedirectedInIncognito() const {
   // TODO(groby): Do we have CWS access in incognito?
   return false;
 }

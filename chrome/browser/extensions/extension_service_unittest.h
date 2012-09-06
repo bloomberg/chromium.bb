@@ -22,12 +22,13 @@ class ExtensionServiceTestBase : public testing::Test {
   ExtensionServiceTestBase();
   virtual ~ExtensionServiceTestBase();
 
-  void InitializeExtensionService(
-      const FilePath& pref_file, const FilePath& extensions_install_dir,
-      bool autoupdate_enabled);
+  void InitializeExtensionService(const FilePath& profile_path,
+                                  const FilePath& pref_file,
+                                  const FilePath& extensions_install_dir,
+                                  bool autoupdate_enabled);
 
-  void InitializeInstalledExtensionService(
-      const FilePath& prefs_file, const FilePath& source_install_dir);
+  void InitializeInstalledExtensionService(const FilePath& prefs_file,
+                                           const FilePath& source_install_dir);
 
   void InitializeEmptyExtensionService();
 

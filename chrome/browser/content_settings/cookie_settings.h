@@ -127,7 +127,7 @@ class CookieSettings
 
     // |ProfileKeyedBaseFactory| methods:
     virtual void RegisterUserPrefs(PrefService* user_prefs) OVERRIDE;
-    virtual bool ServiceRedirectedInIncognito() OVERRIDE;
+    virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
     virtual scoped_refptr<RefcountedProfileKeyedService>
         BuildServiceInstanceFor(Profile* profile) const OVERRIDE;
   };

@@ -32,7 +32,7 @@ class ExtensionSystemSharedFactory : public ProfileKeyedServiceFactory {
 
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
-  virtual bool ServiceRedirectedInIncognito() OVERRIDE;
+  virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
 };
 
 // ProfileKeyedServiceFactory for ExtensionSystem.
@@ -51,8 +51,8 @@ class ExtensionSystemFactory : public ProfileKeyedServiceFactory {
 
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
-  virtual bool ServiceHasOwnInstanceInIncognito() OVERRIDE;
-  virtual bool ServiceIsCreatedWithProfile() OVERRIDE;
+  virtual bool ServiceHasOwnInstanceInIncognito() const OVERRIDE;
+  virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
 };
 
 }  // namespace extensions

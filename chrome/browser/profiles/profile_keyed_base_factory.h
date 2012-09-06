@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_PROFILES_PROFILE_KEYED_BASE_FACTORY_H_
 #define CHROME_BROWSER_PROFILES_PROFILE_KEYED_BASE_FACTORY_H_
 
-#include <map>
 #include <set>
 
 #include "base/threading/non_thread_safe.h"
@@ -28,13 +27,6 @@ class ProfileKeyedBaseFactory : public base::NonThreadSafe {
   // times because testing code can have multiple services of the same type
   // attached to a single |profile|.
   void RegisterUserPrefsOnProfile(Profile* profile);
-
-  // Some unit tests don't run with a Profile, or switch out PrefServices and
-  // require reregistration. They should do neither of those things, but there
-  // are too many of them to go fix.
-  //
-  // DO NOT USE THIS IN REAL CODE.
-  void ForceRegisterPrefsForTest(PrefService* prefs);
 
 #ifndef NDEBUG
   // Returns our name. We don't keep track of this in release mode.
@@ -64,20 +56,20 @@ class ProfileKeyedBaseFactory : public base::NonThreadSafe {
   // pass back NULL. To redirect to the Incognito's original profile or to
   // create another instance, even for Incognito windows, override one of the
   // following methods:
-  virtual bool ServiceRedirectedInIncognito();
-  virtual bool ServiceHasOwnInstanceInIncognito();
+  virtual bool ServiceRedirectedInIncognito() const;
+  virtual bool ServiceHasOwnInstanceInIncognito() const;
 
   // By default, we create instances of a service lazily and wait until
   // GetForProfile() is called on our subclass. Some services need to be
   // created as soon as the Profile has been brought up.
-  virtual bool ServiceIsCreatedWithProfile();
+  virtual bool ServiceIsCreatedWithProfile() const;
 
   // By default, TestingProfiles will be treated like normal profiles. You can
   // override this so that by default, the service associated with the
   // TestingProfile is NULL. (This is just a shortcut around
   // SetTestingFactory() to make sure our profiles don't directly refer to the
   // services they use.)
-  virtual bool ServiceIsNULLWhileTesting();
+  virtual bool ServiceIsNULLWhileTesting() const;
 
   // Interface for people building a type of ProfileKeyedFactory: -------------
 
@@ -99,9 +91,8 @@ class ProfileKeyedBaseFactory : public base::NonThreadSafe {
   virtual void ProfileShutdown(Profile* profile) = 0;
   virtual void ProfileDestroyed(Profile* profile);
 
- protected:
   // Returns whether we've registered the preferences on this profile.
-  bool ArePreferencesSetOn(Profile* profile);
+  bool ArePreferencesSetOn(Profile* profile) const;
 
   // Mark profile as Preferences set.
   void MarkPreferencesSetOn(Profile* profile);

@@ -43,13 +43,13 @@ void ProtectorServiceFactory::RegisterUserPrefs(PrefService* user_prefs) {
   ProtectedPrefsWatcher::RegisterUserPrefs(user_prefs);
 }
 
-bool ProtectorServiceFactory::ServiceIsCreatedWithProfile() {
+bool ProtectorServiceFactory::ServiceIsCreatedWithProfile() const {
   // ProtectorService watches changes for protected prefs so it must be started
   // right with the profile creation.
   return true;
 }
 
-bool ProtectorServiceFactory::ServiceRedirectedInIncognito() {
+bool ProtectorServiceFactory::ServiceRedirectedInIncognito() const {
   return true;
 }
 
