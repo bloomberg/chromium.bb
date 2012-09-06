@@ -1004,6 +1004,7 @@
   fun:sql::Connection::StatementRefCreated
   fun:sql::Connection::StatementRef::StatementRef
   fun:sql::Connection::GetUniqueStatement
+  ...
   fun:history::*
 }
 {
