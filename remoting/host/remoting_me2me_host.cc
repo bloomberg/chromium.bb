@@ -709,6 +709,17 @@ int main(int argc, char** argv) {
               logging::APPEND_TO_OLD_LOG_FILE,
               logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
 
+#if defined(OS_MACOSX)
+  // Exit permanently if there appears to be no window server running.
+  base::mac::ScopedCFTypeRef<CFDictionaryRef> session(
+      CGSessionCopyCurrentDictionary());
+  if (!session.get()) {
+    // TODO(lambroslambrou): Add a new exit-code to reflect this error.
+    LOG(ERROR) << "Failed to connect to Window Server";
+    return remoting::kInvalidHostConfigurationExitCode;
+  }
+#endif  // OS_MACOSX
+
 #if defined(TOOLKIT_GTK)
   // Required for any calls into GTK functions, such as the Disconnect and
   // Continue windows, though these should not be used for the Me2Me case
