@@ -207,7 +207,6 @@ void CertificateViewerDialog::OnDialogShown(
 }
 
 void CertificateViewerDialog::OnDialogClosed(const std::string& json_retval) {
-  delete this;
 }
 
 void CertificateViewerDialog::OnCloseContents(WebContents* source,

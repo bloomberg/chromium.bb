@@ -48,7 +48,7 @@ class ConstrainedWebDialogDelegateBase
       WebDialogWebContentsDelegate* override_tab_delegate);
 
  private:
-  ui::WebDialogDelegate* web_dialog_delegate_;
+  scoped_ptr<ui::WebDialogDelegate> web_dialog_delegate_;
 
   // The constrained window that owns |this|. Saved so we can close it later.
   ConstrainedWindow* window_;

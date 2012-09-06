@@ -5720,14 +5720,6 @@
    fun:_ZN7WebCore18StyleSheetContents26requestImportedStyleSheetsEPNS_13CSSStyleSheetE
 }
 {
-   bug_145644a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN46ConstrainedWebDialogBrowserTest_BasicTest_Test19RunTestOnMainThreadEv
-   fun:_ZN20InProcessBrowserTest23RunTestOnMainThreadLoopEv
-   fun:_ZN7content15BrowserTestBase28ProxyRunTestOnMainThreadLoopEv
-}
-{
    bug_145645
    Memcheck:Leak
    fun:malloc
@@ -5737,14 +5729,6 @@
    fun:_ZN7WebCore21InjectedScriptManagerC1EPFbPNS_11ScriptStateEE
    fun:_ZN7WebCore21InjectedScriptManager15createForWorkerEv
    fun:_ZN7WebCore25WorkerInspectorControllerC1EPNS_13WorkerContextE
-}
-{
-   bug_145644b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN68ConstrainedWebDialogBrowserTest_ReleaseTabContentsOnDialogClose_Test19RunTestOnMainThreadEv
-   fun:_ZN20InProcessBrowserTest23RunTestOnMainThreadLoopEv
-   fun:_ZN7content15BrowserTestBase28ProxyRunTestOnMainThreadLoopEv
 }
 {
    bug_145650a

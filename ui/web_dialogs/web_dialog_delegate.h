@@ -117,7 +117,6 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   // Stores the dialog bounds.
   virtual void StoreDialogSize(const gfx::Size& dialog_size) {}
 
- protected:
   virtual ~WebDialogDelegate() {}
 };
 

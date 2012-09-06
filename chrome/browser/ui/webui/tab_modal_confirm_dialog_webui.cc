@@ -109,7 +109,6 @@ void TabModalConfirmDialogWebUI::OnDialogClosed(
     delegate_->Accept();
   else
     delegate_->Cancel();
-  delete this;
 }
 
 void TabModalConfirmDialogWebUI::OnCloseContents(WebContents* source,

@@ -137,7 +137,6 @@ std::string PrintPreviewTabDelegate::GetDialogArgs() const {
 
 void PrintPreviewTabDelegate::OnDialogClosed(
     const std::string& /* json_retval */) {
-  delete this;
 }
 
 void PrintPreviewTabDelegate::OnCloseContents(WebContents* /* source */,

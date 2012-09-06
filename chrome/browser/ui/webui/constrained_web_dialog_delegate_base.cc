@@ -56,12 +56,12 @@ ConstrainedWebDialogDelegateBase::~ConstrainedWebDialogDelegateBase() {
 
 const WebDialogDelegate*
     ConstrainedWebDialogDelegateBase::GetWebDialogDelegate() const {
-  return web_dialog_delegate_;
+  return web_dialog_delegate_.get();
 }
 
 WebDialogDelegate*
     ConstrainedWebDialogDelegateBase::GetWebDialogDelegate() {
-  return web_dialog_delegate_;
+  return web_dialog_delegate_.get();
 }
 
 void ConstrainedWebDialogDelegateBase::OnDialogCloseFromWebUI() {
