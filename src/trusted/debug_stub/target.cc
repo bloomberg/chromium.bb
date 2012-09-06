@@ -28,7 +28,6 @@
 
 using std::string;
 
-using port::IMutex;
 using port::IPlatform;
 using port::IThread;
 using port::MutexLock;
@@ -39,7 +38,6 @@ namespace gdb_rsp {
 Target::Target(struct NaClApp *nap, const Abi* abi)
   : nap_(nap),
     abi_(abi),
-    mutex_(NULL),
     session_(NULL),
     initial_breakpoint_addr_(0),
     ctx_(NULL),
@@ -65,10 +63,10 @@ bool Target::Init() {
   properties_["Supported"] =
     "PacketSize=7cf;qXfer:features:read+";
 
-  mutex_ = IMutex::Allocate();
+  NaClXMutexCtor(&mutex_);
   ctx_ = new uint8_t[abi_->GetContextSize()];
 
-  if ((NULL == mutex_) || (NULL == ctx_)) {
+  if (NULL == ctx_) {
     Destroy();
     return false;
   }
@@ -79,7 +77,7 @@ bool Target::Init() {
 }
 
 void Target::Destroy() {
-  if (mutex_) IMutex::Free(mutex_);
+  NaClMutexDtor(&mutex_);
 
   delete[] ctx_;
 }
@@ -164,9 +162,9 @@ void Target::RemoveInitialBreakpoint() {
 
 void Target::Run(Session *ses) {
   bool initial_breakpoint_seen = false;
-  mutex_->Lock();
+  NaClXMutexLock(&mutex_);
   session_ = ses;
-  mutex_->Unlock();
+  NaClXMutexUnlock(&mutex_);
   do {
     // We poll periodically for faulted threads or input on the socket.
     // TODO(mseaborn): This is slow.  We should use proper thread
@@ -178,7 +176,7 @@ void Target::Run(Session *ses) {
 
     // Lock to prevent anyone else from modifying threads
     // or updating the signal information.
-    MutexLock lock(mutex_);
+    MutexLock lock(&mutex_);
     Packet recv, reply;
 
     if (step_over_breakpoint_thread_ != 0) {
@@ -286,9 +284,9 @@ void Target::Run(Session *ses) {
 
     // Continue running until the connection is lost.
   } while (ses->Connected());
-  mutex_->Lock();
+  NaClXMutexLock(&mutex_);
   session_ = NULL;
-  mutex_->Unlock();
+  NaClXMutexUnlock(&mutex_);
 }
 
 
@@ -716,31 +714,28 @@ void Target::TrackThread(struct NaClAppThread *natp) {
   // natp->thread_num values are 0-based indexes, but we treat 0 as
   // "not a thread ID", so we add 1.
   uint32_t id = natp->thread_num + 1;
-  mutex_->Lock();
+  MutexLock lock(&mutex_);
   CHECK(threads_[id] == 0);
   threads_[id] = IThread::Create(id, natp);
-  mutex_->Unlock();
 }
 
 void Target::IgnoreThread(struct NaClAppThread *natp) {
   uint32_t id = natp->thread_num + 1;
-  mutex_->Lock();
+  MutexLock lock(&mutex_);
   ThreadMap_t::iterator iter = threads_.find(id);
   CHECK(iter != threads_.end());
   delete iter->second;
   threads_.erase(iter);
-  mutex_->Unlock();
 }
 
 void Target::Exit(int err_code) {
-  mutex_->Lock();
+  MutexLock lock(&mutex_);
   if (session_ != NULL) {
     Packet exit_packet;
     exit_packet.AddRawChar('W');
     exit_packet.AddWord8(err_code);
     session_->SendPacket(&exit_packet);
   }
-  mutex_->Unlock();
 }
 
 void Target::Detach() {

@@ -116,7 +116,7 @@ class Target {
   const Abi *abi_;
 
   // This mutex protects debugging state (threads_, cur_signal, sig_thread_)
-  port::IMutex *mutex_;
+  struct NaClMutex mutex_;
 
   Session *session_;
 
