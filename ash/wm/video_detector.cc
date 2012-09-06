@@ -5,7 +5,6 @@
 #include "ash/wm/video_detector.h"
 
 #include "ash/shell.h"
-#include "ash/wm/window_util.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -104,10 +103,7 @@ void VideoDetector::MaybeNotifyObservers(aura::Window* window,
   if (!window->GetBoundsInRootWindow().Intersects(root_bounds))
     return;
 
-  bool is_fullscreen = wm::IsWindowFullscreen(window);
-  FOR_EACH_OBSERVER(VideoDetectorObserver,
-                    observers_,
-                    OnVideoDetected(is_fullscreen));
+  FOR_EACH_OBSERVER(VideoDetectorObserver, observers_, OnVideoDetected());
   last_observer_notification_time_ = now;
 }
 
