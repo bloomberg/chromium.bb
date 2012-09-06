@@ -255,9 +255,7 @@ posix_memalign_nexe = memalign_env.ComponentProgram(
 node = env.CommandSelLdrTestNacl('posix_memalign.out', posix_memalign_nexe)
 env.AddNodeToTestSuite(node,
                        ['toolchain_tests', 'small_tests'],
-                       'run_posix_memalign_test',
-     # http://code.google.com/p/nativeclient/issues/detail?id=2505
-                       is_broken=not env.Bit('nacl_glibc'))
+                       'run_posix_memalign_test')
 
 
 # Test that local variable dwarf info is preserved with linking and LTO.
