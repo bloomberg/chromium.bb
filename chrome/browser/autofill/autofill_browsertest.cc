@@ -1429,9 +1429,18 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ProfilesNotMergedWhenNoMinAddressData) {
   ASSERT_EQ(0u, personal_data_manager()->profiles().size());
 }
 
+#if defined(OS_LINUX)
+// Has been observed to fail on windows.  crbug.com/100062
+#define MAYBE_MergeAggregatedDuplicatedProfiles \
+    DISABLED_MergeAggregatedDuplicatedProfiles
+#else
+#define MAYBE_MergeAggregatedDuplicatedProfiles \
+    MergeAggregatedDuplicatedProfiles
+#endif
+
 // Test Autofill ability to merge duplicate profiles and throw away junk.
 // TODO(isherman): this looks redundant, consider removing.
-IN_PROC_BROWSER_TEST_F(AutofillTest, MergeAggregatedDuplicatedProfiles) {
+IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_MergeAggregatedDuplicatedProfiles) {
   int num_of_profiles =
       AggregateProfilesIntoAutofillPrefs("dataset_no_address.txt");
 
