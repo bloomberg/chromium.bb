@@ -68,7 +68,7 @@ class WebIntentCallbacks : public ProfileKeyedService {
   // Private method to get and clear the dispatcher for the given string key.
   // If there is no dispatcher available, this will return NULL. Otherwise, this
   // transfers ownership of the WebIntentsDispatcher to the caller.
-  content::WebIntentsDispatcher* GetAndClear(std::string key);
+  content::WebIntentsDispatcher* GetAndClear(const std::string& key);
 
   class SourceObserver;
 

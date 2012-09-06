@@ -28,7 +28,7 @@ class WebIntentCallbacks::SourceObserver : content::WebContentsObserver {
  public:
   SourceObserver(content::WebContents* web_contents,
                  WebIntentCallbacks* callbacks,
-                 const std::string key)
+                 const std::string& key)
       : content::WebContentsObserver(web_contents),
         callbacks_(callbacks),
         key_(key) {}
@@ -89,7 +89,7 @@ content::WebIntentsDispatcher* WebIntentCallbacks::RetrieveCallback(
 }
 
 content::WebIntentsDispatcher* WebIntentCallbacks::GetAndClear(
-    std::string key) {
+    const std::string& key) {
   if (!pending_.count(key))
     return NULL;
 
