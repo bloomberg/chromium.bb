@@ -34,6 +34,7 @@ enum OutputState {
   STATE_DUAL_MIRROR,
   STATE_DUAL_PRIMARY_ONLY,
   STATE_DUAL_SECONDARY_ONLY,
+  STATE_DUAL_UNKNOWN,
 };
 
 // This class interacts directly with the underlying Xrandr API to manipulate
@@ -82,67 +83,6 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   void RemoveObserver(Observer* observer);
 
  private:
-  // The information we need to cache from an output to implement operations
-  // such as power state but also to eliminate duplicate operations within a
-  // given action (determining which CRTC to use for a given output, for
-  // example).
-  struct CachedOutputDescription {
-    RROutput output;
-    RRCrtc crtc;
-    RRMode mirror_mode;
-    RRMode ideal_mode;
-    int x;
-    int y;
-    bool is_connected;
-    bool is_powered_on;
-    bool is_internal;
-    unsigned long mm_width;
-    unsigned long mm_height;
-  };
-
-  // Updates |output_count_|, |output_cache_|, |mirror_supported_|,
-  // |primary_output_index_|, and |secondary_output_index_| with new data.
-  // Returns true if the update succeeded or false if it was skipped since no
-  // actual change was observed.
-  // Note that |output_state_| is not updated by this call.
-  bool TryRecacheOutputs(Display* display, XRRScreenResources* screen);
-
-  // Updates |output_count_|, |output_cache_|, |mirror_supported_|,
-  // |primary_output_index_|, and |secondary_output_index_| with new data.
-  // Note that |output_state_| is not updated by this call.
-  void ForceRecacheOutputs(Display* display, XRRScreenResources* screen);
-
-  // Uses the data stored in |output_cache_| and the given |new_state| to
-  // configure the Xrandr interface and then updates |output_state_| to reflect
-  // the new state.
-  void UpdateCacheAndXrandrToState(Display* display,
-                                   XRRScreenResources* screen,
-                                   Window window,
-                                   OutputState new_state);
-
-  // A helper to re-cache instance variable state and transition into the
-  // appropriate default state for the observed displays.
-  bool RecacheAndUseDefaultState();
-
-  // Checks the |primary_output_index_|, |secondary_output_index_|, and
-  // |mirror_supported_| to see how many displays are currently connected and
-  // returns the state which is most appropriate as a default state for those
-  // displays.
-  OutputState GetDefaultState() const;
-
-  // Called during start-up to determine what the current state of the displays
-  // appears to be, by investigating how the outputs compare to the data stored
-  // in |output_cache_|.  Returns STATE_INVALID if the current display state
-  // doesn't match any supported state.  |output_cache_| must be up-to-date with
-  // regards to the state of X or this method may return incorrect results.
-  OutputState InferCurrentState(
-      Display* display, XRRScreenResources* screen) const;
-
-  // Scans the |output_cache_| to determine whether or not we are in a
-  // "projecting" state and then calls the DBus kSetIsProjectingMethod on powerd
-  // with the result.
-  void CheckIsProjectingAndNotify();
-
   // Fires OnDisplayModeChanged() event to the observers.
   void NotifyOnDisplayChanged();
 
@@ -153,27 +93,8 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // configuration to immediately fail without changing the state.
   bool is_running_on_chrome_os_;
 
-  // The number of outputs in the output_cache_ array.
-  int output_count_;
-
   // The number of outputs that are connected.
   int connected_output_count_;
-
-  // The list of cached output descriptions (|output_count_| elements long).
-  scoped_array<CachedOutputDescription> output_cache_;
-
-  // True if |output_cache_| describes a permutation of outputs which support a
-  // mirrored device mode.
-  bool mirror_supported_;
-
-  // The index of the primary connected output in |output_cache_|.  -1 if there
-  // is no primary output.  This implies the machine currently has no outputs.
-  int primary_output_index_;
-
-  // The index of the secondary connected output in |output_cache_|.  -1 if
-  // there is no secondary output.  This implies the machine currently has one
-  // output.
-  int secondary_output_index_;
 
   // The base of the event numbers used to represent XRandr events used in
   // decoding events regarding output add/remove.

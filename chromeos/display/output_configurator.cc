@@ -44,11 +44,12 @@ const char kInternal_eDP[] = "eDP";
 
 // Gap between screens so cursor at bottom of active display doesn't partially
 // appear on top of inactive display. Higher numbers guard against larger
-// cursors, but also waste more memory. We will double this gap for screens
-// with a device_scale_factor of 2. While this gap will not guard against all
-// possible cursors in X, it should handle the ones we actually use. See
-// crbug.com/130188
-const int kVerticalGap = 30;
+// cursors, but also waste more memory.
+// For simplicity, this is hard-coded to 60 to avoid the complexity of always
+// determining the DPI of the screen and rationalizing which screen we need to
+// use for the DPI calculation.
+// See crbug.com/130188 for initial discussion.
+const int kVerticalGap = 60;
 
 // TODO: Determine if we need to organize modes in a way which provides better
 // than O(n) lookup time.  In many call sites, for example, the "next" mode is
@@ -121,13 +122,18 @@ static bool FindMirrorModeForOutputs(Display* display,
 
 // A helper to call XRRSetCrtcConfig with the given options but some of our
 // default output count and rotation arguments.
-static void ConfigureCrtc(Display *display,
+static void ConfigureCrtc(Display* display,
                           XRRScreenResources* screen,
                           RRCrtc crtc,
                           int x,
                           int y,
                           RRMode mode,
                           RROutput output) {
+  VLOG(1) << "ConfigureCrtc crtc: " << crtc
+          << ", mode " << mode
+          << ", output " << output
+          << ", x " << x
+          << ", y " << y;
   const Rotation kRotate = RR_Rotate_0;
   RROutput* outputs = NULL;
   int num_outputs = 0;
@@ -162,6 +168,7 @@ static void CreateFrameBuffer(Display* display,
                               Window window,
                               int width,
                               int height) {
+  VLOG(1) << "CreateFrameBuffer " << width << " by " << height;
   // Note that setting the screen size fails if any CRTCs are currently
   // pointing into it so disable them all.
   for (int i = 0; i < screen->ncrtc; ++i) {
@@ -186,46 +193,368 @@ static void CreateFrameBuffer(Display* display,
   XRRSetScreenSize(display, window, width, height, mm_width, mm_height);
 }
 
-// A helper to get the current CRTC, Mode, and height for a given output.  This
-// is read from the XRandR configuration and not any of our caches.
-static void GetOutputConfiguration(Display* display,
-                                   XRRScreenResources* screen,
-                                   RROutput output,
-                                   RRCrtc* crtc,
-                                   RRMode* mode,
-                                   int* height) {
-  XRROutputInfo* output_info = XRRGetOutputInfo(display, screen, output);
-  CHECK(output_info != NULL);
-  *crtc = output_info->crtc;
-  XRRCrtcInfo* crtc_info = XRRGetCrtcInfo(display, screen, *crtc);
-  if (crtc_info != NULL) {
-    *mode = crtc_info->mode;
-    *height = crtc_info->height;
-    XRRFreeCrtcInfo(crtc_info);
+typedef struct OutputSnapshot {
+  RROutput output;
+  RRCrtc crtc;
+  RRMode current_mode;
+  int height;
+  int y;
+  RRMode native_mode;
+  RRMode mirror_mode;
+  bool is_internal;
+} OutputSnapshot;
+
+static int GetDualOutputs(Display* display,
+                          XRRScreenResources* screen,
+                          OutputSnapshot* one,
+                          OutputSnapshot* two) {
+  int found_count = 0;
+  XRROutputInfo* one_info = NULL;
+  XRROutputInfo* two_info = NULL;
+
+  for (int i = 0; (i < screen->noutput) && (found_count < 2); ++i) {
+    RROutput this_id = screen->outputs[i];
+    XRROutputInfo* output_info = XRRGetOutputInfo(display, screen, this_id);
+    bool is_connected = (RR_Connected == output_info->connection);
+
+    if (is_connected) {
+      OutputSnapshot *to_populate = NULL;
+
+      if (0 == found_count) {
+        to_populate = one;
+        one_info = output_info;
+      } else {
+        to_populate = two;
+        two_info = output_info;
+      }
+
+      to_populate->output = this_id;
+      // Now, look up the corresponding CRTC and any related info.
+      to_populate->crtc = output_info->crtc;
+      if (None != to_populate->crtc) {
+        XRRCrtcInfo* crtc_info =
+            XRRGetCrtcInfo(display, screen, to_populate->crtc);
+        to_populate->current_mode = crtc_info->mode;
+        to_populate->height = crtc_info->height;
+        to_populate->y = crtc_info->y;
+        XRRFreeCrtcInfo(crtc_info);
+      } else {
+        to_populate->current_mode = 0;
+        to_populate->height = 0;
+        to_populate->y = 0;
+      }
+      // Find the native_mode and leave the mirror_mode for the pass after the
+      // loop.
+      if (output_info->nmode > 0)
+        to_populate->native_mode = output_info->modes[0];
+      to_populate->mirror_mode = 0;
+
+      // See if this output refers to an internal display.
+      const char* name = output_info->name;
+      to_populate->is_internal =
+          (strncmp(kInternal_LVDS,
+                   name,
+                   arraysize(kInternal_LVDS) - 1) == 0) ||
+          (strncmp(kInternal_eDP,
+                   name,
+                   arraysize(kInternal_eDP) - 1) == 0);
+
+      VLOG(1) << "Found display #" << found_count
+              << " with output " << (int)to_populate->output
+              << " crtc " << (int)to_populate->crtc
+              << " current mode " << (int)to_populate->current_mode;
+      ++found_count;
+    } else {
+      XRRFreeOutputInfo(output_info);
+    }
   }
-  XRRFreeOutputInfo(output_info);
+
+  if (2 == found_count) {
+    // Find the mirror modes (if there are any).
+    bool can_mirror = FindMirrorModeForOutputs(display,
+                                               screen,
+                                               one->output,
+                                               two->output,
+                                               &one->mirror_mode,
+                                               &two->mirror_mode);
+    if (!can_mirror) {
+      // We can't mirror so set mirror_mode to 0.
+      one->mirror_mode = 0;
+      two->mirror_mode = 0;
+    }
+  }
+
+  XRRFreeOutputInfo(one_info);
+  XRRFreeOutputInfo(two_info);
+  return found_count;
 }
 
-// A helper to determine the device_scale_factor given pixel width and mm_width.
-// This currently only reports two scale factors (1.0 and 2.0)
-static float ComputeDeviceScaleFactor(unsigned int width,
-                                      unsigned long mm_width) {
-  float device_scale_factor = 1.0f;
-  if (mm_width > 0 && (kMmInInch * width / mm_width) > kHighDensityDIPThreshold)
-    device_scale_factor = 2.0f;
-  return device_scale_factor;
+static OutputState InferCurrentState(Display* display,
+                                     XRRScreenResources* screen,
+                                     const OutputSnapshot* outputs,
+                                     int output_count) {
+  OutputState state = STATE_INVALID;
+  switch (output_count) {
+    case 0:
+      state = STATE_HEADLESS;
+      break;
+    case 1:
+      state = STATE_SINGLE;
+      break;
+    case 2: {
+      RRMode primary_mode = outputs[0].current_mode;
+      RRMode secondary_mode = outputs[1].current_mode;
+
+      if ((0 == outputs[0].y) && (0 == outputs[1].y)) {
+        // Displays in the same spot so this is either mirror or unknown.
+        // Note that we should handle no configured CRTC as a "wildcard" since
+        // that allows us to preserve mirror mode state while power is switched
+        // off on one display.
+        bool primary_mirror = (outputs[0].mirror_mode == primary_mode) ||
+            (None == primary_mode);
+        bool secondary_mirror = (outputs[1].mirror_mode == secondary_mode) ||
+            (None == secondary_mode);
+        if (primary_mirror && secondary_mirror) {
+          state = STATE_DUAL_MIRROR;
+        } else {
+          // We should never normally get into this state but it can help us
+          // make sense of situations where the configuration may have been
+          // changed for testing, etc.
+          state = STATE_DUAL_UNKNOWN;
+        }
+      } else {
+        // At this point, we expect both displays to be in native mode and tiled
+        // such that one is primary and another is correctly positioned as
+        // secondary.  If any of these assumptions are false, this is an unknown
+        // configuration.
+        bool primary_native = (outputs[0].native_mode == primary_mode) ||
+            (None == primary_mode);
+        bool secondary_native = (outputs[1].native_mode == secondary_mode) ||
+            (None == secondary_mode);
+        if (primary_native && secondary_native) {
+          // Just check the relative locations.
+          int secondary_offset = outputs[0].height + kVerticalGap;
+          int primary_offset = outputs[1].height + kVerticalGap;
+          if ((0 == outputs[0].y) && (secondary_offset == outputs[1].y)) {
+            state = STATE_DUAL_PRIMARY_ONLY;
+          } else if ((0 == outputs[1].y) && (primary_offset == outputs[0].y)) {
+            state = STATE_DUAL_SECONDARY_ONLY;
+          } else {
+            // Unexpected locations.
+            state = STATE_DUAL_UNKNOWN;
+          }
+        } else {
+          // Mode assumptions don't hold.
+          state = STATE_DUAL_UNKNOWN;
+        }
+      }
+      break;
+    }
+    default:
+      CHECK(false);
+  }
+  return state;
+}
+
+static OutputState GetNextState(Display* display,
+                                XRRScreenResources* screen,
+                                OutputState current_state,
+                                const OutputSnapshot* outputs,
+                                int output_count) {
+  OutputState state = STATE_INVALID;
+
+  switch (output_count) {
+    case 0:
+      state = STATE_HEADLESS;
+      break;
+    case 1:
+      state = STATE_SINGLE;
+      break;
+    case 2: {
+      bool mirror_supported = (0 != outputs[0].mirror_mode) &&
+          (0 != outputs[1].mirror_mode);
+      switch (current_state) {
+        case STATE_DUAL_PRIMARY_ONLY:
+          state =
+              mirror_supported ? STATE_DUAL_MIRROR : STATE_DUAL_PRIMARY_ONLY;
+          break;
+        case STATE_DUAL_MIRROR:
+          state = STATE_DUAL_PRIMARY_ONLY;
+          break;
+        default:
+          // Unknown so just request something safe.
+          state = STATE_DUAL_PRIMARY_ONLY;
+      }
+      break;
+    }
+    default:
+      CHECK(false);
+  }
+  return state;
+}
+
+static RRCrtc GetNextCrtcAfter(Display* display,
+                               XRRScreenResources* screen,
+                               RROutput output,
+                               RRCrtc previous) {
+  RRCrtc crtc = None;
+  XRROutputInfo* output_info = XRRGetOutputInfo(display, screen, output);
+
+  for (int i = 0; (i < output_info->ncrtc) && (None == crtc); ++i) {
+    RRCrtc this_crtc = output_info->crtcs[i];
+
+    if (previous != this_crtc)
+      crtc = this_crtc;
+  }
+  XRRFreeOutputInfo(output_info);
+  return crtc;
+}
+
+static void EnterState(Display* display,
+                       XRRScreenResources* screen,
+                       Window window,
+                       OutputState new_state,
+                       const OutputSnapshot* outputs,
+                       int output_count) {
+  switch (output_count) {
+    case 0:
+      // Do nothing as no 0-display states are supported.
+      break;
+    case 1: {
+      // Re-allocate the framebuffer to fit.
+      XRRModeInfo* mode_info = ModeInfoForID(screen, outputs[0].native_mode);
+      int width = mode_info->width;
+      int height = mode_info->height;
+      CreateFrameBuffer(display, screen, window, width, height);
+
+      // Re-attach native mode for the CRTC.
+      const int x = 0;
+      const int y = 0;
+      RRCrtc crtc = GetNextCrtcAfter(display, screen, outputs[0].output, None);
+      ConfigureCrtc(display,
+                    screen,
+                    crtc,
+                    x,
+                    y,
+                    outputs[0].native_mode,
+                    outputs[0].output);
+      break;
+    }
+    case 2: {
+      RRCrtc primary_crtc =
+          GetNextCrtcAfter(display, screen, outputs[0].output, None);
+      RRCrtc secondary_crtc =
+          GetNextCrtcAfter(display, screen, outputs[1].output, primary_crtc);
+
+      if (STATE_DUAL_MIRROR == new_state) {
+        XRRModeInfo* mode_info = ModeInfoForID(screen, outputs[0].mirror_mode);
+        int width = mode_info->width;
+        int height = mode_info->height;
+        CreateFrameBuffer(display, screen, window, width, height);
+
+        const int x = 0;
+        const int y = 0;
+        ConfigureCrtc(display,
+                      screen,
+                      primary_crtc,
+                      x,
+                      y,
+                      outputs[0].mirror_mode,
+                      outputs[0].output);
+        ConfigureCrtc(display,
+                      screen,
+                      secondary_crtc,
+                      x,
+                      y,
+                      outputs[1].mirror_mode,
+                      outputs[1].output);
+      } else {
+        XRRModeInfo* primary_mode_info =
+            ModeInfoForID(screen, outputs[0].native_mode);
+        XRRModeInfo* secondary_mode_info =
+            ModeInfoForID(screen, outputs[1].native_mode);
+        int width =
+            std::max<int>(primary_mode_info->width, secondary_mode_info->width);
+        int primary_height = primary_mode_info->height;
+        int secondary_height = secondary_mode_info->height;
+        int height = primary_height + secondary_height + kVerticalGap;
+        CreateFrameBuffer(display, screen, window, width, height);
+
+        const int x = 0;
+        if (STATE_DUAL_PRIMARY_ONLY == new_state) {
+          int primary_y = 0;
+          ConfigureCrtc(display,
+                        screen,
+                        primary_crtc,
+                        x,
+                        primary_y,
+                        outputs[0].native_mode,
+                        outputs[0].output);
+          int secondary_y = primary_height + kVerticalGap;
+          ConfigureCrtc(display,
+                        screen,
+                        secondary_crtc,
+                        x,
+                        secondary_y,
+                        outputs[1].native_mode,
+                        outputs[1].output);
+        } else {
+          int primary_y = secondary_height + kVerticalGap;
+          ConfigureCrtc(display,
+                        screen,
+                        primary_crtc,
+                        x,
+                        primary_y,
+                        outputs[0].native_mode,
+                        outputs[0].output);
+          int secondary_y = 0;
+          ConfigureCrtc(display,
+                        screen,
+                        secondary_crtc,
+                        x,
+                        secondary_y,
+                        outputs[1].native_mode,
+                        outputs[1].output);
+        }
+      }
+      break;
+    }
+    default:
+      CHECK(false);
+  }
+}
+
+static XRRScreenResources* GetScreenResourcesAndRecordUMA(Display* display,
+                                                          Window window) {
+  // This call to XRRGetScreenResources is implicated in a hang bug so
+  // instrument it to see its typical running time (crbug.com/134449).
+  // TODO(disher): Remove these UMA calls once crbug.com/134449 is resolved.
+  UMA_HISTOGRAM_BOOLEAN("Display.XRRGetScreenResources_completed", false);
+  PerfTimer histogram_timer;
+  XRRScreenResources* screen = XRRGetScreenResources(display, window);
+  base::TimeDelta duration = histogram_timer.Elapsed();
+  UMA_HISTOGRAM_BOOLEAN("Display.XRRGetScreenResources_completed", true);
+  UMA_HISTOGRAM_LONG_TIMES("Display.XRRGetScreenResources_duration", duration);
+  return screen;
+}
+
+// Determine if there is an "internal" output and how many outputs are
+// connected.
+static bool IsProjecting(const OutputSnapshot* outputs, int output_count) {
+  bool has_internal_output = false;
+  int connected_output_count = output_count;
+  for (int i = 0; i < output_count; ++i)
+    has_internal_output |= outputs[i].is_internal;
+
+  // "Projecting" is defined as having more than 1 output connected while at
+  // least one of them is an internal output.
+  return has_internal_output && (connected_output_count > 1);
 }
 
 }  // namespace
 
 OutputConfigurator::OutputConfigurator()
     : is_running_on_chrome_os_(base::chromeos::IsRunningOnChromeOS()),
-      output_count_(0),
-      connected_output_count_(0),
-      output_cache_(NULL),
-      mirror_supported_(false),
-      primary_output_index_(-1),
-      secondary_output_index_(-1),
       xrandr_event_base_(0),
       output_state_(STATE_INVALID) {
   if (!is_running_on_chrome_os_)
@@ -236,26 +565,43 @@ OutputConfigurator::OutputConfigurator()
   CHECK(display != NULL);
   XGrabServer(display);
   Window window = DefaultRootWindow(display);
-  XRRScreenResources* screen = XRRGetScreenResources(display, window);
+  XRRScreenResources* screen = GetScreenResourcesAndRecordUMA(display, window);
   CHECK(screen != NULL);
-  bool did_detect_outputs = TryRecacheOutputs(display, screen);
-  CHECK(did_detect_outputs);
-  OutputState current_state = InferCurrentState(display, screen);
-  if (current_state == STATE_INVALID) {
-    // Unknown state.  Transition into the default state.
-    OutputState state = GetDefaultState();
-    UpdateCacheAndXrandrToState(display, screen, window, state);
-  } else {
-    // This is a valid state so just save it to |output_state_|.
-    output_state_ = current_state;
+
+  // Detect our initial state.
+  OutputSnapshot outputs[2] = { {0}, {0} };
+  connected_output_count_ =
+      GetDualOutputs(display, screen, &outputs[0], &outputs[1]);
+  output_state_ =
+      InferCurrentState(display, screen, outputs, connected_output_count_);
+  // Ensure that we are in a supported state with all connected displays powered
+  // on.
+  OutputState starting_state = GetNextState(display,
+                                            screen,
+                                            STATE_INVALID,
+                                            outputs,
+                                            connected_output_count_);
+  if (output_state_ != starting_state) {
+    EnterState(display,
+               screen,
+               window,
+               starting_state,
+               outputs,
+               connected_output_count_);
+    output_state_ =
+        InferCurrentState(display, screen, outputs, connected_output_count_);
   }
+  bool is_projecting = IsProjecting(outputs, connected_output_count_);
+
   // Find xrandr_event_base_ since we need it to interpret events, later.
   int error_base_ignored = 0;
   XRRQueryExtension(display, &xrandr_event_base_, &error_base_ignored);
   // Relinquish X resources.
   XRRFreeScreenResources(screen);
   XUngrabServer(display);
-  CheckIsProjectingAndNotify();
+
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+      SetIsProjecting(is_projecting);
 }
 
 OutputConfigurator::~OutputConfigurator() {
@@ -267,34 +613,36 @@ bool OutputConfigurator::CycleDisplayMode() {
     return false;
 
   bool did_change = false;
-  // Rules:
-  // - if there are 0 or 1 displays, do nothing and return false.
-  // - use y-coord of CRTCs to determine if we are mirror or extended.
-  // The cycle order is:
-  // mirror->extended->mirror
-  OutputState new_state = STATE_INVALID;
-  switch (output_state_) {
-    case STATE_DUAL_MIRROR:
-      new_state = STATE_DUAL_PRIMARY_ONLY;
-      break;
-    case STATE_DUAL_PRIMARY_ONLY:
-      if (mirror_supported_)
-        new_state = STATE_DUAL_MIRROR;
-      else
-        new_state = STATE_INVALID;
-      break;
-    case STATE_DUAL_SECONDARY_ONLY:
-      new_state = mirror_supported_ ?
-          STATE_DUAL_MIRROR :
-          STATE_DUAL_PRIMARY_ONLY;
-      break;
-    default:
-      // Do nothing - we aren't in a mode which we can rotate.
-      break;
-  }
-  if (STATE_INVALID != new_state)
-    did_change = SetDisplayMode(new_state);
+  Display* display = base::MessagePumpAuraX11::GetDefaultXDisplay();
+  CHECK(display != NULL);
+  XGrabServer(display);
+  Window window = DefaultRootWindow(display);
+  XRRScreenResources* screen = GetScreenResourcesAndRecordUMA(display, window);
+  CHECK(screen != NULL);
 
+  OutputSnapshot outputs[2] = { {0}, {0} };
+  connected_output_count_ =
+      GetDualOutputs(display, screen, &outputs[0], &outputs[1]);
+  OutputState original =
+      InferCurrentState(display, screen, outputs, connected_output_count_);
+  OutputState next_state =
+      GetNextState(display, screen, original, outputs, connected_output_count_);
+  if (original != next_state) {
+    EnterState(display,
+               screen,
+               window,
+               next_state,
+               outputs,
+               connected_output_count_);
+    did_change = true;
+  }
+  // We have seen cases where the XRandR data can get out of sync with our own
+  // cache so over-write it with whatever we detected, even if we didn't think
+  // anything changed.
+  output_state_ = next_state;
+
+  XRRFreeScreenResources(screen);
+  XUngrabServer(display);
   return did_change;
 }
 
@@ -309,29 +657,30 @@ bool OutputConfigurator::ScreenPowerSet(bool power_on, bool all_displays) {
   CHECK(display != NULL);
   XGrabServer(display);
   Window window = DefaultRootWindow(display);
-  XRRScreenResources* screen = XRRGetScreenResources(display, window);
+  XRRScreenResources* screen = GetScreenResourcesAndRecordUMA(display, window);
   CHECK(screen != NULL);
 
+  OutputSnapshot outputs[2] = { {0}, {0} };
+  connected_output_count_ =
+      GetDualOutputs(display, screen, &outputs[0], &outputs[1]);
+  output_state_ =
+      InferCurrentState(display, screen, outputs, connected_output_count_);
+
+  RRCrtc crtc = None;
   // Set the CRTCs based on whether we want to turn the power on or off and
   // select the outputs to operate on by name or all_displays.
-  for (int i = 0; i < output_count_; ++i) {
-    if (all_displays || output_cache_[i].is_internal) {
-      const int x = output_cache_[i].x;
-      const int y = output_cache_[i].y;
-      RROutput output = output_cache_[i].output;
-      RRCrtc crtc = output_cache_[i].crtc;
+  for (int i = 0; i < connected_output_count_; ++i) {
+    if (all_displays || outputs[i].is_internal || power_on) {
+      const int x = 0;
+      const int y = outputs[i].y;
+      RROutput output = outputs[i].output;
       RRMode mode = None;
       if (power_on) {
         mode = (STATE_DUAL_MIRROR == output_state_) ?
-            output_cache_[i].mirror_mode :
-            output_cache_[i].ideal_mode;
+            outputs[i].mirror_mode : outputs[i].native_mode;
       }
+      crtc = GetNextCrtcAfter(display, screen, output, crtc);
 
-      VLOG(1) << "SET POWER crtc: " << crtc
-              << ", mode " << mode
-              << ", output " << output
-              << ", x " << x
-              << ", y " << y;
       // The values we are setting are already from the cache so no update
       // required.
       ConfigureCrtc(display,
@@ -341,7 +690,6 @@ bool OutputConfigurator::ScreenPowerSet(bool power_on, bool all_displays) {
                     y,
                     mode,
                     output);
-      output_cache_[i].is_powered_on = power_on;
       success = true;
     }
   }
@@ -360,9 +708,6 @@ bool OutputConfigurator::ScreenPowerSet(bool power_on, bool all_displays) {
 }
 
 bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
-  if (output_state_ == new_state)
-    return true;
-
   if (output_state_ == STATE_INVALID ||
       output_state_ == STATE_HEADLESS ||
       output_state_ == STATE_SINGLE)
@@ -372,16 +717,20 @@ bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
   CHECK(display != NULL);
   XGrabServer(display);
   Window window = DefaultRootWindow(display);
-  XRRScreenResources* screen = XRRGetScreenResources(display, window);
+  XRRScreenResources* screen = GetScreenResourcesAndRecordUMA(display, window);
   CHECK(screen != NULL);
 
-  // We are about to act on the cached output data but it could be stale so
-  // force the outputs to be recached.
-  ForceRecacheOutputs(display, screen);
-  UpdateCacheAndXrandrToState(display,
-                              screen,
-                              window,
-                              new_state);
+  OutputSnapshot outputs[2] = { {0}, {0} };
+  connected_output_count_ =
+      GetDualOutputs(display, screen, &outputs[0], &outputs[1]);
+  EnterState(display,
+             screen,
+             window,
+             new_state,
+             outputs,
+             connected_output_count_);
+  output_state_ = new_state;
+
   XRRFreeScreenResources(screen);
   XUngrabServer(display);
 
@@ -406,8 +755,39 @@ bool OutputConfigurator::Dispatch(const base::NativeEvent& event) {
         reinterpret_cast<XRROutputChangeNotifyEvent*>(xevent);
     if ((output_change_event->connection == RR_Connected) ||
         (output_change_event->connection == RR_Disconnected)) {
-      RecacheAndUseDefaultState();
-      CheckIsProjectingAndNotify();
+      Display* display = base::MessagePumpAuraX11::GetDefaultXDisplay();
+      CHECK(display != NULL);
+      XGrabServer(display);
+      Window window = DefaultRootWindow(display);
+      XRRScreenResources* screen =
+          GetScreenResourcesAndRecordUMA(display, window);
+      CHECK(screen != NULL);
+
+      OutputSnapshot outputs[2] = { {0}, {0} };
+      int new_output_count =
+          GetDualOutputs(display, screen, &outputs[0], &outputs[1]);
+      if (new_output_count != connected_output_count_) {
+        connected_output_count_ = new_output_count;
+        OutputState new_state = GetNextState(display,
+                                             screen,
+                                             STATE_INVALID,
+                                             outputs,
+                                             connected_output_count_);
+        EnterState(display,
+                   screen,
+                   window,
+                   new_state,
+                   outputs,
+                   connected_output_count_);
+        output_state_ = new_state;
+      }
+
+      bool is_projecting = IsProjecting(outputs, connected_output_count_);
+      XRRFreeScreenResources(screen);
+      XUngrabServer(display);
+
+      chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+          SetIsProjecting(is_projecting);
     }
     // Ignore the case of RR_UnkownConnection.
   }
@@ -420,407 +800,6 @@ void OutputConfigurator::AddObserver(Observer* observer) {
 
 void OutputConfigurator::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
-}
-
-bool OutputConfigurator::TryRecacheOutputs(Display* display,
-                                           XRRScreenResources* screen) {
-  bool outputs_did_change = false;
-
-  if (output_count_ != screen->noutput) {
-    outputs_did_change = true;
-  } else {
-    // The outputs might have changed so compare the connected states in the
-    // screen to our existing cache.
-    for (int i = 0; (i < output_count_) && !outputs_did_change; ++i) {
-      RROutput thisID = screen->outputs[i];
-      XRROutputInfo* output = XRRGetOutputInfo(display, screen, thisID);
-      bool now_connected = (RR_Connected == output->connection);
-      outputs_did_change = (now_connected != output_cache_[i].is_connected);
-      XRRFreeOutputInfo(output);
-    }
-  }
-
-  if (outputs_did_change) {
-    // We now know that we need to recache so free and re-alloc the buffer.
-    ForceRecacheOutputs(display, screen);
-  }
-  return outputs_did_change;
-}
-
-void OutputConfigurator::ForceRecacheOutputs(Display* display,
-                                             XRRScreenResources* screen) {
-  output_count_ = screen->noutput;
-  if (output_count_ == 0) {
-    output_cache_.reset(NULL);
-  } else {
-    // Ideally, this would be allocated inline in the OutputConfigurator
-    // instance since we support at most 2 connected outputs but this dynamic
-    // allocation was specifically requested.
-    output_cache_.reset(new CachedOutputDescription[output_count_]);
-  }
-
-  // TODO: This approach to finding CRTCs only supports two.  Expand on this.
-  RRCrtc used_crtc = None;
-  primary_output_index_ = -1;
-  secondary_output_index_ = -1;
-
-  for (int i = 0; i < output_count_; ++i) {
-    RROutput this_id = screen->outputs[i];
-    XRROutputInfo* output = XRRGetOutputInfo(display, screen, this_id);
-    bool is_connected = (RR_Connected == output->connection);
-    RRCrtc crtc = None;
-    RRMode ideal_mode = None;
-    int x = 0;
-    int y = 0;
-    unsigned long mm_width = output->mm_width;
-    unsigned long mm_height = output->mm_height;
-    bool is_internal = false;
-
-    if (is_connected) {
-      for (int j = 0; (j < output->ncrtc) && (None == crtc); ++j) {
-        RRCrtc possible = output->crtcs[j];
-        if (possible != used_crtc) {
-          crtc = possible;
-          used_crtc = possible;
-        }
-      }
-
-      const char* name = output->name;
-      is_internal =
-          (strncmp(kInternal_LVDS,
-                   name,
-                   arraysize(kInternal_LVDS) - 1) == 0) ||
-          (strncmp(kInternal_eDP,
-                   name,
-                   arraysize(kInternal_eDP) - 1) == 0);
-      if (output->nmode > 0)
-        ideal_mode = output->modes[0];
-
-      if (crtc != None) {
-        XRRCrtcInfo* crtcInfo = XRRGetCrtcInfo(display, screen, crtc);
-        x = crtcInfo->x;
-        y = crtcInfo->y;
-        XRRFreeCrtcInfo(crtcInfo);
-      }
-
-      // Save this for later mirror mode detection.
-      if (primary_output_index_ == -1)
-        primary_output_index_ = i;
-      else if (secondary_output_index_ == -1)
-        secondary_output_index_ = i;
-    }
-    XRRFreeOutputInfo(output);
-
-    // Now save the cached state for this output (we will default to mirror
-    // disabled and detect that after we have identified the first two
-    // connected outputs).
-    VLOG(1) << "Recache output index: " << i
-            << ", output id: " << this_id
-            << ", crtc id: " << crtc
-            << ", ideal mode id: " << ideal_mode
-            << ", x: " << x
-            << ", y: " << y
-            << ", is connected: " << is_connected
-            << ", is_internal: " << is_internal
-            << ", mm_width: " << mm_width
-            << ", mm_height: " << mm_height;
-    output_cache_[i].output = this_id;
-    output_cache_[i].crtc = crtc;
-    output_cache_[i].mirror_mode = None;
-    output_cache_[i].ideal_mode = ideal_mode;
-    output_cache_[i].x = x;
-    output_cache_[i].y = y;
-    output_cache_[i].is_connected = is_connected;
-    output_cache_[i].is_powered_on = true;
-    output_cache_[i].is_internal = is_internal;
-    output_cache_[i].mm_width = mm_width;
-    output_cache_[i].mm_height = mm_height;
-  }
-
-  // Now, detect the mirror modes if we have two connected outputs.
-  if ((primary_output_index_ != -1) && (secondary_output_index_ != -1)) {
-    mirror_supported_ = FindMirrorModeForOutputs(
-        display,
-        screen,
-        output_cache_[primary_output_index_].output,
-        output_cache_[secondary_output_index_].output,
-        &output_cache_[primary_output_index_].mirror_mode,
-        &output_cache_[secondary_output_index_].mirror_mode);
-
-    RRMode primary_mode = output_cache_[primary_output_index_].mirror_mode;
-    RRMode second_mode = output_cache_[secondary_output_index_].mirror_mode;
-    VLOG(1) << "Mirror mode supported " << mirror_supported_
-            << " primary " << primary_mode
-            << " secondary " << second_mode;
-  }
-}
-
-void OutputConfigurator::UpdateCacheAndXrandrToState(
-    Display* display,
-    XRRScreenResources* screen,
-    Window window,
-    OutputState new_state) {
-  // Default rules:
-  // - single display = rebuild framebuffer and set to ideal_mode.
-  // - multi display = rebuild framebuffer and set to mirror_mode.
-
-  // First, calculate the width and height of the framebuffer (we could retain
-  // the existing buffer, if it isn't resizing, but that causes an odd display
-  // state where the CRTCs are repositioned over the root windows before Chrome
-  // can move them).  It is a feature worth considering, though, and wouldn't
-  // be difficult to implement (just check the current framebuffer size before
-  // changing it).
-  int width = 0;
-  int height = 0;
-  int primary_height = 0;
-  int secondary_height = 0;
-  int vertical_gap = 0;
-  if (new_state == STATE_SINGLE) {
-    CHECK_NE(-1, primary_output_index_);
-
-    XRRModeInfo* ideal_mode = ModeInfoForID(
-        screen,
-        output_cache_[primary_output_index_].ideal_mode);
-    width = ideal_mode->width;
-    height = ideal_mode->height;
-  } else if (new_state == STATE_DUAL_MIRROR) {
-    CHECK_NE(-1, primary_output_index_);
-    CHECK_NE(-1, secondary_output_index_);
-
-    XRRModeInfo* mirror_mode = ModeInfoForID(
-        screen,
-        output_cache_[primary_output_index_].mirror_mode);
-    width = mirror_mode->width;
-    height = mirror_mode->height;
-  } else if ((new_state == STATE_DUAL_PRIMARY_ONLY) ||
-             (new_state == STATE_DUAL_SECONDARY_ONLY)) {
-    CHECK_NE(-1, primary_output_index_);
-    CHECK_NE(-1, secondary_output_index_);
-
-    XRRModeInfo* one_ideal = ModeInfoForID(
-        screen,
-        output_cache_[primary_output_index_].ideal_mode);
-    XRRModeInfo* two_ideal = ModeInfoForID(
-        screen,
-        output_cache_[secondary_output_index_].ideal_mode);
-
-    // Compute the device scale factor for the topmost display. We only need
-    // to take this device's scale factor into account as we are creating a gap
-    // to avoid the cursor drawing onto the second (unused) display when the
-    // cursor is near the bottom of the topmost display.
-    float top_scale_factor;
-    if (new_state == STATE_DUAL_PRIMARY_ONLY) {
-      top_scale_factor = ComputeDeviceScaleFactor(one_ideal->width,
-          output_cache_[primary_output_index_].mm_width);
-    } else {
-      top_scale_factor = ComputeDeviceScaleFactor(two_ideal->width,
-          output_cache_[secondary_output_index_].mm_width);
-    }
-    vertical_gap = kVerticalGap * top_scale_factor;
-
-    width = std::max<int>(one_ideal->width, two_ideal->width);
-    height = one_ideal->height + two_ideal->height + vertical_gap;
-    primary_height = one_ideal->height;
-    secondary_height = two_ideal->height;
-  }
-  CreateFrameBuffer(display, screen, window, width, height);
-
-  // Now, tile the outputs appropriately.
-  const int x = 0;
-  const int y = 0;
-  switch (new_state) {
-    case STATE_SINGLE:
-      // Update cache to reflect new x/y.
-      output_cache_[primary_output_index_].x = x;
-      output_cache_[primary_output_index_].y = y;
-      ConfigureCrtc(display,
-                    screen,
-                    output_cache_[primary_output_index_].crtc,
-                    output_cache_[primary_output_index_].x,
-                    output_cache_[primary_output_index_].y,
-                    output_cache_[primary_output_index_].ideal_mode,
-                    output_cache_[primary_output_index_].output);
-      break;
-    case STATE_DUAL_MIRROR:
-    case STATE_DUAL_PRIMARY_ONLY:
-    case STATE_DUAL_SECONDARY_ONLY: {
-      RRMode primary_mode = output_cache_[primary_output_index_].mirror_mode;
-      RRMode secondary_mode =
-          output_cache_[secondary_output_index_].mirror_mode;
-      int primary_y = y;
-      int secondary_y = y;
-
-      if (new_state != STATE_DUAL_MIRROR) {
-        primary_mode = output_cache_[primary_output_index_].ideal_mode;
-        secondary_mode = output_cache_[secondary_output_index_].ideal_mode;
-      }
-      if (new_state == STATE_DUAL_PRIMARY_ONLY)
-        secondary_y = y + primary_height + vertical_gap;
-      if (new_state == STATE_DUAL_SECONDARY_ONLY)
-        primary_y = y + secondary_height + vertical_gap;
-
-      // Make sure that the caches are up-to-date with this change to x/y.
-      output_cache_[primary_output_index_].x = x;
-      output_cache_[primary_output_index_].y = primary_y;
-      ConfigureCrtc(display,
-                    screen,
-                    output_cache_[primary_output_index_].crtc,
-                    output_cache_[primary_output_index_].x,
-                    output_cache_[primary_output_index_].y,
-                    primary_mode,
-                    output_cache_[primary_output_index_].output);
-      output_cache_[secondary_output_index_].x = x;
-      output_cache_[secondary_output_index_].y = secondary_y;
-      ConfigureCrtc(display,
-                    screen,
-                    output_cache_[secondary_output_index_].crtc,
-                    output_cache_[secondary_output_index_].x,
-                    output_cache_[secondary_output_index_].y,
-                    secondary_mode,
-                    output_cache_[secondary_output_index_].output);
-      }
-      break;
-    case STATE_HEADLESS:
-      // Do nothing.
-      break;
-    default:
-      NOTREACHED() << "Unhandled state " << new_state;
-  }
-  output_state_ = new_state;
-}
-
-bool OutputConfigurator::RecacheAndUseDefaultState() {
-  Display* display = base::MessagePumpAuraX11::GetDefaultXDisplay();
-  CHECK(display != NULL);
-  XGrabServer(display);
-  Window window = DefaultRootWindow(display);
-  // This call to XRRGetScreenResources is implicated in a hang bug so
-  // instrument it to see its typical running time (crbug.com/134449).
-  // TODO(disher): Remove these UMA calls once crbug.com/134449 is resolved.
-  UMA_HISTOGRAM_BOOLEAN("Display.XRRGetScreenResources_completed", false);
-  PerfTimer histogram_timer;
-  XRRScreenResources* screen = XRRGetScreenResources(display, window);
-  base::TimeDelta duration = histogram_timer.Elapsed();
-  UMA_HISTOGRAM_BOOLEAN("Display.XRRGetScreenResources_completed", true);
-  UMA_HISTOGRAM_LONG_TIMES("Display.XRRGetScreenResources_duration", duration);
-  CHECK(screen != NULL);
-
-  bool did_detect_change = TryRecacheOutputs(display, screen);
-  if (did_detect_change) {
-    OutputState state = GetDefaultState();
-    UpdateCacheAndXrandrToState(display, screen, window, state);
-  }
-  XRRFreeScreenResources(screen);
-  XUngrabServer(display);
-  return did_detect_change;
-}
-
-OutputState OutputConfigurator::GetDefaultState() const {
-  OutputState state = STATE_HEADLESS;
-  if (primary_output_index_ != -1) {
-    if (secondary_output_index_ != -1)
-      state = STATE_DUAL_PRIMARY_ONLY;
-    else
-      state = STATE_SINGLE;
-  }
-  return state;
-}
-
-OutputState OutputConfigurator::InferCurrentState(
-    Display* display, XRRScreenResources* screen) const {
-  // STATE_INVALID will be our default or "unknown" state.
-  OutputState state = STATE_INVALID;
-  // First step:  count the number of connected outputs.
-  if (secondary_output_index_ == -1) {
-    // No secondary display.
-    if (primary_output_index_ == -1) {
-      // No primary display implies HEADLESS.
-      state = STATE_HEADLESS;
-    } else {
-      // The common case of primary-only.
-      // The only sanity check we require in this case is that the current mode
-      // of the output's CRTC is the ideal mode we determined for it.
-      RRCrtc primary_crtc = None;
-      RRMode primary_mode = None;
-      int primary_height = 0;
-      GetOutputConfiguration(display,
-                            screen,
-                            output_cache_[primary_output_index_].output,
-                            &primary_crtc,
-                            &primary_mode,
-                            &primary_height);
-      if (primary_mode == output_cache_[primary_output_index_].ideal_mode)
-        state = STATE_SINGLE;
-    }
-  } else {
-    // We have two displays attached so we need to look at their configuration.
-    // Note that, for simplicity, we will only detect the states that we would
-    // have used and will assume anything unexpected is INVALID (which should
-    // not happen in any expected usage scenario).
-    RRCrtc primary_crtc = None;
-    RRMode primary_mode = None;
-    int primary_height = 0;
-    GetOutputConfiguration(display,
-                           screen,
-                           output_cache_[primary_output_index_].output,
-                           &primary_crtc,
-                           &primary_mode,
-                           &primary_height);
-    RRCrtc secondary_crtc = None;
-    RRMode secondary_mode = None;
-    int secondary_height = 0;
-    GetOutputConfiguration(display,
-                           screen,
-                           output_cache_[secondary_output_index_].output,
-                           &secondary_crtc,
-                           &secondary_mode,
-                           &secondary_height);
-    // Make sure the CRTCs are matched to the expected outputs.
-    if ((output_cache_[primary_output_index_].crtc == primary_crtc) &&
-        (output_cache_[secondary_output_index_].crtc == secondary_crtc)) {
-      // Check the mode matching:  either both mirror or both ideal.
-      if ((output_cache_[primary_output_index_].mirror_mode == primary_mode) &&
-          (output_cache_[secondary_output_index_].mirror_mode ==
-              secondary_mode)) {
-        // We are already in mirror mode.
-        state = STATE_DUAL_MIRROR;
-      } else if ((output_cache_[primary_output_index_].ideal_mode ==
-              primary_mode) &&
-          (output_cache_[secondary_output_index_].ideal_mode ==
-              secondary_mode)) {
-        // Both outputs are in their "ideal" mode so check their Y-offsets to
-        // see which "ideal" configuration this is.
-        if (primary_height == output_cache_[secondary_output_index_].y) {
-          // Secondary is tiled first.
-          state = STATE_DUAL_SECONDARY_ONLY;
-        } else if (secondary_height == output_cache_[primary_output_index_].y) {
-          // Primary is tiled first.
-          state = STATE_DUAL_PRIMARY_ONLY;
-        }
-      }
-    }
-  }
-
-  return state;
-}
-
-void OutputConfigurator::CheckIsProjectingAndNotify() {
-  // Determine if there is an "internal" output and how many outputs are
-  // connected.
-  bool has_internal_output = false;
-  connected_output_count_ = 0;
-  for (int i = 0; i < output_count_; ++i) {
-    if (output_cache_[i].is_connected) {
-      connected_output_count_ += 1;
-      has_internal_output |= output_cache_[i].is_internal;
-    }
-  }
-
-  // "Projecting" is defined as having more than 1 output connected while at
-  // least one of them is an internal output.
-  bool is_projecting = has_internal_output && (connected_output_count_ > 1);
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()
-      ->SetIsProjecting(is_projecting);
 }
 
 void OutputConfigurator::NotifyOnDisplayChanged() {
