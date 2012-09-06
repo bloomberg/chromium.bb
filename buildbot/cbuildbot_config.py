@@ -217,7 +217,7 @@ _settings = dict(
 # hw_tests_critical -- Usually we consider structural failures here as OK.
   hw_tests_critical=False,
 
-# Number of devices to use when scheduling tests in the hw lab.
+# Maximum number of devices to use when scheduling tests in the hw lab.
   hw_tests_num=constants.HWTEST_DEFAULT_NUM,
 
 # upload_hw_test_artifacts -- If true, uploads artifacts for hw testing.

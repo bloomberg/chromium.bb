@@ -482,7 +482,8 @@ def RunHWTestSuite(build, suite, board, pool, num, debug):
     suite: Name of the Autotest suite.
     board: The board the test suite should be scheduled against.
     pool: The pool of machines we should use to run the hw tests on.
-    num: Number of devices to use when scheduling tests in the hw lab.
+    num: Maximum number of devices to use when scheduling tests in the
+         hardware test lab.
     debug: Whether we are in debug mode.
   """
   # TODO(scottz): RPC client option names are misnomers crosbug.com/26445.
