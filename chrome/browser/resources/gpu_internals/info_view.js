@@ -27,6 +27,8 @@ cr.define('gpu', function() {
                                      this.refresh.bind(this));
       browserBridge.addEventListener('clientInfoChange',
                                      this.refresh.bind(this));
+      browserBridge.addEventListener('sandboxInfoChange',
+                                     this.refresh.bind(this));
       browserBridge.addEventListener('crashListChange',
                                      this.refresh.bind(this));
       this.refresh();
@@ -70,6 +72,60 @@ cr.define('gpu', function() {
           }]);
       } else {
         this.setText_('client-info', '... loading...');
+      }
+
+      // Sandbox info
+      var sandboxStatusList = this.querySelector('.sandbox-status-list');
+      if (browserBridge.sandboxInfo) {
+        sandboxStatusList.textContent = '';
+        var sandboxInfo = browserBridge.sandboxInfo;
+        var statusList = [
+          {
+            description: 'SUID Sandbox',
+            value: sandboxInfo.suid_sanbox
+          },
+          {
+            description: 'PID namespaces',
+            value: sandboxInfo.pid_namespaces
+          },
+          {
+            description: 'Network namespaces',
+            value: sandboxInfo.net_namespaces
+          },
+          {
+            description: 'Seccomp-legacy sandbox',
+            value: sandboxInfo.seccomp_legacy
+          },
+          {
+            description: 'Seccomp-BPF sandbox',
+            value: sandboxInfo.seccomp_bpf
+          },
+          {
+            description: 'Adequately sandboxed',
+            value: sandboxInfo.sandbox_ok
+          }
+        ];
+        statusList.forEach(function(item) {
+          var featureEl = document.createElement('li');
+
+          var nameEl = document.createElement('span');
+          nameEl.textContent = item.description + ': ';
+          featureEl.appendChild(nameEl);
+
+          var statusEl = document.createElement('span');
+          if (item.value) {
+            statusEl.textContent = 'Yes';
+            statusEl.className = 'feature-green';
+          } else {
+            statusEl.textContent = 'No';
+            statusEl.className = 'feature-red';
+          }
+          featureEl.appendChild(statusEl);
+
+          sandboxStatusList.appendChild(featureEl);
+        });
+      } else {
+        sandboxStatusList.textContent = '';
       }
 
       // Feature map
