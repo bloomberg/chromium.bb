@@ -360,10 +360,13 @@ bool CollectDriverInfoD3D(const std::wstring& device_id,
           driver_vendor = WideToASCII(std::wstring(value));
           if (driver_vendor == "Advanced Micro Devices, Inc." ||
               driver_vendor == "ATI Technologies Inc.") {
-            // We are conservative and assume that in the absense of a clear
-            // signal the videocard is assumed to be switchable.
+            // We are conservative and assume that in the absence of a clear
+            // signal the videocard is assumed to be switchable. Additionally,
+            // some switchable systems with Intel GPUs aren't correctly
+            // detected, so always count them.
             AMDVideoCardType amd_card_type = GetAMDVideocardType();
-            gpu_info->amd_switchable = (amd_card_type != STANDALONE);
+            gpu_info->amd_switchable = (gpu_info->gpu.vendor_id == 0x8086) ||
+                                       (amd_card_type != STANDALONE);
           }
         }
 
