@@ -15,10 +15,15 @@ class WebCompositorSupportImpl : public WebKit::WebCompositorSupport {
   WebCompositorSupportImpl();
   virtual ~WebCompositorSupportImpl();
 
+  virtual void initialize(WebKit::WebThread* thread);
+  virtual bool isThreadingEnabled();
+  virtual void shutdown();
+  virtual void setPerTilePaintingEnabled(bool enabled);
+  virtual void setPartialSwapEnabled(bool enabled);
+  virtual void setAcceleratedAnimationEnabled(bool enabled);
   virtual WebKit::WebLayerTreeView* createLayerTreeView(
       WebKit::WebLayerTreeViewClient* client, const WebKit::WebLayer& root,
       const WebKit::WebLayerTreeView::Settings& settings);
-
   virtual WebKit::WebLayer* createLayer();
   virtual WebKit::WebContentLayer* createContentLayer(
       WebKit::WebContentLayerClient* client);
