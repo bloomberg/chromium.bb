@@ -930,7 +930,7 @@ void DriveCache::Pin(const std::string& resource_id,
     // Set both |dest_path| and |source_path| to /dev/null, so that:
     // 1) ModifyCacheState won't move files when |source_path| and |dest_path|
     //    are the same.
-    // 2) symlinks to /dev/null will be picked up by GDataSyncClient to download
+    // 2) symlinks to /dev/null will be picked up by DriveSyncClient to download
     //    pinned files that don't exist in cache.
     dest_path = FilePath::FromUTF8Unsafe(util::kSymLinkToDevNull);
     source_path = dest_path;

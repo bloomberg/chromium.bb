@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/gdata/gdata_sync_client.h"
+#include "chrome/browser/chromeos/gdata/drive_sync_client.h"
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -49,23 +49,23 @@ const int kDelaySeconds = 5;
 // Functor for std::find_if() search for a sync task that matches
 // |in_sync_type| and |in_resource_id|.
 struct CompareTypeAndResourceId {
-  CompareTypeAndResourceId(const GDataSyncClient::SyncType& in_sync_type,
+  CompareTypeAndResourceId(const DriveSyncClient::SyncType& in_sync_type,
                            const std::string& in_resource_id)
       : sync_type(in_sync_type),
         resource_id(in_resource_id) {}
 
-  bool operator()(const GDataSyncClient::SyncTask& sync_task) {
+  bool operator()(const DriveSyncClient::SyncTask& sync_task) {
     return (sync_type == sync_task.sync_type &&
             resource_id == sync_task.resource_id);
   }
 
-  const GDataSyncClient::SyncType sync_type;
+  const DriveSyncClient::SyncType sync_type;
   const std::string resource_id;
 };
 
 }  // namespace
 
-GDataSyncClient::SyncTask::SyncTask(SyncType in_sync_type,
+DriveSyncClient::SyncTask::SyncTask(SyncType in_sync_type,
                                     const std::string& in_resource_id,
                                     const base::Time& in_timestamp)
     : sync_type(in_sync_type),
@@ -73,7 +73,7 @@ GDataSyncClient::SyncTask::SyncTask(SyncType in_sync_type,
       timestamp(in_timestamp) {
 }
 
-GDataSyncClient::GDataSyncClient(Profile* profile,
+DriveSyncClient::DriveSyncClient(Profile* profile,
                                  DriveFileSystemInterface* file_system,
                                  DriveCache* cache)
     : profile_(profile),
@@ -86,7 +86,7 @@ GDataSyncClient::GDataSyncClient(Profile* profile,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-GDataSyncClient::~GDataSyncClient() {
+DriveSyncClient::~DriveSyncClient() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (file_system_)
     file_system_->RemoveObserver(this);
@@ -99,7 +99,7 @@ GDataSyncClient::~GDataSyncClient() {
     network_library->RemoveNetworkManagerObserver(this);
 }
 
-void GDataSyncClient::Initialize() {
+void DriveSyncClient::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   file_system_->AddObserver(this);
@@ -117,23 +117,23 @@ void GDataSyncClient::Initialize() {
   registrar_->Add(prefs::kDisableGDataOverCellular, this);
 }
 
-void GDataSyncClient::StartProcessingBacklog() {
+void DriveSyncClient::StartProcessingBacklog() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   cache_->GetResourceIdsOfBacklogOnUIThread(
-      base::Bind(&GDataSyncClient::OnGetResourceIdsOfBacklog,
+      base::Bind(&DriveSyncClient::OnGetResourceIdsOfBacklog,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void GDataSyncClient::StartCheckingExistingPinnedFiles() {
+void DriveSyncClient::StartCheckingExistingPinnedFiles() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   cache_->GetResourceIdsOfExistingPinnedFilesOnUIThread(
-      base::Bind(&GDataSyncClient::OnGetResourceIdsOfExistingPinnedFiles,
+      base::Bind(&DriveSyncClient::OnGetResourceIdsOfExistingPinnedFiles,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-std::vector<std::string> GDataSyncClient::GetResourceIdsForTesting(
+std::vector<std::string> DriveSyncClient::GetResourceIdsForTesting(
     SyncType sync_type) const {
   std::vector<std::string> resource_ids;
   for (size_t i = 0; i < queue_.size(); ++i) {
@@ -144,12 +144,12 @@ std::vector<std::string> GDataSyncClient::GetResourceIdsForTesting(
   return resource_ids;
 }
 
-void GDataSyncClient::StartSyncLoop() {
+void DriveSyncClient::StartSyncLoop() {
   if (!sync_loop_is_running_)
     DoSyncLoop();
 }
 
-void GDataSyncClient::DoSyncLoop() {
+void DriveSyncClient::DoSyncLoop() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (queue_.empty() || ShouldStopSyncLoop()) {
@@ -168,7 +168,7 @@ void GDataSyncClient::DoSyncLoop() {
     // Not yet ready. Revisit at a later time.
     const bool posted = base::MessageLoopProxy::current()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&GDataSyncClient::DoSyncLoop,
+        base::Bind(&DriveSyncClient::DoSyncLoop,
                    weak_ptr_factory_.GetWeakPtr()),
         delay_);
     DCHECK(posted);
@@ -180,7 +180,7 @@ void GDataSyncClient::DoSyncLoop() {
     DVLOG(1) << "Fetching " << sync_task.resource_id;
     file_system_->GetFileByResourceId(
         sync_task.resource_id,
-        base::Bind(&GDataSyncClient::OnFetchFileComplete,
+        base::Bind(&DriveSyncClient::OnFetchFileComplete,
                    weak_ptr_factory_.GetWeakPtr(),
                    sync_task),
         GetContentCallback());
@@ -188,7 +188,7 @@ void GDataSyncClient::DoSyncLoop() {
     DVLOG(1) << "Uploading " << sync_task.resource_id;
     file_system_->UpdateFileByResourceId(
         sync_task.resource_id,
-        base::Bind(&GDataSyncClient::OnUploadFileComplete,
+        base::Bind(&DriveSyncClient::OnUploadFileComplete,
                    weak_ptr_factory_.GetWeakPtr(),
                    sync_task.resource_id));
   } else {
@@ -196,7 +196,7 @@ void GDataSyncClient::DoSyncLoop() {
   }
 }
 
-bool GDataSyncClient::ShouldStopSyncLoop() {
+bool DriveSyncClient::ShouldStopSyncLoop() {
   // Should stop if the gdata feature was disabled while running the fetch
   // loop.
   if (profile_->GetPrefs()->GetBoolean(prefs::kDisableGData))
@@ -228,19 +228,19 @@ bool GDataSyncClient::ShouldStopSyncLoop() {
   return false;
 }
 
-void GDataSyncClient::OnInitialLoadFinished() {
+void DriveSyncClient::OnInitialLoadFinished() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   StartProcessingBacklog();
 }
 
-void GDataSyncClient::OnFeedFromServerLoaded() {
+void DriveSyncClient::OnFeedFromServerLoaded() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   StartCheckingExistingPinnedFiles();
 }
 
-void GDataSyncClient::OnCachePinned(const std::string& resource_id,
+void DriveSyncClient::OnCachePinned(const std::string& resource_id,
                                     const std::string& md5) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -248,7 +248,7 @@ void GDataSyncClient::OnCachePinned(const std::string& resource_id,
   StartSyncLoop();
 }
 
-void GDataSyncClient::OnCacheUnpinned(const std::string& resource_id,
+void DriveSyncClient::OnCacheUnpinned(const std::string& resource_id,
                                       const std::string& md5) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -261,14 +261,14 @@ void GDataSyncClient::OnCacheUnpinned(const std::string& resource_id,
     queue_.erase(iter);
 }
 
-void GDataSyncClient::OnCacheCommitted(const std::string& resource_id) {
+void DriveSyncClient::OnCacheCommitted(const std::string& resource_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   AddTaskToQueue(SyncTask(UPLOAD, resource_id, base::Time::Now()));
   StartSyncLoop();
 }
 
-void GDataSyncClient::AddTaskToQueue(const SyncTask& sync_task) {
+void DriveSyncClient::AddTaskToQueue(const SyncTask& sync_task) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   std::deque<SyncTask>::iterator iter =
@@ -283,7 +283,7 @@ void GDataSyncClient::AddTaskToQueue(const SyncTask& sync_task) {
   queue_.push_back(sync_task);
 }
 
-void GDataSyncClient::OnGetResourceIdsOfBacklog(
+void DriveSyncClient::OnGetResourceIdsOfBacklog(
     const std::vector<std::string>& to_fetch,
     const std::vector<std::string>& to_upload) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -305,7 +305,7 @@ void GDataSyncClient::OnGetResourceIdsOfBacklog(
   StartSyncLoop();
 }
 
-void GDataSyncClient::OnGetResourceIdsOfExistingPinnedFiles(
+void DriveSyncClient::OnGetResourceIdsOfExistingPinnedFiles(
     const std::vector<std::string>& resource_ids) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -313,13 +313,13 @@ void GDataSyncClient::OnGetResourceIdsOfExistingPinnedFiles(
     const std::string& resource_id = resource_ids[i];
     file_system_->GetEntryInfoByResourceId(
         resource_id,
-        base::Bind(&GDataSyncClient::OnGetEntryInfoByResourceId,
+        base::Bind(&DriveSyncClient::OnGetEntryInfoByResourceId,
                    weak_ptr_factory_.GetWeakPtr(),
                    resource_id));
   }
 }
 
-void GDataSyncClient::OnGetEntryInfoByResourceId(
+void DriveSyncClient::OnGetEntryInfoByResourceId(
     const std::string& resource_id,
     DriveFileError error,
     const FilePath& /* gdata_file_path */,
@@ -337,13 +337,13 @@ void GDataSyncClient::OnGetEntryInfoByResourceId(
   cache_->GetCacheEntryOnUIThread(
       resource_id,
       "" /* don't check MD5 */,
-      base::Bind(&GDataSyncClient::OnGetCacheEntry,
+      base::Bind(&DriveSyncClient::OnGetCacheEntry,
                  weak_ptr_factory_.GetWeakPtr(),
                  resource_id,
                  entry_proto->file_specific_info().file_md5()));
 }
 
-void GDataSyncClient::OnGetCacheEntry(
+void DriveSyncClient::OnGetCacheEntry(
     const std::string& resource_id,
     const std::string& latest_md5,
     bool success,
@@ -361,12 +361,12 @@ void GDataSyncClient::OnGetCacheEntry(
   if (latest_md5 != cache_entry.md5() && !cache_entry.is_dirty()) {
     cache_->RemoveOnUIThread(
         resource_id,
-        base::Bind(&GDataSyncClient::OnRemove,
+        base::Bind(&DriveSyncClient::OnRemove,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
-void GDataSyncClient::OnRemove(DriveFileError error,
+void DriveSyncClient::OnRemove(DriveFileError error,
                                const std::string& resource_id,
                                const std::string& md5) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -380,11 +380,11 @@ void GDataSyncClient::OnRemove(DriveFileError error,
   // is downloaded properly to the persistent directory and marked pinned.
   cache_->PinOnUIThread(resource_id,
                         md5,
-                        base::Bind(&GDataSyncClient::OnPinned,
+                        base::Bind(&DriveSyncClient::OnPinned,
                                    weak_ptr_factory_.GetWeakPtr()));
 }
 
-void GDataSyncClient::OnPinned(DriveFileError error,
+void DriveSyncClient::OnPinned(DriveFileError error,
                                const std::string& resource_id,
                                const std::string& /* md5 */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -399,7 +399,7 @@ void GDataSyncClient::OnPinned(DriveFileError error,
   StartSyncLoop();
 }
 
-void GDataSyncClient::OnFetchFileComplete(const SyncTask& sync_task,
+void DriveSyncClient::OnFetchFileComplete(const SyncTask& sync_task,
                                           DriveFileError error,
                                           const FilePath& local_path,
                                           const std::string& ununsed_mime_type,
@@ -425,7 +425,7 @@ void GDataSyncClient::OnFetchFileComplete(const SyncTask& sync_task,
   DoSyncLoop();
 }
 
-void GDataSyncClient::OnUploadFileComplete(const std::string& resource_id,
+void DriveSyncClient::OnUploadFileComplete(const std::string& resource_id,
                                            DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -440,7 +440,7 @@ void GDataSyncClient::OnUploadFileComplete(const std::string& resource_id,
   DoSyncLoop();
 }
 
-void GDataSyncClient::OnNetworkManagerChanged(
+void DriveSyncClient::OnNetworkManagerChanged(
     chromeos::NetworkLibrary* network_library) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -452,7 +452,7 @@ void GDataSyncClient::OnNetworkManagerChanged(
     StartSyncLoop();
 }
 
-void GDataSyncClient::Observe(int type,
+void DriveSyncClient::Observe(int type,
                               const content::NotificationSource& source,
                               const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_SYNC_CLIENT_H_
-#define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_SYNC_CLIENT_H_
+#ifndef CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_SYNC_CLIENT_H_
+#define CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_SYNC_CLIENT_H_
 
 #include <deque>
 #include <string>
@@ -26,7 +26,7 @@ class PrefChangeRegistrar;
 
 namespace gdata {
 
-// The GDataSyncClient is used to synchronize pinned files on gdata and the
+// The DriveSyncClient is used to synchronize pinned files on gdata and the
 // cache on the local drive. The sync client works as follows.
 //
 // When the user pins files on gdata, this client is notified about the files
@@ -43,7 +43,7 @@ namespace gdata {
 // TODO(satorux): This client should also upload pinned but dirty (locally
 // edited) files to gdata. Will work on this once downloading is done.
 // crosbug.com/27836.
-class GDataSyncClient : public DriveFileSystemInterface::Observer,
+class DriveSyncClient : public DriveFileSystemInterface::Observer,
                         public DriveCache::Observer,
                         public chromeos::NetworkLibrary::NetworkManagerObserver,
                         public content::NotificationObserver {
@@ -68,12 +68,12 @@ class GDataSyncClient : public DriveFileSystemInterface::Observer,
   // |profile| is used to access user preferences.
   // |file_system| is used access the
   // cache (ex. store a file to the cache when the file is downloaded).
-  GDataSyncClient(Profile* profile,
+  DriveSyncClient(Profile* profile,
                   DriveFileSystemInterface* file_system,
                   DriveCache* cache);
-  virtual ~GDataSyncClient();
+  virtual ~DriveSyncClient();
 
-  // Initializes the GDataSyncClient.
+  // Initializes the DriveSyncClient.
   void Initialize();
 
   // DriveFileSystemInterface::Observer overrides.
@@ -116,7 +116,7 @@ class GDataSyncClient : public DriveFileSystemInterface::Observer,
   void StartSyncLoop();
 
  private:
-  friend class GDataSyncClientTest;
+  friend class DriveSyncClientTest;
 
   // Adds the given task to the queue. If the same task is queued, remove the
   // existing one, and adds a new one to the end of the queue.
@@ -200,11 +200,11 @@ class GDataSyncClient : public DriveFileSystemInterface::Observer,
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<GDataSyncClient> weak_ptr_factory_;
+  base::WeakPtrFactory<DriveSyncClient> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(GDataSyncClient);
+  DISALLOW_COPY_AND_ASSIGN(DriveSyncClient);
 };
 
 }  // namespace gdata
 
-#endif  // CHROME_BROWSER_CHROMEOS_GDATA_GDATA_SYNC_CLIENT_H_
+#endif  // CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_SYNC_CLIENT_H_

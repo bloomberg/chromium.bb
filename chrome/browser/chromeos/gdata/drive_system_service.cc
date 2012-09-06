@@ -12,10 +12,10 @@
 #include "chrome/browser/chromeos/gdata/drive_file_system.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_proxy.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_util.h"
+#include "chrome/browser/chromeos/gdata/drive_sync_client.h"
 #include "chrome/browser/chromeos/gdata/drive_uploader.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/gdata/file_write_helper.h"
-#include "chrome/browser/chromeos/gdata/gdata_sync_client.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_service.h"
 #include "chrome/browser/download/download_service.h"
@@ -74,7 +74,7 @@ void DriveSystemService::Initialize(
   file_write_helper_.reset(new FileWriteHelper(file_system()));
   download_observer_.reset(new DriveDownloadObserver(uploader(),
                                                      file_system()));
-  sync_client_.reset(new GDataSyncClient(profile_, file_system(), cache()));
+  sync_client_.reset(new DriveSyncClient(profile_, file_system(), cache()));
 
   sync_client_->Initialize();
   file_system_->Initialize();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/gdata/gdata_sync_client.h"
+#include "chrome/browser/chromeos/gdata/drive_sync_client.h"
 
 #include <algorithm>
 #include <vector>
@@ -55,9 +55,9 @@ ACTION_P2(MockUpdateFileByResourceId, error, md5) {
   arg1.Run(error, FilePath(), entry_proto.Pass());
 }
 
-class GDataSyncClientTest : public testing::Test {
+class DriveSyncClientTest : public testing::Test {
  public:
-  GDataSyncClientTest()
+  DriveSyncClientTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         io_thread_(content::BrowserThread::IO),
         profile_(new TestingProfile),
@@ -82,7 +82,7 @@ class GDataSyncClientTest : public testing::Test {
     cache_ = DriveCache::CreateDriveCacheOnUIThread(
         temp_dir_.path(),
         pool->GetSequencedTaskRunner(pool->GetSequenceToken()));
-    sync_client_.reset(new GDataSyncClient(profile_.get(),
+    sync_client_.reset(new DriveSyncClient(profile_.get(),
                                            mock_file_system_.get(),
                                            cache_));
 
@@ -257,23 +257,23 @@ class GDataSyncClientTest : public testing::Test {
   // Returns the resource IDs in the queue to be fetched.
   std::vector<std::string> GetResourceIdsToBeFetched() {
     return sync_client_->GetResourceIdsForTesting(
-        GDataSyncClient::FETCH);
+        DriveSyncClient::FETCH);
   }
 
   // Returns the resource IDs in the queue to be uploaded.
   std::vector<std::string> GetResourceIdsToBeUploaded() {
     return sync_client_->GetResourceIdsForTesting(
-        GDataSyncClient::UPLOAD);
+        DriveSyncClient::UPLOAD);
   }
 
   // Adds a resource ID of a file to fetch.
   void AddResourceIdToFetch(const std::string& resource_id) {
-    sync_client_->AddResourceIdForTesting(GDataSyncClient::FETCH, resource_id);
+    sync_client_->AddResourceIdForTesting(DriveSyncClient::FETCH, resource_id);
   }
 
   // Adds a resource ID of a file to upload.
   void AddResourceIdToUpload(const std::string& resource_id) {
-    sync_client_->AddResourceIdForTesting(GDataSyncClient::UPLOAD,
+    sync_client_->AddResourceIdForTesting(DriveSyncClient::UPLOAD,
                                           resource_id);
   }
 
@@ -285,12 +285,12 @@ class GDataSyncClientTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<StrictMock<MockDriveFileSystem> > mock_file_system_;
   DriveCache* cache_;
-  scoped_ptr<GDataSyncClient> sync_client_;
+  scoped_ptr<DriveSyncClient> sync_client_;
   chromeos::MockNetworkLibrary* mock_network_library_;
   scoped_ptr<chromeos::Network> active_network_;
 };
 
-TEST_F(GDataSyncClientTest, StartInitialScan) {
+TEST_F(DriveSyncClientTest, StartInitialScan) {
   SetUpTestFiles();
   // Connect to no network, so the sync loop won't spin.
   ConnectToNone();
@@ -321,7 +321,7 @@ TEST_F(GDataSyncClientTest, StartInitialScan) {
   EXPECT_EQ("resource_id_dirty", resource_ids[0]);
 }
 
-TEST_F(GDataSyncClientTest, StartSyncLoop) {
+TEST_F(DriveSyncClientTest, StartSyncLoop) {
   SetUpTestFiles();
   ConnectToWifi();
 
@@ -340,7 +340,7 @@ TEST_F(GDataSyncClientTest, StartSyncLoop) {
   sync_client_->StartSyncLoop();
 }
 
-TEST_F(GDataSyncClientTest, StartSyncLoop_Offline) {
+TEST_F(DriveSyncClientTest, StartSyncLoop_Offline) {
   SetUpTestFiles();
   ConnectToNone();
 
@@ -355,7 +355,7 @@ TEST_F(GDataSyncClientTest, StartSyncLoop_Offline) {
   sync_client_->StartSyncLoop();
 }
 
-TEST_F(GDataSyncClientTest, StartSyncLoop_ResumedConnection) {
+TEST_F(DriveSyncClientTest, StartSyncLoop_ResumedConnection) {
   const std::string resource_id("resource_id_not_fetched_foo");
   const FilePath file_path(
       FilePath::FromUTF8Unsafe("local_path_does_not_matter"));
@@ -367,7 +367,7 @@ TEST_F(GDataSyncClientTest, StartSyncLoop_ResumedConnection) {
   // Disconnect from network on fetch try.
   EXPECT_CALL(*mock_file_system_, GetFileByResourceId(resource_id, _, _))
       .WillOnce(DoAll(
-          InvokeWithoutArgs(this, &GDataSyncClientTest::ConnectToNone),
+          InvokeWithoutArgs(this, &DriveSyncClientTest::ConnectToNone),
           MockGetFileByResourceId(DRIVE_FILE_ERROR_NO_CONNECTION,
                                   file_path,
                                   mime_type,
@@ -383,7 +383,7 @@ TEST_F(GDataSyncClientTest, StartSyncLoop_ResumedConnection) {
   ConnectToWifi();
 }
 
-TEST_F(GDataSyncClientTest, StartSyncLoop_CelluarDisabled) {
+TEST_F(DriveSyncClientTest, StartSyncLoop_CelluarDisabled) {
   SetUpTestFiles();
   ConnectToWifi();  // First connect to Wifi.
 
@@ -399,7 +399,7 @@ TEST_F(GDataSyncClientTest, StartSyncLoop_CelluarDisabled) {
   ConnectToCellular();
 }
 
-TEST_F(GDataSyncClientTest, StartSyncLoop_CelluarEnabled) {
+TEST_F(DriveSyncClientTest, StartSyncLoop_CelluarEnabled) {
   SetUpTestFiles();
   ConnectToWifi();  // First connect to Wifi.
 
@@ -422,7 +422,7 @@ TEST_F(GDataSyncClientTest, StartSyncLoop_CelluarEnabled) {
   ConnectToCellular();
 }
 
-TEST_F(GDataSyncClientTest, StartSyncLoop_WimaxDisabled) {
+TEST_F(DriveSyncClientTest, StartSyncLoop_WimaxDisabled) {
   SetUpTestFiles();
   ConnectToWifi();  // First connect to Wifi.
 
@@ -438,7 +438,7 @@ TEST_F(GDataSyncClientTest, StartSyncLoop_WimaxDisabled) {
   ConnectToWimax();
 }
 
-TEST_F(GDataSyncClientTest, StartSyncLoop_CelluarEnabledWithWimax) {
+TEST_F(DriveSyncClientTest, StartSyncLoop_CelluarEnabledWithWimax) {
   SetUpTestFiles();
   ConnectToWifi();  // First connect to Wifi.
 
@@ -461,11 +461,11 @@ TEST_F(GDataSyncClientTest, StartSyncLoop_CelluarEnabledWithWimax) {
   ConnectToWimax();
 }
 
-TEST_F(GDataSyncClientTest, StartSyncLoop_GDataDisabled) {
+TEST_F(DriveSyncClientTest, StartSyncLoop_DriveDisabled) {
   SetUpTestFiles();
   ConnectToWifi();
 
-  // Disable the GData feature.
+  // Disable the Drive feature.
   profile_->GetPrefs()->SetBoolean(prefs::kDisableGData, true);
 
   AddResourceIdToFetch("resource_id_not_fetched_foo");
@@ -474,12 +474,12 @@ TEST_F(GDataSyncClientTest, StartSyncLoop_GDataDisabled) {
   AddResourceIdToUpload("resource_id_dirty");
 
   // These files will be neither fetched nor uploaded not by DriveFileSystem,
-  // as the GData feature is disabled.
+  // as the Drive feature is disabled.
 
   sync_client_->StartSyncLoop();
 }
 
-TEST_F(GDataSyncClientTest, OnCachePinned) {
+TEST_F(DriveSyncClientTest, OnCachePinned) {
   SetUpTestFiles();
   ConnectToWifi();
 
@@ -490,7 +490,7 @@ TEST_F(GDataSyncClientTest, OnCachePinned) {
   sync_client_->OnCachePinned("resource_id_not_fetched_foo", "md5");
 }
 
-TEST_F(GDataSyncClientTest, OnCacheUnpinned) {
+TEST_F(DriveSyncClientTest, OnCacheUnpinned) {
   SetUpTestFiles();
 
   AddResourceIdToFetch("resource_id_not_fetched_foo");
@@ -517,7 +517,7 @@ TEST_F(GDataSyncClientTest, OnCacheUnpinned) {
   ASSERT_TRUE(resource_ids.empty());
 }
 
-TEST_F(GDataSyncClientTest, Deduplication) {
+TEST_F(DriveSyncClientTest, Deduplication) {
   SetUpTestFiles();
   ConnectToWifi();
 
@@ -532,7 +532,7 @@ TEST_F(GDataSyncClientTest, Deduplication) {
   ASSERT_EQ(1U, GetResourceIdsToBeFetched().size());
 }
 
-TEST_F(GDataSyncClientTest, ExistingPinnedFiles) {
+TEST_F(DriveSyncClientTest, ExistingPinnedFiles) {
   SetUpTestFiles();
   // Connect to no network, so the sync loop won't spin.
   ConnectToNone();
