@@ -84,7 +84,19 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
                                public aura::client::CaptureDelegate,
                                public aura::RootWindowHostDelegate {
  public:
-  explicit RootWindow(const gfx::Rect& initial_bounds);
+  struct AURA_EXPORT CreateParams {
+    // CreateParams with initial_bounds and default host.
+    CreateParams(const gfx::Rect& initial_bounds);
+    ~CreateParams() {}
+
+    gfx::Rect initial_bounds;
+
+    // A host to use in place of the default one that RootWindow will create.
+    // NULL by default.
+    RootWindowHost* host;
+  };
+
+  explicit RootWindow(const CreateParams& params);
   virtual ~RootWindow();
 
   static RootWindow* GetForAcceleratedWidget(gfx::AcceleratedWidget widget);

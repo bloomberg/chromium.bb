@@ -83,6 +83,12 @@ void SetLastMouseLocation(const Window* root_window,
   Env::GetInstance()->SetLastMouseLocation(*root_window, location);
 }
 
+RootWindowHost* CreateHost(RootWindow* root_window,
+                           const RootWindow::CreateParams& params) {
+  return params.host ? params.host :
+      RootWindowHost::Create(root_window, params.initial_bounds);
+}
+
 }  // namespace
 
 CompositorLock::CompositorLock(RootWindow* root_window)
@@ -106,13 +112,17 @@ void CompositorLock::CancelLock() {
 
 bool RootWindow::hide_host_cursor_ = false;
 
+RootWindow::CreateParams::CreateParams(const gfx::Rect& a_initial_bounds)
+    : initial_bounds(a_initial_bounds),
+      host(NULL) {
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindow, public:
 
-RootWindow::RootWindow(const gfx::Rect& initial_bounds)
+RootWindow::RootWindow(const CreateParams& params)
     : Window(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          host_(RootWindowHost::Create(this, initial_bounds))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(host_(CreateHost(this, params))),
       ALLOW_THIS_IN_INITIALIZER_LIST(schedule_paint_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(event_factory_(this)),
       mouse_button_flags_(0),
