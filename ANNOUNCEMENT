@@ -84,6 +84,7 @@ Bug fixes
     Thanks Milan Zamazal <pdm@brailcom.org> for reporting this.
   - Fix a bug in the $a. matcher in the multipass rules where only 32
     chars were matched. It now matches 0xffff chars.
+  - Fix a bug reported by James Teh related to pass1Only
 
 Braille Table Improvements 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -99,7 +100,8 @@ Braille Table Improvements
   - Fixes to eo-g1.ctb thanks to Aaron Cannon <cannona@fireantproductions.com>
   - hu-hu-g1.ctb: improvements and extensive test harness, with
     working back-translation, Thanks to Hammer Attila
-  - Fixes to fr-bfu-comp6.utband fr-bfu-comp8.utb thanks to Michel Such <michel.such@free.fr>
+  - Fixes to fr-bfu-comp6.utb and fr-bfu-comp8.utb thanks to Michel
+    Such <michel.such@free.fr>
 
 
 Share and Enjoy!
