@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_GDATA_MOCK_GDATA_UPLOADER_H_
-#define CHROME_BROWSER_CHROMEOS_GDATA_MOCK_GDATA_UPLOADER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_GDATA_MOCK_DRIVE_UPLOADER_H_
+#define CHROME_BROWSER_CHROMEOS_GDATA_MOCK_DRIVE_UPLOADER_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system.h"
-#include "chrome/browser/chromeos/gdata/gdata_uploader.h"
+#include "chrome/browser/chromeos/gdata/drive_uploader.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace gdata {
 
-class MockGDataUploader : public GDataUploaderInterface {
+class MockDriveUploader : public DriveUploaderInterface {
  public:
-  MockGDataUploader();
-  virtual ~MockGDataUploader();
+  MockDriveUploader();
+  virtual ~MockDriveUploader();
   // This function is not mockable by gmock.
   virtual int UploadNewFile(
       scoped_ptr<UploadFileInfo> upload_file_info) OVERRIDE {
@@ -43,4 +43,4 @@ class MockGDataUploader : public GDataUploaderInterface {
 
 }  // namespace gdata
 
-#endif  // CHROME_BROWSER_CHROMEOS_GDATA_MOCK_GDATA_UPLOADER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_GDATA_MOCK_DRIVE_UPLOADER_H_

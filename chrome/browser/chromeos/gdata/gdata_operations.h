@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "chrome/browser/chromeos/gdata/operations_base.h"
-#include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
+#include "chrome/browser/chromeos/gdata/drive_upload_file_info.h"
 
 namespace gdata {
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_UPLOAD_FILE_INFO_H_
-#define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_UPLOAD_FILE_INFO_H_
+#ifndef CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_UPLOAD_FILE_INFO_H_
+#define CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_UPLOAD_FILE_INFO_H_
 
 #include <string>
 #include <vector>
@@ -62,8 +62,8 @@ struct UploadFileInfo {
   // InitiateUpload. Used for the subsequent ResumeUpload requests.
   GURL upload_location;
 
-  // Final path in gdata. Looks like /special/drive/MyFolder/MyFile.
-  FilePath gdata_path;
+  // Final path in drive. Looks like /special/drive/MyFolder/MyFile.
+  FilePath drive_path;
 
   // TODO(achuith): Use generic stream object after FileStream is refactored to
   // extend a generic stream.
@@ -95,4 +95,4 @@ struct UploadFileInfo {
 
 }  // namespace gdata
 
-#endif  // CHROME_BROWSER_CHROMEOS_GDATA_GDATA_UPLOAD_FILE_INFO_H_
+#endif  // CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_UPLOAD_FILE_INFO_H_

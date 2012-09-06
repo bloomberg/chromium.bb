@@ -22,9 +22,9 @@
 #include "chrome/browser/chromeos/gdata/drive_file_system.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_util.h"
 #include "chrome/browser/chromeos/gdata/drive_function_remove.h"
+#include "chrome/browser/chromeos/gdata/drive_uploader.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata_test_util.h"
-#include "chrome/browser/chromeos/gdata/gdata_uploader.h"
 #include "chrome/browser/chromeos/gdata/mock_directory_change_observer.h"
 #include "chrome/browser/chromeos/gdata/mock_drive_cache_observer.h"
 #include "chrome/browser/chromeos/gdata/mock_drive_service.h"
@@ -87,11 +87,11 @@ ACTION_P2(MockGetDocumentEntry, status, value) {
 }
 
 // Action used to set mock expectations for
-// GDataUploaderInterface::UploadExistingFile().
+// DriveUploaderInterface::UploadExistingFile().
 ACTION_P4(MockUploadExistingFile,
-          error, gdata_path, local_file_path, document_entry) {
+          error, drive_path, local_file_path, document_entry) {
   scoped_ptr<UploadFileInfo> upload_file_info(new UploadFileInfo);
-  upload_file_info->gdata_path = gdata_path;
+  upload_file_info->drive_path = drive_path;
   upload_file_info->file_path = local_file_path;
   upload_file_info->entry.reset(document_entry);
   base::MessageLoopProxy::current()->PostTask(FROM_HERE,
@@ -121,9 +121,9 @@ int CountFiles(const DriveEntryProtoVector& entries) {
 
 }  // namespace
 
-class MockGDataUploader : public GDataUploaderInterface {
+class MockDriveUploader : public DriveUploaderInterface {
  public:
-  virtual ~MockGDataUploader() {}
+  virtual ~MockDriveUploader() {}
   // This function is not mockable by gmock.
   virtual int UploadNewFile(
       scoped_ptr<UploadFileInfo> upload_file_info) OVERRIDE {
@@ -206,7 +206,7 @@ class DriveFileSystemTest : public testing::Test {
     cache_ = DriveCache::CreateDriveCacheOnUIThread(
         DriveCache::GetCacheRootPath(profile_.get()), blocking_task_runner_);
 
-    mock_uploader_.reset(new StrictMock<MockGDataUploader>);
+    mock_uploader_.reset(new StrictMock<MockDriveUploader>);
     mock_webapps_registry_.reset(new StrictMock<MockDriveWebAppsRegistry>);
 
     ASSERT_FALSE(file_system_);
@@ -808,7 +808,7 @@ class DriveFileSystemTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<CallbackHelper> callback_helper_;
   DriveCache* cache_;
-  scoped_ptr<StrictMock<MockGDataUploader> > mock_uploader_;
+  scoped_ptr<StrictMock<MockDriveUploader> > mock_uploader_;
   DriveFileSystem* file_system_;
   StrictMock<MockDriveService>* mock_drive_service_;
   scoped_ptr<StrictMock<MockDriveWebAppsRegistry> > mock_webapps_registry_;
@@ -2345,7 +2345,7 @@ TEST_F(DriveFileSystemTest, UpdateFileByResourceId_PersistentFile) {
   ASSERT_TRUE(file_util::PathExists(outgoing_symlink_path));
 
   // Create a DocumentEntry, which is needed to mock
-  // GDataUploaderInterface::UploadExistingFile().
+  // DriveUploaderInterface::UploadExistingFile().
   // TODO(satorux): This should be cleaned up. crbug.com/134240.
   DocumentEntry* document_entry = NULL;
   scoped_ptr<base::Value> value(test_util::LoadJSONFile("root_feed.json"));

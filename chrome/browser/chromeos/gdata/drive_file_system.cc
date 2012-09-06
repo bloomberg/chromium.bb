@@ -23,8 +23,8 @@
 #include "chrome/browser/chromeos/gdata/drive_function_remove.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/chromeos/gdata/drive_system_service.h"
+#include "chrome/browser/chromeos/gdata/drive_uploader.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
-#include "chrome/browser/chromeos/gdata/gdata_uploader.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/task_util.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -389,7 +389,7 @@ DriveFileSystem::DriveFileSystem(
     Profile* profile,
     DriveCache* cache,
     DriveServiceInterface* drive_service,
-    GDataUploaderInterface* uploader,
+    DriveUploaderInterface* uploader,
     DriveWebAppsRegistryInterface* webapps_registry,
     base::SequencedTaskRunner* blocking_task_runner)
     : profile_(profile),
@@ -706,7 +706,7 @@ void DriveFileSystem::StartFileUploadOnUIThread(
     int64* file_size,
     std::string* content_type) {
   // This method needs to run on the UI thread as required by
-  // GDataUploader::UploadNewFile().
+  // DriveUploader::UploadNewFile().
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(error);
   DCHECK(file_size);
@@ -752,7 +752,7 @@ void DriveFileSystem::StartFileUploadOnUIThreadAfterGetEntryInfo(
   scoped_ptr<UploadFileInfo> upload_file_info(new UploadFileInfo);
   upload_file_info->file_path = params.local_file_path;
   upload_file_info->file_size = file_size;
-  upload_file_info->gdata_path = params.remote_file_path;
+  upload_file_info->drive_path = params.remote_file_path;
   // Use the file name as the title.
   upload_file_info->title = params.remote_file_path.BaseName().value();
   upload_file_info->content_length = file_size;
@@ -777,7 +777,7 @@ void DriveFileSystem::OnTransferCompleted(
 
   if (error == DRIVE_FILE_OK && upload_file_info->entry.get()) {
     AddUploadedFile(UPLOAD_NEW_FILE,
-                    upload_file_info->gdata_path.DirName(),
+                    upload_file_info->drive_path.DirName(),
                     upload_file_info->entry.Pass(),
                     upload_file_info->file_path,
                     DriveCache::FILE_OPERATION_COPY,
@@ -2052,7 +2052,7 @@ void DriveFileSystem::OnUpdatedFileUploaded(
   }
 
   AddUploadedFile(UPLOAD_EXISTING_FILE,
-                  upload_file_info->gdata_path.DirName(),
+                  upload_file_info->drive_path.DirName(),
                   upload_file_info->entry.Pass(),
                   upload_file_info->file_path,
                   DriveCache::FILE_OPERATION_MOVE,

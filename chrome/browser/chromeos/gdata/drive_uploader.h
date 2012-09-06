@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_UPLOADER_H_
-#define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_UPLOADER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_UPLOADER_H_
+#define CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_UPLOADER_H_
 
 #include <map>
 #include <set>
@@ -12,9 +12,9 @@
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
+#include "chrome/browser/chromeos/gdata/drive_upload_file_info.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 #include "chrome/browser/chromeos/gdata/gdata_operations.h"
-#include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 #include "googleurl/src/gurl.h"
 
 namespace content {
@@ -25,9 +25,9 @@ namespace gdata {
 
 class DriveServiceInterface;
 
-class GDataUploaderInterface {
+class DriveUploaderInterface {
  public:
-  virtual ~GDataUploaderInterface() {}
+  virtual ~DriveUploaderInterface() {}
 
   // Uploads a new file specified by |upload_file_info|. Transfers ownership.
   // Returns the upload_id.
@@ -63,12 +63,12 @@ class GDataUploaderInterface {
   virtual int64 GetUploadedBytes(int upload_id) const = 0;
 };
 
-class GDataUploader : public GDataUploaderInterface {
+class DriveUploader : public DriveUploaderInterface {
  public:
-  explicit GDataUploader(DriveServiceInterface* drive_service);
-  virtual ~GDataUploader();
+  explicit DriveUploader(DriveServiceInterface* drive_service);
+  virtual ~DriveUploader();
 
-  // GDataUploaderInterface overrides.
+  // DriveUploaderInterface overrides.
   virtual int UploadNewFile(
       scoped_ptr<UploadFileInfo> upload_file_info) OVERRIDE;
   virtual int StreamExistingFile(
@@ -134,7 +134,7 @@ class GDataUploader : public GDataUploaderInterface {
 
   // Pointers to DriveServiceInterface object owned by DriveSystemService.
   // The lifetime of this object is guaranteed to exceed that of the
-  // GDataUploader instance.
+  // DriveUploader instance.
   DriveServiceInterface* drive_service_;
 
   int next_upload_id_;  // id counter.
@@ -144,11 +144,11 @@ class GDataUploader : public GDataUploaderInterface {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<GDataUploader> weak_ptr_factory_;
+  base::WeakPtrFactory<DriveUploader> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(GDataUploader);
+  DISALLOW_COPY_AND_ASSIGN(DriveUploader);
 };
 
 }  // namespace gdata
 
-#endif  // CHROME_BROWSER_CHROMEOS_GDATA_GDATA_UPLOADER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_UPLOADER_H_

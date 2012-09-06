@@ -21,7 +21,7 @@ namespace gdata {
 class DocumentEntry;
 class DriveEntryProto;
 class DriveFileSystemInterface;
-class GDataUploader;
+class DriveUploader;
 struct UploadFileInfo;
 
 // Observes downloads to temporary local drive folder. Schedules these
@@ -29,7 +29,7 @@ struct UploadFileInfo;
 class DriveDownloadObserver : public content::DownloadManager::Observer,
                               public content::DownloadItem::Observer {
  public:
-  DriveDownloadObserver(GDataUploader* uploader,
+  DriveDownloadObserver(DriveUploader* uploader,
                         DriveFileSystemInterface* file_system);
   virtual ~DriveDownloadObserver();
 
@@ -136,7 +136,7 @@ class DriveDownloadObserver : public content::DownloadManager::Observer,
   void StartUpload(int32 download_id,
                    scoped_ptr<UploadFileInfo> upload_file_info);
 
-  // Callback invoked by GDataUploader when the upload associated with
+  // Callback invoked by DriveUploader when the upload associated with
   // |download_id| has completed. |error| indicated whether the
   // call was successful. This function takes ownership of DocumentEntry from
   // |upload_file_info| for use by MoveFileToDriveCache(). It also invokes the
@@ -151,7 +151,7 @@ class DriveDownloadObserver : public content::DownloadManager::Observer,
 
   // Private data.
   // The uploader owned by DriveSystemService. Used to trigger file uploads.
-  GDataUploader* gdata_uploader_;
+  DriveUploader* drive_uploader_;
   // The file system owned by DriveSystemService.
   DriveFileSystemInterface* file_system_;
   // Observe the DownloadManager for new downloads.

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/gdata/gdata_uploader.h"
+#include "chrome/browser/chromeos/gdata/drive_uploader.h"
 
 #include <algorithm>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
-#include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
+#include "chrome/browser/chromeos/gdata/drive_upload_file_info.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
@@ -30,21 +30,21 @@ const int kMaxFileOpenTries = 5;
 
 namespace gdata {
 
-GDataUploader::GDataUploader(DriveServiceInterface* drive_service)
+DriveUploader::DriveUploader(DriveServiceInterface* drive_service)
   : drive_service_(drive_service),
     next_upload_id_(0),
     ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
-GDataUploader::~GDataUploader() {
+DriveUploader::~DriveUploader() {
 }
 
-int GDataUploader::UploadNewFile(scoped_ptr<UploadFileInfo> upload_file_info) {
+int DriveUploader::UploadNewFile(scoped_ptr<UploadFileInfo> upload_file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(upload_file_info.get());
   DCHECK_EQ(upload_file_info->upload_id, -1);
   DCHECK(!upload_file_info->file_path.empty());
-  DCHECK(!upload_file_info->gdata_path.empty());
+  DCHECK(!upload_file_info->drive_path.empty());
   DCHECK(!upload_file_info->title.empty());
   DCHECK(!upload_file_info->content_type.empty());
   DCHECK(!upload_file_info->initial_upload_location.is_empty());
@@ -60,13 +60,13 @@ int GDataUploader::UploadNewFile(scoped_ptr<UploadFileInfo> upload_file_info) {
   return StartUploadFile(upload_file_info.Pass());
 }
 
-int GDataUploader::StreamExistingFile(
+int DriveUploader::StreamExistingFile(
     scoped_ptr<UploadFileInfo> upload_file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(upload_file_info.get());
   DCHECK_EQ(upload_file_info->upload_id, -1);
   DCHECK(!upload_file_info->file_path.empty());
-  DCHECK(!upload_file_info->gdata_path.empty());
+  DCHECK(!upload_file_info->drive_path.empty());
   DCHECK(upload_file_info->title.empty());
   DCHECK(!upload_file_info->content_type.empty());
   DCHECK(!upload_file_info->initial_upload_location.is_empty());
@@ -82,7 +82,7 @@ int GDataUploader::StreamExistingFile(
   return StartUploadFile(upload_file_info.Pass());
 }
 
-int GDataUploader::StartUploadFile(
+int DriveUploader::StartUploadFile(
     scoped_ptr<UploadFileInfo> upload_file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(upload_file_info.get());
@@ -110,9 +110,9 @@ int GDataUploader::StartUploadFile(
   return upload_id;
 }
 
-int GDataUploader::UploadExistingFile(
+int DriveUploader::UploadExistingFile(
     const GURL& upload_location,
-    const FilePath& gdata_file_path,
+    const FilePath& drive_file_path,
     const FilePath& local_file_path,
     int64 file_size,
     const std::string& content_type,
@@ -129,7 +129,7 @@ int GDataUploader::UploadExistingFile(
   upload_file_info->file_size = file_size;
   upload_file_info->content_type = content_type;
   upload_file_info->completion_callback = callback;
-  upload_file_info->gdata_path = gdata_file_path,
+  upload_file_info->drive_path = drive_file_path,
   upload_file_info->content_length = file_size;
   upload_file_info->all_bytes_present = true;
 
@@ -139,7 +139,7 @@ int GDataUploader::UploadExistingFile(
   return StartUploadFile(upload_file_info.Pass());
 }
 
-void GDataUploader::UpdateUpload(int upload_id,
+void DriveUploader::UpdateUpload(int upload_id,
                                  content::DownloadItem* download) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -189,7 +189,7 @@ void GDataUploader::UpdateUpload(int upload_id,
   }
 }
 
-int64 GDataUploader::GetUploadedBytes(int upload_id) const {
+int64 DriveUploader::GetUploadedBytes(int upload_id) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   UploadFileInfo* upload_info = GetUploadFileInfo(upload_id);
   // We return the start_range as the count of uploaded bytes since that is the
@@ -199,7 +199,7 @@ int64 GDataUploader::GetUploadedBytes(int upload_id) const {
   return upload_info ? upload_info->start_range : 0;
 }
 
-UploadFileInfo* GDataUploader::GetUploadFileInfo(int upload_id) const {
+UploadFileInfo* DriveUploader::GetUploadFileInfo(int upload_id) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   UploadFileInfoMap::const_iterator it = pending_uploads_.find(upload_id);
@@ -208,20 +208,20 @@ UploadFileInfo* GDataUploader::GetUploadFileInfo(int upload_id) const {
   return it != pending_uploads_.end() ? it->second : NULL;
 }
 
-void GDataUploader::OpenFile(UploadFileInfo* upload_file_info) {
+void DriveUploader::OpenFile(UploadFileInfo* upload_file_info) {
   // Open the file asynchronously.
   const int rv = upload_file_info->file_stream->Open(
       upload_file_info->file_path,
       base::PLATFORM_FILE_OPEN |
       base::PLATFORM_FILE_READ |
       base::PLATFORM_FILE_ASYNC,
-      base::Bind(&GDataUploader::OpenCompletionCallback,
+      base::Bind(&DriveUploader::OpenCompletionCallback,
                  weak_ptr_factory_.GetWeakPtr(),
                  upload_file_info->upload_id));
   DCHECK_EQ(net::ERR_IO_PENDING, rv);
 }
 
-void GDataUploader::OpenCompletionCallback(int upload_id, int result) {
+void DriveUploader::OpenCompletionCallback(int upload_id, int result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   UploadFileInfo* upload_file_info = GetUploadFileInfo(upload_id);
@@ -267,13 +267,13 @@ void GDataUploader::OpenCompletionCallback(int upload_id, int result) {
                            upload_file_info->content_type,
                            upload_file_info->content_length,
                            upload_file_info->initial_upload_location,
-                           upload_file_info->gdata_path),
-      base::Bind(&GDataUploader::OnUploadLocationReceived,
+                           upload_file_info->drive_path),
+      base::Bind(&DriveUploader::OnUploadLocationReceived,
                  weak_ptr_factory_.GetWeakPtr(),
                  upload_file_info->upload_id));
 }
 
-void GDataUploader::OnUploadLocationReceived(
+void DriveUploader::OnUploadLocationReceived(
     int upload_id,
     GDataErrorCode code,
     const GURL& upload_location) {
@@ -299,7 +299,7 @@ void GDataUploader::OnUploadLocationReceived(
   UploadNextChunk(upload_file_info);
 }
 
-void GDataUploader::UploadNextChunk(UploadFileInfo* upload_file_info) {
+void DriveUploader::UploadNextChunk(UploadFileInfo* upload_file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Check that |upload_file_info| is in pending_uploads_.
   DCHECK(upload_file_info == GetUploadFileInfo(upload_file_info->upload_id));
@@ -342,7 +342,7 @@ void GDataUploader::UploadNextChunk(UploadFileInfo* upload_file_info) {
     // finished yet.
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
-        base::Bind(&GDataUploader::ResumeUpload,
+        base::Bind(&DriveUploader::ResumeUpload,
                    weak_ptr_factory_.GetWeakPtr(),
                    upload_file_info->upload_id));
     return;
@@ -351,13 +351,13 @@ void GDataUploader::UploadNextChunk(UploadFileInfo* upload_file_info) {
   upload_file_info->file_stream->Read(
       upload_file_info->buf,
       bytes_to_read,
-      base::Bind(&GDataUploader::ReadCompletionCallback,
+      base::Bind(&DriveUploader::ReadCompletionCallback,
                  weak_ptr_factory_.GetWeakPtr(),
                  upload_file_info->upload_id,
                  bytes_to_read));
 }
 
-void GDataUploader::ReadCompletionCallback(
+void DriveUploader::ReadCompletionCallback(
     int upload_id,
     int bytes_to_read,
     int bytes_read) {
@@ -382,7 +382,7 @@ void GDataUploader::ReadCompletionCallback(
   ResumeUpload(upload_id);
 }
 
-void GDataUploader::ResumeUpload(int upload_id) {
+void DriveUploader::ResumeUpload(int upload_id) {
   UploadFileInfo* upload_file_info = GetUploadFileInfo(upload_id);
   if (!upload_file_info)
     return;
@@ -395,13 +395,13 @@ void GDataUploader::ResumeUpload(int upload_id) {
                          upload_file_info->content_type,
                          upload_file_info->buf,
                          upload_file_info->upload_location,
-                         upload_file_info->gdata_path),
-      base::Bind(&GDataUploader::OnResumeUploadResponseReceived,
+                         upload_file_info->drive_path),
+      base::Bind(&DriveUploader::OnResumeUploadResponseReceived,
                  weak_ptr_factory_.GetWeakPtr(),
                  upload_file_info->upload_id));
 }
 
-void GDataUploader::OnResumeUploadResponseReceived(
+void DriveUploader::OnResumeUploadResponseReceived(
     int upload_id,
     const ResumeUploadResponse& response,
     scoped_ptr<DocumentEntry> entry) {
@@ -460,7 +460,7 @@ void GDataUploader::OnResumeUploadResponseReceived(
   UploadNextChunk(upload_file_info);
 }
 
-void GDataUploader::UploadFailed(scoped_ptr<UploadFileInfo> upload_file_info,
+void DriveUploader::UploadFailed(scoped_ptr<UploadFileInfo> upload_file_info,
                                  DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -475,7 +475,7 @@ void GDataUploader::UploadFailed(scoped_ptr<UploadFileInfo> upload_file_info,
     callback.Run(error, upload_file_info.Pass());
 }
 
-void GDataUploader::RemoveUpload(int upload_id) {
+void DriveUploader::RemoveUpload(int upload_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   pending_uploads_.erase(upload_id);
 }

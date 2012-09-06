@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/gdata/drive_cache.h"
 #include "chrome/browser/chromeos/gdata/drive_resource_metadata.h"
 #include "chrome/browser/chromeos/gdata/gdata_operations.h"
-#include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 
 namespace gdata {
 

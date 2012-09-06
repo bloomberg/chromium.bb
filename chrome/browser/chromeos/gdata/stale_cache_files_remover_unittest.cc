@@ -16,16 +16,16 @@
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/drive_api_parser.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system.h"
+#include "chrome/browser/chromeos/gdata/drive_uploader.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata_test_util.h"
-#include "chrome/browser/chromeos/gdata/gdata_uploader.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/mock_directory_change_observer.h"
 #include "chrome/browser/chromeos/gdata/mock_drive_cache_observer.h"
 #include "chrome/browser/chromeos/gdata/mock_drive_service.h"
+#include "chrome/browser/chromeos/gdata/mock_drive_uploader.h"
 #include "chrome/browser/chromeos/gdata/mock_drive_web_apps_registry.h"
 #include "chrome/browser/chromeos/gdata/mock_free_disk_space_getter.h"
-#include "chrome/browser/chromeos/gdata/mock_gdata_uploader.h"
 #include "chrome/browser/chromeos/gdata/stale_cache_files_remover.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -90,7 +90,7 @@ class StaleCacheFilesRemoverTest : public testing::Test {
     cache_ = DriveCache::CreateDriveCacheOnUIThread(
         DriveCache::GetCacheRootPath(profile_.get()), blocking_task_runner_);
 
-    mock_uploader_.reset(new StrictMock<MockGDataUploader>);
+    mock_uploader_.reset(new StrictMock<MockDriveUploader>);
     mock_webapps_registry_.reset(new StrictMock<MockDriveWebAppsRegistry>);
 
     ASSERT_FALSE(file_system_);
@@ -148,7 +148,7 @@ class StaleCacheFilesRemoverTest : public testing::Test {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<TestingProfile> profile_;
   DriveCache* cache_;
-  scoped_ptr<StrictMock<MockGDataUploader> > mock_uploader_;
+  scoped_ptr<StrictMock<MockDriveUploader> > mock_uploader_;
   DriveFileSystem* file_system_;
   StrictMock<MockDriveService>* mock_drive_service_;
   scoped_ptr<StrictMock<MockDriveWebAppsRegistry> > mock_webapps_registry_;

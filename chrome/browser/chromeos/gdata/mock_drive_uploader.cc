@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/gdata/mock_gdata_uploader.h"
+#include "chrome/browser/chromeos/gdata/mock_drive_uploader.h"
 
 namespace gdata {
 
-MockGDataUploader::MockGDataUploader() {
+MockDriveUploader::MockDriveUploader() {
 }
 
-MockGDataUploader::~MockGDataUploader() {
+MockDriveUploader::~MockDriveUploader() {
 }
 
 }   // namespace gdata

@@ -32,8 +32,8 @@ namespace gdata {
 
 class DriveFunctionRemove;
 class DriveServiceInterface;
+class DriveUploaderInterface;
 class DriveWebAppsRegistryInterface;
-class GDataUploaderInterface;
 class GDataWapiFeedLoader;
 struct UploadFileInfo;
 
@@ -45,7 +45,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   DriveFileSystem(Profile* profile,
                   DriveCache* cache,
                   DriveServiceInterface* drive_service,
-                  GDataUploaderInterface* uploader,
+                  DriveUploaderInterface* uploader,
                   DriveWebAppsRegistryInterface* webapps_registry,
                   base::SequencedTaskRunner* blocking_task_runner);
   virtual ~DriveFileSystem();
@@ -746,7 +746,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
                                           int64* file_size);
 
   // Part of UpdateFileByResourceId().
-  // Callback for GDataRootDirectory::GetEntryInfoByResourceId.
+  // Callback for DriveRootDirectory::GetEntryInfoByResourceId.
   // |callback| must not be null.
   void OnGetFileCompleteForUpdateFileByEntry(
       const FileOperationCallback& callback,
@@ -757,7 +757,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Part of UpdateFileByResourceId().
-  // Called when GDataUploader::UploadUpdatedFile() is completed for
+  // Called when DriveUploader::UploadUpdatedFile() is completed for
   // UpdateFileByResourceId().
   // |callback| must not be null.
   void OnUpdatedFileUploaded(const FileOperationCallback& callback,
@@ -914,7 +914,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   DriveCache* cache_;
 
   // The uploader owned by DriveSystemService.
-  GDataUploaderInterface* uploader_;
+  DriveUploaderInterface* uploader_;
 
   // The document service owned by DriveSystemService.
   DriveServiceInterface* drive_service_;

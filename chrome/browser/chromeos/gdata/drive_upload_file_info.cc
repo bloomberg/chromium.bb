@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
+#include "chrome/browser/chromeos/gdata/drive_upload_file_info.h"
 
 #include "base/string_number_conversions.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
@@ -43,7 +43,7 @@ std::string UploadFileInfo::DebugString() const {
          "], file_path=[" + file_path.value() +
          "], content_type=[" + content_type +
          "], file_size=[" + base::UintToString(file_size) +
-         "], gdata_path=[" + gdata_path.value() +
+         "], drive_path=[" + drive_path.value() +
          "]";
 }
 

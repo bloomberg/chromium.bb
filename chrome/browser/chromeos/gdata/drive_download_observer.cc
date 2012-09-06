@@ -14,8 +14,8 @@
 #include "chrome/browser/chromeos/gdata/drive_file_system_util.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/chromeos/gdata/drive_system_service.h"
-#include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
-#include "chrome/browser/chromeos/gdata/gdata_uploader.h"
+#include "chrome/browser/chromeos/gdata/drive_upload_file_info.h"
+#include "chrome/browser/chromeos/gdata/drive_uploader.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
 #include "chrome/browser/download/download_completion_blocker.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -38,14 +38,14 @@ const char kGDataPathKey[] = "GDataPath";
 // User Data stored in DownloadItem for ongoing uploads.
 class UploadingUserData : public DownloadCompletionBlocker {
  public:
-  explicit UploadingUserData(GDataUploader* uploader)
+  explicit UploadingUserData(DriveUploader* uploader)
       : uploader_(uploader),
         upload_id_(-1),
         is_overwrite_(false) {
   }
   virtual ~UploadingUserData() {}
 
-  GDataUploader* uploader() { return uploader_; }
+  DriveUploader* uploader() { return uploader_; }
   void set_upload_id(int upload_id) { upload_id_ = upload_id; }
   int upload_id() const { return upload_id_; }
   void set_virtual_dir_path(const FilePath& path) { virtual_dir_path_ = path; }
@@ -62,7 +62,7 @@ class UploadingUserData : public DownloadCompletionBlocker {
   const std::string& md5() const { return md5_; }
 
  private:
-  GDataUploader* uploader_;
+  DriveUploader* uploader_;
   int upload_id_;
   FilePath virtual_dir_path_;
   scoped_ptr<DocumentEntry> entry_;
@@ -191,9 +191,9 @@ void OnAuthenticate(Profile* profile,
 }  // namespace
 
 DriveDownloadObserver::DriveDownloadObserver(
-    GDataUploader* uploader,
+    DriveUploader* uploader,
     DriveFileSystemInterface* file_system)
-    : gdata_uploader_(uploader),
+    : drive_uploader_(uploader),
       file_system_(file_system),
       download_manager_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
@@ -221,13 +221,13 @@ void DriveDownloadObserver::Initialize(
 
 // static
 void DriveDownloadObserver::SubstituteDriveDownloadPath(Profile* profile,
-    const FilePath& gdata_path, content::DownloadItem* download,
+    const FilePath& drive_path, content::DownloadItem* download,
     const SubstituteDriveDownloadPathCallback& callback) {
-  DVLOG(1) << "SubstituteDriveDownloadPath " << gdata_path.value();
+  DVLOG(1) << "SubstituteDriveDownloadPath " << drive_path.value();
 
-  SetDownloadParams(gdata_path, download);
+  SetDownloadParams(drive_path, download);
 
-  if (util::IsUnderGDataMountPoint(gdata_path)) {
+  if (util::IsUnderGDataMountPoint(drive_path)) {
     // Can't access drive if we're not authenticated.
     // We set off a chain of callbacks as follows:
     // DriveServiceInterface::Authenticate
@@ -235,31 +235,31 @@ void DriveDownloadObserver::SubstituteDriveDownloadPath(Profile* profile,
     //     OnEntryFound calls DriveFileSystem::CreateDirectory (if necessary)
     //       OnCreateDirectory calls SubstituteDriveDownloadPathInternal
     GetSystemService(profile)->drive_service()->Authenticate(
-        base::Bind(&OnAuthenticate, profile, gdata_path,
+        base::Bind(&OnAuthenticate, profile, drive_path,
                    base::Bind(&SubstituteDriveDownloadPathInternal,
                               profile, callback)));
   } else {
-    callback.Run(gdata_path);
+    callback.Run(drive_path);
   }
 }
 
 // static
-void DriveDownloadObserver::SetDownloadParams(const FilePath& gdata_path,
+void DriveDownloadObserver::SetDownloadParams(const FilePath& drive_path,
                                               DownloadItem* download) {
   if (!download)
     return;
 
-  if (util::IsUnderGDataMountPoint(gdata_path)) {
+  if (util::IsUnderGDataMountPoint(drive_path)) {
     download->SetUserData(&kGDataPathKey,
-                          new DriveUserData(gdata_path));
-    download->SetDisplayName(gdata_path.BaseName());
+                          new DriveUserData(drive_path));
+    download->SetDisplayName(drive_path.BaseName());
     download->SetIsTemporary(true);
   } else if (IsDriveDownload(download)) {
     // This may have been previously set if the default download folder is
     // /drive, and the user has now changed the download target to a local
     // folder.
     download->SetUserData(&kGDataPathKey, NULL);
-    download->SetDisplayName(gdata_path);
+    download->SetDisplayName(drive_path);
     // TODO(achuith): This is not quite right.
     download->SetIsTemporary(false);
   }
@@ -434,7 +434,7 @@ void DriveDownloadObserver::UploadDownloadItem(DownloadItem* download) {
 
   // Initialize uploading userdata.
   download->SetUserData(&kUploadingKey,
-                            new UploadingUserData(gdata_uploader_));
+                            new UploadingUserData(drive_uploader_));
 
   // Create UploadFileInfo structure for the download item.
   CreateUploadFileInfo(download);
@@ -449,7 +449,7 @@ void DriveDownloadObserver::UpdateUpload(DownloadItem* download) {
     return;
   }
 
-  gdata_uploader_->UpdateUpload(upload_data->upload_id(), download);
+  drive_uploader_->UpdateUpload(upload_data->upload_id(), download);
 }
 
 bool DriveDownloadObserver::ShouldUpload(DownloadItem* download) {
@@ -474,10 +474,10 @@ void DriveDownloadObserver::CreateUploadFileInfo(DownloadItem* download) {
   upload_file_info->file_size = download->GetReceivedBytes();
 
   // Extract the final path from DownloadItem.
-  upload_file_info->gdata_path = GetDrivePath(download);
+  upload_file_info->drive_path = GetDrivePath(download);
 
   // Use the file name as the title.
-  upload_file_info->title = upload_file_info->gdata_path.BaseName().value();
+  upload_file_info->title = upload_file_info->drive_path.BaseName().value();
   upload_file_info->content_type = download->GetMimeType();
   // GData api handles -1 as unknown file length.
   upload_file_info->content_length = download->AllDataSaved() ?
@@ -492,7 +492,7 @@ void DriveDownloadObserver::CreateUploadFileInfo(DownloadItem* download) {
 
   // First check if |path| already exists. If so, we'll be overwriting an
   // existing file.
-  const FilePath path = upload_file_info->gdata_path;
+  const FilePath path = upload_file_info->drive_path;
   file_system_->GetEntryInfoByPath(
       path,
       base::Bind(
@@ -545,7 +545,7 @@ void DriveDownloadObserver::CreateUploadFileInfoAfterCheckExistence(
 
     // Get the DriveDirectory proto for the upload directory, then extract the
     // initial upload URL in OnReadDirectoryByPath().
-    const FilePath upload_dir = upload_file_info->gdata_path.DirName();
+    const FilePath upload_dir = upload_file_info->drive_path.DirName();
     file_system_->GetEntryInfoByPath(
         upload_dir,
         base::Bind(
@@ -593,16 +593,16 @@ void DriveDownloadObserver::StartUpload(
 
   UploadingUserData* upload_data = GetUploadingUserData(download_item);
   DCHECK(upload_data);
-  upload_data->set_virtual_dir_path(upload_file_info->gdata_path.DirName());
+  upload_data->set_virtual_dir_path(upload_file_info->drive_path.DirName());
 
   // Start upload and save the upload id for future reference.
   if (upload_data->is_overwrite()) {
     const int upload_id =
-        gdata_uploader_->StreamExistingFile(upload_file_info.Pass());
+        drive_uploader_->StreamExistingFile(upload_file_info.Pass());
     upload_data->set_upload_id(upload_id);
   } else {
     const int upload_id =
-        gdata_uploader_->UploadNewFile(upload_file_info.Pass());
+        drive_uploader_->UploadNewFile(upload_file_info.Pass());
     upload_data->set_upload_id(upload_id);
   }
 }
