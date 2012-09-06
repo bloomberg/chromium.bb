@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_NET_NETWORK_STATS_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -22,27 +23,26 @@
 #include "net/base/test_data_stream.h"
 #include "net/proxy/proxy_info.h"
 #include "net/socket/socket.h"
+
 namespace chrome_browser_net {
 
-// This class is used for live experiment of network connectivity (either TCP or
-// UDP) metrics. A small percentage of users participate in this experiment. All
+// This class is used for live experiment of network connectivity (for UDP)
+// metrics. A small percentage of users participate in this experiment. All
 // users (who are in the experiment) must have enabled "UMA upload".
 //
 // This class collects the following stats from users who have opted in.
-// a) What percentage of users can get a message end-to-end to a UDP server?
-// b) What percentage of users can get a message end-to-end to a TCP server?
-// c) What is the latency for UDP and TCP.
-// d) If connectivity failed, at what stage (Connect or Write or Read) did it
-// fail?
+// a) Success/failure, to estimate reachability for users.
+// b) RTT for some select set of messages.
+// c) Perform packet loss tests for correlation and FEC experiments.
 //
 // The following is the overview of the echo message protocol.
 //
-// We send the "echo request" to the TCP/UDP servers in the following format:
+// We send the "echo request" to the UDP echo servers in the following format:
 // <version><checksum><payload_size><payload>. <version> is the version number
 // of the "echo request". <checksum> is the checksum of the <payload>.
 // <payload_size> specifies the number of bytes in the <payload>.
 //
-// TCP/UDP servers respond to the "echo request" by returning "echo response".
+// UDP echo servers respond to the "echo request" by returning "echo response".
 // "echo response" is of the format:
 // "<version><checksum><payload_size><key><encoded_payload>". <payload_size>
 // specifies the number of bytes in the <encoded_payload>. <key> is used to
@@ -50,46 +50,65 @@ namespace chrome_browser_net {
 
 class NetworkStats {
  public:
-  enum Status {              // Used in HISTOGRAM_ENUMERATION.
-    SUCCESS,                 // Successfully received bytes from the server.
-    IP_STRING_PARSE_FAILED,  // Parsing of IP string failed.
-    SOCKET_CREATE_FAILED,    // Socket creation failed.
-    RESOLVE_FAILED,          // Host resolution failed.
-    CONNECT_FAILED,          // Connection to the server failed.
-    WRITE_FAILED,            // Sending an echo message to the server failed.
-    READ_TIMED_OUT,          // Reading the reply from the server timed out.
-    READ_FAILED,             // Reading the reply from the server failed.
-    ZERO_LENGTH_ERROR,       // Zero length message.
-    NO_CHECKSUM_ERROR,       // Message doesn't have a checksum.
-    NO_KEY_ERROR,            // Message doesn't have a key.
-    NO_PAYLOAD_SIZE_ERROR,   // Message doesn't have a payload size.
-    NO_PAYLOAD_ERROR,        // Message doesn't have a payload.
-    INVALID_KEY_ERROR,       // Invalid key in the message.
-    TOO_SHORT_PAYLOAD,       // Message is shorter than payload.
-    TOO_LONG_PAYLOAD,        // Message is longer than payload.
-    INVALID_CHECKSUM,        // Checksum verification failed.
-    PATTERN_CHANGED,         // Pattern in payload has changed.
-    INVALID_PACKET_NUMBER,   // Packet number didn't match.
-    TOO_MANY_PACKETS,        // Received more packets than the packets sent.
-    STATUS_MAX,              // Bounding value.
+  enum Status {                 // Used in HISTOGRAM_ENUMERATION.
+    SUCCESS,                    // Successfully received bytes from the server.
+    IP_STRING_PARSE_FAILED,     // Parsing of IP string failed.
+    SOCKET_CREATE_FAILED,       // Socket creation failed.
+    RESOLVE_FAILED,             // Host resolution failed.
+    CONNECT_FAILED,             // Connection to the server failed.
+    WRITE_FAILED,               // Sending an echo message to the server failed.
+    READ_TIMED_OUT,             // Reading the reply from the server timed out.
+    READ_FAILED,                // Reading the reply from the server failed.
+    ZERO_LENGTH_ERROR,          // Zero length message.
+    NO_CHECKSUM_ERROR,          // Message doesn't have a checksum.
+    NO_KEY_ERROR,               // Message doesn't have a key.
+    NO_PAYLOAD_SIZE_ERROR,      // Message doesn't have a payload size.
+    NO_PAYLOAD_ERROR,           // Message doesn't have a payload.
+    INVALID_KEY_ERROR,          // Invalid key in the message.
+    TOO_SHORT_PAYLOAD,          // Message is shorter than payload.
+    TOO_LONG_PAYLOAD,           // Message is longer than payload.
+    INVALID_CHECKSUM,           // Checksum verification failed.
+    PATTERN_CHANGED,            // Pattern in payload has changed.
+    INVALID_PACKET_NUMBER,      // Packet number didn't match.
+    TOO_MANY_PACKETS,           // Received more packets than the packets sent.
+    PREVIOUS_PACKET_NUMBER,     // Received a packet from an earlier test.
+    DUPLICATE_PACKET,           // Received a duplicate packet.
+    SOME_PACKETS_NOT_VERIFIED,  // Some packets have failed verification.
+    STATUS_MAX,                 // Bounding value.
   };
 
   // |ProtocolValue| enumerates different protocols that are being tested.
   enum ProtocolValue {
-    PROTOCOL_TCP,
     PROTOCOL_UDP,
   };
 
   // |HistogramPortSelector| enumerates list of ports that are used for network
-  // connectivity tests (either TCP or UDP).
+  // connectivity tests (for UDP). Currently we are testing port 6121 only.
   enum HistogramPortSelector {
-    PORT_53 = 0,  // DNS
-    PORT_80,      // HTTP
-    PORT_587,     // SMTP Submission.
-    PORT_6121,    // SPDY
-    PORT_8080,    // High order webserver.
+    PORT_6121 = 0,    // SPDY
     HISTOGRAM_PORT_MAX,
   };
+
+  // |TestType| specifies the |current_test_| test we are currently running or
+  // the |next_test_| test we need to run next.
+  enum TestType {
+    START_PACKET_TEST,      // Initial packet loss test.
+    NON_PACED_PACKET_TEST,  // Packet loss test with no pacing.
+    PACED_PACKET_TEST,      // Packet loss test with pacing.
+    TEST_TYPE_MAX,
+  };
+
+  // |PacketStatus| collects the Status and RTT statistics for each packet.
+  struct PacketStatus {
+    base::TimeTicks start_time_;
+    base::TimeTicks end_time_;
+  };
+
+  // Constructs a NetworkStats object that collects metrics for network
+  // connectivity (for UDP).
+  NetworkStats();
+  // NetworkStats is deleted when Finish() is called.
+  ~NetworkStats();
 
   // Starts the client, connecting to |server|.
   // Client will send |bytes_to_send| bytes to |server|.
@@ -106,12 +125,21 @@ class NetworkStats {
              uint32 packets_to_send,
              const net::CompletionCallback& callback);
 
- protected:
-  // Constructs an NetworkStats object that collects metrics for network
-  // connectivity (either TCP or UDP).
-  NetworkStats();
-  // NetworkStats is deleted when Finish() is called.
-  virtual ~NetworkStats();
+ private:
+  friend class NetworkStatsTest;
+
+  // Allow tests to access our innards for testing purposes.
+  FRIEND_TEST_ALL_PREFIXES(NetworkStatsTest, GetHistogramNames);
+  FRIEND_TEST_ALL_PREFIXES(NetworkStatsTestUDP, VerifyBytesInvalidHeaders);
+  FRIEND_TEST_ALL_PREFIXES(NetworkStatsTestUDP, VerifyBytesInvalidChecksum);
+  FRIEND_TEST_ALL_PREFIXES(NetworkStatsTestUDP, VerifyBytesPreviousPacket);
+  FRIEND_TEST_ALL_PREFIXES(NetworkStatsTestUDP, VerifyBytesInvalidPacketNumber);
+  FRIEND_TEST_ALL_PREFIXES(NetworkStatsTestUDP, VerifyBytesPatternChanged);
+  FRIEND_TEST_ALL_PREFIXES(NetworkStatsTestUDP, VerifyBytes);
+
+  // Starts the test specified by the |next_test_|. It also resets all the book
+  // keeping data, before starting the new test.
+  void RestartPacketTest();
 
   // Initializes |finished_callback_| and the number of bytes to send to the
   // server. |finished_callback| is called when we are done with the test.
@@ -122,69 +150,38 @@ class NetworkStats {
                   uint32 packets_to_send,
                   const net::CompletionCallback& finished_callback);
 
-  // Called after host is resolved. UDPStatsClient and TCPStatsClient implement
-  // this method. They create the socket and connect to the server.
-  virtual bool DoConnect(int result) = 0;
+  // Resets all the counters and the collected stats.
+  void ResetData();
+
+  // Callback that is called when host resolution is completed.
+  void OnResolveComplete(int result);
+
+  // Called after host is resolved. Creates UDPClientSocket and connects to the
+  // server. If successfully connected, then calls ConnectComplete() to start
+  // the network connectivity tests. Returns |false| if there is any error.
+  bool DoConnect(int result);
 
   // This method is called after socket connection is completed. It will start
   // the process of sending packets to |server| by calling SendPacket(). Returns
   // false if connection is not established (result is less than 0).
   bool ConnectComplete(int result);
 
-  // Collects network connectivity stats. This is called when all the data from
-  // server is read or when there is a failure during connect/read/write.
-  virtual void Finish(Status status, int result) {}
-
-  // This method is called from Finish() and calls |finished_callback_| callback
-  // to indicate that the test has finished.
-  void DoFinishCallback(int result);
-
-  // Verifies the data and calls Finish() if there is an error or if all bytes
-  // are read. Returns true if Finish() is called otherwise returns false.
-  virtual bool ReadComplete(int result);
-
-  // Returns the number of bytes to be sent to the |server|.
-  uint32 load_size() const { return load_size_; }
-
-  // Helper methods to get and set |socket_|.
-  net::Socket* socket() { return socket_.get(); }
-  void set_socket(net::Socket* socket);
-
-  // Returns |start_time_| (used by histograms).
-  base::TimeTicks start_time() const { return start_time_; }
-
-  // Returns |addresses_|.
-  const net::AddressList& addresses() const { return addresses_; }
-
-  // Returns packets_received_mask_ (used by unit tests).
-  uint32 packets_received_mask() const { return packets_received_mask_; }
-
-  // Collect the following network connectivity stats.
-  // a) What percentage of users can get a message end-to-end to a TCP/UDP
-  // server and if connectivity failed, at what stage (Connect or Write or Read)
-  // did it fail?
-  // b) What is RTT for the echo message.
-  // c) Packet loss correlation and other network connectivity data by calling
-  // RecordAcksReceivedHistograms() and RecordStatusAndRTTHistograms().
-  void RecordHistograms(const ProtocolValue& protocol,
-                        const Status& status,
-                        int result);
-
- private:
-  friend class NetworkStatsTest;
-
-  // Allow tests to access our innards for testing purposes.
-  FRIEND_TEST_ALL_PREFIXES(NetworkStatsTest, GetHistogramNames);
-  FRIEND_TEST_ALL_PREFIXES(NetworkStatsTestTCP, VerifyBytes);
-
-  // Callback that is called when host resolution is completed.
-  void OnResolveComplete(int result);
-
   // This method is called whenever we need to send a packet. It is called from
   // either ConnectComplete or OnWriteComplete. It will send a packet, based on
   // load_size_, to |server| by calling SendData(). If there are no more packets
   // to send, it calls ReadData() to read/verify the data from the |server|.
   void SendPacket();
+
+  // Sends the next packet by calling |SendPacket| after a delay. Delay time is
+  // calculated based on the remaining packets and the remaining time.
+  // For START_PACKET_TEST and NON_PACED_PACKET_TEST delay is zero. It also
+  // yields for packets received between sends.
+  void SendNextPacketAfterDelay();
+
+  // Verifies the data and calls Finish() if there is a significant network
+  // error or if all packets are sent. Returns true if Finish() is called
+  // otherwise returns false.
+  bool ReadComplete(int result);
 
   // Callbacks when an internal IO is completed.
   void OnReadComplete(int result);
@@ -208,7 +205,13 @@ class NetworkStats {
 
   // We set a timeout for responses from the echo servers.
   void StartReadDataTimer(int milliseconds);
-  void OnReadDataTimeout();   // Called when the ReadData Timer fires.
+
+  // Called when the ReadData Timer fires. |test_base_packet_number| specifies
+  // the |base_packet_number_| when we have started the timer. If we haven't
+  // received all the packets for the test (test took longer than 30 secs to
+  // run), then we call Finish() to finish processing. If we have already
+  // received all packets from the server, then this method is a no-op.
+  void OnReadDataTimeout(uint32 test_base_packet_number);
 
   // Returns the checksum for the message.
   uint32 GetChecksum(const char* message, uint32 message_length);
@@ -239,25 +242,66 @@ class NetworkStats {
   // if all the bytes are verified.
   NetworkStats::Status VerifyBytes(const std::string& response);
 
+  // Collects network connectivity stats. This is called when all the data from
+  // server is read or when there is a failure during connect/read/write. It
+  // will either restart the second phase of the test, or it will self destruct
+  // at the end of this method.
+  void Finish(Status status, int result);
+
+  // This method is called from Finish() and calls |finished_callback_| callback
+  // to indicate that the test has finished.
+  void DoFinishCallback(int result);
+
+  // Collect the network connectivity stats by calling RecordRTTHistograms(),
+  // RecordAcksReceivedHistograms() and RecordPacketLossSeriesHistograms(). See
+  // below for details.
+  void RecordHistograms(const ProtocolValue& protocol,
+                        const Status& status,
+                        int result);
+
   // Collect the following network connectivity stats when
   // kMaximumSequentialPackets (21) packets are sent.
   // a) Received the "echo response" for at least one packet.
   // b) Received the "echo response" for the nth packet.
   // c) Count the number of "echo responses" received for each of the initial
   // sequences of packets 1...n.
-  void RecordAcksReceivedHistograms(const char* load_size_string);
+  void RecordAcksReceivedHistograms(const std::string& load_size_string);
 
-  // Collect the following network connectivity stats.
-  // a) What percentage of users can get a message end-to-end to a TCP/UDP
-  // server and if connectivity failed, at what stage (Connect or Write or Read)
-  // did it fail?
-  // b) What is RTT for the echo message.
-  // c) Records if there is a probabalistic dependency in packet loss when
+  // Collect the following network connectivity stats for
+  // kMaximumCorrelationPackets (6) packets test.
+  // a) Success/failure of each packet, to estimate reachability for users.
+  // b) Records if there is a probabalistic dependency in packet loss when
   // kMaximumCorrelationPackets packets are sent consecutively.
   void RecordPacketLossSeriesHistograms(const ProtocolValue& protocol,
+                                        const std::string& load_size_string,
                                         const Status& status,
-                                        const char* load_size_string,
                                         int result);
+
+  // Collects the RTT for the packet specified by the |index|.
+  void RecordRTTHistograms(const ProtocolValue& protocol,
+                           const std::string& load_size_string,
+                           uint32 index);
+
+  uint32 load_size() const { return load_size_; }
+
+  // Returns string representation of test_type_.
+  const char* TestName();
+
+  uint32 packet_number() const { return packet_number_; }
+  uint32 base_packet_number() const { return base_packet_number_; }
+  uint32 set_base_packet_number(uint32 packet_number) {
+    return base_packet_number_ = packet_number;
+  }
+
+  net::Socket* socket() { return socket_.get(); }
+  void set_socket(net::Socket* socket);
+
+  const net::AddressList& addresses() const { return addresses_; }
+
+  uint32 packets_received_mask() const { return packets_received_mask_; }
+
+  TestType next_test() const { return next_test_; }
+
   // The socket handle for this session.
   scoped_ptr<net::Socket> socket_;
 
@@ -271,9 +315,6 @@ class NetworkStats {
   uint32 load_size_;
   uint32 bytes_to_read_;
   uint32 bytes_to_send_;
-
-  // The encoded message read from the server.
-  std::string encoded_message_;
 
   // |stream_| is used to generate data to be sent to the server and it is also
   // used to verify the data received from the server.
@@ -294,77 +335,33 @@ class NetworkStats {
   // round trip is finished).
   net::CompletionCallback finished_callback_;
 
-  // The time when the session was started.
-  base::TimeTicks start_time_;
+  // Collects the Status and RTT for each packet.
+  std::vector<PacketStatus> packet_status_;
+
+  // The time when we have received 1st byte from the server.
+  base::TimeTicks packet_1st_byte_read_time_;
+
+  // The last time when we have received data from the server.
+  base::TimeTicks packet_last_byte_read_time_;
+
+  // This is the average time it took to receive a packet from the server.
+  base::TimeDelta average_time_;
 
   // Data to track number of packets to send to the server and the packets we
   // have received from the server.
-  uint32 packets_to_send_;
-  uint32 packets_sent_;
-  uint32 base_packet_number_;
-  uint32 packets_received_mask_;
+  uint32 packets_to_send_;        // Numbers of packets that are to be sent.
+  uint32 packets_sent_;           // Numbers of packets sent to the server.
+  uint32 packets_received_;       // Number of packets successfully received.
+  uint32 packets_received_mask_;  // Tracks the received status of each packet.
+  uint32 packet_number_;          // The packet number being sent to the server.
+  uint32 base_packet_number_;     // The packet number before the test.
+  bool sending_complete_;         // Finished sending all packets.
+
+  TestType current_test_;  // Current test that is running.
+  TestType next_test_;     // Next test that is to be run.
 
   // We use this factory to create timeout tasks for socket's ReadData.
   base::WeakPtrFactory<NetworkStats> weak_factory_;
-};
-
-class UDPStatsClient : public NetworkStats {
- public:
-  // Constructs an UDPStatsClient object that collects metrics for UDP
-  // connectivity.
-  UDPStatsClient();
-  // UDPStatsClient is deleted when Finish() is called.
-  virtual ~UDPStatsClient();
-
- protected:
-  // Allow tests to access our innards for testing purposes.
-  friend class NetworkStatsTestUDP;
-
-  // Called after host is resolved. Creates UDClientSocket and connects to the
-  // server. If successfully connected, then calls ConnectComplete() to start
-  // the echo protocol. Returns |false| if there is any error.
-  virtual bool DoConnect(int result) OVERRIDE;
-
-  // This method calls NetworkStats::ReadComplete() to verify the data and calls
-  // Finish() if there is an error or if read callback didn't return any data
-  // (|result| is less than or equal to 0).
-  virtual bool ReadComplete(int result) OVERRIDE;
-
-  // Collects stats for UDP connectivity. This is called when all the data from
-  // server is read or when there is a failure during connect/read/write. This
-  // object is deleted at the end of this method.
-  virtual void Finish(Status status, int result) OVERRIDE;
-};
-
-class TCPStatsClient : public NetworkStats {
- public:
-  // Constructs a TCPStatsClient object that collects metrics for TCP
-  // connectivity.
-  TCPStatsClient();
-  // TCPStatsClient is deleted when Finish() is called.
-  virtual ~TCPStatsClient();
-
- protected:
-  // Allow tests to access our innards for testing purposes.
-  friend class NetworkStatsTestTCP;
-
-  // Called after host is resolved. Creates TCPClientSocket and connects to the
-  // server.
-  virtual bool DoConnect(int result) OVERRIDE;
-
-  // This method calls NetworkStats::ReadComplete() to verify the data and calls
-  // Finish() if there is an error (|result| is less than 0).
-  virtual bool ReadComplete(int result) OVERRIDE;
-
-  // Collects stats for TCP connectivity. This is called when all the data from
-  // server is read or when there is a failure during connect/read/write. This
-  // object is deleted at the end of this method.
-  virtual void Finish(Status status, int result) OVERRIDE;
-
- private:
-  // Callback that is called when connect is completed and calls
-  // ConnectComplete() to start the echo protocol.
-  void OnConnectComplete(int result);
 };
 
 class ProxyDetector {
@@ -410,17 +407,17 @@ class ProxyDetector {
   bool has_pending_proxy_resolution_;
 };
 
-// This collects the network connectivity stats for UDP and TCP for small
+// This collects the network connectivity stats for UDP protocol for small
 // percentage of users who are participating in the experiment. All users must
 // have enabled "UMA upload". This method gets called only if UMA upload to the
 // server has succeeded.
 void CollectNetworkStats(const std::string& network_stats_server_url,
                          IOThread* io_thread);
 
-// This starts a test randomly selected among "TCP test with small packet size",
-// "TCP test with large packet size", "UDP test with small packet size", "UDP
-// test with large packet size" and "UDP multi packet loss" tests to collect the
-// network connectivity stats.
+// This starts a test randomly selected among "6 packets correlation test for
+// 1200 bytes packet", "21 packets bursty test with 1200 bytes packet",
+// "21 packets bursty test with 500 bytes packet", and "21 packets bursty test
+// with 100 bytes packet" tests.
 void StartNetworkStatsTest(net::HostResolver* host_resolver,
                            const net::HostPortPair& server_address,
                            NetworkStats::HistogramPortSelector histogram_port,

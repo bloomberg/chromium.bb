@@ -44,7 +44,7 @@ class NetworkStatsTestUDP : public NetworkStatsTest {
 
     // We will use HISTOGRAM_PORT_MAX as the PortIndex enum for testing
     // purposes.
-    UDPStatsClient* udp_stats_client = new UDPStatsClient();
+    NetworkStats* udp_stats_client = new NetworkStats();
     EXPECT_TRUE(udp_stats_client->Start(host_resolver.get(),
                                         test_server_.host_port_pair(),
                                         NetworkStats::HISTOGRAM_PORT_MAX,
@@ -54,39 +54,6 @@ class NetworkStatsTestUDP : public NetworkStatsTest {
                                         cb.callback()));
     int rv = cb.WaitForResult();
     // Check there were no errors during connect/write/read to echo UDP server.
-    EXPECT_EQ(0, rv);
-  }
-
-  net::TestServer test_server_;
-};
-
-class NetworkStatsTestTCP : public NetworkStatsTest {
- public:
-  NetworkStatsTestTCP()
-      : test_server_(net::TestServer::TYPE_TCP_ECHO,
-                     net::TestServer::kLocalhost,
-                     FilePath(FILE_PATH_LITERAL("net/data"))) {
-  }
-
- protected:
-  void RunTCPEchoTest(int bytes, int packets, bool has_proxy) {
-    net::TestCompletionCallback cb;
-
-    scoped_ptr<net::MockHostResolver> host_resolver(
-        new net::MockHostResolver());
-
-    // We will use HISTOGRAM_PORT_MAX as the PortIndex enum for testing
-    // purposes.
-    TCPStatsClient* tcp_stats_client = new TCPStatsClient();
-    EXPECT_TRUE(tcp_stats_client->Start(host_resolver.get(),
-                                        test_server_.host_port_pair(),
-                                        NetworkStats::HISTOGRAM_PORT_MAX,
-                                        has_proxy,
-                                        bytes,
-                                        packets,
-                                        cb.callback()));
-    int rv = cb.WaitForResult();
-    // Check there were no errors during connect/write/read to echo TCP server.
     EXPECT_EQ(0, rv);
   }
 
@@ -133,37 +100,18 @@ TEST_F(NetworkStatsTestUDP, UDPEchoMultiplePacketsNoProxy) {
   RunUDPEchoTest(1024, 4, false);
 }
 
-TEST_F(NetworkStatsTestTCP, TCPEcho100BytesHasProxy) {
-  ASSERT_TRUE(test_server_.Start());
-  RunTCPEchoTest(100, 1, true);
-}
-
-TEST_F(NetworkStatsTestTCP, TCPEcho100BytesNoProxy) {
-  ASSERT_TRUE(test_server_.Start());
-  RunTCPEchoTest(100, 1, false);
-}
-
-TEST_F(NetworkStatsTestTCP, TCPEcho1KBytesHasProxy) {
-  ASSERT_TRUE(test_server_.Start());
-  RunTCPEchoTest(1024, 1, true);
-}
-
-TEST_F(NetworkStatsTestTCP, TCPEcho1KBytesNoProxy) {
-  ASSERT_TRUE(test_server_.Start());
-  RunTCPEchoTest(1024, 1, false);
-}
-
-TEST_F(NetworkStatsTestTCP, VerifyBytes) {
-  static const uint32 KBytesToSend = 100;
-  static const uint32 packets_to_send = 1;
-  static const uint32 packet_number = 1;
-  TCPStatsClient network_stats;
+TEST_F(NetworkStatsTestUDP, VerifyBytesInvalidHeaders) {
+  const uint32 KBytesToSend = 100;
+  const uint32 packets_to_send = 1;
+  NetworkStats network_stats;
   net::TestCompletionCallback cb;
   network_stats.Initialize(KBytesToSend,
                            NetworkStats::HISTOGRAM_PORT_MAX,
                            true,
                            packets_to_send,
                            cb.callback());
+  uint32 packet_number = network_stats.packet_number();
+  network_stats.set_base_packet_number(packet_number);
 
   std::string message;
   EXPECT_EQ(NetworkStats::ZERO_LENGTH_ERROR,
@@ -175,7 +123,6 @@ TEST_F(NetworkStatsTestTCP, VerifyBytes) {
   std::string invalid_key = base::StringPrintf("%06d", -1);
   std::string key_string = base::StringPrintf("%06d", 899999);
   std::string packet_number_string = base::StringPrintf("%010d", packet_number);
-  std::string invalid_packet_number_string = base::StringPrintf("%010d", -1);
   std::string short_payload(packet_number_string +
       "1234567890123456789012345678901234567890123456789012345678901234567890");
   std::string long_payload(packet_number_string +
@@ -209,6 +156,31 @@ TEST_F(NetworkStatsTestTCP, VerifyBytes) {
   message = version + invalid_checksum + payload_size + key_string +
       long_payload;
   EXPECT_EQ(NetworkStats::TOO_LONG_PAYLOAD, network_stats.VerifyBytes(message));
+}
+
+TEST_F(NetworkStatsTestUDP, VerifyBytesInvalidChecksum) {
+  const uint32 KBytesToSend = 100;
+  const uint32 packets_to_send = 1;
+  NetworkStats network_stats;
+  net::TestCompletionCallback cb;
+
+  network_stats.Initialize(KBytesToSend,
+                           NetworkStats::HISTOGRAM_PORT_MAX,
+                           true,
+                           packets_to_send,
+                           cb.callback());
+  uint32 packet_number = network_stats.packet_number();
+  network_stats.set_base_packet_number(packet_number);
+
+  std::string message;
+  EXPECT_EQ(NetworkStats::ZERO_LENGTH_ERROR,
+            network_stats.VerifyBytes(message));
+
+  std::string version = base::StringPrintf("%02d", 1);
+  std::string invalid_checksum = base::StringPrintf("%010d", 0);
+  std::string payload_size = base::StringPrintf("%07d", KBytesToSend);
+  std::string key_string = base::StringPrintf("%06d", 899999);
+  std::string packet_number_string = base::StringPrintf("%010d", packet_number);
 
   scoped_refptr<net::IOBuffer> payload(new net::IOBuffer(KBytesToSend));
 
@@ -236,28 +208,142 @@ TEST_F(NetworkStatsTestTCP, VerifyBytes) {
   message = version + invalid_checksum + payload_size + key_string +
       encoded_payload;
   EXPECT_EQ(NetworkStats::INVALID_CHECKSUM, network_stats.VerifyBytes(message));
+}
 
-  // Corrupt the packet_number in payload data.
-  char corrupted_data_1[KBytesToSend];
-  memcpy(corrupted_data_1, payload_data, KBytesToSend);
-  char temp_char_0 = corrupted_data_1[packet_number_size - 1];
-  corrupted_data_1[packet_number_size - 1] =
-      corrupted_data_1[packet_number_size - 2];
-  corrupted_data_1[packet_number_size - 2] = temp_char_0;
-  char encoded_corrupted_data_1[KBytesToSend];
-  memset(encoded_corrupted_data_1, 0, KBytesToSend);
-  network_stats.Crypt(key,
-                      key_string.length(),
-                      corrupted_data_1,
-                      KBytesToSend,
-                      encoded_corrupted_data_1);
-  std::string invalid_packet_number_payload(encoded_corrupted_data_1,
-                                            KBytesToSend);
-  message = version + checksum + payload_size + key_string +
-      invalid_packet_number_payload;
+TEST_F(NetworkStatsTestUDP, VerifyBytesPreviousPacket) {
+  const uint32 KBytesToSend = 100;
+  const uint32 packets_to_send = 1;
+  NetworkStats network_stats;
+  net::TestCompletionCallback cb;
+
+  network_stats.Initialize(KBytesToSend,
+                           NetworkStats::HISTOGRAM_PORT_MAX,
+                           true,
+                           packets_to_send,
+                           cb.callback());
+  uint32 packet_number = network_stats.packet_number();
+  network_stats.set_base_packet_number(packet_number);
+  uint32 prev_packet_number = packet_number - 1;
+
+  std::string message;
+  std::string version = base::StringPrintf("%02d", 1);
+  std::string payload_size = base::StringPrintf("%07d", KBytesToSend);
+  std::string key_string = base::StringPrintf("%06d", 899999);
+  std::string prev_packet_number_string =
+      base::StringPrintf("%010d", prev_packet_number);
+
+  // Copy the previous packet number into the payload.
+  scoped_refptr<net::IOBuffer> payload(new net::IOBuffer(KBytesToSend));
+  size_t packet_number_size = prev_packet_number_string.size();
+  memcpy(payload->data(), prev_packet_number_string.c_str(),
+         packet_number_size);
+
+  // Get random bytes to fill rest of the payload.
+  network_stats.stream_.GetBytes(payload->data() + packet_number_size,
+                                 KBytesToSend - packet_number_size);
+
+  // Calculate checksum for the previous packet number payload.
+  char* payload_data = payload->data();
+  uint32 sum = network_stats.GetChecksum(payload_data, KBytesToSend);
+  std::string checksum = base::StringPrintf("%010d", sum);
+
+  char encoded_data[KBytesToSend];
+  memset(encoded_data, 0, KBytesToSend);
+  const char* key = key_string.c_str();
+  network_stats.Crypt(
+      key, key_string.length(), payload_data, KBytesToSend, encoded_data);
+  std::string encoded_payload(encoded_data, KBytesToSend);
+
+  message = version + checksum + payload_size + key_string +  encoded_payload;
+  EXPECT_EQ(NetworkStats::PREVIOUS_PACKET_NUMBER,
+            network_stats.VerifyBytes(message));
+  EXPECT_EQ(0u, network_stats.packets_received_mask());
+}
+
+TEST_F(NetworkStatsTestUDP, VerifyBytesInvalidPacketNumber) {
+  const uint32 KBytesToSend = 100;
+  const uint32 packets_to_send = 1;
+  NetworkStats network_stats;
+  net::TestCompletionCallback cb;
+
+  network_stats.Initialize(KBytesToSend,
+                           NetworkStats::HISTOGRAM_PORT_MAX,
+                           true,
+                           packets_to_send,
+                           cb.callback());
+  uint32 packet_number = network_stats.packet_number();
+  network_stats.set_base_packet_number(packet_number);
+  uint32 corrupt_packet_number = packet_number + 1;
+
+  std::string message;
+  std::string version = base::StringPrintf("%02d", 1);
+  std::string payload_size = base::StringPrintf("%07d", KBytesToSend);
+  std::string key_string = base::StringPrintf("%06d", 899999);
+  std::string corrupt_packet_number_string =
+      base::StringPrintf("%010d", corrupt_packet_number);
+
+  scoped_refptr<net::IOBuffer> payload(new net::IOBuffer(KBytesToSend));
+  size_t packet_number_size = corrupt_packet_number_string.size();
+  memcpy(payload->data(), corrupt_packet_number_string.c_str(),
+         packet_number_size);
+
+  // Get random bytes to fill rest of the payload.
+  network_stats.stream_.GetBytes(payload->data() + packet_number_size,
+                                 KBytesToSend - packet_number_size);
+
+  // Calculate checksum for the corrupt packet number payload.
+  char* payload_data = payload->data();
+  uint32 sum = network_stats.GetChecksum(payload_data, KBytesToSend);
+  std::string checksum = base::StringPrintf("%010d", sum);
+
+  char encoded_data[KBytesToSend];
+  memset(encoded_data, 0, KBytesToSend);
+  const char* key = key_string.c_str();
+  network_stats.Crypt(
+      key, key_string.length(), payload_data, KBytesToSend, encoded_data);
+  std::string encoded_payload(encoded_data, KBytesToSend);
+  message = version + checksum + payload_size + key_string + encoded_payload;
   EXPECT_EQ(NetworkStats::INVALID_PACKET_NUMBER,
             network_stats.VerifyBytes(message));
   EXPECT_EQ(0u, network_stats.packets_received_mask());
+}
+
+TEST_F(NetworkStatsTestUDP, VerifyBytesPatternChanged) {
+  const uint32 KBytesToSend = 100;
+  const uint32 packets_to_send = 1;
+  NetworkStats network_stats;
+  net::TestCompletionCallback cb;
+
+  network_stats.Initialize(KBytesToSend,
+                           NetworkStats::HISTOGRAM_PORT_MAX,
+                           true,
+                           packets_to_send,
+                           cb.callback());
+  uint32 packet_number = network_stats.packet_number();
+  network_stats.set_base_packet_number(packet_number);
+
+  std::string message;
+  std::string version = base::StringPrintf("%02d", 1);
+  std::string payload_size = base::StringPrintf("%07d", KBytesToSend);
+  std::string key_string = base::StringPrintf("%06d", 899999);
+  std::string packet_number_string = base::StringPrintf("%010d", packet_number);
+
+  scoped_refptr<net::IOBuffer> payload(new net::IOBuffer(KBytesToSend));
+
+  // Copy the Packet number into the payload.
+  size_t packet_number_size = packet_number_string.size();
+  memcpy(payload->data(), packet_number_string.c_str(), packet_number_size);
+
+  // Get random bytes to fill rest of the payload.
+  network_stats.stream_.GetBytes(payload->data() + packet_number_size,
+                                 KBytesToSend - packet_number_size);
+
+  // Calculate checksum for the payload.
+  char* payload_data = payload->data();
+  uint32 sum = network_stats.GetChecksum(payload_data, KBytesToSend);
+  std::string checksum = base::StringPrintf("%010d", sum);
+
+  const char* key = key_string.c_str();
 
   // Corrupt the randomly generated bytes in payload data.
   char corrupted_data_2[KBytesToSend];
@@ -277,6 +363,50 @@ TEST_F(NetworkStatsTestTCP, VerifyBytes) {
   message = version + checksum + payload_size + key_string + invalid_payload;
   EXPECT_EQ(NetworkStats::PATTERN_CHANGED, network_stats.VerifyBytes(message));
   EXPECT_EQ(0u, network_stats.packets_received_mask());
+}
+
+
+TEST_F(NetworkStatsTestUDP, VerifyBytes) {
+  const uint32 KBytesToSend = 100;
+  const uint32 packets_to_send = 1;
+  NetworkStats network_stats;
+  net::TestCompletionCallback cb;
+
+  network_stats.Initialize(KBytesToSend,
+                           NetworkStats::HISTOGRAM_PORT_MAX,
+                           true,
+                           packets_to_send,
+                           cb.callback());
+  uint32 packet_number = network_stats.packet_number();
+  network_stats.set_base_packet_number(packet_number);
+
+  std::string message;
+  std::string version = base::StringPrintf("%02d", 1);
+  std::string payload_size = base::StringPrintf("%07d", KBytesToSend);
+  std::string key_string = base::StringPrintf("%06d", 899999);
+  std::string packet_number_string = base::StringPrintf("%010d", packet_number);
+
+  scoped_refptr<net::IOBuffer> payload(new net::IOBuffer(KBytesToSend));
+
+  // Copy the Packet number into the payload.
+  size_t packet_number_size = packet_number_string.size();
+  memcpy(payload->data(), packet_number_string.c_str(), packet_number_size);
+
+  // Get random bytes to fill rest of the payload.
+  network_stats.stream_.GetBytes(payload->data() + packet_number_size,
+                                 KBytesToSend - packet_number_size);
+
+  // Calculate checksum for the payload.
+  char* payload_data = payload->data();
+  uint32 sum = network_stats.GetChecksum(payload_data, KBytesToSend);
+  std::string checksum = base::StringPrintf("%010d", sum);
+
+  char encoded_data[KBytesToSend];
+  memset(encoded_data, 0, KBytesToSend);
+  const char* key = key_string.c_str();
+  network_stats.Crypt(
+      key, key_string.length(), payload_data, KBytesToSend, encoded_data);
+  std::string encoded_payload(encoded_data, KBytesToSend);
 
   message = version + checksum + payload_size + key_string + encoded_payload;
   EXPECT_EQ(NetworkStats::SUCCESS, network_stats.VerifyBytes(message));
