@@ -16,6 +16,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "content/public/common/url_constants.h"
 #include "grit/theme_resources.h"
 
 // AutocompleteMatch ----------------------------------------------------------
@@ -297,18 +298,37 @@ bool AutocompleteMatch::IsSearchType(Type type) {
 }
 
 void AutocompleteMatch::ComputeStrippedDestinationURL() {
+  stripped_destination_url = destination_url;
+  if (!stripped_destination_url.is_valid())
+    return;
+
+  // |replacements| keeps all the substitions we're going to make to
+  // from {destination_url} to {stripped_destination_url}.  |need_replacement|
+  // is a helper variable that helps us keep track of whether we need
+  // to apply the replacement.
+  bool needs_replacement = false;
+  GURL::Replacements replacements;
+
+  // Remove the www. prefix from the host.
   static const char prefix[] = "www.";
   static const size_t prefix_len = arraysize(prefix) - 1;
-
   std::string host = destination_url.host();
-  if (destination_url.is_valid() && host.compare(0, prefix_len, prefix) == 0) {
+  if (host.compare(0, prefix_len, prefix) == 0) {
     host = host.substr(prefix_len);
-    GURL::Replacements replace_host;
-    replace_host.SetHostStr(host);
-    stripped_destination_url = destination_url.ReplaceComponents(replace_host);
-  } else {
-    stripped_destination_url = destination_url;
+    replacements.SetHostStr(host);
+    needs_replacement = true;
   }
+
+  // Replace https protocol with http protocol.
+  if (stripped_destination_url.SchemeIs(chrome::kHttpsScheme)) {
+    replacements.SetScheme(
+        chrome::kHttpScheme,
+        url_parse::Component(0, strlen(chrome::kHttpScheme)));
+    needs_replacement = true;
+  }
+
+  if (needs_replacement)
+    stripped_destination_url = destination_url.ReplaceComponents(replacements);
 }
 
 void AutocompleteMatch::GetKeywordUIState(Profile* profile,

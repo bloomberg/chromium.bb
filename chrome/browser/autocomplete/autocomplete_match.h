@@ -169,7 +169,10 @@ struct AutocompleteMatch {
   static bool IsSearchType(Type type);
 
   // Copies the destination_url with "www." stripped off to
-  // |stripped_destination_url|.  This method is invoked internally by the
+  // |stripped_destination_url| and also converts https protocol to
+  // http.  These two conversions are merely to allow comparisons to
+  // remove likely duplicates; these URLs are not used as actual
+  // destination URLs.  This method is invoked internally by the
   // AutocompleteController and does not normally need to be invoked.
   void ComputeStrippedDestinationURL();
 
