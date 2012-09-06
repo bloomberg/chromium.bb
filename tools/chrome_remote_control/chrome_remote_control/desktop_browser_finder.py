@@ -63,7 +63,7 @@ def FindAllAvailableBrowsers(options,
 
   if sys.platform == 'darwin':
     chromium_app_name = 'Chromium.app/Contents/MacOS/Chromium'
-    content_shell_app_name = 'Content\ Shell.app/Contents/MacOS/Content Shell'
+    content_shell_app_name = 'Content Shell.app/Contents/MacOS/Content Shell'
   elif sys.platform.startswith('linux'):
     chromium_app_name = 'chrome'
     content_shell_app_name = 'content_shell'

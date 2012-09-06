@@ -39,7 +39,7 @@ class DesktopBrowserBackend(browser_backend.BrowserBackend):
       self._tmpdir = tempfile.mkdtemp()
       args.append("--user-data-dir=%s" % self._tmpdir)
     args.extend(options.extra_browser_args)
-    if options.hide_stdout:
+    if not options.show_stdout:
       self._devnull = open(os.devnull, 'w')
       self._proc = subprocess.Popen(
         args,stdout=self._devnull, stderr=self._devnull)

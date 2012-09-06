@@ -93,22 +93,22 @@ class OSXFindTest(FindTestBase):
                        "Contents/MacOS/Google Chrome Canary")
     self._files.append("/Applications/Google Chrome.app/" +
                        "Contents/MacOS/Google Chrome")
+    self._files.append(
+      "../../../out/Release/Chromium.app/Contents/MacOS/Chromium")
+    self._files.append(
+      "../../../out/Debug/Chromium.app/Contents/MacOS/Chromium")
+    self._files.append(
+      "../../../out/Release/Content Shell.app/Contents/MacOS/Content Shell")
+    self._files.append(
+      "../../../out/Debug/Content Shell.app/Contents/MacOS/Content Shell")
 
-  def testFindCanaryWithBothPresent(self):
+  def testFindAll(self):
     types = self.DoFindAllTypes()
-    assert 'canary' in types
-    assert 'system' in types
-    assert len(types) == 2
-
-  def testFind(self):
-    browsers = self.DoFindAll()
-    self.assertTrue(has_type(browsers, 'canary'))
-    self.assertTrue(has_type(browsers, 'system'))
-
-    del self._files[0]
-    browsers = self.DoFindAll()
-    self.assertFalse(has_type(browsers, 'canary'))
-    self.assertTrue(has_type(browsers, 'system'))
+    self.assertEquals(
+      set(types),
+      set(['debug', 'release',
+           'content-shell-debug', 'content-shell-release',
+           'canary', 'system']))
 
 
 class LinuxFindTest(FindTestBase):

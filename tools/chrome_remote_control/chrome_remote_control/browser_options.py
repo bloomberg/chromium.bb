@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 import optparse
 import sys
+import shlex
 
 import browser_finder
 
@@ -12,7 +13,7 @@ class BrowserOptions(optparse.Values):
   def __init__(self):
     optparse.Values.__init__(self)
     self.dont_override_profile = False
-    self.hide_stdout = True
+    self.show_stdout = False
     self.browser_executable = None
     self._browser_type =  None
     self.chrome_root = None
@@ -37,6 +38,12 @@ class BrowserOptions(optparse.Values):
         dest='chrome_root',
         help='Where to look for chrome builds.'
              'Defaults to searching parent dirs by default.')
+    parser.add_option('--extra-browser-args',
+        dest='extra_browser_args_as_string',
+        help='Additional arguments to pass to the browser when it starts')
+    parser.add_option('--show-stdout',
+        action='store_true',
+        help="When possible, will display the stdout of the process")
     parser.add_option('--device',
         dest='android_device',
         help='The android device ID to use'
@@ -60,6 +67,10 @@ class BrowserOptions(optparse.Values):
         sys.stderr.write("Available browsers:\n");
         sys.stdout.write("  %s\n" % "\n  ".join(types))
         sys.exit(1)
+      if self.extra_browser_args_as_string:
+        tmp = shlex.split(self.extra_browser_args_as_string)
+        self.extra_browser_args.extend(tmp)
+        delattr(self, 'extra_browser_args_as_string')
       return ret
     parser.parse_args = ParseArgs
     return parser
