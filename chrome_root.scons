@@ -8,7 +8,7 @@ import os
 import shutil
 import sys
 
-sys.path.append("tools")
+sys.path.append(Dir('#/tools').abspath)
 import command_tester
 import test_lib
 
@@ -370,9 +370,7 @@ pre_base_env.AddMethod(GenerateSimpleManifest)
 # Returns a pair (main program, is_portable), based on the program
 # specified in manifest file.
 def GetMainProgramFromManifest(env, manifest):
-  manifest_file = open(str(env.File(manifest)), 'r')
-  obj = json.load(manifest_file)
-  manifest_file.close()
+  obj = json.loads(env.File(manifest).get_contents())
   program_dict = obj['program']
   if env.Bit('pnacl_generate_pexe') and 'portable' in program_dict:
     return program_dict['portable']['pnacl-translate']['url']
