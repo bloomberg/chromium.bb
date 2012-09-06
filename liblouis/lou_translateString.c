@@ -148,6 +148,7 @@ lou_translate (const char *tableList, const widechar
   if ((mode & pass1Only))
     {
       currentOutput = passbuf1;
+      memcpy (prevSrcMapping, srcMapping, destmax * sizeof (int));
       goodTrans = translateString ();
       currentPass = 5;		/*Certainly > table->numPasses */
     }
