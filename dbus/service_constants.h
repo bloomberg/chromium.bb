@@ -682,6 +682,11 @@ const char kVendorWPSModelNameProperty[] = "ModelName";
 const char kVendorWPSModelNumberProperty[] = "ModelNumber";
 const char kVendorWPSDeviceNameProperty[] = "DeviceName";
 const char kVendorOUIListProperty[] = "OUIList";
+
+// Cellular service carriers.
+const char kCarrierGenericUMTS[] = "Generic UMTS";
+const char kCarrierSprint[] = "Sprint";
+const char kCarrierVerizon[] = "Verizon Wireless";
 }  // namespace shill
 
 namespace cashew {
