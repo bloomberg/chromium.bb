@@ -31,8 +31,6 @@ file, with a bit of extra info.
    testcase added in en-GB-g2_harness.txt, search for 651217
    The bug can be seen with other tables too.
 
-** [mh] Add Ethiopic table and harness data, as corrected by Dr. Tamru E. Belay
-
 ** Esperanto table should not be blacklisted, work out whats wrong and make sure it is usable.
 
 ** [mh] According to the harness, Danish table isn't producing correct output.
