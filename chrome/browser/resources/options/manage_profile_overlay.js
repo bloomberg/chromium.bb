@@ -77,8 +77,10 @@ cr.define('options', function() {
         // wish to customize their profile.
         var name = $('create-profile-name').value;
         var icon_url = createIconGrid.selectedItem;
-        chrome.send('createProfile', [name, icon_url,
-                                      $('create-shortcut').checked]);
+        var create_checkbox = false;
+        if ($('create-shortcut'))
+          create_checkbox = $('create-shortcut').checked;
+        chrome.send('createProfile', [name, icon_url, create_checkbox]);
       };
     },
 
@@ -217,9 +219,12 @@ cr.define('options', function() {
     submitManageChanges_: function() {
       var name = $('manage-profile-name').value;
       var iconURL = $('manage-profile-icon-grid').selectedItem;
+      var manage_checkbox = false;
+      if ($('manage-shortcut'))
+        manage_checkbox = $('manage-shortcut').checked;
       chrome.send('setProfileNameAndIcon',
                   [this.profileInfo_.filePath, name, iconURL,
-                  $('manage-shortcut').checked]);
+                  manage_checkbox]);
     },
 
     /**
