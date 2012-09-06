@@ -23,7 +23,7 @@ function FullWindowVideoControls(
     playerContainer, videoContainer, controlsContainer) {
   VideoControls.call(this,
       controlsContainer,
-      onError,
+      onError.bind(null, null),
       function() { chrome.fileBrowserPrivate.toggleFullscreen() },
       videoContainer);
 
