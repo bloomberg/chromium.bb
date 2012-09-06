@@ -341,6 +341,12 @@ cr.define('cr.ui.login', function() {
      * @param {!HTMLElement} screen Screen that is being shown.
      */
     updateInnerContainerSize_: function(screen) {
+      // Have to reset any previously predefined screen size first
+      // so that screen contents would define it instead (offsetHeight/width).
+      // http://crbug.com/146539
+      screen.style.width = '';
+      screen.style.height = '';
+
       var height = screen.offsetHeight;
       var width = screen.offsetWidth;
       if (this.isNewOobe()) {
