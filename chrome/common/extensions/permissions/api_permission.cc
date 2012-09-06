@@ -238,7 +238,6 @@ void APIPermissionInfo::RegisterAllPermissions(
     { APIPermission::kInputMethodPrivate, "inputMethodPrivate",
       kFlagCannotBeOptional },
     { APIPermission::kEchoPrivate, "echoPrivate", kFlagCannotBeOptional },
-    { APIPermission::kRtcPrivate, "rtcPrivate", kFlagCannotBeOptional },
     { APIPermission::kTerminalPrivate, "terminalPrivate",
       kFlagCannotBeOptional },
     { APIPermission::kWallpaperPrivate, "wallpaperPrivate",

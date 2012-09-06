@@ -224,8 +224,6 @@
         'browser/extensions/api/push_messaging/push_messaging_invalidation_mapper.h',
         'browser/extensions/api/record/record_api.cc',
         'browser/extensions/api/record/record_api.h',
-        'browser/extensions/api/rtc_private/rtc_private_api.cc',
-        'browser/extensions/api/rtc_private/rtc_private_api.h',
         'browser/extensions/api/runtime/runtime_api.cc',
         'browser/extensions/api/runtime/runtime_api.h',
         'browser/extensions/api/serial/serial_api.cc',
@@ -599,8 +597,6 @@
           'sources/': [
             ['exclude', 'browser/extensions/api/input_ime/input_ime_api.cc'],
             ['exclude', 'browser/extensions/api/input_ime/input_ime_api.h'],
-            ['exclude', 'browser/extensions/api/rtc_private/rtc_private_api.cc'],
-            ['exclude', 'browser/extensions/api/rtc_private/rtc_private_api.h'],
             ['exclude', 'browser/extensions/api/terminal/terminal_extension_helper.cc'],
             ['exclude', 'browser/extensions/api/terminal/terminal_extension_helper.h'],
             ['exclude', 'browser/extensions/api/terminal/terminal_private_api.cc'],

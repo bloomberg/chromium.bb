@@ -232,16 +232,6 @@
     "channel": "dev",
     "extension_types": ["platform_app"]
   },
-  "rtcPrivate": {
-    "channel": "stable",
-    "extension_types": ["extension", "packaged_app"],
-    "whitelist": [
-      "nckgahadagoaajjgafhacjanaoiihapd",  // Google Talk prod
-      "eggnbpckecmjlblplehfpjjdhhidfdoj",  // Google Talk beta
-      "ppleadejekpmccmnpjdimmlfljlkdfej",  // Google Talk alpha
-      "ljclpkphhpbpinifbeabbhlfddcpfdde"   // Google Talk debug
-    ]
-  },
   // Note: runtime is not actually a permission, but some systems check these
   // values to verify restrictions.
   "runtime": {
