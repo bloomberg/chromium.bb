@@ -295,7 +295,7 @@ void LocationBarView::Init(views::View* popup_parent_view) {
     AddChildView(star_view_);
     star_view_->SetVisible(true);
   }
-  if (ActionBoxButtonView::IsActionBoxEnabled() && browser_) {
+  if (extensions::switch_utils::IsActionBoxEnabled() && browser_) {
     action_box_button_view_ = new ActionBoxButtonView(browser_);
     AddChildView(action_box_button_view_);
     if (star_view_)
@@ -410,7 +410,7 @@ void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
                       edit_bookmarks_enabled_.GetValue();
 
   command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
-  if (star_view_ && !ActionBoxButtonView::IsActionBoxEnabled())
+  if (star_view_ && !extensions::switch_utils::IsActionBoxEnabled())
     star_view_->SetVisible(star_enabled);
 
   ChromeToMobileService* chrome_to_mobile_service =

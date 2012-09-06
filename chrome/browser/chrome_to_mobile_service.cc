@@ -29,6 +29,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/cloud_print/cloud_print_helpers.h"
+#include "chrome/common/extensions/extension_switch_utils.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/oauth2_access_token_fetcher.h"
@@ -163,8 +164,7 @@ ChromeToMobileService::JobData::~JobData() {}
 // static
 bool ChromeToMobileService::IsChromeToMobileEnabled() {
   // Chrome To Mobile is currently gated on the Action Box UI.
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableActionBox);
+  return extensions::switch_utils::IsActionBoxEnabled();
 }
 
 // static

@@ -497,6 +497,8 @@ TEST_F(BrowserWindowControllerTest, BookmarkBarIsSameWidth) {
 }
 
 TEST_F(BrowserWindowControllerTest, TestTopRightForBubble) {
+  // The bookmark bubble must be attached to a lit and visible star.
+  [controller_ setStarredState:YES];
   NSPoint p = [controller_ bookmarkBubblePoint];
   NSRect all = [[controller_ window] frame];
 

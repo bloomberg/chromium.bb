@@ -5772,7 +5772,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Action box
       </message>
       <message name="IDS_FLAGS_ACTION_BOX_DESCRIPTION" desc="Description of the 'Action Box' lab.">
-        Enables the "Action Box" experimental toolbar UI.
+        Disables the "Action Box" experimental toolbar UI.
       </message>
       <message name="IDS_FLAGS_EXTENSIONS_IN_ACTION_BOX_NAME" desc="Name of the 'Extensions in the Action Box' lab.">
         Extensions in the Action box

@@ -111,7 +111,7 @@ LocationBarViewMac::LocationBarViewMac(
           content::PAGE_TRANSITION_TYPED |
           content::PAGE_TRANSITION_FROM_ADDRESS_BAR)),
       weak_ptr_factory_(this) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableActionBox)) {
+  if (extensions::switch_utils::IsActionBoxEnabled()) {
     plus_decoration_.reset(new PlusDecoration(this, browser_));
   }
 
@@ -743,17 +743,16 @@ void LocationBarViewMac::UpdateZoomDecoration() {
 }
 
 void LocationBarViewMac::UpdateStarDecorationVisibility() {
-  bool action_box_enabled =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableActionBox);
   // If the action box is enabled, only show the star if it's lit.
   bool visible = IsStarEnabled();
-  if (!star_decoration_->starred() && action_box_enabled)
+  if (!star_decoration_->starred() &&
+      extensions::switch_utils::IsActionBoxEnabled())
     visible = false;
   star_decoration_->SetVisible(visible);
 }
 
 void LocationBarViewMac::UpdatePlusDecorationVisibility() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableActionBox)) {
+  if (extensions::switch_utils::IsActionBoxEnabled()) {
     // If the action box is enabled, hide it when input is in progress.
     plus_decoration_->SetVisible(!toolbar_model_->input_in_progress());
   }

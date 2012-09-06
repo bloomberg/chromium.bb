@@ -20,8 +20,6 @@ class ActionBoxButtonView : public views::MenuButton,
   SkColor GetBackgroundColor();
   SkColor GetBorderColor();
 
-  static bool IsActionBoxEnabled();
-
  private:
   // Overridden from views::CustomButton:
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;

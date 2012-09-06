@@ -543,7 +543,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   // doesn't work, someone is probably calling show_all on our parent box.
   gtk_box_pack_end(GTK_BOX(entry_box_), tab_to_search_hint_, FALSE, FALSE, 0);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableActionBox)) {
+  if (extensions::switch_utils::IsActionBoxEnabled()) {
     // TODO(mpcomplete): should we hide this if ShouldOnlyShowLocation()==true?
     action_box_button_.reset(new ActionBoxButtonGtk(browser_));
 
@@ -1560,8 +1560,7 @@ void LocationBarViewGtk::UpdateStarIcon() {
   bool star_enabled = !toolbar_model_->input_in_progress() &&
                       edit_bookmarks_enabled_.GetValue();
   command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableActionBox) &&
-      !starred_) {
+  if (extensions::switch_utils::IsActionBoxEnabled() && !starred_) {
     star_enabled = false;
   }
   if (star_enabled) {
