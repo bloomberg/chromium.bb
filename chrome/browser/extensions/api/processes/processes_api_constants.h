@@ -4,10 +4,12 @@
 
 // Constants used for the Processes API.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_PROCESSES_API_CONSTANTS_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_PROCESSES_API_CONSTANTS_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_PROCESSES_PROCESSES_API_CONSTANTS_H_
+#define CHROME_BROWSER_EXTENSIONS_API_PROCESSES_PROCESSES_API_CONSTANTS_H_
 
-namespace extension_processes_api_constants {
+namespace extensions {
+
+namespace processes_api_constants {
 
 // Process object properties.
 extern const char kCpuKey[];
@@ -54,6 +56,8 @@ extern const char kOnUpdatedWithMemory[];
 extern const char kExtensionNotSupported[];
 extern const char kProcessNotFound[];
 
-};  // namespace extension_processes_api_constants
+}  // namespace processes_api_constants
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PROCESSES_API_CONSTANTS_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_API_PROCESSES_PROCESSES_API_CONSTANTS_H_

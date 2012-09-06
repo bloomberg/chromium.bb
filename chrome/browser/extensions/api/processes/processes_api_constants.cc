@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_processes_api_constants.h"
+#include "chrome/browser/extensions/api/processes/processes_api_constants.h"
 
-namespace extension_processes_api_constants {
+namespace extensions {
+
+namespace processes_api_constants {
 
 // Process object properties.
 const char kCpuKey[] = "cpu";
@@ -53,4 +55,6 @@ const char kExtensionNotSupported[] =
     "The Processes extension API is not supported on this platform.";
 const char kProcessNotFound[] = "Process not found: *.";
 
-}  // namespace extension_processes_api_constants
+}  // namespace processes_api_constants
+
+}  // namespace extensions

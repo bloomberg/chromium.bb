@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_PROCESSES_API_H__
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_PROCESSES_API_H__
+#ifndef CHROME_BROWSER_EXTENSIONS_API_PROCESSES_PROCESSES_API_H__
+#define CHROME_BROWSER_EXTENSIONS_API_PROCESSES_PROCESSES_API_H__
 
 #include <set>
 #include <string>
@@ -18,13 +18,15 @@ namespace base {
 class ListValue;
 }
 
+namespace extensions {
+
 // Observes the Task Manager and routes the notifications as events to the
 // extension system.
-class ExtensionProcessesEventRouter : public TaskManagerModelObserver,
-                                      public content::NotificationObserver {
+class ProcessesEventRouter : public TaskManagerModelObserver,
+                             public content::NotificationObserver {
  public:
   // Single instance of the event router.
-  static ExtensionProcessesEventRouter* GetInstance();
+  static ProcessesEventRouter* GetInstance();
 
   // Safe to call multiple times.
   void ObserveProfile(Profile* profile);
@@ -44,10 +46,10 @@ class ExtensionProcessesEventRouter : public TaskManagerModelObserver,
   int num_listeners() { return listeners_; }
 
  private:
-  friend struct DefaultSingletonTraits<ExtensionProcessesEventRouter>;
+  friend struct DefaultSingletonTraits<ProcessesEventRouter>;
 
-  ExtensionProcessesEventRouter();
-  virtual ~ExtensionProcessesEventRouter();
+  ProcessesEventRouter();
+  virtual ~ProcessesEventRouter();
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -95,7 +97,7 @@ class ExtensionProcessesEventRouter : public TaskManagerModelObserver,
   // done once for the lifetime of this object.
   bool task_manager_listening_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionProcessesEventRouter);
+  DISALLOW_COPY_AND_ASSIGN(ProcessesEventRouter);
 };
 
 
@@ -175,4 +177,6 @@ class GetProcessInfoFunction : public AsyncExtensionFunction,
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.processes.getProcessInfo")
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PROCESSES_API_H__
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_API_PROCESSES_PROCESSES_API_H__

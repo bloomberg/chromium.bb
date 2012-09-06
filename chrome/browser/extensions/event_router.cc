@@ -9,13 +9,13 @@
 #include "base/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/api/processes/processes_api.h"
+#include "chrome/browser/extensions/api/processes/processes_api_constants.h"
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
-#include "chrome/browser/extensions/extension_processes_api.h"
-#include "chrome/browser/extensions/extension_processes_api_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/event_names.h"
@@ -157,10 +157,11 @@ void EventRouter::OnListenerAdded(const EventListener* listener) {
   // We lazily tell the TaskManager to start updating when listeners to the
   // processes.onUpdated or processes.onUpdatedWithMemory events arrive.
   const std::string& event_name = listener->event_name;
-  if (event_name.compare(extension_processes_api_constants::kOnUpdated) == 0 ||
+  if (event_name.compare(
+          extensions::processes_api_constants::kOnUpdated) == 0 ||
       event_name.compare(
-          extension_processes_api_constants::kOnUpdatedWithMemory) == 0)
-    ExtensionProcessesEventRouter::GetInstance()->ListenerAdded();
+          extensions::processes_api_constants::kOnUpdatedWithMemory) == 0)
+    extensions::ProcessesEventRouter::GetInstance()->ListenerAdded();
 
   if (SystemInfoEventRouter::IsSystemInfoEvent(event_name))
     SystemInfoEventRouter::GetInstance()->AddEventListener(event_name);
@@ -179,10 +180,11 @@ void EventRouter::OnListenerRemoved(const EventListener* listener) {
   // If a processes.onUpdated or processes.onUpdatedWithMemory event listener
   // is removed (or a process with one exits), then we let the extension API
   // know that it has one fewer listener.
-  if (event_name.compare(extension_processes_api_constants::kOnUpdated) == 0 ||
+  if (event_name.compare(
+          extensions::processes_api_constants::kOnUpdated) == 0 ||
       event_name.compare(
-          extension_processes_api_constants::kOnUpdatedWithMemory) == 0)
-    ExtensionProcessesEventRouter::GetInstance()->ListenerRemoved();
+          extensions::processes_api_constants::kOnUpdatedWithMemory) == 0)
+    extensions::ProcessesEventRouter::GetInstance()->ListenerRemoved();
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

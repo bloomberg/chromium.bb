@@ -36,6 +36,7 @@
 #include "chrome/browser/extensions/api/font_settings/font_settings_api.h"
 #include "chrome/browser/extensions/api/managed_mode/managed_mode_api.h"
 #include "chrome/browser/extensions/api/management/management_api.h"
+#include "chrome/browser/extensions/api/processes/processes_api.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_api.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/app_notification_manager.h"
@@ -52,7 +53,6 @@
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_preference_api.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
-#include "chrome/browser/extensions/extension_processes_api.h"
 #include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
@@ -488,7 +488,7 @@ void ExtensionService::InitEventRouters() {
   cookies_event_router_->Init();
   management_event_router_.reset(new ExtensionManagementEventRouter(profile_));
   management_event_router_->Init();
-  ExtensionProcessesEventRouter::GetInstance()->ObserveProfile(profile_);
+  extensions::ProcessesEventRouter::GetInstance()->ObserveProfile(profile_);
   web_navigation_event_router_.reset(
       new extensions::WebNavigationEventRouter(profile_));
   web_navigation_event_router_->Init();

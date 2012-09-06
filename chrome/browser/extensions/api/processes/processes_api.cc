@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_processes_api.h"
+#include "chrome/browser/extensions/api/processes/processes_api.h"
 
 #include "base/callback.h"
 #include "base/json/json_writer.h"
@@ -12,10 +12,10 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 
+#include "chrome/browser/extensions/api/processes/processes_api_constants.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function_util.h"
-#include "chrome/browser/extensions/extension_processes_api_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -34,8 +34,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/result_codes.h"
 
-namespace keys = extension_processes_api_constants;
-namespace errors = extension_processes_api_constants;
+namespace extensions {
+
+namespace keys = processes_api_constants;
+namespace errors = processes_api_constants;
 
 namespace {
 
@@ -210,11 +212,11 @@ void AddMemoryDetails(DictionaryValue* result,
 
 } // local namespace
 
-ExtensionProcessesEventRouter* ExtensionProcessesEventRouter::GetInstance() {
-  return Singleton<ExtensionProcessesEventRouter>::get();
+ProcessesEventRouter* ProcessesEventRouter::GetInstance() {
+  return Singleton<ProcessesEventRouter>::get();
 }
 
-ExtensionProcessesEventRouter::ExtensionProcessesEventRouter()
+ProcessesEventRouter::ProcessesEventRouter()
     : listeners_(0),
       task_manager_listening_(false) {
 #if defined(ENABLE_TASK_MANAGER)
@@ -228,7 +230,7 @@ ExtensionProcessesEventRouter::ExtensionProcessesEventRouter()
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
-ExtensionProcessesEventRouter::~ExtensionProcessesEventRouter() {
+ProcessesEventRouter::~ProcessesEventRouter() {
 #if defined(ENABLE_TASK_MANAGER)
   registrar_.Remove(this, content::NOTIFICATION_RENDERER_PROCESS_HANG,
       content::NotificationService::AllSources());
@@ -242,11 +244,11 @@ ExtensionProcessesEventRouter::~ExtensionProcessesEventRouter() {
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
-void ExtensionProcessesEventRouter::ObserveProfile(Profile* profile) {
+void ProcessesEventRouter::ObserveProfile(Profile* profile) {
   profiles_.insert(profile);
 }
 
-void ExtensionProcessesEventRouter::ListenerAdded() {
+void ProcessesEventRouter::ListenerAdded() {
 #if defined(ENABLE_TASK_MANAGER)
   // The task manager has its own ref count to balance other callers of
   // StartUpdating/StopUpdating.
@@ -255,7 +257,7 @@ void ExtensionProcessesEventRouter::ListenerAdded() {
   ++listeners_;
 }
 
-void ExtensionProcessesEventRouter::ListenerRemoved() {
+void ProcessesEventRouter::ListenerRemoved() {
   DCHECK(listeners_ > 0);
   --listeners_;
 #if defined(ENABLE_TASK_MANAGER)
@@ -265,7 +267,7 @@ void ExtensionProcessesEventRouter::ListenerRemoved() {
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
-void ExtensionProcessesEventRouter::StartTaskManagerListening() {
+void ProcessesEventRouter::StartTaskManagerListening() {
 #if defined(ENABLE_TASK_MANAGER)
   if (!task_manager_listening_) {
     model_->StartListening();
@@ -274,7 +276,7 @@ void ExtensionProcessesEventRouter::StartTaskManagerListening() {
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
-void ExtensionProcessesEventRouter::Observe(
+void ProcessesEventRouter::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -296,7 +298,7 @@ void ExtensionProcessesEventRouter::Observe(
   return;
 }
 
-void ExtensionProcessesEventRouter::OnItemsAdded(int start, int length) {
+void ProcessesEventRouter::OnItemsAdded(int start, int length) {
 #if defined(ENABLE_TASK_MANAGER)
   DCHECK_EQ(length, 1);
   int index = start;
@@ -325,7 +327,7 @@ void ExtensionProcessesEventRouter::OnItemsAdded(int start, int length) {
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
-void ExtensionProcessesEventRouter::OnItemsChanged(int start, int length) {
+void ProcessesEventRouter::OnItemsChanged(int start, int length) {
 #if defined(ENABLE_TASK_MANAGER)
   // If we don't have any listeners, return immediately.
   if (listeners_ == 0)
@@ -392,7 +394,7 @@ void ExtensionProcessesEventRouter::OnItemsChanged(int start, int length) {
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
-void ExtensionProcessesEventRouter::OnItemsToBeRemoved(int start, int length) {
+void ProcessesEventRouter::OnItemsToBeRemoved(int start, int length) {
 #if defined(ENABLE_TASK_MANAGER)
   DCHECK(length == 1);
 
@@ -420,8 +422,7 @@ void ExtensionProcessesEventRouter::OnItemsToBeRemoved(int start, int length) {
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
-void ExtensionProcessesEventRouter::ProcessHangEvent(
-    content::RenderWidgetHost* widget) {
+void ProcessesEventRouter::ProcessHangEvent(content::RenderWidgetHost* widget) {
 #if defined(ENABLE_TASK_MANAGER)
   std::string event(keys::kOnUnresponsive);
   if (!HasEventListeners(event))
@@ -451,7 +452,7 @@ void ExtensionProcessesEventRouter::ProcessHangEvent(
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
-void ExtensionProcessesEventRouter::ProcessClosedEvent(
+void ProcessesEventRouter::ProcessClosedEvent(
     content::RenderProcessHost* rph,
     content::RenderProcessHost::RendererClosedDetails* details) {
 #if defined(ENABLE_TASK_MANAGER)
@@ -471,10 +472,9 @@ void ExtensionProcessesEventRouter::ProcessClosedEvent(
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
-void ExtensionProcessesEventRouter::DispatchEvent(
-    Profile* profile,
-    const char* event_name,
-    scoped_ptr<ListValue> event_args) {
+void ProcessesEventRouter::DispatchEvent(Profile* profile,
+                                         const char* event_name,
+                                         scoped_ptr<ListValue> event_args) {
   if (profile && profile->GetExtensionEventRouter()) {
     profile->GetExtensionEventRouter()->DispatchEventToRenderers(
         event_name, event_args.Pass(), NULL, GURL(),
@@ -482,9 +482,8 @@ void ExtensionProcessesEventRouter::DispatchEvent(
   }
 }
 
-void ExtensionProcessesEventRouter::NotifyProfiles(
-    const char* event_name,
-    scoped_ptr<ListValue> event_args) {
+void ProcessesEventRouter::NotifyProfiles(const char* event_name,
+                                          scoped_ptr<ListValue> event_args) {
   for (ProfileSet::iterator it = profiles_.begin();
        it != profiles_.end(); it++) {
     Profile* profile = *it;
@@ -497,7 +496,7 @@ void ExtensionProcessesEventRouter::NotifyProfiles(
 // interest, we need to ask each profile whether it has one registered.
 // We only need to look for the profiles that have registered with the
 // this extension API.
-bool ExtensionProcessesEventRouter::HasEventListeners(std::string& event_name) {
+bool ProcessesEventRouter::HasEventListeners(std::string& event_name) {
   for (ProfileSet::iterator it = profiles_.begin();
        it != profiles_.end(); it++) {
     Profile* profile = *it;
@@ -523,16 +522,14 @@ bool GetProcessIdForTabFunction::RunImpl() {
   // which will invoke the callback once we have returned from this function.
   // Otherwise, wait for the notification that the task manager is done with
   // the data gathering.
-  if (ExtensionProcessesEventRouter::GetInstance()->
-          is_task_manager_listening()) {
+  if (ProcessesEventRouter::GetInstance()->is_task_manager_listening()) {
     MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &GetProcessIdForTabFunction::GetProcessIdForTab, this));
   } else {
     registrar_.Add(this,
                    chrome::NOTIFICATION_TASK_MANAGER_CHILD_PROCESSES_DATA_READY,
                    content::NotificationService::AllSources());
-    ExtensionProcessesEventRouter::GetInstance()->
-        StartTaskManagerListening();
+    ProcessesEventRouter::GetInstance()->StartTaskManagerListening();
   }
 
   return true;
@@ -583,16 +580,14 @@ bool TerminateFunction::RunImpl() {
   // which will invoke the callback once we have returned from this function.
   // Otherwise, wait for the notification that the task manager is done with
   // the data gathering.
-  if (ExtensionProcessesEventRouter::GetInstance()->
-          is_task_manager_listening()) {
+  if (ProcessesEventRouter::GetInstance()->is_task_manager_listening()) {
     MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &TerminateFunction::TerminateProcess, this));
   } else {
     registrar_.Add(this,
                    chrome::NOTIFICATION_TASK_MANAGER_CHILD_PROCESSES_DATA_READY,
                    content::NotificationService::AllSources());
-    ExtensionProcessesEventRouter::GetInstance()->
-        StartTaskManagerListening();
+    ProcessesEventRouter::GetInstance()->StartTaskManagerListening();
   }
 
   return true;
@@ -667,16 +662,14 @@ bool GetProcessInfoFunction::RunImpl() {
   // which will invoke the callback once we have returned from this function.
   // Otherwise, wait for the notification that the task manager is done with
   // the data gathering.
-  if (ExtensionProcessesEventRouter::GetInstance()->
-          is_task_manager_listening()) {
+  if (ProcessesEventRouter::GetInstance()->is_task_manager_listening()) {
     MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &GetProcessInfoFunction::GatherProcessInfo, this));
   } else {
     registrar_.Add(this,
                    chrome::NOTIFICATION_TASK_MANAGER_CHILD_PROCESSES_DATA_READY,
                    content::NotificationService::AllSources());
-    ExtensionProcessesEventRouter::GetInstance()->
-        StartTaskManagerListening();
+    ProcessesEventRouter::GetInstance()->StartTaskManagerListening();
   }
   return true;
 
@@ -742,3 +735,5 @@ void GetProcessInfoFunction::GatherProcessInfo() {
   Release();
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
+
+}  // namespace extensions
