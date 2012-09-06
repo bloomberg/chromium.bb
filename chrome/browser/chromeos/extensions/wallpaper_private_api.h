@@ -22,7 +22,27 @@ class WallpaperStringsFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class WallpaperSetWallpaperFunction : public AsyncExtensionFunction {
+// Wallpaper manager function base. It contains a JPEG decoder to decode
+// wallpaper data.
+class WallpaperFunctionBase : public AsyncExtensionFunction {
+ public:
+  WallpaperFunctionBase();
+
+ protected:
+  virtual ~WallpaperFunctionBase();
+
+  // A class to decode JPEG file.
+  class WallpaperDecoder;
+
+  // Holds an instance of WallpaperDecoder.
+  static WallpaperDecoder* wallpaper_decoder_;
+
+ private:
+  virtual void OnWallpaperDecoded(const gfx::ImageSkia& wallpaper) = 0;
+  virtual void OnFailure() = 0;
+};
+
+class WallpaperSetWallpaperFunction : public WallpaperFunctionBase {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("wallpaperPrivate.setWallpaper");
 
@@ -35,10 +55,8 @@ class WallpaperSetWallpaperFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  class WallpaperDecoder;
-
-  void OnWallpaperDecoded(const gfx::ImageSkia& wallpaper);
-  void OnFail();
+  virtual void OnWallpaperDecoded(const gfx::ImageSkia& wallpaper) OVERRIDE;
+  virtual void OnFailure() OVERRIDE;
 
   // Saves the image data to a file.
   void SaveToFile();
@@ -60,9 +78,32 @@ class WallpaperSetWallpaperFunction : public AsyncExtensionFunction {
 
   // String representation of downloaded wallpaper.
   std::string image_data_;
+};
 
-  // Holds an instance of WallpaperDecoder.
-  static WallpaperDecoder* wallpaper_decoder_;
+class WallpaperSetCustomWallpaperFunction : public WallpaperFunctionBase {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("wallpaperPrivate.setCustomWallpaper");
+
+  WallpaperSetCustomWallpaperFunction();
+
+ protected:
+  virtual ~WallpaperSetCustomWallpaperFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  virtual void OnWallpaperDecoded(const gfx::ImageSkia& wallpaper) OVERRIDE;
+  virtual void OnFailure() OVERRIDE;
+
+  // Layout of the downloaded wallpaper.
+  ash::WallpaperLayout layout_;
+
+  // Email address of logged in user.
+  std::string email_;
+
+  // String representation of downloaded wallpaper.
+  std::string image_data_;
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_WALLPAPER_PRIVATE_API_H_

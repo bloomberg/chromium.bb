@@ -18,6 +18,7 @@ function WallpaperManager(dialogDom) {
   this.document_ = dialogDom.ownerDocument;
   this.selectedCategory = null;
   this.currentButter_ = null;
+  this.customWallpaperData_ = null;
   this.fetchManifest_();
   this.initDom_();
 }
@@ -111,8 +112,11 @@ function WallpaperManager(dialogDom) {
     // Selects the first category in the list as default.
     this.categoriesList_.selectionModel.selectedIndex = 0;
 
-    this.dialogDom_.querySelector('#file-selector').addEventListener(
+    $('file-selector').addEventListener(
         'change', this.onFileSelectorChanged_.bind(this));
+
+    $('set-wallpaper-layout').addEventListener(
+        'change', this.onWallpaperLayoutChanged_.bind(this));
 
     this.dialogDom_.ownerDocument.defaultView.addEventListener(
         'resize', this.onResize_.bind(this));
@@ -124,7 +128,7 @@ function WallpaperManager(dialogDom) {
    * Constructs the thumbnails grid.
    */
   WallpaperManager.prototype.initThumbnailsGrid_ = function() {
-    this.wallpaperGrid_ = this.dialogDom_.querySelector('#wallpaper-grid');
+    this.wallpaperGrid_ = $('wallpaper-grid');
     wallpapers.WallpaperThumbnailsGrid.decorate(this.wallpaperGrid_);
 
     this.wallpaperGrid_.addEventListener('change',
@@ -174,7 +178,7 @@ function WallpaperManager(dialogDom) {
     this.wallpaperRequest_.responseType = 'arraybuffer';
     this.wallpaperRequest_.send(null);
     var self = this;
-    this.wallpaperRequest_.onload = function(e) {
+    this.wallpaperRequest_.addEventListener('load', function(e) {
       //TODO(bshe): Add error handling code.
       if (self.wallpaperRequest_.status === 200) {
         var image = self.wallpaperRequest_.response;
@@ -183,7 +187,7 @@ function WallpaperManager(dialogDom) {
                                              wallpaperURL);
       }
       self.wallpaperRequest_ = null;
-    };
+    });
     this.setWallpaperAttribution_(selectedItem);
   };
 
@@ -197,16 +201,13 @@ function WallpaperManager(dialogDom) {
    */
   WallpaperManager.prototype.setWallpaperAttribution_ = function(selectedItem) {
     if (selectedItem) {
-      this.dialogDom_.querySelector('#author-name').textContent =
-          selectedItem.author;
-      this.dialogDom_.querySelector('#author-website').textContent =
-          this.dialogDom_.querySelector('#author-website').href =
+      $('author-name').textContent = selectedItem.author;
+      $('author-website').textContent = $('author-website').href =
           selectedItem.authorWebsite;
       return;
     }
-    this.dialogDom_.querySelector('#author-name').textContent = '';
-    this.dialogDom_.querySelector('#author-website').textContent =
-        this.dialogDom_.querySelector('#author-website').href = '';
+    $('author-name').textContent = '';
+    $('author-website').textContent = $('author-website').href = '';
   };
 
   /**
@@ -221,7 +222,7 @@ function WallpaperManager(dialogDom) {
    * Constructs the categories list.
    */
   WallpaperManager.prototype.initCategoriesList_ = function() {
-    this.categoriesList_ = this.dialogDom_.querySelector('#categories-list');
+    this.categoriesList_ = $('categories-list');
     cr.ui.List.decorate(this.categoriesList_);
 
     var self = this;
@@ -237,7 +238,8 @@ function WallpaperManager(dialogDom) {
     for (var key in this.manifest_.categories) {
       categoriesDataModel.push(this.manifest_.categories[key]);
     }
-    //TODO(bshe): Add custom wallpaper category once it is ready.
+    // Adds custom category as last category.
+    categoriesDataModel.push(str('customCategoryLabel'));
     this.categoriesList_.dataModel = categoriesDataModel;
   };
 
@@ -262,10 +264,38 @@ function WallpaperManager(dialogDom) {
    * when users select a file.
    */
   WallpaperManager.prototype.onFileSelectorChanged_ = function() {
-    var files = this.dialogDom_.querySelector('#file-selector').files;
+    var files = $('file-selector').files;
     if (files.length != 1)
       console.error('More than one files are selected or no file selected');
+    var reader = new FileReader();
+    reader.readAsArrayBuffer(files[0]);
+    var self = this;
+    // TODO(bshe): Handle file error.
+    reader.addEventListener('load', function(e) {
+      self.customWallpaperData_ = e.target.result;
+      self.refreshWallpaper_(self.customWallpaperData_);
+    });
     this.generateThumbnail_(files[0]);
+  };
+
+  /**
+   * Refreshes the custom wallpaper with the current selected layout.
+   * @param {ArrayBuffer} customWallpaper The raw wallpaper file data.
+   */
+  WallpaperManager.prototype.refreshWallpaper_ = function(customWallpaper) {
+    var setWallpaperLayout = $('set-wallpaper-layout');
+    var layout =
+        setWallpaperLayout.options[setWallpaperLayout.selectedIndex].value;
+    chrome.wallpaperPrivate.setCustomWallpaper(customWallpaper,
+                                               layout);
+  };
+
+  /**
+   * Handles the layout setting change of custom wallpaper.
+   */
+  WallpaperManager.prototype.onWallpaperLayoutChanged_ = function() {
+    if (this.customWallpaperData_)
+      this.refreshWallpaper_(this.customWallpaperData_);
   };
 
   /**
@@ -273,28 +303,23 @@ function WallpaperManager(dialogDom) {
    * @param {Object} file The file user selected from file manager.
    */
   WallpaperManager.prototype.generateThumbnail_ = function(file) {
-    var img = this.dialogDom_.querySelector('#preview');
+    var img = $('preview');
     img.file = file;
     var reader = new FileReader();
-    reader.onload = function(e) {
+    reader.addEventListener('load', function(e) {
       img.src = e.target.result;
-    };
+    });
     reader.readAsDataURL(file);
   };
 
   /**
    * Toggle visibility of custom container and category container.
-   * @param {boolean} show True if display custom container and hide category
-   *     container.
+   * @param {boolean} showCustom True if display custom container and hide
+   *     category container.
    */
-  WallpaperManager.prototype.showCustomContainer_ = function(show) {
-    if (show) {
-      this.dialogDom_.querySelector('#category-container').hidden = true;
-      this.dialogDom_.querySelector('#custom-container').hidden = false;
-    } else {
-      this.dialogDom_.querySelector('#category-container').hidden = false;
-      this.dialogDom_.querySelector('#custom-container').hidden = true;
-    }
+  WallpaperManager.prototype.showCustomContainer_ = function(showCustom) {
+    $('category-container').hidden = showCustom;
+    $('custom-container').hidden = !showCustom;
   };
 
   /**

@@ -103,6 +103,14 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // Cancel any previous timer if any.
   void RestartTimer();
 
+  // Saves custom wallpaper to file, post task to generate thumbnail and updates
+  // local state preferences.
+  void SetCustomWallpaper(const std::string& username,
+                          ash::WallpaperLayout layout,
+                          User::WallpaperType type,
+                          base::WeakPtr<WallpaperDelegate> delegate,
+                          const UserImage& wallpaper);
+
   // Tries to load user image from disk; if successful, sets it for the user,
   // and updates Local State.
   void SetUserWallpaperFromFile(const std::string& username,
@@ -240,14 +248,6 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
 
   // Saves wallpaper image raw |data| to |path| (absolute path) in file system.
   void SaveWallpaperInternal(const FilePath& path, const char* data, int size);
-
-  // Saves custom wallpaper to file, post task to generate thumbnail and updates
-  // local state preferences.
-  void SetCustomWallpaper(const std::string& username,
-                          ash::WallpaperLayout layout,
-                          User::WallpaperType type,
-                          base::WeakPtr<WallpaperDelegate> delegate,
-                          const UserImage& wallpaper);
 
   // Whether wallpaper data should be persisted for user |email|.
   // Note: this function can not be called in SetUserWallpaperProperties. It

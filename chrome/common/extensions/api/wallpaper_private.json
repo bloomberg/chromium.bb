@@ -46,6 +46,23 @@
             "name": "url"
           }
         ]
+      },
+      {
+        "name": "setCustomWallpaper",
+        "type": "function",
+        "description": "Sets wallpaper to the image from local file with specified layout",
+        "nodoc": "true",
+        "parameters": [
+          {
+            "type": "binary",
+            "name": "wallpaper"
+          },
+          {
+            "type": "string",
+            "name": "layout",
+            "enum": [ "STRETCH", "CENTER", "CENTER_CROPPED"]
+          }
+        ]
       }
     ]
   }

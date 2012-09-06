@@ -391,6 +391,7 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   // WallpaperManagerPrivate functions.
   RegisterFunction<WallpaperStringsFunction>();
   RegisterFunction<WallpaperSetWallpaperFunction>();
+  RegisterFunction<WallpaperSetCustomWallpaperFunction>();
 
   // InputMethod
   RegisterFunction<GetInputMethodFunction>();
