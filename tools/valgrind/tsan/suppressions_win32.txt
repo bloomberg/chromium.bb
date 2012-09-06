@@ -1,22 +1,4 @@
 ############################
-# Chromium
-
-{
-  Benign race durung InitializeClock
-  ThreadSanitizer:Race
-  ...
-  fun:*InitializeClock*
-}
-
-{
-  bug_62560
-  ThreadSanitizer:Race
-  ...
-  fun:_initterm
-  fun:doexit
-}
-
-############################
 # Reports on the guts of Windows
 {
   UuidCreate
@@ -45,11 +27,45 @@
   ThreadSanitizer:InvalidLock
   fun:unnamedImageEntryPoint
 }
+
 {
   accessing an invalid lock in CoFreeAllLibraries
   ThreadSanitizer:InvalidLock
   fun:CoFreeAllLibraries
 }
+
+{
+  bug_146724_benign_a
+  ThreadSanitizer:Race
+  fun:_lock_file
+  fun:vprintf_helper
+  fun:vprintf
+}
+{
+  bug_146724_benign_b
+  ThreadSanitizer:Race
+  fun:_getstream
+  fun:_wfsopen
+}
+
+############################
+# Chromium
+
+{
+  Benign race durung InitializeClock
+  ThreadSanitizer:Race
+  ...
+  fun:*InitializeClock*
+}
+
+{
+  bug_62560
+  ThreadSanitizer:Race
+  ...
+  fun:_initterm
+  fun:doexit
+}
+
 {
   accessing an invalid lock under exit/doexit
   ThreadSanitizer:InvalidLock
