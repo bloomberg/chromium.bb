@@ -1216,8 +1216,6 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
 
   // In case LoadRequest failed before DidCreateDataSource was called.
   pending_navigation_params_.reset();
-
-  UNSHIPPED_TRACE_EVENT_INSTANT0("test_tracing", "RenderViewImpl::OnNavigate");
 }
 
 bool RenderViewImpl::IsBackForwardToStaleEntry(
@@ -4811,6 +4809,7 @@ void RenderViewImpl::OnScriptEvalRequest(const string16& frame_xpath,
                                          const string16& jscript,
                                          int id,
                                          bool notify_result) {
+  UNSHIPPED_TRACE_EVENT_INSTANT0("test_tracing", "OnScriptEvalRequest");
   EvaluateScript(frame_xpath, jscript, id, notify_result);
 }
 
