@@ -108,19 +108,21 @@ ImageEditor.prototype.prefetchImage = function(url) {
  *
  * @param {string} url Image url.
  * @param {object} metadata Metadata.
- * @param {number} slide Slide direction.
+ * @param {object} effect Transition effect object.
  * @param {function(function)} saveFunction Image save function.
- * @param {function} callback Completion callback.
+ * @param {function} displayCallback Display callback.
+ * @param {function} loadCallback Load callback.
  */
 ImageEditor.prototype.openSession = function(
-    url, metadata, slide, saveFunction, callback) {
+    url, metadata, effect, saveFunction, displayCallback, loadCallback) {
   if (this.commandQueue_)
     throw new Error('Session not closed');
 
   this.lockUI(true);
 
   var self = this;
-  this.imageView_.load(url, metadata, slide, function(loadType) {
+  this.imageView_.load(
+      url, metadata, effect, displayCallback, function(loadType) {
     self.lockUI(false);
     self.commandQueue_ = new CommandQueue(
         self.container_.ownerDocument,
@@ -129,7 +131,7 @@ ImageEditor.prototype.openSession = function(
     self.commandQueue_.attachUI(
         self.getImageView(), self.getPrompt(), self.lockUI.bind(self));
     self.updateUndoRedo();
-    callback(loadType);
+    loadCallback(loadType);
   });
 };
 

@@ -27,31 +27,20 @@ function MosaicMode(container, dataModel, selectionModel,
 MosaicMode.prototype.getName = function() { return 'mosaic' };
 
 /**
- * Load and display items.
- *
- * @param {function} opt_callback Callback.
+ * Initialize the mosaic.
  */
-MosaicMode.prototype.enter = function(opt_callback) {
-  this.mosaic_.enable();
-  if (opt_callback) opt_callback();
-};
+MosaicMode.prototype.init = function() { this.mosaic_.init() };
 
 /**
- * Leave the mode.
- *
- * @param {function} opt_callback Callback.
+ * Enter the mosaic mode.
  */
-MosaicMode.prototype.leave = function(opt_callback) {
-  this.mosaic_.disable(opt_callback);
-};
+MosaicMode.prototype.enter = function() { this.mosaic_.enter() };
 
 /**
  * Execute an action (this mode has no busy state).
  * @param {function} action Action to execute.
  */
-MosaicMode.prototype.executeWhenReady = function(action) {
-  action();
-};
+MosaicMode.prototype.executeWhenReady = function(action) { action() };
 
 /**
  * @return {boolean} Always true (no toolbar fading in this mode).
@@ -71,6 +60,14 @@ MosaicMode.prototype.onKeyDown = function(event) {
       return true;
   }
   return this.mosaic_.onKeyDown(event);
+};
+
+/**
+ * @return {Rect} Selected tile image rectangle. Used for animated transition
+ *   to/from Slide mode.
+ */
+MosaicMode.prototype.getSelectedTileRect = function() {
+  return this.mosaic_.getSelectedTileRect();
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -117,43 +114,40 @@ Mosaic.decorate = function(self, dataModel, selectionModel, metadataCache) {
   self.selectionModel_ = selectionModel;
   self.metadataCache_ = metadataCache;
 
-  // Initialization is completed lazily on the first call to |enable|.
+  // Initialization is completed lazily on the first call to |init|.
 };
 
 /**
- * Enable the mosaic element.
+ * Initialize the mosaic element.
  */
-Mosaic.prototype.enable = function() {
-  this.setAttribute('enabled', true);
+Mosaic.prototype.init = function() {
+  if (this.tiles_)
+    return; // Already initialized, nothing to do.
 
-  if (this.tiles_) {
-    // Already initialized, show and animate the selected item.
-    var tile = this.getSelectedTile();
-    if (tile) {
-      tile.scrollIntoView();
-      tile.zoom(true);
-    }
-  } else {
-    // Complete the initialization. No animation as the layout is not done yet.
-    this.layoutModel_ = new Mosaic.Layout(this);
-    this.selectionController_ =
-        new Mosaic.SelectionController(this.selectionModel_, this.layoutModel_);
+  this.layoutModel_ = new Mosaic.Layout(this);
+  this.selectionController_ =
+      new Mosaic.SelectionController(this.selectionModel_, this.layoutModel_);
 
-    this.tiles_ = [];
-    for (var i = 0; i != this.dataModel_.length; i++)
-      this.tiles_.push(new Mosaic.Tile(this, this.dataModel_.item(i)));
+  this.tiles_ = [];
+  for (var i = 0; i != this.dataModel_.length; i++)
+    this.tiles_.push(new Mosaic.Tile(this, this.dataModel_.item(i)));
 
-    var tile = this.getSelectedTile();
-    if (tile)
-      tile.select(true);
+  var tile = this.getSelectedTile();
+  if (tile)
+    tile.select(true);
 
-    // Do not initialize the listeners until all tiles are loaded and laid out.
-    this.loadTiles_(this.tiles_, this.initListeners_.bind(this));
-  }
+  this.loadTiles_(this.tiles_);
+
+  // The listeners might be called while some tiles are still loading.
+  this.initListeners_();
 };
 
 /**
  * Start listening to events.
+ *
+ * We keep listening to events even when the mosaic is hidden in order to
+ * keep the layout up to date.
+ *
  * @private
  */
 Mosaic.prototype.initListeners_ = function() {
@@ -173,29 +167,26 @@ Mosaic.prototype.initListeners_ = function() {
 };
 
 /**
- * Disable the mosaic element.
- *
- * @param {function} opt_callback Completion callback.
- */
-Mosaic.prototype.disable = function(opt_callback) {
-  this.removeAttribute('enabled');
-  // If there is no selection try tile #0 because this is what the Slide mode
-  // will select.
-  var tile = this.getSelectedTile() || this.tiles_[0];
-  if (tile) {
-    tile.zoom(false, opt_callback);
-  } else {
-    if (opt_callback) opt_callback();
-  }
-  // We continue listening to events to keep the layout up to date.
-  // TODO: animate the selected item to occupy the entire window.
-};
-
-/**
  * @return {Mosaic.Tile} Selected tile or undefined if no selection.
  */
 Mosaic.prototype.getSelectedTile = function() {
-  return this.tiles_[this.selectionModel_.selectedIndex];
+  return this.tiles_ && this.tiles_[this.selectionModel_.selectedIndex];
+};
+
+/**
+ * @return {Rect} Selected tile's image rectangle.
+ */
+Mosaic.prototype.getSelectedTileRect = function() {
+  var tile = this.getSelectedTile();
+  return tile && tile.getImageRect();
+};
+
+/**
+ * Called when showing the mosaic after the slide mode.
+ */
+Mosaic.prototype.enter = function() {
+  var tile = this.getSelectedTile();
+  if (tile) tile.scrollIntoView();
 };
 
 /**
@@ -319,7 +310,8 @@ Mosaic.prototype.onMouseEvent_ = function(event) {
 Mosaic.prototype.onSelection_ = function(event) {
   for (var i = 0; i != event.changes.length; i++) {
     var change = event.changes[i];
-    this.tiles_[change.index].select(change.selected);
+    var tile = this.tiles_[change.index];
+    if (tile) tile.select(change.selected);
   }
 };
 
@@ -331,8 +323,10 @@ Mosaic.prototype.onSelection_ = function(event) {
  */
 Mosaic.prototype.onLeadChange_ = function(event) {
   var index = event.newValue;
-  if (index >= 0)
-    this.tiles_[index].scrollIntoView();
+  if (index >= 0) {
+    var tile = this.tiles_[index];
+    if (tile) tile.scrollIntoView();
+  }
 };
 
 /**
@@ -421,6 +415,11 @@ Mosaic.SelectionController.prototype.__proto__ =
     cr.ui.ListSelectionController.prototype;
 
 /** @inheritDoc */
+Mosaic.SelectionController.prototype.getLastIndex = function() {
+  return this.layoutModel_.getLaidOutTileCount() - 1;
+};
+
+/** @inheritDoc */
 Mosaic.SelectionController.prototype.getIndexBefore = function(index) {
   return this.layoutModel_.getAdjacentIndex(index, -1);
 };
@@ -456,12 +455,19 @@ Mosaic.Layout.PADDING = 50;
 Mosaic.Layout.SPACING = 10;
 
 /**
- * @return {number} Number of tiles in the layout.
+ * @return {number} Total number of tiles added to the layout.
  */
 Mosaic.Layout.prototype.getTileCount = function() {
-  var lastColumn = this.columns_[this.columns_.length - 1];
-  return (lastColumn ? lastColumn.getLastTileIndex() : 0) +
+  return this.getLaidOutTileCount() +
       (this.newColumn_ ? this.newColumn_.getTileCount() : 0);
+};
+
+/**
+ * @return {number} Total number of tiles in completed columns.
+ */
+Mosaic.Layout.prototype.getLaidOutTileCount = function() {
+  var lastColumn = this.columns_[this.columns_.length - 1];
+  return lastColumn ? lastColumn.getLastTileIndex() : 0;
 };
 
 /**
@@ -962,6 +968,7 @@ Mosaic.Tile.decorate = function(self, container, item) {
 
   self.container_ = container;
   self.item_ = item;
+  self.left_ = null; // Mark as not laid out.
 };
 
 /**
@@ -1020,6 +1027,7 @@ Mosaic.Tile.prototype.isLoaded = function() { return !!this.maxContentHeight_ };
  */
 Mosaic.Tile.prototype.load = function(metadata, opt_callback) {
   this.maxContentHeight_ = 0;  // Prevent layout of this while loading.
+  this.left_ = null;  // Mark as not laid out.
 
   this.thumbnailLoader_ =
       new ThumbnailLoader(this.getItem().getUrl(), metadata);
@@ -1085,10 +1093,10 @@ Mosaic.Tile.prototype.layout = function(left, top, width, height) {
     this.container_.appendChild(this);
     var border = util.createChild(this, 'img-border');
     this.wrapper_ = util.createChild(border, 'img-wrapper');
-
-    if (this.hasAttribute('selected'))
-      this.scrollIntoView();
   }
+  if (this.hasAttribute('selected'))
+    this.scrollIntoView();
+
   this.thumbnailLoader_.attachImage(this.wrapper_, true /* fill */);
 };
 
@@ -1096,6 +1104,9 @@ Mosaic.Tile.prototype.layout = function(left, top, width, height) {
  * If the tile is not fully visible scroll the parent to make it fully visible.
  */
 Mosaic.Tile.prototype.scrollIntoView = function() {
+  if (this.left_ == null)  // Not laid out.
+    return;
+
   if (this.left_ < this.container_.scrollLeft) {
     this.container_.scrollLeft = this.left_;
   } else {
@@ -1107,52 +1118,14 @@ Mosaic.Tile.prototype.scrollIntoView = function() {
 };
 
 /**
- * Zoom the tile to/from a larger size that fills the Slide mode viewport.
- *
- * @param {boolean} direction True of entering the mosaic mode.
- * @param {function} opt_callback Callback.
+ * @return {Rect} Rectangle occupied by the tile's image,
+ *   relative to the viewport.
  */
-Mosaic.Tile.prototype.zoom = function(direction, opt_callback) {
-  var normalWidth = this.width_ - Mosaic.Layout.SPACING;
-  var normalHeight = this.height_ - Mosaic.Layout.SPACING;
+Mosaic.Tile.prototype.getImageRect = function() {
+  if (this.left_ == null)  // Not laid out.
+    return null;
 
-  var normalCenterX = this.left_ + this.width_ / 2;
-  var normalCenterY = this.top_ + this.height_ / 2;
-
-  var zoomedWidth = this.container_.clientWidth;
-  // The Slide mode uses more vertical space, as it occupies the entire
-  // 'content' container (which is a parent of this.container_).
-  var zoomedHeight = this.container_.parentNode.clientHeight;
-
-  var zoomedCenterX = this.container_.scrollLeft + zoomedWidth / 2;
-  var zoomedCenterY = zoomedHeight / 2;
-
-  var scale = Math.min(zoomedWidth / normalWidth, zoomedHeight / normalHeight);
-  var shiftX = zoomedCenterX - normalCenterX;
-  var shiftY = zoomedCenterY - normalCenterY;
-
-  var transform = 'translateX(' + shiftX + 'px) translateY(' + shiftY + 'px) ' +
-      'scale(' + scale + ')';
-
-  var duration = 280;
-
-  this.setAttribute('zooming', true);
-
-  // Set the original transform instantly.
-  this.style.webkitTransitionDuration = '';
-  this.style.webkitTransform = direction ? transform : '';
-
-  // Animate to the target transform on the next CSS layout.
-  setTimeout(function() {
-    this.style.webkitTransitionDuration = duration + 'ms';
-    this.style.webkitTransform = direction ? '' : transform;
-  }.bind(this), 0);
-
-  setTimeout(function() {
-    if (opt_callback) opt_callback();
-    this.removeAttribute('zooming');
-    // Reset the transform instantly.
-    this.style.webkitTransitionDuration = '';
-    this.style.webkitTransform = '';
-  }.bind(this), duration + 100 /* error margin */);
+  var margin = Mosaic.Layout.SPACING / 2;
+  return new Rect(this.left_ - this.container_.scrollLeft, this.top_,
+      this.width_, this.height_).inflate(-margin, -margin);
 };

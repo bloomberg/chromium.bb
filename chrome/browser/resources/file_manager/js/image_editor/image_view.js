@@ -297,10 +297,23 @@ ImageView.prototype.cancelLoad = function() {
  *
  * @param {string} url Image url.
  * @param {Object} metadata Metadata.
- * @param {Object} slide Slide-in animation direction.
- * @param {function(number} opt_callback The parameter is the load type.
+ * @param {Object} effect Transition effect object.
+ * @param {function(number} displayCallback Called when the image is displayed
+ *   (possibly as a prevew).
+ * @param {function(number} loadCallback Called when the image is fully loaded.
+ *   The parameter is the load type.
  */
-ImageView.prototype.load = function(url, metadata, slide, opt_callback) {
+ImageView.prototype.load = function(url, metadata, effect,
+                                    displayCallback, loadCallback) {
+  if (effect) {
+    // Skip effects when reloading repeatedly very quickly.
+    var time = Date.now();
+    if (this.lastLoadTime_ &&
+       (time - this.lastLoadTime_) < ImageView.FAST_SCROLL_INTERVAL) {
+      effect = null;
+    }
+    this.lastLoadTime_ = time;
+  }
 
   metadata = metadata || {};
 
@@ -314,9 +327,11 @@ ImageView.prototype.load = function(url, metadata, slide, opt_callback) {
   var loadingVideo = FileType.getMediaType(url) == 'video';
   if (loadingVideo) {
     var video = this.document_.createElement('video');
-    if (metadata.thumbnail && metadata.thumbnail.url) {
+    var videoPreview = !!(metadata.thumbnail && metadata.thumbnail.url);
+    if (videoPreview) {
       video.setAttribute('poster', metadata.thumbnail.url);
-      this.replace(video, slide); // Show the poster immediately.
+      this.replace(video, effect); // Show the poster immediately.
+      if (displayCallback) displayCallback();
     }
     video.addEventListener('loadedmetadata', onVideoLoad);
     video.addEventListener('error', onVideoLoad);
@@ -329,79 +344,64 @@ ImageView.prototype.load = function(url, metadata, slide, opt_callback) {
     function onVideoLoad() {
       video.removeEventListener('loadedmetadata', onVideoLoad);
       video.removeEventListener('error', onVideoLoad);
-      displayMainImage(ImageView.LOAD_TYPE_VIDEO_FILE, slide,
-          !!(metadata.thumbnail && metadata.thumbnail.url) /* preview shown */,
-          video);
+      displayMainImage(ImageView.LOAD_TYPE_VIDEO_FILE, videoPreview, video);
     }
     return;
   }
   var cached = this.contentCache_.getItem(this.contentID_);
   if (cached) {
-    displayMainImage(ImageView.LOAD_TYPE_CACHED_FULL, slide,
+    displayMainImage(ImageView.LOAD_TYPE_CACHED_FULL,
         false /* no preview */, cached);
   } else {
     var cachedScreen = this.screenCache_.getItem(this.contentID_);
     if (cachedScreen) {
       // We have a cached screen-scale canvas, use it instead of a thumbnail.
-      displayThumbnail(ImageView.LOAD_TYPE_CACHED_SCREEN, slide, cachedScreen);
+      displayThumbnail(ImageView.LOAD_TYPE_CACHED_SCREEN, cachedScreen);
       // As far as the user can tell the image is loaded. We still need to load
       // the full res image to make editing possible, but we can report now.
       ImageUtil.metrics.recordInterval(ImageUtil.getMetricName('DisplayTime'));
-    } else if (metadata.thumbnail && metadata.thumbnail.url) {
+    } else if ((!effect || (effect.constructor.name == 'Slide')) &&
+        metadata.thumbnail && metadata.thumbnail.url) {
+      // Only show thumbnails if there is no effect or the effect is Slide.
       this.imageLoader_.load(
           metadata.thumbnail.url,
           function(url, callback) { callback(metadata.thumbnail.transform); },
-          displayThumbnail.bind(null, ImageView.LOAD_TYPE_IMAGE_FILE, slide));
+          displayThumbnail.bind(null, ImageView.LOAD_TYPE_IMAGE_FILE));
     } else {
-      loadMainImage(ImageView.LOAD_TYPE_IMAGE_FILE, slide, url,
+      loadMainImage(ImageView.LOAD_TYPE_IMAGE_FILE, url,
           false /* no preview*/, 0 /* delay */);
     }
   }
 
-  function displayThumbnail(loadType, slide, canvas) {
-    // The thumbnail may have different aspect ratio than the main image.
-    // Force the main image proportions to avoid flicker.
-    var time = Date.now();
-
-    var mainImageLoadDelay = ImageView.ANIMATION_WAIT_INTERVAL;
-    var mainImageSlide = slide;
-
-    // Do not do slide-in animation when scrolling very fast.
-    if (self.lastLoadTime_ &&
-        (time - self.lastLoadTime_) < ImageView.FAST_SCROLL_INTERVAL) {
-      mainImageSlide = 0;
-    }
-    self.lastLoadTime_ = time;
-
-    if (canvas.width) {
+  function displayThumbnail(loadType, canvas) {
+    var previewAvailable = !!canvas.width;
+    if (previewAvailable) {
+      // The thumbnail may have different aspect ratio than the main image.
+      // Force the main image proportions to avoid flicker.
       if (!metadata.media.width) {
         // We do not know the main image size, but chances are that it is large
         // enough. Show the thumbnail at the maximum possible scale.
         var bounds = self.viewport_.getScreenBounds();
         var scale = Math.min(bounds.width / canvas.width,
                              bounds.height / canvas.height);
-        self.replace(canvas, slide,
+        self.replace(canvas, effect,
             canvas.width * scale, canvas.height * scale, true /* preview */);
       } else {
-        self.replace(canvas, slide,
+        self.replace(canvas, effect,
             metadata.media.width, metadata.media.height, true /* preview */);
       }
-      if (!mainImageSlide) mainImageLoadDelay = 0;
-      mainImageSlide = 0;
-    } else {
-      // Thumbnail image load failed, loading the main image immediately.
-      mainImageLoadDelay = 0;
+      if (displayCallback) displayCallback();
     }
-    loadMainImage(loadType, mainImageSlide, url,
-        canvas.width != 0, mainImageLoadDelay);
+    loadMainImage(loadType, url, previewAvailable,
+        (effect && previewAvailable) ? ImageView.ANIMATION_WAIT_INTERVAL : 0);
   }
 
-  function loadMainImage(loadType, slide, contentURL, previewShown, delay) {
+  function loadMainImage(loadType, contentURL, previewShown, delay) {
     if (self.prefetchLoader_.isLoading(contentURL)) {
       // The image we need is already being prefetched. Initiating another load
       // would be a waste. Hijack the load instead by overriding the callback.
       self.prefetchLoader_.setCallback(
-          displayMainImage.bind(null, loadType, slide, previewShown));
+          displayMainImage.bind(null, loadType, previewShown));
 
       // Swap the loaders so that the self.isLoading works correctly.
       var temp = self.prefetchLoader_;
@@ -414,11 +414,11 @@ ImageView.prototype.load = function(url, metadata, slide, opt_callback) {
     self.imageLoader_.load(
         contentURL,
         self.localImageTransformFetcher_,
-        displayMainImage.bind(null, loadType, slide, previewShown),
+        displayMainImage.bind(null, loadType, previewShown),
         delay);
   }
 
-  function displayMainImage(loadType, slide, previewShown, content) {
+  function displayMainImage(loadType, previewShown, content) {
     if ((!loadingVideo && !content.width) ||
         (loadingVideo && !content.duration)) {
       loadType = ImageView.LOAD_TYPE_ERROR;
@@ -432,7 +432,8 @@ ImageView.prototype.load = function(url, metadata, slide, opt_callback) {
     if (!(previewShown &&
         (loadType == ImageView.LOAD_TYPE_ERROR ||
          loadType == ImageView.LOAD_TYPE_VIDEO_FILE))) {
-      self.replace(content, slide);
+      self.replace(content, previewShown ? null : effect);
+      if (!previewShown && displayCallback) displayCallback();
     }
 
     if (loadType != ImageView.LOAD_TYPE_ERROR &&
@@ -447,7 +448,7 @@ ImageView.prototype.load = function(url, metadata, slide, opt_callback) {
       // |streaming| is set only when the file is not locally cached.
       loadType = ImageView.LOAD_TYPE_OFFLINE;
     }
-    if (opt_callback) opt_callback(loadType);
+    if (loadCallback) loadCallback(loadType);
   }
 };
 
@@ -492,8 +493,15 @@ ImageView.prototype.changeUrl = function(newUrl) {
 
 /**
  * Unload content.
+ *
+ * @param {Rect} zoomToRect Target rectangle for zoom-out-effect.
  */
-ImageView.prototype.unload = function() {
+ImageView.prototype.unload = function(zoomToRect) {
+  if (zoomToRect) {
+    this.setTransform(this.screenImage_, this.createZoomEffect(zoomToRect));
+    setTimeout(this.unload.bind(this), ImageView.ANIMATION_WAIT_INTERVAL + 100);
+    return;
+  }
   this.container_.textContent = '';
   this.contentCanvas_ = null;
   this.screenImage_ = null;
@@ -601,31 +609,24 @@ ImageView.prototype.updateThumbnail_ = function(canvas) {
  * Replace the displayed image, possibly with slide-in animation.
  *
  * @param {HTMLCanvasElement|HTMLVideoElement} content The image element.
- * @param {number} opt_slide Slide-in animation direction.
- *           <0 for right-to-left, > 0 for left-to-right, 0 for no animation.
+ * @param {object} opt_effect Transition effect object.
  * @param {number} opt_width Image width.
  * @param {number} opt_height Image height.
  * @param {boolean} opt_preview True if the image is a preview (not full res).
  */
 ImageView.prototype.replace = function(
-    content, opt_slide, opt_width, opt_height, opt_preview) {
+    content, opt_effect, opt_width, opt_height, opt_preview) {
   var oldScreenImage = this.screenImage_;
 
-  this.replaceContent_(content, !opt_slide, opt_width, opt_height, opt_preview);
+  this.replaceContent_(
+      content, !opt_effect, opt_width, opt_height, opt_preview);
 
-  opt_slide = opt_slide || 0;
-  // TODO(kaznacheev): The line below is too obscure.
-  // Refactor the whole 'slide' thing for clarity.
-  if (!opt_slide && !this.getVideo()) return;
+  if (!opt_effect) return;
 
   var newScreenImage = this.screenImage_;
 
-  function numToSlideAttr(num) {
-    return num < 0 ? 'left' : num > 0 ? 'right' : 'center';
-  }
-
   ImageUtil.setAttribute(newScreenImage, 'fade', true);
-  this.setTransform(newScreenImage, opt_slide);
+  this.setTransform(newScreenImage, opt_effect);
   this.container_.appendChild(newScreenImage);
 
   setTimeout(function() {
@@ -633,7 +634,7 @@ ImageView.prototype.replace = function(
     this.setTransform(newScreenImage);
     if (oldScreenImage) {
       ImageUtil.setAttribute(oldScreenImage, 'fade', true);
-      this.setTransform(oldScreenImage, -opt_slide);
+      this.setTransform(oldScreenImage, opt_effect.getReverse());
       setTimeout(function() {
         oldScreenImage.parentNode.removeChild(oldScreenImage);
       }, ImageView.ANIMATION_WAIT_INTERVAL);
@@ -643,46 +644,20 @@ ImageView.prototype.replace = function(
 
 /**
  * @param {HTMLCanvasElement|HTMLVideoElement} element The element to transform.
- * @param {number} opt_slide The slide direction, positive for right.
+ * @param {ImageView.Effect} opt_effect The effect to apply.
  */
-ImageView.prototype.setTransform = function(element, opt_slide) {
-  var transform = '';
-  if (element.constructor.name == 'HTMLCanvasElement' &&
-      this.viewport_.getDevicePixelRatio() != 1) {
-    var scale = 1 / this.viewport_.getDevicePixelRatio();
-    transform += 'scale(' + scale + ') ';
-  }
-  if (opt_slide) {
-    var shift = (opt_slide > 0) ? 40 : -40;
-    transform += 'translate(' + shift + 'px, 0px)';
-  }
-  element.style.webkitTransform = transform;
+ImageView.prototype.setTransform = function(element, opt_effect) {
+  if (!opt_effect) opt_effect = new ImageView.Effect.None();
+  element.style.webkitTransform = opt_effect.transform(element, this.viewport_);
 };
 
 /**
- * Transform the canvas to visualize an editing operation.
- *
- * @param {HTMLCanvasElement} canvas The canvas to transform.
- * @param {Rect} rect1 Source rectangle. If null no translation is performed.
- * @param {Rect} rect2 Target rectangle. If null no translation is performed.
- * @param {number} scale Transform scale.
- * @param {number} rotate90 Rotation in 90 degree increments.
+ * @param {Rect} screenRect Target rectangle in screen coordinates.
+ * @return {ImageView.Effect.Zoom} Zoom effect object.
  */
-ImageView.prototype.setTransformWithEffect = function(
-    canvas, rect1, rect2, scale, rotate90) {
-  var ratio = this.viewport_.getDevicePixelRatio();
-  var transform = '';
-  if (rotate90) {
-    transform += 'rotate(' + rotate90 * 90 + 'deg) ';
-  }
-  if (rect1 && rect2) {
-    var dx = (rect1.left + rect1.width / 2) - (rect2.left + rect2.width / 2);
-    var dy = (rect1.top + rect1.height / 2) - (rect2.top + rect2.height / 2);
-    transform += 'translate(' + (dx / ratio) + 'px,' + (dy / ratio) + 'px) ';
-  }
-  transform += 'scale(' + (scale / ratio) + ')';
-
-  canvas.style.webkitTransform = transform;
+ImageView.prototype.createZoomEffect = function(screenRect) {
+  return new ImageView.Effect.Zoom(
+      this.viewport_.screenToDeviceRect(screenRect));
 };
 
 /**
@@ -709,12 +684,10 @@ ImageView.prototype.replaceAndAnimate = function(
 
   //Transform instantly.
   newScreenImage.style.webkitTransitionDuration = '0ms';
-  this.setTransformWithEffect(
-      newScreenImage,
-      deviceCropRect,
-      deviceFullRect,
-      oldScale / this.viewport_.getScale(),
-      -rotate90);
+  this.setTransform(newScreenImage, rotate90 ?
+      new ImageView.Effect.Rotate(
+          oldScale / this.viewport_.getScale(), -rotate90) :
+      new ImageView.Effect.Zoom(deviceCropRect, deviceFullRect));
 
   oldScreenImage.parentNode.appendChild(newScreenImage);
   oldScreenImage.parentNode.removeChild(oldScreenImage);
@@ -750,12 +723,8 @@ ImageView.prototype.animateAndReplace = function(canvas, imageCropRect) {
   oldScreenImage.parentNode.insertBefore(newScreenImage, oldScreenImage);
 
   // Animate to the transformed state.
-  this.setTransformWithEffect(
-      oldScreenImage,
-      deviceCropRect,
-      deviceFullRect,
-      this.viewport_.getScale() / oldScale,
-      0);
+  this.setTransform(oldScreenImage,
+      new ImageView.Effect.Zoom(deviceCropRect, deviceFullRect));
 
   setTimeout(setFade.bind(null, false), 0);
 
@@ -839,4 +808,131 @@ ImageView.Cache.prototype.renameItem = function(oldId, newId) {
   this.order_[pos] = newId;
   this.map_[newId] = this.map_[oldId];
   delete this.map_[oldId];
+};
+
+/* Transition effects */
+
+/**
+ * Namespace for effects.
+ *
+ * Effects are classes having similar interfaces. Using inheritance seems to be
+ * an overkill here.
+ */
+ImageView.Effect = {};
+
+/**
+ * @param {HTMLCanvasElement|HTMLVideoElement} element Element.
+ * @return {number} Preferred pixel ration to use with this element.
+ * @private
+ */
+ImageView.Effect.getPixelRatio_ = function(element) {
+  if (element.constructor.name == 'HTMLCanvasElement')
+    return Viewport.getDevicePixelRatio();
+  else
+    return 1;
+};
+
+/**
+ * Default effect. It is not a no-op as it needs to adjust a canvas scale
+ * for devicePixelRatio.
+ *
+ * @constructor
+ */
+ImageView.Effect.None = function() {};
+
+/**
+ * @param {HTMLCanvasElement|HTMLVideoElement} element Element.
+ * @return {string} Transform string.
+ */
+ImageView.Effect.None.prototype.transform = function(element) {
+  var ratio = ImageView.Effect.getPixelRatio_(element);
+  return 'scale(' + (1 / ratio) + ')';
+};
+
+/**
+ * Slide effect.
+ *
+ * @param {number} direction -1 for left, 1 for right.
+ * @constructor
+ */
+ImageView.Effect.Slide = function Slide(direction) {
+  this.direction_ = direction;
+};
+
+/**
+ * @return {ImageView.Effect.Slide} Reverse Slide effect.
+ */
+ImageView.Effect.Slide.prototype.getReverse = function() {
+  return new ImageView.Effect.Slide(-this.direction_);
+};
+
+/**
+ * @param {HTMLCanvasElement|HTMLVideoElement} element Element.
+ * @return {string} Transform string.
+ */
+ImageView.Effect.Slide.prototype.transform = function(element) {
+  var ratio = ImageView.Effect.getPixelRatio_(element);
+  var shift = (this.direction_ > 0) ? 40 : -40;
+  return 'scale(' + (1 / ratio) + ') translate(' + shift + 'px, 0px)';
+};
+
+/**
+ * Zoom effect.
+ *
+ * Animates the original rectangle to the target rectangle. Both parameters
+ * should be given in device coordinates (accounting for devicePixelRatio).
+ *
+ * @param {Rect} deviceTargetRect Target rectangle.
+ * @param {Rect} opt_deviceOriginalRect Original rectangle. If omitted,
+ *   the full viewport will be used at the time of |transform| call.
+ * @constructor
+ */
+ImageView.Effect.Zoom = function(deviceTargetRect, opt_deviceOriginalRect) {
+  this.target_ = deviceTargetRect;
+  this.original_ = opt_deviceOriginalRect;
+};
+
+/**
+ * @param {HTMLCanvasElement|HTMLVideoElement} element Element.
+ * @param {Viewport} viewport Viewport.
+ * @return {string} Transform string.
+ */
+ImageView.Effect.Zoom.prototype.transform = function(element, viewport) {
+  if (!this.original_)
+    this.original_ = viewport.getDeviceClipped();
+
+  var ratio = ImageView.Effect.getPixelRatio_(element);
+
+  var dx = (this.target_.left + this.target_.width / 2) -
+           (this.original_.left + this.original_.width / 2);
+  var dy = (this.target_.top + this.target_.height / 2) -
+           (this.original_.top + this.original_.height / 2);
+
+  var scaleX = this.target_.width / this.original_.width;
+  var scaleY = this.target_.height / this.original_.height;
+
+  return 'translate(' + (dx / ratio) + 'px,' + (dy / ratio) + 'px) ' +
+    'scaleX(' + (scaleX / ratio) + ') scaleY(' + (scaleY / ratio) + ')';
+};
+
+/**
+ * Rotate effect
+ *
+ * @param {number} scale Scale.
+ * @param {number} rotate90 Rotation in 90 degrees increments.
+ * @constructor
+ */
+ImageView.Effect.Rotate = function(scale, rotate90) {
+  this.scale_ = scale;
+  this.rotate90_ = rotate90;
+};
+
+/**
+ * @param {HTMLCanvasElement|HTMLVideoElement} element Element.
+ * @return {string} Transform string.
+ */
+ImageView.Effect.Rotate.prototype.transform = function(element) {
+  var ratio = ImageView.Effect.getPixelRatio_(element);
+  return 'rotate(' + (this.rotate90_ * 90) + 'deg) ' +
+         'scale(' + (this.scale_ / ratio) + ')';
 };

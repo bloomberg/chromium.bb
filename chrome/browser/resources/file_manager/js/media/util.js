@@ -20,6 +20,8 @@ function MouseInactivityWatcher(container, opt_timeout, opt_toolsActive) {
   this.timeoutID_ = null;
   this.mouseOverTool_ = false;
 
+  this.clientX_ = 0;
+  this.clientY_ = 0;
   this.container_.addEventListener('mousemove', this.onMouseMove_.bind(this));
 }
 

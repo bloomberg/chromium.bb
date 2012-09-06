@@ -100,7 +100,7 @@ Viewport.prototype.getFittingScale = function() {
   var scaleY = this.screenBounds_.height / this.imageBounds_.height;
   // Scales > (1 / this.getDevicePixelRatio()) do not look good. Also they are
   // not really useful as we do not have any pixel-level operations.
-  return Math.min(1 / this.getDevicePixelRatio(), scaleX, scaleY);
+  return Math.min(1 / Viewport.getDevicePixelRatio(), scaleX, scaleY);
 };
 
 /**
@@ -293,9 +293,7 @@ Viewport.prototype.imageToScreenRect = function(rect) {
 /**
  * @return {number} The number of physical pixels in one CSS pixel.
  */
-Viewport.prototype.getDevicePixelRatio = function() {
-  return window.devicePixelRatio;
-};
+Viewport.getDevicePixelRatio = function() { return window.devicePixelRatio };
 
 /**
  * Convert a rectangle from screen coordinates to 'device' coordinates.
@@ -307,7 +305,7 @@ Viewport.prototype.getDevicePixelRatio = function() {
  * @return {Rect} Rectangle in device coordinates.
  */
 Viewport.prototype.screenToDeviceRect = function(rect) {
-  var ratio = this.getDevicePixelRatio();
+  var ratio = Viewport.getDevicePixelRatio();
   var screenCenterX = Math.round(
       this.screenBounds_.left + this.screenBounds_.width / 2);
   var screenCenterY = Math.round(

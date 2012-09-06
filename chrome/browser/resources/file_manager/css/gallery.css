@@ -11,13 +11,17 @@ body {
 
 .gallery,
 .gallery .content {
-  background: black;
   bottom: 0;
   left: 0;
   overflow: hidden;
   position: absolute;
   right: 0;
   top: 0;
+}
+
+/* Common background for both mosaic and slide mode. */
+.gallery .content {
+  background-color: #333;   /*We want black images to stand out. */
 }
 
 /* Close button */
@@ -55,7 +59,6 @@ body {
 /* Image container and canvas elements */
 
 .gallery .image-container {
-  background-color: rgba(0, 0, 0, 1);
   cursor: none;   /* Only visible when the toolbar is active */
   height: 100%;
   position: absolute;
@@ -201,7 +204,7 @@ body {
   pointer-events: none;
 }
 
-.gallery[tools] .arrow[active] {
+.gallery[tools] .arrow-box[active] .arrow {
   cursor: pointer;
   pointer-events: auto;
 }
@@ -217,11 +220,11 @@ body {
   width: 105px;
 }
 
-.gallery[tools] .arrow[active] div {
+.gallery[tools] .arrow-box[active] .arrow div {
   opacity: 0.25;
 }
 
-.gallery[tools] .arrow[active] div:hover {
+.gallery[tools] .arrow-box[active] .arrow div:hover {
   opacity: 1;
 }
 
@@ -1086,7 +1089,6 @@ body {
 }
 
 .mosaic {
-  background-color: #333;  /* We want black images to stand out. */
   bottom: 56px;  /* Make space for the toolbar. */
   left: 0;
   overflow-x: scroll;
@@ -1104,22 +1106,22 @@ body {
   background: rgb(31, 31, 31);
 }
 
+.gallery:not([mode='mosaic']) .mosaic::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
 .mosaic-tile {
   position: absolute;
 }
 
-.mosaic-tile[zooming] {
-  -webkit-transition-property: -webkit-transform;
-  -webkit-transition-timing-function: ease-in-out;
-  z-index: 2;
-}
-
-.mosaic-tile:not([zooming]) {
-  -webkit-transition: opacity 280ms linear;
-}
-
-.mosaic:not([enabled]) .mosaic-tile:not([zooming]) {
+.gallery:not([mode='mosaic']) .mosaic-tile {
   opacity: 0;
+}
+
+/* Animate tile's opacity, except for the selected tile which should show/hide
+  instantly (this looks better when zooming to/from the slide mode). */
+.mosaic-tile:not([selected]) {
+  -webkit-transition: opacity 280ms ease-in;
 }
 
 /* Must be in sync with mosaic_mode.js.
@@ -1137,11 +1139,11 @@ body {
   top: 4px;
 }
 
-.mosaic-tile[selected]:not([zooming]) .img-border {
+.mosaic-tile[selected] .img-border {
   outline-color: rgb(51, 153, 255);
 }
 
-.mosaic-tile:hover:not([selected]):not([zooming]) .img-border {
+.mosaic-tile:hover:not([selected]) .img-border {
   outline-color: rgb(182, 212, 252);
 }
 
@@ -1158,8 +1160,13 @@ body {
   position: absolute;
 }
 
+/* In order to do mode animated transitions smoothly we keep both mosaic and
+  image-container but transparent. */
 .gallery:not([mode='mosaic']) .mosaic,
-.gallery:not([mode='slide']) .image-container,
+.gallery:not([mode='slide']) .image-container {
+  pointer-events: none;
+}
+
 .gallery:not([mode='slide']) .ribbon,
 .gallery:not([mode='slide']) .arrow-box {
   opacity: 0;

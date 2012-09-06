@@ -260,12 +260,20 @@ Gallery.prototype.load = function(urls, selectedUrl, opt_mosaic) {
   else
     this.onSelection_();
 
-  this.currentMode_ = opt_mosaic ? this.mosaicMode_ : this.slideMode_;
-  this.enterMode_(function() {
+  if (opt_mosaic) {
+    this.setCurrentMode_(this.mosaicMode_);
+    this.mosaicMode_.init();
+  } else {
+    this.setCurrentMode_(this.slideMode_);
+    /* TODO: consider nice blow-up animation for the first image */
+    this.slideMode_.enter(null, function() {
       // Flash the toolbar briefly to show it is there.
       this.inactivityWatcher_.startActivity();
       this.inactivityWatcher_.stopActivity(Gallery.FIRST_FADE_TIMEOUT);
+      // Load mosaic tiles in background so that the transition is smooth.
+      this.mosaicMode_.init();
     }.bind(this));
+  }
 };
 
 /**
@@ -340,15 +348,15 @@ Gallery.prototype.onUserAction_ = function() {
 };
 
 /**
- * Enter the current mode.
- * @param {function} opt_callback Callback.
+ * Set the current mode, update the UI.
+ * @param {object} mode Current mode.
  * @private
  */
-Gallery.prototype.enterMode_ = function(opt_callback) {
+Gallery.prototype.setCurrentMode_ = function(mode) {
+  this.currentMode_ = mode;
   var name = this.currentMode_.getName();
   this.modeButton_.title = this.displayStringFunction_(name);
   this.container_.setAttribute('mode', name);
-  this.currentMode_.enter(opt_callback);
 };
 
 /**
@@ -357,11 +365,14 @@ Gallery.prototype.enterMode_ = function(opt_callback) {
  * @private
  */
 Gallery.prototype.toggleMode_ = function(opt_callback) {
-  this.currentMode_.leave(function() {
-    this.currentMode_ = (this.currentMode_ == this.slideMode_) ?
-        this.mosaicMode_ : this.slideMode_;
-    this.enterMode_(opt_callback);
-  }.bind(this));
+  if (this.currentMode_ == this.slideMode_) {
+    this.mosaicMode_.enter();  // This may change the viewport.
+    this.slideMode_.leave(this.mosaicMode_.getSelectedTileRect(),
+        this.setCurrentMode_.bind(this, this.mosaicMode_));
+  } else {
+    this.slideMode_.enter(this.mosaicMode_.getSelectedTileRect(),
+        this.setCurrentMode_.bind(this, this.slideMode_));
+  }
 };
 
 /**

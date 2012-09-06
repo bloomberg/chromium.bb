@@ -215,10 +215,10 @@ SlideMode.prototype.initDom_ = function() {
 
 /**
  * Load items, display the selected item.
- *
- * @param {function} opt_callback Callback.
+ * @param {Rect} zoomFromRect Rectangle for zoom effect.
+ * @param {function} displayCallback Called when the image is displayed.
  */
-SlideMode.prototype.enter = function(opt_callback) {
+SlideMode.prototype.enter = function(zoomFromRect, displayCallback) {
   this.sequenceDirection_ = 0;
   this.sequenceLength_ = 0;
 
@@ -228,14 +228,13 @@ SlideMode.prototype.enter = function(opt_callback) {
     this.selectionModel_.addEventListener('change', this.onSelectionBound_);
     this.dataModel_.addEventListener('splice', this.onSpliceBound_);
 
-    this.updateArrows_();
+    ImageUtil.setAttribute(this.arrowBox_, 'active', this.getItemCount_() > 1);
     this.ribbon_.enable();
 
     this.prefetchTimer_ = setTimeout(function() {
       this.prefetchTimer_ = null;
       this.requestPrefetch(1);   // Prefetch the next image.
     }.bind(this), 1000);
-    if (opt_callback) opt_callback();
   }.bind(this);
 
   if (this.getItemCount_() == 0) {
@@ -255,7 +254,9 @@ SlideMode.prototype.enter = function(opt_callback) {
     // (loading the ribbon thumbnails can take some time).
     this.metadataCache_.get(selectedUrl, Gallery.METADATA_TYPE,
         function(metadata) {
-          this.loadItem_(selectedUrl, metadata, 0, loadDone);
+          this.loadItem_(selectedUrl, metadata,
+              zoomFromRect && this.imageView_.createZoomEffect(zoomFromRect),
+              displayCallback, loadDone);
         }.bind(this));
 
   }
@@ -263,9 +264,11 @@ SlideMode.prototype.enter = function(opt_callback) {
 
 /**
  * Leave the mode.
- * @param {function} opt_callback Callback.
+ * @param {Rect} zoomToRect Rectangle for zoom effect.
+ * @param {function} callback Called when the image is committed and
+ *   the zoom-out animation is done..
  */
-SlideMode.prototype.leave = function(opt_callback) {
+SlideMode.prototype.leave = function(zoomToRect, callback) {
   if (this.prefetchTimer_) {
     clearTimeout(this.prefetchTimer_);
     this.prefetchTimer_ = null;
@@ -274,13 +277,17 @@ SlideMode.prototype.leave = function(opt_callback) {
   var commitDone = function() {
       this.stopEditing_();
       this.stopSlideshow_();
-      this.unloadImage_();
+      ImageUtil.setAttribute(this.arrowBox_, 'active', false);
+      this.unloadImage_(zoomToRect);
       this.selectionModel_.removeEventListener(
           'change', this.onSelectionBound_);
       this.dataModel_.removeEventListener('splice', this.onSpliceBound_);
       this.ribbon_.disable();
       this.active_ = false;
-      if (opt_callback) opt_callback();
+      if (zoomToRect)
+        setTimeout(callback, ImageView.ANIMATION_WAIT_INTERVAL);
+      else
+        callback();
     }.bind(this);
 
   if (this.getItemCount_() == 0) {
@@ -422,7 +429,9 @@ SlideMode.prototype.loadSelectedItem_ = function() {
   var selectedItem = this.getSelectedItem();
   var onMetadata = function(metadata) {
     if (selectedItem != this.getSelectedItem()) return;
-    this.loadItem_(selectedItem.getUrl(), metadata, step,
+    this.loadItem_(selectedItem.getUrl(), metadata,
+        new ImageView.Effect.Slide(step),
+        function() {} /* no displayCallback */,
         function(loadType) {
           if (selectedItem != this.getSelectedItem()) return;
           if (shouldPrefetch(loadType, step, this.sequenceLength_)) {
@@ -438,20 +447,13 @@ SlideMode.prototype.loadSelectedItem_ = function() {
 
 /**
  * Unload the current image.
+ *
+ * @param {Rect} zoomToRect Rectangle for zoom effect.
  * @private
  */
-SlideMode.prototype.unloadImage_ = function() {
-  this.imageView_.unload();
+SlideMode.prototype.unloadImage_ = function(zoomToRect) {
+  this.imageView_.unload(zoomToRect);
   this.container_.removeAttribute('video');
-};
-
-/**
- * Show/hide arrows based on the item count.
- * @private
- */
-SlideMode.prototype.updateArrows_ = function() {
-  ImageUtil.setAttribute(this.arrowLeft_, 'active', this.getItemCount_() > 1);
-  ImageUtil.setAttribute(this.arrowRight_, 'active', this.getItemCount_() > 1);
 };
 
 /**
@@ -460,7 +462,7 @@ SlideMode.prototype.updateArrows_ = function() {
  * @private
  */
 SlideMode.prototype.onSplice_ = function(event) {
-  this.updateArrows_();
+  ImageUtil.setAttribute(this.arrowBox_, 'active', this.getItemCount_() > 1);
 
   if (event.removed.length != 1)
     return;
@@ -529,11 +531,14 @@ SlideMode.prototype.selectLast = function() {
  *
  * @param {string} url Item url.
  * @param {Object} metadata Item metadata.
- * @param {number} slide Slide animation direction (-1|0|1).
- * @param {function} callback Callback.
+ * @param {Object} effect Transition effect object.
+ * @param {function} displayCallback Called when the image is displayed
+ *     (which can happen before the image load due to caching).
+ * @param {function} loadCallback Called when the image is fully loaded.
  * @private
  */
-SlideMode.prototype.loadItem_ = function(url, metadata, slide, callback) {
+SlideMode.prototype.loadItem_ = function(
+    url, metadata, effect, displayCallback, loadCallback) {
   this.selectedImageMetadata_ = ImageUtil.deepCopy(metadata);
 
   this.showSpinner_(true);
@@ -586,11 +591,11 @@ SlideMode.prototype.loadItem_ = function(url, metadata, slide, callback) {
       }
     }
 
-    callback(loadType);
+    loadCallback(loadType);
   }.bind(this);
 
-  this.editor_.openSession(
-      url, metadata, slide, this.saveCurrentImage_.bind(this), loadDone);
+  this.editor_.openSession(url, metadata, effect,
+      this.saveCurrentImage_.bind(this), displayCallback, loadDone);
 };
 
 /**
@@ -772,13 +777,14 @@ SlideMode.prototype.saveCurrentImage_ = function(callback) {
         }
 
         if (oldUrl != item.getUrl()) {
-          this.displayedIndex_++;
-          // This splice call will fire the selection change event. SlideMode
-          // will ignore it as the selected item is the same.
-          // The ribbon will redraw while being obscured by the Editor toolbar,
-          // so there is no need for nice animation here.
           this.dataModel_.splice(
               this.getSelectedIndex(), 0, new Gallery.Item(oldUrl));
+          // The ribbon will ignore the splice above and redraw after the
+          // select call below (while being obscured by the Editor toolbar,
+          // so there is no need for nice animation here).
+          // SlideMode will ignore the selection change as the displayed item
+          // index has not changed.
+          this.select(++this.displayedIndex_);
         }
         callback();
       }.bind(this));
