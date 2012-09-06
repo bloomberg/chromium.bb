@@ -11,7 +11,6 @@ with ./trace_inputs.py read -l /path/to/executable.logs
 
 import logging
 import multiprocessing
-import optparse
 import os
 import sys
 import time
@@ -170,17 +169,12 @@ def trace_test_cases(
 
 def main():
   """CLI frontend to validate arguments."""
-  def as_digit(variable, default):
-    if variable.isdigit():
-      return int(variable)
-    return default
-
   default_variables = [('OS', isolate_common.get_flavor())]
   if sys.platform in ('win32', 'cygwin'):
     default_variables.append(('EXECUTABLE_SUFFIX', '.exe'))
   else:
     default_variables.append(('EXECUTABLE_SUFFIX', ''))
-  parser = optparse.OptionParser(
+  parser = run_test_cases.OptionParserWithTestShardingAndFiltering(
       usage='%prog <options> [gtest]',
       description=sys.modules['__main__'].__doc__)
   parser.format_description = lambda *_: parser.description
@@ -220,34 +214,6 @@ def main():
       action='count',
       default=0,
       help='Use multiple times to increase verbosity')
-
-  group = optparse.OptionGroup(parser, 'Which test cases to run')
-  group.add_option(
-      '-w', '--whitelist',
-      default=[],
-      action='append',
-      help='filter to apply to test cases to run, wildcard-style, defaults to '
-           'all test')
-  group.add_option(
-      '-b', '--blacklist',
-      default=[],
-      action='append',
-      help='filter to apply to test cases to skip, wildcard-style, defaults to '
-           'no test')
-  group.add_option(
-      '-i', '--index',
-      type='int',
-      default=as_digit(os.environ.get('GTEST_SHARD_INDEX', ''), None),
-      help='Shard index to run')
-  group.add_option(
-      '-s', '--shards',
-      type='int',
-      default=as_digit(os.environ.get('GTEST_TOTAL_SHARDS', ''), None),
-      help='Total number of shards to calculate from the --index to run')
-  group.add_option(
-      '-T', '--test-case-file',
-      help='File containing the exact list of test cases to run')
-  parser.add_option_group(group)
   options, args = parser.parse_args()
 
   levels = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
@@ -260,9 +226,6 @@ def main():
         'Please provide the executable line to run, if you need fancy things '
         'like xvfb, start this script from *inside* xvfb, it\'ll be much faster'
         '.')
-
-  if bool(options.shards) != bool(options.index is not None):
-    parser.error('Use both --index X --shards Y or none of them')
 
   options.root_dir = os.path.abspath(options.root_dir)
   if not os.path.isdir(options.root_dir):

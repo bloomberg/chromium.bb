@@ -734,6 +734,12 @@ class OptionParserWithTestSharding(optparse.OptionParser):
         help='Total number of shards to calculate from the --index to run')
     self.add_option_group(group)
 
+  def parse_args(self, *args, **kwargs):
+    options, args = optparse.OptionParser.parse_args(self, *args, **kwargs)
+    if bool(options.shards) != bool(options.index is not None):
+      self.error('Use both --index X --shards Y or none of them')
+    return options, args
+
 
 class OptionParserWithTestShardingAndFiltering(OptionParserWithTestSharding):
   """Adds automatic handling of test sharding and filtering."""
@@ -764,7 +770,8 @@ class OptionParserWithTestShardingAndFiltering(OptionParserWithTestSharding):
     self.add_option_group(group)
 
   def parse_args(self, *args, **kwargs):
-    options, args = optparse.OptionParser.parse_args(self, *args, **kwargs)
+    options, args = OptionParserWithTestSharding.parse_args(
+        self, *args, **kwargs)
 
     if options.gtest_filter:
       # Override any other option.

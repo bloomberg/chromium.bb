@@ -8,7 +8,6 @@
 See more info at http://code.google.com/p/googletest/.
 """
 
-import optparse
 import sys
 
 import run_test_cases
@@ -16,7 +15,7 @@ import run_test_cases
 
 def main():
   """CLI frontend to validate arguments."""
-  parser = optparse.OptionParser(
+  parser = run_test_cases.OptionParserWithTestSharding(
       usage='%prog <options> [gtest]')
   parser.add_option(
       '-d', '--disabled',
@@ -30,20 +29,9 @@ def main():
       '-F', '--flaky',
       action='store_true',
       help='Include FLAKY_ tests')
-  parser.add_option(
-      '-i', '--index',
-      type='int',
-      help='Shard index to run')
-  parser.add_option(
-      '-s', '--shards',
-      type='int',
-      help='Total number of shards to calculate from the --index to run')
   options, args = parser.parse_args()
   if len(args) != 1:
     parser.error('Please provide the executable to run')
-
-  if bool(options.shards) != bool(options.index is not None):
-    parser.error('Use both --index X --shards Y or none of them')
 
   try:
     tests = run_test_cases.list_test_cases(
