@@ -161,46 +161,46 @@ TEST_F(MouseCursorEventFilterTest, IndicatorBoundsTestOnRight) {
   ash::internal::MouseCursorEventFilter* event_filter =
       Shell::GetInstance()->mouse_cursor_filter();
   event_filter->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
-  EXPECT_EQ("350,80 10x200", event_filter->src_indicator_bounds_.ToString());
-  EXPECT_EQ("360,0 10x360", event_filter->dst_indicator_bounds_.ToString());
+  EXPECT_EQ("359,16 1x344", event_filter->src_indicator_bounds_.ToString());
+  EXPECT_EQ("360,0 1x360", event_filter->dst_indicator_bounds_.ToString());
   event_filter->ShowSharedEdgeIndicator(root_windows[1] /* secondary */);
-  EXPECT_EQ("360,100 10x260", event_filter->src_indicator_bounds_.ToString());
-  EXPECT_EQ("350,0 10x360", event_filter->dst_indicator_bounds_.ToString());
+  EXPECT_EQ("360,16 1x344", event_filter->src_indicator_bounds_.ToString());
+  EXPECT_EQ("359,0 1x360", event_filter->dst_indicator_bounds_.ToString());
 
   // Move 2nd display downwards a bit.
-  default_layout.offset = 50;
+  default_layout.offset = 5;
   controller->SetDefaultDisplayLayout(default_layout);
   event_filter->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   // This is same as before because the 2nd display's y is above
-  // the warp hole's x.
-  EXPECT_EQ("350,80 10x200", event_filter->src_indicator_bounds_.ToString());
-  EXPECT_EQ("360,50 10x310", event_filter->dst_indicator_bounds_.ToString());
+  // the indicator's x.
+  EXPECT_EQ("359,16 1x344", event_filter->src_indicator_bounds_.ToString());
+  EXPECT_EQ("360,5 1x355", event_filter->dst_indicator_bounds_.ToString());
   event_filter->ShowSharedEdgeIndicator(root_windows[1] /* secondary */);
-  EXPECT_EQ("360,150 10x210", event_filter->src_indicator_bounds_.ToString());
-  EXPECT_EQ("350,50 10x310", event_filter->dst_indicator_bounds_.ToString());
+  EXPECT_EQ("360,21 1x339", event_filter->src_indicator_bounds_.ToString());
+  EXPECT_EQ("359,5 1x355", event_filter->dst_indicator_bounds_.ToString());
 
   // Move it down further so that the shared edge is shorter than
   // minimum hole size (160).
   default_layout.offset = 200;
   controller->SetDefaultDisplayLayout(default_layout);
   event_filter->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
-  EXPECT_EQ("350,200 10x160", event_filter->src_indicator_bounds_.ToString());
-  EXPECT_EQ("360,200 10x160", event_filter->dst_indicator_bounds_.ToString());
+  EXPECT_EQ("359,200 1x160", event_filter->src_indicator_bounds_.ToString());
+  EXPECT_EQ("360,200 1x160", event_filter->dst_indicator_bounds_.ToString());
   event_filter->ShowSharedEdgeIndicator(root_windows[1] /* secondary */);
-  EXPECT_EQ("360,200 10x160", event_filter->src_indicator_bounds_.ToString());
-  EXPECT_EQ("350,200 10x160", event_filter->dst_indicator_bounds_.ToString());
+  EXPECT_EQ("360,200 1x160", event_filter->src_indicator_bounds_.ToString());
+  EXPECT_EQ("359,200 1x160", event_filter->dst_indicator_bounds_.ToString());
 
   // Now move 2nd display upwards
-  default_layout.offset = -80;
+  default_layout.offset = -5;
   controller->SetDefaultDisplayLayout(default_layout);
   event_filter->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
-  EXPECT_EQ("350,80 10x200", event_filter->src_indicator_bounds_.ToString());
-  EXPECT_EQ("360,0 10x360", event_filter->dst_indicator_bounds_.ToString());
+  EXPECT_EQ("359,16 1x344", event_filter->src_indicator_bounds_.ToString());
+  EXPECT_EQ("360,0 1x360", event_filter->dst_indicator_bounds_.ToString());
   event_filter->ShowSharedEdgeIndicator(root_windows[1] /* secondary */);
-  // 100 px are reserved on 2nd display from top, so y must be
-  // (100 - 80) = 20
-  EXPECT_EQ("360,20 10x340", event_filter->src_indicator_bounds_.ToString());
-  EXPECT_EQ("350,0 10x360", event_filter->dst_indicator_bounds_.ToString());
+  // 16 px are reserved on 2nd display from top, so y must be
+  // (16 - 5) = 11
+  EXPECT_EQ("360,11 1x349", event_filter->src_indicator_bounds_.ToString());
+  EXPECT_EQ("359,0 1x360", event_filter->dst_indicator_bounds_.ToString());
 
   event_filter->HideSharedEdgeIndicator();
 }
@@ -216,20 +216,20 @@ TEST_F(MouseCursorEventFilterTest, IndicatorBoundsTestOnLeft) {
   ash::internal::MouseCursorEventFilter* event_filter =
       Shell::GetInstance()->mouse_cursor_filter();
   event_filter->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
-  EXPECT_EQ("0,80 10x200", event_filter->src_indicator_bounds_.ToString());
-  EXPECT_EQ("-10,0 10x360", event_filter->dst_indicator_bounds_.ToString());
+  EXPECT_EQ("0,16 1x344", event_filter->src_indicator_bounds_.ToString());
+  EXPECT_EQ("-1,0 1x360", event_filter->dst_indicator_bounds_.ToString());
   event_filter->ShowSharedEdgeIndicator(root_windows[1] /* secondary */);
-  EXPECT_EQ("-10,100 10x260", event_filter->src_indicator_bounds_.ToString());
-  EXPECT_EQ("0,0 10x360", event_filter->dst_indicator_bounds_.ToString());
+  EXPECT_EQ("-1,16 1x344", event_filter->src_indicator_bounds_.ToString());
+  EXPECT_EQ("0,0 1x360", event_filter->dst_indicator_bounds_.ToString());
 
   default_layout.offset = 300;
   controller->SetDefaultDisplayLayout(default_layout);
   event_filter->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
-  EXPECT_EQ("0,300 10x60", event_filter->src_indicator_bounds_.ToString());
-  EXPECT_EQ("-10,300 10x60", event_filter->dst_indicator_bounds_.ToString());
+  EXPECT_EQ("0,300 1x60", event_filter->src_indicator_bounds_.ToString());
+  EXPECT_EQ("-1,300 1x60", event_filter->dst_indicator_bounds_.ToString());
   event_filter->ShowSharedEdgeIndicator(root_windows[1] /* secondary */);
-  EXPECT_EQ("-10,300 10x60", event_filter->src_indicator_bounds_.ToString());
-  EXPECT_EQ("0,300 10x60", event_filter->dst_indicator_bounds_.ToString());
+  EXPECT_EQ("-1,300 1x60", event_filter->src_indicator_bounds_.ToString());
+  EXPECT_EQ("0,300 1x60", event_filter->dst_indicator_bounds_.ToString());
   event_filter->HideSharedEdgeIndicator();
 }
 
@@ -244,30 +244,30 @@ TEST_F(MouseCursorEventFilterTest, IndicatorBoundsTestOnTopBottom) {
   ash::internal::MouseCursorEventFilter* event_filter =
       Shell::GetInstance()->mouse_cursor_filter();
   event_filter->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
-  EXPECT_EQ("0,0 360x10", event_filter->src_indicator_bounds_.ToString());
-  EXPECT_EQ("0,-10 360x10", event_filter->dst_indicator_bounds_.ToString());
+  EXPECT_EQ("0,0 360x1", event_filter->src_indicator_bounds_.ToString());
+  EXPECT_EQ("0,-1 360x1", event_filter->dst_indicator_bounds_.ToString());
   event_filter->ShowSharedEdgeIndicator(root_windows[1] /* secondary */);
-  EXPECT_EQ("0,-10 360x10", event_filter->src_indicator_bounds_.ToString());
-  EXPECT_EQ("0,0 360x10", event_filter->dst_indicator_bounds_.ToString());
+  EXPECT_EQ("0,-1 360x1", event_filter->src_indicator_bounds_.ToString());
+  EXPECT_EQ("0,0 360x1", event_filter->dst_indicator_bounds_.ToString());
 
   default_layout.offset = 300;
   controller->SetDefaultDisplayLayout(default_layout);
   event_filter->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
-  EXPECT_EQ("300,0 60x10", event_filter->src_indicator_bounds_.ToString());
-  EXPECT_EQ("300,-10 60x10", event_filter->dst_indicator_bounds_.ToString());
+  EXPECT_EQ("300,0 60x1", event_filter->src_indicator_bounds_.ToString());
+  EXPECT_EQ("300,-1 60x1", event_filter->dst_indicator_bounds_.ToString());
   event_filter->ShowSharedEdgeIndicator(root_windows[1] /* secondary */);
-  EXPECT_EQ("300,-10 60x10", event_filter->src_indicator_bounds_.ToString());
-  EXPECT_EQ("300,0 60x10", event_filter->dst_indicator_bounds_.ToString());
+  EXPECT_EQ("300,-1 60x1", event_filter->src_indicator_bounds_.ToString());
+  EXPECT_EQ("300,0 60x1", event_filter->dst_indicator_bounds_.ToString());
 
   default_layout.position = DisplayLayout::BOTTOM;
   default_layout.offset = 0;
   controller->SetDefaultDisplayLayout(default_layout);
   event_filter->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
-  EXPECT_EQ("0,350 360x10", event_filter->src_indicator_bounds_.ToString());
-  EXPECT_EQ("0,360 360x10", event_filter->dst_indicator_bounds_.ToString());
+  EXPECT_EQ("0,359 360x1", event_filter->src_indicator_bounds_.ToString());
+  EXPECT_EQ("0,360 360x1", event_filter->dst_indicator_bounds_.ToString());
   event_filter->ShowSharedEdgeIndicator(root_windows[1] /* secondary */);
-  EXPECT_EQ("0,360 360x10", event_filter->src_indicator_bounds_.ToString());
-  EXPECT_EQ("0,350 360x10", event_filter->dst_indicator_bounds_.ToString());
+  EXPECT_EQ("0,360 360x1", event_filter->src_indicator_bounds_.ToString());
+  EXPECT_EQ("0,359 360x1", event_filter->dst_indicator_bounds_.ToString());
 
   event_filter->HideSharedEdgeIndicator();
 }

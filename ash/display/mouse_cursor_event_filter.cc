@@ -24,14 +24,14 @@ namespace {
 
 // Maximum size on the display edge that initiate snapping phantom window,
 // from the corner of the display.
-const int kMaximumSnapHeight = 100;
+const int kMaximumSnapHeight = 16;
 
-// Minimum hight of an indicator on the display edge that allows
+// Minimum height of an indicator on the display edge that allows
 // dragging a window.  If two displays shares the edge smaller than
 // this, entire edge will be used as a draggable space.
 const int kMinimumIndicatorHeight = 200;
 
-const int kIndicatorThickness = 10;
+const int kIndicatorThickness = 1;
 }
 
 MouseCursorEventFilter::MouseCursorEventFilter()
@@ -218,33 +218,22 @@ void MouseCursorEventFilter::UpdateVerticalIndicatorWindowBounds() {
   const gfx::Rect& source_bounds =
       in_primary ? primary_bounds : secondary_bounds;
   int upper_indicator_y = source_bounds.y() + kMaximumSnapHeight;
-  int lower_indicator_y = source_bounds.bottom() - kMaximumSnapHeight;
+  int lower_indicator_y = std::min(source_bounds.bottom(), lower_shared_y);
 
   // This gives a hight that can be used without sacrifying the snap space.
-  int available_space = std::min(lower_shared_y, lower_indicator_y) -
+  int available_space = lower_indicator_y -
       std::max(upper_shared_y, upper_indicator_y);
 
   if (shared_height < kMinimumIndicatorHeight) {
     // If the shared height is smaller than minimum height, use the
-    // entire height;
+    // entire height.
     upper_indicator_y = upper_shared_y;
-    lower_indicator_y = lower_shared_y;
   } else if (available_space < kMinimumIndicatorHeight) {
-    // Need to shrink the snappnig space.
-    int diff = (kMinimumIndicatorHeight - available_space) / 2;
-    upper_indicator_y -= diff;  // expand to upwards.
-    if (upper_indicator_y < upper_shared_y) {
-      diff += (upper_shared_y - upper_indicator_y);
-      upper_indicator_y = upper_shared_y;
-    }
-    lower_indicator_y += diff;  // expand to downwards.
-    if (lower_indicator_y > lower_shared_y) {
-      upper_indicator_y -= (lower_indicator_y - lower_shared_y);
-      lower_indicator_y = lower_shared_y;
-    }
+    // Snap to the bottom.
+    upper_indicator_y =
+        std::max(upper_shared_y, lower_indicator_y + kMinimumIndicatorHeight);
   } else {
     upper_indicator_y = std::max(upper_indicator_y, upper_shared_y);
-    lower_indicator_y = std::min(lower_shared_y, lower_indicator_y);
   }
   src_indicator_bounds_.set_y(upper_indicator_y);
   src_indicator_bounds_.set_height(lower_indicator_y - upper_indicator_y);

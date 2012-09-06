@@ -20,6 +20,7 @@ class ThrobAnimation;
 }
 
 namespace views {
+class View;
 class Widget;
 }
 
@@ -46,8 +47,8 @@ class ASH_EXPORT SharedDisplayEdgeIndicator : public ui::AnimationDelegate {
   // Used to show the displays' shared edge where a window can be moved across.
   // |src_widget_| is for the display where drag starts and |dst_widget_| is
   // for the other display.
-  views::Widget* src_widget_;
-  views::Widget* dst_widget_;
+  views::View* src_indicator_;
+  views::View* dst_indicator_;
 
   // Used to transition the opacity.
   scoped_ptr<ui::ThrobAnimation> animation_;

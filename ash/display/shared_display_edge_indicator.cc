@@ -13,7 +13,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
-#include "ui/views/painter.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -22,11 +22,30 @@ namespace {
 
 const int kIndicatorAnimationDurationMs = 1000;
 
-views::Widget* CreateWidget(const gfx::Rect& bounds) {
-  // This is just a placeholder and we'll use an image.
-  views::Painter* painter = views::Painter::CreateHorizontalGradient(
-      SK_ColorWHITE, SK_ColorWHITE);
+class IndicatorView : public views::View {
+ public:
+  IndicatorView() {
+  }
+  virtual ~IndicatorView() {
+  }
 
+  void SetColor(SkColor color) {
+    color_ = color;
+    SchedulePaint();
+  }
+
+  // views::Views overrides:
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+    canvas->FillRect(gfx::Rect(bounds().size()), color_);
+  }
+
+ private:
+  SkColor color_;
+  DISALLOW_COPY_AND_ASSIGN(IndicatorView);
+};
+
+views::Widget* CreateWidget(const gfx::Rect& bounds,
+                            views::View* contents_view) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.transparent = true;
@@ -36,16 +55,12 @@ views::Widget* CreateWidget(const gfx::Rect& bounds) {
   widget->Init(params);
   widget->SetVisibilityChangedAnimationsEnabled(false);
   widget->GetNativeWindow()->SetName("SharedEdgeIndicator");
-  views::View* content_view = new views::View;
-  content_view->set_background(
-      views::Background::CreateBackgroundPainter(true, painter));
-  widget->SetContentsView(content_view);
+  widget->SetContentsView(contents_view);
   gfx::Display display = gfx::Screen::GetDisplayMatching(bounds);
   aura::Window* window = widget->GetNativeWindow();
   aura::client::ScreenPositionClient* screen_position_client =
       aura::client::GetScreenPositionClient(window->GetRootWindow());
   screen_position_client->SetBounds(window, bounds, display);
-  widget->SetOpacity(0);
   widget->Show();
   return widget;
 }
@@ -53,8 +68,8 @@ views::Widget* CreateWidget(const gfx::Rect& bounds) {
 }  // namespace
 
 SharedDisplayEdgeIndicator::SharedDisplayEdgeIndicator()
-    : src_widget_(NULL),
-      dst_widget_(NULL) {
+    : src_indicator_(NULL),
+      dst_indicator_(NULL) {
 }
 
 SharedDisplayEdgeIndicator::~SharedDisplayEdgeIndicator() {
@@ -63,31 +78,35 @@ SharedDisplayEdgeIndicator::~SharedDisplayEdgeIndicator() {
 
 void SharedDisplayEdgeIndicator::Show(const gfx::Rect& src_bounds,
                                       const gfx::Rect& dst_bounds) {
-  DCHECK(!src_widget_);
-  DCHECK(!dst_widget_);
-  src_widget_ = CreateWidget(src_bounds);
-  dst_widget_ = CreateWidget(dst_bounds);
+  DCHECK(!src_indicator_);
+  DCHECK(!dst_indicator_);
+  src_indicator_ = new IndicatorView;
+  dst_indicator_ = new IndicatorView;
+  CreateWidget(src_bounds, src_indicator_);
+  CreateWidget(src_bounds, dst_indicator_);
   animation_.reset(new ui::ThrobAnimation(this));
   animation_->SetThrobDuration(kIndicatorAnimationDurationMs);
   animation_->StartThrobbing(-1 /* infinite */);
 }
 
 void SharedDisplayEdgeIndicator::Hide() {
-  if (src_widget_)
-    src_widget_->Close();
-  src_widget_ = NULL;
-  if (dst_widget_)
-    dst_widget_->Close();
-  dst_widget_ = NULL;
+  if (src_indicator_)
+    src_indicator_->GetWidget()->Close();
+  src_indicator_ = NULL;
+  if (dst_indicator_)
+    dst_indicator_->GetWidget()->Close();
+  dst_indicator_ = NULL;
 }
 
 void SharedDisplayEdgeIndicator::AnimationProgressed(
     const ui::Animation* animation) {
-  int opacity = animation->CurrentValueBetween(0, 255);
-  if (src_widget_)
-    src_widget_->SetOpacity(opacity);
-  if (dst_widget_)
-    dst_widget_->SetOpacity(opacity);
+  int value = animation->CurrentValueBetween(0, 255);
+  SkColor color = SkColorSetARGB(0xFF, value, value, value);
+  if (src_indicator_)
+    static_cast<IndicatorView*>(src_indicator_)->SetColor(color);
+  if (dst_indicator_)
+    static_cast<IndicatorView*>(dst_indicator_)->SetColor(color);
+
 }
 
 }  // namespace internal
