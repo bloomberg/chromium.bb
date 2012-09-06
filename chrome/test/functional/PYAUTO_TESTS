@@ -717,6 +717,13 @@
       'media_stream_infobar',
       'webrtc_brutality_test',
       'webrtc_call',
+    ],
+  },
+
+  # WebRTC quality tests. Requires webcam, an audio device and a special setup
+  # where the webcam is playing a barcode-encoded video.
+  'WEBRTC_QUALITY': {
+    'all': [
       'webrtc_video_quality',
     ],
   },
