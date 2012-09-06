@@ -323,9 +323,10 @@ drm_output_prepare_scanout_surface(struct weston_output *_output,
 static void
 drm_output_render(struct drm_output *output, pixman_region32_t *damage)
 {
+	struct weston_compositor *ec = output->base.compositor;
 	struct gbm_bo *bo;
 
-	gles2_renderer_repaint_output(&output->base, damage);
+	ec->renderer->repaint_output(&output->base, damage);
 
 	bo = gbm_surface_lock_front_buffer(output->surface);
 	if (!bo) {

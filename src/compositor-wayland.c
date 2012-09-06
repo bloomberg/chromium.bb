@@ -342,9 +342,10 @@ wayland_output_repaint(struct weston_output *output_base,
 		       pixman_region32_t *damage)
 {
 	struct wayland_output *output = (struct wayland_output *) output_base;
+	struct weston_compositor *ec = output->base.compositor;
 	struct wl_callback *callback;
 
-	gles2_renderer_repaint_output(output_base, damage);
+	ec->renderer->repaint_output(&output->base, damage);
 
 	callback = wl_surface_frame(output->parent.surface);
 	wl_callback_add_listener(callback, &frame_listener, output);

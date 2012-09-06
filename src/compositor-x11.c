@@ -324,8 +324,9 @@ x11_output_repaint(struct weston_output *output_base,
 		   pixman_region32_t *damage)
 {
 	struct x11_output *output = (struct x11_output *)output_base;
+	struct weston_compositor *ec = output->base.compositor;
 
-	gles2_renderer_repaint_output(output_base, damage);
+	ec->renderer->repaint_output(output_base, damage);
 
 	wl_event_source_timer_update(output->finish_frame_timer, 10);
 }

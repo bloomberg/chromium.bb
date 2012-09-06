@@ -620,7 +620,7 @@ repaint_surfaces(struct weston_output *output, pixman_region32_t *damage)
 			draw_surface(surface, output, damage);
 }
 
-WL_EXPORT void
+static void
 gles2_renderer_repaint_output(struct weston_output *output,
 			      pixman_region32_t *output_damage)
 {
@@ -674,7 +674,7 @@ gles2_renderer_repaint_output(struct weston_output *output,
 
 }
 
-WL_EXPORT void
+static void
 gles2_renderer_flush_damage(struct weston_surface *surface)
 {
 #ifdef GL_UNPACK_ROW_LENGTH
@@ -731,7 +731,7 @@ ensure_textures(struct weston_surface *es, int num_textures)
 	glBindTexture(es->target, 0);
 }
 
-WL_EXPORT void
+static void
 gles2_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 {
 	struct weston_compositor *ec = es->compositor;
@@ -1035,11 +1035,20 @@ log_egl_gl_info(EGLDisplay egldpy)
 	log_extensions("GL extensions", str ? str : "(null)");
 }
 
+struct gles2_renderer {
+	struct weston_renderer base;
+};
+
 WL_EXPORT int
 gles2_renderer_init(struct weston_compositor *ec)
 {
+	struct gles2_renderer *renderer;
 	const char *extensions;
 	int has_egl_image_external = 0;
+
+	renderer = malloc(sizeof *renderer);
+	if (renderer == NULL)
+		return -1;
 
 	log_egl_gl_info(ec->egl_display);
 
@@ -1114,6 +1123,11 @@ gles2_renderer_init(struct weston_compositor *ec)
 	if (weston_shader_init(&ec->solid_shader,
 			     vertex_shader, solid_fragment_shader) < 0)
 		return -1;
+
+	renderer->base.repaint_output = gles2_renderer_repaint_output;
+	renderer->base.flush_damage = gles2_renderer_flush_damage;
+	renderer->base.attach = gles2_renderer_attach;
+	ec->renderer = &renderer->base;
 
 	return 0;
 }

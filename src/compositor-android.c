@@ -153,7 +153,7 @@ android_output_repaint(struct weston_output *base, pixman_region32_t *damage)
         struct android_compositor *compositor = output->compositor;
 	struct wl_event_loop *loop;
 
-	gles2_renderer_repaint_output(&output->base, damage);
+	compositor->base.renderer->repaint_output(&output->base, damage);
 
 	/* FIXME: does Android have a way to signal page flip done? */
 	loop = wl_display_get_event_loop(compositor->base.wl_display);

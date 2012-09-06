@@ -267,6 +267,13 @@ struct weston_plane {
 	int32_t x, y;
 };
 
+struct weston_renderer {
+	void (*repaint_output)(struct weston_output *output,
+			       pixman_region32_t *output_damage);
+	void (*flush_damage)(struct weston_surface *surface);
+	void (*attach)(struct weston_surface *es, struct wl_buffer *buffer);
+};
+
 struct weston_compositor {
 	struct wl_shm *shm;
 	struct wl_signal destroy_signal;
@@ -326,6 +333,8 @@ struct weston_compositor {
 	int fan_debug;
 
 	uint32_t focus;
+
+	struct weston_renderer *renderer;
 
 	PFNGLEGLIMAGETARGETRENDERBUFFERSTORAGEOESPROC
 		image_target_renderbuffer_storage;
@@ -794,12 +803,5 @@ weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode
 
 int
 gles2_renderer_init(struct weston_compositor *ec);
-void
-gles2_renderer_repaint_output(struct weston_output *output,
-			      pixman_region32_t *output_damage);
-void
-gles2_renderer_flush_damage(struct weston_surface *surface);
-void
-gles2_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer);
 
 #endif

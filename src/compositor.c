@@ -188,7 +188,7 @@ surface_handle_buffer_destroy(struct wl_listener *listener, void *data)
 			     buffer_destroy_listener);
 
 	if (es->buffer && wl_buffer_is_shm(es->buffer))
-		gles2_renderer_flush_damage(es);
+		es->compositor->renderer->flush_damage(es);
 
 	es->buffer = NULL;
 }
@@ -752,7 +752,7 @@ weston_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer)
 			weston_surface_unmap(es);
 	}
 
-	gles2_renderer_attach(es, buffer);
+	es->compositor->renderer->attach(es, buffer);
 	es->buffer = buffer;
 }
 
@@ -834,7 +834,7 @@ surface_accumulate_damage(struct weston_surface *surface,
 			  pixman_region32_t *opaque)
 {
 	if (surface->buffer && wl_buffer_is_shm(surface->buffer))
-		gles2_renderer_flush_damage(surface);
+		surface->compositor->renderer->flush_damage(surface);
 
 	if (surface->transform.enabled) {
 		pixman_box32_t *extents;
