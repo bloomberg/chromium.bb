@@ -812,23 +812,13 @@
             '../net/net.gyp:net_javatests',
             '../tools/android/forwarder/forwarder.gyp:forwarder',
           ],
-          'copies': [
-            {
-              'destination': '<(PRODUCT_DIR)/content_shell_test/java/libs',
-              'files': [
-                '<(PRODUCT_DIR)/lib.java/chromium_base_javatests.jar',
-                '<(PRODUCT_DIR)/lib.java/chromium_net_javatests.jar',
-                '<(PRODUCT_DIR)/lib.java/chromium_content_javatests.jar',
-              ],
-            },
-          ],
           'actions': [
             {
               'action_name': 'content_shell_test_generate_apk',
               'inputs': [
                 '<(PRODUCT_DIR)/lib.java/chromium_base_javatests.jar',
-                '<(PRODUCT_DIR)/lib.java/chromium_net_javatests.jar',
                 '<(PRODUCT_DIR)/lib.java/chromium_content_javatests.jar',
+                '<(PRODUCT_DIR)/lib.java/chromium_net_javatests.jar',
                 '<(DEPTH)/content/shell/android/javatests/content_shell_test_apk.xml',
                 '<(DEPTH)/content/shell/android/javatests/AndroidManifest.xml',
                 '<!@(find <(DEPTH)/content/shell/android/javatests/ -name "*.java")'

@@ -29,12 +29,14 @@
   <property name="asset.absolute.dir" location="${out.dir}/assets"/>
 
   <path id="out.dex.jar.input.ref">
-    <fileset file="${out.dir}/java/libs/chromium_content.jar"/>
-    <fileset file="${out.dir}/java/libs/chromium_net.jar"/>
-    <fileset file="${out.dir}/java/libs/chromium_base.jar"/>
-    <fileset file="${out.dir}/java/libs/chromium_media.jar"/>
+    <pathelement location="${PRODUCT_DIR}/lib.java/chromium_base.jar"/>
+    <pathelement location="${PRODUCT_DIR}/lib.java/chromium_content.jar"/>
+    <pathelement location="${PRODUCT_DIR}/lib.java/chromium_media.jar"/>
+    <pathelement location="${PRODUCT_DIR}/lib.java/chromium_net.jar"/>
   </path>
   <property name="java.compilerargs" value="-classpath ${toString:out.dex.jar.input.ref}"/>
+
+  <echo>classpath: ${toString:out.dex.jar.input.ref}</echo>
 
   <!-- We expect PRODUCT_DIR to be set like the gyp var (e.g. $ROOT/out/Debug) -->
   <fail message="PRODUCT_DIR env var not set?">

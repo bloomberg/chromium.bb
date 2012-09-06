@@ -23,8 +23,13 @@
   <property name="asset.absolute.dir" location="${out.dir}/assets" />
 
   <path id="out.dex.jar.input.ref">
-    <fileset dir="${PRODUCT_DIR}/content_shell/java/libs"/>
-    <fileset dir="${PRODUCT_DIR}/content_shell_test/java/libs"/>
+    <pathelement location="${PRODUCT_DIR}/lib.java/chromium_base.jar"/>
+    <pathelement location="${PRODUCT_DIR}/lib.java/chromium_base_javatests.jar"/>
+    <pathelement location="${PRODUCT_DIR}/lib.java/chromium_content.jar"/>
+    <pathelement location="${PRODUCT_DIR}/lib.java/chromium_content_javatests.jar"/>
+    <pathelement location="${PRODUCT_DIR}/lib.java/chromium_media.jar"/>
+    <pathelement location="${PRODUCT_DIR}/lib.java/chromium_net.jar"/>
+    <pathelement location="${PRODUCT_DIR}/lib.java/chromium_net_javatests.jar"/>
     <pathelement location="${PRODUCT_DIR}/content_shell/classes"/>
   </path>
   <property name="java.compilerargs" value="-classpath ${toString:out.dex.jar.input.ref}"/>
@@ -63,10 +68,10 @@
       <fileset dir="${out.dir}/classes" includes="**/*.class"/>
       <zipfileset
          includes="**/*.class"
-         src="${PRODUCT_DIR}/content_shell_test/java/libs/chromium_content_javatests.jar"/>
+         src="${PRODUCT_DIR}/lib.java/chromium_content_javatests.jar"/>
       <zipfileset
          includes="**/*.class"
-         src="${PRODUCT_DIR}/content_shell_test/java/libs/chromium_net_javatests.jar"/>
+         src="${PRODUCT_DIR}/lib.java/chromium_net_javatests.jar"/>
     </jar>
 
   </target>
