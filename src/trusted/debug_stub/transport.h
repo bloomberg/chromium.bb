@@ -13,20 +13,7 @@
 
 #include "native_client/src/include/portability.h"
 
-#if NACL_WINDOWS
-# include <windows.h>
-# ifndef AF_IPX
-#  include <winsock2.h>
-# endif
-#endif
-
 namespace port {
-
-#if NACL_WINDOWS
-typedef SOCKET SocketHandle;
-#else
-typedef int SocketHandle;
-#endif
 
 class ITransport {
  public:
@@ -44,25 +31,14 @@ class ITransport {
   // Disconnect the transport, R/W and Select will now throw an exception
   virtual void Disconnect() = 0;
 
+  // Attempt to accept connection at the specified address
+  static ITransport *Accept(const char *addr);
   static void Free(ITransport *transport);
 
  protected:
   virtual ~ITransport() {}  // Prevent delete of base pointer
 };
 
-class SocketBinding {
- public:
-  // Bind to the specified TCP port.
-  static SocketBinding *Bind(const char *addr);
-
-  // Accept a connection on an already-bound TCP port.
-  ITransport *AcceptConnection();
-
- private:
-  explicit SocketBinding(SocketHandle socket_handle);
-
-  SocketHandle socket_handle_;
-};
 
 }  // namespace port
 

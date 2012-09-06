@@ -20,6 +20,12 @@ if env.Bit('host_mac'):
   # Resuming from a breakpoint does not yet work on Mac, so we run
   # just the single test that works.
   extra_test_args.append('DebugStubTest.test_initial_breakpoint')
+  # "-a" has the side effect of disabling the Mac outer sandbox, which
+  # does not yet work with the debug stub because the debug stub does
+  # bind() after the outer sandbox has been enabled.
+  # TODO(mseaborn): Clean up the debug stub's initialisation so that
+  # this workaround is not needed.
+  sel_ldr_command.append('-a')
 
 if env.Bit('build_arm'):
   # Use the system's 'nm' tool.  The NaCl toolchain will not be
