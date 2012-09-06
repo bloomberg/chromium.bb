@@ -17317,9 +17317,6 @@ Battery full
     <message name="IDS_WEB_INTENTS_ACTION_VIEW" desc="Question asking the user to pick a service for the 'viewing' action.">
       Which service should be used for viewing?
     </message>
-    <message name="IDS_WEB_INTENTS_ACTION_PICK" desc="Question asking the user to pick a service for the 'pick' action.">
-      Which service should be used for picking?
-    </message>
     <message name="IDS_WEB_INTENTS_ACTION_SUBSCRIBE" desc="Question asking the user to pick a service for the 'subscribe' action.">
       Which service should be used for subscribing?
     </message>

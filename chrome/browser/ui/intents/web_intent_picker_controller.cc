@@ -89,7 +89,8 @@ string16 GetIntentActionString(const std::string& action) {
   else if (!action.compare(web_intents::kActionView))
     return l10n_util::GetStringUTF16(IDS_WEB_INTENTS_ACTION_VIEW);
   else if (!action.compare(web_intents::kActionPick))
-    return l10n_util::GetStringUTF16(IDS_WEB_INTENTS_ACTION_PICK);
+    // Using generic string per UX suggestions.
+    return l10n_util::GetStringUTF16(IDS_INTENT_PICKER_CHOOSE_SERVICE);
   else if (!action.compare(web_intents::kActionSubscribe))
     return l10n_util::GetStringUTF16(IDS_WEB_INTENTS_ACTION_SUBSCRIBE);
   else if (!action.compare(web_intents::kActionSave))
