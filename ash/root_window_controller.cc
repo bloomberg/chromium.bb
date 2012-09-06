@@ -140,6 +140,9 @@ void CreateContainersInRootWindow(aura::RootWindow* root_window) {
   // container (moved back on unlock). We want to make sure that there's an
   // opaque layer occluding the non-lock-screen layers.
 
+  CreateContainer(internal::kShellWindowId_SystemBackgroundContainer,
+                  "SystemBackgroundContainer", root_window);
+
   aura::Window* desktop_background_containers = CreateContainer(
       internal::kShellWindowId_DesktopBackgroundContainer,
       "DesktopBackgroundContainer",
@@ -169,9 +172,6 @@ void CreateContainersInRootWindow(aura::RootWindow* root_window) {
   CreateContainer(internal::kShellWindowId_UnparentedControlContainer,
                   "UnparentedControlContainer",
                   non_lock_screen_containers);
-
-  CreateContainer(internal::kShellWindowId_SystemBackgroundContainer,
-                  "SystemBackgroundContainer", non_lock_screen_containers);
 
   aura::Window* default_container = CreateContainer(
       internal::kShellWindowId_DefaultContainer,
