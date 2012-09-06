@@ -19,6 +19,11 @@ IndexedDBDatabaseCallbacks::IndexedDBDatabaseCallbacks(
 IndexedDBDatabaseCallbacks::~IndexedDBDatabaseCallbacks() {
 }
 
+void IndexedDBDatabaseCallbacks::onForcedClose() {
+  dispatcher_host_->Send(
+      new IndexedDBMsg_DatabaseCallbacksForcedClose(thread_id_, database_id_));
+}
+
 void IndexedDBDatabaseCallbacks::onVersionChange(long long old_version,
                                                  long long new_version) {
   dispatcher_host_->Send(

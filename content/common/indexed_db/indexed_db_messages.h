@@ -272,6 +272,10 @@ IPC_MESSAGE_CONTROL2(IndexedDBMsg_TransactionCallbacksComplete,
                      int32 /* thread_id */,
                      int32 /* transaction_id */)
 
+// IDBDatabaseCallback message handlers
+IPC_MESSAGE_CONTROL2(IndexedDBMsg_DatabaseCallbacksForcedClose,
+                     int32, /* thread_id */
+                     int32) /* database_id */
 IPC_MESSAGE_CONTROL3(IndexedDBMsg_DatabaseCallbacksVersionChange,
                      int32, /* thread_id */
                      int32, /* database_id */

@@ -107,6 +107,8 @@ void IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksUpgradeNeeded, OnUpgradeNeeded)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_TransactionCallbacksAbort, OnAbort)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_TransactionCallbacksComplete, OnComplete)
+    IPC_MESSAGE_HANDLER(IndexedDBMsg_DatabaseCallbacksForcedClose,
+                        OnForcedClose)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_DatabaseCallbacksIntVersionChange,
                         OnIntVersionChange)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_DatabaseCallbacksVersionChange,
@@ -740,6 +742,16 @@ void IndexedDBDispatcher::OnComplete(int32 thread_id, int32 transaction_id) {
     return;
   callbacks->onComplete();
   pending_transaction_callbacks_.Remove(transaction_id);
+}
+
+void IndexedDBDispatcher::OnForcedClose(int32 thread_id,
+                                        int32 database_id) {
+  DCHECK_EQ(thread_id, CurrentWorkerId());
+  WebIDBDatabaseCallbacks* callbacks =
+      pending_database_callbacks_.Lookup(database_id);
+  if (!callbacks)
+    return;
+  callbacks->onForcedClose();
 }
 
 void IndexedDBDispatcher::OnIntVersionChange(int32 thread_id,

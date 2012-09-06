@@ -19,6 +19,7 @@ class IndexedDBDatabaseCallbacks
 
   virtual ~IndexedDBDatabaseCallbacks();
 
+  virtual void onForcedClose();
   virtual void onVersionChange(long long old_version,
                                long long new_version);
   virtual void onVersionChange(const WebKit::WebString& requested_version);

@@ -20,6 +20,7 @@ class GURL;
 class FilePath;
 
 namespace WebKit {
+class WebIDBDatabase;
 class WebIDBFactory;
 }
 
@@ -63,8 +64,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
       const string16& origin_id) const OVERRIDE;
 
   // Methods called by IndexedDBDispatcherHost for quota support.
-  void ConnectionOpened(const GURL& origin_url);
-  void ConnectionClosed(const GURL& origin_url);
+  void ConnectionOpened(const GURL& origin_url, WebKit::WebIDBDatabase*);
+  void ConnectionClosed(const GURL& origin_url, WebKit::WebIDBDatabase*);
   void TransactionComplete(const GURL& origin_url);
   bool WouldBeOverQuota(const GURL& origin_url, int64 additional_bytes);
   bool IsOverQuota(const GURL& origin_url);
@@ -85,6 +86,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTest, ClearLocalState);
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTest, ClearSessionOnlyDatabases);
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTest, SetForceKeepSessionState);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBTest, ForceCloseOpenDatabasesOnDelete);
   friend class IndexedDBQuotaClientTest;
 
   typedef std::map<GURL, int64> OriginToSizeMap;
@@ -123,7 +125,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
   scoped_ptr<std::set<GURL> > origin_set_;
   OriginToSizeMap origin_size_map_;
   OriginToSizeMap space_available_map_;
-  std::map<GURL, unsigned int> connection_count_;
+  typedef std::set<WebKit::WebIDBDatabase*> ConnectionSet;
+  std::map<GURL, ConnectionSet> connections_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBContextImpl);
 };

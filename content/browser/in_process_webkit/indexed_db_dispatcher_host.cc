@@ -164,7 +164,7 @@ int32 IndexedDBDispatcherHost::Add(WebIDBDatabase* idb_database,
     return 0;
   }
   int32 idb_database_id = database_dispatcher_host_->map_.Add(idb_database);
-  Context()->ConnectionOpened(origin_url);
+  Context()->ConnectionOpened(origin_url, idb_database);
   database_dispatcher_host_->database_url_map_[idb_database_id] = origin_url;
   return idb_database_id;
 }
@@ -301,9 +301,10 @@ IndexedDBDispatcherHost::DatabaseDispatcherHost::~DatabaseDispatcherHost() {
   for (WebIDBObjectIDToURLMap::iterator iter = database_url_map_.begin();
        iter != database_url_map_.end(); iter++) {
     WebIDBDatabase* database = map_.Lookup(iter->first);
-    if (database)
+    if (database) {
       database->close();
-    parent_->Context()->ConnectionClosed(iter->second);
+      parent_->Context()->ConnectionClosed(iter->second, database);
+    }
   }
 }
 
@@ -473,7 +474,8 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnClose(
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDestroyed(
     int32 object_id) {
-  parent_->Context()->ConnectionClosed(database_url_map_[object_id]);
+  WebIDBDatabase* database = map_.Lookup(object_id);
+  parent_->Context()->ConnectionClosed(database_url_map_[object_id], database);
   database_url_map_.erase(object_id);
   parent_->DestroyObject(&map_, object_id);
 }

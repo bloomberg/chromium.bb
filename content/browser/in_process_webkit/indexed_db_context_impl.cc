@@ -144,19 +144,31 @@ void IndexedDBContextImpl::DeleteForOrigin(const GURL& origin_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   if (data_path_.empty() || !IsInOriginSet(origin_url))
     return;
-  // TODO(michaeln): When asked to delete an origin with open connections,
-  // forcibly close those connections then delete.
-  if (connection_count_.find(origin_url) == connection_count_.end()) {
-    string16 origin_id = DatabaseUtil::GetOriginIdentifier(origin_url);
-    FilePath idb_directory = GetIndexedDBFilePath(origin_id);
-    EnsureDiskUsageCacheInitialized(origin_url);
-    bool deleted = file_util::Delete(idb_directory, true /*recursive*/);
-    QueryDiskAndUpdateQuotaUsage(origin_url);
-    if (deleted) {
-      RemoveFromOriginSet(origin_url);
-      origin_size_map_.erase(origin_url);
-      space_available_map_.erase(origin_url);
+
+  if (connections_.find(origin_url) != connections_.end()) {
+    ConnectionSet& connections = connections_[origin_url];
+    ConnectionSet::iterator it = connections.begin();
+    while (it != connections.end()) {
+      // Remove before closing so callbacks don't double-erase
+      WebKit::WebIDBDatabase* db = *it;
+      connections.erase(it++);
+      db->forceClose();
     }
+    DCHECK(connections_[origin_url].size() == 0);
+    connections_.erase(origin_url);
+  }
+
+  string16 origin_id = DatabaseUtil::GetOriginIdentifier(origin_url);
+  FilePath idb_directory = GetIndexedDBFilePath(origin_id);
+  EnsureDiskUsageCacheInitialized(origin_url);
+  const bool recursive = true;
+  bool deleted = file_util::Delete(idb_directory, recursive);
+
+  QueryDiskAndUpdateQuotaUsage(origin_url);
+  if (deleted) {
+    RemoveFromOriginSet(origin_url);
+    origin_size_map_.erase(origin_url);
+    space_available_map_.erase(origin_url);
   }
 }
 
@@ -165,13 +177,15 @@ FilePath IndexedDBContextImpl::GetFilePathForTesting(
   return GetIndexedDBFilePath(origin_id);
 }
 
-void IndexedDBContextImpl::ConnectionOpened(const GURL& origin_url) {
+void IndexedDBContextImpl::ConnectionOpened(const GURL& origin_url,
+                                            WebIDBDatabase* connection) {
+  DCHECK(connections_[origin_url].count(connection) == 0);
   if (quota_manager_proxy()) {
     quota_manager_proxy()->NotifyStorageAccessed(
         quota::QuotaClient::kIndexedDatabase, origin_url,
         quota::kStorageTypeTemporary);
   }
-  connection_count_[origin_url]++;
+  connections_[origin_url].insert(connection);
   if (AddToOriginSet(origin_url)) {
     // A newly created db, notify the quota system.
     QueryDiskAndUpdateQuotaUsage(origin_url);
@@ -181,22 +195,27 @@ void IndexedDBContextImpl::ConnectionOpened(const GURL& origin_url) {
   QueryAvailableQuota(origin_url);
 }
 
-void IndexedDBContextImpl::ConnectionClosed(const GURL& origin_url) {
-  DCHECK(connection_count_[origin_url] > 0);
+void IndexedDBContextImpl::ConnectionClosed(const GURL& origin_url,
+                                            WebIDBDatabase* connection) {
+  // May not be in the map if connection was forced to close
+  if (connections_.find(origin_url) == connections_.end() ||
+      connections_[origin_url].count(connection) != 1)
+    return;
   if (quota_manager_proxy()) {
     quota_manager_proxy()->NotifyStorageAccessed(
         quota::QuotaClient::kIndexedDatabase, origin_url,
         quota::kStorageTypeTemporary);
   }
-  connection_count_[origin_url]--;
-  if (connection_count_[origin_url] == 0) {
+  connections_[origin_url].erase(connection);
+  if (connections_[origin_url].size() == 0) {
     QueryDiskAndUpdateQuotaUsage(origin_url);
-    connection_count_.erase(origin_url);
+    connections_.erase(origin_url);
   }
 }
 
 void IndexedDBContextImpl::TransactionComplete(const GURL& origin_url) {
-  DCHECK(connection_count_[origin_url] > 0);
+  DCHECK(connections_.find(origin_url) != connections_.end() &&
+         connections_[origin_url].size() > 0);
   QueryDiskAndUpdateQuotaUsage(origin_url);
   QueryAvailableQuota(origin_url);
 }
@@ -324,7 +343,7 @@ void IndexedDBContextImpl::QueryAvailableQuota(const GURL& origin_url) {
     return;
   }
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!quota_manager_proxy()->quota_manager())
+  if (!quota_manager_proxy() || !quota_manager_proxy()->quota_manager())
     return;
   quota_manager_proxy()->quota_manager()->GetUsageAndQuota(
       origin_url,
