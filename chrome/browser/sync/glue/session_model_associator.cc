@@ -553,8 +553,9 @@ void SessionModelAssociator::LoadFaviconForTab(TabLink* tab_link) {
   }
   DVLOG(1) << "Triggering favicon load for url " << tab_link->url().spec();
   FaviconService::Handle handle = favicon_service->GetRawFaviconForURL(
-      profile_, tab_link->url(), history::FAVICON, gfx::kFaviconSize,
-      ui::SCALE_FACTOR_100P, &load_consumer_,
+      FaviconService::FaviconForURLParams(profile_, tab_link->url(),
+          history::FAVICON, gfx::kFaviconSize, &load_consumer_),
+      ui::SCALE_FACTOR_100P,
       base::Bind(&SessionModelAssociator::OnFaviconDataAvailable,
                  AsWeakPtr()));
   load_consumer_.SetClientData(favicon_service, handle, tab_id);

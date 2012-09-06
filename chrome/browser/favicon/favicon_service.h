@@ -31,6 +31,27 @@ class FaviconService : public CancelableRequestProvider,
 
   virtual ~FaviconService();
 
+  // Auxiliary argument structure for requesting favicons for URLs.
+  struct FaviconForURLParams {
+    FaviconForURLParams(Profile* profile,
+                        const GURL& page_url,
+                        int icon_types,
+                        int desired_size_in_dip,
+                        CancelableRequestConsumerBase* consumer)
+        : profile(profile),
+          page_url(page_url),
+          icon_types(icon_types),
+          desired_size_in_dip(desired_size_in_dip),
+          consumer(consumer) {
+    }
+
+    Profile* profile;
+    GURL page_url;
+    int icon_types;
+    int desired_size_in_dip;
+    CancelableRequestConsumerBase* consumer;
+  };
+
   // Callback for GetFaviconImage() and GetFaviconImageForURL().
   // |FaviconImageResult::image| is constructed from the bitmaps for the
   // passed in URL and icon types which most which closely match the passed in
@@ -125,28 +146,16 @@ class FaviconService : public CancelableRequestProvider,
   // callback and the requested scale factors. All of the scale factors
   // supported by the current platform (eg MacOS) are requested for
   // GetFaviconImageForURL().
-  Handle GetFaviconImageForURL(Profile* profile,
-                               const GURL& page_url,
-                               int icon_types,
-                               int desired_size_in_dip,
-                               CancelableRequestConsumerBase* consumer,
+  Handle GetFaviconImageForURL(const FaviconForURLParams& params,
                                const FaviconImageCallback& callback);
 
-  Handle GetRawFaviconForURL(Profile* profile,
-                             const GURL& page_url,
-                             int icon_types,
-                             int desired_size_in_dip,
+  Handle GetRawFaviconForURL(const FaviconForURLParams& params,
                              ui::ScaleFactor desired_scale_factor,
-                             CancelableRequestConsumerBase* consumer,
                              const FaviconRawCallback& callback);
 
   Handle GetFaviconForURL(
-      Profile* profile,
-      const GURL& page_url,
-      int icon_types,
-      int desired_size_in_dip,
+      const FaviconForURLParams& params,
       const std::vector<ui::ScaleFactor>& desired_scale_factors,
-      CancelableRequestConsumerBase* consumer,
       const FaviconResultsCallback& callback);
 
   // Requests the favicon for |favicon_id| which most closely matches
@@ -189,12 +198,8 @@ class FaviconService : public CancelableRequestProvider,
   // Helper function for GetFaviconImageForURL(), GetRawFaviconForURL() and
   // GetFaviconForURL().
   Handle GetFaviconForURLImpl(
-      Profile* profile,
-      const GURL& page_url,
-      int icon_types,
-      int desired_size_in_dip,
+      const FaviconForURLParams& params,
       const std::vector<ui::ScaleFactor>& desired_scale_factors,
-      CancelableRequestConsumerBase* consumer,
       GetFaviconRequest* request);
 
   // Intermediate callback for GetFaviconImage() and GetFaviconImageForURL()

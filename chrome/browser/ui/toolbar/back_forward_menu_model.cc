@@ -251,8 +251,8 @@ void BackForwardMenuModel::FetchFavicon(NavigationEntry* entry) {
   if (!favicon_service)
     return;
   FaviconService::Handle handle = favicon_service->GetFaviconImageForURL(
-      browser_->profile(), entry->GetURL(), history::FAVICON,
-      gfx::kFaviconSize, &load_consumer_,
+      FaviconService::FaviconForURLParams(browser_->profile(), entry->GetURL(),
+          history::FAVICON, gfx::kFaviconSize, &load_consumer_),
       base::Bind(&BackForwardMenuModel::OnFavIconDataAvailable,
                  base::Unretained(this)));
   load_consumer_.SetClientData(favicon_service, handle, entry->GetUniqueID());

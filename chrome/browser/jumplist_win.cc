@@ -709,7 +709,8 @@ void JumpList::StartLoadingFavicon() {
   FaviconService* favicon_service =
       FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   handle_ = favicon_service->GetFaviconImageForURL(
-      profile_, url, history::FAVICON, gfx::kFaviconSize, &favicon_consumer_,
+      FaviconService::FaviconForURLParams(profile_, url, history::FAVICON,
+          gfx::kFaviconSize, &favicon_consumer_),
       base::Bind(&JumpList::OnFaviconDataAvailable, base::Unretained(this)));
 }
 

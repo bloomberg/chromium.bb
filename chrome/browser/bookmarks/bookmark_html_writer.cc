@@ -461,9 +461,10 @@ bool BookmarkFaviconFetcher::FetchNextFavicon() {
     if (favicons_map_->end() == iter) {
       FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
           profile_, Profile::EXPLICIT_ACCESS);
-      favicon_service->GetRawFaviconForURL(profile_, GURL(url),
-          history::FAVICON, gfx::kFaviconSize, ui::SCALE_FACTOR_100P,
-          &favicon_consumer_,
+      favicon_service->GetRawFaviconForURL(
+          FaviconService::FaviconForURLParams(profile_, GURL(url),
+              history::FAVICON, gfx::kFaviconSize, &favicon_consumer_),
+          ui::SCALE_FACTOR_100P,
           base::Bind(&BookmarkFaviconFetcher::OnFaviconDataAvailable,
                      base::Unretained(this)));
       return true;

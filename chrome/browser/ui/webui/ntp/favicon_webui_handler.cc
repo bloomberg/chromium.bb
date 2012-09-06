@@ -111,12 +111,13 @@ void FaviconWebUIHandler::HandleGetFaviconDominantColor(const ListValue* args) {
 
   dom_id_map_[id_] = dom_id;
   FaviconService::Handle handle = favicon_service->GetRawFaviconForURL(
-      Profile::FromWebUI(web_ui()),
-      url,
-      history::FAVICON,
-      gfx::kFaviconSize,
+      FaviconService::FaviconForURLParams(
+          Profile::FromWebUI(web_ui()),
+          url,
+          history::FAVICON,
+          gfx::kFaviconSize,
+          &consumer_),
       ui::SCALE_FACTOR_100P,
-      &consumer_,
       base::Bind(&FaviconWebUIHandler::OnFaviconDataAvailable,
                  base::Unretained(this)));
   consumer_.SetClientData(favicon_service, handle, id_++);

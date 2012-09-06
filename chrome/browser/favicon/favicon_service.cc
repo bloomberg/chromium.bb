@@ -94,56 +94,41 @@ FaviconService::Handle FaviconService::UpdateFaviconMappingAndFetch(
 }
 
 FaviconService::Handle FaviconService::GetFaviconImageForURL(
-    Profile* profile,
-    const GURL& page_url,
-    int icon_types,
-    int desired_size_in_dip,
-    CancelableRequestConsumerBase* consumer,
+    const FaviconForURLParams& params,
     const FaviconImageCallback& callback) {
   GetFaviconRequest* request = new GetFaviconRequest(base::Bind(
       &FaviconService::GetFaviconImageCallback,
       base::Unretained(this),
-      desired_size_in_dip,
+      params.desired_size_in_dip,
       callback));
 
   std::vector<ui::ScaleFactor> desired_scale_factors =
       ui::GetSupportedScaleFactors();
-  return GetFaviconForURLImpl(profile, page_url, icon_types,
-      desired_size_in_dip, desired_scale_factors, consumer, request);
+  return GetFaviconForURLImpl(params, desired_scale_factors, request);
 }
 
 FaviconService::Handle FaviconService::GetRawFaviconForURL(
-    Profile* profile,
-    const GURL& page_url,
-    int icon_types,
-    int desired_size_in_dip,
+    const FaviconForURLParams& params,
     ui::ScaleFactor desired_scale_factor,
-    CancelableRequestConsumerBase* consumer,
     const FaviconRawCallback& callback) {
   GetFaviconRequest* request = new GetFaviconRequest(base::Bind(
       &FaviconService::GetRawFaviconCallback,
       base::Unretained(this),
-      desired_size_in_dip,
+      params.desired_size_in_dip,
       desired_scale_factor,
       callback));
 
   std::vector<ui::ScaleFactor> desired_scale_factors;
   desired_scale_factors.push_back(desired_scale_factor);
-  return GetFaviconForURLImpl(profile, page_url, icon_types,
-      desired_size_in_dip, desired_scale_factors, consumer, request);
+  return GetFaviconForURLImpl(params, desired_scale_factors, request);
 }
 
 FaviconService::Handle FaviconService::GetFaviconForURL(
-    Profile* profile,
-    const GURL& page_url,
-    int icon_types,
-    int desired_size_in_dip,
+    const FaviconForURLParams& params,
     const std::vector<ui::ScaleFactor>& desired_scale_factors,
-    CancelableRequestConsumerBase* consumer,
     const FaviconResultsCallback& callback) {
   GetFaviconRequest* request = new GetFaviconRequest(callback);
-  return GetFaviconForURLImpl(profile, page_url, icon_types,
-      desired_size_in_dip, desired_scale_factors, consumer, request);
+  return GetFaviconForURLImpl(params, desired_scale_factors, request);
 }
 
 FaviconService::Handle FaviconService::GetRawFaviconForID(
@@ -200,25 +185,24 @@ FaviconService::~FaviconService() {
 }
 
 FaviconService::Handle FaviconService::GetFaviconForURLImpl(
-    Profile* profile,
-    const GURL& page_url,
-    int icon_types,
-    int desired_size_in_dip,
+    const FaviconForURLParams& params,
     const std::vector<ui::ScaleFactor>& desired_scale_factors,
-    CancelableRequestConsumerBase* consumer,
     GetFaviconRequest* request) {
-  AddRequest(request, consumer);
+  AddRequest(request, params.consumer);
   FaviconService::Handle handle = request->handle();
-  if (page_url.SchemeIs(chrome::kChromeUIScheme) ||
-      page_url.SchemeIs(chrome::kExtensionScheme)) {
+  if (params.page_url.SchemeIs(chrome::kChromeUIScheme) ||
+      params.page_url.SchemeIs(chrome::kExtensionScheme)) {
     ChromeWebUIControllerFactory::GetInstance()->GetFaviconForURL(
-        profile, request, page_url, desired_scale_factors);
+        params.profile, request, params.page_url, desired_scale_factors);
   } else {
     // TODO(pkotwicz): Pass in desired size and desired scale factors.
-    if (history_service_)
-      history_service_->GetFaviconForURL(request, page_url, icon_types);
-    else
+    if (history_service_) {
+      history_service_->GetFaviconForURL(request,
+                                         params.page_url,
+                                         params.icon_types);
+    } else {
       ForwardEmptyResultAsync(request);
+    }
   }
   return handle;
 }

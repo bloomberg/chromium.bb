@@ -215,12 +215,13 @@ void ExtensionIconSource::LoadFaviconImage(int request_id) {
 
   GURL favicon_url = GetData(request_id)->extension->GetFullLaunchURL();
   FaviconService::Handle handle = favicon_service->GetRawFaviconForURL(
-      profile_,
-      favicon_url,
-      history::FAVICON,
-      gfx::kFaviconSize,
+      FaviconService::FaviconForURLParams(
+          profile_,
+          favicon_url,
+          history::FAVICON,
+          gfx::kFaviconSize,
+          &cancelable_consumer_),
       ui::SCALE_FACTOR_100P,
-      &cancelable_consumer_,
       base::Bind(&ExtensionIconSource::OnFaviconDataAvailable,
                  base::Unretained(this)));
   cancelable_consumer_.SetClientData(favicon_service, handle, request_id);

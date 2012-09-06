@@ -801,8 +801,8 @@ void BookmarkModel::LoadFavicon(BookmarkNode* node) {
   if (!favicon_service)
     return;
   FaviconService::Handle handle = favicon_service->GetFaviconImageForURL(
-      profile_, node->url(), history::FAVICON, gfx::kFaviconSize,
-      &load_consumer_,
+      FaviconService::FaviconForURLParams(profile_, node->url(),
+          history::FAVICON, gfx::kFaviconSize, &load_consumer_),
       base::Bind(&BookmarkModel::OnFaviconDataAvailable,
                  base::Unretained(this)));
   load_consumer_.SetClientData(favicon_service, handle, node);

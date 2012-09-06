@@ -355,12 +355,13 @@ void BookmarksHandler::HandleCreateHomeScreenBookmarkShortcut(
     FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
         profile, Profile::EXPLICIT_ACCESS);
     FaviconService::Handle handle = favicon_service->GetRawFaviconForURL(
-        profile,
-        node->url(),
-        history::FAVICON | history::TOUCH_ICON,
-        gfx::kFaviconSize,
+        FaviconService::FaviconForURLParams(
+            profile,
+            node->url(),
+            history::FAVICON | history::TOUCH_ICON,
+            gfx::kFaviconSize,
+            &cancelable_consumer_),
         ui::SCALE_FACTOR_100P,
-        &cancelable_consumer_,
         base::Bind(&BookmarksHandler::OnShortcutFaviconDataAvailable,
                    base::Unretained(this)));
     cancelable_consumer_.SetClientData(favicon_service, handle, node);

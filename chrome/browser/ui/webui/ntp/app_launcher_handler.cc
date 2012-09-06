@@ -706,8 +706,8 @@ void AppLauncherHandler::HandleGenerateAppForLink(const ListValue* args) {
   install_info->page_ordinal = page_ordinal;
 
   FaviconService::Handle h = favicon_service->GetFaviconImageForURL(
-      profile, launch_url, history::FAVICON, gfx::kFaviconSize,
-      &favicon_consumer_,
+      FaviconService::FaviconForURLParams(profile, launch_url, history::FAVICON,
+          gfx::kFaviconSize, &favicon_consumer_),
       base::Bind(&AppLauncherHandler::OnFaviconForApp, base::Unretained(this)));
   favicon_consumer_.SetClientData(favicon_service, h, install_info.release());
 }

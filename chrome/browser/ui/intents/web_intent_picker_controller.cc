@@ -504,11 +504,12 @@ void WebIntentPickerController::AddServiceToModel(
 
   pending_async_count_++;
   FaviconService::Handle handle = favicon_service->GetFaviconImageForURL(
-      tab_contents_->profile(),
-      service.service_url,
-      history::FAVICON,
-      gfx::kFaviconSize,
-      &favicon_consumer_,
+      FaviconService::FaviconForURLParams(
+          tab_contents_->profile(),
+          service.service_url,
+          history::FAVICON,
+          gfx::kFaviconSize,
+          &favicon_consumer_),
       base::Bind(
           &WebIntentPickerController::OnFaviconDataAvailable,
           weak_ptr_factory_.GetWeakPtr()));

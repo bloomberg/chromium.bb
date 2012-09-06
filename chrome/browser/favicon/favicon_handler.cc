@@ -393,9 +393,10 @@ void FaviconHandler::GetFaviconForURL(
     int icon_types,
     CancelableRequestConsumerBase* consumer,
     const FaviconService::FaviconResultsCallback& callback) {
-  GetFaviconService()->GetFaviconForURL(profile_, page_url, icon_types,
-      preferred_icon_size(), ui::GetSupportedScaleFactors(), consumer,
-      callback);
+  GetFaviconService()->GetFaviconForURL(
+      FaviconService::FaviconForURLParams(profile_, page_url, icon_types,
+                                          preferred_icon_size(), consumer),
+      ui::GetSupportedScaleFactors(), callback);
 }
 
 void FaviconHandler::SetHistoryFavicon(

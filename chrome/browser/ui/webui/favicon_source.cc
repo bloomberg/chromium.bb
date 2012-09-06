@@ -109,12 +109,13 @@ void FaviconSource::StartDataRequest(const std::string& path,
 
     // TODO(estade): fetch the requested size.
     handle = favicon_service->GetRawFaviconForURL(
-        profile_,
-        url,
-        icon_types_,
-        gfx::kFaviconSize,
+        FaviconService::FaviconForURLParams(
+            profile_,
+            url,
+            icon_types_,
+            gfx::kFaviconSize,
+            &cancelable_consumer_),
         ui::SCALE_FACTOR_100P,
-        &cancelable_consumer_,
         base::Bind(&FaviconSource::OnFaviconDataAvailable,
                    base::Unretained(this)));
   }

@@ -456,8 +456,8 @@ void HistoryMenuBridge::GetFaviconForHistoryItem(HistoryItem* item) {
   FaviconService* service =
       FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   FaviconService::Handle handle = service->GetFaviconImageForURL(
-      profile_, item->url, history::FAVICON, gfx::kFaviconSize,
-      &favicon_consumer_,
+      FaviconService::FaviconForURLParams(profile_, item->url, history::FAVICON,
+          gfx::kFaviconSize, &favicon_consumer_),
       base::Bind(&HistoryMenuBridge::GotFaviconData, base::Unretained(this)));
   favicon_consumer_.SetClientData(service, handle, item);
   item->icon_handle = handle;
