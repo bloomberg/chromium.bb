@@ -1,0 +1,16 @@
+<Application
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <VisualElements
+        DisplayName="Chrome Browser"
+        Logo="Logo.png"
+        SmallLogo="SmallLogo.png"
+        ForegroundText="light"
+        BackgroundColor="white">
+        <DefaultTile
+            ShortName="ChromeBrowser"
+            ShowName="allLogos"
+            />
+        <SplashScreen
+            Image="splash-620x300.png"/>
+    </VisualElements>
+</Application>
