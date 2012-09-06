@@ -302,7 +302,7 @@ void CdmWrapper::DeliverBlock(int32_t result,
     case cdm::kSuccess:
       decrypted_block_info.result = PP_DECRYPTRESULT_SUCCESS;
       break;
-    case cdm::kErrorNoKey:
+    case cdm::kNoKey:
       decrypted_block_info.result = PP_DECRYPTRESULT_DECRYPT_NOKEY;
       break;
     default:

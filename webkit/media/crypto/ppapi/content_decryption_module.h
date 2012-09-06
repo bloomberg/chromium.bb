@@ -8,6 +8,7 @@
 #if defined(_MSC_VER)
 typedef unsigned char uint8_t;
 typedef unsigned int uint32_t;
+typedef int int32_t;
 typedef __int64 int64_t;
 #else
 #include <stdint.h>
@@ -29,10 +30,13 @@ namespace cdm {
 
 enum Status {
   kSuccess = 0,
-  kErrorUnknown,
-  kErrorNoKey
+  kNeedMoreData,  // Decoder needs more data to produce a decoded frame/sample.
+  kNoKey,  // The required decryption key is not available.
+  kError
 };
 
+// Represents a key message sent by the CDM. It does not own any pointers in
+// this struct.
 // TODO(xhwang): Use int32_t instead of uint32_t for sizes here and below and
 // update checks to include <0.
 struct KeyMessage {
@@ -82,6 +86,8 @@ struct SubsampleEntry {
   uint32_t cipher_bytes;
 };
 
+// Represents an input buffer to be decrypted (and possibly decoded). It does
+// own any pointers in this struct.
 struct InputBuffer {
   InputBuffer()
       : data(NULL),
@@ -117,6 +123,7 @@ struct InputBuffer {
   int64_t timestamp;  // Presentation timestamp in microseconds.
 };
 
+// Represents an output decrypted buffer. It does not own |data|.
 struct OutputBuffer {
   OutputBuffer()
       : data(NULL),
@@ -129,15 +136,87 @@ struct OutputBuffer {
   int64_t timestamp;  // Presentation timestamp in microseconds.
 };
 
+// Surface formats based on FOURCC labels, see:
+// http://www.fourcc.org/yuv.php
+enum VideoFormat {
+  kUnknownVideoFormat = 0,  // Unknown format value.  Used for error reporting.
+  kEmptyVideoFrame,  // An empty frame.
+  kYv12,  // 12bpp YVU planar 1x1 Y, 2x2 VU samples.
+  kI420  // 12bpp YVU planar 1x1 Y, 2x2 UV samples.
+};
+
+struct Size {
+  Size() : width(0), height(0) {}
+  Size(int32_t width, int32_t height) : width(width), height(height) {}
+
+  int32_t width;
+  int32_t height;
+};
+
+struct VideoFrame {
+  static const int32_t kMaxPlanes = 3;
+
+  VideoFrame()
+      : timestamp(0) {
+    for (int i = 0; i < kMaxPlanes; ++i) {
+      strides[i] = 0;
+      data[i] = NULL;
+    }
+  }
+
+  // Array of strides for each plane, typically greater or equal to the width
+  // of the surface divided by the horizontal sampling period.  Note that
+  // strides can be negative.
+  int32_t strides[kMaxPlanes];
+
+  // Array of data pointers to each plane.
+  uint8_t* data[kMaxPlanes];
+
+  int64_t timestamp;  // Presentation timestamp in microseconds.
+};
+
+struct VideoDecoderConfig {
+  enum VideoCodec {
+    kUnknownVideoCodec = 0,
+    kCodecVP8
+  };
+
+  enum VideoCodecProfile {
+    kUnknownVideoCodecProfile = 0,
+    kVp8ProfileMain
+  };
+
+  VideoDecoderConfig()
+      : codec(kUnknownVideoCodec),
+        profile(kUnknownVideoCodecProfile),
+        format(kUnknownVideoFormat),
+        extra_data(NULL),
+        extra_data_size() {}
+
+  VideoCodec codec;
+  VideoCodecProfile profile;
+  VideoFormat format;
+
+  // Width and height of video frame immediately post-decode. Not all pixels
+  // in this region are valid.
+  Size coded_size;
+
+  // Optional byte data required to initialize video decoders, such as H.264
+  // AAVC data.
+  uint8_t* extra_data;
+  int32_t extra_data_size;
+};
+
 class ContentDecryptionModule {
  public:
   // Generates a |key_request| given the |init_data|.
+  //
   // Returns kSuccess if the key request was successfully generated,
   // in which case the callee should have allocated memory for the output
   // parameters (e.g |session_id| in |key_request|) and passed the ownership
   // to the caller.
-  // Returns kErrorUnknown otherwise, in which case the output parameters should
-  // not be used by the caller.
+  // Returns kError if any error happened, in which case the |key_request|
+  // should not be used by the caller.
   //
   // TODO(xhwang): It's not safe to pass the ownership of the dynamically
   // allocated memory over library boundaries. Fix it after related PPAPI change
@@ -147,8 +226,8 @@ class ContentDecryptionModule {
                                     KeyMessage* key_request) = 0;
 
   // Adds the |key| to the CDM to be associated with |key_id|.
-  // Returns kSuccess if the key was successfully added.
-  // Returns kErrorUnknown otherwise.
+  //
+  // Returns kSuccess if the key was successfully added, kError otherwise.
   virtual Status AddKey(const char* session_id,
                         int session_id_size,
                         const uint8_t* key,
@@ -157,26 +236,74 @@ class ContentDecryptionModule {
                         int key_id_size) = 0;
 
   // Cancels any pending key request made to the CDM for |session_id|.
+  //
   // Returns kSuccess if all pending key requests for |session_id| were
-  // successfully canceled or there was no key request to be canceled.
-  // Returns kErrorUnknown otherwise.
+  // successfully canceled or there was no key request to be canceled, kError
+  // otherwise.
   virtual Status CancelKeyRequest(const char* session_id,
                                   int session_id_size) = 0;
 
   // Decrypts the |encrypted_buffer|.
+  //
   // Returns kSuccess if decryption succeeded, in which case the callee
   // should have filled the |decrypted_buffer| and passed the ownership of
   // |data| in |decrypted_buffer| to the caller.
-  // Returns kErrorNoKey if the CDM did not have the necessary decryption key
+  // Returns kNoKey if the CDM did not have the necessary decryption key
   // to decrypt.
-  // Returns kErrorUnknown if any other error happened.
-  // In these two cases, |decrypted_buffer| should not be used by the caller.
+  // Returns kError if any other error happened.
+  // If the return value is not kSuccess, |decrypted_buffer| should be ignored
+  // by the caller.
   //
   // TODO(xhwang): It's not safe to pass the ownership of the dynamically
   // allocated memory over library boundaries. Fix it after related PPAPI change
   // and sample CDM are landed.
   virtual Status Decrypt(const InputBuffer& encrypted_buffer,
                          OutputBuffer* decrypted_buffer) = 0;
+
+  // Initializes the CDM video decoder with |video_decoder_config|. This
+  // function must be called before DecryptAndDecodeVideo() is called.
+  //
+  // Returns kSuccess if the |video_decoder_config| is supported and the CDM
+  // video decoder is successfully initialized.
+  // Returns kError if |video_decoder_config| is not supported. The CDM may
+  // still be able to do Decrypt().
+  //
+  // TODO(xhwang): Add stream ID here and in the following video decoder
+  // functions when we need to support multiple video streams in one CDM.
+  virtual Status InitializeVideoDecoder(
+      const VideoDecoderConfig& video_decoder_config) = 0;
+
+  // Decrypts the |encrypted_buffer| and decodes the decrypted buffer into a
+  // |video_frame|. Upon end-of-stream, the caller should call this function
+  // repeatedly with empty |encrypted_buffer| (|data| == NULL) until only empty
+  // |video_frame| (|format| == kEmptyVideoFrame) is produced.
+  //
+  // Returns kSuccess if decryption and decoding both succeeded, in which case
+  // the callee should have filled the |video_frame| and passed the ownership of
+  // |data| in |video_frame| to the caller.
+  // Returns kNoKey if the CDM did not have the necessary decryption key
+  // to decrypt.
+  // Returns kNeedMoreData if more data was needed by the decoder to generate
+  // a decoded frame (e.g. during initialization).
+  // Returns kError if any other (decryption or decoding) error happened.
+  // If the return value is not kSuccess, |video_frame| should be ignored by
+  // the caller.
+  //
+  // TODO(xhwang): It's not safe to pass the ownership of the dynamically
+  // allocated memory over library boundaries. Fix it after related PPAPI change
+  // and sample CDM are landed.
+  virtual Status DecryptAndDecodeVideo(const InputBuffer& encrypted_buffer,
+                                       VideoFrame* video_frame) = 0;
+
+  // Resets the CDM video decoder to an initialized clean state. All internal
+  // buffers will be flushed.
+  virtual void ResetVideoDecoder() = 0;
+
+  // Stops the CDM video decoder and sets it to an uninitialized state. The
+  // caller can call InitializeVideoDecoder() again after this call to
+  // re-initialize the video decoder. This can be used to reconfigure the
+  // video decoder if the config changes.
+  virtual void StopVideoDecoder() = 0;
 
   virtual ~ContentDecryptionModule() {}
 };

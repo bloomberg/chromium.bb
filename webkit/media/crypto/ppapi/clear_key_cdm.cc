@@ -137,7 +137,7 @@ cdm::Status ClearKeyCdm::GenerateKeyRequest(const uint8_t* init_data,
   decryptor_.GenerateKeyRequest("", init_data, init_data_size);
 
   if (client_.status() != Client::kKeyMessage)
-    return cdm::kErrorUnknown;
+    return cdm::kError;
 
   DCHECK(key_request);
   key_request->session_id = AllocateAndCopy(client_.session_id().data(),
@@ -165,7 +165,7 @@ cdm::Status ClearKeyCdm::AddKey(const char* session_id,
                     std::string(session_id, session_id_size));
 
   if (client_.status() != Client::kKeyAdded)
-    return cdm::kErrorUnknown;
+    return cdm::kError;
 
   return cdm::kSuccess;
 }
@@ -203,10 +203,10 @@ cdm::Status ClearKeyCdm::Decrypt(
                      base::Bind(&CopyDecryptResults, &status, &buffer));
 
   if (status == media::Decryptor::kError)
-    return cdm::kErrorUnknown;
+    return cdm::kError;
 
   if (status == media::Decryptor::kNoKey)
-    return cdm::kErrorNoKey;
+    return cdm::kNoKey;
 
   DCHECK(buffer);
   int data_size = buffer->GetDataSize();
@@ -214,6 +214,27 @@ cdm::Status ClearKeyCdm::Decrypt(
   decrypted_buffer->data_size = data_size;
   decrypted_buffer->timestamp = buffer->GetTimestamp().InMicroseconds();
   return cdm::kSuccess;
+}
+
+cdm::Status ClearKeyCdm::InitializeVideoDecoder(
+    const cdm::VideoDecoderConfig& video_decoder_config) {
+  NOTIMPLEMENTED();
+  return cdm::kError;
+}
+
+cdm::Status ClearKeyCdm::DecryptAndDecodeVideo(
+    const cdm::InputBuffer& encrypted_buffer,
+    cdm::VideoFrame* video_frame) {
+  NOTIMPLEMENTED();
+  return cdm::kError;
+}
+
+void ClearKeyCdm::ResetVideoDecoder() {
+  NOTIMPLEMENTED();
+}
+
+void ClearKeyCdm::StopVideoDecoder() {
+  NOTIMPLEMENTED();
 }
 
 }  // namespace webkit_media
