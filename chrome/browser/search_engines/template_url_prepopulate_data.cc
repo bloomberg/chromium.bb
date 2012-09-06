@@ -3285,6 +3285,22 @@ void GetPrepopulationSetFromCountryID(PrefService* prefs,
   }
 }
 
+
+// Logo URLs ///////////////////////////////////////////////////////////////////
+
+struct LogoURLs {
+  const char* const logo_100_percent_url;
+  const char* const logo_200_percent_url;
+};
+
+const LogoURLs google_logos = {
+  "https://www.google.com/images/chrome_search/google_logo.png",
+  "https://www.google.com/images/chrome_search/google_logo_2x.png",
+};
+
+
+////////////////////////////////////////////////////////////////////////////////
+
 }  // namespace
 
 namespace TemplateURLPrepopulateData {
@@ -3364,17 +3380,16 @@ void GetPrepopulatedTemplateFromPrefs(Profile* profile,
 
   size_t num_engines = list->GetSize();
   for (size_t i = 0; i != num_engines; ++i) {
-    const Value* val;
     const DictionaryValue* engine;
     if (list->GetDictionary(i, &engine) &&
-        engine->Get("name", &val) && val->GetAsString(&name) &&
-        engine->Get("keyword", &val) && val->GetAsString(&keyword) &&
-        engine->Get("search_url", &val) && val->GetAsString(&search_url) &&
-        engine->Get("suggest_url", &val) && val->GetAsString(&suggest_url) &&
-        engine->Get("instant_url", &val) && val->GetAsString(&instant_url) &&
-        engine->Get("favicon_url", &val) && val->GetAsString(&favicon_url) &&
-        engine->Get("encoding", &val) && val->GetAsString(&encoding) &&
-        engine->Get("id", &val) && val->GetAsInteger(&id)) {
+        engine->GetString("name", &name) &&
+        engine->GetString("keyword", &keyword) &&
+        engine->GetString("search_url", &search_url) &&
+        engine->GetString("suggest_url", &suggest_url) &&
+        engine->GetString("instant_url", &instant_url) &&
+        engine->GetString("favicon_url", &favicon_url) &&
+        engine->GetString("encoding", &encoding) &&
+        engine->GetInteger("id", &id)) {
       // These next fields are not allowed to be empty.
       if (name.empty() || keyword.empty() || search_url.empty() ||
           favicon_url.empty() || encoding.empty())
@@ -3469,6 +3484,15 @@ SearchEngineType GetEngineType(const std::string& url) {
   }
 
   return SEARCH_ENGINE_OTHER;
+}
+
+GURL GetLogoURL(const TemplateURL& template_url, LogoSize size) {
+  if (GetEngineType(template_url.url()) == SEARCH_ENGINE_GOOGLE) {
+    return GURL((size == LOGO_200_PERCENT) ?
+                google_logos.logo_200_percent_url :
+                google_logos.logo_100_percent_url);
+  }
+  return GURL();
 }
 
 #if defined(OS_ANDROID)

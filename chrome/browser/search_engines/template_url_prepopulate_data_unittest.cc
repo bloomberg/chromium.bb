@@ -176,3 +176,37 @@ TEST_F(TemplateURLPrepopulateDataTest, GetEngineTypeAdvanced) {
   EXPECT_EQ(SEARCH_ENGINE_OTHER,
             TemplateURLPrepopulateData::GetEngineType("invalid:search:url"));
 }
+
+TEST(TemplateURLPrepopulateDataTest, GetLogoURLGoogle) {
+  TemplateURLData data;
+  data.SetURL("http://www.google.com/");
+  TemplateURL turl(NULL, data);
+  GURL logo_100_url = TemplateURLPrepopulateData::GetLogoURL(
+      turl, TemplateURLPrepopulateData::LOGO_100_PERCENT);
+  GURL logo_200_url = TemplateURLPrepopulateData::GetLogoURL(
+      turl, TemplateURLPrepopulateData::LOGO_200_PERCENT);
+
+  EXPECT_EQ("www.google.com", logo_100_url.host());
+  EXPECT_EQ("www.google.com", logo_200_url.host());
+  EXPECT_NE(logo_100_url, logo_200_url);
+}
+
+TEST(TemplateURLPrepopulateDataTest, GetLogoURLUnknown) {
+  TemplateURLData data;
+  data.SetURL("http://webalta.ru/");
+  TemplateURL turl(NULL, data);
+  GURL logo_url = TemplateURLPrepopulateData::GetLogoURL(
+      turl, TemplateURLPrepopulateData::LOGO_100_PERCENT);
+
+  EXPECT_TRUE(logo_url.is_empty());
+}
+
+TEST(TemplateURLPrepopulateDataTest, GetLogoURLInvalid) {
+  TemplateURLData data;
+  data.SetURL("http://invalid:search:url/");
+  TemplateURL turl(NULL, data);
+  GURL logo_url = TemplateURLPrepopulateData::GetLogoURL(
+      turl, TemplateURLPrepopulateData::LOGO_100_PERCENT);
+
+  EXPECT_TRUE(logo_url.is_empty());
+}

@@ -21,6 +21,12 @@ namespace TemplateURLPrepopulateData {
 
 extern const int kMaxPrepopulatedEngineID;
 
+// Sizes at which search provider logos are available.
+enum LogoSize {
+  LOGO_100_PERCENT,
+  LOGO_200_PERCENT,
+};
+
 #if defined(OS_ANDROID)
 
 // This must be called early only once. |country_code| is the country code at
@@ -56,6 +62,12 @@ TemplateURL* GetPrepopulatedDefaultSearch(Profile* profile);
 //
 // NOTE: Must be called on the UI thread.
 SearchEngineType GetEngineType(const std::string& url);
+
+// Returns the logo at the specified |size| for |template_url|.  If no logo is
+// known, this will return an empty GURL.
+//
+// NOTE: Must be called on the UI thread.
+GURL GetLogoURL(const TemplateURL& template_url, LogoSize size);
 
 }  // namespace TemplateURLPrepopulateData
 
