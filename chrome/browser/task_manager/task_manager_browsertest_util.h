@@ -9,7 +9,7 @@
 
 class TaskManagerBrowserTestUtil {
  public:
-  static void WaitForResourceChange(int target_count);
+  static void WaitForWebResourceChange(int target_count);
 
   static void ShowTaskManagerAndWaitForReady(Browser* browser);
 };

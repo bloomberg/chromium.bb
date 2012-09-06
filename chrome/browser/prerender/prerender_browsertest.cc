@@ -1575,7 +1575,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderTaskManager) {
   // Show the task manager. This populates the model.
   current_browser()->window()->ShowTaskManager();
   // Wait for the model of task manager to start.
-  TaskManagerBrowserTestUtil::WaitForResourceChange(2);
+  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
 
   // Start with two resources.
   PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);

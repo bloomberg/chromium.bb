@@ -10,6 +10,8 @@
 // TODO(yusukes): Support Ash on Windows.
 #if defined(OS_CHROMEOS)
 #include "base/chromeos/chromeos_version.h"
+#include "base/command_line.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #endif
 
@@ -20,9 +22,10 @@ CapsLockHandler::CapsLockHandler(chromeos::input_method::XKeyboard* xkeyboard)
       caps_lock_is_on_(xkeyboard_->CapsLockIsEnabled()) {
   chromeos::SystemKeyEventListener* system_event_listener =
       chromeos::SystemKeyEventListener::GetInstance();
-  // SystemKeyEventListener should be instantiated when we're running on Chrome
-  // OS.
-  DCHECK(!is_running_on_chromeos_ || system_event_listener);
+  // SystemKeyEventListener should be instantiated when we're running production
+  // code on Chrome OS.
+  DCHECK(!is_running_on_chromeos_ || system_event_listener ||
+         CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType));
   if (system_event_listener)
     system_event_listener->AddCapsLockObserver(this);
 }

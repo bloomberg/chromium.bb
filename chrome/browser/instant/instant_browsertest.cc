@@ -767,14 +767,14 @@ IN_PROC_BROWSER_TEST_F(InstantTest, TaskManagerPrefix) {
   // rows initially, one for the browser process and one for tab's renderer.
   TaskManagerModel* task_manager = TaskManager::GetInstance()->model();
   task_manager->StartUpdating();
-  TaskManagerBrowserTestUtil::WaitForResourceChange(2);
+  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
 
   ASSERT_NO_FATAL_FAILURE(SetupInstant("instant.html"));
   instant()->OnAutocompleteGotFocus();
   WaitFor(chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED);
 
   // Now there should be three rows, the third being the Instant preview.
-  TaskManagerBrowserTestUtil::WaitForResourceChange(3);
+  TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
   string16 prefix = l10n_util::GetStringFUTF16(
       IDS_TASK_MANAGER_INSTANT_PREVIEW_PREFIX, string16());
   string16 title = task_manager->GetResourceTitle(2);

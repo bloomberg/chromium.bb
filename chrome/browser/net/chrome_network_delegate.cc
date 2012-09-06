@@ -43,6 +43,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/chromeos/chromeos_version.h"
+#include "base/command_line.h"
+#include "chrome/common/chrome_switches.h"
 #endif
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
@@ -365,8 +367,10 @@ bool ChromeNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
 #if defined(OS_CHROMEOS)
   // If we're running Chrome for ChromeOS on Linux, we want to allow file
   // access.
-  if (!base::chromeos::IsRunningOnChromeOS())
+  if (!base::chromeos::IsRunningOnChromeOS() ||
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
     return true;
+  }
 
   // Use a whitelist to only allow access to files residing in the list of
   // directories below.
@@ -402,6 +406,7 @@ bool ChromeNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
     }
   }
 
+  DVLOG(1) << "File access denied - " << path.value().c_str();
   return false;
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 }

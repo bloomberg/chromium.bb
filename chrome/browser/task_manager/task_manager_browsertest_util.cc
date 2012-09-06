@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
+#include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/task_manager.h"
@@ -12,8 +14,29 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents.h"
 
 namespace {
+
+int GetWebResourceCount(const TaskManagerModel* model) {
+  int count = 0;
+  for (int i = 0; i < model->ResourceCount(); i++) {
+    TaskManager::Resource::Type type = model->GetResourceType(i);
+    // Skip system infrastructure resources.
+    if (type == TaskManager::Resource::BROWSER ||
+        type == TaskManager::Resource::NACL ||
+        type == TaskManager::Resource::GPU ||
+        type == TaskManager::Resource::UTILITY ||
+        type == TaskManager::Resource::PROFILE_IMPORT ||
+        type == TaskManager::Resource::ZYGOTE ||
+        type == TaskManager::Resource::SANDBOX_HELPER) {
+      continue;
+    }
+
+    count++;
+  }
+  return count;
+}
 
 class ResourceChangeObserver : public TaskManagerModelObserver {
  public:
@@ -41,7 +64,7 @@ class ResourceChangeObserver : public TaskManagerModelObserver {
 
  private:
   void OnResourceChange() {
-    if (model_->ResourceCount() == target_resource_count_)
+    if (GetWebResourceCount(model_) == target_resource_count_)
       MessageLoopForUI::current()->Quit();
   }
 
@@ -52,7 +75,7 @@ class ResourceChangeObserver : public TaskManagerModelObserver {
 }  // namespace
 
 // static
-void TaskManagerBrowserTestUtil::WaitForResourceChange(int target_count) {
+void TaskManagerBrowserTestUtil::WaitForWebResourceChange(int target_count) {
   TaskManagerModel* model = TaskManager::GetInstance()->model();
 
   ResourceChangeObserver observer(model, target_count);
@@ -61,7 +84,7 @@ void TaskManagerBrowserTestUtil::WaitForResourceChange(int target_count) {
   // Checks that the condition has not been satisfied yet.
   // This check has to be placed after the installation of the observer,
   // because resources may change before that.
-  if (model->ResourceCount() == target_count) {
+  if (GetWebResourceCount(model) == target_count) {
     model->RemoveObserver(&observer);
     return;
   }
