@@ -198,7 +198,7 @@ function bb_goma_make {
 function bb_goma_ninja {
   echo "Using ninja to build."
   local TARGET=$1
-  ninja -C out/$BUILDTYPE -j120 -l20 $TARGET
+  ninja -C out/$BUILDTYPE -j16 -l16 $TARGET
 }
 
 # Compile step
