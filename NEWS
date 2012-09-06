@@ -78,7 +78,7 @@ new DAISY pipeline will ship with this release of liblouis.
    - Fixes to eo-g1.ctb thanks to Aaron Cannon <cannona@fireantproductions.com>
    - hu-hu-g1.ctb: improvements and extensive test harness, with
      working back-translation, Thanks to Hammer Attila
-   - Fixes to fr-bfu-comp8.utb thanks to Michel Such <michel.such@free.fr>
+   - Fixes to fr-bfu-comp6.utb and fr-bfu-comp8.utb thanks to Michel Such <michel.such@free.fr>
    - Reworked and extended Ethiopic braille table ethio-g1.ctb, superseeds gez*, thanks to Dr. Tamru E. Belay <g.braille@sympatico.ca>
 
 
