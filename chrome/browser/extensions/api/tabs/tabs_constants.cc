@@ -67,6 +67,7 @@ const char kStatusValueLoading[] = "loading";
 const char kWindowTypeValueNormal[] = "normal";
 const char kWindowTypeValuePopup[] = "popup";
 const char kWindowTypeValuePanel[] = "panel";
+const char kWindowTypeValueDetachedPanel[] = "detached_panel";
 const char kWindowTypeValueApp[] = "app";
 
 const char kCanOnlyMoveTabsWithinNormalWindowsError[] = "Tabs can only be "

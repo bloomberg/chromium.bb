@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/ui/panels/display_settings_provider.h"
 #include "chrome/browser/ui/panels/panel.h"
-#include "chrome/browser/ui/panels/panel_strip.h"
+#include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/gfx/rect.h"
@@ -63,6 +63,7 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
     GURL url;
     bool wait_for_fully_created;
     ActiveState expected_active_state;
+    PanelManager::CreateMode create_mode;
 
     CreatePanelParams(const std::string& name,
                       const gfx::Rect& bounds,

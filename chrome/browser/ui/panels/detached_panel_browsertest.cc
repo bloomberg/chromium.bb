@@ -16,13 +16,19 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, CheckDetachedPanelProperties) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
 
-  Panel* panel = CreateDetachedPanel("1", gfx::Rect(300, 200, 250, 200));
+  // Create an initially detached panel (as opposed to other tests which create
+  // a docked panel, then detaches it).
+  gfx::Rect bounds(300, 200, 250, 200);
+  CreatePanelParams params("1", bounds, SHOW_AS_ACTIVE);
+  params.create_mode = PanelManager::CREATE_AS_DETACHED;
+  Panel* panel = CreatePanelWithParams(params);
   scoped_ptr<NativePanelTesting> panel_testing(
       CreateNativePanelTesting(panel));
 
   EXPECT_EQ(1, panel_manager->num_panels());
   EXPECT_TRUE(detached_strip->HasPanel(panel));
 
+  EXPECT_EQ(bounds, panel->GetBounds());
   EXPECT_FALSE(panel->always_on_top());
 
   EXPECT_TRUE(panel_testing->IsButtonVisible(panel::CLOSE_BUTTON));

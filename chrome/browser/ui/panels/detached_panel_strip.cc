@@ -9,6 +9,12 @@
 #include "chrome/browser/ui/panels/panel_drag_controller.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 
+namespace {
+// How much horizontal and vertical offset there is between newly opened
+// detached panels.
+const int kPanelTilePixels = 10;
+}  // namespace
+
 DetachedPanelStrip::DetachedPanelStrip(PanelManager* panel_manager)
     : PanelStrip(PanelStrip::DETACHED),
       panel_manager_(panel_manager) {
@@ -66,6 +72,11 @@ void DetachedPanelStrip::AddPanel(Panel* panel,
   DCHECK_NE(this, panel->panel_strip());
   panel->set_panel_strip(this);
   panels_.insert(panel);
+
+  // Offset the default position of the next detached panel if the current
+  // default position is used.
+  if (panel->GetBounds().origin() == default_panel_origin_)
+    ComputeNextDefaultPanelOrigin();
 }
 
 void DetachedPanelStrip::RemovePanel(Panel* panel) {
@@ -228,3 +239,22 @@ void DetachedPanelStrip::UpdatePanelOnStripChange(Panel* panel) {
 void DetachedPanelStrip::OnPanelActiveStateChanged(Panel* panel) {
 }
 
+gfx::Point DetachedPanelStrip::GetDefaultPanelOrigin() {
+  if (!default_panel_origin_.x() && !default_panel_origin_.y()) {
+    gfx::Rect display_area =
+        panel_manager_->display_settings_provider()->GetDisplayArea();
+    default_panel_origin_.SetPoint(kPanelTilePixels + display_area.x(),
+                                   kPanelTilePixels + display_area.y());
+  }
+  return default_panel_origin_;
+}
+
+void DetachedPanelStrip::ComputeNextDefaultPanelOrigin() {
+  default_panel_origin_.Offset(kPanelTilePixels, kPanelTilePixels);
+  gfx::Rect display_area =
+      panel_manager_->display_settings_provider()->GetDisplayArea();
+  if (!display_area.Contains(default_panel_origin_)) {
+    default_panel_origin_.SetPoint(kPanelTilePixels + display_area.x(),
+                                   kPanelTilePixels + display_area.y());
+  }
+}
