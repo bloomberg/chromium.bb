@@ -1430,7 +1430,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ProfilesNotMergedWhenNoMinAddressData) {
 }
 
 #if defined(OS_LINUX)
-// Has been observed to fail on windows.  crbug.com/100062
+// Has been observed to fail on linux.  crbug.com/146688
 #define MAYBE_MergeAggregatedDuplicatedProfiles \
     DISABLED_MergeAggregatedDuplicatedProfiles
 #else
