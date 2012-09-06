@@ -176,6 +176,9 @@ void SyncTest::SetUp() {
 }
 
 void SyncTest::TearDown() {
+  // Clear any mock gaia responses that might have been set.
+  ClearMockGaiaResponses();
+
   // Allow the InProcessBrowserTest framework to perform its tear down.
   InProcessBrowserTest::TearDown();
 
@@ -456,6 +459,19 @@ void SyncTest::SetupMockGaiaResponses() {
       GaiaUrls::GetInstance()->oauth1_login_url(),
       "SID=sid\nLSID=lsid\nAuth=auth_token",
       true);
+}
+
+void SyncTest::ClearMockGaiaResponses() {
+  // Clear any mock gaia responses that might have been set.
+  if (fake_factory_.get()) {
+    fake_factory_->ClearFakeResponses();
+    fake_factory_.reset();
+  }
+
+  // Cancel any outstanding URL fetches and destroy the URLFetcherImplFactory we
+  // created.
+  net::URLFetcher::CancelAll();
+  factory_.reset();
 }
 
 // Start up a local sync server based on the value of server_type_, which
