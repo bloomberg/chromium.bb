@@ -580,11 +580,11 @@ def GetPreferredTrySlaves(project, change):
   if not files:
     return []
 
-  if all(re.search('\.(m|mm)$|[/_]mac[/_.]', f) for f in files):
+  if all(re.search('\.(m|mm)$|(^|[/_])mac[/_.]', f) for f in files):
     return ['mac_rel', 'mac_asan']
-  if all(re.search('[/_]win[/_.]', f) for f in files):
+  if all(re.search('(^|[/_])win[/_.]', f) for f in files):
     return ['win_rel']
-  if all(re.search('[/_]android[/_.]', f) for f in files):
+  if all(re.search('(^|[/_])android[/_.]', f) for f in files):
     return ['android']
 
   trybots = ['win_rel', 'linux_rel', 'mac_rel', 'linux_clang:compile',
