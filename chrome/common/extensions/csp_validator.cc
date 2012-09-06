@@ -83,7 +83,7 @@ bool UpdateStatus(const std::string& directive_name,
 bool ContentSecurityPolicyIsLegal(const std::string& policy) {
   // We block these characters to prevent HTTP header injection when
   // representing the content security policy as an HTTP header.
-  const char kBadChars[] = {'\r', '\n', '\0'};
+  const char kBadChars[] = {',', '\r', '\n', '\0'};
 
   return policy.find_first_of(kBadChars, 0, arraysize(kBadChars)) ==
       std::string::npos;
