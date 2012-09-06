@@ -35,6 +35,27 @@ AM_MAINTAINER_MODE([enable])
 # Enable quiet compiles on automake 1.11.
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
+if test x$LIB_MAN_SUFFIX = x    ; then
+    LIB_MAN_SUFFIX=3
+fi
+if test x$LIB_MAN_DIR = x    ; then
+    LIB_MAN_DIR='$(mandir)/man$(LIB_MAN_SUFFIX)'
+fi
+AC_SUBST([LIB_MAN_SUFFIX])
+AC_SUBST([LIB_MAN_DIR])
+
+MAN_SUBSTS="\
+	-e 's|__vendorversion__|\"\$(PACKAGE_STRING)\" |' \
+	-e 's|__projectroot__|\$(prefix)|g' \
+	-e 's|__apploaddir__|\$(appdefaultdir)|g' \
+	-e 's|__appmansuffix__|\$(APP_MAN_SUFFIX)|g' \
+	-e 's|__drivermansuffix__|\$(DRIVER_MAN_SUFFIX)|g' \
+	-e 's|__adminmansuffix__|\$(ADMIN_MAN_SUFFIX)|g' \
+	-e 's|__libmansuffix__|\$(LIB_MAN_SUFFIX)|g' \
+	-e 's|__miscmansuffix__|\$(MISC_MAN_SUFFIX)|g' \
+	-e 's|__filemansuffix__|\$(FILE_MAN_SUFFIX)|g'"
+AC_SUBST([MAN_SUBSTS])
+
 # Check for programs
 AC_PROG_CC
 
@@ -333,6 +354,7 @@ AC_CONFIG_FILES([
 	tests/vbltest/Makefile
 	include/Makefile
 	include/drm/Makefile
+	man/Makefile
 	libdrm.pc])
 AC_OUTPUT
 

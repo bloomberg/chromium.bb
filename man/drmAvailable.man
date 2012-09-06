@@ -1,0 +1,25 @@
+.\" shorthand for double quote that works everywhere.
+.ds q \N'34'
+.TH drmAvailable  __drivermansuffix__ __vendorversion__
+.SH NAME
+drmAvailable \- determine whether a DRM kernel driver has been loaded
+.SH SYNOPSIS
+.nf
+.B "#include <xf86drm.h>"
+
+.B "int drmAvailable(void);"
+.fi
+.SH DESCRIPTION
+This function allows the caller to determine whether a kernel DRM driver is
+loaded.
+
+.SH RETURN VALUE
+If a DRM driver is currently loaded, this function returns 1.  Otherwise 0
+is returned.
+
+.SH REPORTING BUGS
+Bugs in this function should be reported to http://bugs.freedesktop.org under
+the "Mesa" product, with "Other" or "libdrm" as the component.
+
+.SH "SEE ALSO"
+drmOpen(__libmansuffix__)
