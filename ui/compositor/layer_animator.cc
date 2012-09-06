@@ -26,6 +26,16 @@ static const base::TimeDelta kDefaultTransitionDuration =
 static const base::TimeDelta kTimerInterval =
     base::TimeDelta::FromMilliseconds(10);
 
+// Returns the AnimationContainer we're added to.
+ui::AnimationContainer* GetAnimationContainer() {
+  static ui::AnimationContainer* container = NULL;
+  if (!container) {
+    container = new AnimationContainer();
+    container->AddRef();
+  }
+  return container;
+}
+
 }  // namespace
 
 // static
@@ -298,6 +308,7 @@ void LayerAnimator::Step(base::TimeTicks now) {
   TRACE_EVENT0("ui", "LayerAnimator::Step");
 
   last_step_time_ = now;
+
   // We need to make a copy of the running animations because progressing them
   // and finishing them may indirectly affect the collection of running
   // animations.
@@ -331,17 +342,11 @@ void LayerAnimator::UpdateAnimationState() {
   if (disable_timer_for_test_)
     return;
 
-  static ui::AnimationContainer* container = NULL;
-  if (!container) {
-    container = new AnimationContainer();
-    container->AddRef();
-  }
-
   const bool should_start = is_animating();
   if (should_start && !is_started_)
-    container->Start(this);
+    GetAnimationContainer()->Start(this);
   else if (!should_start && is_started_)
-    container->Stop(this);
+    GetAnimationContainer()->Stop(this);
 
   is_started_ = should_start;
 }
@@ -595,9 +600,16 @@ bool LayerAnimator::StartSequenceImmediately(LayerAnimationSequence* sequence) {
   // a resolution that can be as bad as 15ms. If this causes glitches in the
   // animations, this can be switched to HighResNow() (animation uses Now()
   // internally).
-  base::TimeTicks start_time = is_animating()
-      ? last_step_time_
-      : base::TimeTicks::Now();
+  // All LayerAnimators share the same AnimationContainer. Use the
+  // last_tick_time() from there to ensure animations started during the same
+  // event complete at the same time.
+  base::TimeTicks start_time;
+  if (is_animating())
+    start_time = last_step_time_;
+  else if (GetAnimationContainer()->is_running())
+    start_time = GetAnimationContainer()->last_tick_time();
+  else
+    start_time = base::TimeTicks::Now();
 
   running_animations_.push_back(RunningAnimation(sequence, start_time));
 
