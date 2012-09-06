@@ -6,6 +6,7 @@
 
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/api/bookmarks/bookmark_service.h"
 #include "chrome/browser/history/scored_history_match.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -87,41 +88,92 @@ TEST_F(ScoredHistoryMatchTest, Scoring) {
   // on by default.  This requires setting word_starts, which isn't done
   // right now.
   ScoredHistoryMatch scored_a(row_a, ASCIIToUTF16("abc"), Make1Term("abc"),
-                              word_starts, now);
+                              word_starts, now, NULL);
   ScoredHistoryMatch scored_b(row_a, ASCIIToUTF16("bcd"), Make1Term("bcd"),
-                              word_starts, now);
+                              word_starts, now, NULL);
   EXPECT_GT(scored_a.raw_score, scored_b.raw_score);
   // Test scores based on length.
   ScoredHistoryMatch scored_c(row_a, ASCIIToUTF16("abcd"), Make1Term("abcd"),
-                              word_starts, now);
+                              word_starts, now, NULL);
   EXPECT_LT(scored_a.raw_score, scored_c.raw_score);
   // Test scores based on order.
   ScoredHistoryMatch scored_d(row_a, ASCIIToUTF16("abcdef"),
-                              Make2Terms("abc", "def"), word_starts, now);
+                              Make2Terms("abc", "def"), word_starts, now, NULL);
   ScoredHistoryMatch scored_e(row_a, ASCIIToUTF16("def abc"),
-                              Make2Terms("def", "abc"), word_starts, now);
+                              Make2Terms("def", "abc"), word_starts, now, NULL);
   EXPECT_GT(scored_d.raw_score, scored_e.raw_score);
   // Test scores based on visit_count.
   URLRow row_b(MakeURLRow("http://abcdef", "fedcba", 10, 30, 1));
   ScoredHistoryMatch scored_f(row_b, ASCIIToUTF16("abc"), Make1Term("abc"),
-                              word_starts, now);
+                              word_starts, now, NULL);
   EXPECT_GT(scored_f.raw_score, scored_a.raw_score);
   // Test scores based on last_visit.
   URLRow row_c(MakeURLRow("http://abcdef", "fedcba", 3, 10, 1));
   ScoredHistoryMatch scored_g(row_c, ASCIIToUTF16("abc"), Make1Term("abc"),
-                              word_starts, now);
+                              word_starts, now, NULL);
   EXPECT_GT(scored_g.raw_score, scored_a.raw_score);
   // Test scores based on typed_count.
   URLRow row_d(MakeURLRow("http://abcdef", "fedcba", 3, 30, 10));
   ScoredHistoryMatch scored_h(row_d, ASCIIToUTF16("abc"), Make1Term("abc"),
-                              word_starts, now);
+                              word_starts, now, NULL);
   EXPECT_GT(scored_h.raw_score, scored_a.raw_score);
   // Test scores based on a terms appearing multiple times.
   URLRow row_i(MakeURLRow("http://csi.csi.csi/csi_csi",
       "CSI Guide to CSI Las Vegas, CSI New York, CSI Provo", 3, 30, 10));
   ScoredHistoryMatch scored_i(row_i, ASCIIToUTF16("csi"), Make1Term("csi"),
-                              word_starts, now);
+                              word_starts, now, NULL);
   EXPECT_LT(scored_i.raw_score, 1400);
+}
+
+class BookmarkServiceMock : public BookmarkService {
+ public:
+  BookmarkServiceMock(const GURL& url);
+  virtual ~BookmarkServiceMock() {}
+
+  // Returns true if the given |url| is the same as |url_|.
+  bool IsBookmarked(const GURL& url) OVERRIDE;
+
+  // Required but unused.
+  virtual void GetBookmarks(std::vector<URLAndTitle>* bookmarks) OVERRIDE {}
+  virtual void BlockTillLoaded() OVERRIDE {}
+
+ private:
+  const GURL url_;
+
+  DISALLOW_COPY_AND_ASSIGN(BookmarkServiceMock);
+};
+
+BookmarkServiceMock::BookmarkServiceMock(const GURL& url)
+    : BookmarkService(),
+      url_(url) {
+}
+
+bool BookmarkServiceMock::IsBookmarked(const GURL& url) {
+  return url == url_;
+}
+
+TEST_F(ScoredHistoryMatchTest, ScoringWithBookmarks) {
+  const GURL url("http://www.nanny.org");
+  BookmarkServiceMock bookmark_model_mock(url);
+  URLRow row_a(MakeURLRow("http://www.nanny.org", "Nanny", 3, 30, 1));
+  // We use NowFromSystemTime() because MakeURLRow uses the same function
+  // to calculate last visit time when building a row.
+  base::Time now = base::Time::NowFromSystemTime();
+  RowWordStarts word_starts;
+
+  // Identical queries but the first should be boosted by having a bookmark.
+  ScoredHistoryMatch scored_a(row_a, ASCIIToUTF16("nanny"), Make1Term("nanny"),
+                              word_starts, now, &bookmark_model_mock);
+  ScoredHistoryMatch scored_b(row_a, ASCIIToUTF16("nanny"), Make1Term("nanny"),
+                              word_starts, now, NULL);
+  EXPECT_GT(scored_a.raw_score, scored_b.raw_score);
+
+  // Identical queries, neither should be boosted by having a bookmark.
+  ScoredHistoryMatch scored_c(row_a, ASCIIToUTF16("stick"), Make1Term("stick"),
+                              word_starts, now, &bookmark_model_mock);
+  ScoredHistoryMatch scored_d(row_a, ASCIIToUTF16("stick"), Make1Term("stick"),
+                              word_starts, now, NULL);
+  EXPECT_EQ(scored_c.raw_score, scored_d.raw_score);
 }
 
 TEST_F(ScoredHistoryMatchTest, GetTopicalityScoreTrailingSlash) {

@@ -18,6 +18,7 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/api/bookmarks/bookmark_service.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/url_prefix.h"
 #include "chrome/browser/history/history_database.h"
@@ -71,7 +72,8 @@ URLIndexPrivateData::URLIndexPrivateData()
 }
 
 ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
-    const string16& search_string) {
+    const string16& search_string,
+    BookmarkService* bookmark_service) {
   pre_filter_item_count_ = 0;
   post_filter_item_count_ = 0;
   post_scoring_item_count_ = 0;
@@ -145,7 +147,7 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
   history::String16Vector lower_raw_terms;
   Tokenize(lower_raw_string, kWhitespaceUTF16, &lower_raw_terms);
   scored_items = std::for_each(history_id_set.begin(), history_id_set.end(),
-      AddHistoryMatch(*this, lower_raw_string,
+      AddHistoryMatch(*this, bookmark_service, lower_raw_string,
                       lower_raw_terms, base::Time::Now())).ScoredMatches();
 
   // Select and sort only the top kMaxMatches results.
@@ -275,7 +277,8 @@ scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::RebuildFromHistory(
 
   base::TimeTicks beginning_time = base::TimeTicks::Now();
 
-  scoped_refptr<URLIndexPrivateData> rebuilt_data(new URLIndexPrivateData);
+  scoped_refptr<URLIndexPrivateData>
+      rebuilt_data(new URLIndexPrivateData);
   URLDatabase::URLEnumerator history_enum;
   if (!history_db->InitURLEnumeratorForSignificant(&history_enum))
     return NULL;
@@ -358,10 +361,12 @@ URLIndexPrivateData::SearchTermCacheItem::~SearchTermCacheItem() {}
 
 URLIndexPrivateData::AddHistoryMatch::AddHistoryMatch(
     const URLIndexPrivateData& private_data,
+    BookmarkService* bookmark_service,
     const string16& lower_string,
     const String16Vector& lower_terms,
     const base::Time now)
   : private_data_(private_data),
+    bookmark_service_(bookmark_service),
     lower_string_(lower_string),
     lower_terms_(lower_terms),
     now_(now) {}
@@ -378,7 +383,7 @@ void URLIndexPrivateData::AddHistoryMatch::operator()(
         private_data_.word_starts_map_.find(history_id);
     DCHECK(starts_pos != private_data_.word_starts_map_.end());
     ScoredHistoryMatch match(hist_item, lower_string_, lower_terms_,
-                             starts_pos->second, now_);
+                             starts_pos->second, now_, bookmark_service_);
     if (match.raw_score > 0)
       scored_matches_.push_back(match);
   }

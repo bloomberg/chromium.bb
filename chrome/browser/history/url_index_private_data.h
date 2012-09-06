@@ -17,6 +17,7 @@
 #include "content/public/browser/notification_details.h"
 
 class HistoryQuickProviderTest;
+class BookmarkService;
 
 namespace in_memory_url_index {
 class InMemoryURLIndexCacheItem;
@@ -59,8 +60,10 @@ class URLIndexPrivateData
   // will be found in nearly all history candidates. Results are sorted by
   // descending score. The full results set (i.e. beyond the
   // |kItemsToScoreLimit| limit) will be retained and used for subsequent calls
-  // to this function.
-  ScoredHistoryMatches HistoryItemsForTerms(const string16& term_string);
+  // to this function. |bookmark_service| is used to boost a result's score if
+  // its URL is referenced by one or more of the user's bookmarks.
+  ScoredHistoryMatches HistoryItemsForTerms(const string16& term_string,
+                                            BookmarkService* bookmark_service);
 
   // Adds the history item in |row| to the index if it does not already already
   // exist and it meets the minimum 'quick' criteria. If the row already exists
@@ -165,6 +168,7 @@ class URLIndexPrivateData
   class AddHistoryMatch : public std::unary_function<HistoryID, void> {
    public:
     AddHistoryMatch(const URLIndexPrivateData& private_data,
+                    BookmarkService* bookmark_service,
                     const string16& lower_string,
                     const String16Vector& lower_terms,
                     const base::Time now);
@@ -176,6 +180,7 @@ class URLIndexPrivateData
 
    private:
     const URLIndexPrivateData& private_data_;
+    BookmarkService* bookmark_service_;
     ScoredHistoryMatches scored_matches_;
     const string16& lower_string_;
     const String16Vector& lower_terms_;

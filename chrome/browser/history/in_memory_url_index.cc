@@ -6,6 +6,9 @@
 
 #include "base/file_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/api/bookmarks/bookmark_service.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/url_database.h"
@@ -161,7 +164,8 @@ bool InMemoryURLIndex::GetCacheFilePath(FilePath* file_path) {
 
 ScoredHistoryMatches InMemoryURLIndex::HistoryItemsForTerms(
     const string16& term_string) {
-  return private_data_->HistoryItemsForTerms(term_string);
+  return private_data_->HistoryItemsForTerms(
+    term_string, BookmarkModelFactory::GetForProfile(profile_));
 }
 
 // Updating --------------------------------------------------------------------

@@ -17,6 +17,7 @@
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/api/bookmarks/bookmark_service.h"
 #include "chrome/browser/autocomplete/autocomplete_field_trial.h"
 #include "chrome/browser/autocomplete/url_prefix.h"
 #include "chrome/common/chrome_switches.h"
@@ -53,7 +54,8 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
                                        const string16& lower_string,
                                        const String16Vector& terms,
                                        const RowWordStarts& word_starts,
-                                       const base::Time now)
+                                       const base::Time now,
+                                       BookmarkService* bookmark_service)
     : HistoryMatch(row, 0, false, false),
       raw_score(0),
       can_inline(false) {
@@ -109,13 +111,17 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
       !IsWhitespace(*(lower_string.rbegin()));
   match_in_scheme = can_inline && url_matches[0].offset == 0;
 
+  // Determine if the associated URLs is referenced by any bookmarks.
+  float bookmark_boost =
+      (bookmark_service && bookmark_service->IsBookmarked(gurl)) ? 10.0 : 0.0;
+
   if (use_new_scoring) {
     const float topicality_score = GetTopicalityScore(
         terms.size(), url, url_matches, title_matches, word_starts);
     const float recency_score = GetRecencyScore(
         (now - row.last_visit()).InDays());
     const float popularity_score = GetPopularityScore(
-        row.typed_count(), row.visit_count());
+        row.typed_count() + bookmark_boost, row.visit_count());
 
     // Combine recency, popularity, and topicality scores into one.
     // Example of how this functions: Suppose the omnibox has one
@@ -150,7 +156,8 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
     const int kVisitCountLevel[] = { 50, 30, 10, 5 };
     int visit_count_value = ScoreForValue(row.visit_count(), kVisitCountLevel);
     const int kTypedCountLevel[] = { 50, 30, 10, 5 };
-    int typed_count_value = ScoreForValue(row.typed_count(), kTypedCountLevel);
+    int typed_count_value = ScoreForValue(row.typed_count() + bookmark_boost,
+                                          kTypedCountLevel);
 
     // The final raw score is calculated by:
     //   - multiplying each factor by a 'relevance'

@@ -14,6 +14,8 @@
 #include "chrome/browser/autocomplete/history_provider_util.h"
 #include "chrome/browser/history/in_memory_url_index_types.h"
 
+class BookmarkService;
+
 namespace history {
 
 // An HistoryMatch that has a score as well as metrics defining where in the
@@ -26,12 +28,14 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   // terms in |terms_vector| occur in |row|. If so, calculates a raw score.
   // This raw score allows the results to be ordered and can be used to
   // influence the final score calculated by the client of this index.
-  // If the row does not qualify the raw score will be 0.
+  // If the row does not qualify the raw score will be 0. |bookmark_service| is
+  // used to determine if the match's URL is referenced by any bookmarks.
   ScoredHistoryMatch(const URLRow& row,
                      const string16& lower_string,
                      const String16Vector& terms_vector,
                      const RowWordStarts& word_starts,
-                     const base::Time now);
+                     const base::Time now,
+                     BookmarkService* bookmark_service);
   ~ScoredHistoryMatch();
 
   // Calculates a component score based on position, ordering and total
