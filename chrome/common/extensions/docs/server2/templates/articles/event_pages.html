@@ -41,8 +41,9 @@ when it goes idle again. Here are some examples of things
 that will cause the event page to load:
 </p>
 <ul>
-<li>The extension is first installed.
-<li>The event page listens for an event and the event is dispatched.
+<li>The extension is first installed or is updated to a new version
+(in order to <a href="#registration">register for events</a>).
+<li>The event page was listening for an event, and the event is dispatched.
 <li>A content script or other extension
 <a href="messaging.html">sends a message.</a>
 <li>Another view in the extension (for example, a popup) calls
@@ -54,7 +55,7 @@ Once it has been loaded, the event page will stay running
 as long as it is active (for example, calling an extension
 API or issuing a network request). Additionally, the
 event page will not unload until all visible views (for example,
-popup windows) are closed.
+popup windows) are closed and all message ports are closed.
 </p>
 
 <p>
@@ -74,6 +75,30 @@ event before it is forcibly unloaded. Note that once the event is dispatched,
 new activity will not keep the event page open.
 </p>
 
+<h2 id="registration">Event registration</h2>
+
+<p>
+Chrome keeps track of events that an extension has added listeners
+for. When it dispatches such an event, the extension's event page is
+loaded. Conversely, if the extension removes all of its listeners for
+an event by calling <code>removeListener</code>, Chrome will no longer
+load its event page for that event.
+</p>
+
+<p>
+Because the listeners themselves only exist in the context of the
+event page, you must use <code>addListener</code> each time the event
+page loads; only doing so at
+<code><a href="runtime.html#event-onInstalled">chrome.runtime.onInstalled</a></code>
+by itself is insufficient.
+</p>
+
+<p>
+For an example of event registration in action, you can view the
+<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/">Google Mail
+Checker</a> extension.
+</p>
+
 <h2 id="transition">Convert background page to event page</h2>
 <p>
 Follow this checklist to convert your extension's
@@ -90,7 +115,11 @@ Follow this checklist to convert your extension's
   <li>If you need to do some initialization when your extension is
   installed or upgraded, listen to the
   <code><a href="runtime.html#event-onInstalled">chrome.runtime.onInstalled</a></code>
-  event.
+  event. If you need to do some initialization each time the browser starts,
+  listen to the
+  <code><a href="runtime.html#event-onBrowserStartup">chrome.runtime.onBrowserStartup</a></code>
+  event; however, you should (in almost all cases) prefer
+  the <code>chrome.runtime.onInstalled</code> event.
 
   <li>If you need to keep runtime state in memory throughout a browser
   session, use the <a href="storage.html">storage API</a> or
@@ -99,9 +128,9 @@ Follow this checklist to convert your extension's
 
   <li>Use <a href="events.html#filtered">event filters</a> to restrict
   your event notifications to the cases you care about. For example, if
-  you listen to the <a href="tabs.html#event-onUpdated">tabs.onUpdated</a>
+  you listen to the <code><a href="tabs.html#event-onUpdated">tabs.onUpdated</a></code>
   event, try using the
-  <a href="webNavigation.html#event-onCompleted">webNavigation.onComplete</a>
+  <code><a href="webNavigation.html#event-onCompleted">webNavigation.onComplete</a></code>
   event with filters instead (the tabs API does not support filters).
   That way, your event page will only be loaded for events that
   interest you.
