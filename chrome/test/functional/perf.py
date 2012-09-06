@@ -322,7 +322,8 @@ class BasePerfTest(pyauto.PyUITest):
     if os.path.exists(data_file):
       with open(data_file) as f:
         existing_lines = f.readlines()
-    existing_lines = map(eval, map(lambda x: x.strip(), existing_lines))
+    existing_lines = map(
+        simplejson.loads, map(lambda x: x.strip(), existing_lines))
 
     seen_key = graph_name
     # We assume that the first line |existing_lines[0]| is the latest.
@@ -354,7 +355,7 @@ class BasePerfTest(pyauto.PyUITest):
       existing_lines.insert(0, new_line)
       self._seen_graph_lines[seen_key] = True
 
-    existing_lines = map(str, existing_lines)
+    existing_lines = map(simplejson.dumps, existing_lines)
     with open(data_file, 'w') as f:
       f.write('\n'.join(existing_lines))
     os.chmod(data_file, 0755)
