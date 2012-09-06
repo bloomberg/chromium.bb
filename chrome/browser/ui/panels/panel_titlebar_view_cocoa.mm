@@ -326,8 +326,7 @@ static NSEvent* MakeMouseEvent(NSEventType type,
       hoverImage:rb.GetNativeImageNamed(IDR_PANEL_RESTORE_H)
       pressedImage:rb.GetNativeImageNamed(IDR_PANEL_RESTORE_C)
       toolTip:l10n_util::GetNSStringWithFixup(IDS_PANEL_RESTORE_TOOLTIP)];
-
-  [controller_ updateTitleBarMinimizeRestoreButtonVisibility];
+  [restoreButton_ setHidden:YES];  // Only visible when panel is minimized.
 
   [self updateCustomButtonsLayout];
 

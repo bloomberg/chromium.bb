@@ -71,7 +71,6 @@ extern const char kStatusValueLoading[];
 extern const char kWindowTypeValueNormal[];
 extern const char kWindowTypeValuePopup[];
 extern const char kWindowTypeValuePanel[];
-extern const char kWindowTypeValueDetachedPanel[];
 extern const char kWindowTypeValueApp[];
 
 // Error messages.

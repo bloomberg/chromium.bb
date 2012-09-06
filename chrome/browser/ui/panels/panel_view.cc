@@ -161,7 +161,6 @@ NativePanel* Panel::CreateNativePanel(Panel* panel, const gfx::Rect& bounds) {
 
 PanelView::PanelView(Panel* panel, const gfx::Rect& bounds)
     : panel_(panel),
-      bounds_(bounds),
       window_(NULL),
       web_view_(NULL),
       focused_(false),

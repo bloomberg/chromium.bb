@@ -129,10 +129,6 @@ PanelManager::~PanelManager() {
   docked_strip_.reset();
 }
 
-gfx::Point PanelManager::GetDefaultDetachedPanelOrigin() {
-  return detached_strip_->GetDefaultPanelOrigin();
-}
-
 void PanelManager::OnDisplayAreaChanged(const gfx::Rect& display_area) {
   if (display_area == display_area_)
     return;
@@ -161,23 +157,21 @@ int PanelManager::GetMaxPanelHeight() const {
 
 Panel* PanelManager::CreatePanel(Browser* browser) {
   return CreatePanel(browser, "", NULL, GURL(),
-                     browser->override_bounds(), CREATE_AS_DOCKED);
+                     browser->override_bounds().size());
 }
 
 Panel* PanelManager::CreatePanel(const std::string& app_name,
                                  Profile* profile,
                                  const GURL& url,
-                                 const gfx::Rect& requested_bounds,
-                                 CreateMode mode) {
-  return CreatePanel(NULL, app_name, profile, url, requested_bounds, mode);
+                                 const gfx::Size& requested_size) {
+  return CreatePanel(NULL, app_name, profile, url, requested_size);
 }
 
 Panel* PanelManager::CreatePanel(Browser* browser,
                                  const std::string& app_name,
                                  Profile* profile,
                                  const GURL& url,
-                                 const gfx::Rect& requested_bounds,
-                                 CreateMode mode) {
+                                 const gfx::Size& requested_size) {
   // Need to sync the display area if no panel is present. This is because:
   // 1) Display area is not initialized until first panel is created.
   // 2) On windows, display settings notification is tied to a window. When
@@ -189,8 +183,8 @@ Panel* PanelManager::CreatePanel(Browser* browser,
   }
 
   // Compute initial bounds for the panel.
-  int width = requested_bounds.width();
-  int height = requested_bounds.height();
+  int width = requested_size.width();
+  int height = requested_size.height();
   if (width == 0)
     width = height * kPanelDefaultWidthToHeightRatio;
   else if (height == 0)
@@ -208,13 +202,9 @@ Panel* PanelManager::CreatePanel(Browser* browser,
   else if (height > max_size.height())
     height = max_size.height();
 
-  gfx::Rect bounds(width, height);
-  if (CREATE_AS_DOCKED == mode) {
-    bounds.set_origin(docked_strip_->GetDefaultPositionForPanel(bounds.size()));
-  } else {
-    bounds.set_origin(requested_bounds.origin());
-    bounds = bounds.AdjustToFit(display_settings_provider_->GetDisplayArea());
-  }
+  gfx::Size panel_size(width, height);
+  gfx::Rect bounds(docked_strip_->GetDefaultPositionForPanel(panel_size),
+                   panel_size);
 
   // Create the panel.
   Panel* panel;
@@ -228,27 +218,17 @@ Panel* PanelManager::CreatePanel(Browser* browser,
   }
 
   // Auto resizable feature is enabled only if no initial size is requested.
-  if (auto_sizing_enabled() && requested_bounds.width() == 0 &&
-      requested_bounds.height() == 0) {
+  if (auto_sizing_enabled() && requested_size.width() == 0 &&
+      requested_size.height() == 0) {
     panel->SetAutoResizable(true);
   }
 
-  // Add the panel to the appropriate panel strip.
+  // Add the panel to the docked strip.
   // Delay layout refreshes in case multiple panels are created within
   // a short time of one another or the focus changes shortly after panel
   // is created to avoid excessive screen redraws.
-  PanelStrip* panel_strip;
-  PanelStrip::PositioningMask positioning_mask;
-  if (CREATE_AS_DOCKED == mode) {
-    panel_strip = docked_strip_.get();
-    positioning_mask = PanelStrip::DELAY_LAYOUT_REFRESH;
-  } else {
-    panel_strip = detached_strip_.get();
-    positioning_mask = PanelStrip::KNOWN_POSITION;
-  }
-
-  panel_strip->AddPanel(panel, positioning_mask);
-  panel_strip->UpdatePanelOnStripChange(panel);
+  docked_strip_->AddPanel(panel, PanelStrip::DELAY_LAYOUT_REFRESH);
+  docked_strip_->UpdatePanelOnStripChange(panel);
 
   return panel;
 }

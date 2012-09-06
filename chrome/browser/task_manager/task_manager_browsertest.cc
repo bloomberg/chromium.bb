@@ -151,8 +151,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_NoticePanelChanges) {
           last_loaded_extension_id_),
       browser()->profile(),
       url,
-      gfx::Rect(300, 400),
-      PanelManager::CREATE_AS_DOCKED);
+      gfx::Size(300, 400));
   TaskManagerBrowserTestUtil::WaitForResourceChange(4);
 
   // Check that the fourth entry is a resource with the panel's web contents

@@ -213,19 +213,6 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, MAYBE_WindowOpenPanel) {
   ASSERT_TRUE(RunExtensionTest("window_open/panel")) << message_;
 }
 
-#if defined(USE_ASH)
-// On Ash, this currently fails because we're currently opening new panel
-// windows as popup windows instead.
-#define MAYBE_WindowOpenPanelDetached FAILS_WindowOpenPanelDetached
-#else
-#define MAYBE_WindowOpenPanelDetached WindowOpenPanelDetached
-#endif
-IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, MAYBE_WindowOpenPanelDetached) {
-  if (!PanelManager::UseBrowserlessPanels())
-    return;
-  ASSERT_TRUE(RunExtensionTest("window_open/panel_detached")) << message_;
-}
-
 #if defined(OS_MACOSX) || defined(OS_WIN)
 // Focus test fails if there is no window manager on Linux.
 IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, WindowOpenFocus) {
