@@ -699,6 +699,7 @@ void ProfileManager::DoFinalInit(Profile* profile, bool go_off_the_record) {
 void ProfileManager::DoFinalInitForServices(Profile* profile,
                                             bool go_off_the_record) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+#if defined(ENABLE_EXTENSIONS)
   extensions::ExtensionSystem::Get(profile)->InitForRegularProfile(
       !go_off_the_record);
   // During tests, when |profile| is an instance of TestingProfile,
@@ -707,6 +708,7 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
     profile->GetHostContentSettingsMap()->RegisterExtensionService(
         extensions::ExtensionSystem::Get(profile)->extension_service());
   }
+#endif
   if (!command_line.HasSwitch(switches::kDisableWebResources))
     profile->InitPromoResources();
 }
@@ -714,9 +716,11 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
 void ProfileManager::DoFinalInitLogging(Profile* profile) {
   // Count number of extensions in this profile.
   int extension_count = -1;
+#if defined(ENABLE_EXTENSIONS)
   ExtensionService* extension_service = profile->GetExtensionService();
   if (extension_service)
     extension_count = extension_service->GetAppIds().size();
+#endif
 
   // Log the profile size after a reasonable startup delay.
   BrowserThread::PostDelayedTask(

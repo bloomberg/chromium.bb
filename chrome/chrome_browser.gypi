@@ -2067,6 +2067,13 @@
             'browser/speech/speech_input_extension_api.cc',
             'browser/speech/speech_input_extension_api.h',
           ],
+        }, {
+          'sources!': [
+            'browser/content_settings/content_settings_custom_extension_provider.cc',
+            'browser/content_settings/content_settings_custom_extension_provider.h',
+            'browser/content_settings/content_settings_internal_extension_provider.cc',
+            'browser/content_settings/content_settings_internal_extension_provider.h',
+          ],
         }],
         ['enable_background==0', {
           'sources/': [

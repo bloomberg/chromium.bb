@@ -685,9 +685,11 @@ content::ResourceContext* TestingProfile::GetResourceContext() {
 HostContentSettingsMap* TestingProfile::GetHostContentSettingsMap() {
   if (!host_content_settings_map_.get()) {
     host_content_settings_map_ = new HostContentSettingsMap(GetPrefs(), false);
+#if defined(ENABLE_EXTENSIONS)
     ExtensionService* extension_service = GetExtensionService();
     if (extension_service)
       host_content_settings_map_->RegisterExtensionService(extension_service);
+#endif
   }
   return host_content_settings_map_.get();
 }
@@ -834,5 +836,3 @@ scoped_ptr<TestingProfile> TestingProfile::Builder::Build() {
       pref_service_.Pass(),
       user_cloud_policy_manager_.Pass()));
 }
-
-

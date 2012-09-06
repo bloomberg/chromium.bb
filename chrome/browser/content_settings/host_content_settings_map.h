@@ -50,10 +50,12 @@ class HostContentSettingsMap
   HostContentSettingsMap(PrefService* prefs,
                          bool incognito);
 
+#if defined(ENABLE_EXTENSIONS)
   // In some cases, the ExtensionService is not available at the time the
   // HostContentSettingsMap is constructed. In these cases, we register the
   // service once it's available.
   void RegisterExtensionService(ExtensionService* extension_service);
+#endif
 
   static void RegisterUserPrefs(PrefService* prefs);
 

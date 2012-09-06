@@ -309,9 +309,11 @@ HostContentSettingsMap* OffTheRecordProfileImpl::GetHostContentSettingsMap() {
   profile_->GetHostContentSettingsMap();
   if (!host_content_settings_map_.get()) {
     host_content_settings_map_ = new HostContentSettingsMap(GetPrefs(), true);
+#if defined(ENABLE_EXTENSIONS)
     ExtensionService* extension_service = GetExtensionService();
     if (extension_service)
       host_content_settings_map_->RegisterExtensionService(extension_service);
+#endif
   }
   return host_content_settings_map_.get();
 }

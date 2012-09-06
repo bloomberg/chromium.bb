@@ -100,6 +100,7 @@ HostContentSettingsMap::HostContentSettingsMap(
   }
 }
 
+#if defined(ENABLE_EXTENSIONS)
 void HostContentSettingsMap::RegisterExtensionService(
     ExtensionService* extension_service) {
   DCHECK(extension_service);
@@ -125,6 +126,7 @@ void HostContentSettingsMap::RegisterExtensionService(
                           CONTENT_SETTINGS_TYPE_DEFAULT,
                           "");
 }
+#endif
 
 // static
 void HostContentSettingsMap::RegisterUserPrefs(PrefService* prefs) {
