@@ -86,11 +86,13 @@ bool MediaStreamDependencyFactory::CreatePeerConnectionFactory(
             network_manager,
             socket_factory);
 
+    DCHECK(!audio_device_);
+    audio_device_ = new WebRtcAudioDeviceImpl();
     talk_base::scoped_refptr<webrtc::PeerConnectionFactoryInterface> factory(
         webrtc::CreatePeerConnectionFactory(worker_thread,
                                             signaling_thread,
                                             pa_factory.release(),
-                                            new WebRtcAudioDeviceImpl()));
+                                            audio_device_));
     if (factory.get())
       pc_factory_ = factory.release();
   }
@@ -149,4 +151,8 @@ webrtc::IceCandidateInterface* MediaStreamDependencyFactory::CreateIceCandidate(
     int sdp_mline_index,
     const std::string& sdp) {
   return webrtc::CreateIceCandidate(sdp_mid, sdp_mline_index, sdp);
+}
+
+void MediaStreamDependencyFactory::SetAudioDeviceSessionId(int session_id) {
+  audio_device_->SetSessionId(session_id);
 }

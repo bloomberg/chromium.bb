@@ -100,6 +100,7 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
       const std::string& sdp_mid,
       int sdp_mline_index,
       const std::string& sdp) OVERRIDE;
+  virtual void SetAudioDeviceSessionId(int session_id) OVERRIDE;
 
  private:
   bool mock_pc_factory_created_;
