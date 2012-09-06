@@ -41,29 +41,32 @@ const int kAudioPacketIntervalMs = 100;
 const speech::AudioEncoder::Codec kDefaultAudioCodec =
     speech::AudioEncoder::CODEC_FLAC;
 
-// TODO(primiano): /////////// Remove this after debug stage. /////////////////
+// TODO(hans): Remove this and other logging when we don't need it anymore.
 void DumpResponse(const std::string& response) {
-  bool parse_ok;
-  speech::HttpStreamingResult res;
-  parse_ok = res.ParseFromString(response);
   DVLOG(1) << "------------";
-  if(!parse_ok) {
+  speech::proto::SpeechRecognitionEvent event;
+  if (!event.ParseFromString(response)) {
     DVLOG(1) << "Parse failed!";
     return;
   }
-  if (res.has_id())
-    DVLOG(1) << "ID\t" << res.id();
-  if (res.has_status())
-    DVLOG(1) << "STATUS\t" << res.status();
-  if (res.has_upstream_connected())
-    DVLOG(1) << "UPCON\t" << res.upstream_connected();
-  if (res.hypotheses_size() > 0)
-    DVLOG(1) << "HYPS\t" << res.hypotheses_size();
-  if (res.has_provisional())
-    DVLOG(1) << "PROV\t" << res.provisional();
-  if (res.has_ephemeral())
-    DVLOG(1) << "EPHM\t" << res.ephemeral();
-  DVLOG(1) << "------------\n";
+  if (event.has_status())
+    DVLOG(1) << "STATUS\t" << event.status();
+  for (int i = 0; i < event.result_size(); ++i) {
+    DVLOG(1) << "RESULT #" << i << ":";
+    const speech::proto::SpeechRecognitionResult& res = event.result(i);
+    if (res.has_final())
+      DVLOG(1) << "  FINAL:\t" << res.final();
+    if (res.has_stability())
+      DVLOG(1) << "  STABILITY:\t" << res.stability();
+    for (int j = 0; j < res.alternative_size(); ++j) {
+      const speech::proto::SpeechRecognitionAlternative& alt =
+          res.alternative(j);
+      if (alt.has_confidence())
+        DVLOG(1) << "    CONFIDENCE:\t" << alt.confidence();
+      if (alt.has_transcript())
+        DVLOG(1) << "    TRANSCRIPT:\t" << alt.transcript();
+    }
+  }
 }
 
 std::string GetWebserviceBaseURL() {
@@ -147,7 +150,6 @@ void GoogleStreamingRemoteEngine::DispatchHTTPResponse(const URLFetcher* source,
     source->GetResponseAsString(&response);
   const size_t current_response_length = response.size();
 
-  // TODO(primiano): /////////// Remove this after debug stage. ////////////////
   DVLOG(1) << (source == downstream_fetcher_.get() ? "Downstream" : "Upstream")
            << "HTTP, code: " << source->GetResponseCode()
            << "      length: " << current_response_length
@@ -163,20 +165,20 @@ void GoogleStreamingRemoteEngine::DispatchHTTPResponse(const URLFetcher* source,
   }
 
   if (!response_is_good && source == downstream_fetcher_.get()) {
-    // TODO(primiano): /////////// Remove this after debug stage. /////////////
     DVLOG(1) << "Downstream error " << source->GetResponseCode();
     FSMEventArgs event_args(EVENT_DOWNSTREAM_ERROR);
     DispatchEvent(event_args);
     return;
   }
   if (!response_is_good && source == upstream_fetcher_.get()) {
-    // TODO(primiano): /////////// Remove this after debug stage. /////////////
     DVLOG(1) << "Upstream error " << source->GetResponseCode()
              << " EOR " << end_of_response;
     FSMEventArgs event_args(EVENT_UPSTREAM_ERROR);
     DispatchEvent(event_args);
     return;
   }
+
+  // Ignore incoming data on the upstream connection.
   if (source == upstream_fetcher_.get())
     return;
 
@@ -197,9 +199,8 @@ void GoogleStreamingRemoteEngine::DispatchHTTPResponse(const URLFetcher* source,
     FSMEventArgs event_args(EVENT_DOWNSTREAM_RESPONSE);
     event_args.response = chunked_byte_buffer_.PopChunk();
     DCHECK(event_args.response.get());
-    // TODO(primiano): /////////// Remove this after debug stage. /////////////
-    DumpResponse(std::string((char*)&(*event_args.response->begin()),
-                             event_args.response->size()));
+    DumpResponse(std::string(event_args.response->begin(),
+                             event_args.response->end()));
     DispatchEvent(event_args);
   }
   if (end_of_response) {
@@ -230,8 +231,6 @@ void GoogleStreamingRemoteEngine::DispatchEvent(
   DCHECK(!is_dispatching_event_);
   is_dispatching_event_ = true;
 
-  // TODO(primiano): /////////// Remove this after debug stage. ////////////////
-  //DVLOG(1) << "State " << state_ << ", Event " << event_args.event;
   state_ = ExecuteTransitionAndGetNextState(event_args);
 
   is_dispatching_event_ = false;
@@ -317,12 +316,11 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
 
   // Setup downstream fetcher.
   std::vector<std::string> downstream_args;
-  downstream_args.push_back("sky=" + GetWebserviceKey());
+  downstream_args.push_back("key=" + GetWebserviceKey());
   downstream_args.push_back("pair=" + request_key);
+  downstream_args.push_back("output=pb");
   GURL downstream_url(GetWebserviceBaseURL() + std::string(kDownstreamUrl) +
                       JoinString(downstream_args, '&'));
-  // TODO(primiano): /////////// Remove this after debug stage. /////////////
-  DVLOG(1) << "Opening downstream: " + downstream_url.PathForRequest();
 
   downstream_fetcher_.reset(URLFetcher::Create(
       kDownstreamUrlFetcherIdForTests, downstream_url, URLFetcher::GET, this));
@@ -333,31 +331,29 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
   downstream_fetcher_->Start();
 
   // Setup upstream fetcher.
-  // TODO(primiano): Handle config_.grammar array when it will be implemented by
-  // the speech recognition webservice.
+  // TODO(hans): Support for user-selected grammars.
   std::vector<std::string> upstream_args;
-  upstream_args.push_back("sky=" + GetWebserviceKey());
+  upstream_args.push_back("key=" + GetWebserviceKey());
   upstream_args.push_back("pair=" + request_key);
+  upstream_args.push_back("output=pb");
   upstream_args.push_back(
       "lang=" + net::EscapeQueryParamValue(GetAcceptedLanguages(), true));
   upstream_args.push_back(
-      config_.filter_profanities ? "pfilter=2" : "pfilter=0");
+      config_.filter_profanities ? "pFilter=2" : "pFilter=0");
   if (config_.max_hypotheses > 0U) {
-    upstream_args.push_back("maxresults=" +
+    upstream_args.push_back("maxAlternatives=" +
                             base::UintToString(config_.max_hypotheses));
   }
-  // TODO(primiano) What is this client= parameter? Check with speech team.
-  upstream_args.push_back("client=myapp.mycompany.com");
+  upstream_args.push_back("client=chromium2");
   if (!config_.hardware_info.empty()) {
     upstream_args.push_back(
         "xhw=" + net::EscapeQueryParamValue(config_.hardware_info, true));
   }
+  upstream_args.push_back("continuous");
+  // TODO(hans): Set 'continuous' and 'confidence' based on user input.
 
   GURL upstream_url(GetWebserviceBaseURL() + std::string(kUpstreamUrl) +
                     JoinString(upstream_args, '&'));
-
-  // TODO(primiano): /////////// Remove this after debug stage. ////////////////
-  DVLOG(1) << "Opening upstream: " + upstream_url.PathForRequest();
 
   upstream_fetcher_.reset(URLFetcher::Create(
       kUpstreamUrlFetcherIdForTests, upstream_url, URLFetcher::POST, this));
@@ -390,67 +386,70 @@ GoogleStreamingRemoteEngine::FSMState
 GoogleStreamingRemoteEngine::ProcessDownstreamResponse(
     const FSMEventArgs& event_args) {
   DCHECK(event_args.response.get());
-  bool is_definitive_result = false;
 
-  HttpStreamingResult ws_result;
-  const bool protobuf_parse_successful = ws_result.ParseFromArray(
-      &(*event_args.response->begin()),
-      event_args.response->size());
-  if (!protobuf_parse_successful)
+  proto::SpeechRecognitionEvent ws_event;
+  if (!ws_event.ParseFromString(std::string(event_args.response->begin(),
+                                            event_args.response->end())))
     return AbortWithError(event_args);
 
-  // TODO(primiano): The code below sounds to me like a hack. Discuss the
-  // possibility of having a simpler and clearer protobuf grammar, in order to
-  // distinguish the different type of results and errors in a civilized way.
-
-  // Skip the upstream connected notification, since we're not interested in it.
-  if (ws_result.has_upstream_connected())
+  // An empty (default) event is used to notify us that the upstream has
+  // been connected. Ignore.
+  if (!ws_event.result_size() && (!ws_event.has_status() ||
+      ws_event.status() == proto::SpeechRecognitionEvent::STATUS_SUCCESS)) {
+    DVLOG(1) << "Received empty response";
     return state_;
+  }
 
-  if (ws_result.has_status()) {
-    switch (ws_result.status()) {
-      case kWebserviceStatusNoError:
-        is_definitive_result = true;
+  if (ws_event.has_status()) {
+    switch(ws_event.status()) {
+      case proto::SpeechRecognitionEvent::STATUS_SUCCESS:
         break;
-      case kWebserviceStatusErrorNoMatch:
-        // TODO(primiano): Contact gshires@, in case of no results, instead of
-        // the expected kWebserviceStatusErrorNoMatch status code we receive a
-        // provisional-like result with no provisional nor ephemeral strings.
-        return Abort(content::SPEECH_RECOGNITION_ERROR_NO_MATCH);
-      default:
-        VLOG(1) << "Received an unknown status code from the speech recognition"
-                   "webservice (" << ws_result.status() << ")";
+      case proto::SpeechRecognitionEvent::STATUS_NO_SPEECH:
+        return Abort(content::SPEECH_RECOGNITION_ERROR_NO_SPEECH);
+      case proto::SpeechRecognitionEvent::STATUS_ABORTED:
+        return Abort(content::SPEECH_RECOGNITION_ERROR_ABORTED);
+      case proto::SpeechRecognitionEvent::STATUS_AUDIO_CAPTURE:
+        return Abort(content::SPEECH_RECOGNITION_ERROR_AUDIO);
+      case proto::SpeechRecognitionEvent::STATUS_NETWORK:
         return Abort(content::SPEECH_RECOGNITION_ERROR_NETWORK);
+      case proto::SpeechRecognitionEvent::STATUS_NOT_ALLOWED:
+        // TODO(hans): We need a better error code for this.
+        return Abort(content::SPEECH_RECOGNITION_ERROR_ABORTED);
+      case proto::SpeechRecognitionEvent::STATUS_SERVICE_NOT_ALLOWED:
+        // TODO(hans): We need a better error code for this.
+        return Abort(content::SPEECH_RECOGNITION_ERROR_ABORTED);
+      case proto::SpeechRecognitionEvent::STATUS_BAD_GRAMMAR:
+        return Abort(content::SPEECH_RECOGNITION_ERROR_BAD_GRAMMAR);
+      case proto::SpeechRecognitionEvent::STATUS_LANGUAGE_NOT_SUPPORTED:
+        // TODO(hans): We need a better error code for this.
+        return Abort(content::SPEECH_RECOGNITION_ERROR_ABORTED);
     }
   }
 
-  SpeechRecognitionResult result;
-  if (is_definitive_result) {
-    got_last_definitive_result_ = true;
-    result.is_provisional = false;
-    for (int i = 0; i < ws_result.hypotheses_size(); ++i) {
-      const HttpStreamingHypothesis& ws_hypothesis = ws_result.hypotheses(i);
+  for (int i = 0; i < ws_event.result_size(); ++i) {
+    const proto::SpeechRecognitionResult& ws_result = ws_event.result(i);
+    SpeechRecognitionResult result;
+    result.is_provisional = !(ws_result.has_final() && ws_result.final());
+
+    if (!result.is_provisional)
+      got_last_definitive_result_ = true;
+
+    for (int j = 0; j < ws_result.alternative_size(); ++j) {
+      const proto::SpeechRecognitionAlternative& ws_alternative =
+          ws_result.alternative(j);
       SpeechRecognitionHypothesis hypothesis;
-      DCHECK(ws_hypothesis.has_confidence());
-      hypothesis.confidence = ws_hypothesis.confidence();
-      DCHECK(ws_hypothesis.has_utterance());
-      hypothesis.utterance = UTF8ToUTF16(ws_hypothesis.utterance());
+      if (ws_alternative.has_confidence())
+        hypothesis.confidence = ws_alternative.confidence();
+      DCHECK(ws_alternative.has_transcript());
+      // TODO(hans): Perhaps the transcript should be required in the proto?
+      if (ws_alternative.has_transcript())
+        hypothesis.utterance = UTF8ToUTF16(ws_alternative.transcript());
+
       result.hypotheses.push_back(hypothesis);
     }
-  } else {
-    result.is_provisional = true;
-    string16 transcript;
-    if (ws_result.has_provisional())
-      transcript.append(UTF8ToUTF16(ws_result.provisional()));
-    if (ws_result.has_ephemeral())
-      transcript.append(UTF8ToUTF16(ws_result.ephemeral()));
-    DCHECK(!transcript.empty());
-    result.hypotheses.push_back(SpeechRecognitionHypothesis(transcript, 0.0f));
-  }
 
-  // Propagate just actual results.
-  if (result.hypotheses.size() > 0)
     delegate()->OnSpeechRecognitionEngineResult(result);
+  }
 
   return state_;
 }
@@ -472,8 +471,7 @@ GoogleStreamingRemoteEngine::CloseUpstreamAndWaitForResults(
   DCHECK(upstream_fetcher_.get());
   DCHECK(encoder_.get());
 
-  // TODO(primiano): /////////// Remove this after debug stage. ////////////////
-  DVLOG(1) <<  "Closing upstream";
+  DVLOG(1) <<  "Closing upstream.";
 
   // The encoder requires a non-empty final buffer. So we encode a packet
   // of silence in case encoder had no data already.
@@ -500,8 +498,7 @@ GoogleStreamingRemoteEngine::CloseDownstream(const FSMEventArgs&) {
   DCHECK(!upstream_fetcher_.get());
   DCHECK(downstream_fetcher_.get());
 
-  // TODO(primiano): /////////// Remove this after debug stage. ////////////////
-  DVLOG(1) <<  "Closing downstream";
+  DVLOG(1) <<  "Closing downstream.";
   downstream_fetcher_.reset();
   return STATE_IDLE;
 }
@@ -518,7 +515,6 @@ GoogleStreamingRemoteEngine::AbortWithError(const FSMEventArgs&) {
 
 GoogleStreamingRemoteEngine::FSMState GoogleStreamingRemoteEngine::Abort(
     SpeechRecognitionErrorCode error_code) {
-  // TODO(primiano): /////////// Remove this after debug stage. ////////////////
   DVLOG(1) << "Aborting with error " << error_code;
 
   if (error_code != content::SPEECH_RECOGNITION_ERROR_NONE) {

@@ -5,43 +5,62 @@
 syntax = "proto2";
 option optimize_for = LITE_RUNTIME;
 
-// TODO(primiano) Commented out due to compilation errors. What's its purpose?
-//option cc_api_version = 2;
+// TODO(hans): Commented out due to compilation errors.
+// option cc_api_version = 2;
 
-package speech;
+package speech.proto;
 
-// Used for receiving results from the Google continuous speech recognition
-// webservice.
-message HttpStreamingResult {
-  // Used in case of errors.
-  // TODO(primiano) Not completely sure about its semantic. Ask gshires@.
-  optional int32 status = 1;
+// SpeechRecognitionEvent is the only message type sent to client.
+//
+// The first SpeechRecognitionEvent is an empty (default) message to indicate
+// as early as possible that the stream connection has been established.
+message SpeechRecognitionEvent {
+  enum StatusCode {
+    // Note: in JavaScript API SpeechRecognitionError 0 is "OTHER" error.
+    STATUS_SUCCESS = 0;
+    STATUS_NO_SPEECH = 1;
+    STATUS_ABORTED = 2;
+    STATUS_AUDIO_CAPTURE = 3;
+    STATUS_NETWORK = 4;
+    STATUS_NOT_ALLOWED = 5;
+    STATUS_SERVICE_NOT_ALLOWED = 6;
+    STATUS_BAD_GRAMMAR = 7;
+    STATUS_LANGUAGE_NOT_SUPPORTED = 8;
+  }
+  optional StatusCode status = 1 [default = STATUS_SUCCESS];
 
-  // TODO(primiano) this seems to be not used anymore. Ask gshires@.
-  optional int32 id = 2;
+  // May contain zero or one final=true result (the newly settled portion).
+  // May also contain zero or more final=false results.
+  // (Note that this differs from JavaScript API resultHistory in that no more
+  // than one final=true result is returned, so client must accumulate
+  // resultHistory by concatenating the final=true results.)
+  repeated SpeechRecognitionResult result = 2;
+};
 
-  // Definitive results provide an array of hypotheses.
-  repeated HttpStreamingHypothesis hypotheses = 3;
+message SpeechRecognitionResult {
+  repeated SpeechRecognitionAlternative alternative = 1;
 
-  // Non definitive results, instead, provide a provisional (read: likely to be
-  // confirmed) and an ephemeral (read: likely to be changed soon) string.
-  optional string provisional = 4;
-  optional string ephemeral = 5;
+  // True if this is the final time the speech service will return this
+  // particular SpeechRecognitionResult. If false, then this represents an
+  // interim result that could still be changed.
+  optional bool final = 2 [default = false];
 
-  // TODO(primiano) this seems to be not used anymore. Ask gshires@.
-  optional string upstream_url = 6;
+  // An estimate of the probability that the recognizer will not change its
+  // guess about this interim result.  Values range from 0.0 (completely
+  // unstable) to 1.0 (completely stable).  Note that this is not the same as
+  // "confidence", which estimate the probability that a recognition result
+  // is correct. This field is only provided for interim (final=false) results.
+  optional float stability = 3;
+};
 
-  // Used by the webservice to acknowledge the successfull connection of the
-  // upstream (the one pushing audio data).
-  optional bool upstream_connected = 7;
-}
+// Item in N-best list.
+message SpeechRecognitionAlternative {
+  // Spoken text.
+  optional string transcript = 1;
 
-// Part of a definitive result. See HttpStreamingResult.hypotheses array.
-message HttpStreamingHypothesis {
-  // Textual transcript of the hypothesis.
-  optional string utterance = 1;
-
-  // Confidence score associated with the hypothesis.
+  // The confidence estimate between 0.0 and 1.0.  A higher number means the
+  // system is more confident that the recognition is correct.
+  // This field is typically provided only for the top hypothesis and only for
+  // final results.
   optional float confidence = 2;
 }
-

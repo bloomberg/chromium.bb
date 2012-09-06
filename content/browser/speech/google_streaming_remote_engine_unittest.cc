@@ -25,8 +25,8 @@ using net::TestURLFetcherFactory;
 
 namespace speech {
 
-// Note: the terms upstream and downstream are herein referring to the client
-// (engine_under_test_) viewpoint.
+// Note: the terms upstream and downstream are from the point-of-view of the
+// client (engine_under_test_).
 
 class GoogleStreamingRemoteEngineTest
     : public SpeechRecognitionEngineDelegate,
@@ -63,7 +63,8 @@ class GoogleStreamingRemoteEngineTest
   };
   static bool ResultsAreEqual(const SpeechRecognitionResult& a,
                               const SpeechRecognitionResult& b);
-  static std::string SerializeProtobufResponse(const HttpStreamingResult& msg);
+  static std::string SerializeProtobufResponse(
+      const proto::SpeechRecognitionEvent& msg);
   static std::string ToBigEndian32(uint32 value);
 
   TestURLFetcher* GetUpstreamFetcher();
@@ -222,11 +223,11 @@ TEST_F(GoogleStreamingRemoteEngineTest, NoMatchError) {
 
   CloseMockDownstream(DOWNSTREAM_ERROR_WEBSERVICE_NO_MATCH);
 
-  // Expect a SPEECH_RECOGNITION_ERROR_NO_MATCH error to be raised.
+  // Expect an empty result.
   ASSERT_FALSE(engine_under_test_->IsRecognitionPending());
   EndMockRecognition();
-  ASSERT_EQ(content::SPEECH_RECOGNITION_ERROR_NO_MATCH, error_);
-  ASSERT_EQ(0U, results_.size());
+  SpeechRecognitionResult empty_result;
+  ExpectResultReceived(empty_result);
 }
 
 TEST_F(GoogleStreamingRemoteEngineTest, HTTPError) {
@@ -345,22 +346,19 @@ void GoogleStreamingRemoteEngineTest::ProvideMockResultDownstream(
   downstream_fetcher->set_status(URLRequestStatus(/* default=SUCCESS */));
   downstream_fetcher->set_response_code(200);
 
-  HttpStreamingResult response;
-  if (result.is_provisional) {
-    DCHECK_EQ(result.hypotheses.size(), 1U);
-    const SpeechRecognitionHypothesis& hypothesis = result.hypotheses[0];
-    response.set_provisional(UTF16ToUTF8(hypothesis.utterance));
-  } else {
-    response.set_status(GoogleStreamingRemoteEngine::kWebserviceStatusNoError);
-    for (size_t i = 0; i < result.hypotheses.size(); ++i) {
-        const SpeechRecognitionHypothesis& hypothesis = result.hypotheses[i];
-        HttpStreamingHypothesis* ws_hypothesis = response.add_hypotheses();
-        ws_hypothesis->set_confidence(hypothesis.confidence);
-        ws_hypothesis->set_utterance(UTF16ToUTF8(hypothesis.utterance));
-      }
+  proto::SpeechRecognitionEvent proto_event;
+  proto_event.set_status(proto::SpeechRecognitionEvent::STATUS_SUCCESS);
+  proto::SpeechRecognitionResult* proto_result = proto_event.add_result();
+  proto_result->set_final(!result.is_provisional);
+  for (size_t i = 0; i < result.hypotheses.size(); ++i) {
+    proto::SpeechRecognitionAlternative* proto_alternative =
+        proto_result->add_alternative();
+    const SpeechRecognitionHypothesis& hypothesis = result.hypotheses[i];
+    proto_alternative->set_confidence(hypothesis.confidence);
+    proto_alternative->set_transcript(UTF16ToUTF8(hypothesis.utterance));
   }
 
-  std::string response_string = SerializeProtobufResponse(response);
+  std::string response_string = SerializeProtobufResponse(proto_event);
   response_buffer_.append(response_string);
   downstream_fetcher->SetResponseString(response_buffer_);
   downstream_fetcher->delegate()->OnURLFetchDownloadProgress(
@@ -381,10 +379,9 @@ void GoogleStreamingRemoteEngineTest::CloseMockDownstream(
   downstream_fetcher->set_response_code(
       (error == DOWNSTREAM_ERROR_HTTP500) ? 500 : 200);
 
-if (error == DOWNSTREAM_ERROR_WEBSERVICE_NO_MATCH) {
-    HttpStreamingResult response;
-    response.set_status(
-        GoogleStreamingRemoteEngine::kWebserviceStatusErrorNoMatch);
+  if (error == DOWNSTREAM_ERROR_WEBSERVICE_NO_MATCH) {
+    // Send empty response.
+    proto::SpeechRecognitionEvent response;
     response_buffer_.append(SerializeProtobufResponse(response));
   }
   downstream_fetcher->SetResponseString(response_buffer_);
@@ -416,14 +413,14 @@ bool GoogleStreamingRemoteEngineTest::ResultsAreEqual(
 }
 
 std::string GoogleStreamingRemoteEngineTest::SerializeProtobufResponse(
-    const HttpStreamingResult& msg) {
-  std::string response_string;
-  msg.SerializeToString(&response_string);
+    const proto::SpeechRecognitionEvent& msg) {
+  std::string msg_string;
+  msg.SerializeToString(&msg_string);
 
-  // Append 4 byte prefix length indication to the protobuf message as envisaged
-  // by the google streaming recognition webservice protocol.
-  response_string.insert(0, ToBigEndian32(response_string.size()));
-  return response_string;
+  // Prepend 4 byte prefix length indication to the protobuf message as
+  // envisaged by the google streaming recognition webservice protocol.
+  msg_string.insert(0, ToBigEndian32(msg_string.size()));
+  return msg_string;
 }
 
 std::string GoogleStreamingRemoteEngineTest::ToBigEndian32(uint32 value) {
