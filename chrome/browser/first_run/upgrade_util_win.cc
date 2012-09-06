@@ -4,6 +4,9 @@
 
 #include "chrome/browser/first_run/upgrade_util.h"
 
+#include <windows.h>
+#include <shellapi.h>
+
 #include <algorithm>
 #include <string>
 
@@ -17,9 +20,11 @@
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/win/metro.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/first_run/upgrade_util_win.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/chrome_constants.h"
@@ -79,7 +84,7 @@ FilePath GetMetroRelauncherPath(const FilePath& chrome_exe,
 
 namespace upgrade_util {
 
-bool RelaunchChromeBrowser(const CommandLine& command_line) {
+bool RelaunchChromehelper(const CommandLine& command_line, bool mode_switch) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
   std::string version_str;
 
@@ -89,43 +94,82 @@ bool RelaunchChromeBrowser(const CommandLine& command_line) {
   else
     version_str.clear();
 
-  if (!base::win::IsMetroProcess())
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return base::LaunchProcess(command_line, base::LaunchOptions(), NULL);
 
-  // Pass this Chrome's Start Menu shortcut path and handle to the relauncher.
-  // The relauncher will wait for this Chrome to exit then reactivate it by
-  // way of the Start Menu shortcut.
+  // On Windows 8 we always use the delegate_execute for re-launching chrome.
+  //
+  // Pass this Chrome's Start Menu shortcut path to the relauncher so it can
+  // re-activate chrome via ShellExecute.
   FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
     NOTREACHED();
     return false;
   }
 
-  // Get a handle to this process that can be passed to the relauncher.
-  HANDLE current_process = GetCurrentProcess();
-  base::win::ScopedHandle process_handle;
-  if (!::DuplicateHandle(current_process, current_process, current_process,
-                         process_handle.Receive(), SYNCHRONIZE, TRUE, 0)) {
-    DPCHECK(false);
+  // We need to use ShellExecute to launch the relauncher, which will wait until
+  // we exit. But ShellExecute does not support handle passing to the child
+  // process so we create a uniquely named mutex that we aquire and never
+  // release. So when we exit, Windows marks our mutex as abandoned and the
+  // wait is satisfied.
+  // The format of the named mutex is important. See DelegateExecuteOperation
+  // for more details.
+  string16 mutex_name =
+      base::StringPrintf(L"chrome.relaunch.%d", ::GetCurrentProcessId());
+  HANDLE mutex = ::CreateMutexW(NULL, TRUE, mutex_name.c_str());
+  // The |mutex| handle needs to be leaked. See comment above.
+  if (!mutex) {
+    NOTREACHED();
+    return false;
+  }
+  if (::GetLastError() == ERROR_ALREADY_EXISTS) {
+    NOTREACHED() << "Relaunch mutex already exists";
     return false;
   }
 
-  // Make the command line for the relauncher.
-  CommandLine relaunch_cmd(GetMetroRelauncherPath(chrome_exe, version_str));
+  CommandLine relaunch_cmd(CommandLine::NO_PROGRAM);
   relaunch_cmd.AppendSwitchPath(switches::kRelaunchShortcut,
       ShellIntegration::GetStartMenuShortcut(chrome_exe));
-  relaunch_cmd.AppendSwitchNative(switches::kWaitForHandle,
-      base::UintToString16(reinterpret_cast<uint32>(process_handle.Get())));
+  relaunch_cmd.AppendSwitchNative(switches::kWaitForMutex, mutex_name);
 
-  base::LaunchOptions launch_options;
-  launch_options.inherit_handles = true;
-  if (!base::LaunchProcess(relaunch_cmd, launch_options, NULL)) {
-    DPLOG(ERROR) << "Failed to launch relauncher \""
-                 << relaunch_cmd.GetCommandLineString() << "\"";
+  const char* flag;
+  if (base::win::IsMetroProcess())
+    flag = mode_switch ? switches::kForceDesktop : switches::kForceImmersive;
+  else
+    flag = mode_switch ? switches::kForceImmersive : switches::kForceDesktop;
+  relaunch_cmd.AppendSwitch(flag);
+
+  string16 params(relaunch_cmd.GetCommandLineString());
+  string16 path(GetMetroRelauncherPath(chrome_exe, version_str).value());
+
+  SHELLEXECUTEINFO sei = { sizeof(sei) };
+  sei.fMask = SEE_MASK_FLAG_LOG_USAGE | SEE_MASK_NOCLOSEPROCESS;
+  sei.nShow = SW_SHOWNORMAL;
+  sei.lpFile = path.c_str();
+  sei.lpParameters = params.c_str();
+
+  if (!::ShellExecuteExW(&sei)) {
+    NOTREACHED() << "ShellExecute failed with " << GetLastError();
     return false;
   }
-
+  DWORD pid = ::GetProcessId(sei.hProcess);
+  CloseHandle(sei.hProcess);
+  if (!pid)
+    return false;
+  // The next call appears to be needed if we are relaunching from desktop into
+  // metro mode. The observed effect if not done is that chrome starts in metro
+  // mode but it is not given focus and it gets killed by windows after a few
+  // seconds.
+  ::AllowSetForegroundWindow(pid);
   return true;
+}
+
+bool RelaunchChromeBrowser(const CommandLine& command_line) {
+  return RelaunchChromehelper(command_line, false);
+}
+
+bool RelaunchChromeWithModeSwitch(const CommandLine& command_line) {
+  return RelaunchChromehelper(command_line, true);
 }
 
 bool IsUpdatePendingRestart() {

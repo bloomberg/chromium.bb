@@ -490,6 +490,9 @@ extern const char kShutdownNumProcessesSlow[];
 
 extern const char kRestartLastSessionOnShutdown[];
 extern const char kWasRestarted[];
+#if defined(OS_WIN)
+extern const char kRestartSwitchMode[];
+#endif
 
 extern const char kNumBookmarksOnBookmarkBar[];
 extern const char kNumFoldersOnBookmarkBar[];

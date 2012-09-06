@@ -66,6 +66,8 @@
 #define IDC_PRESENTATION_MODE           34039
 #define IDC_METRO_SNAP_ENABLE           34040
 #define IDC_METRO_SNAP_DISABLE          34041
+#define IDC_WIN8_DESKTOP_RESTART        34042
+#define IDC_WIN8_METRO_RESTART          34043
 
 // Page-related commands
 #define IDC_BOOKMARK_PAGE               35000

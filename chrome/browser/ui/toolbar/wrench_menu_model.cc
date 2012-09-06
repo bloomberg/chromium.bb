@@ -466,8 +466,12 @@ void WrenchMenuModel::Build() {
   AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
 #if defined(OS_WIN)
   if (base::win::IsMetroProcess()) {
+    // Metro mode.
+    AddSeparator(ui::SPACING_SEPARATOR);
+    AddItemWithStringId(IDC_WIN8_DESKTOP_RESTART, IDS_WIN8_DESKTOP_RESTART);
+    AddSeparator(ui::SPACING_SEPARATOR);
     // In Metro, we only show the New Window options if there isn't already
-    // a the window of the requested type (incognito or not) that is available.
+    // a window of the requested type (incognito or not) that is available.
     if (browser_->profile()->IsOffTheRecord()) {
       if (browser::FindBrowserWithProfile(
               browser_->profile()->GetOriginalProfile(),
@@ -478,6 +482,12 @@ void WrenchMenuModel::Build() {
       AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
     }
   } else {
+    // Desktop mode.
+    if (base::win::GetVersion() > base::win::VERSION_WIN7) {
+      AddSeparator(ui::SPACING_SEPARATOR);
+      AddItemWithStringId(IDC_WIN8_METRO_RESTART, IDS_WIN8_METRO_RESTART);
+      AddSeparator(ui::SPACING_SEPARATOR);
+    }
     AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
     AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
   }

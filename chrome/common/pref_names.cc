@@ -1386,6 +1386,11 @@ const char kRestartLastSessionOnShutdown[] = "restart.last.session.on.shutdown";
 // Set before autorestarting Chrome, cleared on clean exit.
 const char kWasRestarted[] = "was.restarted";
 
+#if defined(OS_WIN)
+// On Windows 8 chrome can restart in desktop or in metro mode.
+const char kRestartSwitchMode[] = "restart.switch_mode";
+#endif
+
 // Number of bookmarks/folders on the bookmark bar/other bookmark folder.
 const char kNumBookmarksOnBookmarkBar[] =
     "user_experience_metrics.num_bookmarks_on_bookmark_bar";

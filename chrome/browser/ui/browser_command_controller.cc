@@ -68,6 +68,18 @@ bool HasInternalURL(const NavigationEntry* entry) {
   return false;
 }
 
+#if defined(OS_WIN)
+void RestartWithModeSwitch() {
+  PrefService* prefs = g_browser_process->local_state();
+  if (!prefs)
+    return;
+  if (!prefs->HasPrefPath(prefs::kRestartSwitchMode))
+    return;
+  prefs->SetBoolean(prefs::kRestartSwitchMode, true);
+  browser::AttemptRestart();
+}
+#endif
+
 }  // namespace
 
 namespace chrome {
@@ -330,14 +342,23 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_FULLSCREEN:
       chrome::ToggleFullscreenMode(browser_);
       break;
+
 #if defined(OS_WIN)
+    // Windows 8 specific commands.
     case IDC_METRO_SNAP_ENABLE:
       browser_->SetMetroSnapMode(true);
       break;
     case IDC_METRO_SNAP_DISABLE:
       browser_->SetMetroSnapMode(false);
       break;
+    case IDC_WIN8_DESKTOP_RESTART:
+      RestartWithModeSwitch();
+      break;
+    case IDC_WIN8_METRO_RESTART:
+      RestartWithModeSwitch();
+      break;
 #endif
+
 #if defined(OS_MACOSX)
     case IDC_PRESENTATION_MODE:
       browser_->TogglePresentationMode();
@@ -790,6 +811,9 @@ void BrowserCommandController::InitCommandState() {
   const bool metro_mode = base::win::IsMetroProcess();
   command_updater_.UpdateCommandEnabled(IDC_METRO_SNAP_ENABLE, metro_mode);
   command_updater_.UpdateCommandEnabled(IDC_METRO_SNAP_DISABLE, metro_mode);
+  int restart_mode = metro_mode ?
+      IDC_WIN8_DESKTOP_RESTART : IDC_WIN8_METRO_RESTART;
+  command_updater_.UpdateCommandEnabled(restart_mode, normal_window);
 #endif
 #if defined(OS_MACOSX)
   command_updater_.UpdateCommandEnabled(IDC_TABPOSE, normal_window);

@@ -65,6 +65,12 @@ bool g_trying_to_quit = false;
 // Whether the browser should quit without closing browsers.
 bool g_shutting_down_without_closing_browsers = false;
 
+#if defined(OS_WIN)
+// Whether the next restart should happen in the opposite mode; desktop or
+// metro mode. Windows 8 only.
+bool g_mode_switch = false;
+#endif
+
 Time* shutdown_started_ = NULL;
 ShutdownType shutdown_type_ = NOT_VALID;
 int shutdown_num_processes_;
@@ -147,6 +153,14 @@ bool ShutdownPreThreadsStop() {
     restart_last_session =
         prefs->GetBoolean(prefs::kRestartLastSessionOnShutdown);
     prefs->ClearPref(prefs::kRestartLastSessionOnShutdown);
+#if defined(OS_WIN)
+    if (restart_last_session) {
+      if (prefs->HasPrefPath(prefs::kRestartSwitchMode)) {
+        g_mode_switch = prefs->GetBoolean(prefs::kRestartSwitchMode);
+        prefs->SetBoolean(prefs::kRestartSwitchMode, false);
+      }
+    }
+#endif
   }
 
   prefs->CommitPendingWrite();
@@ -210,7 +224,17 @@ void ShutdownPostThreadsStop(bool restart_last_session) {
       else
         new_cl->AppendSwitch(i->first);
     }
+
+#if defined(OS_WIN)
+    // On Windows 8 we can relaunch in metro or desktop mode.
+    if (g_mode_switch)
+      upgrade_util::RelaunchChromeWithModeSwitch(*new_cl.get());
+    else
+      upgrade_util::RelaunchChromeBrowser(*new_cl.get());
+#else
     upgrade_util::RelaunchChromeBrowser(*new_cl.get());
+#endif  // defined(OS_WIN)
+
 #else
     NOTIMPLEMENTED();
 #endif  // !defined(OS_CHROMEOS)

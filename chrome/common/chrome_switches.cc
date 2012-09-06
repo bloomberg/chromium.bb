@@ -1530,12 +1530,16 @@ const char kEnableSyncCredentialCaching[]    = "enable-sync-credential-caching";
 // Windows 8 and higher.  Used when relaunching metro Chrome.
 const char kForceImmersive[]                 = "force-immersive";
 
+// For the DelegateExecute verb handler to launch Chrome in desktop mode on
+// Windows 8 and higher.  Used when relaunching metro Chrome.
+const char kForceDesktop[]                   = "force-desktop";
+
 // Relaunches metro Chrome on Windows 8 and higher using a given shortcut.
 const char kRelaunchShortcut[]               = "relaunch-shortcut";
 
 // Waits for the given handle to be signaled before relaunching metro Chrome on
 // Windows 8 and higher.
-const char kWaitForHandle[]                  = "wait-for-handle";
+const char kWaitForMutex[]                  = "wait-for-mutex";
 #endif
 
 #if defined(USE_AURA)

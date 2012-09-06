@@ -86,6 +86,7 @@
 #endif  // defined(ENABLE_CONFIGURATION_POLICY)
 
 #if defined(OS_WIN)
+#include "base/win/windows_version.h"
 #include "ui/views/focus/view_storage.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
@@ -750,6 +751,11 @@ void BrowserProcessImpl::CreateLocalState() {
   ApplyDisabledSchemesPolicy();
 
   local_state_->RegisterBooleanPref(prefs::kAllowCrossOriginAuthPrompt, false);
+
+#if defined(OS_WIN)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    local_state_->RegisterBooleanPref(prefs::kRestartSwitchMode, false);
+#endif
 }
 
 void BrowserProcessImpl::PreCreateThreads() {

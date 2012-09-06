@@ -17,6 +17,14 @@ namespace upgrade_util {
 // launched, returns false.
 bool RelaunchChromeBrowser(const CommandLine& command_line);
 
+#if defined(OS_WIN)
+
+// Like RelaunchChromeBrowser() but for Windows 8 if chrome is in desktop mode
+// it launches chrome in metro mode, and vice-versa.
+bool RelaunchChromeWithModeSwitch(const CommandLine& command_line);
+
+#endif
+
 #if !defined(OS_MACOSX)
 
 void SetNewCommandLine(CommandLine* new_command_line);
