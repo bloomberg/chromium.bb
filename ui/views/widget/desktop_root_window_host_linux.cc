@@ -18,27 +18,10 @@ DesktopRootWindowHostLinux::~DesktopRootWindowHostLinux() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopRootWindowHostLinux, DesktopRootWindowHost implementation:
-
-void DesktopRootWindowHostLinux::Init(aura::Window* content_window,
-                                      const Widget::InitParams& params) {
-  // TODO(erg):
-  NOTIMPLEMENTED();
-}
-
-void DesktopRootWindowHostLinux::ShowWindowWithState(
-    ui::WindowShowState show_state) {
-  // TODO(erg):
-  NOTIMPLEMENTED();
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // DesktopRootWindowHost, public:
 
 // static
-DesktopRootWindowHost* DesktopRootWindowHost::Create(
-    internal::NativeWidgetDelegate* native_widget_delegate,
-    const gfx::Rect& initial_bounds) {
+DesktopRootWindowHost* DesktopRootWindowHost::Create() {
   return new DesktopRootWindowHostLinux;
 }
 

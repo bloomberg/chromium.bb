@@ -10,22 +10,18 @@
 #include "ui/views/win/hwnd_message_handler_delegate.h"
 
 namespace views {
+
 class HWNDMessageHandler;
 
 class DesktopRootWindowHostWin : public DesktopRootWindowHost,
                                  public aura::RootWindowHost,
                                  public HWNDMessageHandlerDelegate {
  public:
-  DesktopRootWindowHostWin(
-      internal::NativeWidgetDelegate* native_widget_delegate,
-      const gfx::Rect& initial_bounds);
+  DesktopRootWindowHostWin();
   virtual ~DesktopRootWindowHostWin();
 
  private:
   // Overridden from DesktopRootWindowHost:
-  virtual void Init(aura::Window* content_window,
-                    const Widget::InitParams& params) OVERRIDE;
-  virtual void ShowWindowWithState(ui::WindowShowState show_state) OVERRIDE;
 
   // Overridden from aura::RootWindowHost:
   virtual aura::RootWindow* GetRootWindow() OVERRIDE;
@@ -127,13 +123,6 @@ class DesktopRootWindowHostWin : public DesktopRootWindowHost,
 
   scoped_ptr<aura::RootWindow> root_window_;
   scoped_ptr<HWNDMessageHandler> message_handler_;
-
-  // TODO(beng): Consider providing an interface to DesktopNativeWidgetAura
-  //             instead of providing this route back to Widget.
-  internal::NativeWidgetDelegate* native_widget_delegate_;
-
-  aura::RootWindowHostDelegate* root_window_host_delegate_;
-  aura::Window* content_window_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopRootWindowHostWin);
 };

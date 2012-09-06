@@ -12,39 +12,12 @@ namespace views {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopRootWindowHostWin, public:
 
-DesktopRootWindowHostWin::DesktopRootWindowHostWin(
-    internal::NativeWidgetDelegate* native_widget_delegate,
-    const gfx::Rect& initial_bounds)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(
-          message_handler_(new HWNDMessageHandler(this))),
-      native_widget_delegate_(native_widget_delegate),
-      root_window_host_delegate_(NULL),
-      content_window_(NULL) {
+DesktopRootWindowHostWin::DesktopRootWindowHostWin()
+    : root_window_(NULL),
+      message_handler_(NULL) {
 }
 
 DesktopRootWindowHostWin::~DesktopRootWindowHostWin() {
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// DesktopRootWindowHostWin, DesktopRootWindowHost implementation:
-
-void DesktopRootWindowHostWin::Init(aura::Window* content_window,
-                                    const Widget::InitParams& params) {
-  // TODO(beng): SetInitParams().
-  content_window_ = content_window;
-  message_handler_->Init(NULL, params.bounds);
-
-  aura::RootWindow::CreateParams rw_params(params.bounds);
-  rw_params.host = this;
-  root_window_.reset(new aura::RootWindow(rw_params));
-  root_window_->Init();
-  root_window_->AddChild(content_window_);
-  root_window_host_delegate_ = root_window_.get();
-}
-
-void DesktopRootWindowHostWin::ShowWindowWithState(
-    ui::WindowShowState show_state) {
-  message_handler_->ShowWindowWithState(show_state);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -133,7 +106,6 @@ bool DesktopRootWindowHostWin::IsUsingCustomFrame() const {
 }
 
 void DesktopRootWindowHostWin::SchedulePaint() {
-  native_widget_delegate_->AsWidget()->GetRootView()->SchedulePaint();
 }
 
 void DesktopRootWindowHostWin::EnableInactiveRendering() {
@@ -186,11 +158,11 @@ bool DesktopRootWindowHostWin::WillProcessWorkAreaChange() const {
 
 int DesktopRootWindowHostWin::GetNonClientComponent(
     const gfx::Point& point) const {
-  return native_widget_delegate_->GetNonClientComponent(point);
+  return HTCLIENT;
 }
 
 void DesktopRootWindowHostWin::GetWindowMask(const gfx::Size& size,
-                                             gfx::Path* path) {
+                                        gfx::Path* path) {
 }
 
 bool DesktopRootWindowHostWin::GetClientAreaInsets(gfx::Insets* insets) const {
@@ -198,7 +170,7 @@ bool DesktopRootWindowHostWin::GetClientAreaInsets(gfx::Insets* insets) const {
 }
 
 void DesktopRootWindowHostWin::GetMinMaxSize(gfx::Size* min_size,
-                                             gfx::Size* max_size) const {
+                                        gfx::Size* max_size) const {
 }
 
 gfx::Size DesktopRootWindowHostWin::GetRootViewSize() const {
@@ -244,19 +216,9 @@ void DesktopRootWindowHostWin::HandleAccelerator(
 }
 
 void DesktopRootWindowHostWin::HandleCreate() {
-  // TODO(beng): moar
-  NOTIMPLEMENTED();
-
-  // 1. Window property association
-  // 2. MouseWheel.
-  // 3. Drop target.
-  // 4. Tooltip Manager.
-
-  native_widget_delegate_->OnNativeWidgetCreated();
 }
 
 void DesktopRootWindowHostWin::HandleDestroying() {
-  native_widget_delegate_->OnNativeWidgetDestroying();
 }
 
 void DesktopRootWindowHostWin::HandleDestroyed() {
@@ -286,9 +248,6 @@ void DesktopRootWindowHostWin::HandleVisibilityChanged(bool visible) {
 
 void DesktopRootWindowHostWin::HandleClientSizeChanged(
     const gfx::Size& new_size) {
-  root_window_host_delegate_->OnHostResized(new_size);
-  // TODO(beng): replace with a layout manager??
-  content_window_->SetBounds(gfx::Rect(new_size));
 }
 
 void DesktopRootWindowHostWin::HandleFrameChanged() {
@@ -327,11 +286,10 @@ void DesktopRootWindowHostWin::HandleInputLanguageChange(
 
 bool DesktopRootWindowHostWin::HandlePaintAccelerated(
     const gfx::Rect& invalid_rect) {
-  return native_widget_delegate_->OnNativeWidgetPaintAccelerated(invalid_rect);
+  return false;
 }
 
 void DesktopRootWindowHostWin::HandlePaint(gfx::Canvas* canvas) {
-  root_window_host_delegate_->OnHostPaint();
 }
 
 void DesktopRootWindowHostWin::HandleScreenReaderDetected() {
@@ -364,10 +322,8 @@ void DesktopRootWindowHostWin::PostHandleMSG(UINT message,
 // DesktopRootWindowHost, public:
 
 // static
-DesktopRootWindowHost* DesktopRootWindowHost::Create(
-    internal::NativeWidgetDelegate* native_widget_delegate,
-    const gfx::Rect& initial_bounds) {
-  return new DesktopRootWindowHostWin(native_widget_delegate, initial_bounds);
+DesktopRootWindowHost* DesktopRootWindowHost::Create() {
+  return new DesktopRootWindowHostWin;
 }
 
 }  // namespace views

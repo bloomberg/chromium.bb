@@ -4,7 +4,6 @@
 
 #include "ui/views/widget/desktop_native_widget_aura.h"
 
-#include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/views/widget/desktop_root_window_host.h"
 
@@ -15,9 +14,9 @@ namespace views {
 
 DesktopNativeWidgetAura::DesktopNativeWidgetAura(
     internal::NativeWidgetDelegate* delegate)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(window_(new aura::Window(this))),
-      ownership_(Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET),
-      native_widget_delegate_(delegate) {
+    : desktop_root_window_host_(DesktopRootWindowHost::Create()),
+      window_(NULL),
+      ownership_(Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET) {
 }
 
 DesktopNativeWidgetAura::~DesktopNativeWidgetAura() {
@@ -28,12 +27,6 @@ DesktopNativeWidgetAura::~DesktopNativeWidgetAura() {
 
 void DesktopNativeWidgetAura::InitNativeWidget(
     const Widget::InitParams& params) {
-  window_->Init(params.layer_type);
-  window_->Show();
-
-  desktop_root_window_host_.reset(
-      DesktopRootWindowHost::Create(native_widget_delegate_, params.bounds));
-  desktop_root_window_host_->Init(window_, params);
 }
 
 NonClientFrameView* DesktopNativeWidgetAura::CreateNonClientFrameView() {
@@ -199,7 +192,6 @@ void DesktopNativeWidgetAura::ShowMaximizedWithBounds(
 }
 
 void DesktopNativeWidgetAura::ShowWithWindowState(ui::WindowShowState state) {
-  desktop_root_window_host_->ShowWindowWithState(state);
 }
 
 bool DesktopNativeWidgetAura::IsVisible() const {
@@ -213,7 +205,7 @@ void DesktopNativeWidgetAura::Deactivate() {
 }
 
 bool DesktopNativeWidgetAura::IsActive() const {
-  return true;
+  return false;
 }
 
 void DesktopNativeWidgetAura::SetAlwaysOnTop(bool always_on_top) {
@@ -301,11 +293,7 @@ gfx::Size DesktopNativeWidgetAura::GetMinimumSize() const {
 }
 
 void DesktopNativeWidgetAura::OnBoundsChanged(const gfx::Rect& old_bounds,
-                                              const gfx::Rect& new_bounds) {
-  if (old_bounds.origin() != new_bounds.origin())
-    native_widget_delegate_->OnNativeWidgetMove();
-  if (old_bounds.size() != new_bounds.size())
-    native_widget_delegate_->OnNativeWidgetSizeChanged(new_bounds.size());
+                               const gfx::Rect& new_bounds) {
 }
 
 void DesktopNativeWidgetAura::OnFocus(aura::Window* old_focused_window) {
@@ -324,7 +312,6 @@ gfx::NativeCursor DesktopNativeWidgetAura::GetCursor(const gfx::Point& point) {
 
 int DesktopNativeWidgetAura::GetNonClientComponent(
     const gfx::Point& point) const {
-  // TODO(beng): seems like this shouldn't be necessary here, right?
   return HTCLIENT;
 }
 
@@ -355,7 +342,6 @@ void DesktopNativeWidgetAura::OnCaptureLost() {
 }
 
 void DesktopNativeWidgetAura::OnPaint(gfx::Canvas* canvas) {
-  native_widget_delegate_->OnNativeWidgetPaint(canvas);
 }
 
 void DesktopNativeWidgetAura::OnDeviceScaleFactorChanged(
