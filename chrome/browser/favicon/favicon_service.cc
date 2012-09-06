@@ -5,10 +5,10 @@
 #include "chrome/browser/favicon/favicon_service.h"
 
 #include "chrome/browser/favicon/favicon_util.h"
-#include "chrome/browser/favicon/select_favicon_frames.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/history/select_favicon_frames.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/url_constants.h"
 #include "third_party/skia/include/core/SkBitmap.h"

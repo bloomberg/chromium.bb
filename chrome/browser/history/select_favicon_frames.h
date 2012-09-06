@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_FAVICON_SELECT_FAVICON_FRAMES_H_
-#define CHROME_BROWSER_FAVICON_SELECT_FAVICON_FRAMES_H_
+#ifndef CHROME_BROWSER_HISTORY_SELECT_FAVICON_FRAMES_H_
+#define CHROME_BROWSER_HISTORY_SELECT_FAVICON_FRAMES_H_
 
 #include <vector>
 
@@ -30,4 +30,4 @@ gfx::ImageSkia SelectFaviconFrames(
     int desired_size,
     float* score);
 
-#endif  // CHROME_BROWSER_FAVICON_SELECT_FAVICON_FRAMES_H_
+#endif  // CHROME_BROWSER_HISTORY_SELECT_FAVICON_FRAMES_H_

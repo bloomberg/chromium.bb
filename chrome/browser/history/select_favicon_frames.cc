@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/favicon/select_favicon_frames.h"
+#include "chrome/browser/history/select_favicon_frames.h"
 
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkCanvas.h"
