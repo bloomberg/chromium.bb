@@ -404,6 +404,12 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
     public boolean onTouchEvent(MotionEvent event) {
         return mContentViewCore.onTouchEvent(event);
     }
+
+    @Override
+    protected void onConfigurationChanged(Configuration newConfig) {
+        mContentViewCore.onConfigurationChanged(newConfig);
+    }
+
     // End FrameLayout overrides.
 
     @Override
@@ -580,7 +586,7 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
 
     @Override
     public void super_onConfigurationChanged(Configuration newConfig) {
-        mContentViewCore.onConfigurationChanged(newConfig);
+        super.onConfigurationChanged(newConfig);
     }
 
     @Override
