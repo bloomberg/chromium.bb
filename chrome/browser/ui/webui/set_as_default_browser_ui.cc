@@ -36,6 +36,7 @@
 #include "ui/base/l10n/l10n_font_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/font.h"
+#include "ui/views/widget/widget.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
 using content::BrowserThread;
@@ -245,8 +246,15 @@ SetAsDefaultBrowserDialogImpl::~SetAsDefaultBrowserDialogImpl() {
 }
 
 void SetAsDefaultBrowserDialogImpl::ShowDialog() {
-  chrome::ShowWebDialog(browser_->window()->GetNativeWindow(),
-                        browser_->profile(), this);
+  // Use a NULL parent window to make sure that the dialog will have an item
+  // in the Windows task bar. The code below will make it highlight if the
+  // dialog is not in the foreground.
+  gfx::NativeWindow native_window = chrome::ShowWebDialog(NULL,
+                                                          browser_->profile(),
+                                                          this);
+  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(
+      native_window);
+  widget->FlashFrame(true);
 }
 
 ui::ModalType SetAsDefaultBrowserDialogImpl::GetDialogModalType() const {
