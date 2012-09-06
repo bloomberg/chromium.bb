@@ -46,6 +46,7 @@ ActionBoxMenuModel::ActionBoxMenuModel(Browser* browser)
     SetIcon(GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE),
             rb.GetNativeImageNamed(IDR_MOBILE));
   }
+
   TabContents* current_tab_contents = chrome::GetActiveTabContents(browser_);
   bool starred = current_tab_contents->bookmark_tab_helper()->is_starred();
   AddItemWithStringId(IDC_BOOKMARK_PAGE,
@@ -54,7 +55,8 @@ ActionBoxMenuModel::ActionBoxMenuModel(Browser* browser)
           rb.GetNativeImageNamed(starred ? IDR_STAR_LIT : IDR_STAR));
 
   AddItemWithStringId(IDC_SHARE_PAGE, IDS_SHARE_PAGE);
-  // TODO(skare, stromme): Obtain an icon from UX.
+  SetIcon(GetIndexOfCommandId(IDC_SHARE_PAGE),
+          rb.GetNativeImageNamed(IDR_SHARE));
 
   // Adds extensions to the model.
   int command_id = kFirstExtensionCommandId;

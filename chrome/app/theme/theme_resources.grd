@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <grit latest_public_release="0" current_release="1">
   <outputs>
     <output filename="grit/theme_resources.h" type="rc_header" context="default_100_percent">
@@ -664,6 +664,7 @@
       <if expr="pp_ifdef('chromeos')">
         <structure type="chrome_scaled_image" name="IDR_SPINNER" file="spinner.png" />
       </if>
+      <structure type="chrome_scaled_image" name="IDR_SHARE" file="share.png" />
       <structure type="chrome_scaled_image" name="IDR_STAR" file="star.png" />
       <structure type="chrome_scaled_image" name="IDR_STAR_LIT" file="star_lit.png" />
       <if expr="pp_ifdef('chromeos')">
