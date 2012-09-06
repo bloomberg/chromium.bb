@@ -674,6 +674,43 @@ gles2_renderer_repaint_output(struct weston_output *output,
 
 }
 
+WL_EXPORT void
+gles2_renderer_flush_damage(struct weston_surface *surface)
+{
+#ifdef GL_UNPACK_ROW_LENGTH
+	pixman_box32_t *rectangles;
+	void *data;
+	int i, n;
+#endif
+
+	glBindTexture(GL_TEXTURE_2D, surface->textures[0]);
+
+	if (!surface->compositor->has_unpack_subimage) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
+			     surface->pitch, surface->buffer->height, 0,
+			     GL_BGRA_EXT, GL_UNSIGNED_BYTE,
+			     wl_shm_buffer_get_data(surface->buffer));
+
+		return;
+	}
+
+#ifdef GL_UNPACK_ROW_LENGTH
+	/* Mesa does not define GL_EXT_unpack_subimage */
+	glPixelStorei(GL_UNPACK_ROW_LENGTH, surface->pitch);
+	data = wl_shm_buffer_get_data(surface->buffer);
+	rectangles = pixman_region32_rectangles(&surface->damage, &n);
+	for (i = 0; i < n; i++) {
+		glPixelStorei(GL_UNPACK_SKIP_PIXELS, rectangles[i].x1);
+		glPixelStorei(GL_UNPACK_SKIP_ROWS, rectangles[i].y1);
+		glTexSubImage2D(GL_TEXTURE_2D, 0,
+				rectangles[i].x1, rectangles[i].y1,
+				rectangles[i].x2 - rectangles[i].x1,
+				rectangles[i].y2 - rectangles[i].y1,
+				GL_BGRA_EXT, GL_UNSIGNED_BYTE, data);
+	}
+#endif
+}
+
 static const char vertex_shader[] =
 	"uniform mat4 proj;\n"
 	"attribute vec2 position;\n"

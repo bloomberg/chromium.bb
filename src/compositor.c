@@ -181,9 +181,6 @@ weston_client_launch(struct weston_compositor *compositor,
 }
 
 static void
-update_shm_texture(struct weston_surface *surface);
-
-static void
 surface_handle_buffer_destroy(struct wl_listener *listener, void *data)
 {
 	struct weston_surface *es =
@@ -191,7 +188,7 @@ surface_handle_buffer_destroy(struct wl_listener *listener, void *data)
 			     buffer_destroy_listener);
 
 	if (es->buffer && wl_buffer_is_shm(es->buffer))
-		update_shm_texture(es);
+		gles2_renderer_flush_damage(es);
 
 	es->buffer = NULL;
 }
@@ -935,48 +932,11 @@ fade_frame(struct weston_animation *animation,
 }
 
 static void
-update_shm_texture(struct weston_surface *surface)
-{
-#ifdef GL_UNPACK_ROW_LENGTH
-	pixman_box32_t *rectangles;
-	void *data;
-	int i, n;
-#endif
-
-	glBindTexture(GL_TEXTURE_2D, surface->textures[0]);
-
-	if (!surface->compositor->has_unpack_subimage) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
-			     surface->pitch, surface->buffer->height, 0,
-			     GL_BGRA_EXT, GL_UNSIGNED_BYTE,
-			     wl_shm_buffer_get_data(surface->buffer));
-
-		return;
-	}
-
-#ifdef GL_UNPACK_ROW_LENGTH
-	/* Mesa does not define GL_EXT_unpack_subimage */
-	glPixelStorei(GL_UNPACK_ROW_LENGTH, surface->pitch);
-	data = wl_shm_buffer_get_data(surface->buffer);
-	rectangles = pixman_region32_rectangles(&surface->damage, &n);
-	for (i = 0; i < n; i++) {
-		glPixelStorei(GL_UNPACK_SKIP_PIXELS, rectangles[i].x1);
-		glPixelStorei(GL_UNPACK_SKIP_ROWS, rectangles[i].y1);
-		glTexSubImage2D(GL_TEXTURE_2D, 0,
-				rectangles[i].x1, rectangles[i].y1,
-				rectangles[i].x2 - rectangles[i].x1,
-				rectangles[i].y2 - rectangles[i].y1,
-				GL_BGRA_EXT, GL_UNSIGNED_BYTE, data);
-	}
-#endif
-}
-
-static void
 surface_accumulate_damage(struct weston_surface *surface,
 			  pixman_region32_t *opaque)
 {
 	if (surface->buffer && wl_buffer_is_shm(surface->buffer))
-		update_shm_texture(surface);
+		gles2_renderer_flush_damage(surface);
 
 	if (surface->transform.enabled) {
 		pixman_box32_t *extents;
