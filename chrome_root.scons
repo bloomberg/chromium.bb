@@ -46,7 +46,6 @@ ppapi_scons_files['nonvariant_test_scons_files'] = ExtendFileList(
         'tests/nacl_browser/manifest_file/nacl.scons',
         'tests/nacl_browser/nameservice/nacl.scons',
         'tests/nacl_browser/postmessage_redir/nacl.scons',
-        'tests/nacl_browser/untrusted_crash_dump/nacl.scons',
     ])
 
 ppapi_scons_files['irt_variant_test_scons_files'] = ExtendFileList(
