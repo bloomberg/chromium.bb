@@ -665,6 +665,30 @@ def read(complete_state):
           (' '.join(complete_state.result.command), str(e)))
 
 
+def merge(complete_state):
+  """Reads a trace and merges it back into the source .isolate file."""
+  value = read(complete_state)
+
+  # Now take that data and union it into the original .isolate file.
+  with open(complete_state.saved_state.isolate_file, 'r') as f:
+    prev_content = f.read()
+  prev_config = merge_isolate.load_gyp(
+      merge_isolate.eval_content(prev_content),
+      merge_isolate.extract_comment(prev_content),
+      merge_isolate.DEFAULT_OSES)
+  new_config = merge_isolate.load_gyp(
+      value,
+      '',
+      merge_isolate.DEFAULT_OSES)
+  config = merge_isolate.union(prev_config, new_config)
+  # pylint: disable=E1103
+  data = merge_isolate.convert_map_to_gyp(
+      *merge_isolate.reduce_inputs(*merge_isolate.invert_map(config.flatten())))
+  print 'Updating %s' % complete_state.saved_state.isolate_file
+  with open(complete_state.saved_state.isolate_file, 'wb') as f:
+    merge_isolate.print_all(config.file_comment, data, f)
+
+
 def CMDcheck(args):
   """Checks that all the inputs are present and update .result."""
   parser = OptionParserIsolate(command='check')
@@ -748,27 +772,7 @@ def CMDmerge(args):
   parser = OptionParserIsolate(command='merge', require_result=False)
   options, _ = parser.parse_args(args)
   complete_state = load_complete_state(options, NO_INFO)
-  value = read(complete_state)
-
-  # Now take that data and union it into the original .isolate file.
-  with open(complete_state.saved_state.isolate_file, 'r') as f:
-    prev_content = f.read()
-  prev_config = merge_isolate.load_gyp(
-      merge_isolate.eval_content(prev_content),
-      merge_isolate.extract_comment(prev_content),
-      merge_isolate.DEFAULT_OSES)
-  new_config = merge_isolate.load_gyp(
-      value,
-      '',
-      merge_isolate.DEFAULT_OSES)
-  config = merge_isolate.union(prev_config, new_config)
-  # pylint: disable=E1103
-  data = merge_isolate.convert_map_to_gyp(
-      *merge_isolate.reduce_inputs(*merge_isolate.invert_map(config.flatten())))
-  print 'Updating %s' % complete_state.saved_state.isolate_file
-  with open(complete_state.saved_state.isolate_file, 'wb') as f:
-    merge_isolate.print_all(config.file_comment, data, f)
-
+  merge(complete_state)
   return 0
 
 
@@ -883,6 +887,9 @@ def CMDtrace(args):
   """
   parser = OptionParserIsolate(command='trace')
   parser.enable_interspersed_args()
+  parser.add_option(
+      '-m', '--merge', action='store_true',
+      help='After tracing, merge the results back in the .isolate file')
   options, args = parser.parse_args(args)
   complete_state = load_complete_state(options, STATS_ONLY)
   cmd = complete_state.result.command + args
@@ -906,6 +913,10 @@ def CMDtrace(args):
     raise ExecutionError('Tracing failed for: %s\n%s' % (' '.join(cmd), str(e)))
 
   complete_state.save_files()
+
+  if options.merge:
+    merge(complete_state)
+
   return result
 
 
