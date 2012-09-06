@@ -1,3 +1,11 @@
+2012-09-06  Christian Egli  <christian.egli@sbs.ch>
+
+	* tests/Makefile.am (check_PROGRAMS):
+	* tests/brl_checks.c:
+	* tests/brl_checks.h:
+	* tests/pass1Only.c: Added a test case for the reported memory
+	problem with pass1Only.
+
 2012-09-05  Christian Egli  <christian.egli@sbs.ch>
 
 	* tests/runHarness.py (test_allCases): Add some code to enable the

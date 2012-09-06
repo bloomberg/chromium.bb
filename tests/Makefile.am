@@ -74,6 +74,11 @@ hyphenate_SOURCES =				\
 	brl_checks.h				\
 	hyphenate.c
 
+pass1Only_SOURCES =				\
+	brl_checks.c				\
+	brl_checks.h				\
+	pass1Only.c
+
 check_PROGRAMS =				\
 	pass2					\
 	pass2_inpos				\
@@ -88,7 +93,8 @@ check_PROGRAMS =				\
 	en_gb_g1_italics			\
 	letterDefTest				\
 	squash_space				\
-	hyphenate
+	hyphenate				\
+	pass1Only
 
 dist_check_SCRIPTS =		\
 	check_all_tables.pl	\

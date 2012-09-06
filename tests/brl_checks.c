@@ -30,6 +30,16 @@ int
 check_translation(const char *tableList, const char *str,
 		  const char *typeform, const char *expected)
 {
+  return check_translation_with_mode(tableList, str, typeform, expected, 0);
+}
+
+/* Check if a string is translated as expected. Return 0 if the
+   translation is as expected and 1 otherwise. */
+int
+check_translation_with_mode(const char *tableList, const char *str,
+			    const char *typeform, const char *expected, 
+			    int mode)
+{
   widechar *inbuf;
   widechar *outbuf;
   int inlen;
@@ -55,7 +65,7 @@ check_translation(const char *tableList, const char *str,
       return 1;
     }
   if (!lou_translate(tableList, inbuf, &inlen, outbuf, &outlen,
-		     typeformbuf, NULL, NULL, NULL, NULL, 0))
+		     typeformbuf, NULL, NULL, NULL, NULL, mode))
     {
       printf("Translation failed.\n");
       return 1;
@@ -93,7 +103,6 @@ check_translation(const char *tableList, const char *str,
   free(typeformbuf);
   lou_free();
   return rv;
-
 }
 
 int
