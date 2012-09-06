@@ -228,27 +228,31 @@ static void TryOneInstruction(uint8_t *itext, size_t nbytes) {
     prod_okay = vProd->_maybe_inst_validates_fn(&pinst);
     rdfa_okay = vDFA->_maybe_inst_validates_fn(&dinst);
 
-    if (prod_okay) {
-      if (rdfa_okay) {
-        if (vProd->_inst_length_fn(&pinst) ==
-            vDFA->_inst_length_fn(&dinst)) {
-          /* Both validators see a legal instruction, */
-          /* and they agree on critical details.      */
-          IncrValid();
-          /* Warn if decoders disagree opcode name. */
-          if (gCheckMnemonics) CheckMnemonics(&pinst, &dinst);
-        } else {
-          DecoderError("LENGTH MISMATCH", &pinst, &dinst, "");
-          IncrErrors();
-        }
+    if (prod_okay && rdfa_okay) {
+      if (vProd->_inst_length_fn(&pinst) ==
+          vDFA->_inst_length_fn(&dinst)) {
+        /* Both validators see a legal instruction, */
+        /* and they agree on critical details.      */
+        IncrValid();
+        /* Warn if decoders disagree opcode name. */
+        if (gCheckMnemonics) CheckMnemonics(&pinst, &dinst);
       } else {
-        /* Validators disagree on instruction legality */
-        DecoderError("VALIDATORS DISAGREE", &pinst, &dinst, "");
+        DecoderError("LENGTH MISMATCH", &pinst, &dinst, "");
         IncrErrors();
       }
-    } else if (rdfa_okay) {
+    } else if (prod_okay && !rdfa_okay) {
       /* Validators disagree on instruction legality */
-      DecoderError("VALIDATORS DISAGREE", &pinst, &dinst, "");
+      DecoderError("VALIDATORS DISAGREE (prod accepts, RDFA rejects)",
+                   &pinst,
+                   &dinst,
+                   "");
+      IncrErrors();
+    } else if (!prod_okay && rdfa_okay) {
+      /* Validators disagree on instruction legality */
+      DecoderError("VALIDATORS DISAGREE (prod rejects, RDFA accepts)",
+                   &pinst,
+                   &dinst,
+                   "");
       IncrErrors();
     } else {
       /* Both validators see an illegal instruction */
