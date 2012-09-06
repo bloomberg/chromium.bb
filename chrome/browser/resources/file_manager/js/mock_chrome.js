@@ -50,18 +50,21 @@ function cloneShallow(object) {
  * Mock out the chrome.fileBrowserPrivate API for use in the harness.
  */
 chrome.fileBrowserPrivate = {
+  /**
+   * Change to window.TEMPORARY if you do not insist on persistence.
+   */
+  FS_TYPE: window.PERSISTENT,
 
   /**
    * Return a normal HTML5 filesystem api, rather than the real local
    * filesystem.
    *
-   * You must start chrome with --allow-file-access-from-files and
-   * --unlimited-quota-for-files in order for this to work.
+   * If the test harness is on file: schema you must start chrome with
+   * --allow-file-access-from-files in order for this to work.
    */
   requestLocalFileSystem: function(callback) {
-    window.webkitRequestFileSystem(window.PERSISTENT, 16 * 1024 * 1024,
-                                   callback,
-                                   util.ferr('Error requesting filesystem'));
+    window.webkitRequestFileSystem(this.FS_TYPE,
+        16 * 1024 * 1024, callback, util.ferr('Error requesting filesystem'));
   },
 
   /**

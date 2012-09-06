@@ -1,0 +1,95 @@
+<!DOCTYPE HTML>
+<!--
+  -- Copyright (c) 2011 The Chromium Authors. All rights reserved.
+  -- Use of this source code is governed by a BSD-style license that can be
+  -- found in the LICENSE file.
+  -->
+<html>
+<head>
+  <style>
+    body {
+      margin: 0;
+    }
+
+    iframe {
+      border: none;
+      height: 100%;
+      position: absolute;
+      width: 100%;
+    }
+  </style>
+
+  <script src='js/harness.js'></script>
+  <script src='js/util.js'></script>
+
+  <script>
+    // Put the images in this directory next to this html file.
+    var IMPORT_SOURCE = 'harness_images';
+
+    var GALLERY_ROOT = 'images';
+
+    var IMPORTED_KEY = 'galleryDataImported';
+
+    function initGallery(galleryWindow) {
+      galleryWindow.chrome.fileBrowserPrivate.FS_TYPE = window.TEMPORARY;
+      galleryWindow.Gallery.openStandalone(GALLERY_ROOT);
+    }
+
+    function loadGallery() {
+      var iframe = document.createElement('iframe');
+      document.body.appendChild(iframe);
+      iframe.onload = function() { initGallery(iframe.contentWindow) };
+      iframe.src = "gallery.html";
+    }
+
+    function importImages(filesystem) {
+      var fileCount = 0;
+      var byteCount = 0;
+      var time = Date.now();
+
+      function displayProgress(blob) {
+        fileCount++;
+        byteCount += blob.size;
+        var speed = (byteCount / 1000 / (Date.now() - time)).toFixed(1);
+        document.body.innerHTML =
+            'Imported ' + fileCount + ' files<br>' +
+            (byteCount / 1000 / 1000).toFixed(1) + ' Mb total<br>' +
+            speed + ' Mb/sec';
+      }
+
+      harness.importWebDirectory(filesystem, GALLERY_ROOT, IMPORT_SOURCE,
+          displayProgress,
+          function() {
+            console.log('Imported ' + byteCount + ' bytes');
+            if (fileCount)
+              localStorage[IMPORTED_KEY] = 'true';
+            document.body.textContent = '';
+            loadGallery();
+          });
+    }
+
+    function getFilesystem(callback) {
+      window.webkitRequestFileSystem(window.TEMPORARY, 0, callback,
+          util.flog('Error requesting filesystem'));
+    }
+
+    function onPageLoad() {
+      if (localStorage[IMPORTED_KEY])
+        loadGallery();
+      else
+        getFilesystem(importImages);
+    }
+
+    // Call this from the console to re-import the images.
+    function reset() {
+      delete localStorage[IMPORTED_KEY];
+      getFilesystem(function(filesystem) {
+        harness.resetFilesystem(filesystem, onPageLoad);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', onPageLoad);
+  </script>
+</head>
+  <body></body>
+</html>
