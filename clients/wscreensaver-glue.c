@@ -80,14 +80,14 @@ read_xpm_color(uint32_t *ctable, const char *line)
 	value = strtol(&cstr[1], &end, 16);
 
 	if (strcmp(cstr, "None") == 0)
-		ctable[key] = 0x00ffffff;
+		ctable[key] = 0x00000000;
 	else if (cstr[0] != '#' || !(cstr[1] != '\0' && *end == '\0')) {
 		fprintf(stderr, "%s: error interpreting XPM color '%s'\n",
 			progname, cstr);
 		return;
+	} else {
+		ctable[key] = value | 0xff000000;
 	}
-
-	ctable[key] = value | 0xff000000;
 }
 
 static void
