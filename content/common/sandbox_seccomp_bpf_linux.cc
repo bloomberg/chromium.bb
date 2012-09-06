@@ -565,6 +565,12 @@ bool IsAllowedGetOrModifySocket(int sysno) {
 #endif
       return true;
     default:
+      return false;
+  }
+}
+
+bool IsDeniedGetOrModifySocket(int sysno) {
+  switch (sysno) {
 #if defined(__x86_64__)
     case __NR_accept:
     case __NR_accept4:
@@ -572,7 +578,9 @@ bool IsAllowedGetOrModifySocket(int sysno) {
     case __NR_connect:
     case __NR_socket:
     case __NR_listen:
+      return true;
 #endif
+    default:
       return false;
   }
 }
@@ -1195,7 +1203,8 @@ ErrorCode BaselinePolicy_x86_64(int sysno) {
     return ErrorCode(ENOENT);
   }
 
-  if (IsUmask(sysno) || IsDeniedFileSystemAccessViaFd(sysno)) {
+  if (IsUmask(sysno) || IsDeniedFileSystemAccessViaFd(sysno) ||
+      IsDeniedGetOrModifySocket(sysno)) {
     return ErrorCode(EPERM);
   }
 
@@ -1213,10 +1222,6 @@ ErrorCode GpuProcessPolicy_x86_64(int sysno) {
   switch(sysno) {
     case __NR_ioctl:
       return ErrorCode(ErrorCode::ERR_ALLOWED);
-#if defined(__x86_64__)
-    case __NR_socket:
-      return ErrorCode(EACCES);  // Nvidia binary driver.
-#endif
     case __NR_open:
       // Accelerated video decode is enabled by default only on Chrome OS.
       if (IsAcceleratedVideoDecodeEnabled()) {
@@ -1282,10 +1287,6 @@ ErrorCode FlashProcessPolicy_x86_64(int sysno) {
       return ErrorCode(ErrorCode::ERR_ALLOWED);
     case __NR_ioctl:
       return ErrorCode(ENOTTY);  // Flash Access.
-#if defined(__x86_64__)
-    case __NR_socket:
-      return ErrorCode(EACCES);
-#endif
     default:
 #if defined(__x86_64__)
       // These are under investigation, and hopefully not here for the long
