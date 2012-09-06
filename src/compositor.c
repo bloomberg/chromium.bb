@@ -727,136 +727,34 @@ weston_surface_destroy(struct weston_surface *surface)
 }
 
 static void
-ensure_textures(struct weston_surface *es, int num_textures)
-{
-	int i;
-
-	if (num_textures <= es->num_textures)
-		return;
-
-	for (i = es->num_textures; i < num_textures; i++) {
-		glGenTextures(1, &es->textures[i]);
-		glBindTexture(es->target, es->textures[i]);
-		glTexParameteri(es->target,
-				GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(es->target,
-				GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	}
-	es->num_textures = num_textures;
-	glBindTexture(es->target, 0);
-}
-
-static void
 weston_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer)
 {
 	struct weston_surface *es = (struct weston_surface *) surface;
-	struct weston_compositor *ec = es->compositor;
-	EGLint attribs[3], format;
-	int i, num_planes;
 
 	if (es->buffer) {
 		weston_buffer_post_release(es->buffer);
 		wl_list_remove(&es->buffer_destroy_listener.link);
 	}
 
-	es->buffer = buffer;
+	if (buffer) {
+		buffer->busy_count++;
+		wl_signal_add(&buffer->resource.destroy_signal, 
+			      &es->buffer_destroy_listener);
 
-	if (!buffer) {
+		if (es->geometry.width != buffer->width ||
+		    es->geometry.height != buffer->height) {
+			undef_region(&es->input);
+			pixman_region32_fini(&es->opaque);
+			pixman_region32_init(&es->opaque);
+		}
+	} else {
 		if (weston_surface_is_mapped(es))
 			weston_surface_unmap(es);
-		for (i = 0; i < es->num_images; i++) {
-			ec->destroy_image(ec->egl_display, es->images[i]);
-			es->images[i] = NULL;
-		}
-		es->num_images = 0;
-		glDeleteTextures(es->num_textures, es->textures);
-		es->num_textures = 0;
-		return;
 	}
 
-	buffer->busy_count++;
-	wl_signal_add(&es->buffer->resource.destroy_signal,
-		      &es->buffer_destroy_listener);
-
-	if (es->geometry.width != buffer->width ||
-	    es->geometry.height != buffer->height) {
-		undef_region(&es->input);
-		pixman_region32_fini(&es->opaque);
-		pixman_region32_init(&es->opaque);
-	}
-
-	if (wl_buffer_is_shm(buffer)) {
-		es->pitch = wl_shm_buffer_get_stride(buffer) / 4;
-		es->target = GL_TEXTURE_2D;
-
-		ensure_textures(es, 1);
-		glBindTexture(GL_TEXTURE_2D, es->textures[0]);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
-			     es->pitch, es->buffer->height, 0,
-			     GL_BGRA_EXT, GL_UNSIGNED_BYTE, NULL);
-		if (wl_shm_buffer_get_format(buffer) == WL_SHM_FORMAT_XRGB8888)
-			es->shader = &ec->texture_shader_rgbx;
-		else
-			es->shader = &ec->texture_shader_rgba;
-	} else if (ec->query_buffer(ec->egl_display, buffer,
-				    EGL_TEXTURE_FORMAT, &format)) {
-		for (i = 0; i < es->num_images; i++)
-			ec->destroy_image(ec->egl_display, es->images[i]);
-		es->num_images = 0;
-		es->target = GL_TEXTURE_2D;
-		switch (format) {
-		case EGL_TEXTURE_RGB:
-		case EGL_TEXTURE_RGBA:
-		default:
-			num_planes = 1;
-			es->shader = &ec->texture_shader_rgba;
-			break;
-		case EGL_TEXTURE_EXTERNAL_WL:
-			num_planes = 1;
-			es->target = GL_TEXTURE_EXTERNAL_OES;
-			es->shader = &ec->texture_shader_egl_external;
-			break;
-		case EGL_TEXTURE_Y_UV_WL:
-			num_planes = 2;
-			es->shader = &ec->texture_shader_y_uv;
-			break;
-		case EGL_TEXTURE_Y_U_V_WL:
-			num_planes = 3;
-			es->shader = &ec->texture_shader_y_u_v;
-			break;
-		case EGL_TEXTURE_Y_XUXV_WL:
-			num_planes = 2;
-			es->shader = &ec->texture_shader_y_xuxv;
-			break;
-		}
-
-		ensure_textures(es, num_planes);
-		for (i = 0; i < num_planes; i++) {
-			attribs[0] = EGL_WAYLAND_PLANE_WL;
-			attribs[1] = i;
-			attribs[2] = EGL_NONE;
-			es->images[i] = ec->create_image(ec->egl_display,
-							 NULL,
-							 EGL_WAYLAND_BUFFER_WL,
-							 buffer, attribs);
-			if (!es->images[i]) {
-				weston_log("failed to create img for plane %d\n", i);
-				continue;
-			}
-			es->num_images++;
-
-			glActiveTexture(GL_TEXTURE0 + i);
-			glBindTexture(es->target, es->textures[i]);
-			ec->image_target_texture_2d(es->target,
-						    es->images[i]);
-		}
-
-		es->pitch = buffer->width;
-	} else {
-		weston_log("unhandled buffer type!\n");
-	}
+	gles2_renderer_attach(es, buffer);
+	es->buffer = buffer;
 }
-
 
 WL_EXPORT void
 weston_surface_restack(struct weston_surface *surface, struct wl_list *below)

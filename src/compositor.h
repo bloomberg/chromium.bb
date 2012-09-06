@@ -799,5 +799,7 @@ gles2_renderer_repaint_output(struct weston_output *output,
 			      pixman_region32_t *output_damage);
 void
 gles2_renderer_flush_damage(struct weston_surface *surface);
+void
+gles2_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer);
 
 #endif
