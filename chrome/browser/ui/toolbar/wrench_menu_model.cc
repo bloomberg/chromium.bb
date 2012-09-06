@@ -582,13 +582,8 @@ void WrenchMenuModel::Build() {
   }
 
   if (browser_defaults::kShowExitMenuItem) {
-#if defined(OS_WIN)
-    if (!base::win::IsMetroProcess())
-#endif
-    {
-      AddSeparator(ui::NORMAL_SEPARATOR);
-      AddItemWithStringId(IDC_EXIT, IDS_EXIT);
-    }
+    AddSeparator(ui::NORMAL_SEPARATOR);
+    AddItemWithStringId(IDC_EXIT, IDS_EXIT);
   }
 
 #if defined(USE_AURA)
