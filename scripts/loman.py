@@ -32,8 +32,10 @@ class Manifest(object):
   def AddNonWorkonProject(self, name, path, remote=None, revision=None):
     """Add a new nonworkon project element to the manifest tree."""
     element = ElementTree.Element('project', name=name, path=path,
-                                  remote=remote, revision=revision)
+                                  remote=remote)
     element.attrib['workon'] = 'False'
+    if revision is not None:
+      element.attrib['revision'] = revision
     self.nodes.append(element)
     return element
 
