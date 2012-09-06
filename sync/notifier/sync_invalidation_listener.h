@@ -5,8 +5,8 @@
 // A simple wrapper around invalidation::InvalidationClient that
 // handles all the startup/shutdown details and hookups.
 
-#ifndef SYNC_NOTIFIER_CHROME_INVALIDATION_CLIENT_H_
-#define SYNC_NOTIFIER_CHROME_INVALIDATION_CLIENT_H_
+#ifndef SYNC_NOTIFIER_SYNC_INVALIDATION_LISTENER_H_
+#define SYNC_NOTIFIER_SYNC_INVALIDATION_LISTENER_H_
 
 #include <string>
 
@@ -19,11 +19,11 @@
 #include "google/cacheinvalidation/include/invalidation-listener.h"
 #include "jingle/notifier/listener/push_client_observer.h"
 #include "sync/internal_api/public/util/weak_handle.h"
-#include "sync/notifier/chrome_system_resources.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/notifications_disabled_reason.h"
 #include "sync/notifier/object_id_state_map.h"
 #include "sync/notifier/state_writer.h"
+#include "sync/notifier/sync_system_resources.h"
 
 namespace buzz {
 class XmppTaskParentInterface;
@@ -37,9 +37,9 @@ namespace syncer {
 
 class RegistrationManager;
 
-// ChromeInvalidationClient is not thread-safe and lives on the sync
+// SyncInvalidationListener is not thread-safe and lives on the sync
 // thread.
-class ChromeInvalidationClient
+class SyncInvalidationListener
     : public invalidation::InvalidationListener,
       public StateWriter,
       public notifier::PushClientObserver,
@@ -52,9 +52,9 @@ class ChromeInvalidationClient
       const invalidation::string&,
       invalidation::InvalidationListener*)> CreateInvalidationClientCallback;
 
-  class Listener {
+  class Delegate {
    public:
-    virtual ~Listener();
+    virtual ~Delegate();
 
     virtual void OnInvalidate(const ObjectIdStateMap& id_state_map) = 0;
 
@@ -64,13 +64,13 @@ class ChromeInvalidationClient
         NotificationsDisabledReason reason) = 0;
   };
 
-  explicit ChromeInvalidationClient(
+  explicit SyncInvalidationListener(
       scoped_ptr<notifier::PushClient> push_client);
 
   // Calls Stop().
-  virtual ~ChromeInvalidationClient();
+  virtual ~SyncInvalidationListener();
 
-  // Does not take ownership of |listener| or |state_writer|.
+  // Does not take ownership of |delegate| or |state_writer|.
   // |invalidation_state_tracker| must be initialized.
   void Start(
       const CreateInvalidationClientCallback&
@@ -79,7 +79,7 @@ class ChromeInvalidationClient
       const std::string& state,
       const InvalidationVersionMap& initial_max_invalidation_versions,
       const WeakHandle<InvalidationStateTracker>& invalidation_state_tracker,
-      Listener* listener);
+      Delegate* delegate);
 
   void UpdateCredentials(const std::string& email, const std::string& token);
 
@@ -141,12 +141,12 @@ class ChromeInvalidationClient
 
   void EmitInvalidation(const ObjectIdStateMap& id_state_map);
 
-  // Owned by |chrome_system_resources_|.
+  // Owned by |sync_system_resources_|.
   notifier::PushClient* const push_client_;
-  ChromeSystemResources chrome_system_resources_;
+  SyncSystemResources sync_system_resources_;
   InvalidationVersionMap max_invalidation_versions_;
   WeakHandle<InvalidationStateTracker> invalidation_state_tracker_;
-  Listener* listener_;
+  Delegate* delegate_;
   scoped_ptr<invalidation::InvalidationClient> invalidation_client_;
   scoped_ptr<RegistrationManager> registration_manager_;
   // Stored to pass to |registration_manager_| on start.
@@ -157,9 +157,9 @@ class ChromeInvalidationClient
   NotificationsDisabledReason ticl_state_;
   NotificationsDisabledReason push_client_state_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeInvalidationClient);
+  DISALLOW_COPY_AND_ASSIGN(SyncInvalidationListener);
 };
 
 }  // namespace syncer
 
-#endif  // SYNC_NOTIFIER_CHROME_INVALIDATION_CLIENT_H_
+#endif  // SYNC_NOTIFIER_SYNC_INVALIDATION_LISTENER_H_

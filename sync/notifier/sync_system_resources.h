@@ -6,8 +6,8 @@
 // for scheduling.  Assumes the current message loop is already
 // running.
 
-#ifndef SYNC_NOTIFIER_CHROME_SYSTEM_RESOURCES_H_
-#define SYNC_NOTIFIER_CHROME_SYSTEM_RESOURCES_H_
+#ifndef SYNC_NOTIFIER_SYNC_SYSTEM_RESOURCES_H_
+#define SYNC_NOTIFIER_SYNC_SYSTEM_RESOURCES_H_
 
 #include <set>
 #include <string>
@@ -28,11 +28,11 @@ class PushClient;
 
 namespace syncer {
 
-class ChromeLogger : public invalidation::Logger {
+class SyncLogger : public invalidation::Logger {
  public:
-  ChromeLogger();
+  SyncLogger();
 
-  virtual ~ChromeLogger();
+  virtual ~SyncLogger();
 
   // invalidation::Logger implementation.
   virtual void Log(LogLevel level, const char* file, int line,
@@ -42,11 +42,11 @@ class ChromeLogger : public invalidation::Logger {
       invalidation::SystemResources* resources) OVERRIDE;
 };
 
-class ChromeScheduler : public invalidation::Scheduler {
+class SyncInvalidationScheduler : public invalidation::Scheduler {
  public:
-  ChromeScheduler();
+  SyncInvalidationScheduler();
 
-  virtual ~ChromeScheduler();
+  virtual ~SyncInvalidationScheduler();
 
   // Start and stop the scheduler.
   void Start();
@@ -64,7 +64,7 @@ class ChromeScheduler : public invalidation::Scheduler {
       invalidation::SystemResources* resources) OVERRIDE;
 
  private:
-  base::WeakPtrFactory<ChromeScheduler> weak_factory_;
+  base::WeakPtrFactory<SyncInvalidationScheduler> weak_factory_;
   // Holds all posted tasks that have not yet been run.
   std::set<invalidation::Closure*> posted_tasks_;
 
@@ -76,11 +76,11 @@ class ChromeScheduler : public invalidation::Scheduler {
   void RunPostedTask(invalidation::Closure* task);
 };
 
-class ChromeStorage : public invalidation::Storage {
+class SyncStorage : public invalidation::Storage {
  public:
-  ChromeStorage(StateWriter* state_writer, invalidation::Scheduler* scheduler);
+  SyncStorage(StateWriter* state_writer, invalidation::Scheduler* scheduler);
 
-  virtual ~ChromeStorage();
+  virtual ~SyncStorage();
 
   void SetInitialState(const std::string& value) {
     cached_state_ = value;
@@ -116,12 +116,12 @@ class ChromeStorage : public invalidation::Storage {
   std::string cached_state_;
 };
 
-class ChromeSystemResources : public invalidation::SystemResources {
+class SyncSystemResources : public invalidation::SystemResources {
  public:
-  ChromeSystemResources(scoped_ptr<notifier::PushClient> push_client,
-                        StateWriter* state_writer);
+  SyncSystemResources(scoped_ptr<notifier::PushClient> push_client,
+                      StateWriter* state_writer);
 
-  virtual ~ChromeSystemResources();
+  virtual ~SyncSystemResources();
 
   // invalidation::SystemResources implementation.
   virtual void Start() OVERRIDE;
@@ -129,22 +129,22 @@ class ChromeSystemResources : public invalidation::SystemResources {
   virtual bool IsStarted() const OVERRIDE;
   virtual void set_platform(const std::string& platform);
   virtual std::string platform() const OVERRIDE;
-  virtual ChromeLogger* logger() OVERRIDE;
-  virtual ChromeStorage* storage() OVERRIDE;
+  virtual SyncLogger* logger() OVERRIDE;
+  virtual SyncStorage* storage() OVERRIDE;
   virtual PushClientChannel* network() OVERRIDE;
-  virtual ChromeScheduler* internal_scheduler() OVERRIDE;
-  virtual ChromeScheduler* listener_scheduler() OVERRIDE;
+  virtual SyncInvalidationScheduler* internal_scheduler() OVERRIDE;
+  virtual SyncInvalidationScheduler* listener_scheduler() OVERRIDE;
 
  private:
   bool is_started_;
   std::string platform_;
-  scoped_ptr<ChromeLogger> logger_;
-  scoped_ptr<ChromeScheduler> internal_scheduler_;
-  scoped_ptr<ChromeScheduler> listener_scheduler_;
-  scoped_ptr<ChromeStorage> storage_;
+  scoped_ptr<SyncLogger> logger_;
+  scoped_ptr<SyncInvalidationScheduler> internal_scheduler_;
+  scoped_ptr<SyncInvalidationScheduler> listener_scheduler_;
+  scoped_ptr<SyncStorage> storage_;
   PushClientChannel push_client_channel_;
 };
 
 }  // namespace syncer
 
-#endif  // SYNC_NOTIFIER_CHROME_SYSTEM_RESOURCES_H_
+#endif  // SYNC_NOTIFIER_SYNC_SYSTEM_RESOURCES_H_

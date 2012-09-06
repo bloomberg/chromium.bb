@@ -274,10 +274,6 @@
       'conditions': [
         ['OS != "android"', {
           'sources': [
-            'notifier/chrome_invalidation_client.cc',
-            'notifier/chrome_invalidation_client.h',
-            'notifier/chrome_system_resources.cc',
-            'notifier/chrome_system_resources.h',
             'notifier/invalidation_notifier.cc',
             'notifier/invalidation_notifier.h',
             'notifier/invalidation_state_tracker.h',
@@ -290,6 +286,10 @@
             'notifier/registration_manager.cc',
             'notifier/registration_manager.h',
             'notifier/state_writer.h',
+            'notifier/sync_invalidation_listener.cc',
+            'notifier/sync_invalidation_listener.h',
+            'notifier/sync_system_resources.cc',
+            'notifier/sync_system_resources.h',
           ],
         }],
       ],
@@ -674,8 +674,6 @@
         'conditions': [
           ['OS != "android"', {
             'sources': [
-              'notifier/chrome_invalidation_client_unittest.cc',
-              'notifier/chrome_system_resources_unittest.cc',
               'notifier/fake_invalidator_unittest.cc',
               'notifier/invalidation_notifier_unittest.cc',
               'notifier/invalidator_registrar_unittest.cc',
@@ -683,6 +681,8 @@
               'notifier/p2p_invalidator_unittest.cc',
               'notifier/push_client_channel_unittest.cc',
               'notifier/registration_manager_unittest.cc',
+              'notifier/sync_invalidation_listener_unittest.cc',
+              'notifier/sync_system_resources_unittest.cc',
             ],
           }],
         ],

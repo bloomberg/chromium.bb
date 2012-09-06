@@ -20,10 +20,10 @@
 #include "base/threading/non_thread_safe.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/util/weak_handle.h"
-#include "sync/notifier/chrome_invalidation_client.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/invalidator.h"
 #include "sync/notifier/invalidator_registrar.h"
+#include "sync/notifier/sync_invalidation_listener.h"
 
 namespace notifier {
 class PushClient;
@@ -35,7 +35,7 @@ namespace syncer {
 // TODO(dcheng): Think of a name better than InvalidationInvalidator.
 class InvalidationNotifier
     : public Invalidator,
-      public ChromeInvalidationClient::Listener,
+      public SyncInvalidationListener::Delegate,
       public base::NonThreadSafe {
  public:
   // |invalidation_state_tracker| must be initialized.
@@ -60,7 +60,7 @@ class InvalidationNotifier
       const std::string& email, const std::string& token) OVERRIDE;
   virtual void SendNotification(const ObjectIdStateMap& id_state_map) OVERRIDE;
 
-  // ChromeInvalidationClient::Listener implementation.
+  // SyncInvalidationListener::Delegate implementation.
   virtual void OnInvalidate(const ObjectIdStateMap& id_state_map) OVERRIDE;
   virtual void OnNotificationsEnabled() OVERRIDE;
   virtual void OnNotificationsDisabled(
@@ -80,26 +80,26 @@ class InvalidationNotifier
 
   InvalidatorRegistrar registrar_;
 
-  // Passed to |invalidation_client_|.
+  // Passed to |invalidation_listener_|.
   const InvalidationVersionMap initial_max_invalidation_versions_;
 
-  // Passed to |invalidation_client_|.
+  // Passed to |invalidation_listener_|.
   const WeakHandle<InvalidationStateTracker>
       invalidation_state_tracker_;
 
-  // Passed to |invalidation_client_|.
+  // Passed to |invalidation_listener_|.
   const std::string client_info_;
 
-  // The client ID to pass to |chrome_invalidation_client_|.
-  std::string invalidation_client_id_;
+  // The client ID to pass to |invalidation_listener_|.
+  std::string client_id_;
 
-  // The state to pass to |chrome_invalidation_client_|.
+  // The state to pass to |invalidation_listener_|.
   // TODO(tim): This should be made const once migration is completed for bug
   // 124140.
   std::string invalidation_state_;
 
-  // The invalidation client.
-  ChromeInvalidationClient invalidation_client_;
+  // The invalidation listener.
+  SyncInvalidationListener invalidation_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(InvalidationNotifier);
 };

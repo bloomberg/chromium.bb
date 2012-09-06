@@ -12,9 +12,9 @@
 #include "google/cacheinvalidation/include/types.h"
 #include "jingle/notifier/listener/fake_push_client.h"
 #include "sync/internal_api/public/util/weak_handle.h"
-#include "sync/notifier/chrome_invalidation_client.h"
 #include "sync/notifier/fake_invalidation_state_tracker.h"
 #include "sync/notifier/invalidation_util.h"
+#include "sync/notifier/sync_invalidation_listener.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -127,12 +127,12 @@ class FakeInvalidationClient : public invalidation::InvalidationClient {
   AckHandleSet acked_handles_;
 };
 
-// Fake listener tkat keeps track of invalidation counts, payloads,
+// Fake delegate tkat keeps track of invalidation counts, payloads,
 // and state.
-class FakeListener : public ChromeInvalidationClient::Listener {
+class FakeDelegate : public SyncInvalidationListener::Delegate {
  public:
-  FakeListener() : reason_(TRANSIENT_NOTIFICATION_ERROR) {}
-  virtual ~FakeListener() {}
+  FakeDelegate() : reason_(TRANSIENT_NOTIFICATION_ERROR) {}
+  virtual ~FakeDelegate() {}
 
   int GetInvalidationCount(const ObjectId& id) const {
     ObjectIdCountMap::const_iterator it = invalidation_counts_.find(id);
@@ -149,7 +149,7 @@ class FakeListener : public ChromeInvalidationClient::Listener {
     return reason_;
   }
 
-  // ChromeInvalidationClient::Listener implementation.
+  // SyncInvalidationListener::Delegate implementation.
 
   virtual void OnInvalidate(const ObjectIdStateMap& id_state_map) OVERRIDE {
     for (ObjectIdStateMap::const_iterator it = id_state_map.begin();
@@ -185,9 +185,9 @@ invalidation::InvalidationClient* CreateFakeInvalidationClient(
   return *fake_invalidation_client;
 }
 
-class ChromeInvalidationClientTest : public testing::Test {
+class SyncInvalidationListenerTest : public testing::Test {
  protected:
-  ChromeInvalidationClientTest()
+  SyncInvalidationListenerTest()
       : kBookmarksId_(kChromeSyncSourceId, "BOOKMARK"),
         kPreferencesId_(kChromeSyncSourceId, "PREFERENCE"),
         kExtensionsId_(kChromeSyncSourceId, "EXTENSION"),
@@ -215,15 +215,15 @@ class ChromeInvalidationClientTest : public testing::Test {
   }
 
   int GetInvalidationCount(const ObjectId& id) const {
-    return fake_listener_.GetInvalidationCount(id);
+    return fake_delegate_.GetInvalidationCount(id);
   }
 
   std::string GetPayload(const ObjectId& id) const {
-    return fake_listener_.GetPayload(id);
+    return fake_delegate_.GetPayload(id);
   }
 
   NotificationsDisabledReason GetNotificationsDisabledReason() const {
-    return fake_listener_.GetNotificationsDisabledReason();
+    return fake_delegate_.GetNotificationsDisabledReason();
   }
 
   int64 GetMaxVersion(const ObjectId& id) const {
@@ -302,7 +302,7 @@ class ChromeInvalidationClientTest : public testing::Test {
                   kClientId, kClientInfo, kState,
                   InvalidationVersionMap(),
                   MakeWeakHandle(fake_tracker_.AsWeakPtr()),
-                  &fake_listener_);
+                  &fake_delegate_);
     DCHECK(fake_invalidation_client_);
   }
 
@@ -320,19 +320,19 @@ class ChromeInvalidationClientTest : public testing::Test {
 
   MessageLoop message_loop_;
 
-  FakeListener fake_listener_;
+  FakeDelegate fake_delegate_;
   FakeInvalidationStateTracker fake_tracker_;
   notifier::FakePushClient* const fake_push_client_;
 
  protected:
   // Tests need to access these directly.
   FakeInvalidationClient* fake_invalidation_client_;
-  ChromeInvalidationClient client_;
+  SyncInvalidationListener client_;
 };
 
 // Write a new state to the client.  It should propagate to the
 // tracker.
-TEST_F(ChromeInvalidationClientTest, WriteState) {
+TEST_F(SyncInvalidationListenerTest, WriteState) {
   WriteState(kNewState);
 
   EXPECT_EQ(kNewState, GetInvalidationState());
@@ -342,7 +342,7 @@ TEST_F(ChromeInvalidationClientTest, WriteState) {
 
 // Fire an invalidation without a payload.  It should be processed,
 // the payload should remain empty, and the version should be updated.
-TEST_F(ChromeInvalidationClientTest, InvalidateNoPayload) {
+TEST_F(SyncInvalidationListenerTest, InvalidateNoPayload) {
   const ObjectId& id = kBookmarksId_;
 
   FireInvalidate(id, kVersion1, NULL);
@@ -355,7 +355,7 @@ TEST_F(ChromeInvalidationClientTest, InvalidateNoPayload) {
 // Fire an invalidation with an empty payload.  It should be
 // processed, the payload should remain empty, and the version should
 // be updated.
-TEST_F(ChromeInvalidationClientTest, InvalidateEmptyPayload) {
+TEST_F(SyncInvalidationListenerTest, InvalidateEmptyPayload) {
   const ObjectId& id = kBookmarksId_;
 
   FireInvalidate(id, kVersion1, "");
@@ -367,7 +367,7 @@ TEST_F(ChromeInvalidationClientTest, InvalidateEmptyPayload) {
 
 // Fire an invalidation with a payload.  It should be processed, and
 // both the payload and the version should be updated.
-TEST_F(ChromeInvalidationClientTest, InvalidateWithPayload) {
+TEST_F(SyncInvalidationListenerTest, InvalidateWithPayload) {
   const ObjectId& id = kPreferencesId_;
 
   FireInvalidate(id, kVersion1, kPayload1);
@@ -379,7 +379,7 @@ TEST_F(ChromeInvalidationClientTest, InvalidateWithPayload) {
 
 // Fire an invalidation with a payload.  It should still be processed,
 // and both the payload and the version should be updated.
-TEST_F(ChromeInvalidationClientTest, InvalidateUnregistered) {
+TEST_F(SyncInvalidationListenerTest, InvalidateUnregistered) {
   const ObjectId kUnregisteredId(
       kChromeSyncSourceId, "unregistered");
   const ObjectId& id = kUnregisteredId;
@@ -398,7 +398,7 @@ TEST_F(ChromeInvalidationClientTest, InvalidateUnregistered) {
 // Fire an invalidation, then fire another one with a lower version.
 // The first one should be processed and should update the payload and
 // version, but the second one shouldn't.
-TEST_F(ChromeInvalidationClientTest, InvalidateVersion) {
+TEST_F(SyncInvalidationListenerTest, InvalidateVersion) {
   const ObjectId& id = kPreferencesId_;
 
   FireInvalidate(id, kVersion2, kPayload2);
@@ -417,7 +417,7 @@ TEST_F(ChromeInvalidationClientTest, InvalidateVersion) {
 // Fire an invalidation with an unknown version twice.  It shouldn't
 // update the payload or version either time, but it should still be
 // processed.
-TEST_F(ChromeInvalidationClientTest, InvalidateUnknownVersion) {
+TEST_F(SyncInvalidationListenerTest, InvalidateUnknownVersion) {
   const ObjectId& id = kBookmarksId_;
 
   FireInvalidateUnknownVersion(id);
@@ -435,7 +435,7 @@ TEST_F(ChromeInvalidationClientTest, InvalidateUnknownVersion) {
 
 // Fire an invalidation for all enabled IDs.  It shouldn't update the
 // payload or version, but it should still invalidate the IDs.
-TEST_F(ChromeInvalidationClientTest, InvalidateAll) {
+TEST_F(SyncInvalidationListenerTest, InvalidateAll) {
   FireInvalidateAll();
 
   for (ObjectIdSet::const_iterator it = registered_ids_.begin();
@@ -447,7 +447,7 @@ TEST_F(ChromeInvalidationClientTest, InvalidateAll) {
 }
 
 // Comprehensive test of various scenarios for multiple IDs.
-TEST_F(ChromeInvalidationClientTest, InvalidateMultipleIds) {
+TEST_F(SyncInvalidationListenerTest, InvalidateMultipleIds) {
   FireInvalidate(kBookmarksId_, 3, NULL);
 
   EXPECT_EQ(1, GetInvalidationCount(kBookmarksId_));
@@ -513,7 +513,7 @@ TEST_F(ChromeInvalidationClientTest, InvalidateMultipleIds) {
 // With IDs already registered, enable notifications then ready the
 // client.  The IDs should be registered only after the client is
 // readied.
-TEST_F(ChromeInvalidationClientTest, RegisterEnableReady) {
+TEST_F(SyncInvalidationListenerTest, RegisterEnableReady) {
   EXPECT_TRUE(GetRegisteredIds().empty());
 
   EnableNotifications();
@@ -528,7 +528,7 @@ TEST_F(ChromeInvalidationClientTest, RegisterEnableReady) {
 // With IDs already registered, ready the client then enable
 // notifications.  The IDs should be registered after the client is
 // readied.
-TEST_F(ChromeInvalidationClientTest, RegisterReadyEnable) {
+TEST_F(SyncInvalidationListenerTest, RegisterReadyEnable) {
   EXPECT_TRUE(GetRegisteredIds().empty());
 
   client_.Ready(fake_invalidation_client_);
@@ -543,7 +543,7 @@ TEST_F(ChromeInvalidationClientTest, RegisterReadyEnable) {
 // Unregister the IDs, enable notifications, re-register the IDs, then
 // ready the client.  The IDs should be registered only after the
 // client is readied.
-TEST_F(ChromeInvalidationClientTest, EnableRegisterReady) {
+TEST_F(SyncInvalidationListenerTest, EnableRegisterReady) {
   client_.UpdateRegisteredIds(ObjectIdSet());
 
   EXPECT_TRUE(GetRegisteredIds().empty());
@@ -564,7 +564,7 @@ TEST_F(ChromeInvalidationClientTest, EnableRegisterReady) {
 // Unregister the IDs, enable notifications, ready the client, then
 // re-register the IDs.  The IDs should be registered only after the
 // client is readied.
-TEST_F(ChromeInvalidationClientTest, EnableReadyRegister) {
+TEST_F(SyncInvalidationListenerTest, EnableReadyRegister) {
   client_.UpdateRegisteredIds(ObjectIdSet());
 
   EXPECT_TRUE(GetRegisteredIds().empty());
@@ -585,7 +585,7 @@ TEST_F(ChromeInvalidationClientTest, EnableReadyRegister) {
 // Unregister the IDs, ready the client, enable notifications, then
 // re-register the IDs.  The IDs should be registered only after the
 // client is readied.
-TEST_F(ChromeInvalidationClientTest, ReadyEnableRegister) {
+TEST_F(SyncInvalidationListenerTest, ReadyEnableRegister) {
   client_.UpdateRegisteredIds(ObjectIdSet());
 
   EXPECT_TRUE(GetRegisteredIds().empty());
@@ -608,7 +608,7 @@ TEST_F(ChromeInvalidationClientTest, ReadyEnableRegister) {
 // client is readied.
 //
 // This test is important: see http://crbug.com/139424.
-TEST_F(ChromeInvalidationClientTest, ReadyRegisterEnable) {
+TEST_F(SyncInvalidationListenerTest, ReadyRegisterEnable) {
   client_.UpdateRegisteredIds(ObjectIdSet());
 
   EXPECT_TRUE(GetRegisteredIds().empty());
@@ -628,7 +628,7 @@ TEST_F(ChromeInvalidationClientTest, ReadyRegisterEnable) {
 
 // With IDs already registered, ready the client, restart the client,
 // then re-ready it.  The IDs should still be registered.
-TEST_F(ChromeInvalidationClientTest, RegisterTypesPreserved) {
+TEST_F(SyncInvalidationListenerTest, RegisterTypesPreserved) {
   EXPECT_TRUE(GetRegisteredIds().empty());
 
   client_.Ready(fake_invalidation_client_);
@@ -645,8 +645,8 @@ TEST_F(ChromeInvalidationClientTest, RegisterTypesPreserved) {
 }
 
 // Without readying the client, disable notifications, then enable
-// them.  The listener should still think notifications are disabled.
-TEST_F(ChromeInvalidationClientTest, EnableNotificationsNotReady) {
+// them.  The delegate should still think notifications are disabled.
+TEST_F(SyncInvalidationListenerTest, EnableNotificationsNotReady) {
   EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR,
             GetNotificationsDisabledReason());
 
@@ -669,8 +669,8 @@ TEST_F(ChromeInvalidationClientTest, EnableNotificationsNotReady) {
 }
 
 // Enable notifications then Ready the invalidation client.  The
-// listener should then be ready.
-TEST_F(ChromeInvalidationClientTest, EnableNotificationsThenReady) {
+// delegate should then be ready.
+TEST_F(SyncInvalidationListenerTest, EnableNotificationsThenReady) {
   EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR, GetNotificationsDisabledReason());
 
   EnableNotifications();
@@ -683,8 +683,8 @@ TEST_F(ChromeInvalidationClientTest, EnableNotificationsThenReady) {
 }
 
 // Ready the invalidation client then enable notifications.  The
-// listener should then be ready.
-TEST_F(ChromeInvalidationClientTest, ReadyThenEnableNotifications) {
+// delegate should then be ready.
+TEST_F(SyncInvalidationListenerTest, ReadyThenEnableNotifications) {
   EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR, GetNotificationsDisabledReason());
 
   client_.Ready(fake_invalidation_client_);
@@ -698,8 +698,8 @@ TEST_F(ChromeInvalidationClientTest, ReadyThenEnableNotifications) {
 
 // Enable notifications and ready the client.  Then disable
 // notifications with an auth error and re-enable notifications.  The
-// listener should go into an auth error mode and then back out.
-TEST_F(ChromeInvalidationClientTest, PushClientAuthError) {
+// delegate should go into an auth error mode and then back out.
+TEST_F(SyncInvalidationListenerTest, PushClientAuthError) {
   EnableNotifications();
   client_.Ready(fake_invalidation_client_);
 
@@ -718,9 +718,9 @@ TEST_F(ChromeInvalidationClientTest, PushClientAuthError) {
 
 // Enable notifications and ready the client.  Then simulate an auth
 // error from the invalidation client.  Simulate some notification
-// events, then re-ready the client.  The listener should go into an
+// events, then re-ready the client.  The delegate should go into an
 // auth error mode and come out of it only after the client is ready.
-TEST_F(ChromeInvalidationClientTest, InvalidationClientAuthError) {
+TEST_F(SyncInvalidationListenerTest, InvalidationClientAuthError) {
   EnableNotifications();
   client_.Ready(fake_invalidation_client_);
 

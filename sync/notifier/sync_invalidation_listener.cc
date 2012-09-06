@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/notifier/chrome_invalidation_client.h"
+#include "sync/notifier/sync_invalidation_listener.h"
 
 #include <string>
 #include <vector>
@@ -26,45 +26,45 @@ const char kApplicationName[] = "chrome-sync";
 
 namespace syncer {
 
-ChromeInvalidationClient::Listener::~Listener() {}
+SyncInvalidationListener::Delegate::~Delegate() {}
 
-ChromeInvalidationClient::ChromeInvalidationClient(
+SyncInvalidationListener::SyncInvalidationListener(
     scoped_ptr<notifier::PushClient> push_client)
     : push_client_(push_client.get()),
-      chrome_system_resources_(push_client.Pass(),
-                               ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      listener_(NULL),
+      sync_system_resources_(push_client.Pass(),
+                             ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      delegate_(NULL),
       ticl_state_(DEFAULT_NOTIFICATION_ERROR),
       push_client_state_(DEFAULT_NOTIFICATION_ERROR) {
   DCHECK(CalledOnValidThread());
   push_client_->AddObserver(this);
 }
 
-ChromeInvalidationClient::~ChromeInvalidationClient() {
+SyncInvalidationListener::~SyncInvalidationListener() {
   DCHECK(CalledOnValidThread());
   push_client_->RemoveObserver(this);
   Stop();
-  DCHECK(!listener_);
+  DCHECK(!delegate_);
 }
 
-void ChromeInvalidationClient::Start(
+void SyncInvalidationListener::Start(
     const CreateInvalidationClientCallback&
         create_invalidation_client_callback,
     const std::string& client_id, const std::string& client_info,
     const std::string& state,
     const InvalidationVersionMap& initial_max_invalidation_versions,
     const WeakHandle<InvalidationStateTracker>& invalidation_state_tracker,
-    Listener* listener) {
+    Delegate* delegate) {
   DCHECK(CalledOnValidThread());
   Stop();
 
-  chrome_system_resources_.set_platform(client_info);
-  chrome_system_resources_.Start();
+  sync_system_resources_.set_platform(client_info);
+  sync_system_resources_.Start();
 
   // The Storage resource is implemented as a write-through cache.  We populate
   // it with the initial state on startup, so subsequent writes go to disk and
   // update the in-memory cache, while reads just return the cached state.
-  chrome_system_resources_.storage()->SetInitialState(state);
+  sync_system_resources_.storage()->SetInitialState(state);
 
   max_invalidation_versions_ = initial_max_invalidation_versions;
   if (max_invalidation_versions_.empty()) {
@@ -81,14 +81,14 @@ void ChromeInvalidationClient::Start(
   invalidation_state_tracker_ = invalidation_state_tracker;
   DCHECK(invalidation_state_tracker_.IsInitialized());
 
-  DCHECK(!listener_);
-  DCHECK(listener);
-  listener_ = listener;
+  DCHECK(!delegate_);
+  DCHECK(delegate);
+  delegate_ = delegate;
 
   int client_type = ipc::invalidation::ClientType::CHROME_SYNC;
   invalidation_client_.reset(
       create_invalidation_client_callback.Run(
-          &chrome_system_resources_, client_type, client_id,
+          &sync_system_resources_, client_type, client_id,
           kApplicationName, this));
   invalidation_client_->Start();
 
@@ -96,13 +96,13 @@ void ChromeInvalidationClient::Start(
       new RegistrationManager(invalidation_client_.get()));
 }
 
-void ChromeInvalidationClient::UpdateCredentials(
+void SyncInvalidationListener::UpdateCredentials(
     const std::string& email, const std::string& token) {
   DCHECK(CalledOnValidThread());
-  chrome_system_resources_.network()->UpdateCredentials(email, token);
+  sync_system_resources_.network()->UpdateCredentials(email, token);
 }
 
-void ChromeInvalidationClient::UpdateRegisteredIds(const ObjectIdSet& ids) {
+void SyncInvalidationListener::UpdateRegisteredIds(const ObjectIdSet& ids) {
   DCHECK(CalledOnValidThread());
   registered_ids_ = ids;
   // |ticl_state_| can go to NO_NOTIFICATION_ERROR even without a
@@ -113,7 +113,7 @@ void ChromeInvalidationClient::UpdateRegisteredIds(const ObjectIdSet& ids) {
   }
 }
 
-void ChromeInvalidationClient::Ready(
+void SyncInvalidationListener::Ready(
     invalidation::InvalidationClient* client) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(client, invalidation_client_.get());
@@ -122,7 +122,7 @@ void ChromeInvalidationClient::Ready(
   DoRegistrationUpdate();
 }
 
-void ChromeInvalidationClient::Invalidate(
+void SyncInvalidationListener::Invalidate(
     invalidation::InvalidationClient* client,
     const invalidation::Invalidation& invalidation,
     const invalidation::AckHandle& ack_handle) {
@@ -169,7 +169,7 @@ void ChromeInvalidationClient::Invalidate(
   client->Acknowledge(ack_handle);
 }
 
-void ChromeInvalidationClient::InvalidateUnknownVersion(
+void SyncInvalidationListener::InvalidateUnknownVersion(
     invalidation::InvalidationClient* client,
     const invalidation::ObjectId& object_id,
     const invalidation::AckHandle& ack_handle) {
@@ -187,7 +187,7 @@ void ChromeInvalidationClient::InvalidateUnknownVersion(
 
 // This should behave as if we got an invalidation with version
 // UNKNOWN_OBJECT_VERSION for all known data types.
-void ChromeInvalidationClient::InvalidateAll(
+void SyncInvalidationListener::InvalidateAll(
     invalidation::InvalidationClient* client,
     const invalidation::AckHandle& ack_handle) {
   DCHECK(CalledOnValidThread());
@@ -205,13 +205,13 @@ void ChromeInvalidationClient::InvalidateAll(
   client->Acknowledge(ack_handle);
 }
 
-void ChromeInvalidationClient::EmitInvalidation(
+void SyncInvalidationListener::EmitInvalidation(
     const ObjectIdStateMap& id_state_map) {
   DCHECK(CalledOnValidThread());
-  listener_->OnInvalidate(id_state_map);
+  delegate_->OnInvalidate(id_state_map);
 }
 
-void ChromeInvalidationClient::InformRegistrationStatus(
+void SyncInvalidationListener::InformRegistrationStatus(
       invalidation::InvalidationClient* client,
       const invalidation::ObjectId& object_id,
       InvalidationListener::RegistrationState new_state) {
@@ -226,7 +226,7 @@ void ChromeInvalidationClient::InformRegistrationStatus(
   }
 }
 
-void ChromeInvalidationClient::InformRegistrationFailure(
+void SyncInvalidationListener::InformRegistrationFailure(
     invalidation::InvalidationClient* client,
     const invalidation::ObjectId& object_id,
     bool is_transient,
@@ -255,7 +255,7 @@ void ChromeInvalidationClient::InformRegistrationFailure(
   }
 }
 
-void ChromeInvalidationClient::ReissueRegistrations(
+void SyncInvalidationListener::ReissueRegistrations(
     invalidation::InvalidationClient* client,
     const std::string& prefix,
     int prefix_length) {
@@ -265,7 +265,7 @@ void ChromeInvalidationClient::ReissueRegistrations(
   registration_manager_->MarkAllRegistrationsLost();
 }
 
-void ChromeInvalidationClient::InformError(
+void SyncInvalidationListener::InformError(
     invalidation::InvalidationClient* client,
     const invalidation::ErrorInfo& error_info) {
   DCHECK(CalledOnValidThread());
@@ -281,14 +281,14 @@ void ChromeInvalidationClient::InformError(
   EmitStateChange();
 }
 
-void ChromeInvalidationClient::WriteState(const std::string& state) {
+void SyncInvalidationListener::WriteState(const std::string& state) {
   DCHECK(CalledOnValidThread());
   DVLOG(1) << "WriteState";
   invalidation_state_tracker_.Call(
       FROM_HERE, &InvalidationStateTracker::SetInvalidationState, state);
 }
 
-void ChromeInvalidationClient::DoRegistrationUpdate() {
+void SyncInvalidationListener::DoRegistrationUpdate() {
   DCHECK(CalledOnValidThread());
   const ObjectIdSet& unregistered_ids =
       registration_manager_->UpdateRegisteredIds(registered_ids_);
@@ -296,23 +296,23 @@ void ChromeInvalidationClient::DoRegistrationUpdate() {
       FROM_HERE, &InvalidationStateTracker::Forget, unregistered_ids);
 }
 
-void ChromeInvalidationClient::StopForTest() {
+void SyncInvalidationListener::StopForTest() {
   DCHECK(CalledOnValidThread());
   Stop();
 }
 
-void ChromeInvalidationClient::Stop() {
+void SyncInvalidationListener::Stop() {
   DCHECK(CalledOnValidThread());
   if (!invalidation_client_.get()) {
     return;
   }
 
   registration_manager_.reset();
-  chrome_system_resources_.Stop();
+  sync_system_resources_.Stop();
   invalidation_client_->Stop();
 
   invalidation_client_.reset();
-  listener_ = NULL;
+  delegate_ = NULL;
 
   invalidation_state_tracker_.Reset();
   max_invalidation_versions_.clear();
@@ -320,7 +320,7 @@ void ChromeInvalidationClient::Stop() {
   push_client_state_ = DEFAULT_NOTIFICATION_ERROR;
 }
 
-NotificationsDisabledReason ChromeInvalidationClient::GetState() const {
+NotificationsDisabledReason SyncInvalidationListener::GetState() const {
   DCHECK(CalledOnValidThread());
   if (ticl_state_ == NOTIFICATION_CREDENTIALS_REJECTED ||
       push_client_state_ == NOTIFICATION_CREDENTIALS_REJECTED) {
@@ -338,29 +338,29 @@ NotificationsDisabledReason ChromeInvalidationClient::GetState() const {
   return TRANSIENT_NOTIFICATION_ERROR;
 }
 
-void ChromeInvalidationClient::EmitStateChange() {
+void SyncInvalidationListener::EmitStateChange() {
   DCHECK(CalledOnValidThread());
   if (GetState() == NO_NOTIFICATION_ERROR) {
-    listener_->OnNotificationsEnabled();
+    delegate_->OnNotificationsEnabled();
   } else {
-    listener_->OnNotificationsDisabled(GetState());
+    delegate_->OnNotificationsDisabled(GetState());
   }
 }
 
-void ChromeInvalidationClient::OnNotificationsEnabled() {
+void SyncInvalidationListener::OnNotificationsEnabled() {
   DCHECK(CalledOnValidThread());
   push_client_state_ = NO_NOTIFICATION_ERROR;
   EmitStateChange();
 }
 
-void ChromeInvalidationClient::OnNotificationsDisabled(
+void SyncInvalidationListener::OnNotificationsDisabled(
     notifier::NotificationsDisabledReason reason) {
   DCHECK(CalledOnValidThread());
   push_client_state_ = FromNotifierReason(reason);
   EmitStateChange();
 }
 
-void ChromeInvalidationClient::OnIncomingNotification(
+void SyncInvalidationListener::OnIncomingNotification(
     const notifier::Notification& notification) {
   DCHECK(CalledOnValidThread());
   // Do nothing, since this is already handled by |invalidation_client_|.

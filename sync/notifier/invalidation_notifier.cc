@@ -28,7 +28,7 @@ InvalidationNotifier::InvalidationNotifier(
       invalidation_state_tracker_(invalidation_state_tracker),
       client_info_(client_info),
       invalidation_state_(initial_invalidation_state),
-      invalidation_client_(push_client.Pass()) {
+      invalidation_listener_(push_client.Pass()) {
 }
 
 InvalidationNotifier::~InvalidationNotifier() {
@@ -44,7 +44,7 @@ void InvalidationNotifier::UpdateRegisteredIds(InvalidationHandler* handler,
                                                const ObjectIdSet& ids) {
   DCHECK(CalledOnValidThread());
   registrar_.UpdateRegisteredIds(handler, ids);
-  invalidation_client_.UpdateRegisteredIds(registrar_.GetAllRegisteredIds());
+  invalidation_listener_.UpdateRegisteredIds(registrar_.GetAllRegisteredIds());
 }
 
 void InvalidationNotifier::UnregisterHandler(InvalidationHandler* handler) {
@@ -54,9 +54,9 @@ void InvalidationNotifier::UnregisterHandler(InvalidationHandler* handler) {
 
 void InvalidationNotifier::SetUniqueId(const std::string& unique_id) {
   DCHECK(CalledOnValidThread());
-  invalidation_client_id_ = unique_id;
+  client_id_ = unique_id;
   DVLOG(1) << "Setting unique ID to " << unique_id;
-  CHECK(!invalidation_client_id_.empty());
+  CHECK(!client_id_.empty());
 }
 
 void InvalidationNotifier::SetStateDeprecated(const std::string& state) {
@@ -82,16 +82,16 @@ void InvalidationNotifier::SetStateDeprecated(const std::string& state) {
 void InvalidationNotifier::UpdateCredentials(
     const std::string& email, const std::string& token) {
   if (state_ == STOPPED) {
-    invalidation_client_.Start(
+    invalidation_listener_.Start(
         base::Bind(&invalidation::CreateInvalidationClient),
-        invalidation_client_id_, client_info_, invalidation_state_,
+        client_id_, client_info_, invalidation_state_,
         initial_max_invalidation_versions_,
         invalidation_state_tracker_,
         this);
     invalidation_state_.clear();
     state_ = STARTED;
   }
-  invalidation_client_.UpdateCredentials(email, token);
+  invalidation_listener_.UpdateCredentials(email, token);
 }
 
 void InvalidationNotifier::SendNotification(
