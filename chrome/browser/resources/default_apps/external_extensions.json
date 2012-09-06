@@ -18,6 +18,10 @@
   "pjkljhegncpnkpknbcohdijeoejaedia" : {
     "external_crx": "gmail.crx",
     "external_version": "7"
+  },
+  "apdfllckaahabafndbhieahigkjlhalf" : {
+    "external_crx": "drive.crx",
+    "external_version": "6.2"
   }
 }
 
