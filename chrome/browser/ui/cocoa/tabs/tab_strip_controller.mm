@@ -81,7 +81,11 @@ namespace {
 const CGFloat kUseFullAvailableWidth = -1.0;
 
 // The amount by which tabs overlap.
-const CGFloat kTabOverlap = 19.0;
+// Needs to be <= the x position of the favicon within a tab. Else, every time
+// the throbber is painted, the throbber's invalidation will also invalidate
+// parts of the tab to the left, and two tabs's backgrounds need to be painted
+// on each throbber frame instead of one.
+const CGFloat kTabOverlap = 18.0;
 
 // The amount by which mini tabs are separated from normal tabs.
 const CGFloat kLastMiniTabSpacing = 3.0;
@@ -1505,6 +1509,14 @@ private:
     }
 
     [tabController setIconView:iconView];
+    if (iconView) {
+      // See the comment above kTabOverlap for why these DCHECKs exist.
+      DCHECK_GE(NSMinX([iconView frame]), kTabOverlap);
+      // TODO(thakis): Ideally, this would be true too, but it's not true in
+      // some tests.
+      //DCHECK_LE(NSMaxX([iconView frame]),
+      //          NSWidth([[tabController view] frame]) - kTabOverlap);
+    }
   }
 }
 
