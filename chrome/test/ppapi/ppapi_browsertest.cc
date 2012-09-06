@@ -887,7 +887,11 @@ TEST_PPAPI_OUT_OF_PROCESS(MessageLoop_Basics)
 // slowness, particularly on Windows XP. If this test times out, please try
 // marking it SLOW_ before disabling.
 //    - dmichael
+// MessageLoop_Post starts a thread so only run it if pepper threads are
+// enabled.
+#ifdef ENABLE_PEPPER_THREADING
 TEST_PPAPI_OUT_OF_PROCESS(MessageLoop_Post)
+#endif
 
 // Only enabled in out-of-process mode.
 TEST_PPAPI_OUT_OF_PROCESS(FlashFile_CreateTemporaryFile)
