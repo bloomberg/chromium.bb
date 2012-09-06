@@ -664,8 +664,6 @@ weston_compositor_get_time(void);
 int
 weston_compositor_init(struct weston_compositor *ec, struct wl_display *display,
 		       int argc, char *argv[], const char *config_file);
-int
-weston_compositor_init_gl(struct weston_compositor *ec);
 void
 weston_compositor_shutdown(struct weston_compositor *ec);
 void
@@ -794,6 +792,8 @@ backend_init(struct wl_display *display, int argc, char *argv[],
 int
 weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode);
 
+int
+gles2_renderer_init(struct weston_compositor *ec);
 void
 gles2_renderer_repaint_output(struct weston_output *output,
 			      pixman_region32_t *output_damage);

@@ -883,7 +883,7 @@ wayland_compositor_create(struct wl_display *display,
 	c->base.destroy = wayland_destroy;
 	c->base.restore = wayland_restore;
 
-	if (weston_compositor_init_gl(&c->base) < 0)
+	if (gles2_renderer_init(&c->base) < 0)
 		goto err_display;
 
 	create_border(c);

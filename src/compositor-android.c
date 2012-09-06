@@ -522,7 +522,7 @@ android_compositor_create(struct wl_display *display, int argc, char *argv[],
 	if (android_init_egl(compositor, output) < 0)
 		goto err_output;
 
-	if (weston_compositor_init_gl(&compositor->base) < 0)
+	if (gles2_renderer_init(&compositor->base) < 0)
 		goto err_egl;
 
 	android_compositor_add_output(compositor, output);

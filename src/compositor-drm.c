@@ -2264,7 +2264,7 @@ drm_compositor_create(struct wl_display *display,
 
 	ec->prev_state = WESTON_COMPOSITOR_ACTIVE;
 
-	if (weston_compositor_init_gl(&ec->base) < 0)
+	if (gles2_renderer_init(&ec->base) < 0)
 		goto err_egl;
 
 	for (key = KEY_F1; key < KEY_F9; key++)

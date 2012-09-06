@@ -1174,7 +1174,7 @@ x11_compositor_create(struct wl_display *display,
 	c->base.destroy = x11_destroy;
 	c->base.restore = x11_restore;
 
-	if (weston_compositor_init_gl(&c->base) < 0)
+	if (gles2_renderer_init(&c->base) < 0)
 		goto err_egl;
 
 	if (x11_input_create(c, no_input) < 0)
