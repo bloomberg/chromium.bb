@@ -79,6 +79,12 @@ enum NavigationEvent {
   NAVIGATION_EVENT_COUNT = 14,
 };
 
+void RecordNavigationEvent(NavigationEvent event) {
+  UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
+                            event,
+                            NAVIGATION_EVENT_COUNT);
+}
+
 }  // namespace
 
 namespace predictors {
@@ -124,6 +130,10 @@ ResourcePrefetchPredictor::ResourcePrefetchPredictor(
       tables_(PredictorDatabaseFactory::GetForProfile(
           profile)->resource_prefetch_tables()) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  notification_registrar_.Add(this,
+                              content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+                              content::NotificationService::AllSources());
 }
 
 ResourcePrefetchPredictor::~ResourcePrefetchPredictor() {
@@ -306,14 +316,8 @@ ResourceType::Type ResourcePrefetchPredictor::GetResourceTypeFromMimeType(
 void ResourcePrefetchPredictor::RecordURLRequest(
     const URLRequestSummary& request) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (initialization_state_ == NOT_INITIALIZED) {
-    LazilyInitialize();
+  if (initialization_state_ != INITIALIZED)
     return;
-  } else if (initialization_state_ != INITIALIZED) {
-    return;
-  }
-  DCHECK_EQ(INITIALIZED, initialization_state_);
 
   CHECK_EQ(request.resource_type, ResourceType::MAIN_FRAME);
   OnMainFrameRequest(request);
@@ -346,9 +350,7 @@ void ResourcePrefetchPredictor::OnMainFrameRequest(
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(INITIALIZED, initialization_state_);
 
-  UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
-                            NAVIGATION_EVENT_REQUEST_STARTED,
-                            NAVIGATION_EVENT_COUNT);
+  RecordNavigationEvent(NAVIGATION_EVENT_REQUEST_STARTED);
 
   // Cleanup older navigations.
   CleanupAbandonedNavigations(request.navigation_id);
@@ -362,9 +364,7 @@ void ResourcePrefetchPredictor::OnMainFrameResponse(
     const URLRequestSummary& response) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
-                            NAVIGATION_EVENT_RESPONSE_STARTED,
-                            NAVIGATION_EVENT_COUNT);
+  RecordNavigationEvent(NAVIGATION_EVENT_RESPONSE_STARTED);
 
   // TODO(shishir): The prefreshing will be stopped here.
 }
@@ -373,9 +373,7 @@ void ResourcePrefetchPredictor::OnMainFrameRedirect(
     const URLRequestSummary& response) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
-                            NAVIGATION_EVENT_REQUEST_REDIRECTED,
-                            NAVIGATION_EVENT_COUNT);
+  RecordNavigationEvent(NAVIGATION_EVENT_REQUEST_REDIRECTED);
 
   // Remove the older navigation.
   inflight_navigations_.erase(response.navigation_id);
@@ -385,9 +383,7 @@ void ResourcePrefetchPredictor::OnMainFrameRedirect(
 
   // The redirect url may be empty if the url was invalid.
   if (response.redirect_url.is_empty()) {
-    UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
-                              NAVIGATION_EVENT_REQUEST_REDIRECTED_EMPTY_URL,
-                              NAVIGATION_EVENT_COUNT);
+    RecordNavigationEvent(NAVIGATION_EVENT_REQUEST_REDIRECTED_EMPTY_URL);
     return;
   }
 
@@ -437,9 +433,7 @@ void ResourcePrefetchPredictor::CleanupAbandonedNavigations(
     if (it->first.IsSameRenderer(navigation_id) ||
         (time_now - it->first.creation_time > max_navigation_age)) {
       inflight_navigations_.erase(it++);
-      UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
-                                NAVIGATION_EVENT_REQUEST_EXPIRED,
-                                NAVIGATION_EVENT_COUNT);
+      RecordNavigationEvent(NAVIGATION_EVENT_REQUEST_EXPIRED);
     } else {
       ++it;
     }
@@ -454,21 +448,28 @@ void ResourcePrefetchPredictor::Observe(
 
   switch (type) {
     case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME: {
-      UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
-                                NAVIGATION_EVENT_ONLOAD,
-                                NAVIGATION_EVENT_COUNT);
-      const content::WebContents* web_contents =
-          content::Source<content::WebContents>(source).ptr();
-      NavigationID navigation_id(*web_contents);
-      // WebContents can return an empty URL if the navigation entry
-      // corresponding to the navigation has not been created yet.
-      if (navigation_id.main_frame_url.is_empty()) {
-        UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
-                                  NAVIGATION_EVENT_ONLOAD_EMPTY_URL,
-                                  NAVIGATION_EVENT_COUNT);
-
-      } else {
-        OnNavigationComplete(navigation_id);
+      switch (initialization_state_) {
+        case NOT_INITIALIZED:
+          LazilyInitialize();
+          break;
+        case INITIALIZING:
+          break;
+        case INITIALIZED: {
+          RecordNavigationEvent(NAVIGATION_EVENT_ONLOAD);
+          const content::WebContents* web_contents =
+              content::Source<content::WebContents>(source).ptr();
+          NavigationID navigation_id(*web_contents);
+          // WebContents can return an empty URL if the navigation entry
+          // corresponding to the navigation has not been created yet.
+          if (navigation_id.main_frame_url.is_empty())
+            RecordNavigationEvent(NAVIGATION_EVENT_ONLOAD_EMPTY_URL);
+          else
+            OnNavigationComplete(navigation_id);
+          break;
+        }
+        default:
+          NOTREACHED() << "Unexpected initialization_state_: "
+                       << initialization_state_;
       }
       break;
     }
@@ -558,9 +559,6 @@ void ResourcePrefetchPredictor::OnHistoryAndCacheLoaded() {
                               content::NOTIFICATION_LOAD_FROM_MEMORY_CACHE,
                               content::NotificationService::AllSources());
   notification_registrar_.Add(this,
-                              content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-                              content::NotificationService::AllSources());
-  notification_registrar_.Add(this,
                               chrome::NOTIFICATION_HISTORY_URLS_DELETED,
                               content::Source<Profile>(profile_));
 
@@ -598,15 +596,11 @@ void ResourcePrefetchPredictor::OnNavigationComplete(
 
   if (inflight_navigations_.find(navigation_id) ==
       inflight_navigations_.end()) {
-    UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
-                              NAVIGATION_EVENT_ONLOAD_UNTRACKED_URL,
-                              NAVIGATION_EVENT_COUNT);
+    RecordNavigationEvent(NAVIGATION_EVENT_ONLOAD_UNTRACKED_URL);
     return;
   }
 
-  UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
-                            NAVIGATION_EVENT_ONLOAD_TRACKED_URL,
-                            NAVIGATION_EVENT_COUNT);
+  RecordNavigationEvent(NAVIGATION_EVENT_ONLOAD_TRACKED_URL);
 
   // Report any stats.
   MaybeReportAccuracyStats(navigation_id);
@@ -614,14 +608,10 @@ void ResourcePrefetchPredictor::OnNavigationComplete(
   // Update the URL table.
   const GURL& main_frame_url = navigation_id.main_frame_url;
   if (ShouldTrackUrl(main_frame_url)) {
-    UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
-                              NAVIGATION_EVENT_SHOULD_TRACK_URL,
-                              NAVIGATION_EVENT_COUNT);
+    RecordNavigationEvent(NAVIGATION_EVENT_SHOULD_TRACK_URL);
     LearnUrlNavigation(main_frame_url, inflight_navigations_[navigation_id]);
   } else {
-    UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
-                              NAVIGATION_EVENT_SHOULD_NOT_TRACK_URL,
-                              NAVIGATION_EVENT_COUNT);
+    RecordNavigationEvent(NAVIGATION_EVENT_SHOULD_NOT_TRACK_URL);
   }
 
   // Remove the navigation.
@@ -743,9 +733,7 @@ void ResourcePrefetchPredictor::RemoveAnEntryFromUrlDB() {
   if (url_table_cache_.empty())
     return;
 
-  UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
-                            NAVIGATION_EVENT_URL_TABLE_FULL,
-                            NAVIGATION_EVENT_COUNT);
+  RecordNavigationEvent(NAVIGATION_EVENT_URL_TABLE_FULL);
 
   // TODO(shishir): Maybe use a heap to do this more efficiently.
   base::Time oldest_time;
@@ -775,13 +763,9 @@ void ResourcePrefetchPredictor::MaybeReportAccuracyStats(
   bool have_predictions_for_url =
       url_table_cache_.find(main_frame_url) != url_table_cache_.end();
   if (have_predictions_for_url) {
-    UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
-                              NAVIGATION_EVENT_HAVE_PREDICTIONS_FOR_URL,
-                              NAVIGATION_EVENT_COUNT);
+    RecordNavigationEvent(NAVIGATION_EVENT_HAVE_PREDICTIONS_FOR_URL);
   } else {
-    UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
-                              NAVIGATION_EVENT_NO_PREDICTIONS_FOR_URL,
-                              NAVIGATION_EVENT_COUNT);
+    RecordNavigationEvent(NAVIGATION_EVENT_NO_PREDICTIONS_FOR_URL);
     return;
   }
 
