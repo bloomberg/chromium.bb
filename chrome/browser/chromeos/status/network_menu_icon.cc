@@ -550,7 +550,7 @@ void NetworkIcon::SetBadges(const Network* network) {
     default:
       break;
   }
-  if (vpn_connected_)
+  if (vpn_connected_ && network->type() != TYPE_VPN)
     bottom_left_badge_ = rb.GetImageSkiaNamed(IDR_STATUSBAR_VPN_BADGE);
 }
 
