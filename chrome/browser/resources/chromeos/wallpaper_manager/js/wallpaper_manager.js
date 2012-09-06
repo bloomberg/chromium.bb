@@ -129,8 +129,26 @@ function WallpaperManager(dialogDom) {
 
     this.wallpaperGrid_.addEventListener('change',
         this.onThumbnailClicked_.bind(this));
-    this.wallpaperGrid_.addEventListener('activate',
-        function() { window.close() });
+    this.wallpaperGrid_.addEventListener('activate', this.onClose_.bind(this));
+
+    var self = this;
+    // Override cr.ui.List's activateItemIndex function. Called when a list item
+    // is activated.
+    this.wallpaperGrid_.activateItemAtIndex = this.onClose_.bind(this);
+  };
+
+  /**
+   * Closes window if no pending wallpaper request.
+   */
+  WallpaperManager.prototype.onClose_ = function() {
+    if (this.wallpaperRequest_) {
+      this.wallpaperRequest_.addEventListener('loadend', function() {
+        // Close window on wallpaper loading finished.
+        window.close();
+      });
+    } else {
+      window.close();
+    }
   };
 
   /**
@@ -163,8 +181,8 @@ function WallpaperManager(dialogDom) {
         chrome.wallpaperPrivate.setWallpaper(image,
                                              selectedItem.layout,
                                              wallpaperURL);
-        self.wallpaperRequest_ = null;
       }
+      self.wallpaperRequest_ = null;
     };
     this.setWallpaperAttribution_(selectedItem);
   };
