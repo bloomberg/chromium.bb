@@ -6,6 +6,7 @@
 #define UI_BASE_X_VALUATORS_H_
 
 #include "base/basictypes.h"
+#include "ui/base/ui_export.h"
 
 template <typename T> struct DefaultSingletonTraits;
 
@@ -18,7 +19,7 @@ namespace ui {
 // the last reported valuator values for a specific device.
 // Right now, this is only used to keep track of valuators for events coming in
 // from touch-devices, but it can be used for other devices as well.
-class ValuatorTracker {
+class UI_EXPORT ValuatorTracker {
  private:
   ValuatorTracker();
   ~ValuatorTracker();

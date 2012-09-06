@@ -30,6 +30,7 @@
 #include "ui/base/touch/touch_factory.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/view_prop.h"
+#include "ui/base/x/valuators.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -180,12 +181,23 @@ int CursorShapeFromNative(gfx::NativeCursor native_cursor) {
   return XC_left_ptr;
 }
 
-// Coalesce all pending motion events that are at the top of the queue, and
-// return the number eliminated, storing the last one in |last_event|.
-int CoalescePendingXIMotionEvents(const XEvent* xev, XEvent* last_event) {
+// Coalesce all pending motion events (touch or mouse) that are at the top of
+// the queue, and return the number eliminated, storing the last one in
+// |last_event|.
+int CoalescePendingMotionEvents(const XEvent* xev, XEvent* last_event) {
   XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev->xcookie.data);
   int num_coalesed = 0;
   Display* display = xev->xany.display;
+  int event_type = xev->xgeneric.evtype;
+
+#if defined(USE_XI2_MT)
+  float tracking_id = -1;
+  if (event_type == XI_TouchUpdate) {
+    if (!ui::ValuatorTracker::GetInstance()->ExtractValuator(*xev,
+          ui::ValuatorTracker::VAL_TRACKING_ID, &tracking_id))
+      tracking_id = -1;
+  }
+#endif
 
   while (XPending(display)) {
     XEvent next_event;
@@ -207,14 +219,27 @@ int CoalescePendingXIMotionEvents(const XEvent* xev, XEvent* last_event) {
     }
 
     if (next_event.type == GenericEvent &&
-        next_event.xgeneric.evtype == XI_Motion &&
+        next_event.xgeneric.evtype == event_type &&
         !ui::GetScrollOffsets(&next_event, NULL, NULL)) {
       XIDeviceEvent* next_xievent =
           static_cast<XIDeviceEvent*>(next_event.xcookie.data);
+#if defined(USE_XI2_MT)
+      float next_tracking_id = -1;
+      if (event_type == XI_TouchUpdate) {
+        // If this is a touch motion event (as opposed to mouse motion event),
+        // then make sure the events are from the same touch-point.
+        if (!ui::ValuatorTracker::GetInstance()->ExtractValuator(next_event,
+              ui::ValuatorTracker::VAL_TRACKING_ID, &next_tracking_id))
+          next_tracking_id = -1;
+      }
+#endif
       // Confirm that the motion event is targeted at the same window
       // and that no buttons or modifiers have changed.
       if (xievent->event == next_xievent->event &&
           xievent->child == next_xievent->child &&
+#if defined(USE_XI2_MT)
+          (event_type == XI_Motion || tracking_id == next_tracking_id) &&
+#endif
           xievent->buttons.mask_len == next_xievent->buttons.mask_len &&
           (memcmp(xievent->buttons.mask,
                   next_xievent->buttons.mask,
@@ -667,9 +692,13 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
       int num_coalesced = 0;
 
       switch (type) {
+        case ui::ET_TOUCH_MOVED:
+          num_coalesced = CoalescePendingMotionEvents(xev, &last_event);
+          if (num_coalesced > 0)
+            xev = &last_event;
+          // fallthrough
         case ui::ET_TOUCH_PRESSED:
-        case ui::ET_TOUCH_RELEASED:
-        case ui::ET_TOUCH_MOVED: {
+        case ui::ET_TOUCH_RELEASED: {
           ui::TouchEvent touchev(xev);
           delegate_->OnHostTouchEvent(&touchev);
           break;
@@ -683,7 +712,7 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
           if (type == ui::ET_MOUSE_MOVED || type == ui::ET_MOUSE_DRAGGED) {
             // If this is a motion event, we want to coalesce all pending motion
             // events that are at the top of the queue.
-            num_coalesced = CoalescePendingXIMotionEvents(xev, &last_event);
+            num_coalesced = CoalescePendingMotionEvents(xev, &last_event);
             if (num_coalesced > 0)
               xev = &last_event;
           } else if (type == ui::ET_MOUSE_PRESSED) {
