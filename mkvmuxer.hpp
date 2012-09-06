@@ -489,13 +489,14 @@ class Cluster {
   //   frame: Pointer to the data
   //   length: Length of the data
   //   track_number: Track to add the data to. Value returned by Add track
-  //                 functions.
-  //   timestamp:    Timecode of the frame relative to the cluster timecode.
+  //                 functions.  The range of allowed values is [1, 126].
+  //   timecode:     Absolute (not relative to cluster) timestamp of the
+  //                 frame, expressed in timecode units.
   //   is_key:       Flag telling whether or not this frame is a key frame.
   bool AddFrame(const uint8* frame,
                 uint64 length,
                 uint64 track_number,
-                short timecode,
+                uint64 timecode,  // timecode units (absolute)
                 bool is_key);
 
   // Increments the size of the cluster's data in bytes.
@@ -514,6 +515,23 @@ class Cluster {
   uint64 timecode() const { return timecode_; }
 
  private:
+  //  Signature that matches either of WriteSimpleBlock or WriteMetadataBlock
+  //  in the muxer utilities package.
+  typedef uint64 (*WriteBlock)(IMkvWriter* writer,
+                               const uint8* data,
+                               uint64 length,
+                               uint64 track_number,
+                               int64 timecode,
+                               uint64 generic_arg);
+
+  //  Used to implement AddFrame.
+  bool DoWriteBlock(const uint8* frame,
+                    uint64 length,
+                    uint64 track_number,
+                    uint64 absolute_timecode,
+                    uint64 generic_arg,
+                    WriteBlock write_block);
+
   // Outputs the Cluster header to |writer_|. Returns true on success.
   bool WriteClusterHeader();
 
@@ -670,7 +688,7 @@ class Segment {
   bool AddFrame(const uint8* frame,
                 uint64 length,
                 uint64 track_number,
-                uint64 timestamp,
+                uint64 timestamp_ns,
                 bool is_key);
 
   // Adds a video track to the segment. Returns the number of the track on

@@ -309,7 +309,7 @@ uint64 WriteSimpleBlock(IMkvWriter* writer,
                         uint64 length,
                         uint64 track_number,
                         int64 timecode,
-                        bool is_key) {
+                        uint64 is_key) {
   if (!writer)
     return false;
 

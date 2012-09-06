@@ -62,13 +62,13 @@ bool WriteEbmlElement(IMkvWriter* writer,
 //                  permitted.
 //   timecode:     Relative timecode of the Block.  Only values in the
 //                  range [0, 2^15) are permitted.
-//   is_key:       Flag telling whether or not this frame is a key frame.
+//   is_key:       Non-zero value specifies that frame is a key frame.
 uint64 WriteSimpleBlock(IMkvWriter* writer,
                         const uint8* data,
                         uint64 length,
                         uint64 track_number,
                         int64 timecode,
-                        bool is_key);
+                        uint64 is_key);
 
 // Output a metadata keyframe, using a Block Group element.
 // Inputs:
