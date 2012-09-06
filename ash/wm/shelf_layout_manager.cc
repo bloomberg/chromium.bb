@@ -5,6 +5,7 @@
 #include "ash/wm/shelf_layout_manager.h"
 
 #include <algorithm>
+#include <cmath>
 
 #include "ash/launcher/launcher.h"
 #include "ash/screen_ash.h"
@@ -600,44 +601,88 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     TargetBounds* target_bounds) const {
   CHECK_EQ(GESTURE_DRAG_IN_PROGRESS, gesture_drag_status_);
   bool horizontal = alignment() == SHELF_ALIGNMENT_BOTTOM;
-  bool resist = false;
-  if (horizontal)
-    resist = gesture_drag_amount_ < 0;
-  else if (alignment() == SHELF_ALIGNMENT_LEFT)
-    resist = gesture_drag_amount_ > 0;
-  else
-    resist = gesture_drag_amount_ < 0;
+  const int kFreeMoveRegion = 40;
+  int resistance_free_region = kFreeMoveRegion;
 
-  const float kDragResistanceFactor = 0.25f;
-  float translate = 0.f;
   if (gesture_drag_auto_hide_state_ == AUTO_HIDE_HIDDEN) {
     // If the shelf was hidden when the drag started, then allow the drag some
     // resistance-free region at first to make sure the shelf sticks with the
     // finger until the shelf is visible.
-    int resistance_free_region = horizontal ?
+    resistance_free_region += horizontal ?
         target_bounds->launcher_bounds_in_root.height() :
         target_bounds->launcher_bounds_in_root.width();
-    resist = resist && fabsf(gesture_drag_amount_) > resistance_free_region;
-    if (resist) {
-      float diff = fabsf(gesture_drag_amount_) - resistance_free_region;
-      if (gesture_drag_amount_ < 0)
-        translate = -resistance_free_region - diff * kDragResistanceFactor;
-      else
-        translate = resistance_free_region + diff * kDragResistanceFactor;
-    } else {
-      translate = gesture_drag_amount_;
-    }
+    resistance_free_region -= kAutoHideSize;
+  }
+
+  bool resist = false;
+  if (horizontal)
+    resist = gesture_drag_amount_ < -resistance_free_region;
+  else if (alignment() == SHELF_ALIGNMENT_LEFT)
+    resist = gesture_drag_amount_ > resistance_free_region;
+  else
+    resist = gesture_drag_amount_ < -resistance_free_region;
+
+  float translate = 0.f;
+  if (resist) {
+    float diff = fabsf(gesture_drag_amount_) - resistance_free_region;
+    diff = std::min(diff, 5 * sqrtf(diff));
+    if (gesture_drag_amount_ < 0)
+      translate = -resistance_free_region - diff;
+    else
+      translate = resistance_free_region + diff;
   } else {
-    translate = resist ? gesture_drag_amount_ * kDragResistanceFactor :
-                         gesture_drag_amount_;
+    translate = gesture_drag_amount_;
   }
 
   if (horizontal) {
+    // Move the launcher with the gesture.
     target_bounds->launcher_bounds_in_root.Offset(0, translate);
-    target_bounds->status_bounds_in_root.Offset(0, translate);
+
+    if (translate > 0) {
+      // When dragging down, the statusbar should move.
+      target_bounds->status_bounds_in_root.Offset(0, translate);
+    } else {
+      // When dragging up, the launcher height should increase.
+      resistance_free_region -= kFreeMoveRegion;
+      float move = std::max(translate,
+                            -static_cast<float>(resistance_free_region));
+      target_bounds->launcher_bounds_in_root.set_height(
+          target_bounds->launcher_bounds_in_root.height() + move - translate);
+
+      // The statusbar should move up, but very little.
+      target_bounds->status_bounds_in_root.Offset(0,
+          move - sqrtf(move - translate));
+    }
   } else {
-    target_bounds->launcher_bounds_in_root.Offset(translate, 0);
-    target_bounds->status_bounds_in_root.Offset(translate, 0);
+    // Move the launcher with the gesture.
+    if (alignment() == SHELF_ALIGNMENT_RIGHT)
+      target_bounds->launcher_bounds_in_root.Offset(translate, 0);
+
+    if ((translate > 0 && alignment() == SHELF_ALIGNMENT_RIGHT) ||
+        (translate < 0 && alignment() == SHELF_ALIGNMENT_LEFT)) {
+      // When dragging towards the edge, the statusbar should move.
+      target_bounds->status_bounds_in_root.Offset(translate, 0);
+    } else {
+      // When dragging away from the edge, the launcher width should increase.
+      resistance_free_region -= kFreeMoveRegion;
+      float move = alignment() == SHELF_ALIGNMENT_RIGHT ?
+          std::max(translate, -static_cast<float>(resistance_free_region)) :
+          std::min(translate, static_cast<float>(resistance_free_region));
+
+      if (alignment() == SHELF_ALIGNMENT_RIGHT) {
+        target_bounds->launcher_bounds_in_root.set_width(
+            target_bounds->launcher_bounds_in_root.width() + move - translate);
+        // The statusbar should move, but very little.
+        target_bounds->status_bounds_in_root.Offset(
+            move - sqrtf(move - translate), 0);
+      } else {
+        target_bounds->launcher_bounds_in_root.set_width(
+            target_bounds->launcher_bounds_in_root.width() - move + translate);
+        // The statusbar should move, but very little.
+        target_bounds->status_bounds_in_root.Offset(sqrtf(translate - move), 0);
+      }
+
+    }
   }
 }
 

@@ -5,6 +5,7 @@
 #include "ash/launcher/launcher.h"
 
 #include <algorithm>
+#include <cmath>
 
 #include "ash/focus_cycler.h"
 #include "ash/launcher/launcher_delegate.h"
@@ -81,10 +82,16 @@ void Launcher::DelegateView::Layout() {
     return;
   if (launcher_->alignment_ == SHELF_ALIGNMENT_BOTTOM) {
     int w = std::max(0, width() - launcher_->status_size_.width());
-    child_at(0)->SetBounds(0, 0, w, height());
+    int h = std::min(height(), child_at(0)->GetPreferredSize().height());
+    int move_up = height() > h ? sqrtf(height() - h) : 0;
+    child_at(0)->SetBounds(0, std::max(0, height() - h) - move_up, w, h);
   } else {
     int h = std::max(0, height() - launcher_->status_size_.height());
-    child_at(0)->SetBounds(0, 0, width(), h);
+    int w = std::min(width(), child_at(0)->GetPreferredSize().width());
+    int x = width() > w ? sqrtf(width() - w) : 0;
+    if (launcher_->alignment_ == SHELF_ALIGNMENT_RIGHT)
+      x = width() - w - x;
+    child_at(0)->SetBounds(x, 0, w, h);
   }
 }
 
