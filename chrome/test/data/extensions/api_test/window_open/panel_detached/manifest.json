@@ -1,0 +1,10 @@
+{
+  "name": "window/create.detached-panel",
+  "version": "0.1",
+  "manifest_version": 2,
+  "description": "Tests window.create with detached_panel type.",
+  "background": {
+    "page": "test.html"
+  },
+  "permissions": ["tabs"]
+}

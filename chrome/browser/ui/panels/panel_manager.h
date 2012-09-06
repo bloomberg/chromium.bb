@@ -28,6 +28,11 @@ class PanelMouseWatcher;
 class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
                      public DisplaySettingsProvider::FullScreenObserver {
  public:
+  enum CreateMode {
+    CREATE_AS_DOCKED,  // Creates a docked panel. The default.
+    CREATE_AS_DETACHED  // Creates a detached panel.
+  };
+
   // Returns a single instance.
   static PanelManager* GetInstance();
 
@@ -38,17 +43,22 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
   // TODO(jennb): Delete after refactor.
   static bool UseBrowserlessPanels();
 
+  // Returns the default top-left position for a detached panel.
+  gfx::Point GetDefaultDetachedPanelOrigin();
+
   // Creates a panel and returns it. The panel might be queued for display
   // later.
   // |app_name| is the default title for Panels when the page content does not
   // provide a title. For extensions, this is usually the application name
   // generated from the extension id.
-  // |requested_size| is the desired size for the panel, but actual
-  // size may differ after panel layout.
+  // |requested_bounds| is the desired bounds for the panel, but actual
+  // bounds may differ after panel layout depending on create |mode|.
+  // |mode| indicates whether panel should be created as docked or detached.
   Panel* CreatePanel(const std::string& app_name,
                      Profile* profile,
                      const GURL& url,
-                     const gfx::Size& requested_size);
+                     const gfx::Rect& requested_bounds,
+                     CreateMode mode);
   Panel* CreatePanel(Browser* browser);  // legacy
 
   // Close all panels (asynchronous). Panels will be removed after closing.
@@ -173,7 +183,8 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
                      const std::string& app_name,
                      Profile* profile,
                      const GURL& url,
-                     const gfx::Size& requested_size);
+                     const gfx::Rect& requested_bounds,
+                     CreateMode mode);
 
   // Overridden from DisplaySettingsProvider::DisplayAreaObserver:
   virtual void OnDisplayAreaChanged(const gfx::Rect& display_area) OVERRIDE;

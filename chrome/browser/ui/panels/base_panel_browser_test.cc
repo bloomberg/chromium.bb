@@ -15,8 +15,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/panels/native_panel.h"
-#include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
+#include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/browser/ui/panels/test_panel_active_state_observer.h"
 #include "chrome/browser/ui/panels/test_panel_mouse_watcher.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -291,7 +291,8 @@ BasePanelBrowserTest::CreatePanelParams::CreatePanelParams(
       bounds(bounds),
       show_flag(show_flag),
       wait_for_fully_created(true),
-      expected_active_state(show_flag) {
+      expected_active_state(show_flag),
+      create_mode(PanelManager::CREATE_AS_DOCKED) {
 }
 
 Panel* BasePanelBrowserTest::CreatePanelWithParams(
@@ -312,7 +313,8 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
 
   PanelManager* manager = PanelManager::GetInstance();
   Panel* panel = manager->CreatePanel(params.name, browser()->profile(),
-                                      params.url, params.bounds.size());
+                                      params.url, params.bounds,
+                                      params.create_mode);
 
   if (!params.url.is_empty())
     observer.Wait();

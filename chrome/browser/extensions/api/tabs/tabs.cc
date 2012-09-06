@@ -459,31 +459,13 @@ bool CreateWindowFunction::RunImpl() {
     }
   }
 
-  // Try to position the new browser relative its originating browser window.
-  gfx::Rect window_bounds;
-  // The call offsets the bounds by kWindowTilePixels (defined in WindowSizer to
-  // be 10)
-  //
-  // NOTE(rafaelw): It's ok if GetCurrentBrowser() returns NULL here.
-  // GetBrowserWindowBounds will default to saved "default" values for the app.
-  WindowSizer::GetBrowserWindowBounds(std::string(), gfx::Rect(),
-                                      GetCurrentBrowser(), &window_bounds);
-
-  // Calculate popup and panels bounds separately.
-  gfx::Rect popup_bounds;
-  gfx::Rect panel_bounds;  // Use 0x0 for panels. Panel manager sizes them.
-
-  // In ChromiumOS the default popup bounds is 0x0 which indicates default
-  // window sizes in PanelBrowserView. In other OSs use the same default
-  // bounds as windows.
-#if defined(OS_CHROMEOS)
-  popup_bounds = panel_bounds;
-#else
-  popup_bounds = window_bounds;  // Use window size as default for popups
-#endif
-
   Profile* window_profile = profile();
   Browser::Type window_type = Browser::TYPE_TABBED;
+
+  // panel_create_mode only applies if window is TYPE_PANEL.
+  PanelManager::CreateMode panel_create_mode = PanelManager::CREATE_AS_DOCKED;
+
+  gfx::Rect window_bounds;
   bool focused = true;
   bool saw_focus_key = false;
   std::string extension_id;
@@ -501,46 +483,8 @@ bool CreateWindowFunction::RunImpl() {
   }
 
   if (args) {
-    // Any part of the bounds can optionally be set by the caller.
-    int bounds_val = -1;
-    if (args->HasKey(keys::kLeftKey)) {
-      EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kLeftKey,
-                                                   &bounds_val));
-      window_bounds.set_x(bounds_val);
-      popup_bounds.set_x(bounds_val);
-      panel_bounds.set_x(bounds_val);
-    }
-
-    if (args->HasKey(keys::kTopKey)) {
-      EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kTopKey,
-                                                   &bounds_val));
-      window_bounds.set_y(bounds_val);
-      popup_bounds.set_y(bounds_val);
-      panel_bounds.set_y(bounds_val);
-    }
-
-    if (args->HasKey(keys::kWidthKey)) {
-      EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kWidthKey,
-                                                   &bounds_val));
-      window_bounds.set_width(bounds_val);
-      popup_bounds.set_width(bounds_val);
-      panel_bounds.set_width(bounds_val);
-    }
-
-    if (args->HasKey(keys::kHeightKey)) {
-      EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kHeightKey,
-                                                   &bounds_val));
-      window_bounds.set_height(bounds_val);
-      popup_bounds.set_height(bounds_val);
-      panel_bounds.set_height(bounds_val);
-    }
-
-    if (args->HasKey(keys::kFocusedKey)) {
-      EXTENSION_FUNCTION_VALIDATE(args->GetBoolean(keys::kFocusedKey,
-                                                   &focused));
-      saw_focus_key = true;
-    }
-
+    // Figure out window type before figuring out bounds so that default
+    // bounds can be set according to the window type.
     std::string type_str;
     if (args->HasKey(keys::kWindowTypeKey)) {
       EXTENSION_FUNCTION_VALIDATE(args->GetString(keys::kWindowTypeKey,
@@ -548,46 +492,112 @@ bool CreateWindowFunction::RunImpl() {
       if (type_str == keys::kWindowTypeValuePopup) {
         window_type = Browser::TYPE_POPUP;
         extension_id = GetExtension()->id();
-      } else if (type_str == keys::kWindowTypeValuePanel) {
+      } else if (type_str == keys::kWindowTypeValuePanel ||
+                 type_str == keys::kWindowTypeValueDetachedPanel) {
         extension_id = GetExtension()->id();
         bool use_panels = false;
 #if !defined(OS_ANDROID)
         use_panels = PanelManager::ShouldUsePanels(extension_id);
 #endif
-        if (use_panels)
+        if (use_panels) {
           window_type = Browser::TYPE_PANEL;
-        else
+#if !defined(US_ASH)
+          // Non-Ash has both docked and detached panel types.
+          if (type_str == keys::kWindowTypeValueDetachedPanel)
+            panel_create_mode = PanelManager::CREATE_AS_DETACHED;
+#endif
+        } else {
           window_type = Browser::TYPE_POPUP;
+        }
       } else if (type_str != keys::kWindowTypeValueNormal) {
         error_ = keys::kInvalidWindowTypeError;
         return false;
       }
     }
+
+    // Initialize default window bounds according to window type.
+    // In ChromiumOS the default popup bounds is 0x0 which indicates default
+    // window sizes in PanelBrowserView. In other OSs use the same default
+    // bounds as windows.
+#if !defined(OS_CHROMEOS)
+    if (Browser::TYPE_TABBED == window_type ||
+        Browser::TYPE_POPUP == window_type) {
+#else
+    if (Browser::TYPE_TABBED == window_type) {
+#endif
+      // Try to position the new browser relative to its originating
+      // browser window. The call offsets the bounds by kWindowTilePixels
+      // (defined in WindowSizer to be 10).
+      //
+      // NOTE(rafaelw): It's ok if GetCurrentBrowser() returns NULL here.
+      // GetBrowserWindowBounds will default to saved "default" values for
+      // the app.
+      WindowSizer::GetBrowserWindowBounds(std::string(), gfx::Rect(),
+                                          GetCurrentBrowser(),
+                                          &window_bounds);
+    }
+
+    if (Browser::TYPE_PANEL == window_type &&
+        PanelManager::CREATE_AS_DETACHED == panel_create_mode) {
+      window_bounds.set_origin(
+          PanelManager::GetInstance()->GetDefaultDetachedPanelOrigin());
+    }
+
+    // Any part of the bounds can optionally be set by the caller.
+    int bounds_val = -1;
+    if (args->HasKey(keys::kLeftKey)) {
+      EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kLeftKey,
+                                                   &bounds_val));
+      window_bounds.set_x(bounds_val);
+    }
+
+    if (args->HasKey(keys::kTopKey)) {
+      EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kTopKey,
+                                                   &bounds_val));
+      window_bounds.set_y(bounds_val);
+    }
+
+    if (args->HasKey(keys::kWidthKey)) {
+      EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kWidthKey,
+                                                   &bounds_val));
+      window_bounds.set_width(bounds_val);
+    }
+
+    if (args->HasKey(keys::kHeightKey)) {
+      EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kHeightKey,
+                                                   &bounds_val));
+      window_bounds.set_height(bounds_val);
+    }
+
+    if (args->HasKey(keys::kFocusedKey)) {
+      EXTENSION_FUNCTION_VALIDATE(args->GetBoolean(keys::kFocusedKey,
+                                                   &focused));
+      saw_focus_key = true;
+    }
   }
 
-  if (window_type == Browser::TYPE_PANEL) {
+#if !defined(USE_ASH)
+  if (window_type == Browser::TYPE_PANEL &&
+      PanelManager::UseBrowserlessPanels()) {
     std::string title =
         web_app::GenerateApplicationNameFromExtensionId(extension_id);
-#if !defined(USE_ASH)
-    if (PanelManager::UseBrowserlessPanels()) {
-      // Note: Panels ignore all but the first url provided.
-      Panel* panel = PanelManager::GetInstance()->CreatePanel(
-          title, window_profile, urls[0], panel_bounds.size());
+    // Note: Panels ignore all but the first url provided.
+    Panel* panel = PanelManager::GetInstance()->CreatePanel(
+        title, window_profile, urls[0], window_bounds, panel_create_mode);
 
-      // Unlike other window types, Panels do not take focus by default.
-      if (!saw_focus_key || !focused)
-        panel->ShowInactive();
-      else
-        panel->Show();
+    // Unlike other window types, Panels do not take focus by default.
+    if (!saw_focus_key || !focused)
+      panel->ShowInactive();
+    else
+      panel->Show();
 
     SetResult(
         panel->extension_window_controller()->CreateWindowValueWithTabs(
             GetExtension()));
     return true;
   }
+  // else fall through to create BrowserWindow
 #endif
-    // else fall through to create BrowserWindow
-  }
 
   // Create a new BrowserWindow.
   Browser::CreateParams create_params(window_type, window_profile);
@@ -597,7 +607,7 @@ bool CreateWindowFunction::RunImpl() {
     create_params = Browser::CreateParams::CreateForApp(
         window_type,
         web_app::GenerateApplicationNameFromExtensionId(extension_id),
-        (window_type == Browser::TYPE_PANEL ? panel_bounds : popup_bounds),
+        window_bounds,
         window_profile);
   }
   create_params.initial_show_state = ui::SHOW_STATE_NORMAL;
