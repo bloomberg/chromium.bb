@@ -299,7 +299,7 @@
             '<!@(find <(DEPTH)/android_webview/javatests/ -name "*.java")'
           ],
           'outputs': [
-            '<(PRODUCT_DIR)/android_webview_test/ContentShellTest-debug.apk',
+            '<(PRODUCT_DIR)/android_webview_test/AndroidWebViewTest-debug.apk',
           ],
           'action': [
             'ant',
