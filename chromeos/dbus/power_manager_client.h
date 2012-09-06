@@ -156,9 +156,11 @@ class CHROMEOS_EXPORT PowerManagerClient {
   virtual void NotifyUserActivity(
       const base::TimeTicks& last_activity_time) = 0;
 
-  // Notifies the power manager that a video is currently playing.
+  // Notifies the power manager that a video is currently playing. It also
+  // includes whether or not the containing window for the video is fullscreen.
   virtual void NotifyVideoActivity(
-      const base::TimeTicks& last_activity_time) = 0;
+      const base::TimeTicks& last_activity_time,
+      bool is_fullscreen) = 0;
 
   // Override the current power state on the machine. The overrides will be
   // applied to the request ID specified. To specify a new request; use 0 as

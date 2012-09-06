@@ -18,6 +18,7 @@
         '../third_party/libxml/libxml.gyp:libxml',
         'power_state_control_proto',
         'power_supply_properties_proto',
+        'video_activity_update_proto',
       ],
       'defines': [
         'CHROMEOS_IMPLEMENTATION',
@@ -283,6 +284,20 @@
       'type': 'static_library',
       'sources': [
         '../third_party/cros_system_api/dbus/power_supply_properties.proto',
+      ],
+      'variables': {
+        'proto_in_dir': '../third_party/cros_system_api/dbus/',
+        'proto_out_dir': 'chromeos/dbus',
+      },
+      'includes': ['../build/protoc.gypi'],
+    },
+    {
+      # Protobuf compiler / generator for the VideoActivityUpdate protocol
+      # buffer.
+      'target_name': 'video_activity_update_proto',
+      'type': 'static_library',
+      'sources': [
+        '../third_party/cros_system_api/dbus/video_activity_update.proto',
       ],
       'variables': {
         'proto_in_dir': '../third_party/cros_system_api/dbus/',
