@@ -73,8 +73,8 @@ class WallpaperSetWallpaperFunction : public WallpaperFunctionBase {
   // Email address of logged in user.
   std::string email_;
 
-  // File name extracts from URL.
-  std::string file_name_;
+  // High resolution wallpaper URL.
+  std::string url_;
 
   // String representation of downloaded wallpaper.
   std::string image_data_;

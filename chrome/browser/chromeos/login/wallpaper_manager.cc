@@ -246,7 +246,7 @@ bool WallpaperManager::GetLoggedInUserWallpaperInfo(WallpaperInfo* info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (UserManager::Get()->IsLoggedInAsStub()) {
-    info->file_name = current_user_wallpaper_info_.file_name = "";
+    info->file = current_user_wallpaper_info_.file = "";
     info->layout = current_user_wallpaper_info_.layout = ash::CENTER_CROPPED;
     info->type = current_user_wallpaper_info_.type = User::DEFAULT;
     return true;
@@ -464,7 +464,7 @@ void WallpaperManager::SetInitialUserWallpaper(const std::string& username,
   bool new_wallpaper_ui_disabled = CommandLine::ForCurrentProcess()->
       HasSwitch(switches::kDisableNewWallpaperUI);
   if (!new_wallpaper_ui_disabled) {
-    current_user_wallpaper_info_.file_name = "";
+    current_user_wallpaper_info_.file = "";
     current_user_wallpaper_info_.layout = ash::CENTER_CROPPED;
     current_user_wallpaper_info_.type = User::DEFAULT;
     current_user_wallpaper_info_.date = base::Time::Now().LocalMidnight();
@@ -502,7 +502,7 @@ void WallpaperManager::SetUserWallpaperInfo(const std::string& username,
   base::DictionaryValue* wallpaper_info_dict = new base::DictionaryValue();
   wallpaper_info_dict->SetString(kNewWallpaperDateNodeName,
       base::Int64ToString(info.date.ToInternalValue()));
-  wallpaper_info_dict->SetString(kNewWallpaperFileNodeName, info.file_name);
+  wallpaper_info_dict->SetString(kNewWallpaperFileNodeName, info.file);
   wallpaper_info_dict->SetInteger(kNewWallpaperLayoutNodeName, info.layout);
   wallpaper_info_dict->SetInteger(kNewWallpaperTypeNodeName, info.type);
   wallpaper_update->SetWithoutPathExpansion(username, wallpaper_info_dict);
@@ -544,9 +544,9 @@ void WallpaperManager::SetUserWallpaper(const std::string& email) {
         return;
       }
 
-      if (info.file_name.empty()) {
-        // Uses default built-in wallpaper when file name is empty. Eventually,
-        // we will only ship one built-in wallpaper in ChromeOS image.
+      if (info.file.empty()) {
+        // Uses default built-in wallpaper when file is empty. Eventually, we
+        // will only ship one built-in wallpaper in ChromeOS image.
         ash::Shell::GetInstance()->desktop_background_controller()->
             SetDefaultWallpaper(ash::GetDefaultWallpaperIndex(), false);
         return;
@@ -701,12 +701,13 @@ void WallpaperManager::LoadWallpaper(const std::string& email,
   FilePath wallpaper_dir;
   FilePath wallpaper_path;
   if (info.type == User::ONLINE) {
+    std::string file_name = GURL(info.file).ExtractFileName();
     CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS, &wallpaper_dir));
-    wallpaper_path = wallpaper_dir.Append(info.file_name);
+    wallpaper_path = wallpaper_dir.Append(file_name);
   } else {
     FilePath user_data_dir;
     PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-    wallpaper_path = user_data_dir.Append(info.file_name);
+    wallpaper_path = user_data_dir.Append(info.file);
   }
 
   wallpaper_loader_->Start(wallpaper_path.value(), 0,
@@ -735,12 +736,11 @@ bool WallpaperManager::GetUserWallpaperInfo(const std::string& email,
   const base::DictionaryValue* wallpaper_info_dict;
   if (user_wallpapers->GetDictionaryWithoutPathExpansion(
           email, &wallpaper_info_dict)) {
-    info->file_name = "";
+    info->file = "";
     info->layout = ash::CENTER_CROPPED;
     info->type = User::UNKNOWN;
     info->date = base::Time::Now().LocalMidnight();
-    wallpaper_info_dict->GetString(kNewWallpaperFileNodeName,
-                                   &(info->file_name));
+    wallpaper_info_dict->GetString(kNewWallpaperFileNodeName, &(info->file));
     int temp;
     wallpaper_info_dict->GetInteger(kNewWallpaperLayoutNodeName, &temp);
     info->layout = static_cast<ash::WallpaperLayout>(temp);

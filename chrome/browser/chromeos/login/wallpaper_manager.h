@@ -28,12 +28,13 @@ class PrefService;
 namespace chromeos {
 
 struct WallpaperInfo {
-  std::string file_name;
+  // Online wallpaper URL or file name of migrated wallpaper.
+  std::string file;
   ash::WallpaperLayout layout;
   User::WallpaperType type;
   base::Time date;
   bool operator==(const WallpaperInfo& other) {
-    return (file_name == other.file_name) && (layout == other.layout) &&
+    return (file == other.file) && (layout == other.layout) &&
         (type == other.type);
   }
 };

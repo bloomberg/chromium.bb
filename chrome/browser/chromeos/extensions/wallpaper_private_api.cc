@@ -129,11 +129,8 @@ bool WallpaperSetWallpaperFunction::RunImpl() {
     return false;
   }
   layout_ = ash::GetLayoutEnum(layout_string);
-  std::string url;
-  if (!args_->GetString(2, &url) || url.empty()) {
+  if (!args_->GetString(2, &url_) || url_.empty())
     return false;
-  }
-  file_name_ = GURL(url).ExtractFileName();
 
   // Gets email address while at UI thread.
   email_ = chromeos::UserManager::Get()->GetLoggedInUser().email();
@@ -173,7 +170,8 @@ void WallpaperSetWallpaperFunction::SaveToFile() {
                    this));
     return;
   }
-  FilePath file_path = wallpaper_dir.Append(file_name_);
+  std::string file_name = GURL(url_).ExtractFileName();
+  FilePath file_path = wallpaper_dir.Append(file_name);
   if (file_util::PathExists(file_path) ||
       file_util::WriteFile(file_path, image_data_.c_str(),
                            image_data_.size()) != -1 ) {
@@ -196,7 +194,7 @@ void WallpaperSetWallpaperFunction::SetDecodedWallpaper() {
   bool is_persistent =
       !chromeos::UserManager::Get()->IsCurrentUserEphemeral();
   chromeos::WallpaperInfo info = {
-      file_name_,
+      url_,
       layout_,
       chromeos::User::ONLINE,
       base::Time::Now().LocalMidnight()
