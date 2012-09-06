@@ -39,6 +39,7 @@
 #include "content/public/browser/plugin_service_filter.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/common/content_debug_logging.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/url_constants.h"
@@ -237,6 +238,10 @@ class RenderMessageFilter::OpenChannelToNpapiPluginCallback
   }
 
   virtual void OnChannelOpened(const IPC::ChannelHandle& handle) OVERRIDE {
+#if defined(OS_MACOSX)
+    content::debug::RecordMsg(97285, base::StringPrintf(
+        "OnChannelOpened({%s, %d})", handle.name.c_str(), handle.socket.fd));
+#endif
     WriteReplyAndDeleteThis(handle);
   }
 
@@ -392,6 +397,10 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetMonitorColorProfile,
                         OnGetMonitorColorProfile)
     IPC_MESSAGE_HANDLER(ViewHostMsg_MediaLogEvent, OnMediaLogEvent)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ContentDebugRecordMsg,
+                        OnContentDebugRecordMsg)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ContentDebugGetMessages,
+                        OnContentDebugGetMessages)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -977,6 +986,17 @@ void RenderMessageFilter::OnUpdateIsDelayed(const IPC::Message& msg) {
   // We will simply re-use the UpdateRect unblock mechanism, just with a
   // different message.
   render_widget_helper_->DidReceiveBackingStoreMsg(msg);
+}
+
+// TODO(shess): Could this be annotated WRT the sending renderer?
+void RenderMessageFilter::OnContentDebugRecordMsg(int bug_id,
+                                                  const std::string& msg) {
+  content::debug::RecordMsg(bug_id, msg);
+}
+
+void RenderMessageFilter::OnContentDebugGetMessages(
+    int bug_id, bool* handled, std::vector<std::string>* msgs) {
+  *handled = content::debug::GetMessages(bug_id, msgs);
 }
 
 }  // namespace content

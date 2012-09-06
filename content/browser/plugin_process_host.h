@@ -148,6 +148,11 @@ class CONTENT_EXPORT PluginProcessHost
   void OnPluginSetCursorVisibility(bool visible);
 #endif
 
+  // Forward client messages to content::debug::RecordMsg/GetMessages.
+  void OnContentDebugRecordMsg(int bug_id, const std::string& msg);
+  void OnContentDebugGetMessages(int bug_id, bool* handled,
+                                 std::vector<std::string>* msgs);
+
   virtual bool CanShutdown() OVERRIDE;
   virtual void OnProcessCrashed(int exit_code) OVERRIDE;
 

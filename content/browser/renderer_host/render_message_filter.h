@@ -240,6 +240,11 @@ class RenderMessageFilter : public BrowserMessageFilter {
 
   void OnUpdateIsDelayed(const IPC::Message& msg);
 
+  // Forward client messages to content::debug::RecordMsg/GetMessages.
+  void OnContentDebugRecordMsg(int bug_id, const std::string& msg);
+  void OnContentDebugGetMessages(int bug_id, bool* handled,
+                                 std::vector<std::string>* msgs);
+
   // Cached resource request dispatcher host and plugin service, guaranteed to
   // be non-null if Init succeeds. We do not own the objects, they are managed
   // by the BrowserProcess, which has a wider scope than we do.

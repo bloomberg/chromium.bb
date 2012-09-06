@@ -32,6 +32,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/common/content_debug_logging.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "ipc/ipc_switches.h"
@@ -333,6 +334,10 @@ bool PluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginProcessHostMsg_PluginSetCursorVisibility,
                         OnPluginSetCursorVisibility)
 #endif
+    IPC_MESSAGE_HANDLER(PluginProcessHostMsg_ContentDebugRecordMsg,
+                        OnContentDebugRecordMsg)
+    IPC_MESSAGE_HANDLER(PluginProcessHostMsg_ContentDebugGetMessages,
+                        OnContentDebugGetMessages)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -453,4 +458,15 @@ void PluginProcessHost::OnChannelCreated(
   if (client)
     client->OnChannelOpened(channel_handle);
   sent_requests_.pop_front();
+}
+
+// TODO(shess): Could this be annotated WRT the sending plugin?
+void PluginProcessHost::OnContentDebugRecordMsg(int bug_id,
+                                                const std::string& msg) {
+  content::debug::RecordMsg(bug_id, msg);
+}
+
+void PluginProcessHost::OnContentDebugGetMessages(
+    int bug_id, bool* handled, std::vector<std::string>* msgs) {
+  *handled = content::debug::GetMessages(bug_id, msgs);
 }
