@@ -640,7 +640,6 @@
                 '-DANDROID_SDK_ROOT=<(android_sdk_root)',
                 '-DANDROID_SDK_TOOLS=<(android_sdk_tools)',
                 '-DANDROID_SDK_VERSION=<(android_sdk_version)',
-                '-DANDROID_TOOLCHAIN=<(android_toolchain)',
                 '-DANDROID_GDBSERVER=<(android_gdbserver)',
                 '-DCONFIGURATION_NAME=<(CONFIGURATION_NAME)',
                 '-buildfile',
