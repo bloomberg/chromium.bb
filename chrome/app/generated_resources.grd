@@ -4614,7 +4614,7 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
         The newest version of "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has been disabled because it requires more permissions.
       </message>
       <message name="IDS_EXTENSION_PERMISSIONS_PROMPT_HEADING" desc="First bold line in the content area of the extension or app permissions prompt. Asks the user if they want to grant the permissions to the particular extension or app.">
-        The extension "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has requested additional permissions.
+        "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has requested additional permissions.
       </message>
 
       <!-- Extension alerts. -->
