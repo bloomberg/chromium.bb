@@ -126,11 +126,6 @@ var HSTSView = (function() {
       t = addNode(this.queryOutputDiv_, 'tt');
       t.textContent = result.domain;
 
-      addTextNode(this.queryOutputDiv_, ' is_preloaded:');
-
-      t = addNode(this.queryOutputDiv_, 'tt');
-      t.textContent = result.preloaded;
-
       addTextNode(this.queryOutputDiv_, ' pubkey_hashes:');
 
       t = addNode(this.queryOutputDiv_, 'tt');
