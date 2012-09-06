@@ -167,12 +167,20 @@ class DriveResourceMetadata {
                            scoped_ptr<DocumentEntry> doc_entry,
                            const FileMoveCallback& callback);
 
-  // Moves |entry| to |directory_path| asynchronously. Removes entry from
-  // previous parent. Must be called on UI thread. |callback| is called on the
-  // UI thread. |callback| must not be null.
-  void MoveEntryToDirectory(const FilePath& directory_path,
-                            DriveEntry* entry,
+  // Moves entry specified by |file_path| to the directory specified by
+  // |directory_path| and calls the callback asynchronously. Removes the entry
+  // from the previous parent.
+  // |callback| must not be null.
+  void MoveEntryToDirectory(const FilePath& file_path,
+                            const FilePath& directory_path,
                             const FileMoveCallback& callback);
+
+  // Renames entry specified by |file_path| with the new name |new_name| and
+  // calls |callback| asynchronously.
+  // |callback| must not be null.
+  void RenameEntry(const FilePath& file_path,
+                   const FilePath::StringType& new_name,
+                   const FileMoveCallback& callback);
 
   // Removes entry with |resource_id| from its parent. Calls |callback| with the
   // path of the parent directory. |callback| must not be null.
@@ -246,7 +254,8 @@ class DriveResourceMetadata {
   void SerializeToString(std::string* serialized_proto) const;
   bool ParseFromString(const std::string& serialized_proto);
 
-  // Restores from and saves to database.
+  // Restores from and saves to database, calling |callback| asynchronously.
+  // |callback| must not be null.
   void InitFromDB(const FilePath& db_path,
                   base::SequencedTaskRunner* blocking_task_runner,
                   const FileOperationCallback& callback);
@@ -255,6 +264,7 @@ class DriveResourceMetadata {
  private:
   // Initializes the resource map using serialized_resources fetched from the
   // database.
+  // |callback| must not be null.
   void InitResourceMap(CreateDBParams* create_params,
                        const FileOperationCallback& callback);
 

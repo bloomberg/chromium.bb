@@ -228,6 +228,7 @@ class DriveDirectory : public DriveEntry {
  private:
   // TODO(satorux): Remove the friend statements. crbug.com/139649
   friend class DriveResourceMetadata;
+  friend class DriveResourceMetadataTest;
   friend class GDataWapiFeedProcessor;
 
   explicit DriveDirectory(DriveResourceMetadata* resource_metadata);

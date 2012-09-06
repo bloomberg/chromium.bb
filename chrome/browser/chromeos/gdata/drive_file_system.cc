@@ -1049,6 +1049,7 @@ void DriveFileSystem::MoveOnUIThreadAfterGetEntryInfoPair(
   // If the file/directory is moved to the same directory, just rename it.
   const FilePath& src_file_path = result->first.path;
   const FilePath& dest_parent_path = result->second.path;
+  DCHECK_EQ(dest_parent_path.value(), dest_file_path.DirName().value());
   if (src_file_path.DirName() == dest_parent_path) {
     FileMoveCallback final_file_path_update_callback =
         base::Bind(&DriveFileSystem::OnFilePathUpdated,
@@ -1072,7 +1073,7 @@ void DriveFileSystem::MoveOnUIThreadAfterGetEntryInfoPair(
   const FileMoveCallback add_file_to_directory_callback =
       base::Bind(&DriveFileSystem::MoveEntryFromRootDirectory,
                  ui_weak_ptr_,
-                 dest_file_path.DirName(),
+                 dest_parent_path,
                  callback);
 
   const FileMoveCallback remove_file_from_directory_callback =
@@ -1136,11 +1137,13 @@ void DriveFileSystem::MoveEntryFromRootDirectoryAfterGetEntryInfoPair(
   drive_service_->AddResourceToDirectory(
       GURL(dir_proto->content_url()),
       GURL(src_proto->edit_url()),
-      base::Bind(&DriveFileSystem::OnMoveEntryFromRootDirectoryCompleted,
+      base::Bind(&DriveFileSystem::MoveEntryToDirectory,
                  ui_weak_ptr_,
-                 callback,
                  file_path,
-                 dir_path));
+                 dir_path,
+                 base::Bind(&DriveFileSystem::NotifyAndRunFileOperationCallback,
+                            ui_weak_ptr_,
+                            callback)));
 }
 
 void DriveFileSystem::RemoveEntryFromNonRootDirectory(
@@ -1174,7 +1177,6 @@ void DriveFileSystem::RemoveEntryFromNonRootDirectoryAfterEntryInfoPair(
   DCHECK(result.get());
 
   const FilePath& file_path = result->first.path;
-  const FilePath& dir_path = result->second.path;
   if (result->first.error != DRIVE_FILE_OK) {
     callback.Run(result->first.error, file_path);
     return;
@@ -1191,15 +1193,18 @@ void DriveFileSystem::RemoveEntryFromNonRootDirectoryAfterEntryInfoPair(
     return;
   }
 
+  // The entry is moved to the root directory.
   drive_service_->RemoveResourceFromDirectory(
       GURL(dir_proto->content_url()),
       GURL(entry_proto->edit_url()),
       entry_proto->resource_id(),
-      base::Bind(&DriveFileSystem::MoveEntryToRootDirectoryLocally,
+      base::Bind(&DriveFileSystem::MoveEntryToDirectory,
                  ui_weak_ptr_,
-                 callback,
                  file_path,
-                 dir_path));
+                 resource_metadata_->root()->GetFilePath(),
+                 base::Bind(&DriveFileSystem::NotifyAndRunFileMoveCallback,
+                            ui_weak_ptr_,
+                            callback)));
 }
 
 void DriveFileSystem::Remove(const FilePath& file_path,
@@ -2364,36 +2369,6 @@ void DriveFileSystem::OnCopyDocumentCompleted(
                  callback));
 }
 
-void DriveFileSystem::OnMoveEntryFromRootDirectoryCompleted(
-    const FileOperationCallback& callback,
-    const FilePath& file_path,
-    const FilePath& dir_path,
-    GDataErrorCode status,
-    const GURL& document_url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  DriveFileError error = util::GDataToDriveFileError(status);
-  if (error == DRIVE_FILE_OK) {
-    DriveEntry* entry = resource_metadata_->FindEntryByPathSync(file_path);
-    if (entry) {
-      DCHECK_EQ(resource_metadata_->root(), entry->parent());
-      resource_metadata_->MoveEntryToDirectory(
-          dir_path,
-          entry,
-          base::Bind(
-              &DriveFileSystem::NotifyAndRunFileOperationCallback,
-              ui_weak_ptr_,
-              callback));
-      return;
-    } else {
-      error = DRIVE_FILE_ERROR_NOT_FOUND;
-    }
-  }
-
-  callback.Run(error);
-}
-
 void DriveFileSystem::OnFileDownloaded(
     const GetFileFromCacheParams& params,
     GDataErrorCode status,
@@ -2505,7 +2480,7 @@ void DriveFileSystem::RenameEntryLocally(
     const FilePath::StringType& new_name,
     const FileMoveCallback& callback,
     GDataErrorCode status,
-    const GURL& document_url) {
+    const GURL& /* document_url */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -2515,35 +2490,20 @@ void DriveFileSystem::RenameEntryLocally(
     return;
   }
 
-  DriveEntry* entry = resource_metadata_->FindEntryByPathSync(file_path);
-  if (!entry) {
-    callback.Run(DRIVE_FILE_ERROR_NOT_FOUND, FilePath());
-    return;
-  }
-
-  DCHECK(entry->parent());
-  entry->set_title(new_name);
-  // After changing the title of the entry, call MoveEntryToDirectory() to
-  // remove the entry from its parent directory and then add it back in order to
-  // go through the file name de-duplication.
-  // TODO(achuith/satorux/zel): This code is fragile. The title has been
-  // changed, but not the file_name. MoveEntryToDirectory calls RemoveChild to
-  // remove the child based on the old file_name, and then re-adds the child by
-  // first assigning the new title to file_name. http://crbug.com/30157
-  resource_metadata_->MoveEntryToDirectory(
-      entry->parent()->GetFilePath(),
-      entry,
+  resource_metadata_->RenameEntry(
+      file_path,
+      new_name,
       base::Bind(&DriveFileSystem::NotifyAndRunFileMoveCallback,
                  ui_weak_ptr_,
                  callback));
 }
 
-void DriveFileSystem::MoveEntryToRootDirectoryLocally(
-    const FileMoveCallback& callback,
+void DriveFileSystem::MoveEntryToDirectory(
     const FilePath& file_path,
     const FilePath& dir_path,
+    const FileMoveCallback& callback,
     GDataErrorCode status,
-    const GURL& document_url) {
+    const GURL& /* document_url */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -2553,18 +2513,7 @@ void DriveFileSystem::MoveEntryToRootDirectoryLocally(
     return;
   }
 
-  DriveEntry* entry = resource_metadata_->FindEntryByPathSync(file_path);
-  if (!entry) {
-    callback.Run(DRIVE_FILE_ERROR_NOT_FOUND, FilePath());
-    return;
-  }
-
-  resource_metadata_->MoveEntryToDirectory(
-      resource_metadata_->root()->GetFilePath(),
-      entry,
-      base::Bind(&DriveFileSystem::NotifyAndRunFileMoveCallback,
-                 ui_weak_ptr_,
-                 callback));
+  resource_metadata_->MoveEntryToDirectory(file_path, dir_path, callback);
 }
 
 void DriveFileSystem::NotifyAndRunFileMoveCallback(

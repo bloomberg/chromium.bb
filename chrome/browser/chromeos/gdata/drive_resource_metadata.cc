@@ -276,15 +276,19 @@ void DriveResourceMetadata::AddEntryToDirectory(
 }
 
 void DriveResourceMetadata::MoveEntryToDirectory(
+    const FilePath& file_path,
     const FilePath& directory_path,
-    DriveEntry* entry,
     const FileMoveCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(entry);
+  DCHECK(!directory_path.empty());
+  DCHECK(!file_path.empty());
   DCHECK(!callback.is_null());
 
-  if (entry->parent())
-    entry->parent()->RemoveChild(entry);
+  DriveEntry* entry = FindEntryByPathSync(file_path);
+  if (!entry) {
+    PostFileMoveCallbackError(callback, DRIVE_FILE_ERROR_NOT_FOUND);
+    return;
+  }
 
   DriveEntry* destination = FindEntryByPathSync(directory_path);
   FilePath moved_file_path;
@@ -294,6 +298,9 @@ void DriveResourceMetadata::MoveEntryToDirectory(
   } else if (!destination->AsDriveDirectory()) {
     error = DRIVE_FILE_ERROR_NOT_A_DIRECTORY;
   } else {
+    if (entry->parent())
+      entry->parent()->RemoveChild(entry);
+
     destination->AsDriveDirectory()->AddEntry(entry);
     moved_file_path = entry->GetFilePath();
     error = DRIVE_FILE_OK;
@@ -301,6 +308,39 @@ void DriveResourceMetadata::MoveEntryToDirectory(
   DVLOG(1) << "MoveEntryToDirectory " << moved_file_path.value();
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE, base::Bind(callback, error, moved_file_path));
+}
+
+void DriveResourceMetadata::RenameEntry(
+  const FilePath& file_path,
+  const FilePath::StringType& new_name,
+  const FileMoveCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!file_path.empty());
+  DCHECK(!new_name.empty());
+  DCHECK(!callback.is_null());
+
+  DVLOG(1) << "RenameEntry " << file_path.value() << " to " << new_name;
+  DriveEntry* entry = FindEntryByPathSync(file_path);
+  if (!entry) {
+    PostFileMoveCallbackError(callback, DRIVE_FILE_ERROR_NOT_FOUND);
+    return;
+  }
+
+  if (new_name == file_path.BaseName().value()) {
+    PostFileMoveCallbackError(callback, DRIVE_FILE_ERROR_EXISTS);
+    return;
+  }
+
+  entry->set_title(new_name);
+  DCHECK(entry->parent());
+  // After changing the title of the entry, call MoveEntryToDirectory to
+  // remove the entry from its parent directory and then add it back in order to
+  // go through the file name de-duplication.
+  // TODO(achuith/satorux/zel): This code is fragile. The title has been
+  // changed, but not the file_name. MoveEntryToDirectory calls RemoveChild to
+  // remove the child based on the old file_name, and then re-adds the child by
+  // first assigning the new title to file_name. http://crbug.com/30157
+  MoveEntryToDirectory(file_path, entry->parent()->GetFilePath(), callback);
 }
 
 void DriveResourceMetadata::RemoveEntryFromParent(
@@ -566,10 +606,10 @@ void DriveResourceMetadata::InitFromDB(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!db_path.empty());
   DCHECK(blocking_task_runner);
+  DCHECK(!callback.is_null());
 
   if (resource_metadata_db_.get()) {
-    if (!callback.is_null())
-      callback.Run(DRIVE_FILE_ERROR_FAILED);
+    callback.Run(DRIVE_FILE_ERROR_IN_USE);
     return;
   }
 
@@ -595,13 +635,14 @@ void DriveResourceMetadata::InitResourceMap(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(create_params);
   DCHECK(!resource_metadata_db_.get());
+  DCHECK(!callback.is_null());
+
 
   SerializedMap* serialized_resources = &create_params->serialized_resources;
   resource_metadata_db_ = create_params->db.Pass();
   if (serialized_resources->empty()) {
     origin_ = INITIALIZING;
-    if (!callback.is_null())
-      callback.Run(DRIVE_FILE_ERROR_NOT_FOUND);
+    callback.Run(DRIVE_FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -613,8 +654,7 @@ void DriveResourceMetadata::InitResourceMap(
   if (iter == serialized_resources->end() ||
       !base::StringToInt(iter->second, &version) ||
       version != kProtoVersion) {
-    if (!callback.is_null())
-      callback.Run(DRIVE_FILE_ERROR_FAILED);
+    callback.Run(DRIVE_FILE_ERROR_FAILED);
     return;
   }
   serialized_resources->erase(iter);
@@ -624,8 +664,7 @@ void DriveResourceMetadata::InitResourceMap(
   if (iter == serialized_resources->end() ||
       !base::StringToInt64(iter->second, &largest_changestamp_)) {
     NOTREACHED() << "Could not find/parse largest_changestamp";
-    if (!callback.is_null())
-      callback.Run(DRIVE_FILE_ERROR_FAILED);
+    callback.Run(DRIVE_FILE_ERROR_FAILED);
     return;
   } else {
     DVLOG(1) << "InitResourceMap largest_changestamp_" << largest_changestamp_;
@@ -683,8 +722,7 @@ void DriveResourceMetadata::InitResourceMap(
 
   origin_ = FROM_CACHE;
 
-  if (!callback.is_null())
-    callback.Run(DRIVE_FILE_OK);
+  callback.Run(DRIVE_FILE_OK);
 }
 
 void DriveResourceMetadata::SaveToDB() {

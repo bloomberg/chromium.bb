@@ -478,19 +478,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
                                GDataErrorCode status,
                                scoped_ptr<base::Value> data);
 
-  // Callback for handling an attempt to move a file or directory from the
-  // root directory to another directory on the server side. This function
-  // moves |entry| to the root directory on the client side with
-  // DriveResourceMetadata::MoveEntryToDirectory().
-  //
-  // |callback| must not be null.
-  void OnMoveEntryFromRootDirectoryCompleted(
-      const FileOperationCallback& callback,
-      const FilePath& file_path,
-      const FilePath& dir_path,
-      GDataErrorCode status,
-      const GURL& document_url);
-
   // Callback for handling account metadata fetch.
   void OnGetAvailableSpace(const GetAvailableSpaceCallback& callback,
                            GDataErrorCode status,
@@ -549,15 +536,14 @@ class DriveFileSystem : public DriveFileSystemInterface,
                           GDataErrorCode status,
                           const GURL& document_url);
 
-  // Callback for handling an attempt to remove a file or directory from
-  // another directory. Moves a file or directory at |file_path| to root on
-  // the client side.
+  // Moves entry specified by |file_path| to the directory specified by
+  // |dir_path| and calls |callback| asynchronously.
   // |callback| must not be null.
-  void MoveEntryToRootDirectoryLocally(const FileMoveCallback& callback,
-                                       const FilePath& file_path,
-                                       const FilePath& dir_path,
-                                       GDataErrorCode status,
-                                       const GURL& document_url);
+  void MoveEntryToDirectory(const FilePath& file_path,
+                            const FilePath& dir_path,
+                            const FileMoveCallback& callback,
+                            GDataErrorCode status,
+                            const GURL& document_url);
 
   // Callback when an entry is moved to another directory on the client side.
   // Notifies the directory change and runs |callback|.
