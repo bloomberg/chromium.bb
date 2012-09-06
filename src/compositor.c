@@ -3144,6 +3144,14 @@ weston_compositor_init(struct weston_compositor *ec,
 
 	ec->input_loop = wl_event_loop_create();
 
+	weston_spring_init(&ec->fade.spring, 30.0, 1.0, 1.0);
+	ec->fade.animation.frame = fade_frame;
+
+	weston_layer_init(&ec->fade_layer, &ec->layer_list);
+	weston_layer_init(&ec->cursor_layer, &ec->fade_layer.link);
+
+	weston_compositor_schedule_repaint(ec);
+
 	return 0;
 }
 
@@ -3202,12 +3210,6 @@ weston_compositor_init_gl(struct weston_compositor *ec)
 	if (ec->has_bind_display)
 		ec->bind_display(ec->egl_display, ec->wl_display);
 
-	weston_spring_init(&ec->fade.spring, 30.0, 1.0, 1.0);
-	ec->fade.animation.frame = fade_frame;
-
-	weston_layer_init(&ec->fade_layer, &ec->layer_list);
-	weston_layer_init(&ec->cursor_layer, &ec->fade_layer.link);
-
 	glActiveTexture(GL_TEXTURE0);
 
 	if (weston_shader_init(&ec->texture_shader_rgba,
@@ -3232,8 +3234,6 @@ weston_compositor_init_gl(struct weston_compositor *ec)
 	if (weston_shader_init(&ec->solid_shader,
 			     vertex_shader, solid_fragment_shader) < 0)
 		return -1;
-
-	weston_compositor_schedule_repaint(ec);
 
 	return 0;
 }
