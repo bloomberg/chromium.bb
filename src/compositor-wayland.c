@@ -74,13 +74,12 @@ struct wayland_compositor {
 
 struct wayland_output {
 	struct weston_output	base;
-
+	struct wl_listener	frame_listener;
 	struct {
 		struct wl_surface	*surface;
 		struct wl_shell_surface	*shell_surface;
 		struct wl_egl_window	*egl_window;
 	} parent;
-	EGLSurface egl_surface;
 	struct weston_mode	mode;
 };
 
@@ -329,33 +328,24 @@ static const struct wl_callback_listener frame_listener = {
 };
 
 static void
-wayland_output_repaint(struct weston_output *output_base,
-		       pixman_region32_t *damage, int flip)
+wayland_output_frame_notify(struct wl_listener *listener, void *data)
 {
-	struct wayland_output *output = (struct wayland_output *) output_base;
-	struct wayland_compositor *compositor =
-		(struct wayland_compositor *) output->base.compositor;
-	struct wl_callback *callback;
-	struct weston_surface *surface;
-
-	if (!eglMakeCurrent(compositor->base.egl_display, output->egl_surface,
-			    output->egl_surface,
-			    compositor->base.egl_context)) {
-		weston_log("failed to make current\n");
-		return;
-	}
-
-	wl_list_for_each_reverse(surface, &compositor->base.surface_list, link)
-		weston_surface_draw(surface, &output->base, damage);
-
-	if (!flip)
-		return;
+	struct wayland_output *output =
+		container_of(listener,
+			     struct wayland_output, frame_listener);
 
 	draw_border(output);
+}
 
-	wl_signal_emit(&output->base.frame_signal, output);
+static void
+wayland_output_repaint(struct weston_output *output_base,
+		       pixman_region32_t *damage)
+{
+	struct wayland_output *output = (struct wayland_output *) output_base;
+	struct wl_callback *callback;
 
-	eglSwapBuffers(compositor->base.egl_display, output->egl_surface);
+	gles2_renderer_repaint_output(output_base, damage);
+
 	callback = wl_surface_frame(output->parent.surface);
 	wl_callback_add_listener(callback, &frame_listener, output);
 
@@ -368,7 +358,7 @@ wayland_output_destroy(struct weston_output *output_base)
 	struct wayland_output *output = (struct wayland_output *) output_base;
 	struct weston_compositor *ec = output->base.compositor;
 
-	eglDestroySurface(ec->egl_display, output->egl_surface);
+	eglDestroySurface(ec->egl_display, output->base.egl_surface);
 	wl_egl_window_destroy(output->parent.egl_window);
 	free(output);
 
@@ -422,16 +412,16 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 		goto cleanup_output;
 	}
 
-	output->egl_surface =
+	output->base.egl_surface =
 		eglCreateWindowSurface(c->base.egl_display, c->base.egl_config,
 				       output->parent.egl_window, NULL);
-	if (!output->egl_surface) {
+	if (!output->base.egl_surface) {
 		weston_log("failed to create window surface\n");
 		goto cleanup_window;
 	}
 
-	if (!eglMakeCurrent(c->base.egl_display, output->egl_surface,
-			    output->egl_surface, c->base.egl_context)) {
+	if (!eglMakeCurrent(c->base.egl_display, output->base.egl_surface,
+			    output->base.egl_surface, c->base.egl_context)) {
 		weston_log("failed to make surface current\n");
 		goto cleanup_surface;
 		return -1;
@@ -454,10 +444,13 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 
 	wl_list_insert(c->base.output_list.prev, &output->base.link);
 
+	output->frame_listener.notify = wayland_output_frame_notify;
+	wl_signal_add(&output->base.frame_signal, &output->frame_listener);
+
 	return 0;
 
 cleanup_surface:
-	eglDestroySurface(c->base.egl_display, output->egl_surface);
+	eglDestroySurface(c->base.egl_display, output->base.egl_surface);
 cleanup_window:
 	wl_egl_window_destroy(output->parent.egl_window);
 cleanup_output:

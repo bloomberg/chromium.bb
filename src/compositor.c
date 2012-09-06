@@ -1559,16 +1559,8 @@ weston_output_repaint(struct weston_output *output, uint32_t msecs)
 	struct weston_frame_callback *cb, *cnext;
 	struct wl_list frame_callback_list;
 	pixman_region32_t opaque, output_damage, new_damage;
-	int32_t width, height;
 
 	weston_compositor_update_drag_surfaces(ec);
-
-	width = output->current->width +
-		output->border.left + output->border.right;
-	height = output->current->height +
-		output->border.top + output->border.bottom;
-
-	glViewport(0, 0, width, height);
 
 	/* Rebuild the surface list and update surface transforms up front. */
 	wl_list_init(&ec->surface_list);
@@ -1618,21 +1610,7 @@ weston_output_repaint(struct weston_output *output, uint32_t msecs)
 	if (output->dirty)
 		weston_output_update_matrix(output);
 
-	/* if debugging, redraw everything outside the damage to clean up
-	 * debug lines from the previous draw on this buffer:
-	 */
-	if (ec->fan_debug) {
-		pixman_region32_t undamaged;
-		pixman_region32_init(&undamaged);
-		pixman_region32_subtract(&undamaged, &output->region,
-				&output_damage);
-		ec->fan_debug = 0;
-		output->repaint(output, &undamaged, 0);
-		ec->fan_debug = 1;
-		pixman_region32_fini(&undamaged);
-	}
-
-	output->repaint(output, &output_damage, 1);
+	output->repaint(output, &output_damage);
 
 	pixman_region32_fini(&output_damage);
 

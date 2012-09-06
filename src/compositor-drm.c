@@ -140,7 +140,6 @@ struct drm_output {
 	struct weston_plane fb_plane;
 	struct weston_surface *cursor_surface;
 	int current_cursor;
-	EGLSurface egl_surface;
 	struct drm_fb *current, *next;
 	struct backlight *backlight;
 };
@@ -322,30 +321,12 @@ drm_output_prepare_scanout_surface(struct weston_output *_output,
 }
 
 static void
-drm_output_render(struct drm_output *output, pixman_region32_t *damage, int flip)
+drm_output_render(struct drm_output *output, pixman_region32_t *damage)
 {
-	struct drm_compositor *compositor =
-		(struct drm_compositor *) output->base.compositor;
-	struct weston_surface *surface;
 	struct gbm_bo *bo;
 
-	if (!eglMakeCurrent(compositor->base.egl_display, output->egl_surface,
-			    output->egl_surface,
-			    compositor->base.egl_context)) {
-		weston_log("failed to make current\n");
-		return;
-	}
+	gles2_renderer_repaint_output(&output->base, damage);
 
-	wl_list_for_each_reverse(surface, &compositor->base.surface_list, link)
-		if (surface->plane == &compositor->base.primary_plane)
-			weston_surface_draw(surface, &output->base, damage);
-
-	if (!flip)
-		return;
-
-	wl_signal_emit(&output->base.frame_signal, output);
-
-	eglSwapBuffers(compositor->base.egl_display, output->egl_surface);
 	bo = gbm_surface_lock_front_buffer(output->surface);
 	if (!bo) {
 		weston_log("failed to lock front buffer: %m\n");
@@ -362,7 +343,7 @@ drm_output_render(struct drm_output *output, pixman_region32_t *damage, int flip
 
 static void
 drm_output_repaint(struct weston_output *output_base,
-		   pixman_region32_t *damage, int flip)
+		   pixman_region32_t *damage)
 {
 	struct drm_output *output = (struct drm_output *) output_base;
 	struct drm_compositor *compositor =
@@ -372,10 +353,8 @@ drm_output_repaint(struct weston_output *output_base,
 	int ret = 0;
 
 	if (!output->next)
-		drm_output_render(output, damage, flip);
+		drm_output_render(output, damage);
 	if (!output->next)
-		return;
-	if (!flip)
 		return;
 
 	mode = container_of(output->base.current, struct drm_mode, base);
@@ -885,7 +864,7 @@ drm_output_destroy(struct weston_output *output_base)
 	c->crtc_allocator &= ~(1 << output->crtc_id);
 	c->connector_allocator &= ~(1 << output->connector_id);
 
-	eglDestroySurface(c->base.egl_display, output->egl_surface);
+	eglDestroySurface(c->base.egl_display, output->base.egl_surface);
 	gbm_surface_destroy(output->surface);
 
 	weston_plane_release(&output->fb_plane);
@@ -1029,9 +1008,9 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 	}
 	output->next = NULL;
 
-	eglDestroySurface(ec->base.egl_display, output->egl_surface);
+	eglDestroySurface(ec->base.egl_display, output->base.egl_surface);
 	gbm_surface_destroy(output->surface);
-	output->egl_surface = egl_surface;
+	output->base.egl_surface = egl_surface;
 	output->surface = surface;
 
 	/*update output*/
@@ -1511,12 +1490,12 @@ create_output_for_connector(struct drm_compositor *ec,
 		goto err_free;
 	}
 
-	output->egl_surface =
+	output->base.egl_surface =
 		eglCreateWindowSurface(ec->base.egl_display,
 				       ec->base.egl_config,
 				       output->surface,
 				       NULL);
-	if (output->egl_surface == EGL_NO_SURFACE) {
+	if (output->base.egl_surface == EGL_NO_SURFACE) {
 		weston_log("failed to create egl surface\n");
 		goto err_surface;
 	}

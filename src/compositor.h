@@ -149,6 +149,7 @@ enum dpms_enum {
 struct weston_output {
 	uint32_t id;
 
+	EGLSurface egl_surface;
 	struct wl_list link;
 	struct wl_list resource_list;
 	struct wl_global *global;
@@ -177,7 +178,7 @@ struct weston_output {
 	struct wl_list mode_list;
 
 	void (*repaint)(struct weston_output *output,
-			pixman_region32_t *damage, int flip);
+			pixman_region32_t *damage);
 	void (*destroy)(struct weston_output *output);
 	void (*assign_planes)(struct weston_output *output);
 	int (*switch_mode)(struct weston_output *output, struct weston_mode *mode);
@@ -793,5 +794,9 @@ backend_init(struct wl_display *display, int argc, char *argv[],
 
 int
 weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode);
+
+void
+gles2_renderer_repaint_output(struct weston_output *output,
+			      pixman_region32_t *output_damage);
 
 #endif

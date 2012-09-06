@@ -47,7 +47,6 @@ struct android_output {
 
 	struct weston_mode mode;
 	struct android_framebuffer *fb;
-	EGLSurface egl_surface;
 };
 
 struct android_seat {
@@ -122,8 +121,10 @@ android_output_make_current(struct android_output *output)
 	EGLBoolean ret;
 	static int errored;
 
-	ret = eglMakeCurrent(compositor->base.egl_display, output->egl_surface,
-			     output->egl_surface, compositor->base.egl_context);
+	ret = eglMakeCurrent(compositor->base.egl_display,
+			     output->base.egl_surface,
+			     output->base.egl_surface,
+			     compositor->base.egl_context);
 	if (ret == EGL_FALSE) {
 		if (errored)
 			return -1;
@@ -146,33 +147,13 @@ android_finish_frame(void *data)
 }
 
 static void
-android_output_repaint(struct weston_output *base, pixman_region32_t *damage,
-		int flip)
+android_output_repaint(struct weston_output *base, pixman_region32_t *damage)
 {
 	struct android_output *output = to_android_output(base);
-	struct android_compositor *compositor = output->compositor;
-	struct weston_surface *surface;
+        struct android_compositor *compositor = output->compositor;
 	struct wl_event_loop *loop;
-	EGLBoolean ret;
-	static int errored;
 
-	if (android_output_make_current(output) < 0)
-		return;
-
-	wl_list_for_each_reverse(surface, &compositor->base.surface_list, link)
-		weston_surface_draw(surface, &output->base, damage);
-
-	if (!flip)
-		return;
-
-	wl_signal_emit(&output->base.frame_signal, output);
-
-	ret = eglSwapBuffers(compositor->base.egl_display, output->egl_surface);
-	if (ret == EGL_FALSE && !errored) {
-		errored = 1;
-		weston_log("Failed in eglSwapBuffers.\n");
-		print_egl_error_state();
-	}
+	gles2_renderer_repaint_output(&output->base, damage);
 
 	/* FIXME: does Android have a way to signal page flip done? */
 	loop = wl_display_get_event_loop(compositor->base.wl_display);
@@ -470,12 +451,12 @@ android_init_egl(struct android_compositor *compositor,
 		return -1;
 	}
 
-	output->egl_surface =
+	output->base.egl_surface =
 		eglCreateWindowSurface(compositor->base.egl_display,
 				       compositor->base.egl_config,
 				       output->fb->native_window,
 				       NULL);
-	if (output->egl_surface == EGL_NO_SURFACE) {
+	if (output->base.egl_surface == EGL_NO_SURFACE) {
 		weston_log("Failed to create FB EGLSurface.\n");
 		print_egl_error_state();
 		return -1;

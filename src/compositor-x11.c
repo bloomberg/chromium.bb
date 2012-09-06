@@ -105,7 +105,6 @@ struct x11_output {
 	struct weston_output	base;
 
 	xcb_window_t		window;
-	EGLSurface		egl_surface;
 	struct weston_mode	mode;
 	struct wl_event_source *finish_frame_timer;
 };
@@ -322,29 +321,11 @@ x11_compositor_fini_egl(struct x11_compositor *compositor)
 
 static void
 x11_output_repaint(struct weston_output *output_base,
-		   pixman_region32_t *damage, int flip)
+		   pixman_region32_t *damage)
 {
 	struct x11_output *output = (struct x11_output *)output_base;
-	struct x11_compositor *compositor =
-		(struct x11_compositor *)output->base.compositor;
-	struct weston_surface *surface;
 
-	if (!eglMakeCurrent(compositor->base.egl_display, output->egl_surface,
-			    output->egl_surface,
-			    compositor->base.egl_context)) {
-		weston_log("failed to make current\n");
-		return;
-	}
-
-	wl_list_for_each_reverse(surface, &compositor->base.surface_list, link)
-		weston_surface_draw(surface, &output->base, damage);
-
-	if (!flip)
-		return;
-
-	wl_signal_emit(&output->base.frame_signal, output);
-
-	eglSwapBuffers(compositor->base.egl_display, output->egl_surface);
+	gles2_renderer_repaint_output(output_base, damage);
 
 	wl_event_source_timer_update(output->finish_frame_timer, 10);
 }
@@ -373,7 +354,8 @@ x11_output_destroy(struct weston_output *output_base)
 	wl_list_remove(&output->base.link);
 	wl_event_source_remove(output->finish_frame_timer);
 
-	eglDestroySurface(compositor->base.egl_display, output->egl_surface);
+	eglDestroySurface(compositor->base.egl_display,
+			  output->base.egl_surface);
 
 	xcb_destroy_window(compositor->conn, output->window);
 
@@ -579,15 +561,15 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 		x11_output_change_state(output, 1,
 					c->atom.net_wm_state_fullscreen);
 
-	output->egl_surface = 
+	output->base.egl_surface = 
 		eglCreateWindowSurface(c->base.egl_display, c->base.egl_config,
 				       output->window, NULL);
-	if (!output->egl_surface) {
+	if (!output->base.egl_surface) {
 		weston_log("failed to create window surface\n");
 		return NULL;
 	}
-	if (!eglMakeCurrent(c->base.egl_display, output->egl_surface,
-			    output->egl_surface, c->base.egl_context)) {
+	if (!eglMakeCurrent(c->base.egl_display, output->base.egl_surface,
+			    output->base.egl_surface, c->base.egl_context)) {
 		weston_log("failed to make surface current\n");
 		return NULL;
 	}
