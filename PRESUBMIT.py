@@ -23,6 +23,7 @@ _EXCLUDED_PATHS = (
     r".*MakeFile$",
     r".+_autogen\.h$",
     r"^cc[\\\/].*",
+    r".+[\\\/]pnacl_shim\.c$",
 )
 
 

@@ -20,7 +20,11 @@ def Main():
   # If no arguments are provided, assume we are trying to rebuild the
   # C headers with warnings off.
   if not args:
-    args = ['--wnone', '--cgen', '--range=start,end']
+    args = [
+        '--wnone', '--cgen', '--range=start,end',
+        '--pnacl', '--pnaclshim',
+        '../native_client/src/untrusted/pnacl_irt_shim/pnacl_shim.c',
+    ]
     current_dir = os.path.abspath(os.getcwd())
     script_dir = os.path.abspath(os.path.dirname(__file__))
     if current_dir != script_dir:
