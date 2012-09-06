@@ -32,17 +32,7 @@ space \x000c 0
 space \x000D 0          # cr
 space \x00A0 a          # no-break space
 
-digit 0 3456				zéro
-digit 1 16					un
-digit 2 126					deux
-digit 3 146					trois
-digit 4 1456				quatre
-digit 5 156					cinq
-digit 6 1246				six
-digit 7 12456				sept
-digit 8 1256				huit
-digit 9 246					neuf
-
+include digits6DotsPlusDot6.uti
 include latinLetterDef6Dots.uti
 
 uplow Çç 12346		c cédille
@@ -253,4 +243,6 @@ repeated --- 36-36-36
 repeated ___ 456-456-456
 
 always \s--\s 36-36	tiret
+
+include braille-patterns.cti
 
