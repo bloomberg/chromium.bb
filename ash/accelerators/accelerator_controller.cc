@@ -450,6 +450,7 @@ bool AcceleratorController::PerformAction(int action,
             base::Unretained(shell->output_configurator())));
         return true;
       }
+      return false;
     }
 #endif
     case OPEN_FEEDBACK_PAGE:
