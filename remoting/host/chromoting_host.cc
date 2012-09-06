@@ -19,9 +19,9 @@
 #include "remoting/host/audio_scheduler.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/desktop_environment.h"
+#include "remoting/host/desktop_environment_factory.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/host_config.h"
-#include "remoting/host/screen_recorder.h"
 #include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/host_stub.h"
@@ -66,13 +66,12 @@ const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
 ChromotingHost::ChromotingHost(
     ChromotingHostContext* context,
     SignalStrategy* signal_strategy,
-    DesktopEnvironment* environment,
+    DesktopEnvironmentFactory* desktop_environment_factory,
     scoped_ptr<protocol::SessionManager> session_manager)
     : context_(context),
-      desktop_environment_(environment),
+      desktop_environment_factory_(desktop_environment_factory),
       session_manager_(session_manager.Pass()),
       signal_strategy_(signal_strategy),
-      stopping_recorders_(0),
       state_(kInitial),
       protocol_config_(protocol::CandidateSessionConfig::CreateDefault()),
       login_backoff_(&kDefaultBackoffPolicy),
@@ -80,10 +79,9 @@ ChromotingHost::ChromotingHost(
       reject_authenticating_client_(false) {
   DCHECK(context_);
   DCHECK(signal_strategy);
-  DCHECK(desktop_environment_);
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  if (!desktop_environment_->audio_capturer()) {
+  if (!desktop_environment_factory_->SupportsAudioCapture()) {
     // Disable audio by replacing our list of supported audio configurations
     // with the NONE config.
     protocol_config_->mutable_audio_configs()->clear();
@@ -141,18 +139,16 @@ void ChromotingHost::Shutdown(const base::Closure& shutdown_task) {
         shutdown_tasks_.push_back(shutdown_task);
       state_ = kStopping;
 
-      // Disconnect all of the clients, implicitly stopping the ScreenRecorder.
+      // Disconnect all of the clients.
       while (!clients_.empty()) {
         clients_.front()->Disconnect();
       }
-      DCHECK(!recorder_.get());
-      DCHECK(!audio_scheduler_.get());
 
       // Destroy session manager.
       session_manager_.reset();
 
-      if (!stopping_recorders_)
-        ShutdownFinish();
+      // Run the remaining shutdown tasks.
+      ShutdownFinish();
       break;
   }
 }
@@ -203,8 +199,6 @@ void ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
 
   // Disconnects above must have destroyed all other clients and |recorder_|.
   DCHECK_EQ(clients_.size(), 1U);
-  DCHECK(!recorder_.get());
-  DCHECK(!audio_scheduler_.get());
 
   // Notify observers that there is at least one authenticated client.
   const std::string& jid = client->client_jid();
@@ -224,32 +218,7 @@ void ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
 void ChromotingHost::OnSessionChannelsConnected(ClientSession* client) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  // Then we create a ScreenRecorder passing the message loops that
-  // it should run on.
-  VideoEncoder* video_encoder =
-      CreateVideoEncoder(client->connection()->session()->config());
-
-  recorder_ = new ScreenRecorder(context_->capture_task_runner(),
-                                 context_->encode_task_runner(),
-                                 context_->network_task_runner(),
-                                 desktop_environment_->capturer(),
-                                 video_encoder);
-  if (client->connection()->session()->config().is_audio_enabled()) {
-    scoped_ptr<AudioEncoder> audio_encoder =
-        CreateAudioEncoder(client->connection()->session()->config());
-    audio_scheduler_ = new AudioScheduler(
-        context_->audio_task_runner(),
-        context_->network_task_runner(),
-        desktop_environment_->audio_capturer(),
-        audio_encoder.Pass(),
-        client->connection()->audio_stub());
-  }
-
-  // Immediately add the connection and start the session.
-  recorder_->AddConnection(client->connection());
-  recorder_->Start();
-  desktop_environment_->OnSessionStarted(client->CreateClipboardProxy());
-
+  // Notify observers.
   FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
                     OnClientConnected(client->client_jid()));
 }
@@ -265,42 +234,21 @@ void ChromotingHost::OnSessionAuthenticationFailed(ClientSession* client) {
 void ChromotingHost::OnSessionClosed(ClientSession* client) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  scoped_ptr<ClientSession> client_destroyer(client);
-
   ClientList::iterator it = std::find(clients_.begin(), clients_.end(), client);
   CHECK(it != clients_.end());
   clients_.erase(it);
 
-  if (recorder_.get()) {
-    recorder_->RemoveConnection(client->connection());
-  }
-
-  if (audio_scheduler_.get()) {
-    audio_scheduler_->OnClientDisconnected();
-    StopAudioScheduler();
-  }
-
   if (client->is_authenticated()) {
     FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
                       OnClientDisconnected(client->client_jid()));
-
-    // TODO(sergeyu): This teardown logic belongs to ClientSession
-    // class. It should start/stop screen recorder or tell the host
-    // when to do it.
-    if (recorder_.get()) {
-      // Currently we don't allow more than one simultaneous connection,
-      // so we need to shutdown recorder when a client disconnects.
-      StopScreenRecorder();
-    }
-    desktop_environment_->OnSessionFinished();
   }
+
+  client->StopAndDelete();
 }
 
 void ChromotingHost::OnSessionSequenceNumber(ClientSession* session,
                                              int64 sequence_number) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
-  if (recorder_.get())
-    recorder_->UpdateSequenceNumber(sequence_number);
 }
 
 void ChromotingHost::OnSessionRouteChange(
@@ -354,15 +302,20 @@ void ChromotingHost::OnIncomingSession(
 
   LOG(INFO) << "Client connected: " << session->jid();
 
+  // Create the desktop integration implementation for the client to use.
+  scoped_ptr<DesktopEnvironment> desktop_environment =
+      desktop_environment_factory_->Create(context_);
+
   // Create a client object.
   scoped_ptr<protocol::ConnectionToClient> connection(
       new protocol::ConnectionToClient(session));
   ClientSession* client = new ClientSession(
       this,
+      context_->capture_task_runner(),
+      context_->encode_task_runner(),
+      context_->network_task_runner(),
       connection.Pass(),
-      desktop_environment_->event_executor(),
-      desktop_environment_->event_executor(),
-      desktop_environment_->capturer(),
+      desktop_environment.Pass(),
       max_session_duration_);
   clients_.push_back(client);
 }
@@ -423,75 +376,8 @@ void ChromotingHost::SetUiStrings(const UiStrings& ui_strings) {
   ui_strings_ = ui_strings;
 }
 
-// TODO(sergeyu): Move this to SessionManager?
-// static
-VideoEncoder* ChromotingHost::CreateVideoEncoder(
-    const protocol::SessionConfig& config) {
-  const protocol::ChannelConfig& video_config = config.video_config();
-
-  if (video_config.codec == protocol::ChannelConfig::CODEC_VERBATIM) {
-    return VideoEncoderRowBased::CreateVerbatimEncoder();
-  } else if (video_config.codec == protocol::ChannelConfig::CODEC_ZIP) {
-    return VideoEncoderRowBased::CreateZlibEncoder();
-  } else if (video_config.codec == protocol::ChannelConfig::CODEC_VP8) {
-    return new remoting::VideoEncoderVp8();
-  }
-
-  return NULL;
-}
-
-// static
-scoped_ptr<AudioEncoder> ChromotingHost::CreateAudioEncoder(
-    const protocol::SessionConfig& config) {
-  const protocol::ChannelConfig& audio_config = config.audio_config();
-
-  if (audio_config.codec == protocol::ChannelConfig::CODEC_VERBATIM) {
-    return scoped_ptr<AudioEncoder>(new AudioEncoderVerbatim());
-  } else if (audio_config.codec == protocol::ChannelConfig::CODEC_SPEEX) {
-    return scoped_ptr<AudioEncoder>(new AudioEncoderSpeex());
-  }
-
-  NOTIMPLEMENTED();
-  return scoped_ptr<AudioEncoder>(NULL);
-}
-
-void ChromotingHost::StopScreenRecorder() {
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
-  DCHECK(recorder_.get());
-
-  ++stopping_recorders_;
-  scoped_refptr<ScreenRecorder> recorder = recorder_;
-  recorder_ = NULL;
-  recorder->Stop(base::Bind(&ChromotingHost::OnRecorderStopped, this));
-}
-
-void ChromotingHost::StopAudioScheduler() {
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
-  DCHECK(audio_scheduler_.get());
-
-  ++stopping_recorders_;
-  scoped_refptr<AudioScheduler> recorder = audio_scheduler_;
-  audio_scheduler_ = NULL;
-  recorder->Stop(base::Bind(&ChromotingHost::OnRecorderStopped, this));
-}
-
-void ChromotingHost::OnRecorderStopped() {
-  if (!context_->network_task_runner()->BelongsToCurrentThread()) {
-    context_->network_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&ChromotingHost::OnRecorderStopped, this));
-    return;
-  }
-
-  --stopping_recorders_;
-  DCHECK_GE(stopping_recorders_, 0);
-
-  if (!stopping_recorders_ && state_ == kStopping)
-    ShutdownFinish();
-}
-
 void ChromotingHost::ShutdownFinish() {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
-  DCHECK(!stopping_recorders_);
 
   state_ = kStopped;
 

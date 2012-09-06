@@ -9,6 +9,9 @@
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/chromoting_host.h"
+#include "remoting/host/desktop_environment.h"
+#include "remoting/host/desktop_environment_factory.h"
+#include "remoting/host/event_executor_fake.h"
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/host/it2me_host_user_interface.h"
 #include "remoting/host/video_frame_capturer_fake.h"
@@ -62,6 +65,34 @@ void DoNothing() {
 
 }  // namespace
 
+class MockDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
+ public:
+  MockDesktopEnvironmentFactory();
+  virtual ~MockDesktopEnvironmentFactory();
+
+  virtual scoped_ptr<DesktopEnvironment> Create(
+      ChromotingHostContext* context) OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockDesktopEnvironmentFactory);
+};
+
+MockDesktopEnvironmentFactory::MockDesktopEnvironmentFactory() {
+}
+
+MockDesktopEnvironmentFactory::~MockDesktopEnvironmentFactory() {
+}
+
+scoped_ptr<DesktopEnvironment> MockDesktopEnvironmentFactory::Create(
+    ChromotingHostContext* context) {
+  scoped_ptr<EventExecutor> event_executor(new EventExecutorFake());
+  scoped_ptr<VideoFrameCapturer> video_capturer(new VideoFrameCapturerFake());
+  return scoped_ptr<DesktopEnvironment>(new DesktopEnvironment(
+      scoped_ptr<AudioCapturer>(NULL),
+      event_executor.Pass(),
+      video_capturer.Pass()));
+}
+
 class ChromotingHostTest : public testing::Test {
  public:
   ChromotingHostTest() {
@@ -83,18 +114,11 @@ class ChromotingHostTest : public testing::Test {
         .Times(AnyNumber())
         .WillRepeatedly(Return(message_loop_proxy_.get()));
 
-    scoped_ptr<VideoFrameCapturer> capturer(new VideoFrameCapturerFake());
-    scoped_ptr<AudioCapturer> audio_capturer(NULL);
-    event_executor_ = new MockEventExecutor();
-    desktop_environment_ = DesktopEnvironment::CreateFake(
-        &context_,
-        capturer.Pass(),
-        scoped_ptr<EventExecutor>(event_executor_),
-        audio_capturer.Pass());
+    desktop_environment_factory_.reset(new MockDesktopEnvironmentFactory());
     session_manager_ = new protocol::MockSessionManager();
 
     host_ = new ChromotingHost(
-        &context_, &signal_strategy_, desktop_environment_.get(),
+        &context_, &signal_strategy_, desktop_environment_factory_.get(),
         scoped_ptr<protocol::SessionManager>(session_manager_));
     host_->AddStatusObserver(&host_status_observer_);
 
@@ -145,11 +169,11 @@ class ChromotingHostTest : public testing::Test {
     EXPECT_CALL(*session2_, config())
         .WillRepeatedly(ReturnRef(session_config2_));
 
-    owned_connection1_.reset(new MockConnectionToClient(
-        session1_, &host_stub1_, desktop_environment_->event_executor()));
+    owned_connection1_.reset(new MockConnectionToClient(session1_,
+                                                        &host_stub1_));
     connection1_ = owned_connection1_.get();
-    owned_connection2_.reset(new MockConnectionToClient(
-        session2_, &host_stub2_, desktop_environment_->event_executor()));
+    owned_connection2_.reset(new MockConnectionToClient(session2_,
+                                                        &host_stub2_));
     connection2_ = owned_connection2_.get();
 
     ON_CALL(video_stub1_, ProcessVideoPacketPtr(_, _))
@@ -194,12 +218,17 @@ class ChromotingHostTest : public testing::Test {
         ((connection_index == 0) ? owned_connection1_ : owned_connection2_).
         PassAs<protocol::ConnectionToClient>();
     protocol::ConnectionToClient* connection_ptr = connection.get();
+    scoped_ptr<DesktopEnvironment> desktop_environment =
+        host_->desktop_environment_factory_->Create(&context_);
+    connection_ptr->set_input_stub(desktop_environment->event_executor());
+
     ClientSession* client = new ClientSession(
         host_.get(),
+        context_.capture_task_runner(),
+        context_.encode_task_runner(),
+        context_.network_task_runner(),
         connection.Pass(),
-        desktop_environment_->event_executor(),
-        desktop_environment_->event_executor(),
-        desktop_environment_->capturer(),
+        host_->desktop_environment_factory_->Create(&context_),
         base::TimeDelta());
     connection_ptr->set_host_stub(client);
 
@@ -304,12 +333,9 @@ class ChromotingHostTest : public testing::Test {
         EXPECT_CALL(host_status_observer_, OnClientAuthenticated(session_jid));
     EXPECT_CALL(host_status_observer_, OnClientConnected(session_jid))
         .After(client_authenticated);
-    Expectation session_started =
-        EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_))
-        .After(client_authenticated);
     Expectation video_packet_sent =
         EXPECT_CALL(video_stub, ProcessVideoPacketPtr(_, _))
-        .After(session_started)
+        .After(client_authenticated)
         .WillOnce(DoAll(
             action,
             RunDoneTask()))
@@ -355,12 +381,10 @@ class ChromotingHostTest : public testing::Test {
                                      A action) {
     const std::string& session_jid = get_session_jid(connection_index);
 
-    EXPECT_CALL(*event_executor_, OnSessionFinished())
-        .After(after)
-        .WillOnce(action);
     if (expect_host_status_change) {
       EXPECT_CALL(host_status_observer_, OnClientDisconnected(session_jid))
           .After(after)
+          .WillOnce(action)
           .RetiresOnSaturation();
     }
   }
@@ -371,8 +395,7 @@ class ChromotingHostTest : public testing::Test {
   MockChromotingHostContext context_;
   MockConnectionToClientEventHandler handler_;
   MockSignalStrategy signal_strategy_;
-  MockEventExecutor* event_executor_;
-  scoped_ptr<DesktopEnvironment> desktop_environment_;
+  scoped_ptr<DesktopEnvironmentFactory> desktop_environment_factory_;
   scoped_ptr<It2MeHostUserInterface> it2me_host_user_interface_;
   scoped_refptr<ChromotingHost> host_;
   MockHostStatusObserver host_status_observer_;

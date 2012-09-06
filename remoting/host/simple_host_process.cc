@@ -41,6 +41,8 @@
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/dns_blackhole_checker.h"
 #include "remoting/host/event_executor.h"
+#include "remoting/host/desktop_environment.h"
+#include "remoting/host/desktop_environment_factory.h"
 #include "remoting/host/heartbeat_sender.h"
 #include "remoting/host/host_key_pair.h"
 #include "remoting/host/host_secret.h"
@@ -93,6 +95,36 @@ const char kVideoSwitchValueVp8[] = "vp8";
 }  // namespace
 
 namespace remoting {
+
+class FakeDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
+ public:
+  FakeDesktopEnvironmentFactory();
+  virtual ~FakeDesktopEnvironmentFactory();
+
+  virtual scoped_ptr<DesktopEnvironment> Create(
+      ChromotingHostContext* context) OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeDesktopEnvironmentFactory);
+};
+
+FakeDesktopEnvironmentFactory::FakeDesktopEnvironmentFactory() {
+}
+
+FakeDesktopEnvironmentFactory::~FakeDesktopEnvironmentFactory() {
+}
+
+scoped_ptr<DesktopEnvironment> FakeDesktopEnvironmentFactory::Create(
+    ChromotingHostContext* context) {
+  scoped_ptr<VideoFrameCapturer> capturer(new VideoFrameCapturerFake());
+  scoped_ptr<EventExecutor> event_executor = EventExecutor::Create(
+      context->desktop_task_runner(),
+      context->ui_task_runner());
+  scoped_ptr<AudioCapturer> audio_capturer(NULL);
+  return scoped_ptr<DesktopEnvironment>(new DesktopEnvironment(
+      audio_capturer.Pass(),
+      event_executor.Pass(),
+      capturer.Pass()));
+}
 
 class SimpleHost : public HeartbeatSender::Listener {
  public:
@@ -229,22 +261,13 @@ class SimpleHost : public HeartbeatSender::Listener {
         base::Bind(&SimpleHost::OnAuthFailed, base::Unretained(this))));
 
     if (fake_) {
-      scoped_ptr<VideoFrameCapturer> capturer(new VideoFrameCapturerFake());
-      scoped_ptr<EventExecutor> event_executor = EventExecutor::Create(
-          context_.desktop_task_runner(),
-          context_.ui_task_runner());
-      scoped_ptr<AudioCapturer> audio_capturer(NULL);
-      desktop_environment_ = DesktopEnvironment::CreateFake(
-          &context_,
-          capturer.Pass(),
-          event_executor.Pass(),
-          audio_capturer.Pass());
+      desktop_environment_factory_.reset(new FakeDesktopEnvironmentFactory());
     } else {
-      desktop_environment_ = DesktopEnvironment::Create(&context_);
+      desktop_environment_factory_.reset(new DesktopEnvironmentFactory());
     }
 
     host_ = new ChromotingHost(
-        &context_, signal_strategy_.get(), desktop_environment_.get(),
+        &context_, signal_strategy_.get(), desktop_environment_factory_.get(),
         CreateHostSessionManager(network_settings_,
                                  context_.url_request_context_getter()));
 
@@ -331,10 +354,10 @@ class SimpleHost : public HeartbeatSender::Listener {
   std::string xmpp_auth_token_;
   std::string xmpp_auth_service_;
 
+  scoped_ptr<DesktopEnvironmentFactory> desktop_environment_factory_;
   scoped_ptr<XmppSignalStrategy> signal_strategy_;
   scoped_ptr<DnsBlackholeChecker> dns_blackhole_checker_;
   scoped_ptr<SignalingConnector> signaling_connector_;
-  scoped_ptr<DesktopEnvironment> desktop_environment_;
   scoped_ptr<LogToServer> log_to_server_;
   scoped_ptr<It2MeHostUserInterface> it2me_host_user_interface_;
   scoped_ptr<RegisterSupportHostRequest> register_request_;
