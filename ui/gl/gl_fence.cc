@@ -33,7 +33,7 @@ class GLFenceNVFence: public gfx::GLFence {
   }
 
  private:
-  ~GLFenceNVFence() {
+  virtual ~GLFenceNVFence() {
     glDeleteFencesNV(1, &fence_);
   }
 
@@ -63,7 +63,7 @@ class GLFenceARBSync: public gfx::GLFence {
   }
 
  private:
-  ~GLFenceARBSync() {
+  virtual ~GLFenceARBSync() {
     glDeleteSync(sync_);
   }
 
