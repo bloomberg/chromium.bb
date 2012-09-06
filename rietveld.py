@@ -226,7 +226,7 @@ class Rietveld(object):
         ('description', description),
         ('xsrf_token', self.xsrf_token())])
 
-  def add_comment(self, issue, message):
+  def add_comment(self, issue, message, add_as_reviewer=False):
     max_message = 10000
     tail = '…\n(message too large)'
     if len(message) > max_message:
@@ -236,6 +236,7 @@ class Rietveld(object):
         ('xsrf_token', self.xsrf_token()),
         ('message', message),
         ('message_only', 'True'),
+        ('add_as_reviewer', str(bool(add_as_reviewer))),
         ('send_mail', 'True'),
         ('no_redirect', 'True')])
 
