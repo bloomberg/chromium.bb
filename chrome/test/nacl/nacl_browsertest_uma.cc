@@ -104,11 +104,6 @@ void HistogramHelper::CheckTotalCount(const std::string& name,
       expected_count << ").";
 }
 
-// Disable tests under Linux ASAN.
-// Linux ASAN doesn't work with NaCl.  See: http://crbug.com/104832.
-// TODO(ncbray) enable after http://codereview.chromium.org/10830009/ lands.
-#if !(defined(ADDRESS_SANITIZER) && defined(OS_LINUX))
-
 NACL_BROWSER_TEST_F(NaClBrowserTest, SuccessfulLoadUMA, {
   // Load a NaCl module to generate UMA data.
   RunLoadTest(FILE_PATH_LITERAL("nacl_load_test.html"));
@@ -135,7 +130,5 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, SuccessfulLoadUMA, {
 
 // TODO(ncbray) convert the rest of nacl_uma.py (currently in the NaCl repo.)
 // Test validation failures and crashes.
-
-#endif  // !(defined(ADDRESS_SANITIZER) && defined(OS_LINUX))
 
 }  // namespace anonymous
