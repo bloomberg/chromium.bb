@@ -9,6 +9,16 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
 
+#if REGAL_STATIC_EGL
+extern "C" {
+
+typedef EGLContext RegalSystemContext;
+#define REGAL_DECL
+REGAL_DECL void RegalMakeCurrent( RegalSystemContext ctx );
+
+}  // extern "C"
+#endif
+
 namespace {
 void SetCurrentError(EGLint error_code) {
 }
@@ -133,6 +143,25 @@ const char* eglQueryString(EGLDisplay dpy, EGLint name) {
   }
 }
 
+EGLBoolean eglChooseConfig(EGLDisplay dpy,
+                           const EGLint* attrib_list,
+                           EGLConfig* configs,
+                           EGLint config_size,
+                           EGLint* num_config) {
+  EGLint error_code = ValidateDisplay(dpy);
+  if (error_code != EGL_SUCCESS)
+    return EglError(error_code, EGL_FALSE);
+
+  if (num_config == NULL)
+    return EglError(EGL_BAD_PARAMETER, EGL_FALSE);
+
+  egl::Display* display = static_cast<egl::Display*>(dpy);
+  if (!display->ChooseConfigs(configs, config_size, num_config))
+    return EglError(EGL_BAD_ATTRIBUTE, EGL_FALSE);
+
+  return EglSuccess(EGL_TRUE);
+}
+
 EGLBoolean eglGetConfigs(EGLDisplay dpy,
                          EGLConfig* configs,
                          EGLint config_size,
@@ -149,14 +178,6 @@ EGLBoolean eglGetConfigs(EGLDisplay dpy,
     return EglError(EGL_BAD_ATTRIBUTE, EGL_FALSE);
 
   return EglSuccess(EGL_TRUE);
-}
-
-EGLBoolean eglChooseConfig(EGLDisplay dpy,
-                           const EGLint* attrib_list,
-                           EGLConfig* configs,
-                           EGLint config_size,
-                           EGLint* num_config) {
-  return EGL_FALSE;
 }
 
 EGLBoolean eglGetConfigAttrib(EGLDisplay dpy,
@@ -323,6 +344,11 @@ EGLBoolean eglMakeCurrent(EGLDisplay dpy,
   egl::Display* display = static_cast<egl::Display*>(dpy);
   if (!display->MakeCurrent(draw, read, ctx))
     return EglError(EGL_CONTEXT_LOST, EGL_FALSE);
+
+#if REGAL_STATIC_EGL
+  RegalMakeCurrent(ctx);
+#endif
+
   return EGL_TRUE;
 }
 

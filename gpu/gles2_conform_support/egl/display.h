@@ -49,6 +49,8 @@ class Display {
 
   // Config routines.
   bool IsValidConfig(EGLConfig config);
+  bool ChooseConfigs(
+      EGLConfig* configs, EGLint config_size, EGLint* num_config);
   bool GetConfigs(EGLConfig* configs, EGLint config_size, EGLint* num_config);
   bool GetConfigAttrib(EGLConfig config, EGLint attribute, EGLint* value);
 

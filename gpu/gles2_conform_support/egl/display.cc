@@ -43,6 +43,21 @@ bool Display::IsValidConfig(EGLConfig config) {
   return (config != NULL) && (config == config_.get());
 }
 
+bool Display::ChooseConfigs(EGLConfig* configs,
+                            EGLint config_size,
+                            EGLint* num_config) {
+  // TODO(alokp): Find out a way to find all configs. CommandBuffer currently
+  // does not support finding or choosing configs.
+  *num_config = 1;
+  if (configs != NULL) {
+    if (config_ == NULL) {
+      config_.reset(new Config);
+    }
+    configs[0] = config_.get();
+  }
+  return true;
+}
+
 bool Display::GetConfigs(EGLConfig* configs,
                          EGLint config_size,
                          EGLint* num_config) {
@@ -129,7 +144,22 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
 
   gl_context_->MakeCurrent(gl_surface_);
 
+  EGLint depth_size = 0;
+  EGLint alpha_size = 0;
+  EGLint stencil_size = 0;
+  GetConfigAttrib(config, EGL_DEPTH_SIZE, &depth_size);
+  GetConfigAttrib(config, EGL_ALPHA_SIZE, &alpha_size);
+  GetConfigAttrib(config, EGL_STENCIL_SIZE, &stencil_size);
   std::vector<int32> attribs;
+  attribs.push_back(EGL_DEPTH_SIZE);
+  attribs.push_back(depth_size);
+  attribs.push_back(EGL_ALPHA_SIZE);
+  attribs.push_back(alpha_size);
+  attribs.push_back(EGL_STENCIL_SIZE);
+  attribs.push_back(stencil_size);
+  // TODO(gman): Insert attrib_list. Although ES 1.1 says it must be null
+  attribs.push_back(EGL_NONE);
+
   if (!decoder_->Initialize(gl_surface_.get(),
                             gl_context_.get(),
                             gl_surface_->IsOffscreen(),
