@@ -117,7 +117,7 @@ const int kExceptionSignals[] = {
 };
 const int kNumHandledSignals =
     sizeof(kExceptionSignals) / sizeof(kExceptionSignals[0]);
-struct sigaction old_handlers[kNumHandledSignals] = {0};
+struct sigaction old_handlers[kNumHandledSignals];
 bool handlers_installed = false;
 
 // InstallAlternateStackLocked will store the newly installed stack in new_stack
@@ -524,7 +524,7 @@ bool ExceptionHandler::WriteMinidump() {
     // Reposition the FD to its beginning and resize it to get rid of the
     // previous minidump info.
     lseek(minidump_descriptor_.fd(), 0, SEEK_SET);
-    ftruncate(minidump_descriptor_.fd(), 0);
+    static_cast<void>(ftruncate(minidump_descriptor_.fd(), 0));
   }
 
   // Allow ourselves to be dumped.
