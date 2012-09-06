@@ -274,20 +274,20 @@ void ChromeResourceDispatcherHostDelegate::AppendChromeMetricsHeaders(
     content::ResourceContext* resource_context,
     ResourceType::Type resource_type) {
   // Don't attempt to append headers to requests that have already started.
-  // TODO(stevet): Remove this once we've resolved the request ordering issues
+  // TODO(stevet): Remove this once the request ordering issues are resolved
   // in crbug.com/128048.
   if (request->is_pending())
     return;
 
-  // Note our criteria for attaching Chrome experiment headers:
+  // Note the criteria for attaching Chrome experiment headers:
   // 1. We only transmit to *.google.<TLD> domains. NOTE that this use of
   //    google_util helpers to check this does not guarantee that the URL is
   //    Google-owned, only that it is of the form *.google.<TLD>. In the future
   //    we may choose to reinforce this check.
-  // 2. We only transmit for non-Incognito profiles.
-  // 3. For the X-Chrome-UMA-Enabled bit, we only set it if UMA is in fact
-  //    enabled for this install of Chrome.
-  // 4. For the X-Chrome-Variations, we only include non-empty variation IDs.
+  // 2. Only transmit for non-Incognito profiles.
+  // 3. For the X-Chrome-UMA-Enabled bit, only set it if UMA is in fact enabled
+  //    for this install of Chrome.
+  // 4. For the X-Chrome-Variations, only include non-empty variation IDs.
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
   if (io_data->is_incognito() ||
       !google_util::IsGoogleDomainUrl(request->url().spec(),
@@ -298,7 +298,7 @@ void ChromeResourceDispatcherHostDelegate::AppendChromeMetricsHeaders(
   if (io_data->GetMetricsEnabledStateOnIOThread())
     request->SetExtraRequestHeaderByName("X-Chrome-UMA-Enabled", "1", false);
 
-  // Lazily initialize the header, if not already done, before we attempt to
+  // Lazily initialize the header, if not already done, before attempting to
   // transmit it.
   InitVariationIDsCacheIfNeeded();
   if (!variation_ids_header_.empty()) {
@@ -398,8 +398,8 @@ void ChromeResourceDispatcherHostDelegate::InitVariationIDsCacheIfNeeded() {
   if (variation_ids_cache_initialized_)
     return;
 
-  // Register for additional cache updates. We do this first to avoid a race
-  // that could cause us to miss registered FieldTrials.
+  // Register for additional cache updates. This is done first to avoid a race
+  // that could cause registered FieldTrials to be missed.
   base::FieldTrialList::AddObserver(this);
 
   base::FieldTrial::SelectedGroups initial_groups;
@@ -417,10 +417,20 @@ void ChromeResourceDispatcherHostDelegate::InitVariationIDsCacheIfNeeded() {
 }
 
 void ChromeResourceDispatcherHostDelegate::UpdateVariationIDsHeaderValue() {
-  // The header value is a serialized protobuffer of Variation IDs which we
-  // base64 encode before transmitting as a string.
+  // The header value is a serialized protobuffer of Variation IDs which is
+  // base64 encoded before transmitting as a string.
   if (variation_ids_set_.empty())
     return;
+
+  // This is the bottleneck for the creation of the header, so validate the size
+  // here. Force a hard maximum on the ID count in case the Variations server
+  // returns too many IDs and DOSs receiving servers with large requests.
+  DCHECK_LE(variation_ids_set_.size(), 10U);
+  if (variation_ids_set_.size() > 20) {
+    variation_ids_header_.clear();
+    return;
+  }
+
   metrics::ChromeVariations proto;
   for (std::set<chrome_variations::VariationID>::const_iterator it =
       variation_ids_set_.begin(); it != variation_ids_set_.end(); ++it)
@@ -433,8 +443,8 @@ void ChromeResourceDispatcherHostDelegate::UpdateVariationIDsHeaderValue() {
   if (base::Base64Encode(serialized, &hashed)) {
     // If successful, swap the header value with the new one.
     // Note that the list of IDs and the header could be temporarily out of sync
-    // if IDs are added as we are recreating the header, but we're OK with those
-    // descrepancies.
+    // if IDs are added as the header is recreated. The receiving servers are OK
+    // with such descrepancies.
     variation_ids_header_ = hashed;
   } else {
     DVLOG(1) << "Failed to base64 encode Variation IDs value: " << serialized;
