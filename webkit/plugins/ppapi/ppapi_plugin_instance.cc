@@ -1506,6 +1506,7 @@ bool PluginInstance::Decrypt(
     return false;
 
   ScopedPPResource encrypted_resource(
+      ScopedPPResource::PassRef(),
       MakeBufferResource(pp_instance(),
                          encrypted_buffer->GetData(),
                          encrypted_buffer->GetDataSize()));
@@ -2235,10 +2236,8 @@ void PluginInstance::DeliverBlock(PP_Instance instance,
                                   PP_Resource decrypted_block,
                                   const PP_DecryptedBlockInfo* block_info) {
   DCHECK(block_info);
-
   DecryptionCBMap::iterator found = pending_decryption_cbs_.find(
       block_info->tracking_info.request_id);
-
   if (found == pending_decryption_cbs_.end())
     return;
   media::Decryptor::DecryptCB decrypt_cb = found->second;
@@ -2252,8 +2251,8 @@ void PluginInstance::DeliverBlock(PP_Instance instance,
     decrypt_cb.Run(media::Decryptor::kError, NULL);
     return;
   }
-  EnterResourceNoLock<PPB_Buffer_API> enter(decrypted_block, true);
 
+  EnterResourceNoLock<PPB_Buffer_API> enter(decrypted_block, true);
   if (!enter.succeeded()) {
     decrypt_cb.Run(media::Decryptor::kError, NULL);
     return;
@@ -2264,6 +2263,8 @@ void PluginInstance::DeliverBlock(PP_Instance instance,
     return;
   }
 
+  // TODO(tomfinegan): Find a way to take ownership of the shared memory
+  // managed by the PPB_Buffer_Dev, and avoid the extra copy.
   scoped_refptr<media::DecoderBuffer> decrypted_buffer(
       media::DecoderBuffer::CopyFrom(
           reinterpret_cast<const uint8*>(mapper.data()), mapper.size()));

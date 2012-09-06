@@ -90,7 +90,7 @@ class CdmWrapper : public pp::Instance,
   // buffer resource, and returns it. Returns a an invalid PP_Resource with an
   // ID of 0 on failure. Upon success, the returned Buffer resource has a
   // reference count of 1.
-  PP_Resource MakeBufferResource(const uint8_t* data, uint32_t data_size);
+  pp::Buffer_Dev MakeBufferResource(const uint8_t* data, uint32_t data_size);
 
   // <code>PPB_ContentDecryptor_Private</code> dispatchers. These are passed to
   // <code>callback_factory_</code> to ensure that calls into
@@ -233,7 +233,6 @@ bool CdmWrapper::Decrypt(pp::Buffer_Dev encrypted_buffer,
       status,
       output_buffer,
       encrypted_block_info.tracking_info));
-
   return true;
 }
 
@@ -243,18 +242,17 @@ bool CdmWrapper::DecryptAndDecode(
   return false;
 }
 
-PP_Resource CdmWrapper::MakeBufferResource(const uint8_t* data,
-                                           uint32_t data_size) {
+pp::Buffer_Dev CdmWrapper::MakeBufferResource(const uint8_t* data,
+                                              uint32_t data_size) {
   if (!data || !data_size)
-    return 0;
+    return pp::Buffer_Dev();
 
   pp::Buffer_Dev buffer(this, data_size);
   if (!buffer.data())
-    return 0;
+    return pp::Buffer_Dev();
 
   memcpy(buffer.data(), data, data_size);
-
-  return buffer.detach();
+  return buffer;
 }
 
 void CdmWrapper::KeyAdded(int32_t result, const std::string& session_id) {
@@ -296,7 +294,6 @@ void CdmWrapper::DeliverBlock(int32_t result,
                               const PP_DecryptTrackingInfo& tracking_info) {
   pp::Buffer_Dev decrypted_buffer(MakeBufferResource(output_buffer.data,
                                                      output_buffer.data_size));
-
   PP_DecryptedBlockInfo decrypted_block_info;
   decrypted_block_info.tracking_info.request_id = tracking_info.request_id;
   decrypted_block_info.tracking_info.timestamp = output_buffer.timestamp;

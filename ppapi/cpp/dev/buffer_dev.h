@@ -22,6 +22,10 @@ class Buffer_Dev : public Resource {
   // resulting object will be is_null() if either Create() or Map() fails.
   Buffer_Dev(const InstanceHandle& instance, uint32_t size);
 
+  // Constructor used when the buffer resource already has a reference count
+  // assigned. No additional reference is taken.
+  Buffer_Dev(PassRef, PP_Resource resource);
+
   // Unmap the underlying shared memory.
   virtual ~Buffer_Dev();
 

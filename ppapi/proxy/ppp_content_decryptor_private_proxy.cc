@@ -75,6 +75,22 @@ PP_Var ExtractReceivedVarAndAddRef(Dispatcher* dispatcher,
   return var;
 }
 
+// Increments the reference count on |resource| to ensure that it remains valid
+// until the plugin receives the resource within the asynchronous message sent
+// from the proxy.  The plugin side takes ownership of that reference. Returns
+// PP_TRUE when the reference is successfully added, PP_FALSE otherwise.
+PP_Bool AddRefResourceForPlugin(HostDispatcher* dispatcher,
+                                PP_Resource resource) {
+  const PPB_Core* core = static_cast<const PPB_Core*>(
+      dispatcher->local_get_interface()(PPB_CORE_INTERFACE));
+  if (!core) {
+    NOTREACHED();
+    return PP_FALSE;
+  }
+  core->AddRefResource(resource);
+  return PP_TRUE;
+}
+
 PP_Bool GenerateKeyRequest(PP_Instance instance,
                            PP_Var key_system,
                            PP_Var init_data) {
@@ -133,17 +149,11 @@ PP_Bool Decrypt(PP_Instance instance,
     NOTREACHED();
     return PP_FALSE;
   }
-  const PPB_Core* core = static_cast<const PPB_Core*>(
-      dispatcher->local_get_interface()(PPB_CORE_INTERFACE));
-  if (!core) {
+
+  if (!AddRefResourceForPlugin(dispatcher, encrypted_block)) {
     NOTREACHED();
     return PP_FALSE;
   }
-
-  // We need to take a ref on the resource now. The browser may drop
-  // references once we return from here, but we're sending an asynchronous
-  // message. The plugin side takes ownership of that reference.
-  core->AddRefResource(encrypted_block);
 
   HostResource host_resource;
   host_resource.SetHostResource(instance, encrypted_block);
@@ -180,6 +190,11 @@ PP_Bool DecryptAndDecode(PP_Instance instance,
                          const PP_EncryptedBlockInfo* encrypted_block_info) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher) {
+    NOTREACHED();
+    return PP_FALSE;
+  }
+
+  if (!AddRefResourceForPlugin(dispatcher, encrypted_block)) {
     NOTREACHED();
     return PP_FALSE;
   }

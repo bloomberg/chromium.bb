@@ -43,6 +43,11 @@ Buffer_Dev::Buffer_Dev(const InstanceHandle& instance, uint32_t size)
   Init();
 }
 
+Buffer_Dev::Buffer_Dev(PassRef, PP_Resource resource)
+    : Resource(PassRef(), resource) {
+  Init();
+}
+
 Buffer_Dev::~Buffer_Dev() {
   get_interface<PPB_Buffer_Dev>()->Unmap(pp_resource());
 }

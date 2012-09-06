@@ -101,7 +101,7 @@ PP_Bool Decrypt(PP_Instance instance,
   if (!object)
     return PP_FALSE;
 
-  pp::Buffer_Dev encrypted_block(encrypted_resource);
+  pp::Buffer_Dev encrypted_block(pp::PassRef(), encrypted_resource);
 
   return PP_FromBool(
       static_cast<ContentDecryptor_Private*>(object)->Decrypt(
@@ -117,7 +117,7 @@ PP_Bool DecryptAndDecode(PP_Instance instance,
   if (!object)
     return PP_FALSE;
 
-  pp::Buffer_Dev encrypted_block(encrypted_resource);
+  pp::Buffer_Dev encrypted_block(pp::PassRef(), encrypted_resource);
 
   return PP_FromBool(
       static_cast<ContentDecryptor_Private*>(object)->DecryptAndDecode(
