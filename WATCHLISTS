@@ -307,7 +307,7 @@
                   '|content/public/.*speech'
     },
     'sync': {
-      'filepath': 'chrome/browser/sync/',
+      'filepath': 'chrome/browser/sync/|sync/',
     },
     'tab_contents': {
       'filepath': 'chrome/browser/tab_contents/|'\
@@ -524,7 +524,8 @@
     'site_instance': ['creis+watch@chromium.org', 'ajwong+watch@chromium.org'],
     'speech': ['satish@chromium.org'],
     'sync': ['tim@chromium.org', 'nick@chromium.org',
-             'akalin@chromium.org', 'rsimha@chromium.org'],
+             'akalin@chromium.org', 'rsimha@chromium.org',
+             'haitaol@chromium.org'],
     'tab_contents': ['avi@chromium.org',
                      'creis+watch@chromium.org', 'ajwong+watch@chromium.org'],
     'task_manager': ['yoshiki+watch@chromium.org'],
