@@ -236,8 +236,10 @@ void WebUILoginView::OpenProxySettings() {
 void WebUILoginView::OnPostponedShow() {
   set_is_hidden(false);
   // If notification will happen later let it fire login-prompt-visible signal.
-  if (login_visible_notification_fired_)
+  if (login_visible_notification_fired_) {
+    LOG(INFO) << "Login WebUI >> postponed show, login_visible already fired";
     OnLoginPromptVisible();
+  }
 }
 
 void WebUILoginView::SetStatusAreaVisible(bool visible) {
@@ -353,10 +355,13 @@ void WebUILoginView::RequestMediaAccessPermission(
 
 void WebUILoginView::OnLoginPromptVisible() {
   // If we're hidden than will generate this signal once we're shown.
-  if (is_hidden_ || login_prompt_visible_handled_)
+  if (is_hidden_ || login_prompt_visible_handled_) {
+    LOG(INFO) << "Login WebUI >> not emitting signal, hidden: " << is_hidden_;
     return;
+  }
 
   if (should_emit_login_prompt_visible_) {
+    LOG(INFO) << "Login WebUI >> login-prompt-visible";
     chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
         EmitLoginPromptVisible();
   }

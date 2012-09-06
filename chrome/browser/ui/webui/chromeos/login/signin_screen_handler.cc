@@ -290,7 +290,8 @@ SigninScreenHandler::SigninScreenHandler()
       dns_clear_task_running_(false),
       cookies_cleared_(false),
       cookie_remover_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      webui_visible_(false) {
   CrosSettings::Get()->AddSettingsObserver(kAccountsPrefAllowNewUser, this);
   CrosSettings::Get()->AddSettingsObserver(kAccountsPrefAllowGuest, this);
 }
@@ -1077,6 +1078,8 @@ void SigninScreenHandler::HandleOpenProxySettings(const base::ListValue* args) {
 }
 
 void SigninScreenHandler::HandleLoginVisible(const base::ListValue* args) {
+  LOG(INFO) << "Login WebUI >> LoginVisible, webui_visible_: "
+            << webui_visible_;
   if (!webui_visible_) {
     // There might be multiple messages from OOBE UI so send notifications after
     // the first one only.
