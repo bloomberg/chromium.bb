@@ -13,7 +13,6 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "content/browser/gpu/gpu_process_host.h"
-#include "content/browser/gpu/gpu_util.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/gpu/gpu_info_collector.h"
 #include "content/public/browser/browser_thread.h"
@@ -59,24 +58,14 @@ GpuDataManagerImpl::GpuDataManagerImpl()
     BlacklistCard();
 }
 
-void GpuDataManagerImpl::Initialize(
-    const std::string& browser_version_string,
-    const std::string& gpu_blacklist_json) {
+void GpuDataManagerImpl::InitializeGpuInfo() {
   content::GPUInfo gpu_info;
-  gpu_info_collector::CollectPreliminaryGraphicsInfo(&gpu_info);
-
-  if (!gpu_blacklist_json.empty()) {
-    CHECK(!browser_version_string.empty());
-    gpu_blacklist_.reset(new GpuBlacklist());
-    bool succeed = gpu_blacklist_->LoadGpuBlacklist(
-        browser_version_string,
-        gpu_blacklist_json,
-        GpuBlacklist::kCurrentOsOnly);
-    CHECK(succeed);
-  }
-
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSkipGpuDataLoading))
+    gpu_info_collector::CollectPreliminaryGraphicsInfo(&gpu_info);
+  else
+    gpu_info.finalized = true;
   UpdateGpuInfo(gpu_info);
-  UpdatePreliminaryBlacklistedFeatures();
 }
 
 GpuDataManagerImpl::~GpuDataManagerImpl() {
@@ -102,15 +91,6 @@ void GpuDataManagerImpl::UpdateGpuInfo(const content::GPUInfo& gpu_info) {
     return;
 
   content::GetContentClient()->SetGpuInfo(gpu_info);
-
-  if (gpu_blacklist_.get()) {
-    GpuFeatureType feature_type = gpu_blacklist_->DetermineGpuFeatureType(
-        GpuBlacklist::kOsAny,
-        NULL,
-        GpuDataManager::GetInstance()->GetGPUInfo());
-    gpu_util::UpdateStats(gpu_blacklist_.get(), feature_type);
-    UpdateBlacklistedFeatures(feature_type);
-  }
 
   {
     base::AutoLock auto_lock(gpu_info_lock_);
@@ -162,12 +142,6 @@ base::ListValue* GpuDataManagerImpl::GetLogMessages() const {
   return value;
 }
 
-std::string GpuDataManagerImpl::GetBlacklistVersion() const {
-  if (gpu_blacklist_.get())
-    return gpu_blacklist_->GetVersion();
-  return "0";
-}
-
 GpuFeatureType GpuDataManagerImpl::GetBlacklistedFeatures() const {
   if (software_rendering_) {
     GpuFeatureType flags;
@@ -179,13 +153,6 @@ GpuFeatureType GpuDataManagerImpl::GetBlacklistedFeatures() const {
   }
 
   return gpu_feature_type_;
-}
-
-base::ListValue* GpuDataManagerImpl::GetBlacklistReasons() const {
-  ListValue* reasons = new ListValue();
-  if (gpu_blacklist_.get())
-    gpu_blacklist_->GetBlacklistReasons(reasons);
-  return reasons;
 }
 
 bool GpuDataManagerImpl::GpuAccessAllowed() const {
@@ -341,7 +308,9 @@ void GpuDataManagerImpl::AppendPluginCommandLine(
 #endif
 }
 
-void GpuDataManagerImpl::UpdatePreliminaryBlacklistedFeatures() {
+void GpuDataManagerImpl::SetPreliminaryBlacklistedFeatures(
+    GpuFeatureType feature_type) {
+  UpdateBlacklistedFeatures(feature_type);
   preliminary_gpu_feature_type_ = gpu_feature_type_;
 }
 

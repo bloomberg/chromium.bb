@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/gpu/gpu_blacklist.h"
+#include "chrome/browser/gpu_blacklist.h"
 
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
@@ -12,10 +12,13 @@
 #include "base/string_util.h"
 #include "base/sys_info.h"
 #include "base/version.h"
-#include "content/browser/gpu/gpu_util.h"
+#include "chrome/browser/gpu_util.h"
+#include "chrome/common/chrome_version_info.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/gpu_info.h"
 
+using content::GpuDataManager;
 using content::GpuFeatureType;
 
 namespace {
@@ -916,19 +919,28 @@ GpuFeatureType GpuBlacklist::GpuBlacklistEntry::GetGpuFeatureType() const {
   return feature_type_;
 }
 
+// static
+GpuBlacklist* GpuBlacklist::GetInstance() {
+  return Singleton<GpuBlacklist>::get();
+}
+
 GpuBlacklist::GpuBlacklist()
     : max_entry_id_(0),
       contains_unknown_fields_(false) {
+  GpuDataManager::GetInstance()->AddObserver(this);
 }
 
 GpuBlacklist::~GpuBlacklist() {
   Clear();
+  GpuDataManager::GetInstance()->RemoveObserver(this);
 }
 
 bool GpuBlacklist::LoadGpuBlacklist(
     const std::string& json_context, GpuBlacklist::OsFilter os_filter) {
-  const std::string browser_version_string = "0";
-  return LoadGpuBlacklist(browser_version_string, json_context, os_filter);
+  chrome::VersionInfo chrome_version_info;
+  std::string chrome_version_string =
+      chrome_version_info.is_valid() ? chrome_version_info.Version() : "0";
+  return LoadGpuBlacklist(chrome_version_string, json_context, os_filter);
 }
 
 bool GpuBlacklist::LoadGpuBlacklist(
@@ -1038,6 +1050,14 @@ GpuFeatureType GpuBlacklist::DetermineGpuFeatureType(
   return static_cast<GpuFeatureType>(type);
 }
 
+void GpuBlacklist::UpdateGpuDataManager() {
+  content::GpuFeatureType feature_type = DetermineGpuFeatureType(
+      GpuBlacklist::kOsAny, NULL, GpuDataManager::GetInstance()->GetGPUInfo());
+  GpuDataManager::GetInstance()->SetPreliminaryBlacklistedFeatures(
+      feature_type);
+  gpu_util::UpdateStats();
+}
+
 void GpuBlacklist::GetGpuFeatureTypeEntries(
     content::GpuFeatureType feature,
     std::vector<uint32>& entry_ids,
@@ -1141,6 +1161,10 @@ GpuBlacklist::IsEntrySupportedByCurrentBrowserVersion(
     return kUnsupported;
   }
   return kSupported;
+}
+
+void GpuBlacklist::OnGpuInfoUpdate() {
+  UpdateGpuDataManager();
 }
 
 // static

@@ -8,6 +8,7 @@
 #include "base/path_service.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/version.h"
+#include "chrome/browser/gpu_blacklist.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -66,7 +67,10 @@ class GpuFeatureTest : public InProcessBrowserTest {
   }
 
   void SetupBlacklist(const std::string& json_blacklist) {
-    GpuDataManager::GetInstance()->Initialize("0", json_blacklist);
+    GpuBlacklist* blacklist = GpuBlacklist::GetInstance();
+    ASSERT_TRUE(blacklist->LoadGpuBlacklist(
+        json_blacklist, GpuBlacklist::kAllOs));
+    blacklist->UpdateGpuDataManager();
   }
 
   // If expected_reply is NULL, we don't check the reply content.

@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/api/webstore_private/webstore_private_api.h"
 #include "chrome/browser/extensions/webstore_installer.h"
+#include "chrome/browser/gpu_blacklist.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -435,7 +436,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstoreGetWebGLStatusTest, Blocked) {
       "    }\n"
       "  ]\n"
       "}";
-  content::GpuDataManager::GetInstance()->Initialize("0", json_blacklist);
+  GpuBlacklist* blacklist = GpuBlacklist::GetInstance();
+
+  ASSERT_TRUE(blacklist->LoadGpuBlacklist(
+      json_blacklist, GpuBlacklist::kAllOs));
+  blacklist->UpdateGpuDataManager();
   GpuFeatureType type =
       content::GpuDataManager::GetInstance()->GetBlacklistedFeatures();
   EXPECT_EQ(type, content::GPU_FEATURE_TYPE_WEBGL);
