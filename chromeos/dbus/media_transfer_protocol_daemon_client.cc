@@ -207,7 +207,7 @@ class MediaTransferProtocolDaemonClientImpl
   virtual void GetFileInfoByPath(const std::string& handle,
                                  const std::string& path,
                                  const GetFileInfoCallback& callback,
-                                 const ErrorCallback& error_callback) {
+                                 const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(mtpd::kMtpdInterface, "GetFileInfoByPath");
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(handle);
@@ -224,7 +224,7 @@ class MediaTransferProtocolDaemonClientImpl
   virtual void GetFileInfoById(const std::string& handle,
                                uint32 file_id,
                                const GetFileInfoCallback& callback,
-                               const ErrorCallback& error_callback) {
+                               const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(mtpd::kMtpdInterface, "GetFileInfoById");
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(handle);
