@@ -307,7 +307,7 @@ bool DesktopNativeWidgetAura::OnKeyEvent(ui::KeyEvent* event) {
 }
 
 gfx::NativeCursor DesktopNativeWidgetAura::GetCursor(const gfx::Point& point) {
-  return NULL;
+  return gfx::kNullCursor;
 }
 
 int DesktopNativeWidgetAura::GetNonClientComponent(
