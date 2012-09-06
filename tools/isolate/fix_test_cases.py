@@ -14,6 +14,9 @@ import tempfile
 import run_test_cases
 
 
+XVFB_PATH = os.path.join('..', '..', 'testing', 'xvfb.py')
+
+
 if sys.platform == 'win32':
   import msvcrt  # pylint: disable=F0401
 
@@ -43,12 +46,16 @@ def trace_and_merge(result, test):
   """Traces a single test case and merges the result back into .isolate."""
   env = os.environ.copy()
   env['RUN_TEST_CASES_RUN_ALL'] = '1'
+
+  print 'Starting trace of %s' % test
   subprocess.call(
       [
         sys.executable, 'isolate.py', 'trace', '-r', result,
         '--', '--gtest_filter=' + test,
       ],
       env=env)
+
+  print 'Starting merge of %s' % test
   return not subprocess.call(
       [sys.executable, 'isolate.py', 'merge', '-r', result])
 
@@ -95,6 +102,12 @@ def run(result, test):
   ])
 
 
+def run_normally(executable, test):
+  return not subprocess.call([
+    sys.executable, XVFB_PATH, os.path.dirname(executable), executable,
+    '--gtest_filter=' + test])
+
+
 def diff_and_commit(test):
   """Prints the diff and commit."""
   subprocess.call(['git', 'diff'])
@@ -108,10 +121,11 @@ def trace_and_verify(result, test):
   """
   trace_and_merge(result, test)
   diff_and_commit(test)
+  print 'Verifying trace...'
   return run(result, test)
 
 
-def fix_all(result, shard_index, shard_count):
+def fix_all(result, shard_index, shard_count, executable):
   """Runs all the test cases in a gtest executable and trace the failing tests.
 
   Returns True on success.
@@ -134,6 +148,7 @@ def fix_all(result, shard_index, shard_count):
   if not test_cases:
     return True
 
+  failed_alone = []
   failures = []
   fixed_tests = []
   try:
@@ -143,7 +158,11 @@ def fix_all(result, shard_index, shard_count):
         return True
 
       try:
-        if run(result, test_case):
+        # Check if the test passes normally, because otherwise there is no
+        # reason to trace its failure.
+        if not run_normally(executable, test_case):
+          print '%s is broken when run alone, please fix the test.' % test_case
+          failed_alone.append(test_case)
           continue
 
         if not trace_and_verify(result, test_case):
@@ -164,6 +183,12 @@ def fix_all(result, shard_index, shard_count):
     print 'Test cases still failing (%d):' % len(failures)
     for failure in failures:
       print '  %s' % failure
+
+    if failed_alone:
+      print ('Test cases that failed normally when run alone (%d):' %
+             len(failed_alone))
+      for failed in failed_alone:
+        print failed
   return not failures
 
 
@@ -192,7 +217,7 @@ def main():
         '%s doesn\'t exist, please build %s_run' % (result, basename))
     return 1
 
-  return not fix_all(result, options.index, options.shards)
+  return not fix_all(result, options.index, options.shards, executable)
 
 
 if __name__ == '__main__':

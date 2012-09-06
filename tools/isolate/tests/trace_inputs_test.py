@@ -231,6 +231,12 @@ if sys.platform != 'win32':
           [])
         self.assertEquals(expected, e.args)
 
+    def test_chmod(self):
+      lines = [
+          (self._ROOT_PID, 'chmod("temp/file", 0100644) = 0'),
+      ]
+      self._test_lines(lines, '/home/foo_bar_user/src', [])
+
     def test_close(self):
       lines = [
         (self._ROOT_PID, 'close(7)                          = 0'),
@@ -399,6 +405,19 @@ if sys.platform != 'win32':
         },
       ]
       self._test_lines(lines, '/home/foo_bar_user/src', files)
+
+    def test_rmdir(self):
+      lines = [
+          (self._ROOT_PID, 'rmdir("directory/to/delete") = 0'),
+      ]
+      self._test_lines(lines, '/home/foo_bar_user/src', [])
+
+    def test_setxattr(self):
+      lines = [
+          (self._ROOT_PID,
+           'setxattr("file.exe", "attribute", "value", 0, 0) = 0'),
+      ]
+      self._test_lines(lines, '/home/foo_bar_user/src', [])
 
     def test_sig_unexpected(self):
       lines = [

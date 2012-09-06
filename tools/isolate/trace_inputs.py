@@ -1239,6 +1239,9 @@ class Strace(ApiBase):
       def handle_close(self, _args, _result):
         pass
 
+      def handle_chmod(self, _args, _result):
+        pass
+
       def handle_creat(self, _args, _result):
         # Ignore files created, since they didn't need to exist.
         pass
@@ -1280,14 +1283,17 @@ class Strace(ApiBase):
           return
         self._handle_file(args[0], False)
 
-      @parse_args(r'^AT_FDCWD, \"(.*?)\", ([A-Z\_\|]+)(|, \d+)$', False)
+      @parse_args(r'^(\d+|AT_FDCWD), \"(.*?)\", ([A-Z\_\|]+)(|, \d+)$', False)
       def handle_openat(self, args, _result):
-        # TODO(maruel): Implelement relative open if necessary instead of the
-        # AT_FDCWD flag, let's hope not since this means tracking all active
-        # directory handles.
-        if 'O_DIRECTORY' in args[1]:
+        if 'O_DIRECTORY' in args[2]:
           return
-        self._handle_file(args[0], False)
+        if args[1] == 'AT_FDCWD':
+          self._handle_file(args[1], False)
+        else:
+          # TODO(maruel): Implement relative open if necessary instead of the
+          # AT_FDCWD flag, let's hope not since this means tracking all active
+          # directory handles.
+          raise Exception('Relative open via openat not implemented.')
 
       @parse_args(r'^\"(.+?)\", \".+?\"(\.\.\.)?, \d+$', False)
       def handle_readlink(self, args, _result):
@@ -1299,6 +1305,9 @@ class Strace(ApiBase):
         self._handle_file(args[1], False)
 
       def handle_rmdir(self, _args, _result):
+        pass
+
+      def handle_setxattr(self, _args, _result):
         pass
 
       @parse_args(r'\"(.+?)\", \{.+?, \.\.\.\}', True)
