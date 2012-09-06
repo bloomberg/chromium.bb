@@ -684,6 +684,12 @@ int main(int  argc,
     NaClGdbHook(&state);
   }
 
+  if (enable_debug_stub) {
+    if (!NaClDebugBindSocket()) {
+      exit(1);
+    }
+  }
+
 #if NACL_OSX
   /*
    * Enable the outer sandbox on Mac.  Do this as soon as possible.

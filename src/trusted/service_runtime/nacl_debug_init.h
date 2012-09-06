@@ -12,6 +12,14 @@
 EXTERN_C_BEGIN
 
 /*
+ * This may be called to tell the debug stub to bind the TCP port that
+ * it listens on.  This may need to be called before enabling an outer
+ * sandbox; otherwise, NaClDebugInit() calls it.  The function returns
+ * whether it was successful.
+ */
+int NaClDebugBindSocket(void);
+
+/*
  * Enables the debug stub.  If this is called, we do not guarantee
  * security to the same extent that we normally would.
  */
