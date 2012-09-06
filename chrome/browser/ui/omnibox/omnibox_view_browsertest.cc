@@ -1364,7 +1364,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, AltEnter) {
 }
 
 // http://crbug.com/133354
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
 #define MAYBE_EnterToSearch DISABLED_EnterToSearch
 #else
 #define MAYBE_EnterToSearch EnterToSearch
