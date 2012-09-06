@@ -92,6 +92,7 @@ class RenderTextWin : public RenderText {
  private:
   void ItemizeLogicalText();
   void LayoutVisualText();
+  void LayoutTextRun(internal::TextRun* run);
 
   // Helper function to update the font on a text run after font substitution.
   void ApplySubstituteFont(internal::TextRun* run, const Font& font);

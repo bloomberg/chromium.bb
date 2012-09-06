@@ -667,148 +667,8 @@ void RenderTextWin::LayoutVisualText() {
   string_size_.set_height(0);
   for (size_t i = 0; i < runs_.size(); ++i) {
     internal::TextRun* run = runs_[i];
-    const size_t run_length = run->range.length();
-    const wchar_t* run_text = &(text()[run->range.start()]);
-    bool tried_cached_font = false;
-    bool tried_fallback = false;
-    size_t linked_font_index = 0;
-    const std::vector<Font>* linked_fonts = NULL;
-    Font original_font = run->font;
-    // Keep track of the font that is able to display the greatest number of
-    // characters for which ScriptShape() returned S_OK. This font will be used
-    // in the case where no font is able to display the entire run.
-    int best_partial_font_missing_char_count = INT_MAX;
-    Font best_partial_font = run->font;
-    bool using_best_partial_font = false;
+    LayoutTextRun(run);
 
-    // Select the font desired for glyph generation.
-    SelectObject(cached_hdc_, run->font.GetNativeFont());
-
-    run->logical_clusters.reset(new WORD[run_length]);
-    run->glyph_count = 0;
-    // Max glyph guess: http://msdn.microsoft.com/en-us/library/dd368564.aspx
-    size_t max_glyphs = static_cast<size_t>(1.5 * run_length + 16);
-    while (max_glyphs < kMaxGlyphs) {
-      run->glyphs.reset(new WORD[max_glyphs]);
-      run->visible_attributes.reset(new SCRIPT_VISATTR[max_glyphs]);
-      hr = ScriptShape(cached_hdc_,
-                       &run->script_cache,
-                       run_text,
-                       run_length,
-                       max_glyphs,
-                       &(run->script_analysis),
-                       run->glyphs.get(),
-                       run->logical_clusters.get(),
-                       run->visible_attributes.get(),
-                       &(run->glyph_count));
-      if (hr == E_OUTOFMEMORY) {
-        max_glyphs *= 2;
-        continue;
-      }
-
-      bool glyphs_missing = false;
-      if (hr == USP_E_SCRIPT_NOT_IN_FONT) {
-        glyphs_missing = true;
-      } else if (hr == S_OK) {
-        // If |hr| is S_OK, there could still be missing glyphs in the output,
-        // see: http://msdn.microsoft.com/en-us/library/windows/desktop/dd368564.aspx
-        const int missing_count = CountCharsWithMissingGlyphs(run);
-        // Track the font that produced the least missing glyphs.
-        if (missing_count < best_partial_font_missing_char_count) {
-          best_partial_font_missing_char_count = missing_count;
-          best_partial_font = run->font;
-        }
-        glyphs_missing = (missing_count != 0);
-      }
-
-      // Skip font substitution if there are no missing glyphs or if the font
-      // with the least missing glyphs is being used as a last resort.
-      if (!glyphs_missing || using_best_partial_font) {
-        // Save the successful fallback font that was chosen.
-        if (tried_fallback && !using_best_partial_font)
-          successful_substitute_fonts_[original_font.GetFontName()] = run->font;
-        break;
-      }
-
-      // First, try the cached font from previous runs, if any.
-      if (!tried_cached_font) {
-        tried_cached_font = true;
-        std::map<std::string, Font>::const_iterator it =
-            successful_substitute_fonts_.find(original_font.GetFontName());
-        if (it != successful_substitute_fonts_.end()) {
-          ApplySubstituteFont(run, it->second);
-          continue;
-        }
-      }
-
-      // If there are missing glyphs, first try finding a fallback font using a
-      // meta file, if it hasn't yet been attempted for this run.
-      // TODO(msw|asvitkine): Support RenderText's font_list()?
-      // TODO(msw|asvitkine): Cache previous successful replacement fonts?
-      if (!tried_fallback) {
-        tried_fallback = true;
-
-        Font fallback_font;
-        if (ChooseFallbackFont(cached_hdc_, run->font, run_text, run_length,
-                               &fallback_font)) {
-          ApplySubstituteFont(run, fallback_font);
-          continue;
-        }
-      }
-
-      // The meta file approach did not yield a replacement font, try to find
-      // one using font linking. First time through, get the linked fonts list.
-      if (linked_fonts == NULL) {
-        // First, try to get the list for the original font.
-        linked_fonts = GetLinkedFonts(original_font);
-
-        // If there are no linked fonts for the original font, try querying the
-        // ones for the Uniscribe fallback font. This may happen if the first
-        // font is a custom font that has no linked fonts in the Registry.
-        //
-        // Note: One possibility would be to always merge both lists of fonts,
-        //       but it is not clear whether there are any real world scenarios
-        //       where this would actually help.
-        if (linked_fonts->empty())
-          linked_fonts = GetLinkedFonts(run->font);
-      }
-
-      // None of the fallback fonts were able to display the entire run.
-      if (linked_font_index == linked_fonts->size()) {
-        // If a font was able to partially display the run, use that now.
-        if (best_partial_font_missing_char_count != INT_MAX) {
-          ApplySubstituteFont(run, best_partial_font);
-          using_best_partial_font = true;
-          continue;
-        }
-
-        // If no font was able to partially display the run, replace all glyphs
-        // with |wgDefault| to ensure they don't hold garbage values.
-        SCRIPT_FONTPROPERTIES properties;
-        memset(&properties, 0, sizeof(properties));
-        properties.cBytes = sizeof(properties);
-        ScriptGetFontProperties(cached_hdc_, &run->script_cache, &properties);
-        for (int i = 0; i < run->glyph_count; ++i)
-          run->glyphs[i] = properties.wgDefault;
-
-        // TODO(msw): Don't use SCRIPT_UNDEFINED. Apparently Uniscribe can
-        //            crash on certain surrogate pairs with SCRIPT_UNDEFINED.
-        //            See https://bugzilla.mozilla.org/show_bug.cgi?id=341500
-        //            And http://maxradi.us/documents/uniscribe/
-        run->script_analysis.eScript = SCRIPT_UNDEFINED;
-        // Reset |hr| to 0 to not trigger the DCHECK() below when a font is
-        // not found that can display the text. This is expected behavior
-        // under Windows XP without additional language packs installed and
-        // may also happen on newer versions when trying to display text in
-        // an obscure script that the system doesn't have the right font for.
-        hr = 0;
-        break;
-      }
-
-      // Try the next linked font.
-      ApplySubstituteFont(run, linked_fonts->at(linked_font_index++));
-    }
-    DCHECK(SUCCEEDED(hr));
     string_size_.set_height(std::max(string_size_.height(),
                                      run->font.GetHeight()));
     common_baseline_ = std::max(common_baseline_, run->font.GetBaseline());
@@ -853,6 +713,152 @@ void RenderTextWin::LayoutVisualText() {
     preceding_run_widths += run->width;
   }
   string_size_.set_width(preceding_run_widths);
+}
+
+void RenderTextWin::LayoutTextRun(internal::TextRun* run) {
+  HRESULT hr = E_FAIL;
+  const size_t run_length = run->range.length();
+  const wchar_t* run_text = &(text()[run->range.start()]);
+  bool tried_cached_font = false;
+  bool tried_fallback = false;
+  size_t linked_font_index = 0;
+  const std::vector<Font>* linked_fonts = NULL;
+  Font original_font = run->font;
+  // Keep track of the font that is able to display the greatest number of
+  // characters for which ScriptShape() returned S_OK. This font will be used
+  // in the case where no font is able to display the entire run.
+  int best_partial_font_missing_char_count = INT_MAX;
+  Font best_partial_font = run->font;
+  bool using_best_partial_font = false;
+
+  // Select the font desired for glyph generation.
+  SelectObject(cached_hdc_, run->font.GetNativeFont());
+
+  run->logical_clusters.reset(new WORD[run_length]);
+  run->glyph_count = 0;
+  // Max glyph guess: http://msdn.microsoft.com/en-us/library/dd368564.aspx
+  size_t max_glyphs = static_cast<size_t>(1.5 * run_length + 16);
+  while (max_glyphs < kMaxGlyphs) {
+    run->glyphs.reset(new WORD[max_glyphs]);
+    run->visible_attributes.reset(new SCRIPT_VISATTR[max_glyphs]);
+    hr = ScriptShape(cached_hdc_,
+                     &run->script_cache,
+                     run_text,
+                     run_length,
+                     max_glyphs,
+                     &(run->script_analysis),
+                     run->glyphs.get(),
+                     run->logical_clusters.get(),
+                     run->visible_attributes.get(),
+                     &(run->glyph_count));
+    if (hr == E_OUTOFMEMORY) {
+      max_glyphs *= 2;
+      continue;
+    }
+
+    bool glyphs_missing = false;
+    if (hr == USP_E_SCRIPT_NOT_IN_FONT) {
+      glyphs_missing = true;
+    } else if (hr == S_OK) {
+      // If |hr| is S_OK, there could still be missing glyphs in the output,
+      // see: http://msdn.microsoft.com/en-us/library/windows/desktop/dd368564.aspx
+      const int missing_count = CountCharsWithMissingGlyphs(run);
+      // Track the font that produced the least missing glyphs.
+      if (missing_count < best_partial_font_missing_char_count) {
+        best_partial_font_missing_char_count = missing_count;
+        best_partial_font = run->font;
+      }
+      glyphs_missing = (missing_count != 0);
+    }
+
+    // Skip font substitution if there are no missing glyphs or if the font
+    // with the least missing glyphs is being used as a last resort.
+    if (!glyphs_missing || using_best_partial_font) {
+      // Save the successful fallback font that was chosen.
+      if (tried_fallback && !using_best_partial_font)
+        successful_substitute_fonts_[original_font.GetFontName()] = run->font;
+      break;
+    }
+
+    // First, try the cached font from previous runs, if any.
+    if (!tried_cached_font) {
+      tried_cached_font = true;
+      std::map<std::string, Font>::const_iterator it =
+          successful_substitute_fonts_.find(original_font.GetFontName());
+      if (it != successful_substitute_fonts_.end()) {
+        ApplySubstituteFont(run, it->second);
+        continue;
+      }
+    }
+
+    // If there are missing glyphs, first try finding a fallback font using a
+    // meta file, if it hasn't yet been attempted for this run.
+    // TODO(msw|asvitkine): Support RenderText's font_list()?
+    // TODO(msw|asvitkine): Cache previous successful replacement fonts?
+    if (!tried_fallback) {
+      tried_fallback = true;
+
+      Font fallback_font;
+      if (ChooseFallbackFont(cached_hdc_, run->font, run_text, run_length,
+                             &fallback_font)) {
+        ApplySubstituteFont(run, fallback_font);
+        continue;
+      }
+    }
+
+    // The meta file approach did not yield a replacement font, try to find
+    // one using font linking. First time through, get the linked fonts list.
+    if (linked_fonts == NULL) {
+      // First, try to get the list for the original font.
+      linked_fonts = GetLinkedFonts(original_font);
+
+      // If there are no linked fonts for the original font, try querying the
+      // ones for the Uniscribe fallback font. This may happen if the first
+      // font is a custom font that has no linked fonts in the Registry.
+      //
+      // Note: One possibility would be to always merge both lists of fonts,
+      //       but it is not clear whether there are any real world scenarios
+      //       where this would actually help.
+      if (linked_fonts->empty())
+        linked_fonts = GetLinkedFonts(run->font);
+    }
+
+    // None of the fallback fonts were able to display the entire run.
+    if (linked_font_index == linked_fonts->size()) {
+      // If a font was able to partially display the run, use that now.
+      if (best_partial_font_missing_char_count != INT_MAX) {
+        ApplySubstituteFont(run, best_partial_font);
+        using_best_partial_font = true;
+        continue;
+      }
+
+      // If no font was able to partially display the run, replace all glyphs
+      // with |wgDefault| to ensure they don't hold garbage values.
+      SCRIPT_FONTPROPERTIES properties;
+      memset(&properties, 0, sizeof(properties));
+      properties.cBytes = sizeof(properties);
+      ScriptGetFontProperties(cached_hdc_, &run->script_cache, &properties);
+      for (int i = 0; i < run->glyph_count; ++i)
+        run->glyphs[i] = properties.wgDefault;
+
+      // TODO(msw): Don't use SCRIPT_UNDEFINED. Apparently Uniscribe can
+      //            crash on certain surrogate pairs with SCRIPT_UNDEFINED.
+      //            See https://bugzilla.mozilla.org/show_bug.cgi?id=341500
+      //            And http://maxradi.us/documents/uniscribe/
+      run->script_analysis.eScript = SCRIPT_UNDEFINED;
+      // Reset |hr| to 0 to not trigger the DCHECK() below when a font is
+      // not found that can display the text. This is expected behavior
+      // under Windows XP without additional language packs installed and
+      // may also happen on newer versions when trying to display text in
+      // an obscure script that the system doesn't have the right font for.
+      hr = 0;
+      break;
+    }
+
+    // Try the next linked font.
+    ApplySubstituteFont(run, linked_fonts->at(linked_font_index++));
+  }
+  DCHECK(SUCCEEDED(hr));
 }
 
 void RenderTextWin::ApplySubstituteFont(internal::TextRun* run,
