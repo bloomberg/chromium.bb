@@ -277,6 +277,9 @@ bool GpuDataManagerImpl::IsUsingAcceleratedSurface() const {
     return false;
   if (software_rendering_)
     return false;
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableImageTransportSurface))
+    return false;
   uint32 flags = GetBlacklistedFeatures();
   if (flags & content::GPU_FEATURE_TYPE_TEXTURE_SHARING)
     return false;
