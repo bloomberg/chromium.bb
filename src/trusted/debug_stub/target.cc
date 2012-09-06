@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <algorithm>
+
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
@@ -135,18 +137,33 @@ bool Target::RemoveBreakpoint(uint32_t user_address) {
   return true;
 }
 
-void Target::AdjustSignalForBreakpoint(IThread *thread) {
-  // If we hit the breakpoint, ensure that it is reported as SIGTRAP
-  // rather than SIGSEGV.  This is necessary because we use HLT (which
-  // produces SIGSEGV) rather than the more usual INT3 (which produces
-  // SIGTRAP) on x86, in order to work around a Mac OS X bug.
-  if (cur_signal_ == NACL_ABI_SIGSEGV) {
-    // Casting to uint32_t is necessary to drop the top 32 bits of
-    // %rip on x86-64.
-    uint32_t prog_ctr = (uint32_t) thread->GetContext()->prog_ctr;
-    if (breakpoint_map_.find(prog_ctr) != breakpoint_map_.end()) {
-      cur_signal_ = NACL_ABI_SIGTRAP;
+void Target::CopyFaultSignalFromAppThread(IThread *thread) {
+  if (thread->GetFaultSignal() == 0 && thread->HasThreadFaulted()) {
+    int signal =
+        IThread::ExceptionToSignal(thread->GetAppThread()->fault_signal);
+    // If a thread hits a breakpoint, we want to ensure that it is
+    // reported as SIGTRAP rather than SIGSEGV.  This is necessary
+    // because we use HLT (which produces SIGSEGV) rather than the
+    // more usual INT3 (which produces SIGTRAP) on x86, in order to
+    // work around a Mac OS X bug.
+    //
+    // We need to check each thread to see whether it hit a
+    // breakpoint.  We record this on the thread object because:
+    //  * We need to check the threads before accepting any commands
+    //    from GDB which might remove breakpoints from
+    //    breakpoint_map_, which would remove our ability to tell
+    //    whether a thread hit a breakpoint.
+    //  * Although we deliver fault events to GDB one by one, we might
+    //    have multiple threads that have hit breakpoints.
+    if (signal == NACL_ABI_SIGSEGV) {
+      // Casting to uint32_t is necessary to drop the top 32 bits of
+      // %rip on x86-64.
+      uint32_t prog_ctr = (uint32_t) thread->GetContext()->prog_ctr;
+      if (breakpoint_map_.find(prog_ctr) != breakpoint_map_.end()) {
+        signal = NACL_ABI_SIGTRAP;
+      }
     }
+    thread->SetFaultSignal(signal);
   }
 }
 
@@ -158,6 +175,53 @@ void Target::RemoveInitialBreakpoint() {
     }
     initial_breakpoint_addr_ = 0;
   }
+}
+
+// When the debugger reads memory, we want to report the original
+// memory contents without the modifications we made to add
+// breakpoints.  This function undoes the modifications from a copy of
+// memory.
+void Target::EraseBreakpointsFromCopyOfMemory(uint32_t user_address,
+                                              uint8_t *data, uint32_t size) {
+  uint32_t user_end = user_address + size;
+  const Abi::BPDef *bp = abi_->GetBreakpointDef();
+  for (BreakpointMap_t::iterator iter = breakpoint_map_.begin();
+       iter != breakpoint_map_.end();
+       ++iter) {
+    uint32_t breakpoint_address = iter->first;
+    uint32_t breakpoint_end = breakpoint_address + bp->size_;
+    uint8_t *original_data = iter->second;
+
+    uint32_t overlap_start = std::max(user_address, breakpoint_address);
+    uint32_t overlap_end = std::min(user_end, breakpoint_end);
+    if (overlap_start < overlap_end) {
+      uint8_t *dest = data + (overlap_start - user_address);
+      uint8_t *src = original_data + (overlap_start - breakpoint_address);
+      size_t copy_size = overlap_end - overlap_start;
+      // Sanity check: do some bounds checks.
+      CHECK(data <= dest && dest + copy_size <= data + size);
+      CHECK(original_data <= src
+            && src + copy_size <= original_data + bp->size_);
+      memcpy(dest, src, copy_size);
+    }
+  }
+}
+
+bool Target::DoesRangeOverlapBreakpoint(uint32_t user_address, uint32_t size) {
+  uint32_t user_end = user_address + size;
+  const Abi::BPDef *bp = abi_->GetBreakpointDef();
+  for (BreakpointMap_t::iterator iter = breakpoint_map_.begin();
+       iter != breakpoint_map_.end();
+       ++iter) {
+    uint32_t breakpoint_address = iter->first;
+    uint32_t breakpoint_end = breakpoint_address + bp->size_;
+
+    uint32_t overlap_start = std::max(user_address, breakpoint_address);
+    uint32_t overlap_end = std::min(user_end, breakpoint_end);
+    if (overlap_start < overlap_end)
+      return true;
+  }
+  return false;
 }
 
 void Target::Run(Session *ses) {
@@ -198,7 +262,9 @@ void Target::Run(Session *ses) {
       // All threads but one are already suspended.  We only need to
       // suspend the single thread that we allowed to run.
       thread->SuspendThread();
-      thread->UnqueueFaultedThread(&cur_signal_);
+      CopyFaultSignalFromAppThread(thread);
+      cur_signal_ = thread->GetFaultSignal();
+      thread->UnqueueFaultedThread();
       sig_thread_ = step_over_breakpoint_thread_;
       reg_thread_ = step_over_breakpoint_thread_;
       step_over_breakpoint_thread_ = 0;
@@ -235,7 +301,6 @@ void Target::Run(Session *ses) {
     if (sig_thread_ != 0) {
       // Reset single stepping.
       threads_[sig_thread_]->SetStep(false);
-      AdjustSignalForBreakpoint(threads_[sig_thread_]);
       RemoveInitialBreakpoint();
     }
 
@@ -479,6 +544,8 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
           err = FAILED;
           break;
         }
+        EraseBreakpointsFromCopyOfMemory((uint32_t) user_addr,
+                                         block.get(), len);
 
         pktOut->AddBlock(block.get(), len);
         break;
@@ -504,8 +571,14 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
           err = FAILED;
           break;
         }
-
         len = static_cast<uint32_t>(wlen);
+        // To avoid getting into an inconsistent state, we disallow
+        // overwriting locations where we have inserted breakpoints.
+        if (DoesRangeOverlapBreakpoint((uint32_t) user_addr, len)) {
+          err = FAILED;
+          break;
+        }
+
         nacl::scoped_array<uint8_t> block(new uint8_t[len]);
         pktIn->GetBlock(block.get(), len);
 
@@ -690,6 +763,46 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
       return false;
     }
 
+    case 'Z': {
+      uint64_t breakpoint_type;
+      uint64_t breakpoint_address;
+      uint64_t breakpoint_kind;
+      if (!pktIn->GetNumberSep(&breakpoint_type, 0) ||
+          breakpoint_type != 0 ||
+          !pktIn->GetNumberSep(&breakpoint_address, 0) ||
+          !pktIn->GetNumberSep(&breakpoint_kind, 0)) {
+        err = BAD_FORMAT;
+        break;
+      }
+      if (breakpoint_address != (uint32_t) breakpoint_address ||
+          !AddBreakpoint((uint32_t) breakpoint_address)) {
+        err = FAILED;
+        break;
+      }
+      pktOut->AddString("OK");
+      break;
+    }
+
+    case 'z': {
+      uint64_t breakpoint_type;
+      uint64_t breakpoint_address;
+      uint64_t breakpoint_kind;
+      if (!pktIn->GetNumberSep(&breakpoint_type, 0) ||
+          breakpoint_type != 0 ||
+          !pktIn->GetNumberSep(&breakpoint_address, 0) ||
+          !pktIn->GetNumberSep(&breakpoint_kind, 0)) {
+        err = BAD_FORMAT;
+        break;
+      }
+      if (breakpoint_address != (uint32_t) breakpoint_address ||
+          !RemoveBreakpoint((uint32_t) breakpoint_address)) {
+        err = FAILED;
+        break;
+      }
+      pktOut->AddString("OK");
+      break;
+    }
+
     default: {
       // If the command is not recognzied, ignore it by sending an
       // empty reply.
@@ -788,7 +901,9 @@ void Target::SuspendAllThreads() {
   for (ThreadMap_t::const_iterator iter = threads_.begin();
        iter != threads_.end();
        ++iter) {
-    iter->second->CopyRegistersFromAppThread();
+    IThread *thread = iter->second;
+    thread->CopyRegistersFromAppThread();
+    CopyFaultSignalFromAppThread(thread);
   }
 }
 
@@ -810,11 +925,10 @@ void Target::UnqueueAnyFaultedThread(uint32_t *thread_id, int8_t *signal) {
        iter != threads_.end();
        ++iter) {
     IThread *thread = iter->second;
-    int exception_code;
-    if (NaClAppThreadUnblockIfFaulted(thread->GetAppThread(),
-                                      &exception_code)) {
-      *signal = IThread::ExceptionToSignal(exception_code);
+    if (thread->GetFaultSignal() != 0) {
+      *signal = thread->GetFaultSignal();
       *thread_id = thread->GetId();
+      thread->UnqueueFaultedThread();
       return;
     }
   }

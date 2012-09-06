@@ -31,7 +31,7 @@ namespace port {
 class Thread : public IThread {
  public:
   Thread(uint32_t id, struct NaClAppThread *natp)
-      : id_(id), natp_(natp) {}
+      : id_(id), natp_(natp), fault_signal_(0) {}
   ~Thread() {}
 
   uint32_t GetId() {
@@ -114,13 +114,20 @@ class Thread : public IThread {
   }
 
   // UnqueueFaultedThread() takes a thread that has been blocked as a
-  // result of faulting and unblocks it, returning the type of fault
-  // via |signal|.  As a precondition, the thread must be currently
-  // suspended.
-  virtual void UnqueueFaultedThread(int8_t *signal) {
+  // result of faulting and unblocks it.  As a precondition, the
+  // thread must be currently suspended.
+  virtual void UnqueueFaultedThread() {
     int exception_code;
     CHECK(NaClAppThreadUnblockIfFaulted(natp_, &exception_code));
-    *signal = IThread::ExceptionToSignal(exception_code);
+    fault_signal_ = 0;
+  }
+
+  virtual int GetFaultSignal() {
+    return fault_signal_;
+  }
+
+  virtual void SetFaultSignal(int signal) {
+    fault_signal_ = signal;
   }
 
   virtual struct NaClSignalContext *GetContext() { return &context_; }
@@ -130,6 +137,7 @@ class Thread : public IThread {
   uint32_t id_;
   struct NaClAppThread *natp_;
   struct NaClSignalContext context_;
+  int fault_signal_;
 };
 
 IThread *IThread::Create(uint32_t id, struct NaClAppThread *natp) {

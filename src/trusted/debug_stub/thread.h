@@ -36,10 +36,13 @@ class IThread {
   virtual void SuspendThread() = 0;
   virtual void ResumeThread() = 0;
   virtual bool HasThreadFaulted() = 0;
-  virtual void UnqueueFaultedThread(int8_t *signal) = 0;
+  virtual void UnqueueFaultedThread() = 0;
 
   virtual struct NaClSignalContext *GetContext() = 0;
   virtual struct NaClAppThread *GetAppThread() = 0;
+
+  virtual int GetFaultSignal() = 0;
+  virtual void SetFaultSignal(int signal) = 0;
 
   static IThread *Create(uint32_t id, struct NaClAppThread *natp);
   static int ExceptionToSignal(int exception_code);

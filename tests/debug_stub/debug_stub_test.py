@@ -491,6 +491,97 @@ class DebugStubTest(unittest.TestCase):
       self.assertEqual(reply, 'T05thread:%x;' % tid)
 
 
+class DebugStubBreakpointTest(unittest.TestCase):
+
+  def CheckInstructionPtr(self, connection, expected_ip):
+    ip_value = DecodeRegs(connection.RspRequest('g'))[IP_REG[ARCH]]
+    if ARCH == 'x86-64':
+      # TODO(mseaborn): The debug stub should probably omit the top
+      # bits of %rip automatically.
+      ip_value &= 0xffffffff
+    self.assertEquals(ip_value, expected_ip)
+
+  def test_setting_and_removing_breakpoint(self):
+    func_addr = GetSymbols()['breakpoint_target_func']
+    with LaunchDebugStub('test_setting_breakpoint') as connection:
+      # Set a breakpoint.
+      reply = connection.RspRequest('Z0,%x,0' % func_addr)
+      self.assertEquals(reply, 'OK')
+      # Requesting a breakpoint on an address that already has a
+      # breakpoint should return an error.
+      reply = connection.RspRequest('Z0,%x,0' % func_addr)
+      self.assertEquals(reply, 'E03')
+
+      # When we run the program, we should hit the breakpoint.  When
+      # we continue, we should hit the breakpoint again because it has
+      # not been removed: the debug stub does not step through
+      # breakpoints automatically.
+      for i in xrange(2):
+        reply = connection.RspRequest('c')
+        AssertReplySignal(reply, NACL_SIGTRAP)
+        self.CheckInstructionPtr(connection, func_addr)
+
+      # If we continue a single thread, the fault the thread receives
+      # should still be recognized as a breakpoint.
+      tid = ParseThreadStopReply(reply)['thread_id']
+      reply = connection.RspRequest('vCont;c:%x' % tid)
+      AssertReplySignal(reply, NACL_SIGTRAP)
+      self.CheckInstructionPtr(connection, func_addr)
+
+      # Check that we can remove the breakpoint.
+      reply = connection.RspRequest('z0,%x,0' % func_addr)
+      self.assertEquals(reply, 'OK')
+      # Requesting removing a breakpoint on an address that does not
+      # have one should return an error.
+      reply = connection.RspRequest('z0,%x,0' % func_addr)
+      self.assertEquals(reply, 'E03')
+      # After continuing, we should not hit the breakpoint again, and
+      # the program should run to completion.
+      reply = connection.RspRequest('c')
+      self.assertEquals(reply, 'W00')
+
+  def test_setting_breakpoint_on_invalid_address(self):
+    with LaunchDebugStub('test_exit_code') as connection:
+      # Requesting a breakpoint on an invalid address should give an error.
+      reply = connection.RspRequest('Z0,%x,1' % (1 << 32))
+      self.assertEquals(reply, 'E03')
+
+  def test_breakpoint_memory_changes_are_hidden(self):
+    func_addr = GetSymbols()['breakpoint_target_func']
+    with LaunchDebugStub('test_setting_breakpoint') as connection:
+      chunk_size = 32
+      old_memory = ReadMemory(connection, func_addr, chunk_size)
+      reply = connection.RspRequest('Z0,%x,0' % func_addr)
+      self.assertEquals(reply, 'OK')
+
+      # The debug stub should hide the memory modification.
+      new_memory = ReadMemory(connection, func_addr, chunk_size)
+      self.assertEquals(new_memory, old_memory)
+      # Check reading a subset of the range.  (This will only be a
+      # proper subset on architectures where the breakpoint size is
+      # >1, such as ARM not but x86.)
+      new_memory = ReadMemory(connection, func_addr, 1)
+      self.assertEquals(new_memory, old_memory[:1])
+
+  def test_overwriting_breakpoint_is_disallowed(self):
+    func_addr = GetSymbols()['breakpoint_target_func']
+    with LaunchDebugStub('test_setting_breakpoint') as connection:
+      chunk_size = 32
+      data = ReadMemory(connection, func_addr, chunk_size)
+
+      # Normally, writing to the code area is allowed.
+      write_command = 'M%x,%x:%s' % (func_addr, chunk_size, EncodeHex(data))
+      reply = connection.RspRequest(write_command)
+      self.assertEquals(reply, 'OK')
+
+      # However, if a breakpoint is present, overwriting the
+      # breakpoint is not allowed.
+      reply = connection.RspRequest('Z0,%x,0' % func_addr)
+      self.assertEquals(reply, 'OK')
+      reply = connection.RspRequest(write_command)
+      self.assertEquals(reply, 'E03')
+
+
 class DebugStubThreadSuspensionTest(unittest.TestCase):
 
   def SkipBreakpoint(self, connection):

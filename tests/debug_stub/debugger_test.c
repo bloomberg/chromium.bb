@@ -105,6 +105,19 @@ void test_breakpoint() {
 #endif
 }
 
+/*
+ * The test sets a breakpoint on this function, so for that to work
+ * this function must not be inlined.
+ */
+__attribute__((noinline))
+void breakpoint_target_func() {
+  /*
+   * This is also necessary to prevent inlining according to the GCC
+   * docs for "noinline".
+   */
+  __asm__("");
+}
+
 int non_zero_return() {
   return 2;
 }
@@ -200,6 +213,10 @@ int main(int argc, char **argv) {
 
   if (strcmp(argv[1], "test_getting_registers") == 0) {
     set_registers_and_stop();
+    return 0;
+  }
+  if (strcmp(argv[1], "test_setting_breakpoint") == 0) {
+    breakpoint_target_func();
     return 0;
   }
   if (strcmp(argv[1], "test_breakpoint") == 0) {

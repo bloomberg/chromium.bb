@@ -104,8 +104,11 @@ class Target {
 
   bool AddBreakpoint(uint32_t user_address);
   bool RemoveBreakpoint(uint32_t user_address);
-  void AdjustSignalForBreakpoint(port::IThread *thread);
+  void CopyFaultSignalFromAppThread(port::IThread *thread);
   void RemoveInitialBreakpoint();
+  void EraseBreakpointsFromCopyOfMemory(uint32_t user_address,
+                                        uint8_t *data, uint32_t size);
+  bool DoesRangeOverlapBreakpoint(uint32_t user_address, uint32_t size);
 
   void SuspendAllThreads();
   void ResumeAllThreads();
