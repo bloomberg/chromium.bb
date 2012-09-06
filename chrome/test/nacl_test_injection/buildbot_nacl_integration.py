@@ -76,11 +76,6 @@ def Main(args):
   nacl_integration_script = os.path.join(
       src_dir, 'native_client/build/buildbot_chrome_nacl_stage.py')
   cmd = [sys.executable,
-         '/b/build/scripts/slave/runtest.py',
-         '--run-python-script',
-         '--target=',
-         '--build-dir=',
-         '--',
          nacl_integration_script,
          # TODO(ncbray) re-enable.
          # https://code.google.com/p/chromium/issues/detail?id=133568
