@@ -684,8 +684,6 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
       media::IsMediaLibraryInitialized());
 #endif
 
-  WebRuntimeFeatures::enablePushState(true);
-
   WebRuntimeFeatures::enableTouch(
       command_line.HasSwitch(switches::kEnableTouchEvents));
 
