@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GPU_BLACKLIST_H_
-#define CHROME_BROWSER_GPU_BLACKLIST_H_
+#ifndef CONTENT_BROWSER_GPU_GPU_BLACKLIST_H_
+#define CONTENT_BROWSER_GPU_GPU_BLACKLIST_H_
 
 #include <string>
 #include <vector>
@@ -12,9 +12,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/singleton.h"
 #include "base/values.h"
-#include "content/public/browser/gpu_data_manager_observer.h"
+#include "build/build_config.h"
+#include "content/common/content_export.h"
 #include "content/public/common/gpu_feature_type.h"
 
 class Version;
@@ -23,7 +23,7 @@ namespace content {
 struct GPUInfo;
 }
 
-class GpuBlacklist : public content::GpuDataManagerObserver {
+class CONTENT_EXPORT GpuBlacklist {
  public:
   enum OsType {
     kOsLinux,
@@ -41,14 +41,14 @@ class GpuBlacklist : public content::GpuDataManagerObserver {
     kAllOs
   };
 
-  // Getter for the singleton. This will return NULL on failure.
-  static GpuBlacklist* GetInstance();
-
+  GpuBlacklist();
   virtual ~GpuBlacklist();
 
   // Loads blacklist information from a json file.
   // If failed, the current GpuBlacklist is un-touched.
-  bool LoadGpuBlacklist(const std::string& json_context,
+  bool LoadGpuBlacklist(const std::string& json_context, OsFilter os_filter);
+  bool LoadGpuBlacklist(const std::string& browser_version_string,
+                        const std::string& json_context,
                         OsFilter os_filter);
 
   // Collects system information and combines them with gpu_info and blacklist
@@ -57,10 +57,6 @@ class GpuBlacklist : public content::GpuDataManagerObserver {
   // current OS version.
   content::GpuFeatureType DetermineGpuFeatureType(
       OsType os, Version* os_version, const content::GPUInfo& gpu_info);
-
-  // Helper function that calls DetermineGpuFeatureType and sets the updated
-  // features on GpuDataManager.
-  void UpdateGpuDataManager();
 
   // Collects the active entries that set the "feature" flag from the last
   // DetermineGpuFeatureType() call.  This tells which entries are responsible
@@ -95,7 +91,6 @@ class GpuBlacklist : public content::GpuDataManagerObserver {
 
  private:
   friend class GpuBlacklistTest;
-  friend struct DefaultSingletonTraits<GpuBlacklist>;
   FRIEND_TEST_ALL_PREFIXES(GpuBlacklistTest, ChromeVersionEntry);
   FRIEND_TEST_ALL_PREFIXES(GpuBlacklistTest, CurrentBlacklistValidation);
   FRIEND_TEST_ALL_PREFIXES(GpuBlacklistTest, UnknownField);
@@ -366,12 +361,6 @@ class GpuBlacklist : public content::GpuDataManagerObserver {
   // Gets the current OS type.
   static OsType GetOsType();
 
-  GpuBlacklist();
-
-  bool LoadGpuBlacklist(const std::string& browser_version_string,
-                        const std::string& json_context,
-                        OsFilter os_filter);
-
   bool LoadGpuBlacklist(const base::DictionaryValue& parsed_json,
                         OsFilter os_filter);
 
@@ -382,11 +371,6 @@ class GpuBlacklist : public content::GpuDataManagerObserver {
   // return kSupported;
   BrowserVersionSupport IsEntrySupportedByCurrentBrowserVersion(
       const base::DictionaryValue* value);
-
-  // GpuDataManager::Observer implementation.
-  virtual void OnGpuInfoUpdate() OVERRIDE;
-  virtual void OnVideoMemoryUsageStatsUpdate(
-      const content::GPUVideoMemoryUsageStats& video_memory) OVERRIDE {}
 
   // Returns the number of entries.  This is only for tests.
   size_t num_entries() const;
@@ -413,4 +397,5 @@ class GpuBlacklist : public content::GpuDataManagerObserver {
   DISALLOW_COPY_AND_ASSIGN(GpuBlacklist);
 };
 
-#endif  // CHROME_BROWSER_GPU_BLACKLIST_H_
+#endif  // CONTENT_BROWSER_GPU_GPU_BLACKLIST_H_
+

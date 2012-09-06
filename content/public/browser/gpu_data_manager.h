@@ -27,17 +27,21 @@ class GpuDataManager {
   // Getter for the singleton.
   CONTENT_EXPORT static GpuDataManager* GetInstance();
 
-  // This collects preliminary GPU info; it should only be called at
-  // browser startup time in UI thread before the IO restriction is turned
-  // on.
-  virtual void InitializeGpuInfo() = 0;
+  // This collects preliminary GPU info, load GpuBlacklist, and compute the
+  // preliminary blacklisted features; it should only be called at browser
+  // startup time in UI thread before the IO restriction is turned on.
+  virtual void Initialize(const std::string& browser_version_string,
+                          const std::string& gpu_blacklist_json) = 0;
 
-  // Can be called on any thread.
+  virtual std::string GetBlacklistVersion() const = 0;
+
   virtual GpuFeatureType GetBlacklistedFeatures() const = 0;
 
-  // Sets the blacklisted feature flags due to preliminary GPU info.
-  virtual void SetPreliminaryBlacklistedFeatures(
-      GpuFeatureType feature_type) = 0;
+  // Returns the reasons for the latest run of blacklisting decisions.
+  // For the structure of returned value, see documentation for
+  // GpuBlacklist::GetBlacklistedReasons().
+  // Caller is responsible to release the returned value.
+  virtual base::ListValue* GetBlacklistReasons() const = 0;
 
   virtual GPUInfo GetGPUInfo() const = 0;
 

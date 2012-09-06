@@ -15,8 +15,6 @@
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/gpu_blacklist.h"
-#include "chrome/browser/gpu_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -70,8 +68,7 @@ class TracingMessageHandler
     : public WebUIMessageHandler,
       public ui::SelectFileDialog::Listener,
       public base::SupportsWeakPtr<TracingMessageHandler>,
-      public content::TraceSubscriber,
-      public content::GpuDataManagerObserver {
+      public content::TraceSubscriber {
  public:
   TracingMessageHandler();
   virtual ~TracingMessageHandler();
@@ -88,11 +85,6 @@ class TracingMessageHandler
   virtual void OnTraceDataCollected(
       const scoped_refptr<base::RefCountedString>& trace_fragment);
   virtual void OnTraceBufferPercentFullReply(float percent_full);
-
-  // GpuDataManagerObserver implementation.
-  virtual void OnGpuInfoUpdate() OVERRIDE;
-  virtual void OnVideoMemoryUsageStatsUpdate(
-      const content::GPUVideoMemoryUsageStats& video_memory) OVERRIDE {}
 
   // Messages.
   void OnTracingControllerInitialized(const ListValue* list);
@@ -122,10 +114,6 @@ class TracingMessageHandler
 
   // True while system tracing is active.
   bool system_trace_in_progress_;
-
-  // True if observing the GpuDataManager (re-attaching as observer would
-  // DCHECK).
-  bool observing_;
 
   void OnEndSystemTracingAck(
       const scoped_refptr<base::RefCountedString>& events_str_ptr);
@@ -169,13 +157,10 @@ class TaskProxy : public base::RefCountedThreadSafe<TaskProxy> {
 TracingMessageHandler::TracingMessageHandler()
     : select_trace_file_dialog_type_(ui::SelectFileDialog::SELECT_NONE),
       trace_enabled_(false),
-      system_trace_in_progress_(false),
-      observing_(false) {
+      system_trace_in_progress_(false) {
 }
 
 TracingMessageHandler::~TracingMessageHandler() {
-  GpuDataManager::GetInstance()->RemoveObserver(this);
-
   if (select_trace_file_dialog_)
     select_trace_file_dialog_->ListenerDestroyed();
 
@@ -219,19 +204,6 @@ void TracingMessageHandler::OnTracingControllerInitialized(
     const ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Watch for changes in GPUInfo
-  if (!observing_)
-    GpuDataManager::GetInstance()->AddObserver(this);
-  observing_ = true;
-
-  // Tell GpuDataManager it should have full GpuInfo. If the
-  // Gpu process has not run yet, this will trigger its launch.
-  GpuDataManager::GetInstance()->RequestCompleteGpuInfoIfNeeded();
-
-  // Run callback immediately in case the info is ready and no update in the
-  // future.
-  OnGpuInfoUpdate();
-
   // Send the client info to the tracingController
   {
     scoped_ptr<DictionaryValue> dict(new DictionaryValue());
@@ -256,7 +228,7 @@ void TracingMessageHandler::OnTracingControllerInitialized(
     }
 
     dict->SetString("blacklist_version",
-        GpuBlacklist::GetInstance()->GetVersion());
+        GpuDataManager::GetInstance()->GetBlacklistVersion());
     web_ui()->CallJavascriptFunction("tracingController.onClientInfoUpdate",
                                      *dict);
   }
@@ -265,21 +237,6 @@ void TracingMessageHandler::OnTracingControllerInitialized(
 void TracingMessageHandler::OnBeginRequestBufferPercentFull(
     const ListValue* list) {
   TraceController::GetInstance()->GetTraceBufferPercentFullAsync(this);
-}
-
-void TracingMessageHandler::OnGpuInfoUpdate() {
-  // Get GPU Info.
-  scoped_ptr<base::DictionaryValue> gpu_info_val(
-      gpu_util::GpuInfoAsDictionaryValue());
-
-  // Add in blacklisting features
-  Value* feature_status = gpu_util::GetFeatureStatus();
-  if (feature_status)
-    gpu_info_val->Set("featureStatus", feature_status);
-
-  // Send GPU Info to javascript.
-  web_ui()->CallJavascriptFunction("tracingController.onGpuInfoUpdate",
-      *(gpu_info_val.get()));
 }
 
 // A callback used for asynchronously reading a file to a string. Calls the
