@@ -208,6 +208,9 @@ class LocationBarViewMac : public LocationBar,
   // Ensures the star decoration is visible or hidden, as required.
   void UpdateStarDecorationVisibility();
 
+  // Ensures the plus decoration is visible or hidden, as required.
+  void UpdatePlusDecorationVisibility();
+
   scoped_ptr<OmniboxViewMac> omnibox_view_;
 
   CommandUpdater* command_updater_;  // Weak, owned by Browser.

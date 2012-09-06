@@ -240,6 +240,7 @@ void LocationBarViewMac::Update(const WebContents* contents,
                                 bool should_restore_state) {
   command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, IsStarEnabled());
   UpdateStarDecorationVisibility();
+  UpdatePlusDecorationVisibility();
   UpdateChromeToMobileEnabled();
   UpdateZoomDecoration();
   RefreshPageActionDecorations();
@@ -466,6 +467,7 @@ void LocationBarViewMac::TestPageActionPressed(size_t index) {
 void LocationBarViewMac::SetEditable(bool editable) {
   [field_ setEditable:editable ? YES : NO];
   UpdateStarDecorationVisibility();
+  UpdatePlusDecorationVisibility();
   UpdateChromeToMobileEnabled();
   UpdateZoomDecoration();
   UpdatePageActions();
@@ -748,4 +750,11 @@ void LocationBarViewMac::UpdateStarDecorationVisibility() {
   if (!star_decoration_->starred() && action_box_enabled)
     visible = false;
   star_decoration_->SetVisible(visible);
+}
+
+void LocationBarViewMac::UpdatePlusDecorationVisibility() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableActionBox)) {
+    // If the action box is enabled, hide it when input is in progress.
+    plus_decoration_->SetVisible(!toolbar_model_->input_in_progress());
+  }
 }
