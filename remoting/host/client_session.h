@@ -22,17 +22,8 @@
 #include "remoting/protocol/input_stub.h"
 #include "third_party/skia/include/core/SkPoint.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}  // namespace base
-
 namespace remoting {
 
-class AudioEncoder;
-class AudioScheduler;
-class DesktopEnvironment;
-class ScreenRecorder;
-class VideoEncoder;
 class VideoFrameCapturer;
 
 // A ClientSession keeps a reference to a connection to a client, and maintains
@@ -75,12 +66,12 @@ class ClientSession : public protocol::HostStub,
   };
 
   ClientSession(EventHandler* event_handler,
-                scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
-                scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
-                scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
                 scoped_ptr<protocol::ConnectionToClient> connection,
-                scoped_ptr<DesktopEnvironment> desktop_environment,
+                protocol::ClipboardStub* host_clipboard_stub,
+                protocol::InputStub* host_input_stub,
+                VideoFrameCapturer* capturer,
                 const base::TimeDelta& max_duration);
+  virtual ~ClientSession();
 
   // protocol::HostStub interface.
   virtual void NotifyClientDimensions(
@@ -108,16 +99,8 @@ class ClientSession : public protocol::HostStub,
   // this method returns.
   void Disconnect();
 
-  // Stop all recorders asynchronously and deletes |this| once they are stopped.
-  // StopAndDelete() is the only way to destoy a |ClientSession| instance.
-  void StopAndDelete();
-
   protocol::ConnectionToClient* connection() const {
     return connection_.get();
-  }
-
-  DesktopEnvironment* desktop_environment() const {
-    return desktop_environment_.get();
   }
 
   const std::string& client_jid() { return client_jid_; }
@@ -133,29 +116,14 @@ class ClientSession : public protocol::HostStub,
   // keys or mouse buttons pressed then these will be released.
   void SetDisableInputs(bool disable_inputs);
 
- private:
-  virtual ~ClientSession();
-
   // Creates a proxy for sending clipboard events to the client.
   scoped_ptr<protocol::ClipboardStub> CreateClipboardProxy();
 
-  void OnRecorderStopped();
-
-  // Creates an audio encoder for the specified configuration.
-  static scoped_ptr<AudioEncoder> CreateAudioEncoder(
-      const protocol::SessionConfig& config);
-
-  // Creates a video encoder for the specified configuration.
-  static VideoEncoder* CreateVideoEncoder(
-      const protocol::SessionConfig& config);
-
+ private:
   EventHandler* event_handler_;
 
   // The connection to the client.
   scoped_ptr<protocol::ConnectionToClient> connection_;
-
-  // The desktop environment used by this session.
-  scoped_ptr<DesktopEnvironment> desktop_environment_;
 
   std::string client_jid_;
 
@@ -191,6 +159,12 @@ class ClientSession : public protocol::HostStub,
   // it.
   base::WeakPtrFactory<protocol::ClipboardStub> client_clipboard_factory_;
 
+  // VideoFrameCapturer, used to determine current screen size for ensuring
+  // injected mouse events fall within the screen area.
+  // TODO(lambroslambrou): Move floor-control logic, and clamping to screen
+  // area, out of this class (crbug.com/96508).
+  VideoFrameCapturer* capturer_;
+
   // The maximum duration of this session.
   // There is no maximum if this value is <= 0.
   base::TimeDelta max_duration_;
@@ -198,19 +172,6 @@ class ClientSession : public protocol::HostStub,
   // A timer that triggers a disconnect when the maximum session duration
   // is reached.
   base::OneShotTimer<ClientSession> max_duration_timer_;
-
-  scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
-
-  // Schedulers for audio and video capture.
-  scoped_refptr<AudioScheduler> audio_scheduler_;
-  scoped_refptr<ScreenRecorder> video_recorder_;
-
-  // Number of screen recorders and audio schedulers that are currently being
-  // used or shutdown. Used to delay shutdown if one or more
-  // recorders/schedulers are asynchronously shutting down.
-  int active_recorders_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSession);
 };

@@ -44,9 +44,9 @@ class EventExecutorWin : public EventExecutor {
   virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
 
   // EventExecutor interface.
-  virtual void Start(
+  virtual void OnSessionStarted(
       scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
-  virtual void StopAndDelete() OVERRIDE;
+  virtual void OnSessionFinished() OVERRIDE;
 
  private:
   HKL GetForegroundKeyboardLayout();
@@ -105,12 +105,12 @@ void EventExecutorWin::InjectMouseEvent(const MouseEvent& event) {
   HandleMouse(event);
 }
 
-void EventExecutorWin::Start(
+void EventExecutorWin::OnSessionStarted(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   if (!ui_task_runner_->BelongsToCurrentThread()) {
     ui_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&EventExecutorWin::Start,
+        base::Bind(&EventExecutorWin::OnSessionStarted,
                    base::Unretained(this),
                    base::Passed(&client_clipboard)));
     return;
@@ -119,17 +119,16 @@ void EventExecutorWin::Start(
   clipboard_->Start(client_clipboard.Pass());
 }
 
-void EventExecutorWin::StopAndDelete() {
+void EventExecutorWin::OnSessionFinished() {
   if (!ui_task_runner_->BelongsToCurrentThread()) {
     ui_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&EventExecutorWin::StopAndDelete,
+        base::Bind(&EventExecutorWin::OnSessionFinished,
                    base::Unretained(this)));
     return;
   }
 
   clipboard_->Stop();
-  delete this;
 }
 
 HKL EventExecutorWin::GetForegroundKeyboardLayout() {

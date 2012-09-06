@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/win/session_event_executor.h"
+#include "remoting/host/session_event_executor_win.h"
 
 #include <string>
 
@@ -56,30 +56,29 @@ SessionEventExecutorWin::SessionEventExecutorWin(
 SessionEventExecutorWin::~SessionEventExecutorWin() {
 }
 
-void SessionEventExecutorWin::Start(
+void SessionEventExecutorWin::OnSessionStarted(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&SessionEventExecutorWin::Start,
+        base::Bind(&SessionEventExecutorWin::OnSessionStarted,
                    weak_ptr_, base::Passed(&client_clipboard)));
     return;
   }
 
-  nested_executor_->Start(client_clipboard.Pass());
+  nested_executor_->OnSessionStarted(client_clipboard.Pass());
 }
 
-void SessionEventExecutorWin::StopAndDelete() {
+void SessionEventExecutorWin::OnSessionFinished() {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&SessionEventExecutorWin::StopAndDelete,
+        base::Bind(&SessionEventExecutorWin::OnSessionFinished,
                    weak_ptr_));
     return;
   }
 
-  nested_executor_.release()->StopAndDelete();
-  delete this;
+  nested_executor_->OnSessionFinished();
 }
 
 void SessionEventExecutorWin::InjectClipboardEvent(
