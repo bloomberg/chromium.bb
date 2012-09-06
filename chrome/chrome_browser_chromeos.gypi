@@ -770,16 +770,5 @@
       },
       'includes': [ '../build/protoc.gypi' ]
     },
-    {
-      # Protobuf compiler / generator for contacts-related protocol buffers.
-      'target_name': 'contacts_proto',
-      'type': 'static_library',
-      'sources': [ 'browser/chromeos/contacts/contact.proto' ],
-      'variables': {
-        'proto_in_dir': 'browser/chromeos/contacts',
-        'proto_out_dir': 'chrome/browser/chromeos/contacts',
-      },
-      'includes': [ '../build/protoc.gypi' ]
-    },
   ],
 }

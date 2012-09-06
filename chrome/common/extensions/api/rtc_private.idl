@@ -1,0 +1,29 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+namespace rtcPrivate {
+  // Launch action type.
+  enum ActionType {chat, voice, video};
+
+  dictionary LaunchIntent {
+    // Launch action.
+    ActionType action;
+
+    // Launch data payload.
+    object data;
+
+    // MIME type.
+    DOMString type;
+  };
+
+  dictionary LaunchData {
+    // Launch intent.
+    LaunchIntent intent;
+  };
+
+  interface Events {
+    // Fired when an RTC launch event is raised.
+    static void onLaunch(optional LaunchData data);
+  };
+};

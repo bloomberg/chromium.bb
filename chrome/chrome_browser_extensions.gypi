@@ -24,6 +24,7 @@
         'common',
         'common/extensions/api/api.gyp:api',
         'common_net',
+        'contacts_proto',
         'debugger',
         'in_memory_url_index_cache_proto',
         'installer_util',
@@ -228,6 +229,8 @@
         'browser/extensions/api/push_messaging/push_messaging_invalidation_mapper.h',
         'browser/extensions/api/record/record_api.cc',
         'browser/extensions/api/record/record_api.h',
+        'browser/extensions/api/rtc_private/rtc_private_api.cc',
+        'browser/extensions/api/rtc_private/rtc_private_api.h',
         'browser/extensions/api/runtime/runtime_api.cc',
         'browser/extensions/api/runtime/runtime_api.h',
         'browser/extensions/api/serial/serial_api.cc',
@@ -595,14 +598,16 @@
       'conditions': [
         ['chromeos==0', {
           'sources/': [
-            ['exclude', 'browser/extensions/api/input_ime/input_ime_api.cc'],
-            ['exclude', 'browser/extensions/api/input_ime/input_ime_api.h'],
-            ['exclude', 'browser/extensions/api/terminal/terminal_extension_helper.cc'],
-            ['exclude', 'browser/extensions/api/terminal/terminal_extension_helper.h'],
-            ['exclude', 'browser/extensions/api/terminal/terminal_private_api.cc'],
-            ['exclude', 'browser/extensions/api/terminal/terminal_private_api.h'],
-            ['exclude', 'browser/extensions/extension_input_method_api.cc'],
-            ['exclude', 'browser/extensions/extension_input_method_api.h'],
+            ['exclude', '^browser/extensions/api/input_ime/input_ime_api.cc'],
+            ['exclude', '^browser/extensions/api/input_ime/input_ime_api.h'],
+            ['exclude', '^browser/extensions/api/rtc_private/rtc_private_api.cc'],
+            ['exclude', '^browser/extensions/api/rtc_private/rtc_private_api.h'],
+            ['exclude', '^browser/extensions/api/terminal/terminal_extension_helper.cc'],
+            ['exclude', '^browser/extensions/api/terminal/terminal_extension_helper.h'],
+            ['exclude', '^browser/extensions/api/terminal/terminal_private_api.cc'],
+            ['exclude', '^browser/extensions/api/terminal/terminal_private_api.h'],
+            ['exclude', '^browser/extensions/extension_input_method_api.cc'],
+            ['exclude', '^browser/extensions/extension_input_method_api.h'],
           ],
         }, {  # chromeos==1
           'dependencies': [
@@ -766,6 +771,17 @@
           ],
         }],
       ],
+    },
+    {
+      # Protobuf compiler / generator for contacts-related protocol buffers.
+      'target_name': 'contacts_proto',
+      'type': 'static_library',
+      'sources': [ 'browser/chromeos/contacts/contact.proto' ],
+      'variables': {
+        'proto_in_dir': 'browser/chromeos/contacts',
+        'proto_out_dir': 'chrome/browser/chromeos/contacts',
+      },
+      'includes': [ '../build/protoc.gypi' ]
     },
   ],
   'conditions': [

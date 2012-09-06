@@ -56,6 +56,7 @@
           'experimental_usb.idl',
           'file_system.idl',
           'media_galleries.idl',
+          'rtc_private.idl',
           'serial.idl',
           'socket.idl',
         ],
@@ -71,6 +72,9 @@
         ['OS!="chromeos"', {
           'json_schema_files!': [
             'file_browser_handler_internal.json',
+          ],
+          'idl_schema_files!': [
+            'rtc_private.idl',
           ],
         }],
       ],
