@@ -1510,6 +1510,92 @@ def CMDtree(parser, args):
   return 0
 
 
+def CMDtry(parser, args):
+  """Triggers a try job through Rietveld."""
+  group = optparse.OptionGroup(parser, "Try job options")
+  group.add_option(
+      "-b", "--bot", action="append",
+      help=("IMPORTANT: specify ONE builder per --bot flag. Use it multiple "
+            "times to specify multiple builders. ex: "
+            "'-bwin_rel:ui_tests,webkit_unit_tests -bwin_layout'. See "
+            "the try server waterfall for the builders name and the tests "
+            "available. Can also be used to specify gtest_filter, e.g. "
+            "-bwin_rel:base_unittests:ValuesTest.*Value"))
+  group.add_option(
+      "-r", "--revision",
+      help="Revision to use for the try job; default: the "
+           "revision will be determined by the try server; see "
+           "its waterfall for more info")
+  group.add_option(
+      "-c", "--clobber", action="store_true", default=False,
+      help="Force a clobber before building; e.g. don't do an "
+           "incremental build")
+  group.add_option(
+      "--project",
+      help="Override which project to use. Projects are defined "
+           "server-side to define what default bot set to use")
+  group.add_option(
+      "-t", "--testfilter", action="append", default=[],
+      help=("Apply a testfilter to all the selected builders. Unless the "
+            "builders configurations are similar, use multiple "
+            "--bot <builder>:<test> arguments."))
+  group.add_option(
+      "-n", "--name", help="Try job name; default to current branch name")
+  parser.add_option_group(group)
+  options, args = parser.parse_args(args)
+
+  if args:
+    parser.error('Unknown arguments: %s' % args)
+
+  cl = Changelist()
+  if not cl.GetIssue():
+    parser.error('Need to upload first')
+
+  if not options.name:
+    options.name = cl.GetBranch()
+
+  # Process --bot and --testfilter.
+  if not options.bot:
+    # Get try slaves from PRESUBMIT.py files if not specified.
+    change = cl.GetChange(cl.GetUpstreamBranch(), None)
+    options.bot = presubmit_support.DoGetTrySlaves(
+        change,
+        change.LocalPaths(),
+        settings.GetRoot(),
+        None,
+        None,
+        options.verbose,
+        sys.stdout)
+  if not options.bot:
+    parser.error('No default try builder to try, use --bot')
+
+  builders_and_tests = {}
+  for bot in options.bot:
+    if ':' in bot:
+      builder, tests = bot.split(':', 1)
+      builders_and_tests.setdefault(builder, []).extend(tests.split(','))
+    elif ',' in bot:
+      parser.error('Specify one bot per --bot flag')
+    else:
+      builders_and_tests.setdefault(bot, []).append('defaulttests')
+
+  if options.testfilter:
+    forced_tests = sum((t.split(',') for t in options.testfilter), [])
+    builders_and_tests = dict(
+      (b, forced_tests) for b, t in builders_and_tests.iteritems()
+      if t != ['compile'])
+
+  patchset = cl.GetPatchset()
+  if not cl.GetPatchset():
+    properties = cl.RpcServer().get_issue_properties(cl.GetIssue(), False)
+    patchset = properties['patchsets'][-1]
+
+  cl.RpcServer().trigger_try_jobs(
+      cl.GetIssue(), patchset, options.name, options.clobber, options.revision,
+      builders_and_tests)
+  return 0
+
+
 @usage('[new upstream branch]')
 def CMDupstream(parser, args):
   """prints or sets the name of the upstream branch, if any"""
