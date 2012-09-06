@@ -42,6 +42,7 @@ using content::RenderView;
 using webkit::ppapi::HostGlobals;
 using webkit::ppapi::PluginInstance;
 using webkit::ppapi::PluginDelegate;
+using webkit::ppapi::PluginModule;
 using WebKit::WebView;
 
 namespace {
@@ -207,7 +208,7 @@ PP_Bool StartPpapiProxy(PP_Instance instance) {
     IPC::ChannelHandle channel_handle = it->second;
     map.erase(it);
 
-    webkit::ppapi::PluginInstance* plugin_instance =
+    PluginInstance* plugin_instance =
         content::GetHostGlobals()->GetInstance(instance);
     if (!plugin_instance)
       return PP_FALSE;
@@ -216,18 +217,25 @@ PP_Bool StartPpapiProxy(PP_Instance instance) {
         plugin_instance->container()->element().document().frame()->view();
     RenderView* render_view = content::RenderView::FromWebView(web_view);
 
-    webkit::ppapi::PluginModule* plugin_module = plugin_instance->module();
+    PluginModule* plugin_module = plugin_instance->module();
 
     scoped_refptr<SyncMessageStatusReceiver>
         status_receiver(new SyncMessageStatusReceiver());
     scoped_ptr<OutOfProcessProxy> out_of_process_proxy(new OutOfProcessProxy);
+    // Create a new module for each instance of the NaCl plugin that is using
+    // the IPC based out-of-process proxy. We can't use the existing module,
+    // because it is configured for the in-process NaCl plugin, and we must
+    // keep it that way to allow the page to create other instances.
+    scoped_refptr<PluginModule> nacl_plugin_module(
+        plugin_module->CreateModuleForNaClInstance());
+
     if (out_of_process_proxy->Init(
             channel_handle,
-            plugin_module->pp_module(),
-            webkit::ppapi::PluginModule::GetLocalGetInterfaceFunc(),
+            nacl_plugin_module->pp_module(),
+            PluginModule::GetLocalGetInterfaceFunc(),
             ppapi::Preferences(render_view->GetWebkitPreferences()),
             status_receiver.get())) {
-      plugin_module->InitAsProxiedNaCl(
+      nacl_plugin_module->InitAsProxiedNaCl(
           out_of_process_proxy.PassAs<PluginDelegate::OutOfProcessProxy>(),
           instance);
       return PP_TRUE;

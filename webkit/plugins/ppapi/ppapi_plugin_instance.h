@@ -469,7 +469,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // proxy and re-sends DidCreate, DidChangeView, and HandleDocumentLoad (if
   // necessary).
   // This is for use with the NaCl proxy.
-  bool ResetAsProxied();
+  bool ResetAsProxied(scoped_refptr<PluginModule> module);
 
  private:
   // Implements PPB_Gamepad_API. This is just to avoid having an excessive
@@ -573,10 +573,11 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   PluginDelegate* delegate_;
   scoped_refptr<PluginModule> module_;
   scoped_ptr< ::ppapi::PPP_Instance_Combined> instance_interface_;
-  // If this is the NaCl plugin, store its instance interface so we can shut
-  // it down properly when using the IPC-based PPAPI proxy.
-  // TODO(bbudge) Remove this when the proxy switch is complete.
-  scoped_ptr< ::ppapi::PPP_Instance_Combined> nacl_plugin_instance_interface_;
+  // If this is the NaCl plugin, we create a new module when we switch to the
+  // IPC-based PPAPI proxy. Store the original module and instance interface
+  // so we can shut down properly.
+  scoped_refptr<PluginModule> original_module_;
+  scoped_ptr< ::ppapi::PPP_Instance_Combined> original_instance_interface_;
 
   PP_Instance pp_instance_;
 

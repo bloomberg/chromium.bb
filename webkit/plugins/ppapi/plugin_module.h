@@ -105,7 +105,12 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
   // ownership of the given pointer, even in the failure case.
   void InitAsProxied(PluginDelegate::OutOfProcessProxy* out_of_process_proxy);
 
-  // Initializes this module for the given NaCl proxy. This takes
+  // Creates a new module for a NaCl instance that will be using the IPC proxy.
+  // We can't use the existing module, or new instances of the plugin can't
+  // be created.
+  scoped_refptr<PluginModule> CreateModuleForNaClInstance();
+
+  // Initializes the NaCl module for the given out of process proxy. This takes
   // ownership of the given pointer, even in the failure case.
   void InitAsProxiedNaCl(
       scoped_ptr<PluginDelegate::OutOfProcessProxy> out_of_process_proxy,
@@ -233,8 +238,6 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
   PluginInstanceSet instances_;
 
   PP_Bool (*reserve_instance_id_)(PP_Module, PP_Instance);
-
-  bool nacl_ipc_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginModule);
 };

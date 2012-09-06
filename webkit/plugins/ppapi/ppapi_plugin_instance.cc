@@ -484,6 +484,9 @@ PluginInstance::~PluginInstance() {
 
   delegate_->InstanceDeleted(this);
   module_->InstanceDeleted(this);
+  // If we switched from the NaCl plugin module, notify it too.
+  if (original_module_.get())
+    original_module_->InstanceDeleted(this);
 
   HostGlobals::Get()->InstanceDeleted(pp_instance_);
 }
@@ -505,8 +508,8 @@ void PluginInstance::Delete() {
   // If this is a NaCl plugin instance, shut down the NaCl plugin by calling
   // its DidDestroy. Don't call DidDestroy on the untrusted plugin instance,
   // since there is little that it can do at this point.
-  if (nacl_plugin_instance_interface_.get())
-    nacl_plugin_instance_interface_->DidDestroy(pp_instance());
+  if (original_instance_interface_.get())
+    original_instance_interface_->DidDestroy(pp_instance());
   else
     instance_interface_->DidDestroy(pp_instance());
 
@@ -2543,10 +2546,15 @@ PP_Var PluginInstance::GetPluginInstanceURL(
                                                         components);
 }
 
-bool PluginInstance::ResetAsProxied() {
+bool PluginInstance::ResetAsProxied(scoped_refptr<PluginModule> module) {
+  // Save the original module and switch over to the new one now that this
+  // plugin is using the IPC-based proxy.
+  original_module_ = module_;
+  module_ = module;
+
   // For NaCl instances, remember the NaCl plugin instance interface, so we
   // can shut it down by calling its DidDestroy in our Delete() method.
-  nacl_plugin_instance_interface_.reset(instance_interface_.release());
+  original_instance_interface_.reset(instance_interface_.release());
 
   base::Callback<const void*(const char*)> get_plugin_interface_func =
       base::Bind(&PluginModule::GetPluginInterface, module_.get());

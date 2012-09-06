@@ -419,8 +419,7 @@ PluginModule::PluginModule(const std::string& name,
       name_(name),
       path_(path),
       permissions_(perms),
-      reserve_instance_id_(NULL),
-      nacl_ipc_proxy_(false) {
+      reserve_instance_id_(NULL) {
   // Ensure the globals object is created.
   if (!host_globals)
     host_globals = new HostGlobals;
@@ -503,27 +502,33 @@ void PluginModule::InitAsProxied(
   out_of_process_proxy_.reset(out_of_process_proxy);
 }
 
+scoped_refptr<PluginModule> PluginModule::CreateModuleForNaClInstance() {
+  // Create a new module, but don't set the lifetime delegate. This isn't a
+  // plugin in the usual sense, so it isn't tracked by the browser.
+  scoped_refptr<PluginModule> nacl_module(
+      new PluginModule(name_,
+                       path_,
+                       NULL,  // no lifetime_delegate
+                       permissions_));
+  return nacl_module;
+}
+
 void PluginModule::InitAsProxiedNaCl(
     scoped_ptr<PluginDelegate::OutOfProcessProxy> out_of_process_proxy,
     PP_Instance instance) {
-  // TODO(bbudge) We need to switch the mode of the PluginModule on a
-  // per-instance basis. Fix this so out_of_process_proxy and other
-  // state is stored in a map, indexed by instance.
-  nacl_ipc_proxy_ = true;
   InitAsProxied(out_of_process_proxy.release());
   // InitAsProxied (for the trusted/out-of-process case) initializes only the
   // module, and one or more instances are added later. In this case, the
   // PluginInstance was already created as in-process, so we missed the proxy
   // AddInstance step and must do it now.
   out_of_process_proxy_->AddInstance(instance);
-
   // In NaCl, we need to tell the instance to reset itself as proxied. This will
   // clear cached interface pointers and send DidCreate (etc) to the plugin
   // side of the proxy.
   PluginInstance* plugin_instance = host_globals->GetInstance(instance);
   if (!plugin_instance)
     return;
-  plugin_instance->ResetAsProxied();
+  plugin_instance->ResetAsProxied(this);
 }
 
 // static
@@ -577,11 +582,6 @@ void PluginModule::InstanceDeleted(PluginInstance* instance) {
   if (out_of_process_proxy_.get())
     out_of_process_proxy_->RemoveInstance(instance->pp_instance());
   instances_.erase(instance);
-
-  if (nacl_ipc_proxy_) {
-    out_of_process_proxy_.reset();
-    reserve_instance_id_ = NULL;
-  }
 }
 
 scoped_refptr< ::ppapi::CallbackTracker> PluginModule::GetCallbackTracker() {
