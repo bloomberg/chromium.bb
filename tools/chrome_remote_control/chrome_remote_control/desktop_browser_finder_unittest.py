@@ -119,6 +119,8 @@ class LinuxFindTest(FindTestBase):
     self._files.append("/foo/chrome")
     self._files.append("../../../out/Release/chrome")
     self._files.append("../../../out/Debug/chrome")
+    self._files.append("../../../out/Release/content_shell")
+    self._files.append("../../../out/Debug/content_shell")
 
     self._has_google_chrome_on_path = False
     this = self
@@ -127,6 +129,13 @@ class LinuxFindTest(FindTestBase):
         return 0
       raise OSError("Not found")
     self._subprocess_stub.call_hook = call_hook
+
+  def testFindAllWithExact(self):
+    types = self.DoFindAllTypes()
+    self.assertEquals(
+        set(types),
+        set(['debug', 'release',
+             'content-shell-debug', 'content-shell-release']))
 
   def testFindWithProvidedExecutable(self):
     self._options.browser_executable = "/foo/chrome"
@@ -142,10 +151,12 @@ class LinuxFindTest(FindTestBase):
 
     self._has_google_chrome_on_path = False
     del self._files[1]
-    self.assertEquals([], self.DoFindAllTypes())
+    self.assertEquals(["content-shell-debug", "content-shell-release"],
+                      self.DoFindAllTypes())
 
   def testFindUsingRelease(self):
     self.assertTrue("release" in self.DoFindAllTypes())
+
 
 class WinFindTest(FindTestBase):
   def setUp(self):
@@ -156,6 +167,8 @@ class WinFindTest(FindTestBase):
     self._files.append('c:\\tmp\\chrome.exe')
     self._files.append('..\\..\\..\\build\\Release\\chrome.exe')
     self._files.append('..\\..\\..\\build\\Debug\\chrome.exe')
+    self._files.append('..\\..\\..\\build\\Release\\content_shell.exe')
+    self._files.append('..\\..\\..\\build\\Debug\\content_shell.exe')
     self._files.append(self._os_stub.local_app_data + '\\' +
                        'Google\\Chrome\\Application\\chrome.exe')
     self._files.append(self._os_stub.local_app_data + '\\' +
@@ -164,11 +177,16 @@ class WinFindTest(FindTestBase):
   def testFindAllGivenDefaults(self):
     types = self.DoFindAllTypes()
     self.assertEquals(set(types),
-                      set(['debug', 'release', 'system', 'canary']))
+                      set(['debug', 'release',
+                           'content-shell-debug', 'content-shell-release',
+                           'system', 'canary']))
 
   def testFindAllWithExact(self):
     self._options.browser_executable = 'c:\\tmp\\chrome.exe'
     types = self.DoFindAllTypes()
     self.assertEquals(
         set(types),
-        set(['exact', 'debug', 'release', 'system', 'canary']))
+        set(['exact',
+             'debug', 'release',
+             'content-shell-debug', 'content-shell-release',
+             'system', 'canary']))
