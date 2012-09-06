@@ -55,7 +55,3 @@ const char kPrintSystemFailedMessageId[] = "printsystemfail";
 const char kGetPrinterCapsFailedMessageId[] = "getprncapsfail";
 const char kEnumPrintersFailedMessageId[] = "enumfail";
 const char kZombiePrinterMessageId[] = "zombieprinter";
-
-const char kDefaultCloudPrintOAuthClientId[] =
-    "551556820943.apps.googleusercontent.com";
-const char kDefaultCloudPrintOAuthClientSecret[] = "u3/mp8CgLFxh4uiX1855/MHe";

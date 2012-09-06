@@ -153,9 +153,6 @@ const char kCipherSuiteBlacklist[]          = "cipher-suite-blacklist";
 // expiration of credentials during testing.
 const char kClearTokenService[]             = "clear-token-service";
 
-// Supplies custom client login to OAuth2 URL for testing purposes.
-const char kClientLoginToOAuth2Url[]        = "client-login-to-oauth2-url";
-
 // Used with kCloudPrintFile. Tells Chrome to delete the file when finished
 // displaying the print dialog.
 const char kCloudPrintDeleteFile[]          = "cloud-print-delete-file";
@@ -717,26 +714,6 @@ const char kFileDescriptorLimit[]           = "file-descriptor-limit";
 // whether or not it's actually the first run.
 const char kFirstRun[]                      = "first-run";
 
-// Specifies the backend server used for gaia authentications, like sync or
-// policies for example. The https:// prefix and the trailing slash should be
-// omitted. The default value is "www.google.com".
-const char kGaiaHost[]                      = "gaia-host";
-
-// Specifies the backend server used for OAuth authentication requests.
-// The https:// prefix and the trailing slash should be
-// omitted. The default value is "www.google.com".
-const char kGaiaOAuthHost[]                 = "gaia-oauth-host";
-
-// Specifies the path prefix for GAIA OAuth URLs. It should be used
-// for testing in cases where authentication path prefix differs from the one
-// used in production.
-const char kGaiaOAuthUrlPath[]              = "gaia-oauth-url-path";
-
-// Specifies the path prefix for GAIA authentication URL. It should be used
-// for testing in cases where authentication path prefix differs from the one
-// used in production.
-const char kGaiaUrlPath[]                   = "gaia-url-path";
-
 // Enables using GAIA information to populate profile name and icon.
 const char kGaiaProfileInfo[]               = "gaia-profile-info";
 
@@ -952,21 +929,6 @@ const char kNotifyCloudPrintTokenExpired[]  = "notify-cp-token-expired";
 // Specifies the maximum number of threads to use for running the Proxy
 // Autoconfig (PAC) script.
 const char kNumPacThreads[]                 = "num-pac-threads";
-
-// Specifies custom OAuth1 login scope for testing purposes.
-const char kOAuth1LoginScope[]              = "oauth1-login-scope";
-
-// Specifies custom OAuth2 client id for testing purposes.
-const char kOAuth2ClientId[]                = "oauth2-client-id";
-
-// Specifies custom OAuth2 client secret for testing purposes.
-const char kOAuth2ClientSecret[]            = "oauth2-client-secret";
-
-// Specifies custom OAuth2 issue token URL for testing purposes.
-const char kOAuth2IssueTokenUrl[]           = "oauth2-issue-token-url";
-
-// Specifies custom OAuth2 token URL for testing purposes.
-const char kOAuth2TokenUrl[]                = "oauth2-token-url";
 
 // Refactored (browserless) Panels are on by default in dev/canary/trunk.
 // Use this flag to revert to using the old-style (pre-refactor) Panels.

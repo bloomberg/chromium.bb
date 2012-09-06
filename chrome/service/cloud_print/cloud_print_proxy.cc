@@ -12,6 +12,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/cloud_print/cloud_print_proxy_info.h"
 #include "chrome/common/net/gaia/gaia_oauth_client.h"
+#include "chrome/common/net/google_apis/google_api_keys.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/cloud_print/print_system.h"
@@ -172,8 +173,10 @@ bool CloudPrintProxy::CreateBackend() {
 
   // TODO(sanjeevr): Allow overriding OAuthClientInfo in prefs.
   gaia::OAuthClientInfo oauth_client_info;
-  oauth_client_info.client_id = kDefaultCloudPrintOAuthClientId;
-  oauth_client_info.client_secret = kDefaultCloudPrintOAuthClientSecret;
+  oauth_client_info.client_id =
+      google_apis::GetOAuth2ClientID(google_apis::CLIENT_CLOUD_PRINT);
+  oauth_client_info.client_secret =
+      google_apis::GetOAuth2ClientSecret(google_apis::CLIENT_CLOUD_PRINT);
 
   cloud_print_server_url_ = GURL(cloud_print_server_url_str.c_str());
   DCHECK(cloud_print_server_url_.is_valid());

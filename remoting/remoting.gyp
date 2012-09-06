@@ -1445,6 +1445,11 @@
         '../net/net.gyp:net',
       ],
       'sources': [
+        # TODO(joi): Clean this up with a lib once we move it to its
+        # final destination. See TODO in remoting/host/DEPS.
+        '../chrome/common/net/google_apis/google_api_keys.cc',
+        '../chrome/common/net/google_apis/google_api_keys.h',
+
         'host/branding.cc',
         'host/branding.h',
         'host/config_file_watcher.cc',

@@ -22,6 +22,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
+#include "chrome/common/net/google_apis/google_api_keys.h"
 #include "crypto/nss_util.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -84,10 +85,6 @@ const char kDaemonIpcSwitchName[] = "daemon-pipe";
 const char kUnofficialOAuth2ClientId[] =
     "440925447803-2pi3v45bff6tp1rde2f7q6lgbor3o5uj.apps.googleusercontent.com";
 const char kUnofficialOAuth2ClientSecret[] = "W2ieEsG-R1gIA4MMurGrgMc_";
-
-const char kOfficialOAuth2ClientId[] =
-    "440925447803-avn2sj1kc099s0r7v62je5s339mu0am1.apps.googleusercontent.com";
-const char kOfficialOAuth2ClientSecret[] = "Bgur6DFiOMM1h8x-AQpuTQlK";
 
 void QuitMessageLoop(MessageLoop* message_loop) {
   message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
@@ -502,8 +499,8 @@ class HostProcess
 #ifdef OFFICIAL_BUILD
       if (oauth_use_official_client_id_) {
         OAuthClientInfo official_client_info = {
-          kOfficialOAuth2ClientId,
-          kOfficialOAuth2ClientSecret
+            google_apis::GetOAuth2ClientID(google_apis::CLIENT_REMOTING),
+            google_apis::GetOAuth2ClientSecret(google_apis::CLIENT_REMOTING)
         };
 
         client_info = official_client_info;

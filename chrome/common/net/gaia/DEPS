@@ -1,0 +1,13 @@
+include_rules = [
+  "-chrome",
+  "-content",
+  "+chrome/common/net/gaia",
+  "+chrome/common/net/google_apis",
+]
+
+specific_include_rules = {
+  ".*_[a-z]*test\.cc": [
+    "+chrome/test",
+    "+content/public/test",
+  ]
+}

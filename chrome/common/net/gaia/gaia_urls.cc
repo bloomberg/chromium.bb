@@ -5,7 +5,8 @@
 #include "chrome/common/net/gaia/gaia_urls.h"
 
 #include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/net/gaia/gaia_switches.h"
+#include "chrome/common/net/google_apis/google_api_keys.h"
 
 namespace {
 
@@ -33,16 +34,6 @@ const char kDefaultFederatedLoginHost[] = "www.google.com";
 const char kDefaultFederatedLoginPath[] = "/accounts";
 const char kGetOAuthTokenUrlSuffix[] = "/o8/GetOAuthToken";
 
-// OAuth2 client id for Google Chrome which is registered as an
-// installed application.
-static const char kOAuth2ChromeClientId[] =
-    "77185425430.apps.googleusercontent.com";
-// For an installed application, client secret is not really a secret since
-// it is expected to be embeeded in the application.
-// See documentation at
-// http://code.google.com/apis/accounts/docs/OAuth2InstalledApp.html
-static const char kOAuth2ChromeClientSecret[] =
-    "OTJgUOQcT7lO7GsGZq2G4IlT";
 const char kClientLoginToOAuth2Url[] =
     "https://accounts.google.com/o/oauth2/programmatic_auth";
 const char kOAuth2TokenUrl[] =
@@ -136,12 +127,11 @@ GaiaUrls::GaiaUrls() {
       "https://www.googleapis.com/auth/userinfo.email";
   client_oauth_url_ = "https://accounts.google.com/ClientOAuth";
 
-  GetSwitchValueWithDefault(switches::kOAuth2ClientId,
-                            kOAuth2ChromeClientId,
-                            &oauth2_chrome_client_id_);
-  GetSwitchValueWithDefault(switches::kOAuth2ClientSecret,
-                            kOAuth2ChromeClientSecret,
-                            &oauth2_chrome_client_secret_);
+  oauth2_chrome_client_id_ =
+      google_apis::GetOAuth2ClientID(google_apis::CLIENT_MAIN);
+  oauth2_chrome_client_secret_ =
+      google_apis::GetOAuth2ClientSecret(google_apis::CLIENT_MAIN);
+
   GetSwitchValueWithDefault(switches::kClientLoginToOAuth2Url,
                             kClientLoginToOAuth2Url,
                             &client_login_to_oauth2_url_);
