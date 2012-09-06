@@ -26,8 +26,7 @@ ShellIntegration::DefaultWebClientSetPermission
 }
 
 ShellIntegration::ShortcutInfo::ShortcutInfo()
-    : is_platform_app(false),
-      create_on_desktop(false),
+    : create_on_desktop(false),
       create_in_applications_menu(false),
       create_in_quick_launch_bar(false) {
 }
@@ -55,7 +54,6 @@ bool ShellIntegration::IsRunningInAppMode() {
 CommandLine ShellIntegration::CommandLineArgsForLauncher(
     const GURL& url,
     const std::string& extension_app_id,
-    bool is_platform_app,
     const FilePath& profile_path) {
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
   CommandLine new_cmd_line(CommandLine::NO_PROGRAM);
@@ -85,8 +83,6 @@ CommandLine ShellIntegration::CommandLineArgsForLauncher(
   // during launch.
   if (!extension_app_id.empty()) {
     new_cmd_line.AppendSwitchASCII(switches::kAppId, extension_app_id);
-    if (is_platform_app)
-      new_cmd_line.AppendSwitch(switches::kEnableExperimentalExtensionApis);
   } else {
     // Use '--app=url' instead of just 'url' to launch the browser with minimal
     // chrome.

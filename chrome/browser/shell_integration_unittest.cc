@@ -358,7 +358,6 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
             web_app::GenerateApplicationNameFromURL(GURL(test_cases[i].url)),
             GURL(test_cases[i].url),
             "",
-            false,
             FilePath(),
             ASCIIToUTF16(test_cases[i].title),
             test_cases[i].icon_name,

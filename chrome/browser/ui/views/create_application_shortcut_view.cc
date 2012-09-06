@@ -493,7 +493,6 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
   shortcut_info_.url = GURL(app_->launch_web_url());
   shortcut_info_.title = UTF8ToUTF16(app_->name());
   shortcut_info_.description = UTF8ToUTF16(app_->description());
-  shortcut_info_.is_platform_app = app_->is_platform_app();
   shortcut_info_.extension_path = app_->path();
   shortcut_info_.profile_path = profile->GetPath();
 

@@ -520,7 +520,6 @@ std::string GetDesktopFileContents(
     const std::string& app_name,
     const GURL& url,
     const std::string& extension_id,
-    const bool is_platform_app,
     const FilePath& extension_path,
     const string16& title,
     const std::string& icon_name,
@@ -589,7 +588,7 @@ std::string GetDesktopFileContents(
     }
     CommandLine cmd_line(CommandLine::NO_PROGRAM);
     cmd_line = ShellIntegration::CommandLineArgsForLauncher(
-        url, extension_id, is_platform_app, profile_path);
+        url, extension_id, profile_path);
     const CommandLine::SwitchMap& switch_map = cmd_line.GetSwitches();
     for (CommandLine::SwitchMap::const_iterator i = switch_map.begin();
          i != switch_map.end(); ++i) {
@@ -658,7 +657,6 @@ bool CreateDesktopShortcut(
       app_name,
       shortcut_info.url,
       shortcut_info.extension_id,
-      shortcut_info.is_platform_app,
       shortcut_info.extension_path,
       shortcut_info.title,
       icon_name,

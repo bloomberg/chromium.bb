@@ -89,9 +89,6 @@ class ShellIntegration {
     gfx::Image favicon;
     FilePath profile_path;
 
-    // Shortcuts to platform apps are created differently. They start up with
-    // their own user data directory and load the app from |extension_path|.
-    bool is_platform_app;
     bool create_on_desktop;
     bool create_in_applications_menu;
 
@@ -115,12 +112,10 @@ class ShellIntegration {
   // The new command line reuses the current process's user data directory (and
   // login profile, for ChromeOS).
   // If |extension_app_id| is non-empty, the arguments use kAppId=<id>.
-  // Otherwise, kApp=<url> is used. If |is_platform_app| is true the flag
-  // --enable-platform-apps is added to the command line.
+  // Otherwise, kApp=<url> is used.
   static CommandLine CommandLineArgsForLauncher(
       const GURL& url,
       const std::string& extension_app_id,
-      bool is_platform_app,
       const FilePath& profile_path);
 
 #if defined(OS_WIN)

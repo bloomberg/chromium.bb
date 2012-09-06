@@ -38,7 +38,6 @@ ShellIntegration::ShortcutInfo ShortcutInfoForExtensionAndProfile(
   shortcut_info.title = UTF8ToUTF16(extension->name());
   shortcut_info.description = UTF8ToUTF16(extension->description());
   shortcut_info.extension_path = extension->path();
-  shortcut_info.is_platform_app = extension->is_platform_app();
   shortcut_info.create_in_applications_menu = true;
   shortcut_info.create_in_quick_launch_bar = true;
   shortcut_info.create_on_desktop = true;
