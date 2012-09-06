@@ -161,11 +161,13 @@ cr.define('login', function() {
       var isTimeout = false;
       var isShown = !offlineMessage.classList.contains('hidden') &&
           !offlineMessage.classList.contains('faded');
+      var currentScreenReloaded = false;
 
       if (reason == ERROR_REASONS.PROXY_CONFIG_CHANGED && shouldOverlay &&
-          isShown) {
+          !currentScreenReloaded) {
         // Schedules a immediate retry.
         currentScreen.doReload();
+        currentScreenReloaded = true;
         console.log('Retry page load since proxy settings has been changed');
       }
 
@@ -278,8 +280,10 @@ cr.define('login', function() {
             Oobe.getInstance().updateInnerContainerSize_(currentScreen);
 
           // Forces a reload for Gaia screen on hiding error message.
-          if (currentScreen.id == 'gaia-signin')
+          if (currentScreen.id == 'gaia-signin' && !currentScreenReloaded) {
             currentScreen.doReload();
+            currentScreenReloaded = true;
+          }
         }
       }
     },
