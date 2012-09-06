@@ -25,7 +25,7 @@ if not env.Bit('tests_use_irt'):
       'inbrowser_untrusted_crash_dump_test',
       env.ComponentObject(
           'inbrowser_untrusted_crash_dump_test',
-          'untrusted_crash_dump_test.c'),
+          '${MAIN_DIR}/tests/untrusted_crash_dump/untrusted_crash_dump_test.c'),
      EXTRA_LIBS=['untrusted_crash_dump_lib',
                   'untrusted_crash_dump',
                   'platform', 'gio', 'imc', 'imc_syscalls',
@@ -45,7 +45,7 @@ if not env.Bit('tests_use_irt'):
   env.AlwaysBuild(run_test)
   node = env.Command(
       'inbrowser_untrusted_crash_dump_test.out',
-      ['untrusted_crash_dump_test.py',
+      ['${MAIN_DIR}/tests/untrusted_crash_dump/untrusted_crash_dump_test.py',
        crash_dump, untrusted_crash_dump_test,
        '${STAGING_DIR}/untrusted_crash_dump_test.nmf'],
        '${PYTHON} ${SOURCES} ${ADDR2LINE} '

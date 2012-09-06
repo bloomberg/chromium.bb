@@ -39,23 +39,23 @@ def ExtendFileList(existing, additional):
 
 ppapi_scons_files['nonvariant_test_scons_files'] = ExtendFileList(
     ppapi_scons_files.get('nonvariant_test_scons_files', []), [
-        'tests/browser_dynamic_library/nacl.scons',
-        'tests/browser_startup_time/nacl.scons',
-        'tests/exit_status/nacl.scons',
-        'tests/inbrowser_test_runner/nacl_chrome.scons',
-        'tests/manifest_file/nacl_chrome.scons',
-        'tests/nameservice/nacl_chrome.scons',
-        'tests/postmessage_redir/nacl.scons',
-        'tests/untrusted_crash_dump/nacl_chrome.scons',
+        'tests/nacl_browser/browser_dynamic_library/nacl.scons',
+        'tests/nacl_browser/browser_startup_time/nacl.scons',
+        'tests/nacl_browser/exit_status/nacl.scons',
+        'tests/nacl_browser/inbrowser_test_runner/nacl.scons',
+        'tests/nacl_browser/manifest_file/nacl.scons',
+        'tests/nacl_browser/nameservice/nacl.scons',
+        'tests/nacl_browser/postmessage_redir/nacl.scons',
+        'tests/nacl_browser/untrusted_crash_dump/nacl.scons',
     ])
 
 ppapi_scons_files['irt_variant_test_scons_files'] = ExtendFileList(
     ppapi_scons_files.get('irt_variant_test_scons_files', []), [
         # Disabled by Brad Chen 4 Sep to try to green Chromium
         # nacl_integration tests
-        #'tests/fault_injection/nacl.scons',
+        #'tests/nacl_browser/fault_injection/nacl.scons',
         'tests/nacl.scons',
-        'tests/pnacl_client_translator/nacl.scons',
+        'tests/nacl_browser/pnacl_client_translator/nacl.scons',
     ])
 
 ppapi_scons_files['untrusted_scons_files'] = ExtendFileList(
