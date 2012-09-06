@@ -26,6 +26,10 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_WIN)
+#include "base/win/metro.h"
+#endif  // OS_WIN
+
 namespace extensions {
 
 namespace {
@@ -1160,6 +1164,12 @@ ExtensionPrefs::LaunchType ExtensionPrefs::GetLaunchType(
     if (result == LAUNCH_WINDOW)
       result = LAUNCH_REGULAR;
   #endif
+
+#if defined(OS_WIN)
+    // We don't support app windows in windows 8 metro mode.
+    if (base::win::IsMetroProcess() && result == LAUNCH_WINDOW)
+      result = LAUNCH_REGULAR;
+#endif  // OS_WIN
 
   return result;
 }
