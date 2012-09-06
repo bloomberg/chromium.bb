@@ -29,13 +29,13 @@ class SURFACE_EXPORT AcceleratedPresenter
                               base::TimeTicks,
                               base::TimeDelta)> CompletionTask;
 
-  explicit AcceleratedPresenter(gfx::NativeWindow window);
+  explicit AcceleratedPresenter(gfx::PluginWindowHandle window);
 
   // Returns a thread safe reference to the presenter for the given window or
   // null is no such presenter exists. The thread safe refptr ensures the
   // presenter will not be destroyed. This can be called on any thread.
   static scoped_refptr<AcceleratedPresenter> GetForWindow(
-      gfx::NativeWindow window);
+      gfx::PluginWindowHandle window);
 
   // Schedule a frame to be presented. The completion callback will be invoked
   // when it is safe to write to the surface on another thread. The lock for
@@ -96,7 +96,7 @@ class SURFACE_EXPORT AcceleratedPresenter
   PresentThread* const present_thread_;
 
   // The window that is presented to.
-  gfx::NativeWindow window_;
+  gfx::PluginWindowHandle window_;
 
   // The lock is taken while any thread is calling the object, except those that
   // simply post from the main thread to the present thread via the immutable
@@ -130,7 +130,7 @@ class SURFACE_EXPORT AcceleratedPresenter
 
 class SURFACE_EXPORT AcceleratedSurface {
  public:
-  AcceleratedSurface(gfx::NativeWindow window);
+  AcceleratedSurface(gfx::PluginWindowHandle window);
   ~AcceleratedSurface();
 
   // Synchronously present a frame with no acknowledgement.

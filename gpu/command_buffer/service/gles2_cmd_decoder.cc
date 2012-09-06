@@ -8269,6 +8269,8 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
   // If offscreen then don't actually SwapBuffers to the display. Just copy
   // the rendered frame to another frame buffer.
   if (is_offscreen) {
+    TRACE_EVENT2("gpu", "Offscreen",
+        "width", offscreen_size_.width(), "height", offscreen_size_.height());
     if (offscreen_size_ != offscreen_saved_color_texture_->size()) {
       // Workaround for NVIDIA driver bug on OS X; crbug.com/89557,
       // crbug.com/94163. TODO(kbr): figure out reproduction so Apple will
@@ -8342,7 +8344,9 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
       return error::kNoError;
     }
   } else {
-    TRACE_EVENT1("gpu", "GLContext::SwapBuffers", "frame", this_frame_number);
+    TRACE_EVENT2("gpu", "Onscreen",
+        "width", surface_->GetSize().width(),
+        "height", surface_->GetSize().height());
     if (!surface_->SwapBuffers()) {
       LOG(ERROR) << "Context lost because SwapBuffers failed.";
       return error::kLostContext;

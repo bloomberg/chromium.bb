@@ -229,12 +229,14 @@ class PresentThreadPool {
 class AcceleratedPresenterMap {
  public:
   AcceleratedPresenterMap();
-  scoped_refptr<AcceleratedPresenter> CreatePresenter(gfx::NativeWindow window);
+  scoped_refptr<AcceleratedPresenter> CreatePresenter(
+      gfx::PluginWindowHandle window);
   void RemovePresenter(const scoped_refptr<AcceleratedPresenter>& presenter);
-  scoped_refptr<AcceleratedPresenter> GetPresenter(gfx::NativeWindow window);
+  scoped_refptr<AcceleratedPresenter> GetPresenter(
+      gfx::PluginWindowHandle window);
  private:
   base::Lock lock_;
-  typedef std::map<gfx::NativeWindow, AcceleratedPresenter*> PresenterMap;
+  typedef std::map<gfx::PluginWindowHandle, AcceleratedPresenter*> PresenterMap;
   PresenterMap presenters_;
   DISALLOW_COPY_AND_ASSIGN(AcceleratedPresenterMap);
 };
@@ -381,7 +383,7 @@ AcceleratedPresenterMap::AcceleratedPresenterMap() {
 }
 
 scoped_refptr<AcceleratedPresenter> AcceleratedPresenterMap::CreatePresenter(
-    gfx::NativeWindow window) {
+    gfx::PluginWindowHandle window) {
   scoped_refptr<AcceleratedPresenter> presenter(
       new AcceleratedPresenter(window));
 
@@ -408,7 +410,7 @@ void AcceleratedPresenterMap::RemovePresenter(
 }
 
 scoped_refptr<AcceleratedPresenter> AcceleratedPresenterMap::GetPresenter(
-    gfx::NativeWindow window) {
+    gfx::PluginWindowHandle window) {
   base::AutoLock locked(lock_);
   PresenterMap::iterator it = presenters_.find(window);
   if (it == presenters_.end())
@@ -417,7 +419,7 @@ scoped_refptr<AcceleratedPresenter> AcceleratedPresenterMap::GetPresenter(
   return it->second;
 }
 
-AcceleratedPresenter::AcceleratedPresenter(gfx::NativeWindow window)
+AcceleratedPresenter::AcceleratedPresenter(gfx::PluginWindowHandle window)
     : present_thread_(g_present_thread_pool.Pointer()->NextThread()),
       window_(window),
       event_(false, false),
@@ -425,7 +427,7 @@ AcceleratedPresenter::AcceleratedPresenter(gfx::NativeWindow window)
 }
 
 scoped_refptr<AcceleratedPresenter> AcceleratedPresenter::GetForWindow(
-    gfx::NativeWindow window) {
+    gfx::PluginWindowHandle window) {
   return g_accelerated_presenter_map.Pointer()->GetPresenter(window);
 }
 
@@ -676,8 +678,10 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
     const gfx::Size& size,
     int64 surface_handle,
     const CompletionTask& completion_task) {
-  TRACE_EVENT1(
-      "gpu", "DoPresentAndAcknowledge", "surface_handle", surface_handle);
+  TRACE_EVENT2(
+      "gpu", "DoPresentAndAcknowledge",
+      "width", size.width(),
+      "height", size.height());
 
   HRESULT hr;
 
@@ -920,7 +924,7 @@ bool AcceleratedPresenter::GetPresentationStats(base::TimeTicks* timebase,
   return true;
 }
 
-AcceleratedSurface::AcceleratedSurface(gfx::NativeWindow window)
+AcceleratedSurface::AcceleratedSurface(gfx::PluginWindowHandle window)
     : presenter_(g_accelerated_presenter_map.Pointer()->CreatePresenter(
           window)) {
 }

@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
@@ -26,6 +27,10 @@
 #include "ui/compositor/test_web_graphics_context_3d.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
+
+#if defined(OS_WIN)
+#include "ui/surface/accelerated_surface_win.h"
+#endif
 
 using content::BrowserGpuChannelHostFactory;
 using content::GLHelper;
@@ -287,6 +292,9 @@ class GpuProcessTransportFactory :
   struct PerCompositorData {
     int surface_id;
     scoped_ptr<CompositorSwapClient> swap_client;
+#if defined(OS_WIN)
+    scoped_ptr<AcceleratedSurface> accelerated_surface;
+#endif
   };
 
   PerCompositorData* CreatePerCompositorData(ui::Compositor* compositor) {
@@ -300,9 +308,18 @@ class GpuProcessTransportFactory :
     PerCompositorData* data = new PerCompositorData;
     data->surface_id = tracker->AddSurfaceForNativeWidget(widget);
     data->swap_client.reset(new CompositorSwapClient(compositor, this));
+#if defined(OS_WIN)
+    if (GpuDataManagerImpl::GetInstance()->IsUsingAcceleratedSurface())
+      data->accelerated_surface.reset(new AcceleratedSurface(widget));
+    tracker->SetSurfaceHandle(
+        data->surface_id,
+        gfx::GLSurfaceHandle(widget, true));
+#else
     tracker->SetSurfaceHandle(
         data->surface_id,
         gfx::GLSurfaceHandle(widget, false));
+#endif
+
     per_compositor_data_[compositor] = data;
 
     return data;
@@ -397,11 +414,7 @@ void ImageTransportFactory::Initialize() {
     content::WebKitPlatformSupportImpl::SetOffscreenContextFactoryForTest(
         CreateTestContext);
   } else {
-#if defined(OS_WIN)
-    g_factory = new DefaultTransportFactory();
-#else
     g_factory = new GpuProcessTransportFactory();
-#endif
   }
   ui::ContextFactory::SetInstance(g_factory->AsContextFactory());
 }

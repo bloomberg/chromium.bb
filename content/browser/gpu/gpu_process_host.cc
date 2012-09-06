@@ -42,7 +42,7 @@
 #include "ui/gfx/gtk_native_view_id_manager.h"
 #endif
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
 #include "ui/surface/accelerated_surface_win.h"
 #endif
 
@@ -478,7 +478,7 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
                         OnAcceleratedSurfaceBuffersSwapped)
 #endif
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
                         OnAcceleratedSurfaceBuffersSwapped)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfacePostSubBuffer,
@@ -661,7 +661,7 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
 }
 #endif  // OS_MACOSX
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
 
 void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params) {
@@ -674,11 +674,19 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
 
   gfx::PluginWindowHandle handle =
       GpuSurfaceTracker::Get()->GetSurfaceWindowHandle(params.surface_id);
+
   if (!handle) {
-    TRACE_EVENT1("gpu", "EarlyOut_SurfaceIDNotFound",
+    TRACE_EVENT1("gpu", "SurfaceIDNotFound_RoutingToUI",
                  "surface_id", params.surface_id);
+#if defined(USE_AURA)
+    // This is a content area swap, send it on to the UI thread.
+    scoped_completion_runner.Release();
+    RouteOnUIThread(GpuHostMsg_AcceleratedSurfaceBuffersSwapped(params));
+#endif
     return;
   }
+
+  // Otherwise it's the UI swap.
 
   scoped_refptr<AcceleratedPresenter> presenter(
       AcceleratedPresenter::GetForWindow(handle));
@@ -709,8 +717,13 @@ void GpuProcessHost::OnAcceleratedSurfaceSuspend(int32 surface_id) {
 
   gfx::PluginWindowHandle handle =
       GpuSurfaceTracker::Get()->GetSurfaceWindowHandle(surface_id);
-  if (!handle)
+
+  if (!handle) {
+#if defined(USE_AURA)
+    RouteOnUIThread(GpuHostMsg_AcceleratedSurfaceSuspend(surface_id));
+#endif
     return;
+  }
 
   scoped_refptr<AcceleratedPresenter> presenter(
       AcceleratedPresenter::GetForWindow(handle));
@@ -726,8 +739,12 @@ void GpuProcessHost::OnAcceleratedSurfaceRelease(
 
   gfx::PluginWindowHandle handle =
       GpuSurfaceTracker::Get()->GetSurfaceWindowHandle(params.surface_id);
-  if (!handle)
+  if (!handle) {
+#if defined(USE_AURA)
+    RouteOnUIThread(GpuHostMsg_AcceleratedSurfaceRelease(params));
     return;
+#endif
+  }
 
   scoped_refptr<AcceleratedPresenter> presenter(
       AcceleratedPresenter::GetForWindow(handle));
@@ -737,7 +754,7 @@ void GpuProcessHost::OnAcceleratedSurfaceRelease(
   presenter->ReleaseSurface();
 }
 
-#endif  // OS_WIN && !USE_AURA
+#endif  // OS_WIN
 
 void GpuProcessHost::OnProcessLaunched() {
   UMA_HISTOGRAM_TIMES("GPU.GPUProcessLaunchTime",

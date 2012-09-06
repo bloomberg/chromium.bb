@@ -125,7 +125,8 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
   void OnAcceleratedSurfaceBuffersSwapped(
       const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
 #endif
-#if defined(OS_WIN) && !defined(USE_AURA)
+  // Note: Different implementations depending on USE_AURA.
+#if defined(OS_WIN)
   void OnAcceleratedSurfaceBuffersSwapped(
       const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
   void OnAcceleratedSurfacePostSubBuffer(
