@@ -104,7 +104,7 @@ class MuteButton : public ash::internal::TrayBarButtonWithTitle {
  public:
   explicit MuteButton(views::ButtonListener* listener)
       : TrayBarButtonWithTitle(listener,
-            IDS_ASH_STATUS_TRAY_VOLUME_MUTE,
+            -1,    // no title under mute button
             kTrayBarButtonWidth) {
     Update();
   }

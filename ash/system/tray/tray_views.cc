@@ -487,13 +487,16 @@ TrayBarButtonWithTitle::TrayBarButtonWithTitle(views::ButtonListener* listener,
                                                int width)
     : views::CustomButton(listener),
       image_(new TrayBarButton(kBarImagesActive, kBarImagesDisabled)),
-      title_(new views::Label),
+      title_(NULL),
       width_(width) {
   AddChildView(image_);
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  string16 text = rb.GetLocalizedString(title_id);
-  title_->SetText(text);
-  AddChildView(title_);
+  if (title_id != -1) {
+    title_ = new views::Label;
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    string16 text = rb.GetLocalizedString(title_id);
+    title_->SetText(text);
+    AddChildView(title_);
+  }
 
   image_height_ = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
       kBarImagesActive[0]).ToImageSkia()->height();
@@ -506,7 +509,6 @@ gfx::Size TrayBarButtonWithTitle::GetPreferredSize() {
 }
 
 void TrayBarButtonWithTitle::Layout() {
-  gfx::Size title_size = title_->GetPreferredSize();
   gfx::Rect rect(GetContentsBounds());
   int bar_image_y = rect.height() / 2 - image_height_ / 2;
   gfx::Rect bar_image_rect(rect.x(),
@@ -514,12 +516,15 @@ void TrayBarButtonWithTitle::Layout() {
                            rect.width(),
                            image_height_);
   image_->SetBoundsRect(bar_image_rect);
-  // The image_ has some empty space below the bar image, move the title
-  // a little bit up to look closer to the bar.
-  title_->SetBounds(rect.x(),
-                    bar_image_y + image_height_ - 3,
-                    rect.width(),
-                    title_size.height());
+  if (title_) {
+    // The image_ has some empty space below the bar image, move the title
+    // a little bit up to look closer to the bar.
+    gfx::Size title_size = title_->GetPreferredSize();
+    title_->SetBounds(rect.x(),
+                      bar_image_y + image_height_ - 3,
+                      rect.width(),
+                      title_size.height());
+  }
 }
 
 void TrayBarButtonWithTitle::UpdateButton(bool control_on) {
