@@ -1365,6 +1365,10 @@ Sandbox::EvaluateSyscall GetProcessSyscallPolicy(
     return RendererOrWorkerProcessPolicy_x86_64;
   }
 
+  if (process_type == switches::kUtilityProcess) {
+    return BlacklistDebugAndNumaPolicy;
+  }
+
   NOTREACHED();
   // This will be our default if we need one.
   return AllowAllPolicy;

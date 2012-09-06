@@ -10,6 +10,7 @@
 #include "content/common/child_process.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
+#include "content/public/common/sandbox_init.h"
 #include "content/utility/utility_thread_impl.h"
 
 #if defined(OS_WIN)
@@ -24,6 +25,11 @@ int UtilityMain(const content::MainFunctionParams& parameters) {
 
   base::SystemMonitor system_monitor;
   HighResolutionTimerManager hi_res_timer_manager;
+
+#if defined(OS_LINUX)
+  // Initialize the sandbox before any thread is created.
+  content::InitializeSandbox();
+#endif
 
   ChildProcess utility_process;
   utility_process.set_main_thread(new UtilityThreadImpl());
