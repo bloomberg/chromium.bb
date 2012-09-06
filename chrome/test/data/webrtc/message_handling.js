@@ -10,7 +10,7 @@
 // function setupCall(peerConnection)
 // function answerCall(peerConnection, message)
 
-// Currently these functions are supplied by roap_call.js or jsep_call.js.
+// Currently these functions are supplied by jsep_call.js.
 
 /**
  * This object represents the call.
@@ -53,7 +53,7 @@ var gRemotePeerId = null;
  * We need a STUN server for some API calls.
  * @private
  */
-var STUN_SERVER = "STUN stun.l.google.com:19302";
+var STUN_SERVER = 'STUN stun.l.google.com:19302';
 
 // Public interface to PyAuto test.
 
@@ -69,15 +69,15 @@ function connect(serverUrl, clientName) {
   if (gOurPeerId != null)
     failTest('connecting when already connected');
 
-  debug("Connecting to " + serverUrl + " as " + clientName);
+  debug('Connecting to ' + serverUrl + ' as ' + clientName);
   gServerUrl = serverUrl;
   gOurClientName = clientName;
 
   request = new XMLHttpRequest();
-  request.open("GET", serverUrl + "/sign_in?" + clientName, true);
-  debug(serverUrl + "/sign_in?" + clientName);
+  request.open('GET', serverUrl + '/sign_in?' + clientName, true);
+  debug(serverUrl + '/sign_in?' + clientName);
   request.onreadystatechange = function() {
-    connectCallback(request);
+    connectCallback_(request);
   }
   request.send();
 }
@@ -100,13 +100,34 @@ function call() {
 }
 
 /**
- * Queries if a call is up or not. Returns either 'yes' or 'no' to PyAuto.
+ * Queries if a call is up or not. Returns either 'yes' or 'no' to PyAuto and
+ * true to any calling javascript functions if the call is active.
  */
-function is_call_active() {
+function isCallActive() {
   if (gPeerConnection == null)
-    returnToPyAuto('no');
+    returnToTest('no');
   else
-    returnToPyAuto('yes');
+    returnToTest('yes');
+
+  return gPeerConnection != null;
+}
+
+/**
+ * Toggles the remote streams' enabled state on the peer connection, given that
+ * a call is active. Returns ok-toggled on success.
+ */
+function toggleRemoteStream() {
+  toggle_(gPeerConnection.remoteStreams[0]);
+  returnToTest('ok-toggled');
+}
+
+/**
+ * Toggles the local streams' enabled state on the peer connection, given that
+ * a call is active. Returns ok-toggled on success.
+ */
+function toggleLocalStream() {
+  toggle_(gPeerConnection.localStreams[0]);
+  returnToTest('ok-toggled');
 }
 
 /**
@@ -117,9 +138,9 @@ function hangUp() {
   if (gPeerConnection == null)
     failTest('hanging up, but no call is active');
   sendToPeer(gRemotePeerId, 'BYE');
-  closeCall();
+  closeCall_();
   gAcceptsIncomingCalls = false;
-  returnToPyAuto('ok-call-hung-up');
+  returnToTest('ok-call-hung-up');
 }
 
 /**
@@ -131,36 +152,63 @@ function disconnect() {
     failTest('Disconnecting, but we are not connected.');
 
   request = new XMLHttpRequest();
-  request.open("GET", gServerUrl + "/sign_out?peer_id=" + gOurPeerId, false);
+  request.open('GET', gServerUrl + '/sign_out?peer_id=' + gOurPeerId, false);
   request.send();
   gOurPeerId = null;
-  returnToPyAuto('ok-disconnected');
+  returnToTest('ok-disconnected');
+}
+
+// Public interface to signaling implementations, such as JSEP.
+
+/**
+ * Sends a message to a peer through the peerconnection_server.
+ */
+function sendToPeer(peer, message) {
+  debug('Sending message ' + message + ' to peer ' + peer + '.');
+  var request = new XMLHttpRequest();
+  var url = gServerUrl + '/message?peer_id=' + gOurPeerId + '&to=' + peer;
+  request.open('POST', url, false);
+  request.setRequestHeader('Content-Type', 'text/plain');
+  request.send(message);
 }
 
 // Internals.
 
-function isDisconnected() {
+/** @private */
+function isDisconnected_() {
   return gOurPeerId == null;
 }
 
-function connectCallback(request) {
-  debug("Connect callback: " + request.status + ", " + request.readyState);
+/** @private */
+function toggle_(stream) {
+  if (!isCallActive())
+    failTest('Cannot manipulate local streams: no call active.');
+
+  stream.videoTracks[0].enabled = !stream.videoTracks[0].enabled;
+  stream.audioTracks[0].enabled = !stream.audioTracks[0].enabled;
+}
+
+/** @private */
+function connectCallback_(request) {
+  debug('Connect callback: ' + request.status + ', ' + request.readyState);
   if (request.readyState == 4 && request.status == 200) {
-    gOurPeerId = parseOurPeerId(request.responseText);
-    gRemotePeerId = parseRemotePeerIdIfConnected(request.responseText);
-    startHangingGet(gServerUrl, gOurPeerId);
-    returnToPyAuto('ok-connected');
+    gOurPeerId = parseOurPeerId_(request.responseText);
+    gRemotePeerId = parseRemotePeerIdIfConnected_(request.responseText);
+    startHangingGet_(gServerUrl, gOurPeerId);
+    returnToTest('ok-connected');
   }
 }
 
-function parseOurPeerId(responseText) {
+/** @private */
+function parseOurPeerId_(responseText) {
   // According to peerconnection_server's protocol.
-  var peerList = responseText.split("\n");
-  return parseInt(peerList[0].split(",")[1]);
+  var peerList = responseText.split('\n');
+  return parseInt(peerList[0].split(',')[1]);
 }
 
-function parseRemotePeerIdIfConnected(responseText) {
-  var peerList = responseText.split("\n");
+/** @private */
+function parseRemotePeerIdIfConnected_(responseText) {
+  var peerList = responseText.split('\n');
   if (peerList.length == 1) {
     // No peers have connected yet - we'll get their id later in a notification.
     return null;
@@ -180,7 +228,7 @@ function parseRemotePeerIdIfConnected(responseText) {
 
       // There should be at most one remote peer in this test.
       if (remotePeerId != null)
-        failTest('Unexpected second peer');
+        failTest('Expected just one remote peer in this test: found several.');
 
       // Found a remote peer.
       remotePeerId = id;
@@ -189,23 +237,25 @@ function parseRemotePeerIdIfConnected(responseText) {
   return remotePeerId;
 }
 
-function startHangingGet(server, ourId) {
-  if (isDisconnected())
+/** @private */
+function startHangingGet_(server, ourId) {
+  if (isDisconnected_())
     return;
   hangingGetRequest = new XMLHttpRequest();
   hangingGetRequest.onreadystatechange = function() {
-    hangingGetCallback(hangingGetRequest, server, ourId);
+    hangingGetCallback_(hangingGetRequest, server, ourId);
   }
   hangingGetRequest.ontimeout = function() {
-    hangingGetTimeoutCallback(hangingGetRequest, server, ourId);
+    hangingGetTimeoutCallback_(hangingGetRequest, server, ourId);
   }
-  callUrl = server + "/wait?peer_id=" + ourId;
+  callUrl = server + '/wait?peer_id=' + ourId;
   debug('Sending ' + callUrl);
-  hangingGetRequest.open("GET", callUrl, true);
+  hangingGetRequest.open('GET', callUrl, true);
   hangingGetRequest.send();
 }
 
-function hangingGetCallback(hangingGetRequest, server, ourId) {
+/** @private */
+function hangingGetCallback_(hangingGetRequest, server, ourId) {
   if (hangingGetRequest.readyState != 4)
     return;
   if (hangingGetRequest.status == 0) {
@@ -216,33 +266,26 @@ function hangingGetCallback(hangingGetRequest, server, ourId) {
     failTest('Error ' + hangingGetRequest.status + ' from server: ' +
              hangingGetRequest.statusText);
   }
-  var targetId = readResponseHeader(hangingGetRequest, 'Pragma');
+  var targetId = readResponseHeader_(hangingGetRequest, 'Pragma');
   if (targetId == ourId)
-    handleServerNotification(hangingGetRequest.responseText);
+    handleServerNotification_(hangingGetRequest.responseText);
   else
-    handlePeerMessage(targetId, hangingGetRequest.responseText);
+    handlePeerMessage_(targetId, hangingGetRequest.responseText);
 
   hangingGetRequest.abort();
-  restartHangingGet(server, ourId);
+  restartHangingGet_(server, ourId);
 }
 
-function hangingGetTimeoutCallback(hangingGetRequest, server, ourId) {
+/** @private */
+function hangingGetTimeoutCallback_(hangingGetRequest, server, ourId) {
   debug('Hanging GET times out, re-issuing...');
   hangingGetRequest.abort();
-  restartHangingGet(server, ourId);
+  restartHangingGet_(server, ourId);
 }
 
-function sendToPeer(peer, message) {
-  debug('Sending message ' + message + ' to peer ' + peer + '.');
-  var request = new XMLHttpRequest();
-  var url = gServerUrl + "/message?peer_id=" + gOurPeerId + "&to=" + peer;
-  request.open("POST", url, false);
-  request.setRequestHeader("Content-Type", "text/plain");
-  request.send(message);
-}
-
-function handleServerNotification(message) {
-  var parsed = message.split(",");
+/** @private */
+function handleServerNotification_(message) {
+  var parsed = message.split(',');
   if (parseInt(parsed[2]) == 1) {
     // Peer connected - this must be our remote peer, and it must mean we
     // connected before them (except if we happened to connect to the server
@@ -252,23 +295,25 @@ function handleServerNotification(message) {
   }
 }
 
-function closeCall() {
+/** @private */
+function closeCall_() {
   if (gPeerConnection == null)
     failTest('Closing call, but no call active.');
   gPeerConnection.close();
   gPeerConnection = null;
 }
 
-function handlePeerMessage(peerId, message) {
-  debug("Received message from peer " + peerId + ": " + message);
+/** @private */
+function handlePeerMessage_(peerId, message) {
+  debug('Received message from peer ' + peerId + ': ' + message);
   if (peerId != gRemotePeerId) {
     addTestFailure('Received notification from unknown peer ' + peerId +
                    ' (only know about ' + gRemotePeerId + '.');
     return;
   }
   if (message.search('BYE') == 0) {
-    debug("Received BYE from peer: closing call");
-    closeCall();
+    debug('Received BYE from peer: closing call');
+    closeCall_();
     return;
   }
   if (gPeerConnection == null && gAcceptsIncomingCalls) {
@@ -284,13 +329,15 @@ function handlePeerMessage(peerId, message) {
   handleMessage(gPeerConnection, message);
 }
 
-function restartHangingGet(server, ourId) {
+/** @private */
+function restartHangingGet_(server, ourId) {
   window.setTimeout(function() {
-    startHangingGet(server, ourId);
+    startHangingGet_(server, ourId);
   }, 0);
 }
 
-function readResponseHeader(request, key) {
+/** @private */
+function readResponseHeader_(request, key) {
   var value = request.getResponseHeader(key)
   if (value == null || value.length == 0) {
     addTestFailure('Received empty value ' + value +

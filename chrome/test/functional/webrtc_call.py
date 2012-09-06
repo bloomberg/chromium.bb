@@ -68,7 +68,7 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
 
     self.EstablishCall(from_tab_with_index=0)
 
-    self._StartDetectingVideo(tab_index=0, video_element='remote_view')
+    self._StartDetectingVideo(tab_index=0, video_element='remote-view')
 
     self._WaitForVideoToPlay()
 
@@ -91,14 +91,14 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
 
     This test will launch a window with a single tab and run a getUserMedia call
     which will give us access to the webcam and microphone. Then the javascript
-    code will hook up the webcam data to the local_view video tag. We will
+    code will hook up the webcam data to the local-view video tag. We will
     detect video in that tag using the video detector, and if we see video
     moving the test passes.
     """
     url = self.GetFileURLForDataPath('webrtc', 'webrtc_jsep_test.html')
     self.NavigateToURL(url)
     self.assertEquals('ok-got-stream', self.GetUserMedia(tab_index=0))
-    self._StartDetectingVideo(tab_index=0, video_element='local_view')
+    self._StartDetectingVideo(tab_index=0, video_element='local-view')
 
     self._WaitForVideoToPlay()
 
@@ -122,7 +122,7 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
 
   def _StartDetectingVideo(self, tab_index, video_element):
     self.assertEquals('ok-started', self.ExecuteJavascript(
-        'startDetection("%s", "frame_buffer", 320, 240)' % video_element,
+        'startDetection("%s", "frame-buffer", 320, 240)' % video_element,
         tab_index=tab_index));
 
   def _WaitForVideoToPlay(self):

@@ -5,6 +5,11 @@
  */
 
 /**
+ * See http://dev.w3.org/2011/webrtc/editor/getusermedia.html for more
+ * information on getUserMedia.
+ */
+
+/**
  * Keeps track of our local stream (e.g. what our local webcam is streaming).
  * @private
  */
@@ -25,15 +30,15 @@ var gRequestWebcamAndMicrophoneResult = 'not-called-yet';
  */
 function getUserMedia(requestVideo, requestAudio) {
   if (!navigator.webkitGetUserMedia) {
-    returnToPyAuto('Browser does not support WebRTC.');
+    returnToTest('Browser does not support WebRTC.');
     return;
   }
 
-  debug("Requesting webcam and microphone.");
+  debug('Requesting webcam and microphone.');
   navigator.webkitGetUserMedia({video: requestVideo, audio: requestAudio},
-                               getUserMediaOkCallback,
-                               getUserMediaFailedCallback);
-  returnToPyAuto('ok-requested');
+                               getUserMediaOkCallback_,
+                               getUserMediaFailedCallback_);
+  returnToTest('ok-requested');
 }
 
 /**
@@ -43,34 +48,22 @@ function getUserMedia(requestVideo, requestAudio) {
  * depending on which callback got called by WebRTC.
  */
 function obtainGetUserMediaResult() {
-  returnToPyAuto(gRequestWebcamAndMicrophoneResult);
-}
-
-
-/**
- * @return {string} Returns either the string ok-no-errors or a text message
- *     which describes the failure(s) which have been registered through calls
- *     to addTestFailure in this source file.
- */
-function getAnyTestFailures() {
-  if (gFailures.length == 1)
-    returnToPyAuto('Test failure: ' + gFailures[0]);
-  else if (gFailures.length > 1)
-    returnToPyAuto('Multiple failures: ' + gFailures.join(' AND '));
-  else
-    returnToPyAuto('ok-no-errors');
+  returnToTest(gRequestWebcamAndMicrophoneResult);
+  return gRequestWebcamAndMicrophoneResult;
 }
 
 // Internals.
 
-function getUserMediaOkCallback(stream) {
+/** @private */
+function getUserMediaOkCallback_(stream) {
   gLocalStream = stream;
   var streamUrl = webkitURL.createObjectURL(stream);
-  document.getElementById("local_view").src = streamUrl;
+  document.getElementById('local-view').src = streamUrl;
 
   gRequestWebcamAndMicrophoneResult = 'ok-got-stream';
 }
 
-function getUserMediaFailedCallback(error) {
+/** @private */
+function getUserMediaFailedCallback_(error) {
   gRequestWebcamAndMicrophoneResult = 'failed-with-error-' + error.code;
 }

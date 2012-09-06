@@ -171,9 +171,9 @@ function shoot(width, height, canvas_height){
 
 function doneFrameCapturing() {
   if (dDoneFrameCapturing) {
-    returnToPyAuto('done-capturing');
+    returnToTest('done-capturing');
   } else {
-    returnToPyAuto('still-capturing');
+    returnToTest('still-capturing');
   }
 }
 
@@ -203,9 +203,9 @@ function sendFrames() {
  */
 function haveMoreFramesToSend() {
   if (gFrames.length == 0) {
-    returnToPyAuto('no-more-frames');
+    returnToTest('no-more-frames');
   } else {
-    returnToPyAuto('still-have-frames');
+    returnToTest('still-have-frames');
   }
 }
 

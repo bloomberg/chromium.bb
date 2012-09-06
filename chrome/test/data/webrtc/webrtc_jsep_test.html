@@ -1,6 +1,4 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
-<!-- TODO(ronghuawu): This file is pretty much the same as the
-webrtc_roap_test.html. Find a way to avoid duplication. -->
 <html>
 <head>
   <title>WebRTC PyAuto Test</title>
@@ -9,6 +7,7 @@ webrtc_roap_test.html. Find a way to avoid duplication. -->
   <script type="text/javascript" src="getusermedia.js"></script>
   <script type="text/javascript" src="jsep_call.js"></script>
   <script type="text/javascript" src="video_detector.js"></script>
+  <meta charset="utf-8">
 </head>
 <body>
   <table border="0">
@@ -17,11 +16,11 @@ webrtc_roap_test.html. Find a way to avoid duplication. -->
       <td>Remote Video</td>
     </tr>
     <tr>
-      <td><video width="320" height="240" id="local_view"
+      <td><video width="320" height="240" id="local-view"
           autoplay="autoplay"></video></td>
-      <td><video width="320" height="240" id="remote_view"
+      <td><video width="320" height="240" id="remote-view"
           autoplay="autoplay"></video></td>
-      <td><canvas id="frame_buffer" style="visibility:hidden"></canvas></td>
+      <td><canvas id="frame-buffer" style="visibility:hidden"></canvas></td>
     </tr>
   </table>
 </body>

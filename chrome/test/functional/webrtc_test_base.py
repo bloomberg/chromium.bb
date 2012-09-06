@@ -90,21 +90,29 @@ class WebrtcTestBase(pyauto.PyUITest):
 
     # Double-check the call reached the other side.
     self.assertEquals('yes', self.ExecuteJavascript(
-        'is_call_active()', tab_index=from_tab_with_index))
+        'isCallActive()', tab_index=from_tab_with_index))
 
   def HangUp(self, from_tab_with_index):
     self.assertEquals('ok-call-hung-up', self.ExecuteJavascript(
         'hangUp()', tab_index=from_tab_with_index))
-    self.VerifyHungUp(from_tab_with_index)
-    self.AssertNoFailures(from_tab_with_index)
+    self.WaitUntilHangUpVerified(tab_index=from_tab_with_index)
+    self.AssertNoFailures(tab_index=from_tab_with_index)
 
-  def VerifyHungUp(self, tab_index):
-    self.assertEquals('no', self.ExecuteJavascript(
-        'is_call_active()', tab_index=tab_index))
+  def WaitUntilHangUpVerified(self, tab_index):
+    hung_up = self.WaitUntil(
+        function=lambda: self.ExecuteJavascript('isCallActive()',
+                                                tab_index=tab_index),
+        expect_retval='no')
+    self.assertTrue(hung_up,
+                    msg='Timed out while waiting for hang-up to be confirmed.')
 
   def Disconnect(self, tab_index):
     self.assertEquals('ok-disconnected', self.ExecuteJavascript(
         'disconnect()', tab_index=tab_index))
+
+  def VerifyHungUp(self, tab_index):
+    self.assertEquals('no', self.ExecuteJavascript(
+        'isCallActive()', tab_index=tab_index))
 
   def BinPathForPlatform(self, path):
     """Form a platform specific path to a binary.

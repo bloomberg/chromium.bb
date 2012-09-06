@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+  <title>WebRTC PeerConnection Manual Test</title>
+  <script type="text/javascript" src="../test_functions.js"></script>
+  <script type="text/javascript" src="../message_handling.js"></script>
+  <script type="text/javascript" src="../getusermedia.js"></script>
+  <script type="text/javascript" src="../jsep_call.js"></script>
+  <script type="text/javascript" src="peerconnection.js"></script>
+  <meta charset="utf-8">
+</head>
+<body>
+  <table border="0">
+    <tr>
+      <td>Local Preview</td>
+      <td>Remote Video</td>
+    </tr>
+    <tr>
+      <td><video width="320" height="240" id="local-view"
+          autoplay="autoplay"></video></td>
+      <td><video width="320" height="240" id="remote-view"
+          autoplay="autoplay"></video></td>
+      <td><canvas id="frame-buffer" style="visibility:hidden"></canvas></td>
+    </tr>
+  </table>
+  <table border="0">
+    <tr>
+      <td>Server [<a href="" onclick="showServerHelp()">?</a>]:</td>
+      <td><input type="text" id="server" size="30"
+          value="http://localhost:8888" /></td>
+      <td valign="top">
+        <button id="connect" onclick="connectFromHere();">
+            Connect</button>
+      </td>
+      <td valign="top">
+        <button id="call" onclick="callFromHere();" disabled="true">
+            Call</button>
+      </td>
+      <td valign="top">
+        <button id="hangup" onclick="hangUpFromHere();" disabled="true">
+            Hang up</button>
+      </td>
+      <td valign="top">
+        <button id="toggle-remote" onclick="toggleRemoteFromHere();"
+            disabled="true">Toggle Remote Stream</button>
+      </td>
+      <td valign="top">
+        <button id="toggle-local" onclick="toggleLocalFromHere();"
+            disabled="true">Toggle Local Stream</button>
+      </td>
+    </tr>
+    <tr>
+      <td></td>
+      <td>
+        Audio<input type="checkbox" id="audio" checked />
+        Video<input type="checkbox" id="video" checked />
+      </td>
+      <td><button id="re-request" onclick="getUserMediaFromHere();">
+          Request</button></td>
+    </tr>
+  </table>
+
+  <h1>Log</h1>
+  <pre id="debug"></pre>
+
+</body>
+</html>
