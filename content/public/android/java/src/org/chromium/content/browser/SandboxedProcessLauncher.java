@@ -32,7 +32,7 @@ public class SandboxedProcessLauncher {
     // This must not exceed total number of SandboxedProcessServiceX classes declared in
     // this package, and defined as services in the embedding application's manifest file.
     // (See {@link SandboxedProcessService} for more details on defining the services.)
-    /* package */ static final int MAX_REGISTERED_SERVICES = 5;
+    /* package */ static final int MAX_REGISTERED_SERVICES = 6;
     private static final SandboxedProcessConnection[] mConnections =
         new SandboxedProcessConnection[MAX_REGISTERED_SERVICES];
 

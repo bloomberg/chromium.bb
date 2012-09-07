@@ -46,8 +46,15 @@ public class AndroidBrowserProcess {
     public static final int MAX_RENDERERS_AUTOMATIC = -1;
     // Use single-process mode that runs the renderer on a separate thread in the main application.
     public static final int MAX_RENDERERS_SINGLE_PROCESS = 0;
+
     // Cap on the maximum number of renderer processes that can be requested.
-    public static final int MAX_RENDERERS_LIMIT = 3;  // TODO(tedbo): Raise limit
+    // This is currently set to account for:
+    //   6: The maximum number of sandboxed processes we have available
+    // - 1: The regular New Tab Page
+    // - 1: The incognito New Tab Page
+    // - 1: A regular incognito tab
+    public static final int MAX_RENDERERS_LIMIT =
+        SandboxedProcessLauncher.MAX_REGISTERED_SERVICES - 3;
 
     /**
      * Initialize the process as a ContentView host. This must be called from the main UI thread.

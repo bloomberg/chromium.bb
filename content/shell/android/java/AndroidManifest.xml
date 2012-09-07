@@ -51,6 +51,10 @@
                  android:process=":sandboxed_process4"
                  android:permission="org.chromium.content_shell.permission.SANDBOX"
                  android:exported="false" />
+        <service android:name="org.chromium.content.app.SandboxedProcessService5"
+                 android:process=":sandboxed_process5"
+                 android:permission="org.chromium.content_shell.permission.SANDBOX"
+                 android:exported="false" />
     </application>
 
     <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="14" />
