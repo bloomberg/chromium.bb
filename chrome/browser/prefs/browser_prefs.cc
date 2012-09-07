@@ -220,6 +220,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   ProfileImpl::RegisterUserPrefs(user_prefs);
   PromoResourceService::RegisterUserPrefs(user_prefs);
   ProtocolHandlerRegistry::RegisterPrefs(user_prefs);
+  RegisterBrowserUserPrefs(user_prefs);
   SessionStartupPref::RegisterUserPrefs(user_prefs);
   TemplateURLPrepopulateData::RegisterUserPrefs(user_prefs);
   TranslatePrefs::RegisterUserPrefs(user_prefs);
@@ -252,7 +253,6 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   ChromeToMobileService::RegisterUserPrefs(user_prefs);
   extensions::CommandService::RegisterUserPrefs(user_prefs);
   ExtensionSettingsHandler::RegisterUserPrefs(user_prefs);
-  RegisterBrowserUserPrefs(user_prefs);
   RegisterAutolaunchPrefs(user_prefs);
   DevToolsWindow::RegisterUserPrefs(user_prefs);
   PepperFlashSettingsManager::RegisterUserPrefs(user_prefs);
