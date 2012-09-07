@@ -41,13 +41,13 @@ class BubbleDecoration : public LocationBarDecoration {
   // from.  |frame| is the decoration's frame in the containing cell.
   NSRect GetImageRectInFrame(NSRect frame);
 
+  // Contains font and color attribute for drawing |label_|.
+  scoped_nsobject<NSDictionary> attributes_;
+
  private:
   friend class SelectedKeywordDecorationTest;
   FRIEND_TEST_ALL_PREFIXES(SelectedKeywordDecorationTest,
                            UsesPartialKeywordIfNarrow);
-
-  // Contains font and color attribute for drawing |label_|.
-  scoped_nsobject<NSDictionary> attributes_;
 
   // Image drawn in the left side of the bubble.
   scoped_nsobject<NSImage> image_;

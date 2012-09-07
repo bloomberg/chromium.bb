@@ -117,6 +117,7 @@ class WebIntentPickerController
   friend class WebIntentPickerControllerTest;
   friend class WebIntentPickerControllerBrowserTest;
   friend class WebIntentPickerControllerIncognitoBrowserTest;
+  friend class WebIntentsButtonDecorationTest;
 
   // Dispatches intent to a just-installed extension with ID |extension_id|.
   void DispatchToInstalledExtension(const std::string& extension_id);

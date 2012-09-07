@@ -1799,6 +1799,7 @@
         'browser/ui/cocoa/location_bar/image_decoration_unittest.mm',
         'browser/ui/cocoa/location_bar/keyword_hint_decoration_unittest.mm',
         'browser/ui/cocoa/location_bar/selected_keyword_decoration_unittest.mm',
+        'browser/ui/cocoa/location_bar/web_intents_button_decoration_unittest.mm',
         'browser/ui/cocoa/menu_button_unittest.mm',
         'browser/ui/cocoa/menu_controller_unittest.mm',
         'browser/ui/cocoa/notifications/balloon_controller_unittest.mm',

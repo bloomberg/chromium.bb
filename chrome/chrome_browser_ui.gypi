@@ -584,6 +584,8 @@
         'browser/ui/cocoa/location_bar/selected_keyword_decoration.mm',
         'browser/ui/cocoa/location_bar/star_decoration.h',
         'browser/ui/cocoa/location_bar/star_decoration.mm',
+        'browser/ui/cocoa/location_bar/web_intents_button_decoration.h',
+        'browser/ui/cocoa/location_bar/web_intents_button_decoration.mm',
         'browser/ui/cocoa/location_bar/zoom_decoration.h',
         'browser/ui/cocoa/location_bar/zoom_decoration.mm',
         'browser/ui/cocoa/login_prompt_cocoa.h',

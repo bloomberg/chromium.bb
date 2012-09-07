@@ -45,10 +45,12 @@
 #import "chrome/browser/ui/cocoa/location_bar/plus_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/selected_keyword_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/star_decoration.h"
+#import "chrome/browser/ui/cocoa/location_bar/web_intents_button_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/zoom_decoration.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
+#include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
 #import "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -104,6 +106,8 @@ LocationBarViewMac::LocationBarViewMac(
       zoom_decoration_(new ZoomDecoration(toolbar_model)),
       keyword_hint_decoration_(
           new KeywordHintDecoration(OmniboxViewMac::GetFieldFont())),
+      web_intents_button_decoration_(
+          new WebIntentsButtonDecoration(this, OmniboxViewMac::GetFieldFont())),
       profile_(profile),
       browser_(browser),
       toolbar_model_(toolbar_model),
@@ -228,7 +232,7 @@ void LocationBarViewMac::InvalidatePageActions() {
 }
 
 void LocationBarViewMac::UpdateWebIntentsButton() {
-  // TODO(gbillock): Implement web intents tool for mac
+  RefreshWebIntentsButtonDecoration();
 }
 
 void LocationBarViewMac::SaveStateToContents(WebContents* contents) {
@@ -245,6 +249,7 @@ void LocationBarViewMac::Update(const WebContents* contents,
   UpdateZoomDecoration();
   RefreshPageActionDecorations();
   RefreshContentSettingsDecorations();
+  RefreshWebIntentsButtonDecoration();
   // OmniboxView restores state if the tab is non-NULL.
   omnibox_view_->Update(should_restore_state ? contents : NULL);
   OnChanged();
@@ -640,6 +645,16 @@ void LocationBarViewMac::RefreshPageActionDecorations() {
   }
 }
 
+void LocationBarViewMac::RefreshWebIntentsButtonDecoration() {
+  TabContents* tab_contents = GetTabContents();
+  if (!tab_contents) {
+    web_intents_button_decoration_->SetVisible(false);
+    return;
+  }
+
+  web_intents_button_decoration_->Update(tab_contents);
+}
+
 // TODO(shess): This function should over time grow to closely match
 // the views Layout() function.
 void LocationBarViewMac::Layout() {
@@ -667,6 +682,8 @@ void LocationBarViewMac::Layout() {
   }
 
   [cell addRightDecoration:keyword_hint_decoration_.get()];
+
+  [cell addRightDecoration:web_intents_button_decoration_.get()];
 
   // By default only the location icon is visible.
   location_icon_decoration_->SetVisible(true);
