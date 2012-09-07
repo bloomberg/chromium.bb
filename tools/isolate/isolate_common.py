@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Common code to manage .isolate format.
+"""Common code to manage .isolate format. This file is not executable.
 """
 
 import logging

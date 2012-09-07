@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Scripts to run a test, grab the failures and trace them."""
+"""Runs a test, grab the failures and trace them."""
 
 import json
 import os

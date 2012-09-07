@@ -6,7 +6,6 @@
 """Merges multiple OS-specific gyp dependency lists into one that works on all
 of them.
 
-
 The logic is relatively simple. Takes the current conditions, add more
 condition, find the strict subset. Done.
 """

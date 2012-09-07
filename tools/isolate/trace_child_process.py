@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Executes with the command to be run and optionally waits for the go signal.
+"""Executes with the command to be run.
 
 Not meant to be used directly, only meant to be used by trace_inputs.py.
 
