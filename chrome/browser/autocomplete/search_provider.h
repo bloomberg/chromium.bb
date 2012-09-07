@@ -239,12 +239,11 @@ class SearchProvider : public AutocompleteProvider,
   void ApplyCalculatedNavigationRelevance(NavigationResults* list,
                                           bool is_keyword);
 
-  // Creates a URLFetcher requesting suggest results from the specified
-  // |suggestions_url|. The caller owns the returned URLFetcher.
-  net::URLFetcher* CreateSuggestFetcher(
-      int id,
-      const TemplateURLRef& suggestions_url,
-      const string16& text);
+  // Starts a new URLFetcher requesting suggest results from |template_url|;
+  // callers own the returned URLFetcher, which is NULL for invalid providers.
+  net::URLFetcher* CreateSuggestFetcher(int id,
+                                        const TemplateURL* template_url,
+                                        const string16& text);
 
   // Parses results from the suggest server and updates the appropriate suggest
   // and navigation result lists, depending on whether |is_keyword| is true.

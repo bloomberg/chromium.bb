@@ -312,20 +312,11 @@ void SearchProvider::Run() {
   DCHECK(!done_);
   suggest_results_pending_ = 0;
   time_suggest_request_sent_ = base::TimeTicks::Now();
-  const TemplateURL* default_url = providers_.GetDefaultProviderURL();
-  if (default_url && !default_url->suggestions_url().empty()) {
-    suggest_results_pending_++;
-    LogOmniboxSuggestRequest(REQUEST_SENT);
-    default_fetcher_.reset(CreateSuggestFetcher(kDefaultProviderURLFetcherID,
-        default_url->suggestions_url_ref(), input_.text()));
-  }
-  const TemplateURL* keyword_url = providers_.GetKeywordProviderURL();
-  if (keyword_url && !keyword_url->suggestions_url().empty()) {
-    suggest_results_pending_++;
-    LogOmniboxSuggestRequest(REQUEST_SENT);
-    keyword_fetcher_.reset(CreateSuggestFetcher(kKeywordProviderURLFetcherID,
-        keyword_url->suggestions_url_ref(), keyword_input_text_));
-  }
+
+  default_fetcher_.reset(CreateSuggestFetcher(kDefaultProviderURLFetcherID,
+      providers_.GetDefaultProviderURL(), input_.text()));
+  keyword_fetcher_.reset(CreateSuggestFetcher(kKeywordProviderURLFetcherID,
+      providers_.GetKeywordProviderURL(), keyword_input_text_));
 
   // Both the above can fail if the providers have been modified or deleted
   // since the query began.
@@ -641,13 +632,22 @@ void SearchProvider::ApplyCalculatedNavigationRelevance(NavigationResults* list,
 
 net::URLFetcher* SearchProvider::CreateSuggestFetcher(
     int id,
-    const TemplateURLRef& suggestions_url,
+    const TemplateURL* template_url,
     const string16& text) {
-  DCHECK(suggestions_url.SupportsReplacement());
-  net::URLFetcher* fetcher = net::URLFetcher::Create(id,
-      GURL(suggestions_url.ReplaceSearchTerms(
-          TemplateURLRef::SearchTermsArgs(text))),
-      net::URLFetcher::GET, this);
+  if (!template_url || template_url->suggestions_url().empty())
+    return NULL;
+
+  // Bail if the suggestion URL is invalid with the given replacements.
+  GURL suggest_url(template_url->suggestions_url_ref().ReplaceSearchTerms(
+      TemplateURLRef::SearchTermsArgs(text)));
+  if (!suggest_url.is_valid())
+    return NULL;
+
+  suggest_results_pending_++;
+  LogOmniboxSuggestRequest(REQUEST_SENT);
+
+  net::URLFetcher* fetcher =
+      net::URLFetcher::Create(id, suggest_url, net::URLFetcher::GET, this);
   fetcher->SetRequestContext(profile_->GetRequestContext());
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
   fetcher->Start();

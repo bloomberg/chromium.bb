@@ -144,7 +144,7 @@ class TemplateURLParsingContext {
   // Returns a heap-allocated TemplateURL representing the result of parsing.
   // This will be NULL if parsing failed or if the results were invalid for some
   // reason (e.g. the resulting URL was not HTTP[S], a name wasn't supplied,
-  // etc.).
+  // a resulting TemplateURLRef was invalid, etc.).
   TemplateURL* GetTemplateURL(Profile* profile, bool show_in_default_list);
 
  private:
@@ -291,27 +291,30 @@ void TemplateURLParsingContext::CharactersImpl(void* ctx,
 TemplateURL* TemplateURLParsingContext::GetTemplateURL(
     Profile* profile,
     bool show_in_default_list) {
-  // Basic legality checks.
-  if (data_.short_name.empty() || !IsHTTPRef(data_.url()) ||
-      !IsHTTPRef(data_.suggestions_url))
-    return NULL;
-
-  // If the image was a data URL, use the favicon from the search URL instead.
-  // (see TODO inEndElementImpl()).
-  GURL url(data_.url());
-  if (derive_image_from_url_ && data_.favicon_url.is_empty())
-    data_.favicon_url = TemplateURL::GenerateFaviconURL(url);
-
-  // TODO(jcampan): http://b/issue?id=1196285 we do not support search engines
-  //                that use POST yet.
-  if (method_ == TemplateURLParsingContext::POST)
+  // TODO(jcampan): Support engines that use POST; see http://crbug.com/18107
+  if (method_ == TemplateURLParsingContext::POST || data_.short_name.empty() ||
+      !IsHTTPRef(data_.url()) || !IsHTTPRef(data_.suggestions_url))
     return NULL;
   if (suggestion_method_ == TemplateURLParsingContext::POST)
     data_.suggestions_url.clear();
 
-  data_.SetKeyword(TemplateURLService::GenerateKeyword(url));
+  // If the image was a data URL, use the favicon from the search URL instead.
+  // (see the TODO in EndElementImpl()).
+  GURL search_url(data_.url());
+  if (derive_image_from_url_ && data_.favicon_url.is_empty())
+    data_.favicon_url = TemplateURL::GenerateFaviconURL(search_url);
+
+  data_.SetKeyword(TemplateURLService::GenerateKeyword(search_url));
   data_.show_in_default_list = show_in_default_list;
-  return new TemplateURL(profile, data_);
+
+  // Bail if the search URL is empty or if either TemplateURLRef is invalid.
+  scoped_ptr<TemplateURL> template_url(new TemplateURL(profile, data_));
+  if (template_url->url().empty() || !template_url->url_ref().IsValid() ||
+      (!template_url->suggestions_url().empty() &&
+       !template_url->suggestions_url_ref().IsValid()))
+    return NULL;
+
+  return template_url.release();
 }
 
 // static
@@ -485,8 +488,9 @@ TemplateURL* TemplateURLParser::Parse(
   sax_handler.startElement = &TemplateURLParsingContext::StartElementImpl;
   sax_handler.endElement = &TemplateURLParsingContext::EndElementImpl;
   sax_handler.characters = &TemplateURLParsingContext::CharactersImpl;
-  xmlSAXUserParseMemory(&sax_handler, &context, data, static_cast<int>(length));
+  int error = xmlSAXUserParseMemory(&sax_handler, &context, data,
+                                    static_cast<int>(length));
   xmlSubstituteEntitiesDefault(last_sub_entities_value);
 
-  return context.GetTemplateURL(profile, show_in_default_list);
+  return error ? NULL : context.GetTemplateURL(profile, show_in_default_list);
 }
