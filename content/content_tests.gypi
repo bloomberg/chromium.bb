@@ -232,6 +232,7 @@
         '../webkit/support/webkit_support.gyp:database',
         '../webkit/support/webkit_support.gyp:dom_storage',
         '../webkit/support/webkit_support.gyp:fileapi',
+        '../webkit/support/webkit_support.gyp:forms',
         '../webkit/support/webkit_support.gyp:glue',
         '../webkit/support/webkit_support.gyp:quota',
         '../webkit/support/webkit_support.gyp:webkit_base',
@@ -555,6 +556,7 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../ui/ui.gyp:ui',
+        '../webkit/support/webkit_support.gyp:forms',
         '../webkit/support/webkit_support.gyp:glue',
       ],
       'include_dirs': [

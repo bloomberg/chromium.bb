@@ -23,6 +23,7 @@
         'database',
         'dom_storage',
         'fileapi',
+        'forms',
         'glue',
         'webkit_base',
         'webkit_gpu',

@@ -11,6 +11,7 @@
     '../database/webkit_database.gypi',
     '../dom_storage/webkit_dom_storage.gypi',
     '../fileapi/webkit_fileapi.gypi',
+    '../forms/webkit_forms.gypi',
     '../glue/webkit_glue.gypi',
     '../gpu/webkit_gpu.gypi',
     '../media/webkit_media.gypi',

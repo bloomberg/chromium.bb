@@ -23,6 +23,7 @@
     '../webkit/support/webkit_support.gyp:blob',
     '../webkit/support/webkit_support.gyp:database',
     '../webkit/support/webkit_support.gyp:fileapi',
+    '../webkit/support/webkit_support.gyp:forms',
     '../webkit/support/webkit_support.gyp:webkit_base',
   ],
   'include_dirs': [

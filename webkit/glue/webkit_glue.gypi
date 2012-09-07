@@ -118,7 +118,6 @@
       'variables': { 'enable_wexit_time_destructors': 1, },
       'defines': [
         'WEBKIT_EXTENSIONS_IMPLEMENTATION',
-        'WEBKIT_FORMS_IMPLEMENTATION',
         'WEBKIT_GLUE_IMPLEMENTATION',
         'WEBKIT_PLUGINS_IMPLEMENTATION',
       ],
@@ -146,6 +145,7 @@
         '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
         'blob',
         'fileapi',
+        'forms',
         'webkit_base',
         'webkit_media',
         'webkit_resources',
@@ -160,19 +160,6 @@
         # This list contains all .h, .cc, and .mm files in glue except for
         # those in the test subdirectory and those with unittest in in their
         # names.
-        '../forms/form_data.cc',
-        '../forms/form_data.h',
-        '../forms/form_data_predictions.cc',
-        '../forms/form_data_predictions.h',
-        '../forms/form_field.cc',
-        '../forms/form_field.h',
-        '../forms/form_field_predictions.cc',
-        '../forms/form_field_predictions.h',
-        '../forms/password_form.cc',
-        '../forms/password_form.h',
-        '../forms/password_form_dom_manager.cc',
-        '../forms/password_form_dom_manager.h',
-        '../forms/webkit_forms_export.h',
         '../plugins/npapi/carbon_plugin_window_tracker_mac.cc',
         '../plugins/npapi/carbon_plugin_window_tracker_mac.h',
         '../plugins/npapi/gtk_plugin_container.cc',

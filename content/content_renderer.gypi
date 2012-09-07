@@ -19,6 +19,7 @@
     '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
     '../ui/surface/surface.gyp:surface',
     '../v8/tools/gyp/v8.gyp:v8',
+    '../webkit/support/webkit_support.gyp:forms',
     '../webkit/support/webkit_support.gyp:glue',
     '../webkit/support/webkit_support.gyp:webkit_media',
     '../webkit/support/webkit_support.gyp:webkit_gpu',
