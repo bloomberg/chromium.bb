@@ -305,7 +305,7 @@ deps = {
     "/trunk/deps/third_party/undoview@119694",
 
   "src/tools/deps2git":
-    "/trunk/tools/deps2git@148781",
+    "/trunk/tools/deps2git@153866",
 
   "src/third_party/webpagereplay":
     (Var("googlecode_url") % "web-page-replay") + "/trunk@494",
