@@ -43,6 +43,7 @@
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "sync/notifier/invalidation_util.h"
@@ -50,15 +51,10 @@
 namespace {
 
 // The maximum number of retries for the URLFetcher requests.
-const size_t kMaxRetries = 1;
+const size_t kMaxRetries = 5;
 
-// The number of hours to delay before retrying authentication on failure.
-const size_t kAuthRetryDelayHours = 6;
-
-// The number of hours before subsequent search requests are allowed.
-// This value is used to throttle expensive cloud print search requests.
-// Note that this limitation does not hold across application restarts.
-const int kSearchRequestDelayHours = 24;
+// The number of hours to delay before retrying certain failed operations.
+const size_t kDelayHours = 1;
 
 // The sync invalidation object ID for Chrome to Mobile's mobile device list.
 // This corresponds with cloud print's server-side invalidation object ID.
@@ -322,7 +318,8 @@ void ChromeToMobileService::Observe(
   TokenService::TokenAvailableDetails* token_details =
       content::Details<TokenService::TokenAvailableDetails>(details).ptr();
   // Invalidate the cloud print access token on Gaia login token updates.
-  if (token_details->service() == GaiaConstants::kGaiaOAuth2LoginRefreshToken)
+  if (token_details->service() == GaiaConstants::kGaiaOAuth2LoginRefreshToken ||
+      token_details->service() == GaiaConstants::kGaiaOAuth2LoginAccessToken)
     access_token_.clear();
 }
 
@@ -346,12 +343,20 @@ void ChromeToMobileService::OnGetTokenSuccess(
 
 void ChromeToMobileService::OnGetTokenFailure(
     const GoogleServiceAuthError& error) {
+  LogMetric(BAD_TOKEN);
+  access_token_.clear();
   access_token_fetcher_.reset();
   auth_retry_timer_.Stop();
 
-  auth_retry_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromHours(kAuthRetryDelayHours),
-      this, &ChromeToMobileService::RequestAccessToken);
+  base::TimeDelta delay = std::max(base::TimeDelta::FromHours(kDelayHours),
+                                   auth_retry_timer_.GetCurrentDelay() * 2);
+  auth_retry_timer_.Start(FROM_HERE, delay, this,
+                          &ChromeToMobileService::RequestAccessToken);
+
+  // Clear the mobile list, which may be (or become) out of date.
+  ListValue empty;
+  profile_->GetPrefs()->Set(prefs::kChromeToMobileDeviceList, empty);
+  UpdateCommandState();
 }
 
 void ChromeToMobileService::OnNotificationsEnabled() {
@@ -486,9 +491,15 @@ void ChromeToMobileService::RequestAccessToken() {
     registrar_.Add(this, chrome::NOTIFICATION_TOKEN_AVAILABLE,
                    content::Source<TokenService>(token_service));
 
-  // Deny concurrent requests and bail without a valid Gaia login refresh token.
-  if (access_token_fetcher_.get() || !token_service->HasOAuthLoginToken())
+  // Deny concurrent requests.
+  if (access_token_fetcher_.get())
     return;
+
+  // Handle invalid login refresh tokens as a failure.
+  if (!token_service->HasOAuthLoginToken()) {
+    OnGetTokenFailure(GoogleServiceAuthError(GoogleServiceAuthError::NONE));
+    return;
+  }
 
   auth_retry_timer_.Stop();
   access_token_fetcher_.reset(
@@ -501,6 +512,7 @@ void ChromeToMobileService::RequestAccessToken() {
 }
 
 void ChromeToMobileService::RequestDeviceSearch() {
+  search_retry_timer_.Stop();
   if (access_token_.empty()) {
     // Enqueue this task to perform after obtaining an access token.
     task_queue_.push(base::Bind(&ChromeToMobileService::RequestDeviceSearch,
@@ -522,6 +534,7 @@ void ChromeToMobileService::HandleSearchResponse(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK_EQ(source->GetURL(), GetSearchURL(cloud_print_url_));
 
+  ListValue mobiles;
   std::string data;
   ListValue* list = NULL;
   DictionaryValue* dictionary = NULL;
@@ -529,7 +542,6 @@ void ChromeToMobileService::HandleSearchResponse(
   scoped_ptr<Value> json(base::JSONReader::Read(data));
   if (json.get() && json->GetAsDictionary(&dictionary) && dictionary &&
       dictionary->GetList(cloud_print::kPrinterListValue, &list)) {
-    ListValue mobiles;
     std::string type, name, id;
     DictionaryValue* printer = NULL;
     DictionaryValue* mobile = NULL;
@@ -550,29 +562,49 @@ void ChromeToMobileService::HandleSearchResponse(
         }
       }
     }
-
-    // Update the cached mobile device list in profile prefs.
-    profile_->GetPrefs()->Set(prefs::kChromeToMobileDeviceList, mobiles);
-
-    if (HasMobiles())
-      LogMetric(DEVICES_AVAILABLE);
-    UpdateCommandState();
+  } else if (source->GetResponseCode() == net::HTTP_FORBIDDEN) {
+    LogMetric(BAD_SEARCH_AUTH);
+    // Invalidate the access token and retry a delayed search on access errors.
+    access_token_.clear();
+    search_retry_timer_.Stop();
+    base::TimeDelta delay = std::max(base::TimeDelta::FromHours(kDelayHours),
+                                     search_retry_timer_.GetCurrentDelay() * 2);
+    search_retry_timer_.Start(FROM_HERE, delay, this,
+                              &ChromeToMobileService::RequestDeviceSearch);
+  } else {
+    LogMetric(BAD_SEARCH_OTHER);
   }
+
+  // Update the cached mobile device list in profile prefs.
+  profile_->GetPrefs()->Set(prefs::kChromeToMobileDeviceList, mobiles);
+  if (HasMobiles())
+    LogMetric(DEVICES_AVAILABLE);
+  UpdateCommandState();
 }
 
 void ChromeToMobileService::HandleSubmitResponse(
     const net::URLFetcher* source) {
   // Get the success value from the cloud print server response data.
   std::string data;
-  source->GetResponseAsString(&data);
   bool success = false;
+  source->GetResponseAsString(&data);
   DictionaryValue* dictionary = NULL;
   scoped_ptr<Value> json(base::JSONReader::Read(data));
-  if (json.get() && json->GetAsDictionary(&dictionary) && dictionary)
+  if (json.get() && json->GetAsDictionary(&dictionary) && dictionary) {
     dictionary->GetBoolean("success", &success);
+    int error_code = -1;
+    if (dictionary->GetInteger("errorCode", &error_code))
+      LogMetric(error_code == 407 ? BAD_SEND_407 : BAD_SEND_ERROR);
+  } else if (source->GetResponseCode() == net::HTTP_FORBIDDEN) {
+    LogMetric(BAD_SEND_AUTH);
+  } else {
+    LogMetric(BAD_SEND_OTHER);
+  }
 
   // Log each URL and [DELAYED_]SNAPSHOT job submission response.
   LogMetric(success ? SEND_SUCCESS : SEND_ERROR);
+  LOG_IF(INFO, !success) << "ChromeToMobile send failed (" <<
+                            source->GetResponseCode() << "): " << data;
 
   // Get the observer for this job submission response.
   base::WeakPtr<Observer> observer;
