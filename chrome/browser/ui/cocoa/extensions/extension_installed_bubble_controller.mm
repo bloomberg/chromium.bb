@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/api/commands/command_service_factory.h"
 #include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -21,9 +22,11 @@
 #include "chrome/browser/ui/cocoa/info_bubble_view.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
+#include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
@@ -277,17 +280,44 @@ class ExtensionLoadedNotificationObserver
   return window;
 }
 
-- (NSString*)installMessageForExtensionAction {
+- (bool)hasActivePageAction:(extensions::Command*)command {
   extensions::CommandService* command_service =
       extensions::CommandServiceFactory::GetForProfile(browser_->profile());
   if (type_ == extension_installed_bubble::kPageAction) {
-    extensions::Command page_action_command;
     if (extension_->page_action_command() &&
         command_service->GetPageActionCommand(
             extension_->id(),
             extensions::CommandService::ACTIVE_ONLY,
-            &page_action_command,
+            command,
             NULL)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+- (bool)hasActiveBrowserAction:(extensions::Command*)command {
+  extensions::CommandService* command_service =
+      extensions::CommandServiceFactory::GetForProfile(browser_->profile());
+  if (type_ == extension_installed_bubble::kBrowserAction) {
+    if (extension_->browser_action_command() &&
+        command_service->GetBrowserActionCommand(
+            extension_->id(),
+            extensions::CommandService::ACTIVE_ONLY,
+            command,
+            NULL)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+- (NSString*)installMessageForCurrentExtensionAction {
+  if (type_ == extension_installed_bubble::kPageAction) {
+    extensions::Command page_action_command;
+    if ([self hasActivePageAction:&page_action_command]) {
       return l10n_util::GetNSStringF(
           IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO_WITH_SHORTCUT,
           page_action_command.accelerator().GetShortcutText());
@@ -298,12 +328,7 @@ class ExtensionLoadedNotificationObserver
   } else {
     CHECK_EQ(extension_installed_bubble::kBrowserAction, type_);
     extensions::Command browser_action_command;
-    if (extension_->browser_action_command() &&
-        command_service->GetBrowserActionCommand(
-            extension_->id(),
-            extensions::CommandService::ACTIVE_ONLY,
-            &browser_action_command,
-            NULL)) {
+    if ([self hasActiveBrowserAction:&browser_action_command]) {
       return l10n_util::GetNSStringF(
           IDS_EXTENSION_INSTALLED_BROWSER_ACTION_INFO_WITH_SHORTCUT,
           browser_action_command.accelerator().GetShortcutText());
@@ -337,7 +362,8 @@ class ExtensionLoadedNotificationObserver
   // If type is page action, include a special message about page actions.
   if (type_ == extension_installed_bubble::kBrowserAction ||
       type_ == extension_installed_bubble::kPageAction) {
-    [extraInfoMsg_ setStringValue:[self installMessageForExtensionAction]];
+    [extraInfoMsg_ setStringValue:[self
+        installMessageForCurrentExtensionAction]];
     [extraInfoMsg_ setHidden:NO];
     [[extraInfoMsg_ cell]
         setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
@@ -386,6 +412,18 @@ class ExtensionLoadedNotificationObserver
     [GTMUILocalizerAndLayoutTweaker
         sizeToFitFixedWidthTextField:extensionInstalledInfoMsg_];
     newWindowHeight += [extensionInstalledInfoMsg_ frame].size.height;
+  }
+
+  extensions::Command command;
+  if ([self hasActivePageAction:&command] ||
+      [self hasActiveBrowserAction:&command]) {
+    [manageShortcutLink_ setHidden:NO];
+    [[manageShortcutLink_ cell]
+        setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+    newWindowHeight += 2 * extension_installed_bubble::kInnerVerticalMargin;
+    newWindowHeight += [GTMUILocalizerAndLayoutTweaker
+                            sizeToFitView:manageShortcutLink_].height;
+    newWindowHeight += extension_installed_bubble::kInnerVerticalMargin;
   }
 
   return newWindowHeight;
@@ -478,6 +516,18 @@ class ExtensionLoadedNotificationObserver
         extension_installed_bubble::kInnerVerticalMargin);
   }
   [extensionInstalledInfoMsg_ setFrame:extensionMessageFrame2];
+
+  extensions::Command command;
+  if (![manageShortcutLink_ isHidden]) {
+    NSRect manageShortcutFrame = [manageShortcutLink_ frame];
+    manageShortcutFrame.origin.y = NSMinY(extensionMessageFrame2) - (
+        NSHeight(manageShortcutFrame) +
+        extension_installed_bubble::kInnerVerticalMargin);
+    // Right-align the link.
+    manageShortcutFrame.origin.x = NSMaxX(extensionMessageFrame2) -
+                                   NSWidth(manageShortcutFrame);
+    [manageShortcutLink_ setFrame:manageShortcutFrame];
+  }
 }
 
 // Exposed for unit testing.
@@ -495,6 +545,15 @@ class ExtensionLoadedNotificationObserver
 
 - (void)extensionUnloaded:(id)sender {
   extension_ = NULL;
+}
+
+- (IBAction)onManageShortcutClicked:(id)sender {
+  [self close];
+  std::string configure_url = chrome::kChromeUIExtensionsURL;
+  configure_url += chrome::kExtensionConfigureCommandsSubPage;
+  chrome::NavigateParams params(chrome::GetSingletonTabNavigateParams(
+      browser_, GURL(configure_url)));
+  chrome::Navigate(&params);
 }
 
 @end

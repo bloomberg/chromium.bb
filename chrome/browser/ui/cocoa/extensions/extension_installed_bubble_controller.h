@@ -74,6 +74,8 @@ typedef enum {
   // Only shown for page actions and omnibox keywords.
   IBOutlet NSTextField* extraInfoMsg_;
   IBOutlet NSTextField* extensionInstalledInfoMsg_;
+  // Only shown for extensions with commands.
+  IBOutlet NSButton* manageShortcutLink_;
   // Only shown for bundle installs.
   IBOutlet NSTextField* installedHeadingMsg_;
   IBOutlet NSTextField* installedItemsMsg_;
@@ -103,6 +105,9 @@ typedef enum {
 // Clears our weak pointer to the Extension. This callback is triggered by
 // the extensionObserver when the extension is unloaded.
 - (void)extensionUnloaded:(id)sender;
+
+// Opens the shortcut configuration UI.
+- (IBAction)onManageShortcutClicked:(id)sender;
 
 @end
 
