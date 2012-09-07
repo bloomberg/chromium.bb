@@ -316,7 +316,7 @@ TsfBridge::~TsfBridge() {
 
 // static
 bool TsfBridge::Initialize() {
-  if (MessageLoop::current()->type() == MessageLoop::TYPE_UI) {
+  if (MessageLoop::current()->type() != MessageLoop::TYPE_UI) {
     VLOG(1) << "Do not use TsfBridge without UI thread.";
     return false;
   }
@@ -328,7 +328,7 @@ bool TsfBridge::Initialize() {
 
 // static
 TsfBridge* TsfBridge::GetInstance() {
-  if (MessageLoop::current()->type() == MessageLoop::TYPE_UI) {
+  if (MessageLoop::current()->type() != MessageLoop::TYPE_UI) {
     VLOG(1) << "Do not use TsfBridge without UI thread.";
     return NULL;
   }
