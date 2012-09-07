@@ -68,7 +68,7 @@ void ShowImportProgressDialog(uint16 items,
 
 }  // namespace importer
 
-#if defined(OS_WIN)
+#if !defined(OS_CHROMEOS)
 // static
 void ExternalProtocolHandler::RunExternalProtocolDialog(
     const GURL& url, int render_process_host_id, int routing_id) {
