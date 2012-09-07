@@ -534,13 +534,6 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kAsyncDnsChoices)
   },
   {
-    "disable-video-track",
-    IDS_FLAGS_DISABLE_VIDEO_TRACK_NAME,
-    IDS_FLAGS_DISABLE_VIDEO_TRACK_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kDisableVideoTrack)
-  },
-  {
     "enable-media-source",
     IDS_FLAGS_DISABLE_MEDIA_SOURCE_NAME,
     IDS_FLAGS_DISABLE_MEDIA_SOURCE_DESCRIPTION,

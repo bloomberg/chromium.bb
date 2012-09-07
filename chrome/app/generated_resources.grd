@@ -5999,12 +5999,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_ASYNC_DNS_DESCRIPTION" desc="Description for the flag to enable asynchronous DNS client.">
         Enable experimental asynchronous DNS client.
       </message>
-      <message name="IDS_FLAGS_DISABLE_VIDEO_TRACK_NAME" desc="Title for the flag to disable the &lt;track&gt; element for &lt;video&gt; elements.">
-        Disable <ph name="TRACK_HTML">&lt;track&gt;</ph> element
-      </message>
-      <message name="IDS_FLAGS_DISABLE_VIDEO_TRACK_DESCRIPTION" desc="Description for the flag to disable the track element for captions on &lt;videos&gt; elements.">
-        Disable the track element for captions, subtitles, chapters, and audio descriptions on video elements.
-      </message>
       <message name="IDS_FLAGS_ENABLE_EXTENSION_ALERTS_NAME" desc="Title for the flag to enable extension alerts.">
         Enable extension alerts
       </message>

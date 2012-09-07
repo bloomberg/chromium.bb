@@ -754,7 +754,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableSpeechInput,
     switches::kEnableScriptedSpeech,
     switches::kDisableThreadedAnimation,
-    switches::kDisableVideoTrack,
 #if defined(OS_ANDROID)
     switches::kEnableWebAudio,
 #else
