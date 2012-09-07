@@ -63,6 +63,13 @@ void DomStorageNamespace::CloseStorageArea(DomStorageArea* area) {
   // The in-process-webkit based impl didn't do this either, but would be nice.
 }
 
+DomStorageArea* DomStorageNamespace::GetOpenStorageArea(const GURL& origin) {
+  AreaHolder* holder = GetAreaHolder(origin);
+  if (holder && holder->open_count_)
+    return holder->area_;
+  return NULL;
+}
+
 DomStorageNamespace* DomStorageNamespace::Clone(
     int64 clone_namespace_id,
     const std::string& clone_persistent_namespace_id) {

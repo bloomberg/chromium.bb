@@ -47,6 +47,9 @@ class DomStorageNamespace
   DomStorageArea* OpenStorageArea(const GURL& origin);
   void CloseStorageArea(DomStorageArea* area);
 
+  // Returns the area for |origin| if it's open, otherwise NULL.
+  DomStorageArea* GetOpenStorageArea(const GURL& origin);
+
   // Creates a clone of |this| namespace including
   // shallow copies of all contained areas.
   // Should only be called for session storage namespaces.

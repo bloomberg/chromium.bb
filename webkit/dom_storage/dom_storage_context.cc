@@ -111,6 +111,11 @@ void DomStorageContext::DeleteOrigin(const GURL& origin) {
   DCHECK(!is_shutdown_);
   DomStorageNamespace* local = GetStorageNamespace(kLocalStorageNamespaceId);
   local->DeleteOrigin(origin);
+  // Synthesize a 'cleared' event if the area is open so CachedAreas in
+  // renderers get emptied out too.
+  DomStorageArea* area = local->GetOpenStorageArea(origin);
+  if (area)
+    NotifyAreaCleared(area, origin);
 }
 
 void DomStorageContext::PurgeMemory() {
