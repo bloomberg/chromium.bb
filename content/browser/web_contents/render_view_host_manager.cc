@@ -56,10 +56,11 @@ RenderViewHostManager::~RenderViewHostManager() {
   if (pending_render_view_host_)
     CancelPending();
 
-  // We should always have a main RenderViewHost.
+  // We should always have a main RenderViewHost except in some tests.
   RenderViewHostImpl* render_view_host = render_view_host_;
   render_view_host_ = NULL;
-  render_view_host->Shutdown();
+  if (render_view_host)
+    render_view_host->Shutdown();
 
   // Shut down any swapped out RenderViewHosts.
   for (RenderViewHostMap::iterator iter = swapped_out_hosts_.begin();

@@ -18,11 +18,16 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_switch_utils.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_renderer_host.h"
+#include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -38,6 +43,11 @@ using ::testing::WithArg;
 using ::testing::_;
 
 namespace {
+
+class MockWebContentsDelegate : public content::WebContentsDelegate {
+ public:
+  virtual ~MockWebContentsDelegate() {}
+};
 
 // Google Mock action that posts a task to the current message loop that invokes
 // the first argument of the mocked method as a callback. Said argument must be
@@ -213,7 +223,8 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
 #endif
 };
 
-class ChromeDownloadManagerDelegateTest : public ::testing::Test {
+class ChromeDownloadManagerDelegateTest :
+    public ChromeRenderViewHostTestHarness {
  public:
   ChromeDownloadManagerDelegateTest();
 
@@ -268,26 +279,31 @@ class ChromeDownloadManagerDelegateTest : public ::testing::Test {
                               content::DownloadDangerType danger_type,
                               const FilePath& intermediate_path);
 
-  MessageLoopForUI message_loop_;
   TestingPrefService* pref_service_;
   ScopedTempDir test_download_dir_;
-  TestingProfile profile_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   scoped_refptr<content::MockDownloadManager> download_manager_;
   scoped_refptr<TestChromeDownloadManagerDelegate> delegate_;
+  MockWebContentsDelegate web_contents_delegate_;
 };
 
 ChromeDownloadManagerDelegateTest::ChromeDownloadManagerDelegateTest()
-    : ui_thread_(content::BrowserThread::UI, &message_loop_),
+    : ChromeRenderViewHostTestHarness(),
+      ui_thread_(content::BrowserThread::UI, &message_loop_),
       file_thread_(content::BrowserThread::FILE, &message_loop_),
-      download_manager_(new content::MockDownloadManager),
-      delegate_(new TestChromeDownloadManagerDelegate(&profile_)) {
-  delegate_->SetDownloadManager(download_manager_.get());
-  pref_service_ = profile_.GetTestingPrefService();
+      download_manager_(new content::MockDownloadManager) {
 }
 
 void ChromeDownloadManagerDelegateTest::SetUp() {
+  ChromeRenderViewHostTestHarness::SetUp();
+
+  CHECK(profile());
+  delegate_ = new TestChromeDownloadManagerDelegate(profile());
+  delegate_->SetDownloadManager(download_manager_.get());
+  pref_service_ = profile()->GetTestingPrefService();
+  contents()->SetDelegate(&web_contents_delegate_);
+
   ASSERT_TRUE(test_download_dir_.CreateUniqueTempDir());
   SetDefaultDownloadPath(test_download_dir_.path());
 }
@@ -295,6 +311,7 @@ void ChromeDownloadManagerDelegateTest::SetUp() {
 void ChromeDownloadManagerDelegateTest::TearDown() {
   message_loop_.RunAllPending();
   delegate_->Shutdown();
+  ChromeRenderViewHostTestHarness::TearDown();
 }
 
 void ChromeDownloadManagerDelegateTest::VerifyAndClearExpectations() {
@@ -320,6 +337,8 @@ content::MockDownloadItem*
       .WillByDefault(Return(false));
   ON_CALL(*item, IsTemporary())
       .WillByDefault(Return(false));
+  ON_CALL(*item, GetWebContents())
+      .WillByDefault(Return(contents()));
   EXPECT_CALL(*item, GetId())
       .WillRepeatedly(Return(id));
   EXPECT_CALL(*download_manager_, GetActiveDownloadItem(id))
@@ -875,6 +894,42 @@ TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_LastSavePath) {
   // Run the first test case again. Since the last download path was cleared,
   // this test case should behave identically to the first time it was run.
   RunTestCases(kLastSavePathTestCases, 1);
+}
+
+TEST_F(ChromeDownloadManagerDelegateTest, StartDownload_WebIntents) {
+  const DownloadTestCase kWebIntentsTestCases[] = {
+    {
+      // 1: A file which would be dangerous, but is handled by web intents.
+      // The name will be unaltered (the actual save name will have the
+      // .webintents extension).
+      AUTOMATIC,
+      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      "http://example.com/feed.exe", "application/rss+xml",
+      FILE_PATH_LITERAL(""),
+
+      FILE_PATH_LITERAL("feed.exe.webintents"),
+      FILE_PATH_LITERAL(""),
+      DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+
+      EXPECT_CRDOWNLOAD
+    },
+
+    {
+      // 2: A download with a forced path won't be handled by web intents.
+      FORCED,
+      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      "http://example.com/feed.exe", "application/rss+xml",
+      FILE_PATH_LITERAL("forced.feed.exe"),
+
+      FILE_PATH_LITERAL("forced.feed.exe"),
+      FILE_PATH_LITERAL(""),
+      DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+
+      EXPECT_CRDOWNLOAD
+    },
+  };
+
+  RunTestCases(kWebIntentsTestCases, arraysize(kWebIntentsTestCases));
 }
 
 // TODO(asanka): Add more tests.

@@ -47,6 +47,7 @@
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/glue/web_intent_data.h"
+#include "webkit/glue/web_intent_reply_data.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/browser.h"
@@ -73,6 +74,11 @@ namespace {
 // String pointer used for identifying safebrowing data associated with
 // a download item.
 static const char safe_browsing_id[] = "Safe Browsing ID";
+
+// String pointer used to set the local file extension to be used when a
+// download is going to be dispatched with web intents.
+static const FilePath::CharType kWebIntentsFileExtension[] =
+    FILE_PATH_LITERAL(".webintents");
 
 // The state of a safebrowsing check.
 class SafeBrowsingState : public DownloadCompletionBlocker {
@@ -116,6 +122,20 @@ void GenerateFileNameFromRequest(const DownloadItem& download_item,
                                           download_item.GetSuggestedFilename(),
                                           download_item.GetMimeType(),
                                           default_file_name);
+}
+
+// Needed to give PostTask a void closure in OnWebIntentDispatchCompleted.
+void DeleteFile(const FilePath& file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  file_util::Delete(file_path, false);
+}
+
+// Called when the web intents dispatch has completed. Deletes the |file_path|.
+void OnWebIntentDispatchCompleted(
+    const FilePath& file_path,
+    webkit_glue::WebIntentReplyType intent_reply) {
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          base::Bind(&DeleteFile, file_path));
 }
 
 }  // namespace
@@ -371,6 +391,8 @@ bool ChromeDownloadManagerDelegate::ShouldOpenWithWebIntents(
     const DownloadItem* item) {
   if (!item->GetWebContents() || !item->GetWebContents()->GetDelegate())
     return false;
+  if (!item->GetForcedFilePath().empty())
+    return false;
 
   std::string mime_type = item->GetMimeType();
   if (mime_type == "application/rss+xml" ||
@@ -436,6 +458,8 @@ void ChromeDownloadManagerDelegate::OpenWithWebIntent(
 
   content::WebIntentsDispatcher* dispatcher =
       content::WebIntentsDispatcher::Create(intent_data);
+  dispatcher->RegisterReplyNotification(
+      base::Bind(&OnWebIntentDispatchCompleted, item->GetFullPath()));
   // TODO(gbillock): try to get this to be able to delegate to the Browser
   // object directly, passing a NULL WebContents?
   item->GetWebContents()->GetDelegate()->WebIntentDispatch(
@@ -722,6 +746,14 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
   } else {
     DCHECK(!should_prompt);
     suggested_path = download->GetForcedFilePath();
+  }
+
+  // If we will open the file with a web intents dispatch,
+  // give it a name that will not allow the OS to open it using usual
+  // associated apps.
+  if (ShouldOpenWithWebIntents(download)) {
+    download->SetDisplayName(suggested_path.BaseName());
+    suggested_path = suggested_path.AddExtension(kWebIntentsFileExtension);
   }
 
   // If the download hasn't already been marked dangerous (could be
