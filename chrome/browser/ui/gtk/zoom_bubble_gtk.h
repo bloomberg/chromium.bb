@@ -27,6 +27,9 @@ class ZoomBubbleGtk {
   ZoomBubbleGtk(GtkWidget* anchor, TabContents* tab_contents, bool auto_close);
   virtual ~ZoomBubbleGtk();
 
+  // Convenience method to start |timer_| if |auto_close_| is true.
+  void StartTimerIfNecessary();
+
   // Refreshes the bubble by changing the zoom percentage appropriately and
   // resetting the timer if necessary.
   void Refresh();
