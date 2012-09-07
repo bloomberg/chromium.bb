@@ -22,6 +22,8 @@
 #include <tuple>
 #include <vector>
 
+#include "native_client/src/include/portability.h"
+
 #if defined __GNUC__ && defined __GNUC_MINOR__
   #if __GNUC__ == 4 && __GNUC_MINOR__ < 6
     namespace std {
@@ -41,20 +43,6 @@
 
 #ifndef NACL_TRUSTED_BUT_NOT_TCB
 #error("This file is not meant for use in the TCB")
-#endif
-
-#ifdef __GNUC__
-/* We use operand number formats here.  They are defined in SUSv2 and supported
-   on all POSIX systems (including all versions of Linux and MacOS), yet
-   -pedantic warns about them.  */
-#pragma GCC diagnostic ignored "-Wformat"
-/* GCC complains even when we explicitly use empty initializer list.  Can be
-   easily fixed with data member initializers, but this requires GCC 4.7+.  */
-#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-/* Default is perfectly valid way to handle missing cases.  Especially if we
-   only care about very few non-default ones as often here.  */
-#pragma GCC diagnostic ignored "-Wswitch-enum"
-#pragma GCC diagnostic error "-Wswitch"
 #endif
 
 template <typename T, size_t N>
@@ -77,7 +65,7 @@ namespace {
 
   const char kVersion[] = "0.0";
 
-  const char* const kProgramHelp = "Usage: %1$s [OPTION]... [FILE]...\n"
+  const char* const kProgramHelp = "Usage: %s [OPTION]... [FILE]...\n"
 "\n"
 "Creates ragel machine which recognizes instructions listed in given files.\n"
 "\n"
@@ -115,8 +103,8 @@ namespace {
 "                        etc) to distinguish operands, these are not captured\n"
 "                        between '>opcode_begin' and '@opcode_end'\n"
 "  parse_operands      this will grab instruction operands\n"
-"  check_access        this will check memory access (action is not generated\n"
-"                        by %1$s, you need to define it in your program)\n"
+"  check_access        this will check memory access (action is not\n"
+"                        generated, you need to define it in your program)\n"
 "\n"
 "  nacl-forbidden      generate instructions forbidden for nacl\n"
 "\n"
@@ -131,7 +119,7 @@ namespace {
 "  parse_operand_positions   produce corrent numbers of operands (required\n"
 "                              for decoding, not important for validation)\n";
 
-  const char* const kVersionHelp = "%1$s %2$s\n"
+  const char* const kVersionHelp = "%s %s\n"
 "Copyright (c) 2012 The Native Client Authors. All rights reserved.\n"
 "Use of this source code is governed by a BSD-style license that can be\n"
 "found in the LICENSE file.\n";
@@ -634,7 +622,7 @@ namespace {
          pair_it != end(instruction_names); ++pair_it) {
       auto& pair = *pair_it;
       fprintf(out_file, "  action instruction_%s"
-        " { SET_INSTRUCTION_NAME(instruction_names + %zu); }\n",
+        " { SET_INSTRUCTION_NAME(instruction_names + %"NACL_PRIuS"); }\n",
                                  c_identifier(pair.first).c_str(), pair.second);
     }
   }
@@ -1177,10 +1165,11 @@ namespace {
         if (operand.enabled && operand.source == 'r') {
           if (operand.size == "x87") {
             if (enabled(Actions::kParseX87Operands)) {
-              fprintf(out_file, " @operand%zu_from_opcode_x87", operand_index);
+              fprintf(out_file, " @operand%d_from_opcode_x87", operand_index);
             }
           } else {
-            fprintf(out_file, " @operand%zu_from_opcode", operand_index);
+            fprintf(out_file, " @operand%d_from_opcode",
+                    operand_index);
           }
         }
         if (operand.enabled || enabled(Actions::kParseOperandPositions))
@@ -1273,7 +1262,7 @@ namespace {
     const auto& operands = instruction.get_operands();
     if (enabled(Actions::kParseOperands)) {
       if (enabled(Actions::kParseOperandPositions))
-        fprintf(out_file, " @operands_count_is_%zu", operands.size());
+        fprintf(out_file, " @operands_count_is_%"NACL_PRIuS"", operands.size());
       int operand_index = 0;
       for (auto operand_it = begin(operands);
            operand_it != end(operands); ++operand_it) {
@@ -1284,7 +1273,7 @@ namespace {
                 (operand.source != 'N') && (operand.source != 'Q') &&
                 (operand.source != 'R') && (operand.source != 'U') &&
                 (operand.source != 'W')) || !memory_access))
-            fprintf(out_file, " @operand%zu_%s",
+            fprintf(out_file, " @operand%d_%s",
                                            operand_index, operand.size.c_str());
         static std::map<char, const char*> operand_type {
           { '1',        "one"                   },
@@ -1305,7 +1294,7 @@ namespace {
         auto it = operand_type.find(operand.source);
         if (it != end(operand_type)) {
           if (operand.enabled)
-            fprintf(out_file, " @operand%zu_%s", operand_index, it->second),
+            fprintf(out_file, " @operand%d_%s", operand_index, it->second),
             ++operand_index;
         } else if (operand.enabled) {
           if (enabled(Actions::kParseOperandPositions) ||
@@ -1325,14 +1314,14 @@ namespace {
         if (operand.enabled) {
           if (operand.write)
             if (operand.read)
-              fprintf(out_file, " @operand%zu_readwrite", operand_index);
+              fprintf(out_file, " @operand%d_readwrite", operand_index);
             else
-              fprintf(out_file, " @operand%zu_write", operand_index);
+              fprintf(out_file, " @operand%d_write", operand_index);
           else
             if (operand.read)
-              fprintf(out_file, " @operand%zu_read", operand_index);
+              fprintf(out_file, " @operand%d_read", operand_index);
             else
-              fprintf(out_file, " @operand%zu_unused", operand_index);
+              fprintf(out_file, " @operand%d_unused", operand_index);
         }
         if (operand.enabled || enabled(Actions::kParseOperandPositions))
           ++operand_index;
@@ -1402,7 +1391,7 @@ namespace {
             fprintf(out_file, " @last_byte_is_not_immediate");
         }
         if (operand->enabled && enabled(Actions::kParseOperands))
-          fprintf(out_file, " @operand%zu_from_is4", operand_index - 1);
+          fprintf(out_file, " @operand%d_from_is4", operand_index - 1);
       } else if (operand->source == 'O') {
         fprintf(out_file, ia32_mode ? " disp32" : " disp64");
       }
@@ -1418,7 +1407,7 @@ namespace {
              operand_it != end(operands); ++operand_it) {
           auto& operand = *operand_it;
           if (operand.source == 'C') {
-            fprintf(out_file, " @not_lock_prefix%zu",
+            fprintf(out_file, " @not_lock_prefix%"NACL_PRIuS"",
                                                   &operand - &*begin(operands));
             break;
           }
@@ -1538,7 +1527,7 @@ namespace {
         if (operand.enabled) {
           auto it = operand_type.find(operand.source);
           if (it != end(operand_type))
-            fprintf(out_file, " @operand%zu_from_modrm_%s", operand_index,
+            fprintf(out_file, " @operand%d_from_modrm_%s", operand_index,
                     it->second);
         }
         if (operand.enabled || enabled(Actions::kParseOperandPositions))
@@ -1622,8 +1611,7 @@ namespace {
             if (it != end(operand_type)) {
               if (strcmp(it->second, "rm") != 0 ||
                   enabled(Actions::kParseOperandPositions)) {
-                fprintf(out_file, " @operand%zu_%s", operand_index,
-                        it->second);
+                fprintf(out_file, " @operand%d_%s", operand_index, it->second);
                 ++operand_index;
               }
             } else {
