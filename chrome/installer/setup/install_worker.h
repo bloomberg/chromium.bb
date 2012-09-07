@@ -26,6 +26,24 @@ class InstallationState;
 class InstallerState;
 class Product;
 
+// This method adds work items to create (or update) Chrome uninstall entry in
+// either the Control Panel->Add/Remove Programs list or in the Omaha client
+// state key if running under an MSI installer.
+void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
+                                   const FilePath& setup_path,
+                                   const Version& new_version,
+                                   WorkItemList* install_list,
+                                   const Product& product);
+
+// Creates Version key for a product (if not already present) and sets the new
+// product version as the last step.  If |add_language_identifier| is true, the
+// "lang" value is also set according to the currently selected translation.
+void AddVersionKeyWorkItems(HKEY root,
+                            BrowserDistribution* dist,
+                            const Version& new_version,
+                            bool add_language_identifier,
+                            WorkItemList* list);
+
 // Helper function for AddGoogleUpdateWorkItems that mirrors oeminstall.
 void AddOemInstallWorkItems(const InstallationState& original_state,
                             const InstallerState& installer_state,
@@ -137,24 +155,6 @@ void AddActiveSetupWorkItems(const InstallerState& installer_state,
                              const Version& new_version,
                              const Product& product,
                              WorkItemList* list);
-
-// This method adds work items to create (or update) Chrome uninstall entry in
-// either the Control Panel->Add/Remove Programs list or in the Omaha client
-// state key if running under an MSI installer.
-void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
-                                   const FilePath& setup_path,
-                                   const Version& new_version,
-                                   WorkItemList* install_list,
-                                   const Product& product);
-
-// Creates Version key for a product (if not already present) and sets the new
-// product version as the last step.  If |add_language_identifier| is true, the
-// "lang" value is also set according to the currently selected translation.
-void AddVersionKeyWorkItems(HKEY root,
-                            BrowserDistribution* dist,
-                            const Version& new_version,
-                            bool add_language_identifier,
-                            WorkItemList* list);
 
 // Unregisters the "opv" version of ChromeLauncher from IE's low rights
 // elevation policy.
