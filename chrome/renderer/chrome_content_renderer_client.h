@@ -20,7 +20,7 @@ class SpellCheck;
 class SpellCheckProvider;
 class VisitedLinkSlave;
 
-struct ChromeViewHostMsg_GetPluginInfo_Status;
+struct ChromeViewHostMsg_GetPluginInfo_Output;
 
 namespace extensions {
 class Dispatcher;
@@ -141,9 +141,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       content::RenderView* render_view,
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params,
-      const ChromeViewHostMsg_GetPluginInfo_Status& status,
-      const webkit::WebPluginInfo& plugin,
-      const std::string& actual_mime_type);
+      const ChromeViewHostMsg_GetPluginInfo_Output& output);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeContentRendererClientTest, NaClRestriction);
