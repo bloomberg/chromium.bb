@@ -304,8 +304,8 @@ const char kEnableGpuBenchmarking[]         = "enable-gpu-benchmarking";
 // builds.
 const char kEnableLogging[]                 = "enable-logging";
 
-// Enables Media Source API on <audio>/<video> elements.
-const char kEnableMediaSource[]             = "enable-media-source";
+// Disable Media Source API on <audio>/<video> elements.
+const char kDisableMediaSource[]             = "disable-media-source";
 
 // On Windows, converts the page to the currently-installed monitor profile.
 // This does NOT enable color management for images. The source is still

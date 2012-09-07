@@ -6011,11 +6011,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_EXTENSION_ALERTS_DESCRIPTION" desc="Description for the flag to enable extension alerts.">
         Enable various alerts about changes in extension state.
       </message>
-      <message name="IDS_FLAGS_ENABLE_MEDIA_SOURCE_NAME" desc="Title for the flag to enable the Media Source API on &lt;video&gt; elements.">
-        Enable Media Source API on <ph name="VIDEO_HTML">&lt;video&gt;<ex>&lt;video&gt;</ex></ph> elements.
+      <message name="IDS_FLAGS_DISABLE_MEDIA_SOURCE_NAME" desc="Title for the flag to disable the Media Source API on &lt;video&gt; elements.">
+        Disable Media Source API on <ph name="VIDEO_HTML">&lt;video&gt;<ex>&lt;video&gt;</ex></ph> elements.
       </message>
-      <message name="IDS_FLAGS_ENABLE_MEDIA_SOURCE_DESCRIPTION" desc="Description for the flag to enable the Media Source API on &lt;video&gt; elements.">
-        Enable experimental Media Source API on the video elements. This API allows JavaScript to send media data directly to a video element.
+      <message name="IDS_FLAGS_DISABLE_MEDIA_SOURCE_DESCRIPTION" desc="Description for the flag to disable the Media Source API on &lt;video&gt; elements.">
+        Disable experimental Media Source API on the video elements. This API allows JavaScript to send media data directly to a video element.
       </message>
       <message name="IDS_FLAGS_ENABLE_ENCRYPTED_MEDIA_NAME" desc="Title for the flag to enable the Encrypted Media Extensions on &lt;video&gt; elements.">
         Enable Encrypted Media Extensions on <ph name="VIDEO_HTML">&lt;video&gt;<ex>&lt;video&gt;</ex></ph> elements.

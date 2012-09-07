@@ -639,7 +639,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
       !command_line.HasSwitch(switches::kDisableGeolocation));
 
   WebKit::WebRuntimeFeatures::enableMediaSource(
-      command_line.HasSwitch(switches::kEnableMediaSource));
+      !command_line.HasSwitch(switches::kDisableMediaSource));
 
   WebRuntimeFeatures::enableMediaPlayer(
       media::IsMediaLibraryInitialized());
