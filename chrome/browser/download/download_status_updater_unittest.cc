@@ -103,6 +103,8 @@ class DownloadStatusUpdaterTest : public testing::Test {
     for (int i = 0; i < item_count; ++i) {
       content::MockDownloadItem* item =
           new StrictMock<content::MockDownloadItem>;
+      EXPECT_CALL(*item, IsTemporary())
+          .WillRepeatedly(Return(false));
       if (i < in_progress_count) {
         EXPECT_CALL(*item, GetState())
             .WillRepeatedly(Return(content::DownloadItem::IN_PROGRESS));
@@ -114,8 +116,8 @@ class DownloadStatusUpdaterTest : public testing::Test {
       }
       manager_items_[manager_index].push_back(item);
     }
-    EXPECT_CALL(*manager, SearchDownloads(string16(), _))
-        .WillOnce(SetArgPointee<1>(manager_items_[manager_index]));
+    EXPECT_CALL(*manager, GetAllDownloads(_))
+        .WillOnce(SetArgPointee<0>(manager_items_[manager_index]));
   }
 
   // Return the specified manager.

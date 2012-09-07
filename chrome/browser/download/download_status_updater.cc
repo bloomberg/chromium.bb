@@ -53,12 +53,12 @@ void DownloadStatusUpdater::AddManager(content::DownloadManager* manager) {
 // Methods inherited from content::DownloadManager::Observer.
 void DownloadStatusUpdater::ModelChanged(content::DownloadManager* manager) {
   std::vector<content::DownloadItem*> downloads;
-  manager->SearchDownloads(string16(), &downloads);
+  manager->GetAllDownloads(&downloads);
 
   std::vector<content::DownloadItem*> added_downloads;
   for (std::vector<content::DownloadItem*>::iterator it = downloads.begin();
        it != downloads.end(); ++it) {
-    if (UpdateItem(*it))
+    if (!(*it)->IsTemporary() && UpdateItem(*it))
       added_downloads.push_back(*it);
   }
 

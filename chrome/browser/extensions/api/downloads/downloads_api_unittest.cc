@@ -369,7 +369,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
       entries.push_back(entry);
     }
     GetOnRecordManager()->OnPersistentStoreQueryComplete(&entries);
-    GetOnRecordManager()->GetAllDownloads(FilePath(), items);
+    GetOnRecordManager()->GetAllDownloads(items);
     EXPECT_EQ(count, items->size());
     if (count != items->size())
       return false;
@@ -401,7 +401,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
       EXPECT_EQ(
           1u, observer->NumDownloadsSeenInState(DownloadItem::IN_PROGRESS));
     }
-    GetCurrentManager()->GetAllDownloads(FilePath(), items);
+    GetCurrentManager()->GetAllDownloads(items);
     ASSERT_EQ(count, items->size());
   }
 
@@ -423,7 +423,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
     EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::IN_PROGRESS));
 
     DownloadManager::DownloadVector items;
-    manager->GetAllDownloads(FilePath(), &items);
+    manager->GetAllDownloads(&items);
 
     DownloadItem* new_item = NULL;
     for (DownloadManager::DownloadVector::iterator iter = items.begin();

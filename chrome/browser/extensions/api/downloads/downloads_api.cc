@@ -471,11 +471,11 @@ void RunDownloadQuery(
     if (item)
       all_items.push_back(item);
   } else {
-    manager->GetAllDownloads(FilePath(FILE_PATH_LITERAL("")), &all_items);
+    manager->GetAllDownloads(&all_items);
     if (incognito_manager)
-      incognito_manager->GetAllDownloads(
-          FilePath(FILE_PATH_LITERAL("")), &all_items);
+      incognito_manager->GetAllDownloads(&all_items);
   }
+  query_out.AddFilter(base::Bind(&IsNotTemporaryDownloadFilter));
   query_out.Search(all_items.begin(), all_items.end(), results);
 }
 

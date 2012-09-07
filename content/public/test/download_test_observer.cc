@@ -138,10 +138,7 @@ void DownloadTestObserver::ModelChanged(DownloadManager* manager) {
   // in our final state, note them in |finished_downloads_|
   // (done by |OnDownloadUpdated()|).
   std::vector<DownloadItem*> downloads;
-  download_manager_->GetAllDownloads(FilePath(), &downloads);
-  // As a test class, we're generally interested in whatever's there,
-  // so we include temporary downloads.
-  download_manager_->GetTemporaryDownloads(FilePath(), &downloads);
+  download_manager_->GetAllDownloads(&downloads);
 
   for (std::vector<DownloadItem*>::iterator it = downloads.begin();
        it != downloads.end(); ++it) {
@@ -293,7 +290,7 @@ void DownloadTestFlushObserver::CheckDownloadsInProgress(
     int count = 0;
 
     std::vector<DownloadItem*> downloads;
-    download_manager_->SearchDownloads(string16(), &downloads);
+    download_manager_->GetAllDownloads(&downloads);
     for (std::vector<DownloadItem*>::iterator it = downloads.begin();
          it != downloads.end(); ++it) {
       if ((*it)->GetState() == DownloadItem::IN_PROGRESS)

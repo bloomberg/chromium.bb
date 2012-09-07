@@ -150,7 +150,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadCancelled) {
   observer->WaitForFinished();
 
   std::vector<DownloadItem*> downloads;
-  DownloadManagerForShell(shell())->SearchDownloads(string16(), &downloads);
+  DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
   ASSERT_EQ(1u, downloads.size());
   ASSERT_EQ(DownloadItem::IN_PROGRESS, downloads[0]->GetState());
 
@@ -175,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, MultiDownload) {
   observer1->WaitForFinished();
 
   std::vector<DownloadItem*> downloads;
-  DownloadManagerForShell(shell())->SearchDownloads(string16(), &downloads);
+  DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
   ASSERT_EQ(1u, downloads.size());
   ASSERT_EQ(DownloadItem::IN_PROGRESS, downloads[0]->GetState());
   DownloadItem* download1 = downloads[0];  // The only download.
@@ -188,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, MultiDownload) {
 
   // Should now have 2 items on the manager.
   downloads.clear();
-  DownloadManagerForShell(shell())->SearchDownloads(string16(), &downloads);
+  DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
   ASSERT_EQ(2u, downloads.size());
   // We don't know the order of the downloads.
   DownloadItem* download2 = downloads[(download1 == downloads[0]) ? 1 : 0];

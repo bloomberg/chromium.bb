@@ -27,8 +27,7 @@ class MockDownloadManager : public DownloadManager {
   MOCK_METHOD0(Shutdown, void());
   MOCK_METHOD2(GetTemporaryDownloads, void(const FilePath& dir_path,
                                            DownloadVector* result));
-  MOCK_METHOD2(GetAllDownloads, void(const FilePath& dir_path,
-                                     DownloadVector* result));
+  MOCK_METHOD1(GetAllDownloads, void(DownloadVector* downloads));
   MOCK_METHOD2(SearchDownloads, void(const string16& query,
                                      DownloadVector* result));
   MOCK_METHOD1(Init, bool(BrowserContext* browser_context));

@@ -216,7 +216,7 @@ class MockDownloadOpeningObserver : public DownloadManager::Observer {
   virtual void ModelChanged(DownloadManager* manager) OVERRIDE {
     DCHECK_EQ(manager, download_manager_);
     std::vector<DownloadItem*> downloads;
-    download_manager_->SearchDownloads(string16(), &downloads);
+    download_manager_->GetAllDownloads(&downloads);
 
     for (std::vector<DownloadItem*>::iterator it = downloads.begin();
          it != downloads.end(); ++it) {
@@ -553,7 +553,7 @@ class DownloadTest : public InProcessBrowserTest {
   void GetDownloads(Browser* browser, std::vector<DownloadItem*>* downloads) {
     DCHECK(downloads);
     DownloadManager* manager = DownloadManagerForBrowser(browser);
-    manager->SearchDownloads(string16(), downloads);
+    manager->GetAllDownloads(downloads);
   }
 
   static void ExpectWindowCountAfterDownload(size_t expected) {
@@ -1532,8 +1532,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, AutoOpen) {
 
   // Find the download and confirm it was opened.
   std::vector<DownloadItem*> downloads;
-  DownloadManagerForBrowser(browser())->SearchDownloads(
-      string16(), &downloads);
+  DownloadManagerForBrowser(browser())->GetAllDownloads(&downloads);
   ASSERT_EQ(1u, downloads.size());
   EXPECT_EQ(DownloadItem::COMPLETE, downloads[0]->GetState());
   EXPECT_TRUE(downloads[0]->GetOpened());
@@ -1748,7 +1747,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SearchDownloads) {
   // Do some searches and check the results.
   std::vector<DownloadItem*> search_results;
 
-  manager->SearchDownloads(string16(), &search_results);
+  manager->GetAllDownloads(&search_results);
   ASSERT_EQ(3u, search_results.size());
   std::sort(search_results.begin(), search_results.end(),
             DownloadItemSorter);
