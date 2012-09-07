@@ -288,21 +288,25 @@ void LauncherButton::GetAccessibleState(ui::AccessibleViewState* state) {
 
 void LauncherButton::Layout() {
   gfx::Rect rect(GetContentsBounds());
+  const gfx::Size& icon_size(icon_view_->GetPreferredSize());
   int image_x, image_y;
 
   if (IsShelfHorizontal()) {
-    image_x = rect.x() + (rect.width() - icon_view_->width()) / 2;
-    image_y = rect.bottom() - (icon_view_->height() + kBarSize + kBarSpacing);
+    image_x = rect.x() + (rect.width() - icon_size.width()) / 2;
+    const int align_y = rect.bottom() - kBarSize - kBarSpacing - kIconSize / 2;
+    image_y = align_y - icon_size.height() / 2;
     if (ShouldHop(state_))
       image_y -= kHopSpacing;
   } else {
-    image_y = rect.y() + (rect.height() - icon_view_->height()) / 2;
+    image_y = rect.y() + (rect.height() - icon_size.height()) / 2;
     if (host_->GetShelfAlignment() == SHELF_ALIGNMENT_LEFT) {
-      image_x = rect.x() + kBarSize + kBarSpacing;
+      const int align_x = rect.x() + kBarSize + kBarSpacing + kIconSize / 2;
+      image_x = align_x - icon_size.width() / 2;
       if (ShouldHop(state_))
         image_x += kHopSpacing;
     } else {
-      image_x = rect.right() - (icon_view_->width() + kBarSize + kBarSpacing);
+      const int align_x = rect.right() - kBarSize - kBarSpacing - kIconSize / 2;
+      image_x = align_x - icon_size.width() / 2;
       if (ShouldHop(state_))
         image_x -= kHopSpacing;
     }
@@ -310,11 +314,16 @@ void LauncherButton::Layout() {
 
   // Offset to compensate for shadows.
   gfx::Insets icon_shadow_padding = -gfx::ShadowValue::GetMargin(icon_shadows_);
-  image_x -= icon_shadow_padding.left() - icon_shadow_padding.right();
-  image_y -= icon_shadow_padding.top() - icon_shadow_padding.bottom();
+  image_x -= (icon_shadow_padding.left() - icon_shadow_padding.right()) / 2;
+  image_y -= (icon_shadow_padding.top() - icon_shadow_padding.bottom()) / 2;
 
-  icon_view_->SetPosition(gfx::Point(image_x, image_y));
+  icon_view_->SetBoundsRect(gfx::Rect(gfx::Point(image_x, image_y),
+                                      icon_size));
   bar_->SetBoundsRect(rect);
+}
+
+void LauncherButton::ChildPreferredSizeChanged(views::View* child) {
+  Layout();
 }
 
 void LauncherButton::OnFocus() {
@@ -330,17 +339,9 @@ void LauncherButton::OnBlur() {
 void LauncherButton::Init() {
   icon_view_ = CreateIconView();
 
-  gfx::Insets icon_shadow_padding = -gfx::ShadowValue::GetMargin(icon_shadows_);
-  const int horiz_padding = std::max(icon_shadow_padding.left(),
-                                     icon_shadow_padding.right());
-  const int vert_padding = std::max(icon_shadow_padding.top(),
-                                    icon_shadow_padding.bottom());
-
   // TODO: refactor the layers so each button doesn't require 2.
   icon_view_->SetPaintToLayer(true);
   icon_view_->SetFillsBoundsOpaquely(false);
-  icon_view_->SetSize(gfx::Size(kIconSize + horiz_padding,
-                                kIconSize + vert_padding));
   icon_view_->SetHorizontalAlignment(views::ImageView::CENTER);
   icon_view_->SetVerticalAlignment(views::ImageView::CENTER);
 

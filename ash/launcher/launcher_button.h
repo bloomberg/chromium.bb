@@ -88,6 +88,7 @@ class LauncherButton : public views::CustomButton {
       OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual void Layout() OVERRIDE;
+  virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
 
