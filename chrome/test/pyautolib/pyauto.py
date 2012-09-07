@@ -4723,10 +4723,12 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         'password': password,
     }
     self._GetResultFromJSONRequest(cmd_dict, windex=None)
+    self.AddDomEventObserver('loginfail', automation_id=4444)
     try:
       # TODO(craigdh): Add login failure events once PyAuto switches to mocked
       # GAIA authentication.
-      self.GetNextEvent()
+      if self.GetNextEvent().get('name') == 'loginfail':
+        raise JSONInterfaceError('Login denied by auth server.')
     except JSONInterfaceError as e:
       raise JSONInterfaceError('Login failed. Perhaps Chrome crashed, '
                                'failed to start, or the login flow is '
