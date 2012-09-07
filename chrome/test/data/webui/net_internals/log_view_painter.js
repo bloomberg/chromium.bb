@@ -62,16 +62,19 @@ TEST_F('NetInternalsTest', 'netInternalsLogViewPainterStripInfo', function() {
     // Position within params.headers where the authentication information goes.
     for (var position = 0; position < 3; ++position) {
       var entry = {
-          'params': {
-              'headers': [
-                  'Host: clients1.google.com',
-                  'Connection: keep-alive',
-                  'User-Agent: Mozilla/5.0'],
-              'line': 'GET / HTTP/1.1\r\n'},
-          'phase': 0,
-          'source': {'id': 329, 'type': 1},
-          'time': '22468349',
-          'type': 104};
+        'params': {
+          'headers': [
+            'Host: clients1.google.com',
+            'Connection: keep-alive',
+            'User-Agent: Mozilla/5.0'
+          ],
+          'line': 'GET / HTTP/1.1\r\n'
+        },
+        'phase': EventPhase.PHASE_BEGIN,
+        'source': {'id': 329, 'type': EventSourceType.URL_REQUEST},
+        'time': '22468349',
+        'type': EventSourceType.URL_REQUEST
+      };
 
       entry.params.headers[position] = expectation[0];
       var stripped = stripCookiesAndLoginInfo(entry);
@@ -79,12 +82,34 @@ TEST_F('NetInternalsTest', 'netInternalsLogViewPainterStripInfo', function() {
       // information.
       expectNotEquals(stripped, entry);
       if (expectation[1] == null) {
-        expectEquals(stripped.params.headers[position], expectation[0]);
+        expectEquals(expectation[0], stripped.params.headers[position]);
       } else {
-        expectEquals(stripped.params.headers[position], expectation[1]);
+        expectEquals(expectation[1], stripped.params.headers[position]);
       }
     }
   }
+
+  // Test with SPDY request headers, which use an object rather than an array.
+  var spdyRequestHeadersEntry = {
+    'params': {
+      'headers': {
+        ':host': 'clients1.google.com',
+        ':method': 'GET',
+        ':path': '/cute/cat/pictures/',
+        'cookie': 'blah'
+       },
+      'line': 'GET / HTTP/1.1\r\n'
+    },
+    'phase': EventPhase.PHASE_BEGIN,
+    'source': {'id': 329, 'type': EventSourceType.URL_REQUEST},
+    'time': '22468349',
+    'type': EventSourceType.HTTP_TRANSACTION_SPDY_SEND_REQUEST_HEADERS
+  };
+  var strippedSpdyRequestHeadersEntry =
+      stripCookiesAndLoginInfo(spdyRequestHeadersEntry);
+  expectEquals('cookie: [value was stripped]',
+               strippedSpdyRequestHeadersEntry.params.headers[3]);
+
   testDone();
 });
 
@@ -123,6 +148,8 @@ TEST_F('NetInternalsTest', 'netInternalsLogViewPainterPrintAsText', function() {
   runTestCase(painterTestStripCookiesURLRequest());
   runTestCase(painterTestDontStripCookiesSPDYSession());
   runTestCase(painterTestStripCookiesSPDYSession());
+  runTestCase(painterTestSpdyURLRequestDontStripCookies());
+  runTestCase(painterTestSpdyURLRequestStripCookies());
   runTestCase(painterTestExtraCustomParameter());
   runTestCase(painterTestMissingCustomParameter());
   runTestCase(painterTestSSLVersionFallback());
@@ -1471,6 +1498,56 @@ function painterTestStripCookiesSPDYSession() {
   testCase.privacyStripping = true;
   testCase.expectedText =
       testCase.expectedText.replace(/MyLittlePony/g, '[value was stripped]');
+  return testCase;
+}
+
+/**
+ * Tests that cookies are NOT stripped from SPDY URL request headers when
+ * stripping is not enabled. The difference from the above requests is that SPDY
+ * URL request headers use dictionaries rather than lists.
+ */
+function painterTestSpdyURLRequestDontStripCookies() {
+  var testCase = {};
+  testCase.tickOffset = '1337911098481';
+
+  testCase.logEntries = [
+    {
+      'params': {
+          'headers': {
+            ':host': 'www.google.com',
+            ':method': 'GET',
+            ':path': '/',
+            ':scheme': 'https',
+            ':version': 'HTTP/1.1',
+            'cookie': 'MyMagicPony'},
+      },
+      'phase': EventPhase.PHASE_NONE,
+      'source': {'id': 329, 'type': EventSourceType.URL_REQUEST},
+      'time': '954124663',
+      'type': EventType.HTTP_TRANSACTION_SPDY_SEND_REQUEST_HEADERS
+    }
+  ];
+
+  testCase.expectedText =
+'t=1338865223144 [st=0]  HTTP_TRANSACTION_SPDY_SEND_REQUEST_HEADERS\n' +
+'                        --> :host: www.google.com\n' +
+'                            :method: GET\n' +
+'                            :path: /\n' +
+'                            :scheme: https\n' +
+'                            :version: HTTP/1.1\n' +
+'                            cookie: MyMagicPony';
+  return testCase;
+}
+
+/**
+ * Tests that cookies are NOT stripped from SPDY URL request headers when
+ * stripping is not enabled. The difference from the above requests is that
+ */
+function painterTestSpdyURLRequestStripCookies() {
+  var testCase = painterTestSpdyURLRequestDontStripCookies();
+  testCase.privacyStripping = true;
+  testCase.expectedText =
+      testCase.expectedText.replace(/MyMagicPony/g, '[value was stripped]');
   return testCase;
 }
 
