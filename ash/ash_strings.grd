@@ -274,6 +274,9 @@ Press Ctrl+Alt+Z to cancel.
       <message name="IDS_ASH_STATUS_TRAY_OTHER_WIFI" desc="The label used for the item to display other Wi-Fi networks.">
         Join other...
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_TURN_ON_WIFI" desc="The label used for the item to turn on Wi-Fi networks.">
+        Turn WiFi on...
+      </message>      
       <message name="IDS_ASH_STATUS_TRAY_ENABLE_MOBILE" desc="The label used for the item to enable cellular networks.">
         Enable mobile data
       </message>

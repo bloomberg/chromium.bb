@@ -222,6 +222,7 @@ class NetworkListDetailedView : public NetworkDetailedView,
         view_mobile_account_(NULL),
         setup_mobile_account_(NULL),
         other_wifi_(NULL),
+        turn_on_wifi_(NULL),
         other_mobile_(NULL),
         settings_(NULL),
         proxy_settings_(NULL),
@@ -247,6 +248,7 @@ class NetworkListDetailedView : public NetworkDetailedView,
     view_mobile_account_ = NULL;
     setup_mobile_account_ = NULL;
     other_wifi_ = NULL;
+    turn_on_wifi_ = NULL;
     other_mobile_ = NULL;
     settings_ = NULL;
     proxy_settings_ = NULL;
@@ -265,6 +267,7 @@ class NetworkListDetailedView : public NetworkDetailedView,
   }
 
   virtual void Update() OVERRIDE {
+    UpdateAvailableNetworkList();
     UpdateHeaderButtons();
     UpdateNetworkEntries();
     UpdateNetworkExtra();
@@ -342,28 +345,31 @@ class NetworkListDetailedView : public NetworkDetailedView,
     setup_mobile_account_ = container;
   }
 
-  void UpdateNetworkEntries() {
-    SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
-    std::vector<NetworkIconInfo> list;
-    delegate->GetAvailableNetworks(&list);
+  void UpdateAvailableNetworkList() {
+    network_list_.clear();
+    Shell::GetInstance()->tray_delegate()->GetAvailableNetworks(&network_list_);
+  }
 
+  void RefreshNetworkScrollWithUpdatedNetworkList() {
     network_map_.clear();
     std::set<std::string> new_service_paths;
 
     bool needs_relayout = false;
     views::View* highlighted_view = NULL;
 
-    for (size_t i = 0; i < list.size(); ++i) {
+    for (size_t i = 0; i < network_list_.size(); ++i) {
       std::map<std::string, HoverHighlightView*>::const_iterator it =
-          service_path_map_.find(list[i].service_path);
+          service_path_map_.find(network_list_[i].service_path);
       HoverHighlightView* container = NULL;
       if (it == service_path_map_.end()) {
         // Create a new view.
         container = new HoverHighlightView(this);
         container->set_fixed_height(kTrayPopupItemHeight);
-        container->AddIconAndLabel(list[i].image,
-            list[i].description.empty() ? list[i].name : list[i].description,
-            list[i].highlight ? gfx::Font::BOLD : gfx::Font::NORMAL);
+        container->AddIconAndLabel(network_list_[i].image,
+            network_list_[i].description.empty() ?
+                network_list_[i].name : network_list_[i].description,
+            network_list_[i].highlight ?
+                gfx::Font::BOLD : gfx::Font::NORMAL);
         scroll_content()->AddChildViewAt(container, i);
         container->set_border(views::Border::CreateEmptyBorder(0,
             kTrayPopupDetailsIconWidth, 0, 0));
@@ -371,9 +377,10 @@ class NetworkListDetailedView : public NetworkDetailedView,
       } else {
         container = it->second;
         container->RemoveAllChildViews(true);
-        container->AddIconAndLabel(list[i].image,
-            list[i].description.empty() ? list[i].name : list[i].description,
-            list[i].highlight ? gfx::Font::BOLD : gfx::Font::NORMAL);
+        container->AddIconAndLabel(network_list_[i].image,
+            network_list_[i].description.empty() ?
+                network_list_[i].name : network_list_[i].description,
+            network_list_[i].highlight ? gfx::Font::BOLD : gfx::Font::NORMAL);
         container->Layout();
         container->SchedulePaint();
 
@@ -385,11 +392,11 @@ class NetworkListDetailedView : public NetworkDetailedView,
         }
       }
 
-      if (list[i].highlight)
+      if (network_list_[i].highlight)
         highlighted_view = container;
-      network_map_[container] = list[i].service_path;
-      service_path_map_[list[i].service_path] = container;
-      new_service_paths.insert(list[i].service_path);
+      network_map_[container] = network_list_[i].service_path;
+      service_path_map_[network_list_[i].service_path] = container;
+      new_service_paths.insert(network_list_[i].service_path);
     }
 
     std::set<std::string> remove_service_paths;
@@ -414,6 +421,39 @@ class NetworkListDetailedView : public NetworkDetailedView,
       if (highlighted_view)
         scroll_content()->ScrollRectToVisible(highlighted_view->bounds());
     }
+  }
+
+  void RefreshNetworkScrollWithEmptyNetworkList() {
+    scroll_content()->RemoveAllChildViews(true);
+    HoverHighlightView* container = new HoverHighlightView(this);
+    container->set_fixed_height(kTrayPopupItemHeight);
+
+    if (Shell::GetInstance()->tray_delegate()->GetWifiEnabled()) {
+      NetworkIconInfo info;
+      Shell::GetInstance()->tray_delegate()->
+          GetMostRelevantNetworkIcon(&info, true);
+      container->AddIconAndLabel(info.image,
+          info.description,
+          gfx::Font::NORMAL);
+    } else {
+      container->AddLabel(ui::ResourceBundle::GetSharedInstance().
+          GetLocalizedString(IDS_ASH_STATUS_TRAY_NETWORK_WIFI_DISABLED),
+          gfx::Font::NORMAL);
+      AddChildView(container);
+    }
+
+    container->set_border(views::Border::CreateEmptyBorder(0,
+        kTrayPopupDetailsIconWidth, 0, 0));
+    scroll_content()->AddChildViewAt(container, 0);
+    scroll_content()->SizeToPreferredSize();
+    static_cast<views::View*>(scroller())->Layout();
+  }
+
+  void UpdateNetworkEntries() {
+    if (network_list_.size() > 0 )
+      RefreshNetworkScrollWithUpdatedNetworkList();
+    else
+      RefreshNetworkScrollWithEmptyNetworkList();
 
     view_mobile_account_->SetVisible(false);
     setup_mobile_account_->SetVisible(false);
@@ -422,9 +462,10 @@ class NetworkListDetailedView : public NetworkDetailedView,
       return;
 
     std::string carrier_id, topup_url, setup_url;
-    if (delegate->GetCellularCarrierInfo(&carrier_id,
-                                         &topup_url,
-                                         &setup_url)) {
+    if (Shell::GetInstance()->tray_delegate()->
+            GetCellularCarrierInfo(&carrier_id,
+                                   &topup_url,
+                                   &setup_url)) {
       if (carrier_id != carrier_id_) {
         carrier_id_ = carrier_id;
         if (!topup_url.empty())
@@ -454,6 +495,10 @@ class NetworkListDetailedView : public NetworkDetailedView,
         rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_OTHER_WIFI));
     bottom_row->AddTextButton(other_wifi_);
 
+    turn_on_wifi_ = new TrayPopupTextButton(this,
+        rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_TURN_ON_WIFI));
+    bottom_row->AddTextButton(turn_on_wifi_);
+
     other_mobile_ = new TrayPopupTextButton(this,
         rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_OTHER_MOBILE));
     bottom_row->AddTextButton(other_mobile_);
@@ -470,11 +515,20 @@ class NetworkListDetailedView : public NetworkDetailedView,
       return;
 
     SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
-    other_wifi_->SetEnabled(delegate->GetWifiEnabled());
+    if (network_list_.size() == 0 && !delegate->GetWifiEnabled()) {
+      turn_on_wifi_->SetVisible(true);
+      other_wifi_->SetVisible(false);
+    } else {
+      turn_on_wifi_->SetVisible(false);
+      other_wifi_->SetVisible(true);
+      other_wifi_->SetEnabled(delegate->GetWifiEnabled());
+    }
     other_mobile_->SetVisible(delegate->GetMobileAvailable() &&
                               delegate->GetMobileScanSupported());
     if (other_mobile_->visible())
       other_mobile_->SetEnabled(delegate->GetMobileEnabled());
+
+    turn_on_wifi_->parent()->Layout();
   }
 
   void AppendAirplaneModeEntry() {
@@ -582,6 +636,8 @@ class NetworkListDetailedView : public NetworkDetailedView,
       delegate->ShowOtherCellular();
     else if (sender == other_wifi_)
       delegate->ShowOtherWifi();
+    else if (sender == turn_on_wifi_)
+      delegate->ToggleWifi();
     else
       NOTREACHED();
   }
@@ -625,6 +681,7 @@ class NetworkListDetailedView : public NetworkDetailedView,
   user::LoginStatus login_;
   std::map<views::View*, std::string> network_map_;
   std::map<std::string, HoverHighlightView*> service_path_map_;
+  std::vector<NetworkIconInfo> network_list_;
   views::View* airplane_;
   TrayPopupHeaderButton* info_icon_;
   TrayPopupHeaderButton* button_wifi_;
@@ -632,6 +689,7 @@ class NetworkListDetailedView : public NetworkDetailedView,
   views::View* view_mobile_account_;
   views::View* setup_mobile_account_;
   TrayPopupTextButton* other_wifi_;
+  TrayPopupTextButton* turn_on_wifi_;
   TrayPopupTextButton* other_mobile_;
   TrayPopupTextButton* settings_;
   TrayPopupTextButton* proxy_settings_;
