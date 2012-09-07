@@ -98,9 +98,10 @@ void VersionUpdaterCros::UpdateStatusChanged(
   switch (operation_to_show) {
     case UpdateEngineClient::UPDATE_STATUS_ERROR:
     case UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT:
-      my_status = FAILED;
-      // TODO(derat): More-detailed error info if UpdateEngineClient exposes it.
-      message = l10n_util::GetStringFUTF16Int(IDS_UPGRADE_ERROR, 0);
+      // This path previously used the FAILED status and IDS_UPGRADE_ERROR, but
+      // the update engine reports errors for some conditions that shouldn't
+      // actually be displayed as errors to users: http://crbug.com/146919.
+      // Just use the UPDATED status instead.
       break;
     case UpdateEngineClient::UPDATE_STATUS_CHECKING_FOR_UPDATE:
       my_status = CHECKING;
