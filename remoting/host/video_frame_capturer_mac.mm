@@ -13,9 +13,11 @@
 #include <stddef.h>
 
 #include "base/logging.h"
+#include "base/file_path.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/scoped_native_library.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time.h"
 #include "remoting/base/capture_data.h"
@@ -27,6 +29,17 @@
 namespace remoting {
 
 namespace {
+
+// Definitions used to dynamic-link to deprecated OS 10.6 functions.
+const char* kApplicationServicesLibraryName =
+    "/System/Library/Frameworks/ApplicationServices.framework/"
+    "ApplicationServices";
+typedef void* (*CGDisplayBaseAddressFunc)(CGDirectDisplayID);
+typedef size_t (*CGDisplayBytesPerRowFunc)(CGDirectDisplayID);
+typedef size_t (*CGDisplayBitsPerPixelFunc)(CGDirectDisplayID);
+const char* kOpenGlLibraryName =
+    "/System/Library/Frameworks/OpenGL.framework/OpenGL";
+typedef CGLError (*CGLSetFullScreenFunc)(CGLContextObj);
 
 // skia/ext/skia_utils_mac.h only defines CGRectToSkRect().
 SkIRect CGRectToSkIRect(const CGRect& rect) {
@@ -182,6 +195,14 @@ class VideoFrameCapturerMac : public VideoFrameCapturer {
   // Power management assertion to indicate that the user is active.
   IOPMAssertionID power_assertion_id_user_;
 
+  // Dynamically link to deprecated APIs for Mac OS X 10.6 support.
+  base::ScopedNativeLibrary app_services_library_;
+  CGDisplayBaseAddressFunc cg_display_base_address_;
+  CGDisplayBytesPerRowFunc cg_display_bytes_per_row_;
+  CGDisplayBitsPerPixelFunc cg_display_bits_per_pixel_;
+  base::ScopedNativeLibrary opengl_library_;
+  CGLSetFullScreenFunc cgl_set_full_screen_;
+
   DISALLOW_COPY_AND_ASSIGN(VideoFrameCapturerMac);
 };
 
@@ -192,7 +213,12 @@ VideoFrameCapturerMac::VideoFrameCapturerMac()
       pixel_format_(media::VideoFrame::RGB32),
       display_configuration_capture_event_(false, true),
       power_assertion_id_display_(kIOPMNullAssertionID),
-      power_assertion_id_user_(kIOPMNullAssertionID) {
+      power_assertion_id_user_(kIOPMNullAssertionID),
+      cg_display_base_address_(NULL),
+      cg_display_bytes_per_row_(NULL),
+      cg_display_bits_per_pixel_(NULL),
+      cgl_set_full_screen_(NULL)
+{
 }
 
 VideoFrameCapturerMac::~VideoFrameCapturerMac() {
@@ -519,14 +545,16 @@ void VideoFrameCapturerMac::CgBlitPreLion(const VideoFrameBuffer& buffer,
   last_buffer_ = buffer.ptr();
 
   for (unsigned int d = 0; d < display_ids_.size(); ++d) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    // Use deprecated APIs to determine the display buffer layout.
+    DCHECK(cg_display_base_address_ && cg_display_bytes_per_row_ &&
+        cg_display_bits_per_pixel_);
     uint8* display_base_address =
-        reinterpret_cast<uint8*>(CGDisplayBaseAddress(display_ids_[d]));
+      reinterpret_cast<uint8*>((*cg_display_base_address_)(display_ids_[d]));
     CHECK(display_base_address);
-    int src_bytes_per_row = CGDisplayBytesPerRow(display_ids_[d]);
-    int src_bytes_per_pixel = CGDisplayBitsPerPixel(display_ids_[d]) / 8;
-#pragma clang diagnostic pop
+    int src_bytes_per_row = (*cg_display_bytes_per_row_)(display_ids_[d]);
+    int src_bytes_per_pixel =
+        (*cg_display_bits_per_pixel_)(display_ids_[d]) / 8;
+
     // Determine the position of the display in the buffer.
     SkIRect display_bounds = CGRectToSkIRect(CGDisplayBounds(display_ids_[d]));
     display_bounds.offset(-desktop_bounds_.left(), -desktop_bounds_.top());
@@ -647,11 +675,39 @@ void VideoFrameCapturerMac::ScreenConfigurationChanged() {
   helper_.InvalidateScreen(SkISize::Make(desktop_bounds_.width(),
                                          desktop_bounds_.height()));
 
+  // CgBlitPostLion uses CGDisplayCreateImage() to snapshot each display's
+  // contents. Although the API exists in OS 10.6, it crashes the caller if
+  // the machine has no monitor connected, so we fall back to depcreated APIs
+  // when running on 10.6.
   if (base::mac::IsOSLionOrLater()) {
     LOG(INFO) << "Using CgBlitPostLion.";
     // No need for any OpenGL support on Lion
     return;
   }
+
+  // Dynamically link to the deprecated pre-Lion capture APIs.
+  std::string app_services_library_error;
+  FilePath app_services_path(kApplicationServicesLibraryName);
+  app_services_library_.Reset(
+      base::LoadNativeLibrary(app_services_path, &app_services_library_error));
+  CHECK(app_services_library_.is_valid()) << app_services_library_error;
+
+  std::string opengl_library_error;
+  FilePath opengl_path(kOpenGlLibraryName);
+  opengl_library_.Reset(
+      base::LoadNativeLibrary(opengl_path, &opengl_library_error));
+  CHECK(opengl_library_.is_valid()) << opengl_library_error;
+
+  cg_display_base_address_ = reinterpret_cast<CGDisplayBaseAddressFunc>(
+      app_services_library_.GetFunctionPointer("CGDisplayBaseAddress"));
+  cg_display_bytes_per_row_ = reinterpret_cast<CGDisplayBytesPerRowFunc>(
+      app_services_library_.GetFunctionPointer("CGDisplayBytesPerRow"));
+  cg_display_bits_per_pixel_ = reinterpret_cast<CGDisplayBitsPerPixelFunc>(
+      app_services_library_.GetFunctionPointer("CGDisplayBitsPerPixel"));
+  cgl_set_full_screen_ = reinterpret_cast<CGLSetFullScreenFunc>(
+      opengl_library_.GetFunctionPointer("CGLSetFullScreen"));
+  CHECK(cg_display_base_address_ && cg_display_bytes_per_row_ &&
+        cg_display_bits_per_pixel_ && cgl_set_full_screen_);
 
   if (display_ids_.size() > 1) {
     LOG(INFO) << "Using CgBlitPreLion (Multi-monitor).";
@@ -681,15 +737,7 @@ void VideoFrameCapturerMac::ScreenConfigurationChanged() {
   err = CGLCreateContext(pixel_format, NULL, &cgl_context_);
   DCHECK_EQ(err, kCGLNoError);
   CGLDestroyPixelFormat(pixel_format);
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-  // TODO(jamiewalch): The non-deprecated equivalent code is shown below, but
-  //                   it causes 10.6 Macs' displays to go black. Find out why.
-  //
-  //   CGLSetFullScreenOnDisplay(cgl_context_,
-  //                             CGDisplayIDToOpenGLDisplayMask(mainDevice));
-  CGLSetFullScreen(cgl_context_);
-#pragma clang diagnostic pop
+  (*cgl_set_full_screen_)(cgl_context_);
   CGLSetCurrentContext(cgl_context_);
 
   size_t buffer_size = desktop_bounds_.width() * desktop_bounds_.height() *
