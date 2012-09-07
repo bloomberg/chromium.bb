@@ -10,6 +10,9 @@ AppEngine uses Python 2.5.  To install Python 2.5 locally on a Goobuntu machine:
 %> tar -xvzf Python-2.5.6.tgz
 %> cd Python-2.5.6
 %> ./configure --prefix=/usr/local/python2.5
+If on GPrecise, do this step:
+  %> vi Makefile
+  s|LDFLAGS=|LDFLAGS = -L/usr/lib/x86_64-linux-gnu|
 %> make
 %> make test
 %> sudo make install
