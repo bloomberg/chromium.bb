@@ -109,13 +109,6 @@ std::string DriveEntry::EscapeUtf8FileName(const std::string& input) {
   return input;
 }
 
-// static
-std::string DriveEntry::UnescapeUtf8FileName(const std::string& input) {
-  std::string output = input;
-  ReplaceSubstringsAfterOffset(&output, 0, std::string(kEscapedSlash), kSlash);
-  return output;
-}
-
 // DriveFile class implementation.
 
 DriveFile::DriveFile(DriveResourceMetadata* resource_metadata)
