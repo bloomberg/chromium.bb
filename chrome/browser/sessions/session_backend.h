@@ -121,9 +121,6 @@ class SessionBackend : public base::RefCountedThreadSafe<SessionBackend> {
   // Returns the path to the current file.
   FilePath GetCurrentSessionPath();
 
-  // Writes data about session restore file cycling into preferences.
-  void WriteDebugData();
-
   // Directory files are relative to.
   const FilePath path_to_dir_;
 

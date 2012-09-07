@@ -1824,9 +1824,6 @@ const char kTabStripLayoutType[] = "tab_strip_layout_type";
 // If true, cloud policy for the user is loaded once the user signs in.
 const char kLoadCloudPolicyOnSignin[] = "policy.load_cloud_policy_on_signin";
 
-// Debug information for SessionBackend.
-const char kSessionRestoreFilesCycled[] = "session_restore.files_cycled";
-
 // *************** SERVICE PREFS ***************
 // These are attached to the service process.
 

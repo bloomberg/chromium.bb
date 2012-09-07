@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/path_service.h"
-#include "base/run_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
@@ -96,11 +95,6 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
   void ReadWindows(std::vector<SessionWindow*>* windows) {
     // Forces closing the file.
     helper_.set_service(NULL);
-
-    // SessionBackend posts delayed tasks and might stay alive a bit longer than
-    // SessionService. Make sure the tasks run and the backend is destroyed.
-    base::RunLoop loop;
-    loop.RunUntilIdle();
 
     SessionService* session_service = new SessionService(path_);
     helper_.set_service(session_service);

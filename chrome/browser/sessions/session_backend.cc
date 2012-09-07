@@ -6,18 +6,10 @@
 
 #include <limits>
 
-#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram.h"
-#include "base/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/prefs/scoped_user_pref_update.h"
-#include "chrome/common/pref_names.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 
@@ -275,15 +267,9 @@ void SessionBackend::DeleteLastSession() {
 void SessionBackend::MoveCurrentSessionToLastSession() {
   Init();
   current_session_file_.reset(NULL);
+
   const FilePath current_session_path = GetCurrentSessionPath();
   const FilePath last_session_path = GetLastSessionPath();
-  if (type_ == BaseSessionService::SESSION_RESTORE) {
-    // TODO(marja): This is only for debugging session restore failures; remove
-    // when debugging is done.
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&SessionBackend::WriteDebugData, this));
-  }
   if (file_util::PathExists(last_session_path))
     file_util::Delete(last_session_path, false);
   if (file_util::PathExists(current_session_path)) {
@@ -418,29 +404,4 @@ FilePath SessionBackend::GetCurrentSessionPath() {
   else
     path = path.AppendASCII(kCurrentSessionFileName);
   return path;
-}
-
-void SessionBackend::WriteDebugData() {
-  PrefService* prefs = g_browser_process->local_state();
-  if (!prefs)
-    return;
-  ListPrefUpdate update(prefs, prefs::kSessionRestoreFilesCycled);
-  ListValue* list = update.Get();
-  while (list->GetSize() > 10)
-    list->Remove(0, NULL);
-  char time_string[32];
-  time_t now = base::Time::Now().ToTimeT();
-  strftime(time_string, 32, "%d.%m.%Y %H:%M:%S", localtime(&now));
-  list->Append(new StringValue(
-#if defined(OS_POSIX)
-      base::IntToString(getpid()) + " " +
-#endif
-      std::string(time_string) + " " +
-#if defined(OS_WIN)
-      WideToUTF8(path_to_dir_.BaseName().value()) + " " +
-      WideToUTF8(CommandLine::ForCurrentProcess()->GetCommandLineString())));
-#else
-      path_to_dir_.BaseName().value() + " " +
-      CommandLine::ForCurrentProcess()->GetCommandLineString()));
-#endif
 }
