@@ -30,8 +30,18 @@ namespace extensions {
 // extension icon should host this class and be its observer. ExtensionIconImage
 // should be outlived by the observer. In painting code, UI code paints with the
 // ImageSkia provided by this class. If required extension icon resource is not
-// present, this class uses ImageLoadingTracker to load it and call on its
-// observer interface when the resource is loaded.
+// already present, this class tries to load it and calls its observer interface
+// when the image get updated. Until the resource is loaded, the UI code will be
+// provided with blank, transparent image.
+// If the requested resource doesn't exist or can't be loaded and a default
+// icon was supplied in the constructor, icon image will be updated with the
+// default icon's resource.
+// The default icon doesn't need to be supplied, but in that case, icon image
+// representation will be left blank if the resource loading fails.
+// If default icon is supplied, it is assumed that it contains or can
+// synchronously create (when |GetRepresentation| is called on it)
+// representations for all the scale factors supported by the current platform.
+// Note that |IconImage| is not thread safe.
 class IconImage : public ImageLoadingTracker::Observer,
                   public content::NotificationObserver {
  public:
@@ -41,10 +51,6 @@ class IconImage : public ImageLoadingTracker::Observer,
     // is loaded and added to |image|.
     virtual void OnExtensionIconImageChanged(IconImage* image) = 0;
 
-    // Invoked when the icon image couldn't be loaded.
-    virtual void OnIconImageLoadFailed(IconImage* image,
-                                       ui::ScaleFactor scale_factor) = 0;
-
    protected:
     virtual ~Observer() {}
   };
@@ -52,6 +58,7 @@ class IconImage : public ImageLoadingTracker::Observer,
   IconImage(const Extension* extension,
             const ExtensionIconSet& icon_set,
             int resource_size_in_dip,
+            const gfx::ImageSkia& default_icon,
             Observer* observer);
   virtual ~IconImage();
 
@@ -60,10 +67,20 @@ class IconImage : public ImageLoadingTracker::Observer,
  private:
   class Source;
 
-  typedef std::map<int, ui::ScaleFactor> LoadMap;
+  struct LoadRequest {
+    ui::ScaleFactor scale_factor;
+    bool is_async;
+  };
 
-  // Loads bitmap for additional scale factor.
-  void LoadImageForScaleFactor(ui::ScaleFactor scale_factor);
+  typedef std::map<int, LoadRequest> LoadMap;
+
+  // Loads an image representation for the scale factor.
+  // If the representation gets loaded synchronously, it is returned by this
+  // method.
+  // If representation loading is asynchronous, an empty image
+  // representation is returned. When the representation gets loaded the
+  // observer's |OnExtensionIconImageLoaded| will be called.
+  gfx::ImageSkiaRep LoadImageForScaleFactor(ui::ScaleFactor scale_factor);
 
   // ImageLoadingTracker::Observer overrides:
   virtual void OnImageLoaded(const gfx::Image& image,
@@ -78,12 +95,14 @@ class IconImage : public ImageLoadingTracker::Observer,
   const Extension* extension_;
   const ExtensionIconSet& icon_set_;
   const int resource_size_in_dip_;
-  const gfx::Size desired_size_in_dip_;
 
   Observer* observer_;
 
   Source* source_;  // Owned by ImageSkia storage.
   gfx::ImageSkia image_skia_;
+  // The icon with whose representation |image_skia_| should be updated if
+  // its own representation load fails.
+  gfx::ImageSkia default_icon_;
 
   ImageLoadingTracker tracker_;
   content::NotificationRegistrar registrar_;
