@@ -6,16 +6,14 @@
 #define CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_UPLOADER_H_
 
 #include <map>
-#include <set>
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
 #include "chrome/browser/chromeos/gdata/drive_upload_file_info.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
-#include "chrome/browser/chromeos/gdata/gdata_operations.h"
-#include "googleurl/src/gurl.h"
+
+class GURL;
 
 namespace content {
 class DownloadItem;
@@ -24,6 +22,7 @@ class DownloadItem;
 namespace gdata {
 
 class DriveServiceInterface;
+struct ResumeUploadResponse;
 
 class DriveUploaderInterface {
  public:

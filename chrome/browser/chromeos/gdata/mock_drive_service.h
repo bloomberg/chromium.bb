@@ -9,7 +9,6 @@
 
 #include <string>
 
-#include "base/platform_file.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "testing/gmock/include/gmock/gmock.h"

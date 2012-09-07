@@ -6,6 +6,7 @@
 
 #include <leveldb/db.h>
 
+#include "base/callback.h"
 #include "base/file_util.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"

@@ -9,17 +9,13 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
-#include "base/memory/ref_counted.h"
+#include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop_proxy.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/gdata/drive_cache.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_interface.h"
-#include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_source.h"
 
 class Profile;
 class PrefChangeRegistrar;

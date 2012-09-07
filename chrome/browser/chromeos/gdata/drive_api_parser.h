@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_API_PARSER_H_
 
 #include <string>
-#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"

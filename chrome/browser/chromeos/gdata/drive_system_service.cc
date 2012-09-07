@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/gdata/drive_system_service.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/gdata/drive_api_service.h"
 #include "chrome/browser/chromeos/gdata/drive_download_observer.h"

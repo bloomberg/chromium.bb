@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_GDATA_FILE_WRITE_HELPER_H_
 #define CHROME_BROWSER_CHROMEOS_GDATA_FILE_WRITE_HELPER_H_
 
-#include "base/bind.h"
-#include "base/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
+
+class FilePath;
 
 namespace gdata {
 

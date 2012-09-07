@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_UPLOAD_FILE_INFO_H_
 
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -14,11 +13,14 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 
 namespace content {
 class DownloadItem;
+}
+
+namespace net {
+class FileStream;
 }
 
 namespace gdata {

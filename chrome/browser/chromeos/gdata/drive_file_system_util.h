@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 #include "googleurl/src/gurl.h"

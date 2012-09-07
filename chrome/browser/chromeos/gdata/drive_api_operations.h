@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_API_OPERATIONS_H_
 
 #include <string>
-#include <vector>
 
 #include "chrome/browser/chromeos/gdata/operations_base.h"
 

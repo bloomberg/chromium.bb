@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_GDATA_MOCK_DRIVE_UPLOADER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/values.h"
-#include "chrome/browser/chromeos/gdata/drive_file_system.h"
 #include "chrome/browser/chromeos/gdata/drive_uploader.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

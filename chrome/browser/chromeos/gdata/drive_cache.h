@@ -5,16 +5,14 @@
 #ifndef CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_CACHE_H_
 #define CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_CACHE_H_
 
-#include <map>
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/platform_file.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 
 class Profile;

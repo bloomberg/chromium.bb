@@ -5,12 +5,19 @@
 #ifndef CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_FUNCTION_REMOVE_H_
 #define CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_FUNCTION_REMOVE_H_
 
-#include "base/file_path.h"
-#include "chrome/browser/chromeos/gdata/drive_file_system_interface.h"
+#include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/gdata/drive_resource_metadata.h"
+#include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
+
+class FilePath;
+class GURL;
 
 namespace gdata {
 
 class DriveCache;
+class DriveEntryProto;
 class DriveFileSystem;
 class DriveServiceInterface;
 

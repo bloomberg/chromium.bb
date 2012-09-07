@@ -4,9 +4,6 @@
 
 #include "chrome/browser/chromeos/gdata/drive_file_system.h"
 
-#include <set>
-#include <utility>
-
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/json/json_file_value_serializer.h"
@@ -16,16 +13,16 @@
 #include "base/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
+#include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/drive_api_parser.h"
 #include "chrome/browser/chromeos/gdata/drive_files.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_util.h"
 #include "chrome/browser/chromeos/gdata/drive_function_remove.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
-#include "chrome/browser/chromeos/gdata/drive_system_service.h"
 #include "chrome/browser/chromeos/gdata/drive_uploader.h"
-#include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
+#include "chrome/browser/chromeos/gdata/gdata_wapi_feed_processor.h"
 #include "chrome/browser/chromeos/gdata/task_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"

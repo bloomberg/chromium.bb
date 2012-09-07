@@ -9,7 +9,6 @@
 
 #include "base/observer_list.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/gdata/auth_service.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_operations.h"

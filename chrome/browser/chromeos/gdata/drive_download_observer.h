@@ -7,9 +7,8 @@
 
 #include <map>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"

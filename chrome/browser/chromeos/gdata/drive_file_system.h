@@ -5,36 +5,33 @@
 #ifndef CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_FILE_SYSTEM_H_
 #define CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_FILE_SYSTEM_H_
 
-#include <map>
-#include <set>
 #include <string>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/platform_file.h"
 #include "base/timer.h"
-#include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "chrome/browser/chromeos/gdata/drive_cache.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_interface.h"
-#include "chrome/browser/chromeos/gdata/drive_resource_metadata.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_feed_loader.h"
-#include "chrome/browser/chromeos/gdata/gdata_wapi_feed_processor.h"
 #include "content/public/browser/notification_observer.h"
 
+class PrefChangeRegistrar;
+
 namespace base {
+struct PlatformFileInfo;
 class SequencedTaskRunner;
 }
 
 namespace gdata {
 
 class DriveFunctionRemove;
+class DriveResourceMetadata;
 class DriveServiceInterface;
 class DriveUploaderInterface;
 class DriveWebAppsRegistryInterface;
-class GDataWapiFeedLoader;
 struct UploadFileInfo;
 
 // The production implementation of DriveFileSystemInterface.

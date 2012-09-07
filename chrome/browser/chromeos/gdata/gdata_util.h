@@ -6,13 +6,9 @@
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_UTIL_H_
 
 #include <string>
-#include <utility>
-#include <vector>
 
-#include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/callback_forward.h"
 #include "base/platform_file.h"
-#include "base/time.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 
 class FilePath;
@@ -20,6 +16,7 @@ class Profile;
 
 namespace base {
 class SequencedTaskRunner;
+class Time;
 }  // namespace base
 
 namespace tracked_objects {

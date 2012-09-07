@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/gdata/operations_base.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "google_apis/gaia/oauth2_access_token_fetcher.h"
 
 class Profile;
 

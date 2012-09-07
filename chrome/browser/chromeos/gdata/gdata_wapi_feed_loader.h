@@ -9,11 +9,12 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/file_path.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/gdata/drive_resource_metadata.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
-#include "googleurl/src/gurl.h"
+
+class FilePath;
+class GURL;
 
 namespace base {
 class Value;

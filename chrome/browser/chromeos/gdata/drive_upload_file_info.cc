@@ -6,6 +6,7 @@
 
 #include "base/string_number_conversions.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
+#include "net/base/file_stream.h"
 
 namespace gdata {
 

@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/file_path.h"
-#include "base/gtest_prod_util.h"
 #include "chrome/browser/chromeos/gdata/drive_cache.h"
 
 namespace gdata {
