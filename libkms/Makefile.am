@@ -6,7 +6,7 @@ AM_CFLAGS = \
 libkms_la_LTLIBRARIES = libkms.la
 libkms_ladir = $(libdir)
 libkms_la_LDFLAGS = -version-number 1:0:0 -no-undefined
-libkms_la_LIBADD =
+libkms_la_LIBADD = ../libdrm.la
 
 #if HAVE_LIBUDEV
 #libkms_la_LIBADD += $(LIBUDEV_LIBS)
