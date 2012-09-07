@@ -35,13 +35,6 @@
 
 class InstantTest : public InProcessBrowserTest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
-    // Do not prelaunch the GPU process because it will show up in the task
-    // manager, but whether it appears before or after the Instant tab is not
-    // well defined. This affects the TaskManagerPrefix test below.
-    command_line->AppendSwitch(switches::kDisableGpuProcessPrelaunch);
-  }
-
   void SetupInstant(const std::string& page) {
     ASSERT_TRUE(test_server()->Start());
 
