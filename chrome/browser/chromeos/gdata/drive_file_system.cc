@@ -1991,7 +1991,7 @@ void DriveFileSystem::UpdateFileByResourceIdOnUIThread(
 void DriveFileSystem::UpdateFileByEntryInfo(
     const FileOperationCallback& callback,
     DriveFileError error,
-    const FilePath& /* dive_file_path */,
+    const FilePath& drive_file_path,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -2007,18 +2007,22 @@ void DriveFileSystem::UpdateFileByEntryInfo(
     return;
   }
 
+  // Extract a pointer before we call Pass() so we can use it below.
+  DriveEntryProto* entry_proto_ptr = entry_proto.get();
   cache_->GetFileOnUIThread(
-      entry_proto->resource_id(),
-      entry_proto->file_specific_info().file_md5(),
+      entry_proto_ptr->resource_id(),
+      entry_proto_ptr->file_specific_info().file_md5(),
       base::Bind(&DriveFileSystem::OnGetFileCompleteForUpdateFile,
                  ui_weak_ptr_,
-                 entry_proto->resource_id(),
-                 callback));
+                 callback,
+                 drive_file_path,
+                 base::Passed(&entry_proto)));
 }
 
 void DriveFileSystem::OnGetFileCompleteForUpdateFile(
-    const std::string& resource_id,
     const FileOperationCallback& callback,
+    const FilePath& drive_file_path,
+    scoped_ptr<DriveEntryProto> entry_proto,
     DriveFileError error,
     const FilePath& cache_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -2043,7 +2047,8 @@ void DriveFileSystem::OnGetFileCompleteForUpdateFile(
       base::Bind(&DriveFileSystem::OnGetFileSizeCompleteForUpdateFile,
                  ui_weak_ptr_,
                  callback,
-                 resource_id,
+                 drive_file_path,
+                 base::Passed(&entry_proto),
                  cache_file_path,
                  base::Owned(get_size_error),
                  base::Owned(file_size)));
@@ -2051,47 +2056,19 @@ void DriveFileSystem::OnGetFileCompleteForUpdateFile(
 
 void DriveFileSystem::OnGetFileSizeCompleteForUpdateFile(
     const FileOperationCallback& callback,
-    const std::string& resource_id,
+    const FilePath& drive_file_path,
+    scoped_ptr<DriveEntryProto> entry_proto,
     const FilePath& cache_file_path,
     DriveFileError* error,
     int64* file_size) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+  // |entry_proto| has been checked in UpdateFileByEntryInfo().
+  DCHECK(entry_proto.get());
+  DCHECK(!entry_proto->file_info().is_directory());
 
   if (*error != DRIVE_FILE_OK) {
     callback.Run(*error);
-    return;
-  }
-
-  // TODO(satorux): GetEntryInfoByResourceId() is called twice for
-  // UpdateFileByResourceIdOnUIThread(). crbug.com/143873
-  resource_metadata_->GetEntryInfoByResourceId(
-      resource_id,
-      base::Bind(&DriveFileSystem::OnGetFileCompleteForUpdateFileByEntry,
-          ui_weak_ptr_,
-          callback,
-          *file_size,
-          cache_file_path));
-}
-
-void DriveFileSystem::OnGetFileCompleteForUpdateFileByEntry(
-    const FileOperationCallback& callback,
-    int64 file_size,
-    const FilePath& cache_file_path,
-    DriveFileError error,
-    const FilePath& drive_file_path,
-    scoped_ptr<DriveEntryProto> entry_proto) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (error != DRIVE_FILE_OK) {
-    callback.Run(error);
-    return;
-  }
-
-  DCHECK(entry_proto.get());
-  if (entry_proto->file_info().is_directory()) {
-    callback.Run(DRIVE_FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -2099,7 +2076,7 @@ void DriveFileSystem::OnGetFileCompleteForUpdateFileByEntry(
       GURL(entry_proto->upload_url()),
       drive_file_path,
       cache_file_path,
-      file_size,
+      *file_size,
       entry_proto->file_specific_info().content_mime_type(),
       base::Bind(&DriveFileSystem::OnUpdatedFileUploaded,
                  ui_weak_ptr_,
@@ -2996,7 +2973,7 @@ void DriveFileSystem::OnGetEntryInfoCompleteForOpenFile(
   }
 
   DCHECK(!entry_proto->resource_id().empty());
-  // Extract a pointer before we calling Pass() so we can use it below.
+  // Extract a pointer before we call Pass() so we can use it below.
   DriveEntryProto* entry_proto_ptr = entry_proto.get();
   GetResolvedFileByPath(
       file_path,

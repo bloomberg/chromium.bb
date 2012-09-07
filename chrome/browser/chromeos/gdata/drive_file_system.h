@@ -726,30 +726,22 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // Called when DriveCache::GetFileOnUIThread() is completed for
   // UpdateFileByResourceId().
   // |callback| must not be null.
-  void OnGetFileCompleteForUpdateFile(const std::string& resource_id,
-                                      const FileOperationCallback& callback,
+  void OnGetFileCompleteForUpdateFile(const FileOperationCallback& callback,
+                                      const FilePath& drive_file_path,
+                                      scoped_ptr<DriveEntryProto> entry_proto,
                                       DriveFileError error,
                                       const FilePath& cache_file_path);
 
   // Part of UpdateFileByResourceId().
   // Callback for getting the size of the cache file in the blocking pool.
   // |callback| must not be null.
-  void OnGetFileSizeCompleteForUpdateFile(const FileOperationCallback& callback,
-                                          const std::string& resource_id,
-                                          const FilePath& cache_file_path,
-                                          DriveFileError* error,
-                                          int64* file_size);
-
-  // Part of UpdateFileByResourceId().
-  // Callback for DriveRootDirectory::GetEntryInfoByResourceId.
-  // |callback| must not be null.
-  void OnGetFileCompleteForUpdateFileByEntry(
+  void OnGetFileSizeCompleteForUpdateFile(
       const FileOperationCallback& callback,
-      int64 file_size,
-      const FilePath& cache_file_path,
-      DriveFileError error,
       const FilePath& drive_file_path,
-      scoped_ptr<DriveEntryProto> entry_proto);
+      scoped_ptr<DriveEntryProto> entry_proto,
+      const FilePath& cache_file_path,
+      DriveFileError* error,
+      int64* file_size);
 
   // Part of UpdateFileByResourceId().
   // Called when DriveUploader::UploadUpdatedFile() is completed for
