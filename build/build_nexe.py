@@ -86,6 +86,7 @@ class Builder(object):
       self.arch = arch
       self.mainarch = 'arm'
       self.subarch = ''
+      tool_subdir  = toolname
       self.pnacl = True
     else:
       ErrOut('Toolchain architecture %s not supported.' % arch)
@@ -93,13 +94,13 @@ class Builder(object):
     if arch == 'arm' and toolname == 'glibc':
       ErrOut('arm/glibc not yet supported.')
 
-    if toolname == 'newlib':
-      toolchain = '%s_%s_newlib' % (self.osname, self.mainarch)
-      self.toolname = 'newlib'
-    elif toolname == 'glibc':
-      toolchain = '%s_%s' % (self.osname, self.mainarch)
-      self.toolname = 'glibc'
-    else:
+    if arch == 'arm':
+      self.toolname = '%s_x86_pnacl' % (self.osname)
+
+    if arch != 'arm':
+      self.toolname = '%s_x86_%s' % (self.osname, toolname)
+
+    if toolname not in ['newlib', 'glibc', 'pnacl']:
       ErrOut('Toolchain of type %s not supported.' % toolname)
 
     self.root_path = options.root
@@ -109,18 +110,14 @@ class Builder(object):
     self.outdir = options.objdir
 
     # Set the toolchain directories
+    self.toolchain = os.path.join(options.toolpath, self.toolname)
+    self.toolbin = os.path.join(self.toolchain, tool_subdir, 'bin')
+
     if self.pnacl:
-      pnacldir = 'pnacl_%s_x86_64' % self.osname
-      self.toolchain = self.GenNaClPath(os.path.join('toolchain',
-                                                     pnacldir,
-                                                     self.toolname))
-      self.toolbin = os.path.join(self.toolchain, 'bin')
-      self.toollib = os.path.join(self.toolchain, 'lib')
-      self.toolinc = os.path.join(self.toolchain, 'sysroot', 'include')
+      self.toollib = os.path.join(self.toolchain, tool_subdir,'lib')
+      self.toolinc = os.path.join(self.toolchain, tool_subdir, 'sysroot',
+                                  'include')
     else:
-      self.toolchain = self.GenNaClPath(os.path.join('toolchain',
-                                                     toolchain))
-      self.toolbin = os.path.join(self.toolchain, tool_subdir, 'bin')
       self.toollib = os.path.join(self.toolchain,
                                   tool_subdir,
                                   'lib' + self.subarch)
@@ -401,6 +398,8 @@ def Main(argv):
                     help='Set link flags.')
   parser.add_option('-v', '--verbose', dest='verbose', default=False,
                     help='Enable verbosity', action='store_true')
+  parser.add_option('-t', '--toolpath', dest='toolpath',
+                    help='Set the path for of the toolchains.')
   (options, files) = parser.parse_args(argv[1:])
 
   if not argv:

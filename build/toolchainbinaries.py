@@ -31,7 +31,7 @@ PLATFORM_MAPPING = {
                    'pnacl_translator'],
         'x86-64': ['linux_x86',
                    'linux_x86_newlib',
-                   'pnacl_linux_x86_64',
+                   'pnacl_linux_x86_32',
                    'linux_arm-trusted',
                    'pnacl_translator'],
         'arm'   : ['pnacl_translator'],

@@ -12,6 +12,9 @@
     {
       'target_name': 'prep_toolchain',
       'type': 'none',
+      'dependencies': [
+        'untar_toolchains',
+      ],
       'conditions': [
         ['target_arch=="ia32" or target_arch=="x64"', {
           'dependencies': [
@@ -22,6 +25,86 @@
           ],
         }],
       ],
+    },
+    {
+      'target_name': 'untar_toolchains',
+      'type': 'none',
+      'variables': {
+        'disable_glibc%': 0,
+        'disable_newlib%': 0,
+        'disable_pnacl%': 0,
+      },
+      'conditions': [
+        ['disable_newlib==0', {
+          'actions': [
+            {
+              'action_name': 'Untar newlib',
+              'msvs_cygwin_shell': 0,
+              'description': 'Untar newlib',
+              'inputs': [
+                 '<(DEPTH)/native_client/build/cygtar.py',
+                 '<(DEPTH)/native_client/toolchain/.tars/naclsdk_<(OS)_x86.tgz',
+              ],
+              'outputs': ['<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.untar'],
+              'action': [
+                '>(python_exe)',
+                '<(DEPTH)/native_client/build/untar_toolchain.py',
+                '--tool', 'newlib',
+                '--tmp', '<(SHARED_INTERMEDIATE_DIR)/untar',
+                '--sdk', '<(SHARED_INTERMEDIATE_DIR)/sdk',
+                '--os', '<(OS)',
+                '<(DEPTH)/native_client/toolchain/.tars/naclsdk_<(OS)_x86.tgz',
+              ],
+            },
+          ]
+        }],
+        ['disable_glibc==0', {
+          'actions': [
+            {
+              'action_name': 'Untar glibc',
+              'msvs_cygwin_shell': 0,
+              'description': 'Untar glibc',
+              'inputs': [
+                 '<(DEPTH)/native_client/build/cygtar.py',
+                 '<(DEPTH)/native_client/toolchain/.tars/toolchain_<(OS)_x86.tar.bz2',
+              ],
+              'outputs': ['<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/stamp.untar'],
+              'action': [
+                '>(python_exe)',
+                '<(DEPTH)/native_client/build/untar_toolchain.py',
+                '--tool', 'glibc',
+                '--tmp', '<(SHARED_INTERMEDIATE_DIR)/untar',
+                '--sdk', '<(SHARED_INTERMEDIATE_DIR)/sdk',
+                '--os', '<(OS)',
+                '<(DEPTH)/native_client/toolchain/.tars/toolchain_<(OS)_x86.tar.bz2',
+              ],
+            },
+          ]
+        }],
+        ['disable_pnacl==0', {
+          'actions': [
+            {
+              'action_name': 'Untar pnacl',
+              'msvs_cygwin_shell': 0,
+              'description': 'Untar pnacl',
+              'inputs': [
+                 '<(DEPTH)/native_client/build/cygtar.py',
+                 '<(DEPTH)/native_client/toolchain/.tars/naclsdk_pnacl_<(OS)_x86_32.tgz',
+              ],
+              'outputs': ['<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_pnacl/stamp.untar'],
+              'action': [
+                '>(python_exe)',
+                '<(DEPTH)/native_client/build/untar_toolchain.py',
+                '--tool', 'pnacl',
+                '--tmp', '<(SHARED_INTERMEDIATE_DIR)/untar',
+                '--sdk', '<(SHARED_INTERMEDIATE_DIR)/sdk',
+                '--os', '<(OS)',
+                '<(DEPTH)/native_client/toolchain/.tars/naclsdk_pnacl_<(OS)_x86_32.tgz',
+              ],
+            },
+          ]
+        }],
+      ]
     },
     {
       'target_name': 'copy_headers',
@@ -117,6 +200,7 @@
           'target_name': 'crt_init_64',
           'type': 'none',
           'dependencies': [
+            'untar_toolchains',
             'copy_headers'
           ],
           'variables': {
@@ -143,6 +227,7 @@
           'target_name': 'crt_fini_64',
           'type': 'none',
           'dependencies': [
+            'untar_toolchains',
             'copy_headers'
           ],
           'variables': {
@@ -173,6 +258,7 @@
           'target_name': 'crt_init_32',
           'type': 'none',
           'dependencies': [
+            'untar_toolchains',
             'copy_headers'
           ],
           'variables': {
@@ -199,6 +285,7 @@
           'target_name': 'crt_fini_32',
           'type': 'none',
           'dependencies': [
+            'untar_toolchains',
             'copy_headers'
           ],
           'variables': {

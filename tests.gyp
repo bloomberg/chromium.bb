@@ -21,7 +21,7 @@
           ],
           'variables': {
             'nexe_target': 'hello_world',
-            'build_glibc': 1,
+            'build_glibc': 0,
             'build_newlib': 1,
             'extra_args': [
               '--strip-debug',
@@ -53,7 +53,7 @@
             }],
             ['disable_glibc==0',{
               'variables': {
-                'tools': '--tools=newlib,glibc',
+                'tools': '--tools=newlib',
               },
             }, {
               'variables': {
