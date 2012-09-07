@@ -275,8 +275,8 @@ class ResourceLoaderBridge {
     SyncLoadResponse();
     ~SyncLoadResponse();
 
-    // The response status.
-    net::URLRequestStatus status;
+    // The response error code.
+    int error_code;
 
     // The final URL of the response.  This may differ from the request URL in
     // the case of a server redirect.
@@ -335,9 +335,10 @@ class ResourceLoaderBridge {
     virtual void OnReceivedCachedMetadata(const char* data, int len) { }
 
     // Called when the response is complete.  This method signals completion of
-    // the resource load.ff
+    // the resource load.
     virtual void OnCompletedRequest(
-        const net::URLRequestStatus& status,
+        int error_code,
+        bool was_ignored_by_handler,
         const std::string& security_info,
         const base::TimeTicks& completion_time) = 0;
 

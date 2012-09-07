@@ -75,6 +75,7 @@ class ResourceLoader : public net::URLRequest::Delegate,
   // ResourceController implementation:
   virtual void Resume() OVERRIDE;
   virtual void Cancel() OVERRIDE;
+  virtual void CancelAndIgnore() OVERRIDE;
 
   void StartRequestInternal();
   void CancelRequestInternal(int error, bool from_renderer);

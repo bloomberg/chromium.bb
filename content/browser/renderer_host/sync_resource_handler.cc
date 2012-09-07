@@ -116,7 +116,7 @@ bool SyncResourceHandler::OnResponseCompleted(
     int request_id,
     const net::URLRequestStatus& status,
     const std::string& security_info) {
-  result_.status = status;
+  result_.error_code = status.error();
 
   result_.encoded_data_length =
       DevToolsNetLogObserver::GetAndResetEncodedDataLength(request_);

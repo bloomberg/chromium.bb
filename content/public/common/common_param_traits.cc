@@ -99,9 +99,6 @@ void ParamTraits<net::URLRequestStatus>::Log(const param_type& p,
     case net::URLRequestStatus::IO_PENDING:
       status = "IO_PENDING ";
       break;
-    case net::URLRequestStatus::HANDLED_EXTERNALLY:
-      status = "HANDLED_EXTERNALLY";
-      break;
     case net::URLRequestStatus::CANCELED:
       status = "CANCELED";
       break;

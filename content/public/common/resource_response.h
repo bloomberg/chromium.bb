@@ -20,8 +20,8 @@ namespace content {
 
 // Parameters for a resource response header.
 struct ResourceResponseHead : webkit_glue::ResourceResponseInfo {
-  // The response status.
-  net::URLRequestStatus status;
+  // The response error_code.
+  int error_code;
   // TimeTicks::Now() when the browser received the request from the renderer.
   base::TimeTicks request_start;
   // TimeTicks::Now() when the browser sent the response to the renderer.

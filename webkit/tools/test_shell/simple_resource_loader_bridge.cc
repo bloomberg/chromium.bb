@@ -398,11 +398,12 @@ class RequestProxy
     peer_->OnDownloadedData(bytes_read);
   }
 
-  void NotifyCompletedRequest(const net::URLRequestStatus& status,
+  void NotifyCompletedRequest(int error_code,
                               const std::string& security_info,
                               const base::TimeTicks& complete_time) {
     if (peer_) {
-      peer_->OnCompletedRequest(status, security_info, complete_time);
+      peer_->OnCompletedRequest(error_code, false, security_info,
+                                complete_time);
       DropPeer();  // ensure no further notifications
     }
   }
@@ -533,14 +534,14 @@ class RequestProxy
         base::Bind(&RequestProxy::NotifyReceivedData, this, bytes_read));
   }
 
-  virtual void OnCompletedRequest(const net::URLRequestStatus& status,
+  virtual void OnCompletedRequest(int error_code,
                                   const std::string& security_info,
                                   const base::TimeTicks& complete_time) {
     if (download_to_file_)
       file_stream_.CloseSync();
     owner_loop_->PostTask(
         FROM_HERE,
-        base::Bind(&RequestProxy::NotifyCompletedRequest, this, status,
+        base::Bind(&RequestProxy::NotifyCompletedRequest, this, error_code,
                    security_info, complete_time));
   }
 
@@ -604,7 +605,8 @@ class RequestProxy
     // was a file request and encountered an error, then we need to use the
     // |failed_file_request_status_|. Otherwise use request_'s status.
     OnCompletedRequest(failed_file_request_status_.get() ?
-                       *failed_file_request_status_ : request_->status(),
+                       failed_file_request_status_->error() :
+                       request_->status().error(),
                        std::string(), base::TimeTicks());
     request_.reset();  // destroy on the io thread
   }
@@ -824,12 +826,12 @@ class SyncRequestProxy : public RequestProxy {
   }
 
   virtual void OnCompletedRequest(
-      const net::URLRequestStatus& status,
+      int error_code,
       const std::string& security_info,
       const base::TimeTicks& complete_time) OVERRIDE {
     if (download_to_file_)
       file_stream_.CloseSync();
-    result_->status = status;
+    result_->error_code = error_code;
     event_.Signal();
   }
 

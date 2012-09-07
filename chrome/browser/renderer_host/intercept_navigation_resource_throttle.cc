@@ -10,8 +10,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/resource_controller.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/referrer.h"
 #include "net/url_request/url_request.h"
 
@@ -20,8 +18,6 @@ using content::ChildProcessSecurityPolicy;
 using content::Referrer;
 using content::RenderViewHost;
 using content::ResourceRequestInfo;
-using content::WebContents;
-using content::WebContentsDelegate;
 
 namespace {
 
@@ -116,9 +112,7 @@ void InterceptNavigationResourceThrottle::OnResultObtained(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (should_ignore_navigation) {
-    // TODO(mkosiba): Cancel() results in a CANCELLED status but what we really
-    // want is a HANDLED_EXTERNALLY status.
-    controller()->Cancel();
+    controller()->CancelAndIgnore();
   } else {
     controller()->Resume();
   }

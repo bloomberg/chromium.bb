@@ -124,7 +124,8 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
       int data_len);
   void OnRequestComplete(
       int request_id,
-      const net::URLRequestStatus& status,
+      int error_code,
+      bool was_ignored_by_handler,
       const std::string& security_info,
       const base::TimeTicks& completion_time);
 

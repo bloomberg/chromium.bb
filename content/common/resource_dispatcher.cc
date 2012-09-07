@@ -185,7 +185,7 @@ void IPCResourceLoaderBridge::SetDefersLoading(bool value) {
 void IPCResourceLoaderBridge::SyncLoad(SyncLoadResponse* response) {
   if (request_id_ != -1) {
     NOTREACHED() << "Starting a request twice";
-    response->status.set_status(net::URLRequestStatus::FAILED);
+    response->error_code = net::ERR_FAILED;
     return;
   }
 
@@ -197,11 +197,11 @@ void IPCResourceLoaderBridge::SyncLoad(SyncLoadResponse* response) {
                                                        request_, &result);
   // NOTE: This may pump events (see RenderThread::Send).
   if (!dispatcher_->message_sender()->Send(msg)) {
-    response->status.set_status(net::URLRequestStatus::FAILED);
+    response->error_code = net::ERR_FAILED;
     return;
   }
 
-  response->status = result.status;
+  response->error_code = result.error_code;
   response->url = result.final_url;
   response->headers = result.headers;
   response->mime_type = result.mime_type;
@@ -406,7 +406,8 @@ void ResourceDispatcher::FollowPendingRedirect(
 
 void ResourceDispatcher::OnRequestComplete(
     int request_id,
-    const net::URLRequestStatus& status,
+    int error_code,
+    bool was_ignored_by_handler,
     const std::string& security_info,
     const base::TimeTicks& browser_completion_time) {
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
@@ -419,7 +420,7 @@ void ResourceDispatcher::OnRequestComplete(
   if (delegate_) {
     ResourceLoaderBridge::Peer* new_peer =
         delegate_->OnRequestComplete(
-            request_info->peer, request_info->resource_type, status);
+            request_info->peer, request_info->resource_type, error_code);
     if (new_peer)
       request_info->peer = new_peer;
   }
@@ -429,7 +430,8 @@ void ResourceDispatcher::OnRequestComplete(
   // The request ID will be removed from our pending list in the destructor.
   // Normally, dispatching this message causes the reference-counted request to
   // die immediately.
-  peer->OnCompletedRequest(status, security_info, renderer_completion_time);
+  peer->OnCompletedRequest(error_code, was_ignored_by_handler, security_info,
+                           renderer_completion_time);
 }
 
 int ResourceDispatcher::AddPendingRequest(

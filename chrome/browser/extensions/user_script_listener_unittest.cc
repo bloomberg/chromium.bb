@@ -48,6 +48,9 @@ class ThrottleController : public base::SupportsUserData::Data,
   virtual void Cancel() {
     NOTREACHED();
   }
+  virtual void CancelAndIgnore() {
+    NOTREACHED();
+  }
 
  private:
   net::URLRequest* request_;

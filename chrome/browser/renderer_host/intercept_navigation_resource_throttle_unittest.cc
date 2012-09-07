@@ -68,7 +68,9 @@ class MockResourceController
 
   // content::ResourceController
   virtual void Cancel() {
-    DCHECK(status_ == UNKNOWN);
+    NOTREACHED();
+  }
+  virtual void CancelAndIgnore() {
     status_ = CANCELLED;
     ContinueTestCase();
   }

@@ -17,6 +17,7 @@
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
 #include "content/test/mock_render_process.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/net_errors.h"
 #include "net/base/upload_data.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_status.h"
@@ -177,7 +178,8 @@ void RenderViewFakeResourcesTest::OnRequestResource(
   ASSERT_TRUE(channel_->Send(new ResourceMsg_RequestComplete(
       message.routing_id(),
       request_id,
-      net::URLRequestStatus(),
+      net::OK,
+      false,
       std::string(),
       base::TimeTicks())));
 }

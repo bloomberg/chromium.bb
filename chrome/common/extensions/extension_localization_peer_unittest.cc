@@ -69,8 +69,9 @@ class MockResourceLoaderBridgePeer
   MOCK_METHOD3(OnReceivedData, void(const char* data,
                                     int data_length,
                                     int encoded_data_length));
-  MOCK_METHOD3(OnCompletedRequest, void(
-      const net::URLRequestStatus& status,
+  MOCK_METHOD4(OnCompletedRequest, void(
+      int error_code,
+      bool was_ignored_by_handler,
       const std::string& security_info,
       const base::TimeTicks& completion_time));
 
@@ -142,11 +143,10 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestBadURLRequestStatus) {
 
   EXPECT_CALL(*original_peer_, OnReceivedResponse(_));
   EXPECT_CALL(*original_peer_, OnCompletedRequest(
-    IsURLRequestEqual(net::URLRequestStatus::CANCELED), "", base::TimeTicks()));
+    net::ERR_ABORTED, false, "", base::TimeTicks()));
 
-  net::URLRequestStatus status;
-  status.set_status(net::URLRequestStatus::FAILED);
-  filter_peer->OnCompletedRequest(status, "", base::TimeTicks());
+  filter_peer->OnCompletedRequest(net::ERR_FAILED, false, "",
+                                  base::TimeTicks());
 }
 
 TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestEmptyData) {
@@ -158,12 +158,9 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestEmptyData) {
 
   EXPECT_CALL(*original_peer_, OnReceivedResponse(_));
   EXPECT_CALL(*original_peer_, OnCompletedRequest(
-      IsURLRequestEqual(net::URLRequestStatus::SUCCESS), "",
-      base::TimeTicks()));
+      net::OK, false, "", base::TimeTicks()));
 
-  net::URLRequestStatus status;
-  status.set_status(net::URLRequestStatus::SUCCESS);
-  filter_peer->OnCompletedRequest(status, "", base::TimeTicks());
+  filter_peer->OnCompletedRequest(net::OK, false, "", base::TimeTicks());
 }
 
 TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestNoCatalogs) {
@@ -180,19 +177,16 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestNoCatalogs) {
 
   EXPECT_CALL(*original_peer_, OnReceivedResponse(_)).Times(2);
   EXPECT_CALL(*original_peer_, OnCompletedRequest(
-      IsURLRequestEqual(
-          net::URLRequestStatus::SUCCESS), "", base::TimeTicks())).Times(2);
+          net::OK, false, "", base::TimeTicks())).Times(2);
 
-  net::URLRequestStatus status;
-  status.set_status(net::URLRequestStatus::SUCCESS);
-  filter_peer->OnCompletedRequest(status, "", base::TimeTicks());
+  filter_peer->OnCompletedRequest(net::OK, false, "", base::TimeTicks());
 
   // Test if Send gets called again (it shouldn't be) when first call returned
   // an empty dictionary.
   filter_peer =
       CreateExtensionLocalizationPeer("text/css", GURL(kExtensionUrl_1));
   SetData(filter_peer, "some text");
-  filter_peer->OnCompletedRequest(status, "", base::TimeTicks());
+  filter_peer->OnCompletedRequest(net::OK, false, "", base::TimeTicks());
 }
 
 TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestWithCatalogs) {
@@ -218,12 +212,9 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestWithCatalogs) {
 
   EXPECT_CALL(*original_peer_, OnReceivedResponse(_));
   EXPECT_CALL(*original_peer_, OnCompletedRequest(
-      IsURLRequestEqual(net::URLRequestStatus::SUCCESS), "",
-      base::TimeTicks()));
+      net::OK, false, "", base::TimeTicks()));
 
-  net::URLRequestStatus status;
-  status.set_status(net::URLRequestStatus::SUCCESS);
-  filter_peer->OnCompletedRequest(status, "", base::TimeTicks());
+  filter_peer->OnCompletedRequest(net::OK, false, "", base::TimeTicks());
 }
 
 TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestReplaceMessagesFails) {
@@ -249,10 +240,7 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestReplaceMessagesFails) {
 
   EXPECT_CALL(*original_peer_, OnReceivedResponse(_));
   EXPECT_CALL(*original_peer_, OnCompletedRequest(
-      IsURLRequestEqual(net::URLRequestStatus::SUCCESS), "",
-      base::TimeTicks()));
+      net::OK, false, "", base::TimeTicks()));
 
-  net::URLRequestStatus status;
-  status.set_status(net::URLRequestStatus::SUCCESS);
-  filter_peer->OnCompletedRequest(status, "", base::TimeTicks());
+  filter_peer->OnCompletedRequest(net::OK, false, "", base::TimeTicks());
 }

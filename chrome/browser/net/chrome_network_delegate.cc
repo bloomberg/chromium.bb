@@ -263,8 +263,7 @@ void ChromeNetworkDelegate::OnRawBytesRead(const net::URLRequest& request,
 
 void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
                                         bool started) {
-  if (request->status().status() == net::URLRequestStatus::SUCCESS ||
-      request->status().status() == net::URLRequestStatus::HANDLED_EXTERNALLY) {
+  if (request->status().status() == net::URLRequestStatus::SUCCESS) {
     bool is_redirect = request->response_headers() &&
         net::HttpResponseHeaders::IsRedirectResponseCode(
             request->response_headers()->response_code());

@@ -84,6 +84,10 @@ class ResourceRequestInfo {
   // a link).
   virtual bool HasUserGesture() const = 0;
 
+  // True if ResourceController::CancelAndIgnore() was called.  For example,
+  // the requested URL may be being loaded by an external program.
+  virtual bool WasIgnoredByHandler() const = 0;
+
   // Returns false if there is NOT an associated render view.
   virtual bool GetAssociatedRenderView(int* render_process_id,
                                        int* render_view_id) const = 0;

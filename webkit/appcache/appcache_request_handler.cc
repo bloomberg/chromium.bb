@@ -126,8 +126,7 @@ AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadFallbackForResponse(
   if (!found_fallback_entry_.has_response_id())
     return NULL;
 
-  if (request->status().status() == net::URLRequestStatus::CANCELED ||
-      request->status().status() == net::URLRequestStatus::HANDLED_EXTERNALLY) {
+  if (request->status().status() == net::URLRequestStatus::CANCELED) {
     // 6.9.6, step 4: But not if the user canceled the download.
     return NULL;
   }

@@ -61,7 +61,8 @@ bool RedirectToFileResourceHandler::OnResponseStarted(
     int request_id,
     ResourceResponse* response,
     bool* defer) {
-  if (response->head.status.is_success()) {
+  if (response->head.error_code == net::OK ||
+      response->head.error_code == net::ERR_IO_PENDING) {
     DCHECK(deletable_file_ && !deletable_file_->path().empty());
     response->head.download_file_path = deletable_file_->path();
   }

@@ -17,7 +17,7 @@
 
 IPC_STRUCT_TRAITS_BEGIN(content::ResourceResponseHead)
   IPC_STRUCT_TRAITS_PARENT(webkit_glue::ResourceResponseInfo)
-  IPC_STRUCT_TRAITS_MEMBER(status)
+  IPC_STRUCT_TRAITS_MEMBER(error_code)
   IPC_STRUCT_TRAITS_MEMBER(request_start)
   IPC_STRUCT_TRAITS_MEMBER(response_start)
 IPC_STRUCT_TRAITS_END()
@@ -172,9 +172,10 @@ IPC_MESSAGE_ROUTED2(ResourceMsg_DataDownloaded,
                     int /* data_len */)
 
 // Sent when the request has been completed.
-IPC_MESSAGE_ROUTED4(ResourceMsg_RequestComplete,
+IPC_MESSAGE_ROUTED5(ResourceMsg_RequestComplete,
                     int /* request_id */,
-                    net::URLRequestStatus /* status */,
+                    int /* error_code */,
+                    bool /* was_ignored_by_handler */,
                     std::string /* security info */,
                     base::TimeTicks /* completion_time */)
 

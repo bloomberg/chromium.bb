@@ -28,7 +28,7 @@ namespace {
 
 void PopulateResourceResponse(net::URLRequest* request,
                               ResourceResponse* response) {
-  response->head.status = request->status();
+  response->head.error_code = request->status().error();
   response->head.request_time = request->request_time();
   response->head.response_time = request->response_time();
   response->head.headers = request->response_headers();
@@ -78,7 +78,7 @@ ResourceLoader::~ResourceLoader() {
 
 void ResourceLoader::StartRequest() {
   if (delegate_->HandleExternalProtocol(this, request_->url())) {
-    CancelRequestInternal(net::ERR_UNKNOWN_URL_SCHEME, false);
+    CancelAndIgnore();
     return;
   }
 
@@ -99,6 +99,12 @@ void ResourceLoader::StartRequest() {
 
 void ResourceLoader::CancelRequest(bool from_renderer) {
   CancelRequestInternal(net::ERR_ABORTED, from_renderer);
+}
+
+void ResourceLoader::CancelAndIgnore() {
+  ResourceRequestInfoImpl* info = GetRequestInfo();
+  info->set_was_ignored_by_handler(true);
+  CancelRequest(false);
 }
 
 void ResourceLoader::ReportUploadProgress() {
@@ -205,7 +211,7 @@ void ResourceLoader::OnReceivedRedirect(net::URLRequest* unused,
 
   if (delegate_->HandleExternalProtocol(this, new_url)) {
     // The request is complete so we can remove it.
-    CancelRequestInternal(net::ERR_UNKNOWN_URL_SCHEME, false);
+    CancelAndIgnore();
     return;
   }
 

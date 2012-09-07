@@ -66,19 +66,19 @@ void ExtensionLocalizationPeer::OnReceivedData(const char* data,
 }
 
 void ExtensionLocalizationPeer::OnCompletedRequest(
-    const net::URLRequestStatus& status,
+    int error_code,
+    bool was_ignored_by_handler,
     const std::string& security_info,
     const base::TimeTicks& completion_time) {
   // Make sure we delete ourselves at the end of this call.
   scoped_ptr<ExtensionLocalizationPeer> this_deleter(this);
 
   // Give sub-classes a chance at altering the data.
-  if (status.status() != net::URLRequestStatus::SUCCESS) {
+  if (error_code != net::OK) {
     // We failed to load the resource.
     original_peer_->OnReceivedResponse(response_info_);
-    net::URLRequestStatus status(net::URLRequestStatus::CANCELED,
-                                 net::ERR_ABORTED);
-    original_peer_->OnCompletedRequest(status, security_info, completion_time);
+    original_peer_->OnCompletedRequest(net::ERR_ABORTED, false, security_info,
+                                       completion_time);
     return;
   }
 
@@ -89,7 +89,8 @@ void ExtensionLocalizationPeer::OnCompletedRequest(
     original_peer_->OnReceivedData(data_.data(),
                                    static_cast<int>(data_.size()),
                                    -1);
-  original_peer_->OnCompletedRequest(status, security_info, completion_time);
+  original_peer_->OnCompletedRequest(error_code, was_ignored_by_handler,
+                                     security_info, completion_time);
 }
 
 void ExtensionLocalizationPeer::ReplaceMessages() {

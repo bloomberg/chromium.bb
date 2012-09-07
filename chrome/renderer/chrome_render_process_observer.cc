@@ -76,7 +76,7 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
   virtual webkit_glue::ResourceLoaderBridge::Peer* OnRequestComplete(
       webkit_glue::ResourceLoaderBridge::Peer* current_peer,
       ResourceType::Type resource_type,
-      const net::URLRequestStatus& status) {
+      int error_code) {
     // Update the browser about our cache.
     // Rate limit informing the host of our cache stats.
     if (!weak_factory_.HasWeakPtrs()) {
@@ -87,14 +87,13 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
          base::TimeDelta::FromMilliseconds(kCacheStatsDelayMS));
     }
 
-    if (status.status() != net::URLRequestStatus::CANCELED ||
-        status.error() == net::ERR_ABORTED) {
+    if (error_code == net::ERR_ABORTED) {
       return NULL;
     }
 
     // Resource canceled with a specific error are filtered.
     return SecurityFilterPeer::CreateSecurityFilterPeerForDeniedRequest(
-        resource_type, current_peer, status.error());
+        resource_type, current_peer, error_code);
   }
 
   virtual webkit_glue::ResourceLoaderBridge::Peer* OnReceivedResponse(

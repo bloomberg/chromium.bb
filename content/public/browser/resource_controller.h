@@ -8,10 +8,12 @@
 namespace content {
 
 // Used to either resume a deferred resource load or cancel a resource load at
-// any time.
+// any time.  CancelAndIgnore is a variation of Cancel that also causes the
+// requester of the resource to act like the request was never made.
 class ResourceController {
  public:
   virtual void Cancel() = 0;
+  virtual void CancelAndIgnore() = 0;
   virtual void Resume() = 0;
  protected:
   virtual ~ResourceController() {}

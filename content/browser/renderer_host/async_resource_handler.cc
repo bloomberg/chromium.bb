@@ -309,9 +309,31 @@ bool AsyncResourceHandler::OnResponseCompleted(
         sent_received_response_msg_);
 
   TimeTicks completion_time = TimeTicks::Now();
+
+  int error_code = status.error();
+  bool was_ignored_by_handler =
+      ResourceRequestInfoImpl::ForRequest(request_)->WasIgnoredByHandler();
+
+  DCHECK(status.status() != net::URLRequestStatus::IO_PENDING);
+  // If this check fails, then we're in an inconsistent state because all
+  // requests ignored by the handler should be canceled (which should result in
+  // the ERR_ABORTED error code).
+  DCHECK(!was_ignored_by_handler || error_code == net::ERR_ABORTED);
+
+  // TODO(mkosiba): Fix up cases where we create a URLRequestStatus
+  // with a status() != SUCCESS and an error_code() == net::OK.
+  if (status.status() == net::URLRequestStatus::CANCELED &&
+      error_code == net::OK) {
+    error_code = net::ERR_ABORTED;
+  } else if (status.status() == net::URLRequestStatus::FAILED &&
+             error_code == net::OK) {
+    error_code = net::ERR_FAILED;
+  }
+
   filter_->Send(new ResourceMsg_RequestComplete(routing_id_,
                                                 request_id,
-                                                status,
+                                                error_code,
+                                                was_ignored_by_handler,
                                                 security_info,
                                                 completion_time));
 

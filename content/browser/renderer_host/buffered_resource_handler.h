@@ -52,6 +52,7 @@ class BufferedResourceHandler
   // ResourceController implementation:
   virtual void Resume() OVERRIDE;
   virtual void Cancel() OVERRIDE;
+  virtual void CancelAndIgnore() OVERRIDE;
 
   bool ProcessResponse(bool* defer);
 

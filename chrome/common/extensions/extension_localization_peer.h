@@ -42,7 +42,8 @@ class ExtensionLocalizationPeer
                               int data_length,
                               int encoded_data_length) OVERRIDE;
   virtual void OnCompletedRequest(
-      const net::URLRequestStatus& status,
+      int error_code,
+      bool was_ignored_by_handler,
       const std::string& security_info,
       const base::TimeTicks& completion_time) OVERRIDE;
 

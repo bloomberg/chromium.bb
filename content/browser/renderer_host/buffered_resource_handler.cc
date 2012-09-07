@@ -211,6 +211,10 @@ void BufferedResourceHandler::Cancel() {
   controller()->Cancel();
 }
 
+void BufferedResourceHandler::CancelAndIgnore() {
+  controller()->CancelAndIgnore();
+}
+
 bool BufferedResourceHandler::ProcessResponse(bool* defer) {
   DCHECK_EQ(STATE_PROCESSING, state_);
 
@@ -351,7 +355,8 @@ bool BufferedResourceHandler::UseAlternateNextHandler(
   bool defer_ignored = false;
   next_handler_->OnResponseStarted(request_id, response_, &defer_ignored);
   DCHECK(!defer_ignored);
-  net::URLRequestStatus status(net::URLRequestStatus::HANDLED_EXTERNALLY, 0);
+  net::URLRequestStatus status(net::URLRequestStatus::CANCELED,
+                               net::ERR_ABORTED);
   next_handler_->OnResponseCompleted(request_id, status, std::string());
 
   // This is handled entirely within the new ResourceHandler, so just reset the

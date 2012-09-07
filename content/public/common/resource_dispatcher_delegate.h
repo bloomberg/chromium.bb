@@ -19,7 +19,7 @@ class CONTENT_EXPORT ResourceDispatcherDelegate {
   virtual webkit_glue::ResourceLoaderBridge::Peer* OnRequestComplete(
       webkit_glue::ResourceLoaderBridge::Peer* current_peer,
       ResourceType::Type resource_type,
-      const net::URLRequestStatus& status) = 0;
+      int error_code) = 0;
 
   virtual webkit_glue::ResourceLoaderBridge::Peer* OnReceivedResponse(
       webkit_glue::ResourceLoaderBridge::Peer* current_peer,

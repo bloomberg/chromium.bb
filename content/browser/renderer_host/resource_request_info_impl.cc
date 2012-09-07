@@ -109,6 +109,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       is_download_(is_download),
       allow_download_(allow_download),
       has_user_gesture_(has_user_gesture),
+      was_ignored_by_handler_(false),
       resource_type_(resource_type),
       transition_type_(transition_type),
       memory_cost_(0),
@@ -165,6 +166,10 @@ WebKit::WebReferrerPolicy ResourceRequestInfoImpl::GetReferrerPolicy() const {
 
 bool ResourceRequestInfoImpl::HasUserGesture() const {
   return has_user_gesture_;
+}
+
+bool ResourceRequestInfoImpl::WasIgnoredByHandler() const {
+  return was_ignored_by_handler_;
 }
 
 bool ResourceRequestInfoImpl::GetAssociatedRenderView(

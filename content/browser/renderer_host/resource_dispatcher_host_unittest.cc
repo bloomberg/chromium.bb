@@ -788,13 +788,13 @@ TEST_F(ResourceDispatcherHostTest, Cancel) {
   ASSERT_EQ(ResourceMsg_RequestComplete::ID, msgs[1][1].type());
 
   int request_id;
-  net::URLRequestStatus status;
+  int error_code;
 
   PickleIterator iter(msgs[1][1]);
   ASSERT_TRUE(IPC::ReadParam(&msgs[1][1], &iter, &request_id));
-  ASSERT_TRUE(IPC::ReadParam(&msgs[1][1], &iter, &status));
+  ASSERT_TRUE(IPC::ReadParam(&msgs[1][1], &iter, &error_code));
 
-  EXPECT_EQ(net::URLRequestStatus::CANCELED, status.status());
+  EXPECT_EQ(net::ERR_ABORTED, error_code);
 }
 
 TEST_F(ResourceDispatcherHostTest, CancelWhileStartIsDeferred) {
@@ -1217,18 +1217,17 @@ TEST_F(ResourceDispatcherHostTest, TooManyOutstandingRequests) {
     EXPECT_EQ(1U, msgs[index].size());
     EXPECT_EQ(ResourceMsg_RequestComplete::ID, msgs[index][0].type());
 
-    // The RequestComplete message should have had status
-    // (CANCELLED, ERR_INSUFFICIENT_RESOURCES).
+    // The RequestComplete message should have the error code of
+    // ERR_INSUFFICIENT_RESOURCES.
     int request_id;
-    net::URLRequestStatus status;
+    int error_code;
 
     PickleIterator iter(msgs[index][0]);
     EXPECT_TRUE(IPC::ReadParam(&msgs[index][0], &iter, &request_id));
-    EXPECT_TRUE(IPC::ReadParam(&msgs[index][0], &iter, &status));
+    EXPECT_TRUE(IPC::ReadParam(&msgs[index][0], &iter, &error_code));
 
     EXPECT_EQ(index + 1, request_id);
-    EXPECT_EQ(net::URLRequestStatus::CANCELED, status.status());
-    EXPECT_EQ(net::ERR_INSUFFICIENT_RESOURCES, status.error());
+    EXPECT_EQ(net::ERR_INSUFFICIENT_RESOURCES, error_code);
   }
 
   // The final 2 requests should have succeeded.
@@ -1391,18 +1390,17 @@ TEST_F(ResourceDispatcherHostTest, ForbiddenDownload) {
   ASSERT_EQ(1U, msgs[0].size());
   EXPECT_EQ(ResourceMsg_RequestComplete::ID, msgs[0][0].type());
 
-  // The RequestComplete message should have had status
-  // (CANCELED, ERR_FILE_NOT_FOUND).
+  // The RequestComplete message should have had the error code of
+  // ERR_FILE_NOT_FOUND.
   int request_id;
-  net::URLRequestStatus status;
+  int error_code;
 
   PickleIterator iter(msgs[0][0]);
   EXPECT_TRUE(IPC::ReadParam(&msgs[0][0], &iter, &request_id));
-  EXPECT_TRUE(IPC::ReadParam(&msgs[0][0], &iter, &status));
+  EXPECT_TRUE(IPC::ReadParam(&msgs[0][0], &iter, &error_code));
 
   EXPECT_EQ(1, request_id);
-  EXPECT_EQ(net::URLRequestStatus::CANCELED, status.status());
-  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, status.error());
+  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, error_code);
 }
 
 // Test for http://crbug.com/76202 .  We don't want to destroy a
@@ -1693,18 +1691,17 @@ TEST_F(ResourceDispatcherHostTest, UnknownURLScheme) {
   ASSERT_EQ(1U, msgs[0].size());
   EXPECT_EQ(ResourceMsg_RequestComplete::ID, msgs[0][0].type());
 
-  // The RequestComplete message should have had status
-  // (FAILED, ERR_UNKNOWN_URL_SCHEME).
+  // The RequestComplete message should have the error code of
+  // ERR_UNKNOWN_URL_SCHEME.
   int request_id;
-  net::URLRequestStatus status;
+  int error_code;
 
   PickleIterator iter(msgs[0][0]);
   EXPECT_TRUE(IPC::ReadParam(&msgs[0][0], &iter, &request_id));
-  EXPECT_TRUE(IPC::ReadParam(&msgs[0][0], &iter, &status));
+  EXPECT_TRUE(IPC::ReadParam(&msgs[0][0], &iter, &error_code));
 
   EXPECT_EQ(1, request_id);
-  EXPECT_EQ(net::URLRequestStatus::FAILED, status.status());
-  EXPECT_EQ(net::ERR_UNKNOWN_URL_SCHEME, status.error());
+  EXPECT_EQ(net::ERR_UNKNOWN_URL_SCHEME, error_code);
 }
 
 TEST_F(ResourceDispatcherHostTest, DataReceivedACKs) {

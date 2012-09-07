@@ -3147,10 +3147,6 @@ void RenderViewImpl::didFailProvisionalLoad(WebFrame* frame,
   // from being dumb, WebCore doesn't expect it and it will cause a crash.
   if (error.reason == net::ERR_ABORTED)
     return;
-  // Don't display an error message if the request was handled by an
-  // external protocol handler.
-  if (error.reason == net::ERR_UNKNOWN_URL_SCHEME)
-    return;
 
   // Make sure we never show errors in view source mode.
   frame->enableViewSourceMode(false);
