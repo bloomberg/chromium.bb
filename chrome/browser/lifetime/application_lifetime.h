@@ -21,6 +21,13 @@ void AttemptUserExit();
 // manager re-launch the browser with restore last session flag.
 void AttemptRestart();
 
+#if defined(OS_WIN)
+// Windows 8 specific: Like AttemptRestart but if chrome is running
+// in desktop mode it starts in metro mode and vice-versa. The switching like
+// the restarting is controlled by a preference.
+void AttemptRestartWithModeSwitch();
+#endif
+
 // Attempt to exit by closing all browsers.  This is equivalent to
 // CloseAllBrowsers() on platforms where the application exits
 // when no more windows are remaining. On other platforms (the Mac),

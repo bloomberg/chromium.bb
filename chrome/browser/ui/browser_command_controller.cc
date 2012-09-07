@@ -68,18 +68,6 @@ bool HasInternalURL(const NavigationEntry* entry) {
   return false;
 }
 
-#if defined(OS_WIN)
-void RestartWithModeSwitch() {
-  PrefService* prefs = g_browser_process->local_state();
-  if (!prefs)
-    return;
-  if (!prefs->HasPrefPath(prefs::kRestartSwitchMode))
-    return;
-  prefs->SetBoolean(prefs::kRestartSwitchMode, true);
-  browser::AttemptRestart();
-}
-#endif
-
 }  // namespace
 
 namespace chrome {
@@ -352,10 +340,8 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       browser_->SetMetroSnapMode(false);
       break;
     case IDC_WIN8_DESKTOP_RESTART:
-      RestartWithModeSwitch();
-      break;
     case IDC_WIN8_METRO_RESTART:
-      RestartWithModeSwitch();
+      browser::AttemptRestartWithModeSwitch();
       break;
 #endif
 

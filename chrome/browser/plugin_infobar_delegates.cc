@@ -8,6 +8,7 @@
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/plugin_observer.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/render_messages.h"
@@ -455,7 +456,7 @@ int PluginMetroModeInfoBarDelegate::GetButtons() const {
 string16 PluginMetroModeInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   DCHECK_EQ(BUTTON_OK, button);
-  return l10n_util::GetStringUTF16(IDS_METRO_SWITCH_TO_DESKTOP_BUTTON);
+  return l10n_util::GetStringUTF16(IDS_WIN8_DESKTOP_RESTART);
 }
 
 bool PluginMetroModeInfoBarDelegate::Accept() {
@@ -466,11 +467,7 @@ bool PluginMetroModeInfoBarDelegate::Accept() {
   if (!web_contents->GetURL().is_valid())
     return false;
   std::string url(web_contents->GetURL().spec());
-  // This obscure use of the 'log usage' mask for windows 8 is documented
-  // here http://goo.gl/HBOe9.
-  ui::win::OpenAnyViaShell(UTF8ToUTF16(url),
-                           string16(),
-                           SEE_MASK_FLAG_LOG_USAGE);
+  browser::AttemptRestartWithModeSwitch();
   return true;
 }
 
