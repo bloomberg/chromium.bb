@@ -21,6 +21,7 @@
 #include "base/string16.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
@@ -829,6 +830,11 @@ void ProfileSyncService::OnExperimentsChanged(
     about_flags::SetExperimentEnabled(g_browser_process->local_state(),
                                       "sync-tab-favicons",
                                       true);
+#if defined(OS_ANDROID)
+    // Android does not support about:flags and experiments, so we need to force
+    // setting the experiments as command line switches.
+    CommandLine::ForCurrentProcess()->AppendSwitch(switches::kSyncTabFavicons);
+#endif
   }
 
   current_experiments = experiments;

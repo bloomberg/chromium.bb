@@ -932,8 +932,8 @@ class SyncDataModel(object):
             entry.parent_id_string)
       self._entries[entry.id_string] = entry
 
-  def TriggerSyncTabs(self):
-    """Set the 'sync_tabs' field to this account's nigori node.
+  def TriggerSyncTabFavicons(self):
+    """Set the 'sync_tab_favicons' field to this account's nigori node.
 
     If the field is not currently set, will write a new nigori node entry
     with the field set. Else does nothing.
@@ -941,7 +941,7 @@ class SyncDataModel(object):
 
     nigori_tag = "google_chrome_nigori"
     nigori_original = self._entries.get(self._ServerTagToId(nigori_tag))
-    if (nigori_original.specifics.nigori.sync_tabs):
+    if (nigori_original.specifics.nigori.sync_tab_favicons):
       return
     nigori_new = copy.deepcopy(nigori_original)
     nigori_new.specifics.nigori.sync_tabs = True
@@ -1101,12 +1101,12 @@ class TestServer(object):
         200,
         '<html><title>Transient error</title><H1>Transient error</H1></html>')
 
-  def HandleSetSyncTabs(self):
-    """Set the 'sync_tab' field of the nigori node for this account."""
-    self.account.TriggerSyncTabs()
+  def HandleSetSyncTabFavicons(self):
+    """Set 'sync_tab_favicons' field of the nigori node for this account."""
+    self.account.TriggerSyncTabFavicons()
     return (
         200,
-        '<html><title>Sync Tabs</title><H1>Sync Tabs</H1></html>')
+        '<html><title>Tab Favicons</title><H1>Tab Favicons</H1></html>')
 
   def HandleCreateSyncedBookmarks(self):
     """Create the Synced Bookmarks folder under Bookmarks."""
