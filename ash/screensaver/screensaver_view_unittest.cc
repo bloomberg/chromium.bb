@@ -29,6 +29,7 @@ class ScreensaverViewTest : public ash::test::AshTestBase {
   }
 
   virtual void TearDown() OVERRIDE {
+    RunAllPendingInMessageLoop();
     AshTestBase::TearDown();
   }
 

@@ -22,6 +22,11 @@ class ASH_EXPORT ScreenAsh : public gfx::ScreenImpl {
   ScreenAsh();
   virtual ~ScreenAsh();
 
+  // Finds the display that contains |point| in screeen coordinates.
+  // Returns invalid display if there is no display that can satisfy
+  // the condition.
+  static gfx::Display FindDisplayContainingPoint(const gfx::Point& point);
+
   // Returns the bounds for maximized windows in parent coordinates.
   // Maximized windows trigger auto-hiding the shelf.
   static gfx::Rect GetMaximizedWindowBoundsInParent(aura::Window* window);

@@ -4,6 +4,7 @@
 
 #include "ash/screen_ash.h"
 
+#include "ash/display/multi_display_manager.h"
 #include "ash/shell.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/shelf_layout_manager.h"
@@ -18,8 +19,9 @@
 namespace ash {
 
 namespace {
-aura::DisplayManager* GetDisplayManager() {
-  return aura::Env::GetInstance()->display_manager();
+internal::MultiDisplayManager* GetDisplayManager() {
+  return static_cast<internal::MultiDisplayManager*>(
+      aura::Env::GetInstance()->display_manager());
 }
 }  // namespace
 
@@ -27,6 +29,11 @@ ScreenAsh::ScreenAsh() {
 }
 
 ScreenAsh::~ScreenAsh() {
+}
+
+// static
+gfx::Display ScreenAsh::FindDisplayContainingPoint(const gfx::Point& point) {
+  return GetDisplayManager()->FindDisplayContainingPoint(point);
 }
 
 // static

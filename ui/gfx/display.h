@@ -87,6 +87,9 @@ class UI_EXPORT Display {
   // Returns a string representation of the display;
   std::string ToString() const;
 
+  // True if the display contains valid display id.
+  bool is_valid() const { return id_ != kInvalidDisplayID; }
+
   static const int64 kInvalidDisplayID;
 
  private:

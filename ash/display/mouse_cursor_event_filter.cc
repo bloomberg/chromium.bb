@@ -140,7 +140,8 @@ bool MouseCursorEventFilter::WarpMouseCursorIfNecessary(
   point_in_dst_screen.Offset(offset_x, offset_y);
   aura::RootWindow* dst_root = wm::GetRootWindowAt(point_in_dst_screen);
 
-  // Warp the mouse cursor only if the location is in the indicator bounds.
+  // Warp the mouse cursor only if the location is in the indicator bounds
+  // or the mouse pointer is in the destination root.
   if (mouse_warp_mode_ == WARP_DRAG &&
       dst_root != drag_source_root_ &&
       !src_indicator_bounds_.Contains(point_in_screen)) {

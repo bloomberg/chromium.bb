@@ -45,6 +45,12 @@ class ASH_EXPORT MultiDisplayManager : public aura::DisplayManager,
   bool UpdateWorkAreaOfDisplayNearestWindow(const aura::Window* window,
                                             const gfx::Insets& insets);
 
+  // Finds the display that contains |point| in screeen coordinates.
+  // Returns invalid display if there is no display that can satisfy
+  // the condition.
+  const gfx::Display& FindDisplayContainingPoint(
+      const gfx::Point& point_in_screen) const;
+
   // DisplayManager overrides:
   virtual void OnNativeDisplaysChanged(
       const std::vector<gfx::Display>& displays) OVERRIDE;

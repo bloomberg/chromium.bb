@@ -81,6 +81,17 @@ bool MultiDisplayManager::UpdateWorkAreaOfDisplayNearestWindow(
   return old_work_area != display.work_area();
 }
 
+const gfx::Display& MultiDisplayManager::FindDisplayContainingPoint(
+    const gfx::Point& point_in_screen) const {
+  for (std::vector<gfx::Display>::const_iterator iter = displays_.begin();
+       iter != displays_.end(); ++iter) {
+    const gfx::Display& display = *iter;
+    if (display.bounds().Contains(point_in_screen))
+      return display;
+  }
+  return GetInvalidDisplay();
+}
+
 void MultiDisplayManager::OnNativeDisplaysChanged(
     const std::vector<gfx::Display>& new_displays) {
   size_t min = std::min(displays_.size(), new_displays.size());
@@ -157,15 +168,10 @@ const gfx::Display& MultiDisplayManager::GetDisplayNearestWindow(
 
 const gfx::Display& MultiDisplayManager::GetDisplayNearestPoint(
     const gfx::Point& point) const {
-  for (std::vector<gfx::Display>::const_iterator iter = displays_.begin();
-       iter != displays_.end(); ++iter) {
-    const gfx::Display& display = *iter;
-    if (display.bounds().Contains(point))
-      return display;
-  }
   // Fallback to the primary display if there is no root display containing
   // the |point|.
-  return displays_[0];
+  gfx::Display display = FindDisplayContainingPoint(point);
+  return display.is_valid() ? display : displays_[0];
 }
 
 const gfx::Display& MultiDisplayManager::GetDisplayMatching(
