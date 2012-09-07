@@ -27,6 +27,7 @@ class DriveUploader;
 class DriveWebAppsRegistry;
 class FileWriteHelper;
 class DriveSyncClient;
+class StaleCacheFilesRemover;
 
 // DriveSystemService runs the Drive system, including the Drive file system
 // implementation for the file manager, and some other sub systems.
@@ -82,6 +83,7 @@ class DriveSystemService : public ProfileKeyedService  {
   scoped_ptr<FileWriteHelper> file_write_helper_;
   scoped_ptr<DriveDownloadObserver> download_observer_;
   scoped_ptr<DriveSyncClient> sync_client_;
+  scoped_ptr<StaleCacheFilesRemover> stale_cache_files_remover_;
   base::WeakPtrFactory<DriveSystemService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveSystemService);

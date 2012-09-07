@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/gdata/file_write_helper.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_service.h"
+#include "chrome/browser/chromeos/gdata/stale_cache_files_remover.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -75,6 +76,8 @@ void DriveSystemService::Initialize(
   download_observer_.reset(new DriveDownloadObserver(uploader(),
                                                      file_system()));
   sync_client_.reset(new DriveSyncClient(profile_, file_system(), cache()));
+  stale_cache_files_remover_.reset(new StaleCacheFilesRemover(file_system(),
+                                                              cache()));
 
   sync_client_->Initialize();
   file_system_->Initialize();
@@ -97,6 +100,7 @@ void DriveSystemService::Shutdown() {
   RemoveDriveMountPoint();
 
   // Shut down the member objects in the reverse order of creation.
+  stale_cache_files_remover_.reset();
   sync_client_.reset();
   download_observer_.reset();
   file_write_helper_.reset();
