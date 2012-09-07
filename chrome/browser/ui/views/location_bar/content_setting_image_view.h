@@ -8,7 +8,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
-#include "chrome/browser/ui/views/location_bar/location_bar_decoration_view.h"
 #include "chrome/browser/ui/views/location_bar/touchable_location_bar_view.h"
 #include "chrome/common/content_settings_types.h"
 #include "ui/base/animation/animation_delegate.h"
@@ -36,11 +35,10 @@ class SlideAnimation;
 
 class ContentSettingsDelegateView;
 
-// The ContentSettingImageView displays an icon and optional text label for
-// various content settings affordances in the location bar (i.e. plugin
-// blocking, geolocation).
-class ContentSettingImageView : public LocationBarDecorationView,
-                                public views::WidgetObserver {
+class ContentSettingImageView : public views::ImageView,
+                                public ui::AnimationDelegate,
+                                public views::WidgetObserver,
+                                public TouchableLocationBarView {
  public:
   ContentSettingImageView(ContentSettingsType content_type,
                           const int background_images[],
@@ -49,21 +47,48 @@ class ContentSettingImageView : public LocationBarDecorationView,
 
   // |new_navigation| true if this is a new navigation, false if the tab was
   // just switched to.
-  virtual void Update(TabContents* tab_contents) OVERRIDE;
+  virtual void Update(TabContents* tab_contents);
 
+  // views::View overrides:
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual ui::EventResult OnGestureEvent(
+      const ui::GestureEvent& event) OVERRIDE;
+
+  // ui::AnimationDelegate overrides:
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE;
 
   // views::WidgetObserver override:
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
 
+  // TouchableLocationBarView.
+  virtual int GetBuiltInHorizontalPadding() const OVERRIDE;
+
  protected:
   // Invoked when the user clicks on the control.
-  virtual void OnClick(LocationBarView* parent);
-  virtual int GetTextAnimationSize(double state, int text_size) OVERRIDE;
+  virtual void OnClick();
 
  private:
+  // views::ImageView overrides:
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
+
   scoped_ptr<ContentSettingImageModel> content_setting_image_model_;
 
   views::Widget* bubble_widget_;
+
+  // The owning LocationBarView.
+  LocationBarView* parent_;
+
+  scoped_ptr<ui::SlideAnimation> slide_animator_;
+  string16 animated_text_;
+  bool pause_animation_;
+  int text_size_;
+  int visible_text_size_;
+  views::HorizontalPainter background_painter_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ContentSettingImageView);
 };
