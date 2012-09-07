@@ -353,9 +353,8 @@ void ProfileShortcutManagerWin::UpdateShortcutForProfileAtPath(
         profile_avatar_image.ToSkBitmap();
     // Make a copy of the SkBitmap to ensure that we can safely use the image
     // data on the FILE thread.
-    DCHECK(profile_avatar_bitmap->deepCopyTo(
-        &profile_avatar_bitmap_copy,
-        profile_avatar_bitmap->getConfig()));
+    profile_avatar_bitmap->deepCopyTo(
+        &profile_avatar_bitmap_copy, profile_avatar_bitmap->getConfig());
   }
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
