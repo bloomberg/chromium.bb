@@ -59,16 +59,22 @@ readonly PNACL_BRANCH=master
 auto() {
   INTERACTIVE_MERGE=false
   export DISPLAY=""
-  merge-all "tip"
-  checkout-clang $(get-clang-rev ${MERGE_REVISION})
+  local revision=$1
+  merge-all ${revision}
+  checkout-clang $(get-clang-rev ${revision})
 }
 
-#@ manual [git rev or "tip"]          - Interactive merge
+#@ manual [git rev or "HEAD"]          - Interactive merge
 manual() {
   INTERACTIVE_MERGE=true
-  merge-all "$@"
-  echo "Clang rev corresponging to LLVM rev ${MERGE_REVISION} is"
-  get-clang-rev ${MERGE_REVISION}
+  local revision=$1
+  if [[ $revision == "HEAD" ]]; then
+    revision=$(get-head-revision)
+  fi
+  merge-all ${revision}
+  echo "Clang rev corresponging to LLVM rev ${revision} is"
+  get-clang-rev ${revision}
+  echo "You should manually check it out"
 }
 
 #@ upstream-remote-setup - Add the LLVM remote repo to a pnacl git checkout
@@ -77,13 +83,15 @@ upstream-remote-setup() {
   git remote add ${UPSTREAM_REMOTE} ${UPSTREAM_URL}
 }
 
-get-tip-revision() {
-  # Must have already fetch the upstream remote
+#+ get-head-revision   - get the head revision for LLVM
+# Must have already fetched the upstream remote
+get-head-revision() {
+  spushd ${TC_SRC_LLVM}
   git rev-parse ${UPSTREAM_REMOTE_BRANCH}
+  spopd
 }
 
 pull-upstream() {
-  echo "@@@BUILD_STEP Pull upstream git source@@@"
   # Get the upstream changes onto the local tracking branch
   git checkout ${UPSTREAM_BRANCH}
   git fetch ${UPSTREAM_REMOTE}
@@ -96,11 +104,12 @@ pull-pnacl() {
   git merge --ff ${PNACL_REMOTE_BRANCH}
 }
 
-#+ merge-all [git rev or "tip"]  - Merge everything
+#+ merge-all [git rev]  - Merge everything
 merge-all() {
-  if [ $# -ne 1 ]; then
-    Fatal "Please specify revision or 'tip'"
+  if [[ $# -ne 1 ]]; then
+    Fatal "Please specify revision"
   fi
+  local revision=$1
 
   cd "${TC_SRC_LLVM}"
 
@@ -110,14 +119,8 @@ merge-all() {
   pull-upstream
   pull-pnacl
 
-  if [ "$1" == "tip" ]; then
-    MERGE_REVISION=$(get-tip-revision)
-  else
-    MERGE_REVISION=$1
-  fi
-
-  echo "@@@BUILD_STEP Merge@@@"
-  git-merge ${MERGE_REVISION}
+  echo "@@@BUILD_STEP Merge ${revision}@@@"
+  git-merge ${revision}
 
   generate-diff "${POSTDIFF}"
 
@@ -161,7 +164,7 @@ git-merge() {
   git checkout ${PNACL_BRANCH}
   git merge --no-commit $1 2>&1 | tee "${MERGE_LOG_FILE}"
   local gitret=${PIPESTATUS[0]}
-  if [ ${gitret} -ne 0 ]; then
+  if [[ ${gitret} != 0 ]]; then
     echo "==== REMAINING MERGE CONFLICTS (file deletes, etc.) ===="
     grep CONFLICT "${MERGE_LOG_FILE}"
     echo "==== END grep of ${MERGE_LOG_FILE} ===="
@@ -234,6 +237,14 @@ get-clang-rev() {
     | cut --fields=1 --delimiter=' ')
   cd "${TC_SRC_CLANG}"
   git rev-list --before=${timestamp} --max-count=1 master
+  spopd
+}
+
+#@ clean  - reset the source tree to a known state
+clean() {
+  spushd "${TC_SRC_LLVM}"
+  git reset --hard HEAD
+  git checkout ${PNACL_BRANCH}
   spopd
 }
 

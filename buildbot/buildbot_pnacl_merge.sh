@@ -25,7 +25,7 @@ export PNACL_BUILDBOT=true
 
 GSUTIL=buildbot/gsutil.sh
 PNACL_BUILD=pnacl/build.sh
-MERGE_TOOL=pnacl/scripts/merge-tool.sh
+MERGE_TOOL=pnacl/scripts/merge-tool-git.sh
 SPEC2K_SCRIPT=buildbot/buildbot_spec2k.sh
 PNACL_SCRIPT=buildbot/buildbot_pnacl.sh
 
@@ -45,15 +45,14 @@ clobber() {
 merge-bot() {
   clobber
 
+  echo "@@@BUILD_STEP show-config@@@"
+  ${PNACL_BUILD} show-config
+
   # If BUILDBOT_REVISION is blank, use LLVM tip of tree
   if [ -z "${BUILDBOT_REVISION}" ]; then
-    export BUILDBOT_REVISION=$(${MERGE_TOOL} get-tip-revision)
-  fi
-
-  # Sanity check BUILDBOT_REVISION
-  if [ ${BUILDBOT_REVISION} -lt 140000 ]; then
-     echo 'ERROR: BUILDBOT_REVISION is invalid'
-     exit 1
+    # TODO(dschuff): find out what vars are set on the LLVM bot
+    ${MERGE_TOOL} pull-upstream
+    export BUILDBOT_REVISION=$(${MERGE_TOOL} get-head-revision)
   fi
 
   if [ -z "${BUILDBOT_BUILDNUMBER:-}" ]; then
@@ -62,6 +61,11 @@ merge-bot() {
   fi
 
   local ret=0
+  # Sync the rest of pnacl sources before doing the merge, because it
+  # steps on the LLVM source
+  ${PNACL_BUILD} sync-sources
+
+  # Merge LLVM
   ${MERGE_TOOL} clean
   ${MERGE_TOOL} auto ${BUILDBOT_REVISION} || ret=$?
   if [ ${ret} -eq 55 ] ; then
@@ -72,18 +76,16 @@ merge-bot() {
     exit 1
   fi
 
-  echo "@@@BUILD_STEP show-config@@@"
-  ${PNACL_BUILD} show-config
 
   # Variables for build.sh
-  export LLVM_PROJECT_REV=${BUILDBOT_REVISION}
-  export PNACL_MERGE_TESTING=true
   export PNACL_PRUNE=true
 
   # Build the un-sandboxed toolchain
   echo "@@@BUILD_STEP compile_toolchain@@@"
   ${PNACL_BUILD} clean
-  ${PNACL_BUILD} everything-translator
+  # Don't sync-sources here
+  ${PNACL_BUILD} build-all
+  ${PNACL_BUILD} translator-all
 
   #echo "@@@BUILD_STEP archive_toolchain@@@"
   #${PNACL_BUILD} tarball pnaclsdk.tgz
