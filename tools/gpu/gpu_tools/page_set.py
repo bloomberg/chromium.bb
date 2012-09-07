@@ -23,15 +23,16 @@ class PageSet(object):
       self.LoadFromDict(data)
 
   def LoadFromDict(self, data):
-      self.description = data["description"]
-      for p in data["pages"]:
-        page = Page()
-        for k,v in p.items():
-          if k == "url":
-            if not re.match('(.+)://', v):
-              v = 'http://%s' % v
-          setattr(page, k, v)
-        self.pages.append(page)
+    self.description = data["description"]
+    for p in data["pages"]:
+      page = Page()
+      for k,v in p.items():
+        if k == "url":
+          if not re.match('(.+)://', v):
+            v = 'http://%s' % v
+        setattr(page, k, v)
+      self.pages.append(page)
 
   def __iter__(self):
     return self.pages.__iter__()
+

@@ -8,13 +8,11 @@ class FileServer(object):
   def __init__(self, path, port=8000):
     self._server = None
     self._devnull = None
-    assert os.path.exists(path)
-    if os.path.isdir(path):
-      self._path = path
-    else:
-      self._path = os.path.dirname(path)
+    self._path = path
     self._port = port
 
+    assert os.path.exists(path)
+    assert os.path.isdir(path)
 
   def __enter__(self):
     self._devnull = open(os.devnull, 'w')

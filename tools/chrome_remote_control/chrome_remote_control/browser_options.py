@@ -20,6 +20,11 @@ class BrowserOptions(optparse.Values):
     self.android_device = None
     self.extra_browser_args = []
 
+  def Copy(self):
+    other = BrowserOptions()
+    other.__dict__.update(self.__dict__)
+    return other
+
   def CreateParser(self, *args, **kwargs):
     parser = optparse.OptionParser(*args, **kwargs)
 

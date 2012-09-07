@@ -6,10 +6,10 @@
 // from top to bottom.
 //
 // Usage:
-//   1. Define a callback that takes the results array as a parameter.
+//   1. Define a callback that takes a RenderingStats object as a parameter.
 //   2. To start the test, call new __ScrollTest(callback).
 //   3a. When the test is complete, the callback will be called.
-//   3b. If no callback is specified, the results are sent to the console.
+//   3b. If no callback is specified, the results is sent to the console.
 
 (function() {
   var getTimeMs = (function() {
@@ -80,7 +80,7 @@
     this.finalStats_ = this.getRenderingStats_();
   }
 
-  GpuBenchmarkingRenderingStats.prototype.getResult = function() {
+  GpuBenchmarkingRenderingStats.prototype.get = function() {
     if (!this.initialStats_)
       throw new Error("Start not called.");
 
@@ -119,13 +119,15 @@
     this.recording_ = false;
   }
 
-  RafRenderingStats.prototype.getResult = function() {
-    var result = {};
-    result.numAnimationFrames = this.frameTimes_.length - 1;
-    result.droppedFrameCount = this.getDroppedFrameCount_(this.frameTimes_);
-    result.totalTimeInSeconds = (this.frameTimes_[this.frameTimes_.length - 1] -
+  RafRenderingStats.prototype.get = function() {
+    var results = {};
+    results.numAnimationFrames = this.frameTimes_.length - 1;
+    results.numFramesSentToScreen = results.numFramesSentToScreen;
+    results.droppedFrameCount = this.getDroppedFrameCount_(this.frameTimes_);
+    results.totalTimeInSeconds = (
+        this.frameTimes_[this.frameTimes_.length - 1] -
         this.frameTimes_[0]) / 1000;
-    return result;
+    return results;
   };
 
   RafRenderingStats.prototype.recordFrameTime_ = function(timestamp) {
@@ -146,15 +148,11 @@
     return droppedFrameCount;
   };
 
-  // This class scrolls a page from the top to the bottom a given number of
-  // times.
-  //
-  // Each full transit of the page is called a "pass."
+  // This class scrolls a page from the top to the bottom once.
   //
   // The page is scrolled down by a set of scroll gestures. These gestures
   // correspond to a reading gesture on that platform.
   //
-  // i.e. for TOTAL_ITERATIONS_ = 2, we do
   // start_ -> startPass_ -> ...scrolling... -> onGestureComplete_ ->
   //        -> startPass_ -> .. scrolling... -> onGestureComplete_ -> callback_
   //
@@ -163,13 +161,8 @@
   function ScrollTest(opt_callback, opt_isGmailTest) {
     var self = this;
 
-    this.TOTAL_ITERATIONS_ = 1;
-
     this.callback_ = opt_callback;
     this.isGmailTest_ = opt_isGmailTest;
-    this.iteration_ = 0;
-
-    this.results_ = []
 
     if (this.isGmailTest_) {
       gmonkey.load('2.0', function(api) {
@@ -229,23 +222,15 @@
 
     this.endPass_();
 
-    var isTestComplete = this.iteration_ >= this.TOTAL_ITERATIONS_;
-    if (!isTestComplete) {
-      this.startPass_();
-      return;
-    }
-
-    // Send results.
+    // We're done.
     if (this.callback_)
-      this.callback_(this.results_);
+      this.callback_(this.renderingStats_.get());
     else
-      console.log(this.results_);
+      console.log(this.renderingStats_.get());
   };
 
   ScrollTest.prototype.endPass_ = function() {
     this.renderingStats_.stop();
-    this.results_.push(this.renderingStats_.getResult());
-    this.iteration_++;
   };
 
 
