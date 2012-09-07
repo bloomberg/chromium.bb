@@ -179,9 +179,9 @@ class InstantController : public InstantLoaderDelegate {
                    const TabContents* active_tab);
 
   // Ensures that the |loader_| uses the default Instant URL, recreating it if
-  // necessary. Will not do anything if the Instant URL could not be determined
-  // or the active tab is NULL (browser is shutting down).
-  void CreateDefaultLoader();
+  // necessary, and returns true. Returns false if the Instant URL could not be
+  // determined or the active tab is NULL (browser is shutting down).
+  bool CreateDefaultLoader();
 
   // If the |loader_| is not showing, it is deleted and recreated. Else the
   // refresh is skipped and the next refresh is scheduled.
@@ -238,6 +238,9 @@ class InstantController : public InstantLoaderDelegate {
 
   // See comments on the getter above.
   content::PageTransition last_transition_type_;
+
+  // True if the last match passed to Update() was a search (versus a URL).
+  bool last_match_was_search_;
 
   // True if the preview is currently being displayed. Guaranteed to be false
   // if IsOutOfDate() is true.

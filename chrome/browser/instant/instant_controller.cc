@@ -179,8 +179,12 @@ bool InstantController::Update(const AutocompleteMatch& match,
   std::string instant_url;
   Profile* profile = active_tab->profile();
 
-  // If the match's TemplateURL isn't valid, it is likely not a query.
-  if (!GetInstantURL(match.GetTemplateURL(profile), &instant_url)) {
+  // If the match's TemplateURL is valid, it's a search query; use it. If it's
+  // not valid, it's likely a URL; in EXTENDED mode, try using the default
+  // search engine's TemplateURL instead.
+  if (GetInstantURL(match.GetTemplateURL(profile), &instant_url)) {
+    ResetLoader(instant_url, active_tab);
+  } else if (mode_ != EXTENDED || !CreateDefaultLoader()) {
     Hide();
     return false;
   }
@@ -190,12 +194,11 @@ bool InstantController::Update(const AutocompleteMatch& match,
     return false;
   }
 
-  ResetLoader(instant_url, active_tab);
-  last_active_tab_ = active_tab;
-
   // Track the non-Instant search URL for this query.
   url_for_history_ = match.destination_url;
   last_transition_type_ = match.transition;
+  last_active_tab_ = active_tab;
+  last_match_was_search_ = AutocompleteMatch::IsSearchType(match.type);
 
   // In EXTENDED mode, we send only |user_text| as the query text. In all other
   // modes, we use the entire |full_text|.
@@ -239,7 +242,10 @@ bool InstantController::Update(const AutocompleteMatch& match,
   // We don't have suggestions yet, but need to reset any existing "gray text".
   delegate_->SetSuggestedText(string16(), INSTANT_COMPLETE_NOW);
 
-  return true;
+  // Though we may have handled a URL match above, we return false here, so that
+  // omnibox prerendering can kick in. TODO(sreeram): Remove this (and always
+  // return true) once we are able to commit URLs as well.
+  return last_match_was_search_;
 }
 
 // TODO(tonyg): This method only fires when the omnibox bounds change. It also
@@ -296,7 +302,8 @@ void InstantController::Hide() {
 
 bool InstantController::IsCurrent() const {
   DCHECK(IsOutOfDate() || GetPreviewContents());
-  return !IsOutOfDate() && GetPreviewContents() && loader_->supports_instant();
+  return !IsOutOfDate() && GetPreviewContents() &&
+         loader_->supports_instant() && last_match_was_search_;
 }
 
 TabContents* InstantController::CommitCurrentPreview(InstantCommitType type) {
@@ -553,6 +560,7 @@ InstantController::InstantController(InstantControllerDelegate* delegate,
       last_active_tab_(NULL),
       last_verbatim_(false),
       last_transition_type_(content::PAGE_TRANSITION_LINK),
+      last_match_was_search_(false),
       is_showing_(false),
       loader_processed_last_update_(false) {
 }
@@ -577,21 +585,22 @@ void InstantController::ResetLoader(const std::string& instant_url,
   }
 }
 
-void InstantController::CreateDefaultLoader() {
+bool InstantController::CreateDefaultLoader() {
   const TabContents* active_tab = delegate_->GetActiveTabContents();
 
   // We could get here with no active tab if the Browser is closing.
   if (!active_tab)
-    return;
+    return false;
 
   const TemplateURL* template_url =
       TemplateURLServiceFactory::GetForProfile(active_tab->profile())->
                                  GetDefaultSearchProvider();
   std::string instant_url;
   if (!GetInstantURL(template_url, &instant_url))
-    return;
+    return false;
 
   ResetLoader(instant_url, active_tab);
+  return true;
 }
 
 void InstantController::OnStaleLoader() {
@@ -616,6 +625,7 @@ void InstantController::DeleteLoader() {
   last_verbatim_ = false;
   last_suggestion_ = InstantSuggestion();
   last_transition_type_ = content::PAGE_TRANSITION_LINK;
+  last_match_was_search_ = false;
   last_omnibox_bounds_ = gfx::Rect();
   url_for_history_ = GURL();
   if (GetPreviewContents())
