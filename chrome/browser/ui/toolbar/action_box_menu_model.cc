@@ -39,7 +39,8 @@ ActionBoxMenuModel::ActionBoxMenuModel(Browser* browser)
     : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
       browser_(browser) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  if (ChromeToMobileServiceFactory::GetForProfile(browser_->profile())->
+  if (!browser_->profile()->IsOffTheRecord() &&
+      ChromeToMobileServiceFactory::GetForProfile(browser_->profile())->
       HasMobiles()) {
     AddItemWithStringId(IDC_CHROME_TO_MOBILE_PAGE,
                         IDS_CHROME_TO_MOBILE_BUBBLE_TOOLTIP);
