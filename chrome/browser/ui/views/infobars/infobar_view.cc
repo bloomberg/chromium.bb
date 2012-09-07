@@ -241,6 +241,15 @@ void InfoBarView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
     RemoveChildView(close_button_);
     AddChildView(close_button_);
   }
+
+  // Ensure the infobar is tall enough to display its contents.
+  const int kMinimumVerticalPadding = 6;
+  int height = kDefaultBarTargetHeight;
+  for (int i = 0; i < child_count(); ++i) {
+    const int child_height = child_at(i)->GetPreferredSize().height();
+    height = std::max(height, child_height + kMinimumVerticalPadding);
+  }
+  SetBarTargetHeight(height);
 }
 
 void InfoBarView::PaintChildren(gfx::Canvas* canvas) {
