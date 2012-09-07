@@ -46,6 +46,8 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_KBD_BRIGHTNESS_UP, ui::EF_NONE, KEYBOARD_BRIGHTNESS_UP },
   { true, ui::VKEY_F4, ui::EF_CONTROL_DOWN, CYCLE_DISPLAY_MODE },
   { true, ui::VKEY_L, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, LOCK_SCREEN },
+  { true, ui::VKEY_POWER, ui::EF_NONE, POWER_PRESSED },
+  { false, ui::VKEY_POWER, ui::EF_NONE, POWER_RELEASED },
 #if !defined(NDEBUG)
   // Extra shortcut for debug build to activate lock screen on linux desktop.
   { true, ui::VKEY_L, ui::EF_ALT_DOWN, LOCK_SCREEN },
@@ -185,7 +187,9 @@ const AcceleratorAction kReservedActions[] = {
   MAGNIFY_SCREEN_ZOOM_IN,  // Control+F7
   VOLUME_MUTE,  // F8
   VOLUME_DOWN,  // F9
-  VOLUME_UP  // F10
+  VOLUME_UP,  // F10
+  POWER_PRESSED,
+  POWER_RELEASED,
   // TODO(yusukes): Handle F1, F2, F3, and F4 without modifiers in BrowserView.
 #endif
 };
