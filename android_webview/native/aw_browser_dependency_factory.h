@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 
 namespace content {
+class BrowserContext;
 class JavaScriptDialogCreator;
 class WebContents;
 }
@@ -34,6 +35,9 @@ class AwBrowserDependencyFactory {
 
   // Returns the singleton instance. |SetInstance| must have been called.
   static AwBrowserDependencyFactory* GetInstance();
+
+  // Returns the current browser context based on the specified mode.
+  virtual content::BrowserContext* GetBrowserContext(bool incognito) = 0;
 
   // Constructs and returns ownership of a WebContents instance.
   virtual content::WebContents* CreateWebContents(bool incognito) = 0;

@@ -13,4 +13,5 @@ include_rules = [
   "+chrome/browser/component",
   "+content/public",
   "+jni",
+  "+net",
 ]

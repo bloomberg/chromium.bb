@@ -18,6 +18,19 @@ class AwContentBrowserClient : public chrome::ChromeContentBrowserClient {
 
   // Overriden methods from ContentBrowserClient.
   virtual void ResourceDispatcherHostCreated() OVERRIDE;
+  virtual bool AllowGetCookie(const GURL& url,
+                              const GURL& first_party,
+                              const net::CookieList& cookie_list,
+                              content::ResourceContext* context,
+                              int render_process_id,
+                              int render_view_id) OVERRIDE;
+  virtual bool AllowSetCookie(const GURL& url,
+                              const GURL& first_party,
+                              const std::string& cookie_line,
+                              content::ResourceContext* context,
+                              int render_process_id,
+                              int render_view_id,
+                              net::CookieOptions* options) OVERRIDE;
 };
 
 }  // namespace android_webview

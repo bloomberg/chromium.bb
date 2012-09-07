@@ -7,7 +7,7 @@
 
 if [ "$3" = "" ]
 then
-  echo "Usage: install_binary path/to/binary path/to/target1 path/to/target2 path/to/symbols"
+  echo "Usage: install_binary path/to/binary path/to/target1 path/to/target2 path/to/symbols path/to/symbols2"
   exit 1
 fi
 
@@ -15,9 +15,12 @@ SOURCE=$1
 TARGET=$2
 TARGET2=$3
 SYMBOLS=$4
+SYMBOLS2=$5
 
 mkdir -p $(dirname $SYMBOLS)
 
 cp $SOURCE $SYMBOLS
+# Create a hard link to avoid the additional copy to the secondary location.
+ln $SYMBOLS $SYMBOLS2
 $STRIP --strip-unneeded $SOURCE -o $TARGET
 cp $TARGET $TARGET2

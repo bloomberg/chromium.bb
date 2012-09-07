@@ -31,6 +31,8 @@
         'aw_contents.h',
         'aw_web_contents_delegate.cc',
         'aw_web_contents_delegate.h',
+        'cookie_manager.cc',
+        'cookie_manager.h',
         'intercepted_request_data.cc',
         'intercepted_request_data.h',
       ],
@@ -41,6 +43,7 @@
       'sources': [
           '../java/src/org/chromium/android_webview/AndroidWebViewUtil.java',
           '../java/src/org/chromium/android_webview/AwContents.java',
+          '../java/src/org/chromium/android_webview/CookieManager.java',
           '../java/src/org/chromium/android_webview/InterceptedRequestData.java',
       ],
       'variables': {
