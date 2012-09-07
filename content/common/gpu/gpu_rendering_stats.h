@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_RENDERING_STATS_H_
-#define CONTENT_PUBLIC_COMMON_RENDERING_STATS_H_
+#ifndef CONTENT_COMMON_GPU_GPU_RENDERING_STATS_H_
+#define CONTENT_COMMON_GPU_GPU_RENDERING_STATS_H_
 
 #include "base/time.h"
 #include "content/common/content_export.h"

@@ -10,7 +10,7 @@
 #include "base/file_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/string_number_conversions.h"
-#include "content/public/common/gpu_rendering_stats.h"
+#include "content/common/gpu/gpu_rendering_stats.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/all_rendering_benchmarks.h"
 #include "content/renderer/render_view_impl.h"
