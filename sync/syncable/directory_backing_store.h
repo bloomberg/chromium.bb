@@ -153,6 +153,7 @@ class DirectoryBackingStore : public base::NonThreadSafe {
   bool MigrateVersion75To76();
   bool MigrateVersion76To77();
   bool MigrateVersion77To78();
+  bool MigrateVersion78To79();
 
   scoped_ptr<sql::Connection> db_;
   sql::Statement save_entry_statement_;

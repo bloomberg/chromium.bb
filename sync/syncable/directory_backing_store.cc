@@ -39,7 +39,7 @@ static const string::size_type kUpdateStatementBufferSize = 2048;
 
 // Increment this version whenever updating DB tables.
 extern const int32 kCurrentDBVersion;  // Global visibility for our unittest.
-const int32 kCurrentDBVersion = 78;
+const int32 kCurrentDBVersion = 79;
 
 // Iterate over the fields of |entry| and bind each to |statement| for
 // updating.  Returns the number of args bound.
@@ -307,6 +307,12 @@ bool DirectoryBackingStore::InitializeTables() {
   if (version_on_disk == 77) {
     if (MigrateVersion77To78())
       version_on_disk = 78;
+  }
+
+  // Version 79 migration is a one-time fix for some users in a bad state.
+  if (version_on_disk == 78) {
+    if (MigrateVersion78To79())
+      version_on_disk = 79;
   }
 
   // If one of the migrations requested it, drop columns that aren't current.
@@ -937,6 +943,18 @@ bool DirectoryBackingStore::MigrateVersion77To78() {
     return false;
   }
   SetVersion(78);
+  return true;
+}
+
+bool DirectoryBackingStore::MigrateVersion78To79() {
+  // Some users are stuck with a DB that causes them to reuse existing IDs.  We
+  // perform this one-time fixup on all users to help the few that are stuck.
+  // See crbug.com/142987 for details.
+  if (!db_->Execute(
+          "UPDATE share_info SET next_id = next_id - 65536")) {
+    return false;
+  }
+  SetVersion(79);
   return true;
 }
 
