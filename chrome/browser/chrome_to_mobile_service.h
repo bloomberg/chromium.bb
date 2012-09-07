@@ -13,6 +13,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "base/timer.h"
@@ -217,6 +218,9 @@ class ChromeToMobileService : public ProfileKeyedService,
 
   // The set of snapshots currently available.
   std::set<FilePath> snapshots_;
+
+  // The list of active URLFetcher requests owned by the service.
+  ScopedVector<net::URLFetcher> url_fetchers_;
 
   // Map URLFetchers to observers for reporting OnSendComplete.
   typedef std::map<const net::URLFetcher*, base::WeakPtr<Observer> >

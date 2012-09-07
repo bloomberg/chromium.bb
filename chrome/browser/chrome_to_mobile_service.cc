@@ -312,6 +312,15 @@ void ChromeToMobileService::OnURLFetchComplete(const net::URLFetcher* source) {
     HandleSearchResponse(source);
   else
     HandleSubmitResponse(source);
+
+  // Remove the URLFetcher from the ScopedVector; this deletes the URLFetcher.
+  for (ScopedVector<net::URLFetcher>::iterator it = url_fetchers_.begin();
+       it != url_fetchers_.end(); ++it) {
+    if (*it == source) {
+      url_fetchers_.erase(it);
+      break;
+    }
+  }
 }
 
 void ChromeToMobileService::Observe(
@@ -422,6 +431,7 @@ net::URLFetcher* ChromeToMobileService::CreateRequest() {
   net::URLFetcher* request = net::URLFetcher::Create(
       cloud_print::GetUrlForSubmit(cloud_print_url_),
       net::URLFetcher::POST, this);
+  url_fetchers_.push_back(request);
   InitRequest(request);
   return request;
 }
@@ -513,6 +523,7 @@ void ChromeToMobileService::RequestDeviceSearch() {
 
   net::URLFetcher* search_request = net::URLFetcher::Create(
       GetSearchURL(cloud_print_url_), net::URLFetcher::GET, this);
+  url_fetchers_.push_back(search_request);
   InitRequest(search_request);
   search_request->Start();
 }
