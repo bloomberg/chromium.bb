@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#import "chrome/browser/ui/cocoa/tabs/throbber_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
@@ -146,6 +147,60 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
 }
 @end
 
+@interface WaitingView : NSView {
+ @private
+  scoped_nsobject<NSTextField> text_;
+  scoped_nsobject<ThrobberView> throbber_;
+}
+@end
+
+@implementation WaitingView
+- (id)init {
+  NSRect frame = NSMakeRect(WebIntentPicker::kContentAreaBorder, 0,
+                            kTextWidth, 140);
+
+  if (self = [super initWithFrame:frame]) {
+    const CGFloat kTopMargin = 35.0;
+    const CGFloat kBottomMargin = 25.0;
+    const CGFloat kVerticalSpacing = 18.0;
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+
+    frame.origin = NSMakePoint(WebIntentPicker::kContentAreaBorder,
+                               kBottomMargin);
+    frame.size.width = kTextWidth;
+    text_.reset([[NSTextField alloc] initWithFrame:frame]);
+    ConfigureTextFieldAsLabel(text_);
+    [text_ setAlignment:NSCenterTextAlignment];
+    [text_ setFont:[NSFont boldSystemFontOfSize:[NSFont systemFontSize]]];
+    [text_ setStringValue:
+        l10n_util::GetNSStringWithFixup(IDS_INTENT_PICKER_WAIT_FOR_CWS)];
+    frame.size.height +=
+        [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:
+              text_];
+    [text_ setFrame:frame];
+
+    frame.origin.y += NSHeight(frame) + kVerticalSpacing;
+
+    // The sprite image consists of all the animation frames put together in one
+    // horizontal/wide image. Each animation frame is square in shape within the
+    // sprite.
+    NSImage* iconImage = rb.GetNativeImageNamed(IDR_SPEECH_INPUT_SPINNER);
+    frame.size = [iconImage size];
+    frame.size.width = NSHeight(frame);
+    frame.origin.x = (WebIntentPicker::kWindowWidth - NSWidth(frame))/2.0;
+    throbber_.reset([ThrobberView filmstripThrobberViewWithFrame:frame
+                                                           image:iconImage]);
+
+    frame.size = NSMakeSize(WebIntentPicker::kWindowWidth,
+                            NSMaxY(frame) + kTopMargin);
+    frame.origin = NSMakePoint(0, 0);
+    [self setSubviews:@[throbber_, text_]];
+    [self setFrame:frame];
+  }
+  return self;
+}
+@end
+
 // An NSView subclass to display ratings stars.
 @interface RatingsView : NSView
   // Mark RatingsView as disabled/enabled.
@@ -209,7 +264,7 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
   frame.size.height +=
       [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:
             titleField_];
-  [titleField_ setFrame: frame];
+  [titleField_ setFrame:frame];
 }
 
 - (void)setSubtitle:(NSString*)subtitle {
@@ -221,7 +276,7 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
      frame.size.height +=
          [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:
                subtitleField_];
-     [subtitleField_ setFrame: frame];
+     [subtitleField_ setFrame:frame];
   } else {
     [subtitleField_ setHidden:TRUE];
   }
@@ -240,7 +295,7 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
   if (![subtitleField_ isHidden]) {
     frame = [subtitleField_ frame];
     frame.origin.y = offset;
-    [subtitleField_ setFrame: frame];
+    [subtitleField_ setFrame:frame];
     offset += NSHeight(frame);
   }
 
@@ -309,7 +364,7 @@ const CGFloat kAddButtonWidth = 128.0;
 
   NSRect frame = NSMakeRect(0, 0, (kStarSize + kStarSpacing) * 5, kStarSize);
   RatingsView* widget = [[RatingsView alloc] initWithFrame:frame];
-  [widget setSubviews: subviews];
+  [widget setSubviews:subviews];
   return widget;
 }
 
@@ -399,7 +454,7 @@ const CGFloat kAddButtonWidth = 128.0;
   frame = [ratingsWidget_ frame];
   frame.origin.y += (kMaxHeight - NSHeight(frame)) / 2.0;
   frame.origin.x = offsetX;
-  [ratingsWidget_ setFrame: frame];
+  [ratingsWidget_ setFrame:frame];
 
   // Add an "add to chromium" button.
   string = l10n_util::GetNSStringWithFixup(
@@ -897,8 +952,6 @@ const CGFloat kAddButtonWidth = 128.0;
 }
 
 - (NSView*)createEmptyView {
-  NSMutableArray* subviews = [NSMutableArray array];
-
   NSRect titleFrame = NSMakeRect(WebIntentPicker::kContentAreaBorder,
                                  WebIntentPicker::kContentAreaBorder,
                                  kTextWidth, 1);
@@ -936,13 +989,10 @@ const CGFloat kAddButtonWidth = 128.0;
   bodyFrame.origin.y = 0;
 
   [title setFrame:titleFrame];
-  [body setFrame: bodyFrame];
-
-  [subviews addObject:title];
-  [subviews addObject:body];
+  [body setFrame:bodyFrame];
 
   NSView* view = [[NSView alloc] initWithFrame:viewFrame];
-  [view setSubviews:subviews];
+  [view setSubviews:@[title, body]];
 
   return view;
 }
@@ -963,7 +1013,12 @@ const CGFloat kAddButtonWidth = 128.0;
       !model_->GetInstalledServiceCount() &&
       !model_->GetSuggestedExtensionCount();
 
-  if (isEmpty) {
+  if (model_ && model_->IsWaitingForSuggestions()) {
+    if (!waitingView_.get())
+      waitingView_.reset([[WaitingView alloc] init]);
+    [subviews addObject:waitingView_];
+    offset += NSHeight([waitingView_ frame]);
+  } else if (isEmpty) {
     scoped_nsobject<NSView> emptyView([self createEmptyView]);
     [subviews addObject:emptyView];
     offset += NSHeight([emptyView frame]);
@@ -1016,7 +1071,7 @@ const CGFloat kAddButtonWidth = 128.0;
   textFrame.size.height +=
       [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:
             actionTextField_];
-  [actionTextField_ setFrame: textFrame];
+  [actionTextField_ setFrame:textFrame];
 }
 
 - (void)setInlineDispositionTitle:(NSString*)title {

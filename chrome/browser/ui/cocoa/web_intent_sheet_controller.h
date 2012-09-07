@@ -13,7 +13,9 @@
 
 class WebIntentPickerCocoa;
 class WebIntentPickerModel;
+
 @class IntentView;
+@class WaitingView;
 
 // Controller for intent picker constrained dialog. This dialog pops up
 // whenever a web page invokes ActivateIntent and lets the user choose which
@@ -29,6 +31,7 @@ class WebIntentPickerModel;
   // The intent picker data to be rendered. Weak reference.
   WebIntentPickerModel* model_;
 
+  scoped_nsobject<WaitingView> waitingView_;
   scoped_nsobject<NSTextField> actionTextField_;
   scoped_nsobject<IntentView> intentView_;
   scoped_nsobject<NSButton> closeButton_;

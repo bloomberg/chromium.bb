@@ -142,7 +142,7 @@ TEST_F(WebIntentPickerSheetControllerTest, IntentRows) {
       webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW);
   model.AddInstalledService(string16(), GURL("http://example.com/intent.html"),
       webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW);
-
+  model.SetWaitingForSuggestions(false);
   [controller_ performLayoutWithModel:&model];
 
   CheckWindow(/*row_count=*/2);
@@ -169,6 +169,8 @@ TEST_F(WebIntentPickerSheetControllerTest, SuggestionRow) {
   suggestions.push_back(WebIntentPickerModel::SuggestedExtension(
       string16(), string16(), 2.5));
   model.AddSuggestedExtensions(suggestions);
+  model.SetWaitingForSuggestions(false);
+
   [controller_ performLayoutWithModel:&model];
 
   CheckWindow(/*row_count=*/1);
@@ -200,6 +202,7 @@ TEST_F(WebIntentPickerSheetControllerTest, MixedIntentView) {
       webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW);
   model.AddInstalledService(string16(), GURL("http://example.com/intent.html"),
       webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW);
+  model.SetWaitingForSuggestions(false);
 
   [controller_ performLayoutWithModel:&model];
 
