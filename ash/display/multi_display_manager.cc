@@ -140,7 +140,8 @@ void MultiDisplayManager::OnNativeDisplaysChanged(
 
 RootWindow* MultiDisplayManager::CreateRootWindowForDisplay(
     const gfx::Display& display) {
-  RootWindow* root_window = new RootWindow(display.bounds_in_pixel());
+  RootWindow* root_window =
+      new RootWindow(RootWindow::CreateParams(display.bounds_in_pixel()));
   // No need to remove RootWindowObserver because
   // the DisplayManager object outlives RootWindow objects.
   root_window->AddRootWindowObserver(this);

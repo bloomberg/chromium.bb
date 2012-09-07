@@ -22,7 +22,8 @@ DesktopStackingClient::~DesktopStackingClient() {
 Window* DesktopStackingClient::GetDefaultParent(Window* window,
                                                 const gfx::Rect& bounds) {
   if (!null_parent_.get()) {
-    null_parent_.reset(new aura::RootWindow(gfx::Rect(100, 100)));
+    null_parent_.reset(new aura::RootWindow(
+        aura::RootWindow::CreateParams(gfx::Rect(100, 100))));
     null_parent_->Init();
     null_parent_->set_focus_manager(new FocusManager);
 

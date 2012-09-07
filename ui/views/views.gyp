@@ -446,6 +446,10 @@
             'widget/desktop_native_widget_aura.cc',
             'widget/desktop_native_widget_aura.h',
           ],
+          'sources/': [
+            ['exclude', 'widget/desktop_root_window_host_win.cc'],
+            ['exclude', 'widget/desktop_root_window_host_win.h'],
+          ],
         }],
         ['use_aura==0 and OS=="win"', {
           'sources!': [

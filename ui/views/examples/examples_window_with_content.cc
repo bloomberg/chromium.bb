@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/memory/scoped_vector.h"
 #include "base/utf_string_conversions.h"
 #include "content/public/browser/browser_context.h"
@@ -42,6 +43,10 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+
+#if defined(USE_AURA)
+#include "ui/views/widget/desktop_native_widget_aura.h"
+#endif
 
 namespace views {
 namespace examples {
@@ -202,9 +207,16 @@ void ShowExamplesWindowWithContent(Operation operation,
   if (ExamplesWindowContents::instance()) {
     ExamplesWindowContents::instance()->GetWidget()->Activate();
   } else {
-    Widget::CreateWindowWithBounds(new ExamplesWindowContents(operation,
-                                                              browser_context),
-                                   gfx::Rect(0, 0, 850, 300))->Show();
+    Widget* widget = new Widget;
+    Widget::InitParams params;
+    params.delegate = new ExamplesWindowContents(operation, browser_context);
+    params.bounds = gfx::Rect(0, 0, 850, 300);
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+    if (CommandLine::ForCurrentProcess()->HasSwitch("win-aura"))
+      params.native_widget = new DesktopNativeWidgetAura(widget);
+#endif
+    widget->Init(params);
+    widget->Show();
   }
 }
 

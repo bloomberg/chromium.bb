@@ -153,7 +153,8 @@ void DesktopNativeWidgetHelperAura::PreInitialize(
   activation_client = new aura::DesktopActivationClient(focus_manager);
 #endif
 
-  root_window_.reset(new aura::RootWindow(bounds));
+  root_window_.reset(
+      new aura::RootWindow(aura::RootWindow::CreateParams(bounds)));
   root_window_->SetProperty(kViewsWindowForRootWindow, window);
   root_window_->Init();
   root_window_->set_focus_manager(focus_manager);

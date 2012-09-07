@@ -17,6 +17,9 @@ class DesktopRootWindowHostLinux : public DesktopRootWindowHost {
 
  private:
   // Overridden from DesktopRootWindowHost:
+  virtual void Init(aura::Window* content_window,
+                    const Widget::InitParams& params) OVERRIDE;
+  virtual void ShowWindowWithState(ui::WindowShowState show_state) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopRootWindowHostLinux);
 };
