@@ -222,16 +222,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiEscalationTest,
       switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
   SetEnabled(true, true, "");
 
-  // Crash the extension and try to enable. The extension should be reloaded and
-  // enabled.
-  ASSERT_TRUE(CrashEnabledExtension(kId));
-  SetEnabled(true, true, "");
-
-  // Crash the extension again and try to disable. This call should be a no-op
-  // and the extension should remain unloaded.
+  // Crash the extension. Mock a reload by disabling and then enabling. The
+  // extension should be reloaded and enabled.
   ASSERT_TRUE(CrashEnabledExtension(kId));
   SetEnabled(false, true, "");
+  SetEnabled(true, true, "");
   const extensions::Extension* extension = browser()->profile()->
-      GetExtensionService()->GetTerminatedExtension(kId);
-  ASSERT_TRUE(extension);
+      GetExtensionService()->GetExtensionById(kId, false);
+  EXPECT_TRUE(extension);
 }

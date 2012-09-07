@@ -454,20 +454,6 @@ bool SetEnabledFunction::RunImpl() {
     return false;
   }
 
-  // The extension may have been unloaded due to a crash.
-  if (service()->GetTerminatedExtension(extension_id_)) {
-    if (params->enabled) {
-      service()->ReloadExtension(extension_id_);
-    } else {
-      // Treat setEnabled(false) when the extension has crashed as a no-op.
-      BrowserThread::PostTask(
-          BrowserThread::UI,
-          FROM_HERE,
-          base::Bind(&SetEnabledFunction::SendResponse, this, true));
-      return true;
-    }
-  }
-
   const extensions::ManagementPolicy* policy = extensions::ExtensionSystem::Get(
       profile())->management_policy();
   if (!policy->UserMayModifySettings(extension, NULL)) {

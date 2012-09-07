@@ -897,14 +897,15 @@ void ExtensionService::DisableExtension(
   if (!extension)
     return;
 
-  // Move it over to the disabled list.
+  // Move it over to the disabled list. Don't send a second unload notification
+  // for terminated extensions being disabled.
   disabled_extensions_.Insert(make_scoped_refptr(extension));
-  if (extensions_.Contains(extension->id()))
+  if (extensions_.Contains(extension->id())) {
     extensions_.Remove(extension->id());
-  else
+    NotifyExtensionUnloaded(extension, extension_misc::UNLOAD_REASON_DISABLE);
+  } else {
     terminated_extensions_.Remove(extension->id());
-
-  NotifyExtensionUnloaded(extension, extension_misc::UNLOAD_REASON_DISABLE);
+  }
 
   SyncExtensionChangeIfNeeded(*extension);
 
