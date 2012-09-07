@@ -56,41 +56,27 @@ class TestEventFilterWindowDelegate : public test::TestWindowDelegate {
     consumes_touch_events_ = consumes_touch_events;
   }
 
-  // Overridden from TestWindowDelegate:
-  virtual bool OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
-    return key_event_handling_result_ != ui::ER_UNHANDLED;
+  // Overridden from EventHandler:
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
+    ++key_event_count_;
+    return key_event_handling_result_;
   }
-  virtual bool OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
-    return mouse_event_handling_result_ != ui::ER_UNHANDLED;
+
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+    ++mouse_event_count_;
+    return mouse_event_handling_result_;
   }
+
   virtual ui::TouchStatus OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
     ++touch_event_count_;
     // TODO(sadrul): !
     return ui::TOUCH_STATUS_UNKNOWN;
   }
-  virtual ui::EventResult OnGestureEvent(
-      ui::GestureEvent* event) OVERRIDE {
+
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
     // TODO(sadrul): !
     return ui::ER_UNHANDLED;
   }
-
-  // Overridden from EventHandler:
-  virtual ui::EventResult OnKeyEvent(ui::EventTarget* target,
-                                     ui::KeyEvent* event) OVERRIDE {
-    ++key_event_count_;
-    if (key_event_handling_result_ & ui::ER_CONSUMED)
-      return key_event_handling_result_;
-    return WindowDelegate::OnKeyEvent(target, event);
-  }
-
-  virtual ui::EventResult OnMouseEvent(ui::EventTarget* target,
-                                       ui::MouseEvent* event) OVERRIDE {
-    ++mouse_event_count_;
-    if (mouse_event_handling_result_ & ui::ER_CONSUMED)
-      return mouse_event_handling_result_;
-    return WindowDelegate::OnMouseEvent(target, event);
-  }
-
  private:
   int key_event_count_;
   int mouse_event_count_;

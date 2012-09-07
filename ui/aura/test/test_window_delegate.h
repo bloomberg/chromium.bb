@@ -35,16 +35,11 @@ class TestWindowDelegate : public WindowDelegate {
                                const gfx::Rect& new_bounds) OVERRIDE;
   virtual void OnFocus(Window* old_focused_window) OVERRIDE;
   virtual void OnBlur() OVERRIDE;
-  virtual bool OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE;
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE;
   virtual bool ShouldDescendIntoChildForEventHandling(
       Window* child,
       const gfx::Point& location) OVERRIDE;
-  virtual bool OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
-  virtual ui::TouchStatus OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
-  virtual ui::EventResult OnGestureEvent(
-      ui::GestureEvent* event) OVERRIDE;
   virtual bool CanFocus() OVERRIDE;
   virtual void OnCaptureLost() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
@@ -54,6 +49,12 @@ class TestWindowDelegate : public WindowDelegate {
   virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE;
   virtual bool HasHitTestMask() const OVERRIDE;
   virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE;
+
+  // Overridden from ui::EventHandler:
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual ui::TouchStatus OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
  private:
   int window_component_;
@@ -72,7 +73,7 @@ class ColorTestWindowDelegate : public TestWindowDelegate {
   ui::KeyboardCode last_key_code() const { return last_key_code_; }
 
   // Overridden from TestWindowDelegate:
-  virtual bool OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual void OnWindowDestroyed() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
@@ -104,8 +105,8 @@ class EventCountDelegate : public TestWindowDelegate {
   EventCountDelegate();
 
   // Overridden from TestWindowDelegate:
-  virtual bool OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
-  virtual bool OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
 
   // Returns the counts of mouse motion events in the
   // form of "<enter> <move> <leave>".

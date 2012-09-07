@@ -655,6 +655,8 @@ ui::TouchStatus RootWindow::ProcessTouchEvent(Window* target,
   WindowTracker tracker;
   tracker.Add(target);
 
+  ui::Event::DispatcherApi dispatcher(event);
+  dispatcher.set_target(target);
   for (EventFilters::const_reverse_iterator it = filters.rbegin(),
            rend = filters.rend();
        it != rend; ++it) {

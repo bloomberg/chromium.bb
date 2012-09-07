@@ -6,29 +6,8 @@
 
 namespace aura {
 
-ui::EventResult WindowDelegate::OnKeyEvent(ui::EventTarget* target,
-                                           ui::KeyEvent* event) {
-  return OnKeyEvent(event) ? ui::ER_HANDLED : ui::ER_UNHANDLED;
-}
-
-ui::EventResult WindowDelegate::OnMouseEvent(ui::EventTarget* target,
-                                             ui::MouseEvent* event) {
-  return OnMouseEvent(event) ? ui::ER_HANDLED : ui::ER_UNHANDLED;
-}
-
-ui::EventResult WindowDelegate::OnScrollEvent(ui::EventTarget* target,
-                                              ui::ScrollEvent* event) {
+ui::EventResult WindowDelegate::OnScrollEvent(ui::ScrollEvent* event) {
   return ui::ER_UNHANDLED;
-}
-
-ui::TouchStatus WindowDelegate::OnTouchEvent(ui::EventTarget* target,
-                                             ui::TouchEvent* event) {
-  return ui::TOUCH_STATUS_UNKNOWN;
-}
-
-ui::EventResult WindowDelegate::OnGestureEvent(ui::EventTarget* target,
-                                               ui::GestureEvent* event) {
-  return OnGestureEvent(event);
 }
 
 }  // namespace aura

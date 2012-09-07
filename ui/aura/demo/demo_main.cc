@@ -42,9 +42,6 @@ class DemoWindowDelegate : public aura::WindowDelegate {
                                const gfx::Rect& new_bounds) OVERRIDE {}
   virtual void OnFocus(aura::Window* old_focused_window) OVERRIDE {}
   virtual void OnBlur() OVERRIDE {}
-  virtual bool OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
-    return false;
-  }
   virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE {
     return gfx::kNullCursor;
   }
@@ -55,16 +52,6 @@ class DemoWindowDelegate : public aura::WindowDelegate {
       aura::Window* child,
       const gfx::Point& location) OVERRIDE {
     return true;
-  }
-  virtual bool OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
-    return true;
-  }
-  virtual ui::TouchStatus OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
-    return ui::TOUCH_STATUS_END;
-  }
-  virtual ui::EventResult OnGestureEvent(
-      ui::GestureEvent* event) OVERRIDE {
-    return ui::ER_UNHANDLED;
   }
   virtual bool CanFocus() OVERRIDE { return true; }
   virtual void OnCaptureLost() OVERRIDE {}
@@ -77,6 +64,20 @@ class DemoWindowDelegate : public aura::WindowDelegate {
   virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE {}
   virtual bool HasHitTestMask() const OVERRIDE { return false; }
   virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE {}
+
+  // Overridden from ui::EventHandler:
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
+    return ui::ER_UNHANDLED;
+  }
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+    return ui::ER_HANDLED;
+  }
+  virtual ui::TouchStatus OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
+    return ui::TOUCH_STATUS_END;
+  }
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+    return ui::ER_UNHANDLED;
+  }
 
  private:
   SkColor color_;

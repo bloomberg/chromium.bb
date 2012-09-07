@@ -1167,11 +1167,83 @@ void RenderWidgetHostViewAura::OnBlur() {
   }
 }
 
-bool RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
+gfx::NativeCursor RenderWidgetHostViewAura::GetCursor(const gfx::Point& point) {
+  if (mouse_locked_)
+    return ui::kCursorNone;
+  return current_cursor_.GetNativeCursor();
+}
+
+int RenderWidgetHostViewAura::GetNonClientComponent(
+    const gfx::Point& point) const {
+  return HTCLIENT;
+}
+
+bool RenderWidgetHostViewAura::ShouldDescendIntoChildForEventHandling(
+    aura::Window* child,
+    const gfx::Point& location) {
+  return true;
+}
+
+bool RenderWidgetHostViewAura::CanFocus() {
+  return popup_type_ == WebKit::WebPopupTypeNone;
+}
+
+void RenderWidgetHostViewAura::OnCaptureLost() {
+  host_->LostCapture();
+}
+
+void RenderWidgetHostViewAura::OnPaint(gfx::Canvas* canvas) {
+  paint_canvas_ = canvas;
+  BackingStore* backing_store = host_->GetBackingStore(true);
+  paint_canvas_ = NULL;
+  if (backing_store) {
+    static_cast<BackingStoreAura*>(backing_store)->SkiaShowRect(gfx::Point(),
+                                                                canvas);
+  } else if (aura::Env::GetInstance()->render_white_bg()) {
+    canvas->DrawColor(SK_ColorWHITE);
+  }
+}
+
+void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
+    float device_scale_factor) {
+  if (!host_)
+    return;
+
+  BackingStoreAura* backing_store = static_cast<BackingStoreAura*>(
+      host_->GetBackingStore(false));
+  if (backing_store)  // NULL in hardware path.
+    backing_store->ScaleFactorChanged(device_scale_factor);
+
+  host_->SetDeviceScaleFactor(device_scale_factor);
+  current_cursor_.SetScaleFactor(device_scale_factor);
+}
+
+void RenderWidgetHostViewAura::OnWindowDestroying() {
+}
+
+void RenderWidgetHostViewAura::OnWindowDestroyed() {
+  host_->ViewDestroyed();
+  delete this;
+}
+
+void RenderWidgetHostViewAura::OnWindowTargetVisibilityChanged(bool visible) {
+}
+
+bool RenderWidgetHostViewAura::HasHitTestMask() const {
+  return false;
+}
+
+void RenderWidgetHostViewAura::GetHitTestMask(gfx::Path* mask) const {
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// RenderWidgetHostViewAura, ui::EventHandler implementation:
+
+ui::EventResult RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnKeyEvent");
   if (popup_child_host_view_ && popup_child_host_view_->NeedsInputGrab() &&
       popup_child_host_view_->OnKeyEvent(event))
-    return true;
+    return ui::ER_HANDLED;
 
   // We need to handle the Escape key for Pepper Flash.
   if (is_fullscreen_ && event->key_code() == ui::VKEY_ESCAPE) {
@@ -1194,27 +1266,10 @@ bool RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
       host_->ForwardKeyboardEvent(webkit_event);
     }
   }
-  return true;
+  return ui::ER_HANDLED;
 }
 
-gfx::NativeCursor RenderWidgetHostViewAura::GetCursor(const gfx::Point& point) {
-  if (mouse_locked_)
-    return ui::kCursorNone;
-  return current_cursor_.GetNativeCursor();
-}
-
-int RenderWidgetHostViewAura::GetNonClientComponent(
-    const gfx::Point& point) const {
-  return HTCLIENT;
-}
-
-bool RenderWidgetHostViewAura::ShouldDescendIntoChildForEventHandling(
-    aura::Window* child,
-    const gfx::Point& location) {
-  return true;
-}
-
-bool RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
+ui::EventResult RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnMouseEvent");
   if (mouse_locked_) {
     WebKit::WebMouseEvent mouse_event = MakeWebMouseEvent(event);
@@ -1241,7 +1296,7 @@ bool RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
         host_->ForwardMouseEvent(mouse_event);
     }
 
-    return false;
+    return ui::ER_UNHANDLED;
   }
 
   if (event->type() == ui::ET_MOUSEWHEEL) {
@@ -1290,7 +1345,7 @@ bool RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
     window_->parent()->delegate()->OnMouseEvent(event);
 
   // Return true so that we receive released/drag events.
-  return true;
+  return ui::ER_HANDLED;
 }
 
 ui::TouchStatus RenderWidgetHostViewAura::OnTouchEvent(
@@ -1360,58 +1415,6 @@ ui::EventResult RenderWidgetHostViewAura::OnGestureEvent(
   // from here to avoid any duplicate synthetic mouse-events being generated
   // from aura.
   return ui::ER_CONSUMED;
-}
-
-bool RenderWidgetHostViewAura::CanFocus() {
-  return popup_type_ == WebKit::WebPopupTypeNone;
-}
-
-void RenderWidgetHostViewAura::OnCaptureLost() {
-  host_->LostCapture();
-}
-
-void RenderWidgetHostViewAura::OnPaint(gfx::Canvas* canvas) {
-  paint_canvas_ = canvas;
-  BackingStore* backing_store = host_->GetBackingStore(true);
-  paint_canvas_ = NULL;
-  if (backing_store) {
-    static_cast<BackingStoreAura*>(backing_store)->SkiaShowRect(gfx::Point(),
-                                                                canvas);
-  } else if (aura::Env::GetInstance()->render_white_bg()) {
-    canvas->DrawColor(SK_ColorWHITE);
-  }
-}
-
-void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
-    float device_scale_factor) {
-  if (!host_)
-    return;
-
-  BackingStoreAura* backing_store = static_cast<BackingStoreAura*>(
-      host_->GetBackingStore(false));
-  if (backing_store)  // NULL in hardware path.
-    backing_store->ScaleFactorChanged(device_scale_factor);
-
-  host_->SetDeviceScaleFactor(device_scale_factor);
-  current_cursor_.SetScaleFactor(device_scale_factor);
-}
-
-void RenderWidgetHostViewAura::OnWindowDestroying() {
-}
-
-void RenderWidgetHostViewAura::OnWindowDestroyed() {
-  host_->ViewDestroyed();
-  delete this;
-}
-
-void RenderWidgetHostViewAura::OnWindowTargetVisibilityChanged(bool visible) {
-}
-
-bool RenderWidgetHostViewAura::HasHitTestMask() const {
-  return false;
-}
-
-void RenderWidgetHostViewAura::GetHitTestMask(gfx::Path* mask) const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////

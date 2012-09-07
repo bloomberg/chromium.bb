@@ -743,22 +743,6 @@ void NativeWidgetAura::OnBlur() {
   delegate_->OnNativeBlur(window_->GetFocusManager()->GetFocusedWindow());
 }
 
-bool NativeWidgetAura::OnKeyEvent(ui::KeyEvent* event) {
-  if (event->is_char()) {
-    // If a ui::InputMethod object is attached to the root window, character
-    // events are handled inside the object and are not passed to this function.
-    // If such object is not attached, character events might be sent (e.g. on
-    // Windows). In this case, we just skip these.
-    return false;
-  }
-  // Renderer may send a key event back to us if the key event wasn't handled,
-  // and the window may be invisible by that time.
-  if (!window_->IsVisible())
-    return false;
-  GetWidget()->GetInputMethod()->DispatchKeyEvent(*event);
-  return true;
-}
-
 gfx::NativeCursor NativeWidgetAura::GetCursor(const gfx::Point& point) {
   return cursor_;
 }
@@ -800,35 +784,6 @@ bool NativeWidgetAura::ShouldDescendIntoChildForEventHandling(
     }
   }
   return true;
-}
-
-bool NativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
-  DCHECK(window_->IsVisible());
-  if (event->type() == ui::ET_MOUSEWHEEL)
-    return delegate_->OnMouseEvent(*event);
-
-  if (event->type() == ui::ET_SCROLL) {
-    if (delegate_->OnMouseEvent(*event))
-      return true;
-
-    // Convert unprocessed scroll events into wheel events.
-    ui::MouseWheelEvent mwe(*static_cast<ui::ScrollEvent*>(event));
-    return delegate_->OnMouseEvent(mwe);
-  }
-  if (tooltip_manager_.get())
-    tooltip_manager_->UpdateTooltip();
-  return delegate_->OnMouseEvent(*event);
-}
-
-ui::TouchStatus NativeWidgetAura::OnTouchEvent(ui::TouchEvent* event) {
-  DCHECK(window_->IsVisible());
-  return delegate_->OnTouchEvent(*event);
-}
-
-ui::EventResult NativeWidgetAura::OnGestureEvent(
-    ui::GestureEvent* event) {
-  DCHECK(window_->IsVisible());
-  return delegate_->OnGestureEvent(*event);
 }
 
 bool NativeWidgetAura::CanFocus() {
@@ -873,6 +828,53 @@ bool NativeWidgetAura::HasHitTestMask() const {
 void NativeWidgetAura::GetHitTestMask(gfx::Path* mask) const {
   DCHECK(mask);
   delegate_->GetHitTestMask(mask);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeWidgetAura, ui::EventHandler implementation:
+
+ui::EventResult NativeWidgetAura::OnKeyEvent(ui::KeyEvent* event) {
+  if (event->is_char()) {
+    // If a ui::InputMethod object is attached to the root window, character
+    // events are handled inside the object and are not passed to this function.
+    // If such object is not attached, character events might be sent (e.g. on
+    // Windows). In this case, we just skip these.
+    return ui::ER_UNHANDLED;
+  }
+  // Renderer may send a key event back to us if the key event wasn't handled,
+  // and the window may be invisible by that time.
+  if (!window_->IsVisible())
+    return ui::ER_UNHANDLED;
+  GetWidget()->GetInputMethod()->DispatchKeyEvent(*event);
+  return ui::ER_HANDLED;
+}
+
+ui::EventResult NativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
+  DCHECK(window_->IsVisible());
+  if (event->type() == ui::ET_MOUSEWHEEL)
+    return delegate_->OnMouseEvent(*event) ? ui::ER_HANDLED : ui::ER_UNHANDLED;
+
+  if (event->type() == ui::ET_SCROLL) {
+    if (delegate_->OnMouseEvent(*event))
+      return ui::ER_HANDLED;
+
+    // Convert unprocessed scroll events into wheel events.
+    ui::MouseWheelEvent mwe(*static_cast<ui::ScrollEvent*>(event));
+    return delegate_->OnMouseEvent(mwe) ? ui::ER_HANDLED : ui::ER_UNHANDLED;
+  }
+  if (tooltip_manager_.get())
+    tooltip_manager_->UpdateTooltip();
+  return delegate_->OnMouseEvent(*event) ? ui::ER_HANDLED : ui::ER_UNHANDLED;
+}
+
+ui::TouchStatus NativeWidgetAura::OnTouchEvent(ui::TouchEvent* event) {
+  DCHECK(window_->IsVisible());
+  return delegate_->OnTouchEvent(*event);
+}
+
+ui::EventResult NativeWidgetAura::OnGestureEvent(ui::GestureEvent* event) {
+  DCHECK(window_->IsVisible());
+  return delegate_->OnGestureEvent(*event);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

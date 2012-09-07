@@ -74,7 +74,7 @@
         'base/cocoa/events_mac_unittest.mm',
         'base/cocoa/focus_tracker_unittest.mm',
         'base/dialogs/select_file_dialog_win_unittest.cc',
-        'base/event_unittest.cc',
+        'base/events/event_unittest.cc',
         'base/gtk/gtk_expanded_container_unittest.cc',
         'base/gtk/gtk_im_context_util_unittest.cc',
         'base/gtk/menu_label_accelerator_util_unittest.cc',
@@ -233,7 +233,7 @@
           ],
         }, {
           'sources!': [
-            'base/event_unittest.cc',
+            'base/events/event_unittest.cc',
           ],
         }],
         ['use_aura==1', {

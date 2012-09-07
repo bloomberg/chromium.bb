@@ -26,20 +26,15 @@ class UI_EXPORT EventHandler {
   EventHandler() {}
   virtual ~EventHandler() {}
 
-  virtual EventResult OnKeyEvent(EventTarget* target,
-                                 KeyEvent* event) = 0;
+  virtual EventResult OnKeyEvent(KeyEvent* event) = 0;
 
-  virtual EventResult OnMouseEvent(EventTarget* target,
-                                   MouseEvent* event) = 0;
+  virtual EventResult OnMouseEvent(MouseEvent* event) = 0;
 
-  virtual EventResult OnScrollEvent(EventTarget* target,
-                                    ScrollEvent* event) = 0;
+  virtual EventResult OnScrollEvent(ScrollEvent* event) = 0;
 
-  virtual TouchStatus OnTouchEvent(EventTarget* target,
-                                   TouchEvent* event) = 0;
+  virtual TouchStatus OnTouchEvent(TouchEvent* event) = 0;
 
-  virtual EventResult OnGestureEvent(EventTarget* target,
-                                     GestureEvent* event) = 0;
+  virtual EventResult OnGestureEvent(GestureEvent* event) = 0;
 };
 
 typedef std::vector<EventHandler*> EventHandlerList;

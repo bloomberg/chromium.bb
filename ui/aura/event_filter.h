@@ -62,16 +62,12 @@ class AURA_EXPORT EventFilter : public ui::EventHandler {
   virtual ui::EventResult PreHandleGestureEvent(Window* target,
                                                 ui::GestureEvent* event);
 
-  virtual ui::EventResult OnKeyEvent(ui::EventTarget* target,
-                                     ui::KeyEvent* event) OVERRIDE;
-  virtual ui::EventResult OnMouseEvent(ui::EventTarget* target,
-                                       ui::MouseEvent* event) OVERRIDE;
-  virtual ui::EventResult OnScrollEvent(ui::EventTarget* target,
-                                        ui::ScrollEvent* event) OVERRIDE;
-  virtual ui::TouchStatus OnTouchEvent(ui::EventTarget* target,
-                                       ui::TouchEvent* event) OVERRIDE;
-  virtual ui::EventResult OnGestureEvent(ui::EventTarget* target,
-                                         ui::GestureEvent* e) OVERRIDE;
+  // Overridden from ui::EventHandler.
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual ui::TouchStatus OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* e) OVERRIDE;
 };
 
 }  // namespace aura

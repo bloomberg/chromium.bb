@@ -19,10 +19,26 @@
 
 namespace ui {
 class Transform;
+class EventTarget;
 
 class UI_EXPORT Event {
  public:
   virtual ~Event();
+
+  class DispatcherApi {
+   public:
+    explicit DispatcherApi(Event* event) : event_(event) {}
+
+    void set_target(EventTarget* target) {
+      event_->target_ = target;
+    }
+
+   private:
+    DispatcherApi();
+    Event* event_;
+
+    DISALLOW_COPY_AND_ASSIGN(DispatcherApi);
+  };
 
   // For testing.
   class TestApi {
@@ -47,6 +63,8 @@ class UI_EXPORT Event {
   // This is only intended to be used externally by classes that are modifying
   // events in EventFilter::PreHandleKeyEvent().
   void set_flags(int flags) { flags_ = flags; }
+
+  EventTarget* target() const { return target_; }
 
   // The following methods return true if the respective keys were pressed at
   // the time the event was created.
@@ -152,6 +170,7 @@ class UI_EXPORT Event {
   base::TimeDelta time_stamp_;
   int flags_;
   bool delete_native_event_;
+  EventTarget* target_;
 };
 
 class UI_EXPORT LocatedEvent : public Event {

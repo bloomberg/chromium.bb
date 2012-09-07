@@ -165,11 +165,11 @@ class CaptureWindowDelegateImpl : public TestWindowDelegate {
   int touch_event_count() const { return touch_event_count_; }
   int gesture_event_count() const { return gesture_event_count_; }
 
-  virtual bool OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
     if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED)
       capture_changed_event_count_++;
     mouse_event_count_++;
-    return false;
+    return ui::ER_UNHANDLED;
   }
   virtual ui::TouchStatus OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
     touch_event_count_++;
@@ -1033,7 +1033,7 @@ class MouseEnterExitWindowDelegate : public TestWindowDelegate {
  public:
   MouseEnterExitWindowDelegate() : entered_(false), exited_(false) {}
 
-  virtual bool OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
     switch (event->type()) {
       case ui::ET_MOUSE_ENTERED:
         entered_ = true;
@@ -1044,7 +1044,7 @@ class MouseEnterExitWindowDelegate : public TestWindowDelegate {
       default:
         break;
     }
-    return false;
+    return ui::ER_UNHANDLED;
   }
 
   bool entered() const { return entered_; }

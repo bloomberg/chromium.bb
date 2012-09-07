@@ -302,10 +302,6 @@ void DesktopNativeWidgetAura::OnFocus(aura::Window* old_focused_window) {
 void DesktopNativeWidgetAura::OnBlur() {
 }
 
-bool DesktopNativeWidgetAura::OnKeyEvent(ui::KeyEvent* event) {
-  return false;
-}
-
 gfx::NativeCursor DesktopNativeWidgetAura::GetCursor(const gfx::Point& point) {
   return gfx::kNullCursor;
 }
@@ -319,19 +315,6 @@ bool DesktopNativeWidgetAura::ShouldDescendIntoChildForEventHandling(
       aura::Window* child,
       const gfx::Point& location) {
   return true;
-}
-
-bool DesktopNativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
-  return false;
-}
-
-ui::TouchStatus DesktopNativeWidgetAura::OnTouchEvent(ui::TouchEvent* event) {
-  return ui::TOUCH_STATUS_UNKNOWN;
-}
-
-ui::EventResult DesktopNativeWidgetAura::OnGestureEvent(
-    ui::GestureEvent* event) {
-  return ui::ER_UNHANDLED;
 }
 
 bool DesktopNativeWidgetAura::CanFocus() {
@@ -362,6 +345,26 @@ bool DesktopNativeWidgetAura::HasHitTestMask() const {
 }
 
 void DesktopNativeWidgetAura::GetHitTestMask(gfx::Path* mask) const {
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// DesktopNativeWidgetAura, ui::EventHandler implementation:
+
+ui::EventResult DesktopNativeWidgetAura::OnKeyEvent(ui::KeyEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::EventResult DesktopNativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::TouchStatus DesktopNativeWidgetAura::OnTouchEvent(ui::TouchEvent* event) {
+  return ui::TOUCH_STATUS_UNKNOWN;
+}
+
+ui::EventResult DesktopNativeWidgetAura::OnGestureEvent(
+    ui::GestureEvent* event) {
+  return ui::ER_UNHANDLED;
 }
 
 }  // namespace views

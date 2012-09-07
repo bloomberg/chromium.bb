@@ -42,8 +42,6 @@ class AURA_EXPORT WindowDelegate : public ui::EventHandler {
   virtual void OnFocus(aura::Window* old_focused_window) = 0;
   virtual void OnBlur() = 0;
 
-  virtual bool OnKeyEvent(ui::KeyEvent* event) = 0;
-
   // Returns the native cursor for the specified point, in window coordinates,
   // or NULL for the default cursor.
   virtual gfx::NativeCursor GetCursor(const gfx::Point& point) = 0;
@@ -57,12 +55,6 @@ class AURA_EXPORT WindowDelegate : public ui::EventHandler {
   virtual bool ShouldDescendIntoChildForEventHandling(
       Window* child,
       const gfx::Point& location) = 0;
-
-  virtual bool OnMouseEvent(ui::MouseEvent* event) = 0;
-
-  virtual ui::TouchStatus OnTouchEvent(ui::TouchEvent* event) = 0;
-
-  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) = 0;
 
   // Returns true of the window can be focused.
   virtual bool CanFocus() = 0;
@@ -105,16 +97,8 @@ class AURA_EXPORT WindowDelegate : public ui::EventHandler {
  protected:
   virtual ~WindowDelegate() {}
 
-  virtual ui::EventResult OnKeyEvent(ui::EventTarget* target,
-                                     ui::KeyEvent* event) OVERRIDE;
-  virtual ui::EventResult OnMouseEvent(ui::EventTarget* target,
-                                       ui::MouseEvent* event) OVERRIDE;
-  virtual ui::EventResult OnScrollEvent(ui::EventTarget* target,
-                                        ui::ScrollEvent* event) OVERRIDE;
-  virtual ui::TouchStatus OnTouchEvent(ui::EventTarget* target,
-                                       ui::TouchEvent* event) OVERRIDE;
-  virtual ui::EventResult OnGestureEvent(ui::EventTarget* target,
-                                         ui::GestureEvent* event) OVERRIDE;
+  // Overridden from ui::EventHandler:
+  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
 };
 
 }  // namespace aura

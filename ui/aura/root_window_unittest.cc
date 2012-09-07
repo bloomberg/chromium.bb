@@ -56,11 +56,11 @@ class NonClientDelegate : public test::TestWindowDelegate {
     self->non_client_location_ = location;
     return HTTOPLEFT;
   }
-  virtual bool OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
     mouse_event_count_++;
     mouse_event_location_ = event->location();
     mouse_event_flags_ = event->flags();
-    return true;
+    return ui::ER_HANDLED;
   }
 
  private:
@@ -681,18 +681,18 @@ class DeletingWindowDelegate : public test::TestWindowDelegate {
 
  private:
   // Overridden from WindowDelegate:
-  virtual bool OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
     if (delete_during_handle_)
       delete window_;
     got_event_ = true;
-    return false;
+    return ui::ER_UNHANDLED;
   }
 
-  virtual bool OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
     if (delete_during_handle_)
       delete window_;
     got_event_ = true;
-    return false;
+    return ui::ER_UNHANDLED;
   }
 
   Window* window_;

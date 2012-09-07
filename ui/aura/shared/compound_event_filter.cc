@@ -100,26 +100,24 @@ void CompoundEventFilter::UpdateCursor(Window* target, ui::MouseEvent* event) {
   }
 }
 
-ui::EventResult CompoundEventFilter::FilterKeyEvent(ui::EventTarget* target,
-                                                    ui::KeyEvent* event) {
+ui::EventResult CompoundEventFilter::FilterKeyEvent(ui::KeyEvent* event) {
   int result = ui::ER_UNHANDLED;
   if (filters_.might_have_observers()) {
     ObserverListBase<EventFilter>::Iterator it(filters_);
     EventFilter* filter;
     while (!(result & ui::ER_CONSUMED) && (filter = it.GetNext()) != NULL)
-      result |= filter->OnKeyEvent(target, event);
+      result |= filter->OnKeyEvent(event);
   }
   return static_cast<ui::EventResult>(result);
 }
 
-ui::EventResult CompoundEventFilter::FilterMouseEvent(ui::EventTarget* target,
-                                                      ui::MouseEvent* event) {
+ui::EventResult CompoundEventFilter::FilterMouseEvent(ui::MouseEvent* event) {
   int result = ui::ER_UNHANDLED;
   if (filters_.might_have_observers()) {
     ObserverListBase<EventFilter>::Iterator it(filters_);
     EventFilter* filter;
     while (!(result & ui::ER_CONSUMED) && (filter = it.GetNext()) != NULL)
-      result |= filter->OnMouseEvent(target, event);
+      result |= filter->OnMouseEvent(event);
   }
   return static_cast<ui::EventResult>(result);
 }
@@ -133,7 +131,7 @@ ui::TouchStatus CompoundEventFilter::FilterTouchEvent(
     EventFilter* filter;
     while (status == ui::TOUCH_STATUS_UNKNOWN &&
         (filter = it.GetNext()) != NULL) {
-      status = filter->OnTouchEvent(target, event);
+      status = filter->OnTouchEvent(event);
     }
   }
   return status;
@@ -169,14 +167,12 @@ ui::TouchStatus CompoundEventFilter::PreHandleTouchEvent(
 ////////////////////////////////////////////////////////////////////////////////
 // CompoundEventFilter, ui::EventHandler implementation:
 
-ui::EventResult CompoundEventFilter::OnKeyEvent(ui::EventTarget* target,
-                                                ui::KeyEvent* event) {
-  return FilterKeyEvent(target, event);
+ui::EventResult CompoundEventFilter::OnKeyEvent(ui::KeyEvent* event) {
+  return FilterKeyEvent(event);
 }
 
-ui::EventResult CompoundEventFilter::OnMouseEvent(ui::EventTarget* target,
-                                                  ui::MouseEvent* event) {
-  Window* window = static_cast<Window*>(target);
+ui::EventResult CompoundEventFilter::OnMouseEvent(ui::MouseEvent* event) {
+  Window* window = static_cast<Window*>(event->target());
   WindowTracker window_tracker;
   window_tracker.Add(window);
 
@@ -192,7 +188,7 @@ ui::EventResult CompoundEventFilter::OnMouseEvent(ui::EventTarget* target,
     UpdateCursor(window, event);
   }
 
-  ui::EventResult result = FilterMouseEvent(window, event);
+  ui::EventResult result = FilterMouseEvent(event);
   if ((result & ui::ER_CONSUMED) ||
       !window_tracker.Contains(window) ||
       !window->GetRootWindow()) {
@@ -208,27 +204,24 @@ ui::EventResult CompoundEventFilter::OnMouseEvent(ui::EventTarget* target,
   return result;
 }
 
-ui::EventResult CompoundEventFilter::OnScrollEvent(ui::EventTarget* target,
-                                                   ui::ScrollEvent* event) {
+ui::EventResult CompoundEventFilter::OnScrollEvent(ui::ScrollEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::TouchStatus CompoundEventFilter::OnTouchEvent(ui::EventTarget* target,
-                                                  ui::TouchEvent* event) {
-  return EventFilter::OnTouchEvent(target, event);
+ui::TouchStatus CompoundEventFilter::OnTouchEvent(ui::TouchEvent* event) {
+  return EventFilter::OnTouchEvent(event);
 }
 
-ui::EventResult CompoundEventFilter::OnGestureEvent(ui::EventTarget* target,
-                                                    ui::GestureEvent* event) {
+ui::EventResult CompoundEventFilter::OnGestureEvent(ui::GestureEvent* event) {
   int result = ui::ER_UNHANDLED;
   if (filters_.might_have_observers()) {
     ObserverListBase<EventFilter>::Iterator it(filters_);
     EventFilter* filter;
     while (!(result & ui::ER_CONSUMED) && (filter = it.GetNext()) != NULL)
-      result |= filter->OnGestureEvent(target, event);
+      result |= filter->OnGestureEvent(event);
   }
 
-  Window* window = static_cast<Window*>(target);
+  Window* window = static_cast<Window*>(event->target());
   if (event->type() == ui::ET_GESTURE_BEGIN &&
       event->details().touch_points() == 1 &&
       !(result & ui::ER_CONSUMED) &&

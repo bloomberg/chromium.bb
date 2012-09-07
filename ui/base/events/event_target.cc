@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "ui/base/events/event.h"
 
 namespace ui {
 
@@ -61,38 +62,30 @@ void EventTarget::GetPostTargetHandlers(EventHandlerList* list) {
   }
 }
 
-EventResult EventTarget::OnKeyEvent(EventTarget* target,
-                                    KeyEvent* event) {
-  CHECK_EQ(this, target);
-  return target_handler_ ? target_handler_->OnKeyEvent(target, event) :
-                           ER_UNHANDLED;
+EventResult EventTarget::OnKeyEvent(KeyEvent* event) {
+  CHECK_EQ(this, event->target());
+  return target_handler_ ? target_handler_->OnKeyEvent(event) : ER_UNHANDLED;
 }
 
-EventResult EventTarget::OnMouseEvent(EventTarget* target,
-                                      MouseEvent* event) {
-  CHECK_EQ(this, target);
-  return target_handler_ ? target_handler_->OnMouseEvent(target, event) :
-                           ER_UNHANDLED;
+EventResult EventTarget::OnMouseEvent(MouseEvent* event) {
+  CHECK_EQ(this, event->target());
+  return target_handler_ ? target_handler_->OnMouseEvent(event) : ER_UNHANDLED;
 }
 
-EventResult EventTarget::OnScrollEvent(EventTarget* target,
-                                       ScrollEvent* event) {
-  CHECK_EQ(this, target);
-  return target_handler_ ? target_handler_->OnScrollEvent(target, event) :
-                           ER_UNHANDLED;
+EventResult EventTarget::OnScrollEvent(ScrollEvent* event) {
+  CHECK_EQ(this, event->target());
+  return target_handler_ ? target_handler_->OnScrollEvent(event) : ER_UNHANDLED;
 }
 
-TouchStatus EventTarget::OnTouchEvent(EventTarget* target,
-                                      TouchEvent* event) {
-  CHECK_EQ(this, target);
-  return target_handler_ ? target_handler_->OnTouchEvent(target, event) :
+TouchStatus EventTarget::OnTouchEvent(TouchEvent* event) {
+  CHECK_EQ(this, event->target());
+  return target_handler_ ? target_handler_->OnTouchEvent(event) :
                            TOUCH_STATUS_UNKNOWN;
 }
 
-EventResult EventTarget::OnGestureEvent(EventTarget* target,
-                                        GestureEvent* event) {
-  CHECK_EQ(this, target);
-  return target_handler_ ? target_handler_->OnGestureEvent(target, event) :
+EventResult EventTarget::OnGestureEvent(GestureEvent* event) {
+  CHECK_EQ(this, event->target());
+  return target_handler_ ? target_handler_->OnGestureEvent(event) :
                            ER_UNHANDLED;
 }
 

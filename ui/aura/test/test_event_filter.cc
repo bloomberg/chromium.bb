@@ -25,32 +25,27 @@ void TestEventFilter::ResetCounts() {
   touch_event_count_ = 0;
 }
 
-ui::EventResult TestEventFilter::OnKeyEvent(ui::EventTarget* target,
-                                            ui::KeyEvent* event) {
+ui::EventResult TestEventFilter::OnKeyEvent(ui::KeyEvent* event) {
   ++key_event_count_;
   return key_event_handling_result_;
 }
 
-ui::EventResult TestEventFilter::OnMouseEvent(ui::EventTarget* target,
-                                              ui::MouseEvent* event) {
+ui::EventResult TestEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   ++mouse_event_count_;
   return mouse_event_handling_result_;
 }
 
-ui::EventResult TestEventFilter::OnScrollEvent(ui::EventTarget* target,
-                                               ui::ScrollEvent* event) {
+ui::EventResult TestEventFilter::OnScrollEvent(ui::ScrollEvent* event) {
   return ui::ER_UNHANDLED;
 }
 
-ui::TouchStatus TestEventFilter::OnTouchEvent(ui::EventTarget* target,
-                                              ui::TouchEvent* event) {
+ui::TouchStatus TestEventFilter::OnTouchEvent(ui::TouchEvent* event) {
   ++touch_event_count_;
   // TODO(sadrul): !
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
-ui::EventResult TestEventFilter::OnGestureEvent(ui::EventTarget* target,
-                                                ui::GestureEvent* event) {
+ui::EventResult TestEventFilter::OnGestureEvent(ui::GestureEvent* event) {
   // TODO(sadrul): !
   return ui::ER_UNHANDLED;
 }
