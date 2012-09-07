@@ -24,6 +24,8 @@ void av_destruct_packet(AVPacket *pkt);
 int av_lockmgr_register(AVLockMgrOperation cb);
 void avcodec_get_frame_defaults(AVFrame *pic);
 void avcodec_align_dimensions(AVCodecContext *s, int *width, int *height);
+AVIOContext *avio_alloc_context(unsigned char *buffer, int buffer_size, int write_flag, void *opaque, AVIOReadWriteOperation read_packet, AVIOReadWriteOperation write_packet, AVIOSeekOperation seek);
+int avio_close(AVIOContext *s);
 
 # RDFT functions.
 RDFTContext *av_rdft_init(int nbits, enum RDFTransformType trans);
