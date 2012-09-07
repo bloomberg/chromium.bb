@@ -441,7 +441,7 @@ void ExtensionAction::DoPaintBadge(gfx::Canvas* canvas,
   int rect_y = bounds.bottom() - kBottomMargin - kBadgeHeight;
   int rect_width = badge_width;
   int rect_x = (badge_width >= kCenterAlignThreshold) ?
-      (bounds.x() + bounds.width() - badge_width) / 2 :
+      (bounds.x() + bounds.width()) / 2 - badge_width / 2 :
       bounds.right() - badge_width;
   gfx::Rect rect(rect_x, rect_y, rect_width, rect_height);
 
@@ -473,12 +473,10 @@ void ExtensionAction::DoPaintBadge(gfx::Canvas* canvas,
   // text was too large.
   rect.Inset(kPadding, 0);
   canvas->ClipRect(rect);
-  canvas->sk_canvas()->drawText(
-      text.c_str(), text.size(),
-      SkFloatToScalar(rect.x() +
-                      static_cast<float>(rect.width() - text_width) / 2),
-      SkIntToScalar(rect.y() + kTextSize + kTopTextPadding),
-      *text_paint);
+  canvas->sk_canvas()->drawText(text.c_str(), text.size(),
+                                rect.x() + (rect.width() - text_width) / 2,
+                                rect.y() + kTextSize + kTopTextPadding,
+                                *text_paint);
   canvas->Restore();
 }
 
