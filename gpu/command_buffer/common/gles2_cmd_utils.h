@@ -8,6 +8,7 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_UTILS_H_
 #define GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_UTILS_H_
 
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -19,13 +20,15 @@ namespace gles2 {
 
 // Does a multiply and checks for overflow.  If the multiply did not overflow
 // returns true.
-template <typename T>
-inline bool SafeMultiply(T a, T b, T* dst) {
+
+// Multiplies 2 32 bit unsigned numbers checking for overflow.
+// If there was no overflow returns true.
+inline bool SafeMultiplyUint32(uint32 a, uint32 b, uint32* dst) {
   if (b == 0) {
     *dst = 0;
     return true;
   }
-  T v = a * b;
+  uint32 v = a * b;
   if (v / b != a) {
     *dst = 0;
     return false;
@@ -34,14 +37,8 @@ inline bool SafeMultiply(T a, T b, T* dst) {
   return true;
 }
 
-// A wrapper for SafeMultiply to remove the need to cast.
-inline bool SafeMultiplyUint32(uint32 a, uint32 b, uint32* dst) {
-  return SafeMultiply(a, b, dst);
-}
-
 // Does an add checking for overflow.  If there was no overflow returns true.
-template <typename T>
-inline bool SafeAdd(T a, T b, T* dst) {
+inline bool SafeAddUint32(uint32 a, uint32 b, uint32* dst) {
   if (a + b < a) {
     *dst = 0;
     return false;
@@ -50,9 +47,13 @@ inline bool SafeAdd(T a, T b, T* dst) {
   return true;
 }
 
-// A wrapper for SafeAdd to remove the need to cast.
-inline bool SafeAddUint32(uint32 a, uint32 b, uint32* dst) {
-  return SafeAdd(a, b, dst);
+// Does an add checking for overflow.  If there was no overflow returns true.
+inline bool SafeAddInt32(int32 a, int32 b, int32* dst) {
+  int64 sum64 = static_cast<int64>(a) + b;
+  int32 sum32 = static_cast<int32>(sum64);
+  bool safe = sum64 == static_cast<int64>(sum32);
+  *dst = safe ? sum32 : 0;
+  return safe;
 }
 
 // Utilties for GLES2 support.

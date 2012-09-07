@@ -359,10 +359,10 @@ bool TextureManager::TextureInfo::ValidForTexture(
   if (level >= 0 && face_index < level_infos_.size() &&
       static_cast<size_t>(level) < level_infos_[face_index].size()) {
     const LevelInfo& info = level_infos_[GLTargetToFaceIndex(face)][level];
-    GLint right;
-    GLint top;
-    return SafeAdd(xoffset, width, &right) &&
-           SafeAdd(yoffset, height, &top) &&
+    int32 right;
+    int32 top;
+    return SafeAddInt32(xoffset, width, &right) &&
+           SafeAddInt32(yoffset, height, &top) &&
            xoffset >= 0 &&
            yoffset >= 0 &&
            right <= info.width &&

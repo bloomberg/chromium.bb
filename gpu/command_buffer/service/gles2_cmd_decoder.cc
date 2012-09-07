@@ -5435,11 +5435,10 @@ bool GLES2DecoderImpl::SimulateAttrib0(
   typedef VertexAttribManager::VertexAttribInfo::Vec4 Vec4;
 
   GLuint num_vertices = max_vertex_accessed + 1;
-  GLuint size_needed = 0;
+  uint32 size_needed = 0;
 
   if (num_vertices == 0 ||
-      !SafeMultiply(num_vertices, static_cast<GLuint>(sizeof(Vec4)),
-                    &size_needed) ||
+      !SafeMultiplyUint32(num_vertices, sizeof(Vec4), &size_needed) ||
       size_needed > 0x7FFFFFFFU) {
     SetGLError(GL_OUT_OF_MEMORY, function_name, "Simulating attrib 0");
     return false;
@@ -5549,10 +5548,9 @@ bool GLES2DecoderImpl::SimulateFixedAttribs(
     if (attrib_info &&
         info->CanAccess(max_accessed) &&
         info->type() == GL_FIXED) {
-      GLuint elements_used = 0;
-      if (!SafeMultiply(num_vertices,
-                        static_cast<GLuint>(info->size()), &elements_used) ||
-          !SafeAdd(elements_needed, elements_used, &elements_needed)) {
+      uint32 elements_used = 0;
+      if (!SafeMultiplyUint32(num_vertices, info->size(), &elements_used) ||
+          !SafeAddUint32(elements_needed, elements_used, &elements_needed)) {
         SetGLError(
             GL_OUT_OF_MEMORY, function_name, "simulating GL_FIXED attribs");
         return false;
@@ -5560,9 +5558,9 @@ bool GLES2DecoderImpl::SimulateFixedAttribs(
     }
   }
 
-  const GLuint kSizeOfFloat = sizeof(float);  // NOLINT
-  GLuint size_needed = 0;
-  if (!SafeMultiply(elements_needed, kSizeOfFloat, &size_needed) ||
+  const uint32 kSizeOfFloat = sizeof(float);  // NOLINT
+  uint32 size_needed = 0;
+  if (!SafeMultiplyUint32(elements_needed, kSizeOfFloat, &size_needed) ||
       size_needed > 0x7FFFFFFFU) {
     SetGLError(GL_OUT_OF_MEMORY, function_name, "simulating GL_FIXED attribs");
     return false;
@@ -6481,9 +6479,9 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
   // Get the size of the current fbo or backbuffer.
   gfx::Size max_size = GetBoundReadFrameBufferSize();
 
-  GLint max_x;
-  GLint max_y;
-  if (!SafeAdd(x, width, &max_x) || !SafeAdd(y, height, &max_y)) {
+  int32 max_x;
+  int32 max_y;
+  if (!SafeAddInt32(x, width, &max_x) || !SafeAddInt32(y, height, &max_y)) {
     SetGLError(GL_INVALID_VALUE, "glReadPixels", "dimensions out of range");
     return error::kNoError;
   }
@@ -8536,7 +8534,7 @@ error::Error GLES2DecoderImpl::HandleGetMultipleIntegervCHROMIUM(
     }
     // Num will never be more than 4.
     DCHECK_LE(num, 4u);
-    if (!SafeAdd(num_results, num, &num_results)) {
+    if (!SafeAddUint32(num_results, num, &num_results)) {
       return error::kOutOfBounds;
     }
   }
