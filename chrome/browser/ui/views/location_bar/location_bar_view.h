@@ -48,7 +48,6 @@ class StarView;
 class SuggestedTextView;
 class TabContents;
 class TemplateURLService;
-class WebIntentsButtonView;
 class ZoomView;
 
 namespace chrome {
@@ -525,9 +524,6 @@ class LocationBarView : public LocationBar,
 
   // The star.
   StarView* star_view_;
-
-  // The web intents choose-another-service button
-  WebIntentsButtonView* web_intents_button_view_;
 
   // The action box button (plus).
   ActionBoxButtonView* action_box_button_view_;
