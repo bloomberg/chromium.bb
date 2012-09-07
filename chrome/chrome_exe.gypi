@@ -508,7 +508,13 @@
         }],
         ['OS=="win" and component=="shared_library"', {
           'defines': ['COMPILE_CONTENT_STATICALLY'],
-        }]
+        }],
+        ['OS=="win" and (MSVS_VERSION=="2010" or MSVS_VERSION=="2010e")', {
+          'dependencies': [
+            '../win8/metro_driver/metro_driver.gyp:*',
+            '../win8/delegate_execute/delegate_execute.gyp:*',
+          ],
+        }],
       ],
     },
   ],

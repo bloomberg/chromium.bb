@@ -272,13 +272,6 @@
         },
       ],
     }],
-    [ 'mini_installer_internal_deps == 1 or mini_installer_official_deps == 1', {
-      'target_defaults': {
-        'dependencies': [
-          'mini_installer/support/mini_installer_support.gyp:*',
-        ],
-      },
-    }],
     [ 'branding == "Chrome"', {
       'variables': {
          'branding_dir': '../app/theme/google_chrome',
