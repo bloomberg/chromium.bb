@@ -127,7 +127,9 @@ KioskModeScreensaver::~KioskModeScreensaver() {
 
   // In case we're shutting down without ever triggering the active
   // notification and/or logging in.
-  ash::Shell::GetInstance()->user_activity_detector()->RemoveObserver(this);
+  if (ash::Shell::GetInstance() &&
+      ash::Shell::GetInstance()->user_activity_detector())
+    ash::Shell::GetInstance()->user_activity_detector()->RemoveObserver(this);
   registrar_.RemoveAll();
 }
 
