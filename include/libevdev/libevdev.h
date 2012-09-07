@@ -19,7 +19,8 @@
 #define NLONGS(x) (((x) + LONG_BITS - 1) / LONG_BITS)
 
 typedef void (*syn_report_callback)(void*, EventStatePtr, struct timeval*);
-typedef void (*log_callback)(void*, int level, const char*, ...);
+typedef void (*log_callback)(void*, int level, const char*, ...)
+                __attribute__((format(printf, 3, 4)));
 
 struct EvdevInfo_ {
   struct input_id id;
