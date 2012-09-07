@@ -108,6 +108,9 @@ class DriveFileSystemInterface {
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 
+  // Starts initial feed fetch from the server.
+  virtual void StartInitialFeedFetch() = 0;
+
   // Starts and stops periodic updates.
   virtual void StartUpdates() = 0;
   virtual void StopUpdates() = 0;

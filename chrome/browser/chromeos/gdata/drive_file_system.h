@@ -56,6 +56,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
       DriveFileSystemInterface::Observer* observer) OVERRIDE;
   virtual void RemoveObserver(
       DriveFileSystemInterface::Observer* observer) OVERRIDE;
+  virtual void StartInitialFeedFetch() OVERRIDE;
   virtual void StartUpdates() OVERRIDE;
   virtual void StopUpdates() OVERRIDE;
   virtual void NotifyFileSystemMounted() OVERRIDE;

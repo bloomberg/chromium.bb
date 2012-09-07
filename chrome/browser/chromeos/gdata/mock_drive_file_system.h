@@ -22,6 +22,7 @@ class MockDriveFileSystem : public DriveFileSystemInterface {
   MOCK_METHOD0(Initialize, void());
   MOCK_METHOD1(AddObserver, void(Observer* observer));
   MOCK_METHOD1(RemoveObserver, void(Observer* observer));
+  MOCK_METHOD0(StartInitialFeedFetch, void());
   MOCK_METHOD0(StartUpdates, void());
   MOCK_METHOD0(StopUpdates, void());
   MOCK_METHOD0(NotifyFileSystemMounted, void());

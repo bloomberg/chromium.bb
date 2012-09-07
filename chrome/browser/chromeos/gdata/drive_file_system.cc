@@ -107,7 +107,9 @@ class InitialLoadObserver : public DriveFileSystemInterface::Observer {
  public:
   InitialLoadObserver(DriveFileSystemInterface* file_system,
                       const base::Closure& callback)
-      : file_system_(file_system), callback_(callback) {}
+      : file_system_(file_system), callback_(callback) {
+    file_system_->AddObserver(this);
+  }
 
   virtual void OnInitialLoadFinished() OVERRIDE {
     if (!callback_.is_null())
@@ -120,6 +122,36 @@ class InitialLoadObserver : public DriveFileSystemInterface::Observer {
   DriveFileSystemInterface* file_system_;
   base::Closure callback_;
 };
+
+// The class to wait for the drive service to be ready to start operation.
+class OperationReadinessObserver : public DriveServiceObserver {
+ public:
+  OperationReadinessObserver(DriveServiceInterface* drive_service,
+                             const base::Closure& callback)
+      : drive_service_(drive_service),
+        callback_(callback) {
+    DCHECK(!callback_.is_null());
+    drive_service_->AddObserver(this);
+  }
+
+  // DriveServiceObserver override.
+  virtual void OnReadyToPerformOperations() OVERRIDE {
+    base::MessageLoopProxy::current()->PostTask(FROM_HERE, callback_);
+    drive_service_->RemoveObserver(this);
+    base::MessageLoopProxy::current()->DeleteSoon(FROM_HERE, this);
+  }
+
+ private:
+  DriveServiceInterface* drive_service_;
+  base::Closure callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(OperationReadinessObserver);
+};
+
+// Called when LoadIfNeeded() call from StartInitialFeedFetch() finishes.
+void OnStartInitialFeedFetchFinished(DriveFileError error) {
+  DVLOG(1) << "Loading from StartInitialFeedFetch() finished";
+}
 
 // Gets the file size of |local_file|.
 void GetLocalFileSizeOnBlockingPool(const FilePath& local_file,
@@ -493,6 +525,20 @@ void DriveFileSystem::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
+void DriveFileSystem::StartInitialFeedFetch() {
+  if (drive_service_->CanStartOperation()) {
+    LoadFeedIfNeeded(base::Bind(&OnStartInitialFeedFetchFinished));
+  } else {
+    // Wait for the service to get ready. The observer deletes itself after
+    // OnReadyToPerformOperations() gets called.
+    new OperationReadinessObserver(
+        drive_service_,
+        base::Bind(&DriveFileSystem::LoadFeedIfNeeded,
+                   ui_weak_ptr_,
+                   base::Bind(&OnStartInitialFeedFetchFinished)));
+  }
+}
+
 void DriveFileSystem::StartUpdates() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -573,8 +619,8 @@ void DriveFileSystem::LoadFeedIfNeeded(const FileOperationCallback& callback) {
     // If root feed is not initialized but the initialization process has
     // already started, add an observer to execute the remaining task after
     // the end of the initialization.
-    AddObserver(new InitialLoadObserver(this,
-                                        base::Bind(callback, DRIVE_FILE_OK)));
+    // The observer deletes itself after OnInitialLoadFinished() gets called.
+    new InitialLoadObserver(this, base::Bind(callback, DRIVE_FILE_OK));
     return;
   } else if (resource_metadata_->origin() == UNINITIALIZED) {
     // Load root feed from this disk cache. Upon completion, kick off server

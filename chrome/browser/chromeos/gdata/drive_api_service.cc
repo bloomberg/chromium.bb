@@ -267,8 +267,10 @@ bool DriveAPIService::HasRefreshToken() const {
 
 void DriveAPIService::OnOAuth2RefreshTokenChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  FOR_EACH_OBSERVER(
-      DriveServiceObserver, observers_, OnOperationReadinessChanged());
+  if (CanStartOperation()) {
+    FOR_EACH_OBSERVER(
+        DriveServiceObserver, observers_, OnReadyToPerformOperations());
+  }
 }
 
 }  // namespace gdata
