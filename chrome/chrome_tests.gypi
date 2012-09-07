@@ -2416,6 +2416,9 @@
           },
         }],
         ['OS=="win"', {
+          'sources': [
+            '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings/installer_util_strings.rc'
+          ],
           'dependencies': [
             'chrome_version_resources',
             'installer_util_strings',
