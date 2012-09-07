@@ -251,15 +251,18 @@ function main() {
 
 <h2 id="relaxing">Relaxing the default policy</h2>
 
+<h3 id="relaxing-inline-script">Inline Script</h3>
+
 <p>
   There is no mechanism for relaxing the restriction against executing inline
   JavaScript. In particular, setting a script policy that includes
-  <code>unsafe-inline</code> will have no effect. This is
-  intentional.
+  <code>'unsafe-inline'</code> will have no effect.
 </p>
 
+<h3 id="relaxing-remote-script">Remote Script</h3>
+
 <p>
-  If, on the other hand, you have a need for some external JavaScript or object
+  If you have a need for some external JavaScript or object
   resources, you can relax the policy to a limited extent by whitelisting
   secure origins from which scripts should be accepted. We want to ensure that
   executable resources loaded with an extension's elevated permissions are
@@ -270,14 +273,6 @@ function main() {
   not be accepted. Currently, we allow whitelisting origins with the following
   schemes: <code>HTTPS</code>, <code>chrome-extension</code>, and
   <code>chrome-extension-resource</code>.
-</p>
-
-<p>
-  The policy against <code>eval</code> can also be relaxed by adding
-  <code>unsafe-eval</code> to your policy. However we strongly recommend
-  against doing this. The <code>eval</code> function and its relatives like
-  <code>setTimeout(String)</code>, <code>setInterval(String)</code>, and
-  <code>new Function(String)</code> are notorious XSS attack vectors.
 </p>
 
 <p>
@@ -300,11 +295,7 @@ function main() {
   <code>example.com</code> over HTTPS might look like:
 </p>
 
-<pre>{
-  ...,
-  "content_security_policy": "script-src 'self' https://example.com; object-src 'self'",
-  ...
-}</pre>
+<pre>"content_security_policy": "script-src 'self' https://example.com; object-src 'self'"</pre>
 
 <p class="note">
   Note that both <code>script-src</code> and <code>object-src</code> are defined
@@ -318,6 +309,22 @@ function main() {
   boilerplate of sorts in the <a href="samples.html#analytics">Event Tracking
   with Google Analytics</a> sample extension, and a
 <a href="tut_analytics.html">brief tutorial</a> that goes into more detail.
+</p>
+
+<h3 id="relaxing-eval">Evaluated JavaScript</h3>
+
+<p>
+  The policy against <code>eval()</code> and its relatives like
+  <code>setTimeout(String)</code>, <code>setInterval(String)</code>, and
+  <code>new Function(String)</code> can be relaxed by adding
+  <code>'unsafe-eval'</code> to your policy:
+</p>
+
+<pre>"content_security_policy": "script-src 'self' 'unsafe-eval'"</pre>
+
+<p>
+  However, we strongly recommend against doing this. These functions are
+  notorious XSS attack vectors.
 </p>
 
 <h2 id="tightening">Tightening the default policy</h2>
