@@ -116,7 +116,8 @@ gboolean ChromeWebContentsViewDelegateGtk::OnNativeViewFocusEvent(
 }
 
 void ChromeWebContentsViewDelegateGtk::ShowContextMenu(
-    const content::ContextMenuParams& params) {
+    const content::ContextMenuParams& params,
+    const content::ContextMenuSourceType& type) {
   // Find out the RenderWidgetHostView that corresponds to the render widget on
   // which this context menu is showed, so that we can retrieve the last mouse
   // down event on the render widget and use it as the timestamp of the

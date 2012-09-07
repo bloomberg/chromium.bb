@@ -1016,6 +1016,8 @@ void RenderWidgetHostImpl::ForwardInputEvent(const WebInputEvent& input_event,
 
   DCHECK(!process_->IgnoreInputEvents());
 
+  in_process_event_types_.push(input_event.type);
+
   IPC::Message* message = new ViewMsg_HandleInputEvent(routing_id_);
   message->WriteData(
       reinterpret_cast<const char*>(&input_event), event_size);
@@ -1534,6 +1536,9 @@ void RenderWidgetHostImpl::DidUpdateBackingStore(
 void RenderWidgetHostImpl::OnMsgInputEventAck(WebInputEvent::Type event_type,
                                               bool processed) {
   TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::OnMsgInputEventAck");
+  if (!in_process_event_types_.empty() &&
+      in_process_event_types_.front() == event_type)
+    in_process_event_types_.pop();
 
   // Log the time delta for processing an input event.
   TimeDelta delta = TimeTicks::Now() - input_event_start_time_;

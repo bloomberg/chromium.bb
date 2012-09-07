@@ -328,9 +328,10 @@ gboolean WebContentsViewGtk::OnFocus(GtkWidget* widget,
 }
 
 void WebContentsViewGtk::ShowContextMenu(
-    const content::ContextMenuParams& params) {
+    const content::ContextMenuParams& params,
+    const content::ContextMenuSourceType& type) {
   if (delegate_.get())
-    delegate_->ShowContextMenu(params);
+    delegate_->ShowContextMenu(params, type);
   else
     DLOG(ERROR) << "Cannot show context menus without a delegate.";
 }

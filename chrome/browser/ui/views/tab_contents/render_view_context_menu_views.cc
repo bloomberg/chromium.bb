@@ -42,10 +42,15 @@ RenderViewContextMenuViews* RenderViewContextMenuViews::Create(
 }
 #endif  // OS_WIN
 
-void RenderViewContextMenuViews::RunMenuAt(views::Widget* parent,
-                                           const gfx::Point& point) {
+void RenderViewContextMenuViews::RunMenuAt(
+    views::Widget* parent,
+    const gfx::Point& point,
+    const content::ContextMenuSourceType& type) {
+  views::MenuItemView::AnchorPosition anchor_position =
+      type == content::CONTEXT_MENU_SOURCE_TOUCH ?
+          views::MenuItemView::BOTTOMCENTER : views::MenuItemView::TOPLEFT;
   if (menu_runner_->RunMenuAt(parent, NULL, gfx::Rect(point, gfx::Size()),
-          views::MenuItemView::TOPLEFT, views::MenuRunner::HAS_MNEMONICS |
+      anchor_position, views::MenuRunner::HAS_MNEMONICS |
           views::MenuRunner::CONTEXT_MENU) ==
       views::MenuRunner::MENU_DELETED)
     return;

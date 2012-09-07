@@ -13,6 +13,7 @@
 #include "base/process_util.h"
 #include "base/string16.h"
 #include "content/common/content_export.h"
+#include "content/public/common/context_menu_source_type.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/media_stream_request.h"
 #include "net/base/load_states.h"
@@ -404,7 +405,8 @@ class CONTENT_EXPORT RenderViewHostDelegate {
 
   // A context menu should be shown, to be built using the context information
   // provided in the supplied params.
-  virtual void ShowContextMenu(const ContextMenuParams& params) {}
+  virtual void ShowContextMenu(const ContextMenuParams& params,
+                               const ContextMenuSourceType& type) {}
 
   // The render view has requested access to media devices listed in
   // |request|, and the client should grant or deny that permission by

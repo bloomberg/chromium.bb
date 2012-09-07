@@ -40,7 +40,8 @@ class ChromeWebContentsViewDelegateGtk
 
   // Overridden from WebContentsViewDelegate:
   virtual void ShowContextMenu(
-      const content::ContextMenuParams& params) OVERRIDE;
+      const content::ContextMenuParams& params,
+      const content::ContextMenuSourceType& type) OVERRIDE;
   virtual content::WebDragDestDelegate* GetDragDestDelegate() OVERRIDE;
   virtual void Initialize(GtkWidget* expanded_container,
                           ui::FocusStoreGtk* focus_store) OVERRIDE;

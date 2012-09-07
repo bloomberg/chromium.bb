@@ -1564,6 +1564,9 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
       x = x + state_.initial_bounds.width() - pref.width();
       if (MenuConfig::instance().offset_context_menus && state_.context_menu)
         x -= 1;
+    } else if (state_.anchor == MenuItemView::BOTTOMCENTER) {
+      x = x - (pref.width() - state_.initial_bounds.width()) / 2;
+      y = std::max(0, state_.initial_bounds.y() - pref.height());
     }
 
     if (!state_.monitor_bounds.IsEmpty() &&

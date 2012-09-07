@@ -406,7 +406,8 @@ class CONTENT_EXPORT WebContentsImpl
                                  const gfx::Rect& initial_pos) OVERRIDE;
   virtual void ShowCreatedFullscreenWidget(int route_id) OVERRIDE;
   virtual void ShowContextMenu(
-      const content::ContextMenuParams& params) OVERRIDE;
+      const content::ContextMenuParams& params,
+      const content::ContextMenuSourceType& type) OVERRIDE;
   virtual void RequestMediaAccessPermission(
       const content::MediaStreamRequest* request,
       const content::MediaResponseCallback& callback) OVERRIDE;

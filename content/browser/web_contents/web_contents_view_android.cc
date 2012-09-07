@@ -158,9 +158,11 @@ gfx::Rect WebContentsViewAndroid::GetViewBounds() const {
     return gfx::Rect();
 }
 
-void WebContentsViewAndroid::ShowContextMenu(const ContextMenuParams& params) {
+void WebContentsViewAndroid::ShowContextMenu(
+    const ContextMenuParams& params,
+    const content::ContextMenuSourceType& type) {
   if (delegate_.get())
-    delegate_->ShowContextMenu(params);
+    delegate_->ShowContextMenu(params, type);
 }
 
 void WebContentsViewAndroid::ShowPopupMenu(

@@ -7,6 +7,7 @@
 
 #include <deque>
 #include <map>
+#include <queue>
 #include <string>
 #include <vector>
 
@@ -489,6 +490,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 
   // This value indicates how long to wait before we consider a renderer hung.
   int hung_renderer_delay_ms_;
+
+  std::queue<WebKit::WebInputEvent::Type> in_process_event_types_;
 
  private:
   friend class ::MockRenderWidgetHost;

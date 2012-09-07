@@ -53,6 +53,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/common/context_menu_source_type.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
@@ -1253,7 +1254,15 @@ void RenderViewHostImpl::OnMsgContextMenu(
   FilterURL(policy, renderer_id, false, &validated_params.page_url);
   FilterURL(policy, renderer_id, true, &validated_params.frame_url);
 
-  delegate_->ShowContextMenu(validated_params);
+  content::ContextMenuSourceType type = content::CONTEXT_MENU_SOURCE_MOUSE;
+  if (!in_process_event_types_.empty()) {
+    WebKit::WebInputEvent::Type event_type = in_process_event_types_.front();
+    if (WebKit::WebInputEvent::isGestureEventType(event_type))
+      type = content::CONTEXT_MENU_SOURCE_TOUCH;
+    else if (WebKit::WebInputEvent::isKeyboardEventType(event_type))
+      type = content::CONTEXT_MENU_SOURCE_KEYBOARD;
+  }
+  delegate_->ShowContextMenu(validated_params, type);
 }
 
 void RenderViewHostImpl::OnMsgToggleFullscreen(bool enter_fullscreen) {

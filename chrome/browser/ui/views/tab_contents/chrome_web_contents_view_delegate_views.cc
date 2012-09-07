@@ -123,7 +123,8 @@ void ChromeWebContentsViewDelegateViews::RestoreFocus() {
 }
 
 void ChromeWebContentsViewDelegateViews::ShowContextMenu(
-    const content::ContextMenuParams& params) {
+    const content::ContextMenuParams& params,
+    const content::ContextMenuSourceType& type) {
   context_menu_.reset(
       RenderViewContextMenuViews::Create(web_contents_, params));
   context_menu_->Init();
@@ -152,7 +153,7 @@ void ChromeWebContentsViewDelegateViews::ShowContextMenu(
   // Enable recursive tasks on the message loop so we can get updates while
   // the context menu is being displayed.
   MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
-  context_menu_->RunMenuAt(GetTopLevelWidget(), screen_point);
+  context_menu_->RunMenuAt(GetTopLevelWidget(), screen_point, type);
 }
 
 void ChromeWebContentsViewDelegateViews::SizeChanged(const gfx::Size& size) {

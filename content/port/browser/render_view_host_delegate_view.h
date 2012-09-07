@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
+#include "content/public/common/context_menu_source_type.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 
 class SkBitmap;
@@ -32,7 +33,8 @@ class CONTENT_EXPORT RenderViewHostDelegateView {
  public:
   // A context menu should be shown, to be built using the context information
   // provided in the supplied params.
-  virtual void ShowContextMenu(const ContextMenuParams& params) {}
+  virtual void ShowContextMenu(const ContextMenuParams& params,
+                               const ContextMenuSourceType& type) {}
 
   // Shows a popup menu with the specified items.
   // This method should call RenderViewHost::DidSelectPopupMenuItem[s]() or

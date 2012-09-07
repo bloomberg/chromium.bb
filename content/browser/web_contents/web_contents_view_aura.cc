@@ -405,9 +405,10 @@ gfx::Rect WebContentsViewAura::GetViewBounds() const {
 // WebContentsViewAura, RenderViewHostDelegateView implementation:
 
 void WebContentsViewAura::ShowContextMenu(
-    const content::ContextMenuParams& params) {
+    const content::ContextMenuParams& params,
+    const content::ContextMenuSourceType& type) {
   if (delegate_.get())
-    delegate_->ShowContextMenu(params);
+    delegate_->ShowContextMenu(params, type);
 }
 
 void WebContentsViewAura::ShowPopupMenu(const gfx::Rect& bounds,

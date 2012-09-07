@@ -33,7 +33,8 @@ content::WebDragDestDelegate*
 }
 
 void ChromeWebContentsViewDelegateMac::ShowContextMenu(
-    const content::ContextMenuParams& params) {
+    const content::ContextMenuParams& params,
+    const content::ContextMenuSourceType& type) {
   // The renderer may send the "show context menu" message multiple times, one
   // for each right click mouse event it receives. Normally, this doesn't happen
   // because mouse events are not forwarded once the context menu is showing.

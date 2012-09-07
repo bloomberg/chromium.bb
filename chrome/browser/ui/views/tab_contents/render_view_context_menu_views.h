@@ -9,6 +9,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/string16.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
+#include "content/public/common/context_menu_source_type.h"
 
 namespace gfx {
 class Point;
@@ -30,7 +31,9 @@ class RenderViewContextMenuViews : public RenderViewContextMenu {
       content::WebContents* tab_contents,
       const content::ContextMenuParams& params);
 
-  void RunMenuAt(views::Widget* parent, const gfx::Point& point);
+  void RunMenuAt(views::Widget* parent,
+                 const gfx::Point& point,
+                 const content::ContextMenuSourceType& type);
 
   void UpdateMenuItemStates();
 

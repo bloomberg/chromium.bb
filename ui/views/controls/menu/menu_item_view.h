@@ -91,7 +91,8 @@ class VIEWS_EXPORT MenuItemView : public View {
   // opposite position will be used if base::i18n:IsRTL() is true.
   enum AnchorPosition {
     TOPLEFT,
-    TOPRIGHT
+    TOPRIGHT,
+    BOTTOMCENTER
   };
 
   // Where the menu should be drawn, above or below the bounds (when

@@ -8,6 +8,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/common/context_menu_source_type.h"
 
 #if defined(TOOLKIT_GTK)
 #include "ui/base/gtk/gtk_signal.h"
@@ -22,8 +23,8 @@ class ShellWebContentsViewDelegate : public WebContentsViewDelegate {
   virtual ~ShellWebContentsViewDelegate();
 
   // Overridden from WebContentsViewDelegate:
-  virtual void ShowContextMenu(
-      const ContextMenuParams& params) OVERRIDE;
+  virtual void ShowContextMenu(const ContextMenuParams& params,
+                               const ContextMenuSourceType& type) OVERRIDE;
   virtual WebDragDestDelegate* GetDragDestDelegate() OVERRIDE;
 
 #if defined(TOOLKIT_GTK)
