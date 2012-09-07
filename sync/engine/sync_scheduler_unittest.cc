@@ -105,11 +105,10 @@ class SyncSchedulerTest : public testing::Test {
     syncer_ = new MockSyncer();
     delay_ = NULL;
 
-    ModelSafeRoutingInfo routing_info;
-    routing_info[BOOKMARKS] = GROUP_UI;
-    routing_info[AUTOFILL] = GROUP_DB;
-    routing_info[THEMES] = GROUP_UI;
-    routing_info[NIGORI] = GROUP_PASSIVE;
+    routing_info_[BOOKMARKS] = GROUP_UI;
+    routing_info_[AUTOFILL] = GROUP_DB;
+    routing_info_[THEMES] = GROUP_UI;
+    routing_info_[NIGORI] = GROUP_PASSIVE;
 
     workers_.push_back(make_scoped_refptr(new FakeModelWorker(GROUP_UI)));
     workers_.push_back(make_scoped_refptr(new FakeModelWorker(GROUP_DB)));
@@ -129,7 +128,7 @@ class SyncSchedulerTest : public testing::Test {
             &extensions_activity_monitor_, throttled_data_type_tracker_.get(),
             std::vector<SyncEngineEventListener*>(), NULL, NULL,
             true  /* enable keystore encryption */));
-    context_->set_routing_info(routing_info);
+    context_->set_routing_info(routing_info_);
     context_->set_notifications_enabled(true);
     context_->set_account_name("Test");
     scheduler_.reset(
@@ -140,6 +139,7 @@ class SyncSchedulerTest : public testing::Test {
   }
 
   SyncSchedulerImpl* scheduler() { return scheduler_.get(); }
+  const ModelSafeRoutingInfo& routing_info() { return routing_info_; }
   MockSyncer* syncer() { return syncer_; }
   MockDelayProvider* delay() { return delay_; }
   MockConnectionManager* connection() { return connection_.get(); }
@@ -184,7 +184,7 @@ class SyncSchedulerTest : public testing::Test {
   }
 
   bool RunAndGetBackoff() {
-    ModelTypeSet nudge_types;
+    ModelTypeSet nudge_types(BOOKMARKS);
     StartSyncScheduler(SyncScheduler::NORMAL_MODE);
 
     scheduler()->ScheduleNudgeAsync(
@@ -233,6 +233,7 @@ class SyncSchedulerTest : public testing::Test {
   std::vector<scoped_refptr<FakeModelWorker> > workers_;
   FakeExtensionsActivityMonitor extensions_activity_monitor_;
   scoped_ptr<ThrottledDataTypeTracker> throttled_data_type_tracker_;
+  ModelSafeRoutingInfo routing_info_;
 };
 
 void RecordSyncShareImpl(SyncSession* s, SyncShareRecords* record) {
@@ -406,10 +407,16 @@ TEST_F(SyncSchedulerTest, NudgeWithConfigWithBackingOff) {
   scheduler()->ScheduleNudgeAsync(
       zero(), NUDGE_SOURCE_LOCAL, model_types, FROM_HERE);
   RunLoop();
+  // Note that we're not RunLoop()ing for the NUDGE we just scheduled, but
+  // for the first retry attempt from the config job (after
+  // waiting ~+/- 50ms).
   ASSERT_EQ(2U, records.snapshots.size());
   ASSERT_EQ(0, counter.times_called());
+  EXPECT_EQ(GetUpdatesCallerInfo::RECONFIGURATION,
+            records.snapshots[1].source().updates_source);
 
   RunLoop();
+  // This is the 3rd attempt, which we've set up to SimulateSuccess.
   ASSERT_EQ(3U, records.snapshots.size());
   ASSERT_EQ(1, counter.times_called());
 
@@ -693,7 +700,7 @@ TEST_F(SyncSchedulerTest, HasMoreToSync) {
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
 
   scheduler()->ScheduleNudgeAsync(
-      zero(), NUDGE_SOURCE_LOCAL, ModelTypeSet(), FROM_HERE);
+      zero(), NUDGE_SOURCE_LOCAL, ModelTypeSet(BOOKMARKS), FROM_HERE);
   RunLoop();
   // If more nudges are scheduled, they'll be waited on by TearDown, and would
   // cause our expectation to break.
@@ -708,7 +715,7 @@ TEST_F(SyncSchedulerTest, HasMoreToSyncThenFails) {
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
 
   scheduler()->ScheduleNudgeAsync(
-      zero(), NUDGE_SOURCE_LOCAL, ModelTypeSet(), FROM_HERE);
+      zero(), NUDGE_SOURCE_LOCAL, ModelTypeSet(BOOKMARKS), FROM_HERE);
 
   // We should detect the failure on the second sync share, and go into backoff.
   EXPECT_TRUE(RunAndGetBackoff());
@@ -774,7 +781,8 @@ TEST_F(SyncSchedulerTest, ConfigurationMode) {
   scheduler()->OnReceivedLongPollIntervalUpdate(poll);
   EXPECT_CALL(*syncer(), SyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
-                      WithArg<0>(RecordSyncShare(&records))));
+                      WithArg<0>(RecordSyncShare(&records))))
+      .RetiresOnSaturation();
 
   StartSyncScheduler(SyncScheduler::CONFIGURATION_MODE);
 
@@ -798,6 +806,27 @@ TEST_F(SyncSchedulerTest, ConfigurationMode) {
   ASSERT_EQ(1U, records.snapshots.size());
   EXPECT_TRUE(CompareModelTypeSetToModelTypeStateMap(config_types,
       records.snapshots[0].source().types));
+
+  // Switch to NORMAL_MODE to ensure NUDGES were properly saved and run.
+  // SyncSchedulerWhiteboxTest also provides coverage for this, but much
+  // more targeted ('whitebox' style).
+  scheduler()->OnReceivedLongPollIntervalUpdate(TimeDelta::FromDays(1));
+  SyncShareRecords records2;
+  EXPECT_CALL(*syncer(), SyncShare(_,_,_))
+      .WillOnce(DoAll(Invoke(sessions::test_util::SimulateSuccess),
+                      WithArg<0>(RecordSyncShare(&records2))));
+
+  // TODO(tim): Figure out how to remove this dangerous need to reset
+  // routing info between mode switches.
+  context()->set_routing_info(routing_info());
+  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
+
+  ASSERT_EQ(1U, records2.snapshots.size());
+  EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
+            records2.snapshots[0].source().updates_source);
+  EXPECT_TRUE(CompareModelTypeSetToModelTypeStateMap(nudge_types,
+      records2.snapshots[0].source().types));
+  PumpLoop();
 }
 
 class BackoffTriggersSyncSchedulerTest : public SyncSchedulerTest {
@@ -919,14 +948,6 @@ TEST_F(SyncSchedulerTest, BackoffDropsJobs) {
       base::Bind(&CallbackCounter::Callback, base::Unretained(&counter)));
   ASSERT_FALSE(scheduler()->ScheduleConfiguration(params));
   ASSERT_EQ(0, counter.times_called());
-
-  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
-
-  scheduler()->ScheduleNudgeAsync(
-      zero(), NUDGE_SOURCE_LOCAL, types, FROM_HERE);
-  scheduler()->ScheduleNudgeAsync(
-      zero(), NUDGE_SOURCE_LOCAL, types, FROM_HERE);
-  PumpLoop();
 }
 
 // Test that backoff is shaping traffic properly with consecutive errors.
@@ -959,7 +980,7 @@ TEST_F(SyncSchedulerTest, BackoffElevation) {
 
   // Run again with a nudge.
   scheduler()->ScheduleNudgeAsync(
-      zero(), NUDGE_SOURCE_LOCAL, ModelTypeSet(), FROM_HERE);
+      zero(), NUDGE_SOURCE_LOCAL, ModelTypeSet(BOOKMARKS), FROM_HERE);
   RunLoop();
 
   ASSERT_EQ(kMinNumSamples, r.snapshots.size());
@@ -991,7 +1012,7 @@ TEST_F(SyncSchedulerTest, BackoffRelief) {
 
   // Run again to wait for polling.
   scheduler()->ScheduleNudgeAsync(zero(), NUDGE_SOURCE_LOCAL,
-                                  ModelTypeSet(), FROM_HERE);
+                                  ModelTypeSet(BOOKMARKS), FROM_HERE);
   RunLoop();
 
   StopSyncScheduler();
@@ -1052,7 +1073,7 @@ TEST_F(SyncSchedulerTest, SyncerSteps) {
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
 
   scheduler()->ScheduleNudgeAsync(
-      zero(), NUDGE_SOURCE_LOCAL, ModelTypeSet(), FROM_HERE);
+      zero(), NUDGE_SOURCE_LOCAL, ModelTypeSet(BOOKMARKS), FROM_HERE);
   PumpLoop();
   // Pump again to run job.
   PumpLoop();
@@ -1097,11 +1118,6 @@ TEST_F(SyncSchedulerTest, SyncerSteps) {
   Mock::VerifyAndClearExpectations(syncer());
 }
 
-// Test config tasks don't run during normal mode.
-// TODO(tim): Implement this test and then the functionality!
-TEST_F(SyncSchedulerTest, DISABLED_NoConfigDuringNormal) {
-}
-
 // Test that starting the syncer thread without a valid connection doesn't
 // break things when a connection is detected.
 TEST_F(SyncSchedulerTest, StartWhenNotConnected) {
@@ -1113,7 +1129,7 @@ TEST_F(SyncSchedulerTest, StartWhenNotConnected) {
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
 
   scheduler()->ScheduleNudgeAsync(
-      zero(), NUDGE_SOURCE_LOCAL, ModelTypeSet(), FROM_HERE);
+      zero(), NUDGE_SOURCE_LOCAL, ModelTypeSet(BOOKMARKS), FROM_HERE);
   // Should save the nudge for until after the server is reachable.
   MessageLoop::current()->RunAllPending();
 

@@ -71,10 +71,6 @@ class SyncSchedulerWhiteboxTest : public testing::Test {
     scheduler_->mode_ = mode;
   }
 
-  void SetLastSyncedTime(base::TimeTicks ticks) {
-    scheduler_->last_sync_session_end_time_ = ticks;
-  }
-
   void ResetWaitInterval() {
     scheduler_->wait_interval_.reset();
   }
@@ -103,7 +99,6 @@ class SyncSchedulerWhiteboxTest : public testing::Test {
   void InitializeSyncerOnNormalMode() {
     SetMode(SyncScheduler::NORMAL_MODE);
     ResetWaitInterval();
-    SetLastSyncedTime(base::TimeTicks::Now());
   }
 
   SyncSchedulerImpl::JobProcessDecision CreateAndDecideJob(

@@ -5,6 +5,7 @@
 #ifndef SYNC_ENGINE_SYNC_SCHEDULER_IMPL_H_
 #define SYNC_ENGINE_SYNC_SCHEDULER_IMPL_H_
 
+#include <map>
 #include <string>
 
 #include "base/callback.h"
@@ -278,6 +279,12 @@ class SyncSchedulerImpl : public SyncScheduler {
   // the client starts up and does not need to perform an initial sync.
   void SendInitialSnapshot();
 
+  // This is used for histogramming and analysis of ScheduleNudge* APIs.
+  // SyncScheduler is the ultimate choke-point for all such invocations (with
+  // and without InvalidationState variants, all NudgeSources, etc) and as such
+  // is the most flexible place to do this bookkeeping.
+  void UpdateNudgeTimeRecords(const sessions::SyncSourceInfo& info);
+
   virtual void OnActionableError(const sessions::SyncSessionSnapshot& snapshot);
 
   base::WeakPtrFactory<SyncSchedulerImpl> weak_ptr_factory_;
@@ -313,10 +320,6 @@ class SyncSchedulerImpl : public SyncScheduler {
   // The mode of operation.
   Mode mode_;
 
-  // TODO(tim): Bug 26339. This needs to track more than just time I think,
-  // since the nudges could be for different types. Current impl doesn't care.
-  base::TimeTicks last_sync_session_end_time_;
-
   // The latest connection code we got while trying to connect.
   HttpResponse::ServerConnectionCode connection_code_;
 
@@ -331,7 +334,20 @@ class SyncSchedulerImpl : public SyncScheduler {
   // Invoked to run through the sync cycle.
   scoped_ptr<Syncer> syncer_;
 
-  sessions::SyncSessionContext *session_context_;
+  sessions::SyncSessionContext* session_context_;
+
+  // A map tracking LOCAL NudgeSource invocations of ScheduleNudge* APIs,
+  // organized by datatype. Each datatype that was part of the types requested
+  // in the call will have its TimeTicks value updated.
+  typedef std::map<ModelType, base::TimeTicks> ModelTypeTimeMap;
+  ModelTypeTimeMap last_local_nudges_by_model_type_;
+
+  // Used as an "anti-reentrancy defensive assertion".
+  // While true, it is illegal for any new scheduling activity to take place.
+  // Ensures that higher layers don't break this law in response to events that
+  // take place during a sync cycle. We call this out because such violations
+  // could result in tight sync loops hitting sync servers.
+  bool no_scheduling_allowed_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSchedulerImpl);
 };

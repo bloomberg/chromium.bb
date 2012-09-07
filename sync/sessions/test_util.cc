@@ -48,11 +48,19 @@ void SimulateSuccess(sessions::SyncSession* session,
   }
   ASSERT_EQ(0U, session->status_controller().num_server_changes_remaining());
   session->SetFinished();
-  if (end == SYNCER_END) {
-    session->mutable_status_controller()->set_last_get_key_result(SYNCER_OK);
-    session->mutable_status_controller()->set_last_download_updates_result(
-        SYNCER_OK);
-    session->mutable_status_controller()->set_commit_result(SYNCER_OK);
+  switch(end) {
+    case SYNCER_END:
+      session->mutable_status_controller()->set_commit_result(SYNCER_OK);
+      // Fall through.
+    case APPLY_UPDATES:
+      DCHECK_EQ(end == APPLY_UPDATES, session->source().updates_source ==
+                sync_pb::GetUpdatesCallerInfo::RECONFIGURATION);
+      session->mutable_status_controller()->set_last_get_key_result(SYNCER_OK);
+      session->mutable_status_controller()->set_last_download_updates_result(
+          SYNCER_OK);
+      break;
+    default:
+      ADD_FAILURE() << "Not a valid END state.";
   }
 }
 
