@@ -7,7 +7,10 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 
+class PluginFinder;
+
 namespace webkit {
+struct WebPluginInfo;
 namespace npapi {
 class PluginGroup;
 }
@@ -62,11 +65,14 @@ class GetResourceIdentifiersFunction : public AsyncExtensionFunction {
   FRIEND_TEST_ALL_PREFIXES(ExtensionApiTest,
                            ContentSettingsGetResourceIdentifiers);
 
-  void OnGotPluginGroups(const std::vector<webkit::npapi::PluginGroup>& groups);
+  // Callback method that gets executed when both |finder| and |plugins|
+  // are asynchronously fetched.
+  void OnGotPlugins(const std::vector<webkit::WebPluginInfo>& plugins,
+                    PluginFinder* finder);
 
   // Used to override the global plugin list in tests.
-  static void SetPluginGroupsForTesting(
-      const std::vector<webkit::npapi::PluginGroup>* plugin_groups);
+  static void SetPluginsForTesting(
+      const std::vector<webkit::WebPluginInfo>* plugins);
 };
 
 }  // namespace extensions

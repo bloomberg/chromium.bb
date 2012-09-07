@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/content_settings/content_settings_api.h"
 
+#include <set>
 #include <vector>
 
 #include "base/bind.h"
@@ -17,6 +18,8 @@
 #include "chrome/browser/extensions/extension_preference_api_constants.h"
 #include "chrome/browser/extensions/extension_preference_helpers.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/plugin_finder.h"
+#include "chrome/browser/plugin_installer.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -36,7 +39,7 @@ namespace pref_keys = extension_preference_api_constants;
 
 namespace {
 
-const std::vector<webkit::npapi::PluginGroup>* g_testing_plugin_groups_;
+const std::vector<webkit::WebPluginInfo>* g_testing_plugins_;
 
 bool RemoveContentType(ListValue* args, ContentSettingsType* content_type) {
   std::string content_type_str;
@@ -250,29 +253,38 @@ bool GetResourceIdentifiersFunction::RunImpl() {
   ContentSettingsType content_type;
   EXTENSION_FUNCTION_VALIDATE(RemoveContentType(args_.get(), &content_type));
 
-  if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS) {
-    if (g_testing_plugin_groups_) {
-      OnGotPluginGroups(*g_testing_plugin_groups_);
-    } else {
-      PluginService::GetInstance()->GetPluginGroups(
-          base::Bind(&GetResourceIdentifiersFunction::OnGotPluginGroups, this));
-    }
-  } else {
+  if (content_type != CONTENT_SETTINGS_TYPE_PLUGINS) {
     SendResponse(true);
+    return true;
   }
 
+  if (!g_testing_plugins_) {
+    PluginFinder::GetPluginsAndPluginFinder(
+        base::Bind(&GetResourceIdentifiersFunction::OnGotPlugins, this));
+  } else {
+    PluginFinder::Get(
+        base::Bind(&GetResourceIdentifiersFunction::OnGotPlugins, this,
+                   *g_testing_plugins_));
+  }
   return true;
 }
 
-void GetResourceIdentifiersFunction::OnGotPluginGroups(
-    const std::vector<webkit::npapi::PluginGroup>& groups) {
+void GetResourceIdentifiersFunction::OnGotPlugins(
+    const std::vector<webkit::WebPluginInfo>& plugins,
+    PluginFinder* finder) {
+  std::set<std::string> group_identifiers;
   ListValue* list = new ListValue();
-  for (std::vector<webkit::npapi::PluginGroup>::const_iterator it =
-          groups.begin();
-       it != groups.end(); ++it) {
+  for (std::vector<webkit::WebPluginInfo>::const_iterator it = plugins.begin();
+       it != plugins.end(); ++it) {
+    PluginInstaller* installer = finder->GetPluginInstaller(*it);
+    const std::string& group_identifier = installer->identifier();
+    if (group_identifiers.find(group_identifier) != group_identifiers.end())
+      continue;
+
+    group_identifiers.insert(group_identifier);
     DictionaryValue* dict = new DictionaryValue();
-    dict->SetString(keys::kIdKey, it->identifier());
-    dict->SetString(keys::kDescriptionKey, it->GetGroupName());
+    dict->SetString(keys::kIdKey, group_identifier);
+    dict->SetString(keys::kDescriptionKey, installer->name());
     list->Append(dict);
   }
   SetResult(list);
@@ -282,9 +294,9 @@ void GetResourceIdentifiersFunction::OnGotPluginGroups(
 }
 
 // static
-void GetResourceIdentifiersFunction::SetPluginGroupsForTesting(
-    const std::vector<webkit::npapi::PluginGroup>* plugin_groups) {
-  g_testing_plugin_groups_ = plugin_groups;
+void GetResourceIdentifiersFunction::SetPluginsForTesting(
+    const std::vector<webkit::WebPluginInfo>* plugins) {
+  g_testing_plugins_ = plugins;
 }
 
 }  // namespace extensions

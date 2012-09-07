@@ -104,12 +104,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
   FilePath::CharType kBarPath[] = FILE_PATH_LITERAL("/plugins/bar.plugin");
   const char* kFooName = "Foo Plugin";
   const char* kBarName = "Bar Plugin";
-  const webkit::npapi::PluginGroupDefinition kPluginDefinitions[] = {
-    { "foo", "Foo", kFooName },
-  };
 
-  webkit::npapi::MockPluginList plugin_list(kPluginDefinitions,
-                                            arraysize(kPluginDefinitions));
+  webkit::npapi::MockPluginList plugin_list(NULL, 0);
   plugin_list.AddPluginToLoad(
       webkit::WebPluginInfo(ASCIIToUTF16(kFooName),
                             FilePath(kFooPath),
@@ -121,15 +117,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
                             ASCIIToUTF16("2.3.4"),
                             ASCIIToUTF16("bar")));
 
-  std::vector<webkit::npapi::PluginGroup> groups;
-  plugin_list.GetPluginGroups(true, &groups);
+  std::vector<webkit::WebPluginInfo> plugins;
+  plugin_list.GetPlugins(&plugins);
 
-  GetResourceIdentifiersFunction::SetPluginGroupsForTesting(&groups);
+  GetResourceIdentifiersFunction::SetPluginsForTesting(&plugins);
 
   EXPECT_TRUE(RunExtensionTest("content_settings/getresourceidentifiers"))
       << message_;
 
-  GetResourceIdentifiersFunction::SetPluginGroupsForTesting(NULL);
+  GetResourceIdentifiersFunction::SetPluginsForTesting(NULL);
 }
 
 }  // namespace extensions
