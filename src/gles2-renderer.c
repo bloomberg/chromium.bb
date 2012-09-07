@@ -1045,10 +1045,22 @@ gles2_renderer_init(struct weston_compositor *ec)
 	struct gles2_renderer *renderer;
 	const char *extensions;
 	int has_egl_image_external = 0;
+	struct weston_output *output;
+	EGLBoolean ret;
 
 	renderer = malloc(sizeof *renderer);
 	if (renderer == NULL)
 		return -1;
+
+	output = container_of(ec->output_list.next,
+			      struct weston_output, link);
+	ret = eglMakeCurrent(ec->egl_display, output->egl_surface,
+			     output->egl_surface, ec->egl_context);
+	if (ret == EGL_FALSE) {
+		weston_log("Failed to make EGL context current.\n");
+		print_egl_error_state();
+		return -1;
+	}
 
 	log_egl_gl_info(ec->egl_display);
 

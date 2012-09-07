@@ -88,9 +88,6 @@ struct drm_compositor {
 	uint32_t connector_allocator;
 	struct tty *tty;
 
-	struct gbm_surface *dummy_surface;
-	EGLSurface dummy_egl_surface;
-
 	/* we need these parameters in order to not fail drmModeAddFB2()
 	 * due to out of bounds dimensions, and then mistakenly set
 	 * sprites_are_broken:
@@ -1109,30 +1106,6 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 				 EGL_NO_CONTEXT, context_attribs);
 	if (ec->base.egl_context == NULL) {
 		weston_log("failed to create context\n");
-		return -1;
-	}
-
-	ec->dummy_surface = gbm_surface_create(ec->gbm, 10, 10,
-					       GBM_FORMAT_XRGB8888,
-					       GBM_BO_USE_RENDERING);
-	if (!ec->dummy_surface) {
-		weston_log("failed to create dummy gbm surface\n");
-		return -1;
-	}
-
-	ec->dummy_egl_surface =
-		eglCreateWindowSurface(ec->base.egl_display,
-				       ec->base.egl_config,
-				       ec->dummy_surface,
-				       NULL);
-	if (ec->dummy_egl_surface == EGL_NO_SURFACE) {
-		weston_log("failed to create egl surface\n");
-		return -1;
-	}
-
-	if (!eglMakeCurrent(ec->base.egl_display, ec->dummy_egl_surface,
-			    ec->dummy_egl_surface, ec->base.egl_context)) {
-		weston_log("failed to make context current\n");
 		return -1;
 	}
 
@@ -2265,9 +2238,6 @@ drm_compositor_create(struct wl_display *display,
 
 	ec->prev_state = WESTON_COMPOSITOR_ACTIVE;
 
-	if (gles2_renderer_init(&ec->base) < 0)
-		goto err_egl;
-
 	for (key = KEY_F1; key < KEY_F9; key++)
 		weston_compositor_add_key_binding(&ec->base, key,
 						  MODIFIER_CTRL | MODIFIER_ALT,
@@ -2280,6 +2250,9 @@ drm_compositor_create(struct wl_display *display,
 		weston_log("failed to create output for %s\n", path);
 		goto err_sprite;
 	}
+
+	if (gles2_renderer_init(&ec->base) < 0)
+		goto err_egl;
 
 	path = NULL;
 
@@ -2319,14 +2292,14 @@ err_drm_source:
 	wl_event_source_remove(ec->drm_source);
 	wl_list_for_each_safe(weston_seat, next, &ec->base.seat_list, link)
 		evdev_input_destroy(weston_seat);
-err_sprite:
-	destroy_sprites(ec);
 err_egl:
 	eglMakeCurrent(ec->base.egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE,
 		       EGL_NO_CONTEXT);
 	eglTerminate(ec->base.egl_display);
 	eglReleaseThread();
 	gbm_device_destroy(ec->gbm);
+err_sprite:
+	destroy_sprites(ec);
 err_udev_dev:
 	udev_device_unref(drm_device);
 err_udev_enum:

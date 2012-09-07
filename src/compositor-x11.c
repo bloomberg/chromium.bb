@@ -68,8 +68,6 @@ struct x11_configured_output {
 struct x11_compositor {
 	struct weston_compositor	 base;
 
-	EGLSurface		 dummy_pbuffer;
-
 	Display			*dpy;
 	xcb_connection_t	*conn;
 	xcb_screen_t		*screen;
@@ -256,12 +254,6 @@ x11_compositor_init_egl(struct x11_compositor *c)
 		EGL_NONE
 	};
 
-	static const EGLint pbuffer_attribs[] = {
-		EGL_WIDTH, 10,
-		EGL_HEIGHT, 10,
-		EGL_NONE
-	};
-
 	c->base.egl_display = eglGetDisplay(c->dpy);
 	if (c->base.egl_display == NULL) {
 		weston_log("failed to create display\n");
@@ -288,20 +280,6 @@ x11_compositor_init_egl(struct x11_compositor *c)
 				 EGL_NO_CONTEXT, context_attribs);
 	if (c->base.egl_context == NULL) {
 		weston_log("failed to create context\n");
-		return -1;
-	}
-
-	c->dummy_pbuffer = eglCreatePbufferSurface(c->base.egl_display,
-						   c->base.egl_config,
-						   pbuffer_attribs);
-	if (c->dummy_pbuffer == NULL) {
-		weston_log("failed to create dummy pbuffer\n");
-		return -1;
-	}
-
-	if (!eglMakeCurrent(c->base.egl_display, c->dummy_pbuffer,
-			    c->dummy_pbuffer, c->base.egl_context)) {
-		weston_log("failed to make context current\n");
 		return -1;
 	}
 
@@ -1175,9 +1153,6 @@ x11_compositor_create(struct wl_display *display,
 	c->base.destroy = x11_destroy;
 	c->base.restore = x11_restore;
 
-	if (gles2_renderer_init(&c->base) < 0)
-		goto err_egl;
-
 	if (x11_input_create(c, no_input) < 0)
 		goto err_egl;
 
@@ -1211,6 +1186,9 @@ x11_compositor_create(struct wl_display *display,
 			goto err_x11_input;
 		x = pixman_region32_extents(&output->base.region)->x2;
 	}
+
+	if (gles2_renderer_init(&c->base) < 0)
+		goto err_egl;
 
 	c->xcb_source =
 		wl_event_loop_add_fd(c->base.input_loop,

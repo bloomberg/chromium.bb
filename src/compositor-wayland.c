@@ -46,9 +46,6 @@
 struct wayland_compositor {
 	struct weston_compositor	 base;
 
-	struct wl_egl_pixmap		*dummy_pixmap;
-	EGLSurface			 dummy_egl_surface;
-
 	struct {
 		struct wl_display *wl_display;
 		struct wl_compositor *compositor;
@@ -293,21 +290,6 @@ wayland_compositor_init_egl(struct wayland_compositor *c)
 				 EGL_NO_CONTEXT, context_attribs);
 	if (c->base.egl_context == NULL) {
 		weston_log("failed to create context\n");
-		return -1;
-	}
-
-	c->dummy_pixmap = wl_egl_pixmap_create(10, 10, 0);
-	if (!c->dummy_pixmap) {
-		weston_log("failure to create dummy_pixmap\n");
-		return -1;
-	}
-
-	c->dummy_egl_surface =
-		eglCreatePixmapSurface(c->base.egl_display, c->base.egl_config,
-				       c->dummy_pixmap, NULL);
-	if (!eglMakeCurrent(c->base.egl_display, c->dummy_egl_surface,
-			    c->dummy_egl_surface, c->base.egl_context)) {
-		weston_log("failed to make context current\n");
 		return -1;
 	}
 
@@ -884,11 +866,11 @@ wayland_compositor_create(struct wl_display *display,
 	c->base.destroy = wayland_destroy;
 	c->base.restore = wayland_restore;
 
-	if (gles2_renderer_init(&c->base) < 0)
-		goto err_display;
-
 	create_border(c);
 	if (wayland_compositor_create_output(c, width, height) < 0)
+		goto err_display;
+
+	if (gles2_renderer_init(&c->base) < 0)
 		goto err_display;
 
 	loop = wl_display_get_event_loop(c->base.wl_display);
