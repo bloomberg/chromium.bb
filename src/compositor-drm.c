@@ -1043,11 +1043,6 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 	EGLint major, minor, n;
 	const char *filename, *sysnum;
 	int fd;
-	static const EGLint context_attribs[] = {
-		EGL_CONTEXT_CLIENT_VERSION, 2,
-		EGL_NONE
-	};
-
 	static const EGLint config_attribs[] = {
 		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
 		EGL_RED_SIZE, 1,
@@ -1090,22 +1085,9 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 		return -1;
 	}
 
-	if (!eglBindAPI(EGL_OPENGL_ES_API)) {
-		weston_log("failed to bind api EGL_OPENGL_ES_API\n");
-		return -1;
-	}
-
 	if (!eglChooseConfig(ec->base.egl_display, config_attribs,
 			     &ec->base.egl_config, 1, &n) || n != 1) {
 		weston_log("failed to choose config: %d\n", n);
-		return -1;
-	}
-
-	ec->base.egl_context =
-		eglCreateContext(ec->base.egl_display, ec->base.egl_config,
-				 EGL_NO_CONTEXT, context_attribs);
-	if (ec->base.egl_context == NULL) {
-		weston_log("failed to create context\n");
 		return -1;
 	}
 

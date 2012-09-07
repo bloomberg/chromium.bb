@@ -259,10 +259,6 @@ wayland_compositor_init_egl(struct wayland_compositor *c)
 		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
 		EGL_NONE
 	};
-	static const EGLint context_attribs[] = {
-		EGL_CONTEXT_CLIENT_VERSION, 2,
-		EGL_NONE
-	};
 
 	c->base.egl_display = eglGetDisplay(c->parent.wl_display);
 	if (c->base.egl_display == NULL) {
@@ -275,21 +271,9 @@ wayland_compositor_init_egl(struct wayland_compositor *c)
 		return -1;
 	}
 
-	if (!eglBindAPI(EGL_OPENGL_ES_API)) {
-		weston_log("failed to bind EGL_OPENGL_ES_API\n");
-		return -1;
-	}
    	if (!eglChooseConfig(c->base.egl_display, config_attribs,
 			     &c->base.egl_config, 1, &n) || n == 0) {
 		weston_log("failed to choose config: %d\n", n);
-		return -1;
-	}
-
-	c->base.egl_context =
-		eglCreateContext(c->base.egl_display, c->base.egl_config,
-				 EGL_NO_CONTEXT, context_attribs);
-	if (c->base.egl_context == NULL) {
-		weston_log("failed to create context\n");
 		return -1;
 	}
 
@@ -403,13 +387,6 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 		goto cleanup_window;
 	}
 
-	if (!eglMakeCurrent(c->base.egl_display, output->base.egl_surface,
-			    output->base.egl_surface, c->base.egl_context)) {
-		weston_log("failed to make surface current\n");
-		goto cleanup_surface;
-		return -1;
-	}
-
 	output->parent.shell_surface =
 		wl_shell_get_shell_surface(c->parent.shell,
 					   output->parent.surface);
@@ -432,8 +409,6 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 
 	return 0;
 
-cleanup_surface:
-	eglDestroySurface(c->base.egl_display, output->base.egl_surface);
 cleanup_window:
 	wl_egl_window_destroy(output->parent.egl_window);
 cleanup_output:

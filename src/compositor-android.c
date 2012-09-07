@@ -114,29 +114,6 @@ print_egl_error_state(void)
 		egl_error_string(code), (long)code);
 }
 
-static int
-android_output_make_current(struct android_output *output)
-{
-	struct android_compositor *compositor = output->compositor;
-	EGLBoolean ret;
-	static int errored;
-
-	ret = eglMakeCurrent(compositor->base.egl_display,
-			     output->base.egl_surface,
-			     output->base.egl_surface,
-			     compositor->base.egl_context);
-	if (ret == EGL_FALSE) {
-		if (errored)
-			return -1;
-		errored = 1;
-		weston_log("Failed to make EGL context current.\n");
-		print_egl_error_state();
-		return -1;
-	}
-
-	return 0;
-}
-
 static void
 android_finish_frame(void *data)
 {
@@ -398,11 +375,6 @@ android_init_egl(struct android_compositor *compositor,
 	EGLint eglmajor, eglminor;
 	int ret;
 
-	static const EGLint context_attrs[] = {
-		EGL_CONTEXT_CLIENT_VERSION, 2,
-		EGL_NONE
-	};
-
 	static const EGLint config_attrs[] = {
 		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
 		EGL_RED_SIZE, 1,
@@ -427,26 +399,9 @@ android_init_egl(struct android_compositor *compositor,
 		return -1;
 	}
 
-	if (!eglBindAPI(EGL_OPENGL_ES_API)) {
-		weston_log("Failed to bind EGL_OPENGL_ES_API.\n");
-		print_egl_error_state();
-		return -1;
-	}
-
 	ret = android_egl_choose_config(compositor, output->fb, config_attrs);
 	if (ret < 0) {
 		weston_log("Failed to find an EGL config.\n");
-		print_egl_error_state();
-		return -1;
-	}
-
-	compositor->base.egl_context =
-		eglCreateContext(compositor->base.egl_display,
-				 compositor->base.egl_config,
-				 EGL_NO_CONTEXT,
-				 context_attrs);
-	if (compositor->base.egl_context == EGL_NO_CONTEXT) {
-		weston_log("Failed to create a GL ES 2 context.\n");
 		print_egl_error_state();
 		return -1;
 	}
@@ -461,9 +416,6 @@ android_init_egl(struct android_compositor *compositor,
 		print_egl_error_state();
 		return -1;
 	}
-
-	if (android_output_make_current(output) < 0)
-		return -1;
 
 	return 0;
 }

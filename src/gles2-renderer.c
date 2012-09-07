@@ -1048,9 +1048,27 @@ gles2_renderer_init(struct weston_compositor *ec)
 	struct weston_output *output;
 	EGLBoolean ret;
 
+	static const EGLint context_attribs[] = {
+		EGL_CONTEXT_CLIENT_VERSION, 2,
+		EGL_NONE
+	};
+
 	renderer = malloc(sizeof *renderer);
 	if (renderer == NULL)
 		return -1;
+
+	if (!eglBindAPI(EGL_OPENGL_ES_API)) {
+		weston_log("failed to bind EGL_OPENGL_ES_API\n");
+		print_egl_error_state();
+		return -1;
+	}
+	ec->egl_context = eglCreateContext(ec->egl_display, ec->egl_config,
+					   EGL_NO_CONTEXT, context_attribs);
+	if (ec->egl_context == NULL) {
+		weston_log("failed to create context\n");
+		print_egl_error_state();
+		return -1;
+	}
 
 	output = container_of(ec->output_list.next,
 			      struct weston_output, link);
