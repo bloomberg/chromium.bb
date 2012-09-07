@@ -514,7 +514,7 @@ void ChromeDownloadManagerDelegate::GetSaveDir(WebContents* web_contents,
 
   *skip_dir_check = false;
 #if defined(OS_CHROMEOS)
-  *skip_dir_check = gdata::util::IsUnderGDataMountPoint(*website_save_dir);
+  *skip_dir_check = gdata::util::IsUnderDriveMountPoint(*website_save_dir);
 #endif
 }
 
@@ -842,7 +842,7 @@ void ChromeDownloadManagerDelegate::OnTargetPathDetermined(
     // Retain the last directory. Exclude temporary downloads since the path
     // likely points at the location of a temporary file.
     // TODO(asanka): This logic is a hack. DownloadFilePicker should give us a
-    //               directory to persist. Or perhaps, if the GData path
+    //               directory to persist. Or perhaps, if the Drive path
     //               substitution logic is moved here, then we would have a
     //               persistable path after the DownloadFilePicker is done.
     if (disposition == DownloadItem::TARGET_DISPOSITION_PROMPT &&

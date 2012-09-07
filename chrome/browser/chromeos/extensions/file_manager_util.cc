@@ -228,7 +228,7 @@ void ShowWarningMessageBox(Profile* profile, const FilePath& path) {
       chrome::MESSAGE_BOX_TYPE_WARNING);
 }
 
-// Called when a file on GData was found. Opens the file found at |file_path|
+// Called when a file on Drive was found. Opens the file found at |file_path|
 // in a new tab with a URL computed based on the |file_type|
 void OnGDataFileFound(Profile* profile,
                       const FilePath& file_path,
@@ -257,7 +257,7 @@ void OnGDataFileFound(Profile* profile,
   }
 }
 
-// Called when a crx file on GData was downloaded.
+// Called when a crx file on Drive was downloaded.
 void OnCRXDownloadCallback(Browser* browser,
                            gdata::DriveFileError error,
                            const FilePath& file,
@@ -643,7 +643,7 @@ bool ExecuteBuiltinHandler(Browser* browser, const FilePath& path,
 
       // Open the file once the file is found.
       system_service->file_system()->GetEntryInfoByPath(
-          gdata::util::ExtractGDataPath(path),
+          gdata::util::ExtractDrivePath(path),
           base::Bind(&OnGDataFileFound, profile, path, gdata::REGULAR_FILE));
       return true;
     }
@@ -653,14 +653,14 @@ bool ExecuteBuiltinHandler(Browser* browser, const FilePath& path,
 
   if (IsSupportedGDocsExtension(file_extension.data())) {
     if (gdata::util::GetSpecialRemoteRootPath().IsParent(path)) {
-      // The file is on Google Docs. Get the Docs from the GData service.
+      // The file is on Google Docs. Get the Docs from the Drive service.
       gdata::DriveSystemService* system_service =
           gdata::DriveSystemServiceFactory::GetForProfile(profile);
       if (!system_service)
         return false;
 
       system_service->file_system()->GetEntryInfoByPath(
-          gdata::util::ExtractGDataPath(path),
+          gdata::util::ExtractDrivePath(path),
           base::Bind(&OnGDataFileFound, profile, path,
                      gdata::HOSTED_DOCUMENT));
     } else {
@@ -706,13 +706,13 @@ bool ExecuteBuiltinHandler(Browser* browser, const FilePath& path,
   }
 
   if (IsCRXFile(file_extension.data())) {
-    if (gdata::util::IsUnderGDataMountPoint(path)) {
+    if (gdata::util::IsUnderDriveMountPoint(path)) {
       gdata::DriveSystemService* system_service =
           gdata::DriveSystemServiceFactory::GetForProfile(profile);
       if (!system_service)
         return false;
       system_service->file_system()->GetFileByPath(
-          gdata::util::ExtractGDataPath(path),
+          gdata::util::ExtractDrivePath(path),
           base::Bind(&OnCRXDownloadCallback, browser),
           gdata::GetContentCallback());
     } else {

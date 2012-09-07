@@ -175,7 +175,7 @@ void OnAuthenticate(Profile* profile,
 
   if (error == HTTP_SUCCESS) {
     const FilePath drive_dir_path =
-        util::ExtractGDataPath(drive_path.DirName());
+        util::ExtractDrivePath(drive_path.DirName());
     // Ensure the directory exists. This also forces DriveFileSystem to
     // initialize DriveRootDirectory.
     GetSystemService(profile)->file_system()->GetEntryInfoByPath(
@@ -227,7 +227,7 @@ void DriveDownloadObserver::SubstituteDriveDownloadPath(Profile* profile,
 
   SetDownloadParams(drive_path, download);
 
-  if (util::IsUnderGDataMountPoint(drive_path)) {
+  if (util::IsUnderDriveMountPoint(drive_path)) {
     // Can't access drive if we're not authenticated.
     // We set off a chain of callbacks as follows:
     // DriveServiceInterface::Authenticate
@@ -249,7 +249,7 @@ void DriveDownloadObserver::SetDownloadParams(const FilePath& drive_path,
   if (!download)
     return;
 
-  if (util::IsUnderGDataMountPoint(drive_path)) {
+  if (util::IsUnderDriveMountPoint(drive_path)) {
     download->SetUserData(&kGDataPathKey,
                           new DriveUserData(drive_path));
     download->SetDisplayName(drive_path.BaseName());
@@ -271,7 +271,7 @@ FilePath DriveDownloadObserver::GetDrivePath(DownloadItem* download) {
   // If data is NULL, we've somehow lost the gdata path selected by the file
   // picker.
   DCHECK(data);
-  return data ? util::ExtractGDataPath(data->file_path()) : FilePath();
+  return data ? util::ExtractDrivePath(data->file_path()) : FilePath();
 }
 
 // static

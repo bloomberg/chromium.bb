@@ -172,7 +172,7 @@ bool FileBrowserEventRouter::AddFileWatch(
   // directory from there in order to be able to pair these events with
   // their change notifications.
   if (gdata::util::GetSpecialRemoteRootPath().IsParent(watch_path)) {
-    watch_path = gdata::util::ExtractGDataPath(watch_path);
+    watch_path = gdata::util::ExtractDrivePath(watch_path);
     is_remote_watch = true;
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -208,7 +208,7 @@ void FileBrowserEventRouter::RemoveFileWatch(
   // directory from there in order to be able to pair these events with
   // their change notifications.
   if (gdata::util::GetSpecialRemoteRootPath().IsParent(watch_path)) {
-    watch_path = gdata::util::ExtractGDataPath(watch_path);
+    watch_path = gdata::util::ExtractDrivePath(watch_path);
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&FileBrowserEventRouter::HandleRemoteUpdateRequestOnUIThread,
@@ -253,7 +253,7 @@ void FileBrowserEventRouter::OnAuthenticated(
     error_code = chromeos::MOUNT_ERROR_NOT_AUTHENTICATED;
 
   // Pass back the gdata mount point path as source path.
-  const std::string& gdata_path = gdata::util::GetGDataMountPointPathAsString();
+  const std::string& gdata_path = gdata::util::GetDriveMountPointPathAsString();
   DiskMountManager::MountPointInfo mount_info(
       gdata_path,
       gdata_path,
@@ -459,7 +459,7 @@ void FileBrowserEventRouter::OnFileSystemBeingUnmounted() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Raise a MountCompleted event to notify the File Manager.
-  const std::string& gdata_path = gdata::util::GetGDataMountPointPathAsString();
+  const std::string& gdata_path = gdata::util::GetDriveMountPointPathAsString();
   DiskMountManager::MountPointInfo mount_info(
       gdata_path,
       gdata_path,
@@ -473,7 +473,7 @@ void FileBrowserEventRouter::OnAuthenticationFailed() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Raise a MountCompleted event to notify the File Manager.
-  const std::string& gdata_path = gdata::util::GetGDataMountPointPathAsString();
+  const std::string& gdata_path = gdata::util::GetDriveMountPointPathAsString();
   DiskMountManager::MountPointInfo mount_info(
       gdata_path,
       gdata_path,

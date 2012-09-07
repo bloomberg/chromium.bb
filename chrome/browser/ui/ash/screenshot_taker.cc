@@ -141,7 +141,7 @@ void SaveScreenshotToGData(scoped_refptr<base::RefCountedBytes> png_data,
 
 void PostSaveScreenshotTask(const FilePath& screenshot_path,
                             scoped_refptr<base::RefCountedBytes> png_data) {
-  if (gdata::util::IsUnderGDataMountPoint(screenshot_path)) {
+  if (gdata::util::IsUnderDriveMountPoint(screenshot_path)) {
     Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
     if (profile) {
       gdata::util::PrepareWritableFileAndRun(

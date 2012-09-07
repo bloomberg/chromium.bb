@@ -584,7 +584,7 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     if (disable_gdata_.GetValue()) {
       const FilePath download_path =
           prefs_->GetFilePath(prefs::kDownloadDefaultDirectory);
-      if (gdata::util::IsUnderGDataMountPoint(download_path)) {
+      if (gdata::util::IsUnderDriveMountPoint(download_path)) {
         prefs_->SetFilePath(prefs::kDownloadDefaultDirectory,
                             download_util::GetDefaultDownloadDirectory());
       }

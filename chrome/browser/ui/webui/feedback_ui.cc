@@ -561,7 +561,7 @@ void FeedbackHandler::HandleRefreshSavedScreenshots(const ListValue*) {
   base::Closure refresh_callback = base::Bind(
       &FeedbackHandler::RefreshSavedScreenshotsCallback,
       AsWeakPtr(), base::Owned(saved_screenshots));
-  if (gdata::util::IsUnderGDataMountPoint(filepath)) {
+  if (gdata::util::IsUnderDriveMountPoint(filepath)) {
     GetMostRecentScreenshotsGData(
         filepath, saved_screenshots, kMaxSavedScreenshots, refresh_callback);
   } else {
@@ -588,7 +588,7 @@ void FeedbackHandler::GetMostRecentScreenshotsGData(
       gdata::DriveSystemServiceFactory::GetForProfile(
           Profile::FromWebUI(web_ui()))->file_system();
   file_system->ReadDirectoryByPath(
-      gdata::util::ExtractGDataPath(filepath),
+      gdata::util::ExtractDrivePath(filepath),
       base::Bind(&ReadDirectoryCallback, max_saved, saved_screenshots,
                  callback));
 }

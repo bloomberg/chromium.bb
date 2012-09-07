@@ -135,7 +135,7 @@ void DriveSystemService::AddDriveMountPoint() {
   if (!gdata::util::IsGDataAvailable(profile_))
     return;
 
-  const FilePath mount_point = gdata::util::GetGDataMountPointPath();
+  const FilePath mount_point = gdata::util::GetDriveMountPointPath();
   fileapi::ExternalFileSystemMountPointProvider* provider =
       BrowserContext::GetFileSystemContext(profile_)->external_provider();
   if (provider && !provider->HasMountPoint(mount_point)) {
@@ -151,7 +151,7 @@ void DriveSystemService::RemoveDriveMountPoint() {
   file_system_->NotifyFileSystemToBeUnmounted();
   file_system_->StopUpdates();
 
-  const FilePath mount_point = gdata::util::GetGDataMountPointPath();
+  const FilePath mount_point = gdata::util::GetDriveMountPointPath();
   fileapi::ExternalFileSystemMountPointProvider* provider =
       BrowserContext::GetFileSystemContext(profile_)->external_provider();
   if (provider && provider->HasMountPoint(mount_point))

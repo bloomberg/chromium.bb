@@ -10,43 +10,43 @@
 namespace gdata {
 namespace util {
 
-TEST(DriveFileSystemUtilTest, IsUnderGDataMountPoint) {
-  EXPECT_FALSE(IsUnderGDataMountPoint(
+TEST(DriveFileSystemUtilTest, IsUnderDriveMountPoint) {
+  EXPECT_FALSE(IsUnderDriveMountPoint(
       FilePath::FromUTF8Unsafe("/wherever/foo.txt")));
-  EXPECT_FALSE(IsUnderGDataMountPoint(
+  EXPECT_FALSE(IsUnderDriveMountPoint(
       FilePath::FromUTF8Unsafe("/special/foo.txt")));
-  EXPECT_FALSE(IsUnderGDataMountPoint(
+  EXPECT_FALSE(IsUnderDriveMountPoint(
       FilePath::FromUTF8Unsafe("/special/drivex/foo.txt")));
-  EXPECT_FALSE(IsUnderGDataMountPoint(
+  EXPECT_FALSE(IsUnderDriveMountPoint(
       FilePath::FromUTF8Unsafe("special/drivex/foo.txt")));
 
-  EXPECT_TRUE(IsUnderGDataMountPoint(
+  EXPECT_TRUE(IsUnderDriveMountPoint(
       FilePath::FromUTF8Unsafe("/special/drive")));
-  EXPECT_TRUE(IsUnderGDataMountPoint(
+  EXPECT_TRUE(IsUnderDriveMountPoint(
       FilePath::FromUTF8Unsafe("/special/drive/foo.txt")));
-  EXPECT_TRUE(IsUnderGDataMountPoint(
+  EXPECT_TRUE(IsUnderDriveMountPoint(
       FilePath::FromUTF8Unsafe("/special/drive/subdir/foo.txt")));
 }
 
-TEST(DriveFileSystemUtilTest, ExtractGDataPath) {
+TEST(DriveFileSystemUtilTest, ExtractDrivePath) {
   EXPECT_EQ(FilePath(),
-            ExtractGDataPath(
+            ExtractDrivePath(
                 FilePath::FromUTF8Unsafe("/wherever/foo.txt")));
   EXPECT_EQ(FilePath(),
-            ExtractGDataPath(
+            ExtractDrivePath(
                 FilePath::FromUTF8Unsafe("/special/foo.txt")));
   EXPECT_EQ(FilePath(),
-            ExtractGDataPath(
+            ExtractDrivePath(
                 FilePath::FromUTF8Unsafe("/special/gdatax/foo.txt")));
 
   EXPECT_EQ(FilePath::FromUTF8Unsafe("drive"),
-            ExtractGDataPath(
+            ExtractDrivePath(
                 FilePath::FromUTF8Unsafe("/special/drive")));
   EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/foo.txt"),
-            ExtractGDataPath(
+            ExtractDrivePath(
                 FilePath::FromUTF8Unsafe("/special/drive/foo.txt")));
   EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/subdir/foo.txt"),
-            ExtractGDataPath(
+            ExtractDrivePath(
                 FilePath::FromUTF8Unsafe("/special/drive/subdir/foo.txt")));
 }
 

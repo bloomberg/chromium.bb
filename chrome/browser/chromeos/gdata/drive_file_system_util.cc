@@ -37,11 +37,11 @@ namespace util {
 
 namespace {
 
-const char kGDataSpecialRootPath[] = "/special";
+const char kDriveSpecialRootPath[] = "/special";
 
-const char kGDataMountPointPath[] = "/special/drive";
+const char kDriveMountPointPath[] = "/special/drive";
 
-const FilePath::CharType* kGDataMountPointPathComponents[] = {
+const FilePath::CharType* kDriveMountPointPathComponents[] = {
   "/", "special", "drive"
 };
 
@@ -100,7 +100,7 @@ void OpenEditURLUIThread(Profile* profile, const GURL* edit_url) {
 }
 
 // Invoked upon completion of GetEntryInfoByResourceId initiated by
-// ModifyGDataFileResourceUrl.
+// ModifyDriveFileResourceUrl.
 void OnGetEntryInfoByResourceId(Profile* profile,
                                 const std::string& resource_id,
                                 DriveFileError error,
@@ -175,21 +175,21 @@ void OnGetEntryInfoForInsertDriveCachePathsPermissions(
 
 }  // namespace
 
-const FilePath& GetGDataMountPointPath() {
+const FilePath& GetDriveMountPointPath() {
   CR_DEFINE_STATIC_LOCAL(FilePath, gdata_mount_path,
-      (FilePath::FromUTF8Unsafe(kGDataMountPointPath)));
+      (FilePath::FromUTF8Unsafe(kDriveMountPointPath)));
   return gdata_mount_path;
 }
 
-const std::string& GetGDataMountPointPathAsString() {
+const std::string& GetDriveMountPointPathAsString() {
   CR_DEFINE_STATIC_LOCAL(std::string, gdata_mount_path_string,
-      (kGDataMountPointPath));
+      (kDriveMountPointPath));
   return gdata_mount_path_string;
 }
 
 const FilePath& GetSpecialRemoteRootPath() {
   CR_DEFINE_STATIC_LOCAL(FilePath, gdata_mount_path,
-      (FilePath::FromUTF8Unsafe(kGDataSpecialRootPath)));
+      (FilePath::FromUTF8Unsafe(kDriveSpecialRootPath)));
   return gdata_mount_path;
 }
 
@@ -202,7 +202,7 @@ GURL GetFileResourceUrl(const std::string& resource_id,
   return GURL(url);
 }
 
-void ModifyGDataFileResourceUrl(Profile* profile,
+void ModifyDriveFileResourceUrl(Profile* profile,
                                 const FilePath& drive_cache_path,
                                 GURL* url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -240,13 +240,13 @@ void ModifyGDataFileResourceUrl(Profile* profile,
   }
 }
 
-bool IsUnderGDataMountPoint(const FilePath& path) {
-  return GetGDataMountPointPath() == path ||
-         GetGDataMountPointPath().IsParent(path);
+bool IsUnderDriveMountPoint(const FilePath& path) {
+  return GetDriveMountPointPath() == path ||
+         GetDriveMountPointPath().IsParent(path);
 }
 
-FilePath ExtractGDataPath(const FilePath& path) {
-  if (!IsUnderGDataMountPoint(path))
+FilePath ExtractDrivePath(const FilePath& path) {
+  if (!IsUnderDriveMountPoint(path))
     return FilePath();
 
   std::vector<FilePath::StringType> components;
@@ -254,7 +254,7 @@ FilePath ExtractGDataPath(const FilePath& path) {
 
   // -1 to include 'drive'.
   FilePath extracted;
-  for (size_t i = arraysize(kGDataMountPointPathComponents) - 1;
+  for (size_t i = arraysize(kDriveMountPointPathComponents) - 1;
        i < components.size(); ++i) {
     extracted = extracted.Append(components[i]);
   }
@@ -366,11 +366,11 @@ void PrepareWritableFileAndRun(Profile* profile,
                                const FilePath& path,
                                const OpenFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (IsUnderGDataMountPoint(path)) {
+  if (IsUnderDriveMountPoint(path)) {
     FileWriteHelper* file_write_helper = GetFileWriteHelper(profile);
     if (!file_write_helper)
       return;
-    FilePath remote_path(ExtractGDataPath(path));
+    FilePath remote_path(ExtractDrivePath(path));
     file_write_helper->PrepareWritableFileAndRun(remote_path, callback);
   } else {
     if (!callback.is_null()) {

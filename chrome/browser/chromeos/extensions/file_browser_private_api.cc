@@ -180,7 +180,7 @@ void AddGDataMountPoint(
   if (!provider)
     return;
 
-  const FilePath mount_point = gdata::util::GetGDataMountPointPath();
+  const FilePath mount_point = gdata::util::GetDriveMountPointPath();
   if (!render_view_host || !render_view_host->GetProcess())
     return;
 
@@ -1209,7 +1209,7 @@ bool AddMountFunction::RunImpl() {
       const bool success = true;
       // Pass back the gdata mount point path as source path.
       const std::string& gdata_path =
-          gdata::util::GetGDataMountPointPathAsString();
+          gdata::util::GetDriveMountPointPathAsString();
       SetResult(Value::CreateStringValue(gdata_path));
       FileBrowserEventRouterFactory::GetForProfile(profile_)->
           MountDrive(base::Bind(&AddMountFunction::SendResponse,
@@ -1245,7 +1245,7 @@ void AddMountFunction::GetLocalPathsResponseOnUIThread(
 
   const FilePath& source_path = files[0].local_path;
   const FilePath::StringType& display_name = files[0].display_name;
-  // Check if the source path is under GData cache directory.
+  // Check if the source path is under Drive cache directory.
   gdata::DriveSystemService* system_service =
       gdata::DriveSystemServiceFactory::GetForProfile(profile_);
   gdata::DriveCache* cache = system_service ? system_service->cache() : NULL;
@@ -1375,7 +1375,7 @@ void GetSizeStatsFunction::GetLocalPathsResponseOnUIThread(
     return;
   }
 
-  if (files[0].file_path == gdata::util::GetGDataMountPointPath()) {
+  if (files[0].file_path == gdata::util::GetDriveMountPointPath()) {
     gdata::DriveSystemService* system_service =
         gdata::DriveSystemServiceFactory::GetForProfile(profile_);
 
@@ -2148,7 +2148,7 @@ void GetFileLocationsFunction::GetLocalPathsResponseOnUIThread(
 
   ListValue* locations = new ListValue;
   for (size_t i = 0; i < files.size(); ++i) {
-    if (gdata::util::IsUnderGDataMountPoint(files[i].file_path)) {
+    if (gdata::util::IsUnderDriveMountPoint(files[i].file_path)) {
       locations->Append(Value::CreateStringValue("drive"));
     } else {
       locations->Append(Value::CreateStringValue("local"));
@@ -2192,8 +2192,8 @@ void GetGDataFilesFunction::GetLocalPathsResponseOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   for (size_t i = 0; i < files.size(); ++i) {
-    DCHECK(gdata::util::IsUnderGDataMountPoint(files[i].file_path));
-    FilePath gdata_path = gdata::util::ExtractGDataPath(files[i].file_path);
+    DCHECK(gdata::util::IsUnderDriveMountPoint(files[i].file_path));
+    FilePath gdata_path = gdata::util::ExtractDrivePath(files[i].file_path);
     remaining_gdata_paths_.push(gdata_path);
   }
 
@@ -2322,8 +2322,8 @@ void CancelFileTransfersFunction::GetLocalPathsResponseOnUIThread(
 
   scoped_ptr<ListValue> responses(new ListValue());
   for (size_t i = 0; i < files.size(); ++i) {
-    DCHECK(gdata::util::IsUnderGDataMountPoint(files[i].file_path));
-    FilePath file_path = gdata::util::ExtractGDataPath(files[i].file_path);
+    DCHECK(gdata::util::IsUnderDriveMountPoint(files[i].file_path));
+    FilePath file_path = gdata::util::ExtractDrivePath(files[i].file_path);
     scoped_ptr<DictionaryValue> result(new DictionaryValue());
     result->SetBoolean(
         "canceled",
@@ -2384,20 +2384,20 @@ void TransferFileFunction::GetLocalPathsResponseOnUIThread(
   FilePath destination_file = files[1].file_path;
 
   bool source_file_under_gdata =
-      gdata::util::IsUnderGDataMountPoint(source_file);
+      gdata::util::IsUnderDriveMountPoint(source_file);
   bool destination_file_under_gdata =
-      gdata::util::IsUnderGDataMountPoint(destination_file);
+      gdata::util::IsUnderDriveMountPoint(destination_file);
 
   if (source_file_under_gdata && !destination_file_under_gdata) {
     // Transfer a file from gdata to local file system.
-    source_file = gdata::util::ExtractGDataPath(source_file);
+    source_file = gdata::util::ExtractDrivePath(source_file);
     system_service->file_system()->TransferFileFromRemoteToLocal(
         source_file,
         destination_file,
         base::Bind(&TransferFileFunction::OnTransferCompleted, this));
   } else if (!source_file_under_gdata && destination_file_under_gdata) {
     // Transfer a file from local to Drive file system
-    destination_file = gdata::util::ExtractGDataPath(destination_file);
+    destination_file = gdata::util::ExtractDrivePath(destination_file);
     system_service->file_system()->TransferFileFromLocalToRemote(
         source_file,
         destination_file,

@@ -94,7 +94,7 @@ void ScreenshotSource::SendScreenshot(const std::string& screenshot_path,
     DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(
         ash::Shell::GetInstance()->delegate()->GetCurrentBrowserContext());
     FilePath download_path = download_prefs->DownloadPath();
-    if (gdata::util::IsUnderGDataMountPoint(download_path)) {
+    if (gdata::util::IsUnderDriveMountPoint(download_path)) {
       gdata::DriveFileSystemInterface* file_system =
           gdata::DriveSystemServiceFactory::GetForProfile(
               profile_)->file_system();

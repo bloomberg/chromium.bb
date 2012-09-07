@@ -33,11 +33,11 @@ const char kWildCard[] = "*";
 // which is not yet fetched.
 const char kSymLinkToDevNull[] = "/dev/null";
 
-// Returns the GData mount point path, which looks like "/special/gdata".
-const FilePath& GetGDataMountPointPath();
+// Returns the Drive mount point path, which looks like "/special/gdata".
+const FilePath& GetDriveMountPointPath();
 
-// Returns the GData mount path as string.
-const std::string& GetGDataMountPointPathAsString();
+// Returns the Drive mount path as string.
+const std::string& GetDriveMountPointPathAsString();
 
 // Returns the 'local' root of remote file system as "/special".
 const FilePath& GetSpecialRemoteRootPath();
@@ -48,17 +48,17 @@ GURL GetFileResourceUrl(const std::string& resource_id,
                         const std::string& file_name);
 
 // Given a profile and a drive_cache_path, return the file resource url.
-void ModifyGDataFileResourceUrl(Profile* profile,
+void ModifyDriveFileResourceUrl(Profile* profile,
                                 const FilePath& drive_cache_path,
                                 GURL* url);
 
-// Returns true if the given path is under the GData mount point.
-bool IsUnderGDataMountPoint(const FilePath& path);
+// Returns true if the given path is under the Drive mount point.
+bool IsUnderDriveMountPoint(const FilePath& path);
 
-// Extracts the GData path from the given path located under the GData mount
-// point. Returns an empty path if |path| is not under the GData mount point.
+// Extracts the Drive path from the given path located under the Drive mount
+// point. Returns an empty path if |path| is not under the Drive mount point.
 // Examples: ExtractGDatPath("/special/drive/foo.txt") => "drive/foo.txt"
-FilePath ExtractGDataPath(const FilePath& path);
+FilePath ExtractDrivePath(const FilePath& path);
 
 // Inserts all possible cache paths for a given vector of paths on gdata mount
 // point into the output vector |cache_paths|, and then invokes callback.
@@ -69,11 +69,11 @@ void InsertDriveCachePathsPermissions(
     std::vector<std::pair<FilePath, int> >* cache_paths,
     const base::Closure& callback);
 
-// Escapes a file name in GData cache.
+// Escapes a file name in Drive cache.
 // Replaces percent ('%'), period ('.') and slash ('/') with %XX (hex)
 std::string EscapeCacheFileName(const std::string& filename);
 
-// Unescapes a file path in GData cache.
+// Unescapes a file path in Drive cache.
 // This is the inverse of EscapeCacheFileName.
 std::string UnescapeCacheFileName(const std::string& filename);
 
@@ -100,7 +100,7 @@ typedef base::Callback<void (DriveFileError, const FilePath& path)>
 // string like "/special/drive/foo.txt" to the concrete local cache file path.
 // After |callback| returns, the written content is synchronized to the server.
 //
-// If |path| is not a GData path, it is regarded as a local path and no path
+// If |path| is not a Drive path, it is regarded as a local path and no path
 // conversion takes place.
 //
 // Must be called from UI thread.

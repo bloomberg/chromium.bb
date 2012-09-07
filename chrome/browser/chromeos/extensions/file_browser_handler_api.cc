@@ -267,7 +267,7 @@ void FileHandlerSelectFileFunction::GrantPermissions(
       full_path_,
       file_handler_util::GetReadWritePermissions()));
 
-  if (!gdata::util::IsUnderGDataMountPoint(full_path_)) {
+  if (!gdata::util::IsUnderDriveMountPoint(full_path_)) {
     OnGotPermissionsToGrant(callback, virtual_path);
     return;
   }

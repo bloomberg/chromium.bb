@@ -650,7 +650,7 @@ class ExtensionTaskExecutor::ExecuteTasksFileSystemCallbackDispatcher {
     FilePath virtual_path = url.virtual_path();
 
     bool is_drive_file = url.type() == fileapi::kFileSystemTypeDrive;
-    DCHECK(!is_drive_file || gdata::util::IsUnderGDataMountPoint(local_path));
+    DCHECK(!is_drive_file || gdata::util::IsUnderDriveMountPoint(local_path));
 
     // If the file is under gdata mount point, there is no actual file to be
     // found on the url.path().
@@ -908,7 +908,7 @@ void ExtensionTaskExecutor::InitHandlerHostFileAccessPermissions(
         iter->absolute_path,
         GetAccessPermissionsForHandler(handler_extension, action_id)));
 
-    if (gdata::util::IsUnderGDataMountPoint(iter->absolute_path))
+    if (gdata::util::IsUnderDriveMountPoint(iter->absolute_path))
       gdata_paths->push_back(iter->virtual_path);
   }
 

@@ -90,7 +90,7 @@ void SavePackageFilePickerChromeOS::FileSelectedWithExtraInfo(
       web_contents()->GetBrowserContext());
   DCHECK(profile);
 
-  if (gdata::util::IsUnderGDataMountPoint(selected_path)) {
+  if (gdata::util::IsUnderDriveMountPoint(selected_path)) {
     // Here's a map to the callback chain:
     // GetDriveTempDownloadPath ->
     //   ContinueSettingUpDriveDownload ->
