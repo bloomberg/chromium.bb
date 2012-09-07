@@ -202,6 +202,10 @@ class ThumbnailDatabase {
   // Returns true if the deletion succeeded.
   bool DeleteIconMappings(const GURL& page_url);
 
+  // Deletes the icon mapping with |mapping_id|.
+  // Returns true if the deletion succeeded.
+  bool DeleteIconMapping(IconMappingID mapping_id);
+
   // Checks whether a favicon is used by any URLs in the database.
   bool HasMappingFor(FaviconID id);
 

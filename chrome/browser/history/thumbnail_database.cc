@@ -686,6 +686,14 @@ bool ThumbnailDatabase::DeleteIconMappings(const GURL& page_url) {
   return statement.Run();
 }
 
+bool ThumbnailDatabase::DeleteIconMapping(IconMappingID mapping_id) {
+  sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
+      "DELETE FROM icon_mapping WHERE id=?"));
+  statement.BindInt64(0, mapping_id);
+
+  return statement.Run();
+}
+
 bool ThumbnailDatabase::HasMappingFor(FaviconID id) {
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "SELECT id FROM icon_mapping "

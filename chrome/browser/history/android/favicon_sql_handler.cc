@@ -31,45 +31,40 @@ FaviconSQLHandler::~FaviconSQLHandler() {
 
 bool FaviconSQLHandler::Update(const HistoryAndBookmarkRow& row,
                                const TableIDRows& ids_set) {
-  FaviconID favicon_id = 0;
-  if (row.favicon_valid()) {
-    // If the image_data will be updated, it is not reasonable to find if the
-    // icon is already in database, just create a new favicon.
-    // TODO(pkotwicz): Pass in real pixel size.
-    favicon_id = thumbnail_db_->AddFavicon(
-        GURL(),
-        history::FAVICON,
-        history::GetDefaultFaviconSizes(),
-        row.favicon(),
-        Time::Now(),
-        gfx::Size());
+  if (!row.favicon_valid())
+    return Delete(ids_set);
 
-    if (!favicon_id)
-      return false;
-  }
+  // If the image_data will be updated, it is not reasonable to find if the
+  // icon is already in database, just create a new favicon.
+  // TODO(pkotwicz): Pass in real pixel size.
+  FaviconID favicon_id = thumbnail_db_->AddFavicon(
+      GURL(),
+      history::FAVICON,
+      history::GetDefaultFaviconSizes(),
+      row.favicon(),
+      Time::Now(),
+      gfx::Size());
+
+  if (!favicon_id)
+    return false;
 
   std::vector<FaviconID> favicon_ids;
   for (TableIDRows::const_iterator i = ids_set.begin();
        i != ids_set.end(); ++i) {
+    // Remove all icon mappings to favicons of type FAVICON.
     std::vector<IconMapping> icon_mappings;
-    if (thumbnail_db_->GetIconMappingsForPageURL(i->url, FAVICON,
-                                                 &icon_mappings)) {
-      if (favicon_id) {
-        if (!thumbnail_db_->UpdateIconMapping(icon_mappings[0].mapping_id,
-                                              favicon_id))
-          return false;
-      } else {
-        // Require to delete the icon mapping.
-        if (!thumbnail_db_->DeleteIconMappings(i->url))
-          return false;
-      }
-      // Keep the old icon for deleting it later if possible.
-      favicon_ids.push_back(icon_mappings[0].icon_id);
-    } else if (favicon_id) {
-      // The URL doesn't have icon before, add the icon mapping.
-      if (!thumbnail_db_->AddIconMapping(i->url, favicon_id))
+    thumbnail_db_->GetIconMappingsForPageURL(i->url, FAVICON, &icon_mappings);
+    for (std::vector<IconMapping>::const_iterator m = icon_mappings.begin();
+         m != icon_mappings.end(); ++m) {
+      if (!thumbnail_db_->DeleteIconMapping(m->mapping_id))
         return false;
+
+      // Keep the old icon for deleting it later if possible.
+      favicon_ids.push_back(m->icon_id);
     }
+    // Add the icon mapping.
+    if (!thumbnail_db_->AddIconMapping(i->url, favicon_id))
+      return false;
   }
   // As we update the favicon, Let's remove unused favicons if any.
   if (!favicon_ids.empty() && !DeleteUnusedFavicon(favicon_ids))
