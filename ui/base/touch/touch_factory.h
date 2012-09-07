@@ -98,7 +98,7 @@ class UI_EXPORT TouchFactory {
     SetCursorVisible(false, false);
   }
 
-  // Requirement for Singleton
+  // Requirement for Signleton
   friend struct DefaultSingletonTraits<TouchFactory>;
 
   // The default cursor is hidden after startup, and when the mouse pointer is
@@ -112,7 +112,7 @@ class UI_EXPORT TouchFactory {
 
   // The cursor is hidden if it is idle for a certain amount time. This timer
   // is used to keep track of the idleness.
-  ::base::OneShotTimer<TouchFactory> cursor_timer_;
+  base::OneShotTimer<TouchFactory> cursor_timer_;
 
   // The default cursor.
   Cursor arrow_cursor_;
