@@ -195,6 +195,8 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const FindFirstMissingParentDirectoryResult& result)>
       FindFirstMissingParentDirectoryCallback;
 
+  // Params for FindFirstMissingParentDirectory().
+  struct FindFirstMissingParentDirectoryParams;
 
   // Defines set of parameters passes to intermediate callbacks during
   // execution of CreateDirectory() method.
@@ -576,12 +578,23 @@ class DriveFileSystem : public DriveFileSystemInterface,
                               DriveFileError error,
                               const FilePath& file_path);
 
-  // Given non-existing |directory_path|, finds the first missing parent
-  // directory of |directory_path|.
+  // Finds the first missing parent directory of |directory_path|.
   // |callback| must not be null.
   void FindFirstMissingParentDirectory(
       const FilePath& directory_path,
       const FindFirstMissingParentDirectoryCallback& callback);
+
+  // Helper function for FindFirstMissingParentDirectory, for recursive search
+  // for first missing parent.
+  void FindFirstMissingParentDirectoryInternal(
+      scoped_ptr<FindFirstMissingParentDirectoryParams> params);
+
+  // Callback for ResourceMetadata::GetEntryInfoByPath from
+  // FindFirstMissingParentDirectory.
+  void ContinueFindFirstMissingParentDirectory(
+      scoped_ptr<FindFirstMissingParentDirectoryParams> params,
+      DriveFileError error,
+      scoped_ptr<DriveEntryProto> entry_proto);
 
   // Callback for handling results of ReloadFeedFromServerIfNeeded() initiated
   // from CheckForUpdates(). This callback checks whether feed is successfully

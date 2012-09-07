@@ -240,6 +240,25 @@ void RunGetEntryInfoWithFilePathCallback(
 
 }  // namespace
 
+// DriveFileSystem::FindFirstMissingParentDirectoryParams implementation.
+struct DriveFileSystem::FindFirstMissingParentDirectoryParams {
+  FindFirstMissingParentDirectoryParams(
+      const std::vector<FilePath::StringType>& path_parts,
+      const FindFirstMissingParentDirectoryCallback& callback)
+      : path_parts(path_parts),
+        index(0),
+        callback(callback) {
+    DCHECK(!callback.is_null());
+  }
+  ~FindFirstMissingParentDirectoryParams() {}
+
+  std::vector<FilePath::StringType> path_parts;
+  size_t index;
+  FilePath current_path;
+  GURL last_dir_content_url;
+  const FindFirstMissingParentDirectoryCallback callback;
+};
+
 // DriveFileSystem::FindFirstMissingParentDirectoryResult implementation.
 DriveFileSystem::FindFirstMissingParentDirectoryResult::
 FindFirstMissingParentDirectoryResult()
@@ -2588,44 +2607,71 @@ void DriveFileSystem::FindFirstMissingParentDirectory(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // Let's find which how deep is the existing directory structure and
-  // get the first element that's missing.
   std::vector<FilePath::StringType> path_parts;
   directory_path.GetComponents(&path_parts);
-  FilePath current_path;
 
-  GURL last_dir_content_url;
-  FindFirstMissingParentDirectoryResult result;
-  for (std::vector<FilePath::StringType>::const_iterator iter =
-          path_parts.begin();
-       iter != path_parts.end(); ++iter) {
-    current_path = current_path.Append(*iter);
-    DriveEntry* entry = resource_metadata_->FindEntryByPathSync(current_path);
-    if (entry) {
-      if (entry->file_info().is_directory) {
-        last_dir_content_url = entry->content_url();
-      } else {
-        // Huh, the segment found is a file not a directory?
-        result.Init(FIND_FIRST_FOUND_INVALID, FilePath(), GURL());
-        base::MessageLoopProxy::current()->PostTask(
-            FROM_HERE,
-            base::Bind(callback, result));
-        return;
-      }
-    } else {
-      // The current path is missing.
-      result.Init(FIND_FIRST_FOUND_MISSING, current_path, last_dir_content_url);
-      base::MessageLoopProxy::current()->PostTask(
-          FROM_HERE,
-          base::Bind(callback, result));
-      return;
-    }
-  }
+  scoped_ptr<FindFirstMissingParentDirectoryParams> params(
+      new FindFirstMissingParentDirectoryParams(path_parts, callback));
 
-  result.Init(FIND_FIRST_DIRECTORY_ALREADY_PRESENT, FilePath(), GURL());
+  // Have to post because FindFirstMissingParentDirectoryInternal calls
+  // the callback directly.
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, result));
+      base::Bind(&DriveFileSystem::FindFirstMissingParentDirectoryInternal,
+                 ui_weak_ptr_,
+                 base::Passed(&params)));
+}
+
+void DriveFileSystem::FindFirstMissingParentDirectoryInternal(
+    scoped_ptr<FindFirstMissingParentDirectoryParams> params) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(params.get());
+
+  // Terminate recursion if we're at the last element.
+  if (params->index == params->path_parts.size()) {
+    FindFirstMissingParentDirectoryResult result;
+    result.Init(FIND_FIRST_DIRECTORY_ALREADY_PRESENT, FilePath(), GURL());
+    params->callback.Run(result);
+    return;
+  }
+
+  params->current_path = params->current_path.Append(
+      params->path_parts[params->index]);
+  // Need a reference to current_path before we call base::Passed because the
+  // order of evaluation of arguments is indeterminate.
+  const FilePath& current_path = params->current_path;
+  resource_metadata_->GetEntryInfoByPath(
+      current_path,
+      base::Bind(&DriveFileSystem::ContinueFindFirstMissingParentDirectory,
+                 ui_weak_ptr_,
+                 base::Passed(&params)));
+}
+
+void DriveFileSystem::ContinueFindFirstMissingParentDirectory(
+    scoped_ptr<FindFirstMissingParentDirectoryParams> params,
+    DriveFileError error,
+    scoped_ptr<DriveEntryProto> entry_proto) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(params.get());
+
+  FindFirstMissingParentDirectoryResult result;
+  if (error == DRIVE_FILE_ERROR_NOT_FOUND) {
+    // Found the missing parent.
+    result.Init(FIND_FIRST_FOUND_MISSING,
+                params->current_path,
+                params->last_dir_content_url);
+    params->callback.Run(result);
+  } else if (error != DRIVE_FILE_OK ||
+             !entry_proto->file_info().is_directory()) {
+    // Unexpected error, or found a file when we were expecting a directory.
+    result.Init(FIND_FIRST_FOUND_INVALID, FilePath(), GURL());
+    params->callback.Run(result);
+  } else {
+    // This parent exists, so recursively look at the next element.
+    params->last_dir_content_url = GURL(entry_proto->content_url());
+    params->index++;
+    FindFirstMissingParentDirectoryInternal(params.Pass());
+  }
 }
 
 void DriveFileSystem::AddUploadedFile(

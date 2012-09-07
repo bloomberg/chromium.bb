@@ -193,10 +193,6 @@ class DriveResourceMetadata {
   // Removes the entry from resource map.
   void RemoveEntryFromResourceMap(const std::string& resource_id);
 
-  // Searches for |file_path| synchronously.
-  // TODO(satorux): Replace this with an async version crbug.com/137160
-  DriveEntry* FindEntryByPathSync(const FilePath& file_path);
-
   // Returns the DriveEntry* with the corresponding |resource_id|.
   // TODO(satorux): Remove this in favor of GetEntryInfoByResourceId()
   // but can be difficult. See crbug.com/137374
@@ -293,6 +289,10 @@ class DriveResourceMetadata {
       scoped_ptr<EntryInfoPairResult> result,
       DriveFileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
+
+  // Searches for |file_path| synchronously.
+  // TODO(satorux): Replace this with an async version crbug.com/137160
+  DriveEntry* FindEntryByPathSync(const FilePath& file_path);
 
   // Private data members.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
