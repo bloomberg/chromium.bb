@@ -109,7 +109,7 @@ void UDPSocket::RecvFrom(int count,
   DCHECK(!callback.is_null());
 
   if (!recv_from_callback_.is_null()) {
-    callback.Run(net::ERR_IO_PENDING, NULL, NULL, 0);
+    callback.Run(net::ERR_IO_PENDING, NULL, "", 0);
     return;
   } else {
     recv_from_callback_ = callback;
