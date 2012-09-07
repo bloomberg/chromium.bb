@@ -91,7 +91,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
         switches::kAllowFileAccessFromFiles);
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kForceCompositingMode);
-    net::HttpStreamFactory::set_ignore_certificate_errors(true);
+    //net::HttpStreamFactory::set_ignore_certificate_errors(true);
     net::CookieMonster::EnableFileScheme();
   }
   SetContentClient(&content_client_);

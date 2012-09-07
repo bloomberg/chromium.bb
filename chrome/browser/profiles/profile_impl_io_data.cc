@@ -406,31 +406,16 @@ void ProfileImplIOData::LazyInitializeInternal(
   set_server_bound_cert_service(server_bound_cert_service);
   main_context->set_server_bound_cert_service(server_bound_cert_service);
 
-  std::string trusted_spdy_proxy;
-  if (command_line.HasSwitch(switches::kTrustedSpdyProxy)) {
-    trusted_spdy_proxy = command_line.GetSwitchValueASCII(
-        switches::kTrustedSpdyProxy);
-  }
   net::HttpCache::DefaultBackend* main_backend =
       new net::HttpCache::DefaultBackend(
           net::DISK_CACHE,
           lazy_params_->cache_path,
           lazy_params_->cache_max_size,
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
+  net::HttpNetworkSession::Params network_session_params;
+  PopulateNetworkSessionParams(profile_params, &network_session_params);
   net::HttpCache* main_cache = new net::HttpCache(
-      main_context->host_resolver(),
-      main_context->cert_verifier(),
-      main_context->server_bound_cert_service(),
-      main_context->transport_security_state(),
-      main_context->proxy_service(),
-      GetSSLSessionCacheShard(),
-      main_context->ssl_config_service(),
-      main_context->http_auth_handler_factory(),
-      main_context->network_delegate(),
-      main_context->http_server_properties(),
-      main_context->net_log(),
-      main_backend,
-      trusted_spdy_proxy);
+      network_session_params, main_backend);
 
   if (record_mode || playback_mode) {
     main_cache->set_mode(

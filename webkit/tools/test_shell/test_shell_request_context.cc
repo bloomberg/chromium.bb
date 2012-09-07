@@ -18,6 +18,7 @@
 #include "net/cookies/cookie_monster.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_auth_handler_factory.h"
+#include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_config_service_fixed.h"
@@ -95,21 +96,20 @@ void TestShellRequestContext::Init(
       cache_path.empty() ? net::MEMORY_CACHE : net::DISK_CACHE,
       cache_path, 0, SimpleResourceLoaderBridge::GetCacheThread());
 
-  net::HttpCache* cache =
-      new net::HttpCache(host_resolver(),
-                         cert_verifier(),
-                         server_bound_cert_service(),
-                         NULL, /* transport_security_state */
-                         proxy_service(),
-                         "",  /* ssl_session_cache_shard */
-                         ssl_config_service(),
-                         http_auth_handler_factory(),
-                         NULL,  /* network_delegate */
-                         http_server_properties(),
-                         NULL,  /* netlog */
-                         backend,
-                         "" /* trusted_spdy_proxy */ );
+  net::HttpNetworkSession::Params network_session_params;
+  network_session_params.host_resolver = host_resolver();
+  network_session_params.cert_verifier = cert_verifier();
+  network_session_params.server_bound_cert_service =
+      server_bound_cert_service();
+  network_session_params.proxy_service = proxy_service();
+  network_session_params.ssl_config_service = ssl_config_service();
+  network_session_params.http_auth_handler_factory =
+      http_auth_handler_factory();
+  network_session_params.http_server_properties = http_server_properties();
+  network_session_params.host_resolver = host_resolver();
 
+  net::HttpCache* cache = new net::HttpCache(
+      network_session_params, backend);
   cache->set_mode(cache_mode);
   storage_.set_http_transaction_factory(cache);
 

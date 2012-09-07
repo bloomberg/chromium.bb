@@ -208,13 +208,6 @@ void InitializeNetworkOptions(const CommandLine& parsed_command_line) {
     net::CookieMonster::EnableFileScheme();
   }
 
-  if (parsed_command_line.HasSwitch(switches::kIgnoreCertificateErrors))
-    net::HttpStreamFactory::set_ignore_certificate_errors(true);
-
-  if (parsed_command_line.HasSwitch(switches::kHostRules))
-    net::HttpStreamFactory::SetHostMappingRules(
-        parsed_command_line.GetSwitchValueASCII(switches::kHostRules));
-
   if (parsed_command_line.HasSwitch(switches::kEnableIPPooling))
     net::SpdySessionPool::enable_ip_pooling(true);
 
@@ -236,27 +229,6 @@ void InitializeNetworkOptions(const CommandLine& parsed_command_line) {
   if (parsed_command_line.HasSwitch(switches::kEnableWebSocketOverSpdy)) {
     // Enable WebSocket over SPDY.
     net::WebSocketJob::set_websocket_over_spdy_enabled(true);
-  }
-
-  if (parsed_command_line.HasSwitch(switches::kEnableHttpPipelining))
-    net::HttpStreamFactory::set_http_pipelining_enabled(true);
-
-  if (parsed_command_line.HasSwitch(switches::kTestingFixedHttpPort)) {
-    int value;
-    base::StringToInt(
-        parsed_command_line.GetSwitchValueASCII(
-            switches::kTestingFixedHttpPort),
-        &value);
-    net::HttpStreamFactory::set_testing_fixed_http_port(value);
-  }
-
-  if (parsed_command_line.HasSwitch(switches::kTestingFixedHttpsPort)) {
-    int value;
-    base::StringToInt(
-        parsed_command_line.GetSwitchValueASCII(
-            switches::kTestingFixedHttpsPort),
-        &value);
-    net::HttpStreamFactory::set_testing_fixed_https_port(value);
   }
 
   bool used_spdy_switch = false;

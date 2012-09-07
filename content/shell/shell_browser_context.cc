@@ -28,7 +28,8 @@
 namespace content {
 
 ShellBrowserContext::ShellBrowserContext(bool off_the_record)
-    : off_the_record_(off_the_record) {
+    : off_the_record_(off_the_record),
+      ignore_certificate_errors_(false) {
   InitWhileIOAllowed();
 }
 
@@ -41,6 +42,8 @@ ShellBrowserContext::~ShellBrowserContext() {
 
 void ShellBrowserContext::InitWhileIOAllowed() {
   CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch(switches::kDumpRenderTree))
+    ignore_certificate_errors_ = true;
   if (cmd_line->HasSwitch(switches::kDumpRenderTree)) {
     CHECK(testing_path_.CreateUniqueTempDir());
     path_ = testing_path_.path();
@@ -96,6 +99,7 @@ DownloadManagerDelegate* ShellBrowserContext::GetDownloadManagerDelegate()  {
 net::URLRequestContextGetter* ShellBrowserContext::GetRequestContext()  {
   if (!url_request_getter_) {
     url_request_getter_ = new ShellURLRequestContextGetter(
+        ignore_certificate_errors_,
         GetPath(),
         BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO),
         BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::FILE));

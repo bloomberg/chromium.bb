@@ -19,6 +19,7 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "content/public/browser/resource_context.h"
 #include "net/cookies/cookie_monster.h"
+#include "net/http/http_network_session.h"
 #include "net/url_request/url_request_job_factory.h"
 
 class CookieSettings;
@@ -269,6 +270,12 @@ class ProfileIOData {
   // using it still, before we destroy the member variables that those
   // URLRequests may be accessing.
   void DestroyResourceContext();
+
+  // Fills in fields of params using values from main_request_context_ and the
+  // IOThread associated with profile_params.
+  void PopulateNetworkSessionParams(
+      const ProfileParams* profile_params,
+      net::HttpNetworkSession::Params* params) const;
 
  private:
   class ResourceContext : public content::ResourceContext {

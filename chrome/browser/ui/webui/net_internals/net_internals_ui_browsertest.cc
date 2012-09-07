@@ -96,9 +96,13 @@ void AddDummyHttpPipelineFeedbackOnIOThread(
 
 // Called on IO thread.  Adds an entry to the list of known HTTP pipelining
 // hosts.
-void EnableHttpPipeliningOnIOThread(bool enable) {
+void EnableHttpPipeliningOnIOThread(
+    net::URLRequestContextGetter* context_getter, bool enable) {
   ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  net::HttpStreamFactory::set_http_pipelining_enabled(enable);
+  net::URLRequestContext* context = context_getter->GetURLRequestContext();
+  net::HttpNetworkSession* http_network_session =
+      context->http_transaction_factory()->GetSession();
+  http_network_session->set_http_pipelining_enabled(enable);
 }
 
 }  // namespace
@@ -275,7 +279,9 @@ void NetInternalsTest::MessageHandler::EnableHttpPipelining(
   ASSERT_TRUE(list_value->GetBoolean(0, &enable));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&EnableHttpPipeliningOnIOThread, enable));
+      base::Bind(&EnableHttpPipeliningOnIOThread,
+                 make_scoped_refptr(browser()->profile()->GetRequestContext()),
+                 enable));
 }
 
 void NetInternalsTest::MessageHandler::AddDummyHttpPipelineFeedback(

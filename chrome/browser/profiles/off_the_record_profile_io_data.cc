@@ -29,6 +29,7 @@
 #include "net/base/server_bound_cert_service.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_cache.h"
+#include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/ftp_protocol_handler.h"
@@ -166,7 +167,6 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
 
   IOThread* const io_thread = profile_params->io_thread;
   IOThread::Globals* const io_thread_globals = io_thread->globals();
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
   ApplyProfileParamsToContext(main_context);
   ApplyProfileParamsToContext(extensions_context);
@@ -221,27 +221,10 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
 
   net::HttpCache::BackendFactory* main_backend =
       net::HttpCache::DefaultBackend::InMemory(0);
-
-  std::string trusted_spdy_proxy;
-  if (command_line.HasSwitch(switches::kTrustedSpdyProxy)) {
-    trusted_spdy_proxy = command_line.GetSwitchValueASCII(
-        switches::kTrustedSpdyProxy);
-  }
-
-  net::HttpCache* cache =
-      new net::HttpCache(main_context->host_resolver(),
-                         main_context->cert_verifier(),
-                         main_context->server_bound_cert_service(),
-                         main_context->transport_security_state(),
-                         main_context->proxy_service(),
-                         GetSSLSessionCacheShard(),
-                         main_context->ssl_config_service(),
-                         main_context->http_auth_handler_factory(),
-                         main_context->network_delegate(),
-                         main_context->http_server_properties(),
-                         main_context->net_log(),
-                         main_backend,
-                         trusted_spdy_proxy);
+  net::HttpNetworkSession::Params network_session_params;
+  PopulateNetworkSessionParams(profile_params, &network_session_params);
+  net::HttpCache* cache = new net::HttpCache(
+      network_session_params, main_backend);
 
   main_http_factory_.reset(cache);
   main_context->set_http_transaction_factory(cache);

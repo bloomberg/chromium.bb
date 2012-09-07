@@ -1449,12 +1449,10 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHttpPipeliningStatus(
   DCHECK(!list);
   DictionaryValue* status_dict = new DictionaryValue();
 
-  status_dict->Set("pipelining_enabled",
-                   Value::CreateBooleanValue(
-                       net::HttpStreamFactory::http_pipelining_enabled()));
-
   net::HttpNetworkSession* http_network_session =
       GetHttpNetworkSession(context_getter_->GetURLRequestContext());
+  status_dict->Set("pipelining_enabled", Value::CreateBooleanValue(
+      http_network_session->params().http_pipelining_enabled));
   Value* pipelined_connection_info = NULL;
   if (http_network_session) {
     pipelined_connection_info =

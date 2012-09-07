@@ -46,6 +46,7 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
   DCHECK(request_context);
   DCHECK(!dest_host_port_pair_.host().empty());
   DCHECK_GT(dest_host_port_pair_.port(), 0);
+
   net::HttpNetworkSession::Params session_params;
   session_params.client_socket_factory = socket_factory;
   session_params.host_resolver = request_context->host_resolver();
@@ -62,6 +63,22 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
   session_params.http_server_properties =
       request_context->http_server_properties();
   session_params.net_log = request_context->net_log();
+
+  const net::HttpNetworkSession::Params* reference_params =
+      request_context->GetNetworkSessionParams();
+  if (reference_params) {
+    session_params.host_mapping_rules = reference_params->host_mapping_rules;
+    session_params.ignore_certificate_errors =
+        reference_params->ignore_certificate_errors;
+    session_params.http_pipelining_enabled =
+        reference_params->http_pipelining_enabled;
+    session_params.testing_fixed_http_port =
+        reference_params->testing_fixed_http_port;
+    session_params.testing_fixed_https_port =
+        reference_params->testing_fixed_https_port;
+    session_params.trusted_spdy_proxy = reference_params->trusted_spdy_proxy;
+  }
+
   network_session_ = new net::HttpNetworkSession(session_params);
 }
 

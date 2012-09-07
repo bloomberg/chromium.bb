@@ -47,6 +47,7 @@ class ShellBrowserContext : public BrowserContext {
   void InitWhileIOAllowed();
 
   bool off_the_record_;
+  bool ignore_certificate_errors_;
   ScopedTempDir testing_path_;
   FilePath path_;
   scoped_ptr<ResourceContext> resource_context_;

@@ -4,6 +4,7 @@
 
 #include "content/shell/shell_url_request_context_getter.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/string_split.h"
 #include "base/threading/worker_pool.h"
@@ -17,6 +18,7 @@
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
+#include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
@@ -26,10 +28,12 @@
 namespace content {
 
 ShellURLRequestContextGetter::ShellURLRequestContextGetter(
+    bool ignore_certificate_errors,
     const FilePath& base_path,
     MessageLoop* io_loop,
     MessageLoop* file_loop)
-    : base_path_(base_path),
+    : ignore_certificate_errors_(ignore_certificate_errors),
+      base_path_(base_path),
       io_loop_(io_loop),
       file_loop_(file_loop) {
   // Must first be created on the UI thread.
@@ -88,20 +92,28 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
             BrowserThread::GetMessageLoopProxyForThread(
                 BrowserThread::CACHE));
 
+    net::HttpNetworkSession::Params network_session_params;
+    network_session_params.host_resolver =
+        url_request_context_->host_resolver();
+    network_session_params.cert_verifier =
+        url_request_context_->cert_verifier();
+    network_session_params.server_bound_cert_service =
+        url_request_context_->server_bound_cert_service();
+    network_session_params.proxy_service =
+        url_request_context_->proxy_service();
+    network_session_params.ssl_config_service =
+        url_request_context_->ssl_config_service();
+    network_session_params.http_auth_handler_factory =
+        url_request_context_->http_auth_handler_factory();
+    network_session_params.network_delegate =
+        url_request_context_->network_delegate();
+    network_session_params.http_server_properties =
+        url_request_context_->http_server_properties();
+    network_session_params.ignore_certificate_errors =
+        ignore_certificate_errors_;
+
     net::HttpCache* main_cache = new net::HttpCache(
-        url_request_context_->host_resolver(),
-        url_request_context_->cert_verifier(),
-        url_request_context_->server_bound_cert_service(),
-        NULL, /* transport_security_state */
-        url_request_context_->proxy_service(),
-        "", /* ssl_session_cache_shard */
-        url_request_context_->ssl_config_service(),
-        url_request_context_->http_auth_handler_factory(),
-        url_request_context_->network_delegate(),
-        url_request_context_->http_server_properties(),
-        NULL,
-        main_backend,
-        "" /* trusted_spdy_proxy */ );
+        network_session_params, main_backend);
     storage_->set_http_transaction_factory(main_cache);
 
     storage_->set_job_factory(new net::URLRequestJobFactoryImpl);

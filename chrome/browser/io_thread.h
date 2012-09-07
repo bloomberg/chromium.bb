@@ -36,6 +36,7 @@ namespace net {
 class CertVerifier;
 class CookieStore;
 class FtpTransactionFactory;
+class HostMappingRules;
 class HostResolver;
 class HttpAuthHandlerFactory;
 class HttpServerProperties;
@@ -113,6 +114,11 @@ class IOThread : public content::BrowserThreadDelegate {
     scoped_ptr<chrome_browser_net::HttpPipeliningCompatibilityClient>
         http_pipelining_compatibility_client;
     scoped_ptr<chrome_browser_net::LoadTimeStats> load_time_stats;
+    scoped_ptr<net::HostMappingRules> host_mapping_rules;
+    bool ignore_certificate_errors;
+    bool http_pipelining_enabled;
+    uint16 testing_fixed_http_port;
+    uint16 testing_fixed_https_port;
   };
 
   // |net_log| must either outlive the IOThread or be NULL.
