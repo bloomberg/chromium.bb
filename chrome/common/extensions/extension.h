@@ -802,7 +802,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // The following are helpers for InitFromValue to load various features of the
   // extension from the manifest.
 
-  bool CheckMinimumChromeVersion(string16* error);
   bool LoadAppIsolation(const APIPermissionSet& api_permissions,
                         string16* error);
 
@@ -831,7 +830,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadNaClModules(string16* error);
   bool LoadWebAccessibleResources(string16* error);
   bool LoadSandboxedPages(string16* error);
-  bool CheckRequirements(string16* error);
   bool LoadDefaultLocale(string16* error);
   bool LoadOfflineEnabled(string16* error);
   bool LoadOptionsPage(string16* error);
@@ -905,7 +903,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                        const char* globs_property_name,
                        string16* error,
                        void(UserScript::*add_method)(const std::string& glob),
-                       UserScript *instance);
+                       UserScript* instance);
 
   // Helper method to load an ExtensionAction from the page_action or
   // browser_action entries in the manifest.
@@ -934,11 +932,14 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool CanSpecifyHostPermission(const URLPattern& pattern,
       const APIPermissionSet& permissions) const;
 
+  bool CheckMinimumChromeVersion(string16* error) const;
+  bool CheckRequirements(string16* error) const;
+
   // Check that platform app features are valid. Called after InitFromValue.
-  bool CheckPlatformAppFeatures(std::string* utf8_error);
+  bool CheckPlatformAppFeatures(std::string* utf8_error) const;
 
   // Check that features don't conflict. Called after InitFromValue.
-  bool CheckConflictingFeatures(std::string* utf8_error);
+  bool CheckConflictingFeatures(std::string* utf8_error) const;
 
   // Cached images for this extension. This should only be touched on the UI
   // thread.
@@ -1218,6 +1219,6 @@ struct UpdatedExtensionPermissionsInfo {
       Reason reason);
 };
 
-} // namespace extensions
+}  // namespace extensions
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_H_
