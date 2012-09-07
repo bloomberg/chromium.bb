@@ -40,9 +40,6 @@ class ExtensionAppItem : public ChromeAppListItem,
   }
 
  private:
-  // Returns true if this item represents a version of the Talk extension.
-  bool IsTalkExtension() const;
-
   // Loads extension icon.
   void LoadImage(const extensions::Extension* extension);
 
