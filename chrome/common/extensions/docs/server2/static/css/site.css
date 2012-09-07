@@ -368,7 +368,7 @@ span.displayModeWarning {
   margin: 5px 0px 5px 20px;
   padding: 5px;
   width: 250px;
-  word-break: break-all;
+  word-break: break-word;
 }
 
 #toc * {
@@ -390,7 +390,8 @@ span.displayModeWarning {
 }
 
 #toc ol li {
-  margin: .4em 0 0 1em;
+  margin: .5em 0 .5em 1em;
+  line-height: 1.2em;
 }
 
 #toc ol li ol {
@@ -398,7 +399,7 @@ span.displayModeWarning {
 }
 
 #toc ol li ol li {
-  margin: .1em 0 0 1em;
+  margin: .5em 0 .5em 1em;
 }
 
 .filtered_item {
