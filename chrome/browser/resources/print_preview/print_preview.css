@@ -41,14 +41,18 @@ header {
   text-shadow: white 0 1px 2px;
 }
 
-/* Settings */
-
-#settings {
-  -webkit-box-shadow: inset 0 2px 2px rgba(0, 0, 0, .3);
+#navbar-scroll-container {
+  -webkit-box-flex: 1;
+  -webkit-box-shadow: inset 0 4px 2px -2px rgba(0, 0, 0, .3);
   background: white;
   overflow-y: auto;
   padding-top: 2px;
-  width: 100%;
+}
+
+/* Settings */
+
+#settings {
+  border-left: 1px solid #dcdcdc;
 }
 
 .two-column {
@@ -273,5 +277,6 @@ span.jumping-dots > span:nth-child(3) {
 }
 
 #link-container {
-  -webkit-box-flex: 1;
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
 }

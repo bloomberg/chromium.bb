@@ -40,30 +40,32 @@
       <h1 id="navbar-content-title" i18n-content="title"></h1>
       <include src="print_header.html"/>
     </header>
-    <div id="settings">
-      <include src="settings/destination_settings.html"/>
-      <include src="settings/page_settings.html"/>
-      <include src="settings/copies_settings.html"/>
-      <include src="settings/layout_settings.html"/>
-      <include src="settings/color_settings.html"/>
-      <include src="settings/margin_settings.html"/>
-      <include src="settings/other_options_settings.html"/>
-    </div>
-    <div id="link-container">
-      <div>
-        <button id="system-dialog-link" class="link-button navbar-link"
-            i18n-content="systemDialogOption"></button>
-        <div id="system-dialog-throbber" hidden class="throbber"></div>
+    <div id="navbar-scroll-container">
+      <div id="settings">
+        <include src="settings/destination_settings.html"/>
+        <include src="settings/page_settings.html"/>
+        <include src="settings/copies_settings.html"/>
+        <include src="settings/layout_settings.html"/>
+        <include src="settings/color_settings.html"/>
+        <include src="settings/margin_settings.html"/>
+        <include src="settings/other_options_settings.html"/>
       </div>
-      <div>
-        <button id="open-pdf-in-preview-link" class="link-button navbar-link"
-            hidden i18n-content="openPdfInPreviewOption"></button>
-        <div id="open-preview-app-throbber" hidden class="throbber"></div>
-      </div>
-      <div>
-        <button id="cloud-print-dialog-link" class="link-button navbar-link"
-            hidden i18n-content="cloudPrintDialogOption"></button>
-        <div id="cloud-print-dialog-throbber" hidden class="throbber"></div>
+      <div id="link-container">
+        <div>
+          <button id="system-dialog-link" class="link-button navbar-link"
+              i18n-content="systemDialogOption"></button>
+          <div id="system-dialog-throbber" hidden class="throbber"></div>
+        </div>
+        <div>
+          <button id="open-pdf-in-preview-link" class="link-button navbar-link"
+              hidden i18n-content="openPdfInPreviewOption"></button>
+          <div id="open-preview-app-throbber" hidden class="throbber"></div>
+        </div>
+        <div>
+          <button id="cloud-print-dialog-link" class="link-button navbar-link"
+              hidden i18n-content="cloudPrintDialogOption"></button>
+          <div id="cloud-print-dialog-throbber" hidden class="throbber"></div>
+        </div>
       </div>
     </div>
   </div>
