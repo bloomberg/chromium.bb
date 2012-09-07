@@ -15,7 +15,7 @@
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
-#include "chrome/common/string_ordinal.h"
+#include "sync/api/string_ordinal.h"
 
 using content::BrowserThread;
 using extensions::Extension;
@@ -67,7 +67,7 @@ void SimpleExtensionLoadPrompt::InstallUIProceed() {
     extensions::PermissionsUpdater perms_updater(service_weak_->profile());
     perms_updater.GrantActivePermissions(extension_, false);
     service_weak_->OnExtensionInstalled(
-        extension_, false, StringOrdinal());  // Not from web store.
+        extension_, false, syncer::StringOrdinal());  // Not from web store.
   }
   delete this;
 }
@@ -237,7 +237,7 @@ void UnpackedInstaller::OnLoaded(
   perms_updater.GrantActivePermissions(extension, false);
   service_weak_->OnExtensionInstalled(extension,
                                       false,  // Not from web store.
-                                      StringOrdinal());
+                                      syncer::StringOrdinal());
 }
 
 }  // namespace extensions

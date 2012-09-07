@@ -22,6 +22,7 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
+#include "sync/api/string_ordinal.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome {
@@ -220,7 +221,7 @@ class MediaGalleriesPreferencesTest : public testing::Test {
 
     extension_service_->extension_prefs()->OnExtensionInstalled(
         extension, extensions::Extension::ENABLED, false,
-        StringOrdinal::CreateInitialOrdinal());
+        syncer::StringOrdinal::CreateInitialOrdinal());
 
     return extension;
   }

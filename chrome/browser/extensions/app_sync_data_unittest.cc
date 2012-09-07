@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/app_sync_data.h"
 
+#include "sync/api/string_ordinal.h"
 #include "sync/protocol/app_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,9 +42,9 @@ TEST_F(AppSyncDataTest, SyncDataToExtensionSyncDataForApp) {
   sync_pb::EntitySpecifics entity;
   sync_pb::AppSpecifics* app_specifics = entity.mutable_app();
   app_specifics->set_app_launch_ordinal(
-      StringOrdinal::CreateInitialOrdinal().ToString());
+      syncer::StringOrdinal::CreateInitialOrdinal().ToInternalValue());
   app_specifics->set_page_ordinal(
-      StringOrdinal::CreateInitialOrdinal().ToString());
+      syncer::StringOrdinal::CreateInitialOrdinal().ToInternalValue());
   sync_pb::AppNotificationSettings* notif_settings =
       app_specifics->mutable_notification_settings();
   notif_settings->set_oauth_client_id(kOAuthClientId);
@@ -56,9 +57,9 @@ TEST_F(AppSyncDataTest, SyncDataToExtensionSyncDataForApp) {
 
   AppSyncData app_sync_data(sync_data);
   EXPECT_EQ(app_specifics->app_launch_ordinal(),
-            app_sync_data.app_launch_ordinal().ToString());
+            app_sync_data.app_launch_ordinal().ToInternalValue());
   EXPECT_EQ(app_specifics->page_ordinal(),
-            app_sync_data.page_ordinal().ToString());
+            app_sync_data.page_ordinal().ToInternalValue());
   EXPECT_EQ(notif_settings->oauth_client_id(),
             app_sync_data.notifications_client_id());
   EXPECT_EQ(notif_settings->disabled(),
@@ -71,9 +72,9 @@ TEST_F(AppSyncDataTest, ExtensionSyncDataToSyncDataForApp) {
   sync_pb::EntitySpecifics entity;
   sync_pb::AppSpecifics* input_specifics = entity.mutable_app();
   input_specifics->set_app_launch_ordinal(
-      StringOrdinal::CreateInitialOrdinal().ToString());
+      syncer::StringOrdinal::CreateInitialOrdinal().ToInternalValue());
   input_specifics->set_page_ordinal(
-      StringOrdinal::CreateInitialOrdinal().ToString());
+      syncer::StringOrdinal::CreateInitialOrdinal().ToInternalValue());
   sync_pb::AppNotificationSettings* notif_settings =
       input_specifics->mutable_notification_settings();
   notif_settings->set_oauth_client_id(kOAuthClientId);

@@ -2127,7 +2127,7 @@ void ExtensionService::UpdateActiveExtensionsInCrashReporter() {
 void ExtensionService::OnExtensionInstalled(
     const Extension* extension,
     bool from_webstore,
-    const StringOrdinal& page_ordinal) {
+    const syncer::StringOrdinal& page_ordinal) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Ensure extension is deleted unless we transfer ownership.

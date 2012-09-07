@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/version.h"
-#include "chrome/common/string_ordinal.h"
 #include "googleurl/src/gurl.h"
 #include "sync/api/sync_change.h"
 

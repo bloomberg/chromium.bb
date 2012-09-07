@@ -2041,7 +2041,6 @@
         'common/net/url_util_unittest.cc',
         'common/net/x509_certificate_model_unittest.cc',
         'common/service_process_util_unittest.cc',
-        'common/string_ordinal_unittest.cc',
         'common/switch_utils_unittest.cc',
         'common/thumbnail_score_unittest.cc',
         'common/time_format_unittest.cc',

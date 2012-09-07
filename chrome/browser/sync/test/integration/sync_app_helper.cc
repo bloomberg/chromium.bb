@@ -5,13 +5,12 @@
 #include "chrome/browser/sync/test/integration/sync_app_helper.h"
 
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_sorting.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/extensions_helper.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_helper.h"
-#include "chrome/common/string_ordinal.h"
 
 namespace {
 
@@ -21,8 +20,8 @@ struct AppState {
   bool IsValid() const;
   bool Equals(const AppState& other) const;
 
-  StringOrdinal app_launch_ordinal;
-  StringOrdinal page_ordinal;
+  syncer::StringOrdinal app_launch_ordinal;
+  syncer::StringOrdinal page_ordinal;
 };
 
 typedef std::map<std::string, AppState> AppStateMap;
@@ -36,8 +35,8 @@ bool AppState::IsValid() const {
 }
 
 bool AppState::Equals(const AppState& other) const {
-  return app_launch_ordinal.Equal(other.app_launch_ordinal) &&
-      page_ordinal.Equal(other.page_ordinal);
+  return app_launch_ordinal.Equals(other.app_launch_ordinal) &&
+      page_ordinal.Equals(other.page_ordinal);
 }
 
 // Load all the app specific values for |id| into |app_state|.
@@ -142,20 +141,22 @@ bool SyncAppHelper::AppStatesMatch(Profile* profile1, Profile* profile2) {
   return true;
 }
 
-StringOrdinal SyncAppHelper::GetPageOrdinalForApp(Profile* profile,
-                                                  const std::string& name) {
+syncer::StringOrdinal SyncAppHelper::GetPageOrdinalForApp(
+    Profile* profile,
+    const std::string& name) {
   return profile->GetExtensionService()->extension_prefs()->
       extension_sorting()->GetPageOrdinal(SyncExtensionHelper::NameToId(name));
 }
 
-void SyncAppHelper::SetPageOrdinalForApp(Profile* profile,
-                                         const std::string& name,
-                                         const StringOrdinal& page_ordinal) {
+void SyncAppHelper::SetPageOrdinalForApp(
+    Profile* profile,
+    const std::string& name,
+    const syncer::StringOrdinal& page_ordinal) {
   profile->GetExtensionService()->extension_prefs()->extension_sorting()->
       SetPageOrdinal(SyncExtensionHelper::NameToId(name), page_ordinal);
 }
 
-StringOrdinal SyncAppHelper::GetAppLaunchOrdinalForApp(
+syncer::StringOrdinal SyncAppHelper::GetAppLaunchOrdinalForApp(
     Profile* profile,
     const std::string& name) {
   return profile->GetExtensionService()->extension_prefs()->
@@ -166,7 +167,7 @@ StringOrdinal SyncAppHelper::GetAppLaunchOrdinalForApp(
 void SyncAppHelper::SetAppLaunchOrdinalForApp(
     Profile* profile,
     const std::string& name,
-    const StringOrdinal& app_launch_ordinal) {
+    const syncer::StringOrdinal& app_launch_ordinal) {
   profile->GetExtensionService()->extension_prefs()->extension_sorting()->
       SetAppLaunchOrdinal(SyncExtensionHelper::NameToId(name),
                           app_launch_ordinal);

@@ -63,7 +63,6 @@
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/string_ordinal.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/dom_storage_context.h"
@@ -81,6 +80,7 @@
 #include "net/cookies/cookie_options.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "sync/api/string_ordinal.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/sync_error_factory_mock.h"
 #include "sync/protocol/app_specifics.pb.h"
@@ -2104,8 +2104,9 @@ TEST_F(ExtensionServiceTest, UpdateAppsRetainOrdinals) {
   ASSERT_EQ(std::string("1"), extension->version()->GetString());
 
   // Modify the ordinals so we can distinguish them from the defaults.
-  StringOrdinal new_page_ordinal = sorting->GetPageOrdinal(id).CreateAfter();
-  StringOrdinal new_launch_ordinal =
+  syncer::StringOrdinal new_page_ordinal =
+      sorting->GetPageOrdinal(id).CreateAfter();
+  syncer::StringOrdinal new_launch_ordinal =
       sorting->GetAppLaunchOrdinal(id).CreateBefore();
 
   sorting->SetPageOrdinal(id, new_page_ordinal);
@@ -2117,8 +2118,8 @@ TEST_F(ExtensionServiceTest, UpdateAppsRetainOrdinals) {
             service_->GetExtensionById(id, false)->version()->GetString());
 
   // Verify that the ordinals match.
-  ASSERT_TRUE(new_page_ordinal.Equal(sorting->GetPageOrdinal(id)));
-  ASSERT_TRUE(new_launch_ordinal.Equal(sorting->GetAppLaunchOrdinal(id)));
+  ASSERT_TRUE(new_page_ordinal.Equals(sorting->GetPageOrdinal(id)));
+  ASSERT_TRUE(new_launch_ordinal.Equals(sorting->GetAppLaunchOrdinal(id)));
 }
 
 // Ensures that the CWS has properly initialized ordinals.
@@ -4562,14 +4563,15 @@ TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettings) {
       scoped_ptr<syncer::SyncChangeProcessor>(new TestSyncProcessorStub),
       scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
 
-  StringOrdinal initial_ordinal = StringOrdinal::CreateInitialOrdinal();
+  syncer::StringOrdinal initial_ordinal =
+      syncer::StringOrdinal::CreateInitialOrdinal();
   {
     syncer::SyncDataList list = service_->GetAllSyncData(syncer::APPS);
     ASSERT_EQ(list.size(), 1U);
 
     extensions::AppSyncData app_sync_data(list[0]);
-    EXPECT_TRUE(initial_ordinal.Equal(app_sync_data.app_launch_ordinal()));
-    EXPECT_TRUE(initial_ordinal.Equal(app_sync_data.page_ordinal()));
+    EXPECT_TRUE(initial_ordinal.Equals(app_sync_data.app_launch_ordinal()));
+    EXPECT_TRUE(initial_ordinal.Equals(app_sync_data.page_ordinal()));
   }
 
   ExtensionSorting* sorting = service_->extension_prefs()->extension_sorting();
@@ -4580,7 +4582,7 @@ TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettings) {
 
     extensions::AppSyncData app_sync_data(list[0]);
     EXPECT_TRUE(initial_ordinal.LessThan(app_sync_data.app_launch_ordinal()));
-    EXPECT_TRUE(initial_ordinal.Equal(app_sync_data.page_ordinal()));
+    EXPECT_TRUE(initial_ordinal.Equals(app_sync_data.page_ordinal()));
   }
 
   sorting->SetPageOrdinal(app->id(), initial_ordinal.CreateAfter());
@@ -4624,7 +4626,7 @@ TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettingsOnExtensionMoved) {
     // The sync data is not always in the same order our apps were installed in,
     // so we do that sorting here so we can make sure the values are changed as
     // expected.
-    StringOrdinal app_launch_ordinals[kAppCount];
+    syncer::StringOrdinal app_launch_ordinals[kAppCount];
     for (size_t i = 0; i < kAppCount; ++i) {
       for (size_t j = 0; j < kAppCount; ++j) {
         if (apps[i]->id() == data[j].id())

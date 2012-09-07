@@ -308,7 +308,7 @@ message SyncEntity {
 
   // Supplies an ordinal for this item, relative to other items with the
   // same parent.  Ordinals are ordered lexicographically bytewise.
-  // Ordinals must be a least 8 bytes (for backwards compatibility), and
+  // Ordinals must be at least 8 bytes (for backwards compatibility), and
   // must not be all zeroes.
   //
   // Clients should not make sure that each item they know of has a

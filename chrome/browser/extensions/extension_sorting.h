@@ -9,9 +9,9 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/common/string_ordinal.h"
+#include "chrome/common/extensions/extension.h"
+#include "sync/api/string_ordinal.h"
 
 class ExtensionScopedPrefs;
 class ExtensionServiceInterface;
@@ -53,49 +53,51 @@ class ExtensionSorting {
   // apps are on the same page). A string value close to |a*| generally
   // indicates top left. If the extension has no launch ordinal, an invalid
   // StringOrdinal is returned.
-  StringOrdinal GetAppLaunchOrdinal(const std::string& extension_id) const;
+  syncer::StringOrdinal GetAppLaunchOrdinal(
+      const std::string& extension_id) const;
 
   // Sets a specific launch ordinal for an app with |extension_id|.
   void SetAppLaunchOrdinal(const std::string& extension_id,
-                           const StringOrdinal& new_app_launch_ordinal);
+                           const syncer::StringOrdinal& new_app_launch_ordinal);
 
   // Returns a StringOrdinal that is lower than any app launch ordinal for the
   // given page.
-  StringOrdinal CreateFirstAppLaunchOrdinal(const StringOrdinal& page_ordinal)
-      const;
+  syncer::StringOrdinal CreateFirstAppLaunchOrdinal(
+      const syncer::StringOrdinal& page_ordinal) const;
 
   // Returns a StringOrdinal that is higher than any app launch ordinal for the
   // given page.
-  StringOrdinal CreateNextAppLaunchOrdinal(const StringOrdinal& page_ordinal)
-      const;
+  syncer::StringOrdinal CreateNextAppLaunchOrdinal(
+      const syncer::StringOrdinal& page_ordinal) const;
 
   // Returns a StringOrdinal that is lower than any existing page ordinal.
-  StringOrdinal CreateFirstAppPageOrdinal() const;
+  syncer::StringOrdinal CreateFirstAppPageOrdinal() const;
 
   // Gets the page a new app should install to, which is the earliest non-full
   // page.  The returned ordinal may correspond to a page that doesn't yet exist
   // if all pages are full.
-  StringOrdinal GetNaturalAppPageOrdinal() const;
+  syncer::StringOrdinal GetNaturalAppPageOrdinal() const;
 
   // Get the page ordinal for an app with |extension_id|. This determines
   // which page an app will appear on in page-based NTPs.  If the app has no
   // page specified, an invalid StringOrdinal is returned.
-  StringOrdinal GetPageOrdinal(const std::string& extension_id) const;
+  syncer::StringOrdinal GetPageOrdinal(const std::string& extension_id) const;
 
   // Sets a specific page ordinal for an app with |extension_id|.
   void SetPageOrdinal(const std::string& extension_id,
-                      const StringOrdinal& new_page_ordinal);
+                      const syncer::StringOrdinal& new_page_ordinal);
 
   // Removes the ordinal values for an app.
   void ClearOrdinals(const std::string& extension_id);
 
   // Convert the page StringOrdinal value to its integer equivalent. This takes
   // O(# of apps) worst-case.
-  int PageStringOrdinalAsInteger(const StringOrdinal& page_ordinal) const;
+  int PageStringOrdinalAsInteger(
+      const syncer::StringOrdinal& page_ordinal) const;
 
   // Converts the page index integer to its StringOrdinal equivalent. This takes
   // O(# of apps) worst-case.
-  StringOrdinal PageIntegerAsStringOrdinal(size_t page_index);
+  syncer::StringOrdinal PageIntegerAsStringOrdinal(size_t page_index);
 
  private:
   // Unit tests.
@@ -112,8 +114,8 @@ class ExtensionSorting {
   // the largest ordinal on |page_ordinal|. If there are no apps on the page
   // then an invalid StringOrdinal is returned. It is an error to call this
   // function with an invalid |page_ordinal|.
-  StringOrdinal GetMinOrMaxAppLaunchOrdinalsOnPage(
-      const StringOrdinal& page_ordinal,
+  syncer::StringOrdinal GetMinOrMaxAppLaunchOrdinalsOnPage(
+      const syncer::StringOrdinal& page_ordinal,
       AppLaunchOrdinalReturn return_type) const;
 
   // Initialize the |page_ordinal_map_| with the page ordinals used by the
@@ -129,8 +131,8 @@ class ExtensionSorting {
   // of |page_ordinal| and a app launch ordinal of |app_launch_ordinal|. This
   // works with valid and invalid StringOrdinals.
   void AddOrdinalMapping(const std::string& extension_id,
-                         const StringOrdinal& page_ordinal,
-                         const StringOrdinal& app_launch_ordinal);
+                         const syncer::StringOrdinal& page_ordinal,
+                         const syncer::StringOrdinal& app_launch_ordinal);
 
   // Ensures |ntp_ordinal_map_| is of |minimum_size| number of entries.
   void CreateOrdinalsIfNecessary(size_t minimum_size);
@@ -140,8 +142,8 @@ class ExtensionSorting {
   // is not matching map, nothing happens. This works with valid and invalid
   // StringOrdinals.
   void RemoveOrdinalMapping(const std::string& extension_id,
-                            const StringOrdinal& page_ordinal,
-                            const StringOrdinal& app_launch_ordinal);
+                            const syncer::StringOrdinal& page_ordinal,
+                            const syncer::StringOrdinal& app_launch_ordinal);
 
   // Syncs the extension if needed. It is an error to call this if the
   // extension is not an application.
@@ -161,11 +163,13 @@ class ExtensionSorting {
   // The StringOrdinal is the app launch ordinal and the string is the extension
   // id.
   typedef std::multimap<
-      StringOrdinal, std::string, StringOrdinalLessThan> AppLaunchOrdinalMap;
+      syncer::StringOrdinal, std::string,
+    syncer::StringOrdinal::LessThanFn> AppLaunchOrdinalMap;
   // The StringOrdinal is the page ordinal and the AppLaunchOrdinalMap is the
   // contents of that page.
   typedef std::map<
-      StringOrdinal, AppLaunchOrdinalMap, StringOrdinalLessThan> PageOrdinalMap;
+      syncer::StringOrdinal, AppLaunchOrdinalMap,
+    syncer::StringOrdinal::LessThanFn> PageOrdinalMap;
   PageOrdinalMap ntp_ordinal_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSorting);

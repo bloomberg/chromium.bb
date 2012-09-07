@@ -83,28 +83,29 @@ void InstallAppsPendingForSync(Profile* profile) {
       profile, extensions::Extension::TYPE_HOSTED_APP);
 }
 
-StringOrdinal GetPageOrdinalForApp(Profile* profile,
-                                   int app_index) {
+syncer::StringOrdinal GetPageOrdinalForApp(Profile* profile,
+                                           int app_index) {
   return SyncAppHelper::GetInstance()->GetPageOrdinalForApp(
       profile, CreateFakeAppName(app_index));
 }
 
 void SetPageOrdinalForApp(Profile* profile,
                           int app_index,
-                          const StringOrdinal& page_ordinal) {
+                          const syncer::StringOrdinal& page_ordinal) {
   SyncAppHelper::GetInstance()->SetPageOrdinalForApp(
       profile, CreateFakeAppName(app_index), page_ordinal);
 }
 
-StringOrdinal GetAppLaunchOrdinalForApp(Profile* profile,
-                                        int app_index) {
+syncer::StringOrdinal GetAppLaunchOrdinalForApp(Profile* profile,
+                                                int app_index) {
   return SyncAppHelper::GetInstance()->GetAppLaunchOrdinalForApp(
       profile, CreateFakeAppName(app_index));
 }
 
-void SetAppLaunchOrdinalForApp(Profile* profile,
-                               int app_index,
-                               const StringOrdinal& app_launch_ordinal) {
+void SetAppLaunchOrdinalForApp(
+    Profile* profile,
+    int app_index,
+    const syncer::StringOrdinal& app_launch_ordinal) {
   SyncAppHelper::GetInstance()->SetAppLaunchOrdinalForApp(
       profile, CreateFakeAppName(app_index), app_launch_ordinal);
 }

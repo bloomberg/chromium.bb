@@ -24,11 +24,11 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/string_ordinal.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/web_contents_tester.h"
+#include "sync/api/string_ordinal.h"
 
 #if defined(OS_LINUX)
 #include "chrome/browser/ui/browser_window.h"
@@ -430,7 +430,7 @@ scoped_refptr<Extension> BasePanelBrowserTest::CreateExtension(
   EXPECT_TRUE(extension.get());
   EXPECT_STREQ("", error.c_str());
   browser()->profile()->GetExtensionService()->
-      OnExtensionInstalled(extension.get(), false, StringOrdinal());
+      OnExtensionInstalled(extension.get(), false, syncer::StringOrdinal());
   return extension;
 }
 

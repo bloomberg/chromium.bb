@@ -13,11 +13,11 @@
 #include "chrome/browser/extensions/pending_extension_info.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
+#include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/string_ordinal.h"
-#include "chrome/browser/sync/test/integration/sync_test.h"
-#include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
+#include "sync/api/string_ordinal.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using extensions::Extension;
@@ -71,7 +71,7 @@ std::string SyncExtensionHelper::InstallExtension(
     return "";
   }
   profile->GetExtensionService()->OnExtensionInstalled(
-      extension, extension->UpdatesFromGallery(), StringOrdinal());
+      extension, extension->UpdatesFromGallery(), syncer::StringOrdinal());
   return extension->id();
 }
 

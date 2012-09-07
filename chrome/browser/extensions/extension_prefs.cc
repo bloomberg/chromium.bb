@@ -1401,7 +1401,7 @@ void ExtensionPrefs::OnExtensionInstalled(
     const Extension* extension,
     Extension::State initial_state,
     bool from_webstore,
-    const StringOrdinal& page_ordinal) {
+    const syncer::StringOrdinal& page_ordinal) {
   const std::string& id = extension->id();
   CHECK(Extension::IdIsValid(id));
   ScopedExtensionPrefUpdate update(prefs_, id);
@@ -1439,7 +1439,7 @@ void ExtensionPrefs::OnExtensionInstalled(
   extension_dict->Remove(kRegisteredEvents, NULL);
 
   if (extension->is_app()) {
-    StringOrdinal new_page_ordinal = page_ordinal.IsValid() ?
+    syncer::StringOrdinal new_page_ordinal = page_ordinal.IsValid() ?
         page_ordinal : extension_sorting_->GetNaturalAppPageOrdinal();
     if (!extension_sorting_->GetPageOrdinal(id).IsValid())
       extension_sorting_->SetPageOrdinal(id, new_page_ordinal);

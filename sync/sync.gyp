@@ -46,6 +46,9 @@
         'internal_api/public/base/model_type.h',
         'internal_api/public/base/model_type_state_map.cc',
         'internal_api/public/base/model_type_state_map.h',
+        'internal_api/public/base/node_ordinal.cc',
+        'internal_api/public/base/node_ordinal.h',
+        'internal_api/public/base/ordinal.h',
         'internal_api/public/engine/model_safe_worker.cc',
         'internal_api/public/engine/model_safe_worker.h',
         'internal_api/public/engine/passive_model_worker.cc',
@@ -385,6 +388,7 @@
       # We avoid including header files from sync_proto in our public
       # header files so we don't need to export its settings.
       'sources': [
+        'api/string_ordinal.h',
         'api/syncable_service.cc',
         'api/syncable_service.h',
         'api/sync_data.h',
@@ -585,6 +589,8 @@
         'sources': [
           'internal_api/public/base/enum_set_unittest.cc',
           'internal_api/public/base/model_type_state_map_unittest.cc',
+          'internal_api/public/base/node_ordinal_unittest.cc',
+          'internal_api/public/base/ordinal_unittest.cc',
           'internal_api/public/engine/model_safe_worker_unittest.cc',
           'internal_api/public/util/immutable_unittest.cc',
           'engine/apply_control_data_updates_unittest.cc',

@@ -15,10 +15,10 @@
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/string_ordinal.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "sync/api/string_ordinal.h"
 
 class ExtensionService;
 class PrefChangeRegistrar;
@@ -115,7 +115,7 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
     bool is_bookmark_app;
     string16 title;
     GURL app_url;
-    StringOrdinal page_ordinal;
+    syncer::StringOrdinal page_ordinal;
   };
 
   // Reset some instance flags we use to track the currently uninstalling app.

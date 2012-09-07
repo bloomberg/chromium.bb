@@ -22,6 +22,7 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/json_pref_store.h"
 #include "content/public/browser/browser_thread.h"
+#include "sync/api/string_ordinal.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
@@ -146,7 +147,7 @@ scoped_refptr<Extension> TestExtensionPrefs::AddExtensionWithManifestAndFlags(
   EXPECT_TRUE(Extension::IdIsValid(extension->id()));
   prefs_->OnExtensionInstalled(extension, Extension::ENABLED,
                                extra_flags & Extension::FROM_WEBSTORE,
-                               StringOrdinal::CreateInitialOrdinal());
+                               syncer::StringOrdinal::CreateInitialOrdinal());
   return extension;
 }
 

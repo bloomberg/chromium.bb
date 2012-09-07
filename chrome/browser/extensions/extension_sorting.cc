@@ -54,10 +54,11 @@ void ExtensionSorting::CreateOrdinalsIfNecessary(size_t minimum_size) {
   // Create StringOrdinal values as required to ensure |ntp_ordinal_map_| has at
   // least |minimum_size| entries.
   if (ntp_ordinal_map_.empty() && minimum_size > 0)
-    ntp_ordinal_map_[StringOrdinal::CreateInitialOrdinal()];
+    ntp_ordinal_map_[syncer::StringOrdinal::CreateInitialOrdinal()];
 
   while (ntp_ordinal_map_.size() < minimum_size) {
-    StringOrdinal filler = ntp_ordinal_map_.rbegin()->first.CreateAfter();
+    syncer::StringOrdinal filler =
+        ntp_ordinal_map_.rbegin()->first.CreateAfter();
     AppLaunchOrdinalMap empty_ordinal_map;
     ntp_ordinal_map_.insert(std::make_pair(filler, empty_ordinal_map));
   }
@@ -71,13 +72,13 @@ void ExtensionSorting::MigrateAppIndex(
   // Convert all the page index values to page ordinals. If there are any
   // app launch values that need to be migrated, inserted them into a sorted
   // set to be dealt with later.
-  typedef std::map<StringOrdinal, std::map<int, const std::string*>,
-      StringOrdinalLessThan> AppPositionToIdMapping;
+  typedef std::map<syncer::StringOrdinal, std::map<int, const std::string*>,
+                   syncer::StringOrdinal::LessThanFn> AppPositionToIdMapping;
   AppPositionToIdMapping app_launches_to_convert;
   for (ExtensionPrefs::ExtensionIds::const_iterator ext_id =
            extension_ids.begin(); ext_id != extension_ids.end(); ++ext_id) {
     int old_page_index = 0;
-    StringOrdinal page = GetPageOrdinal(*ext_id);
+    syncer::StringOrdinal page = GetPageOrdinal(*ext_id);
     if (extension_scoped_prefs_->ReadExtensionPrefInteger(
             *ext_id,
             kPrefPageIndexDeprecated,
@@ -141,7 +142,7 @@ void ExtensionSorting::MigrateAppIndex(
   for (AppPositionToIdMapping::const_iterator page_it =
            app_launches_to_convert.begin();
        page_it != app_launches_to_convert.end(); ++page_it) {
-    StringOrdinal page = page_it->first;
+    syncer::StringOrdinal page = page_it->first;
     for (std::map<int, const std::string*>::const_iterator launch_it =
             page_it->second.begin(); launch_it != page_it->second.end();
         ++launch_it) {
@@ -164,7 +165,7 @@ void ExtensionSorting::FixNTPOrdinalCollisions() {
         continue;
       }
 
-      StringOrdinal repeated_ordinal = app_launch_it->first;
+      syncer::StringOrdinal repeated_ordinal = app_launch_it->first;
 
       // Sort the conflicting keys by their extension id, this is how
       // the order is decided.
@@ -173,15 +174,15 @@ void ExtensionSorting::FixNTPOrdinalCollisions() {
         conflicting_ids.push_back(app_launch_it->second);
       std::sort(conflicting_ids.begin(), conflicting_ids.end());
 
-      StringOrdinal upper_bound_ordinal = app_launch_it == page.end() ?
-          StringOrdinal() :
+      syncer::StringOrdinal upper_bound_ordinal = app_launch_it == page.end() ?
+          syncer::StringOrdinal() :
           app_launch_it->first;
-      StringOrdinal lower_bound_ordinal = repeated_ordinal;
+      syncer::StringOrdinal lower_bound_ordinal = repeated_ordinal;
 
       // Start at position 1 because the first extension can keep the conflicted
       // value.
       for (int i = 1; i < app_count; ++i) {
-        StringOrdinal unique_app_launch;
+        syncer::StringOrdinal unique_app_launch;
         if (upper_bound_ordinal.IsValid()) {
           unique_app_launch =
               lower_bound_ordinal.CreateBetween(upper_bound_ordinal);
@@ -202,7 +203,7 @@ void ExtensionSorting::FixNTPOrdinalCollisions() {
 }
 
 void ExtensionSorting::EnsureValidOrdinals(const std::string& extension_id) {
-  StringOrdinal page_ordinal = GetPageOrdinal(extension_id);
+  syncer::StringOrdinal page_ordinal = GetPageOrdinal(extension_id);
   if (!page_ordinal.IsValid()) {
     // The webstore app should always start be on the first page.
     page_ordinal = extension_id == extension_misc::kWebStoreAppId ?
@@ -211,7 +212,7 @@ void ExtensionSorting::EnsureValidOrdinals(const std::string& extension_id) {
     SetPageOrdinal(extension_id, page_ordinal);
   }
 
-  StringOrdinal app_launch_ordinal = GetAppLaunchOrdinal(extension_id);
+  syncer::StringOrdinal app_launch_ordinal = GetAppLaunchOrdinal(extension_id);
   if (!app_launch_ordinal.IsValid()) {
     // The webstore app should always start in the position.
     app_launch_ordinal = extension_id == extension_misc::kWebStoreAppId ?
@@ -240,9 +241,9 @@ void ExtensionSorting::OnExtensionMoved(
           GetAppLaunchOrdinal(predecessor_extension_id).CreateAfter());
     } else {
       // Both a successor and predecessor
-      const StringOrdinal& predecessor_ordinal =
+      const syncer::StringOrdinal& predecessor_ordinal =
           GetAppLaunchOrdinal(predecessor_extension_id);
-      const StringOrdinal& successor_ordinal =
+      const syncer::StringOrdinal& successor_ordinal =
           GetAppLaunchOrdinal(successor_extension_id);
       SetAppLaunchOrdinal(moved_extension_id,
                           predecessor_ordinal.CreateBetween(successor_ordinal));
@@ -256,7 +257,7 @@ void ExtensionSorting::OnExtensionMoved(
 }
 
 
-StringOrdinal ExtensionSorting::GetAppLaunchOrdinal(
+syncer::StringOrdinal ExtensionSorting::GetAppLaunchOrdinal(
     const std::string& extension_id) const {
   std::string raw_value;
   // If the preference read fails then raw_value will still be unset and we
@@ -264,25 +265,25 @@ StringOrdinal ExtensionSorting::GetAppLaunchOrdinal(
   // was found.
   extension_scoped_prefs_->ReadExtensionPrefString(
       extension_id, kPrefAppLaunchOrdinal, &raw_value);
-  return StringOrdinal(raw_value);
+  return syncer::StringOrdinal(raw_value);
 }
 
 void ExtensionSorting::SetAppLaunchOrdinal(
     const std::string& extension_id,
-    const StringOrdinal& new_app_launch_ordinal) {
+    const syncer::StringOrdinal& new_app_launch_ordinal) {
   // No work is required if the old and new values are the same.
-  if (new_app_launch_ordinal.EqualOrBothInvalid(
+  if (new_app_launch_ordinal.EqualsOrBothInvalid(
           GetAppLaunchOrdinal(extension_id))) {
     return;
   }
 
-  StringOrdinal page_ordinal = GetPageOrdinal(extension_id);
+  syncer::StringOrdinal page_ordinal = GetPageOrdinal(extension_id);
   RemoveOrdinalMapping(
       extension_id, page_ordinal, GetAppLaunchOrdinal(extension_id));
   AddOrdinalMapping(extension_id, page_ordinal, new_app_launch_ordinal);
 
   Value* new_value = new_app_launch_ordinal.IsValid() ?
-      Value::CreateStringValue(new_app_launch_ordinal.ToString()) :
+      Value::CreateStringValue(new_app_launch_ordinal.ToInternalValue()) :
       NULL;
 
   extension_scoped_prefs_->UpdateExtensionPref(
@@ -292,48 +293,48 @@ void ExtensionSorting::SetAppLaunchOrdinal(
   SyncIfNeeded(extension_id);
 }
 
-StringOrdinal ExtensionSorting::CreateFirstAppLaunchOrdinal(
-    const StringOrdinal& page_ordinal) const {
-  const StringOrdinal& min_ordinal =
+syncer::StringOrdinal ExtensionSorting::CreateFirstAppLaunchOrdinal(
+    const syncer::StringOrdinal& page_ordinal) const {
+  const syncer::StringOrdinal& min_ordinal =
       GetMinOrMaxAppLaunchOrdinalsOnPage(page_ordinal,
                                          ExtensionSorting::MIN_ORDINAL);
 
   if (min_ordinal.IsValid())
     return min_ordinal.CreateBefore();
   else
-    return StringOrdinal::CreateInitialOrdinal();
+    return syncer::StringOrdinal::CreateInitialOrdinal();
 }
 
-StringOrdinal ExtensionSorting::CreateNextAppLaunchOrdinal(
-    const StringOrdinal& page_ordinal) const {
-  const StringOrdinal& max_ordinal =
+syncer::StringOrdinal ExtensionSorting::CreateNextAppLaunchOrdinal(
+    const syncer::StringOrdinal& page_ordinal) const {
+  const syncer::StringOrdinal& max_ordinal =
       GetMinOrMaxAppLaunchOrdinalsOnPage(page_ordinal,
                                          ExtensionSorting::MAX_ORDINAL);
 
   if (max_ordinal.IsValid())
     return max_ordinal.CreateAfter();
   else
-    return StringOrdinal::CreateInitialOrdinal();
+    return syncer::StringOrdinal::CreateInitialOrdinal();
 }
 
-StringOrdinal ExtensionSorting::CreateFirstAppPageOrdinal() const {
+syncer::StringOrdinal ExtensionSorting::CreateFirstAppPageOrdinal() const {
   const DictionaryValue* extensions = pref_service_->GetDictionary(
           ExtensionPrefs::kExtensionsPref);
   CHECK(extensions);
 
   if (ntp_ordinal_map_.empty())
-    return StringOrdinal::CreateInitialOrdinal();
+    return syncer::StringOrdinal::CreateInitialOrdinal();
 
   return ntp_ordinal_map_.begin()->first;
 }
 
-StringOrdinal ExtensionSorting::GetNaturalAppPageOrdinal() const {
+syncer::StringOrdinal ExtensionSorting::GetNaturalAppPageOrdinal() const {
   const DictionaryValue* extensions = pref_service_->GetDictionary(
           ExtensionPrefs::kExtensionsPref);
   CHECK(extensions);
 
   if (ntp_ordinal_map_.empty())
-    return StringOrdinal::CreateInitialOrdinal();
+    return syncer::StringOrdinal::CreateInitialOrdinal();
 
   for (PageOrdinalMap::const_iterator it = ntp_ordinal_map_.begin();
        it != ntp_ordinal_map_.end(); ++it) {
@@ -342,33 +343,34 @@ StringOrdinal ExtensionSorting::GetNaturalAppPageOrdinal() const {
   }
 
   // Add a new page as all existing pages are full.
-  StringOrdinal last_element = ntp_ordinal_map_.rbegin()->first;
+  syncer::StringOrdinal last_element = ntp_ordinal_map_.rbegin()->first;
   return last_element.CreateAfter();
 }
 
-StringOrdinal ExtensionSorting::GetPageOrdinal(const std::string& extension_id)
-    const {
+syncer::StringOrdinal ExtensionSorting::GetPageOrdinal(
+    const std::string& extension_id) const {
   std::string raw_data;
   // If the preference read fails then raw_data will still be unset and we will
   // return an invalid StringOrdinal to signal that no page ordinal was found.
   extension_scoped_prefs_->ReadExtensionPrefString(
       extension_id, kPrefPageOrdinal, &raw_data);
-  return StringOrdinal(raw_data);
+  return syncer::StringOrdinal(raw_data);
 }
 
-void ExtensionSorting::SetPageOrdinal(const std::string& extension_id,
-                                      const StringOrdinal& new_page_ordinal) {
+void ExtensionSorting::SetPageOrdinal(
+    const std::string& extension_id,
+    const syncer::StringOrdinal& new_page_ordinal) {
   // No work is required if the old and new values are the same.
-  if (new_page_ordinal.EqualOrBothInvalid(GetPageOrdinal(extension_id)))
+  if (new_page_ordinal.EqualsOrBothInvalid(GetPageOrdinal(extension_id)))
     return;
 
-  StringOrdinal app_launch_ordinal = GetAppLaunchOrdinal(extension_id);
+  syncer::StringOrdinal app_launch_ordinal = GetAppLaunchOrdinal(extension_id);
   RemoveOrdinalMapping(
       extension_id, GetPageOrdinal(extension_id), app_launch_ordinal);
   AddOrdinalMapping(extension_id, new_page_ordinal, app_launch_ordinal);
 
   Value* new_value = new_page_ordinal.IsValid() ?
-      Value::CreateStringValue(new_page_ordinal.ToString()) :
+      Value::CreateStringValue(new_page_ordinal.ToInternalValue()) :
       NULL;
 
   extension_scoped_prefs_->UpdateExtensionPref(
@@ -390,7 +392,7 @@ void ExtensionSorting::ClearOrdinals(const std::string& extension_id) {
 }
 
 int ExtensionSorting::PageStringOrdinalAsInteger(
-    const StringOrdinal& page_ordinal) const {
+    const syncer::StringOrdinal& page_ordinal) const {
   if (!page_ordinal.IsValid())
     return -1;
 
@@ -399,12 +401,13 @@ int ExtensionSorting::PageStringOrdinalAsInteger(
       std::distance(ntp_ordinal_map_.begin(), it) : -1;
 }
 
-StringOrdinal ExtensionSorting::PageIntegerAsStringOrdinal(size_t page_index) {
+syncer::StringOrdinal ExtensionSorting::PageIntegerAsStringOrdinal(
+    size_t page_index) {
   const DictionaryValue* extensions = pref_service_->GetDictionary(
           ExtensionPrefs::kExtensionsPref);
 
   if (!extensions)
-    return StringOrdinal();
+    return syncer::StringOrdinal();
 
   if (page_index < ntp_ordinal_map_.size()) {
     PageOrdinalMap::const_iterator it = ntp_ordinal_map_.begin();
@@ -416,12 +419,12 @@ StringOrdinal ExtensionSorting::PageIntegerAsStringOrdinal(size_t page_index) {
   return ntp_ordinal_map_.rbegin()->first;
 }
 
-StringOrdinal ExtensionSorting::GetMinOrMaxAppLaunchOrdinalsOnPage(
-    const StringOrdinal& target_page_ordinal,
+syncer::StringOrdinal ExtensionSorting::GetMinOrMaxAppLaunchOrdinalsOnPage(
+    const syncer::StringOrdinal& target_page_ordinal,
     AppLaunchOrdinalReturn return_type) const {
   CHECK(target_page_ordinal.IsValid());
 
-  StringOrdinal return_value;
+  syncer::StringOrdinal return_value;
 
   PageOrdinalMap::const_iterator page =
       ntp_ordinal_map_.find(target_page_ordinal);
@@ -429,7 +432,7 @@ StringOrdinal ExtensionSorting::GetMinOrMaxAppLaunchOrdinalsOnPage(
     const AppLaunchOrdinalMap& app_list = page->second;
 
     if (app_list.empty())
-      return StringOrdinal();
+      return syncer::StringOrdinal();
 
     if (return_type == ExtensionSorting::MAX_ORDINAL)
       return_value = app_list.rbegin()->first;
@@ -454,7 +457,7 @@ void ExtensionSorting::InitializePageOrdinalMap(
   }
 
   // Include the Web Store App since it is displayed on the NTP.
-  StringOrdinal web_store_app_page =
+  syncer::StringOrdinal web_store_app_page =
       GetPageOrdinal(extension_misc::kWebStoreAppId);
   if (web_store_app_page.IsValid()) {
     AddOrdinalMapping(extension_misc::kWebStoreAppId,
@@ -465,8 +468,8 @@ void ExtensionSorting::InitializePageOrdinalMap(
 
 void ExtensionSorting::AddOrdinalMapping(
     const std::string& extension_id,
-    const StringOrdinal& page_ordinal,
-    const StringOrdinal& app_launch_ordinal) {
+    const syncer::StringOrdinal& page_ordinal,
+    const syncer::StringOrdinal& app_launch_ordinal) {
   if (!page_ordinal.IsValid() || !app_launch_ordinal.IsValid())
     return;
 
@@ -476,8 +479,8 @@ void ExtensionSorting::AddOrdinalMapping(
 
 void ExtensionSorting::RemoveOrdinalMapping(
     const std::string& extension_id,
-    const StringOrdinal& page_ordinal,
-    const StringOrdinal& app_launch_ordinal) {
+    const syncer::StringOrdinal& page_ordinal,
+    const syncer::StringOrdinal& app_launch_ordinal) {
   if (!page_ordinal.IsValid() || !app_launch_ordinal.IsValid())
     return;
 

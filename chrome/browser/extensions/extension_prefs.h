@@ -19,7 +19,7 @@
 #include "chrome/browser/media_gallery/media_galleries_preferences.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/url_pattern_set.h"
-#include "chrome/common/string_ordinal.h"
+#include "sync/api/string_ordinal.h"
 
 class ExtensionPrefValueMap;
 class ExtensionSorting;
@@ -122,7 +122,7 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   void OnExtensionInstalled(const Extension* extension,
                             Extension::State initial_state,
                             bool from_webstore,
-                            const StringOrdinal& page_ordinal);
+                            const syncer::StringOrdinal& page_ordinal);
 
   // Called when an extension is uninstalled, so that prefs get cleaned up.
   void OnExtensionUninstalled(const std::string& extension_id,

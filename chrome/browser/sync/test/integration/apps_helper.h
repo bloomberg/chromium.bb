@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "chrome/common/string_ordinal.h"
+#include "sync/api/string_ordinal.h"
 
 class Profile;
 
@@ -50,21 +50,24 @@ void IncognitoDisableApp(Profile* profile, int index);
 
 // Gets the page ordinal value for the application at the given index on
 // |profile|.
-StringOrdinal GetPageOrdinalForApp(Profile* profile, int app_index);
+syncer::StringOrdinal GetPageOrdinalForApp(Profile* profile, int app_index);
 
 // Sets a new |page_ordinal| value for the application at the given index
 // on |profile|.
 void SetPageOrdinalForApp(
-    Profile* profile, int app_index, const StringOrdinal& page_ordinal);
+    Profile* profile, int app_index,
+    const syncer::StringOrdinal& page_ordinal);
 
 // Gets the app launch ordinal value for the application at the given index on
 // |profile|.
-StringOrdinal GetAppLaunchOrdinalForApp(Profile* profile, int app_index);
+syncer::StringOrdinal GetAppLaunchOrdinalForApp(
+    Profile* profile, int app_index);
 
 // Sets a new |page_ordinal| value for the application at the given index
 // on |profile|.
 void SetAppLaunchOrdinalForApp(
-    Profile* profile, int app_index, const StringOrdinal& app_launch_ordinal);
+    Profile* profile, int app_index,
+    const syncer::StringOrdinal& app_launch_ordinal);
 
 // Copy the page and app launch ordinal value for the application at the given
 // index on |profile_source| to |profile_destination|.

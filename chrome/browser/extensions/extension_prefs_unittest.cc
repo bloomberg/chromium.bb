@@ -17,12 +17,12 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/permissions/permissions_info.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
-#include "chrome/common/string_ordinal.h"
+#include "chrome/common/extensions/permissions/permissions_info.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/mock_notification_observer.h"
+#include "sync/api/string_ordinal.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -741,7 +741,7 @@ class ExtensionPrefsOnExtensionInstalled : public ExtensionPrefsTest {
     EXPECT_FALSE(prefs()->IsExtensionDisabled(extension_->id()));
     prefs()->OnExtensionInstalled(
         extension_.get(), Extension::DISABLED, false,
-        StringOrdinal());
+        syncer::StringOrdinal());
   }
 
   virtual void Verify() {
@@ -760,7 +760,7 @@ class ExtensionPrefsAppDraggedByUser : public ExtensionPrefsTest {
     extension_ = prefs_.AddExtension("on_extension_installed");
     EXPECT_FALSE(prefs()->WasAppDraggedByUser(extension_->id()));
     prefs()->OnExtensionInstalled(extension_.get(), Extension::ENABLED,
-                                  false, StringOrdinal());
+                                  false, syncer::StringOrdinal());
   }
 
   virtual void Verify() {
@@ -922,7 +922,7 @@ void ExtensionPrefsPrepopulatedTest::EnsureExtensionInstalled(Extension *ext) {
   for (size_t i = 0; i < arraysize(extensions); ++i) {
     if (ext == extensions[i] && !installed[i]) {
       prefs()->OnExtensionInstalled(ext, Extension::ENABLED,
-                                    false, StringOrdinal());
+                                    false, syncer::StringOrdinal());
       installed[i] = true;
       break;
     }

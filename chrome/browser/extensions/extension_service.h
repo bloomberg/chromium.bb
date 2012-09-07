@@ -39,6 +39,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "sync/api/string_ordinal.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/syncable_service.h"
 
@@ -405,7 +406,7 @@ class ExtensionService
   void OnExtensionInstalled(
       const extensions::Extension* extension,
       bool from_webstore,
-      const StringOrdinal& page_ordinal);
+      const syncer::StringOrdinal& page_ordinal);
 
   // Initializes the |extension|'s active permission set and disables the
   // extension if the privilege level has increased (e.g., due to an upgrade).

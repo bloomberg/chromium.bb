@@ -18,7 +18,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
-#include "chrome/common/string_ordinal.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -28,6 +27,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/base/mock_host_resolver.h"
+#include "sync/api/string_ordinal.h"
 
 using content::NavigationController;
 using content::RenderViewHost;
@@ -253,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, BookmarkAppGetsNormalProcess) {
       Extension::FROM_BOOKMARK,
       &error));
   service->OnExtensionInstalled(extension, false,
-                                StringOrdinal::CreateInitialOrdinal());
+                                syncer::StringOrdinal::CreateInitialOrdinal());
   ASSERT_TRUE(extension.get());
   ASSERT_TRUE(extension->from_bookmark());
 

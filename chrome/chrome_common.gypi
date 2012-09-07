@@ -284,8 +284,6 @@
         'common/spellcheck_result.h',
         'common/startup_metric_utils.cc',
         'common/startup_metric_utils.h',
-        'common/string_ordinal.cc',
-        'common/string_ordinal.h',
         'common/switch_utils.cc',
         'common/switch_utils.h',
         'common/thumbnail_score.cc',

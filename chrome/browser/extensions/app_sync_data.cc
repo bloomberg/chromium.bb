@@ -30,8 +30,8 @@ AppSyncData::AppSyncData(const Extension& extension,
                          bool incognito_enabled,
                          const std::string& notifications_client_id,
                          bool notifications_disabled,
-                         const StringOrdinal& app_launch_ordinal,
-                         const StringOrdinal& page_ordinal)
+                         const syncer::StringOrdinal& app_launch_ordinal,
+                         const syncer::StringOrdinal& page_ordinal)
     : extension_sync_data_(extension, enabled, incognito_enabled),
       notifications_client_id_(notifications_client_id),
       notifications_disabled_(notifications_disabled),
@@ -65,9 +65,9 @@ void AppSyncData::PopulateAppSpecifics(sync_pb::AppSpecifics* specifics) const {
 
   // Only sync the ordinal values if they are valid.
   if (app_launch_ordinal_.IsValid())
-    specifics->set_app_launch_ordinal(app_launch_ordinal_.ToString());
+    specifics->set_app_launch_ordinal(app_launch_ordinal_.ToInternalValue());
   if (page_ordinal_.IsValid())
-    specifics->set_page_ordinal(page_ordinal_.ToString());
+    specifics->set_page_ordinal(page_ordinal_.ToInternalValue());
 
   extension_sync_data_.PopulateExtensionSpecifics(
       specifics->mutable_extension());
@@ -88,8 +88,8 @@ void AppSyncData::PopulateFromAppSpecifics(
       specifics.notification_settings().has_disabled() &&
       specifics.notification_settings().disabled();
 
-  app_launch_ordinal_ = StringOrdinal(specifics.app_launch_ordinal());
-  page_ordinal_ = StringOrdinal(specifics.page_ordinal());
+  app_launch_ordinal_ = syncer::StringOrdinal(specifics.app_launch_ordinal());
+  page_ordinal_ = syncer::StringOrdinal(specifics.page_ordinal());
 }
 
 void AppSyncData::PopulateFromSyncData(const syncer::SyncData& sync_data) {

@@ -17,8 +17,8 @@
 #include "chrome/browser/extensions/sandboxed_unpacker.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/string_ordinal.h"
 #include "chrome/common/web_apps.h"
+#include "sync/api/string_ordinal.h"
 
 class ExtensionService;
 class SkBitmap;
@@ -161,7 +161,7 @@ class CrxInstaller
     off_store_install_allow_reason_ = reason;
   }
 
-  void set_page_ordinal(const StringOrdinal& page_ordinal) {
+  void set_page_ordinal(const syncer::StringOrdinal& page_ordinal) {
     page_ordinal_ = page_ordinal;
   }
 
@@ -270,7 +270,7 @@ class CrxInstaller
   scoped_refptr<const Extension> extension_;
 
   // The ordinal of the NTP apps page |extension_| will be shown on.
-  StringOrdinal page_ordinal_;
+  syncer::StringOrdinal page_ordinal_;
 
   // A parsed copy of the unmodified original manifest, before any
   // transformations like localization have taken place.
