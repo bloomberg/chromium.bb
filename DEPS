@@ -392,6 +392,14 @@ deps_os = {
     "src/testing/iossim/third_party/class-dump":
       "/trunk/deps/third_party/class-dump@147231",
 
+    # Pull only the headers from WebKit.
+    "src/third_party/WebKit/Source/WebKit/chromium/public":
+      Var("webkit_trunk") + "/Source/WebKit/chromium/public@" +
+      Var("webkit_revision"),
+    "src/third_party/WebKit/Source/Platform/chromium/public":
+      Var("webkit_trunk") + "/Source/Platform/chromium/public@" +
+      Var("webkit_revision"),
+
     # Code that's not needed due to not building everything (especially WebKit).
     "src/build/util/support": None,
     "src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin": None,
