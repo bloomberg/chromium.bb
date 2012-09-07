@@ -17,6 +17,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/plugin_installer.h"
 #include "chrome/browser/plugin_prefs_factory.h"
@@ -406,10 +407,33 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
     force_enable_nacl = true;
   }
 
+  bool migrate_to_pepper_flash = false;
+#if defined(OS_WIN)
+  // If bundled NPAPI Flash is enabled while Peppper Flash is disabled, we
+  // would like to turn Pepper Flash on. And we only want to do it once.
+  // TODO(yzshen): Remove all |migrate_to_pepper_flash|-related code after it
+  // has been run once by most users. (Maybe Chrome 24 or Chrome 25.)
+  if (!prefs_->GetBoolean(prefs::kPluginsMigratedToPepperFlash)) {
+    prefs_->SetBoolean(prefs::kPluginsMigratedToPepperFlash, true);
+    migrate_to_pepper_flash = true;
+  }
+#endif
+
   {  // Scoped update of prefs::kPluginsPluginsList.
     ListPrefUpdate update(prefs_, prefs::kPluginsPluginsList);
     ListValue* saved_plugins_list = update.Get();
     if (saved_plugins_list && !saved_plugins_list->empty()) {
+      // The following four variables are only valid when
+      // |migrate_to_pepper_flash| is set to true.
+      FilePath npapi_flash;
+      FilePath pepper_flash;
+      DictionaryValue* pepper_flash_node = NULL;
+      bool npapi_flash_enabled = false;
+      if (migrate_to_pepper_flash) {
+        PathService::Get(chrome::FILE_FLASH_PLUGIN, &npapi_flash);
+        PathService::Get(chrome::FILE_PEPPER_FLASH_PLUGIN, &pepper_flash);
+      }
+
       for (ListValue::const_iterator it = saved_plugins_list->begin();
            it != saved_plugins_list->end();
            ++it) {
@@ -452,6 +476,13 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
               enabled = true;
               plugin->SetBoolean("enabled", true);
             }
+          } else if (migrate_to_pepper_flash &&
+              FilePath::CompareEqualIgnoreCase(path, npapi_flash.value())) {
+            npapi_flash_enabled = enabled;
+          } else if (migrate_to_pepper_flash &&
+              FilePath::CompareEqualIgnoreCase(path, pepper_flash.value())) {
+            if (!enabled)
+              pepper_flash_node = plugin;
           }
 
           plugin_state_[plugin_path] = enabled;
@@ -467,6 +498,12 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
           // Otherwise this is a list of groups.
           plugin_group_state_[group_name] = false;
         }
+      }
+
+      if (npapi_flash_enabled && pepper_flash_node) {
+        DCHECK(migrate_to_pepper_flash);
+        pepper_flash_node->SetBoolean("enabled", true);
+        plugin_state_[pepper_flash] = true;
       }
     } else {
       // If the saved plugin list is empty, then the call to UpdatePreferences()

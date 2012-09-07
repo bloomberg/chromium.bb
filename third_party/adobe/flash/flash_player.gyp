@@ -59,15 +59,6 @@
                   'binaries/mac/plugin.vch',
                 ]
               }],
-              [ 'OS == "win"', {
-                'files': [
-                  'binaries/win/FlashPlayerApp.exe',
-                  'binaries/win/FlashPlayerCPLApp.cpl',
-                  'binaries/win/gcswf32.dll',
-                  'binaries/win/plugin.vch',
-                  'symbols/win/gcswf32.pdb',
-                ]
-              }],
             ],
           }],
         }],

@@ -255,10 +255,12 @@ bool PathProvider(int key, FilePath* result) {
       cur = cur.Append(FILE_PATH_LITERAL("script.log"));
       break;
     case chrome::FILE_FLASH_PLUGIN:
+    case chrome::FILE_FLASH_PLUGIN_EXISTING:
       if (!GetInternalPluginsDirectory(&cur))
         return false;
       cur = cur.Append(kInternalFlashPluginFileName);
-      if (!file_util::PathExists(cur))
+      if (key == chrome::FILE_FLASH_PLUGIN_EXISTING &&
+          !file_util::PathExists(cur))
         return false;
       break;
     case chrome::FILE_PEPPER_FLASH_PLUGIN:

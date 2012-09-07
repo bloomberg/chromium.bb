@@ -843,6 +843,11 @@ const char kPluginsEnabledInternalPDF[] = "plugins.enabled_internal_pdf3";
 // enable it by default, we'll want to do so only once.
 const char kPluginsEnabledNaCl[] = "plugins.enabled_nacl";
 
+// When bundled NPAPI Flash is removed, if at that point it is enabled while
+// Pepper Flash is disabled, we would like to turn on Pepper Flash. And we will
+// want to do so only once.
+const char kPluginsMigratedToPepperFlash[] = "plugins.migrated_to_pepper_flash";
+
 #if !defined(OS_ANDROID)
 const char kPluginsShowSetReaderDefaultInfobar[] =
     "plugins.show_set_reader_default";

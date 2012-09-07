@@ -765,7 +765,7 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
   FilePath path;
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableInternalFlash) &&
-      PathService::Get(chrome::FILE_FLASH_PLUGIN, &path)) {
+      PathService::Get(chrome::FILE_FLASH_PLUGIN_EXISTING, &path)) {
     plugin_service->AddExtraPluginPath(path);
   }
 

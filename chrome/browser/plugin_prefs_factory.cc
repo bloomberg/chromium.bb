@@ -59,6 +59,9 @@ void PluginPrefsFactory::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kPluginsEnabledNaCl,
                              false,
                              PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kPluginsMigratedToPepperFlash,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kPluginsPluginsList,
                           PrefService::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kPluginsDisabledPlugins,

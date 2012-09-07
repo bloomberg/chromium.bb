@@ -143,7 +143,8 @@ void FinishFlashUpdateRegistration(ComponentUpdateService* cus,
 void StartFlashUpdateRegistration(ComponentUpdateService* cus,
                                   const std::vector<webkit::WebPluginInfo>&) {
   FilePath builtin_plugin_path;
-  if (!PathService::Get(chrome::FILE_FLASH_PLUGIN, &builtin_plugin_path))
+  if (!PathService::Get(chrome::FILE_FLASH_PLUGIN_EXISTING,
+      &builtin_plugin_path))
     return;
 
   FilePath updated_plugin_path =

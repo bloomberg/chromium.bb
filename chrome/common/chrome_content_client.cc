@@ -465,7 +465,7 @@ bool ChromeContentClient::SandboxPlugin(CommandLine* command_line,
       GetSwitchValueNative(switches::kPluginPath);
 
   FilePath builtin_flash;
-  if (!PathService::Get(chrome::FILE_FLASH_PLUGIN, &builtin_flash))
+  if (!PathService::Get(chrome::FILE_FLASH_PLUGIN_EXISTING, &builtin_flash))
     return false;
 
   FilePath plugin_path(plugin_dll);
