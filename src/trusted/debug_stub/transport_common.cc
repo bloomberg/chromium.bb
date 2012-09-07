@@ -4,14 +4,7 @@
  * found in the LICENSE file.
  */
 
-#if NACL_WINDOWS
-#include <windows.h>
-#ifndef AF_IPX
-#include <winsock2.h>
-#endif
-#define SOCKET_HANDLE SOCKET
-#else
-
+#if !NACL_WINDOWS
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <sys/select.h>
@@ -19,8 +12,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#define SOCKET_HANDLE int
+// Define some interfaces that Windows provides but Unix does not
+// provide so that we can use them on all OSes.
 #define closesocket close
+#define INVALID_SOCKET (-1)
 #endif
 
 #include <stdlib.h>
@@ -45,12 +40,12 @@ class Transport : public ITransport {
     handle_ = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   }
 
-  explicit Transport(SOCKET_HANDLE s) {
+  explicit Transport(SocketHandle s) {
     handle_ = s;
   }
 
   ~Transport() {
-    if (handle_ != -1) closesocket(handle_);
+    if (handle_ != INVALID_SOCKET) closesocket(handle_);
   }
 
   // Read from this transport, return a negative value if there is an error
@@ -100,7 +95,7 @@ class Transport : public ITransport {
   }
 
  protected:
-  SOCKET_HANDLE handle_;
+  SocketHandle handle_;
 };
 
 // Convert string in the form of [addr][:port] where addr is a
@@ -169,24 +164,6 @@ static bool StringToIPv4(const std::string &instr, uint32_t *addr,
   return true;
 }
 
-
-static SOCKET_HANDLE s_ServerSock;
-
-static bool SocketInit() {
-  s_ServerSock = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-  if (s_ServerSock == -1) {
-    NaClLog(LOG_ERROR, "Failed to create socket.\n");
-    return false;
-  }
-
-  return true;
-}
-
-static bool SocketsAvailable() {
-  static bool _init = SocketInit();
-  return _init;
-}
-
 static bool BuildSockAddr(const char *addr, struct sockaddr_in *sockaddr) {
   std::string addrstr = addr;
   uint32_t *pip = reinterpret_cast<uint32_t*>(&sockaddr->sin_addr.s_addr);
@@ -196,51 +173,53 @@ static bool BuildSockAddr(const char *addr, struct sockaddr_in *sockaddr) {
   return StringToIPv4(addrstr, pip, pport);
 }
 
-ITransport* ITransport::Accept(const char *addr) {
-  static bool listening = false;
-  if (!SocketsAvailable()) return NULL;
+SocketBinding::SocketBinding(SocketHandle socket_handle)
+    : socket_handle_(socket_handle) {
+}
 
-  if (!listening) {
-    struct sockaddr_in saddr;
-    // Clearing sockaddr_in first appears to be necessary on Mac OS X.
-    memset(&saddr, 0, sizeof(saddr));
-    socklen_t addrlen = static_cast<socklen_t>(sizeof(saddr));
-    saddr.sin_family = AF_INET;
-    saddr.sin_addr.s_addr = htonl(0x7F000001);
-    saddr.sin_port = htons(4014);
-
-    // Override portions address that are provided
-    if (addr) BuildSockAddr(addr, &saddr);
-
-    // This is necessary to ensure that the TCP port is released
-    // promptly when sel_ldr exits.  Without this, the TCP port might
-    // only be released after a timeout, and later processes can fail
-    // to bind it.
-    int reuse_address = 1;
-    setsockopt(s_ServerSock, SOL_SOCKET, SO_REUSEADDR,
-               reinterpret_cast<char *>(&reuse_address),
-               sizeof(reuse_address));
-
-    struct sockaddr *psaddr = reinterpret_cast<struct sockaddr *>(&saddr);
-    if (bind(s_ServerSock, psaddr, addrlen)) {
-      NaClLog(LOG_ERROR, "Failed to bind server.\n");
-      return NULL;
-    }
-
-    if (listen(s_ServerSock, 1)) {
-      NaClLog(LOG_ERROR, "Failed to listen.\n");
-      return NULL;
-    }
-
-    listening = true;
+SocketBinding *SocketBinding::Bind(const char *addr) {
+  SocketHandle socket_handle = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+  if (socket_handle == INVALID_SOCKET) {
+    NaClLog(LOG_ERROR, "Failed to create socket.\n");
+    return NULL;
   }
+  struct sockaddr_in saddr;
+  // Clearing sockaddr_in first appears to be necessary on Mac OS X.
+  memset(&saddr, 0, sizeof(saddr));
+  socklen_t addrlen = static_cast<socklen_t>(sizeof(saddr));
+  saddr.sin_family = AF_INET;
+  saddr.sin_addr.s_addr = htonl(0x7F000001);
+  saddr.sin_port = htons(4014);
 
-  if (listening) {
-    SOCKET_HANDLE s = ::accept(s_ServerSock, NULL, 0);
-    if (-1 != s) return new Transport(s);
+  // Override portions address that are provided
+  if (addr) BuildSockAddr(addr, &saddr);
+
+  // This is necessary to ensure that the TCP port is released
+  // promptly when sel_ldr exits.  Without this, the TCP port might
+  // only be released after a timeout, and later processes can fail
+  // to bind it.
+  int reuse_address = 1;
+  setsockopt(socket_handle, SOL_SOCKET, SO_REUSEADDR,
+             reinterpret_cast<char *>(&reuse_address),
+             sizeof(reuse_address));
+
+  struct sockaddr *psaddr = reinterpret_cast<struct sockaddr *>(&saddr);
+  if (bind(socket_handle, psaddr, addrlen)) {
+    NaClLog(LOG_ERROR, "Failed to bind server.\n");
     return NULL;
   }
 
+  if (listen(socket_handle, 1)) {
+    NaClLog(LOG_ERROR, "Failed to listen.\n");
+    return NULL;
+  }
+  return new SocketBinding(socket_handle);
+}
+
+ITransport *SocketBinding::AcceptConnection() {
+  SocketHandle socket = ::accept(socket_handle_, NULL, 0);
+  if (socket != INVALID_SOCKET)
+    return new Transport(socket);
   return NULL;
 }
 

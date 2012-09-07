@@ -30,6 +30,7 @@
 using port::IPlatform;
 using port::IThread;
 using port::ITransport;
+using port::SocketBinding;
 
 using gdb_rsp::Session;
 using gdb_rsp::Target;
@@ -63,15 +64,23 @@ using gdb_rsp::Target;
 
 static Target *g_target = NULL;
 
-void WINAPI NaClStubThread(void *ptr) {
-  Target *targ = reinterpret_cast<Target*>(ptr);
+void WINAPI NaClStubThread(void *thread_arg) {
+  UNREFERENCED_PARAMETER(thread_arg);
+
+  const char *addr = "127.0.0.1:4014";
+  SocketBinding *socket_binding = SocketBinding::Bind(addr);
+  if (socket_binding == NULL) {
+    NaClLog(LOG_ERROR, "NaClStubThread: Failed to bind TCP port '%s'\n",
+            addr);
+    return;
+  }
   while (1) {
     ITransport* trans = NULL;
     Session* ses = NULL;
 
     try {
       // Wait for a connection.
-      trans = ITransport::Accept("127.0.0.1:4014");
+      trans = socket_binding->AcceptConnection();
       if (NULL == trans) continue;
 
       // Create a new session for this connection
@@ -80,7 +89,7 @@ void WINAPI NaClStubThread(void *ptr) {
       ses->SetFlags(Session::DEBUG_MASK);
 
       // Run this session for as long as it lasts
-      targ->Run(ses);
+      g_target->Run(ses);
     }
     catch(...) {
       delete ses;
@@ -131,8 +140,7 @@ int NaClDebugInit(struct NaClApp *nap) {
   CHECK(thread != NULL);
 
   NaClLog(LOG_WARNING, "nacl_debug(%d) : Debugging started.\n", __LINE__);
-  CHECK(NaClThreadCtor(thread, NaClStubThread, g_target,
-                       NACL_KERN_STACK_SIZE));
+  CHECK(NaClThreadCtor(thread, NaClStubThread, NULL, NACL_KERN_STACK_SIZE));
 
   return 1;
 }
