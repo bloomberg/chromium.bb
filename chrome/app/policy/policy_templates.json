@@ -1651,7 +1651,7 @@
           'type': 'int-enum',
           'schema': {
             'type': 'integer',
-            'enum': [ 1, 2 ],
+            'enum': [ 1, 2, 3 ],
           },
           'items': [
             {
@@ -1664,6 +1664,11 @@
               'value': 2,
               'caption': '''Block all plugins''',
             },
+            {
+              'name': 'ClickToPlay',
+              'value': 3,
+              'caption': '''Click to play''',
+            },
           ],
           'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': True},
@@ -1671,6 +1676,8 @@
           'id': 51,
           'caption': '''Default plugins setting''',
           'desc': '''Allows you to set whether websites are allowed to automatically run plugins. Automatically running plugins can be either allowed for all websites or denied for all websites.
+
+          Click to play allows plugins to run but the user must click them to start their execution.
 
           If this policy is left not set, 'AllowPlugins' will be used and the user will be able to change it.''',
         },
