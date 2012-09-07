@@ -80,11 +80,10 @@ void FileSystemDirURLRequestJob::StartAsync() {
   if (!request_)
     return;
   url_ = FileSystemURL(request_->url());
-  base::PlatformFileError error_code;
-  FileSystemOperation* operation = GetNewOperation(&error_code);
-  if (error_code != base::PLATFORM_FILE_OK) {
+  FileSystemOperation* operation = GetNewOperation();
+  if (!operation) {
     NotifyDone(URLRequestStatus(URLRequestStatus::FAILED,
-                                net::PlatformFileErrorToNetError(error_code)));
+                                net::ERR_INVALID_URL));
     return;
   }
   operation->ReadDirectory(
@@ -125,16 +124,7 @@ void FileSystemDirURLRequestJob::DidReadDirectory(
   }
 
   if (has_more) {
-    base::PlatformFileError error_code;
-    FileSystemOperation* operation = GetNewOperation(&error_code);
-    if (error_code != base::PLATFORM_FILE_OK) {
-      NotifyDone(URLRequestStatus(
-          URLRequestStatus::FAILED,
-          net::PlatformFileErrorToNetError(error_code)));
-      return;
-    }
-
-    operation->ReadDirectory(
+    GetNewOperation()->ReadDirectory(
         url_,
         base::Bind(&FileSystemDirURLRequestJob::DidReadDirectory, this));
   } else {
@@ -143,9 +133,8 @@ void FileSystemDirURLRequestJob::DidReadDirectory(
   }
 }
 
-FileSystemOperation* FileSystemDirURLRequestJob::GetNewOperation(
-    base::PlatformFileError* error_code) {
-  return file_system_context_->CreateFileSystemOperation(url_, error_code);
+FileSystemOperation* FileSystemDirURLRequestJob::GetNewOperation() {
+  return file_system_context_->CreateFileSystemOperation(url_);
 }
 
 }  // namespace fileapi

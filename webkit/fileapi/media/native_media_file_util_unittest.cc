@@ -140,7 +140,7 @@ class NativeMediaFileUtilTest : public testing::Test {
   }
 
   FileSystemOperation* NewOperation(const FileSystemURL& url) {
-    return file_system_context_->CreateFileSystemOperation(url, NULL);
+    return file_system_context_->CreateFileSystemOperation(url);
   }
 
  private:

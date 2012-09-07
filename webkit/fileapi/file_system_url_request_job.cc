@@ -157,12 +157,11 @@ void FileSystemURLRequestJob::StartAsync() {
     return;
   DCHECK(!reader_.get());
   url_ = FileSystemURL(request_->url());
-  base::PlatformFileError error_code;
   FileSystemOperation* operation =
-      file_system_context_->CreateFileSystemOperation(url_, &error_code);
-  if (error_code != base::PLATFORM_FILE_OK) {
+      file_system_context_->CreateFileSystemOperation(url_);
+  if (!operation) {
     NotifyDone(URLRequestStatus(URLRequestStatus::FAILED,
-                                net::PlatformFileErrorToNetError(error_code)));
+                                net::ERR_INVALID_URL));
     return;
   }
   operation->GetMetadata(

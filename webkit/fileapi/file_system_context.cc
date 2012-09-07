@@ -202,22 +202,13 @@ void FileSystemContext::DeleteFileSystem(
 }
 
 FileSystemOperation* FileSystemContext::CreateFileSystemOperation(
-    const FileSystemURL& url, PlatformFileError* error_code) {
-  if (!url.is_valid()) {
-    if (error_code)
-      *error_code = base::PLATFORM_FILE_ERROR_INVALID_URL;
+    const FileSystemURL& url) {
+  if (!url.is_valid())
     return NULL;
-  }
   FileSystemMountPointProvider* mount_point_provider =
       GetMountPointProvider(url.type());
-  if (!mount_point_provider) {
-    if (error_code)
-      *error_code = base::PLATFORM_FILE_ERROR_FAILED;
+  if (!mount_point_provider)
     return NULL;
-  }
-
-  if (error_code)
-    *error_code = base::PLATFORM_FILE_OK;
   return mount_point_provider->CreateFileSystemOperation(url, this);
 }
 
