@@ -430,6 +430,7 @@ extern const char kForceDesktop[];
 extern const char kModeSwitch[];
 extern const char kPrintRaster[];
 extern const char kRelaunchShortcut[];
+extern const char kWaitForHandle[];
 extern const char kWaitForMutex[];
 #endif
 
