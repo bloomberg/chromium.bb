@@ -52,6 +52,8 @@ bool VectorContainsKey(const vector<Key>& vect, const Key& key) {
   return std::find(vect.begin(), vect.end(), key) != vect.end();
 }
 
+void PerrorAbort(const char* err) __attribute__((noreturn));
+
 void PerrorAbort(const char* err) {
   perror(err);
   exit(1);
