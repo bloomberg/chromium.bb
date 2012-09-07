@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/ppb_flash_proxy.h"
 
+#include <limits>
+
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/time.h"
@@ -223,17 +225,25 @@ void PPB_Flash_Proxy::QuitMessageLoop(PP_Instance instance) {
 
 double PPB_Flash_Proxy::GetLocalTimeZoneOffset(PP_Instance instance,
                                                PP_Time t) {
+  static double s_local_offset = 0.0;
+  static int64 s_last_updated = std::numeric_limits<int64>::min();
+
+  // Cache the local offset for ten seconds, since it's slow on XP and Linux.
+  const int64 kMaxCachedLocalOffsetAgeInSeconds = 10;
+  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeTicks expiration =
+      base::TimeTicks::FromInternalValue(s_last_updated) +
+      base::TimeDelta::FromSeconds(kMaxCachedLocalOffsetAgeInSeconds);
+  if (now < expiration)
+    return s_local_offset;
+
+  s_last_updated = now.ToInternalValue();
 #if defined(OS_LINUX)
   // On Linux localtime needs access to the filesystem, which is prohibited
   // by the sandbox. It would be better to go directly to the browser process
   // for this message rather than proxy it through some instance in a renderer.
-  //
-  // Or we could cache the offset and whether DST is active, similar to what
-  // V8 does.
-  double result = 0;
   dispatcher()->Send(new PpapiHostMsg_PPBFlash_GetLocalTimeZoneOffset(
-      API_ID_PPB_FLASH, instance, t, &result));
-  return result;
+      API_ID_PPB_FLASH, instance, t, &s_local_offset));
 #else
   base::Time cur = PPTimeToTime(t);
   base::Time::Exploded exploded = { 0 };
@@ -243,11 +253,13 @@ double PPB_Flash_Proxy::GetLocalTimeZoneOffset(PP_Instance instance,
   if (exploded.HasValidValues() && utc_exploded.HasValidValues()) {
     base::Time adj_time = base::Time::FromUTCExploded(exploded);
     base::Time cur = base::Time::FromUTCExploded(utc_exploded);
-    return (adj_time - cur).InSecondsF();
+    s_local_offset = (adj_time - cur).InSecondsF();
   } else {
-    return 0.0;
+    s_local_offset = 0.0;
   }
 #endif
+
+  return s_local_offset;
 }
 
 PP_Bool PPB_Flash_Proxy::IsRectTopmost(PP_Instance instance,
