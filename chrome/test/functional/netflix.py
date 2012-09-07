@@ -221,6 +221,9 @@ class NetflixGuestModeTest(pyauto.PyUITest, NetflixTestHelper):
     self.assertTrue(login_info['is_logged_in'], msg='Not logged in at all.')
     self.assertTrue(login_info['is_guest'], msg='Not logged in as guest.')
 
+  def ShouldAutoLogin(self):
+    return False
+
   def tearDown(self):
     self.SignOut()
     self.Logout()
