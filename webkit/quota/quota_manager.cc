@@ -538,7 +538,7 @@ class QuotaManager::UsageAndQuotaDispatcherTaskForTemporaryGlobal
                           available_space());
   }
 
-  virtual StorageType type() const { return kStorageTypeTemporary; }
+  virtual StorageType type() const OVERRIDE { return kStorageTypeTemporary; }
 };
 
 // static
