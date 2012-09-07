@@ -465,7 +465,8 @@ void ExternalTabContainerWin::AddNewContents(WebContents* source,
                                              WebContents* new_contents,
                                              WindowOpenDisposition disposition,
                                              const gfx::Rect& initial_pos,
-                                             bool user_gesture) {
+                                             bool user_gesture,
+                                             bool* was_blocked) {
   if (!automation_) {
     DCHECK(pending_);
     LOG(ERROR) << "Invalid automation provider. Dropping new contents notify";

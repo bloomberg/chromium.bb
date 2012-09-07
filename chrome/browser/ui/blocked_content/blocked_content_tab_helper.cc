@@ -19,6 +19,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 
 using content::NavigationEntry;
 
@@ -88,6 +89,7 @@ void BlockedContentTabHelper::AddTabContents(TabContents* new_contents,
 }
 
 void BlockedContentTabHelper::AddPopup(TabContents* new_contents,
+                                       WindowOpenDisposition disposition,
                                        const gfx::Rect& initial_pos,
                                        bool user_gesture) {
   // A page can't spawn popups (or do anything else, either) until its load
@@ -109,16 +111,21 @@ void BlockedContentTabHelper::AddPopup(TabContents* new_contents,
           creator,
           CONTENT_SETTINGS_TYPE_POPUPS,
           "") == CONTENT_SETTING_ALLOW) {
-    web_contents()->AddNewContents(new_contents->web_contents(),
-                                   NEW_POPUP,
-                                   initial_pos,
-                                   true);  // user_gesture
+    content::WebContentsDelegate* delegate = web_contents()->GetDelegate();
+    if (delegate) {
+      delegate->AddNewContents(web_contents(),
+                               new_contents->web_contents(),
+                               disposition,
+                               initial_pos,
+                               true,  // user_gesture
+                               NULL);
+    }
   } else {
     // Call blocked_contents_->AddTabContents with user_gesture == true
     // so that the contents will not get blocked again.
     SendNotification(new_contents, true);
     blocked_contents_->AddTabContents(new_contents,
-                                      NEW_POPUP,
+                                      disposition,
                                       initial_pos,
                                       true);  // user_gesture
     tab_contents_->content_settings()->OnContentBlocked(

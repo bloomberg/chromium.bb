@@ -92,7 +92,7 @@ TEST_F(WebDialogWebContentsDelegateTest, AddNewContentsForegroundTabTest) {
   WebContents* contents =
       WebContentsTester::CreateTestWebContents(profile(), NULL);
   test_web_contents_delegate_->AddNewContents(
-      NULL, contents, NEW_FOREGROUND_TAB, gfx::Rect(), false);
+      NULL, contents, NEW_FOREGROUND_TAB, gfx::Rect(), false, NULL);
   // This should create a new foreground tab in the existing browser.
   EXPECT_EQ(1, browser()->tab_count());
   EXPECT_EQ(1U, BrowserList::size());
@@ -107,7 +107,7 @@ TEST_F(WebDialogWebContentsDelegateTest, DetachTest) {
       NULL, OpenURLParams(GURL(chrome::kAboutBlankURL), Referrer(),
       NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false));
   test_web_contents_delegate_->AddNewContents(NULL, NULL, NEW_FOREGROUND_TAB,
-                                              gfx::Rect(), false);
+                                              gfx::Rect(), false, NULL);
   EXPECT_EQ(0, browser()->tab_count());
   EXPECT_EQ(1U, BrowserList::size());
 }

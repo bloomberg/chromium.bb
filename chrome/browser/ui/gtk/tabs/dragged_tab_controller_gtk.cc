@@ -196,14 +196,16 @@ void DraggedTabControllerGtk::AddNewContents(WebContents* source,
                                              WebContents* new_contents,
                                              WindowOpenDisposition disposition,
                                              const gfx::Rect& initial_pos,
-                                             bool user_gesture) {
+                                             bool user_gesture,
+                                             bool* was_blocked) {
   DCHECK(disposition != CURRENT_TAB);
 
   // Theoretically could be called while dragging if the page tries to
   // spawn a window. Route this message back to the browser in most cases.
   if (drag_data_->GetSourceTabData()->original_delegate_) {
     drag_data_->GetSourceTabData()->original_delegate_->AddNewContents(
-        source, new_contents, disposition, initial_pos, user_gesture);
+        source, new_contents, disposition, initial_pos, user_gesture,
+        was_blocked);
   }
 }
 

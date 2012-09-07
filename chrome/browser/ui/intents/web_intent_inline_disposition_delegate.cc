@@ -67,7 +67,8 @@ void WebIntentInlineDispositionDelegate::AddNewContents(
     content::WebContents* new_contents,
     WindowOpenDisposition disposition,
     const gfx::Rect& initial_pos,
-    bool user_gesture) {
+    bool user_gesture,
+    bool* was_blocked) {
   DCHECK_EQ(source, web_contents_);
   DCHECK_EQ(Profile::FromBrowserContext(new_contents->GetBrowserContext()),
       browser_->profile());
@@ -76,7 +77,7 @@ void WebIntentInlineDispositionDelegate::AddNewContents(
   disposition =
       disposition == NEW_BACKGROUND_TAB ? disposition : NEW_FOREGROUND_TAB;
   chrome::AddWebContents(browser_, NULL, new_contents, disposition, initial_pos,
-                         user_gesture);
+                         user_gesture, was_blocked);
 }
 
 void WebIntentInlineDispositionDelegate::LoadingStateChanged(

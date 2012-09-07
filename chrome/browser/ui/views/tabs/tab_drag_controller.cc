@@ -561,14 +561,16 @@ void TabDragController::AddNewContents(WebContents* source,
                                        WebContents* new_contents,
                                        WindowOpenDisposition disposition,
                                        const gfx::Rect& initial_pos,
-                                       bool user_gesture) {
+                                       bool user_gesture,
+                                       bool* was_blocked) {
   DCHECK_NE(CURRENT_TAB, disposition);
 
   // Theoretically could be called while dragging if the page tries to
   // spawn a window. Route this message back to the browser in most cases.
   if (source_tab_drag_data()->original_delegate) {
     source_tab_drag_data()->original_delegate->AddNewContents(
-        source, new_contents, disposition, initial_pos, user_gesture);
+        source, new_contents, disposition, initial_pos, user_gesture,
+        was_blocked);
   }
 }
 

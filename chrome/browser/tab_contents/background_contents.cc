@@ -98,9 +98,10 @@ void BackgroundContents::AddNewContents(WebContents* source,
                                         WebContents* new_contents,
                                         WindowOpenDisposition disposition,
                                         const gfx::Rect& initial_pos,
-                                        bool user_gesture) {
+                                        bool user_gesture,
+                                        bool* was_blocked) {
   delegate_->AddWebContents(
-      new_contents, disposition, initial_pos, user_gesture);
+      new_contents, disposition, initial_pos, user_gesture, was_blocked);
 }
 
 void BackgroundContents::RenderViewGone(base::TerminationStatus status) {

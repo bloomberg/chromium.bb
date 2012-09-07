@@ -595,7 +595,8 @@ void ExtensionHost::AddNewContents(WebContents* source,
                                    WebContents* new_contents,
                                    WindowOpenDisposition disposition,
                                    const gfx::Rect& initial_pos,
-                                   bool user_gesture) {
+                                   bool user_gesture,
+                                   bool* was_blocked) {
   // First, if the creating extension view was associated with a tab contents,
   // use that tab content's delegate. We must be careful here that the
   // associated tab contents has the same profile as the new tab contents. In
@@ -609,9 +610,12 @@ void ExtensionHost::AddNewContents(WebContents* source,
     if (associated_contents &&
         associated_contents->GetBrowserContext() ==
             new_contents->GetBrowserContext()) {
-      associated_contents->AddNewContents(
-          new_contents, disposition, initial_pos, user_gesture);
-      return;
+      WebContentsDelegate* delegate = associated_contents->GetDelegate();
+      if (delegate) {
+        delegate->AddNewContents(
+            associated_contents, new_contents, disposition, initial_pos,
+            user_gesture, was_blocked);
+      }
     }
   }
 

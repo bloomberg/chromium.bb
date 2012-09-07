@@ -40,6 +40,7 @@ class BlockedContentTabHelper : public content::WebContentsObserver {
 
   // Adds the incoming |new_contents| to the |blocked_contents_| container.
   void AddPopup(TabContents* new_contents,
+                WindowOpenDisposition disposition,
                 const gfx::Rect& initial_pos,
                 bool user_gesture);
 

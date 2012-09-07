@@ -206,10 +206,6 @@ class CONTENT_EXPORT WebContentsImpl
   virtual bool NeedToFireBeforeUnload() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual content::WebContents* Clone() OVERRIDE;
-  virtual void AddNewContents(content::WebContents* new_contents,
-                              WindowOpenDisposition disposition,
-                              const gfx::Rect& initial_pos,
-                              bool user_gesture) OVERRIDE;
   virtual gfx::NativeView GetContentNativeView() const OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual void GetContainerBounds(gfx::Rect* out) const OVERRIDE;

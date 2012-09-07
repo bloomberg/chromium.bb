@@ -61,7 +61,8 @@ class WEB_DIALOGS_EXPORT WebDialogWebContentsDelegate
                               content::WebContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
-                              bool user_gesture) OVERRIDE;
+                              bool user_gesture,
+                              bool* was_blocked) OVERRIDE;
   virtual bool IsPopupOrPanel(
       const content::WebContents* source) const OVERRIDE;
   virtual bool ShouldAddNavigationToHistory(

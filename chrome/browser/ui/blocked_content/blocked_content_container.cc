@@ -75,11 +75,15 @@ void BlockedContentContainer::LaunchForContents(TabContents* tab_contents) {
       tab_contents->blocked_content_tab_helper()->set_delegate(NULL);
       // We needn't call WasShown to change its status because the
       // WebContents::AddNewContents will do it.
-      owner_->web_contents()->AddNewContents(
-          tab_contents->web_contents(),
-          content.disposition,
-          content.bounds,
-          content.user_gesture);
+      WebContentsDelegate* delegate = owner_->web_contents()->GetDelegate();
+      if (delegate) {
+        delegate->AddNewContents(owner_->web_contents(),
+                                 tab_contents->web_contents(),
+                                 content.disposition,
+                                 content.bounds,
+                                 content.user_gesture,
+                                 NULL);
+      }
       break;
     }
   }
@@ -120,9 +124,13 @@ void BlockedContentContainer::AddNewContents(WebContents* source,
                                              WebContents* new_contents,
                                              WindowOpenDisposition disposition,
                                              const gfx::Rect& initial_position,
-                                             bool user_gesture) {
-  owner_->web_contents()->AddNewContents(
-      new_contents, disposition, initial_position, user_gesture);
+                                             bool user_gesture,
+                                             bool* was_blocked) {
+  WebContentsDelegate* delegate = owner_->web_contents()->GetDelegate();
+  if (delegate) {
+    delegate->AddNewContents(owner_->web_contents(), new_contents, disposition,
+                             initial_position, user_gesture, was_blocked);
+  }
 }
 
 void BlockedContentContainer::CloseContents(WebContents* source) {

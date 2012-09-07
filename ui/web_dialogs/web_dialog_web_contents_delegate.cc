@@ -42,7 +42,8 @@ WebContents* WebDialogWebContentsDelegate::OpenURLFromTab(
 void WebDialogWebContentsDelegate::AddNewContents(
     WebContents* source, WebContents* new_contents,
     WindowOpenDisposition disposition, const gfx::Rect& initial_pos,
-    bool user_gesture) {
+    bool user_gesture,
+    bool* was_blocked) {
   handler_->AddNewContents(browser_context_, source, new_contents, disposition,
                            initial_pos, user_gesture);
 }

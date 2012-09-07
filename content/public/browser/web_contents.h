@@ -221,14 +221,6 @@ class WebContents : public PageNavigator,
   // heap-allocated pointer is owned by the caller.
   virtual WebContents* Clone() = 0;
 
-  // Window management ---------------------------------------------------------
-
-  // Adds a new tab or window with the given already-created contents.
-  virtual void AddNewContents(WebContents* new_contents,
-                              WindowOpenDisposition disposition,
-                              const gfx::Rect& initial_pos,
-                              bool user_gesture) = 0;
-
   // Views and focus -----------------------------------------------------------
   // TODO(brettw): Most of these should be removed and the caller should call
   // the view directly.

@@ -160,6 +160,7 @@ using content::SessionStorageNamespace;
 using content::SiteInstance;
 using content::UserMetricsAction;
 using content::WebContents;
+using content::WebContentsDelegate;
 using content::WebContentsObserver;
 using content::WebUI;
 using content::WebUIController;
@@ -1036,17 +1037,6 @@ WebContents* WebContentsImpl::Clone() {
   return tc;
 }
 
-void WebContentsImpl::AddNewContents(WebContents* new_contents,
-                                     WindowOpenDisposition disposition,
-                                     const gfx::Rect& initial_pos,
-                                     bool user_gesture) {
-  if (!delegate_)
-    return;
-
-  delegate_->AddNewContents(this, new_contents, disposition, initial_pos,
-                            user_gesture);
-}
-
 gfx::NativeView WebContentsImpl::GetContentNativeView() const {
   return view_->GetContentNativeView();
 }
@@ -1290,17 +1280,21 @@ void WebContentsImpl::CreateNewWindow(
   if (params.opener_suppressed) {
     // When the opener is suppressed, the original renderer cannot access the
     // new window.  As a result, we need to show and navigate the window here.
-    gfx::Rect initial_pos;
-    // TODO(cdn) Fix popup white-listing for links that open in a new process.
-    AddNewContents(
-        new_contents, params.user_gesture ? params.disposition : NEW_POPUP,
-        initial_pos, params.user_gesture);
-
-    content::OpenURLParams open_params(params.target_url, content::Referrer(),
-                                       CURRENT_TAB,
-                                       content::PAGE_TRANSITION_LINK,
-                                       true /* is_renderer_initiated */);
-    new_contents->OpenURL(open_params);
+    bool was_blocked = false;
+    if (delegate_) {
+      gfx::Rect initial_pos;
+      delegate_->AddNewContents(
+          this, new_contents, params.disposition, initial_pos,
+          params.user_gesture, &was_blocked);
+    }
+    if (!was_blocked) {
+      content::OpenURLParams open_params(params.target_url,
+                                         content::Referrer(),
+                                         CURRENT_TAB,
+                                         content::PAGE_TRANSITION_LINK,
+                                         true /* is_renderer_initiated */);
+      new_contents->OpenURL(open_params);
+    }
   }
 }
 
@@ -1340,8 +1334,13 @@ void WebContentsImpl::ShowCreatedWindow(int route_id,
                                         const gfx::Rect& initial_pos,
                                         bool user_gesture) {
   WebContentsImpl* contents = GetCreatedWindow(route_id);
-  if (contents)
-    AddNewContents(contents, disposition, initial_pos, user_gesture);
+  if (contents) {
+    WebContentsDelegate* delegate = GetDelegate();
+    if (delegate) {
+      delegate->AddNewContents(
+          this, contents, disposition, initial_pos, user_gesture, NULL);
+    }
+  }
 }
 
 void WebContentsImpl::ShowCreatedWidget(int route_id,

@@ -62,7 +62,8 @@ class BlockedContentContainer : public BlockedContentTabHelperDelegate,
                               content::WebContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_position,
-                              bool user_gesture) OVERRIDE;
+                              bool user_gesture,
+                              bool* was_blocked) OVERRIDE;
 
   // Removes |source| from our internal list of blocked contents.
   virtual void CloseContents(content::WebContents* source) OVERRIDE;

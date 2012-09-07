@@ -65,7 +65,8 @@ class BackgroundContentsService : private content::NotificationObserver,
   virtual void AddWebContents(content::WebContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
-                              bool user_gesture) OVERRIDE;
+                              bool user_gesture,
+                              bool* was_blocked) OVERRIDE;
 
   // Gets the parent application id for the passed BackgroundContents. Returns
   // an empty string if no parent application found (e.g. passed

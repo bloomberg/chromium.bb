@@ -163,7 +163,8 @@ class ExtensionHost : public content::WebContentsDelegate,
                               content::WebContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
-                              bool user_gesture) OVERRIDE;
+                              bool user_gesture,
+                              bool* was_blocked) OVERRIDE;
   virtual void CloseContents(content::WebContents* contents) OVERRIDE;
   virtual void OnStartDownload(content::WebContents* source,
                                content::DownloadItem* download) OVERRIDE;

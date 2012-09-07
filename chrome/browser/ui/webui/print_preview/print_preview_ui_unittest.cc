@@ -225,7 +225,7 @@ TEST_F(PrintPreviewUIUnitTest, InitiatorTabGetsFocusOnPrintPreviewTabClose) {
   WebContentsTester* initiator_tester =
       WebContentsTester::For(initiator_contents);
   chrome::AddWebContents(browser(), NULL, initiator_contents,
-                         NEW_FOREGROUND_TAB, gfx::Rect(), false);
+                         NEW_FOREGROUND_TAB, gfx::Rect(), false, NULL);
   TabContents* initiator_tab = TabContents::FromWebContents(initiator_contents);
   ASSERT_TRUE(initiator_tab);
   EXPECT_EQ(2, browser()->tab_count());

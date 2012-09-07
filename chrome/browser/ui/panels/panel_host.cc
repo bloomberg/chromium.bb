@@ -113,7 +113,8 @@ void PanelHost::AddNewContents(content::WebContents* source,
                                content::WebContents* new_contents,
                                WindowOpenDisposition disposition,
                                const gfx::Rect& initial_pos,
-                               bool user_gesture) {
+                               bool user_gesture,
+                               bool* was_blocked) {
   chrome::NavigateParams navigate_params(profile_, new_contents->GetURL(),
                                          content::PAGE_TRANSITION_LINK);
   // Create a TabContents because the NavigateParams takes a TabContents,

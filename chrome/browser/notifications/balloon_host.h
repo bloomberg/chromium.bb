@@ -67,7 +67,8 @@ class BalloonHost : public content::WebContentsDelegate,
                               content::WebContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
-                              bool user_gesture) OVERRIDE;
+                              bool user_gesture,
+                              bool* was_blocked) OVERRIDE;
 
   // content::WebContentsObserver implementation:
   virtual void RenderViewCreated(

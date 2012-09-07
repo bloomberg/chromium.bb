@@ -138,7 +138,8 @@ void WebContentsDelegateAndroid::AddNewContents(
     WebContents* new_contents,
     WindowOpenDisposition disposition,
     const gfx::Rect& initial_pos,
-    bool user_gesture) {
+    bool user_gesture,
+    bool* was_blocked) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   bool handled = false;

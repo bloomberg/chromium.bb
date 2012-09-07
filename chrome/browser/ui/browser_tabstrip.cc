@@ -99,7 +99,8 @@ void AddWebContents(Browser* browser,
                     content::WebContents* new_contents,
                     WindowOpenDisposition disposition,
                     const gfx::Rect& initial_pos,
-                    bool user_gesture) {
+                    bool user_gesture,
+                    bool* was_blocked) {
   // No code for this yet.
   DCHECK(disposition != SAVE_TO_DISK);
   // Can't create a new contents for the current tab - invalid case.
@@ -118,23 +119,26 @@ void AddWebContents(Browser* browser,
   }
 
   if (source_tab_contents) {
-    // Handle blocking of all contents.
+    // Handle blocking of tabs.
     if (source_blocked_content->all_contents_blocked()) {
-      source_blocked_content->AddTabContents(new_tab_contents,
-                                             disposition,
-                                             initial_pos,
-                                             user_gesture);
+      source_blocked_content->AddTabContents(
+          new_tab_contents, disposition, initial_pos, user_gesture);
+      if (was_blocked)
+        *was_blocked = true;
       return;
     }
 
     // Handle blocking of popups.
-    if ((disposition == NEW_POPUP) && !user_gesture &&
+    if ((disposition == NEW_POPUP || disposition == NEW_FOREGROUND_TAB) &&
+        !user_gesture &&
         !CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisablePopupBlocking)) {
       // Unrequested popups from normal pages are constrained unless they're in
       // the white list.  The popup owner will handle checking this.
-      source_tab_contents->blocked_content_tab_helper()->
-          AddPopup(new_tab_contents, initial_pos, user_gesture);
+      source_blocked_content->AddPopup(
+          new_tab_contents, disposition, initial_pos, user_gesture);
+      if (was_blocked)
+        *was_blocked = true;
       return;
     }
 
