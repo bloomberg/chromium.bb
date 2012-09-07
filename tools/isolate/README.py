@@ -33,7 +33,7 @@ import sys
 
 def main():
   for i in sorted(os.listdir(os.path.dirname(os.path.abspath(__file__)))):
-    if not i.endswith('.py') or i in ('PRESUBMIT.py', 'trace_child_process.py'):
+    if not i.endswith('.py') or i == 'PRESUBMIT.py':
       continue
     module = __import__(i[:-3])
     if hasattr(module, '__doc__'):

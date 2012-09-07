@@ -140,7 +140,7 @@ class TraceInputs(TraceInputsBase):
       '  tests/trace_inputs/child2.py'.replace('/', os.path.sep),
       '  tests/trace_inputs/files1/'.replace('/', os.path.sep),
       '  tests/trace_inputs/test_file.txt'.replace('/', os.path.sep),
-      '  tests/%s' % FILENAME,
+      ('  tests/%s' % FILENAME).replace('/', os.path.sep),
       '  trace_inputs.py',
     )) + '\n'
     trace_expected = '\n'.join((
@@ -414,7 +414,7 @@ class TraceInputsImport(TraceInputsBase):
       u'tests/trace_inputs/child2.py'.replace('/', os.path.sep),
       u'tests/trace_inputs/files1/'.replace('/', os.path.sep),
       u'tests/trace_inputs/test_file.txt'.replace('/', os.path.sep),
-      u'tests/trace_inputs_smoke_test.py',
+      u'tests/trace_inputs_smoke_test.py'.replace('/', os.path.sep),
       u'trace_inputs.py',
     ]
     def blacklist(f):
