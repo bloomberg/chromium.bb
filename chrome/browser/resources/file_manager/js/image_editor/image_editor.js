@@ -816,8 +816,11 @@ ImageEditor.MouseControl.prototype.lockMouse_ = function(on) {
  * @private
  */
 ImageEditor.MouseControl.prototype.updateCursor_ = function(position) {
-  this.container_.setAttribute('cursor',
-      this.buffer_.getCursorStyle(position.x, position.y, !!this.dragHandler_));
+  var oldCursor = this.container_.getAttribute('cursor');
+  var newCursor = this.buffer_.getCursorStyle(
+      position.x, position.y, !!this.dragHandler_);
+  if (newCursor != oldCursor)  // Avoid flicker.
+    this.container_.setAttribute('cursor', newCursor);
 };
 
 /**
