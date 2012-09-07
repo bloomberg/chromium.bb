@@ -26,10 +26,7 @@
 #include "printing/backend/cups_helper.h"
 #include "printing/backend/print_backend_consts.h"
 
-#if (defined(OS_MACOSX) && \
-     MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_5) || \
-    (defined(OS_LINUX) && \
-     CUPS_VERSION_MAJOR == 1 && CUPS_VERSION_MINOR < 4)
+#if (CUPS_VERSION_MAJOR == 1 && CUPS_VERSION_MINOR < 4)
 const int CUPS_PRINTER_SCANNER = 0x2000000;  // Scanner-only device
 #endif
 
@@ -210,7 +207,9 @@ std::string PrintBackendCUPS::GetDefaultPrinterName() {
   cups_dest_t* dests;
   int num_dests = GetDests(&dests);
   cups_dest_t* dest = cupsGetDest(NULL, NULL, num_dests, dests);
-  return dest ? std::string(dest->name) : std::string();
+  std::string name = dest ? std::string(dest->name) : std::string();
+  cupsFreeDests(num_dests, dests);
+  return name;
 }
 
 bool PrintBackendCUPS::GetPrinterSemanticCapsAndDefaults(
