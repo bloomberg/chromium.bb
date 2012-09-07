@@ -24,7 +24,10 @@ Preferences::Preferences(const webkit_glue::WebPreferences& prefs)
       number_of_cpu_cores(prefs.number_of_cpu_cores),
       is_3d_supported(prefs.flash_3d_enabled),
       is_stage3d_supported(prefs.flash_stage3d_enabled),
-      is_webgl_supported(prefs.experimental_webgl_enabled) {
+      // This determines both if webgl is supported (experimental_webgl_enabled)
+      // and if it runs in hardware (accelerated_plugins_enabled)
+      is_webgl_supported(prefs.experimental_webgl_enabled &&
+                         prefs.accelerated_plugins_enabled) {
 }
 
 Preferences::~Preferences() {
