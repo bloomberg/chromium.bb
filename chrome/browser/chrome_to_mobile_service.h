@@ -68,6 +68,14 @@ class ChromeToMobileService : public ProfileKeyedService,
     SEND_SUCCESS,           // Cloud print responded with success on send.
     SEND_ERROR,             // Cloud print responded with failure on send.
     LEARN_MORE_CLICKED,     // The "Learn more" help article link was clicked.
+    BAD_TOKEN,              // The cloud print access token could not be minted.
+    BAD_SEARCH_AUTH,        // The cloud print search request failed (auth).
+    BAD_SEARCH_OTHER,       // The cloud print search request failed (other).
+    BAD_SEND_407,           // The cloud print send response was errorCode==407.
+                            // "Print job added but failed to notify printer..."
+    BAD_SEND_ERROR,         // The cloud print send response was errorCode!=407.
+    BAD_SEND_AUTH,          // The cloud print send request failed (auth).
+    BAD_SEND_OTHER,         // The cloud print send request failed (other).
     NUM_METRICS
   };
 
@@ -226,9 +234,10 @@ class ChromeToMobileService : public ProfileKeyedService,
       RequestObserverMap;
   RequestObserverMap request_observer_map_;
 
-  // The pending OAuth access token request and a timer for retrying on failure.
+  // The pending OAuth access token request and timers for retrying on failure.
   scoped_ptr<OAuth2AccessTokenFetcher> access_token_fetcher_;
   base::OneShotTimer<ChromeToMobileService> auth_retry_timer_;
+  base::OneShotTimer<ChromeToMobileService> search_retry_timer_;
 
   // A queue of tasks to perform after an access token is lazily initialized.
   std::queue<base::Closure> task_queue_;
