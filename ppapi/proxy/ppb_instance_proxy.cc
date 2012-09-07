@@ -133,8 +133,6 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgLockMouse)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_UnlockMouse,
                         OnHostMsgUnlockMouse)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBPInstance_GetDefaultPrintSettings,
-                        OnHostMsgGetDefaultPrintSettings)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_SetCursor,
                         OnHostMsgSetCursor)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_SetTextInputType,
@@ -610,19 +608,6 @@ void PPB_Instance_Proxy::UnlockMouse(PP_Instance instance) {
       API_ID_PPB_INSTANCE, instance));
 }
 
-PP_Bool PPB_Instance_Proxy::GetDefaultPrintSettings(
-    PP_Instance instance,
-    PP_PrintSettings_Dev* print_settings) {
-  if (!print_settings)
-    return PP_FALSE;
-
-  bool result;
-  dispatcher()->Send(new PpapiHostMsg_PPBPInstance_GetDefaultPrintSettings(
-      API_ID_PPB_INSTANCE, instance, print_settings, &result));
-
-  return PP_FromBool(result);
-}
-
 void PPB_Instance_Proxy::SetTextInputType(PP_Instance instance,
                                           PP_TextInput_Type type) {
   CancelAnyPendingRequestSurroundingText(instance);
@@ -819,29 +804,6 @@ void PPB_Instance_Proxy::OnHostMsgUnlockMouse(PP_Instance instance) {
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
     enter.functions()->UnlockMouse(instance);
-}
-
-void PPB_Instance_Proxy::OnHostMsgGetDefaultPrintSettings(
-    PP_Instance instance,
-    PP_PrintSettings_Dev* settings,
-    bool* result) {
-  // TODO(raymes): This just returns some generic settings. Actually hook this
-  // up to the browser to return the real defaults.
-  PP_PrintSettings_Dev default_settings = {
-      // |printable_area|: all of the sheet of paper.
-      { { 0, 0 }, { 612, 792 } },
-      // |content_area|: 0.5" margins all around.
-      { { 36, 36 }, { 540, 720 } },
-      // |paper_size|: 8.5" x 11" (US letter).
-      { 612, 792 },
-      300,  // |dpi|.
-      PP_PRINTORIENTATION_NORMAL,  // |orientation|.
-      PP_PRINTSCALINGOPTION_NONE,  // |print_scaling_option|.
-      PP_FALSE,  // |grayscale|.
-      PP_PRINTOUTPUTFORMAT_PDF  // |format|.
-  };
-  *settings = default_settings;
-  *result = true;
 }
 
 #if !defined(OS_NACL)

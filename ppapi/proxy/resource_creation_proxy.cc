@@ -37,6 +37,7 @@
 #include "ppapi/proxy/ppb_video_capture_proxy.h"
 #include "ppapi/proxy/ppb_video_decoder_proxy.h"
 #include "ppapi/proxy/ppb_x509_certificate_private_proxy.h"
+#include "ppapi/proxy/printing_resource.h"
 #include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
@@ -322,6 +323,10 @@ PP_Resource ResourceCreationProxy::CreateNetworkMonitor(
       void* user_data) {
   return PPB_NetworkMonitor_Private_Proxy::CreateProxyResource(
       instance, callback, user_data);
+}
+
+PP_Resource ResourceCreationProxy::CreatePrinting(PP_Instance instance) {
+  return (new PrintingResource(GetConnection(), instance))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateScrollbar(PP_Instance instance,

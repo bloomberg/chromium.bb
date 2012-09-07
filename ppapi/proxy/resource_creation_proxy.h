@@ -146,6 +146,7 @@ class ResourceCreationProxy : public InterfaceProxy,
       PP_Instance instance,
       PPB_NetworkMonitor_Callback callback,
       void* user_data) OVERRIDE;
+  virtual PP_Resource CreatePrinting(PP_Instance) OVERRIDE;
   virtual PP_Resource CreateScrollbar(PP_Instance instance,
                                       PP_Bool vertical) OVERRIDE;
   virtual PP_Resource CreateTalk(PP_Instance instance) OVERRIDE;

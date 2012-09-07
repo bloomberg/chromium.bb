@@ -15,6 +15,7 @@
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/file_chooser_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/proxy/printing_resource.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "ppapi/shared_impl/resource_tracker.h"
@@ -45,6 +46,13 @@ PP_Resource PepperInProcessResourceCreation::CreateFileChooser(
   return (new ppapi::proxy::FileChooserResource(
       host_impl_->in_process_router()->GetPluginConnection(),
       instance, mode, accept_types))->GetReference();
+}
+
+PP_Resource PepperInProcessResourceCreation::CreatePrinting(
+    PP_Instance instance) {
+  return (new ppapi::proxy::PrintingResource(
+      host_impl_->in_process_router()->GetPluginConnection(),
+      instance))->GetReference();
 }
 
 }  // namespace content

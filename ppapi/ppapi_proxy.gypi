@@ -140,6 +140,8 @@
           'proxy/ppp_text_input_proxy.h',
           'proxy/ppp_video_decoder_proxy.cc',
           'proxy/ppp_video_decoder_proxy.h',
+          'proxy/printing_resource.cc',
+          'proxy/printing_resource.h',
           'proxy/proxy_array_output.cc',
           'proxy/proxy_array_output.h',
           'proxy/proxy_channel.cc',

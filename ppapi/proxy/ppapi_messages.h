@@ -1029,10 +1029,6 @@ IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBInstance_LockMouse,
                     PP_Instance /* instance */)
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBInstance_UnlockMouse,
                     PP_Instance /* instance */)
-IPC_SYNC_MESSAGE_ROUTED1_2(PpapiHostMsg_PPBPInstance_GetDefaultPrintSettings,
-                           PP_Instance /* instance */,
-                           PP_PrintSettings_Dev /* settings */,
-                           bool /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBInstance_ResolveRelativeToDocument,
                            PP_Instance /* instance */,
                            ppapi::proxy::SerializedVar /* relative */,
@@ -1558,3 +1554,8 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_Gamepad_Create)
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_Gamepad_RequestMemory)
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_Gamepad_SendMemory,
                      base::SharedMemoryHandle /* handle */)
+// Printing.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_Printing_Create)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_Printing_GetDefaultPrintSettings)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_Printing_GetDefaultPrintSettingsReply,
+                     PP_PrintSettings_Dev /* print_settings */)
