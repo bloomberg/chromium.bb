@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -26,6 +28,8 @@
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_test_util.h"
 #include "sync/notifier/fake_invalidation_handler.h"
+#include "sync/notifier/invalidator.h"
+#include "sync/notifier/invalidator_test_template.h"
 #include "sync/notifier/object_id_state_map_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,21 +51,21 @@ using testing::Mock;
 using testing::Return;
 using testing::StrictMock;
 
-class ProfileSyncServiceTest : public testing::Test {
- protected:
-  ProfileSyncServiceTest()
+class ProfileSyncServiceTestHarness {
+ public:
+  ProfileSyncServiceTestHarness()
       : ui_thread_(BrowserThread::UI, &ui_loop_),
         db_thread_(BrowserThread::DB),
         file_thread_(BrowserThread::FILE),
         io_thread_(BrowserThread::IO) {}
 
-  virtual ~ProfileSyncServiceTest() {}
+  ~ProfileSyncServiceTestHarness() {}
 
-  virtual void SetUp() {
+  void SetUp() {
     file_thread_.Start();
     io_thread_.StartIOThread();
-    profile_.reset(new TestingProfile());
-    profile_->CreateRequestContext();
+    profile.reset(new TestingProfile());
+    profile->CreateRequestContext();
 
     // We need to set the user agent before the backend host can call
     // webkit_glue::GetUserAgent().
@@ -69,11 +73,11 @@ class ProfileSyncServiceTest : public testing::Test {
                               false);
   }
 
-  virtual void TearDown() {
+  void TearDown() {
     // Kill the service before the profile.
-    service_.reset();
-    profile_.reset();
-    // Pump messages posted by the sync core thread (which may end up
+    service.reset();
+    profile.reset();
+    // Pump messages posted by the sync thread (which may end up
     // posting on the IO thread).
     ui_loop_.RunAllPending();
     io_thread_.Stop();
@@ -95,26 +99,26 @@ class ProfileSyncServiceTest : public testing::Test {
       bool synchronous_sync_configuration,
       bool sync_setup_completed,
       syncer::StorageOption storage_option) {
-    if (!service_.get()) {
+    if (!service.get()) {
       SigninManager* signin =
-          SigninManagerFactory::GetForProfile(profile_.get());
+          SigninManagerFactory::GetForProfile(profile.get());
       signin->SetAuthenticatedUsername("test");
       ProfileSyncComponentsFactoryMock* factory =
           new ProfileSyncComponentsFactoryMock();
-      service_.reset(new TestProfileSyncService(
+      service.reset(new TestProfileSyncService(
           factory,
-          profile_.get(),
+          profile.get(),
           signin,
           ProfileSyncService::AUTO_START,
           true,
           base::Closure()));
       if (!set_initial_sync_ended)
-        service_->dont_set_initial_sync_ended_on_init();
+        service->dont_set_initial_sync_ended_on_init();
       if (synchronous_sync_configuration)
-        service_->set_synchronous_sync_configuration();
-      service_->set_storage_option(storage_option);
+        service->set_synchronous_sync_configuration();
+      service->set_storage_option(storage_option);
       if (!sync_setup_completed)
-        profile_->GetPrefs()->SetBoolean(prefs::kSyncHasSetupCompleted, false);
+        profile->GetPrefs()->SetBoolean(prefs::kSyncHasSetupCompleted, false);
 
       // Register the bookmark data type.
       ON_CALL(*factory, CreateDataTypeManager(_, _, _)).
@@ -123,72 +127,89 @@ class ProfileSyncServiceTest : public testing::Test {
       if (issue_auth_token) {
         IssueTestTokens();
       }
-      service_->Initialize();
+      service->Initialize();
     }
   }
 
   void IssueTestTokens() {
     TokenService* token_service =
-        TokenServiceFactory::GetForProfile(profile_.get());
+        TokenServiceFactory::GetForProfile(profile.get());
     token_service->IssueAuthTokenForTest(
         GaiaConstants::kSyncService, "token1");
     token_service->IssueAuthTokenForTest(
         GaiaConstants::kGaiaOAuth2LoginRefreshToken, "token2");
   }
 
+  scoped_ptr<TestProfileSyncService> service;
+  scoped_ptr<TestingProfile> profile;
+
+ private:
   MessageLoop ui_loop_;
-  // Needed by |service_|.
+  // Needed by |service|.
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   // Needed by DisableAndEnableSyncTemporarily test case.
   content::TestBrowserThread file_thread_;
-  // Needed by |service| and |profile_|'s request context.
+  // Needed by |service| and |profile|'s request context.
   content::TestBrowserThread io_thread_;
+};
 
-  scoped_ptr<TestProfileSyncService> service_;
-  scoped_ptr<TestingProfile> profile_;
+class ProfileSyncServiceTest : public testing::Test {
+ protected:
+  virtual void SetUp() {
+    harness_.SetUp();
+  }
+
+  virtual void TearDown() {
+    harness_.TearDown();
+  }
+
+  ProfileSyncServiceTestHarness harness_;
 };
 
 TEST_F(ProfileSyncServiceTest, InitialState) {
-  SigninManager* signin = SigninManagerFactory::GetForProfile(profile_.get());
-  service_.reset(new TestProfileSyncService(
+  SigninManager* signin =
+      SigninManagerFactory::GetForProfile(harness_.profile.get());
+  harness_.service.reset(new TestProfileSyncService(
       new ProfileSyncComponentsFactoryMock(),
-      profile_.get(),
+      harness_.profile.get(),
       signin,
       ProfileSyncService::MANUAL_START,
       true,
       base::Closure()));
   EXPECT_TRUE(
-      service_->sync_service_url().spec() ==
+      harness_.service->sync_service_url().spec() ==
         ProfileSyncService::kSyncServerUrl ||
-      service_->sync_service_url().spec() ==
+      harness_.service->sync_service_url().spec() ==
         ProfileSyncService::kDevServerUrl);
 }
 
 TEST_F(ProfileSyncServiceTest, DisabledByPolicy) {
-  profile_->GetTestingPrefService()->SetManagedPref(
+  harness_.profile->GetTestingPrefService()->SetManagedPref(
       prefs::kSyncManaged,
       Value::CreateBooleanValue(true));
-  SigninManager* signin = SigninManagerFactory::GetForProfile(profile_.get());
-  service_.reset(new TestProfileSyncService(
+  SigninManager* signin =
+      SigninManagerFactory::GetForProfile(harness_.profile.get());
+  harness_.service.reset(new TestProfileSyncService(
       new ProfileSyncComponentsFactoryMock(),
-      profile_.get(),
+      harness_.profile.get(),
       signin,
       ProfileSyncService::MANUAL_START,
       true,
       base::Closure()));
-  service_->Initialize();
-  EXPECT_TRUE(service_->IsManaged());
+  harness_.service->Initialize();
+  EXPECT_TRUE(harness_.service->IsManaged());
 }
 
 TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
-  SigninManager* signin = SigninManagerFactory::GetForProfile(profile_.get());
+  SigninManager* signin =
+      SigninManagerFactory::GetForProfile(harness_.profile.get());
   signin->SetAuthenticatedUsername("test");
   ProfileSyncComponentsFactoryMock* factory =
       new ProfileSyncComponentsFactoryMock();
-  service_.reset(new TestProfileSyncService(
+  harness_.service.reset(new TestProfileSyncService(
       factory,
-      profile_.get(),
+      harness_.profile.get(),
       signin,
       ProfileSyncService::AUTO_START,
       true,
@@ -196,23 +217,24 @@ TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
   EXPECT_CALL(*factory, CreateDataTypeManager(_, _, _)).Times(0);
   EXPECT_CALL(*factory, CreateBookmarkSyncComponents(_, _)).
       Times(0);
-  service_->RegisterDataTypeController(
-      new BookmarkDataTypeController(service_->factory(),
-                                     profile_.get(),
-                                     service_.get()));
+  harness_.service->RegisterDataTypeController(
+      new BookmarkDataTypeController(harness_.service->factory(),
+                                     harness_.profile.get(),
+                                     harness_.service.get()));
 
-  service_->Initialize();
-  service_.reset();
+  harness_.service->Initialize();
+  harness_.service.reset();
 }
 
 TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
-  SigninManager* signin = SigninManagerFactory::GetForProfile(profile_.get());
+  SigninManager* signin =
+      SigninManagerFactory::GetForProfile(harness_.profile.get());
   signin->SetAuthenticatedUsername("test");
   ProfileSyncComponentsFactoryMock* factory =
       new ProfileSyncComponentsFactoryMock();
-  service_.reset(new TestProfileSyncService(
+  harness_.service.reset(new TestProfileSyncService(
       factory,
-      profile_.get(),
+      harness_.profile.get(),
       signin,
       ProfileSyncService::AUTO_START,
       true,
@@ -221,28 +243,31 @@ TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
   EXPECT_CALL(*factory, CreateDataTypeManager(_, _, _)).
       WillRepeatedly(ReturnNewDataTypeManager());
 
-  IssueTestTokens();
+  harness_.IssueTestTokens();
 
-  service_->Initialize();
-  EXPECT_TRUE(service_->sync_initialized());
-  EXPECT_TRUE(service_->GetBackendForTest() != NULL);
-  EXPECT_FALSE(profile_->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart));
+  harness_.service->Initialize();
+  EXPECT_TRUE(harness_.service->sync_initialized());
+  EXPECT_TRUE(harness_.service->GetBackendForTest() != NULL);
+  EXPECT_FALSE(
+      harness_.profile->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart));
 
-  service_->StopAndSuppress();
-  EXPECT_FALSE(service_->sync_initialized());
-  EXPECT_TRUE(profile_->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart));
+  harness_.service->StopAndSuppress();
+  EXPECT_FALSE(harness_.service->sync_initialized());
+  EXPECT_TRUE(
+      harness_.profile->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart));
 
-  service_->UnsuppressAndStart();
-  EXPECT_TRUE(service_->sync_initialized());
-  EXPECT_FALSE(profile_->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart));
+  harness_.service->UnsuppressAndStart();
+  EXPECT_TRUE(harness_.service->sync_initialized());
+  EXPECT_FALSE(
+      harness_.profile->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart));
 }
 
 TEST_F(ProfileSyncServiceTest, JsControllerHandlersBasic) {
-  StartSyncService();
-  EXPECT_TRUE(service_->sync_initialized());
-  EXPECT_TRUE(service_->GetBackendForTest() != NULL);
+  harness_.StartSyncService();
+  EXPECT_TRUE(harness_.service->sync_initialized());
+  EXPECT_TRUE(harness_.service->GetBackendForTest() != NULL);
 
-  syncer::JsController* js_controller = service_->GetJsController();
+  syncer::JsController* js_controller = harness_.service->GetJsController();
   StrictMock<syncer::MockJsEventHandler> event_handler;
   js_controller->AddJsEventHandler(&event_handler);
   js_controller->RemoveJsEventHandler(&event_handler);
@@ -250,70 +275,68 @@ TEST_F(ProfileSyncServiceTest, JsControllerHandlersBasic) {
 
 TEST_F(ProfileSyncServiceTest,
        JsControllerHandlersDelayedBackendInitialization) {
-  StartSyncServiceAndSetInitialSyncEnded(true, false, false, true,
-                                         syncer::STORAGE_IN_MEMORY);
+  harness_.StartSyncServiceAndSetInitialSyncEnded(true, false, false, true,
+                                                  syncer::STORAGE_IN_MEMORY);
 
   StrictMock<syncer::MockJsEventHandler> event_handler;
   EXPECT_CALL(event_handler, HandleJsEvent(_, _)).Times(AtLeast(1));
 
-  EXPECT_EQ(NULL, service_->GetBackendForTest());
-  EXPECT_FALSE(service_->sync_initialized());
+  EXPECT_EQ(NULL, harness_.service->GetBackendForTest());
+  EXPECT_FALSE(harness_.service->sync_initialized());
 
-  syncer::JsController* js_controller = service_->GetJsController();
+  syncer::JsController* js_controller = harness_.service->GetJsController();
   js_controller->AddJsEventHandler(&event_handler);
   // Since we're doing synchronous initialization, backend should be
   // initialized by this call.
-  IssueTestTokens();
-  EXPECT_TRUE(service_->sync_initialized());
+  harness_.IssueTestTokens();
+  EXPECT_TRUE(harness_.service->sync_initialized());
   js_controller->RemoveJsEventHandler(&event_handler);
 }
 
 TEST_F(ProfileSyncServiceTest, JsControllerProcessJsMessageBasic) {
-  StartSyncService();
+  harness_.StartSyncService();
 
   StrictMock<syncer::MockJsReplyHandler> reply_handler;
 
   ListValue arg_list1;
-  arg_list1.Append(Value::CreateStringValue("TRANSIENT_NOTIFICATION_ERROR"));
+  arg_list1.Append(Value::CreateStringValue("TRANSIENT_INVALIDATION_ERROR"));
   syncer::JsArgList args1(&arg_list1);
   EXPECT_CALL(reply_handler,
               HandleJsReply("getNotificationState", HasArgs(args1)));
 
   {
-    syncer::JsController* js_controller = service_->GetJsController();
+    syncer::JsController* js_controller = harness_.service->GetJsController();
     js_controller->ProcessJsMessage("getNotificationState", args1,
                                     reply_handler.AsWeakHandle());
   }
 
   // This forces the sync thread to process the message and reply.
-  service_.reset();
-  ui_loop_.RunAllPending();
+  harness_.TearDown();
 }
 
 TEST_F(ProfileSyncServiceTest,
        JsControllerProcessJsMessageBasicDelayedBackendInitialization) {
-  StartSyncServiceAndSetInitialSyncEnded(true, false, false, true,
-                                         syncer::STORAGE_IN_MEMORY);
+  harness_.StartSyncServiceAndSetInitialSyncEnded(true, false, false, true,
+                                                  syncer::STORAGE_IN_MEMORY);
 
   StrictMock<syncer::MockJsReplyHandler> reply_handler;
 
   ListValue arg_list1;
-  arg_list1.Append(Value::CreateStringValue("TRANSIENT_NOTIFICATION_ERROR"));
+  arg_list1.Append(Value::CreateStringValue("TRANSIENT_INVALIDATION_ERROR"));
   syncer::JsArgList args1(&arg_list1);
   EXPECT_CALL(reply_handler,
               HandleJsReply("getNotificationState", HasArgs(args1)));
 
   {
-    syncer::JsController* js_controller = service_->GetJsController();
+    syncer::JsController* js_controller = harness_.service->GetJsController();
     js_controller->ProcessJsMessage("getNotificationState",
                                     args1, reply_handler.AsWeakHandle());
   }
 
-  IssueTestTokens();
+  harness_.IssueTestTokens();
 
   // This forces the sync thread to process the message and reply.
-  service_.reset();
-  ui_loop_.RunAllPending();
+  harness_.TearDown();
 }
 
 // Make sure that things still work if sync is not enabled, but some old sync
@@ -322,7 +345,8 @@ TEST_F(ProfileSyncServiceTest, TestStartupWithOldSyncData) {
   const char* nonsense1 = "reginald";
   const char* nonsense2 = "beartato";
   const char* nonsense3 = "harrison";
-  FilePath temp_directory = profile_->GetPath().AppendASCII("Sync Data");
+  FilePath temp_directory =
+      harness_.profile->GetPath().AppendASCII("Sync Data");
   FilePath sync_file1 =
       temp_directory.AppendASCII("BookmarkSyncSettings.sqlite3");
   FilePath sync_file2 = temp_directory.AppendASCII("SyncData.sqlite3");
@@ -335,18 +359,18 @@ TEST_F(ProfileSyncServiceTest, TestStartupWithOldSyncData) {
   ASSERT_NE(-1,
             file_util::WriteFile(sync_file3, nonsense3, strlen(nonsense3)));
 
-  StartSyncServiceAndSetInitialSyncEnded(false, false, true, false,
-                                         syncer::STORAGE_ON_DISK);
-  EXPECT_FALSE(service_->HasSyncSetupCompleted());
-  EXPECT_FALSE(service_->sync_initialized());
+  harness_.StartSyncServiceAndSetInitialSyncEnded(false, false, true, false,
+                                                  syncer::STORAGE_ON_DISK);
+  EXPECT_FALSE(harness_.service->HasSyncSetupCompleted());
+  EXPECT_FALSE(harness_.service->sync_initialized());
 
   // Since we're doing synchronous initialization, backend should be
   // initialized by this call.
-  IssueTestTokens();
+  harness_.IssueTestTokens();
 
   // Stop the service so we can read the new Sync Data files that were
   // created.
-  service_.reset();
+  harness_.service.reset();
 
   // This file should have been deleted when the whole directory was nuked.
   ASSERT_FALSE(file_util::PathExists(sync_file3));
@@ -363,60 +387,18 @@ TEST_F(ProfileSyncServiceTest, TestStartupWithOldSyncData) {
 // recreate it.  This test is useful mainly when it is run under valgrind.  Its
 // expectations are not very interesting.
 TEST_F(ProfileSyncServiceTest, FailToOpenDatabase) {
-  StartSyncServiceAndSetInitialSyncEnded(false, true, true, true,
-                                         syncer::STORAGE_INVALID);
+  harness_.StartSyncServiceAndSetInitialSyncEnded(false, true, true, true,
+                                                  syncer::STORAGE_INVALID);
 
   // The backend is not ready.  Ensure the PSS knows this.
-  EXPECT_FALSE(service_->sync_initialized());
-}
-
-// Register for some IDs with the ProfileSyncService and trigger some
-// invalidation messages.  They should be received by the handler.
-// Then unregister and trigger the invalidation messages again.  Those
-// shouldn't be received by the handler.
-TEST_F(ProfileSyncServiceTest, UpdateRegisteredInvalidationIds) {
-  StartSyncService();
-
-  syncer::ObjectIdSet ids;
-  ids.insert(invalidation::ObjectId(1, "id1"));
-  ids.insert(invalidation::ObjectId(2, "id2"));
-  const syncer::ObjectIdStateMap& states =
-      syncer::ObjectIdSetToStateMap(ids, "payload");
-
-  syncer::FakeInvalidationHandler handler;
-
-  service_->RegisterInvalidationHandler(&handler);
-  service_->UpdateRegisteredInvalidationIds(&handler, ids);
-
-  SyncBackendHostForProfileSyncTest* const backend =
-      service_->GetBackendForTest();
-
-  backend->EmitOnNotificationsEnabled();
-  EXPECT_EQ(syncer::NO_NOTIFICATION_ERROR,
-            handler.GetNotificationsDisabledReason());
-
-  backend->EmitOnIncomingNotification(states, syncer::REMOTE_NOTIFICATION);
-  EXPECT_THAT(states, Eq(handler.GetLastNotificationIdStateMap()));
-  EXPECT_EQ(syncer::REMOTE_NOTIFICATION, handler.GetLastNotificationSource());
-
-  backend->EmitOnNotificationsDisabled(syncer::TRANSIENT_NOTIFICATION_ERROR);
-  EXPECT_EQ(syncer::TRANSIENT_NOTIFICATION_ERROR,
-            handler.GetNotificationsDisabledReason());
-
-  Mock::VerifyAndClearExpectations(&handler);
-
-  service_->UnregisterInvalidationHandler(&handler);
-
-  backend->EmitOnNotificationsEnabled();
-  backend->EmitOnIncomingNotification(states, syncer::REMOTE_NOTIFICATION);
-  backend->EmitOnNotificationsDisabled(syncer::TRANSIENT_NOTIFICATION_ERROR);
+  EXPECT_FALSE(harness_.service->sync_initialized());
 }
 
 // Register for some IDs with the ProfileSyncService, restart sync,
 // and trigger some invalidation messages.  They should still be
 // received by the handler.
 TEST_F(ProfileSyncServiceTest, UpdateRegisteredInvalidationIdsPersistence) {
-  StartSyncService();
+  harness_.StartSyncService();
 
   syncer::ObjectIdSet ids;
   ids.insert(invalidation::ObjectId(3, "id3"));
@@ -425,27 +407,144 @@ TEST_F(ProfileSyncServiceTest, UpdateRegisteredInvalidationIdsPersistence) {
 
   syncer::FakeInvalidationHandler handler;
 
-  service_->RegisterInvalidationHandler(&handler);
-  service_->UpdateRegisteredInvalidationIds(&handler, ids);
+  harness_.service->RegisterInvalidationHandler(&handler);
+  harness_.service->UpdateRegisteredInvalidationIds(&handler, ids);
 
-  service_->StopAndSuppress();
-  service_->UnsuppressAndStart();
+  harness_.service->StopAndSuppress();
+  harness_.service->UnsuppressAndStart();
 
   SyncBackendHostForProfileSyncTest* const backend =
-      service_->GetBackendForTest();
+      harness_.service->GetBackendForTest();
 
-  backend->EmitOnNotificationsEnabled();
-  EXPECT_EQ(syncer::NO_NOTIFICATION_ERROR,
-            handler.GetNotificationsDisabledReason());
+  backend->EmitOnInvalidatorStateChange(syncer::INVALIDATIONS_ENABLED);
+  EXPECT_EQ(syncer::INVALIDATIONS_ENABLED, handler.GetInvalidatorState());
 
-  backend->EmitOnIncomingNotification(states, syncer::REMOTE_NOTIFICATION);
-  EXPECT_THAT(states, Eq(handler.GetLastNotificationIdStateMap()));
-  EXPECT_EQ(syncer::REMOTE_NOTIFICATION, handler.GetLastNotificationSource());
+  backend->EmitOnIncomingInvalidation(states, syncer::REMOTE_INVALIDATION);
+  EXPECT_THAT(states, Eq(handler.GetLastInvalidationIdStateMap()));
+  EXPECT_EQ(syncer::REMOTE_INVALIDATION, handler.GetLastInvalidationSource());
 
-  backend->EmitOnNotificationsDisabled(syncer::TRANSIENT_NOTIFICATION_ERROR);
-  EXPECT_EQ(syncer::TRANSIENT_NOTIFICATION_ERROR,
-            handler.GetNotificationsDisabledReason());
+  backend->EmitOnInvalidatorStateChange(syncer::TRANSIENT_INVALIDATION_ERROR);
+  EXPECT_EQ(syncer::TRANSIENT_INVALIDATION_ERROR,
+            handler.GetInvalidatorState());
 }
 
+// Thin Invalidator wrapper around ProfileSyncService.
+class ProfileSyncServiceInvalidator : public syncer::Invalidator {
+ public:
+  explicit ProfileSyncServiceInvalidator(ProfileSyncService* service)
+      : service_(service) {}
+
+  virtual ~ProfileSyncServiceInvalidator() {}
+
+  // Invalidator implementation.
+  virtual void RegisterHandler(syncer::InvalidationHandler* handler) OVERRIDE {
+    service_->RegisterInvalidationHandler(handler);
+  }
+
+  virtual void UpdateRegisteredIds(syncer::InvalidationHandler* handler,
+                                   const syncer::ObjectIdSet& ids) OVERRIDE {
+    service_->UpdateRegisteredInvalidationIds(handler, ids);
+  }
+
+  virtual void UnregisterHandler(
+      syncer::InvalidationHandler* handler) OVERRIDE {
+    service_->UnregisterInvalidationHandler(handler);
+  }
+
+  virtual syncer::InvalidatorState GetInvalidatorState() const OVERRIDE {
+    return service_->GetInvalidatorState();
+  }
+
+  virtual void SetUniqueId(const std::string& unique_id) OVERRIDE {
+    // Do nothing.
+  }
+
+  virtual void SetStateDeprecated(const std::string& state) OVERRIDE {
+    // Do nothing.
+  }
+
+  virtual void UpdateCredentials(
+      const std::string& email, const std::string& token) OVERRIDE {
+    // Do nothing.
+  }
+
+  virtual void SendInvalidation(
+      const syncer::ObjectIdStateMap& id_state_map) OVERRIDE {
+    // Do nothing.
+  }
+
+ private:
+  ProfileSyncService* const service_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceInvalidator);
+};
+
 }  // namespace
+
+
+// ProfileSyncServiceInvalidatorTestDelegate has to be visible from
+// the syncer namespace (where InvalidatorTest lives).
+class ProfileSyncServiceInvalidatorTestDelegate {
+ public:
+  ProfileSyncServiceInvalidatorTestDelegate() {}
+
+  ~ProfileSyncServiceInvalidatorTestDelegate() {
+    DestroyInvalidator();
+  }
+
+  void CreateInvalidator(
+      const std::string& initial_state,
+      const base::WeakPtr<syncer::InvalidationStateTracker>&
+          invalidation_state_tracker) {
+    DCHECK(!invalidator_.get());
+    harness_.SetUp();
+    harness_.StartSyncService();
+    invalidator_.reset(
+        new ProfileSyncServiceInvalidator(harness_.service.get()));
+  }
+
+  ProfileSyncServiceInvalidator* GetInvalidator() {
+    return invalidator_.get();
+  }
+
+  void DestroyInvalidator() {
+    invalidator_.reset();
+    harness_.TearDown();
+  }
+
+  void WaitForInvalidator() {
+    // Do nothing.
+  }
+
+  void TriggerOnInvalidatorStateChange(syncer::InvalidatorState state) {
+    harness_.service->GetBackendForTest()->EmitOnInvalidatorStateChange(state);
+  }
+
+  void TriggerOnIncomingInvalidation(
+      const syncer::ObjectIdStateMap& id_state_map,
+      syncer::IncomingInvalidationSource source) {
+    harness_.service->GetBackendForTest()->EmitOnIncomingInvalidation(
+        id_state_map, source);
+  }
+
+  static bool InvalidatorHandlesDeprecatedState() {
+    return false;
+  }
+
+ private:
+  ProfileSyncServiceTestHarness harness_;
+  scoped_ptr<ProfileSyncServiceInvalidator> invalidator_;
+};
+
 }  // namespace browser_sync
+
+namespace syncer {
+namespace {
+
+// ProfileSyncService should behave just like an invalidator.
+INSTANTIATE_TYPED_TEST_CASE_P(
+    ProfileSyncServiceInvalidatorTest, InvalidatorTest,
+    ::browser_sync::ProfileSyncServiceInvalidatorTestDelegate);
+
+}  // namespace
+}  // namespace syncer

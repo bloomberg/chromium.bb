@@ -54,25 +54,20 @@ class NotificationPrinter : public InvalidationHandler {
   NotificationPrinter() {}
   virtual ~NotificationPrinter() {}
 
-  virtual void OnNotificationsEnabled() OVERRIDE {
-    LOG(INFO) << "Notifications enabled";
+  virtual void OnInvalidatorStateChange(InvalidatorState state) OVERRIDE {
+    LOG(INFO) << "Invalidator state changed to "
+              << InvalidatorStateToString(state);
   }
 
-  virtual void OnNotificationsDisabled(
-      NotificationsDisabledReason reason) OVERRIDE {
-    LOG(INFO) << "Notifications disabled with reason "
-              << NotificationsDisabledReasonToString(reason);
-  }
-
-  virtual void OnIncomingNotification(
+  virtual void OnIncomingInvalidation(
       const ObjectIdStateMap& id_state_map,
-      IncomingNotificationSource source) OVERRIDE {
+      IncomingInvalidationSource source) OVERRIDE {
     const ModelTypeStateMap& type_state_map =
         ObjectIdStateMapToModelTypeStateMap(id_state_map);
     for (ModelTypeStateMap::const_iterator it = type_state_map.begin();
          it != type_state_map.end(); ++it) {
-      LOG(INFO) << (source == REMOTE_NOTIFICATION ? "Remote" : "Local")
-                << " Notification: type = "
+      LOG(INFO) << (source == REMOTE_INVALIDATION ? "Remote" : "Local")
+                << " Invalidation: type = "
                 << ModelTypeToString(it->first)
                 << ", payload = " << it->second.payload;
     }

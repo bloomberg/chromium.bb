@@ -131,7 +131,7 @@ class FakeInvalidationClient : public invalidation::InvalidationClient {
 // and state.
 class FakeDelegate : public SyncInvalidationListener::Delegate {
  public:
-  FakeDelegate() : reason_(TRANSIENT_NOTIFICATION_ERROR) {}
+  FakeDelegate() : state_(TRANSIENT_INVALIDATION_ERROR) {}
   virtual ~FakeDelegate() {}
 
   int GetInvalidationCount(const ObjectId& id) const {
@@ -144,9 +144,8 @@ class FakeDelegate : public SyncInvalidationListener::Delegate {
     return (it == states_.end()) ? "" : it->second.payload;
   }
 
-  // NO_NOTIFICATION_ERROR is the enabled state.
-  NotificationsDisabledReason GetNotificationsDisabledReason() const {
-    return reason_;
+  InvalidatorState GetInvalidatorState() const {
+    return state_;
   }
 
   // SyncInvalidationListener::Delegate implementation.
@@ -159,19 +158,15 @@ class FakeDelegate : public SyncInvalidationListener::Delegate {
     }
   }
 
-  virtual void OnNotificationsEnabled() {
-    reason_ = NO_NOTIFICATION_ERROR;
-  }
-
-  virtual void OnNotificationsDisabled(NotificationsDisabledReason reason) {
-    reason_ = reason;
+  virtual void OnInvalidatorStateChange(InvalidatorState state) {
+    state_ = state;
   }
 
  private:
   typedef std::map<ObjectId, int, ObjectIdLessThan> ObjectIdCountMap;
   ObjectIdCountMap invalidation_counts_;
   ObjectIdStateMap states_;
-  NotificationsDisabledReason reason_;
+  InvalidatorState state_;
 };
 
 invalidation::InvalidationClient* CreateFakeInvalidationClient(
@@ -222,8 +217,8 @@ class SyncInvalidationListenerTest : public testing::Test {
     return fake_delegate_.GetPayload(id);
   }
 
-  NotificationsDisabledReason GetNotificationsDisabledReason() const {
-    return fake_delegate_.GetNotificationsDisabledReason();
+  InvalidatorState GetInvalidatorState() const {
+    return fake_delegate_.GetInvalidatorState();
   }
 
   int64 GetMaxVersion(const ObjectId& id) const {
@@ -645,55 +640,51 @@ TEST_F(SyncInvalidationListenerTest, RegisterTypesPreserved) {
 }
 
 // Without readying the client, disable notifications, then enable
-// them.  The delegate should still think notifications are disabled.
+// them.  The listener should still think notifications are disabled.
 TEST_F(SyncInvalidationListenerTest, EnableNotificationsNotReady) {
-  EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR,
-            GetNotificationsDisabledReason());
+  EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR,
+            GetInvalidatorState());
 
   DisableNotifications(
       notifier::TRANSIENT_NOTIFICATION_ERROR);
 
-  EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR,
-            GetNotificationsDisabledReason());
+  EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, GetInvalidatorState());
 
-  DisableNotifications(
-      notifier::NOTIFICATION_CREDENTIALS_REJECTED);
+  DisableNotifications(notifier::NOTIFICATION_CREDENTIALS_REJECTED);
 
-  EXPECT_EQ(NOTIFICATION_CREDENTIALS_REJECTED,
-            GetNotificationsDisabledReason());
+  EXPECT_EQ(INVALIDATION_CREDENTIALS_REJECTED, GetInvalidatorState());
 
   EnableNotifications();
 
-  EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR,
-            GetNotificationsDisabledReason());
+  EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, GetInvalidatorState());
 }
 
 // Enable notifications then Ready the invalidation client.  The
 // delegate should then be ready.
 TEST_F(SyncInvalidationListenerTest, EnableNotificationsThenReady) {
-  EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR, GetNotificationsDisabledReason());
+  EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, GetInvalidatorState());
 
   EnableNotifications();
 
-  EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR, GetNotificationsDisabledReason());
+  EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, GetInvalidatorState());
 
   client_.Ready(fake_invalidation_client_);
 
-  EXPECT_EQ(NO_NOTIFICATION_ERROR, GetNotificationsDisabledReason());
+  EXPECT_EQ(INVALIDATIONS_ENABLED, GetInvalidatorState());
 }
 
 // Ready the invalidation client then enable notifications.  The
 // delegate should then be ready.
 TEST_F(SyncInvalidationListenerTest, ReadyThenEnableNotifications) {
-  EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR, GetNotificationsDisabledReason());
+  EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, GetInvalidatorState());
 
   client_.Ready(fake_invalidation_client_);
 
-  EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR, GetNotificationsDisabledReason());
+  EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, GetInvalidatorState());
 
   EnableNotifications();
 
-  EXPECT_EQ(NO_NOTIFICATION_ERROR, GetNotificationsDisabledReason());
+  EXPECT_EQ(INVALIDATIONS_ENABLED, GetInvalidatorState());
 }
 
 // Enable notifications and ready the client.  Then disable
@@ -703,17 +694,16 @@ TEST_F(SyncInvalidationListenerTest, PushClientAuthError) {
   EnableNotifications();
   client_.Ready(fake_invalidation_client_);
 
-  EXPECT_EQ(NO_NOTIFICATION_ERROR, GetNotificationsDisabledReason());
+  EXPECT_EQ(INVALIDATIONS_ENABLED, GetInvalidatorState());
 
   DisableNotifications(
       notifier::NOTIFICATION_CREDENTIALS_REJECTED);
 
-  EXPECT_EQ(NOTIFICATION_CREDENTIALS_REJECTED,
-            GetNotificationsDisabledReason());
+  EXPECT_EQ(INVALIDATION_CREDENTIALS_REJECTED, GetInvalidatorState());
 
   EnableNotifications();
 
-  EXPECT_EQ(NO_NOTIFICATION_ERROR, GetNotificationsDisabledReason());
+  EXPECT_EQ(INVALIDATIONS_ENABLED, GetInvalidatorState());
 }
 
 // Enable notifications and ready the client.  Then simulate an auth
@@ -724,7 +714,7 @@ TEST_F(SyncInvalidationListenerTest, InvalidationClientAuthError) {
   EnableNotifications();
   client_.Ready(fake_invalidation_client_);
 
-  EXPECT_EQ(NO_NOTIFICATION_ERROR, GetNotificationsDisabledReason());
+  EXPECT_EQ(INVALIDATIONS_ENABLED, GetInvalidatorState());
 
   client_.InformError(
       fake_invalidation_client_,
@@ -734,29 +724,23 @@ TEST_F(SyncInvalidationListenerTest, InvalidationClientAuthError) {
           "auth error",
           invalidation::ErrorContext()));
 
-  EXPECT_EQ(NOTIFICATION_CREDENTIALS_REJECTED,
-            GetNotificationsDisabledReason());
+  EXPECT_EQ(INVALIDATION_CREDENTIALS_REJECTED, GetInvalidatorState());
 
-  DisableNotifications(
-      notifier::TRANSIENT_NOTIFICATION_ERROR);
+  DisableNotifications(notifier::TRANSIENT_NOTIFICATION_ERROR);
 
-  EXPECT_EQ(NOTIFICATION_CREDENTIALS_REJECTED,
-            GetNotificationsDisabledReason());
+  EXPECT_EQ(INVALIDATION_CREDENTIALS_REJECTED, GetInvalidatorState());
 
-  DisableNotifications(
-      notifier::TRANSIENT_NOTIFICATION_ERROR);
+  DisableNotifications(notifier::TRANSIENT_NOTIFICATION_ERROR);
 
-  EXPECT_EQ(NOTIFICATION_CREDENTIALS_REJECTED,
-            GetNotificationsDisabledReason());
+  EXPECT_EQ(INVALIDATION_CREDENTIALS_REJECTED, GetInvalidatorState());
 
   EnableNotifications();
 
-  EXPECT_EQ(NOTIFICATION_CREDENTIALS_REJECTED,
-            GetNotificationsDisabledReason());
+  EXPECT_EQ(INVALIDATION_CREDENTIALS_REJECTED, GetInvalidatorState());
 
   client_.Ready(fake_invalidation_client_);
 
-  EXPECT_EQ(NO_NOTIFICATION_ERROR, GetNotificationsDisabledReason());
+  EXPECT_EQ(INVALIDATIONS_ENABLED, GetInvalidatorState());
 }
 
 }  // namespace

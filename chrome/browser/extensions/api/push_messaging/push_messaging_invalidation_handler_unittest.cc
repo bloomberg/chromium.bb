@@ -36,6 +36,7 @@ class MockInvalidationFrontend : public InvalidationFrontend {
                void(syncer::InvalidationHandler*, const syncer::ObjectIdSet&));
   MOCK_METHOD1(UnregisterInvalidationHandler,
                void(syncer::InvalidationHandler*));
+  MOCK_CONST_METHOD0(GetInvalidatorState, syncer::InvalidatorState());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockInvalidationFrontend);
@@ -163,8 +164,8 @@ TEST_F(PushMessagingInvalidationHandlerTest, Dispatch) {
               OnMessage("dddddddddddddddddddddddddddddddd", 0, "payload"));
   EXPECT_CALL(delegate_,
               OnMessage("dddddddddddddddddddddddddddddddd", 3, "payload"));
-  handler_->OnIncomingNotification(ObjectIdSetToStateMap(ids, "payload"),
-                                   syncer::REMOTE_NOTIFICATION);
+  handler_->OnIncomingInvalidation(ObjectIdSetToStateMap(ids, "payload"),
+                                   syncer::REMOTE_INVALIDATION);
 }
 
 // Tests that malformed object IDs don't trigger spurious callbacks.
@@ -194,8 +195,8 @@ TEST_F(PushMessagingInvalidationHandlerTest, DispatchInvalidObjectIds) {
   ids.insert(invalidation::ObjectId(
       kSourceId,
       "U/dddddddddddddddddddddddddddddddd/4"));
-  handler_->OnIncomingNotification(ObjectIdSetToStateMap(ids, "payload"),
-                                   syncer::REMOTE_NOTIFICATION);
+  handler_->OnIncomingInvalidation(ObjectIdSetToStateMap(ids, "payload"),
+                                   syncer::REMOTE_INVALIDATION);
 }
 
 }  // namespace extensions

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "google/cacheinvalidation/types.pb.h"
@@ -21,6 +22,7 @@ namespace {
 // Thin Invalidator wrapper around InvalidatorRegistrar.
 class RegistrarInvalidator : public Invalidator {
  public:
+  RegistrarInvalidator() {}
   virtual ~RegistrarInvalidator() {}
 
   InvalidatorRegistrar* GetRegistrar() {
@@ -41,6 +43,10 @@ class RegistrarInvalidator : public Invalidator {
     registrar_.UnregisterHandler(handler);
   }
 
+  virtual InvalidatorState GetInvalidatorState() const OVERRIDE {
+    return registrar_.GetInvalidatorState();
+  }
+
   virtual void SetUniqueId(const std::string& unique_id) OVERRIDE {
     // Do nothing.
   }
@@ -54,13 +60,14 @@ class RegistrarInvalidator : public Invalidator {
     // Do nothing.
   }
 
-  virtual void SendNotification(
-      const ObjectIdStateMap& id_state_map) OVERRIDE {
+  virtual void SendInvalidation(const ObjectIdStateMap& id_state_map) OVERRIDE {
     // Do nothing.
   }
 
  private:
   InvalidatorRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(RegistrarInvalidator);
 };
 
 class RegistrarInvalidatorTestDelegate {
@@ -91,18 +98,14 @@ class RegistrarInvalidatorTestDelegate {
     // Do nothing.
   }
 
-  void TriggerOnNotificationsEnabled() {
-    invalidator_->GetRegistrar()->EmitOnNotificationsEnabled();
+  void TriggerOnInvalidatorStateChange(InvalidatorState state) {
+    invalidator_->GetRegistrar()->UpdateInvalidatorState(state);
   }
 
-  void TriggerOnIncomingNotification(const ObjectIdStateMap& id_state_map,
-                                     IncomingNotificationSource source) {
+  void TriggerOnIncomingInvalidation(const ObjectIdStateMap& id_state_map,
+                                     IncomingInvalidationSource source) {
     invalidator_->GetRegistrar()->DispatchInvalidationsToHandlers(
         id_state_map, source);
-  }
-
-  void TriggerOnNotificationsDisabled(NotificationsDisabledReason reason) {
-    invalidator_->GetRegistrar()->EmitOnNotificationsDisabled(reason);
   }
 
   static bool InvalidatorHandlesDeprecatedState() {

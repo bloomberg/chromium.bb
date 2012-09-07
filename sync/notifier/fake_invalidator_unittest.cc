@@ -40,17 +40,13 @@ class FakeInvalidatorTestDelegate {
     // Do Nothing.
   }
 
-  void TriggerOnNotificationsEnabled() {
-    invalidator_->EmitOnNotificationsEnabled();
+  void TriggerOnInvalidatorStateChange(InvalidatorState state) {
+    invalidator_->EmitOnInvalidatorStateChange(state);
   }
 
-  void TriggerOnIncomingNotification(const ObjectIdStateMap& id_state_map,
-                                     IncomingNotificationSource source) {
-    invalidator_->EmitOnIncomingNotification(id_state_map, source);
-  }
-
-  void TriggerOnNotificationsDisabled(NotificationsDisabledReason reason) {
-    invalidator_->EmitOnNotificationsDisabled(reason);
+  void TriggerOnIncomingInvalidation(const ObjectIdStateMap& id_state_map,
+                                     IncomingInvalidationSource source) {
+    invalidator_->EmitOnIncomingInvalidation(id_state_map, source);
   }
 
   static bool InvalidatorHandlesDeprecatedState() {

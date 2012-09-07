@@ -146,19 +146,15 @@ void SyncBackendHostForProfileSyncTest::SetInitialSyncEndedForAllTypes() {
   }
 }
 
-void SyncBackendHostForProfileSyncTest::EmitOnNotificationsEnabled() {
-  frontend()->OnNotificationsEnabled();
+void SyncBackendHostForProfileSyncTest::EmitOnInvalidatorStateChange(
+    syncer::InvalidatorState state) {
+  frontend()->OnInvalidatorStateChange(state);
 }
 
-void SyncBackendHostForProfileSyncTest::EmitOnNotificationsDisabled(
-    syncer::NotificationsDisabledReason reason) {
-  frontend()->OnNotificationsDisabled(reason);
-}
-
-void SyncBackendHostForProfileSyncTest::EmitOnIncomingNotification(
+void SyncBackendHostForProfileSyncTest::EmitOnIncomingInvalidation(
     const syncer::ObjectIdStateMap& id_state_map,
-    const syncer::IncomingNotificationSource source) {
-  frontend()->OnIncomingNotification(id_state_map, source);
+    const syncer::IncomingInvalidationSource source) {
+  frontend()->OnIncomingInvalidation(id_state_map, source);
 }
 
 }  // namespace browser_sync

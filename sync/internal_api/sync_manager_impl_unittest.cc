@@ -906,24 +906,18 @@ class SyncManagerTest : public testing::Test,
         GetEncryptedTypes(trans->GetWrappedTrans());
   }
 
-  void SimulateEnableNotificationsForTest() {
+  void SimulateInvalidatorStateChangeForTest(InvalidatorState state) {
     DCHECK(sync_manager_.thread_checker_.CalledOnValidThread());
-    sync_manager_.OnNotificationsEnabled();
-  }
-
-  void SimulateDisableNotificationsForTest(
-      NotificationsDisabledReason reason) {
-    DCHECK(sync_manager_.thread_checker_.CalledOnValidThread());
-    sync_manager_.OnNotificationsDisabled(reason);
+    sync_manager_.OnInvalidatorStateChange(state);
   }
 
   void TriggerOnIncomingNotificationForTest(ModelTypeSet model_types) {
     DCHECK(sync_manager_.thread_checker_.CalledOnValidThread());
     ModelTypeStateMap type_state_map =
         ModelTypeSetToStateMap(model_types, std::string());
-    sync_manager_.OnIncomingNotification(
+    sync_manager_.OnIncomingInvalidation(
         ModelTypeStateMapToObjectIdStateMap(type_state_map),
-        REMOTE_NOTIFICATION);
+        REMOTE_INVALIDATION);
   }
 
   void SetProgressMarkerForType(ModelType type, bool set) {
@@ -996,7 +990,7 @@ TEST_F(SyncManagerTest, ProcessJsMessage) {
 
   ListValue disabled_args;
   disabled_args.Append(
-      Value::CreateStringValue("TRANSIENT_NOTIFICATION_ERROR"));
+      Value::CreateStringValue("TRANSIENT_INVALIDATION_ERROR"));
 
   EXPECT_CALL(reply_handler,
               HandleJsReply("getNotificationState",
@@ -1284,9 +1278,9 @@ TEST_F(SyncManagerTest, OnNotificationStateChange) {
   StrictMock<MockJsEventHandler> event_handler;
 
   DictionaryValue enabled_details;
-  enabled_details.SetString("state", "NO_NOTIFICATION_ERROR");
+  enabled_details.SetString("state", "INVALIDATIONS_ENABLED");
   DictionaryValue disabled_details;
-  disabled_details.SetString("state", "TRANSIENT_NOTIFICATION_ERROR");
+  disabled_details.SetString("state", "TRANSIENT_INVALIDATION_ERROR");
 
   EXPECT_CALL(event_handler,
               HandleJsEvent("onNotificationStateChange",
@@ -1295,16 +1289,16 @@ TEST_F(SyncManagerTest, OnNotificationStateChange) {
               HandleJsEvent("onNotificationStateChange",
                             HasDetailsAsDictionary(disabled_details)));
 
-  SimulateEnableNotificationsForTest();
-  SimulateDisableNotificationsForTest(TRANSIENT_NOTIFICATION_ERROR);
+  SimulateInvalidatorStateChangeForTest(INVALIDATIONS_ENABLED);
+  SimulateInvalidatorStateChangeForTest(TRANSIENT_INVALIDATION_ERROR);
 
   SetJsEventHandler(event_handler.AsWeakHandle());
-  SimulateEnableNotificationsForTest();
-  SimulateDisableNotificationsForTest(TRANSIENT_NOTIFICATION_ERROR);
+  SimulateInvalidatorStateChangeForTest(INVALIDATIONS_ENABLED);
+  SimulateInvalidatorStateChangeForTest(TRANSIENT_INVALIDATION_ERROR);
   SetJsEventHandler(WeakHandle<JsEventHandler>());
 
-  SimulateEnableNotificationsForTest();
-  SimulateDisableNotificationsForTest(TRANSIENT_NOTIFICATION_ERROR);
+  SimulateInvalidatorStateChangeForTest(INVALIDATIONS_ENABLED);
+  SimulateInvalidatorStateChangeForTest(TRANSIENT_INVALIDATION_ERROR);
 
   // Should trigger the replies.
   PumpLoop();
@@ -1322,7 +1316,7 @@ TEST_F(SyncManagerTest, OnIncomingNotification) {
   DictionaryValue expected_details;
   {
     ListValue* model_type_list = new ListValue();
-    expected_details.SetString("source", "REMOTE_NOTIFICATION");
+    expected_details.SetString("source", "REMOTE_INVALIDATION");
     expected_details.Set("changedTypes", model_type_list);
     for (ModelTypeSet::Iterator it = model_types.First();
          it.Good(); it.Inc()) {

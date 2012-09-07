@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "sync/notifier/invalidation_handler.h"
 
@@ -17,24 +18,24 @@ class FakeInvalidationHandler : public InvalidationHandler {
   FakeInvalidationHandler();
   virtual ~FakeInvalidationHandler();
 
-  NotificationsDisabledReason GetNotificationsDisabledReason() const;
-  const ObjectIdStateMap& GetLastNotificationIdStateMap() const;
-  IncomingNotificationSource GetLastNotificationSource() const;
-  int GetNotificationCount() const;
+  InvalidatorState GetInvalidatorState() const;
+  const ObjectIdStateMap& GetLastInvalidationIdStateMap() const;
+  IncomingInvalidationSource GetLastInvalidationSource() const;
+  int GetInvalidationCount() const;
 
   // InvalidationHandler implementation.
-  virtual void OnNotificationsEnabled() OVERRIDE;
-  virtual void OnNotificationsDisabled(
-      NotificationsDisabledReason reason) OVERRIDE;
-  virtual void OnIncomingNotification(
+  virtual void OnInvalidatorStateChange(InvalidatorState state) OVERRIDE;
+  virtual void OnIncomingInvalidation(
       const ObjectIdStateMap& id_state_map,
-      IncomingNotificationSource source) OVERRIDE;
+      IncomingInvalidationSource source) OVERRIDE;
 
  private:
-  NotificationsDisabledReason reason_;
+  InvalidatorState state_;
   ObjectIdStateMap last_id_state_map_;
-  IncomingNotificationSource last_source_;
-  int notification_count_;
+  IncomingInvalidationSource last_source_;
+  int invalidation_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeInvalidationHandler);
 };
 
 }  // namespace syncer

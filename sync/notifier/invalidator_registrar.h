@@ -55,11 +55,17 @@ class InvalidatorRegistrar {
   // Invalidations for IDs with no corresponding handler are dropped, as are
   // invalidations for handlers that are not added.
   void DispatchInvalidationsToHandlers(const ObjectIdStateMap& id_state_map,
-                                       IncomingNotificationSource source);
+                                       IncomingInvalidationSource source);
 
-  // Calls the given handler method for each handler that has registered IDs.
-  void EmitOnNotificationsEnabled();
-  void EmitOnNotificationsDisabled(NotificationsDisabledReason reason);
+  // Updates the invalidator state to the given one and then notifies
+  // all handlers.  Note that the order is important; handlers that
+  // call GetInvalidatorState() when notified will see the new state.
+  void UpdateInvalidatorState(InvalidatorState state);
+
+  // Returns the current invalidator state.  When called from within
+  // InvalidationHandler::OnInvalidatorStateChange(), this returns the
+  // updated state.
+  InvalidatorState GetInvalidatorState() const;
 
   bool IsHandlerRegisteredForTest(InvalidationHandler* handler) const;
 
@@ -76,6 +82,7 @@ class InvalidatorRegistrar {
   base::ThreadChecker thread_checker_;
   ObserverList<InvalidationHandler> handlers_;
   IdHandlerMap id_to_handler_map_;
+  InvalidatorState state_;
 
   DISALLOW_COPY_AND_ASSIGN(InvalidatorRegistrar);
 };

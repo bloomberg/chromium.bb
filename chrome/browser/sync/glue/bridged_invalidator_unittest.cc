@@ -52,7 +52,8 @@ class BridgedInvalidatorTestDelegate {
     DCHECK(!fake_delegate_);
     DCHECK(!invalidator_.get());
     fake_delegate_ = new syncer::FakeInvalidator();
-    invalidator_.reset(new BridgedInvalidator(&bridge_, fake_delegate_));
+    invalidator_.reset(new BridgedInvalidator(
+        &bridge_, fake_delegate_, syncer::DEFAULT_INVALIDATION_ERROR));
   }
 
   BridgedInvalidator* GetInvalidator() {
@@ -78,19 +79,14 @@ class BridgedInvalidatorTestDelegate {
     // Do nothing.
   }
 
-  void TriggerOnNotificationsEnabled() {
-    fake_delegate_->EmitOnNotificationsEnabled();
+  void TriggerOnInvalidatorStateChange(syncer::InvalidatorState state) {
+    fake_delegate_->EmitOnInvalidatorStateChange(state);
   }
 
-  void TriggerOnIncomingNotification(
+  void TriggerOnIncomingInvalidation(
       const syncer::ObjectIdStateMap& id_state_map,
-      syncer::IncomingNotificationSource source) {
-    fake_delegate_->EmitOnIncomingNotification(id_state_map, source);
-  }
-
-  void TriggerOnNotificationsDisabled(
-      syncer::NotificationsDisabledReason reason) {
-    fake_delegate_->EmitOnNotificationsDisabled(reason);
+      syncer::IncomingInvalidationSource source) {
+    fake_delegate_->EmitOnIncomingInvalidation(id_state_map, source);
   }
 
   static bool InvalidatorHandlesDeprecatedState() {
@@ -126,7 +122,7 @@ class BridgedInvalidatorTest : public testing::Test {
   BridgedInvalidatorTestDelegate delegate_;
 };
 
-TEST_F(BridgedInvalidatorTest, RegisterHandler) {
+TEST_F(BridgedInvalidatorTest, HandlerMethods) {
   syncer::ObjectIdSet ids;
   ids.insert(invalidation::ObjectId(1, "id1"));
 
@@ -143,6 +139,11 @@ TEST_F(BridgedInvalidatorTest, RegisterHandler) {
   delegate_.GetInvalidator()->UnregisterHandler(&handler);
   EXPECT_FALSE(delegate_.GetFakeDelegate()->IsHandlerRegistered(&handler));
   EXPECT_FALSE(delegate_.GetBridge()->IsHandlerRegisteredForTest(&handler));
+}
+
+TEST_F(BridgedInvalidatorTest, GetInvalidatorState) {
+  EXPECT_EQ(syncer::DEFAULT_INVALIDATION_ERROR,
+            delegate_.GetInvalidator()->GetInvalidatorState());
 }
 
 TEST_F(BridgedInvalidatorTest, SetUniqueId) {
@@ -165,13 +166,13 @@ TEST_F(BridgedInvalidatorTest, UpdateCredentials) {
   EXPECT_EQ(token, delegate_.GetFakeDelegate()->GetCredentialsToken());
 }
 
-TEST_F(BridgedInvalidatorTest, SendNotification) {
+TEST_F(BridgedInvalidatorTest, SendInvalidation) {
   syncer::ObjectIdSet ids;
   ids.insert(invalidation::ObjectId(1, "id1"));
   ids.insert(invalidation::ObjectId(2, "id2"));
   const syncer::ObjectIdStateMap& id_state_map =
       syncer::ObjectIdSetToStateMap(ids, "payload");
-  delegate_.GetInvalidator()->SendNotification(id_state_map);
+  delegate_.GetInvalidator()->SendInvalidation(id_state_map);
   EXPECT_THAT(id_state_map,
               Eq(delegate_.GetFakeDelegate()->GetLastSentIdStateMap()));
 }

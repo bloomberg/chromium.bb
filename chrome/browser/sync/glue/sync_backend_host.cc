@@ -21,6 +21,7 @@
 #include "base/timer.h"
 #include "base/tracked_objects.h"
 #include "base/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/sync/glue/bridged_invalidator.h"
@@ -120,12 +121,11 @@ class SyncBackendHost::Core
   virtual void OnPassphraseStateChanged(syncer::PassphraseState state) OVERRIDE;
 
   // syncer::InvalidationHandler implementation.
-  virtual void OnNotificationsEnabled() OVERRIDE;
-  virtual void OnNotificationsDisabled(
-      syncer::NotificationsDisabledReason reason) OVERRIDE;
-  virtual void OnIncomingNotification(
+  virtual void OnInvalidatorStateChange(
+      syncer::InvalidatorState state) OVERRIDE;
+  virtual void OnIncomingInvalidation(
       const syncer::ObjectIdStateMap& id_state_map,
-      syncer::IncomingNotificationSource source) OVERRIDE;
+      syncer::IncomingInvalidationSource source) OVERRIDE;
 
   // Note:
   //
@@ -1038,32 +1038,24 @@ void SyncBackendHost::Core::OnActionableError(
       sync_error);
 }
 
-void SyncBackendHost::Core::OnNotificationsEnabled() {
+void SyncBackendHost::Core::OnInvalidatorStateChange(
+    syncer::InvalidatorState state) {
   if (!sync_loop_)
     return;
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   host_.Call(FROM_HERE,
-             &SyncBackendHost::HandleNotificationsEnabledOnFrontendLoop);
+             &SyncBackendHost::HandleInvalidatorStateChangeOnFrontendLoop,
+             state);
 }
 
-void SyncBackendHost::Core::OnNotificationsDisabled(
-    syncer::NotificationsDisabledReason reason) {
-  if (!sync_loop_)
-    return;
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  host_.Call(FROM_HERE,
-             &SyncBackendHost::HandleNotificationsDisabledOnFrontendLoop,
-             reason);
-}
-
-void SyncBackendHost::Core::OnIncomingNotification(
+void SyncBackendHost::Core::OnIncomingInvalidation(
     const syncer::ObjectIdStateMap& id_state_map,
-    syncer::IncomingNotificationSource source) {
+    syncer::IncomingInvalidationSource source) {
   if (!sync_loop_)
     return;
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   host_.Call(FROM_HERE,
-             &SyncBackendHost::HandleIncomingNotificationOnFrontendLoop,
+             &SyncBackendHost::HandleIncomingInvalidationOnFrontendLoop,
              id_state_map, source);
 }
 
@@ -1092,6 +1084,15 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
   chrome_sync_notification_bridge_ = options.chrome_sync_notification_bridge;
   DCHECK(chrome_sync_notification_bridge_);
 
+#if defined(OS_ANDROID)
+  // Android uses ChromeSyncNotificationBridge exclusively.
+  const syncer::InvalidatorState kDefaultInvalidatorState =
+      syncer::INVALIDATIONS_ENABLED;
+#else
+  const syncer::InvalidatorState kDefaultInvalidatorState =
+      syncer::DEFAULT_INVALIDATION_ERROR;
+#endif
+
   sync_manager_ = options.sync_manager_factory->CreateSyncManager(name_);
   sync_manager_->AddObserver(this);
   sync_manager_->Init(
@@ -1108,7 +1109,8 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
       options.credentials,
       scoped_ptr<syncer::Invalidator>(new BridgedInvalidator(
           options.chrome_sync_notification_bridge,
-          options.invalidator_factory->CreateInvalidator())),
+          options.invalidator_factory->CreateInvalidator(),
+          kDefaultInvalidatorState)),
       options.restored_key_for_bootstrapping,
       options.restored_keystore_key_for_bootstrapping,
       scoped_ptr<InternalComponentsFactory>(
@@ -1430,28 +1432,21 @@ void SyncBackendHost::HandleActionableErrorEventOnFrontendLoop(
   frontend_->OnActionableError(sync_error);
 }
 
-void SyncBackendHost::HandleNotificationsEnabledOnFrontendLoop() {
+void SyncBackendHost::HandleInvalidatorStateChangeOnFrontendLoop(
+    syncer::InvalidatorState state) {
   if (!frontend_)
     return;
   DCHECK_EQ(MessageLoop::current(), frontend_loop_);
-  frontend_->OnNotificationsEnabled();
+  frontend_->OnInvalidatorStateChange(state);
 }
 
-void SyncBackendHost::HandleNotificationsDisabledOnFrontendLoop(
-    syncer::NotificationsDisabledReason reason) {
-  if (!frontend_)
-    return;
-  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
-  frontend_->OnNotificationsDisabled(reason);
-}
-
-void SyncBackendHost::HandleIncomingNotificationOnFrontendLoop(
+void SyncBackendHost::HandleIncomingInvalidationOnFrontendLoop(
     const syncer::ObjectIdStateMap& id_state_map,
-    syncer::IncomingNotificationSource source) {
+    syncer::IncomingInvalidationSource source) {
   if (!frontend_)
     return;
   DCHECK_EQ(MessageLoop::current(), frontend_loop_);
-  frontend_->OnIncomingNotification(id_state_map, source);
+  frontend_->OnIncomingInvalidation(id_state_map, source);
 }
 
 bool SyncBackendHost::CheckPassphraseAgainstCachedPendingKeys(

@@ -54,17 +54,16 @@ class InvalidationNotifier
   virtual void UpdateRegisteredIds(InvalidationHandler* handler,
                                    const ObjectIdSet& ids) OVERRIDE;
   virtual void UnregisterHandler(InvalidationHandler* handler) OVERRIDE;
+  virtual InvalidatorState GetInvalidatorState() const OVERRIDE;
   virtual void SetUniqueId(const std::string& unique_id) OVERRIDE;
   virtual void SetStateDeprecated(const std::string& state) OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
-  virtual void SendNotification(const ObjectIdStateMap& id_state_map) OVERRIDE;
+  virtual void SendInvalidation(const ObjectIdStateMap& id_state_map) OVERRIDE;
 
   // SyncInvalidationListener::Delegate implementation.
   virtual void OnInvalidate(const ObjectIdStateMap& id_state_map) OVERRIDE;
-  virtual void OnNotificationsEnabled() OVERRIDE;
-  virtual void OnNotificationsDisabled(
-      NotificationsDisabledReason reason) OVERRIDE;
+  virtual void OnInvalidatorStateChange(InvalidatorState state) OVERRIDE;
 
  private:
   // We start off in the STOPPED state.  When we get our initial

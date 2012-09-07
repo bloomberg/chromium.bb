@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_GLUE_BRIDGED_INVALIDATOR_H_
 #define CHROME_BROWSER_SYNC_GLUE_BRIDGED_INVALIDATOR_H_
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "sync/notifier/invalidator.h"
@@ -21,10 +22,12 @@ class ChromeSyncNotificationBridge;
 // and unregistered with the ChromeSyncNotificationBridge, respectively.
 class BridgedInvalidator : public syncer::Invalidator {
  public:
-  // Does not take ownership of |bridge|. Takes ownership of |delegate|.
-  // |delegate| may be NULL.
+  // Does not take ownership of |bridge|. Takes ownership of
+  // |delegate|.  |delegate| may be NULL.  |default_invalidator_state|
+  // is used by GetInvalidatorState() if |delegate| is NULL.
   BridgedInvalidator(ChromeSyncNotificationBridge* bridge,
-                     syncer::Invalidator* delegate);
+                     syncer::Invalidator* delegate,
+                     syncer::InvalidatorState default_invalidator_state);
   virtual ~BridgedInvalidator();
 
   // Invalidator implementation. Passes through all calls to the delegate.
@@ -34,19 +37,24 @@ class BridgedInvalidator : public syncer::Invalidator {
   virtual void UpdateRegisteredIds(syncer::InvalidationHandler * handler,
                                    const syncer::ObjectIdSet& ids) OVERRIDE;
   virtual void UnregisterHandler(syncer::InvalidationHandler* handler) OVERRIDE;
+  virtual syncer::InvalidatorState GetInvalidatorState() const OVERRIDE;
   virtual void SetUniqueId(const std::string& unique_id) OVERRIDE;
   virtual void SetStateDeprecated(const std::string& state) OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
-  virtual void SendNotification(
+  virtual void SendInvalidation(
       const syncer::ObjectIdStateMap& id_state_map) OVERRIDE;
 
  private:
   // The notification bridge that we register the observers with.
-  ChromeSyncNotificationBridge* bridge_;
+  ChromeSyncNotificationBridge* const bridge_;
 
   // The delegate we are wrapping.
-  scoped_ptr<syncer::Invalidator> delegate_;
+  const scoped_ptr<syncer::Invalidator> delegate_;
+
+  const syncer::InvalidatorState default_invalidator_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(BridgedInvalidator);
 };
 
 }  // namespace browser_sync

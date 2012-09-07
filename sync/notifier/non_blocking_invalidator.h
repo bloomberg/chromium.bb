@@ -50,19 +50,18 @@ class NonBlockingInvalidator
   virtual void UpdateRegisteredIds(InvalidationHandler* handler,
                                    const ObjectIdSet& ids) OVERRIDE;
   virtual void UnregisterHandler(InvalidationHandler* handler) OVERRIDE;
+  virtual InvalidatorState GetInvalidatorState() const OVERRIDE;
   virtual void SetUniqueId(const std::string& unique_id) OVERRIDE;
   virtual void SetStateDeprecated(const std::string& state) OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
-  virtual void SendNotification(const ObjectIdStateMap& id_state_map) OVERRIDE;
+  virtual void SendInvalidation(const ObjectIdStateMap& id_state_map) OVERRIDE;
 
   // InvalidationHandler implementation.
-  virtual void OnNotificationsEnabled() OVERRIDE;
-  virtual void OnNotificationsDisabled(
-      NotificationsDisabledReason reason) OVERRIDE;
-  virtual void OnIncomingNotification(
+  virtual void OnInvalidatorStateChange(InvalidatorState state) OVERRIDE;
+  virtual void OnIncomingInvalidation(
       const ObjectIdStateMap& id_state_map,
-      IncomingNotificationSource source) OVERRIDE;
+      IncomingInvalidationSource source) OVERRIDE;
 
  private:
   class Core;

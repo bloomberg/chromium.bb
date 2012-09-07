@@ -676,7 +676,7 @@ void SyncTest::TriggerNotification(syncer::ModelTypeSet changed_types) {
           syncer::NOTIFY_ALL,
           syncer::ObjectIdSetToStateMap(
               syncer::ModelTypeSetToObjectIdSet(changed_types), ""),
-          syncer::REMOTE_NOTIFICATION).ToString();
+          syncer::REMOTE_INVALIDATION).ToString();
   const std::string& path =
       std::string("chromiumsync/sendnotification?channel=") +
       syncer::kSyncP2PNotificationChannel + "&data=" + data;

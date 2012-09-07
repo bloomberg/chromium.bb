@@ -11,7 +11,8 @@
 
 namespace syncer {
 
-InvalidatorRegistrar::InvalidatorRegistrar() {}
+InvalidatorRegistrar::InvalidatorRegistrar()
+    : state_(DEFAULT_INVALIDATION_ERROR) {}
 
 InvalidatorRegistrar::~InvalidatorRegistrar() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -88,7 +89,7 @@ ObjectIdSet InvalidatorRegistrar::GetAllRegisteredIds() const {
 
 void InvalidatorRegistrar::DispatchInvalidationsToHandlers(
     const ObjectIdStateMap& id_state_map,
-    IncomingNotificationSource source) {
+    IncomingInvalidationSource source) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // If we have no handlers, there's nothing to do.
   if (!handlers_.might_have_observers()) {
@@ -111,20 +112,20 @@ void InvalidatorRegistrar::DispatchInvalidationsToHandlers(
   while ((handler = it.GetNext()) != NULL) {
     DispatchMap::const_iterator dispatch_it = dispatch_map.find(handler);
     if (dispatch_it != dispatch_map.end())
-      handler->OnIncomingNotification(dispatch_it->second, source);
+      handler->OnIncomingInvalidation(dispatch_it->second, source);
   }
 }
 
-void InvalidatorRegistrar::EmitOnNotificationsEnabled() {
+void InvalidatorRegistrar::UpdateInvalidatorState(InvalidatorState state) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(InvalidationHandler, handlers_, OnNotificationsEnabled());
+  state_ = state;
+  FOR_EACH_OBSERVER(InvalidationHandler, handlers_,
+                    OnInvalidatorStateChange(state));
 }
 
-void InvalidatorRegistrar::EmitOnNotificationsDisabled(
-    NotificationsDisabledReason reason) {
+InvalidatorState InvalidatorRegistrar::GetInvalidatorState() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  FOR_EACH_OBSERVER(InvalidationHandler, handlers_,
-                    OnNotificationsDisabled(reason));
+  return state_;
 }
 
 bool InvalidatorRegistrar::IsHandlerRegisteredForTest(

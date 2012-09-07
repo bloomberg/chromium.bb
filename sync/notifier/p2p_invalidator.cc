@@ -61,21 +61,21 @@ P2PNotificationTarget P2PNotificationTargetFromString(
   return NOTIFY_SELF;
 }
 
-IncomingNotificationSource P2PNotificationSourceFromInteger(int source_num) {
-  if (source_num == LOCAL_NOTIFICATION) {
-    return LOCAL_NOTIFICATION;
+IncomingInvalidationSource P2PNotificationSourceFromInteger(int source_num) {
+  if (source_num == LOCAL_INVALIDATION) {
+    return LOCAL_INVALIDATION;
   }
-  return REMOTE_NOTIFICATION;
+  return REMOTE_INVALIDATION;
 }
 
 P2PNotificationData::P2PNotificationData()
-    : target_(NOTIFY_SELF), source_(REMOTE_NOTIFICATION) {}
+    : target_(NOTIFY_SELF), source_(REMOTE_INVALIDATION) {}
 
 P2PNotificationData::P2PNotificationData(
     const std::string& sender_id,
     P2PNotificationTarget target,
     const ObjectIdStateMap& id_state_map,
-    IncomingNotificationSource source)
+    IncomingInvalidationSource source)
     : sender_id_(sender_id),
       target_(target),
       id_state_map_(id_state_map),
@@ -101,7 +101,7 @@ const ObjectIdStateMap& P2PNotificationData::GetIdStateMap() const {
   return id_state_map_;
 }
 
-IncomingNotificationSource P2PNotificationData::GetSource() const {
+IncomingInvalidationSource P2PNotificationData::GetSource() const {
   return source_;
 }
 
@@ -188,13 +188,18 @@ void P2PInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
   registrar_.UpdateRegisteredIds(handler, ids);
   const P2PNotificationData notification_data(
       unique_id_, NOTIFY_SELF, ObjectIdSetToStateMap(new_ids, ""),
-      REMOTE_NOTIFICATION);
+      REMOTE_INVALIDATION);
   SendNotificationData(notification_data);
 }
 
 void P2PInvalidator::UnregisterHandler(InvalidationHandler* handler) {
   DCHECK(thread_checker_.CalledOnValidThread());
   registrar_.UnregisterHandler(handler);
+}
+
+InvalidatorState P2PInvalidator::GetInvalidatorState() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return registrar_.GetInvalidatorState();
 }
 
 void P2PInvalidator::SetUniqueId(const std::string& unique_id) {
@@ -224,11 +229,11 @@ void P2PInvalidator::UpdateCredentials(
   logged_in_ = true;
 }
 
-void P2PInvalidator::SendNotification(const ObjectIdStateMap& id_state_map) {
+void P2PInvalidator::SendInvalidation(const ObjectIdStateMap& id_state_map) {
   DCHECK(thread_checker_.CalledOnValidThread());
   const P2PNotificationData notification_data(
       unique_id_, send_notification_target_, id_state_map,
-      REMOTE_NOTIFICATION);
+      REMOTE_INVALIDATION);
   SendNotificationData(notification_data);
 }
 
@@ -236,12 +241,12 @@ void P2PInvalidator::OnNotificationsEnabled() {
   DCHECK(thread_checker_.CalledOnValidThread());
   bool just_turned_on = (notifications_enabled_ == false);
   notifications_enabled_ = true;
-  registrar_.EmitOnNotificationsEnabled();
+  registrar_.UpdateInvalidatorState(INVALIDATIONS_ENABLED);
   if (just_turned_on) {
     const P2PNotificationData notification_data(
         unique_id_, NOTIFY_SELF,
         ObjectIdSetToStateMap(registrar_.GetAllRegisteredIds(), ""),
-        REMOTE_NOTIFICATION);
+        REMOTE_INVALIDATION);
     SendNotificationData(notification_data);
   }
 }
@@ -249,7 +254,7 @@ void P2PInvalidator::OnNotificationsEnabled() {
 void P2PInvalidator::OnNotificationsDisabled(
     notifier::NotificationsDisabledReason reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  registrar_.EmitOnNotificationsDisabled(FromNotifierReason(reason));
+  registrar_.UpdateInvalidatorState(FromNotifierReason(reason));
 }
 
 void P2PInvalidator::OnIncomingNotification(
@@ -276,7 +281,7 @@ void P2PInvalidator::OnIncomingNotification(
         P2PNotificationData(
             unique_id_, NOTIFY_ALL,
             ObjectIdSetToStateMap(registrar_.GetAllRegisteredIds(), ""),
-            REMOTE_NOTIFICATION);
+            REMOTE_INVALIDATION);
   }
   if (!notification_data.IsTargeted(unique_id_)) {
     DVLOG(1) << "Not a target of the notification -- "
@@ -285,7 +290,7 @@ void P2PInvalidator::OnIncomingNotification(
   }
   registrar_.DispatchInvalidationsToHandlers(
       notification_data.GetIdStateMap(),
-      REMOTE_NOTIFICATION);
+      REMOTE_INVALIDATION);
 }
 
 void P2PInvalidator::SendNotificationDataForTest(

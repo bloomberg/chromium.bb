@@ -34,8 +34,8 @@ SyncInvalidationListener::SyncInvalidationListener(
       sync_system_resources_(push_client.Pass(),
                              ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       delegate_(NULL),
-      ticl_state_(DEFAULT_NOTIFICATION_ERROR),
-      push_client_state_(DEFAULT_NOTIFICATION_ERROR) {
+      ticl_state_(DEFAULT_INVALIDATION_ERROR),
+      push_client_state_(DEFAULT_INVALIDATION_ERROR) {
   DCHECK(CalledOnValidThread());
   push_client_->AddObserver(this);
 }
@@ -105,10 +105,10 @@ void SyncInvalidationListener::UpdateCredentials(
 void SyncInvalidationListener::UpdateRegisteredIds(const ObjectIdSet& ids) {
   DCHECK(CalledOnValidThread());
   registered_ids_ = ids;
-  // |ticl_state_| can go to NO_NOTIFICATION_ERROR even without a
+  // |ticl_state_| can go to INVALIDATIONS_ENABLED even without a
   // working XMPP connection (as observed by us), so check it instead
   // of GetState() (see http://crbug.com/139424).
-  if (ticl_state_ == NO_NOTIFICATION_ERROR && registration_manager_.get()) {
+  if (ticl_state_ == INVALIDATIONS_ENABLED && registration_manager_.get()) {
     DoRegistrationUpdate();
   }
 }
@@ -117,7 +117,7 @@ void SyncInvalidationListener::Ready(
     invalidation::InvalidationClient* client) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(client, invalidation_client_.get());
-  ticl_state_ = NO_NOTIFICATION_ERROR;
+  ticl_state_ = INVALIDATIONS_ENABLED;
   EmitStateChange();
   DoRegistrationUpdate();
 }
@@ -274,9 +274,9 @@ void SyncInvalidationListener::InformError(
              << error_info.error_message()
              << " (transient = " << error_info.is_transient() << ")";
   if (error_info.error_reason() == invalidation::ErrorReason::AUTH_FAILURE) {
-    ticl_state_ = NOTIFICATION_CREDENTIALS_REJECTED;
+    ticl_state_ = INVALIDATION_CREDENTIALS_REJECTED;
   } else {
-    ticl_state_ = TRANSIENT_NOTIFICATION_ERROR;
+    ticl_state_ = TRANSIENT_INVALIDATION_ERROR;
   }
   EmitStateChange();
 }
@@ -316,40 +316,36 @@ void SyncInvalidationListener::Stop() {
 
   invalidation_state_tracker_.Reset();
   max_invalidation_versions_.clear();
-  ticl_state_ = DEFAULT_NOTIFICATION_ERROR;
-  push_client_state_ = DEFAULT_NOTIFICATION_ERROR;
+  ticl_state_ = DEFAULT_INVALIDATION_ERROR;
+  push_client_state_ = DEFAULT_INVALIDATION_ERROR;
 }
 
-NotificationsDisabledReason SyncInvalidationListener::GetState() const {
+InvalidatorState SyncInvalidationListener::GetState() const {
   DCHECK(CalledOnValidThread());
-  if (ticl_state_ == NOTIFICATION_CREDENTIALS_REJECTED ||
-      push_client_state_ == NOTIFICATION_CREDENTIALS_REJECTED) {
+  if (ticl_state_ == INVALIDATION_CREDENTIALS_REJECTED ||
+      push_client_state_ == INVALIDATION_CREDENTIALS_REJECTED) {
     // If either the ticl or the push client rejected our credentials,
-    // return NOTIFICATION_CREDENTIALS_REJECTED.
-    return NOTIFICATION_CREDENTIALS_REJECTED;
+    // return INVALIDATION_CREDENTIALS_REJECTED.
+    return INVALIDATION_CREDENTIALS_REJECTED;
   }
-  if (ticl_state_ == NO_NOTIFICATION_ERROR &&
-      push_client_state_ == NO_NOTIFICATION_ERROR) {
+  if (ticl_state_ == INVALIDATIONS_ENABLED &&
+      push_client_state_ == INVALIDATIONS_ENABLED) {
     // If the ticl is ready and the push client notifications are
-    // enabled, return NO_NOTIFICATION_ERROR.
-    return NO_NOTIFICATION_ERROR;
+    // enabled, return INVALIDATIONS_ENABLED.
+    return INVALIDATIONS_ENABLED;
   }
   // Otherwise, we have a transient error.
-  return TRANSIENT_NOTIFICATION_ERROR;
+  return TRANSIENT_INVALIDATION_ERROR;
 }
 
 void SyncInvalidationListener::EmitStateChange() {
   DCHECK(CalledOnValidThread());
-  if (GetState() == NO_NOTIFICATION_ERROR) {
-    delegate_->OnNotificationsEnabled();
-  } else {
-    delegate_->OnNotificationsDisabled(GetState());
-  }
+  delegate_->OnInvalidatorStateChange(GetState());
 }
 
 void SyncInvalidationListener::OnNotificationsEnabled() {
   DCHECK(CalledOnValidThread());
-  push_client_state_ = NO_NOTIFICATION_ERROR;
+  push_client_state_ = INVALIDATIONS_ENABLED;
   EmitStateChange();
 }
 

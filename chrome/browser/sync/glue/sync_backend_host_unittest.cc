@@ -23,7 +23,7 @@
 #include "sync/internal_api/public/sync_manager_factory.h"
 #include "sync/internal_api/public/test/fake_sync_manager.h"
 #include "sync/internal_api/public/util/experiments.h"
-#include "sync/notifier/notifications_disabled_reason.h"
+#include "sync/notifier/invalidator_state.h"
 #include "sync/notifier/object_id_state_map_test_util.h"
 #include "sync/protocol/encryption.pb.h"
 #include "sync/protocol/sync_protocol_error.h"
@@ -58,12 +58,11 @@ class MockSyncFrontend : public SyncFrontend {
  public:
   virtual ~MockSyncFrontend() {}
 
-  MOCK_METHOD0(OnNotificationsEnabled, void());
-  MOCK_METHOD1(OnNotificationsDisabled,
-               void(syncer::NotificationsDisabledReason));
-  MOCK_METHOD2(OnIncomingNotification,
+  MOCK_METHOD1(OnInvalidatorStateChange,
+               void(syncer::InvalidatorState));
+  MOCK_METHOD2(OnIncomingInvalidation,
                void(const syncer::ObjectIdStateMap&,
-                    syncer::IncomingNotificationSource));
+                    syncer::IncomingInvalidationSource));
   MOCK_METHOD2(OnBackendInitialized,
                void(const syncer::WeakHandle<syncer::JsBackend>&, bool));
   MOCK_METHOD0(OnSyncCycleCompleted, void());
@@ -576,55 +575,38 @@ TEST_F(SyncBackendHostTest, Invalidate) {
 
   EXPECT_CALL(
       mock_frontend_,
-      OnIncomingNotification(id_state_map, syncer::REMOTE_NOTIFICATION))
+      OnIncomingInvalidation(id_state_map, syncer::REMOTE_INVALIDATION))
       .WillOnce(InvokeWithoutArgs(QuitMessageLoop));
 
   backend_->UpdateRegisteredInvalidationIds(ids);
-  fake_manager_->Invalidate(id_state_map, syncer::REMOTE_NOTIFICATION);
+  fake_manager_->Invalidate(id_state_map, syncer::REMOTE_INVALIDATION);
   ui_loop_.PostDelayedTask(
       FROM_HERE, ui_loop_.QuitClosure(), TestTimeouts::action_timeout());
   ui_loop_.Run();
 }
 
-// Register for some IDs and turn on notifications.  This should
-// propagate all the way to the frontend.
-TEST_F(SyncBackendHostTest, EnableNotifications) {
+// Register for some IDs and update the invalidator state.  This
+// should propagate all the way to the frontend.
+TEST_F(SyncBackendHostTest, UpdateInvalidatorState) {
   InitializeBackend();
 
-  EXPECT_CALL(mock_frontend_, OnNotificationsEnabled())
+  EXPECT_CALL(mock_frontend_,
+              OnInvalidatorStateChange(syncer::INVALIDATIONS_ENABLED))
       .WillOnce(InvokeWithoutArgs(QuitMessageLoop));
 
   syncer::ObjectIdSet ids;
   ids.insert(invalidation::ObjectId(3, "id3"));
   backend_->UpdateRegisteredInvalidationIds(ids);
-  fake_manager_->EnableNotifications();
+  fake_manager_->UpdateInvalidatorState(syncer::INVALIDATIONS_ENABLED);
   ui_loop_.PostDelayedTask(
       FROM_HERE, ui_loop_.QuitClosure(), TestTimeouts::action_timeout());
   ui_loop_.Run();
 }
 
-// Register for some IDs and turn off notifications.  This should
-// propagate all the way to the frontend.
-TEST_F(SyncBackendHostTest, DisableNotifications) {
-  InitializeBackend();
-
-  EXPECT_CALL(mock_frontend_,
-              OnNotificationsDisabled(syncer::TRANSIENT_NOTIFICATION_ERROR))
-      .WillOnce(InvokeWithoutArgs(QuitMessageLoop));
-
-  syncer::ObjectIdSet ids;
-  ids.insert(invalidation::ObjectId(4, "id4"));
-  backend_->UpdateRegisteredInvalidationIds(ids);
-  fake_manager_->DisableNotifications(syncer::TRANSIENT_NOTIFICATION_ERROR);
-  ui_loop_.PostDelayedTask(
-      FROM_HERE, ui_loop_.QuitClosure(), TestTimeouts::action_timeout());
-  ui_loop_.Run();
-}
-
-// Call StopSyncingForShutdown() on the backend and fire some notifications
+// Call StopSyncingForShutdown() on the backend and fire some invalidations
 // before calling Shutdown().  Then start up and shut down the backend again.
 // Those notifications shouldn't propagate to the frontend.
-TEST_F(SyncBackendHostTest, NotificationsAfterStopSyncingForShutdown) {
+TEST_F(SyncBackendHostTest, InvalidationsAfterStopSyncingForShutdown) {
   InitializeBackend();
 
   syncer::ObjectIdSet ids;
@@ -634,11 +616,11 @@ TEST_F(SyncBackendHostTest, NotificationsAfterStopSyncingForShutdown) {
   backend_->StopSyncingForShutdown();
 
   // Should not trigger anything.
-  fake_manager_->DisableNotifications(syncer::TRANSIENT_NOTIFICATION_ERROR);
-  fake_manager_->EnableNotifications();
+  fake_manager_->UpdateInvalidatorState(syncer::TRANSIENT_INVALIDATION_ERROR);
+  fake_manager_->UpdateInvalidatorState(syncer::INVALIDATIONS_ENABLED);
   const syncer::ObjectIdStateMap& id_state_map =
       syncer::ObjectIdSetToStateMap(ids, "payload");
-  fake_manager_->Invalidate(id_state_map, syncer::REMOTE_NOTIFICATION);
+  fake_manager_->Invalidate(id_state_map, syncer::REMOTE_INVALIDATION);
 
   // Make sure the above calls take effect before we continue.
   fake_manager_->WaitForSyncThread();

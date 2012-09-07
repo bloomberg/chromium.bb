@@ -36,9 +36,9 @@ class ChromeSyncNotificationBridge::Core
                            const syncer::ObjectIdSet& ids);
   void UnregisterHandler(syncer::InvalidationHandler* handler);
 
-  void EmitNotification(
+  void EmitInvalidation(
       const syncer::ObjectIdStateMap& state_map,
-      syncer::IncomingNotificationSource notification_source);
+      syncer::IncomingInvalidationSource invalidation_source);
 
   bool IsHandlerRegisteredForTest(syncer::InvalidationHandler* handler) const;
   syncer::ObjectIdSet GetRegisteredIdsForTest(
@@ -96,9 +96,9 @@ void ChromeSyncNotificationBridge::Core::UnregisterHandler(
   invalidator_registrar_->UnregisterHandler(handler);
 }
 
-void ChromeSyncNotificationBridge::Core::EmitNotification(
+void ChromeSyncNotificationBridge::Core::EmitInvalidation(
     const syncer::ObjectIdStateMap& state_map,
-    syncer::IncomingNotificationSource notification_source) {
+    syncer::IncomingInvalidationSource invalidation_source) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
   const syncer::ObjectIdStateMap& effective_state_map =
       state_map.empty() ?
@@ -107,7 +107,7 @@ void ChromeSyncNotificationBridge::Core::EmitNotification(
       state_map;
 
   invalidator_registrar_->DispatchInvalidationsToHandlers(
-      effective_state_map, notification_source);
+      effective_state_map, invalidation_source);
 }
 
 bool ChromeSyncNotificationBridge::Core::IsHandlerRegisteredForTest(
@@ -187,13 +187,13 @@ void ChromeSyncNotificationBridge::Observe(
     const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  syncer::IncomingNotificationSource notification_source;
+  syncer::IncomingInvalidationSource invalidation_source;
   if (type == chrome::NOTIFICATION_SYNC_REFRESH_LOCAL) {
-    notification_source = syncer::LOCAL_NOTIFICATION;
+    invalidation_source = syncer::LOCAL_INVALIDATION;
   } else if (type == chrome::NOTIFICATION_SYNC_REFRESH_REMOTE) {
-    notification_source = syncer::REMOTE_NOTIFICATION;
+    invalidation_source = syncer::REMOTE_INVALIDATION;
   } else {
-    NOTREACHED() << "Unexpected notification type: " << type;
+    NOTREACHED() << "Unexpected invalidation type: " << type;
     return;
   }
 
@@ -205,10 +205,10 @@ void ChromeSyncNotificationBridge::Observe(
   const syncer::ModelTypeStateMap& state_map = *(state_details.ptr());
   if (!sync_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&Core::EmitNotification,
+          base::Bind(&Core::EmitInvalidation,
                      core_,
                      ModelTypeStateMapToObjectIdStateMap(state_map),
-                     notification_source))) {
+                     invalidation_source))) {
     NOTREACHED();
   }
 }

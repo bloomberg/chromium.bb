@@ -39,19 +39,14 @@ const ObjectIdStateMap& FakeInvalidator::GetLastSentIdStateMap() const {
   return last_sent_id_state_map_;
 }
 
-void FakeInvalidator::EmitOnNotificationsEnabled() {
-  registrar_.EmitOnNotificationsEnabled();
+void FakeInvalidator::EmitOnInvalidatorStateChange(InvalidatorState state) {
+  registrar_.UpdateInvalidatorState(state);
 }
 
-void FakeInvalidator::EmitOnIncomingNotification(
+void FakeInvalidator::EmitOnIncomingInvalidation(
     const ObjectIdStateMap& id_state_map,
-    IncomingNotificationSource source) {
+    IncomingInvalidationSource source) {
   registrar_.DispatchInvalidationsToHandlers(id_state_map, source);
-}
-
-void FakeInvalidator::EmitOnNotificationsDisabled(
-    NotificationsDisabledReason reason) {
-  registrar_.EmitOnNotificationsDisabled(reason);
 }
 
 void FakeInvalidator::RegisterHandler(InvalidationHandler* handler) {
@@ -65,6 +60,10 @@ void FakeInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
 
 void FakeInvalidator::UnregisterHandler(InvalidationHandler* handler) {
   registrar_.UnregisterHandler(handler);
+}
+
+InvalidatorState FakeInvalidator::GetInvalidatorState() const {
+  return registrar_.GetInvalidatorState();
 }
 
 void FakeInvalidator::SetUniqueId(const std::string& unique_id) {
@@ -81,7 +80,7 @@ void FakeInvalidator::UpdateCredentials(
   token_ = token;
 }
 
-void FakeInvalidator::SendNotification(const ObjectIdStateMap& id_state_map) {
+void FakeInvalidator::SendInvalidation(const ObjectIdStateMap& id_state_map) {
   last_sent_id_state_map_ = id_state_map;
 }
 

@@ -183,8 +183,10 @@ ChromeToMobileService::ChromeToMobileService(Profile* profile)
   if (profile_sync_service) {
     CloudPrintURL cloud_print_url(profile_);
     cloud_print_url_ = cloud_print_url.GetCloudPrintServiceURL();
+    sync_invalidation_enabled_ =
+        (profile_sync_service->GetInvalidatorState() ==
+         syncer::INVALIDATIONS_ENABLED);
     // Register for cloud print device list invalidation notifications.
-    // TODO(msw|akalin): Initialize |sync_invalidation_enabled_| properly.
     profile_sync_service->RegisterInvalidationHandler(this);
     syncer::ObjectIdSet ids;
     ids.insert(invalidation::ObjectId(
@@ -363,27 +365,20 @@ void ChromeToMobileService::OnGetTokenFailure(
       this, &ChromeToMobileService::RequestAccessToken);
 }
 
-void ChromeToMobileService::OnNotificationsEnabled() {
-  sync_invalidation_enabled_ = true;
+void ChromeToMobileService::OnInvalidatorStateChange(
+    syncer::InvalidatorState state) {
+  sync_invalidation_enabled_ = (state == syncer::INVALIDATIONS_ENABLED);
   UpdateCommandState();
 }
 
-void ChromeToMobileService::OnNotificationsDisabled(
-    syncer::NotificationsDisabledReason reason) {
-  sync_invalidation_enabled_ = false;
-  UpdateCommandState();
-}
-
-void ChromeToMobileService::OnIncomingNotification(
+void ChromeToMobileService::OnIncomingInvalidation(
     const syncer::ObjectIdStateMap& id_state_map,
-    syncer::IncomingNotificationSource source) {
+    syncer::IncomingInvalidationSource source) {
   DCHECK_EQ(1U, id_state_map.size());
   DCHECK_EQ(1U, id_state_map.count(invalidation::ObjectId(
       ipc::invalidation::ObjectSource::CHROME_COMPONENTS,
       kSyncInvalidationObjectIdChromeToMobileDeviceList)));
   RequestDeviceSearch();
-  // TODO(msw|akalin): This may not necessarily mean notifications are enabled.
-  OnNotificationsEnabled();
 }
 
 const std::string& ChromeToMobileService::GetAccessTokenForTest() const {

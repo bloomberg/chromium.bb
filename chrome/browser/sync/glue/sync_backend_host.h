@@ -466,12 +466,11 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
       syncer::ModelTypeSet failed_configuration_types);
 
   // syncer::InvalidationHandler-like functions.
-  void HandleNotificationsEnabledOnFrontendLoop();
-  void HandleNotificationsDisabledOnFrontendLoop(
-      syncer::NotificationsDisabledReason reason);
-  void HandleIncomingNotificationOnFrontendLoop(
+  void HandleInvalidatorStateChangeOnFrontendLoop(
+      syncer::InvalidatorState state);
+  void HandleIncomingInvalidationOnFrontendLoop(
       const syncer::ObjectIdStateMap& id_state_map,
-      syncer::IncomingNotificationSource source);
+      syncer::IncomingInvalidationSource source);
 
   // Handles stopping the core's SyncManager, accounting for whether
   // initialization is done yet.

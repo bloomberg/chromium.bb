@@ -69,7 +69,7 @@ class ChromeSyncNotificationBridgeTest : public testing::Test {
 
   void VerifyAndDestroyObserver(
       const syncer::ModelTypeStateMap& expected_states,
-      syncer::IncomingNotificationSource expected_source) {
+      syncer::IncomingInvalidationSource expected_source) {
     ASSERT_TRUE(sync_thread_.message_loop_proxy()->PostTask(
         FROM_HERE,
         base::Bind(&ChromeSyncNotificationBridgeTest::
@@ -113,15 +113,15 @@ class ChromeSyncNotificationBridgeTest : public testing::Test {
  private:
   void VerifyAndDestroyObserverOnSyncThread(
       const syncer::ModelTypeStateMap& expected_states,
-      syncer::IncomingNotificationSource expected_source) {
+      syncer::IncomingInvalidationSource expected_source) {
     DCHECK(sync_thread_.message_loop_proxy()->RunsTasksOnCurrentThread());
     if (sync_handler_.get()) {
       sync_handler_notification_success_ =
-          (sync_handler_->GetNotificationCount() == 1) &&
+          (sync_handler_->GetInvalidationCount() == 1) &&
           ObjectIdStateMapEquals(
-              sync_handler_->GetLastNotificationIdStateMap(),
+              sync_handler_->GetLastInvalidationIdStateMap(),
               syncer::ModelTypeStateMapToObjectIdStateMap(expected_states)) &&
-          (sync_handler_->GetLastNotificationSource() == expected_source);
+          (sync_handler_->GetLastInvalidationSource() == expected_source);
       bridge_->UnregisterHandler(sync_handler_.get());
     } else {
       sync_handler_notification_success_ = false;
@@ -164,7 +164,7 @@ class ChromeSyncNotificationBridgeTest : public testing::Test {
 };
 
 // Adds an observer on the sync thread, triggers a local refresh
-// notification, and ensures the bridge posts a LOCAL_NOTIFICATION
+// invalidation, and ensures the bridge posts a LOCAL_INVALIDATION
 // with the proper state to it.
 TEST_F(ChromeSyncNotificationBridgeTest, LocalNotification) {
   syncer::ModelTypeStateMap state_map;
@@ -174,11 +174,11 @@ TEST_F(ChromeSyncNotificationBridgeTest, LocalNotification) {
   UpdateEnabledTypes(syncer::ModelTypeSet(syncer::SESSIONS));
   TriggerRefreshNotification(chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
                              state_map);
-  VerifyAndDestroyObserver(state_map, syncer::LOCAL_NOTIFICATION);
+  VerifyAndDestroyObserver(state_map, syncer::LOCAL_INVALIDATION);
 }
 
 // Adds an observer on the sync thread, triggers a remote refresh
-// notification, and ensures the bridge posts a REMOTE_NOTIFICATION
+// invalidation, and ensures the bridge posts a REMOTE_INVALIDATION
 // with the proper state to it.
 TEST_F(ChromeSyncNotificationBridgeTest, RemoteNotification) {
   syncer::ModelTypeStateMap state_map;
@@ -188,12 +188,12 @@ TEST_F(ChromeSyncNotificationBridgeTest, RemoteNotification) {
   UpdateEnabledTypes(syncer::ModelTypeSet(syncer::SESSIONS));
   TriggerRefreshNotification(chrome::NOTIFICATION_SYNC_REFRESH_REMOTE,
                              state_map);
-  VerifyAndDestroyObserver(state_map, syncer::REMOTE_NOTIFICATION);
+  VerifyAndDestroyObserver(state_map, syncer::REMOTE_INVALIDATION);
 }
 
 // Adds an observer on the sync thread, triggers a local refresh
 // notification with empty state map and ensures the bridge posts a
-// LOCAL_NOTIFICATION with the proper state to it.
+// LOCAL_INVALIDATION with the proper state to it.
 TEST_F(ChromeSyncNotificationBridgeTest, LocalNotificationEmptyPayloadMap) {
   const syncer::ModelTypeSet enabled_types(
       syncer::BOOKMARKS, syncer::PASSWORDS);
@@ -204,12 +204,12 @@ TEST_F(ChromeSyncNotificationBridgeTest, LocalNotificationEmptyPayloadMap) {
   TriggerRefreshNotification(chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
                              syncer::ModelTypeStateMap());
   VerifyAndDestroyObserver(
-      enabled_types_state_map, syncer::LOCAL_NOTIFICATION);
+      enabled_types_state_map, syncer::LOCAL_INVALIDATION);
 }
 
 // Adds an observer on the sync thread, triggers a remote refresh
 // notification with empty state map and ensures the bridge posts a
-// REMOTE_NOTIFICATION with the proper state to it.
+// REMOTE_INVALIDATION with the proper state to it.
 TEST_F(ChromeSyncNotificationBridgeTest, RemoteNotificationEmptyPayloadMap) {
   const syncer::ModelTypeSet enabled_types(
       syncer::BOOKMARKS, syncer::TYPED_URLS);
@@ -220,7 +220,7 @@ TEST_F(ChromeSyncNotificationBridgeTest, RemoteNotificationEmptyPayloadMap) {
   TriggerRefreshNotification(chrome::NOTIFICATION_SYNC_REFRESH_REMOTE,
                              syncer::ModelTypeStateMap());
   VerifyAndDestroyObserver(
-      enabled_types_state_map, syncer::REMOTE_NOTIFICATION);
+      enabled_types_state_map, syncer::REMOTE_INVALIDATION);
 }
 
 }  // namespace

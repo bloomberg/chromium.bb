@@ -46,25 +46,18 @@
 //     // The Trigger* functions below should block until the effects of
 //     // the call are visible on the current thread.
 //
-//     // Should cause OnNotificationsEnabled() to be called on all
-//     // observers of the Invalidator implementation.
-//     void TriggerOnNotificationsEnabled() {
+//     // Should cause OnInvalidatorStateChange() to be called on all
+//     // observers of the Invalidator implementation with the given
+//     // parameters.
+//     void TriggerOnInvalidatorStateChange(InvalidatorState state) {
 //       ...
 //     }
 //
-//     // Should cause OnIncomingNotification() to be called on all
+//     // Should cause OnIncomingInvalidation() to be called on all
 //     // observers of the Invalidator implementation with the given
 //     // parameters.
-//     void TriggerOnIncomingNotification(const ObjectIdStateMap& id_state_map,
-//                                        IncomingNotificationSource source) {
-//       ...
-//     }
-//
-//     // Should cause OnNotificationsDisabled() to be called on all
-//     // observers of the Invalidator implementation with the given
-//     // parameters.
-//     void TriggerOnNotificationsDisabled(
-//         NotificationsDisabledReason reason) {
+//     void TriggerOnIncomingInvalidation(const ObjectIdStateMap& id_state_map,
+//                                        IncomingInvalidationSource source) {
 //       ...
 //     }
 //
@@ -90,6 +83,8 @@
 #ifndef SYNC_NOTIFIER_INVALIDATOR_TEST_TEMPLATE_H_
 #define SYNC_NOTIFIER_INVALIDATOR_TEST_TEMPLATE_H_
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "google/cacheinvalidation/types.pb.h"
 #include "sync/notifier/fake_invalidation_handler.h"
@@ -159,28 +154,27 @@ TYPED_TEST_P(InvalidatorTest, Basic) {
   states[this->id3].payload = "3";
 
   // Should be ignored since no IDs are registered to |handler|.
-  this->delegate_.TriggerOnIncomingNotification(states, REMOTE_NOTIFICATION);
-  EXPECT_EQ(0, handler.GetNotificationCount());
+  this->delegate_.TriggerOnIncomingInvalidation(states, REMOTE_INVALIDATION);
+  EXPECT_EQ(0, handler.GetInvalidationCount());
 
   ObjectIdSet ids;
   ids.insert(this->id1);
   ids.insert(this->id2);
   invalidator->UpdateRegisteredIds(&handler, ids);
 
-  this->delegate_.TriggerOnNotificationsEnabled();
-  EXPECT_EQ(NO_NOTIFICATION_ERROR,
-            handler.GetNotificationsDisabledReason());
+  this->delegate_.TriggerOnInvalidatorStateChange(INVALIDATIONS_ENABLED);
+  EXPECT_EQ(INVALIDATIONS_ENABLED, handler.GetInvalidatorState());
 
   ObjectIdStateMap expected_states;
   expected_states[this->id1].payload = "1";
   expected_states[this->id2].payload = "2";
 
-  this->delegate_.TriggerOnIncomingNotification(states, REMOTE_NOTIFICATION);
-  EXPECT_EQ(1, handler.GetNotificationCount());
+  this->delegate_.TriggerOnIncomingInvalidation(states, REMOTE_INVALIDATION);
+  EXPECT_EQ(1, handler.GetInvalidationCount());
   EXPECT_THAT(
       expected_states,
-      Eq(handler.GetLastNotificationIdStateMap()));
-  EXPECT_EQ(REMOTE_NOTIFICATION, handler.GetLastNotificationSource());
+      Eq(handler.GetLastInvalidationIdStateMap()));
+  EXPECT_EQ(REMOTE_INVALIDATION, handler.GetLastInvalidationSource());
 
   ids.erase(this->id1);
   ids.insert(this->id3);
@@ -190,33 +184,33 @@ TYPED_TEST_P(InvalidatorTest, Basic) {
   expected_states[this->id3].payload = "3";
 
   // Removed object IDs should not be notified, newly-added ones should.
-  this->delegate_.TriggerOnIncomingNotification(states, REMOTE_NOTIFICATION);
-  EXPECT_EQ(2, handler.GetNotificationCount());
+  this->delegate_.TriggerOnIncomingInvalidation(states, REMOTE_INVALIDATION);
+  EXPECT_EQ(2, handler.GetInvalidationCount());
   EXPECT_THAT(
       expected_states,
-      Eq(handler.GetLastNotificationIdStateMap()));
-  EXPECT_EQ(REMOTE_NOTIFICATION, handler.GetLastNotificationSource());
+      Eq(handler.GetLastInvalidationIdStateMap()));
+  EXPECT_EQ(REMOTE_INVALIDATION, handler.GetLastInvalidationSource());
 
-  this->delegate_.TriggerOnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR);
-  EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR,
-            handler.GetNotificationsDisabledReason());
+  this->delegate_.TriggerOnInvalidatorStateChange(TRANSIENT_INVALIDATION_ERROR);
+  EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR,
+            handler.GetInvalidatorState());
 
-  this->delegate_.TriggerOnNotificationsDisabled(
-      NOTIFICATION_CREDENTIALS_REJECTED);
-  EXPECT_EQ(NOTIFICATION_CREDENTIALS_REJECTED,
-            handler.GetNotificationsDisabledReason());
+  this->delegate_.TriggerOnInvalidatorStateChange(
+      INVALIDATION_CREDENTIALS_REJECTED);
+  EXPECT_EQ(INVALIDATION_CREDENTIALS_REJECTED,
+            handler.GetInvalidatorState());
 
   invalidator->UnregisterHandler(&handler);
 
   // Should be ignored since |handler| isn't registered anymore.
-  this->delegate_.TriggerOnIncomingNotification(states, REMOTE_NOTIFICATION);
-  EXPECT_EQ(2, handler.GetNotificationCount());
+  this->delegate_.TriggerOnIncomingInvalidation(states, REMOTE_INVALIDATION);
+  EXPECT_EQ(2, handler.GetInvalidationCount());
 }
 
 // Register handlers and some IDs for those handlers, register a handler with
 // no IDs, and register a handler with some IDs but unregister it.  Then,
-// dispatch some notifications and invalidations.  Handlers that are registered
-// should get notifications, and the ones that have registered IDs should
+// dispatch some invalidations and invalidations.  Handlers that are registered
+// should get invalidations, and the ones that have registered IDs should
 // receive invalidations for those IDs.
 TYPED_TEST_P(InvalidatorTest, MultipleHandlers) {
   Invalidator* const invalidator = this->CreateAndInitializeInvalidator();
@@ -254,15 +248,11 @@ TYPED_TEST_P(InvalidatorTest, MultipleHandlers) {
 
   invalidator->UnregisterHandler(&handler4);
 
-  this->delegate_.TriggerOnNotificationsEnabled();
-  EXPECT_EQ(NO_NOTIFICATION_ERROR,
-            handler1.GetNotificationsDisabledReason());
-  EXPECT_EQ(NO_NOTIFICATION_ERROR,
-            handler2.GetNotificationsDisabledReason());
-  EXPECT_EQ(NO_NOTIFICATION_ERROR,
-            handler3.GetNotificationsDisabledReason());
-  EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR,
-            handler4.GetNotificationsDisabledReason());
+  this->delegate_.TriggerOnInvalidatorStateChange(INVALIDATIONS_ENABLED);
+  EXPECT_EQ(INVALIDATIONS_ENABLED, handler1.GetInvalidatorState());
+  EXPECT_EQ(INVALIDATIONS_ENABLED, handler2.GetInvalidatorState());
+  EXPECT_EQ(INVALIDATIONS_ENABLED, handler3.GetInvalidatorState());
+  EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, handler4.GetInvalidatorState());
 
   {
     ObjectIdStateMap states;
@@ -270,40 +260,36 @@ TYPED_TEST_P(InvalidatorTest, MultipleHandlers) {
     states[this->id2].payload = "2";
     states[this->id3].payload = "3";
     states[this->id4].payload = "4";
-    this->delegate_.TriggerOnIncomingNotification(states, REMOTE_NOTIFICATION);
+    this->delegate_.TriggerOnIncomingInvalidation(states, REMOTE_INVALIDATION);
 
     ObjectIdStateMap expected_states;
     expected_states[this->id1].payload = "1";
     expected_states[this->id2].payload = "2";
 
-    EXPECT_EQ(1, handler1.GetNotificationCount());
+    EXPECT_EQ(1, handler1.GetInvalidationCount());
     EXPECT_THAT(
         expected_states,
-        Eq(handler1.GetLastNotificationIdStateMap()));
-    EXPECT_EQ(REMOTE_NOTIFICATION, handler1.GetLastNotificationSource());
+        Eq(handler1.GetLastInvalidationIdStateMap()));
+    EXPECT_EQ(REMOTE_INVALIDATION, handler1.GetLastInvalidationSource());
 
     expected_states.clear();
     expected_states[this->id3].payload = "3";
 
-    EXPECT_EQ(1, handler2.GetNotificationCount());
+    EXPECT_EQ(1, handler2.GetInvalidationCount());
     EXPECT_THAT(
         expected_states,
-        Eq(handler2.GetLastNotificationIdStateMap()));
-    EXPECT_EQ(REMOTE_NOTIFICATION, handler2.GetLastNotificationSource());
+        Eq(handler2.GetLastInvalidationIdStateMap()));
+    EXPECT_EQ(REMOTE_INVALIDATION, handler2.GetLastInvalidationSource());
 
-    EXPECT_EQ(0, handler3.GetNotificationCount());
-    EXPECT_EQ(0, handler4.GetNotificationCount());
+    EXPECT_EQ(0, handler3.GetInvalidationCount());
+    EXPECT_EQ(0, handler4.GetInvalidationCount());
   }
 
-  this->delegate_.TriggerOnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR);
-  EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR,
-            handler1.GetNotificationsDisabledReason());
-  EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR,
-            handler2.GetNotificationsDisabledReason());
-  EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR,
-            handler3.GetNotificationsDisabledReason());
-  EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR,
-            handler4.GetNotificationsDisabledReason());
+  this->delegate_.TriggerOnInvalidatorStateChange(TRANSIENT_INVALIDATION_ERROR);
+  EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, handler1.GetInvalidatorState());
+  EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, handler2.GetInvalidatorState());
+  EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, handler3.GetInvalidatorState());
+  EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, handler4.GetInvalidatorState());
 }
 
 // Make sure that passing an empty set to UpdateRegisteredIds clears the
@@ -336,27 +322,65 @@ TYPED_TEST_P(InvalidatorTest, EmptySetUnregisters) {
   // further invalidations.
   invalidator->UpdateRegisteredIds(&handler1, ObjectIdSet());
 
-  this->delegate_.TriggerOnNotificationsEnabled();
-  EXPECT_EQ(NO_NOTIFICATION_ERROR,
-            handler1.GetNotificationsDisabledReason());
-  EXPECT_EQ(NO_NOTIFICATION_ERROR,
-            handler2.GetNotificationsDisabledReason());
+  this->delegate_.TriggerOnInvalidatorStateChange(INVALIDATIONS_ENABLED);
+  EXPECT_EQ(INVALIDATIONS_ENABLED, handler1.GetInvalidatorState());
+  EXPECT_EQ(INVALIDATIONS_ENABLED, handler2.GetInvalidatorState());
 
   {
     ObjectIdStateMap states;
     states[this->id1].payload = "1";
     states[this->id2].payload = "2";
     states[this->id3].payload = "3";
-    this->delegate_.TriggerOnIncomingNotification(states, REMOTE_NOTIFICATION);
-    EXPECT_EQ(0, handler1.GetNotificationCount());
-    EXPECT_EQ(1, handler2.GetNotificationCount());
+    this->delegate_.TriggerOnIncomingInvalidation(states, REMOTE_INVALIDATION);
+    EXPECT_EQ(0, handler1.GetInvalidationCount());
+    EXPECT_EQ(1, handler2.GetInvalidationCount());
   }
 
-  this->delegate_.TriggerOnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR);
-  EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR,
-            handler1.GetNotificationsDisabledReason());
-  EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR,
-            handler2.GetNotificationsDisabledReason());
+  this->delegate_.TriggerOnInvalidatorStateChange(TRANSIENT_INVALIDATION_ERROR);
+  EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, handler1.GetInvalidatorState());
+  EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, handler2.GetInvalidatorState());
+}
+
+namespace internal {
+
+// A FakeInvalidationHandler that is "bound" to a specific
+// Invalidator.  This is for cross-referencing state information with
+// the bound Invalidator.
+class BoundFakeInvalidationHandler : public FakeInvalidationHandler {
+ public:
+  explicit BoundFakeInvalidationHandler(const Invalidator& invalidator);
+  virtual ~BoundFakeInvalidationHandler();
+
+  // Returns the last return value of GetInvalidatorState() on the
+  // bound invalidator from the last time the invalidator state
+  // changed.
+  InvalidatorState GetLastRetrievedState() const;
+
+  // InvalidationHandler implementation.
+  virtual void OnInvalidatorStateChange(InvalidatorState state) OVERRIDE;
+
+ private:
+  const Invalidator& invalidator_;
+  InvalidatorState last_retrieved_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(BoundFakeInvalidationHandler);
+};
+
+}  // namespace internal
+
+TYPED_TEST_P(InvalidatorTest, GetInvalidatorStateAlwaysCurrent) {
+  Invalidator* const invalidator = this->CreateAndInitializeInvalidator();
+
+  internal::BoundFakeInvalidationHandler handler(*invalidator);
+  invalidator->RegisterHandler(&handler);
+
+  this->delegate_.TriggerOnInvalidatorStateChange(INVALIDATIONS_ENABLED);
+  EXPECT_EQ(INVALIDATIONS_ENABLED, handler.GetInvalidatorState());
+  EXPECT_EQ(INVALIDATIONS_ENABLED, handler.GetLastRetrievedState());
+
+  this->delegate_.TriggerOnInvalidatorStateChange(TRANSIENT_INVALIDATION_ERROR);
+  EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, handler.GetInvalidatorState());
+  EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, handler.GetLastRetrievedState());
 }
 
 // Initialize the invalidator with an empty initial state.  Call the deprecated
@@ -386,7 +410,7 @@ TYPED_TEST_P(InvalidatorTest, MigrateState) {
   // Pretend that Chrome has shut down.
   this->delegate_.DestroyInvalidator();
   this->delegate_.CreateInvalidator("fake_state",
-                                 this->fake_tracker_.AsWeakPtr());
+                                    this->fake_tracker_.AsWeakPtr());
   invalidator = this->delegate_.GetInvalidator();
 
   // Should do nothing.
@@ -397,7 +421,7 @@ TYPED_TEST_P(InvalidatorTest, MigrateState) {
 
 REGISTER_TYPED_TEST_CASE_P(InvalidatorTest,
                            Basic, MultipleHandlers, EmptySetUnregisters,
-                           MigrateState);
+                           GetInvalidatorStateAlwaysCurrent, MigrateState);
 
 }  // namespace syncer
 

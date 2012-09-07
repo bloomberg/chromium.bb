@@ -16,8 +16,8 @@
 #include "sync/internal_api/public/http_post_provider_factory.h"
 #include "sync/internal_api/public/internal_components_factory.h"
 #include "sync/internal_api/public/util/weak_handle.h"
-#include "sync/notifier/notifications_disabled_reason.h"
 #include "sync/notifier/invalidator.h"
+#include "sync/notifier/invalidator_state.h"
 #include "sync/notifier/object_id_state_map.h"
 #include "sync/test/fake_sync_encryption_handler.h"
 
@@ -53,7 +53,7 @@ ModelTypeSet FakeSyncManager::GetAndResetEnabledTypes() {
 }
 
 void FakeSyncManager::Invalidate(const ObjectIdStateMap& id_state_map,
-                                 IncomingNotificationSource source) {
+                                 IncomingInvalidationSource source) {
   if (!sync_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&FakeSyncManager::InvalidateOnSyncThread,
@@ -62,21 +62,11 @@ void FakeSyncManager::Invalidate(const ObjectIdStateMap& id_state_map,
   }
 }
 
-void FakeSyncManager::EnableNotifications() {
+void FakeSyncManager::UpdateInvalidatorState(InvalidatorState state) {
   if (!sync_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&FakeSyncManager::EnableNotificationsOnSyncThread,
-                 base::Unretained(this)))) {
-    NOTREACHED();
-  }
-}
-
-void FakeSyncManager::DisableNotifications(
-    NotificationsDisabledReason reason) {
-  if (!sync_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&FakeSyncManager::DisableNotificationsOnSyncThread,
-                 base::Unretained(this), reason))) {
+      base::Bind(&FakeSyncManager::UpdateInvalidatorStateOnSyncThread,
+                 base::Unretained(this), state))) {
     NOTREACHED();
   }
 }
@@ -262,20 +252,15 @@ SyncEncryptionHandler* FakeSyncManager::GetEncryptionHandler() {
 
 void FakeSyncManager::InvalidateOnSyncThread(
     const ObjectIdStateMap& id_state_map,
-    IncomingNotificationSource source) {
+    IncomingInvalidationSource source) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
   registrar_.DispatchInvalidationsToHandlers(id_state_map, source);
 }
 
-void FakeSyncManager::EnableNotificationsOnSyncThread() {
+void FakeSyncManager::UpdateInvalidatorStateOnSyncThread(
+    InvalidatorState state) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
-  registrar_.EmitOnNotificationsEnabled();
-}
-
-void FakeSyncManager::DisableNotificationsOnSyncThread(
-    NotificationsDisabledReason reason) {
-  DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
-  registrar_.EmitOnNotificationsDisabled(reason);
+  registrar_.UpdateInvalidatorState(state);
 }
 
 }  // namespace syncer

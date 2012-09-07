@@ -23,7 +23,7 @@
 #include "sync/internal_api/sync_encryption_handler_impl.h"
 #include "sync/js/js_backend.h"
 #include "sync/notifier/invalidation_handler.h"
-#include "sync/notifier/notifications_disabled_reason.h"
+#include "sync/notifier/invalidator_state.h"
 #include "sync/syncable/directory_change_delegate.h"
 #include "sync/util/cryptographer.h"
 #include "sync/util/time.h"
@@ -167,12 +167,10 @@ class SyncManagerImpl : public SyncManager,
       syncable::BaseTransaction* trans) OVERRIDE;
 
   // InvalidationHandler implementation.
-  virtual void OnNotificationsEnabled() OVERRIDE;
-  virtual void OnNotificationsDisabled(
-      NotificationsDisabledReason reason) OVERRIDE;
-  virtual void OnIncomingNotification(
+  virtual void OnInvalidatorStateChange(InvalidatorState state) OVERRIDE;
+  virtual void OnIncomingInvalidation(
       const ObjectIdStateMap& id_state_map,
-      IncomingNotificationSource source) OVERRIDE;
+      IncomingInvalidationSource source) OVERRIDE;
 
   // Called only by our NetworkChangeNotifier.
   virtual void OnIPAddressChanged() OVERRIDE;
@@ -264,9 +262,6 @@ class SyncManagerImpl : public SyncManager,
   void BindJsMessageHandler(
     const std::string& name, UnboundJsMessageHandler unbound_message_handler);
 
-  // Helper function used by OnNotifications{Enabled,Disabled}().
-  void OnNotificationStateChange(NotificationsDisabledReason reason);
-
   // Returned pointer is owned by the caller.
   static DictionaryValue* NotificationInfoToValue(
       const NotificationInfoMap& notification_info);
@@ -353,7 +348,7 @@ class SyncManagerImpl : public SyncManager,
 
   bool observing_ip_address_changes_;
 
-  NotificationsDisabledReason notifications_disabled_reason_;
+  InvalidatorState invalidator_state_;
 
   // Map used to store the notification info to be displayed in
   // about:sync page.

@@ -76,17 +76,13 @@ class NonBlockingInvalidatorTestDelegate {
     run_loop.Run();
   }
 
-  void TriggerOnNotificationsEnabled() {
-    invalidator_->OnNotificationsEnabled();
+  void TriggerOnInvalidatorStateChange(InvalidatorState state) {
+    invalidator_->OnInvalidatorStateChange(state);
   }
 
-  void TriggerOnIncomingNotification(const ObjectIdStateMap& id_state_map,
-                                     IncomingNotificationSource source) {
-    invalidator_->OnIncomingNotification(id_state_map, source);
-  }
-
-  void TriggerOnNotificationsDisabled(NotificationsDisabledReason reason) {
-    invalidator_->OnNotificationsDisabled(reason);
+  void TriggerOnIncomingInvalidation(const ObjectIdStateMap& id_state_map,
+                                     IncomingInvalidationSource source) {
+    invalidator_->OnIncomingInvalidation(id_state_map, source);
   }
 
   static bool InvalidatorHandlesDeprecatedState() {

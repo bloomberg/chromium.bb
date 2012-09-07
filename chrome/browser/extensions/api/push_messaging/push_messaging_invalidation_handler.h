@@ -40,12 +40,11 @@ class PushMessagingInvalidationHandler : public PushMessagingInvalidationMapper,
   virtual void UnregisterExtension(const std::string& extension_id) OVERRIDE;
 
   // InvalidationHandler implementation.
-  virtual void OnNotificationsEnabled() OVERRIDE;
-  virtual void OnNotificationsDisabled(
-      syncer::NotificationsDisabledReason reason) OVERRIDE;
-  virtual void OnIncomingNotification(
+  virtual void OnInvalidatorStateChange(
+      syncer::InvalidatorState state) OVERRIDE;
+  virtual void OnIncomingInvalidation(
       const syncer::ObjectIdStateMap& id_state_map,
-      syncer::IncomingNotificationSource source) OVERRIDE;
+      syncer::IncomingInvalidationSource source) OVERRIDE;
 
   const std::set<std::string>& GetRegisteredExtensionsForTest() const {
     return registered_extensions_;

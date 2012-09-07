@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// An invalidator that uses p2p notifications based on XMPP push
+// An invalidator that uses p2p invalidations based on XMPP push
 // notifications.  Used only for sync integration tests.
 
 #ifndef SYNC_NOTIFIER_P2P_INVALIDATOR_H_
@@ -20,7 +20,7 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/notifier/invalidator.h"
 #include "sync/notifier/invalidator_registrar.h"
-#include "sync/notifier/notifications_disabled_reason.h"
+#include "sync/notifier/invalidator_state.h"
 
 namespace notifier {
 class PushClient;
@@ -57,7 +57,7 @@ class P2PNotificationData {
   P2PNotificationData(const std::string& sender_id,
                       P2PNotificationTarget target,
                       const ObjectIdStateMap& id_state_map,
-                      IncomingNotificationSource source);
+                      IncomingInvalidationSource source);
 
   ~P2PNotificationData();
 
@@ -66,7 +66,7 @@ class P2PNotificationData {
 
   const ObjectIdStateMap& GetIdStateMap() const;
 
-  IncomingNotificationSource GetSource() const;
+  IncomingInvalidationSource GetSource() const;
 
   bool Equals(const P2PNotificationData& other) const;
 
@@ -83,8 +83,8 @@ class P2PNotificationData {
   P2PNotificationTarget target_;
   // The state map for the notification.
   ObjectIdStateMap id_state_map_;
-  // The source of the notification.
-  IncomingNotificationSource source_;
+  // The source of the invalidation.
+  IncomingInvalidationSource source_;
 };
 
 class P2PInvalidator : public Invalidator,
@@ -100,16 +100,17 @@ class P2PInvalidator : public Invalidator,
 
   virtual ~P2PInvalidator();
 
-  // Invalidator implementation
+  // Invalidator implementation.
   virtual void RegisterHandler(InvalidationHandler* handler) OVERRIDE;
   virtual void UpdateRegisteredIds(InvalidationHandler* handler,
                                    const ObjectIdSet& ids) OVERRIDE;
   virtual void UnregisterHandler(InvalidationHandler* handler) OVERRIDE;
+  virtual InvalidatorState GetInvalidatorState() const OVERRIDE;
   virtual void SetUniqueId(const std::string& unique_id) OVERRIDE;
   virtual void SetStateDeprecated(const std::string& state) OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
-  virtual void SendNotification(const ObjectIdStateMap& id_state_map) OVERRIDE;
+  virtual void SendInvalidation(const ObjectIdStateMap& id_state_map) OVERRIDE;
 
   // PushClientObserver implementation.
   virtual void OnNotificationsEnabled() OVERRIDE;

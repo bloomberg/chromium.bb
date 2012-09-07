@@ -55,13 +55,10 @@ class FakeSyncManager : public SyncManager {
 
   // Posts a method to invalidate the given IDs on the sync thread.
   void Invalidate(const ObjectIdStateMap& id_state_map,
-                  IncomingNotificationSource source);
+                  IncomingInvalidationSource source);
 
-  // Posts a method to enable notifications on the sync thread.
-  void EnableNotifications();
-
-  // Posts a method to disable notifications on the sync thread.
-  void DisableNotifications(NotificationsDisabledReason reason);
+  // Posts a method to update the invalidator state on the sync thread.
+  void UpdateInvalidatorState(InvalidatorState state);
 
   // Block until the sync thread has finished processing any pending messages.
   void WaitForSyncThread();
@@ -125,9 +122,8 @@ class FakeSyncManager : public SyncManager {
  private:
   void InvalidateOnSyncThread(
       const ObjectIdStateMap& id_state_map,
-      IncomingNotificationSource source);
-  void EnableNotificationsOnSyncThread();
-  void DisableNotificationsOnSyncThread(NotificationsDisabledReason reason);
+      IncomingInvalidationSource source);
+  void UpdateInvalidatorStateOnSyncThread(InvalidatorState state);
 
   scoped_refptr<base::SequencedTaskRunner> sync_task_runner_;
 

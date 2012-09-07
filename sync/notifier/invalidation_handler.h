@@ -5,33 +5,29 @@
 #ifndef SYNC_NOTIFIER_INVALIDATION_HANDLER_H_
 #define SYNC_NOTIFIER_INVALIDATION_HANDLER_H_
 
+#include "sync/notifier/invalidator_state.h"
 #include "sync/notifier/object_id_state_map.h"
-#include "sync/notifier/notifications_disabled_reason.h"
 
 namespace syncer {
 
-enum IncomingNotificationSource {
-  // The server is notifying us that one or more datatypes have stale data.
-  REMOTE_NOTIFICATION,
-  // A chrome datatype is requesting an optimistic refresh of its data.
-  LOCAL_NOTIFICATION,
+enum IncomingInvalidationSource {
+  // The server is notifying us that one or more objects have stale data.
+  REMOTE_INVALIDATION,
+  // Something locally is requesting an optimistic refresh of its data.
+  LOCAL_INVALIDATION,
 };
 
 class InvalidationHandler {
  public:
-  // Called when notifications are enabled.
-  virtual void OnNotificationsEnabled() = 0;
+  // Called when the invalidator state changes.
+  virtual void OnInvalidatorStateChange(InvalidatorState state) = 0;
 
-  // Called when notifications are disabled, with the reason in
-  // |reason|.
-  virtual void OnNotificationsDisabled(
-      NotificationsDisabledReason reason) = 0;
-
-  // Called when a notification is received.  The per-id states
-  // are in |id_state_map| and the source is in |source|.
-  virtual void OnIncomingNotification(
+  // Called when a invalidation is received.  The per-id states are in
+  // |id_state_map| and the source is in |source|.  Note that this may be
+  // called regardless of the current invalidator state.
+  virtual void OnIncomingInvalidation(
       const ObjectIdStateMap& id_state_map,
-      IncomingNotificationSource source) = 0;
+      IncomingInvalidationSource source) = 0;
 
  protected:
   virtual ~InvalidationHandler() {}

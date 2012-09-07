@@ -168,7 +168,7 @@ SyncManagerImpl::SyncManagerImpl(const std::string& name)
       change_delegate_(NULL),
       initialized_(false),
       observing_ip_address_changes_(false),
-      notifications_disabled_reason_(TRANSIENT_NOTIFICATION_ERROR),
+      invalidator_state_(DEFAULT_INVALIDATION_ERROR),
       throttled_data_type_tracker_(&allstatus_),
       traffic_recorder_(kMaxMessagesToRecord, kMaxMessageSizeToRecord),
       encryptor_(NULL),
@@ -1010,9 +1010,9 @@ void SyncManagerImpl::OnSyncEngineEvent(const SyncEngineEvent& event) {
       if (invalidator_.get()) {
         const ObjectIdStateMap& id_state_map =
             ModelTypeStateMapToObjectIdStateMap(event.snapshot.source().types);
-        invalidator_->SendNotification(id_state_map);
+        invalidator_->SendInvalidation(id_state_map);
       } else {
-        DVLOG(1) << "Not sending notification: invalidator_ is NULL";
+        DVLOG(1) << "Not sending invalidation: invalidator_ is NULL";
       }
     }
   }
@@ -1080,29 +1080,6 @@ void SyncManagerImpl::BindJsMessageHandler(
       base::Bind(unbound_message_handler, base::Unretained(this));
 }
 
-void SyncManagerImpl::OnNotificationStateChange(
-    NotificationsDisabledReason reason) {
-  const std::string& reason_str = NotificationsDisabledReasonToString(reason);
-  notifications_disabled_reason_ = reason;
-  DVLOG(1) << "Notification state changed to: " << reason_str;
-  const bool notifications_enabled =
-      (notifications_disabled_reason_ == NO_NOTIFICATION_ERROR);
-  allstatus_.SetNotificationsEnabled(notifications_enabled);
-  scheduler_->SetNotificationsEnabled(notifications_enabled);
-
-  // TODO(akalin): Treat a CREDENTIALS_REJECTED state as an auth
-  // error.
-
-  if (js_event_handler_.IsInitialized()) {
-    DictionaryValue details;
-    details.Set("state", Value::CreateStringValue(reason_str));
-    js_event_handler_.Call(FROM_HERE,
-                           &JsEventHandler::HandleJsEvent,
-                           "onNotificationStateChange",
-                           JsEventDetails(&details));
-  }
-}
-
 DictionaryValue* SyncManagerImpl::NotificationInfoToValue(
     const NotificationInfoMap& notification_info) {
   DictionaryValue* value = new DictionaryValue();
@@ -1128,7 +1105,7 @@ std::string SyncManagerImpl::NotificationInfoToString(
 JsArgList SyncManagerImpl::GetNotificationState(
     const JsArgList& args) {
   const std::string& notification_state =
-      NotificationsDisabledReasonToString(notifications_disabled_reason_);
+      InvalidatorStateToString(invalidator_state_);
   DVLOG(1) << "GetNotificationState: " << notification_state;
   ListValue return_args;
   return_args.Append(Value::CreateStringValue(notification_state));
@@ -1260,22 +1237,35 @@ void SyncManagerImpl::UpdateNotificationInfo(
   }
 }
 
-void SyncManagerImpl::OnNotificationsEnabled() {
-  OnNotificationStateChange(NO_NOTIFICATION_ERROR);
+void SyncManagerImpl::OnInvalidatorStateChange(InvalidatorState state) {
+  const std::string& state_str = InvalidatorStateToString(state);
+  invalidator_state_ = state;
+  DVLOG(1) << "Invalidator state changed to: " << state_str;
+  const bool notifications_enabled =
+      (invalidator_state_ == INVALIDATIONS_ENABLED);
+  allstatus_.SetNotificationsEnabled(notifications_enabled);
+  scheduler_->SetNotificationsEnabled(notifications_enabled);
+
+  // TODO(akalin): Treat a CREDENTIALS_REJECTED state as an auth
+  // error.
+
+  if (js_event_handler_.IsInitialized()) {
+    DictionaryValue details;
+    details.SetString("state", state_str);
+    js_event_handler_.Call(FROM_HERE,
+                           &JsEventHandler::HandleJsEvent,
+                           "onNotificationStateChange",
+                           JsEventDetails(&details));
+  }
 }
 
-void SyncManagerImpl::OnNotificationsDisabled(
-    NotificationsDisabledReason reason) {
-  OnNotificationStateChange(reason);
-}
-
-void SyncManagerImpl::OnIncomingNotification(
+void SyncManagerImpl::OnIncomingInvalidation(
     const ObjectIdStateMap& id_state_map,
-    IncomingNotificationSource source) {
+    IncomingInvalidationSource source) {
   DCHECK(thread_checker_.CalledOnValidThread());
   const ModelTypeStateMap& type_state_map =
       ObjectIdStateMapToModelTypeStateMap(id_state_map);
-  if (source == LOCAL_NOTIFICATION) {
+  if (source == LOCAL_INVALIDATION) {
     scheduler_->ScheduleNudgeWithStatesAsync(
         TimeDelta::FromMilliseconds(kSyncRefreshDelayMsec),
         NUDGE_SOURCE_LOCAL_REFRESH,
@@ -1289,7 +1279,7 @@ void SyncManagerImpl::OnIncomingNotification(
     UpdateNotificationInfo(type_state_map);
     debug_info_event_listener_.OnIncomingNotification(type_state_map);
   } else {
-    LOG(WARNING) << "Sync received notification without any type information.";
+    LOG(WARNING) << "Sync received invalidation without any type information.";
   }
 
   if (js_event_handler_.IsInitialized()) {
@@ -1302,8 +1292,8 @@ void SyncManagerImpl::OnIncomingNotification(
           ModelTypeToString(it->first);
       changed_types->Append(Value::CreateStringValue(model_type_str));
     }
-    details.SetString("source", (source == LOCAL_NOTIFICATION) ?
-        "LOCAL_NOTIFICATION" : "REMOTE_NOTIFICATION");
+    details.SetString("source", (source == LOCAL_INVALIDATION) ?
+        "LOCAL_INVALIDATION" : "REMOTE_INVALIDATION");
     js_event_handler_.Call(FROM_HERE,
                            &JsEventHandler::HandleJsEvent,
                            "onIncomingNotification",

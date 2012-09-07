@@ -7,46 +7,40 @@
 namespace syncer {
 
 FakeInvalidationHandler::FakeInvalidationHandler()
-    : reason_(TRANSIENT_NOTIFICATION_ERROR),
-      last_source_(LOCAL_NOTIFICATION),
-      notification_count_(0) {}
+    : state_(DEFAULT_INVALIDATION_ERROR),
+      last_source_(LOCAL_INVALIDATION),
+      invalidation_count_(0) {}
 
 FakeInvalidationHandler::~FakeInvalidationHandler() {}
 
-NotificationsDisabledReason
-FakeInvalidationHandler::GetNotificationsDisabledReason() const {
-  return reason_;
+InvalidatorState FakeInvalidationHandler::GetInvalidatorState() const {
+  return state_;
 }
 
 const ObjectIdStateMap&
-FakeInvalidationHandler::GetLastNotificationIdStateMap() const {
+FakeInvalidationHandler::GetLastInvalidationIdStateMap() const {
   return last_id_state_map_;
 }
 
-IncomingNotificationSource
-FakeInvalidationHandler::GetLastNotificationSource() const {
+IncomingInvalidationSource
+FakeInvalidationHandler::GetLastInvalidationSource() const {
   return last_source_;
 }
 
-int FakeInvalidationHandler::GetNotificationCount() const {
-  return notification_count_;
+int FakeInvalidationHandler::GetInvalidationCount() const {
+  return invalidation_count_;
 }
 
-void FakeInvalidationHandler::OnNotificationsEnabled() {
-  reason_ = NO_NOTIFICATION_ERROR;
+void FakeInvalidationHandler::OnInvalidatorStateChange(InvalidatorState state) {
+  state_ = state;
 }
 
-void FakeInvalidationHandler::OnNotificationsDisabled(
-    NotificationsDisabledReason reason) {
-  reason_ = reason;
-}
-
-void FakeInvalidationHandler::OnIncomingNotification(
+void FakeInvalidationHandler::OnIncomingInvalidation(
     const ObjectIdStateMap& id_state_map,
-    IncomingNotificationSource source) {
+    IncomingInvalidationSource source) {
   last_id_state_map_ = id_state_map;
   last_source_ = source;
-  ++notification_count_;
+  ++invalidation_count_;
 }
 
 }  // namespace syncer

@@ -52,6 +52,11 @@ void InvalidationNotifier::UnregisterHandler(InvalidationHandler* handler) {
   registrar_.UnregisterHandler(handler);
 }
 
+InvalidatorState InvalidationNotifier::GetInvalidatorState() const {
+  DCHECK(CalledOnValidThread());
+  return registrar_.GetInvalidatorState();
+}
+
 void InvalidationNotifier::SetUniqueId(const std::string& unique_id) {
   DCHECK(CalledOnValidThread());
   client_id_ = unique_id;
@@ -94,7 +99,7 @@ void InvalidationNotifier::UpdateCredentials(
   invalidation_listener_.UpdateCredentials(email, token);
 }
 
-void InvalidationNotifier::SendNotification(
+void InvalidationNotifier::SendInvalidation(
     const ObjectIdStateMap& id_state_map) {
   DCHECK(CalledOnValidThread());
   // Do nothing.
@@ -102,18 +107,12 @@ void InvalidationNotifier::SendNotification(
 
 void InvalidationNotifier::OnInvalidate(const ObjectIdStateMap& id_state_map) {
   DCHECK(CalledOnValidThread());
-  registrar_.DispatchInvalidationsToHandlers(id_state_map, REMOTE_NOTIFICATION);
+  registrar_.DispatchInvalidationsToHandlers(id_state_map, REMOTE_INVALIDATION);
 }
 
-void InvalidationNotifier::OnNotificationsEnabled() {
+void InvalidationNotifier::OnInvalidatorStateChange(InvalidatorState state) {
   DCHECK(CalledOnValidThread());
-  registrar_.EmitOnNotificationsEnabled();
-}
-
-void InvalidationNotifier::OnNotificationsDisabled(
-    NotificationsDisabledReason reason) {
-  DCHECK(CalledOnValidThread());
-  registrar_.EmitOnNotificationsDisabled(reason);
+  registrar_.UpdateInvalidatorState(state);
 }
 
 }  // namespace syncer

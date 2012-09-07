@@ -10,8 +10,11 @@ namespace browser_sync {
 
 BridgedInvalidator::BridgedInvalidator(
     ChromeSyncNotificationBridge* bridge,
-    syncer::Invalidator* delegate)
-    : bridge_(bridge), delegate_(delegate) {
+    syncer::Invalidator* delegate,
+    syncer::InvalidatorState default_invalidator_state)
+    : bridge_(bridge),
+      delegate_(delegate),
+      default_invalidator_state_(default_invalidator_state) {
   DCHECK(bridge_);
 }
 
@@ -31,6 +34,13 @@ void BridgedInvalidator::UpdateRegisteredIds(
   if (delegate_.get())
     delegate_->UpdateRegisteredIds(handler, ids);
   bridge_->UpdateRegisteredIds(handler, ids);
+}
+
+syncer::InvalidatorState BridgedInvalidator::GetInvalidatorState() const {
+  return
+      delegate_.get() ?
+      delegate_->GetInvalidatorState() :
+      default_invalidator_state_;
 }
 
 void BridgedInvalidator::UnregisterHandler(
@@ -56,10 +66,10 @@ void BridgedInvalidator::UpdateCredentials(
     delegate_->UpdateCredentials(email, token);
 }
 
-void BridgedInvalidator::SendNotification(
+void BridgedInvalidator::SendInvalidation(
     const syncer::ObjectIdStateMap& id_state_map) {
   if (delegate_.get())
-    delegate_->SendNotification(id_state_map);
+    delegate_->SendInvalidation(id_state_map);
 }
 
 }  // namespace browser_sync

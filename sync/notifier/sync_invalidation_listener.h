@@ -20,7 +20,7 @@
 #include "jingle/notifier/listener/push_client_observer.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/invalidation_state_tracker.h"
-#include "sync/notifier/notifications_disabled_reason.h"
+#include "sync/notifier/invalidator_state.h"
 #include "sync/notifier/object_id_state_map.h"
 #include "sync/notifier/state_writer.h"
 #include "sync/notifier/sync_system_resources.h"
@@ -58,10 +58,7 @@ class SyncInvalidationListener
 
     virtual void OnInvalidate(const ObjectIdStateMap& id_state_map) = 0;
 
-    virtual void OnNotificationsEnabled() = 0;
-
-    virtual void OnNotificationsDisabled(
-        NotificationsDisabledReason reason) = 0;
+    virtual void OnInvalidatorStateChange(InvalidatorState state) = 0;
   };
 
   explicit SyncInvalidationListener(
@@ -135,7 +132,7 @@ class SyncInvalidationListener
  private:
   void Stop();
 
-  NotificationsDisabledReason GetState() const;
+  InvalidatorState GetState() const;
 
   void EmitStateChange();
 
@@ -152,10 +149,9 @@ class SyncInvalidationListener
   // Stored to pass to |registration_manager_| on start.
   ObjectIdSet registered_ids_;
 
-  // The states of the ticl and the push client (with
-  // NO_NOTIFICATION_ERROR meaning notifications are enabled).
-  NotificationsDisabledReason ticl_state_;
-  NotificationsDisabledReason push_client_state_;
+  // The states of the ticl and the push client.
+  InvalidatorState ticl_state_;
+  InvalidatorState push_client_state_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncInvalidationListener);
 };

@@ -112,20 +112,15 @@ void PushMessagingInvalidationHandler::UnregisterExtension(
   UpdateRegistrations();
 }
 
-void PushMessagingInvalidationHandler::OnNotificationsEnabled() {
+void PushMessagingInvalidationHandler::OnInvalidatorStateChange(
+    syncer::InvalidatorState state) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Nothing to do.
 }
 
-void PushMessagingInvalidationHandler::OnNotificationsDisabled(
-    syncer::NotificationsDisabledReason reason) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // Nothing to do.
-}
-
-void PushMessagingInvalidationHandler::OnIncomingNotification(
+void PushMessagingInvalidationHandler::OnIncomingInvalidation(
     const syncer::ObjectIdStateMap& id_state_map,
-    syncer::IncomingNotificationSource source) {
+    syncer::IncomingInvalidationSource source) {
   DCHECK(thread_checker_.CalledOnValidThread());
   for (syncer::ObjectIdStateMap::const_iterator it = id_state_map.begin();
        it != id_state_map.end(); ++it) {

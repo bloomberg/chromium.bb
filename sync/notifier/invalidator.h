@@ -13,6 +13,7 @@
 
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/notifier/invalidation_util.h"
+#include "sync/notifier/invalidator_state.h"
 #include "sync/notifier/object_id_state_map.h"
 
 namespace syncer {
@@ -49,7 +50,7 @@ class Invalidator {
   //   invalidator->UnregisterHandler(client_handler);
 
   // Starts sending notifications to |handler|.  |handler| must not be NULL,
-  // and it must already be registered.
+  // and it must not already be registered.
   virtual void RegisterHandler(InvalidationHandler* handler) = 0;
 
   // Updates the set of ObjectIds associated with |handler|.  |handler| must
@@ -62,6 +63,11 @@ class Invalidator {
   // it must already be registered.  Note that this doesn't unregister the IDs
   // associated with |handler|.
   virtual void UnregisterHandler(InvalidationHandler* handler) = 0;
+
+  // Returns the current invalidator state.  When called from within
+  // InvalidationHandler::OnInvalidatorStateChange(), this must return
+  // the updated state.
+  virtual InvalidatorState GetInvalidatorState() const = 0;
 
   // SetUniqueId must be called once, before any call to
   // UpdateCredentials.  |unique_id| should be a non-empty globally
@@ -83,7 +89,7 @@ class Invalidator {
   // which is still used by sync integration tests.
   // TODO(akalin): Remove this once we move the integration tests off p2p
   // notifications.
-  virtual void SendNotification(const ObjectIdStateMap& id_state_map) = 0;
+  virtual void SendInvalidation(const ObjectIdStateMap& id_state_map) = 0;
 };
 }  // namespace syncer
 

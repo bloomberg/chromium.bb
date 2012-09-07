@@ -64,18 +64,14 @@ class InvalidationNotifierTestDelegate {
     message_loop_.RunAllPending();
   }
 
-  void TriggerOnNotificationsEnabled() {
-    invalidator_->OnNotificationsEnabled();
+  void TriggerOnInvalidatorStateChange(InvalidatorState state) {
+    invalidator_->OnInvalidatorStateChange(state);
   }
 
-  void TriggerOnIncomingNotification(const ObjectIdStateMap& id_state_map,
-                                     IncomingNotificationSource source) {
+  void TriggerOnIncomingInvalidation(const ObjectIdStateMap& id_state_map,
+                                     IncomingInvalidationSource source) {
     // None of the tests actually care about |source|.
     invalidator_->OnInvalidate(id_state_map);
-  }
-
-  void TriggerOnNotificationsDisabled(NotificationsDisabledReason reason) {
-    invalidator_->OnNotificationsDisabled(reason);
   }
 
   static bool InvalidatorHandlesDeprecatedState() {

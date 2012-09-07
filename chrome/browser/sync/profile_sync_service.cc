@@ -467,6 +467,10 @@ void ProfileSyncService::UnregisterInvalidationHandler(
   invalidator_registrar_.UnregisterHandler(handler);
 }
 
+syncer::InvalidatorState ProfileSyncService::GetInvalidatorState() const {
+  return invalidator_registrar_.GetInvalidatorState();
+}
+
 void ProfileSyncService::Shutdown() {
   ShutdownImpl(false);
 }
@@ -659,18 +663,14 @@ void ProfileSyncService::DisableBrokenDatatype(
                  weak_factory_.GetWeakPtr()));
 }
 
-void ProfileSyncService::OnNotificationsEnabled() {
-  invalidator_registrar_.EmitOnNotificationsEnabled();
+void ProfileSyncService::OnInvalidatorStateChange(
+    syncer::InvalidatorState state) {
+  invalidator_registrar_.UpdateInvalidatorState(state);
 }
 
-void ProfileSyncService::OnNotificationsDisabled(
-    syncer::NotificationsDisabledReason reason) {
-  invalidator_registrar_.EmitOnNotificationsDisabled(reason);
-}
-
-void ProfileSyncService::OnIncomingNotification(
+void ProfileSyncService::OnIncomingInvalidation(
     const syncer::ObjectIdStateMap& id_state_map,
-    syncer::IncomingNotificationSource source) {
+    syncer::IncomingInvalidationSource source) {
   invalidator_registrar_.DispatchInvalidationsToHandlers(id_state_map, source);
 }
 

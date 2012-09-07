@@ -269,8 +269,8 @@
         'notifier/invalidator.h',
         'notifier/invalidator_registrar.cc',
         'notifier/invalidator_registrar.h',
-        'notifier/notifications_disabled_reason.cc',
-        'notifier/notifications_disabled_reason.h',
+        'notifier/invalidator_state.cc',
+        'notifier/invalidator_state.h',
         'notifier/object_id_state_map.cc',
         'notifier/object_id_state_map.h',
       ],
@@ -474,16 +474,17 @@
     {
       'target_name': 'test_support_sync_notifier',
       'type': 'static_library',
-      'variables': { 'enable_wexit_time_destructors': 1, },
       'include_dirs': [
         '..',
       ],
       'dependencies': [
         '../testing/gmock.gyp:gmock',
+        '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp',
         'sync_notifier',
       ],
       'export_dependent_settings': [
         '../testing/gmock.gyp:gmock',
+        '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp',
         'sync_notifier',
       ],
       'sources': [
@@ -493,6 +494,7 @@
         'notifier/fake_invalidator.h',
         'notifier/fake_invalidation_handler.cc',
         'notifier/fake_invalidation_handler.h',
+        'notifier/invalidator_test_template.cc',
         'notifier/invalidator_test_template.h',
         'notifier/object_id_state_map_test_util.cc',
         'notifier/object_id_state_map_test_util.h',

@@ -64,12 +64,10 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
 
   void SetInitialSyncEndedForAllTypes();
 
-  void EmitOnNotificationsEnabled();
-  void EmitOnNotificationsDisabled(
-      syncer::NotificationsDisabledReason reason);
-  void EmitOnIncomingNotification(
+  void EmitOnInvalidatorStateChange(syncer::InvalidatorState state);
+  void EmitOnIncomingInvalidation(
       const syncer::ObjectIdStateMap& id_state_map,
-      const syncer::IncomingNotificationSource source);
+      const syncer::IncomingInvalidationSource source);
 
  protected:
   virtual void InitCore(const DoInitializeOptions& options) OVERRIDE;
