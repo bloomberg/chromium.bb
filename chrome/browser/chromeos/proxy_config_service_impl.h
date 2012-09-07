@@ -19,10 +19,10 @@ namespace chromeos {
 // Implementation of proxy config service for chromeos that:
 // - extends PrefProxyConfigTrackerImpl (and so lives and runs entirely on UI
 //   thread) to handle proxy from prefs (via PrefProxyConfigTrackerImpl) and
-//   system i.e. network (via flimflam notifications)
+//   system i.e. network (via shill notifications)
 // - exists one per profile and one per local state
 // - retrieves initial system proxy configuration from cros settings persisted
-//   on chromeos device from chromeos revisions before migration to flimflam,
+//   on chromeos device from chromeos revisions before migration to shill,
 // - persists proxy setting per network in flimflim
 // - provides network stack with latest effective proxy configuration for
 //   currently active network via PrefProxyConfigTrackerImpl's mechanism of
@@ -95,14 +95,14 @@ class ProxyConfigServiceImpl
     // ManualProxy.  Returns NULL if scheme is invalid.
     ManualProxy* MapSchemeToProxy(const std::string& scheme);
 
-    // We've migrated device settings to flimflam, so we only need to
+    // We've migrated device settings to shill, so we only need to
     // deserialize previously persisted device settings.
     // Deserializes from signed setting on device as std::string into a
     // protobuf and then into the config.
     bool DeserializeForDevice(const std::string& input);
 
     // Serializes config into a ProxyConfigDictionary and then std::string
-    // persisted as string property in flimflam for a network.
+    // persisted as string property in shill for a network.
     bool SerializeForNetwork(std::string* output);
 
     // Encodes the proxy server as "<url-scheme>=<proxy-scheme>://<proxy>"
@@ -159,7 +159,7 @@ class ProxyConfigServiceImpl
   void UIGetProxyConfig(ProxyConfig* config);
 
   // Called from UI to update proxy configuration for different modes.
-  // Returns true if config is set properly and persisted to flimflam for the
+  // Returns true if config is set properly and persisted to shill for the
   // current network (set via UISetCurrentNetwork/UIMakeActiveNetworkCurrent).
   // If this network is also currently active, config service proceeds to start
   // activating it on network stack.
@@ -218,12 +218,12 @@ class ProxyConfigServiceImpl
 
   // Called from OnNetworkManagerChanged and OnNetworkChanged for currently
   // active network, to handle previously active network, new active network,
-  // and if necessary, migrates device settings to flimflam and/or activates
+  // and if necessary, migrates device settings to shill and/or activates
   // proxy setting of new network.
   void OnActiveNetworkChanged(NetworkLibrary* cros,
                               const Network* active_network);
 
-  // Sets proxy config for |network_path| into flimflam and activates setting
+  // Sets proxy config for |network_path| into shill and activates setting
   // if the network is currently active.  If |only_set_if_empty| is true,
   // proxy will be set and saved only if network has no proxy.
   void SetProxyConfigForNetwork(const std::string& network_path,
@@ -259,7 +259,7 @@ class ProxyConfigServiceImpl
 
   // Data members.
 
-  // Service path of currently active network (determined via flimflam
+  // Service path of currently active network (determined via shill
   // notifications); if effective proxy config is from system, proxy of this
   // network will be the one taking effect.
   std::string active_network_;
@@ -272,7 +272,7 @@ class ProxyConfigServiceImpl
   net::ProxyConfig active_config_;
 
   // Proxy config retreived from device, in format generated from
-  // SerializeForNetwork, that can be directly set into flimflam.
+  // SerializeForNetwork, that can be directly set into shill.
   std::string device_config_;
 
   // Service path of network whose proxy configuration is being displayed or

@@ -50,7 +50,7 @@ class SMSWatcher : public CrosNetworkWatcher {
   virtual ~SMSWatcher();
 
  private:
-  // Callback for flimflam device's GetProperties() method.
+  // Callback for shill device's GetProperties() method.
   void DevicePropertiesCallback(DBusMethodCallStatus call_status,
                                 const base::DictionaryValue& properties);
 

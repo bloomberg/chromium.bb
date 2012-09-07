@@ -20,11 +20,11 @@ namespace chromeos {
 
 class NetworkDevice;
 
-// This takes a Value of a particular form, and maps the keys in the
-// dictionary to a NetworkDevice object to initialize it properly.
-// Subclasses of this can then customize its methods to parse either
-// libcros (flimflam) data or network setup information obtained from
-// policy or setup file import depending on the EnumMapper supplied.
+// This takes a Value of a particular form, and maps the keys in the dictionary
+// to a NetworkDevice object to initialize it properly. Subclasses of this can
+// then customize its methods to parse either Shill data or network setup
+// information obtained from policy or setup file import depending on the
+// EnumMapper supplied.
 class NetworkDeviceParser {
  public:
   virtual ~NetworkDeviceParser();

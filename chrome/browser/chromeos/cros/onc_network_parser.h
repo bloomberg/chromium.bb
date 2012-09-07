@@ -147,7 +147,7 @@ class OncNetworkParser : public NetworkParser {
   static std::string GetPkcs11IdFromCertGuid(const std::string& guid);
 
   // Process ProxySettings dictionary into a format which is then updated into
-  // ProxyConfig property in flimflam.
+  // ProxyConfig property in shill.
   static bool ProcessProxySettings(OncNetworkParser* parser,
                                    const base::Value& value,
                                    Network* network);

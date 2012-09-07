@@ -21,12 +21,12 @@
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/debug_daemon_client.h"
-#include "chromeos/dbus/flimflam_device_client.h"
-#include "chromeos/dbus/flimflam_ipconfig_client.h"
-#include "chromeos/dbus/flimflam_manager_client.h"
-#include "chromeos/dbus/flimflam_network_client.h"
-#include "chromeos/dbus/flimflam_profile_client.h"
-#include "chromeos/dbus/flimflam_service_client.h"
+#include "chromeos/dbus/shill_device_client.h"
+#include "chromeos/dbus/shill_ipconfig_client.h"
+#include "chromeos/dbus/shill_manager_client.h"
+#include "chromeos/dbus/shill_network_client.h"
+#include "chromeos/dbus/shill_profile_client.h"
+#include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/dbus/gsm_sms_client.h"
 #include "chromeos/dbus/ibus/ibus_client.h"
 #include "chromeos/dbus/ibus/ibus_engine_factory_service.h"
@@ -97,24 +97,24 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     // Create the debugdaemon client.
     debugdaemon_client_.reset(
         DebugDaemonClient::Create(client_type, system_bus_.get()));
-    // Create the Flimflam Device client.
-    flimflam_device_client_.reset(
-        FlimflamDeviceClient::Create(client_type, system_bus_.get()));
-    // Create the Flimflam IPConfig client.
-    flimflam_ipconfig_client_.reset(
-        FlimflamIPConfigClient::Create(client_type, system_bus_.get()));
-    // Create the Flimflam Manager client.
-    flimflam_manager_client_.reset(
-        FlimflamManagerClient::Create(client_type, system_bus_.get()));
-    // Create the Flimflam Network client.
-    flimflam_network_client_.reset(
-        FlimflamNetworkClient::Create(client_type, system_bus_.get()));
-    // Create the Flimflam Profile client.
-    flimflam_profile_client_.reset(
-        FlimflamProfileClient::Create(client_type, system_bus_.get()));
-    // Create the Flimflam Service client.
-    flimflam_service_client_.reset(
-        FlimflamServiceClient::Create(client_type, system_bus_.get()));
+    // Create the Shill Device client.
+    shill_device_client_.reset(
+        ShillDeviceClient::Create(client_type, system_bus_.get()));
+    // Create the Shill IPConfig client.
+    shill_ipconfig_client_.reset(
+        ShillIPConfigClient::Create(client_type, system_bus_.get()));
+    // Create the Shill Manager client.
+    shill_manager_client_.reset(
+        ShillManagerClient::Create(client_type, system_bus_.get()));
+    // Create the Shill Network client.
+    shill_network_client_.reset(
+        ShillNetworkClient::Create(client_type, system_bus_.get()));
+    // Create the Shill Profile client.
+    shill_profile_client_.reset(
+        ShillProfileClient::Create(client_type, system_bus_.get()));
+    // Create the Shill Service client.
+    shill_service_client_.reset(
+        ShillServiceClient::Create(client_type, system_bus_.get()));
     // Create the Gsm SMS client.
     gsm_sms_client_.reset(
         GsmSMSClient::Create(client_type, system_bus_.get()));
@@ -262,33 +262,33 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   }
 
   // DBusThreadManager override.
-  virtual FlimflamDeviceClient* GetFlimflamDeviceClient() OVERRIDE {
-    return flimflam_device_client_.get();
+  virtual ShillDeviceClient* GetShillDeviceClient() OVERRIDE {
+    return shill_device_client_.get();
   }
 
   // DBusThreadManager override.
-  virtual FlimflamIPConfigClient* GetFlimflamIPConfigClient() OVERRIDE {
-    return flimflam_ipconfig_client_.get();
+  virtual ShillIPConfigClient* GetShillIPConfigClient() OVERRIDE {
+    return shill_ipconfig_client_.get();
   }
 
   // DBusThreadManager override.
-  virtual FlimflamManagerClient* GetFlimflamManagerClient() OVERRIDE {
-    return flimflam_manager_client_.get();
+  virtual ShillManagerClient* GetShillManagerClient() OVERRIDE {
+    return shill_manager_client_.get();
   }
 
   // DBusThreadManager override.
-  virtual FlimflamNetworkClient* GetFlimflamNetworkClient() OVERRIDE {
-    return flimflam_network_client_.get();
+  virtual ShillNetworkClient* GetShillNetworkClient() OVERRIDE {
+    return shill_network_client_.get();
   }
 
   // DBusThreadManager override.
-  virtual FlimflamProfileClient* GetFlimflamProfileClient() OVERRIDE {
-    return flimflam_profile_client_.get();
+  virtual ShillProfileClient* GetShillProfileClient() OVERRIDE {
+    return shill_profile_client_.get();
   }
 
   // DBusThreadManager override.
-  virtual FlimflamServiceClient* GetFlimflamServiceClient() OVERRIDE {
-    return flimflam_service_client_.get();
+  virtual ShillServiceClient* GetShillServiceClient() OVERRIDE {
+    return shill_service_client_.get();
   }
 
   // DBusThreadManager override.
@@ -402,12 +402,12 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<CrosDisksClient> cros_disks_client_;
   scoped_ptr<CryptohomeClient> cryptohome_client_;
   scoped_ptr<DebugDaemonClient> debugdaemon_client_;
-  scoped_ptr<FlimflamDeviceClient> flimflam_device_client_;
-  scoped_ptr<FlimflamIPConfigClient> flimflam_ipconfig_client_;
-  scoped_ptr<FlimflamManagerClient> flimflam_manager_client_;
-  scoped_ptr<FlimflamNetworkClient> flimflam_network_client_;
-  scoped_ptr<FlimflamProfileClient> flimflam_profile_client_;
-  scoped_ptr<FlimflamServiceClient> flimflam_service_client_;
+  scoped_ptr<ShillDeviceClient> shill_device_client_;
+  scoped_ptr<ShillIPConfigClient> shill_ipconfig_client_;
+  scoped_ptr<ShillManagerClient> shill_manager_client_;
+  scoped_ptr<ShillNetworkClient> shill_network_client_;
+  scoped_ptr<ShillProfileClient> shill_profile_client_;
+  scoped_ptr<ShillServiceClient> shill_service_client_;
   scoped_ptr<GsmSMSClient> gsm_sms_client_;
   scoped_ptr<ImageBurnerClient> image_burner_client_;
   scoped_ptr<IntrospectableClient> introspectable_client_;

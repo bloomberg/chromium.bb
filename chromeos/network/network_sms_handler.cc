@@ -11,8 +11,8 @@
 
 #include "base/bind.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/flimflam_device_client.h"
-#include "chromeos/dbus/flimflam_manager_client.h"
+#include "chromeos/dbus/shill_device_client.h"
+#include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/gsm_sms_client.h"
 #include "chromeos/dbus/modem_messaging_client.h"
 #include "chromeos/dbus/sms_client.h"
@@ -339,7 +339,7 @@ void NetworkSmsHandler::Init() {
   // See: crbug.com/133416.
 
   // Request network manager properties so that we can get the list of devices.
-  DBusThreadManager::Get()->GetFlimflamManagerClient()->GetProperties(
+  DBusThreadManager::Get()->GetShillManagerClient()->GetProperties(
       base::Bind(&NetworkSmsHandler::ManagerPropertiesCallback,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -386,7 +386,7 @@ void NetworkSmsHandler::ManagerPropertiesCallback(
     if (!device_path.empty()) {
       // Request device properties.
       VLOG(1) << "GetDeviceProperties: " << device_path;
-      DBusThreadManager::Get()->GetFlimflamDeviceClient()->GetProperties(
+      DBusThreadManager::Get()->GetShillDeviceClient()->GetProperties(
           dbus::ObjectPath(device_path),
           base::Bind(&NetworkSmsHandler::DevicePropertiesCallback,
                      weak_ptr_factory_.GetWeakPtr(),

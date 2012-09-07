@@ -700,7 +700,7 @@ bool WifiConfigView::Login() {
   } else {
     WifiNetwork* wifi = cros->FindWifiNetworkByPath(service_path_);
     if (!wifi) {
-      // Flimflam no longer knows about this wifi network (edge case).
+      // Shill no longer knows about this wifi network (edge case).
       // TODO(stevenjb): Add a notification (chromium-os13225).
       LOG(WARNING) << "Wifi network: " << service_path_ << " no longer exists.";
       return true;

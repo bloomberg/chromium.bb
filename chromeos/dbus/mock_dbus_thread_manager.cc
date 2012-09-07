@@ -14,12 +14,12 @@
 #include "chromeos/dbus/mock_cros_disks_client.h"
 #include "chromeos/dbus/mock_cryptohome_client.h"
 #include "chromeos/dbus/mock_debug_daemon_client.h"
-#include "chromeos/dbus/mock_flimflam_device_client.h"
-#include "chromeos/dbus/mock_flimflam_ipconfig_client.h"
-#include "chromeos/dbus/mock_flimflam_manager_client.h"
-#include "chromeos/dbus/mock_flimflam_network_client.h"
-#include "chromeos/dbus/mock_flimflam_profile_client.h"
-#include "chromeos/dbus/mock_flimflam_service_client.h"
+#include "chromeos/dbus/mock_shill_device_client.h"
+#include "chromeos/dbus/mock_shill_ipconfig_client.h"
+#include "chromeos/dbus/mock_shill_manager_client.h"
+#include "chromeos/dbus/mock_shill_network_client.h"
+#include "chromeos/dbus/mock_shill_profile_client.h"
+#include "chromeos/dbus/mock_shill_service_client.h"
 #include "chromeos/dbus/mock_gsm_sms_client.h"
 #include "chromeos/dbus/mock_image_burner_client.h"
 #include "chromeos/dbus/mock_introspectable_client.h"
@@ -50,12 +50,12 @@ MockDBusThreadManager::MockDBusThreadManager()
       mock_cros_disks_client_(new MockCrosDisksClient),
       mock_cryptohome_client_(new MockCryptohomeClient),
       mock_debugdaemon_client_(new MockDebugDaemonClient),
-      mock_flimflam_device_client_(new MockFlimflamDeviceClient),
-      mock_flimflam_ipconfig_client_(new MockFlimflamIPConfigClient),
-      mock_flimflam_manager_client_(new MockFlimflamManagerClient),
-      mock_flimflam_network_client_(new MockFlimflamNetworkClient),
-      mock_flimflam_profile_client_(new MockFlimflamProfileClient),
-      mock_flimflam_service_client_(new MockFlimflamServiceClient),
+      mock_shill_device_client_(new MockShillDeviceClient),
+      mock_shill_ipconfig_client_(new MockShillIPConfigClient),
+      mock_shill_manager_client_(new MockShillManagerClient),
+      mock_shill_network_client_(new MockShillNetworkClient),
+      mock_shill_profile_client_(new MockShillProfileClient),
+      mock_shill_service_client_(new MockShillServiceClient),
       mock_gsm_sms_client_(new MockGsmSMSClient),
       mock_image_burner_client_(new MockImageBurnerClient),
       mock_introspectable_client_(new MockIntrospectableClient),
@@ -88,18 +88,18 @@ MockDBusThreadManager::MockDBusThreadManager()
       .WillRepeatedly(Return(mock_cryptohome_client()));
   EXPECT_CALL(*this, GetDebugDaemonClient())
       .WillRepeatedly(Return(mock_debugdaemon_client()));
-  EXPECT_CALL(*this, GetFlimflamDeviceClient())
-      .WillRepeatedly(Return(mock_flimflam_device_client()));
-  EXPECT_CALL(*this, GetFlimflamIPConfigClient())
-      .WillRepeatedly(Return(mock_flimflam_ipconfig_client()));
-  EXPECT_CALL(*this, GetFlimflamManagerClient())
-      .WillRepeatedly(Return(mock_flimflam_manager_client()));
-  EXPECT_CALL(*this, GetFlimflamNetworkClient())
-      .WillRepeatedly(Return(mock_flimflam_network_client()));
-  EXPECT_CALL(*this, GetFlimflamProfileClient())
-      .WillRepeatedly(Return(mock_flimflam_profile_client()));
-  EXPECT_CALL(*this, GetFlimflamServiceClient())
-      .WillRepeatedly(Return(mock_flimflam_service_client()));
+  EXPECT_CALL(*this, GetShillDeviceClient())
+      .WillRepeatedly(Return(mock_shill_device_client()));
+  EXPECT_CALL(*this, GetShillIPConfigClient())
+      .WillRepeatedly(Return(mock_shill_ipconfig_client()));
+  EXPECT_CALL(*this, GetShillManagerClient())
+      .WillRepeatedly(Return(mock_shill_manager_client()));
+  EXPECT_CALL(*this, GetShillNetworkClient())
+      .WillRepeatedly(Return(mock_shill_network_client()));
+  EXPECT_CALL(*this, GetShillProfileClient())
+      .WillRepeatedly(Return(mock_shill_profile_client()));
+  EXPECT_CALL(*this, GetShillServiceClient())
+      .WillRepeatedly(Return(mock_shill_service_client()));
   EXPECT_CALL(*this, GetGsmSMSClient())
       .WillRepeatedly(Return(mock_gsm_sms_client()));
   EXPECT_CALL(*this, GetImageBurnerClient())

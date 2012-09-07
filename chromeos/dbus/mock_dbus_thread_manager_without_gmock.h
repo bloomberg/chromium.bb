@@ -43,12 +43,12 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
   virtual CrosDisksClient* GetCrosDisksClient() OVERRIDE;
   virtual CryptohomeClient* GetCryptohomeClient() OVERRIDE;
   virtual DebugDaemonClient* GetDebugDaemonClient() OVERRIDE;
-  virtual FlimflamDeviceClient* GetFlimflamDeviceClient() OVERRIDE;
-  virtual FlimflamIPConfigClient* GetFlimflamIPConfigClient() OVERRIDE;
-  virtual FlimflamManagerClient* GetFlimflamManagerClient() OVERRIDE;
-  virtual FlimflamNetworkClient* GetFlimflamNetworkClient() OVERRIDE;
-  virtual FlimflamProfileClient* GetFlimflamProfileClient() OVERRIDE;
-  virtual FlimflamServiceClient* GetFlimflamServiceClient() OVERRIDE;
+  virtual ShillDeviceClient* GetShillDeviceClient() OVERRIDE;
+  virtual ShillIPConfigClient* GetShillIPConfigClient() OVERRIDE;
+  virtual ShillManagerClient* GetShillManagerClient() OVERRIDE;
+  virtual ShillNetworkClient* GetShillNetworkClient() OVERRIDE;
+  virtual ShillProfileClient* GetShillProfileClient() OVERRIDE;
+  virtual ShillServiceClient* GetShillServiceClient() OVERRIDE;
   virtual GsmSMSClient* GetGsmSMSClient() OVERRIDE;
   virtual ImageBurnerClient* GetImageBurnerClient() OVERRIDE;
   virtual IntrospectableClient* GetIntrospectableClient() OVERRIDE;

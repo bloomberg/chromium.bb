@@ -392,7 +392,7 @@ ProxyConfigServiceImpl::ProxyConfigServiceImpl(PrefService* pref_service)
 
   FetchProxyPolicy();
 
-  // Register for flimflam network notifications.
+  // Register for shill network notifications.
   NetworkLibrary* network_lib = CrosLibrary::Get()->GetNetworkLibrary();
   OnActiveNetworkChanged(network_lib, network_lib->active_network());
   network_lib->AddNetworkManagerObserver(this);
@@ -600,7 +600,7 @@ void ProxyConfigServiceImpl::Observe(
 void ProxyConfigServiceImpl::OnUISetProxyConfig() {
   if (current_ui_network_.empty())
     return;
-  // Update config to flimflam.
+  // Update config to shill.
   std::string value;
   if (current_ui_config_.SerializeForNetwork(&value)) {
     VLOG(1) << "Set proxy (mode=" << current_ui_config_.mode
@@ -655,7 +655,7 @@ void ProxyConfigServiceImpl::OnActiveNetworkChanged(NetworkLibrary* network_lib,
   // Register observer for new network.
   network_lib->AddNetworkObserver(active_network_, this);
 
-  // If necessary, migrate config to flimflam.
+  // If necessary, migrate config to shill.
   if (active_network->proxy_config().empty() && !device_config_.empty()) {
     VLOG(1) << "Try migrating device config to " << active_network_;
     SetProxyConfigForNetwork(active_network_, device_config_, true);

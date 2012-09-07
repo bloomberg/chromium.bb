@@ -581,7 +581,7 @@ Network* OncNetworkParser::CreateNetworkFromInfo(
     return NULL;
   }
 
-  // Update the UI data property in flimflam.
+  // Update the UI data property in shill.
   std::string ui_data_json;
   base::DictionaryValue ui_data_dict;
   network->ui_data().FillDictionary(&ui_data_dict);
@@ -791,7 +791,7 @@ bool OncNetworkParser::ParseNetworkConfigurationValue(
       // Fall back to generic parser.
       return parser->ParseValue(index, value, network);
     case PROPERTY_INDEX_NAME:
-      // flimflam doesn't allow setting name for non-VPN networks.
+      // shill doesn't allow setting name for non-VPN networks.
       if (network->type() != TYPE_VPN) {
         network->UpdatePropertyMap(PROPERTY_INDEX_NAME, NULL);
         return true;
@@ -1230,13 +1230,13 @@ bool OncNetworkParser::ProcessProxySettings(OncNetworkParser* parser,
   std::string proxy_dict_str = ConvertValueToString(*proxy_dict.get());
 
   // Add ProxyConfig property to property map so that it will be updated in
-  // flimflam in NetworkLibraryImplCros::CallConfigureService after all parsing
+  // shill in NetworkLibraryImplCros::CallConfigureService after all parsing
   // has completed.
   base::StringValue val(proxy_dict_str);
   network->UpdatePropertyMap(PROPERTY_INDEX_PROXY_CONFIG, &val);
 
   // If |network| is currently being connected to or it exists in memory,
-  // flimflam will fire PropertyChanged notification in ConfigureService,
+  // shill will fire PropertyChanged notification in ConfigureService,
   // chromeos::ProxyConfigServiceImpl will get OnNetworkChanged notification
   // and, if necessary, activate |proxy_dict_str| on network stack and reflect
   // it in UI via "Change proxy settings" button.
@@ -1737,7 +1737,7 @@ bool OncVirtualNetworkParser::ParseVPNValue(OncNetworkParser* parser,
     case PROPERTY_INDEX_PROVIDER_HOST: {
       base::StringValue empty_value("");
       virtual_network->set_server_hostname(GetStringValue(value));
-      // Flimflam requires a domain property which is unused.
+      // Shill requires a domain property which is unused.
       network->UpdatePropertyMap(PROPERTY_INDEX_VPN_DOMAIN, &empty_value);
       return true;
     }
@@ -1768,7 +1768,7 @@ bool OncVirtualNetworkParser::ParseVPNValue(OncNetworkParser* parser,
         VLOG(1) << "OpenVPN field not allowed with this VPN type";
         return false;
       }
-      // The following are needed by flimflam to set up the OpenVPN
+      // The following are needed by shill to set up the OpenVPN
       // management channel which every ONC OpenVPN configuration will
       // use.
       base::StringValue empty_value("");
@@ -1849,7 +1849,7 @@ bool OncVirtualNetworkParser::ParseIPsecValue(OncNetworkParser* parser,
     }
     case PROPERTY_INDEX_IPSEC_IKEVERSION: {
       if (!value.IsType(TYPE_STRING)) {
-        // Flimflam wants all provider properties to be strings.
+        // Shill wants all provider properties to be strings.
         base::StringValue string_value(ConvertValueToString(value));
         virtual_network->UpdatePropertyMap(index, &string_value);
       }
@@ -1953,7 +1953,7 @@ bool OncVirtualNetworkParser::ParseOpenVPNValue(OncNetworkParser* parser,
       virtual_network->set_ca_cert_nss(GetStringValue(value));
       return true;
     case PROPERTY_INDEX_OPEN_VPN_REMOTECERTKU: {
-      // ONC supports a list of these, but we flimflam supports only one
+      // ONC supports a list of these, but we shill supports only one
       // today.  So extract the first.
       const base::ListValue* value_list = NULL;
       value.GetAsList(&value_list);
@@ -1987,7 +1987,7 @@ bool OncVirtualNetworkParser::ParseOpenVPNValue(OncNetworkParser* parser,
     case PROPERTY_INDEX_OPEN_VPN_TLSAUTHCONTENTS:
     case PROPERTY_INDEX_OPEN_VPN_TLSREMOTE: {
       if (!value.IsType(TYPE_STRING)) {
-        // Flimflam wants all provider properties to be strings.
+        // Shill wants all provider properties to be strings.
         base::StringValue string_value(ConvertValueToString(value));
         virtual_network->UpdatePropertyMap(index, &string_value);
       }

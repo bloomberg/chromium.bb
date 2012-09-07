@@ -188,7 +188,7 @@ class SimUnlockHandler : public WebUIMessageHandler,
   // Processing for the cases when dialog was cancelled.
   void CancelDialog();
 
-  // Pass PIN/PUK code to flimflam and check status.
+  // Pass PIN/PUK code to shill and check status.
   void EnterCode(const std::string& code, SimUnlockCode code_type);
 
   // Single handler for PIN/PUK code operations.

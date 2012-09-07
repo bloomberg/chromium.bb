@@ -550,7 +550,7 @@ bool NativeNetworkDeviceParser::ParseSimLockStateFromDictionary(
     bool* out_enabled) {
   std::string state_string;
   // Since RetriesLeft is sent as a uint32, which may overflow int32 range, from
-  // Flimflam, it may be stored as an integer or a double in DictionaryValue.
+  // Shill, it may be stored as an integer or a double in DictionaryValue.
   const base::Value* retries_value = NULL;
   if (!info.GetString(flimflam::kSIMLockTypeProperty, &state_string) ||
       !info.GetBoolean(flimflam::kSIMLockEnabledProperty, out_enabled) ||

@@ -321,7 +321,7 @@ const VirtualNetworkVector&
   return remembered_virtual_networks_;
 }
 
-// Use flimflam's ordering of the services to determine which type of
+// Use shill's ordering of the services to determine which type of
 // network to return (i.e. don't assume priority of network types).
 // Note: This does not include any virtual networks.
 namespace {
@@ -828,12 +828,12 @@ void NetworkLibraryImplBase::NetworkConnectStartWifi(
       wifi->passphrase_required())
     wifi->SetPassphrase(wifi->user_passphrase_);
   // For enterprise 802.1X networks, always provide TPM PIN when available.
-  // flimflam uses the PIN if it needs to access certificates in the TPM and
+  // shill uses the PIN if it needs to access certificates in the TPM and
   // ignores it otherwise.
   if (wifi->encryption() == SECURITY_8021X) {
     // If the TPM initialization has not completed, GetTpmPin() will return
     // an empty value, in which case we do not want to clear the PIN since
-    // that will cause flimflam to flag the network as unconfigured.
+    // that will cause shill to flag the network as unconfigured.
     // TODO(stevenjb): We may want to delay attempting to connect, or fail
     // immediately, rather than let the network layer attempt a connection.
     std::string tpm_pin = GetTpmPin();
@@ -844,7 +844,7 @@ void NetworkLibraryImplBase::NetworkConnectStartWifi(
 }
 
 void NetworkLibraryImplBase::NetworkConnectStartVPN(VirtualNetwork* vpn) {
-  // flimflam needs the TPM PIN for some VPN networks to access client
+  // shill needs the TPM PIN for some VPN networks to access client
   // certificates, and ignores the PIN if it doesn't need them. Only set this
   // if the TPM is ready (see comment in NetworkConnectStartWifi).
   std::string tpm_pin = GetTpmPin();
@@ -920,7 +920,7 @@ void NetworkLibraryImplBase::NetworkConnectCompleted(
           << " State: " << network->state()
           << " Status: " << status;
 
-  // If the user asked not to save credentials, flimflam will have
+  // If the user asked not to save credentials, shill will have
   // forgotten them.  Wipe our cache as well.
   if (!network->save_credentials())
     network->EraseCredentials();
@@ -1321,12 +1321,12 @@ bool NetworkLibraryImplBase::SetActiveNetwork(
 ////////////////////////////////////////////////////////////////////////////
 // Network list management functions.
 
-// Note: sometimes flimflam still returns networks when the device type is
+// Note: sometimes shill still returns networks when the device type is
 // disabled. Always check the appropriate enabled() state before adding
 // networks to a list or setting an active network so that we do not show them
 // in the UI.
 
-// This relies on services being requested from flimflam in priority order,
+// This relies on services being requested from shill in priority order,
 // and the updates getting processed and received in order.
 void NetworkLibraryImplBase::UpdateActiveNetwork(Network* network) {
   network->set_is_active(true);
@@ -1476,7 +1476,7 @@ bool NetworkLibraryImplBase::ValidateRememberedNetwork(Network* network) {
   // See if this is a policy-configured network that has meanwhile been removed.
   // This situation may arise when the full list of remembered networks is not
   // available to LoadOncNetworks(), which can happen due to the asynchronous
-  // communication between flimflam and NetworkLibrary. Just tell flimflam to
+  // communication between shill and NetworkLibrary. Just tell shill to
   // delete the network now.
   const NetworkUIData::ONCSource source = network->ui_data().onc_source();
   if (source == NetworkUIData::ONC_SOURCE_USER_POLICY ||
@@ -1507,7 +1507,7 @@ bool NetworkLibraryImplBase::ValidateAndAddRememberedNetwork(Network* network) {
   } else {
     NOTREACHED();
   }
-  // Find service path in profiles. Flimflam does not set the Profile
+  // Find service path in profiles. Shill does not set the Profile
   // property for remembered networks, only active networks.
   for (NetworkProfileList::iterator iter = profile_list_.begin();
        iter != profile_list_.end(); ++iter) {
@@ -1537,7 +1537,7 @@ void NetworkLibraryImplBase::DeleteRememberedNetwork(
   Network* remembered_network = found->second;
 
   // Update any associated network service before removing from profile
-  // so that flimflam doesn't recreate the service (e.g. when we disconenct it).
+  // so that shill doesn't recreate the service (e.g. when we disconenct it).
   Network* network = FindNetworkByUniqueId(remembered_network->unique_id());
   if (network) {
     // Clear the stored credentials for any forgotten networks.

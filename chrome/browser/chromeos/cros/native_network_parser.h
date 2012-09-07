@@ -20,7 +20,7 @@ namespace chromeos {
 
 // This is the network device parser that parses the data from the
 // network stack on the native platform.  Currently it parses
-// FlimFlam-provided information.
+// Shill-provided information.
 class NativeNetworkDeviceParser : public NetworkDeviceParser {
  public:
   NativeNetworkDeviceParser();
@@ -54,7 +54,7 @@ class NativeNetworkDeviceParser : public NetworkDeviceParser {
 
 // This is the network parser that parses the data from the network
 // stack on the native platform.  Currently it parses
-// FlimFlam-provided information.
+// Shill-provided information.
 class NativeNetworkParser : public NetworkParser {
  public:
   NativeNetworkParser();

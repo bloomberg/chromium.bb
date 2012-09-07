@@ -70,8 +70,8 @@ TEST_F(NetworkSmsHandlerTest, SmsHandlerDbusStub) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(chromeos::switches::kSmsTestMessages);
 
-  // This relies on the stub dbus implementations for FlimflamManagerClient,
-  // FlimflamDeviceClient, GsmSMSClient, ModemMessagingClient and SMSClient.
+  // This relies on the stub dbus implementations for ShillManagerClient,
+  // ShillDeviceClient, GsmSMSClient, ModemMessagingClient and SMSClient.
   // Initialize a sms handler. The stub dbus clients will not send the
   // first test message until RequestUpdate has been called.
   scoped_ptr<NetworkSmsHandler> sms_handler(new NetworkSmsHandler());

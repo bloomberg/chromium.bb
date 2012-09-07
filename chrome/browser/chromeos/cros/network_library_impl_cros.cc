@@ -998,7 +998,7 @@ void NetworkLibraryImplCros::UpdateProfile(
       break;
   }
   if (iter1 == profile_list_.end()) {
-    // This can happen if flimflam gets restarted while Chrome is running.
+    // This can happen if shill gets restarted while Chrome is running.
     LOG(WARNING) << "Profile not in list: " << profile_path;
     return;
   }

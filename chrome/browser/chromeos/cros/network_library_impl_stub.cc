@@ -482,7 +482,7 @@ void NetworkLibraryImplStub::CallConfigureService(
     const DictionaryValue* info) {}
 
 void NetworkLibraryImplStub::CallConnectToNetwork(Network* network) {
-  // Immediately set the network to active to mimic flimflam's behavior.
+  // Immediately set the network to active to mimic shill's behavior.
   SetActiveNetwork(network->type(), network->service_path());
   // If a delay has been set (i.e. we are interactive), delay the call to
   // ConnectToNetwork (but signal observers since we changed connecting state).

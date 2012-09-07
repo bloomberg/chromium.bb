@@ -204,7 +204,7 @@ cr.define('login', function() {
               !offlineMessage.classList.contains('show-captive-portal')) {
             // In case of timeout we're suspecting that network might be
             // a captive portal but would like to check that first.
-            // Otherwise (signal from flimflam / generate_204 got redirected)
+            // Otherwise (signal from shill / generate_204 got redirected)
             // show dialog right away.
             if (isTimeout)
               chrome.send('fixCaptivePortal');

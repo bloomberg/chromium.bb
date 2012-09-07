@@ -38,7 +38,7 @@ ChromeProxyConfigService* ProxyServiceFactory::CreateProxyConfigService(
 #if !defined(OS_CHROMEOS)
   // On ChromeOS, base service is NULL; chromeos::ProxyConfigServiceImpl
   // determines the effective proxy config to take effect in the network layer,
-  // be it from prefs or system (which is network flimflam on chromeos).
+  // be it from prefs or system (which is network shill on chromeos).
 
   // For other platforms, create a baseline service that provides proxy
   // configuration in case nothing is configured through prefs (Note: prefs

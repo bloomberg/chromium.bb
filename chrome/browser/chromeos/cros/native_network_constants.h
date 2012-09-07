@@ -14,7 +14,7 @@ namespace chromeos {
 // Format of the Carrier ID.
 extern const char kCarrierIdFormat[];
 
-// Path of the default (shared) flimflam profile.
+// Path of the default (shared) shill profile.
 extern const char kSharedProfilePath[];
 
 extern const char* ConnectionTypeToString(ConnectionType type);

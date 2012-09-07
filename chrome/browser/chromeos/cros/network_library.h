@@ -75,7 +75,7 @@ const int kPriorityNotSet = 0;
 // The value of priority if network is preferred.
 const int kPriorityPreferred = 1;
 
-// Contains data related to the flimflam.Device interface,
+// Contains data related to the shill.Device interface,
 // e.g. ethernet, wifi, cellular.
 // TODO(dpolukhin): refactor to make base class and device specific derivatives.
 class NetworkDevice {
@@ -568,7 +568,7 @@ class Network {
   int priority_;  // determines order in network list.
   bool auto_connect_;
   bool save_credentials_;  // save passphrase and EAP credentials to disk.
-  std::string proxy_config_;  // ProxyConfig property in flimflam.
+  std::string proxy_config_;  // ProxyConfig property in shill.
   ProxyOncConfig proxy_onc_config_;  // Only used for parsing ONC proxy value.
   scoped_ptr<EnrollmentDelegate> enrollment_delegate_;
 
@@ -581,7 +581,7 @@ class Network {
   // Initialize the IP address field
   void InitIPAddress();
 
-  // Priority value, corresponds to index in list from flimflam (0 = first)
+  // Priority value, corresponds to index in list from shill (0 = first)
   int priority_order_;
 
   // Set to true if the UI requested this as a new network.
@@ -859,7 +859,7 @@ class CellularNetwork : public WirelessNetwork {
 
   // Sets the APN to use in establishing data connections. Only
   // the fields of the APN that are needed for making connections
-  // are passed to flimflam. The name, localized_name, and language
+  // are passed to shill. The name, localized_name, and language
   // fields are ignored.
   void SetApn(const CellularApn& apn);
 
@@ -1129,7 +1129,7 @@ class WifiNetwork : public WirelessNetwork {
   std::string eap_passphrase_;
   bool eap_save_credentials_;
 
-  // Internal state (not stored in flimflam).
+  // Internal state (not stored in shill).
   // Passphrase set by user (stored for UI).
   std::string user_passphrase_;
 

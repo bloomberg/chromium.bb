@@ -9,12 +9,12 @@
 #include "chrome/browser/chromeos/cros/sms_watcher.h"
 #include "chromeos/dbus/mock_cashew_client.h"
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
-#include "chromeos/dbus/mock_flimflam_device_client.h"
-#include "chromeos/dbus/mock_flimflam_ipconfig_client.h"
-#include "chromeos/dbus/mock_flimflam_manager_client.h"
-#include "chromeos/dbus/mock_flimflam_network_client.h"
-#include "chromeos/dbus/mock_flimflam_profile_client.h"
-#include "chromeos/dbus/mock_flimflam_service_client.h"
+#include "chromeos/dbus/mock_shill_device_client.h"
+#include "chromeos/dbus/mock_shill_ipconfig_client.h"
+#include "chromeos/dbus/mock_shill_manager_client.h"
+#include "chromeos/dbus/mock_shill_network_client.h"
+#include "chromeos/dbus/mock_shill_profile_client.h"
+#include "chromeos/dbus/mock_shill_service_client.h"
 #include "chromeos/dbus/mock_gsm_sms_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -160,17 +160,17 @@ class CrosNetworkFunctionsTest : public testing::Test {
     DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager);
     mock_cashew_client_ = mock_dbus_thread_manager->mock_cashew_client();
     mock_device_client_ =
-        mock_dbus_thread_manager->mock_flimflam_device_client();
+        mock_dbus_thread_manager->mock_shill_device_client();
     mock_ipconfig_client_ =
-        mock_dbus_thread_manager->mock_flimflam_ipconfig_client();
+        mock_dbus_thread_manager->mock_shill_ipconfig_client();
     mock_manager_client_ =
-        mock_dbus_thread_manager->mock_flimflam_manager_client();
+        mock_dbus_thread_manager->mock_shill_manager_client();
     mock_network_client_ =
-        mock_dbus_thread_manager->mock_flimflam_network_client();
+        mock_dbus_thread_manager->mock_shill_network_client();
     mock_profile_client_ =
-        mock_dbus_thread_manager->mock_flimflam_profile_client();
+        mock_dbus_thread_manager->mock_shill_profile_client();
     mock_service_client_ =
-        mock_dbus_thread_manager->mock_flimflam_service_client();
+        mock_dbus_thread_manager->mock_shill_service_client();
     mock_gsm_sms_client_ = mock_dbus_thread_manager->mock_gsm_sms_client();
   }
 
@@ -179,16 +179,16 @@ class CrosNetworkFunctionsTest : public testing::Test {
     mock_profile_client_ = NULL;
   }
 
-  // Handles responses for GetProperties method calls for FlimflamManagerClient.
+  // Handles responses for GetProperties method calls for ShillManagerClient.
   void OnGetManagerProperties(
-      const FlimflamClientHelper::DictionaryValueCallback& callback) {
+      const ShillClientHelper::DictionaryValueCallback& callback) {
     callback.Run(DBUS_METHOD_CALL_SUCCESS, *dictionary_value_result_);
   }
 
   // Handles responses for GetProperties method calls.
   void OnGetProperties(
       const dbus::ObjectPath& path,
-      const FlimflamClientHelper::DictionaryValueCallback& callback) {
+      const ShillClientHelper::DictionaryValueCallback& callback) {
     callback.Run(DBUS_METHOD_CALL_SUCCESS, *dictionary_value_result_);
   }
 
@@ -196,7 +196,7 @@ class CrosNetworkFunctionsTest : public testing::Test {
   void OnGetEntry(
       const dbus::ObjectPath& profile_path,
       const std::string& entry_path,
-      const FlimflamClientHelper::DictionaryValueCallback& callback) {
+      const ShillClientHelper::DictionaryValueCallback& callback) {
     callback.Run(DBUS_METHOD_CALL_SUCCESS, *dictionary_value_result_);
   }
 
@@ -212,12 +212,12 @@ class CrosNetworkFunctionsTest : public testing::Test {
 
  protected:
   MockCashewClient* mock_cashew_client_;
-  MockFlimflamDeviceClient* mock_device_client_;
-  MockFlimflamIPConfigClient* mock_ipconfig_client_;
-  MockFlimflamManagerClient* mock_manager_client_;
-  MockFlimflamNetworkClient* mock_network_client_;
-  MockFlimflamProfileClient* mock_profile_client_;
-  MockFlimflamServiceClient* mock_service_client_;
+  MockShillDeviceClient* mock_device_client_;
+  MockShillIPConfigClient* mock_ipconfig_client_;
+  MockShillManagerClient* mock_manager_client_;
+  MockShillNetworkClient* mock_network_client_;
+  MockShillProfileClient* mock_profile_client_;
+  MockShillServiceClient* mock_service_client_;
   MockGsmSMSClient* mock_gsm_sms_client_;
   const base::DictionaryValue* dictionary_value_result_;
 };
@@ -312,7 +312,7 @@ TEST_F(CrosNetworkFunctionsTest, CrosMonitorNetworkManagerProperties) {
   const int kValue = 42;
   const base::FundamentalValue value(kValue);
   // Start monitoring.
-  FlimflamClientHelper::PropertyChangedHandler handler;
+  ShillClientHelper::PropertyChangedHandler handler;
   EXPECT_CALL(*mock_manager_client_, SetPropertyChangedHandler(_))
       .WillOnce(SaveArg<0>(&handler));
   CrosNetworkWatcher* watcher = CrosMonitorNetworkManagerProperties(
@@ -331,7 +331,7 @@ TEST_F(CrosNetworkFunctionsTest, CrosMonitorNetworkServiceProperties) {
   const int kValue = 42;
   const base::FundamentalValue value(kValue);
   // Start monitoring.
-  FlimflamClientHelper::PropertyChangedHandler handler;
+  ShillClientHelper::PropertyChangedHandler handler;
   EXPECT_CALL(*mock_service_client_, SetPropertyChangedHandler(path, _))
       .WillOnce(SaveArg<1>(&handler));
   NetworkPropertiesWatcherCallback callback =
@@ -353,7 +353,7 @@ TEST_F(CrosNetworkFunctionsTest, CrosMonitorNetworkDeviceProperties) {
   const int kValue = 42;
   const base::FundamentalValue value(kValue);
   // Start monitoring.
-  FlimflamClientHelper::PropertyChangedHandler handler;
+  ShillClientHelper::PropertyChangedHandler handler;
   EXPECT_CALL(*mock_device_client_, SetPropertyChangedHandler(path, _))
       .WillOnce(SaveArg<1>(&handler));
   NetworkPropertiesWatcherCallback callback =
@@ -490,7 +490,7 @@ TEST_F(CrosNetworkFunctionsTest, CrosMonitorSMS) {
   const std::string modem_device_path = "/modem/device/path";
 
   // Set expectations.
-  FlimflamDeviceClient::DictionaryValueCallback get_properties_callback;
+  ShillDeviceClient::DictionaryValueCallback get_properties_callback;
   EXPECT_CALL(*mock_device_client_,
               GetProperties(dbus::ObjectPath(modem_device_path), _))
       .WillOnce(SaveArg<1>(&get_properties_callback));
@@ -663,7 +663,7 @@ TEST_F(CrosNetworkFunctionsTest, CrosRequestHiddenWifiNetworkProperties) {
   result.SetWithoutPathExpansion(key1, base::Value::CreateStringValue(value1));
   result.SetWithoutPathExpansion(key2, base::Value::CreateStringValue(value2));
   dictionary_value_result_ = &result;
-  // Create expected argument to FlimflamManagerClient::GetService.
+  // Create expected argument to ShillManagerClient::GetService.
   base::DictionaryValue properties;
   properties.SetWithoutPathExpansion(
       flimflam::kModeProperty,
@@ -708,7 +708,7 @@ TEST_F(CrosNetworkFunctionsTest, CrosRequestVirtualNetworkProperties) {
   result.SetWithoutPathExpansion(key1, base::Value::CreateStringValue(value1));
   result.SetWithoutPathExpansion(key2, base::Value::CreateStringValue(value2));
   dictionary_value_result_ = &result;
-  // Create expected argument to FlimflamManagerClient::GetService.
+  // Create expected argument to ShillManagerClient::GetService.
   base::DictionaryValue properties;
   properties.SetWithoutPathExpansion(
       flimflam::kTypeProperty, base::Value::CreateStringValue("vpn"));

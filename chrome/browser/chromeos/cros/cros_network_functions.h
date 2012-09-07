@@ -138,7 +138,7 @@ void CrosDeleteServiceFromProfile(const std::string& profile_path,
 // object that invoked MonitorCellularDataPlan when up to date data is ready.
 void CrosRequestCellularDataPlanUpdate(const std::string& modem_service_path);
 
-// Sets up monitoring of the PropertyChanged signal on the flimflam manager.
+// Sets up monitoring of the PropertyChanged signal on the shill manager.
 // The provided |callback| will be called whenever a manager property changes.
 CrosNetworkWatcher* CrosMonitorNetworkManagerProperties(
     const NetworkPropertiesWatcherCallback& callback);
@@ -215,7 +215,7 @@ void CrosRequestNetworkServiceDisconnect(const std::string& service_path);
 void CrosRequestRemoveNetworkService(const std::string& service_path);
 
 // Requests a scan of services of |type|.
-// |type| should be is a string recognized by flimflam's Manager API.
+// |type| should be is a string recognized by shill's Manager API.
 void CrosRequestNetworkScan(const std::string& network_type);
 
 // Requests enabling or disabling a device.

@@ -81,7 +81,7 @@ void CaptivePortalView::LoadingStateChanged(content::WebContents* source) {
   SimpleWebViewDialog::LoadingStateChanged(source);
   // TODO(nkostylev): Fix case of no connectivity, check HTTP code returned.
   // Disable this heuristic as it has false positives.
-  // Relying on just flimflam portal check to close dialog is fine.
+  // Relying on just shill portal check to close dialog is fine.
   // if (!is_loading && !redirected_)
   //   proxy_->OnOriginalURLLoaded();
 }

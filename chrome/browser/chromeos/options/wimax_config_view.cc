@@ -136,7 +136,7 @@ bool WimaxConfigView::Login() {
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   WimaxNetwork* wimax = cros->FindWimaxNetworkByPath(service_path_);
   if (!wimax) {
-    // Flimflam no longer knows about this wimax network (edge case).
+    // Shill no longer knows about this wimax network (edge case).
     // TODO(stevenjb): Add a notification (chromium-os13225).
     LOG(WARNING) << "Wimax network: " << service_path_ << " no longer exists.";
     return true;

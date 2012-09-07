@@ -12,7 +12,7 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/flimflam_device_client.h"
+#include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/gsm_sms_client.h"
 #include "chromeos/dbus/modem_messaging_client.h"
 #include "chromeos/dbus/sms_client.h"
@@ -364,7 +364,7 @@ SMSWatcher::SMSWatcher(const std::string& modem_device_path,
     : weak_ptr_factory_(this),
       device_path_(modem_device_path),
       callback_(callback) {
-  DBusThreadManager::Get()->GetFlimflamDeviceClient()->GetProperties(
+  DBusThreadManager::Get()->GetShillDeviceClient()->GetProperties(
       dbus::ObjectPath(modem_device_path),
       base::Bind(&SMSWatcher::DevicePropertiesCallback,
                  weak_ptr_factory_.GetWeakPtr()));

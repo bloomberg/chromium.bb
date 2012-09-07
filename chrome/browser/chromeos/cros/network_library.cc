@@ -288,7 +288,7 @@ void Network::SetState(ConnectionState new_state) {
   if (new_state == state_)
     return;
   if (state_ == STATE_CONNECT_REQUESTED && new_state == STATE_IDLE) {
-    // CONNECT_REQUESTED is set internally. Shill/flimflam do not update the
+    // CONNECT_REQUESTED is set internally. Shill does not update the
     // state immediately, so ignore any Idle state updates sent while a
     // connection attempt is in progress.
     VLOG(2) << "Ignoring idle state change after connection request.";
@@ -612,7 +612,7 @@ bool VirtualNetwork::NeedMoreInfoToConnect() const {
       if (client_cert_id_.empty())
         return true;
       // For now we always need additional info for OpenVPN.
-      // TODO(stevenjb): Check connectable() once flimflam sets that state
+      // TODO(stevenjb): Check connectable() once shill sets that state
       // properly, or define another mechanism to determine when additional
       // credentials are required.
       return true;
@@ -835,7 +835,7 @@ bool CellularNetwork::StartActivation() {
     return false;
   if (!CrosActivateCellularModem(service_path(), ""))
     return false;
-  // Don't wait for flimflam to tell us that we are really activating since
+  // Don't wait for shill to tell us that we are really activating since
   // other notifications in the message loop might cause us to think that
   // the process hasn't started yet.
   activation_state_ = ACTIVATION_STATE_ACTIVATING;
@@ -1000,7 +1000,7 @@ WifiNetwork::~WifiNetwork() {}
 
 void WifiNetwork::CalculateUniqueId() {
   ConnectionSecurity encryption = encryption_;
-  // Flimflam treats wpa and rsn as psk internally, so convert those types
+  // Shill treats wpa and rsn as psk internally, so convert those types
   // to psk for unique naming.
   if (encryption == SECURITY_WPA || encryption == SECURITY_RSN)
     encryption = SECURITY_PSK;
@@ -1047,22 +1047,22 @@ const std::string& WifiNetwork::GetPassphrase() const {
 }
 
 void WifiNetwork::SetPassphrase(const std::string& passphrase) {
-  // Set the user_passphrase_ only; passphrase_ stores the flimflam value.
+  // Set the user_passphrase_ only; passphrase_ stores the shill value.
   // If the user sets an empty passphrase, restore it to the passphrase
-  // remembered by flimflam.
+  // remembered by shill.
   if (!passphrase.empty()) {
     user_passphrase_ = passphrase;
     passphrase_ = passphrase;
   } else {
     user_passphrase_ = passphrase_;
   }
-  // Send the change to flimflam. If the format is valid, it will propagate to
+  // Send the change to shill. If the format is valid, it will propagate to
   // passphrase_ with a service update.
   SetOrClearStringProperty(flimflam::kPassphraseProperty, passphrase, NULL);
 }
 
-// See src/third_party/flimflam/doc/service-api.txt for properties that
-// flimflam will forget when SaveCredentials is false.
+// See src/third_party/shill/doc/service-api.txt for properties that
+// shill will forget when SaveCredentials is false.
 void WifiNetwork::EraseCredentials() {
   WipeString(&passphrase_);
   WipeString(&user_passphrase_);
@@ -1150,7 +1150,7 @@ void WifiNetwork::SetEAPClientCertPkcs11Id(const std::string& pkcs11_id) {
   VLOG(1) << "SetEAPClientCertPkcs11Id " << pkcs11_id;
   SetOrClearStringProperty(
       flimflam::kEapCertIdProperty, pkcs11_id, &eap_client_cert_pkcs11_id_);
-  // flimflam requires both CertID and KeyID for TLS connections, despite
+  // shill requires both CertID and KeyID for TLS connections, despite
   // the fact that by convention they are the same ID.
   SetOrClearStringProperty(flimflam::kEapKeyIdProperty, pkcs11_id, NULL);
 }
@@ -1214,7 +1214,7 @@ std::string WifiNetwork::GetEncryptionString() const {
 }
 
 bool WifiNetwork::IsPassphraseRequired() const {
-  // TODO(stevenjb): Remove error_ tests when fixed in flimflam
+  // TODO(stevenjb): Remove error_ tests when fixed.
   // (http://crosbug.com/10135).
   if (error() == ERROR_BAD_PASSPHRASE || error() == ERROR_BAD_WEPKEY)
     return true;
