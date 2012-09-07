@@ -27,10 +27,6 @@ namespace contacts {
 class ContactManager;
 }  // namespace contacts
 
-namespace policy {
-class NetworkConfigurationUpdater;
-}  // namespace policy
-
 class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
  public:
   explicit ChromeBrowserMainPartsChromeos(
@@ -67,7 +63,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_ptr<chromeos::UserActivityNotifier> user_activity_notifier_;
   scoped_ptr<chromeos::VideoActivityNotifier> video_activity_notifier_;
   scoped_ptr<chromeos::ScreenDimmingObserver> screen_dimming_observer_;
-  scoped_ptr<policy::NetworkConfigurationUpdater> network_config_updater_;
   scoped_refptr<chromeos::MediaDeviceNotifications> media_device_notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);

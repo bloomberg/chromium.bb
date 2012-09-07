@@ -1389,6 +1389,7 @@ void NetInternalsMessageHandler::OnImportONCFile(const ListValue* list) {
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   cros_network->LoadOncNetworks(onc_blob, passcode,
                                 chromeos::NetworkUIData::ONC_SOURCE_USER_IMPORT,
+                                false,  // allow_web_trust_from_policy
                                 &error);
 
   // Now that we've added the networks, we need to rescan them so they'll be

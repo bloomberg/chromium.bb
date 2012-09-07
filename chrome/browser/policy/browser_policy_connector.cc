@@ -56,6 +56,7 @@
 #include "chrome/browser/policy/app_pack_updater.h"
 #include "chrome/browser/policy/cros_user_policy_cache.h"
 #include "chrome/browser/policy/device_policy_cache.h"
+#include "chrome/browser/policy/network_configuration_updater.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #endif
 
@@ -178,10 +179,10 @@ scoped_ptr<UserCloudPolicyManager>
     // TODO(mnissler): Revisit once Chrome OS gains multi-profiles support.
     // Don't wait for a policy fetch if there's no logged in user.
     if (chromeos::UserManager::Get()->IsUserLoggedIn()) {
+      std::string email =
+          chromeos::UserManager::Get()->GetLoggedInUser().email();
       wait_for_policy_fetch =
-          g_browser_process->browser_policy_connector()->GetUserAffiliation(
-              chromeos::UserManager::Get()->GetLoggedInUser().email()) ==
-                  policy::USER_AFFILIATION_MANAGED;
+          GetUserAffiliation(email) == USER_AFFILIATION_MANAGED;
     }
 #else
     // On desktop, there's no way to figure out if a user is logged in yet
@@ -346,6 +347,14 @@ void BrowserPolicyConnector::ScheduleServiceInitialization(
 void BrowserPolicyConnector::InitializeUserPolicy(
     const std::string& user_name,
     bool wait_for_policy_fetch) {
+#if defined(OS_CHROMEOS)
+  // If the user is managed then importing certificates from ONC policy is
+  // allowed, otherwise it's not. Update this flag once the user has signed in,
+  // and before user policy is loaded.
+  GetNetworkConfigurationUpdater()->set_allow_web_trust(
+      GetUserAffiliation(user_name) == USER_AFFILIATION_MANAGED);
+#endif
+
   // Throw away the old backend.
   user_cloud_policy_subsystem_.reset();
   user_policy_token_cache_.reset();
@@ -480,6 +489,20 @@ AppPackUpdater* BrowserPolicyConnector::GetAppPackUpdater() {
       app_pack_updater_.reset(new AppPackUpdater(request_context, this));
   }
   return app_pack_updater_.get();
+#else
+  return NULL;
+#endif
+}
+
+NetworkConfigurationUpdater*
+    BrowserPolicyConnector::GetNetworkConfigurationUpdater() {
+#if defined(OS_CHROMEOS)
+  if (!network_configuration_updater_.get()) {
+    network_configuration_updater_.reset(new NetworkConfigurationUpdater(
+        g_browser_process->policy_service(),
+        chromeos::CrosLibrary::Get()->GetNetworkLibrary()));
+  }
+  return network_configuration_updater_.get();
 #else
   return NULL;
 #endif

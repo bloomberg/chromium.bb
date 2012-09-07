@@ -282,6 +282,7 @@ OncNetworkParser::OncNetworkParser(const std::string& onc_blob,
                                    NetworkUIData::ONCSource onc_source)
     : NetworkParser(get_onc_mapper()),
       onc_source_(onc_source),
+      allow_web_trust_from_policy_(false),
       network_configs_(NULL),
       certificates_(NULL) {
   VLOG(2) << __func__ << ": OncNetworkParser called on " << onc_blob;
@@ -822,7 +823,13 @@ OncNetworkParser::ParseServerOrCaCertificate(
     const std::string& cert_type,
     const std::string& guid,
     base::DictionaryValue* certificate) {
-  net::CertDatabase cert_database;
+  // Device policy can't import certificates.
+  if (onc_source_ == NetworkUIData::ONC_SOURCE_DEVICE_POLICY) {
+    LOG(WARNING) << "Refusing to import certificate from device policy";
+    // This isn't a parsing error, so just return NULL here.
+    return NULL;
+  }
+
   bool web_trust = false;
   base::ListValue* trust_list = NULL;
   if (certificate->GetList("Trust", &trust_list)) {
@@ -848,6 +855,14 @@ OncNetworkParser::ParseServerOrCaCertificate(
         return NULL;
       }
     }
+  }
+
+  // Web trust is only granted to certificates imported for a managed user
+  // on a managed device.
+  if (onc_source_ == NetworkUIData::ONC_SOURCE_USER_POLICY &&
+      web_trust && !allow_web_trust_from_policy_) {
+    LOG(WARNING) << "Web trust not granted for certificate: " << guid;
+    web_trust = false;
   }
 
   std::string x509_data;
@@ -915,6 +930,7 @@ OncNetworkParser::ParseServerOrCaCertificate(
   // TODO(mnissler, gspencer): We should probably switch to a mode where we
   // keep our own database for mapping GUIDs to certs in order to enable several
   // GUIDs to map to the same cert. See http://crosbug.com/26073.
+  net::CertDatabase cert_database;
   if (x509_cert->os_cert_handle()->isperm) {
     if (!cert_database.DeleteCertAndKey(x509_cert.get())) {
       parse_error_ = l10n_util::GetStringUTF8(

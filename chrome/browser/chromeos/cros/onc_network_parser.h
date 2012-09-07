@@ -60,6 +60,12 @@ class OncNetworkParser : public NetworkParser {
   virtual ~OncNetworkParser();
   static const EnumMapper<PropertyIndex>* property_mapper();
 
+  // Certificates pushed from a policy source with Web trust are only imported
+  // with ParseCertificate() if this permission is granted.
+  void set_allow_web_trust_from_policy(bool allow) {
+    allow_web_trust_from_policy_ = allow;
+  }
+
   // Returns the number of networks in the "NetworkConfigs" list.
   int GetNetworkConfigsSize() const;
 
@@ -225,6 +231,10 @@ class OncNetworkParser : public NetworkParser {
 
   // Where the ONC blob comes from.
   NetworkUIData::ONCSource onc_source_;
+
+  // Whether certificates with Web trust should be stored when pushed from a
+  // policy source.
+  bool allow_web_trust_from_policy_;
 
   scoped_ptr<base::DictionaryValue> root_dict_;
   base::ListValue* network_configs_;

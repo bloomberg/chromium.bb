@@ -62,7 +62,6 @@
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
-#include "chrome/browser/policy/network_configuration_updater.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -419,12 +418,15 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- just after CreateProfile().
 
+  policy::BrowserPolicyConnector* connector =
+      g_browser_process->browser_policy_connector();
+
   if (parsed_command_line().HasSwitch(switches::kLoginUser) &&
       !parsed_command_line().HasSwitch(switches::kLoginPassword)) {
     // Pass the TokenService pointer to the policy connector so user policy can
     // grab a token and register with the policy server.
     // TODO(mnissler): Remove once OAuth is the only authentication mechanism.
-    g_browser_process->browser_policy_connector()->SetUserPolicyTokenService(
+    connector->SetUserPolicyTokenService(
         TokenServiceFactory::GetForProfile(profile()));
 
     // Make sure we flip every profile to not share proxies if the user hasn't
@@ -435,10 +437,9 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
       profile()->GetPrefs()->SetBoolean(prefs::kUseSharedProxies, false);
   }
 
-  network_config_updater_.reset(
-      new policy::NetworkConfigurationUpdater(
-          g_browser_process->policy_service(),
-          chromeos::CrosLibrary::Get()->GetNetworkLibrary()));
+  // Make sure the NetworkConfigurationUpdater is ready so that it pushes ONC
+  // configuration before login.
+  connector->GetNetworkConfigurationUpdater();
 
   // Make sure that wallpaper boot transition and other delays in OOBE
   // are disabled for tests by default.
@@ -561,9 +562,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   power_button_observer_.reset();
   screen_dimming_observer_.reset();
 
-  // Delete NetworkConfigurationUpdater and ContactManager while
-  // |g_browser_process| is still alive.
-  network_config_updater_.reset();
+  // Delete ContactManager while |g_browser_process| is still alive.
   contact_manager_.reset();
 
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();

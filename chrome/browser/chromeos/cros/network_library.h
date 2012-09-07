@@ -1693,6 +1693,7 @@ class NetworkLibrary {
   virtual bool LoadOncNetworks(const std::string& onc_blob,
                                const std::string& passcode,
                                NetworkUIData::ONCSource source,
+                               bool allow_web_trust_from_policy,
                                std::string* error) = 0;
 
   // This sets the active network for the network type. Note: priority order

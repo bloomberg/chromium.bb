@@ -28,6 +28,7 @@ class CloudPolicyProvider;
 class CloudPolicySubsystem;
 class ConfigurationPolicyProvider;
 class DeviceManagementService;
+class NetworkConfigurationUpdater;
 class PolicyService;
 class UserCloudPolicyManager;
 class UserPolicyTokenCache;
@@ -145,6 +146,8 @@ class BrowserPolicyConnector : public content::NotificationObserver {
 
   AppPackUpdater* GetAppPackUpdater();
 
+  NetworkConfigurationUpdater* GetNetworkConfigurationUpdater();
+
   DeviceManagementService* device_management_service() {
     return device_management_service_.get();
   }
@@ -220,6 +223,7 @@ class BrowserPolicyConnector : public content::NotificationObserver {
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<AppPackUpdater> app_pack_updater_;
+  scoped_ptr<NetworkConfigurationUpdater> network_configuration_updater_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPolicyConnector);

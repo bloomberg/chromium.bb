@@ -22,7 +22,8 @@ NetworkConfigurationUpdater::NetworkConfigurationUpdater(
     chromeos::NetworkLibrary* network_library)
     : policy_change_registrar_(
           policy_service, POLICY_DOMAIN_CHROME, std::string()),
-      network_library_(network_library) {
+      network_library_(network_library),
+      allow_web_trust_(false) {
   DCHECK(network_library_);
   policy_change_registrar_.Observe(
       key::kDeviceOpenNetworkConfiguration,
@@ -77,7 +78,7 @@ void NetworkConfigurationUpdater::ApplyNetworkConfiguration(
     *cached_value = new_network_config;
     std::string error;
     if (!network_library_->LoadOncNetworks(new_network_config, "", onc_source,
-                                           &error)) {
+                                           allow_web_trust_, &error)) {
       LOG(WARNING) << "Network library failed to load ONC configuration:"
                    << error;
     }

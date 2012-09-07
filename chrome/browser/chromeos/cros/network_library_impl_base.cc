@@ -1152,8 +1152,10 @@ void NetworkLibraryImplBase::SwitchToPreferredNetwork() {
 bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
                                              const std::string& passphrase,
                                              NetworkUIData::ONCSource source,
+                                             bool allow_web_trust_from_policy,
                                              std::string* error) {
   OncNetworkParser parser(onc_blob, passphrase, source);
+  parser.set_allow_web_trust_from_policy(allow_web_trust_from_policy);
 
   if (!parser.parse_error().empty()) {
     if (error)
@@ -1163,7 +1165,8 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
 
   for (int i = 0; i < parser.GetCertificatesSize(); i++) {
     // Insert each of the available certs into the certificate DB.
-    if (parser.ParseCertificate(i).get() == NULL) {
+    if (parser.ParseCertificate(i).get() == NULL &&
+        !parser.parse_error().empty()) {
       DLOG(WARNING) << "Cannot parse certificate in ONC file";
       if (error)
         *error = parser.parse_error();

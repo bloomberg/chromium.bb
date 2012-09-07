@@ -30,6 +30,11 @@ class NetworkConfigurationUpdater {
                               chromeos::NetworkLibrary* network_library);
   virtual ~NetworkConfigurationUpdater();
 
+  // Web trust isn't given to certificates imported from ONC by default.
+  // Setting |allow_web_trust| to true allows giving Web trust to the
+  // certificates that request it.
+  void set_allow_web_trust(bool allow) { allow_web_trust_ = allow; }
+
   // Empty network configuration blob.
   static const char kEmptyConfiguration[];
 
@@ -47,6 +52,9 @@ class NetworkConfigurationUpdater {
 
   // Network library to write network configuration to.
   chromeos::NetworkLibrary* network_library_;
+
+  // Whether Web trust is allowed or not.
+  bool allow_web_trust_;
 
   // Current settings.
   std::string device_network_config_;

@@ -241,6 +241,7 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   virtual bool LoadOncNetworks(const std::string& onc_blob,
                                const std::string& passphrase,
                                NetworkUIData::ONCSource source,
+                               bool allow_web_trust_from_policy,
                                std::string* error) OVERRIDE;
   virtual bool SetActiveNetwork(ConnectionType type,
                                 const std::string& service_path) OVERRIDE;

@@ -189,9 +189,10 @@ class MockNetworkLibrary : public NetworkLibrary {
                                      const std::string&,
                                      int));
   MOCK_METHOD0(SwitchToPreferredNetwork, void(void));
-  MOCK_METHOD4(LoadOncNetworks, bool(const std::string&,
+  MOCK_METHOD5(LoadOncNetworks, bool(const std::string&,
                                      const std::string&,
                                      NetworkUIData::ONCSource,
+                                     bool,
                                      std::string*));
   MOCK_METHOD2(SetActiveNetwork, bool(ConnectionType, const std::string&));
 };
