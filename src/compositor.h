@@ -272,6 +272,7 @@ struct weston_renderer {
 			       pixman_region32_t *output_damage);
 	void (*flush_damage)(struct weston_surface *surface);
 	void (*attach)(struct weston_surface *es, struct wl_buffer *buffer);
+	void (*destroy_surface)(struct weston_surface *surface);
 };
 
 struct weston_compositor {

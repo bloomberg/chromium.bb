@@ -682,8 +682,6 @@ struct weston_frame_callback {
 static void
 destroy_surface(struct wl_resource *resource)
 {
-	int i;
-
 	struct weston_surface *surface =
 		container_of(resource,
 			     struct weston_surface, surface.resource);
@@ -693,14 +691,10 @@ destroy_surface(struct wl_resource *resource)
 	if (weston_surface_is_mapped(surface))
 		weston_surface_unmap(surface);
 
-	glDeleteTextures(surface->num_textures, surface->textures);
-
 	if (surface->buffer)
 		wl_list_remove(&surface->buffer_destroy_listener.link);
 
-	for (i = 0; i < surface->num_images; i++)
-		compositor->destroy_image(compositor->egl_display,
-					  surface->images[i]);
+	compositor->renderer->destroy_surface(surface);
 
 	pixman_region32_fini(&surface->transform.boundingbox);
 	pixman_region32_fini(&surface->damage);

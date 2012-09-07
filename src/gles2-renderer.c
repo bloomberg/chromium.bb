@@ -821,6 +821,18 @@ gles2_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 	}
 }
 
+static void
+gles2_renderer_destroy_surface(struct weston_surface *surface)
+{
+	struct weston_compositor *ec = surface->compositor;
+	int i;
+
+	glDeleteTextures(surface->num_textures, surface->textures);
+
+	for (i = 0; i < surface->num_images; i++)
+		ec->destroy_image(ec->egl_display, surface->images[i]);
+}
+
 static const char vertex_shader[] =
 	"uniform mat4 proj;\n"
 	"attribute vec2 position;\n"
@@ -1164,6 +1176,7 @@ gles2_renderer_init(struct weston_compositor *ec)
 	renderer->base.repaint_output = gles2_renderer_repaint_output;
 	renderer->base.flush_damage = gles2_renderer_flush_damage;
 	renderer->base.attach = gles2_renderer_attach;
+	renderer->base.destroy_surface = gles2_renderer_destroy_surface;
 	ec->renderer = &renderer->base;
 
 	return 0;
