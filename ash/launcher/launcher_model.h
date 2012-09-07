@@ -5,15 +5,10 @@
 #ifndef ASH_LAUNCHER_LAUNCHER_MODEL_H_
 #define ASH_LAUNCHER_LAUNCHER_MODEL_H_
 
-#include <vector>
-
 #include "ash/ash_export.h"
 #include "ash/launcher/launcher_types.h"
+#include "base/basictypes.h"
 #include "base/observer_list.h"
-
-namespace aura {
-class Window;
-}
 
 namespace ash {
 
@@ -50,7 +45,7 @@ class ASH_EXPORT LauncherModel {
   void Set(int index, const LauncherItem& item);
 
   // Returns the index of the item by id.
-  int ItemIndexByID(int id);
+  int ItemIndexByID(int id) const;
 
   // Returns the id assigned to the next item added.
   LauncherID next_id() const { return next_id_; }

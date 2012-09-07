@@ -10,10 +10,6 @@
 #include "ash/ash_export.h"
 #include "ui/gfx/image/image_skia.h"
 
-namespace aura {
-class Window;
-}
-
 namespace ash {
 
 typedef int LauncherID;

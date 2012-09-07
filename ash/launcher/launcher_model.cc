@@ -103,7 +103,7 @@ void LauncherModel::Set(int index, const LauncherItem& item) {
     Move(index, new_index);
 }
 
-int LauncherModel::ItemIndexByID(LauncherID id) {
+int LauncherModel::ItemIndexByID(LauncherID id) const {
   LauncherItems::const_iterator i = ItemByID(id);
   return i == items_.end() ? -1 : static_cast<int>(i - items_.begin());
 }
