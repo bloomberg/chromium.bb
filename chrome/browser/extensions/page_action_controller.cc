@@ -20,9 +20,8 @@
 
 namespace extensions {
 
-PageActionController::PageActionController(TabContents* tab_contents)
-    : content::WebContentsObserver(tab_contents->web_contents()),
-      tab_contents_(tab_contents) {}
+PageActionController::PageActionController(content::WebContents* web_contents)
+    : content::WebContentsObserver(web_contents) {}
 
 PageActionController::~PageActionController() {}
 
@@ -52,9 +51,10 @@ LocationBarController::Action PageActionController::OnClicked(
   CHECK(extension);
   ExtensionAction* page_action = extension->page_action();
   CHECK(page_action);
-  int tab_id = ExtensionTabUtil::GetTabId(tab_contents_->web_contents());
+  int tab_id = ExtensionTabUtil::GetTabId(web_contents());
 
-  tab_contents_->extension_tab_helper()->active_tab_permission_manager()->
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
+  tab_contents->extension_tab_helper()->active_tab_permission_manager()->
       GrantIfRequested(extension);
 
   switch (mouse_button) {
@@ -64,10 +64,10 @@ LocationBarController::Action PageActionController::OnClicked(
         return ACTION_SHOW_POPUP;
 
       GetExtensionService()->browser_event_router()->PageActionExecuted(
-          tab_contents_->profile(),
+          tab_contents->profile(),
           *page_action,
           tab_id,
-          tab_contents_->web_contents()->GetURL().spec(),
+          web_contents()->GetURL().spec(),
           mouse_button);
       return ACTION_NONE;
 
@@ -80,7 +80,7 @@ LocationBarController::Action PageActionController::OnClicked(
 }
 
 void PageActionController::NotifyChange() {
-  tab_contents_->web_contents()->NotifyNavigationStateChanged(
+  web_contents()->NotifyNavigationStateChanged(
       content::INVALIDATE_TYPE_PAGE_ACTIONS);
 }
 
@@ -95,16 +95,18 @@ void PageActionController::DidNavigateMainFrame(
   if (current_actions.empty())
     return;
 
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
   for (size_t i = 0; i < current_actions.size(); ++i) {
     current_actions[i]->ClearAllValuesForTab(
-        SessionID::IdForTab(tab_contents_));
+        SessionID::IdForTab(tab_contents));
   }
 
   NotifyChange();
 }
 
 ExtensionService* PageActionController::GetExtensionService() const {
-  return ExtensionSystem::Get(tab_contents_->profile())->extension_service();
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
+  return ExtensionSystem::Get(tab_contents->profile())->extension_service();
 }
 
 }  // namespace extensions

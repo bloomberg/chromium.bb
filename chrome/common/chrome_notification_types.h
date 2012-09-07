@@ -477,7 +477,7 @@ enum NotificationType {
   NOTIFICATION_EXTENSIONS_READY,
 
   // Sent when an extension icon being displayed in the location bar is updated.
-  // The source is the Profile and the details are the TabContents for
+  // The source is the Profile and the details are the WebContents for
   // the tab.
   NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
 

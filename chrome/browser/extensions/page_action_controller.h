@@ -13,7 +13,6 @@
 #include "content/public/browser/web_contents_observer.h"
 
 class ExtensionService;
-class TabContents;
 
 namespace extensions {
 
@@ -22,7 +21,7 @@ namespace extensions {
 class PageActionController : public LocationBarController,
                              public content::WebContentsObserver {
  public:
-  explicit PageActionController(TabContents* tab_contents);
+  explicit PageActionController(content::WebContents* web_contents);
   virtual ~PageActionController();
 
   // LocationBarController implementation.
@@ -39,10 +38,8 @@ class PageActionController : public LocationBarController,
       const content::FrameNavigateParams& params) OVERRIDE;
 
  private:
-  // Gets the ExtensionService for |tab_contents_|.
+  // Gets the ExtensionService for the web contents.
   ExtensionService* GetExtensionService() const;
-
-  TabContents* tab_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(PageActionController);
 };

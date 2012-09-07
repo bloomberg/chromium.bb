@@ -29,14 +29,15 @@
 
 namespace extensions {
 
-ScriptBadgeController::ScriptBadgeController(TabContents* tab_contents,
+ScriptBadgeController::ScriptBadgeController(content::WebContents* web_contents,
                                              ScriptExecutor* script_executor)
     : ScriptExecutor::Observer(script_executor),
-      content::WebContentsObserver(tab_contents->web_contents()),
-      tab_contents_(tab_contents) {
+      content::WebContentsObserver(web_contents) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 content::Source<Profile>(tab_contents->profile()));
+                 content::Source<Profile>(profile));
 }
 
 ScriptBadgeController::~ScriptBadgeController() {}
@@ -54,7 +55,8 @@ void ScriptBadgeController::GetAttentionFor(
   // TODO(jyasskin): Modify the icon's appearance to indicate that the
   // extension is merely asking for permission to run:
   // http://crbug.com/133142
-  script_badge->SetAppearance(SessionID::IdForTab(tab_contents_),
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
+  script_badge->SetAppearance(SessionID::IdForTab(tab_contents),
                               ExtensionAction::WANTS_ATTENTION);
 
   NotifyChange();
@@ -72,28 +74,30 @@ LocationBarController::Action ScriptBadgeController::OnClicked(
   CHECK(script_badge);
 
   switch (mouse_button) {
-    case 1:  // left
-    case 2:  // middle
-      tab_contents_->extension_tab_helper()->active_tab_permission_manager()->
+    case 1:    // left
+    case 2: {  // middle
+      TabContents* tab_contents = TabContents::FromWebContents(web_contents());
+      tab_contents->extension_tab_helper()->active_tab_permission_manager()->
           GrantIfRequested(extension);
 
       // Even if clicking the badge doesn't immediately cause the extension to
       // run script on the page, we want to help users associate clicking with
       // the extension having permission to modify the page, so we make the icon
       // full-colored immediately.
-      if (script_badge->SetAppearance(SessionID::IdForTab(tab_contents_),
+      if (script_badge->SetAppearance(SessionID::IdForTab(tab_contents),
                                       ExtensionAction::ACTIVE))
         NotifyChange();
 
       // Fire the scriptBadge.onClicked event.
       GetExtensionService()->browser_event_router()->ScriptBadgeExecuted(
-          tab_contents_->profile(),
+          tab_contents->profile(),
           *script_badge,
-          SessionID::IdForTab(tab_contents_));
+          SessionID::IdForTab(tab_contents));
 
       // TODO(jyasskin): The fallback order should be user-defined popup ->
       // onClicked handler -> default popup.
       return ACTION_SHOW_SCRIPT_POPUP;
+    }
     case 3:  // right
       // Don't grant access on right clicks, so users can investigate
       // the extension without danger.
@@ -134,21 +138,23 @@ void ScriptBadgeController::OnExecuteScriptFinished(
 }
 
 ExtensionService* ScriptBadgeController::GetExtensionService() {
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
   return extensions::ExtensionSystem::Get(
-      tab_contents_->profile())->extension_service();
+      tab_contents->profile())->extension_service();
 }
 
 int32 ScriptBadgeController::GetPageID() {
   content::NavigationEntry* nav_entry =
-      tab_contents_->web_contents()->GetController().GetActiveEntry();
+      web_contents()->GetController().GetActiveEntry();
   return nav_entry ? nav_entry->GetPageID() : -1;
 }
 
 void ScriptBadgeController::NotifyChange() {
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
-      content::Source<Profile>(tab_contents_->profile()),
-      content::Details<TabContents>(tab_contents_));
+      content::Source<Profile>(tab_contents->profile()),
+      content::Details<content::WebContents>(web_contents()));
 }
 
 void ScriptBadgeController::DidNavigateMainFrame(
@@ -242,7 +248,8 @@ bool ScriptBadgeController::MarkExtensionExecuting(
   if (!script_badge)
     return false;
 
-  script_badge->SetAppearance(SessionID::IdForTab(tab_contents_),
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
+  script_badge->SetAppearance(SessionID::IdForTab(tab_contents),
                               ExtensionAction::ACTIVE);
   return true;
 }

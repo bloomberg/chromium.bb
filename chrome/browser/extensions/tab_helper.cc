@@ -66,9 +66,10 @@ TabHelper::TabHelper(TabContents* tab_contents)
           tab_contents->profile()) {
   if (switch_utils::AreScriptBadgesEnabled()) {
     location_bar_controller_.reset(new ScriptBadgeController(
-        tab_contents, &script_executor_));
+        tab_contents->web_contents(), &script_executor_));
   } else {
-    location_bar_controller_.reset(new PageActionController(tab_contents));
+    location_bar_controller_.reset(
+        new PageActionController(tab_contents->web_contents()));
   }
   registrar_.Add(this,
                  content::NOTIFICATION_LOAD_STOP,

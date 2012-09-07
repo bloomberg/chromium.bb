@@ -1081,9 +1081,8 @@ void LocationBarViewGtk::Observe(int type,
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED: {
       // Only update if the updated action box was for the active tab contents.
-      TabContents* target_tab =
-          content::Details<TabContents>(details).ptr();
-      if (target_tab == GetTabContents())
+      WebContents* target_tab = content::Details<WebContents>(details).ptr();
+      if (target_tab == GetTabContents()->web_contents())
         UpdatePageActions();
       break;
     }

@@ -59,7 +59,7 @@ class ScriptBadgeControllerTest : public TabContentsTestHarness {
 
     script_executor_.reset(new ScriptExecutor(web_contents()));
     script_badge_controller_.reset(new ScriptBadgeController(
-        tab_contents(), script_executor_.get()));
+        web_contents(), script_executor_.get()));
   }
 
  protected:

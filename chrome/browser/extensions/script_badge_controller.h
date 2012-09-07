@@ -21,7 +21,6 @@
 class ExtensionAction;
 class ExtensionService;
 class GURL;
-class TabContents;
 
 namespace base {
 class ListValue;
@@ -53,7 +52,7 @@ class ScriptBadgeController
       public content::WebContentsObserver,
       public content::NotificationObserver {
  public:
-  explicit ScriptBadgeController(TabContents* tab_contents,
+  explicit ScriptBadgeController(content::WebContents* web_contents,
                                  ScriptExecutor* script_executor);
   virtual ~ScriptBadgeController();
 
@@ -109,9 +108,6 @@ class ScriptBadgeController
   // Tries to erase an extension from the relevant collections, and returns
   // whether any change was made.
   bool EraseExtension(const Extension* extension);
-
-  // Our parent TabContents.
-  TabContents* tab_contents_;
 
   // The current extension actions in the order they appeared.  These come from
   // calls to ExecuteScript or getAttention on the current frame.
