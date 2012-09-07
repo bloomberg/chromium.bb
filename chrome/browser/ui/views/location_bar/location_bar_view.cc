@@ -47,6 +47,7 @@
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/location_bar/suggested_text_view.h"
+#include "chrome/browser/ui/views/location_bar/web_intents_button_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
@@ -155,6 +156,13 @@ static const int kSelectedKeywordBackgroundImages[] = {
   IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R,
 };
 
+// TODO(gbillock): replace these with web-intents images when available.
+static const int kWIBubbleBackgroundImages[] = {
+  IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_L,
+  IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_C,
+  IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_R,
+};
+
 #if defined(USE_AURA)
 LocationBarView::FadeAnimationObserver::FadeAnimationObserver(
     LocationBarView* location_bar_view)
@@ -196,6 +204,7 @@ LocationBarView::LocationBarView(Browser* browser,
       keyword_hint_view_(NULL),
       zoom_view_(NULL),
       star_view_(NULL),
+      web_intents_button_view_(NULL),
       action_box_button_view_(NULL),
       mode_(mode),
       show_focus_rect_(false),
@@ -287,6 +296,10 @@ void LocationBarView::Init(views::View* popup_parent_view) {
 
   zoom_view_ = new ZoomView(model_, delegate_);
   AddChildView(zoom_view_);
+
+  web_intents_button_view_ =
+      new WebIntentsButtonView(this, kWIBubbleBackgroundImages);
+  AddChildView(web_intents_button_view_);
 
   if (browser_defaults::bookmarks_enabled && (mode_ == NORMAL)) {
     // Note: condition above means that the star icon is hidden in popups and in
@@ -405,6 +418,7 @@ void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
   ZoomBubbleView::CloseBubble();
   RefreshZoomView();
   RefreshPageActionViews();
+  web_intents_button_view_->Update(GetTabContents());
 
   bool star_enabled = star_view_ && !model_->input_in_progress() &&
                       edit_bookmarks_enabled_.GetValue();
@@ -459,7 +473,10 @@ void LocationBarView::InvalidatePageActions() {
 }
 
 void LocationBarView::UpdateWebIntentsButton() {
-  // TODO(gbillock): implement this for views
+  web_intents_button_view_->Update(GetTabContents());
+
+  Layout();
+  SchedulePaint();
 }
 
 void LocationBarView::OnFocus() {
@@ -791,6 +808,17 @@ void LocationBarView::Layout() {
                       content_blocked_width, (*i)->GetPreferredSize().height());
       offset -= GetItemPadding() - (*i)->GetBuiltInHorizontalPadding();
     }
+  }
+
+  // Now the web intents button
+  if (web_intents_button_view_->visible()) {
+    offset += web_intents_button_view_->GetBuiltInHorizontalPadding();
+    int width = web_intents_button_view_->GetPreferredSize().width();
+    offset -= width;
+    web_intents_button_view_->SetBounds(
+        offset, location_y, width, location_height);
+    offset -= GetItemPadding() -
+              web_intents_button_view_->GetBuiltInHorizontalPadding();
   }
 
   // Now lay out items to the left of the edit field.
