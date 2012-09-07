@@ -38,6 +38,32 @@ ui::AnimationContainer* GetAnimationContainer() {
 
 }  // namespace
 
+class LayerAnimator::DestroyedTracker
+    : public base::RefCounted<LayerAnimator::DestroyedTracker> {
+ public:
+  DestroyedTracker() : is_alive_(true) {}
+
+  // Returns true if the animator is still alive.
+  bool is_alive() const { return is_alive_; }
+
+  // Invoked when the animator is destroyed.
+  void AnimatorDeleted() {
+    DCHECK(is_alive_);
+    is_alive_ = false;
+  }
+
+ private:
+  friend class base::RefCounted<DestroyedTracker>;
+
+  ~DestroyedTracker() {
+    DCHECK(!is_alive_);
+  }
+
+  bool is_alive_;
+
+  DISALLOW_COPY_AND_ASSIGN(DestroyedTracker);
+};
+
 // static
 bool LayerAnimator::disable_animations_for_test_ = false;
 // static
@@ -53,13 +79,15 @@ LayerAnimator::LayerAnimator(base::TimeDelta transition_duration)
       transition_duration_(transition_duration),
       tween_type_(Tween::LINEAR),
       is_started_(false),
-      disable_timer_for_test_(false) {
+      disable_timer_for_test_(false),
+      destroyed_tracker_(new DestroyedTracker) {
 }
 
 LayerAnimator::~LayerAnimator() {
   for (size_t i = 0; i < running_animations_.size(); ++i)
     running_animations_[i].sequence->OnAnimatorDestroyed();
   ClearAnimations();
+  destroyed_tracker_->AnimatorDeleted();
 }
 
 // static
@@ -262,13 +290,16 @@ void LayerAnimator::StopAnimatingProperty(
     RunningAnimation* running = GetRunningAnimation(property);
     if (!running)
       break;
-    FinishAnimation(running->sequence);
+    if (FinishAnimation(running->sequence) == DESTROYED)
+      return;
   }
 }
 
 void LayerAnimator::StopAnimating() {
-  while (is_animating())
-    FinishAnimation(running_animations_[0].sequence);
+  while (is_animating()) {
+    if (FinishAnimation(running_animations_[0].sequence) == DESTROYED)
+      return;
+  }
 }
 
 void LayerAnimator::AddObserver(LayerAnimationObserver* observer) {
@@ -321,9 +352,18 @@ void LayerAnimator::Step(base::TimeTicks now) {
     base::TimeDelta delta = now - running_animations_copy[i].start_time;
     if (delta >= running_animations_copy[i].sequence->duration() &&
         !running_animations_copy[i].sequence->is_cyclic()) {
-      FinishAnimation(running_animations_copy[i].sequence);
-    } else if (ProgressAnimation(running_animations_copy[i].sequence, delta))
+      if (FinishAnimation(running_animations_copy[i].sequence) == DESTROYED)
+        return;
       needs_redraw = true;
+    } else {
+      scoped_refptr<DestroyedTracker> tracker(destroyed_tracker_);
+      const bool progress_result =
+          ProgressAnimation(running_animations_copy[i].sequence, delta);
+      if (!tracker->is_alive())
+        return;
+      if (progress_result)
+        needs_redraw = true;
+    }
   }
 
   if (needs_redraw && delegate())
@@ -377,11 +417,18 @@ LayerAnimationSequence* LayerAnimator::RemoveAnimation(
   return to_return.release();
 }
 
-void LayerAnimator::FinishAnimation(LayerAnimationSequence* sequence) {
+LayerAnimator::DestroyedType LayerAnimator::FinishAnimation(
+    LayerAnimationSequence* sequence) {
   scoped_ptr<LayerAnimationSequence> removed(RemoveAnimation(sequence));
-  sequence->Progress(sequence->duration(), delegate());
+  {
+    scoped_refptr<DestroyedTracker> tracker(destroyed_tracker_);
+    sequence->Progress(sequence->duration(), delegate());
+    if (!tracker->is_alive())
+      return DESTROYED;
+  }
   ProcessQueue();
   UpdateAnimationState();
+  return NOT_DESTROYED;
 }
 
 void LayerAnimator::FinishAnyAnimationWithZeroDuration() {

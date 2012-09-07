@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "ui/base/animation/animation_container_element.h"
@@ -186,6 +187,14 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
  private:
   friend class ScopedLayerAnimationSettings;
 
+  class DestroyedTracker;
+
+  // Used by FinishAnimation() to indicate if this has been destroyed.
+  enum DestroyedType {
+    DESTROYED,
+    NOT_DESTROYED,
+  };
+
   // We need to keep track of the start time of every running animation.
   struct RunningAnimation {
     RunningAnimation(LayerAnimationSequence* sequence,
@@ -215,7 +224,8 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
       LayerAnimationSequence* sequence) WARN_UNUSED_RESULT;
 
   // Progresses to the end of the sequence before removing it.
-  void FinishAnimation(LayerAnimationSequence* sequence);
+  DestroyedType FinishAnimation(
+      LayerAnimationSequence* sequence) WARN_UNUSED_RESULT;
 
   // Finishes any running animation with zero duration.
   void FinishAnyAnimationWithZeroDuration();
@@ -312,6 +322,8 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
   // Observers are notified when layer animations end, are scheduled or are
   // aborted.
   ObserverList<LayerAnimationObserver> observers_;
+
+  scoped_refptr<DestroyedTracker> destroyed_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerAnimator);
 };
