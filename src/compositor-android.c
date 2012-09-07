@@ -423,6 +423,8 @@ android_init_egl(struct android_compositor *compositor,
 static void
 android_fini_egl(struct android_compositor *compositor)
 {
+	gles2_renderer_destroy(&compositor->base);
+
 	eglMakeCurrent(compositor->base.egl_display,
 		       EGL_NO_SURFACE, EGL_NO_SURFACE,
 		       EGL_NO_CONTEXT);

@@ -797,6 +797,8 @@ wayland_restore(struct weston_compositor *ec)
 static void
 wayland_destroy(struct weston_compositor *ec)
 {
+	gles2_renderer_destroy(ec);
+
 	weston_compositor_shutdown(ec);
 
 	free(ec);

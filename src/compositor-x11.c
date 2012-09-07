@@ -273,6 +273,8 @@ x11_compositor_init_egl(struct x11_compositor *c)
 static void
 x11_compositor_fini_egl(struct x11_compositor *compositor)
 {
+	gles2_renderer_destroy(&compositor->base);
+
 	eglMakeCurrent(compositor->base.egl_display,
 		       EGL_NO_SURFACE, EGL_NO_SURFACE,
 		       EGL_NO_CONTEXT);

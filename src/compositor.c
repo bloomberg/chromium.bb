@@ -3142,9 +3142,6 @@ int main(int argc, char *argv[])
 
 	wl_signal_emit(&ec->destroy_signal, ec);
 
-	if (ec->has_bind_display)
-		ec->unbind_display(ec->egl_display, display);
-
 	for (i = ARRAY_LENGTH(signals); i;)
 		wl_event_source_remove(signals[--i]);
 

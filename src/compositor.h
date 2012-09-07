@@ -803,5 +803,7 @@ weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode
 
 int
 gles2_renderer_init(struct weston_compositor *ec);
+void
+gles2_renderer_destroy(struct weston_compositor *ec);
 
 #endif

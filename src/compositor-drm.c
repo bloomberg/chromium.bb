@@ -2034,6 +2034,8 @@ drm_destroy(struct weston_compositor *ec)
 
 	weston_compositor_shutdown(ec);
 
+	gles2_renderer_destroy(ec);
+
 	/* Work around crash in egl_dri2.c's dri2_make_current() */
 	eglMakeCurrent(ec->egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE,
 		       EGL_NO_CONTEXT);

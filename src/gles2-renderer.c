@@ -1039,6 +1039,13 @@ struct gles2_renderer {
 	struct weston_renderer base;
 };
 
+WL_EXPORT void
+gles2_renderer_destroy(struct weston_compositor *ec)
+{
+	if (ec->has_bind_display)
+		ec->unbind_display(ec->egl_display, ec->wl_display);
+}
+
 WL_EXPORT int
 gles2_renderer_init(struct weston_compositor *ec)
 {
