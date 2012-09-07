@@ -573,6 +573,9 @@ Web Store: https://chrome.google.com/remotedesktop"""
   parser.add_option("", "--add-user", dest="add_user", default=False,
                     action="store_true",
                     help="Add current user to the chrome-remote-desktop group.")
+  parser.add_option("", "--host-version", dest="host_version", default=False,
+                    action="store_true",
+                    help="Prints version of the host.")
   (options, args) = parser.parse_args()
 
   host_hash = hashlib.md5(socket.gethostname()).hexdigest()
@@ -606,7 +609,11 @@ Web Store: https://chrome.google.com/remotedesktop"""
                "\"groupadd -f %(group)s && gpasswd --add %(user)s %(group)s\"" %
                { 'group': CHROME_REMOTING_GROUP_NAME,
                  'user': getpass.getuser() })
-    return os.system(command)
+    return os.system(command) >> 8
+
+  if options.host_version:
+    # TODO(sergeyu): Also check RPM package version once we add RPM package.
+    return os.system(locate_executable(HOST_BINARY_NAME) + " --version") >> 8
 
   if not options.start:
     # If no modal command-line options specified, print an error and exit.

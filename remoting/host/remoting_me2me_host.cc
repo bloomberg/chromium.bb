@@ -17,6 +17,7 @@
 #include "base/message_loop.h"
 #include "base/scoped_native_library.h"
 #include "base/string_util.h"
+#include "base/stringize_macros.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
@@ -87,6 +88,9 @@ const char kApplicationName[] = "chromoting";
 
 // The command line switch specifying the name of the daemon IPC endpoint.
 const char kDaemonIpcSwitchName[] = "daemon-pipe";
+
+// The command line switch used to get version of the daemon.
+const char kVersionSwitchName[] = "version";
 
 const char kUnofficialOAuth2ClientId[] =
     "440925447803-2pi3v45bff6tp1rde2f7q6lgbor3o5uj.apps.googleusercontent.com";
@@ -714,6 +718,11 @@ int main(int argc, char** argv) {
   // This object instance is required by Chrome code (for example,
   // LazyInstance, MessageLoop).
   base::AtExitManager exit_manager;
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(kVersionSwitchName)) {
+    printf("%s\n", STRINGIZE(VERSION));
+    return 0;
+  }
 
   // Initialize logging with an appropriate log-file location, and default to
   // log to that on Windows, or to standard error output otherwise.

@@ -21,7 +21,7 @@ remoting.HostController = function() {
     if (version == '') {
       console.log('Host not installed.');
     } else {
-      console.log('Host version:', version);
+      console.log('Host version: ' + version);
     }
   };
   try {

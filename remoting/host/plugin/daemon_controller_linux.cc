@@ -76,6 +76,7 @@ class DaemonControllerLinux : public remoting::DaemonController {
   void DoUpdateConfig(scoped_ptr<base::DictionaryValue> config,
                       const CompletionCallback& done_callback);
   void DoStop(const CompletionCallback& done_callback);
+  void DoGetVersion(const GetVersionCallback& done_callback);
 
   base::Thread file_io_thread_;
 
@@ -194,9 +195,9 @@ void DaemonControllerLinux::SetWindow(void* window_handle) {
 
 void DaemonControllerLinux::GetVersion(
     const GetVersionCallback& done_callback) {
-  // TODO(sergeyu): Implement this method.
-  NOTIMPLEMENTED();
-  done_callback.Run("");
+  file_io_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
+      &DaemonControllerLinux::DoGetVersion, base::Unretained(this),
+      done_callback));
 }
 
 FilePath DaemonControllerLinux::GetConfigPath() {
@@ -300,6 +301,37 @@ void DaemonControllerLinux::DoStop(const CompletionCallback& done_callback) {
     result = RESULT_FAILED;
   }
   done_callback.Run(result);
+}
+
+void DaemonControllerLinux::DoGetVersion(
+    const GetVersionCallback& done_callback) {
+  FilePath script_path;
+  if (!GetScriptPath(&script_path)) {
+    done_callback.Run("");
+    return;
+  }
+  CommandLine command_line(script_path);
+  command_line.AppendArg("--host-version");
+
+  std::string version;
+  int exit_code = 0;
+  int result =
+      base::GetAppOutputWithExitCode(command_line, &version, &exit_code);
+  if (!result || exit_code != 0) {
+    LOG(ERROR) << "Failed to run \"" << command_line.GetCommandLineString()
+               << "\". Exit code: " << exit_code;
+    done_callback.Run("");
+    return;
+  }
+
+  TrimWhitespaceASCII(version, TRIM_ALL, &version);
+  if (!ContainsOnlyChars(version, "0123456789.")) {
+    LOG(ERROR) << "Received invalid host version number: " << version;
+    done_callback.Run("");
+    return;
+  }
+
+  done_callback.Run(version);
 }
 
 }  // namespace

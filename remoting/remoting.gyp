@@ -1445,6 +1445,9 @@
         '../media/media.gyp:media',
         '../net/net.gyp:net',
       ],
+      'defines': [
+        'VERSION=<(version_full)',
+      ],
       'sources': [
         'host/branding.cc',
         'host/branding.h',
