@@ -28,7 +28,7 @@ class PermissionBrokerClientImpl : public PermissionBrokerClient {
         weak_ptr_factory_(this) {}
 
   virtual void RequestPathAccess(const std::string& path,
-                                 const ResultCallback& callback) {
+                                 const ResultCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(kPermissionBrokerInterface,
                                  kRequestPathAccess);
     dbus::MessageWriter writer(&method_call);
@@ -41,7 +41,7 @@ class PermissionBrokerClientImpl : public PermissionBrokerClient {
 
   virtual void RequestUsbAccess(const uint16_t vendor_id,
                                 const uint16_t product_id,
-                                const ResultCallback& callback) {
+                                const ResultCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(kPermissionBrokerInterface, kRequestUsbAccess);
     dbus::MessageWriter writer(&method_call);
     writer.AppendUint16(vendor_id);
@@ -85,13 +85,13 @@ class PermissionBrokerClientStubImpl : public PermissionBrokerClient {
   virtual ~PermissionBrokerClientStubImpl() {}
 
   virtual void RequestPathAccess(const std::string& path,
-                                 const ResultCallback& callback) {
+                                 const ResultCallback& callback) OVERRIDE {
     callback.Run(false);
   }
 
   virtual void RequestUsbAccess(const uint16_t vendor_id,
                                 const uint16_t product_id,
-                                const ResultCallback& callback) {
+                                const ResultCallback& callback) OVERRIDE {
     callback.Run(false);
   }
 
