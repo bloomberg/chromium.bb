@@ -65,10 +65,10 @@ class WEBKIT_GLUE_EXPORT ResourceRequestBody
   virtual ~ResourceRequestBody();
 
   // Resolves the |blob_url| using |blob_controller| and appends resolved
-  // items to |elements|.
+  // items to |resolved_elements|.
   void ResolveBlobReference(webkit_blob::BlobStorageController* blob_controller,
                             const GURL& blob_url,
-                            std::vector<net::UploadElement>* elements);
+                            std::vector<const Element*>* resolved_elements);
 
   std::vector<Element> elements_;
   int64 identifier_;

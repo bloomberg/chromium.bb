@@ -46,6 +46,18 @@ void ResourceRequestBody::AppendFileSystemFileRange(
 
 net::UploadData* ResourceRequestBody::ResolveElementsAndCreateUploadData(
     BlobStorageController* blob_controller) {
+  // Resolve all blob elements.
+  std::vector<const Element*> resolved_elements;
+  for (size_t i = 0; i < elements_.size(); ++i) {
+    const Element& element = elements_[i];
+    if (element.type() == Element::TYPE_BLOB) {
+      ResolveBlobReference(blob_controller, element.url(), &resolved_elements);
+    } else {
+      // No need to resolve, just append the element.
+      resolved_elements.push_back(&element);
+    }
+  }
+
   net::UploadData* upload_data = new net::UploadData;
   // We attach 'this' to UploadData so that we do not need to copy
   // bytes for TYPE_BYTES.
@@ -53,8 +65,8 @@ net::UploadData* ResourceRequestBody::ResolveElementsAndCreateUploadData(
       this, new base::UserDataAdapter<ResourceRequestBody>(this));
   std::vector<net::UploadElement>* elements =
       upload_data->elements_mutable();
-  for (size_t i = 0; i < elements_.size(); ++i) {
-    const Element& element = elements_[i];
+  for (size_t i = 0; i < resolved_elements.size(); ++i) {
+    const Element& element = *resolved_elements[i];
     switch (element.type()) {
       case Element::TYPE_BYTES:
         elements->push_back(net::UploadElement());
@@ -73,7 +85,8 @@ net::UploadData* ResourceRequestBody::ResolveElementsAndCreateUploadData(
         NOTREACHED();
         break;
       case Element::TYPE_BLOB:
-        ResolveBlobReference(blob_controller, element.url(), elements);
+        // Blob elements should be resolved beforehand.
+        NOTREACHED();
         break;
       case Element::TYPE_UNKNOWN:
         NOTREACHED();
@@ -88,14 +101,15 @@ ResourceRequestBody::~ResourceRequestBody() {}
 
 void ResourceRequestBody::ResolveBlobReference(
     webkit_blob::BlobStorageController* blob_controller,
-    const GURL& blob_url, std::vector<net::UploadElement>* elements) {
+    const GURL& blob_url,
+    std::vector<const Element*>* resolved_elements) {
   DCHECK(blob_controller);
   BlobData* blob_data = blob_controller->GetBlobDataFromUrl(blob_url);
   DCHECK(blob_data);
   if (!blob_data)
     return;
 
-  // If there is no element in the referred blob data, just return true.
+  // If there is no element in the referred blob data, just return.
   if (blob_data->items().empty())
     return;
 
@@ -105,30 +119,9 @@ void ResourceRequestBody::ResolveBlobReference(
 
   // Append the elements in the referred blob data.
   for (size_t i = 0; i < blob_data->items().size(); ++i) {
-    elements->push_back(net::UploadElement());
-    net::UploadElement& element = elements->back();
     const BlobData::Item& item = blob_data->items().at(i);
-    switch (item.type()) {
-      case BlobData::Item::TYPE_BYTES:
-        element.SetToSharedBytes(
-            item.bytes() + static_cast<int>(item.offset()),
-            static_cast<int>(item.length()));
-        break;
-      case BlobData::Item::TYPE_FILE:
-        element.SetToFilePathRange(
-            item.path(),
-            item.offset(),
-            item.length(),
-            item.expected_modification_time());
-        break;
-      case BlobData::Item::TYPE_FILE_FILESYSTEM:
-        // TODO(kinuko): Resolve FileSystemURL before creating UploadData.
-        NOTREACHED();
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
+    DCHECK_NE(BlobData::Item::TYPE_BLOB, item.type());
+    resolved_elements->push_back(&item);
   }
 }
 
