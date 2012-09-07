@@ -53,10 +53,11 @@ int FileSystemFileStreamReader::Read(
   if (local_file_reader_.get())
     return local_file_reader_->Read(buf, buf_len, callback);
   DCHECK(!has_pending_create_snapshot_);
+  base::PlatformFileError error_code;
   FileSystemOperation* operation =
-      file_system_context_->CreateFileSystemOperation(url_);
-  if (!operation)
-    return net::ERR_INVALID_URL;
+      file_system_context_->CreateFileSystemOperation(url_, &error_code);
+  if (error_code != base::PLATFORM_FILE_OK)
+    return net::PlatformFileErrorToNetError(error_code);
   has_pending_create_snapshot_ = true;
   operation->CreateSnapshotFile(
       url_,

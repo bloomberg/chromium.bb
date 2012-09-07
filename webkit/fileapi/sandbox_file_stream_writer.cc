@@ -66,8 +66,12 @@ int SandboxFileStreamWriter::Write(
   if (local_file_writer_.get())
     return WriteInternal(buf, buf_len, callback);
 
+  base::PlatformFileError error_code;
   FileSystemOperation* operation =
-      file_system_context_->CreateFileSystemOperation(url_);
+      file_system_context_->CreateFileSystemOperation(url_, &error_code);
+  if (error_code != base::PLATFORM_FILE_OK)
+    return net::PlatformFileErrorToNetError(error_code);
+
   DCHECK(operation);
   net::CompletionCallback write_task =
       base::Bind(&SandboxFileStreamWriter::DidInitializeForWrite,
