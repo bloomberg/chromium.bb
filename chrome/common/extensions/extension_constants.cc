@@ -126,6 +126,10 @@ const char kCroshBuiltinAppId[] = "nkoccljplnhpfnfiajclkommnmllphnl";
 const char kWebStoreAppId[] = "ahfgeienlihckogmohjhadlkjgocpleb";
 const char kCloudPrintAppId[] = "mfehgcgbbipciphmccgaenjidiccnmng";
 const char kChromeAppId[] = "mgndgikekgjfcpckkfioiadnlibdjbkf";
+const char kTalkExtensionId[] = "nckgahadagoaajjgafhacjanaoiihapd";
+const char kTalkBetaExtensionId[] = "eggnbpckecmjlblplehfpjjdhhidfdoj";
+const char kTalkAlphaExtensionId[] = "ppleadejekpmccmnpjdimmlfljlkdfej";
+const char kTalkDebugExtensionId[] = "ljclpkphhpbpinifbeabbhlfddcpfdde";
 const char kAppLaunchHistogram[] = "Extensions.AppLaunch";
 #if defined(OS_CHROMEOS)
 const char kAccessExtensionPath[] =
