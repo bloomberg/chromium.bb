@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_SIGNIN_SIGNIN_TRACKER_H_
 
 #include "chrome/browser/sync/profile_sync_service_observer.h"
-#include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 
 class Profile;
 

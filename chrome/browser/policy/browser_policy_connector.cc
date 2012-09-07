@@ -28,11 +28,11 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/net/gaia/gaia_auth_util.h"
-#include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "google_apis/gaia/gaia_auth_util.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "grit/generated_resources.h"
 #include "policy/policy_constants.h"
 

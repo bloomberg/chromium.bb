@@ -8,7 +8,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/values.h"
-#include "chrome/common/net/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 

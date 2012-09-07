@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 #include "chrome/browser/chromeos/gdata/operation_registry.h"
-#include "chrome/common/net/gaia/oauth2_access_token_consumer.h"
+#include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "googleurl/src/gurl.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"

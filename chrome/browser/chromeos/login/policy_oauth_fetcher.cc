@@ -10,8 +10,8 @@
 #include "chrome/browser/policy/user_cloud_policy_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/net/gaia/gaia_constants.h"
-#include "chrome/common/net/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/gaia_constants.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 
 namespace chromeos {
 

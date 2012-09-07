@@ -9,14 +9,14 @@
 
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/signin/token_service.h"
-#include "chrome/common/net/gaia/gaia_auth_consumer.h"
+#include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_notification_tracker.h"
+#include "google_apis/gaia/gaia_auth_consumer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // TestNotificationTracker doesn't do a deep copy on the notification details.

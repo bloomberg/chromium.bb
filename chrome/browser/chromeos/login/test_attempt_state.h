@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/login/auth_attempt_state.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
-#include "chrome/common/net/gaia/gaia_auth_consumer.h"
+#include "google_apis/gaia/gaia_auth_consumer.h"
 
 namespace chromeos {
 

@@ -15,8 +15,8 @@
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/net/gaia/gaia_oauth_consumer.h"
 #include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
-#include "chrome/common/net/gaia/gaia_auth_consumer.h"
-#include "chrome/common/net/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/gaia_auth_consumer.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 
 class GaiaAuthFetcher;
 class Profile;

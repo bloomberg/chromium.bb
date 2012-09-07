@@ -12,9 +12,9 @@
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
-#include "chrome/common/net/gaia/gaia_auth_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/signature_verifier.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 
 namespace em = enterprise_management;
 

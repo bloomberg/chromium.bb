@@ -6,9 +6,9 @@
 
 #include <string>
 
-#include "chrome/common/net/gaia/gaia_auth_consumer.h"
-#include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "content/public/browser/browser_thread.h"
+#include "google_apis/gaia/gaia_auth_consumer.h"
+#include "google_apis/gaia/gaia_auth_fetcher.h"
 
 using content::BrowserThread;
 

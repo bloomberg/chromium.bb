@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
-#include "chrome/common/net/gaia/gaia_auth_consumer.h"
+#include "google_apis/gaia/gaia_auth_consumer.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

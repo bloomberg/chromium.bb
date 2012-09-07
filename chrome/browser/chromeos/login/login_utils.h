@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "chrome/common/net/gaia/gaia_auth_consumer.h"
+#include "google_apis/gaia/gaia_auth_consumer.h"
 
 class CommandLine;
 class GURL;

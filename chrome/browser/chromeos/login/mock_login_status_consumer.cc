@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/login/mock_login_status_consumer.h"
 
 #include "base/message_loop.h"
-#include "chrome/common/net/gaia/gaia_auth_consumer.h"
+#include "google_apis/gaia/gaia_auth_consumer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {

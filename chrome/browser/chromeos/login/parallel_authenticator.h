@@ -18,7 +18,7 @@
 #include "chrome/browser/chromeos/login/online_attempt.h"
 #include "chrome/browser/chromeos/login/test_attempt_state.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/common/net/gaia/gaia_auth_consumer.h"
+#include "google_apis/gaia/gaia_auth_consumer.h"
 
 class LoginFailure;
 class Profile;

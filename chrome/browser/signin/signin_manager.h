@@ -25,10 +25,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
-#include "chrome/common/net/gaia/gaia_auth_consumer.h"
-#include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "google_apis/gaia/gaia_auth_consumer.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 
 class GaiaAuthFetcher;
 class Profile;

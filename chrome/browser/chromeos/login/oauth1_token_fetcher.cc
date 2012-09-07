@@ -8,8 +8,8 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "content/public/browser/browser_thread.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 
 using content::BrowserThread;
 

@@ -35,6 +35,7 @@
         '../content/content.gyp:content_browser',
         '../content/content.gyp:content_common',
         '../crypto/crypto.gyp:crypto',
+        '../google_apis/google_apis.gyp:google_apis',
         '../media/media.gyp:media',
         '../net/net.gyp:net_with_v8',
         '../ppapi/ppapi_internal.gyp:ppapi_ipc',  # For PpapiMsg_LoadPlugin

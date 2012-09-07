@@ -6,6 +6,7 @@ include_rules = [
   "+chromeos",
   "+content/public/browser",
   "+google/cacheinvalidation",  # Sync invalidation API protobuf files.
+  "+google_apis",
   "+google_update",
   "+grit",  # For generated headers
   "+installer_util_strings",  # For generated headers

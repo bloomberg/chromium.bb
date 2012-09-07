@@ -9,8 +9,8 @@
 #include "chrome/browser/chromeos/login/auth_attempt_state.h"
 #include "chrome/browser/chromeos/login/online_attempt.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/net/gaia/gaia_auth_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 
 namespace chromeos {
 

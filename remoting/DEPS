@@ -4,6 +4,7 @@ include_rules = [
   "+content/common",
 
   "+crypto",
+  "+google_apis",
   "+media/base",
 
   # Note: Only for net::EnableSSLServerSockets(), which must be called by

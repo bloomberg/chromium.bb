@@ -13,10 +13,10 @@
 #include "chrome/browser/extensions/webstore_install_helper.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/gpu_feature_checker.h"
-#include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 
 class ProfileSyncService;
 

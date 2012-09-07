@@ -8,8 +8,8 @@
 #include <string>
 
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
-#include "chrome/common/net/gaia/gaia_auth_consumer.h"
-#include "chrome/common/net/gaia/gaia_auth_fetcher.h"
+#include "google_apis/gaia/gaia_auth_consumer.h"
+#include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {

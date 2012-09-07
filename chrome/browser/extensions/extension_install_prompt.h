@@ -14,7 +14,7 @@
 #include "chrome/browser/extensions/crx_installer_error.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/common/extensions/url_pattern.h"
-#include "chrome/common/net/gaia/oauth2_mint_token_flow.h"
+#include "google_apis/gaia/oauth2_mint_token_flow.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"

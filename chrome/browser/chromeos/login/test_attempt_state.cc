@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "chrome/common/net/gaia/gaia_auth_consumer.h"
+#include "google_apis/gaia/gaia_auth_consumer.h"
 
 namespace chromeos {
 

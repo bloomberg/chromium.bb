@@ -16,10 +16,10 @@
 #include "chrome/browser/chromeos/settings/system_settings_provider.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/net/gaia/gaia_auth_util.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 
 namespace chromeos {
 

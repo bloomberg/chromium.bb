@@ -1,5 +1,0 @@
-include_rules = [
-  "-chrome",
-  "-content",
-  "+chrome/common/net/google_apis",
-]

@@ -18,11 +18,11 @@
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/net/gaia/gaia_auth_consumer.h"
-#include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
+#include "google_apis/gaia/gaia_auth_consumer.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using browser_sync::DataTypeManager;

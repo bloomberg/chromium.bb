@@ -4,9 +4,9 @@
 
 #include "chrome/browser/sync/credential_cache_service_win.h"
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
@@ -29,12 +29,12 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/net/gaia/gaia_auth_consumer.h"
-#include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "google_apis/gaia/gaia_auth_consumer.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "sync/internal_api/public/base/model_type.h"
 
 namespace syncer {

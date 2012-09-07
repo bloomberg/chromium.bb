@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_SIGNIN_UBERTOKEN_FETCHER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/net/gaia/gaia_auth_consumer.h"
-#include "chrome/common/net/gaia/gaia_auth_fetcher.h"
-#include "chrome/common/net/gaia/gaia_oauth_client.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
+#include "google_apis/gaia/gaia_auth_consumer.h"
+#include "google_apis/gaia/gaia_auth_fetcher.h"
+#include "google_apis/gaia/gaia_oauth_client.h"
 
 // Allow to retrieves an uber-auth token for the user. This class uses the
 // |TokenService| and considers that the user is already logged in. It will then

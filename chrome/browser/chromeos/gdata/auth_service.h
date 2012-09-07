@@ -12,9 +12,9 @@
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 #include "chrome/browser/chromeos/gdata/operations_base.h"
-#include "chrome/common/net/gaia/oauth2_access_token_fetcher.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "google_apis/gaia/oauth2_access_token_fetcher.h"
 
 class Profile;
 

@@ -17,9 +17,9 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/policy/enterprise_metrics.h"
-#include "chrome/common/net/gaia/gaia_auth_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 
 namespace chromeos {
 

@@ -12,12 +12,12 @@
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/net/gaia/gaia_auth_fetcher.h"
-#include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "google_apis/gaia/gaia_auth_fetcher.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "net/url_request/url_request_context_getter.h"
 
 using content::BrowserThread;

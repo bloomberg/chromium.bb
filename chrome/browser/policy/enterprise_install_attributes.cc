@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
-#include "chrome/common/net/gaia/gaia_auth_util.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 
 namespace policy {
 

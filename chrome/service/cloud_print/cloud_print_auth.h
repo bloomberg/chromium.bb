@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/values.h"
-#include "chrome/common/net/gaia/gaia_oauth_client.h"
 #include "chrome/service/cloud_print/cloud_print_url_fetcher.h"
+#include "google_apis/gaia/gaia_oauth_client.h"
 #include "googleurl/src/gurl.h"
 
 // CloudPrintAuth is a class to handle login, token refresh, and other

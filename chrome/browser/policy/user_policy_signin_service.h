@@ -8,9 +8,9 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
-#include "chrome/common/net/gaia/oauth2_access_token_consumer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "google_apis/gaia/oauth2_access_token_consumer.h"
 
 class OAuth2AccessTokenFetcher;
 class Profile;

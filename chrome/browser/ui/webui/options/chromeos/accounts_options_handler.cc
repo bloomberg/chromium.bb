@@ -19,8 +19,8 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
-#include "chrome/common/net/gaia/gaia_auth_util.h"
 #include "content/public/browser/web_ui.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

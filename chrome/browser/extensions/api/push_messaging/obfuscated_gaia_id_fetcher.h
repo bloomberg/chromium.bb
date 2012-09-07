@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/common/net/gaia/oauth2_api_call_flow.h"
+#include "google_apis/gaia/oauth2_api_call_flow.h"
 
 class GoogleServiceAuthError;
 

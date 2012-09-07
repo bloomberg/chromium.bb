@@ -14,9 +14,9 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/net/gaia/gaia_constants.h"
-#include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "content/public/browser/notification_service.h"
+#include "google_apis/gaia/gaia_constants.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

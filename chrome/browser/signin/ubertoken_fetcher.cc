@@ -9,9 +9,9 @@
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/signin/ubertoken_fetcher.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/net/gaia/gaia_constants.h"
-#include "chrome/common/net/gaia/gaia_urls.h"
-#include "chrome/common/net/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/gaia_constants.h"
+#include "google_apis/gaia/gaia_urls.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/load_flags.h"
 
 UbertokenFetcher::UbertokenFetcher(Profile* profile,

@@ -1,0 +1,6 @@
+specific_include_rules = {
+  ".*_[a-z]*test\.cc": [
+    "+chrome/test/base/testing_profile.h",
+    "+content/public/test/test_browser_thread.h",
+  ]
+}

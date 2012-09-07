@@ -14,13 +14,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
-#include "chrome/common/extensions/api/permissions.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/api/permissions.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/net/gaia/oauth2_mint_token_flow.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "google_apis/gaia/oauth2_mint_token_flow.h"
 
 using content::RenderProcessHost;
 using extensions::permissions_api_helpers::PackPermissionSet;

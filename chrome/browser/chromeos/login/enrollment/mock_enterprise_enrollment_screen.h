@@ -7,7 +7,7 @@
 
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen_actor.h"
-#include "chrome/common/net/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {

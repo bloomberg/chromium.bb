@@ -21,13 +21,13 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/net/gaia/gaia_auth_util.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "crypto/sha2.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using content::BrowserThread;

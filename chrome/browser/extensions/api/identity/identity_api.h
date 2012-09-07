@@ -11,10 +11,10 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/api/identity/web_auth_flow.h"
 #include "chrome/browser/extensions/app_notify_channel_setup.h"
-#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
-#include "chrome/common/net/gaia/oauth2_mint_token_flow.h"
+#include "google_apis/gaia/oauth2_mint_token_flow.h"
 
 class GetAuthTokenFunctionTest;
 class MockGetAuthTokenFunction;

@@ -282,6 +282,7 @@
         'common',
         'common_net',
         '../base/base.gyp:base',
+        '../google_apis/google_apis.gyp:google_apis',
         '../jingle/jingle.gyp:notifier',
         '../net/net.gyp:net',
         '../printing/printing.gyp:printing',

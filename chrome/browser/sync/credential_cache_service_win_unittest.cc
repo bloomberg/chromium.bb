@@ -12,8 +12,8 @@
 #include "base/values.h"
 #include "chrome/browser/sync/credential_cache_service_win.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/pref_names.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {

@@ -9,8 +9,8 @@
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "sync/protocol/sync_protocol_error.h"
 
 using bookmarks_helper::AddFolder;

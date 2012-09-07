@@ -6,9 +6,9 @@
 
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/net/gaia/gaia_constants.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace {

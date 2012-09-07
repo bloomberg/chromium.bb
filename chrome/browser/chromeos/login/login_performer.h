@@ -13,9 +13,9 @@
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/online_attempt_host.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 
 namespace chromeos {
 

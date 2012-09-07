@@ -7,7 +7,7 @@
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_unittest.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/net/gaia/gaia_constants.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

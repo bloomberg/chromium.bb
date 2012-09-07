@@ -23,9 +23,9 @@
 #include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
-#include "chrome/common/net/gaia/gaia_auth_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/update_engine_client.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "policy/policy_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 

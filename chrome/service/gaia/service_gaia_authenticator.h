@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/common/net/gaia/gaia_authenticator.h"
+#include "google_apis/gaia/gaia_authenticator.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 namespace base {

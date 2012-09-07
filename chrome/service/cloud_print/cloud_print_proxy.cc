@@ -11,13 +11,13 @@
 #include "base/values.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/cloud_print/cloud_print_proxy_info.h"
-#include "chrome/common/net/gaia/gaia_oauth_client.h"
-#include "chrome/common/net/google_apis/google_api_keys.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/cloud_print/print_system.h"
 #include "chrome/service/service_process.h"
 #include "chrome/service/service_process_prefs.h"
+#include "google_apis/gaia/gaia_oauth_client.h"
+#include "google_apis/google_api_keys.h"
 #include "googleurl/src/gurl.h"
 
 namespace {

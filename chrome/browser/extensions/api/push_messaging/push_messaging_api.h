@@ -11,12 +11,12 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/extensions/api/push_messaging/obfuscated_gaia_id_fetcher.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_handler_delegate.h"
+#include "chrome/browser/extensions/extension_function.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "chrome/browser/extensions/api/push_messaging/obfuscated_gaia_id_fetcher.h"
-#include "chrome/browser/extensions/extension_function.h"
-#include "chrome/common/net/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 
 class Profile;
 
