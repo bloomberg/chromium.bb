@@ -16,6 +16,7 @@ UI_EXPORT extern const char kEnableBezelTouch[];
 UI_EXPORT extern const char kDisableScalingInImageSkiaOperations[];
 UI_EXPORT extern const char kEnableBrowserTextSubpixelPositioning[];
 UI_EXPORT extern const char kEnableTouchCalibration[];
+UI_EXPORT extern const char kEnableTouchCalibrationX[];
 UI_EXPORT extern const char kEnableTouchEvents[];
 UI_EXPORT extern const char kEnableViewsTextfield[];
 UI_EXPORT extern const char kEnableWebkitTextSubpixelPositioning[];

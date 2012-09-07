@@ -22,6 +22,9 @@ const char kEnableBrowserTextSubpixelPositioning[] =
 // Enable touch screen calibration.
 const char kEnableTouchCalibration[] = "enable-touch-calibration";
 
+// Enable support for touch event calibration in x direction.
+const char kEnableTouchCalibrationX[] = "enable-touch-calibration-x";
+
 // Enable support for touch events.
 const char kEnableTouchEvents[] = "enable-touch-events";
 

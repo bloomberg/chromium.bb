@@ -576,6 +576,9 @@ gfx::Point CalibrateTouchCoordinates(
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
            switches::kEnableTouchCalibration))
     return gfx::Point(x, y);
+  // Temporarily disabling the calibration for X.
+  bool calibration_x = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableTouchCalibrationX);
   gfx::Rect bounds = gfx::Screen::GetPrimaryDisplay().bounds_in_pixel();
   const int kLeftBorder = 40;
   const int kRightBorder = 40;
@@ -586,19 +589,21 @@ gfx::Point CalibrateTouchCoordinates(
   // The "grace area" (10% in this case) is to make it easier for the user to
   // navigate to the corner.
   const double kGraceAreaFraction = 0.1;
-  // Offset the x position to the real
-  x -= kLeftBorder;
-  // Check if we are in the grace area of the left side.
-  // Note: We might not want to do this when the gesture is locked?
-  if (x < 0 && x > -kLeftBorder * kGraceAreaFraction)
-    x = 0;
-  // Check if we are in the grace area of the right side.
-  // Note: We might not want to do this when the gesture is locked?
-  if (x > resolution_x - kLeftBorder &&
-      x < resolution_x - kLeftBorder + kRightBorder * kGraceAreaFraction)
-    x = resolution_x - kLeftBorder;
-  // Scale the screen area back to the full resolution of the screen.
-  x = (x * resolution_x) / (resolution_x - (kRightBorder + kLeftBorder));
+  if (calibration_x) {
+    // Offset the x position to the real
+    x -= kLeftBorder;
+    // Check if we are in the grace area of the left side.
+    // Note: We might not want to do this when the gesture is locked?
+    if (x < 0 && x > -kLeftBorder * kGraceAreaFraction)
+      x = 0;
+    // Check if we are in the grace area of the right side.
+    // Note: We might not want to do this when the gesture is locked?
+    if (x > resolution_x - kLeftBorder &&
+        x < resolution_x - kLeftBorder + kRightBorder * kGraceAreaFraction)
+      x = resolution_x - kLeftBorder;
+    // Scale the screen area back to the full resolution of the screen.
+    x = (x * resolution_x) / (resolution_x - (kRightBorder + kLeftBorder));
+  }
   // When there is a top bezel we add our border,
   y -= kTopBorder;
   // and increase the sensitivity there.
