@@ -13,6 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/platform_file.h"
 #include "base/process.h"
 #include "webkit/fileapi/file_system_operation.h"
@@ -98,22 +99,12 @@ class FILEAPI_EXPORT LocalFileSystemOperation
   void SyncGetPlatformPath(const FileSystemURL& url, FilePath* platform_path);
 
  private:
-  class ScopedQuotaNotifier;
+  class ScopedUpdateNotifier;
 
   enum SetUpMode {
     SETUP_FOR_READ,
     SETUP_FOR_WRITE,
     SETUP_FOR_CREATE,
-  };
-
-  // A struct to pass arguments to DidGetUsageAndQuotaAndRunTask
-  // purely for compilation (as Bind doesn't recognize too many arguments).
-  struct TaskParamsForDidGetQuota {
-    TaskParamsForDidGetQuota();
-    ~TaskParamsForDidGetQuota();
-    FileSystemURL url;
-    base::Closure task;
-    base::Closure error_callback;
   };
 
   // Only MountPointProviders or testing class can create a
@@ -159,7 +150,8 @@ class FILEAPI_EXPORT LocalFileSystemOperation
   // |task| if the returned quota status is successful, otherwise runs
   // |error_callback|.
   void DidGetUsageAndQuotaAndRunTask(
-      const TaskParamsForDidGetQuota& params,
+      const base::Closure& task,
+      const base::Closure& error_callback,
       quota::QuotaStatusCode status,
       int64 usage, int64 quota);
 
@@ -242,11 +234,9 @@ class FILEAPI_EXPORT LocalFileSystemOperation
   FileSystemFileUtil* src_util_;  // Not owned.
   FileSystemFileUtil* dest_util_;  // Not owned.
 
-  // This is set before any write operations.  The destructor of
-  // ScopedQuotaNotifier sends notification to the QuotaManager
-  // to tell the update is done; so that we can make sure notify
-  // the manager after any write operations are done.
-  scoped_ptr<ScopedQuotaNotifier> scoped_quota_notifier_;
+  // This is set before any write operations to dispatch
+  // FileUpdateObserver::StartUpdate and FileUpdateObserver::EndUpdate.
+  ScopedVector<ScopedUpdateNotifier> scoped_update_notifiers_;
 
   // These are all used only by Write().
   friend class FileWriterDelegate;

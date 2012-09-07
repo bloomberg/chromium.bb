@@ -9,11 +9,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_types.h"
+#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/media/media_file_system_config.h"
+#include "webkit/fileapi/task_runner_bound_observer_list.h"
 
 #if defined(SUPPORT_MEDIA_FILESYSTEM)
 #include "webkit/fileapi/media/media_device_interface_impl.h"
@@ -64,12 +65,25 @@ class FILEAPI_EXPORT_PRIVATE FileSystemOperationContext {
     return media_path_filter_;
   }
 
+  void set_access_observers(const AccessObserverList& list) {
+    access_observers_ = list;
+  }
+  AccessObserverList* access_observers() { return &access_observers_; }
+
+  void set_update_observers(const UpdateObserverList& list) {
+    update_observers_ = list;
+  }
+  UpdateObserverList* update_observers() { return &update_observers_; }
+
  private:
   scoped_refptr<FileSystemContext> file_system_context_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   int64 allowed_bytes_growth_;
   MediaPathFilter* media_path_filter_;
+
+  AccessObserverList access_observers_;
+  UpdateObserverList update_observers_;
 
 #if defined(SUPPORT_MEDIA_FILESYSTEM)
   // Store the current media device.

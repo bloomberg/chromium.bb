@@ -36,9 +36,10 @@ class SandboxMountPointProviderOriginEnumeratorTest : public testing::Test {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     sandbox_provider_.reset(
         new SandboxMountPointProvider(
-          base::MessageLoopProxy::current(),
-          data_dir_.path(),
-          CreateAllowFileAccessOptions()));
+            NULL,
+            base::MessageLoopProxy::current(),
+            data_dir_.path(),
+            CreateAllowFileAccessOptions()));
   }
 
   SandboxMountPointProvider::OriginEnumerator* CreateEnumerator() const {
@@ -274,7 +275,6 @@ class SandboxMountPointProviderMigrationTest : public testing::Test {
     bool create = false;
     std::set<GURL> origins;
     std::string host = "the host with the most";
-    int64 delta = 0;
 
     // We want to make sure that all the public methods of
     // SandboxMountPointProvider which might access the filesystem will cause a
@@ -308,25 +308,6 @@ class SandboxMountPointProviderMigrationTest : public testing::Test {
     case 6:
       sandbox_provider()->GetOriginUsageOnFileThread(
           file_system_context_, origin_url, type);
-      break;
-    case 7:
-      // This case has to use an origin that already exists in the
-      // migrated data.
-      sandbox_provider()->UpdateOriginUsageOnFileThread(
-          NULL, kMigrationTestRecords[0].origin,
-          kFileSystemTypeTemporary, delta);
-      break;
-    case 8:
-      // This case has to use a filesystem that already exists in the
-      // migrated data.
-      sandbox_provider()->StartUpdateOriginOnFileThread(
-          kMigrationTestRecords[0].origin, kFileSystemTypeTemporary);
-      break;
-    case 9:
-      // This case has to use a filesystem that already exists in the
-      // migrated data.
-      sandbox_provider()->EndUpdateOriginOnFileThread(
-          kMigrationTestRecords[0].origin, kFileSystemTypeTemporary);
       break;
     default:
       FAIL();
@@ -376,18 +357,6 @@ TEST_F(SandboxMountPointProviderMigrationTest, TestMigrateViaMethod5) {
 
 TEST_F(SandboxMountPointProviderMigrationTest, TestMigrateViaMethod6) {
   RunMigrationTest(6);
-}
-
-TEST_F(SandboxMountPointProviderMigrationTest, TestMigrateViaMethod7) {
-  RunMigrationTest(7);
-}
-
-TEST_F(SandboxMountPointProviderMigrationTest, TestMigrateViaMethod8) {
-  RunMigrationTest(8);
-}
-
-TEST_F(SandboxMountPointProviderMigrationTest, TestMigrateViaMethod9) {
-  RunMigrationTest(9);
 }
 
 }  // namespace fileapi

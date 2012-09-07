@@ -13,6 +13,7 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/fileapi_export.h"
+#include "webkit/fileapi/task_runner_bound_observer_list.h"
 #include "webkit/quota/quota_types.h"
 
 namespace fileapi {
@@ -25,7 +26,8 @@ class FILEAPI_EXPORT_PRIVATE SandboxFileStreamWriter : public FileStreamWriter {
  public:
   SandboxFileStreamWriter(FileSystemContext* file_system_context,
                           const FileSystemURL& url,
-                          int64 initial_offset);
+                          int64 initial_offset,
+                          const UpdateObserverList& observers);
   virtual ~SandboxFileStreamWriter();
 
   // FileStreamWriter overrides.
@@ -62,13 +64,13 @@ class FILEAPI_EXPORT_PRIVATE SandboxFileStreamWriter : public FileStreamWriter {
   // if there's a pending cancel request.
   bool CancelIfRequested();
 
-  FileSystemQuotaUtil* quota_util() const;
-
   scoped_refptr<FileSystemContext> file_system_context_;
   FileSystemURL url_;
   int64 initial_offset_;
   scoped_ptr<LocalFileStreamWriter> local_file_writer_;
   net::CompletionCallback cancel_callback_;
+
+  UpdateObserverList observers_;
 
   FilePath file_path_;
   int64 file_size_;

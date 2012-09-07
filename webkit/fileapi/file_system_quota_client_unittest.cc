@@ -117,10 +117,13 @@ class FileSystemQuotaClientTest : public testing::Test {
                    weak_factory_.GetWeakPtr()));
   }
 
-  FileSystemOperationContext* CreateFileSystemOperationContext() {
+  FileSystemOperationContext* CreateFileSystemOperationContext(
+      FileSystemType type) {
     FileSystemOperationContext* context =
         new FileSystemOperationContext(file_system_context_);
     context->set_allowed_bytes_growth(100000000);
+    context->set_update_observers(
+        *file_system_context_->GetUpdateObservers(type));
     return context;
   }
 
@@ -132,7 +135,7 @@ class FileSystemQuotaClientTest : public testing::Test {
 
     FileSystemURL url(GURL(origin_url), type, file_path);
     scoped_ptr<FileSystemOperationContext> context(
-        CreateFileSystemOperationContext());
+        CreateFileSystemOperationContext(type));
 
     base::PlatformFileError result =
         file_util->CreateDirectory(context.get(), url, false, false);
@@ -154,7 +157,7 @@ class FileSystemQuotaClientTest : public testing::Test {
 
     FileSystemURL url(GURL(origin_url), type, file_path);
     scoped_ptr<FileSystemOperationContext> context(
-        CreateFileSystemOperationContext());
+        CreateFileSystemOperationContext(type));
 
     bool created = false;
     if (base::PLATFORM_FILE_OK !=

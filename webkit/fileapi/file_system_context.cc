@@ -18,6 +18,7 @@
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/isolated_mount_point_provider.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
+#include "webkit/fileapi/test_mount_point_provider.h"
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/special_storage_policy.h"
 
@@ -45,7 +46,7 @@ void DidOpenFileSystem(
   callback.Run(error, filesystem_name, filesystem_root);
 }
 
-}  // anonymous namespace
+}  // namespace
 
 FileSystemContext::FileSystemContext(
     scoped_ptr<FileSystemTaskRunners> task_runners,
@@ -57,6 +58,7 @@ FileSystemContext::FileSystemContext(
       quota_manager_proxy_(quota_manager_proxy),
       sandbox_provider_(
           new SandboxMountPointProvider(
+              quota_manager_proxy,
               task_runners_->file_task_runner(),
               profile_path,
               options)),
@@ -134,6 +136,23 @@ FileSystemMountPointProvider* FileSystemContext::GetMountPointProvider(
       NOTREACHED();
       return NULL;
   }
+}
+
+const UpdateObserverList* FileSystemContext::GetUpdateObservers(
+    FileSystemType type) const {
+  // Currently update observer is only available in SandboxMountPointProvider
+  // and TestMountPointProvider.
+  // TODO(kinuko): Probably GetUpdateObservers() virtual method should be
+  // added to FileSystemMountPointProvider interface and be called like
+  // other GetFoo() methods do.
+  if (SandboxMountPointProvider::CanHandleType(type))
+    return sandbox_provider()->GetUpdateObservers(type);
+  if (type != kFileSystemTypeTest)
+    return NULL;
+  FileSystemMountPointProvider* mount_point_provider =
+      GetMountPointProvider(type);
+  return static_cast<TestMountPointProvider*>(
+      mount_point_provider)->GetUpdateObservers(type);
 }
 
 SandboxMountPointProvider*

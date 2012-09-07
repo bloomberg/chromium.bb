@@ -98,7 +98,9 @@ class FileWriterDelegateTest : public PlatformTest {
     SandboxFileStreamWriter* writer = new SandboxFileStreamWriter(
         test_helper_.file_system_context(),
         GetFileSystemURL(test_file_path),
-        offset);
+        offset,
+        *test_helper_.file_system_context()->GetUpdateObservers(
+            test_helper_.type()));
     writer->set_default_quota(allowed_growth);
     return new FileWriterDelegate(
         base::Bind(&Result::DidWrite, base::Unretained(result)),

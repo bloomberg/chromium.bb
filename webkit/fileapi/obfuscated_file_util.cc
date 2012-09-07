@@ -18,9 +18,9 @@
 #include "base/stringprintf.h"
 #include "base/sys_string_conversions.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/fileapi/file_observers.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
-#include "webkit/fileapi/file_system_quota_util.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/native_file_util.h"
@@ -80,15 +80,10 @@ bool AllocateQuota(FileSystemOperationContext* context, int64 growth) {
 
 void UpdateUsage(
     FileSystemOperationContext* context,
-    const GURL& origin,
-    FileSystemType type,
+    const FileSystemURL& url,
     int64 growth) {
-  FileSystemQuotaUtil* quota_util =
-      context->file_system_context()->GetQuotaUtil(type);
-  quota::QuotaManagerProxy* quota_manager_proxy =
-      context->file_system_context()->quota_manager_proxy();
-  quota_util->UpdateOriginUsageOnFileThread(
-      quota_manager_proxy, origin, type, growth);
+  context->update_observers()->Notify(
+      &FileUpdateObserver::OnUpdate, MakeTuple(url, growth));
 }
 
 void TouchDirectory(FileSystemDirectoryDatabase* db, FileId dir_id) {
@@ -297,7 +292,7 @@ PlatformFileError ObfuscatedFileUtil::CreateOrOpen(
         file_flags, file_handle);
     if (created && base::PLATFORM_FILE_OK == error) {
       *created = true;
-      UpdateUsage(context, url.origin(), url.type(), growth);
+      UpdateUsage(context, url, growth);
     }
     return error;
   }
@@ -336,7 +331,7 @@ PlatformFileError ObfuscatedFileUtil::CreateOrOpen(
 
   // If truncating we need to update the usage.
   if (error == base::PLATFORM_FILE_OK && delta)
-    UpdateUsage(context, url.origin(), url.type(), delta);
+    UpdateUsage(context, url, delta);
   return error;
 }
 
@@ -383,7 +378,7 @@ PlatformFileError ObfuscatedFileUtil::EnsureFileExists(
       context, FilePath(), url.origin(), url.type(), &file_info, 0, NULL);
   if (created && base::PLATFORM_FILE_OK == error) {
     *created = true;
-    UpdateUsage(context, url.origin(), url.type(), growth);
+    UpdateUsage(context, url, growth);
   }
   return error;
 }
@@ -440,7 +435,7 @@ PlatformFileError ObfuscatedFileUtil::CreateDirectory(
       NOTREACHED();
       return base::PLATFORM_FILE_ERROR_FAILED;
     }
-    UpdateUsage(context, url.origin(), url.type(), growth);
+    UpdateUsage(context, url, growth);
     if (first) {
       first = false;
       TouchDirectory(db, file_info.parent_id);
@@ -551,7 +546,7 @@ PlatformFileError ObfuscatedFileUtil::Truncate(
     return base::PLATFORM_FILE_ERROR_NO_SPACE;
   error = NativeFileUtil::Truncate(local_path, length);
   if (error == base::PLATFORM_FILE_OK)
-    UpdateUsage(context, url.origin(), url.type(), growth);
+    UpdateUsage(context, url, growth);
   return error;
 }
 
@@ -704,7 +699,7 @@ PlatformFileError ObfuscatedFileUtil::CopyOrMoveFile(
     TouchDirectory(db, src_file_info.parent_id);
   TouchDirectory(db, dest_file_info.parent_id);
 
-  UpdateUsage(context, dest_url.origin(), dest_url.type(), growth);
+  UpdateUsage(context, dest_url, growth);
   return error;
 }
 
@@ -774,7 +769,7 @@ PlatformFileError ObfuscatedFileUtil::CopyInForeignFile(
   if (error != base::PLATFORM_FILE_OK)
     return error;
 
-  UpdateUsage(context, dest_url.origin(), dest_url.type(), growth);
+  UpdateUsage(context, dest_url, growth);
   TouchDirectory(db, dest_file_info.parent_id);
   return base::PLATFORM_FILE_OK;
 }
@@ -811,7 +806,7 @@ PlatformFileError ObfuscatedFileUtil::DeleteFile(
     NOTREACHED();
     return base::PLATFORM_FILE_ERROR_FAILED;
   }
-  UpdateUsage(context, url.origin(), url.type(), growth);
+  UpdateUsage(context, url, growth);
   TouchDirectory(db, file_info.parent_id);
 
   if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND)
@@ -843,7 +838,7 @@ PlatformFileError ObfuscatedFileUtil::DeleteSingleDirectory(
     return base::PLATFORM_FILE_ERROR_NOT_EMPTY;
   int64 growth = -UsageForPath(file_info.name.size());
   AllocateQuota(context, growth);
-  UpdateUsage(context, url.origin(), url.type(), growth);
+  UpdateUsage(context, url, growth);
   TouchDirectory(db, file_info.parent_id);
   return base::PLATFORM_FILE_OK;
 }

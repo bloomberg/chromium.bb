@@ -26,22 +26,24 @@
 #include "webkit/blob/blob_data.h"
 #include "webkit/blob/blob_storage_controller.h"
 #include "webkit/blob/shareable_file_reference.h"
-#include "webkit/fileapi/isolated_context.h"
+#include "webkit/fileapi/file_observers.h"
 #include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_system_quota_util.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 
 using content::BrowserMessageFilter;
 using content::BrowserThread;
 using content::UserMetricsAction;
-using fileapi::FileSystemURL;
 using fileapi::FileSystemFileUtil;
 using fileapi::FileSystemMountPointProvider;
 using fileapi::FileSystemOperation;
+using fileapi::FileSystemURL;
+using fileapi::FileUpdateObserver;
 using fileapi::LocalFileSystemOperation;
+using fileapi::UpdateObserverList;
 using webkit_blob::BlobData;
 using webkit_blob::BlobStorageController;
 
@@ -459,10 +461,11 @@ void FileAPIMessageFilter::OnWillUpdate(const GURL& path) {
   FileSystemURL url(path);
   if (!url.is_valid())
     return;
-  fileapi::FileSystemQuotaUtil* quota_util = context_->GetQuotaUtil(url.type());
-  if (!quota_util)
+  const UpdateObserverList* observers =
+      context_->GetUpdateObservers(url.type());
+  if (!observers)
     return;
-  quota_util->proxy()->StartUpdateOrigin(url.origin(), url.type());
+  observers->Notify(&FileUpdateObserver::OnStartUpdate, MakeTuple(url));
 }
 
 void FileAPIMessageFilter::OnDidUpdate(const GURL& path, int64 delta) {
@@ -470,12 +473,12 @@ void FileAPIMessageFilter::OnDidUpdate(const GURL& path, int64 delta) {
   FileSystemURL url(path);
   if (!url.is_valid())
     return;
-  fileapi::FileSystemQuotaUtil* quota_util = context_->GetQuotaUtil(url.type());
-  if (!quota_util)
+  const UpdateObserverList* observers =
+      context_->GetUpdateObservers(url.type());
+  if (!observers)
     return;
-  quota_util->proxy()->UpdateOriginUsage(
-      context_->quota_manager_proxy(), url.origin(), url.type(), delta);
-  quota_util->proxy()->EndUpdateOrigin(url.origin(), url.type());
+  observers->Notify(&FileUpdateObserver::OnUpdate, MakeTuple(url, delta));
+  observers->Notify(&FileUpdateObserver::OnEndUpdate, MakeTuple(url));
 }
 
 void FileAPIMessageFilter::OnSyncGetPlatformPath(

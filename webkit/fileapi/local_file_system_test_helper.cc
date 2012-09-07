@@ -175,10 +175,9 @@ LocalFileSystemOperation* LocalFileSystemTestOriginHelper::NewOperation() {
   DCHECK(file_system_context_.get());
   DCHECK(file_util_);
   scoped_ptr<FileSystemOperationContext> operation_context(
-      new FileSystemOperationContext(file_system_context_.get()));
-  LocalFileSystemOperation* operation =
-      new LocalFileSystemOperation(file_system_context_.get(),
-                                   operation_context.Pass());
+      NewOperationContext());
+  LocalFileSystemOperation* operation = static_cast<LocalFileSystemOperation*>(
+      file_system_context_->CreateFileSystemOperation(CreateURL(FilePath())));
   operation->set_override_file_util(file_util_);
   return operation;
 }
@@ -188,6 +187,8 @@ LocalFileSystemTestOriginHelper::NewOperationContext() {
   DCHECK(file_system_context_.get());
   FileSystemOperationContext* context =
     new FileSystemOperationContext(file_system_context_.get());
+  context->set_update_observers(
+      *file_system_context_->GetUpdateObservers(type_));
   return context;
 }
 

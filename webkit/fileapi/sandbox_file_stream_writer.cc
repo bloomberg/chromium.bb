@@ -10,9 +10,9 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "webkit/blob/local_file_stream_reader.h"
+#include "webkit/fileapi/file_observers.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation.h"
-#include "webkit/fileapi/file_system_quota_util.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/local_file_stream_writer.h"
 #include "webkit/quota/quota_manager.h"
@@ -42,10 +42,12 @@ int64 AdjustQuotaForOverlap(int64 quota,
 SandboxFileStreamWriter::SandboxFileStreamWriter(
     FileSystemContext* file_system_context,
     const FileSystemURL& url,
-    int64 initial_offset)
+    int64 initial_offset,
+    const UpdateObserverList& observers)
     : file_system_context_(file_system_context),
       url_(url),
       initial_offset_(initial_offset),
+      observers_(observers),
       file_size_(0),
       total_bytes_written_(0),
       allowed_bytes_to_write_(0),
@@ -55,10 +57,7 @@ SandboxFileStreamWriter::SandboxFileStreamWriter(
   DCHECK(url_.is_valid());
 }
 
-SandboxFileStreamWriter::~SandboxFileStreamWriter() {
-  if (quota_util())
-    quota_util()->proxy()->EndUpdateOrigin(url_.origin(), url_.type());
-}
+SandboxFileStreamWriter::~SandboxFileStreamWriter() {}
 
 int SandboxFileStreamWriter::Write(
     net::IOBuffer* buf, int buf_len,
@@ -143,7 +142,7 @@ void SandboxFileStreamWriter::DidGetFileInfo(
 
   quota::QuotaManagerProxy* quota_manager_proxy =
       file_system_context_->quota_manager_proxy();
-  if (!quota_manager_proxy || !quota_util()) {
+  if (!quota_manager_proxy) {
     // If we don't have the quota manager or the requested filesystem type
     // does not support quota, we should be able to let it go.
     allowed_bytes_to_write_ = default_quota_;
@@ -151,7 +150,6 @@ void SandboxFileStreamWriter::DidGetFileInfo(
     return;
   }
 
-  quota_util()->proxy()->StartUpdateOrigin(url_.origin(), url_.type());
   DCHECK(quota_manager_proxy->quota_manager());
   quota_manager_proxy->quota_manager()->GetUsageAndQuota(
       url_.origin(),
@@ -207,14 +205,12 @@ void SandboxFileStreamWriter::DidWrite(
     return;
   }
 
-  if (quota_util() &&
-      total_bytes_written_ + write_response + initial_offset_ > file_size_) {
+  if (total_bytes_written_ + write_response + initial_offset_ > file_size_) {
     int overlapped = file_size_ - total_bytes_written_ - initial_offset_;
     if (overlapped < 0)
       overlapped = 0;
-    quota_util()->proxy()->UpdateOriginUsage(
-        file_system_context_->quota_manager_proxy(),
-        url_.origin(), url_.type(), write_response - overlapped);
+    observers_.Notify(&FileUpdateObserver::OnUpdate,
+                      MakeTuple(url_, write_response - overlapped));
   }
   total_bytes_written_ += write_response;
 
@@ -232,11 +228,6 @@ bool SandboxFileStreamWriter::CancelIfRequested() {
   cancel_callback_.Reset();
   pending_cancel.Run(net::OK);
   return true;
-}
-
-FileSystemQuotaUtil* SandboxFileStreamWriter::quota_util() const {
-  DCHECK(file_system_context_.get());
-  return file_system_context_->GetQuotaUtil(url_.type());
 }
 
 }  // namespace fileapi

@@ -19,6 +19,7 @@
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_options.h"
 #include "webkit/fileapi/file_system_quota_util.h"
+#include "webkit/fileapi/task_runner_bound_observer_list.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -31,6 +32,7 @@ class QuotaManagerProxy;
 namespace fileapi {
 
 class ObfuscatedFileUtil;
+class SandboxQuotaObserver;
 
 // An interface to construct or crack sandboxed filesystem paths for
 // TEMPORARY or PERSISTENT filesystems, which are placed under the user's
@@ -65,9 +67,12 @@ class FILEAPI_EXPORT SandboxMountPointProvider
   // Where we move the old filesystem directory if migration fails.
   static const FilePath::CharType kRenamedOldFileSystemDirectory[];
 
+  static bool CanHandleType(FileSystemType type);
+
   // |file_task_runner| is used to validate the root directory and delete the
   // obfuscated file util.
   SandboxMountPointProvider(
+      quota::QuotaManagerProxy* quota_manager_proxy,
       base::SequencedTaskRunner* file_task_runner,
       const FilePath& profile_path,
       const FileSystemOptions& file_system_options);
@@ -134,7 +139,7 @@ class FILEAPI_EXPORT SandboxMountPointProvider
       const GURL& origin_url,
       FileSystemType type);
 
-  // Quota util methods.
+  // FileSystemQuotaUtil overrides.
   virtual void GetOriginsForTypeOnFileThread(
       FileSystemType type,
       std::set<GURL>* origins) OVERRIDE;
@@ -146,27 +151,21 @@ class FILEAPI_EXPORT SandboxMountPointProvider
       FileSystemContext* context,
       const GURL& origin_url,
       FileSystemType type) OVERRIDE;
-  virtual void NotifyOriginWasAccessedOnIOThread(
-      quota::QuotaManagerProxy* proxy,
-      const GURL& origin_url,
-      FileSystemType type) OVERRIDE;
-  virtual void UpdateOriginUsageOnFileThread(
-      quota::QuotaManagerProxy* proxy,
-      const GURL& origin_url,
-      FileSystemType type,
-      int64 delta) OVERRIDE;
-  virtual void StartUpdateOriginOnFileThread(
-      const GURL& origin_url,
-      FileSystemType type) OVERRIDE;
-  virtual void EndUpdateOriginOnFileThread(
-      const GURL& origin_url,
-      FileSystemType type) OVERRIDE;
+
   virtual void InvalidateUsageCache(const GURL& origin_url,
                                     FileSystemType type) OVERRIDE;
 
   void CollectOpenFileSystemMetrics(base::PlatformFileError error_code);
 
+  // Returns update observers for the given type.
+  const UpdateObserverList* GetUpdateObservers(FileSystemType type) const;
+
+  // Reset all observers.
+  void ResetObservers();
+
  private:
+  friend class SandboxQuotaObserver;
+
   // Returns a path to the usage cache file.
   FilePath GetUsageCachePathForOriginAndType(
       const GURL& origin_url,
@@ -191,8 +190,14 @@ class FILEAPI_EXPORT SandboxMountPointProvider
 
   scoped_ptr<ObfuscatedFileUtil> sandbox_file_util_;
 
+  scoped_ptr<SandboxQuotaObserver> quota_observer_;
+
   // Acccessed only on the file thread.
   std::set<GURL> visited_origins_;
+
+  // Observers.
+  UpdateObserverList update_observers_;
+  AccessObserverList access_observers_;
 
   base::Time next_release_time_for_open_filesystem_stat_;
 

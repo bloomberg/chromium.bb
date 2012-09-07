@@ -9,12 +9,13 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/sequenced_task_runner_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
-#include "webkit/fileapi/fileapi_export.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "webkit/fileapi/file_system_types.h"
+#include "webkit/fileapi/fileapi_export.h"
+#include "webkit/fileapi/task_runner_bound_observer_list.h"
 #include "webkit/quota/special_storage_policy.h"
 
 class FilePath;
@@ -83,6 +84,9 @@ class FILEAPI_EXPORT FileSystemContext
   // type.
   FileSystemMountPointProvider* GetMountPointProvider(
       FileSystemType type) const;
+
+  // Returns update observers for the given filesystem type.
+  const UpdateObserverList* GetUpdateObservers(FileSystemType type) const;
 
   // Returns a FileSystemMountPointProvider instance for sandboxed filesystem
   // types (e.g. TEMPORARY or PERSISTENT).  This is equivalent to calling
