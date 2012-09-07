@@ -52,7 +52,8 @@ class BrowserActionApiTest : public ExtensionApiTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
+// This test is flaky: http://crbug.com/147335
+IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_Basic) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("browser_action/basics")) << message_;
   const Extension* extension = GetSingleLoadedExtension();
@@ -458,7 +459,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BadgeBackgroundColor) {
             action->GetBadgeBackgroundColor(ExtensionAction::kDefaultTabId));
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Getters) {
+// This test is flaky: http://crbug.com/147335
+IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_Getters) {
   ASSERT_TRUE(RunExtensionTest("browser_action/getters")) << message_;
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
