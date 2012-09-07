@@ -538,6 +538,11 @@ chrome.fileBrowserPrivate = {
       GALLERY_SLIDESHOW: 'Slide show',
       GALLERY_DELETE: 'Delete',
 
+      GALLERY_OK_LABEL: 'OK',
+      GALLERY_CANCEL_LABEL: 'Cancel',
+      GALLERY_CONFIRM_DELETE_ONE: 'Are you sure you want to delete "$1"?',
+      GALLERY_CONFIRM_DELETE_SOME: 'Are you sure you want to delete $1 items?',
+
       AUDIO_ERROR: 'This file could not be played',
 
       CONFIRM_OVERWRITE_FILE: 'A file named "$1" already exists. Do you want to replace it?',

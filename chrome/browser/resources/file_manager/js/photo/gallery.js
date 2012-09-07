@@ -149,7 +149,8 @@ Gallery.METADATA_TYPE = 'thumbnail|filesystem|media|streaming';
 Gallery.prototype.initListeners_ = function() {
   this.document_.oncontextmenu = function(e) { e.preventDefault(); };
 
-  this.document_.body.addEventListener('keydown', this.onKeyDown_.bind(this));
+  this.keyDownBound_ = this.onKeyDown_.bind(this);
+  this.document_.body.addEventListener('keydown', this.keyDownBound_);
 
   this.inactivityWatcher_ = new MouseInactivityWatcher(
       this.container_, Gallery.FADE_TIMEOUT, this.hasActiveTool.bind(this));
@@ -381,14 +382,52 @@ Gallery.prototype.toggleMode_ = function(opt_callback) {
  */
 Gallery.prototype.onDelete_ = function() {
   // Clone the sorted selected indexes array.
-  var toRemove = this.selectionModel_.selectedIndexes.slice();
-  this.selectionModel_.unselectAll();
+  var indexesToRemove = this.selectionModel_.selectedIndexes.slice();
+  if (!indexesToRemove.length)
+    return;
 
-  // Remove items starting from the highest index.
-  while (toRemove.length)
-    this.dataModel_.splice(toRemove.pop(), 1);
+  /* TODO(dgozman): Implement Undo delete, Remove the confirmation dialog. */
 
-  // TODO: delete actual files.
+  var itemsToRemove = this.getSelectedItems();
+  var plural = itemsToRemove.length > 1;
+  var param = plural ? itemsToRemove.length : itemsToRemove[0].getFileName();
+
+  function deleteNext() {
+    if (!itemsToRemove.length)
+      return;  // All deleted.
+
+    var url = itemsToRemove.pop().getUrl();
+    webkitResolveLocalFileSystemURL(url,
+        function(entry) {
+          entry.remove(deleteNext,
+              util.flog('Error deleting ' + url, deleteNext));
+        },
+        util.flog('Error resolving ' + url, deleteNext));
+  }
+
+  // Prevent the Gallery from handling Esc and Enter.
+  this.document_.body.removeEventListener('keydown', this.keyDownBound_);
+  var restoreListener = function() {
+    this.document_.body.addEventListener('keydown', this.keyDownBound_);
+  }.bind(this);
+
+  cr.ui.dialogs.BaseDialog.OK_LABEL = this.displayStringFunction_('OK_LABEL');
+  cr.ui.dialogs.BaseDialog.CANCEL_LABEL =
+      this.displayStringFunction_('CANCEL_LABEL');
+  var confirm = new cr.ui.dialogs.ConfirmDialog(this.container_);
+  confirm.show(this.displayStringFunction_(
+      plural ? 'CONFIRM_DELETE_SOME' : 'CONFIRM_DELETE_ONE', param),
+      function() {
+        restoreListener();
+        this.selectionModel_.unselectAll();
+        this.selectionModel_.leadIndex = -1;
+        // Remove items from the data model, starting from the highest index.
+        while (indexesToRemove.length)
+          this.dataModel_.splice(indexesToRemove.pop(), 1);
+        // Delete actual files.
+        deleteNext();
+      }.bind(this),
+      restoreListener);
 };
 
 /**

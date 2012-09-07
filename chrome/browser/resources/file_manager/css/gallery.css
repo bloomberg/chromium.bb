@@ -1172,3 +1172,9 @@ body {
   opacity: 0;
   pointer-events: none;
 }
+
+/* Temporary. Remove this along with the delete confirmation dialog
+  when Undo delete is implemented. */
+.cr-dialog-shield {
+  background-color: black;
+}
