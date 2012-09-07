@@ -1733,3 +1733,66 @@ TEST_F(RenderViewImplTest, ZoomLimit) {
   ProcessPendingMessages();
   EXPECT_DOUBLE_EQ(kMaxZoomLevel, view()->GetWebView()->zoomLevel());
 }
+
+TEST_F(RenderViewImplTest, SetEditableSelectionAndComposition) {
+  // Load an HTML page consisting of an input field.
+  LoadHTML("<html>"
+           "<head>"
+           "</head>"
+           "<body>"
+           "<input id=\"test1\" value=\"some test text hello\"></input>"
+           "</body>"
+           "</html>");
+  ExecuteJavaScript("document.getElementById('test1').focus();");
+  view()->OnSetEditableSelectionOffsets(4, 8);
+  const std::vector<WebKit::WebCompositionUnderline> empty_underline;
+  view()->OnSetCompositionFromExistingText(7,10, empty_underline);
+  WebKit::WebTextInputInfo info = view()->webview()->textInputInfo();
+  EXPECT_EQ(4, info.selectionStart);
+  EXPECT_EQ(8, info.selectionEnd);
+  EXPECT_EQ(7, info.compositionStart);
+  EXPECT_EQ(10, info.compositionEnd);
+  view()->OnUnselect();
+  info = view()->webview()->textInputInfo();
+  EXPECT_EQ(0, info.selectionStart);
+  EXPECT_EQ(0, info.selectionEnd);
+}
+
+TEST_F(RenderViewImplTest, OnReplaceAll) {
+  // Load an HTML page consisting of an input field.
+  LoadHTML("<html>"
+           "<head>"
+           "</head>"
+           "<body>"
+           "<input id=\"test1\" value=\"some test text hello\"></input>"
+           "</body>"
+           "</html>");
+  ExecuteJavaScript("document.getElementById('test1').focus();");
+  view()->OnReplaceAll(UTF8ToUTF16("replacement words"));
+  WebKit::WebTextInputInfo info = view()->webview()->textInputInfo();
+  EXPECT_EQ("replacement words", info.value);
+}
+
+TEST_F(RenderViewImplTest, OnExtendSelectionAndDelete) {
+  // Load an HTML page consisting of an input field.
+  LoadHTML("<html>"
+           "<head>"
+           "</head>"
+           "<body>"
+           "<input id=\"test1\" value=\"abcdefghijklmnopqrstuvwxyz\"></input>"
+           "</body>"
+           "</html>");
+  ExecuteJavaScript("document.getElementById('test1').focus();");
+  view()->OnSetEditableSelectionOffsets(10, 10);
+  view()->OnExtendSelectionAndDelete(3, 4);
+  WebKit::WebTextInputInfo info = view()->webview()->textInputInfo();
+  EXPECT_EQ("abcdefgopqrstuvwxyz", info.value);
+  EXPECT_EQ(7, info.selectionStart);
+  EXPECT_EQ(7, info.selectionEnd);
+  view()->OnSetEditableSelectionOffsets(4, 8);
+  view()->OnExtendSelectionAndDelete(2, 5);
+  info = view()->webview()->textInputInfo();
+  EXPECT_EQ("abuvwxyz", info.value);
+  EXPECT_EQ(2, info.selectionStart);
+  EXPECT_EQ(2, info.selectionEnd);
+}

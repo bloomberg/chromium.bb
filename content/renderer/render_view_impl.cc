@@ -959,6 +959,14 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_Replace, OnReplace)
     IPC_MESSAGE_HANDLER(ViewMsg_Delete, OnDelete)
     IPC_MESSAGE_HANDLER(ViewMsg_SelectAll, OnSelectAll)
+    IPC_MESSAGE_HANDLER(ViewMsg_ReplaceAll, OnReplaceAll)
+    IPC_MESSAGE_HANDLER(ViewMsg_Unselect, OnUnselect)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetEditableSelectionOffsets,
+                        OnSetEditableSelectionOffsets)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetCompositionFromExistingText,
+                        OnSetCompositionFromExistingText)
+    IPC_MESSAGE_HANDLER(ViewMsg_ExtendSelectionAndDelete,
+                        OnExtendSelectionAndDelete)
     IPC_MESSAGE_HANDLER(ViewMsg_SelectRange, OnSelectRange)
     IPC_MESSAGE_HANDLER(ViewMsg_CopyImageAt, OnCopyImageAt)
     IPC_MESSAGE_HANDLER(ViewMsg_ExecuteEditCommand, OnExecuteEditCommand)
@@ -1385,6 +1393,40 @@ void RenderViewImpl::OnSelectAll() {
 
   webview()->focusedFrame()->executeCommand(
       WebString::fromUTF8("SelectAll"));
+}
+
+void RenderViewImpl::OnReplaceAll(const string16& text) {
+  WebNode node = GetFocusedNode();
+  if (node.isNull() || !IsEditableNode(node))
+    return;
+
+  OnSelectAll();
+  OnReplace(text);
+}
+
+void RenderViewImpl::OnUnselect() {
+  if (!webview())
+    return;
+
+  webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Unselect"));
+}
+
+void RenderViewImpl::OnSetEditableSelectionOffsets(int start, int end) {
+  webview()->setEditableSelectionOffsets(start, end);
+}
+
+void RenderViewImpl::OnSetCompositionFromExistingText(
+    int start, int end,
+    const std::vector<WebKit::WebCompositionUnderline>& underlines) {
+  if (!webview())
+    return;
+  webview()->setCompositionFromExistingText(start, end, underlines);
+}
+
+void RenderViewImpl::OnExtendSelectionAndDelete(int before, int after) {
+  if (!webview())
+    return;
+  webview()->extendSelectionAndDelete(before, after);
 }
 
 void RenderViewImpl::OnSelectRange(const gfx::Point& start,
