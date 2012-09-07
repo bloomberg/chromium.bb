@@ -2570,13 +2570,14 @@ void BrowserView::ShowPasswordGenerationBubble(
 
   PasswordGenerationBubbleView* bubble =
       new PasswordGenerationBubbleView(
-          bounds,
           form,
+          bounds,
           this,
           tab_contents->web_contents()->GetRenderViewHost(),
+          tab_contents->password_manager(),
           password_generator,
           browser_.get(),
-          tab_contents->password_manager());
+          GetWidget()->GetThemeProvider());
 
   views::BubbleDelegateView::CreateBubble(bubble);
   bubble->SetAlignment(views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR);

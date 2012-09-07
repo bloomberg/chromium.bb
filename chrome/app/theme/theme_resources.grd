@@ -627,12 +627,14 @@
         <structure type="chrome_scaled_image" name="IDR_RELOAD" file="reload.png" />
         <structure type="chrome_scaled_image" name="IDR_RELOAD_H" file="reload_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_RELOAD_P" file="reload_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_RELOAD_DIMMED" file="reload.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_RELOAD" file="common/browser_reload_normal.png" />
         <structure type="chrome_scaled_image" name="IDR_RELOAD_D" file="common/browser_reload_disabled.png" />
         <structure type="chrome_scaled_image" name="IDR_RELOAD_H" file="common/browser_reload_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_RELOAD_P" file="common/browser_reload_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_RELOAD_DIMMED" file="common/browser_reload_normal.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_RESTORE_BUTTON_MASK" file="restore_button_mask.png" />
       <structure type="chrome_scaled_image" name="IDR_SAD_FAVICON" file="sadfavicon.png" />
