@@ -1159,6 +1159,8 @@
         'browser/performance_monitor/database.h',
         'browser/performance_monitor/event.cc',
         'browser/performance_monitor/event.h',
+        'browser/performance_monitor/key_builder.cc',
+        'browser/performance_monitor/key_builder.h',
         'browser/performance_monitor/metric.cc',
         'browser/performance_monitor/metric.h',
         'browser/performance_monitor/performance_monitor.cc',

@@ -30,6 +30,8 @@ struct TimeRange {
   base::Time end;
 };
 
+class KeyBuilder;
+
 // The class supporting all performance monitor storage. This class wraps
 // multiple leveldb::DB objects. All methods must be called from a background
 // thread. Callers should use BrowserThread::PostBlockingPoolSequencedTask using
@@ -261,12 +263,13 @@ class Database {
 
   // Mark the database as being active for the current time.
   void UpdateActiveInterval();
-
   // Updates the max_value_map_ and max_value_db_ if the value is greater than
   // the current max value for the given activity and metric.
   bool UpdateMaxValue(const std::string& activity,
                       MetricType metric,
                       const std::string& value);
+
+  scoped_ptr<KeyBuilder> key_builder_;
 
   // A mapping of id,metric to the last inserted key for those parameters
   // is maintained to prevent having to search through the recent db every
