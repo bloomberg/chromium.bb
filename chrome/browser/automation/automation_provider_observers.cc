@@ -1436,7 +1436,7 @@ void AllDownloadsCompleteObserver::ModelChanged(DownloadManager* manager) {
   // The set of downloads in the download manager has changed.  If there are
   // any new downloads that are still in progress, add them to the pending list.
   std::vector<DownloadItem*> downloads;
-  download_manager_->GetAllDownloads(&downloads);
+  download_manager_->GetAllDownloads(FilePath(), &downloads);
   for (std::vector<DownloadItem*>::iterator it = downloads.begin();
        it != downloads.end(); ++it) {
     if ((*it)->GetState() == DownloadItem::IN_PROGRESS &&

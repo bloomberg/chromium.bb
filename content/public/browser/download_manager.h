@@ -110,9 +110,11 @@ class CONTENT_EXPORT DownloadManager
   virtual void GetTemporaryDownloads(const FilePath& dir_path,
                                      DownloadVector* result) = 0;
 
-  // Add all download items to |downloads|, no matter the type or state, without
-  // clearing |downloads| first.
-  virtual void GetAllDownloads(DownloadVector* downloads) = 0;
+  // If |dir_path| is empty, appends all non-temporary downloads to |*result|.
+  // Otherwise, appends all non-temporary downloads that reside in |dir_path|
+  // to |*result|.
+  virtual void GetAllDownloads(const FilePath& dir_path,
+                               DownloadVector* result) = 0;
 
   // Returns all non-temporary downloads matching |query|. Empty query matches
   // everything.

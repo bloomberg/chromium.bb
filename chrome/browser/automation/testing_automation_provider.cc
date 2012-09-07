@@ -2643,8 +2643,8 @@ void TestingAutomationProvider::GetDownloadsInfo(Browser* browser,
 
   if (download_service->HasCreatedDownloadManager()) {
     std::vector<DownloadItem*> downloads;
-    BrowserContext::GetDownloadManager(browser->profile())->GetAllDownloads(
-        &downloads);
+    BrowserContext::GetDownloadManager(browser->profile())->
+        GetAllDownloads(FilePath(), &downloads);
 
     for (std::vector<DownloadItem*>::iterator it = downloads.begin();
          it != downloads.end();
@@ -2688,7 +2688,7 @@ namespace {
 
 DownloadItem* GetDownloadItemFromId(int id, DownloadManager* download_manager) {
   std::vector<DownloadItem*> downloads;
-  download_manager->GetAllDownloads(&downloads);
+  download_manager->GetAllDownloads(FilePath(), &downloads);
   DownloadItem* selected_item = NULL;
 
   for (std::vector<DownloadItem*>::iterator it = downloads.begin();

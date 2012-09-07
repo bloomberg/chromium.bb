@@ -85,13 +85,13 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Download) {
   observer->WaitForFinished();
 
   std::vector<content::DownloadItem*> downloads;
-  download_manager->GetAllDownloads(&downloads);
+  download_manager->GetAllDownloads(FilePath(), &downloads);
   EXPECT_EQ(1u, downloads.size());
 
   RemoveAndWait(BrowsingDataRemover::REMOVE_DOWNLOADS);
 
   downloads.clear();
-  download_manager->GetAllDownloads(&downloads);
+  download_manager->GetAllDownloads(FilePath(), &downloads);
   EXPECT_TRUE(downloads.empty());
 }
 
