@@ -306,10 +306,6 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter>,
   // List of observers interested in event notifications from us.
   ObserverList<BluetoothAdapter::Observer> observers_;
 
-  // Weak pointer factory for generating 'this' pointers that might live longer
-  // than we do.
-  base::WeakPtrFactory<BluetoothAdapter> weak_ptr_factory_;
-
   // Object path of adapter for this instance, this is fixed at creation time
   // unless |track_default_| is true in which case we update it to always
   // point at the default adapter.
@@ -333,6 +329,10 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter>,
   // instance.
   typedef std::map<const std::string, BluetoothDevice*> DevicesMap;
   DevicesMap devices_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<BluetoothAdapter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothAdapter);
 };

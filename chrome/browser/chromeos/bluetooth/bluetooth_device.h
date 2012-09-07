@@ -557,10 +557,6 @@ class BluetoothDevice : public BluetoothDeviceClient::Observer,
   // Creates a new BluetoothDevice object bound to the adapter |adapter|.
   static BluetoothDevice* Create(BluetoothAdapter* adapter);
 
-  // Weak pointer factory for generating 'this' pointers that might live longer
-  // than we do.
-  base::WeakPtrFactory<BluetoothDevice> weak_ptr_factory_;
-
   // The adapter that owns this device instance.
   BluetoothAdapter* adapter_;
 
@@ -605,6 +601,10 @@ class BluetoothDevice : public BluetoothDeviceClient::Observer,
 
   // Used to keep track of pending application connection requests.
   int connecting_applications_counter_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<BluetoothDevice> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDevice);
 };

@@ -30,10 +30,10 @@ base::LazyInstance<base::WeakPtr<chromeos::BluetoothAdapter> >::Leaky
 
 namespace chromeos {
 
-BluetoothAdapter::BluetoothAdapter() : weak_ptr_factory_(this),
-                                       track_default_(false),
+BluetoothAdapter::BluetoothAdapter() : track_default_(false),
                                        powered_(false),
-                                       discovering_(false) {
+                                       discovering_(false),
+                                       weak_ptr_factory_(this) {
   DBusThreadManager::Get()->GetBluetoothManagerClient()->
       AddObserver(this);
   DBusThreadManager::Get()->GetBluetoothAdapterClient()->
