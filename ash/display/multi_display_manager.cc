@@ -170,7 +170,7 @@ const gfx::Display& MultiDisplayManager::GetDisplayNearestPoint(
     const gfx::Point& point) const {
   // Fallback to the primary display if there is no root display containing
   // the |point|.
-  gfx::Display display = FindDisplayContainingPoint(point);
+  const gfx::Display& display = FindDisplayContainingPoint(point);
   return display.is_valid() ? display : displays_[0];
 }
 
