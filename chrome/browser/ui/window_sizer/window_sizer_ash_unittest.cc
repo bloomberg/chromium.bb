@@ -159,9 +159,9 @@ TEST_F(WindowSizerTest, DefaultSizeCase) {
     gfx::Rect window_bounds;
     GetWindowBounds(twelveeighty, twelveeighty, gfx::Rect(), gfx::Rect(),
                     gfx::Rect(), DEFAULT, &window_bounds, NULL, gfx::Rect());
-    EXPECT_EQ(gfx::Rect(WindowSizer::kDesktopBorderSize,
+    EXPECT_EQ(gfx::Rect((1280 - WindowSizer::kMaximumWindowWidth) / 2,
                         WindowSizer::kDesktopBorderSize,
-                        1280 - 2 * WindowSizer::kDesktopBorderSize,
+                        WindowSizer::kMaximumWindowWidth,
                         1024 - WindowSizer::kDesktopBorderSize),
               window_bounds);
   }
@@ -170,8 +170,9 @@ TEST_F(WindowSizerTest, DefaultSizeCase) {
     gfx::Rect window_bounds;
     GetWindowBounds(sixteenhundred, sixteenhundred, gfx::Rect(), gfx::Rect(),
                     gfx::Rect(), DEFAULT, &window_bounds, NULL, gfx::Rect());
-    EXPECT_EQ(gfx::Rect((1600 - 1280) / 2, WindowSizer::kDesktopBorderSize,
-                        1280,
+    EXPECT_EQ(gfx::Rect((1600 - WindowSizer::kMaximumWindowWidth) / 2,
+                        WindowSizer::kDesktopBorderSize,
+                        WindowSizer::kMaximumWindowWidth,
                         1200 - WindowSizer::kDesktopBorderSize),
               window_bounds);
   }
@@ -180,8 +181,9 @@ TEST_F(WindowSizerTest, DefaultSizeCase) {
     gfx::Rect window_bounds;
     GetWindowBounds(sixteeneighty, sixteeneighty, gfx::Rect(), gfx::Rect(),
                     gfx::Rect(), DEFAULT, &window_bounds, NULL, gfx::Rect());
-    EXPECT_EQ(gfx::Rect((1680 - 1280) / 2, WindowSizer::kDesktopBorderSize,
-                        1280,
+    EXPECT_EQ(gfx::Rect((1680 - WindowSizer::kMaximumWindowWidth) / 2,
+                        WindowSizer::kDesktopBorderSize,
+                        WindowSizer::kMaximumWindowWidth,
                         ash::WindowResizer::AlignToGridRoundDown(
                             1050 - WindowSizer::kDesktopBorderSize,
                             grid)),
@@ -192,8 +194,9 @@ TEST_F(WindowSizerTest, DefaultSizeCase) {
     gfx::Rect window_bounds;
     GetWindowBounds(nineteentwenty, nineteentwenty, gfx::Rect(), gfx::Rect(),
                     gfx::Rect(), DEFAULT, &window_bounds, NULL, gfx::Rect());
-    EXPECT_EQ(gfx::Rect((1920 - 1280) / 2, WindowSizer::kDesktopBorderSize,
-                        1280,
+    EXPECT_EQ(gfx::Rect((1920 - WindowSizer::kMaximumWindowWidth) / 2,
+                        WindowSizer::kDesktopBorderSize,
+                        WindowSizer::kMaximumWindowWidth,
                         1200 - WindowSizer::kDesktopBorderSize),
               window_bounds);
   }

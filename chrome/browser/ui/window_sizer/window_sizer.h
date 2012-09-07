@@ -101,6 +101,9 @@ class WindowSizer {
   // gets positioned to its default location.
   static const int kDesktopBorderSize;
 
+  // Maximum width of a window even if there is more room on the desktop.
+  static const int kMaximumWindowWidth;
+
   // How much horizontal and vertical offset there is between newly
   // opened windows.  This value may be different on each platform.
   static const int kWindowTilePixels;
