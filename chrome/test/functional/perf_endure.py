@@ -12,6 +12,12 @@ This module accepts the following environment variable inputs:
 
   DEEP_MEMORY_PROFILE: Enable the Deep Memory Profiler if it's set to 'True'.
   DEEP_MEMORY_PROFILE_SAVE: Don't clean up dump files if it's set to 'True'.
+
+  ENDURE_NO_WPR: Run tests without Web Page Replay if it's set.
+  WPR_RECORD: Run tests in record mode. If you want to make a fresh
+              archive, make sure to delete the old one, otherwise
+              it will append to the old one.
+  WPR_ARCHIVE_PATH: an alternative archive file to use.
 """
 
 from datetime import datetime
@@ -31,11 +37,13 @@ import pyauto_utils
 import remote_inspector_client
 import selenium.common.exceptions
 from selenium.webdriver.support.ui import WebDriverWait
+import webpagereplay
 
 
 class NotSupportedEnvironmentError(RuntimeError):
   """Represent an error raised since the environment (OS) is not supported."""
   pass
+
 
 class ChromeEndureBaseTest(perf.BasePerfTest):
   """Implements common functionality for all Chrome Endure tests.
@@ -57,6 +65,9 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
   _DMPROF_SCRIPT_PATH = os.path.join(_DMPROF_DIR_PATH, 'dmprof')
 
   def setUp(self):
+    # The Web Page Replay environment variables must be parsed before
+    # perf.BasePerfTest.setUp()
+    self._ParseReplayEnv()
     # The environment variables for the Deep Memory Profiler must be set
     # before perf.BasePerfTest.setUp() to inherit them to Chrome.
     self._deep_memory_profile = self._GetDeepMemoryProfileEnv(
@@ -104,6 +115,7 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     self._deep_memory_profile_json_file = None
     self._deep_memory_profile_last_json_filename = ''
     self._deep_memory_profile_proc = None
+    self._StartReplayServerIfNecessary()
 
   def tearDown(self):
     logging.info('Terminating connection to remote inspector...')
@@ -123,6 +135,50 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
         not self._deep_memory_profile_save and
         self._deep_tempdir):
       pyauto_utils.RemovePath(self._deep_tempdir)
+    # Must be done after perf.BasePerfTest.tearDown()
+    self._StopReplayServerIfNecessary()
+
+  def _GetArchiveName(self):
+    """Return the Web Page Replay archive name that corresponds to a test.
+
+    Override this function to return the name of an archive that
+    corresponds to the test, e.g "ChromeEndureGmailTest.wpr".
+
+    Returns:
+      None, by default no archive name is provided.
+    """
+    return None
+
+  def _ParseReplayEnv(self):
+    """Parse Web Page Replay related envrionment variables."""
+    if 'ENDURE_NO_WPR' in os.environ:
+      self._use_wpr = False
+      logging.info('Skipping Web Page Replay since ENDURE_NO_WPR is set.')
+    else:
+      self._archive_path = None
+      if 'WPR_ARCHIVE_PATH' in os.environ:
+        self._archive_path = os.environ.get('WPR_ARCHIVE_PATH')
+      else:
+        if self._GetArchiveName():
+          self._archive_path = ChromeEndureReplay.Path(
+              'archive', archive_name=self._GetArchiveName())
+      self._is_record_mode = 'WPR_RECORD' in os.environ
+      if self._is_record_mode:
+        if self._archive_path:
+          self._use_wpr = True
+        else:
+          self._use_wpr = False
+          logging.info('Fail to record since a valid archive path can not ' +
+                       'be generated. Did you implement ' +
+                       '_GetArchiveName() in your test?')
+      else:
+        if self._archive_path and os.path.exists(self._archive_path):
+          self._use_wpr = True
+        else:
+          self._use_wpr = False
+          logging.info(
+              'Skipping Web Page Replay since archive file %sdoes not exist.',
+              self._archive_path + ' ' if self._archive_path else '')
 
   def _GetDeepMemoryProfileEnv(self, env_name, converter, default):
     """Returns a converted environment variable for the Deep Memory Profiler.
@@ -164,7 +220,9 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     extra_flags = ['--remote-debugging-port=9222']
     if deep_memory_profile:
       extra_flags.append('--no-sandbox')
-    return (perf.BasePerfTest.ExtraChromeFlags(self) + extra_flags)
+    if self._use_wpr:
+      extra_flags.extend(ChromeEndureReplay.CHROME_FLAGS)
+    return perf.BasePerfTest.ExtraChromeFlags(self) + extra_flags
 
   def _OnTimelineEvent(self, event_info):
     """Invoked by the Remote Inspector Client when a timeline event occurs.
@@ -522,6 +580,26 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
 
     return True
 
+  def _StartReplayServerIfNecessary(self):
+    """Start replay server if necessary."""
+    if self._use_wpr:
+      mode = 'record' if self._is_record_mode else 'replay'
+      self._wpr_server = ChromeEndureReplay.ReplayServer(self._archive_path)
+      self._wpr_server.StartServer()
+      logging.info('Web Page Replay server has started in %s mode.', mode)
+
+  def _StopReplayServerIfNecessary(self):
+    """Stop the Web Page Replay server if necessary.
+
+    This method has to be called AFTER all network connections which go
+    through Web Page Replay server have shut down. Otherwise the
+    Web Page Replay server will hang to wait for them. A good
+    place is to call it at the end of the teardown process.
+    """
+    if self._use_wpr:
+      self._wpr_server.StopServer()
+      logging.info('The Web Page Replay server stopped.')
+
 
 class ChromeEndureControlTest(ChromeEndureBaseTest):
   """Control tests for Chrome Endure."""
@@ -615,6 +693,10 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
       logging.info('Skip recording latency as latency ' +
                    'dom element is not available.')
       self._has_latency = False
+
+  def _GetArchiveName(self):
+    """Return Web Page Replay archive name."""
+    return 'ChromeEndureGmailTest.wpr'
 
   def _SwitchToCanvasFrame(self, driver):
     """Switch the WebDriver to Gmail's 'canvas_frame', if it's available.
@@ -955,6 +1037,10 @@ class ChromeEndureDocsTest(ChromeEndureBaseTest):
 
     self._driver = self.NewWebDriver()
 
+  def _GetArchiveName(self):
+    """Return Web Page Replay archive name."""
+    return 'ChromeEndureDocsTest.wpr'
+
   def testDocsAlternatelyClickLists(self):
     """Alternates between two different document lists.
 
@@ -1024,6 +1110,10 @@ class ChromeEndurePlusTest(ChromeEndureBaseTest):
                         (self._TAB_TITLE_SUBSTRING, loaded_tab_title))
 
     self._driver = self.NewWebDriver()
+
+  def _GetArchiveName(self):
+    """Return Web Page Replay archive name."""
+    return 'ChromeEndurePlusTest.wpr'
 
   def testPlusAlternatelyClickStreams(self):
     """Alternates between two different streams.
@@ -1126,6 +1216,35 @@ class IndexedDBOfflineTest(ChromeEndureBaseTest):
 
     self._RunEndureTest(self._WEBAPP_NAME, self._TAB_TITLE_SUBSTRING,
                         test_description, scenario)
+
+
+class ChromeEndureReplay(object):
+  """Run Chrome Endure tests with network simulation via Web Page Replay."""
+
+  _PATHS = {
+      'archive':
+      'src/chrome/test/data/pyauto_private/webpagereplay/{archive_name}',
+      'scripts':
+      'src/chrome/test/data/chrome_endure/webpagereplay/wpr_deterministic.js',
+      }
+  CHROME_FLAGS = webpagereplay.CHROME_FLAGS
+
+  @classmethod
+  def Path(cls, key, **kwargs):
+    return perf.FormatChromePath(cls._PATHS[key], **kwargs)
+
+  @classmethod
+  def ReplayServer(cls, archive_path):
+    """Create a replay server."""
+    # Inject customized scripts for Google webapps.
+    # See the javascript file for details.
+    scripts = cls.Path('scripts')
+    if not os.path.exists(scripts):
+      raise IOError('Injected scripts %s not found.' % scripts)
+    replay_options = ['--inject_scripts', scripts]
+    if 'WPR_RECORD' in os.environ:
+      replay_options.append('--append')
+    return webpagereplay.ReplayServer(archive_path, replay_options)
 
 
 if __name__ == '__main__':
