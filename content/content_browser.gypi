@@ -7,6 +7,7 @@
     'browser/speech/proto/speech_proto.gyp:speech_proto',
     '../base/base.gyp:base_static',
     '../crypto/crypto.gyp:crypto',
+    '../google_apis/google_apis.gyp:google_apis',
     '../net/net.gyp:net',
     '../skia/skia.gyp:skia',
     '../third_party/zlib/zlib.gyp:zlib',

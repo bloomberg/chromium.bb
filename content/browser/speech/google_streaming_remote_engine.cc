@@ -19,11 +19,12 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/speech_recognition_error.h"
 #include "content/public/common/speech_recognition_result.h"
+#include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
 
 using content::BrowserThread;
@@ -35,6 +36,8 @@ using net::URLFetcher;
 
 namespace {
 
+const char kWebServiceBaseUrl[] =
+    "https://www.google.com/speech-api/full-duplex/v1";
 const char kDownstreamUrl[] = "/down?";
 const char kUpstreamUrl[] = "/up?";
 const int kAudioPacketIntervalMs = 100;
@@ -69,16 +72,19 @@ void DumpResponse(const std::string& response) {
   }
 }
 
-std::string GetWebserviceBaseURL() {
+std::string GetAPIKey() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  return command_line.GetSwitchValueASCII(
-      switches::kSpeechRecognitionWebserviceURL);
-}
+  if (command_line.HasSwitch(switches::kSpeechRecognitionWebserviceKey)) {
+    DVLOG(1) << "GetAPIKey() used key from command-line.";
+    return command_line.GetSwitchValueASCII(
+        switches::kSpeechRecognitionWebserviceKey);
+  }
 
-std::string GetWebserviceKey() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  return command_line.GetSwitchValueASCII(
-      switches::kSpeechRecognitionWebserviceKey);
+  std::string api_key = google_apis::GetAPIKey();
+  if (api_key.empty())
+    DVLOG(1) << "GetAPIKey() returned empty string!";
+
+  return api_key;
 }
 
 }  // namespace
@@ -316,10 +322,12 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
 
   // Setup downstream fetcher.
   std::vector<std::string> downstream_args;
-  downstream_args.push_back("key=" + GetWebserviceKey());
+  downstream_args.push_back(
+      "key=" + net::EscapeQueryParamValue(GetAPIKey(), true));
   downstream_args.push_back("pair=" + request_key);
   downstream_args.push_back("output=pb");
-  GURL downstream_url(GetWebserviceBaseURL() + std::string(kDownstreamUrl) +
+  GURL downstream_url(std::string(kWebServiceBaseUrl) +
+                      std::string(kDownstreamUrl) +
                       JoinString(downstream_args, '&'));
 
   downstream_fetcher_.reset(URLFetcher::Create(
@@ -333,7 +341,8 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
   // Setup upstream fetcher.
   // TODO(hans): Support for user-selected grammars.
   std::vector<std::string> upstream_args;
-  upstream_args.push_back("key=" + GetWebserviceKey());
+  upstream_args.push_back("key=" +
+      net::EscapeQueryParamValue(GetAPIKey(), true));
   upstream_args.push_back("pair=" + request_key);
   upstream_args.push_back("output=pb");
   upstream_args.push_back(
@@ -344,15 +353,18 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
     upstream_args.push_back("maxAlternatives=" +
                             base::UintToString(config_.max_hypotheses));
   }
-  upstream_args.push_back("client=chromium2");
+  upstream_args.push_back("client=chromium");
   if (!config_.hardware_info.empty()) {
     upstream_args.push_back(
         "xhw=" + net::EscapeQueryParamValue(config_.hardware_info, true));
   }
   upstream_args.push_back("continuous");
-  // TODO(hans): Set 'continuous' and 'confidence' based on user input.
+  upstream_args.push_back("interim");
+  // TODO(hans): Set 'continuous', 'interim', and 'confidence' based on user
+  // input.
 
-  GURL upstream_url(GetWebserviceBaseURL() + std::string(kUpstreamUrl) +
+  GURL upstream_url(std::string(kWebServiceBaseUrl) +
+                    std::string(kUpstreamUrl) +
                     JoinString(upstream_args, '&'));
 
   upstream_fetcher_.reset(URLFetcher::Create(

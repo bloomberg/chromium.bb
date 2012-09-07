@@ -12,6 +12,8 @@ include_rules = [
   "+content/shell",  # for content_browsertests
   "+content/test",
 
+  "+google_apis",
+
   "+grit/content_resources.h",
   "+grit/ui_resources.h",
   "+grit/webkit_chromium_resources.h",

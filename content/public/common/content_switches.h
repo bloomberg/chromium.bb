@@ -78,7 +78,6 @@ extern const char kDisableSharedWorkers[];
 extern const char kDisableSiteSpecificQuirks[];
 CONTENT_EXPORT extern const char kDisableSpeechInput[];
 CONTENT_EXPORT extern const char kEnableScriptedSpeech[];
-extern const char kSpeechRecognitionWebserviceURL[];
 extern const char kSpeechRecognitionWebserviceKey[];
 CONTENT_EXPORT extern const char kDisableThreadedAnimation[];
 #if defined(OS_ANDROID)
