@@ -71,7 +71,6 @@ void GDataWapiFeedProcessor::UpdateFileCountUmaHistograms(
   UMA_HISTOGRAM_COUNTS("GData.NumberOfHostedDocuments",
                        uma_stats.num_hosted_documents);
   UMA_HISTOGRAM_COUNTS("GData.NumberOfTotalFiles", num_total_files);
-  const std::vector<int> all_entry_kinds = DocumentEntry::GetAllEntryKinds();
   for (FeedToFileResourceMapUmaStats::EntryKindToCountMap::const_iterator iter =
            uma_stats.num_files_with_entry_kind.begin();
        iter != uma_stats.num_files_with_entry_kind.end();
@@ -79,8 +78,8 @@ void GDataWapiFeedProcessor::UpdateFileCountUmaHistograms(
     const DocumentEntry::EntryKind kind = iter->first;
     const int count = iter->second;
     for (int i = 0; i < count; ++i) {
-      UMA_HISTOGRAM_CUSTOM_ENUMERATION(
-          "GData.EntryKind", kind, all_entry_kinds);
+      UMA_HISTOGRAM_ENUMERATION(
+          "Drive.EntryKind", kind, DocumentEntry::NUM_ENTRY_KINDS);
     }
   }
 }

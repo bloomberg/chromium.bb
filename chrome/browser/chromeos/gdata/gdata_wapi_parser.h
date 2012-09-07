@@ -339,23 +339,24 @@ class DocumentEntry : public FeedEntry {
  public:
   // kEntryKindMap should be also updated if you modify EntryKind.
   enum EntryKind {
-    UNKNOWN       = 0x000000,
+    UNKNOWN,
     // Special entries.
-    ITEM          = 0x001001,
-    SITE          = 0x001002,
+    ITEM,
+    SITE,
     // Hosted Google document.
-    DOCUMENT      = 0x002101,
-    SPREADSHEET   = 0x002102,
-    PRESENTATION  = 0x002103,
-    DRAWING       = 0x002104,
-    TABLE         = 0x002105,
+    DOCUMENT,
+    SPREADSHEET,
+    PRESENTATION,
+    DRAWING,
+    TABLE,
     // Hosted external application document.
-    EXTERNAL_APP  = 0x002201,
+    EXTERNAL_APP,
     // Folders, collections.
-    FOLDER        = 0x004001,
+    FOLDER,
     // Regular files.
-    FILE          = 0x008001,
-    PDF           = 0x008002,
+    FILE,
+    PDF,
+    NUM_ENTRY_KINDS,
   };
   virtual ~DocumentEntry();
 
@@ -401,9 +402,6 @@ class DocumentEntry : public FeedEntry {
 
   // Returns true if |file| has one of the hosted document extensions.
   static bool HasHostedDocumentExtension(const FilePath& file);
-
-  // Returns a list of all entry kinds.
-  static std::vector<int> GetAllEntryKinds();
 
   // Document entry resource id.
   const std::string& resource_id() const { return resource_id_; }
@@ -456,19 +454,43 @@ class DocumentEntry : public FeedEntry {
   std::string GetHostedDocumentExtension() const;
 
   // True if document entry is remotely hosted.
-  bool is_hosted_document() const { return (kind_ & 0x002000) == 0x002000; }
+  bool is_hosted_document() const {
+    return ClassifyEntryKind(kind_) & KIND_OF_HOSTED_DOCUMENT;
+  }
   // True if document entry hosted by Google Documents.
-  bool is_google_document() const { return (kind_ & 0x002100) == 0x002100; }
+  bool is_google_document() const {
+    return ClassifyEntryKind(kind_) & KIND_OF_GOOGLE_DOCUMENT;
+  }
   // True if document entry is hosted by an external application.
-  bool is_external_document() const { return (kind_ & 0x002200) == 0x002200; }
+  bool is_external_document() const {
+    return ClassifyEntryKind(kind_) & KIND_OF_EXTERNAL_DOCUMENT;
+  }
   // True if document entry is a folder (collection).
-  bool is_folder() const { return (kind_ & 0x004000) != 0; }
+  bool is_folder() const { return ClassifyEntryKind(kind_) & KIND_OF_FOLDER; }
   // True if document entry is regular file.
-  bool is_file() const { return (kind_ & 0x008000) != 0; }
+  bool is_file() const { return ClassifyEntryKind(kind_) & KIND_OF_FILE; }
   // True if document entry can't be mapped to the file system.
   bool is_special() const {
     return !is_file() && !is_folder() && !is_hosted_document();
   }
+
+  // The following constructs are exposed for unit tests.
+
+  // Classes of EntryKind. Used for ClassifyEntryKind().
+  enum EntryKindClass {
+    KIND_OF_NONE = 0,
+    KIND_OF_HOSTED_DOCUMENT = 1,
+    KIND_OF_GOOGLE_DOCUMENT = 1 << 1,
+    KIND_OF_EXTERNAL_DOCUMENT = 1 << 2,
+    KIND_OF_FOLDER = 1 << 3,
+    KIND_OF_FILE = 1 << 4,
+  };
+
+  // Classifies the EntryKind. The returned value is a bitmask of
+  // EntryKindClass. For example, DOCUMENT is classified as
+  // KIND_OF_HOSTED_DOCUMENT and KIND_OF_GOOGLE_DOCUMENT, hence the returned
+  // value is KIND_OF_HOSTED_DOCUMENT | KIND_OF_GOOGLE_DOCUMENT.
+  static int ClassifyEntryKind(EntryKind kind);
 
  private:
   friend class base::internal::RepeatedMessageConverter<DocumentEntry>;

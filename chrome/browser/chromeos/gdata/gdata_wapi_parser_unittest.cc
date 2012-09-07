@@ -368,4 +368,37 @@ TEST_F(GDataWAPIParserTest, DocumentEntryHasDocumentExtension) {
       FilePath(FILE_PATH_LITERAL(""))));
 }
 
+TEST_F(GDataWAPIParserTest, DocumentEntryClassifyEntryKind) {
+  EXPECT_EQ(DocumentEntry::KIND_OF_NONE,
+            DocumentEntry::ClassifyEntryKind(DocumentEntry::UNKNOWN));
+  EXPECT_EQ(DocumentEntry::KIND_OF_NONE,
+            DocumentEntry::ClassifyEntryKind(DocumentEntry::ITEM));
+  EXPECT_EQ(DocumentEntry::KIND_OF_NONE,
+            DocumentEntry::ClassifyEntryKind(DocumentEntry::SITE));
+  EXPECT_EQ(DocumentEntry::KIND_OF_GOOGLE_DOCUMENT |
+            DocumentEntry::KIND_OF_HOSTED_DOCUMENT,
+            DocumentEntry::ClassifyEntryKind(DocumentEntry::DOCUMENT));
+  EXPECT_EQ(DocumentEntry::KIND_OF_GOOGLE_DOCUMENT |
+            DocumentEntry::KIND_OF_HOSTED_DOCUMENT,
+            DocumentEntry::ClassifyEntryKind(DocumentEntry::SPREADSHEET));
+  EXPECT_EQ(DocumentEntry::KIND_OF_GOOGLE_DOCUMENT |
+            DocumentEntry::KIND_OF_HOSTED_DOCUMENT,
+            DocumentEntry::ClassifyEntryKind(DocumentEntry::PRESENTATION));
+  EXPECT_EQ(DocumentEntry::KIND_OF_GOOGLE_DOCUMENT |
+            DocumentEntry::KIND_OF_HOSTED_DOCUMENT,
+            DocumentEntry::ClassifyEntryKind(DocumentEntry::DRAWING));
+  EXPECT_EQ(DocumentEntry::KIND_OF_GOOGLE_DOCUMENT |
+            DocumentEntry::KIND_OF_HOSTED_DOCUMENT,
+            DocumentEntry::ClassifyEntryKind(DocumentEntry::TABLE));
+  EXPECT_EQ(DocumentEntry::KIND_OF_EXTERNAL_DOCUMENT |
+            DocumentEntry::KIND_OF_HOSTED_DOCUMENT,
+            DocumentEntry::ClassifyEntryKind(DocumentEntry::EXTERNAL_APP));
+  EXPECT_EQ(DocumentEntry::KIND_OF_FOLDER,
+            DocumentEntry::ClassifyEntryKind(DocumentEntry::FOLDER));
+  EXPECT_EQ(DocumentEntry::KIND_OF_FILE,
+            DocumentEntry::ClassifyEntryKind(DocumentEntry::FILE));
+  EXPECT_EQ(DocumentEntry::KIND_OF_FILE,
+            DocumentEntry::ClassifyEntryKind(DocumentEntry::PDF));
+}
+
 }  // namespace gdata

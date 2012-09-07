@@ -143,6 +143,7 @@ struct EntryKindMap {
 };
 
 const EntryKindMap kEntryKindMap[] = {
+    { DocumentEntry::UNKNOWN,      "unknown",      NULL},
     { DocumentEntry::ITEM,         "item",         NULL},
     { DocumentEntry::DOCUMENT,     "document",     ".gdoc"},
     { DocumentEntry::SPREADSHEET,  "spreadsheet",  ".gsheet"},
@@ -155,6 +156,8 @@ const EntryKindMap kEntryKindMap[] = {
     { DocumentEntry::FILE,         "file",         NULL},
     { DocumentEntry::PDF,          "pdf",          NULL},
 };
+COMPILE_ASSERT(arraysize(kEntryKindMap) == DocumentEntry::NUM_ENTRY_KINDS,
+               EntryKindMap_and_EntryKind_are_not_in_sync);
 
 struct LinkTypeMap {
   Link::LinkType type;
@@ -654,15 +657,6 @@ bool DocumentEntry::HasHostedDocumentExtension(const FilePath& file) {
 }
 
 // static
-std::vector<int> DocumentEntry::GetAllEntryKinds() {
-  std::vector<int> entry_kinds;
-  entry_kinds.push_back(UNKNOWN);
-  for (size_t i = 0; i < arraysize(kEntryKindMap); ++i)
-    entry_kinds.push_back(kEntryKindMap[i].kind);
-  return entry_kinds;
-}
-
-// static
 DocumentEntry::EntryKind DocumentEntry::GetEntryKindFromTerm(
     const std::string& term) {
   if (!StartsWithASCII(term, kTermPrefix, false)) {
@@ -677,6 +671,51 @@ DocumentEntry::EntryKind DocumentEntry::GetEntryKindFromTerm(
   }
   DVLOG(1) << "Unknown entry type for term " << term << ", type " << type;
   return DocumentEntry::UNKNOWN;
+}
+
+// static
+int DocumentEntry::ClassifyEntryKind(EntryKind kind) {
+  int classes = 0;
+
+  // All EntryKind members are listed here, so the compiler catches if a
+  // newly added member is missing here.
+  switch (kind) {
+    case UNKNOWN:
+    // Special entries.
+    case ITEM:
+    case SITE:
+      break;
+
+    // Hosted Google document.
+    case DOCUMENT:
+    case SPREADSHEET:
+    case PRESENTATION:
+    case DRAWING:
+    case TABLE:
+      classes = KIND_OF_GOOGLE_DOCUMENT | KIND_OF_HOSTED_DOCUMENT;
+      break;
+
+    // Hosted external application document.
+    case EXTERNAL_APP:
+      classes = KIND_OF_EXTERNAL_DOCUMENT | KIND_OF_HOSTED_DOCUMENT;
+      break;
+
+    // Folders, collections.
+    case FOLDER:
+      classes = KIND_OF_FOLDER;
+      break;
+
+    // Regular files.
+    case FILE:
+    case PDF:
+      classes = KIND_OF_FILE;
+      break;
+
+    case NUM_ENTRY_KINDS:
+      NOTREACHED();
+  }
+
+  return classes;
 }
 
 void DocumentEntry::FillRemainingFields() {
