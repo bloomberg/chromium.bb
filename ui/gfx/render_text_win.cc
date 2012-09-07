@@ -9,13 +9,11 @@
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
-#include "base/string_split.h"
 #include "base/string_util.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
-#include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/font_fallback_win.h"
 #include "ui/gfx/font_smoothing_win.h"
 #include "ui/gfx/platform_font_win.h"
 
@@ -50,6 +48,7 @@ int CALLBACK MetaFileEnumProc(HDC hdc,
 // an initial |font|. Returns the resulting font via out param |result|. Returns
 // |true| if a fallback font was found.
 // Adapted from WebKit's |FontCache::GetFontDataForCharacters()|.
+// TODO(asvitkine): This should be moved to font_fallback_win.cc.
 bool ChooseFallbackFont(HDC hdc,
                         const Font& font,
                         const wchar_t* text,
@@ -87,117 +86,6 @@ bool ChooseFallbackFont(HDC hdc,
   DeleteEnhMetaFile(meta_file);
 
   return found_fallback;
-}
-
-// Queries the Registry to get a mapping from font filenames to font names.
-void QueryFontsFromRegistry(std::map<std::string, std::string>* map) {
-  const wchar_t* kFonts =
-      L"Software\\Microsoft\\Windows NT\\CurrentVersion\\Fonts";
-
-  base::win::RegistryValueIterator it(HKEY_LOCAL_MACHINE, kFonts);
-  for (; it.Valid(); ++it) {
-    const std::string filename = StringToLowerASCII(WideToUTF8(it.Value()));
-    (*map)[filename] = WideToUTF8(it.Name());
-  }
-}
-
-// Fills |font_names| with a list of font families found in the font file at
-// |filename|. Takes in a |font_map| from font filename to font families, which
-// is filled-in by querying the registry, if empty.
-void GetFontNamesFromFilename(const std::string& filename,
-                              std::map<std::string, std::string>* font_map,
-                              std::vector<std::string>* font_names) {
-  if (font_map->empty())
-    QueryFontsFromRegistry(font_map);
-
-  std::map<std::string, std::string>::const_iterator it =
-      font_map->find(StringToLowerASCII(filename));
-  if (it == font_map->end())
-    return;
-
-  // The family string is in the format "FamilyFoo & FamilyBar (TrueType)".
-  // Split by '&' and strip off the trailing parenthesized experession.
-  base::SplitString(it->second, '&', font_names);
-  if (!font_names->empty()) {
-    const size_t index = font_names->back().find('(');
-    if (index != std::string::npos) {
-      font_names->back().resize(index);
-      TrimWhitespace(font_names->back(), TRIM_TRAILING, &font_names->back());
-    }
-  }
-}
-
-// Returns true if |text| contains only ASCII digits.
-bool ContainsOnlyDigits(const std::string& text) {
-  return text.find_first_not_of("0123456789") == string16::npos;
-}
-
-// Parses the font's name and filename out of a SystemLink entry string, setting
-// |font_name| and |filename| respectively. If a field is not present or could
-// not be parsed, the corresponding param will be cleared.
-void ParseFontLinkEntry(const std::string& entry,
-                        std::string* filename,
-                        std::string* font_name) {
-  // Each entry is comma separated, having the font filename as the first value
-  // followed optionally by the font family name and a pair of integer scaling
-  // factors. See: http://msdn.microsoft.com/en-us/goglobal/bb688134.aspx
-  // TODO(asvitkine): Should we support these scaling factors?
-  std::vector<std::string> parts;
-  base::SplitString(entry, ',', &parts);
-  filename->clear();
-  font_name->clear();
-  if (parts.size() > 0)
-    *filename = parts[0];
-  // The second entry may be the font name or the first scaling factor, if the
-  // entry does not contain a font name. If it contains only digits, assume it
-  // is a scaling factor.
-  if (parts.size() > 1 && !ContainsOnlyDigits(parts[1]))
-    *font_name = parts[1];
-}
-
-// Appends a Font with the given |name| and |size| to |fonts| unless the last
-// entry is already a font with that name.
-void AppendFont(const std::string& name, int size, std::vector<Font>* fonts) {
-  if (fonts->empty() || fonts->back().GetFontName() != name)
-    fonts->push_back(Font(name, size));
-}
-
-// Queries the Registry to get a list of linked fonts for |font|.
-void QueryLinkedFontsFromRegistry(const Font& font,
-                                  std::map<std::string, std::string>* font_map,
-                                  std::vector<Font>* linked_fonts) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-  const wchar_t* kSystemLink =
-      L"Software\\Microsoft\\Windows NT\\CurrentVersion\\FontLink\\SystemLink";
-
-  base::win::RegKey key;
-  if (FAILED(key.Open(HKEY_LOCAL_MACHINE, kSystemLink, KEY_READ)))
-    return;
-
-  const std::wstring original_font_name = UTF8ToWide(font.GetFontName());
-  std::vector<std::wstring> values;
-  if (FAILED(key.ReadValues(original_font_name.c_str(), &values))) {
-    key.Close();
-    return;
-  }
-
-  std::string filename;
-  std::string font_name;
-  for (size_t i = 0; i < values.size(); ++i) {
-    ParseFontLinkEntry(WideToUTF8(values[i]), &filename, &font_name);
-    // If the font name is present, add that directly, otherwise add the
-    // font names corresponding to the filename.
-    if (!font_name.empty()) {
-      AppendFont(font_name, font.GetFontSize(), linked_fonts);
-    } else if (!filename.empty()) {
-      std::vector<std::string> font_names;
-      GetFontNamesFromFilename(filename, font_map, &font_names);
-      for (size_t i = 0; i < font_names.size(); ++i)
-        AppendFont(font_names[i], font.GetFontSize(), linked_fonts);
-    }
-  }
-
-  key.Close();
 }
 
 // Changes |font| to have the specified |font_size| (or |font_height| on Windows
@@ -282,12 +170,6 @@ int GetGlyphXBoundary(internal::TextRun* run, size_t index, bool trailing) {
 
 // static
 HDC RenderTextWin::cached_hdc_ = NULL;
-
-// static
-std::map<std::string, std::vector<Font> > RenderTextWin::cached_linked_fonts_;
-
-// static
-std::map<std::string, std::string> RenderTextWin::cached_system_fonts_;
 
 // static
 std::map<std::string, Font> RenderTextWin::successful_substitute_fonts_;
@@ -716,52 +598,30 @@ void RenderTextWin::LayoutVisualText() {
 }
 
 void RenderTextWin::LayoutTextRun(internal::TextRun* run) {
-  HRESULT hr = E_FAIL;
   const size_t run_length = run->range.length();
   const wchar_t* run_text = &(text()[run->range.start()]);
+  Font original_font = run->font;
+  LinkedFontsIterator fonts(original_font);
   bool tried_cached_font = false;
   bool tried_fallback = false;
-  size_t linked_font_index = 0;
-  const std::vector<Font>* linked_fonts = NULL;
-  Font original_font = run->font;
   // Keep track of the font that is able to display the greatest number of
   // characters for which ScriptShape() returned S_OK. This font will be used
   // in the case where no font is able to display the entire run.
   int best_partial_font_missing_char_count = INT_MAX;
-  Font best_partial_font = run->font;
+  Font best_partial_font = original_font;
   bool using_best_partial_font = false;
-
-  // Select the font desired for glyph generation.
-  SelectObject(cached_hdc_, run->font.GetNativeFont());
+  Font current_font;
 
   run->logical_clusters.reset(new WORD[run_length]);
-  run->glyph_count = 0;
-  // Max glyph guess: http://msdn.microsoft.com/en-us/library/dd368564.aspx
-  size_t max_glyphs = static_cast<size_t>(1.5 * run_length + 16);
-  while (max_glyphs < kMaxGlyphs) {
-    run->glyphs.reset(new WORD[max_glyphs]);
-    run->visible_attributes.reset(new SCRIPT_VISATTR[max_glyphs]);
-    hr = ScriptShape(cached_hdc_,
-                     &run->script_cache,
-                     run_text,
-                     run_length,
-                     max_glyphs,
-                     &(run->script_analysis),
-                     run->glyphs.get(),
-                     run->logical_clusters.get(),
-                     run->visible_attributes.get(),
-                     &(run->glyph_count));
-    if (hr == E_OUTOFMEMORY) {
-      max_glyphs *= 2;
-      continue;
-    }
+  while (fonts.NextFont(&current_font)) {
+    HRESULT hr = ShapeTextRunWithFont(run, current_font);
 
     bool glyphs_missing = false;
     if (hr == USP_E_SCRIPT_NOT_IN_FONT) {
       glyphs_missing = true;
     } else if (hr == S_OK) {
-      // If |hr| is S_OK, there could still be missing glyphs in the output,
-      // see: http://msdn.microsoft.com/en-us/library/windows/desktop/dd368564.aspx
+      // If |hr| is S_OK, there could still be missing glyphs in the output.
+      // http://msdn.microsoft.com/en-us/library/windows/desktop/dd368564.aspx
       const int missing_count = CountCharsWithMissingGlyphs(run);
       // Track the font that produced the least missing glyphs.
       if (missing_count < best_partial_font_missing_char_count) {
@@ -769,24 +629,26 @@ void RenderTextWin::LayoutTextRun(internal::TextRun* run) {
         best_partial_font = run->font;
       }
       glyphs_missing = (missing_count != 0);
+    } else {
+      NOTREACHED() << hr;
     }
 
-    // Skip font substitution if there are no missing glyphs or if the font
-    // with the least missing glyphs is being used as a last resort.
-    if (!glyphs_missing || using_best_partial_font) {
+    // Use the font if it had glyphs for all characters.
+    if (!glyphs_missing) {
       // Save the successful fallback font that was chosen.
-      if (tried_fallback && !using_best_partial_font)
+      if (tried_fallback)
         successful_substitute_fonts_[original_font.GetFontName()] = run->font;
-      break;
+      return;
     }
 
     // First, try the cached font from previous runs, if any.
     if (!tried_cached_font) {
       tried_cached_font = true;
+
       std::map<std::string, Font>::const_iterator it =
           successful_substitute_fonts_.find(original_font.GetFontName());
       if (it != successful_substitute_fonts_.end()) {
-        ApplySubstituteFont(run, it->second);
+        fonts.SetNextFont(it->second);
         continue;
       }
     }
@@ -794,81 +656,79 @@ void RenderTextWin::LayoutTextRun(internal::TextRun* run) {
     // If there are missing glyphs, first try finding a fallback font using a
     // meta file, if it hasn't yet been attempted for this run.
     // TODO(msw|asvitkine): Support RenderText's font_list()?
-    // TODO(msw|asvitkine): Cache previous successful replacement fonts?
     if (!tried_fallback) {
       tried_fallback = true;
 
       Font fallback_font;
       if (ChooseFallbackFont(cached_hdc_, run->font, run_text, run_length,
                              &fallback_font)) {
-        ApplySubstituteFont(run, fallback_font);
+        fonts.SetNextFont(fallback_font);
         continue;
       }
     }
-
-    // The meta file approach did not yield a replacement font, try to find
-    // one using font linking. First time through, get the linked fonts list.
-    if (linked_fonts == NULL) {
-      // First, try to get the list for the original font.
-      linked_fonts = GetLinkedFonts(original_font);
-
-      // If there are no linked fonts for the original font, try querying the
-      // ones for the Uniscribe fallback font. This may happen if the first
-      // font is a custom font that has no linked fonts in the Registry.
-      //
-      // Note: One possibility would be to always merge both lists of fonts,
-      //       but it is not clear whether there are any real world scenarios
-      //       where this would actually help.
-      if (linked_fonts->empty())
-        linked_fonts = GetLinkedFonts(run->font);
-    }
-
-    // None of the fallback fonts were able to display the entire run.
-    if (linked_font_index == linked_fonts->size()) {
-      // If a font was able to partially display the run, use that now.
-      if (best_partial_font_missing_char_count != INT_MAX) {
-        ApplySubstituteFont(run, best_partial_font);
-        using_best_partial_font = true;
-        continue;
-      }
-
-      // If no font was able to partially display the run, replace all glyphs
-      // with |wgDefault| to ensure they don't hold garbage values.
-      SCRIPT_FONTPROPERTIES properties;
-      memset(&properties, 0, sizeof(properties));
-      properties.cBytes = sizeof(properties);
-      ScriptGetFontProperties(cached_hdc_, &run->script_cache, &properties);
-      for (int i = 0; i < run->glyph_count; ++i)
-        run->glyphs[i] = properties.wgDefault;
-
-      // TODO(msw): Don't use SCRIPT_UNDEFINED. Apparently Uniscribe can
-      //            crash on certain surrogate pairs with SCRIPT_UNDEFINED.
-      //            See https://bugzilla.mozilla.org/show_bug.cgi?id=341500
-      //            And http://maxradi.us/documents/uniscribe/
-      run->script_analysis.eScript = SCRIPT_UNDEFINED;
-      // Reset |hr| to 0 to not trigger the DCHECK() below when a font is
-      // not found that can display the text. This is expected behavior
-      // under Windows XP without additional language packs installed and
-      // may also happen on newer versions when trying to display text in
-      // an obscure script that the system doesn't have the right font for.
-      hr = 0;
-      break;
-    }
-
-    // Try the next linked font.
-    ApplySubstituteFont(run, linked_fonts->at(linked_font_index++));
   }
-  DCHECK(SUCCEEDED(hr));
+
+  // If a font was able to partially display the run, use that now.
+  if (best_partial_font_missing_char_count != INT_MAX) {
+    // Re-shape the run only if |best_partial_font| differs from the last font.
+    if (best_partial_font.GetNativeFont() != run->font.GetNativeFont())
+      ShapeTextRunWithFont(run, best_partial_font);
+    return;
+  }
+
+  // If no font was able to partially display the run, replace all glyphs
+  // with |wgDefault| to ensure they don't hold garbage values.
+  SCRIPT_FONTPROPERTIES properties;
+  memset(&properties, 0, sizeof(properties));
+  properties.cBytes = sizeof(properties);
+  ScriptGetFontProperties(cached_hdc_, &run->script_cache, &properties);
+  for (int i = 0; i < run->glyph_count; ++i)
+    run->glyphs[i] = properties.wgDefault;
+
+  // TODO(msw): Don't use SCRIPT_UNDEFINED. Apparently Uniscribe can
+  //            crash on certain surrogate pairs with SCRIPT_UNDEFINED.
+  //            See https://bugzilla.mozilla.org/show_bug.cgi?id=341500
+  //            And http://maxradi.us/documents/uniscribe/
+  run->script_analysis.eScript = SCRIPT_UNDEFINED;
 }
 
-void RenderTextWin::ApplySubstituteFont(internal::TextRun* run,
-                                        const Font& font) {
-  const int font_size = run->font.GetFontSize();
-  const int font_height = run->font.GetHeight();
-  run->font = font;
-  DeriveFontIfNecessary(font_size, font_height, run->font_style, &run->font);
-  ScriptFreeCache(&run->script_cache);
+HRESULT RenderTextWin::ShapeTextRunWithFont(internal::TextRun* run,
+                                            const Font& font) {
+  // Update the run's font only if necessary. If the two fonts wrap the same
+  // PlatformFontWin object, their native fonts will have the same value.
+  if (run->font.GetNativeFont() != font.GetNativeFont()) {
+    const int font_size = run->font.GetFontSize();
+    const int font_height = run->font.GetHeight();
+    run->font = font;
+    DeriveFontIfNecessary(font_size, font_height, run->font_style, &run->font);
+    ScriptFreeCache(&run->script_cache);
+  }
+
+  // Select the font desired for glyph generation.
   SelectObject(cached_hdc_, run->font.GetNativeFont());
+
+  HRESULT hr = E_OUTOFMEMORY;
+  const size_t run_length = run->range.length();
+  const wchar_t* run_text = &(text()[run->range.start()]);
+  // Max glyph guess: http://msdn.microsoft.com/en-us/library/dd368564.aspx
+  size_t max_glyphs = static_cast<size_t>(1.5 * run_length + 16);
+  while (hr == E_OUTOFMEMORY && max_glyphs < kMaxGlyphs) {
+    run->glyph_count = 0;
+    run->glyphs.reset(new WORD[max_glyphs]);
+    run->visible_attributes.reset(new SCRIPT_VISATTR[max_glyphs]);
+    hr = ScriptShape(cached_hdc_,
+                     &run->script_cache,
+                     run_text,
+                     run_length,
+                     max_glyphs,
+                     &run->script_analysis,
+                     run->glyphs.get(),
+                     run->logical_clusters.get(),
+                     run->visible_attributes.get(),
+                     &run->glyph_count);
+    max_glyphs *= 2;
+  }
+  return hr;
 }
 
 int RenderTextWin::CountCharsWithMissingGlyphs(internal::TextRun* run) const {
@@ -903,19 +763,6 @@ int RenderTextWin::CountCharsWithMissingGlyphs(internal::TextRun* run) const {
 
   DCHECK_LE(chars_not_missing_glyphs, static_cast<int>(run->range.length()));
   return run->range.length() - chars_not_missing_glyphs;
-}
-
-const std::vector<Font>* RenderTextWin::GetLinkedFonts(const Font& font) const {
-  const std::string& font_name = font.GetFontName();
-  std::map<std::string, std::vector<Font> >::const_iterator it =
-      cached_linked_fonts_.find(font_name);
-  if (it != cached_linked_fonts_.end())
-    return &it->second;
-
-  cached_linked_fonts_[font_name] = std::vector<Font>();
-  std::vector<Font>* linked_fonts = &cached_linked_fonts_[font_name];
-  QueryLinkedFontsFromRegistry(font, &cached_system_fonts_, linked_fonts);
-  return linked_fonts;
 }
 
 size_t RenderTextWin::GetRunContainingCaret(const SelectionModel& caret) const {

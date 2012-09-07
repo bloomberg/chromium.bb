@@ -143,6 +143,7 @@
             'base/native_theme/native_theme_win_unittest.cc',
             'base/win/hwnd_subclass_unittest.cc',
             'base/win/tsf_text_store_unittest.cc',
+            'gfx/font_fallback_win_unittest.cc',
             'gfx/icon_util_unittest.cc',
             'gfx/platform_font_win_unittest.cc',
           ],
