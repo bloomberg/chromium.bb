@@ -933,9 +933,11 @@ void CaptivePortalBrowserTest::SetUpOnMainThread() {
 
   // Double-check that the captive portal service isn't enabled by default for
   // browser tests.
-  EXPECT_TRUE(CaptivePortalService::is_disabled_for_testing());
+  EXPECT_EQ(CaptivePortalService::DISABLED_FOR_TESTING,
+            CaptivePortalService::get_state_for_testing());
 
-  CaptivePortalService::set_is_disabled_for_testing(false);
+  CaptivePortalService::set_state_for_testing(
+      CaptivePortalService::SKIP_OS_CHECK_FOR_TESTING);
   EnableCaptivePortalDetection(browser()->profile(), true);
 
   // Set the captive portal service to use URLRequestMockCaptivePortalJob's

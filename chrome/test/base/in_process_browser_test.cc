@@ -145,7 +145,8 @@ void InProcessBrowserTest::SetUp() {
 #endif
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  captive_portal::CaptivePortalService::set_is_disabled_for_testing(true);
+  captive_portal::CaptivePortalService::set_state_for_testing(
+      captive_portal::CaptivePortalService::DISABLED_FOR_TESTING);
 #endif
 
   google_util::SetMockLinkDoctorBaseURLForTesting();

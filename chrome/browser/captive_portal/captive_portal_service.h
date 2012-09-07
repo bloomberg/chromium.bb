@@ -49,6 +49,13 @@ class CaptivePortalService : public ProfileKeyedService,
                              public content::NotificationObserver,
                              public base::NonThreadSafe {
  public:
+  enum TestingState {
+    NOT_TESTING,
+    DISABLED_FOR_TESTING,  // The service is always disabled.
+    SKIP_OS_CHECK_FOR_TESTING  // The service can be enabled even if the OS has
+                               // native captive portal detection.
+  };
+
   // The details sent via a NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT.
   struct Results {
     // The result of the second most recent captive portal check.
@@ -78,10 +85,10 @@ class CaptivePortalService : public ProfileKeyedService,
 
   // Used to disable captive portal detection so it doesn't interfere with
   // tests.  Should be called before the service is created.
-  static void set_is_disabled_for_testing(bool is_disabled_for_testing) {
-    is_disabled_for_testing_ = is_disabled_for_testing;
+  static void set_state_for_testing(TestingState testing_state) {
+    testing_state_ = testing_state;
   }
-  static bool is_disabled_for_testing() { return is_disabled_for_testing_; }
+  static TestingState get_state_for_testing() { return testing_state_; }
 
  private:
   friend class CaptivePortalServiceTest;
@@ -218,7 +225,7 @@ class CaptivePortalService : public ProfileKeyedService,
 
   base::OneShotTimer<CaptivePortalService> check_captive_portal_timer_;
 
-  static bool is_disabled_for_testing_;
+  static TestingState testing_state_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalService);
 };
