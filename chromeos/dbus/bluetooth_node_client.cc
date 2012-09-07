@@ -40,8 +40,8 @@ class BluetoothNodeClientImpl: public BluetoothNodeClient,
  public:
   BluetoothNodeClientImpl(dbus::Bus* bus,
                           BluetoothDeviceClient* device_client)
-      : weak_ptr_factory_(this),
-        bus_(bus) {
+      : bus_(bus),
+        weak_ptr_factory_(this) {
     DVLOG(1) << "Creating BluetoothNodeClientImpl";
 
     DCHECK(device_client);
@@ -152,14 +152,16 @@ class BluetoothNodeClientImpl: public BluetoothNodeClient,
                       NodePropertyChanged(object_path, property_name));
   }
 
-  // Weak pointer factory for generating 'this' pointers that might live longer
-  // than we do.
-  base::WeakPtrFactory<BluetoothNodeClientImpl> weak_ptr_factory_;
-
   dbus::Bus* bus_;
 
   // List of observers interested in event notifications from us.
   ObserverList<BluetoothNodeClient::Observer> observers_;
+
+  // Weak pointer factory for generating 'this' pointers that might live longer
+  // than we do.
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<BluetoothNodeClientImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothNodeClientImpl);
 };

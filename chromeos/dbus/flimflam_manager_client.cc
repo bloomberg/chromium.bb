@@ -244,8 +244,11 @@ class FlimflamManagerClientStubImpl : public FlimflamManagerClient {
     callback.Run(DBUS_METHOD_CALL_SUCCESS, stub_properties_);
   }
 
-  base::WeakPtrFactory<FlimflamManagerClientStubImpl> weak_ptr_factory_;
   base::DictionaryValue stub_properties_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<FlimflamManagerClientStubImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FlimflamManagerClientStubImpl);
 };

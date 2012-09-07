@@ -45,8 +45,8 @@ class PipeReader {
   explicit PipeReader(IOCompleteCallback callback)
       : data_stream_(NULL),
         io_buffer_(new net::IOBufferWithSize(4096)),
-        weak_ptr_factory_(this),
-        callback_(callback) {
+        callback_(callback),
+        weak_ptr_factory_(this) {
     pipe_fd_[0] = pipe_fd_[1] = -1;
   }
 
@@ -125,9 +125,12 @@ class PipeReader {
   int pipe_fd_[2];
   scoped_ptr<net::FileStream> data_stream_;
   scoped_refptr<net::IOBufferWithSize> io_buffer_;
-  base::WeakPtrFactory<PipeReader> weak_ptr_factory_;
   std::string data_;
   IOCompleteCallback callback_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<PipeReader> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PipeReader);
 };
@@ -141,8 +144,8 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
  public:
   explicit DebugDaemonClientImpl(dbus::Bus* bus)
       : debugdaemon_proxy_(NULL),
-        weak_ptr_factory_(this),
-        pipe_reader_(NULL) {
+        pipe_reader_(NULL),
+        weak_ptr_factory_(this) {
     debugdaemon_proxy_ = bus->GetObjectProxy(
         debugd::kDebugdServiceName,
         dbus::ObjectPath(debugd::kDebugdServicePath));
@@ -487,9 +490,9 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
   dbus::ObjectProxy* debugdaemon_proxy_;
-  base::WeakPtrFactory<DebugDaemonClientImpl> weak_ptr_factory_;
   scoped_ptr<PipeReader> pipe_reader_;
   StopSystemTracingCallback callback_;
+  base::WeakPtrFactory<DebugDaemonClientImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DebugDaemonClientImpl);
 };

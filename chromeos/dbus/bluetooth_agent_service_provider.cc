@@ -34,11 +34,11 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
   BluetoothAgentServiceProviderImpl(dbus::Bus* bus,
                                     const dbus::ObjectPath& object_path,
                                     Delegate* delegate)
-      : weak_ptr_factory_(this),
-        origin_thread_id_(base::PlatformThread::CurrentId()),
+      : origin_thread_id_(base::PlatformThread::CurrentId()),
         bus_(bus),
         delegate_(delegate),
-        object_path_(object_path) {
+        object_path_(object_path),
+        weak_ptr_factory_(this) {
     DVLOG(1) << "Creating BluetoothAdapterClientImpl for "
              << object_path.value();
 
@@ -509,10 +509,6 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
     }
   }
 
-  // Weak pointer factory for generating 'this' pointers that might live longer
-  // than we do.
-  base::WeakPtrFactory<BluetoothAgentServiceProviderImpl> weak_ptr_factory_;
-
   // Origin thread (i.e. the UI thread in production).
   base::PlatformThreadId origin_thread_id_;
 
@@ -531,6 +527,12 @@ class BluetoothAgentServiceProviderImpl : public BluetoothAgentServiceProvider {
 
   // D-Bus object we are exporting, owned by this object.
   scoped_refptr<dbus::ExportedObject> exported_object_;
+
+  // Weak pointer factory for generating 'this' pointers that might live longer
+  // than we do.
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<BluetoothAgentServiceProviderImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothAgentServiceProviderImpl);
 };

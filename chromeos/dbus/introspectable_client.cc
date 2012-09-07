@@ -33,8 +33,8 @@ namespace chromeos {
 class IntrospectableClientImpl : public IntrospectableClient {
  public:
   explicit IntrospectableClientImpl(dbus::Bus* bus)
-      : weak_ptr_factory_(this),
-        bus_(bus) {
+      : bus_(bus),
+        weak_ptr_factory_(this) {
     DVLOG(1) << "Creating IntrospectableClientImpl";
   }
 
@@ -81,11 +81,13 @@ class IntrospectableClientImpl : public IntrospectableClient {
     callback.Run(service_name, object_path, xml_data, success);
   }
 
+  dbus::Bus* bus_;
+
   // Weak pointer factory for generating 'this' pointers that might live longer
   // than we do.
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<IntrospectableClientImpl> weak_ptr_factory_;
-
-  dbus::Bus* bus_;
 
   DISALLOW_COPY_AND_ASSIGN(IntrospectableClientImpl);
 };

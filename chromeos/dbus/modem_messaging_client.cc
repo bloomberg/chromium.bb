@@ -33,8 +33,8 @@ class ModemMessagingProxy {
            const dbus::ObjectPath& object_path)
       : bus_(bus),
         proxy_(bus->GetObjectProxy(service_name, object_path)),
-        weak_ptr_factory_(this),
-        service_name_(service_name) {
+        service_name_(service_name),
+        weak_ptr_factory_(this) {
     proxy_->ConnectToSignal(
         modemmanager::kModemManager1MessagingInterface,
         modemmanager::kSMSAddedSignal,
@@ -123,9 +123,12 @@ class ModemMessagingProxy {
 
   dbus::Bus* bus_;
   dbus::ObjectProxy* proxy_;
-  base::WeakPtrFactory<ModemMessagingProxy> weak_ptr_factory_;
   std::string service_name_;
   SmsReceivedHandler sms_received_handler_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<ModemMessagingProxy> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ModemMessagingProxy);
 };

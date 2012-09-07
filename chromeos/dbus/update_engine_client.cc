@@ -50,8 +50,8 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
  public:
   explicit UpdateEngineClientImpl(dbus::Bus* bus)
       : update_engine_proxy_(NULL),
-        weak_ptr_factory_(this),
-        last_status_() {
+        last_status_(),
+        weak_ptr_factory_(this) {
     update_engine_proxy_ = bus->GetObjectProxy(
         update_engine::kUpdateEngineServiceName,
         dbus::ObjectPath(update_engine::kUpdateEngineServicePath));
@@ -242,8 +242,11 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
 
   dbus::ObjectProxy* update_engine_proxy_;
   ObserverList<Observer> observers_;
-  base::WeakPtrFactory<UpdateEngineClientImpl> weak_ptr_factory_;
   Status last_status_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<UpdateEngineClientImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateEngineClientImpl);
 };

@@ -22,8 +22,8 @@ namespace chromeos {
 class BluetoothOutOfBandClientImpl: public BluetoothOutOfBandClient {
  public:
   explicit BluetoothOutOfBandClientImpl(dbus::Bus* bus)
-      : weak_ptr_factory_(this),
-        bus_(bus) {}
+      : bus_(bus),
+        weak_ptr_factory_(this) {}
 
   virtual ~BluetoothOutOfBandClientImpl() {}
 
@@ -141,11 +141,13 @@ class BluetoothOutOfBandClientImpl: public BluetoothOutOfBandClient {
     callback.Run(response != NULL);
   }
 
+  dbus::Bus* bus_;
+
   // Weak pointer factory for generating 'this' pointers that might live longer
   // than we do.
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<BluetoothOutOfBandClientImpl> weak_ptr_factory_;
-
-  dbus::Bus* bus_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothOutOfBandClientImpl);
 };

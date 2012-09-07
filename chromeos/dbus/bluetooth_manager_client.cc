@@ -35,8 +35,8 @@ BluetoothManagerClient::Properties::~Properties() {
 class BluetoothManagerClientImpl : public BluetoothManagerClient {
  public:
   explicit BluetoothManagerClientImpl(dbus::Bus* bus)
-      : weak_ptr_factory_(this),
-        object_proxy_(NULL) {
+      : object_proxy_(NULL),
+        weak_ptr_factory_(this) {
     DVLOG(1) << "Creating BluetoothManagerClientImpl";
 
     // Create the object proxy.
@@ -254,10 +254,6 @@ class BluetoothManagerClientImpl : public BluetoothManagerClient {
     callback.Run(object_path, success);
   }
 
-  // Weak pointer factory for generating 'this' pointers that might live longer
-  // than we do.
-  base::WeakPtrFactory<BluetoothManagerClientImpl> weak_ptr_factory_;
-
   // D-Bus proxy for BlueZ Manager interface.
   dbus::ObjectProxy* object_proxy_;
 
@@ -266,6 +262,12 @@ class BluetoothManagerClientImpl : public BluetoothManagerClient {
 
   // List of observers interested in event notifications from us.
   ObserverList<Observer> observers_;
+
+  // Weak pointer factory for generating 'this' pointers that might live longer
+  // than we do.
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<BluetoothManagerClientImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothManagerClientImpl);
 };

@@ -146,11 +146,14 @@ class FlimflamClientHelper {
   void OnError(const ErrorCallback& error_callback,
                dbus::ErrorResponse* response);
 
-  base::WeakPtrFactory<FlimflamClientHelper> weak_ptr_factory_;
   // TODO(hashimoto): Remove this when we no longer need to make blocking calls.
   BlockingMethodCaller blocking_method_caller_;
   dbus::ObjectProxy* proxy_;
   PropertyChangedHandler property_changed_handler_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<FlimflamClientHelper> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FlimflamClientHelper);
 };

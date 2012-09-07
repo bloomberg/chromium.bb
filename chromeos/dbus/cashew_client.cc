@@ -88,8 +88,11 @@ class CashewClientImpl : public CashewClient {
   }
 
   dbus::ObjectProxy* proxy_;
-  base::WeakPtrFactory<CashewClientImpl> weak_ptr_factory_;
   DataPlansUpdateHandler data_plans_update_handler_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<CashewClientImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CashewClientImpl);
 };

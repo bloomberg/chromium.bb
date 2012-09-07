@@ -15,9 +15,9 @@ namespace chromeos {
 
 FlimflamClientHelper::FlimflamClientHelper(dbus::Bus* bus,
                                            dbus::ObjectProxy* proxy)
-    : weak_ptr_factory_(this),
-      blocking_method_caller_(bus, proxy),
-      proxy_(proxy) {
+    : blocking_method_caller_(bus, proxy),
+      proxy_(proxy),
+      weak_ptr_factory_(this) {
 }
 
 FlimflamClientHelper::~FlimflamClientHelper() {

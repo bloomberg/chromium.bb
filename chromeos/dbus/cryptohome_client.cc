@@ -30,8 +30,8 @@ class CryptohomeClientImpl : public CryptohomeClient {
       : proxy_(bus->GetObjectProxy(
             cryptohome::kCryptohomeServiceName,
             dbus::ObjectPath(cryptohome::kCryptohomeServicePath))),
-        weak_ptr_factory_(this),
-        blocking_method_caller_(bus, proxy_) {
+        blocking_method_caller_(bus, proxy_),
+        weak_ptr_factory_(this) {
     proxy_->ConnectToSignal(
         cryptohome::kCryptohomeInterface,
         cryptohome::kSignalAsyncCallStatus,
@@ -424,9 +424,12 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   dbus::ObjectProxy* proxy_;
-  base::WeakPtrFactory<CryptohomeClientImpl> weak_ptr_factory_;
   BlockingMethodCaller blocking_method_caller_;
   AsyncCallStatusHandler async_call_status_handler_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<CryptohomeClientImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CryptohomeClientImpl);
 };
@@ -435,10 +438,10 @@ class CryptohomeClientImpl : public CryptohomeClient {
 class CryptohomeClientStubImpl : public CryptohomeClient {
  public:
   CryptohomeClientStubImpl()
-      : weak_ptr_factory_(this),
-        async_call_id_(1),
+      : async_call_id_(1),
         tpm_is_ready_counter_(0),
-        locked_(false) {
+        locked_(false),
+        weak_ptr_factory_(this) {
   }
 
   virtual ~CryptohomeClientStubImpl() {}
@@ -647,12 +650,12 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
     ++async_call_id_;
   }
 
-  base::WeakPtrFactory<CryptohomeClientStubImpl> weak_ptr_factory_;
   int async_call_id_;
   AsyncCallStatusHandler async_call_status_handler_;
   int tpm_is_ready_counter_;
   std::map<std::string, std::vector<uint8> > install_attrs_;
   bool locked_;
+  base::WeakPtrFactory<CryptohomeClientStubImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CryptohomeClientStubImpl);
 };

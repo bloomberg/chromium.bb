@@ -500,6 +500,9 @@ class PowerManagerClientImpl : public PowerManagerClient {
   dbus::ObjectProxy* power_manager_proxy_;
   dbus::ObjectProxy* session_manager_proxy_;
   ObserverList<Observer> observers_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<PowerManagerClientImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerManagerClientImpl);

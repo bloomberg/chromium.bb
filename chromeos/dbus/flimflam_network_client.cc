@@ -120,6 +120,8 @@ class FlimflamNetworkClientStubImpl : public FlimflamNetworkClient {
     callback.Run(DBUS_METHOD_CALL_SUCCESS, dictionary);
   }
 
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<FlimflamNetworkClientStubImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FlimflamNetworkClientStubImpl);

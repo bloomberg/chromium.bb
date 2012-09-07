@@ -164,6 +164,8 @@ class FlimflamProfileClientStubImpl : public FlimflamProfileClient {
     callback.Run(DBUS_METHOD_CALL_SUCCESS, dictionary);
   }
 
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<FlimflamProfileClientStubImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FlimflamProfileClientStubImpl);

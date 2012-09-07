@@ -245,8 +245,11 @@ class FlimflamIPConfigClientStubImpl : public FlimflamIPConfigClient {
     callback.Run(DBUS_METHOD_CALL_SUCCESS, properties_);
   }
 
-  base::WeakPtrFactory<FlimflamIPConfigClientStubImpl> weak_ptr_factory_;
   base::DictionaryValue properties_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<FlimflamIPConfigClientStubImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FlimflamIPConfigClientStubImpl);
 };

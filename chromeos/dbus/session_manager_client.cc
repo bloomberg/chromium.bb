@@ -323,6 +323,9 @@ class SessionManagerClientImpl : public SessionManagerClient {
   dbus::ObjectProxy* session_manager_proxy_;
   ObserverList<Observer> observers_;
   bool screen_locked_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<SessionManagerClientImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionManagerClientImpl);

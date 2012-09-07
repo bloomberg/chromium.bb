@@ -98,6 +98,9 @@ class SpeechSynthesizerClientImpl : public SpeechSynthesizerClient {
   }
 
   dbus::ObjectProxy* proxy_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<SpeechSynthesizerClientImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SpeechSynthesizerClientImpl);

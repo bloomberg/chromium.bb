@@ -373,9 +373,12 @@ class FlimflamDeviceClientStubImpl : public FlimflamDeviceClient {
                                      base::Bind(callback, status));
   }
 
-  base::WeakPtrFactory<FlimflamDeviceClientStubImpl> weak_ptr_factory_;
   // Dictionary of <device_name, Dictionary>.
   base::DictionaryValue stub_devices_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<FlimflamDeviceClientStubImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FlimflamDeviceClientStubImpl);
 };
