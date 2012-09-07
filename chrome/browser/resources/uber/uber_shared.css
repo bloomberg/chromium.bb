@@ -152,6 +152,7 @@ body.uber-frame section > div:only-of-type {
   background-image: url('chrome://theme/IDR_MANAGED');
   background-position: 5px center;
   background-repeat: no-repeat;
+  background-size: 16px;
   display: block;
   line-height: 24px;
   padding-left: 26px;
