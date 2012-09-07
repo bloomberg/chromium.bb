@@ -20,8 +20,16 @@ import stat
 import subprocess
 import sys
 
-import isolate_common
-import merge_isolate
+# TODO(maruel): These two modules will be merged back here.
+# TODO(maruel): Remove the pylint too, KEY_FOO are temporarily unused.
+# pylint: disable=W0611
+from isolate_common import get_flavor, PATH_VARIABLES, default_blacklist
+from isolate_common import split_touched, generate_isolate, pretty_print
+from isolate_common import KEY_TRACKED, KEY_UNTRACKED, KEY_TOUCHED
+from merge_isolate import load_isolate_as_config, print_all, DEFAULT_OSES
+from merge_isolate import extract_comment, union, convert_map_to_isolate_dict
+from merge_isolate import reduce_inputs, invert_map, eval_content
+
 import trace_inputs
 import run_test_from_archive
 
@@ -155,13 +163,7 @@ def eval_variables(item, variables):
       replace_variable(p, variables) for p in re.split(r'(<\([A-Z_]+\))', item))
 
 
-def indent(data, indent_length):
-  """Indents text."""
-  spacing = ' ' * indent_length
-  return ''.join(spacing + l for l in str(data).splitlines(True))
-
-
-def load_isolate(content):
+def load_isolate_for_flavor(content, flavor):
   """Loads the .isolate file and returns the information unprocessed.
 
   Returns the command, dependencies and read_only flag. The dependencies are
@@ -169,9 +171,7 @@ def load_isolate(content):
   """
   # Load the .isolate file, process its conditions, retrieve the command and
   # dependencies.
-  configs = merge_isolate.load_gyp(
-      merge_isolate.eval_content(content), None, merge_isolate.DEFAULT_OSES)
-  flavor = isolate_common.get_flavor()
+  configs = load_isolate_as_config(eval_content(content), None, DEFAULT_OSES)
   config = configs.per_os.get(flavor) or configs.per_os.get(None)
   if not config:
     raise ExecutionError('Failed to load configuration for \'%s\'' % flavor)
@@ -208,7 +208,7 @@ def process_input(filepath, prevdict, level, read_only):
   out = {}
   if prevdict.get('touched_only') == True:
     # The file's content is ignored. Skip the time and hard code mode.
-    if isolate_common.get_flavor() != 'win':
+    if get_flavor() != 'win':
       out['mode'] = stat.S_IRUSR | stat.S_IRGRP
     out['size'] = 0
     out['sha-1'] = SHA_1_NULL
@@ -218,7 +218,7 @@ def process_input(filepath, prevdict, level, read_only):
   if level >= STATS_ONLY:
     filestats = os.lstat(filepath)
     is_link = stat.S_ISLNK(filestats.st_mode)
-    if isolate_common.get_flavor() != 'win':
+    if get_flavor() != 'win':
       # Ignore file mode on Windows since it's not really useful there.
       filemode = stat.S_IMODE(filestats.st_mode)
       # Remove write access for group and all access to 'others'.
@@ -338,6 +338,9 @@ def determine_root_dir(relative_root, infiles):
   return deepest_root
 
 
+### Internal state files.
+
+
 def process_variables(variables, relative_base_dir):
   """Processes path variables as a special case and returns a copy of the dict.
 
@@ -345,7 +348,7 @@ def process_variables(variables, relative_base_dir):
   to an absolute path, then sets it as relative to relative_base_dir.
   """
   variables = variables.copy()
-  for i in isolate_common.PATH_VARIABLES:
+  for i in PATH_VARIABLES:
     if i not in variables:
       continue
     variable = os.path.normpath(variables[i])
@@ -526,7 +529,8 @@ class CompleteState(object):
     with open(isolate_file, 'r') as f:
       # At that point, variables are not replaced yet in command and infiles.
       # infiles may contain directory entries and is in posix style.
-      command, infiles, touched, read_only = load_isolate(f.read())
+      command, infiles, touched, read_only = load_isolate_for_flavor(
+          f.read(), get_flavor())
     command = [eval_variables(i, self.saved_state.variables) for i in command]
     infiles = [eval_variables(f, self.saved_state.variables) for f in infiles]
     touched = [eval_variables(f, self.saved_state.variables) for f in touched]
@@ -599,6 +603,11 @@ class CompleteState(object):
     return os.path.dirname(self.result_file)
 
   def __str__(self):
+    def indent(data, indent_length):
+      """Indents text."""
+      spacing = ' ' * indent_length
+      return ''.join(spacing + l for l in str(data).splitlines(True))
+
     out = '%s(\n' % self.__class__.__name__
     out += '  root_dir: %s\n' % self.root_dir
     out += '  result: %s\n' % indent(self.result, 2)
@@ -640,7 +649,7 @@ def load_complete_state(options, level):
   return complete_state
 
 
-def read(complete_state):
+def read_trace_as_isolate_dict(complete_state):
   """Reads a trace and returns the .isolate dictionary."""
   api = trace_inputs.get_api()
   logfile = complete_state.result_file + '.log'
@@ -649,9 +658,9 @@ def read(complete_state):
         'No log file \'%s\' to read, did you forget to \'trace\'?' % logfile)
   try:
     results = trace_inputs.load_trace(
-        logfile, complete_state.root_dir, api, isolate_common.default_blacklist)
-    tracked, touched = isolate_common.split_touched(results.existent)
-    value = isolate_common.generate_isolate(
+        logfile, complete_state.root_dir, api, default_blacklist)
+    tracked, touched = split_touched(results.existent)
+    value = generate_isolate(
         tracked,
         [],
         touched,
@@ -667,26 +676,23 @@ def read(complete_state):
 
 def merge(complete_state):
   """Reads a trace and merges it back into the source .isolate file."""
-  value = read(complete_state)
+  value = read_trace_as_isolate_dict(complete_state)
 
   # Now take that data and union it into the original .isolate file.
   with open(complete_state.saved_state.isolate_file, 'r') as f:
     prev_content = f.read()
-  prev_config = merge_isolate.load_gyp(
-      merge_isolate.eval_content(prev_content),
-      merge_isolate.extract_comment(prev_content),
-      merge_isolate.DEFAULT_OSES)
-  new_config = merge_isolate.load_gyp(
-      value,
-      '',
-      merge_isolate.DEFAULT_OSES)
-  config = merge_isolate.union(prev_config, new_config)
+  prev_config = load_isolate_as_config(
+      eval_content(prev_content),
+      extract_comment(prev_content),
+      DEFAULT_OSES)
+  new_config = load_isolate_as_config(value, '', DEFAULT_OSES)
+  config = union(prev_config, new_config)
   # pylint: disable=E1103
-  data = merge_isolate.convert_map_to_gyp(
-      *merge_isolate.reduce_inputs(*merge_isolate.invert_map(config.flatten())))
+  data = convert_map_to_isolate_dict(
+      *reduce_inputs(*invert_map(config.flatten())))
   print 'Updating %s' % complete_state.saved_state.isolate_file
   with open(complete_state.saved_state.isolate_file, 'wb') as f:
-    merge_isolate.print_all(config.file_comment, data, f)
+    print_all(config.file_comment, data, f)
 
 
 def CMDcheck(args):
@@ -784,8 +790,8 @@ def CMDread(args):
   parser = OptionParserIsolate(command='read', require_result=False)
   options, _ = parser.parse_args(args)
   complete_state = load_complete_state(options, NO_INFO)
-  value = read(complete_state)
-  isolate_common.pretty_print(value, sys.stdout)
+  value = read_trace_as_isolate_dict(complete_state)
+  pretty_print(value, sys.stdout)
   return 0
 
 
@@ -958,7 +964,7 @@ class OptionParserIsolate(OptionParserWithLogging):
   """Adds automatic --isolate, --result, --out and --variables handling."""
   def __init__(self, require_result=True, *args, **kwargs):
     OptionParserWithLogging.__init__(self, *args, **kwargs)
-    default_variables = [('OS', isolate_common.get_flavor())]
+    default_variables = [('OS', get_flavor())]
     if sys.platform in ('win32', 'cygwin'):
       default_variables.append(('EXECUTABLE_SUFFIX', '.exe'))
     else:

@@ -20,9 +20,10 @@ class Isolate(unittest.TestCase):
     # Everything should work even from another directory.
     os.chdir(os.path.dirname(ROOT_DIR))
 
-  def test_load_isolate_empty(self):
+  def test_load_isolate_for_flavor_empty(self):
     content = "{}"
-    command, infiles, touched, read_only = isolate.load_isolate(content)
+    command, infiles, touched, read_only = isolate.load_isolate_for_flavor(
+        content, isolate.get_flavor())
     self.assertEquals([], command)
     self.assertEquals([], infiles)
     self.assertEquals([], touched)

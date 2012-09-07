@@ -279,8 +279,8 @@ def reduce_inputs(values, oses):
   return out, oses
 
 
-def convert_map_to_gyp(values, oses):
-  """Regenerates back a gyp-like configuration dict from files and dirs
+def convert_map_to_isolate_dict(values, oses):
+  """Regenerates back a .isolate configuration dict from files and dirs
   mappings generated from reduce_inputs().
   """
   # First, inverse the mapping to make it dict first.
@@ -330,10 +330,10 @@ def convert_map_to_gyp(values, oses):
   return out
 
 
-def load_gyp(value, file_comment, default_oses):
-  """Parses one gyp skeleton and returns a Configs() instance.
+def load_isolate_as_config(value, file_comment, default_oses):
+  """Parses one .isolate file and returns a Configs() instance.
 
-  |value| is the loaded dictionary that was defined in the gyp file.
+  |value| is the loaded dictionary that was defined in the .isolate file.
 
   The expected format is strict, anything diverting from the format below will
   throw an assert:
@@ -385,10 +385,10 @@ def load_gyp(value, file_comment, default_oses):
   return configs
 
 
-def load_gyps(items, default_oses):
-  """Parses each gyp file and returns the merged results.
+def load_isolates(items, default_oses):
+  """Parses each .isolate file and returns the merged results.
 
-  It only loads what load_gyp() can process.
+  It only loads what load_isolate_as_config() can process.
 
   Return values:
     files: dict(filename, set(OS where this filename is a dependency))
@@ -400,7 +400,7 @@ def load_gyps(items, default_oses):
     logging.debug('loading %s' % item)
     with open(item, 'r') as f:
       content = f.read()
-    new_config = load_gyp(
+    new_config = load_isolate_as_config(
         eval_content(content), extract_comment(content), default_oses)
     logging.debug('has OSes: %s' % ','.join(k for k in new_config.per_os if k))
     configs = union(configs, new_config)
@@ -434,8 +434,9 @@ def main(args=None):
         level=level,
         format='%(levelname)5s %(module)15s(%(lineno)3d):%(message)s')
 
-  configs = load_gyps(args, options.os.split(','))
-  data = convert_map_to_gyp(*reduce_inputs(*invert_map(configs.flatten())))
+  configs = load_isolates(args, options.os.split(','))
+  data = convert_map_to_isolate_dict(
+      *reduce_inputs(*invert_map(configs.flatten())))
   if options.output:
     with open(options.output, 'wb') as f:
       print_all(configs.file_comment, data, f)

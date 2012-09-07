@@ -15,7 +15,7 @@ import os
 import sys
 import time
 
-import isolate_common
+import isolate_common as isolate  # TODO(maruel): Remove references to isolate.
 import run_test_cases
 import trace_inputs
 
@@ -95,7 +95,7 @@ def trace_test_cases(
   print ''
   print '%.1fs Done post-processing logs. Parsing logs.' % (
       time.time() - progress.start)
-  results = api.parse_log(logname, isolate_common.default_blacklist)
+  results = api.parse_log(logname, isolate.default_blacklist)
   print '%.1fs Done parsing logs.' % (
       time.time() - progress.start)
 
@@ -121,7 +121,7 @@ def trace_test_cases(
         tracename = test_case.replace('/', '-')
         flattened[test_case] = results_processed[tracename].copy()
         item_results = flattened[test_case]['results']
-        tracked, touched = isolate_common.split_touched(item_results.existent)
+        tracked, touched = isolate.split_touched(item_results.existent)
         flattened[test_case].update({
             'processes': len(list(item_results.process.all)),
             'results': item_results.flatten(),
@@ -129,7 +129,7 @@ def trace_test_cases(
             'returncode': item['returncode'],
             'valid': item['valid'],
             'variables':
-              isolate_common.generate_simplified(
+              isolate.generate_simplified(
                   tracked,
                   [],
                   touched,
@@ -154,8 +154,8 @@ def trace_test_cases(
     files.update((f.full_path, f) for f in item['results'].existent)
   # Convert back to a list, discard the keys.
   files = files.values()
-  tracked, touched = isolate_common.split_touched(files)
-  value = isolate_common.generate_isolate(
+  tracked, touched = isolate.split_touched(files)
+  value = isolate.generate_isolate(
       tracked,
       [],
       touched,
@@ -163,13 +163,13 @@ def trace_test_cases(
       variables,
       cwd_dir)
   with open('%s.isolate' % output_file, 'wb') as f:
-    isolate_common.pretty_print(value, f)
+    isolate.pretty_print(value, f)
   return 0
 
 
 def main():
   """CLI frontend to validate arguments."""
-  default_variables = [('OS', isolate_common.get_flavor())]
+  default_variables = [('OS', isolate.get_flavor())]
   if sys.platform in ('win32', 'cygwin'):
     default_variables.append(('EXECUTABLE_SUFFIX', '.exe'))
   else:

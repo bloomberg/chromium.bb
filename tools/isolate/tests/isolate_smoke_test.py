@@ -148,7 +148,7 @@ class IsolateBase(unittest.TestCase):
   @staticmethod
   def _isolate_dict_to_string(values):
     buf = cStringIO.StringIO()
-    isolate.isolate_common.pretty_print(values, buf)
+    isolate.pretty_print(values, buf)
     return buf.getvalue()
 
   @classmethod
@@ -160,7 +160,7 @@ class IsolateBase(unittest.TestCase):
     return cls._isolate_dict_to_string(
         {
           'conditions': [
-            ['OS=="%s"' % isolate.isolate_common.get_flavor(), {
+            ['OS=="%s"' % isolate.get_flavor(), {
               'variables': variables
             }],
           ],
@@ -203,7 +203,7 @@ class IsolateModeBase(IsolateBase):
         is_link = stat.S_ISLNK(filestats.st_mode)
         if not is_link:
           v[u'size'] = filestats.st_size
-          if isolate.isolate_common.get_flavor() != 'win':
+          if isolate.get_flavor() != 'win':
             v[u'mode'] = self._fix_file_mode(relfile, read_only)
         else:
           v[u'mode'] = 488
@@ -245,7 +245,7 @@ class IsolateModeBase(IsolateBase):
     self.assertEquals(expected, json.load(open(self.result, 'r')))
 
   def _expected_saved_state(self, extra_vars):
-    flavor = isolate.isolate_common.get_flavor()
+    flavor = isolate.get_flavor()
     expected = {
       u'isolate_file': unicode(self.filename()),
       u'variables': {
@@ -685,7 +685,7 @@ class Isolate_trace_read_merge(IsolateModeBase):
     self._expect_results(['fail.py'], None, None, None)
     expected = self._wrap_in_condition(
         {
-          isolate.isolate_common.KEY_TRACKED: [
+          isolate.KEY_TRACKED: [
             'fail.py',
           ],
         })
@@ -747,17 +747,17 @@ class Isolate_trace_read_merge(IsolateModeBase):
     self._expect_results(
         ['touch_only.py', 'trace'], None, {u'FLAG': u'trace'}, empty)
     expected = {
-      isolate.isolate_common.KEY_TRACKED: [
+      isolate.KEY_TRACKED: [
         'touch_only.py',
       ],
-      isolate.isolate_common.KEY_TOUCHED: [
+      isolate.KEY_TOUCHED: [
         # Note that .isolate format mandates / and not os.path.sep.
         'files1/test_file1.txt',
       ],
     }
     if sys.platform != 'linux2':
       # TODO(maruel): Implement touch-only tracing on non-linux.
-      del expected[isolate.isolate_common.KEY_TOUCHED]
+      del expected[isolate.KEY_TOUCHED]
 
     out = self._execute('read', 'touch_only.isolate', [], True)
     self.assertEquals(self._wrap_in_condition(expected), out)
@@ -770,7 +770,7 @@ class Isolate_trace_read_merge(IsolateModeBase):
     self._expect_results(['touch_root.py'], None, None, None)
     expected = self._wrap_in_condition(
         {
-          isolate.isolate_common.KEY_TRACKED: [
+          isolate.KEY_TRACKED: [
             '../../isolate.py',
             'touch_root.py',
           ],
@@ -787,10 +787,10 @@ class Isolate_trace_read_merge(IsolateModeBase):
     self._expect_results(
         ['with_flag.py', 'trace'], None, {u'FLAG': u'trace'}, None)
     expected = {
-      isolate.isolate_common.KEY_TRACKED: [
+      isolate.KEY_TRACKED: [
         'with_flag.py',
       ],
-      isolate.isolate_common.KEY_UNTRACKED: [
+      isolate.KEY_UNTRACKED: [
         # Note that .isolate format mandates / and not os.path.sep.
         'files1/',
       ],
@@ -807,10 +807,10 @@ class Isolate_trace_read_merge(IsolateModeBase):
       self._expect_no_tree()
       self._expect_results(['symlink_full.py'], None, None, None)
       expected = {
-        isolate.isolate_common.KEY_TRACKED: [
+        isolate.KEY_TRACKED: [
           'symlink_full.py',
         ],
-        isolate.isolate_common.KEY_UNTRACKED: [
+        isolate.KEY_UNTRACKED: [
           # Note that .isolate format mandates / and not os.path.sep.
           'files2/',
         ],
@@ -826,10 +826,10 @@ class Isolate_trace_read_merge(IsolateModeBase):
       self._expect_no_tree()
       self._expect_results(['symlink_partial.py'], None, None, None)
       expected = {
-        isolate.isolate_common.KEY_TRACKED: [
+        isolate.KEY_TRACKED: [
           'symlink_partial.py',
         ],
-        isolate.isolate_common.KEY_UNTRACKED: [
+        isolate.KEY_UNTRACKED: [
           'files2/test_file2.txt',
         ],
       }
@@ -959,7 +959,7 @@ class IsolateNoOutdir(IsolateBase):
     # because add the needed information is in the .state file.
     output = self._execute('read', [], True)
     expected = {
-      isolate.isolate_common.KEY_TRACKED: [
+      isolate.KEY_TRACKED: [
         '../../isolate.py',
         'touch_root.py',
       ],

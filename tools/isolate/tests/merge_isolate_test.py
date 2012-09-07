@@ -57,10 +57,11 @@ class MergeGyp(unittest.TestCase):
     except NameError:
       pass
 
-  def test_load_gyp_empty(self):
-    self.assertEquals({}, merge_isolate.load_gyp({}, None, []).flatten())
+  def test_load_isolate_as_config_empty(self):
+    self.assertEquals({}, merge_isolate.load_isolate_as_config(
+      {}, None, []).flatten())
 
-  def test_load_gyp(self):
+  def test_load_isolate_as_config(self):
     value = {
       'variables': {
         KEY_TRACKED: ['a'],
@@ -130,9 +131,10 @@ class MergeGyp(unittest.TestCase):
       },
     }
     self.assertEquals(
-        expected, merge_isolate.load_gyp(value, None, []).flatten())
+        expected, merge_isolate.load_isolate_as_config(
+          value, None, []).flatten())
 
-  def test_load_gyp_duplicate_command(self):
+  def test_load_isolate_as_config_duplicate_command(self):
     value = {
       'variables': {
         'command': ['rm', '-rf', '/'],
@@ -146,12 +148,12 @@ class MergeGyp(unittest.TestCase):
       ],
     }
     try:
-      merge_isolate.load_gyp(value, None, [])
+      merge_isolate.load_isolate_as_config(value, None, [])
       self.fail()
     except AssertionError:
       pass
 
-  def test_load_gyp_no_condition(self):
+  def test_load_isolate_as_config_no_condition(self):
     value = {
       'variables': {
         KEY_TRACKED: ['a'],
@@ -162,7 +164,7 @@ class MergeGyp(unittest.TestCase):
       KEY_TRACKED: ['a'],
       KEY_UNTRACKED: ['b'],
     }
-    actual = merge_isolate.load_gyp(value, None, [])
+    actual = merge_isolate.load_isolate_as_config(value, None, [])
     # Flattening the whole config will discard 'None'.
     self.assertEquals({}, actual.flatten())
     self.assertEquals([None], actual.per_os.keys())
@@ -341,7 +343,7 @@ class MergeGyp(unittest.TestCase):
     self.assertEquals(expected_values, actual_values)
     self.assertEquals(oses, actual_oses)
 
-  def test_convert_map_to_gyp(self):
+  def test_convert_map_to_isolate_as_config(self):
     values = {
       'command': {
         ('echo', 'Hello World'): set(['atari']),
@@ -409,7 +411,8 @@ class MergeGyp(unittest.TestCase):
         }],
       ],
     }
-    self.assertEquals(expected, merge_isolate.convert_map_to_gyp(values, oses))
+    self.assertEquals(
+        expected, merge_isolate.convert_map_to_isolate_dict(values, oses))
 
   def test_merge_two_empty(self):
     # Flat stay flat. Pylint is confused about union() return type.
@@ -417,13 +420,13 @@ class MergeGyp(unittest.TestCase):
     actual = merge_isolate.union(
         merge_isolate.union(
           merge_isolate.Configs([], None),
-          merge_isolate.load_gyp({}, None, [])),
-        merge_isolate.load_gyp({}, None, [])).flatten()
+          merge_isolate.load_isolate_as_config({}, None, [])),
+        merge_isolate.load_isolate_as_config({}, None, [])).flatten()
     self.assertEquals({}, actual)
 
   def test_merge_empty(self):
-    actual = merge_isolate.convert_map_to_gyp(*merge_isolate.reduce_inputs(
-        *merge_isolate.invert_map({})))
+    actual = merge_isolate.convert_map_to_isolate_dict(
+        *merge_isolate.reduce_inputs(*merge_isolate.invert_map({})))
     self.assertEquals({}, actual)
 
   def test_load_two_conditions(self):
@@ -464,8 +467,8 @@ class MergeGyp(unittest.TestCase):
     configs = merge_isolate.union(
         merge_isolate.union(
           merge_isolate.Configs([], None),
-          merge_isolate.load_gyp(linux, None, [])),
-        merge_isolate.load_gyp(mac, None, [])).flatten()
+          merge_isolate.load_isolate_as_config(linux, None, [])),
+        merge_isolate.load_isolate_as_config(mac, None, [])).flatten()
     self.assertEquals(expected, configs)
 
   def test_load_three_conditions(self):
@@ -522,9 +525,9 @@ class MergeGyp(unittest.TestCase):
         merge_isolate.union(
           merge_isolate.union(
             merge_isolate.Configs([], None),
-            merge_isolate.load_gyp(linux, None, [])),
-          merge_isolate.load_gyp(mac, None, [])),
-        merge_isolate.load_gyp(win, None, [])).flatten()
+            merge_isolate.load_isolate_as_config(linux, None, [])),
+          merge_isolate.load_isolate_as_config(mac, None, [])),
+        merge_isolate.load_isolate_as_config(win, None, [])).flatten()
     self.assertEquals(expected, configs)
 
   def test_merge_three_conditions(self):
@@ -569,7 +572,8 @@ class MergeGyp(unittest.TestCase):
         }],
       ],
     }
-    actual = merge_isolate.convert_map_to_gyp(*merge_isolate.reduce_inputs(
+    actual = merge_isolate.convert_map_to_isolate_dict(
+        *merge_isolate.reduce_inputs(
       *merge_isolate.invert_map(values)))
     self.assertEquals(expected, actual)
 
@@ -577,19 +581,21 @@ class MergeGyp(unittest.TestCase):
     # Pylint is confused with merge_isolate.union() return type.
     # pylint: disable=E1103
     configs = merge_isolate.union(
-        merge_isolate.load_gyp({}, '# Yo dawg!\n# Chill out.\n', []),
-        merge_isolate.load_gyp({}, None, []))
+        merge_isolate.load_isolate_as_config(
+          {}, '# Yo dawg!\n# Chill out.\n', []),
+        merge_isolate.load_isolate_as_config({}, None, []))
     self.assertEquals('# Yo dawg!\n# Chill out.\n', configs.file_comment)
 
     configs = merge_isolate.union(
-        merge_isolate.load_gyp({}, None, []),
-        merge_isolate.load_gyp({}, '# Yo dawg!\n# Chill out.\n', []))
+        merge_isolate.load_isolate_as_config({}, None, []),
+        merge_isolate.load_isolate_as_config(
+          {}, '# Yo dawg!\n# Chill out.\n', []))
     self.assertEquals('# Yo dawg!\n# Chill out.\n', configs.file_comment)
 
     # Only keep the first one.
     configs = merge_isolate.union(
-        merge_isolate.load_gyp({}, '# Yo dawg!\n', []),
-        merge_isolate.load_gyp({}, '# Chill out.\n', []))
+        merge_isolate.load_isolate_as_config({}, '# Yo dawg!\n', []),
+        merge_isolate.load_isolate_as_config({}, '# Chill out.\n', []))
     self.assertEquals('# Yo dawg!\n', configs.file_comment)
 
   def test_extract_comment(self):
