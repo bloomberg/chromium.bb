@@ -12,6 +12,8 @@
 #include "base/win/metro.h"
 #endif
 
+int MetroPinTabHelper::kUserDataKey;
+
 MetroPinTabHelper::MetroPinTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       is_pinned_(false) {}

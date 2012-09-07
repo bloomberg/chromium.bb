@@ -5,13 +5,16 @@
 #ifndef CHROME_BROWSER_UI_METRO_PIN_TAB_HELPER_H_
 #define CHROME_BROWSER_UI_METRO_PIN_TAB_HELPER_H_
 
+#include "chrome/browser/tab_contents/web_contents_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
 
 // Per-tab class to help manage metro pinning.
-class MetroPinTabHelper : public content::WebContentsObserver {
+class MetroPinTabHelper : public content::WebContentsObserver,
+                          public WebContentsUserData<MetroPinTabHelper> {
  public:
   explicit MetroPinTabHelper(content::WebContents* tab_contents);
   virtual ~MetroPinTabHelper();
+  static int kUserDataKey;
 
   bool is_pinned() const { return is_pinned_; }
 

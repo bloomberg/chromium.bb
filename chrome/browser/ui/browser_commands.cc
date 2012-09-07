@@ -609,7 +609,7 @@ bool CanBookmarkAllTabs(const Browser* browser) {
 }
 
 void TogglePagePinnedToStartScreen(Browser* browser) {
-  GetActiveTabContents(browser)->metro_pin_tab_helper()->
+  MetroPinTabHelper::FromWebContents(GetActiveWebContents(browser))->
       TogglePinnedToStartScreen();
 }
 

@@ -287,10 +287,12 @@ string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
     }
     case IDC_PIN_TO_START_SCREEN: {
       int string_id = IDS_PIN_TO_START_SCREEN;
-      TabContents* tab_contents = chrome::GetActiveTabContents(browser_);
-      if (tab_contents && tab_contents->metro_pin_tab_helper()->is_pinned()) {
+      WebContents* web_contents = chrome::GetActiveWebContents(browser_);
+      MetroPinTabHelper* tab_helper =
+          web_contents ? MetroPinTabHelper::FromWebContents(web_contents)
+                       : NULL;
+      if (tab_helper && tab_helper->is_pinned())
         string_id = IDS_UNPIN_FROM_START_SCREEN;
-      }
       return l10n_util::GetStringUTF16(string_id);
     }
     default:
