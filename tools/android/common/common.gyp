@@ -7,6 +7,7 @@
     {
       'target_name': 'android_tools_common',
       'type': '<(library)',
+      'toolsets': ['host', 'target'],
       'include_dirs': [
         '..',
         '../../..',
