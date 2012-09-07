@@ -229,14 +229,10 @@ void ContentSettingsStore::ClearContentSettingsForExtension(
   {
     base::AutoLock lock(lock_);
     OriginIdentifierValueMap* map = GetValueMap(ext_id, scope);
-    // TODO(bauerb): This is for debugging http://crbug.com/128652.
-    // Remove once the bug is fixed.
     if (!map) {
-      char ext_id_buffer[33];
-      base::strlcpy(ext_id_buffer, ext_id.c_str(), sizeof(ext_id_buffer));
-      base::debug::Alias(ext_id_buffer);
-      // Do a clean crash.
-      CHECK(false);
+      // Fail gracefully in Release builds.
+      NOTREACHED();
+      return;
     }
     notify = !map->empty();
     map->clear();
