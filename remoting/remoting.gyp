@@ -1452,6 +1452,8 @@
         'host/config_file_watcher.h',
         'host/curtain_mode_mac.h',
         'host/curtain_mode_mac.cc',
+        'host/posix/signal_handler.cc',
+        'host/posix/signal_handler.h',
         'host/remoting_me2me_host.cc',
         'host/usage_stats_consent.h',
         'host/usage_stats_consent_win.cc',

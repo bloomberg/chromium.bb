@@ -288,12 +288,14 @@ class Desktop:
 
   def launch_host(self, host_config):
     # Start remoting host
-    args = [locate_executable(HOST_BINARY_NAME),
-            "--host-config=%s" % (host_config.path)]
-    self.host_proc = subprocess.Popen(args, env=self.child_env)
+    args = [locate_executable(HOST_BINARY_NAME), "--host-config=/dev/stdin"]
+    self.host_proc = subprocess.Popen(args, env=self.child_env,
+                                      stdin=subprocess.PIPE)
     logging.info(args)
     if not self.host_proc.pid:
       raise Exception("Could not start Chrome Remote Desktop host")
+    self.host_proc.stdin.write(json.dumps(host_config.data))
+    self.host_proc.stdin.close()
 
 
 class PidFile:
@@ -515,19 +517,24 @@ def cleanup():
   g_desktops = []
 
 
-def reload_config():
-  for desktop in g_desktops:
-    if desktop.host_proc:
-      desktop.host_proc.send_signal(signal.SIGHUP)
+class SignalHandler:
+  """Reload the config file on SIGHUP. Since we pass the configuration to the
+  host processes via stdin, they can't reload it, so terminate them. They will
+  be relaunched automatically with the new config."""
 
+  def __init__(self, host_config):
+    self.host_config = host_config
 
-def signal_handler(signum, _stackframe):
-  if signum == signal.SIGHUP:
-    logging.info("SIGHUP caught, reloading configuration.")
-    reload_config()
-  else:
-    # Exit cleanly so the atexit handler, cleanup(), gets called.
-    raise SystemExit
+  def __call__(self, signum, _stackframe):
+    if signum == signal.SIGHUP:
+      logging.info("SIGHUP caught, restarting host.")
+      self.host_config.load()
+      for desktop in g_desktops:
+        if desktop.host_proc:
+          desktop.host_proc.send_signal(signal.SIGTERM)
+    else:
+      # Exit cleanly so the atexit handler, cleanup(), gets called.
+      raise SystemExit
 
 
 def relaunch_self():
@@ -642,15 +649,15 @@ Web Store: https://chrome.google.com/remotedesktop"""
 
   atexit.register(cleanup)
 
+  config_filename = os.path.join(CONFIG_DIR, "host#%s.json" % host_hash)
+  host_config = Config(config_filename)
+
   for s in [signal.SIGHUP, signal.SIGINT, signal.SIGTERM, signal.SIGUSR1]:
-    signal.signal(s, signal_handler)
+    signal.signal(s, SignalHandler(host_config))
 
-  # Ensure full path to config directory exists.
-  if not os.path.exists(CONFIG_DIR):
-    os.makedirs(CONFIG_DIR, mode=0700)
-
-  host_config = Config(os.path.join(CONFIG_DIR, "host#%s.json" % host_hash))
-  host_config.load()
+  if (not host_config.load()):
+    print >> sys.stderr, "Failed to load " + config_filename
+    return 1
 
   auth = Authentication()
   auth_config_valid = auth.copy_from(host_config)

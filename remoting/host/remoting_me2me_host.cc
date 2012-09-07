@@ -56,6 +56,11 @@
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
 
+#if defined(OS_POSIX)
+#include <signal.h>
+#include "remoting/host/posix/signal_handler.h"
+#endif  // defined(OS_POSIX)
+
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -149,6 +154,15 @@ class HostProcess
     return true;
   }
 
+#if defined(OS_POSIX)
+  void SigTermHandler(int signal_number) {
+    DCHECK(signal_number == SIGTERM);
+    DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+    LOG(INFO) << "Caught SIGTERM: Shutting down...";
+    Shutdown(kSuccessExitCode);
+  }
+#endif
+
   virtual void OnConfigUpdated(const std::string& serialized_config) OVERRIDE {
     DCHECK(context_->ui_task_runner()->BelongsToCurrentThread());
 
@@ -213,12 +227,6 @@ class HostProcess
   void StartWatchingConfigChanges() {
 #if !defined(REMOTING_MULTI_PROCESS)
 
-#if defined(OS_POSIX)
-    // Ignore SIGHUP sent by the daemon controller since we use
-    // |ConfigFileWatcher| instead.
-    signal(SIGHUP, SIG_IGN);
-#endif  // defined(OS_POSIX)
-
     // Start watching the host configuration file.
     config_watcher_.reset(new ConfigFileWatcher(context_->ui_task_runner(),
                                                 context_->file_task_runner(),
@@ -226,6 +234,14 @@ class HostProcess
     config_watcher_->Watch(host_config_path_);
 #endif  // !defined(REMOTING_MULTI_PROCESS)
   }
+
+#if defined(OS_POSIX)
+  void ListenForShutdownSignal() {
+    remoting::RegisterSignalHandler(
+        SIGTERM,
+        base::Bind(&HostProcess::SigTermHandler, base::Unretained(this)));
+  }
+#endif  // OS_POSIX
 
   void CreateAuthenticatorFactory() {
     DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
@@ -260,6 +276,13 @@ class HostProcess
       OnConfigWatcherError();
       return;
     }
+
+#if defined(OS_POSIX)
+    context_->network_task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&HostProcess::ListenForShutdownSignal,
+                   base::Unretained(this)));
+#endif  // OS_POSIX
 
     StartWatchingConfigChanges();
   }
