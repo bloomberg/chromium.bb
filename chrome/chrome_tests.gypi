@@ -3007,6 +3007,7 @@
         'browser/ui/tab_modal_confirm_dialog_browsertest.cc',
         'browser/ui/tab_modal_confirm_dialog_browsertest.h',
         'browser/ui/views/ash/browser_non_client_frame_view_ash_browsertest.cc',
+        'browser/ui/views/autofill/autofill_external_delegate_views_browsertest.cc',
         'browser/ui/views/browser_actions_container_browsertest.cc',
         'browser/ui/views/constrained_window_views_browsertest.cc',
         'browser/ui/views/frame/app_non_client_frame_view_aura_browsertest.cc',
