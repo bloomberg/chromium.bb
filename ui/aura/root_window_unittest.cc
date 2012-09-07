@@ -742,4 +742,42 @@ TEST_F(RootWindowTest, DeleteWindowDuringDispatch) {
   EXPECT_FALSE(d11.got_event());
 }
 
+namespace {
+
+// A window delegate that detaches the parent of the target's parent window when
+// it receives a tap event.
+class DetachesParentOnTapDelegate : public test::TestWindowDelegate {
+ public:
+  DetachesParentOnTapDelegate() {}
+  virtual ~DetachesParentOnTapDelegate() {}
+
+ private:
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+    if (event->type() == ui::ET_GESTURE_TAP_DOWN)
+      return ui::ER_HANDLED;
+
+    if (event->type() == ui::ET_GESTURE_TAP) {
+      Window* parent = static_cast<Window*>(event->target())->parent();
+      parent->parent()->RemoveChild(parent);
+      return ui::ER_HANDLED;
+    }
+    return ui::ER_UNHANDLED;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(DetachesParentOnTapDelegate);
+};
+
+}  // namespace
+
+// Tests that the gesture recognizer is reset for all child windows when a
+// window hides. No expectations, just checks that the test does not crash.
+TEST_F(RootWindowTest, GestureRecognizerResetsTargetWhenParentHides) {
+  scoped_ptr<Window> w1(CreateWindow(1, root_window(), NULL));
+  DetachesParentOnTapDelegate delegate;
+  scoped_ptr<Window> parent(CreateWindow(22, w1.get(), NULL));
+  Window* child = CreateWindow(11, parent.get(), &delegate);
+  test::EventGenerator generator(root_window(), child);
+  generator.GestureTapAt(gfx::Point(40, 40));
+}
+
 }  // namespace aura

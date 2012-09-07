@@ -747,7 +747,18 @@ void RootWindow::OnWindowHidden(Window* invisible, bool destroyed) {
     mouse_event_dispatch_target_ = NULL;
   if (invisible->Contains(event_dispatch_target_))
     event_dispatch_target_ = NULL;
-  gesture_recognizer_->FlushTouchQueue(invisible);
+
+  CleanupGestureRecognizerState(invisible);
+}
+
+void RootWindow::CleanupGestureRecognizerState(Window* window) {
+  gesture_recognizer_->FlushTouchQueue(window);
+  Windows windows = window->children();
+  for (Windows::const_iterator iter = windows.begin();
+      iter != windows.end();
+      ++iter) {
+    CleanupGestureRecognizerState(*iter);
+  }
 }
 
 void RootWindow::OnWindowAddedToRootWindow(Window* attached) {

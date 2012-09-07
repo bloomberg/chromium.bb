@@ -293,6 +293,10 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // |destroyed| is set to true when the window is being destroyed.
   void OnWindowHidden(Window* invisible, bool destroyed);
 
+  // Cleans up the gesture recognizer for all windows in |window| (including
+  // |window| itself).
+  void CleanupGestureRecognizerState(Window* window);
+
   // Overridden from ui::EventDispatcher.
   virtual bool CanDispatchToTarget(EventTarget* target) OVERRIDE;
   virtual void ProcessPreTargetList(ui::EventHandlerList* list) OVERRIDE;
