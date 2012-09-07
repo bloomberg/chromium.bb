@@ -23,85 +23,106 @@ TEST(ExtensionCSPValidator, IsLegal) {
 }
 
 TEST(ExtensionCSPValidator, IsSecure) {
-  EXPECT_FALSE(ContentSecurityPolicyIsSecure(""));
-  EXPECT_FALSE(ContentSecurityPolicyIsSecure("img-src https://google.com"));
-
-  EXPECT_FALSE(ContentSecurityPolicyIsSecure("default-src *"));
-  EXPECT_TRUE(ContentSecurityPolicyIsSecure("default-src 'self'"));
-  EXPECT_TRUE(ContentSecurityPolicyIsSecure("default-src 'none'"));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' ftp://google.com"));
-  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' https://google.com"));
+      "", Extension::TYPE_EXTENSION));
+  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
+      "img-src https://google.com", Extension::TYPE_EXTENSION));
 
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src *; default-src 'self'"));
+      "default-src *", Extension::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self'; default-src *"));
+      "default-src 'self'", Extension::TYPE_EXTENSION));
+  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
+      "default-src 'none'", Extension::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src 'self'; default-src *; script-src *; script-src 'self'"));
+      "default-src 'self' ftp://google.com", Extension::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self'; default-src *; script-src 'self'; script-src *"));
+      "default-src 'self' https://google.com", Extension::TYPE_EXTENSION));
 
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src *; script-src 'self'"));
+      "default-src *; default-src 'self'", Extension::TYPE_EXTENSION));
+  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
+      "default-src 'self'; default-src *", Extension::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src *; script-src 'self'; img-src 'self'"));
+      "default-src 'self'; default-src *; script-src *; script-src 'self'",
+       Extension::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src *; script-src 'self'; object-src 'self'"));
-  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "script-src 'self'; object-src 'self'"));
+      "default-src 'self'; default-src *; script-src 'self'; script-src *",
+      Extension::TYPE_EXTENSION));
 
-  EXPECT_FALSE(ContentSecurityPolicyIsSecure("default-src 'unsafe-inline'"));
-  EXPECT_FALSE(ContentSecurityPolicyIsSecure("default-src 'unsafe-eval'"));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src 'unsafe-inline' 'none'"));
+      "default-src *; script-src 'self'", Extension::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' http://google.com"));
+      "default-src *; script-src 'self'; img-src 'self'",
+      Extension::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' https://google.com"));
+      "default-src *; script-src 'self'; object-src 'self'",
+      Extension::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' chrome://resources"));
+      "script-src 'self'; object-src 'self'", Extension::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' chrome-extension://aabbcc"));
+      "default-src 'unsafe-eval'", Extension::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' chrome-extension-resource://aabbcc"));
+      "default-src 'unsafe-eval'", Extension::TYPE_PACKAGED_APP));
+
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' https:"));
+      "default-src 'unsafe-eval'", Extension::TYPE_PLATFORM_APP));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' http:"));
+      "default-src 'unsafe-inline'", Extension::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' https://*"));
+      "default-src 'unsafe-inline' 'none'", Extension::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' *"));
-  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' google.com"));
+      "default-src 'self' http://google.com", Extension::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' https://*.google.com"));
+      "default-src 'self' https://google.com", Extension::TYPE_EXTENSION));
+  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' chrome://resources", Extension::TYPE_EXTENSION));
+  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' chrome-extension://aabbcc",
+      Extension::TYPE_EXTENSION));
+  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
+     "default-src 'self' chrome-extension-resource://aabbcc",
+     Extension::TYPE_EXTENSION));
+  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' https:", Extension::TYPE_EXTENSION));
+  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' http:", Extension::TYPE_EXTENSION));
+  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' https://*", Extension::TYPE_EXTENSION));
+  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' *", Extension::TYPE_EXTENSION));
+  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' google.com", Extension::TYPE_EXTENSION));
+  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' https://*.google.com", Extension::TYPE_EXTENSION));
 
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' http://127.0.0.1"));
+      "default-src 'self' http://127.0.0.1", Extension::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' http://localhost"));
+      "default-src 'self' http://localhost", Extension::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' http://lOcAlHoSt"));
+      "default-src 'self' http://lOcAlHoSt", Extension::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' http://127.0.0.1:9999"));
+      "default-src 'self' http://127.0.0.1:9999", Extension::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' http://localhost:8888"));
+      "default-src 'self' http://localhost:8888", Extension::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' http://127.0.0.1.example.com"));
+      "default-src 'self' http://127.0.0.1.example.com",
+      Extension::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' http://localhost.example.com"));
+      "default-src 'self' http://localhost.example.com",
+      Extension::TYPE_EXTENSION));
 
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' blob:"));
+      "default-src 'self' blob:", Extension::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' blob:http://example.com/XXX"));
+      "default-src 'self' blob:http://example.com/XXX",
+      Extension::TYPE_EXTENSION));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' filesystem:"));
+      "default-src 'self' filesystem:", Extension::TYPE_EXTENSION));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' filesystem:http://example.com/XXX"));
+      "default-src 'self' filesystem:http://example.com/XXX",
+      Extension::TYPE_EXTENSION));
 }
 
 TEST(ExtensionCSPValidator, IsSandboxed) {

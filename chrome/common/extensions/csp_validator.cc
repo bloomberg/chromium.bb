@@ -35,7 +35,7 @@ struct DirectiveStatus {
   bool is_secure;
 };
 
-bool HasOnlySecureTokens(StringTokenizer& tokenizer) {
+bool HasOnlySecureTokens(StringTokenizer& tokenizer, Extension::Type type) {
   while (tokenizer.GetNext()) {
     std::string source = tokenizer.token();
     StringToLowerASCII(&source);
@@ -59,6 +59,13 @@ bool HasOnlySecureTokens(StringTokenizer& tokenizer) {
       continue;
     }
 
+    // crbug.com/146487
+    if (type == Extension::TYPE_EXTENSION ||
+        type == Extension::TYPE_PACKAGED_APP) {
+      if (source == "'unsafe-eval'")
+        continue;
+    }
+
     return false;
   }
 
@@ -68,13 +75,14 @@ bool HasOnlySecureTokens(StringTokenizer& tokenizer) {
 // Returns true if |directive_name| matches |status.directive_name|.
 bool UpdateStatus(const std::string& directive_name,
                   StringTokenizer& tokenizer,
-                  DirectiveStatus* status) {
+                  DirectiveStatus* status,
+                  Extension::Type type) {
   if (status->seen_in_policy)
     return false;
   if (directive_name != status->directive_name)
     return false;
   status->seen_in_policy = true;
-  status->is_secure = HasOnlySecureTokens(tokenizer);
+  status->is_secure = HasOnlySecureTokens(tokenizer, type);
   return true;
 }
 
@@ -89,7 +97,8 @@ bool ContentSecurityPolicyIsLegal(const std::string& policy) {
       std::string::npos;
 }
 
-bool ContentSecurityPolicyIsSecure(const std::string& policy) {
+bool ContentSecurityPolicyIsSecure(const std::string& policy,
+                                   Extension::Type type) {
   // See http://www.w3.org/TR/CSP/#parse-a-csp-policy for parsing algorithm.
   std::vector<std::string> directives;
   base::SplitString(policy, ';', &directives);
@@ -107,11 +116,11 @@ bool ContentSecurityPolicyIsSecure(const std::string& policy) {
     std::string directive_name = tokenizer.token();
     StringToLowerASCII(&directive_name);
 
-    if (UpdateStatus(directive_name, tokenizer, &default_src_status))
+    if (UpdateStatus(directive_name, tokenizer, &default_src_status, type))
       continue;
-    if (UpdateStatus(directive_name, tokenizer, &script_src_status))
+    if (UpdateStatus(directive_name, tokenizer, &script_src_status, type))
       continue;
-    if (UpdateStatus(directive_name, tokenizer, &object_src_status))
+    if (UpdateStatus(directive_name, tokenizer, &object_src_status, type))
       continue;
   }
 

@@ -19,13 +19,17 @@ namespace csp_validator {
 bool ContentSecurityPolicyIsLegal(const std::string& policy);
 
 // Checks whether the given |policy| meets the minimum security requirements
-// for use in the extension system. The philosophy behind our minimum
-// requirements is that an XSS vulnerability in the extension should not be
-// able to execute script, even in the precense of an active network attacker.
-// Specifically, 'unsafe-inline' and 'unsafe-eval' are forbidden, as is
-// script or object inclusion from insecure schemes. Also, the use of * is
-// forbidden for scripts and objects.
-bool ContentSecurityPolicyIsSecure(const std::string& policy);
+// for use in the extension system.
+//
+// Ideally, we would like to say that an XSS vulnerability in the extension
+// should not be able to execute script, even in the precense of an active
+// network attacker.
+//
+// However, we found that it broke too many deployed extensions to limit
+// 'unsafe-eval' in the script-src directive, so that is allowed as a special
+// case for extensions. Platform apps disallow it.
+bool ContentSecurityPolicyIsSecure(
+    const std::string& policy, Extension::Type type);
 
 // Checks whether the given |policy| enforces a unique origin sandbox as
 // defined by http://www.whatwg.org/specs/web-apps/current-work/multipage/
