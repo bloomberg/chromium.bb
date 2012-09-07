@@ -16,8 +16,6 @@ sphereflake
 
 # crash, works on ARM
 aha x86-64
-# crash w/ newlib: http://code.google.com/p/nativeclient/issues/detail?id=2505
-dt
 # crash on ARM/qemu
 almabench arm
 spirit arm
