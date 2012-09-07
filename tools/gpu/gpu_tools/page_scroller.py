@@ -15,7 +15,6 @@ import scroll
 import page_set
 import url_test
 
-
 def Main(args):
   options = chrome_remote_control.BrowserOptions()
   parser = options.CreateParser("page_scroller <pageset>")
@@ -36,6 +35,8 @@ def Run(output_stream, options, ps):
   results_writer.writerow(['URL', 'FPS', 'Mean Frame Time (s)',
                            '% Dropped Frames', 'First Paint Time (s)'])
   possible_browser = chrome_remote_control.FindBrowser(options)
+  if not possible_browser:
+    raise Exception('No browser found. Can not continue')
   with possible_browser.Create() as b:
     for result in url_test.UrlTest(b, scroll.Scroll, ps):
       if not result.DidScroll():

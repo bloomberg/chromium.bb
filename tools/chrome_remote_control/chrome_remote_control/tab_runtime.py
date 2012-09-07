@@ -50,11 +50,10 @@ class TabRuntime(object):
     if "error" in res:
       raise EvaluateException(res["error"]["message"])
 
-    if res["result"]["wasThrown"]:
+    if "wasThrown" in res["result"] and res["result"]["wasThrown"]:
       # TODO(nduca): propagate stacks from javascript up to the python
       # exception.
       raise EvaluateException(res["result"]["result"]["description"])
     if res["result"]["result"]["type"] == 'undefined':
       return None
     return res["result"]["result"]["value"]
-

@@ -32,7 +32,7 @@ class BrowserBackend(object):
       else:
         return True
     try:
-      util.WaitFor(IsBrowserUp, timeout=15)
+      util.WaitFor(IsBrowserUp, timeout=30)
     except util.TimeoutException:
       raise BrowserGoneException()
 

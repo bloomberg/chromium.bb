@@ -107,6 +107,11 @@ def Main(args, start_dir, top_level_dir):
   else:
     logging.basicConfig(level=logging.WARNING)
 
+  import browser_finder
+  if browser_finder.FindBrowser(default_options) == None:
+    logging.error("No browser found. Cannot run tests.\n")
+    return 1
+
   browser_options.options_for_unittests = default_options
   olddir = os.getcwd()
   num_errors = 0

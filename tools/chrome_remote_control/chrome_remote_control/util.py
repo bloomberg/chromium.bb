@@ -13,7 +13,10 @@ def WaitFor(condition, timeout):
   while not condition():
     if time.time() - start_time > timeout:
       if condition.__name__ == '<lambda>':
-        condition_string = inspect.getsource(condition).strip()
+        try:
+          condition_string = inspect.getsource(condition).strip()
+        except IOError:
+          condition_string = condition.__name__
       else:
         condition_string = condition.__name__
       raise TimeoutException('Timed out while waiting %ds for %s.' %

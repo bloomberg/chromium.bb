@@ -12,14 +12,9 @@ import chrome_remote_control
 
 def Main(args):
   options = chrome_remote_control.BrowserOptions()
-  parser = options.CreateParser(
-      "list_available_browsers <sitelist>")
-  options, args = parser.parse_args()
-  browser_to_create = chrome_remote_control.FindAllPossibleBrowsers(options)
-  if not len(browser_to_create):
-    sys.stderr.write("No browsers found.\n")
-    return 1
-  print ",".join([b.type for b in browser_to_create])
+  options.browser_type = 'list';
+  parser = options.CreateParser("list_available_browsers")
+  parser.parse_args()
   return 0
 
 if __name__ == "__main__":

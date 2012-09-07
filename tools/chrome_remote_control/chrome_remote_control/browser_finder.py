@@ -18,7 +18,8 @@ class BrowserTypeRequiredException(Exception):
 def FindBrowser(options):
   """Finds the best PossibleBrowser object to run given the provided
   BrowserOptions object. The returned possiblity object can then be used to
-  connect to and control the located browser."""
+  connect to and control the located browser.
+  """
   if options.browser_type == 'exact' and options.browser_executable == None:
     raise Exception("browser_type=exact requires browser_executable be set.")
 

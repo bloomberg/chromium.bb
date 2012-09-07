@@ -107,3 +107,12 @@ class ADBCommands(object):
 
   def Push(self, local, remote):
     return self._adb.Adb().Push(local, remote)
+
+  def Pull(self, remote, local):
+    return self._adb.Adb().Pull(remote, local)
+
+  def FileExistsOnDevice(self, file_name):
+    return self._adb.FileExistsOnDevice(file_name)
+
+  def IsRootEnabled(self):
+    return self._adb.IsRootEnabled()

@@ -28,18 +28,16 @@ class BrowserTest(unittest.TestCase):
     testJS = ("window.chrome.gpuBenchmarking !== undefined ||" +
              "chrome.Interval !== undefined")
 
-    flag1 = "--enable-benchmarking"
-    flag2 = "--enable-gpu-benchmarking"
+    flag1 = "--user-agent=chrome_remote_control"
     options.extra_browser_args.append(flag1)
-    options.extra_browser_args.append(flag2)
     try:
       browser_to_create = browser_finder.FindBrowser(options)
       with browser_to_create.Create() as b:
         with b.ConnectToNthTab(0) as t:
           t.page.Navigate("http://www.google.com/")
           t.WaitForDocumentReadyStateToBeInteractiveOrBetter()
-          self.assertTrue(t.runtime.Evaluate(testJS))
+          self.assertEquals(t.runtime.Evaluate('navigator.userAgent'),
+                            'chrome_remote_control')
 
     finally:
-      options.extra_browser_args.remove(flag2)
       options.extra_browser_args.remove(flag1)
