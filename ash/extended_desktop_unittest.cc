@@ -327,8 +327,8 @@ TEST_F(ExtendedDesktopTest, Capture) {
   generator2.ClickLeftButton();
   EXPECT_EQ("0 0 0", r2_d1.GetMouseMotionCountsAndReset());
   EXPECT_EQ("0 0", r2_d1.GetMouseButtonCountsAndReset());
-  // The mouse is outside, so no move event will be sent.
-  EXPECT_EQ("1 0 0", r1_d1.GetMouseMotionCountsAndReset());
+  // The mouse is outside, and the mouse is warped to the dest root window.
+  EXPECT_EQ("1 1 0", r1_d1.GetMouseMotionCountsAndReset());
   EXPECT_EQ("1 1", r1_d1.GetMouseButtonCountsAndReset());
   // (15,15) on 1st display is (-985,15) on 2nd display.
   generator2.MoveMouseTo(-985, 15);
