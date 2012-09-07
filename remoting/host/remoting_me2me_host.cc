@@ -191,11 +191,11 @@ class HostProcess
       // Don't try to display any UI on top of the system's login screen as this
       // is rejected by the Window Server on OS X 10.7.4, and prevents the
       // capturer from working (http://crbug.com/140984).
-      base::mac::ScopedCFTypeRef<CFDictionaryRef> session(
-          CGSessionCopyCurrentDictionary());
-      const void* logged_in = CFDictionaryGetValue(session,
-                                                   kCGSessionLoginDoneKey);
-      if (logged_in != kCFBooleanTrue) {
+
+      // TODO(lambroslambrou): Use a better technique of detecting whether we're
+      // running in the LoginWindow context, and refactor this into a separate
+      // function to be used here and in CurtainMode::ActivateCurtain().
+      if (getuid() == 0) {
         want_user_interface = false;
       }
 #endif  // OS_MACOSX
@@ -460,11 +460,7 @@ class HostProcess
       //
       // TODO(jamiewalch): Fix this once we have implemented the multi-process
       // daemon architecture (crbug.com/134894)
-      base::mac::ScopedCFTypeRef<CFDictionaryRef> session(
-          CGSessionCopyCurrentDictionary());
-      const void* logged_in = CFDictionaryGetValue(session,
-                                                   kCGSessionLoginDoneKey);
-      if (logged_in != kCFBooleanTrue) {
+      if (getuid() == 0) {
         Shutdown(kLoginScreenNotSupportedExitCode);
         return;
       }
@@ -732,17 +728,6 @@ int main(int argc, char** argv) {
               logging::DONT_LOCK_LOG_FILE,
               logging::APPEND_TO_OLD_LOG_FILE,
               logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
-
-#if defined(OS_MACOSX)
-  // Exit permanently if there appears to be no window server running.
-  base::mac::ScopedCFTypeRef<CFDictionaryRef> session(
-      CGSessionCopyCurrentDictionary());
-  if (!session.get()) {
-    // TODO(lambroslambrou): Add a new exit-code to reflect this error.
-    LOG(ERROR) << "Failed to connect to Window Server";
-    return remoting::kInvalidHostConfigurationExitCode;
-  }
-#endif  // OS_MACOSX
 
 #if defined(TOOLKIT_GTK)
   // Required for any calls into GTK functions, such as the Disconnect and
