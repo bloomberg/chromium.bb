@@ -233,6 +233,7 @@ cr.define('options', function() {
       for (var i = 0; i < this.displays_.length; i++) {
         var display = this.displays_[i];
         display.div.className = 'displays-display';
+        this.resizeDisplayRectangle_(display, i);
         if (i != this.focusedIndex_)
           continue;
 
@@ -333,6 +334,31 @@ cr.define('options', function() {
     },
 
     /**
+     * Resize the specified display rectangle to keep the change of
+     * the border width.
+     * @param {Object} display The display object.
+     * @param {number} index The index of the display.
+     * @private
+     */
+    resizeDisplayRectangle_: function(display, index) {
+      /** @const */ var FOCUSED_BORDER_WIDTH_PX = 2;
+      /** @const */ var NORMAL_BORDER_WIDTH_PX = 1;
+      var borderWidth = (index == this.focusedIndex_) ?
+          FOCUSED_BORDER_WIDTH_PX : NORMAL_BORDER_WIDTH_PX;
+      display.div.style.width =
+          display.width * this.visualScale_ - borderWidth * 2 + 'px';
+      display.div.style.height =
+          display.height * this.visualScale_ - borderWidth * 2 + 'px';
+      display.div.style.lineHeight = display.div.style.height;
+      if (index == 0) {
+        var launcher = display.div.firstChild;
+        if (launcher && launcher.id == 'display-launcher') {
+          launcher.style.width = display.div.style.width;
+        }
+      }
+    },
+
+    /**
      * Lays out the display rectangles for mirroring.
      * @private
      */
@@ -426,24 +452,17 @@ cr.define('options', function() {
         display.div = div;
 
         div.className = 'displays-display';
-        var borderWidth = 1;
-        if (i == this.focusedIndex_) {
+        if (i == this.focusedIndex_)
           div.classList.add('displays-focused');
-          borderWidth = 2;
-        }
-        div.style.width =
-            display.width * this.visualScale_ - borderWidth * 2 + 'px';
-        div.style.height =
-            display.height * this.visualScale_ - borderWidth * 2 + 'px';
-        div.style.lineHeight = div.style.height;
+
         if (i == 0) {
           // Assumes that first display is primary and put a grey rectangle to
           // denote launcher below.
           var launcher = document.createElement('div');
           launcher.id = 'display-launcher';
-          launcher.style.width = display.div.style.width;
           div.appendChild(launcher);
         }
+        this.resizeDisplayRectangle_(display, i);
         div.style.left = display.x * this.visualScale_ + offset.x + 'px';
         div.style.top = display.y * this.visualScale_ + offset.y + 'px';
         div.appendChild(document.createTextNode(display.name));
