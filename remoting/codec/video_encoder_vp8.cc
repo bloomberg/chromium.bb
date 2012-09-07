@@ -70,7 +70,7 @@ bool VideoEncoderVp8::Init(const SkISize& size) {
   // to avoid rounding error.
   const int y_plane_size = image_->w * image_->h;
   const int uv_width = (image_->w + 1) / 2;
-  const int uv_height = (image_->w + 1) / 2;
+  const int uv_height = (image_->h + 1) / 2;
   const int uv_plane_size = uv_width * uv_height;
   const int yuv_image_size = y_plane_size + uv_plane_size * 2;
 
