@@ -5,6 +5,7 @@
 #ifndef UI_AURA_TEST_TEST_SUITE_H_
 #define UI_AURA_TEST_TEST_SUITE_H_
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/test/test_suite.h"
 
@@ -16,9 +17,12 @@ class AuraTestSuite : public base::TestSuite {
   AuraTestSuite(int argc, char** argv);
 
  protected:
-  // base::TestSuite:
+  // Overridden from base::TestSuite:
   virtual void Initialize() OVERRIDE;
   virtual void Shutdown() OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AuraTestSuite);
 };
 
 }  // namespace test

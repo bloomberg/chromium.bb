@@ -16,11 +16,12 @@ class AppListTestSuite : public base::TestSuite {
  public:
   AppListTestSuite(int argc, char** argv);
 
- private:
+ protected:
   // Overridden from base::TestSuite:
   virtual void Initialize() OVERRIDE;
   virtual void Shutdown() OVERRIDE;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(AppListTestSuite);
 };
 

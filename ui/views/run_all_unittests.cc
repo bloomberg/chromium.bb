@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/test/test_suite.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
@@ -14,7 +16,7 @@ class ViewTestSuite : public base::TestSuite {
   ViewTestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
 
  protected:
-  virtual void Initialize() {
+  virtual void Initialize() OVERRIDE {
     base::TestSuite::Initialize();
 
     ui::RegisterPathProvider();
@@ -24,9 +26,12 @@ class ViewTestSuite : public base::TestSuite {
     ui::SetupTestCompositor();
   }
 
-  virtual void Shutdown() {
+  virtual void Shutdown() OVERRIDE {
     ui::CompositorTestSupport::Terminate();
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ViewTestSuite);
 };
 
 int main(int argc, char** argv) {

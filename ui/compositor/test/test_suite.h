@@ -20,11 +20,12 @@ class CompositorTestSuite : public base::TestSuite {
   CompositorTestSuite(int argc, char** argv);
   virtual ~CompositorTestSuite();
 
- private:
-  // base::TestSuite:
+ protected:
+  // Overridden from base::TestSuite:
   virtual void Initialize() OVERRIDE;
   virtual void Shutdown() OVERRIDE;
 
+ private:
   scoped_ptr<MessageLoop> message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorTestSuite);
