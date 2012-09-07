@@ -1046,6 +1046,11 @@ BrowserContext* RenderProcessHostImpl::GetBrowserContext() const {
   return browser_context_;
 }
 
+bool RenderProcessHostImpl::InSameStoragePartition(
+    StoragePartition* partition) const {
+  return storage_partition_impl_ == partition;
+}
+
 int RenderProcessHostImpl::GetID() const {
   return id_;
 }
@@ -1201,6 +1206,15 @@ bool RenderProcessHostImpl::IsSuitableHost(
     return true;
 
   if (host->GetBrowserContext() != browser_context)
+    return false;
+
+  // Check whether the given host and the intended site_url will be using the
+  // same StoragePartition, since a RenderProcessHost can only support a single
+  // StoragePartition.  This is relevant for packaged apps, browser tags, and
+  // isolated sites.
+  StoragePartition* dest_partition =
+      BrowserContext::GetStoragePartitionForSite(browser_context, site_url);
+  if (!host->InSameStoragePartition(dest_partition))
     return false;
 
   // All URLs are suitable if this is associated with a guest renderer process.

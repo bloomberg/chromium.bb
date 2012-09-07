@@ -166,9 +166,9 @@ std::string ContentBrowserClient::GetStoragePartitionIdForChildProcess(
   return std::string();
 }
 
-std::string ContentBrowserClient::GetStoragePartitionIdForSiteInstance(
+std::string ContentBrowserClient::GetStoragePartitionIdForSite(
     BrowserContext* browser_context,
-    content::SiteInstance* instance) {
+    const GURL& site) {
   return std::string();
 }
 

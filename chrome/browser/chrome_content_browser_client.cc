@@ -251,27 +251,6 @@ RenderProcessHostPrivilege GetProcessPrivilege(
   return PRIV_EXTENSION;
 }
 
-bool IsIsolatedAppInProcess(const GURL& site_url,
-                            content::RenderProcessHost* process_host,
-                            extensions::ProcessMap* process_map,
-                            ExtensionService* service) {
-  std::set<std::string> extension_ids =
-      process_map->GetExtensionsInProcess(process_host->GetID());
-  if (extension_ids.empty())
-    return false;
-
-  for (std::set<std::string>::iterator iter = extension_ids.begin();
-       iter != extension_ids.end(); ++iter) {
-    const Extension* extension = service->GetExtensionById(*iter, false);
-    if (extension &&
-        extension->is_storage_isolated() &&
-        extension->url() == site_url)
-      return true;
-  }
-
-  return false;
-}
-
 bool CertMatchesFilter(const net::X509Certificate& cert,
                        const base::DictionaryValue& filter) {
   // TODO(markusheintz): This is the minimal required filter implementation.
@@ -419,16 +398,16 @@ std::string ChromeContentBrowserClient::GetStoragePartitionIdForChildProcess(
   return GetStoragePartitionIdForExtension(browser_context, extension);
 }
 
-std::string ChromeContentBrowserClient::GetStoragePartitionIdForSiteInstance(
+std::string ChromeContentBrowserClient::GetStoragePartitionIdForSite(
     content::BrowserContext* browser_context,
-    SiteInstance* instance) {
+    const GURL& site) {
   const Extension* extension = NULL;
   Profile* profile = Profile::FromBrowserContext(browser_context);
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   if (extension_service) {
     extension = extension_service->extensions()->
-        GetExtensionOrAppByURL(ExtensionURLInfo(instance->GetSite()));
+        GetExtensionOrAppByURL(ExtensionURLInfo(site));
   }
 
   return GetStoragePartitionIdForExtension(browser_context, extension);
@@ -609,17 +588,10 @@ bool ChromeContentBrowserClient::IsSuitableHost(
   if (command_line.HasSwitch(switches::kEnableStrictSiteIsolation))
     return false;
 
-  // An isolated app is only allowed to share with the exact same app in order
-  // to provide complete renderer process isolation.  This also works around
-  // issue http://crbug.com/85588, where different isolated apps in the same
-  // process would end up using the first app's storage contexts.
-  RenderProcessHostPrivilege privilege_required =
-      GetPrivilegeRequiredByUrl(site_url, service);
-  if (privilege_required == PRIV_ISOLATED)
-    return IsIsolatedAppInProcess(site_url, process_host, process_map, service);
-
   // Otherwise, just make sure the process privilege matches the privilege
   // required by the site.
+  RenderProcessHostPrivilege privilege_required =
+      GetPrivilegeRequiredByUrl(site_url, service);
   return GetProcessPrivilege(process_host, process_map, service) ==
       privilege_required;
 }

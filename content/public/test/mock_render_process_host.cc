@@ -193,6 +193,12 @@ BrowserContext* MockRenderProcessHost::GetBrowserContext() const {
   return browser_context_;
 }
 
+bool MockRenderProcessHost::InSameStoragePartition(
+    StoragePartition* partition) const {
+  // Mock RPHs only have one partition.
+  return true;
+}
+
 IPC::ChannelProxy* MockRenderProcessHost::GetChannel() {
   return NULL;
 }

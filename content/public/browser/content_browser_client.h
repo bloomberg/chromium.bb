@@ -274,14 +274,13 @@ class CONTENT_EXPORT ContentBrowserClient {
       content::BrowserContext* browser_context,
       int child_process_id);
 
-  // Same as GetStoragePartitionIdForChildProcess(), but uses a SiteInstance
-  // instead.
+  // Same as GetStoragePartitionIdForChildProcess(), but uses a site instead.
   //
   // TODO(ajwong): Replace all uses of GetStoragePartitionIdForChildProcess()
   // with this one.
-  virtual std::string GetStoragePartitionIdForSiteInstance(
+  virtual std::string GetStoragePartitionIdForSite(
       content::BrowserContext* browser_context,
-      content::SiteInstance* instance);
+      const GURL& site);
 
   // Allows the embedder to provide a validation check for |partition_id|s.
   // This domain of valid entries should match the range of outputs for

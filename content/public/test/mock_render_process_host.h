@@ -66,6 +66,8 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual RenderWidgetHost* GetRenderWidgetHostByID(int routing_id)
         OVERRIDE;
   virtual BrowserContext* GetBrowserContext() const OVERRIDE;
+  virtual bool InSameStoragePartition(
+      StoragePartition* partition) const OVERRIDE;
   virtual IPC::ChannelProxy* GetChannel() OVERRIDE;
   virtual RenderWidgetHostsIterator GetRenderWidgetHostsIterator() OVERRIDE;
   virtual bool FastShutdownForPageCount(size_t count) OVERRIDE;

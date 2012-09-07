@@ -1278,8 +1278,8 @@ NavigationControllerImpl::GetSessionStorageNamespace(
     // TODO(ajwong): When GetDefaultSessionStorageNamespace() goes away, remove
     // this if statement so |instance| must not be NULL.
     partition_id =
-        GetContentClient()->browser()->GetStoragePartitionIdForSiteInstance(
-            browser_context_, instance);
+        GetContentClient()->browser()->GetStoragePartitionIdForSite(
+            browser_context_, instance->GetSite());
   }
 
   SessionStorageNamespaceMap::const_iterator it =

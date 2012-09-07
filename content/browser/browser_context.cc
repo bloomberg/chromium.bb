@@ -12,6 +12,7 @@
 #include "content/browser/in_process_webkit/indexed_db_context_impl.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/browser/site_instance.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/storage_partition_impl_map.h"
 #include "content/common/child_process_host_impl.h"
@@ -132,9 +133,17 @@ StoragePartition* BrowserContext::GetStoragePartition(
   // this conditional and require that |site_instance| is non-NULL.
   if (site_instance) {
     partition_id = GetContentClient()->browser()->
-        GetStoragePartitionIdForSiteInstance(browser_context,
-                                             site_instance);
+        GetStoragePartitionIdForSite(browser_context, site_instance->GetSite());
   }
+
+  return GetStoragePartitionByPartitionId(browser_context, partition_id);
+}
+
+StoragePartition* BrowserContext::GetStoragePartitionForSite(
+    BrowserContext* browser_context,
+    const GURL& site) {
+  std::string partition_id = GetContentClient()->browser()->
+      GetStoragePartitionIdForSite(browser_context, site);
 
   return GetStoragePartitionByPartitionId(browser_context, partition_id);
 }

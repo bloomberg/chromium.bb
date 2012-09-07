@@ -31,6 +31,7 @@ class DatabaseTracker;
 }
 
 class FilePath;
+class GURL;
 
 namespace content {
 
@@ -63,6 +64,8 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
 
   static content::StoragePartition* GetStoragePartition(
       BrowserContext* browser_context, SiteInstance* site_instance);
+  static content::StoragePartition* GetStoragePartitionForSite(
+      BrowserContext* browser_context, const GURL& site);
   static void ForEachStoragePartition(
       BrowserContext* browser_context,
       const StoragePartitionCallback& callback);

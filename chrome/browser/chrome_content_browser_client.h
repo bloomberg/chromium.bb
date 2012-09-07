@@ -41,9 +41,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual std::string GetStoragePartitionIdForChildProcess(
       content::BrowserContext* browser_context,
       int child_process_id) OVERRIDE;
-  virtual std::string GetStoragePartitionIdForSiteInstance(
+  virtual std::string GetStoragePartitionIdForSite(
       content::BrowserContext* browser_context,
-      content::SiteInstance* instance) OVERRIDE;
+      const GURL& site) OVERRIDE;
   virtual bool IsValidStoragePartitionId(
       content::BrowserContext* browser_context,
       const std::string& partition_id) OVERRIDE;

@@ -1238,7 +1238,7 @@ void WebContentsImpl::CreateNewWindow(
   // BrowsingInstance.
   scoped_refptr<SiteInstance> site_instance =
       params.opener_suppressed ?
-      SiteInstance::Create(GetBrowserContext()) :
+      SiteInstance::CreateForURL(GetBrowserContext(), params.target_url) :
       GetSiteInstance();
 
   // Create the new web contents. This will automatically create the new
@@ -1252,8 +1252,8 @@ void WebContentsImpl::CreateNewWindow(
   // http://crbug.com/142685
   const std::string& partition_id =
       content::GetContentClient()->browser()->
-          GetStoragePartitionIdForSiteInstance(GetBrowserContext(),
-                                               site_instance);
+          GetStoragePartitionIdForSite(GetBrowserContext(),
+                                       site_instance->GetSite());
   content::StoragePartition* partition =
       BrowserContext::GetStoragePartition(GetBrowserContext(),
                                           site_instance);

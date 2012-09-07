@@ -21,6 +21,7 @@ struct ViewMsg_SwapOut_Params;
 namespace content {
 class BrowserContext;
 class RenderWidgetHost;
+class StoragePartition;
 }
 
 namespace base {
@@ -126,6 +127,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 
   // Returns the user browser context associated with this renderer process.
   virtual content::BrowserContext* GetBrowserContext() const = 0;
+
+  // Returns whether this process is using the same StoragePartition as
+  // |partition|.
+  virtual bool InSameStoragePartition(StoragePartition* partition) const = 0;
 
   // Returns the unique ID for this child process. This can be used later in
   // a call to FromID() to get back to this object (this is used to avoid
