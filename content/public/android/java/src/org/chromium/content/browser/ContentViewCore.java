@@ -52,8 +52,6 @@ public class ContentViewCore implements MotionEventDelegate {
     public static final int PAGE_TRANSITION_AUTO_BOOKMARK = 2;
     public static final int PAGE_TRANSITION_START_PAGE = 6;
 
-    // Personality of the ContentView.
-    private int mPersonality;
     // Used when ContentView implements a standalone View.
     public static final int PERSONALITY_VIEW = 0;
     // Used for Chrome.
@@ -61,11 +59,14 @@ public class ContentViewCore implements MotionEventDelegate {
 
     // Used to avoid enabling zooming in / out if resulting zooming will
     // produce little visible difference.
-    private static float ZOOM_CONTROLS_EPSILON = 0.007f;
+    private static final float ZOOM_CONTROLS_EPSILON = 0.007f;
 
     // To avoid checkerboard, we clamp the fling velocity based on the maximum number of tiles
     // should be allowed to upload per 100ms.
-    private static int MAX_NUM_UPLOAD_TILES = 12;
+    private final int mMaxNumUploadTiles = 12;
+
+    // Personality of the ContentView.
+    private final int mPersonality;
 
     /**
      * Interface that consumers of {@link ContentViewCore} must implement to allow the proper
@@ -124,7 +125,7 @@ public class ContentViewCore implements MotionEventDelegate {
     }
 
     private static final class DestroyRunnable implements Runnable {
-        private int mNativeContentViewCore;
+        private final int mNativeContentViewCore;
         private DestroyRunnable(int nativeContentViewCore) {
             mNativeContentViewCore = nativeContentViewCore;
         }
@@ -136,7 +137,7 @@ public class ContentViewCore implements MotionEventDelegate {
 
     private CleanupReference mCleanupReference;
 
-    private Context mContext;
+    private final Context mContext;
     private ViewGroup mContainerView;
     private InternalAccessDelegate mContainerViewInternals;
 
@@ -381,8 +382,7 @@ public class ContentViewCore implements MotionEventDelegate {
     }
 
     private void initPopupZoomer(Context context){
-        assert AppResource.DIMENSION_LINK_PREVIEW_OVERLAY_RADIUS != 0;
-        mPopupZoomer = new PopupZoomer(context, AppResource.DIMENSION_LINK_PREVIEW_OVERLAY_RADIUS);
+        mPopupZoomer = new PopupZoomer(context);
         mContainerView.addView(mPopupZoomer);
         PopupZoomer.OnTapListener listener = new PopupZoomer.OnTapListener() {
             @Override
@@ -894,7 +894,7 @@ public class ContentViewCore implements MotionEventDelegate {
      * logic in Scroller.java. As it is almost linear for the first 100ms, we use a simple math.
      */
     private int clampFlingVelocityX(int velocity) {
-        int cols = MAX_NUM_UPLOAD_TILES / (int) (Math.ceil((float) getHeight() / 256) + 1);
+        int cols = mMaxNumUploadTiles / (int) (Math.ceil((float) getHeight() / 256) + 1);
         int maxVelocity = cols > 0 ? cols * 2560 : 1000;
         if (Math.abs(velocity) > maxVelocity) {
             return velocity > 0 ? maxVelocity : -maxVelocity;
@@ -904,7 +904,7 @@ public class ContentViewCore implements MotionEventDelegate {
     }
 
     private int clampFlingVelocityY(int velocity) {
-        int rows = MAX_NUM_UPLOAD_TILES / (int) (Math.ceil((float) getWidth() / 256) + 1);
+        int rows = mMaxNumUploadTiles / (int) (Math.ceil((float) getWidth() / 256) + 1);
         int maxVelocity = rows > 0 ? rows * 2560 : 1000;
         if (Math.abs(velocity) > maxVelocity) {
             return velocity > 0 ? maxVelocity : -maxVelocity;

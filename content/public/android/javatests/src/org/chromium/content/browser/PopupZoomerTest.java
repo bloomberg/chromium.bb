@@ -29,7 +29,7 @@ public class PopupZoomerTest extends InstrumentationTestCase {
         long mPendingDraws = 0;
 
         CustomCanvasPopupZoomer(Context context, Canvas c) {
-            super(context, 0);
+            super(context);
             mCanvas = c;
         }
 
@@ -51,11 +51,6 @@ public class PopupZoomerTest extends InstrumentationTestCase {
             }
         }
 
-        @Override
-        protected Drawable loadOverlayDrawable() {
-            return new ColorDrawable();
-        }
-
     }
 
     private CustomCanvasPopupZoomer createPopupZoomerForTest(Context context) {
@@ -73,6 +68,7 @@ public class PopupZoomerTest extends InstrumentationTestCase {
 
     @Override
     public void setUp() {
+        PopupZoomer.injectOverlayDrawable(new ColorDrawable());
         mPopupZoomer = createPopupZoomerForTest(getInstrumentation().getTargetContext());
     }
 

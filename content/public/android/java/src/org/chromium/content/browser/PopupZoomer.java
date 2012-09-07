@@ -60,8 +60,8 @@ class PopupZoomer extends View {
     // The radius of the overlay bubble, used for rounding the bitmap to draw underneath it.
     private static float sOverlayCornerRadius;
 
-    private Interpolator mShowInterpolator = new OvershootInterpolator();
-    private Interpolator mHideInterpolator = new ReverseInterpolator(mShowInterpolator);
+    private final Interpolator mShowInterpolator = new OvershootInterpolator();
+    private final Interpolator mHideInterpolator = new ReverseInterpolator(mShowInterpolator);
 
     private boolean mAnimating = false;
     private boolean mShowing = false;
@@ -93,7 +93,7 @@ class PopupZoomer extends View {
     // These values to used to animate the popup.
     private float mLeftExtrusion, mTopExtrusion, mRightExtrusion, mBottomExtrusion;
     // The last touch point, where the animation will start from.
-    private PointF mTouch = new PointF();
+    private final PointF mTouch = new PointF();
 
     // Since we sometimes overflow the bounds of the mViewClipRect, we need to allow scrolling.
     // Current scroll position.
@@ -104,13 +104,24 @@ class PopupZoomer extends View {
 
     private GestureDetector mGestureDetector;
 
+    private static float getOverlayCornerRadius(Context context) {
+        // TODO(leandrogracia): restore an assertion for the resource id != 0
+        // here after fixing crbug.com/136704
+        // assert AppResource.DIMENSION_LINK_PREVIEW_OVERLAY_RADIUS != 0;
+        if (sOverlayCornerRadius == 0 && AppResource.DIMENSION_LINK_PREVIEW_OVERLAY_RADIUS != 0)
+            sOverlayCornerRadius = context.getResources().getDimension(
+                    AppResource.DIMENSION_LINK_PREVIEW_OVERLAY_RADIUS);
+        return sOverlayCornerRadius;
+    }
+
     /**
      * Gets the drawable that should be used to frame the zooming popup, loading
      * it from the resource bundle if not already cached.
      */
-    protected Drawable getOverlayDrawable() {
+    private static Drawable getOverlayDrawable(Context context) {
         if (sOverlayDrawable == null) {
-            sOverlayDrawable = loadOverlayDrawable();
+            sOverlayDrawable = context.getResources().getDrawable(
+                    AppResource.DRAWABLE_LINK_PREVIEW_POPUP_OVERLAY);
             sOverlayPadding = new Rect();
             sOverlayDrawable.getPadding(sOverlayPadding);
         }
@@ -118,14 +129,14 @@ class PopupZoomer extends View {
     }
 
     /**
-     * Loads the overlay drawable from the resource bundle.
+     * Injects the overlay drawable for tests. Needs to be called before any instance
+     * of this class tries to draw.
      *
      * @VisibleForTesting
      */
-    protected Drawable loadOverlayDrawable() {
-        assert AppResource.DRAWABLE_LINK_PREVIEW_POPUP_OVERLAY != 0;
-        return getContext().getResources().getDrawable(
-                AppResource.DRAWABLE_LINK_PREVIEW_POPUP_OVERLAY);
+    static void injectOverlayDrawable(Drawable drawable) {
+        sOverlayDrawable = drawable;
+        sOverlayPadding = new Rect();
     }
 
     private static float constrain(float amount, float low, float high) {
@@ -141,14 +152,8 @@ class PopupZoomer extends View {
      * @param context Context to be used.
      * @param overlayRadiusDimensoinResId Resource to be used to get overlay corner radius.
      */
-    public PopupZoomer(Context context, int overlayRadiusDimensoinResId) {
+    public PopupZoomer(Context context) {
         super(context);
-
-        if (overlayRadiusDimensoinResId != 0) {
-            sOverlayCornerRadius = context.getResources().getDimension(overlayRadiusDimensoinResId);
-        } else {
-            sOverlayCornerRadius = 0;
-        }
 
         setVisibility(INVISIBLE);
         setFocusable(true);
@@ -224,7 +229,8 @@ class PopupZoomer extends View {
         Canvas canvas = new Canvas(mZoomedBitmap);
         Path path = new Path();
         RectF canvasRect = new RectF(0, 0, canvas.getWidth(), canvas.getHeight());
-        path.addRoundRect(canvasRect, sOverlayCornerRadius, sOverlayCornerRadius, Direction.CCW);
+        float overlayCornerRadius = getOverlayCornerRadius(getContext());
+        path.addRoundRect(canvasRect, overlayCornerRadius, overlayCornerRadius, Direction.CCW);
         canvas.clipPath(path, Op.XOR);
         Paint clearPaint = new Paint();
         clearPaint.setXfermode(new PorterDuffXfermode(Mode.SRC));
@@ -427,7 +433,7 @@ class PopupZoomer extends View {
         canvas.translate(mPopupScrollX, mPopupScrollY);
         canvas.drawBitmap(mZoomedBitmap, rect.left, rect.top, null);
         canvas.restore();
-        Drawable overlayNineTile = getOverlayDrawable();
+        Drawable overlayNineTile = getOverlayDrawable(getContext());
         overlayNineTile.setBounds((int) rect.left - sOverlayPadding.left,
                 (int) rect.top - sOverlayPadding.top,
                 (int) rect.right + sOverlayPadding.right,
@@ -489,7 +495,7 @@ class PopupZoomer extends View {
     }
 
     private static class ReverseInterpolator implements Interpolator {
-        private Interpolator mInterpolator;
+        private final Interpolator mInterpolator;
 
         public ReverseInterpolator(Interpolator i) {
             mInterpolator = i;
