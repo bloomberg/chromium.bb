@@ -33,19 +33,11 @@ static void (*g_test_get_device_info_from_path_function)(
     const FilePath& path, std::string* device_id, string16* device_name,
     FilePath* relative_path) = NULL;
 
-void EmptyPathIsFalseCallback(const MediaStorageUtil::BoolCallback& callback,
-                              FilePath path) {
-  callback.Run(!path.empty());
-}
-
 void ValidatePathOnFileThread(
-    const FilePath& path, const MediaStorageUtil::FilePathCallback& callback) {
+    const FilePath& path, const MediaStorageUtil::BoolCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  FilePath result;
-  if (file_util::PathExists(path))
-    result = path;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, path));
+                          base::Bind(callback, file_util::PathExists(path)));
 }
 
 FilePath::StringType FindRemovableStorageLocationById(
@@ -123,6 +115,12 @@ bool MediaStorageUtil::IsRemovableDevice(const std::string& device_id) {
 }
 
 // static
+bool MediaStorageUtil::IsMassStorageDevice(const std::string& device_id) {
+  Type type;
+  return CrackDeviceId(device_id, &type, NULL) && type != MTP_OR_PTP;
+}
+
+// static
 void MediaStorageUtil::IsDeviceAttached(const std::string& device_id,
                                         const BoolCallback& callback) {
   Type type;
@@ -141,11 +139,10 @@ void MediaStorageUtil::IsDeviceAttached(const std::string& device_id,
       break;
     case FIXED_MASS_STORAGE:
       // For this type, the unique_id is the path.
-      BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
-          base::Bind(&ValidatePathOnFileThread,
-                     FilePath::FromUTF8Unsafe(unique_id),
-                     base::Bind(&EmptyPathIsFalseCallback, callback)));
+      BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                              base::Bind(&ValidatePathOnFileThread,
+                                         FilePath::FromUTF8Unsafe(unique_id),
+                                         callback));
       break;
   }
   NOTREACHED();
@@ -166,32 +163,26 @@ void MediaStorageUtil::GetDeviceInfoFromPath(const FilePath& path,
 }
 
 // static
-void MediaStorageUtil::FindDevicePathById(const std::string& device_id,
-                                          const FilePathCallback& callback) {
+FilePath MediaStorageUtil::FindDevicePathById(const std::string& device_id) {
   Type type;
   std::string unique_id;
   if (!CrackDeviceId(device_id, &type, &unique_id))
-    callback.Run(FilePath());
+    return FilePath();
 
   switch (type) {
     case MTP_OR_PTP:
       // TODO(kmadhusu) We may want to return the MTP device location here.
-      callback.Run(FilePath());
-      break;
+      return FilePath();
     case REMOVABLE_MASS_STORAGE_WITH_DCIM:  // Fall through.
     case REMOVABLE_MASS_STORAGE_NO_DCIM:
-      callback.Run(FilePath(FindRemovableStorageLocationById(device_id)));
-      break;
+      return FilePath(FindRemovableStorageLocationById(device_id));
     case FIXED_MASS_STORAGE:
       // For this type, the unique_id is the path.
-      BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
-          base::Bind(&ValidatePathOnFileThread,
-                     FilePath::FromUTF8Unsafe(unique_id), callback));
-      break;
+      return FilePath::FromUTF8Unsafe(unique_id);
   }
+
   NOTREACHED();
-  callback.Run(FilePath());
+  return FilePath();
 }
 
 // static

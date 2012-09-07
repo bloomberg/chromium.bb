@@ -15,14 +15,14 @@
 
 #include "base/basictypes.h"
 #include "base/lazy_instance.h"
+#include "base/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/system_monitor/system_monitor.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
-class FilePath;
+class Profile;
 
 namespace content {
-class RenderProcessHost;
+class RenderViewHost;
 }
 
 namespace extensions {
@@ -35,12 +35,13 @@ class IsolatedContext;
 
 namespace chrome {
 
+class ExtensionGalleriesHost;
+
 class MediaFileSystemRegistry
-    : public base::SystemMonitor::DevicesChangedObserver,
-      public content::NotificationObserver {
+    : public base::SystemMonitor::DevicesChangedObserver {
  public:
   struct MediaFSInfo {
-    std::string name;
+    string16 name;
     std::string fsid;
     FilePath path;
   };
@@ -48,57 +49,34 @@ class MediaFileSystemRegistry
   // The instance is lazily created per browser process.
   static MediaFileSystemRegistry* GetInstance();
 
-  // Returns the list of media filesystem IDs and paths for a given RPH.
+  // Returns the list of media filesystem IDs and paths for a given RVH.
   // Called on the UI thread.
   std::vector<MediaFSInfo> GetMediaFileSystemsForExtension(
-      const content::RenderProcessHost* rph,
-      const extensions::Extension& extension);
+      const content::RenderViewHost* rvh,
+      const extensions::Extension* extension);
 
   // base::SystemMonitor::DevicesChangedObserver implementation.
   virtual void OnRemovableStorageDetached(const std::string& id) OVERRIDE;
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
  private:
   friend struct base::DefaultLazyInstanceTraits<MediaFileSystemRegistry>;
 
-  // Mapping of media directories to filesystem IDs.
-  typedef std::map<FilePath, std::string> MediaPathToFSIDMap;
-
-  // Mapping of RPH to MediaPathToFSIDMaps.
-  typedef std::map<const content::RenderProcessHost*,
-                   MediaPathToFSIDMap> ChildIdToMediaFSMap;
-
-  // Mapping of device id to media device info.
-  typedef std::map<std::string, base::SystemMonitor::RemovableStorageInfo>
-      DeviceIdToInfoMap;
+  // Map an extension to the ExtensionGalleriesHost.
+  typedef std::map<std::string /*extension_id*/,
+                   scoped_refptr<ExtensionGalleriesHost> > ExtensionHostMap;
+  // Map a profile and extension to the ExtensionGalleriesHost.
+  typedef std::map<Profile*, ExtensionHostMap> ExtensionGalleriesHostMap;
 
   // Obtain an instance of this class via GetInstance().
   MediaFileSystemRegistry();
   virtual ~MediaFileSystemRegistry();
 
-  // Helper functions to register / unregister listening for renderer process
-  // closed / terminiated notifications.
-  void RegisterForRPHGoneNotifications(const content::RenderProcessHost* rph);
-  void UnregisterForRPHGoneNotifications(const content::RenderProcessHost* rph);
+  void OnExtensionGalleriesHostEmpty(Profile* profile,
+                                     const std::string& extension_id);
 
-  // Registers a path as a media file system and return the filesystem id.
-  std::string RegisterPathAsFileSystem(const FilePath& path);
-
-  // Revoke a media file system with a given |path|.
-  void RevokeMediaFileSystem(const FilePath& path);
-
-  // Only accessed on the UI thread.
-  ChildIdToMediaFSMap media_fs_map_;
-
-  // Only accessed on the UI thread.
-  DeviceIdToInfoMap device_id_map_;
-
-  // Is only used on the UI thread.
-  content::NotificationRegistrar registrar_;
+  // Only accessed on the UI thread.  This map owns all the
+  // ExtensionGalleriesHost objects created.
+  ExtensionGalleriesHostMap extension_hosts_map_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaFileSystemRegistry);
 };

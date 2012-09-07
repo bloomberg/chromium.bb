@@ -79,7 +79,7 @@ bool MediaGalleriesGetMediaFileSystemsFunction::RunImpl() {
   } else if (interactive == "if_needed") {
     std::vector<MediaFileSystemRegistry::MediaFSInfo> filesystems =
         MediaFileSystemRegistry::GetInstance()->GetMediaFileSystemsForExtension(
-            render_view_host()->GetProcess(), *GetExtension());
+            render_view_host(), GetExtension());
     if (filesystems.empty())
       ShowDialog();
     else
@@ -98,7 +98,7 @@ bool MediaGalleriesGetMediaFileSystemsFunction::RunImpl() {
 void MediaGalleriesGetMediaFileSystemsFunction::GetAndReturnGalleries() {
   std::vector<MediaFileSystemRegistry::MediaFSInfo> filesystems =
       MediaFileSystemRegistry::GetInstance()->GetMediaFileSystemsForExtension(
-          render_view_host()->GetProcess(), *GetExtension());
+          render_view_host(), GetExtension());
   ReturnGalleries(filesystems);
 }
 
@@ -115,7 +115,7 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
         "name", Value::CreateStringValue(filesystems[i].name));
     list->Append(dict_value);
 
-    if (GetExtension()->HasAPIPermission(
+    if (!filesystems[i].path.empty() && GetExtension()->HasAPIPermission(
             extensions::APIPermission::kMediaGalleriesRead)) {
       content::ChildProcessSecurityPolicy* policy =
           ChildProcessSecurityPolicy::GetInstance();

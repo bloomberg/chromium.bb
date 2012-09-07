@@ -30,7 +30,6 @@ class MediaStorageUtil {
   };
 
   typedef base::Callback<void(bool)> BoolCallback;
-  typedef base::Callback<void(FilePath)> FilePathCallback;
 
   // Returns a device id given properties of the device. A prefix dependent on
   // |type| is added so |unique_id| need only be unique within the given type.
@@ -50,6 +49,10 @@ class MediaStorageUtil {
   // (type isn't FIXED_MASS_STORAGE).
   static bool IsRemovableDevice(const std::string& device_id);
 
+  // Looks inside |device_id| to determine if it is a mass storage device
+  // (type isn't MTP_OR_PTP).
+  static bool IsMassStorageDevice(const std::string& device_id);
+
   // Determines if the device is attached to the computer.
   static void IsDeviceAttached(const std::string& device_id,
                                const BoolCallback& callback);
@@ -61,10 +64,10 @@ class MediaStorageUtil {
                                     string16* device_name,
                                     FilePath* relative_path);
 
-  // Get a FilePath for the given |device_id|.  If the device isn't connected
-  // or isn't a mass storage type, the FilePath will be empty.
-  static void FindDevicePathById(const std::string& device_id,
-                                 const FilePathCallback& callback);
+  // Get a FilePath for the given |device_id|.  If the device isn't a mass
+  // storage type, the FilePath will be empty.  This does not check that
+  // the device is connected.
+  static FilePath FindDevicePathById(const std::string& device_id);
 
  protected:
   typedef void (*GetDeviceInfoFromPathFunction)(const FilePath& path,

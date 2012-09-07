@@ -102,9 +102,7 @@ void DeviceAttachedIntentSource::OnRemovableStorageAttached(
 
   // Only handle mass storage for now.
   // TODO(kmadhusu): Handle all device types. http://crbug.com/140353.
-  MediaStorageUtil::Type type;
-  MediaStorageUtil::CrackDeviceId(id, &type, NULL);
-  if (type == MediaStorageUtil::MTP_OR_PTP)
+  if (!MediaStorageUtil::IsMassStorageDevice(id))
     return;
   DCHECK(MediaStorageUtil::IsRemovableDevice(id));
 
