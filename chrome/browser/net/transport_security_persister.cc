@@ -20,32 +20,33 @@
 #include "net/base/x509_certificate.h"
 
 using content::BrowserThread;
-using net::Fingerprint;
-using net::FingerprintVector;
+using net::HashValue;
+using net::HashValueTag;
+using net::HashValueVector;
 using net::TransportSecurityState;
 
 namespace {
 
-ListValue* SPKIHashesToListValue(const FingerprintVector& hashes) {
+ListValue* SPKIHashesToListValue(const HashValueVector& hashes) {
   ListValue* pins = new ListValue;
 
-  for (FingerprintVector::const_iterator i = hashes.begin();
+  for (HashValueVector::const_iterator i = hashes.begin();
        i != hashes.end(); ++i) {
-    std::string hash_str(reinterpret_cast<const char*>(i->data),
-                         sizeof(i->data));
+    std::string hash_str(reinterpret_cast<const char*>(i->data()), i->size());
     std::string b64;
-    base::Base64Encode(hash_str, &b64);
-    pins->Append(new StringValue("sha1/" + b64));
+    if (base::Base64Encode(hash_str, &b64))
+      pins->Append(new StringValue(TransportSecurityState::HashValueLabel(*i) +
+                                   b64));
   }
 
   return pins;
 }
 
-void SPKIHashesFromListValue(const ListValue& pins, FingerprintVector* hashes) {
+void SPKIHashesFromListValue(const ListValue& pins, HashValueVector* hashes) {
   size_t num_pins = pins.GetSize();
   for (size_t i = 0; i < num_pins; ++i) {
     std::string type_and_base64;
-    Fingerprint fingerprint;
+    HashValue fingerprint;
     if (pins.GetString(i, &type_and_base64) &&
         TransportSecurityState::ParsePin(type_and_base64, &fingerprint)) {
       hashes->push_back(fingerprint);
