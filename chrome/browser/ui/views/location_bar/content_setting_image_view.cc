@@ -29,10 +29,6 @@ namespace {
 const int kOpenTimeMs = 150;
 const int kFullOpenedTimeMs = 3200;
 const int kMoveTimeMs = kFullOpenedTimeMs + 2 * kOpenTimeMs;
-const int kFrameRateHz = 60;
-// Margins for animated box.
-const int kTextMarginPixels = 4;
-const int kIconLeftMargin = 2;
 
 
 // The fraction of the animation we'll spend animating the string into view, and
@@ -45,15 +41,11 @@ ContentSettingImageView::ContentSettingImageView(
     ContentSettingsType content_type,
     const int background_images[],
     LocationBarView* parent)
-    : content_setting_image_model_(
+    : LocationBarDecorationView(parent, background_images),
+      content_setting_image_model_(
           ContentSettingImageModel::CreateContentSettingImageModel(
               content_type)),
-      bubble_widget_(NULL),
-      parent_(parent),
-      pause_animation_(false),
-      text_size_(0),
-      visible_text_size_(0),
-      background_painter_(background_images) {
+      bubble_widget_(NULL) {
   SetHorizontalAlignment(ImageView::LEADING);
   TouchableLocationBarView::Init(this);
 }
@@ -98,151 +90,22 @@ void ContentSettingImageView::Update(TabContents* tab_contents) {
   if (!animated_string_id)
     return;
 
-  if (!slide_animator_.get()) {
-    slide_animator_.reset(new ui::SlideAnimation(this));
-    slide_animator_->SetSlideDuration(kMoveTimeMs);
-    slide_animator_->SetTweenType(ui::Tween::LINEAR);
-  }
-  // Do not start animation if already in progress.
-  if (!slide_animator_->is_animating()) {
-    // Initialize animated string. It will be cleared when animation is
-    // completed.
-    animated_text_ = l10n_util::GetStringUTF16(animated_string_id);
-    text_size_ = ui::ResourceBundle::GetSharedInstance().GetFont(
-        ui::ResourceBundle::MediumFont).GetStringWidth(animated_text_);
-    text_size_ += 2 * kTextMarginPixels + kIconLeftMargin;
-    slide_animator_->Show();
-  }
+  StartLabelAnimation(l10n_util::GetStringUTF16(animated_string_id),
+                      kMoveTimeMs);
 }
 
-gfx::Size ContentSettingImageView::GetPreferredSize() {
-  gfx::Size preferred_size(views::ImageView::GetPreferredSize());
-  preferred_size.set_height(std::max(preferred_size.height(),
-                                     background_painter_.height()));
-  // When view is animated visible_text_size_ > 0, it is 0 otherwise.
-  preferred_size.set_width(preferred_size.width() + visible_text_size_);
-  return preferred_size;
-}
-
-ui::EventResult ContentSettingImageView::OnGestureEvent(
-    const ui::GestureEvent& event) {
-  if (event.type() == ui::ET_GESTURE_TAP) {
-    OnClick();
-    return ui::ER_CONSUMED;
-  } else if (event.type() == ui::ET_GESTURE_TAP_DOWN) {
-    return ui::ER_CONSUMED;
-  }
-
-  return ui::ER_UNHANDLED;
-}
-
-
-void ContentSettingImageView::AnimationEnded(const ui::Animation* animation) {
-  if (pause_animation_)
-    pause_animation_ = false;
-  slide_animator_->Reset();
-}
-
-void ContentSettingImageView::AnimationProgressed(
-    const ui::Animation* animation) {
-  if (pause_animation_)
-    return;
-  double state = slide_animator_->GetCurrentValue();
+int ContentSettingImageView::GetTextAnimationSize(double state,
+                                                   int text_size) {
   if (state >= 1.0) {
     // Animaton is over, clear the variables.
-    visible_text_size_ = 0;
+    return 0;
   } else if (state < kAnimatingFraction) {
-    visible_text_size_ = static_cast<int>(text_size_ * state /
-                                          kAnimatingFraction);
+    return static_cast<int>(text_size * state / kAnimatingFraction);
   } else if (state > (1.0 - kAnimatingFraction)) {
-    visible_text_size_ = static_cast<int>(text_size_ * (1.0 - state) /
-                                          kAnimatingFraction);
+    return static_cast<int>(text_size * (1.0 - state) / kAnimatingFraction);
   } else {
-    visible_text_size_ = text_size_;
+    return text_size;
   }
-  parent_->Layout();
-  parent_->SchedulePaint();
-}
-
-void ContentSettingImageView::AnimationCanceled(
-    const ui::Animation* animation) {
-  AnimationEnded(animation);
-}
-
-bool ContentSettingImageView::OnMousePressed(const ui::MouseEvent& event) {
-  // We want to show the bubble on mouse release; that is the standard behavior
-  // for buttons.
-  return true;
-}
-
-void ContentSettingImageView::OnMouseReleased(const ui::MouseEvent& event) {
-  if (!HitTestPoint(event.location()))
-    return;
-
-  OnClick();
-}
-
-void ContentSettingImageView::OnClick() {
-  TabContents* tab_contents = parent_->GetTabContents();
-  if (!tab_contents)
-    return;
-
-  // Stop animation.
-  if (slide_animator_.get() && slide_animator_->is_animating()) {
-    slide_animator_->Reset();
-    pause_animation_ = true;
-  }
-
-  Profile* profile = parent_->profile();
-  ContentSettingBubbleContents* bubble = new ContentSettingBubbleContents(
-      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-          parent_->delegate()->GetContentSettingBubbleModelDelegate(),
-          tab_contents,
-          profile,
-          content_setting_image_model_->get_content_settings_type()),
-      tab_contents->web_contents(),
-      this,
-      views::BubbleBorder::TOP_RIGHT);
-  bubble_widget_ = parent_->delegate()->CreateViewsBubble(bubble);
-  bubble_widget_->AddObserver(this);
-  bubble->Show();
-}
-
-void ContentSettingImageView::OnPaint(gfx::Canvas* canvas) {
-  // During the animation we draw a border, an icon and the text. The text area
-  // is changing in size during the animation, giving the appearance of the text
-  // sliding out and then back in. When the text completely slid out the yellow
-  // border is no longer painted around the icon. |visible_text_size_| is 0 when
-  // animation is stopped.
-  if (slide_animator_.get() &&
-      (slide_animator_->is_animating() || pause_animation_)) {
-    // In the non-animated state borders' left() is 0, in the animated state it
-    // is the kIconLeftMargin, so we need to animate border reduction when it
-    // starts to disappear.
-    int necessary_left_margin = std::min(kIconLeftMargin, visible_text_size_);
-    views::Border* empty_border =
-        views::Border::CreateEmptyBorder(0, necessary_left_margin, 0, 0);
-    set_border(empty_border);
-    views::ImageView::OnPaint(canvas);
-
-    // Paint text to the right of the icon.
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    canvas->DrawStringInt(animated_text_,
-        rb.GetFont(ui::ResourceBundle::MediumFont), SK_ColorBLACK,
-        GetImageBounds().right() + kTextMarginPixels, 0,
-        width() - GetImageBounds().width(), height(),
-        gfx::Canvas::TEXT_ALIGN_LEFT | gfx::Canvas::TEXT_VALIGN_MIDDLE);
-  } else {
-    views::ImageView::OnPaint(canvas);
-  }
-}
-
-void ContentSettingImageView::OnPaintBackground(gfx::Canvas* canvas) {
-  if (slide_animator_.get() &&
-      (slide_animator_->is_animating() || pause_animation_))
-    background_painter_.Paint(canvas, size());
-  else
-    views::ImageView::OnPaintBackground(canvas);
 }
 
 void ContentSettingImageView::OnWidgetClosing(views::Widget* widget) {
@@ -250,14 +113,28 @@ void ContentSettingImageView::OnWidgetClosing(views::Widget* widget) {
     bubble_widget_->RemoveObserver(this);
     bubble_widget_ = NULL;
   }
-  if (pause_animation_) {
-    slide_animator_->Reset(
-        1.0 - (visible_text_size_ * kAnimatingFraction) / text_size_);
-    pause_animation_ = false;
-    slide_animator_->Show();
-  }
+
+  UnpauseAnimation();
 }
 
-int ContentSettingImageView::GetBuiltInHorizontalPadding() const {
-  return GetBuiltInHorizontalPaddingImpl();
+void ContentSettingImageView::OnClick(LocationBarView* parent) {
+  TabContents* tab_contents = parent->GetTabContents();
+  if (!tab_contents)
+    return;
+  if (bubble_widget_)
+    return;
+
+  Profile* profile = parent->profile();
+  ContentSettingBubbleContents* bubble = new ContentSettingBubbleContents(
+      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+          parent->delegate()->GetContentSettingBubbleModelDelegate(),
+          tab_contents,
+          profile,
+          content_setting_image_model_->get_content_settings_type()),
+      tab_contents->web_contents(),
+      this,
+      views::BubbleBorder::TOP_RIGHT);
+  bubble_widget_ = parent->delegate()->CreateViewsBubble(bubble);
+  bubble_widget_->AddObserver(this);
+  bubble->Show();
 }
