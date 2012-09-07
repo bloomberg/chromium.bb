@@ -147,6 +147,12 @@ ModemMessagingClient*
   return NULL;
 }
 
+PermissionBrokerClient*
+    MockDBusThreadManagerWithoutGMock::GetPermissionBrokerClient() {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 PowerManagerClient* MockDBusThreadManagerWithoutGMock::GetPowerManagerClient() {
   NOTIMPLEMENTED();
   return NULL;

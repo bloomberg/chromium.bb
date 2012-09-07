@@ -25,6 +25,7 @@
 #include "chromeos/dbus/mock_introspectable_client.h"
 #include "chromeos/dbus/mock_media_transfer_protocol_daemon_client.h"
 #include "chromeos/dbus/mock_modem_messaging_client.h"
+#include "chromeos/dbus/mock_permission_broker_client.h"
 #include "chromeos/dbus/mock_power_manager_client.h"
 #include "chromeos/dbus/mock_session_manager_client.h"
 #include "chromeos/dbus/mock_sms_client.h"
@@ -61,6 +62,7 @@ MockDBusThreadManager::MockDBusThreadManager()
       mock_media_transfer_protocol_daemon_client_(
           new MockMediaTransferProtocolDaemonClient),
       mock_modem_messaging_client_(new MockModemMessagingClient),
+      mock_permission_broker_client_(new MockPermissionBrokerClient),
       mock_power_manager_client_(new MockPowerManagerClient),
       mock_session_manager_client_(new MockSessionManagerClient),
       mock_sms_client_(new MockSMSClient),

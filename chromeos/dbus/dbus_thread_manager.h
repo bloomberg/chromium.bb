@@ -41,16 +41,17 @@ class FlimflamProfileClient;
 class FlimflamServiceClient;
 class GsmSMSClient;
 class IBusClient;
-class IBusEngineService;
 class IBusEngineFactoryService;
+class IBusEngineService;
 class IBusInputContextClient;
 class ImageBurnerClient;
 class IntrospectableClient;
 class MediaTransferProtocolDaemonClient;
 class ModemMessagingClient;
+class PermissionBrokerClient;
 class PowerManagerClient;
-class SessionManagerClient;
 class SMSClient;
+class SessionManagerClient;
 class SpeechSynthesizerClient;
 class UpdateEngineClient;
 
@@ -210,6 +211,10 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // Do not cache this pointer and use it after DBusThreadManager is shut
   // down.
   virtual ModemMessagingClient* GetModemMessagingClient() = 0;
+
+  // Returns the Permission Broker client, owned by DBusThreadManager. Do not
+  // cache this pointer and use it after DBusThreadManager is shut down.
+  virtual PermissionBrokerClient* GetPermissionBrokerClient() = 0;
 
   // Returns the power manager client, owned by DBusThreadManager.
   // See also comments at session_manager_client().
