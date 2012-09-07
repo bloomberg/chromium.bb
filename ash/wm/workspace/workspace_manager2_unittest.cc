@@ -893,5 +893,26 @@ TEST_F(WorkspaceManager2Test, DontMoveOnSwitch) {
   wm::ActivateWindow(w1.get());
   EXPECT_EQ(touches_shelf_bounds.ToString(), w1->bounds().ToString());
 }
+
+// Verifies Focus() works in a window that isn't in the active workspace.
+TEST_F(WorkspaceManager2Test, FocusOnFullscreenInSeparateWorkspace) {
+  scoped_ptr<Window> w1(CreateTestWindow());
+  w1->SetBounds(gfx::Rect(10, 11, 250, 251));
+  w1->Show();
+  wm::ActivateWindow(w1.get());
+
+  scoped_ptr<Window> w2(CreateTestWindow());
+  w2->SetBounds(gfx::Rect(10, 11, 250, 251));
+  w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
+  w2->Show();
+  EXPECT_FALSE(w2->IsVisible());
+  EXPECT_FALSE(wm::IsActiveWindow(w2.get()));
+
+  w2->Focus();
+  EXPECT_TRUE(w2->IsVisible());
+  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
+  EXPECT_FALSE(w1->IsVisible());
+}
+
 }  // namespace internal
 }  // namespace ash

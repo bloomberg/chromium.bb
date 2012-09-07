@@ -933,6 +933,13 @@ void AnimateWorkspaceOut(aura::Window* window,
     window->Hide();
     if (direction == WORKSPACE_ANIMATE_UP)
       window->layer()->SetOpacity(0.0f);
+
+    // After the animation completes snap the transform back to the identity,
+    // otherwise any one that asks for screen bounds gets a slightly scaled
+    // version.
+    settings.SetPreemptionStrategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
+    settings.SetTransitionDuration(base::TimeDelta());
+    window->layer()->SetTransform(ui::Transform());
   }
 }
 

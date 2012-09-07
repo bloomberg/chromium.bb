@@ -538,13 +538,11 @@ bool Window::HasFocus() const {
   return focus_manager ? focus_manager->IsFocusedWindow(this) : false;
 }
 
-// For a given window, we determine its focusability and ability to
-// receive events by inspecting each sibling after it (i.e. drawn in
-// front of it in the z-order) to see if it stops propagation of
-// events that would otherwise be targeted at windows behind it.  We
-// then perform this same check on every window up to the root.
 bool Window::CanFocus() const {
-  if (!IsVisible() || !parent_ || (delegate_ && !delegate_->CanFocus()))
+  // NOTE: as part of focusing the window the ActivationClient may make the
+  // window visible (by way of making a hidden ancestor visible). For this
+  // reason we can't check visibility here and assume the client is doing it.
+  if (!parent_ || (delegate_ && !delegate_->CanFocus()))
     return false;
 
   // The client may forbid certain windows from receiving focus at a given point
