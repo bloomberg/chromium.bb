@@ -11,7 +11,6 @@
 #include "chrome/browser/history/android/android_history_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/SQLiteCursor_jni.h"
-#include "ui/gfx/favicon_size.h"
 #include "sql/statement.h"
 
 using base::android::ConvertUTF8ToJavaString;
@@ -241,8 +240,7 @@ void SQLiteCursor::GetFaviconForIDInUIThread(
     CancelableRequestConsumerBase* consumer,
     const FaviconService::FaviconRawCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  favicon_service_->GetRawFaviconForID(id, gfx::kFaviconSize,
-      ui::SCALE_FACTOR_100P, consumer, callback);
+  favicon_service_->GetLargestRawFaviconForID(id, consumer, callback);
 }
 
 

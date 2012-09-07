@@ -131,17 +131,17 @@ FaviconService::Handle FaviconService::GetFaviconForURL(
   return GetFaviconForURLImpl(params, desired_scale_factors, request);
 }
 
-FaviconService::Handle FaviconService::GetRawFaviconForID(
-    history::FaviconID favicon_id,
-    int desired_size_in_dip,
-    ui::ScaleFactor desired_scale_factor,
-    CancelableRequestConsumerBase* consumer,
-    const FaviconRawCallback& callback) {
-  GetFaviconRequest* request = new GetFaviconRequest(base::Bind(
+FaviconService::Handle FaviconService::GetLargestRawFaviconForID(
+      history::FaviconID favicon_id,
+      CancelableRequestConsumerBase* consumer,
+      const FaviconRawCallback& callback) {
+   // Use 0 as |desired_size_in_dip| to get the largest bitmap for |favicon_id|
+   // without any resizing.
+   GetFaviconRequest* request = new GetFaviconRequest(base::Bind(
       &FaviconService::GetRawFaviconCallback,
       base::Unretained(this),
-      desired_size_in_dip,
-      desired_scale_factor,
+      0,
+      ui::SCALE_FACTOR_100P,
       callback));
 
   AddRequest(request, consumer);
@@ -154,7 +154,6 @@ FaviconService::Handle FaviconService::GetRawFaviconForID(
 
   return handle;
 }
-
 
 void FaviconService::SetFaviconOutOfDateForPage(const GURL& page_url) {
   if (history_service_)
@@ -237,6 +236,14 @@ void FaviconService::GetRawFaviconCallback(
 
   DCHECK_EQ(1u, favicon_bitmap_results.size());
   history::FaviconBitmapResult bitmap_result = favicon_bitmap_results[0];
+
+  // If the desired size is 0, SelectFaviconFrames() will return the largest
+  // bitmap without doing any resizing. As |favicon_bitmap_results| has bitmap
+  // data for a single bitmap, return it and avoid an unnecessary decode.
+  if (desired_size_in_dip == 0) {
+    callback.Run(handle, bitmap_result);
+    return;
+  }
 
   // If history bitmap is already desired pixel size, return early.
   float desired_scale = ui::GetScaleFactorScale(desired_scale_factor);
