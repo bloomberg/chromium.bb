@@ -213,7 +213,7 @@ int EvdevProbeAbsinfo(EvdevPtr device, size_t key) {
 
   absinfo = &device->info.absinfo[key];
   if (ioctl(device->fd, EVIOCGABS(key), absinfo) < 0) {
-      LOG_ERROR(device, "ioctl EVIOCGABS(%d) failed: %s\n", key,
+      LOG_ERROR(device, "ioctl EVIOCGABS(%zu) failed: %s\n", key,
                 strerror(errno));
       return !Success;
   } else {
