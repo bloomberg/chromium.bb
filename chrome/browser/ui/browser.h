@@ -482,6 +482,7 @@ class Browser : public TabStripModelObserver,
 
  private:
   friend class BrowserTest;
+  friend class FullscreenControllerInteractiveTest;
   friend class FullscreenControllerTest;
   FRIEND_TEST_ALL_PREFIXES(AppModeTest, EnableAppModeTest);
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, NoTabsInPopups);
