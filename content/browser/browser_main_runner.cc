@@ -43,6 +43,7 @@ class BrowserMainRunnerImpl : public content::BrowserMainRunner {
       OVERRIDE {
     is_initialized_ = true;
 
+#if !defined(OS_IOS)
     // ChildProcess:: is a misnomer unless you consider context.  Use
     // of --wait-for-debugger only makes sense when Chrome itself is a
     // child process (e.g. when launched by PyAuto).
@@ -51,6 +52,7 @@ class BrowserMainRunnerImpl : public content::BrowserMainRunner {
 
     if (parameters.command_line.HasSwitch(switches::kSingleProcess))
       content::RenderProcessHost::set_run_renderer_in_process(true);
+#endif  // !defined(OS_IOS)
 
     base::StatisticsRecorder::Initialize();
 
