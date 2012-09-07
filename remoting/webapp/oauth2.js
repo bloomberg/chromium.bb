@@ -45,6 +45,9 @@ remoting.OAuth2.prototype.SCOPE_ =
 remoting.OAuth2.prototype.OAUTH2_TOKEN_ENDPOINT_ =
     'https://accounts.google.com/o/oauth2/token';
 /** @private */
+remoting.OAuth2.prototype.OAUTH2_VALIDATE_TOKEN_ENDPOINT_ =
+    'https://www.googleapis.com/oauth2/v1/tokeninfo';
+/** @private */
 remoting.OAuth2.prototype.OAUTH2_REVOKE_TOKEN_ENDPOINT_ =
     'https://accounts.google.com/o/oauth2/revoke';
 
@@ -298,6 +301,100 @@ remoting.OAuth2.prototype.exchangeCodeForToken = function(code, onDone) {
 };
 
 /**
+ * Interprets unexpected HTTP response codes to authentication XMLHttpRequests.
+ * The caller should handle the usual expected responses (200, 400) separately.
+ *
+ * @private
+ * @param {number} xhrStatus Status (HTTP response code) of the XMLHttpRequest.
+ * @return {remoting.Error} An error code to be raised.
+ */
+remoting.OAuth2.prototype.interpretUnexpectedXhrStatus_ = function(xhrStatus) {
+  // Return AUTHENTICATION_FAILED by default, so that the user can try to
+  // recover from an unexpected failure by signing in again.
+  /** @type {remoting.Error} */
+  var error = remoting.Error.AUTHENTICATION_FAILED;
+  if (xhrStatus == 503) {
+    error = remoting.Error.SERVICE_UNAVAILABLE;
+  } else if (xhrStatus == 0) {
+    error = remoting.Error.NETWORK_FAILURE;
+  } else {
+    console.warn('Unexpected authentication response code: ' + xhrStatus);
+  }
+  return error;
+};
+
+/**
+ * Asynchronously validates an access token.
+ *
+ * @param {string} token The access token.
+ * @param {function():void} onOk Callback to invoke if the token is valid.
+ * @param {function(remoting.Error):void} onError Function to invoke with an
+ *     error code on failure.
+ * @return {void} Nothing.
+ */
+remoting.OAuth2.prototype.validateToken = function(token, onOk, onError) {
+  var parameters = {
+    'access_token': token
+  };
+  remoting.xhr.get(this.OAUTH2_VALIDATE_TOKEN_ENDPOINT_,
+                   this.processValidateTokenResponse_.bind(this, onOk, onError),
+                   parameters);
+};
+
+/**
+ * Sorts the URLs in an OAuth2 scope string.
+ *
+ * @private
+ * @param {string} scope The scope to be sorted (URLs separated by spaces).
+ * @return {string} A string with the URLs in {@code scope} sorted.
+ */
+remoting.OAuth2.prototype.sortScope_ = function(scope) {
+  return (/** @type {[string]} */ (scope.split(' ').sort()).join(' '));
+};
+
+/**
+ * Processes token validation results and notifies caller.
+ *
+ * @private
+ * @param {function():void} onOk Callback to invoke if the token is valid.
+ * @param {function(remoting.Error):void} onError Function to invoke with an
+ *     error code on failure.
+ * @param {XMLHttpRequest} xhr The XHR object for this request.
+ * @return {void} Nothing.
+ */
+remoting.OAuth2.prototype.processValidateTokenResponse_ = function(
+    onOk, onError, xhr) {
+  /** @type {remoting.Error} */
+  var error = remoting.Error.UNEXPECTED;
+  if (xhr.status == 200) {
+    var result = jsonParseSafe(xhr.responseText);
+    // Double check that the token is valid for what we requested.
+    if (result && result['audience'] == this.CLIENT_ID_ &&
+        // Compare the (unordered) set of URLs in each scope.
+        this.sortScope_(result['scope']) == this.sortScope_(this.SCOPE_)) {
+      onOk();
+      return;
+    } else {
+      console.warn('Token is valid, but has unexpected audience or scope: ' +
+                   xhr.responseText);
+      error = remoting.Error.AUTHENTICATION_FAILED;
+    }
+  } else if (xhr.status == 400) {
+    var result =
+        /** @type {{error: string}} */ (jsonParseSafe(xhr.responseText));
+    if (result && result.error == 'invalid_token') {
+      error = remoting.Error.AUTHENTICATION_FAILED;
+    }
+  } else {
+    error = this.interpretUnexpectedXhrStatus_(xhr.status);
+  }
+  // Note that AUTHENTICATION_FAILED will force a new sign-in if bubbled all the
+  // way up. The code protects against trying to use expired access tokens, so
+  // if they're invalid, we can assume that simply refreshing won't work.
+  onError(error);
+};
+
+/**
  * Revokes a refresh or an access token.
  *
  * @param {string?} token An access or refresh token.
@@ -357,6 +454,7 @@ remoting.OAuth2.prototype.callWithToken = function(onOk, onError) {
  */
 remoting.OAuth2.prototype.onRefreshToken_ = function(onOk, onError, xhr,
                                                      accessToken) {
+  /** @type {remoting.Error} */
   var error = remoting.Error.UNEXPECTED;
   if (xhr.status == 200) {
     onOk(accessToken);
@@ -367,15 +465,9 @@ remoting.OAuth2.prototype.onRefreshToken_ = function(onOk, onError, xhr,
     if (result && result.error == 'invalid_grant') {
       error = remoting.Error.AUTHENTICATION_FAILED;
     }
-  } else if (xhr.status == 401) {
-    // According to the OAuth2 draft RFC, the server shouldn't return 401,
-    // but AUTHENTICATION_FAILED is the obvious interpretation if it does.
-    console.warn('Unexpected 401 in response to refresh.');
-    error = remoting.Error.AUTHENTICATION_FAILED;
-  } else if (xhr.status == 503) {
-    error = remoting.Error.SERVICE_UNAVAILABLE;
+  } else {
+    error = this.interpretUnexpectedXhrStatus_(xhr.status);
   }
-  // TODO(jamiewalch): Add timeout support.
   onError(error);
 };
 
@@ -407,13 +499,11 @@ remoting.OAuth2.prototype.getEmail = function(onOk, onError) {
       return;
     }
     console.error('Unable to get email address:', xhr.status, xhr);
-    var error = remoting.Error.UNEXPECTED;
     if (xhr.status == 401) {
-      error = remoting.Error.AUTHENTICATION_FAILED;
-    } else if (xhr.status == 503) {
-      error = remoting.Error.SERVICE_UNAVAILABLE;
+      onError(remoting.Error.AUTHENTICATION_FAILED);
+    } else {
+      onError(that.interpretUnexpectedXhrStatus_(xhr.status));
     }
-    onError(error);
   };
 
   /** @param {string} token The access token. */

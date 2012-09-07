@@ -19,7 +19,6 @@ remoting.wcsLoader = null;
 
 /**
  * @constructor
- * @private
  */
 remoting.WcsLoader = function() {
   /**
@@ -111,14 +110,24 @@ remoting.WcsLoader.prototype.start_ = function(token, onReady, onError) {
     typedNode.setAttribute(that.SCRIPT_NODE_LOADED_FLAG_, true);
     that.constructWcs_(token, onReady);
   };
-  var removeNodeAndNotify = function() {
-    var typedNode = /** @type {Element} */ (node);
-    typedNode.parentNode.removeChild(node);
-    // TODO(jamiewalch): See if we can do better by looking at the event.
-    onError(remoting.Error.NETWORK_FAILURE);
-  };
+  var onLoadError = function(event) {
+    // The DOM Event object has no detail on the nature of the error, so try to
+    // validate the token to get a better idea.
+    /** @param {remoting.Error} error Error code. */
+    var onValidateError = function(error) {
+      var typedNode = /** @type {Element} */ (node);
+      typedNode.parentNode.removeChild(node);
+      onError(error);
+    };
+    var onValidateOk = function() {
+      // We can reach the authentication server and validate the token, so our
+      // best guess is that there's something wrong with the talkgadget service.
+      onValidateError(remoting.Error.SERVICE_UNAVAILABLE);
+    }
+    remoting.oauth2.validateToken(token, onValidateOk, onValidateError);
+  }
   node.addEventListener('load', onLoad, false);
-  node.addEventListener('error', removeNodeAndNotify, false);
+  node.addEventListener('error', onLoadError, false);
 };
 
 /**
