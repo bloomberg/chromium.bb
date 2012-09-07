@@ -23,6 +23,17 @@ SocketPermission::SocketPermission(const APIPermissionInfo* info)
 SocketPermission::~SocketPermission() {
 }
 
+bool SocketPermission::HasMessages() const {
+  return info()->message_id() > PermissionMessage::kNone;
+}
+
+PermissionMessages SocketPermission::GetMessages() const {
+  DCHECK(HasMessages());
+  PermissionMessages result;
+  result.push_back(GetMessage_());
+  return result;
+}
+
 bool SocketPermission::Check(
     const APIPermission::CheckParam* param) const {
   const CheckParam* socket_param = static_cast<const CheckParam*>(param);

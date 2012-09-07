@@ -39,6 +39,12 @@ class SocketPermission : public APIPermission {
 
   virtual ~SocketPermission();
 
+  // Returns true if this permission has PermissionMessages.
+  virtual bool HasMessages() const OVERRIDE;
+
+  // Returns the localized permission messages of this permission.
+  virtual PermissionMessages GetMessages() const OVERRIDE;
+
   // Returns true if the given permission in param is allowed.
   virtual bool Check(
       const APIPermission::CheckParam* param) const OVERRIDE;

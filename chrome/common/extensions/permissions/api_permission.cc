@@ -13,6 +13,8 @@ namespace {
 
 using extensions::APIPermission;
 using extensions::APIPermissionInfo;
+using extensions::PermissionMessage;
+using extensions::PermissionMessages;
 
 const char kOldUnlimitedStoragePermission[] = "unlimited_storage";
 const char kWindowsPermission[] = "windows";
@@ -24,6 +26,34 @@ class SimpleAPIPermission : public APIPermission {
 
   virtual ~SimpleAPIPermission() { }
 
+  virtual bool HasMessages() const OVERRIDE {
+    return info()->message_id() > PermissionMessage::kNone;
+  }
+
+  virtual PermissionMessages GetMessages() const OVERRIDE {
+    DCHECK(HasMessages());
+    PermissionMessages result;
+    result.push_back(GetMessage_());
+    return result;
+  }
+
+  virtual bool Check(
+      const APIPermission::CheckParam* param) const OVERRIDE {
+    return !param;
+  }
+
+  virtual bool Contains(const APIPermission* rhs) const OVERRIDE {
+    CHECK(info() == rhs->info());
+    return true;
+  }
+
+  virtual bool Equal(const APIPermission* rhs) const OVERRIDE {
+    if (this == rhs)
+      return true;
+    CHECK(info() == rhs->info());
+    return true;
+  }
+
   virtual bool FromValue(const base::Value* value) OVERRIDE {
     if (value)
       return false;
@@ -32,18 +62,6 @@ class SimpleAPIPermission : public APIPermission {
 
   virtual void ToValue(base::Value** value) const OVERRIDE {
     *value = NULL;
-  }
-
-  virtual bool Check(
-      const APIPermission::CheckParam* param) const OVERRIDE {
-    return !param;
-  }
-
-  virtual bool Equal(const APIPermission* rhs) const OVERRIDE {
-    if (this == rhs)
-      return true;
-    CHECK(info() == rhs->info());
-    return true;
   }
 
   virtual APIPermission* Clone() const OVERRIDE {
@@ -63,11 +81,6 @@ class SimpleAPIPermission : public APIPermission {
   virtual APIPermission* Intersect(const APIPermission* rhs) const OVERRIDE {
     CHECK(info() == rhs->info());
     return new SimpleAPIPermission(info());
-  }
-
-  virtual bool Contains(const APIPermission* rhs) const OVERRIDE {
-    CHECK(info() == rhs->info());
-    return true;
   }
 
   virtual void Write(IPC::Message* m) const OVERRIDE { }
@@ -103,6 +116,9 @@ const char* APIPermission::name() const {
   return info()->name();
 }
 
+PermissionMessage APIPermission::GetMessage_() const {
+  return info()->GetMessage_();
+}
 
 //
 // APIPermissionInfo

@@ -539,15 +539,14 @@ void PermissionSet::InitEffectiveHosts() {
 std::set<PermissionMessage>
     PermissionSet::GetSimplePermissionMessages() const {
   std::set<PermissionMessage> messages;
-  PermissionsInfo* info = PermissionsInfo::GetInstance();
-  for (APIPermissionSet::const_iterator i = apis_.begin();
-       i != apis_.end(); ++i) {
+  for (APIPermissionSet::const_iterator permission_it = apis_.begin();
+       permission_it != apis_.end(); ++permission_it) {
     DCHECK_GT(PermissionMessage::kNone,
               PermissionMessage::kUnknown);
-    const APIPermissionInfo* permission_info = info->GetByID(i->id());
-    if (permission_info &&
-        permission_info->message_id() > PermissionMessage::kNone)
-      messages.insert(permission_info->GetMessage_());
+    if (permission_it->HasMessages()) {
+      PermissionMessages new_messages = permission_it->GetMessages();
+      messages.insert(new_messages.begin(), new_messages.end());
+    }
   }
   return messages;
 }

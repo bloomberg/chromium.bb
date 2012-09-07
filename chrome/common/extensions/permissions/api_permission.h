@@ -126,6 +126,12 @@ class APIPermission {
     return info_;
   }
 
+  // Returns true if this permission has any PermissionMessages.
+  virtual bool HasMessages() const = 0;
+
+  // Returns the localized permission messages of this permission.
+  virtual PermissionMessages GetMessages() const = 0;
+
   // Returns true if the given permission is allowed.
   virtual bool Check(const CheckParam* param) const = 0;
 
@@ -163,6 +169,11 @@ class APIPermission {
   // Logs this permission.
   virtual void Log(std::string* log) const = 0;
 
+ protected:
+  // Returns the localized permission message associated with this api.
+  // Use GetMessage_ to avoid name conflict with macro GetMessage on Windows.
+  PermissionMessage GetMessage_() const;
+
  private:
   const APIPermissionInfo* const info_;
 };
@@ -195,10 +206,6 @@ class APIPermissionInfo {
   // Creates a APIPermission instance.
   APIPermission* CreateAPIPermission() const;
 
-  // Returns the localized permission message associated with this api.
-  // Use GetMessage_ to avoid name conflict with macro GetMessage on Windows.
-  PermissionMessage GetMessage_() const;
-
   int flags() const { return flags_; }
 
   APIPermission::ID id() const { return id_; }
@@ -230,6 +237,9 @@ class APIPermissionInfo {
  private:
   // Instances should only be constructed from within PermissionsInfo.
   friend class PermissionsInfo;
+  // Implementations of APIPermission will want to get the permission message,
+  // but this class's implementation should be hidden from everyone else.
+  friend class APIPermission;
 
   explicit APIPermissionInfo(
       APIPermission::ID id,
@@ -241,6 +251,10 @@ class APIPermissionInfo {
 
   // Register ALL the permissions!
   static void RegisterAllPermissions(PermissionsInfo* info);
+
+  // Returns the localized permission message associated with this api.
+  // Use GetMessage_ to avoid name conflict with macro GetMessage on Windows.
+  PermissionMessage GetMessage_() const;
 
   const APIPermission::ID id_;
   const char* const name_;
