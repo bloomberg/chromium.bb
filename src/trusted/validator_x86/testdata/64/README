@@ -54,7 +54,7 @@ FOO.rval
 
      > scons-out/.../obj/src/trusted/validator_x86/ncval \
           --readwrite_sfi -hex_text=- --max_errors=-1 \
-          --annotate=false --cpuid-all < FOO.hex
+          --annotate=false --cpuid-all --detailed=false < FOO.hex
 
 FOO.rvala
 

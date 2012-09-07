@@ -1,0 +1,9 @@
+VALIDATOR: 000000000000000f: 66 48 68                                     invalid
+VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
+VALIDATOR: 000000000000000f: 66 48 68                                     invalid
+VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
+VALIDATOR: 0000000000000012: 03 04 90                                     add %eax, [%rax+%rdx*4]
+VALIDATOR: ERROR: Invalid base register in memory offset
+VALIDATOR: Checking jump targets: 0 to 18
+VALIDATOR: Checking that basic blocks are aligned
+*** <input> IS UNSAFE ***

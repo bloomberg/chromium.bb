@@ -5,8 +5,10 @@
 0000000000000010: 0f ba 28 01                                  [P] dontcare [%rax] (su), 0x1 (u)
 0000000000000014: 0f ba 38 01                                  [P] dontcare [%rax] (su), 0x1 (u)
 0000000000000018: 66 0f ba 24 24 01                            [P] dontcare [%rsp] (u), 0x1 (u)
-000000000000001e: 0f ba 24 24 01                               [P] dontcare [%rsp] (u), 0x1 (u)
-0000000000000023: 48 0f ba 24 24 01                            [P] dontcare [%rsp] (u), 0x1 (u)
-0000000000000029: 0f ba 34 24 01                               [P] dontcare [%rsp] (su), 0x1 (u)
-000000000000002e: 0f ba 2c 24 01                               [P] dontcare [%rsp] (su), 0x1 (u)
-0000000000000033: 0f ba 3c 24 01                               [P] dontcare [%rsp] (su), 0x1 (u)
+000000000000001e: 90                                           [P] dontcare
+000000000000001f: 90                                           [P] dontcare
+0000000000000020: 0f ba 24 24 01                               [P] dontcare [%rsp] (u), 0x1 (u)
+0000000000000025: 48 0f ba 24 24 01                            [P] dontcare [%rsp] (u), 0x1 (u)
+000000000000002b: 0f ba 34 24 01                               [P] dontcare [%rsp] (su), 0x1 (u)
+0000000000000030: 0f ba 2c 24 01                               [P] dontcare [%rsp] (su), 0x1 (u)
+0000000000000035: 0f ba 3c 24 01                               [P] dontcare [%rsp] (su), 0x1 (u)

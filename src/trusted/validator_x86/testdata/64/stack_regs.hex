@@ -25,6 +25,9 @@
 31 e5
 4a 8d 6c 3d 00
 
+# Nop for bundle alignment.
+90
+
 # mov %eax,%eax
 # lea (%r15,%rax,1),%rsp
 89 c0

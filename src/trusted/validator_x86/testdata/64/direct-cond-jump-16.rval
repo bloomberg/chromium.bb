@@ -2,10 +2,6 @@ VALIDATOR: 0000000000000000: 66 0f 84                                     invali
 VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
 VALIDATOR: 0000000000000000: 66 0f 84                                     invalid
 VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
-VALIDATOR: 0000000000000003: 05                                           invalid
-VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-VALIDATOR: 0000000000000004: 00 90                                        invalid
-VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-VALIDATOR: Checking jump targets: 0 to 7
+VALIDATOR: Checking jump targets: 0 to 8
 VALIDATOR: Checking that basic blocks are aligned
 *** <input> IS UNSAFE ***

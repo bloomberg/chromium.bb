@@ -1,37 +1,29 @@
-VALIDATOR: 00000000000000e8: 66 0f 78 c0 02 01                            [P] dontcare(illegal)
+VALIDATOR: 00000000000000ea: 66 0f 78 c0 02 01                            [P] dontcare(illegal)
 VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-VALIDATOR: 0000000000000104: c4                                           invalid
+VALIDATOR: 000000000000010b: c4                                           invalid
 VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-VALIDATOR: 0000000000000104: c4                                           invalid
+VALIDATOR: 000000000000010b: c4                                           invalid
 VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-VALIDATOR: 000000000000010d: 66 0f 38 dc                                  invalid
+VALIDATOR: 0000000000000114: 66 0f 38 dc                                  invalid
 VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-VALIDATOR: 000000000000010d: 66 0f 38 dc                                  invalid
+VALIDATOR: 0000000000000114: 66 0f 38 dc                                  invalid
 VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-VALIDATOR: 0000000000000111: c8 90 90 90                                  [P] dontcare(illegal)
+VALIDATOR: 0000000000000118: c8 90 90 90                                  [P] dontcare(illegal)
 VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-VALIDATOR: 0000000000000115: 66 0f 3a df                                  invalid
+VALIDATOR: 000000000000011c: 66 0f 3a df                                  invalid
 VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-VALIDATOR: 0000000000000115: 66 0f 3a df                                  invalid
+VALIDATOR: 000000000000011c: 66 0f 3a df                                  invalid
 VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
-VALIDATOR: 0000000000000119: c8 01 90 90                                  [P] dontcare(illegal)
+VALIDATOR: 0000000000000120: c8 01 90 90                                  [P] dontcare(illegal)
 VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-VALIDATOR: 000000000000011d: 66 0f 38 db                                  invalid
+VALIDATOR: 0000000000000124: 66 0f 38 db                                  invalid
 VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-VALIDATOR: 000000000000011d: 66 0f 38 db                                  invalid
+VALIDATOR: 0000000000000124: 66 0f 38 db                                  invalid
 VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-VALIDATOR: 0000000000000121: c8 90 90 90                                  [P] dontcare(illegal)
+VALIDATOR: 0000000000000128: c8 90 90 90                                  [P] dontcare(illegal)
 VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-VALIDATOR: Checking jump targets: 0 to 125
-VALIDATOR: ERROR: f8: Bad jump target
+VALIDATOR: Checking jump targets: 0 to 12c
 VALIDATOR: Checking that basic blocks are aligned
-VALIDATOR: ERROR: 20: Bad basic block alignment.
 VALIDATOR: ERROR: 40: Bad basic block alignment.
-VALIDATOR: ERROR: 60: Bad basic block alignment.
-VALIDATOR: ERROR: 80: Bad basic block alignment.
 VALIDATOR: ERROR: a0: Bad basic block alignment.
-VALIDATOR: ERROR: c0: Bad basic block alignment.
-VALIDATOR: ERROR: e0: Bad basic block alignment.
-VALIDATOR: ERROR: 100: Bad basic block alignment.
-VALIDATOR: ERROR: 120: Bad basic block alignment.
 *** <input> IS UNSAFE ***

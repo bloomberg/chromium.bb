@@ -1,0 +1,5 @@
+VALIDATOR: 2: ret instruction (not allowed)
+VALIDATOR: 2: Illegal instruction
+VALIDATOR: 5: Bad prefix usage
+VALIDATOR: 10: Bad prefix usage
+*** <input> IS UNSAFE ***

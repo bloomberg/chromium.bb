@@ -6,4 +6,4 @@
 
 # Padding in case the parser of the previous instruction recognizes
 # the wrong byte length for the jump constant.
-90 90
+90 90 90

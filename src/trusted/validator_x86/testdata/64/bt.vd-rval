@@ -10,7 +10,6 @@ VALIDATOR: 0000000000000010: 0f ba 28 01                                  [P] do
 VALIDATOR: ERROR: Invalid base register in memory offset
 VALIDATOR: 0000000000000014: 0f ba 38 01                                  [P] dontcare [%rax] (su), 0x1 (u)
 VALIDATOR: ERROR: Invalid base register in memory offset
-VALIDATOR: Checking jump targets: 0 to 38
+VALIDATOR: Checking jump targets: 0 to 3a
 VALIDATOR: Checking that basic blocks are aligned
-VALIDATOR: ERROR: 20: Bad basic block alignment.
 *** <input> IS UNSAFE ***

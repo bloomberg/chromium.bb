@@ -1,0 +1,5 @@
+VALIDATOR: 000000000000000f: a0 88 77 66 55 44 33 22 11                   mov %al, [0x1122334455667788]
+VALIDATOR: ERROR: No base register specified in memory offset
+VALIDATOR: Checking jump targets: 0 to 18
+VALIDATOR: Checking that basic blocks are aligned
+*** <input> IS UNSAFE ***

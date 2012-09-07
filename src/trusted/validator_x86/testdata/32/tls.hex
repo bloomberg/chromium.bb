@@ -1,6 +1,8 @@
 # Test TLS access commands.
 # mov %gs:0, %eax
 65 a1 00 00 00 00
+# AFAIK it's open question whether # writes to gs:... should be allowed.
+# Currently RDFA rejects.
 # mov %eax, %gs:0
 65 a3 00 00 00 00
 # Forbidden
@@ -19,8 +21,8 @@
 # mov %ax, %fs:0
 64 66 a3 00 00 00 00
 
-# Allowed
-# mov %gs:(%eax),%eax
+# AFAIK it's open question whether writes to gs:... should be allowed.
+# Currently RDFA rejects.
 65 8B 00
 
 # Forbidden

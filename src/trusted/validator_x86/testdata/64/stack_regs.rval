@@ -10,11 +10,10 @@ VALIDATOR: 000000000000000e: 49 8d 2c 2f                                  lea %r
 VALIDATOR: ERROR: Illegal change to register RBP
 VALIDATOR: 000000000000000c: 31 e5                                        xor %ebp, %esp
 VALIDATOR: ERROR: Illegal assignment to EBP
-VALIDATOR: 0000000000000021: 49 8d 24 07                                  lea %rsp, [%r15+%rax*1]
+VALIDATOR: 0000000000000022: 49 8d 24 07                                  lea %rsp, [%r15+%rax*1]
 VALIDATOR: ERROR: Illegal assignment to RSP
-VALIDATOR: 0000000000000027: 4a 8d 24 38                                  lea %rsp, [%rax+%r15*1]
+VALIDATOR: 0000000000000028: 4a 8d 24 38                                  lea %rsp, [%rax+%r15*1]
 VALIDATOR: ERROR: Illegal assignment to RSP
-VALIDATOR: Checking jump targets: 0 to 2b
+VALIDATOR: Checking jump targets: 0 to 2c
 VALIDATOR: Checking that basic blocks are aligned
-VALIDATOR: ERROR: 20: Bad basic block alignment.
 *** <input> IS UNSAFE ***

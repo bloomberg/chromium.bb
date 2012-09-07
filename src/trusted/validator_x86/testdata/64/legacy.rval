@@ -50,11 +50,10 @@ VALIDATOR: 000000000000001e: d7                                           xlat
 VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
 VALIDATOR: 000000000000001e: d7                                           xlat
 VALIDATOR: ERROR: Segment memory reference not allowed
-VALIDATOR: 000000000000001f: 48 d7                                        xlat
+VALIDATOR: 0000000000000020: 48 d7                                        xlat
 VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-VALIDATOR: 000000000000001f: 48 d7                                        xlat
+VALIDATOR: 0000000000000020: 48 d7                                        xlat
 VALIDATOR: ERROR: Segment memory reference not allowed
-VALIDATOR: Checking jump targets: 0 to 21
+VALIDATOR: Checking jump targets: 0 to 22
 VALIDATOR: Checking that basic blocks are aligned
-VALIDATOR: ERROR: 20: Bad basic block alignment.
 *** <input> IS UNSAFE ***

@@ -32,6 +32,10 @@ F3 F2 AE
 # lock add %eax, %ss:(%rsp)
 36 F0 01 04 24
 F0 36 01 04 24
+
+# Nops for bundle alignment.
+90 90 90
+
 # mov %edi,%edi
 # lea (%r15,%rdi),%rdi
 # es rep stos %eax,%es:(%rdi)
@@ -57,6 +61,10 @@ F3 66 AB
 # lock add %eax, (%esp)
 67 F0 01 04 24
 F0 67 01 04 24
+
+# Nop for bundle alignment.
+90
+
 # rep stos %eax, %es:(%edi)
 89 FF
 49 8D 3C 3F

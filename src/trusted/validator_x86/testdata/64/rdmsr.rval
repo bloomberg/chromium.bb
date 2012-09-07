@@ -1,0 +1,5 @@
+VALIDATOR: 0000000000000000: 0f 32                                        rdmsr
+VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+VALIDATOR: Checking jump targets: 0 to 2
+VALIDATOR: Checking that basic blocks are aligned
+*** <input> IS UNSAFE ***

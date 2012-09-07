@@ -1,58 +1,42 @@
-VALIDATOR: 00000000000000e8: 66 0f 78 c0 02 01                            extrq %xmm0, 0x2, 0x1
+VALIDATOR: 00000000000000ea: 66 0f 78 c0 02 01                            extrq %xmm0, 0x2, 0x1
 VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-VALIDATOR: 0000000000000104: c4                                           invalid
+VALIDATOR: 000000000000010b: c4                                           invalid
 VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-VALIDATOR: 0000000000000104: c4                                           invalid
+VALIDATOR: 000000000000010b: c4                                           invalid
 VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-VALIDATOR: 000000000000010d: 66 0f 38 dc                                  invalid
+VALIDATOR: 0000000000000114: 66 0f 38 dc                                  invalid
 VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-VALIDATOR: 000000000000010d: 66 0f 38 dc                                  invalid
+VALIDATOR: 0000000000000114: 66 0f 38 dc                                  invalid
 VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-VALIDATOR: 0000000000000111: c8 90 90 90                                  enter 0x9090, 0x90
+VALIDATOR: 0000000000000118: c8 90 90 90                                  enter 0x9090, 0x90
 VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-VALIDATOR: 0000000000000111: c8 90 90 90                                  enter 0x9090, 0x90
+VALIDATOR: 0000000000000118: c8 90 90 90                                  enter 0x9090, 0x90
 VALIDATOR: ERROR: Illegal assignment to RSP
-VALIDATOR: 0000000000000111: c8 90 90 90                                  enter 0x9090, 0x90
+VALIDATOR: 0000000000000118: c8 90 90 90                                  enter 0x9090, 0x90
 VALIDATOR: ERROR: Illegal change to register RBP
-VALIDATOR: 0000000000000115: 66 0f 3a df                                  invalid
+VALIDATOR: 000000000000011c: 66 0f 3a df                                  invalid
 VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-VALIDATOR: 0000000000000115: 66 0f 3a df                                  invalid
+VALIDATOR: 000000000000011c: 66 0f 3a df                                  invalid
 VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
-VALIDATOR: 0000000000000119: c8 01 90 90                                  enter 0x9001, 0x90
+VALIDATOR: 0000000000000120: c8 01 90 90                                  enter 0x9001, 0x90
 VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-VALIDATOR: 0000000000000119: c8 01 90 90                                  enter 0x9001, 0x90
+VALIDATOR: 0000000000000120: c8 01 90 90                                  enter 0x9001, 0x90
 VALIDATOR: ERROR: Illegal assignment to RSP
-VALIDATOR: 0000000000000119: c8 01 90 90                                  enter 0x9001, 0x90
+VALIDATOR: 0000000000000120: c8 01 90 90                                  enter 0x9001, 0x90
 VALIDATOR: ERROR: Illegal change to register RBP
-VALIDATOR: 000000000000011d: 66 0f 38 db                                  invalid
+VALIDATOR: 0000000000000124: 66 0f 38 db                                  invalid
 VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-VALIDATOR: 000000000000011d: 66 0f 38 db                                  invalid
+VALIDATOR: 0000000000000124: 66 0f 38 db                                  invalid
 VALIDATOR: ERROR: Opcode sequence doesn't define a valid x86 instruction
-VALIDATOR: 0000000000000121: c8 90 90 90                                  enter 0x9090, 0x90
+VALIDATOR: 0000000000000128: c8 90 90 90                                  enter 0x9090, 0x90
 VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
-VALIDATOR: 0000000000000121: c8 90 90 90                                  enter 0x9090, 0x90
+VALIDATOR: 0000000000000128: c8 90 90 90                                  enter 0x9090, 0x90
 VALIDATOR: ERROR: Illegal assignment to RSP
-VALIDATOR: 0000000000000121: c8 90 90 90                                  enter 0x9090, 0x90
+VALIDATOR: 0000000000000128: c8 90 90 90                                  enter 0x9090, 0x90
 VALIDATOR: ERROR: Illegal change to register RBP
-VALIDATOR: Checking block alignment and jump targets: 0 to 125
-VALIDATOR: 000000000000001f: 0f 2d c1                                     cvtps2pi %mmx0, %xmm1
+VALIDATOR: Checking block alignment and jump targets: 0 to 12c
+VALIDATOR: 000000000000003f: 0f 18 1c 24                                  prefetcht2 [%rsp]
 VALIDATOR: ERROR: Instruction crosses basic block alignment
-VALIDATOR: 000000000000003e: 0f 18 1c 24                                  prefetcht2 [%rsp]
-VALIDATOR: ERROR: Instruction crosses basic block alignment
-VALIDATOR: 000000000000005f: 66 0f c6 c8 01                               shufpd %xmm1, %xmm0, 0x1
-VALIDATOR: ERROR: Instruction crosses basic block alignment
-VALIDATOR: 000000000000007e: 66 0f 6c c8                                  punpcklqdq %xmm1, %xmm0
-VALIDATOR: ERROR: Instruction crosses basic block alignment
-VALIDATOR: 000000000000009d: 66 0f 38 02 c8                               phaddd %xmm1, %xmm0
-VALIDATOR: ERROR: Instruction crosses basic block alignment
-VALIDATOR: 00000000000000be: 66 0f 38 3e c8                               pmaxuw %xmm1, %xmm0
-VALIDATOR: ERROR: Instruction crosses basic block alignment
-VALIDATOR: 00000000000000de: f3 48 0f b8 c0                               popcnt %rax, %rax
-VALIDATOR: ERROR: Instruction crosses basic block alignment
-VALIDATOR: 00000000000000ff: 66 0f 38 37 c8                               pcmpgtq %xmm1, %xmm0
-VALIDATOR: ERROR: Instruction crosses basic block alignment
-VALIDATOR: 0000000000000105: e3 f1                                        jrcxz 0xf8
-VALIDATOR: ERROR: Doesn't jump to instruction address
-VALIDATOR: 000000000000011d: 66 0f 38 db                                  invalid
+VALIDATOR: 000000000000009f: 66 0f 38 02 c8                               phaddd %xmm1, %xmm0
 VALIDATOR: ERROR: Instruction crosses basic block alignment
 *** <input> IS UNSAFE ***

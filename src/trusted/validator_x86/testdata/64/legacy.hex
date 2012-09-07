@@ -36,5 +36,9 @@ D6
 # Legacy instructions which are valid in 64-bit mode
 # xlat (%ebx,%al)
 D7
+
+# Nop padding for the next instruction not to cross bundle boundary.
+90
+
 # xlat (%rbx,%al)
 48 D7

@@ -16,6 +16,10 @@ f3 0f 5c c8
 66 0f e4 c8
 # comiss %xmm0,%xmm1
 0f 2f c8
+
+# Nop for bundle alignment.
+90
+
 # cvtps2pi %xmm1,%mm0
 0f 2d c1
 # ldmxcsr (%rsp)
@@ -66,6 +70,10 @@ f2 0f d6 c8
 66 0f 73 d8 01
 # pshufd $0x1,%xmm0,%xmm1
 66 0f 70 c8 01
+
+# Nop for bundle alignment.
+90
+
 # punpcklqdq %xmm0,%xmm1
 66 0f 6c c8
 
@@ -124,6 +132,10 @@ f3 0f 2b 04 24
 # SSE42
 # crc32b %al,%rax
 f2 48 0f 38 f0 c0
+
+# Nops for bundle alignment.
+90 90 90 90 90
+
 # pcmpistri $0x1,%xmm0,%xmm1
 66 0f 3a 63 c8 01
 # pcmpgtq %xmm0,%xmm1

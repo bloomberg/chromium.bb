@@ -14,6 +14,10 @@
 # Test legal bit commands
 # btw    $0x1,(%rsp)
 66 0F BA 24 24 01
+
+# Align so that next instruction does not cross bundle boundary.
+90 90
+
 # btl    $0x1,(%rsp)
 0F BA 24 24 01
 # btq    $0x1,(%rsp)

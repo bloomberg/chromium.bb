@@ -14,4 +14,5 @@
 000000000000001c: 9f                                           [P] dontcare(illegal)
 000000000000001d: 9e                                           [P] dontcare(illegal)
 000000000000001e: d7                                           [P] dontcare(illegal)
-000000000000001f: 48 d7                                        [P] dontcare(illegal)
+000000000000001f: 90                                           [P] dontcare
+0000000000000020: 48 d7                                        [P] dontcare(illegal)

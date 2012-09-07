@@ -16,7 +16,8 @@
 66 0f 1f 44 00 00
 
 # This is an example where we have decremented the nop by 1.
-66 0f 1f 43 ff ff
+66 0f 1f 43
+ff ff
 
 # This is the (repeated) correct nop case.
 66 0f 1f 44 00 00
@@ -32,7 +33,8 @@
 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00
 
 # This is an example where we have incremented the nop by 1.
-66 66 66 66 66 2e 0f 1f 84 00 00 00 00 01
+66 66 66 66 66
+2e 0f 1f 84 00 00 00 00 01
 
 # Filler (move) to fill the rest of the block.
 66 bf 88 77
@@ -41,7 +43,8 @@
 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00
 
 # This is an example where we have decremented the nop by 1.
-66 66 66 66 66 2e 0f 1f 83 ff ff ff ff ff
+66 66 66 66 66
+2e 0f 1f 83 ff ff ff ff ff
 
 # Filler to realign the decoder.
 00

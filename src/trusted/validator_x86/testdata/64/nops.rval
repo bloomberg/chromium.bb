@@ -1,29 +1,26 @@
-VALIDATOR: 0000000000000078: 66 66 90                                     xchg %ax, %ax
+VALIDATOR: 000000000000008a: 66 66 90                                     xchg %ax, %ax
 VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
-VALIDATOR: 0000000000000078: 66 66 90                                     xchg %ax, %ax
+VALIDATOR: 000000000000008a: 66 66 90                                     xchg %ax, %ax
 VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
-VALIDATOR: 000000000000007b: 66 66 66 90                                  xchg %ax, %ax
+VALIDATOR: 000000000000008d: 66 66 66 90                                  xchg %ax, %ax
 VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
-VALIDATOR: 000000000000007b: 66 66 66 90                                  xchg %ax, %ax
+VALIDATOR: 000000000000008d: 66 66 66 90                                  xchg %ax, %ax
 VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
-VALIDATOR: 000000000000007f: 3e 0f 1f 84 00 00 00 00 00                   nop
+VALIDATOR: 0000000000000091: 3e 0f 1f 84 00 00 00 00 00                   nop
 VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-VALIDATOR: 0000000000000088: 66 3e 0f 1f 84 00 00 00 00 00                nop
+VALIDATOR: 00000000000000a0: 66 3e 0f 1f 84 00 00 00 00 00                nop
 VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
-VALIDATOR: 0000000000000088: 66 3e 0f 1f 84 00 00 00 00 00                nop
+VALIDATOR: 00000000000000a0: 66 3e 0f 1f 84 00 00 00 00 00                nop
 VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-VALIDATOR: 0000000000000088: 66 3e 0f 1f 84 00 00 00 00 00                nop
+VALIDATOR: 00000000000000a0: 66 3e 0f 1f 84 00 00 00 00 00                nop
 VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
-VALIDATOR: 0000000000000092: 66 66 0f 1f 84 00 00 00 00 00                nop
+VALIDATOR: 00000000000000aa: 66 66 0f 1f 84 00 00 00 00 00                nop
 VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
-VALIDATOR: 0000000000000092: 66 66 0f 1f 84 00 00 00 00 00                nop
+VALIDATOR: 00000000000000aa: 66 66 0f 1f 84 00 00 00 00 00                nop
 VALIDATOR: ERROR: Use of DATA16 (66) prefix for instruction not allowed by Native Client
-VALIDATOR: 0000000000000092: 66 66 0f 1f 84 00 00 00 00 00                nop
+VALIDATOR: 00000000000000aa: 66 66 0f 1f 84 00 00 00 00 00                nop
 VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
-VALIDATOR: Checking jump targets: 0 to 9c
+VALIDATOR: Checking jump targets: 0 to b4
 VALIDATOR: Checking that basic blocks are aligned
-VALIDATOR: ERROR: 20: Bad basic block alignment.
-VALIDATOR: ERROR: 40: Bad basic block alignment.
-VALIDATOR: ERROR: 60: Bad basic block alignment.
 VALIDATOR: ERROR: 80: Bad basic block alignment.
 *** <input> IS UNSAFE ***
