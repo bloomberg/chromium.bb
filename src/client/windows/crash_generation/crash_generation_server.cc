@@ -217,7 +217,7 @@ bool CrashGenerationServer::Start() {
   // Event to signal the client connection and pipe reads and writes.
   overlapped_.hEvent = CreateEvent(NULL,   // Security descriptor.
                                    TRUE,   // Manual reset.
-                                   FALSE,  // Initially signaled.
+                                   FALSE,  // Initially nonsignaled.
                                    NULL);  // Name.
   if (!overlapped_.hEvent) {
     return false;
@@ -247,10 +247,13 @@ bool CrashGenerationServer::Start() {
 
   // Kick-start the state machine. This will initiate an asynchronous wait
   // for client connections.
-  HandleInitialState();
+  if (!SetEvent(overlapped_.hEvent)) {
+    server_state_ = IPC_SERVER_STATE_ERROR;
+    return false;
+  }
 
   // If we are in error state, it's because we failed to start listening.
-  return server_state_ != IPC_SERVER_STATE_ERROR;
+  return true;
 }
 
 // If the server thread serving clients ever gets into the
