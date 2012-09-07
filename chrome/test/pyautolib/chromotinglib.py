@@ -39,7 +39,8 @@ class ChromotingMixIn(object):
       print '_ExecuteJavascript threw JSONInterfaceError'
       return False
 
-  def _WaitForJavascriptCondition(self, condition, tab_index, windex):
+  def _WaitForJavascriptCondition(self, condition, tab_index, windex,
+                                  timeout=-1):
     """Waits until the Javascript condition is true.
 
     This is different from a naive self.WaitUntil(lambda: self.GetDOMValue())
@@ -49,7 +50,7 @@ class ChromotingMixIn(object):
     """
     try:
       return self.WaitUntil(lambda: self.GetDOMValue(
-          '(%s) ? "1" : ""' % condition, tab_index, windex))
+          '(%s) ? "1" : ""' % condition, tab_index, windex), timeout)
     except JSONInterfaceError:
       print '_WaitForJavascriptCondition threw JSONInterfaceError'
       return False
@@ -216,6 +217,11 @@ class ChromotingMixIn(object):
     self._ExecuteJavascript(
         'document.getElementById("get-started-me2me").click();',
         tab_index, windex)
+    self.assertTrue(
+        self._WaitForJavascriptCondition(
+            'document.getElementById("me2me-content").hidden == false',
+            tab_index, windex),
+        msg='No me2me content')
 
   def Share(self, tab_index=1, windex=0):
     """Generates an access code and waits for incoming connections.
@@ -238,10 +244,52 @@ class ChromotingMixIn(object):
             'HOST_SHARE_FINISHED', tab_index, windex),
         msg='Stopping sharing from the host side failed')
 
+  def CleanupHostList(self, tab_index=1, windex=0):
+    """Removes hosts due to failure on previous stop-daemon"""
+    self.EnableConnectionsInstalled()
+    this_host_name = self.GetDOMValue(
+        'document.getElementById("this-host-name").textContent',
+        tab_index, windex)
+    if this_host_name.endswith(' (offline)'):
+      this_host_name = this_host_name[:-10]
+    self.DisableConnections()
+
+    total_hosts = self.GetDOMValue(
+        'document.getElementById("host-list").childNodes.length',
+        tab_index, windex)
+
+    # Start from the end while deleting bogus hosts
+    index = total_hosts
+    while index > 0:
+      index -= 1
+      try:
+        hostname = self.GetDOMValue(
+            'document.getElementById("host-list")'
+            '.childNodes[%s].textContent' % index,
+            tab_index, windex)
+        if hostname == this_host_name or \
+            hostname == this_host_name + ' (offline)':
+          self._ExecuteJavascript(
+              'document.getElementById("host-list")'
+              '.childNodes[%s].childNodes[3].click()' % index,
+              tab_index, windex)
+          self._ExecuteJavascript(
+              'document.getElementById("confirm-host-delete").click()',
+              tab_index, windex)
+      except JSONInterfaceError:
+        print 'Ignore the error on deleting host'
+
+    if self._WaitForJavascriptCondition(
+            'document.getElementById("this-host-connect")'
+            '.getAttribute("data-daemon-state") == "enabled"',
+            tab_index, windex, 1):
+      self.DisableConnections()
+
   def EnableConnectionsInstalled(self, pin_exercise=False,
                                  tab_index=1, windex=0):
     """Enables the remote connections on the host side."""
-    subprocess.call([self._GetHelperRunner(), self._GetHelper(), 'enable'])
+    if sys.platform.startswith('darwin'):
+      subprocess.call([self._GetHelperRunner(), self._GetHelper(), 'enable'])
 
     self.assertTrue(
         self._ExecuteAndWaitForMode(
@@ -338,11 +386,25 @@ class ChromotingMixIn(object):
 
   def DisableConnections(self, tab_index=1, windex=0):
     """Disables the remote connections on the host side."""
-    subprocess.call([self._GetHelperRunner(), self._GetHelper(), 'disable'])
+    if sys.platform.startswith('darwin'):
+      subprocess.call([self._GetHelperRunner(), self._GetHelper(), 'disable'])
 
-    self._ExecuteJavascript(
-        'document.getElementById("stop-daemon").click();',
-        tab_index, windex)
+    # Re-try to make disabling connection more stable
+    for _ in range (1, 4):
+      self._ExecuteJavascript(
+          'document.getElementById("stop-daemon").click();',
+          tab_index, windex)
+
+      # Immediately waiting for host-setup-dialog hidden sometimes times out
+      # even though visually it is hidden. Add some sleep here
+      time.sleep(2)
+
+      if self._WaitForJavascriptCondition(
+          'document.getElementById("host-setup-dialog")'
+          '.childNodes[3].hidden == true',
+          tab_index, windex, 1):
+        break;
+
     self.assertTrue(
         self._ExecuteAndWaitForMode(
             'document.getElementById("host-config-done-dismiss").click();',
@@ -360,7 +422,8 @@ class ChromotingMixIn(object):
 
   def ChangePin(self, pin='222222', tab_index=1, windex=0):
     """Changes pin for enabled host."""
-    subprocess.call([self._GetHelperRunner(), self._GetHelper(), 'changepin'])
+    if sys.platform.startswith('darwin'):
+      subprocess.call([self._GetHelperRunner(), self._GetHelper(), 'changepin'])
 
     self.assertTrue(
         self._ExecuteAndWaitForMode(
@@ -425,25 +488,30 @@ class ChromotingMixIn(object):
     # showing up in the host list. We need to reload the web app to get
     # the host to show up. We will repeat this a few times to make sure
     # eventually host appears.
-    for _ in range(1, 3):
+    for _ in range(1, 13):
       self._ExecuteJavascript(
           'window.location.reload();',
           tab_index, windex)
 
       # pyauto _GetResultFromJSONRequest throws JSONInterfaceError after
-      # ~60 seconds if ExecuteJavascript is called right after reload.
+      # 45 seconds if ExecuteJavascript is called right after reload.
       # Waiting 2s here can avoid this. So instead of getting the error and
-      # wait ~60s, we wait 2s here. If the error still happens, the following
+      # wait 45s, we wait 2s here. If the error still happens, the following
       # retry will handle that.
       time.sleep(2)
 
-      # If this-host-connect is still not enabled, let's retry 3 times here.
+      # If this-host-connect is still not enabled, let's retry one more time.
       this_host_connect_enabled = False
       for _ in range(1, 3):
-        this_host_connect_enabled = self._WaitForJavascriptCondition(
+        daemon_state_enabled = self._WaitForJavascriptCondition(
             'document.getElementById("this-host-connect")'
             '.getAttribute("data-daemon-state") == "enabled"',
-            tab_index, windex)
+            tab_index, windex, 1)
+        host_online = self._WaitForJavascriptCondition(
+            'document.getElementById("this-host-name")'
+            '.textContent.toString().indexOf("offline") == -1',
+            tab_index, windex, 1)
+        this_host_connect_enabled = daemon_state_enabled and host_online
         if this_host_connect_enabled:
           break
       if this_host_connect_enabled:
@@ -451,7 +519,7 @@ class ChromotingMixIn(object):
 
     # Clicking this-host-connect does work right after this-host-connect
     # is enabled. Need to retry.
-    for _ in range(1, 3):
+    for _ in range(1, 4):
       self._ExecuteJavascript(
           'document.getElementById("this-host-connect").click();',
           tab_index, windex)
@@ -461,17 +529,28 @@ class ChromotingMixIn(object):
       # Waiting 2s here can avoid this.
       time.sleep(2)
 
-      # If cannot detect that pin-form appears, try 3 times.
+      # If cannot detect that pin-form appears, retry one more time.
       pin_form_exposed = False
       for _ in range(1, 3):
         pin_form_exposed = self._WaitForJavascriptCondition(
             'document.getElementById("client-dialog")'
             '.childNodes[9].hidden == false',
-            tab_index, windex)
+            tab_index, windex, 1)
         if pin_form_exposed:
           break
+
       if pin_form_exposed:
         break
+
+      # Dismiss connect failure dialog before retry
+      if self._WaitForJavascriptCondition(
+          'document.getElementById("client-dialog")'
+          '.childNodes[25].hidden == false',
+          tab_index, windex, 1):
+        self._ExecuteJavascript(
+            'document.getElementById("client-finished-me2me-button")'
+            '.click();',
+            tab_index, windex)
 
     self._ExecuteJavascript(
         'document.getElementById("pin-entry").value = "' + pin + '";',
@@ -515,12 +594,12 @@ class ChromotingMixIn(object):
     # a long time out if WaitUntil is called right after click.
     time.sleep(2)
 
-    # If cannot detect that pin-form appears, try 3 times.
+    # If cannot detect that pin-form appears, retry one more time.
     for _ in range(1, 3):
       pin_form_exposed = self._WaitForJavascriptCondition(
           'document.getElementById("client-dialog")'
           '.childNodes[9].hidden == false',
-          tab_index, windex)
+          tab_index, windex, 1)
       if pin_form_exposed:
         break
 
@@ -531,4 +610,4 @@ class ChromotingMixIn(object):
         self._ExecuteAndWaitForMode(
             'document.getElementById("pin-form").childNodes[5].click();',
             'IN_SESSION', tab_index, windex),
-        msg='Session was not started')
+        msg='Session was not started when reconnecting')

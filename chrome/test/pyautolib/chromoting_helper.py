@@ -93,7 +93,7 @@ class ChromotingHelperMac(ChromotingHelper):
     # Install host
     os.seteuid(0)
     mpkg = os.path.join('/Volumes', 'Chromoting Host ' + version,
-                        'Chromoting Host.mpkg')
+                        'Chromoting Host.pkg')
     subprocess.call(['/usr/sbin/installer', '-pkg',
                      mpkg, '-target', '/'])
     os.seteuid(login_uid)
@@ -112,8 +112,10 @@ class ChromotingHelperMac(ChromotingHelper):
     """Uninstalls host on Mac."""
     assert os.geteuid() == 0, 'Need superuser privileges'
     uninstall_app = os.path.join('/', 'Applications',
-                                 'Chromoting Host Uninstaller.app')
-    subprocess.call(['open', '-a', uninstall_app])
+                                 'Chromoting Host Uninstaller.app',
+                                 'Contents', 'MacOS',
+                                 'remoting_host_uninstaller')
+    subprocess.call([uninstall_app, '--no-ui'])
 
   def ReplacePrefPaneMac(self, operation):
     """Constructs mock pref pane to replace the actual pref pane on Mac."""
@@ -122,12 +124,13 @@ class ChromotingHelperMac(ChromotingHelper):
     pref_pane_dir = os.path.join('/Library', 'PreferencePanes')
 
     mock_pref_pane = os.path.join(pref_pane_dir, 'mock_pref_pane')
-    pref_pane = os.path.join(pref_pane_dir, 'org.chromium.chromoting.prefPane')
+    pref_pane = os.path.join(pref_pane_dir,
+                             'org.chromium.chromoting.prefPane')
     mock_pref_pane_python = os.path.join(os.getcwd(), 'chrome', 'test',
                                          'functional', 'chromoting',
                                          'mock_pref_pane.py')
 
-    shutil.rmtree(mock_pref_pane, True)
+    os.remove(mock_pref_pane)
 
     mock_pref_pane_file = open(mock_pref_pane, 'w')
     mock_pref_pane_file.write('#!/bin/bash\n')
@@ -137,7 +140,12 @@ class ChromotingHelperMac(ChromotingHelper):
     mock_pref_pane_file.close()
 
     subprocess.call(['chmod', 'a+x', mock_pref_pane])
-    shutil.rmtree(pref_pane, True)
+
+    if os.path.isdir(pref_pane):
+      shutil.rmtree(pref_pane, True)
+    else:
+      os.remove(pref_pane)
+
     subprocess.call(['ln', '-s', mock_pref_pane, pref_pane])
 
 
@@ -146,12 +154,12 @@ class ChromotingHelperWindows(ChromotingHelper):
 
   def InstallHost(self, bin_dir):
     """Installs host on Windows."""
-    host_msi = os.path.join(bin_dir, 'remoting-host.msi')
+    host_msi = os.path.join(bin_dir, 'chromoting.msi')
     subprocess.Popen(['msiexec', '/i', host_msi, '/passive']).wait()
 
   def UninstallHost(self, bin_dir):
     """Uninstalls host on Windows."""
-    host_msi = os.path.join(bin_dir, 'remoting-host.msi')
+    host_msi = os.path.join(bin_dir, 'chromoting.msi')
     subprocess.Popen(['msiexec', '/x', host_msi, '/passive']).wait()
 
 

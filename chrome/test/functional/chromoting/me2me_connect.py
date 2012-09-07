@@ -21,6 +21,7 @@ class Me2MeConnect(chromoting_base.ChromotingBase):
     self.host.LaunchApp(webapp)
     self.host.Authenticate()
     self.host.StartMe2Me()
+    self.host.CleanupHostList()
     self.host.EnableConnectionsInstalled()
     self.client.LaunchApp(webapp)
 
@@ -30,6 +31,7 @@ class Me2MeConnect(chromoting_base.ChromotingBase):
     self.UninstallHostDaemon()
 
     pyauto.PyUITest.tearDown(self)
+
 
   def testMe2MeConnectDisconnectReconnectDisconnect(self):
     """Connects, disconnects, reconnects and disconnects"""

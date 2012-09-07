@@ -36,7 +36,10 @@
       'about_plugins_ui.AboutPluginsUITest',
       'apptest',
       'autofill',
+      'chromoting.auth',
       'chromoting.it2me_basic',
+      'chromoting.me2me_connect',
+      'chromoting.me2me_enable',
       'codesign',
       'crash_reporter',
       'downloads',
@@ -199,6 +202,9 @@
       # ===========================
       # Permanently-disabled tests.
       # ===========================
+      # TODO(yihongg): Me2me test against Linux is not working yet.
+      '-chromoting.me2me_connect',
+      '-chromoting.me2me_enable',
       # crbug.com/104206
       '-notifications.NotificationsTest.testKillNotificationProcess',
       # Several omnibox tests do not show omnibox results when run
@@ -260,7 +266,10 @@
       # Permanently-disabled tests.
       # ===========================
       # ChromeOS doesn't yet support the chromoting host.
+      '-chromoting.auth',
       '-chromoting.it2me_basic',
+      '-chromoting.me2me_connect',
+      '-chromoting.me2me_enable',
       # No codesign verification on ChromeOS.
       '-codesign',
       # Import tests are invalid on ChromeOS since Chrome is the only browser.
@@ -410,7 +419,10 @@
       # Permanently-disabled tests.
       # ===========================
       # The chromoting webapp isn't currently available when FULL is run.
+      '-chromoting.auth',
       '-chromoting.it2me_basic',
+      '-chromoting.me2me_connect',
+      '-chromoting.me2me_enable',
 
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
@@ -746,7 +758,6 @@
       '-about_plugins_ui',
       '-autofill',
       '-pyauto_webdriver',
-      '-chromoting_basic',
       '-extensions',
       '-flash',
       '-fullscreen_mouselock',
