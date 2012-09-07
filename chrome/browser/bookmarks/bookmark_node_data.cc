@@ -19,8 +19,6 @@
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
-#else
-#include "chrome/browser/browser_process.h"
 #endif
 
 const char* BookmarkNodeData::kClipboardFormatString =
@@ -141,7 +139,7 @@ bool BookmarkNodeData::ReadFromTuple(const GURL& url, const string16& title) {
 
 #if !defined(OS_MACOSX)
 void BookmarkNodeData::WriteToClipboard(Profile* profile) const {
-  ui::ScopedClipboardWriter scw(g_browser_process->clipboard(),
+  ui::ScopedClipboardWriter scw(ui::Clipboard::GetForCurrentThread(),
                                 ui::Clipboard::BUFFER_STANDARD);
 
   // If there is only one element and it is a URL, write the URL to the
@@ -169,7 +167,7 @@ void BookmarkNodeData::WriteToClipboard(Profile* profile) const {
 
 bool BookmarkNodeData::ReadFromClipboard() {
   std::string data;
-  ui::Clipboard* clipboard = g_browser_process->clipboard();
+  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   clipboard->ReadData(ui::Clipboard::GetFormatType(kClipboardFormatString),
                       &data);
 
@@ -197,7 +195,7 @@ bool BookmarkNodeData::ReadFromClipboard() {
 }
 
 bool BookmarkNodeData::ClipboardContainsBookmarks() {
-  return g_browser_process->clipboard()->IsFormatAvailable(
+  return ui::Clipboard::GetForCurrentThread()->IsFormatAvailable(
       ui::Clipboard::GetFormatType(kClipboardFormatString),
       ui::Clipboard::BUFFER_STANDARD);
 }

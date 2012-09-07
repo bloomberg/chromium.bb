@@ -26,10 +26,6 @@ namespace gfx {
 class Rect;
 }
 
-namespace ui {
-class Clipboard;
-}
-
 namespace views {
 
 class NonClientFrameView;
@@ -53,9 +49,6 @@ class VIEWS_EXPORT ViewsDelegate {
   static ViewsDelegate* views_delegate;
 
   virtual ~ViewsDelegate() {}
-
-  // Gets the clipboard.
-  virtual ui::Clipboard* GetClipboard() const = 0;
 
   // Saves the position, size and "show" state for the window with the
   // specified name.

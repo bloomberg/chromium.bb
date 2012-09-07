@@ -17,7 +17,6 @@
 #include "content/public/browser/notification_service.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/clipboard/clipboard.h"
 
 #if !defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/policy_service_stub.h"
@@ -124,14 +123,6 @@ chromeos::OomPriorityManager* TestingBrowserProcess::oom_priority_manager() {
   return NULL;
 }
 #endif  // defined(OS_CHROMEOS)
-
-ui::Clipboard* TestingBrowserProcess::clipboard() {
-  if (!clipboard_.get()) {
-    // Note that we need a MessageLoop for the next call to work.
-    clipboard_.reset(new ui::Clipboard);
-  }
-  return clipboard_.get();
-}
 
 extensions::EventRouterForwarder*
 TestingBrowserProcess::extension_event_router_forwarder() {

@@ -28,7 +28,6 @@ class TestViewsDelegate : public ViewsDelegate {
   void SetUseTransparentWindows(bool transparent);
 
   // Overridden from ViewsDelegate:
-  virtual ui::Clipboard* GetClipboard() const OVERRIDE;
   virtual void SaveWindowPlacement(const Widget* window,
                                    const std::string& window_name,
                                    const gfx::Rect& bounds,
@@ -69,7 +68,6 @@ class TestViewsDelegate : public ViewsDelegate {
       content::SiteInstance* site_instance) OVERRIDE;
 
  private:
-  mutable scoped_ptr<ui::Clipboard> clipboard_;
   bool use_transparent_windows_;
 
   DISALLOW_COPY_AND_ASSIGN(TestViewsDelegate);

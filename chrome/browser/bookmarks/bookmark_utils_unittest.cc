@@ -10,10 +10,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 
-#if !defined(OS_MACOSX)
-#include "chrome/browser/browser_process.h"
-#endif
-
 using std::string;
 
 namespace bookmark_utils {
@@ -142,8 +138,9 @@ TEST(BookmarkUtilsTest, CopyPaste) {
 
   // Write some text to the clipboard.
   {
-    ui::ScopedClipboardWriter clipboard_writer(g_browser_process->clipboard(),
-                                               ui::Clipboard::BUFFER_STANDARD);
+    ui::ScopedClipboardWriter clipboard_writer(
+        ui::Clipboard::GetForCurrentThread(),
+        ui::Clipboard::BUFFER_STANDARD);
     clipboard_writer.WriteText(ASCIIToUTF16("foo"));
   }
 

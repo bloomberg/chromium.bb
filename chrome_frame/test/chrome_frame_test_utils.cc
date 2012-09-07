@@ -491,19 +491,17 @@ std::wstring GetPathAndQueryFromUrl(const std::wstring& url) {
 }
 
 std::wstring GetClipboardText() {
-  ui::Clipboard clipboard;
   string16 text16;
-  clipboard.ReadText(ui::Clipboard::BUFFER_STANDARD, &text16);
+  ui::Clipboard::GetForCurrentThread()->ReadText(
+      ui::Clipboard::BUFFER_STANDARD, &text16);
   return UTF16ToWide(text16);
 }
 
 void SetClipboardText(const std::wstring& text) {
-  ui::Clipboard clipboard;
-  {
-    ui::ScopedClipboardWriter clipboard_writer(&clipboard,
-                                               ui::Clipboard::BUFFER_STANDARD);
-    clipboard_writer.WriteText(WideToUTF16(text));
-  }
+  ui::ScopedClipboardWriter clipboard_writer(
+      ui::Clipboard::GetForCurrentThread(),
+      ui::Clipboard::BUFFER_STANDARD);
+  clipboard_writer.WriteText(WideToUTF16(text));
 }
 
 bool AddCFMetaTag(std::string* html_data) {

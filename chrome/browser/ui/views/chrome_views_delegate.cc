@@ -14,7 +14,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/accessibility/accessibility_event_router_views.h"
 #include "chrome/common/pref_names.h"
-#include "ui/base/clipboard/clipboard.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/native_widget.h"
@@ -55,10 +54,6 @@ PrefService* GetPrefsForWindow(const views::Widget* window) {
 
 ///////////////////////////////////////////////////////////////////////////////
 // ChromeViewsDelegate, views::ViewsDelegate implementation:
-
-ui::Clipboard* ChromeViewsDelegate::GetClipboard() const {
-  return g_browser_process->clipboard();
-}
 
 void ChromeViewsDelegate::SaveWindowPlacement(const views::Widget* window,
                                               const std::string& window_name,

@@ -46,6 +46,7 @@
 #include "net/base/ssl_config_service.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/tcp_client_socket.h"
+#include "ui/base/clipboard/clipboard.h"
 
 #if defined(USE_AURA)
 #include "content/browser/renderer_host/image_transport_factory.h"
@@ -236,6 +237,7 @@ BrowserMainLoop::BrowserMainLoop(const content::MainFunctionParams& parameters)
 
 BrowserMainLoop::~BrowserMainLoop() {
   DCHECK_EQ(this, g_current_browser_main_loop);
+  ui::Clipboard::DestroyClipboardForCurrentThread();
   g_current_browser_main_loop = NULL;
 }
 

@@ -11,7 +11,6 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/browser_process.h"
 #include "ui/base/clipboard/clipboard.h"
 
 // static
@@ -27,7 +26,7 @@ string16 OmniboxView::StripJavascriptSchemas(const string16& text) {
 // static
 string16 OmniboxView::GetClipboardText() {
   // Try text format.
-  ui::Clipboard* clipboard = g_browser_process->clipboard();
+  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   if (clipboard->IsFormatAvailable(ui::Clipboard::GetPlainTextWFormatType(),
                                    ui::Clipboard::BUFFER_STANDARD)) {
     string16 text;
