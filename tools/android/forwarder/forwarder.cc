@@ -28,6 +28,14 @@ namespace {
 const pthread_t kInvalidThread = static_cast<pthread_t>(-1);
 volatile bool g_killed = false;
 
+void CloseSocket(int fd) {
+  if (fd >= 0) {
+    int old_errno = errno;
+    (void) HANDLE_EINTR(close(fd));
+    errno = old_errno;
+  }
+}
+
 class Buffer {
  public:
   Buffer()
@@ -237,8 +245,8 @@ void* ForwarderThread(void* arg) {
     }
   }
 
-  HANDLE_EINTR(close(socket1));
-  HANDLE_EINTR(close(socket2));
+  CloseSocket(socket1);
+  CloseSocket(socket2);
   server->DisposeForwarderInfo(index);
   return NULL;
 }
@@ -286,11 +294,11 @@ void* Server::ServerThread(void* arg) {
                      new ForwarderThreadInfo(server, forwarder_index));
     } else {
       // Close the unused client socket which is failed to connect to host.
-      HANDLE_EINTR(close(socket));
+      CloseSocket(socket);
     }
   }
 
-  HANDLE_EINTR(close(server->socket_));
+  CloseSocket(server->socket_);
   server->socket_ = -1;
   return NULL;
 }
@@ -328,7 +336,7 @@ bool Server::InitSocket(const char* arg) {
                         sizeof(addr))) < 0 ||
       HANDLE_EINTR(listen(socket_, 5)) < 0) {
     perror("server bind");
-    HANDLE_EINTR(close(socket_));
+    CloseSocket(socket_);
     socket_ = -1;
     return false;
   }
@@ -338,7 +346,7 @@ bool Server::InitSocket(const char* arg) {
     if (getsockname(socket_, reinterpret_cast<sockaddr*>(&addr), &addrlen)
         != 0) {
       perror("get listen address");
-      HANDLE_EINTR(close(socket_));
+      CloseSocket(socket_);
       socket_ = -1;
       return false;
     }

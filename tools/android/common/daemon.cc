@@ -23,6 +23,12 @@ void Exit(int unused) {
   _exit(g_exit_status);
 }
 
+void CloseFileDescriptor(int fd) {
+  int old_errno = errno;
+  (void) HANDLE_EINTR(close(fd));
+  errno = old_errno;
+}
+
 }  // namespace
 
 namespace tools {
@@ -61,9 +67,9 @@ void SpawnDaemon(int exit_status) {
   // Close the standard input and outputs, otherwise the process may block
   // adbd when the shell exits.
   // Comment out these lines if you want to see outputs for debugging.
-  HANDLE_EINTR(close(0));
-  HANDLE_EINTR(close(1));
-  HANDLE_EINTR(close(2));
+  CloseFileDescriptor(0);
+  CloseFileDescriptor(1);
+  CloseFileDescriptor(2);
 }
 
 }  // namespace tools

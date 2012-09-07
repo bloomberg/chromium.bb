@@ -16,6 +16,17 @@
 #include "tools/android/common/net.h"
 
 namespace tools {
+namespace {
+
+void CloseSocket(int fd) {
+  if (fd >= 0) {
+    int old_errno = errno;
+    (void) HANDLE_EINTR(close(fd));
+    errno = old_errno;
+  }
+}
+
+}  // namespace
 
 int ConnectAdbHostSocket(const char* forward_to) {
   // ADB port forward request format: HHHHtcp:port:address.
@@ -58,7 +69,7 @@ int ConnectAdbHostSocket(const char* forward_to) {
   if (HANDLE_EINTR(connect(host_socket, reinterpret_cast<sockaddr*>(&addr),
                            sizeof(addr))) < 0) {
     LOG(ERROR) << "Failed to connect adb socket: " << strerror(errno);
-    HANDLE_EINTR(close(host_socket));
+    CloseSocket(host_socket);
     return -1;
   }
 
@@ -69,7 +80,7 @@ int ConnectAdbHostSocket(const char* forward_to) {
                                 bytes_remaining, 0));
     if (ret < 0) {
       LOG(ERROR) << "Failed to send request: " << strerror(errno);
-      HANDLE_EINTR(close(host_socket));
+      CloseSocket(host_socket);
       return -1;
     }
 
@@ -85,7 +96,7 @@ int ConnectAdbHostSocket(const char* forward_to) {
       strncmp("OKAY", response, kAdbStatusLength) != 0) {
     LOG(ERROR) << "Bad response from ADB: length: " << response_length
                << " data: " << DumpBinary(response, response_length);
-    HANDLE_EINTR(close(host_socket));
+    CloseSocket(host_socket);
     return -1;
   }
 

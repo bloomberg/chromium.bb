@@ -19,6 +19,7 @@
 #include "base/command_line.h"
 #include "base/eintr_wrapper.h"
 #include "base/logging.h"
+#include "base/safe_strerror_posix.h"
 #include "net/base/big_endian.h"
 #include "net/base/net_util.h"
 #include "net/dns/dns_protocol.h"
@@ -38,6 +39,23 @@ const uint16 kPointerToQueryName =
 
 const uint32 kTTL = 86400;  // One day.
 
+void PError(const char* msg) {
+  int current_errno = errno;
+  LOG(ERROR) << "ERROR: " << msg << ": " << safe_strerror(current_errno);
+}
+
+void SendTo(int sockfd, const void* buf, size_t len, int flags,
+            const sockaddr* dest_addr, socklen_t addrlen) {
+  if (HANDLE_EINTR(sendto(sockfd, buf, len, flags, dest_addr, addrlen)) == -1)
+    PError("sendto()");
+}
+
+void CloseFileDescriptor(int fd) {
+  int old_errno = errno;
+  (void) HANDLE_EINTR(close(fd));
+  errno = old_errno;
+}
+
 void SendRefusedResponse(int sock, const sockaddr_in& client_addr, uint16 id) {
   net::dns_protocol::Header response;
   response.id = htons(id);
@@ -50,9 +68,8 @@ void SendRefusedResponse(int sock, const sockaddr_in& client_addr, uint16 id) {
   response.ancount = 0;
   response.nscount = 0;
   response.arcount = 0;
-  HANDLE_EINTR(sendto(sock, &response, sizeof(response), 0,
-                      reinterpret_cast<const sockaddr*>(&client_addr),
-                      sizeof(client_addr)));
+  SendTo(sock, &response, sizeof(response), 0,
+         reinterpret_cast<const sockaddr*>(&client_addr), sizeof(client_addr));
 }
 
 void SendResponse(int sock, const sockaddr_in& client_addr, uint16 id,
@@ -103,9 +120,8 @@ void SendResponse(int sock, const sockaddr_in& client_addr, uint16 id,
     writer.WriteBytes(&in6addr_loopback, sizeof(in6_addr));
   DCHECK(writer.ptr() - response == response_size);
 
-  HANDLE_EINTR(sendto(sock, response, response_size, 0,
-                      reinterpret_cast<const sockaddr*>(&client_addr),
-                      sizeof(client_addr)));
+  SendTo(sock, response, response_size, 0,
+         reinterpret_cast<const sockaddr*>(&client_addr), sizeof(client_addr));
 }
 
 void HandleRequest(int sock, const char* request, size_t size,
@@ -180,7 +196,7 @@ int main(int argc, char** argv) {
 
   int sock = socket(AF_INET, SOCK_DGRAM, 0);
   if (sock < 0) {
-    perror("create socket");
+    PError("create socket");
     return 1;
   }
 
@@ -192,8 +208,8 @@ int main(int argc, char** argv) {
   int reuse_addr = 1;
   if (HANDLE_EINTR(bind(sock, reinterpret_cast<sockaddr*>(&addr),
                         sizeof(addr))) < 0) {
-    perror("server bind");
-    HANDLE_EINTR(close(sock));
+    PError("server bind");
+    CloseFileDescriptor(sock);
     return 1;
   }
 
@@ -211,7 +227,7 @@ int main(int argc, char** argv) {
     if (size < 0) {
       // Unrecoverable error, can only exit.
       LOG(ERROR) << "Failed to receive a request: " << strerror(errno);
-      HANDLE_EINTR(close(sock));
+      CloseFileDescriptor(sock);
       return 1;
     }
 
