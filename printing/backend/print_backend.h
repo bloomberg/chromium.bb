@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "printing/print_job_constants.h"
 #include "printing/printing_export.h"
 
 namespace base {
@@ -31,6 +32,19 @@ struct PRINTING_EXPORT PrinterBasicInfo {
 };
 
 typedef std::vector<PrinterBasicInfo> PrinterList;
+
+struct PRINTING_EXPORT PrinterSemanticCapsAndDefaults {
+  PrinterSemanticCapsAndDefaults();
+  ~PrinterSemanticCapsAndDefaults();
+
+  // Capabilities.
+  bool color_capable;
+  bool duplex_capable;
+
+  // Current defaults.
+  bool color_default;
+  DuplexMode duplex_default;
+};
 
 struct PRINTING_EXPORT PrinterCapsAndDefaults {
   PrinterCapsAndDefaults();
@@ -57,6 +71,14 @@ class PRINTING_EXPORT PrintBackend
 
   // Get the default printer name. Empty string if no default printer.
   virtual std::string GetDefaultPrinterName() = 0;
+
+  // Gets the semantic capabilities and defaults for a specific printer.
+  // This is usually a lighter implementation than GetPrinterCapsAndDefaults().
+  // NOTE: on some old platforms (WinXP without XPS pack)
+  // GetPrinterCapsAndDefaults() will fail, while this function will succeed.
+  virtual bool GetPrinterSemanticCapsAndDefaults(
+      const std::string& printer_name,
+      PrinterSemanticCapsAndDefaults* printer_info) = 0;
 
   // Gets the capabilities and defaults for a specific printer.
   virtual bool GetPrinterCapsAndDefaults(

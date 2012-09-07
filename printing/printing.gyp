@@ -234,6 +234,14 @@
             'printing_context_win_unittest.cc',
           ]
         }],
+        ['use_cups==1', {
+          'defines': [
+            'USE_CUPS',
+          ],
+          'sources': [
+            'backend/cups_helper_unittest.cc',
+          ],
+        }],
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',

@@ -108,6 +108,9 @@ class PrintBackendCUPS : public PrintBackend {
   // PrintBackend implementation.
   virtual bool EnumeratePrinters(PrinterList* printer_list) OVERRIDE;
   virtual std::string GetDefaultPrinterName() OVERRIDE;
+  virtual bool GetPrinterSemanticCapsAndDefaults(
+      const std::string& printer_name,
+      PrinterSemanticCapsAndDefaults* printer_info) OVERRIDE;
   virtual bool GetPrinterCapsAndDefaults(
       const std::string& printer_name,
       PrinterCapsAndDefaults* printer_info) OVERRIDE;
@@ -208,6 +211,17 @@ std::string PrintBackendCUPS::GetDefaultPrinterName() {
   int num_dests = GetDests(&dests);
   cups_dest_t* dest = cupsGetDest(NULL, NULL, num_dests, dests);
   return dest ? std::string(dest->name) : std::string();
+}
+
+bool PrintBackendCUPS::GetPrinterSemanticCapsAndDefaults(
+    const std::string& printer_name,
+    PrinterSemanticCapsAndDefaults* printer_info) {
+  PrinterCapsAndDefaults info;
+  if (!GetPrinterCapsAndDefaults(printer_name, &info) )
+    return false;
+
+  return parsePpdCapabilities(
+      printer_name, info.printer_capabilities, printer_info);
 }
 
 bool PrintBackendCUPS::GetPrinterCapsAndDefaults(

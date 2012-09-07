@@ -18,6 +18,29 @@
 
 namespace {
 
+// This class is designed to work with PRINTER_INFO_X structures
+// and calls GetPrinter internally with correctly allocated buffer.
+template <typename T>
+class PrinterInfo {
+ public:
+  bool GetPrinterInfo(HANDLE printer, int level) {
+    DWORD buf_size = 0;
+    GetPrinter(printer, level, NULL, 0, &buf_size);
+    if (buf_size == 0)
+      return false;
+    buffer_.reset(new uint8[buf_size]);
+    memset(buffer_.get(), 0, buf_size);
+    return !!GetPrinter(printer, level, buffer_.get(), buf_size, &buf_size);
+  }
+
+  const T* get() const {
+    return reinterpret_cast<T*>(buffer_.get());
+  }
+
+ private:
+  scoped_array<uint8> buffer_;
+};
+
 HRESULT StreamOnHGlobalToString(IStream* stream, std::string* out) {
   DCHECK(stream);
   DCHECK(out);
@@ -42,6 +65,9 @@ class PrintBackendWin : public PrintBackend {
   // PrintBackend implementation.
   virtual bool EnumeratePrinters(PrinterList* printer_list) OVERRIDE;
   virtual std::string GetDefaultPrinterName() OVERRIDE;
+  virtual bool GetPrinterSemanticCapsAndDefaults(
+      const std::string& printer_name,
+      PrinterSemanticCapsAndDefaults* printer_info) OVERRIDE;
   virtual bool GetPrinterCapsAndDefaults(
       const std::string& printer_name,
       PrinterCapsAndDefaults* printer_info) OVERRIDE;
@@ -91,6 +117,76 @@ std::string PrintBackendWin::GetDefaultPrinterName() {
   if (!::GetDefaultPrinter(default_printer_name, &size))
     return std::string();
   return WideToUTF8(default_printer_name);
+}
+
+bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(
+    const std::string& printer_name,
+    PrinterSemanticCapsAndDefaults* printer_info) {
+  ScopedPrinterHandle printer_handle;
+  OpenPrinter(const_cast<LPTSTR>(UTF8ToWide(printer_name).c_str()),
+              printer_handle.Receive(), NULL);
+  DCHECK(printer_handle);
+  if (!printer_handle.IsValid())
+    return false;
+
+  PrinterInfo<PRINTER_INFO_5> info_5;
+  if (!info_5.GetPrinterInfo(printer_handle, 5))
+    return false;
+
+  // Get printer capabilities. For more info see here:
+  // http://msdn.microsoft.com/en-us/library/windows/desktop/dd183552(v=vs.85).aspx
+  bool color_supported = (DeviceCapabilities(info_5.get()->pPrinterName,
+                                             info_5.get()->pPortName,
+                                             DC_COLORDEVICE,
+                                             NULL,
+                                             NULL) == 1);
+
+  bool duplex_supported = (DeviceCapabilities(info_5.get()->pPrinterName,
+                                              info_5.get()->pPortName,
+                                              DC_DUPLEX,
+                                              NULL,
+                                              NULL) == 1);
+
+  // PRINTER_INFO_9 retrieves current user settings.
+  PrinterInfo<PRINTER_INFO_9> info_9;
+  if (!info_9.GetPrinterInfo(printer_handle, 9))
+    return false;
+  DEVMODE* devmode = info_9.get()->pDevMode;
+
+  // Sometimes user settings are not available (have not been setted up yet).
+  // Use printer default settings (PRINTER_INFO_8) in this case.
+  PrinterInfo<PRINTER_INFO_8> info_8;
+  if (!devmode) {
+    if (info_8.GetPrinterInfo(printer_handle, 8))
+      devmode = info_8.get()->pDevMode;
+  }
+  if (!devmode)
+    return false;
+
+  PrinterSemanticCapsAndDefaults caps;
+  caps.color_capable = color_supported;
+  if ((devmode->dmFields & DM_COLOR) == DM_COLOR)
+    caps.color_default = (devmode->dmColor == DMCOLOR_COLOR);
+
+  caps.duplex_capable = duplex_supported;
+  if ((devmode->dmFields & DM_DUPLEX) == DM_DUPLEX) {
+    switch (devmode->dmDuplex) {
+      case DMDUP_SIMPLEX:
+        caps.duplex_default = SIMPLEX;
+        break;
+      case DMDUP_VERTICAL:
+        caps.duplex_default = LONG_EDGE;
+        break;
+      case DMDUP_HORIZONTAL:
+        caps.duplex_default = SHORT_EDGE;
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  *printer_info = caps;
+  return true;
 }
 
 bool PrintBackendWin::GetPrinterCapsAndDefaults(

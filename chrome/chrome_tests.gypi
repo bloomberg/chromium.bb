@@ -2605,14 +2605,6 @@
             ['exclude', '^browser/importer/'],
           ],
         }],
-        ['use_cups==1', {
-          'defines': [
-            'USE_CUPS',
-          ],
-          'sources': [
-            'browser/printing/print_system_task_proxy_unittest.cc',
-          ],
-        }],
         ['component=="shared_library" and incremental_chrome_dll!=1', {
           # This is needed for tests that subclass
           # RendererWebKitPlatformSupportImpl, which subclasses stuff in

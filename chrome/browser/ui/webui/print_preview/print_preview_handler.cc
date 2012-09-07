@@ -7,7 +7,6 @@
 #include <ctype.h>
 
 #include <string>
-#include <vector>
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -763,16 +762,8 @@ void PrintPreviewHandler::ActivateInitiatorTabAndClosePreviewTab() {
 void PrintPreviewHandler::SendPrinterCapabilities(
     const DictionaryValue& settings_info) {
   VLOG(1) << "Get printer capabilities finished";
-  // Copy so we can override with sticky values.
-  scoped_ptr<DictionaryValue> settings(settings_info.DeepCopy());
-  if (GetStickySettings()->color_model() != printing::UNKNOWN_COLOR_MODEL) {
-    settings->SetBoolean(
-        printing::kSettingSetColorAsDefault,
-        printing::isColorModelSelected(
-            GetStickySettings()->color_model()));
-  }
   web_ui()->CallJavascriptFunction("updateWithPrinterCapabilities",
-                                   *settings);
+                                   settings_info);
 }
 
 void PrintPreviewHandler::SendFailedToGetPrinterCapabilities(
