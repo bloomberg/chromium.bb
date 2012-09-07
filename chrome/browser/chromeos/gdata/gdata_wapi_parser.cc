@@ -162,43 +162,43 @@ struct LinkTypeMap {
 };
 
 const LinkTypeMap kLinkTypeMap[] = {
-    { Link::SELF,
+    { Link::kSelf,
       "self" },
-    { Link::NEXT,
+    { Link::kNext,
       "next" },
-    { Link::PARENT,
+    { Link::kParent,
       "http://schemas.google.com/docs/2007#parent" },
-    { Link::ALTERNATE,
+    { Link::kAlternate,
       "alternate"},
-    { Link::EDIT,
+    { Link::kEdit,
       "edit" },
-    { Link::EDIT_MEDIA,
+    { Link::kEditMedia,
       "edit-media" },
-    { Link::ALT_EDIT_MEDIA,
+    { Link::kAltEditMedia,
       "http://schemas.google.com/docs/2007#alt-edit-media" },
-    { Link::ALT_POST,
+    { Link::kAltPost,
       "http://schemas.google.com/docs/2007#alt-post" },
-    { Link::FEED,
+    { Link::kFeed,
       "http://schemas.google.com/g/2005#feed"},
-    { Link::POST,
+    { Link::kPost,
       "http://schemas.google.com/g/2005#post"},
-    { Link::BATCH,
+    { Link::kBatch,
       "http://schemas.google.com/g/2005#batch"},
-    { Link::THUMBNAIL,
+    { Link::kThumbnail,
       "http://schemas.google.com/docs/2007/thumbnail"},
-    { Link::RESUMABLE_EDIT_MEDIA,
+    { Link::kResumableEditMedia,
       "http://schemas.google.com/g/2005#resumable-edit-media"},
-    { Link::RESUMABLE_CREATE_MEDIA,
+    { Link::kResumableCreateMedia,
       "http://schemas.google.com/g/2005#resumable-create-media"},
-    { Link::TABLES_FEED,
+    { Link::kTablesFeed,
       "http://schemas.google.com/spreadsheets/2006#tablesfeed"},
-    { Link::WORKSHEET_FEED,
+    { Link::kWorksheetFeed,
       "http://schemas.google.com/spreadsheets/2006#worksheetsfeed"},
-    { Link::EMBED,
+    { Link::kEmbed,
       "http://schemas.google.com/docs/2007#embed"},
-    { Link::PRODUCT,
+    { Link::kProduct,
       "http://schemas.google.com/docs/2007#product"},
-    { Link::ICON,
+    { Link::kIcon,
       "http://schemas.google.com/docs/2007#icon"},
 };
 
@@ -297,7 +297,7 @@ Author* Author::CreateFromXml(XmlReader* xml_reader) {
 ////////////////////////////////////////////////////////////////////////////////
 // Link implementation
 
-Link::Link() : type_(Link::UNKNOWN) {
+Link::Link() : type_(Link::kUnknown) {
 }
 
 Link::~Link() {
@@ -337,14 +337,14 @@ bool Link::GetLinkType(const base::StringPiece& rel, Link::LinkType* type) {
   // redundant to provide a quick skip if it's obviously not an OPEN_WITH url.
   if (rel.size() >= kOpenWithPrefixSize &&
       StartsWithASCII(rel.as_string(), kOpenWithPrefix, false)) {
-    *type = OPEN_WITH;
+    *type = kOpenWith;
     return true;
   }
 
   // Let unknown link types through, just report it; if the link type is needed
   // in the future, add it into LinkType and kLinkTypeMap.
   DVLOG(1) << "Ignoring unknown link type for rel " << rel;
-  *type = UNKNOWN;
+  *type = kUnknown;
   return true;
 }
 
@@ -378,7 +378,7 @@ Link* Link::CreateFromXml(XmlReader* xml_reader) {
   std::string rel;
   if (xml_reader->NodeAttribute(kRelAttr, &rel)) {
     GetLinkType(rel, &link->type_);
-    if (link->type_ == OPEN_WITH)
+    if (link->type_ == kOpenWith)
       GetAppID(rel, &link->app_id_);
   }
 
@@ -536,7 +536,7 @@ void AppIcon::RegisterJSONConverter(
 
 GURL AppIcon::GetIconURL() const {
   for (size_t i = 0; i < links_.size(); ++i) {
-    if (links_[i]->type() == Link::ICON)
+    if (links_[i]->type() == Link::kIcon)
       return links_[i]->href();
   }
   return GURL();
@@ -836,31 +836,31 @@ DocumentEntry* DocumentEntry::CreateFromFileResource(const FileResource& file) {
   // entry->links_.
   if (!file.parents().empty()) {
     Link* link = new Link();
-    link->type_ = Link::PARENT;
+    link->type_ = Link::kParent;
     link->href_ = file.parents()[0]->parent_link();
     entry->links_.push_back(link);
   }
   if (!file.self_link().is_empty()) {
     Link* link = new Link();
-    link->type_ = Link::EDIT;
+    link->type_ = Link::kEdit;
     link->href_ = file.self_link();
     entry->links_.push_back(link);
   }
   if (!file.thumbnail_link().is_empty()) {
     Link* link = new Link();
-    link->type_ = Link::THUMBNAIL;
+    link->type_ = Link::kThumbnail;
     link->href_ = file.thumbnail_link();
     entry->links_.push_back(link);
   }
   if (!file.alternate_link().is_empty()) {
     Link* link = new Link();
-    link->type_ = Link::ALTERNATE;
+    link->type_ = Link::kAlternate;
     link->href_ = file.alternate_link();
     entry->links_.push_back(link);
   }
   if (!file.embed_link().is_empty()) {
     Link* link = new Link();
-    link->type_ = Link::EMBED;
+    link->type_ = Link::kEmbed;
     link->href_ = file.embed_link();
     entry->links_.push_back(link);
   }
@@ -977,7 +977,7 @@ scoped_ptr<DocumentFeed> DocumentFeed::CreateFromChangeList(
 bool DocumentFeed::GetNextFeedURL(GURL* url) {
   DCHECK(url);
   for (size_t i = 0; i < links_.size(); ++i) {
-    if (links_[i]->type() == Link::NEXT) {
+    if (links_[i]->type() == Link::kNext) {
       *url = links_[i]->href();
       return true;
     }
@@ -1022,7 +1022,7 @@ GURL InstalledApp::GetProductUrl() const {
   for (ScopedVector<Link>::const_iterator it = links_.begin();
        it != links_.end(); ++it) {
     const Link* link = *it;
-    if (link->type() == Link::PRODUCT)
+    if (link->type() == Link::kProduct)
       return link->href();
   }
   return GURL();

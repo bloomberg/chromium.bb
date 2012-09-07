@@ -94,14 +94,14 @@ TEST_F(GDataWAPIParserTest, DocumentFeedJsonParser) {
 
   // Check links.
   ASSERT_EQ(6U, feed->links().size());
-  const Link* self_link = feed->GetLinkByType(Link::SELF);
+  const Link* self_link = feed->GetLinkByType(Link::kSelf);
   ASSERT_TRUE(self_link);
   EXPECT_EQ("https://self_link/", self_link->href().spec());
   EXPECT_EQ("application/atom+xml", self_link->mime_type());
 
 
   const Link* resumable_link =
-      feed->GetLinkByType(Link::RESUMABLE_CREATE_MEDIA);
+      feed->GetLinkByType(Link::kResumableCreateMedia);
   ASSERT_TRUE(resumable_link);
   EXPECT_EQ("https://resumable_create_media_link/",
             resumable_link->href().spec());
@@ -141,13 +141,13 @@ TEST_F(GDataWAPIParserTest, DocumentFeedJsonParser) {
   ASSERT_EQ(FeedLink::ACL, feed_link->type());
 
   const Link* entry1_alternate_link =
-      folder_entry->GetLinkByType(Link::ALTERNATE);
+      folder_entry->GetLinkByType(Link::kAlternate);
   ASSERT_TRUE(entry1_alternate_link);
   EXPECT_EQ("https://1_folder_alternate_link/",
             entry1_alternate_link->href().spec());
   EXPECT_EQ("text/html", entry1_alternate_link->mime_type());
 
-  const Link* entry1_edit_link = folder_entry->GetLinkByType(Link::EDIT);
+  const Link* entry1_edit_link = folder_entry->GetLinkByType(Link::kEdit);
   ASSERT_TRUE(entry1_edit_link);
   EXPECT_EQ("https://1_edit_link/", entry1_edit_link->href().spec());
   EXPECT_EQ("application/atom+xml", entry1_edit_link->mime_type());
@@ -161,20 +161,20 @@ TEST_F(GDataWAPIParserTest, DocumentFeedJsonParser) {
             file_entry->suggested_filename());
   EXPECT_EQ("3b4382ebefec6e743578c76bbd0575ce", file_entry->file_md5());
   EXPECT_EQ(892721, file_entry->file_size());
-  const Link* file_parent_link = file_entry->GetLinkByType(Link::PARENT);
+  const Link* file_parent_link = file_entry->GetLinkByType(Link::kParent);
   ASSERT_TRUE(file_parent_link);
   EXPECT_EQ("https://file_link_parent/", file_parent_link->href().spec());
   EXPECT_EQ("application/atom+xml", file_parent_link->mime_type());
   EXPECT_EQ(ASCIIToUTF16("Medical"), file_parent_link->title());
   const Link* file_open_with_link =
-    file_entry->GetLinkByType(Link::OPEN_WITH);
+    file_entry->GetLinkByType(Link::kOpenWith);
   ASSERT_TRUE(file_open_with_link);
   EXPECT_EQ("https://xml_file_entry_open_with_link/",
             file_open_with_link->href().spec());
   EXPECT_EQ("application/atom+xml", file_open_with_link->mime_type());
   EXPECT_EQ("the_app_id", file_open_with_link->app_id());
 
-  const Link* file_unknown_link = file_entry->GetLinkByType(Link::UNKNOWN);
+  const Link* file_unknown_link = file_entry->GetLinkByType(Link::kUnknown);
   ASSERT_TRUE(file_unknown_link);
   EXPECT_EQ("https://xml_file_fake_entry_open_with_link/",
             file_unknown_link->href().spec());
@@ -238,33 +238,33 @@ TEST_F(GDataWAPIParserTest, DocumentEntryXmlParser) {
 
   // Check links.
   ASSERT_EQ(9U, entry->links().size());
-  const Link* entry1_alternate_link = entry->GetLinkByType(Link::ALTERNATE);
+  const Link* entry1_alternate_link = entry->GetLinkByType(Link::kAlternate);
   ASSERT_TRUE(entry1_alternate_link);
   EXPECT_EQ("https://xml_file_entry_id_alternate_link/",
             entry1_alternate_link->href().spec());
   EXPECT_EQ("text/html", entry1_alternate_link->mime_type());
 
-  const Link* entry1_edit_link = entry->GetLinkByType(Link::EDIT_MEDIA);
+  const Link* entry1_edit_link = entry->GetLinkByType(Link::kEditMedia);
   ASSERT_TRUE(entry1_edit_link);
   EXPECT_EQ("https://xml_file_entry_id_edit_media_link/",
             entry1_edit_link->href().spec());
   EXPECT_EQ("application/x-tar", entry1_edit_link->mime_type());
 
-  const Link* entry1_self_link = entry->GetLinkByType(Link::SELF);
+  const Link* entry1_self_link = entry->GetLinkByType(Link::kSelf);
   ASSERT_TRUE(entry1_self_link);
   EXPECT_EQ("https://xml_file_entry_id_self_link/",
             entry1_self_link->href().spec());
   EXPECT_EQ("application/atom+xml", entry1_self_link->mime_type());
   EXPECT_EQ("", entry1_self_link->app_id());
 
-  const Link* entry1_open_with_link = entry->GetLinkByType(Link::OPEN_WITH);
+  const Link* entry1_open_with_link = entry->GetLinkByType(Link::kOpenWith);
   ASSERT_TRUE(entry1_open_with_link);
   EXPECT_EQ("https://xml_file_entry_open_with_link/",
             entry1_open_with_link->href().spec());
   EXPECT_EQ("application/atom+xml", entry1_open_with_link->mime_type());
   EXPECT_EQ("the_app_id", entry1_open_with_link->app_id());
 
-  const Link* entry1_unknown_link = entry->GetLinkByType(Link::UNKNOWN);
+  const Link* entry1_unknown_link = entry->GetLinkByType(Link::kUnknown);
   ASSERT_TRUE(entry1_unknown_link);
   EXPECT_EQ("https://xml_file_fake_entry_open_with_link/",
             entry1_unknown_link->href().spec());
