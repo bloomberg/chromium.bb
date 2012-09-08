@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/time.h"
+#include "chrome/browser/safe_browsing/bloom_filter.h"
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_unittest_helper.h"
@@ -1584,4 +1585,119 @@ TEST_F(SafeBrowsingDatabaseTest, EmptyUpdate) {
   database_->UpdateFinished(true);
   ASSERT_TRUE(file_util::GetFileInfo(filename, &after_info));
   EXPECT_EQ(before_info.last_modified, after_info.last_modified);
+}
+
+// Test that a filter file is written out during update and read back
+// in during setup.
+TEST_F(SafeBrowsingDatabaseTest, FilterFile) {
+  // Create a database with trivial example data and write it out.
+  {
+    SBChunkList chunks;
+    SBChunk chunk;
+
+    // Prime the database.
+    std::vector<SBListChunkRanges> lists;
+    EXPECT_TRUE(database_->UpdateStarted(&lists));
+
+    InsertAddChunkHostPrefixUrl(&chunk, 1, "www.evil.com/",
+                                "www.evil.com/malware.html");
+    chunks.clear();
+    chunks.push_back(chunk);
+    database_->InsertChunks(safe_browsing_util::kMalwareList, chunks);
+    database_->UpdateFinished(true);
+  }
+
+  // Find the malware url in the database, don't find a good url.
+  const Time now = Time::Now();
+  std::vector<SBFullHashResult> full_hashes;
+  std::vector<SBPrefix> prefix_hits;
+  std::string matching_list;
+  EXPECT_TRUE(database_->ContainsBrowseUrl(
+      GURL("http://www.evil.com/malware.html"),
+      &matching_list, &prefix_hits, &full_hashes, now));
+  EXPECT_FALSE(database_->ContainsBrowseUrl(
+      GURL("http://www.good.com/goodware.html"),
+      &matching_list, &prefix_hits, &full_hashes, now));
+
+  FilePath filter_file = database_->PrefixSetForFilename(
+      database_->BrowseDBFilename(database_filename_));
+
+  // After re-creating the database, it should have a filter read from
+  // a file, so it should find the same results.
+  ASSERT_TRUE(file_util::PathExists(filter_file));
+  database_.reset(new SafeBrowsingDatabaseNew);
+  database_->Init(database_filename_);
+  EXPECT_TRUE(database_->ContainsBrowseUrl(
+      GURL("http://www.evil.com/malware.html"),
+      &matching_list, &prefix_hits, &full_hashes, now));
+  EXPECT_FALSE(database_->ContainsBrowseUrl(
+      GURL("http://www.good.com/goodware.html"),
+      &matching_list, &prefix_hits, &full_hashes, now));
+
+  // If there is no filter file, the database cannot find malware urls.
+  file_util::Delete(filter_file, false);
+  ASSERT_FALSE(file_util::PathExists(filter_file));
+  database_.reset(new SafeBrowsingDatabaseNew);
+  database_->Init(database_filename_);
+  EXPECT_FALSE(database_->ContainsBrowseUrl(
+      GURL("http://www.evil.com/malware.html"),
+      &matching_list, &prefix_hits, &full_hashes, now));
+  EXPECT_FALSE(database_->ContainsBrowseUrl(
+      GURL("http://www.good.com/goodware.html"),
+      &matching_list, &prefix_hits, &full_hashes, now));
+}
+
+TEST_F(SafeBrowsingDatabaseTest, PrefixSetTransition) {
+  // Create a database with trivial example data and write it out.
+  {
+    SBChunkList chunks;
+    SBChunk chunk;
+
+    // Prime the database.
+    std::vector<SBListChunkRanges> lists;
+    EXPECT_TRUE(database_->UpdateStarted(&lists));
+
+    InsertAddChunkHostPrefixUrl(&chunk, 1, "www.evil.com/",
+                                "www.evil.com/malware.html");
+    chunks.clear();
+    chunks.push_back(chunk);
+    database_->InsertChunks(safe_browsing_util::kMalwareList, chunks);
+    database_->UpdateFinished(true);
+  }
+
+  // Some helpful paths.
+  FilePath prefix_set_file = database_->PrefixSetForFilename(
+      database_->BrowseDBFilename(database_filename_));
+  FilePath bloom_filter_file = database_->BloomFilterForFilename(
+      database_->BrowseDBFilename(database_filename_));
+
+  // Manually create a bloom filter for the prefixes and write it out.
+  {
+    scoped_refptr<BloomFilter> filter(
+        new BloomFilter(BloomFilter::kBloomFilterSizeRatio *
+                        BloomFilter::kBloomFilterMinSize));
+    filter->Insert(Sha256Prefix("www.evil.com/"));
+    filter->Insert(Sha256Prefix("www.evil.com/malware.html"));
+    ASSERT_TRUE(filter->WriteFile(bloom_filter_file));
+  }
+
+  file_util::Delete(prefix_set_file, false);
+  ASSERT_FALSE(file_util::PathExists(prefix_set_file));
+  ASSERT_TRUE(file_util::PathExists(bloom_filter_file));
+
+  // Reload the database.
+  database_.reset(new SafeBrowsingDatabaseNew);
+  database_->Init(database_filename_);
+
+  // Should find the malware.
+  const Time now = Time::Now();
+  std::vector<SBFullHashResult> full_hashes;
+  std::vector<SBPrefix> prefix_hits;
+  std::string matching_list;
+  EXPECT_TRUE(database_->ContainsBrowseUrl(
+      GURL("http://www.evil.com/malware.html"),
+      &matching_list, &prefix_hits, &full_hashes, now));
+  EXPECT_FALSE(database_->ContainsBrowseUrl(
+      GURL("http://www.good.com/goodware.html"),
+      &matching_list, &prefix_hits, &full_hashes, now));
 }

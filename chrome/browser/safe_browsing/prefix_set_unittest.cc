@@ -42,26 +42,26 @@ class PrefixSetTest : public PlatformTest {
   // Check that all elements of |prefixes| are in |prefix_set|, and
   // that nearby elements are not (for lack of a more sensible set of
   // items to check for absence).
-  static void CheckPrefixes(safe_browsing::PrefixSet* prefix_set,
+  static void CheckPrefixes(const safe_browsing::PrefixSet& prefix_set,
                             const std::vector<SBPrefix> &prefixes) {
     // The set can generate the prefixes it believes it has, so that's
     // a good starting point.
     std::set<SBPrefix> check(prefixes.begin(), prefixes.end());
     std::vector<SBPrefix> prefixes_copy;
-    prefix_set->GetPrefixes(&prefixes_copy);
+    prefix_set.GetPrefixes(&prefixes_copy);
     EXPECT_EQ(prefixes_copy.size(), check.size());
     EXPECT_TRUE(std::equal(check.begin(), check.end(), prefixes_copy.begin()));
 
     for (size_t i = 0; i < prefixes.size(); ++i) {
-      EXPECT_TRUE(prefix_set->Exists(prefixes[i]));
+      EXPECT_TRUE(prefix_set.Exists(prefixes[i]));
 
       const SBPrefix left_sibling = prefixes[i] - 1;
       if (check.count(left_sibling) == 0)
-        EXPECT_FALSE(prefix_set->Exists(left_sibling));
+        EXPECT_FALSE(prefix_set.Exists(left_sibling));
 
       const SBPrefix right_sibling = prefixes[i] + 1;
       if (check.count(right_sibling) == 0)
-        EXPECT_FALSE(prefix_set->Exists(right_sibling));
+        EXPECT_FALSE(prefix_set.Exists(right_sibling));
     }
   }
 
@@ -154,7 +154,7 @@ std::vector<SBPrefix> PrefixSetTest::shared_prefixes_;
 // Test that a small sparse random input works.
 TEST_F(PrefixSetTest, Baseline) {
   safe_browsing::PrefixSet prefix_set(shared_prefixes_);
-  CheckPrefixes(&prefix_set, shared_prefixes_);
+  CheckPrefixes(prefix_set, shared_prefixes_);
 }
 
 // Test that the empty set doesn't appear to have anything in it.
@@ -306,17 +306,47 @@ TEST_F(PrefixSetTest, EdgeCases) {
   }
 }
 
-// Similar to Baseline test, but write the set out to a file and read
-// it back in before testing.
+// Test writing a prefix set to disk and reading it back in.
 TEST_F(PrefixSetTest, ReadWrite) {
   FilePath filename;
-  ASSERT_TRUE(GetPrefixSetFile(&filename));
 
-  scoped_ptr<safe_browsing::PrefixSet>
-      prefix_set(safe_browsing::PrefixSet::LoadFile(filename));
-  ASSERT_TRUE(prefix_set.get());
+  // Write the sample prefix set out, read it back in, and check all
+  // the prefixes.  Leaves the path in |filename|.
+  {
+    ASSERT_TRUE(GetPrefixSetFile(&filename));
+    scoped_ptr<safe_browsing::PrefixSet>
+        prefix_set(safe_browsing::PrefixSet::LoadFile(filename));
+    ASSERT_TRUE(prefix_set.get());
+    CheckPrefixes(*prefix_set, shared_prefixes_);
+  }
 
-  CheckPrefixes(prefix_set.get(), shared_prefixes_);
+  // Test writing and reading a very sparse set containing no deltas.
+  {
+    const SBPrefix kVeryPositive = 1000 * 1000 * 1000;
+    const SBPrefix kVeryNegative = -kVeryPositive;
+
+    std::vector<SBPrefix> prefixes;
+    prefixes.push_back(kVeryNegative);
+    prefixes.push_back(kVeryPositive);
+
+    safe_browsing::PrefixSet prefix_set_to_write(prefixes);
+    ASSERT_TRUE(prefix_set_to_write.WriteFile(filename));
+    scoped_ptr<safe_browsing::PrefixSet>
+        prefix_set(safe_browsing::PrefixSet::LoadFile(filename));
+    ASSERT_TRUE(prefix_set.get());
+    CheckPrefixes(*prefix_set, prefixes);
+  }
+
+  // Test writing and reading an empty set.
+  {
+    std::vector<SBPrefix> prefixes;
+    safe_browsing::PrefixSet prefix_set_to_write(prefixes);
+    ASSERT_TRUE(prefix_set_to_write.WriteFile(filename));
+    scoped_ptr<safe_browsing::PrefixSet>
+        prefix_set(safe_browsing::PrefixSet::LoadFile(filename));
+    ASSERT_TRUE(prefix_set.get());
+    CheckPrefixes(*prefix_set, prefixes);
+  }
 }
 
 // Check that |CleanChecksum()| makes an acceptable checksum.

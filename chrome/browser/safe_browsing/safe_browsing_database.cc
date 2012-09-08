@@ -31,6 +31,8 @@ namespace {
 
 // Filename suffix for the bloom filter.
 const FilePath::CharType kBloomFilterFile[] = FILE_PATH_LITERAL(" Filter 2");
+// Filename suffix for the prefix set.
+const FilePath::CharType kPrefixSetFile[] = FILE_PATH_LITERAL(" Prefix Set");
 // Filename suffix for download store.
 const FilePath::CharType kDownloadDBFile[] = FILE_PATH_LITERAL(" Download");
 // Filename suffix for client-side phishing detection whitelist store.
@@ -40,7 +42,11 @@ const FilePath::CharType kCsdWhitelistDBFile[] =
 const FilePath::CharType kDownloadWhitelistDBFile[] =
     FILE_PATH_LITERAL(" Download Whitelist");
 // Filename suffix for browse store.
-// TODO(lzheng): change to a better name when we change the file format.
+// TODO(shess): "Safe Browsing Bloom Prefix Set" is full of win.
+// Unfortunately, to change the name implies lots of transition code
+// for little benefit.  If/when file formats change (say to put all
+// the data in one file), that would be a convenient point to rectify
+// this.
 const FilePath::CharType kBrowseDBFile[] = FILE_PATH_LITERAL(" Bloom");
 
 // The maximum staleness for a cached entry.
@@ -258,42 +264,29 @@ bool SBAddFullHashPrefixLess(const SBAddFullHash& a, const SBAddFullHash& b) {
   return a.full_hash.prefix < b.full_hash.prefix;
 }
 
-// Helper to reduce code duplication.
-safe_browsing::PrefixSet* CreateEmptyPrefixSet() {
-  return new safe_browsing::PrefixSet(std::vector<SBPrefix>());
+// Track what LoadBloomFilterOrPrefixSet() loaded.
+enum FilterLoad {
+  FILTER_LOAD,                 // All calls.
+  FILTER_LOADED_PREFIX_SET,    // Cases loaded from prefix set.
+  FILTER_LOADED_BLOOM_FILTER,  // Cases loaded from bloom filter.
+
+  // Memory space for histograms is determined by the max.  ALWAYS ADD
+  // NEW VALUES BEFORE THIS ONE.
+  FILTER_LOAD_MAX
+};
+
+void RecordFilterLoad(FilterLoad event_type) {
+  UMA_HISTOGRAM_ENUMERATION("SB2.FilterLoad", event_type,
+                            FILTER_LOAD_MAX);
 }
 
-// Generate |PrefixSet| and |BloomFilter| instances from the contents
-// of |add_prefixes|.
-void FiltersFromAddPrefixes(
-    const SBAddPrefixes& add_prefixes,
-    scoped_refptr<BloomFilter>* bloom_filter,
-    scoped_ptr<safe_browsing::PrefixSet>* prefix_set) {
-  const int filter_size =
-      BloomFilter::FilterSizeForKeyCount(add_prefixes.size());
-  *bloom_filter = new BloomFilter(filter_size);
-  if (add_prefixes.empty()) {
-    prefix_set->reset(CreateEmptyPrefixSet());
-    return;
-  }
-
-  // TODO(shess): If |add_prefixes| were sorted by the prefix, it
-  // could be passed directly to |PrefixSet()|, removing the need for
-  // |prefixes|.
-  std::vector<SBPrefix> prefixes;
-  prefixes.reserve(add_prefixes.size());
-  for (SBAddPrefixes::const_iterator iter = add_prefixes.begin();
-       iter != add_prefixes.end(); ++iter) {
-    prefixes.push_back(iter->prefix);
-  }
-  std::sort(prefixes.begin(), prefixes.end());
-
-  for (std::vector<SBPrefix>::const_iterator iter = prefixes.begin();
-       iter != prefixes.end(); ++iter) {
-    bloom_filter->get()->Insert(*iter);
-  }
-
-  prefix_set->reset(new safe_browsing::PrefixSet(prefixes));
+// This code always checks for non-zero file size.  This helper makes
+// that less verbose.
+int64 GetFileSizeOrZero(const FilePath& file_path) {
+  int64 size_64;
+  if (!file_util::GetFileSize(file_path, &size_64))
+    return 0;
+  return size_64;
 }
 
 }  // namespace
@@ -356,6 +349,12 @@ FilePath SafeBrowsingDatabase::DownloadDBFilename(
 FilePath SafeBrowsingDatabase::BloomFilterForFilename(
     const FilePath& db_filename) {
   return FilePath(db_filename.value() + kBloomFilterFile);
+}
+
+// static
+FilePath SafeBrowsingDatabase::PrefixSetForFilename(
+    const FilePath& db_filename) {
+  return FilePath(db_filename.value() + kPrefixSetFile);
 }
 
 // static
@@ -433,6 +432,7 @@ void SafeBrowsingDatabaseNew::Init(const FilePath& filename_base) {
 
   browse_filename_ = BrowseDBFilename(filename_base);
   bloom_filter_filename_ = BloomFilterForFilename(browse_filename_);
+  prefix_set_filename_ = PrefixSetForFilename(browse_filename_);
 
   browse_store_->Init(
       browse_filename_,
@@ -448,7 +448,7 @@ void SafeBrowsingDatabaseNew::Init(const FilePath& filename_base) {
     base::AutoLock locked(lookup_lock_);
     full_browse_hashes_.clear();
     pending_browse_hashes_.clear();
-    LoadBloomFilter();
+    LoadBloomFilterOrPrefixSet();
   }
 
   if (download_store_.get()) {
@@ -511,12 +511,8 @@ bool SafeBrowsingDatabaseNew::ResetDatabase() {
     full_browse_hashes_.clear();
     pending_browse_hashes_.clear();
     prefix_miss_cache_.clear();
-    // TODO(shess): This could probably be |bloom_filter_.reset()|.
-    browse_bloom_filter_ = new BloomFilter(BloomFilter::kBloomFilterMinSize *
-                                           BloomFilter::kBloomFilterSizeRatio);
-    // TODO(shess): It is simpler for the code to assume that presence
-    // of a bloom filter always implies presence of a prefix set.
-    prefix_set_.reset(CreateEmptyPrefixSet());
+    browse_bloom_filter_ = NULL;
+    prefix_set_.reset();
   }
   // Wants to acquire the lock itself.
   WhitelistEverything(&csd_whitelist_);
@@ -543,17 +539,23 @@ bool SafeBrowsingDatabaseNew::ContainsBrowseUrl(
     return false;
 
   // This function is called on the I/O thread, prevent changes to
-  // bloom filter and caches.
+  // filter and caches.
   base::AutoLock locked(lookup_lock_);
 
-  if (!browse_bloom_filter_.get())
+  // TODO(shess): During transition, users will have a bloom filter
+  // but no prefix set until first update, after which they'll have a
+  // prefix set but no bloom filter.
+  const bool use_prefix_set = prefix_set_.get() != NULL;
+  if (!use_prefix_set && !browse_bloom_filter_.get())
     return false;
 
   size_t miss_count = 0;
   for (size_t i = 0; i < full_hashes.size(); ++i) {
-    if (browse_bloom_filter_->Exists(full_hashes[i].prefix)) {
-      prefix_hits->push_back(full_hashes[i].prefix);
-      if (prefix_miss_cache_.count(full_hashes[i].prefix) > 0)
+    const SBPrefix prefix = full_hashes[i].prefix;
+    if ((use_prefix_set && prefix_set_->Exists(prefix)) ||
+        (!use_prefix_set && browse_bloom_filter_->Exists(prefix))) {
+      prefix_hits->push_back(prefix);
+      if (prefix_miss_cache_.count(prefix) > 0)
         ++miss_count;
     }
   }
@@ -813,7 +815,7 @@ void SafeBrowsingDatabaseNew::InsertChunks(const std::string& list_name,
   if (corruption_detected_ || chunks.empty())
     return;
 
-  const base::Time insert_start = base::Time::Now();
+  const base::TimeTicks before = base::TimeTicks::Now();
 
   const int list_id = safe_browsing_util::GetListId(list_name);
   DVLOG(2) << list_name << ": " << list_id;
@@ -831,7 +833,7 @@ void SafeBrowsingDatabaseNew::InsertChunks(const std::string& list_name,
   }
   store->FinishChunk();
 
-  UMA_HISTOGRAM_TIMES("SB2.ChunkInsert", base::Time::Now() - insert_start);
+  UMA_HISTOGRAM_TIMES("SB2.ChunkInsert", base::TimeTicks::Now() - before);
 }
 
 void SafeBrowsingDatabaseNew::DeleteChunks(
@@ -1079,8 +1081,6 @@ void SafeBrowsingDatabaseNew::UpdateDownloadStore() {
   std::vector<SBAddFullHash> empty_add_hashes;
 
   // For download, backend lookup happens only if a prefix is in add list.
-  // No need to pass in miss cache when call FinishUpdate to caculate
-  // bloomfilter false positives.
   std::set<SBPrefix> empty_miss_cache;
 
   // These results are not used after this call. Simply ignore the
@@ -1094,11 +1094,9 @@ void SafeBrowsingDatabaseNew::UpdateDownloadStore() {
                                      &add_full_hashes_result))
     RecordFailure(FAILURE_DOWNLOAD_DATABASE_UPDATE_FINISH);
 
-  int64 size_64;
-  if (file_util::GetFileSize(download_filename_, &size_64)) {
-    UMA_HISTOGRAM_COUNTS("SB2.DownloadDatabaseKilobytes",
-                         static_cast<int>(size_64 / 1024));
-  }
+  int64 file_size = GetFileSizeOrZero(download_filename_);
+  UMA_HISTOGRAM_COUNTS("SB2.DownloadDatabaseKilobytes",
+                       static_cast<int>(file_size / 1024));
 
 #if defined(OS_MACOSX)
   base::mac::SetFileBackupExclusion(download_filename_);
@@ -1116,7 +1114,7 @@ void SafeBrowsingDatabaseNew::UpdateBrowseStore() {
                               pending_browse_hashes_.end());
   }
 
-  // Measure the amount of IO during the bloom filter build.
+  // Measure the amount of IO during the filter build.
   base::IoCounters io_before, io_after;
   base::ProcessHandle handle = base::Process::Current().handle();
   scoped_ptr<base::ProcessMetrics> metric(
@@ -1133,7 +1131,7 @@ void SafeBrowsingDatabaseNew::UpdateBrowseStore() {
   // stats if they are available.
   const bool got_counters = metric->GetIOCounters(&io_before);
 
-  const base::Time before = base::Time::Now();
+  const base::TimeTicks before = base::TimeTicks::Now();
 
   SBAddPrefixes add_prefixes;
   std::vector<SBAddFullHash> add_full_hashes;
@@ -1143,9 +1141,20 @@ void SafeBrowsingDatabaseNew::UpdateBrowseStore() {
     return;
   }
 
-  scoped_refptr<BloomFilter> bloom_filter;
-  scoped_ptr<safe_browsing::PrefixSet> prefix_set;
-  FiltersFromAddPrefixes(add_prefixes, &bloom_filter, &prefix_set);
+  // TODO(shess): If |add_prefixes| were sorted by the prefix, it
+  // could be passed directly to |PrefixSet()|, removing the need for
+  // |prefixes|.  For now, |prefixes| is useful while debugging
+  // things.
+  std::vector<SBPrefix> prefixes;
+  prefixes.reserve(add_prefixes.size());
+  for (SBAddPrefixes::const_iterator iter = add_prefixes.begin();
+       iter != add_prefixes.end(); ++iter) {
+    prefixes.push_back(iter->prefix);
+  }
+
+  std::sort(prefixes.begin(), prefixes.end());
+  scoped_ptr<safe_browsing::PrefixSet>
+      prefix_set(new safe_browsing::PrefixSet(prefixes));
 
   // This needs to be in sorted order by prefix for efficient access.
   std::sort(add_full_hashes.begin(), add_full_hashes.end(),
@@ -1163,15 +1172,18 @@ void SafeBrowsingDatabaseNew::UpdateBrowseStore() {
     // hash will be fetched again).
     pending_browse_hashes_.clear();
     prefix_miss_cache_.clear();
-    browse_bloom_filter_.swap(bloom_filter);
+    browse_bloom_filter_ = NULL;  // Stop using the bloom filter.
     prefix_set_.swap(prefix_set);
   }
 
-  const base::TimeDelta bloom_gen = base::Time::Now() - before;
+  DVLOG(1) << "SafeBrowsingDatabaseImpl built prefix set in "
+           << (base::TimeTicks::Now() - before).InMilliseconds()
+           << " ms total.  prefix count: " << add_prefixes.size();
+  UMA_HISTOGRAM_LONG_TIMES("SB2.BuildFilter", base::TimeTicks::Now() - before);
 
-  // Persist the bloom filter to disk.  Since only this thread changes
-  // |browse_bloom_filter_|, there is no need to lock.
-  WriteBloomFilter();
+  // Persist the prefix set to disk.  Since only this thread changes
+  // |prefix_set_|, there is no need to lock.
+  WritePrefixSet();
 
   // Gather statistics.
   if (got_counters && metric->GetIOCounters(&io_after)) {
@@ -1188,17 +1200,13 @@ void SafeBrowsingDatabaseNew::UpdateBrowseStore() {
                          static_cast<int>(io_after.WriteOperationCount -
                                           io_before.WriteOperationCount));
   }
-  DVLOG(1) << "SafeBrowsingDatabaseImpl built bloom filter in "
-           << bloom_gen.InMilliseconds() << " ms total.  prefix count: "
-           << add_prefixes.size();
-  UMA_HISTOGRAM_LONG_TIMES("SB2.BuildFilter", bloom_gen);
-  UMA_HISTOGRAM_COUNTS("SB2.FilterKilobytes",
-                       browse_bloom_filter_->size() / 1024);
-  int64 size_64;
-  if (file_util::GetFileSize(browse_filename_, &size_64)) {
-    UMA_HISTOGRAM_COUNTS("SB2.BrowseDatabaseKilobytes",
-                         static_cast<int>(size_64 / 1024));
-  }
+
+  int64 file_size = GetFileSizeOrZero(prefix_set_filename_);
+  UMA_HISTOGRAM_COUNTS("SB2.PrefixSetKilobytes",
+                       static_cast<int>(file_size / 1024));
+  file_size = GetFileSizeOrZero(browse_filename_);
+  UMA_HISTOGRAM_COUNTS("SB2.BrowseDatabaseKilobytes",
+                       static_cast<int>(file_size / 1024));
 
 #if defined(OS_MACOSX)
   base::mac::SetFileBackupExclusion(browse_filename_);
@@ -1225,34 +1233,70 @@ void SafeBrowsingDatabaseNew::OnHandleCorruptDatabase() {
 
 // TODO(shess): I'm not clear why this code doesn't have any
 // real error-handling.
-void SafeBrowsingDatabaseNew::LoadBloomFilter() {
+// TODO(shess): After a transition period, this can convert to just
+// giving up if the prefix set is not on disk.
+void SafeBrowsingDatabaseNew::LoadBloomFilterOrPrefixSet() {
   DCHECK_EQ(creation_loop_, MessageLoop::current());
   DCHECK(!bloom_filter_filename_.empty());
+  DCHECK(!prefix_set_filename_.empty());
 
-  // If we're missing either of the database or filter files, we wait until the
-  // next update to generate a new filter.
-  // TODO(paulg): Investigate how often the filter file is missing and how
-  // expensive it would be to regenerate it.
-  int64 size_64 = 0;
-  if (!file_util::GetFileSize(browse_filename_, &size_64) || size_64 == 0)
+  // If there is no database, the filter cannot be used.
+  base::PlatformFileInfo db_info;
+  if (!file_util::GetFileInfo(browse_filename_, &db_info) || db_info.size == 0)
     return;
 
-  if (!file_util::GetFileSize(bloom_filter_filename_, &size_64) ||
-      size_64 == 0) {
-    RecordFailure(FAILURE_DATABASE_FILTER_MISSING);
+  RecordFilterLoad(FILTER_LOAD);
+
+  // If there is no prefix set, or if the file is too old, check for a
+  // bloom filter.
+  // TODO(shess): The time check is in case this code gets reverted
+  // and re-landed.  It might be good to keep as a sanity check.
+  // Better would be to put the db's checksum in the filter file.
+  base::PlatformFileInfo prefix_set_info;
+  if (!file_util::GetFileInfo(prefix_set_filename_, &prefix_set_info) ||
+      prefix_set_info.size == 0 ||
+      prefix_set_info.last_modified < db_info.last_modified) {
+    // No prefix set.
+    prefix_set_.reset();
+
+    int64 file_size = GetFileSizeOrZero(bloom_filter_filename_);
+    if (!file_size) {
+      RecordFailure(FAILURE_DATABASE_FILTER_MISSING);
+      return;
+    }
+
+    const base::TimeTicks before = base::TimeTicks::Now();
+    browse_bloom_filter_ = BloomFilter::LoadFile(bloom_filter_filename_);
+    DVLOG(1) << "SafeBrowsingDatabaseNew read bloom filter in "
+             << (base::TimeTicks::Now() - before).InMilliseconds() << " ms";
+    UMA_HISTOGRAM_TIMES("SB2.BloomFilterLoad", base::TimeTicks::Now() - before);
+
+    if (!browse_bloom_filter_.get())
+      RecordFailure(FAILURE_DATABASE_FILTER_READ);
+    else
+      RecordFilterLoad(FILTER_LOADED_BLOOM_FILTER);
+
     return;
   }
 
+  // Once there is a prefix set stored, never use the bloom filter.
+  browse_bloom_filter_ = NULL;
+
+  // TODO(shess): The bloom filter file should have been deleted in
+  // WritePrefixSet(), unless this code is reverted and re-landed.
+  // Just paranoid.
+  file_util::Delete(bloom_filter_filename_, false);
+
   const base::TimeTicks before = base::TimeTicks::Now();
-  browse_bloom_filter_ = BloomFilter::LoadFile(bloom_filter_filename_);
-  DVLOG(1) << "SafeBrowsingDatabaseNew read bloom filter in "
+  prefix_set_.reset(safe_browsing::PrefixSet::LoadFile(prefix_set_filename_));
+  DVLOG(1) << "SafeBrowsingDatabaseNew read prefix set in "
            << (base::TimeTicks::Now() - before).InMilliseconds() << " ms";
+  UMA_HISTOGRAM_TIMES("SB2.PrefixSetLoad", base::TimeTicks::Now() - before);
 
-  if (!browse_bloom_filter_.get())
-    RecordFailure(FAILURE_DATABASE_FILTER_READ);
-
-  // Use an empty prefix set until the first update.
-  prefix_set_.reset(CreateEmptyPrefixSet());
+  if (!prefix_set_.get())
+    RecordFailure(FAILURE_DATABASE_PREFIX_SET_READ);
+  else
+    RecordFilterLoad(FILTER_LOADED_PREFIX_SET);
 }
 
 bool SafeBrowsingDatabaseNew::Delete() {
@@ -1279,25 +1323,34 @@ bool SafeBrowsingDatabaseNew::Delete() {
   const bool r5 = file_util::Delete(bloom_filter_filename_, false);
   if (!r5)
     RecordFailure(FAILURE_DATABASE_FILTER_DELETE);
-  return r1 && r2 && r3 && r4 && r5;
+
+  const bool r6 = file_util::Delete(prefix_set_filename_, false);
+  if (!r6)
+    RecordFailure(FAILURE_DATABASE_PREFIX_SET_DELETE);
+  return r1 && r2 && r3 && r4 && r5 && r6;
 }
 
-void SafeBrowsingDatabaseNew::WriteBloomFilter() {
+void SafeBrowsingDatabaseNew::WritePrefixSet() {
   DCHECK_EQ(creation_loop_, MessageLoop::current());
 
-  if (!browse_bloom_filter_.get())
+  if (!prefix_set_.get())
     return;
 
   const base::TimeTicks before = base::TimeTicks::Now();
-  const bool write_ok = browse_bloom_filter_->WriteFile(bloom_filter_filename_);
-  DVLOG(1) << "SafeBrowsingDatabaseNew wrote bloom filter in "
+  const bool write_ok = prefix_set_->WriteFile(prefix_set_filename_);
+  DVLOG(1) << "SafeBrowsingDatabaseNew wrote prefix set in "
            << (base::TimeTicks::Now() - before).InMilliseconds() << " ms";
+  UMA_HISTOGRAM_TIMES("SB2.PrefixSetWrite", base::TimeTicks::Now() - before);
 
   if (!write_ok)
-    RecordFailure(FAILURE_DATABASE_FILTER_WRITE);
+    RecordFailure(FAILURE_DATABASE_PREFIX_SET_WRITE);
+
+  // Delete any stale bloom filter (checking before deleting is
+  // unlikely to be faster).
+  file_util::Delete(bloom_filter_filename_, false);
 
 #if defined(OS_MACOSX)
-  base::mac::SetFileBackupExclusion(bloom_filter_filename_);
+  base::mac::SetFileBackupExclusion(prefix_set_filename_);
 #endif
 }
 
