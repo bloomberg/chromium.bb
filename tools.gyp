@@ -151,7 +151,6 @@
           'destination': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/include/nacl',
           # Alphabetical order in dst dir for easier verification.
           'files': [
-            '<(DEPTH)/native_client/src/trusted/weak_ref/call_on_main_thread.h',
             '<(DEPTH)/native_client/src/shared/platform/nacl_check.h',
             '<(DEPTH)/native_client/src/untrusted/nacl/nacl_dyncode.h',
             '<(DEPTH)/native_client/src/shared/imc/nacl_imc_c.h',
@@ -160,7 +159,6 @@
             '<(DEPTH)/native_client/src/shared/platform/nacl_log.h',
             '<(DEPTH)/native_client/src/shared/srpc/nacl_srpc.h',
             '<(DEPTH)/native_client/src/shared/platform/nacl_threads.h',
-            '<(DEPTH)/ppapi/native_client/src/shared/ppapi_proxy/ppruntime.h',
             '<(DEPTH)/native_client/src/shared/platform/refcount_base.h',
             '<(DEPTH)/native_client/src/trusted/weak_ref/weak_ref.h'
           ],
@@ -177,14 +175,12 @@
           # Alphabetical order in dst dir for easier verification.
           'destination': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/include/nacl',
           'files': [
-            '<(DEPTH)/native_client/src/trusted/weak_ref/call_on_main_thread.h',
             '<(DEPTH)/native_client/src/shared/platform/nacl_check.h',
             '<(DEPTH)/native_client/src/shared/imc/nacl_imc.h',
             '<(DEPTH)/native_client/src/include/nacl/nacl_inttypes.h',
             '<(DEPTH)/native_client/src/shared/platform/nacl_log.h',
             '<(DEPTH)/native_client/src/shared/srpc/nacl_srpc.h',
             '<(DEPTH)/native_client/src/shared/platform/nacl_threads.h',
-            '<(DEPTH)/ppapi/native_client/src/shared/ppapi_proxy/ppruntime.h',
             '<(DEPTH)/native_client/src/shared/platform/refcount_base.h',
             '<(DEPTH)/native_client/src/trusted/weak_ref/weak_ref.h'
           ],

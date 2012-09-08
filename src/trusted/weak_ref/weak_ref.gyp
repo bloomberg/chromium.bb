@@ -15,7 +15,6 @@
         'sources': [
           'weak_ref.cc',
           'weak_ref.h',
-          'call_on_main_thread.h',
         ],
         'xcode_settings': {
           'WARNING_CFLAGS': [
