@@ -121,7 +121,7 @@ void XServerPixelBuffer::InitShm(int screen) {
   if (x_image_) {
     shm_segment_info_->shmid = shmget(
         IPC_PRIVATE, x_image_->bytes_per_line * x_image_->height,
-        IPC_CREAT | 0666);
+        IPC_CREAT | 0600);
     if (shm_segment_info_->shmid != -1) {
       shm_segment_info_->shmaddr = x_image_->data =
           reinterpret_cast<char*>(shmat(shm_segment_info_->shmid, 0, 0));
@@ -131,12 +131,19 @@ void XServerPixelBuffer::InitShm(int screen) {
         XSync(display_, False);
         if (GetLastXServerError() != 0)
           using_shm = false;
+        if (using_shm) {
+          VLOG(1) << "Using X shared memory segment "
+                  << shm_segment_info_->shmid;
+        }
       }
+    } else {
+      LOG(WARNING) << "Failed to get shared memory segment. "
+                      "Performance may be degraded.";
     }
   }
 
   if (!using_shm) {
-    VLOG(1) << "Not using shared memory.";
+    LOG(WARNING) << "Not using shared memory. Performance may be degraded.";
     Release();
     return;
   }
