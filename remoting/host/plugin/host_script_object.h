@@ -33,7 +33,7 @@
 namespace remoting {
 
 class ChromotingHost;
-class DesktopEnvironment;
+class DesktopEnvironmentFactory;
 class HostEventLogger;
 class It2MeHostUserInterface;
 class MutableHostConfig;
@@ -198,12 +198,10 @@ class HostNPScriptObject : public HostStatusObserver {
   void ReadPolicyAndConnect(const std::string& uid,
                             const std::string& auth_token,
                             const std::string& auth_service);
-  void FinishConnectMainThread(const std::string& uid,
-                               const std::string& auth_token,
-                               const std::string& auth_service);
-  void FinishConnectNetworkThread(const std::string& uid,
-                                  const std::string& auth_token,
-                                  const std::string& auth_service);
+  void FinishConnect(const std::string& uid,
+                     const std::string& auth_token,
+                     const std::string& auth_service);
+
   void DisconnectInternal();
 
   // Callback for ChromotingHost::Shutdown().
@@ -313,7 +311,7 @@ class HostNPScriptObject : public HostStatusObserver {
   scoped_ptr<SignalStrategy> signal_strategy_;
   scoped_ptr<RegisterSupportHostRequest> register_request_;
   scoped_ptr<LogToServer> log_to_server_;
-  scoped_ptr<DesktopEnvironment> desktop_environment_;
+  scoped_ptr<DesktopEnvironmentFactory> desktop_environment_factory_;
   scoped_ptr<It2MeHostUserInterface> it2me_host_user_interface_;
   scoped_ptr<HostEventLogger> host_event_logger_;
 

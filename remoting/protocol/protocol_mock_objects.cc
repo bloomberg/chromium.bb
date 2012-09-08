@@ -13,11 +13,9 @@ namespace protocol {
 
 MockConnectionToClient::MockConnectionToClient(
     Session* session,
-    HostStub* host_stub,
-    InputStub* input_stub)
+    HostStub* host_stub)
     : ConnectionToClient(session) {
   set_host_stub(host_stub);
-  set_input_stub(input_stub);
 }
 
 MockConnectionToClient::~MockConnectionToClient() {}

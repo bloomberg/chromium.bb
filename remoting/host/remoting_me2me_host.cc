@@ -39,7 +39,7 @@
 #include "remoting/host/config_file_watcher.h"
 #include "remoting/host/constants.h"
 #include "remoting/host/config_file_watcher.h"
-#include "remoting/host/desktop_environment.h"
+#include "remoting/host/desktop_environment_factory.h"
 #include "remoting/host/dns_blackhole_checker.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/heartbeat_sender.h"
@@ -75,6 +75,7 @@
 // N.B. OS_WIN is defined by including src/base headers.
 #if defined(OS_WIN)
 #include <commctrl.h>
+#include "remoting/host/win/session_desktop_environment_factory.h"
 #endif  // defined(OS_WIN)
 
 #if defined(TOOLKIT_GTK)
@@ -120,6 +121,11 @@ class HostProcess
         allow_nat_traversal_(true),
         restarting_(false),
         shutting_down_(false),
+#if defined(OS_WIN)
+        desktop_environment_factory_(new SessionDesktopEnvironmentFactory()),
+#else  // !defined(OS_WIN)
+        desktop_environment_factory_(new DesktopEnvironmentFactory()),
+#endif  // !defined(OS_WIN)
         exit_code_(kSuccessExitCode)
 #if defined(OS_MACOSX)
       , curtain_(base::Bind(&HostProcess::OnDisconnectRequested,
@@ -537,11 +543,6 @@ class HostProcess
       signaling_connector_->EnableOAuth(oauth_credentials.Pass());
     }
 
-    if (!desktop_environment_.get()) {
-      desktop_environment_ =
-          DesktopEnvironment::CreateForService(context_.get());
-    }
-
     NetworkSettings network_settings(
         allow_nat_traversal_ ?
         NetworkSettings::NAT_TRAVERSAL_ENABLED :
@@ -552,7 +553,8 @@ class HostProcess
     }
 
     host_ = new ChromotingHost(
-        context_.get(), signal_strategy_.get(), desktop_environment_.get(),
+        context_.get(), signal_strategy_.get(),
+        desktop_environment_factory_.get(),
         CreateHostSessionManager(network_settings,
                                  context_->url_request_context_getter()));
 
@@ -650,7 +652,6 @@ class HostProcess
   void ResetHost() {
     DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-    desktop_environment_.reset();
     host_event_logger_.reset();
     log_to_server_.reset();
     heartbeat_sender_.reset();
@@ -685,9 +686,9 @@ class HostProcess
   bool restarting_;
   bool shutting_down_;
 
+  scoped_ptr<DesktopEnvironmentFactory> desktop_environment_factory_;
   scoped_ptr<XmppSignalStrategy> signal_strategy_;
   scoped_ptr<SignalingConnector> signaling_connector_;
-  scoped_ptr<DesktopEnvironment> desktop_environment_;
   scoped_ptr<HeartbeatSender> heartbeat_sender_;
   scoped_ptr<LogToServer> log_to_server_;
   scoped_ptr<HostEventLogger> host_event_logger_;
