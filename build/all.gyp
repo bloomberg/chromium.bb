@@ -21,7 +21,6 @@
         '../src/trusted/sel_universal/sel_universal.gyp:*',
         '../src/trusted/service_runtime/service_runtime.gyp:*',
         '../src/untrusted/irt/irt.gyp:irt_core_nexe',
-        '../src/untrusted/irt_stub/irt_stub.gyp:*',
         '../src/untrusted/nacl/nacl.gyp:*',
         '../src/untrusted/nosys/nosys.gyp:*',
         '../src/untrusted/pthread/pthread.gyp:*',
