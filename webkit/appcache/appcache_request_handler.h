@@ -125,6 +125,9 @@ class APPCACHE_EXPORT AppCacheRequestHandler
   // request and any redirects will be handled by the network library.
   bool cache_entry_not_found_;
 
+  // True if this->MaybeLoadResource(...) has been called in the past.
+  bool maybe_load_resource_executed_;
+
   // The job we use to deliver a response.
   scoped_refptr<AppCacheURLRequestJob> job_;
 
