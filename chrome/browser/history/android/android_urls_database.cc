@@ -156,6 +156,12 @@ bool AndroidURLsDatabase::MigrateToVersion22() {
   if (!GetDB().Execute("ALTER TABLE android_urls RENAME TO android_urls_tmp"))
     return false;
 
+  if (!GetDB().Execute("DROP INDEX android_urls_raw_url_idx"))
+    return false;
+
+  if (!GetDB().Execute("DROP INDEX android_urls_url_id_idx"))
+    return false;
+
   if (!CreateAndroidURLsTable())
     return false;
 
