@@ -1,0 +1,49 @@
+# -*- python -*-
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+import os
+
+# Support files for pnacl browser tests (as an unpacked chrome extension).
+if not env.Bit('bitcode'):
+  Return()
+
+# Override the IRT shim with the latest one built in scons-out.
+# Otherwise, there may be a mismatch between the latest pepper headers
+# and the IRT shim that we built in the toolchain tarball.
+#
+# We pick exactly that file for now, because the other files in
+# ${LIB_DIR} are bitcode and we don't want to pollute the CRX with those.
+arch = env['TARGET_FULLARCH']
+lib_override = ''
+lib_dep = []
+if arch == 'x86-64':
+  lib_override = ('--lib_override=%s,${LIB_DIR}/libpnacl_irt_shim.a ' % arch)
+  lib_dep = [env.File('${LIB_DIR}/libpnacl_irt_shim.a')]
+
+output_dir = env.GetPnaclExtensionRootNode().abspath
+
+generated_crx = env.Command(
+    # Output (a directory with a bunch of files, like manifest.json)
+    env.GetPnaclExtensionNode(),
+    # Inputs -- just the command and any scons files.  We don't model
+    # deps to files in the toolchain dir, since that doesn't seem to work.
+    ['${SOURCE_ROOT}/native_client/pnacl/' +
+     'pnacl_packaging/pnacl_component_crx_gen.py'] + lib_dep,
+    # Command.
+    ('${PYTHON} ${SOURCES[0]} ' +
+     '--dest=' + output_dir + ' ' +
+     # Override the libraries from the tarball with those in scons-out/x/lib
+     lib_override +
+     # Build only the unpacked extension, not zipped up files, etc.
+     '-u ' +
+     env.GetPnaclExtensionDummyVersion()))
+
+# NOTE: Toolchain directory dependencies don't seem to work in SCons, so we
+# end up setting this to 'AlwaysBuild'.
+env.AlwaysBuild(generated_crx)
+
+env.Alias('pnacl_support_extension', generated_crx)

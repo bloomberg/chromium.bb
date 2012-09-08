@@ -1,0 +1,23 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <!-- Copyright (c) 2011 The Chromium Authors. All rights reserved. -->
+  <!-- Measures startup time for ppapi_test_example (a dependency). -->
+  <head>
+    <title> Startup Timing Test </title>
+    <script type="text/javascript" src="nacltest.js"></script>
+    <script type="text/javascript" src="browser_startup_time.js"></script>
+  </head>
+  <body>
+    <h1>Startup Timing Test</h1>
+    <embed type="application/x-nacl" id="nacl_server"
+           name="nacl_module" width="0" height="0"
+           src="browser_startup_time.nmf" />
+    <script type="text/javascript">
+      //<![CDATA[
+      var loadingTester = new LoadingTester($('nacl_server'));
+      loadingTester.setupLoad();
+      //]]>
+    </script>
+  </body>
+</html>

@@ -1,0 +1,44 @@
+# -*- python -*-
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+import os
+
+# This library is part of the pnacl x86-64 toolchain only, and is used
+# to match the pnacl ABI to the IRT ABI.  It was necessitated by problems
+# in passing structures by value on x86-64.
+if not env.Bit('bitcode') or not env.Bit('target_x86_64'):
+  Return()
+
+# The library must be compiled with nacl-gcc.
+# Clear out the pnacl_generate_pexe bit to allow building this as a
+# library dependency (much like the IRT).
+nacl_gcc_env = env.Clone()
+nacl_gcc_env.ClearBits('pnacl_generate_pexe')
+nacl_gcc_env = nacl_gcc_env.PNaClGetNNaClEnv()
+
+# Generate a 'pnacl_shim.c'
+api_glob = env.Glob('${SOURCE_ROOT}/ppapi/api/*.idl')
+api_dev_glob = env.Glob('${SOURCE_ROOT}/ppapi/api/dev/*.idl')
+generators_glob = env.Glob('${SOURCE_ROOT}/ppapi/generators/*.py')
+generated_file_c = nacl_gcc_env.Command(
+    'pnacl_shim.c',
+    (api_glob + api_dev_glob + generators_glob),
+    ('${PYTHON} ' +
+     '${SOURCE_ROOT}/ppapi/generators/generator.py ' +
+     '--srcroot=' + os.path.join('${SOURCE_ROOT}', 'ppapi', 'api') + ' ' +
+     '--wnone --pnacl --pnaclshim=${TARGETS} ' +
+     ' '.join([idl_file.abspath for idl_file in api_glob + api_dev_glob])))
+
+pnacl_irt_shim = nacl_gcc_env.ComponentLibrary('pnacl_irt_shim', [
+    generated_file_c,
+    'shim_entry.c',
+    'shim_ppapi.c',
+    ])
+
+# However, the library is part of the pnacl sdk (use original env).
+env.AddLibraryToSdk(pnacl_irt_shim)
+
+env.AddObjectToSdk(['libpnacl_irt_shim.a'])

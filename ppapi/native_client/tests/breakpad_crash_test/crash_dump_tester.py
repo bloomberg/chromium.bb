@@ -11,7 +11,7 @@ import time
 
 script_dir = os.path.dirname(__file__)
 sys.path.append(os.path.join(script_dir,
-                             '../../../../native_client/tools/browser_tester'))
+                             '../../tools/browser_tester'))
 
 import browser_tester
 import browsertester.browserlauncher

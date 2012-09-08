@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<!--
+  Copyright (c) 2012 The Chromium Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can be
+  found in the LICENSE file.
+-->
+<html>
+<head>
+<title>
+  NativeClient browser test runner
+</title>
+<script type="text/javascript" src="nacltest.js"></script>
+<script type="text/javascript" src="nmf_test_list.js"></script>
+</head>
+<body>
+
+<div id="scratch_space"></div>
+
+<div id="load_warning">
+Javascript has failed to load.
+</div>
+
+<script type="text/javascript">
+
+function addTest(tester, url) {
+  tester.addAsyncTest(url, function(status) {
+    var embed = document.createElement('embed');
+    embed.width = 0;
+    embed.height = 0;
+    embed.src = url;
+    embed.type = 'application/x-nacl';
+    embed.name = 'foo';
+
+    // Webkit Bug Workaround
+    // THIS SHOULD BE REMOVED WHEN Webkit IS FIXED
+    // http://code.google.com/p/nativeclient/issues/detail?id=2428
+    // http://code.google.com/p/chromium/issues/detail?id=103588
+    ForcePluginLoadOnTimeout(embed, tester, 15000);
+
+    var div = document.createElement('div');
+    div.appendChild(embed);
+
+    var cleanup = function() {
+      document.getElementById('scratch_space').removeChild(div);
+    };
+
+    // This is the prefix prepended by NaCl's unofficial
+    // "dev://postmessage" feature.
+    var stdout_prefix = 'DEBUG_POSTMESSAGE:';
+
+    // NaCl's "dev://postmessage" feature is unsynchronized, in the
+    // sense that the DEBUG_POSTMESSAGE messages can arrive after the
+    // test result event.  As a workaround, we look for an
+    // "END_OF_LOG" string that the nexe prints.
+    var saw_end_of_log = false;
+    var end_of_log_callbacks = [];
+
+    var runEndOfLogCallbacks = function() {
+      if (!saw_end_of_log) {
+        saw_end_of_log = true;
+        for (var i = 0; i < end_of_log_callbacks.length; i++) {
+          end_of_log_callbacks[i]();
+        }
+        end_of_log_callbacks = [];
+      }
+    };
+
+    var callAtEndOfLog = function(func) {
+      if (saw_end_of_log) {
+        func();
+      } else {
+        end_of_log_callbacks.push(func);
+        // If we do not see the end of the log soon, end the test
+        // anyway.  This will happen if the nexe crashes or exits.
+        window.setTimeout(status.wrap(function() {
+          status.log('Did not see the END_OF_LOG message after timeout; ' +
+                     'continuing anyway');
+          runEndOfLogCallbacks();
+        }), 500);
+      }
+    };
+
+    // Set up an event listener for success messages.
+    div.addEventListener('message', status.wrap(function(message_event) {
+      if (message_event.data.substr(0, stdout_prefix.length) == stdout_prefix) {
+        var msg = message_event.data.substr(stdout_prefix.length);
+        if (msg == '\nEND_OF_LOG\n') {
+          runEndOfLogCallbacks();
+        } else {
+          status.log(msg.replace(/\n/g, '\\n'));
+        }
+      } else {
+        callAtEndOfLog(function() {
+          status.assertEqual(message_event.data, 'passed');
+          cleanup();
+          status.pass();
+        });
+      }
+    }), true);
+
+    // Wait for the load event, which indicates successful loading.
+    div.addEventListener('load', status.wrap(function(e) {
+      status.log('Loaded ' + embed.src);
+      // Start tests in the module.
+      embed.postMessage('run_tests');
+    }), true);
+
+    var onError = status.wrap(function(e) {
+      callAtEndOfLog(function() {
+        cleanup();
+        status.fail(embed.lastError);
+      });
+    });
+
+    div.addEventListener('error', onError, true);
+    div.addEventListener('crash', onError, true);
+
+    // Insert div into the DOM.  This starts the load of the nacl plugin, etc.
+    document.getElementById('scratch_space').appendChild(div);
+  });
+}
+
+// Remove the "failed to load" message.
+document.getElementById('load_warning').innerHTML = '';
+
+var tester = new Tester();
+for (var i = 0; i < G_NMF_TEST_LIST.length; i++) {
+  addTest(tester, G_NMF_TEST_LIST[i]);
+}
+
+var args = getTestArguments({'parallel': '0'});
+
+if (parseInt(args['parallel'])) {
+  tester.runParallel();
+} else {
+  tester.run();
+}
+
+</script>
+</body>
+</html>

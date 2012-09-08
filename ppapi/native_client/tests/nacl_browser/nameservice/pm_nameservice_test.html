@@ -1,0 +1,79 @@
+<!--
+  Copyright (c) 2011 The Chromium Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can
+  be found in the LICENSE file.
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="-1" />
+    <script type="text/javascript" src="nacltest.js"></script>
+    <title>Native Client Post Message Name Service Test</title>
+  </head>
+
+  <body>
+    <h1>Native Client Post Message Name Service Test</h1>
+    <div>
+    <embed id="naclModule"
+           name="naclModule"
+           width=400 height=400
+           src="pm_nameservice_test.nmf"
+           basic_tests="2"
+           stress_tests="0"
+           style="background-color:gray"
+           type="application/x-nacl" />
+    </div>
+
+  <script type="text/javascript">
+    //<![CDATA[
+function setupTests(tester, plugin) {
+  tester.addAsyncTest('TestInit', function(status) {
+    plugin.addEventListener('message', function(message_event) {
+      this.removeEventListener('message', arguments.callee, false);
+      status.assertEqual(message_event.data,
+                         'NaClSrpcClientCtor succeeded\n');
+      status.pass();
+    }, false);
+    plugin.postMessage('init');
+  });
+  tester.addAsyncTest('TestNameService', function(status) {
+    plugin.addEventListener('message', function(message_event) {
+      this.removeEventListener('message', arguments.callee, false);
+      status.assertEqual(message_event.data,
+                         'nbytes = 47\n'
+                         +'KernelService\n'
+                         +'ManifestNameService\n'
+                         +'SecureRandom\n');
+      status.pass();
+    }, false);
+    plugin.postMessage('nameservice');
+  });
+  tester.addAsyncTest('TestRng', function(status) {
+    plugin.addEventListener('message', function(message_event) {
+      this.removeEventListener('message', arguments.callee, false);
+      // alert(message_event.data);
+      status.pass();
+    }, false);
+    plugin.postMessage('rng');
+  });
+  tester.addAsyncTest('TestManifest', function(status) {
+    plugin.addEventListener('message', function(message_event) {
+      this.removeEventListener('message', arguments.callee, false);
+      status.assertEqual(message_event.data,
+                         'ManifestTest: basic connectivity ok\n');
+      status.pass();
+    }, false);
+    plugin.postMessage('manifest_test');
+  });
+}
+
+var tester = new Tester();
+setupTests(tester, $('naclModule'));
+tester.waitFor($('naclModule'));
+tester.run();
+    //]]>
+  </script>
+  </body>
+</html>

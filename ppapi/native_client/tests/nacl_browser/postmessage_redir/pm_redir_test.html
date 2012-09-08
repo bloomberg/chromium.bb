@@ -1,0 +1,89 @@
+<!--
+  Copyright 2011 The Chromium Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can
+  be found in the LICENSE file.
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="-1" />
+    <script type="text/javascript" src="nacltest.js"></script>
+    <title>Native Client I/O Redirection to Post Message Test</title>
+  </head>
+
+  <body>
+    <h1>Native Client I/O Redirection to Post Message Test</h1>
+    <div>
+    <embed id="naclModule"
+           name="naclModule"
+           width=400 height=400
+           src="pm_redir_test.nmf"
+           basic_tests="2"
+           stress_tests="0"
+           style="background-color:gray"
+           type="application/x-nacl" />
+    </div>
+
+  <script type="text/javascript">
+    //<![CDATA[
+function setupTests(tester, plugin) {
+  tester.addAsyncTest('Test_output', function(status) {
+    plugin.addEventListener('message', function(message_event) {
+      var prefix = 'DEBUG_POSTMESSAGE:';
+      if (message_event.data.indexOf(prefix) == 0) {
+        var expected_output = 'BOGUS STRING';
+        if (args.stream == 'stdout' && args.thread == 'fg') {
+          expected_output =
+            ('In the year 1878 I took my degree of Doctor of Medicine...\n');
+        } else if (args.stream == 'stderr' && args.thread == 'fg') {
+          expected_output =
+            ('A merry little surge of electricity piped by automatic'
+             +' alarm...\n');
+        } else if (args.stream == 'stdout' && args.thread == 'bg') {
+          expected_output =
+            ('Squire Trelawney, Dr. Livesey, and the rest of these'
+             +' gentlemen...\n');
+        } else if (args.stream == 'stderr' && args.thread == 'bg') {
+          expected_output =
+            ('It is a truth universally acknowledged, that a single man'
+             +' in possession...\n');
+        }
+        var msg_string = message_event.data.substring(prefix.length);
+        console.log('expected output ' + expected_output);
+
+        console.log(msg_string);
+        if (msg_string == expected_output) {
+          console.log('pass!');
+          this.removeEventListener('message', arguments.callee, true);
+          status.pass();
+        } else {
+          // comment this out if test framework args=['--debug'] is
+          // used, since that causes lots of SRPC and PPAPI_PROXY
+          // debug output to be generated on stdout/err, and the test
+          // has no debugging output
+          //
+          status.fail('unexpected output: ' + msg_string);
+        }
+      }
+    }, true);
+    message=('stream=' + args.stream + ',thread=' + args.thread +
+             ',delay_us=' + args.delay_us);
+console.log(message);
+    plugin.postMessage(message);
+  });
+}
+
+var tester = new Tester();
+var args = getTestArguments({
+  'stream' : 'THIS TEST CANNOT RUN STANDALONE -- run using scons instead',
+  'thread' : 'THIS TEST CANNOT RUN STANDALONE -- run using scons instead',
+});
+setupTests(tester, $('naclModule'));
+tester.waitFor($('naclModule'));
+tester.run();
+    //]]>
+  </script>
+  </body>
+</html>

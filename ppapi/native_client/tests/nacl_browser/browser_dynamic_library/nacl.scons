@@ -1,0 +1,45 @@
+# -*- python -*-
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import os
+
+Import('env')
+
+if env.Bit('nacl_static_link'):
+  Return()
+
+toolchain_libraries = [
+    'libmemusage.so', # Will dlopen this library.
+    ]
+
+def make_mappings(libdir, libs):
+  return [(lib, env.File(os.path.join(libdir, lib))) for lib in libs]
+
+# Allow resolving a URL to the toolchain/ directory (instead of staging).
+browser_dlopen_file_mapping = make_mappings('${NACL_SDK_LIB}',
+                                            toolchain_libraries)
+
+browser_dlopen_nexe_name = env.ProgramNameForNmf('browser_dlopen_test')
+browser_dlopen_nexe = env.ComponentProgram(browser_dlopen_nexe_name,
+                                           'browser_dlopen_test.cc',
+                                           EXTRA_LIBS=[
+                                               'ppapi',
+                                               'ppapi_test_lib',
+                                               'platform',
+                                               'dl',
+                                               '${PTHREAD_LIBS}'])
+
+
+env.Publish(browser_dlopen_nexe_name, 'run', ['browser_dlopen_test.html'])
+
+browser_dlopen_node = env.PPAPIBrowserTester(
+    'browser_dlopen_test.out', url='browser_dlopen_test.html',
+    files=env.ExtractPublishedFiles(browser_dlopen_nexe_name),
+    nmfs=['browser_dlopen_test.nmf'],
+    map_files=browser_dlopen_file_mapping)
+
+env.AddNodeToTestSuite(browser_dlopen_node, ['chrome_browser_tests'],
+                       'run_browser_dlopen_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken())

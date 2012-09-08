@@ -1,0 +1,70 @@
+<!--
+  Copyright (c) 2011 The Chromium Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can
+  be found in the LICENSE file.
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="-1" />
+    <script type="text/javascript" src="nacltest.js"></script>
+    <title>Native Client Fault-Injection Test</title>
+  </head>
+
+  <body id="body">
+    <h1>Native Client Fault-Injection Test</h1>
+    <script type="text/javascript">
+    //<![CDATA[
+var tester = new Tester($('body'));
+var gotExpected = false;
+var args = getTestArguments({'expected_error' :
+  'THIS TEST CANNOT RUN STANDALONE -- run using scons instead'});
+var errorListener = function(e) {
+  var target_element = e.target;
+  if (target_element.id != 'naclModule') {
+    alert('not nacl module');
+    return;
+  }
+  if (e.type == 'error') {
+    if ($('naclModule').lastError == args.expected_error) {
+      gotExpected = true;
+    }
+  }
+}
+
+function setupTests(tester) {
+  tester.addAsyncTest('dummy', function(status) {
+    status.assert(gotExpected);
+    status.pass();
+  });
+}
+
+function runTests() {
+  tester.loadErrorsAreOK();
+  setupTests(tester);
+  tester.waitFor($('naclModule'));
+  tester.run();
+}
+
+$('body').addEventListener('error', errorListener, true);
+    //]]>
+  </script>
+    <div>
+    <embed id="naclModule"
+           name="naclModule"
+           width=400 height=400
+           src="fault_pm_nameservice_test.nmf"
+           basic_tests="2"
+           stress_tests="0"
+           style="background-color:gray"
+           type="application/x-nacl" />
+    </div>
+    <script type="text/javascript">
+    //<![CDATA[
+runTests();
+    //]]>
+    </script>
+  </body>
+</html>

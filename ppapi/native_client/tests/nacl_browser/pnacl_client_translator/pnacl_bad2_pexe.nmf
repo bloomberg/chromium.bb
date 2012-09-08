@@ -1,0 +1,8 @@
+{
+  "program": {
+    "x86-32": {"url": "non_existent.nexe"},
+    "x86-64": {"url": "non_existent.nexe"},
+    "arm":    {"url": "non_existent.nexe"},
+    "portable": {"pnacl-translate": {"url": "bad2.pexe"} }
+  }
+}

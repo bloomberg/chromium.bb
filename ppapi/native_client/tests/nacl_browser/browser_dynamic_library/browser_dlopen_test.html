@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<!--
+  Copyright 2012 The Chromium Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can
+  be found in the LICENSE file.
+-->
+<head>
+  <title>PPAPI Runtime Feature Test</title>
+  <meta HTTP-EQUIV="Pragma" CONTENT="no-cache" />
+  <meta HTTP-EQUIV="Expires" CONTENT="-1" />
+  <script type="text/javascript" src="nacltest.js"></script>
+</head>
+
+<body id="body">
+<embed id="naclDSOModule"
+       name="naclDSOModule"
+       src="browser_dlopen_test.nmf"
+       type="application/x-nacl"
+       width=0 height=0 />
+<script type="text/javascript">
+function setupTests(tester, plugin) {
+  function addTest(test_name) {
+    tester.addAsyncTest(test_name, function(test) {
+      test.expectMessageSequence(plugin, [test_name + ':PASSED']);
+      plugin.postMessage(test_name);
+    });
+  }
+
+  addTest("TestDlopenMainThread");
+  addTest("TestDlopenSecondaryThread");
+}
+//<![CDATA[
+var tester = new Tester();
+      setupTests(tester, $('naclDSOModule'));
+      tester.waitFor($('naclDSOModule'));
+      tester.run();
+//]]>
+</script>
+</body>
+</html>

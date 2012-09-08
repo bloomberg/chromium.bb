@@ -1,0 +1,68 @@
+# -*- python -*-
+# Copyright 2011 The Chromium Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+
+# This command is placed in its own nacl.cons file because:
+#   1) It gives it access to the same environment as the tests
+#   2) Sicking it in an arbitrary test's .scons file would be cryptic
+binary = env.DownloadedChromeBinary()
+node = env.Command(binary,
+                   [env.File('${SCONSTRUCT_DIR}/DEPS')],
+                   '${PYTHON} build/download_chrome.py '
+                   '--arch=%s --dst=${CHROME_DOWNLOAD_DIR}' %
+                   env.ChromeBinaryArch())
+# This stops Scons from deleting the file before running the step above.
+env.NoClean(binary)
+env.Precious(binary)
+env.Alias('download_chrome', node)
+
+################################################################################
+## Support
+##   scons MODE=nacl html_examples
+## to build all examples linked from scons-out/.../staging/examples.html
+################################################################################
+
+html_examples = env.Replicate('${STAGING_DIR}', 'examples.html')
+env.Default(html_examples)
+example_nexes = [
+    # SRPC Nexe Tests
+    'srpc_hw',          # srpc_hw.html
+    'srpc_test',        # srpc_basic.html, srpc_perf.html
+    'srpc_nrd_server',  # srpc_nrd_xfer.html
+    'srpc_nrd_client',  # srpc_nrd_xfer.html
+    # SRPC Nexe Performance
+    'mandel_tiled',         # mandel_tiled.html
+    'autoloader_default',   # autoloader.html',
+    # PPAPI Nexe Examples
+    'ppapi_basic_object',       # basic_object.html
+    'ppapi_example_events',     # ppapi_example_events.html
+    'ppapi_example_2d',         # ppapi_example_2d.html
+    'ppapi_example_audio',      # ppapi_example_audio.html
+    'ppapi_geturl',             # ppapi_geturl.html
+    'ppapi_progress_events',    # ppapi_progress_events.html
+    'earth_c',                  # earth_c.html
+    'earth_cc',                 # earth_cc.html
+    'ppapi_bad',                # ppapi_bad.html
+    #TODO(polina): follow ppapi_bad's example to pull in all nexes
+    #'ppapi_crash'               # ppapi_crash.html
+    # PPAPI Proxy Tests
+    'ppapi_ppb_core',              # ppapi_ppb_core.html
+    'ppapi_ppb_graphics2d',        # ppapi_ppb_graphics2d.html
+    'ppapi_ppb_file_system',       # ppapi_ppb_file_system.html
+    'ppapi_ppb_image_data',        # ppapi_ppb_image_data.html
+    'ppapi_ppb_instance',          # ppapi_ppb_instance_data.html
+    'ppapi_ppb_memory',            # ppapi_ppb_memory.html
+    'ppapi_messaging',             # ppapi_messaging.html
+    'ppapi_ppb_scrollbar',         # ppapi_ppb_scrollbar.html
+    'ppapi_ppb_url_request_info',  # ppapi_ppb_url_request_info.html
+    'ppapi_ppp_instance',          # ppapi_ppp_instance.html
+    ]
+
+prog_suffix = env['PROGSUFFIX']
+env.Depends(html_examples,
+            [ env.Alias(nexe + prog_suffix) for nexe in example_nexes ])
+env.Alias('html_examples', html_examples)  # scons --mode=nacl examples_html
+env.Alias('examples_html', html_examples)  # scons --mode=nacl html_examples

@@ -1,0 +1,87 @@
+# -*- python -*-
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+# test source is copied from tests/nameservice/ -- we don't actually
+# care to run the test here, just to cause it to fall over.  we do,
+# however, run it without any fault injection to ensure that we don't
+# have any false injection, to ensure the test hasn't bitrotted.
+
+# postmessage version of srpc_nameservice_test
+
+pm_ns_obj = env.ComponentObject('fault_pm_nameservice_test.o',
+                                'fault_pm_nameservice_test.cc')
+pm_ns_nexe_name = env.ProgramNameForNmf('fault_pm_nameservice_test')
+pm_ns_nexe = env.ComponentProgram(pm_ns_nexe_name,
+                                  pm_ns_obj,
+                                  EXTRA_LIBS=['nacl_ppapi_util',
+                                              'ppapi_cpp',
+                                              'pthread',
+                                              'srpc',
+                                              'platform',
+                                              'gio',
+                                              'imc',
+                                              'imc_syscalls',
+                                              ])
+env.Publish(pm_ns_nexe_name, 'run',
+            ['no_fault_pm_nameservice_test.html',
+             'fault_pm_nameservice_test.html',
+             ])
+
+# chrome_browser_tests
+
+# NB: there is a "plain" version of post-message based name service
+# test, and a "fault-injected" version -- essentially this test is
+# simple and in the same repository as the core NaCl where the fault
+# injection code (see native_client/src/trusted/fault_injection/)
+# lives, which is a primary requirement for being able to commit
+# changes to the tests and to the code-under-test in atomic units.
+
+for extra_os_env, test_args, out_name, run_name, html_file in [
+    [[],
+     [],
+     'no_fault_pm_nameservice_browser_test.out',
+     'run_no_fault_pm_nameservice_chrome_browser_test',
+     'no_fault_pm_nameservice_test.html',
+     ],
+    [['NACL_FAULT_INJECTION=load_module=GF20'],
+     # LOAD_NO_MEMORY
+     [('expected_error','"NaCl module load failed: Insufficient memory to load file"')],
+     'fault_pm_nameservice_browser_test.out',
+     'run_fault_pm_nameservice_chrome_browser_test',
+     'fault_pm_nameservice_test.html',
+     ],
+    [['NACL_FAULT_INJECTION=pq=GF2'],
+     # LOAD_UNSUPPORTED_OS_PLATFORM
+     [('expected_error', '"NaCl module load failed: Operating system platform is not supported"')],
+     'fault_pq_os_pm_nameservice_browser_test.out',
+     'run_fault_pq_os_pm_nameservice_chrome_browser_test',
+     'fault_pm_nameservice_test.html',
+     ],
+    [['NACL_FAULT_INJECTION=pq=GF3'],
+     # LOAD_DEP_UNSUPPORTED
+     [('expected_error', '"NaCl module load failed: Data Execution Prevention is required but is not supported"')],
+     'fault_pq_dep_pm_nameservice_browser_test.out',
+     'run_fault_pq_dep_pm_nameservice_chrome_browser_test',
+     'fault_pm_nameservice_test.html',
+     ],
+    ]:
+
+    node = env.PPAPIBrowserTester(
+        out_name,
+        url=html_file,
+        nmf_names=['fault_pm_nameservice_test'],
+        files=env.ExtractPublishedFiles(pm_ns_nexe_name),
+        args=['--debug'],
+        test_args=test_args,
+        osenv=['NACLVERBOSITY=0:pp_weak_ref=0:weak_ref=0'] + extra_os_env
+        )
+
+    env.AddNodeToTestSuite(node,
+                           ['chrome_browser_tests'],
+                           run_name,
+                           is_broken=(env.PPAPIBrowserTesterIsBroken() or
+                                      env.Bit('nacl_glibc')))

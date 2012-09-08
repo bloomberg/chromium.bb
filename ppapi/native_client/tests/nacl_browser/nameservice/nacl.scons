@@ -1,0 +1,41 @@
+# -*- python -*-
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+# postmessage version of srpc_nameservice_test
+
+pm_ns_obj = env.ComponentObject('pm_nameservice_test.o',
+                                'pm_nameservice_test.cc')
+pm_ns_nexe_name = env.ProgramNameForNmf('pm_nameservice_test')
+pm_ns_nexe = env.ComponentProgram(pm_ns_nexe_name,
+                                  pm_ns_obj,
+                                  EXTRA_LIBS=['nacl_ppapi_util',
+                                              'ppapi_cpp',
+                                              'pthread',
+                                              'srpc',
+                                              'platform',
+                                              'gio',
+                                              'imc',
+                                              'imc_syscalls',
+                                              ])
+env.Publish(pm_ns_nexe_name, 'run',
+            ['pm_nameservice_test.html'])
+
+# chrome_browser_tests
+
+node = env.PPAPIBrowserTester(
+    'pm_nameservice_browser_test.out',
+    url='pm_nameservice_test.html',
+    nmf_names=['pm_nameservice_test'],
+    files=env.ExtractPublishedFiles(pm_ns_nexe_name),
+    args=['--debug'],
+    osenv=['NACLVERBOSITY=0:pp_weak_ref=0:weak_ref=0']
+    )
+
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_pm_nameservice_chrome_browser_test',
+                       is_broken=env.PPAPIBrowserTesterIsBroken())

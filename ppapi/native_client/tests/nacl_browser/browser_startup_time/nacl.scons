@@ -1,0 +1,73 @@
+# -*- python -*-
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Test startup time for loading a basic PPAPI nexe in the browser.
+
+Import('env')
+
+nexe_name = env.ProgramNameForNmf('browser_startup_time')
+stripped_nexe = env.ProgramNameForNmf('browser_startup_time_stripped')
+
+browser_startup_nexe = env.ComponentProgram(
+    nexe_name,
+    ['hello_world.cc'],
+    EXTRA_LIBS=['ppapi_cpp'])
+
+env.Publish(nexe_name, 'run',
+            ['browser_startup_time.html',
+             'browser_startup_time.js'])
+
+test_name = 'browser_startup_time.out'
+output_processor_1 = ['${PYTHON}',
+                      str(env.File(
+                          '${SCONSTRUCT_DIR}/tools/process_perf_output.py')),
+                      test_name,
+                      env.GetPerfEnvDescription()]
+output_processor_c = ['${PYTHON}',
+                      str(env.File(
+                          '${SCONSTRUCT_DIR}/tools/process_perf_combined.py'))]
+
+
+node = env.PPAPIBrowserTester(
+    test_name,
+    url='browser_startup_time.html',
+    nmf_names=['browser_startup_time'],
+    files=env.ExtractPublishedFiles(nexe_name),
+    # Smooth out the timing data.
+    num_runs=5,
+    process_output_single=output_processor_1,
+    process_output_combined=output_processor_c,
+    # Assume verbosity level of 1 will give us NaClLogs for sel_ldr times.
+    log_verbosity=1)
+
+# TODO(jvoung): use a single test suite when either
+# (a) performance_tests are always run, or
+# (b) we have decided to just fold this test into chrome_browser_tests.
+test_suites = ['chrome_browser_tests', 'performance_tests']
+env.AddNodeToTestSuite(node,
+                       test_suites,
+                       'run_browser_startup_time_test',
+                       # This test relies on NACLLOG, which must be able to
+                       # open a file. This won't work with the outer sandbox
+                       # which is enabled in some cases.
+                       is_broken=(env.PPAPIBrowserTesterIsBroken() or
+                                  env.Bit('disable_dynamic_plugin_loading')))
+
+# Also check the size of this nexe.
+node = env.FileSizeTest('browser_startup_size.out',
+                        browser_startup_nexe)
+env.AddNodeToTestSuite(node,
+                       test_suites,
+                       'run_browser_startup_size_test')
+
+# Check size of stripped nexe.
+browser_startup_stripped_nexe = env.StripExecutable(
+    stripped_nexe,
+    browser_startup_nexe)
+node = env.FileSizeTest('browser_startup_stripped_size.out',
+                        browser_startup_stripped_nexe)
+env.AddNodeToTestSuite(node,
+                       test_suites,
+                       'run_browser_startup_stripped_size_test')

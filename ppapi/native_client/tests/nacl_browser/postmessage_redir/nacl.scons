@@ -1,0 +1,58 @@
+# -*- python -*-
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+pm_rd_obj = env.ComponentObject('pm_redir_test.o',
+                                'pm_redir_test.cc')
+pm_rd_nexe_name = env.ProgramNameForNmf('pm_redir_test')
+pm_rd_nexe = env.ComponentProgram(pm_rd_nexe_name,
+                                  pm_rd_obj,
+                                  EXTRA_LIBS=['weak_ref',
+                                              'ppapi_cpp',
+                                              'pthread',
+                                              'platform',
+                                              'gio',
+                                              ])
+env.Publish(pm_rd_nexe_name, 'run',
+            ['pm_redir_test.html'])
+
+for (ostr, thr, delay_us, envar) in [
+  ('stdout', 'fg', '0', 'NACL_EXE_STDOUT=DEBUG_ONLY:dev://postmessage'),
+  ('stderr', 'fg', '0', 'NACL_EXE_STDERR=DEBUG_ONLY:dev://postmessage'),
+  ('stdout', 'bg', '0', 'NACL_EXE_STDOUT=DEBUG_ONLY:dev://postmessage'),
+  ('stderr', 'bg', '0', 'NACL_EXE_STDERR=DEBUG_ONLY:dev://postmessage'),
+  #  1 millisecond
+  ('stdout', 'fg', '1000', 'NACL_EXE_STDOUT=DEBUG_ONLY:dev://postmessage'),
+  ('stderr', 'fg', '1000', 'NACL_EXE_STDERR=DEBUG_ONLY:dev://postmessage'),
+  ('stdout', 'bg', '1000', 'NACL_EXE_STDOUT=DEBUG_ONLY:dev://postmessage'),
+  ('stderr', 'bg', '1000', 'NACL_EXE_STDERR=DEBUG_ONLY:dev://postmessage'),
+  #  1 second
+  ('stdout', 'fg', '1000000', 'NACL_EXE_STDOUT=DEBUG_ONLY:dev://postmessage'),
+  ('stderr', 'fg', '1000000', 'NACL_EXE_STDERR=DEBUG_ONLY:dev://postmessage'),
+  ('stdout', 'bg', '1000000', 'NACL_EXE_STDOUT=DEBUG_ONLY:dev://postmessage'),
+  ('stderr', 'bg', '1000000', 'NACL_EXE_STDERR=DEBUG_ONLY:dev://postmessage'),
+  #  5 seconds -- disabled so we don't make the bots slow...
+  # ('stdout', 'fg', '5000000', 'NACL_EXE_STDOUT=DEBUG_ONLY:dev://postmessage'),
+  # ('stderr', 'fg', '5000000', 'NACL_EXE_STDERR=DEBUG_ONLY:dev://postmessage'),
+  # ('stdout', 'bg', '5000000', 'NACL_EXE_STDOUT=DEBUG_ONLY:dev://postmessage'),
+  # ('stderr', 'bg', '5000000', 'NACL_EXE_STDERR=DEBUG_ONLY:dev://postmessage'),
+  ]:
+
+  node = env.PPAPIBrowserTester(
+    'pm_redir_'+ ostr + '_' + thr + '_' + delay_us + '_test.out',
+    url='pm_redir_test.html',
+    nmf_names=['pm_redir_test'],
+    files=env.ExtractPublishedFiles(pm_rd_nexe_name),
+    # args=['--debug'], # debug turns on srpc-level output, also on stdout
+    test_args=[('stream', ostr), ('thread', thr), ('delay_us', delay_us)],
+    # nacl_exe_stdout='DEBUG_ONLY:dev://postmessage'
+    osenv=[envar])
+
+  env.AddNodeToTestSuite(node,
+                         ['chrome_browser_tests'],
+                         ('run_pm_redir_' + ostr + '_' + thr +
+                          '_' + delay_us + '_chrome_browser_test'),
+                         is_broken=env.PPAPIBrowserTesterIsBroken())

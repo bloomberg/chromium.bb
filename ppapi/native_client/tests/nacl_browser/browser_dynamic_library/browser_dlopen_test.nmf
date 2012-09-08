@@ -1,0 +1,16 @@
+{
+  "program": {
+    "x86-32" : {"url" : "browser_dlopen_test_x86-32.nexe"},
+    "x86-64" : {"url" : "browser_dlopen_test_x86-64.nexe"},
+    "arm" : {"url" : "browser_dlopen_test_arm.nexe"},
+    "portable" : {"pnacl-translate":
+                    {"url" : "browser_dlopen_test.pexe"}}
+  },
+  "files": {
+    "libmemusage.so" : {
+      "x86-32" : {"url" : "libmemusage.so"},
+      "x86-64" : {"url" : "libmemusage.so"},
+      "arm" : {"url" : "libmemusage.so"}
+    }
+  }
+}

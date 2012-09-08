@@ -1,0 +1,98 @@
+<!--
+  Copyright 2011 The Chromium Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can
+  be found in the LICENSE file.
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="-1" />
+    <script type="text/javascript" src="nacltest.js"></script>
+    <title>Native Client Post Message Manifest File Test</title>
+  </head>
+
+  <body>
+    <h1>Native Client Post Message Manifest File Test</h1>
+    <div>
+    <embed id="naclModule"
+           name="naclModule"
+           width=400 height=400
+           src="pm_manifest_file.nmf"
+           basic_tests="2"
+           stress_tests="0"
+           style="background-color:gray"
+           type="application/x-nacl" />
+    </div>
+
+  <script type="text/javascript">
+    //<![CDATA[
+function setupTests(tester, plugin) {
+  tester.addAsyncTest('Test_00_Init', function(status) {
+    plugin.addEventListener('message', function(message_event) {
+      this.removeEventListener('message', arguments.callee, false);
+      status.assertEqual(message_event.data,
+                         'NaClSrpcClientCtor succeeded\n');
+      status.pass();
+    }, false);
+    plugin.postMessage('init');
+  });
+  tester.addAsyncTest('Test_01_NameService', function(status) {
+    plugin.addEventListener('message', function(message_event) {
+      this.removeEventListener('message', arguments.callee, false);
+      status.assertEqual(message_event.data,
+                         'EnumerateNames: in_out_nbytes 4\nEnumerateNames: in_out_nbytes 8\nEnumerateNames: in_out_nbytes 16\nEnumerateNames: in_out_nbytes 32\nEnumerateNames: in_out_nbytes 47\nnbytes = 47\nKernelService\nManifestNameService\nSecureRandom\n');
+      status.pass();
+    }, false);
+    plugin.postMessage('name_dump');
+  });
+  tester.addAsyncTest('Test_02_ManifestList', function(status) {
+    plugin.addEventListener('message', function(message_event) {
+      this.removeEventListener('message', arguments.callee, false);
+      status.assert(
+          message_event.data.indexOf('Manifest Contents:\n') != -1,
+          '"Manifest Contents:" not found in "' + message_event.data + '"')
+      status.assert(
+          message_event.data.indexOf('nmf says hello world\n') != -1,
+          '"nmf says hello world" not found in "' + message_event.data + '"')
+      status.assert(
+          message_event.data.indexOf('test_file\n') != -1,
+          '"test_file" not found in "' + message_event.data + '"')
+      status.pass();
+    }, false);
+    plugin.postMessage('manifest_list');
+  });
+  tester.addAsyncTest('Test_03_ManifestOpen', function(status) {
+    plugin.addEventListener('message', function(message_event) {
+      this.removeEventListener('message', arguments.callee, false);
+      var golden = 'File Contents:\nTest File Content';
+      status.log('expecting golden: ' + golden);
+      status.log('golden.length: ' + golden.length);
+      status.log('message_event.data.length: ' + message_event.data.length);
+      var min_length = Math.min(message_event.data.length, golden.length);
+      status.log('min_length = ' + min_length);
+      var i = 0;
+      for (i = 0; i < min_length; i++) {
+        var mchar = message_event.data.charAt(i);
+        var gchar = golden.charAt(i);
+        if (mchar != gchar) {
+          status.log('char at ' + i + ' differ: ' + mchar + ' != ' + gchar);
+          status.log('charcodes: ' + mchar.charCodeAt(0) + ' != ' + gchar.charCodeAt(0));
+        }
+      }
+      status.assertEqual(message_event.data, golden);
+      status.pass();
+    }, false);
+    plugin.postMessage('manifest_open');
+  });
+}
+
+var tester = new Tester();
+setupTests(tester, $('naclModule'));
+tester.waitFor($('naclModule'));
+tester.run();
+    //]]>
+  </script>
+  </body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+  Copyright (c) 2012 The Chromium Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can be
+  found in the LICENSE file.
+-->
+<html>
+<head>
+  <META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
+  <META HTTP-EQUIV="Expires" CONTENT="-1" />
+  <title>PNACL Test Example (PPAPI Test Example Clone)</title>
+  <script type="text/javascript" src="nacltest.js"></script>
+  <script type="text/javascript" src="ppapi_test_example.js"></script>
+  <script type="text/javascript">
+    //<![CDATA[
+    function pageDidLoad() {
+      // Set up a ticker so that we know that the UI thread is not blocked.
+      var quantum = 50;
+      var startTime = (new Date).getTime();
+      var done = false;
+      var updateUI = function() {
+         var start_end_div = $('start_end');
+         var now = (new Date).getTime();
+         start_end_div.innerText = String(now - startTime);
+         updateCanvas();
+         if (!done) {
+           setTimeout(updateUI, quantum);
+         }
+      }
+      setTimeout(updateUI, quantum);
+
+      var updateProgress = function() {
+         var progress_div = $('progress_area');
+         progress_div.innerText += '.';
+      }
+
+      var handleLoadEnd = function() {
+         done = true;
+      }
+
+      // For canvas drawing.
+      var hpos = 0;
+      var color = 0;
+      // The colors of the rainbow.
+      var palette =
+        new Array("#ff0000", "#ff7f00", "#ffff00", "#00ff00", "#0000ff",
+                  "#6600ff", "#8b00ff");
+      var updateCanvas = function() {
+        var canvas = document.getElementById('canvas');
+        var hsize = canvas.width;
+        var boxHeight = canvas.height;
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle = palette[color];
+        if (!ctx) {
+          return;
+        }
+        boxWidth = Math.min(boxHeight, hsize - hpos);
+        ctx.fillRect(hpos, 0, boxWidth, boxHeight);
+        hpos += boxWidth;
+        if (hpos >= hsize) {
+          hpos = 0;
+          color++;
+          if (color >= palette.length) {
+            color = 0;
+          }
+        }
+      }
+
+      var nexe_div = $('test_nexe');
+      nexe_div.addEventListener('loadstart', updateProgress, true);
+      nexe_div.addEventListener('progress', updateProgress, true);
+      nexe_div.addEventListener('load', updateProgress, true);
+      nexe_div.addEventListener('loadend', handleLoadEnd, true);
+    }
+//]]>
+  </script>
+</head>
+<body onload="pageDidLoad()">
+
+  <h1>PNACL Test Example</h1>
+
+  <embed type="application/x-nacl" id="test_nexe"
+          name="nacl_module"
+          src="pnacl_test_example.nmf"
+          width="20" height="20"
+         style="background-color:gray" />
+
+  <script type="text/javascript">
+    //<![CDATA[
+    var tester = new Tester();
+    setupTests(tester, $('test_nexe'));
+    tester.waitFor($('test_nexe'));
+    tester.run();
+    //]]>
+  </script>
+
+  <p>Page start to loadend (millisecs):</p>
+  <div id="start_end"> 0.0 </div>
+  <p> This will animate when the UI thread is not blocked (until loadend):</p>
+  <canvas id="canvas" width="200" height="10">
+  </canvas>
+
+  <p> Download progress:</p>
+  <div id="progress_area" style="font-size:28pt; color:#FF9900;"> </div>
+
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "program": {
+    "x86-32": {"url": "pm_pre_init_manifest_file_test_x86-32.nexe"},
+    "x86-64": {"url": "pm_pre_init_manifest_file_test_x86-64.nexe"},
+    "arm":    {"url": "pm_pre_init_manifest_file_test_arm.nexe"},
+    "portable": {"pnacl-translate":
+                   {"url": "pm_pre_init_manifest_file_test.pexe"}}
+  },
+  "files": {
+    "nmf says hello world": {
+      "x86-32": {"url": "pm_pre_init_manifest_file_test_x86-32.nexe"},
+      "x86-64": {"url": "pm_pre_init_manifest_file_test_x86-64.nexe"},
+      "arm":    {"url": "pm_pre_init_manifest_file_test_arm.nexe"},
+      "portable": {"pnacl-translate":
+                     {"url": "pm_pre_init_manifest_file_test.pexe"}}
+    },
+    "test_file": {
+      "portable": {"url": "test_file.txt"}
+    }
+  }
+}
