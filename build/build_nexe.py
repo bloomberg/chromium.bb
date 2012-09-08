@@ -206,10 +206,6 @@ class Builder(object):
     options = ArgToList(options)
     if self.toolname in ['glibc', 'newlib'] and self.mainarch == 'x86':
       options += ['-B' + self.toollib]
-    if self.outtype == 'nso':
-      options += ['-Wl,-rpath-link,' + name for name in self.lib_paths]
-      options += ['-shared']
-      options += ['-Wl,-soname,' + os.path.basename(self.name)]
     self.link_options = options + ['-L' + name for name in self.lib_paths]
 
   def BuildArchiveOptions(self):
@@ -356,7 +352,7 @@ class Builder(object):
 
     Link or Archive the final output file, from the compiled sources.
     """
-    if self.outtype in ['nexe', 'nso']:
+    if self.outtype == 'nexe':
       out = self.Link(srcs)
       if self.strip_debug:
         self.Strip(out)

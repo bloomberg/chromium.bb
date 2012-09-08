@@ -178,7 +178,6 @@
       'type': 'none',
       'variables': {
         'nlib_target': 'libplatform.a',
-        'nso_target': 'libplatform.so',
         'build_glibc': 1,
         'build_newlib': 1,
         'sources': [

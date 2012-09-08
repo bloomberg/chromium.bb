@@ -50,7 +50,6 @@
       'type': 'none',
       'variables': {
         'nlib_target': 'libsrpc.a',
-        'nso_target': 'libsrpc.so',
         'build_glibc': 1,
         'build_newlib': 1,
         'sources': [

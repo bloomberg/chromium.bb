@@ -79,9 +79,8 @@
           'type': 'none',
           'variables': {
             'nlib_target': 'libimc.a',
-            'nso_target': 'libimc.so',
             'build_glibc': 1,
-            'build_newlib': 1,
+            'build_newlib': 0,
             'sources': ['nacl_imc_c.cc', 'nacl_imc_common.cc', 'nacl/nacl_imc.cc'],
           },
           'dependencies': [

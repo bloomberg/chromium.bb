@@ -31,7 +31,6 @@
       'type': 'none',
       'variables': {
         'nlib_target': 'libgio.a',
-        'nso_target': 'libgio.so',
         'build_glibc': 1,
         'build_newlib': 1,
         'sources': ['<@(common_sources)']

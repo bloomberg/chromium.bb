@@ -108,7 +108,6 @@
       'type': 'none',
       'variables': {
         'nlib_target': 'libnacl_dyncode.a',
-        'nso_target': 'libnacl_dyncode.so',
         'build_glibc': 1,
         'build_newlib': 1,
       },
@@ -135,7 +134,6 @@
       'type': 'none',
       'variables': {
         'nlib_target': 'libimc_syscalls.a',
-        'nso_target': 'libimc_syscalls.so',
         'build_glibc': 1,
         'build_newlib': 1,
       },
