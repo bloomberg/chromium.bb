@@ -24,23 +24,6 @@
 
 #include "native_client/src/include/portability.h"
 
-#if defined __GNUC__ && defined __GNUC_MINOR__
-  #if __GNUC__ == 4 && __GNUC_MINOR__ < 6
-    namespace std {
-      template<class Container>
-      inline auto begin(Container& container) -> decltype(container.begin()) {
-        return container.begin();
-      }
-
-      template<class Container>
-      inline auto end(Container& container) -> decltype(container.end()) {
-        return container.end();
-      }
-    }
-    #define nullptr ((const char*)0)
-  #endif
-#endif
-
 #ifndef NACL_TRUSTED_BUT_NOT_TCB
 #error("This file is not meant for use in the TCB")
 #endif
@@ -254,7 +237,7 @@ namespace {
 
    private:
     static void check_flag_valid(const std::string& flag) {
-      if (all_instruction_flags.find(flag) == end(all_instruction_flags)) {
+      if (all_instruction_flags.find(flag) == all_instruction_flags.end()) {
         fprintf(stderr, "%s: unknown flag: '%s'\n",
                 short_program_name, flag.c_str());
         exit(1);
@@ -305,15 +288,15 @@ namespace {
     }
     bool has_flag(const std::string& flag) const {
       check_flag_valid(flag);
-      return flags.find(flag) != end(flags);
+      return flags.find(flag) != flags.end();
     }
   };
   std::vector<Instruction> instructions;
 
   FILE* out_file = stdout;
   FILE* const_file = stdout;
-  const char* out_file_name = nullptr;
-  const char* const_file_name = nullptr;
+  const char* out_file_name = NULL;
+  const char* const_file_name = NULL;
 
   auto ia32_mode = true;
 
@@ -447,19 +430,19 @@ namespace {
      Note: it only accepts flags listed in all_instruction_flags.  */
   void parse_instructions(const char* filename) {
     const std::string file_content = read_file(filename);
-    auto it = begin(file_content);
-    while (it != end(file_content)) {
-      it = std::find_if_not(it, end(file_content), is_eol);
-      if (it == end(file_content)) {
+    auto it = file_content.begin();
+    while (it != file_content.end()) {
+      it = std::find_if_not(it, file_content.end(), is_eol);
+      if (it == file_content.end()) {
         return;
       }
       /* If line starts with '#' then it's a comment. */
       if (*it == '#') {
-        it = std::find_if(it, end(file_content), is_eol);
+        it = std::find_if(it, file_content.end(), is_eol);
       } else {
         /* Note: initialization list makes sure flags are toggled to zero.  */
         Instruction instruction { };
-        auto line_end = std::find_if(it, end(file_content), is_eol);
+        auto line_end = std::find_if(it, file_content.end(), is_eol);
         auto operation = split_till_comma(&it, line_end);
         /* Line with just whitespaces is ignored.  */
         if (operation.size() != 0) {
@@ -470,15 +453,15 @@ namespace {
           if (*it == ',') {
             ++it;
             if (it == line_end)
-                      line_end = std::find_if(++it, end(file_content), is_eol);
+                      line_end = std::find_if(++it, file_content.end(), is_eol);
             instruction.opcodes = split_till_comma(&it, line_end);
             if (*it == ',') {
               ++it;
               if (it == line_end)
-                      line_end = std::find_if(++it, end(file_content), is_eol);
+                      line_end = std::find_if(++it, file_content.end(), is_eol);
               auto flags = split_till_comma(&it, line_end);
-              for (auto flag_it = begin(flags);
-                   flag_it != end(flags); ++flag_it) {
+              for (auto flag_it = flags.begin();
+                   flag_it != flags.end(); ++flag_it) {
                 instruction.add_flag(*flag_it);
               }
               if (instruction.has_flag("ia32")) {
@@ -513,7 +496,7 @@ namespace {
             instructions.push_back(instruction);
           }
         }
-        it = std::find_if(it, end(file_content), is_eol);
+        it = std::find_if(it, file_content.end(), is_eol);
       }
     }
   }
@@ -534,47 +517,47 @@ namespace {
   void print_consts(void)  {
     if (enabled(Actions::kInstructionName)) {
       std::vector<std::string> names;
-      std::transform(begin(instruction_names), end(instruction_names),
+      std::transform(instruction_names.begin(), instruction_names.end(),
         std::back_inserter(names),
         select_name);
-      std::sort(begin(names), end(names), compare_names);
-      for (auto name_it = begin(names); name_it != end(names); ++name_it) {
+      std::sort(names.begin(), names.end(), compare_names);
+      for (auto name_it = names.begin(); name_it != names.end(); ++name_it) {
         auto& name = *name_it;
         if (instruction_names[name] == 0) {
           for (decltype(name.length()) p = 1; p < name.length(); ++p) {
             auto it = instruction_names.find(std::string(name, p));
-            if (it != end(instruction_names))
+            if (it != instruction_names.end())
               it->second = 1;
           }
         }
       }
       size_t offset = 0;
-      for (auto pair_it = begin(instruction_names);
-           pair_it != end(instruction_names); ++pair_it) {
+      for (auto pair_it = instruction_names.begin();
+           pair_it != instruction_names.end(); ++pair_it) {
         auto& pair = *pair_it;
         if (pair.second != 1)
           pair.second = offset,
           offset += pair.first.length() + 1;
       }
-      for (auto name_it = begin(names); name_it != end(names); ++name_it) {
+      for (auto name_it = names.begin(); name_it != names.end(); ++name_it) {
         auto& name = *name_it;
         auto offset = instruction_names[name];
         if (offset != 1)
           for (decltype(name.length()) p = 1; p < name.length(); ++p) {
             auto it = instruction_names.find(std::string(name, p));
-            if ((it != end(instruction_names)) && (it->second == 1))
+            if ((it != instruction_names.end()) && (it->second == 1))
               it->second = offset + p;
           }
       }
       offset = 0;
       auto delimiter = "static const char instruction_names[] = {\n  ";
-      for (auto pair_it = begin(instruction_names);
-           pair_it != end(instruction_names); ++pair_it) {
+      for (auto pair_it = instruction_names.begin();
+           pair_it != instruction_names.end(); ++pair_it) {
         auto& pair = *pair_it;
         if (pair.second == offset) {
           fprintf(const_file, "%s", delimiter);
-          for (auto c_it = begin(pair.first);
-               c_it != end(pair.first); ++c_it) {
+          for (auto c_it = pair.first.begin();
+               c_it != pair.first.end(); ++c_it) {
             auto& c = *c_it;
             fprintf(const_file, "0x%02x, ", static_cast<int>(c));
           }
@@ -603,7 +586,7 @@ namespace {
      errors.  */
   std::string c_identifier(std::string text) {
     std::string name;
-    for (auto c_it = begin(text); c_it != end(text); ++c_it) {
+    for (auto c_it = text.begin(); c_it != text.end(); ++c_it) {
       auto c = *c_it;
       if (('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z') ||
           ('0' <= c && c <= '9'))
@@ -618,8 +601,8 @@ namespace {
      in instruction_name variable.  It uses instruction_names array generated by
      print_consts function.  */
   void print_name_actions(void) {
-    for (auto pair_it = begin(instruction_names);
-         pair_it != end(instruction_names); ++pair_it) {
+    for (auto pair_it = instruction_names.begin();
+         pair_it != instruction_names.end(); ++pair_it) {
       auto& pair = *pair_it;
       fprintf(out_file, "  action instruction_%s"
         " { SET_INSTRUCTION_NAME(instruction_names + %"NACL_PRIuS"); }\n",
@@ -651,8 +634,8 @@ namespace {
       if (has_flag("branch_hint")) optional_prefixes.insert("branch_hint");
       if (has_flag("condrep")) optional_prefixes.insert("condrep");
       if (has_flag("rep")) optional_prefixes.insert("rep");
-      for (auto opcode_it = begin(opcodes);
-           opcode_it != end(opcodes); ++opcode_it) {
+      for (auto opcode_it = opcodes.begin();
+           opcode_it != opcodes.end(); ++opcode_it) {
         auto opcode = *opcode_it;
         if (opcode == "/") {
           opcode_in_imm = true;
@@ -663,8 +646,8 @@ namespace {
         }
       }
       /* If register is stored in opcode we need to expand opcode now.  */
-      for (auto operand_it = begin(operands);
-           operand_it != end(operands); ++operand_it) {
+      for (auto operand_it = operands.begin();
+           operand_it != operands.end(); ++operand_it) {
         auto& operand = *operand_it;
         if (operand.source == 'r') {
           auto opcode = opcodes.rbegin();
@@ -719,14 +702,14 @@ namespace {
         "0xf3", "repz",
         "rexw", "fwait"
       };
-      while (opcode_prefixes.find(*begin(opcodes)) != end(opcode_prefixes)) {
-        if ((*begin(opcodes)) == "rexw")
+      while (opcode_prefixes.find(*opcodes.begin()) != opcode_prefixes.end()) {
+        if ((*opcodes.begin()) == "rexw")
           rex.w = true;
-        else if ((*begin(opcodes)) == "fwait")
+        else if ((*opcodes.begin()) == "fwait")
           fwait = true;
-        else if ((*begin(opcodes)) != "rexw")
-          required_prefixes.insert(*begin(opcodes));
-        opcodes.erase(begin(opcodes));
+        else if ((*opcodes.begin()) != "rexw")
+          required_prefixes.insert(*opcodes.begin());
+        opcodes.erase(opcodes.begin());
       }
     }
     MarkedInstruction(const Instruction& instruction_,
@@ -789,8 +772,8 @@ namespace {
       auto result = *this;
       result.required_prefixes.insert(string);
       if (string == "data16")
-        for (auto operand_it = begin(result.operands);
-             operand_it != end(result.operands); ++operand_it) {
+        for (auto operand_it = result.operands.begin();
+             operand_it != result.operands.end(); ++operand_it) {
           auto& operand = *operand_it;
           if (operand.size == "v" || operand.size == "z")
             operand.size = "w";
@@ -828,8 +811,8 @@ namespace {
     MarkedInstruction set_rex_w(void) const {
       auto result = *this;
       result.rex.w = true;
-      for (auto operand_it = begin(result.operands);
-           operand_it != end(result.operands); ++operand_it) {
+      for (auto operand_it = result.operands.begin();
+           operand_it != result.operands.end(); ++operand_it) {
         auto& operand = *operand_it;
         if (operand.size == "v" || operand.size == "y")
           operand.size = "q";
@@ -841,8 +824,8 @@ namespace {
     MarkedInstruction clear_rex_w(void) const {
       auto result = *this;
       result.rex.w = false;
-      for (auto operand_it = begin(result.operands);
-           operand_it != end(result.operands); ++operand_it) {
+      for (auto operand_it = result.operands.begin();
+           operand_it != result.operands.end(); ++operand_it) {
         auto& operand = *operand_it;
         if (operand.size == "v" || operand.size == "y" || operand.size == "z")
           operand.size = "d";
@@ -865,13 +848,13 @@ namespace {
      REX/VEX prefix.  */
   bool mod_reg_is_used(const MarkedInstruction& instruction) {
     const auto& operands = instruction.get_operands();
-    for (auto operand_it = begin(operands);
-         operand_it != end(operands); ++operand_it) {
+    for (auto operand_it = operands.begin();
+         operand_it != operands.end(); ++operand_it) {
       auto& operand = *operand_it;
       const auto source = operand.source;
       const auto& prefixes = instruction.get_required_prefixes();
       /* Control registers can use 0xf0 prefix to select %cr8…%cr15.  */
-      if ((source == 'C' && prefixes.find("0xf0") == end(prefixes)) ||
+      if ((source == 'C' && prefixes.find("0xf0") == prefixes.end()) ||
           source == 'G' || source == 'P' || source == 'V')
         return true;
     }
@@ -883,8 +866,8 @@ namespace {
      “B” bits in REX/VEX prefix.  */
   bool mod_rm_is_used(const MarkedInstruction& instruction) {
     const auto& operands = instruction.get_operands();
-    for (auto operand_it = begin(operands);
-         operand_it != end(operands); ++operand_it) {
+    for (auto operand_it = operands.begin();
+         operand_it != operands.end(); ++operand_it) {
       auto& operand = *operand_it;
       const auto source = operand.source;
       if (source == 'E' || source == 'M' || source == 'N' ||
@@ -923,7 +906,7 @@ namespace {
       if (ia32_mode)
         fprintf(out_file, "0x9b ");
       else if ((required_prefixes.size() == 1) &&
-               (*begin(required_prefixes)) == "data16")
+               (*required_prefixes.begin()) == "data16")
         fprintf(out_file, "(REX_WRXB? 0x9b data16 | 0x9b ");
       else
         fprintf(out_file, "(REX_WRXB? 0x9b | 0x9b ");
@@ -931,10 +914,10 @@ namespace {
     const auto& optional_prefixes = instruction.get_optional_prefixes();
     if ((required_prefixes.size() == 1) &&
         (optional_prefixes.size() == 0)) {
-      fprintf(out_file, "%s ", begin(required_prefixes)->c_str());
+      fprintf(out_file, "%s ", required_prefixes.begin()->c_str());
     } else if ((required_prefixes.size() == 0) &&
                (optional_prefixes.size() == 1)) {
-      fprintf(out_file, "%s? ", begin(optional_prefixes)->c_str());
+      fprintf(out_file, "%s? ", optional_prefixes.begin()->c_str());
     } else if ((optional_prefixes.size() > 0) ||
                (required_prefixes.size() > 0)) {
       auto delimiter = "(";
@@ -942,29 +925,29 @@ namespace {
       auto opt_end = 1 << optional_prefixes.size();
       for (auto opt = opt_start; opt < opt_end; ++opt) {
         auto prefixes = required_prefixes;
-        auto it = begin(optional_prefixes);
+        auto it = optional_prefixes.begin();
         for (auto id = 1; id < opt_end; id <<= 1, ++it) {
           if (opt & id) {
             prefixes.insert(*it);
           }
         }
         if (prefixes.size() == 1) {
-          fprintf(out_file, "%s%s", delimiter, begin(prefixes)->c_str());
+          fprintf(out_file, "%s%s", delimiter, prefixes.begin()->c_str());
           delimiter = " | ";
         } else {
-          std::vector<std::string> permutations(begin(prefixes), end(prefixes));
+          std::vector<std::string> permutations(prefixes.begin(), prefixes.end());
           do {
             fprintf(out_file, "%s", delimiter);
             delimiter = " | ";
             auto delimiter = '(';
-            for (auto prefix_it = begin(permutations);
-                 prefix_it != end(permutations); ++prefix_it) {
+            for (auto prefix_it = permutations.begin();
+                 prefix_it != permutations.end(); ++prefix_it) {
               auto& prefix = *prefix_it;
               fprintf(out_file, "%c%s", delimiter, prefix.c_str());
               delimiter = ' ';
             }
             fprintf(out_file, ")");
-          } while (next_permutation(begin(permutations), end(permutations)));
+          } while (next_permutation(permutations.begin(), permutations.end()));
         }
       }
       if (opt_start)
@@ -1005,7 +988,7 @@ namespace {
   void print_third_byte_of_vex(const MarkedInstruction& instruction,
                                const std::string& third_byte) {
     fprintf(out_file, " b_");
-    for (auto c_it = begin(third_byte); c_it != end(third_byte); ++c_it) {
+    for (auto c_it = third_byte.begin(); c_it != third_byte.end(); ++c_it) {
       auto& c = *c_it;
       if (c == 'W')
         if (instruction.get_rex().w)
@@ -1033,9 +1016,9 @@ namespace {
     auto c5_ok = (opcodes[0] == "0xc4") &&
                  ((opcodes[1] == "RXB.01") ||
                   (opcodes[1] == "RXB.00001")) &&
-                 ((*begin(opcodes[2]) == '0') ||
-                  (*begin(opcodes[2]) == 'x') ||
-                  (*begin(opcodes[2]) == 'X'));
+                 ((*opcodes[2].begin() == '0') ||
+                  (*opcodes[2].begin() == 'x') ||
+                  (*opcodes[2].begin() == 'X'));
     if (c5_ok) fprintf(out_file, "((");
     auto rex = instruction.get_rex();
     fprintf(out_file, "(%s (VEX_", opcodes[0].c_str());
@@ -1052,8 +1035,8 @@ namespace {
     for (size_t symbolic_it = 0;
          symbolic_it < arraysize(symbolic_names); ++symbolic_it) {
       auto symbolic = symbolic_names[symbolic_it];
-      for (auto it = begin(third_byte); it != end(third_byte); ++it)
-        if (static_cast<size_t>(end(third_byte) - it) >= strlen(symbolic) &&
+      for (auto it = third_byte.begin(); it != third_byte.end(); ++it)
+        if (static_cast<size_t>(third_byte.end() - it) >= strlen(symbolic) &&
              strncmp(&*it, symbolic, strlen(symbolic)) == 0) {
           third_byte.replace(it, it + strlen(symbolic), "XXXX");
           break;
@@ -1064,7 +1047,7 @@ namespace {
     static const std::regex third_byte_check(
                        R"([01xX]\.[01xX][01xX][01xX][01xX]\.[01xX]\.[01][01])");
     if ((third_byte.length() != 11) ||
-          !regex_match(begin(third_byte), end(third_byte), third_byte_check)) {
+        !regex_match(third_byte.begin(), third_byte.end(), third_byte_check)) {
 #else
     static const std::set<char> third_byte_check[] {
       { '0', '1', 'x', 'X', 'W' },
@@ -1083,7 +1066,7 @@ namespace {
     if (third_byte_ok)
       for (size_t set_it = 0; set_it < arraysize(third_byte_check); ++set_it) {
         auto& set = third_byte_check[set_it];
-        if (set.find(third_byte[&set - third_byte_check]) == end(set)) {
+        if (set.find(third_byte[&set - third_byte_check]) == set.end()) {
           third_byte_ok = false;
           break;
         }
@@ -1106,7 +1089,7 @@ namespace {
           fprintf(out_file, " @vex_prefix_short");
         fprintf(out_file, "))");
       }
-      for (auto opcode = begin(opcodes) + 3; opcode != end(opcodes); ++opcode)
+      for (auto opcode = opcodes.begin() + 3; opcode != opcodes.end(); ++opcode)
         if (opcode->find('/') == opcode->npos)
           fprintf(out_file, " %s", opcode->c_str());
         else
@@ -1143,8 +1126,8 @@ namespace {
       print_vex_opcode(instruction);
     } else {
       auto delimiter = '(';
-      for (auto opcode_it = begin(opcodes);
-           opcode_it != end(opcodes); ++opcode_it) {
+      for (auto opcode_it = opcodes.begin();
+           opcode_it != opcodes.end(); ++opcode_it) {
         auto opcode = *opcode_it;
         if (opcode.find('/') == opcode.npos)
           fprintf(out_file, "%c%s", delimiter, opcode.c_str()),
@@ -1159,8 +1142,8 @@ namespace {
     const auto& operands = instruction.get_operands();
     if (enabled(Actions::kParseOperands)) {
       auto operand_index = 0;
-      for (auto operand_it = begin(operands);
-           operand_it != end(operands); ++operand_it) {
+      for (auto operand_it = operands.begin();
+           operand_it != operands.end(); ++operand_it) {
         auto& operand = *operand_it;
         if (operand.enabled && operand.source == 'r') {
           if (operand.size == "x87") {
@@ -1185,8 +1168,8 @@ namespace {
   void print_immediate_opcode(const MarkedInstruction& instruction) {
     auto print_opcode = false;
     const auto& opcodes = instruction.get_opcodes();
-    for (auto opcode_it = begin(opcodes);
-           opcode_it != end(opcodes); ++opcode_it) {
+    for (auto opcode_it = opcodes.begin();
+           opcode_it != opcodes.end(); ++opcode_it) {
         auto& opcode = *opcode_it;
       if (opcode == "/")
           print_opcode = true;
@@ -1220,24 +1203,24 @@ namespace {
     if (enabled(Actions::kOpcode))
       fprintf(out_file, " @end_opcode");
     const auto& required_prefixes = instruction.get_required_prefixes();
-    for (auto prefix_it = begin(required_prefixes);
-           prefix_it != end(required_prefixes); ++prefix_it) {
+    for (auto prefix_it = required_prefixes.begin();
+           prefix_it != required_prefixes.end(); ++prefix_it) {
       auto& prefix = *prefix_it;
       if (prefix == "0x66") {
         fprintf(out_file, " @not_data16_prefix");
         break;
       }
     }
-    for (auto prefix_it = begin(required_prefixes);
-         prefix_it != end(required_prefixes); ++prefix_it) {
+    for (auto prefix_it = required_prefixes.begin();
+         prefix_it != required_prefixes.end(); ++prefix_it) {
       auto& prefix = *prefix_it;
       if (prefix == "0xf2") {
         fprintf(out_file, " @not_repnz_prefix");
         break;
       }
     }
-    for (auto prefix_it = begin(required_prefixes);
-         prefix_it != end(required_prefixes); ++prefix_it) {
+    for (auto prefix_it = required_prefixes.begin();
+         prefix_it != required_prefixes.end(); ++prefix_it) {
       auto& prefix = *prefix_it;
       if (prefix == "0xf3") {
         fprintf(out_file, " @not_repz_prefix");
@@ -1254,7 +1237,7 @@ namespace {
              !enabled(Actions::kParseOperandPositions))
       fprintf(out_file, " @modifiable_instruction");
     const auto& flags = instruction.get_flags();
-    for (auto flag_it = begin(flags); flag_it != end(flags); ++flag_it) {
+    for (auto flag_it = flags.begin(); flag_it != flags.end(); ++flag_it) {
         auto& flag = *flag_it;
       if (!strncmp(flag.c_str(), "CPUFeature_", 11))
         fprintf(out_file, " @%s", flag.c_str());
@@ -1264,8 +1247,8 @@ namespace {
       if (enabled(Actions::kParseOperandPositions))
         fprintf(out_file, " @operands_count_is_%"NACL_PRIuS"", operands.size());
       int operand_index = 0;
-      for (auto operand_it = begin(operands);
-           operand_it != end(operands); ++operand_it) {
+      for (auto operand_it = operands.begin();
+           operand_it != operands.end(); ++operand_it) {
         auto& operand = *operand_it;
         if (operand.enabled)
           if (enabled(Actions::kParseOperandPositions) ||
@@ -1292,7 +1275,7 @@ namespace {
           { 'Y',        "es_rdi"                }
         };
         auto it = operand_type.find(operand.source);
-        if (it != end(operand_type)) {
+        if (it != operand_type.end()) {
           if (operand.enabled)
             fprintf(out_file, " @operand%d_%s", operand_index, it->second),
             ++operand_index;
@@ -1308,8 +1291,8 @@ namespace {
     }
     if (enabled(Actions::kParseOperandsStates)) {
       auto operand_index = 0;
-      for (auto operand_it = begin(operands);
-           operand_it != end(operands); ++operand_it) {
+      for (auto operand_it = operands.begin();
+           operand_it != operands.end(); ++operand_it) {
         auto& operand = *operand_it;
         if (operand.enabled) {
           if (operand.write)
@@ -1338,8 +1321,8 @@ namespace {
   void print_immediate_arguments(const MarkedInstruction& instruction) {
     const auto& operands = instruction.get_operands();
     auto operand_index = 0;
-    for (auto operand_it = begin(operands);
-         operand_it != end(operands); ++operand_it) {
+    for (auto operand_it = operands.begin();
+         operand_it != operands.end(); ++operand_it) {
       auto& operand = *operand_it;
       if (operand.enabled || enabled(Actions::kParseOperandPositions))
         ++operand_index;
@@ -1399,16 +1382,16 @@ namespace {
         --operand_index;
     }
     const auto& required_prefixes = instruction.get_required_prefixes();
-    for (auto prefix_it = begin(required_prefixes);
-           prefix_it != end(required_prefixes); ++prefix_it) {
+    for (auto prefix_it = required_prefixes.begin();
+           prefix_it != required_prefixes.end(); ++prefix_it) {
       auto& prefix = *prefix_it;
       if (prefix == "0xf0") {
-        for (auto operand_it = begin(operands);
-             operand_it != end(operands); ++operand_it) {
+        for (auto operand_it = operands.begin();
+             operand_it != operands.end(); ++operand_it) {
           auto& operand = *operand_it;
           if (operand.source == 'C') {
             fprintf(out_file, " @not_lock_prefix%"NACL_PRIuS"",
-                                                  &operand - &*begin(operands));
+                                                 &operand - &*operands.begin());
             break;
           }
         }
@@ -1432,8 +1415,8 @@ namespace {
         int operands_count = 0;
         auto zero_extends = false;
         const auto& operands = instruction.get_operands();
-        for (auto operand_it = begin(operands);
-             operand_it != end(operands); ++operand_it) {
+        for (auto operand_it = operands.begin();
+             operand_it != operands.end(); ++operand_it) {
           auto& operand = *operand_it;
           if (operand.enabled)
             if (((operand.source != 'E') && (operand.source != 'M') &&
@@ -1506,8 +1489,8 @@ namespace {
     if (enabled(Actions::kParseOperands)) {
       auto operand_index = 0;
       const auto& operands = adjusted_instruction.get_operands();
-      for (auto operand_it = begin(operands);
-           operand_it != end(operands); ++operand_it) {
+      for (auto operand_it = operands.begin();
+           operand_it != operands.end(); ++operand_it) {
         auto& operand = *operand_it;
         static const std::map<char, const char*> operand_type {
           { 'C', "reg"       },
@@ -1526,7 +1509,7 @@ namespace {
         };
         if (operand.enabled) {
           auto it = operand_type.find(operand.source);
-          if (it != end(operand_type))
+          if (it != operand_type.end())
             fprintf(out_file, " @operand%d_from_modrm_%s", operand_index,
                     it->second);
         }
@@ -1588,8 +1571,8 @@ namespace {
       if (enabled(Actions::kParseOperands)) {
         auto operand_index = 0;
         const auto& operands = adjusted_instruction.get_operands();
-        for (auto operand_it = begin(operands);
-             operand_it != end(operands); ++operand_it) {
+        for (auto operand_it = operands.begin();
+             operand_it != operands.end(); ++operand_it) {
           auto& operand = *operand_it;
           static const std::map<char, const char*> operand_type {
             { 'C',      "from_modrm_reg"        },
@@ -1608,7 +1591,7 @@ namespace {
           };
           if (operand.enabled) {
             auto it = operand_type.find(operand.source);
-            if (it != end(operand_type)) {
+            if (it != operand_type.end()) {
               if (strcmp(it->second, "rm") != 0 ||
                   enabled(Actions::kParseOperandPositions)) {
                 fprintf(out_file, " @operand%d_%s", operand_index, it->second);
@@ -1643,81 +1626,81 @@ namespace {
   MarkedInstruction expand_sizes(const MarkedInstruction& instruction,
                                                            bool memory_access) {
     auto operands = instruction.get_operands();
-    for (auto operand_it = begin(operands);
-         operand_it != end(operands); ++operand_it) {
+    for (auto operand_it = operands.begin();
+         operand_it != operands.end(); ++operand_it) {
       auto& operand = *operand_it;
       static const std::map<std::pair<char, std::string>,
                          std::pair<const char*, const char*> > operand_sizes = {
-        { { ' ', ""     },      { "xmm",        "128bit"                } },
-        { { ' ', "2"    },      { "2bit",       nullptr                 } },
-        { { ' ', "7"    },      { "x87",        nullptr                 } },
-        { { ' ', "b"    },      { "8bit",       "8bit"                  } },
-        { { ' ', "d"    },      { "32bit",      "32bit"                 } },
-        { { ' ', "do"   },      { "ymm",        "256bit"                } },
-        { { ' ', "dq"   },      { "xmm",        "128bit"                } },
-        { { ' ', "fq"   },      { "ymm",        "256bit"                } },
-        { { ' ', "o"    },      { "xmm",        "128bit"                } },
-        { { ' ', "p"    },      { nullptr,      "farptr"                } },
-        { { ' ', "pb"   },      { "mmx_xmm",    "mmx_xmm"               } },
-        { { ' ', "pd"   },      { "mmx_xmm",    "mmx_xmm"               } },
-        { { ' ', "pdw"  },      { "mmx_xmm",    "mmx_xmm"               } },
-        { { ' ', "pdwx" },      { "ymm",        "256bit"                } },
-        { { ' ', "pdx"  },      { "ymm",        "256bit"                } },
-        { { ' ', "ph"   },      { "mmx_xmm",    "mmx_xmm"               } },
-        { { ' ', "phx"  },      { "ymm",        "256bit"                } },
-        { { ' ', "pi"   },      { "mmx_xmm",    "mmx_xmm"               } },
-        { { ' ', "pix"  },      { "ymm",        "256bit"                } },
-        { { ' ', "pj"   },      { "mmx_xmm",    "mmx_xmm"               } },
-        { { ' ', "pjx"  },      { "ymm",        "256bit"                } },
-        { { ' ', "pk"   },      { "mmx_xmm",    "mmx_xmm"               } },
-        { { ' ', "pkx"  },      { "ymm",        "256bit"                } },
-        { { ' ', "pq"   },      { "mmx_xmm",    "mmx_xmm"               } },
-        { { ' ', "pqw"  },      { "mmx_xmm",    "mmx_xmm"               } },
-        { { ' ', "pqwx" },      { "ymm",        "256bit"                } },
-        { { ' ', "pqx"  },      { "ymm",        "256bit"                } },
-        { { ' ', "ps"   },      { "mmx_xmm",    "mmx_xmm"               } },
-        { { ' ', "psx"  },      { "ymm",        "256bit"                } },
-        { { ' ', "pw"   },      { "mmx_xmm",    "mmx_xmm"               } },
-        { { ' ', "pwx"  },      { "ymm",        "256bit"                } },
-        { { ' ', "q"    },      { "64bit",      "64bit"                 } },
-        { { 'N', "q"    },      { "mmx",        "64bit"                 } },
-        { { 'P', "q"    },      { "mmx",        "64bit"                 } },
-        { { 'Q', "q"    },      { "mmx",        "64bit"                 } },
-        { { 'U', "q"    },      { "xmm",        "64bit"                 } },
-        { { 'V', "q"    },      { "xmm",        "64bit"                 } },
-        { { 'W', "q"    },      { "xmm",        "64bit"                 } },
-        { { ' ', "r"    },      { "regsize",    "regsize"               } },
-        { { 'C', "r"    },      { "creg",       nullptr                 } },
-        { { 'D', "r"    },      { "dreg",       nullptr                 } },
-        { { ' ', "s"    },      { nullptr,      "selector"              } },
-        { { ' ', "sb"   },      { nullptr,      "x87_bcd"               } },
-        { { ' ', "sd"   },      { nullptr,      "float64bit"            } },
-        { { 'H', "sd"   },      { "xmm",        "float64bit"            } },
-        { { 'L', "sd"   },      { "xmm",        "float64bit"            } },
-        { { 'U', "sd"   },      { "xmm",        "float64bit"            } },
-        { { 'V', "sd"   },      { "xmm",        "float64bit"            } },
-        { { 'W', "sd"   },      { "xmm",        "float64bit"            } },
-        { { ' ', "se"   },      { nullptr,      "x87_env"               } },
-        { { ' ', "si"   },      { nullptr,      "x87_32bit"             } },
-        { { ' ', "sq"   },      { nullptr,      "x87_64bit"             } },
-        { { ' ', "sr"   },      { nullptr,      "x87_state"             } },
-        { { ' ', "ss"   },      { nullptr,      "float32bit"            } },
-        { { 'H', "ss"   },      { "xmm",        "float32bit"            } },
-        { { 'L', "ss"   },      { "xmm",        "float32bit"            } },
-        { { 'U', "ss"   },      { "xmm",        "float32bit"            } },
-        { { 'V', "ss"   },      { "xmm",        "float32bit"            } },
-        { { 'W', "ss"   },      { "xmm",        "float32bit"            } },
-        { { ' ', "st"   },      { nullptr,      "float80bit"            } },
-        { { ' ', "sw"   },      { nullptr,      "x87_16bit"             } },
-        { { ' ', "sx"   },      { nullptr,      "x87_mmx_xmm_state"     } },
-        { { ' ', "w"    },      { "16bit",      "16bit"                 } },
-        { { 'S', "w"    },      { "segreg",     nullptr                 } },
-        { { ' ', "x"    },      { "ymm",        "256bit"                } },
+        { { ' ', ""     },      { "xmm",                "128bit"            } },
+        { { ' ', "2"    },      { "2bit",               (const char *)NULL  } },
+        { { ' ', "7"    },      { "x87",                (const char *)NULL  } },
+        { { ' ', "b"    },      { "8bit",               "8bit"              } },
+        { { ' ', "d"    },      { "32bit",              "32bit"             } },
+        { { ' ', "do"   },      { "ymm",                "256bit"            } },
+        { { ' ', "dq"   },      { "xmm",                "128bit"            } },
+        { { ' ', "fq"   },      { "ymm",                "256bit"            } },
+        { { ' ', "o"    },      { "xmm",                "128bit"            } },
+        { { ' ', "p"    },      { (const char *)NULL,   "farptr"            } },
+        { { ' ', "pb"   },      { "mmx_xmm",            "mmx_xmm"           } },
+        { { ' ', "pd"   },      { "mmx_xmm",            "mmx_xmm"           } },
+        { { ' ', "pdw"  },      { "mmx_xmm",            "mmx_xmm"           } },
+        { { ' ', "pdwx" },      { "ymm",                "256bit"            } },
+        { { ' ', "pdx"  },      { "ymm",                "256bit"            } },
+        { { ' ', "ph"   },      { "mmx_xmm",            "mmx_xmm"           } },
+        { { ' ', "phx"  },      { "ymm",                "256bit"            } },
+        { { ' ', "pi"   },      { "mmx_xmm",            "mmx_xmm"           } },
+        { { ' ', "pix"  },      { "ymm",                "256bit"            } },
+        { { ' ', "pj"   },      { "mmx_xmm",            "mmx_xmm"           } },
+        { { ' ', "pjx"  },      { "ymm",                "256bit"            } },
+        { { ' ', "pk"   },      { "mmx_xmm",            "mmx_xmm"           } },
+        { { ' ', "pkx"  },      { "ymm",                "256bit"            } },
+        { { ' ', "pq"   },      { "mmx_xmm",            "mmx_xmm"           } },
+        { { ' ', "pqw"  },      { "mmx_xmm",            "mmx_xmm"           } },
+        { { ' ', "pqwx" },      { "ymm",                "256bit"            } },
+        { { ' ', "pqx"  },      { "ymm",                "256bit"            } },
+        { { ' ', "ps"   },      { "mmx_xmm",            "mmx_xmm"           } },
+        { { ' ', "psx"  },      { "ymm",                "256bit"            } },
+        { { ' ', "pw"   },      { "mmx_xmm",            "mmx_xmm"           } },
+        { { ' ', "pwx"  },      { "ymm",                "256bit"            } },
+        { { ' ', "q"    },      { "64bit",              "64bit"             } },
+        { { 'N', "q"    },      { "mmx",                "64bit"             } },
+        { { 'P', "q"    },      { "mmx",                "64bit"             } },
+        { { 'Q', "q"    },      { "mmx",                "64bit"             } },
+        { { 'U', "q"    },      { "xmm",                "64bit"             } },
+        { { 'V', "q"    },      { "xmm",                "64bit"             } },
+        { { 'W', "q"    },      { "xmm",                "64bit"             } },
+        { { ' ', "r"    },      { "regsize",            "regsize"           } },
+        { { 'C', "r"    },      { "creg",               (const char *)NULL  } },
+        { { 'D', "r"    },      { "dreg",               (const char *)NULL  } },
+        { { ' ', "s"    },      { (const char *)NULL,   "selector"          } },
+        { { ' ', "sb"   },      { (const char *)NULL,   "x87_bcd"           } },
+        { { ' ', "sd"   },      { (const char *)NULL,   "float64bit"        } },
+        { { 'H', "sd"   },      { "xmm",                "float64bit"        } },
+        { { 'L', "sd"   },      { "xmm",                "float64bit"        } },
+        { { 'U', "sd"   },      { "xmm",                "float64bit"        } },
+        { { 'V', "sd"   },      { "xmm",                "float64bit"        } },
+        { { 'W', "sd"   },      { "xmm",                "float64bit"        } },
+        { { ' ', "se"   },      { (const char *)NULL,   "x87_env"           } },
+        { { ' ', "si"   },      { (const char *)NULL,   "x87_32bit"         } },
+        { { ' ', "sq"   },      { (const char *)NULL,   "x87_64bit"         } },
+        { { ' ', "sr"   },      { (const char *)NULL,   "x87_state"         } },
+        { { ' ', "ss"   },      { (const char *)NULL,   "float32bit"        } },
+        { { 'H', "ss"   },      { "xmm",                "float32bit"        } },
+        { { 'L', "ss"   },      { "xmm",                "float32bit"        } },
+        { { 'U', "ss"   },      { "xmm",                "float32bit"        } },
+        { { 'V', "ss"   },      { "xmm",                "float32bit"        } },
+        { { 'W', "ss"   },      { "xmm",                "float32bit"        } },
+        { { ' ', "st"   },      { (const char *)NULL,   "float80bit"        } },
+        { { ' ', "sw"   },      { (const char *)NULL,   "x87_16bit"         } },
+        { { ' ', "sx"   },      { (const char *)NULL,   "x87_mmx_xmm_state" } },
+        { { ' ', "w"    },      { "16bit",              "16bit"             } },
+        { { 'S', "w"    },      { "segreg",             (const char *)NULL  } },
+        { { ' ', "x"    },      { "ymm",                "256bit"            } },
       };
       auto it = operand_sizes.find(make_pair(operand.source, operand.size));
-      if (it == end(operand_sizes))
+      if (it == operand_sizes.end())
         it = operand_sizes.find(make_pair(' ', operand.size));
-      if (it != end(operand_sizes)) {
+      if (it != operand_sizes.end()) {
         bool memory_operand = memory_access &&
                               (operand.source == 'E' ||
                                operand.source == 'M' ||
@@ -1726,7 +1709,7 @@ namespace {
         auto operand_size = memory_operand ?
                               it->second.second : /* Memory size.   */
                               it->second.first;   /* Register size. */
-        if (operand_size != nullptr) {
+        if (operand_size != NULL) {
           if (strcmp(operand_size, "mmx_xmm") == 0) {
             static const std::map<char, const char*> mmx_xmm_sizes {
               { 'a',    "xmm"           }, /* %xmm0 */
@@ -1741,7 +1724,7 @@ namespace {
               { 'W',    "xmm"           }
             };
             auto it_mmx_xmm = mmx_xmm_sizes.find(operand.source);
-            if (it_mmx_xmm != end(mmx_xmm_sizes))
+            if (it_mmx_xmm != mmx_xmm_sizes.end())
               operand_size = it_mmx_xmm->second;
             else
               fprintf(stderr,
@@ -1792,8 +1775,8 @@ namespace {
     bool modrm_register = false;
     char operand_source = ' ';
     const auto& operands = instruction.get_operands();
-    for (auto operand_it = begin(operands);
-         operand_it != end(operands); ++operand_it) {
+    for (auto operand_it = operands.begin();
+         operand_it != operands.end(); ++operand_it) {
       auto& operand = *operand_it;
       static std::map<char, std::pair<bool, bool> > operand_map {
         { 'E', std::make_pair(true,  true)  },
@@ -1805,7 +1788,7 @@ namespace {
         { 'W', std::make_pair(true,  true)  }
       };
       auto it = operand_map.find(operand.source);
-      if (it != end(operand_map)) {
+      if (it != operand_map.end()) {
         if ((modrm_memory || modrm_register) &&
             ((modrm_memory != it->second.first) ||
              (modrm_register != it->second.second)))
@@ -1839,21 +1822,21 @@ namespace {
      If there are no “L” bit then it just calls print_one_size_definition  */
   void print_instruction_px(const MarkedInstruction& instruction) {
     auto operands = instruction.get_operands();
-    for (auto operand_it = begin(operands);
-         operand_it != end(operands); ++operand_it) {
+    for (auto operand_it = operands.begin();
+         operand_it != operands.end(); ++operand_it) {
       auto& operand = *operand_it;
       if ((*operand.size.rbegin() == 'x') &&
-          ((operand.size.length() == 1) || (*begin(operand.size) == 'p'))) {
-        for (auto operand_it = begin(operands);
-             operand_it != end(operands); ++operand_it) {
+          ((operand.size.length() == 1) || (*operand.size.begin() == 'p'))) {
+        for (auto operand_it = operands.begin();
+             operand_it != operands.end(); ++operand_it) {
           auto& operand = *operand_it;
           if ((*operand.size.rbegin() == 'x') &&
-              ((operand.size.length() == 1) || (*begin(operand.size) == 'p')))
+              ((operand.size.length() == 1) || (*operand.size.begin() == 'p')))
             operand.size.resize(operand.size.length() - 1);
         }
         auto opcodes = instruction.get_opcodes();
-        for (auto opcode_it = begin(opcodes);
-               opcode_it != end(opcodes); ++opcode_it) {
+        for (auto opcode_it = opcodes.begin();
+               opcode_it != opcodes.end(); ++opcode_it) {
           auto& opcode = *opcode_it;
           auto Lbit = opcode.find(".L.");
           if (Lbit != opcode.npos) {
@@ -1882,8 +1865,8 @@ namespace {
      “rexw” pseudo-prefix is used then this second call does not happen.  */
   void print_instruction_vyz(const MarkedInstruction& instruction) {
     const auto& operands = instruction.get_operands();
-    for (auto operand_it = begin(operands);
-         operand_it != end(operands); ++operand_it) {
+    for (auto operand_it = operands.begin();
+         operand_it != operands.end(); ++operand_it) {
       auto& operand = *operand_it;
       if (operand.size == "v" || operand.size == "z") {
         print_instruction_px(instruction.add_requred_prefix("data16"));
@@ -1895,8 +1878,8 @@ namespace {
         return;
       }
     }
-    for (auto operand_it = begin(operands);
-         operand_it != end(operands); ++operand_it) {
+    for (auto operand_it = operands.begin();
+         operand_it != operands.end(); ++operand_it) {
       auto& operand = *operand_it;
       if (operand.size == "y" ||
           (operand.source == 'S' && operand.size == "w")) {
@@ -1910,7 +1893,7 @@ namespace {
     const auto& required_prefixes = instruction.get_required_prefixes();
     if (!instruction.has_flag("norex") && !instruction.has_flag("norexw") &&
         !instruction.get_rex().w &&
-        required_prefixes.find("data16") == end(required_prefixes))
+        required_prefixes.find("data16") == required_prefixes.end())
       print_instruction_px(instruction.set_rex_w());
   }
 
@@ -1921,21 +1904,21 @@ namespace {
      are processed as two separate instructions—once as 8bit operand and once
      as 16bit/32bit/64bit operand (16bit/32bit for immediates).  */
   void print_one_instruction_definition(void) {
-    for (auto instruction_it = begin(instructions);
-         instruction_it != end(instructions); ++instruction_it) {
+    for (auto instruction_it = instructions.begin();
+         instruction_it != instructions.end(); ++instruction_it) {
       auto& instruction = *instruction_it;
       MarkedInstruction marked_instruction(instruction);
       auto operands = marked_instruction.get_operands();
       bool found_operand_with_empty_size = false;
-      for (auto it = begin(operands); it != end(operands); ++it) {
+      for (auto it = operands.begin(); it != operands.end(); ++it) {
         if (it->size == "") {
           found_operand_with_empty_size = true;
           break;
         }
       }
       if (found_operand_with_empty_size) {
-        for (auto operand_it = begin(operands);
-             operand_it != end(operands); ++operand_it) {
+        for (auto operand_it = operands.begin();
+             operand_it != operands.end(); ++operand_it) {
           auto& operand = *operand_it;
           if (operand.size == "") operand.size = "b";
         }
@@ -1948,8 +1931,8 @@ namespace {
             break;
           }
         operands = marked_instruction.get_operands();
-        for (auto operand_it = begin(operands);
-             operand_it != end(operands); ++operand_it) {
+        for (auto operand_it = operands.begin();
+             operand_it != operands.end(); ++operand_it) {
           auto& operand = *operand_it;
           if (operand.size == "") {
             if (operand.source == 'I')
