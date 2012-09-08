@@ -149,12 +149,14 @@ class ThumbnailDatabase {
                         IconType* icon_type,
                         FaviconSizes* favicon_sizes);
 
-  // Adds favicon with |icon_url| and |icon_type| to the favicon db, returning
-  // its id.
-  FaviconID AddFavicon(const GURL& icon_url, IconType icon_type);
+  // Adds favicon with |icon_url|, |icon_type| and |favicon_sizes| to the
+  // favicon db, returning its id.
+  FaviconID AddFavicon(const GURL& icon_url,
+                       IconType icon_type,
+                       const FaviconSizes& favicon_sizes);
 
   // Adds a favicon with a single bitmap. This call is equivalent to calling
-  // AddFavicon, SetFaviconSizes, and AddFaviconBitmap.
+  // AddFavicon and AddFaviconBitmap.
   FaviconID AddFavicon(const GURL& icon_url,
                        IconType icon_type,
                        const FaviconSizes& favicon_sizes,

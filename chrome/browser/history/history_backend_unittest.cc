@@ -208,6 +208,14 @@ class HistoryBackendTest : public testing::Test {
     return test_dir_;
   }
 
+  // Returns a gfx::Size vector with small and large sizes.
+  const std::vector<gfx::Size> GetSizesSmallAndLarge() {
+    std::vector<gfx::Size> sizes_small_and_large;
+    sizes_small_and_large.push_back(kSmallSize);
+    sizes_small_and_large.push_back(kLargeSize);
+    return sizes_small_and_large;
+  }
+
   FaviconID GetFavicon(const GURL& url, IconType icon_type) {
     std::vector<IconMapping> icon_mappings;
     if (backend_->thumbnail_db_->GetIconMappingsForPageURL(url, icon_type,
@@ -236,6 +244,7 @@ class HistoryBackendTest : public testing::Test {
                                   &bookmark_model_);
     backend_->Init(std::string(), false);
   }
+
   virtual void TearDown() {
     if (backend_.get())
       backend_->Closing();
@@ -249,7 +258,7 @@ class HistoryBackendTest : public testing::Test {
   }
 
   void BroadcastNotifications(int type,
-                                      HistoryDetails* details) {
+                              HistoryDetails* details) {
     // Send the notifications directly to the in-memory database.
     content::Details<HistoryDetails> det(details);
     mem_backend_->Observe(type, content::Source<HistoryBackendTest>(NULL), det);
@@ -304,9 +313,9 @@ TEST_F(HistoryBackendTest, DeleteAll) {
   GURL favicon_url1("http://www.google.com/favicon.ico");
   GURL favicon_url2("http://news.google.com/favicon.ico");
   FaviconID favicon2 = backend_->thumbnail_db_->AddFavicon(favicon_url2,
-                                                           FAVICON);
+      FAVICON, GetSizesSmallAndLarge());
   FaviconID favicon1 = backend_->thumbnail_db_->AddFavicon(favicon_url1,
-                                                           FAVICON);
+      FAVICON, GetSizesSmallAndLarge());
 
   std::vector<unsigned char> data;
   data.push_back('a');

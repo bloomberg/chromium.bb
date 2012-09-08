@@ -575,12 +575,16 @@ bool ThumbnailDatabase::GetFaviconHeader(
 }
 
 FaviconID ThumbnailDatabase::AddFavicon(const GURL& icon_url,
-                                        IconType icon_type) {
+                                        IconType icon_type,
+                                        const FaviconSizes& favicon_sizes) {
+  std::string favicon_sizes_as_string;
+  FaviconSizesToDatabaseString(favicon_sizes, &favicon_sizes_as_string);
 
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
-      "INSERT INTO favicons (url, icon_type) VALUES (?, ?)"));
+      "INSERT INTO favicons (url, icon_type, sizes) VALUES (?, ?, ?)"));
   statement.BindString(0, URLDatabase::GURLToDatabaseURL(icon_url));
   statement.BindInt(1, icon_type);
+  statement.BindString(2, favicon_sizes_as_string);
 
   if (!statement.Run())
     return 0;
@@ -594,12 +598,10 @@ FaviconID ThumbnailDatabase::AddFavicon(
     const scoped_refptr<base::RefCountedMemory>& icon_data,
     base::Time time,
     const gfx::Size& pixel_size) {
-  FaviconID icon_id = AddFavicon(icon_url, icon_type);
-  if (!icon_id ||
-      !SetFaviconSizes(icon_id, favicon_sizes) ||
-      !AddFaviconBitmap(icon_id, icon_data, time, pixel_size)) {
+  FaviconID icon_id = AddFavicon(icon_url, icon_type, favicon_sizes);
+  if (!icon_id || !AddFaviconBitmap(icon_id, icon_data, time, pixel_size))
     return 0;
-  }
+
   return icon_id;
 }
 
@@ -632,6 +634,12 @@ bool ThumbnailDatabase::GetIconMappingsForPageURL(
       result = true;
       if (!filtered_mapping_data)
         return result;
+
+      // Restrict icon type of subsequent matches to |m->icon_type|.
+      // |m->icon_type| is the largest IconType in |mapping_data| because
+      // |mapping_data| is sorted in descending order of IconType.
+      required_icon_types = m->icon_type;
+
       filtered_mapping_data->push_back(*m);
     }
   }

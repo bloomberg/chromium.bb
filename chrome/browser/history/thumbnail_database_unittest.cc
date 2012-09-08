@@ -70,13 +70,11 @@ class ThumbnailDatabaseTest : public testing::Test {
         gfx::JPEGCodec::Decode(kGoogleThumbnail, sizeof(kGoogleThumbnail)));
   }
 
-  const FaviconSizes& GetFaviconSizesSmallAndLarge() {
-    CR_DEFINE_STATIC_LOCAL(FaviconSizes, kSizesSmallAndLarge, ());
-    if (kSizesSmallAndLarge.empty()) {
-      kSizesSmallAndLarge.push_back(kSmallSize);
-      kSizesSmallAndLarge.push_back(kLargeSize);
-    }
-    return kSizesSmallAndLarge;
+  const FaviconSizes GetFaviconSizesSmallAndLarge() {
+    FaviconSizes sizes_small_and_large;
+    sizes_small_and_large.push_back(kSmallSize);
+    sizes_small_and_large.push_back(kLargeSize);
+    return sizes_small_and_large;
   }
 
   scoped_ptr<SkBitmap> google_bitmap_;
@@ -131,8 +129,8 @@ TEST_F(ThumbnailDatabaseTest, GetFaviconAfterMigrationToTopSites) {
   scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
 
   GURL url("http://google.com");
-  FaviconID icon_id = db.AddFavicon(url, FAVICON);
-  db.SetFaviconSizes(icon_id, GetFaviconSizesSmallAndLarge());
+  FaviconID icon_id = db.AddFavicon(url, FAVICON,
+                                    GetFaviconSizesSmallAndLarge());
   base::Time time = base::Time::Now();
   FaviconBitmapID bitmap1_id = db.AddFaviconBitmap(icon_id, favicon, time,
                                                    kSmallSize);
@@ -195,10 +193,10 @@ TEST_F(ThumbnailDatabaseTest, AddIconMapping) {
   scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
 
   GURL url("http://google.com");
-  FaviconID id = db.AddFavicon(url, TOUCH_ICON);
-  EXPECT_NE(0, id);
   base::Time time = base::Time::Now();
-  db.AddFaviconBitmap(id, favicon, time, gfx::Size());
+  FaviconID id = db.AddFavicon(url, TOUCH_ICON, GetDefaultFaviconSizes(),
+                               favicon, time, gfx::Size());
+  EXPECT_NE(0, id);
 
   EXPECT_NE(0, db.AddIconMapping(url, id));
   std::vector<IconMapping> icon_mappings;
@@ -213,13 +211,8 @@ TEST_F(ThumbnailDatabaseTest, UpdateIconMapping) {
   ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
   db.BeginTransaction();
 
-  std::vector<unsigned char> data(blob1, blob1 + sizeof(blob1));
-  scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
-
   GURL url("http://google.com");
-  FaviconID id = db.AddFavicon(url, TOUCH_ICON);
-  base::Time time = base::Time::Now();
-  db.AddFaviconBitmap(id, favicon, time, gfx::Size());
+  FaviconID id = db.AddFavicon(url, TOUCH_ICON, GetDefaultFaviconSizes());
 
   EXPECT_TRUE(0 < db.AddIconMapping(url, id));
   std::vector<IconMapping> icon_mapping;
@@ -229,7 +222,7 @@ TEST_F(ThumbnailDatabaseTest, UpdateIconMapping) {
   EXPECT_EQ(id, icon_mapping.front().icon_id);
 
   GURL url1("http://www.google.com/");
-  FaviconID new_id = db.AddFavicon(url1, TOUCH_ICON);
+  FaviconID new_id = db.AddFavicon(url1, TOUCH_ICON, GetDefaultFaviconSizes());
   EXPECT_TRUE(db.UpdateIconMapping(icon_mapping.front().mapping_id, new_id));
 
   icon_mapping.clear();
@@ -249,13 +242,12 @@ TEST_F(ThumbnailDatabaseTest, DeleteIconMappings) {
   scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
 
   GURL url("http://google.com");
-  FaviconID id = db.AddFavicon(url, TOUCH_ICON);
+  FaviconID id = db.AddFavicon(url, TOUCH_ICON, GetDefaultFaviconSizes());
   base::Time time = base::Time::Now();
   db.AddFaviconBitmap(id, favicon, time, gfx::Size());
   EXPECT_TRUE(0 < db.AddIconMapping(url, id));
 
-  FaviconID id2 = db.AddFavicon(url, FAVICON);
-  db.AddFaviconBitmap(id2, favicon, time, gfx::Size());
+  FaviconID id2 = db.AddFavicon(url, FAVICON, GetDefaultFaviconSizes());
   EXPECT_TRUE(0 < db.AddIconMapping(url, id2));
   ASSERT_NE(id, id2);
 
@@ -281,13 +273,14 @@ TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURL) {
 
   GURL url("http://google.com");
 
-  FaviconID id1 = db.AddFavicon(url, TOUCH_ICON);
+  FaviconID id1 = db.AddFavicon(url, TOUCH_ICON,
+                                GetFaviconSizesSmallAndLarge());
   base::Time time = base::Time::Now();
   db.AddFaviconBitmap(id1, favicon, time, kSmallSize);
   db.AddFaviconBitmap(id1, favicon, time, kLargeSize);
   EXPECT_TRUE(0 < db.AddIconMapping(url, id1));
 
-  FaviconID id2 = db.AddFavicon(url, FAVICON);
+  FaviconID id2 = db.AddFavicon(url, FAVICON, GetFaviconSizesSmallAndLarge());
   EXPECT_NE(id1, id2);
   db.AddFaviconBitmap(id2, favicon, time, kSmallSize);
   EXPECT_TRUE(0 < db.AddIconMapping(url, id2));
@@ -450,11 +443,13 @@ TEST_F(ThumbnailDatabaseTest, TemporaryTables) {
   scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
 
   GURL unkept_url("http://google.com/favicon2.ico");
-  FaviconID unkept_id = db.AddFavicon(unkept_url, FAVICON);
+  FaviconID unkept_id = db.AddFavicon(unkept_url, FAVICON,
+                                      GetFaviconSizesSmallAndLarge());
   db.AddFaviconBitmap(unkept_id, favicon, base::Time::Now(), kSmallSize);
 
   GURL kept_url("http://google.com/favicon.ico");
-  FaviconID kept_id = db.AddFavicon(kept_url, FAVICON);
+  FaviconID kept_id = db.AddFavicon(kept_url, FAVICON,
+                                    GetFaviconSizesSmallAndLarge());
   db.AddFaviconBitmap(kept_id, favicon, base::Time::Now(), kLargeSize);
 
   GURL page_url("http://google.com");
@@ -498,7 +493,7 @@ TEST_F(ThumbnailDatabaseTest, DeleteFavicon) {
       new base::RefCountedBytes(data2));
 
   GURL url("http://google.com");
-  FaviconID id = db.AddFavicon(url, FAVICON);
+  FaviconID id = db.AddFavicon(url, FAVICON, GetFaviconSizesSmallAndLarge());
   base::Time last_updated = base::Time::Now();
   db.AddFaviconBitmap(id, favicon1, last_updated, kSmallSize);
   db.AddFaviconBitmap(id, favicon2, last_updated, kLargeSize);
@@ -518,49 +513,50 @@ TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURLForReturnOrder) {
   std::vector<unsigned char> data(blob1, blob1 + sizeof(blob1));
   scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
 
-  GURL url("http://google.com");
-  FaviconID id = db.AddFavicon(url, FAVICON);
+  GURL page_url("http://google.com");
+  GURL icon_url("http://google.com/favicon.ico");
   base::Time time = base::Time::Now();
-  db.AddFaviconBitmap(id, favicon, time, gfx::Size());
 
-  EXPECT_NE(0, db.AddIconMapping(url, id));
-  std::vector<IconMapping> icon_mapping;
-  EXPECT_TRUE(db.GetIconMappingsForPageURL(url, &icon_mapping));
+  FaviconID id = db.AddFavicon(icon_url, FAVICON, GetDefaultFaviconSizes(),
+      favicon, time, gfx::Size());
+  EXPECT_NE(0, db.AddIconMapping(page_url, id));
+  std::vector<IconMapping> icon_mappings;
+  EXPECT_TRUE(db.GetIconMappingsForPageURL(page_url, &icon_mappings));
 
-  EXPECT_EQ(url, icon_mapping.front().page_url);
-  EXPECT_EQ(id, icon_mapping.front().icon_id);
-  EXPECT_EQ(FAVICON, icon_mapping.front().icon_type);
+  EXPECT_EQ(page_url, icon_mappings.front().page_url);
+  EXPECT_EQ(id, icon_mappings.front().icon_id);
+  EXPECT_EQ(FAVICON, icon_mappings.front().icon_type);
 
   // Add a touch icon
   std::vector<unsigned char> data2(blob2, blob2 + sizeof(blob2));
   scoped_refptr<base::RefCountedBytes> favicon2 =
       new base::RefCountedBytes(data);
 
-  FaviconID id2 = db.AddFavicon(url, TOUCH_ICON);
-  db.AddFaviconBitmap(id2, favicon2, time, gfx::Size());
-  EXPECT_NE(0, db.AddIconMapping(url, id2));
+  FaviconID id2 = db.AddFavicon(icon_url, TOUCH_ICON,
+      GetDefaultFaviconSizes(), favicon2, time, gfx::Size());
+  EXPECT_NE(0, db.AddIconMapping(page_url, id2));
 
-  icon_mapping.clear();
-  EXPECT_TRUE(db.GetIconMappingsForPageURL(url, &icon_mapping));
+  icon_mappings.clear();
+  EXPECT_TRUE(db.GetIconMappingsForPageURL(page_url, &icon_mappings));
 
-  EXPECT_EQ(url, icon_mapping.front().page_url);
-  EXPECT_EQ(id2, icon_mapping.front().icon_id);
-  EXPECT_EQ(TOUCH_ICON, icon_mapping.front().icon_type);
+  EXPECT_EQ(page_url, icon_mappings.front().page_url);
+  EXPECT_EQ(id2, icon_mappings.front().icon_id);
+  EXPECT_EQ(TOUCH_ICON, icon_mappings.front().icon_type);
 
   // Add a touch precomposed icon
   scoped_refptr<base::RefCountedBytes> favicon3 =
       new base::RefCountedBytes(data2);
 
-  FaviconID id3 = db.AddFavicon(url, TOUCH_PRECOMPOSED_ICON);
-  db.AddFaviconBitmap(id3, favicon3, time, gfx::Size());
-  EXPECT_NE(0, db.AddIconMapping(url, id3));
+  FaviconID id3 = db.AddFavicon(icon_url, TOUCH_PRECOMPOSED_ICON,
+      GetDefaultFaviconSizes(), favicon3, time, gfx::Size());
+  EXPECT_NE(0, db.AddIconMapping(page_url, id3));
 
-  icon_mapping.clear();
-  EXPECT_TRUE(db.GetIconMappingsForPageURL(url, &icon_mapping));
+  icon_mappings.clear();
+  EXPECT_TRUE(db.GetIconMappingsForPageURL(page_url, &icon_mappings));
 
-  EXPECT_EQ(url, icon_mapping.front().page_url);
-  EXPECT_EQ(id3, icon_mapping.front().icon_id);
-  EXPECT_EQ(TOUCH_PRECOMPOSED_ICON, icon_mapping.front().icon_type);
+  EXPECT_EQ(page_url, icon_mappings.front().page_url);
+  EXPECT_EQ(id3, icon_mappings.front().icon_id);
+  EXPECT_EQ(TOUCH_PRECOMPOSED_ICON, icon_mappings.front().icon_type);
 }
 
 // Test result of GetIconMappingsForPageURL when an icon type is passed in.
@@ -582,17 +578,39 @@ TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURLWithIconType) {
                                 favicon, time, gfx::Size());
   EXPECT_NE(0, db.AddIconMapping(url, id2));
 
+  FaviconID id3 = db.AddFavicon(url, TOUCH_ICON, GetDefaultFaviconSizes(),
+                                favicon, time, gfx::Size());
+  EXPECT_NE(0, db.AddIconMapping(url, id3));
+
+  // Only the mappings for favicons of type TOUCH_ICON should be returned as
+  // TOUCH_ICON is a larger icon type than FAVICON.
   std::vector<IconMapping> icon_mappings;
-  EXPECT_TRUE(db.GetIconMappingsForPageURL(url, FAVICON | TOUCH_ICON,
-                                           &icon_mappings));
+  EXPECT_TRUE(db.GetIconMappingsForPageURL(
+      url,
+      FAVICON | TOUCH_ICON | TOUCH_PRECOMPOSED_ICON,
+      &icon_mappings));
+
   EXPECT_EQ(2u, icon_mappings.size());
-  EXPECT_EQ(id2, icon_mappings[0].icon_id);
-  EXPECT_EQ(id1, icon_mappings[1].icon_id);
+  if (id2 == icon_mappings[0].icon_id) {
+    EXPECT_EQ(id3, icon_mappings[1].icon_id);
+  } else {
+    EXPECT_EQ(id3, icon_mappings[0].icon_id);
+    EXPECT_EQ(id2, icon_mappings[1].icon_id);
+  }
 
   icon_mappings.clear();
   EXPECT_TRUE(db.GetIconMappingsForPageURL(url, TOUCH_ICON, &icon_mappings));
+  if (id2 == icon_mappings[0].icon_id) {
+    EXPECT_EQ(id3, icon_mappings[1].icon_id);
+  } else {
+    EXPECT_EQ(id3, icon_mappings[0].icon_id);
+    EXPECT_EQ(id2, icon_mappings[1].icon_id);
+  }
+
+  icon_mappings.clear();
+  EXPECT_TRUE(db.GetIconMappingsForPageURL(url, FAVICON, &icon_mappings));
   EXPECT_EQ(1u, icon_mappings.size());
-  EXPECT_EQ(id2, icon_mappings[0].icon_id);
+  EXPECT_EQ(id1, icon_mappings[0].icon_id);
 }
 
 TEST_F(ThumbnailDatabaseTest, HasMappingFor) {
@@ -604,22 +622,22 @@ TEST_F(ThumbnailDatabaseTest, HasMappingFor) {
   scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
 
   // Add a favicon which will have icon_mappings
-  FaviconID id1 = db.AddFavicon(GURL("http://google.com"), FAVICON);
-  EXPECT_NE(id1, 0);
   base::Time time = base::Time::Now();
-  db.AddFaviconBitmap(id1, favicon, time, gfx::Size());
+  FaviconID id1 = db.AddFavicon(GURL("http://google.com"), FAVICON,
+      GetDefaultFaviconSizes(), favicon, time, gfx::Size());
+  EXPECT_NE(id1, 0);
 
   // Add another type of favicon
-  FaviconID id2 = db.AddFavicon(GURL("http://www.google.com/icon"), TOUCH_ICON);
-  EXPECT_NE(id2, 0);
   time = base::Time::Now();
-  db.AddFaviconBitmap(id2, favicon, time, gfx::Size());
+  FaviconID id2 = db.AddFavicon(GURL("http://www.google.com/icon"), TOUCH_ICON,
+      GetDefaultFaviconSizes(), favicon, time, gfx::Size());
+  EXPECT_NE(id2, 0);
 
   // Add 3rd favicon
-  FaviconID id3 = db.AddFavicon(GURL("http://www.google.com/icon"), TOUCH_ICON);
-  EXPECT_NE(id3, 0);
   time = base::Time::Now();
-  db.AddFaviconBitmap(id3, favicon, time, gfx::Size());
+  FaviconID id3 = db.AddFavicon(GURL("http://www.google.com/icon"), TOUCH_ICON,
+      GetDefaultFaviconSizes(), favicon, time, gfx::Size());
+  EXPECT_NE(id3, 0);
 
   // Add 2 icon mapping
   GURL page_url("http://www.google.com");
@@ -646,19 +664,22 @@ TEST_F(ThumbnailDatabaseTest, CloneIconMappings) {
   scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
 
   // Add a favicon which will have icon_mappings
-  FaviconID id1 = db.AddFavicon(GURL("http://google.com"), FAVICON);
+  FaviconID id1 = db.AddFavicon(GURL("http://google.com"), FAVICON,
+                                GetDefaultFaviconSizes());
   EXPECT_NE(0, id1);
   base::Time time = base::Time::Now();
   db.AddFaviconBitmap(id1, favicon, time, gfx::Size());
 
   // Add another type of favicon
-  FaviconID id2 = db.AddFavicon(GURL("http://www.google.com/icon"), TOUCH_ICON);
+  FaviconID id2 = db.AddFavicon(GURL("http://www.google.com/icon"), TOUCH_ICON,
+                                GetDefaultFaviconSizes());
   EXPECT_NE(0, id2);
   time = base::Time::Now();
   db.AddFaviconBitmap(id2, favicon, time, gfx::Size());
 
   // Add 3rd favicon
-  FaviconID id3 = db.AddFavicon(GURL("http://www.google.com/icon"), TOUCH_ICON);
+  FaviconID id3 = db.AddFavicon(GURL("http://www.google.com/icon"), TOUCH_ICON,
+                                GetDefaultFaviconSizes());
   EXPECT_NE(0, id3);
   time = base::Time::Now();
   db.AddFaviconBitmap(id3, favicon, time, gfx::Size());
@@ -760,25 +781,24 @@ TEST_F(ThumbnailDatabaseTest, IconMappingEnumerator) {
   scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
 
   GURL url("http://google.com");
-  FaviconID touch_icon_id1 = db.AddFavicon(url, TOUCH_ICON);
+  GURL icon_url1("http://google.com/favicon.ico");
+  FaviconID touch_icon_id1 = db.AddFavicon(icon_url1, TOUCH_ICON,
+      GetDefaultFaviconSizes(), favicon, base::Time::Now(), gfx::Size());
   ASSERT_NE(0, touch_icon_id1);
-  ASSERT_TRUE(db.AddFaviconBitmap(touch_icon_id1, favicon, base::Time::Now(),
-                                  gfx::Size()));
   IconMappingID touch_mapping_id1 = db.AddIconMapping(url, touch_icon_id1);
   ASSERT_NE(0, touch_mapping_id1);
 
-  FaviconID favicon_id1 = db.AddFavicon(url, FAVICON);
+  FaviconID favicon_id1 = db.AddFavicon(icon_url1, FAVICON,
+      GetDefaultFaviconSizes(), favicon, base::Time::Now(), gfx::Size());
   ASSERT_NE(0, favicon_id1);
-  ASSERT_TRUE(db.AddFaviconBitmap(favicon_id1, favicon, base::Time::Now(),
-                                  gfx::Size()));
   IconMappingID favicon_mapping_id1 = db.AddIconMapping(url, favicon_id1);
   ASSERT_NE(0, favicon_mapping_id1);
 
   GURL url2("http://chromium.org");
-  FaviconID favicon_id2 = db.AddFavicon(url2, FAVICON);
+  GURL icon_url2("http://chromium.org/favicon.ico");
+  FaviconID favicon_id2 = db.AddFavicon(icon_url2, FAVICON,
+      GetDefaultFaviconSizes(), favicon, base::Time::Now(), gfx::Size());
   ASSERT_NE(0, favicon_id2);
-  ASSERT_TRUE(db.AddFaviconBitmap(favicon_id2, favicon, base::Time::Now(),
-                                  gfx::Size()));
   IconMappingID favicon_mapping_id2 = db.AddIconMapping(url2, favicon_id2);
   ASSERT_NE(0, favicon_mapping_id2);
 

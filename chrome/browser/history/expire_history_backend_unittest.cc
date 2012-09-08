@@ -205,9 +205,9 @@ void ExpireHistoryTest::AddExampleData(URLID url_ids[3], Time visit_times[4]) {
   // Two favicons. The first two URLs will share the same one, while the last
   // one will have a unique favicon.
   FaviconID favicon1 = thumb_db_->AddFavicon(GURL("http://favicon/url1"),
-                                             FAVICON);
+      FAVICON, GetDefaultFaviconSizes());
   FaviconID favicon2 = thumb_db_->AddFavicon(GURL("http://favicon/url2"),
-                                             FAVICON);
+      FAVICON, GetDefaultFaviconSizes());
 
   // Three URLs.
   URLRow url_row1(GURL("http://www.google.com/1"));
@@ -403,7 +403,8 @@ void ExpireHistoryTest::EnsureURLInfoGone(const URLRow& row) {
 TEST_F(ExpireHistoryTest, DeleteFaviconsIfPossible) {
   // Add a favicon record.
   const GURL favicon_url("http://www.google.com/favicon.ico");
-  FaviconID icon_id = thumb_db_->AddFavicon(favicon_url, FAVICON);
+  FaviconID icon_id = thumb_db_->AddFavicon(favicon_url, FAVICON,
+      GetDefaultFaviconSizes());
   EXPECT_TRUE(icon_id);
   EXPECT_TRUE(HasFavicon(icon_id));
 
@@ -414,7 +415,8 @@ TEST_F(ExpireHistoryTest, DeleteFaviconsIfPossible) {
   EXPECT_FALSE(HasFavicon(icon_id));
 
   // Add back the favicon.
-  icon_id = thumb_db_->AddFavicon(favicon_url, TOUCH_ICON);
+  icon_id = thumb_db_->AddFavicon(favicon_url, TOUCH_ICON,
+      GetDefaultFaviconSizes());
   EXPECT_TRUE(icon_id);
   EXPECT_TRUE(HasFavicon(icon_id));
 
