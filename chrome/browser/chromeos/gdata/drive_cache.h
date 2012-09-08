@@ -121,7 +121,7 @@ class DriveCache {
     virtual ~Observer() {}
   };
 
-  // Returns the sub-directory under gdata cache directory for the given sub
+  // Returns the sub-directory under drive cache directory for the given sub
   // directory type. Example:  <user_profile_dir>/GCache/v1/tmp
   //
   // Can be called on any thread.
@@ -135,7 +135,7 @@ class DriveCache {
                             CacheSubDirectoryType sub_dir_type,
                             CachedFileOrigin file_orign) const;
 
-  // Returns true if the given path is under gdata cache directory, i.e.
+  // Returns true if the given path is under drive cache directory, i.e.
   // <user_profile_dir>/GCache/v1
   //
   // Can be called on any thread.

@@ -77,7 +77,7 @@ class DriveFileSystemInterface {
   class Observer {
    public:
     // Triggered when a content of a directory has been changed.
-    // |directory_path| is a virtual directory path (/gdata/...) representing
+    // |directory_path| is a virtual directory path (/drive/...) representing
     // changed directory.
     virtual void OnDirectoryChanged(const FilePath& directory_path) {}
 

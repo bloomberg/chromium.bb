@@ -37,7 +37,7 @@ TEST(DriveFileSystemUtilTest, ExtractDrivePath) {
                 FilePath::FromUTF8Unsafe("/special/foo.txt")));
   EXPECT_EQ(FilePath(),
             ExtractDrivePath(
-                FilePath::FromUTF8Unsafe("/special/gdatax/foo.txt")));
+                FilePath::FromUTF8Unsafe("/special/drivex/foo.txt")));
 
   EXPECT_EQ(FilePath::FromUTF8Unsafe("drive"),
             ExtractDrivePath(

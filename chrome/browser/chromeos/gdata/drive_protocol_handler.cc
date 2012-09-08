@@ -117,15 +117,15 @@ void GetFileSystemOnUIThread(DriveFileSystemInterface** file_system) {
 }
 
 // Helper function to cancel Drive download operation on UI thread.
-void CancelDriveDownloadOnUIThread(const FilePath& gdata_file_path) {
+void CancelDriveDownloadOnUIThread(const FilePath& drive_file_path) {
   DriveSystemService* system_service = GetSystemService();
   if (system_service)
     system_service->drive_service()->operation_registry()->CancelForFilePath(
-        gdata_file_path);
+        drive_file_path);
 }
 
 // DriveURLRequesetJob is the gateway between network-level drive://...
-// requests for gdata resources and DriveFileSytem.  It exposes content URLs
+// requests for drive resources and DriveFileSytem.  It exposes content URLs
 // formatted as drive://<resource-id>.
 class DriveURLRequestJob : public net::URLRequestJob {
  public:
@@ -175,7 +175,7 @@ class DriveURLRequestJob : public net::URLRequestJob {
   // Helper callback for GetEntryInfoByResourceId invoked by StartAsync.
   void OnGetEntryInfoByResourceId(const std::string& resource_id,
                                   DriveFileError error,
-                                  const FilePath& gdata_file_path,
+                                  const FilePath& drive_file_path,
                                   scoped_ptr<DriveEntryProto> entry_proto);
 
   // Helper methods for ReadRawData to open file and read from its corresponding
@@ -209,7 +209,7 @@ class DriveURLRequestJob : public net::URLRequestJob {
   bool headers_set_;  // True if headers have been set.
 
   FilePath local_file_path_;
-  FilePath gdata_file_path_;
+  FilePath drive_file_path_;
   std::string mime_type_;
   int64 initial_file_size_;
   int64 remaining_bytes_;
@@ -259,12 +259,12 @@ void DriveURLRequestJob::Start() {
   // 3) If unable to get file system or request method is not GET, report start
   //    error and bail out.
   // 4) Otherwise, parse request url to get resource id and file name.
-  // 5) Find file from file system to get its mime type, gdata file path and
+  // 5) Find file from file system to get its mime type, drive file path and
   //    size of physical file.
   // 6) Get file from file system asynchronously with both GetFileCallback and
   //    GetContentCallback - this would either get it from cache or
-  //    download it from gdata.
-  // 7) If file is downloaded from gdata:
+  //    download it from Drive.
+  // 7) If file is downloaded from Drive:
   //    7.1) Whenever net::URLFetcherCore::OnReadCompleted() receives a part
   //         of the response, it invokes
   //         constent::URLFetcherDelegate::OnURLFetchDownloadData() if
@@ -319,7 +319,7 @@ void DriveURLRequestJob::Kill() {
 
   CloseFileStream();
 
-  // If download operation for gdata file (via
+  // If download operation for drive file (via
   // DriveFileSystem::GetFileByResourceId) is still in progress, cancel it by
   // posting a task on the UI thread.
   // Download operation is still in progress if:
@@ -330,14 +330,14 @@ void DriveURLRequestJob::Kill() {
   //    part of the download process where the last chunk is written to file;
   //    if we're reading directly from cache file, |remaining_bytes_| doesn't
   //    matter 'cos |local_file_path_| will not be empty.
-  if (file_system_ && !gdata_file_path_.empty() && local_file_path_.empty() &&
+  if (file_system_ && !drive_file_path_.empty() && local_file_path_.empty() &&
       remaining_bytes_ > 0) {
-    DVLOG(1) << "Canceling download operation for " << gdata_file_path_.value();
+    DVLOG(1) << "Canceling download operation for " << drive_file_path_.value();
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
         base::Bind(&CancelDriveDownloadOnUIThread,
-                   gdata_file_path_));
+                   drive_file_path_));
   }
 
   net::URLRequestJob::Kill();
@@ -511,7 +511,7 @@ void DriveURLRequestJob::StartAsync(DriveFileSystemInterface** file_system) {
 void DriveURLRequestJob::OnGetEntryInfoByResourceId(
     const std::string& resource_id,
     DriveFileError error,
-    const FilePath& gdata_file_path,
+    const FilePath& drive_file_path,
     scoped_ptr<DriveEntryProto> entry_proto) {
   if (entry_proto.get() && !entry_proto->has_file_specific_info())
     error = DRIVE_FILE_ERROR_NOT_FOUND;
@@ -519,11 +519,11 @@ void DriveURLRequestJob::OnGetEntryInfoByResourceId(
   if (error == DRIVE_FILE_OK) {
     DCHECK(entry_proto.get());
     mime_type_ = entry_proto->file_specific_info().content_mime_type();
-    gdata_file_path_ = gdata_file_path;
+    drive_file_path_ = drive_file_path;
     initial_file_size_ = entry_proto->file_info().size();
   } else {
     mime_type_.clear();
-    gdata_file_path_.clear();
+    drive_file_path_.clear();
     initial_file_size_ = 0;
   }
   remaining_bytes_ = initial_file_size_;

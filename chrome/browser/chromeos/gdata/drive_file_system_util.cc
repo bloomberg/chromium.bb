@@ -104,7 +104,7 @@ void OpenEditURLUIThread(Profile* profile, const GURL* edit_url) {
 void OnGetEntryInfoByResourceId(Profile* profile,
                                 const std::string& resource_id,
                                 DriveFileError error,
-                                const FilePath& /* gdata_file_path */,
+                                const FilePath& /* drive_file_path */,
                                 scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -176,21 +176,21 @@ void OnGetEntryInfoForInsertDriveCachePathsPermissions(
 }  // namespace
 
 const FilePath& GetDriveMountPointPath() {
-  CR_DEFINE_STATIC_LOCAL(FilePath, gdata_mount_path,
+  CR_DEFINE_STATIC_LOCAL(FilePath, drive_mount_path,
       (FilePath::FromUTF8Unsafe(kDriveMountPointPath)));
-  return gdata_mount_path;
+  return drive_mount_path;
 }
 
 const std::string& GetDriveMountPointPathAsString() {
-  CR_DEFINE_STATIC_LOCAL(std::string, gdata_mount_path_string,
+  CR_DEFINE_STATIC_LOCAL(std::string, drive_mount_path_string,
       (kDriveMountPointPath));
-  return gdata_mount_path_string;
+  return drive_mount_path_string;
 }
 
 const FilePath& GetSpecialRemoteRootPath() {
-  CR_DEFINE_STATIC_LOCAL(FilePath, gdata_mount_path,
+  CR_DEFINE_STATIC_LOCAL(FilePath, drive_mount_path,
       (FilePath::FromUTF8Unsafe(kDriveSpecialRootPath)));
-  return gdata_mount_path;
+  return drive_mount_path;
 }
 
 GURL GetFileResourceUrl(const std::string& resource_id,
@@ -228,7 +228,7 @@ void ModifyDriveFileResourceUrl(Profile* profile,
                  IsParent(drive_cache_path) ||
              cache->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_PERSISTENT).
                  IsParent(drive_cache_path)) {
-    // Handle all other gdata files.
+    // Handle all other drive files.
     const std::string resource_id =
         drive_cache_path.BaseName().RemoveExtension().AsUTF8Unsafe();
     file_system->GetEntryInfoByResourceId(
@@ -263,38 +263,38 @@ FilePath ExtractDrivePath(const FilePath& path) {
 
 void InsertDriveCachePathsPermissions(
     Profile* profile,
-    scoped_ptr<std::vector<FilePath> > gdata_paths,
+    scoped_ptr<std::vector<FilePath> > drive_paths,
     std::vector<std::pair<FilePath, int> >* cache_paths,
     const base::Closure& callback) {
   DCHECK(profile);
-  DCHECK(gdata_paths.get());
+  DCHECK(drive_paths.get());
   DCHECK(cache_paths);
   DCHECK(!callback.is_null());
 
   DriveFileSystemInterface* file_system = GetDriveFileSystem(profile);
-  if (!file_system || gdata_paths->empty()) {
+  if (!file_system || drive_paths->empty()) {
     callback.Run();
     return;
   }
 
-  // Remove one file path entry from the back of the input vector |gdata_paths|.
-  FilePath gdata_path = gdata_paths->back();
-  gdata_paths->pop_back();
+  // Remove one file path entry from the back of the input vector |drive_paths|.
+  FilePath drive_path = drive_paths->back();
+  drive_paths->pop_back();
 
-  // Call GetEntryInfoByPath() to get file info for |gdata_path| then insert
+  // Call GetEntryInfoByPath() to get file info for |drive_path| then insert
   // all possible cache paths to the output vector |cache_paths|.
   // Note that we can only process one file path at a time. Upon completion
   // of OnGetEntryInfoForInsertDriveCachePathsPermissions(), we recursively call
   // InsertDriveCachePathsPermissions() to process the next file path from the
-  // back of the input vector |gdata_paths| until it is empty.
+  // back of the input vector |drive_paths| until it is empty.
   file_system->GetEntryInfoByPath(
-      gdata_path,
+      drive_path,
       base::Bind(&OnGetEntryInfoForInsertDriveCachePathsPermissions,
                  profile,
                  cache_paths,
                  base::Bind(&InsertDriveCachePathsPermissions,
                              profile,
-                             base::Passed(&gdata_paths),
+                             base::Passed(&drive_paths),
                              cache_paths,
                              callback)));
 }

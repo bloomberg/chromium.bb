@@ -22,14 +22,14 @@ class PrefChangeRegistrar;
 
 namespace gdata {
 
-// The DriveSyncClient is used to synchronize pinned files on gdata and the
+// The DriveSyncClient is used to synchronize pinned files on Drive and the
 // cache on the local drive. The sync client works as follows.
 //
-// When the user pins files on gdata, this client is notified about the files
+// When the user pins files on Drive, this client is notified about the files
 // that get pinned, and queues tasks and starts fetching these files in the
 // background.
 //
-// When the user unpins files on gdata, this client is notified about the
+// When the user unpins files on Drive, this client is notified about the
 // files that get unpinned, cancels tasks if these are still in the queue.
 //
 // If the user logs out before fetching of the pinned files is complete, this
@@ -37,7 +37,7 @@ namespace gdata {
 // the states left in the cache.
 //
 // TODO(satorux): This client should also upload pinned but dirty (locally
-// edited) files to gdata. Will work on this once downloading is done.
+// edited) files to Drive. Will work on this once downloading is done.
 // crosbug.com/27836.
 class DriveSyncClient : public DriveFileSystemInterface::Observer,
                         public DriveCache::Observer,
@@ -46,8 +46,8 @@ class DriveSyncClient : public DriveFileSystemInterface::Observer,
  public:
   // Types of sync tasks.
   enum SyncType {
-    FETCH,  // Fetch a file from the gdata server.
-    UPLOAD,  // Upload a file to the gdata server.
+    FETCH,  // Fetch a file from the Drive server.
+    UPLOAD,  // Upload a file to the Drive server.
   };
 
   // The struct is used to queue tasks for fetching and uploading.

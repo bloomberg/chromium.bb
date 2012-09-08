@@ -33,7 +33,7 @@ const char kWildCard[] = "*";
 // which is not yet fetched.
 const char kSymLinkToDevNull[] = "/dev/null";
 
-// Returns the Drive mount point path, which looks like "/special/gdata".
+// Returns the Drive mount point path, which looks like "/special/drive".
 const FilePath& GetDriveMountPointPath();
 
 // Returns the Drive mount path as string.
@@ -60,12 +60,12 @@ bool IsUnderDriveMountPoint(const FilePath& path);
 // Examples: ExtractGDatPath("/special/drive/foo.txt") => "drive/foo.txt"
 FilePath ExtractDrivePath(const FilePath& path);
 
-// Inserts all possible cache paths for a given vector of paths on gdata mount
+// Inserts all possible cache paths for a given vector of paths on drive mount
 // point into the output vector |cache_paths|, and then invokes callback.
 // Caller must ensure that |cache_paths| lives until the callback is invoked.
 void InsertDriveCachePathsPermissions(
     Profile* profile_,
-    scoped_ptr<std::vector<FilePath> > gdata_paths,
+    scoped_ptr<std::vector<FilePath> > drive_paths,
     std::vector<std::pair<FilePath, int> >* cache_paths,
     const base::Closure& callback);
 

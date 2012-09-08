@@ -151,7 +151,7 @@ class MockDriveUploader : public DriveUploaderInterface {
 
   MOCK_METHOD6(UploadExistingFile,
                int(const GURL& upload_location,
-               const FilePath& gdata_file_path,
+               const FilePath& drive_file_path,
                const FilePath& local_file_path,
                int64 file_size,
                const std::string& content_type,

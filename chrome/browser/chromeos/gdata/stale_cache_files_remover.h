@@ -48,7 +48,7 @@ class StaleCacheFilesRemover : public DriveFileSystemInterface::Observer {
       const std::string& resource_id,
       const std::string& cache_md5,
       DriveFileError error,
-      const FilePath& gdata_file_path,
+      const FilePath& drive_file_path,
       scoped_ptr<gdata::DriveEntryProto> entry_proto);
 
   DriveCache* cache_;  // Not owned.

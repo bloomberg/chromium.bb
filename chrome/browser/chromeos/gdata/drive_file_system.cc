@@ -42,11 +42,11 @@ const char kMimeTypeOctetStream[] = "application/octet-stream";
 
 const char kEmptyFilePath[] = "/dev/null";
 
-// GData update check interval (in seconds).
+// Drive update check interval (in seconds).
 #ifndef NDEBUG
-const int kGDataUpdateCheckIntervalInSec = 5;
+const int kDriveUpdateCheckIntervalInSec = 5;
 #else
-const int kGDataUpdateCheckIntervalInSec = 60;
+const int kDriveUpdateCheckIntervalInSec = 60;
 #endif
 
 //================================ Helper functions ============================
@@ -542,7 +542,7 @@ void DriveFileSystem::StartUpdates() {
   DCHECK(!update_timer_.IsRunning());
   update_timer_.Start(FROM_HERE,
                       base::TimeDelta::FromSeconds(
-                          kGDataUpdateCheckIntervalInSec),
+                          kDriveUpdateCheckIntervalInSec),
                       base::Bind(&DriveFileSystem::CheckForUpdates,
                           ui_weak_ptr_));
 }
@@ -964,7 +964,7 @@ void DriveFileSystem::OnGetFileCompleteForTransferFile(
     return;
   }
 
-  // GetFileByPath downloads the file from gdata to a local cache, which is then
+  // GetFileByPath downloads the file from Drive to a local cache, which is then
   // copied to the actual destination path on the local file system using
   // CopyLocalFileOnBlockingPool.
   DriveFileError* copy_file_error =

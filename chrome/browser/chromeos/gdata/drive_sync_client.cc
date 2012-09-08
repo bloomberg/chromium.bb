@@ -191,7 +191,7 @@ void DriveSyncClient::DoSyncLoop() {
 }
 
 bool DriveSyncClient::ShouldStopSyncLoop() {
-  // Should stop if the gdata feature was disabled while running the fetch
+  // Should stop if the drive feature was disabled while running the fetch
   // loop.
   if (profile_->GetPrefs()->GetBoolean(prefs::kDisableGData))
     return true;
@@ -316,7 +316,7 @@ void DriveSyncClient::OnGetResourceIdsOfExistingPinnedFiles(
 void DriveSyncClient::OnGetEntryInfoByResourceId(
     const std::string& resource_id,
     DriveFileError error,
-    const FilePath& /* gdata_file_path */,
+    const FilePath& /* drive_file_path */,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

@@ -173,7 +173,7 @@ class DriveCacheTest : public testing::Test {
 
   void PrepareForInitCacheTest() {
     DVLOG(1) << "PrepareForInitCacheTest start";
-    // Create gdata cache sub directories.
+    // Create drive cache sub directories.
     ASSERT_TRUE(file_util::CreateDirectory(
         cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_PERSISTENT)));
     ASSERT_TRUE(file_util::CreateDirectory(
@@ -190,7 +190,7 @@ class DriveCacheTest : public testing::Test {
     // Copy files from data dir to cache dir to act as cached files.
     for (size_t i = 0; i < ARRAYSIZE_UNSAFE(initial_cache_resources); ++i) {
       const struct InitialCacheResource& resource = initial_cache_resources[i];
-      // Determine gdata cache file absolute path according to cache state.
+      // Determine drive cache file absolute path according to cache state.
       FilePath dest_path = cache_->GetCacheFilePath(
           resource.resource_id,
           resource.md5,

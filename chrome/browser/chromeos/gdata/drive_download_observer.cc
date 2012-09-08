@@ -73,7 +73,7 @@ class UploadingUserData : public DownloadCompletionBlocker {
   DISALLOW_COPY_AND_ASSIGN(UploadingUserData);
 };
 
-// User Data stored in DownloadItem for gdata path.
+// User Data stored in DownloadItem for drive path.
 class DriveUserData : public base::SupportsUserData::Data {
  public:
   explicit DriveUserData(const FilePath& path) : file_path_(path) {}
@@ -111,7 +111,7 @@ DriveSystemService* GetSystemService(Profile* profile) {
   return system_service;
 }
 
-// Substitutes virtual gdata path for local temporary path.
+// Substitutes virtual drive path for local temporary path.
 void SubstituteDriveDownloadPathInternal(Profile* profile,
     const DriveDownloadObserver::SubstituteDriveDownloadPathCallback&
         callback) {
@@ -120,7 +120,7 @@ void SubstituteDriveDownloadPathInternal(Profile* profile,
   const FilePath drive_tmp_download_dir = GetSystemService(profile)->cache()->
       GetCacheDirectoryPath(DriveCache::CACHE_TYPE_TMP_DOWNLOADS);
 
-  // Swap the gdata path with a local path. Local path must be created
+  // Swap the drive path with a local path. Local path must be created
   // on a blocking thread.
   FilePath* drive_tmp_download_path(new FilePath());
   BrowserThread::GetBlockingPool()->PostTaskAndReply(
@@ -268,7 +268,7 @@ void DriveDownloadObserver::SetDownloadParams(const FilePath& drive_path,
 // static
 FilePath DriveDownloadObserver::GetDrivePath(DownloadItem* download) {
   DriveUserData* data = GetDriveUserData(download);
-  // If data is NULL, we've somehow lost the gdata path selected by the file
+  // If data is NULL, we've somehow lost the drive path selected by the file
   // picker.
   DCHECK(data);
   return data ? util::ExtractDrivePath(data->file_path()) : FilePath();
@@ -326,17 +326,17 @@ int DriveDownloadObserver::PercentComplete(DownloadItem* download) {
   return -1;
 }
 
-// |gdata_tmp_download_path| is set to a temporary local download path in
+// |drive_tmp_download_path| is set to a temporary local download path in
 // ~/GCache/v1/tmp/downloads/
 // static
 void DriveDownloadObserver::GetDriveTempDownloadPath(
-    const FilePath& gdata_tmp_download_dir,
-    FilePath* gdata_tmp_download_path) {
-  bool created = file_util::CreateDirectory(gdata_tmp_download_dir);
+    const FilePath& drive_tmp_download_dir,
+    FilePath* drive_tmp_download_path) {
+  bool created = file_util::CreateDirectory(drive_tmp_download_dir);
   DCHECK(created) << "Can not create temp download directory at "
-                  << gdata_tmp_download_dir.value();
-  created = file_util::CreateTemporaryFileInDir(gdata_tmp_download_dir,
-                                                gdata_tmp_download_path);
+                  << drive_tmp_download_dir.value();
+  created = file_util::CreateTemporaryFileInDir(drive_tmp_download_dir,
+                                                drive_tmp_download_path);
   DCHECK(created) << "Temporary download file creation failed";
 }
 
@@ -356,7 +356,7 @@ void DriveDownloadObserver::ModelChanged(DownloadManager* download_manager) {
   for (size_t i = 0; i < downloads.size(); ++i) {
     // Only accept downloads that have the Drive meta data associated with
     // them. Otherwise we might trip over non-Drive downloads being saved to
-    // gdata_tmp_download_path_.
+    // drive_tmp_download_path_.
     if (IsDriveDownload(downloads[i]))
       OnDownloadUpdated(downloads[i]);
   }
@@ -659,7 +659,7 @@ void DriveDownloadObserver::MoveFileToDriveCache(DownloadItem* download) {
                                   download->GetTargetFilePath(),
                                   base::Bind(&base::DoNothing));
   } else {
-    // Move downloaded file to gdata cache. Note that |content_file_path| should
+    // Move downloaded file to drive cache. Note that |content_file_path| should
     // use the final target path (download->GetTargetFilePath()) when the
     // download item has transitioned to the DownloadItem::COMPLETE state.
     file_system_->AddUploadedFile(UPLOAD_NEW_FILE,

@@ -53,7 +53,7 @@ class AuthService : public content::NotificationObserver {
                            const AuthStatusCallback& callback);
 
   // True if an OAuth2 access token is retrieved and believed to be fresh.
-  // The access token is used to access the gdata server.
+  // The access token is used to access the Drive server.
   bool HasAccessToken() const { return !access_token_.empty(); }
 
   // True if an OAuth2 refresh token is present. Its absence means that user
