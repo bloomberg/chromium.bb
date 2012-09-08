@@ -53,6 +53,7 @@ def Main(args):
   stamp_path = os.path.abspath(stamp_path)
   tool_path = os.path.abspath(tool_path)
 
+  options.verbose = True
   if options.verbose:
    print 'Delete: ' + untar_path
   oshelpers.Remove(['-fr', untar_path])
@@ -71,7 +72,7 @@ def Main(args):
 
   if options.verbose:
     print 'Open: ' + args[0]
-  tar = cygtar.CygTar(args[0], 'r')
+  tar = cygtar.CygTar(args[0], 'r', verbose=options.verbose)
   old_path = os.getcwd()
   os.chdir(untar_path)
 
@@ -86,7 +87,11 @@ def Main(args):
 
   if options.verbose:
     print 'Stamp: ' + stamp_path
-  open(stamp_path, 'w').write(args[0] + '\n')
+  fh = open(stamp_path, 'w')
+  fh.write(args[0] + '\n')
+  fh.close()
+  if options.verbose:
+    print 'Done.'
   return 0
 
 

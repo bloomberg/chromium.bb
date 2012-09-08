@@ -45,13 +45,13 @@ BOT_ASSIGNMENT = {
     'mac10.6-newlib-opt':
         python + ' buildbot/buildbot_standard.py opt 32 newlib',
     'mac10.7-newlib-opt':
-        python + ' buildbot/buildbot_standard.py opt 32 newlib',
+        python + ' buildbot/buildbot_standard.py opt 32 newlib --clang',
     'mac10.5-glibc-opt':
         macpython27 + ' buildbot/buildbot_standard.py opt 32 glibc',
     'mac10.6-glibc-opt':
         python + ' buildbot/buildbot_standard.py opt 32 glibc',
     'mac10.7-glibc-opt':
-        python + ' buildbot/buildbot_standard.py opt 32 glibc',
+        python + ' buildbot/buildbot_standard.py opt 32 glibc --clang',
     'lucid-32-newlib-dbg':
         python + ' buildbot/buildbot_standard.py dbg 32 newlib',
     'lucid-32-newlib-opt':
@@ -163,9 +163,9 @@ BOT_ASSIGNMENT = {
     'nacl-mac10.6_glibc_opt':
         python + ' buildbot/buildbot_standard.py opt 32 glibc',
     'nacl-mac10.7_newlib_opt':
-        python + ' buildbot/buildbot_standard.py opt 32 newlib',
+        python + ' buildbot/buildbot_standard.py opt 32 newlib --clang',
     'nacl-mac10.7_glibc_opt':
-        python + ' buildbot/buildbot_standard.py opt 32 glibc',
+        python + ' buildbot/buildbot_standard.py opt 32 glibc --clang',
     'nacl-lucid32_newlib_dbg':
         python + ' buildbot/buildbot_standard.py dbg 32 newlib',
     'nacl-lucid32_newlib_opt':

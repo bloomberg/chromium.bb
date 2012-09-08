@@ -141,6 +141,8 @@ def CommandGclientRunhooks(context):
     gclient = 'gclient.bat'
   else:
     gclient = 'gclient'
+  print 'Running gclient runhooks...'
+  print 'GYP_DEFINES=' + context.GetEnv('GYP_DEFINES')
   Command(context, cmd=[gclient, 'runhooks', '--force'])
 
 
