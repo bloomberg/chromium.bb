@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_GDATA_STALE_CACHE_FILE_REMOVER_H_
-#define CHROME_BROWSER_CHROMEOS_GDATA_STALE_CACHE_FILE_REMOVER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_GDATA_STALE_CACHE_FILES_REMOVER_H_
+#define CHROME_BROWSER_CHROMEOS_GDATA_STALE_CACHE_FILES_REMOVER_H_
 
 #include <string>
 #include <vector>
@@ -62,4 +62,4 @@ class StaleCacheFilesRemover : public DriveFileSystemInterface::Observer {
 
 }  // namespace gdata
 
-#endif  // CHROME_BROWSER_CHROMEOS_GDATA_STALE_CACHE_FILE_REMOVER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_GDATA_STALE_CACHE_FILES_REMOVER_H_
