@@ -24,7 +24,8 @@ extern "C" {
 #define GESTURES_LOG_INFO 1
 
 // this function has to be provided by the user of the library.
-void gestures_log(int verb, const char* format, ...);
+void gestures_log(int verb, const char* format, ...)
+    __attribute__((format(printf, 2, 3)));
 
 typedef double stime_t;  // seconds
 

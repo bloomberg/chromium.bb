@@ -7,6 +7,8 @@
 #include <base/command_line.h>
 #include <gtest/gtest.h>
 
+#include "gestures/include/gestures.h"
+
 int main(int argc, char **argv) {
   CommandLine::Init(argc, argv);
   ::testing::InitGoogleTest(&argc, argv);

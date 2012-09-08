@@ -101,6 +101,7 @@ CXXFLAGS+=\
 	-Werror \
 	-Wignored-qualifiers \
 	-Wmissing-field-initializers \
+	-Wmissing-format-attribute \
 	-Wsign-compare \
 	-Wtype-limits \
 	-D__STDC_FORMAT_MACROS=1 \
