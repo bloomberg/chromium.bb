@@ -5,7 +5,7 @@
  */
 
 /*
- * This file contains common parts of x86-32 and x86-64 insternals (inline
+ * This file contains common parts of x86-32 and x86-64 internals (inline
  * functions and defines).
  */
 
