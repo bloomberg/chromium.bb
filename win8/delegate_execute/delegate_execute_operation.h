@@ -6,44 +6,70 @@
 #define WIN8_DELEGATE_EXECUTE_DELEGATE_EXECUTE_OPERATION_H_
 
 #include <atldef.h>
+#include <windows.h>
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/string16.h"
 
 class CommandLine;
 
 namespace delegate_execute {
 
 // Parses a portion of the DelegateExecute handler's command line to determine
-// the desired operation.
+// the desired operation. The operation type is decided by looking at the
+// command line. The operations are:
+// DELEGATE_EXECUTE:
+//   When the delegate_execute.exe is invoked by windows when a chrome
+//   activation via the shell, possibly using ShellExecute. Control must
+//   be given to ATLs WinMain.
+// RELAUNCH_CHROME:
+//   When the delegate_execute.exe is launched by chrome, when chrome needs
+//   to re-launch itself. The required command line parameters are:
+//     --relaunch-shortcut=<PathToShortcut>
+//     --wait-for-mutex=<MutexNamePid>
+//   The PathToShortcut must be the fully qualified file name to the chrome
+//   shortcut that has the appId and other 'metro ready' parameters.
+//   The MutexNamePid is a mutex name that also encodes the process id and
+//   must follow the format <A>.<B>.<pid> where A and B are arbitray strings
+//   (usually chrome.relaunch) and pid is the process id of chrome.
 class DelegateExecuteOperation {
  public:
   enum OperationType {
-    EXE_MODULE,
+    DELEGATE_EXECUTE,
     RELAUNCH_CHROME,
   };
 
   DelegateExecuteOperation();
   ~DelegateExecuteOperation();
 
-  void Initialize(const CommandLine* command_line);
+  bool Init(const CommandLine* cmd_line);
 
   OperationType operation_type() const {
     return operation_type_;
   }
 
-  // Returns the argument to the --relaunch-shortcut switch.  Valid only when
-  // the operation is RELAUNCH_CHROME.
-  const FilePath& relaunch_shortcut() const {
-    ATLASSERT(operation_type_ == RELAUNCH_CHROME);
+  const char* relaunch_flags() const {
+    return relaunch_flags_;
+  }
+
+  const string16& mutex() const {
+    return mutex_;
+  }
+
+  // Returns the process id of the parent or 0 on failure.
+  DWORD GetParentPid() const;
+
+  const FilePath& shortcut() const {
     return relaunch_shortcut_;
   }
 
  private:
-  void Clear();
-
   OperationType operation_type_;
+  const char* relaunch_flags_;
   FilePath relaunch_shortcut_;
+  string16 mutex_;
+
   DISALLOW_COPY_AND_ASSIGN(DelegateExecuteOperation);
 };
 

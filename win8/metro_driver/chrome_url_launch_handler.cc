@@ -11,7 +11,7 @@
 #include <shlobj.h>
 #include <string>
 
-#include "base/string_tokenizer.h"
+#include "base/command_line.h"
 
 #include "winrt_utils.h"
 
@@ -97,22 +97,18 @@ void ChromeUrlLaunchHandler::HandleProtocolLaunch(
     InitiateNavigationOrSearchRequest(globals.navigation_url.c_str(), 0);
 }
 
-// The LaunchArgs are in a semi-color separated key_name=key_value list. At
-// the moment the only key_name understaood is "url".
+// |launch_args| is an encoded command line, minus the executable name. To
+// find the URL to launch the first argument is used. If any other parameters
+// are encoded in |launch_args| they are ignored.
 string16 ChromeUrlLaunchHandler::GetUrlFromLaunchArgs(
     const string16& launch_args) {
-  WStringTokenizer tokenizer(launch_args, L";=");
-  bool next_is_url = false;
-  while (tokenizer.GetNext()) {
-    if (next_is_url)
-      return tokenizer.token();
-    if (tokenizer.token() == L"url")
-      next_is_url = true;
-  }
-  if (launch_args == L"opennewwindow") {
-    DVLOG(1) << "Returning new tab url";
-    return L"chrome://newtab";
-  }
+  string16 dummy_command_line(L"dummy.exe ");
+  dummy_command_line.append(launch_args);
+  CommandLine command_line = CommandLine::FromString(dummy_command_line);
+  CommandLine::StringVector args = command_line.GetArgs();
+  if (args.size() > 0)
+    return args[0];
+
   return string16();
 }
 

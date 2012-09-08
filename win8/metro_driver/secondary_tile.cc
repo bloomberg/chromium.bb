@@ -15,6 +15,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "crypto/sha2.h"
+#include "googleurl/src/gurl.h"
 #include "win8/metro_driver/chrome_app_view.h"
 #include "win8/metro_driver/winrt_utils.h"
 
@@ -91,7 +92,11 @@ void CreateTileOnStartScreen(const string16& title_str,
   mswrw::HString id;
   id.Attach(MakeHString(GenerateTileId(url_str)));
   mswrw::HString args;
-  args.Attach(MakeHString(string16(L"url=").append(url_str)));
+  // The url is just passed into the tile agruments as is. Metro and desktop
+  // chrome will see the arguments as command line parameters.
+  // A GURL is used to ensure any spaces are properly escaped.
+  GURL url(url_str);
+  args.Attach(MakeHString(UTF8ToUTF16(url.spec())));
 
   mswr::ComPtr<winfoundtn::IUriRuntimeClassFactory> uri_factory;
   hr = winrt_utils::CreateActivationFactory(

@@ -56,7 +56,96 @@ const wchar_t kOSKClassName[] = L"IPTip_Main_Window";
 
 static const int kOSKAdjustmentOffset = 20;
 
+const wchar_t kChromeSubclassWindowProp[] = L"MetroChromeWindowProc";
+
 namespace {
+
+enum Modifier {
+  NONE,
+  SHIFT = 1,
+  CONTROL = 2,
+  ALT = 4
+};
+
+// Helper function to send keystrokes via the SendInput function.
+// Params:
+// mnemonic_char: The keystroke to be sent.
+// modifiers: Combination with Alt, Ctrl, Shift, etc.
+// extended: whether this is an extended key.
+// unicode: whether this is a unicode key.
+void SendMnemonic(WORD mnemonic_char, Modifier modifiers, bool extended,
+                  bool unicode) {
+  INPUT keys[4] = {0};  // Keyboard events
+  int key_count = 0;  // Number of generated events
+
+  if (modifiers & SHIFT) {
+    keys[key_count].type = INPUT_KEYBOARD;
+    keys[key_count].ki.wVk = VK_SHIFT;
+    keys[key_count].ki.wScan = MapVirtualKey(VK_SHIFT, 0);
+    key_count++;
+  }
+
+  if (modifiers & CONTROL) {
+    keys[key_count].type = INPUT_KEYBOARD;
+    keys[key_count].ki.wVk = VK_CONTROL;
+    keys[key_count].ki.wScan = MapVirtualKey(VK_CONTROL, 0);
+    key_count++;
+  }
+
+  if (modifiers & ALT) {
+    keys[key_count].type = INPUT_KEYBOARD;
+    keys[key_count].ki.wVk = VK_MENU;
+    keys[key_count].ki.wScan = MapVirtualKey(VK_MENU, 0);
+    key_count++;
+  }
+
+  keys[key_count].type = INPUT_KEYBOARD;
+  keys[key_count].ki.wVk = mnemonic_char;
+  keys[key_count].ki.wScan = MapVirtualKey(mnemonic_char, 0);
+
+  if (extended)
+    keys[key_count].ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
+  if (unicode)
+    keys[key_count].ki.dwFlags |= KEYEVENTF_UNICODE;
+  key_count++;
+
+  bool should_sleep = key_count > 1;
+
+  // Send key downs
+  for (int i = 0; i < key_count; i++) {
+    SendInput(1, &keys[ i ], sizeof(keys[0]));
+    keys[i].ki.dwFlags |= KEYEVENTF_KEYUP;
+    if (should_sleep) {
+      Sleep(10);
+    }
+  }
+
+  // Now send key ups in reverse order
+  for (int i = key_count; i; i--) {
+    SendInput(1, &keys[ i - 1 ], sizeof(keys[0]));
+    if (should_sleep) {
+      Sleep(10);
+    }
+  }
+}
+
+void MetroExit() {
+  if (globals.core_window == ::GetForegroundWindow()) {
+    DVLOG(1) << "We are in the foreground. Exiting via Alt F4";
+    SendMnemonic(VK_F4, ALT, false, false);
+    DWORD core_window_process_id = 0;
+    DWORD core_window_thread_id = GetWindowThreadProcessId(
+        globals.core_window, &core_window_process_id);
+    if (core_window_thread_id != ::GetCurrentThreadId()) {
+      // Sleep to give time to the core window thread to get this message.
+      Sleep(100);
+    }
+  } else {
+    DVLOG(1) << "We are not in the foreground. Exiting normally";
+    globals.app_exit->Exit();
+    globals.core_window = NULL;
+  }
+}
 
 void AdjustToFitWindow(HWND hwnd, int flags) {
   RECT rect = {0};
@@ -69,6 +158,35 @@ void AdjustToFitWindow(HWND hwnd, int flags) {
                  SWP_NOZORDER | flags);
 }
 
+LRESULT CALLBACK ChromeWindowProc(HWND window,
+                                  UINT message,
+                                  WPARAM wp,
+                                  LPARAM lp) {
+  if (message == WM_SETCURSOR) {
+    // Override the WM_SETCURSOR message to avoid showing the resize cursor
+    // as the mouse moves to the edge of the screen.
+    switch (LOWORD(lp)) {
+      case HTBOTTOM:
+      case HTBOTTOMLEFT:
+      case HTBOTTOMRIGHT:
+      case HTLEFT:
+      case HTRIGHT:
+      case HTTOP:
+      case HTTOPLEFT:
+      case HTTOPRIGHT:
+        lp = MAKELPARAM(HTCLIENT, HIWORD(lp));
+        break;
+      default:
+        break;
+    }
+  }
+
+  WNDPROC old_proc = reinterpret_cast<WNDPROC>(
+      ::GetProp(window, kChromeSubclassWindowProp));
+  DCHECK(old_proc);
+  return CallWindowProc(old_proc, window, message, wp, lp);
+}
+
 void AdjustFrameWindowStyleForMetro(HWND hwnd) {
   DVLOG(1) << __FUNCTION__;
   // Ajust the frame so the live preview works and the frame buttons dissapear.
@@ -78,6 +196,14 @@ void AdjustFrameWindowStyleForMetro(HWND hwnd) {
   ::SetWindowLong(hwnd, GWL_EXSTYLE,
                   ::GetWindowLong(hwnd, GWL_EXSTYLE) & ~(WS_EX_DLGMODALFRAME |
                   WS_EX_WINDOWEDGE | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE));
+
+  // Subclass the wndproc of the frame window, if it's not already there.
+  if (::GetProp(hwnd, kChromeSubclassWindowProp) == NULL) {
+    WNDPROC old_chrome_proc = reinterpret_cast<WNDPROC>(
+        ::SetWindowLong(hwnd, GWL_WNDPROC,
+                        reinterpret_cast<long>(ChromeWindowProc)));
+    ::SetProp(hwnd, kChromeSubclassWindowProp, old_chrome_proc);
+  }
   AdjustToFitWindow(hwnd, SWP_FRAMECHANGED | SWP_NOACTIVATE);
 }
 
@@ -117,7 +243,7 @@ void CloseFrameWindowInternal(HWND hwnd) {
   } else {
     // time to quit
     DVLOG(1) << "Last host window closed. Calling Exit().";
-    globals.app_exit->Exit();
+    MetroExit();
   }
 }
 
@@ -486,8 +612,9 @@ DWORD WINAPI HostMainThreadProc(void*) {
       ::SetWindowLong(globals.core_window, GWL_WNDPROC,
                       reinterpret_cast<long>(ChromeAppView::CoreWindowProc)));
   DWORD exit_code = globals.host_main(globals.host_context);
+
   DVLOG(1) << "host thread done, exit_code=" << exit_code;
-  globals.app_exit->Exit();
+  MetroExit();
   return exit_code;
 }
 
@@ -696,9 +823,11 @@ ChromeAppView::Run() {
   if (wr != WAIT_OBJECT_0) {
     DVLOG(1) << "Waiting for host thread failed : " << wr;
   }
+
+  DVLOG(1) << "Host thread exited";
+
   ::CloseHandle(globals.host_thread);
   globals.host_thread = NULL;
-
   return hr;
 }
 

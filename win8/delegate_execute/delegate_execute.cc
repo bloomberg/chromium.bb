@@ -11,8 +11,8 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/process_util.h"
 #include "base/string16.h"
-#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_handle.h"
@@ -53,68 +53,74 @@ class DelegateExecuteModule
 
 DelegateExecuteModule _AtlModule;
 
-// Relaunch metro Chrome by ShellExecute on |shortcut| with --force-immersive.
-// |handle_value| is an optional handle on which this function will wait before
-// performing the relaunch.
-int RelaunchChrome(const FilePath& shortcut, const string16& handle_value) {
-  base::win::ScopedHandle handle;
+using delegate_execute::DelegateExecuteOperation;
+using base::win::ScopedHandle;
 
-  if (!handle_value.empty()) {
-    uint32 the_handle = 0;
-    if (!base::StringToUint(handle_value, &the_handle)) {
-      // Failed to parse the handle value.  Skip the wait but proceed with the
-      // relaunch.
-      AtlTrace(L"Failed to parse handle value %ls\n", handle_value.c_str());
+int RelaunchChrome(const DelegateExecuteOperation& operation) {
+  AtlTrace("Relaunching [%ls] with flags [%s]\n",
+           operation.mutex().c_str(), operation.relaunch_flags());
+  ScopedHandle mutex(OpenMutexW(SYNCHRONIZE, FALSE, operation.mutex().c_str()));
+  if (mutex.IsValid()) {
+    const int kWaitSeconds = 5;
+    DWORD result = ::WaitForSingleObject(mutex, kWaitSeconds * 1000);
+    if (result == WAIT_ABANDONED) {
+      // This is the normal case. Chrome exits and windows marks the mutex as
+      // abandoned.
+    } else if (result == WAIT_OBJECT_0) {
+      // This is unexpected. Check if somebody is not closing the mutex on
+      // RelaunchChromehelper, the mutex should not be closed.
+      AtlTrace("Unexpected release of the relaunch mutex!!\n");
+    } else if (result == WAIT_TIMEOUT) {
+      // This could mean that Chrome is hung. Proceed to exterminate.
+      DWORD pid = operation.GetParentPid();
+      AtlTrace("%ds timeout. Killing Chrome %d\n", kWaitSeconds, pid);
+      base::KillProcessById(pid, 0, false);
     } else {
-      handle.Set(reinterpret_cast<HANDLE>(the_handle));
+      AtlTrace("Failed to wait for relaunch mutex, result is 0x%x\n", result);
     }
-  }
-
-  if (handle.IsValid()) {
-    AtlTrace(L"Waiting for chrome.exe to exit.\n");
-    DWORD result = ::WaitForSingleObject(handle, 10 * 1000);
-    AtlTrace(L"And we're back.\n");
-    if (result != WAIT_OBJECT_0) {
-      AtlTrace(L"Failed to wait for parent to exit; result=%u.\n", result);
-      // This could mean that Chrome has hung.  Conservatively proceed with
-      // the relaunch anyway.
-    }
-    handle.Close();
+  } else {
+    // It is possible that chrome exits so fast that the mutex is not there.
+    AtlTrace("No relaunch mutex found\n");
   }
 
   base::win::ScopedCOMInitializer com_initializer;
 
-  AtlTrace(L"Launching Chrome via %ls.\n", shortcut.value().c_str());
-  int ser = reinterpret_cast<int>(
-      ::ShellExecute(NULL, NULL, shortcut.value().c_str(),
-                     ASCIIToWide(switches::kForceImmersive).c_str(), NULL,
-                     SW_SHOWNORMAL));
-  AtlTrace(L"ShellExecute returned %d.\n", ser);
-  return ser <= 32;
+  string16 flags(ASCIIToWide(operation.relaunch_flags()));
+  SHELLEXECUTEINFO sei = { sizeof(sei) };
+  sei.fMask = SEE_MASK_FLAG_LOG_USAGE;
+  sei.nShow = SW_SHOWNORMAL;
+  sei.lpFile = operation.shortcut().value().c_str();
+  sei.lpParameters = flags.c_str();
+
+  AtlTrace(L"Relaunching Chrome via shortcut [%ls]\n", sei.lpFile);
+
+  if (!::ShellExecuteExW(&sei)) {
+    int error = HRESULT_FROM_WIN32(::GetLastError());
+    AtlTrace("ShellExecute returned 0x%08X\n", error);
+    return error;
+  }
+  return S_OK;
 }
 
-//
-extern "C" int WINAPI _tWinMain(HINSTANCE , HINSTANCE,
-                                LPTSTR, int nShowCmd) {
-  using delegate_execute::DelegateExecuteOperation;
+extern "C" int WINAPI _tWinMain(HINSTANCE , HINSTANCE, LPTSTR, int nShowCmd) {
   base::AtExitManager exit_manager;
+  AtlTrace("delegate_execute enter\n");
 
   CommandLine::Init(0, NULL);
-  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  HRESULT ret_code = E_UNEXPECTED;
   DelegateExecuteOperation operation;
-
-  operation.Initialize(cmd_line);
-  switch (operation.operation_type()) {
-    case DelegateExecuteOperation::EXE_MODULE:
-      return _AtlModule.WinMain(nShowCmd);
-
-    case DelegateExecuteOperation::RELAUNCH_CHROME:
-      return RelaunchChrome(operation.relaunch_shortcut(),
-          cmd_line->GetSwitchValueNative(switches::kWaitForHandle));
-
-    default:
-      NOTREACHED();
+  if (operation.Init(CommandLine::ForCurrentProcess())) {
+    switch (operation.operation_type()) {
+      case DelegateExecuteOperation::DELEGATE_EXECUTE:
+        ret_code = _AtlModule.WinMain(nShowCmd);
+        break;
+      case DelegateExecuteOperation::RELAUNCH_CHROME:
+        ret_code = RelaunchChrome(operation);
+        break;
+      default:
+        NOTREACHED();
+    }
   }
-
-  return 1;
+  AtlTrace("delegate_execute exit, code = %d\n", ret_code);
+  return ret_code;
 }

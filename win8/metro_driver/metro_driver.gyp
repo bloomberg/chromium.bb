@@ -31,6 +31,7 @@
           'type': 'shared_library',
           'dependencies': [
             '../../base/base.gyp:base',
+	    '../../build/temp_gyp/googleurl.gyp:googleurl',
             '../../crypto/crypto.gyp:crypto',
             '../../sandbox/sandbox.gyp:sandbox',
             '../../google_update/google_update.gyp:google_update',

@@ -220,7 +220,7 @@ STDMETHODIMP CommandExecuteImpl::Execute() {
     AtlTrace("Activating for file\n");
     hr = activation_manager->ActivateApplication(app_id.c_str(),
                                                  verb_.c_str(),
-                                                 AO_NOERRORUI,
+                                                 AO_NONE,
                                                  &pid);
   } else {
     AtlTrace("Activating for protocol\n");
@@ -388,6 +388,7 @@ HRESULT CommandExecuteImpl::LaunchDesktopChrome() {
                            &proc_info);
   if (ret) {
     AtlTrace("Process id is %d\n", proc_info.dwProcessId);
+    AllowSetForegroundWindow(proc_info.dwProcessId);
     CloseHandle(proc_info.hProcess);
     CloseHandle(proc_info.hThread);
   } else {
@@ -417,8 +418,15 @@ EC_HOST_UI_MODE CommandExecuteImpl::GetLaunchMode() {
 
   if (parameters_ == ASCIIToWide(switches::kForceImmersive)) {
     launch_mode = ECHUIM_IMMERSIVE;
-    AtlTrace("Launch mode forced to %s\n", modes[launch_mode]);
     launch_mode_determined = true;
+  } else if (parameters_ == ASCIIToWide(switches::kForceDesktop)) {
+    launch_mode = ECHUIM_DESKTOP;
+    launch_mode_determined = true;
+  }
+
+  if (launch_mode_determined) {
+    parameters_.clear();
+    AtlTrace("Launch mode forced to %s\n", modes[launch_mode]);
     return launch_mode;
   }
 
