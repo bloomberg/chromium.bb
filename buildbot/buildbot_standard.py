@@ -202,10 +202,10 @@ def BuildScript(status, context):
     #     with open() + unlink() so that they will not get left behind.
     if context.Mac():
       subprocess.call(
-          "find /var/folders -name '.org.chromium.*' -exec rm -v '{}' ';'",
+          "find /var/folders -name '.org.chromium.*' -exec rm -rfv '{}' ';'",
           shell=True)
       subprocess.call(
-          "find /var/folders -name '.com.google.Chrome*' -exec rm -v '{}' ';'",
+          "find /var/folders -name '.com.google.Chrome*' -exec rm -rfv '{}' ';'",
           shell=True)
 
   # Skip over hooks when run inside the toolchain build because
