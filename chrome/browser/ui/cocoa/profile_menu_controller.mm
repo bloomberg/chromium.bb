@@ -88,10 +88,9 @@ class Observer : public chrome::BrowserListObserver,
 }
 
 - (IBAction)switchToProfileFromDock:(id)sender {
-  // Explicitly bring to the foreground when creating new windows from the dock.
+  // Explicitly bring to the foreground when taking action from the dock.
   [NSApp activateIgnoringOtherApps:YES];
-  // The dock menu item is indented under "New Window" so always make a new one.
-  model_->SwitchToProfile([sender tag], true);
+  model_->SwitchToProfile([sender tag], false);
   ProfileMetrics::LogProfileSwitchUser(ProfileMetrics::SWITCH_PROFILE_DOCK);
 }
 
@@ -112,7 +111,7 @@ class Observer : public chrome::BrowserListObserver,
 
   if (dock) {
     NSString* headerName =
-        l10n_util::GetNSStringWithFixup(IDS_NEW_WINDOW_MAC);
+        l10n_util::GetNSStringWithFixup(IDS_PROFILES_OPTIONS_GROUP_NAME);
     scoped_nsobject<NSMenuItem> header(
         [[NSMenuItem alloc] initWithTitle:headerName
                                    action:NULL
@@ -129,11 +128,12 @@ class Observer : public chrome::BrowserListObserver,
     NSMenuItem* item = [self createItemWithTitle:name
                                           action:action];
     [item setTag:itemData.model_index];
-    [item setImage:itemData.icon.ToNSImage()];
-    if (itemData.active)
-      [item setState:NSOnState];
-    if (dock)
+    if (dock) {
       [item setIndentationLevel:1];
+    } else {
+      [item setImage:itemData.icon.ToNSImage()];
+      [item setState:itemData.active ? NSOnState : NSOffState];
+    }
     [menu insertItem:item atIndex:i + offset];
   }
 

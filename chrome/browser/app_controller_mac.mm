@@ -1198,24 +1198,23 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
   NSMenu* dockMenu = [[[NSMenu alloc] initWithTitle: @""] autorelease];
   Profile* profile = [self lastProfile];
 
-  BOOL handled = [profileMenuController_ insertItemsIntoMenu:dockMenu
-                                                    atOffset:0
-                                                    fromDock:YES];
+  BOOL profilesAdded = [profileMenuController_ insertItemsIntoMenu:dockMenu
+                                                          atOffset:0
+                                                          fromDock:YES];
+  if (profilesAdded)
+    [dockMenu addItem:[NSMenuItem separatorItem]];
 
-  if (!handled) {
-    NSString* titleStr = l10n_util::GetNSStringWithFixup(IDS_NEW_WINDOW_MAC);
-    scoped_nsobject<NSMenuItem> item(
-        [[NSMenuItem alloc] initWithTitle:titleStr
-                                   action:@selector(commandFromDock:)
-                            keyEquivalent:@""]);
-    [item setTarget:self];
-    [item setTag:IDC_NEW_WINDOW];
-    [dockMenu addItem:item];
-  }
-
-  NSString* titleStr =
-      l10n_util::GetNSStringWithFixup(IDS_NEW_INCOGNITO_WINDOW_MAC);
+  NSString* titleStr = l10n_util::GetNSStringWithFixup(IDS_NEW_WINDOW_MAC);
   scoped_nsobject<NSMenuItem> item(
+      [[NSMenuItem alloc] initWithTitle:titleStr
+                                 action:@selector(commandFromDock:)
+                          keyEquivalent:@""]);
+  [item setTarget:self];
+  [item setTag:IDC_NEW_WINDOW];
+  [dockMenu addItem:item];
+
+  titleStr = l10n_util::GetNSStringWithFixup(IDS_NEW_INCOGNITO_WINDOW_MAC);
+  item.reset(
       [[NSMenuItem alloc] initWithTitle:titleStr
                                  action:@selector(commandFromDock:)
                           keyEquivalent:@""]);
