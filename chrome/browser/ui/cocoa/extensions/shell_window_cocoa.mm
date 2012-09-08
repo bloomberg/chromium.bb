@@ -385,6 +385,10 @@ void ShellWindowCocoa::SetBounds(const gfx::Rect& bounds) {
   [window() setFrame:cocoa_bounds display:YES];
 }
 
+void ShellWindowCocoa::UpdateWindowIcon() {
+  // TODO(junmin): implement.
+}
+
 void ShellWindowCocoa::UpdateWindowTitle() {
   string16 title = shell_window_->GetTitle();
   [window() setTitle:base::SysUTF16ToNSString(title)];

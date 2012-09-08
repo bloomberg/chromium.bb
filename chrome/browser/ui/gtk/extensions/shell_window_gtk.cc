@@ -6,6 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/gtk_window_util.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/extensions/draggable_region.h"
@@ -15,6 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "ui/base/x/active_window_watcher_x.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 
 namespace {
@@ -316,6 +318,15 @@ void ShellWindowGtk::SetFullscreen(bool fullscreen) {
 
 bool ShellWindowGtk::IsFullscreenOrPending() const {
   return content_thinks_its_fullscreen_;
+}
+
+void ShellWindowGtk::UpdateWindowIcon() {
+  Profile* profile = shell_window_->profile();
+  gfx::Image app_icon = shell_window_->app_icon();
+  if (!app_icon.IsEmpty())
+    gtk_util::SetWindowIcon(window_, profile, app_icon.ToGdkPixbuf());
+  else
+    gtk_util::SetWindowIcon(window_, profile);
 }
 
 void ShellWindowGtk::UpdateWindowTitle() {

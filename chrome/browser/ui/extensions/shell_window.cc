@@ -171,6 +171,8 @@ void ShellWindow::Init(const GURL& url,
 
   // Prevent the browser process from shutting down while this window is open.
   browser::StartKeepAlive();
+
+  UpdateExtensionAppIcon();
 }
 
 ShellWindow::~ShellWindow() {
@@ -313,6 +315,27 @@ void ShellWindow::UpdateDraggableRegions(
   native_window_->UpdateDraggableRegions(regions);
 }
 
+void ShellWindow::OnImageLoaded(const gfx::Image& image,
+                                const std::string& extension_id,
+                                int index) {
+  if (!image.IsEmpty()) {
+    app_icon_ = image;
+    native_window_->UpdateWindowIcon();
+  }
+  app_icon_loader_.reset();
+}
+
+void ShellWindow::UpdateExtensionAppIcon() {
+  app_icon_loader_.reset(new ImageLoadingTracker(this));
+  app_icon_loader_->LoadImage(
+      extension(),
+      extension()->GetIconResource(extension_misc::EXTENSION_ICON_SMALLISH,
+                                   ExtensionIconSet::MATCH_BIGGER),
+      gfx::Size(extension_misc::EXTENSION_ICON_SMALLISH,
+                extension_misc::EXTENSION_ICON_SMALLISH),
+      ImageLoadingTracker::CACHE);
+}
+
 void ShellWindow::CloseContents(WebContents* contents) {
   DCHECK(contents == web_contents_);
   native_window_->Close();
@@ -355,6 +378,8 @@ void ShellWindow::NavigationStateChanged(
   DCHECK(source == web_contents_);
   if (changed_flags & content::INVALIDATE_TYPE_TITLE)
     native_window_->UpdateWindowTitle();
+  else if (changed_flags & content::INVALIDATE_TYPE_TAB)
+    native_window_->UpdateWindowIcon();
 }
 
 void ShellWindow::ToggleFullscreenModeForTab(content::WebContents* source,

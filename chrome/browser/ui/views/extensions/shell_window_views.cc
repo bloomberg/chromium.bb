@@ -6,6 +6,8 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/draggable_region.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/render_view_host.h"
@@ -561,10 +563,32 @@ void ShellWindowViews::OnViewWasResized() {
 #endif
 }
 
+gfx::ImageSkia ShellWindowViews::GetWindowAppIcon() {
+  gfx::Image app_icon = shell_window_->app_icon();
+  if (app_icon.IsEmpty())
+    return GetWindowIcon();
+  else
+    return *app_icon.ToImageSkia();
+}
+
+gfx::ImageSkia ShellWindowViews::GetWindowIcon() {
+  TabContents* contents = shell_window_->tab_contents();
+  if (contents) {
+    gfx::Image app_icon = contents->favicon_tab_helper()->GetFavicon();
+    if (!app_icon.IsEmpty())
+      return *app_icon.ToImageSkia();
+  }
+  return gfx::ImageSkia();
+}
+
 void ShellWindowViews::Layout() {
   DCHECK(web_view_);
   web_view_->SetBounds(0, 0, width(), height());
   OnViewWasResized();
+}
+
+void ShellWindowViews::UpdateWindowIcon() {
+  window_->UpdateWindowIcon();
 }
 
 void ShellWindowViews::UpdateWindowTitle() {

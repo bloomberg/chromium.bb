@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
+#include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/base_window.h"
 #include "content/public/browser/notification_observer.h"
@@ -14,6 +15,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/console_message_level.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 
 class GURL;
@@ -38,7 +40,8 @@ struct DraggableRegion;
 class ShellWindow : public content::NotificationObserver,
                     public content::WebContentsDelegate,
                     public content::WebContentsObserver,
-                    public ExtensionFunctionDispatcher::Delegate {
+                    public ExtensionFunctionDispatcher::Delegate,
+                    public ImageLoadingTracker::Observer  {
  public:
   struct CreateParams {
     enum Frame {
@@ -73,6 +76,7 @@ class ShellWindow : public content::NotificationObserver,
   TabContents* tab_contents() const { return contents_.get(); }
   content::WebContents* web_contents() const { return web_contents_; }
   Profile* profile() const { return profile_; }
+  const gfx::Image& app_icon() const { return app_icon_; }
 
   BaseWindow* GetBaseWindow();
   gfx::NativeWindow GetNativeWindow() {
@@ -161,6 +165,14 @@ class ShellWindow : public content::NotificationObserver,
   virtual void UpdateDraggableRegions(
     const std::vector<extensions::DraggableRegion>& regions);
 
+  // Load the app's image, firing a load state change when loaded.
+  void UpdateExtensionAppIcon();
+
+  // ImageLoadingTracker::Observer implementation.
+  virtual void OnImageLoaded(const gfx::Image& image,
+                             const std::string& extension_id,
+                             int index) OVERRIDE;
+
   Profile* profile_;  // weak pointer - owned by ProfileManager.
   // weak pointer - owned by ExtensionService.
   const extensions::Extension* extension_;
@@ -175,6 +187,12 @@ class ShellWindow : public content::NotificationObserver,
   content::WebContents* web_contents_;
   content::NotificationRegistrar registrar_;
   ExtensionFunctionDispatcher extension_function_dispatcher_;
+
+  // Icon showed in the task bar.
+  gfx::Image app_icon_;
+
+  // Used for loading app_icon_.
+  scoped_ptr<ImageLoadingTracker> app_icon_loader_;
 
   scoped_ptr<NativeShellWindow> native_window_;
 

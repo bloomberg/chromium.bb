@@ -17,15 +17,18 @@ class NativeShellWindow : public BaseWindow {
   static NativeShellWindow* Create(ShellWindow* window,
                                    const ShellWindow::CreateParams& params);
 
-  // Called when the title of the window changes.
-  virtual void UpdateWindowTitle() = 0;
-
   // Called when the draggable regions are changed.
   virtual void UpdateDraggableRegions(
       const std::vector<extensions::DraggableRegion>& regions) {}
 
   virtual void SetFullscreen(bool fullscreen) = 0;
   virtual bool IsFullscreenOrPending() const = 0;
+
+  // Called when the icon of the window changes.
+  virtual void UpdateWindowIcon() = 0;
+
+  // Called when the title of the window changes.
+  virtual void UpdateWindowTitle() = 0;
 
   // Allows the window to handle unhandled keyboard messages coming back from
   // the renderer.
