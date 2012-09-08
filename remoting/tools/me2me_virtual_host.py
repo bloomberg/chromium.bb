@@ -58,6 +58,7 @@ os.environ["XAUTHORITY"] = X_AUTH_FILE
 # Globals needed by the atexit cleanup() handler.
 g_desktops = []
 g_pidfile = None
+g_host_hash = hashlib.md5(socket.gethostname()).hexdigest()
 
 class Config:
   def __init__(self, path):
@@ -166,6 +167,7 @@ class Desktop:
     self.host_proc = None
     self.child_env = None
     self.sizes = sizes
+    self.pulseaudio_pipe = None
     g_desktops.append(self)
 
   @staticmethod
@@ -177,7 +179,69 @@ class Desktop:
       display += 1
     return display
 
-  def launch_x_server(self, extra_x_args):
+  def _init_child_env(self):
+    # Create clean environment for new session, so it is cleanly separated from
+    # the user's console X session.
+    self.child_env = {}
+    for key in [
+        "HOME",
+        "LANG",
+        "LOGNAME",
+        "PATH",
+        "SHELL",
+        "USER",
+        "USERNAME",
+        LOG_FILE_ENV_VAR]:
+      if os.environ.has_key(key):
+        self.child_env[key] = os.environ[key]
+
+  def _setup_pulseaudio(self):
+    self.pulseaudio_pipe = None
+
+    # pulseaudio uses UNIX sockets for communication. Length of UNIX socket
+    # name is limited to 108 characters, so audio will not work properly if
+    # the path is too long. To workaround this problem we use only first 10
+    # symbols of the host hash.
+    pulse_path = os.path.join(CONFIG_DIR,
+                              "pulseaudio#%s" % g_host_hash[0:10])
+    if len(pulse_path) + len("/native") >= 108:
+      logging.error("Audio will not be enabled because pulseaudio UNIX " +
+                    "socket path is too long.")
+      return False
+
+    sink_name = "chrome_remote_desktop_session"
+    pipe_name = os.path.join(pulse_path, "fifo_output")
+
+    try:
+      if not os.path.exists(pulse_path):
+        os.mkdir(pulse_path)
+      if not os.path.exists(pipe_name):
+        os.mkfifo(pipe_name)
+    except IOError, e:
+      logging.error("Failed to create pulseaudio pipe: " + str(e))
+      return False
+
+    try:
+      pulse_config = open(os.path.join(pulse_path, "default.pa"), "w")
+      pulse_config.write("load-module module-native-protocol-unix\n")
+      pulse_config.write(
+          ("load-module module-pipe-sink sink_name=%s file=\"%s\" " +
+           "rate=44100 channels=2 format=s16le\n") %
+          (sink_name, pipe_name))
+      pulse_config.close()
+    except IOError, e:
+      logging.error("Failed to write pulseaudio config: " + str(e))
+      return False
+
+    self.child_env["PULSE_CONFIG_PATH"] = pulse_path
+    self.child_env["PULSE_RUNTIME_PATH"] = pulse_path
+    self.child_env["PULSE_STATE_PATH"] = pulse_path
+    self.child_env["PULSE_SINK"] = sink_name
+    self.pulseaudio_pipe = pipe_name
+
+    return True
+
+  def _launch_x_server(self, extra_x_args):
     devnull = open(os.devnull, "rw")
     display = self.get_unused_display_number()
     ret_code = subprocess.call("xauth add :%d . `mcookie`" % display,
@@ -204,22 +268,8 @@ class Desktop:
     if not self.x_proc.pid:
       raise Exception("Could not start Xvfb.")
 
-    # Create clean environment for new session, so it is cleanly separated from
-    # the user's console X session.
-    self.child_env = {
-        "DISPLAY": ":%d" % display,
-        "CHROME_REMOTE_DESKTOP_SESSION": "1" }
-    for key in [
-        "HOME",
-        "LANG",
-        "LOGNAME",
-        "PATH",
-        "SHELL",
-        "USER",
-        "USERNAME",
-        LOG_FILE_ENV_VAR]:
-      if os.environ.has_key(key):
-        self.child_env[key] = os.environ[key]
+    self.child_env["DISPLAY"] = ":%d" % display
+    self.child_env["CHROME_REMOTE_DESKTOP_SESSION"] = "1"
 
     # Wait for X to be active.
     for _test in range(5):
@@ -271,7 +321,7 @@ class Desktop:
 
     devnull.close()
 
-  def launch_x_session(self):
+  def _launch_x_session(self):
     # Start desktop session
     # The /dev/null input redirection is necessary to prevent the X session
     # reading from stdin.  If this code runs as a shell background job in a
@@ -286,9 +336,17 @@ class Desktop:
     if not self.session_proc.pid:
       raise Exception("Could not start X session")
 
+  def launch_session(self, x_args):
+    self._init_child_env()
+    self._setup_pulseaudio()
+    self._launch_x_server(x_args)
+    self._launch_x_session()
+
   def launch_host(self, host_config):
     # Start remoting host
     args = [locate_executable(HOST_BINARY_NAME), "--host-config=/dev/stdin"]
+    if self.pulseaudio_pipe:
+      args.append("--audio-pipe-name=%s" % self.pulseaudio_pipe)
     self.host_proc = subprocess.Popen(args, env=self.child_env,
                                       stdin=subprocess.PIPE)
     logging.info(args)
@@ -578,8 +636,7 @@ Web Store: https://chrome.google.com/remotedesktop"""
                     help="Prints version of the host.")
   (options, args) = parser.parse_args()
 
-  host_hash = hashlib.md5(socket.gethostname()).hexdigest()
-  pid_filename = os.path.join(CONFIG_DIR, "host#%s.pid" % host_hash)
+  pid_filename = os.path.join(CONFIG_DIR, "host#%s.pid" % g_host_hash)
 
   # Check for a modal command-line option (start, stop, etc.)
   if options.check_running:
@@ -656,7 +713,7 @@ Web Store: https://chrome.google.com/remotedesktop"""
 
   atexit.register(cleanup)
 
-  config_filename = os.path.join(CONFIG_DIR, "host#%s.json" % host_hash)
+  config_filename = os.path.join(CONFIG_DIR, "host#%s.json" % g_host_hash)
   host_config = Config(config_filename)
 
   for s in [signal.SIGHUP, signal.SIGINT, signal.SIGTERM, signal.SIGUSR1]:
@@ -727,8 +784,7 @@ Web Store: https://chrome.google.com/remotedesktop"""
         # Neither process has been started yet. Do so now.
         logging.info("Launching X server and X session.")
         last_launch_time = time.time()
-        desktop.launch_x_server(args)
-        desktop.launch_x_session()
+        desktop.launch_session(args)
       else:
         # Both processes have terminated. Since the user's desktop is already
         # gone at this point, there's no state to lose and now is a good time
