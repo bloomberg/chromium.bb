@@ -614,8 +614,16 @@ bool AcceleratorController::PerformAction(int action,
           shell->GetGridSize());
       if (wm::IsWindowFullscreen(window) ||
           wm::IsWindowMaximized(window)) {
+        // Before we can set the bounds we need to restore the window.
+        // Restoring the window will set the window to its restored bounds.
+        // To avoid an unnecessary bounds changes (which may have side effects)
+        // we set the restore bounds to the bounds we want, restore the window,
+        // then reset the restore bounds. This way no unnecessary bounds
+        // changes occurs and the original restore bounds is remembered.
+        gfx::Rect restore = *GetRestoreBoundsInScreen(window);
         SetRestoreBoundsInParent(window, sizer.GetSnapBounds(window->bounds()));
         wm::RestoreWindow(window);
+        SetRestoreBoundsInScreen(window, restore);
       } else {
         window->SetBounds(sizer.GetSnapBounds(window->bounds()));
       }

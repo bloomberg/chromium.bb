@@ -421,9 +421,6 @@ TEST_F(AcceleratorControllerTest, WindowSnap) {
     GetController()->PerformAction(WINDOW_SNAP_LEFT, dummy);
     EXPECT_NE(window->bounds().ToString(), snap_left.ToString());
 
-    GetController()->PerformAction(WINDOW_SNAP_LEFT, dummy);
-    EXPECT_NE(window->bounds().ToString(), snap_left.ToString());
-
     // It should cycle back to the first snapped position.
     GetController()->PerformAction(WINDOW_SNAP_LEFT, dummy);
     EXPECT_EQ(window->bounds().ToString(), snap_left.ToString());
@@ -431,9 +428,6 @@ TEST_F(AcceleratorControllerTest, WindowSnap) {
   {
     GetController()->PerformAction(WINDOW_SNAP_RIGHT, dummy);
     gfx::Rect snap_right = window->bounds();
-    GetController()->PerformAction(WINDOW_SNAP_RIGHT, dummy);
-    EXPECT_NE(window->bounds().ToString(), snap_right.ToString());
-
     GetController()->PerformAction(WINDOW_SNAP_RIGHT, dummy);
     EXPECT_NE(window->bounds().ToString(), snap_right.ToString());
 

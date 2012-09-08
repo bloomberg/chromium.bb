@@ -372,6 +372,7 @@ TEST_F(CustomFrameViewAshTest, MaximizeLeftByButton) {
   EXPECT_FALSE(ash::wm::IsWindowMinimized(window));
   internal::SnapSizer sizer(window, button_pos,
       internal::SnapSizer::LEFT_EDGE, kGridSize);
+  sizer.SelectDefaultSizeAndDisableResize();
   EXPECT_EQ(sizer.target_bounds().ToString(), window->bounds().ToString());
 }
 

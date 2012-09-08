@@ -110,7 +110,7 @@ void PhantomWindowController::Show(const gfx::Rect& bounds, ui::Layer* layer) {
     start_bounds_ = phantom_widget_->GetWindowBoundsInScreen();
   }
   animation_.reset(new ui::SlideAnimation(this));
-  animation_->SetTweenType(ui::Tween::SMOOTH_IN_OUT);
+  animation_->SetTweenType(ui::Tween::EASE_IN);
   animation_->SetSlideDuration(kAnimationDuration);
   animation_->Show();
 }

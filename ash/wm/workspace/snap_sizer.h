@@ -42,22 +42,27 @@ class ASH_EXPORT SnapSizer {
   // then it returns the next snap-bounds).
   gfx::Rect GetSnapBounds(const gfx::Rect& bounds);
 
+  // Set the snap sizer to the button press default size and prevent resizing.
+  void SelectDefaultSizeAndDisableResize();
+
+  // Returns the target bounds based on the edge and the provided |size_index|.
+  // For unit test purposes this function is not private.
+  gfx::Rect GetTargetBoundsForSize(size_t size_index) const;
+
  private:
   // Calculates the amount to increment by. This returns one of -1, 0 or 1 and
-  // is intended to by applied to |percent_index_|. |x| is the current
+  // is intended to by applied to |size_index_|. |x| is the current
   // x-coordinate, and |reference_x| is used to determine whether to increase
   // or decrease the position. It's one of |last_adjust_x_| or |last_update_x_|.
   int CalculateIncrement(int x, int reference_x) const;
 
   // Changes the bounds. |x| is the current x-coordinate and |delta| the amount
   // to increase by. |delta| comes from CalculateIncrement() and is applied
-  // to |percent_index_|.
+  // to |size_index_|.
   void ChangeBounds(int x, int delta);
 
-  // Returns the target bounds based on the edge and |percent_index_|.
+  // Returns the target bounds based on the edge and |size_index_|.
   gfx::Rect GetTargetBounds() const;
-
-  gfx::Rect GetTargetBoundsForPercent(int percent_index) const;
 
   // Returns true if the specified point is along the edge of the screen.
   bool AlongEdge(int x) const;
@@ -74,9 +79,13 @@ class ASH_EXPORT SnapSizer {
   // Time Update() was last invoked.
   base::TimeTicks time_last_update_;
 
-  // Index into |kPercents| that dictates the width of the screen the target
+  // Index into |kSizes| that dictates the width of the screen the target
   // bounds should get.
-  int percent_index_;
+  int size_index_;
+
+  // If set, |size_index_| will get ignored and the single button default
+  // setting will be used instead.
+  bool resize_disabled_;
 
   // Number of times Update() has been invoked since last ChangeBounds().
   int num_moves_since_adjust_;

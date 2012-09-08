@@ -155,7 +155,7 @@ void FrameMaximizeButton::SnapButtonHovered(SnapType type) {
       // We should not come here.
       NOTREACHED();
   }
-  UpdateSnap(location);
+  UpdateSnap(location, true);
 }
 
 void FrameMaximizeButton::ExecuteSnapAndCloseMenu(SnapType snap_type) {
@@ -333,7 +333,7 @@ void FrameMaximizeButton::ProcessUpdateEvent(const ui::LocatedEvent& event) {
         views::View::ExceededDragThreshold(delta_x, delta_y);
   }
   if (exceeded_drag_threshold_)
-    UpdateSnap(event.location());
+    UpdateSnap(event.location(), false);
 }
 
 bool FrameMaximizeButton::ProcessEndEvent(const ui::LocatedEvent& event) {
@@ -389,10 +389,11 @@ void FrameMaximizeButton::UpdateSnapFromEventLocation() {
   if (exceeded_drag_threshold_)
     return;
   exceeded_drag_threshold_ = true;
-  UpdateSnap(press_location_);
+  UpdateSnap(press_location_, false);
 }
 
-void FrameMaximizeButton::UpdateSnap(const gfx::Point& location) {
+void FrameMaximizeButton::UpdateSnap(const gfx::Point& location,
+                                     bool select_default) {
   SnapType type = SnapTypeForLocation(location);
   if (type == snap_type_) {
     if (snap_sizer_.get()) {
@@ -420,6 +421,8 @@ void FrameMaximizeButton::UpdateSnap(const gfx::Point& location) {
     snap_sizer_.reset(new SnapSizer(frame_->GetWidget()->GetNativeWindow(),
                                     LocationForSnapSizer(location),
                                     snap_edge, grid_size));
+    if (select_default)
+      snap_sizer_->SelectDefaultSizeAndDisableResize();
   }
   if (!phantom_window_.get()) {
     phantom_window_.reset(new internal::PhantomWindowController(

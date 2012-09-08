@@ -16,11 +16,11 @@ namespace internal {
 
 namespace {
 
-// Percent of the screen (width) to give the window.
-const float kPercents[] = { .5f, 2.0f / 3.0f, .8f };
+// Sizes in pixel for the width of a given window.
+const int kSizes[] = { 1280, 1024, 768, 640 };
 
-// Windows are initially snapped to the percent at index 0. The index into
-// |kPercents| is changed if any of the following happen:
+// Windows are initially snapped to the size at index 0. The index into
+// |kSizes| is changed if any of the following happen:
 // . The user stops moving the mouse for |kDelayBeforeIncreaseMS| and then moves
 //   the mouse again.
 // . The mouse moves |kPixelsBeforeAdjust| horizontal pixels.
@@ -29,6 +29,10 @@ const float kPercents[] = { .5f, 2.0f / 3.0f, .8f };
 const int kDelayBeforeIncreaseMS = 500;
 const int kMovesBeforeAdjust = 50;
 const int kPixelsBeforeAdjust = 100;
+
+// When the smallest resolution does not fit on the screen, we take this
+// fraction of the available space.
+const int kMinimumScreenPercent = 90;
 
 }  // namespace
 
@@ -40,7 +44,8 @@ SnapSizer::SnapSizer(aura::Window* window,
       edge_(edge),
       grid_size_(grid_size),
       time_last_update_(base::TimeTicks::Now()),
-      percent_index_(0),
+      size_index_(0),
+      resize_disabled_(false),
       num_moves_since_adjust_(0),
       last_adjust_x_(start.x()),
       last_update_x_(start.x()) {
@@ -67,15 +72,56 @@ void SnapSizer::Update(const gfx::Point& location) {
 }
 
 gfx::Rect SnapSizer::GetSnapBounds(const gfx::Rect& bounds) {
-  size_t current;
-  for (current = 0; current < arraysize(kPercents); ++current) {
-    gfx::Rect target = GetTargetBoundsForPercent(current);
-    if (target == bounds) {
-      ++current;
-      break;
+  size_t current = 0;
+  if (!resize_disabled_) {
+    for (current = arraysize(kSizes) - 1; current; current--) {
+      gfx::Rect target = GetTargetBoundsForSize(current);
+      if (target == bounds) {
+        ++current;
+        break;
+      }
     }
   }
-  return GetTargetBoundsForPercent(current % arraysize(kPercents));
+  return GetTargetBoundsForSize(current % arraysize(kSizes));
+}
+
+void SnapSizer::SelectDefaultSizeAndDisableResize() {
+  resize_disabled_ = true;
+  size_index_ = 0;
+  target_bounds_ = GetTargetBounds();
+}
+
+gfx::Rect SnapSizer::GetTargetBoundsForSize(size_t size_index) const {
+  gfx::Rect work_area(ScreenAsh::GetUnmaximizedWorkAreaBoundsInParent(window_));
+  int y = WindowResizer::AlignToGridRoundUp(work_area.y(), grid_size_);
+  // We don't align to the bottom of the grid as the launcher may not
+  // necessarily align to the grid (happens when auto-hidden).
+  int max_y = work_area.bottom();
+  int width = kSizes[size_index];
+  if (resize_disabled_) {
+    width = std::max(1024, work_area.width() / 2);
+  } else {
+    while (width >= work_area.width()) {
+      if (size_index >= arraysize(kSizes))
+        break;
+      width = kSizes[++size_index];
+    }
+  }
+
+  // Make sure that we keep the size of the window smaller then a certain
+  // fraction of the screen space.
+  width = std::min(width, kMinimumScreenPercent * work_area.width() / 100);
+
+  if (edge_ == LEFT_EDGE) {
+    int x = WindowResizer::AlignToGridRoundUp(work_area.x(), grid_size_);
+    int mid_x = WindowResizer::AlignToGridRoundUp(
+        work_area.x() + width, grid_size_);
+    return gfx::Rect(x, y, mid_x - x, max_y - y);
+  }
+  int max_x =
+      WindowResizer::AlignToGridRoundDown(work_area.right(), grid_size_);
+  int x = WindowResizer::AlignToGridRoundUp(max_x - width, grid_size_);
+  return gfx::Rect(x , y, max_x - x, max_y - y);
 }
 
 int SnapSizer::CalculateIncrement(int x, int reference_x) const {
@@ -95,10 +141,10 @@ int SnapSizer::CalculateIncrement(int x, int reference_x) const {
 }
 
 void SnapSizer::ChangeBounds(int x, int delta) {
-  int index = std::min(static_cast<int>(arraysize(kPercents)) - 1,
-                       std::max(percent_index_ + delta, 0));
-  if (index != percent_index_) {
-    percent_index_ = index;
+  int index = std::min(static_cast<int>(arraysize(kSizes)) - 1,
+                       std::max(size_index_ + delta, 0));
+  if (index != size_index_) {
+    size_index_ = index;
     target_bounds_ = GetTargetBounds();
   }
   num_moves_since_adjust_ = 0;
@@ -106,26 +152,7 @@ void SnapSizer::ChangeBounds(int x, int delta) {
 }
 
 gfx::Rect SnapSizer::GetTargetBounds() const {
-  return GetTargetBoundsForPercent(percent_index_);
-}
-
-gfx::Rect SnapSizer::GetTargetBoundsForPercent(int percent_index) const {
-  gfx::Rect work_area(ScreenAsh::GetUnmaximizedWorkAreaBoundsInParent(window_));
-  int y = WindowResizer::AlignToGridRoundUp(work_area.y(), grid_size_);
-  // We don't align to the bottom of the grid as the launcher may not
-  // necessarily align to the grid (happens when auto-hidden).
-  int max_y = work_area.bottom();
-  int width = static_cast<float>(work_area.width()) * kPercents[percent_index];
-  if (edge_ == LEFT_EDGE) {
-    int x = WindowResizer::AlignToGridRoundUp(work_area.x(), grid_size_);
-    int mid_x = WindowResizer::AlignToGridRoundUp(
-        work_area.x() + width, grid_size_);
-    return gfx::Rect(x, y, mid_x - x, max_y - y);
-  }
-  int max_x =
-      WindowResizer::AlignToGridRoundDown(work_area.right(), grid_size_);
-  int x = WindowResizer::AlignToGridRoundUp(max_x - width, grid_size_);
-  return gfx::Rect(x , y, max_x - x, max_y - y);
+  return GetTargetBoundsForSize(size_index_);
 }
 
 bool SnapSizer::AlongEdge(int x) const {

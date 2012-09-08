@@ -101,8 +101,9 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton,
   // |update_timer_|.
   void UpdateSnapFromEventLocation();
 
-  // Updates |snap_type_| based on a mouse drag.
-  void UpdateSnap(const gfx::Point& location);
+  // Updates |snap_type_| based on a mouse drag. If |select_default| is set,
+  // the single button click default setting of the snap sizer should be used.
+  void UpdateSnap(const gfx::Point& location, bool select_default);
 
   // Returns the type of snap based on the specified location.
   SnapType SnapTypeForLocation(const gfx::Point& location) const;

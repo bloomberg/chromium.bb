@@ -12,6 +12,7 @@
 #include "ash/wm/property_util.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
+#include "ash/wm/workspace/snap_sizer.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "base/string_number_conversions.h"
 #include "ui/aura/root_window.h"
@@ -465,7 +466,7 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
     ASSERT_TRUE(resizer.get());
     resizer->Drag(CalculateDragPoint(*resizer, 0, 10), 0);
     resizer->CompleteDrag(0);
-    EXPECT_EQ("0,0 400x" + base::IntToString(bottom),
+    EXPECT_EQ("0,0 720x" + base::IntToString(bottom),
               window_->bounds().ToString());
     ASSERT_TRUE(GetRestoreBoundsInScreen(window_.get()));
     EXPECT_EQ("20,30 50x60",
@@ -479,7 +480,7 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
   ASSERT_TRUE(resizer.get());
   resizer->Drag(CalculateDragPoint(*resizer, 800, 10), 0);
   resizer->CompleteDrag(0);
-  EXPECT_EQ("400,0 400x" + base::IntToString(bottom),
+  EXPECT_EQ("80,0 720x" + base::IntToString(bottom),
             window_->bounds().ToString());
   ASSERT_TRUE(GetRestoreBoundsInScreen(window_.get()));
   EXPECT_EQ("20,30 50x60", GetRestoreBoundsInScreen(window_.get())->ToString());
@@ -902,6 +903,23 @@ TEST_F(WorkspaceWindowResizerTest, CtrlCompleteDragMoveToExactPosition) {
   resizer->Drag(CalculateDragPoint(*resizer, 10, 12), 0);
   resizer->CompleteDrag(ui::EF_CONTROL_DOWN);
   EXPECT_EQ("106,124 320x160", window_->bounds().ToString());
+}
+
+// Check that only usable sizes get returned by the resizer.
+TEST_F(WorkspaceWindowResizerTest, TestProperSizerResolutions) {
+  window_->SetBounds(gfx::Rect(96, 112, 320, 160));
+  SetGridSize(16);
+  scoped_ptr<SnapSizer> resizer(new SnapSizer(
+      window_.get(), gfx::Point(), SnapSizer::LEFT_EDGE, 1));
+  ASSERT_TRUE(resizer.get());
+  gfx::Rect rect = resizer->GetTargetBoundsForSize(0);
+  EXPECT_EQ("0,0 720x552", rect.ToString());
+  rect = resizer->GetTargetBoundsForSize(1);
+  EXPECT_EQ("0,0 720x552", rect.ToString());
+  rect = resizer->GetTargetBoundsForSize(2);
+  EXPECT_EQ("0,0 720x552", rect.ToString());
+  rect = resizer->GetTargetBoundsForSize(3);
+  EXPECT_EQ("0,0 640x552", rect.ToString());
 }
 
 }  // namespace internal
