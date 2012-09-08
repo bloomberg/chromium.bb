@@ -28,8 +28,8 @@ ARCHIVED_PEXE_TRANSLATOR_REV=9326
 # test. The toolchain downloader expects this information in a specially
 # formatted file. We generate that file in this script from this information,
 # to keep all our versions in one place
-ARCHIVED_TOOLCHAIN_REV=9575
-ARCHIVED_TOOLCHAIN_HASH=0e7dba42b0c792a5d40f5293f56d1e7268ee4ab7
+ARCHIVED_TOOLCHAIN_REV=9576
+ARCHIVED_TOOLCHAIN_HASH=0d1d0230713263feafed041c08e7b1725db9b9cf
 
 readonly PNACL_BUILD="pnacl/build.sh"
 readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
@@ -162,7 +162,7 @@ archived-frontend-test() {
 
   # Generate a toolchain version file for the downloader, and run it
   echo PNACL_VERSION=${ARCHIVED_TOOLCHAIN_REV} > TEST_TOOL_REVISIONS
-  echo NACL_TOOL_PNACL_LINUX_X86_64_HASH=${ARCHIVED_TOOLCHAIN_HASH} >> \
+  echo NACL_TOOL_PNACL_LINUX_X86_32_HASH=${ARCHIVED_TOOLCHAIN_HASH} >> \
     TEST_TOOL_REVISIONS
   ${DOWNLOAD_TOOLCHAINS} --no-x86 --no-arm-trusted --no-pnacl-translator \
     --toolchain-dir=toolchain/archived_tc \
