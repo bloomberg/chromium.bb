@@ -9,7 +9,6 @@
   },
   "permissions": [
     "fileBrowserHandler",
-    "tabs",
     "unlimitedStorage"
   ]
 }

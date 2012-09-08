@@ -31,7 +31,7 @@ function errorCallback(error) {
         break;
     };
   }
-  console.log(msg);
+
   chrome.test.fail(msg);
 }
 

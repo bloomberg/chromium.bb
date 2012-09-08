@@ -2,6 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// The file contains the implementation of
+// fileBrowserHandlerInternal.selectFile extension function.
+// When invoked, the function does the following:
+//  - Verifies that the extension function was invoked as a result of user
+//    gesture.
+//  - Display 'save as' dialog using FileSelectorImpl which waits for the user
+//    feedback.
+//  - Once the user selects the file path (or cancels the selection),
+//    FileSelectorImpl notifies FileHandlerSelectFileFunction of the selection
+//    result by calling FileHandlerSelectFile::OnFilePathSelected.
+//  - If the selection was canceled, FileHandlerSelectFileFunction returns
+//    reporting failure.
+//  - If the file path was selected, the function opens external file system
+//    needed to create FileEntry object for the selected path
+//    (opening file system will create file system name and root url for the
+//    caller's external file system).
+//  - The function grants permissions needed to read/write/create file under the
+//    selected path. To grant permissions to the caller, caller's extension ID
+//    has to be allowed to access the files virtual path (e.g. /Downloads/foo)
+//    in ExternalFileSystemMountPointProvider. Additionally, the callers render
+//    process ID has to be granted read, write and create permissions for the
+//    selected file's full filesystem path (e.g.
+//    /home/chronos/user/Downloads/foo) in ChildProcessSecurityPolicy.
+//  - If the selected file path is on drive mount point, read access permissions
+//    for file's possible local drive cache paths have to be granted to caller's
+//    render process ID in ChildProcessSecurityPolicy.
+//  - After the required file access permissions are granted, result object is
+//    created and returned back.
+
 #include "chrome/browser/chromeos/extensions/file_browser_handler_api.h"
 
 #include "base/bind.h"
@@ -31,8 +60,10 @@
 #include "ui/base/dialogs/select_file_dialog.h"
 
 using content::BrowserContext;
+using content::BrowserThread;
 using extensions::api::file_browser_handler_internal::FileEntryInfo;
 using file_handler::FileSelector;
+using file_handler::FileSelectorFactory;
 
 namespace SelectFile =
     extensions::api::file_browser_handler_internal::SelectFile;
@@ -43,27 +74,32 @@ const char kNoUserGestureError[] =
     "This method can only be called in response to user gesture, such as a "
     "mouse click or key press.";
 
-// File selector implementation. It is bound to SelectFileFunction instance.
+// File selector implementation.
 // When |SelectFile| is invoked, it will show save as dialog and listen for user
 // action. When user selects the file (or closes the dialog), the function's
 // |OnFilePathSelected| method will be called with the result.
-// When |SelectFile| is called, the class instance takes ownership of itself.
+// SelectFile should be called only once, because the class instance takes
+// ownership of itself after the first call. It will delete itself after the
+// extension function is notified of file selection result.
+// Since the extension function object is ref counted, FileSelectorImpl holds
+// a reference to it to ensure that the extension function doesn't go away while
+// waiting for user action. The reference is released after the function is
+// notified of the selection result.
 class FileSelectorImpl : public FileSelector,
                          public ui::SelectFileDialog::Listener {
  public:
-  explicit FileSelectorImpl(FileHandlerSelectFileFunction* function);
+  explicit FileSelectorImpl();
   virtual ~FileSelectorImpl() OVERRIDE;
 
  protected:
   // file_handler::FileSelectr overrides.
   // Shows save as dialog with suggested name in window bound to |browser|.
   // After this method is called, the selector implementation should not be
-  // deleted. It will delete itself after it receives response from
-  // SelectFielDialog.
+  // deleted by the caller. It will delete itself after it receives response
+  // from SelectFielDialog.
   virtual void SelectFile(const FilePath& suggested_name,
-                          Browser* browser) OVERRIDE;
-  virtual void set_function_for_test(
-      FileHandlerSelectFileFunction* function) OVERRIDE;
+                          Browser* browser,
+                          FileHandlerSelectFileFunction* function) OVERRIDE;
 
   // ui::SelectFileDialog::Listener overrides.
   virtual void FileSelected(const FilePath& path,
@@ -74,7 +110,20 @@ class FileSelectorImpl : public FileSelector,
   virtual void FileSelectionCanceled(void* params) OVERRIDE;
 
  private:
-  bool DoSelectFile(const FilePath& suggeste_name, Browser* browser);
+  // Initiates and shows 'save as' dialog which will be used to prompt user to
+  // select a file path. The initial selected file name in the dialog will be
+  // set to |suggested_name|. The dialog will be bound to the tab active in
+  // |browser|.
+  // Returns boolean indicating whether the dialog has been successfully shown
+  // to the user.
+  bool StartSelectFile(const FilePath& suggested_name, Browser* browser);
+
+  // Reacts to the user action reported by the dialog and notifies |function_|
+  // about file selection result (by calling |OnFilePathSelected()|).
+  // The |this| object is self destruct after the function is notified.
+  // |success| indicates whether user has selectd the file.
+  // |selected_path| is path that was selected. It is empty if the file wasn't
+  // selected.
   void SendResponse(bool success, const FilePath& selected_path);
 
   // Dialog that is shown by selector.
@@ -86,9 +135,7 @@ class FileSelectorImpl : public FileSelector,
   DISALLOW_COPY_AND_ASSIGN(FileSelectorImpl);
 };
 
-FileSelectorImpl::FileSelectorImpl(FileHandlerSelectFileFunction* function)
-    : function_(function) {
-}
+FileSelectorImpl::FileSelectorImpl() {}
 
 FileSelectorImpl::~FileSelectorImpl() {
   if (dialog_.get())
@@ -99,8 +146,13 @@ FileSelectorImpl::~FileSelectorImpl() {
 }
 
 void FileSelectorImpl::SelectFile(const FilePath& suggested_name,
-                                  Browser* browser) {
-  if (!DoSelectFile(suggested_name, browser)) {
+                                  Browser* browser,
+                                  FileHandlerSelectFileFunction* function) {
+  // We will hold reference to the function until it is notified of selection
+  // result.
+  function_ = function;
+
+  if (!StartSelectFile(suggested_name, browser)) {
     // If the dialog wasn't launched, let's asynchronously report failure to the
     // function.
     base::MessageLoopProxy::current()->PostTask(FROM_HERE,
@@ -109,14 +161,9 @@ void FileSelectorImpl::SelectFile(const FilePath& suggested_name,
   }
 }
 
-// This should be used in testing only.
-void FileSelectorImpl::set_function_for_test(
-    FileHandlerSelectFileFunction* function) {
-  NOTREACHED();
-}
-
-bool FileSelectorImpl::DoSelectFile(const FilePath& suggested_name,
-                                    Browser* browser) {
+bool FileSelectorImpl::StartSelectFile(const FilePath& suggested_name,
+                                       Browser* browser) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!dialog_.get());
   DCHECK(browser);
 
@@ -160,17 +207,37 @@ void FileSelectorImpl::FileSelectionCanceled(
 
 void FileSelectorImpl::SendResponse(bool success,
                                     const FilePath& selected_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   // We don't want to send multiple responses.
   if (function_.get())
     function_->OnFilePathSelected(success, selected_path);
   function_ = NULL;
 }
 
+// FileSelectorFactory implementation.
+class FileSelectorFactoryImpl : public FileSelectorFactory {
+ public:
+  FileSelectorFactoryImpl() {}
+  virtual ~FileSelectorFactoryImpl() {}
+
+  // FileSelectorFactory implementation.
+  // Creates new FileSelectorImplementation for the function.
+  virtual FileSelector* CreateFileSelector() const OVERRIDE {
+    return new FileSelectorImpl();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FileSelectorFactoryImpl);
+};
+
 typedef base::Callback<void (bool success,
                              const std::string& file_system_name,
                              const GURL& file_system_root)>
     FileSystemOpenCallback;
 
+// Relays callback from file system open operation by translating file error
+// returned by the operation to success boolean.
 void RunOpenFileSystemCallback(
     const FileSystemOpenCallback& callback,
     base::PlatformFileError error,
@@ -182,18 +249,17 @@ void RunOpenFileSystemCallback(
 
 }  // namespace
 
-FileHandlerSelectFileFunction::FileHandlerSelectFileFunction() {}
-
-// static
-void FileHandlerSelectFileFunction::set_file_selector_for_test(
-    FileSelector* file_selector) {
-  FileHandlerSelectFileFunction::file_selector_for_test_ = file_selector;
+FileHandlerSelectFileFunction::FileHandlerSelectFileFunction()
+    : file_selector_factory_(new FileSelectorFactoryImpl()),
+      user_gesture_check_enabled_(true) {
 }
 
-// static
-void FileHandlerSelectFileFunction::set_gesture_check_disabled_for_test(
-    bool disabled) {
-  FileHandlerSelectFileFunction::gesture_check_disabled_for_test_ = disabled;
+FileHandlerSelectFileFunction::FileHandlerSelectFileFunction(
+    FileSelectorFactory* file_selector_factory,
+    bool enable_user_gesture_check)
+    : file_selector_factory_(file_selector_factory),
+      user_gesture_check_enabled_(enable_user_gesture_check) {
+  DCHECK(file_selector_factory);
 }
 
 FileHandlerSelectFileFunction::~FileHandlerSelectFileFunction() {}
@@ -203,15 +269,15 @@ bool FileHandlerSelectFileFunction::RunImpl() {
 
   FilePath suggested_name(params->selection_params.suggested_name);
 
-  if (!user_gesture() && !gesture_check_disabled_for_test_) {
+  if (!user_gesture() && user_gesture_check_enabled_) {
     error_ = kNoUserGestureError;
     return false;
   }
 
-  // If |file_selector_| is set (e.g. in test), use it instesad of creating new
-  // file selector.
-  FileSelector* file_selector = GetFileSelector();
-  file_selector->SelectFile(suggested_name.BaseName(), GetCurrentBrowser());
+  FileSelector* file_selector = file_selector_factory_->CreateFileSelector();
+  file_selector->SelectFile(suggested_name.BaseName(),
+                            GetCurrentBrowser(),
+                            this);
   return true;
 }
 
@@ -219,12 +285,14 @@ void FileHandlerSelectFileFunction::OnFilePathSelected(
     bool success,
     const FilePath& full_path) {
   if (!success) {
-    Respond(false, std::string(), GURL(), FilePath());
+    Respond(false);
     return;
   }
 
   full_path_ = full_path;
 
+  // We have to open file system in order to create a FileEntry object for the
+  // selected file path.
   BrowserContext::GetFileSystemContext(profile_)->OpenFileSystem(
       source_url_.GetOrigin(), fileapi::kFileSystemTypeExternal, false,
       base::Bind(&RunOpenFileSystemCallback,
@@ -236,95 +304,87 @@ void FileHandlerSelectFileFunction::OnFileSystemOpened(
     bool success,
     const std::string& file_system_name,
     const GURL& file_system_root) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (success) {
-    GrantPermissions(base::Bind(
-        &FileHandlerSelectFileFunction::Respond, this,
-            success, file_system_name, file_system_root));
+  if (!success) {
+    Respond(false);
     return;
   }
-  Respond(success, file_system_name, file_system_root, FilePath());
+
+  // Remember opened file system's parameters.
+  file_system_name_ = file_system_name;
+  file_system_root_ = file_system_root;
+
+  GrantPermissions();
 }
 
-void FileHandlerSelectFileFunction::GrantPermissions(
-    const GrantPermissionsCallback& callback) {
+void FileHandlerSelectFileFunction::GrantPermissions() {
   fileapi::ExternalFileSystemMountPointProvider* external_provider =
       BrowserContext::GetFileSystemContext(profile_)->external_provider();
   DCHECK(external_provider);
 
-  FilePath virtual_path;
-  external_provider->GetVirtualPath(full_path_, &virtual_path);
-  DCHECK(!virtual_path.empty());
+  external_provider->GetVirtualPath(full_path_, &virtual_path_);
+  DCHECK(!virtual_path_.empty());
 
   // Grant access to this particular file to target extension. This will
   // ensure that the target extension can access only this FS entry and
   // prevent from traversing FS hierarchy upward.
-  external_provider->GrantFileAccessToExtension(extension_id(), virtual_path);
+  external_provider->GrantFileAccessToExtension(extension_id(), virtual_path_);
 
-  // Give read write permissions for the file.
+  // Add read write permissions for the selected file's virtual path to the list
+  // of permissions that have to be granted.
   permissions_to_grant_.push_back(std::make_pair(
       full_path_,
       file_handler_util::GetReadWritePermissions()));
 
   if (!gdata::util::IsUnderDriveMountPoint(full_path_)) {
-    OnGotPermissionsToGrant(callback, virtual_path);
+    // If the file is not on drive, we have to only grant permission for the
+    // file's virtual path.
+    OnGotPermissionsToGrant();
     return;
   }
 
-  // For drive files, we also have to grant permissions for cache paths.
+  // For drive files, we also have to grant permissions for drive cache paths
+  // under which the selected path could be kept.
   scoped_ptr<std::vector<FilePath> > gdata_paths(new std::vector<FilePath>());
-  gdata_paths->push_back(virtual_path);
+  gdata_paths->push_back(virtual_path_);
 
   gdata::util::InsertDriveCachePathsPermissions(
       profile(),
       gdata_paths.Pass(),
       &permissions_to_grant_,
       base::Bind(&FileHandlerSelectFileFunction::OnGotPermissionsToGrant,
-          this, callback, virtual_path));
+                 this));
 }
 
-void FileHandlerSelectFileFunction::OnGotPermissionsToGrant(
-    const GrantPermissionsCallback& callback,
-    const FilePath& virtual_path) {
+void FileHandlerSelectFileFunction::OnGotPermissionsToGrant() {
+  // At this point all needed permissions should be collected, so let's grant
+  // them.
   for (size_t i = 0; i < permissions_to_grant_.size(); i++) {
     content::ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
         render_view_host()->GetProcess()->GetID(),
         permissions_to_grant_[i].first,
         permissions_to_grant_[i].second);
   }
-  callback.Run(virtual_path);
+
+  Respond(true);
 }
 
-void FileHandlerSelectFileFunction::Respond(
-    bool success,
-    const std::string& file_system_name,
-    const GURL& file_system_root,
-    const FilePath& virtual_path) {
+void FileHandlerSelectFileFunction::Respond(bool success) {
   scoped_ptr<SelectFile::Results::Result> result(
       new SelectFile::Results::Result());
   result->success = success;
+
+  // If the file was selected, add 'entry' object which will be later used to
+  // create a FileEntry instance for the selected file.
   if (success) {
     result->entry.reset(new FileEntryInfo());
-    result->entry->file_system_name = file_system_name;
-    result->entry->file_system_root = file_system_root.spec();
-    result->entry->file_full_path = "/" + virtual_path.value();
+    result->entry->file_system_name = file_system_name_;
+    result->entry->file_system_root = file_system_root_.spec();
+    result->entry->file_full_path = "/" + virtual_path_.value();
     result->entry->file_is_directory = false;
   }
 
   results_ = SelectFile::Results::Create(*result);
   SendResponse(true);
 }
-
-FileSelector* FileHandlerSelectFileFunction::GetFileSelector() {
-  FileSelector* result = file_selector_for_test_;
-  if (result) {
-    result->set_function_for_test(this);
-    return result;
-  }
-  return new FileSelectorImpl(this);
-}
-
-FileSelector* FileHandlerSelectFileFunction::file_selector_for_test_ = NULL;
-
-bool FileHandlerSelectFileFunction::gesture_check_disabled_for_test_ = false;
