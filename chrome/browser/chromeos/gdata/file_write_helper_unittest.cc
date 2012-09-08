@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/chromeos/gdata/gdata_test_util.h"
+#include "chrome/browser/chromeos/gdata/drive_test_util.h"
 #include "chrome/browser/chromeos/gdata/mock_drive_file_system.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"

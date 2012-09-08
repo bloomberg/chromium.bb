@@ -20,7 +20,7 @@
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_util.h"
-#include "chrome/browser/chromeos/gdata/gdata_test_util.h"
+#include "chrome/browser/chromeos/gdata/drive_test_util.h"
 #include "chrome/browser/chromeos/gdata/mock_drive_file_system.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_paths.h"

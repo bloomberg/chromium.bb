@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_TEST_UTIL_H_
-#define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_TEST_UTIL_H_
+#ifndef CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_TEST_UTIL_H_
+#define CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_TEST_UTIL_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/gdata/drive_resource_metadata.h"
@@ -115,4 +115,4 @@ void LoadChangeFeed(const std::string& filename,
 }  // namespace test_util
 }  // namespace gdata
 
-#endif  // CHROME_BROWSER_CHROMEOS_GDATA_GDATA_TEST_UTIL_H_
+#endif  // CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_TEST_UTIL_H_
