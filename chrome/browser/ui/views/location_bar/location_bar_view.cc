@@ -696,8 +696,11 @@ void LocationBarView::Layout() {
   if (star_view_ && star_view_->visible())
     entry_width -= star_view_->GetPreferredSize().width() + GetItemPadding();
   int action_box_button_width = location_height;
-  if (action_box_button_view_)
-    entry_width -= action_box_button_width + GetItemPadding();
+  if (action_box_button_view_) {
+    // No need to discount for edge thickness with action box button,
+    // because it fills all the area on a right, including curved edge.
+    entry_width -= action_box_button_width + GetItemPadding() - kEdgeThickness;
+  }
   for (PageActionViews::const_iterator i(page_action_views_.begin());
        i != page_action_views_.end(); ++i) {
     if ((*i)->visible())
