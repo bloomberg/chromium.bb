@@ -25,8 +25,10 @@
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/gestures/gesture_recognizer.h"
 #include "ui/base/gestures/gesture_types.h"
+#include "ui/base/ime/text_input_client.h"
 #include "ui/base/win/extra_sdk_defines.h"
 #include "ui/base/win/ime_input.h"
+#include "ui/base/win/tsf_bridge.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/surface/accelerated_surface_win.h"
@@ -81,7 +83,8 @@ class RenderWidgetHostViewWin
       public NotificationObserver,
       public BrowserAccessibilityDelegate,
       public ui::GestureConsumer,
-      public ui::GestureEventHelper {
+      public ui::GestureEventHelper,
+      public ui::TextInputClient {  // for Win8/metro TSF support.
  public:
   virtual ~RenderWidgetHostViewWin();
 
@@ -239,6 +242,31 @@ class RenderWidgetHostViewWin
   // Overridden from ui::GestureEventHelper.
   virtual bool DispatchLongPressGestureEvent(ui::GestureEvent* event) OVERRIDE;
   virtual bool DispatchCancelTouchEvent(ui::TouchEvent* event) OVERRIDE;
+
+  // Overridden from ui::TextInputClient for Win8/metro TSF support.
+  // Following methods are not used in existing IMM32 related implementation.
+  virtual void SetCompositionText(
+      const ui::CompositionText& composition) OVERRIDE;
+  virtual void ConfirmCompositionText()  OVERRIDE;
+  virtual void ClearCompositionText() OVERRIDE;
+  virtual void InsertText(const string16& text) OVERRIDE;
+  virtual void InsertChar(char16 ch, int flags) OVERRIDE;
+  virtual ui::TextInputType GetTextInputType() const OVERRIDE;
+  virtual bool CanComposeInline() const OVERRIDE;
+  virtual gfx::Rect GetCaretBounds() OVERRIDE;
+  virtual bool GetCompositionCharacterBounds(uint32 index,
+                                             gfx::Rect* rect) OVERRIDE;
+  virtual bool HasCompositionText() OVERRIDE;
+  virtual bool GetTextRange(ui::Range* range) OVERRIDE;
+  virtual bool GetCompositionTextRange(ui::Range* range) OVERRIDE;
+  virtual bool GetSelectionRange(ui::Range* range) OVERRIDE;
+  virtual bool SetSelectionRange(const ui::Range& range) OVERRIDE;
+  virtual bool DeleteRange(const ui::Range& range) OVERRIDE;
+  virtual bool GetTextFromRange(const ui::Range& range,
+                                string16* text) OVERRIDE;
+  virtual void OnInputMethodChanged() OVERRIDE;
+  virtual bool ChangeTextDirectionAndLayoutAlignment(
+      base::i18n::TextDirection direction) OVERRIDE;
 
  protected:
   friend class RenderWidgetHostView;
@@ -519,6 +547,9 @@ class RenderWidgetHostViewWin
 
   // The current composition character bounds.
   std::vector<gfx::Rect> composition_character_bounds_;
+
+  // A cached latest caret rectangle sent from renderer.
+  gfx::Rect caret_rect_;
 
   // TODO(ananta)
   // The WM_POINTERDOWN and on screen keyboard handling related members should

@@ -978,8 +978,10 @@ void RenderWidgetHostViewWin::SelectionBoundsChanged(
   bool is_enabled = (text_input_type_ != ui::TEXT_INPUT_TYPE_NONE &&
       text_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD);
   // Only update caret position if the input method is enabled.
-  if (is_enabled)
-    ime_input_.UpdateCaretRect(m_hWnd, start_rect.Union(end_rect));
+  if (is_enabled) {
+    caret_rect_ = start_rect.Union(end_rect);
+    ime_input_.UpdateCaretRect(m_hWnd, caret_rect_);
+  }
 }
 
 void RenderWidgetHostViewWin::ImeCancelComposition() {
@@ -1242,6 +1244,209 @@ void RenderWidgetHostViewWin::SetScrollOffsetPinning(
     bool is_pinned_to_left, bool is_pinned_to_right) {
 }
 
+void RenderWidgetHostViewWin::SetCompositionText(
+    const ui::CompositionText& composition) {
+  if (!base::win::IsTsfAwareRequired()) {
+    NOTREACHED();
+    return;
+  }
+  if (!render_widget_host_)
+     return;
+  // ui::CompositionUnderline should be identical to
+  // WebKit::WebCompositionUnderline, so that we can do reinterpret_cast safely.
+  COMPILE_ASSERT(sizeof(ui::CompositionUnderline) ==
+                 sizeof(WebKit::WebCompositionUnderline),
+                 ui_CompositionUnderline__WebKit_WebCompositionUnderline_diff);
+  const std::vector<WebKit::WebCompositionUnderline>& underlines =
+      reinterpret_cast<const std::vector<WebKit::WebCompositionUnderline>&>(
+          composition.underlines);
+  render_widget_host_->ImeSetComposition(composition.text, underlines,
+                                         composition.selection.end(),
+                                         composition.selection.end());
+}
+
+void RenderWidgetHostViewWin::ConfirmCompositionText()  {
+  if (!base::win::IsTsfAwareRequired()) {
+    NOTREACHED();
+    return;
+  }
+  // TODO(nona): Implement this function.
+  NOTIMPLEMENTED();
+}
+
+void RenderWidgetHostViewWin::ClearCompositionText() {
+  if (!base::win::IsTsfAwareRequired()) {
+    NOTREACHED();
+    return;
+  }
+  // TODO(nona): Implement this function.
+  NOTIMPLEMENTED();
+}
+
+void RenderWidgetHostViewWin::InsertText(const string16& text) {
+  if (!base::win::IsTsfAwareRequired()) {
+    NOTREACHED();
+    return;
+  }
+  DCHECK(text_input_type_ != ui::TEXT_INPUT_TYPE_NONE);
+  if (render_widget_host_)
+    render_widget_host_->ImeConfirmComposition(text);
+}
+
+void RenderWidgetHostViewWin::InsertChar(char16 ch, int flags) {
+  if (!base::win::IsTsfAwareRequired()) {
+    NOTREACHED();
+    return;
+  }
+  // TODO(nona): Implement this function.
+  NOTIMPLEMENTED();
+}
+
+ui::TextInputType RenderWidgetHostViewWin::GetTextInputType() const {
+  if (!base::win::IsTsfAwareRequired()) {
+    NOTREACHED();
+    return ui::TEXT_INPUT_TYPE_NONE;
+  }
+  return text_input_type_;
+}
+
+bool RenderWidgetHostViewWin::CanComposeInline() const {
+  if (!base::win::IsTsfAwareRequired()) {
+    NOTREACHED();
+    return false;
+  }
+  // TODO(nona): Implement this function.
+  NOTIMPLEMENTED();
+  return false;
+}
+
+gfx::Rect RenderWidgetHostViewWin::GetCaretBounds() {
+  if (!base::win::IsTsfAwareRequired()) {
+    NOTREACHED();
+    return gfx::Rect(0, 0, 0, 0);
+  }
+  RECT tmp_rect = caret_rect_.ToRECT();
+  ClientToScreen(&tmp_rect);
+  return gfx::Rect(tmp_rect);
+}
+
+bool RenderWidgetHostViewWin::GetCompositionCharacterBounds(
+    uint32 index, gfx::Rect* rect) {
+  if (!base::win::IsTsfAwareRequired()) {
+    NOTREACHED();
+    return false;
+  }
+  DCHECK(rect);
+  if (index >= composition_character_bounds_.size())
+    return false;
+  RECT rec = composition_character_bounds_[index].ToRECT();
+  ClientToScreen(&rec);
+  *rect = gfx::Rect(rec);
+  return true;
+}
+
+bool RenderWidgetHostViewWin::HasCompositionText() {
+  if (!base::win::IsTsfAwareRequired()) {
+    NOTREACHED();
+    return false;
+  }
+  // TODO(nona): Implement this function.
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool RenderWidgetHostViewWin::GetTextRange(ui::Range* range) {
+  if (!base::win::IsTsfAwareRequired()) {
+    NOTREACHED();
+    return false;
+  }
+  range->set_start(selection_text_offset_);
+  range->set_end(selection_text_offset_ + selection_text_.length());
+  return false;
+}
+
+bool RenderWidgetHostViewWin::GetCompositionTextRange(ui::Range* range) {
+  if (!base::win::IsTsfAwareRequired()) {
+    NOTREACHED();
+    return false;
+  }
+  // TODO(nona): Implement this function.
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool RenderWidgetHostViewWin::GetSelectionRange(ui::Range* range) {
+  if (!base::win::IsTsfAwareRequired()) {
+    NOTREACHED();
+    return false;
+  }
+  range->set_start(selection_range_.start());
+  range->set_end(selection_range_.end());
+  return false;
+}
+
+bool RenderWidgetHostViewWin::SetSelectionRange(const ui::Range& range) {
+  if (!base::win::IsTsfAwareRequired()) {
+    NOTREACHED();
+    return false;
+  }
+  // TODO(nona): Implement this function.
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool RenderWidgetHostViewWin::DeleteRange(const ui::Range& range) {
+  if (!base::win::IsTsfAwareRequired()) {
+    NOTREACHED();
+    return false;
+  }
+  // TODO(nona): Implement this function.
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool RenderWidgetHostViewWin::GetTextFromRange(const ui::Range& range,
+                                               string16* text) {
+  if (!base::win::IsTsfAwareRequired()) {
+    NOTREACHED();
+    return false;
+  }
+  ui::Range selection_text_range(selection_text_offset_,
+      selection_text_offset_ + selection_text_.length());
+  if (!selection_text_range.Contains(range)) {
+    text->clear();
+    return false;
+  }
+  if (selection_text_range.EqualsIgnoringDirection(range)) {
+    *text = selection_text_;
+  } else {
+    *text = selection_text_.substr(
+        range.GetMin() - selection_text_offset_,
+        range.length());
+  }
+  return true;
+}
+
+void RenderWidgetHostViewWin::OnInputMethodChanged() {
+  if (!base::win::IsTsfAwareRequired()) {
+    NOTREACHED();
+    return;
+  }
+  // TODO(nona): Implement this function.
+  NOTIMPLEMENTED();
+}
+
+bool RenderWidgetHostViewWin::ChangeTextDirectionAndLayoutAlignment(
+      base::i18n::TextDirection direction) {
+  if (!base::win::IsTsfAwareRequired()) {
+    NOTREACHED();
+    return false;
+  }
+  // TODO(nona): Implement this function.
+  NOTIMPLEMENTED();
+  return false;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewWin, private:
 
@@ -1260,6 +1465,9 @@ LRESULT RenderWidgetHostViewWin::OnCreate(CREATESTRUCT* create_struct) {
     SetToTouchMode();
   else
     SetToGestureMode();
+
+  if (base::win::IsTsfAwareRequired())
+    ui::TsfBridge::GetInstance()->AssociateFocus(m_hWnd);
   UpdateIMEState();
 
   return 0;
@@ -1516,6 +1724,9 @@ void RenderWidgetHostViewWin::OnSetFocus(HWND window) {
 
   render_widget_host_->GotFocus();
   render_widget_host_->SetActive(true);
+
+  if (base::win::IsTsfAwareRequired())
+    ui::TsfBridge::GetInstance()->SetFocusedClient(m_hWnd, this);
 }
 
 void RenderWidgetHostViewWin::OnKillFocus(HWND window) {
@@ -1525,6 +1736,9 @@ void RenderWidgetHostViewWin::OnKillFocus(HWND window) {
 
   render_widget_host_->SetActive(false);
   render_widget_host_->Blur();
+
+  if (base::win::IsTsfAwareRequired())
+    ui::TsfBridge::GetInstance()->RemoveFocusedClient(this);
 }
 
 void RenderWidgetHostViewWin::OnCaptureChanged(HWND window) {
@@ -3053,9 +3267,17 @@ LRESULT RenderWidgetHostViewWin::OnQueryCharPosition(
 void RenderWidgetHostViewWin::UpdateIMEState() {
   if (text_input_type_ != ui::TEXT_INPUT_TYPE_NONE &&
       text_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD) {
-    ime_input_.EnableIME(m_hWnd);
+    if (base::win::IsTsfAwareRequired()) {
+      ui::TsfBridge::GetInstance()->EnableIME();
+    } else {
+      ime_input_.EnableIME(m_hWnd);
+    }
   } else {
-    ime_input_.DisableIME(m_hWnd);
+    if (base::win::IsTsfAwareRequired()) {
+      ui::TsfBridge::GetInstance()->DisableIME();
+    } else {
+      ime_input_.DisableIME(m_hWnd);
+    }
   }
 }
 
