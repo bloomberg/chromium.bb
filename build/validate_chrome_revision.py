@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
-""" Check that the chrome_rev in DEPS has binaries for every platform.
+"""Check that the chrome_rev in DEPS has binaries for every platform.
 """
 
 import sys
