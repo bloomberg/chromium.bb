@@ -398,7 +398,7 @@ _default = _config(**_settings)
 # same board without the variant. This rule helps keep inheritance trees
 # sane.
 generic_boards = set([
-  'x86-generic', 'amd64-generic', 'tegra2'
+  'x86-generic', 'amd64-generic', 'daisy'
 ])
 
 
@@ -487,7 +487,7 @@ official = _config(
   chromeos_official=True,
 )
 
-SDK_TEST_BOARDS = ['amd64-generic', 'tegra2', 'x86-generic']
+SDK_TEST_BOARDS = ['amd64-generic', 'daisy', 'x86-generic']
 
 full.add_config('chromiumos-sdk',
   # The amd64-host has to be last as that is when the toolchains
