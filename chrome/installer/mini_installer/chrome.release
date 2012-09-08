@@ -38,13 +38,9 @@ chrome_200_percent.pak: %(VersionDir)s\
 chrome_touch_100_percent.pak: %(VersionDir)s\
 
 [GOOGLE_CHROME]
-FlashPlayerApp.exe: %(VersionDir)s\
-FlashPlayerCPLApp.cpl: %(VersionDir)s\
 SecondaryTile.png: %(VersionDir)s\
 delegate_execute.exe: %(VersionDir)s\
-gcswf32.dll: %(VersionDir)s\
 metro_driver.dll: %(VersionDir)s\
-plugin.vch: %(VersionDir)s\
 PepperFlash\pepflashplayer.dll: %(VersionDir)s\PepperFlash\
 PepperFlash\manifest.json: %(VersionDir)s\PepperFlash\
 # All or none of the following 3 files need to be present as the creation of
