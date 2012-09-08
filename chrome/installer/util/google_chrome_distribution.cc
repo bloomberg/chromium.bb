@@ -808,21 +808,19 @@ void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor,
     const string16& experiment_group,
     const installer::Product& installation,
     const FilePath& application_path) {
-  bool has_welcome_url = (flavor == 0);
-  // Possibly add a url to launch depending on the experiment flavor.
+  // Add the 'welcome back' url for chrome to show.
   CommandLine options(CommandLine::NO_PROGRAM);
   options.AppendSwitchNative(switches::kTryChromeAgain,
       base::IntToString16(flavor));
-  if (has_welcome_url) {
-    // Prepend the url with a space.
-    string16 url(GetWelcomeBackUrl());
-    options.AppendArg("--");
-    options.AppendArgNative(url);
-    // The command line should now have the url added as:
-    // "chrome.exe -- <url>"
-    DCHECK_NE(string16::npos,
-        options.GetCommandLineString().find(L" -- " + url));
-  }
+  // Prepend the url with a space.
+  string16 url(GetWelcomeBackUrl());
+  options.AppendArg("--");
+  options.AppendArgNative(url);
+  // The command line should now have the url added as:
+  // "chrome.exe -- <url>"
+  DCHECK_NE(string16::npos,
+      options.GetCommandLineString().find(L" -- " + url));
+
   // Launch chrome now. It will show the toast UI.
   int32 exit_code = 0;
   if (!installation.LaunchChromeAndWait(application_path, options, &exit_code))
