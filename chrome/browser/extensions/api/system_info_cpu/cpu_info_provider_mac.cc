@@ -6,28 +6,9 @@
 
 namespace extensions {
 
-namespace {
-
-using api::experimental_system_info_cpu::CpuInfo;
-
-// CpuInfoProvider implementation on Mac OS.
-class CpuInfoProviderMac : public CpuInfoProvider {
- public:
-  CpuInfoProviderMac() {}
-  virtual ~CpuInfoProviderMac() {}
-  virtual bool QueryInfo(CpuInfo* info) OVERRIDE;
-};
-
-bool CpuInfoProviderMac::QueryInfo(CpuInfo* info) {
-  // TODO(hmin): not implemented yet.
+bool CpuInfoProvider::QueryCpuTimePerProcessor(std::vector<CpuTime>* times) {
+  // TODO(hongbo): Query the cpu time.
   return false;
-}
-
-}  // namespace
-
-// static
-CpuInfoProvider* CpuInfoProvider::Get() {
-  return CpuInfoProvider::GetInstance<CpuInfoProviderMac>();
 }
 
 }  // namespace extensions

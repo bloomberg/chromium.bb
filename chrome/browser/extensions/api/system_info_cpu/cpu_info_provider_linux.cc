@@ -6,28 +6,9 @@
 
 namespace extensions {
 
-namespace {
-
-using api::experimental_system_info_cpu::CpuInfo;
-
-// CpuInfoProvider implementation for Linux platform.
-class CpuInfoProviderLinux : public CpuInfoProvider {
- public:
-  CpuInfoProviderLinux() {}
-  virtual ~CpuInfoProviderLinux() {}
-  virtual bool QueryInfo(CpuInfo* info) OVERRIDE;
-};
-
-bool CpuInfoProviderLinux::QueryInfo(CpuInfo* info) {
-  // TODO(hmin): not implemented yet.
+bool CpuInfoProvider::QueryCpuTimePerProcessor(std::vector<CpuTime>* times) {
+  // TODO(hongbo): Query the cpu time from /proc/stat.
   return false;
-}
-
-}  // namespace
-
-// static
-CpuInfoProvider* CpuInfoProvider::Get() {
-  return CpuInfoProvider::GetInstance<CpuInfoProviderLinux>();
 }
 
 }  // namespace extensions

@@ -5,21 +5,27 @@
 // File-level comment to appease parser. Eventually this will not be necessary.
 namespace experimental.systemInfo.cpu {
 
-  dictionary CpuCoreInfo {
-    // Indicates the load of CPU core, as a number between 0 and 100.
-    long load;
-  };
-  
   dictionary CpuInfo {
-    // The array of the CPU processors in the system.
-    CpuCoreInfo[] cores;
+    // The number of logical processors.
+    long numOfProcessors;
+    // The architecture name of the processors.
+    DOMString archName;
+    // The model name of the processors.
+    DOMString modelName;
   };
 
-  callback CpuInfoCallback = void (CpuInfo prop);
-  callback CpuUpdateCallback = void (ChangeInfo info);
+  dictionary CpuUpdateInfo {
+    // The average usage percent of all processors, as a number 
+    // between 0 and 100.
+    double averageUsage;
+    // The CPU usage array for each logic processor.
+    double[] usagePerProcessor;
+  };
+
+  callback CpuInfoCallback = void (CpuInfo info);
   
   interface Functions {
-    // Get CPU property.
+    // Get CPU information.
     static void get(CpuInfoCallback callback);
   };
 };

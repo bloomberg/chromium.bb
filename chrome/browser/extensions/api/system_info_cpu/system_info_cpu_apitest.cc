@@ -10,7 +10,6 @@
 namespace extensions {
 
 using api::experimental_system_info_cpu::CpuInfo;
-using api::experimental_system_info_cpu::CpuCoreInfo;
 
 class MockCpuInfoProviderImpl : public CpuInfoProvider {
  public:
@@ -18,16 +17,12 @@ class MockCpuInfoProviderImpl : public CpuInfoProvider {
   ~MockCpuInfoProviderImpl() {}
 
   virtual bool QueryInfo(CpuInfo* info) OVERRIDE {
-    DCHECK(info);
+    if (!info) return false;
 
-    info->cores.clear();
+    info->num_of_processors = 4;
+    info->arch_name = "x86";
+    info->model_name = "unknown";
 
-    static const unsigned int kNumberOfCores = 4;
-    for (unsigned int i = 0; i < kNumberOfCores; ++i) {
-      linked_ptr<CpuCoreInfo> core(new CpuCoreInfo());
-      core->load = i*10;
-      info->cores.push_back(core);
-    }
     return true;
   }
 };

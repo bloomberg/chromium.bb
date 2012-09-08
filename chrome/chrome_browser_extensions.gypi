@@ -251,6 +251,8 @@
         'browser/extensions/api/socket/tcp_socket.h',
         'browser/extensions/api/socket/udp_socket.cc',
         'browser/extensions/api/socket/udp_socket.h',
+        'browser/extensions/api/system_info_cpu/cpu_info_provider.cc',
+        'browser/extensions/api/system_info_cpu/cpu_info_provider.h',
         'browser/extensions/api/system_info_cpu/cpu_info_provider_mac.cc',
         'browser/extensions/api/system_info_cpu/cpu_info_provider_linux.cc',
         'browser/extensions/api/system_info_cpu/cpu_info_provider_win.cc',

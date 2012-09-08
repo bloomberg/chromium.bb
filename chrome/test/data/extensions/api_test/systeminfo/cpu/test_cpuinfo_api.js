@@ -11,12 +11,9 @@ chrome.test.runTests([
   function testGet() {
     for(var i = 0; i < 20; ++i) {
       chrome.systemInfo.cpu.get(chrome.test.callbackPass(function(result) {
-        chrome.test.assertTrue(result.cores.length == 4);
-        var core;
-        for (var i = 0; i < result.cores.length; ++i) {
-          core = result.cores[i];
-          chrome.test.assertTrue(core.load == i*10);
-        }
+        chrome.test.assertEq(4, result.numOfProcessors);
+        chrome.test.assertEq("x86", result.archName);
+        chrome.test.assertEq("unknown", result.modelName);
       }));
     }
   },

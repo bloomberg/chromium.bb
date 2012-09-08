@@ -6,28 +6,9 @@
 
 namespace extensions {
 
-namespace {
-
-using api::experimental_system_info_cpu::CpuInfo;
-
-// CpuInfoProvider implementation on Windows platform.
-class CpuInfoProviderWin : public CpuInfoProvider {
- public:
-  CpuInfoProviderWin() {}
-  virtual ~CpuInfoProviderWin() {}
-  virtual bool QueryInfo(CpuInfo* info) OVERRIDE;
-};
-
-bool CpuInfoProviderWin::QueryInfo(CpuInfo* info) {
-  // TODO(hmin): not implemented yet.
+bool CpuInfoProvider::QueryCpuTimePerProcessor(std::vector<CpuTime>* times) {
+  // TODO(hongbo): use NtQuerySystemInformation to query the cpu time.
   return false;
-}
-
-}  // namespace
-
-// static
-CpuInfoProvider* CpuInfoProvider::Get() {
-  return CpuInfoProvider::GetInstance<CpuInfoProviderWin>();
 }
 
 }  // namespace extensions
