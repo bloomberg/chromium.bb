@@ -172,10 +172,6 @@ else:  # mac
 
 plugin_env.Alias('plugin', plugin_env.GetPPAPIPluginPath(False))
 
-if env.Bit('windows'):
-  env.SDKInstallBin(ppNaClPlugin + '.dll', ppapi_plugin)
-else:
-  env.SDKInstallBin(ppNaClPlugin + '.so', ppapi_plugin)
 
 ###############################################################################
 # PPAPI Plugin Test
