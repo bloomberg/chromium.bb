@@ -165,11 +165,6 @@ def RemoveGypBuildDirectories():
 
 def BuildScript(status, context):
   inside_toolchain = context['inside_toolchain']
-  # When off the trunk, we don't have anywhere to get Chrome binaries
-  # from the appropriate branch, so we can't test the right Chrome.
-  do_integration_tests = (not inside_toolchain and
-                          not context['off_trunk'] and
-                          not context['asan'])
 
   # Clean out build directories.
   with Step('clobber', status):
@@ -369,32 +364,6 @@ def BuildScript(status, context):
     SCons(context,
           mode=context['default_scons_mode'] + ['nacl_irt_test'],
           args=args)
-
-  # These tests will move to chrome side.
-  if do_integration_tests:
-    # If we're running browser tests on a 64-bit Windows machine, build a 32-bit
-    # plugin.
-    if (context.Windows() and
-        context['bits'] == '64' and
-        not inside_toolchain):
-      with Step('plugin_compile_32', status):
-        SCons(context, platform='x86-32', parallel=True, args=['plugin'],
-              enable_chrome_side=True)
-
-    with Step('scons_compile (chrome side)', status, halt_on_fail=False):
-      # Build chrome side of the build.
-      SCons(context, parallel=True, args=[],
-            enable_chrome_side=True)
-
-    with Step('chrome_browser_tests', status, halt_on_fail=False):
-      # Note that we have to add nacl_irt_test to --mode in order to
-      # get inbrowser_test_runner to run.
-      # TODO(mseaborn): Change it so that inbrowser_test_runner is not
-      # a special case.
-      SCons(context, browser_test=True,
-            mode=context['default_scons_mode'] + ['nacl_irt_test'],
-            args=['SILENT=1', 'chrome_browser_tests'],
-            enable_chrome_side=True)
 
 
 def Main():

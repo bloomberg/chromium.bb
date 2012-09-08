@@ -324,9 +324,6 @@ def SetUpArgumentBits(env):
     desc='Use the zero-address-based x86-64 sandbox model instead of '
       'the r15-based model.')
 
-  BitFromArgument(env, 'enable_chrome_side', default=True,
-    desc='Exclude chrome-only components from build.')
-
   #########################################################################
   # EXPERIMENTAL
   # This is for generating a testing library for use within private test
@@ -1200,29 +1197,19 @@ def ExtractPublishedFiles(env, target_name):
 pre_base_env.AddMethod(ExtractPublishedFiles)
 
 
-# Optionally exclude the chrome side of the build.
-# As there are multiple contexts in which the chrome build
-# will need to inject files, call this method in each to grant
-# the chrome side an opportunity to inject them.
-# When the chrome side is absent, provide an empty stub.
-def AddChromeFilesFromGroup(env, file_group):
-  pass
-if not pre_base_env.Bit('enable_chrome_side'):
-  pre_base_env.AddMethod(AddChromeFilesFromGroup)
-# Currently chrome_root.scons in this directory is the entry point for chrome
-# build/test that will be moved to the chrome side. On the chrome side,
-# we will land a copy of this file renamed to chrome_main.scons.
-# If this file is present, we will assume we've landing the migrated files and
-# use chrome_main.scons as the entry point. Prior to that, we will fall back
-# to chrome_root.scons.
-elif os.path.exists(pre_base_env.File(
+# Only include the chrome side of the build if present.
+if os.path.exists(pre_base_env.File(
     '#/../ppapi/native_client/chrome_main.scons').abspath):
   SConscript('#/../ppapi/native_client/chrome_main.scons',
       exports=['pre_base_env'])
-# TODO(bradnelson): drop once chrome_root.scons -> chrome_main.scons
-#     http://code.google.com/p/nativeclient/issues/detail?id=2957
+  enable_chrome = True
 else:
-  SConscript('chrome_root.scons', exports=['pre_base_env'])
+  def AddChromeFilesFromGroup(env, file_group):
+    pass
+  pre_base_env.AddMethod(AddChromeFilesFromGroup)
+  enable_chrome = False
+DeclareBit('enable_chrome_side',
+           'Is the chrome side present.', enable_chrome)
 
 
 def ProgramNameForNmf(env, basename):
