@@ -1280,7 +1280,7 @@ void WebIntentPickerViews::ResetContents() {
   webview_ = NULL;
 
   // Re-initialize the UI.
-  InitContents();
+  InitMainContents();
 
   // Restore previous state.
   service_buttons_->Update();
