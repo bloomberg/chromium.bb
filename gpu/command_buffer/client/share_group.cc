@@ -22,13 +22,13 @@ class IdHandler : public IdHandlerInterface {
   virtual ~IdHandler() { }
 
   // Overridden from IdHandlerInterface.
-  virtual void Destroy(GLES2Implementation* /* gl_impl */) {
+  virtual void Destroy(GLES2Implementation* /* gl_impl */) OVERRIDE {
   }
 
   // Overridden from IdHandlerInterface.
   virtual void MakeIds(
       GLES2Implementation* /* gl_impl */,
-      GLuint id_offset, GLsizei n, GLuint* ids) {
+      GLuint id_offset, GLsizei n, GLuint* ids) OVERRIDE {
     if (id_offset == 0) {
       for (GLsizei ii = 0; ii < n; ++ii) {
         ids[ii] = id_allocator_.AllocateID();
@@ -44,7 +44,7 @@ class IdHandler : public IdHandlerInterface {
   // Overridden from IdHandlerInterface.
   virtual bool FreeIds(
       GLES2Implementation* gl_impl,
-      GLsizei n, const GLuint* ids, DeleteFn delete_fn) {
+      GLsizei n, const GLuint* ids, DeleteFn delete_fn) OVERRIDE {
     for (GLsizei ii = 0; ii < n; ++ii) {
       id_allocator_.FreeID(ids[ii]);
     }
@@ -56,7 +56,7 @@ class IdHandler : public IdHandlerInterface {
   }
 
   // Overridden from IdHandlerInterface.
-  virtual bool MarkAsUsedForBind(GLuint id) {
+  virtual bool MarkAsUsedForBind(GLuint id) OVERRIDE {
     return id == 0 ? true : id_allocator_.MarkAsUsed(id);
   }
  protected:
@@ -79,17 +79,17 @@ class StrictIdHandler : public IdHandler {
 // An id handler for ids that are never reused.
 class NonReusedIdHandler : public IdHandlerInterface {
  public:
-  NonReusedIdHandler() : last_id_(0) { }
-  virtual ~NonReusedIdHandler() { }
+  NonReusedIdHandler() : last_id_(0) {}
+  virtual ~NonReusedIdHandler() {}
 
   // Overridden from IdHandlerInterface.
-  virtual void Destroy(GLES2Implementation* /* gl_impl */) {
+  virtual void Destroy(GLES2Implementation* /* gl_impl */) OVERRIDE {
   }
 
   // Overridden from IdHandlerInterface.
   virtual void MakeIds(
       GLES2Implementation* /* gl_impl */,
-      GLuint id_offset, GLsizei n, GLuint* ids) {
+      GLuint id_offset, GLsizei n, GLuint* ids) OVERRIDE {
     for (GLsizei ii = 0; ii < n; ++ii) {
       ids[ii] = ++last_id_ + id_offset;
     }
@@ -98,14 +98,14 @@ class NonReusedIdHandler : public IdHandlerInterface {
   // Overridden from IdHandlerInterface.
   virtual bool FreeIds(
       GLES2Implementation* gl_impl,
-      GLsizei n, const GLuint* ids, DeleteFn delete_fn) {
+      GLsizei n, const GLuint* ids, DeleteFn delete_fn) OVERRIDE {
     // Ids are never freed.
     (gl_impl->*delete_fn)(n, ids);
     return true;
   }
 
   // Overridden from IdHandlerInterface.
-  virtual bool MarkAsUsedForBind(GLuint /* id */) {
+  virtual bool MarkAsUsedForBind(GLuint /* id */) OVERRIDE {
     // This is only used for Shaders and Programs which have no bind.
     return false;
   }

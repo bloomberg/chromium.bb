@@ -17,50 +17,51 @@ class RenderbufferAttachment
       : renderbuffer_(renderbuffer) {
   }
 
-  virtual GLsizei width() const {
+  virtual GLsizei width() const OVERRIDE {
     return renderbuffer_->width();
   }
 
-  virtual GLsizei height() const {
+  virtual GLsizei height() const OVERRIDE {
     return renderbuffer_->height();
   }
 
-  virtual GLenum internal_format() const {
+  virtual GLenum internal_format() const OVERRIDE {
     return renderbuffer_->internal_format();
   }
 
-  virtual GLsizei samples() const {
+  virtual GLsizei samples() const OVERRIDE {
     return renderbuffer_->samples();
   }
 
-  virtual bool cleared() const {
+  virtual bool cleared() const OVERRIDE {
     return renderbuffer_->cleared();
   }
 
   virtual void SetCleared(
       RenderbufferManager* renderbuffer_manager,
-      TextureManager* /* texture_manager */) {
+      TextureManager* /* texture_manager */) OVERRIDE {
     renderbuffer_manager->SetCleared(renderbuffer_);
   }
 
-  virtual bool IsTexture(TextureManager::TextureInfo* /* texture */) const {
+  virtual bool IsTexture(
+      TextureManager::TextureInfo* /* texture */) const OVERRIDE {
     return false;
   }
 
   virtual bool IsRenderbuffer(
-       RenderbufferManager::RenderbufferInfo* renderbuffer) const {
+       RenderbufferManager::RenderbufferInfo* renderbuffer) const OVERRIDE {
      return renderbuffer_ == renderbuffer;
   }
 
-  virtual bool CanRenderTo() const {
+  virtual bool CanRenderTo() const OVERRIDE {
     return true;
   }
 
-  virtual void DetachFromFramebuffer() {
+  virtual void DetachFromFramebuffer() OVERRIDE {
     // Nothing to do for renderbuffers.
   }
 
-  virtual bool ValidForAttachmentType(GLenum attachment_type) {
+  virtual bool ValidForAttachmentType(GLenum attachment_type) OVERRIDE {
     uint32 need = GLES2Util::GetChannelsNeededForAttachmentType(
         attachment_type);
     uint32 have = GLES2Util::GetChannelsForFormat(internal_format());
@@ -90,47 +91,48 @@ class TextureAttachment
         level_(level) {
   }
 
-  virtual GLsizei width() const {
+  virtual GLsizei width() const OVERRIDE {
     GLsizei temp_width = 0;
     GLsizei temp_height = 0;
     texture_->GetLevelSize(target_, level_, &temp_width, &temp_height);
     return temp_width;
   }
 
-  virtual GLsizei height() const {
+  virtual GLsizei height() const OVERRIDE {
     GLsizei temp_width = 0;
     GLsizei temp_height = 0;
     texture_->GetLevelSize(target_, level_, &temp_width, &temp_height);
     return temp_height;
   }
 
-  virtual GLenum internal_format() const {
+  virtual GLenum internal_format() const OVERRIDE {
     GLenum temp_type = 0;
     GLenum temp_internal_format = 0;
     texture_->GetLevelType(target_, level_, &temp_type, &temp_internal_format);
     return temp_internal_format;
   }
 
-  virtual GLsizei samples() const {
+  virtual GLsizei samples() const OVERRIDE {
     return 0;
   }
 
-  virtual bool cleared() const {
+  virtual bool cleared() const OVERRIDE {
     return texture_->IsLevelCleared(target_, level_);
   }
 
   virtual void SetCleared(
       RenderbufferManager* /* renderbuffer_manager */,
-      TextureManager* texture_manager) {
+      TextureManager* texture_manager) OVERRIDE {
     texture_manager->SetLevelCleared(texture_, target_, level_);
   }
 
-  virtual bool IsTexture(TextureManager::TextureInfo* texture) const {
+  virtual bool IsTexture(TextureManager::TextureInfo* texture) const OVERRIDE {
     return texture == texture_.get();
   }
 
   virtual bool IsRenderbuffer(
-       RenderbufferManager::RenderbufferInfo* /* renderbuffer */) const {
+       RenderbufferManager::RenderbufferInfo* /* renderbuffer */)
+          const OVERRIDE {
     return false;
   }
 
@@ -138,15 +140,15 @@ class TextureAttachment
     return texture_.get();
   }
 
-  virtual bool CanRenderTo() const {
+  virtual bool CanRenderTo() const OVERRIDE {
     return texture_->CanRenderTo();
   }
 
-  virtual void DetachFromFramebuffer() {
+  virtual void DetachFromFramebuffer() OVERRIDE {
     texture_->DetachFromFramebuffer();
   }
 
-  virtual bool ValidForAttachmentType(GLenum attachment_type) {
+  virtual bool ValidForAttachmentType(GLenum attachment_type) OVERRIDE {
     GLenum type = 0;
     GLenum internal_format = 0;
     if (!texture_->GetLevelType(target_, level_, &type, &internal_format)) {
@@ -159,7 +161,7 @@ class TextureAttachment
   }
 
  protected:
-  virtual ~TextureAttachment() { }
+  virtual ~TextureAttachment() {}
 
  private:
   TextureManager::TextureInfo::Ref texture_;
