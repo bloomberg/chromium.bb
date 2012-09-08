@@ -172,8 +172,8 @@ void LoadChangeFeed(const std::string& filename,
   scoped_ptr<DocumentFeed> document_feed(
       DocumentFeed::ExtractAndParse(*document));
   ASSERT_TRUE(document_feed.get());
-  std::vector<DocumentFeed*> feed_list;
-  feed_list.push_back(document_feed.get());
+  ScopedVector<DocumentFeed> feed_list;
+  feed_list.push_back(document_feed.release());
 
   GURL unused;
   DriveFileError file_error = file_system->UpdateFromFeedForTesting(

@@ -9,12 +9,13 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/gdata/drive_resource_metadata.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
+#include "googleurl/src/gurl.h"
 
 class FilePath;
-class GURL;
 
 namespace base {
 class Value;
@@ -27,28 +28,46 @@ class DriveCache;
 class DriveServiceInterface;
 class DriveWebAppsRegistryInterface;
 struct GetDocumentsUiState;
+struct LoadFeedParams;
 
-// Set of parameters sent to LoadDocumentFeedCallback callback.
-struct GetDocumentsParams {
-  GetDocumentsParams(int64 start_changestamp,
-                     int64 root_feed_changestamp,
-                     std::vector<DocumentFeed*>* feed_list,
-                     const std::string& search_query,
-                     const std::string& directory_resource_id,
-                     const FileOperationCallback& callback,
-                     GetDocumentsUiState* ui_state);
-  ~GetDocumentsParams();
+// Callback run as a response to LoadFromServer.
+typedef base::Callback<void(scoped_ptr<LoadFeedParams> params,
+                            DriveFileError error)>
+    LoadDocumentFeedCallback;
+
+// Set of parameters sent to LoadFromServer and LoadDocumentFeedCallback.
+// Value of |start_changestamp| determines the type of feed to load - 0 means
+// root feed, every other value would trigger delta feed.
+// In the case of loading the root feed we use |root_feed_changestamp| as its
+// initial changestamp value since it does not come with that info.
+//
+// When all feeds are loaded, |feed_load_callback| is invoked with the retrieved
+// feeds. Then |load_finished_callback| is invoked with the error code.
+//
+// If invoked as a part of content search, query will be set in |search_query|.
+// If |feed_to_load| is set, this is feed url that will be used to load feed.
+//
+// |feed_load_callback| must not be null.
+// |load_finished_callback| may be null.
+struct LoadFeedParams {
+  LoadFeedParams(ContentOrigin initial_origin,
+                 const LoadDocumentFeedCallback& feed_load_callback);
+
+  ~LoadFeedParams();
 
   // Changestamps are positive numbers in increasing order. The difference
   // between two changestamps is proportional equal to number of items in
   // delta feed between them - bigger the difference, more likely bigger
   // number of items in delta feeds.
+  ContentOrigin initial_origin;
   int64 start_changestamp;
   int64 root_feed_changestamp;
-  scoped_ptr<std::vector<DocumentFeed*> > feed_list;
   std::string search_query;
   std::string directory_resource_id;
-  FileOperationCallback callback;
+  GURL feed_to_load;
+  const LoadDocumentFeedCallback feed_load_callback;
+  FileOperationCallback load_finished_callback;
+  ScopedVector<DocumentFeed> feed_list;
   scoped_ptr<GetDocumentsUiState> ui_state;
 };
 
@@ -67,11 +86,6 @@ struct LoadRootFeedParams {
   base::Time load_start_time;
   const FileOperationCallback callback;
 };
-
-// Callback run as a response to LoadFromServer.
-typedef base::Callback<void(GetDocumentsParams* params,
-                            DriveFileError error)>
-    LoadDocumentFeedCallback;
 
 // GDataWapiFeedLoader is used to load feeds from WAPI (codename for
 // Documents List API) and load the cached proto file.
@@ -154,15 +168,13 @@ class GDataWapiFeedLoader {
   // See comments at GDataWapiFeedProcessor::ApplyFeeds() for
   // |start_changestamp| and |root_feed_changestamp|.
   DriveFileError UpdateFromFeed(
-    const std::vector<DocumentFeed*>& feed_list,
+    const ScopedVector<DocumentFeed>& feed_list,
     int64 start_changestamp,
     int64 root_feed_changestamp);
 
  private:
-  struct LoadFeedParams;
-
-  // Starts root feed load from the server, with detail specified in |param|.
-  void LoadFromServer(const LoadFeedParams& param);
+  // Starts root feed load from the server, with details specified in |params|.
+  void LoadFromServer(scoped_ptr<LoadFeedParams> params);
 
   // Callback for handling root directory refresh from the cache.
   void OnProtoLoaded(LoadRootFeedParams* params);
@@ -204,16 +216,14 @@ class GDataWapiFeedLoader {
   // invoked by StartDirectoryRefresh() completes. This callback will update
   // the content of the refreshed directory object and continue initially
   // started FindEntryByPath() request.
-  void OnFeedFromServerLoaded(GetDocumentsParams* params,
+  void OnFeedFromServerLoaded(scoped_ptr<LoadFeedParams> params,
                               DriveFileError error);
 
   // Callback for handling response from |GDataWapiService::GetDocuments|.
   // Invokes |callback| when done.
   // |callback| must not be null.
   void OnGetDocuments(
-      ContentOrigin initial_origin,
-      const LoadDocumentFeedCallback& callback,
-      GetDocumentsParams* params,
+      scoped_ptr<LoadFeedParams> params,
       base::TimeTicks start_time,
       GDataErrorCode status,
       scoped_ptr<base::Value> data);
@@ -221,9 +231,7 @@ class GDataWapiFeedLoader {
   // Callback for handling response from |DriveAPIService::GetChanglist|.
   // Invokes |callback| when done.
   // |callback| must not be null.
-  void OnGetChangelist(ContentOrigin initial_origin,
-                       const LoadDocumentFeedCallback& callback,
-                       GetDocumentsParams* params,
+  void OnGetChangelist(scoped_ptr<LoadFeedParams> params,
                        base::TimeTicks start_time,
                        GDataErrorCode status,
                        scoped_ptr<base::Value> data);

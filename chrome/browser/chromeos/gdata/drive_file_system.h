@@ -145,7 +145,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // Used in tests to update the file system from |feed_list|.
   // See also the comment at GDataWapiFeedLoader::UpdateFromFeed().
   DriveFileError UpdateFromFeedForTesting(
-      const std::vector<DocumentFeed*>& feed_list,
+      const ScopedVector<DocumentFeed>& feed_list,
       int64 start_changestamp,
       int64 root_feed_changestamp);
 
@@ -236,7 +236,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // |params| params used for getting document feed for content search.
   // |error| error code returned by |LoadFeedFromServer|.
   void OnSearch(const SearchCallback& callback,
-                GetDocumentsParams* params,
+                scoped_ptr<LoadFeedParams> params,
                 DriveFileError error);
 
   // Callback for DriveResourceMetadata::RefreshFile, from OnSearch.
@@ -793,7 +793,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const ReadDirectoryWithSettingCallback& callback);
   void RequestDirectoryRefreshOnUIThread(const FilePath& file_path);
   void OnRequestDirectoryRefresh(const FilePath& directory_path,
-                                 GetDocumentsParams* params,
+                                 scoped_ptr<LoadFeedParams> params,
                                  DriveFileError error);
   void GetAvailableSpaceOnUIThread(const GetAvailableSpaceCallback& callback);
   void AddUploadedFileOnUIThread(UploadMode upload_mode,

@@ -31,7 +31,7 @@ GDataWapiFeedProcessor::~GDataWapiFeedProcessor() {
 }
 
 DriveFileError GDataWapiFeedProcessor::ApplyFeeds(
-    const std::vector<DocumentFeed*>& feed_list,
+    const ScopedVector<DocumentFeed>& feed_list,
     int64 start_changestamp,
     int64 root_feed_changestamp,
     std::set<FilePath>* changed_dirs) {
@@ -239,7 +239,7 @@ DriveDirectory* GDataWapiFeedProcessor::FindDirectoryForNewEntry(
 }
 
 DriveFileError GDataWapiFeedProcessor::FeedToFileResourceMap(
-    const std::vector<DocumentFeed*>& feed_list,
+    const ScopedVector<DocumentFeed>& feed_list,
     FileResourceIdMap* file_map,
     int64* feed_changestamp,
     FeedToFileResourceMapUmaStats* uma_stats) {

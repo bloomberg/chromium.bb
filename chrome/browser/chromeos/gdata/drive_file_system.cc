@@ -1922,10 +1922,10 @@ void DriveFileSystem::RequestDirectoryRefreshOnUIThreadAfterGetEntryInfo(
 
 void DriveFileSystem::OnRequestDirectoryRefresh(
     const FilePath& directory_path,
-    GetDocumentsParams* params,
+    scoped_ptr<LoadFeedParams> params,
     DriveFileError error) {
-  DCHECK(params);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(params.get());
 
   if (error != DRIVE_FILE_OK) {
     LOG(ERROR) << "Failed to refresh directory: " << directory_path.value()
@@ -1938,7 +1938,7 @@ void DriveFileSystem::OnRequestDirectoryRefresh(
   FileResourceIdMap file_map;
   GDataWapiFeedProcessor feed_processor(resource_metadata_.get());
   error = feed_processor.FeedToFileResourceMap(
-      *params->feed_list,
+      params->feed_list,
       &file_map,
       &unused_delta_feed_changestamp,
       &unused_uma_stats);
@@ -2227,10 +2227,11 @@ void DriveFileSystem::ContinueCreateDirectory(
 }
 
 void DriveFileSystem::OnSearch(const SearchCallback& search_callback,
-                               GetDocumentsParams* params,
+                               scoped_ptr<LoadFeedParams> params,
                                DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!search_callback.is_null());
+  DCHECK(params.get());
 
   if (error != DRIVE_FILE_OK) {
     search_callback.Run(error,
@@ -2245,8 +2246,8 @@ void DriveFileSystem::OnSearch(const SearchCallback& search_callback,
   std::vector<SearchResultInfo>* results(new std::vector<SearchResultInfo>());
   scoped_ptr<std::vector<SearchResultInfo> > result_vec(results);
 
-  DCHECK_EQ(1u, params->feed_list->size());
-  DocumentFeed* feed = params->feed_list->at(0);
+  DCHECK_EQ(1u, params->feed_list.size());
+  DocumentFeed* feed = params->feed_list[0];
 
   // TODO(tbarzic): Limit total number of returned results for the query.
   GURL next_feed;
@@ -2362,7 +2363,7 @@ void DriveFileSystem::LoadRootFeedFromCacheForTesting() {
 }
 
 DriveFileError DriveFileSystem::UpdateFromFeedForTesting(
-    const std::vector<DocumentFeed*>& feed_list,
+    const ScopedVector<DocumentFeed>& feed_list,
     int64 start_changestamp,
     int64 root_feed_changestamp) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
