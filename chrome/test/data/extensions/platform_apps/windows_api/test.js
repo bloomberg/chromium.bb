@@ -20,12 +20,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
          {width:512, height:384, frame:'custom'},
          callbackPass(function(win) {
            chrome.test.assertEq(512, win.dom.innerWidth);
-           // TODO(jeremya): Window metrics are inconsistent on Mac at the
-           // moment (see http://crbug.com/130184)
-           if (/Mac/.test(navigator.userAgent))
-             chrome.test.assertEq(406, win.dom.innerHeight);
-           else
-             chrome.test.assertEq(384, win.dom.innerHeight);
+           chrome.test.assertEq(384, win.dom.innerHeight);
            var oldWidth = win.dom.outerWidth, oldHeight = win.dom.outerHeight;
            win.dom.resizeBy(-256, 0);
            chrome.test.assertEq(oldWidth - 256, win.dom.outerWidth);

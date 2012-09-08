@@ -109,6 +109,24 @@
   NSRectFill(rect);
 }
 
++ (NSRect)frameRectForContentRect:(NSRect)contentRect
+                        styleMask:(NSUInteger)mask {
+  return contentRect;
+}
+
++ (NSRect)contentRectForFrameRect:(NSRect)frameRect
+                        styleMask:(NSUInteger)mask {
+  return frameRect;
+}
+
+- (NSRect)frameRectForContentRect:(NSRect)contentRect {
+  return contentRect;
+}
+
+- (NSRect)contentRectForFrameRect:(NSRect)frameRect {
+  return frameRect;
+}
+
 @end
 
 @interface ControlRegionView : NSView
