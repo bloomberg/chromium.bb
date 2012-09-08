@@ -400,7 +400,10 @@ static const AnnotatedInstruction examples_of_safe_stores[] = {
 
   // Store-multiple
   { 0x0881FFFF, "stm r1, { r0-r15 }: store multiple, no writeback" },
-  { 0x08A1FFFF, "stm r1!, { r0-r15 }: store multiple, writeback" },
+  // Note: can't store registers whose number is less than Rt when there is
+  //       writeback. E.g. stm r1! { r0-r15 } is unknown.
+  { 0x08A1FFFE, "stm r1!, { r1-r15 }: store multiple, writeback" },
+  { 0x08A1FFFC, "stm r1!, { r2-r15 }: store multiple, writeback" },
 
   // Stores from the floating point / vector register file
   // These all compile to STC instructions.

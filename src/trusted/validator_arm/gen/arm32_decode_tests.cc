@@ -101,50 +101,154 @@ bool LoadStoreRegisterListTesterop_25To20Is0010x0
       PassesParsePreconditions(inst, decoder);
 }
 
-// op(25:20)=0010x1
+// op(25:20)=001001
 //    = LoadRegisterList {constraints: }
-class LoadStoreRegisterListTesterop_25To20Is0010x1
+class LoadStoreRegisterListTesterop_25To20Is001001
     : public LoadStoreRegisterListTester {
  public:
-  LoadStoreRegisterListTesterop_25To20Is0010x1(const NamedClassDecoder& decoder)
+  LoadStoreRegisterListTesterop_25To20Is001001(const NamedClassDecoder& decoder)
     : LoadStoreRegisterListTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool LoadStoreRegisterListTesterop_25To20Is0010x1
+bool LoadStoreRegisterListTesterop_25To20Is001001
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x03D00000) != 0x00900000 /* op(25:20)=~0010x1 */) return false;
+  if ((inst.Bits() & 0x03F00000) != 0x00900000 /* op(25:20)=~001001 */) return false;
 
   // Check other preconditions defined for the base decoder.
   return LoadStoreRegisterListTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-// op(25:20)=0100x0
-//    = StoreRegisterList {constraints: }
-class LoadStoreRegisterListTesterop_25To20Is0100x0
+// op(25:20)=001011 & Rn(19:16)=~1101
+//    = LoadRegisterList {constraints: }
+class LoadStoreRegisterListTesterop_25To20Is001011_Rn_19To16IsNot1101
     : public LoadStoreRegisterListTester {
  public:
-  LoadStoreRegisterListTesterop_25To20Is0100x0(const NamedClassDecoder& decoder)
+  LoadStoreRegisterListTesterop_25To20Is001011_Rn_19To16IsNot1101(const NamedClassDecoder& decoder)
     : LoadStoreRegisterListTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool LoadStoreRegisterListTesterop_25To20Is0100x0
+bool LoadStoreRegisterListTesterop_25To20Is001011_Rn_19To16IsNot1101
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x03D00000) != 0x01000000 /* op(25:20)=~0100x0 */) return false;
+  if ((inst.Bits() & 0x03F00000) != 0x00B00000 /* op(25:20)=~001011 */) return false;
+  if ((inst.Bits() & 0x000F0000) == 0x000D0000 /* Rn(19:16)=1101 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return LoadStoreRegisterListTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// op(25:20)=001011 & Rn(19:16)=1101
+//    = LoadRegisterList {constraints: }
+class LoadStoreRegisterListTesterop_25To20Is001011_Rn_19To16Is1101
+    : public LoadStoreRegisterListTester {
+ public:
+  LoadStoreRegisterListTesterop_25To20Is001011_Rn_19To16Is1101(const NamedClassDecoder& decoder)
+    : LoadStoreRegisterListTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool LoadStoreRegisterListTesterop_25To20Is001011_Rn_19To16Is1101
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x03F00000) != 0x00B00000 /* op(25:20)=~001011 */) return false;
+  if ((inst.Bits() & 0x000F0000) != 0x000D0000 /* Rn(19:16)=~1101 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return LoadStoreRegisterListTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// op(25:20)=010000
+//    = StoreRegisterList {constraints: }
+class LoadStoreRegisterListTesterop_25To20Is010000
+    : public LoadStoreRegisterListTester {
+ public:
+  LoadStoreRegisterListTesterop_25To20Is010000(const NamedClassDecoder& decoder)
+    : LoadStoreRegisterListTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool LoadStoreRegisterListTesterop_25To20Is010000
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x03F00000) != 0x01000000 /* op(25:20)=~010000 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return LoadStoreRegisterListTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// op(25:20)=010010 & Rn(19:16)=~1101
+//    = StoreRegisterList {constraints: }
+class LoadStoreRegisterListTesterop_25To20Is010010_Rn_19To16IsNot1101
+    : public LoadStoreRegisterListTester {
+ public:
+  LoadStoreRegisterListTesterop_25To20Is010010_Rn_19To16IsNot1101(const NamedClassDecoder& decoder)
+    : LoadStoreRegisterListTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool LoadStoreRegisterListTesterop_25To20Is010010_Rn_19To16IsNot1101
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x03F00000) != 0x01200000 /* op(25:20)=~010010 */) return false;
+  if ((inst.Bits() & 0x000F0000) == 0x000D0000 /* Rn(19:16)=1101 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return LoadStoreRegisterListTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// op(25:20)=010010 & Rn(19:16)=1101
+//    = StoreRegisterList {constraints: }
+class LoadStoreRegisterListTesterop_25To20Is010010_Rn_19To16Is1101
+    : public LoadStoreRegisterListTester {
+ public:
+  LoadStoreRegisterListTesterop_25To20Is010010_Rn_19To16Is1101(const NamedClassDecoder& decoder)
+    : LoadStoreRegisterListTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool LoadStoreRegisterListTesterop_25To20Is010010_Rn_19To16Is1101
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x03F00000) != 0x01200000 /* op(25:20)=~010010 */) return false;
+  if ((inst.Bits() & 0x000F0000) != 0x000D0000 /* Rn(19:16)=~1101 */) return false;
 
   // Check other preconditions defined for the base decoder.
   return LoadStoreRegisterListTester::
@@ -350,6 +454,272 @@ bool BranchImmediate24Testerop_25To20Is11xxxx
 
   // Check other preconditions defined for the base decoder.
   return BranchImmediate24Tester::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// op1(25:20)=00000x
+//    = UndefinedCondDecoder {constraints: }
+class UnsafeCondDecoderTesterop1_25To20Is00000x
+    : public UnsafeCondDecoderTester {
+ public:
+  UnsafeCondDecoderTesterop1_25To20Is00000x(const NamedClassDecoder& decoder)
+    : UnsafeCondDecoderTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool UnsafeCondDecoderTesterop1_25To20Is00000x
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x03E00000) != 0x00000000 /* op1(25:20)=~00000x */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return UnsafeCondDecoderTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// op1(25:20)=11xxxx
+//    = ForbiddenCondDecoder {constraints: }
+class UnsafeCondDecoderTesterop1_25To20Is11xxxx
+    : public UnsafeCondDecoderTester {
+ public:
+  UnsafeCondDecoderTesterop1_25To20Is11xxxx(const NamedClassDecoder& decoder)
+    : UnsafeCondDecoderTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool UnsafeCondDecoderTesterop1_25To20Is11xxxx
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x03000000) != 0x03000000 /* op1(25:20)=~11xxxx */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return UnsafeCondDecoderTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// coproc(11:8)=~101x & op1(25:20)=0xxxx0 & op1_repeated(25:20)=~000x00
+//    = ForbiddenCondDecoder {constraints: }
+class UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is0xxxx0_op1_repeated_25To20IsNot000x00
+    : public UnsafeCondDecoderTester {
+ public:
+  UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is0xxxx0_op1_repeated_25To20IsNot000x00(const NamedClassDecoder& decoder)
+    : UnsafeCondDecoderTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is0xxxx0_op1_repeated_25To20IsNot000x00
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x00000E00) == 0x00000A00 /* coproc(11:8)=101x */) return false;
+  if ((inst.Bits() & 0x02100000) != 0x00000000 /* op1(25:20)=~0xxxx0 */) return false;
+  if ((inst.Bits() & 0x03B00000) == 0x00000000 /* op1_repeated(25:20)=000x00 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return UnsafeCondDecoderTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// coproc(11:8)=~101x & op1(25:20)=0xxxx1 & Rn(19:16)=~1111 & op1_repeated(25:20)=~000x01
+//    = ForbiddenCondDecoder {constraints: }
+class UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is0xxxx1_Rn_19To16IsNot1111_op1_repeated_25To20IsNot000x01
+    : public UnsafeCondDecoderTester {
+ public:
+  UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is0xxxx1_Rn_19To16IsNot1111_op1_repeated_25To20IsNot000x01(const NamedClassDecoder& decoder)
+    : UnsafeCondDecoderTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is0xxxx1_Rn_19To16IsNot1111_op1_repeated_25To20IsNot000x01
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x00000E00) == 0x00000A00 /* coproc(11:8)=101x */) return false;
+  if ((inst.Bits() & 0x02100000) != 0x00100000 /* op1(25:20)=~0xxxx1 */) return false;
+  if ((inst.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16)=1111 */) return false;
+  if ((inst.Bits() & 0x03B00000) == 0x00100000 /* op1_repeated(25:20)=000x01 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return UnsafeCondDecoderTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// coproc(11:8)=~101x & op1(25:20)=0xxxx1 & Rn(19:16)=1111 & op1_repeated(25:20)=~000x01
+//    = ForbiddenCondDecoder {constraints: }
+class UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is0xxxx1_Rn_19To16Is1111_op1_repeated_25To20IsNot000x01
+    : public UnsafeCondDecoderTester {
+ public:
+  UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is0xxxx1_Rn_19To16Is1111_op1_repeated_25To20IsNot000x01(const NamedClassDecoder& decoder)
+    : UnsafeCondDecoderTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is0xxxx1_Rn_19To16Is1111_op1_repeated_25To20IsNot000x01
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x00000E00) == 0x00000A00 /* coproc(11:8)=101x */) return false;
+  if ((inst.Bits() & 0x02100000) != 0x00100000 /* op1(25:20)=~0xxxx1 */) return false;
+  if ((inst.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16)=~1111 */) return false;
+  if ((inst.Bits() & 0x03B00000) == 0x00100000 /* op1_repeated(25:20)=000x01 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return UnsafeCondDecoderTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// coproc(11:8)=~101x & op1(25:20)=000100
+//    = ForbiddenCondDecoder {constraints: }
+class UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is000100
+    : public UnsafeCondDecoderTester {
+ public:
+  UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is000100(const NamedClassDecoder& decoder)
+    : UnsafeCondDecoderTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is000100
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x00000E00) == 0x00000A00 /* coproc(11:8)=101x */) return false;
+  if ((inst.Bits() & 0x03F00000) != 0x00400000 /* op1(25:20)=~000100 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return UnsafeCondDecoderTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// coproc(11:8)=~101x & op1(25:20)=000101
+//    = ForbiddenCondDecoder {constraints: }
+class UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is000101
+    : public UnsafeCondDecoderTester {
+ public:
+  UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is000101(const NamedClassDecoder& decoder)
+    : UnsafeCondDecoderTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is000101
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x00000E00) == 0x00000A00 /* coproc(11:8)=101x */) return false;
+  if ((inst.Bits() & 0x03F00000) != 0x00500000 /* op1(25:20)=~000101 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return UnsafeCondDecoderTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// coproc(11:8)=~101x & op1(25:20)=10xxxx & op(4)=0
+//    = ForbiddenCondDecoder {constraints: }
+class UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is10xxxx_op_4Is0
+    : public UnsafeCondDecoderTester {
+ public:
+  UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is10xxxx_op_4Is0(const NamedClassDecoder& decoder)
+    : UnsafeCondDecoderTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is10xxxx_op_4Is0
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x00000E00) == 0x00000A00 /* coproc(11:8)=101x */) return false;
+  if ((inst.Bits() & 0x03000000) != 0x02000000 /* op1(25:20)=~10xxxx */) return false;
+  if ((inst.Bits() & 0x00000010) != 0x00000000 /* op(4)=~0 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return UnsafeCondDecoderTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// coproc(11:8)=~101x & op1(25:20)=10xxx0 & op(4)=1
+//    = ForbiddenCondDecoder {constraints: }
+class UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is10xxx0_op_4Is1
+    : public UnsafeCondDecoderTester {
+ public:
+  UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is10xxx0_op_4Is1(const NamedClassDecoder& decoder)
+    : UnsafeCondDecoderTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is10xxx0_op_4Is1
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x00000E00) == 0x00000A00 /* coproc(11:8)=101x */) return false;
+  if ((inst.Bits() & 0x03100000) != 0x02000000 /* op1(25:20)=~10xxx0 */) return false;
+  if ((inst.Bits() & 0x00000010) != 0x00000010 /* op(4)=~1 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return UnsafeCondDecoderTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// coproc(11:8)=~101x & op1(25:20)=10xxx1 & op(4)=1
+//    = ForbiddenCondDecoder {constraints: }
+class UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is10xxx1_op_4Is1
+    : public UnsafeCondDecoderTester {
+ public:
+  UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is10xxx1_op_4Is1(const NamedClassDecoder& decoder)
+    : UnsafeCondDecoderTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is10xxx1_op_4Is1
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x00000E00) == 0x00000A00 /* coproc(11:8)=101x */) return false;
+  if ((inst.Bits() & 0x03100000) != 0x02100000 /* op1(25:20)=~10xxx1 */) return false;
+  if ((inst.Bits() & 0x00000010) != 0x00000010 /* op(4)=~1 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return UnsafeCondDecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -2900,6 +3270,56 @@ bool CondVfpOpTesteropc1_23To20Is1x00_opc3_7To6Isx0
       PassesParsePreconditions(inst, decoder);
 }
 
+// opc1(23:20)=1x01
+//    = CondVfpOp {constraints: }
+class CondVfpOpTesteropc1_23To20Is1x01
+    : public CondVfpOpTester {
+ public:
+  CondVfpOpTesteropc1_23To20Is1x01(const NamedClassDecoder& decoder)
+    : CondVfpOpTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool CondVfpOpTesteropc1_23To20Is1x01
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x00B00000) != 0x00900000 /* opc1(23:20)=~1x01 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return CondVfpOpTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// opc1(23:20)=1x10
+//    = CondVfpOp {constraints: }
+class CondVfpOpTesteropc1_23To20Is1x10
+    : public CondVfpOpTester {
+ public:
+  CondVfpOpTesteropc1_23To20Is1x10(const NamedClassDecoder& decoder)
+    : CondVfpOpTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool CondVfpOpTesteropc1_23To20Is1x10
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x00B00000) != 0x00A00000 /* opc1(23:20)=~1x10 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return CondVfpOpTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
 // op1(22:21)=00
 //    = Binary4RegisterDualOp {constraints: ,
 //     safety: ['RegsNotPc']}
@@ -3795,6 +4215,31 @@ bool UnsafeUncondDecoderTesterop1_26To20Is0010000_op2_7To4Is0000_Rn_19To16Isxxx1
       PassesParsePreconditions(inst, decoder);
 }
 
+// op1(26:20)=100x001
+//    = ForbiddenUncondDecoder {constraints: }
+class UnsafeUncondDecoderTesterop1_26To20Is100x001
+    : public UnsafeUncondDecoderTester {
+ public:
+  UnsafeUncondDecoderTesterop1_26To20Is100x001(const NamedClassDecoder& decoder)
+    : UnsafeUncondDecoderTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool UnsafeUncondDecoderTesterop1_26To20Is100x001
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x07700000) != 0x04100000 /* op1(26:20)=~100x001 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return UnsafeUncondDecoderTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
 // op1(26:20)=100x101
 //    = PreloadRegisterImm12Op {constraints: }
 class PreloadRegisterImm12OpTesterop1_26To20Is100x101
@@ -3817,6 +4262,31 @@ bool PreloadRegisterImm12OpTesterop1_26To20Is100x101
 
   // Check other preconditions defined for the base decoder.
   return PreloadRegisterImm12OpTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// op1(26:20)=100xx11
+//    = UnpredictableUncondDecoder {constraints: }
+class UnsafeUncondDecoderTesterop1_26To20Is100xx11
+    : public UnsafeUncondDecoderTester {
+ public:
+  UnsafeUncondDecoderTesterop1_26To20Is100xx11(const NamedClassDecoder& decoder)
+    : UnsafeUncondDecoderTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool UnsafeUncondDecoderTesterop1_26To20Is100xx11
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x07300000) != 0x04300000 /* op1(26:20)=~100xx11 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return UnsafeUncondDecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -3846,6 +4316,32 @@ bool PreloadRegisterImm12OpTesterop1_26To20Is101x001_Rn_19To16IsNot1111Notxxxxxx
 
   // Check other preconditions defined for the base decoder.
   return PreloadRegisterImm12OpTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// op1(26:20)=101x001 & Rn(19:16)=1111
+//    = UnpredictableUncondDecoder {constraints: }
+class UnsafeUncondDecoderTesterop1_26To20Is101x001_Rn_19To16Is1111
+    : public UnsafeUncondDecoderTester {
+ public:
+  UnsafeUncondDecoderTesterop1_26To20Is101x001_Rn_19To16Is1111(const NamedClassDecoder& decoder)
+    : UnsafeUncondDecoderTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool UnsafeUncondDecoderTesterop1_26To20Is101x001_Rn_19To16Is1111
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x07700000) != 0x05100000 /* op1(26:20)=~101x001 */) return false;
+  if ((inst.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16)=~1111 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return UnsafeUncondDecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -3904,81 +4400,54 @@ bool PreloadRegisterImm12OpTesterop1_26To20Is101x101_Rn_19To16Is1111
       PassesParsePreconditions(inst, decoder);
 }
 
-// op1(26:20)=110x101 & op2(7:4)=xxx0
-//    = PreloadRegisterPairOp {constraints: }
-class PreloadRegisterPairOpTesterop1_26To20Is110x101_op2_7To4Isxxx0
-    : public PreloadRegisterPairOpTester {
+// op1(26:20)=1010011
+//    = UnpredictableUncondDecoder {constraints: }
+class UnsafeUncondDecoderTesterop1_26To20Is1010011
+    : public UnsafeUncondDecoderTester {
  public:
-  PreloadRegisterPairOpTesterop1_26To20Is110x101_op2_7To4Isxxx0(const NamedClassDecoder& decoder)
-    : PreloadRegisterPairOpTester(decoder) {}
+  UnsafeUncondDecoderTesterop1_26To20Is1010011(const NamedClassDecoder& decoder)
+    : UnsafeUncondDecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool PreloadRegisterPairOpTesterop1_26To20Is110x101_op2_7To4Isxxx0
+bool UnsafeUncondDecoderTesterop1_26To20Is1010011
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x07700000) != 0x06500000 /* op1(26:20)=~110x101 */) return false;
-  if ((inst.Bits() & 0x00000010) != 0x00000000 /* op2(7:4)=~xxx0 */) return false;
+  if ((inst.Bits() & 0x07F00000) != 0x05300000 /* op1(26:20)=~1010011 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return PreloadRegisterPairOpTester::
+  return UnsafeUncondDecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
-// op1(26:20)=111x001 & op2(7:4)=xxx0
-//    = PreloadRegisterPairOpWAndRnNotPc {constraints: }
-class PreloadRegisterPairOpWAndRnNotPcTesterop1_26To20Is111x001_op2_7To4Isxxx0
-    : public PreloadRegisterPairOpWAndRnNotPcTester {
+// op1(26:20)=1010111 & op2(7:4)=0000
+//    = UnpredictableUncondDecoder {constraints: }
+class UnsafeUncondDecoderTesterop1_26To20Is1010111_op2_7To4Is0000
+    : public UnsafeUncondDecoderTester {
  public:
-  PreloadRegisterPairOpWAndRnNotPcTesterop1_26To20Is111x001_op2_7To4Isxxx0(const NamedClassDecoder& decoder)
-    : PreloadRegisterPairOpWAndRnNotPcTester(decoder) {}
+  UnsafeUncondDecoderTesterop1_26To20Is1010111_op2_7To4Is0000(const NamedClassDecoder& decoder)
+    : UnsafeUncondDecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool PreloadRegisterPairOpWAndRnNotPcTesterop1_26To20Is111x001_op2_7To4Isxxx0
+bool UnsafeUncondDecoderTesterop1_26To20Is1010111_op2_7To4Is0000
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x07700000) != 0x07100000 /* op1(26:20)=~111x001 */) return false;
-  if ((inst.Bits() & 0x00000010) != 0x00000000 /* op2(7:4)=~xxx0 */) return false;
+  if ((inst.Bits() & 0x07F00000) != 0x05700000 /* op1(26:20)=~1010111 */) return false;
+  if ((inst.Bits() & 0x000000F0) != 0x00000000 /* op2(7:4)=~0000 */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return PreloadRegisterPairOpWAndRnNotPcTester::
-      PassesParsePreconditions(inst, decoder);
-}
-
-// op1(26:20)=111x101 & op2(7:4)=xxx0
-//    = PreloadRegisterPairOpWAndRnNotPc {constraints: }
-class PreloadRegisterPairOpWAndRnNotPcTesterop1_26To20Is111x101_op2_7To4Isxxx0
-    : public PreloadRegisterPairOpWAndRnNotPcTester {
- public:
-  PreloadRegisterPairOpWAndRnNotPcTesterop1_26To20Is111x101_op2_7To4Isxxx0(const NamedClassDecoder& decoder)
-    : PreloadRegisterPairOpWAndRnNotPcTester(decoder) {}
-  virtual bool PassesParsePreconditions(
-      nacl_arm_dec::Instruction inst,
-      const NamedClassDecoder& decoder);
-};
-
-bool PreloadRegisterPairOpWAndRnNotPcTesterop1_26To20Is111x101_op2_7To4Isxxx0
-::PassesParsePreconditions(
-     nacl_arm_dec::Instruction inst,
-     const NamedClassDecoder& decoder) {
-
-  // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x07700000) != 0x07500000 /* op1(26:20)=~111x101 */) return false;
-  if ((inst.Bits() & 0x00000010) != 0x00000000 /* op2(7:4)=~xxx0 */) return false;
-
-  // Check other preconditions defined for the base decoder.
-  return PreloadRegisterPairOpWAndRnNotPcTester::
+  return UnsafeUncondDecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -4002,6 +4471,32 @@ bool UnsafeUncondDecoderTesterop1_26To20Is1010111_op2_7To4Is0001
   // Check that row patterns apply to pattern being checked.'
   if ((inst.Bits() & 0x07F00000) != 0x05700000 /* op1(26:20)=~1010111 */) return false;
   if ((inst.Bits() & 0x000000F0) != 0x00000010 /* op2(7:4)=~0001 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return UnsafeUncondDecoderTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// op1(26:20)=1010111 & op2(7:4)=001x
+//    = UnpredictableUncondDecoder {constraints: }
+class UnsafeUncondDecoderTesterop1_26To20Is1010111_op2_7To4Is001x
+    : public UnsafeUncondDecoderTester {
+ public:
+  UnsafeUncondDecoderTesterop1_26To20Is1010111_op2_7To4Is001x(const NamedClassDecoder& decoder)
+    : UnsafeUncondDecoderTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool UnsafeUncondDecoderTesterop1_26To20Is1010111_op2_7To4Is001x
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x07F00000) != 0x05700000 /* op1(26:20)=~1010111 */) return false;
+  if ((inst.Bits() & 0x000000E0) != 0x00000020 /* op2(7:4)=~001x */) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeUncondDecoderTester::
@@ -4083,6 +4578,213 @@ bool InstructionBarrierTesterop1_26To20Is1010111_op2_7To4Is0110
 
   // Check other preconditions defined for the base decoder.
   return InstructionBarrierTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// op1(26:20)=1010111 & op2(7:4)=0111
+//    = UnpredictableUncondDecoder {constraints: }
+class UnsafeUncondDecoderTesterop1_26To20Is1010111_op2_7To4Is0111
+    : public UnsafeUncondDecoderTester {
+ public:
+  UnsafeUncondDecoderTesterop1_26To20Is1010111_op2_7To4Is0111(const NamedClassDecoder& decoder)
+    : UnsafeUncondDecoderTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool UnsafeUncondDecoderTesterop1_26To20Is1010111_op2_7To4Is0111
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x07F00000) != 0x05700000 /* op1(26:20)=~1010111 */) return false;
+  if ((inst.Bits() & 0x000000F0) != 0x00000070 /* op2(7:4)=~0111 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return UnsafeUncondDecoderTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// op1(26:20)=1010111 & op2(7:4)=1xxx
+//    = UnpredictableUncondDecoder {constraints: }
+class UnsafeUncondDecoderTesterop1_26To20Is1010111_op2_7To4Is1xxx
+    : public UnsafeUncondDecoderTester {
+ public:
+  UnsafeUncondDecoderTesterop1_26To20Is1010111_op2_7To4Is1xxx(const NamedClassDecoder& decoder)
+    : UnsafeUncondDecoderTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool UnsafeUncondDecoderTesterop1_26To20Is1010111_op2_7To4Is1xxx
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x07F00000) != 0x05700000 /* op1(26:20)=~1010111 */) return false;
+  if ((inst.Bits() & 0x00000080) != 0x00000080 /* op2(7:4)=~1xxx */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return UnsafeUncondDecoderTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// op1(26:20)=1011x11
+//    = UnpredictableUncondDecoder {constraints: }
+class UnsafeUncondDecoderTesterop1_26To20Is1011x11
+    : public UnsafeUncondDecoderTester {
+ public:
+  UnsafeUncondDecoderTesterop1_26To20Is1011x11(const NamedClassDecoder& decoder)
+    : UnsafeUncondDecoderTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool UnsafeUncondDecoderTesterop1_26To20Is1011x11
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x07B00000) != 0x05B00000 /* op1(26:20)=~1011x11 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return UnsafeUncondDecoderTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// op1(26:20)=110x001 & op2(7:4)=xxx0
+//    = ForbiddenUncondDecoder {constraints: }
+class UnsafeUncondDecoderTesterop1_26To20Is110x001_op2_7To4Isxxx0
+    : public UnsafeUncondDecoderTester {
+ public:
+  UnsafeUncondDecoderTesterop1_26To20Is110x001_op2_7To4Isxxx0(const NamedClassDecoder& decoder)
+    : UnsafeUncondDecoderTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool UnsafeUncondDecoderTesterop1_26To20Is110x001_op2_7To4Isxxx0
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x07700000) != 0x06100000 /* op1(26:20)=~110x001 */) return false;
+  if ((inst.Bits() & 0x00000010) != 0x00000000 /* op2(7:4)=~xxx0 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return UnsafeUncondDecoderTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// op1(26:20)=110x101 & op2(7:4)=xxx0
+//    = PreloadRegisterPairOp {constraints: }
+class PreloadRegisterPairOpTesterop1_26To20Is110x101_op2_7To4Isxxx0
+    : public PreloadRegisterPairOpTester {
+ public:
+  PreloadRegisterPairOpTesterop1_26To20Is110x101_op2_7To4Isxxx0(const NamedClassDecoder& decoder)
+    : PreloadRegisterPairOpTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool PreloadRegisterPairOpTesterop1_26To20Is110x101_op2_7To4Isxxx0
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x07700000) != 0x06500000 /* op1(26:20)=~110x101 */) return false;
+  if ((inst.Bits() & 0x00000010) != 0x00000000 /* op2(7:4)=~xxx0 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return PreloadRegisterPairOpTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// op1(26:20)=111x001 & op2(7:4)=xxx0
+//    = PreloadRegisterPairOpWAndRnNotPc {constraints: }
+class PreloadRegisterPairOpWAndRnNotPcTesterop1_26To20Is111x001_op2_7To4Isxxx0
+    : public PreloadRegisterPairOpWAndRnNotPcTester {
+ public:
+  PreloadRegisterPairOpWAndRnNotPcTesterop1_26To20Is111x001_op2_7To4Isxxx0(const NamedClassDecoder& decoder)
+    : PreloadRegisterPairOpWAndRnNotPcTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool PreloadRegisterPairOpWAndRnNotPcTesterop1_26To20Is111x001_op2_7To4Isxxx0
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x07700000) != 0x07100000 /* op1(26:20)=~111x001 */) return false;
+  if ((inst.Bits() & 0x00000010) != 0x00000000 /* op2(7:4)=~xxx0 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return PreloadRegisterPairOpWAndRnNotPcTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// op1(26:20)=111x101 & op2(7:4)=xxx0
+//    = PreloadRegisterPairOpWAndRnNotPc {constraints: }
+class PreloadRegisterPairOpWAndRnNotPcTesterop1_26To20Is111x101_op2_7To4Isxxx0
+    : public PreloadRegisterPairOpWAndRnNotPcTester {
+ public:
+  PreloadRegisterPairOpWAndRnNotPcTesterop1_26To20Is111x101_op2_7To4Isxxx0(const NamedClassDecoder& decoder)
+    : PreloadRegisterPairOpWAndRnNotPcTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool PreloadRegisterPairOpWAndRnNotPcTesterop1_26To20Is111x101_op2_7To4Isxxx0
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x07700000) != 0x07500000 /* op1(26:20)=~111x101 */) return false;
+  if ((inst.Bits() & 0x00000010) != 0x00000000 /* op2(7:4)=~xxx0 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return PreloadRegisterPairOpWAndRnNotPcTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// op1(26:20)=11xxx11 & op2(7:4)=xxx0
+//    = UnpredictableUncondDecoder {constraints: }
+class UnsafeUncondDecoderTesterop1_26To20Is11xxx11_op2_7To4Isxxx0
+    : public UnsafeUncondDecoderTester {
+ public:
+  UnsafeUncondDecoderTesterop1_26To20Is11xxx11_op2_7To4Isxxx0(const NamedClassDecoder& decoder)
+    : UnsafeUncondDecoderTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool UnsafeUncondDecoderTesterop1_26To20Is11xxx11_op2_7To4Isxxx0
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x06300000) != 0x06300000 /* op1(26:20)=~11xxx11 */) return false;
+  if ((inst.Bits() & 0x00000010) != 0x00000000 /* op2(7:4)=~xxx0 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return UnsafeUncondDecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -4856,6 +5558,31 @@ bool Binary4RegisterDualResultTesterop_23To20Is0100RegsNotPc
       PassesParsePreconditions(inst, decoder);
 }
 
+// op(23:20)=0101
+//    = UndefinedCondDecoder {constraints: }
+class UnsafeCondDecoderTesterop_23To20Is0101
+    : public UnsafeCondDecoderTester {
+ public:
+  UnsafeCondDecoderTesterop_23To20Is0101(const NamedClassDecoder& decoder)
+    : UnsafeCondDecoderTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool UnsafeCondDecoderTesterop_23To20Is0101
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x00F00000) != 0x00500000 /* op(23:20)=~0101 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return UnsafeCondDecoderTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
 // op(23:20)=0110
 //    = Binary4RegisterDualOp {constraints: ,
 //     safety: ['RegsNotPc']}
@@ -4879,6 +5606,31 @@ bool Binary4RegisterDualOpTesterop_23To20Is0110RegsNotPc
 
   // Check other preconditions defined for the base decoder.
   return Binary4RegisterDualOpTesterRegsNotPc::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// op(23:20)=0111
+//    = UndefinedCondDecoder {constraints: }
+class UnsafeCondDecoderTesterop_23To20Is0111
+    : public UnsafeCondDecoderTester {
+ public:
+  UnsafeCondDecoderTesterop_23To20Is0111(const NamedClassDecoder& decoder)
+    : UnsafeCondDecoderTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool UnsafeCondDecoderTesterop_23To20Is0111
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x00F00000) != 0x00700000 /* op(23:20)=~0111 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return UnsafeCondDecoderTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -5031,6 +5783,32 @@ bool CondVfpOpTesteropc2_19To16Is0000_opc3_7To6Is01
   // Check that row patterns apply to pattern being checked.'
   if ((inst.Bits() & 0x000F0000) != 0x00000000 /* opc2(19:16)=~0000 */) return false;
   if ((inst.Bits() & 0x000000C0) != 0x00000040 /* opc3(7:6)=~01 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return CondVfpOpTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// opc2(19:16)=0000 & opc3(7:6)=11
+//    = CondVfpOp {constraints: }
+class CondVfpOpTesteropc2_19To16Is0000_opc3_7To6Is11
+    : public CondVfpOpTester {
+ public:
+  CondVfpOpTesteropc2_19To16Is0000_opc3_7To6Is11(const NamedClassDecoder& decoder)
+    : CondVfpOpTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool CondVfpOpTesteropc2_19To16Is0000_opc3_7To6Is11
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x000F0000) != 0x00000000 /* opc2(19:16)=~0000 */) return false;
+  if ((inst.Bits() & 0x000000C0) != 0x000000C0 /* opc3(7:6)=~11 */) return false;
 
   // Check other preconditions defined for the base decoder.
   return CondVfpOpTester::
@@ -7101,18 +7879,18 @@ bool MoveVfpRegisterOpWithTypeSelTesterL_20Is0_C_8Is1_A_23To21Is0xx
 }
 
 // L(20)=0 & C(8)=1 & A(23:21)=1xx & B(6:5)=0x
-//    = DuplicateToVfpRegisters {constraints: }
-class DuplicateToVfpRegistersTesterL_20Is0_C_8Is1_A_23To21Is1xx_B_6To5Is0x
-    : public DuplicateToVfpRegistersTester {
+//    = DuplicateToAdvSIMDRegisters {constraints: }
+class DuplicateToAdvSIMDRegistersTesterL_20Is0_C_8Is1_A_23To21Is1xx_B_6To5Is0x
+    : public DuplicateToAdvSIMDRegistersTester {
  public:
-  DuplicateToVfpRegistersTesterL_20Is0_C_8Is1_A_23To21Is1xx_B_6To5Is0x(const NamedClassDecoder& decoder)
-    : DuplicateToVfpRegistersTester(decoder) {}
+  DuplicateToAdvSIMDRegistersTesterL_20Is0_C_8Is1_A_23To21Is1xx_B_6To5Is0x(const NamedClassDecoder& decoder)
+    : DuplicateToAdvSIMDRegistersTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool DuplicateToVfpRegistersTesterL_20Is0_C_8Is1_A_23To21Is1xx_B_6To5Is0x
+bool DuplicateToAdvSIMDRegistersTesterL_20Is0_C_8Is1_A_23To21Is1xx_B_6To5Is0x
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
@@ -7124,7 +7902,7 @@ bool DuplicateToVfpRegistersTesterL_20Is0_C_8Is1_A_23To21Is1xx_B_6To5Is0x
   if ((inst.Bits() & 0x00000040) != 0x00000000 /* B(6:5)=~0x */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return DuplicateToVfpRegistersTester::
+  return DuplicateToAdvSIMDRegistersTester::
       PassesParsePreconditions(inst, decoder);
 }
 
@@ -7208,6 +7986,58 @@ bool MoveVfpRegisterOpWithTypeSelTesterL_20Is1_C_8Is1
       PassesParsePreconditions(inst, decoder);
 }
 
+// C(8)=0 & op(7:4)=00x1
+//    = MoveDoubleVfpRegisterOp {constraints: }
+class MoveDoubleVfpRegisterOpTesterC_8Is0_op_7To4Is00x1
+    : public MoveDoubleVfpRegisterOpTester {
+ public:
+  MoveDoubleVfpRegisterOpTesterC_8Is0_op_7To4Is00x1(const NamedClassDecoder& decoder)
+    : MoveDoubleVfpRegisterOpTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool MoveDoubleVfpRegisterOpTesterC_8Is0_op_7To4Is00x1
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x00000100) != 0x00000000 /* C(8)=~0 */) return false;
+  if ((inst.Bits() & 0x000000D0) != 0x00000010 /* op(7:4)=~00x1 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return MoveDoubleVfpRegisterOpTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// C(8)=1 & op(7:4)=00x1
+//    = MoveDoubleVfpRegisterOp {constraints: }
+class MoveDoubleVfpRegisterOpTesterC_8Is1_op_7To4Is00x1
+    : public MoveDoubleVfpRegisterOpTester {
+ public:
+  MoveDoubleVfpRegisterOpTesterC_8Is1_op_7To4Is00x1(const NamedClassDecoder& decoder)
+    : MoveDoubleVfpRegisterOpTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool MoveDoubleVfpRegisterOpTesterC_8Is1_op_7To4Is00x1
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x00000100) != 0x00000100 /* C(8)=~1 */) return false;
+  if ((inst.Bits() & 0x000000D0) != 0x00000010 /* op(7:4)=~00x1 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return MoveDoubleVfpRegisterOpTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
 // op1(27:20)=100xx1x0
 //    = ForbiddenUncondDecoder {constraints: }
 class UnsafeUncondDecoderTesterop1_27To20Is100xx1x0
@@ -7283,27 +8113,26 @@ bool UnsafeUncondDecoderTesterop1_27To20Is101xxxxx
       PassesParsePreconditions(inst, decoder);
 }
 
-// op1(27:20)=110xxxx1 & Rn(19:16)=1111 & op1_repeated(27:20)=~11000x01
+// op1(27:20)=110xxxx0 & op1_repeated(27:20)=~11000x00
 //    = ForbiddenUncondDecoder {constraints: }
-class UnsafeUncondDecoderTesterop1_27To20Is110xxxx1_Rn_19To16Is1111_op1_repeated_27To20IsNot11000x01
+class UnsafeUncondDecoderTesterop1_27To20Is110xxxx0_op1_repeated_27To20IsNot11000x00
     : public UnsafeUncondDecoderTester {
  public:
-  UnsafeUncondDecoderTesterop1_27To20Is110xxxx1_Rn_19To16Is1111_op1_repeated_27To20IsNot11000x01(const NamedClassDecoder& decoder)
+  UnsafeUncondDecoderTesterop1_27To20Is110xxxx0_op1_repeated_27To20IsNot11000x00(const NamedClassDecoder& decoder)
     : UnsafeUncondDecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool UnsafeUncondDecoderTesterop1_27To20Is110xxxx1_Rn_19To16Is1111_op1_repeated_27To20IsNot11000x01
+bool UnsafeUncondDecoderTesterop1_27To20Is110xxxx0_op1_repeated_27To20IsNot11000x00
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x0E100000) != 0x0C100000 /* op1(27:20)=~110xxxx1 */) return false;
-  if ((inst.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16)=~1111 */) return false;
-  if ((inst.Bits() & 0x0FB00000) == 0x0C100000 /* op1_repeated(27:20)=11000x01 */) return false;
+  if ((inst.Bits() & 0x0E100000) != 0x0C000000 /* op1(27:20)=~110xxxx0 */) return false;
+  if ((inst.Bits() & 0x0FB00000) == 0x0C000000 /* op1_repeated(27:20)=11000x00 */) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeUncondDecoderTester::
@@ -7337,25 +8166,26 @@ bool UnsafeUncondDecoderTesterop1_27To20Is110xxxx1_Rn_19To16IsNot1111_op1_repeat
       PassesParsePreconditions(inst, decoder);
 }
 
-// op1(27:20)=110xxxx0 & op1_repeated(27:20)=~11000x01
+// op1(27:20)=110xxxx1 & Rn(19:16)=1111 & op1_repeated(27:20)=~11000x01
 //    = ForbiddenUncondDecoder {constraints: }
-class UnsafeUncondDecoderTesterop1_27To20Is110xxxx0_op1_repeated_27To20IsNot11000x01
+class UnsafeUncondDecoderTesterop1_27To20Is110xxxx1_Rn_19To16Is1111_op1_repeated_27To20IsNot11000x01
     : public UnsafeUncondDecoderTester {
  public:
-  UnsafeUncondDecoderTesterop1_27To20Is110xxxx0_op1_repeated_27To20IsNot11000x01(const NamedClassDecoder& decoder)
+  UnsafeUncondDecoderTesterop1_27To20Is110xxxx1_Rn_19To16Is1111_op1_repeated_27To20IsNot11000x01(const NamedClassDecoder& decoder)
     : UnsafeUncondDecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 };
 
-bool UnsafeUncondDecoderTesterop1_27To20Is110xxxx0_op1_repeated_27To20IsNot11000x01
+bool UnsafeUncondDecoderTesterop1_27To20Is110xxxx1_Rn_19To16Is1111_op1_repeated_27To20IsNot11000x01
 ::PassesParsePreconditions(
      nacl_arm_dec::Instruction inst,
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x0E100000) != 0x0C000000 /* op1(27:20)=~110xxxx0 */) return false;
+  if ((inst.Bits() & 0x0E100000) != 0x0C100000 /* op1(27:20)=~110xxxx1 */) return false;
+  if ((inst.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16)=~1111 */) return false;
   if ((inst.Bits() & 0x0FB00000) == 0x0C100000 /* op1_repeated(27:20)=11000x01 */) return false;
 
   // Check other preconditions defined for the base decoder.
@@ -7407,6 +8237,32 @@ bool UnsafeUncondDecoderTesterop1_27To20Is11000101
 
   // Check that row patterns apply to pattern being checked.'
   if ((inst.Bits() & 0x0FF00000) != 0x0C500000 /* op1(27:20)=~11000101 */) return false;
+
+  // Check other preconditions defined for the base decoder.
+  return UnsafeUncondDecoderTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
+// op1(27:20)=1110xxxx & op(4)=0
+//    = ForbiddenUncondDecoder {constraints: }
+class UnsafeUncondDecoderTesterop1_27To20Is1110xxxx_op_4Is0
+    : public UnsafeUncondDecoderTester {
+ public:
+  UnsafeUncondDecoderTesterop1_27To20Is1110xxxx_op_4Is0(const NamedClassDecoder& decoder)
+    : UnsafeUncondDecoderTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+};
+
+bool UnsafeUncondDecoderTesterop1_27To20Is1110xxxx_op_4Is0
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+
+  // Check that row patterns apply to pattern being checked.'
+  if ((inst.Bits() & 0x0F000000) != 0x0E000000 /* op1(27:20)=~1110xxxx */) return false;
+  if ((inst.Bits() & 0x00000010) != 0x00000000 /* op(4)=~0 */) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeUncondDecoderTester::
@@ -7465,32 +8321,6 @@ bool UnsafeUncondDecoderTesterop1_27To20Is1110xxx1_op_4Is1
       PassesParsePreconditions(inst, decoder);
 }
 
-// op1(27:20)=1110xxxx & op(4)=0
-//    = ForbiddenUncondDecoder {constraints: }
-class UnsafeUncondDecoderTesterop1_27To20Is1110xxxx_op_4Is0
-    : public UnsafeUncondDecoderTester {
- public:
-  UnsafeUncondDecoderTesterop1_27To20Is1110xxxx_op_4Is0(const NamedClassDecoder& decoder)
-    : UnsafeUncondDecoderTester(decoder) {}
-  virtual bool PassesParsePreconditions(
-      nacl_arm_dec::Instruction inst,
-      const NamedClassDecoder& decoder);
-};
-
-bool UnsafeUncondDecoderTesterop1_27To20Is1110xxxx_op_4Is0
-::PassesParsePreconditions(
-     nacl_arm_dec::Instruction inst,
-     const NamedClassDecoder& decoder) {
-
-  // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x0F000000) != 0x0E000000 /* op1(27:20)=~1110xxxx */) return false;
-  if ((inst.Bits() & 0x00000010) != 0x00000000 /* op(4)=~0 */) return false;
-
-  // Check other preconditions defined for the base decoder.
-  return UnsafeUncondDecoderTester::
-      PassesParsePreconditions(inst, decoder);
-}
-
 // The following are derived class decoder testers for decoder actions
 // associated with a pattern of an action. These derived classes introduce
 // a default constructor that automatically initializes the expected decoder
@@ -7532,27 +8362,75 @@ class StoreRegisterListTester_op_25To20Is0010x0_Stm_Stmia_Stmea_Rule_189_A1_P374
   {}
 };
 
-// op(25:20)=0010x1
+// op(25:20)=001001
 //    = LoadRegisterList {constraints: ,
 //     rule: 'Ldm_Ldmia_Ldmfd_Rule_53_A1_P110'}
-class LoadRegisterListTester_op_25To20Is0010x1_Ldm_Ldmia_Ldmfd_Rule_53_A1_P110
-    : public LoadStoreRegisterListTesterop_25To20Is0010x1 {
+class LoadRegisterListTester_op_25To20Is001001_Ldm_Ldmia_Ldmfd_Rule_53_A1_P110
+    : public LoadStoreRegisterListTesterop_25To20Is001001 {
  public:
-  LoadRegisterListTester_op_25To20Is0010x1_Ldm_Ldmia_Ldmfd_Rule_53_A1_P110()
-    : LoadStoreRegisterListTesterop_25To20Is0010x1(
+  LoadRegisterListTester_op_25To20Is001001_Ldm_Ldmia_Ldmfd_Rule_53_A1_P110()
+    : LoadStoreRegisterListTesterop_25To20Is001001(
       state_.LoadRegisterList_Ldm_Ldmia_Ldmfd_Rule_53_A1_P110_instance_)
   {}
 };
 
-// op(25:20)=0100x0
+// op(25:20)=001011 & Rn(19:16)=~1101
+//    = LoadRegisterList {constraints: ,
+//     rule: 'Ldm_Ldmia_Ldmfd_Rule_53_A1_P110'}
+class LoadRegisterListTester_op_25To20Is001011_Rn_19To16IsNot1101_Ldm_Ldmia_Ldmfd_Rule_53_A1_P110
+    : public LoadStoreRegisterListTesterop_25To20Is001011_Rn_19To16IsNot1101 {
+ public:
+  LoadRegisterListTester_op_25To20Is001011_Rn_19To16IsNot1101_Ldm_Ldmia_Ldmfd_Rule_53_A1_P110()
+    : LoadStoreRegisterListTesterop_25To20Is001011_Rn_19To16IsNot1101(
+      state_.LoadRegisterList_Ldm_Ldmia_Ldmfd_Rule_53_A1_P110_instance_)
+  {}
+};
+
+// op(25:20)=001011 & Rn(19:16)=1101
+//    = LoadRegisterList {constraints: ,
+//     rule: 'Pop_Rule_A1'}
+class LoadRegisterListTester_op_25To20Is001011_Rn_19To16Is1101_Pop_Rule_A1
+    : public LoadStoreRegisterListTesterop_25To20Is001011_Rn_19To16Is1101 {
+ public:
+  LoadRegisterListTester_op_25To20Is001011_Rn_19To16Is1101_Pop_Rule_A1()
+    : LoadStoreRegisterListTesterop_25To20Is001011_Rn_19To16Is1101(
+      state_.LoadRegisterList_Pop_Rule_A1_instance_)
+  {}
+};
+
+// op(25:20)=010000
 //    = StoreRegisterList {constraints: ,
 //     rule: 'Stmdb_Stmfd_Rule_191_A1_P378'}
-class StoreRegisterListTester_op_25To20Is0100x0_Stmdb_Stmfd_Rule_191_A1_P378
-    : public LoadStoreRegisterListTesterop_25To20Is0100x0 {
+class StoreRegisterListTester_op_25To20Is010000_Stmdb_Stmfd_Rule_191_A1_P378
+    : public LoadStoreRegisterListTesterop_25To20Is010000 {
  public:
-  StoreRegisterListTester_op_25To20Is0100x0_Stmdb_Stmfd_Rule_191_A1_P378()
-    : LoadStoreRegisterListTesterop_25To20Is0100x0(
+  StoreRegisterListTester_op_25To20Is010000_Stmdb_Stmfd_Rule_191_A1_P378()
+    : LoadStoreRegisterListTesterop_25To20Is010000(
       state_.StoreRegisterList_Stmdb_Stmfd_Rule_191_A1_P378_instance_)
+  {}
+};
+
+// op(25:20)=010010 & Rn(19:16)=~1101
+//    = StoreRegisterList {constraints: ,
+//     rule: 'Stmdb_Stmfd_Rule_191_A1_P378'}
+class StoreRegisterListTester_op_25To20Is010010_Rn_19To16IsNot1101_Stmdb_Stmfd_Rule_191_A1_P378
+    : public LoadStoreRegisterListTesterop_25To20Is010010_Rn_19To16IsNot1101 {
+ public:
+  StoreRegisterListTester_op_25To20Is010010_Rn_19To16IsNot1101_Stmdb_Stmfd_Rule_191_A1_P378()
+    : LoadStoreRegisterListTesterop_25To20Is010010_Rn_19To16IsNot1101(
+      state_.StoreRegisterList_Stmdb_Stmfd_Rule_191_A1_P378_instance_)
+  {}
+};
+
+// op(25:20)=010010 & Rn(19:16)=1101
+//    = StoreRegisterList {constraints: ,
+//     rule: 'Push_Rule_A1'}
+class StoreRegisterListTester_op_25To20Is010010_Rn_19To16Is1101_Push_Rule_A1
+    : public LoadStoreRegisterListTesterop_25To20Is010010_Rn_19To16Is1101 {
+ public:
+  StoreRegisterListTester_op_25To20Is010010_Rn_19To16Is1101_Push_Rule_A1()
+    : LoadStoreRegisterListTesterop_25To20Is010010_Rn_19To16Is1101(
+      state_.StoreRegisterList_Push_Rule_A1_instance_)
   {}
 };
 
@@ -7570,13 +8448,13 @@ class LoadRegisterListTester_op_25To20Is0100x1_Ldmdb_Ldmea_Rule_55_A1_P114
 
 // op(25:20)=0110x0
 //    = StoreRegisterList {constraints: ,
-//     rule: 'Stmid_Stmfa_Rule_192_A1_P380'}
-class StoreRegisterListTester_op_25To20Is0110x0_Stmid_Stmfa_Rule_192_A1_P380
+//     rule: 'Stmib_Stmfa_Rule_192_A1_P380'}
+class StoreRegisterListTester_op_25To20Is0110x0_Stmib_Stmfa_Rule_192_A1_P380
     : public LoadStoreRegisterListTesterop_25To20Is0110x0 {
  public:
-  StoreRegisterListTester_op_25To20Is0110x0_Stmid_Stmfa_Rule_192_A1_P380()
+  StoreRegisterListTester_op_25To20Is0110x0_Stmib_Stmfa_Rule_192_A1_P380()
     : LoadStoreRegisterListTesterop_25To20Is0110x0(
-      state_.StoreRegisterList_Stmid_Stmfa_Rule_192_A1_P380_instance_)
+      state_.StoreRegisterList_Stmib_Stmfa_Rule_192_A1_P380_instance_)
   {}
 };
 
@@ -7649,6 +8527,126 @@ class BranchImmediate24Tester_op_25To20Is11xxxx_Bl_Blx_Rule_23_A1_P58
   BranchImmediate24Tester_op_25To20Is11xxxx_Bl_Blx_Rule_23_A1_P58()
     : BranchImmediate24Testerop_25To20Is11xxxx(
       state_.BranchImmediate24_Bl_Blx_Rule_23_A1_P58_instance_)
+  {}
+};
+
+// op1(25:20)=00000x
+//    = UndefinedCondDecoder {constraints: ,
+//     rule: 'Undefined_A5_6'}
+class UndefinedCondDecoderTester_op1_25To20Is00000x_Undefined_A5_6
+    : public UnsafeCondDecoderTesterop1_25To20Is00000x {
+ public:
+  UndefinedCondDecoderTester_op1_25To20Is00000x_Undefined_A5_6()
+    : UnsafeCondDecoderTesterop1_25To20Is00000x(
+      state_.UndefinedCondDecoder_Undefined_A5_6_instance_)
+  {}
+};
+
+// op1(25:20)=11xxxx
+//    = ForbiddenCondDecoder {constraints: ,
+//     rule: 'Svc_Rule_A1'}
+class ForbiddenCondDecoderTester_op1_25To20Is11xxxx_Svc_Rule_A1
+    : public UnsafeCondDecoderTesterop1_25To20Is11xxxx {
+ public:
+  ForbiddenCondDecoderTester_op1_25To20Is11xxxx_Svc_Rule_A1()
+    : UnsafeCondDecoderTesterop1_25To20Is11xxxx(
+      state_.ForbiddenCondDecoder_Svc_Rule_A1_instance_)
+  {}
+};
+
+// coproc(11:8)=~101x & op1(25:20)=0xxxx0 & op1_repeated(25:20)=~000x00
+//    = ForbiddenCondDecoder {constraints: ,
+//     rule: 'Stc_Rule_A2'}
+class ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is0xxxx0_op1_repeated_25To20IsNot000x00_Stc_Rule_A2
+    : public UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is0xxxx0_op1_repeated_25To20IsNot000x00 {
+ public:
+  ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is0xxxx0_op1_repeated_25To20IsNot000x00_Stc_Rule_A2()
+    : UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is0xxxx0_op1_repeated_25To20IsNot000x00(
+      state_.ForbiddenCondDecoder_Stc_Rule_A2_instance_)
+  {}
+};
+
+// coproc(11:8)=~101x & op1(25:20)=0xxxx1 & Rn(19:16)=~1111 & op1_repeated(25:20)=~000x01
+//    = ForbiddenCondDecoder {constraints: ,
+//     rule: 'Ldc_immediate_Rule_A1'}
+class ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is0xxxx1_Rn_19To16IsNot1111_op1_repeated_25To20IsNot000x01_Ldc_immediate_Rule_A1
+    : public UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is0xxxx1_Rn_19To16IsNot1111_op1_repeated_25To20IsNot000x01 {
+ public:
+  ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is0xxxx1_Rn_19To16IsNot1111_op1_repeated_25To20IsNot000x01_Ldc_immediate_Rule_A1()
+    : UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is0xxxx1_Rn_19To16IsNot1111_op1_repeated_25To20IsNot000x01(
+      state_.ForbiddenCondDecoder_Ldc_immediate_Rule_A1_instance_)
+  {}
+};
+
+// coproc(11:8)=~101x & op1(25:20)=0xxxx1 & Rn(19:16)=1111 & op1_repeated(25:20)=~000x01
+//    = ForbiddenCondDecoder {constraints: ,
+//     rule: 'Ldc_literal_Rule_A1'}
+class ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is0xxxx1_Rn_19To16Is1111_op1_repeated_25To20IsNot000x01_Ldc_literal_Rule_A1
+    : public UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is0xxxx1_Rn_19To16Is1111_op1_repeated_25To20IsNot000x01 {
+ public:
+  ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is0xxxx1_Rn_19To16Is1111_op1_repeated_25To20IsNot000x01_Ldc_literal_Rule_A1()
+    : UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is0xxxx1_Rn_19To16Is1111_op1_repeated_25To20IsNot000x01(
+      state_.ForbiddenCondDecoder_Ldc_literal_Rule_A1_instance_)
+  {}
+};
+
+// coproc(11:8)=~101x & op1(25:20)=000100
+//    = ForbiddenCondDecoder {constraints: ,
+//     rule: 'Mcrr_Rule_A1'}
+class ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is000100_Mcrr_Rule_A1
+    : public UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is000100 {
+ public:
+  ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is000100_Mcrr_Rule_A1()
+    : UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is000100(
+      state_.ForbiddenCondDecoder_Mcrr_Rule_A1_instance_)
+  {}
+};
+
+// coproc(11:8)=~101x & op1(25:20)=000101
+//    = ForbiddenCondDecoder {constraints: ,
+//     rule: 'Mrrc_Rule_A1'}
+class ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is000101_Mrrc_Rule_A1
+    : public UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is000101 {
+ public:
+  ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is000101_Mrrc_Rule_A1()
+    : UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is000101(
+      state_.ForbiddenCondDecoder_Mrrc_Rule_A1_instance_)
+  {}
+};
+
+// coproc(11:8)=~101x & op1(25:20)=10xxxx & op(4)=0
+//    = ForbiddenCondDecoder {constraints: ,
+//     rule: 'Cdp_Rule_A1'}
+class ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is10xxxx_op_4Is0_Cdp_Rule_A1
+    : public UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is10xxxx_op_4Is0 {
+ public:
+  ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is10xxxx_op_4Is0_Cdp_Rule_A1()
+    : UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is10xxxx_op_4Is0(
+      state_.ForbiddenCondDecoder_Cdp_Rule_A1_instance_)
+  {}
+};
+
+// coproc(11:8)=~101x & op1(25:20)=10xxx0 & op(4)=1
+//    = ForbiddenCondDecoder {constraints: ,
+//     rule: 'Mcr_Rule_A1'}
+class ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is10xxx0_op_4Is1_Mcr_Rule_A1
+    : public UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is10xxx0_op_4Is1 {
+ public:
+  ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is10xxx0_op_4Is1_Mcr_Rule_A1()
+    : UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is10xxx0_op_4Is1(
+      state_.ForbiddenCondDecoder_Mcr_Rule_A1_instance_)
+  {}
+};
+
+// coproc(11:8)=~101x & op1(25:20)=10xxx1 & op(4)=1
+//    = ForbiddenCondDecoder {constraints: ,
+//     rule: 'Mrc_Rule_A1'}
+class ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is10xxx1_op_4Is1_Mrc_Rule_A1
+    : public UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is10xxx1_op_4Is1 {
+ public:
+  ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is10xxx1_op_4Is1_Mrc_Rule_A1()
+    : UnsafeCondDecoderTestercoproc_11To8IsNot101x_op1_25To20Is10xxx1_op_4Is1(
+      state_.ForbiddenCondDecoder_Mrc_Rule_A1_instance_)
   {}
 };
 
@@ -8786,37 +9784,37 @@ class Load2RegisterImm8OpTester_op2_6To5Is11_op1_24To20Isxx1x1_Rn_19To16Is1111_L
 
 // opc1(23:20)=0x00
 //    = CondVfpOp {constraints: ,
-//     rule: 'Vm_la_ls_Rule_423_A2_P636'}
-class CondVfpOpTester_opc1_23To20Is0x00_Vm_la_ls_Rule_423_A2_P636
+//     rule: 'Vmla_vmls_Rule_423_A2_P636'}
+class CondVfpOpTester_opc1_23To20Is0x00_Vmla_vmls_Rule_423_A2_P636
     : public CondVfpOpTesteropc1_23To20Is0x00 {
  public:
-  CondVfpOpTester_opc1_23To20Is0x00_Vm_la_ls_Rule_423_A2_P636()
+  CondVfpOpTester_opc1_23To20Is0x00_Vmla_vmls_Rule_423_A2_P636()
     : CondVfpOpTesteropc1_23To20Is0x00(
-      state_.CondVfpOp_Vm_la_ls_Rule_423_A2_P636_instance_)
+      state_.CondVfpOp_Vmla_vmls_Rule_423_A2_P636_instance_)
   {}
 };
 
 // opc1(23:20)=0x01
 //    = CondVfpOp {constraints: ,
-//     rule: 'Vnm_la_ls_ul_Rule_343_A1_P674'}
-class CondVfpOpTester_opc1_23To20Is0x01_Vnm_la_ls_ul_Rule_343_A1_P674
+//     rule: 'Vnmla_vnmls_Rule_343_A1_P674'}
+class CondVfpOpTester_opc1_23To20Is0x01_Vnmla_vnmls_Rule_343_A1_P674
     : public CondVfpOpTesteropc1_23To20Is0x01 {
  public:
-  CondVfpOpTester_opc1_23To20Is0x01_Vnm_la_ls_ul_Rule_343_A1_P674()
+  CondVfpOpTester_opc1_23To20Is0x01_Vnmla_vnmls_Rule_343_A1_P674()
     : CondVfpOpTesteropc1_23To20Is0x01(
-      state_.CondVfpOp_Vnm_la_ls_ul_Rule_343_A1_P674_instance_)
+      state_.CondVfpOp_Vnmla_vnmls_Rule_343_A1_P674_instance_)
   {}
 };
 
 // opc1(23:20)=0x10 & opc3(7:6)=x1
 //    = CondVfpOp {constraints: ,
-//     rule: 'Vnm_la_ls_ul_Rule_343_A2_P674'}
-class CondVfpOpTester_opc1_23To20Is0x10_opc3_7To6Isx1_Vnm_la_ls_ul_Rule_343_A2_P674
+//     rule: 'Vnmul_Rule_343_A2_P674'}
+class CondVfpOpTester_opc1_23To20Is0x10_opc3_7To6Isx1_Vnmul_Rule_343_A2_P674
     : public CondVfpOpTesteropc1_23To20Is0x10_opc3_7To6Isx1 {
  public:
-  CondVfpOpTester_opc1_23To20Is0x10_opc3_7To6Isx1_Vnm_la_ls_ul_Rule_343_A2_P674()
+  CondVfpOpTester_opc1_23To20Is0x10_opc3_7To6Isx1_Vnmul_Rule_343_A2_P674()
     : CondVfpOpTesteropc1_23To20Is0x10_opc3_7To6Isx1(
-      state_.CondVfpOp_Vnm_la_ls_ul_Rule_343_A2_P674_instance_)
+      state_.CondVfpOp_Vnmul_Rule_343_A2_P674_instance_)
   {}
 };
 
@@ -8865,6 +9863,30 @@ class CondVfpOpTester_opc1_23To20Is1x00_opc3_7To6Isx0_Vdiv_Rule_301_A1_P590
   CondVfpOpTester_opc1_23To20Is1x00_opc3_7To6Isx0_Vdiv_Rule_301_A1_P590()
     : CondVfpOpTesteropc1_23To20Is1x00_opc3_7To6Isx0(
       state_.CondVfpOp_Vdiv_Rule_301_A1_P590_instance_)
+  {}
+};
+
+// opc1(23:20)=1x01
+//    = CondVfpOp {constraints: ,
+//     rule: 'Vfnma_vfnms_Rule_A1'}
+class CondVfpOpTester_opc1_23To20Is1x01_Vfnma_vfnms_Rule_A1
+    : public CondVfpOpTesteropc1_23To20Is1x01 {
+ public:
+  CondVfpOpTester_opc1_23To20Is1x01_Vfnma_vfnms_Rule_A1()
+    : CondVfpOpTesteropc1_23To20Is1x01(
+      state_.CondVfpOp_Vfnma_vfnms_Rule_A1_instance_)
+  {}
+};
+
+// opc1(23:20)=1x10
+//    = CondVfpOp {constraints: ,
+//     rule: 'Vfma_vfms_Rule_A1'}
+class CondVfpOpTester_opc1_23To20Is1x10_Vfma_vfms_Rule_A1
+    : public CondVfpOpTesteropc1_23To20Is1x10 {
+ public:
+  CondVfpOpTester_opc1_23To20Is1x10_Vfma_vfms_Rule_A1()
+    : CondVfpOpTesteropc1_23To20Is1x10(
+      state_.CondVfpOp_Vfma_vfms_Rule_A1_instance_)
   {}
 };
 
@@ -9277,6 +10299,18 @@ class ForbiddenUncondDecoderTester_op1_26To20Is0010000_op2_7To4Is0000_Rn_19To16I
   {}
 };
 
+// op1(26:20)=100x001
+//    = ForbiddenUncondDecoder {constraints: ,
+//     rule: 'Unallocated_hints'}
+class ForbiddenUncondDecoderTester_op1_26To20Is100x001_Unallocated_hints
+    : public UnsafeUncondDecoderTesterop1_26To20Is100x001 {
+ public:
+  ForbiddenUncondDecoderTester_op1_26To20Is100x001_Unallocated_hints()
+    : UnsafeUncondDecoderTesterop1_26To20Is100x001(
+      state_.ForbiddenUncondDecoder_Unallocated_hints_instance_)
+  {}
+};
+
 // op1(26:20)=100x101
 //    = PreloadRegisterImm12Op {constraints: ,
 //     rule: 'Pli_Rule_120_A1_P242'}
@@ -9289,6 +10323,18 @@ class PreloadRegisterImm12OpTester_op1_26To20Is100x101_Pli_Rule_120_A1_P242
   {}
 };
 
+// op1(26:20)=100xx11
+//    = UnpredictableUncondDecoder {constraints: ,
+//     rule: 'Unpredictable'}
+class UnpredictableUncondDecoderTester_op1_26To20Is100xx11_Unpredictable
+    : public UnsafeUncondDecoderTesterop1_26To20Is100xx11 {
+ public:
+  UnpredictableUncondDecoderTester_op1_26To20Is100xx11_Unpredictable()
+    : UnsafeUncondDecoderTesterop1_26To20Is100xx11(
+      state_.UnpredictableUncondDecoder_Unpredictable_instance_)
+  {}
+};
+
 // op1(26:20)=101x001 & Rn(19:16)=~1111
 //    = PreloadRegisterImm12Op {constraints: & ~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx ,
 //     rule: 'Pldw_Rule_117_A1_P236'}
@@ -9298,6 +10344,18 @@ class PreloadRegisterImm12OpTester_op1_26To20Is101x001_Rn_19To16IsNot1111Notxxxx
   PreloadRegisterImm12OpTester_op1_26To20Is101x001_Rn_19To16IsNot1111Notxxxxxxxxxxxx1111xxxxxxxxxxxxxxxx_Pldw_Rule_117_A1_P236()
     : PreloadRegisterImm12OpTesterop1_26To20Is101x001_Rn_19To16IsNot1111Notxxxxxxxxxxxx1111xxxxxxxxxxxxxxxx(
       state_.PreloadRegisterImm12Op_Pldw_Rule_117_A1_P236_instance_)
+  {}
+};
+
+// op1(26:20)=101x001 & Rn(19:16)=1111
+//    = UnpredictableUncondDecoder {constraints: ,
+//     rule: 'Unpredictable'}
+class UnpredictableUncondDecoderTester_op1_26To20Is101x001_Rn_19To16Is1111_Unpredictable
+    : public UnsafeUncondDecoderTesterop1_26To20Is101x001_Rn_19To16Is1111 {
+ public:
+  UnpredictableUncondDecoderTester_op1_26To20Is101x001_Rn_19To16Is1111_Unpredictable()
+    : UnsafeUncondDecoderTesterop1_26To20Is101x001_Rn_19To16Is1111(
+      state_.UnpredictableUncondDecoder_Unpredictable_instance_)
   {}
 };
 
@@ -9322,6 +10380,138 @@ class PreloadRegisterImm12OpTester_op1_26To20Is101x101_Rn_19To16Is1111_Pld_Rule_
   PreloadRegisterImm12OpTester_op1_26To20Is101x101_Rn_19To16Is1111_Pld_Rule_118_A1_P238()
     : PreloadRegisterImm12OpTesterop1_26To20Is101x101_Rn_19To16Is1111(
       state_.PreloadRegisterImm12Op_Pld_Rule_118_A1_P238_instance_)
+  {}
+};
+
+// op1(26:20)=1010011
+//    = UnpredictableUncondDecoder {constraints: ,
+//     rule: 'Unpredictable'}
+class UnpredictableUncondDecoderTester_op1_26To20Is1010011_Unpredictable
+    : public UnsafeUncondDecoderTesterop1_26To20Is1010011 {
+ public:
+  UnpredictableUncondDecoderTester_op1_26To20Is1010011_Unpredictable()
+    : UnsafeUncondDecoderTesterop1_26To20Is1010011(
+      state_.UnpredictableUncondDecoder_Unpredictable_instance_)
+  {}
+};
+
+// op1(26:20)=1010111 & op2(7:4)=0000
+//    = UnpredictableUncondDecoder {constraints: ,
+//     rule: 'Unpredictable'}
+class UnpredictableUncondDecoderTester_op1_26To20Is1010111_op2_7To4Is0000_Unpredictable
+    : public UnsafeUncondDecoderTesterop1_26To20Is1010111_op2_7To4Is0000 {
+ public:
+  UnpredictableUncondDecoderTester_op1_26To20Is1010111_op2_7To4Is0000_Unpredictable()
+    : UnsafeUncondDecoderTesterop1_26To20Is1010111_op2_7To4Is0000(
+      state_.UnpredictableUncondDecoder_Unpredictable_instance_)
+  {}
+};
+
+// op1(26:20)=1010111 & op2(7:4)=0001
+//    = ForbiddenUncondDecoder {constraints: ,
+//     rule: 'Clrex_Rule_30_A1_P70'}
+class ForbiddenUncondDecoderTester_op1_26To20Is1010111_op2_7To4Is0001_Clrex_Rule_30_A1_P70
+    : public UnsafeUncondDecoderTesterop1_26To20Is1010111_op2_7To4Is0001 {
+ public:
+  ForbiddenUncondDecoderTester_op1_26To20Is1010111_op2_7To4Is0001_Clrex_Rule_30_A1_P70()
+    : UnsafeUncondDecoderTesterop1_26To20Is1010111_op2_7To4Is0001(
+      state_.ForbiddenUncondDecoder_Clrex_Rule_30_A1_P70_instance_)
+  {}
+};
+
+// op1(26:20)=1010111 & op2(7:4)=001x
+//    = UnpredictableUncondDecoder {constraints: ,
+//     rule: 'Unpredictable'}
+class UnpredictableUncondDecoderTester_op1_26To20Is1010111_op2_7To4Is001x_Unpredictable
+    : public UnsafeUncondDecoderTesterop1_26To20Is1010111_op2_7To4Is001x {
+ public:
+  UnpredictableUncondDecoderTester_op1_26To20Is1010111_op2_7To4Is001x_Unpredictable()
+    : UnsafeUncondDecoderTesterop1_26To20Is1010111_op2_7To4Is001x(
+      state_.UnpredictableUncondDecoder_Unpredictable_instance_)
+  {}
+};
+
+// op1(26:20)=1010111 & op2(7:4)=0100
+//    = DataBarrier {constraints: ,
+//     rule: 'Dsb_Rule_42_A1_P92'}
+class DataBarrierTester_op1_26To20Is1010111_op2_7To4Is0100_Dsb_Rule_42_A1_P92
+    : public DataBarrierTesterop1_26To20Is1010111_op2_7To4Is0100 {
+ public:
+  DataBarrierTester_op1_26To20Is1010111_op2_7To4Is0100_Dsb_Rule_42_A1_P92()
+    : DataBarrierTesterop1_26To20Is1010111_op2_7To4Is0100(
+      state_.DataBarrier_Dsb_Rule_42_A1_P92_instance_)
+  {}
+};
+
+// op1(26:20)=1010111 & op2(7:4)=0101
+//    = DataBarrier {constraints: ,
+//     rule: 'Dmb_Rule_41_A1_P90'}
+class DataBarrierTester_op1_26To20Is1010111_op2_7To4Is0101_Dmb_Rule_41_A1_P90
+    : public DataBarrierTesterop1_26To20Is1010111_op2_7To4Is0101 {
+ public:
+  DataBarrierTester_op1_26To20Is1010111_op2_7To4Is0101_Dmb_Rule_41_A1_P90()
+    : DataBarrierTesterop1_26To20Is1010111_op2_7To4Is0101(
+      state_.DataBarrier_Dmb_Rule_41_A1_P90_instance_)
+  {}
+};
+
+// op1(26:20)=1010111 & op2(7:4)=0110
+//    = InstructionBarrier {constraints: ,
+//     rule: 'Isb_Rule_49_A1_P102'}
+class InstructionBarrierTester_op1_26To20Is1010111_op2_7To4Is0110_Isb_Rule_49_A1_P102
+    : public InstructionBarrierTesterop1_26To20Is1010111_op2_7To4Is0110 {
+ public:
+  InstructionBarrierTester_op1_26To20Is1010111_op2_7To4Is0110_Isb_Rule_49_A1_P102()
+    : InstructionBarrierTesterop1_26To20Is1010111_op2_7To4Is0110(
+      state_.InstructionBarrier_Isb_Rule_49_A1_P102_instance_)
+  {}
+};
+
+// op1(26:20)=1010111 & op2(7:4)=0111
+//    = UnpredictableUncondDecoder {constraints: ,
+//     rule: 'Unpredictable'}
+class UnpredictableUncondDecoderTester_op1_26To20Is1010111_op2_7To4Is0111_Unpredictable
+    : public UnsafeUncondDecoderTesterop1_26To20Is1010111_op2_7To4Is0111 {
+ public:
+  UnpredictableUncondDecoderTester_op1_26To20Is1010111_op2_7To4Is0111_Unpredictable()
+    : UnsafeUncondDecoderTesterop1_26To20Is1010111_op2_7To4Is0111(
+      state_.UnpredictableUncondDecoder_Unpredictable_instance_)
+  {}
+};
+
+// op1(26:20)=1010111 & op2(7:4)=1xxx
+//    = UnpredictableUncondDecoder {constraints: ,
+//     rule: 'Unpredictable'}
+class UnpredictableUncondDecoderTester_op1_26To20Is1010111_op2_7To4Is1xxx_Unpredictable
+    : public UnsafeUncondDecoderTesterop1_26To20Is1010111_op2_7To4Is1xxx {
+ public:
+  UnpredictableUncondDecoderTester_op1_26To20Is1010111_op2_7To4Is1xxx_Unpredictable()
+    : UnsafeUncondDecoderTesterop1_26To20Is1010111_op2_7To4Is1xxx(
+      state_.UnpredictableUncondDecoder_Unpredictable_instance_)
+  {}
+};
+
+// op1(26:20)=1011x11
+//    = UnpredictableUncondDecoder {constraints: ,
+//     rule: 'Unpredictable'}
+class UnpredictableUncondDecoderTester_op1_26To20Is1011x11_Unpredictable
+    : public UnsafeUncondDecoderTesterop1_26To20Is1011x11 {
+ public:
+  UnpredictableUncondDecoderTester_op1_26To20Is1011x11_Unpredictable()
+    : UnsafeUncondDecoderTesterop1_26To20Is1011x11(
+      state_.UnpredictableUncondDecoder_Unpredictable_instance_)
+  {}
+};
+
+// op1(26:20)=110x001 & op2(7:4)=xxx0
+//    = ForbiddenUncondDecoder {constraints: ,
+//     rule: 'Unallocated_hints'}
+class ForbiddenUncondDecoderTester_op1_26To20Is110x001_op2_7To4Isxxx0_Unallocated_hints
+    : public UnsafeUncondDecoderTesterop1_26To20Is110x001_op2_7To4Isxxx0 {
+ public:
+  ForbiddenUncondDecoderTester_op1_26To20Is110x001_op2_7To4Isxxx0_Unallocated_hints()
+    : UnsafeUncondDecoderTesterop1_26To20Is110x001_op2_7To4Isxxx0(
+      state_.ForbiddenUncondDecoder_Unallocated_hints_instance_)
   {}
 };
 
@@ -9361,51 +10551,15 @@ class PreloadRegisterPairOpWAndRnNotPcTester_op1_26To20Is111x101_op2_7To4Isxxx0_
   {}
 };
 
-// op1(26:20)=1010111 & op2(7:4)=0001
-//    = ForbiddenUncondDecoder {constraints: ,
-//     rule: 'Clrex_Rule_30_A1_P70'}
-class ForbiddenUncondDecoderTester_op1_26To20Is1010111_op2_7To4Is0001_Clrex_Rule_30_A1_P70
-    : public UnsafeUncondDecoderTesterop1_26To20Is1010111_op2_7To4Is0001 {
+// op1(26:20)=11xxx11 & op2(7:4)=xxx0
+//    = UnpredictableUncondDecoder {constraints: ,
+//     rule: 'Unpredictable'}
+class UnpredictableUncondDecoderTester_op1_26To20Is11xxx11_op2_7To4Isxxx0_Unpredictable
+    : public UnsafeUncondDecoderTesterop1_26To20Is11xxx11_op2_7To4Isxxx0 {
  public:
-  ForbiddenUncondDecoderTester_op1_26To20Is1010111_op2_7To4Is0001_Clrex_Rule_30_A1_P70()
-    : UnsafeUncondDecoderTesterop1_26To20Is1010111_op2_7To4Is0001(
-      state_.ForbiddenUncondDecoder_Clrex_Rule_30_A1_P70_instance_)
-  {}
-};
-
-// op1(26:20)=1010111 & op2(7:4)=0100
-//    = DataBarrier {constraints: ,
-//     rule: 'Dsb_Rule_42_A1_P92'}
-class DataBarrierTester_op1_26To20Is1010111_op2_7To4Is0100_Dsb_Rule_42_A1_P92
-    : public DataBarrierTesterop1_26To20Is1010111_op2_7To4Is0100 {
- public:
-  DataBarrierTester_op1_26To20Is1010111_op2_7To4Is0100_Dsb_Rule_42_A1_P92()
-    : DataBarrierTesterop1_26To20Is1010111_op2_7To4Is0100(
-      state_.DataBarrier_Dsb_Rule_42_A1_P92_instance_)
-  {}
-};
-
-// op1(26:20)=1010111 & op2(7:4)=0101
-//    = DataBarrier {constraints: ,
-//     rule: 'Dmb_Rule_41_A1_P90'}
-class DataBarrierTester_op1_26To20Is1010111_op2_7To4Is0101_Dmb_Rule_41_A1_P90
-    : public DataBarrierTesterop1_26To20Is1010111_op2_7To4Is0101 {
- public:
-  DataBarrierTester_op1_26To20Is1010111_op2_7To4Is0101_Dmb_Rule_41_A1_P90()
-    : DataBarrierTesterop1_26To20Is1010111_op2_7To4Is0101(
-      state_.DataBarrier_Dmb_Rule_41_A1_P90_instance_)
-  {}
-};
-
-// op1(26:20)=1010111 & op2(7:4)=0110
-//    = InstructionBarrier {constraints: ,
-//     rule: 'Isb_Rule_49_A1_P102'}
-class InstructionBarrierTester_op1_26To20Is1010111_op2_7To4Is0110_Isb_Rule_49_A1_P102
-    : public InstructionBarrierTesterop1_26To20Is1010111_op2_7To4Is0110 {
- public:
-  InstructionBarrierTester_op1_26To20Is1010111_op2_7To4Is0110_Isb_Rule_49_A1_P102()
-    : InstructionBarrierTesterop1_26To20Is1010111_op2_7To4Is0110(
-      state_.InstructionBarrier_Isb_Rule_49_A1_P102_instance_)
+  UnpredictableUncondDecoderTester_op1_26To20Is11xxx11_op2_7To4Isxxx0_Unpredictable()
+    : UnsafeUncondDecoderTesterop1_26To20Is11xxx11_op2_7To4Isxxx0(
+      state_.UnpredictableUncondDecoder_Unpredictable_instance_)
   {}
 };
 
@@ -9761,6 +10915,18 @@ class Binary4RegisterDualResultTester_op_23To20Is0100RegsNotPc_Umaal_Rule_244_A1
   {}
 };
 
+// op(23:20)=0101
+//    = UndefinedCondDecoder {constraints: ,
+//     rule: 'Undefined_A5_2_5_0101'}
+class UndefinedCondDecoderTester_op_23To20Is0101_Undefined_A5_2_5_0101
+    : public UnsafeCondDecoderTesterop_23To20Is0101 {
+ public:
+  UndefinedCondDecoderTester_op_23To20Is0101_Undefined_A5_2_5_0101()
+    : UnsafeCondDecoderTesterop_23To20Is0101(
+      state_.UndefinedCondDecoder_Undefined_A5_2_5_0101_instance_)
+  {}
+};
+
 // op(23:20)=0110
 //    = Binary4RegisterDualOp {constraints: ,
 //     rule: 'Mls_Rule_95_A1_P192',
@@ -9771,6 +10937,18 @@ class Binary4RegisterDualOpTester_op_23To20Is0110RegsNotPc_Mls_Rule_95_A1_P192
   Binary4RegisterDualOpTester_op_23To20Is0110RegsNotPc_Mls_Rule_95_A1_P192()
     : Binary4RegisterDualOpTesterop_23To20Is0110RegsNotPc(
       state_.Binary4RegisterDualOp_Mls_Rule_95_A1_P192_instance_)
+  {}
+};
+
+// op(23:20)=0111
+//    = UndefinedCondDecoder {constraints: ,
+//     rule: 'Undefined_A5_2_5_0111'}
+class UndefinedCondDecoderTester_op_23To20Is0111_Undefined_A5_2_5_0111
+    : public UnsafeCondDecoderTesterop_23To20Is0111 {
+ public:
+  UndefinedCondDecoderTester_op_23To20Is0111_Undefined_A5_2_5_0111()
+    : UnsafeCondDecoderTesterop_23To20Is0111(
+      state_.UndefinedCondDecoder_Undefined_A5_2_5_0111_instance_)
   {}
 };
 
@@ -9850,6 +11028,18 @@ class CondVfpOpTester_opc2_19To16Is0000_opc3_7To6Is01_Vmov_Rule_327_A2_P642
   {}
 };
 
+// opc2(19:16)=0000 & opc3(7:6)=11
+//    = CondVfpOp {constraints: ,
+//     rule: 'Vabs_Rule_269_A2_P532'}
+class CondVfpOpTester_opc2_19To16Is0000_opc3_7To6Is11_Vabs_Rule_269_A2_P532
+    : public CondVfpOpTesteropc2_19To16Is0000_opc3_7To6Is11 {
+ public:
+  CondVfpOpTester_opc2_19To16Is0000_opc3_7To6Is11_Vabs_Rule_269_A2_P532()
+    : CondVfpOpTesteropc2_19To16Is0000_opc3_7To6Is11(
+      state_.CondVfpOp_Vabs_Rule_269_A2_P532_instance_)
+  {}
+};
+
 // opc2(19:16)=0001 & opc3(7:6)=01
 //    = CondVfpOp {constraints: ,
 //     rule: 'Vneg_Rule_342_A2_P672'}
@@ -9888,25 +11078,25 @@ class CondVfpOpTester_opc2_19To16Is001x_opc3_7To6Isx1_Vcvtb_Vcvtt_Rule_300_A1_P5
 
 // opc2(19:16)=0100 & opc3(7:6)=x1
 //    = CondVfpOp {constraints: ,
-//     rule: 'Vcmp_Vcmpe_Rule_292_A1_P572'}
-class CondVfpOpTester_opc2_19To16Is0100_opc3_7To6Isx1_Vcmp_Vcmpe_Rule_292_A1_P572
+//     rule: 'Vcmp_Vcmpe_Rule_A1'}
+class CondVfpOpTester_opc2_19To16Is0100_opc3_7To6Isx1_Vcmp_Vcmpe_Rule_A1
     : public CondVfpOpTesteropc2_19To16Is0100_opc3_7To6Isx1 {
  public:
-  CondVfpOpTester_opc2_19To16Is0100_opc3_7To6Isx1_Vcmp_Vcmpe_Rule_292_A1_P572()
+  CondVfpOpTester_opc2_19To16Is0100_opc3_7To6Isx1_Vcmp_Vcmpe_Rule_A1()
     : CondVfpOpTesteropc2_19To16Is0100_opc3_7To6Isx1(
-      state_.CondVfpOp_Vcmp_Vcmpe_Rule_292_A1_P572_instance_)
+      state_.CondVfpOp_Vcmp_Vcmpe_Rule_A1_instance_)
   {}
 };
 
 // opc2(19:16)=0101 & opc3(7:6)=x1
 //    = CondVfpOp {constraints: ,
-//     rule: 'Vcmp_Vcmpe_Rule_292_A2_P572'}
-class CondVfpOpTester_opc2_19To16Is0101_opc3_7To6Isx1_Vcmp_Vcmpe_Rule_292_A2_P572
+//     rule: 'Vcmp_Vcmpe_Rule_A2'}
+class CondVfpOpTester_opc2_19To16Is0101_opc3_7To6Isx1_Vcmp_Vcmpe_Rule_A2
     : public CondVfpOpTesteropc2_19To16Is0101_opc3_7To6Isx1 {
  public:
-  CondVfpOpTester_opc2_19To16Is0101_opc3_7To6Isx1_Vcmp_Vcmpe_Rule_292_A2_P572()
+  CondVfpOpTester_opc2_19To16Is0101_opc3_7To6Isx1_Vcmp_Vcmpe_Rule_A2()
     : CondVfpOpTesteropc2_19To16Is0101_opc3_7To6Isx1(
-      state_.CondVfpOp_Vcmp_Vcmpe_Rule_292_A2_P572_instance_)
+      state_.CondVfpOp_Vcmp_Vcmpe_Rule_A2_instance_)
   {}
 };
 
@@ -10828,14 +12018,14 @@ class MoveVfpRegisterOpWithTypeSelTester_L_20Is0_C_8Is1_A_23To21Is0xx_Vmov_Rule_
 };
 
 // L(20)=0 & C(8)=1 & A(23:21)=1xx & B(6:5)=0x
-//    = DuplicateToVfpRegisters {constraints: ,
+//    = DuplicateToAdvSIMDRegisters {constraints: ,
 //     rule: 'Vdup_Rule_303_A1_P594'}
-class DuplicateToVfpRegistersTester_L_20Is0_C_8Is1_A_23To21Is1xx_B_6To5Is0x_Vdup_Rule_303_A1_P594
-    : public DuplicateToVfpRegistersTesterL_20Is0_C_8Is1_A_23To21Is1xx_B_6To5Is0x {
+class DuplicateToAdvSIMDRegistersTester_L_20Is0_C_8Is1_A_23To21Is1xx_B_6To5Is0x_Vdup_Rule_303_A1_P594
+    : public DuplicateToAdvSIMDRegistersTesterL_20Is0_C_8Is1_A_23To21Is1xx_B_6To5Is0x {
  public:
-  DuplicateToVfpRegistersTester_L_20Is0_C_8Is1_A_23To21Is1xx_B_6To5Is0x_Vdup_Rule_303_A1_P594()
-    : DuplicateToVfpRegistersTesterL_20Is0_C_8Is1_A_23To21Is1xx_B_6To5Is0x(
-      state_.DuplicateToVfpRegisters_Vdup_Rule_303_A1_P594_instance_)
+  DuplicateToAdvSIMDRegistersTester_L_20Is0_C_8Is1_A_23To21Is1xx_B_6To5Is0x_Vdup_Rule_303_A1_P594()
+    : DuplicateToAdvSIMDRegistersTesterL_20Is0_C_8Is1_A_23To21Is1xx_B_6To5Is0x(
+      state_.DuplicateToAdvSIMDRegisters_Vdup_Rule_303_A1_P594_instance_)
   {}
 };
 
@@ -10875,6 +12065,30 @@ class MoveVfpRegisterOpWithTypeSelTester_L_20Is1_C_8Is1_Vmov_Rule_329_A1_P646
   {}
 };
 
+// C(8)=0 & op(7:4)=00x1
+//    = MoveDoubleVfpRegisterOp {constraints: ,
+//     rule: 'Vmov_two_S_Rule_A1'}
+class MoveDoubleVfpRegisterOpTester_C_8Is0_op_7To4Is00x1_Vmov_two_S_Rule_A1
+    : public MoveDoubleVfpRegisterOpTesterC_8Is0_op_7To4Is00x1 {
+ public:
+  MoveDoubleVfpRegisterOpTester_C_8Is0_op_7To4Is00x1_Vmov_two_S_Rule_A1()
+    : MoveDoubleVfpRegisterOpTesterC_8Is0_op_7To4Is00x1(
+      state_.MoveDoubleVfpRegisterOp_Vmov_two_S_Rule_A1_instance_)
+  {}
+};
+
+// C(8)=1 & op(7:4)=00x1
+//    = MoveDoubleVfpRegisterOp {constraints: ,
+//     rule: 'Vmov_one_D_Rule_A1'}
+class MoveDoubleVfpRegisterOpTester_C_8Is1_op_7To4Is00x1_Vmov_one_D_Rule_A1
+    : public MoveDoubleVfpRegisterOpTesterC_8Is1_op_7To4Is00x1 {
+ public:
+  MoveDoubleVfpRegisterOpTester_C_8Is1_op_7To4Is00x1_Vmov_one_D_Rule_A1()
+    : MoveDoubleVfpRegisterOpTesterC_8Is1_op_7To4Is00x1(
+      state_.MoveDoubleVfpRegisterOp_Vmov_one_D_Rule_A1_instance_)
+  {}
+};
+
 // op1(27:20)=100xx1x0
 //    = ForbiddenUncondDecoder {constraints: ,
 //     rule: 'Srs_Rule_B6_1_10_A1_B6_20'}
@@ -10911,6 +12125,30 @@ class ForbiddenUncondDecoderTester_op1_27To20Is101xxxxx_Blx_Rule_23_A2_P58
   {}
 };
 
+// op1(27:20)=110xxxx0 & op1_repeated(27:20)=~11000x00
+//    = ForbiddenUncondDecoder {constraints: ,
+//     rule: 'Stc2_Rule_188_A2_P372'}
+class ForbiddenUncondDecoderTester_op1_27To20Is110xxxx0_op1_repeated_27To20IsNot11000x00_Stc2_Rule_188_A2_P372
+    : public UnsafeUncondDecoderTesterop1_27To20Is110xxxx0_op1_repeated_27To20IsNot11000x00 {
+ public:
+  ForbiddenUncondDecoderTester_op1_27To20Is110xxxx0_op1_repeated_27To20IsNot11000x00_Stc2_Rule_188_A2_P372()
+    : UnsafeUncondDecoderTesterop1_27To20Is110xxxx0_op1_repeated_27To20IsNot11000x00(
+      state_.ForbiddenUncondDecoder_Stc2_Rule_188_A2_P372_instance_)
+  {}
+};
+
+// op1(27:20)=110xxxx1 & Rn(19:16)=~1111 & op1_repeated(27:20)=~11000x01
+//    = ForbiddenUncondDecoder {constraints: ,
+//     rule: 'Ldc2_Rule_51_A2_P106'}
+class ForbiddenUncondDecoderTester_op1_27To20Is110xxxx1_Rn_19To16IsNot1111_op1_repeated_27To20IsNot11000x01_Ldc2_Rule_51_A2_P106
+    : public UnsafeUncondDecoderTesterop1_27To20Is110xxxx1_Rn_19To16IsNot1111_op1_repeated_27To20IsNot11000x01 {
+ public:
+  ForbiddenUncondDecoderTester_op1_27To20Is110xxxx1_Rn_19To16IsNot1111_op1_repeated_27To20IsNot11000x01_Ldc2_Rule_51_A2_P106()
+    : UnsafeUncondDecoderTesterop1_27To20Is110xxxx1_Rn_19To16IsNot1111_op1_repeated_27To20IsNot11000x01(
+      state_.ForbiddenUncondDecoder_Ldc2_Rule_51_A2_P106_instance_)
+  {}
+};
+
 // op1(27:20)=110xxxx1 & Rn(19:16)=1111 & op1_repeated(27:20)=~11000x01
 //    = ForbiddenUncondDecoder {constraints: ,
 //     rule: 'Ldc2_Rule_52_A2_P108'}
@@ -10920,30 +12158,6 @@ class ForbiddenUncondDecoderTester_op1_27To20Is110xxxx1_Rn_19To16Is1111_op1_repe
   ForbiddenUncondDecoderTester_op1_27To20Is110xxxx1_Rn_19To16Is1111_op1_repeated_27To20IsNot11000x01_Ldc2_Rule_52_A2_P108()
     : UnsafeUncondDecoderTesterop1_27To20Is110xxxx1_Rn_19To16Is1111_op1_repeated_27To20IsNot11000x01(
       state_.ForbiddenUncondDecoder_Ldc2_Rule_52_A2_P108_instance_)
-  {}
-};
-
-// op1(27:20)=110xxxx1 & Rn(19:16)=~1111 & op1_repeated(27:20)=~11000x01
-//    = ForbiddenUncondDecoder {constraints: ,
-//     rule: 'Ldc2_Rule_51_A1_P106'}
-class ForbiddenUncondDecoderTester_op1_27To20Is110xxxx1_Rn_19To16IsNot1111_op1_repeated_27To20IsNot11000x01_Ldc2_Rule_51_A1_P106
-    : public UnsafeUncondDecoderTesterop1_27To20Is110xxxx1_Rn_19To16IsNot1111_op1_repeated_27To20IsNot11000x01 {
- public:
-  ForbiddenUncondDecoderTester_op1_27To20Is110xxxx1_Rn_19To16IsNot1111_op1_repeated_27To20IsNot11000x01_Ldc2_Rule_51_A1_P106()
-    : UnsafeUncondDecoderTesterop1_27To20Is110xxxx1_Rn_19To16IsNot1111_op1_repeated_27To20IsNot11000x01(
-      state_.ForbiddenUncondDecoder_Ldc2_Rule_51_A1_P106_instance_)
-  {}
-};
-
-// op1(27:20)=110xxxx0 & op1_repeated(27:20)=~11000x01
-//    = ForbiddenUncondDecoder {constraints: ,
-//     rule: 'Sdc2_Rule_188_A1_P372'}
-class ForbiddenUncondDecoderTester_op1_27To20Is110xxxx0_op1_repeated_27To20IsNot11000x01_Sdc2_Rule_188_A1_P372
-    : public UnsafeUncondDecoderTesterop1_27To20Is110xxxx0_op1_repeated_27To20IsNot11000x01 {
- public:
-  ForbiddenUncondDecoderTester_op1_27To20Is110xxxx0_op1_repeated_27To20IsNot11000x01_Sdc2_Rule_188_A1_P372()
-    : UnsafeUncondDecoderTesterop1_27To20Is110xxxx0_op1_repeated_27To20IsNot11000x01(
-      state_.ForbiddenUncondDecoder_Sdc2_Rule_188_A1_P372_instance_)
   {}
 };
 
@@ -10971,6 +12185,18 @@ class ForbiddenUncondDecoderTester_op1_27To20Is11000101_Mrrc2_Rule_101_A2_P204
   {}
 };
 
+// op1(27:20)=1110xxxx & op(4)=0
+//    = ForbiddenUncondDecoder {constraints: ,
+//     rule: 'Cdp2_Rule_28_A2_P68'}
+class ForbiddenUncondDecoderTester_op1_27To20Is1110xxxx_op_4Is0_Cdp2_Rule_28_A2_P68
+    : public UnsafeUncondDecoderTesterop1_27To20Is1110xxxx_op_4Is0 {
+ public:
+  ForbiddenUncondDecoderTester_op1_27To20Is1110xxxx_op_4Is0_Cdp2_Rule_28_A2_P68()
+    : UnsafeUncondDecoderTesterop1_27To20Is1110xxxx_op_4Is0(
+      state_.ForbiddenUncondDecoder_Cdp2_Rule_28_A2_P68_instance_)
+  {}
+};
+
 // op1(27:20)=1110xxx0 & op(4)=1
 //    = ForbiddenUncondDecoder {constraints: ,
 //     rule: 'Mcr2_Rule_92_A2_P186'}
@@ -10992,18 +12218,6 @@ class ForbiddenUncondDecoderTester_op1_27To20Is1110xxx1_op_4Is1_Mrc2_Rule_100_A2
   ForbiddenUncondDecoderTester_op1_27To20Is1110xxx1_op_4Is1_Mrc2_Rule_100_A2_P202()
     : UnsafeUncondDecoderTesterop1_27To20Is1110xxx1_op_4Is1(
       state_.ForbiddenUncondDecoder_Mrc2_Rule_100_A2_P202_instance_)
-  {}
-};
-
-// op1(27:20)=1110xxxx & op(4)=0
-//    = ForbiddenUncondDecoder {constraints: ,
-//     rule: 'Cdp2_Rule_28_A2_P68'}
-class ForbiddenUncondDecoderTester_op1_27To20Is1110xxxx_op_4Is0_Cdp2_Rule_28_A2_P68
-    : public UnsafeUncondDecoderTesterop1_27To20Is1110xxxx_op_4Is0 {
- public:
-  ForbiddenUncondDecoderTester_op1_27To20Is1110xxxx_op_4Is0_Cdp2_Rule_28_A2_P68()
-    : UnsafeUncondDecoderTesterop1_27To20Is1110xxxx_op_4Is0(
-      state_.ForbiddenUncondDecoder_Cdp2_Rule_28_A2_P68_instance_)
   {}
 };
 
@@ -11048,26 +12262,70 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("cccc100010w0nnnnrrrrrrrrrrrrrrrr");
 }
 
-// op(25:20)=0010x1
+// op(25:20)=001001
 //    = LoadRegisterList => LoadMultiple {constraints: ,
-//     pattern: 'cccc100010w1nnnnrrrrrrrrrrrrrrrr',
+//     pattern: 'cccc10001001nnnnrrrrrrrrrrrrrrrr',
 //     rule: 'Ldm_Ldmia_Ldmfd_Rule_53_A1_P110'}
 TEST_F(Arm32DecoderStateTests,
-       LoadRegisterListTester_op_25To20Is0010x1_Ldm_Ldmia_Ldmfd_Rule_53_A1_P110_cccc100010w1nnnnrrrrrrrrrrrrrrrr_Test) {
-  LoadRegisterListTester_op_25To20Is0010x1_Ldm_Ldmia_Ldmfd_Rule_53_A1_P110 baseline_tester;
+       LoadRegisterListTester_op_25To20Is001001_Ldm_Ldmia_Ldmfd_Rule_53_A1_P110_cccc10001001nnnnrrrrrrrrrrrrrrrr_Test) {
+  LoadRegisterListTester_op_25To20Is001001_Ldm_Ldmia_Ldmfd_Rule_53_A1_P110 baseline_tester;
   NamedLoadMultiple_Ldm_Ldmia_Ldmfd_Rule_53_A1_P110 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc100010w1nnnnrrrrrrrrrrrrrrrr");
+  a_vs_b_tester.Test("cccc10001001nnnnrrrrrrrrrrrrrrrr");
 }
 
-// op(25:20)=0100x0
+// op(25:20)=001011 & Rn(19:16)=~1101
+//    = LoadRegisterList => LoadMultiple {constraints: ,
+//     pattern: 'cccc10001011nnnnrrrrrrrrrrrrrrrr',
+//     rule: 'Ldm_Ldmia_Ldmfd_Rule_53_A1_P110'}
+TEST_F(Arm32DecoderStateTests,
+       LoadRegisterListTester_op_25To20Is001011_Rn_19To16IsNot1101_Ldm_Ldmia_Ldmfd_Rule_53_A1_P110_cccc10001011nnnnrrrrrrrrrrrrrrrr_Test) {
+  LoadRegisterListTester_op_25To20Is001011_Rn_19To16IsNot1101_Ldm_Ldmia_Ldmfd_Rule_53_A1_P110 baseline_tester;
+  NamedLoadMultiple_Ldm_Ldmia_Ldmfd_Rule_53_A1_P110 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc10001011nnnnrrrrrrrrrrrrrrrr");
+}
+
+// op(25:20)=001011 & Rn(19:16)=1101
+//    = LoadRegisterList => LoadMultiple {constraints: ,
+//     pattern: 'cccc10001011nnnnrrrrrrrrrrrrrrrr',
+//     rule: 'Pop_Rule_A1'}
+TEST_F(Arm32DecoderStateTests,
+       LoadRegisterListTester_op_25To20Is001011_Rn_19To16Is1101_Pop_Rule_A1_cccc10001011nnnnrrrrrrrrrrrrrrrr_Test) {
+  LoadRegisterListTester_op_25To20Is001011_Rn_19To16Is1101_Pop_Rule_A1 baseline_tester;
+  NamedLoadMultiple_Pop_Rule_A1 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc10001011nnnnrrrrrrrrrrrrrrrr");
+}
+
+// op(25:20)=010000
 //    = StoreRegisterList => StoreRegisterList {constraints: ,
-//     pattern: 'cccc100100w0nnnnrrrrrrrrrrrrrrrr',
+//     pattern: 'cccc10010000nnnnrrrrrrrrrrrrrrrr',
 //     rule: 'Stmdb_Stmfd_Rule_191_A1_P378'}
 TEST_F(Arm32DecoderStateTests,
-       StoreRegisterListTester_op_25To20Is0100x0_Stmdb_Stmfd_Rule_191_A1_P378_cccc100100w0nnnnrrrrrrrrrrrrrrrr_Test) {
-  StoreRegisterListTester_op_25To20Is0100x0_Stmdb_Stmfd_Rule_191_A1_P378 tester;
-  tester.Test("cccc100100w0nnnnrrrrrrrrrrrrrrrr");
+       StoreRegisterListTester_op_25To20Is010000_Stmdb_Stmfd_Rule_191_A1_P378_cccc10010000nnnnrrrrrrrrrrrrrrrr_Test) {
+  StoreRegisterListTester_op_25To20Is010000_Stmdb_Stmfd_Rule_191_A1_P378 tester;
+  tester.Test("cccc10010000nnnnrrrrrrrrrrrrrrrr");
+}
+
+// op(25:20)=010010 & Rn(19:16)=~1101
+//    = StoreRegisterList => StoreRegisterList {constraints: ,
+//     pattern: 'cccc10010010nnnnrrrrrrrrrrrrrrrr',
+//     rule: 'Stmdb_Stmfd_Rule_191_A1_P378'}
+TEST_F(Arm32DecoderStateTests,
+       StoreRegisterListTester_op_25To20Is010010_Rn_19To16IsNot1101_Stmdb_Stmfd_Rule_191_A1_P378_cccc10010010nnnnrrrrrrrrrrrrrrrr_Test) {
+  StoreRegisterListTester_op_25To20Is010010_Rn_19To16IsNot1101_Stmdb_Stmfd_Rule_191_A1_P378 tester;
+  tester.Test("cccc10010010nnnnrrrrrrrrrrrrrrrr");
+}
+
+// op(25:20)=010010 & Rn(19:16)=1101
+//    = StoreRegisterList => StoreRegisterList {constraints: ,
+//     pattern: 'cccc10010010nnnnrrrrrrrrrrrrrrrr',
+//     rule: 'Push_Rule_A1'}
+TEST_F(Arm32DecoderStateTests,
+       StoreRegisterListTester_op_25To20Is010010_Rn_19To16Is1101_Push_Rule_A1_cccc10010010nnnnrrrrrrrrrrrrrrrr_Test) {
+  StoreRegisterListTester_op_25To20Is010010_Rn_19To16Is1101_Push_Rule_A1 tester;
+  tester.Test("cccc10010010nnnnrrrrrrrrrrrrrrrr");
 }
 
 // op(25:20)=0100x1
@@ -11085,10 +12343,10 @@ TEST_F(Arm32DecoderStateTests,
 // op(25:20)=0110x0
 //    = StoreRegisterList => StoreRegisterList {constraints: ,
 //     pattern: 'cccc100110w0nnnnrrrrrrrrrrrrrrrr',
-//     rule: 'Stmid_Stmfa_Rule_192_A1_P380'}
+//     rule: 'Stmib_Stmfa_Rule_192_A1_P380'}
 TEST_F(Arm32DecoderStateTests,
-       StoreRegisterListTester_op_25To20Is0110x0_Stmid_Stmfa_Rule_192_A1_P380_cccc100110w0nnnnrrrrrrrrrrrrrrrr_Test) {
-  StoreRegisterListTester_op_25To20Is0110x0_Stmid_Stmfa_Rule_192_A1_P380 tester;
+       StoreRegisterListTester_op_25To20Is0110x0_Stmib_Stmfa_Rule_192_A1_P380_cccc100110w0nnnnrrrrrrrrrrrrrrrr_Test) {
+  StoreRegisterListTester_op_25To20Is0110x0_Stmib_Stmfa_Rule_192_A1_P380 tester;
   tester.Test("cccc100110w0nnnnrrrrrrrrrrrrrrrr");
 }
 
@@ -11162,6 +12420,126 @@ TEST_F(Arm32DecoderStateTests,
   NamedBranch_Bl_Blx_Rule_23_A1_P58 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc1011iiiiiiiiiiiiiiiiiiiiiiii");
+}
+
+// op1(25:20)=00000x
+//    = UndefinedCondDecoder => Undefined {constraints: ,
+//     pattern: 'cccc1100000xnnnnxxxxccccxxxoxxxx',
+//     rule: 'Undefined_A5_6'}
+TEST_F(Arm32DecoderStateTests,
+       UndefinedCondDecoderTester_op1_25To20Is00000x_Undefined_A5_6_cccc1100000xnnnnxxxxccccxxxoxxxx_Test) {
+  UndefinedCondDecoderTester_op1_25To20Is00000x_Undefined_A5_6 baseline_tester;
+  NamedUndefined_Undefined_A5_6 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc1100000xnnnnxxxxccccxxxoxxxx");
+}
+
+// op1(25:20)=11xxxx
+//    = ForbiddenCondDecoder => Forbidden {constraints: ,
+//     pattern: 'cccc1111iiiiiiiiiiiiiiiiiiiiiiii',
+//     rule: 'Svc_Rule_A1'}
+TEST_F(Arm32DecoderStateTests,
+       ForbiddenCondDecoderTester_op1_25To20Is11xxxx_Svc_Rule_A1_cccc1111iiiiiiiiiiiiiiiiiiiiiiii_Test) {
+  ForbiddenCondDecoderTester_op1_25To20Is11xxxx_Svc_Rule_A1 baseline_tester;
+  NamedForbidden_Svc_Rule_A1 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc1111iiiiiiiiiiiiiiiiiiiiiiii");
+}
+
+// coproc(11:8)=~101x & op1(25:20)=0xxxx0 & op1_repeated(25:20)=~000x00
+//    = ForbiddenCondDecoder => Forbidden {constraints: ,
+//     pattern: 'cccc110pudw0nnnnddddcccciiiiiiii',
+//     rule: 'Stc_Rule_A2'}
+TEST_F(Arm32DecoderStateTests,
+       ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is0xxxx0_op1_repeated_25To20IsNot000x00_Stc_Rule_A2_cccc110pudw0nnnnddddcccciiiiiiii_Test) {
+  ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is0xxxx0_op1_repeated_25To20IsNot000x00_Stc_Rule_A2 baseline_tester;
+  NamedForbidden_Stc_Rule_A2 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc110pudw0nnnnddddcccciiiiiiii");
+}
+
+// coproc(11:8)=~101x & op1(25:20)=0xxxx1 & Rn(19:16)=~1111 & op1_repeated(25:20)=~000x01
+//    = ForbiddenCondDecoder => Forbidden {constraints: ,
+//     pattern: 'cccc110pudw1nnnnddddcccciiiiiiii',
+//     rule: 'Ldc_immediate_Rule_A1'}
+TEST_F(Arm32DecoderStateTests,
+       ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is0xxxx1_Rn_19To16IsNot1111_op1_repeated_25To20IsNot000x01_Ldc_immediate_Rule_A1_cccc110pudw1nnnnddddcccciiiiiiii_Test) {
+  ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is0xxxx1_Rn_19To16IsNot1111_op1_repeated_25To20IsNot000x01_Ldc_immediate_Rule_A1 baseline_tester;
+  NamedForbidden_Ldc_immediate_Rule_A1 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc110pudw1nnnnddddcccciiiiiiii");
+}
+
+// coproc(11:8)=~101x & op1(25:20)=0xxxx1 & Rn(19:16)=1111 & op1_repeated(25:20)=~000x01
+//    = ForbiddenCondDecoder => Forbidden {constraints: ,
+//     pattern: 'cccc110pudw11111ddddcccciiiiiiii',
+//     rule: 'Ldc_literal_Rule_A1'}
+TEST_F(Arm32DecoderStateTests,
+       ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is0xxxx1_Rn_19To16Is1111_op1_repeated_25To20IsNot000x01_Ldc_literal_Rule_A1_cccc110pudw11111ddddcccciiiiiiii_Test) {
+  ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is0xxxx1_Rn_19To16Is1111_op1_repeated_25To20IsNot000x01_Ldc_literal_Rule_A1 baseline_tester;
+  NamedForbidden_Ldc_literal_Rule_A1 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc110pudw11111ddddcccciiiiiiii");
+}
+
+// coproc(11:8)=~101x & op1(25:20)=000100
+//    = ForbiddenCondDecoder => Forbidden {constraints: ,
+//     pattern: 'cccc11000100ttttttttccccoooommmm',
+//     rule: 'Mcrr_Rule_A1'}
+TEST_F(Arm32DecoderStateTests,
+       ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is000100_Mcrr_Rule_A1_cccc11000100ttttttttccccoooommmm_Test) {
+  ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is000100_Mcrr_Rule_A1 baseline_tester;
+  NamedForbidden_Mcrr_Rule_A1 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11000100ttttttttccccoooommmm");
+}
+
+// coproc(11:8)=~101x & op1(25:20)=000101
+//    = ForbiddenCondDecoder => Forbidden {constraints: ,
+//     pattern: 'cccc11000101ttttttttccccoooommmm',
+//     rule: 'Mrrc_Rule_A1'}
+TEST_F(Arm32DecoderStateTests,
+       ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is000101_Mrrc_Rule_A1_cccc11000101ttttttttccccoooommmm_Test) {
+  ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is000101_Mrrc_Rule_A1 baseline_tester;
+  NamedForbidden_Mrrc_Rule_A1 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11000101ttttttttccccoooommmm");
+}
+
+// coproc(11:8)=~101x & op1(25:20)=10xxxx & op(4)=0
+//    = ForbiddenCondDecoder => Forbidden {constraints: ,
+//     pattern: 'cccc1110oooonnnnddddccccooo0mmmm',
+//     rule: 'Cdp_Rule_A1'}
+TEST_F(Arm32DecoderStateTests,
+       ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is10xxxx_op_4Is0_Cdp_Rule_A1_cccc1110oooonnnnddddccccooo0mmmm_Test) {
+  ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is10xxxx_op_4Is0_Cdp_Rule_A1 baseline_tester;
+  NamedForbidden_Cdp_Rule_A1 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc1110oooonnnnddddccccooo0mmmm");
+}
+
+// coproc(11:8)=~101x & op1(25:20)=10xxx0 & op(4)=1
+//    = ForbiddenCondDecoder => Forbidden {constraints: ,
+//     pattern: 'cccc1110ooo0nnnnttttccccooo1mmmm',
+//     rule: 'Mcr_Rule_A1'}
+TEST_F(Arm32DecoderStateTests,
+       ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is10xxx0_op_4Is1_Mcr_Rule_A1_cccc1110ooo0nnnnttttccccooo1mmmm_Test) {
+  ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is10xxx0_op_4Is1_Mcr_Rule_A1 baseline_tester;
+  NamedForbidden_Mcr_Rule_A1 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc1110ooo0nnnnttttccccooo1mmmm");
+}
+
+// coproc(11:8)=~101x & op1(25:20)=10xxx1 & op(4)=1
+//    = ForbiddenCondDecoder => Forbidden {constraints: ,
+//     pattern: 'cccc1110ooo1nnnnttttccccooo1mmmm',
+//     rule: 'Mrc_Rule_A1'}
+TEST_F(Arm32DecoderStateTests,
+       ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is10xxx1_op_4Is1_Mrc_Rule_A1_cccc1110ooo1nnnnttttccccooo1mmmm_Test) {
+  ForbiddenCondDecoderTester_coproc_11To8IsNot101x_op1_25To20Is10xxx1_op_4Is1_Mrc_Rule_A1 baseline_tester;
+  NamedForbidden_Mrc_Rule_A1 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc1110ooo1nnnnttttccccooo1mmmm");
 }
 
 // op(25)=0 & op1(24:20)=0xx1x & op2(7:4)=1011
@@ -12278,36 +13656,36 @@ TEST_F(Arm32DecoderStateTests,
 
 // opc1(23:20)=0x00
 //    = CondVfpOp => VfpOp {constraints: ,
-//     pattern: 'cccc11100d00nnnndddd101snpm0mmmm',
-//     rule: 'Vm_la_ls_Rule_423_A2_P636'}
+//     pattern: 'cccc11100d00nnnndddd101snom0mmmm',
+//     rule: 'Vmla_vmls_Rule_423_A2_P636'}
 TEST_F(Arm32DecoderStateTests,
-       CondVfpOpTester_opc1_23To20Is0x00_Vm_la_ls_Rule_423_A2_P636_cccc11100d00nnnndddd101snpm0mmmm_Test) {
-  CondVfpOpTester_opc1_23To20Is0x00_Vm_la_ls_Rule_423_A2_P636 baseline_tester;
-  NamedVfpOp_Vm_la_ls_Rule_423_A2_P636 actual;
+       CondVfpOpTester_opc1_23To20Is0x00_Vmla_vmls_Rule_423_A2_P636_cccc11100d00nnnndddd101snom0mmmm_Test) {
+  CondVfpOpTester_opc1_23To20Is0x00_Vmla_vmls_Rule_423_A2_P636 baseline_tester;
+  NamedVfpOp_Vmla_vmls_Rule_423_A2_P636 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc11100d00nnnndddd101snpm0mmmm");
+  a_vs_b_tester.Test("cccc11100d00nnnndddd101snom0mmmm");
 }
 
 // opc1(23:20)=0x01
 //    = CondVfpOp => VfpOp {constraints: ,
-//     pattern: 'cccc11100d01nnnndddd101snpm0mmmm',
-//     rule: 'Vnm_la_ls_ul_Rule_343_A1_P674'}
+//     pattern: 'cccc11100d01nnnndddd101snom0mmmm',
+//     rule: 'Vnmla_vnmls_Rule_343_A1_P674'}
 TEST_F(Arm32DecoderStateTests,
-       CondVfpOpTester_opc1_23To20Is0x01_Vnm_la_ls_ul_Rule_343_A1_P674_cccc11100d01nnnndddd101snpm0mmmm_Test) {
-  CondVfpOpTester_opc1_23To20Is0x01_Vnm_la_ls_ul_Rule_343_A1_P674 baseline_tester;
-  NamedVfpOp_Vnm_la_ls_ul_Rule_343_A1_P674 actual;
+       CondVfpOpTester_opc1_23To20Is0x01_Vnmla_vnmls_Rule_343_A1_P674_cccc11100d01nnnndddd101snom0mmmm_Test) {
+  CondVfpOpTester_opc1_23To20Is0x01_Vnmla_vnmls_Rule_343_A1_P674 baseline_tester;
+  NamedVfpOp_Vnmla_vnmls_Rule_343_A1_P674 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc11100d01nnnndddd101snpm0mmmm");
+  a_vs_b_tester.Test("cccc11100d01nnnndddd101snom0mmmm");
 }
 
 // opc1(23:20)=0x10 & opc3(7:6)=x1
 //    = CondVfpOp => VfpOp {constraints: ,
 //     pattern: 'cccc11100d10nnnndddd101sn1m0mmmm',
-//     rule: 'Vnm_la_ls_ul_Rule_343_A2_P674'}
+//     rule: 'Vnmul_Rule_343_A2_P674'}
 TEST_F(Arm32DecoderStateTests,
-       CondVfpOpTester_opc1_23To20Is0x10_opc3_7To6Isx1_Vnm_la_ls_ul_Rule_343_A2_P674_cccc11100d10nnnndddd101sn1m0mmmm_Test) {
-  CondVfpOpTester_opc1_23To20Is0x10_opc3_7To6Isx1_Vnm_la_ls_ul_Rule_343_A2_P674 baseline_tester;
-  NamedVfpOp_Vnm_la_ls_ul_Rule_343_A2_P674 actual;
+       CondVfpOpTester_opc1_23To20Is0x10_opc3_7To6Isx1_Vnmul_Rule_343_A2_P674_cccc11100d10nnnndddd101sn1m0mmmm_Test) {
+  CondVfpOpTester_opc1_23To20Is0x10_opc3_7To6Isx1_Vnmul_Rule_343_A2_P674 baseline_tester;
+  NamedVfpOp_Vnmul_Rule_343_A2_P674 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc11100d10nnnndddd101sn1m0mmmm");
 }
@@ -12358,6 +13736,30 @@ TEST_F(Arm32DecoderStateTests,
   NamedVfpOp_Vdiv_Rule_301_A1_P590 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc11101d00nnnndddd101sn0m0mmmm");
+}
+
+// opc1(23:20)=1x01
+//    = CondVfpOp => VfpOp {constraints: ,
+//     pattern: 'cccc11101d01nnnndddd101snom0mmmm',
+//     rule: 'Vfnma_vfnms_Rule_A1'}
+TEST_F(Arm32DecoderStateTests,
+       CondVfpOpTester_opc1_23To20Is1x01_Vfnma_vfnms_Rule_A1_cccc11101d01nnnndddd101snom0mmmm_Test) {
+  CondVfpOpTester_opc1_23To20Is1x01_Vfnma_vfnms_Rule_A1 baseline_tester;
+  NamedVfpOp_Vfnma_vfnms_Rule_A1 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11101d01nnnndddd101snom0mmmm");
+}
+
+// opc1(23:20)=1x10
+//    = CondVfpOp => VfpOp {constraints: ,
+//     pattern: 'cccc11101d10nnnndddd101snom0mmmm',
+//     rule: 'Vfma_vfms_Rule_A1'}
+TEST_F(Arm32DecoderStateTests,
+       CondVfpOpTester_opc1_23To20Is1x10_Vfma_vfms_Rule_A1_cccc11101d10nnnndddd101snom0mmmm_Test) {
+  CondVfpOpTester_opc1_23To20Is1x10_Vfma_vfms_Rule_A1 baseline_tester;
+  NamedVfpOp_Vfma_vfms_Rule_A1 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11101d10nnnndddd101snom0mmmm");
 }
 
 // op1(22:21)=00
@@ -12763,6 +14165,18 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("1111000100000001000000i000000000");
 }
 
+// op1(26:20)=100x001
+//    = ForbiddenUncondDecoder => Forbidden {constraints: ,
+//     pattern: '11110100x001xxxxxxxxxxxxxxxxxxxx',
+//     rule: 'Unallocated_hints'}
+TEST_F(Arm32DecoderStateTests,
+       ForbiddenUncondDecoderTester_op1_26To20Is100x001_Unallocated_hints_11110100x001xxxxxxxxxxxxxxxxxxxx_Test) {
+  ForbiddenUncondDecoderTester_op1_26To20Is100x001_Unallocated_hints baseline_tester;
+  NamedForbidden_Unallocated_hints actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("11110100x001xxxxxxxxxxxxxxxxxxxx");
+}
+
 // op1(26:20)=100x101
 //    = PreloadRegisterImm12Op => DontCareInst {constraints: ,
 //     pattern: '11110100u101nnnn1111iiiiiiiiiiii',
@@ -12775,6 +14189,18 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("11110100u101nnnn1111iiiiiiiiiiii");
 }
 
+// op1(26:20)=100xx11
+//    = UnpredictableUncondDecoder => Unpredictable {constraints: ,
+//     pattern: '11110100xx11xxxxxxxxxxxxxxxxxxxx',
+//     rule: 'Unpredictable'}
+TEST_F(Arm32DecoderStateTests,
+       UnpredictableUncondDecoderTester_op1_26To20Is100xx11_Unpredictable_11110100xx11xxxxxxxxxxxxxxxxxxxx_Test) {
+  UnpredictableUncondDecoderTester_op1_26To20Is100xx11_Unpredictable baseline_tester;
+  NamedUnpredictable_Unpredictable actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("11110100xx11xxxxxxxxxxxxxxxxxxxx");
+}
+
 // op1(26:20)=101x001 & Rn(19:16)=~1111
 //    = PreloadRegisterImm12Op => DontCareInst {constraints: & ~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx ,
 //     pattern: '11110101u001nnnn1111iiiiiiiiiiii',
@@ -12785,6 +14211,18 @@ TEST_F(Arm32DecoderStateTests,
   NamedDontCareInst_Pldw_Rule_117_A1_P236 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("11110101u001nnnn1111iiiiiiiiiiii");
+}
+
+// op1(26:20)=101x001 & Rn(19:16)=1111
+//    = UnpredictableUncondDecoder => Unpredictable {constraints: ,
+//     pattern: '11110101x001xxxxxxxxxxxxxxxxxxxx',
+//     rule: 'Unpredictable'}
+TEST_F(Arm32DecoderStateTests,
+       UnpredictableUncondDecoderTester_op1_26To20Is101x001_Rn_19To16Is1111_Unpredictable_11110101x001xxxxxxxxxxxxxxxxxxxx_Test) {
+  UnpredictableUncondDecoderTester_op1_26To20Is101x001_Rn_19To16Is1111_Unpredictable baseline_tester;
+  NamedUnpredictable_Unpredictable actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("11110101x001xxxxxxxxxxxxxxxxxxxx");
 }
 
 // op1(26:20)=101x101 & Rn(19:16)=~1111
@@ -12809,6 +14247,132 @@ TEST_F(Arm32DecoderStateTests,
   NamedDontCareInst_Pld_Rule_118_A1_P238 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("11110101u10111111111iiiiiiiiiiii");
+}
+
+// op1(26:20)=1010011
+//    = UnpredictableUncondDecoder => Unpredictable {constraints: ,
+//     pattern: '111101010011xxxxxxxxxxxxxxxxxxxx',
+//     rule: 'Unpredictable'}
+TEST_F(Arm32DecoderStateTests,
+       UnpredictableUncondDecoderTester_op1_26To20Is1010011_Unpredictable_111101010011xxxxxxxxxxxxxxxxxxxx_Test) {
+  UnpredictableUncondDecoderTester_op1_26To20Is1010011_Unpredictable baseline_tester;
+  NamedUnpredictable_Unpredictable actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("111101010011xxxxxxxxxxxxxxxxxxxx");
+}
+
+// op1(26:20)=1010111 & op2(7:4)=0000
+//    = UnpredictableUncondDecoder => Unpredictable {constraints: ,
+//     pattern: '111101010111xxxxxxxxxxxx0000xxxx',
+//     rule: 'Unpredictable'}
+TEST_F(Arm32DecoderStateTests,
+       UnpredictableUncondDecoderTester_op1_26To20Is1010111_op2_7To4Is0000_Unpredictable_111101010111xxxxxxxxxxxx0000xxxx_Test) {
+  UnpredictableUncondDecoderTester_op1_26To20Is1010111_op2_7To4Is0000_Unpredictable baseline_tester;
+  NamedUnpredictable_Unpredictable actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("111101010111xxxxxxxxxxxx0000xxxx");
+}
+
+// op1(26:20)=1010111 & op2(7:4)=0001
+//    = ForbiddenUncondDecoder => Forbidden {constraints: ,
+//     pattern: '11110101011111111111000000011111',
+//     rule: 'Clrex_Rule_30_A1_P70'}
+TEST_F(Arm32DecoderStateTests,
+       ForbiddenUncondDecoderTester_op1_26To20Is1010111_op2_7To4Is0001_Clrex_Rule_30_A1_P70_11110101011111111111000000011111_Test) {
+  ForbiddenUncondDecoderTester_op1_26To20Is1010111_op2_7To4Is0001_Clrex_Rule_30_A1_P70 baseline_tester;
+  NamedForbidden_Clrex_Rule_30_A1_P70 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("11110101011111111111000000011111");
+}
+
+// op1(26:20)=1010111 & op2(7:4)=001x
+//    = UnpredictableUncondDecoder => Unpredictable {constraints: ,
+//     pattern: '111101010111xxxxxxxxxxxx001xxxxx',
+//     rule: 'Unpredictable'}
+TEST_F(Arm32DecoderStateTests,
+       UnpredictableUncondDecoderTester_op1_26To20Is1010111_op2_7To4Is001x_Unpredictable_111101010111xxxxxxxxxxxx001xxxxx_Test) {
+  UnpredictableUncondDecoderTester_op1_26To20Is1010111_op2_7To4Is001x_Unpredictable baseline_tester;
+  NamedUnpredictable_Unpredictable actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("111101010111xxxxxxxxxxxx001xxxxx");
+}
+
+// op1(26:20)=1010111 & op2(7:4)=0100
+//    = DataBarrier => DataBarrier {constraints: ,
+//     pattern: '1111010101111111111100000100xxxx',
+//     rule: 'Dsb_Rule_42_A1_P92'}
+TEST_F(Arm32DecoderStateTests,
+       DataBarrierTester_op1_26To20Is1010111_op2_7To4Is0100_Dsb_Rule_42_A1_P92_1111010101111111111100000100xxxx_Test) {
+  DataBarrierTester_op1_26To20Is1010111_op2_7To4Is0100_Dsb_Rule_42_A1_P92 tester;
+  tester.Test("1111010101111111111100000100xxxx");
+}
+
+// op1(26:20)=1010111 & op2(7:4)=0101
+//    = DataBarrier => DataBarrier {constraints: ,
+//     pattern: '1111010101111111111100000101xxxx',
+//     rule: 'Dmb_Rule_41_A1_P90'}
+TEST_F(Arm32DecoderStateTests,
+       DataBarrierTester_op1_26To20Is1010111_op2_7To4Is0101_Dmb_Rule_41_A1_P90_1111010101111111111100000101xxxx_Test) {
+  DataBarrierTester_op1_26To20Is1010111_op2_7To4Is0101_Dmb_Rule_41_A1_P90 tester;
+  tester.Test("1111010101111111111100000101xxxx");
+}
+
+// op1(26:20)=1010111 & op2(7:4)=0110
+//    = InstructionBarrier => InstructionBarrier {constraints: ,
+//     pattern: '1111010101111111111100000110xxxx',
+//     rule: 'Isb_Rule_49_A1_P102'}
+TEST_F(Arm32DecoderStateTests,
+       InstructionBarrierTester_op1_26To20Is1010111_op2_7To4Is0110_Isb_Rule_49_A1_P102_1111010101111111111100000110xxxx_Test) {
+  InstructionBarrierTester_op1_26To20Is1010111_op2_7To4Is0110_Isb_Rule_49_A1_P102 tester;
+  tester.Test("1111010101111111111100000110xxxx");
+}
+
+// op1(26:20)=1010111 & op2(7:4)=0111
+//    = UnpredictableUncondDecoder => Unpredictable {constraints: ,
+//     pattern: '111101010111xxxxxxxxxxxx0111xxxx',
+//     rule: 'Unpredictable'}
+TEST_F(Arm32DecoderStateTests,
+       UnpredictableUncondDecoderTester_op1_26To20Is1010111_op2_7To4Is0111_Unpredictable_111101010111xxxxxxxxxxxx0111xxxx_Test) {
+  UnpredictableUncondDecoderTester_op1_26To20Is1010111_op2_7To4Is0111_Unpredictable baseline_tester;
+  NamedUnpredictable_Unpredictable actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("111101010111xxxxxxxxxxxx0111xxxx");
+}
+
+// op1(26:20)=1010111 & op2(7:4)=1xxx
+//    = UnpredictableUncondDecoder => Unpredictable {constraints: ,
+//     pattern: '111101010111xxxxxxxxxxxx1xxxxxxx',
+//     rule: 'Unpredictable'}
+TEST_F(Arm32DecoderStateTests,
+       UnpredictableUncondDecoderTester_op1_26To20Is1010111_op2_7To4Is1xxx_Unpredictable_111101010111xxxxxxxxxxxx1xxxxxxx_Test) {
+  UnpredictableUncondDecoderTester_op1_26To20Is1010111_op2_7To4Is1xxx_Unpredictable baseline_tester;
+  NamedUnpredictable_Unpredictable actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("111101010111xxxxxxxxxxxx1xxxxxxx");
+}
+
+// op1(26:20)=1011x11
+//    = UnpredictableUncondDecoder => Unpredictable {constraints: ,
+//     pattern: '111101011x11xxxxxxxxxxxxxxxxxxxx',
+//     rule: 'Unpredictable'}
+TEST_F(Arm32DecoderStateTests,
+       UnpredictableUncondDecoderTester_op1_26To20Is1011x11_Unpredictable_111101011x11xxxxxxxxxxxxxxxxxxxx_Test) {
+  UnpredictableUncondDecoderTester_op1_26To20Is1011x11_Unpredictable baseline_tester;
+  NamedUnpredictable_Unpredictable actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("111101011x11xxxxxxxxxxxxxxxxxxxx");
+}
+
+// op1(26:20)=110x001 & op2(7:4)=xxx0
+//    = ForbiddenUncondDecoder => Forbidden {constraints: ,
+//     pattern: '11110110x001xxxxxxxxxxxxxxx0xxxx',
+//     rule: 'Unallocated_hints'}
+TEST_F(Arm32DecoderStateTests,
+       ForbiddenUncondDecoderTester_op1_26To20Is110x001_op2_7To4Isxxx0_Unallocated_hints_11110110x001xxxxxxxxxxxxxxx0xxxx_Test) {
+  ForbiddenUncondDecoderTester_op1_26To20Is110x001_op2_7To4Isxxx0_Unallocated_hints baseline_tester;
+  NamedForbidden_Unallocated_hints actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("11110110x001xxxxxxxxxxxxxxx0xxxx");
 }
 
 // op1(26:20)=110x101 & op2(7:4)=xxx0
@@ -12841,46 +14405,16 @@ TEST_F(Arm32DecoderStateTests,
   tester.Test("11110111u101nnnn1111iiiiitt0mmmm");
 }
 
-// op1(26:20)=1010111 & op2(7:4)=0001
-//    = ForbiddenUncondDecoder => Forbidden {constraints: ,
-//     pattern: '11110101011111111111000000011111',
-//     rule: 'Clrex_Rule_30_A1_P70'}
+// op1(26:20)=11xxx11 & op2(7:4)=xxx0
+//    = UnpredictableUncondDecoder => Unpredictable {constraints: ,
+//     pattern: '1111011xxx11xxxxxxxxxxxxxxx0xxxx',
+//     rule: 'Unpredictable'}
 TEST_F(Arm32DecoderStateTests,
-       ForbiddenUncondDecoderTester_op1_26To20Is1010111_op2_7To4Is0001_Clrex_Rule_30_A1_P70_11110101011111111111000000011111_Test) {
-  ForbiddenUncondDecoderTester_op1_26To20Is1010111_op2_7To4Is0001_Clrex_Rule_30_A1_P70 baseline_tester;
-  NamedForbidden_Clrex_Rule_30_A1_P70 actual;
+       UnpredictableUncondDecoderTester_op1_26To20Is11xxx11_op2_7To4Isxxx0_Unpredictable_1111011xxx11xxxxxxxxxxxxxxx0xxxx_Test) {
+  UnpredictableUncondDecoderTester_op1_26To20Is11xxx11_op2_7To4Isxxx0_Unpredictable baseline_tester;
+  NamedUnpredictable_Unpredictable actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("11110101011111111111000000011111");
-}
-
-// op1(26:20)=1010111 & op2(7:4)=0100
-//    = DataBarrier => DataBarrier {constraints: ,
-//     pattern: '1111010101111111111100000100xxxx',
-//     rule: 'Dsb_Rule_42_A1_P92'}
-TEST_F(Arm32DecoderStateTests,
-       DataBarrierTester_op1_26To20Is1010111_op2_7To4Is0100_Dsb_Rule_42_A1_P92_1111010101111111111100000100xxxx_Test) {
-  DataBarrierTester_op1_26To20Is1010111_op2_7To4Is0100_Dsb_Rule_42_A1_P92 tester;
-  tester.Test("1111010101111111111100000100xxxx");
-}
-
-// op1(26:20)=1010111 & op2(7:4)=0101
-//    = DataBarrier => DataBarrier {constraints: ,
-//     pattern: '1111010101111111111100000101xxxx',
-//     rule: 'Dmb_Rule_41_A1_P90'}
-TEST_F(Arm32DecoderStateTests,
-       DataBarrierTester_op1_26To20Is1010111_op2_7To4Is0101_Dmb_Rule_41_A1_P90_1111010101111111111100000101xxxx_Test) {
-  DataBarrierTester_op1_26To20Is1010111_op2_7To4Is0101_Dmb_Rule_41_A1_P90 tester;
-  tester.Test("1111010101111111111100000101xxxx");
-}
-
-// op1(26:20)=1010111 & op2(7:4)=0110
-//    = InstructionBarrier => InstructionBarrier {constraints: ,
-//     pattern: '1111010101111111111100000110xxxx',
-//     rule: 'Isb_Rule_49_A1_P102'}
-TEST_F(Arm32DecoderStateTests,
-       InstructionBarrierTester_op1_26To20Is1010111_op2_7To4Is0110_Isb_Rule_49_A1_P102_1111010101111111111100000110xxxx_Test) {
-  InstructionBarrierTester_op1_26To20Is1010111_op2_7To4Is0110_Isb_Rule_49_A1_P102 tester;
-  tester.Test("1111010101111111111100000110xxxx");
+  a_vs_b_tester.Test("1111011xxx11xxxxxxxxxxxxxxx0xxxx");
 }
 
 // op2(6:4)=000 & B(9)=1 & op(22:21)=x0
@@ -13231,6 +14765,18 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("cccc00000100hhhhllllmmmm1001nnnn");
 }
 
+// op(23:20)=0101
+//    = UndefinedCondDecoder => Undefined {constraints: ,
+//     pattern: 'cccc00000101xxxxxxxxxxxx1001xxxx',
+//     rule: 'Undefined_A5_2_5_0101'}
+TEST_F(Arm32DecoderStateTests,
+       UndefinedCondDecoderTester_op_23To20Is0101_Undefined_A5_2_5_0101_cccc00000101xxxxxxxxxxxx1001xxxx_Test) {
+  UndefinedCondDecoderTester_op_23To20Is0101_Undefined_A5_2_5_0101 baseline_tester;
+  NamedUndefined_Undefined_A5_2_5_0101 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00000101xxxxxxxxxxxx1001xxxx");
+}
+
 // op(23:20)=0110
 //    = Binary4RegisterDualOp => Defs16To19CondsDontCareRdRaRmRnNotPc {constraints: ,
 //     pattern: 'cccc00000110ddddaaaammmm1001nnnn',
@@ -13242,6 +14788,18 @@ TEST_F(Arm32DecoderStateTests,
   NamedDefs16To19CondsDontCareRdRaRmRnNotPc_Mls_Rule_95_A1_P192 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc00000110ddddaaaammmm1001nnnn");
+}
+
+// op(23:20)=0111
+//    = UndefinedCondDecoder => Undefined {constraints: ,
+//     pattern: 'cccc00000111xxxxxxxxxxxx1001xxxx',
+//     rule: 'Undefined_A5_2_5_0111'}
+TEST_F(Arm32DecoderStateTests,
+       UndefinedCondDecoderTester_op_23To20Is0111_Undefined_A5_2_5_0111_cccc00000111xxxxxxxxxxxx1001xxxx_Test) {
+  UndefinedCondDecoderTester_op_23To20Is0111_Undefined_A5_2_5_0111 baseline_tester;
+  NamedUndefined_Undefined_A5_2_5_0111 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00000111xxxxxxxxxxxx1001xxxx");
 }
 
 // op(23:20)=100x
@@ -13320,6 +14878,18 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("cccc11101d110000dddd101s01m0mmmm");
 }
 
+// opc2(19:16)=0000 & opc3(7:6)=11
+//    = CondVfpOp => VfpOp {constraints: ,
+//     pattern: 'cccc11101d110000dddd101s11m0mmmm',
+//     rule: 'Vabs_Rule_269_A2_P532'}
+TEST_F(Arm32DecoderStateTests,
+       CondVfpOpTester_opc2_19To16Is0000_opc3_7To6Is11_Vabs_Rule_269_A2_P532_cccc11101d110000dddd101s11m0mmmm_Test) {
+  CondVfpOpTester_opc2_19To16Is0000_opc3_7To6Is11_Vabs_Rule_269_A2_P532 baseline_tester;
+  NamedVfpOp_Vabs_Rule_269_A2_P532 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11101d110000dddd101s11m0mmmm");
+}
+
 // opc2(19:16)=0001 & opc3(7:6)=01
 //    = CondVfpOp => VfpOp {constraints: ,
 //     pattern: 'cccc11101d110001dddd101s01m0mmmm',
@@ -13346,24 +14916,24 @@ TEST_F(Arm32DecoderStateTests,
 
 // opc2(19:16)=001x & opc3(7:6)=x1
 //    = CondVfpOp => VfpOp {constraints: ,
-//     pattern: 'cccc11101d11001pdddd1010t1m0mmmm',
+//     pattern: 'cccc11101d11001odddd1010t1m0mmmm',
 //     rule: 'Vcvtb_Vcvtt_Rule_300_A1_P588'}
 TEST_F(Arm32DecoderStateTests,
-       CondVfpOpTester_opc2_19To16Is001x_opc3_7To6Isx1_Vcvtb_Vcvtt_Rule_300_A1_P588_cccc11101d11001pdddd1010t1m0mmmm_Test) {
+       CondVfpOpTester_opc2_19To16Is001x_opc3_7To6Isx1_Vcvtb_Vcvtt_Rule_300_A1_P588_cccc11101d11001odddd1010t1m0mmmm_Test) {
   CondVfpOpTester_opc2_19To16Is001x_opc3_7To6Isx1_Vcvtb_Vcvtt_Rule_300_A1_P588 baseline_tester;
   NamedVfpOp_Vcvtb_Vcvtt_Rule_300_A1_P588 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc11101d11001pdddd1010t1m0mmmm");
+  a_vs_b_tester.Test("cccc11101d11001odddd1010t1m0mmmm");
 }
 
 // opc2(19:16)=0100 & opc3(7:6)=x1
 //    = CondVfpOp => VfpOp {constraints: ,
 //     pattern: 'cccc11101d110100dddd101se1m0mmmm',
-//     rule: 'Vcmp_Vcmpe_Rule_292_A1_P572'}
+//     rule: 'Vcmp_Vcmpe_Rule_A1'}
 TEST_F(Arm32DecoderStateTests,
-       CondVfpOpTester_opc2_19To16Is0100_opc3_7To6Isx1_Vcmp_Vcmpe_Rule_292_A1_P572_cccc11101d110100dddd101se1m0mmmm_Test) {
-  CondVfpOpTester_opc2_19To16Is0100_opc3_7To6Isx1_Vcmp_Vcmpe_Rule_292_A1_P572 baseline_tester;
-  NamedVfpOp_Vcmp_Vcmpe_Rule_292_A1_P572 actual;
+       CondVfpOpTester_opc2_19To16Is0100_opc3_7To6Isx1_Vcmp_Vcmpe_Rule_A1_cccc11101d110100dddd101se1m0mmmm_Test) {
+  CondVfpOpTester_opc2_19To16Is0100_opc3_7To6Isx1_Vcmp_Vcmpe_Rule_A1 baseline_tester;
+  NamedVfpOp_Vcmp_Vcmpe_Rule_A1 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc11101d110100dddd101se1m0mmmm");
 }
@@ -13371,11 +14941,11 @@ TEST_F(Arm32DecoderStateTests,
 // opc2(19:16)=0101 & opc3(7:6)=x1
 //    = CondVfpOp => VfpOp {constraints: ,
 //     pattern: 'cccc11101d110101dddd101se1000000',
-//     rule: 'Vcmp_Vcmpe_Rule_292_A2_P572'}
+//     rule: 'Vcmp_Vcmpe_Rule_A2'}
 TEST_F(Arm32DecoderStateTests,
-       CondVfpOpTester_opc2_19To16Is0101_opc3_7To6Isx1_Vcmp_Vcmpe_Rule_292_A2_P572_cccc11101d110101dddd101se1000000_Test) {
-  CondVfpOpTester_opc2_19To16Is0101_opc3_7To6Isx1_Vcmp_Vcmpe_Rule_292_A2_P572 baseline_tester;
-  NamedVfpOp_Vcmp_Vcmpe_Rule_292_A2_P572 actual;
+       CondVfpOpTester_opc2_19To16Is0101_opc3_7To6Isx1_Vcmp_Vcmpe_Rule_A2_cccc11101d110101dddd101se1000000_Test) {
+  CondVfpOpTester_opc2_19To16Is0101_opc3_7To6Isx1_Vcmp_Vcmpe_Rule_A2 baseline_tester;
+  NamedVfpOp_Vcmp_Vcmpe_Rule_A2 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc11101d110101dddd101se1000000");
 }
@@ -14292,12 +15862,12 @@ TEST_F(Arm32DecoderStateTests,
 }
 
 // L(20)=0 & C(8)=1 & A(23:21)=1xx & B(6:5)=0x
-//    = DuplicateToVfpRegisters => DuplicateToVfpRegisters {constraints: ,
+//    = DuplicateToAdvSIMDRegisters => DuplicateToAdvSIMDRegisters {constraints: ,
 //     pattern: 'cccc11101bq0ddddtttt1011d0e10000',
 //     rule: 'Vdup_Rule_303_A1_P594'}
 TEST_F(Arm32DecoderStateTests,
-       DuplicateToVfpRegistersTester_L_20Is0_C_8Is1_A_23To21Is1xx_B_6To5Is0x_Vdup_Rule_303_A1_P594_cccc11101bq0ddddtttt1011d0e10000_Test) {
-  DuplicateToVfpRegistersTester_L_20Is0_C_8Is1_A_23To21Is1xx_B_6To5Is0x_Vdup_Rule_303_A1_P594 tester;
+       DuplicateToAdvSIMDRegistersTester_L_20Is0_C_8Is1_A_23To21Is1xx_B_6To5Is0x_Vdup_Rule_303_A1_P594_cccc11101bq0ddddtttt1011d0e10000_Test) {
+  DuplicateToAdvSIMDRegistersTester_L_20Is0_C_8Is1_A_23To21Is1xx_B_6To5Is0x_Vdup_Rule_303_A1_P594 tester;
   tester.Test("cccc11101bq0ddddtttt1011d0e10000");
 }
 
@@ -14329,6 +15899,26 @@ TEST_F(Arm32DecoderStateTests,
        MoveVfpRegisterOpWithTypeSelTester_L_20Is1_C_8Is1_Vmov_Rule_329_A1_P646_cccc1110iii1nnnntttt1011nii10000_Test) {
   MoveVfpRegisterOpWithTypeSelTester_L_20Is1_C_8Is1_Vmov_Rule_329_A1_P646 tester;
   tester.Test("cccc1110iii1nnnntttt1011nii10000");
+}
+
+// C(8)=0 & op(7:4)=00x1
+//    = MoveDoubleVfpRegisterOp => MoveDoubleVfpRegisterOp {constraints: ,
+//     pattern: 'cccc1100010otttttttt101000m1mmmm',
+//     rule: 'Vmov_two_S_Rule_A1'}
+TEST_F(Arm32DecoderStateTests,
+       MoveDoubleVfpRegisterOpTester_C_8Is0_op_7To4Is00x1_Vmov_two_S_Rule_A1_cccc1100010otttttttt101000m1mmmm_Test) {
+  MoveDoubleVfpRegisterOpTester_C_8Is0_op_7To4Is00x1_Vmov_two_S_Rule_A1 tester;
+  tester.Test("cccc1100010otttttttt101000m1mmmm");
+}
+
+// C(8)=1 & op(7:4)=00x1
+//    = MoveDoubleVfpRegisterOp => MoveDoubleVfpRegisterOp {constraints: ,
+//     pattern: 'cccc1100010otttttttt101100m1mmmm',
+//     rule: 'Vmov_one_D_Rule_A1'}
+TEST_F(Arm32DecoderStateTests,
+       MoveDoubleVfpRegisterOpTester_C_8Is1_op_7To4Is00x1_Vmov_one_D_Rule_A1_cccc1100010otttttttt101100m1mmmm_Test) {
+  MoveDoubleVfpRegisterOpTester_C_8Is1_op_7To4Is00x1_Vmov_one_D_Rule_A1 tester;
+  tester.Test("cccc1100010otttttttt101100m1mmmm");
 }
 
 // op1(27:20)=100xx1x0
@@ -14367,6 +15957,30 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("1111101hiiiiiiiiiiiiiiiiiiiiiiii");
 }
 
+// op1(27:20)=110xxxx0 & op1_repeated(27:20)=~11000x00
+//    = ForbiddenUncondDecoder => Forbidden {constraints: ,
+//     pattern: '1111110pudw0nnnniiiiiiiiiiiiiiii',
+//     rule: 'Stc2_Rule_188_A2_P372'}
+TEST_F(Arm32DecoderStateTests,
+       ForbiddenUncondDecoderTester_op1_27To20Is110xxxx0_op1_repeated_27To20IsNot11000x00_Stc2_Rule_188_A2_P372_1111110pudw0nnnniiiiiiiiiiiiiiii_Test) {
+  ForbiddenUncondDecoderTester_op1_27To20Is110xxxx0_op1_repeated_27To20IsNot11000x00_Stc2_Rule_188_A2_P372 baseline_tester;
+  NamedForbidden_Stc2_Rule_188_A2_P372 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("1111110pudw0nnnniiiiiiiiiiiiiiii");
+}
+
+// op1(27:20)=110xxxx1 & Rn(19:16)=~1111 & op1_repeated(27:20)=~11000x01
+//    = ForbiddenUncondDecoder => Forbidden {constraints: ,
+//     pattern: '1111110pudw1nnnniiiiiiiiiiiiiiii',
+//     rule: 'Ldc2_Rule_51_A2_P106'}
+TEST_F(Arm32DecoderStateTests,
+       ForbiddenUncondDecoderTester_op1_27To20Is110xxxx1_Rn_19To16IsNot1111_op1_repeated_27To20IsNot11000x01_Ldc2_Rule_51_A2_P106_1111110pudw1nnnniiiiiiiiiiiiiiii_Test) {
+  ForbiddenUncondDecoderTester_op1_27To20Is110xxxx1_Rn_19To16IsNot1111_op1_repeated_27To20IsNot11000x01_Ldc2_Rule_51_A2_P106 baseline_tester;
+  NamedForbidden_Ldc2_Rule_51_A2_P106 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("1111110pudw1nnnniiiiiiiiiiiiiiii");
+}
+
 // op1(27:20)=110xxxx1 & Rn(19:16)=1111 & op1_repeated(27:20)=~11000x01
 //    = ForbiddenUncondDecoder => Forbidden {constraints: ,
 //     pattern: '1111110pudw11111iiiiiiiiiiiiiiii',
@@ -14377,30 +15991,6 @@ TEST_F(Arm32DecoderStateTests,
   NamedForbidden_Ldc2_Rule_52_A2_P108 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("1111110pudw11111iiiiiiiiiiiiiiii");
-}
-
-// op1(27:20)=110xxxx1 & Rn(19:16)=~1111 & op1_repeated(27:20)=~11000x01
-//    = ForbiddenUncondDecoder => Forbidden {constraints: ,
-//     pattern: '1111110pudw1nnnniiiiiiiiiiiiiiii',
-//     rule: 'Ldc2_Rule_51_A1_P106'}
-TEST_F(Arm32DecoderStateTests,
-       ForbiddenUncondDecoderTester_op1_27To20Is110xxxx1_Rn_19To16IsNot1111_op1_repeated_27To20IsNot11000x01_Ldc2_Rule_51_A1_P106_1111110pudw1nnnniiiiiiiiiiiiiiii_Test) {
-  ForbiddenUncondDecoderTester_op1_27To20Is110xxxx1_Rn_19To16IsNot1111_op1_repeated_27To20IsNot11000x01_Ldc2_Rule_51_A1_P106 baseline_tester;
-  NamedForbidden_Ldc2_Rule_51_A1_P106 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("1111110pudw1nnnniiiiiiiiiiiiiiii");
-}
-
-// op1(27:20)=110xxxx0 & op1_repeated(27:20)=~11000x01
-//    = ForbiddenUncondDecoder => Forbidden {constraints: ,
-//     pattern: '1111110pudw0nnnniiiiiiiiiiiiiiii',
-//     rule: 'Sdc2_Rule_188_A1_P372'}
-TEST_F(Arm32DecoderStateTests,
-       ForbiddenUncondDecoderTester_op1_27To20Is110xxxx0_op1_repeated_27To20IsNot11000x01_Sdc2_Rule_188_A1_P372_1111110pudw0nnnniiiiiiiiiiiiiiii_Test) {
-  ForbiddenUncondDecoderTester_op1_27To20Is110xxxx0_op1_repeated_27To20IsNot11000x01_Sdc2_Rule_188_A1_P372 baseline_tester;
-  NamedForbidden_Sdc2_Rule_188_A1_P372 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("1111110pudw0nnnniiiiiiiiiiiiiiii");
 }
 
 // op1(27:20)=11000100
@@ -14427,6 +16017,18 @@ TEST_F(Arm32DecoderStateTests,
   a_vs_b_tester.Test("111111000101ssssttttiiiiiiiiiiii");
 }
 
+// op1(27:20)=1110xxxx & op(4)=0
+//    = ForbiddenUncondDecoder => Forbidden {constraints: ,
+//     pattern: '11111110iiiiiiiiiiiiiiiiiii0iiii',
+//     rule: 'Cdp2_Rule_28_A2_P68'}
+TEST_F(Arm32DecoderStateTests,
+       ForbiddenUncondDecoderTester_op1_27To20Is1110xxxx_op_4Is0_Cdp2_Rule_28_A2_P68_11111110iiiiiiiiiiiiiiiiiii0iiii_Test) {
+  ForbiddenUncondDecoderTester_op1_27To20Is1110xxxx_op_4Is0_Cdp2_Rule_28_A2_P68 baseline_tester;
+  NamedForbidden_Cdp2_Rule_28_A2_P68 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("11111110iiiiiiiiiiiiiiiiiii0iiii");
+}
+
 // op1(27:20)=1110xxx0 & op(4)=1
 //    = ForbiddenUncondDecoder => Forbidden {constraints: ,
 //     pattern: '11111110iii0iiiittttiiiiiii1iiii',
@@ -14449,18 +16051,6 @@ TEST_F(Arm32DecoderStateTests,
   NamedForbidden_Mrc2_Rule_100_A2_P202 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("11111110iii1iiiittttiiiiiii1iiii");
-}
-
-// op1(27:20)=1110xxxx & op(4)=0
-//    = ForbiddenUncondDecoder => Forbidden {constraints: ,
-//     pattern: '11111110iiiiiiiiiiiiiiiiiii0iiii',
-//     rule: 'Cdp2_Rule_28_A2_P68'}
-TEST_F(Arm32DecoderStateTests,
-       ForbiddenUncondDecoderTester_op1_27To20Is1110xxxx_op_4Is0_Cdp2_Rule_28_A2_P68_11111110iiiiiiiiiiiiiiiiiii0iiii_Test) {
-  ForbiddenUncondDecoderTester_op1_27To20Is1110xxxx_op_4Is0_Cdp2_Rule_28_A2_P68 baseline_tester;
-  NamedForbidden_Cdp2_Rule_28_A2_P68 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("11111110iiiiiiiiiiiiiiiiiii0iiii");
 }
 
 }  // namespace nacl_arm_test

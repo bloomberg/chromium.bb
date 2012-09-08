@@ -36,6 +36,13 @@ RegisterList CondDecoder::defs(const Instruction i) const {
   return RegisterList();
 }
 
+// CondAdvSIMDOp
+SafetyLevel CondAdvSIMDOp::safety(const Instruction i) const {
+  return (cond.value(i) == Instruction::AL)
+      ? MAY_BE_SAFE
+      : DEPRECATED;
+}
+
 // MoveImmediate12ToApsr
 SafetyLevel MoveImmediate12ToApsr::safety(const Instruction i) const {
   UNREFERENCED_PARAMETER(i);
@@ -587,6 +594,18 @@ RegisterList LoadRegisterList::defs(const Instruction i) const {
   return register_list.registers(i).Union(LoadStoreRegisterList::defs(i));
 }
 
+// StoreRegisterList
+SafetyLevel StoreRegisterList::safety(const Instruction i) const {
+  if (wback.IsDefined(i) && register_list.registers(i).Contains(n.reg(i)) &&
+      ((register_list.value(i) & (0xFFFFFFFFu << n.reg(i).number())) !=
+       register_list.value(i))) {
+    // Stored value is unknown if there's writeback and the base register isn't
+    // at least the first register that is stored.
+    return UNPREDICTABLE;
+  }
+  return LoadStoreRegisterList::safety(i);
+}
+
 // LoadStoreVectorOp
 Register LoadStoreVectorOp::FirstReg(const Instruction& i) const {
   // Assumes that safety has already been checked, and hence,
@@ -624,34 +643,28 @@ SafetyLevel LoadStoreVectorRegisterList::safety(const Instruction i) const {
   if (wback.IsDefined(i) && n.reg(i).Equals(kRegisterPc))
     return UNPREDICTABLE;
 
-  // Register list must have at least one register.
   uint32_t first_reg = FirstReg(i).number();
 
+  // Register list must have at least one register.
   if (imm8.value(i) == 0)
     return UNPREDICTABLE;
 
-  // Register list doesn't exceed available vector registers.
   switch (coproc.value(i)) {
-    case 11:
-      // Assume double (64-bit) registers. Check that number of registers
-      // is even, and that we don't exceed the total number of available
-      // extended (vector) registers.
-      // Note: The number of 64-bit registers accessed is imm8.value(inst) / 2.
+    case 11: {  // A1: 64-bit registers.
+      uint32_t regs = imm8.value(i) / 2;
       if (!imm8.IsEven(i))
         return DEPRECATED;
-      if ((first_reg + imm8.value(i)) > 32)
+      if ((regs > 16) || ((first_reg + regs) > 32))
         return UNPREDICTABLE;
-      break;
-
-    default:
-    case 10:
-      // Assume single (32-bit) registers.
-      // Note: The number of 32-bit registers accessed is imm8.value(inst).
-      if ((first_reg + imm8.value(i)) > 32)
+    } break;
+    case 10: {  // A2: 32-bit registers.
+      uint32_t regs = imm8.value(i);
+      if ((first_reg + regs) > 32)
         return UNPREDICTABLE;
-      break;
+    } break;
+    default:  // Bad coprocessor (this check should be redundant).
+      return UNPREDICTABLE;
   }
-
   return LoadStoreVectorOp::safety(i);
 }
 
@@ -1067,8 +1080,6 @@ RegisterList VfpUsesRegOp::defs(const Instruction i) const {
 
 // VfpMsrOp
 SafetyLevel VfpMrsOp::safety(Instruction i) const {
-  if (t.reg(i).Equals(kRegisterStack))
-    return UNPREDICTABLE;
   return CondVfpOp::safety(i);
 }
 
@@ -1103,8 +1114,24 @@ SafetyLevel MoveVfpRegisterOpWithTypeSel::safety(Instruction i) const {
   return MoveVfpRegisterOp::safety(i);
 }
 
-// DuplicateToVfpRegisters
-SafetyLevel DuplicateToVfpRegisters::safety(Instruction i) const {
+// MoveDoubleVfpRegisterOp
+SafetyLevel MoveDoubleVfpRegisterOp::safety(Instruction i) const {
+  if ((t2.reg(i).Equals(kRegisterPc)) ||
+      (IsSinglePrecision(i) &&
+       (((vm.reg(i).number() << 1) | m.value(i)) == 31)) ||
+      (to_arm_reg.IsDefined(i) && t.reg(i).Equals(t2.reg(i))))
+    return UNPREDICTABLE;
+  return MoveVfpRegisterOp::safety(i);
+}
+
+RegisterList MoveDoubleVfpRegisterOp::defs(const Instruction i) const {
+  RegisterList defs;
+  if (to_arm_reg.IsDefined(i)) defs.Add(t.reg(i)).Add(t2.reg(i));
+  return defs;
+}
+
+// DuplicateToAdvSIMDRegisters
+SafetyLevel DuplicateToAdvSIMDRegisters::safety(Instruction i) const {
   if (is_two_regs.IsDefined(i) && !vd.IsEven(i))
     return UNDEFINED;
 
@@ -1114,7 +1141,7 @@ SafetyLevel DuplicateToVfpRegisters::safety(Instruction i) const {
   if (t.reg(i).Equals(kRegisterPc))
     return UNPREDICTABLE;
 
-  return CondVfpOp::safety(i);
+  return CondAdvSIMDOp::safety(i);
 }
 
 // DataBarrier

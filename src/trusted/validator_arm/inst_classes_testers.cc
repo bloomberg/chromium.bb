@@ -121,6 +121,30 @@ bool CondVfpOpTester::ApplySanityChecks(Instruction inst,
   return true;
 }
 
+// CondAdvSIMDOpTester
+CondAdvSIMDOpTester::CondAdvSIMDOpTester(const NamedClassDecoder& decoder)
+    : CondDecoderTester(decoder) {}
+
+bool CondAdvSIMDOpTester::ApplySanityChecks(Instruction inst,
+                                        const NamedClassDecoder& decoder) {
+  // Check if expected class name found.
+  NC_PRECOND(CondDecoderTester::ApplySanityChecks(inst, decoder));
+
+  // Apply ARM restrictions.
+  EXPECT_EQ(expected_decoder_.coproc.value(inst), inst.Bits(11, 8));
+
+  // Apply NaCl restrictions, i.e. that this is an advanced SIMD operation.
+  EXPECT_TRUE(
+      (expected_decoder_.coproc.value(inst) == static_cast<uint32_t>(10)) ||
+      (expected_decoder_.coproc.value(inst) == static_cast<uint32_t>(11)));
+
+  EXPECT_EQ(static_cast<uint32_t>(expected_decoder_.cond.value(inst)),
+            static_cast<uint32_t>(Instruction::AL))
+      << "Expected DEPRECATED for " << InstContents();
+
+  return true;
+}
+
 // Unary1RegisterSetTester
 Unary1RegisterSetTester::Unary1RegisterSetTester(
     const NamedClassDecoder& decoder)
@@ -1323,6 +1347,19 @@ ApplySanityChecks(Instruction inst,
   EXPECT_NE(static_cast<uint32_t>(0),
             expected_decoder_.register_list.value(inst))
       << "Expected UNPREDICTABLE for " << InstContents();
+  if ((inst.Bit(20) == 0 /* store */) &&
+      expected_decoder_.wback.IsDefined(inst) &&
+      expected_decoder_.register_list.registers(inst).Contains(
+          expected_decoder_.n.reg(inst))) {
+    // Store multiple stores an unknown value if there's writeback and the
+    // base register isn't at least the first register that is stored.
+    for (nacl_arm_dec::Register::Number r = 0,
+             n = expected_decoder_.n.reg(inst).number();
+         r < n; ++r) {
+      EXPECT_FALSE(expected_decoder_.register_list.value(inst) & (1u << r))
+          << "Expected UNPREDICTABLE for " << InstContents();
+    }
+  }
 
   return true;
 }
@@ -1369,9 +1406,23 @@ ApplySanityChecks(Instruction inst,
                expected_decoder_.n.reg(inst).Equals(kRegisterPc));
   EXPECT_NE(expected_decoder_.NumRegisters(inst), static_cast<uint32_t>(0))
       << "Expected UNPREDICTABLE for " << InstContents();
-  EXPECT_LE(expected_decoder_.FirstReg(inst).number()
-            + expected_decoder_.imm8.value(inst),
-            static_cast<uint32_t>(32)) << InstContents();
+  if (expected_decoder_.coproc.value(inst) == 11 /* A1: 64-bit registers */) {
+    EXPECT_TRUE(expected_decoder_.imm8.IsEven(inst))
+        << "Expected UNPREDICTABLE for " << InstContents();
+    EXPECT_LE(expected_decoder_.imm8.value(inst) / 2,
+              static_cast<uint32_t>(16))
+        << "Expected UNPREDICTABLE for " << InstContents();
+    EXPECT_LE(expected_decoder_.FirstReg(inst).number()
+              + expected_decoder_.imm8.value(inst) / 2,
+              static_cast<uint32_t>(32))
+        << "Expected UNPREDICTABLE for " << InstContents();
+  } else {
+    EXPECT_LE(expected_decoder_.FirstReg(inst).number()
+              + expected_decoder_.imm8.value(inst),
+              static_cast<uint32_t>(32))
+        << "Expected UNPREDICTABLE for " << InstContents();
+  }
+
   uint32_t puw =
       (static_cast<uint32_t>(expected_decoder_.indexing.IsDefined(inst)) << 2) +
       (static_cast<uint32_t>(expected_decoder_.direction.IsAdd(inst)) << 1) +
@@ -2194,10 +2245,6 @@ ApplySanityChecks(Instruction inst,
   // Check Registers and flags used.
   EXPECT_TRUE(expected_decoder_.t.reg(inst).Equals(inst.Reg(15, 12)));
 
-  // Other ARM constraints about this instruction.
-  EXPECT_FALSE(expected_decoder_.t.reg(inst).Equals(kRegisterStack))
-      << "Expected Unpredictable for " << InstContents();
-
   return true;
 }
 
@@ -2231,11 +2278,35 @@ ApplySanityChecks(Instruction inst,
   return true;
 }
 
-// DuplicateToVfpRegistersTester
-bool DuplicateToVfpRegistersTester::
+// MoveDoubleVfpRegisterOpTester
+bool MoveDoubleVfpRegisterOpTester::
 ApplySanityChecks(Instruction inst,
                   const NamedClassDecoder& decoder) {
-  NC_PRECOND(CondVfpOpTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(MoveVfpRegisterOpTester::ApplySanityChecks(inst, decoder));
+
+  // Check Registers and flags used.
+  EXPECT_TRUE(expected_decoder_.t2.reg(inst).Equals(inst.Reg(19, 16)));
+
+  // Other ARM constraints about this instruction.
+  EXPECT_FALSE(expected_decoder_.t2.reg(inst).Equals(kRegisterPc))
+      << "Expected Unpredictable for " << InstContents();
+  EXPECT_FALSE(expected_decoder_.IsSinglePrecision(inst)
+               && (((expected_decoder_.vm.reg(inst).number() << 1) |
+                    expected_decoder_.m.value(inst)) == 31))
+      << "Expected Unpredictable for " << InstContents();
+  EXPECT_FALSE(expected_decoder_.to_arm_reg.IsDefined(inst) &&
+               expected_decoder_.t.reg(inst).Equals(
+                   expected_decoder_.t2.reg(inst)))
+      << "Expected Unpredictable for " << InstContents();
+
+  return true;
+}
+
+// DuplicateToAdvSIMDRegistersTester
+bool DuplicateToAdvSIMDRegistersTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  NC_PRECOND(CondAdvSIMDOpTester::ApplySanityChecks(inst, decoder));
 
   // Check Registers and flags used.
   EXPECT_EQ(expected_decoder_.e.value(inst), inst.Bits(5, 5));

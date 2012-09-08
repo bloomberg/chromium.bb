@@ -1022,25 +1022,6 @@ class MoveFromCoprocessor : public CoprocessorOp {
   NACL_DISALLOW_COPY_AND_ASSIGN(MoveFromCoprocessor);
 };
 
-// MRRC/MRRC2, which load pairs of registers from a coprocessor register.
-class MoveDoubleFromCoprocessor : public CoprocessorOp {
- public:
-  MoveDoubleFromCoprocessor() {}
-  virtual RegisterList defs(Instruction i) const;
-
-  // Contains the first destination core register.
-  Register Rt(const Instruction& i) const {
-    return i.Reg(15, 12);
-  }
-  // Contains the second destination core register.
-  Register Rt2(const Instruction& i) const {
-    return i.Reg(19, 16);
-  }
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(MoveDoubleFromCoprocessor);
-};
-
 // BX and BLX - everyone's favorite register-indirect branch.
 // This implementation makes assumptions about where the L bit is located, and
 // should not be used for other indirect branches (such as mov pc, rN).

@@ -728,10 +728,6 @@ RegisterList MoveFromCoprocessor::defs(Instruction i) const {
 }
 
 
-RegisterList MoveDoubleFromCoprocessor::defs(Instruction i) const {
-  return RegisterList(Rt(i)).Add(Rt2(i));
-}
-
 // Control flow
 
 SafetyLevel BxBlx::safety(Instruction i) const {

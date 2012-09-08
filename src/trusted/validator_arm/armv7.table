@@ -136,6 +136,8 @@ class Store2RegisterImm12Op : LoadStore2RegisterImm12Op
 class Store3RegisterImm5Op : LoadStore3RegisterImm5Op
 class Store3RegisterOp : LoadStore3RegisterOp
 class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
+class UndefinedCondDecoder : UnsafeCondDecoder
+class UnpredictableUncondDecoder : UnsafeUncondDecoder
 
 ##############################################################
 # The following define decoder tables.
@@ -510,12 +512,18 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
                  => Defs12To19CondsDontCareRdRmRnNotPc
                  Umaal_Rule_244_A1_P482
                  cccc00000100hhhhllllmmmm1001nnnn RegsNotPc (v6)
-| 0101      = Undefined
+| 0101      = UndefinedCondDecoder
+                 => Undefined
+                 Undefined_A5_2_5_0101
+                 cccc00000101xxxxxxxxxxxx1001xxxx
 | 0110      = Binary4RegisterDualOp
                  => Defs16To19CondsDontCareRdRaRmRnNotPc
                  Mls_Rule_95_A1_P192
                  cccc00000110ddddaaaammmm1001nnnn RegsNotPc (v6T2)
-| 0111      = Undefined
+| 0111      = UndefinedCondDecoder
+                 => Undefined
+                 Undefined_A5_2_5_0111
+                 cccc00000111xxxxxxxxxxxx1001xxxx
 | 100x      = Binary4RegisterDualResult
                  => Defs12To19CondsDontCareRdRmRnNotPc
                  Umull_Rule_246_A1_P486
@@ -1299,49 +1307,58 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 
 +-- branch_branch_with_link_and_block_data_transfer (See Section A5.5)
 # TODO(karl): Clean up the actual classes once baseline has been committed.
-# TODO(karl) ARM ARM revision C breaks out LDM/POP and STM/PUSH. Should we?
-| op(25:20) R(15)
-| 0000x0    -     = StoreRegisterList
-                    Stmda_Stmed_Rule_190_A1_P376
-                    cccc100000w0nnnnrrrrrrrrrrrrrrrr
-| 0000x1    -     = LoadRegisterList => LoadMultiple
-                    Ldmda_Ldmfa_Rule_54_A1_P112
-                    cccc100000w1nnnnrrrrrrrrrrrrrrrr
-| 0010x0    -     = StoreRegisterList
-                    Stm_Stmia_Stmea_Rule_189_A1_P374
-                    cccc100010w0nnnnrrrrrrrrrrrrrrrr
-# Note: When W=1 and Rn=Sp, the following instruction implements POP.
-| 0010x1    -     = LoadRegisterList => LoadMultiple
-                    Ldm_Ldmia_Ldmfd_Rule_53_A1_P110
-                    cccc100010w1nnnnrrrrrrrrrrrrrrrr
-# Note: When W=1 and Rn=Sp, the following instruction implements PUSH.
-| 0100x0    -     = StoreRegisterList
-                    Stmdb_Stmfd_Rule_191_A1_P378
-                    cccc100100w0nnnnrrrrrrrrrrrrrrrr
-| 0100x1    -     = LoadRegisterList => LoadMultiple
-                    Ldmdb_Ldmea_Rule_55_A1_P114
-                    cccc100100w1nnnnrrrrrrrrrrrrrrrr
-| 0110x0    -     = StoreRegisterList
-                    Stmid_Stmfa_Rule_192_A1_P380
-                    cccc100110w0nnnnrrrrrrrrrrrrrrrr
-| 0110x1    -     = LoadRegisterList => LoadMultiple
-                    Ldmib_Ldmed_Rule_56_A1_P116
-                    cccc100110w1nnnnrrrrrrrrrrrrrrrr
-| 0xx1x0    -     = ForbiddenCondDecoder => Forbidden
-                    Stm_Rule_11_B6_A1_P22 # ring0 version
-                    cccc100pu100nnnnrrrrrrrrrrrrrrrr
-| 0xx1x1    0     = ForbiddenCondDecoder => Forbidden
-                    Ldm_Rule_3_B6_A1_P7   # ring0 version
-                    cccc100pu101nnnn0rrrrrrrrrrrrrrr
-| "         1     = ForbiddenCondDecoder => Forbidden
-                    Ldm_Rule_2_B6_A1_P5   # exception return
-                    cccc100pu1w1nnnn1rrrrrrrrrrrrrrr
-| 10xxxx    -     = BranchImmediate24 => Branch
-                    B_Rule_16_A1_P44
-                    cccc1010iiiiiiiiiiiiiiiiiiiiiiii
-| 11xxxx    -     = BranchImmediate24 => Branch
-                    Bl_Blx_Rule_23_A1_P58
-                    cccc1011iiiiiiiiiiiiiiiiiiiiiiii
+| op(25:20) R(15) Rn(19:16)
+| 0000x0    -     -         = StoreRegisterList
+                              Stmda_Stmed_Rule_190_A1_P376
+                              cccc100000w0nnnnrrrrrrrrrrrrrrrr
+| 0000x1    -     -         = LoadRegisterList => LoadMultiple
+                              Ldmda_Ldmfa_Rule_54_A1_P112
+                              cccc100000w1nnnnrrrrrrrrrrrrrrrr
+| 0010x0    -     -         = StoreRegisterList
+                              Stm_Stmia_Stmea_Rule_189_A1_P374
+                              cccc100010w0nnnnrrrrrrrrrrrrrrrr
+| 001001    -     -         = LoadRegisterList => LoadMultiple
+                              Ldm_Ldmia_Ldmfd_Rule_53_A1_P110
+                              cccc10001001nnnnrrrrrrrrrrrrrrrr
+| 001011    -     ~1101     = LoadRegisterList => LoadMultiple
+                              Ldm_Ldmia_Ldmfd_Rule_53_A1_P110
+                              cccc10001011nnnnrrrrrrrrrrrrrrrr
+| "         -     1101      = LoadRegisterList => LoadMultiple
+                              Pop_Rule_A1
+                              cccc10001011nnnnrrrrrrrrrrrrrrrr
+| 010000    -     -         = StoreRegisterList
+                              Stmdb_Stmfd_Rule_191_A1_P378
+                              cccc10010000nnnnrrrrrrrrrrrrrrrr
+| 010010    -     ~1101     = StoreRegisterList
+                              Stmdb_Stmfd_Rule_191_A1_P378
+                              cccc10010010nnnnrrrrrrrrrrrrrrrr
+| "         -     1101      = StoreRegisterList
+                              Push_Rule_A1
+                              cccc10010010nnnnrrrrrrrrrrrrrrrr
+| 0100x1    -     -         = LoadRegisterList => LoadMultiple
+                              Ldmdb_Ldmea_Rule_55_A1_P114
+                              cccc100100w1nnnnrrrrrrrrrrrrrrrr
+| 0110x0    -     -         = StoreRegisterList
+                              Stmib_Stmfa_Rule_192_A1_P380
+                              cccc100110w0nnnnrrrrrrrrrrrrrrrr
+| 0110x1    -     -         = LoadRegisterList => LoadMultiple
+                              Ldmib_Ldmed_Rule_56_A1_P116
+                              cccc100110w1nnnnrrrrrrrrrrrrrrrr
+| 0xx1x0    -     -         = ForbiddenCondDecoder => Forbidden
+                              Stm_Rule_11_B6_A1_P22 # ring0 version
+                              cccc100pu100nnnnrrrrrrrrrrrrrrrr
+| 0xx1x1    0     -         = ForbiddenCondDecoder => Forbidden
+                              Ldm_Rule_3_B6_A1_P7   # ring0 version
+                              cccc100pu101nnnn0rrrrrrrrrrrrrrr
+| "         1     -         = ForbiddenCondDecoder => Forbidden
+                              Ldm_Rule_2_B6_A1_P5   # exception return
+                              cccc100pu1w1nnnn1rrrrrrrrrrrrrrr
+| 10xxxx    -     -         = BranchImmediate24 => Branch
+                              B_Rule_16_A1_P44
+                              cccc1010iiiiiiiiiiiiiiiiiiiiiiii
+| 11xxxx    -     -         = BranchImmediate24 => Branch
+                              Bl_Blx_Rule_23_A1_P58
+                              cccc1011iiiiiiiiiiiiiiiiiiiiiiii
 +--
 
 +-- coprocessor_instructions_and_supervisor_call (See Section A5.6)
@@ -1349,136 +1366,126 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 # coprocessor operations (coproc=101x).
 # Note: Column op1 is repeated so that the first three rows can define
 # (anded) multiple test conditions for this row.
-| op1(25:20) op(4) coproc(11:8) Rn(19:16) op1_repeated(25:20)
-| 0xxxxx     -     101x         -         ~000x0x
-                   -> extension_register_load_store_instructions
-| 0xxxx0     -     ~101x           -      ~000x0x
-                   # Note: Never safe since coproc!=101x
-                   = Forbidden  # STC A8-372
-| 0xxxx1     -     ~101x        ~1111      ~000x0x
-                   # Note: Never safe since coproc!=101x
-                   = Forbidden        # LDC(immediate), LDC2(immediate) A8-106
-| "          "     "            1111       -
-                   # Note: Never safe since coproc!=101x
-                   = Forbidden        # LDC(literal), LDC2(literal) # A8-108
-| 00000x     -     -            -          -
-                   = Undefined        # see table, section A5.6
-| 00010x     -     101x         -          -
-                   -> transfer_between_arm_core_and_extension_registers_64_bit
-| 000100     -     ~101x        -          -
-                   # Note: Never safe since coproc!=101x
-                   = Forbidden (v5TE) # MCRR, MCRR2 A8-188
-| 000101     -     ~101x        -          -
-                   # Note: Never safe since coproc!=101x
-                   = Forbidden (v5TE) # MRRC, MRRC2 A8-204
-| 10xxxx     0     101x         -          -
-                   -> floating_point_data_processing_instructions
-| "          "     ~101x        -          -
-                   # Note: Never safe since coproc!=101x
-                   = Forbidden        # CDP, CDP2 A8-68
-| "          1     101x         -          -
-                   -> transfer_between_arm_core_and_extension_register_8_16_and_32_bit
-| "          "     ~101x        -          -
-                   # Note: Never safe since coproc!=101x
-                   = Forbidden        # MCR, MCR2 A8-186
-| 10xxx1     1     ~101x        -          -
-                   # Note: Never safe since coproc!=101x
-                   = Forbidden        # MRC, MRC2
-| 11xxxx     -     -            -          -
-                   = Forbidden        # SVC (nee SWI) A8-430
+|  coproc(11:8) op1(25:20) op(4) Rn(19:16) op1_repeated(25:20)
+|  -            00000x     -     -          -      = UndefinedCondDecoder => Undefined
+                                                     Undefined_A5_6
+                                                     cccc1100000xnnnnxxxxccccxxxoxxxx
+|  -            11xxxx     -     -          -      = ForbiddenCondDecoder => Forbidden
+                                                     Svc_Rule_A1
+                                                     cccc1111iiiiiiiiiiiiiiiiiiiiiiii
+| ~101x         0xxxx0     -     -         ~000x00 = ForbiddenCondDecoder => Forbidden
+                                                     Stc_Rule_A2
+                                                     cccc110pudw0nnnnddddcccciiiiiiii
+|  "            0xxxx1     -    ~1111      ~000x01 = ForbiddenCondDecoder => Forbidden
+                                                     Ldc_immediate_Rule_A1
+                                                     cccc110pudw1nnnnddddcccciiiiiiii
+|  "            "          -     1111       "      = ForbiddenCondDecoder => Forbidden
+                                                     Ldc_literal_Rule_A1
+                                                     cccc110pudw11111ddddcccciiiiiiii
+|  "            000100     -     -          -      = ForbiddenCondDecoder => Forbidden
+                                                     Mcrr_Rule_A1
+                                                     cccc11000100ttttttttccccoooommmm (v5TE)
+|  "            000101     -     -          -      = ForbiddenCondDecoder => Forbidden
+                                                     Mrrc_Rule_A1
+                                                     cccc11000101ttttttttccccoooommmm (v5TE)
+|  "            10xxxx     0     -          -      = ForbiddenCondDecoder => Forbidden
+                                                     Cdp_Rule_A1
+                                                     cccc1110oooonnnnddddccccooo0mmmm
+|  "            10xxx0     1     -          -      = ForbiddenCondDecoder => Forbidden
+                                                     Mcr_Rule_A1
+                                                     cccc1110ooo0nnnnttttccccooo1mmmm
+|  "            10xxx1     1     -          -      = ForbiddenCondDecoder => Forbidden
+                                                     Mrc_Rule_A1
+                                                     cccc1110ooo1nnnnttttccccooo1mmmm
+|  101x         0xxxxx     -     -         ~000x0x -> extension_register_load_store_instructions
+|  "            00010x     -     -          -      -> transfer_between_arm_core_and_extension_registers_64_bit
+|  "            10xxxx     0     -          -      -> floating_point_data_processing_instructions
+|  "            10xxxx     1     -          -      -> transfer_between_arm_core_and_extension_register_8_16_and_32_bit
 +--
 
-+-- floating_point_data_processing_instructions (A7.5 Table A7-16, page A7-24)
-# Three register VPD data-processing, CDP instructions for
-# coprocessors 10/11.
++-- floating_point_data_processing_instructions (A7.5 Table A7-16)
 | opc1(23:20) opc3(7:6)
 | 0x00        -         = CondVfpOp => VfpOp
-                          Vm_la_ls_Rule_423_A2_P636
-                          cccc11100d00nnnndddd101snpm0mmmm
+                          Vmla_vmls_Rule_423_A2_P636
+                          cccc11100d00nnnndddd101snom0mmmm (VFPv2)
 | 0x01        -         = CondVfpOp => VfpOp
-                          Vnm_la_ls_ul_Rule_343_A1_P674
-                          cccc11100d01nnnndddd101snpm0mmmm
+                          Vnmla_vnmls_Rule_343_A1_P674
+                          cccc11100d01nnnndddd101snom0mmmm (VFPv2)
 | 0x10        x1        = CondVfpOp => VfpOp
-                          Vnm_la_ls_ul_Rule_343_A2_P674
-                          cccc11100d10nnnndddd101sn1m0mmmm
+                          Vnmul_Rule_343_A2_P674
+                          cccc11100d10nnnndddd101sn1m0mmmm (VFPv2)
 | "           x0        = CondVfpOp => VfpOp
                           Vmul_Rule_338_A2_P664
-                          cccc11100d10nnnndddd101sn0m0mmmm
+                          cccc11100d10nnnndddd101sn0m0mmmm (VFPv2)
 | 0x11        x0        = CondVfpOp => VfpOp
                           Vadd_Rule_271_A2_P536
-                          cccc11100d11nnnndddd101sn0m0mmmm
+                          cccc11100d11nnnndddd101sn0m0mmmm (VFPv2)
 | "           x1        = CondVfpOp => VfpOp
                           Vsub_Rule_402_A2_P790
-                          cccc11100d11nnnndddd101sn1m0mmmm
+                          cccc11100d11nnnndddd101sn1m0mmmm (VFPv2)
 | 1x00        x0        = CondVfpOp => VfpOp
                           Vdiv_Rule_301_A1_P590
-                          cccc11101d00nnnndddd101sn0m0mmmm
+                          cccc11101d00nnnndddd101sn0m0mmmm (VFPv2)
+| 1x01        -         = CondVfpOp => VfpOp
+                          Vfnma_vfnms_Rule_A1
+                          cccc11101d01nnnndddd101snom0mmmm (VFPv4)
+| 1x10        -         = CondVfpOp => VfpOp
+                          Vfma_vfms_Rule_A1
+                          cccc11101d10nnnndddd101snom0mmmm (VFPv4)
 | 1x11        -         -> other_floating_point_data_processing_instructions
 +--
 
-+-- other_floating_point_data_processing_instructions (A7.5 Table A7-17, page 17-25)
-# Other VPD data-processing, CDP instructions for coprocessors 10/11.
-#
-# Note: Currently, all instructions use class CoprocessorOp
-# to follow what the previous version of the ARM validator did.
-#
-# TODO(karl): Fix the class decoders to do the right thing.
++-- other_floating_point_data_processing_instructions (A7.5 Table A7-17)
 | opc2(19:16) opc3(7:6)
 | -           x0        = CondVfpOp => VfpOp
                           Vmov_Rule_326_A2_P640
-                          cccc11101d11iiiidddd101s0000iiii
+                          cccc11101d11iiiidddd101s0000iiii (VFPv3)
 | 0000        01        = CondVfpOp => VfpOp
                           Vmov_Rule_327_A2_P642
-                          cccc11101d110000dddd101s01m0mmmm
+                          cccc11101d110000dddd101s01m0mmmm (VFPv2)
 | "           11        = CondVfpOp => VfpOp
                           Vabs_Rule_269_A2_P532
+                          cccc11101d110000dddd101s11m0mmmm (VFPv2)
 | 0001        01        = CondVfpOp => VfpOp
                           Vneg_Rule_342_A2_P672
-                          cccc11101d110001dddd101s01m0mmmm
+                          cccc11101d110001dddd101s01m0mmmm (VFPv2)
 | "           11        = CondVfpOp => VfpOp
                           Vsqrt_Rule_388_A1_P762
-                          cccc11101d110001dddd101s11m0mmmm
+                          cccc11101d110001dddd101s11m0mmmm (VFPv2)
 | 001x        x1        = CondVfpOp => VfpOp
                           Vcvtb_Vcvtt_Rule_300_A1_P588
-                          cccc11101d11001pdddd1010t1m0mmmm
-| 0100        x1        = CondVfpOp => VfpOp
-                          Vcmp_Vcmpe_Rule_292_A1_P572
-                          cccc11101d110100dddd101se1m0mmmm
-| 0101        x1        = CondVfpOp => VfpOp
-                          Vcmp_Vcmpe_Rule_292_A2_P572
-                          cccc11101d110101dddd101se1000000
+                          cccc11101d11001odddd1010t1m0mmmm (VFPv3HP)
+# The two following entries aren't separate in the ARM manual, but separating
+# them simplifies handling of default-zero bits.
+| 0100        x1        = CondVfpOp => VfpOp # Sets FPSCR, not APSR.
+                          Vcmp_Vcmpe_Rule_A1
+                          cccc11101d110100dddd101se1m0mmmm (VFPv2)
+| 0101        x1        = CondVfpOp => VfpOp # Sets FPSCR, not APSR.
+                          Vcmp_Vcmpe_Rule_A2
+                          cccc11101d110101dddd101se1000000 (VFPv2)
 | 0111        11        = CondVfpOp => VfpOp
                           Vcvt_Rule_298_A1_P584
-                          cccc11101d110111dddd101s11m0mmmm
+                          cccc11101d110111dddd101s11m0mmmm (VFPv2)
 | 1000        x1        = CondVfpOp => VfpOp
                           Vcvt_Vcvtr_Rule_295_A1_P578
-                          # Note: table pattern forces opc2(18:16)=000 for
-                          # instruction. This table also contains entry for
-                          # opc2(18:16)=10x, but not other opc2 values.
-                          # However, rule A1 doesn't mention this
-                          # restriction.
-                          cccc11101d111000dddd101sp1m0mmmm
+                          cccc11101d111000dddd101sp1m0mmmm (VFPv2)
 | 101x        x1        = CondVfpOp => VfpOp
                           Vcvt_Rule_297_A1_P582
-                          cccc11101d11101udddd101fx1i0iiii
+                          cccc11101d11101udddd101fx1i0iiii (VFPv3)
 | 110x        x1        = CondVfpOp => VfpOp
                           Vcvt_Vcvtr_Rule_295_A1_P578
-                          # Note: table pattern forces opc2(18:16)=10x for
-                          # instruction. This table also contains entry for
-                          # opc2(18:16)=000, but not other opc2 values.
-                          # However, rule A1 doesn't mention this
-                          # restriction.
-                          cccc11101d11110xdddd101sp1m0mmmm
+                          cccc11101d11110xdddd101sp1m0mmmm (VFPv2)
 | 111x        x1        = CondVfpOp => VfpOp
                           Vcvt_Rule_297_A1_P582
-                          cccc11101d11111udddd101fx1i0iiii
+                          cccc11101d11111udddd101fx1i0iiii (VFPv3)
 +--
 
 +-- extension_register_load_store_instructions (A7.6)
-# LDC and STC instructions for coprocessors 10/11.
 #
 # TODO(karl): Decide if baseline classes should also be actual classes, once
 #             we finish fixing all uses of StoreCoprocessor and LoadCoprocessor.
+# TODO(jfb) The architecture for these instructions only includes Advanced SIMD
+#           for the 64-bit variants (coproc==0b1011).
 #
 # Note: The following instructions handles both A1 and A2 forms of the
 # instruction, by matching coproc(11:8)=101x.
@@ -1487,306 +1494,214 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | 0010x         -         -> transfer_between_arm_core_and_extension_registers_64_bit
 | 01x00         -         = StoreVectorRegisterList
                             Vstm_Rule_399_A1_A2_P784
-                            cccc11001d00nnnndddd101xiiiiiiii
+                            cccc11001d00nnnndddd101xiiiiiiii (VFPv2, AdvSIMD)
 | 01x10         -         = StoreVectorRegisterList
                             Vstm_Rule_399_A1_A2_P784
-                            cccc11001d10nnnndddd101xiiiiiiii
+                            cccc11001d10nnnndddd101xiiiiiiii (VFPv2, AdvSIMD)
 | 1xx00         -         = StoreVectorRegister
                             Vstr_Rule_400_A1_A2_P786
-                            cccc1101ud00nnnndddd101xiiiiiiii
+                            cccc1101ud00nnnndddd101xiiiiiiii (VFPv2, AdvSIMD)
 | 10x10         ~1101     = StoreVectorRegisterList
                             Vstm_Rule_399_A1_A2_P784
-                            cccc11010d10nnnndddd101xiiiiiiii
-                            NotRnIsSp
+                            cccc11010d10nnnndddd101xiiiiiiii NotRnIsSp (VFPv2, AdvSIMD)
 | "             1101      = StoreVectorRegisterList
                             Vpush_355_A1_A2_P696
-                            cccc11010d101101dddd101xiiiiiiii
+                            cccc11010d101101dddd101xiiiiiiii (VFPv2, AdvSIMD)
 | 01x01         -         = LoadVectorRegisterList
                             Vldm_Rule_319_A1_A2_P626
-                            cccc11001d01nnnndddd101xiiiiiiii
+                            cccc11001d01nnnndddd101xiiiiiiii (VFPv2, AdvSIMD)
 | 01x11         ~1101     = LoadVectorRegisterList
                             Vldm_Rule_319_A1_A2_P626
-                            cccc11001d11nnnndddd101xiiiiiiii
-                            NotRnIsSp
+                            cccc11001d11nnnndddd101xiiiiiiii NotRnIsSp (VFPv2, AdvSIMD)
 | "             1101      = LoadVectorRegisterList
                             Vpop_Rule_354_A1_A2_P694
-                            cccc11001d111101dddd101xiiiiiiii
+                            cccc11001d111101dddd101xiiiiiiii (VFPv2, AdvSIMD)
 | 1xx01         -         = LoadVectorRegister
                             Vldr_Rule_320_A1_A2_P628
-                            cccc1101ud01nnnndddd101xiiiiiiii
+                            cccc1101ud01nnnndddd101xiiiiiiii (VFPv2, AdvSIMD)
 | 10x11         -         = LoadVectorRegisterList
                             Vldm_Rule_318_A1_A2_P626
-                            cccc11010d11nnnndddd101xiiiiiiii
+                            cccc11010d11nnnndddd101xiiiiiiii (VFPv2, AdvSIMD)
 +--
 
-+-- transfer_between_arm_core_and_extension_register_8_16_and_32_bit (A7.8 page A7-31)
-# MRC and MCR instructions for coprocessors 10/11.
++-- transfer_between_arm_core_and_extension_register_8_16_and_32_bit (A7.8)
 | L(20) C(8) A(23:21) B(6:5)
 | 0     0    000      -      = MoveVfpRegisterOp
-                             Vmov_Rule_330_A1_P648
-                             cccc11100000nnnntttt1010n0010000
+                               Vmov_Rule_330_A1_P648
+                               cccc11100000nnnntttt1010n0010000 (VFPv2)
 | "     "    111      -      = VfpUsesRegOp => DontCareInstRdNotPc
-                             Vmsr_Rule_336_A1_P660
-                             cccc111011100001tttt101000010000
+                               Vmsr_Rule_336_A1_P660
+                               cccc111011100001tttt101000010000 (VFPv2, AdvSIMD)
 | 0     1    0xx      -      = MoveVfpRegisterOpWithTypeSel
-                             # Note: reserving bit 23 to zero does not introduce
-                             # any special properties to the safety checks.
-                             # Hence, using MoveVfpRegisterOpWithTypeSel
-                             # is safe.
-                             Vmov_Rule_328_A1_P644
-                             cccc11100ii0ddddtttt1011dii10000
-| "     "    1xx      0x     = DuplicateToVfpRegisters
-                             Vdup_Rule_303_A1_P594
-                             cccc11101bq0ddddtttt1011d0e10000
+                               # Bit 23 is 0, we can use the baseline class'
+                               # safety function and remain correct.
+                               Vmov_Rule_328_A1_P644
+                               # TODO(jfb) Only the word version
+                               #           (opc1:opc2=='0x00') is VFPv2.
+                               cccc11100ii0ddddtttt1011dii10000 (VFPv2, AdvSIMD)
+| "     "    1xx      0x     = DuplicateToAdvSIMDRegisters
+                               Vdup_Rule_303_A1_P594
+                               cccc11101bq0ddddtttt1011d0e10000 (AdvSIMD)
 | 1     0    000      -      = MoveVfpRegisterOp
-                             Vmov_Rule_330_A1_P648
-                             cccc11100001nnnntttt1010n0010000
+                               Vmov_Rule_330_A1_P648
+                               cccc11100001nnnntttt1010n0010000 (VFPv2)
 | "     "    111      -      = VfpMrsOp
-                             Vmrs_Rule_335_A1_P658
-                             cccc111011110001tttt101000010000
+                               Vmrs_Rule_335_A1_P658
+                               cccc111011110001tttt101000010000 (VFPv2, AdvSIMD)
 | "     1    xxx      -      = MoveVfpRegisterOpWithTypeSel
-                             Vmov_Rule_329_A1_P646
-                             cccc1110iii1nnnntttt1011nii10000
+                               Vmov_Rule_329_A1_P646
+                               # TODO(jfb) Only the word version
+                               #           (U:opc1:opc2=='00x00') is VFPv2.
+                               cccc1110iii1nnnntttt1011nii10000 (VFPv2, AdvSIMD)
 | else:                      = Undefined  # Note on page A7-31
 +--
 
-+-- transfer_between_arm_core_and_extension_registers_64_bit (A7.8 page A7-32)
-# These are 64-bit MRRC and MCRR instructions for coprocessors 10/11.
++-- transfer_between_arm_core_and_extension_registers_64_bit (A7.9)
 | C(8) op(7:4)
-| 0    00x1    # TODO(karl): Fix this to do the right thing.
-               # VMOV A8-650
-               = MoveDoubleFromCoprocessor
-| 1    00x1    # TODO(karl): Fix this to do the right thing.
-               # VMOV A8-652
-               = MoveDoubleFromCoprocessor
+| 0    00x1    = MoveDoubleVfpRegisterOp
+                 Vmov_two_S_Rule_A1
+                 cccc1100010otttttttt101000m1mmmm (VFPv2)
+| 1    00x1    = MoveDoubleVfpRegisterOp
+                 Vmov_one_D_Rule_A1
+                 cccc1100010otttttttt101100m1mmmm (VFPv2, AdvSIMD)
+| else:        = Undefined
 +--
 
 +-- unconditional_instructions (See Section A5.7)
-# Note: We currently only allow floating point (and advanced SIMD)
-# coprocessor operations (coproc=101x).
-#
-# Note: Most instructions in this table are forbidden because they
-# aren't specific to the Vfp coprocessors (10, 11).
-#
-# Note: op1 and op1_repeated are the same columns. This is so that we
-# can test patterns like XXXX_XXXX & ~YYYY_YYYY.
-#
 | op1(27:20) op(4) Rn(19:16) op1_repeated(27:20)
-| 0xxx_xxxx  -     -         -
-                             ->memory_hints_advanced_simd_instructions_and_miscellaneous_instructions
-# Note: These instructions are not allowed for any coprocessor.
-| 100x_x1x0  -     -         -
-                         = ForbiddenUncondDecoder
-                         => Forbidden
-                         Srs_Rule_B6_1_10_A1_B6_20
-                         1111100pu1w0110100000101000iiiii
-                         (v6)
-| 100x_x0x1  -     -         -
-                         = ForbiddenUncondDecoder
-                         => Forbidden
-                         Rfe_Rule_B6_1_10_A1_B6_16
-                         1111100pu0w1nnnn0000101000000000
-# TODO(karl) Add (explicit) RegsNotPc as safety constraint.
-                         (v6)
-# Note: The following version of blx is forbidden because it
-# switches to Thum mode.
-| 101x_xxxx  -     -         -
-                         = ForbiddenUncondDecoder => Forbidden
-                         Blx_Rule_23_A2_P58
-                         1111101hiiiiiiiiiiiiiiiiiiiiiiii
-                         (v5)
-# The following are load/store instructions to corresponding coprocessor
-# registers. These are (currently) forbidden, since Vfp (coprocessor 10, 11)
-# have explicit instructions for loading/storing values
-# into Vfp registers.
-#
-# Note: The following two rows are from revision C of the ARM ARM manual.
-| 110x_xxx1  -     1111      ~1100_0x01
-                         = ForbiddenUncondDecoder
-                         => Forbidden
-                         Ldc2_Rule_52_A2_P108
-                         1111110pudw11111iiiiiiiiiiiiiiii
-                         (v5)
+| 0xxx_xxxx  -     -         - -> memory_hints_advanced_simd_instructions_and_miscellaneous_instructions
+| 100x_x1x0  -     -         - = ForbiddenUncondDecoder => Forbidden
+                                 Srs_Rule_B6_1_10_A1_B6_20
+                                 1111100pu1w0110100000101000iiiii (v6)
+| 100x_x0x1  -     -         - = ForbiddenUncondDecoder => Forbidden
+                                 Rfe_Rule_B6_1_10_A1_B6_16
+                                 1111100pu0w1nnnn0000101000000000 (v6)
+| 101x_xxxx  -     -         - = ForbiddenUncondDecoder => Forbidden
+                                 # Forbidden because it switches to Thumb.
+                                 Blx_Rule_23_A2_P58
+                                 1111101hiiiiiiiiiiiiiiiiiiiiiiii (v5)
+| 110x_xxx0   -     -        ~1100_0x00
+                               = ForbiddenUncondDecoder => Forbidden
+                                 Stc2_Rule_188_A2_P372
+                                 1111110pudw0nnnniiiiiiiiiiiiiiii (v5)
 | 110x_xxx1  -     ~1111     ~1100_0x01
-                         = ForbiddenUncondDecoder
-                         => Forbidden
-                         Ldc2_Rule_51_A1_P106
-                         1111110pudw1nnnniiiiiiiiiiiiiiii
-# TODO(karl) Add (explicit) RegsNotPc as safety constraint.
-                         (v5)
-# Note: The following three (commented out) rows are the rows for
-# for implementing LDC and LDC2 from revision B of the ARM ARM manual.
-#| 1100_0x11  -     ~1111     -
-#                         = ForbiddenUncondDecoder # LDC(immed),
-#                         => Forbidden (v5)    # LDC2(immed) A8-106
-#| 1100_1xx1  -     1111      -
-#                         = ForbiddenUncondDecoder # LDC(literal),
-#                         => Forbidden (v5)    # LDC2(literal) A8-108
-#| 1101_xxx1  -     1111      -
-#                         = ForbiddenUncondDecoder # LDC(literal),
-#                         => Forbidden (v5)    # LDC2(literal) A8-106
-# Note: The following two row is from revision C of the ARM ARM manual.
-| 110x_xxx0   -     -        ~1100_0x01
-                         = ForbiddenUncondDecoder
-                         => Forbidden
-                         Sdc2_Rule_188_A1_P372
-                         1111110pudw0nnnniiiiiiiiiiiiiiii
-# TODO(karl) Add (explicit) RegsNotPc as safety constraint.
-                         (v5)
-# Note: The following three (commented out) rows are the rows for
-# for implementing LDC and LDC2 from revision B of the ARM ARM manual.
-#| 1100_0x10  -     -         -
-#                         = ForbiddenUncondDecoder # STC, STC2 A8-372
-#                         => Forbidden (v5)
-#| 1100_1xx0  -     -         -
-#                         "
-#| 1101_xxx0  -     -         -
-#                         "
-| 1100_0100  -     -         -
-                         = ForbiddenUncondDecoder
-                         => Forbidden
-                         Mcrr2_Rule_93_A2_P188
-                         111111000100ssssttttiiiiiiiiiiii
-                         (v6)
-| 1100_0101  -     -         -
-                         = ForbiddenUncondDecoder
-                         => Forbidden
-                         Mrrc2_Rule_101_A2_P204
-                         111111000101ssssttttiiiiiiiiiiii
-                         (v6)
-| 1110_xxx0  1     -         -
-                         = ForbiddenUncondDecoder
-                         => Forbidden
-                         Mcr2_Rule_92_A2_P186
-                         11111110iii0iiiittttiiiiiii1iiii
-                         (v5)
-| 1110_xxx1  1     -         -
-                         = ForbiddenUncondDecoder # MRC, MRC2 A8-202
-                         => Forbidden
-                         Mrc2_Rule_100_A2_P202
-                         11111110iii1iiiittttiiiiiii1iiii
-                         (v5)
-# The following applies a coprocessor operation CDP2. We don't allow
-# since not in SIMD (requires bits 27:25==001), and not in Vfp
-# (section a7.5: UNDEFINED if cond(31:28)=1111).
-| 1110_xxxx  0     -         -
-                         = ForbiddenUncondDecoder
-                         => Forbidden
-                         Cdp2_Rule_28_A2_P68
-                         11111110iiiiiiiiiiiiiiiiiii0iiii
-| else:                  = Undefined          # Note on page A5-30
+                               = ForbiddenUncondDecoder => Forbidden
+                                 Ldc2_Rule_51_A2_P106
+                                 1111110pudw1nnnniiiiiiiiiiiiiiii (v5)
+| 110x_xxx1  -     1111      ~1100_0x01
+                               = ForbiddenUncondDecoder => Forbidden
+                                 Ldc2_Rule_52_A2_P108
+                                 1111110pudw11111iiiiiiiiiiiiiiii (v5)
+| 1100_0100  -     -         - = ForbiddenUncondDecoder => Forbidden
+                                 Mcrr2_Rule_93_A2_P188
+                                 111111000100ssssttttiiiiiiiiiiii (v6)
+| 1100_0101  -     -         - = ForbiddenUncondDecoder => Forbidden
+                                 Mrrc2_Rule_101_A2_P204
+                                 111111000101ssssttttiiiiiiiiiiii (v6)
+| 1110_xxxx  0     -         - = ForbiddenUncondDecoder => Forbidden
+                                 Cdp2_Rule_28_A2_P68
+                                 11111110iiiiiiiiiiiiiiiiiii0iiii (v5)
+| 1110_xxx0  1     -         - = ForbiddenUncondDecoder => Forbidden
+                                 Mcr2_Rule_92_A2_P186
+                                 11111110iii0iiiittttiiiiiii1iiii (v5)
+| 1110_xxx1  1     -         - = ForbiddenUncondDecoder => Forbidden
+                                 Mrc2_Rule_100_A2_P202
+                                 11111110iii1iiiittttiiiiiii1iiii (v5)
+| else:                        = Undefined
 +--
 
 +-- memory_hints_advanced_simd_instructions_and_miscellaneous_instructions (See Section A5.7.1)
-# Note: We have factored out cases when op1(26:20)=10xxx11, so that we can
-# use a table "else" clause to implement the "UNPREDICTABLE except as shown
-# above" table entry correctly.
-#
-# Note: Revision C of the ARM ARM manual is a bit different for this table. Some
-# of the unpredictables are clearer, and it also defines a permanently undefined
-# instruction.
-#
-# TODO(karl) Modify this table to match revision C of the ARM ARM manual.
 | op1(26:20) op2(7:4) Rn(19:16)
 | 001_0000   xx0x     xxx0  = ForbiddenUncondDecoder => Forbidden
-                            Cps_Rule_b6_1_1_A1_B6_3
-                            111100010000iii00000000iii0iiiii
+                              Cps_Rule_b6_1_1_A1_B6_3
+                              111100010000iii00000000iii0iiiii (v6)
 | 001_0000   0000     xxx1  = ForbiddenUncondDecoder => Forbidden
-                            # Note: we don't allow one to change endianess
-                            Setend_Rule_157_P314
-                            1111000100000001000000i000000000
-                            (v6)
-  # SETEND A8-324
+                              Setend_Rule_157_P314
+                              1111000100000001000000i000000000 (v6)
 | 01x_xxxx   -        -     ->advanced_simd_data_processing_instructions
 | 100_xxx0   -        -     ->advanced_simd_element_or_structure_load_store_instructions
-                            # The following are unallocated memory hints,
-                            # which the manual (for this table) states should
-                            # be treated as nop. However, we will disallow until
-                            # more specific information is provided as to why
-                            # we should allow such instructions, and what (exactly)
-                            # those instructions are.
-| 100_x001   -        -     = Forbidden (MP)
-                            # TODO(karl): Should we allow the following
-                            # preload instruction.
+| 100_x001   -        -     = ForbiddenUncondDecoder => Forbidden
+                              Unallocated_hints
+                              # Manual says these are treated as NOPs, disallow
+                              # until proven necessary.
+                              11110100x001xxxxxxxxxxxxxxxxxxxx (MPExt)
 | 100_x101   -        -     = PreloadRegisterImm12Op => DontCareInst
                               Pli_Rule_120_A1_P242
-                              11110100u101nnnn1111iiiiiiiiiiii
-                              (v7)
+                              # TODO(karl) Should we allow instruction preload?
+                              11110100u101nnnn1111iiiiiiiiiiii (v7)
+| 100_xx11   -        -     = UnpredictableUncondDecoder => Unpredictable
+                              Unpredictable
+                              11110100xx11xxxxxxxxxxxxxxxxxxxx
 | 101_x001   -        ~1111 = PreloadRegisterImm12Op => DontCareInst
                               Pldw_Rule_117_A1_P236
                               11110101u001nnnn1111iiiiiiiiiiii
-                              & ~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx
-                              (MP)
-| "          -        1111  = Unpredictable
+                              & ~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx (MP)
+| "          -        1111  = UnpredictableUncondDecoder => Unpredictable
+                              Unpredictable
+                              11110101x001xxxxxxxxxxxxxxxxxxxx
 | 101_x101   -        ~1111 = PreloadRegisterImm12Op => DontCareInst
                               Pld_Rule_117_A1_P236
                               11110101u101nnnn1111iiiiiiiiiiii
-                              & ~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx
-                              (v5TE)
-| 101_x101   -        1111  = PreloadRegisterImm12Op => DontCareInst
+                              & ~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx (v5TE)
+| "          -        1111  = PreloadRegisterImm12Op => DontCareInst
                               Pld_Rule_118_A1_P238
                               11110101u10111111111iiiiiiiiiiii (v5TE)
-| 10x_xx11   -        -     -> memory_hints_simd_10xxx11
-                            # The following are unallocated memory hints,
-                            # which the manual (for this table) states should
-                            # be treated as nop. However, we will disallow until
-                            # more specific information is provided as to why
-                            # we should allow such instructions, and what (exactly)
-                            # those instructions are.
-| 110_x001   xxx0     -     = Forbidden (MP)
-                            # TODO(karl): Should we allow the following
-                            # preload instruction.
+| 101_0011   -        -     = UnpredictableUncondDecoder => Unpredictable
+                              Unpredictable
+                              111101010011xxxxxxxxxxxxxxxxxxxx
+| 101_0111   0000     -     = UnpredictableUncondDecoder => Unpredictable
+                              Unpredictable
+                              111101010111xxxxxxxxxxxx0000xxxx
+| "          0001     -     = ForbiddenUncondDecoder => Forbidden
+                              # Might affect global exclusive access record.
+                              # Disallow until proven useful.
+                              Clrex_Rule_30_A1_P70
+                              11110101011111111111000000011111 (v6K)
+| "          001x     -     = UnpredictableUncondDecoder => Unpredictable
+                              Unpredictable
+                              111101010111xxxxxxxxxxxx001xxxxx
+| "          0100     -     = DataBarrier
+                              Dsb_Rule_42_A1_P92
+                              # Note: Has safety constraint that xxxx in:
+                              # {1111, 1110, 1011, 1010, 0111, 0110, 0011, 0010}
+                              1111010101111111111100000100xxxx (v6T2)
+| "          0101     -     = DataBarrier
+                              Dmb_Rule_41_A1_P90
+                              # Note: Has safety constraint that xxxx in
+                              # {1111, 1110, 1011, 1010, 0111, 0110, 0011, 0010}
+                              1111010101111111111100000101xxxx (v7)
+| "          0110     -     = InstructionBarrier
+                              Isb_Rule_49_A1_P102
+                              # Note: Has safety constraint that xxxx = 1111
+                              1111010101111111111100000110xxxx (v6T2)
+| "          0111     -     = UnpredictableUncondDecoder => Unpredictable
+                              Unpredictable
+                              111101010111xxxxxxxxxxxx0111xxxx
+| "          1xxx     -     = UnpredictableUncondDecoder => Unpredictable
+                              Unpredictable
+                              111101010111xxxxxxxxxxxx1xxxxxxx
+| 101_1x11   -        -     = UnpredictableUncondDecoder => Unpredictable
+                              Unpredictable
+                              111101011x11xxxxxxxxxxxxxxxxxxxx
+| 110_x001   xxx0     -     = ForbiddenUncondDecoder => Forbidden
+                              Unallocated_hints
+                              # Manual says these are treated as NOPs, disallow
+                              # until proven necessary.
+                              11110110x001xxxxxxxxxxxxxxx0xxxx (MPExt)
 | 110_x101   xxx0     -     = PreloadRegisterPairOp
                               Pli_Rule_121_A1_P244
-                              11110110u101nnnn1111iiiiitt0mmmm
-# TODO(karl) Add (explicit) safety constraint that Rm can't be PC.
-                              (v7)
+                              # TODO(karl) Should we allow instruction preload?
+                              11110110u101nnnn1111iiiiitt0mmmm (v7)
 | 111_x001   xxx0     -     = PreloadRegisterPairOpWAndRnNotPc
                               Pldw_Rule_119_A1_P240
-                              11110111u001nnnn1111iiiiitt0mmmm
-# TODO(karl) Add (explicit) safety constraint that Rn and Rm can't be PC.
-                              (MP)
+                              11110111u001nnnn1111iiiiitt0mmmm (MPExt)
 | 111_x101   xxx0     -     = PreloadRegisterPairOpWAndRnNotPc
                               Pld_Rule_119_A1_P240
-                              11110111u101nnnn1111iiiiitt0mmmm
-# TODO(karl) Add (explicit) xsafety constraint that Rn and Rm can't be PC.
-                              (v5TE)
-| 11x_xx11   xxx0     -     = Unpredictable
+                              11110111u101nnnn1111iiiiitt0mmmm (v5TE)
+| 11x_xx11   xxx0     -     = UnpredictableUncondDecoder => Unpredictable
+                              Unpredictable
+                              1111011xxx11xxxxxxxxxxxxxxx0xxxx
 | else:                     = Undefined   # Note on page A5-31
-+--
-
-+-- memory_hints_simd_10xxx11 (See Section A5.7.1)
-# Implements op1(26:20)=10xxx11 entries from the
-# memory_hints_advanced_simd_instructions_and_miscellaneous_instructions
-# table, so that the ""UNPREDICTABLE except as shown above" table
-# entry can be implemented as an else clause.
-| op1(26:20) op2(7:4) Rn(19:16)
-| 101_0111   0001     -         = ForbiddenUncondDecoder => Forbidden
-                                  # Note: For now, we are forbidding the following.
-                                  # If we want to put it back, the following is
-                                  # how it should be encoded.
-                                  # UncondDecoder => DontCareInst
-                                  Clrex_Rule_30_A1_P70
-                                  11110101011111111111000000011111
-                                  (v6K)
-| "          0100     -         = DataBarrier
-                                  Dsb_Rule_42_A1_P92
-                                  1111010101111111111100000100xxxx
-# Note: Has safety constraint that
-# xxxx in {1111, 1110, 1011, 1010, 0111, 0110, 0011, 0010}
-                                  (v6T2)
-| "          0101     -         = DataBarrier
-                                  Dmb_Rule_41_A1_P90
-                                  1111010101111111111100000101xxxx
-# Note: Has safety constraint that
-# xxxx in {1111, 1110, 1011, 1010, 0111, 0110, 0011, 0010}
-                                  (v7)
-| "          0110     -         = InstructionBarrier
-                                  Isb_Rule_49_A1_P102
-                                  1111010101111111111100000110xxxx
-# Note: Has safety constraint that xxxx = 1111
-                                  (v6T2)
-| else:                         = Unpredictable # 10x_xx11  (except shown above)
 +--
 
 +-- advanced_simd_data_processing_instructions (See Section A7.4)

@@ -108,7 +108,7 @@ class UnsafeCondDecoderTester : public CondDecoderTester {
 // +--------+--------------------------------+--------+----------------+
 // |  cond  |                                | coproc |                |
 // +--------+--------------------------------+--------+----------------+
-// A generic VFP instruction that (by default) only effects vector
+// A generic VFP instruction that (by default) only affects vector
 // register banks. Hence, they do not change general purpose registers.
 class CondVfpOpTester : public CondDecoderTester {
  public:
@@ -121,6 +121,22 @@ class CondVfpOpTester : public CondDecoderTester {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(CondVfpOpTester);
+};
+
+// Same as CondVfpOp, but with the extra restriction that ARM deprecates the
+// conditional execution of any Advanced SIMD instruction encoding that is not
+// also available as a VFP instruction encoding.
+class CondAdvSIMDOpTester : public CondDecoderTester {
+ public:
+  explicit CondAdvSIMDOpTester(const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::CondAdvSIMDOp expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(CondAdvSIMDOpTester);
 };
 
 // Implements a decoder tester for decoder Unary1RegisterSet
@@ -1995,7 +2011,8 @@ class VfpUsesRegOpTester : public CondVfpOpTester {
 // |  cond  |                        |   Rt   | coproc |               |
 // +--------+------------------------+--------+--------+---------------+
 //
-// if Rt=13 then UNPREDICTABLE.
+// TODO(jfb) The following restriction is ignored for now:
+// if Rt=13 && CurrentInstrSet() != ARM then UNPREDICTABLE.
 //
 // Note: if Rt=PC, then it doesn't update PC. Rather, it updates the
 // conditions flags ASPR.{N, Z, C, V} from corresponding conditions
@@ -2067,7 +2084,29 @@ class MoveVfpRegisterOpWithTypeSelTester : public MoveVfpRegisterOpTester {
   NACL_DISALLOW_COPY_AND_ASSIGN(MoveVfpRegisterOpWithTypeSelTester);
 };
 
-// Implements a decoder tester for DuplicateToVfpRegisters.
+
+// Implements a decoder tester for MoveDoubleVfpRegisterOp.
+// Added constraint to MoveVfpRegisterOp:
+// if t == 15 || t2 == 15 then UNPREDICTABLE;
+// if IsSinglePrecision() && m == 31 then UNPREDICTABLE;
+// if to_arm_registers && t == t2 then UNPREDICTABLE;
+class MoveDoubleVfpRegisterOpTester : public MoveVfpRegisterOpTester {
+ public:
+  explicit MoveDoubleVfpRegisterOpTester(
+      const NamedClassDecoder& decoder)
+      : MoveVfpRegisterOpTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::MoveDoubleVfpRegisterOp expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(MoveDoubleVfpRegisterOpTester);
+};
+
+// Implements a decoder tester for DuplicateToAdvSIMDRegisters.
 // Op<c>.size <Dd>, <Rt>
 // Op<c>.size <Qd>, <Rt>
 // +--------+----------+--+--+--+--------+--------+--------+--+--+--+----------+
@@ -2078,23 +2117,24 @@ class MoveVfpRegisterOpWithTypeSelTester : public MoveVfpRegisterOpTester {
 // d = D:Vd
 // # D registers = (Q=0 ? 1 : 2)
 //
+// if cond != AL then DEPRECATED
 // if Q=1 and Vd<0>=1 then UNDEFINED
 // if t=15 then UNPREDICTABLE.
 // if b:e=11 then UNDEFINED.
-class DuplicateToVfpRegistersTester : public CondVfpOpTester {
+class DuplicateToAdvSIMDRegistersTester : public CondAdvSIMDOpTester {
  public:
-  explicit DuplicateToVfpRegistersTester(
+  explicit DuplicateToAdvSIMDRegistersTester(
       const NamedClassDecoder& decoder)
-      : CondVfpOpTester(decoder) {}
+      : CondAdvSIMDOpTester(decoder) {}
   virtual bool ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
  protected:
-  nacl_arm_dec::DuplicateToVfpRegisters expected_decoder_;
+  nacl_arm_dec::DuplicateToAdvSIMDRegisters expected_decoder_;
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(DuplicateToVfpRegistersTester);
+  NACL_DISALLOW_COPY_AND_ASSIGN(DuplicateToAdvSIMDRegistersTester);
 };
 
 // Implements a decoder tester for BarrierInst

@@ -143,13 +143,31 @@ class ForbiddenCondDecoder : public UnsafeCondDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(ForbiddenCondDecoder);
 };
 
+// Models a (conditional) undefined UnsafeCondDecoder.
+class UndefinedCondDecoder : public UnsafeCondDecoder {
+ public:
+  explicit UndefinedCondDecoder() : UnsafeCondDecoder(UNDEFINED) {}
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(UndefinedCondDecoder);
+};
+
+// Models an (unconditional) unpredictable UnsafeUncondDecoder.
+class UnpredictableUncondDecoder : public UnsafeUncondDecoder {
+ public:
+  explicit UnpredictableUncondDecoder() : UnsafeUncondDecoder(UNPREDICTABLE) {}
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(UnpredictableUncondDecoder);
+};
+
 // Implements a VFP operation on instructions of the form;
 // +--------+--------------------------------+--------+----------------+
 // |31302928|27262524232221201918171615141312|1110 9 8| 7 6 5 4 3 2 1 0|
 // +--------+--------------------------------+--------+----------------+
 // |  cond  |                                | coproc |                |
 // +--------+--------------------------------+--------+----------------+
-// A generic VFP instruction that (by default) only effects vector
+// A generic VFP instruction that (by default) only affects vector
 // register banks. Hence, they do not change general purpose registers.
 class CondVfpOp : public CoprocessorOp {
  public:
@@ -160,6 +178,21 @@ class CondVfpOp : public CoprocessorOp {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(CondVfpOp);
+};
+
+// Same as CondVfpOp, but with the extra restriction that ARM deprecates the
+// conditional execution of any Advanced SIMD instruction encoding that is not
+// also available as a VFP instruction encoding.
+class CondAdvSIMDOp : public CoprocessorOp {
+ public:
+  // Accessor to non-vector register fields.
+  static const ConditionBits28To31Interface cond;
+
+  CondAdvSIMDOp() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(CondAdvSIMDOp);
 };
 
 // Models a move of an immediate 12 value to the corresponding
@@ -763,7 +796,7 @@ class Store2RegisterImm8DoubleOp
 // Rn - The base register.
 // imm12 - The offset from the address.
 //
-// Note: Currently we don't maks addresses for preload instructions,
+// Note: Currently we don't mask addresses for preload instructions,
 // since an action load doesn't occur, and it doesn't fault the processor.
 // Hence we do not define virtual base_address_register.
 // Note: We assume that we don't care if the conditions flags are set.
@@ -972,7 +1005,6 @@ class LoadStoreRegisterList : public ClassDecoder {
 // safe by assuming ArchVersion() >= 7.
 // Nacl Constraints:
 // If registers<pc> == '1' then FORBIDDEN_OPERANDS.
-
 class LoadRegisterList : public LoadStoreRegisterList {
  public:
   LoadRegisterList() {}
@@ -983,9 +1015,13 @@ class LoadRegisterList : public LoadStoreRegisterList {
   NACL_DISALLOW_COPY_AND_ASSIGN(LoadRegisterList);
 };
 
+// A LoadStoreRegisterList with constraint:
+// If wback && register<n> == '1' && n != LowestSetBit(registers)
+//   then UNPREDICTABLE.
 class StoreRegisterList : public LoadStoreRegisterList {
  public:
   StoreRegisterList() {}
+  virtual SafetyLevel safety(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(StoreRegisterList);
@@ -2023,7 +2059,8 @@ class VfpUsesRegOp : public CondVfpOp {
 // |  cond  |                        |   Rt   | coproc |               |
 // +--------+------------------------+--------+--------+---------------+
 //
-// if Rt=13 then UNPREDICTABLE.
+// TODO(jfb) The following restriction is ignored for now:
+// if Rt=13 && CurrentInstrSet() != ARM then UNPREDICTABLE.
 //
 // Note: if Rt=PC, then it doesn't update PC. Rather, it updates the
 // conditions flags ASPR.{N, Z, C, V} from corresponding conditions
@@ -2057,7 +2094,7 @@ class VfpMrsOp : public CondVfpOp {
 //
 // If t=15 then UNPREDICTABLE
 //
-// Note: We don't model Register S[Vn:N] since it can't effect NaCl validation.
+// Note: We don't model Register S[Vn:N] since it can't affect NaCl validation.
 class MoveVfpRegisterOp : public CondVfpOp {
  public:
   static const RegBits12To15Interface t;
@@ -2089,7 +2126,23 @@ class MoveVfpRegisterOpWithTypeSel : public MoveVfpRegisterOp {
   NACL_DISALLOW_COPY_AND_ASSIGN(MoveVfpRegisterOpWithTypeSel);
 };
 
-// Models a move from a core register to every element of a vfp register.
+// Move either 2*S or 1*D FPR register(s) to/from 2*GPRs.
+class MoveDoubleVfpRegisterOp : public MoveVfpRegisterOp {
+ public:
+  static const RegBits16To19Interface t2;
+  static const RegBits0To3Interface vm;
+  static const Imm1Bit5Interface m;
+
+  MoveDoubleVfpRegisterOp() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+  static bool IsSinglePrecision(Instruction i) { return !i.Bit(8); }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(MoveDoubleVfpRegisterOp);
+};
+
+// Models a move from a core register to every element of an FP register.
 // Op<c>.size <Dd>, <Rt>
 // Op<c>.size <Qd>, <Rt>
 // +--------+----------+--+--+--+--------+--------+--------+--+--+--+----------+
@@ -2100,10 +2153,11 @@ class MoveVfpRegisterOpWithTypeSel : public MoveVfpRegisterOp {
 // d = D:Vd
 // # D registers = (Q=0 ? 1 : 2)
 //
+// if cond != AL then DEPRECATED
 // if Q=1 and Vd<0>=1 then UNDEFINED
 // if t=15 then UNPREDICTABLE.
 // if b:e=11 then UNDEFINED.
-class DuplicateToVfpRegisters : public CondVfpOp {
+class DuplicateToAdvSIMDRegisters : public CondAdvSIMDOp {
  public:
   static const Imm1Bit5Interface e;
   static const RegBits12To15Interface t;
@@ -2112,7 +2166,7 @@ class DuplicateToVfpRegisters : public CondVfpOp {
   static const Imm1Bit22Interface b;
 
   // Methods for class
-  DuplicateToVfpRegisters() {}
+  DuplicateToAdvSIMDRegisters() {}
   virtual SafetyLevel safety(Instruction i) const;
 
   uint32_t be_value(const Instruction& i) const {
@@ -2120,7 +2174,7 @@ class DuplicateToVfpRegisters : public CondVfpOp {
   }
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(DuplicateToVfpRegisters);
+  NACL_DISALLOW_COPY_AND_ASSIGN(DuplicateToAdvSIMDRegisters);
 };
 
 // Models a synchronization barrier instruction.

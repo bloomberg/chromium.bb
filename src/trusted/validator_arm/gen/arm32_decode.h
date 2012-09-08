@@ -79,9 +79,6 @@ class Arm32DecoderState : DecoderState {
   inline const ClassDecoder& decode_memory_hints_advanced_simd_instructions_and_miscellaneous_instructions(
       const Instruction insn) const;
 
-  inline const ClassDecoder& decode_memory_hints_simd_10xxx11(
-      const Instruction insn) const;
-
   inline const ClassDecoder& decode_miscellaneous_instructions(
       const Instruction insn) const;
 
@@ -148,7 +145,7 @@ class Arm32DecoderState : DecoderState {
   const DontCareInst DontCareInst_instance_;
   const DontCareInstRdNotPc DontCareInstRdNotPc_instance_;
   const DontCareInstRnRsRmNotPc DontCareInstRnRsRmNotPc_instance_;
-  const DuplicateToVfpRegisters DuplicateToVfpRegisters_instance_;
+  const DuplicateToAdvSIMDRegisters DuplicateToAdvSIMDRegisters_instance_;
   const Forbidden Forbidden_instance_;
   const InstructionBarrier InstructionBarrier_instance_;
   const LoadBasedImmedMemory LoadBasedImmedMemory_instance_;
@@ -161,7 +158,7 @@ class Arm32DecoderState : DecoderState {
   const LoadVectorRegister LoadVectorRegister_instance_;
   const LoadVectorRegisterList LoadVectorRegisterList_instance_;
   const MaskAddress MaskAddress_instance_;
-  const MoveDoubleFromCoprocessor MoveDoubleFromCoprocessor_instance_;
+  const MoveDoubleVfpRegisterOp MoveDoubleVfpRegisterOp_instance_;
   const MoveVfpRegisterOp MoveVfpRegisterOp_instance_;
   const MoveVfpRegisterOpWithTypeSel MoveVfpRegisterOpWithTypeSel_instance_;
   const NotImplemented NotImplemented_instance_;
