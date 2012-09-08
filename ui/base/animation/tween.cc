@@ -24,6 +24,9 @@ double Tween::CalculateValue(Tween::Type type, double state) {
     case EASE_IN:
       return pow(state, 2);
 
+    case EASE_IN_2:
+      return pow(state, 4);
+
     case EASE_IN_OUT:
       if (state < 0.5)
         return pow(state * 2, 2) / 2.0;

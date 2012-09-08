@@ -689,11 +689,15 @@ class CrossFadeObserver : public ui::CompositorObserver,
 
 namespace {
 
+// TODO: leaving in for now since Nicholas wants to play with this, remove if we
+// leave it at 0.
+const int kPauseTimeMS = 0;
+
 // Duration of cross fades when workspace2 is enabled.
 const int kWorkspaceCrossFadeDurationMs = 333;
 
 // Amount of time for animating a workspace in or out.
-const int kWorkspaceSwitchTimeMS = 333;
+const int kWorkspaceSwitchTimeMS = 333 + kPauseTimeMS;
 
 // Scales for workspaces above/below current workspace.
 const float kWorkspaceScaleAbove = 1.1f;
@@ -715,9 +719,15 @@ void ApplyWorkspaceScale(ui::Layer* layer, WorkspaceScaleType type) {
   layer->SetTransform(transform);
 }
 
+// Implementation of cross fading. Window is the window being cross faded. It
+// should be at the target bounds. |old_layer| the previous layer from |window|.
+// This takes ownership of |old_layer| and deletes when the animation is done.
+// |pause_duration| is the duration to pause at the current bounds before
+// animating.
 void CrossFadeImpl(aura::Window* window,
                    ui::Layer* old_layer,
-                   ui::Tween::Type tween_type) {
+                   ui::Tween::Type tween_type,
+                   base::TimeDelta pause_duration) {
   const gfx::Rect old_bounds(old_layer->bounds());
   const gfx::Rect new_bounds(window->bounds());
   const bool old_on_top = (old_bounds.width() > new_bounds.width());
@@ -728,7 +738,13 @@ void CrossFadeImpl(aura::Window* window,
 
   // Scale up the old layer while translating to new position.
   {
+    old_layer->GetAnimator()->StopAnimating();
     ui::ScopedLayerAnimationSettings settings(old_layer->GetAnimator());
+    settings.SetPreemptionStrategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
+    old_layer->GetAnimator()->SchedulePauseForProperties(
+        pause_duration, ui::LayerAnimationElement::TRANSFORM,
+        ui::LayerAnimationElement::OPACITY, -1);
+
     // Animation observer owns the old layer and deletes itself.
     settings.AddObserver(new internal::CrossFadeObserver(window, old_layer));
     settings.SetTransitionDuration(duration);
@@ -771,6 +787,10 @@ void CrossFadeImpl(aura::Window* window,
     // Animate the new layer to the identity transform, so the window goes to
     // its newly set bounds.
     ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+    settings.SetPreemptionStrategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
+    window->layer()->GetAnimator()->SchedulePauseForProperties(
+        pause_duration, ui::LayerAnimationElement::TRANSFORM,
+        ui::LayerAnimationElement::OPACITY, -1);
     settings.SetTransitionDuration(duration);
     settings.SetTweenType(tween_type);
     window->layer()->SetTransform(ui::Transform());
@@ -788,6 +808,57 @@ base::TimeDelta AdjustAnimationTime(int time_ms) {
           ash::switches::kAshWindowAnimationsDisabled))
     time_ms = 0;
   return base::TimeDelta::FromMilliseconds(time_ms);
+}
+
+void AnimateWorkspaceInImpl(aura::Window* window,
+                            WorkspaceAnimationDirection direction,
+                            bool animate_opacity,
+                            ui::Tween::Type tween_type) {
+  window->layer()->SetOpacity(animate_opacity ? 0.0f : 1.0f);
+  window->Show();
+  ApplyWorkspaceScale(window->layer(),
+                      direction == WORKSPACE_ANIMATE_UP ?
+                          WORKSPACE_SCALE_BELOW : WORKSPACE_SCALE_ABOVE);
+
+  {
+    ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+    settings.SetTweenType(tween_type);
+    settings.SetTransitionDuration(AdjustAnimationTime(kWorkspaceSwitchTimeMS));
+    window->layer()->SetTransform(ui::Transform());
+    window->layer()->SetOpacity(1.0f);
+  }
+}
+
+void AnimateWorkspaceOutImpl(aura::Window* window,
+                             WorkspaceAnimationDirection direction,
+                             bool animate_opacity,
+                             ui::Tween::Type tween_type,
+                             int duration_ms) {
+  {
+    ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+    settings.SetTransitionDuration(AdjustAnimationTime(duration_ms));
+    settings.SetTweenType(tween_type);
+    ApplyWorkspaceScale(window->layer(),
+                        direction == WORKSPACE_ANIMATE_UP ?
+                            WORKSPACE_SCALE_ABOVE : WORKSPACE_SCALE_BELOW);
+    // NOTE: Hide() must be before SetOpacity(), else
+    // VisibilityController::UpdateLayerVisibility doesn't pass the false to the
+    // layer so that the layer and window end up out of sync and confused.
+    window->Hide();
+    if (animate_opacity)
+      window->layer()->SetOpacity(0.0f);
+
+    // After the animation completes snap the transform back to the identity,
+    // otherwise any one that asks for screen bounds gets a slightly scaled
+    // version.
+    settings.SetPreemptionStrategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
+    settings.SetTransitionDuration(base::TimeDelta());
+    window->layer()->SetTransform(ui::Transform());
+  }
+}
+
+ui::Tween::Type TweenTypeForWorskpaceOut(WorkspaceType type) {
+  return WORKSPACE_DESKTOP ? ui::Tween::LINEAR : ui::Tween::EASE_OUT;
 }
 
 }  // namespace
@@ -849,30 +920,43 @@ void CrossFadeToBounds(aura::Window* window, const gfx::Rect& new_bounds) {
   else
     old_layer->parent()->StackAbove(new_layer, old_layer);
 
-  CrossFadeImpl(window, old_layer, ui::Tween::EASE_OUT);
+  CrossFadeImpl(window, old_layer, ui::Tween::EASE_OUT, base::TimeDelta());
 }
 
 void CrossFadeWindowBetweenWorkspaces(aura::Window* old_workspace,
                                       aura::Window* new_workspace,
                                       aura::Window* window,
-                                      ui::Layer* old_layer) {
+                                      ui::Layer* old_layer,
+                                      bool is_old_desktop) {
   ui::Layer* layer_parent = new_workspace->layer()->parent();
   layer_parent->Add(old_layer);
   const bool restoring = old_layer->bounds().width() > window->bounds().width();
-  if (restoring)
+  ui::Tween::Type tween_type, workspace_tween_type;
+  if (restoring) {
     layer_parent->StackAbove(old_layer, new_workspace->layer());
-  else
+    tween_type = ui::Tween::EASE_OUT;
+    workspace_tween_type = ui::Tween::LINEAR;
+  } else {
     layer_parent->StackBelow(old_layer, new_workspace->layer());
+    tween_type = ui::Tween::EASE_IN_2;
+    workspace_tween_type = ui::Tween::EASE_OUT;
+  }
 
-  CrossFadeImpl(window, old_layer, ui::Tween::EASE_IN);
+  CrossFadeImpl(window, old_layer, tween_type,
+                AdjustAnimationTime(restoring ? 0 : kPauseTimeMS));
 
   if (restoring) {
     if (old_workspace)
-      AnimateWorkspaceOut(old_workspace, WORKSPACE_ANIMATE_UP);
-    AnimateWorkspaceIn(new_workspace, WORKSPACE_ANIMATE_UP);
+      AnimateWorkspaceOutImpl(old_workspace, WORKSPACE_ANIMATE_UP, false,
+                              workspace_tween_type, kWorkspaceSwitchTimeMS);
+    AnimateWorkspaceInImpl(new_workspace, WORKSPACE_ANIMATE_UP, false,
+                           workspace_tween_type);
   } else {
-    if (old_workspace)
-      AnimateWorkspaceOut(old_workspace, WORKSPACE_ANIMATE_DOWN);
+    if (old_workspace) {
+      AnimateWorkspaceOutImpl(old_workspace, WORKSPACE_ANIMATE_DOWN, false,
+                              workspace_tween_type,
+                              kWorkspaceSwitchTimeMS);
+    }
 
     new_workspace->Show();
     new_workspace->layer()->SetOpacity(1.f);
@@ -881,59 +965,45 @@ void CrossFadeWindowBetweenWorkspaces(aura::Window* old_workspace,
 }
 
 void AnimateBetweenWorkspaces(aura::Window* old_window,
-                              aura::Window* new_window,
+                              WorkspaceType old_type,
                               bool animate_old,
-                              bool is_new_desktop) {
+                              aura::Window* new_window,
+                              WorkspaceType new_type,
+                              bool is_restoring_maximized_window) {
   if (animate_old) {
-    AnimateWorkspaceOut(old_window, is_new_desktop ? WORKSPACE_ANIMATE_UP :
-                                                     WORKSPACE_ANIMATE_DOWN);
+    // When switching to the desktop the old window lifts off.
+    AnimateWorkspaceOutImpl(
+        old_window,
+        new_type == WORKSPACE_DESKTOP ? WORKSPACE_ANIMATE_UP :
+            WORKSPACE_ANIMATE_DOWN,
+        (new_type == WORKSPACE_DESKTOP || old_type == WORKSPACE_MAXIMIZED) &&
+            !is_restoring_maximized_window,
+        TweenTypeForWorskpaceOut(old_type),
+        kWorkspaceSwitchTimeMS);
   }
 
-  AnimateWorkspaceIn(new_window, is_new_desktop ? WORKSPACE_ANIMATE_UP :
-                                                  WORKSPACE_ANIMATE_DOWN);
+  // Switching from the desktop to a maximized animates down.
+  AnimateWorkspaceIn(
+      new_window,
+      old_type == WORKSPACE_DESKTOP ?
+          WORKSPACE_ANIMATE_DOWN : WORKSPACE_ANIMATE_UP,
+      old_type == WORKSPACE_DESKTOP);
 }
 
 void AnimateWorkspaceIn(aura::Window* window,
-                        WorkspaceAnimationDirection direction) {
-  window->layer()->SetOpacity(
-      direction == WORKSPACE_ANIMATE_DOWN ? 0.0f : 1.0f);
-  window->Show();
-  ApplyWorkspaceScale(window->layer(),
-                      direction == WORKSPACE_ANIMATE_UP ?
-                          WORKSPACE_SCALE_BELOW : WORKSPACE_SCALE_ABOVE);
-
-  {
-    ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
-    settings.SetTweenType(ui::Tween::EASE_OUT);
-    settings.SetTransitionDuration(AdjustAnimationTime(kWorkspaceSwitchTimeMS));
-    window->layer()->SetTransform(ui::Transform());
-    window->layer()->SetOpacity(1.0f);
-  }
+                        WorkspaceAnimationDirection direction,
+                        bool animate_opacity) {
+  AnimateWorkspaceInImpl(window, direction, animate_opacity,
+                         ui::Tween::EASE_OUT);
 }
 
 void AnimateWorkspaceOut(aura::Window* window,
-                         WorkspaceAnimationDirection direction) {
-  {
-    ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
-    settings.SetTransitionDuration(
-        AdjustAnimationTime(kWorkspaceSwitchTimeMS));
-    ApplyWorkspaceScale(window->layer(),
-                        direction == WORKSPACE_ANIMATE_UP ?
-                            WORKSPACE_SCALE_ABOVE : WORKSPACE_SCALE_BELOW);
-    // NOTE: Hide() must be before SetOpacity(), else
-    // VisibilityController::UpdateLayerVisibility doesn't pass the false to the
-    // layer so that the layer and window end up out of sync and confused.
-    window->Hide();
-    if (direction == WORKSPACE_ANIMATE_UP)
-      window->layer()->SetOpacity(0.0f);
-
-    // After the animation completes snap the transform back to the identity,
-    // otherwise any one that asks for screen bounds gets a slightly scaled
-    // version.
-    settings.SetPreemptionStrategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
-    settings.SetTransitionDuration(base::TimeDelta());
-    window->layer()->SetTransform(ui::Transform());
-  }
+                         WorkspaceAnimationDirection direction,
+                         WorkspaceType type,
+                         bool animate_opacity) {
+  AnimateWorkspaceOutImpl(window, direction, animate_opacity,
+                          TweenTypeForWorskpaceOut(type),
+                          kWorkspaceSwitchTimeMS);
 }
 
 base::TimeDelta GetSystemBackgroundDestroyDuration() {

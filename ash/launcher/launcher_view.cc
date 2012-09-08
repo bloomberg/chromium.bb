@@ -25,6 +25,7 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
@@ -991,6 +992,8 @@ void LauncherView::ButtonPressed(views::Button* sender,
   if (view_index == -1)
     return;
 
+  if (event.IsShiftDown())
+    ui::LayerAnimator::set_slow_animation_mode(true);
   tooltip_->Close();
   switch (model_->items()[view_index].type) {
     case TYPE_TABBED:
@@ -1022,6 +1025,8 @@ void LauncherView::ButtonPressed(views::Button* sender,
         delegate_->CreateNewTab();
       break;
   }
+  if (event.IsShiftDown())
+    ui::LayerAnimator::set_slow_animation_mode(false);
 }
 
 void LauncherView::ShowContextMenuForView(views::View* source,

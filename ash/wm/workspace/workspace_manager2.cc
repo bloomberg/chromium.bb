@@ -7,8 +7,6 @@
 #include <algorithm>
 #include <functional>
 
-#include "ash/ash_switches.h"
-#include "ash/screen_ash.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -26,16 +24,12 @@
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
-#include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/gfx/screen.h"
-#include "ui/gfx/transform.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(ash::internal::Workspace2*);
 
@@ -59,6 +53,10 @@ void ReparentWindow(Window* window,
     new_parent->StackChildBelow(window, stack_beneath);
   for (size_t i = 0; i < window->transient_children().size(); ++i)
     ReparentWindow(window->transient_children()[i], new_parent, stack_beneath);
+}
+
+WorkspaceType WorkspaceType(Workspace2* workspace) {
+  return workspace->is_maximized() ? WORKSPACE_MAXIMIZED : WORKSPACE_DESKTOP;
 }
 
 // Workspace -------------------------------------------------------------------
@@ -99,7 +97,9 @@ WorkspaceManager2::WorkspaceManager2(Window* contents_view)
       active_workspace_(NULL),
       grid_size_(0),
       shelf_(NULL),
-      in_move_(false) {
+      in_move_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          clear_unminimizing_workspace_factory_(this)) {
   // Clobber any existing event filter.
   contents_view->SetEventFilter(NULL);
   // |contents_view| takes ownership of WorkspaceManagerLayoutManager2.
@@ -267,18 +267,31 @@ void WorkspaceManager2::SetActiveWorkspace(Workspace2* workspace,
   Workspace2* last_active = active_workspace_;
   active_workspace_ = workspace;
 
-  // Move the active workspace to the top. We don't do this for the desktop as
-  // it animates up.
-  if (active_workspace_ != desktop_workspace()) {
-    active_workspace_->window()->parent()->StackChildAtTop(
-        active_workspace_->window());
+  const bool is_unminimizing_maximized_window =
+      unminimizing_workspace_ && unminimizing_workspace_ == active_workspace_ &&
+      active_workspace_->is_maximized();
+  if (is_unminimizing_maximized_window) {
+    // If we're unminimizing a window it needs to be on the top, otherwise you
+    // won't see the animation.
+    contents_view_->StackChildAtTop(active_workspace_->window());
+  } else if (active_workspace_->is_maximized() && last_active->is_maximized()) {
+    // When switching between maximized windows we need the last active
+    // workspace on top of the new, otherwise the animations won't look
+    // right. Since only one workspace is visible at a time stacking order of
+    // the workspace windows ultimately doesn't matter.
+    contents_view_->StackChildAtTop(last_active->window());
   }
 
   destroy_background_timer_.Stop();
   if (active_workspace_ == desktop_workspace()) {
+    base::TimeDelta delay(GetSystemBackgroundDestroyDuration());
+    if (ui::LayerAnimator::slow_animation_mode())
+      delay *= ui::LayerAnimator::slow_animation_scale_factor();
+    // Delay an extra 100ms to make sure everything settlts down before
+    // destroying the background.
+    delay += base::TimeDelta::FromMilliseconds(100);
     destroy_background_timer_.Start(
-        FROM_HERE, GetSystemBackgroundDestroyDuration(),
-        this, &WorkspaceManager2::DestroySystemBackground);
+        FROM_HERE, delay, this, &WorkspaceManager2::DestroySystemBackground);
   } else if (!background_controller_.get()) {
     background_controller_.reset(new SystemBackgroundController(
                                      contents_view_->GetRootWindow()));
@@ -287,9 +300,13 @@ void WorkspaceManager2::SetActiveWorkspace(Workspace2* workspace,
   UpdateShelfVisibility();
 
   if (animate_type != ANIMATE_NONE) {
-    AnimateBetweenWorkspaces(last_active->window(), workspace->window(),
-                             (animate_type == ANIMATE_OLD_AND_NEW),
-                             active_workspace_ == desktop_workspace());
+    AnimateBetweenWorkspaces(
+        last_active->window(),
+        WorkspaceType(last_active),
+        (animate_type == ANIMATE_OLD_AND_NEW),
+        workspace->window(),
+        WorkspaceType(workspace),
+        is_unminimizing_maximized_window);
   }
 
   RootWindowController* root_controller = GetRootWindowController(
@@ -298,9 +315,10 @@ void WorkspaceManager2::SetActiveWorkspace(Workspace2* workspace,
     aura::Window* background = root_controller->GetContainer(
         kShellWindowId_DesktopBackgroundContainer);
     if (last_active == desktop_workspace()) {
-      AnimateWorkspaceOut(background, WORKSPACE_ANIMATE_DOWN);
+      AnimateWorkspaceOut(background, WORKSPACE_ANIMATE_DOWN, WORKSPACE_DESKTOP,
+                          false);
     } else if (active_workspace_ == desktop_workspace()) {
-      AnimateWorkspaceIn(background, WORKSPACE_ANIMATE_UP);
+      AnimateWorkspaceIn(background, WORKSPACE_ANIMATE_UP, false);
     }
   }
 }
@@ -363,6 +381,8 @@ void WorkspaceManager2::MoveWorkspaceToPendingOrDelete(
   }
 
   if (workspace->window()->children().empty()) {
+    if (workspace == unminimizing_workspace_)
+      unminimizing_workspace_ = NULL;
     pending_workspaces_.erase(workspace);
     ScheduleDelete(workspace);
   } else {
@@ -390,6 +410,24 @@ void WorkspaceManager2::ScheduleDelete(Workspace2* workspace) {
 
 void WorkspaceManager2::DestroySystemBackground() {
   background_controller_.reset();
+}
+
+void WorkspaceManager2::SetUnminimizingWorkspace(Workspace2* workspace) {
+  // The normal sequence of unminimizing a window is: Show() the window, which
+  // triggers changing the kShowStateKey to NORMAL and lastly the window is made
+  // active. This means at the time the window is unminimized we don't know if
+  // the workspace it is in is going to become active. To track this
+  // |unminimizing_workspace_| is set at the time we unminimize and a task is
+  // schedule to reset it. This way when we get the activate we know we're in
+  // the process unminimizing and can do the right animation.
+  unminimizing_workspace_ = workspace;
+  if (unminimizing_workspace_) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&WorkspaceManager2::SetUnminimizingWorkspace,
+                   clear_unminimizing_workspace_factory_.GetWeakPtr(),
+                   static_cast<Workspace2*>(NULL)));
+  }
 }
 
 void WorkspaceManager2::ProcessDeletion() {
@@ -491,8 +529,10 @@ void WorkspaceManager2::OnWorkspaceWindowShowStateChanged(
       SetActiveWorkspace(new_workspace, ANIMATE_NONE);
       CrossFadeWindowBetweenWorkspaces(
           workspace ? workspace->window() : NULL, new_workspace->window(),
-          child, old_layer);
+          child, old_layer, false);
     } else {
+      if (last_show_state == ui::SHOW_STATE_MINIMIZED)
+        SetUnminimizingWorkspace(new_workspace ? new_workspace : workspace);
       DCHECK(!old_layer);
     }
   }
