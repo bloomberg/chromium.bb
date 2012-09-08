@@ -365,10 +365,12 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
                        close_button_->y());
 
   // We don't need the extra lightness in the edges when we're at the top edge
-  // of the screen.
+  // of the screen or maximized. We have the maximized check as during
+  // animations the bounds may not be at 0, but the border shouldn't be drawn.
+  //
   // TODO(oshima): This will not work under multi-display, need to add method
   // like GetWindowBoundsInDisplay().
-  if (frame_->GetWindowBoundsInScreen().y() == 0)
+  if (frame_->GetWindowBoundsInScreen().y() == 0 || frame_->IsMaximized())
     return;
 
   // Draw the top corners and edge.
