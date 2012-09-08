@@ -18,6 +18,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/metro.h"
+#include "base/win/text_services_message_filter.h"
 #include "base/win/windows_version.h"
 #include "base/win/wrapped_window_proc.h"
 #include "chrome/browser/browser_util_win.h"
@@ -186,6 +187,21 @@ void ChromeBrowserMainPartsWin::PreMainMessageLoopStart() {
   }
   removable_device_notifications_window_ =
       new chrome::RemovableDeviceNotificationsWindowWin();
+}
+
+void ChromeBrowserMainPartsWin::PostMainMessageLoopStart() {
+  DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
+
+  if (base::win::IsTsfAwareRequired()) {
+    // Create a TSF message filter for the message loop. MessageLoop takes
+    // ownership of the filter.
+    scoped_ptr<base::win::TextServicesMessageFilter> tsf_message_filter(
+      new base::win::TextServicesMessageFilter);
+    if (tsf_message_filter->Init()) {
+      MessageLoopForUI::current()->SetMessageFilter(
+        tsf_message_filter.PassAs<MessageLoopForUI::MessageFilter>());
+    }
+  }
 }
 
 // static
