@@ -1086,18 +1086,17 @@ namespace {
 
 class TestSyncMessageFilter : public SyncMessageFilter {
  public:
-  TestSyncMessageFilter(base::WaitableEvent* shutdown_event, Worker* worker)
+  TestSyncMessageFilter(base::WaitableEvent* shutdown_event,
+                        Worker* worker,
+                        scoped_refptr<base::MessageLoopProxy> message_loop)
       : SyncMessageFilter(shutdown_event),
         worker_(worker),
-        thread_("helper_thread") {
-    base::Thread::Options options;
-    options.message_loop_type = MessageLoop::TYPE_DEFAULT;
-    thread_.StartWithOptions(options);
+        message_loop_(message_loop) {
   }
 
   virtual void OnFilterAdded(Channel* channel) {
     SyncMessageFilter::OnFilterAdded(channel);
-    thread_.message_loop()->PostTask(
+    message_loop_->PostTask(
         FROM_HERE,
         base::Bind(&TestSyncMessageFilter::SendMessageOnHelperThread, this));
   }
@@ -1115,20 +1114,26 @@ class TestSyncMessageFilter : public SyncMessageFilter {
   virtual ~TestSyncMessageFilter() {}
 
   Worker* worker_;
-  base::Thread thread_;
+  scoped_refptr<base::MessageLoopProxy> message_loop_;
 };
 
 class SyncMessageFilterServer : public Worker {
  public:
   SyncMessageFilterServer()
-      : Worker(Channel::MODE_SERVER, "sync_message_filter_server") {
-    filter_ = new TestSyncMessageFilter(shutdown_event(), this);
+      : Worker(Channel::MODE_SERVER, "sync_message_filter_server"),
+        thread_("helper_thread") {
+    base::Thread::Options options;
+    options.message_loop_type = MessageLoop::TYPE_DEFAULT;
+    thread_.StartWithOptions(options);
+    filter_ = new TestSyncMessageFilter(shutdown_event(), this,
+                                        thread_.message_loop_proxy());
   }
 
   void Run() {
     channel()->AddFilter(filter_.get());
   }
 
+  base::Thread thread_;
   scoped_refptr<TestSyncMessageFilter> filter_;
 };
 
