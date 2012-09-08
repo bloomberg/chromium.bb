@@ -8,9 +8,9 @@
 
 #include "CCLayerTreeHost.h"
 #include "FakeCCLayerTreeHostClient.h"
+#include "WebCompositorInitializer.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <public/WebCompositor.h>
 
 using namespace WebCore;
 using ::testing::Mock;
@@ -36,11 +36,15 @@ private:
 
 
 class TextureLayerChromiumTest : public testing::Test {
+public:
+    TextureLayerChromiumTest()
+        : m_compositorInitializer(0)
+    {
+    }
+
 protected:
     virtual void SetUp()
     {
-        // Initialize without threading support.
-        WebKit::WebCompositor::initialize(0);
         m_layerTreeHost = adoptPtr(new MockCCLayerTreeHost);
     }
 
@@ -51,10 +55,11 @@ protected:
 
         m_layerTreeHost->setRootLayer(0);
         m_layerTreeHost.clear();
-        WebKit::WebCompositor::shutdown();
     }
 
     OwnPtr<MockCCLayerTreeHost> m_layerTreeHost;
+private:
+    WebKitTests::WebCompositorInitializer m_compositorInitializer;
 };
 
 TEST_F(TextureLayerChromiumTest, syncImplWhenChangingTextureId)

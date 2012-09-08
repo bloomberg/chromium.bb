@@ -40,6 +40,7 @@
       'CCThreadedTest.h',
       'CCTiledLayerImplTest.cpp',
       'CCTimerTest.cpp',
+      'FloatQuadTest.cpp',
     ],
     'cc_tests_support_files': [
       'test/CCAnimationTestCommon.cpp',
@@ -61,6 +62,7 @@
       'test/FakeWebGraphicsContext3D.h',
       'test/FakeWebScrollbarThemeGeometry.h',
       'test/MockCCQuadCuller.h',
+      'test/WebCompositorInitializer.h',
     ],
   },
   'targets': [

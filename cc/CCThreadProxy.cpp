@@ -51,7 +51,6 @@ CCThreadProxy::CCThreadProxy(CCLayerTreeHost* layerTreeHost)
     , m_commitRequestSentToImplThread(false)
     , m_forcedCommitRequested(false)
     , m_layerTreeHost(layerTreeHost)
-    , m_compositorIdentifier(-1)
     , m_rendererInitialized(false)
     , m_started(false)
     , m_texturesAcquired(true)
@@ -251,12 +250,6 @@ bool CCThreadProxy::recreateContext()
     return recreateSucceeded;
 }
 
-int CCThreadProxy::compositorIdentifier() const
-{
-    ASSERT(isMainThread());
-    return m_compositorIdentifier;
-}
-
 void CCThreadProxy::implSideRenderingStats(CCRenderingStats& stats)
 {
     ASSERT(isMainThread());
@@ -389,7 +382,8 @@ void CCThreadProxy::start()
     // Create LayerTreeHostImpl.
     DebugScopedSetMainThreadBlocked mainThreadBlocked;
     CCCompletionEvent completion;
-    CCProxy::implThread()->postTask(createCCThreadTask(this, &CCThreadProxy::initializeImplOnImplThread, &completion));
+    OwnPtr<CCInputHandler> handler = m_layerTreeHost->createInputHandler();
+    CCProxy::implThread()->postTask(createCCThreadTask(this, &CCThreadProxy::initializeImplOnImplThread, &completion, handler.release()));
     completion.wait();
 
     m_started = true;
@@ -682,7 +676,8 @@ CCScheduledActionDrawAndSwapResult CCThreadProxy::scheduledActionDrawAndSwapInte
     double monotonicTime = monotonicallyIncreasingTime();
     double wallClockTime = currentTime();
 
-    m_inputHandlerOnImplThread->animate(monotonicTime);
+    if (m_inputHandlerOnImplThread)
+        m_inputHandlerOnImplThread->animate(monotonicTime);
     m_layerTreeHostImpl->animate(monotonicTime, wallClockTime);
 
     // This method is called on a forced draw, regardless of whether we are able to produce a frame,
@@ -835,7 +830,7 @@ void CCThreadProxy::tryToRecreateContext()
         m_contextRecreationTimer.clear();
 }
 
-void CCThreadProxy::initializeImplOnImplThread(CCCompletionEvent* completion)
+void CCThreadProxy::initializeImplOnImplThread(CCCompletionEvent* completion, PassOwnPtr<CCInputHandler> popHandler)
 {
     TRACE_EVENT0("cc", "CCThreadProxy::initializeImplOnImplThread");
     ASSERT(isImplThread());
@@ -849,8 +844,9 @@ void CCThreadProxy::initializeImplOnImplThread(CCCompletionEvent* completion)
     m_schedulerOnImplThread = CCScheduler::create(this, frameRateController.release());
     m_schedulerOnImplThread->setVisible(m_layerTreeHostImpl->visible());
 
-    m_inputHandlerOnImplThread = CCInputHandler::create(m_layerTreeHostImpl.get());
-    m_compositorIdentifier = m_inputHandlerOnImplThread->identifier();
+    m_inputHandlerOnImplThread = popHandler;
+    if (m_inputHandlerOnImplThread)
+        m_inputHandlerOnImplThread->bindToClient(m_layerTreeHostImpl.get());
 
     completion->signal();
 }

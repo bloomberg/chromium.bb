@@ -5,6 +5,8 @@
 #include "webkit/compositor_bindings/web_compositor_support_impl.h"
 
 #if defined(USE_LIBCC_FOR_COMPOSITOR)
+#include "config.h"
+#include "base/memory/scoped_ptr.h"
 #include "webkit/compositor_bindings/WebLayerImpl.h"
 #include "webkit/compositor_bindings/WebLayerTreeViewImpl.h"
 #include "webkit/compositor_bindings/WebCompositorImpl.h"

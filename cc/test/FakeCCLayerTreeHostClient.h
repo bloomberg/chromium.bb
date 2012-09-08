@@ -6,6 +6,7 @@
 
 #include "config.h"
 
+#include "CCInputHandler.h"
 #include "CCLayerTreeHost.h"
 #include "CompositorFakeWebGraphicsContext3D.h"
 #include "FakeWebCompositorOutputSurface.h"
@@ -26,6 +27,7 @@ public:
         return WebKit::FakeWebCompositorOutputSurface::create(WebKit::CompositorFakeWebGraphicsContext3D::create(attrs));
     }
     virtual void didRecreateOutputSurface(bool success) OVERRIDE { }
+    virtual PassOwnPtr<CCInputHandler> createInputHandler() OVERRIDE { return nullptr; }
     virtual void willCommit() OVERRIDE { }
     virtual void didCommit() OVERRIDE { }
     virtual void didCommitAndDrawFrame() OVERRIDE { }

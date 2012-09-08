@@ -6,7 +6,6 @@
 
 #include "CCLayerTreeHostImpl.h"
 
-#include "CCActiveGestureAnimation.h"
 #include "CCAppendQuadsData.h"
 #include "CCDamageTracker.h"
 #include "CCDebugRectHistory.h"
@@ -180,7 +179,6 @@ void CCLayerTreeHostImpl::animate(double monotonicTime, double wallClockTime)
 {
     animatePageScale(monotonicTime);
     animateLayers(monotonicTime, wallClockTime);
-    animateGestures(monotonicTime);
     animateScrollbars(monotonicTime);
 }
 
@@ -207,14 +205,6 @@ void CCLayerTreeHostImpl::startPageScaleAnimation(const IntSize& targetPosition,
 
     m_client->setNeedsRedrawOnImplThread();
     m_client->setNeedsCommitOnImplThread();
-}
-
-void CCLayerTreeHostImpl::setActiveGestureAnimation(PassOwnPtr<CCActiveGestureAnimation> gestureAnimation)
-{
-    m_activeGestureAnimation = gestureAnimation;
-
-    if (m_activeGestureAnimation)
-        m_client->setNeedsRedrawOnImplThread();
 }
 
 void CCLayerTreeHostImpl::scheduleAnimation()
@@ -289,7 +279,7 @@ bool CCLayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
 
     CCLayerIteratorType end = CCLayerIteratorType::end(frame.renderSurfaceLayerList);
     for (CCLayerIteratorType it = CCLayerIteratorType::begin(frame.renderSurfaceLayerList); it != end; ++it) {
-        int targetRenderPassId = it.targetRenderSurfaceLayer()->id();
+        CCRenderPass::Id targetRenderPassId = it.targetRenderSurfaceLayer()->renderSurface()->renderPassId();
         CCRenderPass* targetRenderPass = frame.renderPassesById.get(targetRenderPassId);
 
         occlusionTracker.enterLayer(it);
@@ -297,7 +287,7 @@ bool CCLayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
         CCAppendQuadsData appendQuadsData;
 
         if (it.representsContributingRenderSurface()) {
-            int contributingRenderPassId = it->id();
+            CCRenderPass::Id contributingRenderPassId = it->renderSurface()->renderPassId();
             CCRenderPass* contributingRenderPass = frame.renderPassesById.get(contributingRenderPassId);
             targetRenderPass->appendQuadsForRenderSurfaceLayer(*it, contributingRenderPass, &occlusionTracker, appendQuadsData);
         } else if (it.representsItself() && !it->visibleContentRect().isEmpty()) {
@@ -392,14 +382,14 @@ IntSize CCLayerTreeHostImpl::contentSize() const
     return m_rootScrollLayerImpl->children()[0]->contentBounds();
 }
 
-static inline CCRenderPass* findRenderPassById(int renderPassId, const CCLayerTreeHostImpl::FrameData& frame)
+static inline CCRenderPass* findRenderPassById(CCRenderPass::Id renderPassId, const CCLayerTreeHostImpl::FrameData& frame)
 {
     CCRenderPassIdHashMap::const_iterator it = frame.renderPassesById.find(renderPassId);
     ASSERT(it != frame.renderPassesById.end());
     return it->second.get();
 }
 
-static void removeRenderPassesRecursive(int removeRenderPassId, CCLayerTreeHostImpl::FrameData& frame)
+static void removeRenderPassesRecursive(CCRenderPass::Id removeRenderPassId, CCLayerTreeHostImpl::FrameData& frame)
 {
     CCRenderPass* removeRenderPass = findRenderPassById(removeRenderPassId, frame);
     size_t removeIndex = frame.renderPasses.find(removeRenderPass);
@@ -419,7 +409,7 @@ static void removeRenderPassesRecursive(int removeRenderPassId, CCLayerTreeHostI
         if (currentQuad->material() != CCDrawQuad::RenderPass)
             continue;
 
-        int nextRemoveRenderPassId = CCRenderPassDrawQuad::materialCast(currentQuad)->renderPassId();
+        CCRenderPass::Id nextRemoveRenderPassId = CCRenderPassDrawQuad::materialCast(currentQuad)->renderPassId();
         removeRenderPassesRecursive(nextRemoveRenderPassId, frame);
     }
 }
@@ -1249,19 +1239,6 @@ void CCLayerTreeHostImpl::dumpRenderSurfaces(TextStream& ts, int indent, const C
 
     for (size_t i = 0; i < layer->children().size(); ++i)
         dumpRenderSurfaces(ts, indent, layer->children()[i].get());
-}
-
-
-void CCLayerTreeHostImpl::animateGestures(double monotonicTime)
-{
-    if (!m_activeGestureAnimation)
-        return;
-
-    bool isContinuing = m_activeGestureAnimation->animate(monotonicTime);
-    if (isContinuing)
-        m_client->setNeedsRedrawOnImplThread();
-    else
-        m_activeGestureAnimation.clear();
 }
 
 int CCLayerTreeHostImpl::sourceAnimationFrameNumber() const

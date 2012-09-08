@@ -24,13 +24,11 @@ class WebCompositorImpl : public WebCompositor {
 public:
     static bool initialized();
 
-private:
-
-    friend class WebCompositor;
     static void initialize(WebThread* implThread);
-    static bool threadingEnabled();
+    static bool isThreadingEnabled();
     static void shutdown();
 
+private:
     static bool s_initialized;
     static WebCore::CCThread* s_mainThread;
     static WebCore::CCThread* s_implThread;
