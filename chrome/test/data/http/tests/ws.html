@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>test wss connection</title>
+<title>test ws connection</title>
 <script type="text/javascript">
 
 var href = window.location.href;
 var portBegin = href.lastIndexOf(':') + 1;
 var portEnd = href.lastIndexOf('/');
 var port = href.slice(portBegin, portEnd);
-var url = 'wss://localhost:' + port + '/websocket/tests/echo';
+var scheme = href.indexOf('https') >= 0 ? 'wss' : 'ws';
+var url = scheme + '://localhost:' + port + '/websocket/tests/echo';
 
 // Do connection test.
 var ws = new WebSocket(url);
@@ -25,14 +26,6 @@ ws.onclose = function()
   // Set document title to 'FAIL'.
   document.title = 'FAIL';
 }
-
-function timeOutCallback()
-{
-  // Set document title to 'FAIL'.
-  document.title = 'FAIL';
-}
-
-setTimeout(timeOutCallback, 3000);
 
 </script>
 </head>

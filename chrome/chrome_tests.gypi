@@ -2931,6 +2931,7 @@
         'browser/net/cookie_policy_browsertest.cc',
         'browser/net/ftp_browsertest.cc',
         'browser/net/load_timing_observer_browsertest.cc',
+        'browser/net/proxy_browsertest.cc',
         'browser/notifications/desktop_notifications_unittest.cc',
         'browser/notifications/desktop_notifications_unittest.h',
         'browser/notifications/notification_browsertest.cc',

@@ -601,7 +601,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSInvalidCertAndGoForward) {
 
   // Visit bad HTTPS page.
   std::string urlPath =
-      StringPrintf("%s%d%s", "https://localhost:", port, "/wss.html");
+      StringPrintf("%s%d%s", "https://localhost:", port, "/ws.html");
   ui_test_utils::NavigateToURL(browser(), GURL(urlPath));
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
                                  false, true);  // Interstitial showing
@@ -1504,7 +1504,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITestIgnoreCertErrors, TestWSS) {
 
   // Visit bad HTTPS page.
   std::string url_path =
-      StringPrintf("%s%d%s", "https://localhost:", port, "/wss.html");
+      StringPrintf("%s%d%s", "https://localhost:", port, "/ws.html");
   ui_test_utils::NavigateToURL(browser(), GURL(url_path));
 
   // We shouldn't have an interstitial page showing here.
