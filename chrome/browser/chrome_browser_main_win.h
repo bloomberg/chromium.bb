@@ -13,7 +13,7 @@
 class CommandLine;
 
 namespace chrome {
-class MediaDeviceNotificationsWindowWin;
+class RemovableDeviceNotificationsWindowWin;
 }  // namespace chrome
 
 
@@ -65,8 +65,8 @@ class ChromeBrowserMainPartsWin : public ChromeBrowserMainParts {
   static void SetupInstallerUtilStrings();
 
  private:
-  scoped_refptr<chrome::MediaDeviceNotificationsWindowWin>
-      media_device_notifications_window_;
+  scoped_refptr<chrome::RemovableDeviceNotificationsWindowWin>
+      removable_device_notifications_window_;
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsWin);
 };
 

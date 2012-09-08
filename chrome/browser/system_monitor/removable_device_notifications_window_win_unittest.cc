@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/system_monitor/media_device_notifications_window_win.h"
+#include "chrome/browser/system_monitor/removable_device_notifications_window_win.h"
 
 #include <dbt.h>
 
@@ -38,21 +38,21 @@ LRESULT GetVolumeName(LPCWSTR drive,
 
 namespace chrome {
 
-using chrome::MediaDeviceNotificationsWindowWin;
+using chrome::RemovableDeviceNotificationsWindowWin;
 using testing::_;
 
-class MediaDeviceNotificationsWindowWinTest : public testing::Test {
+class RemovableDeviceNotificationsWindowWinTest : public testing::Test {
  public:
-  MediaDeviceNotificationsWindowWinTest()
+  RemovableDeviceNotificationsWindowWinTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE) { }
-  virtual ~MediaDeviceNotificationsWindowWinTest() { }
+  virtual ~RemovableDeviceNotificationsWindowWinTest() { }
 
  protected:
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
     file_thread_.Start();
-    window_ = new MediaDeviceNotificationsWindowWin(&GetVolumeName);
+    window_ = new RemovableDeviceNotificationsWindowWin(&GetVolumeName);
     system_monitor_.AddDevicesChangedObserver(&observer_);
   }
 
@@ -83,10 +83,10 @@ class MediaDeviceNotificationsWindowWinTest : public testing::Test {
 
   base::SystemMonitor system_monitor_;
   base::MockDevicesChangedObserver observer_;
-  scoped_refptr<MediaDeviceNotificationsWindowWin> window_;
+  scoped_refptr<RemovableDeviceNotificationsWindowWin> window_;
 };
 
-void MediaDeviceNotificationsWindowWinTest::DoDevicesAttachedTest(
+void RemovableDeviceNotificationsWindowWinTest::DoDevicesAttachedTest(
     const std::vector<int>& device_indices) {
   DEV_BROADCAST_VOLUME volume_broadcast;
   volume_broadcast.dbcv_size = sizeof(volume_broadcast);
@@ -114,7 +114,7 @@ void MediaDeviceNotificationsWindowWinTest::DoDevicesAttachedTest(
   message_loop_.RunAllPending();
 }
 
-void MediaDeviceNotificationsWindowWinTest::DoDevicesDetachedTest(
+void RemovableDeviceNotificationsWindowWinTest::DoDevicesDetachedTest(
     const std::vector<int>& device_indices) {
   DEV_BROADCAST_VOLUME volume_broadcast;
   volume_broadcast.dbcv_size = sizeof(volume_broadcast);
@@ -138,12 +138,12 @@ void MediaDeviceNotificationsWindowWinTest::DoDevicesDetachedTest(
   message_loop_.RunAllPending();
 }
 
-TEST_F(MediaDeviceNotificationsWindowWinTest, RandomMessage) {
+TEST_F(RemovableDeviceNotificationsWindowWinTest, RandomMessage) {
   window_->OnDeviceChange(DBT_DEVICEQUERYREMOVE, NULL);
   message_loop_.RunAllPending();
 }
 
-TEST_F(MediaDeviceNotificationsWindowWinTest, DevicesAttached) {
+TEST_F(RemovableDeviceNotificationsWindowWinTest, DevicesAttached) {
   std::vector<int> device_indices;
   device_indices.push_back(1);
   device_indices.push_back(5);
@@ -152,21 +152,21 @@ TEST_F(MediaDeviceNotificationsWindowWinTest, DevicesAttached) {
   DoDevicesAttachedTest(device_indices);
 }
 
-TEST_F(MediaDeviceNotificationsWindowWinTest, DevicesAttachedHighBoundary) {
+TEST_F(RemovableDeviceNotificationsWindowWinTest, DevicesAttachedHighBoundary) {
   std::vector<int> device_indices;
   device_indices.push_back(25);
 
   DoDevicesAttachedTest(device_indices);
 }
 
-TEST_F(MediaDeviceNotificationsWindowWinTest, DevicesAttachedLowBoundary) {
+TEST_F(RemovableDeviceNotificationsWindowWinTest, DevicesAttachedLowBoundary) {
   std::vector<int> device_indices;
   device_indices.push_back(0);
 
   DoDevicesAttachedTest(device_indices);
 }
 
-TEST_F(MediaDeviceNotificationsWindowWinTest, DevicesAttachedAdjacentBits) {
+TEST_F(RemovableDeviceNotificationsWindowWinTest, DevicesAttachedAdjacentBits) {
   std::vector<int> device_indices;
   device_indices.push_back(0);
   device_indices.push_back(1);
@@ -176,7 +176,7 @@ TEST_F(MediaDeviceNotificationsWindowWinTest, DevicesAttachedAdjacentBits) {
   DoDevicesAttachedTest(device_indices);
 }
 
-TEST_F(MediaDeviceNotificationsWindowWinTest, DevicesDetached) {
+TEST_F(RemovableDeviceNotificationsWindowWinTest, DevicesDetached) {
   std::vector<int> device_indices;
   device_indices.push_back(1);
   device_indices.push_back(5);
@@ -185,21 +185,21 @@ TEST_F(MediaDeviceNotificationsWindowWinTest, DevicesDetached) {
   DoDevicesDetachedTest(device_indices);
 }
 
-TEST_F(MediaDeviceNotificationsWindowWinTest, DevicesDetachedHighBoundary) {
+TEST_F(RemovableDeviceNotificationsWindowWinTest, DevicesDetachedHighBoundary) {
   std::vector<int> device_indices;
   device_indices.push_back(25);
 
   DoDevicesDetachedTest(device_indices);
 }
 
-TEST_F(MediaDeviceNotificationsWindowWinTest, DevicesDetachedLowBoundary) {
+TEST_F(RemovableDeviceNotificationsWindowWinTest, DevicesDetachedLowBoundary) {
   std::vector<int> device_indices;
   device_indices.push_back(0);
 
   DoDevicesDetachedTest(device_indices);
 }
 
-TEST_F(MediaDeviceNotificationsWindowWinTest, DevicesDetachedAdjacentBits) {
+TEST_F(RemovableDeviceNotificationsWindowWinTest, DevicesDetachedAdjacentBits) {
   std::vector<int> device_indices;
   device_indices.push_back(0);
   device_indices.push_back(1);

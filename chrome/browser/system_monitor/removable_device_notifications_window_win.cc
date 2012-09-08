@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/system_monitor/media_device_notifications_window_win.h"
+#include "chrome/browser/system_monitor/removable_device_notifications_window_win.h"
 
 #include <windows.h>
 #include <dbt.h>
@@ -22,7 +22,7 @@ using content::BrowserThread;
 
 namespace {
 
-const wchar_t WindowClassName[] = L"Chrome_MediaDeviceNotificationWindow";
+const wchar_t WindowClassName[] = L"Chrome_RemovableDeviceNotificationWindow";
 
 LRESULT GetVolumeName(LPCWSTR drive,
                       LPWSTR volume_name,
@@ -47,7 +47,7 @@ DWORD GetVolumeBitMaskFromBroadcastHeader(DWORD data) {
 
 namespace chrome {
 
-MediaDeviceNotificationsWindowWin::MediaDeviceNotificationsWindowWin()
+RemovableDeviceNotificationsWindowWin::RemovableDeviceNotificationsWindowWin()
     : atom_(0),
       instance_(NULL),
       window_(NULL),
@@ -55,7 +55,7 @@ MediaDeviceNotificationsWindowWin::MediaDeviceNotificationsWindowWin()
   Init();
 }
 
-MediaDeviceNotificationsWindowWin::MediaDeviceNotificationsWindowWin(
+RemovableDeviceNotificationsWindowWin::RemovableDeviceNotificationsWindowWin(
     VolumeNameFunc volume_name_func)
     : atom_(0),
       instance_(NULL),
@@ -64,12 +64,12 @@ MediaDeviceNotificationsWindowWin::MediaDeviceNotificationsWindowWin(
   Init();
 }
 
-void MediaDeviceNotificationsWindowWin::Init() {
+void RemovableDeviceNotificationsWindowWin::Init() {
   WNDCLASSEX window_class;
   base::win::InitializeWindowClass(
       WindowClassName,
       &base::win::WrappedWindowProc<
-          MediaDeviceNotificationsWindowWin::WndProcThunk>,
+          RemovableDeviceNotificationsWindowWin::WndProcThunk>,
       0, 0, 0, NULL, NULL, NULL, NULL, NULL,
       &window_class);
   instance_ = window_class.hInstance;
@@ -81,7 +81,8 @@ void MediaDeviceNotificationsWindowWin::Init() {
   SetWindowLongPtr(window_, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
 }
 
-MediaDeviceNotificationsWindowWin::~MediaDeviceNotificationsWindowWin() {
+RemovableDeviceNotificationsWindowWin::~RemovableDeviceNotificationsWindowWin(
+    ) {
   if (window_)
     DestroyWindow(window_);
 
@@ -89,8 +90,8 @@ MediaDeviceNotificationsWindowWin::~MediaDeviceNotificationsWindowWin() {
     UnregisterClass(MAKEINTATOM(atom_), instance_);
 }
 
-LRESULT MediaDeviceNotificationsWindowWin::OnDeviceChange(UINT event_type,
-                                                          DWORD data) {
+LRESULT RemovableDeviceNotificationsWindowWin::OnDeviceChange(UINT event_type,
+                                                              DWORD data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   switch (event_type) {
     case DBT_DEVICEARRIVAL: {
@@ -108,7 +109,7 @@ LRESULT MediaDeviceNotificationsWindowWin::OnDeviceChange(UINT event_type,
                 base::IntToString(i));
             BrowserThread::PostTask(
                 BrowserThread::FILE, FROM_HERE,
-                base::Bind(&MediaDeviceNotificationsWindowWin::
+                base::Bind(&RemovableDeviceNotificationsWindowWin::
                     CheckDeviceTypeOnFileThread, this, device_id,
                     FilePath::StringType(volume_name), FilePath(drive)));
           }
@@ -132,7 +133,7 @@ LRESULT MediaDeviceNotificationsWindowWin::OnDeviceChange(UINT event_type,
   return TRUE;
 }
 
-void MediaDeviceNotificationsWindowWin::CheckDeviceTypeOnFileThread(
+void RemovableDeviceNotificationsWindowWin::CheckDeviceTypeOnFileThread(
     const std::string& id,
     const FilePath::StringType& device_name,
     const FilePath& path) {
@@ -143,12 +144,13 @@ void MediaDeviceNotificationsWindowWin::CheckDeviceTypeOnFileThread(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(
-          &MediaDeviceNotificationsWindowWin::
-              ProcessMediaDeviceAttachedOnUIThread,
+          &RemovableDeviceNotificationsWindowWin::
+              ProcessRemovableDeviceAttachedOnUIThread,
           this, id, device_name, path));
 }
 
-void MediaDeviceNotificationsWindowWin::ProcessMediaDeviceAttachedOnUIThread(
+void
+RemovableDeviceNotificationsWindowWin::ProcessRemovableDeviceAttachedOnUIThread(
     const std::string& id,
     const FilePath::StringType& device_name,
     const FilePath& path) {
@@ -159,7 +161,7 @@ void MediaDeviceNotificationsWindowWin::ProcessMediaDeviceAttachedOnUIThread(
                                                         path.value());
 }
 
-LRESULT CALLBACK MediaDeviceNotificationsWindowWin::WndProc(
+LRESULT CALLBACK RemovableDeviceNotificationsWindowWin::WndProc(
     HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
   switch (message) {
     case WM_DEVICECHANGE:
@@ -173,13 +175,13 @@ LRESULT CALLBACK MediaDeviceNotificationsWindowWin::WndProc(
 }
 
 // static
-LRESULT CALLBACK MediaDeviceNotificationsWindowWin::WndProcThunk(
+LRESULT CALLBACK RemovableDeviceNotificationsWindowWin::WndProcThunk(
     HWND hwnd,
     UINT message,
     WPARAM wparam,
     LPARAM lparam) {
-  MediaDeviceNotificationsWindowWin* msg_wnd =
-      reinterpret_cast<MediaDeviceNotificationsWindowWin*>(
+  RemovableDeviceNotificationsWindowWin* msg_wnd =
+      reinterpret_cast<RemovableDeviceNotificationsWindowWin*>(
           GetWindowLongPtr(hwnd, GWLP_USERDATA));
   if (msg_wnd)
     return msg_wnd->WndProc(hwnd, message, wparam, lparam);

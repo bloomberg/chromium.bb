@@ -25,7 +25,7 @@
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
-#include "chrome/browser/system_monitor/media_device_notifications_window_win.h"
+#include "chrome/browser/system_monitor/removable_device_notifications_window_win.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/uninstall_browser_prompt.h"
 #include "chrome/common/chrome_constants.h"
@@ -184,8 +184,8 @@ void ChromeBrowserMainPartsWin::PreMainMessageLoopStart() {
     // Make sure that we know how to handle exceptions from the message loop.
     InitializeWindowProcExceptions();
   }
-  media_device_notifications_window_ =
-    new chrome::MediaDeviceNotificationsWindowWin();
+  removable_device_notifications_window_ =
+      new chrome::RemovableDeviceNotificationsWindowWin();
 }
 
 // static

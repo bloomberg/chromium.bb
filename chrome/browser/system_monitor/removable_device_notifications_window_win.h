@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYSTEM_MONITOR_MEDIA_DEVICE_NOTIFICATIONS_WINDOW_WIN_H_
-#define CHROME_BROWSER_SYSTEM_MONITOR_MEDIA_DEVICE_NOTIFICATIONS_WINDOW_WIN_H_
+#ifndef CHROME_BROWSER_SYSTEM_MONITOR_REMOVABLE_DEVICE_NOTIFICATIONS_WINDOW_WIN_H_
+#define CHROME_BROWSER_SYSTEM_MONITOR_REMOVABLE_DEVICE_NOTIFICATIONS_WINDOW_WIN_H_
 
 #include <windows.h>
 
@@ -18,19 +18,20 @@ typedef LRESULT (*VolumeNameFunc)(LPCWSTR drive,
                                   unsigned int volume_name_len);
 namespace chrome {
 
-class MediaDeviceNotificationsWindowWin
-    : public base::RefCountedThreadSafe<MediaDeviceNotificationsWindowWin> {
+class RemovableDeviceNotificationsWindowWin
+    : public base::RefCountedThreadSafe<RemovableDeviceNotificationsWindowWin> {
  public:
-  MediaDeviceNotificationsWindowWin();
+  RemovableDeviceNotificationsWindowWin();
   // Only for use in unit tests.
-  explicit MediaDeviceNotificationsWindowWin(VolumeNameFunc volumeNameFunc);
+  explicit RemovableDeviceNotificationsWindowWin(VolumeNameFunc volumeNameFunc);
 
   LRESULT OnDeviceChange(UINT event_type, DWORD data);
 
  private:
-  friend class base::RefCountedThreadSafe<MediaDeviceNotificationsWindowWin>;
+  friend class
+      base::RefCountedThreadSafe<RemovableDeviceNotificationsWindowWin>;
 
-  virtual ~MediaDeviceNotificationsWindowWin();
+  virtual ~RemovableDeviceNotificationsWindowWin();
 
   void Init();
 
@@ -48,7 +49,7 @@ class MediaDeviceNotificationsWindowWin
                                    const FilePath::StringType& device_name,
                                    const FilePath& path);
 
-  void ProcessMediaDeviceAttachedOnUIThread(
+  void ProcessRemovableDeviceAttachedOnUIThread(
       const std::string& id,
       const FilePath::StringType& device_name,
       const FilePath& path);
@@ -62,9 +63,9 @@ class MediaDeviceNotificationsWindowWin
   HWND window_;
   VolumeNameFunc volume_name_func_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaDeviceNotificationsWindowWin);
+  DISALLOW_COPY_AND_ASSIGN(RemovableDeviceNotificationsWindowWin);
 };
 
 }  // namespace chrome
 
-#endif  // CHROME_BROWSER_SYSTEM_MONITOR_MEDIA_DEVICE_NOTIFICATIONS_WINDOW_WIN_H_
+#endif  // CHROME_BROWSER_SYSTEM_MONITOR_REMOVABLE_DEVICE_NOTIFICATIONS_WINDOW_WIN_H_
