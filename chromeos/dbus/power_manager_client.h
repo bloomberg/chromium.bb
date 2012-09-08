@@ -131,6 +131,12 @@ class CHROMEOS_EXPORT PowerManagerClient {
   // Requests shutdown of the system.
   virtual void RequestShutdown() = 0;
 
+  // Notifies PowerManager that screen lock has been completed.
+  virtual void NotifyScreenLockCompleted() = 0;
+
+  // Notifies PowerManager that screen is unlocked.
+  virtual void NotifyScreenUnlockCompleted() = 0;
+
   // Idle management functions:
 
   // Calculates idle time asynchronously, after the idle time request has
