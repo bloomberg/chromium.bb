@@ -76,6 +76,10 @@ def HttpDownload(url, target, username=None, password=None, verbose=True):
         src.close()
       break
     except urllib2.HTTPError:
+      sys.stdout.write('Failed to open.\n')
+      pass
+    except urllib2.URLError:
+      sys.stdout.write('Failed mid stream.\n')
       pass
   else:
     sys.stdout.write('Download failed on %s, giving up.\n' % url)
