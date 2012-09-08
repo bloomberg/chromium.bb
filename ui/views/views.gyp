@@ -32,7 +32,6 @@
         '../../base/base.gyp:base_i18n',
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../../build/temp_gyp/googleurl.gyp:googleurl',
-        '../../content/content.gyp:content',
         '../../skia/skia.gyp:skia',
         '../../third_party/icu/icu.gyp:icui18n',
         '../../third_party/icu/icu.gyp:icuuc',
