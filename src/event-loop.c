@@ -403,11 +403,11 @@ wl_event_loop_dispatch(struct wl_event_loop *loop, int timeout)
 	count = epoll_wait(loop->epoll_fd, ep, ARRAY_LENGTH(ep), timeout);
 	if (count < 0)
 		return -1;
-	n = 0;
+
 	for (i = 0; i < count; i++) {
 		source = ep[i].data.ptr;
 		if (source->fd != -1)
-			n += source->interface->dispatch(source, &ep[i]);
+			source->interface->dispatch(source, &ep[i]);
 	}
 
 	wl_event_loop_process_destroy_list(loop);
