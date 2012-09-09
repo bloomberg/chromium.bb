@@ -414,6 +414,8 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
                                                                 !rexw_counted) {
         if (strcmp(instruction_name, "callq") &&
             strcmp(instruction_name, "cmpxchg8b") &&
+            strcmp(instruction_name, "cvtpi2ps") &&
+            strcmp(instruction_name, "cvtpi2pd") &&
             (strcmp(instruction_name, "extractps") ||
              instruction->operands[i].name != REG_RM) &&
             strcmp(instruction_name, "jmpq") &&
@@ -424,10 +426,50 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
             strcmp(instruction_name, "movlpd") &&
             strcmp(instruction_name, "movlps") &&
             strcmp(instruction_name, "movntsd") &&
+            (strcmp(instruction_name, "movq") ||
+             (((begin[0] & 0x48) == 0x48) &&
+               (begin[1] == 0x0f) &&
+               (begin[2] == 0x6e)) ||
+             (((begin[0] & 0x48) == 0x48) &&
+               (begin[1] == 0x0f) &&
+               (begin[2] == 0x7e)) ||
+             (((begin[0] == 0x66) &&
+               (begin[1] & 0x48) == 0x48) &&
+               (begin[2] == 0x0f) &&
+               (begin[3] == 0x6e)) ||
+             (((begin[0] == 0x66) &&
+               (begin[1] & 0x48) == 0x48) &&
+               (begin[2] == 0x0f) &&
+               (begin[3] == 0x7e))) &&
             strcmp(instruction_name, "mwait") &&
             strcmp(instruction_name, "pf2id") &&
             strcmp(instruction_name, "pf2iw") &&
+            strcmp(instruction_name, "pabsb") &&
+            strcmp(instruction_name, "pabsd") &&
+            strcmp(instruction_name, "pabsw") &&
+            strcmp(instruction_name, "packssdw") &&
+            strcmp(instruction_name, "packsswb") &&
+            strcmp(instruction_name, "packuswb") &&
+            strcmp(instruction_name, "paddb") &&
+            strcmp(instruction_name, "paddd") &&
+            strcmp(instruction_name, "paddq") &&
+            strcmp(instruction_name, "paddsb") &&
+            strcmp(instruction_name, "paddsw") &&
+            strcmp(instruction_name, "paddusb") &&
+            strcmp(instruction_name, "paddusw") &&
+            strcmp(instruction_name, "paddw") &&
+            strcmp(instruction_name, "palignr") &&
+            strcmp(instruction_name, "pand") &&
+            strcmp(instruction_name, "pandn") &&
             strcmp(instruction_name, "pavgusb") &&
+            strcmp(instruction_name, "pavgb") &&
+            strcmp(instruction_name, "pavgw") &&
+            strcmp(instruction_name, "pcmpeqb") &&
+            strcmp(instruction_name, "pcmpeqd") &&
+            strcmp(instruction_name, "pcmpeqw") &&
+            strcmp(instruction_name, "pcmpgtb") &&
+            strcmp(instruction_name, "pcmpgtd") &&
+            strcmp(instruction_name, "pcmpgtw") &&
             strcmp(instruction_name, "pfacc") &&
             strcmp(instruction_name, "pfadd") &&
             strcmp(instruction_name, "pfcmpge") &&
@@ -445,12 +487,65 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
             strcmp(instruction_name, "pfrsqrt") &&
             strcmp(instruction_name, "pfsub") &&
             strcmp(instruction_name, "pfsubr") &&
+            strcmp(instruction_name, "phaddd") &&
+            strcmp(instruction_name, "phaddsw") &&
+            strcmp(instruction_name, "phaddw") &&
+            strcmp(instruction_name, "phsubd") &&
+            strcmp(instruction_name, "phsubsw") &&
+            strcmp(instruction_name, "phsubw") &&
             strcmp(instruction_name, "pi2fd") &&
             strcmp(instruction_name, "pi2fw") &&
+            strcmp(instruction_name, "pmaddubsw") &&
+            strcmp(instruction_name, "pmaddwd") &&
+            strcmp(instruction_name, "pmaxsw") &&
+            strcmp(instruction_name, "pmaxub") &&
+            strcmp(instruction_name, "pminsw") &&
+            strcmp(instruction_name, "pminub") &&
+            strcmp(instruction_name, "pmulhrsw") &&
             strcmp(instruction_name, "pmulhrw") &&
+            strcmp(instruction_name, "pmulhuw") &&
+            strcmp(instruction_name, "pmulhw") &&
+            strcmp(instruction_name, "pmullw") &&
+            strcmp(instruction_name, "pmuludq") &&
+            strcmp(instruction_name, "por") &&
+            strcmp(instruction_name, "psadbw") &&
+            strcmp(instruction_name, "pshufb") &&
+            strcmp(instruction_name, "pshufhw") &&
+            strcmp(instruction_name, "pshuflw") &&
+            strcmp(instruction_name, "pshufw") &&
+            strcmp(instruction_name, "psignb") &&
+            strcmp(instruction_name, "psignd") &&
+            strcmp(instruction_name, "psignw") &&
+            strcmp(instruction_name, "pslld") &&
+            strcmp(instruction_name, "psllq") &&
+            strcmp(instruction_name, "psllw") &&
+            strcmp(instruction_name, "psrad") &&
+            strcmp(instruction_name, "psraw") &&
+            strcmp(instruction_name, "psrld") &&
+            strcmp(instruction_name, "psrlq") &&
+            strcmp(instruction_name, "psrlw") &&
+            strcmp(instruction_name, "psubb") &&
+            strcmp(instruction_name, "psubd") &&
+            strcmp(instruction_name, "psubq") &&
+            strcmp(instruction_name, "psubsb") &&
+            strcmp(instruction_name, "psubsw") &&
+            strcmp(instruction_name, "psubusb") &&
+            strcmp(instruction_name, "psubusw") &&
+            strcmp(instruction_name, "psubw") &&
             strcmp(instruction_name, "pswapd") &&
             strcmp(instruction_name, "pop") &&
-            strcmp(instruction_name, "push")) {
+            strcmp(instruction_name, "punpckhbw") &&
+            strcmp(instruction_name, "punpckhdq") &&
+            strcmp(instruction_name, "punpckhqdq") &&
+            strcmp(instruction_name, "punpckhwd") &&
+            strcmp(instruction_name, "punpcklbw") &&
+            strcmp(instruction_name, "punpckldq") &&
+            strcmp(instruction_name, "punpcklqdq") &&
+            strcmp(instruction_name, "punpcklwd") &&
+            strcmp(instruction_name, "push") &&
+            strcmp(instruction_name, "pxor") &&
+            strcmp(instruction_name, "unpckhpd") &&
+            strcmp(instruction_name, "unpcklpd")) {
           ++rex_bits;
           rexw_counted = TRUE;
         }
@@ -483,7 +578,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
        !strcmp(instruction_name, "vcvttpd2dq") ||
        !strcmp(instruction_name, "vcvttpd2ps")) &&
       instruction->operands[1].name == REG_RM) {
-    if (instruction->operands[1].type == OperandXMM) {
+    if (instruction->operands[1].type == OperandSize128bit) {
       show_name_suffix = 'x';
     } else {
       show_name_suffix = 'y';
