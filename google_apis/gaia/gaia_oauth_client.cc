@@ -44,7 +44,7 @@ class GaiaOAuthClient::Core
                     GaiaOAuthClient::Delegate* delegate);
 
   // net::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source);
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<Core>;
