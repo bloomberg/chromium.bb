@@ -53,7 +53,7 @@ class NetworkChangeNotifierChromeos
                                 const chromeos::Network* network) OVERRIDE;
 
   // Initiate online status change reporting.
-  void ReportConnectionChange(bool is_online);
+  void ReportConnectionChange();
   void ReportConnectionChangeOnUIThread();
   // Callback from online_notification_task_ when online state notification
   // is actually scheduled.
@@ -84,8 +84,6 @@ class NetworkChangeNotifierChromeos
   // Current active network's IP address.
   std::string ip_address_;
 
-  // The last reported online state.
-  bool is_online_;
   base::WeakPtrFactory<NetworkChangeNotifierChromeos> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkChangeNotifierChromeos);
