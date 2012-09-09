@@ -168,6 +168,9 @@ litdigit 8 125
 litdigit 9 24
 litdigit 0 245
 
+# unicode braille
+include braille-patterns.cti
+
 lowword - 36-36		make double when hyphen surrounded by white spaces
 
 numsign 3456
