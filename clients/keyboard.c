@@ -303,8 +303,26 @@ input_method_context_surrounding_text(void *data,
 	fprintf(stderr, "Surrounding text updated: %s\n", text);
 }
 
+static void
+input_method_context_reset(void *data,
+			   struct input_method_context *context)
+{
+	struct virtual_keyboard *keyboard = data;
+
+	fprintf(stderr, "Reset pre-edit buffer\n");
+
+	if (strlen(keyboard->preedit_string)) {
+		input_method_context_preedit_string(context,
+						    "",
+						    0);
+		free(keyboard->preedit_string);
+		keyboard->preedit_string = strdup("");
+	}
+}
+
 static const struct input_method_context_listener input_method_context_listener = {
 	input_method_context_surrounding_text,
+	input_method_context_reset
 };
 
 static void

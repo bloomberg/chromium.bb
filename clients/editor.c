@@ -548,6 +548,8 @@ text_entry_set_cursor_position(struct text_entry *entry,
 {
 	entry->cursor = text_layout_xy_to_index(entry->layout, x, y);
 
+	text_model_reset(entry->model);
+
 	if (entry->cursor >= entry->preedit_cursor) {
 		entry->cursor -= entry->preedit_cursor;
 	}

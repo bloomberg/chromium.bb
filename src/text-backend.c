@@ -173,6 +173,20 @@ text_model_deactivate(struct wl_client *client,
 }
 
 static void
+text_model_reset(struct wl_client *client,
+		 struct wl_resource *resource)
+{
+	struct text_model *text_model = resource->data;
+	struct input_method *input_method, *next;
+
+	wl_list_for_each_safe(input_method, next, &text_model->input_methods, link) {
+		if (!input_method->context)
+			continue;
+		input_method_context_send_reset(&input_method->context->resource);
+	}
+}
+
+static void
 text_model_set_micro_focus(struct wl_client *client,
 			   struct wl_resource *resource,
 			   int32_t x,
@@ -198,6 +212,7 @@ static const struct text_model_interface text_model_implementation = {
 	text_model_set_surrounding_text,
 	text_model_activate,
 	text_model_deactivate,
+	text_model_reset,
 	text_model_set_micro_focus,
 	text_model_set_preedit,
 	text_model_set_content_type

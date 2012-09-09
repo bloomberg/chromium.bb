@@ -68,6 +68,8 @@
       <arg name="cursor" type="uint"/>
       <arg name="anchor" type="uint"/>
     </event>
+    <event name="reset">
+    </event>
   </interface>
 
   <interface name="input_method" version="1">

@@ -67,6 +67,8 @@
       </description>
       <arg name="seat" type="object" interface="wl_seat"/>
     </request>
+    <request name="reset">
+    </request>
     <request name="set_micro_focus">
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
