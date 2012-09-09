@@ -4,26 +4,13 @@
 
 #import <Cocoa/Cocoa.h>
 #include <dlfcn.h>
+#include <objc/runtime.h>
 
 #include "base/logging.h"
 #import "base/memory/scoped_nsobject.h"
 #import "chrome/common/mac/objc_zombie.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-
-namespace {
-
-// Dynamically look up |objc_setAssociatedObject()|, which isn't
-// available until the 10.6 SDK.
-
-typedef void objc_setAssociatedObjectFn(id object, void *key, id value,
-                                        int policy);
-objc_setAssociatedObjectFn* LookupSetAssociatedObjectFn() {
-  return reinterpret_cast<objc_setAssociatedObjectFn*>(
-      dlsym(RTLD_DEFAULT, "objc_setAssociatedObject"));
-}
-
-}  // namespace
 
 @interface ZombieCxxDestructTest : NSObject
 {
@@ -43,32 +30,18 @@ objc_setAssociatedObjectFn* LookupSetAssociatedObjectFn() {
 @end
 
 @interface ZombieAssociatedObjectTest : NSObject
-+ (BOOL)supportsAssociatedObjects;
 - (id)initWithAssociatedObject:(id)anObject;
 @end
 
 @implementation ZombieAssociatedObjectTest
 
-+ (BOOL)supportsAssociatedObjects {
-  if (LookupSetAssociatedObjectFn())
-    return YES;
-  return NO;
-}
-
 - (id)initWithAssociatedObject:(id)anObject {
-  self = [super init];
-  if (self) {
-    objc_setAssociatedObjectFn* fn = LookupSetAssociatedObjectFn();
-    if (fn) {
-      // Cribbed from 10.6 <objc/runtime.h>.
-      static const int kObjcAssociationRetain = 01401;
-
-      // The address of the variable itself is the unique key, the
-      // contents don't matter.
-      static char kAssociatedObjectKey = 'x';
-
-      (*fn)(self, &kAssociatedObjectKey, anObject, kObjcAssociationRetain);
-    }
+  if ((self = [super init])) {
+    // The address of the variable itself is the unique key, the
+    // contents don't matter.
+    static char kAssociatedObjectKey = 'x';
+    objc_setAssociatedObject(
+        self, &kAssociatedObjectKey, anObject, OBJC_ASSOCIATION_RETAIN);
   }
   return self;
 }
@@ -103,15 +76,7 @@ TEST(ObjcZombieTest, CxxDestructors) {
 
 // Verify that the associated objects are released when the object is
 // released.
-// NOTE(shess): To test the negative, hardcode |g_objectDestruct| to
-// the 10.5 version in |ZombieInit()|, and run this test on 10.6.
 TEST(ObjcZombieTest, AssociatedObjectsReleased) {
-  if (![ZombieAssociatedObjectTest supportsAssociatedObjects]) {
-    DLOG(ERROR)
-        << "ObjcZombieTest.AssociatedObjectsReleased not supported on 10.5";
-    return;
-  }
-
   scoped_nsobject<id> anObject([[NSObject alloc] init]);
   EXPECT_EQ(1u, [anObject retainCount]);
 
