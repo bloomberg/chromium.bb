@@ -393,8 +393,13 @@ void ShelfLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
 void ShelfLayoutManager::SetChildBounds(aura::Window* child,
                                         const gfx::Rect& requested_bounds) {
   SetChildBoundsDirect(child, requested_bounds);
-  if (!in_layout_)
+  // We may contain other widgets (such as frame maximize bubble) but they don't
+  // effect the layout in anyway.
+  if (!in_layout_ &&
+      ((launcher_widget() && launcher_widget()->GetNativeView() == child) ||
+       (status_->GetNativeView() == child))) {
     LayoutShelf();
+  }
 }
 
 void ShelfLayoutManager::OnLockStateChanged(bool locked) {
