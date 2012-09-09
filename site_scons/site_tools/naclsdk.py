@@ -79,17 +79,11 @@ NACL_TOOL_MAP = {
 
 def _PlatformSubdirs(env):
   if env.Bit('bitcode'):
+    # TODO(jvoung)  BUG=
+    # The toolchain download no longer supports downloading a 64 bit image
+    # See: http://codereview.chromium.org/10908107/
     os = NACL_CANONICAL_PLATFORM_MAP[env['PLATFORM']]
-    import platform
-    machine = platform.machine()
-    # x86 or i[0-9]86 should be converted to x86_32
-    if re.match(r'x86$|i[0-9]86', machine):
-      machine = 'x86_32'
-    elif machine == 'x86_64':
-      # Windows and Mac toolchains are only available as 32-bit binaries.
-      if os == 'win' or os == 'mac':
-        machine = 'x86_32'
-    name = 'pnacl_%s_%s' % (os, machine)
+    name = 'pnacl_%s_x86_32' % os
   else:
     platform = NACL_CANONICAL_PLATFORM_MAP[env['PLATFORM']]
     arch = env['BUILD_ARCHITECTURE']
