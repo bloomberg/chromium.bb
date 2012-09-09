@@ -12,9 +12,11 @@
 #include "ui/gfx/size.h"
 
 namespace contacts {
-namespace test {
 
 typedef std::vector<const Contact*> ContactPointers;
+class ContactMap;
+
+namespace test {
 
 // Returns a string containing the information stored in |contact|.  The same
 // string will be returned for functionally-equivalent contacts (e.g. ones
@@ -29,6 +31,9 @@ std::string ContactsToString(const ScopedVector<Contact>& contacts);
 // Convenience wrapper for ContactsToString().  Takes |num_contacts|
 // const Contact* arguments.
 std::string VarContactsToString(int num_contacts, ...);
+
+// Like ContactsToStrings(), but takes a ContactMap as input.
+std::string ContactMapToString(const ContactMap& contact_map);
 
 // Saves copies of all contacts in |source| to |dest|.
 void CopyContacts(const ContactPointers& source,

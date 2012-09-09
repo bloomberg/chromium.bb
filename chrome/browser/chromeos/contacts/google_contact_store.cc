@@ -83,7 +83,6 @@ void GoogleContactStore::TestAPI::NotifyAboutNetworkStateChange(bool online) {
 
 GoogleContactStore::GoogleContactStore(Profile* profile)
     : profile_(profile),
-      contacts_deleter_(&contacts_),
       db_(new ContactDatabase),
       update_delay_on_next_failure_(
           base::TimeDelta::FromSeconds(kUpdateFailureInitialRetrySec)),
@@ -132,8 +131,8 @@ void GoogleContactStore::AppendContacts(ContactPointers* contacts_out) {
 const Contact* GoogleContactStore::GetContactById(
     const std::string& contact_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ContactMap::const_iterator it = contacts_.find(contact_id);
-  return (it != contacts_.end() && !it->second->deleted()) ? it->second : NULL;
+  const Contact* contact = contacts_.Find(contact_id);
+  return (contact && !contact->deleted()) ? contact : NULL;
 }
 
 void GoogleContactStore::AddObserver(ContactStoreObserver* observer) {
@@ -241,45 +240,13 @@ void GoogleContactStore::MergeContacts(
     bool is_full_update,
     scoped_ptr<ScopedVector<Contact> > updated_contacts) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (is_full_update) {
-    STLDeleteValues(&contacts_);
-    contacts_.clear();
-  }
-
-  for (ScopedVector<Contact>::iterator it = updated_contacts->begin();
-       it != updated_contacts->end(); ++it) {
-    Contact* contact = *it;
-    VLOG(1) << "Updating " << contact->contact_id();
-    ContactMap::iterator map_it = contacts_.find(contact->contact_id());
-    if (map_it == contacts_.end()) {
-      contacts_[contact->contact_id()] = contact;
-    } else {
-      delete map_it->second;
-      map_it->second = contact;
-    }
-  }
-
-  // Make sure that the Contact objects won't be destroyed when
-  // |updated_contacts| is destroyed.
+  if (is_full_update)
+    contacts_.Clear();
   size_t num_updated_contacts = updated_contacts->size();
-  updated_contacts->weak_clear();
+  contacts_.Merge(updated_contacts.Pass(), ContactMap::KEEP_DELETED_CONTACTS);
 
-  if (is_full_update || num_updated_contacts > 0) {
-    // Find the latest update time.
-    last_contact_update_time_ = base::Time();
-    for (ContactMap::const_iterator it = contacts_.begin();
-         it != contacts_.end(); ++it) {
-      const Contact* contact = it->second;
-      base::Time update_time =
-          base::Time::FromInternalValue(contact->update_time());
-
-      if (!update_time.is_null() &&
-          (last_contact_update_time_.is_null() ||
-           last_contact_update_time_ < update_time)) {
-        last_contact_update_time_ = update_time;
-      }
-    }
-  }
+  if (is_full_update || num_updated_contacts > 0)
+    last_contact_update_time_ = contacts_.GetMaxUpdateTime();
   VLOG(1) << "Last contact update time is "
           << (last_contact_update_time_.is_null() ?
               std::string("null") :

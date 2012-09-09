@@ -145,7 +145,7 @@ TEST_F(GoogleContactStoreTest, LoadFromGData) {
 
   // The contacts should've been saved to the database, too.
   EXPECT_EQ(VarContactsToString(2, contact1.get(), contact2.get()),
-            ContactsToString(db_->contacts()));
+            ContactMapToString(db_->contacts()));
 }
 
 TEST_F(GoogleContactStoreTest, UpdateFromGData) {
@@ -187,7 +187,7 @@ TEST_F(GoogleContactStoreTest, UpdateFromGData) {
   // All three contacts should've been saved to the database.
   EXPECT_EQ(VarContactsToString(
                 3, contact1.get(), contact2.get(), contact3.get()),
-            ContactsToString(db_->contacts()));
+            ContactMapToString(db_->contacts()));
   EXPECT_EQ(3, db_->num_saved_contacts());
   EXPECT_TRUE(test_api_->update_scheduled());
 }
@@ -215,7 +215,8 @@ TEST_F(GoogleContactStoreTest, FetchUpdatedContacts) {
   ContactPointers loaded_contacts;
   store_->AppendContacts(&loaded_contacts);
   EXPECT_EQ(ContactsToString(kAllContacts), ContactsToString(loaded_contacts));
-  EXPECT_EQ(ContactsToString(kAllContacts), ContactsToString(db_->contacts()));
+  EXPECT_EQ(ContactsToString(kAllContacts),
+            ContactMapToString(db_->contacts()));
   EXPECT_EQ(static_cast<int>(kAllContacts.size()), db_->num_saved_contacts());
   EXPECT_TRUE(test_api_->update_scheduled());
   EXPECT_EQ(1, observer_.num_updates());
@@ -241,7 +242,8 @@ TEST_F(GoogleContactStoreTest, FetchUpdatedContacts) {
   loaded_contacts.clear();
   store_->AppendContacts(&loaded_contacts);
   EXPECT_EQ(ContactsToString(kAllContacts), ContactsToString(loaded_contacts));
-  EXPECT_EQ(ContactsToString(kAllContacts), ContactsToString(db_->contacts()));
+  EXPECT_EQ(ContactsToString(kAllContacts),
+            ContactMapToString(db_->contacts()));
   EXPECT_EQ(1, db_->num_saved_contacts());
   EXPECT_TRUE(test_api_->update_scheduled());
   EXPECT_EQ(1, observer_.num_updates());
@@ -259,7 +261,8 @@ TEST_F(GoogleContactStoreTest, FetchUpdatedContacts) {
   loaded_contacts.clear();
   store_->AppendContacts(&loaded_contacts);
   EXPECT_EQ(ContactsToString(kAllContacts), ContactsToString(loaded_contacts));
-  EXPECT_EQ(ContactsToString(kAllContacts), ContactsToString(db_->contacts()));
+  EXPECT_EQ(ContactsToString(kAllContacts),
+            ContactMapToString(db_->contacts()));
   EXPECT_EQ(1, db_->num_saved_contacts());
   EXPECT_TRUE(test_api_->update_scheduled());
   EXPECT_EQ(1, observer_.num_updates());

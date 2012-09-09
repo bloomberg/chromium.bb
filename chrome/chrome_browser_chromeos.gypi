@@ -145,6 +145,8 @@
         'browser/chromeos/contacts/contact_manager.cc',
         'browser/chromeos/contacts/contact_manager.h',
         'browser/chromeos/contacts/contact_manager_observer.h',
+        'browser/chromeos/contacts/contact_map.cc',
+        'browser/chromeos/contacts/contact_map.h',
         'browser/chromeos/contacts/contact_store.h',
         'browser/chromeos/contacts/contact_store_observer.h',
         'browser/chromeos/contacts/google_contact_store.cc',

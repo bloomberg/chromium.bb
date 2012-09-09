@@ -12,6 +12,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/time.h"
+#include "chrome/browser/chromeos/contacts/contact_map.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -131,6 +132,15 @@ std::string VarContactsToString(int num_contacts, ...) {
   for (int i = 0; i < num_contacts; ++i)
     contacts.push_back(va_arg(list, const Contact*));
   va_end(list);
+  return ContactsToString(contacts);
+}
+
+std::string ContactMapToString(const ContactMap& contact_map) {
+  ContactPointers contacts;
+  for (ContactMap::const_iterator it = contact_map.begin();
+       it != contact_map.end(); ++it) {
+    contacts.push_back(it->second);
+  }
   return ContactsToString(contacts);
 }
 

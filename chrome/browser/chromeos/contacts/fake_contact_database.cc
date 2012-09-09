@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/contacts/fake_contact_database.h"
 
 #include "chrome/browser/chromeos/contacts/contact.pb.h"
-#include "chrome/browser/chromeos/contacts/contact_test_util.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -28,7 +27,8 @@ void FakeContactDatabase::Init(const FilePath& database_dir,
 
 void FakeContactDatabase::SetContacts(const ContactPointers& contacts,
                                       const UpdateMetadata& metadata) {
-  test::CopyContacts(contacts, &contacts_);
+  contacts_.Clear();
+  MergeContacts(contacts);
   metadata_ = metadata;
 }
 
@@ -45,9 +45,8 @@ void FakeContactDatabase::SaveContacts(scoped_ptr<ContactPointers> contacts,
   if (save_success_) {
     num_saved_contacts_ += contacts->size();
     if (is_full_update)
-      test::CopyContacts(*contacts, &contacts_);
-    else
-      MergeContacts(*contacts);
+      contacts_.Clear();
+    MergeContacts(*contacts);
     metadata_ = *metadata;
   }
   callback.Run(save_success_);
@@ -58,7 +57,10 @@ void FakeContactDatabase::LoadContacts(LoadCallback callback) {
   scoped_ptr<ScopedVector<Contact> > contacts(new ScopedVector<Contact>());
   scoped_ptr<UpdateMetadata> metadata(new UpdateMetadata);
   if (load_success_) {
-    test::CopyContacts(contacts_, contacts.get());
+    for (ContactMap::const_iterator it = contacts_.begin();
+         it != contacts_.end(); ++it) {
+      contacts->push_back(new Contact(*it->second));
+    }
     *metadata = metadata_;
   }
   callback.Run(load_success_, contacts.Pass(), metadata.Pass());
@@ -69,22 +71,10 @@ FakeContactDatabase::~FakeContactDatabase() {
 
 void FakeContactDatabase::MergeContacts(
     const ContactPointers& updated_contacts) {
-  for (ContactPointers::const_iterator updated_it = updated_contacts.begin();
-       updated_it != updated_contacts.end(); ++updated_it) {
-    const Contact& updated_contact = **updated_it;
-    bool found = false;
-    for (ScopedVector<Contact>::const_iterator existing_it = contacts_.begin();
-         existing_it != contacts_.end(); ++existing_it) {
-      Contact* existing_contact = *existing_it;
-      if (existing_contact->contact_id() == updated_contact.contact_id()) {
-        *existing_contact = updated_contact;
-        found = true;
-        break;
-      }
-    }
-    if (!found)
-      contacts_.push_back(new Contact(updated_contact));
-  }
+  scoped_ptr<ScopedVector<Contact> > copied_contacts(new ScopedVector<Contact>);
+  for (size_t i = 0; i < updated_contacts.size(); ++i)
+    copied_contacts->push_back(new Contact(*updated_contacts[i]));
+  contacts_.Merge(copied_contacts.Pass(), ContactMap::KEEP_DELETED_CONTACTS);
 }
 
 }  // namespace contacts

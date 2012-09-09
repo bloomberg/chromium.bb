@@ -17,9 +17,9 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/stl_util.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "chrome/browser/chromeos/contacts/contact_map.h"
 #include "net/base/network_change_notifier.h"
 
 class Profile;
@@ -84,9 +84,6 @@ class GoogleContactStore
       net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
  private:
-  // Map from a contact's Google-assigned ID to the contact itself.
-  typedef std::map<std::string, Contact*> ContactMap;
-
   // Returns the current time. Uses |current_time_for_testing_| instead if it's
   // set.
   base::Time GetCurrentTime() const;
@@ -136,9 +133,6 @@ class GoogleContactStore
 
   // Owns the pointed-to Contact values.
   ContactMap contacts_;
-
-  // Deletes values in |contacts_|.
-  STLValueDeleter<ContactMap> contacts_deleter_;
 
   // Most-recent time that an entry in |contacts_| has been updated (as reported
   // by Google).

@@ -1102,6 +1102,7 @@
         'browser/chromeos/contacts/contact_manager_stub.cc',
         'browser/chromeos/contacts/contact_manager_stub.h',
         'browser/chromeos/contacts/contact_manager_unittest.cc',
+        'browser/chromeos/contacts/contact_map_unittest.cc',
         'browser/chromeos/contacts/contact_test_util.cc',
         'browser/chromeos/contacts/contact_test_util.h',
         'browser/chromeos/contacts/fake_contact_database.cc',

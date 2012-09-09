@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/contacts/contact_database.h"
 
 #include "chrome/browser/chromeos/contacts/contact.pb.h"
+#include "chrome/browser/chromeos/contacts/contact_map.h"
 
 namespace contacts {
 
@@ -16,7 +17,7 @@ class FakeContactDatabase : public ContactDatabaseInterface {
  public:
   FakeContactDatabase();
 
-  const ScopedVector<Contact>& contacts() const { return contacts_; }
+  const ContactMap& contacts() const { return contacts_; }
 
   void set_init_success(bool success) { init_success_ = success; }
   void set_save_success(bool success) { save_success_ = success; }
@@ -57,7 +58,7 @@ class FakeContactDatabase : public ContactDatabaseInterface {
   int num_saved_contacts_;
 
   // Currently-stored contacts and metadata.
-  ScopedVector<Contact> contacts_;
+  ContactMap contacts_;
   UpdateMetadata metadata_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeContactDatabase);
