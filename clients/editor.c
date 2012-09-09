@@ -51,6 +51,8 @@ struct text_entry {
 	int active;
 	uint32_t cursor;
 	uint32_t anchor;
+	char *preedit_text;
+	uint32_t preedit_cursor;
 	struct text_model *model;
 	struct text_layout *layout;
 };
@@ -311,6 +313,8 @@ text_entry_create(struct editor *editor, const char *text)
 	entry->active = 0;
 	entry->cursor = strlen(text);
 	entry->anchor = entry->cursor;
+	entry->preedit_text = NULL;
+	entry->preedit_cursor = 0;
 	entry->model = text_model_factory_create_text_model(editor->text_model_factory);
 	text_model_add_listener(entry->model, &text_model_listener, entry);
 
@@ -408,6 +412,30 @@ text_entry_deactivate(struct text_entry *entry,
 }
 
 static void
+text_entry_update_layout(struct text_entry *entry)
+{
+	char *text;
+
+	assert(((unsigned int)entry->cursor) <= strlen(entry->text));
+
+	if (!entry->preedit_text) {
+		text_layout_set_text(entry->layout, entry->text);
+		return;
+	}
+
+	text = malloc(strlen(entry->text) + strlen(entry->preedit_text) + 1);
+	strncpy(text, entry->text, entry->cursor);
+	strcpy(text + entry->cursor, entry->preedit_text);
+	strcpy(text + entry->cursor + strlen(entry->preedit_text),
+	       entry->text + entry->cursor);
+
+	text_layout_set_text(entry->layout, text);
+	free(text);
+
+	widget_schedule_redraw(entry->widget);
+}
+
+static void
 text_entry_insert_at_cursor(struct text_entry *entry, const char *text)
 {
 	char *new_text = malloc(strlen(entry->text) + strlen(text) + 1);
@@ -422,7 +450,27 @@ text_entry_insert_at_cursor(struct text_entry *entry, const char *text)
 	entry->cursor += strlen(text);
 	entry->anchor += strlen(text);
 
-	text_layout_set_text(entry->layout, entry->text);
+	text_entry_update_layout(entry);
+}
+
+static void
+text_entry_set_preedit(struct text_entry *entry,
+		       const char *preedit_text,
+		       int preedit_cursor)
+{
+	if (entry->preedit_text) {
+		free(entry->preedit_text);
+		entry->preedit_text = NULL;
+		entry->preedit_cursor = 0;
+	}
+
+	if (!preedit_text)
+		return;
+
+	entry->preedit_text = strdup(preedit_text);
+	entry->preedit_cursor = preedit_cursor;
+
+	text_entry_update_layout(entry);
 }
 
 static void
@@ -430,6 +478,12 @@ text_entry_set_cursor_position(struct text_entry *entry,
 			       int32_t x, int32_t y)
 {
 	entry->cursor = text_layout_xy_to_index(entry->layout, x, y);
+
+	if (entry->cursor >= entry->preedit_cursor) {
+		entry->cursor -= entry->preedit_cursor;
+	}
+
+	text_entry_update_layout(entry);
 
 	widget_schedule_redraw(entry->widget);
 }
@@ -485,12 +539,42 @@ text_entry_draw_cursor(struct text_entry *entry, cairo_t *cr)
 	cairo_rectangle_t cursor_pos;
 
 	text_layout_extents(entry->layout, &extents);
-	text_layout_get_cursor_pos(entry->layout, entry->cursor, &cursor_pos);
+	text_layout_get_cursor_pos(entry->layout,
+				   entry->cursor + entry->preedit_cursor,
+				   &cursor_pos);
 
 	cairo_set_line_width(cr, 1.0);
 	cairo_move_to(cr, cursor_pos.x, extents.y_bearing + extents.height + 2);
 	cairo_line_to(cr, cursor_pos.x, extents.y_bearing - 2);
 	cairo_stroke(cr);
+}
+
+static void
+text_entry_draw_preedit(struct text_entry *entry, cairo_t *cr)
+{
+	cairo_text_extents_t extents;
+	cairo_rectangle_t start;
+	cairo_rectangle_t end;
+
+	if (!entry->preedit_text)
+		return;
+
+	text_layout_extents(entry->layout, &extents);
+
+	text_layout_index_to_pos(entry->layout, entry->cursor, &start);
+	text_layout_index_to_pos(entry->layout,
+				 entry->cursor + strlen(entry->preedit_text),
+				 &end);
+
+	cairo_save (cr);
+
+	cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
+	cairo_rectangle(cr,
+			start.x, 0,
+			end.x - start.x, 1);
+	cairo_fill(cr);
+
+	cairo_restore (cr);
 }
 
 static void
@@ -534,6 +618,8 @@ text_entry_redraw_handler(struct widget *widget, void *data)
 	text_entry_draw_selection(entry, cr);
 
 	text_entry_draw_cursor(entry, cr);
+
+	text_entry_draw_preedit(entry, cr);
 
 	cairo_pop_group_to_source(cr);
 	cairo_paint(cr);
@@ -646,6 +732,7 @@ main(int argc, char *argv[])
 
 	editor.entry = text_entry_create(&editor, "Entry");
 	editor.editor = text_entry_create(&editor, "Editor");
+	text_entry_set_preedit(editor.editor, "preedit", strlen("preedit"));
 
 	window_set_title(editor.window, "Text Editor");
 
