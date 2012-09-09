@@ -439,8 +439,8 @@ void DriveFile::ToProto(DriveEntryProto* proto) const {
 }
 
 void DriveDirectory::FromProto(const DriveDirectoryProto& proto) {
-  DCHECK(proto.gdata_entry().file_info().is_directory());
-  DCHECK(!proto.gdata_entry().has_file_specific_info());
+  DCHECK(proto.drive_entry().file_info().is_directory());
+  DCHECK(!proto.drive_entry().has_file_specific_info());
 
   for (int i = 0; i < proto.child_files_size(); ++i) {
     scoped_ptr<DriveFile> file(resource_metadata_->CreateDriveFile());
@@ -455,12 +455,12 @@ void DriveDirectory::FromProto(const DriveDirectoryProto& proto) {
 
   // The states of the directory should be updated after children are
   // handled successfully, so that incomplete states are not left.
-  DriveEntry::FromProto(proto.gdata_entry());
+  DriveEntry::FromProto(proto.drive_entry());
 }
 
 void DriveDirectory::ToProto(DriveDirectoryProto* proto) const {
-  DriveEntry::ToProto(proto->mutable_gdata_entry());
-  DCHECK(proto->gdata_entry().file_info().is_directory());
+  DriveEntry::ToProto(proto->mutable_drive_entry());
+  DCHECK(proto->drive_entry().file_info().is_directory());
 
   for (ChildMap::const_iterator iter = child_files_.begin();
        iter != child_files_.end(); ++iter) {

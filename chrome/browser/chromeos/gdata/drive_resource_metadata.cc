@@ -767,7 +767,7 @@ void DriveResourceMetadata::SaveToDB() {
 void DriveResourceMetadata::SerializeToString(
     std::string* serialized_proto) const {
   DriveRootDirectoryProto proto;
-  root_->ToProto(proto.mutable_gdata_directory());
+  root_->ToProto(proto.mutable_drive_directory());
   proto.set_largest_changestamp(largest_changestamp_);
   proto.set_version(kProtoVersion);
 
@@ -787,7 +787,7 @@ bool DriveResourceMetadata::ParseFromString(
     return false;
   }
 
-  root_->FromProto(proto.gdata_directory());
+  root_->FromProto(proto.drive_directory());
 
   origin_ = FROM_CACHE;
   largest_changestamp_ = proto.largest_changestamp();

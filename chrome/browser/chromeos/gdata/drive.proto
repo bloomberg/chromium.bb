@@ -73,7 +73,7 @@ message DriveEntryProto {
 // children as pairs of base name and resource ID. We should remove this
 // message type once we get there.
 message DriveDirectoryProto {
-  optional DriveEntryProto gdata_entry = 1;
+  optional DriveEntryProto drive_entry = 1;
   repeated DriveDirectoryProto child_directories = 7;
   repeated DriveEntryProto child_files = 9;
 }
@@ -81,11 +81,11 @@ message DriveDirectoryProto {
 // Container for the root directory and the largest changestamp.
 // TODO(satorux): Remove this: crbug.com/137862
 message DriveRootDirectoryProto {
-  optional DriveDirectoryProto gdata_directory = 1;
+  optional DriveDirectoryProto drive_directory = 1;
   optional int64 largest_changestamp = 4;
   // Monotonically increasing version number, which is changed when
   // incompatible change is made in the proto file.
-  // kProtoVersion in gdata_files.h defines the current version.
+  // kProtoVersion in drive_files.h defines the current version.
   optional int32 version = 3;
 }
 
@@ -112,5 +112,5 @@ message DriveCacheEntry {
   optional bool is_persistent = 6;
 
   // When adding a new state, be sure to update TestDriveCacheState and test
-  // functions defined in gdata_test_util.cc.
+  // functions defined in drive_test_util.cc.
 }

@@ -131,7 +131,7 @@ TEST_F(DriveResourceMetadataTest, VersionCheck) {
   // Set up the root directory.
   DriveRootDirectoryProto proto;
   DriveEntryProto* mutable_entry =
-      proto.mutable_gdata_directory()->mutable_gdata_entry();
+      proto.mutable_drive_directory()->mutable_drive_entry();
   mutable_entry->mutable_file_info()->set_is_directory(true);
   mutable_entry->set_resource_id(kDriveRootDirectoryResourceId);
   mutable_entry->set_upload_url(kResumableCreateMediaUrl);

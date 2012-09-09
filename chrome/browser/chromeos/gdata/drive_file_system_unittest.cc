@@ -624,8 +624,8 @@ class DriveFileSystemTest : public testing::Test {
     DriveRootDirectoryProto root;
     root.set_version(kProtoVersion);
     root.set_largest_changestamp(654321);
-    DriveDirectoryProto* root_dir = root.mutable_gdata_directory();
-    DriveEntryProto* dir_base = root_dir->mutable_gdata_entry();
+    DriveDirectoryProto* root_dir = root.mutable_drive_directory();
+    DriveEntryProto* dir_base = root_dir->mutable_drive_entry();
     PlatformFileInfoProto* platform_info = dir_base->mutable_file_info();
     dir_base->set_title("drive");
     dir_base->set_resource_id(kDriveRootDirectoryResourceId);
@@ -644,7 +644,7 @@ class DriveFileSystemTest : public testing::Test {
 
     // drive/Dir1
     DriveDirectoryProto* dir1 = root_dir->add_child_directories();
-    dir_base = dir1->mutable_gdata_entry();
+    dir_base = dir1->mutable_drive_entry();
     dir_base->set_title("Dir1");
     dir_base->set_resource_id("resource_id:Dir1");
     dir_base->set_upload_url("http://resumable-create-media/2");
@@ -663,7 +663,7 @@ class DriveFileSystemTest : public testing::Test {
 
     // drive/Dir1/SubDir2
     DriveDirectoryProto* dir2 = dir1->add_child_directories();
-    dir_base = dir2->mutable_gdata_entry();
+    dir_base = dir2->mutable_drive_entry();
     dir_base->set_title("SubDir2");
     dir_base->set_resource_id("resource_id:SubDir2");
     dir_base->set_upload_url("http://resumable-create-media/3");
