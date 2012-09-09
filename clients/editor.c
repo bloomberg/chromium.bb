@@ -205,15 +205,7 @@ static void text_entry_button_handler(struct widget *widget,
 				      struct input *input, uint32_t time,
 				      uint32_t button,
 				      enum wl_pointer_button_state state, void *data);
-
-static void
-text_entry_append(struct text_entry *entry, const char *text)
-{
-	entry->text = realloc(entry->text, strlen(entry->text) + strlen(text) + 1);
-	strcat(entry->text, text);
-	text_layout_set_text(entry->layout, entry->text);
-}
-
+static void text_entry_insert_at_cursor(struct text_entry *entry, const char *text);
 
 static void
 text_model_commit_string(void *data,
@@ -223,7 +215,12 @@ text_model_commit_string(void *data,
 {
 	struct text_entry *entry = data;
 
-	text_entry_append(entry, text);	
+	if (index > strlen(text)) {
+		fprintf(stderr, "Invalid cursor index %d\n", index);
+		index = strlen(text);
+	}
+
+	text_entry_insert_at_cursor(entry, text);
 
 	widget_schedule_redraw(entry->widget);
 }
@@ -406,6 +403,23 @@ text_entry_deactivate(struct text_entry *entry,
 {
 	text_model_deactivate(entry->model,
 			      seat);
+}
+
+static void
+text_entry_insert_at_cursor(struct text_entry *entry, const char *text)
+{
+	char *new_text = malloc(strlen(entry->text) + strlen(text) + 1);
+
+	strncpy(new_text, entry->text, entry->cursor);
+	strcpy(new_text + entry->cursor, text);
+	strcpy(new_text + entry->cursor + strlen(text),
+	       entry->text + entry->cursor);
+
+	free(entry->text);
+	entry->text = new_text;
+	entry->cursor += strlen(text);
+
+	text_layout_set_text(entry->layout, entry->text);
 }
 
 static void
