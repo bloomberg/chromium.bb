@@ -35,6 +35,7 @@ def Main(argv):
     return 1
 
   shutil.copy(argv[1], argv[2])
+  print 'From %s to %s\n' % (argv[1], argv[2])
   return 0
 
 if __name__ == '__main__':
