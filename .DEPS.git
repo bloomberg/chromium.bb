@@ -11,22 +11,12 @@ vars = {
 }
 
 deps = {
-    'base':
-        Var('git_url') + '/chromium/src/base.git@9206024f3b6b6b695cb7db800c9489b554bccf9c',
-    'build':
-        Var('git_url') + '/chromium/src/build.git@f5f7865054fbf59c65f1aa6e5bbb6393332c0463',
     'chrome/test/pyautolib':
         Var('git_url') + '/chromium/src/chrome/test/pyautolib.git@2765c22a732ea18fe1a6cd3d2e29c9f3224438aa',
-    'gpu':
-        Var('git_url') + '/chromium/src/gpu.git@b66d14e4340be9e843eea450c13baa7682bb70db',
-    'media':
-        Var('git_url') + '/chromium/src/media.git@4a3b612ece2fcc5a788f539d955c67cf5cfe74e7',
     'native_client/tools/perf_expectations':
         Var('git_url') + '/chromium/src/tools/perf_expectations.git@5a2630c1fc344fe96931d1e4d8dd758ec7970da0',
     'net/tools/testserver':
         Var('git_url') + '/chromium/src/net/tools/testserver.git@983fc4633ff0069243b05a8a3a7d370399f11043',
-    'ppapi':
-        Var('git_url') + '/chromium/src/ppapi.git@8a76deb2712f1f6ea154e24e594b53a74cb42667',
     'testing/gtest':
         Var('git_url') + '/external/googletest.git@090d8a824857f24e5ec780112a3d4b269f9a7d3d',
     'third_party':
