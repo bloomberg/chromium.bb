@@ -4,6 +4,4 @@ include_rules = [
   "+native_client/src/trusted",
   "+native_client/src/untrusted",
   "+native_client/tests",
-  "+ppapi/c",
-  "+ppapi/cpp",
 ]

@@ -630,7 +630,7 @@
                           # so that gyp understands it's a path and performs proper
                           # relativization during dict merging.
                           'strip_from_xcode_path':
-                              '../../build/mac/strip_from_xcode',
+                              'mac/strip_from_xcode',
                         },
                         'postbuild_name': 'Strip If Needed',
                         'action': ['<(strip_from_xcode_path)'],

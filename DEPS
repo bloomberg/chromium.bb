@@ -27,22 +27,12 @@ vars = {
 }
 
 deps = {
-  "base":
-    Var("chromium_trunk") + "/src/base@" + Var("chrome_rev"),
-  "build":
-    Var("chromium_trunk") + "/src/build@" + Var("chrome_rev"),
   "chrome/test/pyautolib":
     Var("chromium_trunk") + "/src/chrome/test/pyautolib@" + Var("chrome_rev"),
-  "gpu":
-    Var("chromium_trunk") + "/src/gpu@" + Var("chrome_rev"),
-  "media":
-    Var("chromium_trunk") + "/src/media@" + Var("chrome_rev"),
   "native_client/tools/perf_expectations":
     Var("chromium_trunk") + "/src/tools/perf_expectations@" + Var("chrome_rev"),
   "net/tools/testserver":
     Var("chromium_trunk") + "/src/net/tools/testserver@" + Var("chrome_rev"),
-  "ppapi":
-    Var("chromium_trunk") + "/src/ppapi@" + Var("chrome_rev"),
   "testing/gtest":
     "http://googletest.googlecode.com/svn/trunk@" + Var("gtest_rev"),
   "third_party":

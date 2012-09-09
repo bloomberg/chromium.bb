@@ -75,7 +75,7 @@
           'lib_dirs_newlib64': [],
           'lib_dirs_glibc32': [],
           'lib_dirs_glibc64': [],
-          'include_dirs': ['<(DEPTH)', '<(DEPTH)/ppapi'],
+          'include_dirs': ['<(DEPTH)'],
           'defines': [
             '<@(nacl_default_defines)',
             'NACL_BUILD_ARCH=x86',
@@ -123,7 +123,7 @@
           'enable_arm': 1,
           'extra_deps_newlib_arm': [],
           'lib_dirs_newlib_arm': [],
-          'include_dirs': ['<(DEPTH)','<(DEPTH)/ppapi'],
+          'include_dirs': ['<(DEPTH)'],
           'defines': [
             '<@(nacl_default_defines)',
             'NACL_BUILD_ARCH=arm',
@@ -163,7 +163,6 @@
                  'description': 'building >(out_newlib64)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
-                    '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_newlib64)',
                     '>(source_list_newlib64)',
@@ -205,7 +204,6 @@
                  'description': 'building >(out_newlib64)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
-                    '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_newlib64)',
                     '>(source_list_newlib64)',
@@ -247,7 +245,6 @@
                  'description': 'building >(out_newlib32)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
-                    '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_newlib32)',
                     '>(source_list_newlib32)',
@@ -289,7 +286,6 @@
                  'description': 'building >(out_newlib32)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
-                    '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_newlib32)',
                     '>(source_list_newlib32)',
@@ -337,7 +333,6 @@
                 'description': 'building >(out_newlib_arm)',
                 'inputs': [
                   '<(DEPTH)/native_client/build/build_nexe.py',
-                  '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                   '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                   '>@(extra_deps_newlib_arm)',
                   '>(source_list_newlib_arm)',
@@ -378,7 +373,6 @@
                 'description': 'building >(out_newlib_arm)',
                 'inputs': [
                   '<(DEPTH)/native_client/build/build_nexe.py',
-                  '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                   '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                   '>@(extra_deps_newlib_arm)',
                   '>(source_list_newlib_arm)',
@@ -425,7 +419,6 @@
                  'description': 'building >(out_glibc64)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
-                    '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_glibc64)',
                     '>(source_list_glibc64)',
@@ -467,7 +460,6 @@
                  'description': 'building >(out_glibc32)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
-                    '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_glibc32)',
                     '>(source_list_glibc32)',
@@ -509,7 +501,6 @@
                  'description': 'building >(out_glibc64)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
-                    '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_glibc64)',
                     '>(source_list_glibc64)',
@@ -551,7 +542,6 @@
                  'description': 'building >(out_glibc32)',
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
-                    '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_glibc32)',
                     '>(source_list_glibc32)',
