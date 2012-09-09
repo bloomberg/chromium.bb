@@ -4,9 +4,7 @@
 
 #include "base/message_loop.h"
 #include "remoting/base/constants.h"
-#include "remoting/host/audio_capturer.h"
 #include "remoting/host/client_session.h"
-#include "remoting/host/desktop_environment.h"
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,10 +17,8 @@ using protocol::MockConnectionToClientEventHandler;
 using protocol::MockHostStub;
 using protocol::MockInputStub;
 using protocol::MockSession;
-using protocol::SessionConfig;
 
 using testing::_;
-using testing::AnyNumber;
 using testing::DeleteArg;
 using testing::InSequence;
 using testing::Return;
@@ -33,72 +29,31 @@ class ClientSessionTest : public testing::Test {
   ClientSessionTest() {}
 
   virtual void SetUp() OVERRIDE {
-    message_loop_proxy_ = base::MessageLoopProxy::current();
-
-    EXPECT_CALL(context_, ui_task_runner())
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(message_loop_proxy_.get()));
-    EXPECT_CALL(context_, capture_task_runner())
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(message_loop_proxy_.get()));
-    EXPECT_CALL(context_, encode_task_runner())
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(message_loop_proxy_.get()));
-    EXPECT_CALL(context_, network_task_runner())
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(message_loop_proxy_.get()));
-
     client_jid_ = "user@domain/rest-of-jid";
-
-    event_executor_ = new MockEventExecutor();
-    capturer_ = new MockVideoFrameCapturer();
-    EXPECT_CALL(*capturer_, Start(_));
-    EXPECT_CALL(*capturer_, Stop());
-    EXPECT_CALL(*capturer_, InvalidateRegion(_)).Times(AnyNumber());
-    EXPECT_CALL(*capturer_, CaptureInvalidRegion(_)).Times(AnyNumber());
-
-    scoped_ptr<DesktopEnvironment> desktop_environment(new DesktopEnvironment(
-        scoped_ptr<AudioCapturer>(NULL),
-        scoped_ptr<EventExecutor>(event_executor_),
-        scoped_ptr<VideoFrameCapturer>(capturer_)));
 
     // Set up a large default screen size that won't affect most tests.
     default_screen_size_.set(1000, 1000);
-    EXPECT_CALL(*capturer_, size_most_recent())
+    EXPECT_CALL(capturer_, size_most_recent())
         .WillRepeatedly(ReturnRef(default_screen_size_));
 
-    session_config_ = SessionConfig::GetDefault();
-
     protocol::MockSession* session = new MockSession();
-    EXPECT_CALL(*session, config()).WillRepeatedly(ReturnRef(session_config_));
     EXPECT_CALL(*session, jid()).WillRepeatedly(ReturnRef(client_jid_));
     EXPECT_CALL(*session, SetEventHandler(_));
     EXPECT_CALL(*session, Close());
     scoped_ptr<protocol::ConnectionToClient> connection(
         new protocol::ConnectionToClient(session));
     connection_ = connection.get();
-
-    client_session_ = new ClientSession(
-        &session_event_handler_,
-        context_.capture_task_runner(),
-        context_.encode_task_runner(),
-        context_.network_task_runner(),
-        connection.Pass(),
-        desktop_environment.Pass(),
-        base::TimeDelta());
+    client_session_.reset(new ClientSession(
+        &session_event_handler_, connection.Pass(),
+        &host_clipboard_stub_, &host_input_stub_, &capturer_,
+        base::TimeDelta()));
   }
 
   virtual void TearDown() OVERRIDE {
-    // MockClientSessionEventHandler won't trigger StopAndDelete, so fake it.
-    client_session_->StopAndDelete(base::Bind(
-        &ClientSessionTest::OnClientStopped, base::Unretained(this)));
-
-    // Run message loop before destroying because the session is destroyed
-    // asynchronously.
-    message_loop_.Run();
-
-    // Verify that the client session has been stopped.
-    EXPECT_TRUE(client_session_ == NULL);
+    client_session_.reset();
+    // Run message loop before destroying because protocol::Session is
+    // destroyed asynchronously.
+    message_loop_.RunAllPending();
   }
 
  protected:
@@ -109,22 +64,15 @@ class ClientSessionTest : public testing::Test {
                                         protocol::OK);
   }
 
-  void OnClientStopped() {
-    client_session_ = NULL;
-    message_loop_.PostTask(FROM_HERE, MessageLoop::QuitClosure());
-  }
-
-  MockChromotingHostContext context_;
-  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   SkISize default_screen_size_;
   MessageLoop message_loop_;
   std::string client_jid_;
   MockHostStub host_stub_;
-  MockEventExecutor* event_executor_;
-  MockVideoFrameCapturer* capturer_;
+  MockClipboardStub host_clipboard_stub_;
+  MockInputStub host_input_stub_;
+  MockVideoFrameCapturer capturer_;
   MockClientSessionEventHandler session_event_handler_;
-  ClientSession* client_session_;
-  SessionConfig session_config_;
+  scoped_ptr<ClientSession> client_session_;
 
   // ClientSession owns |connection_| but tests need it to inject fake events.
   protocol::ConnectionToClient* connection_;
@@ -150,12 +98,10 @@ TEST_F(ClientSessionTest, ClipboardStubFilter) {
 
   InSequence s;
   EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
-  EXPECT_CALL(*event_executor_, StartPtr(_));
   EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_));
-  EXPECT_CALL(*event_executor_, InjectClipboardEvent(EqualsClipboardEvent(
+  EXPECT_CALL(host_clipboard_stub_, InjectClipboardEvent(EqualsClipboardEvent(
       kMimeTypeTextUtf8, "b")));
   EXPECT_CALL(session_event_handler_, OnSessionClosed(_));
-  EXPECT_CALL(*event_executor_, StopAndDeleteMock());
 
   // This event should not get through to the clipboard stub,
   // because the client isn't authenticated yet.
@@ -213,13 +159,11 @@ TEST_F(ClientSessionTest, InputStubFilter) {
 
   InSequence s;
   EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
-  EXPECT_CALL(*event_executor_, StartPtr(_));
   EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_));
-  EXPECT_CALL(*event_executor_, InjectKeyEvent(EqualsKeyEvent(2, true)));
-  EXPECT_CALL(*event_executor_, InjectKeyEvent(EqualsKeyEvent(2, false)));
-  EXPECT_CALL(*event_executor_, InjectMouseEvent(EqualsMouseEvent(200, 201)));
+  EXPECT_CALL(host_input_stub_, InjectKeyEvent(EqualsKeyEvent(2, true)));
+  EXPECT_CALL(host_input_stub_, InjectKeyEvent(EqualsKeyEvent(2, false)));
+  EXPECT_CALL(host_input_stub_, InjectMouseEvent(EqualsMouseEvent(200, 201)));
   EXPECT_CALL(session_event_handler_, OnSessionClosed(_));
-  EXPECT_CALL(*event_executor_, StopAndDeleteMock());
 
   // These events should not get through to the input stub,
   // because the client isn't authenticated yet.
@@ -251,12 +195,10 @@ TEST_F(ClientSessionTest, LocalInputTest) {
 
   InSequence s;
   EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
-  EXPECT_CALL(*event_executor_, StartPtr(_));
   EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_));
-  EXPECT_CALL(*event_executor_, InjectMouseEvent(EqualsMouseEvent(100, 101)));
-  EXPECT_CALL(*event_executor_, InjectMouseEvent(EqualsMouseEvent(200, 201)));
+  EXPECT_CALL(host_input_stub_, InjectMouseEvent(EqualsMouseEvent(100, 101)));
+  EXPECT_CALL(host_input_stub_, InjectMouseEvent(EqualsMouseEvent(200, 201)));
   EXPECT_CALL(session_event_handler_, OnSessionClosed(_));
-  EXPECT_CALL(*event_executor_, StopAndDeleteMock());
 
   client_session_->OnConnectionAuthenticated(client_session_->connection());
   client_session_->OnConnectionChannelsConnected(client_session_->connection());
@@ -290,18 +232,16 @@ TEST_F(ClientSessionTest, RestoreEventState) {
 
   InSequence s;
   EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
-  EXPECT_CALL(*event_executor_, StartPtr(_));
   EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_));
-  EXPECT_CALL(*event_executor_, InjectKeyEvent(EqualsKeyEvent(1, true)));
-  EXPECT_CALL(*event_executor_, InjectKeyEvent(EqualsKeyEvent(2, true)));
-  EXPECT_CALL(*event_executor_, InjectMouseEvent(EqualsMouseButtonEvent(
+  EXPECT_CALL(host_input_stub_, InjectKeyEvent(EqualsKeyEvent(1, true)));
+  EXPECT_CALL(host_input_stub_, InjectKeyEvent(EqualsKeyEvent(2, true)));
+  EXPECT_CALL(host_input_stub_, InjectMouseEvent(EqualsMouseButtonEvent(
       protocol::MouseEvent::BUTTON_LEFT, true)));
-  EXPECT_CALL(*event_executor_, InjectKeyEvent(EqualsKeyEvent(1, false)));
-  EXPECT_CALL(*event_executor_, InjectKeyEvent(EqualsKeyEvent(2, false)));
-  EXPECT_CALL(*event_executor_, InjectMouseEvent(EqualsMouseButtonEvent(
+  EXPECT_CALL(host_input_stub_, InjectKeyEvent(EqualsKeyEvent(1, false)));
+  EXPECT_CALL(host_input_stub_, InjectKeyEvent(EqualsKeyEvent(2, false)));
+  EXPECT_CALL(host_input_stub_, InjectMouseEvent(EqualsMouseButtonEvent(
       protocol::MouseEvent::BUTTON_LEFT, false)));
   EXPECT_CALL(session_event_handler_, OnSessionClosed(_));
-  EXPECT_CALL(*event_executor_, StopAndDeleteMock());
 
   client_session_->OnConnectionAuthenticated(client_session_->connection());
   client_session_->OnConnectionChannelsConnected(client_session_->connection());
@@ -315,14 +255,12 @@ TEST_F(ClientSessionTest, RestoreEventState) {
 
 TEST_F(ClientSessionTest, ClampMouseEvents) {
   SkISize screen(SkISize::Make(200, 100));
-  EXPECT_CALL(*capturer_, size_most_recent())
+  EXPECT_CALL(capturer_, size_most_recent())
       .WillRepeatedly(ReturnRef(screen));
 
   EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
-  EXPECT_CALL(*event_executor_, StartPtr(_));
   EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_));
   EXPECT_CALL(session_event_handler_, OnSessionClosed(_));
-  EXPECT_CALL(*event_executor_, StopAndDeleteMock());
 
   client_session_->OnConnectionAuthenticated(client_session_->connection());
   client_session_->OnConnectionChannelsConnected(client_session_->connection());
@@ -337,7 +275,7 @@ TEST_F(ClientSessionTest, ClampMouseEvents) {
     for (int i = 0; i < 3; i++) {
       event.set_x(input_x[i]);
       event.set_y(input_y[j]);
-      EXPECT_CALL(*event_executor_, InjectMouseEvent(EqualsMouseEvent(
+      EXPECT_CALL(host_input_stub_, InjectMouseEvent(EqualsMouseEvent(
           expected_x[i], expected_y[j])));
       connection_->input_stub()->InjectMouseEvent(event);
     }

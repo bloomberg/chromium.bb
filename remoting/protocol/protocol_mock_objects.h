@@ -28,7 +28,8 @@ namespace protocol {
 class MockConnectionToClient : public ConnectionToClient {
  public:
   MockConnectionToClient(Session* session,
-                         HostStub* host_stub);
+                         HostStub* host_stub,
+                         InputStub* input_stub);
   virtual ~MockConnectionToClient();
 
   MOCK_METHOD1(Init, void(Session* session));
