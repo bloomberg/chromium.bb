@@ -38,13 +38,19 @@ struct text_model {
 	struct wl_surface *surface;
 };
 
-struct input_method {
-	struct wl_resource *input_method_binding;
-	struct wl_global *input_method_global;
+struct text_model_factory {
 	struct wl_global *text_model_factory_global;
 	struct wl_listener destroy_listener;
 
 	struct weston_compositor *ec;
+};
+
+struct input_method {
+	struct wl_resource *input_method_binding;
+	struct wl_global *input_method_global;
+	struct wl_listener destroy_listener;
+
+	struct weston_seat *seat;
 	struct text_model *model;
 
 	struct wl_list link;
@@ -184,24 +190,24 @@ static void text_model_factory_create_text_model(struct wl_client *client,
 						 struct wl_resource *resource,
 						 uint32_t id)
 {
-	struct input_method *input_method = resource->data;
+	struct text_model_factory *text_model_factory = resource->data;
 	struct text_model *text_model;
 
 	text_model = calloc(1, sizeof *text_model);
-
-	text_model->resource.destroy = destroy_text_model;
 
 	text_model->resource.object.id = id;
 	text_model->resource.object.interface = &text_model_interface;
 	text_model->resource.object.implementation =
 		(void (**)(void)) &text_model_implementation;
+
 	text_model->resource.data = text_model;
+	text_model->resource.destroy = destroy_text_model;
 
-	text_model->ec = input_method->ec;
-
-	wl_client_add_resource(client, &text_model->resource);
+	text_model->ec = text_model_factory->ec;
 
 	wl_list_init(&text_model->input_methods);
+
+	wl_client_add_resource(client, &text_model->resource);
 };
 
 static const struct text_model_factory_interface text_model_factory_implementation = {
@@ -214,13 +220,43 @@ bind_text_model_factory(struct wl_client *client,
 			uint32_t version,
 			uint32_t id)
 {
-	struct input_method *input_method = data;
+	struct text_model_factory *text_model_factory = data;
 
 	/* No checking for duplicate binding necessary.
 	 * No events have to be sent, so we don't need the return value. */
 	wl_client_add_object(client, &text_model_factory_interface,
 			     &text_model_factory_implementation,
-			     id, input_method);
+			     id, text_model_factory);
+}
+
+static void
+text_model_factory_notifier_destroy(struct wl_listener *listener, void *data)
+{
+	struct text_model_factory *text_model_factory =
+		container_of(listener, struct text_model_factory, destroy_listener);
+
+	wl_display_remove_global(text_model_factory->ec->wl_display,
+				 text_model_factory->text_model_factory_global);
+
+	free(text_model_factory);
+}
+
+WL_EXPORT void
+text_model_factory_create(struct weston_compositor *ec)
+{
+	struct text_model_factory *text_model_factory;
+
+	text_model_factory = calloc(1, sizeof *text_model_factory);
+
+	text_model_factory->ec = ec;
+
+	text_model_factory->text_model_factory_global =
+		wl_display_add_global(ec->wl_display,
+				      &text_model_factory_interface,
+				      text_model_factory, bind_text_model_factory);
+
+	text_model_factory->destroy_listener.notify = text_model_factory_notifier_destroy;
+	wl_signal_add(&ec->destroy_signal, &text_model_factory->destroy_listener);
 }
 
 static void
@@ -279,10 +315,12 @@ input_method_notifier_destroy(struct wl_listener *listener, void *data)
 	struct input_method *input_method =
 		container_of(listener, struct input_method, destroy_listener);
 
-	wl_display_remove_global(input_method->ec->wl_display,
+	if (input_method->model)
+		deactivate_text_model(input_method->model, input_method);
+
+	wl_display_remove_global(input_method->seat->compositor->wl_display,
 				 input_method->input_method_global);
-	wl_display_remove_global(input_method->ec->wl_display,
-				 input_method->text_model_factory_global);
+
 	free(input_method);
 }
 
@@ -316,7 +354,7 @@ input_method_init_seat(struct weston_seat *seat)
 	seat->input_method->focus_listener_initialized = 1;
 }
 
-void
+WL_EXPORT void
 input_method_create(struct weston_compositor *ec,
 		    struct weston_seat *seat)
 {
@@ -324,7 +362,7 @@ input_method_create(struct weston_compositor *ec,
 
 	input_method = calloc(1, sizeof *input_method);
 
-	input_method->ec = ec;
+	input_method->seat = seat;
 	input_method->model = NULL;
 	input_method->focus_listener_initialized = 0;
 
@@ -333,13 +371,8 @@ input_method_create(struct weston_compositor *ec,
 				      &input_method_interface,
 				      input_method, bind_input_method);
 
-	input_method->text_model_factory_global =
-		wl_display_add_global(ec->wl_display,
-				      &text_model_factory_interface,
-				      input_method, bind_text_model_factory);
-
 	input_method->destroy_listener.notify = input_method_notifier_destroy;
-	wl_signal_add(&ec->destroy_signal, &input_method->destroy_listener);
+	wl_signal_add(&seat->seat.destroy_signal, &input_method->destroy_listener);
 
 	seat->input_method = input_method;
 }

@@ -747,6 +747,9 @@ void
 text_cursor_position_notifier_create(struct weston_compositor *ec);
 
 void
+text_model_factory_create(struct weston_compositor *ec);
+
+void
 input_method_create(struct weston_compositor *ec,
 		    struct weston_seat *seat);
 

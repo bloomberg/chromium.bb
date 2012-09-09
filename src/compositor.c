@@ -2769,6 +2769,7 @@ weston_compositor_init(struct weston_compositor *ec,
 
 	screenshooter_create(ec);
 	text_cursor_position_notifier_create(ec);
+	text_model_factory_create(ec);
 
 	wl_data_device_manager_init(ec->wl_display);
 
