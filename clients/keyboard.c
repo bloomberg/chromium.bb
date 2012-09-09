@@ -37,6 +37,7 @@ struct virtual_keyboard {
 	struct input_method *input_method;
 	struct input_method_context *context;
 	struct display *display;
+	char *preedit_string;
 };
 
 enum key_type {
@@ -214,16 +215,27 @@ keyboard_handle_key(struct keyboard *keyboard, const struct key *key)
 
 	switch (key->key_type) {
 		case keytype_default:
-			input_method_context_commit_string(keyboard->keyboard->context,
-							   label, -1);
+			keyboard->keyboard->preedit_string = strcat(keyboard->keyboard->preedit_string,
+								    label);
+			input_method_context_preedit_string(keyboard->keyboard->context,
+							    keyboard->keyboard->preedit_string,
+							    strlen(keyboard->keyboard->preedit_string));
 			break;
 		case keytype_backspace:
 			break;
 		case keytype_enter:
 			break;
 		case keytype_space:
+			keyboard->keyboard->preedit_string = strcat(keyboard->keyboard->preedit_string,
+								    " ");
+			input_method_context_preedit_string(keyboard->keyboard->context,
+							    "",
+							    0);
 			input_method_context_commit_string(keyboard->keyboard->context,
-							   " ", -1);
+							   keyboard->keyboard->preedit_string,
+							   strlen(keyboard->keyboard->preedit_string));
+			free(keyboard->keyboard->preedit_string);
+			keyboard->keyboard->preedit_string = strdup("");
 			break;
 		case keytype_switch:
 			if (keyboard->state == keyboardstate_default)
@@ -296,6 +308,11 @@ input_method_activate(void *data,
 
 	if (keyboard->context)
 		input_method_context_destroy(keyboard->context);
+
+	if (keyboard->preedit_string)
+		free(keyboard->preedit_string);
+
+	keyboard->preedit_string = strdup("");
 
 	keyboard->context = context;
 	input_method_context_add_listener(context,
@@ -390,6 +407,7 @@ main(int argc, char *argv[])
 	}
 
 	virtual_keyboard.context = NULL;
+	virtual_keyboard.preedit_string = NULL;
 
 	wl_display_add_global_listener(display_get_display(virtual_keyboard.display),
 				       global_handler, &virtual_keyboard);

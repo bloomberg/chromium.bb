@@ -209,6 +209,9 @@ static void text_entry_button_handler(struct widget *widget,
 				      uint32_t button,
 				      enum wl_pointer_button_state state, void *data);
 static void text_entry_insert_at_cursor(struct text_entry *entry, const char *text);
+static void text_entry_set_preedit(struct text_entry *entry,
+				   const char *preedit_text,
+				   int preedit_cursor);
 
 static void
 text_model_commit_string(void *data,
@@ -234,6 +237,16 @@ text_model_preedit_string(void *data,
 			  const char *text,
 			  uint32_t index)
 {
+	struct text_entry *entry = data;
+
+	if (index > strlen(text)) {
+		fprintf(stderr, "Invalid cursor index %d\n", index);
+		index = strlen(text);
+	}
+
+	text_entry_set_preedit(entry, text, index);
+
+	widget_schedule_redraw(entry->widget);
 }
 
 static void

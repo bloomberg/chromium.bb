@@ -42,6 +42,13 @@
       <arg name="text" type="string"/>
       <arg name="index" type="uint"/>
     </request>
+    <request name="preedit_string">
+      <description summary="pre-edit string">
+        Send the pre-edit string text to the applications text model.
+      </description>
+      <arg name="text" type="string"/>
+      <arg name="index" type="uint"/>
+    </request>
     <event name="surrounding_text">
       <description summary="surrounding text event">
         The plain surrounding text around the input position. Cursor is the
