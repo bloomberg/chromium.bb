@@ -115,8 +115,8 @@ class FILEAPI_EXPORT LocalFileSystemOperation
   friend class TestMountPointProvider;
   friend class chromeos::CrosMountPointProvider;
 
-  friend class FileSystemOperationTest;
-  friend class FileSystemOperationWriteTest;
+  friend class LocalFileSystemOperationTest;
+  friend class LocalFileSystemOperationWriteTest;
   friend class FileWriterDelegateTest;
   friend class FileSystemQuotaTest;
   friend class LocalFileSystemTestOriginHelper;
@@ -127,6 +127,10 @@ class FILEAPI_EXPORT LocalFileSystemOperation
 
   FileSystemContext* file_system_context() const {
     return operation_context_->file_system_context();
+  }
+
+  FileSystemOperationContext* operation_context() const {
+    return operation_context_.get();
   }
 
   // The unit tests that need to specify and control the lifetime of the

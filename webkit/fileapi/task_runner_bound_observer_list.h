@@ -94,9 +94,11 @@ class TaskRunnerBoundObserverList {
 };
 
 class FileAccessObserver;
+class FileChangeObserver;
 class FileUpdateObserver;
 
 typedef TaskRunnerBoundObserverList<FileAccessObserver> AccessObserverList;
+typedef TaskRunnerBoundObserverList<FileChangeObserver> ChangeObserverList;
 typedef TaskRunnerBoundObserverList<FileUpdateObserver> UpdateObserverList;
 
 }  // namespace fileapi

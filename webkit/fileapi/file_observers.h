@@ -46,6 +46,25 @@ class FILEAPI_EXPORT FileAccessObserver {
   virtual void OnAccess(const FileSystemURL& url) = 0;
 };
 
+// An abstract interface to observe file changes.
+// Each method of this class is called once per file/directory is created,
+// removed or modified.  For recursive operations each method is called for
+// each subdirectory/subfile.  Currently ChangeObserver is only supported
+// by the local sandbox file system.
+class FILEAPI_EXPORT FileChangeObserver {
+ public:
+  virtual ~FileChangeObserver() {}
+
+  virtual void OnCreateFile(const FileSystemURL& url) = 0;
+  virtual void OnCreateFileFrom(const FileSystemURL& url,
+                                const FileSystemURL& src) = 0;
+  virtual void OnRemoveFile(const FileSystemURL& url) = 0;
+  virtual void OnModifyFile(const FileSystemURL& url) = 0;
+
+  virtual void OnCreateDirectory(const FileSystemURL& url) = 0;
+  virtual void OnRemoveDirectory(const FileSystemURL& url) = 0;
+};
+
 }  // namespace fileapi
 
 #endif  // WEBKIT_FILEAPI_FILE_OBSERVERS_H_

@@ -411,6 +411,8 @@
         '../webkit/fileapi/local_file_stream_writer_unittest.cc',
         '../webkit/fileapi/local_file_util_unittest.cc',
         '../webkit/fileapi/media/native_media_file_util_unittest.cc',
+        '../webkit/fileapi/mock_file_change_observer.cc',
+        '../webkit/fileapi/mock_file_change_observer.h',
         '../webkit/fileapi/mock_file_system_options.cc',
         '../webkit/fileapi/mock_file_system_options.h',
         '../webkit/fileapi/obfuscated_file_util_unittest.cc',

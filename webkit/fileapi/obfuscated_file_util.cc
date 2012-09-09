@@ -293,6 +293,8 @@ PlatformFileError ObfuscatedFileUtil::CreateOrOpen(
     if (created && base::PLATFORM_FILE_OK == error) {
       *created = true;
       UpdateUsage(context, url, growth);
+      context->change_observers()->Notify(
+          &FileChangeObserver::OnCreateFile, MakeTuple(url));
     }
     return error;
   }
@@ -330,8 +332,11 @@ PlatformFileError ObfuscatedFileUtil::CreateOrOpen(
   }
 
   // If truncating we need to update the usage.
-  if (error == base::PLATFORM_FILE_OK && delta)
+  if (error == base::PLATFORM_FILE_OK && delta) {
     UpdateUsage(context, url, delta);
+    context->change_observers()->Notify(
+        &FileChangeObserver::OnModifyFile, MakeTuple(url));
+  }
   return error;
 }
 
@@ -379,6 +384,8 @@ PlatformFileError ObfuscatedFileUtil::EnsureFileExists(
   if (created && base::PLATFORM_FILE_OK == error) {
     *created = true;
     UpdateUsage(context, url, growth);
+    context->change_observers()->Notify(
+        &FileChangeObserver::OnCreateFile, MakeTuple(url));
   }
   return error;
 }
@@ -436,6 +443,8 @@ PlatformFileError ObfuscatedFileUtil::CreateDirectory(
       return base::PLATFORM_FILE_ERROR_FAILED;
     }
     UpdateUsage(context, url, growth);
+    context->change_observers()->Notify(
+        &FileChangeObserver::OnCreateDirectory, MakeTuple(url));
     if (first) {
       first = false;
       TouchDirectory(db, file_info.parent_id);
@@ -545,8 +554,11 @@ PlatformFileError ObfuscatedFileUtil::Truncate(
   if (!AllocateQuota(context, growth))
     return base::PLATFORM_FILE_ERROR_NO_SPACE;
   error = NativeFileUtil::Truncate(local_path, length);
-  if (error == base::PLATFORM_FILE_OK)
+  if (error == base::PLATFORM_FILE_OK) {
     UpdateUsage(context, url, growth);
+    context->change_observers()->Notify(
+        &FileChangeObserver::OnModifyFile, MakeTuple(url));
+  }
   return error;
 }
 
@@ -695,8 +707,22 @@ PlatformFileError ObfuscatedFileUtil::CopyOrMoveFile(
   if (error != base::PLATFORM_FILE_OK)
     return error;
 
-  if (!copy)
+  if (overwrite) {
+    context->change_observers()->Notify(
+        &FileChangeObserver::OnModifyFile,
+        MakeTuple(dest_url));
+  } else {
+    context->change_observers()->Notify(
+        &FileChangeObserver::OnCreateFileFrom,
+        MakeTuple(dest_url, src_url));
+  }
+
+  if (!copy) {
+    context->change_observers()->Notify(
+        &FileChangeObserver::OnRemoveFile, MakeTuple(src_url));
     TouchDirectory(db, src_file_info.parent_id);
+  }
+
   TouchDirectory(db, dest_file_info.parent_id);
 
   UpdateUsage(context, dest_url, growth);
@@ -769,6 +795,14 @@ PlatformFileError ObfuscatedFileUtil::CopyInForeignFile(
   if (error != base::PLATFORM_FILE_OK)
     return error;
 
+  if (overwrite) {
+    context->change_observers()->Notify(
+        &FileChangeObserver::OnModifyFile, MakeTuple(dest_url));
+  } else {
+    context->change_observers()->Notify(
+        &FileChangeObserver::OnCreateFile, MakeTuple(dest_url));
+  }
+
   UpdateUsage(context, dest_url, growth);
   TouchDirectory(db, dest_file_info.parent_id);
   return base::PLATFORM_FILE_OK;
@@ -809,6 +843,9 @@ PlatformFileError ObfuscatedFileUtil::DeleteFile(
   UpdateUsage(context, url, growth);
   TouchDirectory(db, file_info.parent_id);
 
+  context->change_observers()->Notify(
+      &FileChangeObserver::OnRemoveFile, MakeTuple(url));
+
   if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND)
     return base::PLATFORM_FILE_OK;
 
@@ -840,6 +877,8 @@ PlatformFileError ObfuscatedFileUtil::DeleteSingleDirectory(
   AllocateQuota(context, growth);
   UpdateUsage(context, url, growth);
   TouchDirectory(db, file_info.parent_id);
+  context->change_observers()->Notify(
+      &FileChangeObserver::OnRemoveDirectory, MakeTuple(url));
   return base::PLATFORM_FILE_OK;
 }
 

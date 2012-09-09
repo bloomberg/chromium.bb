@@ -65,6 +65,11 @@ class FILEAPI_EXPORT_PRIVATE FileSystemOperationContext {
     return media_path_filter_;
   }
 
+  void set_change_observers(const ChangeObserverList& list) {
+    change_observers_ = list;
+  }
+  ChangeObserverList* change_observers() { return &change_observers_; }
+
   void set_access_observers(const AccessObserverList& list) {
     access_observers_ = list;
   }
@@ -83,6 +88,7 @@ class FILEAPI_EXPORT_PRIVATE FileSystemOperationContext {
   MediaPathFilter* media_path_filter_;
 
   AccessObserverList access_observers_;
+  ChangeObserverList change_observers_;
   UpdateObserverList update_observers_;
 
 #if defined(SUPPORT_MEDIA_FILESYSTEM)
