@@ -643,11 +643,6 @@ mode-buildbot-tc-x8664-win() {
   TOOLCHAIN_LABEL=pnacl_win_x86_32
   tc-build-all ${TOOLCHAIN_LABEL} ${is_try} false false
 
-  # On windows-chrome the plugin is always 32bit even though the nexe
-  # might be 64bit
-  echo @@@BUILD_STEP plugin compile 32@@@
-  ./scons --verbose -k -j8 --mode=opt-host,nacl platform=x86-32 plugin
-
   # We can't test ARM because we do not have QEMU for Win.
   tc-tests-small "x86-64"
 }
