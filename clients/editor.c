@@ -1,5 +1,6 @@
 /*
  * Copyright © 2012 Openismus GmbH
+ * Copyright © 2012 Intel Corporation
  *
  * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee, provided
@@ -146,17 +147,14 @@ static struct text_entry*
 text_entry_create(struct editor *editor, const char *text)
 {
 	struct text_entry *entry;
-	struct wl_surface *surface;
 
 	entry = malloc(sizeof *entry);
-
-	surface = window_get_wl_surface(editor->window);
 
 	entry->widget = editor->widget;
 	entry->window = editor->window;
 	entry->text = strdup(text);
 	entry->active = 0;
-	entry->model = text_model_factory_create_text_model(editor->text_model_factory, surface);
+	entry->model = text_model_factory_create_text_model(editor->text_model_factory);
 	text_model_add_listener(entry->model, &text_model_listener, entry);
 
 	return entry;

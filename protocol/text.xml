@@ -46,7 +46,6 @@
   <interface name="text_model_factory" version="1">
     <request name="create_text_model">
       <arg name="id" type="new_id" interface="text_model"/>
-      <arg name="surface" type="object" interface="wl_surface"/>
     </request>
   </interface>
 

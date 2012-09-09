@@ -1,5 +1,5 @@
 /*
- * Copyright © 2012 Openismus GmbH
+ * Copyright © 2012 Intel Corporation
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -160,7 +160,7 @@ create_text_model(int fd, struct display *display)
 	char buf[64];
 	int len;
 
-	display->text_model = text_model_factory_create_text_model(display->factory, display->surface);
+	display->text_model = text_model_factory_create_text_model(display->factory);
 	text_model_add_listener(display->text_model, &text_model_listener, display);
 	wl_display_flush(display->display);
 

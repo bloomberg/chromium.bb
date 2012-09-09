@@ -1,5 +1,6 @@
 /*
  * Copyright © 2012 Openismus GmbH
+ * Copyright © 2012 Intel Corporation
  *
  * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee, provided
@@ -181,8 +182,7 @@ static const struct text_model_interface text_model_implementation = {
 
 static void text_model_factory_create_text_model(struct wl_client *client,
 						 struct wl_resource *resource,
-						 uint32_t id,
-						 struct wl_resource *surface)
+						 uint32_t id)
 {
 	struct input_method *input_method = resource->data;
 	struct text_model *text_model;
