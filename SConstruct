@@ -1209,8 +1209,8 @@ else:
   pre_base_env.AddMethod(AddChromeFilesFromGroup)
   enable_chrome = False
 DeclareBit('enable_chrome_side',
-           'Is the chrome side present.', enable_chrome)
-
+           'Is the chrome side present.')
+pre_base_env.SetBitFromOption('enable_chrome_side', enable_chrome)
 
 def ProgramNameForNmf(env, basename):
   """ Create an architecture-specific filename that can be used in an NMF URL.
