@@ -32,12 +32,25 @@
 #include "window.h"
 #include "text-client-protocol.h"
 
+static const char *font_name = "sans-serif";
+static int font_size = 14;
+
+struct text_layout {
+	cairo_glyph_t *glyphs;
+	int num_glyphs;
+	cairo_text_cluster_t *clusters;
+	int num_clusters;
+	cairo_text_cluster_flags_t cluster_flags;
+	cairo_scaled_font_t *font;
+};
+
 struct text_entry {
 	struct widget *widget;
 	struct window *window;
 	char *text;
 	int active;
 	struct text_model *model;
+	struct text_layout *layout;
 };
 
 struct editor {
@@ -48,6 +61,81 @@ struct editor {
 	struct text_entry *entry;
 	struct text_entry *editor;
 };
+
+static struct text_layout *
+text_layout_create(void)
+{
+	struct text_layout *layout;
+	cairo_surface_t *surface;
+	cairo_t *cr;
+
+	layout = malloc(sizeof *layout);
+	if (!layout)
+		return NULL;
+
+	layout->glyphs = NULL;
+	layout->num_glyphs = 0;
+
+	layout->clusters = NULL;
+	layout->num_clusters = 0;
+
+	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 0, 0);
+	cr = cairo_create(surface);
+	cairo_set_font_size(cr, font_size);
+	cairo_select_font_face(cr, font_name, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+	layout->font = cairo_get_scaled_font(cr);
+	cairo_scaled_font_reference(layout->font);
+
+	cairo_destroy(cr);
+	cairo_surface_destroy(surface);
+
+	return layout;
+}
+
+static void
+text_layout_destroy(struct text_layout *layout)
+{
+	if (layout->glyphs)
+		cairo_glyph_free(layout->glyphs);
+
+	if (layout->clusters)
+		cairo_text_cluster_free(layout->clusters);
+
+	cairo_scaled_font_destroy(layout->font);
+
+	free(layout);
+}
+
+static void
+text_layout_set_text(struct text_layout *layout,
+		     const char *text)
+{
+	if (layout->glyphs)
+		cairo_glyph_free(layout->glyphs);
+
+	if (layout->clusters)
+		cairo_text_cluster_free(layout->clusters);
+
+	layout->glyphs = NULL;
+	layout->num_glyphs = 0;
+	layout->clusters = NULL;
+	layout->num_clusters = 0;
+
+	cairo_scaled_font_text_to_glyphs(layout->font, 0, 0, text, -1,
+					 &layout->glyphs, &layout->num_glyphs,
+					 &layout->clusters, &layout->num_clusters,
+					 &layout->cluster_flags);
+}
+
+static void
+text_layout_draw(struct text_layout *layout, cairo_t *cr)
+{
+	cairo_save(cr);
+	cairo_set_scaled_font(cr, layout->font);
+	cairo_show_glyphs(cr, layout->glyphs, layout->num_glyphs);
+	cairo_restore(cr);
+}
+
 
 static void text_entry_redraw_handler(struct widget *widget, void *data);
 static void text_entry_button_handler(struct widget *widget,
@@ -60,6 +148,7 @@ text_entry_append(struct text_entry *entry, const char *text)
 {
 	entry->text = realloc(entry->text, strlen(entry->text) + strlen(text) + 1);
 	strcat(entry->text, text);
+	text_layout_set_text(entry->layout, entry->text);
 }
 
 
@@ -162,6 +251,9 @@ text_entry_create(struct editor *editor, const char *text)
 	entry->model = text_model_factory_create_text_model(editor->text_model_factory);
 	text_model_add_listener(entry->model, &text_model_listener, entry);
 
+	entry->layout = text_layout_create();
+	text_layout_set_text(entry->layout, entry->text);
+
 	widget_set_redraw_handler(entry->widget, text_entry_redraw_handler);
 	widget_set_button_handler(entry->widget, text_entry_button_handler);
 
@@ -173,6 +265,7 @@ text_entry_destroy(struct text_entry *entry)
 {
 	widget_destroy(entry->widget);
 	text_model_destroy(entry->model);
+	text_layout_destroy(entry->layout);
 	free(entry->text);
 	free(entry);
 }
@@ -285,13 +378,9 @@ text_entry_redraw_handler(struct widget *widget, void *data)
 	}
 
 	cairo_set_source_rgba(cr, 0, 0, 0, 1);
-	cairo_select_font_face(cr, "sans",
-			       CAIRO_FONT_SLANT_NORMAL,
-			       CAIRO_FONT_WEIGHT_BOLD);
-	cairo_set_font_size(cr, 14);
 
 	cairo_translate(cr, 10, allocation.height / 2);
-	cairo_show_text(cr, entry->text);
+	text_layout_draw(entry->layout, cr);
 	cairo_pop_group_to_source(cr);
 	cairo_paint(cr);
 
