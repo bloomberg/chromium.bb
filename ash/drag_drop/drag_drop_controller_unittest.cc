@@ -503,7 +503,7 @@ TEST_F(DragDropControllerTest, ViewRemovedWhileInDragDropTest) {
 }
 
 TEST_F(DragDropControllerTest, DragLeavesClipboardAloneTest) {
-  ui::Clipboard* cb = ui::Clipboard::GetForCurrentThread();
+  ui::Clipboard* cb = views::ViewsDelegate::views_delegate->GetClipboard();
   std::string clip_str("I am on the clipboard");
   {
     // We first copy some text to the clipboard.

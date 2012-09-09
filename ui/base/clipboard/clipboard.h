@@ -46,7 +46,6 @@ class NSString;
 #endif
 
 namespace ui {
-class ClipboardTest;
 
 class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
  public:
@@ -183,18 +182,8 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
     return static_cast<Buffer>(buffer);
   }
 
-  // Returns the clipboard object for the current thread.
-  //
-  // Most implementations will have at most one clipboard which will live on
-  // the main UI thread, but Windows has tricky semantics where there have to
-  // be two clipboards: one that lives on the UI thread and one that lives on
-  // the IO thread.
-  static Clipboard* GetForCurrentThread();
-
-  // Destroys the clipboard for the current thread. Usually, this will clean up
-  // all clipboards, except on Windows. (Previous code leaks the IO thread
-  // clipboard, so it shouldn't be a problem.)
-  static void DestroyClipboardForCurrentThread();
+  Clipboard();
+  ~Clipboard();
 
   // Write a bunch of objects to the system clipboard. Copies are made of the
   // contents of |objects|. On Windows they are copied to the system clipboard.
@@ -295,10 +284,6 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
  private:
   FRIEND_TEST_ALL_PREFIXES(ClipboardTest, SharedBitmapTest);
   FRIEND_TEST_ALL_PREFIXES(ClipboardTest, EmptyHTMLTest);
-  friend class ClipboardTest;
-
-  Clipboard();
-  ~Clipboard();
 
   void DispatchObject(ObjectType type, const ObjectMapParams& params);
 

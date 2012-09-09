@@ -31,8 +31,8 @@ namespace {
 // clipboard's contents.  // See http://crbug.com/5823.
 void WriteObjectsHelper(const ui::Clipboard::ObjectMap* objects) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ui::Clipboard::GetForCurrentThread()->WriteObjects(
-      ui::Clipboard::BUFFER_STANDARD, *objects);
+  static ui::Clipboard* clipboard = new ui::Clipboard;
+  clipboard->WriteObjects(ui::Clipboard::BUFFER_STANDARD, *objects);
 }
 
 }  // namespace
@@ -244,6 +244,7 @@ void ClipboardMessageFilter::OnReadCustomData(
 ui::Clipboard* ClipboardMessageFilter::GetClipboard() {
   // We have a static instance of the clipboard service for use by all message
   // filters.  This instance lives for the life of the browser processes.
-  static ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
+  static ui::Clipboard* clipboard = new ui::Clipboard;
+
   return clipboard;
 }

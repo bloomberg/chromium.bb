@@ -78,6 +78,7 @@
 #include "content/public/common/pepper_plugin_info.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(ENABLE_CONFIGURATION_POLICY)
@@ -141,6 +142,7 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
       thumbnail_generator_(new ThumbnailGenerator),
       download_status_updater_(new DownloadStatusUpdater) {
   g_browser_process = this;
+  clipboard_.reset(new ui::Clipboard);
 
 #if defined(ENABLE_PRINTING)
   // Must be created after the NotificationService.
@@ -384,6 +386,11 @@ PrefService* BrowserProcessImpl::local_state() {
   if (!created_local_state_)
     CreateLocalState();
   return local_state_.get();
+}
+
+ui::Clipboard* BrowserProcessImpl::clipboard() {
+  DCHECK(CalledOnValidThread());
+  return clipboard_.get();
 }
 
 net::URLRequestContextGetter* BrowserProcessImpl::system_request_context() {

@@ -760,7 +760,7 @@ void OmniboxViewViews::OnAfterUserAction(views::Textfield* sender) {
 void OmniboxViewViews::OnAfterCutOrCopy() {
   ui::Range selection_range;
   textfield_->GetSelectedRange(&selection_range);
-  ui::Clipboard* cb = ui::Clipboard::GetForCurrentThread();
+  ui::Clipboard* cb = views::ViewsDelegate::views_delegate->GetClipboard();
   string16 selected_text;
   cb->ReadText(ui::Clipboard::BUFFER_STANDARD, &selected_text);
   const string16 text = textfield_->text();

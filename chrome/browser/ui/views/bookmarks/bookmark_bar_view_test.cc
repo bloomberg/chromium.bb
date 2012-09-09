@@ -58,6 +58,7 @@ void MoveMouseAndPress(const gfx::Point& screen_pos,
 class ViewsDelegateImpl : public views::ViewsDelegate {
  public:
   ViewsDelegateImpl() {}
+  virtual ui::Clipboard* GetClipboard() const OVERRIDE { return NULL; }
   virtual void SaveWindowPlacement(const views::Widget* window,
                                    const std::string& window_name,
                                    const gfx::Rect& bounds,

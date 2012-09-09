@@ -27,6 +27,7 @@
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -1332,7 +1333,7 @@ void OmniboxViewWin::OnCopy() {
   // GetSel() doesn't preserve selection direction, so sel.cpMin will always be
   // the smaller value.
   model()->AdjustTextForCopy(sel.cpMin, IsSelectAll(), &text, &url, &write_url);
-  ui::ScopedClipboardWriter scw(ui::Clipboard::GetForCurrentThread(),
+  ui::ScopedClipboardWriter scw(g_browser_process->clipboard(),
                                 ui::Clipboard::BUFFER_STANDARD);
   scw.WriteText(text);
   if (write_url)

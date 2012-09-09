@@ -4,10 +4,8 @@
 
 #include "ui/base/clipboard/clipboard.h"
 
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/synchronization/lock.h"
 #include "ui/gfx/size.h"
 
 namespace ui {
@@ -74,15 +72,6 @@ bool ValidateAndMapSharedBitmap(const Clipboard::ObjectMapParams& params,
   return true;
 }
 
-// Mapping from threads to clipboard objects.
-typedef std::map<base::PlatformThreadId, Clipboard*> ClipboardMap;
-static base::LazyInstance<ClipboardMap> g_clipboard_map =
-    LAZY_INSTANCE_INITIALIZER;
-
-// Mutex that controls access to |g_clipboard_map|.
-static base::LazyInstance<base::Lock>::Leaky
-    g_clipboard_map_lock = LAZY_INSTANCE_INITIALIZER;
-
 }  // namespace
 
 const char Clipboard::kMimeTypeText[] = "text/plain";
@@ -91,33 +80,6 @@ const char Clipboard::kMimeTypeDownloadURL[] = "downloadurl";
 const char Clipboard::kMimeTypeHTML[] = "text/html";
 const char Clipboard::kMimeTypeRTF[] = "text/rtf";
 const char Clipboard::kMimeTypePNG[] = "image/png";
-
-// static
-Clipboard* Clipboard::GetForCurrentThread() {
-  base::AutoLock lock(g_clipboard_map_lock.Get());
-
-  base::PlatformThreadId id = base::PlatformThread::CurrentId();
-  ClipboardMap* clipboard_map = g_clipboard_map.Pointer();
-  ClipboardMap::iterator it = clipboard_map->find(id);
-  if (it != clipboard_map->end())
-    return it->second;
-
-  Clipboard* clipboard = new ui::Clipboard;
-  clipboard_map->insert(std::make_pair(id, clipboard));
-  return clipboard;
-}
-
-void Clipboard::DestroyClipboardForCurrentThread() {
-  base::AutoLock lock(g_clipboard_map_lock.Get());
-
-  ClipboardMap* clipboard_map = g_clipboard_map.Pointer();
-  base::PlatformThreadId id = base::PlatformThread::CurrentId();
-  ClipboardMap::iterator it = clipboard_map->find(id);
-  if (it != clipboard_map->end()) {
-    delete it->second;
-    clipboard_map->erase(it);
-  }
-}
 
 void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
   // All types apart from CBF_WEBKIT need at least 1 non-empty param.

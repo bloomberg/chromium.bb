@@ -40,14 +40,14 @@ TEST_F(OmniboxViewTest, TestStripSchemasUnsafeForPaste) {
 }
 
 TEST_F(OmniboxViewTest, GetClipboardText) {
-  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
+  ui::Clipboard clipboard;
 
   const string16 kPlainText(ASCIIToUTF16("test text"));
   const std::string kURL("http://www.example.com/");
 
   // Can we pull straight text off the clipboard?
   {
-    ui::ScopedClipboardWriter clipboard_writer(clipboard,
+    ui::ScopedClipboardWriter clipboard_writer(&clipboard,
                                                ui::Clipboard::BUFFER_STANDARD);
     clipboard_writer.WriteText(kPlainText);
   }
@@ -57,8 +57,8 @@ TEST_F(OmniboxViewTest, GetClipboardText) {
   // ObjectMap is empty.  http://crbug.com/133848
 #if !defined(USE_AURA)
   // Does an empty clipboard get empty text?
-  clipboard->WriteObjects(ui::Clipboard::BUFFER_STANDARD,
-                          ui::Clipboard::ObjectMap());
+  clipboard.WriteObjects(ui::Clipboard::BUFFER_STANDARD,
+                         ui::Clipboard::ObjectMap());
   EXPECT_EQ(string16(), OmniboxView::GetClipboardText());
 #endif
 
@@ -68,7 +68,7 @@ TEST_F(OmniboxViewTest, GetClipboardText) {
   const string16 kTitle(ASCIIToUTF16("The Example Company"));
   // Can we pull a bookmark off the clipboard?
   {
-    ui::ScopedClipboardWriter clipboard_writer(clipboard,
+    ui::ScopedClipboardWriter clipboard_writer(&clipboard,
                                                ui::Clipboard::BUFFER_STANDARD);
     clipboard_writer.WriteBookmark(kTitle, kURL);
   }
@@ -76,7 +76,7 @@ TEST_F(OmniboxViewTest, GetClipboardText) {
 
   // Do we pull text in preference to a bookmark?
   {
-    ui::ScopedClipboardWriter clipboard_writer(clipboard,
+    ui::ScopedClipboardWriter clipboard_writer(&clipboard,
                                                ui::Clipboard::BUFFER_STANDARD);
     clipboard_writer.WriteText(kPlainText);
     clipboard_writer.WriteBookmark(kTitle, kURL);
@@ -87,7 +87,7 @@ TEST_F(OmniboxViewTest, GetClipboardText) {
   // Do we get nothing if there is neither text nor a bookmark?
   {
     const string16 kMarkup(ASCIIToUTF16("<strong>Hi!</string>"));
-    ui::ScopedClipboardWriter clipboard_writer(clipboard,
+    ui::ScopedClipboardWriter clipboard_writer(&clipboard,
                                                ui::Clipboard::BUFFER_STANDARD);
     clipboard_writer.WriteHTML(kMarkup, kURL);
   }
@@ -98,7 +98,7 @@ TEST_F(OmniboxViewTest, GetClipboardText) {
     const string16 kWrappedURL(ASCIIToUTF16(
         "http://www.chromium.org/developers/testing/chromium-\n"
         "build-infrastructure/tour-of-the-chromium-buildbot"));
-    ui::ScopedClipboardWriter clipboard_writer(clipboard,
+    ui::ScopedClipboardWriter clipboard_writer(&clipboard,
                                                ui::Clipboard::BUFFER_STANDARD);
     clipboard_writer.WriteText(kWrappedURL);
   }
@@ -112,7 +112,7 @@ TEST_F(OmniboxViewTest, GetClipboardText) {
   {
     const string16 kWrappedAddress(ASCIIToUTF16(
         "1600 Amphitheatre Parkway\nMountain View, CA"));
-    ui::ScopedClipboardWriter clipboard_writer(clipboard,
+    ui::ScopedClipboardWriter clipboard_writer(&clipboard,
                                                ui::Clipboard::BUFFER_STANDARD);
     clipboard_writer.WriteText(kWrappedAddress);
   }

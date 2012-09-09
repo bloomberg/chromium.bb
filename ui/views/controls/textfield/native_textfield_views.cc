@@ -37,6 +37,7 @@
 #include "ui/views/controls/textfield/textfield_views_model.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/metrics.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "unicode/uchar.h"
 
@@ -585,8 +586,8 @@ bool NativeTextfieldViews::IsCommandIdEnabled(int command_id) const {
     case IDS_APP_COPY:
       return model_->HasSelection() && !textfield_->IsObscured();
     case IDS_APP_PASTE:
-      ui::Clipboard::GetForCurrentThread()->ReadText(
-          ui::Clipboard::BUFFER_STANDARD, &result);
+      ViewsDelegate::views_delegate->GetClipboard()
+          ->ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
       return editable && !result.empty();
     case IDS_APP_DELETE:
       return editable && model_->HasSelection();

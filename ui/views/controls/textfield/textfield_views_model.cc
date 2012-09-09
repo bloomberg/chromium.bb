@@ -20,6 +20,7 @@
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/views_delegate.h"
 
 namespace views {
 
@@ -510,7 +511,7 @@ bool TextfieldViewsModel::Redo() {
 bool TextfieldViewsModel::Cut() {
   if (!HasCompositionText() && HasSelection() && !render_text_->is_obscured()) {
     ui::ScopedClipboardWriter(
-        ui::Clipboard::GetForCurrentThread(),
+        views::ViewsDelegate::views_delegate->GetClipboard(),
         ui::Clipboard::BUFFER_STANDARD).WriteText(GetSelectedText());
     // A trick to let undo/redo handle cursor correctly.
     // Undoing CUT moves the cursor to the end of the change rather
@@ -528,7 +529,7 @@ bool TextfieldViewsModel::Cut() {
 bool TextfieldViewsModel::Copy() {
   if (!HasCompositionText() && HasSelection() && !render_text_->is_obscured()) {
     ui::ScopedClipboardWriter(
-        ui::Clipboard::GetForCurrentThread(),
+        views::ViewsDelegate::views_delegate->GetClipboard(),
         ui::Clipboard::BUFFER_STANDARD).WriteText(GetSelectedText());
     return true;
   }
@@ -537,7 +538,7 @@ bool TextfieldViewsModel::Copy() {
 
 bool TextfieldViewsModel::Paste() {
   string16 result;
-  ui::Clipboard::GetForCurrentThread()
+  views::ViewsDelegate::views_delegate->GetClipboard()
       ->ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
   if (!result.empty()) {
     InsertTextInternal(result, false);

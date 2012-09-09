@@ -36,6 +36,7 @@ class AccessibilityViewsDelegate : public views::ViewsDelegate {
   virtual ~AccessibilityViewsDelegate() {}
 
   // Overridden from views::ViewsDelegate:
+  virtual ui::Clipboard* GetClipboard() const OVERRIDE { return NULL; }
   virtual void SaveWindowPlacement(const views::Widget* window,
                                    const std::string& window_name,
                                    const gfx::Rect& bounds,

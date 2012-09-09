@@ -52,6 +52,13 @@ class ShellViewsDelegateAura : public ViewsDelegate {
   }
 
   // Overridden from ViewsDelegate:
+  virtual ui::Clipboard* GetClipboard() const OVERRIDE {
+    if (!clipboard_.get()) {
+      clipboard_.reset(new ui::Clipboard);
+    }
+    return clipboard_.get();
+  }
+
   virtual void SaveWindowPlacement(const Widget* window,
                                    const std::string& window_name,
                                    const gfx::Rect& bounds,
@@ -104,6 +111,7 @@ class ShellViewsDelegateAura : public ViewsDelegate {
   }
 
  private:
+  mutable scoped_ptr<ui::Clipboard> clipboard_;
   bool use_transparent_windows_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellViewsDelegateAura);

@@ -64,6 +64,7 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual WatchDogThread* watchdog_thread() OVERRIDE;
   virtual ProfileManager* profile_manager() OVERRIDE;
   virtual PrefService* local_state() OVERRIDE;
+  virtual ui::Clipboard* clipboard() OVERRIDE;
   virtual net::URLRequestContextGetter* system_request_context() OVERRIDE;
   virtual chrome_variations::VariationsService* variations_service() OVERRIDE;
 #if defined(OS_CHROMEOS)
@@ -176,6 +177,8 @@ class BrowserProcessImpl : public BrowserProcess,
       print_preview_tab_controller_;
 
   scoped_ptr<printing::BackgroundPrintingManager> background_printing_manager_;
+
+  scoped_ptr<ui::Clipboard> clipboard_;
 
   scoped_ptr<chrome_variations::VariationsService> variations_service_;
 

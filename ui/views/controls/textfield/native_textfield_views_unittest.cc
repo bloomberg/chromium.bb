@@ -34,6 +34,7 @@
 #include "ui/views/ime/mock_input_method.h"
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/widget.h"
 
@@ -234,14 +235,14 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
 
   string16 GetClipboardText() const {
     string16 text;
-    ui::Clipboard::GetForCurrentThread()->
+    views::ViewsDelegate::views_delegate->GetClipboard()->
         ReadText(ui::Clipboard::BUFFER_STANDARD, &text);
     return text;
   }
 
   void SetClipboardText(const std::string& text) {
     ui::ScopedClipboardWriter clipboard_writer(
-        ui::Clipboard::GetForCurrentThread(),
+        views::ViewsDelegate::views_delegate->GetClipboard(),
         ui::Clipboard::BUFFER_STANDARD);
     clipboard_writer.WriteText(ASCIIToUTF16(text));
   }
@@ -1102,7 +1103,7 @@ TEST_F(NativeTextfieldViewsTest, ReadOnlyTest) {
   EXPECT_STR_NE(" one two three ", str);
 
   SendKeyEvent(ui::VKEY_C, false, true);
-  ui::Clipboard::GetForCurrentThread()->
+  views::ViewsDelegate::views_delegate->GetClipboard()->
       ReadText(ui::Clipboard::BUFFER_STANDARD, &str);
   EXPECT_STR_EQ(" one two three ", str);
 

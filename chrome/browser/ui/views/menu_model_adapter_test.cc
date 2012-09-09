@@ -35,6 +35,10 @@ class TestViewsDelegate : public views::ViewsDelegate {
   }
 
   // views::ViewsDelegate implementation
+  virtual ui::Clipboard* GetClipboard() const OVERRIDE {
+    return NULL;
+  }
+
   virtual void SaveWindowPlacement(const views::Widget* widget,
                                    const std::string& window_name,
                                    const gfx::Rect& bounds,

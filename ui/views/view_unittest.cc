@@ -1168,6 +1168,8 @@ TEST_F(ViewTest, Textfield) {
   const string16 kExtraText = ASCIIToUTF16("Pretty deep, Philip!");
   const string16 kEmptyString;
 
+  ui::Clipboard clipboard;
+
   Widget* widget = new Widget;
   Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
   params.bounds = gfx::Rect(0, 0, 100, 100);
@@ -1204,7 +1206,7 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   const string16 kReadOnlyText = ASCIIToUTF16("Read only");
   const string16 kPasswordText = ASCIIToUTF16("Password! ** Secret stuff **");
 
-  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
+  ui::Clipboard clipboard;
 
   Widget* widget = new Widget;
   Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
@@ -1233,7 +1235,7 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   ::SendMessage(normal->GetTestingHandle(), WM_CUT, 0, 0);
 
   string16 result;
-  clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
+  clipboard.ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
   EXPECT_EQ(kNormalText, result);
   normal->SetText(kNormalText);  // Let's revert to the original content.
 
@@ -1241,7 +1243,7 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   read_only->SelectAll(false);
   ::SendMessage(read_only->GetTestingHandle(), WM_CUT, 0, 0);
   result.clear();
-  clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
+  clipboard.ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
   // Cut should have failed, so the clipboard content should not have changed.
   EXPECT_EQ(kNormalText, result);
 
@@ -1249,7 +1251,7 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   password->SelectAll(false);
   ::SendMessage(password->GetTestingHandle(), WM_CUT, 0, 0);
   result.clear();
-  clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
+  clipboard.ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
   // Cut should have failed, so the clipboard content should not have changed.
   EXPECT_EQ(kNormalText, result);
 
@@ -1262,19 +1264,19 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   read_only->SelectAll(false);
   ::SendMessage(read_only->GetTestingHandle(), WM_COPY, 0, 0);
   result.clear();
-  clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
+  clipboard.ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
   EXPECT_EQ(kReadOnlyText, result);
 
   normal->SelectAll(false);
   ::SendMessage(normal->GetTestingHandle(), WM_COPY, 0, 0);
   result.clear();
-  clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
+  clipboard.ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
   EXPECT_EQ(kNormalText, result);
 
   password->SelectAll(false);
   ::SendMessage(password->GetTestingHandle(), WM_COPY, 0, 0);
   result.clear();
-  clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
+  clipboard.ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
   // We don't let you copy from an obscured field, clipboard should not have
   // changed.
   EXPECT_EQ(kNormalText, result);
