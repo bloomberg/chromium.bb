@@ -27,12 +27,8 @@ vars = {
 }
 
 deps = {
-  "chrome/test/pyautolib":
-    Var("chromium_trunk") + "/src/chrome/test/pyautolib@" + Var("chrome_rev"),
   "native_client/tools/perf_expectations":
     Var("chromium_trunk") + "/src/tools/perf_expectations@" + Var("chrome_rev"),
-  "net/tools/testserver":
-    Var("chromium_trunk") + "/src/net/tools/testserver@" + Var("chrome_rev"),
   "testing/gtest":
     "http://googletest.googlecode.com/svn/trunk@" + Var("gtest_rev"),
   "third_party":
@@ -41,8 +37,6 @@ deps = {
     Var("native_client_trunk") + "/src/validator_snapshots@" + Var("tools_rev"),
   "third_party/asan":
     Var("chromium_trunk") + "/deps/third_party/asan@" + Var("chrome_rev"),
-  "third_party/gles2_book":
-    Var("chromium_trunk") + "/src/third_party/gles2_book@" + Var("chrome_rev"),
   "third_party/jsoncpp":
     Var("chromium_trunk") + "/src/third_party/jsoncpp@" + Var("chrome_rev"),
   # NOTE! These two for jsoncpp are taken verbatim from chromium/src/DEPS
@@ -60,17 +54,9 @@ deps = {
      "/trunk/lss@" + Var("lss_rev")),
   "third_party/khronos":
     Var("chromium_trunk") + "/src/third_party/khronos@" + Var("chrome_rev"),
-  "third_party/ply":
-    Var("chromium_trunk") + "/src/third_party/ply@" + Var("chrome_rev"),
-  "third_party/pyftpdlib":
-    Var("chromium_trunk") + "/src/third_party/pyftpdlib@" + Var("chrome_rev"),
-  "third_party/pyftpdlib/src":
-    (Var("googlecode_url") % "pyftpdlib") + "/trunk@888",
   "third_party/simplejson":
     (Var("chromium_trunk") + "/tools/build/third_party/simplejson@" +
      Var("chrome_rev")),
-  "third_party/tlslite":
-    Var("chromium_trunk") + "/src/third_party/tlslite@" + Var("chrome_rev"),
   "tools/clang":
     Var("chromium_trunk") + "/src/tools/clang@" + Var("chrome_rev"),
   "tools/gyp":
