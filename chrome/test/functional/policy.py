@@ -157,24 +157,6 @@ class PolicyTest(policy_base.PolicyTestBase):
     else:
       raise NotImplementedError()
 
-  def testDisableSPDY(self):
-    """Verify that SPDY is disabled."""
-    policy = {'DisableSpdy': True}
-    self.SetUserPolicy(policy)
-    self.NavigateToURL('chrome://net-internals/#spdy')
-    self.assertEquals(0, self.FindInPage('SPDY Enabled: true')['match_count'])
-    self.assertEquals(
-        1,
-        self.FindInPage('SPDY Enabled: false', tab_index=0)['match_count'],
-        msg='SPDY is not disabled.')
-    policy = {'DisableSpdy': False}
-    self.SetUserPolicy(policy)
-    self.ReloadTab()
-    self.assertEquals(
-        1,
-        self.FindInPage('SPDY Enabled: true', tab_index=0)['match_count'],
-        msg='SPDY is not disabled.')
-
   def testDisabledPlugins(self):
     """Verify that disabled plugins cannot be enabled."""
     policy = {'DisabledPlugins': ['Shockwave Flash']}

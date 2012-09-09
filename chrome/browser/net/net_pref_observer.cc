@@ -4,15 +4,12 @@
 
 #include "chrome/browser/net/net_pref_observer.h"
 
-#include "base/bind.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
 #include "net/http/http_stream_factory.h"
 
 using content::BrowserThread;
@@ -30,7 +27,7 @@ NetPrefObserver::NetPrefObserver(PrefService* prefs,
                                    this);
   spdy_disabled_.Init(prefs::kDisableSpdy, prefs, this);
 
-  ApplySettings(NULL);
+  ApplySettings();
 }
 
 NetPrefObserver::~NetPrefObserver() {
@@ -41,12 +38,10 @@ void NetPrefObserver::Observe(int type,
                               const content::NotificationSource& source,
                               const content::NotificationDetails& details) {
   DCHECK_EQ(type, chrome::NOTIFICATION_PREF_CHANGED);
-
-  std::string* pref_name = content::Details<std::string>(details).ptr();
-  ApplySettings(pref_name);
+  ApplySettings();
 }
 
-void NetPrefObserver::ApplySettings(const std::string* pref_name) {
+void NetPrefObserver::ApplySettings() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   predictor_->EnablePredictor(*network_prediction_enabled_);

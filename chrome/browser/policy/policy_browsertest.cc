@@ -62,6 +62,7 @@
 #include "content/test/net/url_request_mock_http_job.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
+#include "net/http/http_stream_factory.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
 #include "policy/policy_constants.h"
@@ -431,6 +432,24 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, Disable3DAPIs) {
   EXPECT_TRUE(IsWebGLEnabled(contents));
 }
 #endif
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, DisableSpdy) {
+  // Verifies that SPDY can be disable by policy.
+  EXPECT_TRUE(net::HttpStreamFactory::spdy_enabled());
+  PolicyMap policies;
+  policies.Set(key::kDisableSpdy, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
+  provider_.UpdateChromePolicy(policies);
+  content::RunAllPendingInMessageLoop();
+  EXPECT_FALSE(net::HttpStreamFactory::spdy_enabled());
+  // Verify that it can be force-enabled too.
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kDisableSpdy, true);
+  policies.Set(key::kDisableSpdy, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));
+  provider_.UpdateChromePolicy(policies);
+  content::RunAllPendingInMessageLoop();
+  EXPECT_TRUE(net::HttpStreamFactory::spdy_enabled());
+}
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabled) {
   // Verifies that access to the developer tools can be disabled.
