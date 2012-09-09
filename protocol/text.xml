@@ -11,10 +11,15 @@
       and compose text out of them.
     </description>
     <request name="set_surrounding_text">
+      <description summary="sets the surrounding text">
+        Sets the plain surrounding text around the input position. Cursor is the
+        position within the surrounding text. Anchor is the position of the
+        selection anchor within the surrounding text. If there is no selected
+        text anchor is the same as cursor.
+      </description>
       <arg name="text" type="string"/>
-    </request>
-    <request name="set_cursor_index">
-      <arg name="index" type="uint"/>
+      <arg name="cursor" type="uint"/>
+      <arg name="anchor" type="uint"/>
     </request>
     <request name="activate">
       <description summary="request activation">
@@ -34,10 +39,6 @@
         activation.
       </description>
       <arg name="seat" type="object" interface="wl_seat"/>
-    </request>
-    <request name="set_selected_text">
-      <arg name="text" type="string"/>
-      <arg name="index" type="int"/>
     </request>
     <request name="set_micro_focus">
       <arg name="x" type="int"/>
@@ -104,11 +105,16 @@
       <arg name="text" type="string"/>
       <arg name="index" type="uint"/>
     </request>
-    <event name="set_surrounding_text">
+    <event name="surrounding_text">
       <description summary="surrounding text event">
-        The surrounding text from the model.
+        The plain surrounding text around the input position. Cursor is the
+        position within the surrounding text. Anchor is the position of the
+        selection anchor within the surrounding text. If there is no selected
+        text anchor is the same as cursor.
       </description>
       <arg name="text" type="string"/>
+      <arg name="cursor" type="uint"/>
+      <arg name="anchor" type="uint"/>
     </event>
   </interface>
 

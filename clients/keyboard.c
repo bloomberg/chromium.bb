@@ -137,6 +137,20 @@ button_handler(struct widget *widget,
 }
 
 static void
+input_method_context_surrounding_text(void *data,
+				      struct input_method_context *context,
+				      const char *text,
+				      uint32_t cursor,
+				      uint32_t anchor)
+{
+	fprintf(stderr, "Surrounding text updated: %s\n", text);
+}
+
+static const struct input_method_context_listener input_method_context_listener = {
+	input_method_context_surrounding_text,
+};
+
+static void
 input_method_activate(void *data,
 		      struct input_method *input_method,
 		      struct input_method_context *context)
@@ -147,6 +161,9 @@ input_method_activate(void *data,
 		input_method_context_destroy(keyboard->context);
 
 	keyboard->context = context;
+	input_method_context_add_listener(context,
+					  &input_method_context_listener,
+					  keyboard);
 }
 
 static void

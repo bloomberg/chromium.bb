@@ -109,7 +109,9 @@ destroy_text_model(struct wl_resource *resource)
 static void
 text_model_set_surrounding_text(struct wl_client *client,
 				struct wl_resource *resource,
-				const char *text)
+				const char *text,
+				uint32_t cursor,
+				uint32_t anchor)
 {
 	struct text_model *text_model = resource->data;
 	struct input_method *input_method, *next;
@@ -117,15 +119,11 @@ text_model_set_surrounding_text(struct wl_client *client,
 	wl_list_for_each_safe(input_method, next, &text_model->input_methods, link) {
 		if (!input_method->context)
 			continue;
-		input_method_context_send_set_surrounding_text(&input_method->context->resource, text);
+		input_method_context_send_surrounding_text(&input_method->context->resource,
+							   text,
+							   cursor,
+							   anchor);
 	}
-}
-
-static void
-text_model_set_cursor_index(struct wl_client *client,
-			    struct wl_resource *resource,
-			    uint32_t index)
-{
 }
 
 static void
@@ -174,14 +172,6 @@ text_model_deactivate(struct wl_client *client,
 }
 
 static void
-text_model_set_selected_text(struct wl_client *client,
-			     struct wl_resource *resource,
-			     const char *text,
-			     int32_t index)
-{
-}
-
-static void
 text_model_set_micro_focus(struct wl_client *client,
 			   struct wl_resource *resource,
 			   int32_t x,
@@ -205,10 +195,8 @@ text_model_set_content_type(struct wl_client *client,
 
 static const struct text_model_interface text_model_implementation = {
 	text_model_set_surrounding_text,
-	text_model_set_cursor_index,
 	text_model_activate,
 	text_model_deactivate,
-	text_model_set_selected_text,
 	text_model_set_micro_focus,
 	text_model_set_preedit,
 	text_model_set_content_type

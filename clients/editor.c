@@ -433,6 +433,11 @@ text_entry_update_layout(struct text_entry *entry)
 	free(text);
 
 	widget_schedule_redraw(entry->widget);
+
+	text_model_set_surrounding_text(entry->model,
+					entry->text,
+					entry->cursor,
+					entry->anchor);
 }
 
 static void
