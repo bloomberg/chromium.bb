@@ -27,6 +27,7 @@
 #include "text-server-protocol.h"
 
 struct input_method;
+struct input_method_context;
 
 struct text_model {
 	struct wl_resource resource;
@@ -58,7 +59,20 @@ struct input_method {
 	struct wl_listener keyboard_focus_listener;
 
 	int focus_listener_initialized;
+
+	struct input_method_context *context;
 };
+
+struct input_method_context {
+	struct wl_resource resource;
+
+	struct text_model *model;
+
+	struct wl_list link;
+};
+
+static void input_method_context_create(struct text_model *model,
+					struct input_method *input_method);
 
 static void input_method_init_seat(struct weston_seat *seat);
 
@@ -69,8 +83,11 @@ deactivate_text_model(struct text_model *text_model,
 	struct weston_compositor *ec = text_model->ec;
 
 	if (input_method->model == text_model) {
+		if (input_method->input_method_binding)
+			input_method_send_deactivate(input_method->input_method_binding, &input_method->context->resource);
 		wl_list_remove(&input_method->link);
 		input_method->model = NULL;
+		input_method->context = NULL;
 		wl_signal_emit(&ec->hide_input_panel_signal, ec);
 		text_model_send_deactivated(&text_model->resource);
 	}
@@ -94,6 +111,14 @@ text_model_set_surrounding_text(struct wl_client *client,
 				struct wl_resource *resource,
 				const char *text)
 {
+	struct text_model *text_model = resource->data;
+	struct input_method *input_method, *next;
+
+	wl_list_for_each_safe(input_method, next, &text_model->input_methods, link) {
+		if (!input_method->context)
+			continue;
+		input_method_context_send_set_surrounding_text(&input_method->context->resource, text);
+	}
 }
 
 static void
@@ -111,6 +136,7 @@ text_model_activate(struct wl_client *client,
 {
 	struct text_model *text_model = resource->data;
 	struct weston_seat *weston_seat = seat->data;
+	struct input_method *input_method = weston_seat->input_method;
 	struct text_model *old = weston_seat->input_method->model;
 	struct weston_compositor *ec = text_model->ec;
 
@@ -122,11 +148,13 @@ text_model_activate(struct wl_client *client,
 				      weston_seat->input_method);
 	}
 
-	weston_seat->input_method->model = text_model;
-	wl_list_insert(&text_model->input_methods, &weston_seat->input_method->link);
+	input_method->model = text_model;
+	wl_list_insert(&text_model->input_methods, &input_method->link);
 	input_method_init_seat(weston_seat);
 
 	text_model->surface = surface->data;
+
+	input_method_context_create(text_model, input_method);
 
 	wl_signal_emit(&ec->show_input_panel_signal, ec);
 
@@ -260,21 +288,64 @@ text_model_factory_create(struct weston_compositor *ec)
 }
 
 static void
-input_method_commit_string(struct wl_client *client,
-			   struct wl_resource *resource,
-			   const char *text,
-			   uint32_t index)
+input_method_context_destroy(struct wl_client *client,
+			     struct wl_resource *resource)
 {
-	struct input_method *input_method = resource->data;
-
-	if (input_method->model) {
-		text_model_send_commit_string(&input_method->model->resource, text, index);
-	}
+	wl_resource_destroy(resource);
 }
 
-static const struct input_method_interface input_method_implementation = {
-	input_method_commit_string
+static void
+input_method_context_commit_string(struct wl_client *client,
+				   struct wl_resource *resource,
+				   const char *text,
+				   uint32_t index)
+{
+	struct input_method_context *context = resource->data;
+
+	text_model_send_commit_string(&context->model->resource, text, index);
+}
+
+static const struct input_method_context_interface input_method_context_implementation = {
+	input_method_context_destroy,
+	input_method_context_commit_string
 };
+
+static void
+destroy_input_method_context(struct wl_resource *resource)
+{
+	struct input_method_context *context = resource->data;
+
+	free(context);
+}
+
+static void
+input_method_context_create(struct text_model *model,
+			    struct input_method *input_method)
+{
+	struct input_method_context *context;
+
+	if (!input_method->input_method_binding)
+		return;
+
+	context = malloc(sizeof *context);
+	if (context == NULL)
+		return;
+
+	context->resource.destroy = destroy_input_method_context;
+	context->resource.object.id = 0;
+	context->resource.object.interface = &input_method_context_interface;
+	context->resource.object.implementation =
+		(void (**)(void)) &input_method_context_implementation;
+	context->resource.data = context;
+	wl_signal_init(&context->resource.destroy_signal);
+
+	context->model = model;
+	input_method->context = context;
+
+	wl_client_add_resource(input_method->input_method_binding->client, &context->resource);
+
+	input_method_send_activate(input_method->input_method_binding, &context->resource);
+}
 
 static void
 unbind_input_method(struct wl_resource *resource)
@@ -282,6 +353,8 @@ unbind_input_method(struct wl_resource *resource)
 	struct input_method *input_method = resource->data;
 
 	input_method->input_method_binding = NULL;
+	input_method->context = NULL;
+
 	free(resource);
 }
 
@@ -295,7 +368,7 @@ bind_input_method(struct wl_client *client,
 	struct wl_resource *resource;
 
 	resource = wl_client_add_object(client, &input_method_interface,
-					&input_method_implementation,
+					NULL,
 					id, input_method);
 
 	if (input_method->input_method_binding == NULL) {
@@ -365,6 +438,7 @@ input_method_create(struct weston_compositor *ec,
 	input_method->seat = seat;
 	input_method->model = NULL;
 	input_method->focus_listener_initialized = 0;
+	input_method->context = NULL;
 
 	input_method->input_method_global =
 		wl_display_add_global(ec->wl_display,

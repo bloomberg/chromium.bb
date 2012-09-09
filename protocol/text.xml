@@ -49,10 +49,23 @@
     </request>
   </interface>
 
-  <interface name="input_method" version="1">
+  <interface name="input_method_context" version="1">
+    <request name="destroy" type="destructor"/>
     <request name="commit_string">
       <arg name="text" type="string"/>
       <arg name="index" type="uint"/>
     </request>
+    <event name="set_surrounding_text">
+      <arg name="text" type="string"/>
+    </event>
+  </interface>
+
+  <interface name="input_method" version="1">
+    <event name="activate">
+      <arg name="id" type="new_id" interface="input_method_context"/>
+    </event>
+    <event name="deactivate">
+      <arg name="context" type="object" interface="input_method_context"/>
+    </event>
   </interface>
 </protocol>

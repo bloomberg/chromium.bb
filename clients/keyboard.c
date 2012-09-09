@@ -1,5 +1,6 @@
 /*
  * Copyright © 2012 Openismus GmbH
+ * Copyright © 2012 Intel Corporation
  *
  * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee, provided
@@ -34,6 +35,7 @@
 struct virtual_keyboard {
 	struct input_panel *input_panel;
 	struct input_method *input_method;
+	struct input_method_context *context;
 	struct display *display;
 };
 
@@ -129,10 +131,42 @@ button_handler(struct widget *widget,
 
 	text[0] = y / keyboard->cy * 10 + x / keyboard->cx + '0';
 
-	input_method_commit_string(keyboard->keyboard->input_method, text, -1);
+	input_method_context_commit_string(keyboard->keyboard->context, text, -1);
 
 	widget_schedule_redraw(widget);
 }
+
+static void
+input_method_activate(void *data,
+		      struct input_method *input_method,
+		      struct input_method_context *context)
+{
+	struct virtual_keyboard *keyboard = data;
+
+	if (keyboard->context)
+		input_method_context_destroy(keyboard->context);
+
+	keyboard->context = context;
+}
+
+static void
+input_method_deactivate(void *data,
+			struct input_method *input_method,
+			struct input_method_context *context)
+{
+	struct virtual_keyboard *keyboard = data;
+
+	if (!keyboard->context)
+		return;
+
+	input_method_context_destroy(keyboard->context);
+	keyboard->context = NULL;
+}
+
+static const struct input_method_listener input_method_listener = {
+	input_method_activate,
+	input_method_deactivate
+};
 
 static void
 global_handler(struct wl_display *display, uint32_t id,
@@ -144,6 +178,7 @@ global_handler(struct wl_display *display, uint32_t id,
 		keyboard->input_panel = wl_display_bind(display, id, &input_panel_interface);
 	} else if (!strcmp(interface, "input_method")) {
 		keyboard->input_method = wl_display_bind(display, id, &input_method_interface);
+		input_method_add_listener(keyboard->input_method, &input_method_listener, keyboard);
 	}
 }
 
@@ -200,6 +235,8 @@ main(int argc, char *argv[])
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;
 	}
+
+	virtual_keyboard.context = NULL;
 
 	wl_display_add_global_listener(display_get_display(virtual_keyboard.display),
 				       global_handler, &virtual_keyboard);
