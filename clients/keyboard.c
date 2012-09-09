@@ -228,6 +228,8 @@ keyboard_handle_key(struct keyboard *keyboard, const struct key *key)
 			}
 			break;
 		case keytype_enter:
+			input_method_context_key(keyboard->keyboard->context,
+						 XKB_KEY_KP_Enter, WL_KEYBOARD_KEY_STATE_PRESSED);
 			break;
 		case keytype_space:
 			keyboard->keyboard->preedit_string = strcat(keyboard->keyboard->preedit_string,
@@ -250,6 +252,8 @@ keyboard_handle_key(struct keyboard *keyboard, const struct key *key)
 		case keytype_symbols:
 			break;
 		case keytype_tab:
+			input_method_context_key(keyboard->keyboard->context,
+						 XKB_KEY_Tab, WL_KEYBOARD_KEY_STATE_PRESSED);
 			break;
 	}
 }

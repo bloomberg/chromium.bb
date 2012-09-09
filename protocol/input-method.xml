@@ -53,6 +53,10 @@
       <arg name="index" type="int"/>
       <arg name="length" type="uint"/>
     </request>
+    <request name="key">
+      <arg name="key" type="uint"/>
+      <arg name="state" type="uint"/>
+    </request>
     <event name="surrounding_text">
       <description summary="surrounding text event">
         The plain surrounding text around the input position. Cursor is the

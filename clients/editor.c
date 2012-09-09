@@ -284,8 +284,31 @@ text_model_preedit_styling(void *data,
 
 static void
 text_model_key(void *data,
-	       struct text_model *text_model)
+	       struct text_model *text_model,
+               uint32_t key,
+               uint32_t state)
 {
+	const char *state_label;
+	const char *key_label;
+
+	if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
+		state_label = "pressed";
+	} else {
+		state_label = "released";
+	}
+
+	switch (key) {
+		case XKB_KEY_Tab:
+			key_label = "Tab";
+			break;
+		case XKB_KEY_KP_Enter:
+			key_label = "Enter";
+			break;
+		default:
+			key_label = "Unknown";
+	}
+
+	fprintf(stderr, "%s key was %s.\n", key_label, state_label);
 }
 
 static void

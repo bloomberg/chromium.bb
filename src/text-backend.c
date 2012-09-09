@@ -316,11 +316,23 @@ input_method_context_delete_surrounding_text(struct wl_client *client,
 	text_model_send_delete_surrounding_text(&context->model->resource, index, length);
 }
 
+static void
+input_method_context_key(struct wl_client *client,
+			 struct wl_resource *resource,
+			 uint32_t key,
+			 uint32_t state)
+{
+	struct input_method_context *context = resource->data;
+
+	text_model_send_key(&context->model->resource, key, state);
+}
+
 static const struct input_method_context_interface input_method_context_implementation = {
 	input_method_context_destroy,
 	input_method_context_commit_string,
 	input_method_context_preedit_string,
-	input_method_context_delete_surrounding_text
+	input_method_context_delete_surrounding_text,
+	input_method_context_key
 };
 
 static void

@@ -75,10 +75,12 @@ text_model_preedit_styling(void *data,
 
 static void 
 text_model_key(void *data,
-	       struct text_model *text_model)
+	       struct text_model *text_model,
+	       uint32_t key,
+	       uint32_t state)
 {
 }
-	
+
 static void
 text_model_selection_replacement(void *data,
 				 struct text_model *text_model)
