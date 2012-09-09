@@ -2,7 +2,7 @@
 # Created June 9, 2005 by Leon Ungier <Leon.Ungier@ViewPlus.com> with
 # help and guidance from Lars Bjørndal <lars@handytech.no>.
 # Modified October 25, 2005
-# Last modified February 2009, by lars@handytech.no
+# Last modified July 2012, by lars@lamasti.net
 
 include no-no-g2.ctb
 
@@ -86,8 +86,6 @@ endword dommenes 26-145-2346-234
 endword dommen 26-145-1345
 
 endword dommer 26-145-1235
-endword dommerne 26-145-1235-2346
-endword dommernes 26-145-1235-2346-234
 
 # word du 145											# defined in level 2
 # begword dykk 145-13							# defined in level 2
@@ -156,7 +154,7 @@ always erz 156-1356
 
 always enbruk 126-12-13
 always ensom 126-25-234
-always ensomm 126-26-234
+always ensomme 126-26-234
 word erte 156-1256
 begword erte 156-1256
 endword erte 156-1256
@@ -235,7 +233,7 @@ begword heldig 125-145									# level 3 contractions
 begword uheldig 136-125-145
 
 endword het 236													# level 3 contractions
-endword hetã 236-126
+endword heten 236-126
 endword heter 236-156
 endword hetene 236-15-2346
 
@@ -323,7 +321,6 @@ endword ligetes 26-123-1256-234
 endword ligere 26-123-12356
 endword ligeres 26-123-12356-234
 
-
 # word mange 134										# defined in level 1 contractions
 # word manges 134-234								# defined in level 2 contractions
 # word med 146											# defined in level 1 contractions
@@ -345,16 +342,7 @@ endword mentne 25-2345-2346
 endword mentnes 25-2345-2346-234
 endword mentte 25-2345-1256
 endword menta 25-2345-1
-endword mentade 25-2345-1-1456
-endword mentaen 25-2345-1-126
-endword mentaens 25-2345-1-126-234
-endword mentaer 25-2345-1-156
-endword mentaers 25-2345-1-156-234
-endword mentaet 25-2345-1-346
-endword mentaets 25-2345-1-346-234
-endword mentane 25-2345-1-2346
-endword mentanes 25-2345-1-2346-234
-endword mentate 25-2345-1-1256
+
 endword mente 26-2345
 endword mentene 26-2345-2346
 endword mentenes 26-2345-2346-234
@@ -377,6 +365,8 @@ endword nadne 25-1246-2346
 endword nade 26-1246
 endword nadene 26-1246-2346
 endword nadenes 26-1246-2346-234
+endword nadere 26-1246-12356
+endword nadere 26-1246-12356-234
 
 # word natur 1345-2345							# defined in level 2 contractions
 # begword unatur 136-1345-2345						# level 3 contractions
@@ -454,12 +444,6 @@ endword samtes 25-146-1256-234
 endword samre 25-146-12356
 endword samres 25-146-12356-234
 endword samt 25-146-2345
-endword samtar 25-46-2345-3456
-endword samten 25-46-2345-126
-endword samter 25-46-2345-156
-endword samtet 25-46-2345-346
-endword samtne 25-46-2345-2346
-endword samtte 25-46-2345-1256
 endword same 26-146
 endword samene 26-146-2346
 endword samenes 26-146-2346-234
@@ -489,16 +473,15 @@ word sjeldan 234-245-145								# level 3 contractions
 word sjelden 234-245-145-126
 word sjeldne 234-245-145-2346
 endword sjon 25-1345
-always sjons 25-1345-234
 endword sjonar 25-1345-3456
-endword sjonar 25-1345-3456-234
+endword sjonars 25-1345-3456-234
 endword sjonen 25-1345-126
 endword sjonens 25-1345-126-234
 endword sjoner 25-1345-156
 endword sjoners 25-1345-156-234
 endword sjonet 25-1345-346
 endword sjonane 25-1345-1-2346
-endword sjonane 25-1345-1-2346-234
+endword sjonanes 25-1345-1-2346-234
 endword sjone 26-1345
 endword sjonene 26-1345-2346
 endword sjonenes 26-1345-2346-234
@@ -509,7 +492,7 @@ begword sk 2356
 endword sk 2356
 # word skal 123456								# defined level 2 contractions
 endword skap 25-1234
-always skaps 25-1234-234
+endword skaps 25-1234-234
 endword skapar 25-1234-3456
 endword skapars 25-1234-3456-234
 endword skapen 25-1234-126
@@ -598,11 +581,7 @@ endword visne 25-1236-2346
 endword visnes 25-1236-2346-234
 endword viste 25-1236-1256
 endword vistes 25-1236-1256-234
-endword vist 25-1236
-endword vistar 25-1236-3456
-endword vistars 25-1236-3456-234
-endword vistne 25-1236-2346
-endword vistnes 25-1236-2346-234
+endword vist 25-1236-2345
 
 # word viss 1236-234							# defined level 2 contractions
 # word uviss 136-1236-234					# defined level 2 contractions
