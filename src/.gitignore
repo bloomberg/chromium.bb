@@ -15,3 +15,5 @@ text-protocol.c
 text-server-protocol.h
 workspaces-protocol.c
 workspaces-server-protocol.h
+input-method-protocol.c
+input-method-server-protocol.h

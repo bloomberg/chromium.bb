@@ -118,8 +118,8 @@ keyboard_SOURCES = 				\
 	keyboard.c				\
 	desktop-shell-client-protocol.h		\
 	desktop-shell-protocol.c		\
-	text-client-protocol.h			\
-	text-protocol.c
+	input-method-protocol.c			\
+	input-method-client-protocol.h
 keyboard_LDADD = $(toolkit_libs)
 
 weston_info_SOURCES =				\
@@ -147,6 +147,8 @@ BUILT_SOURCES =					\
 	text-cursor-position-protocol.c		\
 	text-protocol.c				\
 	text-client-protocol.h			\
+	input-method-protocol.c			\
+	input-method-client-protocol.h		\
 	desktop-shell-client-protocol.h		\
 	desktop-shell-protocol.c		\
 	tablet-shell-client-protocol.h		\

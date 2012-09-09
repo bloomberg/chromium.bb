@@ -1,4 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <protocol name="text">
+
+  <copyright>
+    Copyright © 2012 Intel Corporation
+
+    Permission to use, copy, modify, distribute, and sell this
+    software and its documentation for any purpose is hereby granted
+    without fee, provided that the above copyright notice appear in
+    all copies and that both that copyright notice and this permission
+    notice appear in supporting documentation, and that the name of
+    the copyright holders not be used in advertising or publicity
+    pertaining to distribution of the software without specific,
+    written prior permission.  The copyright holders make no
+    representations about the suitability of this software for any
+    purpose.  It is provided "as is" without express or implied
+    warranty.
+
+    THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+    SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+    FITNESS, IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY
+    SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+    AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+    ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+    THIS SOFTWARE.
+  </copyright>
+
   <interface name="text_model" version="1">
     <description summary="text model">
       A model for text input. Adds support for text input and input methods to
@@ -87,58 +114,5 @@
       </description>
       <arg name="id" type="new_id" interface="text_model"/>
     </request>
-  </interface>
-
-  <interface name="input_method_context" version="1">
-    <description summary="input method context">
-      Corresponds to a text model on input method side. An input method context
-      is created on text mode activation on the input method side. It allows to
-      receive information about the text model from the application via events.
-      Input method contexts do not keep state after deactivation and should be
-      destroyed after deactivation is handled.
-    </description>
-    <request name="destroy" type="destructor"/>
-    <request name="commit_string">
-      <description summary="commit string">
-        Send the commit string text to the applications text model.
-      </description>
-      <arg name="text" type="string"/>
-      <arg name="index" type="uint"/>
-    </request>
-    <event name="surrounding_text">
-      <description summary="surrounding text event">
-        The plain surrounding text around the input position. Cursor is the
-        position within the surrounding text. Anchor is the position of the
-        selection anchor within the surrounding text. If there is no selected
-        text anchor is the same as cursor.
-      </description>
-      <arg name="text" type="string"/>
-      <arg name="cursor" type="uint"/>
-      <arg name="anchor" type="uint"/>
-    </event>
-  </interface>
-
-  <interface name="input_method" version="1">
-    <description summary="input method">
-      An input method object is responsible to compose text in response to
-      input from hardware or virtual keyboards. There is one input method
-      object per seat. On activate there is a new input method context object
-      created which allows the input method to communicate with the text model.
-    </description>
-    <event name="activate">
-      <description summary="activate event">
-        A text model was activated. Creates an input method context object
-        which allows communication with the text model.
-      </description>
-      <arg name="id" type="new_id" interface="input_method_context"/>
-    </event>
-    <event name="deactivate">
-      <description summary="activate event">
-        The text model corresponding to the context argument was deactivated.
-        The input method context should be destroyed after deactivation is
-        handled.
-      </description>
-      <arg name="context" type="object" interface="input_method_context"/>
-    </event>
   </interface>
 </protocol>

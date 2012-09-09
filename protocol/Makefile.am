@@ -4,4 +4,5 @@ EXTRA_DIST =					\
 	tablet-shell.xml			\
 	xserver.xml				\
 	text.xml				\
+	input-method.xml			\
 	workspaces.xml

@@ -28,6 +28,8 @@ weston_SOURCES =				\
 	text-backend.c				\
 	text-protocol.c				\
 	text-server-protocol.h			\
+	input-method-protocol.c			\
+	input-method-server-protocol.h		\
 	workspaces-protocol.c			\
 	workspaces-server-protocol.h		\
 	util.c					\
@@ -176,6 +178,8 @@ BUILT_SOURCES =					\
 	desktop-shell-server-protocol.h		\
 	text-protocol.c				\
 	text-server-protocol.h			\
+	input-method-protocol.c			\
+	input-method-server-protocol.h		\
 	workspaces-server-protocol.h		\
 	workspaces-protocol.c			\
 	git-version.h

@@ -29,7 +29,7 @@
 #include <cairo.h>
 
 #include "window.h"
-#include "text-client-protocol.h"
+#include "input-method-client-protocol.h"
 #include "desktop-shell-client-protocol.h"
 
 struct virtual_keyboard {

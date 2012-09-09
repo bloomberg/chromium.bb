@@ -25,6 +25,7 @@
 
 #include "compositor.h"
 #include "text-server-protocol.h"
+#include "input-method-server-protocol.h"
 
 struct input_method;
 struct input_method_context;

@@ -8,6 +8,8 @@ eventdemo
 flower
 gears
 image
+input-method-protocol.c
+input-method-client-protocol.h
 keyboard
 libtoytoolkit.a
 resizor
