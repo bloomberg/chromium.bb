@@ -1,5 +1,15 @@
 <protocol name="text">
-   <interface name="text_model" version="1">
+  <interface name="text_model" version="1">
+    <description summary="text model">
+      A model for text input. Adds support for text input and input methods to
+      applications. A text_model object is created from a text_model_factory and
+      corresponds typically to a text entry in an application. Requests are used
+      to activate/deactivate the model and set information like surrounding and
+      selected text or the content type. The information about entered text is
+      sent to the model via the pre-edit and commit events. Using this interface
+      removes the need for applications to directly process hardware key events
+      and compose text out of them.
+    </description>
     <request name="set_surrounding_text">
       <arg name="text" type="string"/>
     </request>
@@ -7,10 +17,22 @@
       <arg name="index" type="uint"/>
     </request>
     <request name="activate">
+      <description summary="request activation">
+        Requests the model to be activated (typically when the text entry gets
+        focus). The seat argument is a wl_seat which maintains the focus for
+        this activation. The surface argument is a wl_surface assigned to the
+        model and tracked for focus lost. The activated event is emitted on
+        successful activation.
+      </description>
       <arg name="seat" type="object" interface="wl_seat"/>
       <arg name="surface" type="object" interface="wl_surface"/>
     </request>
     <request name="deactivate">
+      <description summary="request deactivation">
+        Requests the model to be deactivated (typically when the text entry
+        lost focus). The seat argument is a wl_seat which was used for
+        activation.
+      </description>
       <arg name="seat" type="object" interface="wl_seat"/>
     </request>
     <request name="set_selected_text">
@@ -39,32 +61,77 @@
     <event name="selection_replacement"/>
     <event name="direction"/>
     <event name="locale"/>
-    <event name="activated"/>
-    <event name="deactivated"/>
+    <event name="activated">
+      <description summary="activated event">
+        Notify the model when it is activated. Typically in response to an
+        activate request.
+      </description>
+    </event>
+    <event name="deactivated">
+      <description summary="deactivated event">
+        Notify the model when it is deactivated. Either in response to a
+        deactivate request or when the assigned surface lost focus or was
+        destroyed.
+      </description>
+    </event>
   </interface>
 
   <interface name="text_model_factory" version="1">
+    <description summary="text model factory">
+      A factory for text models. This object is a singleton global.
+    </description>
     <request name="create_text_model">
+      <description summary="create text model">
+        Creates a new text model object.
+      </description>
       <arg name="id" type="new_id" interface="text_model"/>
     </request>
   </interface>
 
   <interface name="input_method_context" version="1">
+    <description summary="input method context">
+      Corresponds to a text model on input method side. An input method context
+      is created on text mode activation on the input method side. It allows to
+      receive information about the text model from the application via events.
+      Input method contexts do not keep state after deactivation and should be
+      destroyed after deactivation is handled.
+    </description>
     <request name="destroy" type="destructor"/>
     <request name="commit_string">
+      <description summary="commit string">
+        Send the commit string text to the applications text model.
+      </description>
       <arg name="text" type="string"/>
       <arg name="index" type="uint"/>
     </request>
     <event name="set_surrounding_text">
+      <description summary="surrounding text event">
+        The surrounding text from the model.
+      </description>
       <arg name="text" type="string"/>
     </event>
   </interface>
 
   <interface name="input_method" version="1">
+    <description summary="input method">
+      An input method object is responsible to compose text in response to
+      input from hardware or virtual keyboards. There is one input method
+      object per seat. On activate there is a new input method context object
+      created which allows the input method to communicate with the text model.
+    </description>
     <event name="activate">
+      <description summary="activate event">
+        A text model was activated. Creates an input method context object
+        which allows communication with the text model.
+      </description>
       <arg name="id" type="new_id" interface="input_method_context"/>
     </event>
     <event name="deactivate">
+      <description summary="activate event">
+        The text model corresponding to the context argument was deactivated.
+        The input method context should be destroyed after deactivation is
+        handled.
+      </description>
       <arg name="context" type="object" interface="input_method_context"/>
     </event>
   </interface>
