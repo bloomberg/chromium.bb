@@ -256,12 +256,18 @@ WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
   return webkit_event;
 }
 
+// NOTE: ui::ScrollEvent instances come from the touchpad.
 WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
     ui::ScrollEvent* event) {
   WebKit::WebGestureEvent webkit_event;
 
   switch (event->type()) {
     case ui::ET_SCROLL:
+      // TODO(sadrul || rjkroege): This will do touchscreen style scrolling in
+      // response to touchpad events. Currently, touchscreen and touchpad
+      // scrolls are the same. However, if the planned changes to touchscreen
+      // scrolling take place, this will no longer be so. If so, this needs to
+      // be adjusted.
       webkit_event.type = WebKit::WebInputEvent::GestureScrollUpdate;
       webkit_event.data.scrollUpdate.deltaX = event->x_offset();
       webkit_event.data.scrollUpdate.deltaY = event->y_offset();
@@ -270,6 +276,8 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
       webkit_event.type = WebKit::WebInputEvent::GestureFlingStart;
       webkit_event.data.flingStart.velocityX = event->x_offset();
       webkit_event.data.flingStart.velocityY = event->y_offset();
+      webkit_event.data.flingStart.sourceDevice =
+          WebKit::WebGestureEvent::Touchpad;
       break;
     case ui::ET_SCROLL_FLING_CANCEL:
       webkit_event.type = WebKit::WebInputEvent::GestureFlingCancel;
@@ -336,6 +344,7 @@ WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
   return webkit_event;
 }
 
+// NOTE: ui::GestureEvent instances come from the touchscreen.
 WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
     ui::GestureEvent* event) {
   WebKit::WebGestureEvent gesture_event;
@@ -384,6 +393,8 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
       gesture_event.type = WebKit::WebInputEvent::GestureFlingStart;
       gesture_event.data.flingStart.velocityX = event->details().velocity_x();
       gesture_event.data.flingStart.velocityY = event->details().velocity_y();
+      gesture_event.data.flingStart.sourceDevice =
+          WebKit::WebGestureEvent::Touchscreen;
       gesture_event.deltaX = event->details().velocity_x();
       gesture_event.deltaY = event->details().velocity_y();
       break;

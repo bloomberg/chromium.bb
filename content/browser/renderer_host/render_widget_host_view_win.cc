@@ -416,6 +416,8 @@ WebKit::WebGestureEvent CreateWebGestureEvent(HWND hwnd,
     case ui::ET_SCROLL_FLING_START:
       gesture_event.data.flingStart.velocityX = gesture.details().velocity_x();
       gesture_event.data.flingStart.velocityY = gesture.details().velocity_y();
+      gesture_event.data.flingStart.sourceDevice =
+          WebKit::WebGestureEvent::Touchscreen;
       gesture_event.deltaX = gesture.details().velocity_x();
       gesture_event.deltaY = gesture.details().velocity_y();
       break;

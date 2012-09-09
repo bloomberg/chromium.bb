@@ -281,6 +281,9 @@ void ContentViewCoreImpl::SendGestureEvent(WebInputEvent::Type type,
   WebKit::WebGestureEvent event = WebInputEventFactory::gestureEvent(
       type, time_ms / 1000.0, x, y, 0, 0, 0);
 
+  if (type == WebInputEvent::GestureFlingStart)
+    event.data.flingStart.sourceDevice = WebKit::WebGestureEvent::Touchscreen;
+
   if (GetRenderWidgetHostViewAndroid())
     GetRenderWidgetHostViewAndroid()->GestureEvent(event);
 }
