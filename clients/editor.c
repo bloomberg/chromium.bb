@@ -50,6 +50,7 @@ struct text_entry {
 	char *text;
 	int active;
 	uint32_t cursor;
+	uint32_t anchor;
 	struct text_model *model;
 	struct text_layout *layout;
 };
@@ -309,6 +310,7 @@ text_entry_create(struct editor *editor, const char *text)
 	entry->text = strdup(text);
 	entry->active = 0;
 	entry->cursor = strlen(text);
+	entry->anchor = entry->cursor;
 	entry->model = text_model_factory_create_text_model(editor->text_model_factory);
 	text_model_add_listener(entry->model, &text_model_listener, entry);
 
@@ -418,6 +420,7 @@ text_entry_insert_at_cursor(struct text_entry *entry, const char *text)
 	free(entry->text);
 	entry->text = new_text;
 	entry->cursor += strlen(text);
+	entry->anchor += strlen(text);
 
 	text_layout_set_text(entry->layout, entry->text);
 }
@@ -429,6 +432,50 @@ text_entry_set_cursor_position(struct text_entry *entry,
 	entry->cursor = text_layout_xy_to_index(entry->layout, x, y);
 
 	widget_schedule_redraw(entry->widget);
+}
+
+static void
+text_entry_set_anchor_position(struct text_entry *entry,
+			       int32_t x, int32_t y)
+{
+	entry->anchor = text_layout_xy_to_index(entry->layout, x, y);
+
+	widget_schedule_redraw(entry->widget);
+}
+
+static void
+text_entry_draw_selection(struct text_entry *entry, cairo_t *cr)
+{
+	cairo_text_extents_t extents;
+	uint32_t start_index = entry->anchor < entry->cursor ? entry->anchor : entry->cursor;
+	uint32_t end_index = entry->anchor < entry->cursor ? entry->cursor : entry->anchor;
+	cairo_rectangle_t start;
+	cairo_rectangle_t end;
+
+	if (entry->anchor == entry->cursor)
+		return;
+
+	text_layout_extents(entry->layout, &extents);
+
+	text_layout_index_to_pos(entry->layout, start_index, &start);
+	text_layout_index_to_pos(entry->layout, end_index, &end);
+
+	cairo_save (cr);
+
+	cairo_set_source_rgba(cr, 0.0, 0.0, 1.0, 1.0);
+	cairo_rectangle(cr,
+			start.x, extents.y_bearing + extents.height + 2,
+			end.x - start.x, -extents.height - 4);
+	cairo_fill(cr);
+
+	cairo_rectangle(cr,
+			start.x, extents.y_bearing + extents.height,
+			end.x - start.x, -extents.height);
+	cairo_clip(cr);
+	cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 1.0);
+	text_layout_draw(entry->layout, cr);
+
+	cairo_restore (cr);
 }
 
 static void
@@ -484,6 +531,8 @@ text_entry_redraw_handler(struct widget *widget, void *data)
 	cairo_translate(cr, 10, allocation.height / 2);
 	text_layout_draw(entry->layout, cr);
 
+	text_entry_draw_selection(entry, cr);
+
 	text_entry_draw_cursor(entry, cr);
 
 	cairo_pop_group_to_source(cr);
@@ -491,6 +540,23 @@ text_entry_redraw_handler(struct widget *widget, void *data)
 
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
+}
+
+static int
+text_entry_motion_handler(struct widget *widget,
+			  struct input *input, uint32_t time,
+			  float x, float y, void *data)
+{
+	struct text_entry *entry = data;
+	struct rectangle allocation;
+
+	widget_get_allocation(entry->widget, &allocation);
+
+	text_entry_set_cursor_position(entry,
+				       x - allocation.x,
+				       y - allocation.y);
+
+	return CURSOR_IBEAM;
 }
 
 static void
@@ -510,7 +576,7 @@ text_entry_button_handler(struct widget *widget,
 		return;
 	}
 
-	text_entry_set_cursor_position(entry, 
+	text_entry_set_cursor_position(entry,
 				       x - allocation.x,
 				       y - allocation.y);
 
@@ -518,6 +584,14 @@ text_entry_button_handler(struct widget *widget,
 		struct wl_seat *seat = input_get_seat(input);
 
 		text_entry_activate(entry, seat);
+
+		text_entry_set_anchor_position(entry,
+					       x - allocation.x,
+					       y - allocation.y);
+
+		widget_set_motion_handler(entry->widget, text_entry_motion_handler);
+	} else {
+		widget_set_motion_handler(entry->widget, NULL);
 	}
 }
 
