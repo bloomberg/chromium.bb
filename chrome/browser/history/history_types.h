@@ -656,6 +656,9 @@ bool RowQualifiesAsSignificant(const URLRow& row, const base::Time& threshold);
 
 // Defines the icon types. They are also stored in icon_type field of favicons
 // table.
+// The values of the IconTypes are used to select the priority in which favicon
+// data is returned in HistoryBackend and ThumbnailDatabase. Data for the
+// largest IconType takes priority if data for multiple IconTypes is available.
 enum IconType {
   INVALID_ICON = 0x0,
   FAVICON = 1 << 0,
@@ -676,6 +679,9 @@ struct IconMapping {
 
   // The unique id of the icon.
   FaviconID icon_id;
+
+  // The url of the icon.
+  GURL icon_url;
 
   // The type of icon.
   IconType icon_type;
@@ -705,6 +711,10 @@ struct FaviconBitmapResult {
   // The icon type of the containing favicon.
   IconType icon_type;
 };
+
+// Define type with same structure as FaviconBitmapResult for passing data to
+// HistoryBackend::SetFavicons().
+typedef FaviconBitmapResult FaviconBitmapData;
 
 // Defines a gfx::Image of size desired_size_in_dip composed of image
 // representations for each of the desired scale factors.
@@ -738,6 +748,18 @@ const FaviconSizes& GetDefaultFaviconSizes();
 
 // A map from an icon URL to the FaviconSizes for that URL.
 typedef std::map<GURL, FaviconSizes> IconURLSizesMap;
+
+// Defines a favicon bitmap and its associated pixel size.
+struct FaviconBitmapIDSize {
+  FaviconBitmapIDSize();
+  ~FaviconBitmapIDSize();
+
+  // The unique id of the favicon bitmap.
+  FaviconBitmapID bitmap_id;
+
+  // The pixel dimensions of the associated bitmap.
+  gfx::Size pixel_size;
+};
 
 // Defines a favicon bitmap stored in the history backend.
 struct FaviconBitmap {

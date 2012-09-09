@@ -491,58 +491,66 @@ HistoryService::Handle HistoryService::GetPageThumbnail(
                   new history::GetPageThumbnailRequest(callback), page_url);
 }
 
-void HistoryService::GetFavicon(FaviconService::GetFaviconRequest* request,
-                                const GURL& icon_url,
-                                history::IconType icon_type) {
-  Schedule(PRIORITY_NORMAL, &HistoryBackend::GetFavicon, NULL, request,
-           icon_url, icon_type);
+void HistoryService::GetFavicons(
+    FaviconService::GetFaviconRequest* request,
+    const std::vector<GURL>& icon_urls,
+    int icon_types,
+    int desired_size_in_dip,
+    const std::vector<ui::ScaleFactor>& desired_scale_factors) {
+  Schedule(PRIORITY_NORMAL, &HistoryBackend::GetFavicons, NULL, request,
+           icon_urls, icon_types, desired_size_in_dip, desired_scale_factors);
 }
 
-void HistoryService::UpdateFaviconMappingAndFetch(
+void HistoryService::GetFaviconsForURL(
     FaviconService::GetFaviconRequest* request,
     const GURL& page_url,
-    const GURL& icon_url,
-    history::IconType icon_type) {
-  Schedule(PRIORITY_NORMAL, &HistoryBackend::UpdateFaviconMappingAndFetch, NULL,
-           request, page_url, icon_url, history::FAVICON);
-}
-
-void HistoryService::GetFaviconForURL(
-    FaviconService::GetFaviconRequest* request,
-    const GURL& page_url,
-    int icon_types) {
-  Schedule(PRIORITY_NORMAL, &HistoryBackend::GetFaviconForURL, NULL, request,
-           page_url, icon_types);
+    int icon_types,
+    int desired_size_in_dip,
+    const std::vector<ui::ScaleFactor>& desired_scale_factors) {
+  Schedule(PRIORITY_NORMAL, &HistoryBackend::GetFaviconsForURL, NULL, request,
+           page_url, icon_types, desired_size_in_dip, desired_scale_factors);
 }
 
 void HistoryService::GetFaviconForID(FaviconService::GetFaviconRequest* request,
-                                     history::FaviconID id) {
+                                     history::FaviconID favicon_id,
+                                     int desired_size_in_dip,
+                                     ui::ScaleFactor desired_scale_factor) {
   Schedule(PRIORITY_NORMAL, &HistoryBackend::GetFaviconForID, NULL, request,
-           id);
+           favicon_id, desired_size_in_dip, desired_scale_factor);
 }
 
-void HistoryService::SetFavicon(const GURL& page_url,
-                                const GURL& icon_url,
-                                const std::vector<unsigned char>& image_data,
-                                history::IconType icon_type) {
+void HistoryService::UpdateFaviconMappingsAndFetch(
+    FaviconService::GetFaviconRequest* request,
+    const GURL& page_url,
+    const std::vector<GURL>& icon_urls,
+    int icon_types,
+    int desired_size_in_dip,
+    const std::vector<ui::ScaleFactor>& desired_scale_factors) {
+  Schedule(PRIORITY_NORMAL, &HistoryBackend::UpdateFaviconMappingsAndFetch,
+           NULL, request, page_url, icon_urls, icon_types, desired_size_in_dip,
+           desired_scale_factors);
+}
+
+void HistoryService::SetFavicons(
+    const GURL& page_url,
+    history::IconType icon_type,
+    const std::vector<history::FaviconBitmapData>& favicon_bitmap_data,
+    const history::IconURLSizesMap& icon_url_sizes) {
   if (!CanAddURL(page_url))
     return;
 
-  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::SetFavicon,
-      page_url, icon_url,
-      scoped_refptr<base::RefCountedMemory>(
-          new base::RefCountedBytes(image_data)),
-      icon_type);
+  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::SetFavicons, page_url,
+      icon_type, favicon_bitmap_data, icon_url_sizes);
 }
 
-void HistoryService::SetFaviconOutOfDateForPage(const GURL& page_url) {
+void HistoryService::SetFaviconsOutOfDateForPage(const GURL& page_url) {
   ScheduleAndForget(PRIORITY_NORMAL,
-                    &HistoryBackend::SetFaviconOutOfDateForPage, page_url);
+                    &HistoryBackend::SetFaviconsOutOfDateForPage, page_url);
 }
 
-void HistoryService::CloneFavicon(const GURL& old_page_url,
+void HistoryService::CloneFavicons(const GURL& old_page_url,
                                   const GURL& new_page_url) {
-  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::CloneFavicon,
+  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::CloneFavicons,
                     old_page_url, new_page_url);
 }
 

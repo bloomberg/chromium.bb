@@ -80,6 +80,7 @@ static void FillIconMapping(const sql::Statement& statement,
   icon_mapping->icon_id = statement.ColumnInt64(1);
   icon_mapping->icon_type =
       static_cast<history::IconType>(statement.ColumnInt(2));
+  icon_mapping->icon_url = GURL(statement.ColumnString(3));
   icon_mapping->page_url = page_url;
 }
 
@@ -103,7 +104,7 @@ bool ThumbnailDatabase::IconMappingEnumerator::GetNextIconMapping(
     IconMapping* icon_mapping) {
   if (!statement_.Step())
     return false;
-  FillIconMapping(statement_, GURL(statement_.ColumnString(3)), icon_mapping);
+  FillIconMapping(statement_, GURL(statement_.ColumnString(4)), icon_mapping);
   return true;
 }
 
@@ -447,6 +448,29 @@ bool ThumbnailDatabase::ThumbnailScoreForId(URLID id,
   return true;
 }
 
+bool ThumbnailDatabase::GetFaviconBitmapIDSizes(
+    FaviconID icon_id,
+    std::vector<FaviconBitmapIDSize>* bitmap_id_sizes) {
+  DCHECK(icon_id);
+  sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
+      "SELECT id, width, height FROM favicon_bitmaps WHERE icon_id=?"));
+  statement.BindInt64(0, icon_id);
+
+  bool result = false;
+  while (statement.Step()) {
+    result = true;
+    if (!bitmap_id_sizes)
+      return result;
+
+    FaviconBitmapIDSize bitmap_id_size;
+    bitmap_id_size.bitmap_id = statement.ColumnInt64(0);
+    bitmap_id_size.pixel_size = gfx::Size(statement.ColumnInt(1),
+                                          statement.ColumnInt(2));
+    bitmap_id_sizes->push_back(bitmap_id_size);
+  }
+  return result;
+}
+
 bool ThumbnailDatabase::GetFaviconBitmaps(
     FaviconID icon_id,
     std::vector<FaviconBitmap>* favicon_bitmaps) {
@@ -479,6 +503,36 @@ bool ThumbnailDatabase::GetFaviconBitmaps(
   return result;
 }
 
+bool ThumbnailDatabase::GetFaviconBitmap(
+    FaviconBitmapID bitmap_id,
+    base::Time* last_updated,
+    scoped_refptr<base::RefCountedMemory>* png_icon_data,
+    gfx::Size* pixel_size) {
+  DCHECK(bitmap_id);
+  sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
+      "SELECT last_updated, image_data, width, height FROM favicon_bitmaps "
+      "WHERE id=?"));
+  statement.BindInt64(0, bitmap_id);
+
+  if (!statement.Step())
+    return false;
+
+  if (last_updated)
+    *last_updated = base::Time::FromInternalValue(statement.ColumnInt64(0));
+
+  if (png_icon_data && statement.ColumnByteLength(1) > 0) {
+    scoped_refptr<base::RefCountedBytes> data(new base::RefCountedBytes());
+    statement.ColumnBlobAsVector(1, &data->data());
+    *png_icon_data = data;
+  }
+
+  if (pixel_size) {
+    *pixel_size = gfx::Size(statement.ColumnInt(2),
+                            statement.ColumnInt(3));
+  }
+  return true;
+}
+
 FaviconBitmapID ThumbnailDatabase::AddFaviconBitmap(
     FaviconID icon_id,
     const scoped_refptr<base::RefCountedMemory>& icon_data,
@@ -504,10 +558,36 @@ FaviconBitmapID ThumbnailDatabase::AddFaviconBitmap(
   return db_.GetLastInsertRowId();
 }
 
+bool ThumbnailDatabase::SetFaviconBitmap(
+    FaviconBitmapID bitmap_id,
+    scoped_refptr<base::RefCountedMemory> bitmap_data,
+    base::Time time) {
+  DCHECK(bitmap_id);
+  sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
+      "UPDATE favicon_bitmaps SET image_data=?, last_updated=? WHERE id=?"));
+  if (bitmap_data.get() && bitmap_data->size()) {
+    statement.BindBlob(0, bitmap_data->front(),
+                       static_cast<int>(bitmap_data->size()));
+  } else {
+    statement.BindNull(0);
+  }
+  statement.BindInt64(1, time.ToInternalValue());
+  statement.BindInt64(2, bitmap_id);
+
+  return statement.Run();
+}
+
 bool ThumbnailDatabase::DeleteFaviconBitmapsForFavicon(FaviconID icon_id) {
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM favicon_bitmaps WHERE icon_id=?"));
   statement.BindInt64(0, icon_id);
+  return statement.Run();
+}
+
+bool ThumbnailDatabase::DeleteFaviconBitmap(FaviconBitmapID bitmap_id) {
+  sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
+      "DELETE FROM favicon_bitmaps WHERE id=?"));
+  statement.BindInt64(0, bitmap_id);
   return statement.Run();
 }
 
@@ -650,7 +730,8 @@ bool ThumbnailDatabase::GetIconMappingsForPageURL(
     const GURL& page_url,
     std::vector<IconMapping>* mapping_data) {
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
-      "SELECT icon_mapping.id, icon_mapping.icon_id, favicons.icon_type "
+      "SELECT icon_mapping.id, icon_mapping.icon_id, favicons.icon_type, "
+      "favicons.url "
       "FROM icon_mapping "
       "INNER JOIN favicons "
       "ON icon_mapping.icon_id = favicons.id "
@@ -741,7 +822,7 @@ bool ThumbnailDatabase::InitIconMappingEnumerator(
   enumerator->statement_.Assign(db_.GetCachedStatement(
       SQL_FROM_HERE,
       "SELECT icon_mapping.id, icon_mapping.icon_id, favicons.icon_type, "
-             "icon_mapping.page_url "
+             "favicons.url, icon_mapping.page_url "
          "FROM icon_mapping JOIN favicons ON ("
               "icon_mapping.icon_id = favicons.id) "
          "WHERE favicons.icon_type = ?"));

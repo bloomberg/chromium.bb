@@ -526,6 +526,7 @@ TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURLForReturnOrder) {
   EXPECT_EQ(page_url, icon_mappings.front().page_url);
   EXPECT_EQ(id, icon_mappings.front().icon_id);
   EXPECT_EQ(FAVICON, icon_mappings.front().icon_type);
+  EXPECT_EQ(icon_url, icon_mappings.front().icon_url);
 
   // Add a touch icon
   std::vector<unsigned char> data2(blob2, blob2 + sizeof(blob2));
@@ -542,6 +543,7 @@ TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURLForReturnOrder) {
   EXPECT_EQ(page_url, icon_mappings.front().page_url);
   EXPECT_EQ(id2, icon_mappings.front().icon_id);
   EXPECT_EQ(TOUCH_ICON, icon_mappings.front().icon_type);
+  EXPECT_EQ(icon_url, icon_mappings.front().icon_url);
 
   // Add a touch precomposed icon
   scoped_refptr<base::RefCountedBytes> favicon3 =
@@ -557,6 +559,7 @@ TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURLForReturnOrder) {
   EXPECT_EQ(page_url, icon_mappings.front().page_url);
   EXPECT_EQ(id3, icon_mappings.front().icon_id);
   EXPECT_EQ(TOUCH_PRECOMPOSED_ICON, icon_mappings.front().icon_type);
+  EXPECT_EQ(icon_url, icon_mappings.front().icon_url);
 }
 
 // Test result of GetIconMappingsForPageURL when an icon type is passed in.
@@ -741,10 +744,7 @@ TEST_F(IconMappingMigrationTest, TestIconMappingMigration) {
   EXPECT_EQ(FAVICON, icon_mappings[0].icon_type);
   EXPECT_EQ(page_url1, icon_mappings[0].page_url);
   EXPECT_EQ(1, icon_mappings[0].icon_id);
-  GURL out_icon_url;
-  ASSERT_TRUE(db.GetFaviconHeader(
-      icon_mappings[0].icon_id, &out_icon_url, NULL, NULL));
-  EXPECT_EQ(icon1, out_icon_url);
+  EXPECT_EQ(icon1, icon_mappings[0].icon_url);
 
   // Test a page which has the same icon.
   GURL page_url3 = GURL("http://www.google.com/");
@@ -754,6 +754,7 @@ TEST_F(IconMappingMigrationTest, TestIconMappingMigration) {
   EXPECT_EQ(FAVICON, icon_mappings[0].icon_type);
   EXPECT_EQ(page_url3, icon_mappings[0].page_url);
   EXPECT_EQ(1, icon_mappings[0].icon_id);
+  EXPECT_EQ(icon1, icon_mappings[0].icon_url);
 
   // Test a icon_mapping with different IconID.
   GURL page_url2 = GURL("http://yahoo.com/");
@@ -763,9 +764,7 @@ TEST_F(IconMappingMigrationTest, TestIconMappingMigration) {
   EXPECT_EQ(FAVICON, icon_mappings[0].icon_type);
   EXPECT_EQ(page_url2, icon_mappings[0].page_url);
   EXPECT_EQ(2, icon_mappings[0].icon_id);
-  ASSERT_TRUE(db.GetFaviconHeader(
-      icon_mappings[0].icon_id, &out_icon_url, NULL, NULL));
-  EXPECT_EQ(icon2, out_icon_url);
+  EXPECT_EQ(icon2, icon_mappings[0].icon_url);
 
   // Test a page without icon
   GURL page_url4 = GURL("http://www.google.com/blank.html");
@@ -815,11 +814,13 @@ TEST_F(ThumbnailDatabaseTest, IconMappingEnumerator) {
       has_favicon_mapping1 = true;
       EXPECT_EQ(url, icon_mapping.page_url);
       EXPECT_EQ(favicon_id1, icon_mapping.icon_id);
+      EXPECT_EQ(icon_url1, icon_mapping.icon_url);
       EXPECT_EQ(FAVICON, icon_mapping.icon_type);
     } else if (favicon_mapping_id2 == icon_mapping.mapping_id) {
       has_favicon_mapping2 = true;
       EXPECT_EQ(url2, icon_mapping.page_url);
       EXPECT_EQ(favicon_id2, icon_mapping.icon_id);
+      EXPECT_EQ(icon_url2, icon_mapping.icon_url);
       EXPECT_EQ(FAVICON, icon_mapping.icon_type);
     }
   }
@@ -833,6 +834,7 @@ TEST_F(ThumbnailDatabaseTest, IconMappingEnumerator) {
   EXPECT_EQ(touch_mapping_id1, icon_mapping.mapping_id);
   EXPECT_EQ(url, icon_mapping.page_url);
   EXPECT_EQ(touch_icon_id1, icon_mapping.icon_id);
+  EXPECT_EQ(icon_url1, icon_mapping.icon_url);
   EXPECT_EQ(TOUCH_ICON, icon_mapping.icon_type);
 
   EXPECT_FALSE(enumerator2.GetNextIconMapping(&icon_mapping));

@@ -248,10 +248,22 @@ TEST_F(AndroidProviderBackendTest, UpdateTables) {
   // Set favicon to url2.
   std::vector<unsigned char> data;
   data.push_back('1');
-  history_backend->SetFavicon(url2,
-                              GURL(),
-                              new base::RefCountedBytes(data),
-                              FAVICON);
+  history::FaviconBitmapData bitmap_data_element;
+  bitmap_data_element.bitmap_data = new base::RefCountedBytes(data);
+  bitmap_data_element.pixel_size = gfx::Size();
+  bitmap_data_element.icon_url = GURL();
+  std::vector<history::FaviconBitmapData> favicon_bitmap_data;
+  favicon_bitmap_data.push_back(bitmap_data_element);
+
+  FaviconSizes favicon_sizes;
+  favicon_sizes.push_back(gfx::Size());
+  IconURLSizesMap icon_url_sizes;
+  icon_url_sizes[GURL()] = favicon_sizes;
+
+  history_backend->SetFavicons(url2,
+                               FAVICON,
+                               favicon_bitmap_data,
+                               icon_url_sizes);
   history_backend->Closing();
   }
 
@@ -394,10 +406,22 @@ TEST_F(AndroidProviderBackendTest, QueryHistoryAndBookmarks) {
   // Set favicon to url2.
   std::vector<unsigned char> data;
   data.push_back('1');
-  history_backend->SetFavicon(url2,
-                              GURL(),
-                              new base::RefCountedBytes(data),
-                              FAVICON);
+  history::FaviconBitmapData bitmap_data_element;
+  bitmap_data_element.bitmap_data = new base::RefCountedBytes(data);
+  bitmap_data_element.pixel_size = gfx::Size();
+  bitmap_data_element.icon_url = GURL();
+  std::vector<history::FaviconBitmapData> favicon_bitmap_data;
+  favicon_bitmap_data.push_back(bitmap_data_element);
+
+  FaviconSizes favicon_sizes;
+  favicon_sizes.push_back(gfx::Size());
+  IconURLSizesMap icon_url_sizes;
+  icon_url_sizes[GURL()] = favicon_sizes;
+
+  history_backend->SetFavicons(url2,
+                               FAVICON,
+                               favicon_bitmap_data,
+                               icon_url_sizes);
   history_backend->Closing();
   }
 

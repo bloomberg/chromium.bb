@@ -25,6 +25,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/page_transition_types.h"
 #include "sql/init_status.h"
+#include "ui/base/layout.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/history/android/android_history_provider_service.h"
@@ -689,48 +690,108 @@ class HistoryService : public CancelableRequestProvider,
   // these methods directly you should call the respective method on the
   // FaviconService.
 
-  // Used by the FaviconService to get a favicon from the history backend.
-  void GetFavicon(FaviconService::GetFaviconRequest* request,
-                  const GURL& icon_url,
-                  history::IconType icon_type);
+  // Used by FaviconService to get the favicon bitmaps from the history backend
+  // which most closely match |desired_size_in_dip| x |desired_size_in_dip| and
+  // |desired_scale_factors| for |icon_types|. If |desired_size_in_dip| is 0,
+  // the largest favicon bitmap for |icon_types| is returned. The returned
+  // FaviconBitmapResults will have at most one result for each of
+  // |desired_scale_factors|. If a favicon bitmap is determined to be the best
+  // candidate for multiple scale factors there will be less results.
+  // If |icon_types| has several types, results for only a single type will be
+  // returned in the priority of TOUCH_PRECOMPOSED_ICON, TOUCH_ICON, and
+  // FAVICON.
+  void GetFavicons(FaviconService::GetFaviconRequest* request,
+                   const std::vector<GURL>& icon_urls,
+                   int icon_types,
+                   int desired_size_in_dip,
+                   const std::vector<ui::ScaleFactor>& desired_scale_factors);
 
-  // Used by the FaviconService to update the favicon mappings on the history
-  // backend.
-  void UpdateFaviconMappingAndFetch(FaviconService::GetFaviconRequest* request,
-                                    const GURL& page_url,
-                                    const GURL& icon_url,
-                                    history::IconType icon_type);
+  // Used by the FaviconService to get favicons mapped to |page_url| for
+  // |icon_types| which most closely match |desired_size_in_dip| and
+  // |desired_scale_factors|. If |desired_size_in_dip| is 0, the largest favicon
+  // bitmap for |icon_types| is returned. The returned FaviconBitmapResults will
+  // have at most one result for each of |desired_scale_factors|. If a favicon
+  // bitmap is determined to be the best candidate for multiple scale factors
+  // there will be less results. If |icon_types| has several types, results for
+  // only a single type will be returned in the priority of
+  // TOUCH_PRECOMPOSED_ICON, TOUCH_ICON, and FAVICON.
+  void GetFaviconsForURL(
+      FaviconService::GetFaviconRequest* request,
+      const GURL& page_url,
+      int icon_types,
+      int desired_size_in_dip,
+      const std::vector<ui::ScaleFactor>& desired_scale_factors);
 
-  // Used by the FaviconService to get a favicon from the history backend.
-  void GetFaviconForURL(FaviconService::GetFaviconRequest* request,
-                        const GURL& page_url,
-                        int icon_types);
-
-  // Used by the FaviconService to get a favicon from the history backend.
+  // Used by the FaviconService to get the favicon bitmap which most closely
+  // matches |desired_size_in_dip| and |desired_scale_factor| from the favicon
+  // with |favicon_id| from the history backend. If |desired_size_in_dip| is 0,
+  // the largest favicon bitmap for |favicon_id| is returned.
   void GetFaviconForID(FaviconService::GetFaviconRequest* request,
-                       history::FaviconID id);
+                       history::FaviconID favicon_id,
+                       int desired_size_in_dip,
+                       ui::ScaleFactor desired_scale_factor);
+
+  // Used by the FaviconService to replace the favicon mappings to |page_url|
+  // for |icon_types| on the history backend.
+  // Sample |icon_urls|:
+  //  { ICON_URL1 -> TOUCH_ICON, known to the database,
+  //    ICON_URL2 -> TOUCH_ICON, not known to the database,
+  //    ICON_URL3 -> TOUCH_PRECOMPOSED_ICON, known to the database }
+  // The new mappings are computed from |icon_urls| with these rules:
+  // 1) Any urls in |icon_urls| which are not already known to the database are
+  //    rejected.
+  //    Sample new mappings to |page_url|: { ICON_URL1, ICON_URL3 }
+  // 2) If |icon_types| has multiple types, the mappings are only set for the
+  //    largest icon type.
+  //    Sample new mappings to |page_url|: { ICON_URL3 }
+  // |icon_types| can only have multiple IconTypes if
+  // |icon_types| == TOUCH_ICON | TOUCH_PRECOMPOSED_ICON.
+  // The favicon bitmaps which most closely match |desired_size_in_dip|
+  // and |desired_scale_factors| from the favicons which were just mapped
+  // to |page_url| are returned. If |desired_size_in_dip| is 0, the
+  // largest favicon bitmap is returned.
+  void UpdateFaviconMappingsAndFetch(
+      FaviconService::GetFaviconRequest* request,
+      const GURL& page_url,
+      const std::vector<GURL>& icon_urls,
+      int icon_types,
+      int desired_size_in_dip,
+      const std::vector<ui::ScaleFactor>& desired_scale_factors);
+
+  // Used by the FaviconService to set the favicons for a page on the history
+  // backend.
+  // |favicon_bitmap_data| is a listing of additional favicon bitmaps to store
+  // for |page_url|.
+  // |expired| and |icon_type| fields in FaviconBitmapData are ignored.
+  // |icon_url_sizes| is a mapping of all the icon urls of the favicons
+  // available for |page_url| to the sizes that those favicons are available
+  // from the web.
+  // |favicon_bitmap_data| does not need to have entries for all the icon urls
+  // or sizes listed in |icon_url_sizes|. However, the icon urls and pixel
+  // sizes in |favicon_bitmap_data| must be a subset of |icon_url_sizes|. It is
+  // important that |icon_url_sizes| be complete as mappings to favicons whose
+  // icon url or pixel size is not in |icon_url_sizes| will be deleted.
+  // See HistoryBackend::ValidateSetFaviconsParams() for more details on the
+  // criteria for |favicon_bitmap_data| and |icon_url_sizes| to be valid.
+  void SetFavicons(
+      const GURL& page_url,
+      history::IconType icon_type,
+      const std::vector<history::FaviconBitmapData>& favicon_bitmap_data,
+      const history::IconURLSizesMap& icon_url_sizes);
 
   // Used by the FaviconService to mark the favicon for the page as being out
   // of date.
-  void SetFaviconOutOfDateForPage(const GURL& page_url);
+  void SetFaviconsOutOfDateForPage(const GURL& page_url);
 
   // Used by the FaviconService to clone favicons from one page to another,
   // provided that other page does not already have favicons.
-  void CloneFavicon(const GURL& old_page_url, const GURL& new_page_url);
+  void CloneFavicons(const GURL& old_page_url, const GURL& new_page_url);
 
   // Used by the FaviconService for importing many favicons for many pages at
   // once. The pages must exist, any favicon sets for unknown pages will be
   // discarded. Existing favicons will not be overwritten.
   void SetImportedFavicons(
       const std::vector<history::ImportedFaviconUsage>& favicon_usage);
-
-  // Used by the FaviconService to set the favicon for a page on the history
-  // backend.
-  void SetFavicon(const GURL& page_url,
-                  const GURL& icon_url,
-                  const std::vector<unsigned char>& image_data,
-                  history::IconType icon_type);
-
 
   // Sets the in-memory URL database. This is called by the backend once the
   // database is loaded to make it available.
@@ -843,8 +904,34 @@ class HistoryService : public CancelableRequestProvider,
       AddRequest(request, consumer);
     ScheduleTask(priority,
                  base::Bind(func, history_backend_.get(),
-                                   scoped_refptr<RequestType>(request),
-                                   a, b, c, d));
+                            scoped_refptr<RequestType>(request), a, b, c, d));
+    return request->handle();
+  }
+
+  template<typename BackendFunc,
+           class RequestType,  // Descendant of CancelableRequstBase.
+           typename ArgA,
+           typename ArgB,
+           typename ArgC,
+           typename ArgD,
+           typename ArgE>
+  Handle Schedule(SchedulePriority priority,
+                  BackendFunc func,  // Function to call on the HistoryBackend.
+                  CancelableRequestConsumerBase* consumer,
+                  RequestType* request,
+                  const ArgA& a,
+                  const ArgB& b,
+                  const ArgC& c,
+                  const ArgD& d,
+                  const ArgE& e) {
+    DCHECK(thread_) << "History service being called after cleanup";
+    LoadBackendIfNecessary();
+    if (consumer)
+      AddRequest(request, consumer);
+    ScheduleTask(priority,
+                 base::Bind(func, history_backend_.get(),
+                            scoped_refptr<RequestType>(request),
+                            a, b, c, d, e));
     return request->handle();
   }
 
@@ -906,6 +993,25 @@ class HistoryService : public CancelableRequestProvider,
     LoadBackendIfNecessary();
     ScheduleTask(priority, base::Bind(func, history_backend_.get(),
                                       a, b, c, d));
+  }
+
+  template<typename BackendFunc,
+           typename ArgA,
+           typename ArgB,
+           typename ArgC,
+           typename ArgD,
+           typename ArgE>
+  void ScheduleAndForget(SchedulePriority priority,
+                         BackendFunc func,  // Function to call on backend.
+                         const ArgA& a,
+                         const ArgB& b,
+                         const ArgC& c,
+                         const ArgD& d,
+                         const ArgE& e) {
+    DCHECK(thread_) << "History service being called after cleanup";
+    LoadBackendIfNecessary();
+    ScheduleTask(priority, base::Bind(func, history_backend_.get(),
+                                      a, b, c, d, e));
   }
 
   content::NotificationRegistrar registrar_;

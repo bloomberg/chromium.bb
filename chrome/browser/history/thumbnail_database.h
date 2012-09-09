@@ -99,10 +99,27 @@ class ThumbnailDatabase {
 
   // Favicon Bitmaps -----------------------------------------------------------
 
+  // Returns true if there are favicon bitmaps for |icon_id|. If
+  // |bitmap_id_sizes| is non NULL, sets it to a list of the favicon bitmap ids
+  // and their associated pixel sizes for the favicon with |icon_id|.
+  // The list contains results for the bitmaps which are cached in the
+  // favicon_bitmaps table. The pixel sizes are a subset of the sizes in the
+  // 'sizes' field of the favicons table for |icon_id|.
+  bool GetFaviconBitmapIDSizes(
+      FaviconID icon_id,
+      std::vector<FaviconBitmapIDSize>* bitmap_id_sizes);
+
   // Returns true if there are any matched bitmaps for the given |icon_id|. All
   // matched results are returned if |favicon_bitmaps| is not NULL.
   bool GetFaviconBitmaps(FaviconID icon_id,
                          std::vector<FaviconBitmap>* favicon_bitmaps);
+
+  // Gets the last updated time, bitmap data, and pixel size of the favicon
+  // bitmap at |bitmap_id|. Returns true if successful.
+  bool GetFaviconBitmap(FaviconBitmapID bitmap_id,
+                        base::Time* last_updated,
+                        scoped_refptr<base::RefCountedMemory>* png_icon_data,
+                        gfx::Size* pixel_size);
 
   // Adds a bitmap component at |pixel_size| for the favicon with |icon_id|.
   // Only favicons representing a .ico file should have multiple favicon bitmaps
@@ -118,9 +135,20 @@ class ThumbnailDatabase {
       base::Time time,
       const gfx::Size& pixel_size);
 
+  // Sets the bitmap data and the last updated time for the favicon bitmap at
+  // |bitmap_id|.
+  // Returns true if successful.
+  bool SetFaviconBitmap(FaviconBitmapID bitmap_id,
+                        scoped_refptr<base::RefCountedMemory> bitmap_data,
+                        base::Time time);
+
   // Deletes the favicon bitmaps for the favicon with with |icon_id|.
   // Returns true if successful.
   bool DeleteFaviconBitmapsForFavicon(FaviconID icon_id);
+
+  // Deletes the favicon bitmap with |bitmap_id|.
+  // Returns true if successful.
+  bool DeleteFaviconBitmap(FaviconBitmapID bitmap_id);
 
   // Favicons ------------------------------------------------------------------
 

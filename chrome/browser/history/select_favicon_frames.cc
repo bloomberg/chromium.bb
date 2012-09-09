@@ -12,10 +12,19 @@
 
 namespace {
 
+// Return gfx::Size vector with the pixel sizes of |bitmaps|.
 void SizesFromBitmaps(const std::vector<SkBitmap>& bitmaps,
                       std::vector<gfx::Size>* sizes) {
   for (size_t i = 0; i < bitmaps.size(); ++i)
     sizes->push_back(gfx::Size(bitmaps[i].width(), bitmaps[i].height()));
+}
+
+// Return gfx::Size vector with the pixel sizes of |bitmap_id_sizes|.
+void SizesFromFaviconBitmapIDSizes(
+    const std::vector<history::FaviconBitmapIDSize>& bitmap_id_sizes,
+    std::vector<gfx::Size>* sizes) {
+  for (size_t i = 0; i < bitmap_id_sizes.size(); ++i)
+    sizes->push_back(bitmap_id_sizes[i].pixel_size);
 }
 
 size_t BiggestCandidate(const std::vector<gfx::Size>& candidate_sizes) {
@@ -139,9 +148,14 @@ size_t GetCandidateIndexWithBestScore(
   }
 
   const gfx::Size& candidate_size = candidate_sizes[candidate_index];
-  bool is_integer_multiple = desired_size % candidate_size.width() == 0 &&
-                             desired_size % candidate_size.height() == 0;
-  *resize_method = is_integer_multiple ? SAMPLE_NEAREST_NEIGHBOUR : LANCZOS;
+  if (candidate_size.IsEmpty()) {
+    *resize_method = NONE;
+  } else if (desired_size % candidate_size.width() == 0 &&
+             desired_size % candidate_size.height() == 0) {
+    *resize_method = SAMPLE_NEAREST_NEIGHBOUR;
+  } else {
+    *resize_method = LANCZOS;
+  }
   return candidate_index;
 }
 
@@ -165,8 +179,10 @@ void GetCandidateIndicesWithBestScores(
     int desired_size,
     float* match_score,
     std::vector<SelectionResult>* results) {
-  if (candidate_sizes.empty())
+  if (candidate_sizes.empty()) {
+    *match_score = 0.0f;
     return;
+  }
 
   if (desired_size == 0) {
     // Just return the biggest image available.
@@ -224,6 +240,8 @@ SkBitmap GetResizedBitmap(const SkBitmap& source_bitmap,
 
 }  // namespace
 
+const float kSelectFaviconFramesInvalidScore = -1.0f;
+
 gfx::ImageSkia SelectFaviconFrames(
     const std::vector<SkBitmap>& bitmaps,
     const std::vector<ui::ScaleFactor>& scale_factors,
@@ -245,4 +263,34 @@ gfx::ImageSkia SelectFaviconFrames(
         gfx::ImageSkiaRep(resized_bitmap, result.scale_factor));
   }
   return multi_image;
+}
+
+void SelectFaviconBitmapIDs(
+    const std::vector<history::FaviconBitmapIDSize>& bitmap_id_sizes,
+    const std::vector<ui::ScaleFactor>& scale_factors,
+    int desired_size,
+    std::vector<history::FaviconBitmapID>* filtered_favicon_bitmap_ids,
+    float* match_score) {
+  std::vector<gfx::Size> candidate_sizes;
+  SizesFromFaviconBitmapIDSizes(bitmap_id_sizes, &candidate_sizes);
+
+  std::vector<SelectionResult> results;
+  GetCandidateIndicesWithBestScores(candidate_sizes, scale_factors,
+      desired_size, match_score, &results);
+
+  std::set<history::FaviconBitmapID> already_added;
+  for (size_t i = 0; i < results.size(); ++i) {
+    const SelectionResult& result = results[i];
+    history::FaviconBitmapID bitmap_id =
+        bitmap_id_sizes[result.index].bitmap_id;
+
+    // GetCandidateIndicesWithBestScores() will return duplicate indices if the
+    // bitmap data for a |bitmap_id| should be used for multiple scale factors.
+    // Remove duplicates here such that |filtered_favicon_bitmap_ids| contains
+    // no duplicates.
+    if (already_added.find(bitmap_id) == already_added.end()) {
+      already_added.insert(bitmap_id);
+      filtered_favicon_bitmap_ids->push_back(bitmap_id);
+    }
+  }
 }
