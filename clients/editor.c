@@ -37,7 +37,6 @@ struct text_entry {
 	struct window *window;
 	char *text;
 	int active;
-	struct rectangle allocation;
 	struct text_model *model;
 };
 
@@ -49,6 +48,12 @@ struct editor {
 	struct text_entry *entry;
 	struct text_entry *editor;
 };
+
+static void text_entry_redraw_handler(struct widget *widget, void *data);
+static void text_entry_button_handler(struct widget *widget,
+				      struct input *input, uint32_t time,
+				      uint32_t button,
+				      enum wl_pointer_button_state state, void *data);
 
 static void
 text_entry_append(struct text_entry *entry, const char *text)
@@ -150,12 +155,15 @@ text_entry_create(struct editor *editor, const char *text)
 
 	entry = malloc(sizeof *entry);
 
-	entry->widget = editor->widget;
+	entry->widget = widget_add_widget(editor->widget, entry);
 	entry->window = editor->window;
 	entry->text = strdup(text);
 	entry->active = 0;
 	entry->model = text_model_factory_create_text_model(editor->text_model_factory);
 	text_model_add_listener(entry->model, &text_model_listener, entry);
+
+	widget_set_redraw_handler(entry->widget, text_entry_redraw_handler);
+	widget_set_button_handler(entry->widget, text_entry_button_handler);
 
 	return entry;
 }
@@ -163,40 +171,10 @@ text_entry_create(struct editor *editor, const char *text)
 static void
 text_entry_destroy(struct text_entry *entry)
 {
+	widget_destroy(entry->widget);
 	text_model_destroy(entry->model);
 	free(entry->text);
 	free(entry);
-}
-
-static void
-text_entry_draw(struct text_entry *entry, cairo_t *cr)
-{
-	cairo_save(cr);
-	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-
-	cairo_rectangle(cr, entry->allocation.x, entry->allocation.y, entry->allocation.width, entry->allocation.height);
-	cairo_clip(cr);
-
-	cairo_translate(cr, entry->allocation.x, entry->allocation.y);
-	cairo_rectangle(cr, 0, 0, entry->allocation.width, entry->allocation.height);
-	cairo_set_source_rgba(cr, 1, 1, 1, 0.5);
-	cairo_fill(cr);
-	if (entry->active) {
-		cairo_rectangle(cr, 0, 0, entry->allocation.width, entry->allocation.height);
-		cairo_set_source_rgba(cr, 0, 0, 1, 0.5);
-		cairo_stroke(cr);
-	}
-
-	cairo_set_source_rgb(cr, 0, 0, 0);
-	cairo_select_font_face(cr, "sans",
-			       CAIRO_FONT_SLANT_NORMAL,
-			       CAIRO_FONT_WEIGHT_BOLD);
-	cairo_set_font_size(cr, 14);
-
-	cairo_translate(cr, 10, entry->allocation.height / 2);
-	cairo_show_text(cr, entry->text);
-
-	cairo_restore(cr);
 }
 
 static void
@@ -218,16 +196,10 @@ redraw_handler(struct widget *widget, void *data)
 
 	/* Draw background */
 	cairo_push_group(cr);
-	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);	
+	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr, 1, 1, 1, 1);
 	cairo_rectangle(cr, 0, 0, allocation.width, allocation.height);
 	cairo_fill(cr);
-
-	/* Entry */
-	text_entry_draw(editor->entry, cr);
-
-	/* Editor */
-	text_entry_draw(editor->editor, cr);
 
 	cairo_pop_group_to_source(cr);
 	cairo_paint(cr);
@@ -240,10 +212,7 @@ static void
 text_entry_allocate(struct text_entry *entry, int32_t x, int32_t y,
 		    int32_t width, int32_t height)
 {
-	entry->allocation.x = x;
-	entry->allocation.y = y;
-	entry->allocation.width = width;
-	entry->allocation.height = height;
+	widget_set_allocation(entry->widget, x, y, width, height);
 }
 
 static void
@@ -251,28 +220,21 @@ resize_handler(struct widget *widget,
 	       int32_t width, int32_t height, void *data)
 {
 	struct editor *editor = data;
+	struct rectangle allocation;
 
-	text_entry_allocate(editor->entry, 20, 20, width - 40, height / 2 - 40);
-	text_entry_allocate(editor->editor, 20, height / 2 + 20, width - 40, height / 2 - 40);
-}
+	widget_get_allocation(editor->widget, &allocation);
 
-static int32_t
-rectangle_contains(struct rectangle *rectangle, int32_t x, int32_t y)
-{
-	if (x < rectangle->x || x > rectangle->x + rectangle->width) {
-		return 0;
-	}
-
-	if (y < rectangle->y || y > rectangle->y + rectangle->height) {
-		return 0;
-	}
-
-	return 1;
+	text_entry_allocate(editor->entry,
+			    allocation.x + 20, allocation.y + 20,
+			    width - 40, height / 2 - 40);
+	text_entry_allocate(editor->editor,
+			    allocation.x + 20, allocation.y + height / 2 + 20,
+			    width - 40, height / 2 - 40);
 }
 
 static void
 text_entry_activate(struct text_entry *entry,
-                    struct wl_seat *seat)
+		    struct wl_seat *seat)
 {
 	struct wl_surface *surface = window_get_wl_surface(entry->window);
 
@@ -290,42 +252,90 @@ text_entry_deactivate(struct text_entry *entry,
 }
 
 static void
-button_handler(struct widget *widget,
-	       struct input *input, uint32_t time,
-	       uint32_t button,
-	       enum wl_pointer_button_state state, void *data)
+text_entry_redraw_handler(struct widget *widget, void *data)
 {
-	struct editor *editor = data;
+	struct text_entry *entry = data;
+	cairo_surface_t *surface;
 	struct rectangle allocation;
-	int32_t x, y;
-	struct wl_seat *seat;
+	cairo_t *cr;
 
-	if (state != WL_POINTER_BUTTON_STATE_PRESSED || button != BTN_LEFT) {
+	surface = window_get_surface(entry->window);
+	widget_get_allocation(entry->widget, &allocation);
+
+	cr = cairo_create(surface);
+	cairo_rectangle(cr, allocation.x, allocation.y, allocation.width, allocation.height);
+	cairo_clip(cr);
+
+	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+
+	cairo_push_group(cr);
+	cairo_translate(cr, allocation.x, allocation.y);
+
+	cairo_set_source_rgba(cr, 1, 1, 1, 1);
+	cairo_rectangle(cr, 0, 0, allocation.width, allocation.height);
+	cairo_fill(cr);
+
+	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+
+	if (entry->active) {
+		cairo_rectangle(cr, 0, 0, allocation.width, allocation.height);
+		cairo_set_line_width (cr, 3);
+		cairo_set_source_rgba(cr, 0, 0, 1, 1.0);
+		cairo_stroke(cr);
+	}
+
+	cairo_set_source_rgba(cr, 0, 0, 0, 1);
+	cairo_select_font_face(cr, "sans",
+			       CAIRO_FONT_SLANT_NORMAL,
+			       CAIRO_FONT_WEIGHT_BOLD);
+	cairo_set_font_size(cr, 14);
+
+	cairo_translate(cr, 10, allocation.height / 2);
+	cairo_show_text(cr, entry->text);
+	cairo_pop_group_to_source(cr);
+	cairo_paint(cr);
+
+	cairo_destroy(cr);
+	cairo_surface_destroy(surface);
+}
+
+static void
+text_entry_button_handler(struct widget *widget,
+			  struct input *input, uint32_t time,
+			  uint32_t button,
+			  enum wl_pointer_button_state state, void *data)
+{
+	struct text_entry *entry = data;
+
+	if (button != BTN_LEFT) {
 		return;
 	}
 
-	input_get_position(input, &x, &y);
+	if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
+		struct wl_seat *seat = input_get_seat(input);
 
-	widget_get_allocation(editor->widget, &allocation);
-	x -= allocation.x;
-	y -= allocation.y;
+		text_entry_activate(entry, seat);
+	}
+}
 
-	int32_t activate_entry = rectangle_contains(&editor->entry->allocation, x, y);
-	int32_t activate_editor = rectangle_contains(&editor->editor->allocation, x, y);
-	assert(!(activate_entry && activate_editor));
+static void
+editor_button_handler(struct widget *widget,
+		      struct input *input, uint32_t time,
+		      uint32_t button,
+		      enum wl_pointer_button_state state, void *data)
+{
+	struct editor *editor = data;
 
-	seat = input_get_seat(input);
+	if (button != BTN_LEFT) {
+		return;
+	}
 
-	if (activate_entry) {
-		text_entry_activate(editor->entry, seat);
-	} else if (activate_editor) {
-		text_entry_activate(editor->editor, seat);
-	} else {
+	if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
+		struct wl_seat *seat = input_get_seat(input);
+
 		text_entry_deactivate(editor->entry, seat);
 		text_entry_deactivate(editor->editor, seat);
 	}
-
-	widget_schedule_redraw(widget);
 }
 
 static void
@@ -337,8 +347,6 @@ global_handler(struct wl_display *display, uint32_t id,
 	if (!strcmp(interface, "text_model_factory")) {
 		editor->text_model_factory = wl_display_bind(display, id,
 							     &text_model_factory_interface);
-	} else if (!strcmp(interface, "wl_seat")) {
-		fprintf(stderr, "wl_seat added\n");
 	}
 }
 
@@ -366,7 +374,7 @@ main(int argc, char *argv[])
 
 	widget_set_redraw_handler(editor.widget, redraw_handler);
 	widget_set_resize_handler(editor.widget, resize_handler);
-	widget_set_button_handler(editor.widget, button_handler);
+	widget_set_button_handler(editor.widget, editor_button_handler);
 
 	window_schedule_resize(editor.window, 500, 400);
 
