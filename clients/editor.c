@@ -49,6 +49,7 @@ struct text_entry {
 	struct window *window;
 	char *text;
 	int active;
+	uint32_t cursor;
 	struct text_model *model;
 	struct text_layout *layout;
 };
@@ -136,6 +137,68 @@ text_layout_draw(struct text_layout *layout, cairo_t *cr)
 	cairo_restore(cr);
 }
 
+static void
+text_layout_extents(struct text_layout *layout, cairo_text_extents_t *extents)
+{
+	cairo_scaled_font_glyph_extents(layout->font,
+					layout->glyphs, layout->num_glyphs,
+					extents);
+}
+
+static int
+text_layout_xy_to_index(struct text_layout *layout, double x, double y)
+{
+	cairo_text_extents_t extents;
+	int i;
+
+	cairo_scaled_font_glyph_extents(layout->font,
+					layout->glyphs, layout->num_glyphs,
+					&extents);
+
+	for (i = 1; i < layout->num_glyphs; i++) {
+		if (layout->glyphs[i].x >= x) {
+			return i - 1;
+		}
+	}
+
+	if (x >= layout->glyphs[layout->num_glyphs - 1].x && x < extents.width)
+		return layout->num_glyphs - 1;
+
+	return layout->num_glyphs;
+}
+
+static void
+text_layout_index_to_pos(struct text_layout *layout, uint32_t index, cairo_rectangle_t *pos)
+{
+	cairo_text_extents_t extents;
+
+	if (!pos)
+		return;
+
+	cairo_scaled_font_glyph_extents(layout->font,
+					layout->glyphs, layout->num_glyphs,
+					&extents);
+
+	if ((int)index >= layout->num_glyphs) {
+		pos->x = extents.x_advance;
+		pos->y = layout->num_glyphs ? layout->glyphs[layout->num_glyphs - 1].y : 0;
+		pos->width = 1;
+		pos->height = extents.height;
+		return;
+	}
+
+	pos->x = layout->glyphs[index].x;
+	pos->y = layout->glyphs[index].y;
+	pos->width = (int)index < layout->num_glyphs - 1 ? layout->glyphs[index + 1].x : extents.x_advance - pos->x;
+	pos->height = extents.height;
+}
+
+static void
+text_layout_get_cursor_pos(struct text_layout *layout, int index, cairo_rectangle_t *pos)
+{
+	text_layout_index_to_pos(layout, index, pos);
+	pos->width = 1;
+}
 
 static void text_entry_redraw_handler(struct widget *widget, void *data);
 static void text_entry_button_handler(struct widget *widget,
@@ -248,6 +311,7 @@ text_entry_create(struct editor *editor, const char *text)
 	entry->window = editor->window;
 	entry->text = strdup(text);
 	entry->active = 0;
+	entry->cursor = strlen(text);
 	entry->model = text_model_factory_create_text_model(editor->text_model_factory);
 	text_model_add_listener(entry->model, &text_model_listener, entry);
 
@@ -345,6 +409,30 @@ text_entry_deactivate(struct text_entry *entry,
 }
 
 static void
+text_entry_set_cursor_position(struct text_entry *entry,
+			       int32_t x, int32_t y)
+{
+	entry->cursor = text_layout_xy_to_index(entry->layout, x, y);
+
+	widget_schedule_redraw(entry->widget);
+}
+
+static void
+text_entry_draw_cursor(struct text_entry *entry, cairo_t *cr)
+{
+	cairo_text_extents_t extents;
+	cairo_rectangle_t cursor_pos;
+
+	text_layout_extents(entry->layout, &extents);
+	text_layout_get_cursor_pos(entry->layout, entry->cursor, &cursor_pos);
+
+	cairo_set_line_width(cr, 1.0);
+	cairo_move_to(cr, cursor_pos.x, extents.y_bearing + extents.height + 2);
+	cairo_line_to(cr, cursor_pos.x, extents.y_bearing - 2);
+	cairo_stroke(cr);
+}
+
+static void
 text_entry_redraw_handler(struct widget *widget, void *data)
 {
 	struct text_entry *entry = data;
@@ -381,6 +469,9 @@ text_entry_redraw_handler(struct widget *widget, void *data)
 
 	cairo_translate(cr, 10, allocation.height / 2);
 	text_layout_draw(entry->layout, cr);
+
+	text_entry_draw_cursor(entry, cr);
+
 	cairo_pop_group_to_source(cr);
 	cairo_paint(cr);
 
@@ -395,10 +486,19 @@ text_entry_button_handler(struct widget *widget,
 			  enum wl_pointer_button_state state, void *data)
 {
 	struct text_entry *entry = data;
+	struct rectangle allocation;
+	int32_t x, y;
+
+	widget_get_allocation(entry->widget, &allocation);
+	input_get_position(input, &x, &y);
 
 	if (button != BTN_LEFT) {
 		return;
 	}
+
+	text_entry_set_cursor_position(entry, 
+				       x - allocation.x,
+				       y - allocation.y);
 
 	if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
 		struct wl_seat *seat = input_get_seat(input);
