@@ -262,8 +262,10 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
           static_cast<WindowTypeLauncherItem::Type>(i);
 
       string16 title = UTF8ToUTF16(WindowTypeLauncherItem::GetTitle(type));
-      if (base::i18n::StringSearchIgnoringCaseAndAccents(query, title))
+      if (base::i18n::StringSearchIgnoringCaseAndAccents(
+              query, title, NULL, NULL)) {
         model_->results()->Add(new ExampleSearchResult(type, query));
+      }
     }
   }
 

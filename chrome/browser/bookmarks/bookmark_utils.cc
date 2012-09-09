@@ -155,8 +155,10 @@ bool MoreRecentlyModified(const BookmarkNode* n1, const BookmarkNode* n2) {
 bool DoesBookmarkTextContainWords(const string16& text,
                                   const std::vector<string16>& words) {
   for (size_t i = 0; i < words.size(); ++i) {
-    if (!base::i18n::StringSearchIgnoringCaseAndAccents(words[i], text))
+    if (!base::i18n::StringSearchIgnoringCaseAndAccents(
+            words[i], text, NULL, NULL)) {
       return false;
+    }
   }
   return true;
 }

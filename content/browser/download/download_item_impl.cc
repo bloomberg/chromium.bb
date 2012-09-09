@@ -706,8 +706,10 @@ bool DownloadItemImpl::MatchesQuery(const string16& query) const {
   DCHECK_EQ(query, base::i18n::ToLower(query));
 
   string16 url_raw(UTF8ToUTF16(GetURL().spec()));
-  if (base::i18n::StringSearchIgnoringCaseAndAccents(query, url_raw))
+  if (base::i18n::StringSearchIgnoringCaseAndAccents(
+          query, url_raw, NULL, NULL)) {
     return true;
+  }
 
   // TODO(phajdan.jr): write a test case for the following code.
   // A good test case would be:
@@ -718,13 +720,16 @@ bool DownloadItemImpl::MatchesQuery(const string16& query) const {
   languages = content::GetContentClient()->browser()->GetAcceptLangs(
       GetBrowserContext());
   string16 url_formatted(net::FormatUrl(GetURL(), languages));
-  if (base::i18n::StringSearchIgnoringCaseAndAccents(query, url_formatted))
+  if (base::i18n::StringSearchIgnoringCaseAndAccents(
+          query, url_formatted, NULL, NULL)) {
     return true;
+  }
 
   // TODO(asanka): Change this to GetTargetFilePath() once DownloadQuery has
   //               been modified to work with target paths.
   string16 path(GetFullPath().LossyDisplayName());
-  return base::i18n::StringSearchIgnoringCaseAndAccents(query, path);
+  return base::i18n::StringSearchIgnoringCaseAndAccents(
+      query, path, NULL, NULL);
 }
 
 DownloadPersistentStoreInfo DownloadItemImpl::GetPersistentStoreInfo() const {
