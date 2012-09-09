@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
 #include "chrome/browser/api/prefs/pref_change_registrar.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -57,6 +56,27 @@ struct CompareTypeAndResourceId {
   const std::string resource_id;
 };
 
+// Returns true if the curernt network connection is over cellular.
+bool IsConnectionTypeCellular() {
+  bool is_cellular = false;
+  // Use switch, not if, to allow compiler to catch future enum changes.
+  // (e.g. Addition of CONNECTION_5G)
+  switch (net::NetworkChangeNotifier::GetConnectionType()) {
+    case net::NetworkChangeNotifier::CONNECTION_2G:
+    case net::NetworkChangeNotifier::CONNECTION_3G:
+    case net::NetworkChangeNotifier::CONNECTION_4G:
+      is_cellular = true;
+      break;
+    case net::NetworkChangeNotifier::CONNECTION_UNKNOWN:
+    case net::NetworkChangeNotifier::CONNECTION_ETHERNET:
+    case net::NetworkChangeNotifier::CONNECTION_WIFI:
+    case net::NetworkChangeNotifier::CONNECTION_NONE:
+      is_cellular = false;
+      break;
+  }
+  return is_cellular;
+}
+
 }  // namespace
 
 DriveSyncClient::SyncTask::SyncTask(SyncType in_sync_type,
@@ -86,11 +106,7 @@ DriveSyncClient::~DriveSyncClient() {
     file_system_->RemoveObserver(this);
   if (cache_)
     cache_->RemoveObserver(this);
-
-  chromeos::NetworkLibrary* network_library =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  if (network_library)
-    network_library->RemoveNetworkManagerObserver(this);
+  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
 }
 
 void DriveSyncClient::Initialize() {
@@ -99,12 +115,7 @@ void DriveSyncClient::Initialize() {
   file_system_->AddObserver(this);
   cache_->AddObserver(this);
 
-  chromeos::NetworkLibrary* network_library =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  if (network_library)
-    network_library->AddNetworkManagerObserver(this);
-  else
-    LOG(ERROR) << "NetworkLibrary is not present";
+  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
 
   registrar_->Init(profile_->GetPrefs());
   registrar_->Add(prefs::kDisableGData, this);
@@ -196,28 +207,15 @@ bool DriveSyncClient::ShouldStopSyncLoop() {
   if (profile_->GetPrefs()->GetBoolean(prefs::kDisableGData))
     return true;
 
-  // Something must be wrong if the network library is not present.
-  chromeos::NetworkLibrary* network_library =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  if (!network_library)
-    return true;
-
-  // Something must be wrong if the active network is not present.
-  const chromeos::Network* active_network = network_library->active_network();
-  if (!active_network)
-    return true;
-
   // Should stop if the network is not online.
-  if (!active_network->online())
+  if (net::NetworkChangeNotifier::IsOffline())
     return true;
 
   // Should stop if the current connection is on cellular network, and
   // fetching is disabled over cellular.
   if (profile_->GetPrefs()->GetBoolean(prefs::kDisableGDataOverCellular) &&
-      (active_network->type() == chromeos::TYPE_CELLULAR ||
-       active_network->type() == chromeos::TYPE_WIMAX)) {
+      IsConnectionTypeCellular())
     return true;
-  }
 
   return false;
 }
@@ -434,18 +432,6 @@ void DriveSyncClient::OnUploadFileComplete(const std::string& resource_id,
   DoSyncLoop();
 }
 
-void DriveSyncClient::OnNetworkManagerChanged(
-    chromeos::NetworkLibrary* network_library) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Resume the sync loop if the network is back online. Note that we don't
-  // need to check the type of the network as it will be checked in
-  // ShouldStopSyncLoop() as soon as the loop is resumed.
-  const chromeos::Network* active_network = network_library->active_network();
-  if (active_network && active_network->online())
-    StartSyncLoop();
-}
-
 void DriveSyncClient::Observe(int type,
                               const content::NotificationSource& source,
                               const content::NotificationDetails& details) {
@@ -455,6 +441,17 @@ void DriveSyncClient::Observe(int type,
   // don't need to check the new values here as these will be checked in
   // ShouldStopSyncLoop() as soon as the loop is resumed.
   StartSyncLoop();
+}
+
+void DriveSyncClient::OnConnectionTypeChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Resume the sync loop if the network is back online. Note that we don't
+  // need to check the type of the network as it will be checked in
+  // ShouldStopSyncLoop() as soon as the loop is resumed.
+  if (!net::NetworkChangeNotifier::IsOffline())
+    StartSyncLoop();
 }
 
 }  // namespace gdata

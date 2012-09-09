@@ -16,7 +16,6 @@
 #include "base/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/drive_api_parser.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system.h"
@@ -181,7 +180,6 @@ class DriveFileSystemTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    chromeos::CrosLibrary::Initialize(true /* use_stub */);
     io_thread_.StartIOThread();
 
     profile_.reset(new TestingProfile);
@@ -241,7 +239,6 @@ class DriveFileSystemTest : public testing::Test {
     test_util::RunBlockingPoolTask();
 
     profile_.reset(NULL);
-    chromeos::CrosLibrary::Shutdown();
   }
 
   // Loads test json file as root ("/drive") element.
@@ -827,10 +824,7 @@ class DriveFileSystemTest : public testing::Test {
   bool expect_outgoing_symlink_;
   std::string expected_file_extension_;
   int root_feed_changestamp_;
-  static bool cros_initialized_;
 };
-
-bool DriveFileSystemTest::cros_initialized_ = false;
 
 void AsyncInitializationCallback(
     int* counter,

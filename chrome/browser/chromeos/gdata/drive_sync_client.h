@@ -12,10 +12,10 @@
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/gdata/drive_cache.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_interface.h"
 #include "content/public/browser/notification_observer.h"
+#include "net/base/network_change_notifier.h"
 
 class Profile;
 class PrefChangeRegistrar;
@@ -39,10 +39,11 @@ namespace gdata {
 // TODO(satorux): This client should also upload pinned but dirty (locally
 // edited) files to Drive. Will work on this once downloading is done.
 // crosbug.com/27836.
-class DriveSyncClient : public DriveFileSystemInterface::Observer,
-                        public DriveCache::Observer,
-                        public chromeos::NetworkLibrary::NetworkManagerObserver,
-                        public content::NotificationObserver {
+class DriveSyncClient
+    : public DriveFileSystemInterface::Observer,
+      public DriveCache::Observer,
+      public content::NotificationObserver,
+      public net::NetworkChangeNotifier::ConnectionTypeObserver{
  public:
   // Types of sync tasks.
   enum SyncType {
@@ -170,14 +171,15 @@ class DriveSyncClient : public DriveFileSystemInterface::Observer,
   void OnUploadFileComplete(const std::string& resource_id,
                             DriveFileError error);
 
-  // chromeos::NetworkLibrary::NetworkManagerObserver override.
-  virtual void OnNetworkManagerChanged(
-      chromeos::NetworkLibrary* network_library) OVERRIDE;
-
   // content::NotificationObserver override.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // net::NetworkChangeNotifier::ConnectionTypeObserver override.
+  virtual void OnConnectionTypeChanged(
+      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
+
   Profile* profile_;
   DriveFileSystemInterface* file_system_;  // Owned by DriveSystemService.
   DriveCache* cache_;  // Owned by DriveSystemService.

@@ -16,8 +16,6 @@
 #include "base/scoped_temp_dir.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_util.h"
 #include "chrome/browser/chromeos/gdata/drive_test_util.h"
@@ -38,6 +36,8 @@ using ::testing::_;
 
 namespace gdata {
 
+namespace {
+
 // Action used to set mock expectations for GetFileByResourceId().
 ACTION_P4(MockGetFileByResourceId, error, local_path, mime_type, file_type) {
   arg1.Run(error, local_path, mime_type, file_type);
@@ -55,23 +55,25 @@ ACTION_P2(MockUpdateFileByResourceId, error, md5) {
   arg1.Run(error, FilePath(), entry_proto.Pass());
 }
 
+class MockNetworkChangeNotifier : public net::NetworkChangeNotifier {
+ public:
+  MOCK_CONST_METHOD0(GetCurrentConnectionType,
+                     net::NetworkChangeNotifier::ConnectionType());
+};
+
+}  // namespace
+
 class DriveSyncClientTest : public testing::Test {
  public:
   DriveSyncClientTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         io_thread_(content::BrowserThread::IO),
         profile_(new TestingProfile),
-        mock_file_system_(new StrictMock<MockDriveFileSystem>),
-        mock_network_library_(NULL) {
+        mock_file_system_(new StrictMock<MockDriveFileSystem>) {
   }
 
   virtual void SetUp() OVERRIDE {
-    chromeos::CrosLibrary::Initialize(true /* use_stub */);
-
-    // CrosLibrary takes ownership of MockNetworkLibrary.
-    mock_network_library_ = new chromeos::MockNetworkLibrary;
-    chromeos::CrosLibrary::Get()->GetTestApi()->SetNetworkLibrary(
-        mock_network_library_, true);
+    mock_network_change_notifier_.reset(new MockNetworkChangeNotifier);
 
     // Create a temporary directory.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -86,10 +88,6 @@ class DriveSyncClientTest : public testing::Test {
                                            mock_file_system_.get(),
                                            cache_));
 
-    EXPECT_CALL(*mock_network_library_, AddNetworkManagerObserver(
-        sync_client_.get())).Times(1);
-    EXPECT_CALL(*mock_network_library_, RemoveNetworkManagerObserver(
-        sync_client_.get())).Times(1);
     EXPECT_CALL(*mock_file_system_, AddObserver(sync_client_.get())).Times(1);
     EXPECT_CALL(*mock_file_system_,
                 RemoveObserver(sync_client_.get())).Times(1);
@@ -103,56 +101,40 @@ class DriveSyncClientTest : public testing::Test {
     // The sync client should be deleted before NetworkLibrary, as the sync
     // client registers itself as observer of NetworkLibrary.
     sync_client_.reset();
-    chromeos::CrosLibrary::Shutdown();
     cache_->DestroyOnUIThread();
     test_util::RunBlockingPoolTask();
+    mock_network_change_notifier_.reset();
   }
 
-  // Sets up MockNetworkLibrary as if it's connected to wifi network.
-  void ConnectToWifi() {
-    active_network_.reset(
-        chromeos::Network::CreateForTesting(chromeos::TYPE_WIFI));
-    EXPECT_CALL(*mock_network_library_, active_network())
-        .Times(AnyNumber())
-        .WillRepeatedly((Return(active_network_.get())));
-    chromeos::Network::TestApi(active_network_.get()).SetConnected();
+  // Sets up MockNetworkChangeNotifier as if it's connected to a network with
+  // the specified connection type.
+  void ChangeConnectionType(net::NetworkChangeNotifier::ConnectionType type) {
+    EXPECT_CALL(*mock_network_change_notifier_, GetCurrentConnectionType())
+        .WillRepeatedly(Return(type));
     // Notify the sync client that the network is changed. This is done via
-    // NetworkLibrary in production, but here, we simulate the behavior by
-    // directly calling OnNetworkManagerChanged().
-    sync_client_->OnNetworkManagerChanged(mock_network_library_);
+    // NetworkChangeNotifier in production, but here, we simulate the behavior
+    // by directly calling OnConnectionTypeChanged().
+    sync_client_->OnConnectionTypeChanged(type);
   }
 
-  // Sets up MockNetworkLibrary as if it's connected to cellular network.
+  // Sets up MockNetworkChangeNotifier as if it's connected to wifi network.
+  void ConnectToWifi() {
+    ChangeConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  }
+
+  // Sets up MockNetworkChangeNotifier as if it's connected to cellular network.
   void ConnectToCellular() {
-    active_network_.reset(
-        chromeos::Network::CreateForTesting(chromeos::TYPE_CELLULAR));
-    EXPECT_CALL(*mock_network_library_, active_network())
-        .Times(AnyNumber())
-        .WillRepeatedly((Return(active_network_.get())));
-    chromeos::Network::TestApi(active_network_.get()).SetConnected();
-    sync_client_->OnNetworkManagerChanged(mock_network_library_);
+    ChangeConnectionType(net::NetworkChangeNotifier::CONNECTION_2G);
   }
 
-  // Sets up MockNetworkLibrary as if it's connected to wimax network.
+  // Sets up MockNetworkChangeNotifier as if it's connected to wimax network.
   void ConnectToWimax() {
-    active_network_.reset(
-        chromeos::Network::CreateForTesting(chromeos::TYPE_WIMAX));
-    EXPECT_CALL(*mock_network_library_, active_network())
-        .Times(AnyNumber())
-        .WillRepeatedly((Return(active_network_.get())));
-    chromeos::Network::TestApi(active_network_.get()).SetConnected();
-    sync_client_->OnNetworkManagerChanged(mock_network_library_);
+    ChangeConnectionType(net::NetworkChangeNotifier::CONNECTION_4G);
   }
 
-  // Sets up MockNetworkLibrary as if it's disconnected.
+  // Sets up MockNetworkChangeNotifier as if it's disconnected.
   void ConnectToNone() {
-    active_network_.reset(
-        chromeos::Network::CreateForTesting(chromeos::TYPE_WIFI));
-    EXPECT_CALL(*mock_network_library_, active_network())
-        .Times(AnyNumber())
-        .WillRepeatedly((Return(active_network_.get())));
-    chromeos::Network::TestApi(active_network_.get()).SetDisconnected();
-    sync_client_->OnNetworkManagerChanged(mock_network_library_);
+    ChangeConnectionType(net::NetworkChangeNotifier::CONNECTION_NONE);
   }
 
   // Sets up test files in the temporary directory.
@@ -286,8 +268,7 @@ class DriveSyncClientTest : public testing::Test {
   scoped_ptr<StrictMock<MockDriveFileSystem> > mock_file_system_;
   DriveCache* cache_;
   scoped_ptr<DriveSyncClient> sync_client_;
-  chromeos::MockNetworkLibrary* mock_network_library_;
-  scoped_ptr<chromeos::Network> active_network_;
+  scoped_ptr<MockNetworkChangeNotifier> mock_network_change_notifier_;
 };
 
 TEST_F(DriveSyncClientTest, StartInitialScan) {
