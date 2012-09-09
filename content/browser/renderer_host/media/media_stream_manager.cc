@@ -134,6 +134,13 @@ MediaStreamManager::EnumerationCache::EnumerationCache()
 MediaStreamManager::EnumerationCache::~EnumerationCache() {
 }
 
+bool MediaStreamManager::always_use_fake_devices_ = false;
+
+// static
+void MediaStreamManager::AlwaysUseFakeDevice() {
+  always_use_fake_devices_ = true;
+}
+
 MediaStreamManager::MediaStreamManager(
     AudioInputDeviceManager* audio_input_device_manager,
     VideoCaptureManager* video_capture_manager)
@@ -174,6 +181,8 @@ void MediaStreamManager::GenerateStream(MediaStreamRequester* requester,
                                         const GURL& security_origin,
                                         std::string* label) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (always_use_fake_devices_)
+    UseFakeDevice();
 
   // Create a new request based on options.
   DeviceRequest new_request(requester, options,
@@ -715,6 +724,8 @@ void MediaStreamManager::WillDestroyCurrentMessageLoop() {
 void MediaStreamManager::NotifyObserverDevicesOpened(DeviceRequest* request) {
   content::MediaObserver* media_observer =
       content::GetContentClient()->browser()->GetMediaObserver();
+  if (media_observer == NULL)
+    return;
   content::MediaStreamDevices opened_devices;
   DevicesFromRequest(request, &opened_devices);
   DCHECK(!opened_devices.empty());
@@ -726,6 +737,8 @@ void MediaStreamManager::NotifyObserverDevicesOpened(DeviceRequest* request) {
 void MediaStreamManager::NotifyObserverDevicesClosed(DeviceRequest* request) {
   content::MediaObserver* media_observer =
       content::GetContentClient()->browser()->GetMediaObserver();
+  if (media_observer == NULL)
+    return;
   content::MediaStreamDevices closed_devices;
   DevicesFromRequest(request, &closed_devices);
   if (closed_devices.empty())

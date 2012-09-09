@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/test/test_suite.h"
+#include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/public/app/content_main.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/content_test_suite_base.h"
@@ -134,6 +135,10 @@ class ContentTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
 }  // namespace content
 
 int main(int argc, char** argv) {
+  // Always use fake WebRTC devices in this binary since we want to be able
+  // to test WebRTC even if we don't have any devices on the system.
+  media_stream::MediaStreamManager::AlwaysUseFakeDevice();
+
   content::ContentTestLauncherDelegate launcher_delegate;
   return test_launcher::LaunchTests(&launcher_delegate, argc, argv);
 }

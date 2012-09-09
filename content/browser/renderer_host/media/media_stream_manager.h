@@ -148,9 +148,11 @@ class CONTENT_EXPORT MediaStreamManager
 
   // Used by unit test to make sure fake devices are used instead of a real
   // devices, which is needed for server based testing.
-  // TODO(xians): Remove this hack since we can create our own
-  // MediaStreamManager in our unit tests.
   void UseFakeDevice();
+
+  // Call to have all GenerateStream calls from now on use fake devices instead
+  // of real ones. This should NOT be used in production versions of Chrome.
+  static void AlwaysUseFakeDevice();
 
   // This object gets deleted on the UI thread after the IO thread has been
   // destroyed. So we need to know when IO thread is being destroyed so that
@@ -228,6 +230,9 @@ class CONTENT_EXPORT MediaStreamManager
   // Hold a pointer to the IO loop to check we delete the device thread and
   // managers on the right thread.
   MessageLoop* io_loop_;
+
+  // Static members.
+  static bool always_use_fake_devices_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamManager);
 };
