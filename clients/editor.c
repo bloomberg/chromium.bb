@@ -212,6 +212,8 @@ static void text_entry_insert_at_cursor(struct text_entry *entry, const char *te
 static void text_entry_set_preedit(struct text_entry *entry,
 				   const char *preedit_text,
 				   int preedit_cursor);
+static void text_entry_delete_text(struct text_entry *entry,
+				   uint32_t index, uint32_t length);
 
 static void
 text_model_commit_string(void *data,
@@ -247,6 +249,31 @@ text_model_preedit_string(void *data,
 	text_entry_set_preedit(entry, text, index);
 
 	widget_schedule_redraw(entry->widget);
+}
+
+static void
+text_model_delete_surrounding_text(void *data,
+				   struct text_model *text_model,
+				   int32_t index,
+				   uint32_t length)
+{
+	struct text_entry *entry = data;
+	uint32_t cursor_index = index + entry->cursor;
+
+	if (cursor_index > strlen(entry->text)) {
+		fprintf(stderr, "Invalid cursor index %d\n", index);
+		return;
+	}
+
+	if (cursor_index + length > strlen(entry->text)) {
+		fprintf(stderr, "Invalid length %d\n", length);
+		return;
+	}
+
+	if (length == 0)
+		return;
+
+	text_entry_delete_text(entry, cursor_index, length);
 }
 
 static void
@@ -304,6 +331,7 @@ text_model_deactivated(void *data,
 static const struct text_model_listener text_model_listener = {
 	text_model_commit_string,
 	text_model_preedit_string,
+	text_model_delete_surrounding_text,
 	text_model_preedit_styling,
 	text_model_key,
 	text_model_selection_replacement,
@@ -511,6 +539,21 @@ text_entry_set_anchor_position(struct text_entry *entry,
 			       int32_t x, int32_t y)
 {
 	entry->anchor = text_layout_xy_to_index(entry->layout, x, y);
+
+	widget_schedule_redraw(entry->widget);
+}
+
+static void
+text_entry_delete_text(struct text_entry *entry,
+		       uint32_t index, uint32_t length)
+{
+	if (entry->cursor > index)
+		entry->cursor -= length;
+
+	entry->text[index] = '\0';
+	strcat(entry->text, entry->text + index + length);
+
+	text_entry_update_layout(entry);
 
 	widget_schedule_redraw(entry->widget);
 }

@@ -49,6 +49,10 @@
       <arg name="text" type="string"/>
       <arg name="index" type="uint"/>
     </request>
+    <request name="delete_surrounding_text">
+      <arg name="index" type="int"/>
+      <arg name="length" type="uint"/>
+    </request>
     <event name="surrounding_text">
       <description summary="surrounding text event">
         The plain surrounding text around the input position. Cursor is the

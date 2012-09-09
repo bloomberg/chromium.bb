@@ -305,10 +305,22 @@ input_method_context_preedit_string(struct wl_client *client,
 	text_model_send_preedit_string(&context->model->resource, text, index);
 }
 
+static void
+input_method_context_delete_surrounding_text(struct wl_client *client,
+					     struct wl_resource *resource,
+					     int32_t index,
+					     uint32_t length)
+{
+	struct input_method_context *context = resource->data;
+
+	text_model_send_delete_surrounding_text(&context->model->resource, index, length);
+}
+
 static const struct input_method_context_interface input_method_context_implementation = {
 	input_method_context_destroy,
 	input_method_context_commit_string,
 	input_method_context_preedit_string,
+	input_method_context_delete_surrounding_text
 };
 
 static void

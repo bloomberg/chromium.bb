@@ -60,6 +60,14 @@ text_model_preedit_string(void *data,
 }
 
 static void
+text_model_delete_surrounding_text(void *data,
+				   struct text_model *text_model,
+				   int32_t index,
+				   uint32_t length)
+{
+}
+
+static void
 text_model_preedit_styling(void *data,
 			   struct text_model *text_model)
 {
@@ -112,6 +120,7 @@ text_model_deactivated(void *data,
 static const struct text_model_listener text_model_listener = {
 	text_model_commit_string,
 	text_model_preedit_string,
+	text_model_delete_surrounding_text,
 	text_model_preedit_styling,
 	text_model_key,
 	text_model_selection_replacement,

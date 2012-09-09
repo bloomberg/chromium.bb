@@ -222,6 +222,10 @@ keyboard_handle_key(struct keyboard *keyboard, const struct key *key)
 							    strlen(keyboard->keyboard->preedit_string));
 			break;
 		case keytype_backspace:
+			if (strlen(keyboard->keyboard->preedit_string) == 0) {
+				input_method_context_delete_surrounding_text(keyboard->keyboard->context,
+									     -1, 1);
+			}
 			break;
 		case keytype_enter:
 			break;
