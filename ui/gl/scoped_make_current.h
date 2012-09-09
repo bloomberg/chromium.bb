@@ -5,28 +5,34 @@
 #ifndef UI_GL_SCOPED_MAKE_CURRENT_H_
 #define UI_GL_SCOPED_MAKE_CURRENT_H_
 
-#include "ui/gl/gl_context.h"
-#include "ui/gl/gl_surface.h"
+#include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
+#include "ui/gl/gl_export.h"
 
 namespace gfx {
+class GLContext;
+class GLSurface;
+}
+
+namespace ui {
 
 class GL_EXPORT ScopedMakeCurrent {
  public:
-  explicit ScopedMakeCurrent(GLContext* context, GLSurface* surface);
+  ScopedMakeCurrent(gfx::GLContext* context, gfx::GLSurface* surface);
   ~ScopedMakeCurrent();
 
-  bool Succeeded();
+  bool Succeeded() const;
 
  private:
-  scoped_refptr<GLContext> previous_context_;
-  scoped_refptr<GLSurface> previous_surface_;
-  scoped_refptr<GLContext> context_;
-  scoped_refptr<GLSurface> surface_;
+  scoped_refptr<gfx::GLContext> previous_context_;
+  scoped_refptr<gfx::GLSurface> previous_surface_;
+  scoped_refptr<gfx::GLContext> context_;
+  scoped_refptr<gfx::GLSurface> surface_;
   bool succeeded_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedMakeCurrent);
 };
 
-}  // namespace gfx
+}  // namespace ui
 
 #endif  // UI_GL_SCOPED_MAKE_CURRENT_H_

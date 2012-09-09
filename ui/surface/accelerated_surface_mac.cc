@@ -222,7 +222,7 @@ uint32 AcceleratedSurface::SetSurfaceSize(const gfx::Size& size) {
   if (!io_surface_support)
     return 0;  // Caller can try using SetWindowSizeForTransportDIB().
 
-  gfx::ScopedMakeCurrent make_current(gl_context_.get(), gl_surface_.get());
+  ui::ScopedMakeCurrent make_current(gl_context_.get(), gl_surface_.get());
   if (!make_current.Succeeded())
     return 0;
 

@@ -14,7 +14,6 @@ class GLHelper;
 
 namespace gfx {
 class Size;
-class ScopedMakeCurrent;
 }
 
 namespace ui {

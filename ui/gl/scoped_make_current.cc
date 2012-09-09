@@ -5,15 +5,18 @@
 #include "ui/gl/scoped_make_current.h"
 
 #include "base/logging.h"
+#include "ui/gl/gl_context.h"
+#include "ui/gl/gl_surface.h"
 
-namespace gfx {
+namespace ui {
 
-ScopedMakeCurrent::ScopedMakeCurrent(GLContext* context, GLSurface* surface)
-    : previous_context_(GLContext::GetCurrent())
-    , previous_surface_(GLSurface::GetCurrent())
-    , context_(context)
-    , surface_(surface)
-    , succeeded_(false) {
+ScopedMakeCurrent::ScopedMakeCurrent(gfx::GLContext* context,
+                                     gfx::GLSurface* surface)
+    : previous_context_(gfx::GLContext::GetCurrent()),
+      previous_surface_(gfx::GLSurface::GetCurrent()),
+      context_(context),
+      surface_(surface),
+      succeeded_(false) {
   DCHECK(context);
   DCHECK(surface);
   succeeded_ = context->MakeCurrent(surface);
@@ -28,9 +31,8 @@ ScopedMakeCurrent::~ScopedMakeCurrent() {
   }
 }
 
-bool ScopedMakeCurrent::Succeeded() {
+bool ScopedMakeCurrent::Succeeded() const {
   return succeeded_;
 }
 
-}  // namespace gfx
-
+}  // namespace ui
