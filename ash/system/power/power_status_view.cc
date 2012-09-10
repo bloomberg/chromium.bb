@@ -203,7 +203,8 @@ void PowerStatusView::UpdateTextForNotificationView() {
 
 void PowerStatusView::UpdateIcon() {
   if (icon_) {
-    icon_->SetImage(TrayPower::GetBatteryImage(supply_status_, ICON_DARK));
+    icon_->SetImage(TrayPower::GetBatteryImage(supply_status_, ICON_DARK,
+                                               icon_->GetImage()));
     icon_->SetVisible(true);
   }
 }

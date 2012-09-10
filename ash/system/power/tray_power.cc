@@ -82,7 +82,8 @@ class PowerTrayView : public views::ImageView {
 
  private:
   void UpdateImage() {
-    SetImage(TrayPower::GetBatteryImage(supply_status_, ICON_LIGHT));
+    SetImage(TrayPower::GetBatteryImage(supply_status_, ICON_LIGHT,
+                                        GetImage()));
   }
 
   PowerSupplyStatus supply_status_;
@@ -100,7 +101,8 @@ class PowerNotificationView : public TrayNotificationView {
   }
 
   void UpdatePowerStatus(const PowerSupplyStatus& status) {
-    SetIconImage(TrayPower::GetBatteryImage(status, ICON_DARK));
+    SetIconImage(TrayPower::GetBatteryImage(status, ICON_DARK,
+                                            GetIconImage()));
     power_status_view_->UpdatePowerStatus(status);
   }
 
@@ -126,7 +128,8 @@ TrayPower::~TrayPower() {
 // static
 gfx::ImageSkia TrayPower::GetBatteryImage(
     const PowerSupplyStatus& supply_status,
-    IconSet icon_set) {
+    IconSet icon_set,
+    const gfx::ImageSkia& default_image) {
   gfx::Image all = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
       icon_set == ICON_DARK ?
       IDR_AURA_UBER_TRAY_POWER_SMALL_DARK : IDR_AURA_UBER_TRAY_POWER_SMALL);
@@ -137,9 +140,12 @@ gfx::ImageSkia TrayPower::GetBatteryImage(
   } else if (!supply_status.battery_is_present) {
     image_index = kNumPowerImages;
   } else {
-    double percentage = supply_status.is_calculating_battery_time ? 100.0 :
-        supply_status.battery_percentage;
-    image_index = static_cast<int>(percentage / 100.0 * (kNumPowerImages - 1));
+    // If power supply is calculating battery time, the battery percentage
+    // is uncertain, just return |default_image|.
+    if (supply_status.is_calculating_battery_time)
+      return default_image;
+    image_index = static_cast<int>(supply_status.battery_percentage /
+                  100.0 * (kNumPowerImages - 1));
     image_index = std::max(std::min(image_index, kNumPowerImages - 2), 0);
   }
 

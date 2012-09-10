@@ -41,6 +41,9 @@ class TrayNotificationView : public views::View,
   // Sets/updates the icon image.
   void SetIconImage(const gfx::ImageSkia& image);
 
+  // Gets the icons image.
+  const gfx::ImageSkia& GetIconImage() const;
+
   // Replaces the contents view.
   void UpdateView(views::View* new_contents);
 
