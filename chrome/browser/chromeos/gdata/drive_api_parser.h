@@ -97,7 +97,7 @@ class DriveAppIcon {
   IconCategory category() const { return category_; }
 
   // Size in pixels of one side of the icon (icons are always square).
-  const int icon_side_length() const { return icon_side_length_; }
+  int icon_side_length() const { return icon_side_length_; }
 
   // Returns URL for this icon.
   const GURL& icon_url() const { return icon_url_; }

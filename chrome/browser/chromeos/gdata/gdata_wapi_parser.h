@@ -272,7 +272,7 @@ class AppIcon {
   IconCategory category() const { return category_; }
 
   // Size in pixels of one side of the icon (icons are always square).
-  const int icon_side_length() const { return icon_side_length_; }
+  int icon_side_length() const { return icon_side_length_; }
 
   // Get a list of links available for this AppIcon.
   const ScopedVector<Link>& links() const { return links_; }
