@@ -51,8 +51,6 @@ class ASH_EXPORT MultiWindowResizeController :
   // Hides the resize widget.
   void Hide();
 
-  void set_grid_size(int grid_size) { grid_size_ = grid_size; }
-
   // MouseWatcherListenre overrides:
   virtual void MouseMovedOutOfHost() OVERRIDE;
 
@@ -165,9 +163,6 @@ class ASH_EXPORT MultiWindowResizeController :
 
   // Bounds the widget was last shown at in screen coordinates.
   gfx::Rect show_bounds_in_screen_;
-
-  // Size of the grid.
-  int grid_size_;
 
   // Used to detect whether the mouse is over the windows. While
   // |resize_widget_| is non-NULL (ie the widget is showing) we ignore calls

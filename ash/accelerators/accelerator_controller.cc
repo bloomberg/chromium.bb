@@ -610,8 +610,7 @@ bool AcceleratorController::PerformAction(int action,
       internal::SnapSizer sizer(window,
           gfx::Point(),
           action == WINDOW_SNAP_LEFT ? internal::SnapSizer::LEFT_EDGE :
-                                       internal::SnapSizer::RIGHT_EDGE,
-          shell->GetGridSize());
+                                       internal::SnapSizer::RIGHT_EDGE);
       if (wm::IsWindowFullscreen(window) ||
           wm::IsWindowMaximized(window)) {
         // Before we can set the bounds we need to restore the window.

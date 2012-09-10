@@ -8,11 +8,13 @@
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/wm/always_on_top_controller.h"
+#include "ash/wm/base_layout_manager.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace2.h"
 #include "ash/wm/workspace/workspace_manager2.h"
+#include "ash/wm/workspace/workspace_window_resizer.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
@@ -26,25 +28,6 @@ using aura::Window;
 
 namespace ash {
 namespace internal {
-
-namespace {
-
-gfx::Rect BoundsWithScreenEdgeVisible(
-    aura::Window* window,
-    const gfx::Rect& restore_bounds) {
-  // If the restore_bounds are more than 1 grid step away from the size the
-  // window would be when maximized, inset it.
-  int grid_size = ash::Shell::GetInstance()->GetGridSize();
-  gfx::Rect max_bounds = ash::ScreenAsh::GetMaximizedWindowBoundsInParent(
-      window->parent()->parent());
-  max_bounds.Inset(grid_size, grid_size);
-  // TODO(sky): this looks totally wrong!
-  if (restore_bounds.Contains(max_bounds))
-    return max_bounds;
-  return restore_bounds;
-}
-
-}  // namespace
 
 WorkspaceLayoutManager2::WorkspaceLayoutManager2(Workspace2* workspace)
     : root_window_(workspace->window()->GetRootWindow()),
@@ -233,9 +216,11 @@ void WorkspaceLayoutManager2::UpdateBoundsFromShowState(Window* window) {
         gfx::Rect bounds_in_parent =
             ScreenAsh::ConvertRectFromScreen(window->parent()->parent(),
                                              *restore);
-        SetChildBoundsDirect(window,
-                             BoundsWithScreenEdgeVisible(window,
-                                                         bounds_in_parent));
+        SetChildBoundsDirect(
+            window,
+            BaseLayoutManager::BoundsWithScreenEdgeVisible(
+                window->parent()->parent(),
+                bounds_in_parent));
       }
       window->ClearProperty(aura::client::kRestoreBoundsKey);
       break;

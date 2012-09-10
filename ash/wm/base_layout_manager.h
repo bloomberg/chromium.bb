@@ -41,6 +41,12 @@ class ASH_EXPORT BaseLayoutManager : public aura::LayoutManager,
 
   const WindowSet& windows() const { return windows_; }
 
+  // Given a |window| and tentative |restore_bounds|, returns new bounds that
+  // ensure that at least a few pixels of the screen background are visible
+  // outside the edges of the window.
+  static gfx::Rect BoundsWithScreenEdgeVisible(aura::Window* window,
+                                               const gfx::Rect& restore_bounds);
+
   // LayoutManager overrides:
   virtual void OnWindowResized() OVERRIDE;
   virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE;

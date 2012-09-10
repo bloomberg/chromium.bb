@@ -43,8 +43,6 @@ class ASH_EXPORT Workspace2 {
 
   WorkspaceManager2* workspace_manager() { return workspace_manager_; }
 
-  void SetGridSize(int grid_size);
-
   // Returns true if the Workspace should be moved to pending. This is true
   // if there are no visible maximized windows.
   bool ShouldMoveToPending() const;

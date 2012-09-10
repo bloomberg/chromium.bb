@@ -25,11 +25,6 @@ class ASH_EXPORT BaseWorkspaceManager {
   // Returns true if in maximized or fullscreen mode.
   virtual bool IsInMaximizedMode() const = 0;
 
-  // Sets the size of the grid. Newly added windows are forced to align to the
-  // size of the grid.
-  virtual void SetGridSize(int size) = 0;
-  virtual int GetGridSize() const = 0;
-
   // Returns the current window state.
   virtual WorkspaceWindowState GetWindowState() const = 0;
 

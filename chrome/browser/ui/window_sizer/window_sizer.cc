@@ -128,8 +128,11 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
 
 // The number of pixels which are kept free top, left and right when a window
 // gets positioned to its default location.
+// static
 const int WindowSizer::kDesktopBorderSize = 16;
+
 // Maximum width of a window even if there is more room on the desktop.
+// static
 const int WindowSizer::kMaximumWindowWidth = 1100;
 
 WindowSizer::WindowSizer(StateProvider* state_provider, const Browser* browser)

@@ -17,7 +17,6 @@ namespace ash {
 
 // statics
 
-// Currently matches kGridSize * 2 (defined in ash/wm/workspace_controller.cc).
 const int WindowPositioner::kMinimumWindowOffset = 32;
 
 WindowPositioner::WindowPositioner()
@@ -33,14 +32,7 @@ WindowPositioner::~WindowPositioner() {
 }
 
 gfx::Rect WindowPositioner::GetPopupPosition(const gfx::Rect& old_pos) {
-  int grid = ash::Shell::GetInstance()->GetGridSize();
-  // Make sure that the grid has a minimum resolution.
-  if (!grid) {
-    grid = kMinimumWindowOffset;
-  } else {
-    while (grid < kMinimumWindowOffset)
-      grid *= 2;
-  }
+  int grid = kMinimumWindowOffset;
   popup_position_offset_from_screen_corner_x = grid;
   popup_position_offset_from_screen_corner_y = grid;
   if (!pop_position_offset_increment_x) {
@@ -160,10 +152,6 @@ gfx::Rect WindowPositioner::SmartPopupPosition(
           if (regions[i]->Intersects(gfx::Rect(x + work_area.x(),
                                                y + work_area.y(), w, h))) {
             y = regions[i]->bottom() - work_area.y();
-            if (grid > 1) {
-              // Align to the (next) grid step.
-              y = ash::WindowResizer::AlignToGridRoundUp(y, grid);
-            }
             break;
           }
         }

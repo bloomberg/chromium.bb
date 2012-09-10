@@ -148,8 +148,7 @@ bool MultiWindowResizeController::ResizeWindows::Equals(
 }
 
 MultiWindowResizeController::MultiWindowResizeController()
-    : resize_widget_(NULL),
-      grid_size_(0) {
+    : resize_widget_(NULL){
 }
 
 MultiWindowResizeController::~MultiWindowResizeController() {

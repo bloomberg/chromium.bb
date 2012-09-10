@@ -90,7 +90,6 @@ class WorkspaceManagerTest : public test::AshTestBase {
     WorkspaceControllerTestHelper workspace_helper(
         Shell::TestApi(Shell::GetInstance()).workspace_controller());
     manager_ = workspace_helper.workspace_manager();
-    manager_->SetGridSize(0);
   }
   virtual void TearDown() OVERRIDE {
     manager_ = NULL;
@@ -315,8 +314,6 @@ TEST_F(WorkspaceManagerTest, ChangeBoundsOfNormalWindow) {
 
 // Assertions around grid size.
 TEST_F(WorkspaceManagerTest, SnapToGrid) {
-  manager_->SetGridSize(8);
-
   // Verify snap to grid when bounds are set before parented.
   scoped_ptr<Window> w1(CreateTestWindowUnparented());
   w1->SetBounds(gfx::Rect(1, 6, 25, 30));

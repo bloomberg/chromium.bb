@@ -95,7 +95,6 @@ class WorkspaceManagerLayoutManager2 : public BaseLayoutManager {
 WorkspaceManager2::WorkspaceManager2(Window* contents_view)
     : contents_view_(contents_view),
       active_workspace_(NULL),
-      grid_size_(0),
       shelf_(NULL),
       in_move_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -143,20 +142,6 @@ bool WorkspaceManager2::WillRestoreMaximized(Window* window) {
 
 bool WorkspaceManager2::IsInMaximizedMode() const {
   return active_workspace_ && active_workspace_->is_maximized();
-}
-
-void WorkspaceManager2::SetGridSize(int size) {
-  grid_size_ = size;
-  std::for_each(workspaces_.begin(), workspaces_.end(),
-                std::bind2nd(std::mem_fun(&Workspace2::SetGridSize),
-                             grid_size_));
-  std::for_each(pending_workspaces_.begin(), pending_workspaces_.end(),
-                std::bind2nd(std::mem_fun(&Workspace2::SetGridSize),
-                             grid_size_));
-}
-
-int WorkspaceManager2::GetGridSize() const {
-  return grid_size_;
 }
 
 WorkspaceWindowState WorkspaceManager2::GetWindowState() const {
@@ -330,7 +315,6 @@ WorkspaceManager2::FindWorkspace(Workspace2* workspace)  {
 
 Workspace2* WorkspaceManager2::CreateWorkspace(bool maximized) {
   Workspace2* workspace = new Workspace2(this, contents_view_, maximized);
-  workspace->SetGridSize(grid_size_);
   workspace->window()->SetLayoutManager(new WorkspaceLayoutManager2(workspace));
   return workspace;
 }

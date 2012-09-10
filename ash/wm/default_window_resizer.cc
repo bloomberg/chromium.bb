@@ -14,8 +14,6 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/compositor/layer.h"
-#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/screen.h"
 
 namespace ash {
@@ -42,9 +40,7 @@ void DefaultWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   if (current_root != details_.window->GetRootWindow())
     return;
 
-  int grid_size = event_flags & ui::EF_CONTROL_DOWN ?
-                  0 : ash::Shell::GetInstance()->GetGridSize();
-  gfx::Rect bounds(CalculateBoundsForDrag(details_, location, grid_size));
+  gfx::Rect bounds(CalculateBoundsForDrag(details_, location));
   if (bounds != details_.window->bounds()) {
     did_move_or_resize_ = true;
     details_.window->SetBounds(bounds);
@@ -52,26 +48,6 @@ void DefaultWindowResizer::Drag(const gfx::Point& location, int event_flags) {
 }
 
 void DefaultWindowResizer::CompleteDrag(int event_flags) {
-  int grid_size = event_flags & ui::EF_CONTROL_DOWN ?
-                  0 : ash::Shell::GetInstance()->GetGridSize();
-  if (grid_size <= 1 || !did_move_or_resize_)
-    return;
-  gfx::Rect new_bounds(
-      AdjustBoundsToGrid(details_.window->bounds(), grid_size));
-  if (new_bounds == details_.window->bounds())
-    return;
-
-  if (new_bounds.size() != details_.window->bounds().size()) {
-    // Don't attempt to animate a size change.
-    details_.window->SetBounds(new_bounds);
-    return;
-  }
-
-  ui::ScopedLayerAnimationSettings scoped_setter(
-      details_.window->layer()->GetAnimator());
-  // Use a small duration since the grid is small.
-  scoped_setter.SetTransitionDuration(base::TimeDelta::FromMilliseconds(100));
-  details_.window->SetBounds(new_bounds);
 }
 
 void DefaultWindowResizer::RevertDrag() {

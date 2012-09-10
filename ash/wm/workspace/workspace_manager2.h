@@ -61,8 +61,6 @@ class ASH_EXPORT WorkspaceManager2 : public BaseWorkspaceManager {
 
   // BaseWorkspaceManager2 overrides:
   virtual bool IsInMaximizedMode() const OVERRIDE;
-  virtual void SetGridSize(int size) OVERRIDE;
-  virtual int GetGridSize() const OVERRIDE;
   virtual WorkspaceWindowState GetWindowState() const OVERRIDE;
   virtual void SetShelf(ShelfLayoutManager* shelf) OVERRIDE;
   virtual void SetActiveWorkspaceByWindow(aura::Window* window) OVERRIDE;
@@ -166,9 +164,6 @@ class ASH_EXPORT WorkspaceManager2 : public BaseWorkspaceManager {
   // Once any window in the workspace is activated the workspace is moved to
   // |workspaces_|.
   std::set<Workspace2*> pending_workspaces_;
-
-  // See description above setter.
-  int grid_size_;
 
   // Owned by the Shell. May be NULL.
   ShelfLayoutManager* shelf_;

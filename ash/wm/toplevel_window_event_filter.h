@@ -35,12 +35,6 @@ class ASH_EXPORT ToplevelWindowEventFilter
   explicit ToplevelWindowEventFilter(aura::Window* owner);
   virtual ~ToplevelWindowEventFilter();
 
-  // Sets the size of the grid. If non-zero all resizes and moves are forced to
-  // fall on a grid of the specified size. The default is 0, meaning the x,y and
-  // width,height are not restricted in anyway.
-  void set_grid_size(int size) { grid_size_ = size; }
-  int grid_size() const { return grid_size_; }
-
   // Overridden from aura::EventFilter:
   virtual bool PreHandleKeyEvent(aura::Window* target,
                                  ui::KeyEvent* event) OVERRIDE;
@@ -99,9 +93,6 @@ class ASH_EXPORT ToplevelWindowEventFilter
 
   // Is a gesture-resize in progress?
   bool in_gesture_resize_;
-
-  // See description above setter.
-  int grid_size_;
 
   scoped_ptr<ScopedWindowResizer> window_resizer_;
 

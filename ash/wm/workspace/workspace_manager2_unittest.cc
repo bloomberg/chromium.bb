@@ -122,7 +122,6 @@ class WorkspaceManager2Test : public test::AshTestBase {
     WorkspaceControllerTestHelper workspace_helper(
         Shell::TestApi(Shell::GetInstance()).workspace_controller());
     manager_ = workspace_helper.workspace_manager2();
-    manager_->SetGridSize(0);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -313,8 +312,6 @@ TEST_F(WorkspaceManager2Test, ChangeBoundsOfNormalWindow) {
 
 // Verifies the bounds is not altered when showing and grid is enabled.
 TEST_F(WorkspaceManager2Test, SnapToGrid) {
-  manager_->SetGridSize(8);
-
   scoped_ptr<Window> w1(CreateTestWindowUnparented());
   w1->SetBounds(gfx::Rect(1, 6, 25, 30));
   w1->SetParent(NULL);

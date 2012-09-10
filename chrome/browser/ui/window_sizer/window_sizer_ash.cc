@@ -102,8 +102,6 @@ void WindowSizer::GetDefaultWindowBoundsAsh(gfx::Rect* default_bounds) const {
 
   gfx::Rect work_area = monitor_info_provider_->GetPrimaryDisplayWorkArea();
 
-  DCHECK_EQ(kDesktopBorderSize, ash::Shell::GetInstance()->GetGridSize());
-
   // There should be a 'desktop' border around the window at the left and right
   // side.
   int default_width = work_area.width() - 2 * kDesktopBorderSize;

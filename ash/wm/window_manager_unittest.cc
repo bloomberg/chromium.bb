@@ -366,9 +366,6 @@ TEST_F(WindowManagerTest, ActivateOnTouch) {
 
 TEST_F(WindowManagerTest, MouseEventCursors) {
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
-  // Disable ash grid so that test can place a window at
-  // specific location.
-  ash::Shell::GetInstance()->DisableWorkspaceGridLayout();
 
   // Create a window.
   const int kWindowLeft = 123;
@@ -466,10 +463,6 @@ TEST_F(WindowManagerTest, MouseEventCursors) {
 #define MAYBE_TransformActivate TransformActivate
 #endif
 TEST_F(WindowManagerTest, MAYBE_TransformActivate) {
-  // Disable ash grid so that test can place a window at
-  // specific location.
-  ash::Shell::GetInstance()->DisableWorkspaceGridLayout();
-
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
   gfx::Size size = root_window->bounds().size();
   EXPECT_EQ(

@@ -328,9 +328,6 @@ class ASH_EXPORT Shell : ash::CursorDelegate {
   SystemTrayDelegate* tray_delegate();
   SystemTray* system_tray();
 
-  // Returns the size of the grid.
-  int GetGridSize() const;
-
   static void set_initially_hide_cursor(bool hide) {
     initially_hide_cursor_ = hide;
   }
@@ -382,9 +379,6 @@ class ASH_EXPORT Shell : ash::CursorDelegate {
   // primary display.
   void InitLayoutManagersForPrimaryDisplay(
       internal::RootWindowController* root_window_controller);
-
-  // Disables the workspace grid layout.
-  void DisableWorkspaceGridLayout();
 
   // aura::CursorManager::Delegate overrides:
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;

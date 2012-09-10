@@ -157,7 +157,6 @@ TEST_F(CustomFrameViewAshTest, ResizeButtonDrag) {
   CustomFrameViewAsh::TestApi test(frame);
   views::View* view = test.maximize_button();
   gfx::Point center = view->GetBoundsInScreen().CenterPoint();
-  const int kGridSize = ash::Shell::GetInstance()->GetGridSize();
 
   aura::test::EventGenerator generator(window->GetRootWindow(), center);
 
@@ -173,7 +172,7 @@ TEST_F(CustomFrameViewAshTest, ResizeButtonDrag) {
     EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
     EXPECT_FALSE(ash::wm::IsWindowMinimized(window));
     internal::SnapSizer sizer(window, center,
-        internal::SnapSizer::RIGHT_EDGE, kGridSize);
+        internal::SnapSizer::RIGHT_EDGE);
     EXPECT_EQ(sizer.target_bounds().ToString(), window->bounds().ToString());
   }
 
@@ -189,7 +188,7 @@ TEST_F(CustomFrameViewAshTest, ResizeButtonDrag) {
     EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
     EXPECT_FALSE(ash::wm::IsWindowMinimized(window));
     internal::SnapSizer sizer(window, center,
-        internal::SnapSizer::LEFT_EDGE, kGridSize);
+        internal::SnapSizer::LEFT_EDGE);
     EXPECT_EQ(sizer.target_bounds().ToString(), window->bounds().ToString());
   }
 
@@ -222,7 +221,7 @@ TEST_F(CustomFrameViewAshTest, ResizeButtonDrag) {
     EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
     EXPECT_FALSE(ash::wm::IsWindowMinimized(window));
     internal::SnapSizer sizer(window, center,
-        internal::SnapSizer::RIGHT_EDGE, kGridSize);
+        internal::SnapSizer::RIGHT_EDGE);
     EXPECT_EQ(sizer.target_bounds().ToString(), window->bounds().ToString());
   }
 
@@ -239,7 +238,7 @@ TEST_F(CustomFrameViewAshTest, ResizeButtonDrag) {
     EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
     EXPECT_FALSE(ash::wm::IsWindowMinimized(window));
     internal::SnapSizer sizer(window, center,
-        internal::SnapSizer::LEFT_EDGE, kGridSize);
+        internal::SnapSizer::LEFT_EDGE);
     EXPECT_EQ(sizer.target_bounds().ToString(), window->bounds().ToString());
   }
 
@@ -339,7 +338,6 @@ TEST_F(CustomFrameViewAshTest, MaximizeLeftButtonDragOut) {
 // Test that clicking a button in the maximizer bubble (in this case the
 // maximize left button) will do the requested action.
 TEST_F(CustomFrameViewAshTest, MaximizeLeftByButton) {
-  const int kGridSize = ash::Shell::GetInstance()->GetGridSize();
   views::Widget* widget = CreateWidget();
   aura::Window* window = widget->GetNativeWindow();
   CustomFrameViewAsh* frame = custom_frame_view_ash(widget);
@@ -371,7 +369,7 @@ TEST_F(CustomFrameViewAshTest, MaximizeLeftByButton) {
   EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
   EXPECT_FALSE(ash::wm::IsWindowMinimized(window));
   internal::SnapSizer sizer(window, button_pos,
-      internal::SnapSizer::LEFT_EDGE, kGridSize);
+                            internal::SnapSizer::LEFT_EDGE);
   sizer.SelectDefaultSizeAndDisableResize();
   EXPECT_EQ(sizer.target_bounds().ToString(), window->bounds().ToString());
 }

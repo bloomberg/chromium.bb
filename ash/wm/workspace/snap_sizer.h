@@ -27,10 +27,7 @@ class ASH_EXPORT SnapSizer {
     RIGHT_EDGE
   };
 
-  SnapSizer(aura::Window* window,
-            const gfx::Point& start,
-            Edge edge,
-            int grid_size);
+  SnapSizer(aura::Window* window, const gfx::Point& start, Edge edge);
 
   // Updates the target bounds based on a mouse move.
   void Update(const gfx::Point& location);
@@ -71,7 +68,6 @@ class ASH_EXPORT SnapSizer {
   aura::Window* window_;
 
   const Edge edge_;
-  const int grid_size_;
 
   // Current target bounds for the snap.
   gfx::Rect target_bounds_;

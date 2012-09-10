@@ -25,8 +25,7 @@ class WorkspaceEventFilter;
 class WorkspaceLayoutManager;
 
 // WorkspaceController acts as a central place that ties together all the
-// various workspace pieces: WorkspaceManager, WorkspaceLayoutManager and
-// WorkspaceEventFilter.
+// various workspace pieces.
 class ASH_EXPORT WorkspaceController
     : public aura::client::ActivationChangeObserver {
  public:
@@ -38,10 +37,6 @@ class ASH_EXPORT WorkspaceController
 
   // Returns true if in maximized or fullscreen mode.
   bool IsInMaximizedMode() const;
-
-  // Sets the size of the grid.
-  void SetGridSize(int grid_size);
-  int GetGridSize() const;
 
   // Returns the current window state.
   WorkspaceWindowState GetWindowState() const;

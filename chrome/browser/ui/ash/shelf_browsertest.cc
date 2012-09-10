@@ -20,7 +20,6 @@ IN_PROC_BROWSER_TEST_F(ShelfBrowserTest, StatusBubble) {
   EXPECT_TRUE(shelf->IsVisible());
 
   // Ensure that the browser abuts the shelf.
-  ash::Shell::TestApi(shell).workspace_controller()->SetGridSize(1);
   const gfx::Rect old_bounds = browser()->window()->GetBounds();
   const gfx::Rect new_bounds(
       old_bounds.x(),

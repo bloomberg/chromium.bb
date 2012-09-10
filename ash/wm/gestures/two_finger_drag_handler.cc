@@ -4,7 +4,6 @@
 
 #include "ash/wm/gestures/two_finger_drag_handler.h"
 
-#include "ash/shell.h"
 #include "ash/wm/default_window_resizer.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/snap_sizer.h"
@@ -68,8 +67,7 @@ bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
         internal::SnapSizer sizer(target,
             gfx::Point(),
             event.details().swipe_left() ? internal::SnapSizer::LEFT_EDGE :
-                                           internal::SnapSizer::RIGHT_EDGE,
-            Shell::GetInstance()->GetGridSize());
+                                           internal::SnapSizer::RIGHT_EDGE);
 
         ui::ScopedLayerAnimationSettings scoped_setter(
             target->layer()->GetAnimator());

@@ -656,11 +656,6 @@ SystemTray* Shell::system_tray() {
   return status_area_widget_->system_tray();
 }
 
-int Shell::GetGridSize() const {
-  return
-      GetPrimaryRootWindowController()->workspace_controller()->GetGridSize();
-}
-
 void Shell::InitRootWindowForSecondaryDisplay(aura::RootWindow* root) {
   root->set_focus_manager(focus_manager_.get());
   internal::RootWindowController* controller =
@@ -751,14 +746,6 @@ void Shell::InitLayoutManagersForPrimaryDisplay(
       new internal::PanelWindowEventFilter(
           panel_container, panel_layout_manager_));
   panel_container->SetLayoutManager(panel_layout_manager_);
-}
-
-// TODO: this is only used in tests, move with test.
-void Shell::DisableWorkspaceGridLayout() {
-  RootWindowControllerList controllers = GetAllRootWindowControllers();
-  for (RootWindowControllerList::iterator iter = controllers.begin();
-       iter != controllers.end(); ++iter)
-    (*iter)->workspace_controller()->SetGridSize(0);
 }
 
 void Shell::SetCursor(gfx::NativeCursor cursor) {

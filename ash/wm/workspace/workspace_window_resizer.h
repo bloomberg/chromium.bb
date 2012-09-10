@@ -42,6 +42,10 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // TODO: this should come from a property on the window.
   static const int kMinOnscreenHeight;
 
+  // Snap region when dragging close to the edges. That is, as the window gets
+  // this close to an edge of the screen it snaps to the edge.
+  static const int kScreenEdgeInset;
+
   virtual ~WorkspaceWindowResizer();
 
   static WorkspaceWindowResizer* Create(
@@ -81,23 +85,21 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   };
 
   // Returns the final bounds to place the window at. This differs from
-  // the current if there is a grid.
-  gfx::Rect GetFinalBounds(const gfx::Rect& bounds, int grid_size) const;
+  // the current when snapping.
+  gfx::Rect GetFinalBounds(const gfx::Rect& bounds) const;
 
   // Lays out the attached windows. |bounds| is the bounds of the main window.
-  void LayoutAttachedWindows(const gfx::Rect& bounds, int grid_size);
+  void LayoutAttachedWindows(const gfx::Rect& bounds);
 
   // Calculates the size (along the primary axis) of the attached windows.
   // |initial_size| is the initial size of the main window, |current_size| the
   // new size of the main window, |start| the position to layout the attached
   // windows from and |end| the coordinate to position to.
-  void CalculateAttachedSizes(
-      int initial_size,
-      int current_size,
-      int start,
-      int end,
-      int grid_size,
-      std::vector<int>* sizes) const;
+  void CalculateAttachedSizes(int initial_size,
+                              int current_size,
+                              int start,
+                              int end,
+                              std::vector<int>* sizes) const;
 
   // Adjusts the bounds to enforce that windows are vertically contained in the
   // work area.
@@ -119,8 +121,7 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
 
   // Updates the bounds of the phantom window for window snapping.
   void UpdateSnapPhantomWindow(const gfx::Point& location,
-                               const gfx::Rect& bounds,
-                               int grid_size);
+                               const gfx::Rect& bounds);
 
   // Updates the bounds of the phantom window for window dragging. Set true on
   // |in_original_root| if the pointer is still in |window()->GetRootWindow()|.

@@ -79,11 +79,16 @@ TestBrowserWindowAura::TestBrowserWindowAura(aura::Window *native_window)
 
 TestBrowserWindowAura::~TestBrowserWindowAura() {}
 
+int AlignToGridRoundDown(int location, int grid_size) {
+  if (grid_size <= 1 || location % grid_size == 0)
+    return location;
+  return location / grid_size * grid_size;
+}
+
 // Test that the window is sized appropriately for the first run experience
 // where the default window bounds calculation is invoked.
 TEST_F(WindowSizerTest, DefaultSizeCase) {
-  int grid = ash::Shell::GetInstance()->GetGridSize();
-  EXPECT_EQ(WindowSizer::kDesktopBorderSize, grid);
+  int grid = WindowSizer::kDesktopBorderSize;
   { // 4:3 monitor case, 1024x768, no taskbar
     gfx::Rect window_bounds;
     GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(), gfx::Rect(),
@@ -103,7 +108,7 @@ TEST_F(WindowSizerTest, DefaultSizeCase) {
     EXPECT_EQ(gfx::Rect(WindowSizer::kDesktopBorderSize,
                         WindowSizer::kDesktopBorderSize,
                         1024 - WindowSizer::kDesktopBorderSize * 2,
-                        ash::WindowResizer::AlignToGridRoundDown(
+                        AlignToGridRoundDown(
                             taskbar_bottom_work_area.height() -
                             WindowSizer::kDesktopBorderSize, grid)),
                         window_bounds);
@@ -116,7 +121,7 @@ TEST_F(WindowSizerTest, DefaultSizeCase) {
                     gfx::Rect());
     EXPECT_EQ(gfx::Rect(WindowSizer::kDesktopBorderSize,
                         WindowSizer::kDesktopBorderSize,
-                        ash::WindowResizer::AlignToGridRoundDown(
+                        AlignToGridRoundDown(
                             taskbar_right_work_area.width() -
                             WindowSizer::kDesktopBorderSize * 2, grid),
                         768 - WindowSizer::kDesktopBorderSize),
@@ -131,10 +136,10 @@ TEST_F(WindowSizerTest, DefaultSizeCase) {
     EXPECT_EQ(gfx::Rect(taskbar_left_work_area.x() +
                           WindowSizer::kDesktopBorderSize,
                         WindowSizer::kDesktopBorderSize,
-                        ash::WindowResizer::AlignToGridRoundDown(
+                        AlignToGridRoundDown(
                             taskbar_left_work_area.width() -
                         WindowSizer::kDesktopBorderSize * 2, grid),
-                            ash::WindowResizer::AlignToGridRoundDown(
+                            AlignToGridRoundDown(
                             taskbar_left_work_area.height() -
                             WindowSizer::kDesktopBorderSize, grid)),
               window_bounds);
@@ -149,7 +154,7 @@ TEST_F(WindowSizerTest, DefaultSizeCase) {
                         taskbar_top_work_area.y() +
                           WindowSizer::kDesktopBorderSize,
                         1024 - WindowSizer::kDesktopBorderSize * 2,
-                        ash::WindowResizer::AlignToGridRoundDown(
+                        AlignToGridRoundDown(
                             taskbar_top_work_area.height() -
                             WindowSizer::kDesktopBorderSize, grid)),
               window_bounds);
@@ -184,7 +189,7 @@ TEST_F(WindowSizerTest, DefaultSizeCase) {
     EXPECT_EQ(gfx::Rect((1680 - WindowSizer::kMaximumWindowWidth) / 2,
                         WindowSizer::kDesktopBorderSize,
                         WindowSizer::kMaximumWindowWidth,
-                        ash::WindowResizer::AlignToGridRoundDown(
+                        AlignToGridRoundDown(
                             1050 - WindowSizer::kDesktopBorderSize,
                             grid)),
               window_bounds);

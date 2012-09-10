@@ -417,10 +417,9 @@ void FrameMaximizeButton::UpdateSnap(const gfx::Point& location,
   if (snap_type_ == SNAP_LEFT || snap_type_ == SNAP_RIGHT) {
     SnapSizer::Edge snap_edge = snap_type_ == SNAP_LEFT ?
         SnapSizer::LEFT_EDGE : SnapSizer::RIGHT_EDGE;
-    int grid_size = Shell::GetInstance()->GetGridSize();
     snap_sizer_.reset(new SnapSizer(frame_->GetWidget()->GetNativeWindow(),
                                     LocationForSnapSizer(location),
-                                    snap_edge, grid_size));
+                                    snap_edge));
     if (select_default)
       snap_sizer_->SelectDefaultSizeAndDisableResize();
   }

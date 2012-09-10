@@ -70,7 +70,6 @@ bool WorkspaceEventFilter::PreHandleMouseEvent(aura::Window* target,
     case ui::ET_MOUSE_MOVED: {
       int component =
           target->delegate()->GetNonClientComponent(event->location());
-      multi_window_resize_controller_.set_grid_size(grid_size());
       multi_window_resize_controller_.Show(target, component,
                                            event->location());
       break;

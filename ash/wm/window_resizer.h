@@ -36,16 +36,6 @@ class ASH_EXPORT WindowResizer {
   // Returns a bitmask of the kBoundsChange_ values.
   static int GetBoundsChangeForWindowComponent(int component);
 
-  // Returns a location >= |location| that is aligned to fall on increments of
-  // |grid_size|.
-  static int AlignToGrid(int location, int grid_size);
-
-  // Variant of AlignToGrid that rounds up.
-  static int AlignToGridRoundUp(int location, int grid_size);
-
-  // Variant of AlignToGrid that rounds down.
-  static int AlignToGridRoundDown(int location, int grid_size);
-
   // Invoked to drag/move/resize the window. |location| is in the coordinates
   // of the window supplied to the constructor. |event_flags| is the event
   // flags from the event.
@@ -96,10 +86,8 @@ class ASH_EXPORT WindowResizer {
     bool is_resizable;
   };
 
-  static gfx::Rect CalculateBoundsForDrag(
-      const Details& details,
-      const gfx::Point& location,
-      int grid_size);
+  static gfx::Rect CalculateBoundsForDrag(const Details& details,
+                                          const gfx::Point& location);
 
   static gfx::Rect AdjustBoundsToGrid(const gfx::Rect& bounds,
                                       int grid_size);
@@ -116,20 +104,17 @@ class ASH_EXPORT WindowResizer {
   // Returns the size of the window for the drag.
   static gfx::Size GetSizeForDrag(const Details& details,
                                   int* delta_x,
-                                  int* delta_y,
-                                  int grid_size);
+                                  int* delta_y);
 
   // Returns the width of the window.
   static int GetWidthForDrag(const Details& details,
                              int min_width,
-                             int* delta_x,
-                             int grid_size);
+                             int* delta_x);
 
   // Returns the height of the drag.
   static int GetHeightForDrag(const Details& details,
                               int min_height,
-                              int* delta_y,
-                              int grid_size);
+                              int* delta_y);
 };
 
 }  // namespace aura

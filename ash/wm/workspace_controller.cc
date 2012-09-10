@@ -19,13 +19,6 @@
 namespace ash {
 namespace internal {
 
-namespace {
-
-// Size of the grid when a grid is enabled.
-const int kGridSize = 16;
-
-}  // namespace
-
 WorkspaceController::WorkspaceController(aura::Window* viewport)
     : viewport_(viewport),
       layout_manager_(NULL),
@@ -44,7 +37,6 @@ WorkspaceController::WorkspaceController(aura::Window* viewport)
     viewport->SetEventFilter(event_filter_);
   }
   aura::client::GetActivationClient(root_window)->AddObserver(this);
-  SetGridSize(kGridSize);
 }
 
 WorkspaceController::~WorkspaceController() {
@@ -63,16 +55,6 @@ bool WorkspaceController::IsWorkspace2Enabled() {
 
 bool WorkspaceController::IsInMaximizedMode() const {
   return workspace_manager_->IsInMaximizedMode();
-}
-
-void WorkspaceController::SetGridSize(int grid_size) {
-  workspace_manager_->SetGridSize(grid_size);
-  if (event_filter_)
-    event_filter_->set_grid_size(grid_size);
-}
-
-int WorkspaceController::GetGridSize() const {
-  return workspace_manager_->GetGridSize();
 }
 
 WorkspaceWindowState WorkspaceController::GetWindowState() const {

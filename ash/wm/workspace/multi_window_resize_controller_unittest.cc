@@ -30,7 +30,6 @@ class MultiWindowResizeControllerTest : public test::AshTestBase {
     test::AshTestBase::SetUp();
     WorkspaceController* wc =
         ash::Shell::TestApi(Shell::GetInstance()).workspace_controller();
-    wc->SetGridSize(0);
     WorkspaceEventFilter* event_filter =
         WorkspaceControllerTestHelper(wc).GetFilter();
     resize_controller_ = WorkspaceEventFilterTestHelper(event_filter).

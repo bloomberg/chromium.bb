@@ -78,7 +78,6 @@ class ToplevelWindowEventFilterTest : public AshTestBase {
     parent_->SetBounds(Shell::GetPrimaryRootWindow()->bounds());
     filter_ = new ToplevelWindowEventFilter(parent_);
     parent_->SetEventFilter(filter_);
-    SetGridSize(0);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -107,11 +106,6 @@ class ToplevelWindowEventFilterTest : public AshTestBase {
   void TouchDragFromCenterBy(aura::Window* window, int dx, int dy) {
     aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), window);
     generator.PressMoveAndReleaseTouchBy(dx, dy);
-  }
-
-  void SetGridSize(int grid_size) {
-    Shell::TestApi shell_test(Shell::GetInstance());
-    shell_test.workspace_controller()->SetGridSize(grid_size);
   }
 
   ToplevelWindowEventFilter* filter_;
@@ -399,46 +393,8 @@ TEST_F(ToplevelWindowEventFilterTest, DontGotWiderThanScreen) {
   EXPECT_EQ(work_area.width(), target->bounds().width());
 }
 
-// Verifies that when a grid size is set resizes snap to the grid.
-TEST_F(ToplevelWindowEventFilterTest, ResizeSnaps) {
-  SetGridSize(8);
-  scoped_ptr<aura::Window> target(CreateWindow(HTBOTTOMRIGHT));
-  DragFromCenterBy(target.get(), 11, 21);
-  EXPECT_EQ(112, target->bounds().width());
-  EXPECT_EQ(120, target->bounds().height());
-  target.reset(CreateWindow(HTTOPLEFT));
-  target->SetBounds(gfx::Rect(48, 96, 100, 100));
-  DragFromCenterBy(target.get(), -11, -21);
-  EXPECT_EQ(40, target->bounds().x());
-  EXPECT_EQ(80, target->bounds().y());
-  EXPECT_EQ(112, target->bounds().width());
-  EXPECT_EQ(120, target->bounds().height());
-}
-
-// Verifies that when a grid size is set dragging snaps to the grid.
-TEST_F(ToplevelWindowEventFilterTest, DragSnaps) {
-  SetGridSize(8);
-  scoped_ptr<aura::Window> target(CreateWindow(HTCAPTION));
-  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                       target.get());
-  generator.PressLeftButton();
-  generator.MoveMouseTo(generator.current_location().Add(gfx::Point(11, 21)));
-
-  // Execute any scheduled draws so that pending mouse events are processed.
-  RunAllPendingInMessageLoop();
-
-  EXPECT_EQ(11, target->bounds().x());
-  EXPECT_EQ(21, target->bounds().y());
-  // We only snap moves to the grid on release.
-  generator.ReleaseLeftButton();
-  EXPECT_EQ(8, target->bounds().x());
-  EXPECT_EQ(24, target->bounds().y());
-}
-
 // Verifies that touch-gestures drag the window correctly.
 TEST_F(ToplevelWindowEventFilterTest, GestureDrag) {
-  const int kGridSize = 8;
-  SetGridSize(kGridSize);
   scoped_ptr<aura::Window> target(CreateWindow(HTCAPTION));
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                        target.get());
@@ -457,7 +413,7 @@ TEST_F(ToplevelWindowEventFilterTest, GestureDrag) {
   EXPECT_NE(old_bounds.ToString(), target->bounds().ToString());
   {
     internal::SnapSizer sizer(target.get(), location,
-        internal::SnapSizer::RIGHT_EDGE, kGridSize);
+        internal::SnapSizer::RIGHT_EDGE);
     EXPECT_EQ(sizer.target_bounds().ToString(), target->bounds().ToString());
   }
 
@@ -474,7 +430,7 @@ TEST_F(ToplevelWindowEventFilterTest, GestureDrag) {
   EXPECT_NE(old_bounds.ToString(), target->bounds().ToString());
   {
     internal::SnapSizer sizer(target.get(), location,
-        internal::SnapSizer::LEFT_EDGE, kGridSize);
+        internal::SnapSizer::LEFT_EDGE);
     EXPECT_EQ(sizer.target_bounds().ToString(), target->bounds().ToString());
   }
 

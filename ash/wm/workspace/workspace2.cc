@@ -51,10 +51,6 @@ aura::Window* Workspace2::ReleaseWindow() {
   return window;
 }
 
-void Workspace2::SetGridSize(int grid_size) {
-  event_filter_->set_grid_size(grid_size);
-}
-
 bool Workspace2::ShouldMoveToPending() const {
   if (!is_maximized_)
     return false;

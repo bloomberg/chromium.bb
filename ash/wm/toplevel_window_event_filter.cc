@@ -96,8 +96,7 @@ void ToplevelWindowEventFilter::ScopedWindowResizer::OnWindowDestroying(
 
 ToplevelWindowEventFilter::ToplevelWindowEventFilter(aura::Window* owner)
     : in_move_loop_(false),
-      in_gesture_resize_(false),
-      grid_size_(0) {
+      in_gesture_resize_(false) {
   aura::client::SetWindowMoveClient(owner, this);
 }
 
@@ -231,8 +230,7 @@ ui::EventResult ToplevelWindowEventFilter::PreHandleGestureEvent(
         internal::SnapSizer sizer(target,
             gfx::Point(),
             event->details().velocity_x() < 0 ? internal::SnapSizer::LEFT_EDGE :
-            internal::SnapSizer::RIGHT_EDGE,
-            Shell::GetInstance()->GetGridSize());
+            internal::SnapSizer::RIGHT_EDGE);
 
         ui::ScopedLayerAnimationSettings scoped_setter(
             target->layer()->GetAnimator());

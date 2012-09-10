@@ -41,8 +41,6 @@ class WorkspaceEventFilterTest : public test::AshTestBase {
 };
 
 TEST_F(WorkspaceEventFilterTest, DoubleClickSingleAxisResizeEdge) {
-  Shell::TestApi(Shell::GetInstance()).workspace_controller()->SetGridSize(0);
-
   // Double clicking the vertical resize edge of a window should maximize it
   // vertically.
   gfx::Rect restored_bounds(10, 10, 50, 50);

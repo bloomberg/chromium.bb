@@ -10,6 +10,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace/workspace_window_resizer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/client/aura_constants.h"
@@ -170,7 +171,7 @@ TEST_F(BaseLayoutManagerTest, BoundsWithScreenEdgeVisible) {
   // Restore it.
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
   // It should have the default maximized window bounds, inset by the grid size.
-  int grid_size = ash::Shell::GetInstance()->GetGridSize();
+  int grid_size = internal::WorkspaceWindowResizer::kScreenEdgeInset;
   gfx::Rect max_bounds =
       ash::ScreenAsh::GetMaximizedWindowBoundsInParent(window.get());
   max_bounds.Inset(grid_size, grid_size);

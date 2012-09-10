@@ -59,8 +59,6 @@ class ASH_EXPORT WorkspaceManager : public BaseWorkspaceManager {
 
   // BaseWorkspaceManager overrides:
   virtual bool IsInMaximizedMode() const OVERRIDE;
-  virtual void SetGridSize(int size) OVERRIDE;
-  virtual int GetGridSize() const OVERRIDE;
   virtual WorkspaceWindowState GetWindowState() const OVERRIDE;
   virtual void SetShelf(ShelfLayoutManager* shelf) OVERRIDE;
   virtual void SetActiveWorkspaceByWindow(aura::Window* window) OVERRIDE;
