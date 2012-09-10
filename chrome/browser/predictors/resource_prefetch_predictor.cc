@@ -569,15 +569,14 @@ void ResourcePrefetchPredictor::OnHistoryAndCacheLoaded() {
 }
 
 bool ResourcePrefetchPredictor::ShouldTrackUrl(const GURL& url) {
-  if (url_table_cache_.find(url) != url_table_cache_.end())
-    return true;
+  bool already_tracking = url_table_cache_.find(url) != url_table_cache_.end();
 
   HistoryService* history_service = HistoryServiceFactory::GetForProfile(
       profile_, Profile::EXPLICIT_ACCESS);
   DCHECK(history_service);
   history::URLDatabase* url_db = history_service->InMemoryDatabase();
   if (!url_db)
-    return false;
+    return already_tracking;
 
   history::URLRow url_row;
   int visit_count = 0;
@@ -587,7 +586,7 @@ bool ResourcePrefetchPredictor::ShouldTrackUrl(const GURL& url) {
   UMA_HISTOGRAM_COUNTS("ResourcePrefetchPredictor.HistoryVisitCountForUrl",
                        visit_count);
 
-  return visit_count >= config_.min_url_visit_count;
+  return already_tracking || (visit_count >= config_.min_url_visit_count);
 }
 
 void ResourcePrefetchPredictor::OnNavigationComplete(
