@@ -1887,6 +1887,7 @@ binutils-configure() {
           --enable-plugins \
           --disable-werror \
           --without-gas \
+          --without-zlib \
           --with-sysroot="${NONEXISTENT_PATH}"
   # There's no point in setting the correct path as sysroot, because we
   # want the toolchain to be relocatable. The driver will use ld command-line
@@ -1923,6 +1924,7 @@ binutils-make() {
 
   RunWithLog binutils.make \
     env -i PATH="/usr/bin:/bin" \
+    ac_cv_search_zlibVersion=no \
     make ${MAKE_OPTS}
 
   ts-touch-commit "${objdir}"
