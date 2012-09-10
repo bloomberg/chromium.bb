@@ -96,6 +96,7 @@ void ProfileImplIOData::Handle::Init(
       int media_cache_max_size,
       const FilePath& extensions_cookie_path,
       const FilePath& app_path,
+      const FilePath& infinite_cache_path,
       chrome_browser_net::Predictor* predictor,
       PrefService* local_state,
       IOThread* io_thread,
@@ -114,6 +115,7 @@ void ProfileImplIOData::Handle::Init(
   lazy_params->media_cache_path = media_cache_path;
   lazy_params->media_cache_max_size = media_cache_max_size;
   lazy_params->extensions_cookie_path = extensions_cookie_path;
+  lazy_params->infinite_cache_path = infinite_cache_path;
   lazy_params->restore_old_session_cookies = restore_old_session_cookies;
   lazy_params->special_storage_policy = special_storage_policy;
 
@@ -416,6 +418,7 @@ void ProfileImplIOData::LazyInitializeInternal(
   PopulateNetworkSessionParams(profile_params, &network_session_params);
   net::HttpCache* main_cache = new net::HttpCache(
       network_session_params, main_backend);
+  main_cache->InitializeInfiniteCache(lazy_params_->infinite_cache_path);
 
   if (record_mode || playback_mode) {
     main_cache->set_mode(

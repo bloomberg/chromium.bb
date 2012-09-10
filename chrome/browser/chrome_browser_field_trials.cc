@@ -128,6 +128,7 @@ void ChromeBrowserFieldTrials::SetupFieldTrials(bool proxy_policy_is_set) {
   DisableNewTabFieldTrialIfNecesssary();
   SetUpSafeBrowsingInterstitialFieldTrial();
   SetUpChannelIDFieldTrial();
+  SetUpInfiniteCacheFieldTrial();
 }
 
 // This is an A/B test for the maximum number of persistent connections per
@@ -558,4 +559,21 @@ void ChromeBrowserFieldTrials::SetUpChannelIDFieldTrial() {
     if (trial->group() == enable_group)
       net::SSLConfigService::EnableChannelIDTrial();
   }
+}
+
+void ChromeBrowserFieldTrials::SetUpInfiniteCacheFieldTrial() {
+  const base::FieldTrial::Probability kDivisor = 100;
+
+#if (defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_IOS))
+  const base::FieldTrial::Probability kInfiniteCacheProbability = 0;
+#else
+  const base::FieldTrial::Probability kInfiniteCacheProbability = 1;
+#endif
+
+  scoped_refptr<base::FieldTrial> trial(
+      base::FieldTrialList::FactoryGetFieldTrial("InfiniteCache", kDivisor,
+                                                 "No", 2013, 12, 31, NULL));
+  trial->UseOneTimeRandomization();
+  trial->AppendGroup("Yes", kInfiniteCacheProbability);
+  trial->AppendGroup("Control", kInfiniteCacheProbability);
 }

@@ -45,6 +45,7 @@ class ProfileImplIOData : public ProfileIOData {
               int media_cache_max_size,
               const FilePath& extensions_cookie_path,
               const FilePath& app_path,
+              const FilePath& infinite_cache_path,
               chrome_browser_net::Predictor* predictor,
               PrefService* local_state,
               IOThread* io_thread,
@@ -123,6 +124,7 @@ class ProfileImplIOData : public ProfileIOData {
     FilePath media_cache_path;
     int media_cache_max_size;
     FilePath extensions_cookie_path;
+    FilePath infinite_cache_path;
     bool restore_old_session_cookies;
     scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy;
   };
