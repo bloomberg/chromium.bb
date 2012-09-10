@@ -372,6 +372,14 @@ void WallpaperManager::SetCustomWallpaper(const std::string& username,
   std::string wallpaper_path =
       GetOriginalWallpaperPathForUser(username).value();
 
+  // If decoded wallpaper is empty, we are probably failed to decode the file.
+  // Use default wallpaper in this case.
+  if (wallpaper.image().isNull()) {
+    ash::Shell::GetInstance()->desktop_background_controller()->
+        SetDefaultWallpaper(ash::GetDefaultWallpaperIndex(), false);
+    return;
+  }
+
   bool is_persistent = ShouldPersistDataForUser(username);
 
   BrowserThread::PostTask(
@@ -918,6 +926,36 @@ void WallpaperManager::OnWallpaperDecoded(const std::string& email,
                                           bool update_wallpaper,
                                           const UserImage& wallpaper) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // If decoded wallpaper is empty, we are probably failed to decode the file.
+  // Use default wallpaper in this case.
+  if (wallpaper.image().isNull()) {
+    bool new_wallpaper_ui_disabled = CommandLine::ForCurrentProcess()->
+        HasSwitch(switches::kDisableNewWallpaperUI);
+    // Updates user pref to default wallpaper.
+    if (!new_wallpaper_ui_disabled) {
+      WallpaperInfo info = {
+                             "",
+                             ash::CENTER_CROPPED,
+                             User::DEFAULT,
+                             base::Time::Now().LocalMidnight()
+                         };
+      SetUserWallpaperInfo(email, info, true);
+    } else {
+      SetUserWallpaperProperties(email, User::DEFAULT,
+                                 ash::GetDefaultWallpaperIndex(), true);
+    }
+
+    if (update_wallpaper) {
+      ash::Shell::GetInstance()->desktop_background_controller()->
+          SetDefaultWallpaper(ash::GetDefaultWallpaperIndex(), false);
+    } else {
+      ash::Shell::GetInstance()->desktop_background_controller()->
+          CacheDefaultWallpaper(ash::GetDefaultWallpaperIndex());
+    }
+    return;
+  }
+
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,

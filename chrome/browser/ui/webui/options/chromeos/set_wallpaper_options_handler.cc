@@ -39,7 +39,6 @@ ui::SelectFileDialog::FileTypeInfo GetUserImageFileTypeInfo() {
 
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("jpg"));
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("jpeg"));
-  file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("png"));
 
   file_type_info.extension_description_overrides.resize(1);
   file_type_info.extension_description_overrides[0] =
