@@ -10,6 +10,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/images/SkImageEncoder.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorSupport.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
@@ -138,12 +140,14 @@ Compositor::Compositor(CompositorDelegate* delegate,
     : delegate_(delegate),
       root_layer_(NULL),
       widget_(widget),
-      root_web_layer_(WebKit::WebLayer::create()),
       swap_posted_(false),
       device_scale_factor_(0.0f),
       last_started_frame_(0),
       last_ended_frame_(0),
       disable_schedule_composite_(false) {
+  WebKit::WebCompositorSupport* compositor_support =
+      WebKit::Platform::current()->compositorSupport();
+  root_web_layer_.reset(compositor_support->createLayer());
   WebKit::WebLayerTreeView::Settings settings;
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   settings.showFPSCounter =
@@ -154,8 +158,8 @@ Compositor::Compositor(CompositorDelegate* delegate,
       test_compositor_enabled ? kTestRefreshRate : kDefaultRefreshRate;
 
   root_web_layer_->setAnchorPoint(WebKit::WebFloatPoint(0.f, 0.f));
-  host_.reset(WebKit::WebLayerTreeView::create(this, *root_web_layer_,
-                                               settings));
+  host_.reset(compositor_support->createLayerTreeView(this, *root_web_layer_,
+                                                      settings));
   host_->setSurfaceReady();
 }
 
