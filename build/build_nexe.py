@@ -110,6 +110,8 @@ class Builder(object):
     self.outdir = options.objdir
 
     # Set the toolchain directories
+    print 'toolpath=' + options.toolpath
+    print 'toolname=' + self.toolname
     self.toolchain = os.path.join(options.toolpath, self.toolname)
     self.toolbin = os.path.join(self.toolchain, tool_subdir, 'bin')
 
@@ -206,6 +208,10 @@ class Builder(object):
     options = ArgToList(options)
     if self.toolname in ['glibc', 'newlib'] and self.mainarch == 'x86':
       options += ['-B' + self.toollib]
+    if self.outtype == 'nso':
+      options += ['-Wl,-rpath-link,' + name for name in self.lib_paths]
+      options += ['-shared']
+      options += ['-Wl,-soname,' + os.path.basename(self.name)]
     self.link_options = options + ['-L' + name for name in self.lib_paths]
 
   def BuildArchiveOptions(self):
@@ -352,7 +358,7 @@ class Builder(object):
 
     Link or Archive the final output file, from the compiled sources.
     """
-    if self.outtype == 'nexe':
+    if self.outtype in ['nexe', 'nso']:
       out = self.Link(srcs)
       if self.strip_debug:
         self.Strip(out)
@@ -407,6 +413,7 @@ def Main(argv):
     return 1
 
   options.verbose = True
+  print ' '.join(argv)
   if options.source_list:
     source_list_handle = open(options.source_list, 'r')
     source_list = source_list_handle.read().splitlines()

@@ -33,6 +33,7 @@
           'type': 'none',
           'variables': {
             'nlib_target': 'libweak_ref.a',
+            'nso_target': 'libweak_ref.so',
             'build_glibc': 1,
             'build_newlib': 1,
             'sources': ['weak_ref.cc'],

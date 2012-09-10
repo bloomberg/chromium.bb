@@ -25,6 +25,7 @@
         '../src/untrusted/nosys/nosys.gyp:*',
         '../src/untrusted/pthread/pthread.gyp:*',
         '../tests/sel_main_chrome/sel_main_chrome.gyp:*',
+        'nacl_core_sdk.gyp:*',
       ],
       'conditions': [
         # No tests on ARM yet.
