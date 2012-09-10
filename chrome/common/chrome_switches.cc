@@ -1159,7 +1159,7 @@ const char kSavePageAsMHTML[] = "save-page-as-mhtml";
 
 // URL prefix used by safebrowsing to fetch hash, download data and report
 // malware.
-const char kSbURLPrefix[] = "safebrowsing-url-preqfix";
+const char kSbURLPrefix[] = "safebrowsing-url-prefix";
 
 // If present, safebrowsing only performs update when
 // SafeBrowsingProtocolManager::ForceScheduleNextUpdate() is explicitly called.
@@ -1540,10 +1540,6 @@ const char kRelaunchShortcut[]               = "relaunch-shortcut";
 // Waits for the given handle to be signaled before relaunching metro Chrome on
 // Windows 8 and higher.
 const char kWaitForMutex[]                  = "wait-for-mutex";
-
-// Waits for the given handle to be signaled before relaunching metro Chrome on
-// Windows 8 and higher.
-const char kWaitForHandle[]                  = "wait-for-handle";
 #endif
 
 #if defined(USE_AURA)
