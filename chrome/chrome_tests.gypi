@@ -1325,8 +1325,6 @@
         'browser/google/google_update_settings_unittest.cc',
         'browser/google/google_url_tracker_unittest.cc',
         'browser/google/google_util_unittest.cc',
-        'browser/gpu_blacklist_unittest.cc',
-        'browser/gpu_util_unittest.cc',
         'browser/history/android/android_cache_database_unittest.cc',
         'browser/history/android/android_history_provider_service_unittest.cc',
         'browser/history/android/android_history_types_unittest.cc',

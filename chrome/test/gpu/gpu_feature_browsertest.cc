@@ -8,7 +8,6 @@
 #include "base/path_service.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/version.h"
-#include "chrome/browser/gpu_blacklist.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -18,6 +17,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/gpu_info.h"
 #include "content/test/gpu/gpu_test_config.h"
 #include "content/test/gpu/test_switches.h"
 #include "net/base/net_util.h"
@@ -67,10 +67,9 @@ class GpuFeatureTest : public InProcessBrowserTest {
   }
 
   void SetupBlacklist(const std::string& json_blacklist) {
-    GpuBlacklist* blacklist = GpuBlacklist::GetInstance();
-    ASSERT_TRUE(blacklist->LoadGpuBlacklist(
-        json_blacklist, GpuBlacklist::kAllOs));
-    blacklist->UpdateGpuDataManager();
+    content::GPUInfo gpu_info;
+    GpuDataManager::GetInstance()->Initialize(
+        "0", json_blacklist, gpu_info);
   }
 
   // If expected_reply is NULL, we don't check the reply content.

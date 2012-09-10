@@ -69,8 +69,9 @@ TEST_F(GpuDataManagerImplTest, GpuSideBlacklisting) {
   EXPECT_EQ(0, manager->GetBlacklistedFeatures());
   EXPECT_TRUE(manager->GpuAccessAllowed());
 
-  manager->SetPreliminaryBlacklistedFeatures(
+  manager->UpdateBlacklistedFeatures(
       content::GPU_FEATURE_TYPE_WEBGL);
+  manager->UpdatePreliminaryBlacklistedFeatures();
   EXPECT_TRUE(manager->GpuAccessAllowed());
   EXPECT_EQ(content::GPU_FEATURE_TYPE_WEBGL,
             manager->GetBlacklistedFeatures());

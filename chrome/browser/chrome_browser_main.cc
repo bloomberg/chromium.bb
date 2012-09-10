@@ -34,6 +34,7 @@
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
+#include "chrome/browser/chrome_gpu_util.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_protocols.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -41,7 +42,6 @@
 #include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/browser/google/google_search_counter.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/gpu_blacklist.h"
 #include "chrome/browser/jankometer.h"
 #include "chrome/browser/language_usage_metrics.h"
 #include "chrome/browser/managed_mode.h"
@@ -394,25 +394,6 @@ Profile* CreateProfile(const content::MainFunctionParams& parameters,
 #endif
 
   return NULL;
-}
-
-// Load GPU Blacklist, collect preliminary gpu info, and compute preliminary
-// gpu feature flags.
-void InitializeGpuDataManager(const CommandLine& parsed_command_line) {
-  content::GpuDataManager::GetInstance()->InitializeGpuInfo();
-  if (parsed_command_line.HasSwitch(switches::kSkipGpuDataLoading) ||
-      parsed_command_line.HasSwitch(switches::kIgnoreGpuBlacklist)) {
-    return;
-  }
-
-  const base::StringPiece gpu_blacklist_json(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_GPU_BLACKLIST, ui::SCALE_FACTOR_NONE));
-  GpuBlacklist* gpu_blacklist = GpuBlacklist::GetInstance();
-  bool succeed = gpu_blacklist->LoadGpuBlacklist(
-      gpu_blacklist_json.as_string(), GpuBlacklist::kCurrentOsOnly);
-  DCHECK(succeed);
-  gpu_blacklist->UpdateGpuDataManager();
 }
 
 #if defined(OS_MACOSX)
@@ -1333,8 +1314,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   CloudPrintProxyServiceFactory::GetForProfile(profile_);
 #endif
 
-  // Load GPU Blacklist.
-  InitializeGpuDataManager(parsed_command_line());
+  // Load GPU Blacklist; load preliminary GPU info.
+  gpu_util::InitializeGpuDataManager(parsed_command_line());
 
   // Start watching all browser threads for responsiveness.
   ThreadWatcherList::StartWatchingAll(parsed_command_line());
