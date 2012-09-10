@@ -60,7 +60,7 @@ class ScreenshotSource : public ChromeURLDataManager::DataSource {
                            int request_id,
                            const FilePath& file);
 
-  // The callback for GData's getting file method.
+  // The callback for Drive's getting file method.
   void GetSavedScreenshotCallback(const std::string& screenshot_path,
                                   int request_id,
                                   gdata::DriveFileError error,

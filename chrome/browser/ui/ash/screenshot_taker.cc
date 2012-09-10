@@ -129,7 +129,7 @@ void SaveScreenshot(const FilePath& screenshot_path,
 
 // TODO(kinaba): crbug.com/140425, remove this ungly #ifdef dispatch.
 #ifdef OS_CHROMEOS
-void SaveScreenshotToGData(scoped_refptr<base::RefCountedBytes> png_data,
+void SaveScreenshotToDrive(scoped_refptr<base::RefCountedBytes> png_data,
                            gdata::DriveFileError error,
                            const FilePath& local_path) {
   if (error != gdata::DRIVE_FILE_OK) {
@@ -147,7 +147,7 @@ void PostSaveScreenshotTask(const FilePath& screenshot_path,
       gdata::util::PrepareWritableFileAndRun(
           profile,
           screenshot_path,
-          base::Bind(&SaveScreenshotToGData, png_data));
+          base::Bind(&SaveScreenshotToDrive, png_data));
     }
   } else {
     content::BrowserThread::PostTask(

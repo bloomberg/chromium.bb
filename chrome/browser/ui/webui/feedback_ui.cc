@@ -114,7 +114,7 @@ std::string GetUserEmail() {
     return manager->GetLoggedInUser().display_email();
 }
 
-bool ScreenshotGDataTimestampComp(const gdata::DriveEntryProto& entry1,
+bool ScreenshotDriveTimestampComp(const gdata::DriveEntryProto& entry1,
                                   const gdata::DriveEntryProto& entry2) {
   return entry1.file_info().last_modified() >
       entry2.file_info().last_modified();
@@ -145,7 +145,7 @@ void ReadDirectoryCallback(size_t max_saved,
   std::partial_sort(screenshot_entries.begin(),
                     screenshot_entries.begin() + sort_size,
                     screenshot_entries.end(),
-                    ScreenshotGDataTimestampComp);
+                    ScreenshotDriveTimestampComp);
   for (size_t i = 0; i < sort_size; ++i) {
     const gdata::DriveEntryProto& entry = screenshot_entries[i];
     saved_screenshots->push_back(
@@ -265,7 +265,7 @@ class FeedbackHandler : public WebUIMessageHandler,
   void HandleRefreshSavedScreenshots(const ListValue* args);
   void RefreshSavedScreenshotsCallback(
       std::vector<std::string>* saved_screenshots);
-  void GetMostRecentScreenshotsGData(
+  void GetMostRecentScreenshotsDrive(
       const FilePath& filepath, std::vector<std::string>* saved_screenshots,
       size_t max_saved, base::Closure callback);
 #endif
@@ -562,7 +562,7 @@ void FeedbackHandler::HandleRefreshSavedScreenshots(const ListValue*) {
       &FeedbackHandler::RefreshSavedScreenshotsCallback,
       AsWeakPtr(), base::Owned(saved_screenshots));
   if (gdata::util::IsUnderDriveMountPoint(filepath)) {
-    GetMostRecentScreenshotsGData(
+    GetMostRecentScreenshotsDrive(
         filepath, saved_screenshots, kMaxSavedScreenshots, refresh_callback);
   } else {
     BrowserThread::PostTaskAndReply(
@@ -581,7 +581,7 @@ void FeedbackHandler::RefreshSavedScreenshotsCallback(
   web_ui()->CallJavascriptFunction("setupSavedScreenshots", screenshots_list);
 }
 
-void FeedbackHandler::GetMostRecentScreenshotsGData(
+void FeedbackHandler::GetMostRecentScreenshotsDrive(
     const FilePath& filepath, std::vector<std::string>* saved_screenshots,
     size_t max_saved, base::Closure callback) {
   gdata::DriveFileSystemInterface* file_system =

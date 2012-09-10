@@ -320,7 +320,7 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
 #endif
 
 #if defined(OS_CHROMEOS)
-  // If there's a GData upload associated with this download, we wait until that
+  // If there's a Drive upload associated with this download, we wait until that
   // is complete before allowing the download item to complete.
   if (!gdata::DriveDownloadObserver::IsReadyToComplete(
         item, internal_complete_callback))

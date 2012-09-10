@@ -400,7 +400,7 @@ class GetSizeStatsFunction : public FileBrowserFunction {
   // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
   void GetLocalPathsResponseOnUIThread(const SelectedFileInfoList& files);
 
-  void GetGDataAvailableSpaceCallback(gdata::DriveFileError error,
+  void GetDriveAvailableSpaceCallback(gdata::DriveFileError error,
                                       int64 bytes_total,
                                       int64 bytes_used);
 
@@ -470,14 +470,14 @@ class FileDialogStringsFunction : public SyncExtensionFunction {
 // same length as the input list of file URLs.  If a particular file has an
 // error, then return a dictionary with the key "error" set to the error number
 // (gdata::DriveFileError) for that entry in the returned list.
-class GetGDataFilePropertiesFunction : public FileBrowserFunction {
+class GetDriveFilePropertiesFunction : public FileBrowserFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getGDataFileProperties");
 
-  GetGDataFilePropertiesFunction();
+  GetDriveFilePropertiesFunction();
 
  protected:
-  virtual ~GetGDataFilePropertiesFunction();
+  virtual ~GetDriveFilePropertiesFunction();
 
   void GetNextFileProperties();
   void CompleteGetFileProperties();
@@ -520,14 +520,14 @@ class GetGDataFilePropertiesFunction : public FileBrowserFunction {
 // has an error, then return a dictionary with the key "error" set to
 // the error number (gdata::DriveFileError) for that entry in the
 // returned list.
-class PinGDataFileFunction : public GetGDataFilePropertiesFunction {
+class PinDriveFileFunction : public GetDriveFilePropertiesFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.pinGDataFile");
 
-  PinGDataFileFunction();
+  PinDriveFileFunction();
 
  protected:
-  virtual ~PinGDataFileFunction();
+  virtual ~PinDriveFileFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -577,17 +577,17 @@ class GetFileLocationsFunction : public FileBrowserFunction {
 // This function puts empty strings instead of local paths for files could
 // not be obtained. For instance, this can happen if the user specifies a new
 // file name to save a file on gdata. There may be other reasons to fail. The
-// file manager should check if the local paths returned from getGDataFiles()
+// file manager should check if the local paths returned from getDriveFiles()
 // contain empty paths.
 // TODO(satorux): Should we propagate error types to the JavasScript layer?
-class GetGDataFilesFunction : public FileBrowserFunction {
+class GetDriveFilesFunction : public FileBrowserFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getGDataFiles");
 
-  GetGDataFilesFunction();
+  GetDriveFilesFunction();
 
  protected:
-  virtual ~GetGDataFilesFunction();
+  virtual ~GetDriveFilesFunction();
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -597,18 +597,18 @@ class GetGDataFilesFunction : public FileBrowserFunction {
   // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
   void GetLocalPathsResponseOnUIThread(const SelectedFileInfoList& files);
 
-  // Gets the file on the top of the |remaining_gdata_paths_| or sends the
+  // Gets the file on the top of the |remaining_drive_paths_| or sends the
   // response if the queue is empty.
   void GetFileOrSendResponse();
 
   // Called by DriveFileSystem::GetFile(). Pops the file from
-  // |remaining_gdata_paths_|, and calls GetFileOrSendResponse().
+  // |remaining_drive_paths_|, and calls GetFileOrSendResponse().
   void OnFileReady(gdata::DriveFileError error,
                    const FilePath& local_path,
                    const std::string& unused_mime_type,
                    gdata::DriveFileType file_type);
 
-  std::queue<FilePath> remaining_gdata_paths_;
+  std::queue<FilePath> remaining_drive_paths_;
   ListValue* local_paths_;
 };
 
@@ -668,23 +668,23 @@ class TransferFileFunction : public FileBrowserFunction {
 };
 
 // Read setting value.
-class GetGDataPreferencesFunction : public SyncExtensionFunction {
+class GetDrivePreferencesFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getGDataPreferences");
 
  protected:
-  virtual ~GetGDataPreferencesFunction() {}
+  virtual ~GetDrivePreferencesFunction() {}
 
   virtual bool RunImpl() OVERRIDE;
 };
 
 // Write setting value.
-class SetGDataPreferencesFunction : public SyncExtensionFunction {
+class SetDrivePreferencesFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.setGDataPreferences");
 
  protected:
-  virtual ~SetGDataPreferencesFunction() {}
+  virtual ~SetDrivePreferencesFunction() {}
 
   virtual bool RunImpl() OVERRIDE;
 };

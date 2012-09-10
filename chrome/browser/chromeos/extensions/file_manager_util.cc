@@ -230,7 +230,7 @@ void ShowWarningMessageBox(Profile* profile, const FilePath& path) {
 
 // Called when a file on Drive was found. Opens the file found at |file_path|
 // in a new tab with a URL computed based on the |file_type|
-void OnGDataFileFound(Profile* profile,
+void OnDriveFileFound(Profile* profile,
                       const FilePath& file_path,
                       gdata::DriveFileType file_type,
                       gdata::DriveFileError error,
@@ -644,7 +644,7 @@ bool ExecuteBuiltinHandler(Browser* browser, const FilePath& path,
       // Open the file once the file is found.
       system_service->file_system()->GetEntryInfoByPath(
           gdata::util::ExtractDrivePath(path),
-          base::Bind(&OnGDataFileFound, profile, path, gdata::REGULAR_FILE));
+          base::Bind(&OnDriveFileFound, profile, path, gdata::REGULAR_FILE));
       return true;
     }
     OpenNewTab(page_url, NULL);
@@ -661,7 +661,7 @@ bool ExecuteBuiltinHandler(Browser* browser, const FilePath& path,
 
       system_service->file_system()->GetEntryInfoByPath(
           gdata::util::ExtractDrivePath(path),
-          base::Bind(&OnGDataFileFound, profile, path,
+          base::Bind(&OnDriveFileFound, profile, path,
                      gdata::HOSTED_DOCUMENT));
     } else {
       // The file is local (downloaded from an attachment or otherwise copied).
