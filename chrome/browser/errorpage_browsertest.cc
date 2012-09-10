@@ -140,8 +140,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_GoBack1) {
 #endif
 // Test that a DNS error occuring in the main frame does not result in an
 // additional session history entry.
-// Disabled:  http://crbug.com/136310
-IN_PROC_BROWSER_TEST_F(ErrorPageTest, DISABLED_DNSError_GoBack2) {
+IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_GoBack2) {
   NavigateToFileURL(FILE_PATH_LITERAL("title2.html"));
 
   NavigateToURLAndWaitForTitle(GetDnsErrorURL(), "Mock Link Doctor", 2);
@@ -159,8 +158,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DISABLED_DNSError_GoBack2) {
 #endif
 // Test that a DNS error occuring in the main frame does not result in an
 // additional session history entry.
-// Disabled:  http://crbug.com/136310
-IN_PROC_BROWSER_TEST_F(ErrorPageTest, DISABLED_DNSError_GoBack2AndForward) {
+IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_GoBack2AndForward) {
   NavigateToFileURL(FILE_PATH_LITERAL("title2.html"));
 
   NavigateToURLAndWaitForTitle(GetDnsErrorURL(), "Mock Link Doctor", 2);
@@ -180,8 +178,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DISABLED_DNSError_GoBack2AndForward) {
 #endif
 // Test that a DNS error occuring in the main frame does not result in an
 // additional session history entry.
-// Disabled:  http://crbug.com/136310
-IN_PROC_BROWSER_TEST_F(ErrorPageTest, DISABLED_DNSError_GoBack2Forward2) {
+IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_GoBack2Forward2) {
   NavigateToFileURL(FILE_PATH_LITERAL("title3.html"));
 
   NavigateToURLAndWaitForTitle(GetDnsErrorURL(), "Mock Link Doctor", 2);
