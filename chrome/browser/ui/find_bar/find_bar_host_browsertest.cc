@@ -63,6 +63,7 @@ const std::string kPrematureEnd = "premature_end.html";
 const std::string kMoveIfOver = "move_if_obscuring.html";
 const std::string kBitstackCrash = "crash_14491.html";
 const std::string kSelectChangesOrdinal = "select_changes_ordinal.html";
+const std::string kStartAfterSelection = "start_after_selection.html";
 const std::string kSimple = "simple.html";
 const std::string kLinkPage = "link.html";
 
@@ -593,6 +594,40 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 
   // End the find session.
   tab->find_tab_helper()->StopFinding(FindBarController::kKeepSelectionOnPage);
+}
+
+// This tests that we start searching after selected text.
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
+                       StartSearchAfterSelection) {
+  // First we navigate to our test content.
+  ui_test_utils::NavigateToURL(browser(), GetURL(kStartAfterSelection));
+
+  TabContents* tab = chrome::GetActiveTabContents(browser());
+  ASSERT_TRUE(tab != NULL);
+  int ordinal = 0;
+
+  // Move the selection to the text span.
+  std::string result;
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
+      tab->web_contents()->GetRenderViewHost(),
+      std::wstring(),
+      L"window.domAutomationController.send(selectSpan());",
+      &result));
+
+  // Do a find-next after the selection. This should select the 2nd occurrence
+  // of the word 'find'.
+  EXPECT_EQ(4, FindInPageWchar(tab, L"fi", kFwd, kIgnoreCase, &ordinal));
+  EXPECT_EQ(2, ordinal);
+
+  // Refine the search, current active match should not change.
+  EXPECT_EQ(4, FindInPageWchar(tab, L"find", kFwd, kIgnoreCase, &ordinal));
+  EXPECT_EQ(2, ordinal);
+
+  // Refine the search to 'findMe'. The first new match is before the current
+  // active match, the second one is after it. This verifies that refining a
+  // search doesn't reset it.
+  EXPECT_EQ(2, FindInPageWchar(tab, L"findMe", kFwd, kIgnoreCase, &ordinal));
+  EXPECT_EQ(2, ordinal);
 }
 
 // This test loads a page with frames and makes sure the ordinal returned makes
