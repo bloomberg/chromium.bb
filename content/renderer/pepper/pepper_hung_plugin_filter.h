@@ -60,8 +60,9 @@ class PepperHungPluginFilter
   void MayHaveBecomeUnhung();
 
   // Checks if the plugin is considered hung based on whether it has been
-  // blocked for long enough.
-  bool IsHung() const;
+  // blocked for long enough. The current time is passed in so that the deltas
+  // can be synchronized with the caller's computations.
+  bool IsHung(base::TimeTicks now) const;
 
   // Timer handler that checks for a hang after a timeout.
   void OnHangTimer();

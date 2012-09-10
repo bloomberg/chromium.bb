@@ -88,20 +88,18 @@ void PepperHungPluginFilter::EnsureTimerScheduled() {
 }
 
 void PepperHungPluginFilter::MayHaveBecomeUnhung() {
-  if (!hung_plugin_showing_ || IsHung())
+  if (!hung_plugin_showing_ || IsHung(base::TimeTicks::Now()))
     return;
 
   SendHungMessage(false);
   hung_plugin_showing_ = false;
 }
 
-bool PepperHungPluginFilter::IsHung() const {
+bool PepperHungPluginFilter::IsHung(base::TimeTicks now) const {
   lock_.AssertAcquired();
 
   if (!pending_sync_message_count_)
     return false;  // Not blocked on a sync message.
-
-  base::TimeTicks now = base::TimeTicks::Now();
 
   DCHECK(!began_blocking_time_.is_null());
   if (now - began_blocking_time_ >=
@@ -123,16 +121,41 @@ void PepperHungPluginFilter::OnHangTimer() {
   base::AutoLock lock(lock_);
   timer_task_pending_ = false;
 
-  if (!IsHung()) {
+  // Save this up front so all deltas computed below will agree on "now."
+  base::TimeTicks now = base::TimeTicks::Now();
+
+  if (!IsHung(now)) {
     if (pending_sync_message_count_ > 0) {
       // Got a timer message while we're waiting on a sync message. We need
       // to schedule another timer message because the latest sync message
       // would not have scheduled one (we only have one out-standing timer at
       // a time).
       DCHECK(!began_blocking_time_.is_null());
+      base::TimeDelta time_blocked = now - began_blocking_time_;
+
+      // This is the delay we're considered hung since we first started
+      // blocking.
       base::TimeDelta delay =
-          base::TimeDelta::FromSeconds(kHungThresholdSec) -
-          (base::TimeTicks::Now() - began_blocking_time_);
+          base::TimeDelta::FromSeconds(kHungThresholdSec) - time_blocked;
+
+      // If another message was received from the plugin since we first started
+      // blocking, but we haven't hit the "hard" threshold yet, we won't be
+      // considered hung even though we're beyond the "regular" hung threshold.
+      // In this case, schedule a timer at the hard threshold.
+      if (delay <= base::TimeDelta()) {
+        delay = base::TimeDelta::FromSeconds(kBlockedHardThresholdSec) -
+            time_blocked;
+      }
+
+      // If the delay is negative or zero, another timer task will be
+      // immediately posted, and if the condition persists we could end up
+      // spinning on hang timers and not getting any work done, causing our
+      // own "kind of" hang (although the message loop is running little work
+      // will be getting done) in the renderer! If the timings or logic are
+      // off, we'd prefer to get a crash dump and know about it.
+      CHECK(delay <= base::TimeDelta());
+
+      timer_task_pending_ = false;
       io_loop_->PostDelayedTask(FROM_HERE,
           base::Bind(&PepperHungPluginFilter::OnHangTimer, this),
           delay);
