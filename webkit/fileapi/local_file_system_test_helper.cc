@@ -177,7 +177,8 @@ LocalFileSystemOperation* LocalFileSystemTestOriginHelper::NewOperation() {
   scoped_ptr<FileSystemOperationContext> operation_context(
       NewOperationContext());
   LocalFileSystemOperation* operation = static_cast<LocalFileSystemOperation*>(
-      file_system_context_->CreateFileSystemOperation(CreateURL(FilePath())));
+      file_system_context_->CreateFileSystemOperation(
+          CreateURL(FilePath()), NULL));
   operation->set_override_file_util(file_util_);
   return operation;
 }

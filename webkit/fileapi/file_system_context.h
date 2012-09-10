@@ -50,7 +50,7 @@ class FILEAPI_EXPORT FileSystemContext
                                         DefaultContextDeleter> {
  public:
   // task_runners->file_task_runner() is used as default TaskRunner.
-  // Unless a MountPointProvired is override in CreateFileSystemOperation,
+  // Unless a MountPointProvider is overridden in CreateFileSystemOperation,
   // it is used for all file operations and file related meta operations.
   // The code assumes that
   // task_runners->file_task_runner()->RunsTasksOnCurrentThread()
@@ -129,7 +129,9 @@ class FILEAPI_EXPORT FileSystemContext
   // and calling the provider's corresponding CreateFileSystemOperation method.
   // The resolved MountPointProvider could perform further specialization
   // depending on the filesystem type pointed by the |url|.
-  FileSystemOperation* CreateFileSystemOperation(const FileSystemURL& url);
+  FileSystemOperation* CreateFileSystemOperation(
+      const FileSystemURL& url,
+      base::PlatformFileError* error_code);
 
   // Creates new FileStreamReader instance to read a file pointed by the given
   // filesystem URL |url| starting from |offset|.

@@ -52,7 +52,7 @@ class FILEAPI_EXPORT_PRIVATE FileSystemDirURLRequestJob
   void DidReadDirectory(base::PlatformFileError result,
                         const std::vector<base::FileUtilProxy::Entry>& entries,
                         bool has_more);
-  FileSystemOperation* GetNewOperation();
+  FileSystemOperation* GetNewOperation(base::PlatformFileError* error_code);
 
   std::string data_;
   FileSystemURL url_;

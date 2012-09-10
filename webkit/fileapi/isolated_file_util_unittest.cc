@@ -304,7 +304,11 @@ TEST_F(IsolatedFileUtilTest, UnregisteredPathsTest) {
     ASSERT_FALSE(url.is_valid());
 
     // We should not be able to create a new operation for an invalid URL.
-    ASSERT_EQ(NULL, file_system_context()->CreateFileSystemOperation(url));
+    base::PlatformFileError error_code;
+    FileSystemOperation* operation =
+        file_system_context()->CreateFileSystemOperation(url, &error_code);
+    ASSERT_EQ(NULL, operation);
+    ASSERT_EQ(base::PLATFORM_FILE_ERROR_INVALID_URL, error_code);
   }
 }
 

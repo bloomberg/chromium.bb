@@ -722,7 +722,8 @@ class HTML5FileWriter {
   }
 
   fileapi::FileSystemOperation* operation() {
-    return fs_->CreateFileSystemOperation(fileapi::FileSystemURL(GURL(root_)));
+    return fs_->CreateFileSystemOperation(
+        fileapi::FileSystemURL(GURL(root_)), NULL);
   }
 
   void CreateFile() {
