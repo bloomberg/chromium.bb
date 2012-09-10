@@ -233,7 +233,7 @@ TEST_F(DeviceSettingsServiceTest, StoreFailure) {
 
   device_settings_test_helper_.set_store_result(false);
   device_settings_service_.Store(
-      policy_.GetBlob(),
+      policy_.GetCopy(),
       base::Bind(&DeviceSettingsServiceTest::SetOperationCompleted,
                  base::Unretained(this)));
   device_settings_test_helper_.Flush();
@@ -251,7 +251,7 @@ TEST_F(DeviceSettingsServiceTest, StoreSuccess) {
 
   owner_key_util_->SetPublicKeyFromPrivateKey(policy_.signing_key());
   device_settings_service_.Store(
-      policy_.GetBlob(),
+      policy_.GetCopy(),
       base::Bind(&DeviceSettingsServiceTest::SetOperationCompleted,
                  base::Unretained(this)));
   device_settings_test_helper_.Flush();
@@ -272,7 +272,7 @@ TEST_F(DeviceSettingsServiceTest, StoreRotation) {
       set_device_policy_refresh_rate(300);
   policy_.set_new_signing_key(policy::PolicyBuilder::CreateTestNewSigningKey());
   policy_.Build();
-  device_settings_service_.Store(policy_.GetBlob(), base::Closure());
+  device_settings_service_.Store(policy_.GetCopy(), base::Closure());
   device_settings_test_helper_.FlushStore();
   owner_key_util_->SetPublicKeyFromPrivateKey(policy_.new_signing_key());
   device_settings_service_.OwnerKeySet(true);
@@ -362,7 +362,7 @@ TEST_F(DeviceSettingsServiceTest, Observer) {
 
   EXPECT_CALL(observer_, OwnershipStatusChanged()).Times(0);
   EXPECT_CALL(observer_, DeviceSettingsUpdated()).Times(1);
-  device_settings_service_.Store(policy_.GetBlob(), base::Closure());
+  device_settings_service_.Store(policy_.GetCopy(), base::Closure());
   device_settings_test_helper_.Flush();
   Mock::VerifyAndClearExpectations(&observer_);
 

@@ -132,7 +132,7 @@ class CloudPolicyClient {
   bool is_registered() const { return !dm_token_.empty(); }
 
   // The policy response as obtained by the last request to the cloud. This
-  // policy blob hasn't gone through verification, so it's contents cannot be
+  // policy blob hasn't gone through verification, so its contents cannot be
   // trusted. Use CloudPolicyStore::policy() and CloudPolicyStore::policy_map()
   // instead for making policy decisions.
   const enterprise_management::PolicyFetchResponse* policy() const {

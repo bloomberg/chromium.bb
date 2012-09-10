@@ -208,7 +208,7 @@ TEST_F(SessionManagerOperationTest, StoreSettings) {
   StoreSettingsOperation op(
       base::Bind(&SessionManagerOperationTest::OnOperationCompleted,
                  base::Unretained(this)),
-      policy_.GetBlob());
+      policy_.GetCopy());
 
   EXPECT_CALL(*this,
               OnOperationCompleted(

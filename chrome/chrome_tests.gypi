@@ -1463,6 +1463,7 @@
         'browser/policy/configuration_policy_provider_test.cc',
         'browser/policy/configuration_policy_provider_test.h',
         'browser/policy/cros_user_policy_cache_unittest.cc',
+        'browser/policy/device_cloud_policy_store_chromeos_unittest.cc',
         'browser/policy/device_management_service_unittest.cc',
         'browser/policy/device_policy_cache_unittest.cc',
         'browser/policy/device_status_collector_unittest.cc',

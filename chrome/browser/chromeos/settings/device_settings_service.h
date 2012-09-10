@@ -28,6 +28,7 @@ class RSAPrivateKey;
 namespace enterprise_management {
 class ChromeDeviceSettingsProto;
 class PolicyData;
+class PolicyFetchResponse;
 }
 
 namespace chromeos {
@@ -158,7 +159,8 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
   // Stores a policy blob to session_manager. The result of the operation is
   // reported through |callback|. If successful, the updated device settings are
   // present in policy_data() and device_settings() when the callback runs.
-  void Store(const std::string& policy_blob, const base::Closure& callback);
+  void Store(scoped_ptr<enterprise_management::PolicyFetchResponse> policy,
+             const base::Closure& callback);
 
   // Returns the ownership status. May return OWNERSHIP_UNKNOWN if the disk
   // hasn't been checked yet.

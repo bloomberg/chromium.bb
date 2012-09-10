@@ -96,14 +96,14 @@ void DeviceSettingsService::SignAndStore(
           username_));
 }
 
-void DeviceSettingsService::Store(const std::string& policy_blob,
+void DeviceSettingsService::Store(scoped_ptr<em::PolicyFetchResponse> policy,
                                   const base::Closure& callback) {
   Enqueue(
       new StoreSettingsOperation(
           base::Bind(&DeviceSettingsService::HandleCompletedOperation,
                      weak_factory_.GetWeakPtr(),
                      callback),
-          policy_blob));
+          policy.Pass()));
 }
 
 DeviceSettingsService::OwnershipStatus

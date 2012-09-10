@@ -186,17 +186,18 @@ void LoadSettingsOperation::Run() {
   StartLoading();
 }
 
-StoreSettingsOperation::StoreSettingsOperation(const Callback& callback,
-                                               const std::string& policy_blob)
+StoreSettingsOperation::StoreSettingsOperation(
+    const Callback& callback,
+    scoped_ptr<em::PolicyFetchResponse> policy)
     : SessionManagerOperation(callback),
-      policy_blob_(policy_blob),
+      policy_(policy.Pass()),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
 
 StoreSettingsOperation::~StoreSettingsOperation() {}
 
 void StoreSettingsOperation::Run() {
   session_manager_client()->StoreDevicePolicy(
-      policy_blob_,
+      policy_->SerializeAsString(),
       base::Bind(&StoreSettingsOperation::HandleStoreResult,
                  weak_factory_.GetWeakPtr()));
 }

@@ -36,6 +36,8 @@ class CloudPolicyStore {
     STATUS_SERIALIZE_ERROR,
     // Validation error.
     STATUS_VALIDATION_ERROR,
+    // Store cannot accept policy (e.g. non-enterprise device).
+    STATUS_BAD_STATE,
   };
 
   // Callbacks for policy store events. Most importantly, policy updates.

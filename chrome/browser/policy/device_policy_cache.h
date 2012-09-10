@@ -5,6 +5,10 @@
 #ifndef CHROME_BROWSER_POLICY_DEVICE_POLICY_CACHE_H_
 #define CHROME_BROWSER_POLICY_DEVICE_POLICY_CACHE_H_
 
+#include <string>
+
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
@@ -74,32 +78,6 @@ class DevicePolicyCache : public CloudPolicyCacheBase,
   // Checks whether a policy fetch is pending and sends out a notification if
   // that is the case.
   void CheckFetchingDone();
-
-  void DecodeDevicePolicy(
-      const enterprise_management::ChromeDeviceSettingsProto& policy,
-      PolicyMap* policies);
-
-  // Decode the various groups of policies.
-  static void DecodeLoginPolicies(
-      const enterprise_management::ChromeDeviceSettingsProto& policy,
-      PolicyMap* policies);
-  static void DecodeKioskPolicies(
-      const enterprise_management::ChromeDeviceSettingsProto& policy,
-      PolicyMap* policies,
-      EnterpriseInstallAttributes* install_attributes);
-  static void DecodeNetworkPolicies(
-      const enterprise_management::ChromeDeviceSettingsProto& policy,
-      PolicyMap* policies,
-      EnterpriseInstallAttributes* install_attributes);
-  static void DecodeReportingPolicies(
-      const enterprise_management::ChromeDeviceSettingsProto& policy,
-      PolicyMap* policies);
-  static void DecodeAutoUpdatePolicies(
-      const enterprise_management::ChromeDeviceSettingsProto& policy,
-      PolicyMap* policies);
-  static void DecodeGenericPolicies(
-      const enterprise_management::ChromeDeviceSettingsProto& policy,
-      PolicyMap* policies);
 
   CloudPolicyDataStore* data_store_;
   EnterpriseInstallAttributes* install_attributes_;

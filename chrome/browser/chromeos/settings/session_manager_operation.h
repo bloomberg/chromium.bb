@@ -14,6 +14,7 @@
 namespace enterprise_management {
 class ChromeDeviceSettingsProto;
 class PolicyData;
+class PolicyFetchResponse;
 }
 
 namespace chromeos {
@@ -139,8 +140,9 @@ class LoadSettingsOperation : public SessionManagerOperation {
 class StoreSettingsOperation : public SessionManagerOperation {
  public:
   // Creates a new store operation.
-  StoreSettingsOperation(const Callback& callback,
-                         const std::string& policy_blob);
+  StoreSettingsOperation(
+      const Callback& callback,
+      scoped_ptr<enterprise_management::PolicyFetchResponse> policy);
   virtual ~StoreSettingsOperation();
 
  protected:
@@ -151,7 +153,7 @@ class StoreSettingsOperation : public SessionManagerOperation {
   // Handles the result of the store operation and triggers the load.
   void HandleStoreResult(bool success);
 
-  std::string policy_blob_;
+  scoped_ptr<enterprise_management::PolicyFetchResponse> policy_;
 
   base::WeakPtrFactory<StoreSettingsOperation> weak_factory_;
 
