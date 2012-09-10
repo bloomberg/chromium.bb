@@ -8,6 +8,7 @@
 
 #include "CCTiledLayerImpl.h"
 
+#include "base/stringprintf.h"
 #include "CCAppendQuadsData.h"
 #include "CCCheckerboardDrawQuad.h"
 #include "CCDebugBorderDrawQuad.h"
@@ -19,8 +20,6 @@
 #include "FloatQuad.h"
 #include "GraphicsContext3D.h"
 #include "SkColor.h"
-#include "TextStream.h"
-#include <wtf/text/WTFString.h>
 
 using namespace std;
 using WebKit::WebTransformationMatrix;
@@ -75,11 +74,11 @@ CCResourceProvider::ResourceId CCTiledLayerImpl::contentsResourceId() const
     return resourceId;
 }
 
-void CCTiledLayerImpl::dumpLayerProperties(TextStream& ts, int indent) const
+void CCTiledLayerImpl::dumpLayerProperties(std::string* str, int indent) const
 {
-    CCLayerImpl::dumpLayerProperties(ts, indent);
-    writeIndent(ts, indent);
-    ts << "skipsDraw: " << (!m_tiler || m_skipsDraw) << "\n";
+    str->append(indentString(indent));
+    base::StringAppendF(str, "skipsDraw: %d\n", (!m_tiler || m_skipsDraw));
+    CCLayerImpl::dumpLayerProperties(str, indent);
 }
 
 bool CCTiledLayerImpl::hasTileAt(int i, int j) const

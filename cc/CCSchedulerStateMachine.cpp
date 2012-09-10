@@ -5,7 +5,7 @@
 #include "config.h"
 
 #include "CCSchedulerStateMachine.h"
-#include "TextStream.h"
+#include "base/stringprintf.h"
 
 
 namespace WebCore {
@@ -33,29 +33,29 @@ CCSchedulerStateMachine::CCSchedulerStateMachine()
 {
 }
 
-String CCSchedulerStateMachine::toString()
+std::string CCSchedulerStateMachine::toString()
 {
-    TextStream ts;
-    ts << "m_commitState = " << m_commitState << "; ";
-    ts << "m_currentFrameNumber = " << m_currentFrameNumber << "; ";
-    ts << "m_lastFrameNumberWhereDrawWasCalled = " << m_lastFrameNumberWhereDrawWasCalled << "; ";
-    ts << "m_consecutiveFailedDraws = " << m_consecutiveFailedDraws << "; ";
-    ts << "m_maximumNumberOfFailedDrawsBeforeDrawIsForced = " << m_maximumNumberOfFailedDrawsBeforeDrawIsForced << "; ";
-    ts << "m_needsRedraw = " << m_needsRedraw << "; ";
-    ts << "m_needsForcedRedraw = " << m_needsForcedRedraw << "; ";
-    ts << "m_needsForcedRedrawAfterNextCommit = " << m_needsForcedRedrawAfterNextCommit << "; ";
-    ts << "m_needsCommit = " << m_needsCommit << "; ";
-    ts << "m_needsForcedCommit = " << m_needsForcedCommit << "; ";
-    ts << "m_mainThreadNeedsLayerTextures = " << m_mainThreadNeedsLayerTextures << "; ";
-    ts << "m_updateMoreResourcesPending = " << m_updateMoreResourcesPending << "; ";
-    ts << "m_insideVSync = " << m_insideVSync << "; ";
-    ts << "m_visible = " << m_visible << "; ";
-    ts << "m_canBeginFrame = " << m_canBeginFrame << "; ";
-    ts << "m_canDraw = " << m_canDraw << "; ";
-    ts << "m_drawIfPossibleFailed = " << m_drawIfPossibleFailed << "; ";
-    ts << "m_textureState = " << m_textureState << "; ";
-    ts << "m_contextState = " << m_contextState << "; ";
-    return ts.release();
+    std::string str;
+    base::StringAppendF(&str, "m_commitState = %d; ", m_commitState);
+    base::StringAppendF(&str, "m_currentFrameNumber = %d; ", m_currentFrameNumber);
+    base::StringAppendF(&str, "m_lastFrameNumberWhereDrawWasCalled = %d; ", m_lastFrameNumberWhereDrawWasCalled);
+    base::StringAppendF(&str, "m_consecutiveFailedDraws = %d; ", m_consecutiveFailedDraws);
+    base::StringAppendF(&str, "m_maximumNumberOfFailedDrawsBeforeDrawIsForced = %d; ", m_maximumNumberOfFailedDrawsBeforeDrawIsForced);
+    base::StringAppendF(&str, "m_needsRedraw = %d; ", m_needsRedraw);
+    base::StringAppendF(&str, "m_needsForcedRedraw = %d; ", m_needsForcedRedraw);
+    base::StringAppendF(&str, "m_needsForcedRedrawAfterNextCommit = %d; ", m_needsForcedRedrawAfterNextCommit);
+    base::StringAppendF(&str, "m_needsCommit = %d; ", m_needsCommit);
+    base::StringAppendF(&str, "m_needsForcedCommit = %d; ", m_needsForcedCommit);
+    base::StringAppendF(&str, "m_mainThreadNeedsLayerTextures = %d; ", m_mainThreadNeedsLayerTextures);
+    base::StringAppendF(&str, "m_updateMoreResourcesPending = %d; ", m_updateMoreResourcesPending);
+    base::StringAppendF(&str, "m_insideVSync = %d; ", m_insideVSync);
+    base::StringAppendF(&str, "m_visible = %d; ", m_visible);
+    base::StringAppendF(&str, "m_canBeginFrame = %d; ", m_canBeginFrame);
+    base::StringAppendF(&str, "m_canDraw = %d; ", m_canDraw);
+    base::StringAppendF(&str, "m_drawIfPossibleFailed = %d; ", m_drawIfPossibleFailed);
+    base::StringAppendF(&str, "m_textureState = %d; ", m_textureState);
+    base::StringAppendF(&str, "m_contextState = %d; ", m_contextState);
+    return str;
 }
 
 bool CCSchedulerStateMachine::hasDrawnThisFrame() const

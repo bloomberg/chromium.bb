@@ -13,8 +13,6 @@
 #include "CCLayerImpl.h"
 #include "CCLayerTreeHost.h"
 #include "CCSettings.h"
-#include "TextStream.h"
-
 #include <public/WebAnimationDelegate.h>
 #include <public/WebLayerScrollClient.h>
 #include <public/WebSize.h>
@@ -509,7 +507,7 @@ void LayerChromium::pushPropertiesTo(CCLayerImpl* layer)
     layer->setContentBounds(contentBounds());
     layer->setDebugBorderColor(m_debugBorderColor);
     layer->setDebugBorderWidth(m_debugBorderWidth);
-    layer->setDebugName(m_debugName.isolatedCopy()); // We have to use isolatedCopy() here to safely pass ownership to another thread.
+    layer->setDebugName(m_debugName);
     layer->setDoubleSided(m_doubleSided);
     layer->setDrawCheckerboardForMissingTiles(m_drawCheckerboardForMissingTiles);
     layer->setForceRenderSurface(m_forceRenderSurface);
@@ -581,7 +579,7 @@ void LayerChromium::setDebugBorderWidth(float width)
     setNeedsCommit();
 }
 
-void LayerChromium::setDebugName(const String& debugName)
+void LayerChromium::setDebugName(const std::string& debugName)
 {
     m_debugName = debugName;
     setNeedsCommit();

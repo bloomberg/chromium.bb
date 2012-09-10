@@ -19,9 +19,7 @@
 #include "Extensions3DChromium.h"
 #include "GraphicsContext3D.h"
 #include "NotImplemented.h"
-#include "TextStream.h"
 #include <public/WebVideoFrame.h>
-#include <wtf/text/WTFString.h>
 
 namespace WebCore {
 
@@ -376,11 +374,11 @@ void CCVideoLayerImpl::setNeedsRedraw()
     layerTreeHostImpl()->setNeedsRedraw();
 }
 
-void CCVideoLayerImpl::dumpLayerProperties(TextStream& ts, int indent) const
+void CCVideoLayerImpl::dumpLayerProperties(std::string* str, int indent) const
 {
-    writeIndent(ts, indent);
-    ts << "video layer\n";
-    CCLayerImpl::dumpLayerProperties(ts, indent);
+    str->append(indentString(indent));
+    str->append("video layer\n");
+    CCLayerImpl::dumpLayerProperties(str, indent);
 }
 
 }

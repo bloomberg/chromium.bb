@@ -104,7 +104,7 @@ public:
     bool canDraw();
     CCGraphicsContext* context() const;
 
-    String layerTreeAsText() const;
+    std::string layerTreeAsText() const;
 
     void finishAllRendering();
     int sourceAnimationFrameNumber() const;
@@ -242,7 +242,7 @@ private:
 
     void animateScrollbarsRecursive(CCLayerImpl*, double monotonicTime);
 
-    void dumpRenderSurfaces(TextStream&, int indent, const CCLayerImpl*) const;
+    void dumpRenderSurfaces(std::string*, int indent, const CCLayerImpl*) const;
 
     OwnPtr<CCGraphicsContext> m_context;
     OwnPtr<CCResourceProvider> m_resourceProvider;

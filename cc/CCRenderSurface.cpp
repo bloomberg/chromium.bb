@@ -8,6 +8,7 @@
 
 #include "CCRenderSurface.h"
 
+#include "base/stringprintf.h"
 #include "CCDamageTracker.h"
 #include "CCDebugBorderDrawQuad.h"
 #include "CCLayerImpl.h"
@@ -17,9 +18,7 @@
 #include "CCRenderPassDrawQuad.h"
 #include "CCRenderPassSink.h"
 #include "CCSharedQuadState.h"
-#include "TextStream.h"
 #include <public/WebTransformationMatrix.h>
-#include <wtf/text/CString.h>
 
 using WebKit::WebTransformationMatrix;
 
@@ -61,35 +60,40 @@ FloatRect CCRenderSurface::drawableContentRect() const
     return drawableContentRect;
 }
 
-String CCRenderSurface::name() const
+std::string CCRenderSurface::name() const
 {
-    return String::format("RenderSurface(id=%i,owner=%s)", m_owningLayer->id(), m_owningLayer->debugName().utf8().data());
+    return base::StringPrintf("RenderSurface(id=%i,owner=%s)", m_owningLayer->id(), m_owningLayer->debugName().data());
 }
 
-static void writeIndent(TextStream& ts, int indent)
+static std::string indentString(int indent)
 {
+    std::string str;
     for (int i = 0; i != indent; ++i)
-        ts << "  ";
+        str.append("  ");
+    return str;
 }
 
-void CCRenderSurface::dumpSurface(TextStream& ts, int indent) const
+void CCRenderSurface::dumpSurface(std::string* str, int indent) const
 {
-    writeIndent(ts, indent);
-    ts << name() << "\n";
+    std::string indentStr = indentString(indent);
+    str->append(indentStr);
+    base::StringAppendF(str, "%s\n", name().data());
 
-    writeIndent(ts, indent+1);
-    ts << "contentRect: (" << m_contentRect.x() << ", " << m_contentRect.y() << ", " << m_contentRect.width() << ", " << m_contentRect.height() << "\n";
+    indentStr.append("  ");
+    str->append(indentStr);
+    base::StringAppendF(str, "contentRect: (%d, %d, %d, %d)\n", m_contentRect.x(), m_contentRect.y(), m_contentRect.width(), m_contentRect.height());
 
-    writeIndent(ts, indent+1);
-    ts << "drawTransform: ";
-    ts << m_drawTransform.m11() << ", " << m_drawTransform.m12() << ", " << m_drawTransform.m13() << ", " << m_drawTransform.m14() << "  //  ";
-    ts << m_drawTransform.m21() << ", " << m_drawTransform.m22() << ", " << m_drawTransform.m23() << ", " << m_drawTransform.m24() << "  //  ";
-    ts << m_drawTransform.m31() << ", " << m_drawTransform.m32() << ", " << m_drawTransform.m33() << ", " << m_drawTransform.m34() << "  //  ";
-    ts << m_drawTransform.m41() << ", " << m_drawTransform.m42() << ", " << m_drawTransform.m43() << ", " << m_drawTransform.m44() << "\n";
+    str->append(indentStr);
+    base::StringAppendF(str, "drawTransform: %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f\n",
+        m_drawTransform.m11(), m_drawTransform.m12(), m_drawTransform.m13(), m_drawTransform.m14(),
+        m_drawTransform.m21(), m_drawTransform.m22(), m_drawTransform.m23(), m_drawTransform.m24(),
+        m_drawTransform.m31(), m_drawTransform.m32(), m_drawTransform.m33(), m_drawTransform.m34(),
+        m_drawTransform.m41(), m_drawTransform.m42(), m_drawTransform.m43(), m_drawTransform.m44());
 
-    writeIndent(ts, indent+1);
-    ts << "damageRect is pos(" << m_damageTracker->currentDamageRect().x() << "," << m_damageTracker->currentDamageRect().y() << "), ";
-    ts << "size(" << m_damageTracker->currentDamageRect().width() << "," << m_damageTracker->currentDamageRect().height() << ")\n";
+    str->append(indentStr);
+    base::StringAppendF(str, "damageRect is pos(%f, %f), size(%f, %f)\n",
+        m_damageTracker->currentDamageRect().x(), m_damageTracker->currentDamageRect().y(),
+        m_damageTracker->currentDamageRect().width(), m_damageTracker->currentDamageRect().height());
 }
 
 int CCRenderSurface::owningLayerId() const

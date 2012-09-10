@@ -9,6 +9,10 @@
 #include "LayerChromium.h"
 #include "SkMatrix44.h"
 #include "WebAnimationImpl.h"
+#ifdef LOG
+#undef LOG
+#endif
+#include "base/string_util.h"
 #include <public/WebFloatPoint.h>
 #include <public/WebFloatRect.h>
 #include <public/WebSize.h>
@@ -275,7 +279,7 @@ void WebLayerImpl::setDebugBorderWidth(float width)
 
 void WebLayerImpl::setDebugName(WebString name)
 {
-    m_layer->setDebugName(name);
+    m_layer->setDebugName(UTF16ToASCII(string16(name.data(), name.length())));
 }
 
 void WebLayerImpl::setAnimationDelegate(WebAnimationDelegate* delegate)

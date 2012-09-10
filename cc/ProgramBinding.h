@@ -7,7 +7,7 @@
 
 #if USE(ACCELERATED_COMPOSITING)
 
-#include <wtf/text/WTFString.h>
+#include <string>
 
 namespace WebKit {
 class WebGraphicsContext3D;
@@ -20,7 +20,7 @@ public:
     ProgramBindingBase();
     ~ProgramBindingBase();
 
-    void init(WebKit::WebGraphicsContext3D*, const String& vertexShader, const String& fragmentShader);
+    void init(WebKit::WebGraphicsContext3D*, const std::string& vertexShader, const std::string& fragmentShader);
     void link(WebKit::WebGraphicsContext3D*);
     void cleanup(WebKit::WebGraphicsContext3D*);
 
@@ -29,7 +29,7 @@ public:
 
 protected:
 
-    unsigned loadShader(WebKit::WebGraphicsContext3D*, unsigned type, const String& shaderSource);
+    unsigned loadShader(WebKit::WebGraphicsContext3D*, unsigned type, const std::string& shaderSource);
     unsigned createShaderProgram(WebKit::WebGraphicsContext3D*, unsigned vertexShader, unsigned fragmentShader);
     void cleanupShaders(WebKit::WebGraphicsContext3D*);
 

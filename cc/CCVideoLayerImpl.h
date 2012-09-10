@@ -33,7 +33,7 @@ public:
     virtual void appendQuads(CCQuadSink&, CCAppendQuadsData&) OVERRIDE;
     virtual void didDraw(CCResourceProvider*) OVERRIDE;
 
-    virtual void dumpLayerProperties(TextStream&, int indent) const OVERRIDE;
+    virtual void dumpLayerProperties(std::string*, int indent) const OVERRIDE;
 
     Mutex& providerMutex() { return m_providerMutex; }
 

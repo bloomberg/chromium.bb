@@ -7,8 +7,6 @@
 #include "CCSchedulerStateMachine.h"
 
 #include <gtest/gtest.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/WTFString.h>
 
 using namespace WTF;
 using namespace WebCore;

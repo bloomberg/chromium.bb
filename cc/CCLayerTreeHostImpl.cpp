@@ -27,7 +27,6 @@
 #include "CCScrollbarLayerImpl.h"
 #include "CCSettings.h"
 #include "CCSingleThreadProxy.h"
-#include "TextStream.h"
 #include "TraceEvent.h"
 #include <wtf/CurrentTime.h>
 
@@ -1221,24 +1220,24 @@ void CCLayerTreeHostImpl::clearRenderSurfaces()
     m_renderSurfaceLayerList.clear();
 }
 
-String CCLayerTreeHostImpl::layerTreeAsText() const
+std::string CCLayerTreeHostImpl::layerTreeAsText() const
 {
-    TextStream ts;
+    std::string str;
     if (m_rootLayerImpl) {
-        ts << m_rootLayerImpl->layerTreeAsText();
-        ts << "RenderSurfaces:\n";
-        dumpRenderSurfaces(ts, 1, m_rootLayerImpl.get());
+        str = m_rootLayerImpl->layerTreeAsText();
+        str +=  "RenderSurfaces:\n";
+        dumpRenderSurfaces(&str, 1, m_rootLayerImpl.get());
     }
-    return ts.release();
+    return str;
 }
 
-void CCLayerTreeHostImpl::dumpRenderSurfaces(TextStream& ts, int indent, const CCLayerImpl* layer) const
+void CCLayerTreeHostImpl::dumpRenderSurfaces(std::string* str, int indent, const CCLayerImpl* layer) const
 {
     if (layer->renderSurface())
-        layer->renderSurface()->dumpSurface(ts, indent);
+        layer->renderSurface()->dumpSurface(str, indent);
 
     for (size_t i = 0; i < layer->children().size(); ++i)
-        dumpRenderSurfaces(ts, indent, layer->children()[i].get());
+        dumpRenderSurfaces(str, indent, layer->children()[i].get());
 }
 
 int CCLayerTreeHostImpl::sourceAnimationFrameNumber() const

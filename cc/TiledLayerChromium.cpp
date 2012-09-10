@@ -15,7 +15,6 @@
 #include "CCTiledLayerImpl.h"
 #include "GraphicsContext3D.h"
 #include "Region.h"
-#include "TextStream.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MathExtras.h>
 

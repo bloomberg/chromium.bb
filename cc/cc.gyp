@@ -249,7 +249,6 @@
             'stubs/NotImplemented.h',
             'stubs/Region.h',
             'stubs/SkiaUtils.h',
-            'stubs/TextStream.h',
             'stubs/TilingData.h',
             'stubs/TraceEvent.h',
             'stubs/UnitBezier.h',

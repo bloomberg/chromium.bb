@@ -8,10 +8,10 @@
 
 #include "CCTextureLayerImpl.h"
 
+#include "base/stringprintf.h"
 #include "CCQuadSink.h"
 #include "CCRenderer.h"
 #include "CCTextureDrawQuad.h"
-#include "TextStream.h"
 
 namespace WebCore {
 
@@ -61,11 +61,11 @@ void CCTextureLayerImpl::didDraw(CCResourceProvider* resourceProvider)
     m_externalTextureResource = 0;
 }
 
-void CCTextureLayerImpl::dumpLayerProperties(TextStream& ts, int indent) const
+void CCTextureLayerImpl::dumpLayerProperties(std::string* str, int indent) const
 {
-    writeIndent(ts, indent);
-    ts << "texture layer texture id: " << m_textureId << " premultiplied: " << m_premultipliedAlpha << "\n";
-    CCLayerImpl::dumpLayerProperties(ts, indent);
+    str->append(indentString(indent));
+    base::StringAppendF(str, "texture layer texture id: %u premultiplied: %d\n", m_textureId, m_premultipliedAlpha);
+    CCLayerImpl::dumpLayerProperties(str, indent);
 }
 
 void CCTextureLayerImpl::didLoseContext()

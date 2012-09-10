@@ -8,13 +8,13 @@
 
 #include "CCIOSurfaceLayerImpl.h"
 
+#include "base/stringprintf.h"
 #include "CCGraphicsContext.h"
 #include "CCIOSurfaceDrawQuad.h"
 #include "CCLayerTreeHostImpl.h"
 #include "CCQuadSink.h"
 #include "CCRendererGL.h" // For the GLC() macro.
 #include "Extensions3D.h"
-#include "TextStream.h"
 #include <public/WebGraphicsContext3D.h>
 
 namespace WebCore {
@@ -84,11 +84,11 @@ void CCIOSurfaceLayerImpl::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData& 
     quadSink.append(CCIOSurfaceDrawQuad::create(sharedQuadState, quadRect, m_ioSurfaceSize, m_ioSurfaceTextureId, CCIOSurfaceDrawQuad::Flipped), appendQuadsData);
 }
 
-void CCIOSurfaceLayerImpl::dumpLayerProperties(TextStream& ts, int indent) const
+void CCIOSurfaceLayerImpl::dumpLayerProperties(std::string* str, int indent) const
 {
-    writeIndent(ts, indent);
-    ts << "iosurface id: " << m_ioSurfaceId << " texture id: " << m_ioSurfaceTextureId;
-    CCLayerImpl::dumpLayerProperties(ts, indent);
+    str->append(indentString(indent));
+    base::StringAppendF(str, "iosurface id: %u texture id: %u\n", m_ioSurfaceId, m_ioSurfaceTextureId);
+    CCLayerImpl::dumpLayerProperties(str, indent);
 }
 
 void CCIOSurfaceLayerImpl::didLoseContext()

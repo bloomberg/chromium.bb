@@ -6,6 +6,7 @@
 
 #include "CCHeadsUpDisplayLayerImpl.h"
 
+#include "base/stringprintf.h"
 #include "CCDebugRectHistory.h"
 #include "CCFontAtlas.h"
 #include "CCFrameRateCounter.h"
@@ -18,7 +19,6 @@
 #include "SkColorMatrixFilter.h"
 #include "SkPaint.h"
 #include "skia/ext/platform_canvas.h"
-#include <wtf/text/WTFString.h>
 
 namespace WebCore {
 
@@ -149,7 +149,7 @@ void CCHeadsUpDisplayLayerImpl::drawHudContents(SkCanvas* canvas)
         drawFPSCounter(canvas, layerTreeHostImpl()->fpsCounter(), fpsCounterTop, fpsCounterHeight);
 
     if (settings.showPlatformLayerTree && m_fontAtlas) {
-        String layerTree = layerTreeHostImpl()->layerTreeAsText();
+        std::string layerTree = layerTreeHostImpl()->layerTreeAsText();
         m_fontAtlas->drawText(canvas, createPaint(), layerTree, IntPoint(2, platformLayerTreeTop), bounds());
     }
 
@@ -225,7 +225,7 @@ void CCHeadsUpDisplayLayerImpl::drawFPSCounterText(SkCanvas* canvas, CCFrameRate
 
     // Draw FPS text.
     if (m_fontAtlas)
-        m_fontAtlas->drawText(canvas, createPaint(), String::format("FPS: %4.1f +/- %3.1f", averageFPS, stdDeviation), IntPoint(10, height / 3), IntSize(width, height));
+        m_fontAtlas->drawText(canvas, createPaint(), base::StringPrintf("FPS: %4.1f +/- %3.1f", averageFPS, stdDeviation), IntPoint(10, height / 3), IntSize(width, height));
 }
 
 void CCHeadsUpDisplayLayerImpl::drawDebugRects(SkCanvas* canvas, CCDebugRectHistory* debugRectHistory)

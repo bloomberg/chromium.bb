@@ -11,7 +11,6 @@
 #include "CCQuadSink.h"
 #include "CCSolidColorDrawQuad.h"
 #include <wtf/MathExtras.h>
-#include <wtf/text/WTFString.h>
 
 using namespace std;
 using WebKit::WebTransformationMatrix;

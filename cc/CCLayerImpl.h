@@ -14,13 +14,12 @@
 #include "IntRect.h"
 #include "Region.h"
 #include "SkColor.h"
-#include "TextStream.h"
 #include <public/WebFilterOperations.h>
 #include <public/WebTransformationMatrix.h>
+#include <string>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
 
 namespace WebCore {
 
@@ -144,8 +143,8 @@ public:
     bool hasDebugBorders() const;
 
     // Debug layer name.
-    void setDebugName(const String& debugName) { m_debugName = debugName; }
-    String debugName() const { return m_debugName; }
+    void setDebugName(const std::string& debugName) { m_debugName = debugName; }
+    std::string debugName() const { return m_debugName; }
 
     CCRenderSurface* renderSurface() const { return m_renderSurface.get(); }
     void createRenderSurface();
@@ -224,7 +223,7 @@ public:
     const FloatRect& updateRect() const { return m_updateRect; }
     void setUpdateRect(const FloatRect& updateRect) { m_updateRect = updateRect; }
 
-    String layerTreeAsText() const;
+    std::string layerTreeAsText() const;
 
     void setStackingOrderChanged(bool);
 
@@ -257,8 +256,8 @@ protected:
 
     void appendDebugBorderQuad(CCQuadSink&, const CCSharedQuadState*, CCAppendQuadsData&) const;
 
-    virtual void dumpLayerProperties(TextStream&, int indent) const;
-    static void writeIndent(TextStream&, int indent);
+    virtual void dumpLayerProperties(std::string*, int indent) const;
+    static std::string indentString(int indent);
 
 private:
     void setParent(CCLayerImpl* parent) { m_parent = parent; }
@@ -272,7 +271,7 @@ private:
 
     virtual const char* layerTypeAsString() const { return "LayerChromium"; }
 
-    void dumpLayer(TextStream&, int indent) const;
+    void dumpLayer(std::string*, int indent) const;
 
     // Properties internal to CCLayerImpl
     CCLayerImpl* m_parent;
@@ -351,7 +350,7 @@ private:
     float m_debugBorderWidth;
 
     // Debug layer name.
-    String m_debugName;
+    std::string m_debugName;
 
     WebKit::WebFilterOperations m_filters;
     WebKit::WebFilterOperations m_backgroundFilters;

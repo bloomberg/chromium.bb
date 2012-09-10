@@ -8,15 +8,14 @@
 
 #include "CCLayerImpl.h"
 
+#include "base/stringprintf.h"
 #include "CCDebugBorderDrawQuad.h"
 #include "CCLayerSorter.h"
 #include "CCMathUtil.h"
 #include "CCProxy.h"
 #include "CCQuadSink.h"
 #include "CCScrollbarAnimationController.h"
-#include "TextStream.h"
 #include "TraceEvent.h"
-#include <wtf/text/WTFString.h>
 
 using WebKit::WebTransformationMatrix;
 
@@ -210,34 +209,37 @@ CCInputHandlerClient::ScrollStatus CCLayerImpl::tryScroll(const IntPoint& viewpo
     return CCInputHandlerClient::ScrollStarted;
 }
 
-void CCLayerImpl::writeIndent(TextStream& ts, int indent)
+std::string CCLayerImpl::indentString(int indent)
 {
+    std::string str;
     for (int i = 0; i != indent; ++i)
-        ts << "  ";
+        str.append("  ");
+    return str;
 }
 
-void CCLayerImpl::dumpLayerProperties(TextStream& ts, int indent) const
+void CCLayerImpl::dumpLayerProperties(std::string* str, int indent) const
 {
-    writeIndent(ts, indent);
-    ts << "layer ID: " << m_layerId << "\n";
+    std::string indentStr = indentString(indent);
+    str->append(indentStr);
+    base::StringAppendF(str, "layer ID: %d\n", m_layerId);
 
-    writeIndent(ts, indent);
-    ts << "bounds: " << bounds().width() << ", " << bounds().height() << "\n";
+    str->append(indentStr);
+    base::StringAppendF(str, "bounds: %d, %d\n", bounds().width(), bounds().height());
 
     if (m_renderTarget) {
-        writeIndent(ts, indent);
-        ts << "renderTarget: " << m_renderTarget->m_layerId << "\n";
+        str->append(indentStr);
+        base::StringAppendF(str, "renderTarget: %d\n", m_renderTarget->m_layerId);
     }
 
-    writeIndent(ts, indent);
-    ts << "drawTransform: ";
-    ts << m_drawTransform.m11() << ", " << m_drawTransform.m12() << ", " << m_drawTransform.m13() << ", " << m_drawTransform.m14() << "  //  ";
-    ts << m_drawTransform.m21() << ", " << m_drawTransform.m22() << ", " << m_drawTransform.m23() << ", " << m_drawTransform.m24() << "  //  ";
-    ts << m_drawTransform.m31() << ", " << m_drawTransform.m32() << ", " << m_drawTransform.m33() << ", " << m_drawTransform.m34() << "  //  ";
-    ts << m_drawTransform.m41() << ", " << m_drawTransform.m42() << ", " << m_drawTransform.m43() << ", " << m_drawTransform.m44() << "\n";
+    str->append(indentStr);
+    base::StringAppendF(str, "drawTransform: %f, %f, %f, %f  //  %f, %f, %f, %f  //  %f, %f, %f, %f  //  %f, %f, %f, %f\n",
+        m_drawTransform.m11(), m_drawTransform.m12(), m_drawTransform.m13(), m_drawTransform.m14(),
+        m_drawTransform.m21(), m_drawTransform.m22(), m_drawTransform.m23(), m_drawTransform.m24(),
+        m_drawTransform.m31(), m_drawTransform.m32(), m_drawTransform.m33(), m_drawTransform.m34(),
+        m_drawTransform.m41(), m_drawTransform.m42(), m_drawTransform.m43(), m_drawTransform.m44());
 
-    writeIndent(ts, indent);
-    ts << "drawsContent: " << (m_drawsContent ? "yes" : "no") << "\n";
+    str->append(indentStr);
+    base::StringAppendF(str, "drawsContent: %s\n", m_drawsContent ? "yes" : "no");
 }
 
 void sortLayers(Vector<CCLayerImpl*>::iterator first, Vector<CCLayerImpl*>::iterator end, CCLayerSorter* layerSorter)
@@ -246,30 +248,30 @@ void sortLayers(Vector<CCLayerImpl*>::iterator first, Vector<CCLayerImpl*>::iter
     layerSorter->sort(first, end);
 }
 
-String CCLayerImpl::layerTreeAsText() const
+std::string CCLayerImpl::layerTreeAsText() const
 {
-    TextStream ts;
-    dumpLayer(ts, 0);
-    return ts.release();
+    std::string str;
+    dumpLayer(&str, 0);
+    return str;
 }
 
-void CCLayerImpl::dumpLayer(TextStream& ts, int indent) const
+void CCLayerImpl::dumpLayer(std::string* str, int indent) const
 {
-    writeIndent(ts, indent);
-    ts << layerTypeAsString() << "(" << m_debugName << ")\n";
-    dumpLayerProperties(ts, indent+2);
+    str->append(indentString(indent));
+    base::StringAppendF(str, "%s(%s)\n", layerTypeAsString(), m_debugName.data());
+    dumpLayerProperties(str, indent+2);
     if (m_replicaLayer) {
-        writeIndent(ts, indent+2);
-        ts << "Replica:\n";
-        m_replicaLayer->dumpLayer(ts, indent+3);
+        str->append(indentString(indent+2));
+        str->append("Replica:\n");
+        m_replicaLayer->dumpLayer(str, indent+3);
     }
     if (m_maskLayer) {
-        writeIndent(ts, indent+2);
-        ts << "Mask:\n";
-        m_maskLayer->dumpLayer(ts, indent+3);
+        str->append(indentString(indent+2));
+        str->append("Mask:\n");
+        m_maskLayer->dumpLayer(str, indent+3);
     }
     for (size_t i = 0; i < m_children.size(); ++i)
-        m_children[i]->dumpLayer(ts, indent+1);
+        m_children[i]->dumpLayer(str, indent+1);
 }
 
 void CCLayerImpl::setStackingOrderChanged(bool stackingOrderChanged)

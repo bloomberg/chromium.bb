@@ -8,7 +8,7 @@
 #if USE(ACCELERATED_COMPOSITING)
 
 #include "SkColorPriv.h"
-#include <wtf/text/WTFString.h>
+#include <string>
 
 namespace WebKit {
 class WebGraphicsContext3D;
@@ -21,7 +21,7 @@ public:
     VertexShaderPosTex();
 
     void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
-    String getShaderString() const;
+    std::string getShaderString() const;
 
     int matrixLocation() const { return m_matrixLocation; }
 
@@ -34,7 +34,7 @@ public:
     VertexShaderPosTexYUVStretch();
 
     void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
-    String getShaderString() const;
+    std::string getShaderString() const;
 
     int matrixLocation() const { return m_matrixLocation; }
     int yWidthScaleFactorLocation() const { return m_yWidthScaleFactorLocation; }
@@ -51,7 +51,7 @@ public:
     VertexShaderPos();
 
     void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
-    String getShaderString() const;
+    std::string getShaderString() const;
 
     int matrixLocation() const { return m_matrixLocation; }
 
@@ -62,7 +62,7 @@ private:
 class VertexShaderPosTexIdentity {
 public:
     void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex) { }
-    String getShaderString() const;
+    std::string getShaderString() const;
 };
 
 class VertexShaderPosTexTransform {
@@ -70,7 +70,7 @@ public:
     VertexShaderPosTexTransform();
 
     void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
-    String getShaderString() const;
+    std::string getShaderString() const;
 
     int matrixLocation() const { return m_matrixLocation; }
     int texTransformLocation() const { return m_texTransformLocation; }
@@ -85,7 +85,7 @@ public:
     VertexShaderQuad();
 
     void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
-    String getShaderString() const;
+    std::string getShaderString() const;
 
     int matrixLocation() const { return m_matrixLocation; }
     int pointLocation() const { return m_pointLocation; }
@@ -100,7 +100,7 @@ public:
     VertexShaderTile();
 
     void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
-    String getShaderString() const;
+    std::string getShaderString() const;
 
     int matrixLocation() const { return m_matrixLocation; }
     int pointLocation() const { return m_pointLocation; }
@@ -117,7 +117,7 @@ public:
     VertexShaderVideoTransform();
 
     bool init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
-    String getShaderString() const;
+    std::string getShaderString() const;
 
     int matrixLocation() const { return m_matrixLocation; }
     int texMatrixLocation() const { return m_texMatrixLocation; }
@@ -158,50 +158,50 @@ private:
 
 class FragmentShaderRGBATexFlipAlpha : public FragmentTexAlphaBinding {
 public:
-    String getShaderString() const;
+    std::string getShaderString() const;
 };
 
 class FragmentShaderRGBATexAlpha : public FragmentTexAlphaBinding {
 public:
-    String getShaderString() const;
+    std::string getShaderString() const;
 };
 
 class FragmentShaderRGBATexRectFlipAlpha : public FragmentTexAlphaBinding {
 public:
-    String getShaderString() const;
+    std::string getShaderString() const;
 };
 
 class FragmentShaderRGBATexRectAlpha : public FragmentTexAlphaBinding {
 public:
-    String getShaderString() const;
+    std::string getShaderString() const;
 };
 
 class FragmentShaderRGBATexOpaque : public FragmentTexOpaqueBinding {
 public:
-    String getShaderString() const;
+    std::string getShaderString() const;
 };
 
 class FragmentShaderRGBATex : public FragmentTexOpaqueBinding {
 public:
-    String getShaderString() const;
+    std::string getShaderString() const;
 };
 
 // Swizzles the red and blue component of sampled texel with alpha.
 class FragmentShaderRGBATexSwizzleAlpha : public FragmentTexAlphaBinding {
 public:
-    String getShaderString() const;
+    std::string getShaderString() const;
 };
 
 // Swizzles the red and blue component of sampled texel without alpha.
 class FragmentShaderRGBATexSwizzleOpaque : public FragmentTexOpaqueBinding {
 public:
-    String getShaderString() const;
+    std::string getShaderString() const;
 };
 
 // Fragment shader for external textures.
 class FragmentShaderOESImageExternal : public FragmentTexAlphaBinding {
 public:
-    String getShaderString() const;
+    std::string getShaderString() const;
     bool init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
 private:
     int m_samplerLocation;
@@ -212,7 +212,7 @@ public:
     FragmentShaderRGBATexAlphaAA();
 
     void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
-    String getShaderString() const;
+    std::string getShaderString() const;
 
     int alphaLocation() const { return m_alphaLocation; }
     int samplerLocation() const { return m_samplerLocation; }
@@ -243,19 +243,19 @@ private:
 
 class FragmentShaderRGBATexClampAlphaAA : public FragmentTexClampAlphaAABinding {
 public:
-    String getShaderString() const;
+    std::string getShaderString() const;
 };
 
 // Swizzles the red and blue component of sampled texel.
 class FragmentShaderRGBATexClampSwizzleAlphaAA : public FragmentTexClampAlphaAABinding {
 public:
-    String getShaderString() const;
+    std::string getShaderString() const;
 };
 
 class FragmentShaderRGBATexAlphaMask {
 public:
     FragmentShaderRGBATexAlphaMask();
-    String getShaderString() const;
+    std::string getShaderString() const;
 
     void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
     int alphaLocation() const { return m_alphaLocation; }
@@ -275,7 +275,7 @@ private:
 class FragmentShaderRGBATexAlphaMaskAA {
 public:
     FragmentShaderRGBATexAlphaMaskAA();
-    String getShaderString() const;
+    std::string getShaderString() const;
 
     void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
     int alphaLocation() const { return m_alphaLocation; }
@@ -297,7 +297,7 @@ private:
 class FragmentShaderYUVVideo {
 public:
     FragmentShaderYUVVideo();
-    String getShaderString() const;
+    std::string getShaderString() const;
 
     void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
 
@@ -320,7 +320,7 @@ private:
 class FragmentShaderColor {
 public:
     FragmentShaderColor();
-    String getShaderString() const;
+    std::string getShaderString() const;
 
     void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
     int colorLocation() const { return m_colorLocation; }
@@ -332,7 +332,7 @@ private:
 class FragmentShaderCheckerboard {
 public:
     FragmentShaderCheckerboard();
-    String getShaderString() const;
+    std::string getShaderString() const;
 
     void init(WebKit::WebGraphicsContext3D*, unsigned program, bool usingBindUniform, int* baseUniformIndex);
     int alphaLocation() const { return m_alphaLocation; }

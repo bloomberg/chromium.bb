@@ -7,8 +7,10 @@
 #if USE(ACCELERATED_COMPOSITING)
 #include "CCFontAtlas.h"
 
+#include "base/string_split.h"
 #include "CCProxy.h"
 #include "SkCanvas.h"
+#include <vector>
 
 namespace WebCore {
 
@@ -26,12 +28,12 @@ CCFontAtlas::~CCFontAtlas()
 {
 }
 
-void CCFontAtlas::drawText(SkCanvas* canvas, const SkPaint& paint, const String& text, const IntPoint& destPosition, const IntSize& clip) const
+void CCFontAtlas::drawText(SkCanvas* canvas, const SkPaint& paint, const std::string& text, const IntPoint& destPosition, const IntSize& clip) const
 {
     ASSERT(CCProxy::isImplThread());
 
-    Vector<String> lines;
-    text.split('\n', lines);
+    std::vector<std::string> lines;
+    base::SplitString(text, '\n', &lines);
 
     IntPoint position = destPosition;
     for (size_t i = 0; i < lines.size(); ++i) {
@@ -42,7 +44,7 @@ void CCFontAtlas::drawText(SkCanvas* canvas, const SkPaint& paint, const String&
     }
 }
 
-void CCFontAtlas::drawOneLineOfTextInternal(SkCanvas* canvas, const SkPaint& paint, const String& textLine, const IntPoint& destPosition) const
+void CCFontAtlas::drawOneLineOfTextInternal(SkCanvas* canvas, const SkPaint& paint, const std::string& textLine, const IntPoint& destPosition) const
 {
     ASSERT(CCProxy::isImplThread());
 

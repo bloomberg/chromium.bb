@@ -25,7 +25,7 @@ public:
 
     virtual CCResourceProvider::ResourceId contentsResourceId() const OVERRIDE;
 
-    virtual void dumpLayerProperties(TextStream&, int indent) const OVERRIDE;
+    virtual void dumpLayerProperties(std::string*, int indent) const OVERRIDE;
 
     void setSkipsDraw(bool skipsDraw) { m_skipsDraw = skipsDraw; }
     void setTilingData(const CCLayerTilingData& tiler);

@@ -15,16 +15,14 @@
 #include "Region.h"
 #include "RenderSurfaceChromium.h"
 #include "SkColor.h"
-
 #include <public/WebFilterOperations.h>
 #include <public/WebTransformationMatrix.h>
+#include <string>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/Vector.h>
-#include <wtf/text/StringHash.h>
-#include <wtf/text/WTFString.h>
 
 namespace WebKit {
 class WebAnimationDelegate;
@@ -186,7 +184,7 @@ public:
 
     void setDebugBorderColor(SkColor);
     void setDebugBorderWidth(float);
-    void setDebugName(const String&);
+    void setDebugName(const std::string&);
 
     virtual void pushPropertiesTo(CCLayerImpl*);
 
@@ -325,7 +323,7 @@ private:
     SkColor m_backgroundColor;
     SkColor m_debugBorderColor;
     float m_debugBorderWidth;
-    String m_debugName;
+    std::string m_debugName;
     float m_opacity;
     WebKit::WebFilterOperations m_filters;
     WebKit::WebFilterOperations m_backgroundFilters;

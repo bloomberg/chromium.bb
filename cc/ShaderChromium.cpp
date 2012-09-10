@@ -9,6 +9,7 @@
 #include "ShaderChromium.h"
 
 #include <public/WebGraphicsContext3D.h>
+#include <wtf/StdLibExtras.h>
 
 #define SHADER0(Src) #Src
 #define SHADER(Src) SHADER0(Src)
@@ -52,7 +53,7 @@ void VertexShaderPosTex::init(WebGraphicsContext3D* context, unsigned program, b
     ASSERT(m_matrixLocation != -1);
 }
 
-String VertexShaderPosTex::getShaderString() const
+std::string VertexShaderPosTex::getShaderString() const
 {
     return SHADER(
         attribute vec4 a_position;
@@ -91,7 +92,7 @@ void VertexShaderPosTexYUVStretch::init(WebGraphicsContext3D* context, unsigned 
     ASSERT(m_matrixLocation != -1 && m_yWidthScaleFactorLocation != -1 && m_uvWidthScaleFactorLocation != -1);
 }
 
-String VertexShaderPosTexYUVStretch::getShaderString() const
+std::string VertexShaderPosTexYUVStretch::getShaderString() const
 {
     return SHADER(
         precision mediump float;
@@ -129,7 +130,7 @@ void VertexShaderPos::init(WebGraphicsContext3D* context, unsigned program, bool
     ASSERT(m_matrixLocation != -1);
 }
 
-String VertexShaderPos::getShaderString() const
+std::string VertexShaderPos::getShaderString() const
 {
     return SHADER(
         attribute vec4 a_position;
@@ -162,7 +163,7 @@ void VertexShaderPosTexTransform::init(WebGraphicsContext3D* context, unsigned p
     ASSERT(m_matrixLocation != -1 && m_texTransformLocation != -1);
 }
 
-String VertexShaderPosTexTransform::getShaderString() const
+std::string VertexShaderPosTexTransform::getShaderString() const
 {
     return SHADER(
         attribute vec4 a_position;
@@ -184,7 +185,7 @@ VertexShaderQuad::VertexShaderQuad()
 {
 }
 
-String VertexShaderPosTexIdentity::getShaderString() const
+std::string VertexShaderPosTexIdentity::getShaderString() const
 {
     return SHADER(
         attribute vec4 a_position;
@@ -212,7 +213,7 @@ void VertexShaderQuad::init(WebGraphicsContext3D* context, unsigned program, boo
     ASSERT(m_matrixLocation != -1 && m_pointLocation != -1);
 }
 
-String VertexShaderQuad::getShaderString() const
+std::string VertexShaderQuad::getShaderString() const
 {
     return SHADER(
         attribute vec4 a_position;
@@ -258,7 +259,7 @@ void VertexShaderTile::init(WebGraphicsContext3D* context, unsigned program, boo
     ASSERT(m_matrixLocation != -1 && m_pointLocation != -1 && m_vertexTexTransformLocation != -1);
 }
 
-String VertexShaderTile::getShaderString() const
+std::string VertexShaderTile::getShaderString() const
 {
     return SHADER(
         attribute vec4 a_position;
@@ -302,7 +303,7 @@ bool VertexShaderVideoTransform::init(WebGraphicsContext3D* context, unsigned pr
     return m_matrixLocation != -1 && m_texMatrixLocation != -1;
 }
 
-String VertexShaderVideoTransform::getShaderString() const
+std::string VertexShaderVideoTransform::getShaderString() const
 {
     return SHADER(
         attribute vec4 a_position;
@@ -357,7 +358,7 @@ void FragmentTexOpaqueBinding::init(WebGraphicsContext3D* context, unsigned prog
     ASSERT(m_samplerLocation != -1);
 }
 
-String FragmentShaderRGBATexFlipAlpha::getShaderString() const
+std::string FragmentShaderRGBATexFlipAlpha::getShaderString() const
 {
     return SHADER(
         precision mediump float;
@@ -385,7 +386,7 @@ bool FragmentShaderOESImageExternal::init(WebGraphicsContext3D* context, unsigne
     return m_samplerLocation != -1;
 }
 
-String FragmentShaderOESImageExternal::getShaderString() const
+std::string FragmentShaderOESImageExternal::getShaderString() const
 {
     // Cannot use the SHADER() macro because of the '#' char
     return "#extension GL_OES_EGL_image_external : require \n"
@@ -399,7 +400,7 @@ String FragmentShaderOESImageExternal::getShaderString() const
            "}\n";
 }
 
-String FragmentShaderRGBATexAlpha::getShaderString() const
+std::string FragmentShaderRGBATexAlpha::getShaderString() const
 {
     return SHADER(
         precision mediump float;
@@ -414,7 +415,7 @@ String FragmentShaderRGBATexAlpha::getShaderString() const
     );
 }
 
-String FragmentShaderRGBATexRectFlipAlpha::getShaderString() const
+std::string FragmentShaderRGBATexRectFlipAlpha::getShaderString() const
 {
     // This must be paired with VertexShaderPosTexTransform to pick up the texTransform uniform.
     // The necessary #extension preprocessing directive breaks the SHADER and SHADER0 macros.
@@ -431,7 +432,7 @@ String FragmentShaderRGBATexRectFlipAlpha::getShaderString() const
             "}\n";
 }
 
-String FragmentShaderRGBATexRectAlpha::getShaderString() const
+std::string FragmentShaderRGBATexRectAlpha::getShaderString() const
 {
     return "#extension GL_ARB_texture_rectangle : require\n"
             "precision mediump float;\n"
@@ -445,7 +446,7 @@ String FragmentShaderRGBATexRectAlpha::getShaderString() const
             "}\n";
 }
 
-String FragmentShaderRGBATexOpaque::getShaderString() const
+std::string FragmentShaderRGBATexOpaque::getShaderString() const
 {
     return SHADER(
         precision mediump float;
@@ -459,7 +460,7 @@ String FragmentShaderRGBATexOpaque::getShaderString() const
     );
 }
 
-String FragmentShaderRGBATex::getShaderString() const
+std::string FragmentShaderRGBATex::getShaderString() const
 {
     return SHADER(
         precision mediump float;
@@ -472,7 +473,7 @@ String FragmentShaderRGBATex::getShaderString() const
     );
 }
 
-String FragmentShaderRGBATexSwizzleAlpha::getShaderString() const
+std::string FragmentShaderRGBATexSwizzleAlpha::getShaderString() const
 {
     return SHADER(
         precision mediump float;
@@ -487,7 +488,7 @@ String FragmentShaderRGBATexSwizzleAlpha::getShaderString() const
     );
 }
 
-String FragmentShaderRGBATexSwizzleOpaque::getShaderString() const
+std::string FragmentShaderRGBATexSwizzleOpaque::getShaderString() const
 {
     return SHADER(
         precision mediump float;
@@ -525,7 +526,7 @@ void FragmentShaderRGBATexAlphaAA::init(WebGraphicsContext3D* context, unsigned 
     ASSERT(m_samplerLocation != -1 && m_alphaLocation != -1 && m_edgeLocation != -1);
 }
 
-String FragmentShaderRGBATexAlphaAA::getShaderString() const
+std::string FragmentShaderRGBATexAlphaAA::getShaderString() const
 {
     return SHADER(
         precision mediump float;
@@ -577,7 +578,7 @@ void FragmentTexClampAlphaAABinding::init(WebGraphicsContext3D* context, unsigne
     ASSERT(m_samplerLocation != -1 && m_alphaLocation != -1 && m_fragmentTexTransformLocation != -1 && m_edgeLocation != -1);
 }
 
-String FragmentShaderRGBATexClampAlphaAA::getShaderString() const
+std::string FragmentShaderRGBATexClampAlphaAA::getShaderString() const
 {
     return SHADER(
         precision mediump float;
@@ -604,7 +605,7 @@ String FragmentShaderRGBATexClampAlphaAA::getShaderString() const
     );
 }
 
-String FragmentShaderRGBATexClampSwizzleAlphaAA::getShaderString() const
+std::string FragmentShaderRGBATexClampSwizzleAlphaAA::getShaderString() const
 {
     return SHADER(
         precision mediump float;
@@ -660,7 +661,7 @@ void FragmentShaderRGBATexAlphaMask::init(WebGraphicsContext3D* context, unsigne
     ASSERT(m_samplerLocation != -1 && m_maskSamplerLocation != -1 && m_alphaLocation != -1);
 }
 
-String FragmentShaderRGBATexAlphaMask::getShaderString() const
+std::string FragmentShaderRGBATexAlphaMask::getShaderString() const
 {
     return SHADER(
         precision mediump float;
@@ -712,7 +713,7 @@ void FragmentShaderRGBATexAlphaMaskAA::init(WebGraphicsContext3D* context, unsig
     ASSERT(m_samplerLocation != -1 && m_maskSamplerLocation != -1 && m_alphaLocation != -1 && m_edgeLocation != -1);
 }
 
-String FragmentShaderRGBATexAlphaMaskAA::getShaderString() const
+std::string FragmentShaderRGBATexAlphaMaskAA::getShaderString() const
 {
     return SHADER(
         precision mediump float;
@@ -777,7 +778,7 @@ void FragmentShaderYUVVideo::init(WebGraphicsContext3D* context, unsigned progra
            && m_alphaLocation != -1 && m_ccMatrixLocation != -1 && m_yuvAdjLocation != -1);
 }
 
-String FragmentShaderYUVVideo::getShaderString() const
+std::string FragmentShaderYUVVideo::getShaderString() const
 {
     return SHADER(
         precision mediump float;
@@ -820,7 +821,7 @@ void FragmentShaderColor::init(WebGraphicsContext3D* context, unsigned program, 
     ASSERT(m_colorLocation != -1);
 }
 
-String FragmentShaderColor::getShaderString() const
+std::string FragmentShaderColor::getShaderString() const
 {
     return SHADER(
         precision mediump float;
@@ -856,7 +857,7 @@ void FragmentShaderCheckerboard::init(WebGraphicsContext3D* context, unsigned pr
     ASSERT(m_alphaLocation != -1 && m_texTransformLocation != -1 && m_frequencyLocation != -1);
 }
 
-String FragmentShaderCheckerboard::getShaderString() const
+std::string FragmentShaderCheckerboard::getShaderString() const
 {
     // Shader based on Example 13-17 of "OpenGL ES 2.0 Programming Guide"
     // by Munshi, Ginsburg, Shreiner.

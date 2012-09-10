@@ -11,7 +11,6 @@
 #include <cmath>
 #include <wtf/Assertions.h>
 #include <wtf/StdLibExtras.h>
-#include <wtf/StringExtras.h>
 
 namespace {
 

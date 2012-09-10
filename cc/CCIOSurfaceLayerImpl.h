@@ -25,7 +25,7 @@ public:
     virtual void willDraw(CCResourceProvider*) OVERRIDE;
     virtual void didLoseContext() OVERRIDE;
 
-    virtual void dumpLayerProperties(TextStream&, int indent) const OVERRIDE;
+    virtual void dumpLayerProperties(std::string*, int indent) const OVERRIDE;
 
 private:
     explicit CCIOSurfaceLayerImpl(int);

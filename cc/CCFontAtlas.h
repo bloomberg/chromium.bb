@@ -9,9 +9,9 @@
 
 #include "IntRect.h"
 #include "SkBitmap.h"
+#include <string>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
-#include <wtf/text/WTFString.h>
 
 class SkCanvas;
 
@@ -39,7 +39,7 @@ public:
     // - IntSize clip is used to avoid wasting time drawing things that are outside the
     //   target canvas bounds.
     // - Should only be called only on the impl thread.
-    void drawText(SkCanvas*, const SkPaint&, const String& text, const IntPoint& destPosition, const IntSize& clip) const;
+    void drawText(SkCanvas*, const SkPaint&, const std::string& text, const IntPoint& destPosition, const IntSize& clip) const;
 
     // Draws the entire atlas at the specified position, just for debugging purposes.
     void drawDebugAtlas(SkCanvas*, const IntPoint& destPosition) const;
@@ -47,7 +47,7 @@ public:
 private:
     CCFontAtlas(SkBitmap, IntRect asciiToRectTable[128], int fontHeight);
 
-    void drawOneLineOfTextInternal(SkCanvas*, const SkPaint&, const String&, const IntPoint& destPosition) const;
+    void drawOneLineOfTextInternal(SkCanvas*, const SkPaint&, const std::string&, const IntPoint& destPosition) const;
 
     // The actual texture atlas containing all the pre-rendered glyphs.
     SkBitmap m_atlas;

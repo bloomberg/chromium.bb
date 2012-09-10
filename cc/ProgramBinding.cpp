@@ -13,7 +13,6 @@
 #include "GraphicsContext3D.h"
 #include "TraceEvent.h"
 #include <public/WebGraphicsContext3D.h>
-#include <wtf/text/CString.h>
 
 using WebKit::WebGraphicsContext3D;
 
@@ -42,7 +41,7 @@ static bool contextLost(WebGraphicsContext3D* context)
 }
 
 
-void ProgramBindingBase::init(WebGraphicsContext3D* context, const String& vertexShader, const String& fragmentShader)
+void ProgramBindingBase::init(WebGraphicsContext3D* context, const std::string& vertexShader, const std::string& fragmentShader)
 {
     TRACE_EVENT0("cc", "ProgramBindingBase::init");
     m_vertexShaderId = loadShader(context, GraphicsContext3D::VERTEX_SHADER, vertexShader);
@@ -94,13 +93,12 @@ void ProgramBindingBase::cleanup(WebGraphicsContext3D* context)
     cleanupShaders(context);
 }
 
-unsigned ProgramBindingBase::loadShader(WebGraphicsContext3D* context, unsigned type, const String& shaderSource)
+unsigned ProgramBindingBase::loadShader(WebGraphicsContext3D* context, unsigned type, const std::string& shaderSource)
 {
     unsigned shader = context->createShader(type);
     if (!shader)
         return 0;
-    String sourceString(shaderSource);
-    GLC(context, context->shaderSource(shader, sourceString.utf8().data()));
+    GLC(context, context->shaderSource(shader, shaderSource.data()));
     GLC(context, context->compileShader(shader));
 #ifndef NDEBUG
     int compiled = 0;

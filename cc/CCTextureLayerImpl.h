@@ -23,7 +23,7 @@ public:
 
     virtual void didLoseContext() OVERRIDE;
 
-    virtual void dumpLayerProperties(TextStream&, int indent) const OVERRIDE;
+    virtual void dumpLayerProperties(std::string*, int indent) const OVERRIDE;
 
     unsigned textureId() const { return m_textureId; }
     void setTextureId(unsigned id) { m_textureId = id; }

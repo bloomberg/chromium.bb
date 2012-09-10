@@ -11,7 +11,6 @@
 #include "CCMathUtil.h"
 #include "LayerChromium.h"
 #include <public/WebTransformationMatrix.h>
-#include <wtf/text/CString.h>
 
 using WebKit::WebTransformationMatrix;
 

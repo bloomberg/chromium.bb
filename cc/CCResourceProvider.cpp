@@ -5,7 +5,12 @@
 #include "config.h"
 
 #include "CCResourceProvider.h"
+#ifdef LOG
+#undef LOG
+#endif
 
+#include "base/string_split.h"
+#include "base/string_util.h"
 #include "CCProxy.h"
 #include "CCRendererGL.h" // For the GLC() macro.
 #include "Extensions3DChromium.h"
@@ -344,10 +349,9 @@ bool CCResourceProvider::initialize()
     if (!context3d->makeContextCurrent())
         return false;
 
-    WebKit::WebString extensionsWebString = context3d->getString(GraphicsContext3D::EXTENSIONS);
-    String extensionsString(extensionsWebString.data(), extensionsWebString.length());
-    Vector<String> extensions;
-    extensionsString.split(' ', extensions);
+    std::string extensionsString = UTF16ToASCII(context3d->getString(GraphicsContext3D::EXTENSIONS));
+    std::vector<std::string> extensions;
+    base::SplitString(extensionsString, ' ', &extensions);
     bool useMapSub = false;
     for (size_t i = 0; i < extensions.size(); ++i) {
         if (extensions[i] == "GL_EXT_texture_storage")
