@@ -18,7 +18,7 @@ namespace {
 
 // Default maximum time between the GestureRecognizer generating a
 // GestureTapDown and when it is forwarded to the renderer.
-static const int kTapDownDeferralTimeMs = 100;
+static const int kTapDownDeferralTimeMs = 150;
 
 // Sets |*value| to |switchKey| if it exists or sets it to |defaultValue|.
 static void GetParamHelper(int* value,
