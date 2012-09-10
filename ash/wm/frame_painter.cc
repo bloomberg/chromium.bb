@@ -7,7 +7,6 @@
 #include "ash/ash_constants.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/logging.h"  // DCHECK
@@ -27,7 +26,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -248,7 +246,6 @@ int FramePainter::NonClientHitTest(views::NonClientFrameView* view,
                                                      kResizeAreaCornerSize,
                                                      kResizeAreaCornerSize,
                                                      can_ever_resize);
-  frame_component = AdjustFrameHitCodeForMaximizedModes(frame_component);
   if (frame_component != HTNOWHERE)
     return frame_component;
 
@@ -611,43 +608,6 @@ int FramePainter::GetHeaderOpacity(HeaderMode header_mode,
   if (header_mode == ACTIVE)
     return kActiveWindowOpacity;
   return kInactiveWindowOpacity;
-}
-
-int FramePainter::AdjustFrameHitCodeForMaximizedModes(int hit_code) {
-  if (hit_code != HTNOWHERE && wm::IsWindowNormal(window_) &&
-      GetRestoreBoundsInScreen(window_)) {
-    // When there is a restore rectangle, a left/right maximized window might
-    // be active.
-    const gfx::Rect& bounds = frame_->GetWindowBoundsInScreen();
-    const gfx::Rect& screen =
-        gfx::Screen::GetDisplayMatching(bounds).work_area();
-    if (bounds.y() == screen.y() && bounds.bottom() == screen.bottom()) {
-      // The window is probably either left or right maximized.
-      if (bounds.x() == screen.x()) {
-        // It is left maximized and we can only allow a right resize.
-        return (hit_code == HTBOTTOMRIGHT ||
-                hit_code == HTTOPRIGHT ||
-                hit_code == HTRIGHT) ? HTRIGHT : HTNOWHERE;
-      } else if (bounds.right() == screen.right()) {
-        // It is right maximized and we can only allow a left resize.
-        return (hit_code == HTBOTTOMLEFT ||
-                hit_code == HTTOPLEFT ||
-                hit_code == HTLEFT) ? HTLEFT : HTNOWHERE;
-      }
-    } else if (bounds.x() == screen.x() &&
-               bounds.right() == screen.right()) {
-      // If horizontal fill mode is activated we don't allow a left/right
-      // resizing.
-      if (hit_code == HTTOPRIGHT ||
-          hit_code == HTTOP ||
-          hit_code == HTTOPLEFT)
-        return HTTOP;
-      return (hit_code == HTBOTTOMRIGHT ||
-              hit_code == HTBOTTOM ||
-              hit_code == HTBOTTOMLEFT) ? HTBOTTOM : HTNOWHERE;
-    }
-  }
-  return hit_code;
 }
 
 // static

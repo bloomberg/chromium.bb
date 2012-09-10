@@ -1258,7 +1258,7 @@ void Widget::SetInitialBounds(const gfx::Rect& bounds) {
   if (GetSavedWindowPlacement(&saved_bounds, &saved_show_state_)) {
     if (saved_show_state_ == ui::SHOW_STATE_MAXIMIZED) {
       // If we're going to maximize, wait until Show is invoked to set the
-      // bounds. That way we avoid a noticeable resize.
+      // bounds. That way we avoid a noticable resize.
       initial_restored_bounds_ = saved_bounds;
     } else {
       SetBounds(saved_bounds);

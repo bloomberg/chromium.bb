@@ -458,6 +458,7 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
     EXPECT_EQ("20,30 50x60",
               GetRestoreBoundsInScreen(window_.get())->ToString());
   }
+
   // Try the same with the right side.
   scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
       window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
@@ -866,38 +867,6 @@ TEST_F(WorkspaceWindowResizerTest, TestProperSizerResolutions) {
   EXPECT_EQ("0,0 720x552", rect.ToString());
   rect = resizer->GetTargetBoundsForSize(3);
   EXPECT_EQ("0,0 640x552", rect.ToString());
-}
-
-// Verifies that a dragged window will restore to its pre-maximized size.
-TEST_F(WorkspaceWindowResizerTest, RestoreToPreMaximizeCoordinates) {
-  window_->SetBounds(gfx::Rect(0, 0, 1000, 1000));
-  SetRestoreBoundsInScreen(window_.get(), gfx::Rect(96, 112, 320, 160));
-  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-      window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
-  ASSERT_TRUE(resizer.get());
-  // Drag the window to new poistion by adding (180, 16) to original point,
-  // the window should get restored.
-  resizer->Drag(CalculateDragPoint(*resizer, 180, 16), 0);
-  resizer->CompleteDrag(0);
-  EXPECT_EQ("180,16 320x160", window_->bounds().ToString());
-  // The restore rectangle should get cleared as well.
-  EXPECT_EQ(NULL, GetRestoreBoundsInScreen(window_.get()));
-}
-
-// Verifies that a dragged window will restore to its pre-maximized size.
-TEST_F(WorkspaceWindowResizerTest, RevertResizeOperation) {
-  window_->SetBounds(gfx::Rect(0, 0, 1000, 1000));
-  SetRestoreBoundsInScreen(window_.get(), gfx::Rect(96, 112, 320, 160));
-  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-      window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
-  ASSERT_TRUE(resizer.get());
-  // Drag the window to new poistion by adding (180, 16) to original point,
-  // the window should get restored.
-  resizer->Drag(CalculateDragPoint(*resizer, 180, 16), 0);
-  resizer->RevertDrag();
-  EXPECT_EQ("0,0 1000x1000", window_->bounds().ToString());
-  EXPECT_EQ("96,112 320x160",
-      GetRestoreBoundsInScreen(window_.get())->ToString());
 }
 
 }  // namespace internal
