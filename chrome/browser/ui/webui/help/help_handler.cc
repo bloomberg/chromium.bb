@@ -150,6 +150,7 @@ void HelpHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
     { "stable", IDS_ABOUT_PAGE_CHANNEL_STABLE },
     { "beta", IDS_ABOUT_PAGE_CHANNEL_BETA },
     { "dev", IDS_ABOUT_PAGE_CHANNEL_DEVELOPMENT },
+    { "channel-changed", IDS_ABOUT_PAGE_CHANNEL_CHANGED },
     { "webkit", IDS_WEBKIT },
     { "userAgent", IDS_ABOUT_VERSION_USER_AGENT },
     { "commandLine", IDS_ABOUT_VERSION_COMMAND_LINE },
@@ -326,6 +327,9 @@ void HelpHandler::SetReleaseTrack(const ListValue* args) {
   if (chromeos::UserManager::Get()->IsCurrentUserOwner()) {
     chromeos::CrosSettings::Get()->SetString(chromeos::kReleaseChannel,
                                              channel);
+    // Check for update after switching release channel.
+    version_updater_->CheckForUpdate(base::Bind(&HelpHandler::SetUpdateStatus,
+                                                base::Unretained(this)));
   }
 }
 

@@ -54,6 +54,11 @@ cr.define('help', function() {
 
       var channelChanger = $('channel-changer');
       if (channelChanger) {
+        this.channelName_ = {
+            'stable-channel': loadTimeData.getString('stable'),
+            'beta-channel': loadTimeData.getString('beta'),
+            'dev-channel': loadTimeData.getString('dev')
+        };
         var self = this;
         channelChanger.onchange = function(event) {
           self.setReleaseChannel_(event.target.value);
@@ -215,6 +220,9 @@ cr.define('help', function() {
      */
     setReleaseChannel_: function(channel) {
       chrome.send('setReleaseTrack', [channel]);
+      $('channel-change-confirmation').hidden = false;
+      $('channel-change-confirmation').textContent = loadTimeData.getStringF(
+          'channel-changed', this.channelName_[channel]);
     },
 
     /**

@@ -9379,6 +9379,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_ABOUT_PAGE_CHANNEL_DEVELOPMENT" desc="The development option in the channel select.">
         Dev - Unstable
       </message>
+      <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGED" desc="The message to confirm that channel has changed.">
+        You have switched to the <ph name="CHANNEL_NAME">$1<ex>Stable</ex></ph> channel.
+      </message>
 
       <message name="IDS_OPTIONS_STARTUP_GROUP_NAME" desc="The title of the startup group">
         On startup
