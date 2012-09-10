@@ -100,7 +100,7 @@ class ChromotingHelperMac(ChromotingHelper):
 
     # Unmount after installation
     mounted = os.path.join('/Volumes', 'Chromoting Host ' + version)
-    subprocess.call('hdiutil unmount "' + mounted + '"', shell=True)
+    subprocess.call('hdiutil detach "' + mounted + '"', shell=True)
 
     # Clean up remoting-me2me-host-mac dir
     shutil.rmtree(host_dir, True)
@@ -130,7 +130,14 @@ class ChromotingHelperMac(ChromotingHelper):
                                          'functional', 'chromoting',
                                          'mock_pref_pane.py')
 
-    os.remove(mock_pref_pane)
+    # When the symlink from real pref pane to mock pref pane exists,
+    # mock pref pane will be modified to be a dir when the host is installed.
+    # After the host is installed and mock pref pane is modified to be a file,
+    # it will be a file until next host installation.
+    if os.path.isdir(mock_pref_pane):
+      shutil.rmtree(mock_pref_pane, True)
+    elif os.path.isfile(mock_pref_pane):
+      os.remove(mock_pref_pane)
 
     mock_pref_pane_file = open(mock_pref_pane, 'w')
     mock_pref_pane_file.write('#!/bin/bash\n')
@@ -141,9 +148,12 @@ class ChromotingHelperMac(ChromotingHelper):
 
     subprocess.call(['chmod', 'a+x', mock_pref_pane])
 
+    # The real pref pane is a dir if the host is installed on a clean machine.
+    # Once the test is run on the machine, real pref pane will be replaced to
+    # a symlink.
     if os.path.isdir(pref_pane):
       shutil.rmtree(pref_pane, True)
-    else:
+    elif os.path.isfile(pref_pane):
       os.remove(pref_pane)
 
     subprocess.call(['ln', '-s', mock_pref_pane, pref_pane])
