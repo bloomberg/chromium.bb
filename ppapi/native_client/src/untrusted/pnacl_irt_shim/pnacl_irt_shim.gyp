@@ -22,9 +22,6 @@
           'shim_entry.c',
           'shim_ppapi.c',
         ],
-        'include_dirs': [
-          '../../../..',
-        ],
       },
       'dependencies': [
         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
