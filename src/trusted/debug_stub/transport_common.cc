@@ -223,9 +223,4 @@ ITransport *SocketBinding::AcceptConnection() {
   return NULL;
 }
 
-void ITransport::Free(ITransport* itrans) {
-  Transport* trans = static_cast<Transport*>(itrans);
-  delete trans;
-}
-
 }  // namespace port

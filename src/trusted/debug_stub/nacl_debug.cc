@@ -75,26 +75,17 @@ void WINAPI NaClStubThread(void *thread_arg) {
     return;
   }
   while (1) {
-    ITransport* trans = NULL;
-    Session* ses = NULL;
+    // Wait for a connection.
+    nacl::scoped_ptr<ITransport> trans(socket_binding->AcceptConnection());
+    if (NULL == trans.get()) continue;
 
-    try {
-      // Wait for a connection.
-      trans = socket_binding->AcceptConnection();
-      if (NULL == trans) continue;
+    // Create a new session for this connection
+    Session ses;
+    ses.Init(trans.get());
+    ses.SetFlags(Session::DEBUG_MASK);
 
-      // Create a new session for this connection
-      ses = new Session();
-      ses->Init(trans);
-      ses->SetFlags(Session::DEBUG_MASK);
-
-      // Run this session for as long as it lasts
-      g_target->Run(ses);
-    }
-    catch(...) {
-      delete ses;
-      ITransport::Free(trans);
-    }
+    // Run this session for as long as it lasts
+    g_target->Run(&ses);
   }
 }
 

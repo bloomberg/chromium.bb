@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2010 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -30,6 +30,8 @@ typedef int SocketHandle;
 
 class ITransport {
  public:
+  virtual ~ITransport() {}  // Allow to delete using base pointer
+
   // Read from this transport, return a negative value if there is an error
   // otherwise return the number of bytes actually read.
   virtual int32_t Read(void *ptr, int32_t len) = 0;
@@ -43,11 +45,6 @@ class ITransport {
 
   // Disconnect the transport, R/W and Select will now throw an exception
   virtual void Disconnect() = 0;
-
-  static void Free(ITransport *transport);
-
- protected:
-  virtual ~ITransport() {}  // Prevent delete of base pointer
 };
 
 class SocketBinding {
