@@ -27,7 +27,7 @@
 #include "chrome/browser/safe_browsing/malware_details.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -105,7 +105,6 @@ static const char* const kTakeMeBackCommand = "takeMeBack";
 static const char* const kDoReportCommand = "doReport";
 static const char* const kDontReportCommand = "dontReport";
 static const char* const kDisplayCheckBox = "displaycheckbox";
-static const char* const kDisplayShowDiagnostic = "displayShowDiagnostic";
 static const char* const kBoxChecked = "boxchecked";
 static const char* const kExpandedSeeMore = "expandedSeeMore";
 // Special command that we use when the user navigated away from the
@@ -1047,24 +1046,22 @@ void SafeBrowsingBlockingPageV2::PopulateStringDictionary(
     const string16& headline,
     const string16& description1,
     const string16& description2,
-    const string16& description3,
-    const string16& description4) {
+    const string16& description3) {
   strings->SetString("title", title);
   strings->SetString("headLine", headline);
   strings->SetString("description1", description1);
   strings->SetString("description2", description2);
   strings->SetString("description3", description3);
-  strings->SetString("description4", description4);
   strings->SetBoolean("proceedDisabled",
                       IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled));
+  strings->SetBoolean("isMainFrame", is_main_frame_load_blocked_);
 
-  strings->SetString("textdirection", base::i18n::IsRTL() ? "rtl" : "ltr");
   strings->SetString("back_button",
       l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_BACK_BUTTON));
   strings->SetString("seeMore", l10n_util::GetStringUTF16(
       IDS_SAFE_BROWSING_MALWARE_V2_SEE_MORE));
-  strings->SetString("seeLess", l10n_util::GetStringUTF16(
-      IDS_SAFE_BROWSING_MALWARE_V2_SEE_LESS));
+
+  ChromeURLDataManager::DataSource::SetFontAndTextDirection(strings);
 }
 
 void SafeBrowsingBlockingPageV2::PopulateMultipleThreatStringDictionary(
@@ -1080,9 +1077,11 @@ void SafeBrowsingBlockingPageV2::PopulateMalwareStringDictionary(
 
   // Check to see if we're blocking the main page, or a sub-resource on the
   // main page.
-  string16 headline, description1, description2, description3, description4;
+  string16 headline, description1, description2, description3;
 
 
+  description3 = l10n_util::GetStringUTF16(
+      IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION3);
   if (is_main_frame_load_blocked_) {
     headline = l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_V2_HEADLINE);
     description1 = l10n_util::GetStringFUTF16(
@@ -1091,11 +1090,8 @@ void SafeBrowsingBlockingPageV2::PopulateMalwareStringDictionary(
         UTF8ToUTF16(url_.host()));
     description2 = l10n_util::GetStringUTF16(
         IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION2);
-    description3 = l10n_util::GetStringUTF16(
-        IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION3);
-    description4 = l10n_util::GetStringUTF16(
-        IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION4);
-    strings->SetBoolean(kDisplayShowDiagnostic, true);
+    strings->SetString("details", l10n_util::GetStringUTF16(
+          IDS_SAFE_BROWSING_MALWARE_V2_DETAILS));
   } else {
     headline = l10n_util::GetStringUTF16(
         IDS_SAFE_BROWSING_MALWARE_V2_HEADLINE_SUBRESOURCE);
@@ -1103,14 +1099,12 @@ void SafeBrowsingBlockingPageV2::PopulateMalwareStringDictionary(
         IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION1_SUBRESOURCE,
         l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
         UTF8ToUTF16(web_contents_->GetURL().host()));
-    description2 = l10n_util::GetStringUTF16(
-        IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION2_SUBRESOURCE);
-    description3 = l10n_util::GetStringUTF16(
-        IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION3_SUBRESOURCE);
-    description4 = l10n_util::GetStringFUTF16(
-            IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION4_SUBRESOURCE,
-            UTF8ToUTF16(url_.host()));
-    strings->SetBoolean(kDisplayShowDiagnostic, false);
+    description2 = l10n_util::GetStringFUTF16(
+        IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION2_SUBRESOURCE,
+        UTF8ToUTF16(url_.host()));
+    strings->SetString("details", l10n_util::GetStringFUTF16(
+          IDS_SAFE_BROWSING_MALWARE_V2_DETAILS_SUBRESOURCE,
+          UTF8ToUTF16(url_.host())));
   }
 
   PopulateStringDictionary(
@@ -1119,8 +1113,7 @@ void SafeBrowsingBlockingPageV2::PopulateMalwareStringDictionary(
       headline,
       description1,
       description2,
-      description3,
-      description4);
+      description3);
 
   if (!CanShowMalwareDetailsOption()) {
     strings->SetBoolean(kDisplayCheckBox, false);
@@ -1143,10 +1136,10 @@ void SafeBrowsingBlockingPageV2::PopulateMalwareStringDictionary(
       strings->SetString(kBoxChecked, "");
   }
 
+  strings->SetString("proceed",
+      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_V2_PROCEED_LINK));
   strings->SetString("learnMore",
       l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_V2_LEARN_MORE));
-  strings->SetString("details",
-      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_V2_DETAILS));
 }
 
 void SafeBrowsingBlockingPageV2::PopulatePhishingStringDictionary(

@@ -10837,7 +10837,7 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         </message>
       </if>
       <message name="IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION1" desc="SafeBrowsing Malware HTML v2 description, first line">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> has blocked access to <ph name="HOST_NAME">$2<ex>www.malware.com</ex></ph>.
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> has blocked access to <ph name="HOST_NAME">$2<ex>www.malware.com</ex></ph> for now.
       </message>
       <message name="IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION1_SUBRESOURCE" desc="SafeBrowsing Malware HTML v2 description, first line, when the malware is on a subresource of the page">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> has blocked access to this page on <ph name="HOST_NAME">$2<ex>landing.com</ex></ph>.
@@ -10846,34 +10846,34 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         <message name="IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION2" desc="Mobile: SafeBrowsing Malware HTML v2 description, second line">
           Even if you have visited this website safely in the past, visiting it now is very likely to infect your mobile device with malware.
         </message>
-        <message name="IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION3_SUBRESOURCE" desc="Mobile: SafeBrowsing Malware HTML v2 description, last line, when the malware is on a subresource of the page">
-          Visiting this web page now is very likely to infect your mobile device with malware. Malware is malicious software that causes things like identity theft, financial loss, and permanent file deletion.
+        <message name="IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION2_SUBRESOURCE" desc="Mobile: SafeBrowsing Malware HTML v2 description, second line, when the malware is on a subresource of the page">
+          Content from <ph name="ELEMENTS_HOST_NAME">$1<ex>evil.com</ex></ph>, a known malware distributor, has been inserted into this web page. Visiting this page now is very likely to infect your mobile device with malware.
         </message>
       </if>
       <if expr="is_macosx">
         <message name="IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION2" desc="Mac: SafeBrowsing Malware HTML v2 description, second line">
           Even if you have visited this website safely in the past, visiting it now is very likely to infect your Mac with malware.
         </message>
-        <message name="IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION3_SUBRESOURCE" desc="Mac: SafeBrowsing Malware HTML v2 description, last line, when the malware is on a subresource of the page">
-          Visiting this web page now is very likely to infect your Mac with malware. Malware is malicious software that causes things like identity theft, financial loss, and permanent file deletion.
+        <message name="IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION2_SUBRESOURCE" desc="Mac: SafeBrowsing Malware HTML v2 description, second line, when the malware is on a subresource of the page">
+          Content from <ph name="ELEMENTS_HOST_NAME">$1<ex>evil.com</ex></ph>, a known malware distributor, has been inserted into this web page. Visiting this page now is very likely to infect your Mac with malware.
         </message>
       </if>
       <if expr="not pp_ifdef('android') and not is_macosx">
         <message name="IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION2" desc="SafeBrowsing Malware HTML v2 description, second line">
           Even if you have visited this website safely in the past, visiting it now is very likely to infect your computer with malware.
         </message>
-        <message name="IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION3_SUBRESOURCE" desc="SafeBrowsing Malware HTML v2 description, last line, when the malware is on a subresource of the page">
-          Visiting this web page now is very likely to infect your computer with malware. Malware is malicious software that causes things like identity theft, financial loss, and permanent file deletion.
+        <message name="IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION2_SUBRESOURCE" desc="SafeBrowsing Malware HTML v2 description, second line, when the malware is on a subresource of the page">
+          Content from <ph name="ELEMENTS_HOST_NAME">$1<ex>evil.com</ex></ph>, a known malware distributor, has been inserted into this web page. Visiting this page now is very likely to infect your computer with malware.
         </message>
       </if>
-      <message name="IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION2_SUBRESOURCE" desc="SafeBrowsing Malware HTML v2 description, second line, when the malware is on a subresource of the page">
-        Content from a known malware distributor has been inserted into this web page, likely as a result of an attack unknown to its owner.
-      </message>
       <message name="IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION3" desc="SafeBrowsing Malware HTML v2 description, last line">
         Malware is malicious software that causes things like identity theft, financial loss, and permanent file deletion.
       </message>
       <message name="IDS_SAFE_BROWSING_MALWARE_PROCEED_LINK" desc="SafeBrowsing Malware HTML description, last line proceed link part.">
         proceed anyway
+      </message>
+      <message name="IDS_SAFE_BROWSING_MALWARE_V2_PROCEED_LINK" desc="SafeBrowsing Malware HTML v2 description, advanced section proceed link part.">
+        Proceed at your own risk
       </message>
       <if expr="pp_ifdef('android')">
         <message name="IDS_SAFE_BROWSING_MALWARE_DESCRIPTION4" desc="Mobile: SafeBrowsing Malware HTML description, first line for case of subresource malicious">
@@ -10888,26 +10888,17 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_SAFE_BROWSING_MALWARE_DESCRIPTION5" desc="SafeBrowsing Malware HTML description, detailed information, click button to span.">
         We have already notified <ph name="HOST_NAME">&lt;strong&gt;$1<ex>evil.com</ex>&lt;/strong&gt;</ph> that we found malware on the site. For more about the problems found on <ph name="HOST_NAME2">$2<ex>www.malware.com</ex></ph>, visit the Google <ph name="DIAGNOSTIC_PAGE">$3<ex>diagnostic page</ex></ph>.
       </message>
-      <message name="IDS_SAFE_BROWSING_MALWARE_V2_SEE_MORE" desc="SafeBrowsing Malware HTML v2 see more dropdown header text">
-        More
-      </message>
-      <message name="IDS_SAFE_BROWSING_MALWARE_V2_SEE_LESS" desc="SafeBrowsing Malware HTML v2 see less dropdown header text">
-        Less
-      </message>
-      <message name="IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION4" desc="SafeBrowsing Malware HTML v2 more info text, and proceed link">
-        You should not visit the website ahead even if you trust it or have anti-virus software. Legitimate websites are often compromised without the knowledge of their owners, but the problems are usually resolved quickly. Please check again tomorrow.
-        <ph name="BEGIN_SPAN">&lt;span id="proceed-span" hidden&gt;</ph>If you <ph name="BEGIN_LINK">&lt;a id="proceed" href="#"&gt;</ph>proceed against Google's recommendation<ph name="END_LINK">&lt;/a&gt;</ph>, you will most likely become a victim of malware.<ph name="END_SPAN">&lt;/span&gt;</ph>
-      </message>
-      <message name="IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION4_SUBRESOURCE" desc="SafeBrowsing Malware HTML v2 more info text, and proceed link, when the malware is on a subresource of the page">
-        The page ahead has been temporarily compromised to import content from the malware distributor <ph name="ELEMENTS_HOST_NAME">$1<ex>evil.com</ex></ph> (<ph name="BEGIN_LINK">&lt;a id="show-diagnostic-link" href="#"&gt;</ph>info<ph name="END_LINK">&lt;/a&gt;</ph>).
-        <ph name="BEGIN_SPAN">&lt;span id="proceed-span" hidden&gt;</ph>If you <ph name="BEGIN_LINK2">&lt;a id="proceed" href="#"&gt;</ph>proceed against Google's recommendation<ph name="END_LINK2">&lt;/a&gt;</ph>, you'll most likely become a victim of malware even if you have anti-virus software.<ph name="END_SPAN">&lt;/span&gt;</ph>
-        Please check again tomorrow.
+      <message name="IDS_SAFE_BROWSING_MALWARE_V2_SEE_MORE" desc="SafeBrowsing Malware HTML v2 advanced section see more text">
+        Advanced
       </message>
       <message name="IDS_SAFE_BROWSING_MALWARE_V2_LEARN_MORE" desc="SafeBrowsing Malware HTML v2 learn more link text">
-        Learn More about Malware
+        Learn more
       </message>
       <message name="IDS_SAFE_BROWSING_MALWARE_V2_DETAILS" desc="SafeBrowsing Malware HTML v2 more details link text">
-        More Details about Problems on this Website
+        Details about problems on this website
+      </message>
+      <message name="IDS_SAFE_BROWSING_MALWARE_V2_DETAILS_SUBRESOURCE" desc="SafeBrowsing Malware HTML v2 more details link text, when the malware is on a subresource of the page">
+        Details about <ph name="ELEMENTS_HOST_NAME">$1<ex>evil.com</ex></ph>
       </message>
       <message name="IDS_SAFE_BROWSING_MALWARE_BACK_BUTTON" desc="SafeBrowsing Malware, back button">
         Go back
@@ -10919,7 +10910,7 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Safe Browsing privacy policies
       </message>
       <message name="IDS_SAFE_BROWSING_PRIVACY_POLICY_PAGE_V2" desc="Label for the link to SafeBrowsing Privacy policy page v2">
-        Privacy Policy
+        Privacy policy
       </message>
       <message name="IDS_SAFE_BROWSING_PRIVACY_POLICY_URL" translateable="false">
         http://www.google.com/chrome/intl/[GRITLANGCODE]/privacy.html
@@ -10928,7 +10919,7 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Help improve detection of malware by sending additional data to Google about sites on which you see this warning. This data will be handled in accordance with the <ph name="PRIVACY_PAGE_LINK">$1</ph>.
       </message>
       <message name="IDS_SAFE_BROWSING_MALWARE_V2_REPORTING_AGREE" desc="SafeBrowsing Malware v2 Details label next to checkbox">
-        Report back to Google to help improve malware detection. <ph name="PRIVACY_PAGE_LINK">$1</ph>.
+        Help detect malware by sending data to Google about sites on which you see this warning. <ph name="PRIVACY_PAGE_LINK">$1</ph>
       </message>
       <message name="IDS_SAFE_BROWSING_PHISHING_TITLE" desc="SafeBrowsing Phishing HTML title">
         Phishing Detected!

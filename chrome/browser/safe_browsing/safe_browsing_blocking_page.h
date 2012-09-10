@@ -260,8 +260,7 @@ class SafeBrowsingBlockingPageV2 : public SafeBrowsingBlockingPage {
                                 const string16& headline,
                                 const string16& description1,
                                 const string16& description2,
-                                const string16& description3,
-                                const string16& description4);
+                                const string16& description3);
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageV2);
 };
