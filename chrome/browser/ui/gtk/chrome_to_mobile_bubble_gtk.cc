@@ -53,10 +53,10 @@ const GdkColor kErrorColor = GDK_COLOR_RGB(0xFF, 0x00, 0x00);
 }  // namespace
 
 // static
-void ChromeToMobileBubbleGtk::Show(GtkImage* anchor_image, Browser* browser) {
+void ChromeToMobileBubbleGtk::Show(GtkWidget* anchor_widget, Browser* browser) {
   // Do not construct a new bubble if one is already being shown.
   if (!g_bubble)
-    g_bubble = new ChromeToMobileBubbleGtk(anchor_image, browser);
+    g_bubble = new ChromeToMobileBubbleGtk(anchor_widget, browser);
 }
 
 void ChromeToMobileBubbleGtk::BubbleClosing(BubbleGtk* bubble,
@@ -66,12 +66,8 @@ void ChromeToMobileBubbleGtk::BubbleClosing(BubbleGtk* bubble,
   // Instruct the service to delete the snapshot file.
   service_->DeleteSnapshot(snapshot_path_);
 
-  // Restore the resting state mobile device icon.
-  gtk_image_set_from_pixbuf(GTK_IMAGE(anchor_image_),
-      theme_service_->GetImageNamed(IDR_MOBILE)->ToGdkPixbuf());
-
   labels_.clear();
-  anchor_image_ = NULL;
+  anchor_widget_ = NULL;
   send_copy_ = NULL;
   cancel_ = NULL;
   send_ = NULL;
@@ -142,13 +138,13 @@ void ChromeToMobileBubbleGtk::OnSendComplete(bool success) {
   }
 }
 
-ChromeToMobileBubbleGtk::ChromeToMobileBubbleGtk(GtkImage* anchor_image,
+ChromeToMobileBubbleGtk::ChromeToMobileBubbleGtk(GtkWidget* anchor_widget,
                                                  Browser* browser)
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       browser_(browser),
       service_(ChromeToMobileServiceFactory::GetForProfile(browser->profile())),
       theme_service_(GtkThemeService::GetFrom(browser->profile())),
-      anchor_image_(anchor_image),
+      anchor_widget_(anchor_widget),
       send_copy_(NULL),
       cancel_(NULL),
       send_(NULL),
@@ -254,15 +250,10 @@ ChromeToMobileBubbleGtk::ChromeToMobileBubbleGtk(GtkImage* anchor_image,
 
   BubbleGtk::ArrowLocationGtk arrow_location = base::i18n::IsRTL() ?
       BubbleGtk::ARROW_LOCATION_TOP_LEFT : BubbleGtk::ARROW_LOCATION_TOP_RIGHT;
-  bubble_ = BubbleGtk::Show(GTK_WIDGET(anchor_image_),
-                            NULL,
-                            content,
-                            arrow_location,
-                            BubbleGtk::MATCH_SYSTEM_THEME |
-                                BubbleGtk::POPUP_WINDOW |
-                                BubbleGtk::GRAB_INPUT,
-                            theme_service_,
-                            this /*delegate*/);
+  const int attribute_flags = BubbleGtk::MATCH_SYSTEM_THEME |
+                              BubbleGtk::POPUP_WINDOW | BubbleGtk::GRAB_INPUT;
+  bubble_ = BubbleGtk::Show(anchor_widget_, NULL, content, arrow_location,
+                            attribute_flags, theme_service_, this /*delegate*/);
   if (!bubble_) {
     NOTREACHED();
     return;
@@ -276,9 +267,6 @@ ChromeToMobileBubbleGtk::ChromeToMobileBubbleGtk(GtkImage* anchor_image,
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(theme_service_));
   theme_service_->InitThemesFor(this);
-
-  gtk_image_set_from_pixbuf(GTK_IMAGE(anchor_image_),
-      theme_service_->GetImageNamed(IDR_MOBILE_LIT)->ToGdkPixbuf());
 }
 
 ChromeToMobileBubbleGtk::~ChromeToMobileBubbleGtk() {

@@ -44,8 +44,8 @@ class ChromeToMobileBubbleGtk : public BubbleDelegateGtk,
                                 public ChromeToMobileService::Observer {
  public:
   // Shows the Chrome to Mobile bubble, pointing at |anchor_widget|.
-  // |anchor_image| is updated to show the lit icon during the bubble lifetime.
-  static void Show(GtkImage* anchor_image, Browser* browser);
+  // TODO(msw): Show the lit mobile icon during the bubble lifetime.
+  static void Show(GtkWidget* anchor_widget, Browser* browser);
 
   // BubbleDelegateGtk:
   virtual void BubbleClosing(BubbleGtk* bubble, bool closed_by_escape) OVERRIDE;
@@ -63,7 +63,7 @@ class ChromeToMobileBubbleGtk : public BubbleDelegateGtk,
   virtual void OnSendComplete(bool success) OVERRIDE;
 
  private:
-  ChromeToMobileBubbleGtk(GtkImage* anchor_image, Browser* browser);
+  ChromeToMobileBubbleGtk(GtkWidget* anchor_widget, Browser* browser);
   virtual ~ChromeToMobileBubbleGtk();
 
   // Notified when |content_| is destroyed so we can delete our instance.
@@ -90,8 +90,8 @@ class ChromeToMobileBubbleGtk : public BubbleDelegateGtk,
   // The list of radio buttons corresponding to the list of mobile devices.
   std::vector<GtkWidget*> radio_buttons_;
 
-  // The anchor image, updated to show the lit icon during the bubble lifetime.
-  GtkImage* anchor_image_;
+  // The widget to which this bubble is anchored.
+  GtkWidget* anchor_widget_;
 
   // The labels in the bubble; tracked for theme changes.
   std::vector<GtkWidget*> labels_;

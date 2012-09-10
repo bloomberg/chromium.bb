@@ -413,6 +413,9 @@ class LocationBarViewGtk : public OmniboxEditController,
   // Update the star icon after it is toggled or the theme changes.
   void UpdateStarIcon();
 
+  // Update the Chrome To Mobile command state.
+  void UpdateChromeToMobileState();
+
   // Returns true if we should only show the URL and none of the extras like
   // the star button or page actions.
   bool ShouldOnlyShowLocation();

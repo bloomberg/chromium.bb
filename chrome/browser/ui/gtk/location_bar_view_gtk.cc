@@ -725,6 +725,7 @@ GtkWidget* LocationBarViewGtk::GetPageActionWidget(
 void LocationBarViewGtk::Update(const WebContents* contents) {
   UpdateZoomIcon();
   UpdateStarIcon();
+  UpdateChromeToMobileState();
   UpdateSiteTypeArea();
   UpdateContentSettingsIcons();
   UpdatePageActions();
@@ -1506,9 +1507,7 @@ void LocationBarViewGtk::ShowStarBubble(const GURL& url,
 }
 
 void LocationBarViewGtk::ShowChromeToMobileBubble() {
-  // TODO(msw): Chrome to Mobile is currently disabled on GTK.
-  // ChromeToMobileBubbleGtk::Show(GTK_WIDGET(action_box_button_->widget()),
-  //                               browser_);
+  ChromeToMobileBubbleGtk::Show(action_box_button_->widget(), browser_);
 }
 
 void LocationBarViewGtk::SetStarred(bool starred) {
@@ -1570,6 +1569,13 @@ void LocationBarViewGtk::UpdateStarIcon() {
   } else {
     gtk_widget_hide_all(star_.get());
   }
+}
+
+void LocationBarViewGtk::UpdateChromeToMobileState() {
+  ChromeToMobileService* service =
+      ChromeToMobileServiceFactory::GetForProfile(browser()->profile());
+  command_updater_->UpdateCommandEnabled(IDC_CHROME_TO_MOBILE_PAGE,
+      !toolbar_model_->input_in_progress() && service && service->HasMobiles());
 }
 
 bool LocationBarViewGtk::ShouldOnlyShowLocation() {
