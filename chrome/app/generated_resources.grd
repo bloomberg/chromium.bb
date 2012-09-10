@@ -15640,10 +15640,10 @@ Press any key to continue exploring.
         Touchpad and mouse settings
       </message>
       <message name="IDS_OPTIONS_POINTER_OVERLAY_SECTION_TITLE_TOUCHPAD" desc="The title for 'Touchpad' section of the Pointer Settings overlay.">
-        Touchpad:
+        Touchpad
       </message>
       <message name="IDS_OPTIONS_POINTER_OVERLAY_SECTION_TITLE_MOUSE" desc="The title for 'Mouse' section of the Pointer Settings overlay.">
-        Mouse:
+        Mouse
       </message>
       <message name="IDS_STATUSBAR_ACCESSIBILITY_ENABLED" desc="The tooltip for the status bar button to indicate that accessibility is enabled.">
         Accessibility features are enabled.
