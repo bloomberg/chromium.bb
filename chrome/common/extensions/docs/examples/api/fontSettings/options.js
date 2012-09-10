@@ -154,26 +154,32 @@ function isControllableLevel(levelOfControl) {
 }
 
 // Returns a function to be used as a listener for font size setting changed
-// events from the Font Settings Extension API. The function updates the
-// input element |elem| to reflect the change.
-function getFontSizeChangedOnBrowserFunc(elem) {
+// events from the Font Settings Extension API. The function updates the input
+// element |elem| and the elements in |sampleTexts| to reflect the change.
+function getFontSizeChangedOnBrowserFunc(elem, sampleTexts) {
   return function(details) {
-    elem.value = details.pixelSize.toString();
+    var size = details.pixelSize.toString();
+    elem.value = size;
     elem.disabled = !isControllableLevel(details.levelOfControl);
+    for (var i = 0; i < sampleTexts.length; i++)
+      document.getElementById(sampleTexts[i]).style.fontSize = size + 'px';
   }
 }
 
-// Maps the text input HTML element with |id| to the extension API accessor
+// Maps the HTML <input> element with |id| to the extension API accessor
 // functions |getter| and |setter| for a setting and onChange event |apiEvent|
-// for the setting.
-function initFontSizePref(id, getter, setter, apiEvent) {
+// for the setting. Also, maps the element ids in |sampleTexts| to this setting.
+function initFontSizePref(id, sampleTexts, getter, setter, apiEvent) {
   var elem = document.getElementById(id);
   getter({}, function(details) {
-    elem.value = details.pixelSize.toString();
+    var size = details.pixelSize.toString();
+    elem.value = size;
     elem.disabled = !isControllableLevel(details.levelOfControl);
+    for (var i = 0; i < sampleTexts.length; i++)
+      document.getElementById(sampleTexts[i]).style.fontSize = size + 'px';
   });
   elem.addEventListener('change', getFontSizeChangedFunc(elem, setter));
-  apiEvent.addListener(getFontSizeChangedOnBrowserFunc(elem));
+  apiEvent.addListener(getFontSizeChangedOnBrowserFunc(elem, sampleTexts));
 }
 
 function clearAllSettings() {
@@ -229,19 +235,24 @@ function init() {
   chrome.fontSettings.onFontChanged.addListener(
       updateFontListsForScript);
 
-  initFontSizePref('defaultFontSize',
-                   chrome.fontSettings.getDefaultFontSize,
-                   chrome.fontSettings.setDefaultFontSize,
-                   chrome.fontSettings.onDefaultFontSizeChanged);
+  initFontSizePref(
+      'defaultFontSize',
+      ['standardFontSample', 'serifFontSample', 'sansSerifFontSample'],
+      chrome.fontSettings.getDefaultFontSize,
+      chrome.fontSettings.setDefaultFontSize,
+      chrome.fontSettings.onDefaultFontSizeChanged);
   initFontSizePref(
       'defaultFixedFontSize',
+      ['fixedFontSample'],
       chrome.fontSettings.getDefaultFixedFontSize,
       chrome.fontSettings.setDefaultFixedFontSize,
       chrome.fontSettings.onDefaultFixedFontSizeChanged);
-  initFontSizePref('minFontSize',
-                   chrome.fontSettings.getMinimumFontSize,
-                   chrome.fontSettings.setMinimumFontSize,
-                   chrome.fontSettings.onMinimumFontSizeChanged);
+  initFontSizePref(
+      'minFontSize',
+      ['minFontSample'],
+      chrome.fontSettings.getMinimumFontSize,
+      chrome.fontSettings.setMinimumFontSize,
+      chrome.fontSettings.onMinimumFontSizeChanged);
 
   var clearButton = document.getElementById('clearButton');
   clearButton.addEventListener('click', clearAllSettings);
