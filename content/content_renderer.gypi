@@ -44,8 +44,6 @@
     'public/renderer/render_view_observer_tracker.h',
     'public/renderer/render_view_visitor.h',
     'public/renderer/renderer_ppapi_host.h',
-    'public/renderer/v8_string_conversions.cc',
-    'public/renderer/v8_string_conversions.h',
     'public/renderer/v8_value_converter.h',
     'renderer/accessibility_node_serializer.cc',
     'renderer/accessibility_node_serializer.h',
