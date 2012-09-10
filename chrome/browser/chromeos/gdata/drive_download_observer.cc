@@ -351,13 +351,15 @@ void DriveDownloadObserver::ModelChanged(DownloadManager* download_manager) {
 
   DownloadManager::DownloadVector downloads;
   // Drive downloads are considered temporary downloads.
-  download_manager->GetTemporaryDownloads(drive_tmp_download_path_,
-                                          &downloads);
+  download_manager->GetAllDownloads(&downloads);
   for (size_t i = 0; i < downloads.size(); ++i) {
     // Only accept downloads that have the Drive meta data associated with
     // them. Otherwise we might trip over non-Drive downloads being saved to
     // drive_tmp_download_path_.
-    if (IsDriveDownload(downloads[i]))
+    if (downloads[i]->IsTemporary() &&
+        (downloads[i]->GetTargetFilePath().DirName() ==
+         drive_tmp_download_path_) &&
+        IsDriveDownload(downloads[i]))
       OnDownloadUpdated(downloads[i]);
   }
 }
@@ -456,9 +458,11 @@ bool DriveDownloadObserver::ShouldUpload(DownloadItem* download) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Upload if the item is in pending_downloads_,
+  // has a filename,
   // is complete or large enough to stream, and,
   // is not already being uploaded.
   return (pending_downloads_.count(download->GetId()) != 0) &&
+         !download->GetFullPath().empty() &&
          (download->AllDataSaved() ||
           download->GetReceivedBytes() > kStreamingFileSize) &&
          (GetUploadingUserData(download) == NULL);

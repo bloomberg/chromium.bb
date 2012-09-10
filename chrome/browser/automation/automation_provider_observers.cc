@@ -1431,21 +1431,13 @@ AllDownloadsCompleteObserver::AllDownloadsCompleteObserver(
 
 AllDownloadsCompleteObserver::~AllDownloadsCompleteObserver() {}
 
-void AllDownloadsCompleteObserver::ModelChanged(DownloadManager* manager) {
-  DCHECK_EQ(manager, download_manager_);
-  // The set of downloads in the download manager has changed.  If there are
-  // any new downloads that are still in progress, add them to the pending list.
-  std::vector<DownloadItem*> downloads;
-  download_manager_->GetAllDownloads(FilePath(), &downloads);
-  for (std::vector<DownloadItem*>::iterator it = downloads.begin();
-       it != downloads.end(); ++it) {
-    if ((*it)->GetState() == DownloadItem::IN_PROGRESS &&
-        pre_download_ids_.find((*it)->GetId()) == pre_download_ids_.end()) {
-      (*it)->AddObserver(this);
-      pending_downloads_.insert(*it);
-    }
+
+void AllDownloadsCompleteObserver::OnDownloadCreated(
+    DownloadManager* manager, DownloadItem* item) {
+  if (pre_download_ids_.find(item->GetId()) == pre_download_ids_.end()) {
+    item->AddObserver(this);
+    pending_downloads_.insert(item);
   }
-  ReplyIfNecessary();
 }
 
 void AllDownloadsCompleteObserver::OnDownloadUpdated(DownloadItem* download) {

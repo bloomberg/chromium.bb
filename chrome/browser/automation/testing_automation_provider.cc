@@ -2643,8 +2643,8 @@ void TestingAutomationProvider::GetDownloadsInfo(Browser* browser,
 
   if (download_service->HasCreatedDownloadManager()) {
     std::vector<DownloadItem*> downloads;
-    BrowserContext::GetDownloadManager(browser->profile())->
-        GetAllDownloads(FilePath(), &downloads);
+    BrowserContext::GetDownloadManager(browser->profile())->GetAllDownloads(
+        &downloads);
 
     for (std::vector<DownloadItem*>::iterator it = downloads.begin();
          it != downloads.end();
@@ -2684,27 +2684,6 @@ void TestingAutomationProvider::WaitForAllDownloadsToComplete(
       pre_download_ids);
 }
 
-namespace {
-
-DownloadItem* GetDownloadItemFromId(int id, DownloadManager* download_manager) {
-  std::vector<DownloadItem*> downloads;
-  download_manager->GetAllDownloads(FilePath(), &downloads);
-  DownloadItem* selected_item = NULL;
-
-  for (std::vector<DownloadItem*>::iterator it = downloads.begin();
-       it != downloads.end();
-       it++) {
-    DownloadItem* curr_item = *it;
-    if (curr_item->GetId() == id) {
-      selected_item = curr_item;
-      break;
-    }
-  }
-  return selected_item;
-}
-
-}  // namespace
-
 // See PerformActionOnDownload() in chrome/test/pyautolib/pyauto.py for sample
 // json input and output.
 void TestingAutomationProvider::PerformActionOnDownload(
@@ -2728,7 +2707,7 @@ void TestingAutomationProvider::PerformActionOnDownload(
 
   DownloadManager* download_manager =
       BrowserContext::GetDownloadManager(browser->profile());
-  DownloadItem* selected_item = GetDownloadItemFromId(id, download_manager);
+  DownloadItem* selected_item = download_manager->GetDownload(id);
   if (!selected_item) {
     AutomationJSONReply(this, reply_message)
         .SendError(StringPrintf("No download with an id of %d\n", id));

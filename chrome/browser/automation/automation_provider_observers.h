@@ -1101,11 +1101,11 @@ class AllDownloadsCompleteObserver
   virtual ~AllDownloadsCompleteObserver();
 
   // content::DownloadManager::Observer.
-  virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;
+  virtual void OnDownloadCreated(
+      content::DownloadManager* manager, content::DownloadItem* item) OVERRIDE;
 
   // content::DownloadItem::Observer.
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE {}
 
  private:
   void ReplyIfNecessary();

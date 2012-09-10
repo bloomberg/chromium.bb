@@ -264,6 +264,9 @@ void DownloadStatusUpdater::UpdateAppIconDownloadProgress(
   bool progress_known = GetProgress(&progress, &download_count);
   UpdateAppIcon(download_count, progress_known, progress);
 
+  if (download->GetFullPath().empty())
+    return;
+
   // Update NSProgress-based indicators.
 
   if (NSProgressSupported()) {

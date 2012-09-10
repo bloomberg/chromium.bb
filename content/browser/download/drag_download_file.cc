@@ -183,11 +183,14 @@ void DragDownloadFile::ModelChanged(DownloadManager* manager) {
     return;
 
   std::vector<DownloadItem*> downloads;
-  download_manager_->GetTemporaryDownloads(file_path_.DirName(), &downloads);
+  download_manager_->GetAllDownloads(&downloads);
   for (std::vector<DownloadItem*>::const_iterator i = downloads.begin();
        i != downloads.end(); ++i) {
-    if ((*i)->GetOriginalUrl() == url_) {
-      download_item_ = *i;
+    DownloadItem* item = *i;
+    if (item->IsTemporary() &&
+        item->GetOriginalUrl() == url_ &&
+        file_path_.DirName() == item->GetTargetFilePath().DirName()) {
+      download_item_ = item;
       download_item_->AddObserver(this);
       break;
     }

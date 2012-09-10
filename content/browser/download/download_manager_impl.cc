@@ -333,38 +333,6 @@ void DownloadManagerImpl::Shutdown() {
   delegate_ = NULL;
 }
 
-void DownloadManagerImpl::GetTemporaryDownloads(
-    const FilePath& dir_path, DownloadVector* result) {
-  DCHECK(result);
-
-  for (DownloadMap::iterator it = downloads_.begin();
-       it != downloads_.end(); ++it) {
-    DownloadItemImpl* item = it->second;
-    // TODO(benjhayden): Don't check IsPersisted().
-    if (item->IsTemporary() &&
-        item->IsPersisted() &&
-        (dir_path.empty() ||
-         item->GetTargetFilePath().DirName() == dir_path))
-      result->push_back(item);
-  }
-}
-
-void DownloadManagerImpl::GetAllDownloads(
-    const FilePath& dir_path, DownloadVector* result) {
-  DCHECK(result);
-
-  for (DownloadMap::iterator it = downloads_.begin();
-       it != downloads_.end(); ++it) {
-    DownloadItemImpl* item = it->second;
-    // TODO(benjhayden): Don't check IsPersisted().
-    if (!item->IsTemporary() &&
-        item->IsPersisted() &&
-        (dir_path.empty() ||
-         item->GetTargetFilePath().DirName() == dir_path))
-      result->push_back(item);
-  }
-}
-
 void DownloadManagerImpl::SearchDownloads(const string16& query,
                                           DownloadVector* result) {
   string16 query_lower(base::i18n::ToLower(query));
@@ -975,6 +943,13 @@ DownloadItem* DownloadManagerImpl::GetDownloadItem(int download_id) {
 
 DownloadItem* DownloadManagerImpl::GetDownload(int download_id) {
   return ContainsKey(downloads_, download_id) ? downloads_[download_id] : NULL;
+}
+
+void DownloadManagerImpl::GetAllDownloads(DownloadVector* downloads) {
+  for (DownloadMap::iterator it = downloads_.begin();
+       it != downloads_.end(); ++it) {
+    downloads->push_back(it->second);
+  }
 }
 
 DownloadItem* DownloadManagerImpl::GetActiveDownloadItem(int download_id) {
