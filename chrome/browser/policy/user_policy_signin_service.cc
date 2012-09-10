@@ -136,7 +136,7 @@ void UserPolicySigninService::ConfigureUserCloudPolicyManager() {
     // UserCloudPolicyManager and have it initiate a DMToken fetch only once
     // the policy load is complete (http://crbug.com/143187).
     if (!manager_->IsClientRegistered() &&
-        manager_->cloud_policy_service()->store()->is_initialized()) {
+        manager_->cloud_policy_store()->is_initialized()) {
       RegisterCloudPolicyService();
     }
   }

@@ -11,9 +11,9 @@ namespace em = enterprise_management;
 
 namespace policy {
 
-CloudPolicyService::CloudPolicyService(scoped_ptr<CloudPolicyClient> client,
+CloudPolicyService::CloudPolicyService(CloudPolicyClient* client,
                                        CloudPolicyStore* store)
-    : client_(client.Pass()),
+    : client_(client),
       store_(store),
       refresh_state_(REFRESH_NONE) {
   client_->AddObserver(this);

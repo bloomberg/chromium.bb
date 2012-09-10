@@ -11,21 +11,20 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/policy/cloud_policy_client.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud_policy_store.h"
 
 namespace policy {
 
-// Coordinates cloud policy handling, hosting the cloud policy client, fetching
-// new policy, and updating the local policy cache when new policy becomes
-// available.
+// Coordinates cloud policy handling, moving downloaded policy from the client
+// to the store, and setting up client registrations from cached data in the
+// store. Also coordinates actions on policy refresh triggers.
 class CloudPolicyService : public CloudPolicyClient::Observer,
                            public CloudPolicyStore::Observer {
  public:
-  CloudPolicyService(scoped_ptr<CloudPolicyClient> client,
-                     CloudPolicyStore* store);
+  // |client| and |store| must remain valid for the object life time.
+  CloudPolicyService(CloudPolicyClient* client, CloudPolicyStore* store);
   virtual ~CloudPolicyService();
 
   // Returns the domain that manages this user/device, according to the current
@@ -35,9 +34,6 @@ class CloudPolicyService : public CloudPolicyClient::Observer,
   // Refreshes policy. |callback| will be invoked after the operation completes
   // or aborts because of errors.
   void RefreshPolicy(const base::Closure& callback);
-
-  CloudPolicyClient* client() { return client_.get(); }
-  CloudPolicyStore* store() { return store_; }
 
   // CloudPolicyClient::Observer:
   virtual void OnPolicyFetched(CloudPolicyClient* client) OVERRIDE;
@@ -53,7 +49,7 @@ class CloudPolicyService : public CloudPolicyClient::Observer,
   void RefreshCompleted();
 
   // The client used to talk to the cloud.
-  scoped_ptr<CloudPolicyClient> client_;
+  CloudPolicyClient* client_;
 
   // Takes care of persisting and decoding cloud policy.
   CloudPolicyStore* store_;

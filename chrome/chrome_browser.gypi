@@ -1216,6 +1216,8 @@
         'browser/policy/cloud_policy_controller.h',
         'browser/policy/cloud_policy_data_store.cc',
         'browser/policy/cloud_policy_data_store.h',
+        'browser/policy/cloud_policy_manager.cc',
+        'browser/policy/cloud_policy_manager.h',
         'browser/policy/cloud_policy_provider.cc',
         'browser/policy/cloud_policy_provider.h',
         'browser/policy/cloud_policy_refresh_scheduler.cc',

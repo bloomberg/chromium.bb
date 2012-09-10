@@ -21,13 +21,12 @@ namespace policy {
 class CloudPolicyServiceTest : public testing::Test {
  public:
   CloudPolicyServiceTest()
-      : client_(new MockCloudPolicyClient),
-        service_(scoped_ptr<CloudPolicyClient>(client_), &store_) {}
+      : service_(&client_, &store_) {}
 
   MOCK_METHOD0(OnPolicyRefresh, void(void));
 
  protected:
-  MockCloudPolicyClient* client_;
+  MockCloudPolicyClient client_;
   MockCloudPolicyStore store_;
   CloudPolicyService service_;
 };
@@ -49,9 +48,9 @@ TEST_F(CloudPolicyServiceTest, ManagedByValidPolicy) {
 TEST_F(CloudPolicyServiceTest, PolicyUpdateSuccess) {
   em::PolicyFetchResponse policy;
   policy.set_policy_data("fake policy");
-  client_->SetPolicy(policy);
+  client_.SetPolicy(policy);
   EXPECT_CALL(store_, Store(ProtoMatches(policy))).Times(1);
-  client_->NotifyPolicyFetched();
+  client_.NotifyPolicyFetched();
 
   // After |store_| initializes, credentials and other meta data should be
   // transferred to |client_|.
@@ -61,40 +60,40 @@ TEST_F(CloudPolicyServiceTest, PolicyUpdateSuccess) {
   store_.policy_->set_timestamp(32);
   store_.policy_->set_valid_serial_number_missing(true);
   store_.policy_->set_public_key_version(17);
-  EXPECT_CALL(*client_,
+  EXPECT_CALL(client_,
               SetupRegistration(store_.policy_->request_token(),
                                 store_.policy_->device_id())).Times(1);
   store_.NotifyStoreLoaded();
   EXPECT_EQ(base::Time::UnixEpoch() + base::TimeDelta::FromMilliseconds(32),
-            client_->last_policy_timestamp_);
-  EXPECT_TRUE(client_->submit_machine_id_);
-  EXPECT_TRUE(client_->public_key_version_valid_);
-  EXPECT_EQ(17, client_->public_key_version_);
+            client_.last_policy_timestamp_);
+  EXPECT_TRUE(client_.submit_machine_id_);
+  EXPECT_TRUE(client_.public_key_version_valid_);
+  EXPECT_EQ(17, client_.public_key_version_);
 }
 
 TEST_F(CloudPolicyServiceTest, PolicyUpdateClientFailure) {
-  client_->SetStatus(DM_STATUS_REQUEST_FAILED);
+  client_.SetStatus(DM_STATUS_REQUEST_FAILED);
   EXPECT_CALL(store_, Store(_)).Times(0);
-  client_->NotifyPolicyFetched();
+  client_.NotifyPolicyFetched();
 }
 
 TEST_F(CloudPolicyServiceTest, RefreshPolicySuccess) {
   testing::InSequence seq;
 
   EXPECT_CALL(*this, OnPolicyRefresh()).Times(0);
-  client_->SetDMToken("fake token");
+  client_.SetDMToken("fake token");
 
   // Trigger a fetch on the client.
-  EXPECT_CALL(*client_, FetchPolicy()).Times(1);
+  EXPECT_CALL(client_, FetchPolicy()).Times(1);
   service_.RefreshPolicy(base::Bind(&CloudPolicyServiceTest::OnPolicyRefresh,
                                     base::Unretained(this)));
 
   // Client responds, push policy to store.
   em::PolicyFetchResponse policy;
   policy.set_policy_data("fake policy");
-  client_->SetPolicy(policy);
+  client_.SetPolicy(policy);
   EXPECT_CALL(store_, Store(ProtoMatches(policy))).Times(1);
-  client_->NotifyPolicyFetched();
+  client_.NotifyPolicyFetched();
 
   // Store reloads policy, callback gets triggered.
   store_.policy_.reset(new em::PolicyData());
@@ -106,9 +105,9 @@ TEST_F(CloudPolicyServiceTest, RefreshPolicySuccess) {
 
 TEST_F(CloudPolicyServiceTest, RefreshPolicyNotRegistered) {
   // Clear the token so the client is not registered.
-  client_->SetDMToken("");
+  client_.SetDMToken("");
 
-  EXPECT_CALL(*client_, FetchPolicy()).Times(0);
+  EXPECT_CALL(client_, FetchPolicy()).Times(0);
   EXPECT_CALL(*this, OnPolicyRefresh()).Times(1);
   service_.RefreshPolicy(base::Bind(&CloudPolicyServiceTest::OnPolicyRefresh,
                                     base::Unretained(this)));
@@ -118,36 +117,36 @@ TEST_F(CloudPolicyServiceTest, RefreshPolicyClientError) {
   testing::InSequence seq;
 
   EXPECT_CALL(*this, OnPolicyRefresh()).Times(0);
-  client_->SetDMToken("fake token");
+  client_.SetDMToken("fake token");
 
   // Trigger a fetch on the client.
-  EXPECT_CALL(*client_, FetchPolicy()).Times(1);
+  EXPECT_CALL(client_, FetchPolicy()).Times(1);
   service_.RefreshPolicy(base::Bind(&CloudPolicyServiceTest::OnPolicyRefresh,
                                     base::Unretained(this)));
 
   // Client responds with an error, which should trigger the callback.
-  client_->SetStatus(DM_STATUS_REQUEST_FAILED);
+  client_.SetStatus(DM_STATUS_REQUEST_FAILED);
   EXPECT_CALL(*this, OnPolicyRefresh()).Times(1);
-  client_->NotifyClientError();
+  client_.NotifyClientError();
 }
 
 TEST_F(CloudPolicyServiceTest, RefreshPolicyStoreError) {
   testing::InSequence seq;
 
   EXPECT_CALL(*this, OnPolicyRefresh()).Times(0);
-  client_->SetDMToken("fake token");
+  client_.SetDMToken("fake token");
 
   // Trigger a fetch on the client.
-  EXPECT_CALL(*client_, FetchPolicy()).Times(1);
+  EXPECT_CALL(client_, FetchPolicy()).Times(1);
   service_.RefreshPolicy(base::Bind(&CloudPolicyServiceTest::OnPolicyRefresh,
                                     base::Unretained(this)));
 
   // Client responds, push policy to store.
   em::PolicyFetchResponse policy;
   policy.set_policy_data("fake policy");
-  client_->SetPolicy(policy);
+  client_.SetPolicy(policy);
   EXPECT_CALL(store_, Store(ProtoMatches(policy))).Times(1);
-  client_->NotifyPolicyFetched();
+  client_.NotifyPolicyFetched();
 
   // Store fails, which should trigger the callback.
   EXPECT_CALL(*this, OnPolicyRefresh()).Times(1);
@@ -158,27 +157,27 @@ TEST_F(CloudPolicyServiceTest, RefreshPolicyConcurrent) {
   testing::InSequence seq;
 
   EXPECT_CALL(*this, OnPolicyRefresh()).Times(0);
-  client_->SetDMToken("fake token");
+  client_.SetDMToken("fake token");
 
   // Trigger a fetch on the client.
-  EXPECT_CALL(*client_, FetchPolicy()).Times(1);
+  EXPECT_CALL(client_, FetchPolicy()).Times(1);
   service_.RefreshPolicy(base::Bind(&CloudPolicyServiceTest::OnPolicyRefresh,
                                     base::Unretained(this)));
 
   // Triggering another policy refresh should generate a new fetch request.
-  EXPECT_CALL(*client_, FetchPolicy()).Times(1);
+  EXPECT_CALL(client_, FetchPolicy()).Times(1);
   service_.RefreshPolicy(base::Bind(&CloudPolicyServiceTest::OnPolicyRefresh,
                                     base::Unretained(this)));
 
   // Client responds, push policy to store.
   em::PolicyFetchResponse policy;
   policy.set_policy_data("fake policy");
-  client_->SetPolicy(policy);
+  client_.SetPolicy(policy);
   EXPECT_CALL(store_, Store(ProtoMatches(policy))).Times(1);
-  client_->NotifyPolicyFetched();
+  client_.NotifyPolicyFetched();
 
   // Trigger another policy fetch.
-  EXPECT_CALL(*client_, FetchPolicy()).Times(1);
+  EXPECT_CALL(client_, FetchPolicy()).Times(1);
   service_.RefreshPolicy(base::Bind(&CloudPolicyServiceTest::OnPolicyRefresh,
                                     base::Unretained(this)));
 
@@ -188,7 +187,7 @@ TEST_F(CloudPolicyServiceTest, RefreshPolicyConcurrent) {
 
   // Second policy fetch finishes.
   EXPECT_CALL(store_, Store(ProtoMatches(policy))).Times(1);
-  client_->NotifyPolicyFetched();
+  client_.NotifyPolicyFetched();
 
   // Corresponding store operation finishes, all _three_ callbacks fire.
   EXPECT_CALL(*this, OnPolicyRefresh()).Times(3);
