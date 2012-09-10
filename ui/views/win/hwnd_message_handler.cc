@@ -386,6 +386,7 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
 }
 
 HWNDMessageHandler::~HWNDMessageHandler() {
+  delegate_ = NULL;
   if (destroyed_ != NULL)
     *destroyed_ = true;
   // Prevent calls back into this class via WNDPROC now that we've been
@@ -912,7 +913,7 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
   HWND window = hwnd();
   LRESULT result = 0;
 
-  if (delegate_->PreHandleMSG(message, w_param, l_param, &result))
+  if (delegate_ && delegate_->PreHandleMSG(message, w_param, l_param, &result))
     return result;
 
 #if !defined(USE_AURA)
@@ -926,10 +927,12 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
   // Otherwise we handle everything else.
   if (!ProcessWindowMessage(window, message, w_param, l_param, result))
     result = DefWindowProc(window, message, w_param, l_param);
-  delegate_->PostHandleMSG(message, w_param, l_param);
+  if (delegate_)
+    delegate_->PostHandleMSG(message, w_param, l_param);
   if (message == WM_NCDESTROY) {
     MessageLoopForUI::current()->RemoveObserver(this);
-    delegate_->HandleDestroyed();
+    if (delegate_)
+      delegate_->HandleDestroyed();
   }
 
   // Only top level widget should store/restore focus.

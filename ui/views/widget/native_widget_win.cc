@@ -102,6 +102,7 @@ NativeWidgetWin::~NativeWidgetWin() {
     delete delegate_;
   else
     CloseNow();
+  message_handler_.reset();
 }
 
 // static
