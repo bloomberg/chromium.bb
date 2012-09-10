@@ -14,6 +14,7 @@
 
 #include <map>
 
+#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
@@ -49,36 +50,44 @@ class CONTENT_EXPORT AudioInputDeviceManager
   virtual void Close(int session_id) OVERRIDE;
 
   // Functions used by AudioInputRenderHost, called on IO thread.
-  // Start the device referenced by the session id.
-  void Start(int session_id,
-             AudioInputDeviceManagerEventHandler* event_handler);
-  // Stop the device referenced by the session id.
+  // Starts the device referenced by the session id.
+  void Start(int session_id, AudioInputDeviceManagerEventHandler* handler);
+  // Stops the device referenced by the session id.
   void Stop(int session_id);
 
  private:
+  typedef std::map<int, AudioInputDeviceManagerEventHandler*> EventHandlerMap;
+  typedef std::map<int, media::AudioDeviceName> AudioInputDeviceMap;
+
   friend class base::RefCountedThreadSafe<AudioInputDeviceManager>;
   virtual ~AudioInputDeviceManager();
 
-  // Executed on media stream device thread.
+  // Enumerates audio input devices on media stream device thread.
   void EnumerateOnDeviceThread();
+  // Opens the device on media stream device thread.
   void OpenOnDeviceThread(int session_id, const StreamDeviceInfo& device);
+  // Closes the deivce on the media stream device thread.
   void CloseOnDeviceThread(int session_id);
 
-  // Executed on IO thread to call Listener.
+  // Callback used by EnumerateOnDeviceThread(), called with a list of
+  // enumerated devices on IO thread.
   void DevicesEnumeratedOnIOThread(StreamDeviceInfoArray* devices);
+  // Callback used by OpenOnDeviceThread(), called with the session_id
+  // referencing the opened device on IO thread.
   void OpenedOnIOThread(int session_id);
+  // Callback used by CloseOnDeviceThread(), called with the session_id
+  // referencing the closed device on IO thread.
   void ClosedOnIOThread(int session_id);
 
+  // Verifies that the calling thread is media stream device thread.
   bool IsOnDeviceThread() const;
 
   // Only accessed on Browser::IO thread.
   MediaStreamProviderListener* listener_;
   int next_capture_session_id_;
-  typedef std::map<int, AudioInputDeviceManagerEventHandler*> EventHandlerMap;
   EventHandlerMap event_handlers_;
 
   // Only accessed from media stream device thread.
-  typedef std::map<int, media::AudioDeviceName> AudioInputDeviceMap;
   AudioInputDeviceMap devices_;
   media::AudioManager* audio_manager_;
 

@@ -19,7 +19,6 @@ using content::BrowserThread;
 using content::BrowserThreadImpl;
 using media_stream::AudioInputDeviceManager;
 using testing::_;
-using testing::AnyNumber;
 using testing::InSequence;
 using testing::Return;
 
