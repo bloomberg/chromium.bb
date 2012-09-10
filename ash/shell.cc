@@ -198,6 +198,8 @@ Shell::Shell(ShellDelegate* delegate)
   output_configurator_->AddObserver(output_configurator_animation_.get());
   base::MessagePumpAuraX11::Current()->AddDispatcherForRootWindow(
       output_configurator());
+  static_cast<internal::MultiDisplayManager*>(
+      aura::Env::GetInstance()->display_manager())->InitInternalDisplayInfo();
 #endif  // defined(OS_CHROMEOS)
 }
 

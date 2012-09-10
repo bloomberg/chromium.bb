@@ -24,6 +24,11 @@
 #include "ui/base/x/x11_util.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "base/chromeos/chromeos_version.h"
+#include "chromeos/display/output_configurator.h"
+#endif
+
 DECLARE_WINDOW_PROPERTY_TYPE(int64);
 
 namespace ash {
@@ -45,7 +50,8 @@ using std::vector;
 DEFINE_WINDOW_PROPERTY_KEY(int64, kDisplayIdKey,
                            gfx::Display::kInvalidDisplayID);
 
-MultiDisplayManager::MultiDisplayManager() {
+MultiDisplayManager::MultiDisplayManager() :
+    internal_display_id_(gfx::Display::kInvalidDisplayID) {
   Init();
 }
 
@@ -71,6 +77,29 @@ void MultiDisplayManager::ToggleDisplayScale() {
   manager->ScaleDisplayImpl();
 }
 
+void MultiDisplayManager::InitInternalDisplayInfo() {
+#if defined(OS_CHROMEOS)
+  if (!base::chromeos::IsRunningOnChromeOS())
+    return;
+  std::vector<XID> outputs;
+  ui::GetOutputDeviceHandles(&outputs);
+  std::vector<std::string> output_names = ui::GetOutputNames(outputs);
+  for (size_t i = 0; i < output_names.size(); ++i) {
+    if (chromeos::OutputConfigurator::IsInternalOutputName(
+            output_names[i])) {
+      XID internal_output = outputs[i];
+      uint16 manufacturer_id = 0;
+      uint32 serial_number = 0;
+      ui::GetOutputDeviceData(
+          internal_output, &manufacturer_id, &serial_number, NULL);
+      internal_display_id_ =
+          gfx::Display::GetID(manufacturer_id, serial_number);
+      return;
+    }
+  }
+#endif
+}
+
 bool MultiDisplayManager::UpdateWorkAreaOfDisplayNearestWindow(
     const aura::Window* window,
     const gfx::Insets& insets) {
@@ -93,14 +122,44 @@ const gfx::Display& MultiDisplayManager::FindDisplayContainingPoint(
 }
 
 void MultiDisplayManager::OnNativeDisplaysChanged(
-    const std::vector<gfx::Display>& new_displays) {
+    const std::vector<gfx::Display>& updated_displays) {
+  if (updated_displays.size() == 0) {
+    // Don't update the displays when all displays are disconnected.
+    // This happens when:
+    // - the device is idle and powerd requested to turn off all displays.
+    // - the device is suspended. (kernel turns off all displays)
+    // - the internal display's brightness is set to 0 and no external
+    //   display is connected.
+    // - the internal display's brightness is 0 and external display is
+    //   disconnected.
+    // The display will be updated when one of displays is turned on, and the
+    // display list will be updated correctly.
+    return;
+  }
+  std::vector<gfx::Display> new_displays;
+  if (internal_display_id_ != gfx::Display::kInvalidDisplayID) {
+    bool internal_display_connected = false;
+    for (Displays::const_iterator iter = updated_displays.begin();
+         iter != updated_displays.end(); ++iter) {
+      if ((*iter).id() == internal_display_id_) {
+        internal_display_connected = true;
+        // Update the internal display cache.
+        internal_display_.reset(new gfx::Display);
+        *internal_display_.get() = *iter;
+        break;
+      }
+    }
+    // If the internal display wasn't connected, use the cached value.
+    if (!internal_display_connected)
+      new_displays.push_back(*internal_display_.get());
+    new_displays.insert(
+        new_displays.end(), updated_displays.begin(), updated_displays.end());
+  } else {
+    new_displays = updated_displays;
+  }
+
   size_t min = std::min(displays_.size(), new_displays.size());
 
-  // For m19, we only care about 1st display as primary, and
-  // don't differentiate the rest of displays as all secondary
-  // displays have the same content. ID for primary display stays the same
-  // because we never remove it, we don't update IDs for other displays
-  // , for now, because they're the same.
   // TODO(oshima): Fix this so that we can differentiate outputs
   // and keep a content on one display stays on the same display
   // when a display is added or removed.
@@ -307,6 +366,12 @@ void MultiDisplayManager::AddDisplayFromSpec(const std::string& spec) {
   display.SetScaleAndBounds(display.device_scale_factor(), native_bounds);
   display.UpdateWorkAreaFromInsets(insets);
   displays_.push_back(display);
+}
+
+void MultiDisplayManager::SetInternalDisplayIdForTest(int64 id) {
+  internal_display_id_ = id;
+  internal_display_.reset(new gfx::Display(internal_display_id_,
+                                           gfx::Rect(800, 600)));
 }
 
 }  // namespace internal

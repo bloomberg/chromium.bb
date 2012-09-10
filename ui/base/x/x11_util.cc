@@ -1167,6 +1167,22 @@ bool GetOutputDeviceData(XID output,
   return true;
 }
 
+std::vector<std::string> GetOutputNames(std::vector<XID> output_ids) {
+  std::vector<std::string> names;
+  Display* display = GetXDisplay();
+  Window root_window = DefaultRootWindow(display);
+  XRRScreenResources* screen_resources =
+      XRRGetScreenResources(display, root_window);
+  for (std::vector<XID>::iterator iter = output_ids.begin();
+       iter != output_ids.end(); ++iter) {
+    XRROutputInfo* output =
+        XRRGetOutputInfo(display, screen_resources, *iter);
+    names.push_back(std::string(output->name));
+    XRRFreeOutputInfo(output);
+  }
+  XRRFreeScreenResources(screen_resources);
+  return names;
+}
 
 bool GetWindowManagerName(std::string* wm_name) {
   DCHECK(wm_name);

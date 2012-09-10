@@ -256,6 +256,9 @@ UI_EXPORT bool GetOutputDeviceData(XID output,
                                    uint32* serial_number,
                                    std::string* human_readable_name);
 
+// Gets the name of outputs given by |output_id|.
+UI_EXPORT std::vector<std::string> GetOutputNames(std::vector<XID> output_id);
+
 enum WindowManagerName {
   WM_UNKNOWN,
   WM_BLACKBOX,

@@ -239,6 +239,7 @@
         'chromeos_test_support',
       ],
       'sources': [
+        'display/output_configurator_unittest.cc',
         'dbus/blocking_method_caller_unittest.cc',
         'dbus/shill_client_unittest_base.cc',
         'dbus/shill_client_unittest_base.h',

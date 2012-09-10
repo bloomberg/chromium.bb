@@ -82,6 +82,9 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // Tells if the output specified by |name| is for internal display.
+  static bool IsInternalOutputName(const std::string& name);
+
  private:
   // Fires OnDisplayModeChanged() event to the observers.
   void NotifyOnDisplayChanged();

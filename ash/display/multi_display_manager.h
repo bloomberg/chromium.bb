@@ -42,6 +42,10 @@ class ASH_EXPORT MultiDisplayManager : public aura::DisplayManager,
   static void CycleDisplay();
   static void ToggleDisplayScale();
 
+  // Detects the internal display's ID, and stores gfx::Display
+  // in the cache, if any.
+  void InitInternalDisplayInfo();
+
   bool UpdateWorkAreaOfDisplayNearestWindow(const aura::Window* window,
                                             const gfx::Insets& insets);
 
@@ -73,6 +77,7 @@ class ASH_EXPORT MultiDisplayManager : public aura::DisplayManager,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, ConvertPoint);
+  FRIEND_TEST_ALL_PREFIXES(MultiDisplayManagerTest, TestNativeDisplaysChanged);
   typedef std::vector<gfx::Display> Displays;
 
   void Init();
@@ -85,7 +90,14 @@ class ASH_EXPORT MultiDisplayManager : public aura::DisplayManager,
   // the format of |spec|.
   void AddDisplayFromSpec(const std::string& spec);
 
+  void SetInternalDisplayIdForTest(int64 id);
+
   Displays displays_;
+
+  int64 internal_display_id_;
+
+  // An internal display cache used when the internal display is disconnectd.
+  scoped_ptr<gfx::Display> internal_display_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiDisplayManager);
 };

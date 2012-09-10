@@ -250,14 +250,9 @@ static int GetDualOutputs(Display* display,
       to_populate->mirror_mode = 0;
 
       // See if this output refers to an internal display.
-      const char* name = output_info->name;
       to_populate->is_internal =
-          (strncmp(kInternal_LVDS,
-                   name,
-                   arraysize(kInternal_LVDS) - 1) == 0) ||
-          (strncmp(kInternal_eDP,
-                   name,
-                   arraysize(kInternal_eDP) - 1) == 0);
+          OutputConfigurator::IsInternalOutputName(
+              std::string(output_info->name));
 
       VLOG(1) << "Found display #" << found_count
               << " with output " << (int)to_populate->output
@@ -800,6 +795,11 @@ void OutputConfigurator::AddObserver(Observer* observer) {
 
 void OutputConfigurator::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+// static
+bool OutputConfigurator::IsInternalOutputName(const std::string& name) {
+  return name.find(kInternal_LVDS) == 0 || name.find(kInternal_eDP) == 0;
 }
 
 void OutputConfigurator::NotifyOnDisplayChanged() {
