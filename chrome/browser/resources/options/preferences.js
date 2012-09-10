@@ -12,6 +12,8 @@ cr.define('options', function() {
    * @constructor
    */
   function Preferences() {
+    // Map of registered preferences.
+    this.registeredPreferences_ = {};
   }
 
   cr.addSingletonGetter(Preferences);
@@ -145,9 +147,6 @@ cr.define('options', function() {
 
   Preferences.prototype = {
     __proto__: cr.EventTarget.prototype,
-
-    // Map of registered preferences.
-    registeredPreferences_: {},
 
     /**
      * Adds an event listener to the target.
