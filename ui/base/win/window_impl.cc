@@ -16,7 +16,7 @@ namespace ui {
 
 static const DWORD kWindowDefaultChildStyle =
     WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
-static const DWORD kWindowDefaultStyle = WS_OVERLAPPEDWINDOW;
+static const DWORD kWindowDefaultStyle = WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN;
 static const DWORD kWindowDefaultExStyle = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
