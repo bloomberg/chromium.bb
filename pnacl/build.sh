@@ -1844,6 +1844,7 @@ binutils-configure() {
   if ${BUILD_PLATFORM_LINUX} ; then
       local flags='-Xlinker -rpath -Xlinker '"'"'$\\$$\$$\\$$\$$ORIGIN/../lib'"'"
       local shared='yes'
+      local zlib='--without-zlib'
   else
       # The shared build for binutils on mac is currently disabled.
       # A mac-expert needs to look at this but
@@ -1855,6 +1856,7 @@ binutils-configure() {
       #local flags="-Xlinker -rpath -Xlinker '@executable_path/../lib'"
       local flags=''
       local shared='no'
+      local zlib=''
   fi
   # The --enable-gold and --enable-plugins options are on so that we
   # can use gold's support for plugin to link PNaCl modules.
@@ -1879,7 +1881,7 @@ binutils-configure() {
           --enable-plugins \
           --disable-werror \
           --without-gas \
-          --without-zlib \
+          ${zlib} \
           --with-sysroot="${NONEXISTENT_PATH}"
   # There's no point in setting the correct path as sysroot, because we
   # want the toolchain to be relocatable. The driver will use ld command-line
