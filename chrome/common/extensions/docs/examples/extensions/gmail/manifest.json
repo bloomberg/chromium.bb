@@ -19,7 +19,6 @@
     "webNavigation",
     "*://*.google.com/"
    ],
-  "version": "4.1",
-  "minimum_chrome_version": "22",
+  "version": "4.2",
   "manifest_version": 2
 }

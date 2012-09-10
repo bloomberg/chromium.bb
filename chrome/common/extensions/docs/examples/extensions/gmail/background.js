@@ -18,6 +18,10 @@ var rotation = 0;
 var unreadCount = -1;
 var loadingAnimation = new LoadingAnimation();
 
+// Legacy support for pre-event-pages.
+var oldChromeVersion = !chrome.runtime;
+var requestTimerId;
+
 function getGmailUrl() {
   var url = "https://mail.google.com/";
   if (localStorage.customDomain)
@@ -112,7 +116,14 @@ function scheduleRequest() {
   var multiplier = Math.max(randomness * exponent, 1);
   var delay = Math.min(multiplier * pollIntervalMin, pollIntervalMax);
 
-  chrome.alarms.create({'delayInMinutes': delay});
+  if (oldChromeVersion) {
+    if (requestTimerId) {
+      window.clearTimeout(requestTimerId);
+    }
+    requestTimerId = window.setTimeout(onAlarm, delay*60*1000);
+  } else {
+    chrome.alarms.create({'delayInMinutes': delay});
+  }
 }
 
 // ajax stuff
@@ -254,6 +265,7 @@ function goToInbox() {
     for (var i = 0, tab; tab = tabs[i]; i++) {
       if (tab.url && isGmailUrl(tab.url)) {
         chrome.tabs.update(tab.id, {selected: true});
+        startRequest({scheduleRequest:false, showLoadingAnimation:false});
         return;
       }
     }
@@ -263,13 +275,21 @@ function goToInbox() {
 
 document.addEventListener('DOMContentLoaded', init);
 
-chrome.runtime.onInstalled.addListener(function() {
+function onInit() {
   startRequest({scheduleRequest:true, showLoadingAnimation:true});
-});
+}
 
-chrome.alarms.onAlarm.addListener(function() {
+if (oldChromeVersion) {
+  onInit();
+} else {
+  chrome.runtime.onInstalled.addListener(onInit);
+}
+
+function onAlarm() {
   startRequest({scheduleRequest:true, showLoadingAnimation:false});
-});
+}
+if (!oldChromeVersion)
+  chrome.alarms.onAlarm.addListener(onAlarm);
 
 var filters = {
   // TODO(aa): Cannot use urlPrefix because all the url fields lack the protocol
@@ -278,8 +298,9 @@ var filters = {
 };
 
 chrome.webNavigation.onDOMContentLoaded.addListener(function(changeInfo) {
-  if (changeInfo.url && isGmailUrl(changeInfo.url))
+  if (changeInfo.url && isGmailUrl(changeInfo.url)) {
     startRequest({scheduleRequest:false, showLoadingAnimation:false});
+  }
 }, filters);
 
 chrome.browserAction.onClicked.addListener(goToInbox);

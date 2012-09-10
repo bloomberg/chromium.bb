@@ -15,10 +15,18 @@ function init() {
   markClean();
 }
 
+function getBackgroundPage(callback) {
+  if (chrome.runtime) {
+    chrome.runtime.getBackgroundPage(callback);
+  } else {
+    callback(chrome.extension.getBackgroundPage());
+  }
+}
+
 function save() {
   localStorage.customDomain = customDomainsTextbox.value;
   markClean();
-  chrome.runtime.getBackgroundPage(function(backgroundPage) {
+  getBackgroundPage(function(backgroundPage) {
     backgroundPage.startRequest({
       scheduleRequest:false,
       showLoadingAnimation:true
