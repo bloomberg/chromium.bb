@@ -31,17 +31,53 @@
   'includes': [
     '../../../build/common.gypi',
   ],
-  'targets': [
-    {
-      'target_name': 'utils',
-      'type': 'static_library',
-      'sources': [
-        'flags.c',
-        'flags.h',
-        'formatting.c',
-        'formatting.h',
-        'types.h',
-      ],
-    }
-  ]
+  'target_defaults': {
+    'variables': {
+      'target_base': 'none',
+    },
+    'target_conditions': [
+      ['target_base=="utils"', {
+        'sources': [
+          'flags.c',
+          'flags.h',
+          'formatting.c',
+          'formatting.h',
+          'types.h',
+        ],
+      }],
+    ],
+  },
+  'conditions': [
+    ['target_arch=="ia32"', {
+      'targets': [
+        {
+          'target_name': 'utils',
+          'type': 'static_library',
+          'variables': {
+            'target_base': 'utils',
+          },
+        }],
+    }],
+    ['OS=="win"', {
+      'targets': [
+        {
+          'target_name': 'utils64',
+          'type': 'static_library',
+          'variables': {
+            'target_base': 'utils',
+            'win_target': 'x64',
+          },
+        }],
+    }],
+    ['OS!="win" and target_arch!="ia32"', {
+      'targets': [
+        {
+          'target_name': 'utils',
+          'type': 'static_library',
+          'variables': {
+            'target_base': 'utils',
+          },
+        }],
+    }],
+  ],
 }

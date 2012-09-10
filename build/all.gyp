@@ -40,6 +40,7 @@
           ],
         }, {
           'dependencies': [
+            '../src/trusted/validator_x86/ncval.gyp:*',
             '../src/trusted/validator_x86/validator_x86.gyp:*',
           ],
         }],

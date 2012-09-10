@@ -94,7 +94,7 @@
             'win_target': 'x64',
           },
           'dependencies': [
-            '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
+            '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
           ],
         },
         { 'target_name': 'ncval_base_verbose_x86_64',
