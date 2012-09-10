@@ -30,7 +30,7 @@ chromeHidden.registerCustomHook('app.window', function(bindingsAPI) {
   });
   AppWindow.prototype.moveTo = window.moveTo.bind(window);
   AppWindow.prototype.resizeTo = window.resizeTo.bind(window);
-  AppWindow.prototype.dom = window;
+  AppWindow.prototype.contentWindow = window;
   apiFunctions.setHandleRequest('current', function() {
     return new AppWindow;
   })

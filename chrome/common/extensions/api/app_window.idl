@@ -73,10 +73,11 @@ namespace app.window {
     // Move the window to the position (|x|, |y|).
     static void moveTo(long x, long y);
 
-    // Move the window to the position (|x|, |y|).
-    static void resizeTo(long x, long y);
+    // Resize the window to |width|x|height| pixels in size.
+    static void resizeTo(long width, long height);
 
-    [instanceOf=global] object dom;
+    // The JavaScript 'window' object for the created child.
+    [instanceOf=global] object contentWindow;
   };
 
   interface Functions {
