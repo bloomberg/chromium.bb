@@ -9,7 +9,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace aura {
-class RootWindowHost;
 class Window;
 }
 
@@ -33,16 +32,7 @@ class DesktopRootWindowHost {
   virtual void Init(aura::Window* content_window,
                     const Widget::InitParams& params) = 0;
 
-  virtual void Close() = 0;
-  virtual void CloseNow() = 0;
-
-  virtual aura::RootWindowHost* AsRootWindowHost() = 0;
-
   virtual void ShowWindowWithState(ui::WindowShowState show_state) = 0;
-
-  virtual bool IsVisible() const = 0;
-
-  virtual gfx::Rect GetClientAreaBoundsInScreen() const = 0;
 };
 
 }  // namespace views

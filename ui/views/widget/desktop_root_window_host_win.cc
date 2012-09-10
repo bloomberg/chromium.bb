@@ -4,11 +4,7 @@
 
 #include "ui/views/widget/desktop_root_window_host_win.h"
 
-#include "ui/aura/desktop/desktop_activation_client.h"
-#include "ui/aura/desktop/desktop_dispatcher_client.h"
-#include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
-#include "ui/views/widget/desktop_capture_client.h"
 #include "ui/views/win/hwnd_message_handler.h"
 
 namespace views {
@@ -44,48 +40,11 @@ void DesktopRootWindowHostWin::Init(aura::Window* content_window,
   root_window_->Init();
   root_window_->AddChild(content_window_);
   root_window_host_delegate_ = root_window_.get();
-
-  native_widget_delegate_->OnNativeWidgetCreated();
-
-  capture_client_.reset(new DesktopCaptureClient);
-  aura::client::SetCaptureClient(root_window_.get(), capture_client_.get());
-
-  focus_manager_.reset(new aura::FocusManager);
-  root_window_->set_focus_manager(focus_manager_.get());
-
-  activation_client_.reset(
-      new aura::DesktopActivationClient(root_window_->GetFocusManager()));
-  aura::client::SetActivationClient(root_window_.get(),
-                                    activation_client_.get());
-
-  dispatcher_client_.reset(new aura::DesktopDispatcherClient);
-  aura::client::SetDispatcherClient(root_window_.get(),
-                                    dispatcher_client_.get());
-}
-
-void DesktopRootWindowHostWin::Close() {
-  message_handler_->Close();
-}
-
-void DesktopRootWindowHostWin::CloseNow() {
-  message_handler_->CloseNow();
-}
-
-aura::RootWindowHost* DesktopRootWindowHostWin::AsRootWindowHost() {
-  return this;
 }
 
 void DesktopRootWindowHostWin::ShowWindowWithState(
     ui::WindowShowState show_state) {
   message_handler_->ShowWindowWithState(show_state);
-}
-
-bool DesktopRootWindowHostWin::IsVisible() const {
-  return message_handler_->IsVisible();
-}
-
-gfx::Rect DesktopRootWindowHostWin::GetClientAreaBoundsInScreen() const {
-  return message_handler_->GetClientAreaBoundsInScreen();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -100,11 +59,9 @@ gfx::AcceleratedWidget DesktopRootWindowHostWin::GetAcceleratedWidget() {
 }
 
 void DesktopRootWindowHostWin::Show() {
-  message_handler_->Show();
 }
 
 void DesktopRootWindowHostWin::Hide() {
-  message_handler_->Hide();
 }
 
 void DesktopRootWindowHostWin::ToggleFullScreen() {
@@ -294,6 +251,8 @@ void DesktopRootWindowHostWin::HandleCreate() {
   // 2. MouseWheel.
   // 3. Drop target.
   // 4. Tooltip Manager.
+
+  native_widget_delegate_->OnNativeWidgetCreated();
 }
 
 void DesktopRootWindowHostWin::HandleDestroying() {
@@ -327,8 +286,7 @@ void DesktopRootWindowHostWin::HandleVisibilityChanged(bool visible) {
 
 void DesktopRootWindowHostWin::HandleClientSizeChanged(
     const gfx::Size& new_size) {
-  if (root_window_host_delegate_)
-    root_window_host_delegate_->OnHostResized(new_size);
+  root_window_host_delegate_->OnHostResized(new_size);
   // TODO(beng): replace with a layout manager??
   content_window_->SetBounds(gfx::Rect(new_size));
 }
@@ -343,8 +301,7 @@ void DesktopRootWindowHostWin::HandleNativeBlur(HWND focused_window) {
 }
 
 bool DesktopRootWindowHostWin::HandleMouseEvent(const ui::MouseEvent& event) {
-  return root_window_host_delegate_->OnHostMouseEvent(
-      const_cast<ui::MouseEvent*>(&event));
+  return false;
 }
 
 bool DesktopRootWindowHostWin::HandleKeyEvent(const ui::KeyEvent& event) {
