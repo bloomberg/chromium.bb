@@ -775,7 +775,7 @@ cr.define('ntp', function() {
      * @private
      */
     updateFocusableElement_: function() {
-      if (this.focusableElements_.length == 0) {
+      if (this.focusableElements_.length == 0 || !this.selected) {
         this.focusElementIndex_ = -1;
         return;
       }
