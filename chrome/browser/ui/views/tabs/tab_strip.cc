@@ -70,9 +70,9 @@ static const int kNativeFrameInactiveTabAlpha = 200;
 static const int kNativeFrameInactiveTabAlphaMultiSelection = 150;
 
 #if defined(USE_ASH)
-static const int kInactiveTabAlpha = 230;
+static const int kInactiveTabAndNewTabButtonAlpha = 230;
 #else
-static const int kInactiveTabAlpha = 255;
+static const int kInactiveTabAndNewTabButtonAlpha = 255;
 #endif
 
 // Inverse ratio of the width of a tab edge to the width of the tab. When
@@ -1188,8 +1188,8 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
   // painting changes as we switch between the two.
   bool stacking = layout_type_ == TAB_STRIP_LAYOUT_STACKED;
 
-  if (kInactiveTabAlpha < 255)
-    canvas->SaveLayerAlpha(kInactiveTabAlpha);
+  if (kInactiveTabAndNewTabButtonAlpha < 255)
+    canvas->SaveLayerAlpha(kInactiveTabAndNewTabButtonAlpha);
 
   PaintClosingTabs(canvas, tab_count());
 
@@ -1229,7 +1229,7 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
       tab->Paint(canvas);
     }
   }
-  if (kInactiveTabAlpha < 255)
+  if (kInactiveTabAndNewTabButtonAlpha < 255)
     canvas->Restore();
 
   if (GetWidget()->ShouldUseNativeFrame()) {
@@ -1259,7 +1259,11 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
     active_tab->Paint(canvas);
 
   // Paint the New Tab button.
+  if (kInactiveTabAndNewTabButtonAlpha < 255)
+    canvas->SaveLayerAlpha(kInactiveTabAndNewTabButtonAlpha);
   newtab_button_->Paint(canvas);
+  if (kInactiveTabAndNewTabButtonAlpha < 255)
+    canvas->Restore();
 
   // And the dragged tabs.
   for (size_t i = 0; i < tabs_dragging.size(); ++i)
