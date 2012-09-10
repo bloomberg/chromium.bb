@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/string_util.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -19,7 +18,6 @@
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_disabled_ui.h"
-#include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -626,18 +624,6 @@ void ExtensionSettingsHandler::HandleEnableMessage(const ListValue* args) {
           web_ui()->GetWebContents());
       extensions::ShowExtensionDisabledDialog(
           extension_service_, browser, extension);
-    } else if ((prefs->GetDisableReasons(extension_id) &
-                   Extension::DISABLE_UNSUPPORTED_REQUIREMENT) &&
-               !requirements_checker_.get()) {
-      // Recheck the requirements.
-      scoped_refptr<const Extension> extension =
-          extension_service_->GetExtensionById(extension_id,
-                                               true /* include disabled */);
-      requirements_checker_.reset(new extensions::RequirementsChecker());
-      requirements_checker_->Check(
-          extension,
-          base::Bind(&ExtensionSettingsHandler::OnRequirementsChecked,
-                     AsWeakPtr(), extension_id));
     } else {
       extension_service_->EnableExtension(extension_id);
     }
@@ -900,17 +886,4 @@ void ExtensionSettingsHandler::InspectExtensionHost(
     extensions::ExtensionHost* host) {
   if (host)
     DevToolsWindow::OpenDevToolsWindow(host->render_view_host());
-}
-
-void ExtensionSettingsHandler::OnRequirementsChecked(
-    std::string extension_id,
-    std::vector<std::string> requirement_errors) {
-  if (requirement_errors.empty()) {
-    extension_service_->EnableExtension(extension_id);
-  } else {
-    ExtensionErrorReporter::GetInstance()->ReportError(
-        UTF8ToUTF16(JoinString(requirement_errors, ' ')),
-        true /* be noisy */);
-  }
-  requirements_checker_.reset();
 }

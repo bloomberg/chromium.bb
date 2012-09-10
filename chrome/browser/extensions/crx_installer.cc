@@ -14,7 +14,7 @@
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
-#include "base/string_util.h"
+#include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
@@ -29,7 +29,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/permissions_updater.h"
-#include "chrome/browser/extensions/requirements_checker.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
@@ -102,10 +101,7 @@ CrxInstaller::CrxInstaller(
       creation_flags_(Extension::NO_FLAGS),
       off_store_install_allow_reason_(OffStoreInstallDisallowed),
       did_handle_successfully_(true),
-      record_oauth2_grant_(false),
-      error_on_unsupported_requirements_(false),
-      requirements_checker_(new extensions::RequirementsChecker()),
-      has_requirement_errors_(false) {
+      record_oauth2_grant_(false) {
   if (!approval)
     return;
 
@@ -389,33 +385,9 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
   }
 
   if (!BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&CrxInstaller::CheckRequirements, this)))
+          BrowserThread::UI, FROM_HERE,
+          base::Bind(&CrxInstaller::ConfirmInstall, this)))
     NOTREACHED();
-}
-
-void CrxInstaller::CheckRequirements() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  AddRef();  // Balanced in OnRequirementsChecked().
-  requirements_checker_->Check(extension_,
-                               base::Bind(&CrxInstaller::OnRequirementsChecked,
-                                          this));
-}
-
-void CrxInstaller::OnRequirementsChecked(
-    std::vector<std::string> requirement_errors) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  Release();  // Balanced in CheckRequirements().
-  if (!requirement_errors.empty()) {
-    if (error_on_unsupported_requirements_) {
-      ReportFailureFromUIThread(CrxInstallerError(
-          UTF8ToUTF16(JoinString(requirement_errors, ' '))));
-      return;
-    }
-    has_requirement_errors_ = true;
-  }
-
-  ConfirmInstall();
 }
 
 void CrxInstaller::ConfirmInstall() {
@@ -626,10 +598,8 @@ void CrxInstaller::ReportSuccessFromUIThread() {
 
   // Tell the frontend about the installation and hand off ownership of
   // extension_ to it.
-  frontend_weak_->OnExtensionInstalled(extension_,
-                                       is_gallery_install(),
-                                       page_ordinal_,
-                                       has_requirement_errors_);
+  frontend_weak_->OnExtensionInstalled(extension_, is_gallery_install(),
+                                       page_ordinal_);
 
   NotifyCrxInstallComplete(extension_.get());
 

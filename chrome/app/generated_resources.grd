@@ -4815,15 +4815,6 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       <message name="IDS_EXTENSION_CANT_DOWNGRADE_VERSION" desc="Error message when a user tries to install an extension with a lower version that a version that it already installed.">
         Attempted to downgrade extension.
       </message>
-      <message name="IDS_EXTENSION_WEBGL_NOT_SUPPORTED" desc="Error message when an extension has a requirement for WebGL that the system does not support.">
-        WebGL is not supported.
-      </message>
-      <message name="IDS_EXTENSION_CSS3D_NOT_SUPPORTED" desc="Error message when an extension has a requirement for CSS3d that the system does not support.">
-        CSS3d is not supported.
-      </message>
-      <message name="IDS_EXTENSION_NPAPI_NOT_SUPPORTED" desc="Error message when an extension has a requirement for plugins that the system does not support.">
-        NPAPI plugins are not supported.
-      </message>
       <message name="IDS_EXTENSION_CANT_INSTALL_BLACKLISTED" desc="Error message when a user tries to install an extension that is blacklisted.">
         This extension is blacklisted.
       </message>

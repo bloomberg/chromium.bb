@@ -6,11 +6,9 @@
 #define CHROME_BROWSER_EXTENSIONS_UNPACKED_INSTALLER_H_
 
 #include <string>
-#include <vector>
 
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 
 class ExtensionService;
@@ -18,11 +16,8 @@ class ExtensionService;
 namespace extensions {
 
 class Extension;
-class RequirementsChecker;
 
-// Installs and loads an unpacked extension. Because internal state needs to be
-// held about the instalation process, only one call to Load*() should be made
-// per UnpackedInstaller.
+// Installs and loads an unpacked extension.
 // TODO(erikkay): It might be useful to be able to load a packed extension
 // (presumably into memory) without installing it.
 class UnpackedInstaller
@@ -61,12 +56,6 @@ class UnpackedInstaller
   explicit UnpackedInstaller(ExtensionService* extension_service);
   virtual ~UnpackedInstaller();
 
-  // Must be called from the UI thread.
-  void CheckRequirements();
-
-  // Callback from RequirementsChecker.
-  void OnRequirementsChecked(std::vector<std::string> requirement_errors);
-
   // Verifies if loading unpacked extensions is allowed.
   bool IsLoadingUnpackedAllowed() const;
 
@@ -85,7 +74,7 @@ class UnpackedInstaller
   void ReportExtensionLoadError(const std::string& error);
 
   // Called when an unpacked extension has been loaded and installed.
-  void OnLoaded();
+  void OnLoaded(const scoped_refptr<const Extension>& extension);
 
   // Helper to get the Extension::CreateFlags for the installing extension.
   int GetFlags();
@@ -99,10 +88,6 @@ class UnpackedInstaller
   // If true and the extension contains plugins, we prompt the user before
   // loading.
   bool prompt_for_plugins_;
-
-  scoped_ptr<RequirementsChecker> requirements_checker_;
-
-  scoped_refptr<const Extension> extension_;
 
   // Whether to require the extension installed to have a modern manifest
   // version.

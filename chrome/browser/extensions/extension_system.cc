@@ -162,9 +162,10 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
       StringTokenizerT<CommandLine::StringType,
           CommandLine::StringType::const_iterator> t(path_list,
                                                      FILE_PATH_LITERAL(","));
+      scoped_refptr<UnpackedInstaller> installer =
+          UnpackedInstaller::Create(extension_service_.get());
       while (t.GetNext()) {
-        UnpackedInstaller::Create(extension_service_.get())->
-            LoadFromCommandLine(FilePath(t.token()));
+        installer->LoadFromCommandLine(FilePath(t.token()));
       }
     }
   }

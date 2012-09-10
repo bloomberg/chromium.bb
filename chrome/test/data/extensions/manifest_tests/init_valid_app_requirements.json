@@ -10,8 +10,8 @@
     ]
   },
   "requirements": {
-    "3D": {
-      "features": ["webgl"]
+    "webgl": {
+      "extensions": ["l33t OpenGL extension"]
     }
   }
 }

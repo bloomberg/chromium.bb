@@ -430,9 +430,7 @@ scoped_refptr<Extension> BasePanelBrowserTest::CreateExtension(
   EXPECT_TRUE(extension.get());
   EXPECT_STREQ("", error.c_str());
   browser()->profile()->GetExtensionService()->
-      OnExtensionInstalled(extension.get(), false /* not from webstore */,
-                           syncer::StringOrdinal(),
-                           false /* no requirement errors */);
+      OnExtensionInstalled(extension.get(), false, syncer::StringOrdinal());
   return extension;
 }
 

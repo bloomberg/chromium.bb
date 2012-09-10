@@ -112,7 +112,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     DISABLE_USER_ACTION = 1 << 0,
     DISABLE_PERMISSIONS_INCREASE = 1 << 1,
     DISABLE_RELOAD = 1 << 2,
-    DISABLE_UNSUPPORTED_REQUIREMENT = 1 << 3
   };
 
   enum InstallType {
@@ -139,16 +138,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     SYNC_TYPE_NONE = 0,
     SYNC_TYPE_EXTENSION,
     SYNC_TYPE_APP
-  };
-
-  // Declared requirements for the extension.
-  struct Requirements {
-    Requirements();
-    ~Requirements();
-
-    bool webgl;
-    bool css3d;
-    bool npapi;
   };
 
   // An NPAPI plugin included in the extension.
@@ -603,7 +592,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Accessors:
 
-  const Requirements& requirements() const { return requirements_; }
   const FilePath& path() const { return path_; }
   const GURL& url() const { return extension_url_; }
   Location location() const;
@@ -842,8 +830,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadNaClModules(string16* error);
   bool LoadWebAccessibleResources(string16* error);
   bool LoadSandboxedPages(string16* error);
-  // Must be called after LoadPlugins().
-  bool LoadRequirements(string16* error);
   bool LoadDefaultLocale(string16* error);
   bool LoadOfflineEnabled(string16* error);
   bool LoadOptionsPage(string16* error);
@@ -947,6 +933,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
       const APIPermissionSet& permissions) const;
 
   bool CheckMinimumChromeVersion(string16* error) const;
+  bool CheckRequirements(string16* error) const;
 
   // Check that platform app features are valid. Called after InitFromValue.
   bool CheckPlatformAppFeatures(std::string* utf8_error) const;
@@ -975,9 +962,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // this member variable to 0 to distinguish the "uninitialized" case from
   // the case when we know the manifest version actually is 1.
   int manifest_version_;
-
-  // The requirements declared in the manifest.
-  Requirements requirements_;
 
   // The absolute path to the directory the extension is stored in.
   FilePath path_;

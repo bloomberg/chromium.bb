@@ -2128,8 +2128,7 @@ void ExtensionService::UpdateActiveExtensionsInCrashReporter() {
 void ExtensionService::OnExtensionInstalled(
     const Extension* extension,
     bool from_webstore,
-    const syncer::StringOrdinal& page_ordinal,
-    bool has_requirement_errors) {
+    const syncer::StringOrdinal& page_ordinal) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Ensure extension is deleted unless we transfer ownership.
@@ -2174,20 +2173,6 @@ void ExtensionService::OnExtensionInstalled(
     if (IsExternalExtensionUninstalled(id)) {
       initial_enable = true;
     }
-  }
-
-  // Unsupported requirements overrides the management policy.
-  if (has_requirement_errors) {
-    initial_enable = false;
-    extension_prefs_->AddDisableReason(
-        id, Extension::DISABLE_UNSUPPORTED_REQUIREMENT);
-  // If the extension was disabled because of unsupported requirements but
-  // now supports all requirements after an update and there are not other
-  // disable reasons, enable it.
-  } else if (extension_prefs_->GetDisableReasons(id) ==
-      Extension::DISABLE_UNSUPPORTED_REQUIREMENT) {
-    initial_enable = true;
-    extension_prefs_->ClearDisableReasons(id);
   }
 
   int include_mask = INCLUDE_ENABLED;
