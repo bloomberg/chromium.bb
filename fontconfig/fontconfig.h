@@ -580,6 +580,9 @@ FcInitBringUptoDate (void);
 FcPublic FcStrSet *
 FcGetLangs (void);
 
+FcPublic FcChar8 *
+FcLangNormalize (const FcChar8 *lang);
+
 FcPublic const FcCharSet *
 FcLangGetCharSet (const FcChar8 *lang);
 

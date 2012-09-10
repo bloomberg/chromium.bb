@@ -677,6 +677,7 @@ fc-match/Makefile
 fc-pattern/Makefile
 fc-query/Makefile
 fc-scan/Makefile
+fc-validate/Makefile
 doc/Makefile
 doc/version.sgml
 test/Makefile
