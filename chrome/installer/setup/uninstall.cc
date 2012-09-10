@@ -19,6 +19,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -307,7 +308,7 @@ void DeleteChromeShortcuts(const InstallerState& installer_state,
     VLOG(1) << "Unpinning shortcut at " << shortcut_link.value()
             << " from taskbar";
     // Ignore return value: keep uninstalling if the unpin fails.
-    file_util::TaskbarUnpinShortcutLink(shortcut_link.value().c_str());
+    base::win::TaskbarUnpinShortcutLink(shortcut_link.value().c_str());
 
     VLOG(1) << "Deleting shortcut " << shortcut_path.value();
     if (!file_util::Delete(shortcut_path, true))

@@ -10,7 +10,6 @@
 #include "base/path_service.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
-#include "base/win/windows_version.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,6 +25,11 @@
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "base/environment.h"
+#endif
+
+#if defined(OS_WIN)
+#include "base/win/shortcut.h"
+#include "base/win/windows_version.h"
 #endif
 
 using content::BrowserThread;
@@ -262,16 +266,14 @@ void UpdateShortcutWorker::UpdateShortcutsOnFileThread() {
       shortcut_info_.description.resize(MAX_PATH - 1);
 
     for (size_t i = 0; i < shortcut_files_.size(); ++i) {
-      file_util::CreateOrUpdateShortcutLink(
-          NULL,
-          shortcut_files_[i].value().c_str(),
-          NULL,
-          NULL,
-          shortcut_info_.description.c_str(),
-          icon_file.value().c_str(),
-          0,
-          app_id.c_str(),
-          file_util::SHORTCUT_NO_OPTIONS);
+      base::win::ShortcutProperties shortcut_properties;
+      shortcut_properties.set_target(shortcut_files_[i]);
+      shortcut_properties.set_description(shortcut_info_.description);
+      shortcut_properties.set_icon(icon_file, 0);
+      shortcut_properties.set_app_id(app_id);
+      base::win::CreateOrUpdateShortcutLink(
+          shortcut_files_[i], shortcut_properties,
+          base::win::SHORTCUT_UPDATE_EXISTING);
     }
   }
 

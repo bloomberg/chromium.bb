@@ -32,6 +32,7 @@
 #include "base/values.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
+#include "base/win/shortcut.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
@@ -728,15 +729,6 @@ bool LaunchApplicationAssociationDialog(const string16& app_id) {
     return false;
   hr = aarui->LaunchAdvancedAssociationUI(app_id.c_str());
   return SUCCEEDED(hr);
-}
-
-uint32 ConvertShellUtilShortcutOptionsToFileUtil(uint32 options) {
-  uint32 converted_options = 0;
-  if (options & ShellUtil::SHORTCUT_DUAL_MODE)
-    converted_options |= file_util::SHORTCUT_DUAL_MODE;
-  if (options & ShellUtil::SHORTCUT_CREATE_ALWAYS)
-    converted_options |= file_util::SHORTCUT_CREATE_ALWAYS;
-  return converted_options;
 }
 
 // As of r133333, the DelegateExecute verb handler was being registered for
@@ -1672,56 +1664,24 @@ bool ShellUtil::UpdateChromeShortcut(BrowserDistribution* dist,
   }
 
   const string16 app_id(GetBrowserModelId(dist, chrome_exe));
+  const bool is_dual_mode = ((options & ShellUtil::SHORTCUT_DUAL_MODE) != 0);
+  const base::win::ShortcutOperation operation =
+      (options & ShellUtil::SHORTCUT_CREATE_ALWAYS) != 0 ?
+          base::win::SHORTCUT_CREATE_ALWAYS :
+          base::win::SHORTCUT_UPDATE_EXISTING;
 
-  return file_util::CreateOrUpdateShortcutLink(
-      chrome_exe.c_str(),
-      shortcut.c_str(),
-      chrome_path.value().c_str(),
-      arguments.c_str(),
-      description.c_str(),
-      icon_path.c_str(),
-      icon_index,
-      app_id.c_str(),
-      ConvertShellUtilShortcutOptionsToFileUtil(options));
-}
-
-ShellUtil::VerifyShortcutStatus ShellUtil::VerifyChromeShortcut(
-    const string16& exe_path, const string16& shortcut,
-    const string16& description, int icon_index) {
-  base::win::ScopedComPtr<IShellLink> i_shell_link;
-  base::win::ScopedComPtr<IPersistFile> i_persist_file;
-  wchar_t long_path[MAX_PATH] = {0};
-  wchar_t short_path[MAX_PATH] = {0};
-  wchar_t file_path[MAX_PATH] = {0};
-  wchar_t icon_path[MAX_PATH] = {0};
-  wchar_t desc[MAX_PATH] = {0};
-  int index = 0;
-
-  // Get the shortcut's properties.
-  if (FAILED(i_shell_link.CreateInstance(CLSID_ShellLink, NULL,
-                                         CLSCTX_INPROC_SERVER)) ||
-      FAILED(i_persist_file.QueryFrom(i_shell_link)) ||
-      FAILED(i_persist_file->Load(shortcut.c_str(), 0)) ||
-      ::GetLongPathName(exe_path.c_str(), long_path, MAX_PATH) == 0 ||
-      ::GetShortPathName(exe_path.c_str(), short_path, MAX_PATH) == 0 ||
-      FAILED(i_shell_link->GetPath(file_path, MAX_PATH, NULL,
-                                   SLGP_UNCPRIORITY)) ||
-      FAILED(i_shell_link->GetIconLocation(icon_path, MAX_PATH, &index)) ||
-      FAILED(i_shell_link->GetDescription(desc, MAX_PATH)) ||
-      FAILED(i_shell_link->GetDescription(desc, MAX_PATH)))
-    return VERIFY_SHORTCUT_FAILURE_UNEXPECTED;
-
-  FilePath path(file_path);
-  if (path != FilePath(long_path) && path != FilePath(short_path))
-    return VERIFY_SHORTCUT_FAILURE_PATH;
-
-  if (string16(desc) != string16(description))
-    return VERIFY_SHORTCUT_FAILURE_DESCRIPTION;
-
-  if (index != icon_index)
-    return VERIFY_SHORTCUT_FAILURE_ICON_INDEX;
-
-  return VERIFY_SHORTCUT_SUCCESS;
+  // TODO(gab): The shell_util interface will also be refactored in an upcoming
+  // CL to use a ShortcutProperties like interface for its shortcut methods.
+  base::win::ShortcutProperties shortcut_properties;
+  shortcut_properties.set_target(FilePath(chrome_exe));
+  shortcut_properties.set_working_dir(chrome_path);
+  shortcut_properties.set_arguments(arguments);
+  shortcut_properties.set_description(description);
+  shortcut_properties.set_icon(FilePath(icon_path), icon_index);
+  shortcut_properties.set_app_id(app_id);
+  shortcut_properties.set_dual_mode(is_dual_mode);
+  return base::win::CreateOrUpdateShortcutLink(
+      FilePath(shortcut), shortcut_properties, operation);
 }
 
 bool ShellUtil::GetUserSpecificRegistrySuffix(string16* suffix) {

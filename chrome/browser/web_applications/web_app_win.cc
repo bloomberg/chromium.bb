@@ -13,6 +13,7 @@
 #include "base/path_service.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -124,7 +125,7 @@ std::vector<FilePath> GetShortcutPaths(
 bool ShortcutIsForProfile(const FilePath& shortcut_file_name,
                           const FilePath& profile_path) {
   string16 cmd_line_string;
-  if (file_util::ResolveShortcut(shortcut_file_name, NULL, &cmd_line_string)) {
+  if (base::win::ResolveShortcut(shortcut_file_name, NULL, &cmd_line_string)) {
     cmd_line_string = L"program " + cmd_line_string;
     CommandLine shortcut_cmd_line = CommandLine::FromString(cmd_line_string);
     return shortcut_cmd_line.HasSwitch(switches::kProfileDirectory) &&
@@ -229,7 +230,7 @@ bool CreatePlatformShortcuts(
     return false;
 
   // Working directory.
-  FilePath chrome_folder = chrome_exe.DirName();
+  FilePath chrome_folder(chrome_exe.DirName());
 
   CommandLine cmd_line(CommandLine::NO_PROGRAM);
   cmd_line = ShellIntegration::CommandLineArgsForLauncher(shortcut_info.url,
@@ -247,10 +248,9 @@ bool CreatePlatformShortcuts(
     description.resize(MAX_PATH - 1);
 
   // Generates app id from web app url and profile path.
-  std::string app_name =
-      web_app::GenerateApplicationNameFromInfo(shortcut_info);
-  string16 app_id = ShellIntegration::GetAppModelIdForProfile(
-      UTF8ToUTF16(app_name), shortcut_info.profile_path);
+  std::string app_name(web_app::GenerateApplicationNameFromInfo(shortcut_info));
+  string16 app_id(ShellIntegration::GetAppModelIdForProfile(
+      UTF8ToUTF16(app_name), shortcut_info.profile_path));
 
   FilePath shortcut_to_pin;
   bool success = true;
@@ -268,16 +268,17 @@ bool CreatePlatformShortcuts(
           StringPrintf(" (%d)", unique_number));
     }
 
-    success = file_util::CreateOrUpdateShortcutLink(
-        chrome_exe.value().c_str(),
-        shortcut_file.value().c_str(),
-        chrome_folder.value().c_str(),
-        wide_switches.c_str(),
-        description.c_str(),
-        icon_file.value().c_str(),
-        0,
-        app_id.c_str(),
-        file_util::SHORTCUT_CREATE_ALWAYS) && success;
+    base::win::ShortcutProperties shortcut_properties;
+    shortcut_properties.set_target(chrome_exe);
+    shortcut_properties.set_working_dir(chrome_folder);
+    shortcut_properties.set_arguments(wide_switches);
+    shortcut_properties.set_description(description);
+    shortcut_properties.set_icon(icon_file, 0);
+    shortcut_properties.set_app_id(app_id);
+    shortcut_properties.set_dual_mode(false);
+    success = base::win::CreateOrUpdateShortcutLink(
+        shortcut_file, shortcut_properties,
+        base::win::SHORTCUT_CREATE_ALWAYS) && success;
 
     // Any shortcut would work for the pinning. We use the first one.
     if (success && pin_to_taskbar && shortcut_to_pin.empty())
@@ -286,7 +287,7 @@ bool CreatePlatformShortcuts(
 
   if (success && pin_to_taskbar) {
     if (!shortcut_to_pin.empty()) {
-      success &= file_util::TaskbarPinShortcutLink(
+      success &= base::win::TaskbarPinShortcutLink(
           shortcut_to_pin.value().c_str());
     } else {
       success = false;
@@ -320,7 +321,7 @@ void DeletePlatformShortcuts(
          j != shortcut_files.end(); ++j) {
       // Any shortcut could have been pinned, either by chrome or the user, so
       // they are all unpinned.
-      file_util::TaskbarUnpinShortcutLink(j->value().c_str());
+      base::win::TaskbarUnpinShortcutLink(j->value().c_str());
       file_util::Delete(*j, false);
     }
   }
