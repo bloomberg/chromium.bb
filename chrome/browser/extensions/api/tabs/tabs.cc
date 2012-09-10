@@ -618,8 +618,10 @@ bool CreateWindowFunction::RunImpl() {
   for (std::vector<GURL>::iterator i = urls.begin(); i != urls.end(); ++i) {
     TabContents* tab = chrome::AddSelectedTabWithURL(
         new_window, *i, content::PAGE_TRANSITION_LINK);
-    if (window_type == Browser::TYPE_PANEL)
-      tab->extension_tab_helper()->SetExtensionAppIconById(extension_id);
+    if (window_type == Browser::TYPE_PANEL) {
+      extensions::TabHelper::FromWebContents(tab->web_contents())->
+          SetExtensionAppIconById(extension_id);
+    }
   }
   if (contents) {
     TabStripModel* target_tab_strip = new_window->tab_strip_model();
@@ -1349,14 +1351,15 @@ bool UpdateTabFunction::UpdateURLIfPresent(DictionaryValue* update_props,
       return false;
     }
 
-    tab_contents_->extension_tab_helper()->script_executor()->ExecuteScript(
-        extension_id(),
-        ScriptExecutor::JAVASCRIPT,
-        url.path(),
-        ScriptExecutor::TOP_FRAME,
-        extensions::UserScript::DOCUMENT_IDLE,
-        ScriptExecutor::MAIN_WORLD,
-        base::Bind(&UpdateTabFunction::OnExecuteCodeFinished, this));
+    extensions::TabHelper::FromWebContents(tab_contents_->web_contents())->
+        script_executor()->ExecuteScript(
+            extension_id(),
+            ScriptExecutor::JAVASCRIPT,
+            url.path(),
+            ScriptExecutor::TOP_FRAME,
+            extensions::UserScript::DOCUMENT_IDLE,
+            ScriptExecutor::MAIN_WORLD,
+            base::Bind(&UpdateTabFunction::OnExecuteCodeFinished, this));
 
     *is_async = true;
     return true;

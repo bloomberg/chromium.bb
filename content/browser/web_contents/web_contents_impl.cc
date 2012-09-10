@@ -1034,6 +1034,9 @@ WebContents* WebContentsImpl::Clone() {
                                          GetSiteInstance(), MSG_ROUTING_NONE,
                                          this, opener_);
   tc->GetController().CopyStateFrom(controller_);
+  FOR_EACH_OBSERVER(WebContentsObserver,
+                    observers_,
+                    DidCloneToNewWebContents(this, tc));
   return tc;
 }
 

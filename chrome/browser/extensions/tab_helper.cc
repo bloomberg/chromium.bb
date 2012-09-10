@@ -4,8 +4,8 @@
 
 #include "chrome/browser/extensions/tab_helper.h"
 
-#include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/app_notify_channel_ui.h"
+#include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/page_action_controller.h"
@@ -15,7 +15,6 @@
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -52,43 +51,41 @@ const char kPermissionError[] = "permission_error";
 
 namespace extensions {
 
-TabHelper::TabHelper(TabContents* tab_contents)
-    : content::WebContentsObserver(tab_contents->web_contents()),
+int TabHelper::kUserDataKey;
+
+TabHelper::TabHelper(content::WebContents* web_contents)
+    : content::WebContentsObserver(web_contents),
       extension_app_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          extension_function_dispatcher_(tab_contents->profile(), this)),
+          extension_function_dispatcher_(
+              Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+              this)),
       pending_web_app_action_(NONE),
-      tab_contents_(tab_contents),
-      script_executor_(tab_contents->web_contents()),
+      script_executor_(web_contents),
       active_tab_permission_manager_(
-          tab_contents->web_contents(),
-          SessionID::IdForTab(tab_contents),
-          tab_contents->profile()) {
+          web_contents,
+          SessionID::IdForTab(TabContents::FromWebContents(web_contents)),
+          Profile::FromBrowserContext(web_contents->GetBrowserContext())) {
   if (switch_utils::AreScriptBadgesEnabled()) {
-    location_bar_controller_.reset(new ScriptBadgeController(
-        tab_contents->web_contents(), &script_executor_));
+    location_bar_controller_.reset(
+        new ScriptBadgeController(web_contents, &script_executor_));
   } else {
     location_bar_controller_.reset(
-        new PageActionController(tab_contents->web_contents()));
+        new PageActionController(web_contents));
   }
   registrar_.Add(this,
                  content::NOTIFICATION_LOAD_STOP,
                  content::Source<NavigationController>(
-                    &tab_contents->web_contents()->GetController()));
+                    &web_contents->GetController()));
 }
 
 TabHelper::~TabHelper() {
 }
 
-void TabHelper::CopyStateFrom(const TabHelper& source) {
-  SetExtensionApp(source.extension_app());
-  extension_app_icon_ = source.extension_app_icon_;
-}
-
 void TabHelper::CreateApplicationShortcuts() {
   DCHECK(CanCreateApplicationShortcuts());
   NavigationEntry* entry =
-      tab_contents_->web_contents()->GetController().GetLastCommittedEntry();
+      web_contents()->GetController().GetLastCommittedEntry();
   if (!entry)
     return;
 
@@ -103,7 +100,7 @@ bool TabHelper::CanCreateApplicationShortcuts() const {
 #if defined(OS_MACOSX)
   return false;
 #else
-  return web_app::IsValidUrl(tab_contents_->web_contents()->GetURL()) &&
+  return web_app::IsValidUrl(web_contents()->GetURL()) &&
       pending_web_app_action_ == NONE;
 #endif
 }
@@ -140,9 +137,10 @@ SkBitmap* TabHelper::GetExtensionAppIcon() {
 }
 
 void TabHelper::RenderViewCreated(RenderViewHost* render_view_host) {
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
   render_view_host->Send(
       new ExtensionMsg_SetTabId(render_view_host->GetRoutingID(),
-                                SessionID::IdForTab(tab_contents_)));
+                                SessionID::IdForTab(tab_contents)));
 }
 
 void TabHelper::DidNavigateMainFrame(
@@ -157,11 +155,12 @@ void TabHelper::DidNavigateMainFrame(
   if (!service)
     return;
 
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
   for (ExtensionSet::const_iterator it = service->extensions()->begin();
        it != service->extensions()->end(); ++it) {
     ExtensionAction* browser_action = (*it)->browser_action();
     if (browser_action) {
-      browser_action->ClearAllValuesForTab(SessionID::IdForTab(tab_contents_));
+      browser_action->ClearAllValuesForTab(SessionID::IdForTab(tab_contents));
       content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
           content::Source<ExtensionAction>(browser_action),
@@ -189,6 +188,18 @@ bool TabHelper::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+void TabHelper::DidCloneToNewWebContents(WebContents* old_web_contents,
+                                         WebContents* new_web_contents) {
+  // When the WebContents that this is attached to is cloned, give the new clone
+  // a TabHelper and copy state over.
+  CreateForWebContents(new_web_contents);
+  TabHelper* new_helper = FromWebContents(new_web_contents);
+
+  new_helper->SetExtensionApp(extension_app());
+  new_helper->extension_app_icon_ = extension_app_icon_;
+}
+
+
 void TabHelper::OnDidGetApplicationInfo(int32 page_id,
                                         const WebApplicationInfo& info) {
   // Android does not implement BrowserWindow.
@@ -196,19 +207,20 @@ void TabHelper::OnDidGetApplicationInfo(int32 page_id,
   web_app_info_ = info;
 
   NavigationEntry* entry =
-      tab_contents_->web_contents()->GetController().GetLastCommittedEntry();
+      web_contents()->GetController().GetLastCommittedEntry();
   if (!entry || (entry->GetPageID() != page_id))
     return;
 
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
   switch (pending_web_app_action_) {
     case CREATE_SHORTCUT: {
       chrome::ShowCreateWebAppShortcutsDialog(
-          tab_contents_->web_contents()->GetView()->GetTopLevelNativeWindow(),
-          tab_contents_);
+          web_contents()->GetView()->GetTopLevelNativeWindow(),
+          tab_contents);
       break;
     }
     case UPDATE_SHORTCUT: {
-      web_app::UpdateShortcutForTabContents(tab_contents_);
+      web_app::UpdateShortcutForTabContents(tab_contents);
       break;
     }
     default:
@@ -230,10 +242,10 @@ void TabHelper::OnInstallApplication(const WebApplicationInfo& info) {
   ExtensionInstallPrompt* prompt = NULL;
   if (extension_service->show_extensions_prompts()) {
     gfx::NativeWindow parent =
-        tab_contents_->web_contents()->GetView()->GetTopLevelNativeWindow();
-    prompt = new ExtensionInstallPrompt(parent,
-                                        tab_contents_->web_contents(),
-                                        tab_contents_->profile());
+        web_contents()->GetView()->GetTopLevelNativeWindow();
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+    prompt = new ExtensionInstallPrompt(parent, web_contents(), profile);
   }
   scoped_refptr<CrxInstaller> installer(
       CrxInstaller::Create(extension_service, prompt));
@@ -264,8 +276,7 @@ void TabHelper::OnGetAppNotifyChannel(const GURL& requestor_url,
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   ExtensionService* extension_service = profile->GetExtensionService();
   ProcessMap* process_map = extension_service->process_map();
-  content::RenderProcessHost* process =
-      tab_contents()->web_contents()->GetRenderProcessHost();
+  content::RenderProcessHost* process = web_contents()->GetRenderProcessHost();
   const Extension* extension =
       extension_service->GetInstalledApp(requestor_url);
 
@@ -287,8 +298,9 @@ void TabHelper::OnGetAppNotifyChannel(const GURL& requestor_url,
     return;
   }
 
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
   AppNotifyChannelUI* ui = AppNotifyChannelUI::Create(
-      profile, tab_contents(), extension->name(),
+      profile, tab_contents, extension->name(),
       AppNotifyChannelUI::NOTIFICATION_INFOBAR);
 
   scoped_refptr<AppNotifyChannelSetup> channel_setup(
@@ -427,7 +439,7 @@ void TabHelper::Observe(int type,
   DCHECK(type == content::NOTIFICATION_LOAD_STOP);
   const NavigationController& controller =
       *content::Source<NavigationController>(source).ptr();
-  DCHECK_EQ(controller.GetWebContents(), tab_contents_->web_contents());
+  DCHECK_EQ(controller.GetWebContents(), web_contents());
 
   if (pending_web_app_action_ == UPDATE_SHORTCUT) {
     // Schedule a shortcut update when web application info is available if

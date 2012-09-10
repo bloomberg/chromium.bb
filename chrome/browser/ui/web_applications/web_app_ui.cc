@@ -98,8 +98,10 @@ class UpdateShortcutWorker : public content::NotificationObserver {
 UpdateShortcutWorker::UpdateShortcutWorker(TabContents* tab_contents)
     : tab_contents_(tab_contents),
       profile_path_(tab_contents->profile()->GetPath()) {
+  extensions::TabHelper* extensions_tab_helper =
+      extensions::TabHelper::FromWebContents(tab_contents->web_contents());
   web_app::GetShortcutInfoForTab(tab_contents_, &shortcut_info_);
-  web_app::GetIconsInfo(tab_contents_->extension_tab_helper()->web_app_info(),
+  web_app::GetIconsInfo(extensions_tab_helper->web_app_info(),
                         &unprocessed_icons_);
   file_name_ = web_app::internals::GetSanitizedFileName(shortcut_info_.title);
 
@@ -164,7 +166,9 @@ void UpdateShortcutWorker::OnIconDownloaded(int download_id,
   if (!errored && !image.isNull()) {
     // Update icon with download image and update shortcut.
     shortcut_info_.favicon = gfx::Image(image);
-    tab_contents_->extension_tab_helper()->SetAppIcon(image);
+    extensions::TabHelper* extensions_tab_helper =
+        extensions::TabHelper::FromWebContents(tab_contents_->web_contents());
+    extensions_tab_helper->SetAppIcon(image);
     UpdateShortcuts();
   } else {
     // Try the next icon otherwise.
@@ -303,8 +307,9 @@ void GetShortcutInfoForTab(TabContents* tab_contents,
   DCHECK(info);  // Must provide a valid info.
   const WebContents* web_contents = tab_contents->web_contents();
 
-  const WebApplicationInfo& app_info =
-      tab_contents->extension_tab_helper()->web_app_info();
+  const extensions::TabHelper* extensions_tab_helper =
+      extensions::TabHelper::FromWebContents(web_contents);
+  const WebApplicationInfo& app_info = extensions_tab_helper->web_app_info();
 
   info->url = app_info.app_url.is_empty() ? web_contents->GetURL() :
                                             app_info.app_url;

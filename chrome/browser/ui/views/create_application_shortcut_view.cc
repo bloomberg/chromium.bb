@@ -422,7 +422,8 @@ CreateUrlApplicationShortcutView::CreateUrlApplicationShortcutView(
 
   web_app::GetShortcutInfoForTab(tab_contents_, &shortcut_info_);
   const WebApplicationInfo& app_info =
-      tab_contents_->extension_tab_helper()->web_app_info();
+      extensions::TabHelper::FromWebContents(tab_contents_->web_contents())->
+          web_app_info();
   if (!app_info.icons.empty()) {
     web_app::GetIconsInfo(app_info, &unprocessed_icons_);
     FetchIcon();
@@ -440,9 +441,10 @@ bool CreateUrlApplicationShortcutView::Accept() {
   if (!CreateApplicationShortcutView::Accept())
     return false;
 
-  tab_contents_->extension_tab_helper()->SetAppIcon(
-      shortcut_info_.favicon.IsEmpty() ? SkBitmap() :
-                                         *shortcut_info_.favicon.ToSkBitmap());
+  extensions::TabHelper::FromWebContents(tab_contents_->web_contents())->
+      SetAppIcon(shortcut_info_.favicon.IsEmpty()
+          ? SkBitmap()
+          : *shortcut_info_.favicon.ToSkBitmap());
   Browser* browser =
       browser::FindBrowserWithWebContents(tab_contents_->web_contents());
   if (browser)

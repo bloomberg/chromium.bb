@@ -457,8 +457,10 @@ NSRect Tile::GetFaviconStartRectRelativeTo(const Tile& tile) const {
 }
 
 NSImage* Tile::favicon() const {
-  if (contents_->extension_tab_helper()->is_app()) {
-    SkBitmap* bitmap = contents_->extension_tab_helper()->GetExtensionAppIcon();
+  extensions::TabHelper* extensions_tab_helper =
+      extensions::TabHelper::FromWebContents(contents_->web_contents());
+  if (extensions_tab_helper->is_app()) {
+    SkBitmap* bitmap = extensions_tab_helper->GetExtensionAppIcon();
     if (bitmap)
       return gfx::SkBitmapToNSImage(*bitmap);
   }

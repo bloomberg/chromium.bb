@@ -71,11 +71,10 @@ DraggedViewGtk::DraggedViewGtk(DragData* drag_data,
   }
 
   for (size_t i = 0; i < drag_data_->size(); i++) {
-    TabContents* tab_contents = TabContents::FromWebContents(
-        drag_data_->get(i)->contents_->web_contents());
+    WebContents* web_contents = drag_data_->get(i)->contents_->web_contents();
     renderers_[i]->UpdateData(
-        drag_data_->get(i)->contents_->web_contents(),
-        tab_contents->extension_tab_helper()->is_app(),
+        web_contents,
+        extensions::TabHelper::FromWebContents(web_contents)->is_app(),
         false); // loading_only
     renderers_[i]->set_is_active(
         static_cast<int>(i) == drag_data_->source_tab_index());
