@@ -610,7 +610,7 @@ FileManager.prototype = {
         'blur', this.onRenameInputBlur_.bind(this));
 
     this.filenameInput_.addEventListener(
-        'keyup', this.onFilenameInputKeyUp_.bind(this));
+        'keydown', this.onFilenameInputKeyDown_.bind(this));
     this.filenameInput_.addEventListener(
         'focus', this.onFilenameInputFocus_.bind(this));
 
@@ -3224,7 +3224,7 @@ FileManager.prototype = {
     this.refocus();
   };
 
-  FileManager.prototype.onFilenameInputKeyUp_ = function(event) {
+  FileManager.prototype.onFilenameInputKeyDown_ = function(event) {
     var enabled = this.updateOkButton_();
     if (enabled &&
         (util.getKeyModifiers(event) + event.keyCode) == '13' /* Enter */)
