@@ -76,7 +76,8 @@
 #include "media/base/media.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositor.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorSupport.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebColorName.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabase.h"
@@ -326,13 +327,6 @@ void RenderThreadImpl::Init() {
   if (command_line.HasSwitch(switches::kEnableGpuBenchmarking))
       RegisterExtension(content::GpuBenchmarkingExtension::Get());
 
-  WebKit::WebCompositor::setAcceleratedAnimationEnabled(
-      !command_line.HasSwitch(switches::kDisableThreadedAnimation));
-  WebKit::WebCompositor::setPerTilePaintingEnabled(
-      command_line.HasSwitch(switches::kEnablePerTilePainting));
-  WebKit::WebCompositor::setPartialSwapEnabled(
-      command_line.HasSwitch(switches::kEnablePartialSwap));
-
   context_lost_cb_.reset(new GpuVDAContextLostCallback());
 
   // Note that under Linux, the media library will normally already have
@@ -378,7 +372,7 @@ RenderThreadImpl::~RenderThreadImpl() {
   }
 
   if (compositor_initialized_) {
-    WebKit::WebCompositor::shutdown();
+    WebKit::Platform::current()->compositorSupport()->shutdown();
     compositor_initialized_ = false;
   }
   if (compositor_thread_.get()) {
@@ -569,6 +563,16 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   webkit_platform_support_.reset(new RendererWebKitPlatformSupportImpl);
   WebKit::initialize(webkit_platform_support_.get());
 
+  WebKit::WebCompositorSupport* compositor_support =
+      WebKit::Platform::current()->compositorSupport();
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  compositor_support->setAcceleratedAnimationEnabled(
+      !command_line.HasSwitch(switches::kDisableThreadedAnimation));
+  compositor_support->setPerTilePaintingEnabled(
+      command_line.HasSwitch(switches::kEnablePerTilePainting));
+  compositor_support->setPartialSwapEnabled(
+      command_line.HasSwitch(switches::kEnablePartialSwap));
+
   // TODO(fsamuel): Guests don't currently support threaded compositing.
   // This should go away with the new design of the browser plugin.
   // The new design can be tracked at: http://crbug.com/134492.
@@ -578,9 +582,9 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   if (enable) {
     compositor_thread_.reset(new CompositorThread(this));
     AddFilter(compositor_thread_->GetMessageFilter());
-    WebKit::WebCompositor::initialize(compositor_thread_->GetWebThread());
+    compositor_support->initialize(compositor_thread_->GetWebThread());
   } else {
-    WebKit::WebCompositor::initialize(NULL);
+    compositor_support->initialize(NULL);
   }
   compositor_initialized_ = true;
 
@@ -595,8 +599,6 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   WebScriptController::enableV8SingleThreadMode();
 
   RenderThreadImpl::RegisterSchemes();
-
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
   webkit_glue::EnableWebCoreLogChannels(
       command_line.GetSwitchValueASCII(switches::kWebCoreLogChannels));
