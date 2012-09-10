@@ -151,8 +151,6 @@ ScreenLocker::ScreenLocker(const User& user)
 void ScreenLocker::Init() {
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
   delegate_.reset(new WebUIScreenLocker(this));
-  ash::Shell::GetInstance()->
-      desktop_background_controller()->MoveDesktopToLockedContainer();
   delegate_->LockScreen(unlock_on_input_);
 }
 
@@ -352,6 +350,9 @@ void ScreenLocker::ScreenLockReady() {
   base::TimeDelta delta = base::Time::Now() - start_time_;
   VLOG(1) << "Screen lock time: " << delta.InSecondsF();
   UMA_HISTOGRAM_TIMES("ScreenLocker.ScreenLockTime", delta);
+
+  ash::Shell::GetInstance()->
+      desktop_background_controller()->MoveDesktopToLockedContainer();
 
   bool state = true;
   content::NotificationService::current()->Notify(

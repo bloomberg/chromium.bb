@@ -61,7 +61,7 @@ const int kFastCloseAnimMs = 150;
 
 // Amount of time taken to make the lock window fade in when the screen is
 // locked.
-const int kLockFadeInAnimMs = 500;
+const int kLockFadeInAnimMs = 200;
 
 // Additional time (beyond kFastCloseAnimMs) to wait after starting the
 // fast-close shutdown animation before actually requesting shutdown, to give
