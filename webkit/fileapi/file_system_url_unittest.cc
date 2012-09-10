@@ -77,4 +77,33 @@ TEST(FileSystemURLTest, RejectMalformedURL) {
   EXPECT_FALSE(CreateFileSystemURL("filesystem:foobar/file").is_valid());
 }
 
+TEST(FileSystemURLTest, CompareURLs) {
+  const GURL urls[] = {
+      GURL("filesystem:http://chromium.org/temporary/dir a/file a"),
+      GURL("filesystem:http://chromium.org/temporary/dir a/file a"),
+      GURL("filesystem:http://chromium.org/temporary/dir a/file b"),
+      GURL("filesystem:http://chromium.org/temporary/dir a/file aa"),
+      GURL("filesystem:http://chromium.org/temporary/dir b/file a"),
+      GURL("filesystem:http://chromium.org/temporary/dir aa/file b"),
+      GURL("filesystem:http://chromium.com/temporary/dir a/file a"),
+      GURL("filesystem:https://chromium.org/temporary/dir a/file a")
+  };
+
+  FileSystemURL::Comparator compare;
+  for (size_t i = 0; i < arraysize(urls); ++i) {
+    for (size_t j = 0; j < arraysize(urls); ++j) {
+      SCOPED_TRACE(testing::Message() << i << " < " << j);
+      EXPECT_EQ(urls[i] < urls[j],
+                compare(FileSystemURL(urls[i]), FileSystemURL(urls[j])));
+    }
+  }
+
+  FileSystemURL a = CreateFileSystemURL(
+      "filesystem:http://chromium.org/temporary/dir a/file a");
+  FileSystemURL b = CreateFileSystemURL(
+      "filesystem:http://chromium.org/persistent/dir a/file a");
+  EXPECT_EQ(a.type() < b.type(), compare(a, b));
+  EXPECT_EQ(b.type() < a.type(), compare(b, a));
+}
+
 }  // namespace fileapi

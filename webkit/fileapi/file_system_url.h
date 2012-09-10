@@ -91,6 +91,10 @@ class FILEAPI_EXPORT FileSystemURL {
 
   bool operator==(const FileSystemURL& that) const;
 
+  struct FILEAPI_EXPORT Comparator {
+    bool operator() (const FileSystemURL& lhs, const FileSystemURL& rhs) const;
+  };
+
  private:
   void MayCrackIsolatedPath();
 

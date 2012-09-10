@@ -4,6 +4,7 @@
 
 #include "webkit/fileapi/file_system_url.h"
 
+#include "base/logging.h"
 #include "base/string_util.h"
 #include "net/base/escape.h"
 #include "webkit/fileapi/file_system_types.h"
@@ -114,6 +115,19 @@ bool FileSystemURL::operator==(const FileSystemURL& that) const {
       virtual_path_ == that.virtual_path_ &&
       filesystem_id_ == that.filesystem_id_ &&
       is_valid_ == that.is_valid_;
+}
+
+bool FileSystemURL::Comparator::operator()(const FileSystemURL& lhs,
+                                           const FileSystemURL& rhs) const {
+  DCHECK(lhs.is_valid_ && rhs.is_valid_);
+  if (lhs.origin_ != rhs.origin_)
+    return lhs.origin_ < rhs.origin_;
+  if (lhs.type_ != rhs.type_)
+    return lhs.type_ < rhs.type_;
+  // Compares the virtual path, i.e. the path() part of the original URL
+  // so rhs this reflects the virtual path relationship (rather than
+  // rhs of cracked paths).
+  return lhs.virtual_path_ < rhs.virtual_path_;
 }
 
 void FileSystemURL::MayCrackIsolatedPath() {
