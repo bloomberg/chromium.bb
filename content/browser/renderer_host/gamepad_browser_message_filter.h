@@ -16,12 +16,11 @@ class RenderProcessHost;
 
 class GamepadBrowserMessageFilter : public content::BrowserMessageFilter {
  public:
-  explicit GamepadBrowserMessageFilter(RenderProcessHost* rph);
+  GamepadBrowserMessageFilter();
 
   // content::BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
-  GamepadBrowserMessageFilter();
 
  private:
   virtual ~GamepadBrowserMessageFilter();
@@ -29,11 +28,11 @@ class GamepadBrowserMessageFilter : public content::BrowserMessageFilter {
   void OnGamepadStartPolling(base::SharedMemoryHandle* renderer_handle);
   void OnGamepadStopPolling();
 
-  RenderProcessHost* render_process_host_;
+  bool is_started_;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadBrowserMessageFilter);
 };
 
-} // namespace content
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_GAMEPAD_BROWSER_MESSAGE_FILTER_H_

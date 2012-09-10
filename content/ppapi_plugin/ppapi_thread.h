@@ -70,6 +70,9 @@ class PpapiThread : public ChildThread,
   void OnMsgLoadPlugin(const FilePath& path);
   void OnMsgCreateChannel(int renderer_id,
                           bool incognito);
+  void OnMsgResourceReply(
+      const ppapi::proxy::ResourceMessageReplyParams& reply_params,
+      const IPC::Message& nested_msg);
   void OnMsgSetNetworkState(bool online);
   void OnPluginDispatcherMessageReceived(const IPC::Message& msg);
 

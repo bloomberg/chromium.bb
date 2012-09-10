@@ -91,7 +91,8 @@ void PpapiHost::OnHostMsgResourceCall(
     reply_params.set_result(resource_host->OnResourceMessageReceived(
         nested_msg, &context));
 
-    // Sanity check the resource handler.
+    // Sanity check the resource handler. Note if the result was
+    // "completion pending" the resource host may have already sent the reply.
     if (reply_params.result() == PP_OK_COMPLETIONPENDING) {
       // Message handler should have only returned a pending result if a
       // response will be sent to the plugin.

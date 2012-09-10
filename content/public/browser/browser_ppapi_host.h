@@ -5,6 +5,9 @@
 #ifndef CONTENT_PUBLIC_BROWSER_BROWSER_PPAPI_HOST_H_
 #define CONTENT_PUBLIC_BROWSER_BROWSER_PPAPI_HOST_H_
 
+#include "base/process.h"
+#include "content/common/content_export.h"
+
 namespace ppapi {
 namespace host {
 class PpapiHost;
@@ -18,10 +21,13 @@ namespace content {
 //
 // There will be one of these objects in the browser per plugin process. It
 // lives entirely on the I/O thread.
-class BrowserPpapiHost {
+class CONTENT_EXPORT BrowserPpapiHost {
  public:
   // Returns the PpapiHost object.
   virtual ppapi::host::PpapiHost* GetPpapiHost() = 0;
+
+  // Returns the handle to the plugin process.
+  virtual base::ProcessHandle GetPluginProcessHandle() const = 0;
 
  protected:
   virtual ~BrowserPpapiHost() {}

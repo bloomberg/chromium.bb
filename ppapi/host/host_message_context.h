@@ -15,9 +15,13 @@ namespace host {
 // This context structure provides information about incoming resource message
 // call requests when passed to resources.
 struct PPAPI_HOST_EXPORT HostMessageContext {
-  explicit HostMessageContext(const ppapi::proxy::ResourceMessageCallParams& cp)
-      : params(cp) {
-  }
+  explicit HostMessageContext(
+      const ppapi::proxy::ResourceMessageCallParams& cp);
+  ~HostMessageContext();
+
+  // Returns a "reply params" struct with the same resource and sequence number
+  // as this request.
+  ppapi::proxy::ResourceMessageReplyParams MakeReplyParams();
 
   // The original call parameters passed to the resource message call.
   const ppapi::proxy::ResourceMessageCallParams& params;

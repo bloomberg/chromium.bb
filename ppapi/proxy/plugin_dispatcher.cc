@@ -260,6 +260,19 @@ thunk::ResourceCreationAPI* PluginDispatcher::GetResourceCreationAPI() {
       GetInterfaceProxy(API_ID_RESOURCE_CREATION));
 }
 
+// static
+void PluginDispatcher::DispatchResourceReply(
+    const ppapi::proxy::ResourceMessageReplyParams& reply_params,
+    const IPC::Message& nested_msg) {
+  Resource* resource = PpapiGlobals::Get()->GetResourceTracker()->GetResource(
+      reply_params.pp_resource());
+  if (!resource) {
+    NOTREACHED();
+    return;
+  }
+  resource->OnReplyReceived(reply_params, nested_msg);
+}
+
 void PluginDispatcher::ForceFreeAllInstances() {
   if (!g_instance_to_dispatcher)
     return;
@@ -281,13 +294,7 @@ void PluginDispatcher::ForceFreeAllInstances() {
 void PluginDispatcher::OnMsgResourceReply(
     const ppapi::proxy::ResourceMessageReplyParams& reply_params,
     const IPC::Message& nested_msg) {
-  Resource* resource = PpapiGlobals::Get()->GetResourceTracker()->GetResource(
-      reply_params.pp_resource());
-  if (!resource) {
-    NOTREACHED();
-    return;
-  }
-  resource->OnReplyReceived(reply_params, nested_msg);
+  DispatchResourceReply(reply_params, nested_msg);
 }
 
 void PluginDispatcher::OnMsgSupportsInterface(

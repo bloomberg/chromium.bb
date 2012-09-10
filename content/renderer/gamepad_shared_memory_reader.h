@@ -24,7 +24,7 @@ class GamepadSharedMemoryReader {
   scoped_ptr<base::SharedMemory> renderer_shared_memory_;
   GamepadHardwareBuffer* gamepad_hardware_buffer_;
 
-  bool ever_interacted_with_[WebKit::WebGamepads::itemsLengthCap];
+  bool ever_interacted_with_;
 };
 
 }  // namespace content

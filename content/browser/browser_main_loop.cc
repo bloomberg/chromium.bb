@@ -505,8 +505,6 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 #endif
   BrowserGpuChannelHostFactory::Terminate();
 
-  GamepadService::GetInstance()->Terminate();
-
   // The device monitors are using |system_monitor_| as dependency, so delete
   // them before |system_monitor_| goes away.
   // On Mac and windows, the monitor needs to be destroyed on the same thread
@@ -605,6 +603,10 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   // it here (which will block until required operations are complete) gives
   // more head start for those operations to finish.
   BrowserThreadImpl::ShutdownThreadPool();
+
+  // Must happen after the I/O thread is shutdown since this class lives on the
+  // I/O thread and isn't threadsafe.
+  GamepadService::GetInstance()->Terminate();
 
   if (parts_.get())
     parts_->PostDestroyThreads();

@@ -23,6 +23,7 @@
       'sources': [
         'host/dispatch_host_message.h',
         'host/host_factory.h',
+        'host/host_message_context.cc',
         'host/host_message_context.h',
         'host/instance_message_filter.cc',
         'host/instance_message_filter.h',

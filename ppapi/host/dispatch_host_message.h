@@ -79,10 +79,9 @@ inline int32_t DispatchResourceCall(ObjT* obj, Method method,
 
 #define PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(msg_class, member_func) \
   case msg_class::ID: { \
-      TRACK_RUN_IN_IPC_HANDLER(member_func); \
-      return member_func(context); \
-    }
-
+    TRACK_RUN_IN_IPC_HANDLER(member_func); \
+    return member_func(context); \
+  }
 
 }  // namespace host
 }  // namespace ppapi

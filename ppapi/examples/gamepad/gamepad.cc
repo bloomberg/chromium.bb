@@ -85,7 +85,7 @@ class MyInstance : public pp::Instance {
   }
 
   pp::ImageData PaintImage(const pp::Size& size) {
-    pp::ImageData image(this, PP_IMAGEDATAFORMAT_BGRA_PREMUL, size, false);
+    pp::ImageData image(this, PP_IMAGEDATAFORMAT_BGRA_PREMUL, size, true);
     if (image.is_null())
       return image;
 

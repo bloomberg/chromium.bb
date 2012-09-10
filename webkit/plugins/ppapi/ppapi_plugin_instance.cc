@@ -33,6 +33,7 @@
 #include "ppapi/c/private/pp_content_decryptor.h"
 #include "ppapi/c/private/ppp_instance_private.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
+#include "ppapi/shared_impl/ppb_gamepad_shared.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
 #include "ppapi/shared_impl/ppb_url_util_shared.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
@@ -401,7 +402,8 @@ PluginInstance::GamepadImpl::GamepadImpl(PluginDelegate* delegate)
 void PluginInstance::GamepadImpl::Sample(PP_GamepadsSampleData* data) {
   WebKit::WebGamepads webkit_data;
   delegate_->SampleGamepads(&webkit_data);
-  ConvertWebKitGamepadData(webkit_data, data);
+  ConvertWebKitGamepadData(
+      *reinterpret_cast<const ::ppapi::WebKitGamepads*>(&webkit_data), data);
 }
 
 PluginInstance::PluginInstance(

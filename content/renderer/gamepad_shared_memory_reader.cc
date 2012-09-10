@@ -7,6 +7,7 @@
 #include "base/debug/trace_event.h"
 #include "base/metrics/histogram.h"
 #include "content/common/gamepad_messages.h"
+#include "content/common/gamepad_user_gesture.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/common/gamepad_hardware_buffer.h"
 #include "ipc/ipc_sync_message_filter.h"
@@ -14,8 +15,8 @@
 namespace content {
 
 GamepadSharedMemoryReader::GamepadSharedMemoryReader()
-    : gamepad_hardware_buffer_(NULL) {
-  memset(ever_interacted_with_, 0, sizeof(ever_interacted_with_));
+    : gamepad_hardware_buffer_(NULL),
+      ever_interacted_with_(false) {
   CHECK(RenderThread::Get()->Send(new GamepadHostMsg_StartPolling(
       &renderer_shared_memory_handle_)));
   // If we don't get a valid handle from the browser, don't try to Map (we're
@@ -35,6 +36,12 @@ GamepadSharedMemoryReader::GamepadSharedMemoryReader()
 }
 
 void GamepadSharedMemoryReader::SampleGamepads(WebKit::WebGamepads& gamepads) {
+  // ==========
+  //   DANGER
+  // ==========
+  //
+  // This logic is duplicated in Pepper as well. If you change it, that also
+  // needs to be in sync. See ppapi/proxy/gamepad_resource.cc.
   WebKit::WebGamepads read_into;
   TRACE_EVENT0("GAMEPAD", "SampleGamepads");
 
@@ -58,32 +65,25 @@ void GamepadSharedMemoryReader::SampleGamepads(WebKit::WebGamepads& gamepads) {
   UMA_HISTOGRAM_COUNTS("Gamepad.ReadContentionCount", contention_count);
 
   if (contention_count >= kMaximumContentionCount) {
-      // We failed to successfully read, presumably because the hardware
-      // thread was taking unusually long. Don't copy the data to the output
-      // buffer, and simply leave what was there before.
-      return;
+    // We failed to successfully read, presumably because the hardware
+    // thread was taking unusually long. Don't copy the data to the output
+    // buffer, and simply leave what was there before.
+    return;
   }
 
   // New data was read successfully, copy it into the output buffer.
   memcpy(&gamepads, &read_into, sizeof(gamepads));
 
-  // Override the "connected" with false until the user has interacted
-  // with the gamepad. This is to prevent fingerprinting on drive-by pages.
-  for (unsigned i = 0; i < WebKit::WebGamepads::itemsLengthCap; ++i) {
-    WebKit::WebGamepad& pad = gamepads.items[i];
-    // If the device is physically connected, then check if we should
-    // keep it disabled. We track if any of the primary 4 buttons have been
-    // pressed to determine a reasonable intentional interaction from the user.
-    if (pad.connected) {
-      if (ever_interacted_with_[i])
-        continue;
-      const unsigned kPrimaryInteractionButtons = 4;
-      for (unsigned j = 0; j < kPrimaryInteractionButtons; ++j)
-        ever_interacted_with_[i] |= pad.buttons[j] > 0.5f;
-      // If we've not previously set, and the user still hasn't touched
-      // these buttons, then don't pass the data on to the Chromium port.
-      if (!ever_interacted_with_[i])
-        pad.connected = false;
+  if (!ever_interacted_with_) {
+    if (GamepadsHaveUserGesture(gamepads)) {
+      ever_interacted_with_ = true;
+    } else {
+      // Clear the connected flag if the user hasn't interacted with any of the
+      // gamepads to prevent fingerprinting. The actual data is not cleared.
+      // WebKit will only copy out data into the JS buffers for connected
+      // gamepads so this is sufficient.
+      for (unsigned i = 0; i < WebKit::WebGamepads::itemsLengthCap; i++)
+        gamepads.items[i].connected = false;
     }
   }
 }

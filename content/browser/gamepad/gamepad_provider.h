@@ -5,6 +5,11 @@
 #ifndef CONTENT_BROWSER_GAMEPAD_GAMEPAD_PROVIDER_H_
 #define CONTENT_BROWSER_GAMEPAD_GAMEPAD_PROVIDER_H_
 
+#include <utility>
+#include <vector>
+
+#include "base/callback_forward.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop_proxy.h"
@@ -14,6 +19,7 @@
 #include "content/common/content_export.h"
 
 namespace base {
+class MessageLoopProxy;
 class Thread;
 }
 
@@ -25,13 +31,16 @@ struct GamepadHardwareBuffer;
 class CONTENT_EXPORT GamepadProvider :
   public base::SystemMonitor::DevicesChangedObserver {
  public:
-  explicit GamepadProvider();
+  GamepadProvider();
+
+  // Manually specifies the data fetcher. Used for testing.
+  explicit GamepadProvider(scoped_ptr<GamepadDataFetcher> fetcher);
+
   virtual ~GamepadProvider();
 
-  // Set the platform-specific data fetcher. Mostly used for testing.
-  void SetDataFetcher(GamepadDataFetcher* fetcher);
-
-  base::SharedMemoryHandle GetRendererSharedMemoryHandle(
+  // Returns the shared memory handle of the gamepad data duplicated into the
+  // given process.
+  base::SharedMemoryHandle GetSharedMemoryHandleForProcess(
       base::ProcessHandle renderer_process);
 
   // Pause and resume the background polling thread. Can be called from any
@@ -39,14 +48,19 @@ class CONTENT_EXPORT GamepadProvider :
   void Pause();
   void Resume();
 
+  // Registers the given closure for calling when the user has interacted with
+  // the device. This callback will only be issued once.
+  void RegisterForUserGesture(const base::Closure& closure);
+
   // base::SystemMonitor::DevicesChangedObserver implementation.
   virtual void OnDevicesChanged(base::SystemMonitor::DeviceType type) OVERRIDE;
 
  private:
+  void Initialize(scoped_ptr<GamepadDataFetcher> fetcher);
 
   // Method for setting up the platform-specific data fetcher. Takes ownership
   // of |fetcher|.
-  void DoInitializePollingThread(GamepadDataFetcher* fetcher);
+  void DoInitializePollingThread(scoped_ptr<GamepadDataFetcher> fetcher);
 
   // Method for sending pause hints to the low-level data fetcher. Runs on
   // polling_thread_.
@@ -57,6 +71,9 @@ class CONTENT_EXPORT GamepadProvider :
   void ScheduleDoPoll();
 
   GamepadHardwareBuffer* SharedMemoryAsHardwareBuffer();
+
+  // Checks the gamepad state to see if the user has interacted with it.
+  void CheckForUserGesture();
 
   enum { kDesiredSamplingIntervalMs = 16 };
 
@@ -69,6 +86,23 @@ class CONTENT_EXPORT GamepadProvider :
   // accidentally scheduling more than one at any time, when rapidly toggling
   // |is_paused_|.
   bool have_scheduled_do_poll_;
+
+  // Lists all observers registered for user gestures, and the thread which
+  // to issue the callbacks on. Since we always issue the callback on the
+  // thread which the registration happened, and this class lives on the I/O
+  // thread, the message loop proxies will normally just be the I/O thread.
+  // However, this will be the main thread for unit testing.
+  base::Lock user_gesture_lock_;
+  struct ClosureAndThread {
+    ClosureAndThread(const base::Closure& c,
+                     const scoped_refptr<base::MessageLoopProxy>& m);
+    ~ClosureAndThread();
+
+    base::Closure closure;
+    scoped_refptr<base::MessageLoopProxy> message_loop;
+  };
+  typedef std::vector<ClosureAndThread> UserGestureObserverVector;
+  UserGestureObserverVector user_gesture_observers_;
 
   // Updated based on notification from SystemMonitor when the system devices
   // have been updated, and this notification is passed on to the data fetcher

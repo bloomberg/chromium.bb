@@ -9,8 +9,10 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"
+#include "ppapi/c/ppb_gamepad.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
+#include "ppapi/shared_impl/ppb_gamepad_shared.h"
 #include "ppapi/thunk/ppb_gamepad_api.h"
 
 struct PP_GamepadsSampleData;
@@ -41,11 +43,13 @@ class PPAPI_PROXY_EXPORT GamepadResource
   virtual void OnReplyReceived(const ResourceMessageReplyParams& params,
                                const IPC::Message& msg) OVERRIDE;
 
-  void OnPluginMsgSendMemory(const ResourceMessageReplyParams& params,
-                             base::SharedMemoryHandle shared_memory_handle);
+  void OnPluginMsgSendMemory(const ResourceMessageReplyParams& params);
 
   scoped_ptr<base::SharedMemory> shared_memory_;
-  void* buffer_;
+  const ContentGamepadHardwareBuffer* buffer_;
+
+  // Last data returned so we can use this in the event of a read failure.
+  PP_GamepadsSampleData last_read_;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadResource);
 };

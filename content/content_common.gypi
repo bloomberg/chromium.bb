@@ -198,6 +198,8 @@
     'common/gamepad_messages.h',
     'common/gamepad_seqlock.cc',
     'common/gamepad_seqlock.h',
+    'common/gamepad_user_gesture.cc',
+    'common/gamepad_user_gesture.h',
     'common/geolocation_messages.h',
     'common/gpu/client/command_buffer_proxy_impl.cc',
     'common/gpu/client/command_buffer_proxy_impl.h',

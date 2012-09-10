@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_GAMEPAD_PLATFORM_DATA_FETCHER_LINUX_H_
-#define CONTENT_BROWSER_GAMEPAD_PLATFORM_DATA_FETCHER_LINUX_H_
+#ifndef CONTENT_BROWSER_GAMEPAD_GAMEPAD_PLATFORM_DATA_FETCHER_LINUX_H_
+#define CONTENT_BROWSER_GAMEPAD_GAMEPAD_PLATFORM_DATA_FETCHER_LINUX_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/gamepad/data_fetcher.h"
+#include "content/browser/gamepad/gamepad_data_fetcher.h"
 #include "content/browser/gamepad/gamepad_standard_mappings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGamepads.h"
 
@@ -53,4 +53,4 @@ class GamepadPlatformDataFetcherLinux : public GamepadDataFetcher {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_GAMEPAD_PLATFORM_DATA_FETCHER_LINUX_H_
+#endif  // CONTENT_BROWSER_GAMEPAD_GAMEPAD_PLATFORM_DATA_FETCHER_LINUX_H_

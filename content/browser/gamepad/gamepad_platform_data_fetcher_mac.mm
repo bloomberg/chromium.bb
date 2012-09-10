@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/gamepad/platform_data_fetcher_mac.h"
+#include "content/browser/gamepad/gamepad_platform_data_fetcher_mac.h"
 
 #include "base/mac/foundation_util.h"
 #include "base/memory/scoped_nsobject.h"

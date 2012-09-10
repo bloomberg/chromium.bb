@@ -6,18 +6,34 @@
 #define CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_GAMEPAD_HOST_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "ppapi/host/resource_host.h"
+
+namespace ppapi {
+namespace proxy {
+class ResourceMessageReplyParams;
+}
+}
 
 namespace content {
 
 class BrowserPpapiHost;
+class GamepadService;
 
 class CONTENT_EXPORT PepperGamepadHost : public ppapi::host::ResourceHost {
  public:
   PepperGamepadHost(BrowserPpapiHost* host,
                     PP_Instance instance,
                     PP_Resource resource);
+
+  // Allows tests to specify a gamepad service to use rather than the global
+  // singleton. The caller owns the gamepad_service pointer.
+  PepperGamepadHost(GamepadService* gamepad_service,
+                    BrowserPpapiHost* host,
+                    PP_Instance instance,
+                    PP_Resource resource);
+
   virtual ~PepperGamepadHost();
 
   virtual int32_t OnResourceMessageReceived(
@@ -27,7 +43,15 @@ class CONTENT_EXPORT PepperGamepadHost : public ppapi::host::ResourceHost {
  private:
   int32_t OnMsgRequestMemory(ppapi::host::HostMessageContext* context);
 
+  void GotUserGesture(const ppapi::proxy::ResourceMessageReplyParams& params);
+
   BrowserPpapiHost* browser_ppapi_host_;
+
+  GamepadService* gamepad_service_;
+
+  bool is_started_;
+
+  base::WeakPtrFactory<PepperGamepadHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperGamepadHost);
 };

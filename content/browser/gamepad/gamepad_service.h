@@ -2,72 +2,76 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Owns the GamepadProvider (the background polling thread) and keeps track of
-// the number of renderers currently using the data (and pausing the provider
-// when not in use).
-
 #ifndef CONTENT_BROWSER_GAMEPAD_GAMEPAD_SERVICE_H
 #define CONTENT_BROWSER_GAMEPAD_GAMEPAD_SERVICE_H
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/shared_memory.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "base/threading/thread_checker.h"
+#include "content/common/content_export.h"
 
 namespace content {
 
 class GamepadDataFetcher;
 class GamepadProvider;
+class GamepadServiceTestConstructor;
 class RenderProcessHost;
 
-class GamepadService : public NotificationObserver {
+// Owns the GamepadProvider (the background polling thread) and keeps track of
+// the number of consumers currently using the data (and pausing the provider
+// when not in use).
+class CONTENT_EXPORT GamepadService {
  public:
   // Returns the GamepadService singleton.
   static GamepadService* GetInstance();
 
-  // Called on IO thread from a renderer host. Increments the number of users
-  // of the provider. The Provider is running when there's > 0 users, and is
-  // paused when the count drops to 0. There is no stop, the gamepad service
-  // registers with the RPH to be notified when the associated renderer closes
-  // (or crashes).
-  void Start(GamepadDataFetcher* fetcher,
-             RenderProcessHost* associated_rph);
+  // Increments the number of users of the provider. The Provider is running
+  // when there's > 0 users, and is paused when the count drops to 0.
+  //
+  // Must be called on the I/O thread.
+  void AddConsumer();
 
-  base::SharedMemoryHandle GetSharedMemoryHandle(base::ProcessHandle handle);
+  // Removes a consumer. Should be matched with an AddConsumer call.
+  //
+  // Must be called on the I/O thread.
+  void RemoveConsumer();
+
+  // Registers the given closure for calling when the user has interacted with
+  // the device. This callback will only be issued once. Should only be called
+  // while a consumer is active.
+  void RegisterForUserGesture(const base::Closure& closure);
+
+  // Returns the shared memory handle of the gamepad data duplicated into the
+  // given process.
+  base::SharedMemoryHandle GetSharedMemoryHandleForProcess(
+      base::ProcessHandle handle);
 
   // Stop/join with the background thread in GamepadProvider |provider_|.
   void Terminate();
 
  private:
   friend struct DefaultSingletonTraits<GamepadService>;
+  friend class GamepadServiceTestConstructor;
+
   GamepadService();
+
+  // Constructor for testing. This specifies the data fetcher to use for a
+  // provider, bypassing the default platform one.
+  GamepadService(scoped_ptr<GamepadDataFetcher> fetcher);
+
   virtual ~GamepadService();
-
-  // Called when a renderer that Start'd us is closed/crashes.
-  void Stop(const NotificationSource& source);
-
-  // Run on UI thread to receive/stop notifications of renderer closes.
-  void RegisterForTerminationNotification(RenderProcessHost* rph);
-  void UnregisterForTerminationNotification(const NotificationSource& source);
-
-  // NotificationObserver overrides:
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
-
-  // A registrar for listening notifications. Used to listen for when an
-  // associated renderer has gone away (possibly crashed). We don't trust
-  // the renderers to send a stop message because of the possibility of
-  // crashing.
-  NotificationRegistrar registrar_;
 
   int num_readers_;
   scoped_ptr<GamepadProvider> provider_;
 
+  base::ThreadChecker thread_checker_;
+
   DISALLOW_COPY_AND_ASSIGN(GamepadService);
 };
 
-} // namespace content
+}  // namespace content
 
-#endif // CONTENT_BROWSER_GAMEPAD_GAMEPAD_SERVICE_H
+#endif  // CONTENT_BROWSER_GAMEPAD_GAMEPAD_SERVICE_H_

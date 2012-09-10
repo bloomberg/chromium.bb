@@ -147,6 +147,13 @@ class PPAPI_PROXY_EXPORT PluginDispatcher
   uint32 plugin_dispatcher_id() const { return plugin_dispatcher_id_; }
   bool incognito() const { return incognito_; }
 
+  // Dispatches the given resource message to the appropriate resource in the
+  // plugin process. This should be wired to the various channels that messages
+  // come in from various other processes.
+  static void DispatchResourceReply(
+      const ppapi::proxy::ResourceMessageReplyParams& reply_params,
+      const IPC::Message& nested_msg);
+
  private:
   friend class PluginDispatcherTest;
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_GAMEPAD_DATA_FETCHER_H_
-#define CONTENT_BROWSER_GAMEPAD_DATA_FETCHER_H_
+#ifndef CONTENT_BROWSER_GAMEPAD_GAMEPAD_DATA_FETCHER_H_
+#define CONTENT_BROWSER_GAMEPAD_GAMEPAD_DATA_FETCHER_H_
 
 namespace WebKit {
 class WebGamepads;
@@ -11,6 +11,8 @@ class WebGamepads;
 
 namespace content {
 
+// Abstract interface for imlementing platform- (and test-) specific behaviro
+// for getting the gamepad data.
 class GamepadDataFetcher {
  public:
   virtual ~GamepadDataFetcher() {}
@@ -19,6 +21,6 @@ class GamepadDataFetcher {
   virtual void PauseHint(bool paused) {}
 };
 
-} // namespace content
+}  // namespace content
 
-#endif  // CONTENT_BROWSER_GAMEPAD_DATA_FETCHER_H_
+#endif  // CONTENT_BROWSER_GAMEPAD_GAMEPAD_DATA_FETCHER_H_

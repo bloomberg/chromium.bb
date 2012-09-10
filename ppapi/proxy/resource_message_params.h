@@ -5,9 +5,12 @@
 #ifndef PPAPI_PROXY_RESOURCE_MESSAGE_PARAMS_H_
 #define PPAPI_PROXY_RESOURCE_MESSAGE_PARAMS_H_
 
+#include <vector>
+
 #include "ipc/ipc_message_utils.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
+#include "ppapi/proxy/serialized_structs.h"
 
 namespace ppapi {
 namespace proxy {
@@ -19,6 +22,33 @@ class PPAPI_PROXY_EXPORT ResourceMessageParams {
 
   PP_Resource pp_resource() const { return pp_resource_; }
   int32_t sequence() const { return sequence_; }
+
+  const std::vector<SerializedHandle> handles() const { return handles_; }
+
+  // Returns a pointer to the handle at the given index if it exists and is of
+  // the given type. If the index doesn't exist or the handle isn't of the
+  // given type, returns NULL. Note that the pointer will be into an internal
+  // vector so will be invalidated if the params are mutated.
+  const SerializedHandle* GetHandleOfTypeAtIndex(
+      size_t index,
+      SerializedHandle::Type type) const;
+
+  // Helper functions to return shared memory handles passed in the params
+  // struct. If the index has a valid handle of the given type, it will be
+  // placed in the output parameter and the function will return true. If the
+  // handle doesn't exist or is a different type, the functions will return
+  // false and the output parameter will be untouched.
+  //
+  // Note that the handle could still be a "null" or invalid handle of
+  // the right type and the functions will succeed.
+  bool GetSharedMemoryHandleAtIndex(size_t index,
+                                    base::SharedMemoryHandle* handle) const;
+  bool GetSocketHandleAtIndex(size_t index,
+                              IPC::PlatformFileForTransit* handle) const;
+
+  // Appends the given handle to the list of handles sent with the call or
+  // reply.
+  void AppendHandle(const SerializedHandle& handle);
 
  protected:
   ResourceMessageParams();
@@ -44,6 +74,11 @@ class PPAPI_PROXY_EXPORT ResourceMessageParams {
   // confusion within the plugin and within callbacks on the same resource,
   // there shouldn't be a security problem.
   int32_t sequence_;
+
+  // A list of all handles transferred in the message. Handles go here so that
+  // the NaCl adapter can extract them generally when it rewrites them to
+  // go between Windows and NaCl (Posix) apps.
+  std::vector<SerializedHandle> handles_;
 };
 
 // Parameters common to all ResourceMessage "Call" requests.

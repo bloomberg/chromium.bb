@@ -39,7 +39,9 @@ class PPAPI_HOST_EXPORT ResourceHost {
   //
   // You can do a response asynchronously by returning PP_OK_COMPLETIONPENDING.
   // This will cause the reply to be skipped, and the class implementing this
-  // function will take responsibility for issuing the callback later.
+  // function will take responsibility for issuing the callback. The callback
+  // can be issued inside OnResourceMessageReceived before it returns, or at
+  // a future time.
   //
   // If you don't have a particular reply message, you can just ignore
   // the reply in the message context. However, if you have a reply more than

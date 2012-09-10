@@ -28,6 +28,6 @@ struct GamepadHardwareBuffer {
   WebKit::WebGamepads buffer;
 };
 
-}
+}  // namespace content
 
 #endif // CONTENT_COMMON_GAMEPAD_HARDWARE_BUFFER_H_

@@ -5,19 +5,19 @@
 // Define the default data fetcher that GamepadProvider will use if none is
 // supplied. (GamepadPlatformDataFetcher).
 
-#ifndef CONTENT_BROWSER_GAMEPAD_PLATFORM_DATA_FETCHER_H_
-#define CONTENT_BROWSER_GAMEPAD_PLATFORM_DATA_FETCHER_H_
+#ifndef CONTENT_BROWSER_GAMEPAD_GAMEPAD_PLATFORM_DATA_FETCHER_H_
+#define CONTENT_BROWSER_GAMEPAD_GAMEPAD_PLATFORM_DATA_FETCHER_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "content/browser/gamepad/data_fetcher.h"
+#include "content/browser/gamepad/gamepad_data_fetcher.h"
 
 #if defined(OS_WIN)
-#include "content/browser/gamepad/platform_data_fetcher_win.h"
+#include "content/browser/gamepad/gamepad_platform_data_fetcher_win.h"
 #elif defined(OS_MACOSX)
-#include "content/browser/gamepad/platform_data_fetcher_mac.h"
+#include "content/browser/gamepad/gamepad_platform_data_fetcher_mac.h"
 #elif defined(OS_LINUX)
-#include "content/browser/gamepad/platform_data_fetcher_linux.h"
+#include "content/browser/gamepad/gamepad_platform_data_fetcher_linux.h"
 #endif
 
 namespace content {
@@ -52,4 +52,4 @@ typedef GamepadDataFetcherEmpty GamepadPlatformDataFetcher;
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_GAMEPAD_PLATFORM_DATA_FETCHER_H_
+#endif  // CONTENT_BROWSER_GAMEPAD_GAMEPAD_PLATFORM_DATA_FETCHER_H_

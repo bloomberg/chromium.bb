@@ -607,7 +607,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       GetID(),
       storage_partition_impl_->GetQuotaManager(),
       GetContentClient()->browser()->CreateQuotaPermissionContext()));
-  channel_->AddFilter(new GamepadBrowserMessageFilter(this));
+  channel_->AddFilter(new GamepadBrowserMessageFilter());
   channel_->AddFilter(new ProfilerMessageFilter(PROCESS_TYPE_RENDERER));
   channel_->AddFilter(new HistogramMessageFilter());
   channel_->AddFilter(new HyphenatorMessageFilter(this));

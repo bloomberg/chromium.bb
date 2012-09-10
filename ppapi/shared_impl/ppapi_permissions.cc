@@ -17,6 +17,14 @@ PpapiPermissions::PpapiPermissions(uint32 perms) : permissions_(perms) {
 PpapiPermissions::~PpapiPermissions() {
 }
 
+// static
+PpapiPermissions PpapiPermissions::AllPermissions() {
+  return PpapiPermissions(
+      PERMISSION_DEV |
+      PERMISSION_PRIVATE |
+      PERMISSION_BYPASS_USER_GESTURE);
+}
+
 bool PpapiPermissions::HasPermission(Permission perm) const {
   // Check that "perm" is a power of two to make sure the caller didn't set
   // more than one permission bit. We may want to change how permissions are

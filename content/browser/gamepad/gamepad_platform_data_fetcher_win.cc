@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/gamepad/platform_data_fetcher_win.h"
+#include "content/browser/gamepad/gamepad_platform_data_fetcher_win.h"
 
 #include "base/debug/trace_event.h"
 #include "content/common/gamepad_messages.h"

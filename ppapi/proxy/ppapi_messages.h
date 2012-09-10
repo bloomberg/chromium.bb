@@ -1551,9 +1551,15 @@ IPC_MESSAGE_CONTROL1(PpapiPluginMsg_FileChooser_ShowReply,
 
 // Gamepad.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_Gamepad_Create)
+
+// Requests that the gamepad host send the shared memory handle to the plugin
+// process.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_Gamepad_RequestMemory)
-IPC_MESSAGE_CONTROL1(PpapiPluginMsg_Gamepad_SendMemory,
-                     base::SharedMemoryHandle /* handle */)
+
+// Reply to a RequestMemory call. This supplies the shared memory handle. The
+// actual handle is passed in the ReplyParams struct.
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_Gamepad_SendMemory)
+
 // Printing.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_Printing_Create)
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_Printing_GetDefaultPrintSettings)

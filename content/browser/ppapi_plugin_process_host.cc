@@ -141,6 +141,9 @@ PpapiPluginProcessHost::PpapiPluginProcessHost()
     : is_broker_(true) {
   process_.reset(new BrowserChildProcessHostImpl(
       content::PROCESS_TYPE_PPAPI_BROKER, this));
+
+  ppapi::PpapiPermissions permissions;  // No permissions.
+  host_impl_ = new content::BrowserPpapiHostImpl(this, permissions);
 }
 
 bool PpapiPluginProcessHost::Init(const content::PepperPluginInfo& info) {
@@ -243,6 +246,7 @@ void PpapiPluginProcessHost::RequestPluginChannel(Client* client) {
 }
 
 void PpapiPluginProcessHost::OnProcessLaunched() {
+  host_impl_->set_plugin_process_handle(process_->GetHandle());
 }
 
 bool PpapiPluginProcessHost::OnMessageReceived(const IPC::Message& msg) {

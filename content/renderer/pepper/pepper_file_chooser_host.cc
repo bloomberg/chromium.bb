@@ -166,9 +166,7 @@ int32_t PepperFileChooserHost::OnMsgShow(
     return PP_ERROR_NOACCESS;
   }
 
-  reply_params_ = ppapi::proxy::ResourceMessageReplyParams(
-      context->params.pp_resource(),
-      context->params.sequence());
+  reply_params_ = context->MakeReplyParams();
   return PP_OK_COMPLETIONPENDING;
 }
 

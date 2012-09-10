@@ -27,12 +27,51 @@ ResourceMessageParams::~ResourceMessageParams() {
 void ResourceMessageParams::Serialize(IPC::Message* msg) const {
   IPC::ParamTraits<PP_Resource>::Write(msg, pp_resource_);
   IPC::ParamTraits<int32_t>::Write(msg, sequence_);
+  IPC::ParamTraits<std::vector<SerializedHandle> >::Write(msg, handles_);
 }
 
 bool ResourceMessageParams::Deserialize(const IPC::Message* msg,
                                         PickleIterator* iter) {
   return IPC::ParamTraits<PP_Resource>::Read(msg, iter, &pp_resource_) &&
-         IPC::ParamTraits<int32_t>::Read(msg, iter, &sequence_);
+         IPC::ParamTraits<int32_t>::Read(msg, iter, &sequence_) &&
+         IPC::ParamTraits<std::vector<SerializedHandle> >::Read(
+             msg, iter, &handles_);
+}
+
+const SerializedHandle* ResourceMessageParams::GetHandleOfTypeAtIndex(
+    size_t index,
+    SerializedHandle::Type type) const {
+  if (handles_.size() <= index)
+    return NULL;
+  if (handles_[index].type() != type)
+    return NULL;
+  return &handles_[index];
+}
+
+bool ResourceMessageParams::GetSharedMemoryHandleAtIndex(
+    size_t index,
+    base::SharedMemoryHandle* handle) const {
+  const SerializedHandle* serialized = GetHandleOfTypeAtIndex(
+      index, SerializedHandle::SHARED_MEMORY);
+  if (!serialized)
+    return false;
+  *handle = serialized->shmem();
+  return true;
+}
+
+bool ResourceMessageParams::GetSocketHandleAtIndex(
+    size_t index,
+    IPC::PlatformFileForTransit* handle) const {
+  const SerializedHandle* serialized = GetHandleOfTypeAtIndex(
+      index, SerializedHandle::SOCKET);
+  if (!serialized)
+    return false;
+  *handle = serialized->descriptor();
+  return true;
+}
+
+void ResourceMessageParams::AppendHandle(const SerializedHandle& handle) {
+  handles_.push_back(handle);
 }
 
 ResourceMessageCallParams::ResourceMessageCallParams()

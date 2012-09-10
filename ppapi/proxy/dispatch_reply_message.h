@@ -63,16 +63,23 @@ inline void DispatchResourceReply(ObjT* obj, Method method,
 
 #define PPAPI_DISPATCH_RESOURCE_REPLY(msg_class, member_func) \
     case msg_class::ID: { \
-        TRACK_RUN_IN_IPC_HANDLER(member_func); \
-        msg_class::Schema::Param p; \
-        if (msg_class::Read(&ipc_message__, &p)) { \
-          ppapi::proxy::DispatchResourceReply( \
-              this, \
-              &_IpcMessageHandlerClass::member_func, \
-              params, p); \
-        }  \
+      TRACK_RUN_IN_IPC_HANDLER(member_func); \
+      msg_class::Schema::Param p; \
+      if (msg_class::Read(&ipc_message__, &p)) { \
+        ppapi::proxy::DispatchResourceReply( \
+            this, \
+            &_IpcMessageHandlerClass::member_func, \
+            params, p); \
       }  \
-      break;
+      break; \
+    }
+
+#define PPAPI_DISPATCH_RESOURCE_REPLY_0(msg_class, member_func) \
+    case msg_class::ID: { \
+      TRACK_RUN_IN_IPC_HANDLER(member_func); \
+      member_func(params); \
+      break; \
+    }
 
 }  // namespace proxy
 }  // namespace ppapi
