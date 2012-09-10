@@ -97,12 +97,8 @@
       '-omnibox.OmniboxTest.testAutoCompleteForNonAsciiSearch',
       # crbug.com/137041
       '-omnibox.OmniboxTest.testDifferentTypesOfResults',
-      # crbug.com/115427
-      '-policy.PolicyTest.testAlwaysAuthorizePlugins',
       # crbug.com/118054
       '-policy.PolicyTest.testApplicationLocaleValue',
-      # crbug.com/96896
-      '-policy.PolicyTest.testEnabledPlugins',
       # crbug.com/118123
       '-policy.PolicyTest.testExtensionInstallFromForceList',
       # crbug.com/85600
@@ -654,8 +650,6 @@
       'chromeos_retail_mode',
       'policy',
       'policy_prefs_ui',
-      # crbug.com/115427
-      '-policy.PolicyTest.testAlwaysAuthorizePlugins',
       # crbug.com/118054
       '-policy.PolicyTest.testApplicationLocaleValue',
       # crbug.com/118123

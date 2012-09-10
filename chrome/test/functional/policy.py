@@ -50,16 +50,6 @@ class PolicyTest(policy_base.PolicyTestBase):
     else:
       return 'Preference can be set even though a policy is in effect.'
 
-  # TODO(frankf): Move tests dependending on this to plugins.py.
-  def _GetPluginPID(self, plugin_name):
-    """Fetch the pid of the plugin process with name |plugin_name|."""
-    child_processes = self.GetBrowserInfo()['child_processes']
-    plugin_type = 'Plug-in'
-    for x in child_processes:
-      if x['type'] == plugin_type and plugin_name in x['name']:
-        return x['pid']
-    return None
-
   def setUp(self):
     policy_base.PolicyTestBase.setUp(self)
     if self.IsChromeOS():
@@ -156,59 +146,6 @@ class PolicyTest(policy_base.PolicyTestBase):
       # TODO(sunandt): Try changing the application locale to another language.
     else:
       raise NotImplementedError()
-
-  def testDisabledPlugins(self):
-    """Verify that disabled plugins cannot be enabled."""
-    policy = {'DisabledPlugins': ['Shockwave Flash']}
-    self.SetUserPolicy(policy)
-    for plugin in self.GetPluginsInfo().Plugins():
-      if 'Flash' in plugin['name']:
-        self.assertRaises(pyauto.JSONInterfaceError,
-                          lambda: self.EnablePlugin(plugin['path']))
-        return
-
-  def testDisabledPluginsException(self):
-    """Verify that plugins given exceptions can be managed by users.
-
-    Chrome PDF Viewer is disabled using DisabledPlugins policy.
-    User can still toggle the plugin setting when an exception is given for a
-    plugin. So we are trying to enable Chrome PDF Viewer.
-    """
-    policy = {
-      'DisabledPlugins': ['Chrome PDF Viewer'],
-      'DisabledPluginsExceptions': ['Chrome PDF Viewer']
-    }
-    self.SetUserPolicy(policy)
-    for plugin in self.GetPluginsInfo().Plugins():
-      if 'Chrome PDF Viewer' in plugin['name']:
-        self.EnablePlugin(plugin['path'])
-        return
-
-  def testEnabledPlugins(self):
-    """Verify that enabled plugins cannot be disabled."""
-    policy = {'EnabledPlugins': ['Shockwave Flash']}
-    self.SetUserPolicy(policy)
-    for plugin in self.GetPluginsInfo().Plugins():
-      if 'Flash' in plugin['name']:
-        self.assertRaises(pyauto.JSONInterfaceError,
-                          lambda: self.DisablePlugin(plugin['path']))
-        return
-    logging.debug('Flash is not present.')
-
-  def testAlwaysAuthorizePlugins(self):
-    """Verify plugins are always allowed to run when policy is set."""
-    policy = {'AlwaysAuthorizePlugins': True}
-    self.SetUserPolicy(policy)
-    url = self.GetFileURLForDataPath('plugin', 'java_new.html')
-    self.NavigateToURL(url)
-    self.assertFalse(self.WaitForInfobarCount(1))
-    pid = self._GetPluginPID('Java')
-    self.assertTrue(pid, 'No plugin process for java')
-    policy = {'AlwaysAuthorizePlugins': False}
-    self.NavigateToURL(url)
-    self.assertFalse(self.WaitForInfobarCount(1))
-    pid = self._GetPluginPID('Java')
-    self.assertTrue(pid, 'No plugin process for java')
 
   # Needed for extension tests
   _GOOD_CRX_ID = 'ldnnhddmnhbkjipkidpdiheffobcpfmf'
