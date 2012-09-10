@@ -24,12 +24,8 @@ size_t CCTexture::bytes() const
 
 size_t CCTexture::memorySizeBytes(const IntSize& size, GC3Denum format)
 {
-    unsigned int componentsPerPixel;
-    unsigned int bytesPerComponent;
-    if (!GraphicsContext3D::computeFormatAndTypeParameters(format, GraphicsContext3D::UNSIGNED_BYTE, &componentsPerPixel, &bytesPerComponent)) {
-        ASSERT_NOT_REACHED();
-        return 0u;
-    }
+    unsigned int componentsPerPixel = 4;
+    unsigned int bytesPerComponent = 1;
     return componentsPerPixel * bytesPerComponent * size.width() * size.height();
 }
 

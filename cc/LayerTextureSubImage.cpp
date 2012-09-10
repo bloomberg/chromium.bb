@@ -84,12 +84,8 @@ void LayerTextureSubImage::uploadWithMapTexSubImage(const uint8_t* image, const 
         return;
     }
 
-    unsigned int componentsPerPixel;
-    unsigned int bytesPerComponent;
-    if (!GraphicsContext3D::computeFormatAndTypeParameters(format, GraphicsContext3D::UNSIGNED_BYTE, &componentsPerPixel, &bytesPerComponent)) {
-        ASSERT_NOT_REACHED();
-        return;
-    }
+    unsigned int componentsPerPixel = 4;
+    unsigned int bytesPerComponent = 1;
 
     if (imageRect.width() == sourceRect.width() && !offset.x())
         memcpy(pixelDest, &image[offset.y() * imageRect.width() * componentsPerPixel * bytesPerComponent], imageRect.width() * sourceRect.height() * componentsPerPixel * bytesPerComponent);

@@ -26,7 +26,6 @@ size_t textureSize(const IntSize& size, WGC3Denum format)
 {
     unsigned int componentsPerPixel = 4;
     unsigned int bytesPerComponent = 1;
-    GraphicsContext3D::computeFormatAndTypeParameters(format, GraphicsContext3D::UNSIGNED_BYTE, &componentsPerPixel, &bytesPerComponent);
     return size.width() * size.height() * componentsPerPixel * bytesPerComponent;
 }
 
