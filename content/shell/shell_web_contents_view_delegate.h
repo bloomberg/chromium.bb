@@ -35,6 +35,11 @@ class ShellWebContentsViewDelegate : public WebContentsViewDelegate {
   virtual gboolean OnNativeViewFocusEvent(GtkWidget* widget,
                                           GtkDirectionType type,
                                           gboolean* return_value) OVERRIDE;
+#elif defined(OS_MACOSX)
+  virtual NSObject<RenderWidgetHostViewMacDelegate>*
+      CreateRenderWidgetHostViewDelegate(
+          RenderWidgetHost* render_widget_host) OVERRIDE;
+  void ActionPerformed(int id);
 #endif
 
  private:

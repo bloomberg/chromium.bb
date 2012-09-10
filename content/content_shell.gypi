@@ -102,6 +102,7 @@
         'shell/shell_url_request_context_getter.h',
         'shell/shell_web_contents_view_delegate_creator.h',
         'shell/shell_web_contents_view_delegate_gtk.cc',
+        'shell/shell_web_contents_view_delegate_mac.mm',
         'shell/shell_web_contents_view_delegate.h',
         'shell/webkit_test_runner.cc',
         'shell/webkit_test_runner.h',
