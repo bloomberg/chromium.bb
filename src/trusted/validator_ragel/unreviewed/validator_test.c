@@ -32,10 +32,10 @@ void NaClLog(int detail_level, char const  *fmt, ...) {
   exit(1);
 }
 
-static void CheckBounds(unsigned char *data, size_t data_size,
-                        void *ptr, size_t inside_size) {
-  CHECK(data <= (unsigned char *) ptr);
-  CHECK((unsigned char *) ptr + inside_size <= data + data_size);
+static void CheckBounds(const unsigned char *data, size_t data_size,
+                        const void *ptr, size_t inside_size) {
+  CHECK(data <= (const unsigned char *) ptr);
+  CHECK((const unsigned char *) ptr + inside_size <= data + data_size);
 }
 
 void ReadImage(const char *filename, uint8_t **result, size_t *result_size) {
@@ -119,7 +119,104 @@ Bool ProcessError(const uint8_t *begin, const uint8_t *end,
     return TRUE;
 }
 
-Bool ValidateFile(const char *filename, int repeat_count,
+Bool ValidateElf32(const uint8_t *data, size_t data_size,
+                   enum validation_options options,
+                   const NaClCPUFeaturesX86 *cpu_features) {
+  Elf32_Ehdr *header;
+  int index;
+
+  header = (Elf32_Ehdr *) data;
+  CheckBounds(data, data_size, header, sizeof(*header));
+  assert(memcmp(header->e_ident, ELFMAG, strlen(ELFMAG)) == 0);
+
+  for (index = 0; index < header->e_shnum; ++index) {
+    Elf32_Shdr *section = (Elf32_Shdr *) (data + header->e_shoff +
+                                               header->e_shentsize * index);
+    CheckBounds(data, data_size, section, sizeof(*section));
+
+    if ((section->sh_flags & SHF_EXECINSTR) != 0) {
+      struct ValidateState state;
+      Bool res;
+
+      state.offset = data + section->sh_offset - section->sh_addr;
+      if (section->sh_size <= 0xfff) {
+        state.width = 4;
+      } else if (section->sh_size <= 0xfffffff) {
+        state.width = 8;
+      } else {
+        state.width = 12;
+      }
+      CheckBounds(data, data_size,
+                  data + section->sh_offset, section->sh_size);
+      res = ValidateChunkIA32(data + section->sh_offset, section->sh_size,
+                              options, cpu_features,
+                              ProcessError, &state);
+      if (!res)
+        return res;
+    }
+  }
+  return TRUE;
+}
+
+Bool ValidateElf64(const uint8_t *data, size_t data_size,
+                   enum validation_options options,
+                   const NaClCPUFeaturesX86 *cpu_features) {
+  Elf64_Ehdr *header;
+  int index;
+
+  header = (Elf64_Ehdr *) data;
+  CheckBounds(data, data_size, header, sizeof(*header));
+  assert(memcmp(header->e_ident, ELFMAG, strlen(ELFMAG)) == 0);
+
+  for (index = 0; index < header->e_shnum; ++index) {
+    Elf64_Shdr *section = (Elf64_Shdr *) (data + header->e_shoff +
+                                               header->e_shentsize * index);
+    CheckBounds(data, data_size, section, sizeof(*section));
+
+    if ((section->sh_flags & SHF_EXECINSTR) != 0) {
+      struct ValidateState state;
+      Bool res;
+
+      state.offset = data + section->sh_offset - section->sh_addr;
+      if (section->sh_size <= 0xfff) {
+        state.width = 4;
+      } else if (section->sh_size <= 0xfffffff) {
+        state.width = 8;
+      } else if (section->sh_size <= 0xfffffffffffLL) {
+        state.width = 12;
+      } else {
+        state.width = 16;
+      }
+      CheckBounds(data, data_size,
+                  data + section->sh_offset, (size_t)section->sh_size);
+      res = ValidateChunkAMD64(data + section->sh_offset,
+                               (size_t)section->sh_size,
+                               options,
+                               cpu_features, ProcessError, &state);
+      if (!res)
+        return res;
+    }
+  }
+  return TRUE;
+}
+
+Bool ValidateElf(const char *filename,
+                 const uint8_t *data, size_t data_size,
+                 enum validation_options options,
+                 const NaClCPUFeaturesX86 *cpu_features) {
+  if (data[4] == 1) {
+    return ValidateElf32(data, data_size, options, cpu_features);
+  } else if (data[4] == 2) {
+    return ValidateElf64(data, data_size, options, cpu_features);
+  } else {
+    printf("Unknown ELF class: %s\n", filename);
+    exit(1);
+  }
+}
+
+void ProcessFile(const char *filename,
+                 int repeat_count,
+                 int raw_bitness,
                  enum validation_options options,
                  const NaClCPUFeaturesX86 *cpu_features) {
   size_t data_size;
@@ -128,91 +225,40 @@ Bool ValidateFile(const char *filename, int repeat_count,
 
   ReadImage(filename, &data, &data_size);
 
-  if (data[4] == 1) {
-    for (count = 0; count < repeat_count; ++count) {
-      Elf32_Ehdr *header;
-      int index;
-
-      header = (Elf32_Ehdr *) data;
-      CheckBounds(data, data_size, header, sizeof(*header));
-      assert(memcmp(header->e_ident, ELFMAG, strlen(ELFMAG)) == 0);
-
-      for (index = 0; index < header->e_shnum; ++index) {
-        Elf32_Shdr *section = (Elf32_Shdr *) (data + header->e_shoff +
-                                                   header->e_shentsize * index);
-        CheckBounds(data, data_size, section, sizeof(*section));
-
-        if ((section->sh_flags & SHF_EXECINSTR) != 0) {
-          struct ValidateState state;
-          Bool res;
-
-          state.offset = data + section->sh_offset - section->sh_addr;
-          if (section->sh_size <= 0xfff) {
-            state.width = 4;
-          } else if (section->sh_size <= 0xfffffff) {
-            state.width = 8;
-          } else {
-            state.width = 12;
-          }
-          CheckBounds(data, data_size,
-                      data + section->sh_offset, section->sh_size);
-          res = ValidateChunkIA32(data + section->sh_offset, section->sh_size,
-                                  options, cpu_features,
-                                  ProcessError, &state);
-          if (!res)
-            return res;
-        }
-      }
+  for (count = 0; count < repeat_count; ++count) {
+    Bool rc = FALSE;
+    if (raw_bitness == 0)
+      rc = ValidateElf(filename,
+                       data, data_size,
+                       options,
+                       cpu_features);
+    else if (raw_bitness == 32) {
+      struct ValidateState state;
+      state.offset = data;
+      CHECK(data_size % kBundleSize == 0);
+      rc = ValidateChunkIA32(data, data_size,
+                             options, cpu_features,
+                             ProcessError, &state);
     }
-  } else if (data[4] == 2) {
-    for (count = 0; count < repeat_count; ++count) {
-      Elf64_Ehdr *header;
-      int index;
-
-      header = (Elf64_Ehdr *) data;
-      CheckBounds(data, data_size, header, sizeof(*header));
-      assert(memcmp(header->e_ident, ELFMAG, strlen(ELFMAG)) == 0);
-
-      for (index = 0; index < header->e_shnum; ++index) {
-        Elf64_Shdr *section = (Elf64_Shdr *) (data + header->e_shoff +
-                                                   header->e_shentsize * index);
-        CheckBounds(data, data_size, section, sizeof(*section));
-
-        if ((section->sh_flags & SHF_EXECINSTR) != 0) {
-          struct ValidateState state;
-          Bool res;
-
-          state.offset = data + section->sh_offset - section->sh_addr;
-          if (section->sh_size <= 0xfff) {
-            state.width = 4;
-          } else if (section->sh_size <= 0xfffffff) {
-            state.width = 8;
-          } else if (section->sh_size <= 0xfffffffffffLL) {
-            state.width = 12;
-          } else {
-            state.width = 16;
-          }
-          CheckBounds(data, data_size,
-                      data + section->sh_offset, (size_t)section->sh_size);
-          res = ValidateChunkAMD64(data + section->sh_offset,
-                                   (size_t)section->sh_size,
-                                   options,
-                                   cpu_features, ProcessError, &state);
-          if (!res)
-            return res;
-        }
-      }
+    else if (raw_bitness == 64) {
+      struct ValidateState state;
+      state.offset = data;
+      CHECK(data_size % kBundleSize == 0);
+      rc = ValidateChunkAMD64(data, data_size,
+                              options, cpu_features,
+                              ProcessError, &state);
     }
-  } else {
-    printf("Unknown ELF class: %s\n", filename);
-    exit(1);
+    if (!rc) {
+      printf("file '%s' can not be fully validated\n", filename);
+      exit(1);
+    }
   }
-  return TRUE;
 }
 
 int main(int argc, char **argv) {
   int index, initial_index = 1, repeat_count = 1;
-  int use_old_features = 0;
+  const NaClCPUFeaturesX86 *cpu_features = &full_cpuid_features;
+  int raw_bitness = 0;
   enum validation_options options = 0;
 
   if (argc == 1) {
@@ -220,7 +266,8 @@ int main(int argc, char **argv) {
     return 2;
   }
   while (initial_index < argc) {
-    if (!strcmp(argv[initial_index], "--repeat")) {
+    char *arg = argv[initial_index];
+    if (!strcmp(arg, "--repeat")) {
       if (initial_index+1 >= argc) {
         printf("%s: no integer after --repeat\n", argv[0]);
         return 2;
@@ -228,12 +275,20 @@ int main(int argc, char **argv) {
       repeat_count = atoi(argv[initial_index + 1]);
       initial_index += 2;
     }
-    else if (!strcmp(argv[initial_index], "--compatible")) {
-      use_old_features = 1;
+    else if (!strcmp(arg, "--compatible")) {
+      cpu_features = &validator_cpuid_features;
       initial_index++;
     }
-    else if (!strcmp(argv[initial_index], "--nobundles")) {
+    else if (!strcmp(arg, "--nobundles")) {
       options |= PROCESS_CHUNK_AS_A_CONTIGUOUS_STREAM;
+      initial_index++;
+    }
+    else if (!strcmp(argv[initial_index], "--raw32")) {
+      raw_bitness = 32;
+      initial_index++;
+    }
+    else if (!strcmp(argv[initial_index], "--raw64")) {
+      raw_bitness = 64;
       initial_index++;
     }
     else
@@ -241,14 +296,7 @@ int main(int argc, char **argv) {
   }
   for (index = initial_index; index < argc; ++index) {
     const char *filename = argv[index];
-    Bool rc = ValidateFile(filename, repeat_count,
-                          options,
-                          use_old_features ? &validator_cpuid_features :
-                                             &full_cpuid_features);
-    if (!rc) {
-      printf("file '%s' can not be fully validated\n", filename);
-      return 1;
-    }
+    ProcessFile(filename, repeat_count, raw_bitness, options, cpu_features);
   }
   return 0;
 }
