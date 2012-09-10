@@ -139,12 +139,7 @@ TEST(EventDispatcherTest, EventDispatchOrder) {
   EXPECT_FALSE(result & ER_CONSUMED);
   EXPECT_FALSE(result & ER_HANDLED);
 
-  // Note that the pre-handlers for the target itself (i.e. |child|) will not
-  // receive these events. This is for compatibility reasons for how
-  // event-filters behave in aura. The desired behaviour is that the
-  // pre-handlers for the target will receive the events before the target.
-  // http://crbug.com/147523
-  int expected[] = { 1, 2, 5, 6, 7, 8 };
+  int expected[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
   EXPECT_EQ(
       std::vector<int>(expected, expected + sizeof(expected) / sizeof(int)),
       child.handler_list());
@@ -161,7 +156,7 @@ TEST(EventDispatcherTest, EventDispatchOrder) {
 
   child.Reset();
 
-  int nexpected[] = { 1, 2, 5 };
+  int nexpected[] = { 1, 2, 3, 4, 5 };
   h5.set_event_result(ER_CONSUMED);
   result = dispatcher.ProcessEvent(&child, &mouse);
   EXPECT_TRUE(result & ER_CONSUMED);

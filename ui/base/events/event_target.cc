@@ -37,8 +37,7 @@ void EventTarget::RemovePostTargetHandler(EventHandler* handler) {
 }
 
 void EventTarget::GetPreTargetHandlers(EventHandlerList* list) {
-  EventTarget* target = this->GetParentTarget() ? this->GetParentTarget()
-                                                : this;
+  EventTarget* target = this;
   while (target) {
     EventHandlerList::reverse_iterator it, rend;
     for (it = target->pre_target_list().rbegin(),
