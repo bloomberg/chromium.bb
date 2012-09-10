@@ -17,8 +17,8 @@ class _FakeFetcher(object):
   def __init__(self, base_path):
     self._base_path = base_path
 
-  def _ReadFile(self, path):
-    with open(os.path.join(self._base_path, path), 'r') as f:
+  def _ReadFile(self, path, mode='r'):
+    with open(os.path.join(self._base_path, path), mode) as f:
       return f.read()
 
   def _ListDir(self, path):
@@ -96,7 +96,8 @@ class FakeGithubZip(_FakeFetcher):
     try:
       return self._ReadFile(os.path.join('test_data',
                                          'github_file_system',
-                                         'apps_samples.zip'))
+                                         'apps_samples.zip'),
+                            mode='rb')
     except IOError:
       return None
 

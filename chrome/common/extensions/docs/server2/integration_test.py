@@ -81,6 +81,7 @@ class IntegrationTest(unittest.TestCase):
           test_files.append(os.path.join(path, name)[len(base_path + os.sep):])
     else:
       test_files = EXPLICIT_TEST_FILES
+    test_files = [f.replace(os.sep, '/') for f in test_files]
     failures = []
     for filename in test_files:
       request = _MockRequest(filename)
