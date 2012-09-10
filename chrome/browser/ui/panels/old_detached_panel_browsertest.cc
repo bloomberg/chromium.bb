@@ -40,7 +40,8 @@ IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest,
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest, DrawAttentionOnActive) {
+IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest,
+                       FLAKY_DrawAttentionOnActive) {
   // Create a detached panel that is initially active.
   Panel* panel = CreateDetachedPanel("1", gfx::Rect(300, 200, 250, 200));
   scoped_ptr<NativePanelTesting> native_panel_testing(
@@ -59,7 +60,7 @@ IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest, DrawAttentionOnActive) {
 }
 
 IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest,
-                       DrawAttentionOnInactive) {
+                       FLAKY_DrawAttentionOnInactive) {
   // Create an inactive detached panel.
   Panel* panel = CreateDetachedPanel("1", gfx::Rect(300, 200, 250, 200));
   panel->Deactivate();

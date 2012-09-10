@@ -610,7 +610,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, MinimizeRestoreButtonClick) {
   EXPECT_FALSE(panel3->IsMinimized());
 }
 
-IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, RestoreAllWithTitlebarClick) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, FLAKY_RestoreAllWithTitlebarClick) {
   // Test with three panels.
   Panel* panel1 = CreatePanel("PanelTest1");
   Panel* panel2 = CreatePanel("PanelTest2");
