@@ -68,7 +68,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "2.9",
+  "version": "2.10",
   "entries": [
     {
       "id": 1,
@@ -534,25 +534,8 @@
       ]
     },
     {
-      "id": 39,
-      "description": "ATI drivers on Windows XP cause BSODs when using 3D in Flash",
-      "cr_bugs": [130505],
-      "os": {
-        "type": "win",
-        "version": {
-          "op": "=",
-          "number": "5"
-        }
-      },
-      "vendor_id": "0x1002",
-      "blacklist": [
-        "flash_3d",
-        "flash_stage3d"
-      ]
-    },
-    {
       "id": 41,
-      "description": "Disable 3D in Flash on XP",
+      "description": "Disable 3D (but not Stage3D) in Flash on XP",
       "cr_bugs": [134885],
       "os": {
         "type": "win",
@@ -562,8 +545,7 @@
         }
       },
       "blacklist": [
-        "flash_3d",
-        "flash_stage3d"
+        "flash_3d"
       ]
     },
     {
