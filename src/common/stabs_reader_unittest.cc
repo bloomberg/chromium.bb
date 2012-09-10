@@ -102,9 +102,9 @@ class StringAssembler: public Section {
 
     in_cu_ = true;
   }
-  
+
   // Finish off the current CU's strings.
-  size_t EndCU() { 
+  size_t EndCU() {
     assert(in_cu_);
     in_cu_ = false;
     return Size() - cu_start_;
@@ -127,7 +127,7 @@ class StringAssembler: public Section {
 class StabsAssembler: public Section {
  public:
   // Create a StabsAssembler that uses StringAssembler for its strings.
-  StabsAssembler(StringAssembler *string_assembler) 
+  StabsAssembler(StringAssembler *string_assembler)
       : Section(string_assembler->endianness()),
         string_assembler_(string_assembler),
         value_size_(0),
@@ -188,7 +188,7 @@ class StabsAssembler: public Section {
     cu_header_ = NULL;
     return *this;
   }
-  
+
  private:
   // Data used in a compilation unit header STAB that we won't know until
   // we've finished the compilation unit.
@@ -265,19 +265,19 @@ TEST_F(Stabs, MockStabsInput) {
   stabs.set_value_size(4);
   stabs
       .Stab(N_SO,      149, 40232, 0x18a2a72bU, "builddir/")
-      .Stab(N_FUN,      83, 50010, 0x91a5353fU, 
+      .Stab(N_FUN,      83, 50010, 0x91a5353fU,
             "not the SO with source file name we expected ")
       .Stab(N_SO,      165, 24791, 0xfe69d23cU, "")
       .Stab(N_SO,      184, 34178, 0xca4d883aU, "builddir1/")
       .Stab(N_SO,       83, 40859, 0xd2fe5df3U, "file1.c")
       .Stab(N_LSYM,    147, 39565, 0x60d4bb8aU, "not the FUN we're looking for")
       .Stab(N_FUN,     120, 50271, 0xa049f4b1U, "fun1")
-      .Stab(N_BINCL,   150, 15694, 0xef65c659U, 
+      .Stab(N_BINCL,   150, 15694, 0xef65c659U,
             "something to ignore in a FUN body")
       .Stab(N_SLINE,   147,  4967, 0xd904b3f, "")
       .Stab(N_SOL,     177, 56135, 0xbd97b1dcU, "header.h")
       .Stab(N_SLINE,   130, 24610, 0x90f145b, "")
-      .Stab(N_FUN,      45, 32441, 0xbf27cf93U, 
+      .Stab(N_FUN,      45, 32441, 0xbf27cf93U,
             "fun2:some stabs type info here:to trim from the name")
       .Stab(N_SLINE,   138, 39002, 0x8148b87, "")
       .Stab(N_SOL,      60, 49318, 0x1d06e025U, "file1.c")
@@ -316,7 +316,7 @@ TEST_F(Stabs, MockStabsInput) {
         .WillOnce(Return(true));
     EXPECT_CALL(mock_handler, EndCompilationUnit(0xd04b7448U))
         .WillOnce(Return(true));
-    EXPECT_CALL(mock_handler, StartCompilationUnit(StrEq("file3.c"), 
+    EXPECT_CALL(mock_handler, StartCompilationUnit(StrEq("file3.c"),
                                                    0x11759f10U, NULL))
         .WillOnce(Return(true));
     EXPECT_CALL(mock_handler, EndCompilationUnit(0x11cfe4b5U))
@@ -337,7 +337,7 @@ TEST_F(Stabs, AbruptCU) {
     EXPECT_CALL(mock_handler,
                 StartCompilationUnit(StrEq("file2-1.c"), 0xbf10d5e4, NULL))
         .WillOnce(Return(true));
-    EXPECT_CALL(mock_handler, EndCompilationUnit(NULL))
+    EXPECT_CALL(mock_handler, EndCompilationUnit(0))
         .WillOnce(Return(true));
   }
 
@@ -359,9 +359,9 @@ TEST_F(Stabs, AbruptFunction) {
         .WillOnce(Return(true));
     EXPECT_CALL(mock_handler, StartFunction(StrEq("fun3_1"), 0xbbd4a145U))
         .WillOnce(Return(true));
-    EXPECT_CALL(mock_handler, EndFunction(NULL))
+    EXPECT_CALL(mock_handler, EndFunction(0))
         .WillOnce(Return(true));
-    EXPECT_CALL(mock_handler, EndCompilationUnit(NULL))
+    EXPECT_CALL(mock_handler, EndCompilationUnit(0))
         .WillOnce(Return(true));
   }
 
@@ -394,12 +394,12 @@ TEST_F(Stabs, NoCUEnd) {
     EXPECT_CALL(mock_handler,
                 StartCompilationUnit(StrEq("file5-1.c"), 0x2f7493c9U, NULL))
         .WillOnce(Return(true));
-    EXPECT_CALL(mock_handler, EndCompilationUnit(NULL))
+    EXPECT_CALL(mock_handler, EndCompilationUnit(0))
         .WillOnce(Return(true));
     EXPECT_CALL(mock_handler,
                 StartCompilationUnit(StrEq("file5-2.c"), 0xf9f1d50fU, NULL))
         .WillOnce(Return(true));
-    EXPECT_CALL(mock_handler, EndCompilationUnit(NULL))
+    EXPECT_CALL(mock_handler, EndCompilationUnit(0))
         .WillOnce(Return(true));
   }
 

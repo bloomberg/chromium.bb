@@ -493,6 +493,8 @@ src_tools_linux_md2core_minidump_2_core_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing/gtest/include \
 	-I$(top_srcdir)/src/testing/gtest \
 	-I$(top_srcdir)/src/testing
+src_tools_linux_md2core_minidump_2_core_unittest_LDADD = \
+	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 endif LINUX_HOST
 
@@ -514,7 +516,8 @@ src_processor_binarystream_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing/gtest \
 	-I$(top_srcdir)/src/testing
 src_processor_binarystream_unittest_LDADD = \
-	src/processor/binarystream.o
+	src/processor/binarystream.o \
+	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 src_processor_basic_source_line_resolver_unittest_SOURCES = \
 	src/processor/basic_source_line_resolver_unittest.cc \
@@ -532,7 +535,8 @@ src_processor_basic_source_line_resolver_unittest_LDADD = \
 	src/processor/pathname_stripper.o \
 	src/processor/logging.o \
 	src/processor/source_line_resolver_base.o \
-	src/processor/tokenize.o
+	src/processor/tokenize.o \
+	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 src_processor_cfi_frame_info_unittest_SOURCES = \
 	src/processor/cfi_frame_info_unittest.cc \
@@ -542,7 +546,8 @@ src_processor_cfi_frame_info_unittest_SOURCES = \
 src_processor_cfi_frame_info_unittest_LDADD = \
 	src/processor/cfi_frame_info.o \
 	src/processor/logging.o \
-	src/processor/pathname_stripper.o
+	src/processor/pathname_stripper.o \
+	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 src_processor_cfi_frame_info_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/testing/include \
@@ -588,7 +593,8 @@ src_processor_exploitability_unittest_LDADD = \
 	src/processor/stackwalker_sparc.o \
 	src/processor/stackwalker_x86.o \
 	src/processor/tokenize.o \
-	src/third_party/libdisasm/libdisasm.a
+	src/third_party/libdisasm/libdisasm.a \
+	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 src_processor_disassembler_x86_unittest_SOURCES = \
 	src/processor/disassembler_x86_unittest.cc \
@@ -603,7 +609,8 @@ src_processor_disassembler_x86_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing
 src_processor_disassembler_x86_unittest_LDADD = \
 	src/processor/disassembler_x86.o \
-	src/third_party/libdisasm/libdisasm.a
+	src/third_party/libdisasm/libdisasm.a \
+	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 src_processor_fast_source_line_resolver_unittest_SOURCES = \
 	src/processor/fast_source_line_resolver_unittest.cc \
@@ -624,7 +631,8 @@ src_processor_fast_source_line_resolver_unittest_LDADD = \
 	src/processor/pathname_stripper.o \
 	src/processor/logging.o \
 	src/processor/source_line_resolver_base.o \
-	src/processor/tokenize.o
+	src/processor/tokenize.o \
+	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 src_processor_map_serializers_unittest_SOURCES = \
 	src/processor/map_serializers_unittest.cc \
@@ -638,7 +646,8 @@ src_processor_map_serializers_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing
 src_processor_map_serializers_unittest_LDADD = \
 	src/processor/logging.o \
-	src/processor/pathname_stripper.o
+	src/processor/pathname_stripper.o \
+	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 src_processor_minidump_processor_unittest_SOURCES = \
 	src/processor/minidump_processor_unittest.cc \
@@ -671,7 +680,8 @@ src_processor_minidump_processor_unittest_LDADD = \
 	src/processor/stackwalker_sparc.o \
 	src/processor/stackwalker_x86.o \
 	src/processor/tokenize.o \
-	src/third_party/libdisasm/libdisasm.a
+	src/third_party/libdisasm/libdisasm.a \
+	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 src_processor_minidump_unittest_SOURCES = \
 	src/common/test_assembler.cc \
@@ -690,7 +700,8 @@ src_processor_minidump_unittest_LDADD = \
 	src/processor/basic_code_modules.o \
 	src/processor/logging.o \
 	src/processor/minidump.o \
-	src/processor/pathname_stripper.o
+	src/processor/pathname_stripper.o \
+	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 src_processor_static_address_map_unittest_SOURCES = \
 	src/processor/static_address_map_unittest.cc \
@@ -704,7 +715,8 @@ src_processor_static_address_map_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing
 src_processor_static_address_map_unittest_LDADD = \
 	src/processor/logging.o \
-	src/processor/pathname_stripper.o
+	src/processor/pathname_stripper.o \
+	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 src_processor_static_contained_range_map_unittest_SOURCES = \
 	src/processor/static_contained_range_map_unittest.cc \
@@ -718,7 +730,8 @@ src_processor_static_contained_range_map_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing
 src_processor_static_contained_range_map_unittest_LDADD = \
 	src/processor/logging.o \
-	src/processor/pathname_stripper.o
+	src/processor/pathname_stripper.o \
+	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 src_processor_static_map_unittest_SOURCES = \
 	src/processor/static_map_unittest.cc \
@@ -732,7 +745,8 @@ src_processor_static_map_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing
 src_processor_static_map_unittest_LDADD = \
 	src/processor/logging.o \
-	src/processor/pathname_stripper.o
+	src/processor/pathname_stripper.o \
+	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 src_processor_static_range_map_unittest_SOURCES = \
 	src/processor/static_range_map_unittest.cc \
@@ -746,24 +760,28 @@ src_processor_static_range_map_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing
 src_processor_static_range_map_unittest_LDADD = \
 	src/processor/logging.o \
-	src/processor/pathname_stripper.o
+	src/processor/pathname_stripper.o \
+	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 src_processor_pathname_stripper_unittest_SOURCES = \
 	src/processor/pathname_stripper_unittest.cc
 src_processor_pathname_stripper_unittest_LDADD = \
-	src/processor/pathname_stripper.o
+	src/processor/pathname_stripper.o \
+	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 src_processor_postfix_evaluator_unittest_SOURCES = \
 	src/processor/postfix_evaluator_unittest.cc
 src_processor_postfix_evaluator_unittest_LDADD = \
 	src/processor/logging.o \
-	src/processor/pathname_stripper.o
+	src/processor/pathname_stripper.o \
+	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 src_processor_range_map_unittest_SOURCES = \
 	src/processor/range_map_unittest.cc
 src_processor_range_map_unittest_LDADD = \
 	src/processor/logging.o \
-	src/processor/pathname_stripper.o
+	src/processor/pathname_stripper.o \
+	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 src_processor_stackwalker_selftest_SOURCES = \
 	src/processor/stackwalker_selftest.cc
@@ -784,7 +802,8 @@ src_processor_stackwalker_selftest_LDADD = \
 	src/processor/stackwalker_ppc.o \
 	src/processor/stackwalker_sparc.o \
 	src/processor/stackwalker_x86.o \
-	src/processor/tokenize.o
+	src/processor/tokenize.o \
+	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 src_processor_stackwalker_amd64_unittest_SOURCES = \
 	src/common/test_assembler.cc \
@@ -793,7 +812,8 @@ src_processor_stackwalker_amd64_unittest_SOURCES = \
 	src/testing/gtest/src/gtest_main.cc \
 	src/testing/src/gmock-all.cc
 src_processor_stackwalker_amd64_unittest_LDADD = \
-	src/libbreakpad.a
+	src/libbreakpad.a \
+	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 src_processor_stackwalker_amd64_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/testing/include \
@@ -808,7 +828,8 @@ src_processor_stackwalker_arm_unittest_SOURCES = \
 	src/testing/gtest/src/gtest_main.cc \
 	src/testing/src/gmock-all.cc
 src_processor_stackwalker_arm_unittest_LDADD = \
-	src/libbreakpad.a
+	src/libbreakpad.a \
+	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 src_processor_stackwalker_arm_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/testing/include \
@@ -823,7 +844,8 @@ src_processor_stackwalker_x86_unittest_SOURCES = \
 	src/testing/gtest/src/gtest_main.cc \
 	src/testing/src/gmock-all.cc
 src_processor_stackwalker_x86_unittest_LDADD = \
-	src/libbreakpad.a
+	src/libbreakpad.a \
+	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 src_processor_stackwalker_x86_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/testing/include \
@@ -846,6 +868,7 @@ src_processor_synth_minidump_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing/gtest/include \
 	-I$(top_srcdir)/src/testing/gtest \
 	-I$(top_srcdir)/src/testing
+src_processor_synth_minidump_unittest_LDADD = $(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 src_common_test_assembler_unittest_SOURCES = \
 	src/common/test_assembler.cc \
@@ -860,6 +883,7 @@ src_common_test_assembler_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing/gtest/include \
 	-I$(top_srcdir)/src/testing/gtest \
 	-I$(top_srcdir)/src/testing
+src_common_test_assembler_unittest_LDADD = $(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 ## Non-installables
 noinst_PROGRAMS =
