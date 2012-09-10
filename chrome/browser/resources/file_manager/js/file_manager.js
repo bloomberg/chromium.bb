@@ -3377,7 +3377,7 @@ FileManager.prototype = {
           return;
         }
 
-        if (this.butterBar_.hideError()) {
+        if (this.butterBar_ && this.butterBar_.hideError()) {
           event.preventDefault();
           return;
         }
