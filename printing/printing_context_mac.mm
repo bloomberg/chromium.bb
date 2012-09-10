@@ -7,6 +7,9 @@
 #import <ApplicationServices/ApplicationServices.h>
 #import <AppKit/AppKit.h>
 
+#import <iomanip>
+#import <numeric>
+
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -16,6 +19,20 @@
 #include "printing/print_settings_initializer_mac.h"
 
 namespace printing {
+
+namespace {
+
+// Return true if PPD name of paper is equal.
+bool IsPaperNameEqual(const PMPaper& paper1, const PMPaper& paper2) {
+  CFStringRef name1 = NULL;
+  CFStringRef name2 = NULL;
+  return (PMPaperGetPPDPaperName(paper1, &name1) == noErr) &&
+         (PMPaperGetPPDPaperName(paper2, &name2) == noErr) &&
+         (CFStringCompare(name1, name2,
+                          kCFCompareCaseInsensitive) == kCFCompareEqualTo);
+}
+
+}  // namespace
 
 // static
 PrintingContext* PrintingContext::Create(const std::string& app_locale) {
@@ -227,7 +244,8 @@ bool PrintingContextMac::UpdatePageFormatWithPaperInfo() {
   if (PMGetPageFormatPaper(default_page_format, &default_paper) != noErr)
     return false;
 
-  double default_page_width, default_page_height;
+  double default_page_width = 0.0;
+  double default_page_height = 0.0;
   if (PMPaperGetWidth(default_paper, &default_page_width) != noErr)
     return false;
 
@@ -245,22 +263,24 @@ bool PrintingContextMac::UpdatePageFormatWithPaperInfo() {
   if (PMPrinterGetPaperList(current_printer, &paper_list) != noErr)
     return false;
 
+  double best_match = std::numeric_limits<double>::max();
   PMPaper best_matching_paper = kPMNoData;
   int num_papers = CFArrayGetCount(paper_list);
   for (int i = 0; i < num_papers; ++i) {
-    PMPaper paper = (PMPaper) [(NSArray* ) paper_list objectAtIndex: i];
-    double paper_width, paper_height;
+    PMPaper paper = (PMPaper)[(NSArray*)paper_list objectAtIndex: i];
+    double paper_width = 0.0;
+    double paper_height = 0.0;
     PMPaperGetWidth(paper, &paper_width);
     PMPaperGetHeight(paper, &paper_height);
-    if (default_page_width == paper_width &&
-        default_page_height == paper_height) {
+    double current_match = std::max(fabs(default_page_width - paper_width),
+                                    fabs(default_page_height - paper_height));
+    // Ignore paper sizes that are very different.
+    if (current_match > 2)
+      continue;
+    current_match += IsPaperNameEqual(paper, default_paper) ? 0 : 1;
+    if (current_match < best_match) {
       best_matching_paper = paper;
-      break;
-    }
-    // Trying to find the best matching paper.
-    if (fabs(default_page_width - paper_width) < 2 &&
-        fabs(default_page_height - paper_height) < 2) {
-      best_matching_paper = paper;
+      best_match = current_match;
     }
   }
 
