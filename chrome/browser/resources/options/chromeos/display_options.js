@@ -13,7 +13,7 @@ cr.define('options', function() {
 
   /**
    * Enumeration of secondary display layout.  The value has to be same as the
-   * values in ash/monitor/monitor_controller.cc.
+   * values in ash/display/display_controller.cc.
    * @enum {number}
    */
   var SecondaryDisplayLayout = {
@@ -83,6 +83,33 @@ cr.define('options', function() {
     },
 
     /**
+     * Snaps the region [point, width] to [basePoint, baseWidth] if
+     * the [point, width] is close enough to the base's edge.
+     * @param {number} point The starting point of the region.
+     * @param {number} width The width of the region.
+     * @param {number} basePoint The starting point of the base region.
+     * @param {number} baseWidth The width of the base region.
+     * @return {number} The moved point.  Returns point itself if it doesn't
+     *     need to snap to the edge.
+     * @private
+     */
+    snapToEdge_: function(point, width, basePoint, baseWidth) {
+      // If the edge of the regions is smaller than this, it will snap to the
+      // base's edge.
+      /** @const */ var SNAP_DISTANCE_PX = 16;
+
+      var startDiff = Math.abs(point - basePoint);
+      var endDiff = Math.abs(point + width - (basePoint + baseWidth));
+      // Prefer the closer one if both edges are close enough.
+      if (startDiff < SNAP_DISTANCE_PX && startDiff < endDiff)
+        return basePoint;
+      else if (endDiff < SNAP_DISTANCE)
+        return basePoint + baseWidth - width;
+
+      return point;
+    },
+
+    /**
      * Mouse move handler for dragging display rectangle.
      * @private
      * @param {Event} e The mouse move event.
@@ -115,6 +142,11 @@ cr.define('options', function() {
 
       var baseDiv = this.displays_[this.dragging_.isPrimary ? 1 : 0].div;
       var draggingDiv = this.dragging_.display.div;
+
+      newPosition.x = this.snapToEdge_(newPosition.x, draggingDiv.offsetWidth,
+                                       baseDiv.offsetLeft, baseDiv.offsetWidth);
+      newPosition.y = this.snapToEdge_(newPosition.y, draggingDiv.offsetHeight,
+                                       baseDiv.offsetTop, baseDiv.offsetHeight);
 
       // Separate the area into four (LEFT/RIGHT/TOP/BOTTOM) by the diagonals of
       // the primary display, and decide which area the display should reside.
