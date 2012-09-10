@@ -196,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, FLAKY_MinimizeSqueezedActive) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, Flaky_CloseSqueezedPanels) {
+IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, FLAKY_CloseSqueezedPanels) {
   PanelManager* panel_manager = PanelManager::GetInstance();
 
   // Create enough docked panels to get into squeezing.
