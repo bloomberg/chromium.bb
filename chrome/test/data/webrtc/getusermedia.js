@@ -52,6 +52,16 @@ function obtainGetUserMediaResult() {
   return gRequestWebcamAndMicrophoneResult;
 }
 
+/**
+ * Stops the local stream.
+ */
+function stopLocalStream() {
+  if (gLocalStream == null)
+    failTest('No local stream yet.');
+
+  gLocalStream.stop();
+}
+
 // Internals.
 
 /** @private */

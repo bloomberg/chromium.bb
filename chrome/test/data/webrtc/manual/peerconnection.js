@@ -57,6 +57,10 @@ function toggleLocalFromHere() {
   toggleLocalStream();
 }
 
+function stopLocalFromHere() {
+  stopLocalStream();
+}
+
 function showServerHelp() {
   alert('You need to build and run a peerconnection_server on some '
     + 'suitable machine. To build it in chrome, just run make/ninja '
