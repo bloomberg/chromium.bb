@@ -235,7 +235,7 @@ const webkit::WebPluginInfo* GetFlashPlugin(
   }
 #if defined(OFFICIAL_BUILD)
   // Official builds bundle Flash.
-  ASSERT_TRUE(flash);
+  EXPECT_TRUE(flash);
 #else
   if (!flash)
     LOG(INFO) << "Test skipped because the Flash plugin couldn't be found.";
