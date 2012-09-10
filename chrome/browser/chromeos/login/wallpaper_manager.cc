@@ -211,6 +211,9 @@ FilePath WallpaperManager::GetWallpaperPathForUser(const std::string& username,
                                                    bool is_small) {
   const char* suffix = is_small ?
       kSmallCustomWallpaperSuffix : kLargeCustomWallpaperSuffix;
+  // TODO(bshe): Remove file extension completely. It is not used and can be
+  // misleading. For example, the file extension below should be ".jpg", since
+  // the user wallpaper files contain JPEG data.
   std::string filename = base::StringPrintf("%s_wallpaper%s.png",
                                             username.c_str(),
                                             suffix);
