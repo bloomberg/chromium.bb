@@ -422,7 +422,7 @@ TEST_F(ToplevelWindowEventFilterTest, DragSnaps) {
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                        target.get());
   generator.PressLeftButton();
-  generator.MoveMouseTo(generator.current_location().Add(gfx::Point(11, 21)));
+  generator.MoveMouseBy(11, 21);
 
   // Execute any scheduled draws so that pending mouse events are processed.
   RunAllPendingInMessageLoop();
@@ -519,7 +519,7 @@ TEST_F(ToplevelWindowEventFilterTest, MAYBE_EscapeReverts) {
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                        target.get());
   generator.PressLeftButton();
-  generator.MoveMouseTo(generator.current_location().Add(gfx::Point(10, 11)));
+  generator.MoveMouseBy(10, 11);
 
   // Execute any scheduled draws so that pending mouse events are processed.
   RunAllPendingInMessageLoop();

@@ -59,6 +59,12 @@ class RootWindowController {
   void CreateContainers();
   void InitLayoutManagers();
 
+  // Deletes associated objects and clears the state, but doesn't delete
+  // the root window yet. This is used to delete a secondary displays'
+  // root window safely when the display disconnect signal is received,
+  // which may come while we're in the nested message loop.
+  void Shutdown();
+
   // Deletes all child windows and performs necessary cleanup.
   void CloseChildWindows();
 

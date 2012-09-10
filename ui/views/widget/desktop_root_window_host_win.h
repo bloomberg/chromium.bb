@@ -50,6 +50,7 @@ class DesktopRootWindowHostWin : public DesktopRootWindowHost,
       std::vector<unsigned char>* png_representation) OVERRIDE;
   virtual void PostNativeEvent(const base::NativeEvent& native_event) OVERRIDE;
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
+  virtual void PrepareForShutdown() OVERRIDE;
 
   // Overridden from HWNDMessageHandlerDelegate:
   virtual bool IsWidgetWindow() const OVERRIDE;

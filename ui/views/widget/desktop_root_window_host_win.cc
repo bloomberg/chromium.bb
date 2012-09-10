@@ -121,6 +121,9 @@ void DesktopRootWindowHostWin::OnDeviceScaleFactorChanged(
     float device_scale_factor) {
 }
 
+void DesktopRootWindowHostWin::PrepareForShutdown() {
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopRootWindowHostWin, HWNDMessageHandlerDelegate implementation:
 

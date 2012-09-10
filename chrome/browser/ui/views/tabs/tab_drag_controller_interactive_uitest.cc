@@ -33,6 +33,7 @@
 
 #if defined(USE_ASH)
 #include "ash/display/display_controller.h"
+#include "ash/display/multi_display_manager.h"
 #include "ash/shell.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/root_window.h"
@@ -940,8 +941,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
   ResetIDs(browser2->tab_strip_model(), 100);
 
   // Move the second browser to the second display.
-  std::vector<aura::RootWindow*> roots(
-      ash::Shell::GetInstance()->display_controller()->GetAllRootWindows());
+  std::vector<aura::RootWindow*> roots(ash::Shell::GetAllRootWindows());
   ASSERT_EQ(2u, roots.size());
   aura::RootWindow* second_root = roots[1];
   gfx::Rect work_area = gfx::Screen::GetDisplayNearestWindow(
@@ -972,6 +972,153 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
   ASSERT_FALSE(TabDragController::IsActive());
   EXPECT_EQ("0 100", IDString(browser2->tab_strip_model()));
   EXPECT_EQ("1", IDString(browser()->tab_strip_model()));
+}
+
+namespace {
+
+class DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest
+    : public TabDragControllerTest {
+ public:
+  DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest() {}
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    TabDragControllerTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII("aura-host-window-size",
+                                    "0+0-250x250,251+0-250x250");
+  }
+
+  bool Press(const gfx::Point& position) {
+    return ui_test_utils::SendMouseMoveSync(position) &&
+        ui_test_utils::SendMouseEventsSync(ui_controls::LEFT,
+                                           ui_controls::DOWN);
+  }
+
+  bool DragTabAndExecuteTaskWhenDone(const gfx::Point& position,
+                                     const base::Closure& task) {
+    return ui_controls::SendMouseMoveNotifyWhenDone(
+        position.x(), position.y(), task);
+  }
+
+  void QuitWhenNotDragging() {
+    test::QuitWhenNotDraggingImpl();
+    MessageLoop::current()->Run();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(
+      DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest);
+};
+
+// Invoked from the nested message loop.
+void CancelDragTabToWindowInSeparateDisplayStep3(
+    TabStrip* tab_strip) {
+  ASSERT_FALSE(tab_strip->IsDragSessionActive());
+  ASSERT_TRUE(TabDragController::IsActive());
+  ASSERT_EQ(2u, BrowserList::size());
+
+  // Switching display mode should cancel the drag operation.
+  ash::internal::MultiDisplayManager::CycleDisplay();
+}
+
+// Invoked from the nested message loop.
+void CancelDragTabToWindowInSeparateDisplayStep2(
+    DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest* test,
+    TabStrip* tab_strip,
+    aura::RootWindow* current_root,
+    gfx::Point final_destination) {
+  ASSERT_FALSE(tab_strip->IsDragSessionActive());
+  ASSERT_TRUE(TabDragController::IsActive());
+  ASSERT_EQ(2u, BrowserList::size());
+
+  Browser* new_browser = *(++BrowserList::begin());
+  EXPECT_EQ(current_root,
+            new_browser->window()->GetNativeWindow()->GetRootWindow());
+
+  ASSERT_TRUE(test->DragTabAndExecuteTaskWhenDone(
+      final_destination,
+      base::Bind(&CancelDragTabToWindowInSeparateDisplayStep3,
+                 tab_strip)));
+}
+
+}  // namespace
+
+// Drags from browser to a second display and releases input.
+IN_PROC_BROWSER_TEST_F(
+    DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest,
+    CancelDragTabToWindowIn2ndDisplay) {
+  // Add another tab.
+  AddTabAndResetBrowser(browser());
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+
+  EXPECT_EQ("0 1", IDString(browser()->tab_strip_model()));
+
+  // Move the second browser to the second display.
+  std::vector<aura::RootWindow*> roots(ash::Shell::GetAllRootWindows());
+  ASSERT_EQ(2u, roots.size());
+  gfx::Point final_destination =
+      gfx::Screen::GetDisplayNearestWindow(roots[1]).work_area().CenterPoint();
+
+  // Move to the first tab and drag it enough so that it detaches, but not
+  // enough to move to another display.
+  gfx::Point tab_0_dst(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
+  ASSERT_TRUE(Press(tab_0_dst));
+  tab_0_dst.Offset(0, GetDetachY(tab_strip));
+  ASSERT_TRUE(DragTabAndExecuteTaskWhenDone(
+      tab_0_dst, base::Bind(&CancelDragTabToWindowInSeparateDisplayStep2,
+                            this, tab_strip, roots[0], final_destination)));
+  QuitWhenNotDragging();
+
+  ASSERT_EQ(1u, BrowserList::size());
+  ASSERT_FALSE(tab_strip->IsDragSessionActive());
+  ASSERT_FALSE(TabDragController::IsActive());
+  EXPECT_EQ("0 1", IDString(browser()->tab_strip_model()));
+
+  // Release the mouse
+  ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(
+      ui_controls::LEFT, ui_controls::UP));
+}
+
+// Drags from browser from a second display to primary and releases input.
+IN_PROC_BROWSER_TEST_F(
+    DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest,
+    CancelDragTabToWindowIn1stDisplay) {
+  std::vector<aura::RootWindow*> roots(ash::Shell::GetAllRootWindows());
+  ASSERT_EQ(2u, roots.size());
+
+  // Add another tab.
+  AddTabAndResetBrowser(browser());
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+
+  EXPECT_EQ("0 1", IDString(browser()->tab_strip_model()));
+  EXPECT_EQ(roots[0], browser()->window()->GetNativeWindow()->GetRootWindow());
+
+  gfx::Rect work_area =
+      gfx::Screen::GetDisplayNearestWindow(roots[1]).work_area();
+  browser()->window()->SetBounds(work_area);
+  EXPECT_EQ(roots[1], browser()->window()->GetNativeWindow()->GetRootWindow());
+
+  // Move the second browser to the display.
+  gfx::Point final_destination =
+      gfx::Screen::GetDisplayNearestWindow(roots[0]).work_area().CenterPoint();
+
+  // Move to the first tab and drag it enough so that it detaches, but not
+  // enough to move to another display.
+  gfx::Point tab_0_dst(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
+  ASSERT_TRUE(Press(tab_0_dst));
+  tab_0_dst.Offset(0, GetDetachY(tab_strip));
+  ASSERT_TRUE(DragTabAndExecuteTaskWhenDone(
+      tab_0_dst, base::Bind(&CancelDragTabToWindowInSeparateDisplayStep2,
+                            this, tab_strip, roots[1], final_destination)));
+  QuitWhenNotDragging();
+
+  ASSERT_EQ(1u, BrowserList::size());
+  ASSERT_FALSE(tab_strip->IsDragSessionActive());
+  ASSERT_FALSE(TabDragController::IsActive());
+  EXPECT_EQ("0 1", IDString(browser()->tab_strip_model()));
+
+  // Release the mouse
+  ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(
+      ui_controls::LEFT, ui_controls::UP));
 }
 
 #endif

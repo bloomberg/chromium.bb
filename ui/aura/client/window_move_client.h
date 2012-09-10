@@ -15,13 +15,21 @@ namespace aura {
 class Window;
 namespace client {
 
+enum WindowMoveResult {
+  MOVE_SUCCESSFUL,  // Moving window was successful.
+  MOVE_CANCELED    // Moving window was canceled.
+};
+
 // An interface implemented by an object that manages programatically keyed
 // window moving.
 class AURA_EXPORT WindowMoveClient {
  public:
   // Starts a nested message loop for moving the window. |drag_offset| is the
   // offset from the window origin to the cursor when the drag was started.
-  virtual void RunMoveLoop(Window* window, const gfx::Point& drag_offset) = 0;
+  // Returns MOVE_SUCCESSFUL if the move has completed successfully, or
+  // MOVE_CANCELED otherwise.
+  virtual WindowMoveResult RunMoveLoop(Window* window,
+                                       const gfx::Point& drag_offset) = 0;
 
   // Ends a previously started move loop.
   virtual void EndMoveLoop() = 0;

@@ -53,18 +53,13 @@ MultiDisplayManager::~MultiDisplayManager() {
 }
 
 // static
-void MultiDisplayManager::AddRemoveDisplay() {
-  MultiDisplayManager* manager = static_cast<MultiDisplayManager*>(
-      aura::Env::GetInstance()->display_manager());
-  manager->AddRemoveDisplayImpl();
-}
-
 void MultiDisplayManager::CycleDisplay() {
   MultiDisplayManager* manager = static_cast<MultiDisplayManager*>(
       aura::Env::GetInstance()->display_manager());
   manager->CycleDisplayImpl();
 }
 
+// static
 void MultiDisplayManager::ToggleDisplayScale() {
   MultiDisplayManager* manager = static_cast<MultiDisplayManager*>(
       aura::Env::GetInstance()->display_manager());
@@ -223,8 +218,10 @@ void MultiDisplayManager::OnRootWindowResized(const aura::RootWindow* root,
                                               const gfx::Size& old_size) {
   if (!use_fullscreen_host_window()) {
     gfx::Display& display = FindDisplayForRootWindow(root);
-    display.SetSize(root->GetHostSize());
-    NotifyBoundsChanged(display);
+    if (display.size() != root->GetHostSize()) {
+      display.SetSize(root->GetHostSize());
+      NotifyBoundsChanged(display);
+    }
   }
 }
 
@@ -242,7 +239,7 @@ void MultiDisplayManager::Init() {
     AddDisplayFromSpec(std::string() /* default */);
 }
 
-void MultiDisplayManager::AddRemoveDisplayImpl() {
+void MultiDisplayManager::CycleDisplayImpl() {
   std::vector<gfx::Display> new_displays;
   if (displays_.size() > 1) {
     // Remove if there is more than one display.
@@ -252,23 +249,10 @@ void MultiDisplayManager::AddRemoveDisplayImpl() {
   } else {
     // Add if there is only one display.
     new_displays.push_back(displays_[0]);
-    new_displays.push_back(CreateDisplayFromSpec("50+50-1280x768"));
+    new_displays.push_back(CreateDisplayFromSpec("100+200-500x400"));
   }
   if (new_displays.size())
     OnNativeDisplaysChanged(new_displays);
-}
-
-void MultiDisplayManager::CycleDisplayImpl() {
-  if (displays_.size() > 1) {
-    std::vector<gfx::Display> new_displays;
-    for (Displays::const_iterator iter = displays_.begin() + 1;
-         iter != displays_.end(); ++iter) {
-      gfx::Display display = *iter;
-      new_displays.push_back(display);
-    }
-    new_displays.push_back(displays_.front());
-    OnNativeDisplaysChanged(new_displays);
-  }
 }
 
 void MultiDisplayManager::ScaleDisplayImpl() {
@@ -290,6 +274,8 @@ void MultiDisplayManager::ScaleDisplayImpl() {
 gfx::Display& MultiDisplayManager::FindDisplayForRootWindow(
     const aura::RootWindow* root_window) {
   int64 id = root_window->GetProperty(kDisplayIdKey);
+  // if id is |kInvaildDisplayID|, it's being deleted.
+  DCHECK(id != gfx::Display::kInvalidDisplayID);
   for (Displays::iterator iter = displays_.begin();
        iter != displays_.end(); ++iter) {
     if ((*iter).id() == id)
