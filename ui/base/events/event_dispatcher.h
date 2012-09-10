@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_EVENTS_EVENT_CONSTANTS_EVENTS_EVENT_DISPATCHER_H_
-#define UI_BASE_EVENTS_EVENT_CONSTANTS_EVENTS_EVENT_DISPATCHER_H_
+#ifndef UI_BASE_EVENTS_EVENT_DISPATCHER_H_
+#define UI_BASE_EVENTS_EVENT_DISPATCHER_H_
 
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_constants.h"
@@ -15,8 +15,8 @@ namespace ui {
 // Dispatches events to appropriate targets.
 class UI_EXPORT EventDispatcher {
  public:
-  EventDispatcher() {}
-  virtual ~EventDispatcher() {}
+  EventDispatcher();
+  virtual ~EventDispatcher();
 
   // Returns whether an event can still be dispatched to a target. (e.g. during
   // event dispatch, one of the handlers may have destroyed the target, in which
@@ -78,37 +78,19 @@ class UI_EXPORT EventDispatcher {
   }
 
   EventResult DispatchEventToSingleHandler(EventHandler* handler,
-                                           ui::KeyEvent* event) {
-    return handler->OnKeyEvent(event);
-  }
-
+                                           KeyEvent* event);
   EventResult DispatchEventToSingleHandler(EventHandler* handler,
-                                           ui::MouseEvent* event) {
-    return handler->OnMouseEvent(event);
-  }
-
+                                           MouseEvent* event);
   EventResult DispatchEventToSingleHandler(EventHandler* handler,
-                                           ui::ScrollEvent* event) {
-    return handler->OnScrollEvent(event);
-  }
-
+                                           ScrollEvent* event);
   EventResult DispatchEventToSingleHandler(EventHandler* handler,
-                                           ui::TouchEvent* event) {
-    // TODO(sad): This needs fixing (especially for the QUEUED_ status).
-    TouchStatus status = handler->OnTouchEvent(event);
-    return status == ui::TOUCH_STATUS_UNKNOWN ? ER_UNHANDLED :
-           status == ui::TOUCH_STATUS_QUEUED_END ? ER_CONSUMED :
-                                                   ER_HANDLED;
-  }
-
+                                           TouchEvent* event);
   EventResult DispatchEventToSingleHandler(EventHandler* handler,
-                                           ui::GestureEvent* event) {
-    return handler->OnGestureEvent(event);
-  }
+                                           GestureEvent* event);
 
   DISALLOW_COPY_AND_ASSIGN(EventDispatcher);
 };
 
 }  // namespace ui
 
-#endif  // UI_BASE_EVENTS_EVENT_CONSTANTS_EVENTS_EVENT_DISPATCHER_H_
+#endif  // UI_BASE_EVENTS_EVENT_DISPATCHER_H_
