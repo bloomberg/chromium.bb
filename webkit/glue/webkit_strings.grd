@@ -314,6 +314,46 @@ below:
         jump
       </message>
 
+      <message name="IDS_AX_AM_PM_FIELD_TEXT" desc="Accessible description of the AM/PM field in a date/time control">
+        AM/PM
+      </message>
+
+      <message name="IDS_AX_DAY_OF_MONTH_FIELD_TEXT" desc="Accessible description of the day of month field in a date/time control">
+        Day
+      </message>
+
+      <message name="IDS_AX_DATE_TIME_FIELD_EMPTY_VALUE_TEXT" desc="Accessible description of empty value of field in a date/time control">
+        blank
+      </message>
+
+      <message name="IDS_AX_HOUR_FIELD_TEXT" desc="Accessible description of the hour field in a date/time control">
+        Hours
+      </message>
+
+      <message name="IDS_AX_MILLISECOND_FIELD_TEXT" desc="Accessible description of the millisecond field in a date/time control">
+        Milliseconds
+      </message>
+
+      <message name="IDS_AX_MINUTE_FIELD_TEXT" desc="Accessible description of the minute field in a date/time control">
+        Minutes
+      </message>
+
+      <message name="IDS_AX_MONTH_FIELD_TEXT" desc="Accessible description of the month field in a date/time control">
+        Month
+      </message>
+
+      <message name="IDS_AX_SECOND_FIELD_TEXT" desc="Accessible description of the second field in a date/time control">
+        Seconds
+      </message>
+
+      <message name="IDS_AX_WEEK_OF_YEAR_FIELD_TEXT" desc="Accessible description of the week of year field in a date/time control">
+        Week
+      </message>
+
+      <message name="IDS_AX_YEAR_FIELD_TEXT" desc="Accessible description of the year field in a date/time control">
+        Year
+      </message>
+
       <message name="IDS_KEYGEN_HIGH_GRADE_KEY" desc="High-grade cryptographic key size menu item">
         2048 (High Grade)
       </message>

@@ -126,12 +126,20 @@ namespace webkit_glue {
 
 static int ToMessageID(WebLocalizedString::Name name) {
   switch (name) {
+    case WebLocalizedString::AXAMPMFieldText:
+      return IDS_AX_AM_PM_FIELD_TEXT;
     case WebLocalizedString::AXButtonActionVerb:
       return IDS_AX_BUTTON_ACTION_VERB;
     case WebLocalizedString::AXCheckedCheckBoxActionVerb:
       return IDS_AX_CHECKED_CHECK_BOX_ACTION_VERB;
+    case WebLocalizedString::AXDateTimeFieldEmptyValueText:
+      return IDS_AX_DATE_TIME_FIELD_EMPTY_VALUE_TEXT;
+    case WebLocalizedString::AXDayOfMonthFieldText:
+      return IDS_AX_DAY_OF_MONTH_FIELD_TEXT;
     case WebLocalizedString::AXHeadingText:
       return IDS_AX_ROLE_HEADING;
+    case WebLocalizedString::AXHourFieldText:
+      return IDS_AX_HOUR_FIELD_TEXT;
     case WebLocalizedString::AXImageMapText:
       return IDS_AX_ROLE_IMAGE_MAP;
     case WebLocalizedString::AXLinkActionVerb:
@@ -140,14 +148,26 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_AX_ROLE_LINK;
     case WebLocalizedString::AXListMarkerText:
       return IDS_AX_ROLE_LIST_MARKER;
+    case WebLocalizedString::AXMillisecondFieldText:
+      return IDS_AX_MILLISECOND_FIELD_TEXT;
+    case WebLocalizedString::AXMinuteFieldText:
+      return IDS_AX_MINUTE_FIELD_TEXT;
+    case WebLocalizedString::AXMonthFieldText:
+      return IDS_AX_MONTH_FIELD_TEXT;
     case WebLocalizedString::AXRadioButtonActionVerb:
       return IDS_AX_RADIO_BUTTON_ACTION_VERB;
+    case WebLocalizedString::AXSecondFieldText:
+      return IDS_AX_SECOND_FIELD_TEXT;
     case WebLocalizedString::AXTextFieldActionVerb:
       return IDS_AX_TEXT_FIELD_ACTION_VERB;
     case WebLocalizedString::AXUncheckedCheckBoxActionVerb:
       return IDS_AX_UNCHECKED_CHECK_BOX_ACTION_VERB;
     case WebLocalizedString::AXWebAreaText:
       return IDS_AX_ROLE_WEB_AREA;
+    case WebLocalizedString::AXWeekOfYearFieldText:
+      return IDS_AX_WEEK_OF_YEAR_FIELD_TEXT;
+    case WebLocalizedString::AXYearFieldText:
+      return IDS_AX_YEAR_FIELD_TEXT;
     case WebLocalizedString::CalendarClear:
       return IDS_FORM_CALENDAR_CLEAR;
     case WebLocalizedString::CalendarToday:
