@@ -1067,17 +1067,6 @@ enum NotificationType {
   // object.
   NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
 
-  // Sent when an attempt to acquire the public key of the owner of a chromium
-  // os device has succeeded.
-  NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED,
-
-  // Sent when an attempt to acquire the public key of the owner of a chromium
-  // os device has failed.
-  NOTIFICATION_OWNER_KEY_FETCH_ATTEMPT_FAILED,
-
-  // Sent after UserManager checked ownership status of logged in user.
-  NOTIFICATION_OWNERSHIP_CHECKED,
-
   // Sent by DeviceSettingsService to indicate that the ownership status
   // changed. If you can, please use DeviceSettingsService::Observer instead.
   // Other singleton-based services can't use that because Observer
