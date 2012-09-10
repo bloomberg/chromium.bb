@@ -354,7 +354,7 @@ void wl_resource_post_no_memory(struct wl_resource *resource);
 
 #include "wayland-server-protocol.h"
 
-void
+uint32_t
 wl_client_add_resource(struct wl_client *client,
 		       struct wl_resource *resource);
 

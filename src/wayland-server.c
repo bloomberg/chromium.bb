@@ -387,23 +387,27 @@ wl_client_get_credentials(struct wl_client *client,
 		*gid = client->ucred.gid;
 }
 
-WL_EXPORT void
+WL_EXPORT uint32_t
 wl_client_add_resource(struct wl_client *client,
 		       struct wl_resource *resource)
 {
-	if (resource->object.id == 0)
+	if (resource->object.id == 0) {
 		resource->object.id =
 			wl_map_insert_new(&client->objects,
 					  WL_MAP_SERVER_SIDE, resource);
-	else if (wl_map_insert_at(&client->objects,
-				  resource->object.id, resource) < 0)
+	} else if (wl_map_insert_at(&client->objects,
+				  resource->object.id, resource) < 0) {
 		wl_resource_post_error(client->display_resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
 				       "invalid new id %d",
 				       resource->object.id);
+		return 0;
+	}
 
 	resource->client = client;
 	wl_signal_init(&resource->destroy_signal);
+
+	return resource->object.id;
 }
 
 WL_EXPORT struct wl_resource *
