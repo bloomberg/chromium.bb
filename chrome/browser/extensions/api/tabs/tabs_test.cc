@@ -604,3 +604,86 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, InvalidUpdateWindowState) {
           browser()),
       keys::kInvalidWindowStateError));
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTab) {
+  static const char kNewBlankTabArgs[] ="about:blank";
+
+  content::OpenURLParams params(GURL(kNewBlankTabArgs), content::Referrer(),
+                                NEW_FOREGROUND_TAB,
+                                content::PAGE_TRANSITION_LINK, false);
+  content::WebContents* web_contents = browser()->OpenURL(params);
+  int tab_id = ExtensionTabUtil::GetTabId(web_contents);
+  int window_id = ExtensionTabUtil::GetWindowIdOfTab(web_contents);
+  int tab_index = -1;
+  TabStripModel* tab_strip;
+  ExtensionTabUtil::GetTabStripModel(web_contents, &tab_strip, &tab_index);
+
+  scoped_refptr<DuplicateTabFunction> duplicate_tab_function(
+      new DuplicateTabFunction());
+  scoped_ptr<base::DictionaryValue> test_extension_value(
+      utils::ParseDictionary(
+      "{\"name\": \"Test\", \"version\": \"1.0\", \"permissions\": [\"tabs\"]}"
+      ));
+  scoped_refptr<extensions::Extension> empty_tab_extension(
+      utils::CreateExtension(test_extension_value.get()));
+  duplicate_tab_function->set_extension(empty_tab_extension.get());
+  duplicate_tab_function->set_has_callback(true);
+
+  scoped_ptr<base::DictionaryValue> duplicate_result(utils::ToDictionary(
+      utils::RunFunctionAndReturnSingleResult(
+          duplicate_tab_function.get(), base::StringPrintf("[%u]", tab_id),
+          browser())));
+
+  int duplicate_tab_id = utils::GetInteger(duplicate_result.get(), "id");
+  int duplicate_tab_window_id = utils::GetInteger(duplicate_result.get(),
+                                                  "windowId");
+  int duplicate_tab_index = utils::GetInteger(duplicate_result.get(), "index");
+  EXPECT_EQ(base::Value::TYPE_DICTIONARY, duplicate_result->GetType());
+  // Duplicate tab id should be different from the original tab id.
+  EXPECT_NE(tab_id, duplicate_tab_id);
+  EXPECT_EQ(window_id, duplicate_tab_window_id);
+  EXPECT_EQ(tab_index + 1, duplicate_tab_index);
+  // The test empty tab extension has tabs permissions, therefore
+  // |duplicate_result| should contain url, title, and faviconUrl
+  // in the function result.
+  EXPECT_TRUE(utils::HasPrivacySensitiveFields(duplicate_result.get()));
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTabNoPermission) {
+  static const char kNewBlankTabArgs[] ="about:blank";
+
+  content::OpenURLParams params(GURL(kNewBlankTabArgs), content::Referrer(),
+                                NEW_FOREGROUND_TAB,
+                                content::PAGE_TRANSITION_LINK, false);
+  content::WebContents* web_contents = browser()->OpenURL(params);
+  int tab_id = ExtensionTabUtil::GetTabId(web_contents);
+  int window_id = ExtensionTabUtil::GetWindowIdOfTab(web_contents);
+  int tab_index = -1;
+  TabStripModel* tab_strip;
+  ExtensionTabUtil::GetTabStripModel(web_contents, &tab_strip, &tab_index);
+
+  scoped_refptr<DuplicateTabFunction> duplicate_tab_function(
+      new DuplicateTabFunction());
+  scoped_refptr<extensions::Extension> empty_extension(
+      utils::CreateEmptyExtension());
+  duplicate_tab_function->set_extension(empty_extension.get());
+  duplicate_tab_function->set_has_callback(true);
+
+  scoped_ptr<base::DictionaryValue> duplicate_result(utils::ToDictionary(
+      utils::RunFunctionAndReturnSingleResult(
+          duplicate_tab_function.get(), base::StringPrintf("[%u]", tab_id),
+          browser())));
+
+  int duplicate_tab_id = utils::GetInteger(duplicate_result.get(), "id");
+  int duplicate_tab_window_id = utils::GetInteger(duplicate_result.get(),
+                                                  "windowId");
+  int duplicate_tab_index = utils::GetInteger(duplicate_result.get(), "index");
+  EXPECT_EQ(base::Value::TYPE_DICTIONARY, duplicate_result->GetType());
+  // Duplicate tab id should be different from the original tab id.
+  EXPECT_NE(tab_id, duplicate_tab_id);
+  EXPECT_EQ(window_id, duplicate_tab_window_id);
+  EXPECT_EQ(tab_index + 1, duplicate_tab_index);
+  // The test empty extension has no permissions, therefore |duplicate_result|
+  // should not contain url, title, and faviconUrl in the function result.
+  EXPECT_FALSE(utils::HasPrivacySensitiveFields(duplicate_result.get()));
+}

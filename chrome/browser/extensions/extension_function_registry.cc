@@ -97,21 +97,22 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<RemoveWindowFunction>();
 
   // Tabs
-  RegisterFunction<GetTabFunction>();
+  RegisterFunction<CaptureVisibleTabFunction>();
+  RegisterFunction<CreateTabFunction>();
+  RegisterFunction<DetectTabLanguageFunction>();
+  RegisterFunction<DuplicateTabFunction>();
+  RegisterFunction<GetAllTabsInWindowFunction>();
   RegisterFunction<GetCurrentTabFunction>();
   RegisterFunction<GetSelectedTabFunction>();
-  RegisterFunction<GetAllTabsInWindowFunction>();
-  RegisterFunction<QueryTabsFunction>();
+  RegisterFunction<GetTabFunction>();
   RegisterFunction<HighlightTabsFunction>();
-  RegisterFunction<CreateTabFunction>();
-  RegisterFunction<UpdateTabFunction>();
   RegisterFunction<MoveTabsFunction>();
+  RegisterFunction<QueryTabsFunction>();
   RegisterFunction<ReloadTabFunction>();
   RegisterFunction<RemoveTabsFunction>();
-  RegisterFunction<DetectTabLanguageFunction>();
-  RegisterFunction<CaptureVisibleTabFunction>();
   RegisterFunction<TabsExecuteScriptFunction>();
   RegisterFunction<TabsInsertCSSFunction>();
+  RegisterFunction<UpdateTabFunction>();
 
   // Page Actions.
   RegisterFunction<EnablePageActionsFunction>();

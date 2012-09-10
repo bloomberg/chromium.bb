@@ -770,6 +770,7 @@ TEST(PermissionsTest, DefaultFunctionAccess) {
     { "browserAction.abcd.onClick",  true },
     // Test Tabs functions.
     { "tabs.create",      true},
+    { "tabs.duplicate",   true},
     { "tabs.update",      true},
     { "tabs.getSelected", true},
     { "tabs.onUpdated",   true },

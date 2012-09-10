@@ -9,6 +9,7 @@
 #include "base/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/ui/browser.h"
@@ -18,6 +19,7 @@
 
 using content::WebContents;
 using extensions::Extension;
+namespace keys = extensions::tabs_constants;
 
 namespace {
 
@@ -105,18 +107,38 @@ scoped_refptr<Extension> CreateEmptyExtension() {
 
 scoped_refptr<Extension> CreateEmptyExtensionWithLocation(
     Extension::Location location) {
-  std::string error;
-  const FilePath test_extension_path;
   scoped_ptr<base::DictionaryValue> test_extension_value(
       ParseDictionary("{\"name\": \"Test\", \"version\": \"1.0\"}"));
+  return CreateExtension(location, test_extension_value.get());
+}
+
+scoped_refptr<Extension> CreateExtension(
+    base::DictionaryValue* test_extension_value) {
+  return CreateExtension(Extension::INTERNAL, test_extension_value);
+}
+
+scoped_refptr<Extension> CreateExtension(
+    Extension::Location location,
+    base::DictionaryValue* test_extension_value) {
+  std::string error;
+  const FilePath test_extension_path;
   scoped_refptr<Extension> extension(Extension::Create(
       test_extension_path,
       location,
-      *test_extension_value.get(),
+      *test_extension_value,
       Extension::NO_FLAGS,
       &error));
   EXPECT_TRUE(error.empty()) << "Could not parse test extension " << error;
   return extension;
+}
+
+bool HasPrivacySensitiveFields(base::DictionaryValue* val) {
+  std::string result;
+  if (val->GetString(keys::kUrlKey, &result) ||
+      val->GetString(keys::kTitleKey, &result) ||
+      val->GetString(keys::kFaviconUrlKey, &result))
+    return true;
+  return false;
 }
 
 std::string RunFunctionAndReturnError(UIThreadExtensionFunction* function,

@@ -79,6 +79,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Tabs2) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "crud2.html")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabDuplicate) {
+  ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "duplicate.html")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabUpdate) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "update.html")) << message_;
 }

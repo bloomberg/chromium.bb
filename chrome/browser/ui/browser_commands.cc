@@ -491,7 +491,7 @@ bool CanDuplicateTab(const Browser* browser) {
   return contents && contents->GetController().GetLastCommittedEntry();
 }
 
-void DuplicateTabAt(Browser* browser, int index) {
+TabContents* DuplicateTabAt(Browser* browser, int index) {
   TabContents* contents = GetTabContentsAt(browser, index);
   CHECK(contents);
   TabContents* contents_dupe =
@@ -541,6 +541,7 @@ void DuplicateTabAt(Browser* browser, int index) {
       SessionServiceFactory::GetForProfileIfExisting(browser->profile());
   if (session_service)
     session_service->TabRestored(contents_dupe, pinned);
+  return contents_dupe;
 }
 
 bool CanDuplicateTabAt(Browser* browser, int index) {

@@ -274,6 +274,32 @@
         ]
       },
       {
+        "name": "duplicate",
+        "type": "function",
+        "description": "Duplicates a tab. Note: This function can be used without requesting the 'tabs' permission in the manifest.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "tabId",
+            "minimum": 0,
+            "description": "The ID of the tab which is to be duplicated."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "tab",
+                "optional": true,
+                "description": "Details about the duplicated tab. The Tab object doesn't contain url, title and faviconUrl if the 'tabs' permission has not been requested.",
+                "$ref": "Tab"
+              }
+            ]
+          }
+        ]
+      },
+      {
         "name": "query",
         "type": "function",
         "description": "Gets all tabs that have the specified properties, or all tabs if no properties are specified.",

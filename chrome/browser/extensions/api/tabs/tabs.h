@@ -109,6 +109,11 @@ class CreateTabFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.create")
 };
+class DuplicateTabFunction : public SyncExtensionFunction {
+  virtual ~DuplicateTabFunction() {}
+  virtual bool RunImpl() OVERRIDE;
+  DECLARE_EXTENSION_FUNCTION_NAME("tabs.duplicate")
+};
 class HighlightTabsFunction : public SyncExtensionFunction {
   virtual ~HighlightTabsFunction() {}
   virtual bool RunImpl() OVERRIDE;

@@ -1093,6 +1093,33 @@ bool CreateTabFunction::RunImpl() {
   return true;
 }
 
+bool DuplicateTabFunction::RunImpl() {
+  int tab_id = -1;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &tab_id));
+
+  Browser* browser = NULL;
+  TabStripModel* tab_strip = NULL;
+  TabContents* contents = NULL;
+  int tab_index = -1;
+  if (!GetTabById(tab_id, profile(), include_incognito(),
+                  &browser, &tab_strip, &contents, &tab_index, &error_)) {
+    return false;
+  }
+
+  TabContents* new_contents = chrome::DuplicateTabAt(browser, tab_index);
+  if (!has_callback())
+    return true;
+
+  int new_index = tab_strip->GetIndexOfTabContents(new_contents);
+
+  // Return data about the newly created tab.
+  SetResult(ExtensionTabUtil::CreateTabValue(
+      new_contents->web_contents(),
+      tab_strip, new_index, GetExtension()));
+
+  return true;
+}
+
 bool GetTabFunction::RunImpl() {
   int tab_id = -1;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &tab_id));
