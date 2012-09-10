@@ -16,6 +16,7 @@
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/cert_store.h"
+#include "content/public/browser/user_metrics.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -371,6 +372,9 @@ void WebsiteSettingsPopupView::ButtonPressed(
 void WebsiteSettingsPopupView::LinkClicked(views::Link* source,
                                            int event_flags) {
   if (source == cookie_dialog_link_) {
+    // Count how often the Collected Cookies dialog is opened.
+    content::RecordAction(
+        content::UserMetricsAction("WebsiteSettings_CookiesDialogOpened"));
     new CollectedCookiesViews(tab_contents_);
   } else if (source == certificate_dialog_link_) {
     gfx::NativeWindow parent =

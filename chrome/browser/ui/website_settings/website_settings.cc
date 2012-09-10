@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/metrics/histogram.h"
 #include "base/i18n/time_formatting.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -31,6 +32,7 @@
 #include "chrome/common/content_settings_pattern.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cert_store.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/common/url_constants.h"
 #include "grit/chromium_strings.h"
@@ -97,6 +99,10 @@ WebsiteSettings::WebsiteSettings(
   PresentSiteData();
   PresentSiteIdentity();
   PresentHistoryInfo(base::Time());
+
+  // Every time the Website Settings UI is opened a |WebsiteSettings| object is
+  // created. So this counts how ofter the Website Settings UI is opened.
+  content::RecordAction(content::UserMetricsAction("WebsiteSettings_Opened"));
 }
 
 WebsiteSettings::~WebsiteSettings() {
@@ -104,6 +110,10 @@ WebsiteSettings::~WebsiteSettings() {
 
 void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
                                               ContentSetting setting) {
+  // Count how often a permission for a specific content type is changed using
+  // the Website Settings UI.
+  UMA_HISTOGRAM_COUNTS("WebsiteSettings.PermissionChanged", type);
+
   ContentSettingsPattern primary_pattern;
   ContentSettingsPattern secondary_pattern;
   switch (type) {

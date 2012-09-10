@@ -19,6 +19,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -446,6 +447,8 @@ NSColor* IdentityVerifiedTextColor() {
 // Handler for the link button below the list of cookies.
 - (void)showCookiesAndSiteData:(id)sender {
   DCHECK(tabContents_);
+  content::RecordAction(
+      content::UserMetricsAction("WebsiteSettings_CookiesDialogOpened"));
   chrome::ShowCollectedCookiesDialog(tabContents_);
 }
 

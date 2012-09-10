@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/website_settings/website_settings_utils.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/cert_store.h"
+#include "content/public/browser/user_metrics.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -569,6 +570,10 @@ void WebsiteSettingsPopupGtk::SetSelectedTab(TabId tab_id) {
 }
 
 void WebsiteSettingsPopupGtk::OnCookiesLinkClicked(GtkWidget* widget) {
+  // Count how often the Collected Cookies dialog is opened.
+  content::RecordAction(
+      content::UserMetricsAction("WebsiteSettings_CookiesDialogOpened"));
+
   new CollectedCookiesGtk(GTK_WINDOW(parent_),
                           tab_contents_);
   bubble_->Close();

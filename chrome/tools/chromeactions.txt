@@ -10,6 +10,7 @@
 0x4ebeea0717b98e89	AboutFlags_disable-chrome-to-mobile
 0xe9d2339d6b9225c7	AboutFlags_disable-outdated-plugins
 0xf73b5212b48e2a75	AboutFlags_disable-print-preview
+0x088990bbea59a185	AboutFlags_disable-website-settings
 0xdddbf34cee2c636c	AboutFlags_dns-server
 0x3add7fc42803849e	AboutFlags_downloads-new-ui
 0x487390cc957aa352	AboutFlags_enable-chrome-to-mobile
@@ -1171,6 +1172,7 @@
 0xc35f4595bbf2a0fa	PDF_UseReaderInfoBarOK
 0xb7334d4097ba87ef	PDF_UseReaderInfoBarShown
 0xee3677bcca83ece9	PageDown
+0xac722301695b9315	PageLoad
 0x9b869c510c75c582	PageUp
 0x9ba3ff80fde405cd	PasswordManager_Disabled
 0x6cc1116fbd900ebf	PasswordManager_Enabled
@@ -1360,9 +1362,12 @@
 0x624ddd04836efdcd	Upgrade_Started
 0xa909d722e2ae4285	ViewAboutConflicts
 0xf3768ba285ebca7e	ViewAboutFlash
+0xd3879291d67e1389	ViewAboutNaCl
 0xfb4a178539bac6bd	ViewSource
 0x6932875212d36f57	WP_EditImage
 0x34a770eb3bbf5632	WP_Gallery
+0x949730a9468e27a1	WebsiteSettings_CookiesDialogOpened
+0xddc2a5698e145d16	WebsiteSettings_Opened
 0x554103fbf5582ee0	ZoomMinus
 0x82d278b1f2e78bcd	ZoomMinus_AtMinimum
 0x4344cd22d03f6800	ZoomNormal
