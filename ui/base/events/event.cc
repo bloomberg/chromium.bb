@@ -62,9 +62,7 @@ Event::Event(EventType type, int flags)
       time_stamp_(base::Time::NowFromSystemTime() - base::Time()),
       flags_(flags),
       delete_native_event_(false),
-      target_(NULL),
-      phase_(EP_PREDISPATCH),
-      result_(ER_UNHANDLED) {
+      target_(NULL) {
   Init();
 }
 
@@ -75,9 +73,7 @@ Event::Event(const base::NativeEvent& native_event,
       time_stamp_(EventTimeFromNative(native_event)),
       flags_(flags),
       delete_native_event_(false),
-      target_(NULL),
-      phase_(EP_PREDISPATCH),
-      result_(ER_UNHANDLED) {
+      target_(NULL) {
   InitWithNativeEvent(native_event);
 }
 
@@ -87,9 +83,7 @@ Event::Event(const Event& copy)
       time_stamp_(copy.time_stamp_),
       flags_(copy.flags_),
       delete_native_event_(false),
-      target_(NULL),
-      phase_(EP_PREDISPATCH),
-      result_(ER_UNHANDLED) {
+      target_(NULL) {
 #if defined(USE_X11)
   if (native_event_)
     delete_native_event_ = true;

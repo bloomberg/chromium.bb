@@ -33,11 +33,6 @@ class UI_EXPORT Event {
       event_->target_ = target;
     }
 
-    void set_phase(EventPhase phase) { event_->phase_ = phase; }
-    void set_result(int result) {
-      event_->result_ = static_cast<EventResult>(result);
-    }
-
    private:
     DispatcherApi();
     Event* event_;
@@ -70,8 +65,6 @@ class UI_EXPORT Event {
   void set_flags(int flags) { flags_ = flags; }
 
   EventTarget* target() const { return target_; }
-  EventPhase phase() const { return phase_; }
-  EventResult result() const { return result_; }
 
   // The following methods return true if the respective keys were pressed at
   // the time the event was created.
@@ -178,8 +171,6 @@ class UI_EXPORT Event {
   int flags_;
   bool delete_native_event_;
   EventTarget* target_;
-  EventPhase phase_;
-  EventResult result_;
 };
 
 class UI_EXPORT LocatedEvent : public Event {
