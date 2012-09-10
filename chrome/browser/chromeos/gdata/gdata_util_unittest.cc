@@ -7,8 +7,11 @@
 #include "base/i18n/time_formatting.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/system/timezone_settings.h"
+#endif  // OS_CHROMEOS
 
 namespace gdata {
 namespace util {
@@ -20,6 +23,9 @@ std::string FormatTime(const base::Time& time) {
 
 }  // namespace
 
+// TODO(yoshiki): Find platform independent way to get/set local timezone.
+// (http://crbug.com/147524).
+#if defined(OS_CHROMEOS)
 TEST(GDataUtilTest, GetTimeFromStringLocalTimezone) {
   // Creates time object GMT.
   base::Time::Exploded exploded = {2012, 7, 0, 14, 1, 3, 21, 151};
@@ -85,6 +91,7 @@ TEST(GDataUtilTest, GetTimeFromString) {
   EXPECT_EQ(FormatTime(base::Time::FromUTCExploded(target_time3)),
             FormatTime(test_time));
 }
+#endif  // OS_CHROMEOS
 
 TEST(GDataUtilTest, FormatTimeAsString) {
   base::Time::Exploded exploded_time = {2012, 7, 0, 19, 15, 59, 13, 123};

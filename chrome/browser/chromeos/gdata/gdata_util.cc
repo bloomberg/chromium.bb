@@ -15,12 +15,15 @@
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/tracked_objects.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif  // OS_CHROMEOS
 
 using content::BrowserThread;
 
@@ -61,6 +64,7 @@ bool ParseTimezone(const base::StringPiece& timezone,
 }  // namespace
 
 bool IsGDataAvailable(Profile* profile) {
+#if defined(OS_CHROMEOS)
   if (!chromeos::UserManager::Get()->IsUserLoggedIn() ||
       chromeos::UserManager::Get()->IsLoggedInAsGuest() ||
       chromeos::UserManager::Get()->IsLoggedInAsDemoUser())
@@ -77,6 +81,11 @@ bool IsGDataAvailable(Profile* profile) {
     return false;
 
   return true;
+#else
+  // TODO(nhiroki): Check if GData is available or not in a platform
+  // independent way (http://crbug.com/147529).
+  return false;
+#endif  // OS_CHROMEOS
 }
 
 bool IsDriveV2ApiEnabled() {
