@@ -57,9 +57,11 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_ZOOM_OUT" file="cros/pointers/zoom_out.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_GRAB" file="cros/pointers/fleur.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_GRABBING" file="cros/pointers/hand3.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_BACKGROUND" file="ash/launcher_background.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_BROWSER" file="ash/launcher_browser.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_BROWSER_PANEL" file="ash/launcher_browser_panel.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_BROWSER_SHORTCUT" file="aura/chromium-32.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_DIMMING" file="ash/launcher_dimming.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_ICON_APPLIST" file="ash/launcher_applist.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_ICON_APPLIST_HOT" file="ash/launcher_applist_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_ICON_APPLIST_PUSHED" file="ash/launcher_applist_pressed.png" />

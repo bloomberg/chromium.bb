@@ -25,15 +25,14 @@ TabbedLauncherButton::IconView::IconView(
   if (!browser_image_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
-    browser_image_ = new SkBitmap(
-        *rb.GetImageNamed(IDR_AURA_LAUNCHER_BROWSER).ToSkBitmap());
-    incognito_browser_image_ = new SkBitmap(
-        *rb.GetImageNamed(IDR_AURA_LAUNCHER_INCOGNITO_BROWSER).ToSkBitmap());
-    browser_panel_image_ = new SkBitmap(
-        *rb.GetImageNamed(IDR_AURA_LAUNCHER_BROWSER_PANEL).ToSkBitmap());
-    incognito_browser_panel_image_ = new SkBitmap(
-        *rb.GetImageNamed(
-            IDR_AURA_LAUNCHER_INCOGNITO_BROWSER_PANEL).ToSkBitmap());
+    browser_image_ = rb.GetImageNamed(IDR_AURA_LAUNCHER_BROWSER).ToImageSkia();
+    incognito_browser_image_ =
+        rb.GetImageNamed(IDR_AURA_LAUNCHER_INCOGNITO_BROWSER).ToImageSkia();
+    browser_panel_image_ =
+        rb.GetImageNamed(IDR_AURA_LAUNCHER_BROWSER_PANEL).ToImageSkia();
+    incognito_browser_panel_image_ =
+        rb.GetImageNamed(
+            IDR_AURA_LAUNCHER_INCOGNITO_BROWSER_PANEL).ToImageSkia();
   }
   set_icon_size(0);
   if (host->is_incognito() == STATE_NOT_INCOGNITO)
@@ -101,10 +100,13 @@ void TabbedLauncherButton::IconView::OnPaint(gfx::Canvas* canvas) {
 }
 
 // static
-SkBitmap* TabbedLauncherButton::IconView::browser_image_ = NULL;
-SkBitmap* TabbedLauncherButton::IconView::incognito_browser_image_ = NULL;
-SkBitmap* TabbedLauncherButton::IconView::browser_panel_image_ = NULL;
-SkBitmap* TabbedLauncherButton::IconView::incognito_browser_panel_image_ = NULL;
+const gfx::ImageSkia* TabbedLauncherButton::IconView::browser_image_ = NULL;
+const gfx::ImageSkia* TabbedLauncherButton::IconView::incognito_browser_image_ =
+    NULL;
+const gfx::ImageSkia* TabbedLauncherButton::IconView::browser_panel_image_ =
+    NULL;
+const gfx::ImageSkia*
+    TabbedLauncherButton::IconView::incognito_browser_panel_image_ = NULL;
 
 TabbedLauncherButton* TabbedLauncherButton::Create(
     views::ButtonListener* listener,

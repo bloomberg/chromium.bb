@@ -12,6 +12,10 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/glow_hover_controller.h"
 
+namespace gfx {
+class ImageSkia;
+}
+
 namespace ui {
 class MultiAnimation;
 }
@@ -80,11 +84,11 @@ class TabbedLauncherButton : public LauncherButton {
     scoped_ptr<ui::MultiAnimation> animation_;
 
     // Background images. Which one is chosen depends on the type of the window.
-    static SkBitmap* browser_image_;
-    static SkBitmap* incognito_browser_image_;
+    static const gfx::ImageSkia* browser_image_;
+    static const gfx::ImageSkia* incognito_browser_image_;
     // TODO[dave] implement panel specific image.
-    static SkBitmap* browser_panel_image_;
-    static SkBitmap* incognito_browser_panel_image_;
+    static const gfx::ImageSkia* browser_panel_image_;
+    static const gfx::ImageSkia* incognito_browser_panel_image_;
 
     DISALLOW_COPY_AND_ASSIGN(IconView);
   };

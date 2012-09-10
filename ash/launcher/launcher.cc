@@ -16,7 +16,9 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/shelf_layout_manager.h"
+#include "grit/ui_resources.h"
 #include "ui/aura/window.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
@@ -24,12 +26,18 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
+namespace {
+// Size of black border at bottom (or side) of launcher.
+const int kNumBlackPixels = 3;
+}
+
 namespace ash {
 
 // The contents view of the Widget. This view contains LauncherView and
 // sizes it to the width of the widget minus the size of the status area.
 class Launcher::DelegateView : public views::WidgetDelegate,
-                               public views::AccessiblePaneView {
+                               public views::AccessiblePaneView,
+                               public internal::BackgroundAnimatorDelegate {
  public:
   explicit DelegateView(Launcher* launcher);
   virtual ~DelegateView();
@@ -44,6 +52,7 @@ class Launcher::DelegateView : public views::WidgetDelegate,
   // views::View overrides
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
+  virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
 
   // views::WidgetDelegateView overrides:
   virtual views::Widget* GetWidget() OVERRIDE {
@@ -58,16 +67,21 @@ class Launcher::DelegateView : public views::WidgetDelegate,
     return focus_cycler_ && focus_cycler_->widget_activating() == GetWidget();
   }
 
+  // BackgroundAnimatorDelegate overrides:
+  virtual void UpdateBackground(int alpha) OVERRIDE;
+
  private:
   Launcher* launcher_;
   internal::FocusCycler* focus_cycler_;
+  int alpha_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegateView);
 };
 
 Launcher::DelegateView::DelegateView(Launcher* launcher)
     : launcher_(launcher),
-      focus_cycler_(NULL) {
+      focus_cycler_(NULL),
+      alpha_(0) {
 }
 
 Launcher::DelegateView::~DelegateView() {
@@ -80,19 +94,52 @@ gfx::Size Launcher::DelegateView::GetPreferredSize() {
 void Launcher::DelegateView::Layout() {
   if (child_count() == 0)
     return;
+  View* launcher_view = child_at(0);
+
   if (launcher_->alignment_ == SHELF_ALIGNMENT_BOTTOM) {
     int w = std::max(0, width() - launcher_->status_size_.width());
-    int h = std::min(height(), child_at(0)->GetPreferredSize().height());
+    int h = std::min(height(), launcher_view->GetPreferredSize().height());
     int move_up = height() > h ? sqrtf(height() - h) : 0;
-    child_at(0)->SetBounds(0, std::max(0, height() - h) - move_up, w, h);
+    launcher_view->SetBounds(0, std::max(0, height() - h) - move_up, w, h);
   } else {
     int h = std::max(0, height() - launcher_->status_size_.height());
-    int w = std::min(width(), child_at(0)->GetPreferredSize().width());
+    int w = std::min(width(), launcher_view->GetPreferredSize().width());
     int x = width() > w ? sqrtf(width() - w) : 0;
     if (launcher_->alignment_ == SHELF_ALIGNMENT_RIGHT)
       x = width() - w - x;
-    child_at(0)->SetBounds(x, 0, w, h);
+    launcher_view->SetBounds(x, 0, w, h);
   }
+}
+
+void Launcher::DelegateView::OnPaintBackground(gfx::Canvas* canvas) {
+  if (launcher_->alignment_ == SHELF_ALIGNMENT_BOTTOM) {
+    SkPaint paint;
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    static const gfx::ImageSkia* launcher_background = NULL;
+    if (!launcher_background) {
+      launcher_background =
+          rb.GetImageNamed(IDR_AURA_LAUNCHER_BACKGROUND).ToImageSkia();
+    }
+    paint.setAlpha(alpha_);
+    canvas->DrawImageInt(
+        *launcher_background,
+        0, 0, launcher_background->width(), launcher_background->height(),
+        0, 0, width(), height(),
+        false,
+        paint);
+    canvas->FillRect(
+        gfx::Rect(0, height() - kNumBlackPixels, width(), kNumBlackPixels),
+        SK_ColorBLACK);
+  } else {
+    // TODO(davemoore): when we get an image for the side launcher background
+    // use it, and handle black border.
+    canvas->DrawColor(SkColorSetARGB(alpha_, 0, 0, 0));
+  }
+}
+
+void Launcher::DelegateView::UpdateBackground(int alpha) {
+  alpha_ = alpha;
+  SchedulePaint();
 }
 
 // Launcher --------------------------------------------------------------------
@@ -101,11 +148,10 @@ Launcher::Launcher(aura::Window* window_container,
                    internal::ShelfLayoutManager* shelf_layout_manager)
     : widget_(NULL),
       window_container_(window_container),
-      delegate_view_(NULL),
+      delegate_view_(new DelegateView(this)),
       launcher_view_(NULL),
       alignment_(SHELF_ALIGNMENT_BOTTOM),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          background_animator_(this, 0, kLauncherBackgroundAlpha)) {
+      background_animator_(delegate_view_, 0, kLauncherBackgroundAlpha) {
   model_.reset(new LauncherModel);
   if (Shell::GetInstance()->delegate()) {
     delegate_.reset(
@@ -115,8 +161,6 @@ Launcher::Launcher(aura::Window* window_container,
   widget_.reset(new views::Widget);
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  // The launcher only ever draws a solid color.
-  params.layer_type = ui::LAYER_SOLID_COLOR;
   params.transparent = true;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = Shell::GetContainer(
@@ -125,7 +169,6 @@ Launcher::Launcher(aura::Window* window_container,
   launcher_view_ = new internal::LauncherView(
       model_.get(), delegate_.get(), shelf_layout_manager);
   launcher_view_->Init();
-  delegate_view_ = new DelegateView(this);
   delegate_view_->AddChildView(launcher_view_);
   params.delegate = delegate_view_;
   widget_->Init(params);
@@ -226,11 +269,6 @@ views::View* Launcher::GetAppListButtonView() const {
 
 internal::LauncherView* Launcher::GetLauncherViewForTest() {
   return launcher_view_;
-}
-
-void Launcher::UpdateBackground(int alpha) {
-  ui::Layer* layer = widget_->GetNativeView()->layer();
-  layer->SetColor(SkColorSetARGB(alpha, 0, 0, 0));
 }
 
 }  // namespace ash

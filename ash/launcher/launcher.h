@@ -38,7 +38,7 @@ class LauncherIconObserver;
 class LauncherDelegate;
 class LauncherModel;
 
-class ASH_EXPORT Launcher : public internal::BackgroundAnimatorDelegate {
+class ASH_EXPORT Launcher  {
  public:
   Launcher(aura::Window* window_container,
            internal::ShelfLayoutManager* shelf_layout_manager);
@@ -97,9 +97,6 @@ class ASH_EXPORT Launcher : public internal::BackgroundAnimatorDelegate {
   views::Widget* widget() { return widget_.get(); }
 
   aura::Window* window_container() { return window_container_; }
-
-  // BackgroundAnimatorDelegate overrides:
-  virtual void UpdateBackground(int alpha) OVERRIDE;
 
  private:
   class DelegateView;
