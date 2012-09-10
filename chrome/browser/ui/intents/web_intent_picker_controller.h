@@ -125,6 +125,13 @@ class WebIntentPickerController
   // Adds a service to the data model.
   void AddServiceToModel(const webkit_glue::WebIntentServiceData& service);
 
+  // Register the user-selected service (indicated by the passed |url|) as
+  // the default for the combination of action/type/options in the picker.
+  void SetDefaultServiceForSelection(const GURL& url);
+
+  // Calculate a digest value for the services in the picker.
+  int64 DigestServices();
+
   // Gets a notification when the return message is sent to the source tab,
   // so we can close the picker dialog or service tab.
   void OnSendReturnMessage(webkit_glue::WebIntentReplyType reply_type);

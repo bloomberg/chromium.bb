@@ -23,7 +23,8 @@ const size_t kMaxSuggestionCount = 5;  // Maximum number of visible suggestions.
 
 WebIntentPickerModel::WebIntentPickerModel()
     : observer_(NULL),
-      waiting_for_suggestions_(true) {
+      waiting_for_suggestions_(true),
+      default_service_hash_(0) {
 }
 
 WebIntentPickerModel::~WebIntentPickerModel() {

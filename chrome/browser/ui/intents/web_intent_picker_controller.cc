@@ -8,7 +8,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/platform_app_launcher.h"
@@ -297,6 +299,12 @@ void WebIntentPickerController::OnServiceChosen(
   web_intents::RecordServiceInvoke(uma_bucket_);
   ExtensionService* service = tab_contents_->profile()->GetExtensionService();
   DCHECK(service);
+
+  // Set the default here. Activating the intent resets the picker model.
+  // TODO(gbillock): we should perhaps couple the model to the dispatcher so
+  // we can re-activate the model on use-another-service.
+  SetDefaultServiceForSelection(url);
+
   const extensions::Extension* extension = service->GetInstalledApp(url);
 
   // TODO(smckay): this basically smells like another disposition.
@@ -351,6 +359,53 @@ void WebIntentPickerController::OnServiceChosen(
       NOTREACHED();
       break;
   }
+}
+
+// Take the MD5 digest of the origins of picker options
+// and record it as the default context string.
+int64 WebIntentPickerController::DigestServices() {
+  // The context in which the default is registered is all
+  // the installed services represented in the picker (represented
+  // by their site origins).
+  std::vector<std::string> context_urls;
+  for (size_t i = 0; i < picker_model_->GetInstalledServiceCount(); ++i) {
+    const GURL& url = picker_model_->GetInstalledServiceAt(i).url;
+    if (url.SchemeIs(chrome::kExtensionScheme))
+      context_urls.push_back(url.host());  // this is the extension ID
+    else
+      context_urls.push_back(url.GetOrigin().spec());
+  }
+  std::sort(context_urls.begin(), context_urls.end());
+
+  base::MD5Context md5_context;
+  base::MD5Init(&md5_context);
+  for (size_t i = 0; i < context_urls.size(); ++i)
+    base::MD5Update(&md5_context, context_urls[i]);
+  base::MD5Digest digest;
+  base::MD5Final(&digest, &md5_context);
+  int64 hash = 0;
+  COMPILE_ASSERT(sizeof(base::MD5Digest) > sizeof(int64),
+                 int64_size_greater_than_md5_buffer);
+  memcpy(&hash, &digest, sizeof(int64));
+
+  return hash;
+}
+
+void WebIntentPickerController::SetDefaultServiceForSelection(const GURL& url) {
+  int64 service_hash = DigestServices();
+  DCHECK(picker_model_.get());
+  if (url == picker_model_->default_service_url() &&
+      service_hash == picker_model_->default_service_hash()) {
+    return;
+  }
+
+  DefaultWebIntentService record;
+  record.action = picker_model_->action();
+  record.type = picker_model_->type();
+  record.service_url = url.spec();
+  record.suppression = service_hash;
+  record.user_date = static_cast<int>(floor(base::Time::Now().ToDoubleT()));
+  GetWebIntentsRegistry(tab_contents_)->RegisterDefaultIntentService(record);
 }
 
 void WebIntentPickerController::OnInlineDispositionWebContentsCreated(
@@ -536,6 +591,7 @@ void WebIntentPickerController::OnWebIntentServicesAvailableForExplicitIntent(
 
     AddServiceToModel(services[i]);
 
+    // BUG? This should a) not use (i)
     InvokeService(picker_model_->GetInstalledServiceAt(i));
     AsyncOperationFinished();
     return;
@@ -552,8 +608,8 @@ void WebIntentPickerController::OnWebIntentServicesAvailableForExplicitIntent(
 void WebIntentPickerController::OnWebIntentDefaultsAvailable(
     const DefaultWebIntentService& default_service) {
   if (!default_service.service_url.empty()) {
-    DCHECK(default_service.suppression == 0);
     picker_model_->set_default_service_url(GURL(default_service.service_url));
+    picker_model_->set_default_service_hash(default_service.suppression);
   }
 
   RegistryCallsCompleted();
@@ -564,13 +620,13 @@ void WebIntentPickerController::RegistryCallsCompleted() {
   pending_registry_calls_count_--;
   if (pending_registry_calls_count_ != 0) return;
 
-  if (picker_model_->default_service_url().is_valid()) {
+  if (picker_model_->default_service_url().is_valid() &&
+      picker_model_->default_service_hash() == DigestServices()) {
     // If there's a default service, dispatch to it immediately
     // without showing the picker.
     const WebIntentPickerModel::InstalledService* default_service =
         picker_model_->GetInstalledServiceWithURL(
             GURL(picker_model_->default_service_url()));
-
     if (default_service != NULL) {
       InvokeService(*default_service);
       return;
@@ -810,7 +866,8 @@ void WebIntentPickerController::OnPickerEvent(WebIntentPickerEvent event) {
 
     case kPickerEventAsyncDataComplete:
       DCHECK(dialog_state_ == kPickerSetup ||
-              dialog_state_ == kPickerWaiting);
+             dialog_state_ == kPickerWaiting ||
+             dialog_state_ == kPickerWaitLong);
 
       // In setup state, transition to main dialog. In waiting state, let
       // timer expire.

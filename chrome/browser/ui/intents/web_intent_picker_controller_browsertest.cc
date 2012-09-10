@@ -190,7 +190,6 @@ class IntentsDispatcherMock : public content::WebIntentsDispatcher {
   virtual void SendReplyMessage(webkit_glue::WebIntentReplyType reply_type,
                                 const string16& data) OVERRIDE {
     replied_ = true;
-    LOG(INFO) << "Intent Reply: " << UTF16ToASCII(data);
   }
 
   virtual void RegisterReplyNotification(
@@ -294,13 +293,19 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
   }
 
   void SetDefaultService(const string16& action,
-                         const std::string& url) {
+                         const std::string& url,
+                         int64 service_hash) {
     DefaultWebIntentService default_service;
     default_service.action = action;
     default_service.type = kType1;
     default_service.user_date = 1000000;
+    default_service.suppression = service_hash;
     default_service.service_url = url;
     web_data_service_->AddDefaultWebIntentService(default_service);
+  }
+
+  int64 DigestServices() {
+    return controller_->DigestServices();
   }
 
   void OnSendReturnMessage(
@@ -552,7 +557,6 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
                                              chrome::kExtensionScheme,
                                              extension_id,
                                              "share.html"));
-  LOG(INFO) << "Calling " << explicitIntent.service.spec();
   IntentsDispatcherMock dispatcher2(explicitIntent);
   controller_->SetIntentsDispatcher(&dispatcher2);
   controller_->ShowDialog(kAction1, kType2);
@@ -581,7 +585,6 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
                                      chrome::kExtensionScheme,
                                      kDummyExtensionId,
                                      UTF16ToASCII(kAction1).c_str()));
-  LOG(INFO) << "Calling " << intent.service.spec();
   IntentsDispatcherMock dispatcher(intent);
   controller_->SetIntentsDispatcher(&dispatcher);
   controller_->ShowDialog(kAction1, kType1);
@@ -622,12 +625,24 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
                        DefaultsTest) {
   AddWebIntentService(kAction1, kServiceURL1);
   AddWebIntentService(kAction1, kServiceURL2);
+  AddCWSExtensionServiceEmpty(kAction1);
 
-  SetDefaultService(kAction1, kServiceURL1.spec());
-
+  // Bring up the picker to get the test-installed services so we can create a
+  // default with the right defaulting fingerprint.
   webkit_glue::WebIntentData intent;
   intent.action = kAction1;
   intent.type = kType1;
+  IntentsDispatcherMock dispatcher1(intent);
+  controller_->SetIntentsDispatcher(&dispatcher1);
+  controller_->ShowDialog(kAction1, kType1);
+  picker_.Wait();
+  int64 service_hash = DigestServices();
+  SetDefaultService(kAction1, kServiceURL1.spec(), service_hash);
+
+  // Reset the picker for the real dispatch.
+  picker_.MockClose();
+  SetupMockPicker();
+
   IntentsDispatcherMock dispatcher(intent);
   controller_->SetIntentsDispatcher(&dispatcher);
 
@@ -644,4 +659,29 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
             chrome::GetActiveWebContents(browser())->GetURL());
 
   EXPECT_TRUE(dispatcher.dispatched_);
+}
+
+IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
+                       DefaultsTestWithOldDefault) {
+  AddWebIntentService(kAction1, kServiceURL1);
+  AddWebIntentService(kAction1, kServiceURL2);
+  AddCWSExtensionServiceEmpty(kAction1);
+
+  webkit_glue::WebIntentData intent;
+  intent.action = kAction1;
+  intent.type = kType1;
+  IntentsDispatcherMock dispatcher(intent);
+  controller_->SetIntentsDispatcher(&dispatcher);
+
+  SetDefaultService(kAction1, kServiceURL1.spec(), 0);
+
+  controller_->ShowDialog(kAction1, kType1);
+  picker_.Wait();
+
+  EXPECT_EQ(2, picker_.num_installed_services_);
+
+  // The found default isn't used immediately because the defaulting
+  // context has changed.
+  ASSERT_EQ(1, browser()->tab_count());
+  EXPECT_FALSE(dispatcher.dispatched_);
 }

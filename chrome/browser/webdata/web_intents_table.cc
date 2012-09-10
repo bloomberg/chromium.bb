@@ -262,7 +262,7 @@ bool WebIntentsTable::GetDefaultServices(
       return false;
     }
     entry.user_date = s.ColumnInt(3);
-    entry.suppression = s.ColumnInt(4);
+    entry.suppression = s.ColumnInt64(4);
     entry.service_url = s.ColumnString(5);
 
     default_services->push_back(entry);
@@ -286,7 +286,7 @@ bool WebIntentsTable::GetAllDefaultServices(
       return false;
     }
     entry.user_date = s.ColumnInt(3);
-    entry.suppression = s.ColumnInt(4);
+    entry.suppression = s.ColumnInt64(4);
     entry.service_url = s.ColumnString(5);
 
     default_services->push_back(entry);
@@ -306,7 +306,7 @@ bool WebIntentsTable::SetDefaultService(
   s.BindString16(1, default_service.type);
   s.BindString(2, default_service.url_pattern.GetAsString());
   s.BindInt(3, default_service.user_date);
-  s.BindInt(4, default_service.suppression);
+  s.BindInt64(4, default_service.suppression);
   s.BindString(5, default_service.service_url);
 
   return s.Run();

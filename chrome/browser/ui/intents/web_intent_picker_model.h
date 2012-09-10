@@ -72,9 +72,14 @@ class WebIntentPickerModel {
   const string16& type() const { return type_; }
   void set_type(const string16& type) { type_ = type; }
 
-  const GURL& default_service_url() const { return default_service_url_; }
+  GURL default_service_url() const { return default_service_url_; }
   void set_default_service_url(const GURL& default_url) {
     default_service_url_ = default_url;
+  }
+
+  int64 default_service_hash() const { return default_service_hash_; }
+  void set_default_service_hash(int64 default_service_hash) {
+    default_service_hash_ = default_service_hash;
   }
 
   // Add a new installed service with |title|, |url| and |disposition| to the
@@ -169,6 +174,9 @@ class WebIntentPickerModel {
 
   // Indicates that there are still open requests to CWS.
   bool waiting_for_suggestions_;
+
+  // The hash context for the default service, if there is one.
+  int64 default_service_hash_;
 
   DISALLOW_COPY_AND_ASSIGN(WebIntentPickerModel);
 };

@@ -39,9 +39,10 @@ struct DefaultWebIntentService {
   // If the user did not set the default explicitly, is <= 0.
   int user_date;
 
-  // |suppression| holds a value modeling whether a default is suppressed.
-  // If it has value == 0, the default is active.
-  int suppression;
+  // |suppression| holds a value indicating what the suppression context
+  // for the default should be. Currently it holds a hash value of the other
+  // current entries in the picker model when the default was set.
+  int64 suppression;
 
   std::string service_url;
 
