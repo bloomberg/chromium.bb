@@ -48,5 +48,10 @@
         '../skia/skia.gyp:skia',
       ],
     }],
+    ['OS=="ios"', {
+      'sources!': [
+        'app/content_main.cc',
+      ],
+    }],
   ],
 }

@@ -14,17 +14,10 @@
         'content_browser',
         'content_common',
         '../net/net.gyp:net_test_support',
-        '../ppapi/ppapi_internal.gyp:ppapi_host',
-        '../ppapi/ppapi_internal.gyp:ppapi_proxy',
-        '../ppapi/ppapi_internal.gyp:ppapi_shared',
-        '../ppapi/ppapi_internal.gyp:ppapi_unittest_shared',
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
-        '../ui/surface/surface.gyp:surface',
         '../ui/ui.gyp:ui_test_support',
-        '../webkit/support/webkit_support.gyp:appcache',
       ],
       'include_dirs': [
         '..',
@@ -145,6 +138,31 @@
         '../webkit/quota/mock_special_storage_policy.h',
       ],
       'conditions': [
+        ['OS == "ios"', {
+          'sources/': [
+            # iOS only needs a small portion of content; exclude all the
+            # implementation, and re-include what is used.
+            ['exclude', '\\.(cc|mm)$'],
+            ['include', '_ios\\.(cc|mm)$'],
+            ['include', '^public/test/content_test_suite_base\\.cc$'],
+            ['include', '^public/test/mock_notification_observer\\.cc$'],
+            ['include', '^public/test/mock_resource_context\\.cc$'],
+            ['include', '^public/test/test_browser_thread\\.cc$'],
+            ['include', '^public/test/test_content_client_initializer\\.cc$'],
+            ['include', '^public/test/test_notification_tracker\\.cc$'],
+            ['include', '^public/test/test_utils\\.cc$'],
+          ],
+        }, {  # OS != "ios"
+          'dependencies': [
+            '../ppapi/ppapi_internal.gyp:ppapi_host',
+            '../ppapi/ppapi_internal.gyp:ppapi_proxy',
+            '../ppapi/ppapi_internal.gyp:ppapi_shared',
+            '../ppapi/ppapi_internal.gyp:ppapi_unittest_shared',
+            '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
+            '../ui/surface/surface.gyp:surface',
+            '../webkit/support/webkit_support.gyp:appcache',
+          ],
+        }],
         ['OS == "win" or (toolkit_uses_gtk == 1 and selinux == 0)', {
           'dependencies': [
             '../sandbox/sandbox.gyp:sandbox',
@@ -194,7 +212,7 @@
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
           ],
         }],
-        ['OS!="android"', {
+        ['OS!="android" and OS!="ios"', {
           'dependencies': [
             '../third_party/libvpx/libvpx.gyp:libvpx',
           ],
@@ -207,42 +225,18 @@
       'defines!': ['CONTENT_IMPLEMENTATION'],
       'dependencies': [
         'content_common',
-        'content_gpu',
-        'content_plugin',
-        'content_renderer',
         'test_support_content',
         'browser/speech/proto/speech_proto.gyp:speech_proto',
-        'content_resources.gyp:content_resources',
         '../base/base.gyp:test_support_base',
-        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../crypto/crypto.gyp:crypto',
-        '../gpu/gpu.gyp:gpu_unittest_utils',
-        '../ipc/ipc.gyp:test_support_ipc',
-        '../jingle/jingle.gyp:jingle_glue_test_util',
         '../media/media.gyp:media_test_support',
-        '../media/media.gyp:shared_memory_support',
         '../net/net.gyp:net_test_support',
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
-        '../third_party/libjingle/libjingle.gyp:libjingle',
-        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
-        '../ui/gl/gl.gyp:gl',
         '../ui/ui.gyp:ui',
-        '../v8/tools/gyp/v8.gyp:v8',
-        '../webkit/support/webkit_support.gyp:appcache',
-        '../webkit/support/webkit_support.gyp:blob',
-        '../webkit/support/webkit_support.gyp:database',
-        '../webkit/support/webkit_support.gyp:dom_storage',
-        '../webkit/support/webkit_support.gyp:fileapi',
         '../webkit/support/webkit_support.gyp:forms',
-        '../webkit/support/webkit_support.gyp:glue',
-        '../webkit/support/webkit_support.gyp:quota',
         '../webkit/support/webkit_support.gyp:user_agent',
-        '../webkit/support/webkit_support.gyp:webkit_base',
-        '../webkit/support/webkit_support.gyp:webkit_media',
-        '../webkit/webkit.gyp:test_shell_test_support',
       ],
       'include_dirs': [
         '..',
@@ -453,6 +447,45 @@
         '../webkit/quota/quota_temporary_storage_evictor_unittest.cc',
       ],
       'conditions': [
+        ['OS == "ios"', {
+          'sources/': [
+            # iOS only needs a small portion of content; exclude all the
+            # implementation, and re-include what is used.
+            ['exclude', '\\.(cc|mm)$'],
+            ['include', '_ios\\.(cc|mm)$'],
+            ['include', '^browser/browser_thread_unittest\\.cc$'],
+            ['include', '^browser/notification_service_impl_unittest\\.cc$'],
+            ['include', '^browser/speech/.*_unittest\\.cc$'],
+            ['include', '^test/run_all_unittests\\.cc$'],
+          ],
+        }, {  # OS != "ios"
+          'dependencies': [
+            'content_gpu',
+            'content_plugin',
+            'content_renderer',
+            'content_resources.gyp:content_resources',
+            '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+            '../gpu/gpu.gyp:gpu_unittest_utils',
+            '../ipc/ipc.gyp:test_support_ipc',
+            '../jingle/jingle.gyp:jingle_glue_test_util',
+            '../media/media.gyp:shared_memory_support',
+            '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
+            '../third_party/libjingle/libjingle.gyp:libjingle',
+            '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
+            '../ui/gl/gl.gyp:gl',
+            '../v8/tools/gyp/v8.gyp:v8',
+            '../webkit/support/webkit_support.gyp:appcache',
+            '../webkit/support/webkit_support.gyp:blob',
+            '../webkit/support/webkit_support.gyp:database',
+            '../webkit/support/webkit_support.gyp:dom_storage',
+            '../webkit/support/webkit_support.gyp:fileapi',
+            '../webkit/support/webkit_support.gyp:glue',
+            '../webkit/support/webkit_support.gyp:quota',
+            '../webkit/support/webkit_support.gyp:webkit_base',
+            '../webkit/support/webkit_support.gyp:webkit_media',
+            '../webkit/webkit.gyp:test_shell_test_support',
+          ],
+        }],
         ['enable_webrtc==1', {
           'sources': [
             'browser/renderer_host/p2p/socket_host_test_utils.h',
@@ -533,7 +566,8 @@
             'browser/geolocation/wifi_data_provider_common_unittest.cc',
             'browser/geolocation/wifi_data_provider_linux_unittest.cc',
           ],
-        }, { # OS != "android"
+        }],
+        ['OS != "android" and OS != "ios"', {
           'dependencies': [
             '../third_party/libvpx/libvpx.gyp:libvpx',
           ],
@@ -545,163 +579,167 @@
         }],
       ],
     },
-    {
-      'target_name': 'content_browsertests',
-      'type': 'executable',
-      'defines!': ['CONTENT_IMPLEMENTATION'],
-      'dependencies': [
-        'content_gpu',
-        'content_plugin',
-        'content_renderer',
-        'content_shell_lib',
-        'content_shell_pak',
-        'test_support_content',
-        '../base/base.gyp:test_support_base',
-        '../ipc/ipc.gyp:test_support_ipc',
-        '../net/net.gyp:net_test_support',
-        '../ppapi/ppapi_internal.gyp:ppapi_host',
-        '../ppapi/ppapi_internal.gyp:ppapi_proxy',
-        '../ppapi/ppapi_internal.gyp:ppapi_ipc',
-        '../ppapi/ppapi_internal.gyp:ppapi_shared',
-        '../ppapi/ppapi_internal.gyp:ppapi_unittest_shared',
-        '../skia/skia.gyp:skia',
-        '../testing/gmock.gyp:gmock',
-        '../testing/gtest.gyp:gtest',
-        '../ui/ui.gyp:ui',
-        '../webkit/support/webkit_support.gyp:forms',
-        '../webkit/support/webkit_support.gyp:glue',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'defines': [
-        'HAS_OUT_OF_PROC_TEST_RUNNER',
-      ],
-      'sources': [
-        'browser/accessibility/cross_platform_accessibility_browsertest.cc',
-        'browser/accessibility/dump_accessibility_tree_browsertest.cc',
-        'browser/accessibility/dump_accessibility_tree_helper.cc',
-        'browser/accessibility/dump_accessibility_tree_helper.h',
-        'browser/accessibility/dump_accessibility_tree_helper_mac.mm',
-        'browser/accessibility/dump_accessibility_tree_helper_win.cc',
-        'browser/appcache/appcache_browsertest.cc',
-        'browser/audio_browsertest.cc',
-        'browser/child_process_security_policy_browsertest.cc',
-        'browser/database_browsertest.cc',
-        'browser/device_orientation/device_orientation_browsertest.cc',
-        'browser/dom_storage/dom_storage_browsertest.cc',
-	'browser/download/download_browsertest.cc',
-        'browser/download/mhtml_generation_browsertest.cc',
-        'browser/download/save_package_browsertest.cc',
-        'browser/fileapi/file_system_browsertest.cc',
-        'browser/in_process_webkit/indexed_db_browsertest.cc',
-        'browser/in_process_webkit/indexed_db_layout_browsertest.cc',
-        'browser/media_browsertest.cc',
-        'browser/plugin_data_remover_impl_browsertest.cc',
-        'browser/plugin_browsertest.cc',
-        'browser/plugin_service_impl_browsertest.cc',
-        'browser/renderer_host/render_view_host_browsertest.cc',
-        'browser/renderer_host/render_view_host_manager_browsertest.cc',
-        'browser/renderer_host/resource_dispatcher_host_browsertest.cc',
-        'browser/session_history_browsertest.cc',
-        'browser/speech/speech_recognition_browsertest.cc',
-        'browser/webkit_browsertest.cc',
-        'browser/worker_host/test/worker_browsertest.cc',
-        'common/content_constants_internal.cc',
-        'common/content_constants_internal.h',
-        'renderer/browser_plugin/mock_browser_plugin.h',
-        'renderer/browser_plugin/mock_browser_plugin.cc',
-        'renderer/browser_plugin/mock_browser_plugin_manager.h',
-        'renderer/browser_plugin/mock_browser_plugin_manager.cc',
-        'renderer/browser_plugin/browser_plugin_browsertest.h',
-        'renderer/browser_plugin/browser_plugin_browsertest.cc',
-        'renderer/mouse_lock_dispatcher_browsertest.cc',
-        'renderer/pepper/mock_renderer_ppapi_host.cc',
-        'renderer/pepper/pepper_file_chooser_host_unittest.cc',
-        'renderer/render_view_browsertest.cc',
-        'renderer/render_view_browsertest_mac.mm',
-        'renderer/renderer_accessibility_browsertest.cc',
-        'test/content_browser_test.h',
-        'test/content_browser_test.cc',
-        'test/content_browser_test_utils.cc',
-        'test/content_browser_test_utils.h',
-        'test/content_browser_test_utils_mac.mm',
-        'test/content_browser_test_test.cc',
-        'test/content_test_launcher.cc',
-        'test/layout_browsertest.cc',
-        'test/layout_browsertest.h',
-        'test/layout_test_http_server.cc',
-        'test/layout_test_http_server.h',
-      ],
-      'conditions': [
-        ['OS=="win"', {
-          'resource_include_dirs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit',
-          ],
-          'sources': [
-            'shell/resource.h',
-            'shell/shell.rc',
-            # TODO:  It would be nice to have these pulled in
-            # automatically from direct_dependent_settings in
-            # their various targets (net.gyp:net_resources, etc.),
-            # but that causes errors in other targets when
-            # resulting .res files get referenced multiple times.
-            '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.rc',
-          ],
-          'dependencies': [
-            '<(DEPTH)/net/net.gyp:net_resources',
-            '<(DEPTH)/third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
-            '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',
-            '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_strings',
-          ],
-          'configurations': {
-            'Debug_Base': {
-              'msvs_settings': {
-                'VCLinkerTool': {
-                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
-                },
-              },
-            },
-          },
-        }],
-        ['OS=="win" and win_use_allocator_shim==1', {
-          'dependencies': [
-            '../base/allocator/allocator.gyp:allocator',
-          ],
-        }],
-        ['OS=="linux"', {
-          'sources!': [
-            'browser/accessibility/dump_accessibility_tree_browsertest.cc',
-            'browser/accessibility/dump_accessibility_tree_helper.cc',
-          ],
-        }],
-        ['OS=="mac"', {
-          'dependencies': [
-            'content_shell',  # Needed for Content Shell.app's Helper.
-          ],
-        }],
-        ['use_aura==1', {
-          'sources!': [
-            'browser/accessibility/dump_accessibility_tree_browsertest.cc',
-            'browser/accessibility/dump_accessibility_tree_helper_win.cc',
-            'browser/accessibility/dump_accessibility_tree_helper.cc',
-            'browser/plugin_browsertest.cc',
-          ],
-        }],
-        ['target_arch!="arm"', {
-          'dependencies': [
-            # Runtime dependencies
-            '../webkit/webkit.gyp:copy_npapi_test_plugin',
-            '../webkit/webkit.gyp:pull_in_copy_TestNetscapePlugIn',
-          ],
-        }],
-      ],
-    },
   ],
   'conditions': [
+    ['OS!="ios"', {
+      'targets': [
+        {
+          'target_name': 'content_browsertests',
+          'type': 'executable',
+          'defines!': ['CONTENT_IMPLEMENTATION'],
+          'dependencies': [
+            'content_gpu',
+            'content_plugin',
+            'content_renderer',
+            'content_shell_lib',
+            'content_shell_pak',
+            'test_support_content',
+            '../base/base.gyp:test_support_base',
+            '../ipc/ipc.gyp:test_support_ipc',
+            '../net/net.gyp:net_test_support',
+            '../ppapi/ppapi_internal.gyp:ppapi_host',
+            '../ppapi/ppapi_internal.gyp:ppapi_proxy',
+            '../ppapi/ppapi_internal.gyp:ppapi_ipc',
+            '../ppapi/ppapi_internal.gyp:ppapi_shared',
+            '../ppapi/ppapi_internal.gyp:ppapi_unittest_shared',
+            '../skia/skia.gyp:skia',
+            '../testing/gmock.gyp:gmock',
+            '../testing/gtest.gyp:gtest',
+            '../ui/ui.gyp:ui',
+            '../webkit/support/webkit_support.gyp:forms',
+            '../webkit/support/webkit_support.gyp:glue',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'defines': [
+            'HAS_OUT_OF_PROC_TEST_RUNNER',
+          ],
+          'sources': [
+            'browser/accessibility/cross_platform_accessibility_browsertest.cc',
+            'browser/accessibility/dump_accessibility_tree_browsertest.cc',
+            'browser/accessibility/dump_accessibility_tree_helper.cc',
+            'browser/accessibility/dump_accessibility_tree_helper.h',
+            'browser/accessibility/dump_accessibility_tree_helper_mac.mm',
+            'browser/accessibility/dump_accessibility_tree_helper_win.cc',
+            'browser/appcache/appcache_browsertest.cc',
+            'browser/audio_browsertest.cc',
+            'browser/child_process_security_policy_browsertest.cc',
+            'browser/database_browsertest.cc',
+            'browser/device_orientation/device_orientation_browsertest.cc',
+            'browser/dom_storage/dom_storage_browsertest.cc',
+            'browser/download/download_browsertest.cc',
+            'browser/download/mhtml_generation_browsertest.cc',
+            'browser/download/save_package_browsertest.cc',
+            'browser/fileapi/file_system_browsertest.cc',
+            'browser/in_process_webkit/indexed_db_browsertest.cc',
+            'browser/in_process_webkit/indexed_db_layout_browsertest.cc',
+            'browser/media_browsertest.cc',
+            'browser/plugin_data_remover_impl_browsertest.cc',
+            'browser/plugin_browsertest.cc',
+            'browser/plugin_service_impl_browsertest.cc',
+            'browser/renderer_host/render_view_host_browsertest.cc',
+            'browser/renderer_host/render_view_host_manager_browsertest.cc',
+            'browser/renderer_host/resource_dispatcher_host_browsertest.cc',
+            'browser/session_history_browsertest.cc',
+            'browser/speech/speech_recognition_browsertest.cc',
+            'browser/webkit_browsertest.cc',
+            'browser/worker_host/test/worker_browsertest.cc',
+            'common/content_constants_internal.cc',
+            'common/content_constants_internal.h',
+            'renderer/browser_plugin/mock_browser_plugin.h',
+            'renderer/browser_plugin/mock_browser_plugin.cc',
+            'renderer/browser_plugin/mock_browser_plugin_manager.h',
+            'renderer/browser_plugin/mock_browser_plugin_manager.cc',
+            'renderer/browser_plugin/browser_plugin_browsertest.h',
+            'renderer/browser_plugin/browser_plugin_browsertest.cc',
+            'renderer/mouse_lock_dispatcher_browsertest.cc',
+            'renderer/pepper/mock_renderer_ppapi_host.cc',
+            'renderer/pepper/pepper_file_chooser_host_unittest.cc',
+            'renderer/render_view_browsertest.cc',
+            'renderer/render_view_browsertest_mac.mm',
+            'renderer/renderer_accessibility_browsertest.cc',
+            'test/content_browser_test.h',
+            'test/content_browser_test.cc',
+            'test/content_browser_test_utils.cc',
+            'test/content_browser_test_utils.h',
+            'test/content_browser_test_utils_mac.mm',
+            'test/content_browser_test_test.cc',
+            'test/content_test_launcher.cc',
+            'test/layout_browsertest.cc',
+            'test/layout_browsertest.h',
+            'test/layout_test_http_server.cc',
+            'test/layout_test_http_server.h',
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              'resource_include_dirs': [
+                '<(SHARED_INTERMEDIATE_DIR)/webkit',
+              ],
+              'sources': [
+                'shell/resource.h',
+                'shell/shell.rc',
+                # TODO:  It would be nice to have these pulled in
+                # automatically from direct_dependent_settings in
+                # their various targets (net.gyp:net_resources, etc.),
+                # but that causes errors in other targets when
+                # resulting .res files get referenced multiple times.
+                '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.rc',
+              ],
+              'dependencies': [
+                '<(DEPTH)/net/net.gyp:net_resources',
+                '<(DEPTH)/third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
+                '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',
+                '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_strings',
+              ],
+              'configurations': {
+                'Debug_Base': {
+                  'msvs_settings': {
+                    'VCLinkerTool': {
+                      'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                    },
+                  },
+                },
+              },
+            }],
+            ['OS=="win" and win_use_allocator_shim==1', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
+            ['OS=="linux"', {
+              'sources!': [
+                'browser/accessibility/dump_accessibility_tree_browsertest.cc',
+                'browser/accessibility/dump_accessibility_tree_helper.cc',
+              ],
+            }],
+            ['OS=="mac"', {
+              'dependencies': [
+                'content_shell',  # Needed for Content Shell.app's Helper.
+              ],
+            }],
+            ['use_aura==1', {
+              'sources!': [
+                'browser/accessibility/dump_accessibility_tree_browsertest.cc',
+                'browser/accessibility/dump_accessibility_tree_helper_win.cc',
+                'browser/accessibility/dump_accessibility_tree_helper.cc',
+                'browser/plugin_browsertest.cc',
+              ],
+            }],
+            ['target_arch!="arm"', {
+              'dependencies': [
+                # Runtime dependencies
+                '../webkit/webkit.gyp:copy_npapi_test_plugin',
+                '../webkit/webkit.gyp:pull_in_copy_TestNetscapePlugIn',
+              ],
+            }],
+          ],
+        },
+      ],
+    }],
     ['chromeos==1 or OS=="linux" or OS=="win" or OS=="mac"', {
       'targets': [
           {

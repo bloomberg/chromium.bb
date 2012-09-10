@@ -833,7 +833,21 @@
         'browser/gamepad/gamepad_platform_data_fetcher.cc',
       ]
     }],
-    ['OS!="ios"', {
+    ['OS=="ios"', {
+      'sources/': [
+        # iOS only needs a small portion of content; exclude all the
+        # implementation, and re-include what is used.
+        ['exclude', '\\.cc$'],
+        ['exclude', '\\.mm$'],
+        ['include', '_ios\\.(cc|mm)$'],
+        ['include', '^public/browser/notification_registrar\\.cc$'],
+        ['include', '^public/browser/speech_recognition_'],
+        ['include', '^browser/notification_service_impl\\.cc$'],
+        # Pull in all but one file from speech.
+        ['include', '^browser/speech/'],
+        ['exclude', '^browser/speech/input_tag_speech_dispatcher_host\\.cc$$'],
+      ],
+    }, {  # OS!="ios"
       'dependencies': [
         'browser/debugger/devtools_resources.gyp:devtools_resources',
         '../net/net.gyp:http_server',
@@ -1030,21 +1044,6 @@
     ['input_speech==0', {
       'sources/': [
         ['exclude', '^browser/speech/'],
-      ],
-    }],
-    ['OS=="ios"', {
-      'sources/': [
-        # iOS only needs a small portion of content; exclude all the
-        # implementation, and re-include what is used.
-        ['exclude', '\\.cc$'],
-        ['exclude', '\\.mm$'],
-        ['include', '_ios\\.(cc|mm)$'],
-        ['include', '^public/browser/notification_registrar\\.cc$'],
-        ['include', '^public/browser/speech_recognition_'],
-        ['include', '^browser/notification_service_impl\\.cc$'],
-        # Pull in all but one file from speech.
-        ['include', '^browser/speech/'],
-        ['exclude', '^browser/speech/input_tag_speech_dispatcher_host\\.cc$$'],
       ],
     }],
   ],
