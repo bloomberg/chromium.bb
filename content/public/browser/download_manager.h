@@ -218,8 +218,6 @@ class CONTENT_EXPORT DownloadManager
   // yet in the history map.
   virtual DownloadItem* GetActiveDownloadItem(int id) = 0;
 
-  virtual bool GenerateFileHash() = 0;
-
  protected:
   virtual ~DownloadManager() {}
 

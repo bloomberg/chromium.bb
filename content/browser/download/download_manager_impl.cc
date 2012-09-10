@@ -413,9 +413,8 @@ content::DownloadId DownloadManagerImpl::StartDownload(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&DownloadFileManager::CreateDownloadFile,
                  file_manager_, base::Passed(info.Pass()),
-                 base::Passed(stream.Pass()),
-                 make_scoped_refptr(this),
-                 GenerateFileHash(), bound_net_log,
+                 base::Passed(stream.Pass()), make_scoped_refptr(this),
+                 (delegate_ && delegate_->GenerateFileHash()), bound_net_log,
                  callback));
 
   return download_id;
@@ -749,10 +748,6 @@ void DownloadManagerImpl::RemoveFromActiveList(DownloadItemImpl* download) {
     if (delegate_)
       delegate_->UpdateItemInPersistentStore(download);
   }
-}
-
-bool DownloadManagerImpl::GenerateFileHash() {
-  return delegate_ && delegate_->GenerateFileHash();
 }
 
 int DownloadManagerImpl::RemoveDownloadItems(

@@ -91,7 +91,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   virtual void SavePageDownloadFinished(
       content::DownloadItem* download) OVERRIDE;
   virtual content::DownloadItem* GetActiveDownloadItem(int id) OVERRIDE;
-  virtual bool GenerateFileHash() OVERRIDE;
 
  private:
   typedef std::set<content::DownloadItem*> DownloadSet;
