@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/api_function.h"
 #include "chrome/browser/extensions/api/api_resource_manager.h"
+#include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/extensions/api/socket.h"
 #include "net/base/address_list.h"
 #include "net/base/host_resolver.h"
@@ -296,6 +297,20 @@ class SocketGetInfoFunction : public SocketAsyncApiFunction {
 
  private:
   scoped_ptr<api::socket::GetInfo::Params> params_;
+};
+
+class SocketGetNetworkListFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("socket.getNetworkList");
+
+ protected:
+  virtual ~SocketGetNetworkListFunction() {}
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  void GetNetworkListOnFileThread();
+  void HandleGetNetworkListError();
+  void SendResponseOnUIThread(const net::NetworkInterfaceList& interface_list);
 };
 
 }  // namespace extensions

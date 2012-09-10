@@ -109,6 +109,24 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketCreateBad) {
       browser(), utils::NONE);
 }
 
+IN_PROC_BROWSER_TEST_F(SocketApiTest, GetNetworkList) {
+  scoped_refptr<extensions::SocketGetNetworkListFunction> socket_function(
+      new extensions::SocketGetNetworkListFunction());
+  scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
+
+  socket_function->set_extension(empty_extension.get());
+  socket_function->set_has_callback(true);
+
+  scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
+      socket_function, "[]", browser(), utils::NONE));
+  ASSERT_EQ(base::Value::TYPE_LIST, result->GetType());
+
+  // If we're invoking socket tests, all we can confirm is that we have at
+  // least one address, but not what it is.
+  ListValue *value = static_cast<ListValue*>(result.get());
+  ASSERT_TRUE(value->GetSize() > 0);
+}
+
 IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketUDPExtension) {
   scoped_ptr<net::TestServer> test_server(
       new net::TestServer(net::TestServer::TYPE_UDP_ECHO,
