@@ -292,7 +292,7 @@ CommandLine InProcessBrowserTest::GetCommandLineForRelaunch() {
   switches.erase(switches::kUserDataDir);
   switches.erase(test_launcher::kSingleProcessTestsFlag);
   switches.erase(test_launcher::kSingleProcessTestsAndChromeFlag);
-  new_command_line.AppendSwitch(ChromeTestSuite::kLaunchAsBrowser);
+  new_command_line.AppendSwitch(test_launcher::kLaunchAsBrowser);
 
 #if defined(USE_AURA)
   // Copy what UITestBase::SetLaunchSwitches() does, and also what

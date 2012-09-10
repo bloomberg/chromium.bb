@@ -17,6 +17,10 @@ namespace base {
 class RunLoop;
 }
 
+namespace content {
+class ContentMainDelegate;
+}
+
 namespace test_launcher {
 
 extern const char kEmptyTestName[];
@@ -26,6 +30,7 @@ extern const char kGTestListTestsFlag[];
 extern const char kGTestRepeatFlag[];
 extern const char kGTestRunDisabledTestsFlag[];
 extern const char kGTestOutputFlag[];
+extern const char kLaunchAsBrowser[];
 extern const char kSingleProcessTestsFlag[];
 extern const char kSingleProcessTestsAndChromeFlag[];
 extern const char kRunManualTestsFlag[];
@@ -37,12 +42,12 @@ extern const char kWarmupFlag[];
 class TestLauncherDelegate {
  public:
   virtual std::string GetEmptyTestName() = 0;
-  virtual bool Run(int argc, char** argv, int* return_code) = 0;
   virtual int RunTestSuite(int argc, char** argv) = 0;
   virtual bool AdjustChildProcessCommandLine(CommandLine* command_line,
                                              const FilePath& temp_data_dir) = 0;
   virtual void PreRunMessageLoop(base::RunLoop* run_loop) {}
   virtual void PostRunMessageLoop() {}
+  virtual content::ContentMainDelegate* CreateContentMainDelegate() = 0;
 
  protected:
   virtual ~TestLauncherDelegate();

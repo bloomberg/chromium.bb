@@ -173,8 +173,6 @@ class ChromeTestSuiteInitializer : public testing::EmptyTestEventListener {
 
 }  // namespace
 
-const char ChromeTestSuite::kLaunchAsBrowser[] = "as-browser";
-
 ChromeTestSuite::ChromeTestSuite(int argc, char** argv)
     : content::ContentTestSuiteBase(argc, argv) {
 }

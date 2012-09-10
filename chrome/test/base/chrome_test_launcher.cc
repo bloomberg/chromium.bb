@@ -42,36 +42,6 @@ class ChromeTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
     return kEmptyTestName;
   }
 
-  virtual bool Run(int argc, char** argv, int* return_code) OVERRIDE {
-#if defined(OS_WIN) || defined(OS_LINUX)
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
-    bool launch_chrome =
-        command_line->HasSwitch(switches::kProcessType) ||
-        command_line->HasSwitch(ChromeTestSuite::kLaunchAsBrowser);
-#endif
-#if defined(OS_WIN)
-    if (launch_chrome) {
-      sandbox::SandboxInterfaceInfo sandbox_info = {0};
-      content::InitializeSandboxInfo(&sandbox_info);
-      ChromeMainDelegate chrome_main_delegate;
-      *return_code = content::ContentMain(GetModuleHandle(NULL),
-                                          &sandbox_info,
-                                          &chrome_main_delegate);
-      return true;
-    }
-#elif defined(OS_LINUX)
-    if (launch_chrome) {
-      ChromeMainDelegate chrome_main_delegate;
-      *return_code = content::ContentMain(argc,
-                                          const_cast<const char**>(argv),
-                                          &chrome_main_delegate);
-      return true;
-    }
-#endif  // defined(OS_WIN)
-
-    return false;
-  }
-
   virtual int RunTestSuite(int argc, char** argv) OVERRIDE {
     return ChromeTestSuite(argc, argv).Run();
   }
@@ -115,6 +85,18 @@ class ChromeTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
       DCHECK_EQ(handlers_.empty(), false);
       handlers_.pop();
     }
+#endif
+  }
+
+ protected:
+  virtual content::ContentMainDelegate* CreateContentMainDelegate() OVERRIDE {
+#if defined(OS_WIN) || defined (OS_LINUX)
+    return new ChromeMainDelegate();
+#else
+    // This delegate is only guaranteed to link on linux and windows, so just
+    // bail out if we are on any other platform.
+    NOTREACHED();
+    return NULL;
 #endif
   }
 

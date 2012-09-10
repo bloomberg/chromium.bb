@@ -21,9 +21,6 @@ class StatsTable;
 
 class ChromeTestSuite : public content::ContentTestSuiteBase {
  public:
-  // Make the browser_test binary launch as a regular browser.
-  static const char kLaunchAsBrowser[];
-
   ChromeTestSuite(int argc, char** argv);
   virtual ~ChromeTestSuite();
 
