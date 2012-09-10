@@ -49,6 +49,9 @@
 #include "chrome/browser/extensions/test_management_policy.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
+#include "chrome/browser/gpu_blacklist.h"
+#include "chrome/browser/gpu_util.h"
+#include "chrome/browser/plugin_prefs_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -716,6 +719,25 @@ class ExtensionServiceTest
     INSTALLED,
     ENABLED
   };
+
+  void BlackListWebGL() {
+    static const std::string json_blacklist =
+      "{\n"
+      "  \"name\": \"gpu blacklist\",\n"
+      "  \"version\": \"1.0\",\n"
+      "  \"entries\": [\n"
+      "    {\n"
+      "      \"id\": 1,\n"
+      "      \"blacklist\": [\"webgl\"]\n"
+      "    }\n"
+      "  ]\n"
+      "}";
+    GpuBlacklist* blacklist = GpuBlacklist::GetInstance();
+    ASSERT_TRUE(blacklist);
+    ASSERT_TRUE(blacklist->LoadGpuBlacklist(json_blacklist,
+                                            GpuBlacklist::kAllOs));
+    blacklist->UpdateGpuDataManager();
+  }
 
   void UpdateExtension(const std::string& id, const FilePath& in_path,
                        UpdateState expected_state) {
@@ -2396,7 +2418,7 @@ TEST_F(ExtensionServiceTest, UpdateExtensionPreservesState) {
 
   path = data_dir_.AppendASCII("good2.crx");
   UpdateExtension(good_crx, path, INSTALLED);
-  ASSERT_EQ(1u, service_->disabled_extensions()->size());
+  ASSERT_EQ(1u, service_->disabled_extensions()->size());\
   const Extension* good2 = service_->GetExtensionById(good_crx, true);
   ASSERT_EQ("1.0.0.1", good2->version()->GetString());
   EXPECT_TRUE(service_->IsIncognitoEnabled(good2->id()));
@@ -3430,6 +3452,101 @@ TEST_F(ExtensionServiceTest, UninstallExtensionHelperTerminated) {
   InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);
   TerminateExtension(good_crx);
   UninstallExtension(good_crx, true);
+}
+
+// An extension disabled because of unsupported requirements should re-enabled
+// if updated to a version with supported requirements as long as there are no
+// other disable reasons.
+TEST_F(ExtensionServiceTest, UpgradingRequirementsEnabled) {
+  InitializeEmptyExtensionService();
+  BlackListWebGL();
+
+  FilePath path = data_dir_.AppendASCII("requirements");
+  FilePath pem_path = data_dir_.AppendASCII("requirements")
+                               .AppendASCII("v1_good.pem");
+  const Extension* extension_v1 = PackAndInstallCRX(path.AppendASCII("v1_good"),
+                                                    pem_path,
+                                                    INSTALL_NEW);
+  std::string id = extension_v1->id();
+  EXPECT_TRUE(service_->IsExtensionEnabled(id));
+
+  PackCRX(path.AppendASCII("v2_bad_requirements"), pem_path,
+                           path.AppendASCII("v2_bad_requirements.crx"));
+  UpdateExtension(id, path.AppendASCII("v2_bad_requirements.crx"), INSTALLED);
+  EXPECT_FALSE(service_->IsExtensionEnabled(id));
+
+  PackCRX(path.AppendASCII("v3_good"), pem_path,
+                           path.AppendASCII("v3_good.crx"));
+  UpdateExtension(id, path.AppendASCII("v3_good.crx"), ENABLED);
+  EXPECT_TRUE(service_->IsExtensionEnabled(id));
+}
+
+// Extensions disabled through user action should stay disabled.
+TEST_F(ExtensionServiceTest, UpgradingRequirementsDisabled) {
+  InitializeEmptyExtensionService();
+  BlackListWebGL();
+
+  FilePath path = data_dir_.AppendASCII("requirements");
+  FilePath pem_path = data_dir_.AppendASCII("requirements")
+                               .AppendASCII("v1_good.pem");
+  const Extension* extension_v1 = PackAndInstallCRX(path.AppendASCII("v1_good"),
+                                                    pem_path,
+                                                    INSTALL_NEW);
+  std::string id = extension_v1->id();
+  service_->DisableExtension(id, Extension::DISABLE_USER_ACTION);
+  EXPECT_FALSE(service_->IsExtensionEnabled(id));
+
+  PackCRX(path.AppendASCII("v2_bad_requirements"), pem_path,
+                           path.AppendASCII("v2_bad_requirements.crx"));
+  UpdateExtension(id, path.AppendASCII("v2_bad_requirements.crx"), INSTALLED);
+  EXPECT_FALSE(service_->IsExtensionEnabled(id));
+
+  PackCRX(path.AppendASCII("v3_good"), pem_path,
+                           path.AppendASCII("v3_good.crx"));
+  UpdateExtension(id, path.AppendASCII("v3_good.crx"), INSTALLED);
+  EXPECT_FALSE(service_->IsExtensionEnabled(id));
+}
+
+// The extension should not re-enabled because it was disabled from a
+// permission increase.
+TEST_F(ExtensionServiceTest, UpgradingRequirementsPermissions) {
+  InitializeEmptyExtensionService();
+  BlackListWebGL();
+
+  FilePath path = data_dir_.AppendASCII("requirements");
+  FilePath pem_path = data_dir_.AppendASCII("requirements")
+                               .AppendASCII("v1_good.pem");
+  const Extension* extension_v1 = PackAndInstallCRX(path.AppendASCII("v1_good"),
+                                                    pem_path,
+                                                    INSTALL_NEW);
+  std::string id = extension_v1->id();
+  EXPECT_TRUE(service_->IsExtensionEnabled(id));
+
+  PackCRX(path.AppendASCII("v2_bad_requirements_and_permissions"), pem_path,
+      path.AppendASCII("v2_bad_requirements_and_permissions.crx"));
+  UpdateExtension(
+      id,
+      path.AppendASCII("v2_bad_requirements_and_permissions.crx"), INSTALLED);
+  EXPECT_FALSE(service_->IsExtensionEnabled(id));
+
+  PackCRX(path.AppendASCII("v3_bad_permissions"), pem_path,
+                           path.AppendASCII("v3_bad_permissions.crx"));
+  UpdateExtension(id, path.AppendASCII("v3_bad_permissions.crx"), INSTALLED);
+  EXPECT_FALSE(service_->IsExtensionEnabled(id));
+}
+
+// Unpacked extensions are not allowed to be installed if they have unsupported
+// requirements.
+TEST_F(ExtensionServiceTest, UnpackedRequirements) {
+  InitializeEmptyExtensionService();
+  BlackListWebGL();
+
+  FilePath path = data_dir_.AppendASCII("requirements")
+                           .AppendASCII("v2_bad_requirements");
+  extensions::UnpackedInstaller::Create(service_)->Load(path);
+  loop_.RunAllPending();
+  EXPECT_EQ(1u, GetErrors().size());
+  EXPECT_EQ(0u, service_->extensions()->size());
 }
 
 class ExtensionCookieCallback {

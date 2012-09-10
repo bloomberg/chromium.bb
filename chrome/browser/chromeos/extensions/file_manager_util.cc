@@ -739,6 +739,7 @@ void InstallCRX(Browser* browser, const FilePath& path) {
       extensions::CrxInstaller::Create(
           service,
           chrome::CreateExtensionInstallPromptWithBrowser(browser)));
+  installer->set_error_on_unsupported_requirements(true);
   installer->set_is_gallery_install(false);
   installer->set_allow_silent_install(false);
   installer->InstallCrx(path);

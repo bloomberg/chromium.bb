@@ -65,8 +65,6 @@ TEST_F(ExtensionManifestTest, InitFromValueInvalid) {
              errors::kInvalidMinimumChromeVersion),
     Testcase("init_invalid_chrome_version_too_low.json",
              errors::kChromeVersionTooLow),
-    Testcase("init_invalid_requirements_1.json", errors::kInvalidRequirements),
-    Testcase("init_invalid_requirements_2.json", errors::kInvalidRequirement)
   };
 
   RunTestcases(testcases, arraysize(testcases),

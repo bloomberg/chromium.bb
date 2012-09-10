@@ -265,6 +265,14 @@ const int Extension::kValidWebExtentSchemes =
 const int Extension::kValidHostPermissionSchemes =
     UserScript::kValidUserScriptSchemes | URLPattern::SCHEME_CHROMEUI;
 
+Extension::Requirements::Requirements()
+    : webgl(false),
+      css3d(false),
+      npapi(false) {
+}
+
+Extension::Requirements::~Requirements() {}
+
 Extension::InputComponentInfo::InputComponentInfo()
     : type(INPUT_COMPONENT_TYPE_NONE),
       shortcut_alt(false),
@@ -1260,7 +1268,7 @@ bool Extension::LoadSharedFeatures(
       !LoadNaClModules(error) ||
       !LoadWebAccessibleResources(error) ||
       !LoadSandboxedPages(error) ||
-      !CheckRequirements(error) ||
+      !LoadRequirements(error) ||
       !LoadDefaultLocale(error) ||
       !LoadOfflineEnabled(error) ||
       !LoadOptionsPage(error) ||
@@ -1621,6 +1629,82 @@ bool Extension::LoadSandboxedPages(string16* error) {
         sandboxed_pages_content_security_policy_, GetType()));
   }
 
+  return true;
+}
+
+bool Extension::LoadRequirements(string16* error) {
+  // If the extension has plugins, then |requirements_.npapi| defaults to true.
+  if (plugins_.size() > 0)
+    requirements_.npapi = true;
+
+  if (!manifest_->HasKey(keys::kRequirements))
+    return true;
+
+  DictionaryValue* requirements_value = NULL;
+  if (!manifest_->GetDictionary(keys::kRequirements, &requirements_value)) {
+    *error = ASCIIToUTF16(errors::kInvalidRequirements);
+    return false;
+  }
+
+  for (DictionaryValue::key_iterator it = requirements_value->begin_keys();
+       it != requirements_value->end_keys(); ++it) {
+    DictionaryValue* requirement_value;
+    if (!requirements_value->GetDictionaryWithoutPathExpansion(
+        *it, &requirement_value)) {
+      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+          errors::kInvalidRequirement, *it);
+      return false;
+    }
+
+    if (*it == "plugins") {
+      for (DictionaryValue::key_iterator plugin_it =
+              requirement_value->begin_keys();
+           plugin_it != requirement_value->end_keys(); ++plugin_it) {
+        bool plugin_required = false;
+        if (!requirement_value->GetBoolean(*plugin_it, &plugin_required)) {
+          *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+              errors::kInvalidRequirement, *it);
+          return false;
+        }
+        if (*plugin_it == "npapi") {
+          requirements_.npapi = plugin_required;
+        } else {
+          *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+              errors::kInvalidRequirement, *it);
+          return false;
+        }
+      }
+    } else if (*it == "3D") {
+      ListValue* features = NULL;
+      if (!requirement_value->GetListWithoutPathExpansion("features",
+                                                          &features) ||
+          !features) {
+        *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+            errors::kInvalidRequirement, *it);
+        return false;
+      }
+
+      for (base::ListValue::iterator feature_it = features->begin();
+           feature_it != features->end();
+           ++feature_it) {
+        std::string feature;
+        if ((*feature_it)->GetAsString(&feature)) {
+          if (feature == "webgl") {
+            requirements_.webgl = true;
+          } else if (feature == "css3d") {
+            requirements_.css3d = true;
+          } else {
+            *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+                errors::kInvalidRequirement, *it);
+            return false;
+          }
+        }
+      }
+    } else {
+      *error = ASCIIToUTF16(errors::kInvalidRequirements);
+      return false;
+    }
+  }
   return true;
 }
 
@@ -3804,30 +3888,6 @@ bool Extension::CheckMinimumChromeVersion(string16* error) const {
         l10n_util::GetStringUTF8(IDS_PRODUCT_NAME),
         minimum_version_string);
     return false;
-  }
-  return true;
-}
-
-// These are not actually persisted (they're only used by the store), but
-// still validated.
-bool Extension::CheckRequirements(string16* error) const {
-  if (!manifest_->HasKey(keys::kRequirements))
-    return true;
-  DictionaryValue* requirements_value = NULL;
-  if (!manifest_->GetDictionary(keys::kRequirements, &requirements_value)) {
-    *error = ASCIIToUTF16(errors::kInvalidRequirements);
-    return false;
-  }
-
-  for (DictionaryValue::key_iterator it = requirements_value->begin_keys();
-       it != requirements_value->end_keys(); ++it) {
-    DictionaryValue* requirement_value;
-    if (!requirements_value->GetDictionaryWithoutPathExpansion(
-        *it, &requirement_value)) {
-      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidRequirement, *it);
-      return false;
-    }
   }
   return true;
 }

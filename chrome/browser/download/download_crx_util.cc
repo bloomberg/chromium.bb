@@ -83,6 +83,7 @@ scoped_refptr<extensions::CrxInstaller> OpenChromeExtension(
           CreateExtensionInstallPrompt(profile),
           WebstoreInstaller::GetAssociatedApproval(download_item)));
 
+  installer->set_error_on_unsupported_requirements(true);
   installer->set_delete_source(true);
   installer->set_install_cause(extension_misc::INSTALL_CAUSE_USER_DOWNLOAD);
 
