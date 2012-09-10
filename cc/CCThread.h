@@ -5,8 +5,9 @@
 #ifndef CCThread_h
 #define CCThread_h
 
+#include "base/threading/platform_thread.h"
 #include <wtf/PassOwnPtr.h>
-#include <wtf/Threading.h>
+#include <wtf/Noncopyable.h>
 
 namespace WebCore {
 
@@ -33,7 +34,7 @@ public:
     // Executes the task after the specified delay.
     virtual void postDelayedTask(PassOwnPtr<Task>, long long delayMs) = 0;
 
-    virtual WTF::ThreadIdentifier threadID() const = 0;
+    virtual base::PlatformThreadId threadID() const = 0;
 };
 
 }

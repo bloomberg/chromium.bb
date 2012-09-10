@@ -10,7 +10,6 @@
 #include <wtf/Noncopyable.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>
-#include <wtf/Threading.h>
 
 namespace WebCore {
 

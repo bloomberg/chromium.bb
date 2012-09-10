@@ -8,7 +8,7 @@
 #include "CCTexture.h"
 
 #if !ASSERT_DISABLED
-#include <wtf/MainThread.h>
+#include "base/threading/platform_thread.h"
 #endif
 
 namespace WebCore {
@@ -35,7 +35,7 @@ private:
     CCResourceProvider* m_resourceProvider;
 
 #if !ASSERT_DISABLED
-    ThreadIdentifier m_allocateThreadIdentifier;
+    base::PlatformThreadId m_allocateThreadIdentifier;
 #endif
 };
 

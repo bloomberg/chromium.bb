@@ -6,6 +6,7 @@
 #define CCScopedThreadProxy_h
 
 #include "CCThreadTask.h"
+#include "base/threading/platform_thread.h"
 #include <wtf/ThreadSafeRefCounted.h>
 
 namespace WebCore {
@@ -24,7 +25,7 @@ class CCScopedThreadProxy : public ThreadSafeRefCounted<CCScopedThreadProxy> {
 public:
     static PassRefPtr<CCScopedThreadProxy> create(CCThread* targetThread)
     {
-        ASSERT(currentThread() == targetThread->threadID());
+        ASSERT(base::PlatformThread::CurrentId() == targetThread->threadID());
         return adoptRef(new CCScopedThreadProxy(targetThread));
     }
 
@@ -38,7 +39,7 @@ public:
 
     void shutdown()
     {
-        ASSERT(currentThread() == m_targetThread->threadID());
+        ASSERT(base::PlatformThread::CurrentId() == m_targetThread->threadID());
         ASSERT(!m_shutdown);
         m_shutdown = true;
     }
@@ -57,7 +58,7 @@ private:
             deref();
             return;
         }
-        ASSERT(currentThread() == m_targetThread->threadID());
+        ASSERT(base::PlatformThread::CurrentId() == m_targetThread->threadID());
         task->performTask();
         deref();
     }

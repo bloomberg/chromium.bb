@@ -17,7 +17,7 @@ namespace {
 #ifndef NDEBUG
 bool implThreadIsOverridden = false;
 bool s_isMainThreadBlocked = false;
-ThreadIdentifier threadIDOverridenToBeImplThread;
+base::PlatformThreadId threadIDOverridenToBeImplThread;
 #endif
 CCThread* s_mainThread = 0;
 CCThread* s_implThread = 0;
@@ -50,7 +50,7 @@ CCThread* CCProxy::implThread()
 
 CCThread* CCProxy::currentThread()
 {
-    ThreadIdentifier currentThreadIdentifier = WTF::currentThread();
+    base::PlatformThreadId currentThreadIdentifier = base::PlatformThread::CurrentId();
     if (s_mainThread && s_mainThread->threadID() == currentThreadIdentifier)
         return s_mainThread;
     if (s_implThread && s_implThread->threadID() == currentThreadIdentifier)
@@ -62,24 +62,24 @@ CCThread* CCProxy::currentThread()
 bool CCProxy::isMainThread()
 {
     ASSERT(s_mainThread);
-    if (implThreadIsOverridden && WTF::currentThread() == threadIDOverridenToBeImplThread)
+    if (implThreadIsOverridden && base::PlatformThread::CurrentId() == threadIDOverridenToBeImplThread)
         return false;
-    return WTF::currentThread() == s_mainThread->threadID();
+    return base::PlatformThread::CurrentId() == s_mainThread->threadID();
 }
 
 bool CCProxy::isImplThread()
 {
-    WTF::ThreadIdentifier implThreadID = s_implThread ? s_implThread->threadID() : 0;
-    if (implThreadIsOverridden && WTF::currentThread() == threadIDOverridenToBeImplThread)
+    base::PlatformThreadId implThreadID = s_implThread ? s_implThread->threadID() : 0;
+    if (implThreadIsOverridden && base::PlatformThread::CurrentId() == threadIDOverridenToBeImplThread)
         return true;
-    return WTF::currentThread() == implThreadID;
+    return base::PlatformThread::CurrentId() == implThreadID;
 }
 
 void CCProxy::setCurrentThreadIsImplThread(bool isImplThread)
 {
     implThreadIsOverridden = isImplThread;
     if (isImplThread)
-        threadIDOverridenToBeImplThread = WTF::currentThread();
+        threadIDOverridenToBeImplThread = base::PlatformThread::CurrentId();
 }
 
 bool CCProxy::isMainThreadBlocked()

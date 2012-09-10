@@ -22,7 +22,7 @@ namespace WebKit {
 // PassOwnPtrs.
 class GetThreadIDTask : public WebThread::Task {
 public:
-    GetThreadIDTask(ThreadIdentifier* result, CCCompletionEvent* completion)
+    GetThreadIDTask(base::PlatformThreadId* result, CCCompletionEvent* completion)
          : m_completion(completion)
          , m_result(result) { }
 
@@ -30,13 +30,13 @@ public:
 
     virtual void run()
     {
-        *m_result = currentThread();
+        *m_result = base::PlatformThread::CurrentId();
         m_completion->signal();
     }
 
 private:
     CCCompletionEvent* m_completion;
-    ThreadIdentifier* m_result;
+    base::PlatformThreadId* m_result;
 };
 
 // General adapter from a CCThread::Task to a WebThread::Task.
@@ -55,9 +55,14 @@ private:
     OwnPtr<CCThread::Task> m_task;
 };
 
-PassOwnPtr<CCThread> CCThreadImpl::create(WebThread* thread)
+PassOwnPtr<CCThread> CCThreadImpl::createForCurrentThread()
 {
-    return adoptPtr(new CCThreadImpl(thread));
+    return adoptPtr(new CCThreadImpl(Platform::current()->currentThread(), true));
+}
+
+PassOwnPtr<CCThread> CCThreadImpl::createForDifferentThread(WebThread* thread)
+{
+    return adoptPtr(new CCThreadImpl(thread, false));
 }
 
 CCThreadImpl::~CCThreadImpl()
@@ -74,22 +79,21 @@ void CCThreadImpl::postDelayedTask(PassOwnPtr<CCThread::Task> task, long long de
     m_thread->postDelayedTask(new CCThreadTaskAdapter(task), delayMs);
 }
 
-ThreadIdentifier CCThreadImpl::threadID() const
+base::PlatformThreadId CCThreadImpl::threadID() const
 {
     return m_threadID;
 }
 
-CCThreadImpl::CCThreadImpl(WebThread* thread)
+CCThreadImpl::CCThreadImpl(WebThread* thread, bool currentThread)
     : m_thread(thread)
 {
-    if (thread == WebKit::Platform::current()->currentThread()) {
-        m_threadID = currentThread();
+    if (currentThread) {
+        m_threadID = base::PlatformThread::CurrentId();
         return;
     }
 
     // Get the threadId for the newly-created thread by running a task
     // on that thread, blocking on the result.
-    m_threadID = currentThread();
     CCCompletionEvent completion;
     m_thread->postTask(new GetThreadIDTask(&m_threadID, &completion));
     completion.wait();

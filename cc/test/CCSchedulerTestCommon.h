@@ -8,6 +8,7 @@
 #include "CCDelayBasedTimeSource.h"
 #include "CCFrameRateController.h"
 #include "CCThread.h"
+#include "base/threading/platform_thread.h"
 #include <gtest/gtest.h>
 #include <wtf/OwnPtr.h>
 
@@ -64,7 +65,7 @@ public:
         m_pendingTask = task;
         m_pendingTaskDelay = delay;
     }
-    virtual WTF::ThreadIdentifier threadID() const { return 0; }
+    virtual base::PlatformThreadId threadID() const { return 0; }
 
 protected:
     OwnPtr<Task> m_pendingTask;

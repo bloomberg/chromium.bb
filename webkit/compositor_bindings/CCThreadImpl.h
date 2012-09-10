@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "CCThread.h"
+#include "base/threading/platform_thread.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/Threading.h>
 
@@ -16,17 +17,22 @@ class WebThread;
 // Implements CCThread in terms of WebThread.
 class CCThreadImpl : public WebCore::CCThread {
 public:
-    static PassOwnPtr<WebCore::CCThread> create(WebThread*);
+    // Creates a CCThreadImpl wrapping the current thread.
+    static PassOwnPtr<WebCore::CCThread> createForCurrentThread();
+
+    // Creates a CCThread wrapping a non-current WebThread.
+    static PassOwnPtr<WebCore::CCThread> createForDifferentThread(WebThread*);
+
     virtual ~CCThreadImpl();
     virtual void postTask(PassOwnPtr<WebCore::CCThread::Task>);
     virtual void postDelayedTask(PassOwnPtr<WebCore::CCThread::Task>, long long delayMs);
-    WTF::ThreadIdentifier threadID() const;
+    base::PlatformThreadId threadID() const;
 
 private:
-    explicit CCThreadImpl(WebThread*);
+    CCThreadImpl(WebThread*, bool currentThread);
 
     WebThread* m_thread;
-    WTF::ThreadIdentifier m_threadID;
+    base::PlatformThreadId m_threadID;
 };
 
 } // namespace WebKit

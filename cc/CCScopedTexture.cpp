@@ -28,7 +28,7 @@ bool CCScopedTexture::allocate(int pool, const IntSize& size, GC3Denum format, C
     setId(m_resourceProvider->createResource(pool, size, format, hint));
 
 #if !ASSERT_DISABLED
-    m_allocateThreadIdentifier = WTF::currentThread();
+    m_allocateThreadIdentifier = base::PlatformThread::CurrentId();
 #endif
 
     return id();
@@ -37,7 +37,7 @@ bool CCScopedTexture::allocate(int pool, const IntSize& size, GC3Denum format, C
 void CCScopedTexture::free()
 {
     if (id()) {
-        ASSERT(m_allocateThreadIdentifier == WTF::currentThread());
+        ASSERT(m_allocateThreadIdentifier == base::PlatformThread::CurrentId());
         m_resourceProvider->deleteResource(id());
     }
     setId(0);
