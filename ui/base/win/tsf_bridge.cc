@@ -51,6 +51,31 @@ class TsfBridgeDelegate : public TsfBridge {
     if (!InitializeForDisabledDocumentManager())
       return false;
 
+    // Japanese IME expectes the default value of this compartment is
+    // TF_SENTENCEMODE_PHRASEPREDICT like IMM32 implementation. This value is
+    // managed per thread, so that it is enough to set this value at once. This
+    // value does not affect other language's IME behaviors.
+    base::win::ScopedComPtr<ITfCompartmentMgr> thread_compartment_manager;
+    if (FAILED(thread_compartment_manager.QueryFrom(thread_manager_))) {
+      VLOG(1) << "Failed to get ITfCompartmentMgr.";
+      return false;
+    }
+
+    base::win::ScopedComPtr<ITfCompartment> sentence_compartment;
+    if (FAILED(thread_compartment_manager->GetCompartment(
+        GUID_COMPARTMENT_KEYBOARD_INPUTMODE_SENTENCE,
+        sentence_compartment.Receive()))) {
+      VLOG(1) << "Failed to get sentence compartment.";
+      return false;
+    }
+
+    base::win::ScopedVariant sentence_variant;
+    sentence_variant.Set(TF_SENTENCEMODE_PHRASEPREDICT);
+    if (FAILED(sentence_compartment->SetValue(client_id_, &sentence_variant))) {
+      VLOG(1) << "Failed to change the sentence mode.";
+      return false;
+    }
+
     return true;
   }
 
