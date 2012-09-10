@@ -225,8 +225,10 @@ TEST_F(MultiDisplayManagerTest, MAYBE_EmulatorTest) {
 // TODO(oshima): Device scale factor is supported on chromeos only for now.
 #if defined(OS_CHROMEOS)
 #define MAYBE_TestDeviceScaleOnlyChange TestDeviceScaleOnlyChange
+#define MAYBE_TestNativeDisplaysChanged TestNativeDisplaysChanged
 #else
 #define MAYBE_TestDeviceScaleOnlyChange DISABLED_TestDeviceScaleOnlyChange
+#define MAYBE_TestNativeDisplaysChanged DISABLED_TestNativeDisplaysChanged
 #endif
 
 TEST_F(MultiDisplayManagerTest, MAYBE_TestDeviceScaleOnlyChange) {
@@ -244,7 +246,7 @@ TEST_F(MultiDisplayManagerTest, MAYBE_TestDeviceScaleOnlyChange) {
   aura::DisplayManager::set_use_fullscreen_host_window(false);
 }
 
-TEST_F(MultiDisplayManagerTest, TestNativeDisplaysChanged) {
+TEST_F(MultiDisplayManagerTest, MAYBE_TestNativeDisplaysChanged) {
   const int64 internal_display_id = 99999;
   const gfx::Display native_display(internal_display_id,
                                     gfx::Rect(0, 0, 500, 500));

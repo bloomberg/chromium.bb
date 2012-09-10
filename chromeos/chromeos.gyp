@@ -125,6 +125,7 @@
       'link_settings': {
         'libraries': [
           '-lXext',
+          '-lXrandr',
         ],
       },
     },
