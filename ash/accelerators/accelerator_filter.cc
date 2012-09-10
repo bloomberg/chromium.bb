@@ -39,6 +39,9 @@ bool ShouldProcessAcceleratorsNow(const ui::Accelerator& accelerator,
     return false;
   }
 
+  if (Shell::GetInstance()->GetAppListTargetVisibility())
+    return true;
+
   // Unless |target| is in the full screen state, handle reserved accelerators
   // such as Alt+Tab now.
   return Shell::GetInstance()->accelerator_controller()->IsReservedAccelerator(
