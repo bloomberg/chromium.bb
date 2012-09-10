@@ -24,6 +24,7 @@ class AppListControllerAsh : public AppListController {
   virtual void ActivateApp(Profile* profile,
                            const std::string& extension_id,
                            int event_flags) OVERRIDE;
+  virtual gfx::ImageSkia GetWindowAppIcon() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(AppListControllerAsh);
 };

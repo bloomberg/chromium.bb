@@ -36,6 +36,7 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   void InitAsBubble(gfx::NativeView parent,
                     PaginationModel* pagination_model,
                     views::View* anchor,
+                    const gfx::Point& anchor_point,
                     views::BubbleBorder::ArrowLocation arrow_location);
 
   void SetBubbleArrowLocation(
@@ -51,6 +52,7 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
 
   // Overridden from views::WidgetDelegateView:
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
+  virtual gfx::ImageSkia GetWindowAppIcon() OVERRIDE;
   virtual bool HasHitTestMask() const OVERRIDE;
   virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE;
 

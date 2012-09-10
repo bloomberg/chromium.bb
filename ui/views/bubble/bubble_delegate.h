@@ -123,8 +123,15 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // Perform view initialization on the contents for bubble sizing.
   virtual void Init();
 
-  // Set the anchor view, this must be done before calling CreateBubble or Show.
+  // Set the anchor view, this (or set_anchor_point) must be done before
+  // calling CreateBubble or Show.
   void set_anchor_view(View* anchor_view) { anchor_view_ = anchor_view; }
+
+  // Sets the anchor point used in the absence of an anchor view. This
+  // (or set_anchor_view) must be set before calling CreateBubble or Show.
+  void set_anchor_point(gfx::Point anchor_point) {
+    anchor_point_ = anchor_point;
+  }
 
   bool move_with_anchor() const { return move_with_anchor_; }
   void set_move_with_anchor(bool move_with_anchor) {
@@ -156,6 +163,9 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // The view and widget to which this bubble is anchored.
   View* anchor_view_;
   Widget* anchor_widget_;
+
+  // The anchor point used in the absence of an anchor view.
+  gfx::Point anchor_point_;
 
   // If true, the bubble will re-anchor (and may resize) with |anchor_widget_|.
   bool move_with_anchor_;

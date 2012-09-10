@@ -36,6 +36,11 @@ AppListBubbleBorder::~AppListBubbleBorder() {
 
 void AppListBubbleBorder::PaintBackground(gfx::Canvas* canvas,
                                           const gfx::Rect& bounds) const {
+  SkPaint paint;
+  paint.setStyle(SkPaint::kFill_Style);
+
+// TODO(benwells): Get these details painting on Windows.
+#if !defined(OS_WIN)
   const gfx::Rect search_box_view_bounds =
       app_list_view_->ConvertRectToWidget(search_box_view_->bounds());
   gfx::Rect search_box_rect(bounds.x(),
@@ -43,8 +48,6 @@ void AppListBubbleBorder::PaintBackground(gfx::Canvas* canvas,
                             bounds.width(),
                             search_box_view_bounds.bottom() - bounds.y());
 
-  SkPaint paint;
-  paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(kSearchBoxBackground);
   canvas->DrawRect(search_box_rect, paint);
 
@@ -57,6 +60,9 @@ void AppListBubbleBorder::PaintBackground(gfx::Canvas* canvas,
                           seperator_rect.bottom(),
                           bounds.width(),
                           bounds.bottom() - seperator_rect.bottom());
+#else
+  gfx::Rect contents_rect(bounds);
+#endif
 
   paint.setColor(kContentsBackgroundColor);
   canvas->DrawRect(contents_rect, paint);

@@ -6,6 +6,7 @@
 
 #include "base/string_util.h"
 #include "ui/app_list/app_list_bubble_border.h"
+#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_item_view.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_view_delegate.h"
@@ -51,8 +52,14 @@ void AppListView::InitAsBubble(
     gfx::NativeView parent,
     PaginationModel* pagination_model,
     views::View* anchor,
+    const gfx::Point& anchor_point,
     views::BubbleBorder::ArrowLocation arrow_location) {
+#if defined(OS_WIN)
+  set_background(views::Background::CreateSolidBackground(
+      kContentsBackgroundColor));
+#else
   set_background(NULL);
+#endif
 
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
                                         kInnerPadding,
@@ -68,6 +75,7 @@ void AppListView::InitAsBubble(
   search_box_view_->set_contents_view(contents_view_);
 
   set_anchor_view(anchor);
+  set_anchor_point(anchor_point);
   set_margins(gfx::Insets());
   set_move_with_anchor(true);
   set_parent_window(parent);
@@ -81,12 +89,14 @@ void AppListView::InitAsBubble(
   GetBubbleFrameView()->SetBubbleBorder(bubble_border_);
   SetBubbleArrowLocation(arrow_location);
 
+#if !defined(OS_WIN)
   // Resets default background since AppListBubbleBorder paints background.
   GetBubbleFrameView()->set_background(NULL);
 
   contents_view_->SetPaintToLayer(true);
   contents_view_->SetFillsBoundsOpaquely(false);
   contents_view_->layer()->SetMasksToBounds(true);
+#endif
 
   CreateModel();
 }
@@ -124,6 +134,13 @@ void AppListView::CreateModel() {
 
 views::View* AppListView::GetInitiallyFocusedView() {
   return search_box_view_->search_box();
+}
+
+gfx::ImageSkia AppListView::GetWindowAppIcon() {
+  if (delegate_.get())
+    return delegate_->GetWindowAppIcon();
+
+  return gfx::ImageSkia();
 }
 
 bool AppListView::HasHitTestMask() const {

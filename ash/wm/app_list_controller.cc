@@ -123,6 +123,7 @@ void AppListController::SetVisible(bool visible) {
             kShellWindowId_AppListContainer),
         pagination_model_.get(),
         Shell::GetInstance()->launcher()->GetAppListButtonView(),
+        gfx::Point(),
         GetBubbleArrowLocation());
     SetView(view);
   }

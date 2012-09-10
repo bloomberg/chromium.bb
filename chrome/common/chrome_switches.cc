@@ -1184,6 +1184,9 @@ const char kServiceAccountLsid[]            = "service-account-lsid";
 // Sets a token in the token service, for testing.
 const char kSetToken[]                      = "set-token";
 
+// If true the app list will be shown.
+const char kShowAppList[]                   = "show-app-list";
+
 // Annotates forms with Autofill field type predictions.
 const char kShowAutofillTypePredictions[]   = "show-autofill-type-predictions";
 

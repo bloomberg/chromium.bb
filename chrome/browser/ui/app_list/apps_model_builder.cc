@@ -19,6 +19,7 @@ using extensions::Extension;
 
 namespace {
 
+// TODO(benwells): Get the list of special apps from the controller.
 const char* kSpecialApps[] = {
   extension_misc::kChromeAppId,
   extension_misc::kWebStoreAppId,
@@ -154,7 +155,8 @@ void AppsModelBuilder::CreateSpecialApps() {
       continue;
 
     const Extension* extension = service->GetInstalledExtension(extension_id);
-    DCHECK(extension);
+    if (!extension)
+      continue;
 
     model_->Add(new ExtensionAppItem(profile_, extension, controller_));
   }

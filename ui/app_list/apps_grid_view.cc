@@ -276,8 +276,10 @@ AppListItemView* AppsGridView::CreateViewForItemAtIndex(size_t index) {
                                               model_->GetItemAt(index),
                                               listener_);
   item->SetIconSize(icon_size_);
+#if !defined(OS_WIN)
   item->SetPaintToLayer(true);
   item->SetFillsBoundsOpaquely(false);
+#endif
   return item;
 }
 

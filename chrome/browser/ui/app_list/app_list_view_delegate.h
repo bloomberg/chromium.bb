@@ -35,6 +35,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate {
                                         int action_index,
                                         int event_flags) OVERRIDE;
   virtual void Close() OVERRIDE;
+  virtual gfx::ImageSkia GetWindowAppIcon() OVERRIDE;
 
   scoped_ptr<AppsModelBuilder> apps_builder_;
   scoped_ptr<SearchBuilder> search_builder_;

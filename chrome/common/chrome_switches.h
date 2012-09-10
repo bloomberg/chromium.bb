@@ -312,6 +312,7 @@ extern const char kSbDisableDownloadProtection[];
 extern const char kSearchInOmniboxHint[];
 extern const char kServiceAccountLsid[];
 extern const char kSetToken[];
+extern const char kShowAppList[];
 extern const char kShowAutofillTypePredictions[];
 extern const char kShowComponentExtensionOptions[];
 extern const char kShowIcons[];

@@ -245,7 +245,7 @@ void BubbleDelegateView::OnWidgetMoved(Widget* widget) {
 
 gfx::Rect BubbleDelegateView::GetAnchorRect() {
   if (!anchor_view())
-    return gfx::Rect();
+    return gfx::Rect(anchor_point_, gfx::Size());
   gfx::Rect anchor_bounds = anchor_view()->GetBoundsInScreen();
   anchor_bounds.Inset(anchor_insets_);
   return anchor_bounds;
