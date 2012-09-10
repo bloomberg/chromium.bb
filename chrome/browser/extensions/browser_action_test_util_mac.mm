@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/browser_action_test_util.h"
 
+#include "base/mac/foundation_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
@@ -37,6 +38,15 @@ int BrowserActionTestUtil::NumberOfBrowserActions() {
 
 bool BrowserActionTestUtil::HasIcon(int index) {
   return [GetButton(browser_, index) image] != nil;
+}
+
+gfx::Image BrowserActionTestUtil::GetIcon(int index) {
+  NSImage* ns_image = [GetButton(browser_, index) image];
+  // gfx::Image takes ownership of the |ns_image| reference. We have to increase
+  // the ref count so |ns_image| stays around when the image object is
+  // destroyed.
+  base::mac::NSObjectRetain(ns_image);
+  return gfx::Image(ns_image);
 }
 
 void BrowserActionTestUtil::Press(int index) {

@@ -378,6 +378,10 @@ bool BrowserActionButton::IsEnabled(int tab_id) const {
   return browser_action_->GetIsVisible(tab_id);
 }
 
+gfx::ImageSkia BrowserActionButton::GetIconForTest() {
+  return icon();
+}
+
 BrowserActionButton::~BrowserActionButton() {
 }
 

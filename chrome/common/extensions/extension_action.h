@@ -178,6 +178,9 @@ class ExtensionAction {
   // returns the puzzle piece icon.
   gfx::Image GetIcon(int tab_id) const;
 
+  // Gets the icon that has been set using |SetIcon| for the tab.
+  gfx::ImageSkia GetExplicitlySetIcon(int tab_id) const;
+
   // Set this action's icon index for a specific tab.  For use with
   // icon_paths(), only used in page actions.
   void SetIconIndex(int tab_id, int index);

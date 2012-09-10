@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/gtk/extensions/extension_popup_gtk.h"
 #include "chrome/browser/ui/gtk/extensions/extension_view_gtk.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
+#include "ui/gfx/image/image.h"
 
 namespace {
 
@@ -47,6 +48,16 @@ int BrowserActionTestUtil::NumberOfBrowserActions() {
 bool BrowserActionTestUtil::HasIcon(int index) {
   GtkWidget* button = GetButton(browser_, index);
   return gtk_button_get_image(GTK_BUTTON(button)) != NULL;
+}
+
+gfx::Image BrowserActionTestUtil::GetIcon(int index) {
+  GtkWidget* button = GetButton(browser_, index);
+  GtkWidget* image = gtk_button_get_image(GTK_BUTTON(button));
+  GdkPixbuf* pixbuf = gtk_image_get_pixbuf(GTK_IMAGE(image));
+  // gfx::Image takes ownership of the |pixbuf| reference. We have to increase
+  // the ref count so |pixbuf| stays around when the image object is destroyed.
+  g_object_ref(pixbuf);
+  return gfx::Image(pixbuf);
 }
 
 void BrowserActionTestUtil::Press(int index) {

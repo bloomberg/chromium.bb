@@ -23,6 +23,10 @@ namespace extensions {
 class Extension;
 }
 
+namespace gfx {
+class Image;
+}
+
 namespace views {
 class MenuItemView;
 class MenuRunner;
@@ -166,6 +170,9 @@ class BrowserActionButton : public views::MenuButton,
   // the built-in views enabled/SetEnabled because disabled views do not
   // receive drag events.
   bool IsEnabled(int tab_id) const;
+
+  // Returns button icon so it can be accessed during tests.
+  gfx::ImageSkia GetIconForTest();
 
  protected:
   // Overridden from views::View:

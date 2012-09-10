@@ -44,6 +44,20 @@ const char kNoExtensionActionError[] =
 const char kNoTabError[] = "No tab with id: *.";
 const char kIconIndexOutOfBounds[] = "Page action icon index out of bounds.";
 
+struct IconRepresentationInfo {
+  // Size as a string that will be used to retrieve representation value from
+  // SetIcon function arguments.
+  const char* size_string;
+  // Scale factor for which the represantion should be used.
+  ui::ScaleFactor scale;
+};
+
+
+const IconRepresentationInfo kIconSizes[] = {
+    { "19", ui::SCALE_FACTOR_100P },
+    { "38", ui::SCALE_FACTOR_200P }
+};
+
 // Conversion function for reading/writing to storage.
 SkColor RawStringToSkColor(const std::string& str) {
   uint64 value = 0;
@@ -71,9 +85,11 @@ bool StringToSkBitmap(const std::string& str, SkBitmap* bitmap) {
 }
 
 // Conversion function for reading/writing to storage.
-std::string ImageToString(const gfx::Image& image) {
+std::string RepresentationToString(const gfx::ImageSkia& image,
+                                   ui::ScaleFactor scale) {
+  SkBitmap bitmap = image.GetRepresentation(scale).sk_bitmap();
   IPC::Message bitmap_pickle;
-  IPC::WriteParam(&bitmap_pickle, image.AsBitmap());
+  IPC::WriteParam(&bitmap_pickle, bitmap);
   std::string raw_str(static_cast<const char*>(bitmap_pickle.data()),
                       bitmap_pickle.size());
   std::string base64_str;
@@ -89,6 +105,7 @@ void SetDefaultsFromValue(const base::DictionaryValue* dict,
   std::string str_value;
   int int_value;
   SkBitmap bitmap;
+  gfx::ImageSkia icon;
 
   if (dict->GetString(kPopupUrlStorageKey, &str_value))
     action->SetPopupUrl(kTabId, GURL(str_value));
@@ -103,10 +120,17 @@ void SetDefaultsFromValue(const base::DictionaryValue* dict,
   if (dict->GetInteger(kAppearanceStorageKey, &int_value))
     action->SetAppearance(kTabId,
                           static_cast<ExtensionAction::Appearance>(int_value));
-  if (dict->GetString(kIconStorageKey, &str_value) &&
-      StringToSkBitmap(str_value, &bitmap)) {
-    CHECK(!bitmap.isNull());
-    action->SetIcon(kTabId, gfx::Image(bitmap));
+
+  const base::DictionaryValue* icon_value = NULL;
+  if (dict->GetDictionary(kIconStorageKey, &icon_value)) {
+    for (size_t i = 0; i < arraysize(kIconSizes); i++) {
+      if (icon_value->GetString(kIconSizes[i].size_string, &str_value) &&
+          StringToSkBitmap(str_value, &bitmap)) {
+        CHECK(!bitmap.isNull());
+        icon.AddRepresentation(gfx::ImageSkiaRep(bitmap, kIconSizes[i].scale));
+      }
+    }
+    action->SetIcon(kTabId, gfx::Image(icon));
   }
 }
 
@@ -126,8 +150,19 @@ scoped_ptr<base::DictionaryValue> DefaultsToValue(ExtensionAction* action) {
   dict->SetInteger(kAppearanceStorageKey,
                    action->GetIsVisible(kTabId) ?
                        ExtensionAction::ACTIVE : ExtensionAction::INVISIBLE);
-  dict->SetString(kIconStorageKey, ImageToString(action->GetIcon(kTabId)));
 
+  gfx::ImageSkia icon = action->GetExplicitlySetIcon(kTabId);
+  if (!icon.isNull()) {
+    base::DictionaryValue* icon_value = new base::DictionaryValue();
+    for (size_t i = 0; i < arraysize(kIconSizes); i++) {
+      if (icon.HasRepresentation(kIconSizes[i].scale)) {
+        icon_value->SetString(
+            kIconSizes[i].size_string,
+            RepresentationToString(icon, kIconSizes[i].scale));
+      }
+    }
+    dict->Set(kIconStorageKey, icon_value);
+  }
   return dict.Pass();
 }
 
@@ -220,7 +255,7 @@ void ExtensionActionStorageManager::ReadFromStorage(
   if (extension->browser_action()->has_changed())
     return;
 
-  base::DictionaryValue* dict = NULL;
+  const base::DictionaryValue* dict = NULL;
   if (!value.get() || !value->GetAsDictionary(&dict))
     return;
 
@@ -403,17 +438,26 @@ bool ExtensionActionHideFunction::RunExtensionAction() {
 }
 
 bool ExtensionActionSetIconFunction::RunExtensionAction() {
-  // setIcon can take a variant argument: either a canvas ImageData, or an
-  // icon index.
-  base::BinaryValue* binary = NULL;
+  // setIcon can take a variant argument: either a dictionary of canvas
+  // ImageData, or an icon index.
   int icon_index;
-  if (details_->GetBinary("imageData", &binary)) {
-    IPC::Message bitmap_pickle(binary->GetBuffer(), binary->GetSize());
-    PickleIterator iter(bitmap_pickle);
-    SkBitmap bitmap;
-    EXTENSION_FUNCTION_VALIDATE(IPC::ReadParam(&bitmap_pickle, &iter, &bitmap));
-    CHECK(!bitmap.isNull());
-    extension_action_->SetIcon(tab_id_, gfx::Image(bitmap));
+  base::DictionaryValue* canvas_set = NULL;
+  if (details_->GetDictionary("imageData", &canvas_set)) {
+    gfx::ImageSkia icon;
+    // Extract icon representations from the ImageDataSet dictionary.
+    for (size_t i = 0; i < arraysize(kIconSizes); i++) {
+      base::BinaryValue* binary;
+      if (canvas_set->GetBinary(kIconSizes[i].size_string, &binary)) {
+        IPC::Message pickle(binary->GetBuffer(), binary->GetSize());
+        PickleIterator iter(pickle);
+        SkBitmap bitmap;
+        EXTENSION_FUNCTION_VALIDATE(IPC::ReadParam(&pickle, &iter, &bitmap));
+        CHECK(!bitmap.isNull());
+        icon.AddRepresentation(gfx::ImageSkiaRep(bitmap, kIconSizes[i].scale));
+      }
+    }
+
+    extension_action_->SetIcon(tab_id_, gfx::Image(icon));
   } else if (details_->GetInteger("iconIndex", &icon_index)) {
     // If --enable-script-badges is on there might legitimately be an iconIndex
     // set. Until we decide what to do with that, ignore.

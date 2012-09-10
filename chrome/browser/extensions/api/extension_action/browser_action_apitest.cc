@@ -24,11 +24,47 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/skia_util.h"
+
+#if defined (OS_MACOSX)
+#include "ui/gfx/image/image_unittest_util.h"
+#endif
 
 using content::WebContents;
 using extensions::Extension;
+
+namespace {
+
+const char kEmptyImageDataError[] =
+    "The imageData property must contain an ImageData object or dictionary "
+    "of ImageData objects.";
+const char kEmptyPathError[] = "The path property must not be empty.";
+
+// Views implementation of browser action button will return icon whose
+// background will be set.
+gfx::ImageSkia AddBackgroundForViews(const gfx::ImageSkia& icon) {
+#if defined(TOOLKIT_VIEWS)
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  gfx::ImageSkia bg = *rb.GetImageSkiaNamed(IDR_BROWSER_ACTION);
+  return gfx::ImageSkiaOperations::CreateSuperimposedImage(bg, icon);
+#endif
+
+  return icon;
+}
+
+bool ImagesAreEqualAtScale(const gfx::ImageSkia& i1,
+                           const gfx::ImageSkia& i2,
+                           ui::ScaleFactor scale_factor) {
+  SkBitmap bitmap1 = i1.GetRepresentation(scale_factor).sk_bitmap();
+  SkBitmap bitmap2 = i2.GetRepresentation(scale_factor).sk_bitmap();
+  return gfx::BitmapsAreEqual(bitmap1, bitmap2);
+}
 
 class BrowserActionApiTest : public ExtensionApiTest {
  public:
@@ -98,37 +134,173 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
 
+#if defined (OS_MACOSX)
+  // We need this on mac so we don't loose 2x representations from browser icon
+  // in transformations gfx::ImageSkia -> NSImage -> gfx::ImageSkia.
+  gfx::test::SetSupportedScaleFactorsTo1xAnd2x();
+#endif
+
   // Test that there is a browser action in the toolbar.
   ASSERT_EQ(1, GetBrowserActionsBar().NumberOfBrowserActions());
   EXPECT_TRUE(GetBrowserActionsBar().HasIcon(0));
 
-  // Set prev_id which holds the id of the previous image, and use it in the
-  // next test to see if the image changes.
-  uint32_t prev_id = extension->browser_action()->GetIcon(0).
-      ToSkBitmap()->getGenerationID();
+  gfx::Image action_icon = extension->browser_action()->GetIcon(0);
+  uint32_t action_icon_last_id = action_icon.ToSkBitmap()->getGenerationID();
 
-  // Tell the extension to update the icon using setIcon({imageData:...}).
+  // Let's check that |GetIcon| doesn't always return bitmap with new id.
+  ASSERT_EQ(action_icon_last_id,
+            extension->browser_action()->GetIcon(0).ToSkBitmap()->
+            getGenerationID());
+
+  uint32_t action_icon_current_id = 0;
+
   ResultCatcher catcher;
-  ui_test_utils::NavigateToURL(browser(),
-      GURL(extension->GetResourceURL("update.html")));
+
+  // Tell the extension to update the icon using ImageData object.
+  GetBrowserActionsBar().Press(0);
   ASSERT_TRUE(catcher.GetNextResult());
 
-  // Test that we received the changes.
-  EXPECT_TRUE(GetBrowserActionsBar().HasIcon(0));
-  EXPECT_NE(prev_id,
-            extension->browser_action()->GetIcon(0).
-            ToSkBitmap()->getGenerationID());
-  prev_id = extension->browser_action()->GetIcon(0).
-      ToSkBitmap()->getGenerationID();
+  action_icon = extension->browser_action()->GetIcon(0);
 
-  // Tell the extension to update the icon using setIcon({path:...}).
-  ui_test_utils::NavigateToURL(browser(),
-      GURL(extension->GetResourceURL("update2.html")));
+  action_icon_current_id = action_icon.ToSkBitmap()->getGenerationID();
+  EXPECT_GT(action_icon_current_id, action_icon_last_id);
+  action_icon_last_id = action_icon_current_id;
+
+  EXPECT_FALSE(
+      action_icon.ToImageSkia()->HasRepresentation(ui::SCALE_FACTOR_200P));
+
+  EXPECT_TRUE(ImagesAreEqualAtScale(
+      AddBackgroundForViews(*action_icon.ToImageSkia()),
+      *GetBrowserActionsBar().GetIcon(0).ToImageSkia(),
+      ui::SCALE_FACTOR_100P));
+
+  // Tell the extension to update the icon using path.
+  GetBrowserActionsBar().Press(0);
   ASSERT_TRUE(catcher.GetNextResult());
-  EXPECT_TRUE(GetBrowserActionsBar().HasIcon(0));
-  EXPECT_NE(prev_id,
-            extension->browser_action()->GetIcon(0).
-            ToSkBitmap()->getGenerationID());
+
+  action_icon = extension->browser_action()->GetIcon(0);
+
+  action_icon_current_id = action_icon.ToSkBitmap()->getGenerationID();
+  EXPECT_GT(action_icon_current_id, action_icon_last_id);
+  action_icon_last_id = action_icon_current_id;
+
+  EXPECT_FALSE(
+      action_icon.ToImageSkia()->HasRepresentation(ui::SCALE_FACTOR_200P));
+
+  EXPECT_TRUE(ImagesAreEqualAtScale(
+      AddBackgroundForViews(*action_icon.ToImageSkia()),
+      *GetBrowserActionsBar().GetIcon(0).ToImageSkia(),
+      ui::SCALE_FACTOR_100P));
+
+  // Tell the extension to update the icon using dictionary of ImageData
+  // objects.
+  GetBrowserActionsBar().Press(0);
+  ASSERT_TRUE(catcher.GetNextResult());
+
+  action_icon = extension->browser_action()->GetIcon(0);
+
+  action_icon_current_id = action_icon.ToSkBitmap()->getGenerationID();
+  EXPECT_GT(action_icon_current_id, action_icon_last_id);
+  action_icon_last_id = action_icon_current_id;
+
+  EXPECT_TRUE(
+      action_icon.ToImageSkia()->HasRepresentation(ui::SCALE_FACTOR_200P));
+
+  EXPECT_TRUE(ImagesAreEqualAtScale(
+      AddBackgroundForViews(*action_icon.ToImageSkia()),
+      *GetBrowserActionsBar().GetIcon(0).ToImageSkia(),
+      ui::SCALE_FACTOR_100P));
+
+  // Tell the extension to update the icon using dictionary of paths.
+  GetBrowserActionsBar().Press(0);
+  ASSERT_TRUE(catcher.GetNextResult());
+
+  action_icon = extension->browser_action()->GetIcon(0);
+
+  action_icon_current_id = action_icon.ToSkBitmap()->getGenerationID();
+  EXPECT_GT(action_icon_current_id, action_icon_last_id);
+  action_icon_last_id = action_icon_current_id;
+
+  EXPECT_TRUE(
+      action_icon.ToImageSkia()->HasRepresentation(ui::SCALE_FACTOR_200P));
+
+  EXPECT_TRUE(ImagesAreEqualAtScale(
+      AddBackgroundForViews(*action_icon.ToImageSkia()),
+      *GetBrowserActionsBar().GetIcon(0).ToImageSkia(),
+      ui::SCALE_FACTOR_100P));
+
+  // Tell the extension to update the icon using dictionary of ImageData
+  // objects, but setting only size 19.
+  GetBrowserActionsBar().Press(0);
+  ASSERT_TRUE(catcher.GetNextResult());
+
+  action_icon = extension->browser_action()->GetIcon(0);
+
+  action_icon_current_id = action_icon.ToSkBitmap()->getGenerationID();
+  EXPECT_GT(action_icon_current_id, action_icon_last_id);
+  action_icon_last_id = action_icon_current_id;
+
+  EXPECT_FALSE(
+      action_icon.ToImageSkia()->HasRepresentation(ui::SCALE_FACTOR_200P));
+
+  EXPECT_TRUE(ImagesAreEqualAtScale(
+      AddBackgroundForViews(*action_icon.ToImageSkia()),
+      *GetBrowserActionsBar().GetIcon(0).ToImageSkia(),
+      ui::SCALE_FACTOR_100P));
+
+  // Tell the extension to update the icon using dictionary of paths, but
+  // setting only size 19.
+  GetBrowserActionsBar().Press(0);
+  ASSERT_TRUE(catcher.GetNextResult());
+
+  action_icon = extension->browser_action()->GetIcon(0);
+
+  action_icon_current_id = action_icon.ToSkBitmap()->getGenerationID();
+  EXPECT_GT(action_icon_current_id, action_icon_last_id);
+  action_icon_last_id = action_icon_current_id;
+
+  EXPECT_FALSE(
+      action_icon.ToImageSkia()->HasRepresentation(ui::SCALE_FACTOR_200P));
+
+  EXPECT_TRUE(ImagesAreEqualAtScale(
+      AddBackgroundForViews(*action_icon.ToImageSkia()),
+      *GetBrowserActionsBar().GetIcon(0).ToImageSkia(),
+      ui::SCALE_FACTOR_100P));
+
+  // Tell the extension to update the icon using dictionary of ImageData
+  // objects, but setting only size 38.
+  GetBrowserActionsBar().Press(0);
+  ASSERT_TRUE(catcher.GetNextResult());
+
+  action_icon = extension->browser_action()->GetIcon(0);
+
+  const gfx::ImageSkia* action_icon_skia = action_icon.ToImageSkia();
+
+  EXPECT_FALSE(action_icon_skia->HasRepresentation(ui::SCALE_FACTOR_100P));
+  EXPECT_TRUE(action_icon_skia->HasRepresentation(ui::SCALE_FACTOR_200P));
+
+  action_icon_current_id = action_icon.ToSkBitmap()->getGenerationID();
+  EXPECT_GT(action_icon_current_id, action_icon_last_id);
+  action_icon_last_id = action_icon_current_id;
+
+  EXPECT_TRUE(gfx::BitmapsAreEqual(
+      *action_icon.ToSkBitmap(),
+      action_icon_skia->GetRepresentation(ui::SCALE_FACTOR_200P).sk_bitmap()));
+
+  EXPECT_TRUE(ImagesAreEqualAtScale(
+      AddBackgroundForViews(*action_icon_skia),
+      *GetBrowserActionsBar().GetIcon(0).ToImageSkia(),
+      ui::SCALE_FACTOR_200P));
+
+  // Try setting icon with empty dictionary of ImageData objects.
+  GetBrowserActionsBar().Press(0);
+  ASSERT_FALSE(catcher.GetNextResult());
+  EXPECT_EQ(kEmptyImageDataError, catcher.message());
+
+  // Try setting icon with empty dictionary of path objects.
+  GetBrowserActionsBar().Press(0);
+  ASSERT_FALSE(catcher.GetNextResult());
+  EXPECT_EQ(kEmptyPathError, catcher.message());
 }
 
 // This test is flaky as per http://crbug.com/74557.
@@ -477,3 +649,5 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Getters) {
       GURL(extension->GetResourceURL("update2.html")));
   ASSERT_TRUE(catcher.GetNextResult());
 }
+
+}  // namespace

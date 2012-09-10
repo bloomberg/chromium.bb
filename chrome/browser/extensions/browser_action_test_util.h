@@ -13,6 +13,7 @@ class Browser;
 class ExtensionAction;
 
 namespace gfx {
+class Image;
 class Rect;
 class Size;
 }  // namespace gfx
@@ -36,6 +37,9 @@ class BrowserActionTestUtil {
   // that the icon is loaded asynchronously, in which case you can wait for it
   // to load by calling WaitForBrowserActionUpdated.
   bool HasIcon(int index);
+
+  // Returns icon for the browser action at |index|.
+  gfx::Image GetIcon(int index);
 
   // Simulates a user click on the browser action button at |index|.
   void Press(int index);

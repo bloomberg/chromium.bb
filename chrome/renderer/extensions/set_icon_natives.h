@@ -23,8 +23,10 @@ class SetIconNatives : public ChromeV8Extension {
   SetIconNatives(Dispatcher* dispatcher, RequestSender* request_sender);
 
  private:
-  bool ConvertImageDataToBitmapValue(const v8::Arguments& args,
+  bool ConvertImageDataToBitmapValue(const v8::Local<v8::Object> image_data,
                                      Value** bitmap_value);
+  bool ConvertImageDataSetToBitmapValueSet(const v8::Arguments& args,
+                                           DictionaryValue* bitmap_value);
   v8::Handle<v8::Value> SetIconCommon(const v8::Arguments& args);
   RequestSender* request_sender_;
 

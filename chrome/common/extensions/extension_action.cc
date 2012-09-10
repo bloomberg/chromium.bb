@@ -304,7 +304,7 @@ void ExtensionAction::SetIcon(int tab_id, const gfx::Image& image) {
 
 gfx::Image ExtensionAction::GetIcon(int tab_id) const {
   // Check if a specific icon is set for this tab.
-  gfx::ImageSkia icon = GetValue(&icon_, tab_id);
+  gfx::ImageSkia icon = GetExplicitlySetIcon(tab_id);
   if (icon.isNull()) {
     // Need to find an icon from a path.
     const std::string* path = NULL;
@@ -331,6 +331,10 @@ gfx::Image ExtensionAction::GetIcon(int tab_id) const {
     icon = gfx::ImageSkia(new GetAttentionImageSource(icon), icon.size());
 
   return gfx::Image(ApplyIconAnimation(tab_id, icon));
+}
+
+gfx::ImageSkia ExtensionAction::GetExplicitlySetIcon(int tab_id) const {
+  return GetValue(&icon_, tab_id);
 }
 
 void ExtensionAction::SetIconIndex(int tab_id, int index) {

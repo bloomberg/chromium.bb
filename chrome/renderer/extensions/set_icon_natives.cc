@@ -4,10 +4,17 @@
 
 #include "chrome/renderer/extensions/set_icon_natives.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/extensions/request_sender.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+
+namespace {
+
+const char* kImageSizeKeys[] = { "19", "38" };
+
+}  // namespace
 
 namespace extensions {
 
@@ -20,12 +27,7 @@ SetIconNatives::SetIconNatives(Dispatcher* dispatcher,
 }
 
 bool SetIconNatives::ConvertImageDataToBitmapValue(
-    const v8::Arguments& args, Value** bitmap_value) {
-  v8::Local<v8::Object> extension_args = args[1]->ToObject();
-  v8::Local<v8::Object> details =
-      extension_args->Get(v8::String::New("0"))->ToObject();
-  v8::Local<v8::Object> image_data =
-      details->Get(v8::String::New("imageData"))->ToObject();
+    const v8::Local<v8::Object> image_data, Value** bitmap_value) {
   v8::Local<v8::Object> data =
       image_data->Get(v8::String::New("data"))->ToObject();
   int width = image_data->Get(v8::String::New("width"))->Int32Value();
@@ -61,10 +63,32 @@ bool SetIconNatives::ConvertImageDataToBitmapValue(
   return true;
 }
 
+bool SetIconNatives::ConvertImageDataSetToBitmapValueSet(
+    const v8::Arguments& args, DictionaryValue* bitmap_set_value) {
+  v8::Local<v8::Object> extension_args = args[1]->ToObject();
+  v8::Local<v8::Object> details =
+      extension_args->Get(v8::String::New("0"))->ToObject();
+  v8::Local<v8::Object> image_data_set =
+      details->Get(v8::String::New("imageData"))->ToObject();
+
+  DCHECK(bitmap_set_value);
+  for (size_t i = 0; i < arraysize(kImageSizeKeys); i++) {
+    if (!image_data_set->Has(v8::String::New(kImageSizeKeys[i])))
+      continue;
+    v8::Local<v8::Object> image_data =
+        image_data_set->Get(v8::String::New(kImageSizeKeys[i]))->ToObject();
+    Value* image_data_bitmap = NULL;
+    if (!ConvertImageDataToBitmapValue(image_data, &image_data_bitmap))
+      return false;
+    bitmap_set_value->Set(kImageSizeKeys[i], image_data_bitmap);
+  }
+  return true;
+}
+
 v8::Handle<v8::Value> SetIconNatives::SetIconCommon(
     const v8::Arguments& args) {
-  Value* bitmap_value = NULL;
-  if (!ConvertImageDataToBitmapValue(args, &bitmap_value))
+  scoped_ptr<DictionaryValue> bitmap_set_value(new DictionaryValue());
+  if (!ConvertImageDataSetToBitmapValueSet(args, bitmap_set_value.get()))
     return v8::Undefined();
 
   v8::Local<v8::Object> extension_args = args[1]->ToObject();
@@ -72,7 +96,7 @@ v8::Handle<v8::Value> SetIconNatives::SetIconCommon(
       extension_args->Get(v8::String::New("0"))->ToObject();
 
   DictionaryValue* dict = new DictionaryValue();
-  dict->Set("imageData", bitmap_value);
+  dict->Set("imageData", bitmap_set_value.release());
 
   if (details->Has(v8::String::New("tabId"))) {
     dict->SetInteger("tabId",
