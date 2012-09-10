@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "base/string_piece.h"
 #include "ui/gfx/image/image.h"
-#include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/ppapi/host_globals.h"
+#include "webkit/user_agent/user_agent.h"
 
 namespace content {
 

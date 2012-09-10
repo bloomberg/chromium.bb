@@ -49,9 +49,9 @@
         '../webkit/support/webkit_support.gyp:fileapi',
         '../webkit/support/webkit_support.gyp:glue',
         '../webkit/support/webkit_support.gyp:quota',
+        '../webkit/support/webkit_support.gyp:user_agent',
         '../webkit/support/webkit_support.gyp:webkit_base',
         '../webkit/support/webkit_support.gyp:webkit_resources',
-        '../webkit/support/webkit_support.gyp:webkit_user_agent',
       ],
       'include_dirs': [
         '..',

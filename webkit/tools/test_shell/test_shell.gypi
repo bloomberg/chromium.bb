@@ -55,12 +55,12 @@
         '<(DEPTH)/webkit/support/webkit_support.gyp:forms',
         '<(DEPTH)/webkit/support/webkit_support.gyp:glue',
         '<(DEPTH)/webkit/support/webkit_support.gyp:quota',
+        '<(DEPTH)/webkit/support/webkit_support.gyp:user_agent',
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_base',
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_gpu',
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_media',
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_support_common',
-        '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_user_agent',
       ],
       'sources': [
         'mac/test_shell_webview.h',
@@ -120,6 +120,7 @@
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '<(DEPTH)/webkit/support/webkit_support.gyp:glue',
+        '<(DEPTH)/webkit/support/webkit_support.gyp:user_agent',
       ],
       'conditions': [
         ['target_arch!="arm"', {
@@ -362,7 +363,7 @@
         '<(DEPTH)/testing/gmock.gyp:gmock',
         '<(DEPTH)/testing/gtest.gyp:gtest',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
-        '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_user_agent',
+        '<(DEPTH)/webkit/support/webkit_support.gyp:user_agent',
       ],
       'sources': [
         '../../glue/bookmarklet_unittest.cc',
@@ -393,6 +394,7 @@
         '../../plugins/ppapi/quota_file_io_unittest.cc',
         '../../plugins/ppapi/time_conversion_unittest.cc',
         '../../plugins/ppapi/url_request_info_unittest.cc',
+        '../../user_agent/user_agent_unittest.cc',
         '../webcore_unit_tests/BMPImageDecoder_unittest.cpp',
         '../webcore_unit_tests/ICOImageDecoder_unittest.cpp',
         'image_decoder_unittest.cc',

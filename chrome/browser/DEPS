@@ -31,6 +31,7 @@ include_rules = [
   "+webkit/glue",  # Defines some types that are marshalled over IPC.
   "+webkit/plugins",  # Defines some types that are marshalled over IPC.
   "+webkit/quota",
+  "+webkit/user_agent",
   "+xib_localizers", # For generated mac localization helpers
 
   # TODO(jam): Need to remove all these and use only content/public. BUG=98716

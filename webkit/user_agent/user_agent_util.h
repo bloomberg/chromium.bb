@@ -2,34 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_USER_AGENT_H_
-#define WEBKIT_GLUE_USER_AGENT_H_
+#ifndef WEBKIT_USER_AGENT_USER_AGENT_UTIL_H_
+#define WEBKIT_USER_AGENT_USER_AGENT_UTIL_H_
 
 #include <string>
 
 #include "base/basictypes.h"
+#include "webkit/user_agent/webkit_user_agent_export.h"
 
 namespace webkit_glue {
 
 // Builds a User-agent compatible string that describes the OS and CPU type.
-std::string BuildOSCpuInfo();
+WEBKIT_USER_AGENT_EXPORT std::string BuildOSCpuInfo();
 
 // Returns the WebKit version, in the form "major.minor (branch@revision)".
-std::string GetWebKitVersion();
+WEBKIT_USER_AGENT_EXPORT std::string GetWebKitVersion();
 
 // The following 2 functions return the major and minor webkit versions.
-int GetWebKitMajorVersion();
-int GetWebKitMinorVersion();
+WEBKIT_USER_AGENT_EXPORT int GetWebKitMajorVersion();
+WEBKIT_USER_AGENT_EXPORT int GetWebKitMinorVersion();
 
 // Helper function to generate a full user agent string from a short
 // product name.
-std::string BuildUserAgentFromProduct(const std::string& product);
+WEBKIT_USER_AGENT_EXPORT std::string BuildUserAgentFromProduct(
+    const std::string& product);
 
 // Builds a full user agent string given a string describing the OS and a
 // product name.
-std::string BuildUserAgentFromOSAndProduct(const std::string& os_info,
-                                           const std::string& product);
+WEBKIT_USER_AGENT_EXPORT std::string BuildUserAgentFromOSAndProduct(
+    const std::string& os_info,
+    const std::string& product);
 
 }  // namespace webkit_glue
 
-#endif  // WEBKIT_GLUE_USER_AGENT_H_
+#endif  // WEBKIT_USER_AGENT_USER_AGENT_UTIL_H_

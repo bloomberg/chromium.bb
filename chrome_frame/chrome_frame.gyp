@@ -664,7 +664,7 @@
         '../net/net.gyp:net',
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/bzip2/bzip2.gyp:bzip2',
-        '../webkit/support/webkit_support.gyp:webkit_user_agent',
+        '../webkit/support/webkit_support.gyp:user_agent',
       ],
       'sources': [
         'bho.cc',

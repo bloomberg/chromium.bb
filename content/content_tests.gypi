@@ -239,6 +239,7 @@
         '../webkit/support/webkit_support.gyp:forms',
         '../webkit/support/webkit_support.gyp:glue',
         '../webkit/support/webkit_support.gyp:quota',
+        '../webkit/support/webkit_support.gyp:user_agent',
         '../webkit/support/webkit_support.gyp:webkit_base',
         '../webkit/support/webkit_support.gyp:webkit_media',
         '../webkit/webkit.gyp:test_shell_test_support',

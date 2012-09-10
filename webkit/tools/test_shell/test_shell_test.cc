@@ -14,8 +14,8 @@
 #include "base/string_util.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
-#include "webkit/glue/user_agent.h"
-#include "webkit/glue/webkit_glue.h"
+#include "webkit/user_agent/user_agent.h"
+#include "webkit/user_agent/user_agent_util.h"
 
 GURL TestShellTest::GetTestURL(const FilePath& test_case_path,
                                const std::string& test_case) {

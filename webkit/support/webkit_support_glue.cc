@@ -6,7 +6,6 @@
 
 #include "base/base_paths.h"
 #include "base/path_service.h"
-#include "webkit/glue/user_agent.h"
 
 // Functions needed by webkit_glue.
 

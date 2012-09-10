@@ -16,6 +16,7 @@
     '../gpu/webkit_gpu.gypi',
     '../media/webkit_media.gypi',
     '../quota/webkit_quota.gypi',
+    '../user_agent/webkit_user_agent.gypi',
     'webkit_support.gypi',
   ],
 }

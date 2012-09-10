@@ -11,6 +11,7 @@ include_rules = [
   "+webkit/forms",  # Defines some types that are marshalled over IPC.
   "+webkit/glue",
   "+webkit/plugins",
+  "+webkit/user_agent",
 
   # TODO(jam): remove this once all of chrome doesn't depend on content/common.
   "-content/common",

@@ -13,7 +13,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome_frame/utils.h"
 #include "net/base/net_util.h"
-#include "webkit/glue/user_agent.h"
+#include "webkit/user_agent/user_agent_util.h"
 
 const wchar_t kQuotes[] = L"\"'";
 const char kXFrameOptionsHeader[] = "X-Frame-Options";

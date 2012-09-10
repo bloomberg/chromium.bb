@@ -44,7 +44,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/win/dpi.h"
-#include "webkit/glue/webkit_glue.h"
+#include "webkit/user_agent/user_agent.h"
 
 #if defined(USE_TCMALLOC)
 #include "third_party/tcmalloc/chromium/src/gperftools/malloc_extension.h"

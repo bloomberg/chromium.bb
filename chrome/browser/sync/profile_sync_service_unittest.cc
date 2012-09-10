@@ -33,7 +33,7 @@
 #include "sync/notifier/object_id_state_map_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/glue/webkit_glue.h"
+#include "webkit/user_agent/user_agent.h"
 
 // TODO(akalin): Add tests here that exercise the whole
 // ProfileSyncService/SyncBackendHost stack while mocking out as

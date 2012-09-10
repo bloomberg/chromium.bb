@@ -32,8 +32,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "v8/include/v8.h"
-#include "webkit/glue/user_agent.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/user_agent/user_agent_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/file_util_proxy.h"

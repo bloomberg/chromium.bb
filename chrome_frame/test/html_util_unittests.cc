@@ -24,7 +24,7 @@
 #include "chrome_frame/chrome_frame_delegate.h"
 #include "chrome_frame/html_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/glue/user_agent.h"
+#include "webkit/user_agent/user_agent_util.h"
 
 const char kChromeFrameUserAgent[] = "chromeframe";
 
