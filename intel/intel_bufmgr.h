@@ -248,6 +248,11 @@ int drm_intel_reg_read(drm_intel_bufmgr *bufmgr,
 		       uint32_t offset,
 		       uint64_t *result);
 
+int drm_intel_get_reset_stats(drm_intel_context *ctx,
+			      uint32_t *reset_count,
+			      uint32_t *active,
+			      uint32_t *pending);
+
 /** @{ Compatibility defines to keep old code building despite the symbol rename
  * from dri_* to drm_intel_*
  */

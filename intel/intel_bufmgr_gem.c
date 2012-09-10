@@ -3021,6 +3021,40 @@ drm_intel_gem_context_destroy(drm_intel_context *ctx)
 }
 
 int
+drm_intel_get_reset_stats(drm_intel_context *ctx,
+			  uint32_t *reset_count,
+			  uint32_t *active,
+			  uint32_t *pending)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem;
+	struct drm_i915_reset_stats stats;
+	int ret;
+
+	if (ctx == NULL)
+		return -EINVAL;
+
+	VG_CLEAR(stats);
+
+	bufmgr_gem = (drm_intel_bufmgr_gem *)ctx->bufmgr;
+	stats.ctx_id = ctx->ctx_id;
+	ret = drmIoctl(bufmgr_gem->fd,
+		       DRM_IOCTL_I915_GET_RESET_STATS,
+		       &stats);
+	if (ret == 0) {
+		if (reset_count != NULL)
+			*reset_count = stats.reset_count;
+
+		if (active != NULL)
+			*active = stats.batch_active;
+
+		if (pending != NULL)
+			*pending = stats.batch_pending;
+	}
+
+	return ret;
+}
+
+int
 drm_intel_reg_read(drm_intel_bufmgr *bufmgr,
 		   uint32_t offset,
 		   uint64_t *result)
