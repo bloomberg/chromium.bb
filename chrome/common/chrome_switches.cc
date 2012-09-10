@@ -1407,6 +1407,9 @@ const char kEnableGView[]                   = "enable-gview";
 // Enable Kiosk mode for ChromeOS
 const char kEnableKioskMode[]               = "enable-kiosk-mode";
 
+// Enables request of tablet site (via user agent override).
+const char kEnableRequestTabletSite[]       = "enable-request-tablet-site";
+
 // Enables static ip configuration. This flag should be removed when it's on by
 // default.
 const char kEnableStaticIPConfig[]          = "enable-static-ip-config";

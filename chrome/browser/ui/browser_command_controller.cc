@@ -556,6 +556,9 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_IMPORT_SETTINGS:
       ShowImportDialog(browser_);
       break;
+    case IDC_TOGGLE_REQUEST_TABLET_SITE:
+      ToggleRequestTabletSite(browser_);
+      break;
     case IDC_ABOUT:
       ShowAboutChrome(browser_);
       break;
@@ -916,6 +919,10 @@ void BrowserCommandController::UpdateCommandsForTabState() {
       IDC_CREATE_SHORTCUTS,
       CanCreateApplicationShortcuts(browser_));
 #endif
+
+  command_updater_.UpdateCommandEnabled(
+      IDC_TOGGLE_REQUEST_TABLET_SITE,
+      CanRequestTabletSite(current_web_contents));
 
   UpdateCommandsForContentRestrictionState();
   UpdateCommandsForBookmarkEditing();

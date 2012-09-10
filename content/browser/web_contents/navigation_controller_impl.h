@@ -78,6 +78,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   virtual bool IsInitialNavigation() OVERRIDE;
   virtual void Reload(bool check_for_repost) OVERRIDE;
   virtual void ReloadIgnoringCache(bool check_for_repost) OVERRIDE;
+  virtual void ReloadOriginalRequestURL(bool check_for_repost) OVERRIDE;
   virtual void NotifyEntryChanged(const content::NavigationEntry* entry,
                                  int index) OVERRIDE;
   virtual void CopyStateFrom(
@@ -105,11 +106,6 @@ class CONTENT_EXPORT NavigationControllerImpl
   content::NavigationEntryImpl* GetEntryWithPageID(
       content::SiteInstance* instance,
       int32 page_id) const;
-
-  // Reloads the current entry using the original URL used to create it.  This
-  // is used for cases where the user wants to refresh a page using a different
-  // user agent after following a redirect.
-  void ReloadOriginalRequestURL(bool check_for_repost);
 
   // Transient entry -----------------------------------------------------------
 

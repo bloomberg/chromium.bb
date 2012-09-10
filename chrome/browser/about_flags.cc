@@ -923,6 +923,15 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(ash::switches::kAshEnableAdvancedGestures),
   },
 #endif
+#if defined(OS_CHROMEOS)
+  {
+    "enable-request-tablet-site",
+    IDS_FLAGS_ENABLE_REQUEST_TABLET_SITE_NAME,
+    IDS_FLAGS_ENABLE_REQUEST_TABLET_SITE_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableRequestTabletSite)
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;

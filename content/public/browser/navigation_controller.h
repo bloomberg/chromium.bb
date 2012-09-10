@@ -291,6 +291,11 @@ class NavigationController {
   // Like Reload(), but don't use caches (aka "shift-reload").
   virtual void ReloadIgnoringCache(bool check_for_repost) = 0;
 
+  // Reloads the current entry using the original URL used to create it.  This
+  // is used for cases where the user wants to refresh a page using a different
+  // user agent after following a redirect.
+  virtual void ReloadOriginalRequestURL(bool check_for_repost) = 0;
+
   // Removing of entries -------------------------------------------------------
 
   // Removes the entry at the specified |index|.  This call dicards any pending

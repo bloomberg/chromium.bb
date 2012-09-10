@@ -189,6 +189,7 @@
 #define IDC_SHOW_AVATAR_MENU            40134
 #define IDC_EXTENSION_DISABLED_FIRST    40135
 #define IDC_EXTENSION_DISABLED_LAST     40235
+#define IDC_TOGGLE_REQUEST_TABLET_SITE  40236
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.

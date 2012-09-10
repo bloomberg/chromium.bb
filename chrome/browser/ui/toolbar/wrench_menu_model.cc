@@ -43,6 +43,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profiling.h"
 #include "content/public/browser/host_zoom_map.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -364,6 +365,8 @@ bool WrenchMenuModel::IsCommandIdChecked(int command_id) const {
     return browser_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
   } else if (command_id == IDC_PROFILING_ENABLED) {
     return Profiling::BeingProfiled();
+  } else if (command_id == IDC_TOGGLE_REQUEST_TABLET_SITE) {
+    return chrome::IsRequestingTabletSite(browser_);
   }
 
   return false;
@@ -546,6 +549,13 @@ void WrenchMenuModel::Build() {
   }
 
   AddItemWithStringId(IDC_OPTIONS, IDS_SETTINGS);
+
+#if defined(OS_CHROMEOS)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableRequestTabletSite))
+    AddCheckItemWithStringId(IDC_TOGGLE_REQUEST_TABLET_SITE,
+                             IDS_TOGGLE_REQUEST_TABLET_SITE);
+#endif
 
 // On ChromeOS-Touch, we don't want the about/background pages menu options.
 #if defined(OS_CHROMEOS)

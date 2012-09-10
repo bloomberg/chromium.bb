@@ -1299,6 +1299,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           &amp;Show bookmarks bar
         </message>
       </if>
+      <message name="IDS_TOGGLE_REQUEST_TABLET_SITE" desc="The toggle to request tablet site on a touch dev.">
+        Request tablet site
+      </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_SHOW_HISTORY" desc="The show history menu in the app menu">
           &amp;History
@@ -6318,6 +6321,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_ENABLE_WEBKIT_TEXT_SUBPIXEL_POSITIONING_DESCRIPTION" desc="Description for the flag to set when subpixel text positioning is enabled on web pages.">
         Allows text glyphs on web pages to have X positions which aren't snapped to the pixel grid.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_REQUEST_TABLET_SITE_NAME" desc="Name for the flag to set to enable Request Tablet Site in the wrench menu.">
+        Enables the request tablet site option in the settings menu.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_REQUEST_TABLET_SITE_DESCRIPTION" desc="Description for the flag to set to enable Request Tablet Site in the wrench menu.">
+        Allows the user to request tablet site. Web content is often optimized for tablet devices. When this option is selected the user agent string is changed to indicate a tablet device. Web content optimized for tablets is received there after for the current tab.
       </message>
 
       <!-- Crashes -->

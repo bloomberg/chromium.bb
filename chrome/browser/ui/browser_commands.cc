@@ -63,12 +63,14 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_intents_dispatcher.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_restriction.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/user_agent/user_agent_util.h"
 
 #if defined(OS_MACOSX)
 #include "ui/base/cocoa/find_pasteboard.h"
@@ -77,6 +79,10 @@
 #if defined(OS_WIN)
 #include "base/win/metro.h"
 #endif
+
+namespace {
+const char kOsOverrideForTabletSite[] = "Linux; Android 4.0.3";
+}
 
 using content::NavigationController;
 using content::NavigationEntry;
@@ -867,6 +873,43 @@ void OpenUpdateChromeDialog(Browser* browser) {
 
 void ToggleSpeechInput(Browser* browser) {
   GetActiveWebContents(browser)->GetRenderViewHost()->ToggleSpeechInput();
+}
+
+bool CanRequestTabletSite(WebContents* current_tab) {
+  if (!current_tab)
+    return false;
+  return current_tab->GetController().GetActiveEntry() != NULL;
+}
+
+bool IsRequestingTabletSite(Browser* browser) {
+  WebContents* current_tab = chrome::GetActiveWebContents(browser);
+  if (!current_tab)
+    return false;
+  content::NavigationEntry* entry =
+      current_tab->GetController().GetActiveEntry();
+  if (!entry)
+    return false;
+  return entry->GetIsOverridingUserAgent();
+}
+
+void ToggleRequestTabletSite(Browser* browser) {
+  WebContents* current_tab = GetActiveWebContents(browser);
+  if (!current_tab)
+    return;
+  NavigationController& controller = current_tab->GetController();
+  NavigationEntry* entry = controller.GetActiveEntry();
+  if (!entry)
+    return;
+  if (entry->GetIsOverridingUserAgent()) {
+    entry->SetIsOverridingUserAgent(false);
+  } else {
+    entry->SetIsOverridingUserAgent(true);
+    current_tab->SetUserAgentOverride(
+        webkit_glue::BuildUserAgentFromOSAndProduct(
+            kOsOverrideForTabletSite,
+            content::GetContentClient()->GetProduct()));
+  }
+  controller.ReloadOriginalRequestURL(true);
 }
 
 void ToggleFullscreenMode(Browser* browser) {
