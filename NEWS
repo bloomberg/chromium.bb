@@ -11,6 +11,11 @@ assortment of table improvements. Thanks to all of this liblouis has
 already seen quite a bit of uptake in a number of places, notably the
 new DAISY pipeline will ship with this release of liblouis.
 
+NOTE: If you have private tables you might want to migrate them to
+utf-8. To do this just use iconv as follows:
+
+  $ iconv -f latin-1 -t utf-8 <input >output
+
 ** New features
 *** New Braille tables
     - Estonian grade 0, thanks to Jürgen Dengo.
