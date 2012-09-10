@@ -200,7 +200,6 @@ class TestFaviconHandler : public FaviconHandler {
                      FaviconHandlerDelegate* delegate,
                      Type type)
       : FaviconHandler(profile, delegate, type),
-        download_image_size_(0),
         entry_(NavigationEntry::Create()),
         download_id_(0) {
     entry_->SetURL(page_url);
@@ -294,9 +293,6 @@ class TestFaviconHandler : public FaviconHandler {
   }
 
   GURL page_url_;
-
-  GURL download_image_url_;
-  int download_image_size_;
 
  private:
   scoped_ptr<NavigationEntry> entry_;
