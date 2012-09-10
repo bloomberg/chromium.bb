@@ -210,9 +210,13 @@ FileManager.prototype = {
     this.gdataChangeHandler_ =
         fileManager.updateMetadataInUI_.bind(fileManager, 'gdata');
 
+    var dm = fileManager.directoryModel_;
+    this.internalChangeHandler_ = dm.rescan.bind(dm);
+
     this.filesystemObserverId_ = null;
     this.thumbnailObserverId_ = null;
     this.gdataObserverId_ = null;
+    this.internalObserverId_ = null;
 
     // Holds the directories known to contain files with stale metadata
     // as URL to bool map.
@@ -227,8 +231,8 @@ FileManager.prototype = {
    * @param {DirectoryEntryi?} entry New watched directory entry.
    * @override
    */
-  FileManager.MetadataFileWatcher.prototype.changeWatchedEntry =
-      function(entry) {
+  FileManager.MetadataFileWatcher.prototype.changeWatchedEntry = function(
+      entry) {
     FileWatcher.prototype.changeWatchedEntry.call(this, entry);
 
     if (this.filesystemObserverId_)
@@ -239,6 +243,7 @@ FileManager.prototype = {
       this.metadataCache_.removeObserver(this.gdataObserverId_);
     this.filesystemObserverId_ = null;
     this.gdataObserverId_ = null;
+    this.internalObserverId_ = null;
     if (!entry)
       return;
 
@@ -261,6 +266,12 @@ FileManager.prototype = {
           'gdata',
           this.gdataChangeHandler_);
     }
+
+    this.internalObserverId_ = this.metadataCache_.addObserver(
+        entry,
+        MetadataCache.CHILDREN,
+        'internal',
+        this.internalChangeHandler_);
   };
 
   /**
@@ -472,7 +483,8 @@ FileManager.prototype = {
     this.copyManager_.addEventListener('copy-operation-complete',
         this.onCopyManagerOperationComplete_.bind(this));
 
-    this.butterBar_ = new ButterBar(this.dialogDom_, this.copyManager_);
+    this.butterBar_ = new ButterBar(this.dialogDom_, this.copyManager_,
+        this.metadataCache_);
 
     var controller = this.fileTransferController_ = new FileTransferController(
         GridItem.bind(null, this, false /* no checkbox */),
@@ -1284,7 +1296,7 @@ FileManager.prototype = {
         if (this.isRenamingInProgress())
           document.execCommand('delete');
         else
-          this.deleteEntries(this.selection.entries);
+          this.deleteSelection();
 
         return;
 
@@ -2637,26 +2649,12 @@ FileManager.prototype = {
         this.directoryModel_.getCurrentDirEntry().toURL();
   };
 
-  FileManager.prototype.deleteEntries = function(entries, force, opt_callback) {
-    if (!force) {
-      var self = this;
-      var msg;
-      if (entries.length == 1) {
-        msg = strf('CONFIRM_DELETE_ONE', entries[0].name);
-      } else {
-        msg = strf('CONFIRM_DELETE_SOME', entries.length);
-      }
-
-      this.confirm.show(msg, this.deleteEntries.bind(
-          this, entries, true, opt_callback));
-      return;
-    }
-
-    this.directoryModel_.deleteEntries(entries, opt_callback);
+  FileManager.prototype.deleteSelection = function(entries) {
+    this.butterBar_.initiateDelete(this.selection.entries);
   };
 
   FileManager.prototype.onDeleteButtonClick_ = function(event) {
-    this.deleteEntries(this.selection.entries);
+    this.deleteSelection();
     event.preventDefault();
     event.stopPropagation();
   };
@@ -2665,7 +2663,7 @@ FileManager.prototype = {
     switch (util.getKeyModifiers(event) + event.keyCode) {
       case '13':  // Enter
       case '32':  // Space
-        this.deleteEntries(this.selection.entries);
+        this.deleteSelection();
         event.preventDefault();
         event.stopPropagation();
         break;

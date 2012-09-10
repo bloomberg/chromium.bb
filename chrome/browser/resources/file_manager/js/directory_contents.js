@@ -23,6 +23,12 @@ function FileListContext(metadataCache, fileList, showHidden) {
    */
   this.filters_ = {};
   this.setFilterHidden(!showHidden);
+
+  // Do not show entries marked as 'deleted'.
+  this.addFilter('deleted', function(entry) {
+    var internal = this.metadataCache.getCached(entry, 'internal');
+    return !(internal && internal.deleted);
+  }.bind(this));
 }
 
 /**

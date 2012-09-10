@@ -11698,6 +11698,13 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Move failed, unexpected error: $1
       </message>
 
+      <message name="IDS_FILE_BROWSER_DELETED_MESSAGE_PLURAL" desc="Message informing about deleting multiple items.">
+        Deleted <ph name="COUNT">$1<ex>10</ex></ph> items
+      </message>
+      <message name="IDS_FILE_BROWSER_DELETED_MESSAGE" desc="Message informing about deleting single item.">
+        Deleted "<ph name="FILENAME">$1<ex>photo.jpg</ex></ph>"
+      </message>
+
       <message name="IDS_FILE_BROWSER_CANCEL_LABEL" desc="Cancel label.">
         Cancel
       </message>

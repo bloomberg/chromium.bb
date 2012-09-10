@@ -49,10 +49,24 @@ FileCopyManagerWrapper.prototype.getCopyManagerSync_ = function() {
  * @param {Function} callback Function with FileCopyManager as a parameter.
  */
 FileCopyManagerWrapper.prototype.getCopyManagerAsync_ = function(callback) {
-  chrome.runtime.getBackgroundPage(
-      function(bg) {
-        callback(bg.FileCopyManager.getInstance(this.root_));
-      }.bind(this));
+  var MAX_RETRIES = 10;
+  var TIMEOUT = 100;
+
+  var root = this.root_;
+  var retries = 0;
+
+  function tryOnce() {
+    chrome.runtime.getBackgroundPage(function(bg) {
+      if (bg) {
+        callback(bg.FileCopyManager.getInstance(root));
+        return;
+      }
+      if (++retries < MAX_RETRIES)
+        setTimeout(tryOnce, TIMEOUT);
+    });
+  }
+
+  tryOnce();
 };
 
 /**
@@ -101,27 +115,21 @@ FileCopyManagerWrapper.prototype.getStatus = function() {
 };
 
 /**
- * Request that the current copy queue be abandoned.
- * @param {Function} opt_callback On cancel.
+ * Decorates a FileCopyManager method, so it will be executed after initializing
+ * the FileCopyManager instance in background page.
+ * @param {string} method The method name.
  */
-FileCopyManagerWrapper.prototype.requestCancel = function(opt_callback) {
-  this.getCopyManagerAsync_(
-      function(cm) {
-        cm.requestCancel(opt_callback);
-      });
+FileCopyManagerWrapper.decorateAsyncMethod = function(method) {
+  FileCopyManagerWrapper.prototype[method] = function() {
+    var args = Array.prototype.slice.call(arguments);
+    this.getCopyManagerAsync_(function(cm) {
+      cm[method].apply(cm, args);
+    });
+  };
 };
 
-/**
- * Convert string in clipboard to entries and kick off pasting.
- * @param {Object} clipboard Clipboard contents.
- * @param {string} targetPath Target path.
- * @param {boolean} targetOnGData If target is on GDrive.
- */
-FileCopyManagerWrapper.prototype.paste = function(clipboard, targetPath,
-                                                  targetOnGData) {
-  this.getCopyManagerAsync_(
-      function(cm) {
-        cm.paste(clipboard, targetPath, targetOnGData);
-      });
-};
-
+FileCopyManagerWrapper.decorateAsyncMethod('requestCancel');
+FileCopyManagerWrapper.decorateAsyncMethod('paste');
+FileCopyManagerWrapper.decorateAsyncMethod('deleteEntries');
+FileCopyManagerWrapper.decorateAsyncMethod('forceDeleteTask');
+FileCopyManagerWrapper.decorateAsyncMethod('cancelDeleteTask');

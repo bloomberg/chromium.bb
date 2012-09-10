@@ -296,8 +296,10 @@ MetadataCache.prototype.getCached = function(items, type) {
  * @param {Array.<Object>} values List of corresponding metadata values.
  */
 MetadataCache.prototype.set = function(items, type, values) {
-  if (!(items instanceof Array))
+  if (!(items instanceof Array)) {
     items = [items];
+    values = [values];
+  }
 
   this.startBatchUpdates();
   for (var index = 0; index < items.length; index++) {

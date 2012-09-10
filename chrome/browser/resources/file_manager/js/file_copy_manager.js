@@ -8,6 +8,8 @@
  */
 function FileCopyManager(root) {
   this.copyTasks_ = [];
+  this.deleteTasks_ = [];
+  this.lastDeleteId_ = 0;
   this.cancelObservers_ = [];
   this.cancelRequested_ = false;
   this.root_ = root;
@@ -271,7 +273,7 @@ FileCopyManager.prototype.sendEvent_ = function(eventName, eventArgs) {
       w.fileCopyManagerWrapper.onEvent(eventName, eventArgs);
   }
 
-  if (this.copyTasks_.length === 0) {
+  if (this.copyTasks_.length === 0 && this.deleteTasks_.length === 0) {
     if (this.unloadTimeout_ === null)
       this.unloadTimeout_ = setTimeout(close, 5000);
   } else {
@@ -941,4 +943,105 @@ FileCopyManager.prototype.copyEntry_ = function(sourceEntry,
   }
 
   sourceEntry.file(onSourceFileFound, errorCallback);
+};
+
+/**
+ * Timeout before files are really deleted (to allow undo).
+ */
+FileCopyManager.DELETE_TIMEOUT = 15 * 1000;
+
+/**
+ * Schedules the files deletion.
+ * @param {Array.<Entry>} entries The entries.
+ * @param {function(number)} callback Callback gets the scheduled task id.
+ */
+FileCopyManager.prototype.deleteEntries = function(entries, callback) {
+  var id = ++this.lastDeleteId_;
+  var task = {
+    entries: entries,
+    id: id,
+    timeout: setTimeout(this.forceDeleteTask.bind(this, id),
+        FileCopyManager.DELETE_TIMEOUT)
+  };
+  this.deleteTasks_.push(task);
+  callback(id);
+  this.sendDeleteEvent_(task, 'SCHEDULED');
+};
+
+/**
+ * Force deletion before timeout runs out.
+ * @param {number} id The delete task id (as returned by deleteEntries).
+ */
+FileCopyManager.prototype.forceDeleteTask = function(id) {
+  var task = this.findDeleteTaskAndCancelTimeout_(id);
+  if (task) this.serviceDeleteTask_(task);
+};
+
+/**
+ * Cancels the scheduled deletion.
+ * @param {number} id The delete task id (as returned by deleteEntries).
+ */
+FileCopyManager.prototype.cancelDeleteTask = function(id) {
+  var task = this.findDeleteTaskAndCancelTimeout_(id);
+  if (task) this.sendDeleteEvent_(task, 'CANCELLED');
+};
+
+/**
+ * Finds the delete task, removes it from list and cancels the timeout.
+ * @param {number} id The delete task id (as returned by deleteEntries).
+ * @return {object} The delete task.
+ * @private
+ */
+FileCopyManager.prototype.findDeleteTaskAndCancelTimeout_ = function(id) {
+  for (var index = 0; index < this.deleteTasks_.length; index++) {
+    var task = this.deleteTasks_[index];
+    if (task.id == id) {
+      this.deleteTasks_.splice(index, 1);
+      if (task.timeout) {
+        clearTimeout(task.timeout);
+        task.timeout = null;
+      }
+      return task;
+    }
+  }
+  return null;
+};
+
+/**
+ * Performs the deletion.
+ * @param {object} task The delete task (see deleteEntries function).
+ * @private
+ */
+FileCopyManager.prototype.serviceDeleteTask_ = function(task) {
+  var downcount = task.entries.length + 1;
+
+  var onComplete = function() {
+    if (--downcount == 0)
+      this.sendDeleteEvent_(task, 'SUCCESS');
+  }.bind(this);
+
+  for (var i = 0; i < task.entries.length; i++) {
+    var entry = task.entries[i];
+    util.removeFileOrDirectory(
+        entry,
+        onComplete,
+        onComplete); // We ignore error, because we can't do anything here.
+  }
+  onComplete();
+};
+
+/**
+ * Send a 'delete' event to listeners.
+ * @param {Object} task The delete task (see deleteEntries function).
+ * @param {string} reason Event reason.
+ * @private
+ */
+FileCopyManager.prototype.sendDeleteEvent_ = function(task, reason) {
+  this.sendEvent_('delete', {
+    reason: reason,
+    id: task.id,
+    urls: task.entries.map(function(e) {
+      return util.makeFilesystemUrl(e.fullPath);
+    })
+  });
 };

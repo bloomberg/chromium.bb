@@ -15,18 +15,23 @@ var MINIMUM_BUTTER_DISPLAY_TIME_MS = 1300;
  * @constructor
  * @param {HTMLElement} dialogDom FileManager top-level div.
  * @param {FileCopyManagerWrapper} copyManager The copy manager.
+ * @param {MetadataCache} metadataCache The metadata cache.
  */
-function ButterBar(dialogDom, copyManager) {
+function ButterBar(dialogDom, copyManager, metadataCache) {
   this.dialogDom_ = dialogDom;
   this.butter_ = this.dialogDom_.querySelector('#butter-bar');
   this.document_ = this.butter_.ownerDocument;
   this.copyManager_ = copyManager;
+  this.metadataCache_ = metadataCache;
   this.hideTimeout_ = null;
   this.showTimeout_ = null;
   this.lastShowTime_ = 0;
+  this.deleteTaskId_ = null;
 
   this.copyManager_.addEventListener('copy-progress',
                                      this.onCopyProgress_.bind(this));
+  this.copyManager_.addEventListener('delete',
+                                     this.onDelete_.bind(this));
 }
 
 /**
@@ -229,6 +234,9 @@ ButterBar.prototype.showProgress_ = function() {
  * @param {cr.Event} event A 'copy-progress' event from FileCopyManager.
  */
 ButterBar.prototype.onCopyProgress_ = function(event) {
+  // Delete operation has higher priority.
+  if (this.deleteTaskId_) return;
+
   if (event.reason != 'PROGRESS')
     this.clearShowTimeout_();
 
@@ -277,4 +285,79 @@ ButterBar.prototype.onCopyProgress_ = function(event) {
     default:
       console.log('Unknown "copy-progress" event reason: ' + event.reason);
   }
+};
+
+/**
+ * Informs user that files were deleted with an undo option.
+ * In fact, files will be really deleted after timeout.
+ * @param {Array.<Entry>} entries The entries to delete.
+ */
+ButterBar.prototype.initiateDelete = function(entries) {
+  if (this.deleteTaskId_) {
+    this.copyManager_.forceDeleteTask(this.deleteTaskId_);
+    this.deleteTaskId_ = null;
+  }
+
+  var callback = function(id) {
+    if (this.deleteTaskId_)
+      console.error('Already got a deleteTaskId');
+    this.deleteTaskId_ = id;
+  }.bind(this);
+
+  this.copyManager_.deleteEntries(entries, callback);
+};
+
+/**
+ * 'delete' event handler. Shows information about deleting files.
+ * @private
+ * @param {cr.Event} event A 'delete' event from FileCopyManager.
+ */
+ButterBar.prototype.onDelete_ = function(event) {
+  if (event.id != this.deleteTaskId_) return;
+
+  switch (event.reason) {
+    case 'SCHEDULED':
+      var props = [];
+      for (var i = 0; i < event.urls.length; i++) {
+        props[i] = {deleted: true};
+      }
+      this.metadataCache_.set(event.urls, 'internal', props);
+
+      var title = strf('DELETED_MESSAGE_PLURAL', event.urls.length);
+      if (event.urls.length == 1) {
+        var fullPath = util.extractFilePath(event.urls[0]);
+        var fileName = PathUtil.split(fullPath).pop();
+        title = strf('DELETED_MESSAGE', fileName);
+      }
+
+      this.show(title, {
+        // TODO: show the link 'undo' instead of X sign.
+        actions: {'Undo': this.undoDelete_.bind(this)},
+        timeout: 0
+      });
+      break;
+
+    case 'CANCELLED':
+    case 'SUCCESS':
+      var props = [];
+      for (var i = 0; i < event.urls.length; i++) {
+        props[i] = {deleted: false};
+      }
+      this.metadataCache_.set(event.urls, 'internal', props);
+
+      this.deleteTaskId_ = null;
+      this.hide_();
+      break;
+
+    default:
+      console.log('Unknown "delete" event reason: ' + event.reason);
+  }
+};
+
+/**
+ * Undo the delete operation.
+ * @private
+ */
+ButterBar.prototype.undoDelete_ = function() {
+  this.copyManager_.cancelDeleteTask(this.deleteTaskId_);
 };

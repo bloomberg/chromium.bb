@@ -496,42 +496,6 @@ DirectoryModel.prototype.replaceDirectoryContents_ = function(dirContents) {
 };
 
 /**
- * Delete the list of files and directories from filesystem and
- * update the file list.
- * @param {Array.<Entry>} entries Entries to delete.
- * @param {function()=} opt_callback Called when finished.
- */
-DirectoryModel.prototype.deleteEntries = function(entries, opt_callback) {
-  var downcount = entries.length + 1;
-  var currentDirPath = this.getCurrentDirPath();
-
-  var onComplete = opt_callback ? function() {
-    if (--downcount == 0)
-      opt_callback();
-  } : function() {};
-
-  var fileList = this.getFileList();
-  for (var i = 0; i < entries.length; i++) {
-    var entry = entries[i];
-
-    var onSuccess = function(removedEntry) {
-      if (currentDirPath == this.getCurrentDirPath()) {
-        var index = fileList.indexOf(removedEntry);
-        if (index >= 0)
-          fileList.splice(index, 1);
-      }
-      onComplete();
-    }.bind(this, entry);
-
-    util.removeFileOrDirectory(
-        entry,
-        onSuccess,
-        util.flog('Error deleting ' + entry.fullPath, onComplete));
-  }
-  onComplete();
-};
-
-/**
  * @param {string} name Filename.
  */
 DirectoryModel.prototype.onEntryChanged = function(name) {

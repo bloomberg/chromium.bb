@@ -14,9 +14,7 @@
 var pyautoAPI = {
   /**
    * Add the item with given name to the current selection.
-   *
    * @param {string} name Name of the item to add to selection
-   * @return {boolean} Whether item exists.
    */
   addItemToSelection: function(name) {
     var entryExists = false;
@@ -36,8 +34,6 @@ var pyautoAPI = {
   /**
    * List all items in the current directory.
    * We assume names do not contain '|' charecter.
-   *
-   * @return {object} A a list of item names.
    */
   listDirectory: function() {
     var list = [];
@@ -96,6 +92,10 @@ var pyautoAPI = {
     this.sendDone_();
   },
 
+  /**
+   * Executes the clipboard command.
+   * @param {string} command Command name.
+   */
   executeClipboardCommand_: function(command) {
     // Input should not be focused, or the cut/cop/paste command
     // will be treated as textual editing.
@@ -135,7 +135,6 @@ var pyautoAPI = {
 
   /**
    * Rename selected item.
-   *
    * @param {string} name New name of the item.
    */
   renameItem: function(name) {
@@ -148,13 +147,18 @@ var pyautoAPI = {
    * Delete selected entries.
    */
   deleteItems: function() {
-    var entries = fileManager.selection.entries;
-    fileManager.deleteEntries(entries, true, this.sendDone_);
+    var dm = fileManager.directoryModel_;
+    var onRescan = function() {
+      dm.removeEventListener('rescan-completed', onRescan);
+      this.sendDone_();
+    }.bind(this);
+
+    dm.addEventListener('rescan-completed', onRescan);
+    fileManager.deleteSelection();
   },
 
   /**
    * Create directory.
-   *
    * @param {string} name Name of the directory.
    */
   createDirectory: function(name) {
@@ -165,15 +169,13 @@ var pyautoAPI = {
     }.bind(this);
 
     dm.addEventListener('rescan-completed', onRescan);
-    fileManager.directoryModel_.createDirectory(name, function(){});
+    fileManager.directoryModel_.createDirectory(name, function() {});
   },
 
   /**
    * Change to a directory.
-   *
    * A path starting with '/' * is absolute, otherwise it is relative to the
    * current directory.
-   *
    * @param {string} path Path to directory.
    */
   changeDirectory: function(path) {
@@ -192,8 +194,6 @@ var pyautoAPI = {
 
   /**
    * Get the absolute path of current directory.
-   *
-   * @return {string} Path to the current directory.
    */
   currentDirectory: function() {
     this.sendValue_(fileManager.getCurrentDirectory());
@@ -201,8 +201,6 @@ var pyautoAPI = {
 
   /**
    * Get remaining and total size of selected directory.
-   *
-   * @return {object} remaining and total size in KB.
    */
   getSelectedDirectorySizeStats: function() {
     var directoryURL = fileManager.selection.entries[0].toURL();
@@ -213,11 +211,8 @@ var pyautoAPI = {
 
   /**
    * Returns whether the file manager is initialized.
-   *
    * This function is polled by pyauto before calling any
    * of the functions above.
-   *
-   * @return {boolean} Whether file manager is initialized.
    */
   isInitialized: function() {
     var initialized = fileManager &&

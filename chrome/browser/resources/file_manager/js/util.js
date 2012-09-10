@@ -583,6 +583,7 @@ util.applyTransform = function(element, transform) {
  * @return {string} URL.
  */
 util.makeFilesystemUrl = function(path) {
+  path = path.split('/').map(encodeURIComponent).join('/');
   return 'filesystem:' + chrome.extension.getURL('external' + path);
 };
 
