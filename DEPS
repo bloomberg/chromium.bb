@@ -220,6 +220,9 @@ deps = {
   "src/content/test/data/layout_tests/LayoutTests/storage/indexeddb":
     Var("webkit_trunk") + "/LayoutTests/storage/indexeddb@" +
     Var("webkit_revision"),
+  "src/content/test/data/layout_tests/LayoutTests/fast/files":
+    Var("webkit_trunk") + "/LayoutTests/fast/files@" +
+    Var("webkit_revision"),
   "src/content/test/data/layout_tests/LayoutTests/fast/filesystem/resources":
     Var("webkit_trunk") + "/LayoutTests/fast/filesystem/resources@" +
     Var("webkit_revision"),
