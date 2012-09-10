@@ -1048,6 +1048,8 @@ class Strace(ApiBase):
       # because the process was forcibly killed so it won't open any new file.
       RE_KILLED = re.compile(
           r'^.*\+\+\+ killed by ([A-Z]+)( \(core dumped\))? \+\+\+$')
+      # The process has exited.
+      RE_PROCESS_EXITED = re.compile(r'^\+\+\+ exited with (\d+) \+\+\+')
       # A call was canceled. Ignore any prefix.
       RE_UNAVAILABLE = re.compile(r'^.*\)\s*= \? <unavailable>$')
       # Happens when strace fails to even get the function name.
@@ -1157,6 +1159,12 @@ class Strace(ApiBase):
           match = self.RE_KILLED.match(line)
           if match:
             # Converts a '+++ killed by Foo +++' trace into an exit_group().
+            self.handle_exit_group(match.group(1), None)
+            return
+
+          match = self.RE_PROCESS_EXITED.match(line)
+          if match:
+            # Converts a '+++ exited with 1 +++' trace into an exit_group()
             self.handle_exit_group(match.group(1), None)
             return
 
