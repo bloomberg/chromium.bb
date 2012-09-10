@@ -125,8 +125,11 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   if (wm::IsWindowNormal(window()))
     AdjustBoundsForMainWindow(&bounds, grid_size);
   if (bounds != window()->bounds()) {
-    if (!did_move_or_resize_)
+    if (!did_move_or_resize_) {
+      if (!details_.restore_bounds.IsEmpty())
+        ClearRestoreBounds(window());
       RestackWindows();
+    }
     did_move_or_resize_ = true;
   }
 
@@ -164,7 +167,9 @@ void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
 
   if (snap_type_ == SNAP_LEFT_EDGE || snap_type_ == SNAP_RIGHT_EDGE) {
     if (!GetRestoreBoundsInScreen(window()))
-      SetRestoreBoundsInParent(window(), details_.initial_bounds);
+      SetRestoreBoundsInParent(window(), details_.restore_bounds.IsEmpty() ?
+                                         details_.initial_bounds :
+                                         details_.restore_bounds);
     window()->SetBounds(snap_sizer_->target_bounds());
     return;
   }
@@ -196,6 +201,9 @@ void WorkspaceWindowResizer::RevertDrag() {
     return;
 
   window()->SetBounds(details_.initial_bounds);
+  if (!details_.restore_bounds.IsEmpty())
+    SetRestoreBoundsInScreen(details_.window, details_.restore_bounds);
+
   if (details_.window_component == HTRIGHT) {
     int last_x = details_.initial_bounds.right();
     for (size_t i = 0; i < attached_windows_.size(); ++i) {

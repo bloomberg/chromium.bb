@@ -7,17 +7,39 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/property_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "grit/ui_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/root_window.h"
+#include "ui/base/hit_test.h"
+#include "ui/gfx/screen.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
+#include "ui/views/window/non_client_view.h"
 
 using views::Widget;
 using views::ImageButton;
 
 namespace {
+
+class ResizableWidgetDelegate : public views::WidgetDelegate {
+ public:
+  ResizableWidgetDelegate(views::Widget* widget) {
+    widget_ = widget;
+  }
+
+  virtual bool CanResize() const OVERRIDE { return true; }
+  // Implementations of the widget class.
+  virtual views::Widget* GetWidget() OVERRIDE { return widget_; }
+  virtual const views::Widget* GetWidget() const OVERRIDE { return widget_; }
+
+ private:
+  views::Widget* widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(ResizableWidgetDelegate);
+};
 
 // Creates a test widget that owns its native widget.
 Widget* CreateTestWidget() {
@@ -33,6 +55,17 @@ Widget* CreateAlwaysOnTopWidget() {
   Widget::InitParams params;
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.keep_on_top = true;
+  widget->Init(params);
+  return widget;
+}
+
+Widget* CreateResizableWidget() {
+  Widget* widget = new Widget;
+  Widget::InitParams params;
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.keep_on_top = true;
+  params.delegate = new ResizableWidgetDelegate(widget);
+  params.type = Widget::InitParams::TYPE_WINDOW;
   widget->Init(params);
   return widget;
 }
@@ -159,6 +192,40 @@ TEST_F(FramePainterTest, GetHeaderOpacity) {
             p1.GetHeaderOpacity(FramePainter::ACTIVE,
                                 IDR_AURA_WINDOW_HEADER_BASE_ACTIVE,
                                 &custom_overlay));
+}
+
+// Test the hit test function with windows which are "partially maximized".
+TEST_F(FramePainterTest, HitTestSpecialMaximizedModes) {
+  // Create a widget and a painter for it.
+  scoped_ptr<Widget> w1(CreateResizableWidget());
+  FramePainter p1;
+  ImageButton size1(NULL);
+  ImageButton close1(NULL);
+  p1.Init(w1.get(), NULL, &size1, &close1, FramePainter::SIZE_BUTTON_MAXIMIZES);
+  views::NonClientFrameView* frame = w1->non_client_view()->frame_view();
+  w1->Show();
+  gfx::Rect any_rect = gfx::Rect(0, 0, 100, 100);
+  gfx::Rect screen = gfx::Screen::GetDisplayMatching(any_rect).work_area();
+  w1->SetBounds(any_rect);
+  EXPECT_EQ(HTTOPLEFT, p1.NonClientHitTest(frame, gfx::Point(0, 15)));
+  w1->SetBounds(gfx::Rect(
+      screen.x(), screen.y(), screen.width() / 2, screen.height()));
+  // A hit without a set restore rect should produce a top left hit.
+  EXPECT_EQ(HTTOPLEFT, p1.NonClientHitTest(frame, gfx::Point(0, 15)));
+  ash::SetRestoreBoundsInScreen(w1->GetNativeWindow(), any_rect);
+  // A hit into the corner should produce nowhere - not left.
+  EXPECT_EQ(HTCAPTION, p1.NonClientHitTest(frame, gfx::Point(0, 15)));
+  // A hit into the middle upper area should generate right - not top&right.
+  EXPECT_EQ(HTRIGHT,
+            p1.NonClientHitTest(frame, gfx::Point(screen.width() / 2, 15)));
+  // A hit into the middle should generate right.
+  EXPECT_EQ(HTRIGHT,
+            p1.NonClientHitTest(frame, gfx::Point(screen.width() / 2,
+                                                  screen.height() / 2)));
+  // A hit into the middle lower area should generate right - not bottom&right.
+  EXPECT_EQ(HTRIGHT,
+            p1.NonClientHitTest(frame, gfx::Point(screen.width() / 2,
+                                                  screen.height() - 1)));
 }
 
 }  // namespace ash

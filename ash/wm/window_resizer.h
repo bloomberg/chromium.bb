@@ -64,6 +64,10 @@ class ASH_EXPORT WindowResizer {
     // Initial bounds of the window.
     gfx::Rect initial_bounds;
 
+    // Restore bounds (in screen coordinates) of the window before the drag
+    // started. Only set if the window is normal and is being dragged.
+    gfx::Rect restore_bounds;
+
     // Location passed to the constructor, in |window->parent()|'s coordinates.
     gfx::Point initial_location_in_parent;
 
