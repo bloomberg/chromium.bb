@@ -19,7 +19,6 @@ const Contact* ContactMap::Find(const std::string& contact_id) const {
 
 void ContactMap::Clear() {
   STLDeleteValues(&contacts_);
-  contacts_.clear();
 }
 
 void ContactMap::Merge(scoped_ptr<ScopedVector<Contact> > updated_contacts,

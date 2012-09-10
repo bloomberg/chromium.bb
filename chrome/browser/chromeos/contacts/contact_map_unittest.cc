@@ -14,9 +14,7 @@
 namespace contacts {
 namespace test {
 
-typedef testing::Test ContactMapTest;
-
-TEST_F(ContactMapTest, Merge) {
+TEST(ContactMapTest, Merge) {
   ContactMap map;
   EXPECT_TRUE(map.empty());
   EXPECT_EQ(0U, map.size());
