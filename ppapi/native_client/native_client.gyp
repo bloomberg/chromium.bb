@@ -20,20 +20,21 @@
             '..',
           ],
           'copies': [
-            {
-              'destination': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/include/nacl',
-              'files': [
-                  'src/trusted/weak_ref/call_on_main_thread.h',
-                  'src/shared/ppapi_proxy/ppruntime.h',
-              ],
-            },
-            {
-              'destination': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/include/nacl',
-              'files': [
-                  'src/trusted/weak_ref/call_on_main_thread.h',
-                  'src/shared/ppapi_proxy/ppruntime.h',
-              ],
-            },
+            # TODO(bradnelson): Re-enable on nacl DEPS roll.
+            #{
+            #  'destination': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/include/nacl',
+            #  'files': [
+            #      'src/trusted/weak_ref/call_on_main_thread.h',
+            #      'src/shared/ppapi_proxy/ppruntime.h',
+            #  ],
+            #},
+            #{
+            #  'destination': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/include/nacl',
+            #  'files': [
+            #      'src/trusted/weak_ref/call_on_main_thread.h',
+            #      'src/shared/ppapi_proxy/ppruntime.h',
+            #  ],
+            #},
             # Here we copy linker scripts out of the Native Client repository.
             # These are source, not build artifacts.
             {
