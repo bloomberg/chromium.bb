@@ -26,7 +26,6 @@ cr.define('gpu', function() {
     if (!this.debugMode_) {
       chrome.send('browserBridgeInitialized');
       this.beginRequestClientInfo_();
-      this.beginRequestSandboxInfo_();
       this.beginRequestLogMessages_();
       this.beginRequestCrashList_();
     }
@@ -39,11 +38,9 @@ cr.define('gpu', function() {
       // set up things according to the simulated data
       this.gpuInfo_ = data.gpuInfo;
       this.clientInfo_ = data.clientInfo;
-      this.sandboxInfo_ = data.sandboxInfo;
       this.logMessages_ = data.logMessages;
       cr.dispatchSimpleEvent(this, 'gpuInfoUpdate');
       cr.dispatchSimpleEvent(this, 'clientInfoChange');
-      cr.dispatchSimpleEvent(this, 'sandboxInfoChange');
       cr.dispatchSimpleEvent(this, 'logMessagesChange');
     },
 
@@ -118,28 +115,6 @@ cr.define('gpu', function() {
      */
     get clientInfo() {
       return this.clientInfo_;
-    },
-
-    /**
-     * This function begins a request for the SandboxInfo. If it comes back
-     * as undefined, then we will issue the request again in 250ms.
-     */
-    beginRequestSandboxInfo_: function() {
-      this.callAsync('requestSandboxInfo', undefined, (function(data) {
-        if (data === undefined) { // try again in 250 ms
-          window.setTimeout(this.beginRequestSandboxInfo_.bind(this), 250);
-        } else {
-          this.sandboxInfo_ = data;
-          cr.dispatchSimpleEvent(this, 'sandboxInfoChange');
-        }
-      }).bind(this));
-    },
-
-    /**
-     * Returns information about the currently runnign Chrome sandbox.
-     */
-    get sandboxInfo() {
-      return this.sandboxInfo_;
     },
 
     /**

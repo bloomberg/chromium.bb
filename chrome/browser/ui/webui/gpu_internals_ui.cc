@@ -35,11 +35,6 @@
 #include "third_party/angle/src/common/version.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_LINUX) || defined(OS_OPENBSD)
-#include "content/public/browser/zygote_host_linux.h"
-#include "content/public/common/sandbox_linux.h"
-#endif
-
 using content::BrowserThread;
 using content::GpuDataManager;
 using content::GpuFeatureType;
@@ -407,7 +402,6 @@ class GpuMessageHandler
 
   // Submessages dispatched from OnCallAsync
   Value* OnRequestClientInfo(const ListValue* list);
-  Value* OnRequestSandboxInfo(const ListValue* list);
   Value* OnRequestLogMessages(const ListValue* list);
   Value* OnRequestCrashList(const ListValue* list);
 
@@ -484,8 +478,6 @@ void GpuMessageHandler::OnCallAsync(const ListValue* args) {
   Value* ret = NULL;
   if (submessage == "requestClientInfo") {
     ret = OnRequestClientInfo(submessageArgs);
-  } else if (submessage == "requestSandboxInfo") {
-    ret = OnRequestSandboxInfo(submessageArgs);
   } else if (submessage == "requestLogMessages") {
     ret = OnRequestLogMessages(submessageArgs);
   } else if (submessage == "requestCrashList") {
@@ -562,35 +554,6 @@ Value* GpuMessageHandler::OnRequestClientInfo(const ListValue* list) {
 #endif
   dict->SetString("blacklist_version",
       GpuDataManager::GetInstance()->GetBlacklistVersion());
-
-  return dict;
-}
-
-Value* GpuMessageHandler::OnRequestSandboxInfo(const ListValue*) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  DictionaryValue* dict = new DictionaryValue();
-
-#if defined(OS_LINUX) || defined(OS_OPENBSD)
-  const int status = content::ZygoteHost::GetInstance()->GetSandboxStatus();
-  dict->SetBoolean("suid_sanbox", status & content::kSandboxLinuxSUID);
-  dict->SetBoolean("pid_namespaces", status & content::kSandboxLinuxPIDNS);
-  dict->SetBoolean("net_namespaces", status & content::kSandboxLinuxNetNS);
-  dict->SetBoolean("seccomp_legacy",
-      status & content::kSandboxLinuxSeccompLegacy);
-  dict->SetBoolean("seccomp_bpf", status & content::kSandboxLinuxSeccompBpf);
-  bool good = ((status & content::kSandboxLinuxSUID) &&
-               (status & content::kSandboxLinuxPIDNS)) ||
-              (status & content::kSandboxLinuxSeccompLegacy);
-  dict->SetBoolean("sandbox_ok", good);
-#else
-  dict->SetBoolean("suid_sanbox", false);
-  dict->SetBoolean("pid_namespaces", false);
-  dict->SetBoolean("net_namespaces", false);
-  dict->SetBoolean("seccomp_legacy", false);
-  dict->SetBoolean("seccomp_bpf", false);
-  dict->SetBoolean("sandbox_ok", true);
-#endif
 
   return dict;
 }
