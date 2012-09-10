@@ -39,6 +39,7 @@ class BrowserFrameAura : public views::ContextMenuController,
 
   // Overridden from views::NativeWidgetAura:
   virtual void OnWindowDestroying() OVERRIDE;
+  virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE;
 
   // Overridden from NativeBrowserFrame:
   virtual views::NativeWidget* AsNativeWidget() OVERRIDE;

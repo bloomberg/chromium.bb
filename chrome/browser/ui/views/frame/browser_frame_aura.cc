@@ -138,6 +138,17 @@ void BrowserFrameAura::OnWindowDestroying() {
   views::NativeWidgetAura::OnWindowDestroying();
 }
 
+void BrowserFrameAura::OnWindowTargetVisibilityChanged(bool visible) {
+  // On Aura when the BrowserView is shown it tries to restore focus, but can
+  // be blocked when this parent BrowserFrameAura isn't visible. Therefore we
+  // RestoreFocus() when we become visible, which results in the web contents
+  // being asked to focus, which places focus either in the web contents or in
+  // the location bar as appropriate.
+  if (visible)
+    browser_view_->RestoreFocus();
+  views::NativeWidgetAura::OnWindowTargetVisibilityChanged(visible);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserFrameAura, NativeBrowserFrame implementation:
 
