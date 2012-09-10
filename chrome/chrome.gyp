@@ -1077,16 +1077,14 @@
           'target_name': 'chrome_java',
           'type': 'none',
           'dependencies': [
-            '../base/base.gyp:base_java',
+            '../base/base.gyp:base',
             '../chrome/browser/component/components.gyp:web_contents_delegate_android_java',
             '../content/content.gyp:content_java',
-            '../net/net.gyp:net_java',
           ],
           'export_dependent_settings': [
-            '../base/base.gyp:base_java',
+            '../base/base.gyp:base',
             '../chrome/browser/component/components.gyp:web_contents_delegate_android_java',
             '../content/content.gyp:content_java',
-            '../net/net.gyp:net_java',
           ],
           'variables': {
             'package_name': 'chrome',

@@ -40,7 +40,6 @@
           'target_name': 'gpu_unittests_apk',
           'type': 'none',
           'dependencies': [
-            '../base/base.gyp:base_java',
             'gpu_unittests',
           ],
           'variables': {

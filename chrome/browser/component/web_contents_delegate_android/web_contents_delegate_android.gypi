@@ -34,7 +34,7 @@
       'target_name': 'web_contents_delegate_android_java',
       'type': 'none',
       'dependencies': [
-        '<(DEPTH)/base/base.gyp:base_java',
+        '<(DEPTH)/base/base.gyp:base',
       ],
       'variables': {
         'package_name': 'web_contents_delegate_android',

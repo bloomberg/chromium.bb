@@ -280,14 +280,14 @@
           'target_name': 'content_java',
           'type': 'none',
           'dependencies': [
-            '../base/base.gyp:base_java',
-            '../net/net.gyp:net_java',
+            '../base/base.gyp:base',
+            '../net/net.gyp:net',
             'common_aidl',
             'content_common',
           ],
           'export_dependent_settings': [
-            '../base/base.gyp:base_java',
-            '../net/net.gyp:net_java',
+            '../base/base.gyp:base',
+            '../net/net.gyp:net',
           ],
           'variables': {
             'package_name': 'content',

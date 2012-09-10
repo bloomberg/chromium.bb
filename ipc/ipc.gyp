@@ -132,7 +132,6 @@
           'target_name': 'ipc_tests_apk',
           'type': 'none',
           'dependencies': [
-            '../base/base.gyp:base_java',
             'ipc_tests',
           ],
           'variables': {

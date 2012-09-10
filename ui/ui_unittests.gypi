@@ -260,7 +260,6 @@
           'target_name': 'ui_unittests_apk',
           'type': 'none',
           'dependencies': [
-            '../base/base.gyp:base_java',
             'ui_unittests',
           ],
           'variables': {

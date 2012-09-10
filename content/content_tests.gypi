@@ -787,8 +787,6 @@
           'target_name': 'content_unittests_apk',
           'type': 'none',
           'dependencies': [
-            '../base/base.gyp:base_java',
-            '../net/net.gyp:net_java',
             'content_java',
             'content_unittests',
           ],
@@ -806,7 +804,7 @@
           'target_name': 'content_javatests',
           'type': 'none',
           'dependencies': [
-            '../base/base.gyp:base_java',
+            '../base/base.gyp:base',
             '../base/base.gyp:base_java_test_support',
             'content_common',
             'content_java',

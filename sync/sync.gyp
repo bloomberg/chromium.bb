@@ -872,7 +872,6 @@
           'target_name': 'sync_unit_tests_apk',
           'type': 'none',
           'dependencies': [
-            '../base/base.gyp:base_java',
             'sync_unit_tests',
           ],
           'variables': {
