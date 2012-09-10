@@ -25,7 +25,7 @@ class DockedPanelBrowserTest : public BasePanelBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, SqueezePanelsInDock) {
+IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, FLAKY_SqueezePanelsInDock) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
 
@@ -87,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, SqueezePanelsInDock) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, SqueezeAndThenSomeMore) {
+IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, FLAKY_SqueezeAndThenSomeMore) {
   PanelManager* panel_manager = PanelManager::GetInstance();
 
   // Create enough docked panels to get into squeezing.
@@ -139,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, SqueezeAndThenSomeMore) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, MinimizeSqueezedActive) {
+IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, FLAKY_MinimizeSqueezedActive) {
   PanelManager* panel_manager = PanelManager::GetInstance();
 
   // Create enough docked panels to get into squeezing.
@@ -196,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, MinimizeSqueezedActive) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, CloseSqueezedPanels) {
+IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, Flaky_CloseSqueezedPanels) {
   PanelManager* panel_manager = PanelManager::GetInstance();
 
   // Create enough docked panels to get into squeezing.
