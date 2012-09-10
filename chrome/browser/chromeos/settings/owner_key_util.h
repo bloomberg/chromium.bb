@@ -24,7 +24,7 @@ namespace chromeos {
 
 class OwnerKeyUtilTest;
 
-class OwnerKeyUtil : public base::RefCounted<OwnerKeyUtil> {
+class OwnerKeyUtil : public base::RefCountedThreadSafe<OwnerKeyUtil> {
  public:
   // Creates an OwnerKeyUtil instance.
   static OwnerKeyUtil* Create();
@@ -47,7 +47,7 @@ class OwnerKeyUtil : public base::RefCounted<OwnerKeyUtil> {
   virtual ~OwnerKeyUtil();
 
  private:
-  friend class base::RefCounted<OwnerKeyUtil>;
+  friend class base::RefCountedThreadSafe<OwnerKeyUtil>;
 
   FRIEND_TEST_ALL_PREFIXES(OwnerKeyUtilTest, ExportImportPublicKey);
 };
