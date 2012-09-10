@@ -160,6 +160,7 @@
             '../ppapi/ppapi_internal.gyp:ppapi_unittest_shared',
             '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
             '../ui/surface/surface.gyp:surface',
+            '../webkit/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
             '../webkit/support/webkit_support.gyp:appcache',
           ],
         }],
