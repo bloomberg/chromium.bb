@@ -7,6 +7,7 @@
 import cPickle
 import functools
 import glob
+import json
 import multiprocessing
 import os
 import Queue
@@ -1272,25 +1273,62 @@ class ASyncHWTestStage(HWTestStage, BoardSpecificBuilderStage,
 
 class SDKPackageStage(bs.BuilderStage):
   """Stage that performs preparing and packaging SDK files"""
+
+  # Version of the Manifest file being generated. Should be incremented for
+  # Major format changes.
+  MANIFEST_VERSION = '1'
+
   def _PerformStage(self):
     tarball_location = os.path.join(self._build_root, 'built-sdk.tbz2')
     chroot_location = os.path.join(self._build_root, 'chroot')
     board_location = os.path.join(chroot_location, 'build/amd64-host')
+    manifest_location = os.path.join(self._build_root,
+                                     'built-sdk.tbz2.Manifest')
 
     # Create a tarball of the latest SDK.
+    self.CreateSDKTarball(chroot_location, board_location, tarball_location)
+
+    # Create a package manifest for the tarball.
+    self.CreateManifestFromSDK(board_location, manifest_location)
+
+    # Make sure the regular user has the permission to read.
+    cmd = ['chmod', 'a+r', tarball_location]
+    cros_build_lib.SudoRunCommand(cmd, cwd=board_location)
+
+  def CreateSDKTarball(self, chroot, sdk_path, dest_tarball):
+    """Creates an SDK tarball from a given source chroot.
+
+    Args:
+      chroot: A chroot used for finding compression tool.
+      sdk_path: Path to the root of newly generated SDK image.
+      dest_tarball: Path of the tarball that should be created.
+    """
     bzip2 = cros_build_lib.FindCompressor(
-        cros_build_lib.COMP_BZIP2, chroot=chroot_location)
-    cmd = ['tar', '-I', bzip2, '-cf', tarball_location]
+        cros_build_lib.COMP_BZIP2, chroot=chroot)
+    cmd = ['tar', '-I', bzip2, '-cf', dest_tarball]
     excluded_paths = ('usr/lib/debug', 'usr/local/autotest', 'packages',
                       'tmp')
     for path in excluded_paths:
       cmd.append('--exclude=%s/*' % path)
     cmd.append('.')
-    cros_build_lib.SudoRunCommand(cmd, cwd=board_location)
+    cros_build_lib.SudoRunCommand(cmd, cwd=sdk_path)
 
-    # Make sure the regular user has the permission to read.
-    cmd = ['chmod', 'a+r', tarball_location]
-    cros_build_lib.SudoRunCommand(cmd, cwd=board_location)
+  def CreateManifestFromSDK(self, sdk_path, dest_manifest):
+    """Creates a manifest from a given source chroot.
+
+    Args:
+      sdk_path: Path to the root of the SDK to describe.
+      dest_manifest: Path to the manifest that should be generated.
+    """
+    package_data = {}
+    for key, version in portage_utilities.ListInstalledPackages(sdk_path):
+      package_data.setdefault(key, []).append((version, {}))
+    self._WriteManifest(package_data, dest_manifest)
+
+  def _WriteManifest(self, data, manifest):
+    """Encode manifest into a json file."""
+    json_input = dict(version=self.MANIFEST_VERSION, packages=data)
+    osutils.WriteFile(manifest, json.dumps(json_input))
 
 
 class SDKTestStage(bs.BuilderStage):

@@ -24,9 +24,9 @@ import multiprocessing
 import optparse
 import os
 import sys
-import tempfile
 
 from chromite.buildbot import cbuildbot_background as bg
+from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import gs
 from chromite.lib import osutils
@@ -46,6 +46,7 @@ _HOST_ARCH = 'amd64'
 _BOARD_PATH = 'chroot/build/%(board)s'
 _REL_BOARD_PATH = 'board/%(target)s/%(version)s'
 _REL_HOST_PATH = 'host/%(host_arch)s/%(target)s/%(version)s'
+_SDK_GS_BUCKET = 'gs://chromiumos-sdk'
 # Private overlays to look at for builds to filter
 # relative to build path
 _PRIVATE_OVERLAY_DIR = 'src/private-overlays'
@@ -402,8 +403,7 @@ class PrebuiltUploader(object):
     remote_location = '%s/%s' % (self._upload_location.rstrip('/'), url_suffix)
     assert remote_location.startswith('gs://')
     cwd, boardname = os.path.split(board_path.rstrip(os.path.sep))
-    try:
-      tmpdir = tempfile.mkdtemp()
+    with osutils.TempDirContextManager() as tmpdir:
       if prepackaged is None:
         tarfile = os.path.join(tmpdir, '%s.tbz2' % boardname)
         bzip2 = cros_build_lib.FindCompressor(cros_build_lib.COMP_BZIP2)
@@ -418,16 +418,27 @@ class PrebuiltUploader(object):
         tarfile = prepackaged
 
       remote_tarfile = '%s/%s.tbz2' % (remote_location.rstrip('/'), boardname)
+      version_str = version
       # FIXME(zbehan): Temporary hack to upload amd64-host chroots to a
       # different gs bucket. The right way is to do the upload in a separate
       # pass of this script.
-      if boardname == 'amd64-host':
+      if boardname == constants.CHROOT_BUILDER_BOARD:
         # FIXME(zbehan): Why does version contain the prefix "chroot-"?
+        version_str = version[len('chroot-'):]
         remote_tarfile = \
-            'gs://chromiumos-sdk/cros-sdk-%s.tbz2' % version.strip('chroot-')
+            '%s/cros-sdk-%s.tbz2' % (_SDK_GS_BUCKET, version_str)
+        # For SDK, also upload the manifest which is guaranteed to exist
+        # by the builderstage.
+        _GsUpload(tarfile + '.Manifest', remote_tarfile + '.Manifest',
+                  self._acl)
+        # Finally, also update the pointer to the latest SDK on which polling
+        # scripts rely.
+        pointerfile = os.path.join(tmpdir, 'cros-sdk-latest.conf')
+        remote_pointerfile = '%s/cros-sdk-latest.conf' % _SDK_GS_BUCKET
+        osutils.WriteFile(pointerfile, 'LATEST_SDK=%s' % version_str)
+        _GsUpload(pointerfile, remote_pointerfile, self._acl)
       _GsUpload(tarfile, remote_tarfile, self._acl)
-    finally:
-      cros_build_lib.SudoRunCommand(['rm', '-rf', tmpdir], cwd=cwd)
+
 
   def _GetTargets(self):
     """Retuns the list of targets to use."""
@@ -525,10 +536,10 @@ class PrebuiltUploader(object):
           tar_process.join()
           assert tar_process.exitcode == 0
           # TODO(zbehan): This should be done cleaner.
-          if target.board == 'amd64-host':
+          if target.board == constants.CHROOT_BUILDER_BOARD:
             sdk_conf = os.path.join(self._build_path, self._binhost_conf_dir,
                                   'host/sdk_version.conf')
-            RevGitFile(sdk_conf, version.strip('chroot-'),
+            RevGitFile(sdk_conf, version[len('chroot-'):],
                        key='SDK_LATEST_VERSION', dryrun=self._debug)
 
       # Record URL where prebuilts were uploaded.

@@ -6,6 +6,7 @@
 
 """Unittests for build stages."""
 
+import json
 import mox
 import os
 import shutil
@@ -45,7 +46,7 @@ class AbstractStageTest(cros_test_lib.MoxTestCase):
     """Returns an instance of the stage to be tested.
     Implement in subclasses.
     """
-    raise NotImplementedError, "return an instance of stage to be tested."
+    raise NotImplementedError(self, "ConstructStage")
 
   def setUp(self):
     # Always stub RunCommmand out as we use it in every method.
@@ -514,6 +515,68 @@ class BuildBoardTest(AbstractStageTest):
     self.mox.ReplayAll()
     self.RunStage()
     self.mox.VerifyAll()
+
+
+class SDKStageTest(AbstractStageTest, cros_test_lib.TempDirTestCase):
+  """Tests SDK package and Manifest creation."""
+  fake_packages = [('cat1/package','1'), ('cat1/package','2'),
+                   ('cat2/package','3'), ('cat2/package','4')]
+  fake_json_data = {}
+  fake_chroot = None
+
+  def setUp(self):
+    self.build_root = self.tempdir
+    self.options.buildroot = self.build_root
+
+    # Replace SudoRunCommand, since we don't care about sudo.
+    self._OriginalSudoRunCommand = cros_build_lib.SudoRunCommand
+    cros_build_lib.SudoRunCommand = cros_build_lib.RunCommand
+
+    # Prepare a fake chroot.
+    self.fake_chroot = os.path.join(self.build_root, 'chroot/build/amd64-host')
+    os.makedirs(self.fake_chroot)
+    osutils.Touch(os.path.join(self.fake_chroot, 'file'))
+    for package, v in self.fake_packages:
+      (c, p, v) = portage_utilities.SplitCPV('%s-%s' % (package, v))
+      key = '%s/%s' % (c, p)
+      self.fake_json_data.setdefault(key, []).append([v, {}])
+
+  def tearDown(self):
+    cros_build_lib.SudoRunCommand = self._OriginalSudoRunCommand
+
+  def ConstructStage(self):
+    return stages.SDKPackageStage(self.options, self.build_config)
+
+  def testTarballCreation(self):
+    """Tests whether we package the tarball and correctly create a Manifest."""
+    self.bot_id = 'chromiumos-sdk'
+    self.build_config = config.config[self.bot_id]
+    fake_tarball = os.path.join(self.build_root, 'built-sdk.tbz2')
+    fake_manifest = os.path.join(self.build_root,
+                                 'built-sdk.tbz2.Manifest')
+    self.mox.StubOutWithMock(portage_utilities, 'ListInstalledPackages')
+
+    portage_utilities.ListInstalledPackages(self.fake_chroot).AndReturn(
+        self.fake_packages)
+
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+
+    # Check tarball for the correct contents.
+    output = cros_build_lib.RunCommandCaptureOutput(
+        ['tar', '-jtvf', fake_tarball]).output.splitlines()
+    # First line is './', use it as an anchor, count the chars, and strip as
+    # much from all other lines.
+    stripchars = len(output[0]) - 1
+    tar_lines = [x[stripchars:] for x in output]
+    # TODO(ferringb): replace with assertIn.
+    self.assertFalse('/build/amd64-host/' in tar_lines)
+    self.assertTrue('/file' in tar_lines)
+    # Verify manifest contents.
+    real_json_data = json.loads(osutils.ReadFile(fake_manifest))
+    self.assertEqual(real_json_data['packages'],
+                     self.fake_json_data)
 
 
 class VMTestStageTest(AbstractStageTest):

@@ -54,6 +54,14 @@ def WriteFile(path, content, mode='w', atomic=False):
     raise
 
 
+def Touch(path):
+  """Simulate unix touch. Create if doesn't exist and update its timestamp."""
+  # Create the file if nonexistant.
+  open(path, 'a').close()
+  # Update timestamp to right now.
+  os.utime(path, None)
+
+
 def ReadFile(path, mode='r'):
   """Read a given file on disk.  Primarily useful for one off small files."""
   with open(path, mode) as f:

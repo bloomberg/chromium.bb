@@ -6,6 +6,7 @@
 
 import filecmp
 import fileinput
+import glob
 import logging
 import multiprocessing
 import os
@@ -23,6 +24,15 @@ _OVERLAY_LIST_CMD = '%(build_root)s/src/platform/dev/host/cros_overlay_list'
 
 # Takes two strings, package_name and commit_id.
 _GIT_COMMIT_MESSAGE = 'Marking 9999 ebuild for %s with commit(s) %s as stable.'
+
+# Package matching regexp, as dictated by package manager specification:
+# http://www.gentoo.org/proj/en/qa/pms.xml
+_pkg = '(?P<package>' + '[\w+][\w+-]*)'
+_ver = '(?P<version>' + \
+       '(?P<ver>(\d+)((\.\d+)*)([a-z]?)' + \
+       '((_(pre|p|beta|alpha|rc)\d*)*))' + \
+       '(?P<rev>(-r(\d+)))?)'
+_pvr_re = re.compile('^%s-%s$' % (_pkg, _ver), re.VERBOSE)
 
 
 def FindOverlays(srcroot, overlay_type, board=None):
@@ -701,15 +711,42 @@ def GetWorkonProjectMap(overlay, subdirectories):
 def SplitEbuildPath(path):
   """Split an ebuild path into its components.
 
-  Given a specified ebuild filename, returns $CATEGORY, $PN, $P.
+  Given a specified ebuild filename, returns $CATEGORY, $PN, $P. It does not
+  perform any check on ebuild name elements or their validity, merely splits
+  a filename, absolute or relative, and returns the last 3 components.
 
-  Example: For chromeos-base/power_manager/power_manager-9999.ebuild,
+  Example: For /any/path/chromeos-base/power_manager/power_manager-9999.ebuild,
   returns ('chromeos-base', 'power_manager', 'power_manager-9999').
 
   Returns:
     $CATEGORY, $PN, $P
   """
   return os.path.splitext(path)[0].rsplit('/', 3)[-3:]
+
+
+def SplitPV(pv):
+  """Takes a PV value and splits it into individual components.
+
+  Returns:
+    Package, Version
+  """
+  m = _pvr_re.match(pv)
+  if m is None:
+    return None
+  return (m.group('package'), m.group('version'))
+
+
+def SplitCPV(cpv):
+  """Splits a CPV value into components.
+
+  Returns:
+    Category, Package, Version
+  """
+  (category, pv) = cpv.split('/', 1)
+  m = SplitPV(pv)
+  if m is None:
+    return None
+  return (category, ) + m
 
 
 def FindWorkonProjects(packages):
@@ -727,3 +764,26 @@ def FindWorkonProjects(packages):
     for _, projects in GetWorkonProjectMap(overlay, packages):
       all_projects.update(projects)
   return all_projects
+
+
+def ListInstalledPackages(sysroot):
+  """Lists all portage packages in a given portage-managed root.
+
+  Assumes the existence of a /var/db/pkg package database.
+
+  Args:
+    sysroot: The root being inspected.
+
+  Returns:
+    A list of (cp,v) tuples in the given sysroot.
+  """
+  vdb_path = os.path.join(sysroot, 'var/db/pkg')
+  ebuild_pattern = os.path.join(vdb_path, '*/*/*.ebuild')
+  packages = []
+  for path in glob.glob(ebuild_pattern):
+    category, package, packagecheck = SplitEbuildPath(path)
+    pv = SplitPV(package)
+    if package == packagecheck and pv is not None:
+      pkgname, version = pv
+      packages.append(('%s/%s' % (category, pkgname), version))
+  return packages

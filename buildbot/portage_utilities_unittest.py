@@ -561,6 +561,19 @@ class ProjectMappingTest(cros_test_lib.TestCase):
     for path in (ebuild_path, './' + ebuild_path, 'foo.bar/' + ebuild_path):
       self.assertEquals(components, portage_utilities.SplitEbuildPath(path))
 
+  def testSplitPV(self):
+    """Test splitting PVs into package and version components."""
+    pv = 'bar-1.2.3_rc1-r5'
+    components = tuple(pv.split('-', 1))
+    self.assertEquals(components, portage_utilities.SplitPV(pv))
+
+  def testSplitCPV(self):
+    """Test splitting CPV into components."""
+    cpv = 'foo/bar-4.5.6_alpha-r6'
+    cat = cpv.split('/', 1)[0]
+    components = tuple([cat] + cpv.split('/', 1)[1].split('-', 1))
+    self.assertEquals(components, portage_utilities.SplitCPV(cpv))
+
   def testFindWorkonProjects(self):
     """Test if we can find the list of workon projects."""
     power_manager = 'chromeos-base/power_manager'
@@ -575,6 +588,53 @@ class ProjectMappingTest(cros_test_lib.TestCase):
     for packages, projects in matches:
       self.assertEquals(projects,
                         portage_utilities.FindWorkonProjects(packages))
+
+class PackageDBTest(cros_test_lib.MoxTempDirTestCase):
+  fake_pkgdb = { 'category1' : [ 'package-1', 'package-2' ],
+                 'category2' : [ 'package-3', 'package-4' ],
+                 'category3' : [ 'invalid', 'semi-invalid' ],
+                 'invalid' : [], }
+  fake_packages = []
+  build_root = None
+  fake_chroot = None
+
+  def setUp(self):
+    self.build_root = self.tempdir
+    # Prepare a fake chroot.
+    self.fake_chroot = os.path.join(self.build_root, 'chroot/build/amd64-host')
+    fake_pkgdb_path = os.path.join(self.fake_chroot, 'var/db/pkg')
+    os.makedirs(fake_pkgdb_path)
+    for cat, pkgs in self.fake_pkgdb.iteritems():
+      catpath = os.path.join(fake_pkgdb_path, cat)
+      if cat == 'invalid':
+        # Invalid category is a file. Should not be delved into.
+        osutils.Touch(catpath)
+        continue
+      os.makedirs(catpath)
+      for pkg in pkgs:
+        pkgpath = os.path.join(catpath, pkg)
+        if pkg == 'invalid':
+          # Invalid package is a file instead of a directory/
+          osutils.Touch(pkgpath)
+          continue
+        os.makedirs(pkgpath)
+        if pkg.endswith('-invalid'):
+          # Invalid package does not meet existence of "%s/%s.ebuild" file.
+          osutils.Touch(os.path.join(pkgpath, 'whatever'))
+          continue
+        # Correct pkg.
+        osutils.Touch(os.path.join(pkgpath, pkg + '.ebuild'))
+        (p, v) = portage_utilities.SplitPV(pkg)
+        key = '%s/%s' % (cat, p)
+        self.fake_packages.append((key, v))
+
+  def testListInstalledPackages(self):
+    """Test if listing packages installed into a root works."""
+    packages = portage_utilities.ListInstalledPackages(self.fake_chroot)
+    # Sort the lists, because the filesystem might reorder the entries for us.
+    packages.sort()
+    self.fake_packages.sort()
+    self.assertEquals(self.fake_packages, packages)
 
 
 if __name__ == '__main__':
