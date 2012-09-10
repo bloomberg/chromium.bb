@@ -295,12 +295,16 @@ class GTalkBaseTest(pyauto.PyUITest):
       The data object for the tab.
     """
     extension_views = self.GetBrowserInfo()['extension_views']
-    i = 0
+    candidate_views = list()
     for extension_view in extension_views:
       if extension_view['url'] and url_query in extension_view['url']:
-        if i == index:
-           return extension_view['view']
-        i = i + 1
+        candidate_views.append(extension_view['view'])
+
+    # No guarantee on view order, so sort the views to get the correct one for
+    # a given index.
+    candidate_views.sort()
+    if len(candidate_views) > index:
+      return candidate_views[index]
     return None
 
   def _GetInjectedJs(self):
