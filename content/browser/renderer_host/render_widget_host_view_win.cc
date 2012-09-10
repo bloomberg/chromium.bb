@@ -526,6 +526,9 @@ class WebTouchState {
   DISALLOW_COPY_AND_ASSIGN(WebTouchState);
 };
 
+typedef void (*MetroSetFrameWindow)(HWND window);
+typedef void (*MetroCloseFrameWindow)(HWND window);
+
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewWin, public:
 
@@ -1086,6 +1089,15 @@ void RenderWidgetHostViewWin::Destroy() {
   render_widget_host_ = NULL;
   being_destroyed_ = true;
   CleanupCompositorWindow();
+
+  if (is_fullscreen_ && base::win::IsMetroProcess()) {
+    MetroCloseFrameWindow close_frame_window =
+        reinterpret_cast<MetroCloseFrameWindow>(
+            ::GetProcAddress(base::win::GetMetroModule(), "CloseFrameWindow"));
+    DCHECK(close_frame_window);
+    close_frame_window(m_hWnd);
+  }
+
   DestroyWindow();
 }
 
@@ -3097,6 +3109,14 @@ void RenderWidgetHostViewWin::DoPopupOrFullscreenInit(HWND parent_hwnd,
   Create(parent_hwnd, NULL, NULL, WS_POPUP, ex_style);
   MoveWindow(pos.x(), pos.y(), pos.width(), pos.height(), TRUE);
   ShowWindow(IsActivatable() ? SW_SHOW : SW_SHOWNA);
+
+  if (is_fullscreen_ && base::win::IsMetroProcess()) {
+    MetroSetFrameWindow set_frame_window =
+        reinterpret_cast<MetroSetFrameWindow>(
+            ::GetProcAddress(base::win::GetMetroModule(), "SetFrameWindow"));
+    DCHECK(set_frame_window);
+    set_frame_window(m_hWnd);
+  }
 }
 
 CPoint RenderWidgetHostViewWin::GetClientCenter() const {
