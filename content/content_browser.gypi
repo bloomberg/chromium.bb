@@ -830,7 +830,7 @@
   'conditions': [
     ['OS!="win" and OS!="mac" and OS!="linux"', {
       'sources': [
-        'browser/gamepad/platform_data_fetcher.cc',
+        'browser/gamepad/gamepad_platform_data_fetcher.cc',
       ]
     }],
     ['OS!="ios"', {
@@ -976,7 +976,7 @@
     }],
     ['os_bsd==1', {
       'sources/': [
-        ['exclude', '^browser/gamepad/platform_data_fetcher_linux\\.cc$'],
+        ['exclude', '^browser/gamepad/gamepad_platform_data_fetcher_linux\\.cc$'],
         ['exclude', '^browser/geolocation/wifi_data_provider_linux\\.cc$'],
       ],
     }],
