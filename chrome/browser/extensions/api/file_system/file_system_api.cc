@@ -155,26 +155,19 @@ bool GetFileTypesFromAcceptOption(
       std::vector<FilePath::StringType> inner;
       std::string accept_type = *iter;
       StringToLowerASCII(&accept_type);
-
-      if (*iter == "image/*") {
-        description_id = IDS_IMAGE_FILES;
-        net::GetImageExtensions(&inner);
-      } else if (*iter == "audio/*") {
-        description_id = IDS_AUDIO_FILES;
-        net::GetAudioExtensions(&inner);
-      } else if (*iter == "video/*") {
-        description_id = IDS_VIDEO_FILES;
-        net::GetVideoExtensions(&inner);
-      } else {
-        net::GetExtensionsForMimeType(*iter, &inner);
-      }
-
+      net::GetExtensionsForMimeType(*iter, &inner);
       if (inner.empty())
         continue;
 
-      if (description_id && valid_type)
+      if (valid_type)
         description_id = 0; // We already have an accept type with label; if
                             // we find another, give up and use the default.
+      else if (accept_type == "image/*")
+        description_id = IDS_IMAGE_FILES;
+      else if (accept_type == "audio/*")
+        description_id = IDS_AUDIO_FILES;
+      else if (accept_type == "video/*")
+        description_id = IDS_VIDEO_FILES;
 
       extension_set.insert(inner.begin(), inner.end());
       valid_type = true;

@@ -44,9 +44,9 @@ void MediaPathFilter::EnsureInitialized() {
   if (initialized_)
     return;
 
-  net::GetImageExtensions(&media_file_extensions_);
-  net::GetAudioExtensions(&media_file_extensions_);
-  net::GetVideoExtensions(&media_file_extensions_);
+  net::GetExtensionsForMimeType("image/*", &media_file_extensions_);
+  net::GetExtensionsForMimeType("audio/*", &media_file_extensions_);
+  net::GetExtensionsForMimeType("video/*", &media_file_extensions_);
 
   MediaFileExtensionList::iterator new_end =
       std::remove_if(media_file_extensions_.begin(),
