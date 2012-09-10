@@ -31,16 +31,57 @@ cr.define('options', function() {
     OptionsPage.call(this, 'display',
                      loadTimeData.getString('displayOptionsPageTabTitle'),
                      'display-options-page');
-    this.mirroring_ = false;
-    this.focusedIndex_ = null;
-    this.displays_ = [];
-    this.visualScale_ = VISUAL_SCALE;
   }
 
   cr.addSingletonGetter(DisplayOptions);
 
   DisplayOptions.prototype = {
     __proto__: OptionsPage.prototype,
+
+    /**
+     * Whether the current output status is mirroring displays or not.
+     * @private
+     */
+    mirroring_: false,
+
+    /**
+     * The current secondary display layout.
+     * @private
+     */
+    layout_: SecondaryDisplayLayout.RIGHT,
+
+    /**
+     * The array of current output displays.  It also contains the display
+     * rectangles currently rendered on screen.
+     * @private
+     */
+    displays_: [],
+
+    /**
+     * The index for the currently focused display in the options UI.  null if
+     * no one has focus.
+     */
+    focusedIndex_: null,
+
+    /**
+     * The flag to check if the current options status should be sent to the
+     * system or not (unchanged).
+     * @private
+     */
+    dirty_: false,
+
+    /**
+     * The container div element which contains all of the display rectangles.
+     * @private
+     */
+    displaysView_: null,
+
+    /**
+     * The scale factor of the actual display size to the drawn display
+     * rectangle size.
+     * @private
+     */
+    visualScale_: VISUAL_SCALE,
 
     /**
      * Initialize the page.
@@ -80,6 +121,7 @@ cr.define('options', function() {
       }
       chrome.send('setDisplayLayout',
                   [this.layout_, offset / this.visualScale_]);
+      this.dirty_ = false;
     },
 
     /**
@@ -237,6 +279,7 @@ cr.define('options', function() {
         break;
       }
 
+      this.dirty_ = true;
       return false;
     },
 
@@ -311,7 +354,8 @@ cr.define('options', function() {
           draggingDiv.style.left = left + 'px';
         }
         this.dragging_ = null;
-        this.applyResult_();
+        if (this.dirty_)
+          this.applyResult_();
       }
       this.updateSelectedDisplayDescription_();
       return false;
@@ -515,6 +559,7 @@ cr.define('options', function() {
       this.mirroring_ = mirroring;
       this.layout_ = layout;
       this.offset_ = offset;
+      this.dirty_ = false;
 
       $('display-options-toggle-mirroring').textContent =
           loadTimeData.getString(
