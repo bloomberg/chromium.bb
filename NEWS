@@ -1,6 +1,6 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
-* Noteworthy changes in release 2.5.0 (2012-9-5)
+* Noteworthy changes in release 2.5.0 (2012-9-10)
 
 This release contains a tremendous amount of work many developers.
 Many long standing bugs have been fixed. The tables can finally be in
@@ -84,8 +84,7 @@ new DAISY pipeline will ship with this release of liblouis.
    - Reworked and extended Ethiopic braille table ethio-g1.ctb,
      superseeds gez*, thanks to Dr. Tamru E. Belay
      <g.braille@sympatico.ca>
-- Fixes to no-no-g3.ctb thanks to  Lars Bjørndal
-  <lars@lamasti.net>
+   - Fixes to no-no-g3.ctb thanks to Lars Bjørndal <lars@lamasti.net>
 
 * Noteworthy changes in release 2.4.1 (2012-2-22)
 
