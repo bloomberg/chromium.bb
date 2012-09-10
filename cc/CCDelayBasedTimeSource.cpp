@@ -43,6 +43,7 @@ CCDelayBasedTimeSource::CCDelayBasedTimeSource(double intervalSeconds, CCThread*
     , m_state(STATE_INACTIVE)
     , m_timer(thread, this)
 {
+    turnOffVerifier();
 }
 
 void CCDelayBasedTimeSource::setActive(bool active)

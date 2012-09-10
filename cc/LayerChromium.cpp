@@ -68,6 +68,7 @@ LayerChromium::LayerChromium()
     , m_layerAnimationDelegate(0)
     , m_layerScrollClient(0)
 {
+    turnOffVerifier(); // In the component build we don't have WTF threading initialized in this DLL so the thread verifier explodes.
     if (m_layerId < 0) {
         s_nextLayerId = 1;
         m_layerId = s_nextLayerId++;

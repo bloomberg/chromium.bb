@@ -47,6 +47,7 @@ RateLimiter::RateLimiter(WebKit::WebGraphicsContext3D* context, RateLimiterClien
     , m_active(false)
     , m_client(client)
 {
+    turnOffVerifier();
     ASSERT(context);
 }
 

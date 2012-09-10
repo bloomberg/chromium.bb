@@ -37,6 +37,11 @@ public:
         OwnPtr<CCPrioritizedTexture> m_texture;
     };
 
+    LayerTextureUpdater()
+    {
+        turnOffVerifier(); // In the component build we don't have WTF threading initialized in this DLL so the thread verifier explodes.
+    }
+
     virtual ~LayerTextureUpdater() { }
 
     enum SampledTexelFormat {
