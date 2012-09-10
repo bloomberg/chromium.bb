@@ -193,25 +193,28 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithGCExposed,
 class IndexedDBBrowserTestWithVersion0Schema : public IndexedDBBrowserTest {
  public:
   virtual void SetUpOnMainThread() {
+    scoped_refptr<IndexedDBContext> context =
+        BrowserContext::GetIndexedDBContext(
+            shell()->web_contents()->GetBrowserContext());
     BrowserThread::PostTask(
         BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
         base::Bind(
             &IndexedDBBrowserTestWithVersion0Schema::CopyLevelDBToProfile,
-            shell()));
+            shell(),
+            context));
     scoped_refptr<base::ThreadTestHelper> helper(
         new base::ThreadTestHelper(BrowserThread::GetMessageLoopProxyForThread(
             BrowserThread::WEBKIT_DEPRECATED)));
     ASSERT_TRUE(helper->Run());
   }
-  static void CopyLevelDBToProfile(Shell* shell) {
+  static void CopyLevelDBToProfile(Shell* shell,
+                                   scoped_refptr<IndexedDBContext> context) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
     FilePath leveldb_dir(FILE_PATH_LITERAL("file__0.indexeddb.leveldb"));
     FilePath test_data_dir =
         GetTestFilePath("indexeddb", "migration_from_0").Append(leveldb_dir);
-    IndexedDBContext* context = BrowserContext::GetIndexedDBContext(
-        shell->web_contents()->GetBrowserContext());
     IndexedDBContextImpl* context_impl =
-        static_cast<IndexedDBContextImpl*>(context);
+        static_cast<IndexedDBContextImpl*>(context.get());
     FilePath dest = context_impl->data_path().Append(leveldb_dir);
     // If we don't create the destination directory first, the contents of the
     // leveldb directory are copied directly into profile/IndexedDB instead of

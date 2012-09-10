@@ -282,6 +282,7 @@ void InitializeResourceContext(BrowserContext* browser_context) {
       kHostZoomMapKeyName,
       new NonOwningZoomData(
           HostZoomMap::GetForBrowserContext(browser_context)));
+  resource_context->DetachUserDataThread();
 
   // Add content's URLRequestContext's hooks.
   // Check first to avoid memory leak in unittests.
