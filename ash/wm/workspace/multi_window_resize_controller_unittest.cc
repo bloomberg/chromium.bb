@@ -86,7 +86,9 @@ class MultiWindowResizeControllerTest : public test::AshTestBase {
     return resize_controller_->IsOverWindows(loc);
   }
 
-  views::Widget* resize_widget() { return resize_controller_->resize_widget_; }
+  views::Widget* resize_widget() {
+    return resize_controller_->resize_widget_.get();
+  }
 
   MultiWindowResizeController* resize_controller_;
 

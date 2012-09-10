@@ -153,7 +153,7 @@ class ASH_EXPORT MultiWindowResizeController :
   // Timer used before showing.
   base::OneShotTimer<MultiWindowResizeController> show_timer_;
 
-  views::Widget* resize_widget_;
+  scoped_ptr<views::Widget> resize_widget_;
 
   // If non-null we're in a resize loop.
   scoped_ptr<WorkspaceWindowResizer> window_resizer_;

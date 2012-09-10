@@ -80,7 +80,8 @@ void TestShellDelegate::ShowTaskManager() {
 }
 
 content::BrowserContext* TestShellDelegate::GetCurrentBrowserContext() {
-  return new content::TestBrowserContext();
+  current_browser_context_.reset(new content::TestBrowserContext());
+  return current_browser_context_.get();
 }
 
 void TestShellDelegate::ToggleSpokenFeedback() {

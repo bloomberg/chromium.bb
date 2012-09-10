@@ -1209,11 +1209,33 @@
    fun:GetNumObjects
 }
 {
-   bug_114750
+   bug_114750_a
    Heapcheck:Leak
    fun:::FindBestMatchFontFamilyName
    fun:gfx::PlatformFontPango::PlatformFontPango
    fun:PlatformFontPangoTest_FamilyList_Test::TestBody
+}
+{
+   bug_114750_b
+   Heapcheck:Leak
+   fun:??
+   fun:FindBestMatchFontFamilyName
+   fun:PlatformFontPango
+   fun:gfx::PlatformFont::CreateFromNativeFont
+   fun:Font
+   fun:PlatformFontPango
+   fun:gfx::PlatformFont::CreateDefault
+   fun:Font
+   fun:Label
+   fun:ash::internal::TrayItemView::CreateLabel
+   fun:ash::internal::TrayIME::CreateTrayView
+   fun:ash::SystemTray::AddTrayItem
+   fun:ash::SystemTray::CreateItems
+   fun:ash::SystemTray::Initialize
+   fun:ash::internal::StatusAreaWidget::CreateTrayViews
+   fun:ash::Shell::Init
+   fun:ash::Shell::CreateInstance
+   fun:ash::test::AshTestBase::SetUp
 }
 {
    bug_114758

@@ -26,7 +26,7 @@ class DragDropTrackerTest : public test::AshTestBase {
                                         aura::Window* parent) {
     static int window_id = 0;
     return aura::test::CreateTestWindowWithDelegate(
-        new aura::test::TestWindowDelegate,
+        aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate(),
         window_id++,
         bounds,
         parent);

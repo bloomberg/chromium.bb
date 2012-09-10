@@ -7,6 +7,7 @@
 
 #include "ash/shell_delegate.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace ash {
 namespace test {
@@ -53,6 +54,7 @@ class TestShellDelegate : public ShellDelegate {
  private:
   bool locked_;
   bool spoken_feedback_enabled_;
+  scoped_ptr<content::BrowserContext> current_browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(TestShellDelegate);
 };

@@ -28,11 +28,6 @@ class ScreensaverViewTest : public ash::test::AshTestBase {
     RunAllPendingInMessageLoop();
   }
 
-  virtual void TearDown() OVERRIDE {
-    RunAllPendingInMessageLoop();
-    AshTestBase::TearDown();
-  }
-
   void ExpectOpenScreensaver() {
     internal::ScreensaverView* screensaver =
         internal::ScreensaverView::GetInstance();

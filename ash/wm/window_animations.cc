@@ -154,7 +154,7 @@ class HidingWindowAnimationObserver : public ui::ImplicitAnimationObserver,
     // Window may have been destroyed by this point.
     if (window_)
       window_->RemoveObserver(this);
-    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+    delete this;
   }
 
   // Overridden from aura::WindowObserver:
@@ -169,7 +169,6 @@ class HidingWindowAnimationObserver : public ui::ImplicitAnimationObserver,
     const views::Widget* const_widget = widget;
     if (widget && const_widget->GetRootView() && widget->GetContentsView())
       AcquireAllViewLayers(widget->GetContentsView());
-
     window_->RemoveObserver(this);
     window_ = NULL;
   }
@@ -221,6 +220,7 @@ class WorkspaceHidingWindowAnimationObserver
     // Restore the correct visibility value (overridden for the duration of the
     // animation in AnimateHideWindow()).
     layer_->SetVisible(false);
+    delete this;
   }
 
   ui::Layer* layer_;

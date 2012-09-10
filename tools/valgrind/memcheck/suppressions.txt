@@ -718,6 +718,23 @@
    ...
    fun:_mesa_glsl_link_shader
 }
+{
+   bug_146955
+   Memcheck:Unaddressable
+   ...
+   fun:FcConfigParseAndLoad
+   fun:FcInitLoadConfig
+   fun:FcInitLoadConfigAndFonts
+   fun:FcInit
+   fun:FcConfigGetCurrent
+   fun:FcConfigSubstituteWithPat
+   fun:_ZN12_GLOBAL__N_127FindBestMatchFontFamilyNameERKSt6vectorISsSaISsEE
+   fun:_ZN3gfx17PlatformFontPangoC1EP21_PangoFontDescription
+   fun:_ZN3gfx12PlatformFont20CreateFromNativeFontEP21_PangoFontDescription
+   fun:_ZN3gfx4FontC1EP21_PangoFontDescription
+   fun:_ZN3gfx17PlatformFontPangoC1Ev
+   fun:_ZN3gfx12PlatformFont13CreateDefaultEv
+}
 
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
@@ -5963,8 +5980,6 @@
    fun:_ZN7WebCore9CSSParser10parseSheetEPNS_18StyleSheetContentsERKN3WTF6StringEiPNS3_6VectorINS3_6RefPtrINS_17CSSRuleSourceDataEEELm0EEE
 }
 
-
-
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
 
@@ -6003,4 +6018,15 @@
    fun:XCreateBitmapFromData
    ...
    fun:_ZN4aura19RootWindowHostLinuxC1EPNS_22RootWindowHostDelegateERKN3gfx4RectE
+}
+{
+   bug_146950
+   Memcheck:Leak
+   fun:malloc
+   fun:get_peer_sock_name
+   fun:_xcb_get_auth_info
+   fun:xcb_connect_to_display_with_auth_info
+   fun:_XConnectXCB
+   fun:XOpenDisplay
+   fun:_ZN4base18MessagePumpAuraX1118GetDefaultXDisplayEv
 }
