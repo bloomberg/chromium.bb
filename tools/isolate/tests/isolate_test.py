@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import cStringIO
 import logging
 import os
 import sys
@@ -278,8 +279,7 @@ class Isolate(unittest.TestCase):
       },
     }
     self.assertEquals(
-        expected, isolate.load_isolate_as_config(
-          value, None, []).flatten())
+        expected, isolate.load_isolate_as_config(value, None, []).flatten())
 
   def test_load_isolate_as_config_duplicate_command(self):
     value = {
@@ -490,7 +490,7 @@ class Isolate(unittest.TestCase):
     self.assertEquals(expected_values, actual_values)
     self.assertEquals(oses, actual_oses)
 
-  def test_convert_map_to_isolate_as_config(self):
+  def test_convert_map_to_isolate_dict(self):
     values = {
       'command': {
         ('echo', 'Hello World'): set(['atari']),
@@ -727,15 +727,13 @@ class Isolate(unittest.TestCase):
     # Pylint is confused with isolate.union() return type.
     # pylint: disable=E1103
     configs = isolate.union(
-        isolate.load_isolate_as_config(
-          {}, '# Yo dawg!\n# Chill out.\n', []),
+        isolate.load_isolate_as_config({}, '# Yo dawg!\n# Chill out.\n', []),
         isolate.load_isolate_as_config({}, None, []))
     self.assertEquals('# Yo dawg!\n# Chill out.\n', configs.file_comment)
 
     configs = isolate.union(
         isolate.load_isolate_as_config({}, None, []),
-        isolate.load_isolate_as_config(
-          {}, '# Yo dawg!\n# Chill out.\n', []))
+        isolate.load_isolate_as_config({}, '# Yo dawg!\n# Chill out.\n', []))
     self.assertEquals('# Yo dawg!\n# Chill out.\n', configs.file_comment)
 
     # Only keep the first one.
@@ -746,9 +744,86 @@ class Isolate(unittest.TestCase):
 
   def test_extract_comment(self):
     self.assertEquals(
-        '# Foo\n# Bar\n',
-        isolate.extract_comment('# Foo\n# Bar\n{}'))
+        '# Foo\n# Bar\n', isolate.extract_comment('# Foo\n# Bar\n{}'))
     self.assertEquals('', isolate.extract_comment('{}'))
+
+  def _test_pretty_print_impl(self, value, expected):
+    actual = cStringIO.StringIO()
+    isolate.pretty_print(value, actual)
+    self.assertEquals(expected, actual.getvalue())
+
+  def test_pretty_print_empty(self):
+    self._test_pretty_print_impl({}, '{\n}\n')
+
+  def test_pretty_print_mid_size(self):
+    value = {
+      'variables': {
+        'bar': [
+          'file1',
+          'file2',
+        ],
+      },
+      'conditions': [
+        ['OS=\"foo\"', {
+          'variables': {
+            isolate.KEY_UNTRACKED: [
+              'dir1',
+              'dir2',
+            ],
+            isolate.KEY_TRACKED: [
+              'file4',
+              'file3',
+            ],
+            'command': ['python', '-c', 'print "H\\i\'"'],
+            'read_only': True,
+            'relative_cwd': 'isol\'at\\e',
+          },
+        }],
+        ['OS=\"bar\"', {
+          'variables': {},
+        }, {
+          'variables': {},
+        }],
+      ],
+    }
+    expected = (
+        "{\n"
+        "  'variables': {\n"
+        "    'bar': [\n"
+        "      'file1',\n"
+        "      'file2',\n"
+        "    ],\n"
+        "  },\n"
+        "  'conditions': [\n"
+        "    ['OS=\"foo\"', {\n"
+        "      'variables': {\n"
+        "        'command': [\n"
+        "          'python',\n"
+        "          '-c',\n"
+        "          'print \"H\\i\'\"',\n"
+        "        ],\n"
+        "        'relative_cwd': 'isol\\'at\\\\e',\n"
+        "        'read_only': True\n"
+        "        'isolate_dependency_tracked': [\n"
+        "          'file4',\n"
+        "          'file3',\n"
+        "        ],\n"
+        "        'isolate_dependency_untracked': [\n"
+        "          'dir1',\n"
+        "          'dir2',\n"
+        "        ],\n"
+        "      },\n"
+        "    }],\n"
+        "    ['OS=\"bar\"', {\n"
+        "      'variables': {\n"
+        "      },\n"
+        "    }, {\n"
+        "      'variables': {\n"
+        "      },\n"
+        "    }],\n"
+        "  ],\n"
+        "}\n")
+    self._test_pretty_print_impl(value, expected)
 
 
 if __name__ == '__main__':

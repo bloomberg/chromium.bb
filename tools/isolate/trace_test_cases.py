@@ -15,7 +15,7 @@ import os
 import sys
 import time
 
-import isolate_common as isolate  # TODO(maruel): Remove references to isolate.
+import isolate  # TODO(maruel): Remove references to isolate.
 import run_test_cases
 import trace_inputs
 
