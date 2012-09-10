@@ -24,7 +24,15 @@ class Extension;
 // implementation details for each platform.
 class ExtensionKeybindingRegistry : public content::NotificationObserver {
  public:
-  explicit ExtensionKeybindingRegistry(Profile* profile);
+   enum ExtensionFilter {
+     ALL_EXTENSIONS,
+     PLATFORM_APPS_ONLY
+   };
+
+   // If |extension_filter| is not ALL_EXTENSIONS, only keybindings by
+  // by extensions that match the filter will be registered.
+  ExtensionKeybindingRegistry(Profile* profile,
+                              ExtensionFilter extension_filter);
   virtual ~ExtensionKeybindingRegistry();
 
   // Enables/Disables general shortcut handing in Chrome. Implemented in
@@ -57,11 +65,17 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver {
   bool ShouldIgnoreCommand(const std::string& command) const;
 
  private:
+  // Returns true if the |extension| matches our extension filter.
+  bool ExtensionMatchesFilter(const extensions::Extension* extension);
+
   // The content notification registrar for listening to extension events.
   content::NotificationRegistrar registrar_;
 
-  // Weak pointer to the our profile. Not owned by us.
+  // Weak pointer to our profile. Not owned by us.
   Profile* profile_;
+
+  // What extensions to register keybindings for.
+  ExtensionFilter extension_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionKeybindingRegistry);
 };

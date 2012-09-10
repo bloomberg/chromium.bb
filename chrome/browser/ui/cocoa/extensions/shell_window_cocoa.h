@@ -17,6 +17,7 @@
 #import "third_party/GTM/AppKit/GTMWindowSheetController.h"
 #include "ui/gfx/rect.h"
 
+class ExtensionKeybindingRegistryCocoa;
 class Profile;
 class ShellWindowCocoa;
 @class ShellNSWindow;
@@ -35,6 +36,10 @@ class ShellWindowCocoa;
 }
 
 @property(assign, nonatomic) ShellWindowCocoa* shellWindow;
+
+// Consults the Command Registry to see if this |event| needs to be handled as
+// an extension command and returns YES if so (NO otherwise).
+- (BOOL)handledByExtensionCommand:(NSEvent*)event;
 
 @end
 
@@ -79,6 +84,9 @@ class ShellWindowCocoa : public NativeShellWindow {
   // Called when the window is moved.
   void WindowDidMove();
 
+  // Called to handle a key event.
+  bool HandledByExtensionCommand(NSEvent* event);
+
  protected:
   // NativeShellWindow implementation.
   virtual void SetFullscreen(bool fullscreen) OVERRIDE;
@@ -117,6 +125,10 @@ class ShellWindowCocoa : public NativeShellWindow {
   NSInteger attention_request_id_;  // identifier from requestUserAttention
 
   std::vector<extensions::DraggableRegion> draggable_regions_;
+
+  // The Extension Command Registry used to determine which keyboard events to
+  // handle.
+  scoped_ptr<ExtensionKeybindingRegistryCocoa> extension_keybinding_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellWindowCocoa);
 };

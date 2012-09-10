@@ -16,6 +16,7 @@
 #include "ui/base/x/active_window_watcher_x_observer.h"
 #include "ui/gfx/rect.h"
 
+class ExtensionKeybindingRegistryGtk;
 class Profile;
 
 namespace extensions {
@@ -117,6 +118,11 @@ class ShellWindowGtk : public NativeShellWindow,
 
   // The timer used to save the window position for session restore.
   base::OneShotTimer<ShellWindowGtk> window_configure_debounce_timer_;
+
+  // The Extension Keybinding Registry responsible for registering listeners for
+  // accelerators that are sent to the window, that are destined to be turned
+  // into events and sent to the extension.
+  scoped_ptr<ExtensionKeybindingRegistryGtk> extension_keybinding_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellWindowGtk);
 };

@@ -20,8 +20,10 @@ void extensions::ExtensionKeybindingRegistry::SetShortcutHandlingSuspended(
 }
 
 ExtensionKeybindingRegistryViews::ExtensionKeybindingRegistryViews(
-    Profile* profile, views::FocusManager* focus_manager)
-    : ExtensionKeybindingRegistry(profile),
+    Profile* profile,
+    views::FocusManager* focus_manager,
+    ExtensionFilter extension_filter)
+    : ExtensionKeybindingRegistry(profile, extension_filter),
       profile_(profile),
       focus_manager_(focus_manager) {
   Init();

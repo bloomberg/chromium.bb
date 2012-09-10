@@ -6,6 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/gtk/extensions/extension_keybinding_registry_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/gtk_window_util.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -111,6 +112,11 @@ ShellWindowGtk::ShellWindowGtk(ShellWindow* shell_window,
     g_signal_connect(window_, "button-press-event",
                      G_CALLBACK(OnButtonPressThunk), this);
   }
+
+  // Add the keybinding registry.
+  extension_keybinding_registry_.reset(
+      new ExtensionKeybindingRegistryGtk(shell_window_->profile(), window_,
+          extensions::ExtensionKeybindingRegistry::PLATFORM_APPS_ONLY));
 
   ui::ActiveWindowWatcherX::AddObserver(this);
 }

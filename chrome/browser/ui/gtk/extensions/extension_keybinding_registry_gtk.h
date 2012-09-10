@@ -35,7 +35,9 @@ typedef struct _GdkEventKey GdkEventKey;
 class ExtensionKeybindingRegistryGtk
     : public extensions::ExtensionKeybindingRegistry {
  public:
-  ExtensionKeybindingRegistryGtk(Profile* profile, gfx::NativeWindow window);
+  ExtensionKeybindingRegistryGtk(Profile* profile,
+                                 gfx::NativeWindow window,
+                                 ExtensionFilter extension_filter);
   virtual ~ExtensionKeybindingRegistryGtk();
 
   static void set_shortcut_handling_suspended(bool suspended) {

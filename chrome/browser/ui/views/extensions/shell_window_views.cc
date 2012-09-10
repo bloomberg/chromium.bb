@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/common/extensions/draggable_region.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/render_view_host.h"
@@ -340,6 +341,12 @@ ShellWindowViews::ShellWindowViews(ShellWindow* shell_window,
           UTF8ToWide(app_name), shell_window_->profile()->GetPath()),
       GetWidget()->GetTopLevelWidget()->GetNativeWindow());
 #endif
+
+  extension_keybinding_registry_.reset(
+      new ExtensionKeybindingRegistryViews(shell_window_->profile(),
+          window_->GetFocusManager(),
+          extensions::ExtensionKeybindingRegistry::PLATFORM_APPS_ONLY));
+
   OnViewWasResized();
 
   window_->Show();
@@ -629,7 +636,8 @@ void ShellWindowViews::UpdateDraggableRegions(
 
 void ShellWindowViews::HandleKeyboardEvent(
     const content::NativeWebKeyboardEvent& event) {
-  // No-op.
+  unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,
+                                                        GetFocusManager());
 }
 
 void ShellWindowViews::SaveWindowPlacement(const gfx::Rect& bounds,

@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
+#include "chrome/browser/ui/cocoa/extensions/extension_keybinding_registry_cocoa.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
@@ -75,6 +76,12 @@
 
 - (void)executeCommand:(int)command {
   // No-op, swallow the event.
+}
+
+- (BOOL)handledByExtensionCommand:(NSEvent*)event {
+  if (shellWindow_)
+    return shellWindow_->HandledByExtensionCommand(event);
+  return NO;
 }
 
 @end
@@ -199,6 +206,10 @@ ShellWindowCocoa::ShellWindowCocoa(ShellWindow* shell_window,
 
   [[window_controller_ window] setDelegate:window_controller_];
   [window_controller_ setShellWindow:this];
+
+  extension_keybinding_registry_.reset(
+      new ExtensionKeybindingRegistryCocoa(shell_window_->profile(), window,
+          extensions::ExtensionKeybindingRegistry::PLATFORM_APPS_ONLY));
 }
 
 void ShellWindowCocoa::InstallView() {
@@ -493,6 +504,11 @@ void ShellWindowCocoa::WindowDidResize() {
 
 void ShellWindowCocoa::WindowDidMove() {
   shell_window_->SaveWindowPosition();
+}
+
+bool ShellWindowCocoa::HandledByExtensionCommand(NSEvent* event) {
+  return extension_keybinding_registry_->ProcessKeyEvent(
+      content::NativeWebKeyboardEvent(event));
 }
 
 ShellWindowCocoa::~ShellWindowCocoa() {

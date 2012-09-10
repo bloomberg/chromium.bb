@@ -26,8 +26,10 @@ void extensions::ExtensionKeybindingRegistry::SetShortcutHandlingSuspended(
 bool ExtensionKeybindingRegistryCocoa::shortcut_handling_suspended_ = false;
 
 ExtensionKeybindingRegistryCocoa::ExtensionKeybindingRegistryCocoa(
-    Profile* profile, gfx::NativeWindow window)
-    : ExtensionKeybindingRegistry(profile),
+    Profile* profile,
+    gfx::NativeWindow window,
+    ExtensionFilter extension_filter)
+    : ExtensionKeybindingRegistry(profile, extension_filter),
       profile_(profile),
       window_(window) {
   Init();

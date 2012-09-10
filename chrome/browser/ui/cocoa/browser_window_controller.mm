@@ -417,7 +417,8 @@ enum {
 
     extension_keybinding_registry_.reset(
         new ExtensionKeybindingRegistryCocoa(browser_->profile(),
-                                             [self window]));
+            [self window],
+            extensions::ExtensionKeybindingRegistry::ALL_EXTENSIONS));
 
     // We are done initializing now.
     initializing_ = NO;

@@ -21,8 +21,10 @@ void extensions::ExtensionKeybindingRegistry::SetShortcutHandlingSuspended(
 bool ExtensionKeybindingRegistryGtk::shortcut_handling_suspended_ = false;
 
 ExtensionKeybindingRegistryGtk::ExtensionKeybindingRegistryGtk(
-    Profile* profile, gfx::NativeWindow window)
-    : ExtensionKeybindingRegistry(profile),
+    Profile* profile,
+    gfx::NativeWindow window,
+    ExtensionFilter extension_filter)
+    : ExtensionKeybindingRegistry(profile, extension_filter),
       profile_(profile),
       window_(window),
       accel_group_(NULL) {
