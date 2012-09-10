@@ -9,9 +9,11 @@
 #include "base/bind_helpers.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string16.h"
+#include "base/stringprintf.h"
 #include "base/test/test_file_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -20,6 +22,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/plugin_prefs.h"
@@ -45,6 +50,8 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/content_settings.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -96,6 +103,16 @@ const char kURL[] = "http://example.com";
 const char kCookieValue[] = "converted=true";
 // Assigned to Philip J. Fry to fix eventually.
 const char kCookieOptions[] = ";expires=Wed Jan 01 3000 00:00:00 GMT";
+
+const FilePath::CharType kTestExtensionsDir[] = FILE_PATH_LITERAL("extensions");
+const FilePath::CharType kGoodCrxName[] = FILE_PATH_LITERAL("good.crx");
+const FilePath::CharType kAdBlockCrxName[] = FILE_PATH_LITERAL("adblock.crx");
+
+const char kGoodCrxId[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
+const char kAdBlockCrxId[] = "dojnnbeimaimaojcialkkgajdnefpgcn";
+
+const FilePath::CharType kGoodCrxManifestName[] =
+    FILE_PATH_LITERAL("good_update_manifest.xml");
 
 // Filters requests to the hosts in |urls| and redirects them to the test data
 // dir through URLRequestMockHTTPJobs.
@@ -375,6 +392,40 @@ class PolicyTest : public InProcessBrowserTest {
     content::RunMessageLoop();
   }
 #endif
+
+  ExtensionService* extension_service() {
+    extensions::ExtensionSystem* system =
+        extensions::ExtensionSystem::Get(browser()->profile());
+    return system->extension_service();
+  }
+
+  const extensions::Extension* InstallExtension(
+      const FilePath::StringType& name) {
+    FilePath extension_path(ui_test_utils::GetTestFilePath(
+        FilePath(kTestExtensionsDir), FilePath(name)));
+    scoped_refptr<extensions::CrxInstaller> installer =
+        extensions::CrxInstaller::Create(extension_service(), NULL);
+    installer->set_allow_silent_install(true);
+    installer->set_install_cause(extension_misc::INSTALL_CAUSE_UPDATE);
+    installer->set_creation_flags(extensions::Extension::FROM_WEBSTORE);
+
+    content::WindowedNotificationObserver observer(
+        chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+        content::NotificationService::AllSources());
+    installer->InstallCrx(extension_path);
+    observer.Wait();
+    content::Details<const extensions::Extension> details = observer.details();
+    return details.ptr();
+  }
+
+  void UninstallExtension(const std::string& id, bool expect_success) {
+    content::WindowedNotificationObserver observer(
+        expect_success ? chrome::NOTIFICATION_EXTENSION_UNINSTALLED
+                       : chrome::NOTIFICATION_EXTENSION_UNINSTALL_NOT_ALLOWED,
+        content::NotificationService::AllSources());
+    extension_service()->UninstallExtension(id, false, NULL);
+    observer.Wait();
+  }
 
   MockConfigurationPolicyProvider provider_;
 };
@@ -743,6 +794,102 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DownloadDirectory) {
   EXPECT_FALSE(file_util::PathExists(initial_dir.path().Append(file)));
 }
 #endif
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklist) {
+  // Verifies that blacklisted extensions can't be installed.
+  ExtensionService* service = extension_service();
+  ASSERT_FALSE(service->GetExtensionById(kGoodCrxId, true));
+  ASSERT_FALSE(service->GetExtensionById(kAdBlockCrxId, true));
+  base::ListValue blacklist;
+  blacklist.Append(base::Value::CreateStringValue(kGoodCrxId));
+  PolicyMap policies;
+  policies.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, blacklist.DeepCopy());
+  provider_.UpdateChromePolicy(policies);
+
+  // "good.crx" is blacklisted.
+  EXPECT_FALSE(InstallExtension(kGoodCrxName));
+  EXPECT_FALSE(service->GetExtensionById(kGoodCrxId, true));
+
+  // "adblock.crx" is not.
+  const extensions::Extension* adblock = InstallExtension(kAdBlockCrxName);
+  ASSERT_TRUE(adblock);
+  EXPECT_EQ(kAdBlockCrxId, adblock->id());
+  EXPECT_EQ(adblock,
+            service->GetExtensionById(kAdBlockCrxId, true));
+
+  // Now blacklist all extensions.
+  blacklist.Clear();
+  blacklist.Append(base::Value::CreateStringValue("*"));
+  policies.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, blacklist.DeepCopy());
+  provider_.UpdateChromePolicy(policies);
+  // AdBlock was automatically removed.
+  ASSERT_FALSE(service->GetExtensionById(kAdBlockCrxId, true));
+  // And can't be installed again, nor can good.crx.
+  EXPECT_FALSE(InstallExtension(kAdBlockCrxName));
+  EXPECT_FALSE(service->GetExtensionById(kAdBlockCrxId, true));
+  EXPECT_FALSE(InstallExtension(kGoodCrxName));
+  EXPECT_FALSE(service->GetExtensionById(kGoodCrxId, true));
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallWhitelist) {
+  // Verifies that the whitelist can open exceptions to the blacklist.
+  ExtensionService* service = extension_service();
+  ASSERT_FALSE(service->GetExtensionById(kGoodCrxId, true));
+  ASSERT_FALSE(service->GetExtensionById(kAdBlockCrxId, true));
+  base::ListValue blacklist;
+  blacklist.Append(base::Value::CreateStringValue("*"));
+  base::ListValue whitelist;
+  whitelist.Append(base::Value::CreateStringValue(kGoodCrxId));
+  PolicyMap policies;
+  policies.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, blacklist.DeepCopy());
+  policies.Set(key::kExtensionInstallWhitelist, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, whitelist.DeepCopy());
+  provider_.UpdateChromePolicy(policies);
+  // "adblock.crx" is blacklisted.
+  EXPECT_FALSE(InstallExtension(kAdBlockCrxName));
+  EXPECT_FALSE(service->GetExtensionById(kAdBlockCrxId, true));
+  // "good.crx" has a whitelist exception.
+  const extensions::Extension* good = InstallExtension(kGoodCrxName);
+  ASSERT_TRUE(good);
+  EXPECT_EQ(kGoodCrxId, good->id());
+  EXPECT_EQ(good, service->GetExtensionById(kGoodCrxId, true));
+  // The user can also remove this extension.
+  UninstallExtension(kGoodCrxId, true);
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
+  // Verifies that extensions that are force-installed by policies are
+  // installed and can't be uninstalled.
+  ExtensionService* service = extension_service();
+  ASSERT_FALSE(service->GetExtensionById(kGoodCrxId, true));
+
+  // Extensions that are force-installed come from an update URL, which defaults
+  // to the webstore. Use a mock URL for this test with an update manifest
+  // that includes "good.crx".
+  FilePath path = FilePath(kTestExtensionsDir).Append(kGoodCrxManifestName);
+  GURL url(URLRequestMockHTTPJob::GetMockUrl(path));
+
+  // Setting the forcelist extension should install "good.crx".
+  base::ListValue forcelist;
+  forcelist.Append(base::Value::CreateStringValue(StringPrintf(
+      "%s;%s", kGoodCrxId, url.spec().c_str())));
+  PolicyMap policies;
+  policies.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, forcelist.DeepCopy());
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_EXTENSION_INSTALLED,
+      content::NotificationService::AllSources());
+  provider_.UpdateChromePolicy(policies);
+  observer.Wait();
+  content::Details<const extensions::Extension> details = observer.details();
+  EXPECT_EQ(kGoodCrxId, details->id());
+  EXPECT_EQ(details.ptr(), service->GetExtensionById(kGoodCrxId, true));
+  // The user is not allowed to uninstall force-installed extensions.
+  UninstallExtension(kGoodCrxId, false);
+}
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, IncognitoEnabled) {
   // Verifies that incognito windows can't be opened when disabled by policy.
