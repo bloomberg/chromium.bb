@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_EVENTS_EVENT_CONSTANTS_EVENT_H_
-#define UI_BASE_EVENTS_EVENT_CONSTANTS_EVENT_H_
+#ifndef UI_BASE_EVENTS_EVENT_H_
+#define UI_BASE_EVENTS_EVENT_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -620,4 +620,4 @@ class UI_EXPORT GestureEvent : public LocatedEvent {
 
 }  // namespace ui
 
-#endif  // UI_BASE_EVENTS_EVENT_CONSTANTS_EVENT_H_
+#endif  // UI_BASE_EVENTS_EVENT_H_

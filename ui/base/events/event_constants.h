@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_EVENTS_EVENT_CONSTANTS_EVENTS_H_
-#define UI_BASE_EVENTS_EVENT_CONSTANTS_EVENTS_H_
+#ifndef UI_BASE_EVENTS_EVENT_CONSTANTS_H_
+#define UI_BASE_EVENTS_EVENT_CONSTANTS_H_
 
 #include "base/event_types.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -228,4 +228,4 @@ UI_EXPORT bool IsMouseEventFromTouch(UINT message);
 
 }  // namespace ui
 
-#endif  // UI_BASE_EVENTS_EVENT_CONSTANTS_EVENTS_H_
+#endif  // UI_BASE_EVENTS_EVENT_CONSTANTS_H_
