@@ -450,22 +450,22 @@ bool FileResource::IsDirectory() const {
   return mime_type_ == kDriveFolderMimeType;
 }
 
-DocumentEntry::EntryKind FileResource::GetKind() const {
+DriveEntryKind FileResource::GetKind() const {
   if (mime_type() == kGoogleDocumentMimeType)
-    return DocumentEntry::DOCUMENT;
+    return ENTRY_KIND_DOCUMENT;
   if (mime_type() == kGoogleSpreadsheetMimeType)
-    return DocumentEntry::SPREADSHEET;
+    return ENTRY_KIND_SPREADSHEET;
   if (mime_type() == kGooglePresentationMimeType)
-    return DocumentEntry::PRESENTATION;
+    return ENTRY_KIND_PRESENTATION;
   if (mime_type() == kGoogleDrawingMimeType)
-    return DocumentEntry::DRAWING;
+    return ENTRY_KIND_DRAWING;
   if (mime_type() == kGoogleTableMimeType)
-    return DocumentEntry::TABLE;
+    return ENTRY_KIND_TABLE;
   if (mime_type() == kDriveFolderMimeType)
-    return DocumentEntry::FOLDER;
+    return ENTRY_KIND_FOLDER;
   if (mime_type() == "application/pdf")
-    return DocumentEntry::PDF;
-  return DocumentEntry::FILE;
+    return ENTRY_KIND_PDF;
+  return ENTRY_KIND_FILE;
 }
 
 bool FileResource::Parse(const base::Value& value) {

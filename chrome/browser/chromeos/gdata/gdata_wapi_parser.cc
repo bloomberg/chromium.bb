@@ -137,27 +137,27 @@ const char kOpenWithPrefix[] = "http://schemas.google.com/docs/2007#open-with-";
 const size_t kOpenWithPrefixSize = arraysize(kOpenWithPrefix) - 1;
 
 struct EntryKindMap {
-  DocumentEntry::EntryKind kind;
+  DriveEntryKind kind;
   const char* entry;
   const char* extension;
 };
 
 const EntryKindMap kEntryKindMap[] = {
-    { DocumentEntry::UNKNOWN,      "unknown",      NULL},
-    { DocumentEntry::ITEM,         "item",         NULL},
-    { DocumentEntry::DOCUMENT,     "document",     ".gdoc"},
-    { DocumentEntry::SPREADSHEET,  "spreadsheet",  ".gsheet"},
-    { DocumentEntry::PRESENTATION, "presentation", ".gslides" },
-    { DocumentEntry::DRAWING,      "drawing",      ".gdraw"},
-    { DocumentEntry::TABLE,        "table",        ".gtable"},
-    { DocumentEntry::EXTERNAL_APP, "externalapp",  ".glink"},
-    { DocumentEntry::SITE,         "site",         NULL},
-    { DocumentEntry::FOLDER,       "folder",       NULL},
-    { DocumentEntry::FILE,         "file",         NULL},
-    { DocumentEntry::PDF,          "pdf",          NULL},
+    { ENTRY_KIND_UNKNOWN,      "unknown",      NULL},
+    { ENTRY_KIND_ITEM,         "item",         NULL},
+    { ENTRY_KIND_DOCUMENT,     "document",     ".gdoc"},
+    { ENTRY_KIND_SPREADSHEET,  "spreadsheet",  ".gsheet"},
+    { ENTRY_KIND_PRESENTATION, "presentation", ".gslides" },
+    { ENTRY_KIND_DRAWING,      "drawing",      ".gdraw"},
+    { ENTRY_KIND_TABLE,        "table",        ".gtable"},
+    { ENTRY_KIND_EXTERNAL_APP, "externalapp",  ".glink"},
+    { ENTRY_KIND_SITE,         "site",         NULL},
+    { ENTRY_KIND_FOLDER,       "folder",       NULL},
+    { ENTRY_KIND_FILE,         "file",         NULL},
+    { ENTRY_KIND_PDF,          "pdf",          NULL},
 };
-COMPILE_ASSERT(arraysize(kEntryKindMap) == DocumentEntry::NUM_ENTRY_KINDS,
-               EntryKindMap_and_EntryKind_are_not_in_sync);
+COMPILE_ASSERT(arraysize(kEntryKindMap) == ENTRY_KIND_MAX_VALUE,
+               EntryKindMap_and_DriveEntryKind_are_not_in_sync);
 
 struct LinkTypeMap {
   Link::LinkType type;
@@ -584,7 +584,7 @@ void FeedEntry::RegisterJSONConverter(
 // DocumentEntry implementation
 
 DocumentEntry::DocumentEntry()
-    : kind_(DocumentEntry::UNKNOWN),
+    : kind_(ENTRY_KIND_UNKNOWN),
       file_size_(0),
       deleted_(false),
       removed_(false) {
@@ -657,11 +657,11 @@ bool DocumentEntry::HasHostedDocumentExtension(const FilePath& file) {
 }
 
 // static
-DocumentEntry::EntryKind DocumentEntry::GetEntryKindFromTerm(
+DriveEntryKind DocumentEntry::GetEntryKindFromTerm(
     const std::string& term) {
   if (!StartsWithASCII(term, kTermPrefix, false)) {
     DVLOG(1) << "Unexpected term prefix term " << term;
-    return DocumentEntry::UNKNOWN;
+    return ENTRY_KIND_UNKNOWN;
   }
 
   std::string type = term.substr(strlen(kTermPrefix));
@@ -670,48 +670,48 @@ DocumentEntry::EntryKind DocumentEntry::GetEntryKindFromTerm(
       return kEntryKindMap[i].kind;
   }
   DVLOG(1) << "Unknown entry type for term " << term << ", type " << type;
-  return DocumentEntry::UNKNOWN;
+  return ENTRY_KIND_UNKNOWN;
 }
 
 // static
-int DocumentEntry::ClassifyEntryKind(EntryKind kind) {
+int DocumentEntry::ClassifyEntryKind(DriveEntryKind kind) {
   int classes = 0;
 
-  // All EntryKind members are listed here, so the compiler catches if a
+  // All DriveEntryKind members are listed here, so the compiler catches if a
   // newly added member is missing here.
   switch (kind) {
-    case UNKNOWN:
+    case ENTRY_KIND_UNKNOWN:
     // Special entries.
-    case ITEM:
-    case SITE:
+    case ENTRY_KIND_ITEM:
+    case ENTRY_KIND_SITE:
       break;
 
     // Hosted Google document.
-    case DOCUMENT:
-    case SPREADSHEET:
-    case PRESENTATION:
-    case DRAWING:
-    case TABLE:
+    case ENTRY_KIND_DOCUMENT:
+    case ENTRY_KIND_SPREADSHEET:
+    case ENTRY_KIND_PRESENTATION:
+    case ENTRY_KIND_DRAWING:
+    case ENTRY_KIND_TABLE:
       classes = KIND_OF_GOOGLE_DOCUMENT | KIND_OF_HOSTED_DOCUMENT;
       break;
 
     // Hosted external application document.
-    case EXTERNAL_APP:
+    case ENTRY_KIND_EXTERNAL_APP:
       classes = KIND_OF_EXTERNAL_DOCUMENT | KIND_OF_HOSTED_DOCUMENT;
       break;
 
     // Folders, collections.
-    case FOLDER:
+    case ENTRY_KIND_FOLDER:
       classes = KIND_OF_FOLDER;
       break;
 
     // Regular files.
-    case FILE:
-    case PDF:
+    case ENTRY_KIND_FILE:
+    case ENTRY_KIND_PDF:
       classes = KIND_OF_FILE;
       break;
 
-    case NUM_ENTRY_KINDS:
+    case ENTRY_KIND_MAX_VALUE:
       NOTREACHED();
   }
 

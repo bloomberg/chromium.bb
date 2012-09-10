@@ -75,11 +75,11 @@ void GDataWapiFeedProcessor::UpdateFileCountUmaHistograms(
            uma_stats.num_files_with_entry_kind.begin();
        iter != uma_stats.num_files_with_entry_kind.end();
        ++iter) {
-    const DocumentEntry::EntryKind kind = iter->first;
+    const DriveEntryKind kind = iter->first;
     const int count = iter->second;
     for (int i = 0; i < count; ++i) {
       UMA_HISTOGRAM_ENUMERATION(
-          "Drive.EntryKind", kind, DocumentEntry::NUM_ENTRY_KINDS);
+          "Drive.EntryKind", kind, ENTRY_KIND_MAX_VALUE);
     }
   }
 }

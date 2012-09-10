@@ -28,7 +28,7 @@ struct FeedToFileResourceMapUmaStats {
   FeedToFileResourceMapUmaStats();
   ~FeedToFileResourceMapUmaStats();
 
-  typedef std::map<DocumentEntry::EntryKind, int> EntryKindToCountMap;
+  typedef std::map<DriveEntryKind, int> EntryKindToCountMap;
   int num_regular_files;
   int num_hosted_documents;
   EntryKindToCountMap num_files_with_entry_kind;

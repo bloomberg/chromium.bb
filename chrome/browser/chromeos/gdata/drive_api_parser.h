@@ -362,7 +362,7 @@ class FileResource {
   // Returns EntryKind for this file.
   // TODO(kochi): Remove this once FileResource is directly converted to proto.
   // http://crbug.com/142293
-  DocumentEntry::EntryKind GetKind() const;
+  DriveEntryKind GetKind() const;
 
   // Returns file ID.  This is unique in all files in Google Drive.
   const std::string& file_id() const { return file_id_; }

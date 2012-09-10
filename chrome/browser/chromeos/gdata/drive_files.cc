@@ -113,7 +113,7 @@ std::string DriveEntry::EscapeUtf8FileName(const std::string& input) {
 
 DriveFile::DriveFile(DriveResourceMetadata* resource_metadata)
     : DriveEntry(resource_metadata),
-      kind_(DocumentEntry::UNKNOWN),
+      kind_(ENTRY_KIND_UNKNOWN),
       is_hosted_document_(false) {
   file_info_.is_directory = false;
 }

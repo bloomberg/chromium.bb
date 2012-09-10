@@ -113,7 +113,7 @@ TEST_F(GDataWAPIParserTest, DocumentFeedJsonParser) {
   // Check a folder entry.
   const DocumentEntry* folder_entry = feed->entries()[0];
   ASSERT_TRUE(folder_entry);
-  EXPECT_EQ(DocumentEntry::FOLDER, folder_entry->kind());
+  EXPECT_EQ(ENTRY_KIND_FOLDER, folder_entry->kind());
   EXPECT_EQ("\"HhMOFgcNHSt7ImBr\"", folder_entry->etag());
   EXPECT_EQ("folder:sub_sub_directory_folder_id", folder_entry->resource_id());
   EXPECT_EQ("https://1_folder_id", folder_entry->id());
@@ -155,7 +155,7 @@ TEST_F(GDataWAPIParserTest, DocumentFeedJsonParser) {
   // Check a file entry.
   const DocumentEntry* file_entry = feed->entries()[1];
   ASSERT_TRUE(file_entry);
-  EXPECT_EQ(DocumentEntry::FILE, file_entry->kind());
+  EXPECT_EQ(ENTRY_KIND_FILE, file_entry->kind());
   EXPECT_EQ(ASCIIToUTF16("filename.m4a"), file_entry->filename());
   EXPECT_EQ(ASCIIToUTF16("sugg_file_name.m4a"),
             file_entry->suggested_filename());
@@ -184,7 +184,7 @@ TEST_F(GDataWAPIParserTest, DocumentFeedJsonParser) {
   // Check a file entry.
   const DocumentEntry* document_entry = feed->entries()[2];
   ASSERT_TRUE(document_entry);
-  EXPECT_EQ(DocumentEntry::DOCUMENT, document_entry->kind());
+  EXPECT_EQ(ENTRY_KIND_DOCUMENT, document_entry->kind());
   EXPECT_TRUE(document_entry->is_hosted_document());
   EXPECT_TRUE(document_entry->is_google_document());
   EXPECT_FALSE(document_entry->is_external_document());
@@ -192,7 +192,7 @@ TEST_F(GDataWAPIParserTest, DocumentFeedJsonParser) {
   // Check an external document entry.
   const DocumentEntry* app_entry = feed->entries()[3];
   ASSERT_TRUE(app_entry);
-  EXPECT_EQ(DocumentEntry::EXTERNAL_APP, app_entry->kind());
+  EXPECT_EQ(ENTRY_KIND_EXTERNAL_APP, app_entry->kind());
   EXPECT_TRUE(app_entry->is_hosted_document());
   EXPECT_TRUE(app_entry->is_external_document());
   EXPECT_FALSE(app_entry->is_google_document());
@@ -204,7 +204,7 @@ TEST_F(GDataWAPIParserTest, DocumentEntryXmlParser) {
   scoped_ptr<DocumentEntry> entry(LoadDocumentEntryFromXml("entry.xml"));
   ASSERT_TRUE(entry.get());
 
-  EXPECT_EQ(DocumentEntry::FILE, entry->kind());
+  EXPECT_EQ(ENTRY_KIND_FILE, entry->kind());
   EXPECT_EQ("\"HhMOFgcNHSt7ImBr\"", entry->etag());
   EXPECT_EQ("file:xml_file_resource_id", entry->resource_id());
   EXPECT_EQ("https://xml_file_id", entry->id());
@@ -272,7 +272,7 @@ TEST_F(GDataWAPIParserTest, DocumentEntryXmlParser) {
   EXPECT_EQ("", entry1_unknown_link->app_id());
 
   // Check a file properties.
-  EXPECT_EQ(DocumentEntry::FILE, entry->kind());
+  EXPECT_EQ(ENTRY_KIND_FILE, entry->kind());
   EXPECT_EQ(ASCIIToUTF16("Xml Entry File Name.tar"), entry->filename());
   EXPECT_EQ(ASCIIToUTF16("Xml Entry Suggested File Name.tar"),
             entry->suggested_filename());
@@ -370,35 +370,35 @@ TEST_F(GDataWAPIParserTest, DocumentEntryHasDocumentExtension) {
 
 TEST_F(GDataWAPIParserTest, DocumentEntryClassifyEntryKind) {
   EXPECT_EQ(DocumentEntry::KIND_OF_NONE,
-            DocumentEntry::ClassifyEntryKind(DocumentEntry::UNKNOWN));
+            DocumentEntry::ClassifyEntryKind(ENTRY_KIND_UNKNOWN));
   EXPECT_EQ(DocumentEntry::KIND_OF_NONE,
-            DocumentEntry::ClassifyEntryKind(DocumentEntry::ITEM));
+            DocumentEntry::ClassifyEntryKind(ENTRY_KIND_ITEM));
   EXPECT_EQ(DocumentEntry::KIND_OF_NONE,
-            DocumentEntry::ClassifyEntryKind(DocumentEntry::SITE));
+            DocumentEntry::ClassifyEntryKind(ENTRY_KIND_SITE));
   EXPECT_EQ(DocumentEntry::KIND_OF_GOOGLE_DOCUMENT |
             DocumentEntry::KIND_OF_HOSTED_DOCUMENT,
-            DocumentEntry::ClassifyEntryKind(DocumentEntry::DOCUMENT));
+            DocumentEntry::ClassifyEntryKind(ENTRY_KIND_DOCUMENT));
   EXPECT_EQ(DocumentEntry::KIND_OF_GOOGLE_DOCUMENT |
             DocumentEntry::KIND_OF_HOSTED_DOCUMENT,
-            DocumentEntry::ClassifyEntryKind(DocumentEntry::SPREADSHEET));
+            DocumentEntry::ClassifyEntryKind(ENTRY_KIND_SPREADSHEET));
   EXPECT_EQ(DocumentEntry::KIND_OF_GOOGLE_DOCUMENT |
             DocumentEntry::KIND_OF_HOSTED_DOCUMENT,
-            DocumentEntry::ClassifyEntryKind(DocumentEntry::PRESENTATION));
+            DocumentEntry::ClassifyEntryKind(ENTRY_KIND_PRESENTATION));
   EXPECT_EQ(DocumentEntry::KIND_OF_GOOGLE_DOCUMENT |
             DocumentEntry::KIND_OF_HOSTED_DOCUMENT,
-            DocumentEntry::ClassifyEntryKind(DocumentEntry::DRAWING));
+            DocumentEntry::ClassifyEntryKind(ENTRY_KIND_DRAWING));
   EXPECT_EQ(DocumentEntry::KIND_OF_GOOGLE_DOCUMENT |
             DocumentEntry::KIND_OF_HOSTED_DOCUMENT,
-            DocumentEntry::ClassifyEntryKind(DocumentEntry::TABLE));
+            DocumentEntry::ClassifyEntryKind(ENTRY_KIND_TABLE));
   EXPECT_EQ(DocumentEntry::KIND_OF_EXTERNAL_DOCUMENT |
             DocumentEntry::KIND_OF_HOSTED_DOCUMENT,
-            DocumentEntry::ClassifyEntryKind(DocumentEntry::EXTERNAL_APP));
+            DocumentEntry::ClassifyEntryKind(ENTRY_KIND_EXTERNAL_APP));
   EXPECT_EQ(DocumentEntry::KIND_OF_FOLDER,
-            DocumentEntry::ClassifyEntryKind(DocumentEntry::FOLDER));
+            DocumentEntry::ClassifyEntryKind(ENTRY_KIND_FOLDER));
   EXPECT_EQ(DocumentEntry::KIND_OF_FILE,
-            DocumentEntry::ClassifyEntryKind(DocumentEntry::FILE));
+            DocumentEntry::ClassifyEntryKind(ENTRY_KIND_FILE));
   EXPECT_EQ(DocumentEntry::KIND_OF_FILE,
-            DocumentEntry::ClassifyEntryKind(DocumentEntry::PDF));
+            DocumentEntry::ClassifyEntryKind(ENTRY_KIND_PDF));
 }
 
 }  // namespace gdata

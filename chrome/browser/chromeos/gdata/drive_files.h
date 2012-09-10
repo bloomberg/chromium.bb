@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
+#include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
 
 namespace gdata {
@@ -174,7 +175,7 @@ class DriveFile : public DriveEntry {
   void FromProto(const DriveEntryProto& proto);
   void ToProto(DriveEntryProto* proto) const;
 
-  DocumentEntry::EntryKind kind() const { return kind_; }
+  DriveEntryKind kind() const { return kind_; }
   const GURL& thumbnail_url() const { return thumbnail_url_; }
   const GURL& alternate_url() const { return alternate_url_; }
   const std::string& content_mime_type() const { return content_mime_type_; }
@@ -198,7 +199,7 @@ class DriveFile : public DriveEntry {
 
   virtual DriveFile* AsDriveFile() OVERRIDE;
 
-  DocumentEntry::EntryKind kind_;  // Not saved in proto.
+  DriveEntryKind kind_;  // Not saved in proto.
   GURL thumbnail_url_;
   GURL alternate_url_;
   std::string content_mime_type_;

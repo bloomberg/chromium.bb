@@ -14,6 +14,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/string_piece.h"
 #include "base/time.h"
+#include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "googleurl/src/gurl.h"
 
 class FilePath;
@@ -337,27 +338,6 @@ class FeedEntry {
 // Document feed entry.
 class DocumentEntry : public FeedEntry {
  public:
-  // kEntryKindMap should be also updated if you modify EntryKind.
-  enum EntryKind {
-    UNKNOWN,
-    // Special entries.
-    ITEM,
-    SITE,
-    // Hosted Google document.
-    DOCUMENT,
-    SPREADSHEET,
-    PRESENTATION,
-    DRAWING,
-    TABLE,
-    // Hosted external application document.
-    EXTERNAL_APP,
-    // Folders, collections.
-    FOLDER,
-    // Regular files.
-    FILE,
-    PDF,
-    NUM_ENTRY_KINDS,
-  };
   virtual ~DocumentEntry();
 
   // Extracts "entry" dictionary from the JSON value, and parse the contents,
@@ -410,7 +390,7 @@ class DocumentEntry : public FeedEntry {
   const std::string& id() const { return id_; }
 
   // Document entry kind.
-  EntryKind kind() const { return kind_; }
+  DriveEntryKind kind() const { return kind_; }
 
   // Document entry title.
   const string16& title() const { return title_; }
@@ -490,7 +470,7 @@ class DocumentEntry : public FeedEntry {
   // EntryKindClass. For example, DOCUMENT is classified as
   // KIND_OF_HOSTED_DOCUMENT and KIND_OF_GOOGLE_DOCUMENT, hence the returned
   // value is KIND_OF_HOSTED_DOCUMENT | KIND_OF_GOOGLE_DOCUMENT.
-  static int ClassifyEntryKind(EntryKind kind);
+  static int ClassifyEntryKind(DriveEntryKind kind);
 
  private:
   friend class base::internal::RepeatedMessageConverter<DocumentEntry>;
@@ -502,14 +482,14 @@ class DocumentEntry : public FeedEntry {
   // Fills the remaining fields where JSONValueConverter cannot catch.
   void FillRemainingFields();
 
-  // Converts categories.term into EntryKind enum.
-  static EntryKind GetEntryKindFromTerm(const std::string& term);
+  // Converts categories.term into DriveEntryKind enum.
+  static DriveEntryKind GetEntryKindFromTerm(const std::string& term);
   // Converts |kind| into its text identifier equivalent.
-  static const char* GetEntryKindDescription(EntryKind kind);
+  static const char* GetEntryKindDescription(DriveEntryKind kind);
 
   std::string resource_id_;
   std::string id_;
-  EntryKind kind_;
+  DriveEntryKind kind_;
   string16 title_;
   base::Time published_time_;
   std::vector<string16> labels_;
