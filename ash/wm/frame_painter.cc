@@ -454,7 +454,21 @@ void FramePainter::PaintTitleBar(views::NonClientFrameView* view,
 void FramePainter::LayoutHeader(views::NonClientFrameView* view,
                                 bool maximized_layout) {
   // The maximized layout uses shorter buttons.
-  if (maximized_layout) {
+  if (maximized_layout &&
+      internal::WorkspaceController::IsWorkspace2Enabled()) {
+    SetButtonImages(close_button_,
+                    IDR_AURA_WINDOW_MAXIMIZED_CLOSE2,
+                    IDR_AURA_WINDOW_MAXIMIZED_CLOSE2_H,
+                    IDR_AURA_WINDOW_MAXIMIZED_CLOSE2_P);
+    // The chat window cannot be restored but only minimized.
+    // Case: (size_button_behavior_ == SIZE_BUTTON_MINIMIZES). We used to have
+    // a special set of artwork to show this case, but per discussion we
+    // removed this.
+    SetButtonImages(size_button_,
+                    IDR_AURA_WINDOW_MAXIMIZED_RESTORE2,
+                    IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_H,
+                    IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_P);
+  } else if (maximized_layout) {
     SetButtonImages(close_button_,
                     IDR_AURA_WINDOW_MAXIMIZED_CLOSE,
                     IDR_AURA_WINDOW_MAXIMIZED_CLOSE_H,

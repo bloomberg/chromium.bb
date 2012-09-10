@@ -205,6 +205,10 @@
           <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE" file="cros/window_close_short_normal.png" />
           <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE_H" file="cros/window_close_short_hover.png" />
           <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE_P" file="cros/window_close_short_pressed.png" />
+          <!-- These are temporary, when workspace2 is the default they'll replace IDR_AURA_WINDOW_MAXIMIZED_CLOSE -->
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE2" file="cros/window_close_short_black_normal.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE2_H" file="cros/window_close_short_black_hover.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE2_P" file="cros/window_close_short_black_pressed.png" />
         
           <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZE" file="cros/window_size_tall_normal.png" />
           <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZE_H" file="cros/window_size_tall_hover.png" />
@@ -212,6 +216,10 @@
           <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE" file="cros/window_size_short_normal.png" />
           <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE_H" file="cros/window_size_short_hover.png" />
           <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE_P" file="cros/window_size_short_pressed.png" />
+          <!-- These are temporary, when workspace2 is the default they'll replace IDR_AURA_WINDOW_MAXIMIZED_RESTORE -->
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE2" file="cros/window_size_short_black_normal.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_H" file="cros/window_size_short_black_hover.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_P" file="cros/window_size_short_black_pressed.png" />
         </if>
         <if expr="not context.startswith('default_')">
           <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CLOSE" file="aura/window_close_normal.png" />
