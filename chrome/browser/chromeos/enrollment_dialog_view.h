@@ -5,9 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ENROLLMENT_DIALOG_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_ENROLLMENT_DIALOG_VIEW_H_
 
-#include "base/callback.h"
-#include "googleurl/src/gurl.h"
-#include "net/base/cert_database.h"
+#include <string>
+
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/window/dialog_delegate.h"
 

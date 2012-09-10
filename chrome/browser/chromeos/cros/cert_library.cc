@@ -28,6 +28,7 @@
 #include "crypto/symmetric_key.h"
 #include "grit/generated_resources.h"
 #include "net/base/cert_database.h"
+#include "net/base/nss_cert_database.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"
 #include "unicode/coll.h"  // icu::Collator
@@ -128,12 +129,12 @@ class CertLibraryImpl
       ALLOW_THIS_IN_INITIALIZER_LIST(server_ca_certs_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    net::CertDatabase::AddObserver(this);
+    net::CertDatabase::GetInstance()->AddObserver(this);
   }
 
   ~CertLibraryImpl() {
     DCHECK(request_task_.is_null());
-    net::CertDatabase::RemoveObserver(this);
+    net::CertDatabase::GetInstance()->RemoveObserver(this);
   }
 
   // CertLibrary implementation.
@@ -242,7 +243,7 @@ class CertLibraryImpl
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 
-  virtual void OnUserCertAdded(const net::X509Certificate* cert) OVERRIDE {
+  virtual void OnCertAdded(const net::X509Certificate* cert) OVERRIDE {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     // Only load certificates if we have completed an initial request.
     if (certificates_loaded_) {
@@ -253,7 +254,7 @@ class CertLibraryImpl
     }
   }
 
-  virtual void OnUserCertRemoved(const net::X509Certificate* cert) OVERRIDE {
+  virtual void OnCertRemoved(const net::X509Certificate* cert) OVERRIDE {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     // Only load certificates if we have completed an initial request.
     if (certificates_loaded_) {
@@ -273,9 +274,8 @@ class CertLibraryImpl
     VLOG(1) << " Loading Certificates.";
     // Certificate fetch occurs on the DB thread.
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-    net::CertDatabase cert_db;
     net::CertificateList* cert_list = new net::CertificateList();
-    cert_db.ListCerts(cert_list);
+    net::NSSCertDatabase::GetInstance()->ListCerts(cert_list);
     // Pass the list to the UI thread to safely update the local lists.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,

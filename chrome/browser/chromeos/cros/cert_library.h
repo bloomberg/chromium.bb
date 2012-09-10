@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/string16.h"
-#include "net/base/cert_database.h"
 #include "net/base/x509_certificate.h"
 
 namespace crypto {

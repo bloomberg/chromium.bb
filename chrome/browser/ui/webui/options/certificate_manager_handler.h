@@ -13,7 +13,7 @@
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/certificate_manager_model.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
-#include "net/base/cert_database.h"
+#include "net/base/nss_cert_database.h"
 #include "ui/base/dialogs/select_file_dialog.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -146,7 +146,7 @@ class CertificateManagerHandler
   // attempted to import.
   void ShowImportErrors(
       const std::string& title,
-      const net::CertDatabase::ImportCertFailureList& not_imported) const;
+      const net::NSSCertDatabase::ImportCertFailureList& not_imported) const;
 
 #if defined(OS_CHROMEOS)
   // Check whether Tpm token is ready and notifiy JS side.

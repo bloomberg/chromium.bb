@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_CROS_ONC_NETWORK_PARSER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"  // for OVERRIDE
 #include "base/gtest_prod_util.h"

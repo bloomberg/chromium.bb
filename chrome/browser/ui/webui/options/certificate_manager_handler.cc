@@ -525,14 +525,14 @@ void CertificateManagerHandler::GetCATrust(const ListValue* args) {
     return;
   }
 
-  net::CertDatabase::TrustBits trust_bits =
-      certificate_manager_model_->cert_db().GetCertTrust(cert, net::CA_CERT);
+  net::NSSCertDatabase::TrustBits trust_bits =
+      certificate_manager_model_->cert_db()->GetCertTrust(cert, net::CA_CERT);
   base::FundamentalValue ssl_value(
-      static_cast<bool>(trust_bits & net::CertDatabase::TRUSTED_SSL));
+      static_cast<bool>(trust_bits & net::NSSCertDatabase::TRUSTED_SSL));
   base::FundamentalValue email_value(
-      static_cast<bool>(trust_bits & net::CertDatabase::TRUSTED_EMAIL));
+      static_cast<bool>(trust_bits & net::NSSCertDatabase::TRUSTED_EMAIL));
   base::FundamentalValue obj_sign_value(
-      static_cast<bool>(trust_bits & net::CertDatabase::TRUSTED_OBJ_SIGN));
+      static_cast<bool>(trust_bits & net::NSSCertDatabase::TRUSTED_OBJ_SIGN));
   web_ui()->CallJavascriptFunction(
       "CertificateEditCaTrustOverlay.populateTrust",
       ssl_value, email_value, obj_sign_value);
@@ -556,9 +556,9 @@ void CertificateManagerHandler::EditCATrust(const ListValue* args) {
   bool result = certificate_manager_model_->SetCertTrust(
       cert,
       net::CA_CERT,
-      trust_ssl * net::CertDatabase::TRUSTED_SSL +
-          trust_email * net::CertDatabase::TRUSTED_EMAIL +
-          trust_obj_sign * net::CertDatabase::TRUSTED_OBJ_SIGN);
+      trust_ssl * net::NSSCertDatabase::TRUSTED_SSL +
+          trust_email * net::NSSCertDatabase::TRUSTED_EMAIL +
+          trust_obj_sign * net::NSSCertDatabase::TRUSTED_OBJ_SIGN);
   web_ui()->CallJavascriptFunction("CertificateEditCaTrustOverlay.dismiss");
   if (!result) {
     // TODO(mattm): better error messages?
@@ -629,7 +629,7 @@ void CertificateManagerHandler::ExportPersonalPasswordSelected(
 
 void CertificateManagerHandler::ExportPersonalSlotsUnlocked() {
   std::string output;
-  int num_exported = certificate_manager_model_->cert_db().ExportToPKCS12(
+  int num_exported = certificate_manager_model_->cert_db()->ExportToPKCS12(
       selected_cert_list_,
       password_,
       &output);
@@ -720,9 +720,9 @@ void CertificateManagerHandler::ImportPersonalFileRead(
   file_data_ = data;
 
   if (use_hardware_backed_) {
-    module_ = certificate_manager_model_->cert_db().GetPrivateModule();
+    module_ = certificate_manager_model_->cert_db()->GetPrivateModule();
   } else {
-    module_ = certificate_manager_model_->cert_db().GetPublicModule();
+    module_ = certificate_manager_model_->cert_db()->GetPublicModule();
   }
 
   net::CryptoModuleList modules;
@@ -833,11 +833,11 @@ void CertificateManagerHandler::ImportServerFileRead(int read_errno,
     return;
   }
 
-  net::CertDatabase::ImportCertFailureList not_imported;
+  net::NSSCertDatabase::ImportCertFailureList not_imported;
   // TODO(mattm): Add UI for trust. http://crbug.com/76274
   bool result = certificate_manager_model_->ImportServerCert(
       selected_cert_list_,
-      net::CertDatabase::TRUST_DEFAULT,
+      net::NSSCertDatabase::TRUST_DEFAULT,
       &not_imported);
   if (!result) {
     ShowError(
@@ -892,7 +892,8 @@ void CertificateManagerHandler::ImportCAFileRead(int read_errno,
   }
 
   scoped_refptr<net::X509Certificate> root_cert =
-      certificate_manager_model_->cert_db().FindRootInList(selected_cert_list_);
+      certificate_manager_model_->cert_db()->FindRootInList(
+          selected_cert_list_);
 
   // TODO(mattm): check here if root_cert is not a CA cert and show error.
 
@@ -918,12 +919,12 @@ void CertificateManagerHandler::ImportCATrustSelected(const ListValue* args) {
 
   // TODO(mattm): add UI for setting explicit distrust, too.
   // http://crbug.com/128411
-  net::CertDatabase::ImportCertFailureList not_imported;
+  net::NSSCertDatabase::ImportCertFailureList not_imported;
   bool result = certificate_manager_model_->ImportCACerts(
       selected_cert_list_,
-      trust_ssl * net::CertDatabase::TRUSTED_SSL +
-          trust_email * net::CertDatabase::TRUSTED_EMAIL +
-          trust_obj_sign * net::CertDatabase::TRUSTED_OBJ_SIGN,
+      trust_ssl * net::NSSCertDatabase::TRUSTED_SSL +
+          trust_email * net::NSSCertDatabase::TRUSTED_EMAIL +
+          trust_obj_sign * net::NSSCertDatabase::TRUSTED_OBJ_SIGN,
       &not_imported);
   web_ui()->CallJavascriptFunction("CertificateEditCaTrustOverlay.dismiss");
   if (!result) {
@@ -1000,10 +1001,10 @@ void CertificateManagerHandler::PopulateTree(const std::string& tab_name,
             *cert, CertificateManagerModel::COL_SUBJECT_NAME));
         cert_dict->SetBoolean(
             kReadOnlyId,
-            certificate_manager_model_->cert_db().IsReadOnly(cert));
+            certificate_manager_model_->cert_db()->IsReadOnly(cert));
         cert_dict->SetBoolean(
             kUntrustedId,
-            certificate_manager_model_->cert_db().IsUntrusted(cert));
+            certificate_manager_model_->cert_db()->IsUntrusted(cert));
         // TODO(hshi): This should be determined by testing for PKCS #11
         // CKA_EXTRACTABLE attribute. We may need to use the NSS function
         // PK11_ReadRawAttribute to do that.
@@ -1041,7 +1042,7 @@ void CertificateManagerHandler::ShowError(const std::string& title,
 
 void CertificateManagerHandler::ShowImportErrors(
     const std::string& title,
-    const net::CertDatabase::ImportCertFailureList& not_imported) const {
+    const net::NSSCertDatabase::ImportCertFailureList& not_imported) const {
   std::string error;
   if (selected_cert_list_.size() == 1)
     error = l10n_util::GetStringUTF8(
@@ -1053,7 +1054,7 @@ void CertificateManagerHandler::ShowImportErrors(
 
   ListValue cert_error_list;
   for (size_t i = 0; i < not_imported.size(); ++i) {
-    const net::CertDatabase::ImportCertFailure& failure = not_imported[i];
+    const net::NSSCertDatabase::ImportCertFailure& failure = not_imported[i];
     DictionaryValue* dict = new DictionaryValue;
     dict->SetString(kNameId, failure.certificate->subject().GetDisplayName());
     dict->SetString(kErrorId, NetErrorToString(failure.net_error));

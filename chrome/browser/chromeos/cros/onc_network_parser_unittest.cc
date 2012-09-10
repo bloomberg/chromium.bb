@@ -28,9 +28,9 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/test/test_browser_thread.h"
 #include "crypto/nss_util.h"
-#include "net/base/cert_database.h"
 #include "net/base/cert_type.h"
 #include "net/base/crypto_module.h"
+#include "net/base/nss_cert_database.h"
 #include "net/base/x509_certificate.h"
 #include "net/proxy/proxy_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -67,7 +67,7 @@ class OncNetworkParserTest : public testing::Test {
   }
 
   virtual void SetUp() {
-    slot_ = cert_db_.GetPublicModule();
+    slot_ = net::NSSCertDatabase::GetInstance()->GetPublicModule();
 
     // Don't run the test if the setup failed.
     ASSERT_TRUE(slot_->os_module_handle());
@@ -108,7 +108,6 @@ class OncNetworkParserTest : public testing::Test {
 
  protected:
   scoped_refptr<net::CryptoModule> slot_;
-  net::CertDatabase cert_db_;
 
  private:
   net::CertificateList ListCertsInSlot(PK11SlotInfo* slot) {
@@ -131,7 +130,7 @@ class OncNetworkParserTest : public testing::Test {
     bool ok = true;
     net::CertificateList certs = ListCertsInSlot(slot);
     for (size_t i = 0; i < certs.size(); ++i) {
-      if (!cert_db_.DeleteCertAndKey(certs[i]))
+      if (!net::NSSCertDatabase::GetInstance()->DeleteCertAndKey(certs[i]))
         ok = false;
     }
     return ok;

@@ -7,8 +7,8 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "net/base/cert_database.h"
 #include "net/base/cert_test_util.h"
+#include "net/base/nss_cert_database.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(X509CertificateModelTest, GetTypeCA) {
@@ -27,9 +27,8 @@ TEST(X509CertificateModelTest, GetTypeCA) {
 
   // Test that explicitly distrusted CA certs are still returned as CA_CERT
   // type. See http://crbug.com/96654.
-  net::CertDatabase cert_db;
-  EXPECT_TRUE(cert_db.SetCertTrust(cert, net::CA_CERT,
-                                   net::CertDatabase::DISTRUSTED_SSL));
+  EXPECT_TRUE(net::NSSCertDatabase::GetInstance()->SetCertTrust(
+      cert, net::CA_CERT, net::NSSCertDatabase::DISTRUSTED_SSL));
 
   EXPECT_EQ(net::CA_CERT,
             x509_certificate_model::GetType(cert->os_cert_handle()));
@@ -54,17 +53,17 @@ TEST(X509CertificateModelTest, GetTypeServer) {
   EXPECT_EQ(net::UNKNOWN_CERT,
             x509_certificate_model::GetType(cert->os_cert_handle()));
 
-  net::CertDatabase cert_db;
+  net::NSSCertDatabase* cert_db = net::NSSCertDatabase::GetInstance();
   // Test GetCertType with server certs and explicit trust.
-  EXPECT_TRUE(cert_db.SetCertTrust(cert, net::SERVER_CERT,
-                                   net::CertDatabase::TRUSTED_SSL));
+  EXPECT_TRUE(cert_db->SetCertTrust(
+      cert, net::SERVER_CERT, net::NSSCertDatabase::TRUSTED_SSL));
 
   EXPECT_EQ(net::SERVER_CERT,
             x509_certificate_model::GetType(cert->os_cert_handle()));
 
   // Test GetCertType with server certs and explicit distrust.
-  EXPECT_TRUE(cert_db.SetCertTrust(cert, net::SERVER_CERT,
-                                   net::CertDatabase::DISTRUSTED_SSL));
+  EXPECT_TRUE(cert_db->SetCertTrust(
+      cert, net::SERVER_CERT, net::NSSCertDatabase::DISTRUSTED_SSL));
 
   EXPECT_EQ(net::SERVER_CERT,
             x509_certificate_model::GetType(cert->os_cert_handle()));

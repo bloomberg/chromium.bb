@@ -19,8 +19,8 @@
 #include "chrome/browser/chromeos/cros/onc_network_parser.h"
 #include "chrome/common/chrome_paths.h"
 #include "crypto/nss_util.h"
-#include "net/base/cert_database.h"
 #include "net/base/crypto_module.h"
+#include "net/base/nss_cert_database.h"
 #include "net/base/x509_certificate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -152,7 +152,7 @@ class NetworkLibraryStubTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    slot_ = cert_db_.GetPublicModule();
+    slot_ = net::NSSCertDatabase::GetInstance()->GetPublicModule();
     cros_ = CrosLibrary::Get()->GetNetworkLibrary();
     ASSERT_TRUE(cros_) << "GetNetworkLibrary() Failed!";
 
@@ -200,13 +200,12 @@ class NetworkLibraryStubTest : public testing::Test {
     bool ok = true;
     net::CertificateList certs = ListCertsInSlot(slot);
     for (size_t i = 0; i < certs.size(); ++i) {
-      if (!cert_db_.DeleteCertAndKey(certs[i]))
+      if (!net::NSSCertDatabase::GetInstance()->DeleteCertAndKey(certs[i]))
         ok = false;
     }
     return ok;
   }
 
-  net::CertDatabase cert_db_;
   scoped_refptr<net::CryptoModule> slot_;
 };
 

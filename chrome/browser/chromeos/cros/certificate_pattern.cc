@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "net/base/cert_database.h"
 #include "net/base/net_errors.h"
+#include "net/base/nss_cert_database.h"
 #include "net/base/x509_cert_types.h"
 #include "net/base/x509_certificate.h"
 
@@ -110,7 +111,7 @@ class IssuerCaRefFilter {
   bool operator()(const scoped_refptr<net::X509Certificate>& cert) const {
     // Find the certificate issuer for each certificate.
     // TODO(gspencer): this functionality should be available from
-    // X509Certificate or CertDatabase.
+    // X509Certificate or NSSCertDatabase.
     CERTCertificate* issuer_cert = CERT_FindCertIssuer(
         cert.get()->os_cert_handle(), PR_Now(), certUsageAnyCA);
 
@@ -244,8 +245,7 @@ scoped_refptr<net::X509Certificate> CertificatePattern::GetMatch() const {
   // Start with all the certs, and narrow it down from there.
   net::CertificateList all_certs;
   CertificateStlList matching_certs;
-  net::CertDatabase cert_db;
-  cert_db.ListCerts(&all_certs);
+  net::NSSCertDatabase::GetInstance()->ListCerts(&all_certs);
 
   if (all_certs.empty())
     return NULL;
@@ -278,7 +278,7 @@ scoped_refptr<net::X509Certificate> CertificatePattern::GetMatch() const {
   // them.  The CheckUserCert call in the filter is a little slow (because of
   // underlying PKCS11 calls), so we do this last to reduce the number of times
   // we have to call it.
-  PrivateKeyFilter private_filter(&cert_db);
+  PrivateKeyFilter private_filter(net::CertDatabase::GetInstance());
   matching_certs.remove_if(private_filter);
 
   if (matching_certs.empty())
