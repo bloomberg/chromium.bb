@@ -82,14 +82,12 @@ ASH_EXPORT void CrossFadeToBounds(aura::Window* window,
 
 // Cross fade |layer| (which is a clone of |window|s layer before it was
 // resized) to windows current bounds. |new_workspace| is the original workspace
-// |window| was in and |new_workspace| the new workspace. |is_old_desktop| is
-// true if |old_workspace| corresponds to the desktop.
+// |window| was in and |new_workspace| the new workspace.
 // This takes ownership of |layer|.
 ASH_EXPORT void CrossFadeWindowBetweenWorkspaces(aura::Window* old_workspace,
                                                  aura::Window* new_workspace,
                                                  aura::Window* window,
-                                                 ui::Layer* layer,
-                                                 bool is_old_desktop);
+                                                 ui::Layer* layer);
 
 // Indicates the direction the workspace should appear to go.
 enum WorkspaceAnimationDirection {
@@ -115,12 +113,10 @@ ASH_EXPORT void AnimateBetweenWorkspaces(aura::Window* old_window,
 // Animates the workspace visualy in or out. This is used when the workspace is
 // becoming active, and out when the workspace was active.
 ASH_EXPORT void AnimateWorkspaceIn(aura::Window* window,
-                                   WorkspaceAnimationDirection direction,
-                                   bool animate_opacity);
+                                   WorkspaceAnimationDirection direction);
 ASH_EXPORT void AnimateWorkspaceOut(aura::Window* window,
                                     WorkspaceAnimationDirection direction,
-                                    WorkspaceType type,
-                                    bool animate_opacity);
+                                    WorkspaceType type);
 
 // Returns the amount of time before destroying the system background.
 ASH_EXPORT base::TimeDelta GetSystemBackgroundDestroyDuration();

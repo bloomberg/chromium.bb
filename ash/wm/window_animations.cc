@@ -346,7 +346,7 @@ void AnimateShowWindow_Workspace(aura::Window* window) {
   ui::Transform transform(BuildWorkspaceSwitchTransform(window));
   // When we call SetOpacity here, if a hide sequence is already running,
   // the default animation preemption strategy fast forwards the hide sequence
-  // to completion and notify the WorkspaceHidingWindowAnimationObserver to
+  // to completion and notifies the WorkspaceHidingWindowAnimationObserver to
   // set the layer to be invisible. We should call SetVisible after SetOpacity
   // to ensure our layer is visible again.
   window->layer()->SetOpacity(0.0f);
@@ -703,9 +703,18 @@ const int kWorkspaceSwitchTimeMS = 333 + kPauseTimeMS;
 const float kWorkspaceScaleAbove = 1.1f;
 const float kWorkspaceScaleBelow = .9f;
 
+// Brightness for the non-active workspace.
+const float kWorkspaceBrightness = -.05f;
+
 enum WorkspaceScaleType {
   WORKSPACE_SCALE_ABOVE,
   WORKSPACE_SCALE_BELOW,
+};
+
+// Used to identify what should animate in AnimateWorkspaceIn/Out.
+enum WorkspaceAnimateTypes {
+  WORKSPACE_ANIMATE_OPACITY =    1 << 0,
+  WORKSPACE_ANIMATE_BRIGHTNESS = 1 << 1,
 };
 
 void ApplyWorkspaceScale(ui::Layer* layer, WorkspaceScaleType type) {
@@ -812,9 +821,13 @@ base::TimeDelta AdjustAnimationTime(int time_ms) {
 
 void AnimateWorkspaceInImpl(aura::Window* window,
                             WorkspaceAnimationDirection direction,
-                            bool animate_opacity,
+                            uint32 animate_types,
                             ui::Tween::Type tween_type) {
-  window->layer()->SetOpacity(animate_opacity ? 0.0f : 1.0f);
+  window->layer()->SetOpacity(
+      (animate_types & WORKSPACE_ANIMATE_OPACITY) ? 0.0f : 1.0f);
+  window->layer()->SetLayerBrightness(
+      (animate_types & WORKSPACE_ANIMATE_BRIGHTNESS) ?
+      kWorkspaceBrightness : 0.0f);
   window->Show();
   ApplyWorkspaceScale(window->layer(),
                       direction == WORKSPACE_ANIMATE_UP ?
@@ -826,12 +839,13 @@ void AnimateWorkspaceInImpl(aura::Window* window,
     settings.SetTransitionDuration(AdjustAnimationTime(kWorkspaceSwitchTimeMS));
     window->layer()->SetTransform(ui::Transform());
     window->layer()->SetOpacity(1.0f);
+    window->layer()->SetLayerBrightness(0.0f);
   }
 }
 
 void AnimateWorkspaceOutImpl(aura::Window* window,
                              WorkspaceAnimationDirection direction,
-                             bool animate_opacity,
+                             uint32 animate_types,
                              ui::Tween::Type tween_type,
                              int duration_ms) {
   {
@@ -845,8 +859,10 @@ void AnimateWorkspaceOutImpl(aura::Window* window,
     // VisibilityController::UpdateLayerVisibility doesn't pass the false to the
     // layer so that the layer and window end up out of sync and confused.
     window->Hide();
-    if (animate_opacity)
+    if (animate_types & WORKSPACE_ANIMATE_OPACITY)
       window->layer()->SetOpacity(0.0f);
+    if (animate_types & WORKSPACE_ANIMATE_BRIGHTNESS)
+      window->layer()->SetLayerBrightness(kWorkspaceBrightness);
 
     // After the animation completes snap the transform back to the identity,
     // otherwise any one that asks for screen bounds gets a slightly scaled
@@ -926,8 +942,7 @@ void CrossFadeToBounds(aura::Window* window, const gfx::Rect& new_bounds) {
 void CrossFadeWindowBetweenWorkspaces(aura::Window* old_workspace,
                                       aura::Window* new_workspace,
                                       aura::Window* window,
-                                      ui::Layer* old_layer,
-                                      bool is_old_desktop) {
+                                      ui::Layer* old_layer) {
   ui::Layer* layer_parent = new_workspace->layer()->parent();
   layer_parent->Add(old_layer);
   const bool restoring = old_layer->bounds().width() > window->bounds().width();
@@ -935,25 +950,49 @@ void CrossFadeWindowBetweenWorkspaces(aura::Window* old_workspace,
   if (restoring) {
     layer_parent->StackAbove(old_layer, new_workspace->layer());
     tween_type = ui::Tween::EASE_OUT;
-    workspace_tween_type = ui::Tween::LINEAR;
+    workspace_tween_type = ui::Tween::EASE_OUT;
   } else {
     layer_parent->StackBelow(old_layer, new_workspace->layer());
     tween_type = ui::Tween::EASE_IN_2;
-    workspace_tween_type = ui::Tween::EASE_OUT;
+    workspace_tween_type = ui::Tween::LINEAR;
   }
 
   CrossFadeImpl(window, old_layer, tween_type,
                 AdjustAnimationTime(restoring ? 0 : kPauseTimeMS));
 
   if (restoring) {
+    typedef aura::Window::Windows Windows;
     if (old_workspace)
-      AnimateWorkspaceOutImpl(old_workspace, WORKSPACE_ANIMATE_UP, false,
+      AnimateWorkspaceOutImpl(old_workspace, WORKSPACE_ANIMATE_UP,
+                              WORKSPACE_ANIMATE_BRIGHTNESS,
                               workspace_tween_type, kWorkspaceSwitchTimeMS);
-    AnimateWorkspaceInImpl(new_workspace, WORKSPACE_ANIMATE_UP, false,
-                           workspace_tween_type);
+
+    // Ideally we would use AnimateWorkspaceIn() for |new_workspace|, but that
+    // results in |window| animating with the workspace scale. We don't want
+    // that, so we explicitly animate each of the children to give the effect of
+    // the workspace scaling.
+    new_workspace->Show();
+    new_workspace->SetTransform(ui::Transform());
+    new_workspace->layer()->SetOpacity(1.0f);
+    new_workspace->layer()->SetLayerBrightness(0.0f);
+    const Windows& children(new_workspace->children());
+    for (Windows::const_iterator i = children.begin(); i != children.end();
+         ++i) {
+      aura::Window* child = *i;
+      if (child == window)
+        continue;
+      child->SetTransform(ash::internal::BuildWorkspaceSwitchTransform(child));
+      child->layer()->SetLayerBrightness(kWorkspaceBrightness);
+      ui::ScopedLayerAnimationSettings settings(child->layer()->GetAnimator());
+      settings.SetTransitionDuration(
+          AdjustAnimationTime(kWorkspaceSwitchTimeMS));
+      child->SetTransform(ui::Transform());
+      child->layer()->SetLayerBrightness(0.0f);
+    }
   } else {
     if (old_workspace) {
-      AnimateWorkspaceOutImpl(old_workspace, WORKSPACE_ANIMATE_DOWN, false,
+      AnimateWorkspaceOutImpl(old_workspace, WORKSPACE_ANIMATE_DOWN,
+                              WORKSPACE_ANIMATE_BRIGHTNESS,
                               workspace_tween_type,
                               kWorkspaceSwitchTimeMS);
     }
@@ -961,6 +1000,7 @@ void CrossFadeWindowBetweenWorkspaces(aura::Window* old_workspace,
     new_workspace->Show();
     new_workspace->layer()->SetOpacity(1.f);
     new_workspace->layer()->SetTransform(ui::Transform());
+    new_workspace->layer()->SetLayerBrightness(0.0f);
   }
 }
 
@@ -970,38 +1010,46 @@ void AnimateBetweenWorkspaces(aura::Window* old_window,
                               aura::Window* new_window,
                               WorkspaceType new_type,
                               bool is_restoring_maximized_window) {
+  uint32 common_animate_types = 0;
+  if (!(new_type == WORKSPACE_MAXIMIZED && old_type == WORKSPACE_MAXIMIZED))
+    common_animate_types |= WORKSPACE_ANIMATE_BRIGHTNESS;
   if (animate_old) {
     // When switching to the desktop the old window lifts off.
+    uint32 animate_types = common_animate_types;
+    if ((new_type == WORKSPACE_DESKTOP || old_type == WORKSPACE_MAXIMIZED) &&
+        !is_restoring_maximized_window)
+      animate_types |= WORKSPACE_ANIMATE_OPACITY;
     AnimateWorkspaceOutImpl(
         old_window,
         new_type == WORKSPACE_DESKTOP ? WORKSPACE_ANIMATE_UP :
             WORKSPACE_ANIMATE_DOWN,
-        (new_type == WORKSPACE_DESKTOP || old_type == WORKSPACE_MAXIMIZED) &&
-            !is_restoring_maximized_window,
+        animate_types,
         TweenTypeForWorskpaceOut(old_type),
         kWorkspaceSwitchTimeMS);
   }
 
   // Switching from the desktop to a maximized animates down.
-  AnimateWorkspaceIn(
+  uint32 animate_types = common_animate_types;
+  if (old_type == WORKSPACE_DESKTOP)
+    animate_types |= WORKSPACE_ANIMATE_OPACITY;
+  AnimateWorkspaceInImpl(
       new_window,
       old_type == WORKSPACE_DESKTOP ?
           WORKSPACE_ANIMATE_DOWN : WORKSPACE_ANIMATE_UP,
-      old_type == WORKSPACE_DESKTOP);
+      common_animate_types,
+      ui::Tween::EASE_OUT);
 }
 
 void AnimateWorkspaceIn(aura::Window* window,
-                        WorkspaceAnimationDirection direction,
-                        bool animate_opacity) {
-  AnimateWorkspaceInImpl(window, direction, animate_opacity,
+                        WorkspaceAnimationDirection direction) {
+  AnimateWorkspaceInImpl(window, direction, WORKSPACE_ANIMATE_BRIGHTNESS,
                          ui::Tween::EASE_OUT);
 }
 
 void AnimateWorkspaceOut(aura::Window* window,
                          WorkspaceAnimationDirection direction,
-                         WorkspaceType type,
-                         bool animate_opacity) {
-  AnimateWorkspaceOutImpl(window, direction, animate_opacity,
+                         WorkspaceType type) {
+  AnimateWorkspaceOutImpl(window, direction, WORKSPACE_ANIMATE_BRIGHTNESS,
                           TweenTypeForWorskpaceOut(type),
                           kWorkspaceSwitchTimeMS);
 }

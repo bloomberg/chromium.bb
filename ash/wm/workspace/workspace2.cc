@@ -27,6 +27,8 @@ Workspace2::Workspace2(WorkspaceManager2* manager,
   window_->set_id(kShellWindowId_WorkspaceContainer);
   window_->SetName("WorkspaceContainer");
   window_->Init(ui::LAYER_NOT_DRAWN);
+  // Do this so when animating out windows don't extend beyond the bounds.
+  window_->layer()->SetMasksToBounds(true);
   window_->Hide();
   window_->SetParent(parent);
   window_->SetEventFilter(event_filter_);

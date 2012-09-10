@@ -315,10 +315,10 @@ void WorkspaceManager2::SetActiveWorkspace(Workspace2* workspace,
     aura::Window* background = root_controller->GetContainer(
         kShellWindowId_DesktopBackgroundContainer);
     if (last_active == desktop_workspace()) {
-      AnimateWorkspaceOut(background, WORKSPACE_ANIMATE_DOWN, WORKSPACE_DESKTOP,
-                          false);
+      AnimateWorkspaceOut(background, WORKSPACE_ANIMATE_DOWN,
+                          WORKSPACE_DESKTOP);
     } else if (active_workspace_ == desktop_workspace()) {
-      AnimateWorkspaceIn(background, WORKSPACE_ANIMATE_UP, false);
+      AnimateWorkspaceIn(background, WORKSPACE_ANIMATE_UP);
     }
   }
 }
@@ -529,7 +529,7 @@ void WorkspaceManager2::OnWorkspaceWindowShowStateChanged(
       SetActiveWorkspace(new_workspace, ANIMATE_NONE);
       CrossFadeWindowBetweenWorkspaces(
           workspace ? workspace->window() : NULL, new_workspace->window(),
-          child, old_layer, false);
+          child, old_layer);
     } else {
       if (last_show_state == ui::SHOW_STATE_MINIMIZED)
         SetUnminimizingWorkspace(new_workspace ? new_workspace : workspace);

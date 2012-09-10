@@ -10,6 +10,7 @@
 #include "grit/ui_strings.h"  // Accessibility names
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
@@ -145,6 +146,8 @@ gfx::Size CustomFrameViewAsh::GetMinimumSize() {
 // views::ButtonListener overrides:
 void CustomFrameViewAsh::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
+  if (event.IsShiftDown())
+    ui::LayerAnimator::set_slow_animation_mode(true);
   if (sender == maximize_button_) {
     // The maximize button may move out from under the cursor.
     ResetWindowControls();
@@ -156,6 +159,8 @@ void CustomFrameViewAsh::ButtonPressed(views::Button* sender,
   } else if (sender == close_button_) {
     frame_->Close();
   }
+  if (event.IsShiftDown())
+    ui::LayerAnimator::set_slow_animation_mode(false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
