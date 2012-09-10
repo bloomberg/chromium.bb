@@ -280,12 +280,10 @@ toggle_fullscreen(struct window *window, int fullscreen)
 	window->configured = 0;
 
 	if (fullscreen) {
-		window->opaque = 1;
 		wl_shell_surface_set_fullscreen(window->shell_surface,
 						WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
 						0, NULL);
 	} else {
-		window->opaque = 0;
 		wl_shell_surface_set_toplevel(window->shell_surface);
 		handle_configure(window, window->shell_surface, 0,
 				 window->window_size.width,
@@ -403,7 +401,7 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 
 	eglSwapBuffers(window->display->egl.dpy, window->egl_surface);
 
-	if (window->opaque) {
+	if (window->opaque || window->fullscreen) {
 		region = wl_compositor_create_region(window->display->compositor);
 		wl_region_add(region, 0, 0,
 			      window->window_size.width,
@@ -594,7 +592,7 @@ main(int argc, char **argv)
 	struct sigaction sigint;
 	struct display display = { 0 };
 	struct window  window  = { 0 };
-	int i, opaque = 0;
+	int i;
 
 	window.display = &display;
 	display.window = &window;
@@ -605,7 +603,7 @@ main(int argc, char **argv)
 		if (strcmp("-f", argv[i]) == 0)
 			window.fullscreen = 1;
 		else if (strcmp("-o", argv[i]) == 0)
-			opaque = 1;
+			window.opaque = 1;
 		else if (strcmp("-h", argv[i]) == 0)
 			usage(EXIT_SUCCESS);
 		else
@@ -621,10 +619,7 @@ main(int argc, char **argv)
 	wl_display_get_fd(display.display, event_mask_update, &display);
 	wl_display_iterate(display.display, WL_DISPLAY_READABLE);
 
-	if (window.fullscreen)
-		window.opaque = 1;
-
-	init_egl(&display, opaque);
+	init_egl(&display, window.opaque);
 	create_surface(&window);
 	init_gl(&window);
 
