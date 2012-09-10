@@ -74,7 +74,9 @@ ZoomBubbleGtk::ZoomBubbleGtk(GtkWidget* anchor,
       GtkThemeService::GetFrom(Profile::FromBrowserContext(
           tab_contents->web_contents()->GetBrowserContext()));
 
+  event_box_ = gtk_event_box_new();
   GtkWidget* container = gtk_vbox_new(FALSE, 0);
+  gtk_container_add(GTK_CONTAINER(event_box_), container);
 
   int zoom_percent = tab_contents->zoom_controller()->zoom_percent();
   std::string percentage_text = UTF16ToUTF8(l10n_util::GetStringFUTF16Int(
@@ -107,7 +109,7 @@ ZoomBubbleGtk::ZoomBubbleGtk(GtkWidget* anchor,
   BubbleGtk::ArrowLocationGtk arrow_location =
       BubbleGtk::ARROW_LOCATION_TOP_MIDDLE;
   int bubble_options = BubbleGtk::MATCH_SYSTEM_THEME | BubbleGtk::POPUP_WINDOW;
-  bubble_ = BubbleGtk::Show(anchor, &rect, container, arrow_location,
+  bubble_ = BubbleGtk::Show(anchor, &rect, event_box_, arrow_location,
       auto_close ? bubble_options : bubble_options | BubbleGtk::GRAB_INPUT,
       theme_service, NULL);
 
@@ -116,8 +118,25 @@ ZoomBubbleGtk::ZoomBubbleGtk(GtkWidget* anchor,
     return;
   }
 
-  g_signal_connect(container, "destroy",
+  g_signal_connect(event_box_, "destroy",
                    G_CALLBACK(&OnDestroyThunk), this);
+
+  if (auto_close_) {
+    // If this is an auto-closing bubble, listen to leave/enter to keep the
+    // bubble alive if the mouse stays anywhere inside the bubble.
+    gtk_widget_add_events(event_box_, GDK_ENTER_NOTIFY_MASK |
+                                      GDK_LEAVE_NOTIFY_MASK);
+    g_signal_connect_after(event_box_, "enter-notify-event",
+                           G_CALLBACK(&OnMouseEnterThunk), this);
+    g_signal_connect(event_box_, "leave-notify-event",
+                     G_CALLBACK(&OnMouseLeaveThunk), this);
+
+    // This is required as a leave is fired when the mouse goes from inside the
+    // bubble's container to inside the set default button.
+    gtk_widget_add_events(set_default_button, GDK_ENTER_NOTIFY_MASK);
+    g_signal_connect_after(set_default_button, "enter-notify-event",
+                           G_CALLBACK(&OnMouseEnterThunk), this);
+  }
 
   StartTimerIfNecessary();
 }
@@ -150,7 +169,13 @@ void ZoomBubbleGtk::StartTimerIfNecessary() {
   }
 }
 
+void ZoomBubbleGtk::StopTimerIfNecessary() {
+  if (timer_.IsRunning())
+    timer_.Stop();
+}
+
 void ZoomBubbleGtk::CloseBubble() {
+  DCHECK(bubble_);
   bubble_->Close();
 }
 
@@ -165,4 +190,16 @@ void ZoomBubbleGtk::OnSetDefaultLinkClick(GtkWidget* widget) {
           GetPrefs()->GetDouble(prefs::kDefaultZoomLevel);
   tab_contents_->web_contents()->GetRenderViewHost()->
       SetZoomLevel(default_zoom_level);
+}
+
+gboolean ZoomBubbleGtk::OnMouseEnter(GtkWidget* widget,
+                                     GdkEventCrossing* event) {
+  StopTimerIfNecessary();
+  return FALSE;
+}
+
+gboolean ZoomBubbleGtk::OnMouseLeave(GtkWidget* widget,
+                                     GdkEventCrossing* event) {
+  StartTimerIfNecessary();
+  return FALSE;
 }
