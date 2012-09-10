@@ -195,27 +195,6 @@ handle-error() {
   fi
 }
 
-clobber-chrome-tmp() {
-  # Try to clobber /tmp/ contents to clear temporary chrome files.
-  rm -rf /tmp/.org.chromium.Chromium.*
-
-  # On Windows we may have additional files left by chrome/pepper's
-  # StreamToFile-style url requests.  These are files with names like
-  # 1AB9.tmp in the windows %TEMP% or %TMP%. Clobber these too.
-  # See: http://code.google.com/p/nativeclient/issues/detail?id=1981
-  #
-  # Here, we assume that the buildbot script is running Cygwin...
-  # In Cygwin, $TEMP is not equal to %TEMP%, because Cygwin overrides
-  # $TEMP to be /tmp.  Meanwhile, windows chrome uses %TEMP%.
-  # Long story short, we do a hack and check for for $LOCALAPPDATA\Temp\
-  # which is the closest thing to %TEMP% (at least the default) that we can
-  # access from within Cygwin.
-  if [[ "$(uname -s)" =~ CYGWIN ]]; then
-    find ${LOCALAPPDATA}/Temp -regex ".*[0-9a-fA-F]+\.tmp" -print0 | \
-      xargs -0 rm -rf
-  fi
-}
-
 # Clear out object, and temporary directories.
 clobber() {
   echo "@@@BUILD_STEP clobber@@@"
@@ -366,47 +345,6 @@ scons-stage-noirt() {
   ${SCONS_COMMON} ${extra} ${mode} platform=${platform} ${test} || handle-error
 }
 
-single-browser-test() {
-  local platform=$1
-  local extra=$2
-  local test=$3
-
-  # if we run mulitple browser test (e.g. on toolchain bots) we
-  # may run out of quota without this
-  clobber-chrome-tmp
-
-  # Build in parallel (assume -jN specified in extra), but run sequentially.
-  # If we do not run tests sequentially, some may fail. E.g.,
-  # http://code.google.com/p/nativeclient/issues/detail?id=2019
-  scons-stage-irt ${platform} \
-    "${extra} browser_headless=1 SILENT=1 do_not_run_tests=1" ${test}
-
-  #TODO(dschuff): remove this when streaming is the default
-  export NACL_STREAMING_TRANSLATION=true
-  scons-stage-irt ${platform} "${extra} browser_headless=1 SILENT=1 -j1" \
-      ${test}
-}
-
-browser-tests() {
-  local platform=$1
-  local extra=$2
-  if [[ "${extra}" =~ --nacl_glibc ]]; then
-    # For glibc, only non-pexe mode works for now.
-    # We need to ensure psos are translated before running.
-    # E.g., run_pm_manifest_file_chrome_browser_test relies on
-    # libimc, libweak_ref, etc.
-    single-browser-test ${platform} "${extra} pnacl_generate_pexe=0" \
-        "chrome_browser_tests"
-  else
-    # Otherwise, try pexe mode.
-    # Use streaming translator. TODO(dschuff): remove this when env var
-    # goes away in Chrome and we use it by default
-    # BUG=http://code.google.com/p/nativeclient/issues/detail?id=2195
-    export NACL_STREAMING_TRANSLATION
-    single-browser-test ${platform} "${extra}" "chrome_browser_tests"
-  fi
-}
-
 # This function is shared between x86-32 and x86-64. All building and testing
 # is done on the same bot. Try runs are identical to buildbot runs
 #
@@ -454,7 +392,6 @@ mode-buildbot-x86() {
   # translator memory consumption regression test
   scons-stage-irt "${arch}" "${flags_run} use_sandboxed_translator=1" \
       "large_code"
-  browser-tests "${arch}" "-j8 -k"
 }
 
 # QEMU upload bot runs this function, and the hardware download bot runs
@@ -496,8 +433,6 @@ mode-buildbot-arm() {
   scons-stage-noirt "arm" \
     "${qemuflags} use_sandboxed_translator=1 translate_in_build_step=0" \
     "toolchain_tests"
-
-  browser-tests "arm" ""
 }
 
 mode-buildbot-arm-hw() {
@@ -515,7 +450,6 @@ mode-buildbot-arm-hw() {
   scons-stage-noirt "arm" \
     "${hwflags} use_sandboxed_translator=1 translate_in_build_step=0" \
     "toolchain_tests"
-  browser-tests "arm" "${hwflags}"
 }
 
 mode-trybot-qemu() {
@@ -591,23 +525,10 @@ tc-tests-large() {
               "${SCONS_TC_TESTS}"
   scons-stage-noirt "x86-64" "${scons_flags} --nacl_glibc pnacl_generate_pexe=0" \
               "${SCONS_TC_TESTS}"
-
-  # we run the browser tests last since they tend to be flaky
-  # and will terminate the testing unless  FAIL_FAST=false
-
-  # newlib browser
-  browser-tests "x86-32" "-j8 -k"
-  browser-tests "x86-64" "-j8 -k"
-  browser-tests "arm"    "-j8 -k"
-
-  # glibc browser
-  browser-tests "x86-32" "-j8 -k --nacl_glibc"
-  browser-tests "x86-64" "-j8 -k --nacl_glibc"
 }
 
 tc-tests-small() {
   scons-stage-noirt "$1" "-j8 -k" "${SCONS_TC_TESTS}"
-  browser-tests "$1" "-j8 -k"
 }
 
 mode-buildbot-tc-x8664-linux() {
@@ -678,10 +599,6 @@ test-all-newlib() {
   scons-stage-noirt "arm"    "${scons_flags}" "smoke_tests"
   scons-stage-noirt "x86-32" "${scons_flags}" "smoke_tests"
   scons-stage-noirt "x86-64" "${scons_flags}" "smoke_tests"
-  # browser tests.
-  browser-tests "arm" "--verbose -j${concur}"
-  browser-tests "x86-32" "--verbose -j${concur}"
-  browser-tests "x86-64" "--verbose -j${concur}"
 }
 
 test-all-glibc() {
