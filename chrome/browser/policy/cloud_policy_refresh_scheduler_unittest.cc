@@ -129,9 +129,19 @@ TEST_F(CloudPolicyRefreshSchedulerTest, InitialRefreshUnmanaged) {
   last_callback_.Run();
 }
 
-TEST_F(CloudPolicyRefreshSchedulerTest, InitialRefreshManaged) {
+TEST_F(CloudPolicyRefreshSchedulerTest, InitialRefreshManagedNotYetFetched) {
   scoped_ptr<CloudPolicyRefreshScheduler> scheduler(CreateRefreshScheduler());
   EXPECT_EQ(last_delay_, base::TimeDelta());
+  ASSERT_FALSE(last_callback_.is_null());
+  EXPECT_CALL(client_, FetchPolicy()).Times(1);
+  last_callback_.Run();
+}
+
+TEST_F(CloudPolicyRefreshSchedulerTest, InitialRefreshManagedAlreadyFetched) {
+  last_refresh_ = base::Time::NowFromSystemTime();
+  client_.SetPolicy(em::PolicyFetchResponse());
+  scoped_ptr<CloudPolicyRefreshScheduler> scheduler(CreateRefreshScheduler());
+  CheckTiming(kPolicyRefreshRate);
   ASSERT_FALSE(last_callback_.is_null());
   EXPECT_CALL(client_, FetchPolicy()).Times(1);
   last_callback_.Run();
@@ -256,11 +266,11 @@ class CloudPolicyRefreshSchedulerClientErrorTest
 
 TEST_P(CloudPolicyRefreshSchedulerClientErrorTest, OnClientError) {
   client_.SetStatus(GetParam().client_error);
+  last_delay_ = base::TimeDelta();
+  last_callback_.Reset();
 
   // See whether the error triggers the right refresh delay.
   int64 expected_delay_ms = GetParam().expected_delay_ms;
-  if (expected_delay_ms == -1)
-    EXPECT_CALL(*task_runner_, PostDelayedTask(_, _, _)).Times(0);
   client_.NotifyClientError();
   if (expected_delay_ms >= 0) {
     CheckTiming(expected_delay_ms);
@@ -275,6 +285,9 @@ TEST_P(CloudPolicyRefreshSchedulerClientErrorTest, OnClientError) {
                            GetParam().expected_delay_ms));
     } while (GetParam().backoff_factor > 1 &&
              expected_delay_ms <= kPolicyRefreshRate);
+  } else {
+    EXPECT_EQ(base::TimeDelta(), last_delay_);
+    EXPECT_TRUE(last_callback_.is_null());
   }
 }
 

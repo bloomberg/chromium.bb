@@ -116,8 +116,21 @@ void CloudPolicyRefreshScheduler::OnIPAddressChanged() {
 }
 
 void CloudPolicyRefreshScheduler::UpdateLastRefreshFromPolicy() {
-  if (store_->has_policy() && !store_->is_managed() &&
-      last_refresh_.is_null()) {
+  if (!last_refresh_.is_null())
+    return;
+
+  // If the client has already fetched policy, assume that happened recently. If
+  // that assumption ever breaks, the proper thing to do probably is to move the
+  // |last_refresh_| bookkeeping to CloudPolicyClient.
+  if (client_->policy()) {
+    last_refresh_ = base::Time::NowFromSystemTime();
+    return;
+  }
+
+  // If there is a cached non-managed response, make sure to only re-query the
+  // server after kUnmanagedRefreshDelayMs. NB: For existing policy, an
+  // immediate refresh is intentional.
+  if (store_->has_policy() && !store_->is_managed()) {
     last_refresh_ =
         base::Time::UnixEpoch() +
         base::TimeDelta::FromMilliseconds(store_->policy()->timestamp());
