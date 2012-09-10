@@ -5190,7 +5190,7 @@
    fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
 }
 {
-   bug_124445
+   bug_124445a
    Memcheck:Leak
    fun:calloc
    ...
@@ -5200,6 +5200,17 @@
    ...
    fun:_ZN3net18SSL*SocketNSS*
    fun:_ZN3net18SSL*SocketNSS*
+}
+{
+   bug_124445b
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:error_get_my_stack
+   ...
+   fun:CERT_NewTempCertificate
+   ...
+   fun:_ZN33SSLHostStateTest_QueryPolicy_Test8TestBodyEv
 }
 {
    bug_123453

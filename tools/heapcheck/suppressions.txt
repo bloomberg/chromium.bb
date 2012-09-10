@@ -165,6 +165,12 @@
    fun:net::TestRootCerts::*
 }
 {
+   bug_66941_d
+   Heapcheck:Leak
+   fun:sqlite3MemMalloc
+   fun:net::TestRootCerts::Add
+}
+{
    bug_todo_getdelim_lucid
    Heapcheck:Leak
    fun:_IO_getdelim
