@@ -8,5 +8,5 @@
       "scripts": ["test.js"]
     }
   },
-  "permissions": ["mediaGalleriesRead"]
+  "permissions": [{"mediaGalleries": ["read"]}]
 }

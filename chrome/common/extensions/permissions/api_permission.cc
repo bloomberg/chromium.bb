@@ -4,6 +4,7 @@
 
 #include "chrome/common/extensions/permissions/api_permission.h"
 
+#include "chrome/common/extensions/permissions/media_galleries_permission.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
 #include "grit/generated_resources.h"
@@ -210,8 +211,6 @@ void APIPermissionInfo::RegisterAllPermissions(
     { APIPermission::kManagement, "management", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT,
       PermissionMessage::kManagement },
-    { APIPermission::kMediaGalleries, "mediaGalleries" },
-    { APIPermission::kMediaGalleriesRead, "mediaGalleriesRead" },
     { APIPermission::kPageCapture, "pageCapture", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_ALL_PAGES_CONTENT,
       PermissionMessage::kAllPageContent },
@@ -300,10 +299,9 @@ void APIPermissionInfo::RegisterAllPermissions(
     { APIPermission::kFileSystemWrite, "fileSystemWrite", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_FILE_SYSTEM_WRITE,
       PermissionMessage::kFileSystemWrite },
-    { APIPermission::kMediaGalleriesAllGalleries, "mediaGalleriesAllGalleries",
-      kFlagCannotBeOptional,
-      IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_ALL_GALLERIES,
-      PermissionMessage::kMediaGalleriesAllGalleries },
+    { APIPermission::kMediaGalleries, "mediaGalleries", kFlagNone, 0,
+      PermissionMessage::kNone,
+      &::CreateAPIPermission<MediaGalleriesPermission> },
     { APIPermission::kPushMessaging, "pushMessaging", kFlagCannotBeOptional },
   };
 

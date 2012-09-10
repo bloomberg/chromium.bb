@@ -95,10 +95,10 @@ class MediaGalleriesPreferencesTest : public testing::Test {
     }
 
     std::vector<std::string> all_permissions;
-    all_permissions.push_back("mediaGalleriesAllGalleries");
-    all_permissions.push_back("mediaGalleriesRead");
+    all_permissions.push_back("all-auto-detected");
+    all_permissions.push_back("read");
     std::vector<std::string> read_permissions;
-    read_permissions.push_back("mediaGalleriesRead");
+    read_permissions.push_back("read");
 
     all_permission_extension = AddApp("all", all_permissions);
     regular_permission_extension = AddApp("regular", read_permissions);
@@ -190,18 +190,24 @@ class MediaGalleriesPreferencesTest : public testing::Test {
  private:
   scoped_refptr<extensions::Extension> AddApp(
       std::string name,
-      std::vector<std::string> permissions) {
+      std::vector<std::string> media_galleries_permissions) {
     scoped_ptr<DictionaryValue> manifest(new DictionaryValue);
     manifest->SetString(extension_manifest_keys::kName, name);
     manifest->SetString(extension_manifest_keys::kVersion, "0.1");
     manifest->SetInteger(extension_manifest_keys::kManifestVersion, 2);
-    ListValue* background_script_list = new ListValue;;
+    ListValue* background_script_list = new ListValue;
     background_script_list->Append(Value::CreateStringValue("background.js"));
     manifest->Set(extension_manifest_keys::kPlatformAppBackgroundScripts,
                   background_script_list);
-    ListValue* permission_list = new ListValue;;
-    for (size_t i = 0; i < permissions.size(); i++)
-      permission_list->Append(Value::CreateStringValue(permissions[i]));
+
+    ListValue* permission_detail_list = new ListValue;
+    for (size_t i = 0; i < media_galleries_permissions.size(); i++)
+      permission_detail_list->Append(
+          Value::CreateStringValue(media_galleries_permissions[i]));
+    DictionaryValue* media_galleries_permission = new DictionaryValue();
+    media_galleries_permission->Set("mediaGalleries", permission_detail_list);
+    ListValue* permission_list = new ListValue;
+    permission_list->Append(media_galleries_permission);
     manifest->Set(extension_manifest_keys::kPermissions, permission_list);
 
     FilePath path = extensions_dir_.AppendASCII(name);

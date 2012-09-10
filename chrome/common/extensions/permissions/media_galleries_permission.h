@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_PERMISSIONS_SOCKET_PERMISSION_H_
-#define CHROME_COMMON_EXTENSIONS_PERMISSIONS_SOCKET_PERMISSION_H_
+#ifndef CHROME_COMMON_EXTENSIONS_PERMISSIONS_MEDIA_GALLERIES_PERMISSION_H_
+#define CHROME_COMMON_EXTENSIONS_PERMISSIONS_MEDIA_GALLERIES_PERMISSION_H_
 
 #include <set>
 #include <string>
 
 #include "chrome/common/extensions/permissions/api_permission.h"
-#include "chrome/common/extensions/permissions/socket_permission_data.h"
 
 namespace base {
 class Value;
@@ -21,25 +20,57 @@ class Message;
 
 namespace extensions {
 
+class Extension;
+
 // There's room to share code with related classes, see http://crbug.com/147531
 
-class SocketPermission : public APIPermission {
+// There are two kinds of media galleries permissions, location permissions
+// and access type permissions.
+//
+// The default location permission (no permission parameter) does not grant
+// access to any galleries, but lets the user grant access on a per gallery
+// basis.  The other location permission "all-auto-detected" gives the user
+// access to all auto detected galleries.  This includes per platform default
+// galleries and removable devices that are detected as media devices.
+//
+// Access type will include several different types in the future, but right
+// now we only have one access type, "read."  Future access types may include
+// "write," "delete," and "add-file."
+//
+// <media galleries permissions>
+//     :=  'all-auto-detected' | 'read' | <media galleries permissions>
+
+class MediaGalleriesPermission : public APIPermission {
  public:
-  struct CheckParam : APIPermission::CheckParam {
-    CheckParam(SocketPermissionData::OperationType type,
-        const std::string& host,
-        int port)
-      : type(type),
-        host(host),
-        port(port) { }
-    SocketPermissionData::OperationType type;
-    std::string host;
-    int port;
+  enum PermissionTypes {
+    kNone = 0,
+    kAllAutoDetected,
+    kRead,
   };
 
-  explicit SocketPermission(const APIPermissionInfo* info);
+  struct CheckParam : APIPermission::CheckParam {
+    explicit CheckParam(PermissionTypes permission) : permission(permission) {
+    }
+    PermissionTypes permission;
+  };
 
-  virtual ~SocketPermission();
+  explicit MediaGalleriesPermission(const APIPermissionInfo* info);
+
+  virtual ~MediaGalleriesPermission();
+
+  // Returns true if the passed |extension| has the read permission parameter.
+  static bool HasReadAccess(const Extension& extension);
+
+  // Returns true if the passed |extension| has the all galleries permission
+  // parameter.
+  static bool HasAllGalleriesAccess(const Extension& extension);
+
+  // Converts a string to a PermissionType. Return kNone for an unrecognized
+  // input.
+  static PermissionTypes PermissionStringToType(const std::string& str);
+
+  // Converts a PermissionType to a string.
+  static const char* PermissionTypeToString(PermissionTypes type);
 
   // Returns true if this permission has PermissionMessages.
   virtual bool HasMessages() const OVERRIDE;
@@ -88,9 +119,9 @@ class SocketPermission : public APIPermission {
   virtual void Log(std::string* log) const OVERRIDE;
 
  private:
-  std::set<SocketPermissionData> data_set_;
+  std::set<PermissionTypes> permissions_;
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_PERMISSIONS_SOCKET_PERMISSION_H_
+#endif  // CHROME_COMMON_EXTENSIONS_PERMISSIONS_MEDIA_GALLERIES_PERMISSION_H_

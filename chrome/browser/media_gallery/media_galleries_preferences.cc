@@ -19,9 +19,11 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/permissions/api_permission.h"
+#include "chrome/common/extensions/permissions/media_galleries_permission.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
+
+using extensions::MediaGalleriesPermission;
 
 namespace chrome {
 
@@ -310,8 +312,8 @@ void MediaGalleriesPreferences::ForgetGalleryById(MediaGalleryPrefId pref_id) {
 MediaGalleryPrefIdSet MediaGalleriesPreferences::GalleriesForExtension(
     const extensions::Extension& extension) const {
   MediaGalleryPrefIdSet result;
-  if (extension.HasAPIPermission(
-          extensions::APIPermission::kMediaGalleriesAllGalleries)) {
+
+  if (MediaGalleriesPermission::HasAllGalleriesAccess(extension)) {
     for (MediaGalleriesPrefInfoMap::const_iterator it =
              known_galleries_.begin(); it != known_galleries_.end(); ++it) {
       if (it->second.type == MediaGalleryPrefInfo::kAutoDetected)
@@ -351,8 +353,8 @@ void MediaGalleriesPreferences::SetGalleryPermissionForExtension(
   if (gallery_info == known_galleries_.end())
     return;
 
-  bool all_permission = extension.HasAPIPermission(
-      extensions::APIPermission::kMediaGalleriesAllGalleries);
+  bool all_permission =
+      MediaGalleriesPermission::HasAllGalleriesAccess(extension);
   if (has_permission && all_permission) {
     if (gallery_info->second.type == MediaGalleryPrefInfo::kAutoDetected) {
       GetExtensionPrefs()->UnsetMediaGalleryPermission(extension.id(), pref_id);

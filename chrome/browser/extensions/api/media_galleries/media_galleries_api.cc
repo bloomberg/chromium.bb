@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/api/experimental_media_galleries.h"
 #include "chrome/common/extensions/api/media_galleries.h"
+#include "chrome/common/extensions/permissions/media_galleries_permission.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
@@ -115,8 +116,8 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
         "name", Value::CreateStringValue(filesystems[i].name));
     list->Append(dict_value);
 
-    if (!filesystems[i].path.empty() && GetExtension()->HasAPIPermission(
-            extensions::APIPermission::kMediaGalleriesRead)) {
+    if (!filesystems[i].path.empty() &&
+        MediaGalleriesPermission::HasReadAccess(*GetExtension())) {
       content::ChildProcessSecurityPolicy* policy =
           ChildProcessSecurityPolicy::GetInstance();
       if (!policy->CanReadFile(child_id, filesystems[i].path))
