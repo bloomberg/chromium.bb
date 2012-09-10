@@ -43,7 +43,7 @@ cr.define('options', function() {
   // PrefInputElement class:
 
   // Define a constructor that uses an input element as its underlying element.
-  var PrefInputElement = function() {};
+  var PrefInputElement = cr.ui.define('input');
 
   PrefInputElement.prototype = {
     // Set up the prototype chain
