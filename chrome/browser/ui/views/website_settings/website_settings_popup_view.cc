@@ -534,7 +534,7 @@ void WebsiteSettingsPopupView::SetIdentityInfo(
   ResetConnectionSection(
       identity_info_content_,
       WebsiteSettingsUI::GetIdentityIcon(identity_info.identity_status),
-      headline,
+      string16(), // The identity section has no headline.
       UTF8ToUTF16(identity_info.identity_status_description),
       certificate_dialog_link_);
 
