@@ -8,7 +8,10 @@
 #include "base/basictypes.h"
 
 class Browser;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 // Uniquely identifies a tab or window for the duration of a session.
 class SessionID {
@@ -21,14 +24,14 @@ class SessionID {
   // This value is immutable for a given tab. It will be unique across Chrome
   // within the current session, but may be re-used across sessions. Returns -1
   // for NULL, and will never return -1 for a valid tab.
-  static id_type IdForTab(const TabContents* tab);
+  static id_type IdForTab(const content::WebContents* tab);
 
   // If the tab has ever been attached to a window, this is the value of
   // Browser::session_id().id() for some Browser object. Returns -1 for NULL, or
   // another value that's not equal to any Browser's id for a tab that has never
   // been attached to a window. IdForWindowContainingTab() returns the old
   // window for a tab that's currently being dragged between windows.
-  static id_type IdForWindowContainingTab(const TabContents* tab);
+  static id_type IdForWindowContainingTab(const content::WebContents* tab);
 
   // Returns the underlying id.
   void set_id(id_type id) { id_ = id; }

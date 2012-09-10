@@ -63,7 +63,7 @@ class ActiveTabTest : public TabContentsTestHarness {
 
  protected:
   int tab_id() {
-    return SessionID::IdForTab(tab_contents());
+    return SessionID::IdForTab(tab_contents()->web_contents());
   }
 
   ActiveTabPermissionManager* active_tab_permission_manager() {

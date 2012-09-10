@@ -775,7 +775,7 @@ ToDataUrlOffscreenTabFunction::ToDataUrlOffscreenTabFunction() {}
 ToDataUrlOffscreenTabFunction::~ToDataUrlOffscreenTabFunction() {}
 
 bool ToDataUrlOffscreenTabFunction::GetTabToCapture(
-    WebContents** web_contents, TabContents** tab_contents) {
+    WebContents** web_contents) {
   int offscreen_tab_id;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &offscreen_tab_id));
 
@@ -788,7 +788,6 @@ bool ToDataUrlOffscreenTabFunction::GetTabToCapture(
     return false;
 
   *web_contents = offscreen_tab->web_contents();
-  *tab_contents = offscreen_tab->tab_contents();
   return true;
 }
 

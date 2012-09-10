@@ -151,8 +151,7 @@ class ToDataUrlOffscreenTabFunction : public CaptureVisibleTabFunction {
   virtual ~ToDataUrlOffscreenTabFunction();
 
   // CaptureVisibleTabFunction:
-  virtual bool GetTabToCapture(content::WebContents** web_contents,
-                               TabContents** tab_contents) OVERRIDE;
+  virtual bool GetTabToCapture(content::WebContents** web_contents) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ToDataUrlOffscreenTabFunction);

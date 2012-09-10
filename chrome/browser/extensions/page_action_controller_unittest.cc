@@ -44,7 +44,7 @@ class PageActionControllerTest : public TabContentsTestHarness {
 
  protected:
   int tab_id() {
-    return SessionID::IdForTab(tab_contents());
+    return SessionID::IdForTab(web_contents());
   }
 
   ExtensionService* extension_service_;

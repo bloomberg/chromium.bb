@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -74,11 +73,11 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
     // homepage, we just disable this menu item.
     return extension->GetHomepageURL().is_valid();
   } else if (command_id == INSPECT_POPUP) {
-    TabContents* tab_contents = chrome::GetActiveTabContents(browser_);
-    if (!tab_contents)
+    WebContents* web_contents = chrome::GetActiveWebContents(browser_);
+    if (!web_contents)
       return false;
 
-    return extension_action_->HasPopup(SessionID::IdForTab(tab_contents));
+    return extension_action_->HasPopup(SessionID::IdForTab(web_contents));
   } else if (command_id == DISABLE || command_id == UNINSTALL) {
     // Some extension types can not be disabled or uninstalled.
     return extensions::ExtensionSystem::Get(

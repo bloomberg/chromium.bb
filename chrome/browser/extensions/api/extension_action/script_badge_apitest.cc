@@ -43,7 +43,7 @@ IN_PROC_BROWSER_TEST_F(ScriptBadgeApiTest, Basics) {
               location_bar_controller();
 
   const int tab_id = SessionID::IdForTab(
-      chrome::GetActiveTabContents(browser()));
+      chrome::GetActiveWebContents(browser()));
   EXPECT_EQ(GURL(extension->GetResourceURL("default_popup.html")),
             script_badge->GetPopupUrl(tab_id));
 

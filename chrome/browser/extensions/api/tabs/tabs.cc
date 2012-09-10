@@ -1232,7 +1232,7 @@ bool UpdateTabFunction::RunImpl() {
       error_ = keys::kNoSelectedTabError;
       return false;
     }
-    tab_id = SessionID::IdForTab(contents);
+    tab_id = SessionID::IdForTab(contents->web_contents());
   } else {
     EXTENSION_FUNCTION_VALIDATE(tab_value->GetAsInteger(&tab_id));
   }
@@ -1601,8 +1601,7 @@ bool RemoveTabsFunction::RunImpl() {
   return true;
 }
 
-bool CaptureVisibleTabFunction::GetTabToCapture(
-    WebContents** web_contents, TabContents** tab_contents) {
+bool CaptureVisibleTabFunction::GetTabToCapture(WebContents** web_contents) {
   Browser* browser = NULL;
   // windowId defaults to "current" window.
   int window_id = extension_misc::kCurrentWindowId;
@@ -1619,8 +1618,6 @@ bool CaptureVisibleTabFunction::GetTabToCapture(
     return false;
   }
 
-  *tab_contents = chrome::GetActiveTabContents(browser);
-
   return true;
 };
 
@@ -1632,8 +1629,7 @@ bool CaptureVisibleTabFunction::RunImpl() {
   }
 
   WebContents* web_contents = NULL;
-  TabContents* tab_contents = NULL;
-  if (!GetTabToCapture(&web_contents, &tab_contents))
+  if (!GetTabToCapture(&web_contents))
     return false;
 
   image_format_ = FORMAT_JPEG;  // Default format is JPEG.
@@ -1669,7 +1665,7 @@ bool CaptureVisibleTabFunction::RunImpl() {
   // permission to do this.
   if (!GetExtension()->CanCaptureVisiblePage(
         web_contents->GetURL(),
-        SessionID::IdForTab(tab_contents),
+        SessionID::IdForTab(web_contents),
         &error_)) {
     return false;
   }
@@ -1701,8 +1697,7 @@ void CaptureVisibleTabFunction::CopyFromBackingStoreComplete(
   }
 
   WebContents* web_contents = NULL;
-  TabContents* tab_contents = NULL;
-  if (!GetTabToCapture(&web_contents, &tab_contents)) {
+  if (!GetTabToCapture(&web_contents)) {
     error_ = keys::kInternalVisibleTabCaptureError;
     SendResponse(false);
     return;
@@ -1713,7 +1708,8 @@ void CaptureVisibleTabFunction::CopyFromBackingStoreComplete(
                  chrome::NOTIFICATION_TAB_SNAPSHOT_TAKEN,
                  content::Source<WebContents>(web_contents));
   AddRef();  // Balanced in CaptureVisibleTabFunction::Observe().
-  tab_contents->snapshot_tab_helper()->CaptureSnapshot();
+  TabContents::FromWebContents(web_contents)->snapshot_tab_helper()->
+      CaptureSnapshot();
 }
 
 // If a backing store was not available in CaptureVisibleTabFunction::RunImpl,

@@ -13,10 +13,17 @@ SessionID::SessionID() {
   id_ = next_id++;
 }
 
-SessionID::id_type SessionID::IdForTab(const TabContents* tab) {
-  return tab ? tab->session_tab_helper()->session_id().id() : -1;
+SessionID::id_type SessionID::IdForTab(const content::WebContents* tab) {
+  const TabContents* tab_contents = tab ? TabContents::FromWebContents(tab)
+                                        : NULL;
+  return tab_contents ? tab_contents->session_tab_helper()->session_id().id()
+                      : -1;
 }
 
-SessionID::id_type SessionID::IdForWindowContainingTab(const TabContents* tab) {
-  return tab ? tab->session_tab_helper()->window_id().id() : -1;
+SessionID::id_type SessionID::IdForWindowContainingTab(
+    const content::WebContents* tab) {
+  const TabContents* tab_contents = tab ? TabContents::FromWebContents(tab)
+                                        : NULL;
+  return tab_contents ? tab_contents->session_tab_helper()->window_id().id()
+                      : -1;
 }

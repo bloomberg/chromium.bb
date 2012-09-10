@@ -55,8 +55,7 @@ void ScriptBadgeController::GetAttentionFor(
   // TODO(jyasskin): Modify the icon's appearance to indicate that the
   // extension is merely asking for permission to run:
   // http://crbug.com/133142
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
-  script_badge->SetAppearance(SessionID::IdForTab(tab_contents),
+  script_badge->SetAppearance(SessionID::IdForTab(web_contents()),
                               ExtensionAction::WANTS_ATTENTION);
 
   NotifyChange();
@@ -84,7 +83,7 @@ LocationBarController::Action ScriptBadgeController::OnClicked(
       // run script on the page, we want to help users associate clicking with
       // the extension having permission to modify the page, so we make the icon
       // full-colored immediately.
-      if (script_badge->SetAppearance(SessionID::IdForTab(tab_contents),
+      if (script_badge->SetAppearance(SessionID::IdForTab(web_contents()),
                                       ExtensionAction::ACTIVE))
         NotifyChange();
 
@@ -92,7 +91,7 @@ LocationBarController::Action ScriptBadgeController::OnClicked(
       GetExtensionService()->browser_event_router()->ScriptBadgeExecuted(
           tab_contents->profile(),
           *script_badge,
-          SessionID::IdForTab(tab_contents));
+          SessionID::IdForTab(web_contents()));
 
       // TODO(jyasskin): The fallback order should be user-defined popup ->
       // onClicked handler -> default popup.
@@ -248,8 +247,7 @@ bool ScriptBadgeController::MarkExtensionExecuting(
   if (!script_badge)
     return false;
 
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
-  script_badge->SetAppearance(SessionID::IdForTab(tab_contents),
+  script_badge->SetAppearance(SessionID::IdForTab(web_contents()),
                               ExtensionAction::ACTIVE);
   return true;
 }

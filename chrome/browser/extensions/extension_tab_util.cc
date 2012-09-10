@@ -49,7 +49,7 @@ int ExtensionTabUtil::GetWindowIdOfTabStripModel(
 }
 
 int ExtensionTabUtil::GetTabId(const WebContents* web_contents) {
-  return SessionID::IdForTab(TabContents::FromWebContents(web_contents));
+  return SessionID::IdForTab(web_contents);
 }
 
 std::string ExtensionTabUtil::GetTabStatusText(bool is_loading) {
@@ -57,8 +57,7 @@ std::string ExtensionTabUtil::GetTabStatusText(bool is_loading) {
 }
 
 int ExtensionTabUtil::GetWindowIdOfTab(const WebContents* web_contents) {
-  return SessionID::IdForWindowContainingTab(
-      TabContents::FromWebContents(web_contents));
+  return SessionID::IdForWindowContainingTab(web_contents);
 }
 
 DictionaryValue* ExtensionTabUtil::CreateTabValue(
@@ -219,7 +218,7 @@ bool ExtensionTabUtil::GetTabById(int tab_id,
       TabStripModel* target_tab_strip = target_browser->tab_strip_model();
       for (int i = 0; i < target_tab_strip->count(); ++i) {
         TabContents* target_contents = target_tab_strip->GetTabContentsAt(i);
-        if (SessionID::IdForTab(target_contents) == tab_id) {
+        if (SessionID::IdForTab(target_contents->web_contents()) == tab_id) {
           if (browser)
             *browser = target_browser;
           if (tab_strip)

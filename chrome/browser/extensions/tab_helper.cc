@@ -64,7 +64,7 @@ TabHelper::TabHelper(content::WebContents* web_contents)
       script_executor_(web_contents),
       active_tab_permission_manager_(
           web_contents,
-          SessionID::IdForTab(TabContents::FromWebContents(web_contents)),
+          SessionID::IdForTab(web_contents),
           Profile::FromBrowserContext(web_contents->GetBrowserContext())) {
   if (switch_utils::AreScriptBadgesEnabled()) {
     location_bar_controller_.reset(
@@ -137,10 +137,9 @@ SkBitmap* TabHelper::GetExtensionAppIcon() {
 }
 
 void TabHelper::RenderViewCreated(RenderViewHost* render_view_host) {
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
   render_view_host->Send(
       new ExtensionMsg_SetTabId(render_view_host->GetRoutingID(),
-                                SessionID::IdForTab(tab_contents)));
+                                SessionID::IdForTab(web_contents())));
 }
 
 void TabHelper::DidNavigateMainFrame(
@@ -155,12 +154,11 @@ void TabHelper::DidNavigateMainFrame(
   if (!service)
     return;
 
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
   for (ExtensionSet::const_iterator it = service->extensions()->begin();
        it != service->extensions()->end(); ++it) {
     ExtensionAction* browser_action = (*it)->browser_action();
     if (browser_action) {
-      browser_action->ClearAllValuesForTab(SessionID::IdForTab(tab_contents));
+      browser_action->ClearAllValuesForTab(SessionID::IdForTab(web_contents()));
       content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
           content::Source<ExtensionAction>(browser_action),

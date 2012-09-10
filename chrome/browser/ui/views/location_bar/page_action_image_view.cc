@@ -49,7 +49,7 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
       popup_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(scoped_icon_animation_observer_(
           page_action->GetIconAnimation(
-              SessionID::IdForTab(owner->GetTabContents())),
+              SessionID::IdForTab(owner->GetTabContents()->web_contents())),
           this)) {
   const Extension* extension = owner_->profile()->GetExtensionService()->
       GetExtensionById(page_action->extension_id(), false);

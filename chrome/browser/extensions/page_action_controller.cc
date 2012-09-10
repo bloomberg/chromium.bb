@@ -94,10 +94,9 @@ void PageActionController::DidNavigateMainFrame(
   if (current_actions.empty())
     return;
 
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
   for (size_t i = 0; i < current_actions.size(); ++i) {
     current_actions[i]->ClearAllValuesForTab(
-        SessionID::IdForTab(tab_contents));
+        SessionID::IdForTab(web_contents()));
   }
 
   NotifyChange();
