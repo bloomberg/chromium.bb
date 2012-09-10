@@ -744,14 +744,6 @@ translator-all() {
   fi
 
   # Copy native libs to translator install dir.
-  # NOTE: Currently, sdk-irt-shim() has not yet been removed, so we run
-  # that here.  This will a real PPAPI libpnacl_irt_shim.a over the
-  # dummy version in the ${INSTALL_LIB_NATIVE} directory.  This gives us
-  # a way of making a browser-compatible translator for now.
-  # Once the PPAPI libpnacl_irt_shim.a is moved to the chromium repo we will
-  # need to supplement the translator build in chrome.  Once that is done, the
-  # translator build in the NaCl repo only works for commandline tests.
-  sdk-irt-shim
   cp -a ${INSTALL_LIB_NATIVE}* ${INSTALL_TRANSLATOR}
 
   driver-install-translator
@@ -3067,31 +3059,6 @@ sdk-libs() {
   spopd
 }
 
-# This provides a convenience function for building the "real" PPAPI shim.
-# TODO(jvoung): remove this once the sources have been moved to the chrome repo.
-sdk-irt-shim() {
-  # NOTE: This uses the nacl-gcc toolchain, causing
-  #       the pnacl toolchain to depend on it.
-  StepBanner "SDK" "IRT Shim"
-  spushd "${NACL_ROOT}"
-  # NOTE: We specify bitcode=1, but it is really using nacl-gcc to build
-  # the library (it's only bitcode=1 because it's part of the pnacl sdk).
-  RunWithLog "sdk.irt.shim" \
-    ./scons -j${PNACL_CONCURRENCY} \
-            bitcode=1 \
-            platform=x86-64 \
-            naclsdk_validate=0 \
-            pnacl_generate_pexe=0 \
-            --verbose \
-            enable_chrome_side=1 \
-            pnacl_irt_shim
-  local out_dir_prefix="${SCONS_OUT}"/nacl-x86-64-pnacl-clang
-  local outdir="${out_dir_prefix}"/obj/src/untrusted/pnacl_irt_shim
-  mkdir -p "${INSTALL_LIB_X8664}"
-  cp "${outdir}"/libpnacl_irt_shim.a "${INSTALL_LIB_X8664}"
-  spopd
-}
-
 # This builds lib*_private.a, to allow building the llc and ld nexes without
 # the IRT and without the segment gap.
 sdk-private-libs() {
@@ -3200,54 +3167,6 @@ newlib-nacl-headers-check() {
 }
 
 
-#+ ppapi-all
-#+ Note: this is will be removed once we have cut ties to PPAPI in the NaCl
-#+ repository and confined PPAPI to the chromium repository.
-ppapi-all() {
-  sdk-irt-shim
-  ppapi-headers
-}
-
-
-#+ ppapi-headers
-#+ Note, this is experimental for now and must be called manually to avoid
-#+ any unexpected interference with where scons picks up the ppapi headers
-#+ today.
-# TODO(robertm): harmonize this with whatever we do for the nacl-gcc TC
-ppapi-headers() {
-  ppapi-headers-one newlib
-  ppapi-headers-one glibc
-}
-
-ppapi-headers-one() {
-  local libmode=$1
-  check-libmode ${libmode}
-  local sdkinclude="$(GetInstallDir ${libmode})"/sdk/include
-  local dst="${sdkinclude}"/ppapi
-  StepBanner "PPAPI-HEADERS" "${dst}"
-  # This is quick and dirty 1st cut.
-  local ppapi_base=${NACL_ROOT}/../ppapi
-  rm -rf ${dst}
-  mkdir -p ${dst}
-  cp -r ${ppapi_base}/c            ${dst}
-  cp -r ${ppapi_base}/cpp          ${dst}
-  cp -r ${ppapi_base}/utility      ${dst}
-  cp -r ${ppapi_base}/lib/gl/gles2 ${dst}
-
-  # pruning (needs a lot more work)
-  rm -rf ${dst}/*/private
-  rm -rf ${dst}/*/trusted
-  rm -rf ${dst}/*/documentation
-  rm -rf ${dst}/*/.svn
-
-  rm -f ${dst}/*/*.c
-  rm -f ${dst}/*/*.cc
-  rm -f ${dst}/*/*/*.cc
-
-  cp -r ${ppapi_base}/lib/gl/include/KHR   "${sdkinclude}"
-  cp -r ${ppapi_base}/lib/gl/include/EGL   "${sdkinclude}"
-  cp -r ${ppapi_base}/lib/gl/include/GLES2 "${sdkinclude}"
-}
 #+-------------------------------------------------------------------------
 #@ driver                - Install driver scripts.
 driver() {
