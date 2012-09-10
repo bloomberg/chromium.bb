@@ -4,5 +4,3 @@ IPCSyncChannelTest.ChattyServer
 IPCChannelTest.ChannelTest
 # Crashes under Valgrind. See http://crbug.com/46782
 IPCSyncChannelTest.Multiple
-# These crash under Valgrind way too often. See http://crbug.com/140442
-IPCSyncChannelTest.*
