@@ -15,6 +15,9 @@
         'build_glibc': 1,
         'build_newlib': 1,
       },
+      'include_dirs': [
+        '../../../..',
+      ],
       'sources': [
         'ppapi_plugin_main.c',
         'ppapi_plugin_start.c',
