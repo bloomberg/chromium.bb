@@ -946,13 +946,6 @@
    fun:calloc
    ...
    fun:error_get_my_stack
-   fun:nss_ClearErrorStack
-   fun:NSSArena_Create
-   ...
-   fun:nss_Init
-   fun:NSS_InitReadWrite
-   ...
-   fun:*13EnsureNSSInitEv
 }
 {
    bug_61585b (Intentional)
@@ -999,16 +992,6 @@
    fun:initSessionCacheLocksLazily
    ...
    fun:ssl_InitSessionCacheLocks
-}
-{
-   # Intentionally leaking NSS to prevent shutdown crashes
-   bug_77990 (Intentional)
-   Memcheck:Leak
-   fun:calloc
-   ...
-   fun:error_get_my_stack
-   fun:nss_ClearErrorStack
-   fun:NSSArena_Destroy
 }
 {
    bug_83345 (Needs_Annotation)
@@ -5188,29 +5171,6 @@
    fun:_ZN7WebCore11V8DOMWindow19postMessageCallbackERKN2v89ArgumentsE
    fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
    fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
-}
-{
-   bug_124445a
-   Memcheck:Leak
-   fun:calloc
-   ...
-   fun:error_get_my_stack
-   ...
-   fun:CERT_NewTempCertificate
-   ...
-   fun:_ZN3net18SSL*SocketNSS*
-   fun:_ZN3net18SSL*SocketNSS*
-}
-{
-   bug_124445b
-   Memcheck:Leak
-   fun:calloc
-   ...
-   fun:error_get_my_stack
-   ...
-   fun:CERT_NewTempCertificate
-   ...
-   fun:_ZN33SSLHostStateTest_QueryPolicy_Test8TestBodyEv
 }
 {
    bug_123453
