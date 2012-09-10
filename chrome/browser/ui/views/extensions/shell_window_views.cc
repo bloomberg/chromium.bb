@@ -329,6 +329,9 @@ ShellWindowViews::ShellWindowViews(ShellWindow* shell_window,
       window_->non_client_view()->GetWindowBoundsForClientBounds(
           win_params.bounds);
   window_->SetBounds(window_bounds);
+  // Center window if no position was specified.
+  if (win_params.bounds.x() < 0 || win_params.bounds.y() < 0)
+    window_->CenterWindow(window_bounds.size());
 #if defined(OS_WIN) && !defined(USE_AURA)
   std::string app_name = web_app::GenerateApplicationNameFromExtensionId(
       extension()->id());
@@ -627,6 +630,12 @@ void ShellWindowViews::UpdateDraggableRegions(
 void ShellWindowViews::HandleKeyboardEvent(
     const content::NativeWebKeyboardEvent& event) {
   // No-op.
+}
+
+void ShellWindowViews::SaveWindowPlacement(const gfx::Rect& bounds,
+                                           ui::WindowShowState show_state) {
+  views::WidgetDelegate::SaveWindowPlacement(bounds, show_state);
+  shell_window_->SaveWindowPosition();
 }
 
 // static

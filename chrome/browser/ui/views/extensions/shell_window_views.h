@@ -91,6 +91,10 @@ class ShellWindowViews : public NativeShellWindow,
     return shell_window_->extension();
   }
 
+  // views::WidgetDelegate implementation.
+  virtual void SaveWindowPlacement(const gfx::Rect& bounds,
+                                   ui::WindowShowState show_state) OVERRIDE;
+
  private:
   friend class ShellWindowFrameView;
 
