@@ -82,7 +82,7 @@ namespace alarms {
   };
 
   interface Events {
-    // Fired when an alarm has elapsed. Useful for transient background pages.
+    // Fired when an alarm has elapsed. Useful for event pages.
     // |alarm|: The alarm that has elapsed.
     static void onAlarm(Alarm alarm);
   };

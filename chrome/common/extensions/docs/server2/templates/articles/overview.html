@@ -229,6 +229,7 @@ that uses information from google.com:
   "description": "Gets information from Google.",
   "icons": { "128": "icon_128.png" },
   "background": {
+    "persistent": false,
     "scripts": ["bg.js"]
   },
   "permissions": ["http://*.google.com/", "https://*.google.com/"],
@@ -278,11 +279,13 @@ the behavior of the browser action in both windows.
  alt="Two windows and a box representing a background page (background.html). One window has a yellow icon; the other has both a yellow icon and a blue icon. The yellow icons are connected to the background page." />
 
 <p>
-Although background pages can be useful,
-don't use one if you don't need it.
-Background pages are always open,
-so when a user installs many extensions that have background pages,
-Chrome's performance can suffer.
+There are two types of background pages:
+<a href="background_pages.html">persistent background pages</a>,
+and <a href="event_pages.html">event pages</a>. Persistent
+background pages, as the name suggests, are always open.
+Event pages are opened and closed as needed. Unless you absolutely
+need your background page to run all the time, prefer to use
+an event page.
 </p>
 
 <!-- PENDING: Perhaps show a picture of many background page processes.
@@ -290,31 +293,8 @@ Chrome's performance can suffer.
   and perhaps the differences between packaged apps and extensions. -->
 
 <p>
-Here are some examples of extensions that usually
-<em>do not need</em> a background page:
-</p>
-
-<ul>
-  <li> An extension with a browser action that
-    presents its UI solely through a popup
-    (and perhaps an options page).
-  </li>
-  <li>
-    An extension that provides an <em>override page</em>&mdash;a
-    page that replaces a standard Chrome page.
-  </li>
-  <li>
-    An extension with a content script
-    that <em>doesn't use</em> localStorage or
-    <a href="#apis">extension APIs</a>.
-  </li>
-  <li>
-    An extension that has no UI except for an options page.
-  </li>
-</ul>
-
-<p>
-See <a href="background_pages.html">Background Pages</a>
+See <a href="event_pages.html">Event Pages</a>
+and <a href="background_pages.html">Background Pages</a>
 for more details.
 </p>
 
@@ -465,18 +445,18 @@ Synchronous methods never have a callback
 because they don't return until they've completed all their work.
 Often, synchronous methods have a return type.
 Consider the
-<a href="extension.html#method-getBackgroundPage">chrome.extensions.getBackgroundPage()</a> method:
+<a href="runtime.html#method-getURL">chrome.runtime.getURL()</a> method:
 </p>
 
 <p>
 <code>
-Window chrome.extension.getBackgroundPage()
+string chrome.runtime.getURL()
 </code>
 </p>
 
 <p>
-This method has no callback and a return type of <code>Window</code>
-because it synchronously returns the background page
+This method has no callback and a return type of <code>string</code>
+because it synchronously returns the URL
 and performs no other, asynchronous work.
 </p>
 
@@ -630,13 +610,14 @@ For example:
 </p>
 
 <pre>
-var bgPage = chrome.extension.getBackgroundPage();
-
 function saveTabData(tab, data) {
   if (tab.incognito) {
-    bgPage[tab.url] = data;       // Persist data ONLY in memory
+    chrome.runtime.getBackgroundPage(function(bgPage) {
+      bgPage[tab.url] = data;      // Persist data ONLY in memory
+    });
   } else {
-    localStorage[tab.url] = data; // OK to store data
+    localStorage[tab.url] = data;  // OK to store data
+  }
 }
 </pre>
 
