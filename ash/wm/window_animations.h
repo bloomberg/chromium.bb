@@ -100,6 +100,9 @@ enum WorkspaceType {
   WORKSPACE_DESKTOP,
 };
 
+// Amount of time for the workspace switch animation.
+extern const int kWorkspaceSwitchTimeMS;
+
 // Animates between two workspaces. If |animate_old| is false |old_window| is
 // not animated, otherwise it is. |is_restoring_maximized_window| is true if
 // the switch is the result of a minmized window being restored.

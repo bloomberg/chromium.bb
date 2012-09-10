@@ -630,7 +630,11 @@ class CrossFadeObserver : public ui::CompositorObserver,
     layer_->GetCompositor()->AddObserver(this);
   }
   virtual ~CrossFadeObserver() {
-    Cleanup();
+    window_->RemoveObserver(this);
+    window_ = NULL;
+    layer_->GetCompositor()->RemoveObserver(this);
+    wm::DeepDeleteLayers(layer_);
+    layer_ = NULL;
   }
 
   // ui::CompositorObserver overrides:
@@ -643,19 +647,14 @@ class CrossFadeObserver : public ui::CompositorObserver,
   virtual void OnCompositingEnded(ui::Compositor* compositor) OVERRIDE {
   }
   virtual void OnCompositingAborted(ui::Compositor* compositor) OVERRIDE {
-    // Something went wrong with compositing and our layers are now invalid.
-    if (layer_)
-      layer_->GetAnimator()->StopAnimating();
-    // Delete is scheduled in OnImplicitAnimationsCompleted().
-    Cleanup();
+    // Triggers OnImplicitAnimationsCompleted() to be called and deletes us.
+    layer_->GetAnimator()->StopAnimating();
   }
 
   // aura::WindowObserver overrides:
   virtual void OnWindowDestroying(Window* window) OVERRIDE {
-    if (layer_)
-      layer_->GetAnimator()->StopAnimating();
-    // Delete is scheduled in OnImplicitAnimationsCompleted().
-    Cleanup();
+    // Triggers OnImplicitAnimationsCompleted() to be called and deletes us.
+    layer_->GetAnimator()->StopAnimating();
   }
 
   // ui::ImplicitAnimationObserver overrides:
@@ -664,20 +663,6 @@ class CrossFadeObserver : public ui::CompositorObserver,
   }
 
  private:
-  // Can be called multiple times if the window is closed or the compositor
-  // fails in the middle of the animation.
-  void Cleanup() {
-    if (window_) {
-      window_->RemoveObserver(this);
-      window_ = NULL;
-    }
-    if (layer_) {
-      layer_->GetCompositor()->RemoveObserver(this);
-      wm::DeepDeleteLayers(layer_);
-      layer_ = NULL;
-    }
-  }
-
   Window* window_;  // not owned
   Layer* layer_;  // owned
 
@@ -689,19 +674,23 @@ class CrossFadeObserver : public ui::CompositorObserver,
 
 namespace {
 
-// TODO: leaving in for now since Nicholas wants to play with this, remove if we
-// leave it at 0.
-const int kPauseTimeMS = 0;
-
 // Duration of cross fades when workspace2 is enabled.
 const int kWorkspaceCrossFadeDurationMs = 333;
-
-// Amount of time for animating a workspace in or out.
-const int kWorkspaceSwitchTimeMS = 333 + kPauseTimeMS;
 
 // Scales for workspaces above/below current workspace.
 const float kWorkspaceScaleAbove = 1.1f;
 const float kWorkspaceScaleBelow = .9f;
+
+// TODO: leaving in for now since Nicholas wants to play with this, remove if we
+// leave it at 0.
+const int kPauseTimeMS = 0;
+
+}  // namespace
+
+// Amount of time for animating a workspace in or out.
+const int kWorkspaceSwitchTimeMS = 333 + kPauseTimeMS;
+
+namespace {
 
 // Brightness for the non-active workspace.
 const float kWorkspaceBrightness = -.05f;

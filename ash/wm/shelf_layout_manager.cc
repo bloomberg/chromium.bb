@@ -13,6 +13,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/wm/window_animations.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/auto_reset.h"
 #include "base/i18n/rtl.h"
@@ -46,6 +47,8 @@ const int ShelfLayoutManager::kWorkspaceAreaBottomInset = 2;
 
 // static
 const int ShelfLayoutManager::kAutoHideSize = 2;
+
+// ShelfLayoutManager::AutoHideEventFilter -------------------------------------
 
 // Notifies ShelfLayoutManager any time the mouse moves.
 class ShelfLayoutManager::AutoHideEventFilter : public aura::EventFilter {
@@ -119,8 +122,42 @@ ShelfLayoutManager::AutoHideEventFilter::PreHandleGestureEvent(
   return ui::ER_UNHANDLED;  // Not handled.
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// ShelfLayoutManager, public:
+// ShelfLayoutManager:UpdateShelfObserver --------------------------------------
+
+// UpdateShelfObserver is used to delay updating the background until the
+// animation completes.
+class ShelfLayoutManager::UpdateShelfObserver
+    : public ui::ImplicitAnimationObserver {
+ public:
+  explicit UpdateShelfObserver(ShelfLayoutManager* shelf) : shelf_(shelf) {
+    shelf_->update_shelf_observer_ = this;
+  }
+
+  void Detach() {
+    shelf_ = NULL;
+  }
+
+  virtual void OnImplicitAnimationsCompleted() OVERRIDE {
+    if (shelf_) {
+      shelf_->UpdateShelfBackground(
+          internal::BackgroundAnimator::CHANGE_ANIMATE);
+    }
+    delete this;
+  }
+
+ private:
+  virtual ~UpdateShelfObserver() {
+    if (shelf_)
+      shelf_->update_shelf_observer_ = NULL;
+  }
+
+  // Shelf we're in. NULL if deleted before we're deleted.
+  ShelfLayoutManager* shelf_;
+
+  DISALLOW_COPY_AND_ASSIGN(UpdateShelfObserver);
+};
+
+// ShelfLayoutManager ----------------------------------------------------------
 
 ShelfLayoutManager::ShelfLayoutManager(views::Widget* status)
     : root_window_(Shell::GetPrimaryRootWindow()),
@@ -133,12 +170,16 @@ ShelfLayoutManager::ShelfLayoutManager(views::Widget* status)
       window_overlaps_shelf_(false),
       gesture_drag_status_(GESTURE_DRAG_NONE),
       gesture_drag_amount_(0.f),
-      gesture_drag_auto_hide_state_(AUTO_HIDE_SHOWN) {
+      gesture_drag_auto_hide_state_(AUTO_HIDE_SHOWN),
+      update_shelf_observer_(NULL) {
   Shell::GetInstance()->AddShellObserver(this);
   aura::client::GetActivationClient(root_window_)->AddObserver(this);
 }
 
 ShelfLayoutManager::~ShelfLayoutManager() {
+  if (update_shelf_observer_)
+    update_shelf_observer_->Detach();
+
   FOR_EACH_OBSERVER(Observer, observers_, WillDeleteShelf());
   Shell::GetInstance()->RemoveShellObserver(this);
   aura::client::GetActivationClient(root_window_)->RemoveObserver(this);
@@ -253,6 +294,7 @@ void ShelfLayoutManager::UpdateVisibilityState() {
                  AUTO_HIDE : VISIBLE);
         SetWindowOverlapsShelf(window_state ==
                                WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF);
+        break;
     }
   }
 }
@@ -468,7 +510,7 @@ void ShelfLayoutManager::SetState(VisibilityState visibility_state) {
   auto_hide_timer_.Stop();
 
   // Animating the background when transitioning from auto-hide & hidden to
-  // visibile is janking. Update the background immediately in this case.
+  // visible is janky. Update the background immediately in this case.
   internal::BackgroundAnimator::ChangeType change_type =
       (state_.visibility_state == AUTO_HIDE &&
        state_.auto_hide_state == AUTO_HIDE_HIDDEN &&
@@ -479,11 +521,14 @@ void ShelfLayoutManager::SetState(VisibilityState visibility_state) {
   state_ = state;
   TargetBounds target_bounds;
   CalculateTargetBounds(state_, &target_bounds);
+  const int animate_time_ms =
+      WorkspaceController::IsWorkspace2Enabled() ? kWorkspaceSwitchTimeMS :
+      130;
   if (launcher_widget()) {
     ui::ScopedLayerAnimationSettings launcher_animation_setter(
         GetLayer(launcher_widget())->GetAnimator());
     launcher_animation_setter.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(130));
+        base::TimeDelta::FromMilliseconds(animate_time_ms));
     launcher_animation_setter.SetTweenType(ui::Tween::EASE_OUT);
     GetLayer(launcher_widget())->SetBounds(
         target_bounds.launcher_bounds_in_root);
@@ -492,15 +537,30 @@ void ShelfLayoutManager::SetState(VisibilityState visibility_state) {
   ui::ScopedLayerAnimationSettings status_animation_setter(
       GetLayer(status_)->GetAnimator());
   status_animation_setter.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(130));
+      base::TimeDelta::FromMilliseconds(animate_time_ms));
   status_animation_setter.SetTweenType(ui::Tween::EASE_OUT);
+  // Delay updating the background when going from AUTO_HIDE_SHOWN to
+  // AUTO_HIDE_HIDDEN until the shelf animates out. Otherwise during the
+  // animation you see the background change.
+  const bool delay_shelf_update =
+      state.visibility_state && AUTO_HIDE &&
+      state.auto_hide_state == AUTO_HIDE_HIDDEN &&
+      state_.visibility_state == AUTO_HIDE;
+  if (delay_shelf_update) {
+    if (update_shelf_observer_)
+      update_shelf_observer_->Detach();
+    // UpdateShelfBackground deletes itself when the animation is done.
+    update_shelf_observer_ = new UpdateShelfObserver(this);
+    status_animation_setter.AddObserver(update_shelf_observer_);
+  }
   GetLayer(status_)->SetBounds(target_bounds.status_bounds_in_root);
   GetLayer(status_)->SetOpacity(target_bounds.opacity);
   Shell::GetInstance()->SetDisplayWorkAreaInsets(
       Shell::GetPrimaryRootWindow(),
       target_bounds.work_area_insets);
   UpdateHitTestBounds();
-  UpdateShelfBackground(change_type);
+  if (!delay_shelf_update)
+    UpdateShelfBackground(change_type);
 }
 
 void ShelfLayoutManager::StopAnimating() {

@@ -173,6 +173,7 @@ class ASH_EXPORT ShelfLayoutManager :
 
  private:
   class AutoHideEventFilter;
+  class UpdateShelfObserver;
   friend class ash::ScreenAsh;
   friend class ShelfLayoutManagerTest;
   FRIEND_TEST_ALL_PREFIXES(ShelfLayoutManagerTest, SetAutoHideBehavior);
@@ -305,6 +306,9 @@ class ASH_EXPORT ShelfLayoutManager :
 
   // Manage the auto-hide state during the gesture.
   AutoHideState gesture_drag_auto_hide_state_;
+
+  // Used to delay updating shelf background.
+  UpdateShelfObserver* update_shelf_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManager);
 };
