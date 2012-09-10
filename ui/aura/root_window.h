@@ -126,9 +126,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Hides the root window host.
   void HideRootWindow();
 
-  // Stop listening events in preparation for shutdown.
-  void PrepareForShutdown();
-
   RootWindowHostDelegate* AsRootWindowHostDelegate();
 
   // Sets the size of the root window.

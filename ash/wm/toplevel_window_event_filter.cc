@@ -96,15 +96,12 @@ void ToplevelWindowEventFilter::ScopedWindowResizer::OnWindowDestroying(
 
 ToplevelWindowEventFilter::ToplevelWindowEventFilter(aura::Window* owner)
     : in_move_loop_(false),
-      move_cancelled_(false),
       in_gesture_resize_(false),
       grid_size_(0) {
   aura::client::SetWindowMoveClient(owner, this);
-  Shell::GetInstance()->display_controller()->AddObserver(this);
 }
 
 ToplevelWindowEventFilter::~ToplevelWindowEventFilter() {
-  Shell::GetInstance()->display_controller()->RemoveObserver(this);
 }
 
 bool ToplevelWindowEventFilter::PreHandleKeyEvent(aura::Window* target,
@@ -252,12 +249,10 @@ ui::EventResult ToplevelWindowEventFilter::PreHandleGestureEvent(
   return ui::ER_CONSUMED;
 }
 
-aura::client::WindowMoveResult ToplevelWindowEventFilter::RunMoveLoop(
-    aura::Window* source,
-    const gfx::Point& drag_offset) {
+void ToplevelWindowEventFilter::RunMoveLoop(aura::Window* source,
+                                            const gfx::Point& drag_offset) {
   DCHECK(!in_move_loop_);  // Can only handle one nested loop at a time.
   in_move_loop_ = true;
-  move_cancelled_ = false;
   aura::RootWindow* root_window = source->GetRootWindow();
   DCHECK(root_window);
   gfx::Point drag_location;
@@ -281,8 +276,6 @@ aura::client::WindowMoveResult ToplevelWindowEventFilter::RunMoveLoop(
   run_loop.Run();
 #endif  // !defined(OS_MACOSX)
   in_gesture_resize_ = in_move_loop_ = false;
-  return move_cancelled_ ? aura::client::MOVE_CANCELED :
-      aura::client::MOVE_SUCCESSFUL;
 }
 
 void ToplevelWindowEventFilter::EndMoveLoop() {
@@ -295,16 +288,6 @@ void ToplevelWindowEventFilter::EndMoveLoop() {
     window_resizer_.reset();
   }
   quit_closure_.Run();
-}
-
-void ToplevelWindowEventFilter::OnDisplayConfigurationChanging() {
-  if (in_move_loop_) {
-    move_cancelled_ = true;
-    EndMoveLoop();
-  } else if (window_resizer_.get()) {
-    window_resizer_->resizer()->RevertDrag();
-    window_resizer_.reset();
-  }
 }
 
 // static

@@ -53,7 +53,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/display/output_configurator_animation.h"
-#include "base/chromeos/chromeos_version.h"
 #include "chromeos/display/output_configurator.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -106,20 +105,7 @@ bool HandleToggleSpokenFeedback() {
   Shell::GetInstance()->delegate()->ToggleSpokenFeedback();
   return true;
 }
-void HandleCycleDisplayMode() {
-  Shell* shell = Shell::GetInstance();
-  if (!base::chromeos::IsRunningOnChromeOS()) {
-    internal::MultiDisplayManager::CycleDisplay();
-  } else if (shell->output_configurator()->connected_output_count() > 1) {
-    internal::OutputConfiguratorAnimation* animation =
-        shell->output_configurator_animation();
-    animation->StartFadeOutAnimation(base::Bind(
-        base::IgnoreResult(&chromeos::OutputConfigurator::CycleDisplayMode),
-        base::Unretained(shell->output_configurator())));
-  }
-}
-
-#endif  // defined(OS_CHROMEOS)
+#endif
 
 bool HandleExit() {
   ShellDelegate* delegate = Shell::GetInstance()->delegate();
@@ -454,9 +440,18 @@ bool AcceleratorController::PerformAction(int action,
       if (Shell::GetInstance()->tray_delegate())
         Shell::GetInstance()->tray_delegate()->ToggleWifi();
       return true;
-    case CYCLE_DISPLAY_MODE:
-      HandleCycleDisplayMode();
-      return true;
+    case CYCLE_DISPLAY_MODE: {
+      Shell* shell = Shell::GetInstance();
+      if (shell->output_configurator()->connected_output_count() > 1) {
+        internal::OutputConfiguratorAnimation* animation =
+            shell->output_configurator_animation();
+        animation->StartFadeOutAnimation(base::Bind(
+            base::IgnoreResult(&chromeos::OutputConfigurator::CycleDisplayMode),
+            base::Unretained(shell->output_configurator())));
+        return true;
+      }
+      return false;
+    }
 #endif
     case OPEN_FEEDBACK_PAGE:
       ash::Shell::GetInstance()->delegate()->OpenFeedbackPage();
@@ -680,6 +675,12 @@ bool AcceleratorController::PerformAction(int action,
       return HandleToggleDesktopBackgroundMode();
     case TOGGLE_ROOT_WINDOW_FULL_SCREEN:
       return HandleToggleRootWindowFullScreen();
+    case DISPLAY_ADD_REMOVE:
+      internal::MultiDisplayManager::AddRemoveDisplay();
+      return true;
+    case DISPLAY_CYCLE:
+      internal::MultiDisplayManager::CycleDisplay();
+      return true;
     case DISPLAY_TOGGLE_SCALE:
       internal::MultiDisplayManager::ToggleDisplayScale();
       return true;

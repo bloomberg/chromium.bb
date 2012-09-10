@@ -201,12 +201,6 @@ void RootWindow::HideRootWindow() {
   host_->Hide();
 }
 
-void RootWindow::PrepareForShutdown() {
-  host_->PrepareForShutdown();
-  // discard synthesize event request as well.
-  synthesize_mouse_move_ = false;
-}
-
 RootWindowHostDelegate* RootWindow::AsRootWindowHostDelegate() {
   return this;
 }

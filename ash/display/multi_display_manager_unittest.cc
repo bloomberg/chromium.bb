@@ -195,20 +195,29 @@ TEST_F(MultiDisplayManagerTest, MAYBE_NativeDisplayTest) {
 TEST_F(MultiDisplayManagerTest, MAYBE_EmulatorTest) {
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
 
-  internal::MultiDisplayManager::CycleDisplay();
+  internal::MultiDisplayManager::AddRemoveDisplay();
   // Update primary and add seconary.
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
-  EXPECT_EQ("0 1 0", GetCountSummary());
+  EXPECT_EQ("1 1 0", GetCountSummary());
   reset();
 
   internal::MultiDisplayManager::CycleDisplay();
+  EXPECT_EQ(2U, display_manager()->GetNumDisplays());
+  // Observer gets called twice in this mode because
+  // it gets notified both from |OnNativeDisplayChagned|
+  // and from |RootWindowObserver|, which is the consequence of
+  // |SetHostSize()|.
+  EXPECT_EQ("4 0 0", GetCountSummary());
+  reset();
+
+  internal::MultiDisplayManager::AddRemoveDisplay();
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0 0 1", GetCountSummary());
   reset();
 
   internal::MultiDisplayManager::CycleDisplay();
-  EXPECT_EQ(2U, display_manager()->GetNumDisplays());
-  EXPECT_EQ("0 1 0", GetCountSummary());
+  EXPECT_EQ(1U, display_manager()->GetNumDisplays());
+  EXPECT_EQ("0 0 0", GetCountSummary());
   reset();
 }
 

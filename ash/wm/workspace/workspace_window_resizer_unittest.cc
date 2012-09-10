@@ -141,15 +141,15 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
 // Fails on win_aura since wm::GetRootWindowRelativeToWindow is not implemented
 // yet for the platform.
 #if defined(OS_WIN)
-#define MAYBE_WindowDragWithMultiDisplays \
-  DISABLED_WindowDragWithMultiDisplays
-#define MAYBE_WindowDragWithMultiDisplaysRightToLeft \
-  DISABLED_WindowDragWithMultiDisplaysRightToLeft
+#define MAYBE_WindowDragWithMultiMonitors \
+  DISABLED_WindowDragWithMultiMonitors
+#define MAYBE_WindowDragWithMultiMonitorsRightToLeft \
+  DISABLED_WindowDragWithMultiMonitorsRightToLeft
 #define MAYBE_PhantomStyle DISABLED_PhantomStyle
 #else
-#define MAYBE_WindowDragWithMultiDisplays WindowDragWithMultiDisplays
-#define MAYBE_WindowDragWithMultiDisplaysRightToLeft \
-  WindowDragWithMultiDisplaysRightToLeft
+#define MAYBE_WindowDragWithMultiMonitors WindowDragWithMultiMonitors
+#define MAYBE_WindowDragWithMultiMonitorsRightToLeft \
+  WindowDragWithMultiMonitorsRightToLeft
 #define MAYBE_PhantomStyle PhantomStyle
 #endif
 
@@ -487,7 +487,7 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
 }
 
 // Verifies a window can be moved from the primary display to another.
-TEST_F(WorkspaceWindowResizerTest, MAYBE_WindowDragWithMultiDisplays) {
+TEST_F(WorkspaceWindowResizerTest, MAYBE_WindowDragWithMultiMonitors) {
   // The secondary display is logically on the right, but on the system (e.g. X)
   // layer, it's below the primary one. See UpdateDisplay() in ash_test_base.cc.
   UpdateDisplay("800x600,800x600");
@@ -554,7 +554,7 @@ TEST_F(WorkspaceWindowResizerTest, MAYBE_WindowDragWithMultiDisplays) {
 
 // Verifies a window can be moved from the secondary display to primary.
 TEST_F(WorkspaceWindowResizerTest,
-       MAYBE_WindowDragWithMultiDisplaysRightToLeft) {
+       MAYBE_WindowDragWithMultiMonitorsRightToLeft) {
   UpdateDisplay("800x600,800x600");
   Shell::GetInstance()->shelf()->LayoutShelf();
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
