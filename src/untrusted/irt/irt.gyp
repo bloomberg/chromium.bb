@@ -113,11 +113,12 @@
         'build_newlib': 1,
       },
       'sources': ['<@(irt_sources)', '<@(irt_browser)'],
+      'include_dirs': ['../../../../ppapi'],
       'conditions': [
         ['target_arch == "x64" or target_arch == "ia32"', {
           'link_flags': [
-           '-r',
-           '-nostartfiles',
+             '-r',
+             '-nostartfiles',
           ],
         }],
       ],
