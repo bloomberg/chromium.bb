@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/extensions/extension_view.h"
+#include "chrome/browser/ui/views/extensions/extension_view_views.h"
 
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
@@ -126,8 +126,8 @@ void ExtensionView::ResizeDueToAutoResize(const gfx::Size& new_size) {
 }
 
 void ExtensionView::ViewHierarchyChanged(bool is_add,
-                                         views::View *parent,
-                                         views::View *child) {
+                                         views::View* parent,
+                                         views::View* child) {
   NativeViewHost::ViewHierarchyChanged(is_add, parent, child);
   if (is_add && GetWidget() && !initialized_)
     CreateWidgetHostView();

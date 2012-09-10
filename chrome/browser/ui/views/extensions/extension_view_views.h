@@ -2,24 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_VIEW_VIEWS_H_
+#define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_VIEW_VIEWS_H_
 
-#include "build/build_config.h"
-
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/views/controls/native/native_view_host.h"
 
 class Browser;
-class ExtensionView;
+
+namespace content {
+class RenderViewHost;
+}
 
 namespace extensions {
 class Extension;
 class ExtensionHost;
-}
-
-namespace content {
-class RenderViewHost;
 }
 
 // This handles the display portion of an ExtensionHost.
@@ -60,8 +59,9 @@ class ExtensionView : public views::NativeViewHost {
   // Overridden from views::NativeViewHost:
   virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) OVERRIDE;
   virtual void SetVisible(bool is_visible) OVERRIDE;
-  virtual void ViewHierarchyChanged(
-      bool is_add, views::View *parent, views::View *child) OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    views::View* parent,
+                                    views::View* child) OVERRIDE;
 
  protected:
   // Overridden from views::View.
@@ -110,4 +110,4 @@ class ExtensionView : public views::NativeViewHost {
   DISALLOW_COPY_AND_ASSIGN(ExtensionView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_VIEW_VIEWS_H_
