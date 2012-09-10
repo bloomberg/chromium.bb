@@ -281,7 +281,7 @@ class Handler(webapp.RequestHandler):
     return False
 
   def _RedirectBadPaths(self, path, channel_name, default):
-    if '/' in path:
+    if '/' in path or path == '404.html':
       return False
     apps_templates = APPS_COMPILED_FILE_SYSTEM.GetFromFileListing(
         PUBLIC_TEMPLATE_PATH + '/apps')

@@ -82,7 +82,10 @@ class FakeViewvcServer(_FakeFetcher):
           html.append('<td><a title="file"><strong>000000</strong></a></td>')
       html.append('</html>')
       return '\n'.join(html)
-    return self._ReadFile(path)
+    try:
+      return self._ReadFile(path)
+    except IOError:
+      raise FileNotFoundError(path)
 
 class FakeGithubStat(_FakeFetcher):
   def fetch(self, url):

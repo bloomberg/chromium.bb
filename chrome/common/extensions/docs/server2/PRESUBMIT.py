@@ -17,11 +17,14 @@ build_server.main()
 sys.path.pop(0)
 
 WHITELIST = [ r'.+_test.py$' ]
+# The integration tests are selectively run from the PRESUBMIT in
+# chrome/common/extensions.
+BLACKLIST = [ r'integration_test.py$' ]
 
 def CheckChangeOnUpload(input_api, output_api):
   return input_api.canned_checks.RunUnitTestsInDirectory(
-      input_api, output_api, '.', whitelist=WHITELIST)
+      input_api, output_api, '.', whitelist=WHITELIST, blacklist=BLACKLIST)
 
 def CheckChangeOnCommit(input_api, output_api):
   return input_api.canned_checks.RunUnitTestsInDirectory(
-      input_api, output_api, '.', whitelist=WHITELIST)
+      input_api, output_api, '.', whitelist=WHITELIST, blacklist=BLACKLIST)
