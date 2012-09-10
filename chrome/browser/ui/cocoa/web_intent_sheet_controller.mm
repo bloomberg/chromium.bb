@@ -8,6 +8,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser_list.h"
+#import "chrome/browser/ui/cocoa/event_utils.h"
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
@@ -786,7 +787,8 @@ const CGFloat kAddButtonWidth = 128.0;
 // Pop up a new tab with the Chrome Web Store.
 - (IBAction)showChromeWebStore:(id)sender {
   DCHECK(picker_);
-  picker_->OnSuggestionsLinkClicked();
+  picker_->OnSuggestionsLinkClicked(
+      event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]));
 }
 
 // A picker button has been pressed - invoke corresponding service.
@@ -801,7 +803,8 @@ const CGFloat kAddButtonWidth = 128.0;
   const WebIntentPickerModel::SuggestedExtension& extension =
       model_->GetSuggestedExtensionAt([sender tag]);
 
-  picker_->OnExtensionLinkClicked(UTF16ToUTF8(extension.id));
+  picker_->OnExtensionLinkClicked(UTF16ToUTF8(extension.id),
+      event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]));
 }
 
 - (IBAction)installExtension:(id)sender {

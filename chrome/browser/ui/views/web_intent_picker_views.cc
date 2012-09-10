@@ -507,7 +507,9 @@ class SuggestedExtensionsRowView : public views::View,
     virtual void OnExtensionInstallClicked(const string16& extension_id) = 0;
 
     // Called when the user clicks the extension title link.
-    virtual void OnExtensionLinkClicked(const string16& extension_id) = 0;
+    virtual void OnExtensionLinkClicked(
+        const string16& extension_id,
+        WindowOpenDisposition disposition) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -597,7 +599,8 @@ void SuggestedExtensionsRowView::ButtonPressed(views::Button* sender,
 
 void SuggestedExtensionsRowView::LinkClicked(views::Link* source,
                                              int event_flags) {
-  delegate_->OnExtensionLinkClicked(extension_->id);
+  delegate_->OnExtensionLinkClicked(extension_->id,
+      chrome::DispositionFromEventFlags(event_flags));
 }
 
 void SuggestedExtensionsRowView::StartThrobber() {
@@ -772,7 +775,9 @@ class WebIntentPickerViews : public views::ButtonListener,
 
   // SuggestedExtensionsRowView::Delegate implementation.
   virtual void OnExtensionInstallClicked(const string16& extension_id) OVERRIDE;
-  virtual void OnExtensionLinkClicked(const string16& extension_id) OVERRIDE;
+  virtual void OnExtensionLinkClicked(
+      const string16& extension_id,
+      WindowOpenDisposition disposition) OVERRIDE;
 
  private:
   // Initialize the contents of the picker. After this call, contents_ will be
@@ -927,7 +932,8 @@ int WebIntentPickerViews::GetDialogButtons() const {
 
 void WebIntentPickerViews::LinkClicked(views::Link* source, int event_flags) {
   if (source == more_suggestions_link_) {
-    delegate_->OnSuggestionsLinkClicked();
+    delegate_->OnSuggestionsLinkClicked(
+        chrome::DispositionFromEventFlags(event_flags));
   } else if (source == choose_another_service_link_) {
     // Signal cancellation of inline disposition.
     delegate_->OnChooseAnotherService();
@@ -1169,8 +1175,9 @@ void WebIntentPickerViews::OnExtensionInstallClicked(
 }
 
 void WebIntentPickerViews::OnExtensionLinkClicked(
-    const string16& extension_id) {
-  delegate_->OnExtensionLinkClicked(UTF16ToUTF8(extension_id));
+    const string16& extension_id,
+    WindowOpenDisposition disposition) {
+  delegate_->OnExtensionLinkClicked(UTF16ToUTF8(extension_id), disposition);
 }
 
 void WebIntentPickerViews::InitContents() {

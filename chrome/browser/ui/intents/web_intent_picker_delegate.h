@@ -7,6 +7,7 @@
 
 #include <string>
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
+#include "webkit/glue/window_open_disposition.h"
 
 namespace content {
 class WebContents;
@@ -33,10 +34,17 @@ class WebIntentPickerDelegate {
   virtual void OnExtensionInstallRequested(const std::string& id) = 0;
 
   // Called when the user has chosen to visit the CWS entry for an extension.
-  virtual void OnExtensionLinkClicked(const std::string& id) = 0;
+  // |id| is the extension id.
+  // |disposition| is user-requested disposition for opening the extension
+  // link.
+  virtual void OnExtensionLinkClicked(
+      const std::string& id,
+      WindowOpenDisposition disposition) = 0;
 
   // Called when the user chooses to get more suggestions from CWS.
-  virtual void OnSuggestionsLinkClicked() = 0;
+  // |disposition| is user-requested disposition for opening the suggestions
+  // link.
+  virtual void OnSuggestionsLinkClicked(WindowOpenDisposition disposition) = 0;
 
   // Called when the user cancels out of the dialog.
   virtual void OnPickerClosed() = 0;

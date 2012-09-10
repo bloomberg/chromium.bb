@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/gtk/browser_toolbar_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
+#include "chrome/browser/ui/gtk/event_utils.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -465,7 +466,8 @@ void WebIntentPickerGtk::OnExtensionLinkClick(GtkWidget* link) {
   size_t index = GetExtensionWidgetRow(link);
   const WebIntentPickerModel::SuggestedExtension& extension =
       model_->GetSuggestedExtensionAt(index);
-  delegate_->OnExtensionLinkClicked(UTF16ToUTF8(extension.id));
+  delegate_->OnExtensionLinkClicked(UTF16ToUTF8(extension.id),
+      event_utils::DispositionForCurrentButtonPressEvent());
 }
 
 void WebIntentPickerGtk::OnExtensionInstallButtonClick(GtkWidget* button) {
@@ -501,7 +503,8 @@ void WebIntentPickerGtk::OnExtensionInstallButtonClick(GtkWidget* button) {
 void WebIntentPickerGtk::OnMoreSuggestionsLinkClick(GtkWidget* link) {
   // TODO(binji): This should link to a CWS search, based on the current
   // action/type pair.
-  delegate_->OnSuggestionsLinkClicked();
+  delegate_->OnSuggestionsLinkClicked(
+      event_utils::DispositionForCurrentButtonPressEvent());
 }
 
 void WebIntentPickerGtk::OnChooseAnotherServiceClick(GtkWidget* link) {

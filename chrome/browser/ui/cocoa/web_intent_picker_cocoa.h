@@ -11,6 +11,7 @@
 #include "base/string16.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
+#include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model_observer.h"
 
@@ -38,8 +39,10 @@ class WebIntentPickerCocoa : public WebIntentPicker,
   void OnCancelled();
   void OnServiceChosen(size_t index);
   void OnExtensionInstallRequested(const std::string& extension_id);
-  void OnExtensionLinkClicked(const std::string& extension_id);
-  void OnSuggestionsLinkClicked();
+  void OnExtensionLinkClicked(
+      const std::string& extension_id,
+      WindowOpenDisposition disposition);
+  void OnSuggestionsLinkClicked(WindowOpenDisposition disposition);
   void OnChooseAnotherService();
 
   // WebIntentPicker implementation.

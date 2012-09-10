@@ -102,8 +102,11 @@ class WebIntentPickerController
   virtual void OnInlineDispositionWebContentsCreated(
       content::WebContents* web_contents) OVERRIDE;
   virtual void OnExtensionInstallRequested(const std::string& id) OVERRIDE;
-  virtual void OnExtensionLinkClicked(const std::string& id) OVERRIDE;
-  virtual void OnSuggestionsLinkClicked() OVERRIDE;
+  virtual void OnExtensionLinkClicked(
+      const std::string& id,
+      WindowOpenDisposition disposition) OVERRIDE;
+  virtual void OnSuggestionsLinkClicked(
+      WindowOpenDisposition disposition) OVERRIDE;
   virtual void OnPickerClosed() OVERRIDE;
   virtual void OnChooseAnotherService() OVERRIDE;
   virtual void OnClosing() OVERRIDE;

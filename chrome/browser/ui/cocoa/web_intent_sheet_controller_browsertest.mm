@@ -21,11 +21,14 @@ class MockIntentPickerDelegate : public WebIntentPickerDelegate {
   MOCK_METHOD2(OnServiceChosen, void(
       const GURL& url,
       webkit_glue::WebIntentServiceData::Disposition disposition));
+  MOCK_METHOD2(OnExtensionLinkClicked, void(
+      const std::string& id,
+      WindowOpenDisposition disposition));
   MOCK_METHOD1(OnInlineDispositionWebContentsCreated,
       void(content::WebContents* web_contents));
   MOCK_METHOD1(OnExtensionInstallRequested, void(const std::string& id));
-  MOCK_METHOD1(OnExtensionLinkClicked, void(const std::string& id));
-  MOCK_METHOD0(OnSuggestionsLinkClicked, void ());
+  MOCK_METHOD1(OnSuggestionsLinkClicked,
+      void(WindowOpenDisposition disposition));
   MOCK_METHOD0(OnPickerClosed, void());
   MOCK_METHOD0(OnChooseAnotherService, void());
   MOCK_METHOD0(OnClosing, void());

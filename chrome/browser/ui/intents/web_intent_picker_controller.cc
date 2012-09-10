@@ -342,9 +342,10 @@ void WebIntentPickerController::OnServiceChosen(
       // Since we're passing in a target_contents, it assumes that we will
       // navigate the page ourselves, though.
       chrome::NavigateParams params(tab_contents_->profile(), url,
-                                    content::PAGE_TRANSITION_AUTO_BOOKMARK);
+                                    content::PAGE_TRANSITION_LINK);
       params.target_contents = contents;
       params.disposition = NEW_FOREGROUND_TAB;
+      params.tabstrip_add_types = TabStripModel::ADD_INHERIT_GROUP;
       chrome::Navigate(&params);
 
       service_tab_->GetController().LoadURL(
@@ -429,23 +430,28 @@ void WebIntentPickerController::OnExtensionInstallRequested(
   installer->Start();
 }
 
-void WebIntentPickerController::OnExtensionLinkClicked(const std::string& id) {
+void WebIntentPickerController::OnExtensionLinkClicked(
+    const std::string& id,
+    WindowOpenDisposition disposition) {
   // Navigate from source tab.
   GURL extension_url(extension_urls::GetWebstoreItemDetailURLPrefix() + id);
   chrome::NavigateParams params(tab_contents_->profile(), extension_url,
-                                content::PAGE_TRANSITION_AUTO_BOOKMARK);
-  params.disposition = NEW_FOREGROUND_TAB;
+                                content::PAGE_TRANSITION_LINK);
+  params.disposition =
+      (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition;
   chrome::Navigate(&params);
 }
 
-void WebIntentPickerController::OnSuggestionsLinkClicked() {
+void WebIntentPickerController::OnSuggestionsLinkClicked(
+    WindowOpenDisposition disposition) {
   // Navigate from source tab.
   GURL query_url = extension_urls::GetWebstoreIntentQueryURL(
       UTF16ToUTF8(picker_model_->action()),
       UTF16ToUTF8(picker_model_->type()));
   chrome::NavigateParams params(tab_contents_->profile(), query_url,
-                                content::PAGE_TRANSITION_AUTO_BOOKMARK);
-  params.disposition = NEW_FOREGROUND_TAB;
+                                content::PAGE_TRANSITION_LINK);
+  params.disposition =
+      (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition;
   chrome::Navigate(&params);
 }
 

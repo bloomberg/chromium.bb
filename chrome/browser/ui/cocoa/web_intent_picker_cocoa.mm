@@ -228,14 +228,17 @@ void WebIntentPickerCocoa::OnInlineDispositionAutoResize(
 void WebIntentPickerCocoa::OnPendingAsyncCompleted() {
 }
 
-void WebIntentPickerCocoa::OnExtensionLinkClicked(const std::string& id) {
+void WebIntentPickerCocoa::OnExtensionLinkClicked(
+    const std::string& id,
+    WindowOpenDisposition disposition) {
   DCHECK(delegate_);
-  delegate_->OnExtensionLinkClicked(id);
+  delegate_->OnExtensionLinkClicked(id, disposition);
 }
 
-void WebIntentPickerCocoa::OnSuggestionsLinkClicked() {
+void WebIntentPickerCocoa::OnSuggestionsLinkClicked(
+    WindowOpenDisposition disposition) {
   DCHECK(delegate_);
-  delegate_->OnSuggestionsLinkClicked();
+  delegate_->OnSuggestionsLinkClicked(disposition);
 }
 
 void WebIntentPickerCocoa::OnChooseAnotherService() {
