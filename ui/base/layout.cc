@@ -60,7 +60,9 @@ bool UseTouchOptimizedUI() {
 #endif
 }
 
-const float kScaleFactorScales[] = {1.0, 2.0};
+const float kScaleFactorScales[] = {1.0f, 1.4f, 1.8f, 2.0f};
+COMPILE_ASSERT(ui::NUM_SCALE_FACTORS == arraysize(kScaleFactorScales),
+               kScaleFactorScales_incorrect_size);
 const size_t kScaleFactorScalesLength = arraysize(kScaleFactorScales);
 
 std::vector<ui::ScaleFactor>& GetSupportedScaleFactorsInternal() {
@@ -71,6 +73,11 @@ std::vector<ui::ScaleFactor>& GetSupportedScaleFactorsInternal() {
 #if defined(OS_MACOSX) && defined(ENABLE_HIDPI)
       if (base::mac::IsOSLionOrLater())
         supported_scale_factors->push_back(ui::SCALE_FACTOR_200P);
+#elif defined(OS_WIN) && defined(ENABLE_HIDPI)
+      if (base::win::IsMetroProcess() && base::win::IsTouchEnabled()) {
+        supported_scale_factors->push_back(ui::SCALE_FACTOR_140P);
+        supported_scale_factors->push_back(ui::SCALE_FACTOR_180P);
+      }
 #elif defined(USE_ASH)
       supported_scale_factors->push_back(ui::SCALE_FACTOR_200P);
 #endif

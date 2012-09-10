@@ -38,8 +38,11 @@ enum ScaleFactor {
   // The scale factor used for unscaled binary data, the 1x (default) scale
   // factor data packs.
   SCALE_FACTOR_NONE = SCALE_FACTOR_100P,
-
+  SCALE_FACTOR_140P,
+  SCALE_FACTOR_180P,
   SCALE_FACTOR_200P,
+
+  NUM_SCALE_FACTORS  // This always appears last.
 };
 
 // Returns the float scale value for |scale_factor|.
