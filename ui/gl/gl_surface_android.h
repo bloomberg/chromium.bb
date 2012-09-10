@@ -18,7 +18,6 @@ namespace gfx {
 class AndroidViewSurface : public NativeViewGLSurfaceEGL {
  public:
   AndroidViewSurface();
-  virtual ~AndroidViewSurface();
 
   // Implement GLSurface.
   virtual bool Initialize() OVERRIDE;
@@ -31,6 +30,8 @@ class AndroidViewSurface : public NativeViewGLSurfaceEGL {
   virtual void SetNativeWindow(AndroidNativeWindow* window) OVERRIDE;
 
  private:
+  virtual ~AndroidViewSurface();
+
   bool CreateWindowSurface(AndroidNativeWindow* window);
 
   scoped_refptr<PbufferGLSurfaceEGL>  pbuffer_surface_;
