@@ -12,6 +12,11 @@
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(USE_AURA)
+#include "base/command_line.h"
+#include "ui/views/widget/desktop_native_widget_aura.h"
+#endif
+
 namespace views {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -34,6 +39,10 @@ void MenuHost::InitMenuHost(Widget* parent,
   params.has_dropshadow = true;
   params.parent_widget = parent;
   params.bounds = bounds;
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+  if (CommandLine::ForCurrentProcess()->HasSwitch("win-aura"))
+    params.native_widget = new DesktopNativeWidgetAura(this);
+#endif
   Init(params);
   SetContentsView(contents_view);
   ShowMenuHost(do_capture);
