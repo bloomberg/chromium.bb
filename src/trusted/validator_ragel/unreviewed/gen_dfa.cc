@@ -221,8 +221,7 @@ static const std::set<std::string> all_instruction_flags = {
 class extract_operand;
 class MarkedInstruction;
 class Instruction {
- protected:
-  std::string name;
+ public:
   struct Operand {
     char source;
     std::string size;
@@ -231,6 +230,8 @@ class Instruction {
     bool write;
     bool implicit;
   };
+ protected:
+  std::string name;
   std::vector<Operand> operands;
   std::vector<std::string> opcodes;
   std::set<std::string> flags;
@@ -254,35 +255,35 @@ class Instruction {
   friend void parse_instructions(const char*);
 
  public:
-  const decltype(name)& get_name(void) const {
+  const std::string& get_name(void) const {
     return name;
   }
-  Instruction replace_name(const decltype(name)& name) const {
-    auto result = *this;
+  Instruction replace_name(const std::string& name) const {
+    Instruction result = *this;
     result.name = name;
     return result;
   }
-  const decltype(operands)& get_operands(void) const {
+  const std::vector<Operand>& get_operands(void) const {
     return operands;
   }
-  Instruction replace_operands(const decltype(operands)& operands) const {
-    auto result = *this;
+  Instruction replace_operands(const std::vector<Operand>& operands) const {
+    Instruction result = *this;
     result.operands = operands;
     return result;
   }
-  const decltype(opcodes)& get_opcodes(void) const {
+  const std::vector<std::string>& get_opcodes(void) const {
     return opcodes;
   }
-  Instruction replace_opcodes(const decltype(opcodes)& opcodes) const {
-    auto result = *this;
+  Instruction replace_opcodes(const std::vector<std::string>& opcodes) const {
+    Instruction result = *this;
     result.opcodes = opcodes;
     return result;
   }
-  const decltype(flags)& get_flags(void) const {
+  const std::set<std::string>& get_flags(void) const {
     return flags;
   }
-  Instruction replace_flags(const decltype(flags)& flags) const {
-    auto result = *this;
+  Instruction replace_flags(const std::set<std::string>& flags) const {
+    Instruction result = *this;
     result.flags = flags;
     return result;
   }
@@ -298,13 +299,13 @@ FILE* const_file = stdout;
 const char* out_file_name = NULL;
 const char* const_file_name = NULL;
 
-auto ia32_mode = true;
+bool ia32_mode = true;
 
 /* read_file reads the filename and returns it's contents.  We don't try to
    save memory by using line-by-line processing.  */
 std::string read_file(const char* filename) {
   std::string file_content;
-  auto file = open(filename, O_RDONLY);
+  int file = open(filename, O_RDONLY);
   char buf[1024];
   ssize_t count;
 
@@ -314,7 +315,7 @@ std::string read_file(const char* filename) {
     exit(1);
   }
   while ((count = read(file, buf, sizeof(buf))) > 0)
-    for (auto it = buf; it < buf + count ; ++it)
+    for (char* it = buf; it < buf + count ; ++it)
       if (*it != '\r')
         file_content.push_back(*it);
       else
@@ -424,7 +425,7 @@ struct extract_operand {
    Note: it only accepts flags listed in all_instruction_flags.  */
 void parse_instructions(const char* filename) {
   const std::string file_content = read_file(filename);
-  auto it = file_content.begin();
+  std::string::const_iterator it = file_content.begin();
   while (it != file_content.end()) {
     it = std::find_if_not(it, file_content.end(), is_eol);
     if (it == file_content.end()) {
@@ -436,14 +437,16 @@ void parse_instructions(const char* filename) {
     } else {
       /* Note: initialization list makes sure flags are toggled to zero.  */
       Instruction instruction { };
-      auto line_end = std::find_if(it, file_content.end(), is_eol);
-      auto operation = split_till_comma(&it, line_end);
+      std::string::const_iterator line_end = std::find_if(it,
+                                                          file_content.end(),
+                                                          is_eol);
+      std::vector<std::string> operation = split_till_comma(&it, line_end);
       /* Line with just whitespaces is ignored.  */
       if (operation.size() != 0) {
         for_each(operation.rbegin(),
                  operation.rend() - 1,
                  extract_operand(&instruction, operation));
-        auto enabled_instruction = true;
+        bool enabled_instruction = true;
         if (*it == ',') {
           ++it;
           if (it == line_end)
@@ -453,8 +456,10 @@ void parse_instructions(const char* filename) {
             ++it;
             if (it == line_end)
               line_end = std::find_if(++it, file_content.end(), is_eol);
-            const auto& flags = split_till_comma(&it, line_end);
-            for (auto flag = flags.begin(); flag != flags.end(); ++flag)
+            const std::vector<std::string>& flags = split_till_comma(&it,
+                                                                     line_end);
+            for (std::vector<std::string>::const_iterator flag = flags.begin();
+                 flag != flags.end(); ++flag)
               instruction.add_flag(*flag);
             if ((instruction.has_flag("ia32") && !ia32_mode) ||
                 (instruction.has_flag("amd64") && ia32_mode) ||
@@ -497,35 +502,40 @@ void print_consts(void)  {
                    std::back_inserter(names),
                    select_name);
     std::sort(names.begin(), names.end(), compare_names);
-    for (auto name = names.begin(); name != names.end(); ++name)
+    for (std::vector<std::string>::const_iterator name = names.begin();
+         name != names.end(); ++name)
       if (instruction_names[*name] == 0)
-        for (decltype(name->length()) p = 1; p < name->length(); ++p) {
-          const auto it = instruction_names.find(std::string(*name, p));
+        for (size_t p = 1; p < name->length(); ++p) {
+          const std::map<std::string, size_t>::iterator it =
+            instruction_names.find(std::string(*name, p));
           if (it != instruction_names.end())
             it->second = 1;
         }
     size_t offset = 0;
-    for (auto pair = instruction_names.begin(); pair != instruction_names.end();
-         ++pair)
+    for (std::map<std::string, size_t>::iterator pair =
+           instruction_names.begin(); pair != instruction_names.end(); ++pair)
       if (pair->second != 1)
         pair->second = offset,
         offset += pair->first.length() + 1;
-    for (auto name = names.begin(); name != names.end(); ++name) {
-      auto offset = instruction_names[*name];
+    for (std::vector<std::string>::const_iterator name = names.begin();
+         name != names.end(); ++name) {
+      size_t offset = instruction_names[*name];
       if (offset != 1)
-        for (decltype(name->length()) p = 1; p < name->length(); ++p) {
-          const auto it = instruction_names.find(std::string(*name, p));
+        for (size_t p = 1; p < name->length(); ++p) {
+          const std::map<std::string, size_t>::iterator it =
+            instruction_names.find(std::string(*name, p));
           if ((it != instruction_names.end()) && (it->second == 1))
             it->second = offset + p;
         }
     }
     offset = 0;
-    auto delimiter = "static const char instruction_names[] = {\n  ";
-    for (auto pair = instruction_names.begin(); pair != instruction_names.end();
-         ++pair)
+    const char* delimiter = "static const char instruction_names[] = {\n  ";
+    for (std::map<std::string, size_t>::const_iterator pair =
+           instruction_names.begin(); pair != instruction_names.end(); ++pair)
       if (pair->second == offset) {
         fprintf(const_file, "%s", delimiter);
-        for (auto c = pair->first.begin(); c != pair->first.end(); ++c)
+        for (std::string::const_iterator c = pair->first.begin();
+             c != pair->first.end(); ++c)
           fprintf(const_file, "0x%02x, ", static_cast<int>(*c));
         fprintf(const_file, "\'\\0\',  /* ");
         fprintf(const_file, "%s", pair->first.c_str());
@@ -551,7 +561,7 @@ void print_consts(void)  {
    errors.  */
 std::string c_identifier(std::string text) {
   std::string name;
-  for (auto c = text.begin(); c != text.end(); ++c)
+  for (std::string::const_iterator c = text.begin(); c != text.end(); ++c)
     if (('A' <= *c && *c <= 'Z') || ('a' <= *c && *c <= 'z') ||
         ('0' <= *c && *c <= '9'))
       name.push_back(*c);
@@ -564,22 +574,25 @@ std::string c_identifier(std::string text) {
    in instruction_name variable.  It uses instruction_names array generated by
    print_consts function.  */
 void print_name_actions(void) {
-  for (auto pair = instruction_names.begin(); pair != instruction_names.end();
-       ++pair)
+  for (std::map<std::string, size_t>::const_iterator pair =
+         instruction_names.begin(); pair != instruction_names.end(); ++pair)
     fprintf(out_file, "  action instruction_%s"
             " { SET_INSTRUCTION_NAME(instruction_names + %" NACL_PRIuS "); }\n",
             c_identifier(pair->first).c_str(), pair->second);
 }
 
 class MarkedInstruction : public Instruction {
-  std::multiset<std::string> required_prefixes;
-  std::multiset<std::string> optional_prefixes;
+ public:
   struct RexType {
     bool b : 1;
     bool x : 1;
     bool r : 1;
     bool w : 1;
-  } rex;
+  };
+ private:
+  std::multiset<std::string> required_prefixes;
+  std::multiset<std::string> optional_prefixes;
+  RexType rex;
   bool opcode_in_modrm : 1;
   bool opcode_in_imm : 1;
   bool fwait : 1;
@@ -595,7 +608,8 @@ class MarkedInstruction : public Instruction {
     if (has_flag("branch_hint")) optional_prefixes.insert("branch_hint");
     if (has_flag("condrep")) optional_prefixes.insert("condrep");
     if (has_flag("rep")) optional_prefixes.insert("rep");
-    for (auto opcode = opcodes.begin(); opcode != opcodes.end(); ++opcode)
+    for (std::vector<std::string>::const_iterator opcode = opcodes.begin();
+         opcode != opcodes.end(); ++opcode)
       if (*opcode == "/") {
         opcode_in_imm = true;
         break;
@@ -604,17 +618,18 @@ class MarkedInstruction : public Instruction {
         break;
       }
     /* If register is stored in opcode we need to expand opcode now.  */
-    for (auto operand = operands.begin(); operand != operands.end(); ++operand)
+    for (std::vector<Operand>::const_iterator operand = operands.begin();
+         operand != operands.end(); ++operand)
       if (operand->source == 'r') {
-        auto opcode = opcodes.rbegin();
+        std::vector<std::string>::reverse_iterator opcode = opcodes.rbegin();
         for (; opcode != opcodes.rend(); ++opcode) {
           if (opcode->find('/') == opcode->npos) {
-          auto saved_opcode = *opcode;
+          std::string saved_opcode = *opcode;
             switch (*(opcode->rbegin())) {
               case '0':
                 (*opcode) = "(";
                 opcode->append(saved_opcode);
-                for (auto c = '1'; c <= '7'; ++c) {
+                for (char c = '1'; c <= '7'; ++c) {
                   opcode->push_back('|');
                   (*(saved_opcode.rbegin())) = c;
                   opcode->append(saved_opcode);
@@ -670,12 +685,12 @@ class MarkedInstruction : public Instruction {
     }
   }
   MarkedInstruction(const Instruction& instruction_,
-                    const decltype(required_prefixes)& required_prefixes_,
-                    const decltype(optional_prefixes)& optional_prefixes_,
-                    const decltype(rex)& rex_,
-                    const decltype(opcode_in_modrm)& opcode_in_modrm_,
-                    const decltype(opcode_in_imm)& opcode_in_imm_,
-                    const decltype(fwait)& fwait_) :
+                    const std::multiset<std::string>& required_prefixes_,
+                    const std::multiset<std::string>& optional_prefixes_,
+                    const RexType& rex_,
+                    bool opcode_in_modrm_,
+                    bool opcode_in_imm_,
+                    bool fwait_) :
     Instruction(instruction_),
     required_prefixes(required_prefixes_),
     optional_prefixes(optional_prefixes_),
@@ -684,7 +699,7 @@ class MarkedInstruction : public Instruction {
     opcode_in_imm(opcode_in_imm_),
     fwait(fwait_) {
   }
-  MarkedInstruction replace_name(const decltype(name)& name) const {
+  MarkedInstruction replace_name(const std::string& name) const {
     return MarkedInstruction(Instruction::replace_name(name),
                              required_prefixes,
                              optional_prefixes,
@@ -693,7 +708,8 @@ class MarkedInstruction : public Instruction {
                              opcode_in_imm,
                              fwait);
   }
-  MarkedInstruction replace_operands(const decltype(operands)& operands) const {
+  MarkedInstruction replace_operands(
+      const std::vector<Operand>& operands) const {
     return MarkedInstruction(Instruction::replace_operands(operands),
                              required_prefixes,
                              optional_prefixes,
@@ -721,14 +737,14 @@ class MarkedInstruction : public Instruction {
                              opcode_in_imm,
                              fwait);
   }
-  const decltype(required_prefixes)& get_required_prefixes(void) const {
+  const std::multiset<std::string>& get_required_prefixes(void) const {
     return required_prefixes;
   }
   MarkedInstruction add_requred_prefix(const std::string& string) const {
-    auto result = *this;
+    MarkedInstruction result = *this;
     result.required_prefixes.insert(string);
     if (string == "data16")
-      for (auto operand = result.operands.begin();
+      for (std::vector<Operand>::iterator operand = result.operands.begin();
            operand != result.operands.end(); ++operand)
         if (operand->size == "v" || operand->size == "z")
           operand->size = "w";
@@ -736,36 +752,36 @@ class MarkedInstruction : public Instruction {
           operand->size = "d";
     return result;
   }
-  const decltype(optional_prefixes)& get_optional_prefixes(void) const {
+  const std::multiset<std::string>& get_optional_prefixes(void) const {
     return optional_prefixes;
   }
   MarkedInstruction add_optional_prefix(const std::string& string) const {
-    auto result = *this;
+    MarkedInstruction result = *this;
     result.optional_prefixes.insert(string);
     return result;
   }
-  const decltype(rex)& get_rex(void) const {
+  const RexType& get_rex(void) const {
     return rex;
   }
   MarkedInstruction set_rex_b(void) const {
-    auto result = *this;
+    MarkedInstruction result = *this;
     result.rex.b = true;
     return result;
   }
   MarkedInstruction set_rex_x(void) const {
-    auto result = *this;
+    MarkedInstruction result = *this;
     result.rex.x = true;
     return result;
   }
   MarkedInstruction set_rex_r(void) const {
-    auto result = *this;
+    MarkedInstruction result = *this;
     result.rex.r = true;
     return result;
   }
   MarkedInstruction set_rex_w(void) const {
-    auto result = *this;
+    MarkedInstruction result = *this;
     result.rex.w = true;
-    for (auto operand = result.operands.begin();
+    for (std::vector<Operand>::iterator operand = result.operands.begin();
          operand != result.operands.end(); ++operand)
       if (operand->size == "v" || operand->size == "y")
         operand->size = "q";
@@ -774,26 +790,26 @@ class MarkedInstruction : public Instruction {
     return result;
   }
   MarkedInstruction clear_rex_w(void) const {
-    auto result = *this;
+    MarkedInstruction result = *this;
     result.rex.w = false;
-    for (auto operand = result.operands.begin();
+    for (std::vector<Operand>::iterator operand = result.operands.begin();
          operand != result.operands.end(); ++operand)
       if (operand->size == "v" || operand->size == "y" || operand->size == "z")
         operand->size = "d";
     return result;
   }
   MarkedInstruction set_opcode_in_modrm(void) const {
-    auto result = *this;
+    MarkedInstruction result = *this;
     result.opcode_in_modrm = true;
     return result;
   }
-  decltype(opcode_in_modrm) get_opcode_in_modrm(void) const {
+  bool get_opcode_in_modrm(void) const {
     return opcode_in_modrm;
   }
-  decltype(opcode_in_modrm) get_opcode_in_imm(void) const {
+  bool get_opcode_in_imm(void) const {
     return opcode_in_imm;
   }
-  decltype(opcode_in_modrm) get_fwait(void) const {
+  bool get_fwait(void) const {
     return fwait;
   }
 };
@@ -802,10 +818,13 @@ class MarkedInstruction : public Instruction {
    encoded in field “reg” in “ModR/M byte” and must be extended by “R” bit in
    REX/VEX prefix.  */
 bool mod_reg_is_used(const MarkedInstruction& instruction) {
-  const auto& operands = instruction.get_operands();
-  for (auto operand = operands.begin(); operand != operands.end(); ++operand) {
-    const auto source = operand->source;
-    const auto& prefixes = instruction.get_required_prefixes();
+  const std::vector<MarkedInstruction::Operand>& operands =
+    instruction.get_operands();
+  for (std::vector<MarkedInstruction::Operand>::const_iterator
+         operand = operands.begin(); operand != operands.end(); ++operand) {
+    const char source = operand->source;
+    const std::multiset<std::string>& prefixes =
+      instruction.get_required_prefixes();
     /* Control registers can use 0xf0 prefix to select %cr8…%cr15.  */
     if ((source == 'C' && prefixes.find("0xf0") == prefixes.end()) ||
         source == 'G' || source == 'P' || source == 'V')
@@ -818,9 +837,11 @@ bool mod_reg_is_used(const MarkedInstruction& instruction) {
    encoded in field “r/m” in “ModR/M byte” and must be extended by “X” and/or
    “B” bits in REX/VEX prefix.  */
 bool mod_rm_is_used(const MarkedInstruction& instruction) {
-  const auto& operands = instruction.get_operands();
-  for (auto operand = operands.begin(); operand != operands.end(); ++operand) {
-    const auto source = operand->source;
+  const std::vector<MarkedInstruction::Operand>& operands =
+    instruction.get_operands();
+  for (std::vector<MarkedInstruction::Operand>::const_iterator operand =
+         operands.begin(); operand != operands.end(); ++operand) {
+    const char source = operand->source;
     if (source == 'E' || source == 'M' || source == 'N' ||
         source == 'Q' || source == 'R' || source == 'U' || source == 'W')
       return true;
@@ -852,7 +873,8 @@ void print_operator_delimiter(void) {
    prefixes for decoder and/or prefixes in a single “preferred order”
    for strict validator).  */
 void print_legacy_prefixes(const MarkedInstruction& instruction) {
-  const auto& required_prefixes = instruction.get_required_prefixes();
+  const std::multiset<std::string>& required_prefixes =
+    instruction.get_required_prefixes();
   if (instruction.get_fwait()) {
     if (ia32_mode)
       fprintf(out_file, "0x9b ");
@@ -862,7 +884,8 @@ void print_legacy_prefixes(const MarkedInstruction& instruction) {
     else
       fprintf(out_file, "(REX_WRXB? 0x9b | 0x9b ");
   }
-  const auto& optional_prefixes = instruction.get_optional_prefixes();
+  const std::multiset<std::string>& optional_prefixes =
+    instruction.get_optional_prefixes();
   if ((required_prefixes.size() == 1) &&
       (optional_prefixes.size() == 0)) {
     fprintf(out_file, "%s ", required_prefixes.begin()->c_str());
@@ -871,13 +894,13 @@ void print_legacy_prefixes(const MarkedInstruction& instruction) {
     fprintf(out_file, "%s? ", optional_prefixes.begin()->c_str());
   } else if ((optional_prefixes.size() > 0) ||
              (required_prefixes.size() > 0)) {
-    auto delimiter = "(";
-    auto opt_start = required_prefixes.size() ? 0 : 1;
-    auto opt_end = 1 << optional_prefixes.size();
-    for (auto opt = opt_start; opt < opt_end; ++opt) {
-      auto prefixes = required_prefixes;
-      auto it = optional_prefixes.begin();
-      for (auto id = 1; id < opt_end; id <<= 1, ++it) {
+    const char* delimiter = "(";
+    size_t opt_start = required_prefixes.size() ? 0 : 1;
+    size_t opt_end = 1 << optional_prefixes.size();
+    for (size_t opt = opt_start; opt < opt_end; ++opt) {
+      std::multiset<std::string> prefixes = required_prefixes;
+      std::multiset<std::string>::const_iterator it = optional_prefixes.begin();
+      for (size_t id = 1; id < opt_end; id <<= 1, ++it) {
         if (opt & id) {
           prefixes.insert(*it);
         }
@@ -890,9 +913,9 @@ void print_legacy_prefixes(const MarkedInstruction& instruction) {
         do {
           fprintf(out_file, "%s", delimiter);
           delimiter = " | ";
-          auto delimiter = '(';
-          for (auto prefix = permutations.begin(); prefix != permutations.end();
-               ++prefix)
+          char delimiter = '(';
+          for (std::vector<std::string>::const_iterator prefix =
+                 permutations.begin(); prefix != permutations.end(); ++prefix)
             fprintf(out_file, "%c%s", delimiter, prefix->c_str()),
             delimiter = ' ';
           fprintf(out_file, ")");
@@ -916,7 +939,7 @@ void print_rex_prefix(const MarkedInstruction& instruction) {
   /* Prefix REX is not used in ia32 mode.  */
   if (ia32_mode || instruction.has_flag("norex"))
     return;
-  const auto& opcodes = instruction.get_opcodes();
+  const std::vector<std::string>& opcodes = instruction.get_opcodes();
   /* VEX/XOP instructions integrate REX bits and opcode bits.  They will
      be printed in print_opcode_nomodrm.  */
   if ((opcodes.size() >= 3) &&
@@ -937,7 +960,8 @@ void print_rex_prefix(const MarkedInstruction& instruction) {
 void print_third_byte_of_vex(const MarkedInstruction& instruction,
                              const std::string& third_byte) {
   fprintf(out_file, " b_");
-  for (auto c = third_byte.begin(); c != third_byte.end(); ++c)
+  for (std::string::const_iterator c = third_byte.begin();
+       c != third_byte.end(); ++c)
     if (*c == 'W')
       if (instruction.get_rex().w)
         fprintf(out_file, "1");
@@ -959,15 +983,15 @@ void print_third_byte_of_vex(const MarkedInstruction& instruction,
     • VEX prefix combines opcode selection table with RXB VEX bits
     • one register can be embedded in a VEX prefix, too   */
 void print_vex_opcode(const MarkedInstruction& instruction) {
-  const auto& opcodes = instruction.get_opcodes();
-  auto c5_ok = (opcodes[0] == "0xc4") &&
+  const std::vector<std::string>& opcodes = instruction.get_opcodes();
+  bool c5_ok = (opcodes[0] == "0xc4") &&
                ((opcodes[1] == "RXB.01") ||
                 (opcodes[1] == "RXB.00001")) &&
                ((*opcodes[2].begin() == '0') ||
                 (*opcodes[2].begin() == 'x') ||
                 (*opcodes[2].begin() == 'X'));
   if (c5_ok) fprintf(out_file, "((");
-  auto rex = instruction.get_rex();
+  MarkedInstruction::RexType rex = instruction.get_rex();
   fprintf(out_file, "(%s (VEX_", opcodes[0].c_str());
   if (ia32_mode || (!rex.r && !rex.x & !rex.b)) {
     fprintf(out_file, "NONE");
@@ -977,10 +1001,11 @@ void print_vex_opcode(const MarkedInstruction& instruction) {
     if (rex.b) fprintf(out_file, "B");
   }
   fprintf(out_file, " & VEX_map%s) ", opcodes[1].c_str() + 4);
-  auto third_byte = opcodes[2];
+  std::string third_byte = opcodes[2];
   static const char* symbolic_names[] = { "cntl", "dest", "src1", "src" };
   for (size_t name = 0; name < arraysize(symbolic_names); ++name)
-    for (auto it = third_byte.begin(); it != third_byte.end(); ++it)
+    for (std::string::iterator it = third_byte.begin(); it != third_byte.end();
+         ++it)
       if (static_cast<size_t>(third_byte.end() - it) >=
                                                  strlen(symbolic_names[name]) &&
           strncmp(&*it, symbolic_names[name], strlen(symbolic_names[name]))
@@ -1001,7 +1026,7 @@ void print_vex_opcode(const MarkedInstruction& instruction) {
     { '0', '1' },
     { '0', '1' }
   };
-  auto third_byte_ok = (arraysize(third_byte_check) == third_byte.length());
+  bool third_byte_ok = (arraysize(third_byte_check) == third_byte.length());
   if (third_byte_ok)
     for (size_t set = 0; set < arraysize(third_byte_check); ++set)
       if (third_byte_check[set].find(third_byte[set]) ==
@@ -1026,7 +1051,8 @@ void print_vex_opcode(const MarkedInstruction& instruction) {
         fprintf(out_file, " @vex_prefix_short");
       fprintf(out_file, "))");
     }
-    for (auto opcode = opcodes.begin() + 3; opcode != opcodes.end(); ++opcode)
+    for (std::vector<std::string>::const_iterator opcode = opcodes.begin() + 3;
+         opcode != opcodes.end(); ++opcode)
       if (opcode->find('/') == opcode->npos)
         fprintf(out_file, " %s", opcode->c_str());
       else
@@ -1050,7 +1076,7 @@ void print_vex_opcode(const MarkedInstruction& instruction) {
     • opcode can be embedded in “ModR/M byte” and “imm” parts of the
       instruction.  These are NOT printed here.  */
 void print_opcode_nomodrm(const MarkedInstruction& instruction) {
-  const auto& opcodes = instruction.get_opcodes();
+  const std::vector<std::string>& opcodes = instruction.get_opcodes();
   if ((opcodes.size() == 1) ||
       ((opcodes.size() == 2) &&
        (opcodes[1].find('/') != opcodes[1].npos))) {
@@ -1062,8 +1088,9 @@ void print_opcode_nomodrm(const MarkedInstruction& instruction) {
              (opcodes[1].substr(0, 4) == "RXB.")) {
     print_vex_opcode(instruction);
   } else {
-    auto delimiter = '(';
-    for (auto opcode = opcodes.begin(); opcode != opcodes.end(); ++opcode)
+    char delimiter = '(';
+    for (std::vector<std::string>::const_iterator opcode = opcodes.begin();
+         opcode != opcodes.end(); ++opcode)
       if (opcode->find('/') == opcode->npos)
         fprintf(out_file, "%c%s", delimiter, opcode->c_str()),
         delimiter = ' ';
@@ -1073,16 +1100,19 @@ void print_opcode_nomodrm(const MarkedInstruction& instruction) {
   }
   if (enabled(Actions::kOpcode))
     fprintf(out_file, " >begin_opcode");
-  const auto& operands = instruction.get_operands();
+  const std::vector<MarkedInstruction::Operand>& operands =
+    instruction.get_operands();
   if (enabled(Actions::kParseOperands)) {
-    auto operand_index = 0;
-    for (auto operand = operands.begin(); operand != operands.end();
-         ++operand) {
+    size_t operand_index = 0;
+    for (std::vector<MarkedInstruction::Operand>::const_iterator operand =
+           operands.begin(); operand != operands.end(); ++operand) {
       if (operand->enabled && operand->source == 'r') {
         if (operand->size == "x87")
-          fprintf(out_file, " @operand%d_from_opcode_x87", operand_index);
+          fprintf(out_file, " @operand%" NACL_PRIuS "_from_opcode_x87",
+                  operand_index);
         else
-          fprintf(out_file, " @operand%d_from_opcode", operand_index);
+          fprintf(out_file, " @operand%" NACL_PRIuS "_from_opcode",
+                  operand_index);
       }
       if (operand->enabled || enabled(Actions::kParseOperandPositions))
         ++operand_index;
@@ -1095,9 +1125,10 @@ void print_opcode_nomodrm(const MarkedInstruction& instruction) {
 
    Prints machine for this last part of the opcode.  */
 void print_immediate_opcode(const MarkedInstruction& instruction) {
-  auto print_opcode = false;
-  const auto& opcodes = instruction.get_opcodes();
-  for (auto opcode = opcodes.begin(); opcode != opcodes.end(); ++opcode)
+  bool print_opcode = false;
+  const std::vector<std::string>& opcodes = instruction.get_opcodes();
+  for (std::vector<std::string>::const_iterator opcode = opcodes.begin();
+       opcode != opcodes.end(); ++opcode)
     if (*opcode == "/")
       print_opcode = true;
     else if (print_opcode)
@@ -1119,30 +1150,35 @@ void print_immediate_opcode(const MarkedInstruction& instruction) {
     • recognition of implied operands (e.g. %rax or %ds:(%rsi).  */
 void print_opcode_recognition(const MarkedInstruction& instruction,
                               bool memory_access) {
-  const auto& opcodes = instruction.get_opcodes();
+  const std::vector<std::string>& opcodes = instruction.get_opcodes();
   if (instruction.get_opcode_in_modrm()) {
     fprintf(out_file, " (");
-    for (auto opcode = opcodes.rbegin(); opcode != opcodes.rend(); ++opcode)
+    for (std::vector<std::string>::const_reverse_iterator opcode =
+           opcodes.rbegin(); opcode != opcodes.rend(); ++opcode)
       if ((*opcode) != "/" && opcode->find('/') != opcode->npos)
         fprintf(out_file, "opcode_%s", opcode->c_str() + 1);
   }
   if (enabled(Actions::kOpcode))
     fprintf(out_file, " @end_opcode");
-  const auto& required_prefixes = instruction.get_required_prefixes();
-  for (auto required_prefix = required_prefixes.begin();
-       required_prefix != required_prefixes.end(); ++required_prefix)
+  const std::multiset<std::string>& required_prefixes =
+    instruction.get_required_prefixes();
+  for (std::multiset<std::string>::const_iterator required_prefix =
+         required_prefixes.begin(); required_prefix != required_prefixes.end();
+         ++required_prefix)
     if (*required_prefix == "0x66") {
       fprintf(out_file, " @not_data16_prefix");
       break;
     }
-  for (auto required_prefix = required_prefixes.begin();
-       required_prefix != required_prefixes.end(); ++required_prefix)
+  for (std::multiset<std::string>::const_iterator required_prefix =
+         required_prefixes.begin(); required_prefix != required_prefixes.end();
+         ++required_prefix)
     if (*required_prefix == "0xf2") {
       fprintf(out_file, " @not_repnz_prefix");
       break;
     }
-  for (auto required_prefix = required_prefixes.begin();
-       required_prefix != required_prefixes.end(); ++required_prefix)
+  for (std::multiset<std::string>::const_iterator required_prefix =
+         required_prefixes.begin(); required_prefix != required_prefixes.end();
+         ++required_prefix)
     if (*required_prefix == "0xf3") {
       fprintf(out_file, " @not_repz_prefix");
       break;
@@ -1156,17 +1192,19 @@ void print_opcode_recognition(const MarkedInstruction& instruction,
            enabled(Actions::kParseOperands) &&
            !enabled(Actions::kParseOperandPositions))
     fprintf(out_file, " @modifiable_instruction");
-  const auto& flags = instruction.get_flags();
-  for (auto flag = flags.begin(); flag != flags.end(); ++flag)
+  const std::set<std::string>& flags = instruction.get_flags();
+  for (std::set<std::string>::const_iterator flag = flags.begin();
+       flag != flags.end(); ++flag)
     if (!strncmp(flag->c_str(), "CPUFeature_", 11))
       fprintf(out_file, " @%s", flag->c_str());
-  const auto& operands = instruction.get_operands();
+  const std::vector<MarkedInstruction::Operand>& operands =
+    instruction.get_operands();
   if (enabled(Actions::kParseOperands)) {
     if (enabled(Actions::kParseOperandPositions))
       fprintf(out_file, " @operands_count_is_%" NACL_PRIuS, operands.size());
     int operand_index = 0;
-    for (auto operand = operands.begin(); operand != operands.end();
-         ++operand) {
+    for (std::vector<MarkedInstruction::Operand>::const_iterator operand =
+           operands.begin(); operand != operands.end(); ++operand) {
       if (operand->enabled)
         if (enabled(Actions::kParseOperandPositions) ||
             (((operand->source != 'E') && (operand->source != 'M') &&
@@ -1191,7 +1229,8 @@ void print_opcode_recognition(const MarkedInstruction& instruction,
         { 'X',  "ds_rsi"                },
         { 'Y',  "es_rdi"                }
       };
-      const auto it = operand_type.find(operand->source);
+      const std::map<char, const char*>::const_iterator it =
+        operand_type.find(operand->source);
       if (it != operand_type.end()) {
         if (operand->enabled)
           fprintf(out_file, " @operand%d_%s", operand_index, it->second),
@@ -1207,20 +1246,21 @@ void print_opcode_recognition(const MarkedInstruction& instruction,
     }
   }
   if (enabled(Actions::kParseOperandsStates)) {
-    auto operand_index = 0;
-    for (auto operand = operands.begin(); operand != operands.end();
-         ++operand) {
+    size_t operand_index = 0;
+    for (std::vector<MarkedInstruction::Operand>::const_iterator
+           operand = operands.begin(); operand != operands.end(); ++operand) {
       if (operand->enabled) {
         if (operand->write)
           if (operand->read)
-            fprintf(out_file, " @operand%d_readwrite", operand_index);
+            fprintf(out_file, " @operand%" NACL_PRIuS "_readwrite",
+                    operand_index);
           else
-            fprintf(out_file, " @operand%d_write", operand_index);
+            fprintf(out_file, " @operand%" NACL_PRIuS "_write", operand_index);
         else
           if (operand->read)
-            fprintf(out_file, " @operand%d_read", operand_index);
+            fprintf(out_file, " @operand%" NACL_PRIuS "_read", operand_index);
           else
-            fprintf(out_file, " @operand%d_unused", operand_index);
+            fprintf(out_file, " @operand%" NACL_PRIuS "_unused", operand_index);
       }
       if (operand->enabled || enabled(Actions::kParseOperandPositions))
         ++operand_index;
@@ -1235,13 +1275,15 @@ void print_opcode_recognition(const MarkedInstruction& instruction,
    This includes “normal immediates”, “relative immediates” (for call/j*),
    and “32bit/64bit offset” (e.g. in “movabs” instruction).  */
 void print_immediate_arguments(const MarkedInstruction& instruction) {
-  const auto& operands = instruction.get_operands();
-  auto operand_index = 0;
-  for (auto operand = operands.begin(); operand != operands.end(); ++operand)
+  const std::vector<MarkedInstruction::Operand>& operands =
+    instruction.get_operands();
+  size_t operand_index = 0;
+  for (std::vector<MarkedInstruction::Operand>::const_iterator
+         operand = operands.begin(); operand != operands.end(); ++operand)
     if (operand->enabled || enabled(Actions::kParseOperandPositions))
       ++operand_index;
-  for (auto operand = operands.rbegin(); operand != operands.rend();
-                                                                    ++operand) {
+  for (std::vector<MarkedInstruction::Operand>::const_reverse_iterator
+         operand = operands.rbegin(); operand != operands.rend(); ++operand) {
     if (operand->source == 'i') {
       if (operand->size == "8bit")
         fprintf(out_file, " imm8n2");
@@ -1284,19 +1326,22 @@ void print_immediate_arguments(const MarkedInstruction& instruction) {
           fprintf(out_file, " @last_byte_is_not_immediate");
       }
       if (operand->enabled && enabled(Actions::kParseOperands))
-        fprintf(out_file, " @operand%d_from_is4", operand_index - 1);
+        fprintf(out_file, " @operand%" NACL_PRIuS "_from_is4",
+                operand_index - 1);
     } else if (operand->source == 'O') {
       fprintf(out_file, ia32_mode ? " disp32" : " disp64");
     }
     if (operand->enabled || enabled(Actions::kParseOperandPositions))
       --operand_index;
   }
-  const auto& required_prefixes = instruction.get_required_prefixes();
-  for (auto required_prefix = required_prefixes.begin();
-       required_prefix != required_prefixes.end(); ++required_prefix)
+  const std::multiset<std::string>& required_prefixes =
+    instruction.get_required_prefixes();
+  for (std::multiset<std::string>::const_iterator required_prefix =
+         required_prefixes.begin(); required_prefix != required_prefixes.end();
+         ++required_prefix)
     if (*required_prefix == "0xf0") {
-      for (auto operand = operands.begin(); operand != operands.end();
-           ++operand)
+      for (std::vector<MarkedInstruction::Operand>::const_iterator operand =
+             operands.begin(); operand != operands.end(); ++operand)
         if (operand->source == 'C') {
           fprintf(out_file, " @not_lock_prefix%" NACL_PRIuS,
                   operand - operands.begin());
@@ -1319,10 +1364,11 @@ void print_instruction_end_actions(const MarkedInstruction& instruction,
   if (enabled(Actions::kParseOperands)) {
     if (!enabled(Actions::kParseOperandPositions)) {
       int operands_count = 0;
-      auto zero_extends = false;
-      const auto& operands = instruction.get_operands();
-      for (auto operand = operands.begin(); operand != operands.end();
-           ++operand)
+      bool zero_extends = false;
+      const std::vector<MarkedInstruction::Operand>& operands =
+        instruction.get_operands();
+      for (std::vector<MarkedInstruction::Operand>::const_iterator operand =
+             operands.begin(); operand != operands.end(); ++operand)
         if (operand->enabled &&
             (((operand->source != 'E') && (operand->source != 'M') &&
               (operand->source != 'N') && (operand->source != 'Q') &&
@@ -1353,7 +1399,7 @@ void print_instruction_end_actions(const MarkedInstruction& instruction,
    instruction set.  */
 void print_one_size_definition_nomodrm(const MarkedInstruction& instruction) {
   print_operator_delimiter();
-  auto opcodes = instruction.get_opcodes();
+  std::vector<std::string> opcodes = instruction.get_opcodes();
   if (opcodes[0] == "(0x90|0x91|0x92|0x93|0x94|0x95|0x96|0x97)")
     fprintf(out_file, "((");
   print_legacy_prefixes(instruction);
@@ -1380,7 +1426,7 @@ void print_one_size_definition_nomodrm(const MarkedInstruction& instruction) {
 void print_one_size_definition_modrm_register(
     const MarkedInstruction& instruction) {
   print_operator_delimiter();
-  auto adjusted_instruction = instruction;
+  MarkedInstruction adjusted_instruction = instruction;
   if (mod_reg_is_used(adjusted_instruction))
     adjusted_instruction = adjusted_instruction.set_rex_r();
   if (mod_rm_is_used(adjusted_instruction))
@@ -1392,10 +1438,11 @@ void print_one_size_definition_modrm_register(
     print_opcode_recognition(adjusted_instruction, false);
   fprintf(out_file, " modrm_registers");
   if (enabled(Actions::kParseOperands)) {
-    auto operand_index = 0;
-    const auto& operands = adjusted_instruction.get_operands();
-    for (auto operand = operands.begin(); operand != operands.end();
-         ++operand) {
+    size_t operand_index = 0;
+    const std::vector<MarkedInstruction::Operand>& operands =
+      adjusted_instruction.get_operands();
+    for (std::vector<MarkedInstruction::Operand>::const_iterator operand =
+           operands.begin(); operand != operands.end(); ++operand) {
       static const std::map<char, const char*> operand_type {
         { 'C', "reg"       },
         { 'D', "reg"       },
@@ -1412,10 +1459,11 @@ void print_one_size_definition_modrm_register(
         { 'W', "rm"        }
       };
       if (operand->enabled) {
-        const auto it = operand_type.find(operand->source);
+        const std::map<char, const char*>::const_iterator it =
+          operand_type.find(operand->source);
         if (it != operand_type.end())
-          fprintf(out_file, " @operand%d_from_modrm_%s", operand_index,
-                  it->second);
+          fprintf(out_file, " @operand%" NACL_PRIuS "_from_modrm_%s",
+                  operand_index, it->second);
       }
       if (operand->enabled || enabled(Actions::kParseOperandPositions))
         ++operand_index;
@@ -1453,7 +1501,7 @@ void print_one_size_definition_modrm_memory(
    };
   for (size_t mode = 0; mode < arraysize(modes); ++mode) {
     print_operator_delimiter();
-    auto adjusted_instruction = instruction;
+    MarkedInstruction adjusted_instruction = instruction;
     if (mod_reg_is_used(adjusted_instruction))
       adjusted_instruction = adjusted_instruction.set_rex_r();
     if (mod_rm_is_used(adjusted_instruction)) {
@@ -1472,10 +1520,11 @@ void print_one_size_definition_modrm_memory(
     else
       fprintf(out_file, " (any");
     if (enabled(Actions::kParseOperands)) {
-      auto operand_index = 0;
-    const auto& operands = adjusted_instruction.get_operands();
-    for (auto operand = operands.begin(); operand != operands.end();
-         ++operand) {
+      size_t operand_index = 0;
+    const std::vector<MarkedInstruction::Operand>& operands =
+      adjusted_instruction.get_operands();
+    for (std::vector<MarkedInstruction::Operand>::const_iterator operand =
+           operands.begin(); operand != operands.end(); ++operand) {
       static const std::map<char, const char*> operand_type {
         { 'C',  "from_modrm_reg"        },
         { 'D',  "from_modrm_reg"        },
@@ -1492,11 +1541,13 @@ void print_one_size_definition_modrm_memory(
         { 'W',  "rm"                    }
       };
       if (operand->enabled) {
-        const auto it = operand_type.find(operand->source);
+        const std::map<char, const char*>::const_iterator it =
+          operand_type.find(operand->source);
         if (it != operand_type.end()) {
           if (strcmp(it->second, "rm") != 0 ||
                 enabled(Actions::kParseOperandPositions)) {
-              fprintf(out_file, " @operand%d_%s", operand_index, it->second);
+              fprintf(out_file, " @operand%" NACL_PRIuS "_%s", operand_index,
+                      it->second);
               ++operand_index;
             }
           } else {
@@ -1527,11 +1578,12 @@ void print_one_size_definition_modrm_memory(
    line) use this description.  */
 MarkedInstruction expand_sizes(const MarkedInstruction& instruction,
                                bool memory_access) {
-  auto opcode_in_modrm = instruction.get_opcode_in_modrm();
-  auto memory_operands = false;
-  auto operands = instruction.get_operands();
-  for (auto operand = operands.begin(); operand != operands.end();
-       ++operand) {
+  bool opcode_in_modrm = instruction.get_opcode_in_modrm();
+  bool memory_operands = false;
+  std::vector<MarkedInstruction::Operand> operands =
+    instruction.get_operands();
+  for (std::vector<MarkedInstruction::Operand>::iterator operand =
+         operands.begin(); operand != operands.end(); ++operand) {
     static const std::map<std::pair<char, std::string>,
                           std::pair<const char*, const char*> >
         operand_sizes = {
@@ -1601,19 +1653,21 @@ MarkedInstruction expand_sizes(const MarkedInstruction& instruction,
       { { 'S',  "w"     },      { "segreg",             (const char *)NULL  } },
       { { ' ',  "x"     },      { "ymm",                "256bit"            } },
     };
-    auto it = operand_sizes.find(make_pair(operand->source, operand->size));
+    std::map<std::pair<char, std::string>,
+             std::pair<const char*, const char*> >::const_iterator it =
+      operand_sizes.find(make_pair(operand->source, operand->size));
     if (it == operand_sizes.end())
       it = operand_sizes.find(make_pair(' ', operand->size));
     if (it != operand_sizes.end()) {
-      auto memory_or_register = operand->source == 'E' ||
+      bool memory_or_register = operand->source == 'E' ||
                                 operand->source == 'Q' ||
                                 operand->source == 'W';
-      auto memory_operand = memory_access &&
+      bool memory_operand = memory_access &&
                             (memory_or_register || operand->source == 'M');
-      auto operand_size = memory_operand ?
-                            it->second.second : /* Memory size.   */
-                            it->second.first;   /* Register size. */
-      auto memory_ne_register = memory_or_register &&
+      const char* operand_size = memory_operand ?
+                                   it->second.second : /* Memory size.   */
+                                   it->second.first;   /* Register size. */
+      bool memory_ne_register = memory_or_register &&
                                 it->second.second != it->second.first;
       if (operand_size != NULL) {
         if (strcmp(operand_size, "mmx_xmm") == 0) {
@@ -1631,7 +1685,9 @@ MarkedInstruction expand_sizes(const MarkedInstruction& instruction,
             { 'V', { "xmm",              (const char *)NULL } },
             { 'W', { "xmm",              "128bit"           } }
           };
-          const auto it_mmx_xmm = mmx_xmm_sizes.find(operand->source);
+          const std::map<char,
+                         std::pair<const char*, const char*> >::const_iterator
+            it_mmx_xmm = mmx_xmm_sizes.find(operand->source);
           if (it_mmx_xmm != end(mmx_xmm_sizes))
             operand_size = memory_operand ?
                              it_mmx_xmm->second.second : /* Memory size.   */
@@ -1694,7 +1750,7 @@ MarkedInstruction expand_sizes(const MarkedInstruction& instruction,
   }
   if (opcode_in_modrm &&
       !instruction.get_opcode_in_modrm() && !instruction.get_opcode_in_imm()) {
-    auto opcodes = instruction.get_opcodes();
+    std::vector<std::string> opcodes = instruction.get_opcodes();
     opcodes.push_back(memory_operands ? "/m" : "/r");
     return instruction.set_opcode_in_modrm().replace_operands(operands).
            replace_opcodes(opcodes);
@@ -1714,8 +1770,10 @@ void print_one_size_definition(const MarkedInstruction& instruction) {
   bool modrm_memory = false;
   bool modrm_register = false;
   char operand_source = ' ';
-  const auto& operands = instruction.get_operands();
-  for (auto operand = operands.begin(); operand != operands.end(); ++operand) {
+  const std::vector<MarkedInstruction::Operand>& operands =
+    instruction.get_operands();
+  for (std::vector<MarkedInstruction::Operand>::const_iterator operand =
+         operands.begin(); operand != operands.end(); ++operand) {
     static const std::map<char, std::pair<bool, bool> > operand_map {
       { 'E',    {true,  true}   },
       { 'M',    {true,  false}  },
@@ -1725,7 +1783,8 @@ void print_one_size_definition(const MarkedInstruction& instruction) {
       { 'U',    {false, true}   },
       { 'W',    {true,  true}   }
     };
-    const auto it = operand_map.find(operand->source);
+    const std::map<char, std::pair<bool, bool> >::const_iterator it =
+      operand_map.find(operand->source);
     if (it != operand_map.end()) {
       if ((modrm_memory || modrm_register) &&
           ((modrm_memory != it->second.first) ||
@@ -1741,7 +1800,8 @@ void print_one_size_definition(const MarkedInstruction& instruction) {
   }
   if (modrm_memory || modrm_register) {
     if (modrm_memory) {
-      auto instruction_with_expanded_sizes = expand_sizes(instruction, true);
+      MarkedInstruction instruction_with_expanded_sizes =
+        expand_sizes(instruction, true);
       print_one_size_definition_modrm_memory(instruction_with_expanded_sizes);
       if (instruction.has_flag("lock"))
         print_one_size_definition_modrm_memory(
@@ -1759,18 +1819,22 @@ void print_one_size_definition(const MarkedInstruction& instruction) {
 
    If there are no “L” bit then it just calls print_one_size_definition  */
 void print_instruction_px(const MarkedInstruction& instruction) {
-  auto operands = instruction.get_operands();
-  for (auto operand = operands.begin(); operand != operands.end(); ++operand)
+  std::vector<MarkedInstruction::Operand> operands =
+    instruction.get_operands();
+  for (std::vector<MarkedInstruction::Operand>::const_iterator operand =
+         operands.begin(); operand != operands.end(); ++operand)
     if ((*operand->size.rbegin() == 'x') &&
         ((operand->size.length() == 1) || (*operand->size.begin() == 'p'))) {
-      for (auto operand = operands.begin(); operand != operands.end();
+      for (std::vector<MarkedInstruction::Operand>::iterator operand =
+             operands.begin(); operand != operands.end();
            ++operand)
         if ((*operand->size.rbegin() == 'x') &&
             ((operand->size.length() == 1) || (*operand->size.begin() == 'p')))
           operand->size.resize(operand->size.length() - 1);
-      auto opcodes = instruction.get_opcodes();
-      for (auto opcode = opcodes.begin(); opcode != opcodes.end(); ++opcode) {
-        auto Lbit = opcode->find(".L.");
+      std::vector<std::string> opcodes = instruction.get_opcodes();
+      for (std::vector<std::string>::iterator opcode = opcodes.begin();
+           opcode != opcodes.end(); ++opcode) {
+        size_t Lbit = opcode->find(".L.");
         if (Lbit != opcode->npos) {
           opcode->at(++Lbit) = '0';
           print_one_size_definition(instruction.
@@ -1795,27 +1859,31 @@ void print_instruction_px(const MarkedInstruction& instruction) {
    once with W cleared and once with W set.  If flag is “norexw” is used or if
    “rexw” pseudo-prefix is used then this second call does not happen.  */
 void print_instruction_vyz(const MarkedInstruction& instruction) {
-  const auto& operands = instruction.get_operands();
-  for (auto operand = operands.begin(); operand != operands.end(); ++operand)
+  const std::vector<MarkedInstruction::Operand>& operands =
+    instruction.get_operands();
+  for (std::vector<MarkedInstruction::Operand>::const_iterator
+         operand = operands.begin(); operand != operands.end(); ++operand)
     if (operand->size == "v" || operand->size == "z") {
       print_instruction_px(instruction.add_requred_prefix("data16"));
       print_instruction_px(instruction.clear_rex_w());
-      auto instruction_w = instruction.set_rex_w();
+      MarkedInstruction instruction_w = instruction.set_rex_w();
       print_instruction_px(instruction_w);
       if (enabled(Actions::kNaClForbidden))
         print_instruction_px(instruction_w.add_requred_prefix("data16"));
       return;
     }
-  for (auto operand = operands.begin(); operand != operands.end(); ++operand)
+  for (std::vector<MarkedInstruction::Operand>::const_iterator
+         operand = operands.begin(); operand != operands.end(); ++operand)
     if (operand->size == "y" ||
         (operand->source == 'S' && operand->size == "w")) {
       print_instruction_px(instruction.clear_rex_w());
-      auto instruction_w = instruction.set_rex_w();
+      MarkedInstruction instruction_w = instruction.set_rex_w();
       print_instruction_px(instruction.set_rex_w());
       return;
     }
   print_instruction_px(instruction);
-  const auto& required_prefixes = instruction.get_required_prefixes();
+  const std::multiset<std::string>& required_prefixes =
+    instruction.get_required_prefixes();
   if (!instruction.has_flag("norex") && !instruction.has_flag("norexw") &&
       !instruction.get_rex().w &&
       required_prefixes.find("data16") == required_prefixes.end())
@@ -1829,32 +1897,36 @@ void print_instruction_vyz(const MarkedInstruction& instruction) {
    are processed as two separate instructions—once as 8bit operand and once
    as 16bit/32bit/64bit operand (16bit/32bit for immediates).  */
 void print_one_instruction_definition(void) {
-  for (auto instruction = instructions.begin();
-       instruction != instructions.end(); ++instruction) {
+  for (std::vector<Instruction>::const_iterator
+         instruction = instructions.begin(); instruction != instructions.end();
+         ++instruction) {
     MarkedInstruction marked_instruction(*instruction);
-    auto operands = marked_instruction.get_operands();
+    std::vector<MarkedInstruction::Operand> operands =
+      marked_instruction.get_operands();
     bool found_operand_with_empty_size = false;
-    for (auto operand = operands.begin(); operand != operands.end(); ++operand) {
+    for (std::vector<MarkedInstruction::Operand>::const_iterator
+           operand = operands.begin(); operand != operands.end(); ++operand) {
       if (operand->size == "") {
         found_operand_with_empty_size = true;
         break;
       }
     }
     if (found_operand_with_empty_size) {
-      for (auto operand = operands.begin(); operand != operands.end();
-           ++operand)
+      for (std::vector<MarkedInstruction::Operand>::iterator operand =
+           operands.begin(); operand != operands.end(); ++operand)
         if (operand->size == "") operand->size = "b";
       print_instruction_vyz(marked_instruction.replace_operands(operands));
-      auto opcodes = marked_instruction.get_opcodes();
-      for (auto opcode = opcodes.rbegin(); opcode != opcodes.rend(); ++opcode)
+      std::vector<std::string> opcodes = marked_instruction.get_opcodes();
+      for (std::vector<std::string>::reverse_iterator opcode = opcodes.rbegin();
+           opcode != opcodes.rend(); ++opcode)
         if (opcode->find('/') == opcode->npos) {
           /* 'w' bit is last bit both in binary and textual form.  */
           *(opcode->rbegin()) += 0x1;
           break;
         }
       operands = marked_instruction.get_operands();
-      for (auto operand = operands.begin(); operand != operands.end();
-           ++operand)
+      for (std::vector<MarkedInstruction::Operand>::iterator
+             operand = operands.begin(); operand != operands.end(); ++operand)
         if (operand->size == "") {
           if (operand->source == 'I')
             operand->size = "z";
@@ -1907,11 +1979,11 @@ int main(int argc, char* argv[]) {
         break;
       }
       case 'd': {
-        for (auto action_to_disable = strtok(optarg, ",");
+        for (char* action_to_disable = strtok(optarg, ",");
              action_to_disable;
              action_to_disable = strtok(NULL, ",")) {
           compare_action compare_with_action_to_disable(action_to_disable);
-          auto action_number = std::find_if(
+          const char** action_number = std::find_if(
             kDisablableActionsList,
             kDisablableActionsList + arraysize(kDisablableActionsList),
             compare_with_action_to_disable);
@@ -1955,7 +2027,7 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  for (auto i = optind; i < argc; ++i) {
+  for (int i = optind; i < argc; ++i) {
     parse_instructions(argv[i]);
   }
 
@@ -2009,7 +2081,7 @@ int main(int argc, char* argv[]) {
     print_consts();
 
     if (out_file == const_file) {
-      for (auto i = 0; i < 80; ++i) {
+      for (size_t i = 0; i < 80; ++i) {
         fputc('#', out_file);
       }
       fputc('\n', out_file);
