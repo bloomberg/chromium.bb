@@ -51,7 +51,8 @@ class User {
     CUSTOMIZED = 1,
     DEFAULT = 2,
     UNKNOWN = 3,
-    ONLINE = 4
+    ONLINE = 4,
+    WALLPAPER_TYPE_COUNT = 5
   };
 
   // The email the user used to log in.

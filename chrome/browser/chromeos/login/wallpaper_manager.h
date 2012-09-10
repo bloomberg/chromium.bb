@@ -240,6 +240,9 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
                                     int preferred_width,
                                     int preferred_height);
 
+  // Record data for User Metrics Analysis.
+  void RecordUma(User::WallpaperType type, int index);
+
   // Saves original custom wallpaper to |path| (absolute path) on filesystem
   // and starts resizing operation of the custom wallpaper if necessary.
   void SaveCustomWallpaper(const std::string& email,

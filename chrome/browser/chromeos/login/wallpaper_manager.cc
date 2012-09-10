@@ -12,6 +12,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -147,6 +148,8 @@ void WallpaperManager::EnsureLoggedInUserWallpaperLoaded() {
   WallpaperInfo info;
   if (!new_wallpaper_ui_disabled &&
       GetLoggedInUserWallpaperInfo(&info)) {
+    // TODO(sschmitz): We need an index for default wallpapers for the new UI.
+    RecordUma(info.type, -1);
     if (info == current_user_wallpaper_info_)
       return;
   } else {
@@ -154,7 +157,7 @@ void WallpaperManager::EnsureLoggedInUserWallpaperLoaded() {
     int index;
     base::Time date;
     GetLoggedInUserWallpaperProperties(&type, &index, &date);
-
+    RecordUma(type, index);
     if (type == current_user_wallpaper_type_ &&
         index == current_user_wallpaper_index_) {
       return;
@@ -1056,6 +1059,18 @@ void WallpaperManager::ResizeAndSaveCustomWallpaper(const UserImage& wallpaper,
       base::Bind(&WallpaperManager::OnWallpaperEncoded,
                  weak_factory_.GetWeakPtr(),
                  path));
+}
+
+void WallpaperManager::RecordUma(User::WallpaperType type, int index) {
+  UMA_HISTOGRAM_ENUMERATION("Ash.Wallpaper.Type", type,
+                            User::WALLPAPER_TYPE_COUNT);
+  if (type == User::DEFAULT) {
+    if (index >= 0) {
+      // TODO(sschmitz): Remove "if" when the index for new UI is available.
+      UMA_HISTOGRAM_ENUMERATION("Ash.Wallpaper.DefaultIndex", index,
+                                ash::GetWallpaperCount());
+    }
+  }
 }
 
 void WallpaperManager::SaveWallpaperInternal(const FilePath& path,
