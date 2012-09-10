@@ -224,9 +224,8 @@ Browser* CreateBrowserWindow(const Browser::CreateParams& params,
   bool use_existing_browser_window = false;
 
 #if defined(OS_WIN)
-  // In Windows 8 metro mode we only allow new windows to be created if the
-  // extension id is valid in which case it is created as an application window
-  if (extension_id.empty() && base::win::IsMetroProcess())
+  // In windows 8 metro mode we don't allow windows to be created.
+  if (base::win::IsMetroProcess())
     use_existing_browser_window = true;
 #endif  // OS_WIN
 
