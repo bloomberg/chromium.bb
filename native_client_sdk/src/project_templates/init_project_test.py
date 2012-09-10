@@ -87,6 +87,13 @@ class TestGlobalFunctions(unittest.TestCase):
 class TestProjectInitializer(unittest.TestCase):
   """Class for test cases to cover public interface of ProjectInitializer."""
 
+  def __init__(self):
+    unittest.TestCase.__init__(self)
+    self.os_mock = None
+    self.fileinput_mock = None
+    self.sys_mock = None
+    self.shutil_mock = None
+
   def setUp(self):
     self.script_dir = os.path.abspath(os.path.dirname(__file__))
     self.nacl_src_dir = os.getenv('NACL_SDK_ROOT', None)

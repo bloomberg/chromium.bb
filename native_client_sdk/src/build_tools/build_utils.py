@@ -16,6 +16,7 @@ import shutil
 import subprocess
 import sys
 
+# pylint: disable=E0602
 
 # Reuse last change utility code.
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -83,18 +84,18 @@ def ForceMakeDirs(abs_path, mode=0755):
     # If there are permission problems, they will be caught by the exception
     # handler around the os.makedirs call.
     os.remove(abs_path)
-  except:
+  except OSError:
     pass
   try:
     os.makedirs(abs_path, mode)
-  except OSError, (os_errno, os_strerr):
+  except OSError, e:
     # If the error is anything but EEXIST (file already exists), then print an
     # informative message and re-raise.  It is not and error if the directory
     # already exists.
+    (os_errno, os_strerr) = e
     if os_errno != errno.EEXIST:
       print 'ForceMakeDirs(%s, 0%o) FAILED: %s' % (abs_path, mode, os_strerr)
       raise
-    pass
 
 
 # patch version 2.6 doesn't work.  Most of our Linux distros use patch 2.6.
@@ -289,17 +290,17 @@ def UpdateReadMe(filename):
                      .replace('${REVISION}', str(SVNRevision()))
                      .replace('${DATE}', str(datetime.date.today())))
 
-def CleanDirectory(dir):
+def CleanDirectory(dirname):
   '''Cleans all the contents of a given directory.
   This works even when there are Windows Junctions in the directory
 
   Args:
-    dir: The directory to clean
+    dirname: The directory to clean
   '''
   if sys.platform != 'win32':
-    shutil.rmtree(dir, ignore_errors=True)
+    shutil.rmtree(dirname, ignore_errors=True)
   else:
     # Intentionally ignore return value since a directory might be in use.
-    subprocess.call(['rmdir', '/Q', '/S', dir],
+    subprocess.call(['rmdir', '/Q', '/S', dirname],
                     env=os.environ.copy(),
                     shell=True)

@@ -15,7 +15,7 @@ script forwards its arguments to sdk_updater_main.py.
 
 import os
 import subprocess
-from sdk_update_common import *
+from sdk_update_common import RenameDir, RemoveDir, Error
 import sys
 import tempfile
 
@@ -83,7 +83,7 @@ def RenameSdkToolsDirectory():
       # Failed for some reason, move the old dir back.
       try:
         RenameDir(temp_sdktools, SDK_TOOLS_DIR)
-      except:
+      except Error:
         # Not much to do here. sdk_tools won't exist, but sdk_tools_update
         # should. Hopefully running the batch script again will move
         # sdk_tools_update -> sdk_tools and it will work this time...
@@ -104,7 +104,7 @@ def main():
     return subprocess.call([NACLSDK_SHELL_SCRIPT] + args)
   else:
     return subprocess.call(MakeSdkUpdateMainCmd(args))
-    
+
 
 if __name__ == '__main__':
   sys.exit(main())

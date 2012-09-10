@@ -4,11 +4,9 @@
 # found in the LICENSE file.
 
 import buildbot_common
-import make_rules
 import optparse
 import os
 import sys
-
 from make_rules import MakeRules, SetVar, GenerateCleanRules, GenerateNMFRules
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -85,7 +83,7 @@ def GetPlatforms(plat_list, plat_filter):
   return platforms
 
 
-def GenerateToolDefaults(desc, tools):
+def GenerateToolDefaults(tools):
   defaults = ''
   for tool in tools:
     defaults += MakeRules(tool).BuildDefaults()
@@ -94,11 +92,10 @@ def GenerateToolDefaults(desc, tools):
 
 def GenerateSettings(desc, tools):
   settings = SetVar('VALID_TOOLCHAINS', tools)
-  settings+= 'TOOLCHAIN?=%s\n\n' % tools[0]
+  settings += 'TOOLCHAIN?=%s\n\n' % tools[0]
   for target in desc['TARGETS']:
     project = target['NAME']
     macro = project.upper()
-    srcs = GetSourcesDict(target['SOURCES'])
 
     c_flags = target.get('CCFLAGS')
     cc_flags = target.get('CXXFLAGS')
@@ -114,12 +111,10 @@ def GenerateSettings(desc, tools):
 
 
 def GenerateRules(desc, tools):
-  all_targets = []
-  clean = []
   rules = '#\n# Per target object lists\n#\n'
 
   #Determine which projects are in the NMF files.
-  main = None
+  executable = None
   dlls = []
   project_list = []
   glibc_rename = []
@@ -130,7 +125,7 @@ def GenerateRules(desc, tools):
     project_list.append(project)
     srcs = GetSourcesDict(target['SOURCES'])
     if ptype == 'MAIN':
-      main = project
+      executable = project
     if ptype == 'SO':
       dlls.append(project)
       for arch in ['x86_32', 'x86_64']:
@@ -152,15 +147,12 @@ def GenerateRules(desc, tools):
         project = target['NAME']
         ptype = target['TYPE']
         srcs = GetSourcesDict(target['SOURCES'])
-        objs = GetProjectObjects(srcs)
         defs = target.get('DEFINES', [])
         incs = target.get('INCLUDES', [])
         libs = target.get('LIBS', [])
-        lpaths = target.get('LIBPATHS', [])
-        ipaths = target.get('INCPATHS', [])
         makeobj.SetProject(project, ptype, defs=defs, incs=incs, libs=libs)
-	if ptype == 'main':
-	  rules += makeobj.GetPepperPlugin()
+        if ptype == 'main':
+          rules += makeobj.GetPepperPlugin()
         for arch in arches:
           makeobj.SetArch(arch)
           for src in srcs.get('.c', []):
@@ -170,8 +162,8 @@ def GenerateRules(desc, tools):
           rules += '\n'
           rules += makeobj.BuildObjectList()
           rules += makeobj.BuildLinkRule()
-      if main:
-        rules += GenerateNMFRules(tc, main, dlls, cfg, arches)
+      if executable:
+        rules += GenerateNMFRules(tc, executable, dlls, cfg, arches)
 
   rules += GenerateCleanRules(tools, configs)
   rules += '\nall: $(ALL_TARGETS)\n'
@@ -182,11 +174,9 @@ def GenerateRules(desc, tools):
 
 def GenerateReplacements(desc, tools):
   # Generate target settings
-  plats = GetPlatforms(desc['TOOLS'], tools)
-
   settings = GenerateSettings(desc, tools)
-  tool_def = GenerateToolDefaults(desc, tools)
-  all_targets, rules = GenerateRules(desc, tools)
+  tool_def = GenerateToolDefaults(tools)
+  _, rules = GenerateRules(desc, tools)
 
   prelaunch = desc.get('LAUNCH', '')
   prerun = desc.get('PRE', '')
@@ -241,12 +231,12 @@ def ErrorMsgFunc(text):
   sys.stderr.write(text + '\n')
 
 
-def ValidateFormat(src, format, ErrorMsg=ErrorMsgFunc):
+def ValidateFormat(src, dsc_format, ErrorMsg=ErrorMsgFunc):
   failed = False
 
   # Verify all required keys are there
-  for key in format:
-    (exp_type, exp_value, required) = format[key]
+  for key in dsc_format:
+    (exp_type, exp_value, required) = dsc_format[key]
     if required and key not in src:
       ErrorMsg('Missing required key %s.' % key)
       failed = True
@@ -254,12 +244,12 @@ def ValidateFormat(src, format, ErrorMsg=ErrorMsgFunc):
   # For each provided key, verify it's valid
   for key in src:
     # Verify the key is known
-    if key not in format:
+    if key not in dsc_format:
       ErrorMsg('Unexpected key %s.' % key)
       failed = True
       continue
 
-    exp_type, exp_value, required = format[key]
+    exp_type, exp_value, required = dsc_format[key]
     value = src[key]
 
     # Verify the key is of the expected type
@@ -443,9 +433,9 @@ def ProcessProject(srcroot, dstroot, desc, toolchains):
     FindAndCopyFiles(headers, srcroot, srcdirs, header_out_dir)
 
   if IsNexe(desc):
-    template=os.path.join(SCRIPT_DIR, 'template.mk')
+    template = os.path.join(SCRIPT_DIR, 'template.mk')
   else:
-    template=os.path.join(SCRIPT_DIR, 'library.mk')
+    template = os.path.join(SCRIPT_DIR, 'library.mk')
 
   tools = []
   for tool in desc['TOOLS']:

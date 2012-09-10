@@ -62,7 +62,7 @@ def Run(args, cwd=None, env=None, shell=False):
   sys.stderr.flush()
 
 
-def CopyDir(src, dst, excludes=['.svn', '*/.svn']):
+def CopyDir(src, dst, excludes=('.svn', '*/.svn')):
   """Recursively copy a directory using."""
   args = ['-r', src, dst]
   for exc in excludes:

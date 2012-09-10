@@ -7,6 +7,9 @@
 in manifest.
 """
 
+# pylint is convinced the email module is missing attributes
+# pylint: disable=E1101
+
 import buildbot_common
 import csv
 import cStringIO
@@ -92,6 +95,7 @@ def GetPlatformsFromArchives(archive_urls):
 
 class Delegate(object):
   """Delegate all external access; reading/writing to filesystem, gsutil etc."""
+
   def GetRepoManifest(self):
     """Read the manifest file from the NaCl SDK repository.
 
@@ -157,7 +161,6 @@ class Delegate(object):
           effect is that text in stdin is copied to |dest|."""
     raise NotImplementedError()
 
-
   def Print(self, *args):
     """Print a message."""
     raise NotImplementedError()
@@ -165,6 +168,7 @@ class Delegate(object):
 
 class RealDelegate(Delegate):
   def __init__(self, dryrun=False, gsutil=None):
+    super(RealDelegate, self).__init__()
     self.dryrun = dryrun
     if gsutil:
       self.gsutil = gsutil
@@ -313,6 +317,7 @@ class VersionFinder(object):
       'canary'). |archives| is a list of archive URLs."""
     version = None
     skipped_versions = []
+    channel = ''
     while True:
       try:
         version, channel = shared_version_generator.next()

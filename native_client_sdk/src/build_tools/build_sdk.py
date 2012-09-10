@@ -15,6 +15,7 @@ BUILDBOT_BUILDERNAME to determine whether the script is run locally
 and whether it should upload an SDK to file storage (GSTORE)
 """
 
+# pylint: disable=W0621
 
 # std python includes
 import copy

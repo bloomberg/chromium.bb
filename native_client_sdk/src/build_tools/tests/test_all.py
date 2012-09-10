@@ -8,7 +8,7 @@ import unittest
 
 TEST_MODULES = [
     'test_auto_update_sdktools',
-    'test_update_manifest'
+    'test_update_nacl_manifest'
 ]
 
 def main():

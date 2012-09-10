@@ -11,10 +11,8 @@ tool users run to download new bundles, update existing bundles, etc.
 
 import buildbot_common
 import build_utils
-import cStringIO
 import optparse
 import os
-import re
 import sys
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -111,9 +109,9 @@ def UpdateRevisionNumber(out_dir, revision_number):
   SDK_UPDATE_MAIN = os.path.join(out_dir,
       'nacl_sdk/sdk_tools/sdk_update_main.py')
 
-  file = open(SDK_UPDATE_MAIN, 'r').read().replace(
+  contents = open(SDK_UPDATE_MAIN, 'r').read().replace(
       '{REVISION}', str(revision_number))
-  open(SDK_UPDATE_MAIN, 'w').write(file)
+  open(SDK_UPDATE_MAIN, 'w').write(contents)
 
 
 def BuildUpdater(out_dir, revision_number=None):
@@ -131,7 +129,7 @@ def BuildUpdater(out_dir, revision_number=None):
   buildbot_common.RemoveDir(os.path.join(out_dir, 'nacl_sdk'))
 
   updater_files = MakeUpdaterFilesAbsolute(out_dir)
-  out_files = [out_file for in_file, out_file in updater_files]
+  out_files = [out_file for _, out_file in updater_files]
 
   CopyFiles(updater_files)
   UpdateRevisionNumber(out_dir, revision_number)

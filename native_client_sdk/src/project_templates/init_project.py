@@ -279,6 +279,7 @@ class ProjectInitializer(object):
     self.__is_c_project = is_c_project
     self.__is_vs_project = is_vs_project
     self.__project_files = []
+    self.__project_dir = None
     self.__project_name = project_name
     self.__project_location = project_location
     self.__nacl_platform = nacl_platform

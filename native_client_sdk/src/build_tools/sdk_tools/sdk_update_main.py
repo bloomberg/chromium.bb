@@ -11,15 +11,18 @@ import json
 import manifest_util
 import optparse
 import os
-from sdk_update_common import *
+from sdk_update_common import RenameDir, RemoveDir, Error
 import shutil
 import subprocess
 import sys
 import tempfile
+# when pylint runs the third_party module is the one from depot_tools
+# pylint: disable=E0611
 from third_party import fancy_urllib
 import urllib2
 import urlparse
 
+# pylint: disable=C0301
 
 #------------------------------------------------------------------------------
 # Constants
@@ -300,7 +303,7 @@ class SDKConfig(object):
       WarningPrint('source \''+string+'\' already exists in config.')
       return
     try:
-      url_stream = UrlOpen(string)
+      UrlOpen(string)
     except urllib2.URLError:
       WarningPrint('Unable to fetch manifest URL \'%s\'. Exiting...' % string)
       return
@@ -371,7 +374,7 @@ def Info(options, argv, config):
   DebugPrint("Running List command with: %s, %s" %(options, argv))
 
   parser = optparse.OptionParser(usage=Info.__doc__)
-  (info_options, args) = parser.parse_args(argv)
+  (_, args) = parser.parse_args(argv)
 
   if not args:
     parser.print_help()
@@ -436,7 +439,7 @@ def List(options, argv, config):
       '-r', '--revision', dest='revision',
       default=False, action='store_true',
       help='display revision numbers')
-  (list_options, args) = parser.parse_args(argv)
+  (list_options, _) = parser.parse_args(argv)
 
   manifest = LoadManifestFromURLs([options.manifest_url] + config.GetSources())
   manifest_path = os.path.join(options.user_data_dir, options.manifest_filename)
@@ -447,7 +450,6 @@ def List(options, argv, config):
   InfoPrint(' I: installed\n *: update available\n')
   for bundle in manifest.GetBundles():
     local_bundle = local_manifest.GetBundle(bundle.name)
-    installed = local_bundle is not None
     needs_update = local_bundle and local_manifest.BundleNeedsUpdate(bundle)
     if needs_update:
       any_bundles_need_update = True

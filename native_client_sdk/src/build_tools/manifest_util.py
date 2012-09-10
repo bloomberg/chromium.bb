@@ -106,6 +106,7 @@ class Archive(dict):
 
   def __init__(self, host_os_name):
     """ Create a new archive for the given host-os name. """
+    super(Archive, self).__init__()
     self['host_os'] = host_os_name
 
   def CopyFrom(self, src):
@@ -141,7 +142,7 @@ class Archive(dict):
     elif not len(checksum):
       raise Error('Archive "%s" has an empty checksum dict' % host_os)
     # Verify that all key names are valid.
-    for key, val in self.iteritems():
+    for key in self:
       if key not in VALID_ARCHIVE_KEYS:
         raise Error('Archive "%s" has invalid attribute "%s"' % (host_os, key))
 
@@ -177,9 +178,9 @@ class Archive(dict):
       return
     return self.__setitem__(name, value)
 
-  def GetChecksum(self, type='sha1'):
+  def GetChecksum(self, hash_type='sha1'):
     """Returns a given cryptographic checksum of the archive"""
-    return self['checksum'][type]
+    return self['checksum'][hash_type]
 
 
 class Bundle(dict):
@@ -227,13 +228,13 @@ class Bundle(dict):
     """
     self.CopyFrom(json.loads(json_string))
 
-  def CopyFrom(self, dict):
+  def CopyFrom(self, source):
     """Update the content of the bundle by copying values from the given
        dictionary.
 
     Args:
-      dict: The dictionary whose values must be copied to the bundle."""
-    for key, value in dict.items():
+      source: The dictionary whose values must be copied to the bundle."""
+    for key, value in source.items():
       if key == ARCHIVES_KEY:
         archives = []
         for a in value:
@@ -270,7 +271,7 @@ class Bundle(dict):
           'Bundle "%s" has invalid recommended field: "%s"' %
           (self[NAME_KEY], self['recommended']))
     # Verify that all key names are valid.
-    for key, val in self.iteritems():
+    for key in self:
       if key not in VALID_BUNDLES_KEYS:
         raise Error('Bundle "%s" has invalid attribute "%s"' %
                     (self[NAME_KEY], key))
@@ -393,7 +394,7 @@ class SDKManifest(object):
       raise Error("Manifest version too high: %s" %
                   self._manifest_data["manifest_version"])
     # Verify that all key names are valid.
-    for key, val in self._manifest_data.iteritems():
+    for key in self._manifest_data:
       if key not in VALID_MANIFEST_KEYS:
         raise Error('Manifest has invalid attribute "%s"' % key)
     # Validate each bundle
@@ -412,7 +413,8 @@ class SDKManifest(object):
     bundles = [bundle for bundle in self._manifest_data[BUNDLES_KEY]
                if bundle[NAME_KEY] == name]
     if len(bundles) > 1:
-      WarningPrint("More than one bundle with name '%s' exists." % name)
+      sys.stderr.write("WARNING: More than one bundle with name"
+                       "'%s' exists.\n" % name)
     return bundles[0] if len(bundles) > 0 else None
 
   def GetBundles(self):
