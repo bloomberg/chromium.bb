@@ -409,7 +409,6 @@
       'about_plugins_ui.ChromeAboutPluginsUITest',
       'media.media_basic_playback',
       'nacl_sdk',
-      'youtube',
 
       # ===========================
       # Permanently-disabled tests.
@@ -462,9 +461,6 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # crbug.com/109035
-      '-youtube.YoutubeTest.testPlayerBytes',
-      '-youtube.YoutubeTest.testPlayerResolution',
 
       # ===========================
       # Permanently-disabled tests.
@@ -499,12 +495,10 @@
       '-extensions.ExtensionsTest.testAllowAccessFileURLs',
       # crbug.com/100365
       '-autofill.AutofillTest.testDisplayLineItemForEntriesWithNoCCNum',
-      # crbug.com/109035
-      '-youtube.YoutubeTest.testPlayerBytes',
-      '-youtube.YoutubeTest.testPlayerResolution',
     ],
 
     'chromeos': [
+      'youtube',
       # ===========================
       # Permanently-disabled tests.
       # ===========================

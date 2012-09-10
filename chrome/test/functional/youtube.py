@@ -9,6 +9,7 @@ import time
 import pyauto_functional
 import pyauto
 import pyauto_errors
+import test_utils
 
 
 class YoutubeTestHelper():
@@ -121,6 +122,13 @@ class YoutubeTestHelper():
         window.domAutomationController.send('');
     """)
 
+  def StopVideo(self):
+    """Stops the video and cancels loading."""
+    self._pyauto.ExecuteJavascript("""
+        ytplayer.stopVideo();
+        window.domAutomationController.send('');
+    """)
+
   def PauseVideo(self):
     """Pause the video."""
     self.ExecuteJavascript("""
@@ -153,6 +161,30 @@ class YoutubeTestHelper():
     self.PlayVideo()
     self.AssertPlayerState(state=self.is_playing,
                            msg='Player did not enter the playing state')
+
+  def VideoBytesLoadingAndAssert(self):
+    """Assert the video loading."""
+    total_bytes = self.GetVideoTotalBytes()
+    prev_loaded_bytes = 0
+    loaded_bytes = 0
+    count = 0
+    while loaded_bytes < total_bytes:
+      # We want to test bytes loading only twice
+      count = count + 1
+      if count == 2:
+        break
+      loaded_bytes = self.GetVideoLoadedBytes()
+      self.assertTrue(prev_loaded_bytes <= loaded_bytes)
+      prev_loaded_bytes = loaded_bytes
+      # Give some time to load a video
+      time.sleep(1)
+
+  def PlayFAVideo(self):
+    """Play and assert FA video playing."""
+    credentials = self.GetPrivateInfo()['test_fa_account']
+    test_utils.GoogleAccountsLogin(self,
+        credentials['username'], credentials['password'])
+    self.PlayVideoAndAssert('pmE6CJoq4Kg')
 
 
 class YoutubeTest(pyauto.PyUITest, YoutubeTestHelper):
@@ -208,20 +240,18 @@ class YoutubeTest(pyauto.PyUITest, YoutubeTestHelper):
   def testPlayerBytes(self):
     """Test that player downloads video bytes."""
     self.PlayVideoAndAssert()
-    total_bytes = self.GetVideoTotalBytes()
-    prev_loaded_bytes = 0
-    loaded_bytes = 0
-    count = 0
-    while loaded_bytes < total_bytes:
-      # We want to test bytes loading only twice
-      count = count + 1
-      if count == 2:
-        break
-      loaded_bytes = self.GetVideoLoadedBytes()
-      self.assertTrue(prev_loaded_bytes <= loaded_bytes)
-      prev_loaded_bytes = loaded_bytes
-      # Give some time to load a video
-      time.sleep(1)
+    self.VideoBytesLoadingAndAssert()
+
+  def testFAVideo(self):
+    """Test that FlashAccess/DRM video plays."""
+    self.PlayFAVideo()
+    self.StopVideo()
+
+  def testFAVideoBytes(self):
+    """Test FlashAccess/DRM video bytes loading."""
+    self.PlayFAVideo()
+    self.VideoBytesLoadingAndAssert()
+    self.StopVideo()
 
 
 if __name__ == '__main__':
