@@ -266,12 +266,12 @@ void BrowserLauncherItemController::UpdateLauncher(TabContents* tab) {
     DCHECK_EQ(TYPE_TABBED, type());
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     if (tab->favicon_tab_helper()->ShouldDisplayFavicon()) {
-      item.image = tab->favicon_tab_helper()->GetFavicon().AsBitmap();
+      item.image = tab->favicon_tab_helper()->GetFavicon().AsImageSkia();
       if (item.image.isNull()) {
-        item.image = *rb.GetBitmapNamed(IDR_DEFAULT_FAVICON);
+        item.image = *rb.GetImageSkiaNamed(IDR_DEFAULT_FAVICON);
       }
     } else {
-      item.image = *rb.GetBitmapNamed(IDR_DEFAULT_FAVICON);
+      item.image = *rb.GetImageSkiaNamed(IDR_DEFAULT_FAVICON);
     }
   }
   launcher_model()->Set(item_index, item);
