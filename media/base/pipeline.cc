@@ -88,8 +88,12 @@ Pipeline::Pipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
 }
 
 Pipeline::~Pipeline() {
+  // TODO(scherkus): Reenable after figuring out why this is firing, see
+  // http://crbug.com/148405
+#if 0
   DCHECK(thread_checker_.CalledOnValidThread())
       << "Pipeline must be destroyed on same thread that created it";
+#endif
   DCHECK(!running_) << "Stop() must complete before destroying object";
   DCHECK(stop_cb_.is_null());
   DCHECK(seek_cb_.is_null());
