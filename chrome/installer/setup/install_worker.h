@@ -12,8 +12,6 @@
 
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
-
 class BrowserDistribution;
 class CommandLine;
 class FilePath;
@@ -32,8 +30,8 @@ class Product;
 void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
                                    const FilePath& setup_path,
                                    const Version& new_version,
-                                   WorkItemList* install_list,
-                                   const Product& product);
+                                   const Product& product,
+                                   WorkItemList* install_list);
 
 // Creates Version key for a product (if not already present) and sets the new
 // product version as the last step.  If |add_language_identifier| is true, the
@@ -79,6 +77,7 @@ void AddUsageStatsWorkItems(const InstallationState& original_state,
 //   it if not.
 // If these operations are successful, the function returns true, otherwise
 // false.
+// |current_version| can be NULL to indicate no Chrome is currently installed.
 bool AppendPostInstallTasks(const InstallerState& installer_state,
                             const FilePath& setup_path,
                             const Version* current_version,
@@ -97,14 +96,15 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
 //           to be installed.
 // temp_path: the path of working directory used during installation. This path
 //            does not need to exist.
+// |current_version| can be NULL to indicate no Chrome is currently installed.
 void AddInstallWorkItems(const InstallationState& original_state,
                          const InstallerState& installer_state,
                          const FilePath& setup_path,
                          const FilePath& archive_path,
                          const FilePath& src_path,
                          const FilePath& temp_path,
+                         const Version* current_version,
                          const Version& new_version,
-                         scoped_ptr<Version>* current_version,
                          WorkItemList* install_list);
 
 // Appends registration or unregistration work items to |work_item_list| for the
@@ -180,11 +180,11 @@ void RefreshElevationPolicy();
 // |machine_state|).  |setup_path| (the path to the executable currently being
 // run) and |new_version| (the version of the product(s) currently being
 // installed) are required when processing product installation; they are unused
-// (and may therefore be NULL) when uninstalling.
+// (and may therefore be empty) when uninstalling.
 void AddQuickEnableChromeFrameWorkItems(const InstallerState& installer_state,
                                         const InstallationState& machine_state,
-                                        const FilePath* setup_path,
-                                        const Version* new_version,
+                                        const FilePath& setup_path,
+                                        const Version& new_version,
                                         WorkItemList* work_item_list);
 
 // Adds work items to add or remove the "quick-enable-application-host" command
@@ -193,22 +193,22 @@ void AddQuickEnableChromeFrameWorkItems(const InstallerState& installer_state,
 // configuration (represented in |machine_state|).  |setup_path| (the path to
 // the executable currently being run) and |new_version| (the version of the
 // product(s) currently being installed) are required when processing product
-// installation; they are unused (and may therefore be NULL) when uninstalling.
+// installation; they are unused ((and may therefore be empty) when
+// uninstalling).
 void AddQuickEnableApplicationHostWorkItems(
     const InstallerState& installer_state,
     const InstallationState& machine_state,
-    const FilePath* setup_path,
-    const Version* new_version,
+    const FilePath& setup_path,
+    const Version& new_version,
     WorkItemList* work_item_list);
 
 // Adds work items to add or remove the "on-os-upgrade" command to |product|'s
 // version key on the basis of the current operation (represented in
-// |installer_state|).  |new_version| (the version of the product(s)
-// currently being installed) is required when processing product
-// installation; it is unused (and may therefore be NULL) when uninstalling.
+// |installer_state|).  |new_version| is the version of the product(s)
+// currently being installed -- can be empty on uninstall.
 void AddOsUpgradeWorkItems(const InstallerState& installer_state,
-                           const FilePath* setup_path,
-                           const Version* new_version,
+                           const FilePath& setup_path,
+                           const Version& new_version,
                            const Product& product,
                            WorkItemList* install_list);
 

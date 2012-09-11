@@ -103,7 +103,7 @@ InstallStatus ChromeFrameQuickEnable(const InstallationState& machine_state,
 
       // This creates the uninstallation entry for GCF.
       AddUninstallShortcutWorkItems(*installer_state, setup_path, new_version,
-                                    item_list.get(), *cf);
+                                    *cf, item_list.get());
       // Always set the "lang" value since quick-enable always happens in the
       // context of an interactive session with a user.
       AddVersionKeyWorkItems(installer_state->root_key(), cf->distribution(),
@@ -125,8 +125,8 @@ InstallStatus ChromeFrameQuickEnable(const InstallationState& machine_state,
       // Add the items to remove the quick-enable-cf command from the registry.
       AddQuickEnableChromeFrameWorkItems(
           *installer_state, machine_state,
-          &chrome_state->uninstall_command().GetProgram(),
-          &chrome_state->version(),
+          chrome_state->uninstall_command().GetProgram(),
+          new_version,
           item_list.get());
 
       if (!item_list->Do()) {

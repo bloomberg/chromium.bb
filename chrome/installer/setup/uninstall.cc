@@ -132,7 +132,7 @@ void ProcessOnOsUpgradeWorkItems(
     const installer::Product& product) {
   scoped_ptr<WorkItemList> work_item_list(
       WorkItem::CreateNoRollbackWorkItemList());
-  AddOsUpgradeWorkItems(installer_state, NULL, NULL, product,
+  AddOsUpgradeWorkItems(installer_state, FilePath(), Version(), product,
                         work_item_list.get());
   if (!work_item_list->Do())
     LOG(ERROR) << "Failed to remove on-os-upgrade command.";
@@ -146,11 +146,12 @@ void ProcessQuickEnableWorkItems(
   scoped_ptr<WorkItemList> work_item_list(
       WorkItem::CreateNoRollbackWorkItemList());
 
-  AddQuickEnableChromeFrameWorkItems(installer_state, machine_state, NULL, NULL,
-                                     work_item_list.get());
+  AddQuickEnableChromeFrameWorkItems(installer_state, machine_state, FilePath(),
+                                     Version(), work_item_list.get());
 
-  AddQuickEnableApplicationHostWorkItems(installer_state, machine_state, NULL,
-                                         NULL, work_item_list.get());
+  AddQuickEnableApplicationHostWorkItems(installer_state, machine_state,
+                                         FilePath(), Version(),
+                                         work_item_list.get());
   if (!work_item_list->Do())
     LOG(ERROR) << "Failed to update quick-enable-cf command.";
 }
@@ -283,18 +284,21 @@ void DeleteChromeShortcuts(const InstallerState& installer_state,
           ShellUtil::SHORTCUT_ALTERNATE);
     }
 
-    ShellUtil::RemoveChromeQuickLaunchShortcut(product.distribution(),
+    ShellUtil::RemoveChromeQuickLaunchShortcut(
+        product.distribution(),
         ShellUtil::CURRENT_USER | ShellUtil::SYSTEM_LEVEL);
   } else {
     PathService::Get(base::DIR_START_MENU, &shortcut_path);
-    if (!ShellUtil::RemoveChromeDesktopShortcut(product.distribution(),
+    if (!ShellUtil::RemoveChromeDesktopShortcut(
+        product.distribution(),
         ShellUtil::CURRENT_USER, ShellUtil::SHORTCUT_NO_OPTIONS)) {
-      ShellUtil::RemoveChromeDesktopShortcut(product.distribution(),
+      ShellUtil::RemoveChromeDesktopShortcut(
+          product.distribution(),
           ShellUtil::CURRENT_USER, ShellUtil::SHORTCUT_ALTERNATE);
     }
 
-    ShellUtil::RemoveChromeQuickLaunchShortcut(product.distribution(),
-        ShellUtil::CURRENT_USER);
+    ShellUtil::RemoveChromeQuickLaunchShortcut(
+        product.distribution(), ShellUtil::CURRENT_USER);
   }
   if (shortcut_path.empty()) {
     LOG(ERROR) << "Failed to get location for shortcut.";
@@ -677,7 +681,8 @@ bool DeleteChromeRegistrationKeys(BrowserDistribution* dist, HKEY root,
   }
 
   // Delete Software\RegisteredApplications\Chromium
-  InstallUtil::DeleteRegistryValue(root, ShellUtil::kRegRegisteredApplications,
+  InstallUtil::DeleteRegistryValue(
+      root, ShellUtil::kRegRegisteredApplications,
       dist->GetBaseAppName() + browser_entry_suffix);
 
   // Delete the App Paths and Applications keys that let Explorer find Chrome:

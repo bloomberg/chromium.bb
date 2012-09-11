@@ -88,8 +88,8 @@ bool DeleteFileFromTempProcess(const FilePath& path,
   static const wchar_t kRunDll32Path[] =
       L"%SystemRoot%\\System32\\rundll32.exe";
   wchar_t rundll32[MAX_PATH];
-  DWORD size = ExpandEnvironmentStrings(kRunDll32Path, rundll32,
-                                        arraysize(rundll32));
+  DWORD size =
+      ExpandEnvironmentStrings(kRunDll32Path, rundll32, arraysize(rundll32));
   if (!size || size >= MAX_PATH)
     return false;
 
@@ -110,7 +110,8 @@ bool DeleteFileFromTempProcess(const FilePath& path,
                                  PAGE_READWRITE);
     if (mem) {
       SIZE_T written = 0;
-      ::WriteProcessMemory(pi.hProcess, mem, path.value().c_str(),
+      ::WriteProcessMemory(
+          pi.hProcess, mem, path.value().c_str(),
           (path.value().size() + 1) * sizeof(path.value()[0]), &written);
       HMODULE kernel32 = ::GetModuleHandle(L"kernel32.dll");
       PAPCFUNC sleep = reinterpret_cast<PAPCFUNC>(
@@ -149,7 +150,8 @@ string16 GetActiveSetupPath(BrowserDistribution* dist) {
 ScopedTokenPrivilege::ScopedTokenPrivilege(const wchar_t* privilege_name)
     : is_enabled_(false) {
   if (!::OpenProcessToken(::GetCurrentProcess(),
-      TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, token_.Receive())) {
+                          TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,
+                          token_.Receive())) {
     return;
   }
 
@@ -170,9 +172,10 @@ ScopedTokenPrivilege::ScopedTokenPrivilege(const wchar_t* privilege_name)
   if (!::AdjustTokenPrivileges(token_, FALSE, &tp, sizeof(TOKEN_PRIVILEGES),
                                &previous_privileges_, &return_length)) {
     token_.Close();
-  } else {
-    is_enabled_ = true;
+    return;
   }
+
+  is_enabled_ = true;
 }
 
 ScopedTokenPrivilege::~ScopedTokenPrivilege() {

@@ -460,8 +460,8 @@ TEST_F(InstallWorkerTest, TestInstallChromeSingleSystem) {
                       archive_path_,
                       src_path_,
                       temp_dir_,
+                      current_version_.get(),
                       *new_version_.get(),
-                      &current_version_,
                       &work_item_list);
 }
 
@@ -724,8 +724,8 @@ TEST_F(QuickEnableAbsentTest, CleanInstallSingleChrome) {
                                 InstallerState::SINGLE_INSTALL_OR_UPDATE));
   AddQuickEnableChromeFrameWorkItems(*installer_state,
                                      *machine_state_,
-                                     &setup_path_,
-                                     new_version_.get(),
+                                     setup_path_,
+                                     *new_version_.get(),
                                      &work_item_list_);
 }
 
@@ -737,8 +737,8 @@ TEST_F(QuickEnableAbsentTest, CleanInstallSingleChromeFrame) {
                                      InstallerState::SINGLE_INSTALL_OR_UPDATE));
   AddQuickEnableChromeFrameWorkItems(*installer_state,
                                      *machine_state_,
-                                     &setup_path_,
-                                     new_version_.get(),
+                                     setup_path_,
+                                     *new_version_.get(),
                                      &work_item_list_);
 }
 
@@ -750,8 +750,8 @@ TEST_F(QuickEnableAbsentTest, CleanInstallMultiChromeFrame) {
                                      InstallerState::MULTI_INSTALL));
   AddQuickEnableChromeFrameWorkItems(*installer_state,
                                      *machine_state_,
-                                     &setup_path_,
-                                     new_version_.get(),
+                                     setup_path_,
+                                     *new_version_.get(),
                                      &work_item_list_);
 }
 
@@ -766,8 +766,8 @@ TEST_F(QuickEnableAbsentTest, CleanInstallMultiChromeChromeFrame) {
                                  installer_state.get());
   AddQuickEnableChromeFrameWorkItems(*installer_state,
                                      *machine_state_,
-                                     &setup_path_,
-                                     new_version_.get(),
+                                     setup_path_,
+                                     *new_version_.get(),
                                      &work_item_list_);
 }
 
@@ -783,8 +783,8 @@ TEST_F(QuickEnableAbsentTest, UninstallMultiChromeLeaveMultiChromeFrame) {
   AddChromeToInstallerState(*machine_state_, installer_state.get());
   AddQuickEnableChromeFrameWorkItems(*installer_state,
                                      *machine_state_,
-                                     &setup_path_,
-                                     new_version_.get(),
+                                     setup_path_,
+                                     *new_version_.get(),
                                      &work_item_list_);
 }
 
@@ -801,8 +801,8 @@ TEST_F(QuickEnableAbsentTest, UninstallMultiChromeLeaveSingleChromeFrame) {
   AddChromeBinariesToInstallerState(*machine_state_, installer_state.get());
   AddQuickEnableChromeFrameWorkItems(*installer_state,
                                      *machine_state_,
-                                     &setup_path_,
-                                     new_version_.get(),
+                                     setup_path_,
+                                     *new_version_.get(),
                                      &work_item_list_);
 }
 
@@ -820,8 +820,8 @@ TEST_F(QuickEnableAbsentTest, AcceptReadyMode) {
   AddChromeBinariesToInstallerState(*machine_state_, installer_state.get());
   AddQuickEnableChromeFrameWorkItems(*installer_state,
                                      *machine_state_,
-                                     &setup_path_,
-                                     new_version_.get(),
+                                     setup_path_,
+                                     *new_version_.get(),
                                      &work_item_list_);
 }
 
@@ -885,8 +885,8 @@ TEST_F(QuickEnablePresentTest, CleanInstallMultiChrome) {
                                 InstallerState::MULTI_INSTALL));
   AddQuickEnableChromeFrameWorkItems(*installer_state,
                                      *machine_state_,
-                                     &setup_path_,
-                                     new_version_.get(),
+                                     setup_path_,
+                                     *new_version_.get(),
                                      &work_item_list_);
 }
 
@@ -901,8 +901,8 @@ TEST_F(QuickEnablePresentTest, CleanInstallMultiChromeReadyMode) {
                                  installer_state.get());
   AddQuickEnableChromeFrameWorkItems(*installer_state,
                                      *machine_state_,
-                                     &setup_path_,
-                                     new_version_.get(),
+                                     setup_path_,
+                                     *new_version_.get(),
                                      &work_item_list_);
 }
 
@@ -918,8 +918,8 @@ TEST_F(QuickEnablePresentTest, UninstallSingleChromeFrame) {
   AddChromeFrameToInstallerState(*machine_state_, false, installer_state.get());
   AddQuickEnableChromeFrameWorkItems(*installer_state,
                                      *machine_state_,
-                                     &setup_path_,
-                                     new_version_.get(),
+                                     setup_path_,
+                                     *new_version_.get(),
                                      &work_item_list_);
 }
 
@@ -935,8 +935,8 @@ TEST_F(QuickEnablePresentTest, UninstallMultiChromeFrame) {
   AddChromeFrameToInstallerState(*machine_state_, false, installer_state.get());
   AddQuickEnableChromeFrameWorkItems(*installer_state,
                                      *machine_state_,
-                                     &setup_path_,
-                                     new_version_.get(),
+                                     setup_path_,
+                                     *new_version_.get(),
                                      &work_item_list_);
 }
 

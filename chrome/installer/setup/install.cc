@@ -132,8 +132,8 @@ installer::InstallStatus InstallNewVersion(
                       archive_path,
                       src_path,
                       temp_path,
+                      current_version->get(),
                       new_version,
-                      current_version,
                       install_list.get());
 
   FilePath new_chrome_exe(

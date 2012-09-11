@@ -94,10 +94,10 @@ InstallStatus ChromeFrameReadyModeOptIn(
 
   // This creates the uninstallation entry for GCF.
   AddUninstallShortcutWorkItems(opt_in_state, cf_state->GetSetupPath(),
-      cf_state->version(), item_list.get(), *cf);
+      cf_state->version(), *cf, item_list.get());
   // This updates the Chrome uninstallation entries.
   AddUninstallShortcutWorkItems(opt_in_state, chrome_state->GetSetupPath(),
-      chrome_state->version(), item_list.get(), *chrome);
+      chrome_state->version(), *chrome, item_list.get());
 
   // Add a work item to delete the ChromeFrameReadyMode registry value.
   HKEY root = opt_in_state.root_key();
