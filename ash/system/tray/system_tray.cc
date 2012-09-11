@@ -27,7 +27,6 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray_accessibility.h"
 #include "ash/system/tray_caps_lock.h"
-#include "ash/system/tray_display.h"
 #include "ash/system/tray_update.h"
 #include "ash/system/user/login_status.h"
 #include "ash/system/user/tray_user.h"
@@ -101,7 +100,6 @@ void SystemTray::CreateItems() {
   internal::TrayLocale* tray_locale = new internal::TrayLocale;
   internal::TrayUpdate* tray_update = new internal::TrayUpdate;
   internal::TraySettings* tray_settings = new internal::TraySettings();
-  internal::TrayDisplay* tray_display = new internal::TrayDisplay;
 
   accessibility_observer_ = tray_accessibility;
   audio_observer_ = tray_volume;
@@ -127,7 +125,6 @@ void SystemTray::CreateItems() {
   AddTrayItem(tray_drive);
   AddTrayItem(tray_ime);
   AddTrayItem(tray_locale);
-  AddTrayItem(tray_display);
   AddTrayItem(tray_volume);
   AddTrayItem(tray_brightness);
   AddTrayItem(tray_update);

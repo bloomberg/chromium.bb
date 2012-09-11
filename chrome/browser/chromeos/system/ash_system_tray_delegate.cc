@@ -322,11 +322,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     // TODO(sad): Make this work.
   }
 
-  virtual void ShowDisplaySettings() OVERRIDE {
-    content::RecordAction(content::UserMetricsAction("ShowDisplayOptions"));
-    chrome::ShowSettingsSubPage(GetAppropriateBrowser(), "display");
-  }
-
   virtual void ShowDriveSettings() OVERRIDE {
     // TODO(hshi): Open the drive-specific settings page once we put it in.
     // For now just show search result for downoads settings.

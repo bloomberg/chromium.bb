@@ -116,9 +116,6 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   virtual void ShowBluetoothSettings() OVERRIDE {
   }
 
-  virtual void ShowDisplaySettings() OVERRIDE {
-  }
-
   virtual void ShowDriveSettings() OVERRIDE {
   }
 
