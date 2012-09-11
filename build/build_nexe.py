@@ -412,7 +412,6 @@ def Main(argv):
     parser.print_help()
     return 1
 
-  options.verbose = True
   print ' '.join(argv)
   if options.source_list:
     source_list_handle = open(options.source_list, 'r')
