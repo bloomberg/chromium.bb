@@ -192,7 +192,11 @@ def SyncFlavor(flavor, url, dst, hash, min_time, keep=False, force=False,
       src = os.path.join(untar_dir, 'toolchain', flavor)
     download_utils.MoveDirCleanly(src, dst)
   finally:
-    download_utils.RemoveDir(untar_dir)
+    try:
+      download_utils.RemoveDir(untar_dir)
+    except Exception, e:
+      print 'Failed cleanup with: ' + str(e)
+      print 'Continuing on original exception...'
   download_utils.WriteSourceStamp(dst, url)
   download_utils.WriteHashStamp(dst, hash)
   return True
