@@ -18,3 +18,6 @@ ProfileSyncServiceSessionTest.ValidTabs
 
 # http://crbug.com/139652
 BackgroundApplicationListModelTest.RandomTest
+
+# http://crbug.com/148356
+DeviceSettingsProviderTest.SetPrefFailed
