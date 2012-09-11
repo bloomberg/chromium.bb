@@ -202,6 +202,9 @@ class ChromeToMobileService : public ProfileKeyedService,
   // Submit a cloud print job request with the requisite data.
   void SendJobRequest(base::WeakPtr<Observer> observer, const JobData& data);
 
+  // Clear the cached cloud print auth access token.
+  void ClearAccessToken();
+
   // Send the OAuth2AccessTokenFetcher request.
   // Virtual for unit test mocking.
   virtual void RequestAccessToken();

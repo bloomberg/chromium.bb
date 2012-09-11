@@ -368,6 +368,15 @@ void ChromeToMobileService::OnGetTokenSuccess(
   auth_retry_timer_.Stop();
   access_token_ = access_token;
 
+  // Post a delayed task to invalidate the access token at its expiration time.
+  if (!content::BrowserThread::PostDelayedTask(
+          content::BrowserThread::UI, FROM_HERE,
+          base::Bind(&ChromeToMobileService::ClearAccessToken,
+                     weak_ptr_factory_.GetWeakPtr()),
+          expiration_time - base::Time::Now())) {
+    NOTREACHED();
+  }
+
   while (!task_queue_.empty()) {
     // Post all tasks that were queued and waiting on a valid access token.
     if (!content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
@@ -521,6 +530,10 @@ void ChromeToMobileService::SendJobRequest(base::WeakPtr<Observer> observer,
   request_observer_map_[request] = observer;
   request->SetUploadData("multipart/form-data; boundary=" + bound, post);
   request->Start();
+}
+
+void ChromeToMobileService::ClearAccessToken() {
+  access_token_.clear();
 }
 
 void ChromeToMobileService::RequestAccessToken() {
