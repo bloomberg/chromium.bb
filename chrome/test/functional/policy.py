@@ -78,25 +78,6 @@ class PolicyTest(policy_base.PolicyTestBase):
     self.assertFalse(fails, msg='%d of %d policies failed.\n%s' %
                      (len(fails), total, '\n'.join(fails)))
 
-  def testHomePageOptions(self):
-    """Verify that we cannot modify Homepage URL."""
-    policy = {
-      'HomepageLocation': 'http://chromium.org',
-      'HomepageIsNewTabPage': True
-    }
-    self.SetUserPolicy(policy)
-    # Try to configure home page URL
-    self.assertEquals('http://chromium.org',
-                      self.GetPrefsInfo().Prefs('homepage'))
-    self.assertRaises(
-        pyauto.JSONInterfaceError,
-        lambda: self.SetPrefs('homepage', 'http://www.google.com'))
-    # Try to remove NTP as home page
-    self.assertTrue(self.GetPrefsInfo().Prefs(pyauto.kHomePageIsNewTabPage))
-    self.assertRaises(
-        pyauto.JSONInterfaceError,
-        lambda: self.SetPrefs(pyauto.kHomePageIsNewTabPage, False))
-
   def testApplicationLocaleValue(self):
     """Verify that Chrome can be launched only in a specific locale."""
     if self.IsWin():

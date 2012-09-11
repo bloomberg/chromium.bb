@@ -49,6 +49,8 @@ class StartupBrowserCreatorTest : public ExtensionBrowserTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnablePanels);
+    command_line->AppendSwitchASCII(switches::kHomePage,
+                                    chrome::kAboutBlankURL);
   }
 
   // Helper functions return void so that we can ASSERT*().

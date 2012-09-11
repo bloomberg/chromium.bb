@@ -180,10 +180,6 @@ void InProcessBrowserTest::PrepareTestCommandLine(CommandLine* command_line) {
   // TODO(pkotwicz): Investigate if we can remove this switch.
   command_line->AppendSwitch(switches::kDisableZeroBrowsersOpenForTests);
 
-  if (!command_line->HasSwitch(switches::kHomePage)) {
-    command_line->AppendSwitchASCII(
-        switches::kHomePage, chrome::kAboutBlankURL);
-  }
   if (command_line->GetArgs().empty())
     command_line->AppendArg(chrome::kAboutBlankURL);
 }
