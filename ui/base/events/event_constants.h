@@ -105,6 +105,15 @@ enum EventResult {
                      // propagated to other handlers.
 };
 
+// Phase of the event dispatch.
+enum EventPhase {
+  EP_PREDISPATCH,
+  EP_PRETARGET,
+  EP_TARGET,
+  EP_POSTTARGET,
+  EP_POSTDISPATCH
+};
+
 enum TouchStatus {
   TOUCH_STATUS_UNKNOWN = 0,  // Unknown touch status. This is used to indicate
                              // that the touch event was not handled.

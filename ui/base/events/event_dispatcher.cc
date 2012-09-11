@@ -44,4 +44,15 @@ EventResult EventDispatcher::DispatchEventToSingleHandler(EventHandler* handler,
   return handler->OnGestureEvent(event);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// EventDispatcher::ScopedDispatchHelper
+
+EventDispatcher::ScopedDispatchHelper::ScopedDispatchHelper(Event* event)
+    : Event::DispatcherApi(event) {
+}
+
+EventDispatcher::ScopedDispatchHelper::~ScopedDispatchHelper() {
+  set_phase(EP_POSTDISPATCH);
+}
+
 }  // namespace ui

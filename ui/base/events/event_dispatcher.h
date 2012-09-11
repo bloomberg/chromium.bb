@@ -33,12 +33,13 @@ class UI_EXPORT EventDispatcher {
     if (!target || !target->CanAcceptEvents())
       return ER_UNHANDLED;
 
-    Event::DispatcherApi dispatcher(event);
-    dispatcher.set_target(target);
+    ScopedDispatchHelper dispatch_helper(event);
+    dispatch_helper.set_target(target);
 
     EventHandlerList list;
     target->GetPreTargetHandlers(&list);
     ProcessPreTargetList(&list);
+    dispatch_helper.set_phase(EP_PRETARGET);
     int result = DispatchEventToEventHandlers(list, event);
     if (result & ER_CONSUMED)
       return result;
@@ -49,7 +50,9 @@ class UI_EXPORT EventDispatcher {
     // this layer, however it should not be processed in the next layer of
     // abstraction.
     if (CanDispatchToTarget(target)) {
+      dispatch_helper.set_phase(EP_TARGET);
       result |= DispatchEventToSingleHandler(target, event);
+      dispatch_helper.set_result(event->result() | result);
       if (result & ER_CONSUMED)
         return result;
     }
@@ -60,17 +63,29 @@ class UI_EXPORT EventDispatcher {
     list.clear();
     target->GetPostTargetHandlers(&list);
     ProcessPostTargetList(&list);
+    dispatch_helper.set_phase(EP_POSTTARGET);
     result |= DispatchEventToEventHandlers(list, event);
     return result;
   }
 
  private:
+  class UI_EXPORT ScopedDispatchHelper : public NON_EXPORTED_BASE(
+      Event::DispatcherApi) {
+   public:
+    explicit ScopedDispatchHelper(Event* event);
+    virtual ~ScopedDispatchHelper();
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ScopedDispatchHelper);
+  };
+
   template<class T>
   int DispatchEventToEventHandlers(EventHandlerList& list, T* event) {
     int result = ER_UNHANDLED;
+    Event::DispatcherApi dispatch_helper(event);
     for (EventHandlerList::const_iterator it = list.begin(),
             end = list.end(); it != end; ++it) {
       result |= DispatchEventToSingleHandler((*it), event);
+      dispatch_helper.set_result(event->result() | result);
       if (result & ER_CONSUMED)
         return result;
     }
