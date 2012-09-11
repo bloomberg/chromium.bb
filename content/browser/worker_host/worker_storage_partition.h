@@ -1,0 +1,74 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CONTENT_BROWSER_WORKER_HOST_WORKER_STORAGE_PARTITION_H_
+#define CONTENT_BROWSER_WORKER_HOST_WORKER_STORAGE_PARTITION_H_
+
+#include "base/memory/ref_counted.h"
+
+class ChromeAppCacheService;
+class IndexedDBContextImpl;
+
+namespace fileapi {
+class FileSystemContext;
+}  // namespace fileapi
+
+namespace webkit_database {
+class DatabaseTracker;
+}  // namespace webkit_database
+
+// Contains the data from StoragePartition for use by Worker APIs.
+//
+// StoragePartition meant for the UI so we can't use it directly in many
+// Worker APIs that run on the IO thread. While we could make it RefCounted,
+// the Worker system is the only place that really needs access on the IO
+// thread. Instead of changing the lifetime semantics of StoragePartition,
+// we just create a parallel struct here to simplify the APIs of various
+// methods in WorkerServiceImpl.
+//
+// This class is effectively a struct, but we make it a class because we want to
+// define copy constructors, assignment operators, and an Equals() function for
+// it which makes it look awkward as a struct.
+class WorkerStoragePartition {
+ public:
+  WorkerStoragePartition(ChromeAppCacheService* appcache_service,
+                         fileapi::FileSystemContext* filesystem_context,
+                         webkit_database::DatabaseTracker* database_tracker,
+                         IndexedDBContextImpl* indexed_db_context);
+  ~WorkerStoragePartition();
+
+  // Declaring so these don't get inlined which has the unfortunate effect of
+  // requiring all including classes to have the full definition of every member
+  // type.
+  WorkerStoragePartition(const WorkerStoragePartition& other);
+  const WorkerStoragePartition& operator=(const WorkerStoragePartition& rhs);
+
+  bool Equals(const WorkerStoragePartition& other) const;
+
+  ChromeAppCacheService* appcache_service() const {
+    return appcache_service_.get();
+  }
+
+  fileapi::FileSystemContext* filesystem_context() const {
+    return filesystem_context_.get();
+  }
+
+  webkit_database::DatabaseTracker* database_tracker() const {
+    return database_tracker_.get();
+  }
+
+  IndexedDBContextImpl* indexed_db_context() const {
+    return indexed_db_context_.get();
+  }
+
+ private:
+  void Copy(const WorkerStoragePartition& other);
+
+  scoped_refptr<ChromeAppCacheService> appcache_service_;
+  scoped_refptr<fileapi::FileSystemContext> filesystem_context_;
+  scoped_refptr<webkit_database::DatabaseTracker> database_tracker_;
+  scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
+};
+
+#endif  // CONTENT_BROWSER_WORKER_HOST_WORKER_STORAGE_PARTITION_H_

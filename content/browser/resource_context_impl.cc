@@ -33,9 +33,6 @@
 // Key names on ResourceContext.
 static const char* kAppCacheServiceKeyName = "content_appcache_service_tracker";
 static const char* kBlobStorageContextKeyName = "content_blob_storage_context";
-static const char* kDatabaseTrackerKeyName = "content_database_tracker";
-static const char* kFileSystemContextKeyName = "content_file_system_context";
-static const char* kIndexedDBContextKeyName = "content_indexed_db_context";
 static const char* kHostZoomMapKeyName = "content_host_zoom_map";
 
 using appcache::AppCacheService;
@@ -213,28 +210,6 @@ BlobStorageController* GetBlobStorageControllerForResourceContext(
   return GetChromeBlobStorageContextForResourceContext(resource_context)->
       controller();
 }
-
-DatabaseTracker* GetDatabaseTrackerForResourceContext(
-    ResourceContext* resource_context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return UserDataAdapter<DatabaseTracker>::Get(
-      resource_context, kDatabaseTrackerKeyName);
-}
-
-FileSystemContext* GetFileSystemContextForResourceContext(
-    ResourceContext* resource_context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return UserDataAdapter<FileSystemContext>::Get(
-      resource_context, kFileSystemContextKeyName);
-}
-
-IndexedDBContextImpl* GetIndexedDBContextForResourceContext(
-    ResourceContext* resource_context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return UserDataAdapter<IndexedDBContextImpl>::Get(
-      resource_context, kIndexedDBContextKeyName);
-}
-
 ChromeBlobStorageContext* GetChromeBlobStorageContextForResourceContext(
     ResourceContext* resource_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -250,27 +225,13 @@ HostZoomMap* GetHostZoomMapForResourceContext(ResourceContext* context) {
 
 void InitializeResourceContext(BrowserContext* browser_context) {
   ResourceContext* resource_context = browser_context->GetResourceContext();
-  DCHECK(!resource_context->GetUserData(kIndexedDBContextKeyName));
+  DCHECK(!resource_context->GetUserData(kHostZoomMapKeyName));
 
-  resource_context->SetUserData(
-      kIndexedDBContextKeyName,
-      new UserDataAdapter<IndexedDBContextImpl>(
-          static_cast<IndexedDBContextImpl*>(
-              BrowserContext::GetIndexedDBContext(browser_context))));
-  resource_context->SetUserData(
-      kDatabaseTrackerKeyName,
-      new UserDataAdapter<webkit_database::DatabaseTracker>(
-          BrowserContext::GetDefaultStoragePartition(browser_context)->
-              GetDatabaseTracker()));
   resource_context->SetUserData(
       kAppCacheServiceKeyName,
       new UserDataAdapter<ChromeAppCacheService>(
           static_cast<ChromeAppCacheService*>(
               BrowserContext::GetAppCacheService(browser_context))));
-  resource_context->SetUserData(
-      kFileSystemContextKeyName,
-      new UserDataAdapter<FileSystemContext>(
-          BrowserContext::GetFileSystemContext(browser_context)));
   resource_context->SetUserData(
       kBlobStorageContextKeyName,
       new UserDataAdapter<ChromeBlobStorageContext>(

@@ -822,6 +822,8 @@
     'browser/worker_host/worker_process_host.h',
     'browser/worker_host/worker_service_impl.cc',
     'browser/worker_host/worker_service_impl.h',
+    'browser/worker_host/worker_storage_partition.cc',
+    'browser/worker_host/worker_storage_partition.h',
     'browser/zygote_host/zygote_host_impl_linux.cc',
     'browser/zygote_host/zygote_host_impl_linux.h',
     'zygote/zygote_linux.cc',

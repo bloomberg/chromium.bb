@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_WORKER_HOST_WORKER_MESSAGE_FILTER_H_
 
 #include "base/callback.h"
+#include "content/browser/worker_host/worker_storage_partition.h"
 #include "content/public/browser/browser_message_filter.h"
 
 class ResourceDispatcherHost;
@@ -15,17 +16,16 @@ namespace content {
 class ResourceContext;
 }  // namespace content
 
-
 class WorkerMessageFilter : public content::BrowserMessageFilter {
  public:
   typedef base::Callback<int(void)> NextRoutingIDCallback;
 
   // |next_routing_id| is owned by this object.  It can be used up until
   // OnChannelClosing.
-  WorkerMessageFilter(
-      int render_process_id,
-      content::ResourceContext* resource_context,
-      const NextRoutingIDCallback& callback);
+  WorkerMessageFilter(int render_process_id,
+                      content::ResourceContext* resource_context,
+                      const WorkerStoragePartition& partition,
+                      const NextRoutingIDCallback& callback);
 
   // content::BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
@@ -51,6 +51,7 @@ class WorkerMessageFilter : public content::BrowserMessageFilter {
 
   int render_process_id_;
   content::ResourceContext* const resource_context_;
+  WorkerStoragePartition partition_;
 
   // This is guaranteed to be valid until OnChannelClosing is closed, and it's
   // not used after.

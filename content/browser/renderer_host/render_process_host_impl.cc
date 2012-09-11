@@ -86,6 +86,7 @@
 #include "content/browser/speech/input_tag_speech_dispatcher_host.h"
 #include "content/browser/speech/speech_recognition_dispatcher_host.h"
 #include "content/browser/trace_message_filter.h"
+#include "content/browser/worker_host/worker_storage_partition.h"
 #include "content/browser/worker_host/worker_message_filter.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/child_process_messages.h"
@@ -510,6 +511,7 @@ bool RenderProcessHostImpl::Init() {
 }
 
 void RenderProcessHostImpl::CreateMessageFilters() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   MediaObserver* media_observer =
       GetContentClient()->browser()->GetMediaObserver();
   scoped_refptr<RenderMessageFilter> render_message_filter(
@@ -592,9 +594,17 @@ void RenderProcessHostImpl::CreateMessageFilters() {
           resource_context);
   channel_->AddFilter(socket_stream_dispatcher_host);
 
-  channel_->AddFilter(new WorkerMessageFilter(GetID(), resource_context,
-      base::Bind(&RenderWidgetHelper::GetNextRoutingID,
-                 base::Unretained(widget_helper_.get()))));
+  channel_->AddFilter(
+      new WorkerMessageFilter(
+          GetID(),
+          resource_context,
+          WorkerStoragePartition(
+              storage_partition_impl_->GetAppCacheService(),
+              storage_partition_impl_->GetFileSystemContext(),
+              storage_partition_impl_->GetDatabaseTracker(),
+              storage_partition_impl_->GetIndexedDBContext()),
+          base::Bind(&RenderWidgetHelper::GetNextRoutingID,
+                     base::Unretained(widget_helper_.get()))));
 
 #if defined(ENABLE_WEBRTC)
   channel_->AddFilter(new P2PSocketDispatcherHost(resource_context));

@@ -15,6 +15,7 @@
 #include "content/public/browser/worker_service.h"
 
 class GURL;
+class WorkerStoragePartition;
 struct ViewHostMsg_CreateWorker_Params;
 
 namespace content {
@@ -37,11 +38,13 @@ class CONTENT_EXPORT WorkerServiceImpl
   void CreateWorker(const ViewHostMsg_CreateWorker_Params& params,
                     int route_id,
                     WorkerMessageFilter* filter,
-                    ResourceContext* resource_context);
+                    ResourceContext* resource_context,
+                    const WorkerStoragePartition& worker_partition);
   void LookupSharedWorker(const ViewHostMsg_CreateWorker_Params& params,
                           int route_id,
                           WorkerMessageFilter* filter,
                           ResourceContext* resource_context,
+                          const WorkerStoragePartition& worker_partition,
                           bool* exists,
                           bool* url_error);
   void CancelCreateDedicatedWorker(int route_id, WorkerMessageFilter* filter);
@@ -115,19 +118,23 @@ class CONTENT_EXPORT WorkerServiceImpl
   WorkerProcessHost::WorkerInstance* CreatePendingInstance(
       const GURL& url,
       const string16& name,
-      ResourceContext* resource_context);
+      ResourceContext* resource_context,
+      const WorkerStoragePartition& worker_partition);
   WorkerProcessHost::WorkerInstance* FindPendingInstance(
       const GURL& url,
       const string16& name,
+      const WorkerStoragePartition& worker_partition,
       ResourceContext* resource_context);
   void RemovePendingInstances(
       const GURL& url,
       const string16& name,
+      const WorkerStoragePartition& worker_partition,
       ResourceContext* resource_context);
 
   WorkerProcessHost::WorkerInstance* FindSharedWorkerInstance(
       const GURL& url,
       const string16& name,
+      const WorkerStoragePartition& worker_partition,
       ResourceContext* resource_context);
 
   NotificationRegistrar registrar_;

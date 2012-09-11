@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_WORKER_HOST_WORKER_PROCESS_HOST_H_
 
 #include <list>
+#include <string>
 #include <utility>
 
 #include "base/basictypes.h"
@@ -13,17 +14,28 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/browser/worker_host/worker_document_set.h"
+#include "content/browser/worker_host/worker_storage_partition.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_sender.h"
 
 class BrowserChildProcessHostImpl;
+class ChromeAppCacheService;
+class IndexedDBContextImpl;
 
 namespace content {
 class ResourceContext;
 class WorkerServiceImpl;
 }  // namespace content
+
+namespace fileapi {
+class FileSystemContext;
+}  // namespace fileapi
+
+namespace webkit_database {
+class DatabaseTracker;
+}  // namespace webkit_database
 
 // The WorkerProcessHost is the interface that represents the browser side of
 // the browser <-> worker communication channel. There will be one
@@ -43,12 +55,14 @@ class WorkerProcessHost : public content::BrowserChildProcessHostDelegate,
                    int worker_route_id,
                    int parent_process_id,
                    int64 main_resource_appcache_id,
-                   content::ResourceContext* resource_context);
+                   content::ResourceContext* resource_context,
+                   const WorkerStoragePartition& partition);
     // Used for pending instances. Rest of the parameters are ignored.
     WorkerInstance(const GURL& url,
                    bool shared,
                    const string16& name,
-                   content::ResourceContext* resource_context);
+                   content::ResourceContext* resource_context,
+                   const WorkerStoragePartition& partition);
     ~WorkerInstance();
 
     // Unique identifier for a worker client.
@@ -73,6 +87,7 @@ class WorkerProcessHost : public content::BrowserChildProcessHostDelegate,
     bool Matches(
         const GURL& url,
         const string16& name,
+        const WorkerStoragePartition& partition,
         content::ResourceContext* resource_context) const;
 
     // Shares the passed instance's WorkerDocumentSet with this instance. This
@@ -98,6 +113,9 @@ class WorkerProcessHost : public content::BrowserChildProcessHostDelegate,
     content::ResourceContext* resource_context() const {
       return resource_context_;
     }
+    const WorkerStoragePartition& partition() const {
+      return partition_;
+    }
 
    private:
     // Set of all filters (clients) associated with this worker.
@@ -110,9 +128,11 @@ class WorkerProcessHost : public content::BrowserChildProcessHostDelegate,
     FilterList filters_;
     scoped_refptr<WorkerDocumentSet> worker_document_set_;
     content::ResourceContext* const resource_context_;
+    WorkerStoragePartition partition_;
   };
 
-  explicit WorkerProcessHost(content::ResourceContext* resource_context);
+  WorkerProcessHost(content::ResourceContext* resource_context,
+                    const WorkerStoragePartition& partition);
   virtual ~WorkerProcessHost();
 
   // IPC::Sender implementation:
@@ -195,6 +215,7 @@ class WorkerProcessHost : public content::BrowserChildProcessHostDelegate,
   Instances instances_;
 
   content::ResourceContext* const resource_context_;
+  WorkerStoragePartition partition_;
 
   // A reference to the filter associated with this worker process.  We need to
   // keep this around since we'll use it when forward messages to the worker
