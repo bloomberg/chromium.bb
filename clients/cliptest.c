@@ -81,65 +81,320 @@ weston_surface_to_global_float(struct weston_surface *surface,
 
 /* ---------------------- copied begins -----------------------*/
 
+struct polygon8 {
+	GLfloat x[8];
+	GLfloat y[8];
+	int n;
+};
+
+struct clip_context {
+	struct {
+		GLfloat x;
+		GLfloat y;
+	} prev;
+
+	struct {
+		GLfloat x1, y1;
+		GLfloat x2, y2;
+	} clip;
+
+	struct {
+		GLfloat *x;
+		GLfloat *y;
+	} vertices;
+};
+
+static GLfloat
+float_difference(GLfloat a, GLfloat b)
+{
+	/* http://www.altdevblogaday.com/2012/02/22/comparing-floating-point-numbers-2012-edition/ */
+	static const GLfloat max_diff = 4.0f * FLT_MIN;
+	static const GLfloat max_rel_diff = 4.0e-5;
+	GLfloat diff = a - b;
+	GLfloat adiff = fabsf(diff);
+
+	if (adiff <= max_diff)
+		return 0.0f;
+
+	a = fabsf(a);
+	b = fabsf(b);
+	if (adiff <= (a > b ? a : b) * max_rel_diff)
+		return 0.0f;
+
+	return diff;
+}
+
+/* A line segment (p1x, p1y)-(p2x, p2y) intersects the line x = x_arg.
+ * Compute the y coordinate of the intersection.
+ */
+static GLfloat
+clip_intersect_y(GLfloat p1x, GLfloat p1y, GLfloat p2x, GLfloat p2y,
+		 GLfloat x_arg)
+{
+	GLfloat a;
+	GLfloat diff = float_difference(p1x, p2x);
+
+	/* Practically vertical line segment, yet the end points have already
+	 * been determined to be on different sides of the line. Therefore
+	 * the line segment is part of the line and intersects everywhere.
+	 * Return the end point, so we use the whole line segment.
+	 */
+	if (diff == 0.0f)
+		return p2y;
+
+	a = (x_arg - p2x) / diff;
+	return p2y + (p1y - p2y) * a;
+}
+
+/* A line segment (p1x, p1y)-(p2x, p2y) intersects the line y = y_arg.
+ * Compute the x coordinate of the intersection.
+ */
+static GLfloat
+clip_intersect_x(GLfloat p1x, GLfloat p1y, GLfloat p2x, GLfloat p2y,
+		 GLfloat y_arg)
+{
+	GLfloat a;
+	GLfloat diff = float_difference(p1y, p2y);
+
+	/* Practically horizontal line segment, yet the end points have already
+	 * been determined to be on different sides of the line. Therefore
+	 * the line segment is part of the line and intersects everywhere.
+	 * Return the end point, so we use the whole line segment.
+	 */
+	if (diff == 0.0f)
+		return p2x;
+
+	a = (y_arg - p2y) / diff;
+	return p2x + (p1x - p2x) * a;
+}
+
+enum path_transition {
+	PATH_TRANSITION_OUT_TO_OUT = 0,
+	PATH_TRANSITION_OUT_TO_IN = 1,
+	PATH_TRANSITION_IN_TO_OUT = 2,
+	PATH_TRANSITION_IN_TO_IN = 3,
+};
+
+static void
+clip_append_vertex(struct clip_context *ctx, GLfloat x, GLfloat y)
+{
+	*ctx->vertices.x++ = x;
+	*ctx->vertices.y++ = y;
+}
+
+static enum path_transition
+path_transition_left_edge(struct clip_context *ctx, GLfloat x, GLfloat y)
+{
+	return ((ctx->prev.x >= ctx->clip.x1) << 1) | (x >= ctx->clip.x1);
+}
+
+static enum path_transition
+path_transition_right_edge(struct clip_context *ctx, GLfloat x, GLfloat y)
+{
+	return ((ctx->prev.x < ctx->clip.x2) << 1) | (x < ctx->clip.x2);
+}
+
+static enum path_transition
+path_transition_top_edge(struct clip_context *ctx, GLfloat x, GLfloat y)
+{
+	return ((ctx->prev.y >= ctx->clip.y1) << 1) | (y >= ctx->clip.y1);
+}
+
+static enum path_transition
+path_transition_bottom_edge(struct clip_context *ctx, GLfloat x, GLfloat y)
+{
+	return ((ctx->prev.y < ctx->clip.y2) << 1) | (y < ctx->clip.y2);
+}
+
+static void
+clip_polygon_leftright(struct clip_context *ctx,
+		       enum path_transition transition,
+		       GLfloat x, GLfloat y, GLfloat clip_x)
+{
+	GLfloat yi;
+
+	switch (transition) {
+	case PATH_TRANSITION_IN_TO_IN:
+		clip_append_vertex(ctx, x, y);
+		break;
+	case PATH_TRANSITION_IN_TO_OUT:
+		yi = clip_intersect_y(ctx->prev.x, ctx->prev.y, x, y, clip_x);
+		clip_append_vertex(ctx, clip_x, yi);
+		break;
+	case PATH_TRANSITION_OUT_TO_IN:
+		yi = clip_intersect_y(ctx->prev.x, ctx->prev.y, x, y, clip_x);
+		clip_append_vertex(ctx, clip_x, yi);
+		clip_append_vertex(ctx, x, y);
+		break;
+	case PATH_TRANSITION_OUT_TO_OUT:
+		/* nothing */
+		break;
+	default:
+		assert(0 && "bad enum path_transition");
+	}
+
+	ctx->prev.x = x;
+	ctx->prev.y = y;
+}
+
+static void
+clip_polygon_topbottom(struct clip_context *ctx,
+		       enum path_transition transition,
+		       GLfloat x, GLfloat y, GLfloat clip_y)
+{
+	GLfloat xi;
+
+	switch (transition) {
+	case PATH_TRANSITION_IN_TO_IN:
+		clip_append_vertex(ctx, x, y);
+		break;
+	case PATH_TRANSITION_IN_TO_OUT:
+		xi = clip_intersect_x(ctx->prev.x, ctx->prev.y, x, y, clip_y);
+		clip_append_vertex(ctx, xi, clip_y);
+		break;
+	case PATH_TRANSITION_OUT_TO_IN:
+		xi = clip_intersect_x(ctx->prev.x, ctx->prev.y, x, y, clip_y);
+		clip_append_vertex(ctx, xi, clip_y);
+		clip_append_vertex(ctx, x, y);
+		break;
+	case PATH_TRANSITION_OUT_TO_OUT:
+		/* nothing */
+		break;
+	default:
+		assert(0 && "bad enum path_transition");
+	}
+
+	ctx->prev.x = x;
+	ctx->prev.y = y;
+}
+
+static void
+clip_context_prepare(struct clip_context *ctx, const struct polygon8 *src,
+		      GLfloat *dst_x, GLfloat *dst_y)
+{
+	ctx->prev.x = src->x[src->n - 1];
+	ctx->prev.y = src->y[src->n - 1];
+	ctx->vertices.x = dst_x;
+	ctx->vertices.y = dst_y;
+}
+
+static int
+clip_polygon_left(struct clip_context *ctx, const struct polygon8 *src,
+		  GLfloat *dst_x, GLfloat *dst_y)
+{
+	enum path_transition trans;
+	int i;
+
+	clip_context_prepare(ctx, src, dst_x, dst_y);
+	for (i = 0; i < src->n; i++) {
+		trans = path_transition_left_edge(ctx, src->x[i], src->y[i]);
+		clip_polygon_leftright(ctx, trans, src->x[i], src->y[i],
+				       ctx->clip.x1);
+	}
+	return ctx->vertices.x - dst_x;
+}
+
+static int
+clip_polygon_right(struct clip_context *ctx, const struct polygon8 *src,
+		   GLfloat *dst_x, GLfloat *dst_y)
+{
+	enum path_transition trans;
+	int i;
+
+	clip_context_prepare(ctx, src, dst_x, dst_y);
+	for (i = 0; i < src->n; i++) {
+		trans = path_transition_right_edge(ctx, src->x[i], src->y[i]);
+		clip_polygon_leftright(ctx, trans, src->x[i], src->y[i],
+				       ctx->clip.x2);
+	}
+	return ctx->vertices.x - dst_x;
+}
+
+static int
+clip_polygon_top(struct clip_context *ctx, const struct polygon8 *src,
+		 GLfloat *dst_x, GLfloat *dst_y)
+{
+	enum path_transition trans;
+	int i;
+
+	clip_context_prepare(ctx, src, dst_x, dst_y);
+	for (i = 0; i < src->n; i++) {
+		trans = path_transition_top_edge(ctx, src->x[i], src->y[i]);
+		clip_polygon_topbottom(ctx, trans, src->x[i], src->y[i],
+				       ctx->clip.y1);
+	}
+	return ctx->vertices.x - dst_x;
+}
+
+static int
+clip_polygon_bottom(struct clip_context *ctx, const struct polygon8 *src,
+		    GLfloat *dst_x, GLfloat *dst_y)
+{
+	enum path_transition trans;
+	int i;
+
+	clip_context_prepare(ctx, src, dst_x, dst_y);
+	for (i = 0; i < src->n; i++) {
+		trans = path_transition_bottom_edge(ctx, src->x[i], src->y[i]);
+		clip_polygon_topbottom(ctx, trans, src->x[i], src->y[i],
+				       ctx->clip.y2);
+	}
+	return ctx->vertices.x - dst_x;
+}
+
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 #define min(a, b) (((a) > (b)) ? (b) : (a))
 #define clip(x, a, b)  min(max(x, a), b)
-#define sign(x)   ((x) >= 0)
 
+/*
+ * Compute the boundary vertices of the intersection of the global coordinate
+ * aligned rectangle 'rect', and an arbitrary quadrilateral produced from
+ * 'surf_rect' when transformed from surface coordinates into global coordinates.
+ * The vertices are written to 'ex' and 'ey', and the return value is the
+ * number of vertices. Vertices are produced in clockwise winding order.
+ * Guarantees to produce either zero vertices, or 3-8 vertices with non-zero
+ * polygon area.
+ */
 static int
 calculate_edges(struct weston_surface *es, pixman_box32_t *rect,
 		pixman_box32_t *surf_rect, GLfloat *ex, GLfloat *ey)
 {
-	int i, n = 0;
+	struct polygon8 polygon;
+	struct clip_context ctx;
+	int i, n;
 	GLfloat min_x, max_x, min_y, max_y;
-	GLfloat x[4] = {
-			surf_rect->x1, surf_rect->x2, surf_rect->x2, surf_rect->x1,
+	struct polygon8 surf = {
+		{ surf_rect->x1, surf_rect->x2, surf_rect->x2, surf_rect->x1 },
+		{ surf_rect->y1, surf_rect->y1, surf_rect->y2, surf_rect->y2 },
+		4
 	};
-	GLfloat y[4] = {
-			surf_rect->y1, surf_rect->y1, surf_rect->y2, surf_rect->y2,
-	};
-	GLfloat cx1 = rect->x1;
-	GLfloat cx2 = rect->x2;
-	GLfloat cy1 = rect->y1;
-	GLfloat cy2 = rect->y2;
 
-	GLfloat dist_squared(GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2)
-	{
-		GLfloat dx = (x1 - x2);
-		GLfloat dy = (y1 - y2);
-		return dx * dx + dy * dy;
-	}
-
-	void append_vertex(GLfloat x, GLfloat y)
-	{
-		/* don't emit duplicate vertices: */
-		if ((n > 0) && (ex[n-1] == x) && (ey[n-1] == y))
-			return;
-		ex[n] = x;
-		ey[n] = y;
-		n++;
-	}
+	ctx.clip.x1 = rect->x1;
+	ctx.clip.y1 = rect->y1;
+	ctx.clip.x2 = rect->x2;
+	ctx.clip.y2 = rect->y2;
 
 	/* transform surface to screen space: */
-	for (i = 0; i < 4; i++)
-		weston_surface_to_global_float(es, x[i], y[i], &x[i], &y[i]);
+	for (i = 0; i < surf.n; i++)
+		weston_surface_to_global_float(es, surf.x[i], surf.y[i],
+					       &surf.x[i], &surf.y[i]);
 
 	/* find bounding box: */
-	min_x = max_x = x[0];
-	min_y = max_y = y[0];
+	min_x = max_x = surf.x[0];
+	min_y = max_y = surf.y[0];
 
-	for (i = 1; i < 4; i++) {
-		min_x = min(min_x, x[i]);
-		max_x = max(max_x, x[i]);
-		min_y = min(min_y, y[i]);
-		max_y = max(max_y, y[i]);
+	for (i = 1; i < surf.n; i++) {
+		min_x = min(min_x, surf.x[i]);
+		max_x = max(max_x, surf.x[i]);
+		min_y = min(min_y, surf.y[i]);
+		max_y = max(max_y, surf.y[i]);
 	}
 
 	/* First, simple bounding box check to discard early transformed
 	 * surface rects that do not intersect with the clip region:
 	 */
-	if ((min_x > cx2) || (max_x < cx1) ||
-			(min_y > cy2) || (max_y < cy1))
+	if ((min_x >= ctx.clip.x2) || (max_x <= ctx.clip.x1) ||
+	    (min_y >= ctx.clip.y2) || (max_y <= ctx.clip.y1))
 		return 0;
 
 	/* Simple case, bounding box edges are parallel to surface edges,
@@ -147,227 +402,46 @@ calculate_edges(struct weston_surface *es, pixman_box32_t *rect,
 	 * vertices to the clip rect bounds:
 	 */
 	if (!es->transform.enabled) {
-		for (i = 0; i < 4; i++) {
-			ex[n] = clip(x[i], cx1, cx2);
-			ey[n] = clip(y[i], cy1, cy2);
-			n++;
+		for (i = 0; i < surf.n; i++) {
+			ex[i] = clip(surf.x[i], ctx.clip.x1, ctx.clip.x2);
+			ey[i] = clip(surf.y[i], ctx.clip.y1, ctx.clip.y2);
 		}
-		return 4;
+		return surf.n;
 	}
 
-	/* Hard case, transformation applied.  We need to find the vertices
-	 * of the shape that is the intersection of the clip rect and
-	 * transformed surface.  This can be anything from 3 to 8 sides.
-	 *
-	 * Observation: all the resulting vertices will be the intersection
-	 * points of the transformed surface and the clip rect, plus the
-	 * vertices of the clip rect which are enclosed by the transformed
-	 * surface and the vertices of the transformed surface which are
-	 * enclosed by the clip rect.
-	 *
-	 * Observation: there will be zero, one, or two resulting vertices
-	 * for each edge of the src rect.
-	 *
-	 * Loop over four edges of the transformed rect:
+	/* Transformed case: use a general polygon clipping algorithm to
+	 * clip the surface rectangle with each side of 'rect'.
+	 * The algorithm is Sutherland-Hodgman, as explained in
+	 * http://www.codeguru.com/cpp/misc/misc/graphics/article.php/c8965/Polygon-Clipping.htm
+	 * but without looking at any of that code.
 	 */
-	for (i = 0; i < 4; i++) {
-		GLfloat x1, y1, x2, y2;
-		int last_n = n;
+	polygon.n = clip_polygon_left(&ctx, &surf, polygon.x, polygon.y);
+	surf.n = clip_polygon_right(&ctx, &polygon, surf.x, surf.y);
+	polygon.n = clip_polygon_top(&ctx, &surf, polygon.x, polygon.y);
+	surf.n = clip_polygon_bottom(&ctx, &polygon, surf.x, surf.y);
 
-		x1 = x[i];
-		y1 = y[i];
-
-		/* if this vertex is contained in the clip rect, use it as-is: */
-		if ((cx1 <= x1) && (x1 <= cx2) &&
-				(cy1 <= y1) && (y1 <= cy2))
-			append_vertex(x1, y1);
-
-		/* for remaining, we consider the point as part of a line: */
-		x2 = x[(i+1) % 4];
-		y2 = y[(i+1) % 4];
-
-		if (x1 == x2) {
-			append_vertex(clip(x1, cx1, cx2), clip(y1, cy1, cy2));
-			append_vertex(clip(x2, cx1, cx2), clip(y2, cy1, cy2));
-		} else if (y1 == y2) {
-			append_vertex(clip(x1, cx1, cx2), clip(y1, cy1, cy2));
-			append_vertex(clip(x2, cx1, cx2), clip(y2, cy1, cy2));
-		} else {
-			GLfloat m, c, p;
-			GLfloat tx[2], ty[2];
-			int tn = 0;
-
-			int intersect_horiz(GLfloat y, GLfloat *p)
-			{
-				GLfloat x;
-
-				/* if y does not lie between y1 and y2, no
-				 * intersection possible
-				 */
-				if (sign(y-y1) == sign(y-y2))
-					return 0;
-
-				x = (y - c) / m;
-
-				/* if x does not lie between cx1 and cx2, no
-				 * intersection:
-				 */
-				if (sign(x-cx1) == sign(x-cx2))
-					return 0;
-
-				*p = x;
-				return 1;
-			}
-
-			int intersect_vert(GLfloat x, GLfloat *p)
-			{
-				GLfloat y;
-
-				if (sign(x-x1) == sign(x-x2))
-					return 0;
-
-				y = m * x + c;
-
-				if (sign(y-cy1) == sign(y-cy2))
-					return 0;
-
-				*p = y;
-				return 1;
-			}
-
-			/* y = mx + c */
-			m = (y2 - y1) / (x2 - x1);
-			c = y1 - m * x1;
-
-			/* check for up to two intersections with the four edges
-			 * of the clip rect.  Note that we don't know the orientation
-			 * of the transformed surface wrt. the clip rect.  So if when
-			 * there are two intersection points, we need to put the one
-			 * closest to x1,y1 first:
-			 */
-
-			/* check top clip rect edge: */
-			if (intersect_horiz(cy1, &p)) {
-				ty[tn] = cy1;
-				tx[tn] = p;
-				tn++;
-			}
-
-			/* check right clip rect edge: */
-			if (intersect_vert(cx2, &p)) {
-				ty[tn] = p;
-				tx[tn] = cx2;
-				tn++;
-				if (tn == 2)
-					goto edge_check_done;
-			}
-
-			/* check bottom clip rect edge: */
-			if (intersect_horiz(cy2, &p)) {
-				ty[tn] = cy2;
-				tx[tn] = p;
-				tn++;
-				if (tn == 2)
-					goto edge_check_done;
-			}
-
-			/* check left clip rect edge: */
-			if (intersect_vert(cx1, &p)) {
-				ty[tn] = p;
-				tx[tn] = cx1;
-				tn++;
-			}
-
-edge_check_done:
-			if (tn == 1) {
-				append_vertex(tx[0], ty[0]);
-			} else if (tn == 2) {
-				if (dist_squared(x1, y1, tx[0], ty[0]) <
-						dist_squared(x1, y1, tx[1], ty[1])) {
-					append_vertex(tx[0], ty[0]);
-					append_vertex(tx[1], ty[1]);
-				} else {
-					append_vertex(tx[1], ty[1]);
-					append_vertex(tx[0], ty[0]);
-				}
-			}
-
-			if (n == last_n) {
-				GLfloat best_x=0, best_y=0;
-				uint32_t d, best_d = (unsigned int)-1; /* distance squared */
-				uint32_t max_d = dist_squared(x2, y2,
-						x[(i+2) % 4], y[(i+2) % 4]);
-
-				/* if there are no vertices on this line, it could be that
-				 * there is a vertex of the clip rect that is enclosed by
-				 * the transformed surface.  Find the vertex of the clip
-				 * rect that is reached by the shortest line perpendicular
-				 * to the current edge, if any.
-				 *
-				 * slope of perpendicular is 1/m, so
-				 *
-				 *   cy = -cx/m + c2
-				 *   c2 = cy + cx/m
-				 *
-				 */
-
-				int perp_intersect(GLfloat cx, GLfloat cy, uint32_t *d)
-				{
-					GLfloat c2 = cy + cx/m;
-					GLfloat x = (c2 - c) / (m + 1/m);
-
-					/* if the x position of the intersection of the
-					 * perpendicular with the transformed edge does
-					 * not lie within the bounds of the edge, then
-					 * no intersection:
-					 */
-					if (sign(x-x1) == sign(x-x2))
-						return 0;
-
-					*d = dist_squared(cx, cy, x, (m * x) + c);
-
-					/* if intersection distance is further away than
-					 * opposite edge of surface region, it is invalid:
-					 */
-					if (*d > max_d)
-						return 0;
-
-					return 1;
-				}
-
-				if (perp_intersect(cx1, cy1, &d)) {
-					best_x = cx1;
-					best_y = cy1;
-					best_d = d;
-				}
-
-				if (perp_intersect(cx1, cy2, &d) && (d < best_d)) {
-					best_x = cx1;
-					best_y = cy2;
-					best_d = d;
-				}
-
-				if (perp_intersect(cx2, cy2, &d) && (d < best_d)) {
-					best_x = cx2;
-					best_y = cy2;
-					best_d = d;
-				}
-
-				if (perp_intersect(cx2, cy1, &d) && (d < best_d)) {
-					best_x = cx2;
-					best_y = cy1;
-					best_d = d;
-				}
-
-				if (best_d != (unsigned int)-1)  // XXX can this happen?
-					append_vertex(best_x, best_y);
-			}
-		}
-
+	/* Get rid of duplicate vertices */
+	ex[0] = surf.x[0];
+	ey[0] = surf.y[0];
+	n = 1;
+	for (i = 1; i < surf.n; i++) {
+		if (float_difference(ex[n - 1], surf.x[i]) == 0.0f &&
+		    float_difference(ey[n - 1], surf.y[i]) == 0.0f)
+			continue;
+		ex[n] = surf.x[i];
+		ey[n] = surf.y[i];
+		n++;
 	}
+	if (float_difference(ex[n - 1], surf.x[0]) == 0.0f &&
+	    float_difference(ey[n - 1], surf.y[0]) == 0.0f)
+		n--;
+
+	if (n < 3)
+		return 0;
 
 	return n;
 }
+
 
 /* ---------------------- copied ends -----------------------*/
 
