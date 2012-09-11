@@ -126,6 +126,9 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CELLULAR_DISABLED_HOVER" file="ash/status_cellular_disabled_h.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CELLULAR_ENABLED" file="ash/status_cellular_enabled.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CELLULAR_ENABLED_HOVER" file="ash/status_cellular_enabled_h.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_DISPLAY" file="ash/status_display.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_DISPLAY_HOVER" file="ash/status_display_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_DISPLAY_PRESSED" file="ash/status_display_pressed.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_DRIVE" file="ash/status_drive.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_DRIVE_CANCEL" file="ash/status_drive_item_cancel.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_DRIVE_CANCEL_HOVER" file="ash/status_drive_item_cancel_hover.png" />

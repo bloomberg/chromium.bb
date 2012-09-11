@@ -136,6 +136,9 @@ class SystemTrayDelegate {
   // Shows the settings related to bluetooth.
   virtual void ShowBluetoothSettings() = 0;
 
+  // Shows settings related to multiple displays.
+  virtual void ShowDisplaySettings() = 0;
+
   // Shows settings related to Google Drive.
   virtual void ShowDriveSettings() = 0;
 
