@@ -262,8 +262,6 @@ void AttemptRestartWithModeSwitch() {
   // The kRestartSwitchMode preference does not exists for Windows 7 and older
   // operating systems so there is no need for OS version check.
   PrefService* prefs = g_browser_process->local_state();
-  if (!prefs->HasPrefPath(prefs::kRestartSwitchMode))
-    return;
   prefs->SetBoolean(prefs::kRestartSwitchMode, true);
   browser::AttemptRestart();
 }
