@@ -82,7 +82,9 @@ class DomEventObserver
 
 // Event observer that listens for the completion of login.
 class LoginEventObserver
-    : public AutomationEventObserver, public chromeos::LoginStatusConsumer {
+    : public AutomationEventObserver,
+      public chromeos::LoginStatusConsumer,
+      public content::NotificationObserver {
  public:
   LoginEventObserver(AutomationEventQueue* event_queue,
                      chromeos::ExistingUserController* controller,
@@ -94,10 +96,15 @@ class LoginEventObserver
   virtual void OnLoginSuccess(const std::string& username,
                               const std::string& password,
                               bool pending_requests, bool using_oauth) OVERRIDE;
+  // Overridden from content::NotificationObserver.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   chromeos::ExistingUserController* controller_;
   base::WeakPtr<AutomationProvider> automation_;
+  content::NotificationRegistrar registrar_;
 
   void _NotifyLoginEvent(const std::string& error_string);
 
