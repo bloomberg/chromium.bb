@@ -33,10 +33,10 @@ ResourceRequestDetails::ResourceRequestDetails(const net::URLRequest* request,
   // of ssl state change (http://crbug.com/25357). For now, just notify
   // the first one (works for dedicated workers and shared workers with
   // a single process).
-  int temp;
   if (!WorkerServiceImpl::GetInstance()->GetRendererForWorker(
-          info->GetChildID(), &origin_child_id, &temp)) {
+          info->GetChildID(), &origin_child_id, &origin_route_id)) {
     origin_child_id = info->GetChildID();
+    origin_route_id = info->GetRouteID();
   }
 }
 

@@ -304,11 +304,15 @@ void WebNavigationTabObserver::Observe(
         content::RenderViewHost* render_view_host = NULL;
         if (render_view_host_ &&
             resource_redirect_details->origin_child_id ==
-                render_view_host_->GetProcess()->GetID()) {
+                render_view_host_->GetProcess()->GetID() &&
+            resource_redirect_details->origin_route_id ==
+                render_view_host_->GetRoutingID()) {
           render_view_host = render_view_host_;
         } else if (pending_render_view_host_ &&
                    resource_redirect_details->origin_child_id ==
-                       pending_render_view_host_->GetProcess()->GetID()) {
+                       pending_render_view_host_->GetProcess()->GetID() &&
+                   resource_redirect_details->origin_route_id ==
+                       pending_render_view_host_->GetRoutingID()) {
           render_view_host = pending_render_view_host_;
         }
         if (!render_view_host)

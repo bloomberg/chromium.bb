@@ -34,6 +34,7 @@ struct ResourceRequestDetails {
   bool has_upload;
   int load_flags;
   int origin_child_id;
+  int origin_route_id;
   net::URLRequestStatus status;
   int ssl_cert_id;
   net::CertStatus ssl_cert_status;

@@ -26,6 +26,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -395,6 +396,36 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ServerRedirect) {
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_serverRedirect.html"))
           << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ServerRedirectSingleProcess) {
+  // Set max renderers to 1 to force running out of processes.
+  content::RenderProcessHost::SetMaxRendererProcessCount(1);
+
+  // Wait for the extension to set itself up and return control to us.
+  ASSERT_TRUE(RunExtensionSubtest(
+      "webnavigation", "test_serverRedirectSingleProcess.html"))
+          << message_;
+
+  WebContents* tab = chrome::GetActiveWebContents(browser());
+  content::WaitForLoadStop(tab);
+
+  ResultCatcher catcher;
+  GURL url(base::StringPrintf(
+      "http://www.a.com:%d/"
+          "files/extensions/api_test/webnavigation/serverRedirect/a.html",
+      test_server()->host_port_pair().port()));
+
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  url = GURL(base::StringPrintf(
+      "http://www.b.com:%d/server-redirect?http://www.b.com:%d/",
+      test_server()->host_port_pair().port(),
+      test_server()->host_port_pair().port()));
+
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ForwardBack) {
