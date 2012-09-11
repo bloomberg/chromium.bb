@@ -534,7 +534,7 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kAsyncDnsChoices)
   },
   {
-    "enable-media-source",
+    "disable-media-source",
     IDS_FLAGS_DISABLE_MEDIA_SOURCE_NAME,
     IDS_FLAGS_DISABLE_MEDIA_SOURCE_DESCRIPTION,
     kOsAll,
