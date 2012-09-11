@@ -328,6 +328,12 @@ Press Ctrl+Alt+Z to cancel.
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_ADD_DEVICE" desc="The label used in the tray popup to add a bluetooth device.">
         Add device...
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING" desc="The label used in the tray to show that the current status is mirroring.">
+	Mirroring to <ph name="DISPLAY_NAME">$1</ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED" desc="The label used in the tray to show that the current status is extended.">
+	Extending screen to <ph name="DISPLAY_NAME">$1</ph>
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_DRIVE_SYNCING" desc="The label in the tray to indicate onoing file sync operations.">
         Syncing <ph name="count">$1<ex>3</ex></ph> file(s)
       </message>

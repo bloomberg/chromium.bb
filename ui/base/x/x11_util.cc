@@ -1189,13 +1189,23 @@ bool GetOutputDeviceData(XID output,
   return true;
 }
 
-std::vector<std::string> GetOutputNames(std::vector<XID> output_ids) {
+std::vector<std::string> GetDisplayNames(const std::vector<XID>& output_ids) {
+  std::vector<std::string> names;
+  for (size_t i = 0; i < output_ids.size(); ++i) {
+    std::string display_name;
+    if (GetOutputDeviceData(output_ids[i], NULL, NULL, &display_name))
+      names.push_back(display_name);
+  }
+  return names;
+}
+
+std::vector<std::string> GetOutputNames(const std::vector<XID>& output_ids) {
   std::vector<std::string> names;
   Display* display = GetXDisplay();
   Window root_window = DefaultRootWindow(display);
   XRRScreenResources* screen_resources =
       XRRGetScreenResources(display, root_window);
-  for (std::vector<XID>::iterator iter = output_ids.begin();
+  for (std::vector<XID>::const_iterator iter = output_ids.begin();
        iter != output_ids.end(); ++iter) {
     XRROutputInfo* output =
         XRRGetOutputInfo(display, screen_resources, *iter);
