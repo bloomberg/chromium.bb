@@ -102,7 +102,8 @@ class Shell : public WebContentsDelegate,
                                       const OpenURLParams& params) OVERRIDE;
   virtual void LoadingStateChanged(WebContents* source) OVERRIDE;
 #if defined(OS_ANDROID)
-  virtual void LoadProgressChanged(double progress) OVERRIDE;
+  virtual void LoadProgressChanged(WebContents* source,
+                                   double progress) OVERRIDE;
   virtual void AttachLayer(WebContents* web_contents,
                            WebKit::WebLayer* layer) OVERRIDE;
   virtual void RemoveLayer(WebContents* web_contents,

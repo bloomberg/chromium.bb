@@ -14,6 +14,19 @@ using WebKit::WebSurroundingText;
 
 namespace content {
 
+ContentDetector::Result::Result() : valid(false) {}
+
+ContentDetector::Result::Result(const WebKit::WebRange& content_boundaries,
+                                const std::string& text,
+                                const GURL& intent_url)
+  : valid(true),
+    content_boundaries(content_boundaries),
+    text(text),
+    intent_url(intent_url) {
+}
+
+ContentDetector::Result::~Result() {}
+
 ContentDetector::Result ContentDetector::FindTappedContent(
     const WebKit::WebHitTestResult& hit_test) {
   if (hit_test.isNull())

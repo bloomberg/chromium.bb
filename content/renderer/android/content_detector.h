@@ -19,14 +19,11 @@ class ContentDetector {
  public:
   // Holds the content detection results.
   struct Result {
-    Result() : valid(false) {}
+    Result();
     Result(const WebKit::WebRange& content_boundaries,
            const std::string& text,
-           const GURL& intent_url)
-        : valid(true),
-          content_boundaries(content_boundaries),
-          text(text),
-          intent_url(intent_url) {}
+           const GURL& intent_url);
+    ~Result();
 
     bool valid;
     WebKit::WebRange content_boundaries;

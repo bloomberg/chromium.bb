@@ -60,7 +60,7 @@ void Shell::PlatformSetTitle(const string16& title) {
   NOTIMPLEMENTED();
 }
 
-void Shell::LoadProgressChanged(double progress) {
+void Shell::LoadProgressChanged(WebContents* source, double progress) {
   JNIEnv* env = AttachCurrentThread();
   Java_Shell_onLoadProgressChanged(env, java_object_.obj(), progress);
 }
