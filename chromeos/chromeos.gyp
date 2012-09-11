@@ -268,6 +268,14 @@
       'include_dirs': [
         '..',
       ],
+      'conditions': [
+        [ 'linux_use_tcmalloc==1', {
+           'dependencies': [
+              '../base/allocator/allocator.gyp:allocator',
+            ],
+          },
+        ],
+      ],
     },
     {
       # Protobuf compiler / generator for the PowerSupplyProperties protocol
