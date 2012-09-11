@@ -44,6 +44,7 @@
 #include "net/base/ssl_config_service.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/tcp_client_socket.h"
+#include "ui/base/clipboard/clipboard.h"
 
 #if defined(USE_AURA)
 #include "content/browser/renderer_host/image_transport_factory.h"
@@ -234,6 +235,7 @@ BrowserMainLoop::BrowserMainLoop(const content::MainFunctionParams& parameters)
 
 BrowserMainLoop::~BrowserMainLoop() {
   DCHECK_EQ(this, g_current_browser_main_loop);
+  ui::Clipboard::DestroyClipboardForCurrentThread();
   g_current_browser_main_loop = NULL;
 }
 
@@ -658,6 +660,18 @@ void BrowserMainLoop::BrowserThreadsStarted() {
 #if defined(ENABLE_INPUT_SPEECH)
   speech_recognition_manager_.reset(new speech::SpeechRecognitionManagerImpl());
 #endif
+
+  // Alert the clipboard class to which threads are allowed to access the
+  // clipboard:
+  std::vector<base::PlatformThreadId> allowed_clipboard_threads;
+  // The current thread is the UI thread.
+  allowed_clipboard_threads.push_back(base::PlatformThread::CurrentId());
+#if defined(OS_WIN)
+  // On Windows, clipboards are also used on the File or IO threads.
+  allowed_clipboard_threads.push_back(file_thread_->thread_id());
+  allowed_clipboard_threads.push_back(io_thread_->thread_id());
+#endif
+  ui::Clipboard::SetAllowedThreads(allowed_clipboard_threads);
 }
 
 void BrowserMainLoop::InitializeToolkit() {

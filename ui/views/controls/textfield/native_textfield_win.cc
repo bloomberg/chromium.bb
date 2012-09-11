@@ -33,7 +33,6 @@
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/metrics.h"
-#include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -560,9 +559,9 @@ void NativeTextfieldWin::OnCopy() {
     return;
 
   const string16 text(GetSelectedText());
-  if (!text.empty() && ViewsDelegate::views_delegate) {
+  if (!text.empty()) {
     ui::ScopedClipboardWriter scw(
-        ViewsDelegate::views_delegate->GetClipboard(),
+        ui::Clipboard::GetForCurrentThread(),
         ui::Clipboard::BUFFER_STANDARD);
     scw.WriteText(text);
   }
@@ -975,10 +974,10 @@ void NativeTextfieldWin::OnNonLButtonDown(UINT keys, const CPoint& point) {
 }
 
 void NativeTextfieldWin::OnPaste() {
-  if (textfield_->read_only() || !ViewsDelegate::views_delegate)
+  if (textfield_->read_only())
     return;
 
-  ui::Clipboard* clipboard = ViewsDelegate::views_delegate->GetClipboard();
+  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   if (!clipboard->IsFormatAvailable(ui::Clipboard::GetPlainTextWFormatType(),
                                     ui::Clipboard::BUFFER_STANDARD))
     return;

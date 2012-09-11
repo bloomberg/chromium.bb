@@ -269,20 +269,19 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_FindAndCopy) {
       true, false, NULL, NULL));
 
   // Verify that copying selected text works.
-  ui::Clipboard clipboard;
+  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   // Reset the clipboard first.
   ui::Clipboard::ObjectMap objects;
   ui::Clipboard::ObjectMapParams params;
   params.push_back(std::vector<char>());
   objects[ui::Clipboard::CBF_TEXT] = params;
-  clipboard.WriteObjects(ui::Clipboard::BUFFER_STANDARD, objects);
+  clipboard->WriteObjects(ui::Clipboard::BUFFER_STANDARD, objects);
 
   chrome::GetActiveWebContents(browser())->GetRenderViewHost()->Copy();
   ASSERT_NO_FATAL_FAILURE(WaitForResponse());
 
-
   std::string text;
-  clipboard.ReadAsciiText(ui::Clipboard::BUFFER_STANDARD, &text);
+  clipboard->ReadAsciiText(ui::Clipboard::BUFFER_STANDARD, &text);
   ASSERT_EQ("adipiscing", text);
 }
 

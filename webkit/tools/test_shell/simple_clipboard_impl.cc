@@ -23,8 +23,6 @@
 
 namespace {
 
-base::LazyInstance<ui::Clipboard> clipboard = LAZY_INSTANCE_INITIALIZER;
-
 }  // anonymous namespace
 
 SimpleClipboardClient::SimpleClipboardClient() {
@@ -35,7 +33,7 @@ SimpleClipboardClient::~SimpleClipboardClient() {
 
 
 ui::Clipboard* SimpleClipboardClient::GetClipboard() {
-  return clipboard.Pointer();
+  return ui::Clipboard::GetForCurrentThread();
 }
 
 uint64 SimpleClipboardClient::GetSequenceNumber(ui::Clipboard::Buffer buffer) {

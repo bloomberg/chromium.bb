@@ -17,7 +17,6 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
-#include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/client_view.h"
 
@@ -140,10 +139,7 @@ bool MessageBoxView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   if (prompt_field_ && prompt_field_->HasFocus())
     return false;
 
-  if (!ViewsDelegate::views_delegate)
-    return false;
-
-  ui::Clipboard* clipboard = ViewsDelegate::views_delegate->GetClipboard();
+  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   if (!clipboard)
     return false;
 

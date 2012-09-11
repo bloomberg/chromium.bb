@@ -4,8 +4,12 @@
 
 #include "ui/base/clipboard/clipboard.h"
 
+#include <iterator>
+
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/synchronization/lock.h"
 #include "ui/gfx/size.h"
 
 namespace ui {
@@ -72,6 +76,22 @@ bool ValidateAndMapSharedBitmap(const Clipboard::ObjectMapParams& params,
   return true;
 }
 
+// A list of allowed threads. By default, this is empty and no thread checking
+// is done (in the unit test case), but a user (like content) can set which
+// threads are allowed to call this method.
+typedef std::vector<base::PlatformThreadId> AllowedThreadsVector;
+static base::LazyInstance<AllowedThreadsVector> g_allowed_threads =
+    LAZY_INSTANCE_INITIALIZER;
+
+// Mapping from threads to clipboard objects.
+typedef std::map<base::PlatformThreadId, Clipboard*> ClipboardMap;
+static base::LazyInstance<ClipboardMap> g_clipboard_map =
+    LAZY_INSTANCE_INITIALIZER;
+
+// Mutex that controls access to |g_clipboard_map|.
+static base::LazyInstance<base::Lock>::Leaky
+    g_clipboard_map_lock = LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
 const char Clipboard::kMimeTypeText[] = "text/plain";
@@ -80,6 +100,58 @@ const char Clipboard::kMimeTypeDownloadURL[] = "downloadurl";
 const char Clipboard::kMimeTypeHTML[] = "text/html";
 const char Clipboard::kMimeTypeRTF[] = "text/rtf";
 const char Clipboard::kMimeTypePNG[] = "image/png";
+
+// static
+void Clipboard::SetAllowedThreads(
+    const std::vector<base::PlatformThreadId>& allowed_threads) {
+  base::AutoLock lock(g_clipboard_map_lock.Get());
+
+  g_allowed_threads.Get().clear();
+  std::copy(allowed_threads.begin(), allowed_threads.end(),
+            std::back_inserter(g_allowed_threads.Get()));
+}
+
+// static
+Clipboard* Clipboard::GetForCurrentThread() {
+  base::AutoLock lock(g_clipboard_map_lock.Get());
+
+  base::PlatformThreadId id = base::PlatformThread::CurrentId();
+
+  AllowedThreadsVector* allowed_threads = g_allowed_threads.Pointer();
+  if (!allowed_threads->empty()) {
+    bool found = false;
+    for (AllowedThreadsVector::const_iterator it = allowed_threads->begin();
+         it != allowed_threads->end(); ++it) {
+      if (*it == id) {
+        found = true;
+        break;
+      }
+    }
+
+    DCHECK(found);
+  }
+
+  ClipboardMap* clipboard_map = g_clipboard_map.Pointer();
+  ClipboardMap::iterator it = clipboard_map->find(id);
+  if (it != clipboard_map->end())
+    return it->second;
+
+  Clipboard* clipboard = new ui::Clipboard;
+  clipboard_map->insert(std::make_pair(id, clipboard));
+  return clipboard;
+}
+
+void Clipboard::DestroyClipboardForCurrentThread() {
+  base::AutoLock lock(g_clipboard_map_lock.Get());
+
+  ClipboardMap* clipboard_map = g_clipboard_map.Pointer();
+  base::PlatformThreadId id = base::PlatformThread::CurrentId();
+  ClipboardMap::iterator it = clipboard_map->find(id);
+  if (it != clipboard_map->end()) {
+    delete it->second;
+    clipboard_map->erase(it);
+  }
+}
 
 void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
   // All types apart from CBF_WEBKIT need at least 1 non-empty param.

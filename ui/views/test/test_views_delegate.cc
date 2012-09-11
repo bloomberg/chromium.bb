@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "content/public/test/web_contents_tester.h"
-#include "ui/base/clipboard/clipboard.h"
 
 namespace views {
 
@@ -22,14 +21,6 @@ TestViewsDelegate::~TestViewsDelegate() {
 
 void TestViewsDelegate::SetUseTransparentWindows(bool transparent) {
   use_transparent_windows_ = transparent;
-}
-
-ui::Clipboard* TestViewsDelegate::GetClipboard() const {
-  if (!clipboard_.get()) {
-    // Note that we need a MessageLoop for the next call to work.
-    clipboard_.reset(new ui::Clipboard);
-  }
-  return clipboard_.get();
 }
 
 void TestViewsDelegate::SaveWindowPlacement(const Widget* window,
