@@ -642,7 +642,7 @@ void MenuManager::ExecuteCommand(Profile* profile,
   // Add the tab info to the argument list.
   // No tab info in a platform app.
   if (!extension || !extension->is_platform_app()) {
-    // Note: web_contents are NULL in unit tests :(
+    // Note: web_contents only NULL in unit tests :(
     if (web_contents)
       args->Append(ExtensionTabUtil::CreateTabValue(web_contents, extension));
     else
@@ -666,10 +666,11 @@ void MenuManager::ExecuteCommand(Profile* profile,
       WriteToStorage(extension);
   }
 
-  // Note: web_contents are NULL in unit tests :(
-  if (web_contents && extensions::TabHelper::FromWebContents(web_contents)) {
-    extensions::TabHelper::FromWebContents(web_contents)->
-        active_tab_permission_manager()->GrantIfRequested(extension);
+  TabContents* tab_contents = web_contents ?
+      TabContents::FromWebContents(web_contents) : NULL;
+  if (tab_contents && extension) {
+    tab_contents->extension_tab_helper()->active_tab_permission_manager()->
+        GrantIfRequested(extension);
   }
 
   event_router->DispatchEventToExtension(

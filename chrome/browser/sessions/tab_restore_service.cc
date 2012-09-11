@@ -542,8 +542,7 @@ void TabRestoreService::PopulateTab(Tab* tab,
   // tab_contents is NULL in some browser tests.
   if (tab_contents) {
     const extensions::Extension* extension =
-        extensions::TabHelper::FromWebContents(controller->GetWebContents())->
-            extension_app();
+        tab_contents->extension_tab_helper()->extension_app();
     if (extension)
       tab->extension_app_id = extension->id();
   }

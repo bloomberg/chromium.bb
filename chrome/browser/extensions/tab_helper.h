@@ -14,13 +14,13 @@
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/extensions/script_executor.h"
 #include "chrome/browser/extensions/webstore_inline_installer.h"
-#include "chrome/browser/tab_contents/web_contents_user_data.h"
 #include "chrome/common/web_apps.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
+class TabContents;
 struct WebApplicationInfo;
 
 namespace content {
@@ -40,8 +40,7 @@ class TabHelper : public content::WebContentsObserver,
                   public WebstoreInlineInstaller::Delegate,
                   public AppNotifyChannelSetup::Delegate,
                   public base::SupportsWeakPtr<TabHelper>,
-                  public content::NotificationObserver,
-                  public WebContentsUserData<TabHelper> {
+                  public content::NotificationObserver {
  public:
   // Different types of action when web app info is available.
   // OnDidGetApplicationInfo uses this to dispatch calls.
@@ -51,9 +50,11 @@ class TabHelper : public content::WebContentsObserver,
     UPDATE_SHORTCUT   // Update icon for app shortcut.
   };
 
-  explicit TabHelper(content::WebContents* web_contents);
+  explicit TabHelper(TabContents* tab_contents);
   virtual ~TabHelper();
-  static int kUserDataKey;
+
+  // Copies the internal state from another TabHelper.
+  void CopyStateFrom(const TabHelper& source);
 
   void CreateApplicationShortcuts();
   bool CanCreateApplicationShortcuts() const;
@@ -94,6 +95,10 @@ class TabHelper : public content::WebContentsObserver,
   // Extension::EXTENSION_ICON_SMALLISH).
   SkBitmap* GetExtensionAppIcon();
 
+  TabContents* tab_contents() {
+    return tab_contents_;
+  }
+
   content::WebContents* web_contents() const {
     return content::WebContentsObserver::web_contents();
   }
@@ -122,9 +127,6 @@ class TabHelper : public content::WebContentsObserver,
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void DidCloneToNewWebContents(
-      content::WebContents* old_web_contents,
-      content::WebContents* new_web_contents) OVERRIDE;
 
   // ExtensionFunctionDispatcher::Delegate overrides.
   virtual extensions::WindowController* GetExtensionWindowController()
@@ -212,6 +214,8 @@ class TabHelper : public content::WebContentsObserver,
   WebAppAction pending_web_app_action_;
 
   content::NotificationRegistrar registrar_;
+
+  TabContents* tab_contents_;
 
   ScriptExecutor script_executor_;
 

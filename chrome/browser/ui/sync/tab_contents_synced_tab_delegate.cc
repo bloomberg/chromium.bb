@@ -37,15 +37,14 @@ Profile* TabContentsSyncedTabDelegate::profile() const {
 }
 
 bool TabContentsSyncedTabDelegate::HasExtensionAppId() const {
-  return !!(extensions::TabHelper::FromWebContents(
-      tab_contents_->web_contents())->extension_app());
+  return (tab_contents_->extension_tab_helper() &&
+      tab_contents_->extension_tab_helper()->extension_app());
 }
 
 const std::string& TabContentsSyncedTabDelegate::GetExtensionAppId()
     const {
   DCHECK(HasExtensionAppId());
-  return extensions::TabHelper::FromWebContents(tab_contents_->web_contents())->
-      extension_app()->id();
+  return tab_contents_->extension_tab_helper()->extension_app()->id();
 }
 
 int TabContentsSyncedTabDelegate::GetCurrentEntryIndex() const {

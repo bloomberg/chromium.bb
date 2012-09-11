@@ -1832,11 +1832,9 @@ TEST_F(TabStripModelTest, Apps) {
                         &error));
   extension_app->launch_web_url_ = "http://www.google.com";
   TabContents* contents1 = CreateTabContents();
-  extensions::TabHelper::FromWebContents(contents1->web_contents())->
-      SetExtensionApp(extension_app);
+  contents1->extension_tab_helper()->SetExtensionApp(extension_app);
   TabContents* contents2 = CreateTabContents();
-  extensions::TabHelper::FromWebContents(contents2->web_contents())->
-      SetExtensionApp(extension_app);
+  contents2->extension_tab_helper()->SetExtensionApp(extension_app);
   TabContents* contents3 = CreateTabContents();
 
   SetID(contents1->web_contents(), 1);

@@ -606,12 +606,10 @@ void SessionService::Observe(int type,
         return;
       SetTabWindow(tab->session_tab_helper()->window_id(),
                    tab->session_tab_helper()->session_id());
-      extensions::TabHelper* extensions_tab_helper =
-          extensions::TabHelper::FromWebContents(tab->web_contents());
-      if (extensions_tab_helper->extension_app()) {
+      if (tab->extension_tab_helper()->extension_app()) {
         SetTabExtensionAppID(tab->session_tab_helper()->window_id(),
             tab->session_tab_helper()->session_id(),
-            extensions_tab_helper->extension_app()->id());
+            tab->extension_tab_helper()->extension_app()->id());
       }
 
       // Record the association between the SessionStorageNamespace and the
@@ -708,16 +706,12 @@ void SessionService::Observe(int type,
     case chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED: {
       extensions::TabHelper* extension_tab_helper =
           content::Source<extensions::TabHelper>(source).ptr();
-      if (extension_tab_helper->web_contents()->GetBrowserContext() !=
-              profile()) {
+      if (extension_tab_helper->tab_contents()->profile() != profile())
         return;
-      }
       if (extension_tab_helper->extension_app()) {
-        TabContents* tab_contents =
-            TabContents::FromWebContents(extension_tab_helper->web_contents());
-        SessionTabHelper* helper = tab_contents->session_tab_helper();
-        SetTabExtensionAppID(helper->window_id(),
-                             helper->session_id(),
+        SessionTabHelper* helper =
+            extension_tab_helper->tab_contents()->session_tab_helper();
+        SetTabExtensionAppID(helper->window_id(), helper->session_id(),
                              extension_tab_helper->extension_app()->id());
       }
       break;
@@ -1310,13 +1304,11 @@ void SessionService::BuildCommandsForTab(
     commands->push_back(CreatePinnedStateCommand(session_id, true));
   }
 
-  extensions::TabHelper* extensions_tab_helper =
-      extensions::TabHelper::FromWebContents(tab->web_contents());
-  if (extensions_tab_helper->extension_app()) {
+  if (tab->extension_tab_helper()->extension_app()) {
     commands->push_back(
         CreateSetTabExtensionAppIDCommand(
             kCommandSetExtensionAppID, session_id.id(),
-            extensions_tab_helper->extension_app()->id()));
+            tab->extension_tab_helper()->extension_app()->id()));
   }
 
   const std::string& ua_override = tab->web_contents()->GetUserAgentOverride();

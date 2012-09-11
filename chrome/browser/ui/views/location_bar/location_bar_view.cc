@@ -1149,12 +1149,10 @@ void LocationBarView::RefreshPageActionViews() {
 
   std::vector<ExtensionAction*> new_page_actions;
 
-  WebContents* contents = GetWebContentsFromDelegate(delegate_);
-  if (contents) {
-    extensions::TabHelper* extensions_tab_helper =
-        extensions::TabHelper::FromWebContents(contents);
+  TabContents* tab_contents = GetTabContents();
+  if (tab_contents) {
     extensions::LocationBarController* controller =
-        extensions_tab_helper->location_bar_controller();
+        tab_contents->extension_tab_helper()->location_bar_controller();
     new_page_actions = controller->GetCurrentActions();
   }
 
@@ -1180,6 +1178,7 @@ void LocationBarView::RefreshPageActionViews() {
     }
   }
 
+  WebContents* contents = GetWebContentsFromDelegate(delegate_);
   if (!page_action_views_.empty() && contents) {
     Browser* browser = browser::FindBrowserWithWebContents(contents);
     GURL url = chrome::GetActiveWebContents(browser)->GetURL();

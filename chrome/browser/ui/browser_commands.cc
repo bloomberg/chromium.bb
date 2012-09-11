@@ -1015,12 +1015,12 @@ bool CanViewSource(const Browser* browser) {
 
 void CreateApplicationShortcuts(Browser* browser) {
   content::RecordAction(UserMetricsAction("CreateShortcut"));
-  extensions::TabHelper::FromWebContents(GetActiveWebContents(browser))->
+  GetActiveTabContents(browser)->extension_tab_helper()->
       CreateApplicationShortcuts();
 }
 
 bool CanCreateApplicationShortcuts(const Browser* browser) {
-  return extensions::TabHelper::FromWebContents(GetActiveWebContents(browser))->
+  return GetActiveTabContents(browser)->extension_tab_helper()->
       CanCreateApplicationShortcuts();
 }
 

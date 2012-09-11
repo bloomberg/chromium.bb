@@ -956,11 +956,10 @@ void LocationBarViewGtk::UpdateContentSettingsIcons() {
 void LocationBarViewGtk::UpdatePageActions() {
   std::vector<ExtensionAction*> new_page_actions;
 
-  WebContents* contents = GetWebContents();
-  if (contents) {
+  TabContents* tab_contents = GetTabContents();
+  if (tab_contents) {
     LocationBarController* location_bar_controller =
-        extensions::TabHelper::FromWebContents(contents)->
-            location_bar_controller();
+        tab_contents->extension_tab_helper()->location_bar_controller();
     new_page_actions = location_bar_controller->GetCurrentActions();
   }
 
@@ -982,6 +981,7 @@ void LocationBarViewGtk::UpdatePageActions() {
         content::NotificationService::NoDetails());
   }
 
+  WebContents* contents = GetWebContents();
   if (!page_action_views_.empty() && contents) {
     GURL url = chrome::GetActiveWebContents(browser())->GetURL();
 
@@ -2037,8 +2037,7 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
     return TRUE;
 
   LocationBarController* controller =
-      extensions::TabHelper::FromWebContents(tab_contents->web_contents())->
-          location_bar_controller();
+      tab_contents->extension_tab_helper()->location_bar_controller();
 
   switch (controller->OnClicked(extension->id(), event->button)) {
     case LocationBarController::ACTION_NONE:

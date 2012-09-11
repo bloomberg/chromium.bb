@@ -75,10 +75,10 @@ LocationBarController::Action ScriptBadgeController::OnClicked(
   switch (mouse_button) {
     case 1:    // left
     case 2: {  // middle
-      extensions::TabHelper::FromWebContents(web_contents())->
-          active_tab_permission_manager()->GrantIfRequested(extension);
-
       TabContents* tab_contents = TabContents::FromWebContents(web_contents());
+      tab_contents->extension_tab_helper()->active_tab_permission_manager()->
+          GrantIfRequested(extension);
+
       // Even if clicking the badge doesn't immediately cause the extension to
       // run script on the page, we want to help users associate clicking with
       // the extension having permission to modify the page, so we make the icon

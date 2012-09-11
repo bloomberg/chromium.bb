@@ -67,8 +67,8 @@ class ActiveTabTest : public TabContentsTestHarness {
   }
 
   ActiveTabPermissionManager* active_tab_permission_manager() {
-    return extensions::TabHelper::FromWebContents(web_contents())->
-        active_tab_permission_manager();
+    return tab_contents()->extension_tab_helper()->
+                           active_tab_permission_manager();
   }
 
   bool IsAllowed(const scoped_refptr<const Extension>& extension,

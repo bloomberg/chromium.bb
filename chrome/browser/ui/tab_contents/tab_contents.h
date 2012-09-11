@@ -106,6 +106,7 @@ class WebUILoginView;
 }
 
 namespace extensions {
+class TabHelper;
 class WebAuthFlow;
 class WebNavigationTabObserver;
 }
@@ -238,6 +239,14 @@ class TabContents : public content::WebContentsObserver {
 
   CoreTabHelper* core_tab_helper() { return core_tab_helper_.get(); }
 
+  extensions::TabHelper* extension_tab_helper() {
+    return extension_tab_helper_.get();
+  }
+
+  const extensions::TabHelper* extension_tab_helper() const {
+    return extension_tab_helper_.get();
+  }
+
   FaviconTabHelper* favicon_tab_helper() { return favicon_tab_helper_.get(); }
   FindTabHelper* find_tab_helper() { return find_tab_helper_.get(); }
   HistoryTabHelper* history_tab_helper() { return history_tab_helper_.get(); }
@@ -346,6 +355,7 @@ class TabContents : public content::WebContentsObserver {
 #endif
   scoped_ptr<ConstrainedWindowTabHelper> constrained_window_tab_helper_;
   scoped_ptr<CoreTabHelper> core_tab_helper_;
+  scoped_ptr<extensions::TabHelper> extension_tab_helper_;
   scoped_ptr<FaviconTabHelper> favicon_tab_helper_;
   scoped_ptr<FindTabHelper> find_tab_helper_;
   scoped_ptr<HistoryTabHelper> history_tab_helper_;

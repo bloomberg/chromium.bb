@@ -38,9 +38,8 @@ IN_PROC_BROWSER_TEST_F(ScriptBadgeApiTest, Basics) {
   ExtensionAction* script_badge = extension->script_badge();
   ASSERT_TRUE(script_badge);
   const extensions::LocationBarController* location_bar_controller =
-      extensions::TabHelper::FromWebContents(
-          chrome::GetActiveWebContents(browser()))->
-              location_bar_controller();
+      chrome::GetActiveTabContents(browser())->extension_tab_helper()->
+      location_bar_controller();
 
   const int tab_id = SessionID::IdForTab(
       chrome::GetActiveWebContents(browser()));

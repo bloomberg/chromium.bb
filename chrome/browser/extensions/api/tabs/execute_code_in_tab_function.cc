@@ -265,14 +265,13 @@ bool ExecuteCodeInTabFunction::Execute(const std::string& code_string) {
   }
   CHECK_NE(UserScript::UNDEFINED, run_at);
 
-  extensions::TabHelper::FromWebContents(contents->web_contents())->
-      script_executor()->ExecuteScript(
-          extension->id(),
-          script_type,
-          code_string,
-          frame_scope,
-          run_at,
-          ScriptExecutor::ISOLATED_WORLD,
-          base::Bind(&ExecuteCodeInTabFunction::OnExecuteCodeFinished, this));
+  contents->extension_tab_helper()->script_executor()->ExecuteScript(
+      extension->id(),
+      script_type,
+      code_string,
+      frame_scope,
+      run_at,
+      ScriptExecutor::ISOLATED_WORLD,
+      base::Bind(&ExecuteCodeInTabFunction::OnExecuteCodeFinished, this));
   return true;
 }

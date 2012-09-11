@@ -376,8 +376,7 @@ void ExtensionActionFunction::NotifyBrowserActionChange() {
 }
 
 void ExtensionActionFunction::NotifyLocationBarChange() {
-  extensions::TabHelper::FromWebContents(contents_->web_contents())->
-      location_bar_controller()->NotifyChange();
+  contents_->extension_tab_helper()->location_bar_controller()->NotifyChange();
 }
 
 // static
@@ -426,7 +425,7 @@ bool ExtensionActionFunction::SetVisible(bool visible) {
 
 extensions::TabHelper& ExtensionActionFunction::tab_helper() const {
   CHECK(contents_);
-  return *extensions::TabHelper::FromWebContents(contents_->web_contents());
+  return *contents_->extension_tab_helper();
 }
 
 bool ExtensionActionShowFunction::RunExtensionAction() {

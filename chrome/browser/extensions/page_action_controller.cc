@@ -53,8 +53,9 @@ LocationBarController::Action PageActionController::OnClicked(
   CHECK(page_action);
   int tab_id = ExtensionTabUtil::GetTabId(web_contents());
 
-  extensions::TabHelper::FromWebContents(web_contents())->
-      active_tab_permission_manager()->GrantIfRequested(extension);
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
+  tab_contents->extension_tab_helper()->active_tab_permission_manager()->
+      GrantIfRequested(extension);
 
   switch (mouse_button) {
     case 1:  // left
@@ -63,7 +64,7 @@ LocationBarController::Action PageActionController::OnClicked(
         return ACTION_SHOW_POPUP;
 
       GetExtensionService()->browser_event_router()->PageActionExecuted(
-          Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
+          tab_contents->profile(),
           *page_action,
           tab_id,
           web_contents()->GetURL().spec(),

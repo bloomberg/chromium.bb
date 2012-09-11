@@ -38,13 +38,6 @@ class WebContentsUserData : public base::SupportsUserData::Data {
   static T* FromWebContents(content::WebContents* contents) {
     return static_cast<T*>(contents->GetUserData(&T::kUserDataKey));
   }
-
-  // Retrieves the instance of type T that was attached to the specified
-  // WebContents (via CreateForWebContents above) and returns it. If no instance
-  // of the type was attached, returns NULL.
-  static const T* FromWebContents(const content::WebContents* contents) {
-    return static_cast<const T*>(contents->GetUserData(&T::kUserDataKey));
-  }
 };
 
 #endif  // CHROME_BROWSER_TAB_CONTENTS_WEB_CONTENTS_USER_DATA_H_
