@@ -316,9 +316,6 @@ void RenderThreadImpl::Init() {
   audio_message_filter_ = new AudioMessageFilter();
   AddFilter(audio_message_filter_.get());
 
-  devtools_agent_message_filter_ = new DevToolsAgentFilter();
-  AddFilter(devtools_agent_message_filter_.get());
-
   AddFilter(new IndexedDBMessageFilter);
 
   content::GetContentClient()->renderer()->RenderThreadStarted();
@@ -348,8 +345,10 @@ RenderThreadImpl::~RenderThreadImpl() {
     web_database_observer_impl_->WaitForAllDatabasesToClose();
 
   // Shutdown in reverse of the initialization order.
-  RemoveFilter(devtools_agent_message_filter_.get());
-  devtools_agent_message_filter_ = NULL;
+  if (devtools_agent_message_filter_.get()) {
+    RemoveFilter(devtools_agent_message_filter_.get());
+    devtools_agent_message_filter_ = NULL;
+  }
 
   RemoveFilter(audio_input_message_filter_.get());
   audio_input_message_filter_ = NULL;
@@ -703,6 +702,9 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
       command_line.HasSwitch(switches::kEnableCssExclusions));
 
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, WebKitInitialized());
+
+  devtools_agent_message_filter_ = new DevToolsAgentFilter();
+  AddFilter(devtools_agent_message_filter_.get());
 
   if (content::GetContentClient()->renderer()->
          RunIdleHandlerWhenWidgetsHidden()) {

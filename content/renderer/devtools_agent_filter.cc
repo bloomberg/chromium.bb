@@ -36,21 +36,18 @@ class MessageImpl : public WebDevToolsAgent::MessageDescriptor {
   int host_id;
 };
 
-// Made static to allow DevToolsAgent to use it for replying directly
-// from IO thread.
-int g_current_routing_id = 0;
-
 }  // namespace
 
 DevToolsAgentFilter::DevToolsAgentFilter()
     : message_handled_(false),
-      render_thread_loop_(MessageLoop::current()) {
+      render_thread_loop_(MessageLoop::current()),
+      current_routing_id_(0) {
 }
 
 bool DevToolsAgentFilter::OnMessageReceived(const IPC::Message& message) {
   // Dispatch debugger commands directly from IO.
   message_handled_ = true;
-  g_current_routing_id = message.routing_id();
+  current_routing_id_ = message.routing_id();
   IPC_BEGIN_MESSAGE_MAP(DevToolsAgentFilter, message)
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_DispatchOnInspectorBackend,
                         OnDispatchOnInspectorBackend)
@@ -69,7 +66,7 @@ void DevToolsAgentFilter::OnDispatchOnInspectorBackend(
       return;
   }
   WebDevToolsAgent::interruptAndDispatch(
-      new MessageImpl(message, g_current_routing_id));
+      new MessageImpl(message, current_routing_id_));
 
   render_thread_loop_->PostTask(
       FROM_HERE, base::Bind(&WebDevToolsAgent::processPendingMessages));

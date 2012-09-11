@@ -36,6 +36,7 @@ class DevToolsAgentFilter : public IPC::ChannelProxy::MessageFilter {
 
   bool message_handled_;
   MessageLoop* render_thread_loop_;
+  int current_routing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsAgentFilter);
 };
