@@ -41,6 +41,14 @@ class CommitLaterTask;
 class HistoryPublisher;
 class VisitFilter;
 
+// The maximum number of icons URLs per page which can be stored in the
+// thumbnail database.
+static const size_t kMaxFaviconsPerPage = 8;
+
+// The maximum number of bitmaps for a single icon URL which can be stored in
+// the thumbnail database.
+static const size_t kMaxFaviconBitmapsPerIconURL = 8;
+
 // *See the .cc file for more information on the design.*
 //
 // Internal history implementation which does most of the work of the history
@@ -276,6 +284,12 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       int desired_size_in_dip,
       const std::vector<ui::ScaleFactor>& desired_scale_factors);
 
+  void MergeFavicon(const GURL& page_url,
+                    const GURL& icon_url,
+                    IconType icon_type,
+                    scoped_refptr<base::RefCountedMemory> bitmap_data,
+                    const gfx::Size& pixel_size);
+
   void SetFavicons(
       const GURL& page_url,
       IconType icon_type,
@@ -483,10 +497,16 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
                            SetFaviconMappingsForPageDuplicates);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, SetFavicons);
-  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
-                           SetFaviconsSameFaviconURLForTwoPages);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, SetFaviconsDeleteBitmaps);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, SetFaviconsReplaceBitmapData);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
+                           SetFaviconsSameFaviconURLForTwoPages);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, MergeFaviconPageURLNotInDB);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, MergeFaviconPageURLInDB);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, MergeFaviconIconURLInDB);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, MergeFaviconMaxFaviconsPerPage);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
+                           MergeFaviconMaxFaviconBitmapsPerIconURL);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
                            UpdateFaviconMappingsAndFetchMultipleIconTypes);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, GetFaviconsFromDBEmpty);

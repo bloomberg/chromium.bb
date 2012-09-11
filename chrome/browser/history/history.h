@@ -758,6 +758,25 @@ class HistoryService : public CancelableRequestProvider,
       int desired_size_in_dip,
       const std::vector<ui::ScaleFactor>& desired_scale_factors);
 
+  // Used by FaviconService to set a favicon for |page_url| at |icon_url|.
+  // If the |icon_url| and |pixel_size| are consistent with the icons mapped
+  // to |page_url| and the pixel sizes of the bitmaps at |icon_url|:
+  //   The favicon bitmap for |icon_url| and |pixel_size| will be updated or
+  //   created if necessary.
+  // If |icon_url| and |pixel_size| are inconsistent:
+  //   A new favicon bitmap (and favicon if necessary) will be created. The
+  //   favicon sizes for |icon_url| will be set to the default favicon sizes to
+  //   indicate that the favicon sizes are no longer known.
+  //   Arbitrary favicons and favicon bitmaps associated to |page_url| and
+  //   |icon_url| may be deleted in order to maintain the restriction for the
+  //   max favicons per page, and max favicon bitmaps per icon URL.
+  // TODO(pkotwicz): Remove once no longer required by sync.
+  void MergeFavicon(const GURL& page_url,
+                    const GURL& icon_url,
+                    history::IconType icon_type,
+                    scoped_refptr<base::RefCountedMemory> bitmap_data,
+                    const gfx::Size& pixel_size);
+
   // Used by the FaviconService to set the favicons for a page on the history
   // backend.
   // |favicon_bitmap_data| is a listing of additional favicon bitmaps to store
@@ -771,6 +790,8 @@ class HistoryService : public CancelableRequestProvider,
   // sizes in |favicon_bitmap_data| must be a subset of |icon_url_sizes|. It is
   // important that |icon_url_sizes| be complete as mappings to favicons whose
   // icon url or pixel size is not in |icon_url_sizes| will be deleted.
+  // Use MergeFavicon() if any of the icon URLs for |page_url| or any of the
+  // favicon sizes of the icon URLs are not known.
   // See HistoryBackend::ValidateSetFaviconsParams() for more details on the
   // criteria for |favicon_bitmap_data| and |icon_url_sizes| to be valid.
   void SetFavicons(

@@ -96,14 +96,6 @@ static const int kMaxRedirectCount = 32;
 // and is archived.
 static const int kArchiveDaysThreshold = 90;
 
-// The maximum number of icons URLs per page which can be stored in the
-// thumbnail database.
-static const size_t kMaxFaviconsPerPage = 8;
-
-// The maximum number of bitmaps for a single icon URL which can be stored in
-// the thumbnail database.
-static const size_t kMaxFaviconBitmapsPerIconURL = 8;
-
 // Converts from PageUsageData to MostVisitedURL. |redirects| is a
 // list of redirects for this URL. Empty list means no redirects.
 MostVisitedURL MakeMostVisitedURL(const PageUsageData& page_data,
@@ -1842,6 +1834,87 @@ void HistoryBackend::UpdateFaviconMappingsAndFetch(
     const std::vector<ui::ScaleFactor>& desired_scale_factors) {
   UpdateFaviconMappingsAndFetchImpl(request, &page_url, icon_urls, icon_types,
       desired_size_in_dip, desired_scale_factors);
+}
+
+void HistoryBackend::MergeFavicon(
+    const GURL& page_url,
+    const GURL& icon_url,
+    history::IconType icon_type,
+    scoped_refptr<base::RefCountedMemory> bitmap_data,
+    const gfx::Size& pixel_size) {
+  FaviconID favicon_id =
+      thumbnail_db_->GetFaviconIDForFaviconURL(icon_url, icon_type, NULL);
+  if (favicon_id) {
+    // |icon_url| is known to the history backend.
+    FaviconSizes favicon_sizes;
+    thumbnail_db_->GetFaviconHeader(favicon_id, NULL, NULL, &favicon_sizes);
+    FaviconSizes::iterator favicon_sizes_it = std::find(
+        favicon_sizes.begin(), favicon_sizes.end(), pixel_size);
+    if (favicon_sizes_it == favicon_sizes.end()) {
+       // As |pixel_size| is inconsistent with the favicon sizes in the
+       // database, the favicon's favicon sizes are ambiguous. Set them
+       // to the default.
+       thumbnail_db_->SetFaviconSizes(favicon_id, GetDefaultFaviconSizes());
+
+       // SetFaviconBitmaps() will add 0 or 1 favicon bitmaps. 0 favicon
+       // bitmaps will be added if a favicon's favicon sizes are inconsistent
+       // because they were set to the default favicon sizes by a previous
+       // merge and there is a favicon bitmap of |pixel_size| for |favicon_id|.
+       // Remove an arbitrary favicon bitmap if SetFavicons() MIGHT drive the
+       // number of favicon bitmaps over the limit of
+       // |kMaxFaviconBitmapsPerIconURL|.
+       std::vector<FaviconBitmapIDSize> bitmap_id_sizes;
+       thumbnail_db_->GetFaviconBitmapIDSizes(favicon_id, &bitmap_id_sizes);
+       if (bitmap_id_sizes.size() == kMaxFaviconBitmapsPerIconURL)
+         thumbnail_db_->DeleteFaviconBitmap(bitmap_id_sizes[0].bitmap_id);
+    }
+
+    FaviconBitmapData bitmap_data_element;
+    bitmap_data_element.bitmap_data = bitmap_data;
+    bitmap_data_element.pixel_size = pixel_size;
+    bitmap_data_element.icon_url = icon_url;
+    std::vector<FaviconBitmapData> favicon_bitmap_data;
+    favicon_bitmap_data.push_back(bitmap_data_element);
+    SetFaviconBitmaps(favicon_id, favicon_bitmap_data);
+  } else {
+    // |icon_url| is not known to the thumbnail database. Add a favicon with
+    // the bitmap data.
+    favicon_id = thumbnail_db_->AddFavicon(icon_url,
+                                           icon_type,
+                                           GetDefaultFaviconSizes(),
+                                           bitmap_data,
+                                           base::Time::Now(),
+                                           pixel_size);
+  }
+
+  // Check if |favicon_id| is already mapped to |page_url| for |icon_type|.
+  std::vector<IconMapping> icon_mappings;
+  thumbnail_db_->GetIconMappingsForPageURL(page_url, icon_type, &icon_mappings);
+  bool already_mapped = false;
+  for (size_t i = 0; i < icon_mappings.size(); ++i) {
+    if (icon_mappings[i].icon_id == favicon_id) {
+      already_mapped = true;
+      break;
+    }
+  }
+
+  if (!already_mapped) {
+    // |favicon_id| is not mapped to |page_url|. Build list of all the
+    // FaviconIDs which should be mapped to |page_url| for |icon_type|.
+    std::vector<FaviconID> favicon_ids;
+    for (size_t i = 0; i < icon_mappings.size(); ++i)
+      favicon_ids.push_back(icon_mappings[i].icon_id);
+
+    // Remove an arbitrary favicon to avoid going over the limit of
+    // |kMaxFaviconsPerPage|.
+    if (favicon_ids.size() == kMaxFaviconsPerPage)
+      favicon_ids.pop_back();
+
+    // Add mapping to |favicon_id|.
+    favicon_ids.push_back(favicon_id);
+
+    SetFaviconMappingsForPageAndRedirects(page_url, icon_type, favicon_ids);
+  }
 }
 
 void HistoryBackend::SetFavicons(
