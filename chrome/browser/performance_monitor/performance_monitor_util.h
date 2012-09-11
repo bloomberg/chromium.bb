@@ -16,16 +16,6 @@
 namespace performance_monitor {
 namespace util {
 
-// Metric data can be either dense or sporadic, so AggregateMetric() normalizes
-// the metric data in time. |metrics| must be sorted in increasing time.
-// Put concisely, AggregateMetric() does sample rate conversion from irregular
-// metric data points to a sample period of |resolution| beginning at |start|.
-// Each sampling window starts and ends at an integer multiple away from
-// |start| and data points are omitted if there are no points to resample.
-Database::MetricVector AggregateMetric(const Database::MetricVector& metrics,
-                                       const base::Time& start,
-                                       const base::TimeDelta& resolution);
-
 // Posts |request| to the performance monitor database's sequenced thread. On
 // completion |reply| is posted to the thread that called
 // PostTaskToDatabaseThreadAndReply.

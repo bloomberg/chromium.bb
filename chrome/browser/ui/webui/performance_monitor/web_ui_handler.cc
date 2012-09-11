@@ -15,6 +15,7 @@
 #include "chrome/browser/performance_monitor/performance_monitor_util.h"
 #include "chrome/browser/ui/webui/performance_monitor/performance_monitor_l10n.h"
 #include "chrome/browser/ui/webui/performance_monitor/performance_monitor_ui_constants.h"
+#include "chrome/browser/ui/webui/performance_monitor/performance_monitor_ui_util.h"
 #include "chrome/common/extensions/value_builder.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
@@ -79,11 +80,50 @@ Unit GetUnitForMetricCategory(MetricCategory category) {
     case METRIC_CATEGORY_CPU:
       return UNIT_PERCENT;
     case METRIC_CATEGORY_MEMORY:
-      return UNIT_BYTES;
+      return UNIT_MEGABYTES;
     case METRIC_CATEGORY_TIMING:
-      return UNIT_MICROSECONDS;
+      return UNIT_SECONDS;
     case METRIC_CATEGORY_NETWORK:
+      return UNIT_MEGABYTES;
+    default:
+      NOTREACHED();
+  }
+  return UNIT_UNDEFINED;
+}
+
+MetricCategory GetCategoryForMetric(MetricType type) {
+  switch (type) {
+    case METRIC_CPU_USAGE:
+      return METRIC_CATEGORY_CPU;
+    case METRIC_SHARED_MEMORY_USAGE:
+    case METRIC_PRIVATE_MEMORY_USAGE:
+      return METRIC_CATEGORY_MEMORY;
+    case METRIC_STARTUP_TIME:
+    case METRIC_TEST_STARTUP_TIME:
+    case METRIC_SESSION_RESTORE_TIME:
+    case METRIC_PAGE_LOAD_TIME:
+      return METRIC_CATEGORY_TIMING;
+    case METRIC_NETWORK_BYTES_READ:
+      return METRIC_CATEGORY_NETWORK;
+    default:
+      NOTREACHED();
+  }
+  return METRIC_CATEGORY_NUMBER_OF_CATEGORIES;
+}
+
+Unit GetUnitForMetricType(MetricType type) {
+  switch (type) {
+    case METRIC_CPU_USAGE:
+      return UNIT_PERCENT;
+    case METRIC_SHARED_MEMORY_USAGE:
+    case METRIC_PRIVATE_MEMORY_USAGE:
+    case METRIC_NETWORK_BYTES_READ:
       return UNIT_BYTES;
+    case METRIC_STARTUP_TIME:
+    case METRIC_TEST_STARTUP_TIME:
+    case METRIC_SESSION_RESTORE_TIME:
+    case METRIC_PAGE_LOAD_TIME:
+      return UNIT_MICROSECONDS;
     default:
       NOTREACHED();
   }
@@ -199,13 +239,11 @@ void DoGetEvents(ListValue* results, EventType event_type,
 
       Value* value = NULL;
 
-      // The property 'eventType' is used computationally on the UI side (and
-      // not displayed), so it does not need any localization.
-      if (*key == "eventType") {
-        Value* old_value = NULL;
-        (*event)->data()->Get(*key, &old_value);
-        value = old_value->DeepCopy();
-      } else if (*key == "time") {
+      // The property 'eventType' is set in HandleGetEvents as part of the
+      // entire result set, so we don't need to include this here in the event.
+      if (*key == "eventType")
+        continue;
+      else if (*key == "time") {
         // The property 'time' is also used computationally, but must be
         // converted to JS-style time.
         double time = 0.0;
@@ -219,7 +257,7 @@ void DoGetEvents(ListValue* results, EventType event_type,
         // All other values are user-facing, so we create a new value for
         // localized display.
         DictionaryValue* localized_value = new DictionaryValue();
-        localized_value->SetString("displayString",
+        localized_value->SetString("label",
                                    GetLocalizedStringFromEventProperty(*key));
         Value* old_value = NULL;
         (*event)->data()->Get(*key, &old_value);
@@ -234,6 +272,41 @@ void DoGetEvents(ListValue* results, EventType event_type,
   }
 }
 
+// Populates |results| for the UI, including setting the 'metricId' property,
+// converting and adding |max_value| to the 'maxValue' property, and converting
+// each metric in |aggregated_metrics| to be in JS-friendly and readable units
+// in the 'metrics' property.
+void ConvertUnitsAndPopulateMetricResults(
+    DictionaryValue* results,
+    MetricType metric_type,
+    double max_value,
+    const Database::MetricVector* aggregated_metrics) {
+  results->SetInteger("metricId", static_cast<int>(metric_type));
+
+  double conversion_factor =
+      GetConversionFactor(*GetUnitDetails(GetUnitForMetricType(metric_type)),
+                          *GetUnitDetails(GetUnitForMetricCategory(
+                              GetCategoryForMetric(metric_type))));
+
+  results->SetDouble("maxValue", max_value * conversion_factor);
+
+  ListValue* metric_list = new ListValue();
+  results->Set("metrics", metric_list);
+
+  if (!aggregated_metrics)
+    return;
+
+  for (Database::MetricVector::const_iterator it = aggregated_metrics->begin();
+       it != aggregated_metrics->end(); ++it) {
+    DictionaryValue* metric_value = new DictionaryValue();
+    // Convert time to JS-friendly time.
+    metric_value->SetDouble("time", it->time.ToJsTime());
+    // Convert the units to the proper unit type.
+    metric_value->SetDouble("value", it->value * conversion_factor);
+    metric_list->Append(metric_value);
+  }
+}
+
 // Queries the performance monitor database for metrics of type |metric_type|
 // between |start| and |end| times and appends the results to |results|.
 void DoGetMetric(DictionaryValue* results,
@@ -241,29 +314,20 @@ void DoGetMetric(DictionaryValue* results,
                  const base::Time& start, const base::Time& end,
                  const base::TimeDelta& resolution) {
   Database* db = PerformanceMonitor::GetInstance()->database();
-  // results->SetDouble("maxValue", db->GetMaxValueForMetric(metric_type));
-  results->SetDouble("maxValue", 10.0);
-  results->SetInteger("metricId", static_cast<int>(metric_type));
 
-  ListValue* metric_list = new ListValue();
-  results->Set("metrics", metric_list);
   Database::MetricVectorMap metric_vector_map =
       db->GetStatsForMetricByActivity(metric_type, start, end);
 
   linked_ptr<Database::MetricVector> metric_vector =
       metric_vector_map[kProcessChromeAggregate];
-  if (!metric_vector.get())
-    metric_vector.reset(new Database::MetricVector());
 
-  Database::MetricVector aggregated_metrics =
-      util::AggregateMetric(*metric_vector, start, resolution);
-  for (Database::MetricVector::const_iterator it = aggregated_metrics.begin();
-       it != aggregated_metrics.end(); ++it) {
-    DictionaryValue* metric_value = new DictionaryValue();
-    metric_value->SetDouble("time", it->time.ToJsTime());
-    metric_value->SetDouble("value", it->value);
-    metric_list->Append(metric_value);
-  }
+  ConvertUnitsAndPopulateMetricResults(
+      results,
+      metric_type,
+      db->GetMaxStatsForActivityAndMetric(metric_type),
+      AggregateMetric(metric_vector.get(),
+                      start,
+                      resolution).get());
 }
 
 }  // namespace
