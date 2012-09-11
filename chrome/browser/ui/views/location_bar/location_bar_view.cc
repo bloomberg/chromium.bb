@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/views/location_bar/ev_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/keyword_hint_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
+#include "chrome/browser/ui/views/location_bar/open_pdf_in_reader_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_with_badge_view.h"
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
@@ -203,6 +204,7 @@ LocationBarView::LocationBarView(Browser* browser,
       suggested_text_view_(NULL),
       keyword_hint_view_(NULL),
       zoom_view_(NULL),
+      open_pdf_in_reader_view_(NULL),
       star_view_(NULL),
       web_intents_button_view_(NULL),
       action_box_button_view_(NULL),
@@ -300,6 +302,9 @@ void LocationBarView::Init(views::View* popup_parent_view) {
   web_intents_button_view_ =
       new WebIntentsButtonView(this, kWIBubbleBackgroundImages);
   AddChildView(web_intents_button_view_);
+
+  open_pdf_in_reader_view_ = new OpenPDFInReaderView(this);
+  AddChildView(open_pdf_in_reader_view_);
 
   if (browser_defaults::bookmarks_enabled && (mode_ == NORMAL)) {
     // Note: condition above means that the star icon is hidden in popups and in
@@ -419,6 +424,8 @@ void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
   RefreshZoomView();
   RefreshPageActionViews();
   web_intents_button_view_->Update(GetTabContents());
+  open_pdf_in_reader_view_->Update(
+      model_->input_in_progress() ? NULL : GetTabContents());
 
   bool star_enabled = star_view_ && !model_->input_in_progress() &&
                       edit_bookmarks_enabled_.GetValue();
@@ -475,6 +482,13 @@ void LocationBarView::InvalidatePageActions() {
 void LocationBarView::UpdateWebIntentsButton() {
   web_intents_button_view_->Update(GetTabContents());
 
+  Layout();
+  SchedulePaint();
+}
+
+void LocationBarView::UpdateOpenPDFInReaderPrompt() {
+  open_pdf_in_reader_view_->Update(
+      model_->input_in_progress() ? NULL : GetTabContents());
   Layout();
   SchedulePaint();
 }
@@ -695,6 +709,10 @@ void LocationBarView::Layout() {
 
   if (star_view_ && star_view_->visible())
     entry_width -= star_view_->GetPreferredSize().width() + GetItemPadding();
+  if (open_pdf_in_reader_view_ && open_pdf_in_reader_view_->visible()) {
+    entry_width -= open_pdf_in_reader_view_->GetPreferredSize().width() +
+        GetItemPadding();
+  }
   int action_box_button_width = location_height;
   if (action_box_button_view_) {
     // No need to discount for edge thickness with action box button,
@@ -778,6 +796,16 @@ void LocationBarView::Layout() {
     offset -= star_width;
     star_view_->SetBounds(offset, location_y, star_width, location_height);
     offset -= GetItemPadding() - star_view_->GetBuiltInHorizontalPadding();
+  }
+
+  if (open_pdf_in_reader_view_ && open_pdf_in_reader_view_->visible()) {
+    offset += open_pdf_in_reader_view_->GetBuiltInHorizontalPadding();
+    int icon_width = open_pdf_in_reader_view_->GetPreferredSize().width();
+    offset -= icon_width;
+    open_pdf_in_reader_view_->SetBounds(offset, location_y,
+                                        icon_width, location_height);
+    offset -= GetItemPadding() -
+        open_pdf_in_reader_view_->GetBuiltInHorizontalPadding();
   }
 
   for (PageActionViews::const_iterator i(page_action_views_.begin());
@@ -1163,7 +1191,9 @@ void LocationBarView::RefreshPageActionViews() {
     DeletePageActionViews();  // Delete the old views (if any).
 
     page_action_views_.resize(page_actions_.size());
-    View* right_anchor = star_view_;
+    View* right_anchor = open_pdf_in_reader_view_;
+    if (!right_anchor)
+      right_anchor = star_view_;
     if (!right_anchor)
       right_anchor = action_box_button_view_;
     DCHECK(right_anchor);

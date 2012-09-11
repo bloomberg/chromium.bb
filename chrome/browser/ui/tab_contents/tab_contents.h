@@ -45,7 +45,6 @@ class OmniboxSearchHint;
 class PanelHost;
 class PasswordManager;
 class PasswordManagerDelegate;
-class PDFTabObserver;
 class PepperBrokerObserver;
 class PluginObserver;
 class PrefsTabHelper;
@@ -403,7 +402,6 @@ class TabContents : public content::WebContentsObserver {
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   scoped_ptr<OneClickSigninHelper> one_click_signin_helper_;
 #endif
-  scoped_ptr<PDFTabObserver> pdf_tab_observer_;
   scoped_ptr<PepperBrokerObserver> pepper_broker_observer_;
   scoped_ptr<PluginObserver> plugin_observer_;
   scoped_ptr<printing::PrintPreviewMessageHandler> print_preview_;
