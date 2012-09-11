@@ -15,6 +15,11 @@
 namespace {
 
 class OmniboxViewTest : public PlatformTest {
+ public:
+  virtual void TearDown() OVERRIDE {
+    ui::Clipboard::DestroyClipboardForCurrentThread();
+  }
+
  private:
   // Windows requires a message loop for clipboard access.
   MessageLoopForUI message_loop_;

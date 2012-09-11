@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 
 using std::string;
@@ -15,7 +16,14 @@ using std::string;
 namespace bookmark_utils {
 namespace {
 
-TEST(BookmarkUtilsTest, GetBookmarksContainingText) {
+class BookmarkUtilsTest : public ::testing::Test {
+ public:
+  virtual void TearDown() OVERRIDE {
+    ui::Clipboard::DestroyClipboardForCurrentThread();
+  }
+};
+
+TEST_F(BookmarkUtilsTest, GetBookmarksContainingText) {
   BookmarkModel model(NULL);
   const BookmarkNode* n1 = model.AddURL(model.other_node(),
                                         0,
@@ -51,7 +59,7 @@ TEST(BookmarkUtilsTest, GetBookmarksContainingText) {
   nodes.clear();
 }
 
-TEST(BookmarkUtilsTest, DoesBookmarkContainText) {
+TEST_F(BookmarkUtilsTest, DoesBookmarkContainText) {
   BookmarkModel model(NULL);
   const BookmarkNode* node = model.AddURL(model.other_node(),
                                           0,
@@ -118,7 +126,7 @@ TEST(BookmarkUtilsTest, DoesBookmarkContainText) {
 }
 
 #if !defined(OS_MACOSX)
-TEST(BookmarkUtilsTest, CopyPaste) {
+TEST_F(BookmarkUtilsTest, CopyPaste) {
   // Clipboard requires a message loop.
   MessageLoopForUI loop;
 
