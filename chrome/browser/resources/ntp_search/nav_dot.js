@@ -77,7 +77,6 @@ cr.define('ntp', function() {
      */
     onClick_: function(e) {
       this.switchToPage();
-      chrome.send('introMessageDismissed');
       e.stopPropagation();
     },
 

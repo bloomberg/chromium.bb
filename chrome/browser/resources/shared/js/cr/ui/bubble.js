@@ -145,7 +145,7 @@ cr.define('cr.ui', function() {
      * Sets the delay before the user is allowed to click outside the bubble
      * to dismiss it. Using a delay makes it less likely that the user will
      * unintentionally dismiss the bubble.
-     * @param {int} delay The delay in miliseconds.
+     * @param {number} delay The delay in milliseconds.
      */
     set deactivateToDismissDelay(delay) {
       this.deactivateToDismissDelay_ = delay;
