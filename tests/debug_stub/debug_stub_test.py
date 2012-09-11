@@ -355,6 +355,10 @@ class DebugStubTest(unittest.TestCase):
       self.CheckReadMemoryAtInvalidAddr(connection)
 
   def test_breakpoint(self):
+    if sys.platform == 'darwin':
+      # TODO(mseaborn): Make this work on Mac OS X (and enable it) by
+      # removing this test's use of the int3 instruction.
+      return
     with LaunchDebugStub('test_breakpoint') as connection:
       # Continue until breakpoint.
       reply = connection.RspRequest('c')
@@ -405,6 +409,10 @@ class DebugStubTest(unittest.TestCase):
       self.assertEqual(regs['eflags'] & X86_TRAP_FLAG, 0)
 
   def test_single_step(self):
+    if sys.platform == 'darwin':
+      # TODO(mseaborn): Make this work on Mac OS X (and enable it) by
+      # removing this test's use of the int3 instruction.
+      return
     if ARCH == 'arm':
       # Skip this test because single-stepping is not supported on ARM.
       # TODO(eaeltsin):
@@ -421,6 +429,10 @@ class DebugStubTest(unittest.TestCase):
       self.assertEquals(reply, 'W00')
 
   def test_vCont(self):
+    if sys.platform == 'darwin':
+      # TODO(mseaborn): Make this work on Mac OS X (and enable it) by
+      # removing this test's use of the int3 instruction.
+      return
     # Basically repeat test_single_step, but using vCont commands.
     if ARCH == 'arm':
       # Skip this test because single-stepping is not supported on ARM.
@@ -475,6 +487,10 @@ class DebugStubTest(unittest.TestCase):
       AssertReplySignal(reply, NACL_SIGTRAP)
 
   def test_software_single_step(self):
+    if sys.platform == 'darwin':
+      # TODO(mseaborn): Make this work on Mac OS X (and enable it) by
+      # removing this test's use of the int3 instruction.
+      return
     # We want this test to work on ARM. As we can't skip past trap instruction
     # on ARM, we'll step from initial breakpoint to the first trap instruction.
     # We can use any test that has initial breakpoint and trap instruction on
@@ -609,6 +625,10 @@ class DebugStubThreadSuspensionTest(unittest.TestCase):
     return child_thread_id
 
   def test_continuing_thread_with_others_suspended(self):
+    if sys.platform == 'darwin':
+      # TODO(mseaborn): Make this work on Mac OS X (and enable it) by
+      # removing this test's use of the int3 instruction.
+      return
     with LaunchDebugStub('test_suspending_threads') as connection:
       symbols = GetSymbols()
       child_thread_id = self.WaitForTestThreadsToStart(connection, symbols)
@@ -635,6 +655,10 @@ class DebugStubThreadSuspensionTest(unittest.TestCase):
             child_thread_val)
 
   def test_single_stepping_thread_with_others_suspended(self):
+    if sys.platform == 'darwin':
+      # TODO(mseaborn): Make this work on Mac OS X (and enable it) by
+      # removing this test's use of the int3 instruction.
+      return
     with LaunchDebugStub('test_suspending_threads') as connection:
       symbols = GetSymbols()
       child_thread_id = self.WaitForTestThreadsToStart(connection, symbols)

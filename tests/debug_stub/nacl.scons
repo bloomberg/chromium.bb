@@ -17,9 +17,6 @@ sel_ldr_command = env.AddBootstrap(env.GetSelLdr(), ['-f', test_prog])
 is_broken = not env.Bit('nacl_static_link')
 extra_test_args = []
 if env.Bit('host_mac'):
-  # Resuming from a breakpoint does not yet work on Mac, so we run
-  # just the single test that works.
-  extra_test_args.append('DebugStubTest.test_initial_breakpoint')
   # "-a" has the side effect of disabling the Mac outer sandbox, which
   # does not yet work with the debug stub because the debug stub does
   # bind() after the outer sandbox has been enabled.
