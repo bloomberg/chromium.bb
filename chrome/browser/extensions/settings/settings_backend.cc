@@ -201,7 +201,7 @@ syncer::SyncError SettingsBackend::MergeDataAndStartSyncing(
     }
     DCHECK(!sync_data->HasKey(data.key())) <<
         "Duplicate settings for " << data.extension_id() << "/" << data.key();
-    sync_data->Set(data.key(), data.value().DeepCopy());
+    sync_data->SetWithoutPathExpansion(data.key(), data.value().DeepCopy());
   }
 
   // Start syncing all existing storage areas.  Any storage areas created in

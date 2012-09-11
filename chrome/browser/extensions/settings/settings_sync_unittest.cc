@@ -1379,4 +1379,50 @@ TEST_F(ExtensionSettingsSyncTest,
   GetSyncableService(model_type)->StopSyncing(model_type);
 }
 
+TEST_F(ExtensionSettingsSyncTest, Dots) {
+  syncer::ModelType model_type = syncer::EXTENSION_SETTINGS;
+  Extension::Type type = Extension::TYPE_EXTENSION;
+
+  ValueStore* storage = AddExtensionAndGetStorage("ext", type);
+
+  {
+    syncer::SyncDataList sync_data_list;
+    scoped_ptr<Value> string_value(Value::CreateStringValue("value"));
+    sync_data_list.push_back(settings_sync_util::CreateData(
+        "ext", "key.with.dot", *string_value, model_type));
+
+    GetSyncableService(model_type)->MergeDataAndStartSyncing(
+        model_type,
+        sync_data_list,
+        sync_processor_delegate_.PassAs<syncer::SyncChangeProcessor>(),
+        scoped_ptr<syncer::SyncErrorFactory>(
+            new syncer::SyncErrorFactoryMock()));
+  }
+
+  // Test dots in keys that come from sync.
+  {
+    ValueStore::ReadResult data = storage->Get();
+    ASSERT_FALSE(data->HasError());
+
+    DictionaryValue expected_data;
+    expected_data.SetWithoutPathExpansion(
+        "key.with.dot",
+        Value::CreateStringValue("value"));
+    EXPECT_TRUE(Value::Equals(&expected_data, data->settings().get()));
+  }
+
+  // Test dots in keys going to sync.
+  {
+    scoped_ptr<Value> string_value(Value::CreateStringValue("spot"));
+    storage->Set(DEFAULTS, "key.with.spot", *string_value);
+
+    ASSERT_EQ(1u, sync_processor_->changes().size());
+    SettingSyncData sync_data = sync_processor_->changes()[0];
+    EXPECT_EQ(syncer::SyncChange::ACTION_ADD, sync_data.change_type());
+    EXPECT_EQ("ext", sync_data.extension_id());
+    EXPECT_EQ("key.with.spot", sync_data.key());
+    EXPECT_TRUE(sync_data.value().Equals(string_value.get()));
+  }
+}
+
 }  // namespace extensions

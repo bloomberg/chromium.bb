@@ -20,7 +20,7 @@ std::string ValueStoreChange::ToJson(
     if (it->new_value()) {
       change_value->Set("newValue", it->new_value()->DeepCopy());
     }
-    changes_value.Set(it->key(), change_value);
+    changes_value.SetWithoutPathExpansion(it->key(), change_value);
   }
   std::string json;
   base::JSONWriter::Write(&changes_value, &json);

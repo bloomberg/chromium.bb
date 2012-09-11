@@ -20,43 +20,43 @@ DictionaryBuilder::~DictionaryBuilder() {}
 
 DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
                                           int in_value) {
-  dict_->SetInteger(path, in_value);
+  dict_->SetWithoutPathExpansion(path, Value::CreateIntegerValue(in_value));
   return *this;
 }
 
 DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
                                           double in_value) {
-  dict_->SetDouble(path, in_value);
+  dict_->SetWithoutPathExpansion(path, Value::CreateDoubleValue(in_value));
   return *this;
 }
 
 DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
                                           const std::string& in_value) {
-  dict_->SetString(path, in_value);
+  dict_->SetWithoutPathExpansion(path, Value::CreateStringValue(in_value));
   return *this;
 }
 
 DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
                                           const string16& in_value) {
-  dict_->SetString(path, in_value);
+  dict_->SetWithoutPathExpansion(path, Value::CreateStringValue(in_value));
   return *this;
 }
 
 DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
                                           DictionaryBuilder& in_value) {
-  dict_->Set(path, in_value.Build().release());
+  dict_->SetWithoutPathExpansion(path, in_value.Build().release());
   return *this;
 }
 
 DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
                                           ListBuilder& in_value) {
-  dict_->Set(path, in_value.Build().release());
+  dict_->SetWithoutPathExpansion(path, in_value.Build().release());
   return *this;
 }
 
 DictionaryBuilder& DictionaryBuilder::SetBoolean(
     const std::string& path, bool in_value) {
-  dict_->SetBoolean(path, in_value);
+  dict_->SetWithoutPathExpansion(path, Value::CreateBooleanValue(in_value));
   return *this;
 }
 

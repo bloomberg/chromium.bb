@@ -1925,6 +1925,7 @@
         'browser/value_store/leveldb_value_store_unittest.cc',
         'browser/value_store/policy_value_store_unittest.cc',
         'browser/value_store/testing_value_store_unittest.cc',
+        'browser/value_store/value_store_change_unittest.cc',
         'browser/value_store/value_store_frontend_unittest.cc',
         'browser/value_store/value_store_unittest.cc',
         'browser/value_store/value_store_unittest.h',
