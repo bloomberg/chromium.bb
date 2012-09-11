@@ -61,6 +61,7 @@
       ],
       'include_dirs': [
         '../..',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit',
         '<(webkit_src_dir)/Source/Platform/chromium',
       ],
       'conditions': [
