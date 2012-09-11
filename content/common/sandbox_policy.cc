@@ -43,6 +43,7 @@ const wchar_t* const kTroublesomeDlls[] = {
   L"acpiz.dll",                   // Unknown.
   L"avgrsstx.dll",                // AVG 8.
   L"babylonchromepi.dll",         // Babylon translator.
+  L"browsemngr.dll",              // Uninstall blocker used by Babylon.
   L"btkeyind.dll",                // Widcomm Bluetooth.
   L"cmcsyshk.dll",                // CMC Internet Security.
   L"cmsetac.dll",                 // Unknown (suspected malware).
