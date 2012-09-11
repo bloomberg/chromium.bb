@@ -5623,13 +5623,6 @@
    fun:_ZNK7SkPaint14descriptorProcEPK8SkMatrixPFvPK12SkDescriptorPvES6_b
 }
 {
-   bug_140628
-   Memcheck:Leak
-   ...
-   fun:_ZN15ExtensionAction16RunIconAnimationEi
-   fun:_ZN15ExtensionAction13SetAppearanceEiNS_10AppearanceE
-}
-{
    bug_143431
    Memcheck:Leak
    fun:_Znw*

@@ -57,13 +57,12 @@ class ExtensionAction {
   };
 
   // A fade-in animation.
-  class IconAnimation : public ui::LinearAnimation,
-                        public base::SupportsWeakPtr<IconAnimation> {
+  class IconAnimation : public ui::LinearAnimation {
    public:
     // Observes changes to icon animation state.
     class Observer {
      public:
-      virtual void OnIconChanged(const IconAnimation& animation) = 0;
+      virtual void OnIconChanged() = 0;
 
      protected:
       virtual ~Observer() {}
@@ -100,7 +99,9 @@ class ExtensionAction {
    private:
     // Construct using ExtensionAction::RunIconAnimation().
     friend class ExtensionAction;
-    explicit IconAnimation(ui::AnimationDelegate* delegate);
+    IconAnimation();
+
+    base::WeakPtr<IconAnimation> AsWeakPtr();
 
     // ui::LinearAnimation implementation.
     virtual void AnimateToState(double state) OVERRIDE;
@@ -109,6 +110,8 @@ class ExtensionAction {
     mutable scoped_ptr<SkDevice> device_;
 
     ObserverList<Observer> observers_;
+
+    base::WeakPtrFactory<IconAnimation> weak_ptr_factory_;
 
     DISALLOW_COPY_AND_ASSIGN(IconAnimation);
   };
@@ -255,16 +258,10 @@ class ExtensionAction {
   base::WeakPtr<IconAnimation> GetIconAnimation(int tab_id) const;
 
  private:
-  class IconAnimationWrapper;
   class IconWithBadgeImageSource;
 
   // Runs an animation on a tab.
   void RunIconAnimation(int tab_id);
-
-  // Finds the icon animation wrapper for a tab, if any.  If the animation for
-  // this tab has recently completed, also removes up any other dead wrappers
-  // from the map.
-  IconAnimationWrapper* GetIconAnimationWrapper(int tab_id) const;
 
   // If the icon animation is running on tab |tab_id|, applies it to
   // |orig| and returns the result. Otherwise, just returns |orig|.
@@ -319,13 +316,12 @@ class ExtensionAction {
   std::map<int, SkColor> badge_text_color_;
   std::map<int, Appearance> appearance_;
 
-  // IconAnimationWrappers own themselves so that even if the Extension and
-  // ExtensionAction are destroyed on a non-UI thread, the animation will still
-  // only be touched from the UI thread.  When an animation finishes, it deletes
-  // itself, which causes the WeakPtr in this map to become NULL.
-  // GetIconAnimationWrapper() removes NULLs to prevent the map from growing
-  // without bound.
-  mutable std::map<int, base::WeakPtr<IconAnimationWrapper> > icon_animation_;
+  // IconAnimations are destroyed by a delayed task on the UI message loop so
+  // that even if the Extension and ExtensionAction are destroyed on a non-UI
+  // thread, the animation will still only be touched from the UI thread.  This
+  // causes the WeakPtr in this map to become NULL.  GetIconAnimation() removes
+  // NULLs to prevent the map from growing without bound.
+  mutable std::map<int, base::WeakPtr<IconAnimation> > icon_animation_;
 
   std::string default_icon_path_;
 

@@ -1990,8 +1990,7 @@ void LocationBarViewGtk::PageActionViewGtk::ConnectPageActionAccelerator() {
   }
 }
 
-void LocationBarViewGtk::PageActionViewGtk::OnIconChanged(
-    const ExtensionAction::IconAnimation& animation) {
+void LocationBarViewGtk::PageActionViewGtk::OnIconChanged() {
   UpdateVisibility(owner_->GetWebContents(), current_url_);
 }
 

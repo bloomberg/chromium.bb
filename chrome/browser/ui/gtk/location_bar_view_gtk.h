@@ -287,8 +287,7 @@ class LocationBarViewGtk : public OmniboxEditController,
                                      void* user_data);
 
     // ExtensionAction::IconAnimationDelegate implementation.
-    virtual void OnIconChanged(
-        const ExtensionAction::IconAnimation& animation) OVERRIDE;
+    virtual void OnIconChanged() OVERRIDE;
 
     // The location bar view that owns us.
     LocationBarViewGtk* owner_;

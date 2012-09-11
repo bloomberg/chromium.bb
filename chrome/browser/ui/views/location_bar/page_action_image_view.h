@@ -85,8 +85,7 @@ class PageActionImageView : public views::ImageView,
 
  private:
   // Overridden from ExtensionAction::IconAnimation::Observer:
-  virtual void OnIconChanged(
-      const ExtensionAction::IconAnimation& animation) OVERRIDE;
+  virtual void OnIconChanged() OVERRIDE;
 
   // Shows the popup, with the given URL.
   void ShowPopupWithURL(const GURL& popup_url);

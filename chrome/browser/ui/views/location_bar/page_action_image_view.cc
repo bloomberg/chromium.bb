@@ -293,8 +293,7 @@ void PageActionImageView::Observe(int type,
     owner_->UpdatePageActions();
 }
 
-void PageActionImageView::OnIconChanged(
-    const ExtensionAction::IconAnimation& animation) {
+void PageActionImageView::OnIconChanged() {
   TabContents* tab_contents = owner_->GetTabContents();
   if (tab_contents)
     UpdateVisibility(tab_contents->web_contents(), current_url_);

@@ -137,13 +137,11 @@ TEST_F(ExtensionActionTest, Visibility) {
   ASSERT_FALSE(action.GetIsVisible(1));
   ASSERT_FALSE(action.GetIsVisible(100));
   EXPECT_FALSE(action.GetIconAnimation(100));
-
-  message_loop.RunAllPending();
 }
 
 TEST_F(ExtensionActionTest, GetAttention) {
   // Supports the icon animation.
-  MessageLoop message_loop;
+  scoped_ptr<MessageLoop> message_loop(new MessageLoop);
 
   EXPECT_FALSE(action.GetIsVisible(1));
   EXPECT_FALSE(action.GetIconAnimation(1));
@@ -152,14 +150,13 @@ TEST_F(ExtensionActionTest, GetAttention) {
   EXPECT_TRUE(action.GetIconAnimation(1));
 
   // Simulate waiting long enough for the animation to end.
-  action.GetIconAnimation(1)->Stop();
+  message_loop.reset();  // Can't have 2 MessageLoops alive at once.
+  message_loop.reset(new MessageLoop);
   EXPECT_FALSE(action.GetIconAnimation(1));  // Sanity check.
 
   action.SetAppearance(1, ExtensionAction::ACTIVE);
   EXPECT_FALSE(action.GetIconAnimation(1))
       << "The animation should not play again if the icon was already visible.";
-
-  message_loop.RunAllPending();
 }
 
 TEST_F(ExtensionActionTest, Badge) {

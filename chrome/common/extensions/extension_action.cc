@@ -6,7 +6,9 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "chrome/common/badge_util.h"
 #include "googleurl/src/gurl.h"
 #include "grit/theme_resources.h"
@@ -80,46 +82,15 @@ class GetAttentionImageSource : public gfx::ImageSkiaSource {
 
 }  // namespace
 
-// Wraps an IconAnimation and implements its ui::AnimationDelegate to delete
-// itself when the animation ends or is cancelled, causing its owned
-// IconAnimation to be destroyed.
-class ExtensionAction::IconAnimationWrapper
-    : public ui::AnimationDelegate,
-      public base::SupportsWeakPtr<IconAnimationWrapper> {
- public:
-  IconAnimationWrapper()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(animation_(this)) {}
-
-  virtual ~IconAnimationWrapper() {}
-
-  IconAnimation* animation() {
-    return &animation_;
-  }
-
- private:
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE {
-    Done();
-  }
-
-  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE {
-    Done();
-  }
-
-  void Done() {
-    delete this;
-  }
-
-  IconAnimation animation_;
-};
-
 // TODO(tbarzic): Merge AnimationIconImageSource and IconAnimation together.
 // Source for painting animated skia image.
 class AnimatedIconImageSource : public gfx::ImageSkiaSource {
  public:
-  AnimatedIconImageSource(const gfx::ImageSkia& image,
-                          ExtensionAction::IconAnimation* animation)
+  AnimatedIconImageSource(
+      const gfx::ImageSkia& image,
+      base::WeakPtr<ExtensionAction::IconAnimation> animation)
       : image_(image),
-        animation_(animation->AsWeakPtr()) {
+        animation_(animation) {
   }
 
  private:
@@ -191,13 +162,22 @@ class ExtensionAction::IconWithBadgeImageSource
 
 
 const int ExtensionAction::kDefaultTabId = -1;
+// 100ms animation at 50fps (so 5 animation frames in total).
+const int kIconFadeInDurationMs = 100;
+const int kIconFadeInFramesPerSecond = 50;
 
-ExtensionAction::IconAnimation::IconAnimation(
-    ui::AnimationDelegate* delegate)
-    // 100ms animation at 50fps (so 5 animation frames in total).
-    : ui::LinearAnimation(100, 50, delegate) {}
+ExtensionAction::IconAnimation::IconAnimation()
+    : ui::LinearAnimation(kIconFadeInDurationMs, kIconFadeInFramesPerSecond,
+                          NULL),
+      weak_ptr_factory_(this) {}
 
-ExtensionAction::IconAnimation::~IconAnimation() {}
+ExtensionAction::IconAnimation::~IconAnimation() {
+  // Make sure observers don't access *this after its destructor has started.
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  // In case the animation was destroyed before it finished (likely due to
+  // delays in timer scheduling), make sure it's fully visible.
+  FOR_EACH_OBSERVER(Observer, observers_, OnIconChanged());
+}
 
 const SkBitmap& ExtensionAction::IconAnimation::Apply(
     const SkBitmap& icon) const {
@@ -219,6 +199,11 @@ const SkBitmap& ExtensionAction::IconAnimation::Apply(
   return device_->accessBitmap(false);
 }
 
+base::WeakPtr<ExtensionAction::IconAnimation>
+ExtensionAction::IconAnimation::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 void ExtensionAction::IconAnimation::AddObserver(
     ExtensionAction::IconAnimation::Observer* observer) {
   observers_.AddObserver(observer);
@@ -230,7 +215,7 @@ void ExtensionAction::IconAnimation::RemoveObserver(
 }
 
 void ExtensionAction::IconAnimation::AnimateToState(double state) {
-  FOR_EACH_OBSERVER(Observer, observers_, OnIconChanged(*this));
+  FOR_EACH_OBSERVER(Observer, observers_, OnIconChanged());
 }
 
 ExtensionAction::IconAnimation::ScopedObserver::ScopedObserver(
@@ -486,16 +471,16 @@ void ExtensionAction::DoPaintBadge(gfx::Canvas* canvas,
   canvas->Restore();
 }
 
-ExtensionAction::IconAnimationWrapper* ExtensionAction::GetIconAnimationWrapper(
+base::WeakPtr<ExtensionAction::IconAnimation> ExtensionAction::GetIconAnimation(
     int tab_id) const {
-  std::map<int, base::WeakPtr<IconAnimationWrapper> >::iterator it =
+  std::map<int, base::WeakPtr<IconAnimation> >::iterator it =
       icon_animation_.find(tab_id);
   if (it == icon_animation_.end())
-    return NULL;
+    return base::WeakPtr<ExtensionAction::IconAnimation>();
   if (it->second)
     return it->second;
 
-  // Take this opportunity to remove all the NULL IconAnimationWrappers from
+  // Take this opportunity to remove all the NULL IconAnimations from
   // icon_animation_.
   icon_animation_.erase(it);
   for (it = icon_animation_.begin(); it != icon_animation_.end();) {
@@ -506,31 +491,34 @@ ExtensionAction::IconAnimationWrapper* ExtensionAction::GetIconAnimationWrapper(
       icon_animation_.erase(it++);
     }
   }
-  return NULL;
-}
-
-base::WeakPtr<ExtensionAction::IconAnimation> ExtensionAction::GetIconAnimation(
-    int tab_id) const {
-  IconAnimationWrapper* wrapper = GetIconAnimationWrapper(tab_id);
-  return wrapper ? wrapper->animation()->AsWeakPtr()
-      : base::WeakPtr<IconAnimation>();
+  return base::WeakPtr<ExtensionAction::IconAnimation>();
 }
 
 gfx::ImageSkia ExtensionAction::ApplyIconAnimation(
     int tab_id,
     const gfx::ImageSkia& icon) const {
-  IconAnimationWrapper* animation_wrapper = GetIconAnimationWrapper(tab_id);
-  if (animation_wrapper == NULL)
+  base::WeakPtr<IconAnimation> animation = GetIconAnimation(tab_id);
+  if (animation == NULL)
     return icon;
 
-  return gfx::ImageSkia(
-      new AnimatedIconImageSource(icon, animation_wrapper->animation()),
-      icon.size());
+  return gfx::ImageSkia(new AnimatedIconImageSource(icon, animation),
+                        icon.size());
 }
 
+namespace {
+// Used to create a Callback owning an IconAnimation.
+void DestroyIconAnimation(scoped_ptr<ExtensionAction::IconAnimation>) {}
+}
 void ExtensionAction::RunIconAnimation(int tab_id) {
-  IconAnimationWrapper* icon_animation =
-      new IconAnimationWrapper();
+  scoped_ptr<IconAnimation> icon_animation(new IconAnimation());
   icon_animation_[tab_id] = icon_animation->AsWeakPtr();
-  icon_animation->animation()->Start();
+  icon_animation->Start();
+  // After the icon is finished fading in (plus some padding to handle random
+  // timer delays), destroy it. We use a delayed task so that the Animation is
+  // deleted even if it hasn't finished by the time the MessageLoop is
+  // destroyed.
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&DestroyIconAnimation, base::Passed(icon_animation.Pass())),
+      base::TimeDelta::FromMilliseconds(kIconFadeInDurationMs * 2));
 }

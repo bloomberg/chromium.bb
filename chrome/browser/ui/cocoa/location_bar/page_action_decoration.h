@@ -69,8 +69,7 @@ class PageActionDecoration : public ImageDecoration,
   void ShowPopup(const NSRect& frame, const GURL& popup_url);
 
   // Overridden from ExtensionAction::IconAnimation::Observer.
-  virtual void OnIconChanged(
-      const ExtensionAction::IconAnimation& animation) OVERRIDE;
+  virtual void OnIconChanged() OVERRIDE;
 
   // Overridden from NotificationObserver:
   virtual void Observe(int type,

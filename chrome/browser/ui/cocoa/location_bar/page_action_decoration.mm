@@ -256,8 +256,7 @@ void PageActionDecoration::ShowPopup(const NSRect& frame,
                             devMode:NO];
 }
 
-void PageActionDecoration::OnIconChanged(
-    const ExtensionAction::IconAnimation& animation) {
+void PageActionDecoration::OnIconChanged() {
   UpdateVisibility(owner_->GetWebContents(), current_url_);
   owner_->RedrawDecoration(this);
 }
