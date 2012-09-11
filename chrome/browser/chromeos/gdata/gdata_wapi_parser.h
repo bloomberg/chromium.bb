@@ -50,27 +50,27 @@ class FileResource;
 class Link {
  public:
   enum LinkType {
-    kUnknown,
-    kSelf,
-    kNext,
-    kParent,
-    kAlternate,
-    kEdit,
-    kEditMedia,
-    kAltEditMedia,
-    kAltPost,
-    kFeed,
-    kPost,
-    kBatch,
-    kResumableEditMedia,
-    kResumableCreateMedia,
-    kTablesFeed,
-    kWorksheetFeed,
-    kThumbnail,
-    kEmbed,
-    kProduct,
-    kIcon,
-    kOpenWith,
+    LINK_UNKNOWN,
+    LINK_SELF,
+    LINK_NEXT,
+    LINK_PARENT,
+    LINK_ALTERNATE,
+    LINK_EDIT,
+    LINK_EDIT_MEDIA,
+    LINK_ALT_EDIT_MEDIA,
+    LINK_ALT_POST,
+    LINK_FEED,
+    LINK_POST,
+    LINK_BATCH,
+    LINK_RESUMABLE_EDIT_MEDIA,
+    LINK_RESUMABLE_CREATE_MEDIA,
+    LINK_TABLES_FEED,
+    LINK_WORKSHEET_FEED,
+    LINK_THUMBNAIL,
+    LINK_EMBED,
+    LINK_PRODUCT,
+    LINK_ICON,
+    LINK_OPEN_WITH,
   };
   Link();
   ~Link();
@@ -124,9 +124,9 @@ class Link {
 class FeedLink {
  public:
   enum FeedLinkType {
-    UNKNOWN,
-    ACL,
-    REVISIONS,
+    FEED_LINK_UNKNOWN,
+    FEED_LINK_ACL,
+    FEED_LINK_REVISIONS,
   };
   FeedLink();
 
@@ -186,10 +186,10 @@ class Author {
 class Category {
  public:
   enum CategoryType {
-    UNKNOWN,
-    ITEM,
-    KIND,
-    LABEL,
+    CATEGORY_UNKNOWN,
+    CATEGORY_ITEM,
+    CATEGORY_KIND,
+    CATEGORY_LABEL,
   };
 
   Category();
@@ -213,7 +213,7 @@ class Category {
  private:
   friend class DocumentEntry;
   // Converts category scheme into CategoryType enum. For example,
-  // http://schemas.google.com/g/2005#kind => Category::KIND
+  // http://schemas.google.com/g/2005#kind => Category::CATEGORY_KIND
   // Returns false and does not change |result| when |scheme| has an
   // unrecognizable value.
   static bool GetCategoryTypeFromScheme(
@@ -255,10 +255,11 @@ class Content {
 class AppIcon {
  public:
   enum IconCategory {
-    UNKNOWN,          // Uninitialized state
-    DOCUMENT,         // Document icon for various MIME types
-    APPLICATION,      // Application icon for various MIME types
-    SHARED_DOCUMENT,  // Icon for documents that are shared from other users.
+    ICON_UNKNOWN,          // Uninitialized state
+    ICON_DOCUMENT,         // Document icon for various MIME types
+    ICON_APPLICATION,      // Application icon for various MIME types
+    ICON_SHARED_DOCUMENT,  // Icon for documents that are shared from other
+                           // users.
   };
 
   AppIcon();

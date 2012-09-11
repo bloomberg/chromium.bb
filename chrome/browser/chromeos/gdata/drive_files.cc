@@ -64,11 +64,11 @@ void DriveEntry::InitFromDocumentEntry(const DocumentEntry& doc) {
   content_url_ = doc.content_url();
   deleted_ = doc.deleted();
 
-  const Link* edit_link = doc.GetLinkByType(Link::kEdit);
+  const Link* edit_link = doc.GetLinkByType(Link::LINK_EDIT);
   if (edit_link)
     edit_url_ = edit_link->href();
 
-  const Link* parent_link = doc.GetLinkByType(Link::kParent);
+  const Link* parent_link = doc.GetLinkByType(Link::LINK_PARENT);
   if (parent_link)
     parent_resource_id_ = ExtractResourceId(parent_link->href());
 }
@@ -143,7 +143,8 @@ void DriveFile::InitFromDocumentEntry(const DocumentEntry& doc) {
 
     // The resumable-edit-media link should only be present for regular
     // files as hosted documents are not uploadable.
-    const Link* upload_link = doc.GetLinkByType(Link::kResumableEditMedia);
+    const Link* upload_link =
+        doc.GetLinkByType(Link::LINK_RESUMABLE_EDIT_MEDIA);
     if (upload_link)
       upload_url_ = upload_link->href();
   } else {
@@ -164,11 +165,11 @@ void DriveFile::InitFromDocumentEntry(const DocumentEntry& doc) {
   // |is_hosted_document_| and |document_extension_| are set.
   SetBaseNameFromTitle();
 
-  const Link* thumbnail_link = doc.GetLinkByType(Link::kThumbnail);
+  const Link* thumbnail_link = doc.GetLinkByType(Link::LINK_THUMBNAIL);
   if (thumbnail_link)
     thumbnail_url_ = thumbnail_link->href();
 
-  const Link* alternate_link = doc.GetLinkByType(Link::kAlternate);
+  const Link* alternate_link = doc.GetLinkByType(Link::LINK_ALTERNATE);
   if (alternate_link)
     alternate_url_ = alternate_link->href();
 }
@@ -191,7 +192,8 @@ DriveDirectory* DriveDirectory::AsDriveDirectory() {
 void DriveDirectory::InitFromDocumentEntry(const DocumentEntry& doc) {
   DriveEntry::InitFromDocumentEntry(doc);
 
-  const Link* upload_link = doc.GetLinkByType(Link::kResumableCreateMedia);
+  const Link* upload_link =
+      doc.GetLinkByType(Link::LINK_RESUMABLE_CREATE_MEDIA);
   if (upload_link)
     upload_url_ = upload_link->href();
 }

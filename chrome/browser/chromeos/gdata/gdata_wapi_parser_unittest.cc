@@ -94,14 +94,14 @@ TEST_F(GDataWAPIParserTest, DocumentFeedJsonParser) {
 
   // Check links.
   ASSERT_EQ(6U, feed->links().size());
-  const Link* self_link = feed->GetLinkByType(Link::kSelf);
+  const Link* self_link = feed->GetLinkByType(Link::LINK_SELF);
   ASSERT_TRUE(self_link);
   EXPECT_EQ("https://self_link/", self_link->href().spec());
   EXPECT_EQ("application/atom+xml", self_link->mime_type());
 
 
   const Link* resumable_link =
-      feed->GetLinkByType(Link::kResumableCreateMedia);
+      feed->GetLinkByType(Link::LINK_RESUMABLE_CREATE_MEDIA);
   ASSERT_TRUE(resumable_link);
   EXPECT_EQ("https://resumable_create_media_link/",
             resumable_link->href().spec());
@@ -138,16 +138,16 @@ TEST_F(GDataWAPIParserTest, DocumentFeedJsonParser) {
   ASSERT_EQ(1U, folder_entry->feed_links().size());
   const FeedLink* feed_link = folder_entry->feed_links()[0];
   ASSERT_TRUE(feed_link);
-  ASSERT_EQ(FeedLink::ACL, feed_link->type());
+  ASSERT_EQ(FeedLink::FEED_LINK_ACL, feed_link->type());
 
   const Link* entry1_alternate_link =
-      folder_entry->GetLinkByType(Link::kAlternate);
+      folder_entry->GetLinkByType(Link::LINK_ALTERNATE);
   ASSERT_TRUE(entry1_alternate_link);
   EXPECT_EQ("https://1_folder_alternate_link/",
             entry1_alternate_link->href().spec());
   EXPECT_EQ("text/html", entry1_alternate_link->mime_type());
 
-  const Link* entry1_edit_link = folder_entry->GetLinkByType(Link::kEdit);
+  const Link* entry1_edit_link = folder_entry->GetLinkByType(Link::LINK_EDIT);
   ASSERT_TRUE(entry1_edit_link);
   EXPECT_EQ("https://1_edit_link/", entry1_edit_link->href().spec());
   EXPECT_EQ("application/atom+xml", entry1_edit_link->mime_type());
@@ -161,20 +161,20 @@ TEST_F(GDataWAPIParserTest, DocumentFeedJsonParser) {
             file_entry->suggested_filename());
   EXPECT_EQ("3b4382ebefec6e743578c76bbd0575ce", file_entry->file_md5());
   EXPECT_EQ(892721, file_entry->file_size());
-  const Link* file_parent_link = file_entry->GetLinkByType(Link::kParent);
+  const Link* file_parent_link = file_entry->GetLinkByType(Link::LINK_PARENT);
   ASSERT_TRUE(file_parent_link);
   EXPECT_EQ("https://file_link_parent/", file_parent_link->href().spec());
   EXPECT_EQ("application/atom+xml", file_parent_link->mime_type());
   EXPECT_EQ(ASCIIToUTF16("Medical"), file_parent_link->title());
   const Link* file_open_with_link =
-    file_entry->GetLinkByType(Link::kOpenWith);
+    file_entry->GetLinkByType(Link::LINK_OPEN_WITH);
   ASSERT_TRUE(file_open_with_link);
   EXPECT_EQ("https://xml_file_entry_open_with_link/",
             file_open_with_link->href().spec());
   EXPECT_EQ("application/atom+xml", file_open_with_link->mime_type());
   EXPECT_EQ("the_app_id", file_open_with_link->app_id());
 
-  const Link* file_unknown_link = file_entry->GetLinkByType(Link::kUnknown);
+  const Link* file_unknown_link = file_entry->GetLinkByType(Link::LINK_UNKNOWN);
   ASSERT_TRUE(file_unknown_link);
   EXPECT_EQ("https://xml_file_fake_entry_open_with_link/",
             file_unknown_link->href().spec());
@@ -230,41 +230,43 @@ TEST_F(GDataWAPIParserTest, DocumentEntryXmlParser) {
   ASSERT_EQ(2U, entry->feed_links().size());
   const FeedLink* feed_link_1 = entry->feed_links()[0];
   ASSERT_TRUE(feed_link_1);
-  EXPECT_EQ(FeedLink::ACL, feed_link_1->type());
+  EXPECT_EQ(FeedLink::FEED_LINK_ACL, feed_link_1->type());
 
   const FeedLink* feed_link_2 = entry->feed_links()[1];
   ASSERT_TRUE(feed_link_2);
-  EXPECT_EQ(FeedLink::REVISIONS, feed_link_2->type());
+  EXPECT_EQ(FeedLink::FEED_LINK_REVISIONS, feed_link_2->type());
 
   // Check links.
   ASSERT_EQ(9U, entry->links().size());
-  const Link* entry1_alternate_link = entry->GetLinkByType(Link::kAlternate);
+  const Link* entry1_alternate_link =
+      entry->GetLinkByType(Link::LINK_ALTERNATE);
   ASSERT_TRUE(entry1_alternate_link);
   EXPECT_EQ("https://xml_file_entry_id_alternate_link/",
             entry1_alternate_link->href().spec());
   EXPECT_EQ("text/html", entry1_alternate_link->mime_type());
 
-  const Link* entry1_edit_link = entry->GetLinkByType(Link::kEditMedia);
+  const Link* entry1_edit_link = entry->GetLinkByType(Link::LINK_EDIT_MEDIA);
   ASSERT_TRUE(entry1_edit_link);
   EXPECT_EQ("https://xml_file_entry_id_edit_media_link/",
             entry1_edit_link->href().spec());
   EXPECT_EQ("application/x-tar", entry1_edit_link->mime_type());
 
-  const Link* entry1_self_link = entry->GetLinkByType(Link::kSelf);
+  const Link* entry1_self_link = entry->GetLinkByType(Link::LINK_SELF);
   ASSERT_TRUE(entry1_self_link);
   EXPECT_EQ("https://xml_file_entry_id_self_link/",
             entry1_self_link->href().spec());
   EXPECT_EQ("application/atom+xml", entry1_self_link->mime_type());
   EXPECT_EQ("", entry1_self_link->app_id());
 
-  const Link* entry1_open_with_link = entry->GetLinkByType(Link::kOpenWith);
+  const Link* entry1_open_with_link =
+      entry->GetLinkByType(Link::LINK_OPEN_WITH);
   ASSERT_TRUE(entry1_open_with_link);
   EXPECT_EQ("https://xml_file_entry_open_with_link/",
             entry1_open_with_link->href().spec());
   EXPECT_EQ("application/atom+xml", entry1_open_with_link->mime_type());
   EXPECT_EQ("the_app_id", entry1_open_with_link->app_id());
 
-  const Link* entry1_unknown_link = entry->GetLinkByType(Link::kUnknown);
+  const Link* entry1_unknown_link = entry->GetLinkByType(Link::LINK_UNKNOWN);
   ASSERT_TRUE(entry1_unknown_link);
   EXPECT_EQ("https://xml_file_fake_entry_open_with_link/",
             entry1_unknown_link->href().spec());
@@ -323,15 +325,15 @@ TEST_F(GDataWAPIParserTest, AccountMetadataFeedParser) {
   EXPECT_EQ("ext_3", *first_app->secondary_extensions()[0]);
 
   ASSERT_EQ(1U, first_app->app_icons().size());
-  EXPECT_EQ(AppIcon::DOCUMENT, first_app->app_icons()[0]->category());
+  EXPECT_EQ(AppIcon::ICON_DOCUMENT, first_app->app_icons()[0]->category());
   EXPECT_EQ(16, first_app->app_icons()[0]->icon_side_length());
   GURL icon_url = first_app->app_icons()[0]->GetIconURL();
   EXPECT_EQ("https://www.google.com/images/srpr/logo3w.png", icon_url.spec());
   InstalledApp::IconList icons =
-    first_app->GetIconsForCategory(AppIcon::DOCUMENT);
+    first_app->GetIconsForCategory(AppIcon::ICON_DOCUMENT);
   EXPECT_EQ("https://www.google.com/images/srpr/logo3w.png",
             icons[0].second.spec());
-  icons = first_app->GetIconsForCategory(AppIcon::SHARED_DOCUMENT);
+  icons = first_app->GetIconsForCategory(AppIcon::ICON_SHARED_DOCUMENT);
   EXPECT_TRUE(icons.empty());
 
   ASSERT_TRUE(second_app);

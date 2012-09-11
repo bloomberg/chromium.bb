@@ -585,7 +585,7 @@ void AuthorizeAppsOperation::ParseResponse(
   const ScopedVector<Link>& feed_links = entry->links();
   for (ScopedVector<Link>::const_iterator iter = feed_links.begin();
        iter != feed_links.end(); ++iter) {
-    if ((*iter)->type() == Link::kOpenWith) {
+    if ((*iter)->type() == Link::LINK_OPEN_WITH) {
       base::DictionaryValue* link = new DictionaryValue;
       link->SetString(std::string("href"), (*iter)->href().spec());
       link->SetString(std::string("mime_type"), (*iter)->mime_type());

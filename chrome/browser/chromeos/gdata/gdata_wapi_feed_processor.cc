@@ -257,7 +257,7 @@ DriveFileError GDataWapiFeedProcessor::FeedToFileResourceMap(
     // be handled in GDatadirectory::FromDocumentEntry();
     if (i == 0) {
       const Link* root_feed_upload_link =
-          feed->GetLinkByType(Link::kResumableCreateMedia);
+          feed->GetLinkByType(Link::LINK_RESUMABLE_CREATE_MEDIA);
       if (root_feed_upload_link)
         resource_metadata_->root()->set_upload_url(
             root_feed_upload_link->href());
