@@ -61,8 +61,6 @@ static XRRModeInfo* ModeInfoForID(XRRScreenResources* screen, RRMode modeID) {
     if (modeID == screen->modes[i].id)
       result = &screen->modes[i];
 
-  // We can't fail to find a mode referenced from the same screen.
-  CHECK(result != NULL);
   return result;
 }
 
@@ -91,6 +89,9 @@ static bool FindMirrorModeForOutputs(Display* display,
     RRMode two_id = secondary->modes[two_index];
     XRRModeInfo* one_mode = ModeInfoForID(screen, one_id);
     XRRModeInfo* two_mode = ModeInfoForID(screen, two_id);
+    if (one_mode == NULL || two_mode == NULL)
+      break;
+
     int one_width = one_mode->width;
     int one_height = one_mode->height;
     int two_width = two_mode->width;
@@ -405,7 +406,7 @@ static RRCrtc GetNextCrtcAfter(Display* display,
   return crtc;
 }
 
-static void EnterState(Display* display,
+static bool EnterState(Display* display,
                        XRRScreenResources* screen,
                        Window window,
                        OutputState new_state,
@@ -418,6 +419,9 @@ static void EnterState(Display* display,
     case 1: {
       // Re-allocate the framebuffer to fit.
       XRRModeInfo* mode_info = ModeInfoForID(screen, outputs[0].native_mode);
+      if (mode_info == NULL)
+        return false;
+
       int width = mode_info->width;
       int height = mode_info->height;
       CreateFrameBuffer(display, screen, window, width, height);
@@ -443,6 +447,9 @@ static void EnterState(Display* display,
 
       if (STATE_DUAL_MIRROR == new_state) {
         XRRModeInfo* mode_info = ModeInfoForID(screen, outputs[0].mirror_mode);
+        if (mode_info == NULL)
+          return false;
+
         int width = mode_info->width;
         int height = mode_info->height;
         CreateFrameBuffer(display, screen, window, width, height);
@@ -468,6 +475,9 @@ static void EnterState(Display* display,
             ModeInfoForID(screen, outputs[0].native_mode);
         XRRModeInfo* secondary_mode_info =
             ModeInfoForID(screen, outputs[1].native_mode);
+        if (primary_mode_info == NULL || secondary_mode_info == NULL)
+          return false;
+
         int width =
             std::max<int>(primary_mode_info->width, secondary_mode_info->width);
         int primary_height = primary_mode_info->height;
@@ -517,6 +527,8 @@ static void EnterState(Display* display,
     default:
       CHECK(false);
   }
+
+  return true;
 }
 
 static XRRScreenResources* GetScreenResourcesAndRecordUMA(Display* display,
@@ -576,13 +588,13 @@ OutputConfigurator::OutputConfigurator()
                                             STATE_INVALID,
                                             outputs,
                                             connected_output_count_);
-  if (output_state_ != starting_state) {
-    EnterState(display,
-               screen,
-               window,
-               starting_state,
-               outputs,
-               connected_output_count_);
+  if (output_state_ != starting_state &&
+      EnterState(display,
+                 screen,
+                 window,
+                 starting_state,
+                 outputs,
+                 connected_output_count_)) {
     output_state_ =
         InferCurrentState(display, screen, outputs, connected_output_count_);
   }
@@ -622,13 +634,13 @@ bool OutputConfigurator::CycleDisplayMode() {
       InferCurrentState(display, screen, outputs, connected_output_count_);
   OutputState next_state =
       GetNextState(display, screen, original, outputs, connected_output_count_);
-  if (original != next_state) {
-    EnterState(display,
-               screen,
-               window,
-               next_state,
-               outputs,
-               connected_output_count_);
+  if (original != next_state &&
+      EnterState(display,
+                 screen,
+                 window,
+                 next_state,
+                 outputs,
+                 connected_output_count_)) {
     did_change = true;
   }
   // We have seen cases where the XRandR data can get out of sync with our own
@@ -718,13 +730,14 @@ bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
   OutputSnapshot outputs[2] = { {0}, {0} };
   connected_output_count_ =
       GetDualOutputs(display, screen, &outputs[0], &outputs[1]);
-  EnterState(display,
-             screen,
-             window,
-             new_state,
-             outputs,
-             connected_output_count_);
-  output_state_ = new_state;
+  if (EnterState(display,
+                 screen,
+                 window,
+                 new_state,
+                 outputs,
+                 connected_output_count_)) {
+    output_state_ = new_state;
+  }
 
   XRRFreeScreenResources(screen);
   XUngrabServer(display);
@@ -768,13 +781,14 @@ bool OutputConfigurator::Dispatch(const base::NativeEvent& event) {
                                              STATE_INVALID,
                                              outputs,
                                              connected_output_count_);
-        EnterState(display,
-                   screen,
-                   window,
-                   new_state,
-                   outputs,
-                   connected_output_count_);
-        output_state_ = new_state;
+        if (EnterState(display,
+                       screen,
+                       window,
+                       new_state,
+                       outputs,
+                       connected_output_count_)) {
+          output_state_ = new_state;
+        }
       }
 
       bool is_projecting = IsProjecting(outputs, connected_output_count_);
