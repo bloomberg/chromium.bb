@@ -17,7 +17,6 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
-#include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/installer/setup/setup_constants.h"
@@ -310,7 +309,7 @@ void CreateOrUpdateStartMenuAndTaskbarShortcuts(
     // proceed to pin the Start Menu shortcut to the taskbar on Win7+.
     VLOG(1) << "Pinning new shortcut at " << chrome_link.value()
             << " to taskbar";
-    if (!base::win::TaskbarPinShortcutLink(chrome_link.value().c_str())) {
+    if (!file_util::TaskbarPinShortcutLink(chrome_link.value().c_str())) {
       LOG(ERROR) << "Failed to pin shortcut to taskbar: "
                  << chrome_link.value();
     }
@@ -328,14 +327,12 @@ void CreateOrUpdateStartMenuAndTaskbarShortcuts(
     CommandLine arguments(CommandLine::NO_PROGRAM);
     AppendUninstallCommandLineFlags(installer_state, product, &arguments);
     VLOG(1) << operation << " uninstall link at " << uninstall_link.value();
-    base::win::ShortcutProperties shortcut_properties;
-    shortcut_properties.set_target(setup_exe);
-    shortcut_properties.set_arguments(arguments.GetCommandLineString());
-    shortcut_properties.set_icon(setup_exe, 0);
-    if (!base::win::CreateOrUpdateShortcutLink(
-            uninstall_link, shortcut_properties,
-            create_always ? base::win::SHORTCUT_CREATE_ALWAYS :
-                            base::win::SHORTCUT_UPDATE_EXISTING)) {
+    if (!file_util::CreateOrUpdateShortcutLink(setup_exe.value().c_str(),
+            uninstall_link.value().c_str(), NULL,
+            arguments.GetCommandLineString().c_str(), NULL,
+            setup_exe.value().c_str(), 0, NULL,
+            create_always ? file_util::SHORTCUT_CREATE_ALWAYS :
+                            file_util::SHORTCUT_NO_OPTIONS)) {
       LOG(WARNING) << operation << " uninstall link at "
                    << uninstall_link.value() << " failed.";
     }

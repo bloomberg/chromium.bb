@@ -21,7 +21,6 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_comptr.h"
-#include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
@@ -337,11 +336,10 @@ void MigrateWin7ShortcutsInPath(
     GetShortcutAppId(shell_link, &existing_app_id);
 
     if (expected_app_id != existing_app_id) {
-      base::win::ShortcutProperties properties_app_id_only;
-      properties_app_id_only.set_app_id(expected_app_id);
-      base::win::CreateOrUpdateShortcutLink(
-          shortcut, properties_app_id_only,
-          base::win::SHORTCUT_UPDATE_EXISTING);
+      file_util::CreateOrUpdateShortcutLink(NULL, shortcut.value().c_str(),
+                                            NULL, NULL, NULL, NULL, 0,
+                                            expected_app_id.c_str(),
+                                            file_util::SHORTCUT_NO_OPTIONS);
     }
   }
 }
