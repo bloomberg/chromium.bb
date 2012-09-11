@@ -153,7 +153,7 @@ void PepperHungPluginFilter::OnHangTimer() {
       // own "kind of" hang (although the message loop is running little work
       // will be getting done) in the renderer! If the timings or logic are
       // off, we'd prefer to get a crash dump and know about it.
-      CHECK(delay <= base::TimeDelta());
+      CHECK(delay > base::TimeDelta());
 
       timer_task_pending_ = false;
       io_loop_->PostDelayedTask(FROM_HERE,
