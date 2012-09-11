@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "chrome/browser/chromeos/extensions/file_handler_util.h"
-#include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
+#include "chrome/browser/google_apis/gdata_errorcode.h"
 
 namespace gdata {
 

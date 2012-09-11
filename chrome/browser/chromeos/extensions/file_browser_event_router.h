@@ -16,7 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_interface.h"
-#include "chrome/browser/chromeos/gdata/operation_registry.h"
+#include "chrome/browser/google_apis/operation_registry.h"
 #include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
 #include "chrome/browser/profiles/refcounted_profile_keyed_service_factory.h"
 #include "chromeos/disks/disk_mount_manager.h"

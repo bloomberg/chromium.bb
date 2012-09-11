@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
-#include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
+#include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class Profile;
 

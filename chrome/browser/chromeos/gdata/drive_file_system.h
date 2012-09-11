@@ -14,8 +14,8 @@
 #include "base/timer.h"
 #include "chrome/browser/chromeos/gdata/drive_cache.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_interface.h"
-#include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_feed_loader.h"
+#include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "content/public/browser/notification_observer.h"
 
 class PrefChangeRegistrar;

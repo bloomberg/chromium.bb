@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/gdata/task_util.h"
+#include "chrome/browser/google_apis/task_util.h"
 
 #include "base/location.h"
 #include "content/public/browser/browser_thread.h"

@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/file_path.h"
-#include "chrome/browser/chromeos/gdata/operation_registry.h"
+#include "chrome/browser/google_apis/operation_registry.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/dialogs/select_file_dialog.h"
 

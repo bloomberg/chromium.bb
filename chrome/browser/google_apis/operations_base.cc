@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/gdata/operations_base.h"
+#include "chrome/browser/google_apis/operations_base.h"
 
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram.h"

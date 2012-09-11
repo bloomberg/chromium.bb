@@ -23,7 +23,7 @@
 #include "chrome/browser/chromeos/gdata/drive_uploader.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_feed_processor.h"
-#include "chrome/browser/chromeos/gdata/task_util.h"
+#include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"

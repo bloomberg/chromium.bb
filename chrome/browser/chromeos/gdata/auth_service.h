@@ -10,8 +10,8 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
-#include "chrome/browser/chromeos/gdata/operations_base.h"
+#include "chrome/browser/google_apis/gdata_errorcode.h"
+#include "chrome/browser/google_apis/operations_base.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 

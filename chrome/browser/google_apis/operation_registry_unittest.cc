@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/gdata/operation_registry.h"
+#include "chrome/browser/google_apis/operation_registry.h"
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"

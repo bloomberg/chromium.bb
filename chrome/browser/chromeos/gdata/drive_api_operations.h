@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/browser/chromeos/gdata/operations_base.h"
+#include "chrome/browser/google_apis/operations_base.h"
 
 // TODO(kochi): Rename to namespace drive. http://crbug.com/136371
 namespace gdata {

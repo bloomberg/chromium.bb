@@ -11,7 +11,7 @@
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
+#include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 

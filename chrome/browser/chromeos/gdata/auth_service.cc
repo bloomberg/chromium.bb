@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
-#include "chrome/browser/chromeos/gdata/operations_base.h"
-#include "chrome/browser/chromeos/gdata/task_util.h"
+#include "chrome/browser/google_apis/operations_base.h"
+#include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"

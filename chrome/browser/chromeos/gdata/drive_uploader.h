@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/gdata/drive_upload_file_info.h"
-#include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
+#include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class GURL;
 

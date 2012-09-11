@@ -15,7 +15,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/gdata/drive_resource_metadata.h"
-#include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
+#include "chrome/browser/google_apis/gdata_errorcode.h"
 #endif
 
 typedef std::vector<unsigned char> ScreenshotData;

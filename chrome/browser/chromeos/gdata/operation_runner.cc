@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "chrome/browser/chromeos/gdata/auth_service.h"
-#include "chrome/browser/chromeos/gdata/operations_base.h"
+#include "chrome/browser/google_apis/operations_base.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 

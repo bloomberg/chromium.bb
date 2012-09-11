@@ -7,11 +7,11 @@
 
 #include <string>
 
-#include "chrome/browser/chromeos/gdata/operations_base.h"
 // TODO(kochi): Further split gdata_operations.h and include only necessary
 // headers. http://crbug.com/141469
 // DownloadActionCallback/InitiateUploadParams/ResulmeUploadParams
 #include "chrome/browser/chromeos/gdata/gdata_operations.h"
+#include "chrome/browser/google_apis/operations_base.h"
 
 class Profile;
 

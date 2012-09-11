@@ -18,7 +18,7 @@
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/chromeos/gdata/drive_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
-#include "chrome/browser/chromeos/gdata/operation_registry.h"
+#include "chrome/browser/google_apis/operation_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"

@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
+#include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/io_buffer.h"
 

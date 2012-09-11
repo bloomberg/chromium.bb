@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_GDATA_OPERATIONS_BASE_H_
-#define CHROME_BROWSER_CHROMEOS_GDATA_OPERATIONS_BASE_H_
+#ifndef CHROME_BROWSER_GOOGLE_APIS_OPERATIONS_BASE_H_
+#define CHROME_BROWSER_GOOGLE_APIS_OPERATIONS_BASE_H_
 
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
-#include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
-#include "chrome/browser/chromeos/gdata/operation_registry.h"
+#include "chrome/browser/google_apis/gdata_errorcode.h"
+#include "chrome/browser/google_apis/operation_registry.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "googleurl/src/gurl.h"
 #include "net/http/http_response_headers.h"
@@ -231,4 +231,4 @@ class GetDataOperation : public UrlFetchOperationBase {
 
 }  // namespace gdata
 
-#endif  // CHROME_BROWSER_CHROMEOS_GDATA_OPERATIONS_BASE_H_
+#endif  // CHROME_BROWSER_GOOGLE_APIS_OPERATIONS_BASE_H_

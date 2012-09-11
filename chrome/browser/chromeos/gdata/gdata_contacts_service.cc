@@ -20,11 +20,11 @@
 #include "base/timer.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/contacts/contact.pb.h"
-#include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 #include "chrome/browser/chromeos/gdata/gdata_operations.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
-#include "chrome/browser/chromeos/gdata/operation_registry.h"
 #include "chrome/browser/chromeos/gdata/operation_runner.h"
+#include "chrome/browser/google_apis/gdata_errorcode.h"
+#include "chrome/browser/google_apis/operation_registry.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

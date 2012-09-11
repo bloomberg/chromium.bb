@@ -9,7 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/platform_file.h"
-#include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
+#include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class FilePath;
 class Profile;
