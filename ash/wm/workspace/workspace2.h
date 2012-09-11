@@ -21,7 +21,7 @@ class Rect;
 namespace ash {
 namespace internal {
 
-class WorkspaceEventFilter;
+class WorkspaceEventHandler;
 class WorkspaceManager2;
 
 // Workspace is used to maintain either a single maximized windows (including
@@ -61,7 +61,7 @@ class ASH_EXPORT Workspace2 {
   aura::Window* window_;
 
   // Owned by |window_|.
-  WorkspaceEventFilter* event_filter_;
+  WorkspaceEventHandler* event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(Workspace2);
 };

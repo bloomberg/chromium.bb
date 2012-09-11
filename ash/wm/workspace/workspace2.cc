@@ -8,7 +8,7 @@
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/workspace_event_filter.h"
+#include "ash/wm/workspace/workspace_event_handler.h"
 #include "ash/wm/workspace/workspace_manager2.h"
 #include "ui/aura/window.h"
 
@@ -21,7 +21,7 @@ Workspace2::Workspace2(WorkspaceManager2* manager,
     : is_maximized_(is_maximized),
       workspace_manager_(manager),
       window_(new aura::Window(NULL)),
-      event_filter_(new WorkspaceEventFilter(window_)) {
+      event_handler_(new WorkspaceEventHandler(window_)) {
   window_->SetProperty(internal::kChildWindowVisibilityChangesAnimatedKey,
                        true);
   window_->set_id(kShellWindowId_WorkspaceContainer);
@@ -31,7 +31,7 @@ Workspace2::Workspace2(WorkspaceManager2* manager,
   window_->layer()->SetMasksToBounds(true);
   window_->Hide();
   window_->SetParent(parent);
-  window_->SetEventFilter(event_filter_);
+  window_->AddPreTargetHandler(event_handler_);
   window_->SetProperty(internal::kUsesScreenCoordinatesKey, true);
 }
 
@@ -47,7 +47,7 @@ aura::Window* Workspace2::ReleaseWindow() {
   window_->SetEventFilter(NULL);
   aura::Window* window = window_;
   window_ = NULL;
-  event_filter_ = NULL;
+  event_handler_ = NULL;
   return window;
 }
 

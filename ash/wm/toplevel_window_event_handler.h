@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_TOPLEVEL_WINDOW_EVENT_FILTER_H_
-#define ASH_WM_TOPLEVEL_WINDOW_EVENT_FILTER_H_
+#ifndef ASH_WM_TOPLEVEL_WINDOW_EVENT_HANDLER_H_
+#define ASH_WM_TOPLEVEL_WINDOW_EVENT_HANDLER_H_
 
 #include <set>
 
@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/window_move_client.h"
-#include "ui/aura/event_filter.h"
+#include "ui/base/events/event_handler.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 
@@ -28,24 +28,19 @@ namespace ash {
 
 class WindowResizer;
 
-class ASH_EXPORT ToplevelWindowEventFilter
-    : public aura::EventFilter,
+class ASH_EXPORT ToplevelWindowEventHandler
+    : public ui::EventHandler,
       public aura::client::WindowMoveClient {
  public:
-  explicit ToplevelWindowEventFilter(aura::Window* owner);
-  virtual ~ToplevelWindowEventFilter();
+  explicit ToplevelWindowEventHandler(aura::Window* owner);
+  virtual ~ToplevelWindowEventHandler();
 
-  // Overridden from aura::EventFilter:
-  virtual bool PreHandleKeyEvent(aura::Window* target,
-                                 ui::KeyEvent* event) OVERRIDE;
-  virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   ui::MouseEvent* event) OVERRIDE;
-  virtual ui::TouchStatus PreHandleTouchEvent(
-      aura::Window* target,
-      ui::TouchEvent* event) OVERRIDE;
-  virtual ui::EventResult PreHandleGestureEvent(
-      aura::Window* target,
-      ui::GestureEvent* event) OVERRIDE;
+  // Overridden from ui::EventHandler:
+  virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual ui::EventResult OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual ui::EventResult OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual ui::TouchStatus OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
+  virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // Overridden form aura::client::WindowMoveClient:
   virtual void RunMoveLoop(aura::Window* source,
@@ -98,9 +93,9 @@ class ASH_EXPORT ToplevelWindowEventFilter
 
   base::Closure quit_closure_;
 
-  DISALLOW_COPY_AND_ASSIGN(ToplevelWindowEventFilter);
+  DISALLOW_COPY_AND_ASSIGN(ToplevelWindowEventHandler);
 };
 
 }  // namespace aura
 
-#endif  // ASH_WM_TOPLEVEL_WINDOW_EVENT_FILTER_H_
+#endif  // ASH_WM_TOPLEVEL_WINDOW_EVENT_HANDLER_H_

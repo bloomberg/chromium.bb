@@ -8,7 +8,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_animations.h"
-#include "ash/wm/workspace/workspace_event_filter.h"
+#include "ash/wm/workspace/workspace_event_handler.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "grit/ui_resources.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -160,7 +160,7 @@ void MultiWindowResizeController::Show(Window* window,
                                        const gfx::Point& point_in_window) {
   // When the resize widget is showing we ignore Show() requests. Instead we
   // only care about mouse movements from MouseWatcher. This is necessary as
-  // WorkspaceEventFilter only sees mouse movements over the windows, not all
+  // WorkspaceEventHandler only sees mouse movements over the windows, not all
   // windows or over the desktop.
   if (resize_widget_.get())
     return;

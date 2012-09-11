@@ -6,7 +6,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/workspace_event_filter.h"
+#include "ash/wm/workspace/workspace_event_handler.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace/workspace_manager.h"
 #include "ash/wm/workspace/workspace_manager2.h"
@@ -22,7 +22,7 @@ namespace internal {
 WorkspaceController::WorkspaceController(aura::Window* viewport)
     : viewport_(viewport),
       layout_manager_(NULL),
-      event_filter_(NULL) {
+      event_handler_(NULL) {
   aura::RootWindow* root_window = viewport->GetRootWindow();
   if (IsWorkspace2Enabled()) {
     WorkspaceManager2* workspace_manager = new WorkspaceManager2(viewport);
@@ -33,8 +33,8 @@ WorkspaceController::WorkspaceController(aura::Window* viewport)
     layout_manager_ = new WorkspaceLayoutManager(
         root_window, workspace_manager);
     viewport->SetLayoutManager(layout_manager_);
-    event_filter_ = new WorkspaceEventFilter(viewport);
-    viewport->SetEventFilter(event_filter_);
+    event_handler_ = new WorkspaceEventHandler(viewport);
+    viewport->AddPreTargetHandler(event_handler_);
   }
   aura::client::GetActivationClient(root_window)->AddObserver(this);
 }

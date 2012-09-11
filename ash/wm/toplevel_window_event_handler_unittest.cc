@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/toplevel_window_event_filter.h"
+#include "ash/wm/toplevel_window_event_handler.h"
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -64,10 +64,10 @@ class TestWindowDelegate : public aura::test::TestWindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestWindowDelegate);
 };
 
-class ToplevelWindowEventFilterTest : public AshTestBase {
+class ToplevelWindowEventHandlerTest : public AshTestBase {
  public:
-  ToplevelWindowEventFilterTest() : filter_(NULL), parent_(NULL) {}
-  virtual ~ToplevelWindowEventFilterTest() {}
+  ToplevelWindowEventHandlerTest() : handler_(NULL), parent_(NULL) {}
+  virtual ~ToplevelWindowEventHandlerTest() {}
 
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
@@ -76,12 +76,12 @@ class ToplevelWindowEventFilterTest : public AshTestBase {
     parent_->Show();
     Shell::GetPrimaryRootWindow()->AddChild(parent_);
     parent_->SetBounds(Shell::GetPrimaryRootWindow()->bounds());
-    filter_ = new ToplevelWindowEventFilter(parent_);
-    parent_->SetEventFilter(filter_);
+    handler_ = new ToplevelWindowEventHandler(parent_);
+    parent_->AddPreTargetHandler(handler_);
   }
 
   virtual void TearDown() OVERRIDE {
-    filter_ = NULL;
+    handler_ = NULL;
     parent_ = NULL;
     AshTestBase::TearDown();
   }
@@ -108,18 +108,18 @@ class ToplevelWindowEventFilterTest : public AshTestBase {
     generator.PressMoveAndReleaseTouchBy(dx, dy);
   }
 
-  ToplevelWindowEventFilter* filter_;
+  ToplevelWindowEventHandler* handler_;
 
  private:
-  // Window |filter_| is installed on. Owned by RootWindow.
+  // Window |handler_| is installed on. Owned by RootWindow.
   aura::Window* parent_;
 
-  DISALLOW_COPY_AND_ASSIGN(ToplevelWindowEventFilterTest);
+  DISALLOW_COPY_AND_ASSIGN(ToplevelWindowEventHandlerTest);
 };
 
 }
 
-TEST_F(ToplevelWindowEventFilterTest, Caption) {
+TEST_F(ToplevelWindowEventHandlerTest, Caption) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTCAPTION));
   gfx::Size size = w1->bounds().size();
   DragFromCenterBy(w1.get(), 100, 100);
@@ -135,7 +135,7 @@ TEST_F(ToplevelWindowEventFilterTest, Caption) {
   EXPECT_EQ(size.ToString(), w1->bounds().size().ToString());
 }
 
-TEST_F(ToplevelWindowEventFilterTest, BottomRight) {
+TEST_F(ToplevelWindowEventHandlerTest, BottomRight) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTBOTTOMRIGHT));
   gfx::Point position = w1->bounds().origin();
   DragFromCenterBy(w1.get(), 100, 100);
@@ -145,7 +145,7 @@ TEST_F(ToplevelWindowEventFilterTest, BottomRight) {
   EXPECT_EQ(gfx::Size(200, 200), w1->bounds().size());
 }
 
-TEST_F(ToplevelWindowEventFilterTest, GrowBox) {
+TEST_F(ToplevelWindowEventHandlerTest, GrowBox) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTGROWBOX));
   TestWindowDelegate* window_delegate =
     static_cast<TestWindowDelegate*>(w1->delegate());
@@ -173,7 +173,7 @@ TEST_F(ToplevelWindowEventFilterTest, GrowBox) {
   EXPECT_EQ(gfx::Size(40, 40), w1->bounds().size());
 }
 
-TEST_F(ToplevelWindowEventFilterTest, Right) {
+TEST_F(ToplevelWindowEventHandlerTest, Right) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTRIGHT));
   gfx::Point position = w1->bounds().origin();
   DragFromCenterBy(w1.get(), 100, 100);
@@ -183,7 +183,7 @@ TEST_F(ToplevelWindowEventFilterTest, Right) {
   EXPECT_EQ(gfx::Size(200, 100), w1->bounds().size());
 }
 
-TEST_F(ToplevelWindowEventFilterTest, Bottom) {
+TEST_F(ToplevelWindowEventHandlerTest, Bottom) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTBOTTOM));
   gfx::Point position = w1->bounds().origin();
   DragFromCenterBy(w1.get(), 100, 100);
@@ -193,7 +193,7 @@ TEST_F(ToplevelWindowEventFilterTest, Bottom) {
   EXPECT_EQ(gfx::Size(100, 200), w1->bounds().size());
 }
 
-TEST_F(ToplevelWindowEventFilterTest, TopRight) {
+TEST_F(ToplevelWindowEventHandlerTest, TopRight) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTTOPRIGHT));
   DragFromCenterBy(w1.get(), -50, 50);
   // Position should have been offset by 0,50.
@@ -202,7 +202,7 @@ TEST_F(ToplevelWindowEventFilterTest, TopRight) {
   EXPECT_EQ(gfx::Size(50, 50), w1->bounds().size());
 }
 
-TEST_F(ToplevelWindowEventFilterTest, Top) {
+TEST_F(ToplevelWindowEventHandlerTest, Top) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTTOP));
   DragFromCenterBy(w1.get(), 50, 50);
   // Position should have been offset by 0,50.
@@ -211,7 +211,7 @@ TEST_F(ToplevelWindowEventFilterTest, Top) {
   EXPECT_EQ(gfx::Size(100, 50), w1->bounds().size());
 }
 
-TEST_F(ToplevelWindowEventFilterTest, Left) {
+TEST_F(ToplevelWindowEventHandlerTest, Left) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTLEFT));
   DragFromCenterBy(w1.get(), 50, 50);
   // Position should have been offset by 50,0.
@@ -220,7 +220,7 @@ TEST_F(ToplevelWindowEventFilterTest, Left) {
   EXPECT_EQ(gfx::Size(50, 100), w1->bounds().size());
 }
 
-TEST_F(ToplevelWindowEventFilterTest, BottomLeft) {
+TEST_F(ToplevelWindowEventHandlerTest, BottomLeft) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTBOTTOMLEFT));
   DragFromCenterBy(w1.get(), 50, -50);
   // Position should have been offset by 50,0.
@@ -229,7 +229,7 @@ TEST_F(ToplevelWindowEventFilterTest, BottomLeft) {
   EXPECT_EQ(gfx::Size(50, 50), w1->bounds().size());
 }
 
-TEST_F(ToplevelWindowEventFilterTest, TopLeft) {
+TEST_F(ToplevelWindowEventHandlerTest, TopLeft) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTTOPLEFT));
   DragFromCenterBy(w1.get(), 50, 50);
   // Position should have been offset by 50,50.
@@ -238,7 +238,7 @@ TEST_F(ToplevelWindowEventFilterTest, TopLeft) {
   EXPECT_EQ(gfx::Size(50, 50), w1->bounds().size());
 }
 
-TEST_F(ToplevelWindowEventFilterTest, Client) {
+TEST_F(ToplevelWindowEventHandlerTest, Client) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTCLIENT));
   gfx::Rect bounds = w1->bounds();
   DragFromCenterBy(w1.get(), 100, 100);
@@ -246,7 +246,7 @@ TEST_F(ToplevelWindowEventFilterTest, Client) {
   EXPECT_EQ(bounds, w1->bounds());
 }
 
-TEST_F(ToplevelWindowEventFilterTest, LeftPastMinimum) {
+TEST_F(ToplevelWindowEventHandlerTest, LeftPastMinimum) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTLEFT));
   TestWindowDelegate* window_delegate =
       static_cast<TestWindowDelegate*>(w1->delegate());
@@ -259,7 +259,7 @@ TEST_F(ToplevelWindowEventFilterTest, LeftPastMinimum) {
   EXPECT_EQ(gfx::Size(40, 100), w1->bounds().size());
 }
 
-TEST_F(ToplevelWindowEventFilterTest, RightPastMinimum) {
+TEST_F(ToplevelWindowEventHandlerTest, RightPastMinimum) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTRIGHT));
   TestWindowDelegate* window_delegate =
       static_cast<TestWindowDelegate*>(w1->delegate());
@@ -273,7 +273,7 @@ TEST_F(ToplevelWindowEventFilterTest, RightPastMinimum) {
   EXPECT_EQ(gfx::Size(40, 100), w1->bounds().size());
 }
 
-TEST_F(ToplevelWindowEventFilterTest, TopLeftPastMinimum) {
+TEST_F(ToplevelWindowEventHandlerTest, TopLeftPastMinimum) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTTOPLEFT));
   TestWindowDelegate* window_delegate =
       static_cast<TestWindowDelegate*>(w1->delegate());
@@ -286,7 +286,7 @@ TEST_F(ToplevelWindowEventFilterTest, TopLeftPastMinimum) {
   EXPECT_EQ(gfx::Size(40, 40), w1->bounds().size());
 }
 
-TEST_F(ToplevelWindowEventFilterTest, TopRightPastMinimum) {
+TEST_F(ToplevelWindowEventHandlerTest, TopRightPastMinimum) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTTOPRIGHT));
   TestWindowDelegate* window_delegate =
       static_cast<TestWindowDelegate*>(w1->delegate());
@@ -300,7 +300,7 @@ TEST_F(ToplevelWindowEventFilterTest, TopRightPastMinimum) {
   EXPECT_EQ(gfx::Size(40, 40), w1->bounds().size());
 }
 
-TEST_F(ToplevelWindowEventFilterTest, BottomLeftPastMinimum) {
+TEST_F(ToplevelWindowEventHandlerTest, BottomLeftPastMinimum) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTBOTTOMLEFT));
   TestWindowDelegate* window_delegate =
       static_cast<TestWindowDelegate*>(w1->delegate());
@@ -314,7 +314,7 @@ TEST_F(ToplevelWindowEventFilterTest, BottomLeftPastMinimum) {
   EXPECT_EQ(gfx::Size(40, 40), w1->bounds().size());
 }
 
-TEST_F(ToplevelWindowEventFilterTest, BottomRightPastMinimum) {
+TEST_F(ToplevelWindowEventHandlerTest, BottomRightPastMinimum) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTBOTTOMRIGHT));
   TestWindowDelegate* window_delegate =
       static_cast<TestWindowDelegate*>(w1->delegate());
@@ -328,7 +328,7 @@ TEST_F(ToplevelWindowEventFilterTest, BottomRightPastMinimum) {
   EXPECT_EQ(gfx::Size(40, 40), w1->bounds().size());
 }
 
-TEST_F(ToplevelWindowEventFilterTest, BottomRightWorkArea) {
+TEST_F(ToplevelWindowEventHandlerTest, BottomRightWorkArea) {
   scoped_ptr<aura::Window> target(CreateWindow(HTBOTTOMRIGHT));
   gfx::Rect work_area =
       gfx::Screen::GetDisplayNearestWindow(target.get()).work_area();
@@ -342,7 +342,7 @@ TEST_F(ToplevelWindowEventFilterTest, BottomRightWorkArea) {
             target->bounds().size());
 }
 
-TEST_F(ToplevelWindowEventFilterTest, BottomLeftWorkArea) {
+TEST_F(ToplevelWindowEventHandlerTest, BottomLeftWorkArea) {
   scoped_ptr<aura::Window> target(CreateWindow(HTBOTTOMLEFT));
   gfx::Rect work_area =
       gfx::Screen::GetDisplayNearestWindow(target.get()).work_area();
@@ -357,7 +357,7 @@ TEST_F(ToplevelWindowEventFilterTest, BottomLeftWorkArea) {
             target->bounds().size());
 }
 
-TEST_F(ToplevelWindowEventFilterTest, BottomWorkArea) {
+TEST_F(ToplevelWindowEventHandlerTest, BottomWorkArea) {
   scoped_ptr<aura::Window> target(CreateWindow(HTBOTTOM));
   gfx::Rect work_area =
       gfx::Screen::GetDisplayNearestWindow(target.get()).work_area();
@@ -372,7 +372,7 @@ TEST_F(ToplevelWindowEventFilterTest, BottomWorkArea) {
 }
 
 // Verifies we don't let windows drag to a -y location.
-TEST_F(ToplevelWindowEventFilterTest, DontDragToNegativeY) {
+TEST_F(ToplevelWindowEventHandlerTest, DontDragToNegativeY) {
   scoped_ptr<aura::Window> target(CreateWindow(HTTOP));
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                        target.get());
@@ -384,7 +384,7 @@ TEST_F(ToplevelWindowEventFilterTest, DontDragToNegativeY) {
 }
 
 // Verifies we don't let windows go bigger than the display width.
-TEST_F(ToplevelWindowEventFilterTest, DontGotWiderThanScreen) {
+TEST_F(ToplevelWindowEventHandlerTest, DontGotWiderThanScreen) {
   scoped_ptr<aura::Window> target(CreateWindow(HTRIGHT));
   gfx::Rect work_area =
       gfx::Screen::GetDisplayNearestWindow(target.get()).bounds();
@@ -394,7 +394,7 @@ TEST_F(ToplevelWindowEventFilterTest, DontGotWiderThanScreen) {
 }
 
 // Verifies that touch-gestures drag the window correctly.
-TEST_F(ToplevelWindowEventFilterTest, GestureDrag) {
+TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
   scoped_ptr<aura::Window> target(CreateWindow(HTCAPTION));
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                        target.get());
@@ -465,7 +465,7 @@ TEST_F(ToplevelWindowEventFilterTest, GestureDrag) {
 #else
 #define MAYBE_EscapeReverts EscapeReverts
 #endif
-TEST_F(ToplevelWindowEventFilterTest, MAYBE_EscapeReverts) {
+TEST_F(ToplevelWindowEventHandlerTest, MAYBE_EscapeReverts) {
   aura::RootWindow* root = Shell::GetPrimaryRootWindow();
   aura::client::ActivationClient* original_client =
       aura::client::GetActivationClient(root);

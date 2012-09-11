@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/workspace/workspace_event_filter.h"
+#include "ash/wm/workspace/workspace_event_handler.h"
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -19,10 +19,10 @@
 namespace ash {
 namespace internal {
 
-class WorkspaceEventFilterTest : public test::AshTestBase {
+class WorkspaceEventHandlerTest : public test::AshTestBase {
  public:
-  WorkspaceEventFilterTest() {}
-  virtual ~WorkspaceEventFilterTest() {}
+  WorkspaceEventHandlerTest() {}
+  virtual ~WorkspaceEventHandlerTest() {}
 
  protected:
   aura::Window* CreateTestWindow(aura::WindowDelegate* delegate,
@@ -37,10 +37,10 @@ class WorkspaceEventFilterTest : public test::AshTestBase {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WorkspaceEventFilterTest);
+  DISALLOW_COPY_AND_ASSIGN(WorkspaceEventHandlerTest);
 };
 
-TEST_F(WorkspaceEventFilterTest, DoubleClickSingleAxisResizeEdge) {
+TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisResizeEdge) {
   // Double clicking the vertical resize edge of a window should maximize it
   // vertically.
   gfx::Rect restored_bounds(10, 10, 50, 50);
@@ -95,7 +95,7 @@ TEST_F(WorkspaceEventFilterTest, DoubleClickSingleAxisResizeEdge) {
   EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
 }
 
-TEST_F(WorkspaceEventFilterTest, DoubleClickCaptionTogglesMaximize) {
+TEST_F(WorkspaceEventHandlerTest, DoubleClickCaptionTogglesMaximize) {
   aura::test::TestWindowDelegate wd;
   scoped_ptr<aura::Window> window(CreateTestWindow(&wd, gfx::Rect(1, 2, 3, 4)));
   wd.set_window_component(HTCAPTION);
@@ -112,7 +112,7 @@ TEST_F(WorkspaceEventFilterTest, DoubleClickCaptionTogglesMaximize) {
   EXPECT_EQ("1,2 3x4", window->bounds().ToString());
 }
 
-TEST_F(WorkspaceEventFilterTest, DoubleTapCaptionTogglesMaximize) {
+TEST_F(WorkspaceEventHandlerTest, DoubleTapCaptionTogglesMaximize) {
   aura::test::TestWindowDelegate wd;
   gfx::Rect bounds(10, 20, 30, 40);
   scoped_ptr<aura::Window> window(CreateTestWindow(&wd, bounds));
@@ -134,9 +134,9 @@ TEST_F(WorkspaceEventFilterTest, DoubleTapCaptionTogglesMaximize) {
 }
 
 // Verifies deleting the window while dragging doesn't crash.
-TEST_F(WorkspaceEventFilterTest, DeleteWhenDragging) {
+TEST_F(WorkspaceEventHandlerTest, DeleteWhenDragging) {
   // Create a large window in the background. This is necessary so that when we
-  // delete |window| WorkspaceEventFilter is still the active EventFilter.
+  // delete |window| WorkspaceEventHandler is still the active event handler.
   aura::test::TestWindowDelegate wd2;
   scoped_ptr<aura::Window> window2(
       CreateTestWindow(&wd2, gfx::Rect(0, 0, 500, 500)));
@@ -155,7 +155,7 @@ TEST_F(WorkspaceEventFilterTest, DeleteWhenDragging) {
 }
 
 // Verifies deleting the window while in a run loop doesn't crash.
-TEST_F(WorkspaceEventFilterTest, DeleteWhileInRunLoop) {
+TEST_F(WorkspaceEventHandlerTest, DeleteWhileInRunLoop) {
   aura::test::TestWindowDelegate wd;
   const gfx::Rect bounds(10, 20, 30, 40);
   scoped_ptr<aura::Window> window(CreateTestWindow(&wd, bounds));

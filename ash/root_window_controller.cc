@@ -17,7 +17,7 @@
 #include "ash/wm/root_window_layout_manager.h"
 #include "ash/wm/screen_dimmer.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
-#include "ash/wm/toplevel_window_event_filter.h"
+#include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/visibility_controller.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/workspace_controller.h"
@@ -177,8 +177,10 @@ void CreateContainersInRootWindow(aura::RootWindow* root_window) {
       internal::kShellWindowId_DefaultContainer,
       "DefaultContainer",
       non_lock_screen_containers);
-  default_container->SetEventFilter(
-      new ToplevelWindowEventFilter(default_container));
+  if (!internal::WorkspaceController::IsWorkspace2Enabled()) {
+    default_container->AddPreTargetHandler(
+        new ToplevelWindowEventHandler(default_container));
+  }
   SetChildWindowVisibilityChangesAnimated(default_container);
   SetUsesScreenCoordinates(default_container);
 
@@ -186,8 +188,8 @@ void CreateContainersInRootWindow(aura::RootWindow* root_window) {
       internal::kShellWindowId_AlwaysOnTopContainer,
       "AlwaysOnTopContainer",
       non_lock_screen_containers);
-  always_on_top_container->SetEventFilter(
-      new ToplevelWindowEventFilter(always_on_top_container));
+  always_on_top_container->AddPreTargetHandler(
+      new ToplevelWindowEventHandler(always_on_top_container));
   SetChildWindowVisibilityChangesAnimated(always_on_top_container);
   SetUsesScreenCoordinates(always_on_top_container);
 
@@ -211,8 +213,8 @@ void CreateContainersInRootWindow(aura::RootWindow* root_window) {
       internal::kShellWindowId_SystemModalContainer,
       "SystemModalContainer",
       non_lock_screen_containers);
-  modal_container->SetEventFilter(
-      new ToplevelWindowEventFilter(modal_container));
+  modal_container->AddPreTargetHandler(
+      new ToplevelWindowEventHandler(modal_container));
   modal_container->SetLayoutManager(
       new internal::SystemModalContainerLayoutManager(modal_container));
   SetChildWindowVisibilityChangesAnimated(modal_container);
@@ -239,8 +241,8 @@ void CreateContainersInRootWindow(aura::RootWindow* root_window) {
       internal::kShellWindowId_LockSystemModalContainer,
       "LockSystemModalContainer",
       lock_screen_containers);
-  lock_modal_container->SetEventFilter(
-      new ToplevelWindowEventFilter(lock_modal_container));
+  lock_modal_container->AddPreTargetHandler(
+      new ToplevelWindowEventHandler(lock_modal_container));
   lock_modal_container->SetLayoutManager(
       new internal::SystemModalContainerLayoutManager(lock_modal_container));
   SetChildWindowVisibilityChangesAnimated(lock_modal_container);

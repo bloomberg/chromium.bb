@@ -21,7 +21,7 @@ namespace internal {
 class BaseWorkspaceManager;
 class ShelfLayoutManager;
 class WorkspaceControllerTestHelper;
-class WorkspaceEventFilter;
+class WorkspaceEventHandler;
 class WorkspaceLayoutManager;
 
 // WorkspaceController acts as a central place that ties together all the
@@ -60,14 +60,14 @@ class ASH_EXPORT WorkspaceController
 
   scoped_ptr<BaseWorkspaceManager> workspace_manager_;
 
-  // TODO(sky): remove |layout_manager_| and |event_filter_| when Workspace2
+  // TODO(sky): remove |layout_manager_| and |event_handler_| when Workspace2
   // is the default.
 
   // Owned by the window its attached to.
   WorkspaceLayoutManager* layout_manager_;
 
   // Owned by |viewport_|.
-  WorkspaceEventFilter* event_filter_;
+  WorkspaceEventHandler* event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceController);
 };

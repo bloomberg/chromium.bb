@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/workspace/workspace_event_filter.h"
+#include "ash/wm/workspace/workspace_event_handler.h"
 
 #include "ash/screen_ash.h"
 #include "ash/wm/property_util.h"
@@ -54,18 +54,18 @@ void ToggleMaximizedState(aura::Window* window) {
 
 namespace internal {
 
-WorkspaceEventFilter::WorkspaceEventFilter(aura::Window* owner)
-    : ToplevelWindowEventFilter(owner),
+WorkspaceEventHandler::WorkspaceEventHandler(aura::Window* owner)
+    : ToplevelWindowEventHandler(owner),
       destroyed_(NULL) {
 }
 
-WorkspaceEventFilter::~WorkspaceEventFilter() {
+WorkspaceEventHandler::~WorkspaceEventHandler() {
   if (destroyed_)
     *destroyed_ = true;
 }
 
-bool WorkspaceEventFilter::PreHandleMouseEvent(aura::Window* target,
-                                               ui::MouseEvent* event) {
+ui::EventResult WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event) {
+  aura::Window* target = static_cast<aura::Window*>(event->target());
   switch (event->type()) {
     case ui::ET_MOUSE_MOVED: {
       int component =
@@ -87,7 +87,7 @@ bool WorkspaceEventFilter::PreHandleMouseEvent(aura::Window* target,
         destroyed_ = &destroyed;
         ToggleMaximizedState(target);
         if (destroyed)
-          return false;
+          return ui::ER_UNHANDLED;
         destroyed_ = NULL;
       }
       multi_window_resize_controller_.Hide();
@@ -97,22 +97,21 @@ bool WorkspaceEventFilter::PreHandleMouseEvent(aura::Window* target,
     default:
       break;
   }
-  return ToplevelWindowEventFilter::PreHandleMouseEvent(target, event);
+  return ToplevelWindowEventHandler::OnMouseEvent(event);
 }
 
-ui::EventResult WorkspaceEventFilter::PreHandleGestureEvent(
-    aura::Window* target,
-    ui::GestureEvent* event) {
+ui::EventResult WorkspaceEventHandler::OnGestureEvent(ui::GestureEvent* event) {
+  aura::Window* target = static_cast<aura::Window*>(event->target());
   if (event->type() == ui::ET_GESTURE_DOUBLE_TAP &&
       target->delegate()->GetNonClientComponent(event->location()) ==
       HTCAPTION) {
     ToggleMaximizedState(target);  // |this| may be destroyed from here.
     return ui::ER_CONSUMED;
   }
-  return ToplevelWindowEventFilter::PreHandleGestureEvent(target, event);
+  return ToplevelWindowEventHandler::OnGestureEvent(event);
 }
 
-WindowResizer* WorkspaceEventFilter::CreateWindowResizer(
+WindowResizer* WorkspaceEventHandler::CreateWindowResizer(
     aura::Window* window,
     const gfx::Point& point_in_parent,
     int window_component) {
@@ -127,7 +126,7 @@ WindowResizer* WorkspaceEventFilter::CreateWindowResizer(
       std::vector<aura::Window*>());
 }
 
-void WorkspaceEventFilter::HandleVerticalResizeDoubleClick(
+void WorkspaceEventHandler::HandleVerticalResizeDoubleClick(
     aura::Window* target,
     ui::MouseEvent* event) {
   if (event->flags() & ui::EF_IS_DOUBLE_CLICK &&

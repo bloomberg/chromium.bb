@@ -13,14 +13,14 @@ namespace ash {
 namespace internal {
 
 class MultiWindowResizeController;
-class WorkspaceEventFilter;
+class WorkspaceEventHandler;
 
 class WorkspaceControllerTestHelper {
  public:
   explicit WorkspaceControllerTestHelper(WorkspaceController* controller);
   ~WorkspaceControllerTestHelper();
 
-  WorkspaceEventFilter* GetFilter();
+  WorkspaceEventHandler* GetEventHandler();
   MultiWindowResizeController* GetMultiWindowResizeController();
   WorkspaceManager* workspace_manager() {
     return static_cast<WorkspaceManager*>(

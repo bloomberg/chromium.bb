@@ -17,6 +17,21 @@ class UI_EXPORT EventTarget : public EventHandler {
  public:
   typedef std::vector<EventTarget*> EventTargets;
 
+  class TestApi {
+   public:
+    explicit TestApi(EventTarget* target) : target_(target) {}
+
+    const EventHandlerList& pre_target_handlers() {
+      return target_->pre_target_list_;
+    }
+
+   private:
+    TestApi();
+    EventTarget* target_;
+
+    DISALLOW_COPY_AND_ASSIGN(TestApi);
+  };
+
   EventTarget();
   virtual ~EventTarget();
 
@@ -29,7 +44,7 @@ class UI_EXPORT EventTarget : public EventHandler {
   void AddPreTargetHandler(EventHandler* handler);
   void RemovePreTargetHandler(EventHandler* handler);
 
-  // Adds a handler to receive events after the target. The hanler must be
+  // Adds a handler to receive events after the target. The handler must be
   // explicitly removed from the target before the handler is destroyed. The
   // EventTarget does not take ownership of the handler.
   void AddPostTargetHandler(EventHandler* handler);
@@ -39,9 +54,6 @@ class UI_EXPORT EventTarget : public EventHandler {
   void set_target_handler(EventHandler* handler) {
     target_handler_ = handler;
   }
-
-  EventHandlerList& pre_target_list() { return pre_target_list_; }
-  EventHandlerList& post_target_list() { return post_target_list_; }
 
  private:
   friend class EventDispatcher;

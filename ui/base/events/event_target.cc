@@ -40,8 +40,8 @@ void EventTarget::GetPreTargetHandlers(EventHandlerList* list) {
   EventTarget* target = this;
   while (target) {
     EventHandlerList::reverse_iterator it, rend;
-    for (it = target->pre_target_list().rbegin(),
-            rend = target->pre_target_list().rend();
+    for (it = target->pre_target_list_.rbegin(),
+            rend = target->pre_target_list_.rend();
         it != rend;
         ++it) {
       list->insert(list->begin(), *it);
@@ -53,8 +53,8 @@ void EventTarget::GetPreTargetHandlers(EventHandlerList* list) {
 void EventTarget::GetPostTargetHandlers(EventHandlerList* list) {
   EventTarget* target = this;
   while (target) {
-    for (EventHandlerList::iterator it = target->post_target_list().begin(),
-        end = target->post_target_list().end(); it != end; ++it) {
+    for (EventHandlerList::iterator it = target->post_target_list_.begin(),
+        end = target->post_target_list_.end(); it != end; ++it) {
       list->push_back(*it);
     }
     target = target->GetParentTarget();

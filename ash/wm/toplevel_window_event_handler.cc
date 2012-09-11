@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/toplevel_window_event_filter.h"
+#include "ash/wm/toplevel_window_event_handler.h"
 
 #include "ash/shell.h"
 #include "ash/wm/default_window_resizer.h"
@@ -50,11 +50,11 @@ gfx::Point ConvertPointToParent(aura::Window* window,
 
 // Wraps a WindowResizer and installs an observer on its target window.  When
 // the window is destroyed ResizerWindowDestroyed() is invoked back on the
-// ToplevelWindowEventFilter to clean up.
-class ToplevelWindowEventFilter::ScopedWindowResizer
+// ToplevelWindowEventHandler to clean up.
+class ToplevelWindowEventHandler::ScopedWindowResizer
     : public aura::WindowObserver {
  public:
-  ScopedWindowResizer(ToplevelWindowEventFilter* filter,
+  ScopedWindowResizer(ToplevelWindowEventHandler* handler,
                       WindowResizer* resizer);
   virtual ~ScopedWindowResizer();
 
@@ -64,60 +64,60 @@ class ToplevelWindowEventFilter::ScopedWindowResizer
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
  private:
-  ToplevelWindowEventFilter* filter_;
+  ToplevelWindowEventHandler* handler_;
   scoped_ptr<WindowResizer> resizer_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedWindowResizer);
 };
 
-ToplevelWindowEventFilter::ScopedWindowResizer::ScopedWindowResizer(
-    ToplevelWindowEventFilter* filter,
+ToplevelWindowEventHandler::ScopedWindowResizer::ScopedWindowResizer(
+    ToplevelWindowEventHandler* handler,
     WindowResizer* resizer)
-    : filter_(filter),
+    : handler_(handler),
       resizer_(resizer) {
   if (resizer_.get())
     resizer_->GetTarget()->AddObserver(this);
 }
 
-ToplevelWindowEventFilter::ScopedWindowResizer::~ScopedWindowResizer() {
+ToplevelWindowEventHandler::ScopedWindowResizer::~ScopedWindowResizer() {
   if (resizer_.get())
     resizer_->GetTarget()->RemoveObserver(this);
 }
 
-void ToplevelWindowEventFilter::ScopedWindowResizer::OnWindowDestroying(
+void ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowDestroying(
     aura::Window* window) {
   DCHECK(resizer_.get());
   DCHECK_EQ(resizer_->GetTarget(), window);
-  filter_->ResizerWindowDestroyed();
+  handler_->ResizerWindowDestroyed();
 }
 
 
-// ToplevelWindowEventFilter ---------------------------------------------------
+// ToplevelWindowEventHandler --------------------------------------------------
 
-ToplevelWindowEventFilter::ToplevelWindowEventFilter(aura::Window* owner)
+ToplevelWindowEventHandler::ToplevelWindowEventHandler(aura::Window* owner)
     : in_move_loop_(false),
       in_gesture_resize_(false) {
   aura::client::SetWindowMoveClient(owner, this);
 }
 
-ToplevelWindowEventFilter::~ToplevelWindowEventFilter() {
+ToplevelWindowEventHandler::~ToplevelWindowEventHandler() {
 }
 
-bool ToplevelWindowEventFilter::PreHandleKeyEvent(aura::Window* target,
-                                                  ui::KeyEvent* event) {
+ui::EventResult ToplevelWindowEventHandler::OnKeyEvent(ui::KeyEvent* event) {
   if (window_resizer_.get() && event->type() == ui::ET_KEY_PRESSED &&
       event->key_code() == ui::VKEY_ESCAPE) {
     CompleteDrag(DRAG_REVERT, event->flags());
   }
-  return false;
+  return ui::ER_UNHANDLED;
 }
 
-bool ToplevelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
-                                                    ui::MouseEvent* event) {
+ui::EventResult ToplevelWindowEventHandler::OnMouseEvent(
+    ui::MouseEvent* event) {
   if ((event->flags() &
       (ui::EF_MIDDLE_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON)) != 0)
-    return false;
+    return ui::ER_UNHANDLED;
 
+  aura::Window* target = static_cast<aura::Window*>(event->target());
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED: {
       // We also update the current window component here because for the
@@ -134,10 +134,11 @@ bool ToplevelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
       } else {
         window_resizer_.reset();
       }
-      return WindowResizer::GetBoundsChangeForWindowComponent(component) != 0;
+      return WindowResizer::GetBoundsChangeForWindowComponent(component) != 0 ?
+          ui::ER_CONSUMED : ui::ER_UNHANDLED;
     }
     case ui::ET_MOUSE_DRAGGED:
-      return HandleDrag(target, event);
+      return HandleDrag(target, event) ? ui::ER_CONSUMED : ui::ER_UNHANDLED;
     case ui::ET_MOUSE_CAPTURE_CHANGED:
     case ui::ET_MOUSE_RELEASED:
       CompleteDrag(event->type() == ui::ET_MOUSE_RELEASED ?
@@ -148,32 +149,38 @@ bool ToplevelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
         in_move_loop_ = false;
       }
       // Completing the drag may result in hiding the window. If this happens
-      // return true so no other filters/observers see the event. Otherwise they
-      // see the event on a hidden window.
+      // return true so no other handlers/observers see the event. Otherwise
+      // they see the event on a hidden window.
       if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED &&
           !target->IsVisible()) {
-        return true;
+        return ui::ER_CONSUMED;
       }
       break;
     case ui::ET_MOUSE_MOVED:
-      return HandleMouseMoved(target, event);
+      return HandleMouseMoved(target, event) ?
+          ui::ER_CONSUMED : ui::ER_UNHANDLED;
     case ui::ET_MOUSE_EXITED:
-      return HandleMouseExited(target, event);
+      return HandleMouseExited(target, event) ?
+          ui::ER_CONSUMED : ui::ER_UNHANDLED;
     default:
       break;
   }
-  return false;
+  return ui::ER_UNHANDLED;
 }
 
-ui::TouchStatus ToplevelWindowEventFilter::PreHandleTouchEvent(
-    aura::Window* target,
+ui::EventResult ToplevelWindowEventHandler::OnScrollEvent(
+    ui::ScrollEvent* event) {
+  return ui::ER_UNHANDLED;
+}
+
+ui::TouchStatus ToplevelWindowEventHandler::OnTouchEvent(
     ui::TouchEvent* event) {
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
-ui::EventResult ToplevelWindowEventFilter::PreHandleGestureEvent(
-    aura::Window* target,
+ui::EventResult ToplevelWindowEventHandler::OnGestureEvent(
     ui::GestureEvent* event) {
+  aura::Window* target = static_cast<aura::Window*>(event->target());
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN: {
       int component =
@@ -247,8 +254,8 @@ ui::EventResult ToplevelWindowEventFilter::PreHandleGestureEvent(
   return ui::ER_CONSUMED;
 }
 
-void ToplevelWindowEventFilter::RunMoveLoop(aura::Window* source,
-                                            const gfx::Point& drag_offset) {
+void ToplevelWindowEventHandler::RunMoveLoop(aura::Window* source,
+                                             const gfx::Point& drag_offset) {
   DCHECK(!in_move_loop_);  // Can only handle one nested loop at a time.
   in_move_loop_ = true;
   aura::RootWindow* root_window = source->GetRootWindow();
@@ -276,7 +283,7 @@ void ToplevelWindowEventFilter::RunMoveLoop(aura::Window* source,
   in_gesture_resize_ = in_move_loop_ = false;
 }
 
-void ToplevelWindowEventFilter::EndMoveLoop() {
+void ToplevelWindowEventHandler::EndMoveLoop() {
   if (!in_move_loop_)
     return;
 
@@ -289,7 +296,7 @@ void ToplevelWindowEventFilter::EndMoveLoop() {
 }
 
 // static
-WindowResizer* ToplevelWindowEventFilter::CreateWindowResizer(
+WindowResizer* ToplevelWindowEventHandler::CreateWindowResizer(
     aura::Window* window,
     const gfx::Point& point_in_parent,
     int window_component) {
@@ -300,7 +307,7 @@ WindowResizer* ToplevelWindowEventFilter::CreateWindowResizer(
 }
 
 
-void ToplevelWindowEventFilter::CreateScopedWindowResizer(
+void ToplevelWindowEventHandler::CreateScopedWindowResizer(
     aura::Window* window,
     const gfx::Point& point_in_parent,
     int window_component) {
@@ -311,8 +318,8 @@ void ToplevelWindowEventFilter::CreateScopedWindowResizer(
     window_resizer_.reset(new ScopedWindowResizer(this, resizer));
 }
 
-void ToplevelWindowEventFilter::CompleteDrag(DragCompletionStatus status,
-                                             int event_flags) {
+void ToplevelWindowEventHandler::CompleteDrag(DragCompletionStatus status,
+                                              int event_flags) {
   scoped_ptr<ScopedWindowResizer> resizer(window_resizer_.release());
   if (resizer.get()) {
     if (status == DRAG_COMPLETE)
@@ -322,8 +329,8 @@ void ToplevelWindowEventFilter::CompleteDrag(DragCompletionStatus status,
   }
 }
 
-bool ToplevelWindowEventFilter::HandleDrag(aura::Window* target,
-                                           ui::LocatedEvent* event) {
+bool ToplevelWindowEventHandler::HandleDrag(aura::Window* target,
+                                            ui::LocatedEvent* event) {
   // This function only be triggered to move window
   // by mouse drag or touch move event.
   DCHECK(event->type() == ui::ET_MOUSE_DRAGGED ||
@@ -337,8 +344,8 @@ bool ToplevelWindowEventFilter::HandleDrag(aura::Window* target,
   return true;
 }
 
-bool ToplevelWindowEventFilter::HandleMouseMoved(aura::Window* target,
-                                                 ui::LocatedEvent* event) {
+bool ToplevelWindowEventHandler::HandleMouseMoved(aura::Window* target,
+                                                  ui::LocatedEvent* event) {
   // TODO(jamescook): Move the resize cursor update code into here from
   // CompoundEventFilter?
   internal::ResizeShadowController* controller =
@@ -355,8 +362,8 @@ bool ToplevelWindowEventFilter::HandleMouseMoved(aura::Window* target,
   return false;
 }
 
-bool ToplevelWindowEventFilter::HandleMouseExited(aura::Window* target,
-                                                  ui::LocatedEvent* event) {
+bool ToplevelWindowEventHandler::HandleMouseExited(aura::Window* target,
+                                                   ui::LocatedEvent* event) {
   internal::ResizeShadowController* controller =
       Shell::GetInstance()->resize_shadow_controller();
   if (controller)
@@ -364,7 +371,7 @@ bool ToplevelWindowEventFilter::HandleMouseExited(aura::Window* target,
   return false;
 }
 
-void ToplevelWindowEventFilter::ResizerWindowDestroyed() {
+void ToplevelWindowEventHandler::ResizerWindowDestroyed() {
   // We explicitly don't invoke RevertDrag() since that may do things to window.
   // Instead we destroy the resizer.
   window_resizer_.reset();

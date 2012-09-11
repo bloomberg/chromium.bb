@@ -300,9 +300,6 @@ TEST_F(ShellTest, MAYBE_ManagedWindowModeBasics) {
   widget->Show();
   EXPECT_FALSE(widget->IsMaximized());
 
-  // We have a default container event filter (for window drags).
-  EXPECT_TRUE(widget->GetNativeWindow()->parent()->event_filter());
-
   // Clean up.
   widget->Close();
 }
