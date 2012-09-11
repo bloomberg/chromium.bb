@@ -533,6 +533,7 @@ def ForceFileType(filename, newtype = None):
 # TODO(pdox): Add types for sources which should not be preprocessed.
 ExtensionMap = {
   'c'   : 'c',
+  'i'   : 'c',    # C, but should not be preprocessed.
 
   'cc'  : 'c++',
   'cp'  : 'c++',
@@ -541,6 +542,7 @@ ExtensionMap = {
   'CPP' : 'c++',
   'c++' : 'c++',
   'C'   : 'c++',
+  'ii'  : 'c++',  # C++, but should not be preprocessed.
 
   'm'   : 'objc',  # .m = "Objective-C source file"
 
