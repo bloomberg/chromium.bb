@@ -50,14 +50,43 @@ export PNACL_BUILDBOT=true
 # by long periods without console output.
 export PNACL_VERBOSE=true
 
+# For now this script runs on linux x86-64.
+# It is possible to force the PNACL_BUILD to build host binaries with "-m32",
+# by uncommenting below:
+# export BUILD_ARCH="x86_32"
+# export HOST_ARCH="x86_32"
+# TODO(pnacl-team): Figure out what to do about this.
+# Export this so that the test scripts know where to find the toolchain.
+export PNACL_TOOLCHAIN_LABEL=pnacl_linux_x86_64
+# This picks the TC which we just built, even if scons doesn't know
+# how to find a 64-bit host toolchain.
+readonly SCONS_PICK_TC="pnaclsdk_mode=custom:toolchain/${PNACL_TOOLCHAIN_LABEL}"
+
+export PNACL_ARCHIVED_FRONTEND_LABEL=pnacl_linux_x86_32
+
+# download-old-tc -
+# Generate a toolchain version + hash, file for the downloader, and run it.
+download-old-tc() {
+  local dst=$1
+  local temp_rev_file="TEST_TOOL_REVISIONS"
+  echo PNACL_VERSION=${ARCHIVED_TOOLCHAIN_REV} > ${temp_rev_file}
+  # NOTE: even though we are using x86-64 host toolchains above,
+  # download_toolchains.py only knows how to download 32-bit host
+  # toolchains right now.
+  # See ${PNACL_ARCHIVED_FRONTEND_LABEL} vs ${PNACL_TOOLCHAIN_LABEL}.
+  echo NACL_TOOL_PNACL_LINUX_X86_32_HASH=${ARCHIVED_TOOLCHAIN_HASH} >> \
+    ${temp_rev_file}
+  ${DOWNLOAD_TOOLCHAINS} --no-x86 --no-arm-trusted --no-pnacl-translator \
+    --toolchain-dir=${dst} ${temp_rev_file}
+}
+
+
 clobber() {
   echo @@@BUILD_STEP clobber@@@
   rm -rf scons-out
   # Don't clobber toolchain/pnacl_translator; these bots currently don't build
-  # it, but they use the DEPSed-in version
+  # it, but they use the DEPSed-in version.
   rm -rf toolchain/pnacl_linux* toolchain/pnacl_mac* toolchain/pnacl_win*
-  # Try to clobber /tmp/ contents to clear temporary chrome files.
-  rm -rf /tmp/.org.chromium.Chromium.*
 }
 
 handle-error() {
@@ -70,21 +99,9 @@ handle-error() {
 readonly SCONS_COMMON="./scons --verbose bitcode=1"
 build-sbtc-prerequisites() {
   local platform=$1
-  ${SCONS_COMMON} platform=${platform} sel_ldr sel_universal irt_core \
+  ${SCONS_COMMON} ${SCONS_PICK_TC} platform=${platform} \
+    sel_ldr sel_universal irt_core \
     -j ${PNACL_CONCURRENCY}
-}
-
-
-build-canned-prerequisites() {
-  local platform=$1
-  local flags="--mode=opt-host,nacl -j ${PNACL_CONCURRENCY} platform=${platform}"
-  local targets="sel_ldr sel_universal nacl_helper_bootstrap irt_core irt"
-  ${SCONS_COMMON} ${flags} ${targets}
-
-  if [ ${platform} = "x86-64" ] ; then
-      ${SCONS_COMMON} ${flags} pnacl_irt_shim
-      ${SCONS_COMMON} ${flags} translate_fast=1 pnacl_irt_shim
-  fi
 }
 
 
@@ -95,7 +112,8 @@ scons-tests-pic() {
   local extra="--mode=opt-host,nacl \
                -j${PNACL_CONCURRENCY} -k \
                nacl_pic=1  pnacl_generate_pexe=0"
-  ${SCONS_COMMON} ${extra} platform=${platform} smoke_tests || handle-error
+  ${SCONS_COMMON} ${SCONS_PICK_TC} ${extra} \
+    platform=${platform} smoke_tests || handle-error
 }
 
 
@@ -113,21 +131,24 @@ scons-tests-translator() {
   local targets="small_tests medium_tests large_tests"
 
   echo "@@@BUILD_STEP scons-sb-translator [${platform}] [${targets}]@@@"
-  ${SCONS_COMMON} ${flags} ${targets} translate_in_build_step=0 \
+  ${SCONS_COMMON} ${SCONS_PICK_TC} \
+    ${flags} ${targets} translate_in_build_step=0 \
     do_not_run_tests=1 || handle-error
-  ${SCONS_COMMON} ${flags} ${targets} -j1 || handle-error
+  ${SCONS_COMMON} ${SCONS_PICK_TC} ${flags} ${targets} -j1 || handle-error
 
   echo "@@@BUILD_STEP scons-sb-translator [fast] [${platform}] [${targets}]@@@"
-  ${SCONS_COMMON} ${flags} translate_fast=1 translate_in_build_step=0 \
+  ${SCONS_COMMON} ${SCONS_PICK_TC} \
+    ${flags} translate_fast=1 translate_in_build_step=0 \
     do_not_run_tests=1 ${targets} || handle-error
-  ${SCONS_COMMON} ${flags} translate_fast=1 -j1 ${targets} || handle-error
+  ${SCONS_COMMON} ${SCONS_PICK_TC} \
+    ${flags} translate_fast=1 -j1 ${targets} || handle-error
 }
 
 scons-tests-x86-64-zero-based-sandbox() {
   echo "@@@BUILD_STEP hello_world (x86-64 zero-based sandbox)@@@"
   local flags="--mode=opt-host,nacl bitcode=1 platform=x86-64 \
                x86_64_zero_based_sandbox=1"
-  ${SCONS_COMMON} ${flags} "run_hello_world_test"
+  ${SCONS_COMMON} ${SCONS_PICK_TC} ${flags} "run_hello_world_test"
 }
 
 # This test is a bitcode stability test, which builds pexes for all the tests
@@ -147,8 +168,6 @@ archived-frontend-test() {
   local arch=$1
   echo "@@@BUILD_STEP archived_frontend [${arch}]\
         rev ${ARCHIVED_TOOLCHAIN_REV}@@@"
-  # For now this script runs on linux x86-64
-  local tc_name=pnacl_linux_x86_64
   local targets="small_tests medium_tests large_tests"
   local flags="--mode=opt-host,nacl bitcode=1 platform=${arch} \
                translate_in_build_step=0 -j${PNACL_CONCURRENCY} \
@@ -159,39 +178,25 @@ archived-frontend-test() {
   # Get the archived frontend.
   # If the correct cached frontend is in place, the hash will match and the
   # download will be a no-op. Otherwise the downloader will fix it.
-
-  # Generate a toolchain version file for the downloader, and run it
-  echo PNACL_VERSION=${ARCHIVED_TOOLCHAIN_REV} > TEST_TOOL_REVISIONS
-  echo NACL_TOOL_PNACL_LINUX_X86_32_HASH=${ARCHIVED_TOOLCHAIN_HASH} >> \
-    TEST_TOOL_REVISIONS
-  ${DOWNLOAD_TOOLCHAINS} --no-x86 --no-arm-trusted --no-pnacl-translator \
-    --toolchain-dir=toolchain/archived_tc \
-    TEST_TOOL_REVISIONS
-
-  # Save the current toolchain
-  mkdir -p toolchain/current_tc
-  rm -rf toolchain/current_tc/*
-  mv toolchain/${tc_name} toolchain/current_tc/${tc_name}
-
-  # Link the old frontend into place.
-  ln -s archived_tc/${tc_name} toolchain/${tc_name}
+  download-old-tc toolchain/archived_tc
 
   # Build the pexes with the old frontend
-  ${SCONS_COMMON} do_not_run_tests=1 ${flags} ${targets} || handle-error
+  local old_frontend=toolchain/archived_tc/${PNACL_ARCHIVED_FRONTEND_LABEL}
+
+  ${SCONS_COMMON} "pnaclsdk_mode=custom:${old_frontend}" \
+    do_not_run_tests=1 ${flags} ${targets} || handle-error
   # The pexes for fast translation tests are identical but scons uses a
   # different directory.
   cp -a scons-out/nacl-${arch}-pnacl-pexe-clang \
     scons-out/nacl-${arch}-pnacl-fast-pexe-clang
 
-  # Put the current toolchain back in place
-  rm toolchain/${tc_name}
-  mv toolchain/current_tc/${tc_name} toolchain/${tc_name}
   # Translate them with the new translator, and run the tests
-  ${SCONS_COMMON} ${flags} ${targets} built_elsewhere=1 || handle-error
+  ${SCONS_COMMON} ${SCONS_PICK_TC} \
+    ${flags} ${targets} built_elsewhere=1 || handle-error
   echo "@@@BUILD_STEP archived_frontend [${arch} translate-fast]\
         rev ${ARCHIVED_TOOLCHAIN_REV}@@@"
   # Also test the fast-translation option
-  ${SCONS_COMMON} ${flags} translate_fast=1 built_elsewhere=1 \
+  ${SCONS_COMMON} ${SCONS_PICK_TC} ${flags} translate_fast=1 built_elsewhere=1 \
     ${targets} || handle-error
 }
 
@@ -312,7 +317,7 @@ tc-test-bot() {
     # toolchain which is currently deps'ed in.
     # There is a small upside here: we will notice that bitcode has
     # changed in a way that is incompatible with older translators.
-    # Todo(pnacl-team): rethink this.
+    # TODO(pnacl-team): rethink this.
     # Note: the tests which use sandboxed translation are at the end,
     # because they can sometimes hang on arm, causing buildbot to kill the
     # script without running any more tests.
@@ -329,8 +334,8 @@ tc-test-bot() {
 
 
 if [ $# = 0 ]; then
-    # NOTE: this is used for manual testing only
-    tc-test-bot "x86-64 x86-32 arm"
+  # NOTE: this is used for manual testing only
+  tc-test-bot "x86-64 x86-32 arm"
 else
-    "$@"
+  "$@"
 fi

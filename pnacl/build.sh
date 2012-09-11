@@ -13,8 +13,9 @@
 #
 # All directories are relative to BASE which is
 # On Linux X86-64: native_client/toolchain/pnacl_linux_x86_64/
-# On Linux X86-32: native_client/toolchain/pnacl_linux_i686/
-# On Mac X86-32  : native_client/toolchain/pnacl_darwin_i386/
+# On Linux X86-32: native_client/toolchain/pnacl_linux_x86_32/
+# On Mac X86-32  : native_client/toolchain/pnacl_mac_x86_32/
+# On Windows X86-32  : native_client/toolchain/pnacl_win_x86_32/
 #
 ######################################################################
 
@@ -1839,8 +1840,8 @@ binutils-configure() {
   # c.f.:  http://sourceware.org/ml/binutils/2009-05/msg00252.html
   # all we try to do here is to add "$ORIGIN/../lib to "rpath".
   # If you ever touch this please make sure that rpath is correct via:
-  # objdump -p toolchain/pnacl_linux_x86_64/host/bin/arm-pc-nacl-ld.gold
-  # objdump -p toolchain/pnacl_linux_x86_64/host/bin/arm-pc-nacl-objdump
+  # objdump -p toolchain/${TOOLCHAIN_LABEL}/host/bin/arm-pc-nacl-ld.gold
+  # objdump -p toolchain/${TOOLCHAIN_LABEL}/host/bin/arm-pc-nacl-objdump
   if ${BUILD_PLATFORM_LINUX} ; then
       local flags='-Xlinker -rpath -Xlinker '"'"'$\\$$\$$\\$$\$$ORIGIN/../lib'"'"
       local shared='yes'
@@ -3035,11 +3036,15 @@ sdk-headers() {
 
   StepBanner "SDK" "Install headers"
   spushd "${NACL_ROOT}"
+  # TODO(pnacl-team): remove this pnaclsdk_mode once we have a better story
+  # about host binary type (x86-32 vs x86-64).  SCons only knows how to use
+  # x86-32 host binaries right now, so we need pnaclsdk_mode to override that.
   RunWithLog "sdk.headers" \
       ./scons \
       "${SCONS_ARGS[@]}" \
       ${extra_flags} \
       platform=${neutral_platform} \
+      pnaclsdk_mode="custom:${INSTALL_ROOT}" \
       install_headers \
       includedir="$(PosixToSysPath "${SDK_INSTALL_INCLUDE}")"
   spopd
@@ -3057,11 +3062,13 @@ sdk-libs() {
   fi
 
   spushd "${NACL_ROOT}"
+  # See above TODO about pnaclsdk_mode.
   RunWithLog "sdk.libs.bitcode" \
       ./scons \
       "${SCONS_ARGS[@]}" \
       ${extra_flags} \
       platform=${neutral_platform} \
+      pnaclsdk_mode="custom:${INSTALL_ROOT}" \
       install_lib \
       libdir="$(PosixToSysPath "${SDK_INSTALL_LIB}")"
   spopd
@@ -3075,11 +3082,13 @@ sdk-private-libs() {
   spushd "${NACL_ROOT}"
 
   local neutral_platform="x86-32"
+  # See above TODO about pnaclsdk_mode.
   RunWithLog "sdk.libs_private.bitcode" \
     ./scons \
     -j${PNACL_CONCURRENCY} \
     bitcode=1 \
     platform=${neutral_platform} \
+    pnaclsdk_mode="custom:${INSTALL_ROOT}" \
     --verbose \
     libnacl_sys_private \
     libpthread_private \

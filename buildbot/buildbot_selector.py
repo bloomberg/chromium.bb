@@ -246,9 +246,6 @@ BOT_ASSIGNMENT = {
         'buildbot\\buildbot_pnacl.bat mode-buildbot-tc-x8664-win false',
 
     # Pnacl toolchain testers
-    # This bots is scheduled to be replaced (split) by the three following it
-    'linux-pnacl-x86_64-tests':
-        'bash buildbot/buildbot_pnacl_toolchain_tests.sh',
     'linux-pnacl-x86_64-tests-x86_64':
         'bash buildbot/buildbot_pnacl_toolchain_tests.sh tc-test-bot x86-64',
     'linux-pnacl-x86_64-tests-x86_32':

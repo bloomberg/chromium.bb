@@ -25,8 +25,13 @@ readonly LLVM_TESTSUITE_BUILD=${NACL_ROOT}/pnacl/build/llvm-test-suite
 readonly TC_SRC_LLVM=${NACL_ROOT}/pnacl/git/llvm
 readonly TC_BUILD_LLVM=${NACL_ROOT}/pnacl/build/llvm
 readonly PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-6}
-readonly PNACL_BIN=${NACL_ROOT}/toolchain/pnacl_linux_x86_64/newlib/bin
-readonly PNACL_SDK_DIR=${NACL_ROOT}/toolchain/pnacl_linux_x86_64/newlib/sdk
+
+if [[ ${PNACL_TOOLCHAIN_LABEL} == "" ]]; then
+  echo 'Must set env var PNACL_TOOLCHAIN_LABEL to locate pnacl tc!'
+fi
+readonly PNACL_BIN=${NACL_ROOT}/toolchain/${PNACL_TOOLCHAIN_LABEL}/newlib/bin
+readonly PNACL_SDK_DIR=\
+${NACL_ROOT}/toolchain/${PNACL_TOOLCHAIN_LABEL}/newlib/sdk
 readonly PNACL_SCRIPTS=${NACL_ROOT}/pnacl/scripts
 readonly PARSE_REPORT=${PNACL_SCRIPTS}/parse_llvm_testsuite_report.py
 

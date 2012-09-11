@@ -94,7 +94,7 @@ def _PlatformSubdirs(env):
   return name
 
 
-def _GetNaclSdkRoot(env, sdk_mode):
+def _GetNaclSdkRoot(env, sdk_mode, psdk_mode):
   """Return the path to the sdk.
 
   Args:
@@ -103,6 +103,12 @@ def _GetNaclSdkRoot(env, sdk_mode):
   Returns:
     The path to the sdk.
   """
+
+  # Allow pnacl to override its path separately.  See comments for why
+  # psdk_mode is separate from sdk_mode.
+  if env.Bit('bitcode') and psdk_mode.startswith('custom:'):
+    return os.path.abspath(psdk_mode[len('custom:'):])
+
   if sdk_mode == 'local':
     if env['PLATFORM'] in ['win32', 'cygwin']:
       # Try to use cygpath under the assumption we are running thru cygwin.
@@ -580,7 +586,16 @@ def generate(env):
   env.AddMethod(PNaClForceNative)
   env.AddMethod(PNaClGetNNaClEnv)
 
+  # Get configuration option for getting the naclsdk.  Default is download.
+  # We have a separate flag for pnacl "psdk_mode" since even with PNaCl,
+  # the native nacl-gcc toolchain is used to build some parts like
+  # the irt-core.
   sdk_mode = SCons.Script.ARGUMENTS.get('naclsdk_mode', 'download')
+  psdk_mode = SCons.Script.ARGUMENTS.get('pnaclsdk_mode', 'default')
+  if psdk_mode != 'default' and not psdk_mode.startswith('custom:'):
+    raise Exception(
+      'pnaclsdk_mode only supports "default" or "custom:path", not %s' %
+      psdk_mode)
 
   # Invoke the various unix tools that the NativeClient SDK resembles.
   env.Tool('g++')
@@ -647,7 +662,7 @@ def generate(env):
       env[com] = "${TEMPFILE('%s')}" % env[com]
 
   # Get root of the SDK.
-  root = _GetNaclSdkRoot(env, sdk_mode)
+  root = _GetNaclSdkRoot(env, sdk_mode, psdk_mode)
 
   # Determine where to get the SDK from.
   if sdk_mode == 'manual':

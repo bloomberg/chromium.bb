@@ -5,7 +5,8 @@
 set -o nounset
 set -o errexit
 
-readonly EXTRACT=toolchain/pnacl_linux_x86_64/pkg/llvm/bin/llvm-extract
+# TODO(pnacl-team): We have to not hard-code this.
+readonly EXTRACT=toolchain/pnacl_linux_x86_64/host/bin/llvm-extract
 readonly TRANSLATE=toolchain/pnacl_linux_x86_64/newlib/bin/pnacl-translate
 
 split-pexe() {
@@ -46,7 +47,7 @@ split-translate-link() {
     split-pexe  ${in}.$i ${in} $i $n
   done
 
-  # TODO(robertm): these could be parallized
+  # TODO(robertm): these could be parallelized
   local objs=""
   for i in $(seq 0 $(($n - 1))) ; do
     echo "translating  $i/$n"

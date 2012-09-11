@@ -17,7 +17,7 @@ trusted_env = env['TRUSTED_ENV']
 test_guest = env.ComponentProgram(
     'step_test_guest', ['step_test_guest.c'],
     EXTRA_LINKFLAGS=['-nostdlib'])
-if env.Bit('pnacl_generate_pexe'):
+if env.ShouldTranslateToNexe(test_guest):
   env.Replace(TRANSLATEFLAGS=['-nostdlib'])
   test_guest = env.GetTranslatedNexe(test_guest)
 

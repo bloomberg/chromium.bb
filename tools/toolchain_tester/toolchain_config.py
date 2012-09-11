@@ -229,8 +229,15 @@ TOOLCHAIN_CONFIGS['nacl_gcc_x8664_O3'] = ToolchainConfig(
 ######################################################################
 # PNACL + SEL_LDR [ARM]
 ######################################################################
-PNACL_ROOT = 'toolchain/pnacl_linux_x86_64/newlib'
 
+# Locate the pnacl toolchain.  Path supplied externally.
+PNACL_TOOLCHAIN_LABEL = ''
+if os.environ['PNACL_TOOLCHAIN_LABEL'] == '':
+  raise Exception('Must set env var PNACL_TOOLCHAIN_LABEL to locate pnacl tc.')
+else:
+  PNACL_TOOLCHAIN_LABEL = os.environ['PNACL_TOOLCHAIN_LABEL']
+
+PNACL_ROOT = os.path.join('toolchain', PNACL_TOOLCHAIN_LABEL, 'newlib')
 PNACL_FRONTEND = PNACL_ROOT + '/bin/pnacl-clang'
 
 # NOTE: Our driver supports going from .c to .nexe in one go

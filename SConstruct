@@ -124,6 +124,7 @@ ACCEPTABLE_ARGUMENTS = set([
     # Not using nacl_linkflags since that gets clobbered in some tests.
     'pnacl_bcldflags',
     'naclsdk_mode',
+    'pnaclsdk_mode',
     'platform',
     # Run tests under this tool (e.g. valgrind, tsan, strace, etc).
     # If the tool has options, pass them after comma: 'tool,--opt1,--opt2'.
@@ -1992,6 +1993,9 @@ naclsdk_mode=<mode>   where <mode>:
                     'custom:<path>': use kit at <path>
                     'manual': use settings from env vars NACL_SDK_xxx
 
+pnaclsdk_mode=<mode> where <mode:
+                    'default': use the default (typically the downloaded copy)
+                    'custom:<path>': use kit from <path>
 
 --prebuilt          Do not build things, just do install steps
 

@@ -9,7 +9,8 @@
 #
 # for i in  scons-out/nacl-x86-64-pnacl/obj/tests/*/*pexe  ; do
 # echo $i
-# toolchain/pnacl_linux_x86_64/arm-none-linux-gnueabi/bin/llvm-ld \
+# TODO(pnacl-team): Stop hardcoding these paths.
+# toolchain/pnacl_linux_x86_64/host/bin/llvm-ld \
 #   -o xxx $i   --nacl-abi-check   --nacl-legal-undefs \
 #   tools/llvm/non_bitcode_symbols.txt
 #

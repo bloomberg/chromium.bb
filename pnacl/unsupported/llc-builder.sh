@@ -93,11 +93,11 @@ llc-make() {
 
 
 llc-install() {
-    # This just works on linux and assumes release builds
-    cp ${TC_BUILD_LLVM}/Release+Asserts/bin/llc \
-       toolchain/pnacl_linux_x86_64/pkg/llvm/bin/llc
+  # This just works on linux and assumes release builds...
+  # TODO(pnacl-team): Make this configurable.
+  cp ${TC_BUILD_LLVM}/Release+Asserts/bin/llc \
+    toolchain/pnacl_linux_x86_64/pkg/llvm/bin/llc
 }
-
 
 
 llc-run-x8632() {

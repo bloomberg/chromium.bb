@@ -9,7 +9,8 @@ set -eu
 dir=$(pwd)
 cd ../../../..
 topdir=$(pwd)
-tools="$topdir/toolchain/pnacl_linux_x86_64/pkg/binutils/bin"
+# TODO(pnacl-team): We have to not hard-code this.
+tools="$topdir/toolchain/pnacl_linux_x86_64/host/bin"
 cd $dir
 
 ldscript=ld_script_arm_thumb2_untrusted
