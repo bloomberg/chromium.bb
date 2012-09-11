@@ -152,3 +152,9 @@ void BrowserFrame::OnNativeWidgetActivationChanged(bool active) {
 AvatarMenuButton* BrowserFrame::GetAvatarMenuButton() {
   return browser_frame_view_->avatar_button();
 }
+
+#if !defined(OS_WIN)
+bool BrowserFrame::ShouldLeaveOffsetNearTopBorder() {
+  return !IsMaximized();
+}
+#endif  // OS_WIN

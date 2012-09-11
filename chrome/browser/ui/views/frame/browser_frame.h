@@ -76,6 +76,11 @@ class BrowserFrame : public views::Widget {
   virtual ui::ThemeProvider* GetThemeProvider() const OVERRIDE;
   virtual void OnNativeWidgetActivationChanged(bool active) OVERRIDE;
 
+  // Returns true if we should leave any offset at the frame caption. Typically
+  // when the frame is maximized/full screen we want to leave no offset at the
+  // top.
+  bool ShouldLeaveOffsetNearTopBorder();
+
   AvatarMenuButton* GetAvatarMenuButton();
 
  private:

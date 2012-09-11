@@ -267,11 +267,12 @@ int GlassBrowserFrameView::NonClientTopBorderHeight(
     bool restored) const {
   if (!restored && frame()->IsFullscreen())
     return 0;
+
   // We'd like to use FrameBorderThickness() here, but the maximized Aero glass
   // frame has a 0 frame border around most edges and a CYSIZEFRAME-thick border
   // at the top (see AeroGlassFrame::OnGetMinMaxInfo()).
   return GetSystemMetrics(SM_CYSIZEFRAME) +
-      ((!restored && browser_view()->IsMaximized()) ?
+      ((!restored && !frame()->ShouldLeaveOffsetNearTopBorder()) ?
       -kTabstripTopShadowThickness : kNonClientRestoredExtraThickness);
 }
 

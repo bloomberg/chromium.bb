@@ -210,8 +210,9 @@ int OpaqueBrowserFrameView::NonClientTopBorderHeight(
   }
 
   return FrameBorderThickness(restored) -
-      ((browser_view()->IsTabStripVisible() && !restored &&
-      frame()->IsMaximized()) ? kTabstripTopShadowThickness : 0);
+      ((browser_view()->IsTabStripVisible() &&
+          !restored && !frame()->ShouldLeaveOffsetNearTopBorder())
+              ? kTabstripTopShadowThickness : 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -233,7 +234,7 @@ gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStrip(
 BrowserNonClientFrameView::TabStripInsets
 OpaqueBrowserFrameView::GetTabStripInsets(bool restored) const {
   int top = NonClientTopBorderHeight(restored) + ((!restored &&
-      (frame()->IsMaximized() ||
+      (!frame()->ShouldLeaveOffsetNearTopBorder() ||
       frame()->IsFullscreen())) ?
       0 : kNonClientRestoredExtraThickness);
   // TODO: include OTR and caption.

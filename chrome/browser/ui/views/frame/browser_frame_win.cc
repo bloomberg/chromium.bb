@@ -32,6 +32,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/layout.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -610,6 +611,14 @@ const gfx::Font& BrowserFrame::GetTitleFont() {
   static gfx::Font* title_font =
       new gfx::Font(views::NativeWidgetWin::GetWindowTitleFont());
   return *title_font;
+}
+
+bool BrowserFrame::ShouldLeaveOffsetNearTopBorder() {
+  if (base::win::IsMetroProcess()) {
+    if (ui::GetDisplayLayout() == ui::LAYOUT_DESKTOP)
+      return false;
+  }
+  return !IsMaximized();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
