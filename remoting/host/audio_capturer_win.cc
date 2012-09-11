@@ -199,7 +199,7 @@ bool AudioCapturerWin::Start(const PacketCapturedCallback& callback) {
 
 void AudioCapturerWin::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(IsRunning());
+  DCHECK(IsStarted());
 
   capture_timer_.reset();
   mm_device_.Release();
@@ -211,7 +211,7 @@ void AudioCapturerWin::Stop() {
   thread_checker_.DetachFromThread();
 }
 
-bool AudioCapturerWin::IsRunning() {
+bool AudioCapturerWin::IsStarted() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return capture_timer_.get() != NULL;
 }
@@ -219,7 +219,7 @@ bool AudioCapturerWin::IsRunning() {
 void AudioCapturerWin::DoCapture() {
   DCHECK(AudioCapturer::IsValidSampleRate(sampling_rate_));
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(IsRunning());
+  DCHECK(IsStarted());
 
   // Fetch all packets from the audio capture endpoint buffer.
   while (true) {
@@ -276,6 +276,10 @@ bool AudioCapturerWin::IsPacketOfSilence(
     if (abs(samples[i]) > kSilenceThreshold)
       return false;
   }
+  return true;
+}
+
+bool AudioCapturer::IsSupported() {
   return true;
 }
 

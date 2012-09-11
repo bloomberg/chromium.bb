@@ -19,6 +19,9 @@ class AudioCapturer {
 
   virtual ~AudioCapturer() {}
 
+  // Returns true if audio capturing is supported on this platform. If this
+  // returns true, then Create() must not return NULL.
+  static bool IsSupported();
   static scoped_ptr<AudioCapturer> Create();
 
   // Capturers should sample at a 44.1 or 48 kHz sampling rate, in uncompressed
@@ -29,7 +32,7 @@ class AudioCapturer {
   // resources.
   virtual void Stop() = 0;
   // Returns true if the audio capturer is running.
-  virtual bool IsRunning() = 0;
+  virtual bool IsStarted() = 0;
 
   static bool IsValidSampleRate(int sample_rate);
 };

@@ -16,6 +16,7 @@
 #include "remoting/codec/video_encoder.h"
 #include "remoting/codec/video_encoder_row_based.h"
 #include "remoting/codec/video_encoder_vp8.h"
+#include "remoting/host/audio_capturer.h"
 #include "remoting/host/audio_scheduler.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/desktop_environment.h"
@@ -83,7 +84,7 @@ ChromotingHost::ChromotingHost(
   DCHECK(desktop_environment_);
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  if (!desktop_environment_->audio_capturer()) {
+  if (!AudioCapturer::IsSupported()) {
     // Disable audio by replacing our list of supported audio configurations
     // with the NONE config.
     protocol_config_->mutable_audio_configs()->clear();

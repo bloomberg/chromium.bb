@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef REMOTING_HOST_AUDIO_CAPTURER_WIN_H_
+#define REMOTING_HOST_AUDIO_CAPTURER_WIN_H_
+
 #include <audioclient.h>
 #include <mmdeviceapi.h>
 
@@ -24,7 +27,7 @@ class AudioCapturerWin : public AudioCapturer {
   // AudioCapturer interface.
   virtual bool Start(const PacketCapturedCallback& callback) OVERRIDE;
   virtual void Stop() OVERRIDE;
-  virtual bool IsRunning() OVERRIDE;
+  virtual bool IsStarted() OVERRIDE;
 
   static bool IsPacketOfSilence(const int16* samples, int number_of_samples);
 
@@ -52,3 +55,5 @@ class AudioCapturerWin : public AudioCapturer {
 };
 
 }  // namespace remoting
+
+#endif  // REMOTING_HOST_AUDIO_CAPTURER_WIN_H_
