@@ -2861,7 +2861,7 @@ on_segv_signal(int s, siginfo_t *siginfo, void *context)
 
 
 static void *
-load_module(const char *name, const char *entrypoint, void **handle)
+load_module(const char *name, const char *entrypoint)
 {
 	char path[PATH_MAX];
 	void *module, *init;
@@ -2982,7 +2982,6 @@ int main(int argc, char *argv[])
 	struct wl_event_source *signals[4];
 	struct wl_event_loop *loop;
 	struct sigaction segv_action;
-	void *shell_module, *backend_module, *xserver_module;
 	int (*module_init)(struct weston_compositor *ec);
 	struct weston_compositor
 		*(*backend_init)(struct wl_display *display,
@@ -3061,7 +3060,7 @@ int main(int argc, char *argv[])
 	config_file = config_file_path("weston.ini");
 	parse_config_file(config_file, cs, ARRAY_LENGTH(cs), shell);
 
-	backend_init = load_module(backend, "backend_init", &backend_module);
+	backend_init = load_module(backend, "backend_init");
 	if (!backend_init)
 		exit(EXIT_FAILURE);
 
@@ -3091,8 +3090,7 @@ int main(int argc, char *argv[])
 
 	module_init = NULL;
 	if (xserver)
-		module_init = load_module("xwayland.so", "module_init",
-					  &xserver_module);
+		module_init = load_module("xwayland.so", "module_init");
 	if (module_init && module_init(ec) < 0) {
 		ret = EXIT_FAILURE;
 		goto out;
@@ -3103,7 +3101,7 @@ int main(int argc, char *argv[])
 
 	if (!shell)
 		shell = "desktop-shell.so";
-	module_init = load_module(shell, "module_init", &shell_module);
+	module_init = load_module(shell, "module_init");
 	if (!module_init || module_init(ec) < 0) {
 		ret = EXIT_FAILURE;
 		goto out;
@@ -3112,7 +3110,7 @@ int main(int argc, char *argv[])
 
 	module_init = NULL;
 	if (module)
-		module_init = load_module(module, "module_init", NULL);
+		module_init = load_module(module, "module_init");
 	if (module_init && module_init(ec) < 0) {
 		ret = EXIT_FAILURE;
 		goto out;
