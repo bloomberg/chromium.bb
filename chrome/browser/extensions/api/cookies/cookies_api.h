@@ -11,9 +11,8 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/time.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/common/extensions/api/cookies.h"
@@ -21,10 +20,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "net/cookies/canonical_cookie.h"
-
-namespace base {
-class DictionaryValue;
-}
 
 namespace net {
 class URLRequestContextGetter;
@@ -49,12 +44,11 @@ class ExtensionCookiesEventRouter : public content::NotificationObserver {
 
   // Handler for the COOKIE_CHANGED event. The method takes the details of such
   // an event and constructs a suitable JSON formatted extension event from it.
-  void CookieChanged(Profile* profile,
-                     ChromeCookieDetails* details);
+  void CookieChanged(Profile* profile, ChromeCookieDetails* details);
 
   // This method dispatches events to the extension message service.
   void DispatchEvent(Profile* context,
-                     const char* event_name,
+                     const std::string& event_name,
                      scoped_ptr<base::ListValue> event_args,
                      GURL& cookie_domain);
 

@@ -12,6 +12,7 @@
 #include "base/json/json_writer.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/cookies/cookies_api_constants.h"
 #include "chrome/browser/extensions/api/cookies/cookies_helpers.h"
@@ -62,9 +63,9 @@ void ExtensionCookiesEventRouter::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   Profile* profile = content::Source<Profile>(source).ptr();
-  if (!profile_->IsSameProfile(profile)) {
+  if (!profile_->IsSameProfile(profile))
     return;
-  }
+
   switch (type) {
     case chrome::NOTIFICATION_COOKIE_CHANGED:
       CookieChanged(
@@ -86,10 +87,10 @@ void ExtensionCookiesEventRouter::CookieChanged(
 
   scoped_ptr<Cookie> cookie(
       cookies_helpers::CreateCookie(*details->cookie,
-          cookies_helpers::GetStoreIdFromProfile(profile)));
+          cookies_helpers::GetStoreIdFromProfile(profile_)));
   dict->Set(keys::kCookieKey, cookie->ToValue().release());
 
-  // Map the interal cause to an external string.
+  // Map the internal cause to an external string.
   std::string cause;
   switch (details->cause) {
     case net::CookieMonster::Delegate::CHANGE_COOKIE_EXPLICIT:
@@ -125,13 +126,15 @@ void ExtensionCookiesEventRouter::CookieChanged(
 }
 
 void ExtensionCookiesEventRouter::DispatchEvent(
-    Profile* profile, const char* event_name, scoped_ptr<ListValue> event_args,
+    Profile* profile,
+    const std::string& event_name,
+    scoped_ptr<ListValue> event_args,
     GURL& cookie_domain) {
-  if (profile && profile->GetExtensionEventRouter()) {
-    profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-        event_name, event_args.Pass(), profile, cookie_domain,
-        EventFilteringInfo());
-  }
+  EventRouter* router = profile ? profile->GetExtensionEventRouter() : NULL;
+  if (!router)
+    return;
+  router->DispatchEventToRenderers(event_name, event_args.Pass(), profile,
+                                   cookie_domain);
 }
 
 bool CookiesFunction::ParseUrl(const std::string& url_string, GURL* url,
@@ -143,8 +146,7 @@ bool CookiesFunction::ParseUrl(const std::string& url_string, GURL* url,
     return false;
   }
   // Check against host permissions if needed.
-  if (check_host_permissions &&
-      !GetExtension()->HasHostPermission(*url)) {
+  if (check_host_permissions && !GetExtension()->HasHostPermission(*url)) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         keys::kNoHostPermissionsError, url->spec());
     return false;
@@ -267,9 +269,9 @@ bool GetAllCookiesFunction::RunImpl() {
   parsed_args_ = GetAll::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parsed_args_.get());
 
-  if (parsed_args_->details.url.get()) {
-    if (!ParseUrl(*parsed_args_->details.url, &url_, false))
-      return false;
+  if (parsed_args_->details.url.get() &&
+      !ParseUrl(*parsed_args_->details.url, &url_, false)) {
+    return false;
   }
 
   std::string store_id = parsed_args_->details.store_id.get() ?

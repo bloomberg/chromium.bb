@@ -150,8 +150,10 @@ class AlarmManager
   // The previous and next time that alarms were and will be run.
   base::Time last_poll_time_;
   base::Time next_poll_time_;
+
+  DISALLOW_COPY_AND_ASSIGN(AlarmManager);
 };
 
-} //  namespace extensions
+}  //  namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_ALARMS_ALARM_MANAGER_H__
