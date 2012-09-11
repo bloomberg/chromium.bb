@@ -88,7 +88,11 @@ GpuMemoryManager::GpuMemoryManager(GpuMemoryManagerClient* client,
 #if defined(OS_ANDROID)
     bytes_available_gpu_memory_ = 64 * 1024 * 1024;
 #else
+#if defined(OS_CHROMEOS)
+    bytes_available_gpu_memory_ = 1024 * 1024 * 1024;
+#else
     bytes_available_gpu_memory_ = 256 * 1024 * 1024;
+#endif
 #endif
   }
 }

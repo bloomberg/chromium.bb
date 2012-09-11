@@ -103,7 +103,11 @@ class CONTENT_EXPORT GpuMemoryManager :
 
   // The maximum amount of memory that a tab may be assigned
   size_t GetMaximumTabAllocation() const {
+#if defined(OS_CHROMEOS)
+    return bytes_available_gpu_memory_;
+#else
     return 128 * 1024 * 1024;
+#endif
   }
 
   // The minimum non-zero amount of memory that a tab may be assigned
