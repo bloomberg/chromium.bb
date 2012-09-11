@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/image_loading_tracker.h"
+#include "chrome/browser/extensions/extension_icon_image.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "ui/base/models/simple_menu_model.h"
 
@@ -23,7 +23,7 @@ class Extension;
 
 // ExtensionAppItem represents an extension app in app list.
 class ExtensionAppItem : public ChromeAppListItem,
-                         public ImageLoadingTracker::Observer,
+                         public extensions::IconImage::Observer,
                          public ui::SimpleMenuModel::Delegate {
  public:
   ExtensionAppItem(Profile* profile,
@@ -50,10 +50,9 @@ class ExtensionAppItem : public ChromeAppListItem,
   void ShowExtensionDetails();
   void StartExtensionUninstall();
 
-  // Overridden from ImageLoadingTracker::Observer:
-  virtual void OnImageLoaded(const gfx::Image& image,
-                             const std::string& extension_id,
-                             int tracker_index) OVERRIDE;
+  // Overridden from extensions::IconImage::Observer:
+  virtual void OnExtensionIconImageChanged(
+      extensions::IconImage* image) OVERRIDE;
 
   // Overridden from ui::SimpleMenuModel::Delegate:
   virtual bool IsItemForCommandIdDynamic(int command_id) const OVERRIDE;
@@ -73,7 +72,7 @@ class ExtensionAppItem : public ChromeAppListItem,
   const std::string extension_id_;
   AppListController* controller_;
 
-  scoped_ptr<ImageLoadingTracker> tracker_;
+  scoped_ptr<extensions::IconImage> icon_;
   scoped_ptr<ui::SimpleMenuModel> context_menu_model_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionAppItem);

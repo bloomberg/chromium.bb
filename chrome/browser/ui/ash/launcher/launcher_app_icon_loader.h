@@ -8,8 +8,7 @@
 #include <map>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/image_loading_tracker.h"
+#include "chrome/browser/extensions/extension_icon_image.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
 class Profile;
@@ -22,32 +21,29 @@ class Extension;
 // Default implementation of LauncherUpdater::AppIconLoader that interacts
 // with the ExtensionService and ImageLoadingTracker to load images.
 class LauncherAppIconLoader : public ChromeLauncherController::AppIconLoader,
-                              public ImageLoadingTracker::Observer {
+                              public extensions::IconImage::Observer {
  public:
   LauncherAppIconLoader(Profile* profile, ChromeLauncherController* host);
   virtual ~LauncherAppIconLoader();
 
-  // AppIconLoader:
+  // AppIconLoader overrides:
   virtual void FetchImage(const std::string& id) OVERRIDE;
+  virtual void ClearImage(const std::string& id) OVERRIDE;
 
-  // ImageLoadingTracker::Observer:
-  virtual void OnImageLoaded(const gfx::Image& image,
-                             const std::string& extension_id,
-                             int index) OVERRIDE;
+  // extensions::IconImage::Observer overrides:
+  virtual void OnExtensionIconImageChanged(
+      extensions::IconImage* image) OVERRIDE;
 
  private:
-  typedef std::map<int, std::string> ImageLoaderIDToExtensionIDMap;
+  typedef std::map<extensions::IconImage*, std::string> ImageToExtensionIDMap;
 
   Profile* profile_;
 
   // ChromeLauncherController we're associated with (and owned by).
   ChromeLauncherController* host_;
 
-  // Used to load images.
-  scoped_ptr<ImageLoadingTracker> image_loader_;
-
-  // Maps from id from the ImageLoadingTracker to the extension id.
-  ImageLoaderIDToExtensionIDMap map_;
+  // Maps from IconImage pointer to the extension id.
+  ImageToExtensionIDMap map_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherAppIconLoader);
 };

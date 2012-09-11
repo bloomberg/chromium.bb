@@ -96,6 +96,11 @@ class ImageLoadingTracker : public content::NotificationObserver {
     ui::ScaleFactor scale_factor;
   };
 
+  // Returns true if given extension id is a special component extension that
+  // has its resource bundled.
+  // TODO(xiyuan): Move this out of this class.
+  static bool IsSpecialBundledExtensionId(const std::string& extension_id);
+
   explicit ImageLoadingTracker(Observer* observer);
   virtual ~ImageLoadingTracker();
 

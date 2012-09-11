@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/launcher_app_icon_loader.h"
 
+#include "base/stl_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -31,10 +32,11 @@ LauncherAppIconLoader::LauncherAppIconLoader(
 }
 
 LauncherAppIconLoader::~LauncherAppIconLoader() {
+  STLDeleteContainerPairFirstPointers(map_.begin(), map_.end());
 }
 
 void LauncherAppIconLoader::FetchImage(const std::string& id) {
-  for (ImageLoaderIDToExtensionIDMap::const_iterator i = map_.begin();
+  for (ImageToExtensionIDMap::const_iterator i = map_.begin();
        i != map_.end(); ++i) {
     if (i->second == id)
       return;  // Already loading the image.
@@ -43,29 +45,35 @@ void LauncherAppIconLoader::FetchImage(const std::string& id) {
   const extensions::Extension* extension = GetExtensionByID(profile_, id);
   if (!extension)
     return;
-  if (!image_loader_.get())
-    image_loader_.reset(new ImageLoadingTracker(this));
-  map_[image_loader_->next_id()] = id;
-  image_loader_->LoadImage(
+
+  extensions::IconImage* image = new extensions::IconImage(
       extension,
-      extension->GetIconResource(extension_misc::EXTENSION_ICON_SMALL,
-                                 ExtensionIconSet::MATCH_BIGGER),
-      gfx::Size(extension_misc::EXTENSION_ICON_SMALL,
-                extension_misc::EXTENSION_ICON_SMALL),
-      ImageLoadingTracker::CACHE);
+      extension->icons(),
+      extension_misc::EXTENSION_ICON_SMALL,
+      extensions::Extension::GetDefaultIcon(true),
+      this);
+  // |map_| takes ownership of |image|.
+  map_[image] = id;
+
+  host_->SetAppImage(id, image->image_skia());
 }
 
-void LauncherAppIconLoader::OnImageLoaded(const gfx::Image& image,
-                                          const std::string& extension_id,
-                                          int index) {
-  ImageLoaderIDToExtensionIDMap::iterator i = map_.find(index);
-  if (i == map_.end())
-    return;  // The tab has since been removed, do nothing.
+void LauncherAppIconLoader::ClearImage(const std::string& id) {
+  for (ImageToExtensionIDMap::iterator i = map_.begin();
+       i != map_.end(); ++i) {
+    if (i->second == id) {
+      delete i->first;
+      map_.erase(i);
+      break;
+    }
+  }
+}
 
-  std::string id = i->second;
-  map_.erase(i);
-  if (image.IsEmpty())
-    host_->SetAppImage(id, extensions::Extension::GetDefaultIcon(true));
-  else
-    host_->SetAppImage(id, *image.ToImageSkia());
+void LauncherAppIconLoader::OnExtensionIconImageChanged(
+    extensions::IconImage* image) {
+  ImageToExtensionIDMap::iterator i = map_.find(image);
+  if (i == map_.end())
+    return;  // The image has been removed, do nothing.
+
+  host_->SetAppImage(i->second, image->image_skia());
 }

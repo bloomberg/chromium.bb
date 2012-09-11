@@ -6,16 +6,11 @@
 
 #include <algorithm>
 
-#include "base/bind.h"
-#include "base/message_loop.h"
-#include "base/synchronization/cancellation_flag.h"
-#include "base/threading/worker_pool.h"
 #include "base/utf_string_conversions.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_item_model.h"
 #include "ui/app_list/apps_grid_view.h"
 #include "ui/app_list/drop_shadow_label.h"
-#include "ui/app_list/icon_cache.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -81,55 +76,6 @@ class StaticImageView : public views::ImageView {
 // static
 const char AppListItemView::kViewClassName[] = "ui/app_list/AppListItemView";
 
-// AppListItemView::IconOperation wraps background icon processing.
-class AppListItemView::IconOperation
-    : public base::RefCountedThreadSafe<AppListItemView::IconOperation> {
- public:
-  IconOperation(const gfx::ImageSkia& image,
-                const gfx::Size& size,
-                const gfx::ShadowValues& shadows)
-      : image_(image),
-        size_(size),
-        shadows_(shadows) {
-  }
-
-  static void Run(scoped_refptr<IconOperation> op) {
-    op->ResizeAndGenerateShadow();
-  }
-
-  void ResizeAndGenerateShadow() {
-    if (cancel_flag_.IsSet())
-      return;
-
-    gfx::ImageSkia resized(gfx::ImageSkiaOperations::CreateResizedImage(image_,
-        skia::ImageOperations::RESIZE_BEST, size_));
-    gfx::ImageSkia shadow(
-        gfx::ImageSkiaOperations::CreateImageWithDropShadow(resized, shadows_));
-    image_ = shadow;
-    image_.MakeThreadSafe();
-  }
-
-  void Cancel() {
-    cancel_flag_.Set();
-  }
-
-  const gfx::ImageSkia& image() const {
-    return image_;
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<AppListItemView::IconOperation>;
-  ~IconOperation() {}
-
-  base::CancellationFlag cancel_flag_;
-
-  gfx::ImageSkia image_;
-  const gfx::Size size_;
-  const gfx::ShadowValues shadows_;
-
-  DISALLOW_COPY_AND_ASSIGN(IconOperation);
-};
-
 AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
                                  AppListItemModel* model,
                                  views::ButtonListener* listener)
@@ -137,8 +83,7 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
       model_(model),
       apps_grid_view_(apps_grid_view),
       icon_(new StaticImageView),
-      title_(new DropShadowLabel),
-      ALLOW_THIS_IN_INITIALIZER_LIST(apply_shadow_factory_(this)) {
+      title_(new DropShadowLabel) {
   title_->SetBackgroundColor(kTitleBackgroundColor);
   title_->SetEnabledColor(kTitleColor);
   title_->SetFont(GetTitleFont());
@@ -161,7 +106,6 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
 
 AppListItemView::~AppListItemView() {
   model_->RemoveObserver(this);
-  CancelPendingIconOperation();
 }
 
 void AppListItemView::SetIconSize(const gfx::Size& size) {
@@ -184,39 +128,12 @@ void AppListItemView::UpdateIcon() {
     return;
   }
 
-  CancelPendingIconOperation();
-
-  gfx::ImageSkia shadow;
-  if (IconCache::GetInstance()->Get(icon, icon_size_, &shadow)) {
-    icon_->SetImage(shadow);
-  } else {
-    // Schedule resize and shadow generation.
-    icon_op_ = new IconOperation(icon, icon_size_, icon_shadows_);
-    base::WorkerPool::PostTaskAndReply(
-        FROM_HERE,
-        base::Bind(&IconOperation::Run, icon_op_),
-        base::Bind(&AppListItemView::ApplyShadow,
-                   apply_shadow_factory_.GetWeakPtr(),
-                   icon_op_),
-        true /* task_is_slow */);
-  }
-}
-
-void AppListItemView::CancelPendingIconOperation() {
-  // Set canceled flag of previous request to skip unneeded processing.
-  if (icon_op_.get())
-    icon_op_->Cancel();
-
-  // Cancel reply callback for previous request.
-  apply_shadow_factory_.InvalidateWeakPtrs();
-}
-
-void AppListItemView::ApplyShadow(scoped_refptr<IconOperation> op) {
-  icon_->SetImage(op->image());
-  IconCache::GetInstance()->Put(model_->icon(), icon_size_, op->image());
-
-  DCHECK(op.get() == icon_op_.get());
-  icon_op_ = NULL;
+  gfx::ImageSkia resized(gfx::ImageSkiaOperations::CreateResizedImage(icon,
+      skia::ImageOperations::RESIZE_BEST, icon_size_));
+  gfx::ImageSkia shadow(
+      gfx::ImageSkiaOperations::CreateImageWithDropShadow(resized,
+                                                          icon_shadows_));
+  icon_->SetImage(shadow);
 }
 
 void AppListItemView::ItemIconChanged() {

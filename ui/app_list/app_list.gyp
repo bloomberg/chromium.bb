@@ -45,8 +45,6 @@
         'contents_view.h',
         'drop_shadow_label.cc',
         'drop_shadow_label.h',
-        'icon_cache.cc',
-        'icon_cache.h',
         'page_switcher.cc',
         'page_switcher.h',
         'pagination_model.cc',

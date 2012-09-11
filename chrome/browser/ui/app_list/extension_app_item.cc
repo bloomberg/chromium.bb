@@ -151,14 +151,13 @@ bool ExtensionAppItem::IsTalkExtension() const {
 }
 
 void ExtensionAppItem::LoadImage(const Extension* extension) {
-  tracker_.reset(new ImageLoadingTracker(this));
-  tracker_->LoadImage(extension,
-                      extension->GetIconResource(
-                          extension_misc::EXTENSION_ICON_LARGE,
-                          ExtensionIconSet::MATCH_BIGGER),
-                      gfx::Size(extension_misc::EXTENSION_ICON_LARGE,
-                                extension_misc::EXTENSION_ICON_LARGE),
-                      ImageLoadingTracker::DONT_CACHE);
+  icon_.reset(new extensions::IconImage(
+      extension,
+      extension->icons(),
+      extension_misc::EXTENSION_ICON_MEDIUM,
+      Extension::GetDefaultIcon(true),
+      this));
+  SetIcon(icon_->image_skia());
 }
 
 void ExtensionAppItem::ShowExtensionOptions() {
@@ -190,18 +189,10 @@ void ExtensionAppItem::StartExtensionUninstall() {
   uninstaller->Run();
 }
 
-void ExtensionAppItem::OnImageLoaded(const gfx::Image& image,
-                                     const std::string& extension_id,
-                                     int tracker_index) {
-  if (!image.IsEmpty()) {
-    gfx::ImageSkia image_skia = *image.ToImageSkia();
-    image_skia.MakeThreadSafe();
-    SetIcon(image_skia);
-  } else {
-    gfx::ImageSkia image_skia(Extension::GetDefaultIcon(true /* is_app */));
-    image_skia.MakeThreadSafe();
-    SetIcon(image_skia);
-  }
+void ExtensionAppItem::OnExtensionIconImageChanged(
+    extensions::IconImage* image) {
+  DCHECK(icon_.get() == image);
+  SetIcon(icon_->image_skia());
 }
 
 bool ExtensionAppItem::IsItemForCommandIdDynamic(int command_id) const {

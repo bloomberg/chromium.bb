@@ -9,7 +9,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_item_model_observer.h"
 #include "ui/gfx/shadow_value.h"
@@ -46,17 +45,8 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   AppListItemModel* model() const { return model_; }
 
  private:
-  class IconOperation;
-
   // Get icon from model and schedule background processing.
   void UpdateIcon();
-
-  // Cancel pending icon operation and reply callback.
-  void CancelPendingIconOperation();
-
-  // Reply callback from background shadow generation. |op| is the finished
-  // operation and holds the result image.
-  void ApplyShadow(scoped_refptr<IconOperation> op);
 
   // AppListItemModelObserver overrides:
   virtual void ItemIconChanged() OVERRIDE;
@@ -86,9 +76,6 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   scoped_ptr<views::MenuRunner> context_menu_runner_;
 
   gfx::Size icon_size_;
-
-  scoped_refptr<IconOperation> icon_op_;
-  base::WeakPtrFactory<AppListItemView> apply_shadow_factory_;
   gfx::ShadowValues icon_shadows_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListItemView);

@@ -6,6 +6,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "ash/launcher/launcher_model.h"
 #include "base/memory/scoped_ptr.h"
@@ -95,6 +96,8 @@ class AppIconLoaderImpl : public ChromeLauncherController::AppIconLoader {
   virtual void FetchImage(const std::string& id) OVERRIDE {
     fetch_count_++;
   }
+  virtual void ClearImage(const std::string& id) OVERRIDE {
+  }
 
  private:
   int fetch_count_;
@@ -104,8 +107,8 @@ class AppIconLoaderImpl : public ChromeLauncherController::AppIconLoader {
 
 }  // namespace
 
-class BrowserLauncherItemControllerTest :
-    public ChromeRenderViewHostTestHarness {
+class BrowserLauncherItemControllerTest
+    : public ChromeRenderViewHostTestHarness {
  public:
   BrowserLauncherItemControllerTest()
       : browser_thread_(content::BrowserThread::UI, &message_loop_) {

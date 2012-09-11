@@ -12,7 +12,6 @@
 #include "ash/wm/property_util.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "ui/app_list/app_list_view.h"
-#include "ui/app_list/icon_cache.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
@@ -87,7 +86,6 @@ AppListController::AppListController()
     : pagination_model_(new app_list::PaginationModel),
       is_visible_(false),
       view_(NULL) {
-  app_list::IconCache::CreateInstance();
   Shell::GetInstance()->AddShellObserver(this);
 }
 
@@ -97,7 +95,6 @@ AppListController::~AppListController() {
   if (view_ && view_->GetWidget())
     view_->GetWidget()->CloseNow();
 
-  app_list::IconCache::DeleteInstance();
   Shell::GetInstance()->RemoveShellObserver(this);
 }
 
@@ -144,8 +141,6 @@ void AppListController::SetView(app_list::AppListView* view) {
   DCHECK(view_ == NULL);
 
   if (is_visible_) {
-    app_list::IconCache::GetInstance()->MarkAllEntryUnused();
-
     view_ = view;
     views::Widget* widget = view_->GetWidget();
     widget->AddObserver(this);
@@ -174,8 +169,6 @@ void AppListController::ResetView() {
   widget->GetNativeView()->GetRootWindow()->RemoveRootWindowObserver(this);
   widget->GetNativeView()->GetFocusManager()->RemoveObserver(this);
   view_ = NULL;
-
-  app_list::IconCache::GetInstance()->PurgeAllUnused();
 }
 
 void AppListController::ScheduleAnimation() {

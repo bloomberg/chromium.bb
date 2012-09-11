@@ -92,6 +92,9 @@ class ChromeLauncherController
     // Fetches the image for the specified id. When done (which may be
     // synchronous), this should invoke SetAppImage() on the LauncherUpdater.
     virtual void FetchImage(const std::string& id) = 0;
+
+    // Clears the image for the specified id.
+    virtual void ClearImage(const std::string& id) = 0;
   };
 
   ChromeLauncherController(Profile* profile, ash::LauncherModel* model);

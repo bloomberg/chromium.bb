@@ -17,7 +17,6 @@ AppListItemModel::~AppListItemModel() {
 
 void AppListItemModel::SetIcon(const gfx::ImageSkia& icon) {
   icon_ = icon;
-  DCHECK(icon.IsThreadSafe());
   FOR_EACH_OBSERVER(AppListItemModelObserver, observers_, ItemIconChanged());
 }
 

@@ -626,6 +626,7 @@ void ChromeLauncherController::Observe(
       const Extension* extension = unload_info->extension;
       if (IsAppPinned(extension->id()))
         DoUnpinAppsWithID(extension->id());
+      app_icon_loader_->ClearImage(extension->id());
       break;
     }
     case chrome::NOTIFICATION_PREF_CHANGED: {

@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "grit/theme_resources.h"
 #include "ui/app_list/app_list_view.h"
-#include "ui/app_list/icon_cache.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/win/shell.h"
@@ -84,9 +83,7 @@ gfx::ImageSkia AppListControllerWin::GetWindowAppIcon() {
 // list to operate.
 class AppListResources {
  public:
-  AppListResources::AppListResources() {
-    app_list::IconCache::CreateInstance();
-  }
+  AppListResources::AppListResources() {}
 
   app_list::PaginationModel* pagination_model() { return &pagination_model_; }
 
