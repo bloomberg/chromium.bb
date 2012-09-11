@@ -115,8 +115,8 @@ bool Socket::InitSocketInternal() {
 bool Socket::InitUnixSocket(const std::string& path, bool abstract) {
   static const size_t kPathMax = sizeof(addr_.addr_un.sun_path);
   // For abstract sockets we need one extra byte for the leading zero.
-  if (abstract && path.size() + 2 /* '\0' */ > kPathMax ||
-      !abstract && path.size() + 1 /* '\0' */ > kPathMax) {
+  if ((abstract && path.size() + 2 /* '\0' */ > kPathMax) ||
+      (!abstract && path.size() + 1 /* '\0' */ > kPathMax)) {
     LOG(ERROR) << "The provided path is too big to create a unix "
                << "domain socket: " << path;
     return false;
