@@ -1384,6 +1384,18 @@ XScopedString::~XScopedString() {
   XFree(string_);
 }
 
+XScopedImage::~XScopedImage() {
+  reset(NULL);
+}
+
+void XScopedImage::reset(XImage* image) {
+  if (image_ == image)
+    return;
+  if (image_)
+    XDestroyImage(image_);
+  image_ = image;
+}
+
 XScopedCursor::XScopedCursor(::Cursor cursor, Display* display)
     : cursor_(cursor),
       display_(display) {

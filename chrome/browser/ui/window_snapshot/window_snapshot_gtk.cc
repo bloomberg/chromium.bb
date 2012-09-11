@@ -46,10 +46,10 @@ bool GrabWindowSnapshot(gfx::NativeWindow window_handle,
   DCHECK_LE(snapshot_bounds.right(), window_bounds.width());
   DCHECK_LE(snapshot_bounds.bottom(), window_bounds.height());
 
-  XImage* image = XGetImage(
+  ui::XScopedImage image(XGetImage(
       display, win, snapshot_bounds.x(), snapshot_bounds.y(),
-      snapshot_bounds.width(), snapshot_bounds.height(), AllPlanes, ZPixmap);
-  if (!image) {
+      snapshot_bounds.width(), snapshot_bounds.height(), AllPlanes, ZPixmap));
+  if (!image.get()) {
     LOG(ERROR) << "Couldn't get image";
     return false;
   }

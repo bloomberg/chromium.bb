@@ -813,13 +813,13 @@ void RootWindowHostLinux::SetFocusWhenShown(bool focus_when_shown) {
 bool RootWindowHostLinux::GrabSnapshot(
     const gfx::Rect& snapshot_bounds,
     std::vector<unsigned char>* png_representation) {
-  XImage* image = XGetImage(
+  ui::XScopedImage image(XGetImage(
       xdisplay_, xwindow_,
       snapshot_bounds.x(), snapshot_bounds.y(),
       snapshot_bounds.width(), snapshot_bounds.height(),
-      AllPlanes, ZPixmap);
+      AllPlanes, ZPixmap));
 
-  if (!image) {
+  if (!image.get()) {
     LOG(ERROR) << "XGetImage failed";
     return false;
   }
@@ -844,7 +844,6 @@ bool RootWindowHostLinux::GrabSnapshot(
     }
   } else {
     LOG(ERROR) << "bits_per_pixel is too small";
-    XFree(image);
     return false;
   }
 
@@ -853,7 +852,6 @@ bool RootWindowHostLinux::GrabSnapshot(
                         image->width * image->bits_per_pixel / 8,
                         true, std::vector<gfx::PNGCodec::Comment>(),
                         png_representation);
-  XFree(image);
   return true;
 }
 

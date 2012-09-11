@@ -25,6 +25,7 @@ typedef unsigned long XSharedMemoryId;  // ShmSeg in the X headers.
 typedef struct _XDisplay Display;
 typedef unsigned long Cursor;
 typedef struct _XcursorImage XcursorImage;
+typedef struct _XImage XImage;
 
 #if defined(TOOLKIT_GTK)
 typedef struct _GdkDrawable GdkWindow;
@@ -319,7 +320,7 @@ UI_EXPORT void InitXKeyEventForTesting(EventType type,
 // makes sure it's XFree'd.
 class UI_EXPORT XScopedString {
  public:
-  explicit XScopedString(char* str) : string_(str) { }
+  explicit XScopedString(char* str) : string_(str) {}
   ~XScopedString();
 
   const char* string() const { return string_; }
@@ -328,6 +329,29 @@ class UI_EXPORT XScopedString {
   char* string_;
 
   DISALLOW_COPY_AND_ASSIGN(XScopedString);
+};
+
+// Keeps track of an image returned by an X function (e.g. XGetImage) and
+// makes sure it's XDestroyImage'd.
+class UI_EXPORT XScopedImage {
+ public:
+  explicit XScopedImage(XImage* image) : image_(image) {}
+  ~XScopedImage();
+
+  XImage* get() const {
+    return image_;
+  }
+
+  XImage* operator->() const {
+    return image_;
+  }
+
+  void reset(XImage* image);
+
+ private:
+  XImage* image_;
+
+  DISALLOW_COPY_AND_ASSIGN(XScopedImage);
 };
 
 // Keeps track of a cursor returned by an X function and makes sure it's

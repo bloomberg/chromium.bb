@@ -1042,19 +1042,17 @@ void RenderWidgetHostViewGtk::CopyFromCompositingSurface(
   base::ScopedClosureRunner scoped_callback_runner(base::Bind(callback, false));
 
   const gfx::Rect bounds = GetViewBounds();
-  XImage* image = XGetImage(ui::GetXDisplay(), ui::GetX11RootWindow(),
-                            bounds.x() + src_subrect.x(),
-                            bounds.y() + src_subrect.y(),
-                            src_subrect.width(),
-                            src_subrect.height(),
-                            AllPlanes, ZPixmap);
-  if (!image)
+  ui::XScopedImage image(XGetImage(ui::GetXDisplay(), ui::GetX11RootWindow(),
+                                   bounds.x() + src_subrect.x(),
+                                   bounds.y() + src_subrect.y(),
+                                   src_subrect.width(),
+                                   src_subrect.height(),
+                                   AllPlanes, ZPixmap));
+  if (!image.get())
     return;
 
-  if (!output->initialize(src_subrect.width(), src_subrect.height(), true)) {
-    XFree(image);
+  if (!output->initialize(src_subrect.width(), src_subrect.height(), true))
     return;
-  }
 
   const SkBitmap& bitmap = output->getTopDevice()->accessBitmap(true);
   const size_t bitmap_size = bitmap.getSize();
@@ -1063,7 +1061,6 @@ void RenderWidgetHostViewGtk::CopyFromCompositingSurface(
   unsigned char* pixels = static_cast<unsigned char*>(bitmap.getPixels());
   memcpy(pixels, image->data, bitmap_size);
 
-  XFree(image);
   scoped_callback_runner.Release();
   callback.Run(true);
 }
