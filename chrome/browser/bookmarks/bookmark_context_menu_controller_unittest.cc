@@ -17,6 +17,7 @@
 #include "content/public/test/test_browser_thread.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/clipboard/clipboard.h"
 
 using content::BrowserThread;
 using content::OpenURLParams;
@@ -60,6 +61,8 @@ class BookmarkContextMenuControllerTest : public testing::Test {
 #if defined(OS_WIN)
     bookmark_utils::DisableBookmarkBarViewAnimationsForTesting(false);
 #endif
+
+    ui::Clipboard::DestroyClipboardForCurrentThread();
 
     // Flush the message loop to make application verifiers happy.
     message_loop_.RunAllPending();
