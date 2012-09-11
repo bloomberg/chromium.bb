@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_input_event.idl modified Fri Jun 22 15:22:14 2012. */
+/* From ppb_input_event.idl modified Tue Aug 14 09:41:28 2012. */
 
 #ifndef PPAPI_C_PPB_INPUT_EVENT_H_
 #define PPAPI_C_PPB_INPUT_EVENT_H_
@@ -208,7 +208,9 @@ typedef enum {
   PP_INPUTEVENT_MODIFIER_MIDDLEBUTTONDOWN = 1 << 7,
   PP_INPUTEVENT_MODIFIER_RIGHTBUTTONDOWN = 1 << 8,
   PP_INPUTEVENT_MODIFIER_CAPSLOCKKEY = 1 << 9,
-  PP_INPUTEVENT_MODIFIER_NUMLOCKKEY = 1 << 10
+  PP_INPUTEVENT_MODIFIER_NUMLOCKKEY = 1 << 10,
+  PP_INPUTEVENT_MODIFIER_ISLEFT = 1 << 11,
+  PP_INPUTEVENT_MODIFIER_ISRIGHT = 1 << 12
 } PP_InputEvent_Modifier;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_InputEvent_Modifier, 4);
 

@@ -196,7 +196,9 @@ enum PP_InputEvent_Modifier {
   PP_INPUTEVENT_MODIFIER_MIDDLEBUTTONDOWN = 1 << 7,
   PP_INPUTEVENT_MODIFIER_RIGHTBUTTONDOWN  = 1 << 8,
   PP_INPUTEVENT_MODIFIER_CAPSLOCKKEY      = 1 << 9,
-  PP_INPUTEVENT_MODIFIER_NUMLOCKKEY       = 1 << 10
+  PP_INPUTEVENT_MODIFIER_NUMLOCKKEY       = 1 << 10,
+  PP_INPUTEVENT_MODIFIER_ISLEFT           = 1 << 11,
+  PP_INPUTEVENT_MODIFIER_ISRIGHT          = 1 << 12
 };
 
 /**
@@ -400,7 +402,7 @@ interface PPB_InputEvent {
    *
    * @param[in] resource A <code>PP_Resource</code> corresponding to a generic
    * resource.
-   * 
+   *
    * @return <code>PP_TRUE</code> if the given resource is a valid input event
    * resource.
    */
@@ -408,12 +410,12 @@ interface PPB_InputEvent {
 
   /**
    * GetType() returns the type of input event for the given input event
-   * resource. 
+   * resource.
    *
    * @param[in] resource A <code>PP_Resource</code> corresponding to an input
    * event.
    *
-   * @return A <code>PP_InputEvent_Type</code> if its a valid input event or 
+   * @return A <code>PP_InputEvent_Type</code> if its a valid input event or
    * <code>PP_INPUTEVENT_TYPE_UNDEFINED</code> if the resource is invalid.
    */
   PP_InputEvent_Type GetType([in] PP_Resource event);
@@ -425,7 +427,7 @@ interface PPB_InputEvent {
    * events without being sensitive to variable processing time.
    *
    * @param[in] resource A <code>PP_Resource</code> corresponding to the event.
-   * 
+   *
    * @return The return value is in time ticks, which is a monotonically
    * increasing clock not related to the wall clock time. It will not change
    * if the user changes their clock or daylight savings time starts, so can
@@ -741,7 +743,7 @@ interface PPB_KeyboardInputEvent {
 
   /**
    * IsKeyboardInputEvent() determines if a resource is a keyboard event.
-   * 
+   *
    * @param[in] resource A <code>PP_Resource</code> corresponding to an event.
    *
    * @return <code>PP_TRUE</code> if the given resource is a valid input event.

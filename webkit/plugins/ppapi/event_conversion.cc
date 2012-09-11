@@ -76,6 +76,12 @@ COMPILE_ASSERT(static_cast<int>(PP_INPUTEVENT_MODIFIER_CAPSLOCKKEY) ==
 COMPILE_ASSERT(static_cast<int>(PP_INPUTEVENT_MODIFIER_NUMLOCKKEY) ==
                static_cast<int>(WebInputEvent::NumLockOn),
                NumLockMatches);
+COMPILE_ASSERT(static_cast<int>(PP_INPUTEVENT_MODIFIER_ISLEFT) ==
+               static_cast<int>(WebInputEvent::IsLeft),
+               LeftMatches);
+COMPILE_ASSERT(static_cast<int>(PP_INPUTEVENT_MODIFIER_ISRIGHT) ==
+               static_cast<int>(WebInputEvent::IsRight),
+               RightMatches);
 
 PP_InputEvent_Type ConvertEventTypes(WebInputEvent::Type wetype) {
   switch (wetype) {
