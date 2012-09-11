@@ -106,7 +106,9 @@ function updateIcon() {
   } else {
     chrome.browserAction.setIcon({path: "gmail_logged_in.png"});
     chrome.browserAction.setBadgeBackgroundColor({color:[208, 0, 24, 255]});
-    chrome.browserAction.setBadgeText({text:unreadCount});
+    chrome.browserAction.setBadgeText({
+      text: unreadCount != "0" ? unreadCount : ""
+    });
   }
 }
 
