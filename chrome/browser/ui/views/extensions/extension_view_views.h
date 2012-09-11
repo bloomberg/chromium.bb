@@ -22,17 +22,17 @@ class ExtensionHost;
 }
 
 // This handles the display portion of an ExtensionHost.
-class ExtensionView : public views::NativeViewHost {
+class ExtensionViewViews : public views::NativeViewHost {
  public:
-  ExtensionView(extensions::ExtensionHost* host, Browser* browser);
-  virtual ~ExtensionView();
+  ExtensionViewViews(extensions::ExtensionHost* host, Browser* browser);
+  virtual ~ExtensionViewViews();
 
   // A class that represents the container that this view is in.
   // (bottom shelf, side bar, etc.)
   class Container {
    public:
     virtual ~Container() {}
-    virtual void OnExtensionSizeChanged(ExtensionView* view) {}
+    virtual void OnExtensionSizeChanged(ExtensionViewViews* view) {}
     virtual void OnViewWasResized() {}
   };
 
@@ -75,7 +75,7 @@ class ExtensionView : public views::NativeViewHost {
   // Initializes the RenderWidgetHostView for this object.
   void CreateWidgetHostView();
 
-  // We wait to show the ExtensionView until several things have loaded.
+  // We wait to show the ExtensionViewViews until several things have loaded.
   void ShowIfCompletelyLoaded();
 
   // Restore object to initial state. Called on shutdown or after a renderer
@@ -96,7 +96,7 @@ class ExtensionView : public views::NativeViewHost {
   // when the view has a custom background, but hasn't been initialized yet.
   SkBitmap pending_background_;
 
-  // What we should set the preferred width to once the ExtensionView has
+  // What we should set the preferred width to once the ExtensionViewViews has
   // loaded.
   gfx::Size pending_preferred_size_;
 
@@ -107,7 +107,7 @@ class ExtensionView : public views::NativeViewHost {
   // Whether this extension view is clipped.
   bool is_clipped_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionView);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionViewViews);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_VIEW_VIEWS_H_

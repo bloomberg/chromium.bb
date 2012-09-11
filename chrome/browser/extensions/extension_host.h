@@ -20,7 +20,7 @@
 #include "content/public/browser/web_contents_observer.h"
 
 #if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/ui/views/extensions/extension_view.h"
+#include "chrome/browser/ui/views/extensions/extension_view_views.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
 #elif defined(TOOLKIT_GTK)
@@ -55,7 +55,7 @@ class ExtensionHost : public content::WebContentsDelegate,
   class ProcessCreationQueue;
 
 #if defined(TOOLKIT_VIEWS)
-  typedef ExtensionView PlatformExtensionView;
+  typedef ExtensionViewViews PlatformExtensionView;
 #elif defined(OS_MACOSX)
   typedef ExtensionViewMac PlatformExtensionView;
 #elif defined(TOOLKIT_GTK)

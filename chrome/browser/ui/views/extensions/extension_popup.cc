@@ -141,7 +141,7 @@ void ExtensionPopup::Observe(int type,
   }
 }
 
-void ExtensionPopup::OnExtensionSizeChanged(ExtensionView* view) {
+void ExtensionPopup::OnExtensionSizeChanged(ExtensionViewViews* view) {
   SizeToContents();
 }
 
