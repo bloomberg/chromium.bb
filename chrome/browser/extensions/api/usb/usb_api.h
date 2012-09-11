@@ -27,6 +27,9 @@ class UsbAsyncApiFunction : public AsyncApiFunction {
 
   virtual bool PrePrepare() OVERRIDE;
 
+  UsbDeviceResource* GetUsbDeviceResource(int api_resource_id);
+  void RemoveUsbDeviceResource(int api_resource_id);
+
   ApiResourceManager<UsbDeviceResource>* manager_;
 };
 

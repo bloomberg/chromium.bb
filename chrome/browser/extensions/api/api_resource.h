@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/common/extensions/extension.h"
 
 namespace extensions {
 
@@ -19,12 +20,25 @@ class ApiResource {
  public:
   virtual ~ApiResource();
 
+  const std::string& owner_extension_id() const {
+    return owner_extension_id_;
+  }
+
  protected:
-  ApiResource(ApiResourceEventNotifier* event_notifier);
+  ApiResource(const std::string& owner_extension_id,
+              ApiResourceEventNotifier* event_notifier);
 
   ApiResourceEventNotifier* event_notifier() const;
 
  private:
+  // The extension that owns this resource. This could be derived from
+  // event_notifier, but that's a little too cute; to make future code
+  // maintenance easier, we'll require callers to explicitly specify the owner,
+  // and for now we'll assert that the owner implied by the event_notifier is
+  // consistent with the explicit one.
+  const std::string& owner_extension_id_;
+
+  // The object that lets this resource report events to the owner application.
   scoped_refptr<ApiResourceEventNotifier> event_notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(ApiResource);

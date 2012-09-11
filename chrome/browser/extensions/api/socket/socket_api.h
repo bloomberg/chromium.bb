@@ -37,6 +37,9 @@ class SocketAsyncApiFunction : public AsyncApiFunction {
   virtual bool PrePrepare() OVERRIDE;
   virtual bool Respond() OVERRIDE;
 
+  Socket* GetSocket(int api_resource_id);
+  void RemoveSocket(int api_resource_id);
+
   ApiResourceManager<Socket>* manager_;
 };
 

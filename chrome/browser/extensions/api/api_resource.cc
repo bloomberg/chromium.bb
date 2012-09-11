@@ -7,8 +7,15 @@
 
 namespace extensions {
 
-ApiResource::ApiResource(ApiResourceEventNotifier* event_notifier)
-    : event_notifier_(event_notifier) {
+ApiResource::ApiResource(const std::string& owner_extension_id,
+                         ApiResourceEventNotifier* event_notifier)
+    : owner_extension_id_(owner_extension_id),
+      event_notifier_(event_notifier) {
+
+  CHECK(!owner_extension_id_.empty());
+  if (event_notifier)
+    CHECK(event_notifier->src_extension_id() == owner_extension_id_);
+
   // scoped_refptr<> constructor does the initial AddRef() for us on
   // event_notifier_.
 }

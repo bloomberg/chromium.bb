@@ -16,7 +16,8 @@ class ApiResourceEventNotifier;
 
 class UDPSocket : public Socket {
  public:
-  explicit UDPSocket(ApiResourceEventNotifier* event_notifier);
+  UDPSocket(const std::string& owner_extension_id,
+            ApiResourceEventNotifier* event_notifier);
   virtual ~UDPSocket();
 
   virtual void Connect(const std::string& address,

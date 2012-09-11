@@ -153,9 +153,10 @@ static const char* ConvertTransferStatusToErrorString(
 
 namespace extensions {
 
-UsbDeviceResource::UsbDeviceResource(ApiResourceEventNotifier* notifier,
+UsbDeviceResource::UsbDeviceResource(const std::string& owner_extension_id,
+                                     ApiResourceEventNotifier* notifier,
                                      UsbDevice* device)
-    : ApiResource(notifier), device_(device) {}
+    : ApiResource(owner_extension_id, notifier), device_(device) {}
 
 UsbDeviceResource::~UsbDeviceResource() {
   Close();

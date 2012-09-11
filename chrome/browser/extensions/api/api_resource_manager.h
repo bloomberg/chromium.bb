@@ -51,22 +51,30 @@ class ApiResourceManager : public ProfileKeyedService,
     return 0;
   }
 
-  void Remove(int api_resource_id) {
+  void Remove(const std::string& extension_id, int api_resource_id) {
     DCHECK(BrowserThread::CurrentlyOn(thread_id_));
-    api_resource_map_->erase(api_resource_id);
+    if (GetOwnedResource(extension_id, api_resource_id) != NULL) {
+      api_resource_map_->erase(api_resource_id);
+    }
   }
 
-  T* Get(int api_resource_id) {
+  T* Get(const std::string& extension_id, int api_resource_id) {
     DCHECK(BrowserThread::CurrentlyOn(thread_id_));
-    linked_ptr<T> ptr = (*api_resource_map_)[api_resource_id];
-    return ptr.get();
+    return GetOwnedResource(extension_id, api_resource_id);
   }
 
  private:
-  // TODO(miket): consider partitioning the ID space by extension ID to make it
-  // harder for extensions to peek into each others' resources.
   int GenerateId() {
     return next_id_++;
+  }
+
+  T* GetOwnedResource(const std::string& extension_id,
+                      int api_resource_id) {
+    linked_ptr<T> ptr = (*api_resource_map_)[api_resource_id];
+    T* resource = ptr.get();
+    if (resource && extension_id == resource->owner_extension_id())
+      return resource;
+    return NULL;
   }
 
   int next_id_;

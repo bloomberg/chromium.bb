@@ -45,6 +45,15 @@ bool SerialAsyncApiFunction::PrePrepare() {
   return manager_ != NULL;
 }
 
+SerialConnection* SerialAsyncApiFunction::GetSerialConnection(
+    int api_resource_id) {
+  return manager_->Get(extension_->id(), api_resource_id);
+}
+
+void SerialAsyncApiFunction::RemoveSerialConnection(int api_resource_id) {
+  manager_->Remove(extension_->id(), api_resource_id);
+}
+
 SerialGetPortsFunction::SerialGetPortsFunction() {}
 
 bool SerialGetPortsFunction::Prepare() {
@@ -116,6 +125,7 @@ void SerialOpenFunction::Work() {
     SerialConnection* serial_connection = CreateSerialConnection(
       params_->port,
       bitrate_,
+      extension_->id(),
       event_notifier_);
     CHECK(serial_connection);
     int id = manager_->Add(serial_connection);
@@ -124,7 +134,7 @@ void SerialOpenFunction::Work() {
     bool open_result = serial_connection->Open();
     if (!open_result) {
       serial_connection->Close();
-      manager_->Remove(id);
+      RemoveSerialConnection(id);
       id = -1;
     }
 
@@ -143,8 +153,10 @@ void SerialOpenFunction::Work() {
 SerialConnection* SerialOpenFunction::CreateSerialConnection(
     const std::string& port,
     int bitrate,
+    const std::string& owner_extension_id,
     ApiResourceEventNotifier* event_notifier) {
-  return new SerialConnection(port, bitrate, event_notifier);
+  return new SerialConnection(port, bitrate, owner_extension_id,
+                              event_notifier);
 }
 
 bool SerialOpenFunction::DoesPortExist(const std::string& port) {
@@ -174,10 +186,11 @@ bool SerialCloseFunction::Prepare() {
 
 void SerialCloseFunction::Work() {
   bool close_result = false;
-  SerialConnection* serial_connection = manager_->Get(params_->connection_id);
+  SerialConnection* serial_connection = GetSerialConnection(
+      params_->connection_id);
   if (serial_connection) {
     serial_connection->Close();
-    manager_->Remove(params_->connection_id);
+    RemoveSerialConnection(params_->connection_id);
     close_result = true;
   }
 
@@ -211,7 +224,8 @@ void SerialReadFunction::Work() {
   int bytes_read = -1;
   scoped_refptr<net::IOBufferWithSize> io_buffer(
       new net::IOBufferWithSize(params_->bytes_to_read));
-  SerialConnection* serial_connection(manager_->Get(params_->connection_id));
+  SerialConnection* serial_connection(GetSerialConnection(
+      params_->connection_id));
 
   if (serial_connection)
     bytes_read = serial_connection->Read(io_buffer);
@@ -253,7 +267,8 @@ bool SerialWriteFunction::Prepare() {
 
 void SerialWriteFunction::Work() {
   int bytes_written = -1;
-  SerialConnection* serial_connection = manager_->Get(params_->connection_id);
+  SerialConnection* serial_connection = GetSerialConnection(
+      params_->connection_id);
   if (serial_connection)
     bytes_written = serial_connection->Write(io_buffer_, io_buffer_size_);
   else
@@ -284,7 +299,8 @@ bool SerialFlushFunction::Prepare() {
 
 void SerialFlushFunction::Work() {
   bool flush_result = false;
-  SerialConnection* serial_connection = manager_->Get(params_->connection_id);
+  SerialConnection* serial_connection = GetSerialConnection(
+      params_->connection_id);
   if (serial_connection) {
     serial_connection->Flush();
     flush_result = true;
@@ -316,7 +332,8 @@ bool SerialGetControlSignalsFunction::Prepare() {
 
 void SerialGetControlSignalsFunction::Work() {
   DictionaryValue *result = new DictionaryValue();
-  SerialConnection* serial_connection = manager_->Get(params_->connection_id);
+  SerialConnection* serial_connection = GetSerialConnection(
+      params_->connection_id);
   if (serial_connection) {
     SerialConnection::ControlSignals control_signals = { 0 };
     if (serial_connection->GetControlSignals(control_signals)) {
@@ -355,7 +372,8 @@ bool SerialSetControlSignalsFunction::Prepare() {
 }
 
 void SerialSetControlSignalsFunction::Work() {
-  SerialConnection* serial_connection = manager_->Get(params_->connection_id);
+  SerialConnection* serial_connection = GetSerialConnection(
+      params_->connection_id);
   if (serial_connection) {
     SerialConnection::ControlSignals control_signals = { 0 };
     control_signals.should_set_dtr = params_->options.dtr.get() != NULL;

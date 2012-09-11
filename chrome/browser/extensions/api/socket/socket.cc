@@ -14,8 +14,9 @@
 
 namespace extensions {
 
-Socket::Socket(ApiResourceEventNotifier* event_notifier)
-    : ApiResource(event_notifier),
+Socket::Socket(const std::string& owner_extension_id,
+               ApiResourceEventNotifier* event_notifier)
+    : ApiResource(owner_extension_id, event_notifier),
       port_(0),
       is_connected_(false) {
 }

@@ -29,6 +29,7 @@ class SerialConnection : public ApiResource {
  public:
   SerialConnection(const std::string& port,
                    int bitrate,
+                   const std::string& owner_extension_id,
                    ApiResourceEventNotifier* event_notifier);
   virtual ~SerialConnection();
 

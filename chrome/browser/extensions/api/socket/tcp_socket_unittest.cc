@@ -43,9 +43,10 @@ class MockTCPSocket : public net::TCPClientSocket {
 
 class MockApiResourceEventNotifier : public ApiResourceEventNotifier {
  public:
-  MockApiResourceEventNotifier() : ApiResourceEventNotifier(NULL, NULL,
-                                                            std::string(),
-                                                            0, GURL()) {}
+  MockApiResourceEventNotifier(const std::string& owner_extension_id)
+      : ApiResourceEventNotifier(NULL, NULL,
+                                 owner_extension_id,
+                                 0, GURL()) {}
 
   MOCK_METHOD2(OnReadComplete, void(int result_code,
                                     const std::string& message));
@@ -65,15 +66,17 @@ class CompleteHandler {
   DISALLOW_COPY_AND_ASSIGN(CompleteHandler);
 };
 
+const std::string FAKE_ID = "abcdefghijklmnopqrst";
 
 TEST(SocketTest, TestTCPSocketRead) {
   net::AddressList address_list;
   MockTCPSocket* tcp_client_socket = new MockTCPSocket(address_list);
-  ApiResourceEventNotifier* notifier = new MockApiResourceEventNotifier();
+  ApiResourceEventNotifier* notifier = new MockApiResourceEventNotifier(
+      FAKE_ID);
   CompleteHandler handler;
 
   scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
-      tcp_client_socket, notifier));
+      tcp_client_socket, FAKE_ID, notifier));
 
   EXPECT_CALL(*tcp_client_socket, Read(_, _, _))
       .Times(1);
@@ -88,11 +91,12 @@ TEST(SocketTest, TestTCPSocketRead) {
 TEST(SocketTest, TestTCPSocketWrite) {
   net::AddressList address_list;
   MockTCPSocket* tcp_client_socket = new MockTCPSocket(address_list);
-  ApiResourceEventNotifier* notifier = new MockApiResourceEventNotifier();
+  ApiResourceEventNotifier* notifier = new MockApiResourceEventNotifier(
+      FAKE_ID);
   CompleteHandler handler;
 
   scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
-      tcp_client_socket, notifier));
+      tcp_client_socket, FAKE_ID, notifier));
 
   net::CompletionCallback callback;
   EXPECT_CALL(*tcp_client_socket, Write(_, _, _))
@@ -111,11 +115,12 @@ TEST(SocketTest, TestTCPSocketWrite) {
 TEST(SocketTest, TestTCPSocketBlockedWrite) {
   net::AddressList address_list;
   MockTCPSocket* tcp_client_socket = new MockTCPSocket(address_list);
-  MockApiResourceEventNotifier* notifier = new MockApiResourceEventNotifier();
+  MockApiResourceEventNotifier* notifier = new MockApiResourceEventNotifier(
+      FAKE_ID);
   CompleteHandler handler;
 
   scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
-      tcp_client_socket, notifier));
+      tcp_client_socket, FAKE_ID, notifier));
 
   net::CompletionCallback callback;
   EXPECT_CALL(*tcp_client_socket, Write(_, _, _))
@@ -137,11 +142,12 @@ TEST(SocketTest, TestTCPSocketBlockedWrite) {
 TEST(SocketTest, TestTCPSocketBlockedWriteReentry) {
   net::AddressList address_list;
   MockTCPSocket* tcp_client_socket = new MockTCPSocket(address_list);
-  MockApiResourceEventNotifier* notifier = new MockApiResourceEventNotifier();
+  MockApiResourceEventNotifier* notifier = new MockApiResourceEventNotifier(
+      FAKE_ID);
   CompleteHandler handlers[5];
 
   scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
-      tcp_client_socket, notifier));
+      tcp_client_socket, FAKE_ID, notifier));
 
   net::CompletionCallback callback;
   EXPECT_CALL(*tcp_client_socket, Write(_, _, _))
@@ -170,10 +176,11 @@ TEST(SocketTest, TestTCPSocketBlockedWriteReentry) {
 TEST(SocketTest, TestTCPSocketSetNoDelay) {
   net::AddressList address_list;
   MockTCPSocket* tcp_client_socket = new MockTCPSocket(address_list);
-  MockApiResourceEventNotifier* notifier = new MockApiResourceEventNotifier();
+  MockApiResourceEventNotifier* notifier = new MockApiResourceEventNotifier(
+      FAKE_ID);
 
   scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
-      tcp_client_socket, notifier));
+      tcp_client_socket, FAKE_ID, notifier));
 
   bool no_delay = false;
   EXPECT_CALL(*tcp_client_socket, SetNoDelay(_))
@@ -193,10 +200,11 @@ TEST(SocketTest, TestTCPSocketSetNoDelay) {
 TEST(SocketTest, TestTCPSocketSetKeepAlive) {
   net::AddressList address_list;
   MockTCPSocket* tcp_client_socket = new MockTCPSocket(address_list);
-  MockApiResourceEventNotifier* notifier = new MockApiResourceEventNotifier();
+  MockApiResourceEventNotifier* notifier = new MockApiResourceEventNotifier(
+      FAKE_ID);
 
   scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
-      tcp_client_socket, notifier));
+      tcp_client_socket, FAKE_ID, notifier));
 
   bool enable = false;
   int delay = 0;

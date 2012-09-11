@@ -33,8 +33,7 @@ extern const char kSrcIdKey[];
 class ApiResourceEventNotifier
     : public base::RefCountedThreadSafe<ApiResourceEventNotifier> {
  public:
-  ApiResourceEventNotifier(EventRouter* router,
-                           Profile* profile,
+  ApiResourceEventNotifier(EventRouter* router, Profile* profile,
                            const std::string& src_extension_id, int src_id,
                            const GURL& src_url);
 
@@ -44,6 +43,8 @@ class ApiResourceEventNotifier
 
   static std::string ApiResourceEventTypeToString(
       ApiResourceEventType event_type);
+
+  const std::string& src_extension_id() const { return src_extension_id_; }
 
  private:
   friend class base::RefCountedThreadSafe<ApiResourceEventNotifier>;

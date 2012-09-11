@@ -87,7 +87,8 @@ class Socket : public ApiResource {
                                         int* port);
 
  protected:
-  explicit Socket(ApiResourceEventNotifier* event_notifier);
+  Socket(const std::string& owner_extension_id_,
+         ApiResourceEventNotifier* event_notifier);
 
   void WriteData();
   virtual int WriteImpl(net::IOBuffer* io_buffer,

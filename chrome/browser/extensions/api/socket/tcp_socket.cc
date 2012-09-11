@@ -14,22 +14,25 @@
 
 namespace extensions {
 
-TCPSocket::TCPSocket(ApiResourceEventNotifier* event_notifier)
-    : Socket(event_notifier) {
+TCPSocket::TCPSocket(const std::string& owner_extension_id,
+                     ApiResourceEventNotifier* event_notifier)
+    : Socket(owner_extension_id, event_notifier) {
 }
 
 // For testing.
 TCPSocket::TCPSocket(net::TCPClientSocket* tcp_client_socket,
+                     const std::string& owner_extension_id,
                      ApiResourceEventNotifier* event_notifier)
-    : Socket(event_notifier),
+    : Socket(owner_extension_id, event_notifier),
       socket_(tcp_client_socket) {
 }
 
 // static
 TCPSocket* TCPSocket::CreateSocketForTesting(
     net::TCPClientSocket* tcp_client_socket,
+    const std::string& owner_extension_id,
     ApiResourceEventNotifier* event_notifier) {
-  return new TCPSocket(tcp_client_socket, event_notifier);
+  return new TCPSocket(tcp_client_socket, owner_extension_id, event_notifier);
 }
 
 TCPSocket::~TCPSocket() {

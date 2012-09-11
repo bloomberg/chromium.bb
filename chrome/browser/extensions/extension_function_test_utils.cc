@@ -109,24 +109,38 @@ scoped_refptr<Extension> CreateEmptyExtensionWithLocation(
     Extension::Location location) {
   scoped_ptr<base::DictionaryValue> test_extension_value(
       ParseDictionary("{\"name\": \"Test\", \"version\": \"1.0\"}"));
-  return CreateExtension(location, test_extension_value.get());
+  return CreateExtension(location, test_extension_value.get(), std::string());
+}
+
+scoped_refptr<Extension> CreateEmptyExtension(
+    const std::string& id_input) {
+  scoped_ptr<base::DictionaryValue> test_extension_value(
+      ParseDictionary("{\"name\": \"Test\", \"version\": \"1.0\"}"));
+  return CreateExtension(Extension::INTERNAL, test_extension_value.get(),
+                         id_input);
 }
 
 scoped_refptr<Extension> CreateExtension(
     base::DictionaryValue* test_extension_value) {
-  return CreateExtension(Extension::INTERNAL, test_extension_value);
+  return CreateExtension(Extension::INTERNAL, test_extension_value,
+                         std::string());
 }
 
 scoped_refptr<Extension> CreateExtension(
     Extension::Location location,
-    base::DictionaryValue* test_extension_value) {
+    base::DictionaryValue* test_extension_value,
+    const std::string& id_input) {
   std::string error;
   const FilePath test_extension_path;
+  std::string id;
+  if (!id_input.empty())
+    CHECK(Extension::GenerateId(id_input, &id));
   scoped_refptr<Extension> extension(Extension::Create(
       test_extension_path,
       location,
       *test_extension_value,
       Extension::NO_FLAGS,
+      id,
       &error));
   EXPECT_TRUE(error.empty()) << "Could not parse test extension " << error;
   return extension;

@@ -13,8 +13,9 @@
 
 namespace extensions {
 
-UDPSocket::UDPSocket(ApiResourceEventNotifier* event_notifier)
-    : Socket(event_notifier),
+UDPSocket::UDPSocket(const std::string& owner_extension_id,
+                     ApiResourceEventNotifier* event_notifier)
+    : Socket(owner_extension_id, event_notifier),
       socket_(net::DatagramSocket::DEFAULT_BIND,
               net::RandIntCallback(),
               NULL,
