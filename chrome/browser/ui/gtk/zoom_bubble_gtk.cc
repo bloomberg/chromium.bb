@@ -69,6 +69,7 @@ ZoomBubbleGtk::ZoomBubbleGtk(GtkWidget* anchor,
                              TabContents* tab_contents,
                              bool auto_close)
     : auto_close_(auto_close),
+      mouse_inside_(false),
       tab_contents_(tab_contents) {
   GtkThemeService* theme_service =
       GtkThemeService::GetFrom(Profile::FromBrowserContext(
@@ -156,16 +157,17 @@ void ZoomBubbleGtk::Refresh() {
 }
 
 void ZoomBubbleGtk::StartTimerIfNecessary() {
-  if (auto_close_) {
-    if (timer_.IsRunning()) {
-      timer_.Reset();
-    } else {
-      timer_.Start(
-          FROM_HERE,
-          base::TimeDelta::FromMilliseconds(kBubbleCloseDelay),
-          this,
-          &ZoomBubbleGtk::CloseBubble);
-    }
+  if (!auto_close_ || mouse_inside_)
+    return;
+
+  if (timer_.IsRunning()) {
+    timer_.Reset();
+  } else {
+    timer_.Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kBubbleCloseDelay),
+        this,
+        &ZoomBubbleGtk::CloseBubble);
   }
 }
 
@@ -194,12 +196,14 @@ void ZoomBubbleGtk::OnSetDefaultLinkClick(GtkWidget* widget) {
 
 gboolean ZoomBubbleGtk::OnMouseEnter(GtkWidget* widget,
                                      GdkEventCrossing* event) {
+  mouse_inside_ = true;
   StopTimerIfNecessary();
   return FALSE;
 }
 
 gboolean ZoomBubbleGtk::OnMouseLeave(GtkWidget* widget,
                                      GdkEventCrossing* event) {
+  mouse_inside_ = false;
   StartTimerIfNecessary();
   return FALSE;
 }

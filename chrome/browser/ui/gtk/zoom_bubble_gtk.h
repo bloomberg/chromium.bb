@@ -55,6 +55,9 @@ class ZoomBubbleGtk {
   // Whether the currently displayed bubble will automatically close.
   bool auto_close_;
 
+  // Whether the mouse is currently inside the bubble.
+  bool mouse_inside_;
+
   // Timer used to close the bubble when |auto_close_| is true.
   base::OneShotTimer<ZoomBubbleGtk> timer_;
 
