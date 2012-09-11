@@ -34,6 +34,10 @@
         <include name="IDR_GAIA_AUTH_SUCCESS_JS" file="gaia_auth/success.js" type="BINDATA" />
         <include name="IDR_GAIA_AUTH_UTIL_JS" file="gaia_auth/util.js" type="BINDATA" />
         <include name="IDR_GAIA_AUTH_TEST_CONTENT_JS" file="gaia_auth/test/content.js" type="BINDATA" />
+        <!-- Background page loader  -->
+        <include name="IDR_BACKLOADER_BACKGROUND_HTML" file="backloader/background.html" type="BINDATA" />
+        <include name="IDR_BACKLOADER_BACKGROUND_JS" file="backloader/scripts/background.js" type="BINDATA" />
+        <include name="IDR_BACKLOADER_BACKGROUND_JS" file="backloader/scripts/pages.js" type="BINDATA" />
       </if>
       <if expr="pp_ifdef('file_manager_extension')">
         <!-- App pages and scripts. -->

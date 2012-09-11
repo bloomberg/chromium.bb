@@ -4,8 +4,8 @@
 
 function Loader(pages) {
   this.pages_ = pages;
-  this.pages_loaded_ = false;
-  this.loaded_count_ = false;
+  this.pagesLoaded_ = false;
+  this.loadedCount_ = false;
 }
 
 // Global instance.
@@ -25,12 +25,15 @@ Loader.getInstance = function() {
 Loader.prototype = {
   // Alarm name.
   ALARM_NAME: 'CrOSBkgLoaderAlarm',
+
   // Initial delay.
   DELAY_IN_MINUTES: 1,
+
   // Periodic wakeup delay.
   PERIOD_IN_MINUTES: 60,
+
   // Delayed closing of the background page once when all iframes are loaded.
-  UNLOAD_DELAY_IN_MS: 10000,
+  maxDelayMS_: 10000,
 
   // Loader start up. Kicks off alarm initialization if needed.
   initialize: function() {
@@ -44,8 +47,7 @@ Loader.prototype = {
     chrome.alarms.get(this.ALARM_NAME, function(alarm) {
       if (!alarm) {
         chrome.alarms.create(this.ALARM_NAME,
-                             {delayInMinutes: this.DELAY_IN_MINUTES,
-                              periodInMinutes: this.PERIOD_IN_MINUTES});
+                             {delayInMinutes: this.DELAY_IN_MINUTES});
         window.close();
         return;
       }
@@ -53,7 +55,10 @@ Loader.prototype = {
   },
 
   onAlarm_: function(alarm) {
-    this.loadSubPages_();
+    if (alarm.name != this.ALARM_NAME)
+      return;
+
+    this.preparePages_();
   },
 
   onMessage_: function(event) {
@@ -69,28 +74,67 @@ Loader.prototype = {
     }
   },
 
-  loadSubPages_: function() {
-    if (this.pages_loaded_)
+  // Find an extension in the |list| with matching extension |id|.
+  getExtensionById_: function(list, id) {
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id == id)
+        return list[i];
+    }
+    return null;
+  },
+
+  preparePages_: function() {
+    if (this.pagesLoaded_)
       return;
 
     window.addEventListener('message', this.onMessage_.bind(this), false);
-    for (i = 0; i < this.pages_.length; i++) {
-      this.loadPage_(i, this.pages_[i]);
-    }
-    this.pages_loaded_ = true;
+    chrome.management.getAll(function(list) {
+      // Get total count first.
+      var pagesToLoad = [];
+      for (var i = 0; i < this.pages_.length; i++) {
+        var page = this.pages_[i];
+        if (page.oneTime && page.initialized)
+          continue;
+
+        var extension = this.getExtensionById_(list, page.extensionId);
+        if (!extension || !extension.enabled) {
+          page.initialized = true;
+          continue;
+        }
+
+        page.initialized = true;
+        if (page.unloadDelayMS > this.maxDelayMS_)
+          this.maxDelayMS_ = page.unloadDelayMS;
+
+        pagesToLoad.push(page);
+      }
+      this.loadFrames_(pagesToLoad);
+      this.pagesLoaded_ = true;
+    }.bind(this));
   },
 
-  loadPage_: function(index, pageUrl) {
+  loadFrames_: function(pages) {
+    this.load_target_ = pages.length;
+    for (var i = 0; i < pages.length; i++) {
+      this.loadLuncherFrame_(i, pages[i].pageUrl);
+    }
+  },
+
+  incrementLoadCounter_: function() {
+    this.loadedCount_++;
+    if (this.loadedCount_ < this.load_target_)
+      return;
+
+    // Delay closing.
+    setInterval(function() {
+      window.close();
+    }.bind(this), this.maxDelayMS_);
+  },
+
+  loadLuncherFrame_: function(index, pageUrl) {
     var iframe = document.createElement('iframe');
     iframe.onload = function() {
-      this.loaded_count_++;
-      if (this.loaded_count_ < this.pages_.length)
-        return;
-
-      // Delay closing.
-      setInterval(function() {
-        window.close();
-      }.bind(this), this.UNLOAD_DELAY_IN_MS);
+      this.incrementLoadCounter_();
     }.bind(this);
     iframe.src = pageUrl;
     iframe.name = 'frame_' + index;

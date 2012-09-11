@@ -1382,6 +1382,10 @@ const char kDisableNewWallpaperUI[]         = "disable-new-wallpaper-picker-ui";
 // Avoid doing animations upon oobe.
 const char kDisableOobeAnimation[]          = "disable-oobe-animation";
 
+// Enables component extension that initializes background pages of
+// certain hosted applications.
+const char kEnableBackgroundLoader[]        = "enable-background-loader";
+
 // Enables touchpad three-finger-click as middle button.
 const char kEnableTouchpadThreeFingerClick[]
     = "touchpad-enable-three-finger-click";

@@ -710,6 +710,13 @@ const Experiment kExperiments[] = {
   },
 #if defined(OS_CHROMEOS)
   {
+    "enable-background-loader",
+    IDS_ENABLE_BACKLOADER_NAME,
+    IDS_ENABLE_BACKLOADER_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableBackgroundLoader)
+  },
+  {
     "enable-bezel-touch",
     IDS_ENABLE_BEZEL_TOUCH_NAME,
     IDS_ENABLE_BEZEL_TOUCH_DESCRIPTION,

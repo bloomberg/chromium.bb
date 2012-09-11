@@ -4,4 +4,10 @@
 
 // List of pages to load in the background.
 var g_pages = [
+  {
+    extension_id: 'ejjicmeblgpmajnghnpcppodonldlgfn',
+    pageUrl: 'https://www.google.com/calendar/offline/background.html',
+    oneTime: true,
+    unloadDelayMS: 10000
+  }
 ];
