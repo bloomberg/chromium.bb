@@ -79,6 +79,13 @@ enum NavigationEvent {
   NAVIGATION_EVENT_COUNT = 14,
 };
 
+// For reporting events of interest that are not tied to any navigation.
+enum ReportingEvent {
+  REPORTING_EVENT_ALL_HISTORY_CLEARED = 0,
+  REPORTING_EVENT_PARTIAL_HISTORY_CLEARED = 1,
+  REPORTING_EVENT_COUNT = 2
+};
+
 void RecordNavigationEvent(NavigationEvent event) {
   UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.NavigationEvent",
                             event,
@@ -503,10 +510,17 @@ void ResourcePrefetchPredictor::Observe(
       const content::Details<const history::URLsDeletedDetails>
           urls_deleted_details =
               content::Details<const history::URLsDeletedDetails>(details);
-      if (urls_deleted_details->all_history)
+      if (urls_deleted_details->all_history) {
         DeleteAllUrls();
-      else
+        UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.ReportingEvent",
+                                  REPORTING_EVENT_ALL_HISTORY_CLEARED,
+                                  REPORTING_EVENT_COUNT);
+      } else {
         DeleteUrls(urls_deleted_details->rows);
+        UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.ReportingEvent",
+                                  REPORTING_EVENT_PARTIAL_HISTORY_CLEARED,
+                                  REPORTING_EVENT_COUNT);
+      }
       break;
     }
 
