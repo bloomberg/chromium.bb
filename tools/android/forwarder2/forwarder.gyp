@@ -37,6 +37,7 @@
         }],
       ],
       'sources': [
+        'command.cc',
         'device_forwarder_main.cc',
         'socket.cc',
       ],
@@ -53,6 +54,7 @@
         '../../..',
       ],
       'sources': [
+        'command.cc',
         'host_forwarder_main.cc',
         'socket.cc',
       ],
