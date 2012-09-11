@@ -19,12 +19,7 @@ class DesktopRootWindowHostLinux : public DesktopRootWindowHost {
   // Overridden from DesktopRootWindowHost:
   virtual void Init(aura::Window* content_window,
                     const Widget::InitParams& params) OVERRIDE;
-  virtual void Close() OVERRIDE;
-  virtual void CloseNow() OVERRIDE;
-  virtual aura::RootWindowHost* AsRootWindowHost() OVERRIDE;
   virtual void ShowWindowWithState(ui::WindowShowState show_state) OVERRIDE;
-  virtual bool IsVisible() const OVERRIDE;
-  virtual gfx::Rect GetClientAreaBoundsInScreen() const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopRootWindowHostLinux);
 };

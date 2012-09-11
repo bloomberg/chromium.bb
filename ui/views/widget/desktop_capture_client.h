@@ -8,11 +8,10 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/client/capture_client.h"
-#include "ui/views/views_export.h"
 
 namespace views {
 
-class VIEWS_EXPORT DesktopCaptureClient : public aura::client::CaptureClient {
+class DesktopCaptureClient : public aura::client::CaptureClient {
  public:
   DesktopCaptureClient();
   virtual ~DesktopCaptureClient();

@@ -9,14 +9,7 @@
 #include "ui/views/widget/desktop_root_window_host.h"
 #include "ui/views/win/hwnd_message_handler_delegate.h"
 
-namespace aura {
-class DesktopActivationClient;
-class DesktopDispatcherClient;
-class FocusManager;
-}
-
 namespace views {
-class DesktopCaptureClient;
 class HWNDMessageHandler;
 
 class DesktopRootWindowHostWin : public DesktopRootWindowHost,
@@ -32,12 +25,7 @@ class DesktopRootWindowHostWin : public DesktopRootWindowHost,
   // Overridden from DesktopRootWindowHost:
   virtual void Init(aura::Window* content_window,
                     const Widget::InitParams& params) OVERRIDE;
-  virtual void Close() OVERRIDE;
-  virtual void CloseNow() OVERRIDE;
-  virtual aura::RootWindowHost* AsRootWindowHost() OVERRIDE;
   virtual void ShowWindowWithState(ui::WindowShowState show_state) OVERRIDE;
-  virtual bool IsVisible() const OVERRIDE;
-  virtual gfx::Rect GetClientAreaBoundsInScreen() const OVERRIDE;
 
   // Overridden from aura::RootWindowHost:
   virtual aura::RootWindow* GetRootWindow() OVERRIDE;
@@ -140,10 +128,6 @@ class DesktopRootWindowHostWin : public DesktopRootWindowHost,
 
   scoped_ptr<aura::RootWindow> root_window_;
   scoped_ptr<HWNDMessageHandler> message_handler_;
-  scoped_ptr<DesktopCaptureClient> capture_client_;
-  scoped_ptr<aura::DesktopActivationClient> activation_client_;
-  scoped_ptr<aura::DesktopDispatcherClient> dispatcher_client_;
-  scoped_ptr<aura::FocusManager> focus_manager_;
 
   // TODO(beng): Consider providing an interface to DesktopNativeWidgetAura
   //             instead of providing this route back to Widget.

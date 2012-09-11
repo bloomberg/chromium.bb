@@ -229,7 +229,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public ui::WindowImpl,
 
   // Message Handlers ----------------------------------------------------------
 
-  BEGIN_MSG_MAP_EX(HWNDMessageHandler)
+  BEGIN_MSG_MAP_EX(NativeWidgetWin)
     // Range handlers must go first!
     MESSAGE_RANGE_HANDLER_EX(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseRange)
     MESSAGE_RANGE_HANDLER_EX(WM_NCMOUSEMOVE, WM_NCXBUTTONDBLCLK, OnMouseRange)

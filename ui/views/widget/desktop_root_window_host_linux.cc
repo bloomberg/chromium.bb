@@ -26,38 +26,10 @@ void DesktopRootWindowHostLinux::Init(aura::Window* content_window,
   NOTIMPLEMENTED();
 }
 
-void DesktopRootWindowHostLinux::Close() {
-  // TODO(erg):
-  NOTIMPLEMENTED();
-}
-
-void DesktopRootWindowHostLinux::CloseNow() {
-  // TODO(erg):
-  NOTIMPLEMENTED();
-}
-
-aura::RootWindowHost* DesktopRootWindowHostLinux::AsRootWindowHost() {
-  // TODO(erg):
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
 void DesktopRootWindowHostLinux::ShowWindowWithState(
     ui::WindowShowState show_state) {
   // TODO(erg):
   NOTIMPLEMENTED();
-}
-
-bool DesktopRootWindowHostLinux::IsVisible() const {
-  // TODO(erg):
-  NOTIMPLEMENTED();
-  return true;
-}
-
-gfx::Rect DesktopRootWindowHostLinux::GetClientAreaBoundsInScreen() const {
-  // TODO(erg):
-  NOTIMPLEMENTED();
-  return gfx::Rect(100, 100);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
