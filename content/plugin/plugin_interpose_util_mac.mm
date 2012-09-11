@@ -91,12 +91,6 @@ void NotifyPluginOfSetCursorVisibility(bool visibility) {
   }
 }
 
-__attribute__((visibility("default")))
-bool GetPluginWindowHasFocus(const OpaquePluginRef delegate) {
-  return static_cast<webkit::npapi::WebPluginDelegateImpl*>(
-      delegate)->GetWindowHasFocus();
-}
-
 }  // namespace mac_plugin_interposing
 
 #pragma mark -

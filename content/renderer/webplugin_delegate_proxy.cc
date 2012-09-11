@@ -1182,8 +1182,7 @@ void WebPluginDelegateProxy::OnCancelResource(int id) {
     plugin_->CancelResource(id);
 }
 
-void WebPluginDelegateProxy::OnInvalidateRect(const gfx::Rect& rect,
-                                              bool allow_buffer_flipping) {
+void WebPluginDelegateProxy::OnInvalidateRect(const gfx::Rect& rect) {
   if (!plugin_)
     return;
 
@@ -1195,7 +1194,7 @@ void WebPluginDelegateProxy::OnInvalidateRect(const gfx::Rect& rect,
   // The plugin is blocked on the renderer because the invalidate message it has
   // sent us is synchronous, so we can use buffer flipping here if the caller
   // allows it.
-  UpdateFrontBuffer(clipped_rect, allow_buffer_flipping);
+  UpdateFrontBuffer(clipped_rect, true);
   plugin_->InvalidateRect(clipped_rect);
 }
 

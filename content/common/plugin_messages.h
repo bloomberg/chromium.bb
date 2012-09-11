@@ -335,9 +335,8 @@ IPC_MESSAGE_ROUTED1(PluginHostMsg_URLRequest,
 IPC_MESSAGE_ROUTED1(PluginHostMsg_CancelResource,
                     int /* id */)
 
-IPC_MESSAGE_ROUTED2(PluginHostMsg_InvalidateRect,
-                    gfx::Rect /* rect */,
-                    bool /* allow_buffer_flipping */)
+IPC_MESSAGE_ROUTED1(PluginHostMsg_InvalidateRect,
+                    gfx::Rect /* rect */)
 
 IPC_SYNC_MESSAGE_ROUTED1_1(PluginHostMsg_GetWindowScriptNPObject,
                            int /* route id */,

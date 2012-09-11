@@ -21,43 +21,33 @@ namespace npapi {
 // suitable for sending to Mac plugins (via NPP_HandleEvent).
 class PluginWebEventConverter {
  public:
-  PluginWebEventConverter() {}
-  virtual ~PluginWebEventConverter() {}
+  PluginWebEventConverter();
+  virtual ~PluginWebEventConverter();
 
   // Initializes a converter for the given web event. Returns false if the event
   // could not be converted.
-  virtual bool InitWithEvent(const WebKit::WebInputEvent& web_event);
+  bool InitWithEvent(const WebKit::WebInputEvent& web_event);
 
   // Returns a pointer to a plugin event--suitable for passing to
   // NPP_HandleEvent--corresponding to the the web event this converter was
   // created with. The pointer is valid only as long as this object is.
   // Returns NULL iff InitWithEvent returned false.
-  virtual void* plugin_event() = 0;
+  NPCocoaEvent* plugin_event() { return &cocoa_event_; }
 
- protected:
-  // To be overridden by subclasses to store a converted plugin representation
-  // of the given web event, suitable for returning from plugin_event.
+ private:
+  // Stores a converted plugin representation of the given web event, suitable
+  // for returning from plugin_event.
   // Returns true if the event was successfully converted.
-  virtual bool ConvertKeyboardEvent(
-      const WebKit::WebKeyboardEvent& web_event) = 0;
-  virtual bool ConvertMouseEvent(const WebKit::WebMouseEvent& web_event) = 0;
-  virtual bool ConvertMouseWheelEvent(
-      const WebKit::WebMouseWheelEvent& web_event) = 0;
+  bool ConvertKeyboardEvent(const WebKit::WebKeyboardEvent& web_event);
+  bool ConvertMouseEvent(const WebKit::WebMouseEvent& web_event);
+  bool ConvertMouseWheelEvent(const WebKit::WebMouseWheelEvent& web_event);
 
- private:
+  // Returns the Cocoa translation of web_event's modifiers.
+  static NSUInteger CocoaModifiers(const WebKit::WebInputEvent& web_event);
+
+  NPCocoaEvent cocoa_event_;
+
   DISALLOW_COPY_AND_ASSIGN(PluginWebEventConverter);
-};
-
-// Factory for generating PluginWebEventConverter objects by event model.
-class PluginWebEventConverterFactory {
- public:
-  // Returns a new PluginWebEventConverter corresponding to the given plugin
-  // event model.
-  static PluginWebEventConverter*
-      CreateConverterForModel(NPEventModel event_model);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PluginWebEventConverterFactory);
 };
 
 }  // namespace npapi

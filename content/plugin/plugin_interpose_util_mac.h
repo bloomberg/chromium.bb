@@ -50,9 +50,6 @@ void NotifyPluginOfSetThemeCursor(OpaquePluginRef delegate,
 void NotifyPluginOfSetCursor(OpaquePluginRef delegate,
                              const Cursor* cursor);
 
-// Returns true if the window containing the given plugin delegate is focused.
-bool GetPluginWindowHasFocus(const OpaquePluginRef delegate);
-
 }  // namespace MacPluginInterpose
 
 #endif  // CONTENT_PLUGIN_PLUGIN_INTERPOSE_UTIL_MAC_H_

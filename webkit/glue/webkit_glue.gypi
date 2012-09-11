@@ -113,8 +113,6 @@
         # This list contains all .h, .cc, and .mm files in glue except for
         # those in the test subdirectory and those with unittest in in their
         # names.
-        '../plugins/npapi/carbon_plugin_window_tracker_mac.cc',
-        '../plugins/npapi/carbon_plugin_window_tracker_mac.h',
         '../plugins/npapi/gtk_plugin_container.cc',
         '../plugins/npapi/gtk_plugin_container.h',
         '../plugins/npapi/gtk_plugin_container_manager.cc',

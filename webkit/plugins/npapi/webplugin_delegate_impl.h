@@ -175,8 +175,6 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
   static WebPluginDelegateImpl* GetActiveDelegate();
   // Informs the plugin that the window it is in has gained or lost focus.
   void SetWindowHasFocus(bool has_focus);
-  // Returns whether or not the window the plugin is in has focus.
-  bool GetWindowHasFocus() const { return containing_window_has_focus_; }
   // Informs the plugin that its tab or window has been hidden or shown.
   void SetContainerVisibility(bool is_visible);
   // Informs the plugin that its containing window's frame has changed.
@@ -199,17 +197,10 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
   // context instead of a buffer context.
   void SetNoBufferContext();
 
-#ifndef NP_NO_CARBON
-  // Indicates that it's time to send the plugin a null event.
-  void FireIdleEvent();
-#endif
-
   // TODO(caryclark): This is a temporary workaround to allow the Darwin / Skia
   // port to share code with the Darwin / CG port. Later, this will be removed
   // and all callers will use the Paint defined above.
   void CGPaint(CGContextRef context, const gfx::Rect& rect);
-
-  bool AllowBufferFlipping();
 #endif  // OS_MACOSX && !USE_AURA
 
   gfx::PluginWindowHandle windowed_handle() const {
@@ -451,21 +442,8 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
   // Uses a CARenderer to draw the plug-in's layer in our OpenGL surface.
   void DrawLayerInSurface();
 
-#ifndef NP_NO_CARBON
-  // Moves our dummy window to match the current screen location of the plugin.
-  void UpdateDummyWindowBounds(const gfx::Point& plugin_origin);
-
-  // Adjusts the idle event rate for a Carbon plugin based on its current
-  // visibility.
-  void UpdateIdleEventRate();
-#endif  // !NP_NO_CARBON
-
   bool use_buffer_context_;
   CGContextRef buffer_context_;  // Weak ref.
-
-#ifndef NP_NO_CARBON
-  NP_CGContext np_cg_context_;
-#endif
 
   CALayer* layer_;  // Used for CA drawing mode. Weak, retained by plug-in.
   WebPluginAcceleratedSurface* surface_;  // Weak ref.

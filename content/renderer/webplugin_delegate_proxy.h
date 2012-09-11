@@ -155,7 +155,7 @@ class WebPluginDelegateProxy
                      bool* result);
   void OnHandleURLRequest(const PluginHostMsg_URLRequest_Params& params);
   void OnCancelResource(int id);
-  void OnInvalidateRect(const gfx::Rect& rect, bool allow_buffer_flipping);
+  void OnInvalidateRect(const gfx::Rect& rect);
   void OnGetWindowScriptNPObject(int route_id, bool* success);
   void OnResolveProxy(const GURL& url, bool* result, std::string* proxy_list);
   void OnGetPluginElement(int route_id, bool* success);

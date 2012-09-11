@@ -18,6 +18,24 @@ namespace npapi {
 
 namespace {
 
+// Returns true if the given key is a modifier key.
+bool KeyIsModifier(int native_key_code) {
+  switch (native_key_code) {
+    case 55:  // Left command
+    case 54:  // Right command
+    case 58:  // Left option
+    case 61:  // Right option
+    case 59:  // Left control
+    case 62:  // Right control
+    case 56:  // Left shift
+    case 60:  // Right shift
+    case 57:  // Caps lock
+      return true;
+    default:
+      return false;
+  }
+}
+
 // Returns true if the caps lock flag should be set for the given event.
 bool CapsLockIsActive(const WebInputEvent& event) {
   // Only key events have accurate information for the caps lock flag; see
@@ -33,170 +51,28 @@ bool CapsLockIsActive(const WebInputEvent& event) {
 
 #pragma mark -
 
-#ifndef NP_NO_CARBON
-
-// Converter implementation for the Carbon event model.
-class CarbonPluginWebEventConverter : public PluginWebEventConverter {
- public:
-  CarbonPluginWebEventConverter() {}
-  virtual ~CarbonPluginWebEventConverter() {}
-
-  virtual bool InitWithEvent(const WebInputEvent& web_event);
-
-  virtual void* plugin_event() { return &carbon_event_; }
-
- protected:
-  virtual bool ConvertKeyboardEvent(const WebKeyboardEvent& key_event);
-  virtual bool ConvertMouseEvent(const WebMouseEvent& mouse_event);
-  virtual bool ConvertMouseWheelEvent(const WebMouseWheelEvent& wheel_event);
-
- private:
-  // Returns the Carbon translation of web_event's modifiers.
-  static EventModifiers CarbonModifiers(const WebInputEvent& web_event);
-
-  NPEvent carbon_event_;
-
-  DISALLOW_COPY_AND_ASSIGN(CarbonPluginWebEventConverter);
-};
-
-bool CarbonPluginWebEventConverter::InitWithEvent(
-    const WebInputEvent& web_event) {
-  memset(&carbon_event_, 0, sizeof(carbon_event_));
-  // Set the fields common to all event types.
-  carbon_event_.when = TickCount();
-  carbon_event_.modifiers |= CarbonModifiers(web_event);
-
-  return PluginWebEventConverter::InitWithEvent(web_event);
+PluginWebEventConverter::PluginWebEventConverter() {
 }
 
-bool CarbonPluginWebEventConverter::ConvertKeyboardEvent(
-    const WebKeyboardEvent& key_event) {
-  // TODO: Figure out how to handle Unicode input to plugins, if that's
-  // even possible in the NPAPI Carbon event model.
-  carbon_event_.message = (key_event.nativeKeyCode << 8) & keyCodeMask;
-  carbon_event_.message |= key_event.text[0] & charCodeMask;
-  carbon_event_.modifiers |= btnState;
-
-  switch (key_event.type) {
-    case WebInputEvent::KeyDown:
-      if (key_event.modifiers & WebInputEvent::IsAutoRepeat)
-        carbon_event_.what = autoKey;
-      else
-        carbon_event_.what = keyDown;
-      return true;
-    case WebInputEvent::KeyUp:
-      carbon_event_.what = keyUp;
-      return true;
-    case WebInputEvent::RawKeyDown:
-    case WebInputEvent::Char:
-      // May be used eventually for IME, but currently not needed.
-      return false;
-    default:
-      NOTREACHED();
-      return false;
-  }
+PluginWebEventConverter::~PluginWebEventConverter() {
 }
 
-bool CarbonPluginWebEventConverter::ConvertMouseEvent(
-    const WebMouseEvent& mouse_event) {
-  carbon_event_.where.h = mouse_event.globalX;
-  carbon_event_.where.v = mouse_event.globalY;
-
-  // Default to "button up"; override this for mouse down events below.
-  carbon_event_.modifiers |= btnState;
-
-  switch (mouse_event.button) {
-    case WebMouseEvent::ButtonLeft:
-      break;
-    case WebMouseEvent::ButtonMiddle:
-      carbon_event_.modifiers |= cmdKey;
-      break;
-    case WebMouseEvent::ButtonRight:
-      carbon_event_.modifiers |= controlKey;
-      break;
-    default:
-      NOTIMPLEMENTED();
-  }
-  switch (mouse_event.type) {
-    case WebInputEvent::MouseMove:
-      carbon_event_.what = nullEvent;
-      return true;
-    case WebInputEvent::MouseLeave:
-    case WebInputEvent::MouseEnter:
-      carbon_event_.what = NPEventType_AdjustCursorEvent;
-      return true;
-    case WebInputEvent::MouseDown:
-      carbon_event_.modifiers &= ~btnState;
-      carbon_event_.what = mouseDown;
-      return true;
-    case WebInputEvent::MouseUp:
-      carbon_event_.what = mouseUp;
-      return true;
-    default:
-      NOTREACHED();
-      return false;
-  }
-}
-
-bool CarbonPluginWebEventConverter::ConvertMouseWheelEvent(
-    const WebMouseWheelEvent& wheel_event) {
-  return false;  // The Carbon NPAPI event model has no "mouse wheel" concept.
-}
-
-EventModifiers CarbonPluginWebEventConverter::CarbonModifiers(
-    const WebInputEvent& web_event) {
-  NSInteger modifiers = 0;
-  if (web_event.modifiers & WebInputEvent::ControlKey)
-    modifiers |= controlKey;
-  if (web_event.modifiers & WebInputEvent::ShiftKey)
-    modifiers |= shiftKey;
-  if (web_event.modifiers & WebInputEvent::AltKey)
-    modifiers |= optionKey;
-  if (web_event.modifiers & WebInputEvent::MetaKey)
-    modifiers |= cmdKey;
-  if (CapsLockIsActive(web_event))
-    modifiers |= alphaLock;
-  return modifiers;
-}
-
-#endif  // !NP_NO_CARBON
-
-#pragma mark -
-
-// Converter implementation for the Cocoa event model.
-class CocoaPluginWebEventConverter : public PluginWebEventConverter {
-public:
-  CocoaPluginWebEventConverter() {}
-  virtual ~CocoaPluginWebEventConverter() {}
-
-  virtual bool InitWithEvent(const WebInputEvent& web_event);
-
-  virtual void* plugin_event() { return &cocoa_event_; }
-
-protected:
-  virtual bool ConvertKeyboardEvent(const WebKeyboardEvent& key_event);
-  virtual bool ConvertMouseEvent(const WebMouseEvent& mouse_event);
-  virtual bool ConvertMouseWheelEvent(const WebMouseWheelEvent& wheel_event);
-
-private:
-  // Returns the Cocoa translation of web_event's modifiers.
-  static NSUInteger CocoaModifiers(const WebInputEvent& web_event);
-
-  // Returns true if the given key is a modifier key.
-  static bool KeyIsModifier(int native_key_code);
-
-  NPCocoaEvent cocoa_event_;
-
-  DISALLOW_COPY_AND_ASSIGN(CocoaPluginWebEventConverter);
-};
-
-bool CocoaPluginWebEventConverter::InitWithEvent(
-    const WebInputEvent& web_event) {
+bool PluginWebEventConverter::InitWithEvent(const WebInputEvent& web_event) {
   memset(&cocoa_event_, 0, sizeof(cocoa_event_));
-  return PluginWebEventConverter::InitWithEvent(web_event);
+  if (web_event.type == WebInputEvent::MouseWheel) {
+    return ConvertMouseWheelEvent(
+        *static_cast<const WebMouseWheelEvent*>(&web_event));
+  } else if (WebInputEvent::isMouseEventType(web_event.type)) {
+    return ConvertMouseEvent(*static_cast<const WebMouseEvent*>(&web_event));
+  } else if (WebInputEvent::isKeyboardEventType(web_event.type)) {
+    return ConvertKeyboardEvent(
+       *static_cast<const WebKeyboardEvent*>(&web_event));
+  }
+  DLOG(WARNING) << "Unknown event type " << web_event.type;
+  return false;
 }
 
-bool CocoaPluginWebEventConverter::ConvertKeyboardEvent(
+bool PluginWebEventConverter::ConvertKeyboardEvent(
     const WebKeyboardEvent& key_event) {
   cocoa_event_.data.key.keyCode = key_event.nativeKeyCode;
 
@@ -235,7 +111,7 @@ bool CocoaPluginWebEventConverter::ConvertKeyboardEvent(
   }
 }
 
-bool CocoaPluginWebEventConverter::ConvertMouseEvent(
+bool PluginWebEventConverter::ConvertMouseEvent(
     const WebMouseEvent& mouse_event) {
   cocoa_event_.data.mouse.pluginX = mouse_event.x;
   cocoa_event_.data.mouse.pluginY = mouse_event.y;
@@ -283,7 +159,7 @@ bool CocoaPluginWebEventConverter::ConvertMouseEvent(
   }
 }
 
-bool CocoaPluginWebEventConverter::ConvertMouseWheelEvent(
+bool PluginWebEventConverter::ConvertMouseWheelEvent(
     const WebMouseWheelEvent& wheel_event) {
   cocoa_event_.type = NPCocoaEventScrollWheel;
   cocoa_event_.data.mouse.pluginX = wheel_event.x;
@@ -294,7 +170,7 @@ bool CocoaPluginWebEventConverter::ConvertMouseWheelEvent(
   return true;
 }
 
-NSUInteger CocoaPluginWebEventConverter::CocoaModifiers(
+NSUInteger PluginWebEventConverter::CocoaModifiers(
     const WebInputEvent& web_event) {
   NSInteger modifiers = 0;
   if (web_event.modifiers & WebInputEvent::ControlKey)
@@ -308,57 +184,6 @@ NSUInteger CocoaPluginWebEventConverter::CocoaModifiers(
   if (CapsLockIsActive(web_event))
     modifiers |= NSAlphaShiftKeyMask;
   return modifiers;
-}
-
-bool CocoaPluginWebEventConverter::KeyIsModifier(int native_key_code) {
-  switch (native_key_code) {
-    case 55:  // Left command
-    case 54:  // Right command
-    case 58:  // Left option
-    case 61:  // Right option
-    case 59:  // Left control
-    case 62:  // Right control
-    case 56:  // Left shift
-    case 60:  // Right shift
-    case 57:  // Caps lock
-      return true;
-    default:
-      return false;
-  }
-}
-
-#pragma mark -
-
-bool PluginWebEventConverter::InitWithEvent(const WebInputEvent& web_event) {
-  if (web_event.type == WebInputEvent::MouseWheel) {
-    return ConvertMouseWheelEvent(
-        *static_cast<const WebMouseWheelEvent*>(&web_event));
-  } else if (WebInputEvent::isMouseEventType(web_event.type)) {
-    return ConvertMouseEvent(*static_cast<const WebMouseEvent*>(&web_event));
-  } else if (WebInputEvent::isKeyboardEventType(web_event.type)) {
-    return ConvertKeyboardEvent(
-       *static_cast<const WebKeyboardEvent*>(&web_event));
-  }
-  DLOG(WARNING) << "Unknown event type " << web_event.type;
-  return false;
-}
-
-#pragma mark -
-
-PluginWebEventConverter*
-    PluginWebEventConverterFactory::CreateConverterForModel(
-        NPEventModel event_model) {
-  switch (event_model) {
-    case NPEventModelCocoa:
-      return new CocoaPluginWebEventConverter();
-#ifndef NP_NO_CARBON
-    case NPEventModelCarbon:
-      return new CarbonPluginWebEventConverter();
-#endif
-    default:
-      NOTIMPLEMENTED();
-      return NULL;
-  }
 }
 
 }  // namespace npapi
