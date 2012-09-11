@@ -23,27 +23,52 @@ using content::GpuDataManager;
 
 namespace gpu_util {
 
-void InitializeCompositingFieldTrial() {
+void DisableCompositingFieldTrial() {
+  base::FieldTrial* trial =
+      base::FieldTrialList::Find(content::kGpuCompositingFieldTrialName);
+  if (trial)
+    trial->Disable();
+}
+
+bool ShouldRunCompositingFieldTrial() {
 // Enable the field trial only on desktop OS's.
 #if !(defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX))
-  return;
+  return false;
 #endif
+
 #if defined(OS_WIN)
   // Don't run the trial on Windows XP.
   if (base::win::GetVersion() < base::win::VERSION_VISTA)
-    return;
+    return false;
 #endif
 
   // The performance of accelerated compositing is too low with software
   // rendering.
   if (content::GpuDataManager::GetInstance()->ShouldUseSoftwareRendering())
-    return;
+    return false;
 
   // Don't activate the field trial if force-compositing-mode has been
   // explicitly disabled from the command line.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableForceCompositingMode))
+    return false;
+
+  return true;
+}
+
+// Note: The compositing field trial may be created at startup time via the
+// Finch framework. In that case, all the Groups and probability values are
+// set before this function is called and any Field Trial setup calls
+// made here are simply ignored.
+// Early outs from this function intended to bypass activation of the field
+// trial must call DisableCompositingFieldTrial() before returning.
+void InitializeCompositingFieldTrial() {
+  // Early out in configurations that should not run the compositing
+  // field trial.
+  if (!ShouldRunCompositingFieldTrial()) {
+    DisableCompositingFieldTrial();
     return;
+  }
 
   const base::FieldTrial::Probability kDivisor = 3;
   scoped_refptr<base::FieldTrial> trial(
