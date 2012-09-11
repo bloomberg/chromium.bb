@@ -104,11 +104,11 @@ class ProfileShortcutManagerTest : public testing::Test {
   void SetupDefaultProfileShortcut() {
     EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_FAILURE_UNEXPECTED,
               VerifyProfileShortcut(profile_name_));
-
+    // A non-badged shortcut for chrome is automatically created with the
+    // first profile (for the case when the user deletes their only
+    // profile).
     profile_manager_->profile_info_cache()->AddProfileToCache(
         dest_path_, profile_name_, string16(), 0);
-    profile_manager_->profile_manager()->profile_shortcut_manager()->
-        CreateProfileShortcut(dest_path_);
     MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     MessageLoop::current()->Run();
     // We now have 1 profile, so we expect a new shortcut with no profile
@@ -128,8 +128,6 @@ class ProfileShortcutManagerTest : public testing::Test {
         dest_path_, profile_name_, string16(), 0);
     profile_manager_->profile_info_cache()->AddProfileToCache(
         second_dest_path_, second_profile_name_, string16(), 0);
-    profile_manager_->profile_manager()->profile_shortcut_manager()->
-        CreateProfileShortcut(dest_path_);
     profile_manager_->profile_manager()->profile_shortcut_manager()->
         CreateProfileShortcut(second_dest_path_);
     MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());

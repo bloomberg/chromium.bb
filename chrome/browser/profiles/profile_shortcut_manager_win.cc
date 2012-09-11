@@ -217,7 +217,10 @@ void ProfileShortcutManagerWin::CreateProfileShortcut(
 }
 
 void ProfileShortcutManagerWin::OnProfileAdded(const FilePath& profile_path) {
-  if (profile_manager_->GetProfileInfoCache().GetNumberOfProfiles() == 2) {
+  if (profile_manager_->GetProfileInfoCache().GetNumberOfProfiles() == 1) {
+    UpdateShortcutForProfileAtPath(profile_path, true);
+  } else if (
+      profile_manager_->GetProfileInfoCache().GetNumberOfProfiles() == 2) {
     UpdateShortcutForProfileAtPath(
         GetOtherProfilePath(profile_path), false);
   }
