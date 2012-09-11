@@ -11484,7 +11484,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Slide view
       </message>
       <message name="IDS_FILE_BROWSER_GALLERY_SLIDESHOW" desc="In the Gallery, the title on the button that starts the slide show.">
-        Slide show
+        Slideshow
       </message>
       <message name="IDS_FILE_BROWSER_GALLERY_DELETE" desc="In the Gallery, the title on the button that deletes selected images.">
         Delete

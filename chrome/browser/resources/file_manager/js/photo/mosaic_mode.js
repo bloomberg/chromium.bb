@@ -7,18 +7,17 @@
  * @param {cr.ui.ArrayDataModel} dataModel Data model.
  * @param {cr.ui.ListSelectionModel} selectionModel Selection model.
  * @param {MetadataCache} metadataCache Metadata cache.
- * @param {function} openSelectedItem Function to open the selected item in the
- *   slide mode.
+ * @param {function} toggleMode Function to switch to the Slide mode.
  * @constructor
  */
 function MosaicMode(container, dataModel, selectionModel,
-                    metadataCache, openSelectedItem) {
+                    metadataCache, toggleMode) {
   this.mosaic_ = new Mosaic(container.ownerDocument,
       dataModel, selectionModel, metadataCache);
   container.appendChild(this.mosaic_);
 
-  this.openSelectedItem_ = openSelectedItem;
-  this.mosaic_.addEventListener('dblclick', this.openSelectedItem_);
+  this.toggleMode_ = toggleMode;
+  this.mosaic_.addEventListener('dblclick', this.toggleMode_);
 }
 
 /**
@@ -56,7 +55,7 @@ MosaicMode.prototype.hasActiveTool = function() { return true };
 MosaicMode.prototype.onKeyDown = function(event) {
   switch (util.getKeyModifiers(event) + event.keyIdentifier) {
     case 'Enter':
-      this.openSelectedItem_();
+      this.toggleMode_();
       return true;
   }
   return this.mosaic_.onKeyDown(event);
@@ -155,6 +154,7 @@ Mosaic.prototype.initListeners_ = function() {
       'resize', this.onResize_.bind(this));
 
   var mouseEventBound = this.onMouseEvent_.bind(this);
+  this.addEventListener('mousemove', mouseEventBound);
   this.addEventListener('mousedown', mouseEventBound);
   this.addEventListener('mouseup', mouseEventBound);
 
@@ -289,6 +289,12 @@ Mosaic.prototype.onResize_ = function() {
  * @private
  */
 Mosaic.prototype.onMouseEvent_ = function(event) {
+  // Navigating with mouse, enable hover state.
+  this.classList.add('hover-visible');
+
+  if (event.type == 'mousemove')
+    return;
+
   var index = -1;
   for (var target = event.target;
        target && (target != this);
@@ -390,6 +396,8 @@ Mosaic.prototype.onContentChange_ = function(event) {
  */
 Mosaic.prototype.onKeyDown = function(event) {
   this.selectionController_.handleKeyDown(event);
+  if (event.defaultPrevented)  // Navigating with keyboard, hide hover state.
+    this.classList.remove('hover-visible');
   return event.defaultPrevented;
 };
 

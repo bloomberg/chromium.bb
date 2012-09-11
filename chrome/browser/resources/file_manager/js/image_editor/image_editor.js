@@ -418,9 +418,8 @@ ImageEditor.prototype.getMode = function() { return this.currentMode_ };
  * The user clicked on the mode button.
  *
  * @param {ImageEditor.Mode} mode The new mode.
- * @param {Event} event The event that caused the call.
  */
-ImageEditor.prototype.enterMode = function(mode, event) {
+ImageEditor.prototype.enterMode = function(mode) {
   if (this.isLocked()) return;
 
   if (this.currentMode_ == mode) {
@@ -435,19 +434,17 @@ ImageEditor.prototype.enterMode = function(mode, event) {
   // The above call could have caused a commit which might have initiated
   // an asynchronous command execution. Wait for it to complete, then proceed
   // with the mode set up.
-  this.commandQueue_.executeWhenReady(
-      this.setUpMode_.bind(this, mode, event));
+  this.commandQueue_.executeWhenReady(this.setUpMode_.bind(this, mode));
 };
 
 /**
  * Set up the new editing mode.
  *
  * @param {ImageEditor.Mode} mode The mode.
- * @param {Event} event The event that caused the call.
  * @private
  */
-ImageEditor.prototype.setUpMode_ = function(mode, event) {
-  this.currentTool_ = event.target;
+ImageEditor.prototype.setUpMode_ = function(mode) {
+  this.currentTool_ = mode.button_;
 
   ImageUtil.setAttribute(this.currentTool_, 'pressed', true);
 
@@ -505,6 +502,24 @@ ImageEditor.prototype.leaveModeGently = function() {
 };
 
 /**
+ * Enter the editor mode with the given name.
+ *
+ * @param {string} name Mode name.
+ * @private
+ */
+ImageEditor.prototype.enterModeByName_ = function(name) {
+  for (var i = 0; i != this.modes_.length; i++) {
+    var mode = this.modes_[i];
+    if (mode.name == name) {
+      if (!mode.button_.hasAttribute('disabled'))
+        this.enterMode(mode);
+      return;
+    }
+  }
+  console.error('Mode "' + name + '" not found.');
+};
+
+/**
  * Key down handler.
  * @param {Event} event The keydown event.
  * @return {boolean} True if handled.
@@ -526,12 +541,33 @@ ImageEditor.prototype.onKeyDown = function(event) {
       }
       break;
 
-    case 'Ctrl-Shift-U+005A':  // Ctrl+Shift-Z
+    case 'Ctrl-U+0059':  // Ctrl+Y
       if (this.commandQueue_.canRedo()) {
         this.redo();
         return true;
       }
       break;
+
+    case 'U+0041':  // 'a'
+      this.enterModeByName_('autofix');
+      return true;
+
+    case 'U+0042':  // 'b'
+      this.enterModeByName_('exposure');
+      return true;
+
+    case 'U+0043':  // 'c'
+      this.enterModeByName_('crop');
+      return true;
+
+    case 'U+004C':  // 'l'
+      this.enterModeByName_('rotate_left');
+      return true;
+
+    case 'U+0052':  // 'r'
+      this.enterModeByName_('rotate_right');
+      return true;
+
   }
   return false;
 };

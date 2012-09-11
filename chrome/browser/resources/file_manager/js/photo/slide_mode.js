@@ -217,8 +217,10 @@ SlideMode.prototype.initDom_ = function() {
  * Load items, display the selected item.
  * @param {Rect} zoomFromRect Rectangle for zoom effect.
  * @param {function} displayCallback Called when the image is displayed.
+ * @param {function} loadCallback Called when the image is displayed.
  */
-SlideMode.prototype.enter = function(zoomFromRect, displayCallback) {
+SlideMode.prototype.enter = function(
+    zoomFromRect, displayCallback, loadCallback) {
   this.sequenceDirection_ = 0;
   this.sequenceLength_ = 0;
 
@@ -235,6 +237,8 @@ SlideMode.prototype.enter = function(zoomFromRect, displayCallback) {
       this.prefetchTimer_ = null;
       this.requestPrefetch(1);   // Prefetch the next image.
     }.bind(this), 1000);
+
+    if (loadCallback) loadCallback();
   }.bind(this);
 
   if (this.getItemCount_() == 0) {
@@ -266,7 +270,7 @@ SlideMode.prototype.enter = function(zoomFromRect, displayCallback) {
  * Leave the mode.
  * @param {Rect} zoomToRect Rectangle for zoom effect.
  * @param {function} callback Called when the image is committed and
- *   the zoom-out animation is done..
+ *   the zoom-out animation is done.
  */
 SlideMode.prototype.leave = function(zoomToRect, callback) {
   if (this.prefetchTimer_) {
@@ -370,6 +374,7 @@ SlideMode.prototype.select = function(index, opt_slideHint) {
   this.slideHint_ = opt_slideHint;
   this.selectionModel_.unselectAll();
   this.selectionModel_.setIndexSelected(index, true);
+  this.selectionModel_.leadIndex = index;
 };
 
 /**
@@ -699,10 +704,6 @@ SlideMode.prototype.onKeyDown = function(event) {
       if (!this.isEditing())
         return false;  // Not handled.
       this.toggleEditor_();
-      break;
-
-    case 'Ctrl-U+00DD':  // Ctrl+]. TODO(kaznacheev): Find a non-cryptic key.
-      this.toggleSlideshow_(SlideMode.SLIDESHOW_INTERVAL_FIRST);
       break;
 
     case 'Home':

@@ -354,10 +354,14 @@ Gallery.prototype.onUserAction_ = function() {
  * @private
  */
 Gallery.prototype.setCurrentMode_ = function(mode) {
+  if (mode != this.slideMode_ && mode != this.mosaicMode_)
+    console.error('Invalid Gallery mode');
+
   this.currentMode_ = mode;
-  var name = this.currentMode_.getName();
-  this.modeButton_.title = this.displayStringFunction_(name);
-  this.container_.setAttribute('mode', name);
+  var oppositeMode =
+      mode == this.slideMode_ ? this.mosaicMode_ : this.slideMode_;
+  this.modeButton_.title = this.displayStringFunction_(oppositeMode.getName());
+  this.container_.setAttribute('mode', this.currentMode_.getName());
 };
 
 /**
@@ -369,10 +373,14 @@ Gallery.prototype.toggleMode_ = function(opt_callback) {
   if (this.currentMode_ == this.slideMode_) {
     this.mosaicMode_.enter();  // This may change the viewport.
     this.slideMode_.leave(this.mosaicMode_.getSelectedTileRect(),
-        this.setCurrentMode_.bind(this, this.mosaicMode_));
+        function() {
+          this.setCurrentMode_(this.mosaicMode_);
+          if (opt_callback) opt_callback();
+        }.bind(this));
   } else {
     this.slideMode_.enter(this.mosaicMode_.getSelectedTileRect(),
-        this.setCurrentMode_.bind(this, this.slideMode_));
+        this.setCurrentMode_.bind(this, this.slideMode_),
+        opt_callback);
   }
 };
 
@@ -427,7 +435,10 @@ Gallery.prototype.onDelete_ = function() {
         // Delete actual files.
         deleteNext();
       }.bind(this),
-      restoreListener);
+      function() {
+        // Restore the listener after a timeout so that ESC is processed.
+        setTimeout(restoreListener, 0);
+      });
 };
 
 /**
@@ -502,7 +513,17 @@ Gallery.prototype.onKeyDown_ = function(event) {
         this.onClose_();
       break;
 
+    case 'U+004D':  // 'm' switches between Slide and Mosaic mode.
+      this.toggleMode_();
+      break;
+
+
+    case 'U+0056':  // 'v'
+      this.slideMode_.toggleSlideshow_(SlideMode.SLIDESHOW_INTERVAL_FIRST);
+      return;
+
     case 'U+007F':  // Delete
+    case 'Shift-U+0033':  // Shift+'3' (Delete key might be missing).
       this.onDelete_();
       break;
   }

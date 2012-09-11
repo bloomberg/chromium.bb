@@ -535,7 +535,7 @@ chrome.fileBrowserPrivate = {
       GALLERY_NO_IMAGES: 'No images in this directory.',
       GALLERY_MOSAIC: 'Mosaic view',
       GALLERY_SLIDE: 'Slide view',
-      GALLERY_SLIDESHOW: 'Slide show',
+      GALLERY_SLIDESHOW: 'Slideshow',
       GALLERY_DELETE: 'Delete',
 
       GALLERY_OK_LABEL: 'OK',

@@ -21,7 +21,7 @@ body {
 
 /* Common background for both mosaic and slide mode. */
 .gallery .content {
-  background-color: #333;   /*We want black images to stand out. */
+  background-color: black;
 }
 
 /* Close button */
@@ -1143,7 +1143,7 @@ body {
   outline-color: rgb(51, 153, 255);
 }
 
-.mosaic-tile:hover:not([selected]) .img-border {
+.mosaic.hover-visible .mosaic-tile:hover:not([selected]) .img-border {
   outline-color: rgb(182, 212, 252);
 }
 

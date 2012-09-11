@@ -137,11 +137,11 @@ var harness = {
    */
   get iframe() { return document.querySelector('#dialog') },
 
-  get fileManager() { return iframe.contentWindow.fileManager },
+  get fileManager() { return harness.iframe.contentWindow.fileManager },
 
-  get pyautoAPI() { return iframe.contentWindow.pyautoAPI },
+  get pyautoAPI() { return harness.iframe.contentWindow.pyautoAPI },
 
-  get chrome() { return iframe.contentWindow.chrome; },
+  get chrome() { return harness.iframe.contentWindow.chrome; },
 
   /**
    * Copy a blob into the filesystem.
