@@ -536,6 +536,12 @@ bool ExecuteDefaultHandler(Profile* profile, const FilePath& path) {
   std::string extension_id = handler->extension_id();
   std::string action_id = handler->id();
   Browser* browser = browser::FindLastActiveWithProfile(profile);
+
+  // If there is no browsers for the profile, bail out. Return true so warning
+  // about file type not being supported is not displayed.
+  if (!browser)
+    return true;
+
   if (extension_id == kFileBrowserDomain) {
     // Only two of the built-in File Browser tasks require opening the File
     // Browser tab.
