@@ -516,10 +516,6 @@ cr.define('options', function() {
       }
     },
 
-    attach_: function() {
-      chrome.send('SyncSetupAttachHandler');
-    },
-
     /**
      * Shows the appropriate sync setup page.
      * @param {string} page A page of the sync setup to show.
