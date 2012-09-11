@@ -40,13 +40,6 @@ class ShellWebContentsViewDelegate : public WebContentsViewDelegate {
       CreateRenderWidgetHostViewDelegate(
           RenderWidgetHost* render_widget_host) OVERRIDE;
   void ActionPerformed(int id);
-#elif defined(OS_WIN)
-  virtual void StoreFocus() OVERRIDE;
-  virtual void RestoreFocus() OVERRIDE;
-  virtual bool Focus() OVERRIDE;
-  virtual void TakeFocus(bool reverse) OVERRIDE;
-  virtual void SizeChanged(const gfx::Size& size) OVERRIDE;
-  void MenuItemSelected(int selection);
 #endif
 
  private:
