@@ -397,6 +397,15 @@ void ContentViewCoreImpl::PinchBy(JNIEnv* env, jobject obj, jlong time_ms,
     GetRenderWidgetHostViewAndroid()->GestureEvent(event);
 }
 
+void ContentViewCoreImpl::SelectBetweenCoordinates(JNIEnv* env, jobject obj,
+                                                   jint x1, jint y1,
+                                                   jint x2, jint y2) {
+  if (GetRenderWidgetHostViewAndroid()) {
+    GetRenderWidgetHostViewAndroid()->SelectRange(gfx::Point(x1, y1),
+                                                  gfx::Point(x2, y2));
+  }
+}
+
 jboolean ContentViewCoreImpl::CanGoBack(JNIEnv* env, jobject obj) {
   return web_contents_->GetController().CanGoBack();
 }

@@ -1385,6 +1385,9 @@ public class ContentViewCore implements MotionEventDelegate {
     private native void nativePinchBy(int nativeContentViewCoreImpl, long timeMs,
             int anchorX, int anchorY, float deltaScale);
 
+    private native void nativeSelectBetweenCoordinates(
+            int nativeContentViewCore, int x1, int y1, int x2, int y2);
+
     private native boolean nativeCanGoBack(int nativeContentViewCoreImpl);
 
     private native boolean nativeCanGoForward(int nativeContentViewCoreImpl);

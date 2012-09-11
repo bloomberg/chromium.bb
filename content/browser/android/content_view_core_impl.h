@@ -103,6 +103,9 @@ class ContentViewCoreImpl : public ContentViewCore,
                jint x,
                jint y,
                jfloat delta);
+  virtual void SelectBetweenCoordinates(JNIEnv* env, jobject obj,
+                                        jint x1, jint y1,
+                                        jint x2, jint y2) OVERRIDE;
   jboolean CanGoBack(JNIEnv* env, jobject obj);
   jboolean CanGoForward(JNIEnv* env, jobject obj);
   jboolean CanGoToOffset(JNIEnv* env, jobject obj, jint offset);

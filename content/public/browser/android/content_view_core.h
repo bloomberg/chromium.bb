@@ -40,6 +40,8 @@ class ContentViewCore {
   // --------------------------------------------------------------------------
 
   virtual int GetNativeImeAdapter(JNIEnv* env, jobject obj) = 0;
+  virtual void SelectBetweenCoordinates(JNIEnv* env, jobject obj,
+                                        jint x1, jint y1, jint x2, jint y2) = 0;
 
   // --------------------------------------------------------------------------
   // Methods called from native code

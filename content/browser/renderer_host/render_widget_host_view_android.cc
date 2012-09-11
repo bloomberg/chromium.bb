@@ -384,6 +384,12 @@ void RenderWidgetHostViewAndroid::GestureEvent(
     host_->ForwardGestureEvent(event);
 }
 
+void RenderWidgetHostViewAndroid::SelectRange(const gfx::Point& start,
+                                              const gfx::Point& end) {
+  if (host_)
+    host_->SelectRange(start, end);
+}
+
 void RenderWidgetHostViewAndroid::SetContentViewCore(
     ContentViewCoreImpl* content_view_core) {
   content_view_core_ = content_view_core;

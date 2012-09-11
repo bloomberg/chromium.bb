@@ -113,6 +113,9 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
 
   int GetNativeImeAdapter();
 
+  // Select all text between the given coordinates.
+  void SelectRange(const gfx::Point& start, const gfx::Point& end);
+
  private:
   // The model object.
   RenderWidgetHostImpl* host_;
