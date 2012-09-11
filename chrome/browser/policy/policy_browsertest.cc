@@ -1115,7 +1115,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DisableScreenshotsFile) {
 
 namespace {
 
-bool IsNonSwitchArgument(const std::string& s) {
+bool IsNonSwitchArgument(const CommandLine::StringType& s) {
   return s.empty() || s[0] != '-';
 }
 
