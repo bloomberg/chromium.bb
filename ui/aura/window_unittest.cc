@@ -927,9 +927,10 @@ TEST_F(WindowTest, TransferCaptureTouchEvents) {
   d1.ResetCounts();
   d2.ResetCounts();
 
-  // Set capture on |w2|, this should send a cancel to |w1| but not |w2|.
+  // Set capture on |w2|, this should send a cancel (TAP_CANCEL, END) to |w1|
+  // but not |w2|.
   w2->SetCapture();
-  EXPECT_EQ(1, d1.gesture_event_count());
+  EXPECT_EQ(2, d1.gesture_event_count());
   EXPECT_EQ(0, d2.gesture_event_count());
   d1.ResetCounts();
   d2.ResetCounts();
@@ -949,8 +950,8 @@ TEST_F(WindowTest, TransferCaptureTouchEvents) {
   root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&m3);
   EXPECT_EQ(0, d1.gesture_event_count());
   EXPECT_EQ(0, d2.gesture_event_count());
-  // |w3| gets two events, both scroll related.
-  EXPECT_EQ(2, d3.gesture_event_count());
+  // |w3| gets a TAP_CANCEL and two scroll related events.
+  EXPECT_EQ(3, d3.gesture_event_count());
 }
 
 // Changes capture while capture is already ongoing.

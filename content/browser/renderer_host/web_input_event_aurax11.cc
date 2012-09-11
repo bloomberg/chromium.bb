@@ -414,6 +414,8 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
     case ui::ET_GESTURE_BEGIN:
     case ui::ET_GESTURE_END:
     case ui::ET_GESTURE_MULTIFINGER_SWIPE:
+    case ui::ET_GESTURE_TAP_CANCEL:
+      gesture_event.type = WebKit::WebInputEvent::Undefined;
       break;
     default:
       NOTREACHED() << "Unknown gesture type: " << event->type();

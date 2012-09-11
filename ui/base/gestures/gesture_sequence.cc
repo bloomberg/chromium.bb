@@ -368,11 +368,14 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
     case GST_PENDING_SYNTHETIC_CLICK_FIRST_RELEASED:
       if (Click(event, point, gestures.get()))
         point.UpdateForTap();
+      else
+        PrependTapCancelGestureEvent(point, gestures.get());
       set_state(GS_NO_GESTURE);
       break;
     case GST_PENDING_SYNTHETIC_CLICK_FIRST_MOVED:
     case GST_PENDING_SYNTHETIC_CLICK_FIRST_STATIONARY:
       if (ScrollStart(event, point, gestures.get())) {
+        PrependTapCancelGestureEvent(point, gestures.get());
         set_state(GS_SCROLL);
         if (ScrollUpdate(event, point, gestures.get()))
           point.UpdateForScroll();
@@ -380,6 +383,7 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
       break;
     case GST_PENDING_SYNTHETIC_CLICK_FIRST_RELEASED_HANDLED:
     case GST_PENDING_SYNTHETIC_CLICK_FIRST_CANCELLED:
+      PrependTapCancelGestureEvent(point, gestures.get());
       set_state(GS_NO_GESTURE);
       break;
     case GST_SCROLL_FIRST_MOVED:
@@ -394,8 +398,10 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
       ScrollEnd(event, point, gestures.get());
       set_state(GS_NO_GESTURE);
       break;
-    case GST_SCROLL_SECOND_PRESSED:
     case GST_PENDING_SYNTHETIC_CLICK_SECOND_PRESSED:
+      PrependTapCancelGestureEvent(point, gestures.get());
+      // fall through
+    case GST_SCROLL_SECOND_PRESSED:
       if (IsSecondTouchDownCloseEnoughForTwoFingerTap()) {
         TwoFingerTouchDown(event, point, gestures.get());
         set_state(GS_PENDING_TWO_FINGER_TAP);
@@ -595,6 +601,16 @@ void GestureSequence::AppendTapDownGestureEvent(const GesturePoint& point,
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
       1 << point.touch_id()));
+}
+
+void GestureSequence::PrependTapCancelGestureEvent(const GesturePoint& point,
+                                            Gestures* gestures) {
+  gestures->insert(gestures->begin(), CreateGestureEvent(
+    GestureEventDetails(ui::ET_GESTURE_TAP_CANCEL, 0, 0),
+    point.first_touch_position(),
+    flags_,
+    base::Time::FromDoubleT(point.last_touch_time()),
+    1 << point.touch_id()));
 }
 
 void GestureSequence::AppendBeginGestureEvent(const GesturePoint& point,

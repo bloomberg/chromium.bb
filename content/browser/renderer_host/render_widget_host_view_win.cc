@@ -339,6 +339,8 @@ WebKit::WebInputEvent::Type ConvertToWebInputEvent(ui::EventType t) {
       return WebKit::WebGestureEvent::GestureTap;
     case ui::ET_GESTURE_TAP_DOWN:
       return WebKit::WebGestureEvent::GestureTapDown;
+    case ui::ET_GESTURE_TAP_CANCEL:
+      return WebKit::WebInputEvent::Undefined;
     case ui::ET_GESTURE_DOUBLE_TAP:
       return WebKit::WebGestureEvent::GestureDoubleTap;
     case ui::ET_GESTURE_LONG_PRESS:

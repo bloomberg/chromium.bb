@@ -136,6 +136,7 @@ void GestureEventFilter::Reset() {
 }
 
 void GestureEventFilter::ProcessGestureAck(bool processed, int type) {
+  DCHECK_EQ(coalesced_gesture_events_.front().type, type);
   coalesced_gesture_events_.pop_front();
   if (!coalesced_gesture_events_.empty()) {
     WebGestureEvent next_gesture_event = coalesced_gesture_events_.front();
