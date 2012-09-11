@@ -226,7 +226,7 @@ class IPC_EXPORT Message : public Pickle {
 
   // Called at various points between send and receive to track message.
   void TraceMessageStep() {
-    TRACE_EVENT_ASYNC_BEGIN_STEP0("ipc", "IPC", header()->flags, "step");
+    TRACE_EVENT_ASYNC_STEP0("ipc", "IPC", header()->flags, "step");
   }
 
  protected:
