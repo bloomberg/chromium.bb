@@ -36,7 +36,7 @@ cd /d "%~dp0."
 call git config remote.origin.fetch > NUL
 if errorlevel 1 goto :GIT_SVN_UPDATE
 call git fetch -q origin > NUL
-call git rebase -q origin > NUL
+call git rebase -q origin/master > NUL
 goto :EOF
 
 :GIT_SVN_UPDATE
