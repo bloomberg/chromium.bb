@@ -29,12 +29,4 @@
 #endif  /* defined(NACL_TARGET_ARM_THUMB2_MODE) */
 #define NACL_HALT_WORD          NACL_HALT_OPCODE
 
-struct NaClApp;
-struct NaClThreadContext;
-
-uint32_t NaClGetThreadCombinedDescriptor(struct NaClThreadContext *user);
-
-void NaClSetThreadCombinedDescriptor(struct NaClThreadContext *user,
-                                     uint32_t tls_idx);
-
 #endif /* SERVICE_RUNTIME_ARCH_ARM_SEL_LDR_H__ */
