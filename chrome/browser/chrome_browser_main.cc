@@ -736,7 +736,8 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
   // If we're running tests (ui_task is non-null), then the ResourceBundle
   // has already been initialized.
-  if (parameters().ui_task) {
+  if (parameters().ui_task &&
+      !local_state_->IsManagedPreference(prefs::kApplicationLocale)) {
     browser_process_->SetApplicationLocale("en-US");
   } else {
     // Mac starts it earlier in |PreMainMessageLoopStart()| (because it is

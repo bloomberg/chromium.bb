@@ -97,8 +97,6 @@
       '-omnibox.OmniboxTest.testAutoCompleteForNonAsciiSearch',
       # crbug.com/137041
       '-omnibox.OmniboxTest.testDifferentTypesOfResults',
-      # crbug.com/118054
-      '-policy.PolicyTest.testApplicationLocaleValue',
       # crbug.com/85600
       '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
       # crbug.com/112051
@@ -642,8 +640,6 @@
       'chromeos_retail_mode',
       'policy',
       'policy_prefs_ui',
-      # crbug.com/118054
-      '-policy.PolicyTest.testApplicationLocaleValue',
     ],
   },
 

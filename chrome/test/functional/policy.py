@@ -78,18 +78,6 @@ class PolicyTest(policy_base.PolicyTestBase):
     self.assertFalse(fails, msg='%d of %d policies failed.\n%s' %
                      (len(fails), total, '\n'.join(fails)))
 
-  def testApplicationLocaleValue(self):
-    """Verify that Chrome can be launched only in a specific locale."""
-    if self.IsWin():
-      policy = {'ApplicationLocaleValue': 'hi'}
-      self.SetUserPolicy(policy)
-      self.assertTrue(
-          'hi' in self.GetPrefsInfo().Prefs()['intl']['accept_languages'],
-          msg='Chrome locale is not Hindi.')
-      # TODO(sunandt): Try changing the application locale to another language.
-    else:
-      raise NotImplementedError()
-
 
 if __name__ == '__main__':
   pyauto_functional.Main()
