@@ -55,8 +55,11 @@ void ScriptBadgeController::GetAttentionFor(
   // TODO(jyasskin): Modify the icon's appearance to indicate that the
   // extension is merely asking for permission to run:
   // http://crbug.com/133142
-  script_badge->SetAppearance(SessionID::IdForTab(web_contents()),
-                              ExtensionAction::WANTS_ATTENTION);
+  // TODO(avi): Make IdForTab return -1 for non-tabs.
+  if (TabContents::FromWebContents(web_contents())) {
+    script_badge->SetAppearance(SessionID::IdForTab(web_contents()),
+                                ExtensionAction::WANTS_ATTENTION);
+  }
 
   NotifyChange();
 }
@@ -247,6 +250,9 @@ bool ScriptBadgeController::MarkExtensionExecuting(
   if (!script_badge)
     return false;
 
+  // TODO(avi): Make IdForTab return -1 for non-tabs.
+  if (!TabContents::FromWebContents(web_contents()))
+    return true;
   script_badge->SetAppearance(SessionID::IdForTab(web_contents()),
                               ExtensionAction::ACTIVE);
   return true;

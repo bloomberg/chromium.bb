@@ -10,6 +10,7 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -49,6 +50,9 @@ int ExtensionTabUtil::GetWindowIdOfTabStripModel(
 }
 
 int ExtensionTabUtil::GetTabId(const WebContents* web_contents) {
+  // TODO(avi): Make IdForTab return -1 for non-tabs.
+  if (!TabContents::FromWebContents(web_contents))
+    return -1;
   return SessionID::IdForTab(web_contents);
 }
 
@@ -57,6 +61,9 @@ std::string ExtensionTabUtil::GetTabStatusText(bool is_loading) {
 }
 
 int ExtensionTabUtil::GetWindowIdOfTab(const WebContents* web_contents) {
+  // TODO(avi): Make IdForWindowContainingTab return -1 for non-tabs.
+  if (!TabContents::FromWebContents(web_contents))
+    return -1;
   return SessionID::IdForWindowContainingTab(web_contents);
 }
 

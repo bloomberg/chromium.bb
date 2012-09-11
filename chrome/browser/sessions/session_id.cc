@@ -14,16 +14,18 @@ SessionID::SessionID() {
 }
 
 SessionID::id_type SessionID::IdForTab(const content::WebContents* tab) {
-  const TabContents* tab_contents = tab ? TabContents::FromWebContents(tab)
-                                        : NULL;
-  return tab_contents ? tab_contents->session_tab_helper()->session_id().id()
-                      : -1;
+  // Explicitly crash if this isn't a tab. This is temporary during refactoring
+  // and will go away soon.
+  return tab ? TabContents::FromWebContents(tab)->
+                   session_tab_helper()->session_id().id()
+             : -1;
 }
 
 SessionID::id_type SessionID::IdForWindowContainingTab(
     const content::WebContents* tab) {
-  const TabContents* tab_contents = tab ? TabContents::FromWebContents(tab)
-                                        : NULL;
-  return tab_contents ? tab_contents->session_tab_helper()->window_id().id()
-                      : -1;
+  // Explicitly crash if this isn't a tab. This is temporary during refactoring
+  // and will go away soon.
+  return tab ? TabContents::FromWebContents(tab)->
+                   session_tab_helper()->window_id().id()
+             : -1;
 }
