@@ -15,6 +15,7 @@
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "media/base/message_loop_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamComponent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPeerConnection00Handler.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPeerConnectionHandler.h"
@@ -155,4 +156,70 @@ TEST_F(MediaStreamImplTest, LocalMediaStream) {
   // In the unit test the owning frame is NULL.
   ms_impl_->FrameWillClose(NULL);
   EXPECT_EQ(3, ms_dispatcher_->stop_stream_counter());
+}
+
+TEST_F(MediaStreamImplTest, CloneLocalMediaStream) {
+  // Request a stream with both audio and video.
+  WebKit::WebMediaStreamDescriptor mixed_desc =
+      RequestLocalMediaStream(true, true);
+
+  // Create a WebKit MediaStream description with the same sources as the
+  // sources used in the original requested media stream.
+  WebKit::WebMediaStreamDescriptor cloned_desc;
+  WebKit::WebVector<WebKit::WebMediaStreamComponent> compontents;
+  mixed_desc.audioSources(compontents);
+  WebKit::WebVector<WebKit::WebMediaStreamSource> audio_sources(
+      static_cast<size_t>(1));
+  audio_sources[0] = compontents[0].source();
+  mixed_desc.videoSources(compontents);
+  WebKit::WebVector<WebKit::WebMediaStreamSource> video_sources(
+      static_cast<size_t>(1));
+  video_sources[0] = compontents[0].source();
+  cloned_desc.initialize("cloned stream", audio_sources, video_sources);
+
+  // Test that we can clone the local MediaStream.
+  ms_impl_->CreateMediaStream(NULL, &cloned_desc);
+
+  MediaStreamExtraData* extra_data = static_cast<MediaStreamExtraData*>(
+      mixed_desc.extraData());
+
+  MediaStreamExtraData* cloned_extra_data = static_cast<MediaStreamExtraData*>(
+      cloned_desc.extraData());
+
+  ASSERT_TRUE(extra_data && extra_data->local_stream());
+  ASSERT_TRUE(cloned_extra_data && cloned_extra_data->local_stream());
+  ASSERT_EQ(1u, extra_data->local_stream()->video_tracks()->count());
+  ASSERT_EQ(1u, extra_data->local_stream()->audio_tracks()->count());
+
+  EXPECT_EQ(1u, cloned_extra_data->local_stream()->video_tracks()->count());
+  EXPECT_EQ(1u, cloned_extra_data->local_stream()->audio_tracks()->count());
+  EXPECT_NE(extra_data->local_stream()->label(),
+            cloned_extra_data->local_stream()->label());
+}
+
+// Test that we don't crash if a MediaStream is created in WebKit with unknown
+// sources. This can for example happen if a MediaStream is created with
+// remote tracks.
+TEST_F(MediaStreamImplTest, CreateInvalidMediaStream) {
+  // Create a WebKit MediaStream description.
+  WebKit::WebMediaStreamDescriptor desc;
+  WebKit::WebVector<WebKit::WebMediaStreamSource> audio_sources(
+      static_cast<size_t>(1));
+  audio_sources[0].initialize("audio source",
+                              WebKit::WebMediaStreamSource::TypeAudio,
+                              "something");
+  WebKit::WebVector<WebKit::WebMediaStreamSource> video_sources(
+      static_cast<size_t>(1));
+  video_sources[0].initialize("video source",
+                              WebKit::WebMediaStreamSource::TypeVideo,
+                              "something");
+  desc.initialize("new stream", audio_sources, video_sources);
+
+  ms_impl_->CreateMediaStream(NULL, &desc);
+  MediaStreamExtraData* extra_data = static_cast<MediaStreamExtraData*>(
+      desc.extraData());
+
+  ASSERT_TRUE(extra_data && extra_data->local_stream());
+  EXPECT_EQ(0u, extra_data->local_stream()->video_tracks()->count());
+  EXPECT_EQ(0u, extra_data->local_stream()->audio_tracks()->count());
 }

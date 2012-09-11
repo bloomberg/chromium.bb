@@ -186,11 +186,8 @@ class CONTENT_EXPORT MediaStreamImpl
   scoped_refptr<media::VideoDecoder> CreateRemoteVideoDecoder(
       webrtc::MediaStreamInterface* stream,
       media::MessageLoopFactory* message_loop_factory);
-  LocalNativeStreamPtr CreateNativeLocalMediaStream(
-      const std::string& label,
-      WebKit::WebFrame* frame,
-      const WebKit::WebVector<WebKit::WebMediaStreamSource>& audio_sources,
-      const WebKit::WebVector<WebKit::WebMediaStreamSource>& video_sources);
+  bool CreateNativeLocalMediaStream(
+      WebKit::WebMediaStreamDescriptor* description);
 
   scoped_ptr<MediaStreamDependencyFactory> dependency_factory_;
 
