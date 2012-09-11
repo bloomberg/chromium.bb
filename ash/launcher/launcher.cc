@@ -98,16 +98,10 @@ void Launcher::DelegateView::Layout() {
 
   if (launcher_->alignment_ == SHELF_ALIGNMENT_BOTTOM) {
     int w = std::max(0, width() - launcher_->status_size_.width());
-    int h = std::min(height(), launcher_view->GetPreferredSize().height());
-    int move_up = height() > h ? sqrtf(height() - h) : 0;
-    launcher_view->SetBounds(0, std::max(0, height() - h) - move_up, w, h);
+    launcher_view->SetBounds(0, 0, w, height());
   } else {
     int h = std::max(0, height() - launcher_->status_size_.height());
-    int w = std::min(width(), launcher_view->GetPreferredSize().width());
-    int x = width() > w ? sqrtf(width() - w) : 0;
-    if (launcher_->alignment_ == SHELF_ALIGNMENT_RIGHT)
-      x = width() - w - x;
-    launcher_view->SetBounds(x, 0, w, h);
+    launcher_view->SetBounds(0, 0, width(), h);
   }
 }
 

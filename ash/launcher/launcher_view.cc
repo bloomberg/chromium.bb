@@ -387,10 +387,11 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
       continue;
     }
 
-    view_model_->set_ideal_bounds(i, gfx::Rect(
-        x, y, kLauncherPreferredSize, kLauncherPreferredSize));
-    x = primary_axis_coordinate(x + kLauncherPreferredSize + kButtonSpacing, 0);
-    y = primary_axis_coordinate(0, y + kLauncherPreferredSize + kButtonSpacing);
+    int w = primary_axis_coordinate(kLauncherPreferredSize, width());
+    int h = primary_axis_coordinate(height(), kLauncherPreferredSize);
+    view_model_->set_ideal_bounds(i, gfx::Rect(x, y, w, h));
+    x = primary_axis_coordinate(x + w + kButtonSpacing, 0);
+    y = primary_axis_coordinate(0, y + h + kButtonSpacing);
   }
 
   int app_list_index = view_model_->view_size() - 1;
@@ -407,13 +408,14 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
     // Makes the first launcher button include the leading inset.
     view_model_->set_ideal_bounds(0, gfx::Rect(gfx::Size(
         primary_axis_coordinate(leading_inset() + kLauncherPreferredSize,
-                                kLauncherPreferredSize),
-        primary_axis_coordinate(kLauncherPreferredSize,
+                                width()),
+        primary_axis_coordinate(height(),
                                 leading_inset() + kLauncherPreferredSize))));
   }
 
-  bounds->overflow_bounds.set_size(
-      gfx::Size(kLauncherPreferredSize, kLauncherPreferredSize));
+  bounds->overflow_bounds.set_size(gfx::Size(
+      primary_axis_coordinate(kLauncherPreferredSize, width()),
+      primary_axis_coordinate(height(), kLauncherPreferredSize)));
   last_visible_index_ = DetermineLastVisibleIndex(
       available_size - leading_inset() - kLauncherPreferredSize -
       kButtonSpacing - kLauncherPreferredSize);

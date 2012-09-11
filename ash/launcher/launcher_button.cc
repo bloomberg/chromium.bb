@@ -289,36 +289,29 @@ void LauncherButton::GetAccessibleState(ui::AccessibleViewState* state) {
 void LauncherButton::Layout() {
   gfx::Rect rect(GetContentsBounds());
   const gfx::Size& icon_size(icon_view_->GetPreferredSize());
-  int image_x, image_y;
+  gfx::Rect icon_bounds = rect.Center(icon_size);
 
+  int x_offset = 0, y_offset = 0;
   if (IsShelfHorizontal()) {
-    image_x = rect.x() + (rect.width() - icon_size.width()) / 2;
-    const int align_y = rect.bottom() - kBarSize - kBarSpacing - kIconSize / 2;
-    image_y = align_y - icon_size.height() / 2;
+    y_offset += kBarSize / 2;
     if (ShouldHop(state_))
-      image_y -= kHopSpacing;
+      y_offset += kHopSpacing;
   } else {
-    image_y = rect.y() + (rect.height() - icon_size.height()) / 2;
-    if (host_->GetShelfAlignment() == SHELF_ALIGNMENT_LEFT) {
-      const int align_x = rect.x() + kBarSize + kBarSpacing + kIconSize / 2;
-      image_x = align_x - icon_size.width() / 2;
-      if (ShouldHop(state_))
-        image_x += kHopSpacing;
-    } else {
-      const int align_x = rect.right() - kBarSize - kBarSpacing - kIconSize / 2;
-      image_x = align_x - icon_size.width() / 2;
-      if (ShouldHop(state_))
-        image_x -= kHopSpacing;
-    }
+    x_offset += kBarSize / 2;
+    if (ShouldHop(state_))
+      x_offset += kHopSpacing;
+    if (host_->GetShelfAlignment() == SHELF_ALIGNMENT_LEFT)
+      x_offset = -x_offset;
   }
 
   // Offset to compensate for shadows.
-  gfx::Insets icon_shadow_padding = -gfx::ShadowValue::GetMargin(icon_shadows_);
-  image_x -= (icon_shadow_padding.left() - icon_shadow_padding.right()) / 2;
-  image_y -= (icon_shadow_padding.top() - icon_shadow_padding.bottom()) / 2;
+  gfx::Insets icon_shadow_padding = gfx::ShadowValue::GetMargin(icon_shadows_);
 
-  icon_view_->SetBoundsRect(gfx::Rect(gfx::Point(image_x, image_y),
-                                      icon_size));
+  x_offset -= (icon_shadow_padding.left() - icon_shadow_padding.right()) / 2;
+  y_offset -= (icon_shadow_padding.top() - icon_shadow_padding.bottom()) / 2;
+  icon_bounds.Offset(-x_offset, -y_offset);
+
+  icon_view_->SetBoundsRect(icon_bounds);
   bar_->SetBoundsRect(rect);
 }
 

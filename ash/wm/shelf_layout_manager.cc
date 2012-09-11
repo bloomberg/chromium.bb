@@ -666,8 +666,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     TargetBounds* target_bounds) const {
   CHECK_EQ(GESTURE_DRAG_IN_PROGRESS, gesture_drag_status_);
   bool horizontal = alignment() == SHELF_ALIGNMENT_BOTTOM;
-  const int kFreeMoveRegion = 40;
-  int resistance_free_region = kFreeMoveRegion;
+  int resistance_free_region = 0;
 
   if (gesture_drag_auto_hide_state_ == AUTO_HIDE_HIDDEN) {
     // If the shelf was hidden when the drag started, then allow the drag some
@@ -690,7 +689,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
   float translate = 0.f;
   if (resist) {
     float diff = fabsf(gesture_drag_amount_) - resistance_free_region;
-    diff = std::min(diff, 5 * sqrtf(diff));
+    diff = std::min(diff, sqrtf(diff));
     if (gesture_drag_amount_ < 0)
       translate = -resistance_free_region - diff;
     else
@@ -708,15 +707,15 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
       target_bounds->status_bounds_in_root.Offset(0, translate);
     } else {
       // When dragging up, the launcher height should increase.
-      resistance_free_region -= kFreeMoveRegion;
       float move = std::max(translate,
                             -static_cast<float>(resistance_free_region));
       target_bounds->launcher_bounds_in_root.set_height(
           target_bounds->launcher_bounds_in_root.height() + move - translate);
 
-      // The statusbar should move up, but very little.
-      target_bounds->status_bounds_in_root.Offset(0,
-          move - sqrtf(move - translate));
+      // The statusbar should be in the center.
+      gfx::Rect status_y = target_bounds->launcher_bounds_in_root.Center(
+          target_bounds->status_bounds_in_root.size());
+      target_bounds->status_bounds_in_root.set_y(status_y.y());
     }
   } else {
     // Move the launcher with the gesture.
@@ -729,7 +728,6 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
       target_bounds->status_bounds_in_root.Offset(translate, 0);
     } else {
       // When dragging away from the edge, the launcher width should increase.
-      resistance_free_region -= kFreeMoveRegion;
       float move = alignment() == SHELF_ALIGNMENT_RIGHT ?
           std::max(translate, -static_cast<float>(resistance_free_region)) :
           std::min(translate, static_cast<float>(resistance_free_region));
@@ -737,16 +735,15 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
       if (alignment() == SHELF_ALIGNMENT_RIGHT) {
         target_bounds->launcher_bounds_in_root.set_width(
             target_bounds->launcher_bounds_in_root.width() + move - translate);
-        // The statusbar should move, but very little.
-        target_bounds->status_bounds_in_root.Offset(
-            move - sqrtf(move - translate), 0);
       } else {
         target_bounds->launcher_bounds_in_root.set_width(
             target_bounds->launcher_bounds_in_root.width() - move + translate);
-        // The statusbar should move, but very little.
-        target_bounds->status_bounds_in_root.Offset(sqrtf(translate - move), 0);
       }
 
+      // The statusbar should be in the center.
+      gfx::Rect status_x = target_bounds->launcher_bounds_in_root.Center(
+          target_bounds->status_bounds_in_root.size());
+      target_bounds->status_bounds_in_root.set_x(status_x.x());
     }
   }
 }
