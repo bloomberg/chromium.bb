@@ -835,11 +835,9 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
 #pragma mark Private Methods
 
-// Called after the current theme has changed.
-- (void)themeDidChangeNotification:(NSNotification*)aNotification {
-  ui::ThemeProvider* themeProvider =
-      static_cast<ThemeService*>([[aNotification object] pointerValue]);
-  [self updateTheme:themeProvider];
+// Called after a theme change took place, possibly for a different profile.
+- (void)themeDidChangeNotification:(NSNotification*)notification {
+  [self updateTheme:[[[self view] window] themeProvider]];
 }
 
 // (Private) Method is the same as [self view], but is provided to be explicit.
@@ -1250,8 +1248,10 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   for (int i = 0; i < node->child_count(); i++) {
     const BookmarkNode* child = node->GetChild(i);
     BookmarkButton* button = [self buttonForNode:child xOffset:&xOffset];
-    if (NSMinX([button frame]) >= maxViewX)
+    if (NSMinX([button frame]) >= maxViewX) {
+      [button setDelegate:nil];
       break;
+    }
     [buttons_ addObject:button];
   }
 }
@@ -1632,8 +1632,10 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     if (i == barCount + 1)
       maxViewX += NSWidth([offTheSideButton_ frame]) +
           bookmarks::kBookmarkHorizontalPadding;
-    if (NSMaxX([button frame]) >= maxViewX)
+    if (NSMaxX([button frame]) >= maxViewX) {
+      [button setDelegate:nil];
       break;
+    }
     ++displayedButtonCount_;
     [buttons_ addObject:button];
     [buttonView_ addSubview:button];

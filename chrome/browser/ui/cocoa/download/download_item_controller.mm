@@ -283,16 +283,17 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   // happened yet.
 }
 
-// Called after the current theme has changed.
-- (void)themeDidChangeNotification:(NSNotification*)aNotification {
-  ui::ThemeProvider* themeProvider =
-      static_cast<ThemeService*>([[aNotification object] pointerValue]);
-  [self updateTheme:themeProvider];
+// Called after a theme change took place, possibly for a different profile.
+- (void)themeDidChangeNotification:(NSNotification*)notification {
+  [self updateTheme:[[[self view] window] themeProvider]];
 }
 
 // Adapt appearance to the current theme. Called after theme changes and before
 // this is shown for the first time.
 - (void)updateTheme:(ui::ThemeProvider*)themeProvider {
+  if (!themeProvider)
+    return;
+
   NSColor* color =
       themeProvider->GetNSColor(ThemeService::COLOR_TAB_TEXT, true);
   [dangerousDownloadLabel_ setTextColor:color];

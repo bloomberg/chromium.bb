@@ -73,11 +73,9 @@ using content::UserMetricsAction;
   [controller_ viewDidMoveToWindow];
 }
 
-// Called after the current theme has changed.
-- (void)themeDidChangeNotification:(NSNotification*)aNotification {
-  ui::ThemeProvider* themeProvider =
-      static_cast<ThemeService*>([[aNotification object] pointerValue]);
-  [self updateTheme:themeProvider];
+// Called after a theme change took place, possibly for a different profile.
+- (void)themeDidChangeNotification:(NSNotification*)notification {
+  [self updateTheme:[[self window] themeProvider]];
 }
 
 // Adapt appearance to the current theme. Called after theme changes and before
