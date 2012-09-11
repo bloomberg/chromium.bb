@@ -232,20 +232,37 @@ class LoggingNativeHandler : public NativeHandler {
     bool check_value = args[0]->BooleanValue();
     std::string error_message;
     if (args.Length() == 2)
-      error_message += "Error: " + std::string(*v8::String::AsciiValue(args[1]))
-          + "\n";
+      error_message = "Error: " + std::string(*v8::String::AsciiValue(args[1]));
 
-    v8::Handle<v8::Array> stack_trace(
-        v8::StackTrace::CurrentStackTrace(10)->AsArray());
-    error_message += "Stack trace: {\n";
-    for (size_t i = 0; i < stack_trace->Length(); i++) {
-      error_message += "  "
-          + std::string(*v8::String::AsciiValue(stack_trace->Get(i))) + "\n";
+    v8::Handle<v8::StackTrace> stack_trace =
+        v8::StackTrace::CurrentStackTrace(10);
+    if (stack_trace.IsEmpty() || stack_trace->GetFrameCount() == 0) {
+      error_message += "\n    <no stack trace>";
+    } else {
+      for (size_t i = 0; i < (size_t) stack_trace->GetFrameCount(); ++i) {
+        v8::Handle<v8::StackFrame> frame = stack_trace->GetFrame(i);
+        CHECK(!frame.IsEmpty());
+        error_message += base::StringPrintf("\n    at %s (%s:%d:%d)",
+            ToStringOrDefault(frame->GetFunctionName(), "<anonymous>").c_str(),
+            ToStringOrDefault(frame->GetScriptName(), "<anonymous>").c_str(),
+            frame->GetLineNumber(),
+            frame->GetColumn());
+      }
     }
-    error_message += "}";
     DCHECK(check_value) << error_message;
+    LOG(WARNING) << error_message;
     return v8::Undefined();
   }
+
+ private:
+  std::string ToStringOrDefault(const v8::Handle<v8::String>& v8_string,
+                                  const std::string& dflt) {
+    if (v8_string.IsEmpty())
+      return dflt;
+    std::string ascii_value = *v8::String::AsciiValue(v8_string);
+    return ascii_value.empty() ? dflt : ascii_value;
+  }
+
 };
 
 void InstallAppBindings(ModuleSystem* module_system,
