@@ -20,10 +20,12 @@
           'action_name': 'check_sdk_patch_action',
           'inputs': [
             '<(check_sdk_script)',
+            '<(windows_sdk_path)/Include/winrt/asyncinfo.h',
           ],
           'outputs': [
-            # This keeps the ninja build happy.
-            'dummy',
+            # This keeps the ninja build happy and provides a slightly helpful
+            # error messge if the sdk is missing.
+            'check_sdk_patch',
           ],
           'action': ['python', '<(check_sdk_script)', '<(windows_sdk_path)'],
         },
