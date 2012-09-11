@@ -108,7 +108,7 @@ struct PromoMapEntry {
 const PromoMapEntry kPromoMap[] = {
     { NotificationPromo::NO_PROMO, "" },
     { NotificationPromo::NTP_NOTIFICATION_PROMO, "ntp_notification_promo" },
-    { NotificationPromo::BUBBLE_PROMO, "bubble_promo" },
+    { NotificationPromo::NTP_BUBBLE_PROMO, "ntp_bubble_promo" },
     { NotificationPromo::MOBILE_NTP_SYNC_PROMO, "mobile_ntp_sync_promo" },
 };
 
@@ -299,10 +299,9 @@ void NotificationPromo::InitFromJson(const DictionaryValue& json,
                                      PromoType promo_type) {
   promo_type_ = promo_type;
   const ListValue* promo_list = NULL;
-  if (!json.GetList(PromoTypeToString(promo_type_), &promo_list)) {
-    LOG(ERROR) << "Malformed JSON: not " << PromoTypeToString(promo_type_);
+  DVLOG(1) << "InitFromJson " << PromoTypeToString(promo_type_);
+  if (!json.GetList(PromoTypeToString(promo_type_), &promo_list))
     return;
-  }
 
   // No support for multiple promos yet. Only consider the first one.
   const DictionaryValue* promo = NULL;

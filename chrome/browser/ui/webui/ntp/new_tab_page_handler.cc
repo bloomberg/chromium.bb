@@ -51,18 +51,24 @@ void NewTabPageHandler::RegisterMessages() {
         shown_page_type, kHistogramEnumerationMax);
   }
 
-  web_ui()->RegisterMessageCallback("closeNotificationPromo",
-      base::Bind(&NewTabPageHandler::HandleCloseNotificationPromo,
+  web_ui()->RegisterMessageCallback("notificationPromoClosed",
+      base::Bind(&NewTabPageHandler::HandleNotificationPromoClosed,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("notificationPromoViewed",
       base::Bind(&NewTabPageHandler::HandleNotificationPromoViewed,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("bubblePromoClosed",
+      base::Bind(&NewTabPageHandler::HandleBubblePromoClosed,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("bubblePromoViewed",
+      base::Bind(&NewTabPageHandler::HandleBubblePromoViewed,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("pageSelected",
       base::Bind(&NewTabPageHandler::HandlePageSelected,
                  base::Unretained(this)));
 }
 
-void NewTabPageHandler::HandleCloseNotificationPromo(const ListValue* args) {
+void NewTabPageHandler::HandleNotificationPromoClosed(const ListValue* args) {
   NotificationPromo::HandleClosed(Profile::FromWebUI(web_ui()),
                                   NotificationPromo::NTP_NOTIFICATION_PROMO);
   Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED);
@@ -70,7 +76,20 @@ void NewTabPageHandler::HandleCloseNotificationPromo(const ListValue* args) {
 
 void NewTabPageHandler::HandleNotificationPromoViewed(const ListValue* args) {
   if (NotificationPromo::HandleViewed(Profile::FromWebUI(web_ui()),
-        NotificationPromo::NTP_NOTIFICATION_PROMO)) {
+          NotificationPromo::NTP_NOTIFICATION_PROMO)) {
+    Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED);
+  }
+}
+
+void NewTabPageHandler::HandleBubblePromoClosed(const ListValue* args) {
+  NotificationPromo::HandleClosed(Profile::FromWebUI(web_ui()),
+                                  NotificationPromo::NTP_BUBBLE_PROMO);
+  Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED);
+}
+
+void NewTabPageHandler::HandleBubblePromoViewed(const ListValue* args) {
+  if (NotificationPromo::HandleViewed(Profile::FromWebUI(web_ui()),
+                                      NotificationPromo::NTP_BUBBLE_PROMO)) {
     Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED);
   }
 }

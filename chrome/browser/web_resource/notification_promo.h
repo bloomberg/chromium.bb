@@ -30,7 +30,7 @@ class NotificationPromo {
   enum PromoType {
     NO_PROMO,
     NTP_NOTIFICATION_PROMO,
-    BUBBLE_PROMO,
+    NTP_BUBBLE_PROMO,
     MOBILE_NTP_SYNC_PROMO,
   };
 

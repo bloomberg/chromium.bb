@@ -8,13 +8,13 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/web_resource/notification_promo.h"
 #include "chrome/browser/web_resource/web_resource_service.h"
 
 namespace base {
 class DictionaryValue;
 }
 
+class NotificationPromo;
 class PrefService;
 class Profile;
 
@@ -41,7 +41,7 @@ class PromoResourceService : public WebResourceService {
 
   // Schedule a notification that a web resource is either going to become
   // available or be no longer valid.
-  void ScheduleNotification(double start, double end);
+  void ScheduleNotification(const NotificationPromo& notification_promo);
 
   // Schedules the initial notification for when the web resource is going
   // to become available or no longer valid. This performs a few additional

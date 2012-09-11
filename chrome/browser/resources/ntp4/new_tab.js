@@ -31,7 +31,7 @@ cr.define('ntp', function() {
    * navigation dot UI.
    * @type {!Element|undefined}
    */
-  var infoBubble;
+  var promoBubble;
 
   /**
    * If non-null, an bubble confirming that the user has signed into sync. It
@@ -98,8 +98,8 @@ cr.define('ntp', function() {
     appendTilePage: function(page, title, titleIsEditable, opt_refNode) {
       ntp.PageListView.prototype.appendTilePage.apply(this, arguments);
 
-      if (infoBubble)
-        window.setTimeout(infoBubble.reposition.bind(infoBubble), 0);
+      if (promoBubble)
+        window.setTimeout(promoBubble.reposition.bind(promoBubble), 0);
     }
   };
 
@@ -183,6 +183,23 @@ cr.define('ntp', function() {
       shouldShowLoginBubble = true;
     }
 
+    if (loadTimeData.valueExists('bubblePromoText')) {
+      promoBubble = new cr.ui.Bubble;
+      promoBubble.anchorNode = getRequiredElement('logo-img');
+      promoBubble.setArrowLocation(cr.ui.ArrowLocation.BOTTOM_START);
+      promoBubble.bubbleAlignment =
+          cr.ui.BubbleAlignment.BUBBLE_EDGE_TO_ANCHOR_EDGE;
+      promoBubble.deactivateToDismissDelay = 2000;
+      promoBubble.content = parseHtmlSubset(loadTimeData.getString(
+          'bubblePromoText'), ['BR']);
+      promoBubble.handleCloseEvent = function() {
+        promoBubble.hide();
+        chrome.send('bubblePromoClosed');
+      };
+      promoBubble.show();
+      chrome.send('bubblePromoViewed');
+    }
+
     var loginContainer = getRequiredElement('login-container');
     loginContainer.addEventListener('click', showSyncLoginUI);
     chrome.send('initializeSyncLogin');
@@ -194,8 +211,8 @@ cr.define('ntp', function() {
       newTabView.cardSlider.currentCardValue.navigationDot.classList.add(
           'selected');
 
-      if (loadTimeData.valueExists('serverpromo')) {
-        var promo = loadTimeData.getString('serverpromo');
+      if (loadTimeData.valueExists('notificationPromoText')) {
+        var promo = loadTimeData.getString('notificationPromoText');
         var tags = ['IMG'];
         var attrs = {
           src: function(node, value) {
@@ -204,7 +221,7 @@ cr.define('ntp', function() {
           },
         };
         showNotification(parseHtmlSubset(promo, tags, attrs), [], function() {
-          chrome.send('closeNotificationPromo');
+          chrome.send('notificationPromoClosed');
         }, 60000);
         chrome.send('notificationPromoViewed');
       }

@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_resource/notification_promo.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -22,23 +23,25 @@
 namespace {
 
 // Delay on first fetch so we don't interfere with startup.
-static const int kStartResourceFetchDelay = 5000;
+const int kStartResourceFetchDelay = 5000;
 
 // Delay between calls to update the cache (12 hours), and 3 min in debug mode.
-static const int kCacheUpdateDelay = 12 * 60 * 60 * 1000;
-static const int kTestCacheUpdateDelay = 3 * 60 * 1000;
+const int kCacheUpdateDelay = 12 * 60 * 60 * 1000;
+const int kTestCacheUpdateDelay = 3 * 60 * 1000;
 
 // The version of the service (used to expire the cache when upgrading Chrome
 // to versions with different types of promos).
-static const int kPromoServiceVersion = 7;
+const int kPromoServiceVersion = 7;
 
 // The promotion type used for Unpack() and ScheduleNotificationOnInit.
-static const NotificationPromo::PromoType kDefaultPromoType =
+const NotificationPromo::PromoType kValidPromoTypes[] = {
 #if defined(OS_ANDROID) || defined(OS_IOS)
-    NotificationPromo::MOBILE_NTP_SYNC_PROMO;
+    NotificationPromo::MOBILE_NTP_SYNC_PROMO,
 #else
-    NotificationPromo::NTP_NOTIFICATION_PROMO;
+    NotificationPromo::NTP_NOTIFICATION_PROMO,
+    NotificationPromo::NTP_BUBBLE_PROMO,
 #endif
+};
 
 GURL GetPromoResourceURL() {
   const std::string promo_server_url = CommandLine::ForCurrentProcess()->
@@ -97,8 +100,11 @@ PromoResourceService::PromoResourceService(Profile* profile)
 PromoResourceService::~PromoResourceService() {
 }
 
-void PromoResourceService::ScheduleNotification(double promo_start,
-                                                double promo_end) {
+void PromoResourceService::ScheduleNotification(
+    const NotificationPromo& notification_promo) {
+  const double promo_start = notification_promo.StartTimeForGroup();
+  const double promo_end = notification_promo.EndTime();
+
   if (promo_start > 0 && promo_end > 0) {
     const int64 ms_until_start =
         static_cast<int64>((base::Time::FromDoubleT(
@@ -143,10 +149,11 @@ void PromoResourceService::ScheduleNotificationOnInit() {
   } else {
     // If the promo start is in the future, set a notification task to
     // invalidate the NTP cache at the time of the promo start.
-    NotificationPromo notification_promo(profile_);
-    notification_promo.InitFromPrefs(kDefaultPromoType);
-    ScheduleNotification(notification_promo.StartTimeForGroup(),
-                         notification_promo.EndTime());
+    for (size_t i = 0; i < arraysize(kValidPromoTypes); ++i) {
+      NotificationPromo notification_promo(profile_);
+      notification_promo.InitFromPrefs(kValidPromoTypes[i]);
+      ScheduleNotification(notification_promo);
+    }
   }
 }
 
@@ -187,11 +194,10 @@ std::string PromoResourceService::GetPromoLocale() {
 }
 
 void PromoResourceService::Unpack(const DictionaryValue& parsed_json) {
-  NotificationPromo notification_promo(profile_);
-  notification_promo.InitFromJson(parsed_json, kDefaultPromoType);
-
-  if (notification_promo.new_notification()) {
-    ScheduleNotification(notification_promo.StartTimeForGroup(),
-                         notification_promo.EndTime());
+  for (size_t i = 0; i < arraysize(kValidPromoTypes); ++i) {
+    NotificationPromo notification_promo(profile_);
+    notification_promo.InitFromJson(parsed_json, kValidPromoTypes[i]);
+    if (notification_promo.new_notification())
+      ScheduleNotification(notification_promo);
   }
 }

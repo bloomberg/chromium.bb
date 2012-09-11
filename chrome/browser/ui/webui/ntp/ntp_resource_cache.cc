@@ -424,8 +424,19 @@ void NTPResourceCache::CreateNewTabHTML() {
   } else {
     NotificationPromo notification_promo(profile_);
     notification_promo.InitFromPrefs(NotificationPromo::NTP_NOTIFICATION_PROMO);
-    if (notification_promo.CanShow())
-      load_time_data.SetString("serverpromo", notification_promo.promo_text());
+    if (notification_promo.CanShow()) {
+      load_time_data.SetString("notificationPromoText",
+                               notification_promo.promo_text());
+      DVLOG(1) << "Notification promo:" << notification_promo.promo_text();
+    }
+
+    NotificationPromo bubble_promo(profile_);
+    bubble_promo.InitFromPrefs(NotificationPromo::NTP_BUBBLE_PROMO);
+    if (bubble_promo.CanShow()) {
+      load_time_data.SetString("bubblePromoText",
+                               bubble_promo.promo_text());
+      DVLOG(1) << "Bubble promo:" << bubble_promo.promo_text();
+    }
   }
 
   // Determine whether to show the menu for accessing tabs on other devices.
