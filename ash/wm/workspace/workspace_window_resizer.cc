@@ -6,6 +6,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <utility>
+#include <vector>
 
 #include "ash/display/display_controller.h"
 #include "ash/display/mouse_cursor_event_filter.h"
@@ -58,6 +60,25 @@ aura::RootWindow* GetAnotherRootWindow(aura::RootWindow* root_window) {
   if (root_windows[0] == root_window)
     return root_windows[1];
   return root_windows[0];
+}
+
+// Returns the origin for |src| when magnetically attaching to |attach_to|
+// along the edge |edge|.
+gfx::Point OriginForMagneticAttach(const gfx::Rect& src,
+                                   const gfx::Rect& attach_to,
+                                   MagnetismEdge edge) {
+  switch (edge) {
+    case MAGNETISM_EDGE_TOP:
+      return gfx::Point(src.x(), attach_to.bottom());
+    case MAGNETISM_EDGE_LEFT:
+      return gfx::Point(attach_to.right(), src.y());
+    case MAGNETISM_EDGE_BOTTOM:
+      return gfx::Point(src.x(), attach_to.y() - src.height());
+    case MAGNETISM_EDGE_RIGHT:
+      return gfx::Point(attach_to.x() - src.width(), src.y());
+  }
+  NOTREACHED();
+  return gfx::Point();
 }
 
 }  // namespace
@@ -124,6 +145,7 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location, int event_flags) {
 
   if (wm::IsWindowNormal(window()))
     AdjustBoundsForMainWindow(&bounds, grid_size);
+
   if (bounds != window()->bounds()) {
     if (!did_move_or_resize_) {
       if (!details_.restore_bounds.IsEmpty())
@@ -240,7 +262,9 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
       snap_type_(SNAP_NONE),
       num_mouse_moves_since_bounds_change_(0),
       layer_(NULL),
-      destroyed_(NULL) {
+      destroyed_(NULL),
+      magnetism_window_(NULL),
+      magnetism_edge_(MAGNETISM_EDGE_TOP) {
   DCHECK(details_.is_resizable);
 
   Shell* shell = Shell::GetInstance();
@@ -369,9 +393,44 @@ void WorkspaceWindowResizer::CalculateAttachedSizes(
   }
 }
 
+void WorkspaceWindowResizer::MagneticallySnapToOtherWindows(gfx::Rect* bounds) {
+    // If we snapped to a window then check it first. That way we don't bounce
+    // around when close to multiple edges.
+  if (magnetism_window_) {
+    if (window_tracker_.Contains(magnetism_window_) &&
+        MagnetismMatcher::ShouldAttachOnEdge(
+            *bounds, magnetism_window_->bounds(), magnetism_edge_)) {
+      bounds->set_origin(
+          OriginForMagneticAttach(*bounds, magnetism_window_->bounds(),
+                                  magnetism_edge_));
+      return;
+    }
+    window_tracker_.Remove(magnetism_window_);
+    magnetism_window_ = NULL;
+  }
+
+  MagnetismMatcher matcher(*bounds);
+  aura::Window* parent = window()->parent();
+  const aura::Window::Windows& windows(parent->children());
+  for (aura::Window::Windows::const_reverse_iterator i = windows.rbegin();
+       i != windows.rend() && !matcher.AreEdgesObscured(); ++i) {
+    aura::Window* other = *i;
+    if (other == window() || !other->IsVisible())
+      continue;
+    if (matcher.ShouldAttach(other->bounds(), &magnetism_edge_)) {
+      magnetism_window_ = other;
+      window_tracker_.Add(magnetism_window_);
+      bounds->set_origin(
+          OriginForMagneticAttach(*bounds, magnetism_window_->bounds(),
+                                  magnetism_edge_));
+      return;
+    }
+  }
+}
+
 void WorkspaceWindowResizer::AdjustBoundsForMainWindow(
     gfx::Rect* bounds,
-    int grid_size) const {
+    int grid_size) {
   // Always keep kMinOnscreenHeight on the bottom except when an extended
   // display is available and a window is being dragged.
   gfx::Rect work_area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(window()));
@@ -388,8 +447,11 @@ void WorkspaceWindowResizer::AdjustBoundsForMainWindow(
     bounds->set_y(work_area.y());
   }
 
-  if (grid_size >= 0 && details_.window_component == HTCAPTION)
+  if (grid_size > 0 && details_.window_component == HTCAPTION) {
     SnapToWorkAreaEdges(work_area, bounds, grid_size);
+
+    MagneticallySnapToOtherWindows(bounds);
+  }
 
   if (attached_windows_.empty())
     return;

@@ -8,9 +8,11 @@
 #include <vector>
 
 #include "ash/wm/window_resizer.h"
+#include "ash/wm/workspace/magnetism_matcher.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/aura/window_tracker.h"
 
 namespace aura {
 class RootWindow;
@@ -101,9 +103,13 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
                               int end,
                               std::vector<int>* sizes) const;
 
+  // Attempts to snap the window to any other nearly windows, update |bounds| if
+  // there was a close enough window.
+  void MagneticallySnapToOtherWindows(gfx::Rect* bounds);
+
   // Adjusts the bounds to enforce that windows are vertically contained in the
   // work area.
-  void AdjustBoundsForMainWindow(gfx::Rect* bounds, int grid_size) const;
+  void AdjustBoundsForMainWindow(gfx::Rect* bounds, int grid_size);
 
   // Snaps the window bounds to the work area edges if necessary.
   void SnapToWorkAreaEdges(
@@ -202,6 +208,13 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // If non-NULL the destructor sets this to true. Used to determine if this has
   // been deleted.
   bool* destroyed_;
+
+  aura::Window* magnetism_window_;
+
+  // Used to verify |magnetism_window_| is still valid.
+  aura::WindowTracker window_tracker_;
+
+  MagnetismEdge magnetism_edge_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceWindowResizer);
 };

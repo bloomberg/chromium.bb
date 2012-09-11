@@ -900,5 +900,31 @@ TEST_F(WorkspaceWindowResizerTest, RevertResizeOperation) {
       GetRestoreBoundsInScreen(window_.get())->ToString());
 }
 
+// Check that only usable sizes get returned by the resizer.
+TEST_F(WorkspaceWindowResizerTest, MagneticallyAttach) {
+  window_->SetBounds(gfx::Rect(10, 10, 20, 30));
+  window2_->SetBounds(gfx::Rect(150, 160, 25, 20));
+  window2_->Show();
+
+  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+      window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
+  ASSERT_TRUE(resizer.get());
+  // Move |window| one pixel to the left of |window2|.
+  resizer->Drag(CalculateDragPoint(*resizer, 119, 145), 0);
+  EXPECT_EQ("130,155 20x30", window_->bounds().ToString());
+
+  // Move |window| one pixel to the right of |window2|.
+  resizer->Drag(CalculateDragPoint(*resizer, 164, 145), 0);
+  EXPECT_EQ("175,155 20x30", window_->bounds().ToString());
+
+  // Move |window| one pixel above |window2|.
+  resizer->Drag(CalculateDragPoint(*resizer, 142, 119), 0);
+  EXPECT_EQ("152,130 20x30", window_->bounds().ToString());
+
+  // Move |window| one pixel above the bottom of |window2|.
+  resizer->Drag(CalculateDragPoint(*resizer, 142, 169), 0);
+  EXPECT_EQ("152,180 20x30", window_->bounds().ToString());
+}
+
 }  // namespace internal
 }  // namespace ash
