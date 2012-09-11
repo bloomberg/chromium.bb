@@ -69,8 +69,8 @@ class Transport : public ITransport {
 
     // We want a "non-blocking" check
     struct timeval timeout;
-    timeout.tv_sec = 0;
-    timeout.tv_usec= ms * 1000;
+    timeout.tv_sec = ms / 1000;
+    timeout.tv_usec = (ms % 1000) * 1000;
 
     // Check if this file handle can select on read
     int cnt = select(static_cast<int>(handle_) + 1, &fds, 0, 0, &timeout);

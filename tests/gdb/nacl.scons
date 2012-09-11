@@ -10,7 +10,7 @@ if 'TRUSTED_ENV' not in env:
 
 # PNaCl and ARM bots don't have GDB.
 # TODO(halyavin) : check debugger with PNaCl and enable test if possible.
-if env.Bit('host_mac') or env.Bit('bitcode') or env.Bit('target_arm'):
+if env.Bit('bitcode') or env.Bit('target_arm'):
   Return()
 
 # We need -O0 to make stepping predictable and read local variables/function
@@ -98,8 +98,10 @@ node = env.CommandTest(
     osenv=env_vars + ['GDB_TEST_GUEST=%s' % gdb_test_guest_thread.abspath],
     extra_deps=[sel_ldr, irt, gdb_test_guest_thread])
 
+# TODO(mseaborn): Investigate why this test fails on Mac OS X and fix it.
 env.AddNodeToTestSuite(node, ['large_tests'],
-                       'run_gdb_break_continue_thread_test')
+                       'run_gdb_break_continue_thread_test',
+                       is_broken=env.Bit('host_mac'))
 
 node = env.CommandTest(
     'gdb_syscall_thread.out',

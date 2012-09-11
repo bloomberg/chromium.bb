@@ -8,6 +8,7 @@ import os
 import re
 import socket
 import subprocess
+import sys
 
 
 def FilenameToUnix(str):
@@ -52,6 +53,13 @@ def LaunchSelLdr(program, name):
   sel_ldr = os.environ['NACL_SEL_LDR']
   irt = os.environ['NACL_IRT']
   args = [sel_ldr, '-g', '-B', irt]
+  if sys.platform == 'darwin':
+    # "-a" has the side effect of disabling the Mac OS X outer
+    # sandbox, which does not yet work with the debug stub because the
+    # debug stub does bind() after the outer sandbox has been enabled.
+    # TODO(mseaborn): Clean up the debug stub's initialisation so that
+    # this workaround is not needed.
+    args += ['-a']
   if os.environ.has_key('NACL_LD_SO'):
     args += ['-a', '--', os.environ['NACL_LD_SO'],
              '--library-path', os.environ['NACL_LIBS']]
