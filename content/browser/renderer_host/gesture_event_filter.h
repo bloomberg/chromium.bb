@@ -20,9 +20,17 @@ namespace content {
 class RenderWidgetHostImpl;
 class TapSuppressionController;
 
-// Manages a queue of in-progress |WebGestureEvent| instances filtering,
-// coalescing or discarding them as required to maximize the chance that
-// the event stream can be handled entirely by the compositor thread.
+// Applies a sequence of filters to WebGestureEvents instances.
+// First: the sequence is filtered for bounces. A bounce is when the finger
+// lifts from the screen briefly during an in-progress scroll. If this happens,
+// non-GestureScrollUpdate events are queued until the de-bounce interval
+// passes or another GestureScrollUpdate event occurs.
+//
+// Second: the |WebGestureEvent| instances are filtered (coalescing or
+// discarding them as required) to maximize the chance that the event stream
+// can be handled entirely by the compositor thread.
+// TODO(rjkroege): Possibly refactor into a filter chain:
+// http://crbug.com/148443.
 class GestureEventFilter {
  public:
   explicit GestureEventFilter(RenderWidgetHostImpl*);
@@ -32,9 +40,9 @@ class GestureEventFilter {
   // |WebGestureEvent| argument to the renderer.
   bool ShouldForward(const WebKit::WebGestureEvent&);
 
-  // Indicate that calling RenderWidgetHostImpl has received an acknowledgement
-  // from the renderer with state |processed| and event |type|. May send events
-  // if the queue is not empty.
+  // Indicate that the calling RenderWidgetHostImpl has received an
+  // acknowledgement from the renderer with state |processed| and event |type|.
+  // May send events if the queue is not empty.
   void ProcessGestureAck(bool processed, int type);
 
   // Reset the state of the filter as would be needed when the Renderer exits.
@@ -54,6 +62,10 @@ class GestureEventFilter {
   // GestureTapDown to the renderer.
   void SendGestureTapDownNow();
 
+  // Inovked on the expiration of the debounce interval to release
+  // deferred events.
+  void SendScrollEndingEventsNow();
+
   // Returns |true| if the given GestureFlingCancel should be discarded
   // as unnecessary.
   bool ShouldDiscardFlingCancelEvent(
@@ -63,10 +75,18 @@ class GestureEventFilter {
   // hence that event should be handled now.
   bool ShouldHandleEventNow();
 
-  // Merge a GestureScrollUpdate into the queue if possible or append
-  // it to the queue.
+  // Merge or append a GestureScrollUpdate into the coalescing queue.
   void MergeOrInsertScrollEvent(
        const WebKit::WebGestureEvent& gesture_event);
+
+  // Sub-filter for removing bounces from in-progress scrolls.
+  bool ShouldForwardForBounceReduction(
+      const WebKit::WebGestureEvent& gesture_event);
+
+  // Sub-filter for removing unnecessary GestureFlingCancels and deferring
+  // GestureTapDowns.
+  bool ShouldForwardForTapDeferral(
+      const WebKit::WebGestureEvent& gesture_event);
 
   // Only a RenderWidgetHostViewImpl can own an instance.
   RenderWidgetHostImpl* render_widget_host_;
@@ -74,6 +94,9 @@ class GestureEventFilter {
   // True if a GestureFlingStart is in progress on the renderer or
   // queued without a subsequent queued GestureFlingCancel event.
   bool fling_in_progress_;
+
+  // True if a GestureScrollUpdate sequence is in progress.
+  bool scrolling_in_progress_;
 
   // Timer to release a previously deferred GestureTapDown event.
   base::OneShotTimer<GestureEventFilter> send_gtd_timer_;
@@ -91,8 +114,18 @@ class GestureEventFilter {
   // Tap gesture event currently subject to deferral.
   WebKit::WebGestureEvent deferred_tap_down_event_;
 
+  // Timer to release a previously deferred GestureTapDown event.
+  base::OneShotTimer<GestureEventFilter> debounce_deferring_timer_;
+
+  // Queue of events that have been deferred for debounce.
+  GestureEventQueue debouncing_deferral_queue_;
+
   // Time window in which to defer a GestureTapDown.
   int maximum_tap_gap_time_ms_;
+
+  // Time window in which to debounce scroll/fling ends.
+  // TODO(rjkroege): Make this dynamically configurable.
+  int debounce_interval_time_ms_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureEventFilter);
 };

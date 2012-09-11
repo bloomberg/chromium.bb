@@ -20,6 +20,11 @@ namespace {
 // GestureTapDown and when it is forwarded to the renderer.
 static const int kTapDownDeferralTimeMs = 150;
 
+// Default debouncing interval duration: if a scroll is in progress, non-scroll
+// events during this interval are deferred to either its end or discarded on
+// receipt of another GestureScrollUpdate.
+static const int kDebouncingIntervalTimeMs = 30;
+
 // Sets |*value| to |switchKey| if it exists or sets it to |defaultValue|.
 static void GetParamHelper(int* value,
                            int defaultValue,
@@ -60,8 +65,10 @@ bool ShouldCoalesceGestureEvents(const WebKit::WebGestureEvent& last_event,
 GestureEventFilter::GestureEventFilter(RenderWidgetHostImpl* rwhv)
      : render_widget_host_(rwhv),
        fling_in_progress_(false),
+       scrolling_in_progress_(false),
        tap_suppression_controller_(new TapSuppressionController(rwhv)),
-       maximum_tap_gap_time_ms_(GetTapDownDeferralTimeMs()) {
+       maximum_tap_gap_time_ms_(GetTapDownDeferralTimeMs()),
+       debounce_interval_time_ms_(kDebouncingIntervalTimeMs) {
 }
 
 GestureEventFilter::~GestureEventFilter() { }
@@ -82,8 +89,49 @@ bool GestureEventFilter::ShouldDiscardFlingCancelEvent(
   return true;
 }
 
-// TODO(rjkroege): separate touchpad and touchscreen events.
+bool GestureEventFilter::ShouldForwardForBounceReduction(
+    const WebGestureEvent& gesture_event) {
+  switch (gesture_event.type) {
+    case WebInputEvent::GestureScrollUpdate:
+      if (!scrolling_in_progress_) {
+        debounce_deferring_timer_.Start(FROM_HERE,
+              base::TimeDelta::FromMilliseconds(debounce_interval_time_ms_),
+              this,
+              &GestureEventFilter::SendScrollEndingEventsNow);
+      } else {
+        // Extend the bounce interval.
+        debounce_deferring_timer_.Reset();
+      }
+      scrolling_in_progress_ = true;
+      debouncing_deferral_queue_.clear();
+      return true;
+    case WebInputEvent::GesturePinchBegin:
+      // TODO(rjkroege): Debounce pinch (http://crbug.com/147647)
+      scrolling_in_progress_ = false;
+      return true;
+    default:
+      if (scrolling_in_progress_) {
+        debouncing_deferral_queue_.push_back(gesture_event);
+        return false;
+      }
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+// NOTE: The filters are applied successively. This simplifies the change.
 bool GestureEventFilter::ShouldForward(const WebGestureEvent& gesture_event) {
+  if (debounce_interval_time_ms_ ==  0 ||
+      ShouldForwardForBounceReduction(gesture_event))
+    return ShouldForwardForTapDeferral(gesture_event);
+  return false;
+}
+
+// TODO(rjkroege): separate touchpad and touchscreen events.
+bool GestureEventFilter::ShouldForwardForTapDeferral(
+    const WebGestureEvent& gesture_event) {
   switch (gesture_event.type) {
     case WebInputEvent::GestureFlingCancel:
       if (!ShouldDiscardFlingCancelEvent(gesture_event)) {
@@ -131,7 +179,11 @@ bool GestureEventFilter::ShouldForward(const WebGestureEvent& gesture_event) {
 
 void GestureEventFilter::Reset() {
   fling_in_progress_ = false;
+  scrolling_in_progress_ = false;
   coalesced_gesture_events_.clear();
+  debouncing_deferral_queue_.clear();
+  send_gtd_timer_.Stop();
+  debounce_deferring_timer_.Stop();
   // TODO(rjkroege): Reset the tap suppression controller.
 }
 
@@ -162,6 +214,18 @@ void GestureEventFilter::SendGestureTapDownNow() {
       render_widget_host_->ForwardGestureEventImmediately(
           deferred_tap_down_event_);
   }
+}
+
+void GestureEventFilter::SendScrollEndingEventsNow() {
+  scrolling_in_progress_ = false;
+  for (GestureEventQueue::iterator it =
+      debouncing_deferral_queue_.begin();
+      it != debouncing_deferral_queue_.end(); it++) {
+    if (ShouldForwardForTapDeferral(*it)) {
+      render_widget_host_->ForwardGestureEventImmediately(*it);
+    }
+  }
+  debouncing_deferral_queue_.clear();
 }
 
 void GestureEventFilter::MergeOrInsertScrollEvent(
