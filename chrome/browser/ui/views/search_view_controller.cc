@@ -414,6 +414,15 @@ void SearchViewController::StartAnimation() {
   }
 }
 
+void SearchViewController::StopAnimation() {
+  ntp_container_->layer()->GetAnimator()->StopAnimating();
+  GetLogoView()->layer()->GetAnimator()->StopAnimating();
+  if (content_view_->web_contents()) {
+    content_view_->web_contents()->GetNativeView()->layer()->GetAnimator()->
+        StopAnimating();
+  }
+}
+
 void SearchViewController::CreateViews(State state) {
   DCHECK(!ntp_container_);
 
@@ -492,6 +501,14 @@ views::View* SearchViewController::GetLogoView() const {
 void SearchViewController::DestroyViews() {
   if (!search_container_)
     return;
+
+  // Before destroying all views, cancel all animations to restore all views
+  // into place.  Otherwise, the parent restoration of web_contents back to the
+  // |main_contents_view_| does not work smoothly, resulting in an empty
+  // contents page.  E.g. if the mode changes to |SEARCH_RESULTS| while views
+  // are still animating, the results page will not show up if the animations
+  // are not stopped before the views are destroyed.
+  StopAnimation();
 
   // We persist the parent of the omnibox so that we don't have to inject a new
   // parent into ToolbarView.

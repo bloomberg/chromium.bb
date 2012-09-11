@@ -111,6 +111,9 @@ class SearchViewController
   // Starts the animation.
   void StartAnimation();
 
+  // Stops the animation.
+  void StopAnimation();
+
   // Create the various views and installs them as an overlay on
   // |contents_container_|.  |state| is used to determine visual style
   // of the created views.
