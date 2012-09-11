@@ -69,9 +69,10 @@ ASH_EXPORT void CenterWindow(aura::Window* window);
 //
 // As a result of this |window| has freshly created layers, meaning the layers
 // are all empty (nothing has been painted to them) and are sized to 0x0. Soon
-// after this call you need to reset the bounds of the window.
-ASH_EXPORT ui::Layer* RecreateWindowLayers(
-    aura::Window* window) WARN_UNUSED_RESULT;
+// after this call you need to reset the bounds of the window. Or, you can pass
+// true as the second argument to let the function do that.
+ASH_EXPORT ui::Layer* RecreateWindowLayers(aura::Window* window,
+                                           bool set_bounds) WARN_UNUSED_RESULT;
 
 // Deletes |layer| and all its child layers.
 ASH_EXPORT void DeepDeleteLayers(ui::Layer* layer);

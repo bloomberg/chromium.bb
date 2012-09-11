@@ -912,7 +912,7 @@ void CrossFadeToBounds(aura::Window* window, const gfx::Rect& new_bounds) {
   // Create fresh layers for the window and all its children to paint into.
   // Takes ownership of the old layer and all its children, which will be
   // cleaned up after the animation completes.
-  ui::Layer* old_layer = wm::RecreateWindowLayers(window);
+  ui::Layer* old_layer = wm::RecreateWindowLayers(window, false);
   ui::Layer* new_layer = window->layer();
 
   // Resize the window to the new size, which will force a layout and paint.

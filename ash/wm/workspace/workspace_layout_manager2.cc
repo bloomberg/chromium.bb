@@ -132,7 +132,7 @@ void WorkspaceLayoutManager2::OnWindowPropertyChanged(Window* window,
          (!WorkspaceManager2::IsMaximizedState(new_state) &&
           WorkspaceManager2::IsMaximizedState(old_state) &&
           new_state != ui::SHOW_STATE_MINIMIZED))) {
-      cloned_layer = wm::RecreateWindowLayers(window);
+      cloned_layer = wm::RecreateWindowLayers(window, false);
     }
     UpdateBoundsFromShowState(window);
     ShowStateChanged(window, old_state, cloned_layer);
