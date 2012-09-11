@@ -7,14 +7,12 @@
 
 #include "base/basictypes.h"
 
-namespace content {
-class WebContents;
-}
+class TabContents;
 
 // Call this when a tab encounters a PDF that has features which our internal
 // viewer doesn't support.  Will take care of puting up an infobar to inform the
 // user and launch Reader if they choose.  If Reader is out of date, it will put
 // up an interstitial.
-void PDFHasUnsupportedFeature(content::WebContents* web_contents);
+void PDFHasUnsupportedFeature(TabContents* tab);
 
 #endif  // CHROME_BROWSER_UI_PDF_PDF_UNSUPPORTED_FEATURE_H_

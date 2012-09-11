@@ -40,7 +40,6 @@ class GURL;
 class InstantController;
 class KeywordHintView;
 class LocationIconView;
-class OpenPDFInReaderView;
 class PageActionWithBadgeView;
 class PageActionImageView;
 class Profile;
@@ -316,7 +315,6 @@ class LocationBarView : public LocationBar,
   virtual void UpdatePageActions() OVERRIDE;
   virtual void InvalidatePageActions() OVERRIDE;
   virtual void UpdateWebIntentsButton() OVERRIDE;
-  virtual void UpdateOpenPDFInReaderPrompt() OVERRIDE;
   virtual void SaveStateToContents(content::WebContents* contents) OVERRIDE;
   virtual void Revert() OVERRIDE;
   virtual const OmniboxView* GetLocationEntry() const OVERRIDE;
@@ -518,9 +516,6 @@ class LocationBarView : public LocationBar,
 
   // The zoom icon.
   ZoomView* zoom_view_;
-
-  // The icon to open a PDF in Reader.
-  OpenPDFInReaderView* open_pdf_in_reader_view_;
 
   // The current page actions.
   std::vector<ExtensionAction*> page_actions_;

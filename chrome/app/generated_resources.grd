@@ -6875,9 +6875,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ACCNAME_CHROME_TO_MOBILE" desc="The accessible name for the Chrome To Mobile button.">
         Chrome To Mobile
       </message>
-      <message name="IDS_ACCNAME_OPEN_PDF_IN_READER" desc="The accessible name for the Open PDF in Reader button.">
-        Open PDF in Reader
-      </message>
       <message name="IDS_ACCNAME_FIND" desc="The accessible name for the find button.">
         Find
       </message>
@@ -17339,17 +17336,13 @@ Battery full
       Which service should be used for saving?
     </message>
 
-    <!-- PDF with unsupported feature bubble -->
-    <message name="IDS_PDF_BUBBLE_MESSAGE" desc="Message for the bubble when a user views a PDF with an unsupported feature">
-      Parts of this PDF document could not be displayed.
+    <!-- PDF with unsupported feature Info Bar -->
+    <message name="IDS_PDF_INFOBAR_QUESTION_READER_INSTALLED" desc="Question asked on the info bar when a user views a PDF with an unsupported feature and they have Adobe Reader installed.">
+      Parts of this PDF document could not be displayed. Open in Adobe Reader?
     </message>
 
-    <message name="IDS_PDF_BUBBLE_OPEN_IN_READER_LINK" desc="Title of the link to open a PDF with an unsupported feature in Adobe Reader">
-      Open in Adobe Reader
-    </message>
-
-    <message name="IDS_PDF_BUBBLE_INSTALL_READER_LINK" desc="Title of the link to open a PDF with an unsupported feature in Adobe Reader">
-      Install Adobe Reader
+    <message name="IDS_PDF_INFOBAR_QUESTION_READER_NOT_INSTALLED" desc="Question asked on the info bar when a user views a PDF with an unsupported feature and they don't have Adobe Reader installed.">
+      Parts of this PDF document could not be displayed. Install Adobe Reader?
     </message>
 
     <message name="IDS_PDF_INFOBAR_QUESTION_ALWAYS_USE_READER" desc="Question asked on the info bar when a user opens a PDF with Reader and we want to ask them if they always want to use it for viewing PDF files.">
