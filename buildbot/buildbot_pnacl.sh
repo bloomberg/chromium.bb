@@ -513,7 +513,9 @@ mode-buildbot-arm-hw-try() {
 # These are also suitable for local TC sanity testing
 tc-tests-large() {
   local is_try=$1
-  local scons_flags="-k skip_trusted_tests=1 -j8"
+
+  local label="pnaclsdk_mode=custom:toolchain/${TOOLCHAIN_LABEL}"
+  local scons_flags="-k skip_trusted_tests=1 -j8 ${label}"
 
   # newlib
   scons-stage-noirt "x86-32" "${scons_flags}" "${SCONS_TC_TESTS}"
