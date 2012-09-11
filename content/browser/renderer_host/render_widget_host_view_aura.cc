@@ -338,7 +338,12 @@ gfx::NativeView RenderWidgetHostViewAura::GetNativeView() const {
 }
 
 gfx::NativeViewId RenderWidgetHostViewAura::GetNativeViewId() const {
+#if defined(OS_WIN)
+  HWND window = window_->GetRootWindow()->GetAcceleratedWidget();
+  return reinterpret_cast<gfx::NativeViewId>(window);
+#else
   return static_cast<gfx::NativeViewId>(NULL);
+#endif
 }
 
 gfx::NativeViewAccessible RenderWidgetHostViewAura::GetNativeViewAccessible() {
@@ -347,8 +352,29 @@ gfx::NativeViewAccessible RenderWidgetHostViewAura::GetNativeViewAccessible() {
 }
 
 void RenderWidgetHostViewAura::MovePluginWindows(
-    const std::vector<webkit::npapi::WebPluginGeometry>& moves) {
-  // We don't support windowed plugins.
+    const gfx::Point& scroll_offset,
+    const std::vector<webkit::npapi::WebPluginGeometry>& plugin_window_moves) {
+#if defined(OS_WIN)
+  HWND parent = window_->GetRootWindow()->GetAcceleratedWidget();
+  gfx::Rect view_bounds = window_->GetBoundsInRootWindow();
+  std::vector<webkit::npapi::WebPluginGeometry> moves = plugin_window_moves;
+
+  gfx::Rect view_port(scroll_offset.x(), scroll_offset.y(), view_bounds.width(),
+                      view_bounds.height());
+
+  for (size_t i = 0; i < moves.size(); ++i) {
+    gfx::Rect clip = moves[i].clip_rect;
+    clip.Offset(moves[i].window_rect.origin());
+    clip.Offset(scroll_offset);
+    clip = clip.Intersect(view_port);
+    clip.Offset(-moves[i].window_rect.x(), -moves[i].window_rect.y());
+    clip.Offset(-scroll_offset.x(), -scroll_offset.y());
+    moves[i].clip_rect = clip;
+
+    moves[i].window_rect.Offset(view_bounds.origin());
+  }
+  MovePluginWindowsHelper(parent, moves);
+#endif  // defined(OS_WIN)
 }
 
 void RenderWidgetHostViewAura::Focus() {
@@ -453,6 +479,15 @@ void RenderWidgetHostViewAura::DidUpdateBackingStore(
       continue;
 
     SchedulePaintIfNotInClip(rect, clip_rect);
+
+#if defined(OS_WIN)
+    // Send the invalid rect in screen coordinates.
+    gfx::Rect screen_rect = GetViewBounds();
+    gfx::Rect invalid_screen_rect(rect);
+    invalid_screen_rect.Offset(screen_rect.x(), screen_rect.y());
+    HWND hwnd = window_->GetRootWindow()->GetAcceleratedWidget();
+    PaintPluginWindowsHelper(hwnd, invalid_screen_rect);
+#endif  // defined(OS_WIN)
   }
 }
 

@@ -49,6 +49,7 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   virtual gfx::NativeViewId GetNativeViewId() const OVERRIDE;
   virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
   virtual void MovePluginWindows(
+      const gfx::Point& scroll_offset,
       const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE;
   virtual void Focus() OVERRIDE;
   virtual void Blur() OVERRIDE;

@@ -28,7 +28,6 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
-#include "content/browser/plugin_process_host.h"
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/backing_store_win.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -60,7 +59,6 @@
 #include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/mouse_wheel_util.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/gdi_util.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 #include "webkit/glue/webcursor.h"
@@ -75,7 +73,6 @@ using WebKit::WebInputEvent;
 using WebKit::WebInputEventFactory;
 using WebKit::WebMouseEvent;
 using WebKit::WebTextDirection;
-using webkit::npapi::WebPluginGeometry;
 
 namespace content {
 namespace {
@@ -125,44 +122,6 @@ BOOL CALLBACK DismissOwnedPopups(HWND window, LPARAM arg) {
   return TRUE;
 }
 
-// |window| is the plugin HWND, created and destroyed in the plugin process.
-// |parent| is the parent HWND, created and destroyed on the browser UI thread.
-void NotifyPluginProcessHostHelper(HWND window, HWND parent, int tries) {
-  // How long to wait between each try.
-  static const int kTryDelayMs = 200;
-
-  DWORD plugin_process_id;
-  bool found_starting_plugin_process = false;
-  GetWindowThreadProcessId(window, &plugin_process_id);
-  for (PluginProcessHostIterator iter; !iter.Done(); ++iter) {
-    if (!iter.GetData().handle) {
-      found_starting_plugin_process = true;
-      continue;
-    }
-    if (base::GetProcId(iter.GetData().handle) == plugin_process_id) {
-      iter->AddWindow(parent);
-      return;
-    }
-  }
-
-  if (found_starting_plugin_process) {
-    // A plugin process has started but we don't have its handle yet.  Since
-    // it's most likely the one for this plugin, try a few more times after a
-    // delay.
-    if (tries > 0) {
-      MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&NotifyPluginProcessHostHelper, window, parent, tries - 1),
-          base::TimeDelta::FromMilliseconds(kTryDelayMs));
-      return;
-    }
-  }
-
-  // The plugin process might have died in the time to execute the task, don't
-  // leak the HWND.
-  PostMessage(parent, WM_CLOSE, 0, 0);
-}
-
 // Windows callback for OnDestroy to detach the plugin windows.
 BOOL CALLBACK DetachPluginWindowsCallback(HWND window, LPARAM param) {
   if (webkit::npapi::WebPluginDelegateImpl::IsPluginDelegateWindow(window) &&
@@ -171,26 +130,6 @@ BOOL CALLBACK DetachPluginWindowsCallback(HWND window, LPARAM param) {
     SetParent(window, NULL);
   }
   return TRUE;
-}
-
-// The plugin wrapper window which lives in the browser process has this proc
-// as its window procedure. We only handle the WM_PARENTNOTIFY message sent by
-// windowed plugins for mouse input. This is forwarded off to the wrappers
-// parent which is typically the RVH window which turns on user gesture.
-LRESULT CALLBACK PluginWrapperWindowProc(HWND window, unsigned int message,
-                                         WPARAM wparam, LPARAM lparam) {
-  if (message == WM_PARENTNOTIFY) {
-    switch (LOWORD(wparam)) {
-      case WM_LBUTTONDOWN:
-      case WM_RBUTTONDOWN:
-      case WM_MBUTTONDOWN:
-        ::SendMessage(GetParent(window), message, wparam, lparam);
-        return 0;
-      default:
-        break;
-    }
-  }
-  return ::DefWindowProc(window, message, wparam, lparam);
 }
 
 void SendToGpuProcessHost(int gpu_host_id, scoped_ptr<IPC::Message> message) {
@@ -713,140 +652,9 @@ RenderWidgetHostViewWin::GetNativeViewAccessible() {
 }
 
 void RenderWidgetHostViewWin::MovePluginWindows(
-    const std::vector<WebPluginGeometry>& plugin_window_moves) {
-  if (plugin_window_moves.empty())
-    return;
-
-  bool oop_plugins =
-    !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) &&
-    !CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessPlugins);
-
-  HDWP defer_window_pos_info =
-      ::BeginDeferWindowPos(static_cast<int>(plugin_window_moves.size()));
-
-  if (!defer_window_pos_info) {
-    NOTREACHED();
-    return;
-  }
-
-  for (size_t i = 0; i < plugin_window_moves.size(); ++i) {
-    unsigned long flags = 0;
-    const WebPluginGeometry& move = plugin_window_moves[i];
-    HWND window = move.window;
-
-    // As the plugin parent window which lives on the browser UI thread is
-    // destroyed asynchronously, it is possible that we have a stale window
-    // sent in by the renderer for moving around.
-    // Note: get the parent before checking if the window is valid, to avoid a
-    // race condition where the window is destroyed after the check but before
-    // the GetParent call.
-    HWND parent = ::GetParent(window);
-    if (!::IsWindow(window))
-      continue;
-
-    if (oop_plugins) {
-      if (parent == m_hWnd) {
-        // The plugin window is a direct child of this window, add an
-        // intermediate window that lives on this thread to speed up scrolling.
-        // Note this only works with out of process plugins since we depend on
-        // PluginProcessHost to destroy the intermediate HWNDs.
-        parent = ReparentWindow(window);
-        ::ShowWindow(window, SW_SHOW);  // Window was created hidden.
-      } else if (::GetParent(parent) != m_hWnd) {
-        // The renderer should only be trying to move windows that are children
-        // of its render widget window. However, this may happen as a result of
-        // a race condition, so we ignore it and not kill the plugin process.
-        continue;
-      }
-
-      // We move the intermediate parent window which doesn't result in cross-
-      // process synchronous Windows messages.
-      window = parent;
-    }
-
-    if (move.visible)
-      flags |= SWP_SHOWWINDOW;
-    else
-      flags |= SWP_HIDEWINDOW;
-
-    if (move.rects_valid) {
-      HRGN hrgn = ::CreateRectRgn(move.clip_rect.x(),
-                                  move.clip_rect.y(),
-                                  move.clip_rect.right(),
-                                  move.clip_rect.bottom());
-      gfx::SubtractRectanglesFromRegion(hrgn, move.cutout_rects);
-
-      // Note: System will own the hrgn after we call SetWindowRgn,
-      // so we don't need to call DeleteObject(hrgn)
-      ::SetWindowRgn(window, hrgn, !move.clip_rect.IsEmpty());
-    } else {
-      flags |= SWP_NOMOVE;
-      flags |= SWP_NOSIZE;
-    }
-
-    defer_window_pos_info = ::DeferWindowPos(defer_window_pos_info,
-                                             window, NULL,
-                                             move.window_rect.x(),
-                                             move.window_rect.y(),
-                                             move.window_rect.width(),
-                                             move.window_rect.height(), flags);
-    if (!defer_window_pos_info) {
-      DCHECK(false) << "DeferWindowPos failed, so all plugin moves ignored.";
-      return;
-    }
-  }
-
-  ::EndDeferWindowPos(defer_window_pos_info);
-}
-
-HWND RenderWidgetHostViewWin::ReparentWindow(HWND window) {
-  static ATOM atom = 0;
-  static HMODULE instance = NULL;
-  if (!atom) {
-    WNDCLASSEX window_class;
-    base::win::InitializeWindowClass(
-        webkit::npapi::kWrapperNativeWindowClassName,
-        &base::win::WrappedWindowProc<PluginWrapperWindowProc>,
-        CS_DBLCLKS,
-        0,
-        0,
-        NULL,
-        reinterpret_cast<HBRUSH>(COLOR_WINDOW+1),
-        NULL,
-        NULL,
-        NULL,
-        &window_class);
-    instance = window_class.hInstance;
-    atom = RegisterClassEx(&window_class);
-  }
-  DCHECK(atom);
-
-  HWND orig_parent = ::GetParent(window);
-  HWND parent = CreateWindowEx(
-      WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR,
-      MAKEINTATOM(atom), 0,
-      WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
-      0, 0, 0, 0, orig_parent, 0, instance, 0);
-  ui::CheckWindowCreated(parent);
-  // If UIPI is enabled we need to add message filters for parents with
-  // children that cross process boundaries.
-  if (::GetPropW(orig_parent, webkit::npapi::kNativeWindowClassFilterProp)) {
-    // Process-wide message filters required on Vista must be added to:
-    // chrome_content_client.cc ChromeContentClient::SandboxPlugin
-    ChangeWindowMessageFilterEx(parent, WM_MOUSEWHEEL, MSGFLT_ALLOW, NULL);
-    ChangeWindowMessageFilterEx(parent, WM_GESTURE, MSGFLT_ALLOW, NULL);
-    ChangeWindowMessageFilterEx(parent, WM_APPCOMMAND, MSGFLT_ALLOW, NULL);
-    ::RemovePropW(orig_parent, webkit::npapi::kNativeWindowClassFilterProp);
-  }
-  ::SetParent(window, parent);
-  // How many times we try to find a PluginProcessHost whose process matches
-  // the HWND.
-  static const int kMaxTries = 5;
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&NotifyPluginProcessHostHelper, window, parent, kMaxTries));
-  return parent;
+    const gfx::Point& scroll_offset,
+    const std::vector<webkit::npapi::WebPluginGeometry>& plugin_window_moves) {
+  MovePluginWindowsHelper(m_hWnd, plugin_window_moves);
 }
 
 static BOOL CALLBACK AddChildWindowToVector(HWND hwnd, LPARAM lparam) {
@@ -1002,23 +810,6 @@ void RenderWidgetHostViewWin::ImeCompositionRangeChanged(
   composition_character_bounds_ = character_bounds;
 }
 
-BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lparam) {
-  if (!webkit::npapi::WebPluginDelegateImpl::IsPluginDelegateWindow(hwnd))
-    return TRUE;
-
-  gfx::Rect* rect = reinterpret_cast<gfx::Rect*>(lparam);
-  static UINT msg = RegisterWindowMessage(webkit::npapi::kPaintMessageName);
-  WPARAM wparam = rect->x() << 16 | rect->y();
-  lparam = rect->width() << 16 | rect->height();
-
-  // SendMessage gets the message across much quicker than PostMessage, since it
-  // doesn't get queued.  When the plugin thread calls PeekMessage or other
-  // Win32 APIs, sent messages are dispatched automatically.
-  SendNotifyMessage(hwnd, msg, wparam, lparam);
-
-  return TRUE;
-}
-
 void RenderWidgetHostViewWin::Redraw() {
   RECT damage_bounds;
   GetUpdateRect(&damage_bounds, FALSE);
@@ -1043,8 +834,7 @@ void RenderWidgetHostViewWin::Redraw() {
   gfx::Rect invalid_screen_rect(damage_bounds);
   invalid_screen_rect.Offset(screen_rect.x(), screen_rect.y());
 
-  LPARAM lparam = reinterpret_cast<LPARAM>(&invalid_screen_rect);
-  EnumChildWindows(m_hWnd, EnumChildProc, lparam);
+  PaintPluginWindowsHelper(m_hWnd, invalid_screen_rect);
 }
 
 void RenderWidgetHostViewWin::DidUpdateBackingStore(
@@ -2701,7 +2491,7 @@ gfx::GLSurfaceHandle RenderWidgetHostViewWin::GetCompositingSurface() {
   }
 
   // On XP we need a child window that can be resized independently of the
-  // partent.
+  // parent.
   static ATOM atom = 0;
   static HMODULE instance = NULL;
   if (!atom) {

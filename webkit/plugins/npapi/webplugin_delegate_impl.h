@@ -10,6 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/time.h"
 #include "base/timer.h"
@@ -20,10 +21,6 @@
 #include "webkit/glue/webcursor.h"
 #include "webkit/plugins/npapi/webplugin_delegate.h"
 #include "webkit/plugins/webkit_plugins_export.h"
-
-#if defined(OS_WIN) && !defined(USE_AURA)
-#include "base/memory/weak_ptr.h"
-#endif
 
 #if defined(USE_X11)
 #include "ui/base/x/x11_util.h"
@@ -53,7 +50,7 @@ class WebPluginAcceleratedSurface;
 class ExternalDragTracker;
 #endif  // OS_MACOSX
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
 class WebPluginIMEWin;
 #endif  // OS_WIN
 
@@ -88,15 +85,17 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
                                        const std::string& mime_type,
                                        gfx::PluginWindowHandle containing_view);
 
-  static bool IsPluginDelegateWindow(gfx::NativeWindow window);
-  static bool GetPluginNameFromWindow(gfx::NativeWindow window,
+#if defined(OS_WIN)
+  static bool IsPluginDelegateWindow(HWND window);
+  static bool GetPluginNameFromWindow(HWND window,
                                       string16* plugin_name);
-  static bool GetPluginVersionFromWindow(gfx::NativeWindow window,
+  static bool GetPluginVersionFromWindow(HWND window,
                                          string16* plugin_version);
 
   // Returns true if the window handle passed in is that of the dummy
   // activation window for windowless plugins.
-  static bool IsDummyActivationWindow(gfx::NativeWindow window);
+  static bool IsDummyActivationWindow(HWND window);
+#endif
 
   // WebPluginDelegate implementation
   virtual bool Initialize(const GURL& url,
@@ -148,7 +147,7 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
   // Informs the plugin that the view it is in has gained or lost focus.
   void SetContentAreaHasFocus(bool has_focus);
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   // Informs the plug-in that an IME has changed its status.
   void ImeCompositionUpdated(const string16& text,
                              const std::vector<int>& clauses,
@@ -332,7 +331,7 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
   WebPlugin* plugin_;
   scoped_refptr<PluginInstance> instance_;
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   // Original wndproc before we subclassed.
   WNDPROC plugin_wnd_proc_;
 
@@ -372,7 +371,7 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
   gfx::Rect clip_rect_;
   int quirks_;
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   // Windowless plugins don't have keyboard focus causing issues with the
   // plugin not receiving keyboard events if the plugin enters a modal
   // loop like TrackPopupMenuEx or MessageBox, etc.
@@ -500,7 +499,7 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
   // The url with which the plugin was instantiated.
   std::string plugin_url_;
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   // Indicates the end of a user gesture period.
   void OnUserGestureEnd();
 

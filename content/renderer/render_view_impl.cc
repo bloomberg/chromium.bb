@@ -4229,7 +4229,8 @@ WebKit::WebPlugin* RenderViewImpl::CreatePlugin(
         pepper_module.get(), params, pepper_delegate_.AsWeakPtr());
   }
 
-#if defined(USE_AURA)
+
+#if defined(USE_AURA) && !defined(OS_WIN)
   return NULL;
 #else
   return new webkit::npapi::WebPluginImpl(

@@ -479,6 +479,7 @@ gfx::NativeViewAccessible RenderWidgetHostViewMac::GetNativeViewAccessible() {
 }
 
 void RenderWidgetHostViewMac::MovePluginWindows(
+    const gfx::Point& scroll_offset,
     const std::vector<webkit::npapi::WebPluginGeometry>& moves) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewMac::MovePluginWindows");
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1226,7 +1227,7 @@ void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
   // plugin windows.
   if (params.window == gfx::kNullPluginWindow) {
     NOTIMPLEMENTED();
-    AckPendingSwapBuffers();
+      AckPendingSwapBuffers();
   } else {
     // Deprecated accelerated plugin code path.
     AcceleratedPluginView* view = ViewForPluginWindowHandle(params.window);

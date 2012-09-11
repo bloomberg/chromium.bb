@@ -4,7 +4,7 @@
 
 #include "content/browser/plugin_process_host.h"
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
 #include <windows.h>
 #elif defined(OS_POSIX)
 #include <utility>  // for pair<>
@@ -53,7 +53,7 @@ using content::ChildProcessHost;
 #include "ui/gfx/rect.h"
 #endif
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
@@ -133,7 +133,7 @@ PluginProcessHost::PluginProcessHost()
 }
 
 PluginProcessHost::~PluginProcessHost() {
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   // We erase HWNDs from the plugin_parent_windows_set_ when we receive a
   // notification that the window is being destroyed. If we don't receive this
   // notification and the PluginProcessHost instance is being destroyed, it
@@ -311,7 +311,7 @@ bool PluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PluginProcessHost, msg)
     IPC_MESSAGE_HANDLER(PluginProcessHostMsg_ChannelCreated, OnChannelCreated)
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(PluginProcessHostMsg_PluginWindowDestroyed,
                         OnPluginWindowDestroyed)
     IPC_MESSAGE_HANDLER(PluginProcessHostMsg_ReparentPluginWindow,

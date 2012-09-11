@@ -758,6 +758,7 @@ gfx::NativeViewAccessible RenderWidgetHostViewGtk::GetNativeViewAccessible() {
 }
 
 void RenderWidgetHostViewGtk::MovePluginWindows(
+    const gfx::Point& scroll_offset,
     const std::vector<webkit::npapi::WebPluginGeometry>& moves) {
   for (size_t i = 0; i < moves.size(); ++i) {
     plugin_container_manager_.MovePluginContainer(moves[i]);

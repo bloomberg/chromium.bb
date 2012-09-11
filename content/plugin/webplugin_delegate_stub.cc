@@ -163,7 +163,12 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
 
   gfx::PluginWindowHandle parent = gfx::kNullPluginWindow;
 #if defined(USE_AURA)
+#if defined(OS_WIN)
+  // Copy of gfx::NativeViewFromId that's defined without Aura.
+  parent = reinterpret_cast<HWND>(params.containing_window);
+#else
   // Nothing.
+#endif
 #elif defined(OS_WIN)
   parent = gfx::NativeViewFromId(params.containing_window);
 #elif defined(OS_LINUX)

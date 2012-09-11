@@ -420,7 +420,6 @@
         ['use_aura==1', {
           'sources/': [
             ['exclude', '^\\.\\./plugins/npapi/webplugin_delegate_impl_mac.mm'],
-            ['exclude', '^\\.\\./plugins/npapi/webplugin_delegate_impl_win.cc'],
           ],
           'sources!': [
             'webcursor_mac.mm',
@@ -431,6 +430,11 @@
           'link_settings': {
             'libraries': [ '-lXcursor', ],
           },
+        }],
+        ['use_aura==1 and OS=="win"', {
+          'sources/': [
+            ['exclude', '^\\.\\./plugins/npapi/webplugin_delegate_impl_aura'],
+          ],
         }],
         ['OS!="mac"', {
           'sources/': [['exclude', '_mac\\.(cc|mm)$']],

@@ -73,7 +73,9 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   virtual void WasHidden() = 0;
 
   // Moves all plugin windows as described in the given list.
+  // |scroll_offset| is the scroll offset of the render view.
   virtual void MovePluginWindows(
+      const gfx::Point& scroll_offset,
       const std::vector<webkit::npapi::WebPluginGeometry>& moves) = 0;
 
   // Take focus from the associated View component.

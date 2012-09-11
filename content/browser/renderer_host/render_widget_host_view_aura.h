@@ -77,6 +77,7 @@ class RenderWidgetHostViewAura
   virtual void WasShown() OVERRIDE;
   virtual void WasHidden() OVERRIDE;
   virtual void MovePluginWindows(
+      const gfx::Point& scroll_offset,
       const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE;
   virtual void Focus() OVERRIDE;
   virtual void Blur() OVERRIDE;

@@ -170,6 +170,7 @@ class RenderWidgetHostViewWin
   virtual void WasShown() OVERRIDE;
   virtual void WasHidden() OVERRIDE;
   virtual void MovePluginWindows(
+      const gfx::Point& scroll_offset,
       const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE;
   virtual void Focus() OVERRIDE;
   virtual void Blur() OVERRIDE;
@@ -379,9 +380,6 @@ class RenderWidgetHostViewWin
   // will be tiled such that it lines up with existing tiles starting from the
   // origin of |dc|.
   void DrawBackground(const RECT& rect, CPaintDC* dc);
-
-  // Create an intermediate window between the given HWND and its parent.
-  HWND ReparentWindow(HWND window);
 
   // Clean up the compositor window, if needed.
   void CleanupCompositorWindow();
