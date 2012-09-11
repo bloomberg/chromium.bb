@@ -1916,10 +1916,16 @@ binutils-make() {
 
   ts-touch-open "${objdir}"
 
-  RunWithLog binutils.make \
-    env -i PATH="/usr/bin:/bin" \
-    ac_cv_search_zlibVersion=no \
-    make ${MAKE_OPTS}
+  if ${BUILD_PLATFORM_LINUX}; then
+    RunWithLog binutils.make \
+      env -i PATH="/usr/bin:/bin" \
+      ac_cv_search_zlibVersion=no \
+      make ${MAKE_OPTS}
+  else
+    RunWithLog binutils.make \
+      env -i PATH="/usr/bin:/bin" \
+      make ${MAKE_OPTS}
+  fi
 
   ts-touch-commit "${objdir}"
 
