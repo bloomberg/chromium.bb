@@ -8,6 +8,7 @@
 #include <set>
 
 #include "ash/ash_export.h"
+#include "ash/display/display_controller.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -30,7 +31,8 @@ class WindowResizer;
 
 class ASH_EXPORT ToplevelWindowEventHandler
     : public ui::EventHandler,
-      public aura::client::WindowMoveClient {
+      public aura::client::WindowMoveClient,
+      public DisplayController::Observer {
  public:
   explicit ToplevelWindowEventHandler(aura::Window* owner);
   virtual ~ToplevelWindowEventHandler();
@@ -43,9 +45,13 @@ class ASH_EXPORT ToplevelWindowEventHandler
   virtual ui::EventResult OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // Overridden form aura::client::WindowMoveClient:
-  virtual void RunMoveLoop(aura::Window* source,
-                           const gfx::Point& drag_offset) OVERRIDE;
+  virtual aura::client::WindowMoveResult RunMoveLoop(
+      aura::Window* source,
+      const gfx::Point& drag_offset) OVERRIDE;
   virtual void EndMoveLoop() OVERRIDE;
+
+  // Overridden form ash::DisplayController::Observer:
+  virtual void OnDisplayConfigurationChanging() OVERRIDE;
 
  protected:
   // Creates a new WindowResizer.
@@ -85,6 +91,10 @@ class ASH_EXPORT ToplevelWindowEventHandler
 
   // Are we running a nested message loop from RunMoveLoop().
   bool in_move_loop_;
+
+  // Was the move operation cancelled? Used only when the nested loop
+  // is used to move a window.
+  bool move_cancelled_;
 
   // Is a gesture-resize in progress?
   bool in_gesture_resize_;

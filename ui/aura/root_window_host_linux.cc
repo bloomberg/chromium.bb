@@ -1168,6 +1168,10 @@ void RootWindowHostLinux::OnDeviceScaleFactorChanged(
   image_cursors_->Reload(device_scale_factor);
 }
 
+void RootWindowHostLinux::PrepareForShutdown() {
+  base::MessagePumpAuraX11::Current()->RemoveDispatcherForWindow(xwindow_);
+}
+
 bool RootWindowHostLinux::IsWindowManagerPresent() {
   // Per ICCCM 2.8, "Manager Selections", window managers should take ownership
   // of WM_Sn selections (where n is a screen number).

@@ -11,6 +11,8 @@
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
+#include "base/observer_list.h"
 #include "ui/aura/display_observer.h"
 #include "ui/aura/display_manager.h"
 
@@ -61,6 +63,16 @@ struct ASH_EXPORT DisplayLayout {
 // display, keeping them in sync with display configuration changes.
 class ASH_EXPORT DisplayController : public aura::DisplayObserver {
  public:
+  class ASH_EXPORT Observer {
+   public:
+    // Invoked when the display configuration change is requested,
+    // but before the change is applied to aura/ash.
+    virtual void OnDisplayConfigurationChanging() = 0;
+
+   protected:
+    virtual ~Observer() {}
+  };
+
   DisplayController();
   virtual ~DisplayController();
 
@@ -69,6 +81,10 @@ class ASH_EXPORT DisplayController : public aura::DisplayObserver {
 
   // Initialize secondary displays.
   void InitSecondaryDisplays();
+
+  // Add/Remove observers.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Returns the root window for primary display.
   aura::RootWindow* GetPrimaryRootWindow();
@@ -111,6 +127,8 @@ class ASH_EXPORT DisplayController : public aura::DisplayObserver {
 
   void UpdateDisplayBoundsForLayout();
 
+  void NotifyDisplayConfigurationChanging();
+
   // The mapping from display ID to its root window.
   std::map<int64, aura::RootWindow*> root_windows_;
 
@@ -119,6 +137,8 @@ class ASH_EXPORT DisplayController : public aura::DisplayObserver {
 
   // Per-device display layout.
   std::map<std::string, DisplayLayout> secondary_layouts_;
+
+  ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayController);
 };

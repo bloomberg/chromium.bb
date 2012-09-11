@@ -147,8 +147,6 @@ const AcceleratorData kDebugAcceleratorData[] = {
   // For testing on systems where Alt-Tab is already mapped.
   { true, ui::VKEY_W, ui::EF_ALT_DOWN, CYCLE_FORWARD_MRU },
   { true, ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, CYCLE_BACKWARD_MRU },
-  { true, ui::VKEY_F4, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, DISPLAY_CYCLE },
-  { true, ui::VKEY_F4, ui::EF_SHIFT_DOWN, DISPLAY_ADD_REMOVE },
   { true, ui::VKEY_HOME, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     DISPLAY_TOGGLE_SCALE },
 #if !defined(NDEBUG)
@@ -173,8 +171,6 @@ const AcceleratorAction kReservedActions[] = {
   FOCUS_PREVIOUS_PANE,  // Control+F1
   FOCUS_NEXT_PANE,  // Control+F2
   CYCLE_DISPLAY_MODE,  // Control+F4
-  DISPLAY_ADD_REMOVE,  // Shift+F4
-  DISPLAY_CYCLE,  // Shift+Control+F4
   CYCLE_FORWARD_LINEAR,  // F5
   CYCLE_BACKWARD_LINEAR,  // Shift+F5
   TAKE_SCREENSHOT,  // Control+F5

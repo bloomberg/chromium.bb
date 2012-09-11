@@ -8,6 +8,7 @@
 
 #include "ash/desktop_background/desktop_background_widget_controller.h"
 #include "ash/display/display_controller.h"
+#include "ash/display/multi_display_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_factory.h"
 #include "ash/shell_window_ids.h"
@@ -295,6 +296,12 @@ RootWindowController::RootWindowController(aura::RootWindow* root_window)
 }
 
 RootWindowController::~RootWindowController() {
+  Shutdown();
+  root_window_.reset();
+}
+
+void RootWindowController::Shutdown() {
+  CloseChildWindows();
   if (Shell::GetActiveRootWindow() == root_window_.get()) {
     Shell::GetInstance()->set_active_root_window(
         Shell::GetPrimaryRootWindow() == root_window_.get() ?
@@ -304,7 +311,11 @@ RootWindowController::~RootWindowController() {
   event_client_.reset();
   screen_dimmer_.reset();
   workspace_controller_.reset();
-  root_window_.reset();
+  // Forget with the display ID so that display lookup
+  // ends up with invalid display.
+  root_window_->ClearProperty(kDisplayIdKey);
+  // And this root window should no longer process events.
+  root_window_->PrepareForShutdown();
 }
 
 aura::Window* RootWindowController::GetContainer(int container_id) {

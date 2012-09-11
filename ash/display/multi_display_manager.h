@@ -38,7 +38,6 @@ class ASH_EXPORT MultiDisplayManager : public aura::DisplayManager,
 
   // Used to emulate display change when run in a desktop environment instead
   // of on a device.
-  static void AddRemoveDisplay();
   static void CycleDisplay();
   static void ToggleDisplayScale();
 
@@ -81,7 +80,6 @@ class ASH_EXPORT MultiDisplayManager : public aura::DisplayManager,
   typedef std::vector<gfx::Display> Displays;
 
   void Init();
-  void AddRemoveDisplayImpl();
   void CycleDisplayImpl();
   void ScaleDisplayImpl();
   gfx::Display& FindDisplayForRootWindow(const aura::RootWindow* root);

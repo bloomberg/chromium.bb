@@ -180,6 +180,14 @@ void DisplayController::InitSecondaryDisplays() {
   UpdateDisplayBoundsForLayout();
 }
 
+void DisplayController::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void DisplayController::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 aura::RootWindow* DisplayController::GetPrimaryRootWindow() {
   DCHECK(!root_windows_.empty());
   aura::DisplayManager* display_manager =
@@ -233,14 +241,23 @@ DisplayController::GetAllRootWindowControllers() {
 }
 
 void DisplayController::SetDefaultDisplayLayout(const DisplayLayout& layout) {
-  default_display_layout_ = layout;
-  UpdateDisplayBoundsForLayout();
+  if (default_display_layout_.position != layout.position ||
+      default_display_layout_.offset != layout.offset) {
+    default_display_layout_ = layout;
+    NotifyDisplayConfigurationChanging();
+    UpdateDisplayBoundsForLayout();
+  }
 }
 
 void DisplayController::SetLayoutForDisplayName(const std::string& name,
                                                 const DisplayLayout& layout) {
-  secondary_layouts_[name] = layout;
-  UpdateDisplayBoundsForLayout();
+  DisplayLayout& display_for_name = secondary_layouts_[name];
+  if (display_for_name.position != layout.position ||
+      display_for_name.offset != layout.offset) {
+    secondary_layouts_[name] = layout;
+    NotifyDisplayConfigurationChanging();
+    UpdateDisplayBoundsForLayout();
+  }
 }
 
 const DisplayLayout& DisplayController::GetLayoutForDisplayName(
@@ -254,12 +271,14 @@ const DisplayLayout& DisplayController::GetLayoutForDisplayName(
 }
 
 void DisplayController::OnDisplayBoundsChanged(const gfx::Display& display) {
+  NotifyDisplayConfigurationChanging();
   root_windows_[display.id()]->SetHostBounds(display.bounds_in_pixel());
   UpdateDisplayBoundsForLayout();
 }
 
 void DisplayController::OnDisplayAdded(const gfx::Display& display) {
   DCHECK(!root_windows_.empty());
+  NotifyDisplayConfigurationChanging();
   aura::RootWindow* root = AddRootWindowForDisplay(display);
   Shell::GetInstance()->InitRootWindowForSecondaryDisplay(root);
   UpdateDisplayBoundsForLayout();
@@ -270,18 +289,19 @@ void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
   DCHECK(root);
   // Primary display should never be removed by DisplayManager.
   DCHECK(root != GetPrimaryRootWindow());
+  NotifyDisplayConfigurationChanging();
   // Display for root window will be deleted when the Primary RootWindow
   // is deleted by the Shell.
   if (root != GetPrimaryRootWindow()) {
     root_windows_.erase(display.id());
     internal::RootWindowController* controller =
         GetRootWindowController(root);
-    if (controller) {
-      controller->MoveWindowsTo(GetPrimaryRootWindow());
-      delete controller;
-    } else {
-      delete root;
-    }
+    DCHECK(controller);
+    controller->MoveWindowsTo(GetPrimaryRootWindow());
+    // Delete most of root window related objects, but don't delete
+    // root window itself yet because the stak may be using it.
+    controller->Shutdown();
+    MessageLoop::current()->DeleteSoon(FROM_HERE, controller);
   }
 }
 
@@ -355,6 +375,10 @@ void DisplayController::UpdateDisplayBoundsForLayout() {
   secondary_display->set_bounds(
       gfx::Rect(new_secondary_origin, secondary_bounds.size()));
   secondary_display->UpdateWorkAreaFromInsets(insets);
+}
+
+void DisplayController::NotifyDisplayConfigurationChanging() {
+  FOR_EACH_OBSERVER(Observer, observers_, OnDisplayConfigurationChanging());
 }
 
 }  // namespace ash

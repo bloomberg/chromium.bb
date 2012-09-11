@@ -44,6 +44,7 @@ class RootWindowHostWin : public RootWindowHost, public ui::WindowImpl {
       std::vector<unsigned char>* png_representation) OVERRIDE;
   virtual void PostNativeEvent(const base::NativeEvent& native_event) OVERRIDE;
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
+  virtual void PrepareForShutdown() OVERRIDE;
 
  private:
   BEGIN_MSG_MAP_EX(RootWindowHostWin)

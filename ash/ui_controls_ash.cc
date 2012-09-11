@@ -7,6 +7,7 @@
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/window_properties.h"
 #include "ui/aura/client/capture_client.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/ui_controls_aura.h"
 #include "ui/gfx/screen.h"
@@ -32,18 +33,25 @@ ui_controls::UIControlsAura* GetUIControlsForRootWindow(
 }
 
 // Returns the UIControls object for the RootWindow at the |point| in
-// absolute screen coordinates.  NULL if there is no RootWindow under the
-// |point|.
-ui_controls::UIControlsAura* GetUIControlsAt(const gfx::Point& point) {
+// virtual screen coordinates, and updates the |point| relative to the
+// UIControlsAura's root window.  NULL if there is no RootWindow under
+// the |point|.
+ui_controls::UIControlsAura* GetUIControlsAt(gfx::Point* point) {
   // If there is a capture events must be relative to it.
   aura::client::CaptureClient* capture_client =
       GetCaptureClient(ash::Shell::GetInstance()->GetPrimaryRootWindow());
-  if (capture_client && capture_client->GetCaptureWindow()) {
-    return GetUIControlsForRootWindow(
-        capture_client->GetCaptureWindow()->GetRootWindow());
-  }
-  aura::RootWindow* root = wm::GetRootWindowAt(point);
-  return root ? GetUIControlsForRootWindow(root) : NULL;
+  aura::RootWindow* root = NULL;
+  if (capture_client && capture_client->GetCaptureWindow())
+    root = capture_client->GetCaptureWindow()->GetRootWindow();
+  else
+    root = wm::GetRootWindowAt(*point);
+
+  aura::client::ScreenPositionClient* screen_position_client =
+      aura::client::GetScreenPositionClient(root);
+  if (screen_position_client)
+    screen_position_client->ConvertPointFromScreen(root, point);
+
+  return GetUIControlsForRootWindow(root);
 }
 
 }  // namespace
@@ -82,25 +90,25 @@ class UIControlsAsh : public ui_controls::UIControlsAura {
   }
 
   virtual bool SendMouseMove(long x, long y) OVERRIDE {
-    ui_controls::UIControlsAura* ui_controls =
-        GetUIControlsAt(gfx::Point(x, y));
-    return ui_controls && ui_controls->SendMouseMove(x, y);
+    gfx::Point p(x, y);
+    ui_controls::UIControlsAura* ui_controls = GetUIControlsAt(&p);
+    return ui_controls && ui_controls->SendMouseMove(p.x(), p.y());
   }
 
   virtual bool SendMouseMoveNotifyWhenDone(
       long x,
       long y,
       const base::Closure& closure) OVERRIDE {
-    ui_controls::UIControlsAura* ui_controls =
-        GetUIControlsAt(gfx::Point(x, y));
+    gfx::Point p(x, y);
+    ui_controls::UIControlsAura* ui_controls = GetUIControlsAt(&p);
     return ui_controls &&
-        ui_controls->SendMouseMoveNotifyWhenDone(x, y, closure);
+        ui_controls->SendMouseMoveNotifyWhenDone(p.x(), p.y(), closure);
   }
 
   virtual bool SendMouseEvents(ui_controls::MouseButton type,
                                int state) OVERRIDE {
-    ui_controls::UIControlsAura* ui_controls =
-        GetUIControlsAt(gfx::Screen::GetCursorScreenPoint());
+    gfx::Point p(gfx::Screen::GetCursorScreenPoint());
+    ui_controls::UIControlsAura* ui_controls = GetUIControlsAt(&p);
     return ui_controls && ui_controls->SendMouseEvents(type, state);
   }
 
@@ -108,15 +116,15 @@ class UIControlsAsh : public ui_controls::UIControlsAura {
       ui_controls::MouseButton type,
       int state,
       const base::Closure& closure) OVERRIDE {
-    ui_controls::UIControlsAura* ui_controls =
-        GetUIControlsAt(gfx::Screen::GetCursorScreenPoint());
+    gfx::Point p(gfx::Screen::GetCursorScreenPoint());
+    ui_controls::UIControlsAura* ui_controls = GetUIControlsAt(&p);
     return ui_controls && ui_controls->SendMouseEventsNotifyWhenDone(
         type, state, closure);
   }
 
   virtual bool SendMouseClick(ui_controls::MouseButton type) OVERRIDE {
-    ui_controls::UIControlsAura* ui_controls =
-        GetUIControlsAt(gfx::Screen::GetCursorScreenPoint());
+    gfx::Point p(gfx::Screen::GetCursorScreenPoint());
+    ui_controls::UIControlsAura* ui_controls = GetUIControlsAt(&p);
     return ui_controls && ui_controls->SendMouseClick(type);
   }
 

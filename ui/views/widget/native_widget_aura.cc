@@ -676,9 +676,10 @@ Widget::MoveLoopResult NativeWidgetAura::RunMoveLoop(
   if (window_->parent() &&
       aura::client::GetWindowMoveClient(window_->parent())) {
     SetCapture();
-    aura::client::GetWindowMoveClient(window_->parent())->RunMoveLoop(
-        window_, drag_offset);
-    return Widget::MOVE_LOOP_SUCCESSFUL;
+    if (aura::client::GetWindowMoveClient(window_->parent())->RunMoveLoop(
+            window_, drag_offset) == aura::client::MOVE_SUCCESSFUL) {
+      return Widget::MOVE_LOOP_SUCCESSFUL;
+    }
   }
   return Widget::MOVE_LOOP_CANCELED;
 }

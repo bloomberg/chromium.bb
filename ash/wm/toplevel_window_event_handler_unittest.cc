@@ -475,7 +475,7 @@ TEST_F(ToplevelWindowEventHandlerTest, MAYBE_EscapeReverts) {
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                        target.get());
   generator.PressLeftButton();
-  generator.MoveMouseTo(generator.current_location().Add(gfx::Point(10, 11)));
+  generator.MoveMouseBy(10, 11);
 
   // Execute any scheduled draws so that pending mouse events are processed.
   RunAllPendingInMessageLoop();

@@ -304,6 +304,10 @@ void RootWindowHostWin::OnDeviceScaleFactorChanged(
   NOTIMPLEMENTED();
 }
 
+void RootWindowHostWin::PrepareForShutdown() {
+  NOTIMPLEMENTED();
+}
+
 void RootWindowHostWin::OnClose() {
   // TODO: this obviously shouldn't be here.
   MessageLoopForUI::current()->Quit();
