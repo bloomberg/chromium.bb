@@ -354,7 +354,8 @@ class NinjaWriter:
       self.ninja.newline()
     return targets[0]
 
-  def WriteSpec(self, spec, config_name, generator_flags):
+  def WriteSpec(self, spec, config_name, generator_flags,
+      case_sensitive_filesystem):
     """The main entry point for NinjaWriter: write the build rules for a spec.
 
     Returns a Target object, which represents the output paths for this spec.
@@ -428,7 +429,8 @@ class NinjaWriter:
             self.xcode_settings, self.GypPathToNinja,
             lambda path, lang: self.GypPathToUniqueOutput(path + '-' + lang))
       link_deps = self.WriteSources(
-          config_name, config, sources, compile_depends_stamp, pch)
+          config_name, config, sources, compile_depends_stamp, pch,
+          case_sensitive_filesystem)
       # Some actions/rules output 'sources' that are already object files.
       link_deps += [self.GypPathToNinja(f)
           for f in sources if f.endswith(self.obj_ext)]
@@ -705,7 +707,7 @@ class NinjaWriter:
     bundle_depends.append(out)
 
   def WriteSources(self, config_name, config, sources, predepends,
-                   precompiled_header):
+                   precompiled_header, case_sensitive_filesystem):
     """Write build rules to compile all of |sources|."""
     if self.toolset == 'host':
       self.ninja.variable('ar', '$ar_host')
@@ -798,6 +800,12 @@ class NinjaWriter:
         continue
       input = self.GypPathToNinja(source)
       output = self.GypPathToUniqueOutput(filename + obj_ext)
+      # Ninja's depfile handling gets confused when the case of a filename
+      # changes on a case-insensitive file system. To work around that, always
+      # convert .o filenames to lowercase on such file systems. See
+      # https://github.com/martine/ninja/issues/402 for details.
+      if not case_sensitive_filesystem:
+        output = output.lower()
       implicit = precompiled_header.GetObjDependencies([input], [output])
       self.ninja.build(output, command, input,
                        implicit=[gch for _, _, gch in implicit],
@@ -1296,6 +1304,8 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   master_ninja = ninja_syntax.Writer(
       OpenOutput(os.path.join(toplevel_build, 'build.ninja')),
       width=120)
+  case_sensitive_filesystem = not os.path.exists(
+      os.path.join(toplevel_build, 'BUILD.NINJA'))
 
   # Put build-time support tools in out/{config_name}.
   gyp.common.CopyTool(flavor, toplevel_build)
@@ -1682,7 +1692,8 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
                          flavor, abs_build_dir=abs_build_dir)
     master_ninja.subninja(output_file)
 
-    target = writer.WriteSpec(spec, config_name, generator_flags)
+    target = writer.WriteSpec(
+        spec, config_name, generator_flags, case_sensitive_filesystem)
     if target:
       if name != target.FinalOutput() and spec['toolset'] == 'target':
         target_short_names.setdefault(name, []).append(target)
