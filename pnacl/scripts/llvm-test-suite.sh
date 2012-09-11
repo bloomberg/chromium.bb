@@ -51,7 +51,13 @@ testsuite-prereq() {
     echo "Please specify arch"
     exit 1
   fi
-  ./scons platform=$1 irt_core sel_ldr -j${PNACL_CONCURRENCY}
+  # The toolchain used may not be the one downloaded, but one that is freshly
+  # built into a different directory, due to 32 vs 64 host bitness and
+  # pathname choices.
+  # So we use pnaclsdk_mode=custom:<path>.
+  ./scons \
+    pnaclsdk_mode="custom:toolchain/${PNACL_TOOLCHAIN_LABEL}" \
+    platform=$1 irt_core sel_ldr -j${PNACL_CONCURRENCY}
 }
 
 testsuite-run() {

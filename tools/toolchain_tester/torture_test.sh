@@ -24,6 +24,7 @@ readonly TEST_TARBALL_URL=${TEST_TARBALL_URL:-http://commondatastorage.googleapi
 
 readonly TEST_PATH_C=${TEST_ROOT}/gcc-4.6.1/gcc/testsuite/gcc.c-torture/execute
 readonly TEST_PATH_CPP=${TEST_ROOT}/gcc-4.6.1/gcc/testsuite/g++.dg
+
 ######################################################################
 ######################################################################
 #
@@ -94,7 +95,20 @@ prereq() {
   # NOTE: we force the building of scons-out/nacl-*/lib/crtX.o
   #       implicitly via run_intrinsics_test
   # this is only required for naclgcc_newlib tests
-  ./scons platform=${arch} irt_core sel_ldr run_intrinsics_test
+
+  local custom_tc=""
+  if [[ ${arch} == "arm" ]]; then
+    # For ARM+PNaCl, the toolchain used may not be the one downloaded,
+    # but one that is freshly built into a different directory,
+    # due to 32 vs 64 host bitness and pathname choices.
+    # For other PNaCl cases, we rely on nacl-gcc to build irt_core anyway.
+    if [[ ${PNACL_TOOLCHAIN_LABEL} == "" ]]; then
+      echo 'Must set env var PNACL_TOOLCHAIN_LABEL to locate pnacl tc!'
+    fi
+    custom_tc="pnaclsdk_mode=custom:toolchain/${PNACL_TOOLCHAIN_LABEL}"
+  fi
+  ./scons ${custom_tc} platform=${arch} irt_core sel_ldr run_intrinsics_test \
+    -j4
 }
 
 #@
