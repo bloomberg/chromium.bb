@@ -666,7 +666,11 @@ void LocationBarView::Layout() {
       -1 : kBubbleHorizontalPadding;
 
   // Start by reserving the padding at the right edge.
-  int entry_width = width() - kEdgeThickness - GetEdgeItemPadding();
+  int entry_width = width() - kEdgeThickness;
+  // No need for edge item padding with action box as it fills
+  // all the area on the right.
+  if (!action_box_button_view_)
+    entry_width -= GetEdgeItemPadding();
 
   // |location_icon_view_| is visible except when |ev_bubble_view_| or
   // |selected_keyword_view_| are visible.
@@ -693,14 +697,11 @@ void LocationBarView::Layout() {
                     location_icon_width + kItemEditPadding);
   }
 
+  int action_box_button_width = location_height;
+  if (action_box_button_view_)
+    entry_width -= action_box_button_width + GetItemPadding();
   if (star_view_ && star_view_->visible())
     entry_width -= star_view_->GetPreferredSize().width() + GetItemPadding();
-  int action_box_button_width = location_height;
-  if (action_box_button_view_) {
-    // No need to discount for edge thickness with action box button,
-    // because it fills all the area on a right, including curved edge.
-    entry_width -= action_box_button_width + GetItemPadding() - kEdgeThickness;
-  }
   for (PageActionViews::const_iterator i(page_action_views_.begin());
        i != page_action_views_.end(); ++i) {
     if ((*i)->visible())
