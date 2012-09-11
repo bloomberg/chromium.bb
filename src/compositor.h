@@ -276,7 +276,6 @@ struct weston_renderer {
 };
 
 struct weston_compositor {
-	struct wl_shm *shm;
 	struct wl_signal destroy_signal;
 
 	EGLDisplay egl_display;
