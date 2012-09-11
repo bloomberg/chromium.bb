@@ -167,9 +167,22 @@ def SyncFlavor(flavor, url, dst, hash, min_time, keep=False, force=False,
   if hash is None:
     hash = download_utils.HashFile(filepath)
 
+  prefix = 'tmp_unpacked_toolchain_'
+  suffix = '.tmp'
+
+  # Attempt to cleanup.
+  if os.path.exists(toolchain_dir):
+    for path in os.listdir(toolchain_dir):
+      if path.startswith(prefix) and path.endswith(suffix):
+        full_path = os.path.join(toolchain_dir, path)
+        try:
+          print 'Cleaning up %s...' % full_path
+          download_utils.RemoveDir(full_path)
+        except Exception, e:
+          print 'Failed cleanup with: ' + str(e)
+
   untar_dir = tempfile.mkdtemp(
-      suffix='.tmp', prefix='tmp_unpacked_toolchain_',
-      dir=toolchain_dir)
+      suffix=suffix, prefix=prefix, dir=toolchain_dir)
   try:
     tar = cygtar.CygTar(filepath, 'r:*', verbose=verbose)
     curdir = os.getcwd()
