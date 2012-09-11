@@ -710,6 +710,19 @@ void Directory::set_store_birthday(const string& store_birthday) {
   kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
 }
 
+string Directory::bag_of_chips() const {
+  ScopedKernelLock lock(this);
+  return kernel_->persisted_info.bag_of_chips;
+}
+
+void Directory::set_bag_of_chips(const string& bag_of_chips) {
+  ScopedKernelLock lock(this);
+  if (kernel_->persisted_info.bag_of_chips == bag_of_chips)
+    return;
+  kernel_->persisted_info.bag_of_chips = bag_of_chips;
+  kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
+}
+
 std::string Directory::GetNotificationState() const {
   ScopedKernelLock lock(this);
   std::string notification_state = kernel_->persisted_info.notification_state;

@@ -163,6 +163,12 @@ void SyncerProtoUtil::AddRequestBirthday(syncable::Directory* dir,
 }
 
 // static
+void SyncerProtoUtil::AddBagOfChips(syncable::Directory* dir,
+                                    ClientToServerMessage* msg) {
+  msg->mutable_bag_of_chips()->ParseFromString(dir->bag_of_chips());
+}
+
+// static
 void SyncerProtoUtil::SetProtocolVersion(ClientToServerMessage* msg) {
   const int current_version =
       ClientToServerMessage::default_instance().protocol_version();
@@ -349,6 +355,8 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
   DCHECK(!msg.get_updates().has_requested_types());  // Deprecated.
   DCHECK(msg.has_store_birthday() || IsVeryFirstGetUpdates(msg))
       << "Must call AddRequestBirthday to set birthday.";
+  DCHECK(msg.has_bag_of_chips())
+      << "Must call AddBagOfChips to set bag_of_chips.";
 
   syncable::Directory* dir = session->context()->directory();
 
@@ -370,6 +378,9 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
   LogClientToServerResponse(*response);
   session->context()->traffic_recorder()->RecordClientToServerResponse(
       *response);
+
+  // Persist a bag of chips if it has been sent by the server.
+  PersistBagOfChips(dir, *response);
 
   SyncProtocolError sync_protocol_error;
 
@@ -507,6 +518,16 @@ const std::string& SyncerProtoUtil::NameFromCommitEntryResponse(
   if (entry.has_non_unique_name())
     return entry.non_unique_name();
   return entry.name();
+}
+
+// static
+void SyncerProtoUtil::PersistBagOfChips(syncable::Directory* dir,
+    const sync_pb::ClientToServerResponse& response) {
+  if (!response.has_new_bag_of_chips())
+    return;
+  std::string bag_of_chips;
+  if (response.new_bag_of_chips().SerializeToString(&bag_of_chips))
+    dir->set_bag_of_chips(bag_of_chips);
 }
 
 std::string SyncerProtoUtil::SyncEntityDebugString(

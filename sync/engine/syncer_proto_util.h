@@ -74,6 +74,11 @@ class SyncerProtoUtil {
   static const std::string& NameFromCommitEntryResponse(
       const sync_pb::CommitResponse_EntryResponse& entry);
 
+  // Persist the bag of chips if it is present in the response.
+  static void PersistBagOfChips(
+      syncable::Directory* dir,
+      const sync_pb::ClientToServerResponse& response);
+
   // EntitySpecifics is used as a filter for the GetUpdates message to tell
   // the server which datatypes to send back.  This adds a datatype so that
   // it's included in the filter.
@@ -91,6 +96,11 @@ class SyncerProtoUtil {
   // Pull the birthday from the dir and put it into the msg.
   static void AddRequestBirthday(syncable::Directory* dir,
                                  sync_pb::ClientToServerMessage* msg);
+
+  // Pull the bag of chips from the dir and put it into the msg.
+  static void AddBagOfChips(syncable::Directory* dir,
+                            sync_pb::ClientToServerMessage* msg);
+
 
   // Set the protocol version field in the outgoing message.
   static void SetProtocolVersion(sync_pb::ClientToServerMessage* msg);

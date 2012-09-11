@@ -170,6 +170,10 @@ class Directory {
     int64 next_id;
     // The persisted notification state.
     std::string notification_state;
+    // The serialized bag of chips we were given by the server. Contents are
+    // opaque to the client. This is the serialization of a message of type
+    // ChipBag defined in sync.proto. It can contains NULL characters.
+    std::string bag_of_chips;
   };
 
   // What the Directory needs on initialization to create itself and its Kernel.
@@ -259,6 +263,11 @@ class Directory {
   // later.
   std::string store_birthday() const;
   void set_store_birthday(const std::string& store_birthday);
+
+  // (Account) Bag of chip is an opaque state used by the server to track the
+  // client.
+  std::string bag_of_chips() const;
+  void set_bag_of_chips(const std::string& bag_of_chips);
 
   std::string GetNotificationState() const;
   void SetNotificationState(const std::string& notification_state);

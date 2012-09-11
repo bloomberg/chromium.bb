@@ -111,6 +111,7 @@ SyncerError DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
 
   SyncerProtoUtil::SetProtocolVersion(&client_to_server_message);
   SyncerProtoUtil::AddRequestBirthday(dir, &client_to_server_message);
+  SyncerProtoUtil::AddBagOfChips(dir, &client_to_server_message);
 
   DebugInfo* debug_info = client_to_server_message.mutable_debug_info();
 

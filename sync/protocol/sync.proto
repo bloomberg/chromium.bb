@@ -463,6 +463,10 @@ message AuthenticateMessage {
   required string auth_token = 1;
 };
 
+// Opaque data used by the server to track the client with.
+message ChipBag {
+};
+
 message ClientToServerMessage {
   required string share = 1;
   optional int32 protocol_version = 2 [default = 31];
@@ -491,6 +495,10 @@ message ClientToServerMessage {
   // This is only sent on the first getupdates of every sync cycle,
   // as an optimization to save bandwidth.
   optional DebugInfo debug_info = 10;
+
+  // Per-client state for use by the server. Sent with every message sent to the
+  // server.
+  optional ChipBag bag_of_chips = 11;
 };
 
 message CommitResponse {
@@ -678,5 +686,9 @@ message ClientToServerResponse {
     repeated int32 error_data_type_ids = 5;
   }
   optional Error error = 13;
+
+  // The new per-client state for this client. If set, should be persisted and
+  // sent with any subsequent ClientToServerMessages.
+  optional ChipBag new_bag_of_chips = 14;
 };
 

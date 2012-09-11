@@ -114,6 +114,8 @@ SyncerError BuildCommitCommand::ExecuteImpl(SyncSession* session) {
   SyncerProtoUtil::SetProtocolVersion(commit_message_);
   SyncerProtoUtil::AddRequestBirthday(
       session->write_transaction()->directory(), commit_message_);
+  SyncerProtoUtil::AddBagOfChips(
+      session->write_transaction()->directory(), commit_message_);
 
   // Cache previously computed position values.  Because |commit_ids|
   // is already in sibling order, we should always hit this map after

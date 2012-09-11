@@ -39,7 +39,7 @@ static const string::size_type kUpdateStatementBufferSize = 2048;
 
 // Increment this version whenever updating DB tables.
 extern const int32 kCurrentDBVersion;  // Global visibility for our unittest.
-const int32 kCurrentDBVersion = 79;
+const int32 kCurrentDBVersion = 80;
 
 // Iterate over the fields of |entry| and bind each to |statement| for
 // updating.  Returns the number of args bound.
@@ -201,11 +201,13 @@ bool DirectoryBackingStore::SaveChanges(
             "UPDATE share_info "
             "SET store_birthday = ?, "
             "next_id = ?, "
-            "notification_state = ?"));
+            "notification_state = ?, "
+            "bag_of_chips = ?"));
     s1.BindString(0, info.store_birthday);
     s1.BindInt64(1, info.next_id);
     s1.BindBlob(2, info.notification_state.data(),
                    info.notification_state.size());
+    s1.BindBlob(3, info.bag_of_chips.data(), info.bag_of_chips.size());
 
     if (!s1.Run())
       return false;
@@ -315,6 +317,12 @@ bool DirectoryBackingStore::InitializeTables() {
       version_on_disk = 79;
   }
 
+  // Version 80 migration is adding the bag_of_chips column.
+  if (version_on_disk == 79) {
+    if (MigrateVersion79To80())
+      version_on_disk = 80;
+  }
+
   // If one of the migrations requested it, drop columns that aren't current.
   // It's only safe to do this after migrating all the way to the current
   // version.
@@ -395,9 +403,10 @@ bool DirectoryBackingStore::RefreshColumns() {
   if (!db_->Execute(
           "INSERT INTO temp_share_info (id, name, store_birthday, "
           "db_create_version, db_create_time, next_id, cache_guid,"
-          "notification_state) "
+          "notification_state, bag_of_chips) "
           "SELECT id, name, store_birthday, db_create_version, "
-          "db_create_time, next_id, cache_guid, notification_state "
+          "db_create_time, next_id, cache_guid, notification_state, "
+          "bag_of_chips "
           "FROM share_info"))
     return false;
 
@@ -429,7 +438,8 @@ bool DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
   {
     sql::Statement s(
         db_->GetUniqueStatement(
-            "SELECT store_birthday, next_id, cache_guid, notification_state "
+            "SELECT store_birthday, next_id, cache_guid, notification_state, "
+            "bag_of_chips "
             "FROM share_info"));
     if (!s.Step())
       return false;
@@ -438,6 +448,7 @@ bool DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
     info->kernel_info.next_id = s.ColumnInt64(1);
     info->cache_guid = s.ColumnString(2);
     s.ColumnBlobAsString(3, &(info->kernel_info.notification_state));
+    s.ColumnBlobAsString(4, &(info->kernel_info.bag_of_chips));
 
     // Verify there was only one row returned.
     DCHECK(!s.Step());
@@ -957,6 +968,19 @@ bool DirectoryBackingStore::MigrateVersion78To79() {
   SetVersion(79);
   return true;
 }
+bool DirectoryBackingStore::MigrateVersion79To80() {
+  if (!db_->Execute(
+          "ALTER TABLE share_info ADD COLUMN bag_of_chips BLOB"))
+    return false;
+  sql::Statement update(db_->GetUniqueStatement(
+          "UPDATE share_info SET bag_of_chips = ?"));
+  // An empty message is serialized to an empty string.
+  update.BindBlob(0, NULL, 0);
+  if (!update.Run())
+    return false;
+  SetVersion(80);
+  return true;
+}
 
 bool DirectoryBackingStore::CreateTables() {
   DVLOG(1) << "First run, creating tables";
@@ -992,7 +1016,8 @@ bool DirectoryBackingStore::CreateTables() {
             "?, "   // db_create_time
             "-2, "  // next_id
             "?, "   // cache_guid
-            "?);"));  // notification_state
+            "?, "   // notification_state
+            "?);"));  // bag_of_chips
     s.BindString(0, dir_name_);                   // id
     s.BindString(1, dir_name_);                   // name
     s.BindString(2, "");                          // store_birthday
@@ -1002,7 +1027,7 @@ bool DirectoryBackingStore::CreateTables() {
     s.BindInt(4, static_cast<int32>(time(0)));    // db_create_time
     s.BindString(5, GenerateCacheGUID());         // cache_guid
     s.BindBlob(6, NULL, 0);                       // notification_state
-
+    s.BindBlob(7, NULL, 0);                       // bag_of_chips
     if (!s.Run())
       return false;
   }
@@ -1078,10 +1103,10 @@ bool DirectoryBackingStore::CreateShareInfoTable(bool is_temporary) {
       "db_create_version TEXT, "
       "db_create_time INT, "
       "next_id INT default -2, "
-      "cache_guid TEXT ");
-
-  query.append(", notification_state BLOB");
-  query.append(")");
+      "cache_guid TEXT, "
+      "notification_state BLOB, "
+      "bag_of_chips BLOB"
+      ")");
   return db_->Execute(query.c_str());
 }
 
