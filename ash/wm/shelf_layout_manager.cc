@@ -387,29 +387,35 @@ void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {
     return;
   }
 
-  gesture_drag_status_ = GESTURE_DRAG_COMPLETE_IN_PROGRESS;
   gesture_drag_auto_hide_state_ =
       gesture_drag_auto_hide_state_ == AUTO_HIDE_SHOWN ? AUTO_HIDE_HIDDEN :
                                                          AUTO_HIDE_SHOWN;
   if (launcher_widget())
     launcher_widget()->Deactivate();
   status_->Deactivate();
-  if (auto_hide_behavior_ != SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS)
+  if (gesture_drag_auto_hide_state_ == AUTO_HIDE_HIDDEN &&
+      auto_hide_behavior_ != SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS) {
+    gesture_drag_status_ = GESTURE_DRAG_NONE;
     SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-  else
+  } else if (gesture_drag_auto_hide_state_ == AUTO_HIDE_SHOWN &&
+             auto_hide_behavior_ != SHELF_AUTO_HIDE_BEHAVIOR_NEVER) {
+    gesture_drag_status_ = GESTURE_DRAG_NONE;
+    SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  } else {
+    gesture_drag_status_ = GESTURE_DRAG_COMPLETE_IN_PROGRESS;
     UpdateVisibilityState();
-  gesture_drag_status_ = GESTURE_DRAG_NONE;
+    gesture_drag_status_ = GESTURE_DRAG_NONE;
+  }
 }
 
 void ShelfLayoutManager::CancelGestureDrag() {
-  gesture_drag_status_ = GESTURE_DRAG_COMPLETE_IN_PROGRESS;
+  gesture_drag_status_ = GESTURE_DRAG_NONE;
   ui::ScopedLayerAnimationSettings
       launcher_settings(GetLayer(launcher_widget())->GetAnimator()),
       status_settings(GetLayer(status_)->GetAnimator());
   LayoutShelf();
   UpdateVisibilityState();
   UpdateShelfBackground(internal::BackgroundAnimator::CHANGE_ANIMATE);
-  gesture_drag_status_ = GESTURE_DRAG_NONE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -518,6 +524,8 @@ void ShelfLayoutManager::SetState(VisibilityState visibility_state) {
       internal::BackgroundAnimator::CHANGE_IMMEDIATE :
       internal::BackgroundAnimator::CHANGE_ANIMATE;
   StopAnimating();
+
+  State old_state = state_;
   state_ = state;
   TargetBounds target_bounds;
   CalculateTargetBounds(state_, &target_bounds);
@@ -539,13 +547,22 @@ void ShelfLayoutManager::SetState(VisibilityState visibility_state) {
   status_animation_setter.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(animate_time_ms));
   status_animation_setter.SetTweenType(ui::Tween::EASE_OUT);
+
   // Delay updating the background when going from AUTO_HIDE_SHOWN to
   // AUTO_HIDE_HIDDEN until the shelf animates out. Otherwise during the
   // animation you see the background change.
-  const bool delay_shelf_update =
-      state.visibility_state && AUTO_HIDE &&
+  // Also delay the animation when the shelf was hidden, and has just been made
+  // visible (e.g. using a gesture-drag).
+  bool delay_shelf_update =
+      state.visibility_state == AUTO_HIDE &&
       state.auto_hide_state == AUTO_HIDE_HIDDEN &&
-      state_.visibility_state == AUTO_HIDE;
+      old_state.visibility_state == AUTO_HIDE;
+
+  if (state.visibility_state == VISIBLE &&
+      old_state.visibility_state == AUTO_HIDE &&
+      old_state.auto_hide_state == AUTO_HIDE_HIDDEN)
+    delay_shelf_update = true;
+
   if (delay_shelf_update) {
     if (update_shelf_observer_)
       update_shelf_observer_->Detach();
