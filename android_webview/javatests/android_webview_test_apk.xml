@@ -11,7 +11,7 @@
   </description>
 
   <import file="../../build/android/ant/common.xml"/>
-  <import file="../../build/android/ant/sdk-targets.xml"/>
+
   <property name="target.abi" value="${APP_ABI}"/>
   <property name="out.dir" location="${PRODUCT_DIR}/android_webview_test"/>
   <property name="resource.absolute.dir" value="../res"/>
@@ -50,6 +50,7 @@
   <path id="javac.custom.classpath">
     <path refid="out.dex.jar.input.ref"/>
   </path>
+  <import file="../../build/android/ant/sdk-targets.xml"/>
   <import file="${sdk.dir}/tools/ant/build.xml" />
 
 </project>

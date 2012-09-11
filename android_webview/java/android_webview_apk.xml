@@ -9,7 +9,7 @@
     Building AndroidWebView.apk
   </description>
   <import file="../../build/android/ant/common.xml"/>
-  <import file="../../build/android/ant/sdk-targets.xml"/>
+
   <property-value name="target.abi" value="${APP_ABI}"/>
   <property-location name="out.dir" location="${PRODUCT_DIR}/android_webview"
       check-exists="false"/>
@@ -42,5 +42,6 @@
   <path id="javac.custom.classpath">
     <path refid="out.dex.jar.input.ref"/>
   </path>
+  <import file="../../build/android/ant/sdk-targets.xml"/>
   <import file="${sdk.dir}/tools/ant/build.xml"/>
 </project>
