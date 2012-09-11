@@ -35,6 +35,7 @@ cr.define('options', function() {
       detailsContainer.appendChild(bubbleContainer);
 
       self.appendChild(detailsContainer);
+      self.addEventListener('click', self.show_);
 
       // If there is a pref, track its controlledBy property in order to be able
       // to bring up the correct bubble.
@@ -47,9 +48,9 @@ cr.define('options', function() {
                 self.controlledBy = controlledBy ? controlledBy : null;
               }
             });
-      }
 
-      self.addEventListener('click', self.show_);
+        self.resetHandler(self.clearAssociatedPref_);
+      }
     },
 
 
@@ -59,6 +60,23 @@ cr.define('options', function() {
     close: function() {
       this.querySelector('details').removeAttribute('open');
       this.ownerDocument.removeEventListener('click', this.closeHandler_, true);
+    },
+
+    /**
+     * The given handler will be called when the user clicks on the 'reset to
+     * recommended value' link shown in the indicator bubble.
+     * @param {function()} handler The handler to be called.
+     */
+    set resetHandler(handler) {
+      this.resetHandler_ = handler;
+    },
+
+    /**
+     * Clears the preference associated with this indicator.
+     * @private
+     */
+    clearAssociatedPref_: function() {
+      Preferences.clearPref(this.getAttribute('pref'), this.dialogPref);
     },
 
     /**
@@ -98,8 +116,7 @@ cr.define('options', function() {
       bubbleText.className = 'controlled-setting-bubble-text';
       bubbleText.textContent = text;
 
-      var pref = self.getAttribute('pref');
-      if (self.controlledBy == 'recommended' && pref) {
+      if (self.controlledBy == 'recommended' && self.resetHandler_) {
         var container = doc.createElement('div');
         var action = doc.createElement('button');
         action.classList.add('link-button');
@@ -108,9 +125,7 @@ cr.define('options', function() {
             loadTimeData.getString('controlledSettingApplyRecommendation');
         action.addEventListener(
             'click',
-            function(e) {
-              Preferences.clearPref(pref, self.dialogPref);
-            });
+            function(event) { self.resetHandler_(); });
         container.appendChild(action);
         bubbleText.appendChild(container);
       }

@@ -36,6 +36,14 @@
   overflow-y: auto;
 }
 
+#vpn-tab td {
+  padding: 0;
+}
+
+#vpn-tab .option-value:not(input) {
+  padding: 4px;
+}
+
 #ip-config-list {
   min-height: 96px !important;
 }

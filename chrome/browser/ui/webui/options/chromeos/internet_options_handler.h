@@ -93,6 +93,7 @@ class InternetOptionsHandler
       base::DictionaryValue* dictionary,
       const std::string& carrier_id);
 
+  void SetServerHostnameCallback(const base::ListValue* args);
   void SetPreferNetworkCallback(const base::ListValue* args);
   void SetAutoConnectCallback(const base::ListValue* args);
   void SetSharedCallback(const base::ListValue* args);
@@ -133,8 +134,6 @@ class InternetOptionsHandler
                             base::DictionaryValue* dictionary);
   void PopulateCellularDetails(const chromeos::CellularNetwork* cellular,
                                base::DictionaryValue* dictionary);
-  void PopulateVPNDetails(const chromeos::VirtualNetwork* vpn,
-                          base::DictionaryValue* dictionary);
 
   // Converts CellularDataPlan structure into dictionary for JS. Formats plan
   // settings into human readable texts.
@@ -161,14 +160,6 @@ class InternetOptionsHandler
   // display the correct icon for that network's signal strength and, in the
   // case of cellular networks, network technology and roaming status.
   void MonitorNetworks();
-
-  // Stores a dictionary under |key| in |settings| that is suitable to be sent
-  // to the webui that contains the actual value of a setting and whether it's
-  // controlled by policy. Takes ownership of |value|.
-  void SetValueDictionary(DictionaryValue* settings,
-                          const char* key,
-                          base::Value* value,
-                          const chromeos::NetworkPropertyUIData& ui_data);
 
   // Convenience pointer to netwrok library (will not change).
   chromeos::NetworkLibrary* cros_;

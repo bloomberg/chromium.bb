@@ -574,6 +574,10 @@ cr.define('options.internet', function() {
                   [servicePath,
                    $('auto-connect-network-cellular').checked ? 'true' :
                        'false']);
+    } else if (data.type == Constants.TYPE_VPN) {
+      chrome.send('setServerHostname',
+                  [servicePath,
+                   $('inet-server-hostname').value]);
     }
 
     var nameServerTypes = ['automatic', 'google', 'user'];
@@ -962,9 +966,13 @@ cr.define('options.internet', function() {
       detailsPage.cellular = false;
       detailsPage.gsm = false;
       $('inet-service-name').textContent = data.service_name;
-      $('inet-server-hostname').textContent = data.server_hostname;
       $('inet-provider-type').textContent = data.provider_type;
       $('inet-username').textContent = data.username;
+      var inetServerHostname = $('inet-server-hostname');
+      inetServerHostname.value = data.serverHostname.value;
+      inetServerHostname.resetHandler = function() {
+        inetServerHostname.value = data.serverHostname.default;
+      };
     } else {
       OptionsPage.showTab($('internet-nav-tab'));
       detailsPage.ethernet = true;
@@ -985,10 +993,13 @@ cr.define('options.internet', function() {
         if (controlledBy) {
           indicators[i].controlledBy = controlledBy;
           var forElement = $(indicators[i].getAttribute('for'));
-          if (forElement)
+          if (forElement) {
             forElement.disabled = controlledBy != 'recommended';
-          if (forElement.type == 'radio' && !forElement.checked)
-            indicators[i].hidden = true;
+            if (forElement.type == 'radio' && !forElement.checked)
+              indicators[i].hidden = true;
+            if (forElement.resetHandler)
+              indicators[i].resetHandler = forElement.resetHandler;
+          }
         } else {
           indicators[i].controlledBy = null;
         }

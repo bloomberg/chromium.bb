@@ -712,6 +712,11 @@ void VirtualNetwork::SetOpenVPNCredentials(
   SetStringProperty(flimflam::kOpenVPNOTPProperty, otp, NULL);
 }
 
+void VirtualNetwork::SetServerHostname(const std::string& server_hostname) {
+  SetStringProperty(flimflam::kProviderHostProperty,
+                    server_hostname, &server_hostname_);
+}
+
 void VirtualNetwork::SetCertificateSlotAndPin(
     const std::string& slot, const std::string& pin) {
   if (provider_type() == PROVIDER_TYPE_OPEN_VPN) {

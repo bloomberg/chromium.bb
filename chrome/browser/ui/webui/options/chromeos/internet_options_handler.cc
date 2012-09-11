@@ -129,6 +129,7 @@ const char kSetApnMessage[] = "setApn";
 const char kSetAutoConnectMessage[] = "setAutoConnect";
 const char kSetIPConfigMessage[] = "setIPConfig";
 const char kSetPreferNetworkMessage[] = "setPreferNetwork";
+const char kSetServerHostname[] = "setServerHostname";
 const char kSetSimCardLockMessage[] = "setSimCardLock";
 const char kShowMorePlanInfoMessage[] = "showMorePlanInfo";
 
@@ -201,7 +202,7 @@ const char kTagRemembered[] = "remembered";
 const char kTagRememberedList[] = "rememberedList";
 const char kTagRestrictedPool[] = "restrictedPool";
 const char kTagRoamingState[] = "roamingState";
-const char kTagServer_hostname[] = "server_hostname";
+const char kTagServerHostname[] = "serverHostname";
 const char kTagService_name[] = "service_name";
 const char kTagServiceName[] = "serviceName";
 const char kTagServicePath[] = "servicePath";
@@ -484,6 +485,51 @@ static bool CanAddNetworkType(int type) {
          type == chromeos::TYPE_VPN ||
          type == chromeos::TYPE_CELLULAR;
 }
+
+// Stores a dictionary under |key| in |settings| that is suitable to be sent
+// to the webui that contains the actual value of a setting and whether it's
+// controlled by policy. Takes ownership of |value|.
+void SetValueDictionary(
+    DictionaryValue* settings,
+    const char* key,
+    base::Value* value,
+    const chromeos::NetworkPropertyUIData& ui_data) {
+  DictionaryValue* value_dict = new DictionaryValue();
+  // DictionaryValue::Set() takes ownership of |value|.
+  if (value)
+    value_dict->Set(kTagValue, value);
+  const base::Value* default_value = ui_data.default_value();
+  if (default_value)
+    value_dict->Set(kTagDefault, default_value->DeepCopy());
+  if (ui_data.managed())
+    value_dict->SetString(kTagControlledBy, kTagPolicy);
+  else if (ui_data.recommended())
+    value_dict->SetString(kTagControlledBy, kTagRecommended);
+  settings->Set(key, value_dict);
+}
+
+// Fills |dictionary| with the configuration details of |vpn|. |onc| is required
+// for augmenting the policy-managed information.
+void PopulateVPNDetails(
+    const chromeos::VirtualNetwork* vpn,
+    const base::DictionaryValue& onc,
+    DictionaryValue* dictionary) {
+  dictionary->SetString(kTagService_name, vpn->name());
+  bool remembered = (vpn->profile_type() != chromeos::PROFILE_NONE);
+  dictionary->SetBoolean(kTagRemembered, remembered);
+  dictionary->SetString(kTagProvider_type, vpn->GetProviderTypeString());
+  dictionary->SetString(kTagUsername, vpn->username());
+
+  chromeos::NetworkPropertyUIData hostname_ui_data;
+  hostname_ui_data.ParseOncProperty(
+      vpn->ui_data(), &onc,
+      base::StringPrintf("%s.%s",
+                         chromeos::onc::kVPN,
+                         chromeos::onc::vpn::kHost));
+  SetValueDictionary(dictionary, kTagServerHostname,
+                     Value::CreateStringValue(vpn->server_hostname()),
+                     hostname_ui_data);
+}
 }  // namespace
 
 namespace options {
@@ -754,6 +800,9 @@ void InternetOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(kToggleAirplaneModeMessage,
       base::Bind(&InternetOptionsHandler::ToggleAirplaneModeCallback,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(kSetServerHostname,
+      base::Bind(&InternetOptionsHandler::SetServerHostnameCallback,
+                 base::Unretained(this)));
 }
 
 void InternetOptionsHandler::EnableWifiCallback(const ListValue* args) {
@@ -1002,6 +1051,25 @@ DictionaryValue* InternetOptionsHandler::CellularDataPlanToDictionary(
   return plan_dict;
 }
 
+void InternetOptionsHandler::SetServerHostnameCallback(const ListValue* args) {
+  std::string service_path;
+  std::string server_hostname;
+
+  if (args->GetSize() < 2 ||
+      !args->GetString(0, &service_path) ||
+      !args->GetString(1, &server_hostname)) {
+    NOTREACHED();
+    return;
+  }
+
+  chromeos::VirtualNetwork* vpn = cros_->FindVirtualNetworkByPath(service_path);
+  if (!vpn)
+    return;
+
+  if (server_hostname != vpn->server_hostname())
+    vpn->SetServerHostname(server_hostname);
+}
+
 void InternetOptionsHandler::SetPreferNetworkCallback(const ListValue* args) {
   std::string service_path;
   std::string prefer_network_str;
@@ -1231,6 +1299,7 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
     dictionary.SetBoolean(kTagDeviceConnected,
                           cros_->virtual_network_connected());
     PopulateVPNDetails(static_cast<const chromeos::VirtualNetwork*>(network),
+                       *onc,
                        &dictionary);
   } else if (type == chromeos::TYPE_ETHERNET) {
     dictionary.SetBoolean(kTagDeviceConnected, cros_->ethernet_connected());
@@ -1355,17 +1424,6 @@ void InternetOptionsHandler::PopulateCellularDetails(
   SetActivationButtonVisibility(cellular,
                                 dictionary,
                                 cros_->GetCellularHomeCarrierId());
-}
-
-void InternetOptionsHandler::PopulateVPNDetails(
-    const chromeos::VirtualNetwork* vpn,
-    DictionaryValue* dictionary) {
-  dictionary->SetString(kTagService_name, vpn->name());
-  bool remembered = (vpn->profile_type() != chromeos::PROFILE_NONE);
-  dictionary->SetBoolean(kTagRemembered, remembered);
-  dictionary->SetString(kTagServer_hostname, vpn->server_hostname());
-  dictionary->SetString(kTagProvider_type, vpn->GetProviderTypeString());
-  dictionary->SetString(kTagUsername, vpn->username());
 }
 
 void InternetOptionsHandler::SetActivationButtonVisibility(
@@ -1667,25 +1725,6 @@ void InternetOptionsHandler::FillNetworkInfo(DictionaryValue* dictionary) {
   // TODO(kevers): The use of 'offline_mode' is not quite correct.  Update once
   // we have proper back-end support.
   dictionary->SetBoolean(kTagAirplaneMode, cros_->offline_mode());
-}
-
-void InternetOptionsHandler::SetValueDictionary(
-    DictionaryValue* settings,
-    const char* key,
-    base::Value* value,
-    const chromeos::NetworkPropertyUIData& ui_data) {
-  DictionaryValue* value_dict = new DictionaryValue();
-  // DictionaryValue::Set() takes ownership of |value|.
-  if (value)
-    value_dict->Set(kTagValue, value);
-  const base::Value* default_value = ui_data.default_value();
-  if (default_value)
-    value_dict->Set(kTagDefault, default_value->DeepCopy());
-  if (ui_data.managed())
-    value_dict->SetString(kTagControlledBy, kTagPolicy);
-  else if (ui_data.recommended())
-    value_dict->SetString(kTagControlledBy, kTagRecommended);
-  settings->Set(key, value_dict);
 }
 
 }  // namespace options

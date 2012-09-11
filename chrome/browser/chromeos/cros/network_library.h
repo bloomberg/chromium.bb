@@ -675,6 +675,7 @@ class VirtualNetwork : public Network {
                              const std::string& username,
                              const std::string& user_passphrase,
                              const std::string& otp);
+  void SetServerHostname(const std::string& server_hostname);
 
  private:
   // This allows NetworkParser and its subclasses access to
