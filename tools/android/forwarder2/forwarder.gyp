@@ -39,7 +39,9 @@
       'sources': [
         'command.cc',
         'device_forwarder_main.cc',
+        'device_listener.cc',
         'forwarder.cc',
+        'pipe_notifier.cc',
         'socket.cc',
         'thread.cc',
       ],
@@ -59,6 +61,7 @@
         'command.cc',
         'forwarder.cc',
         'host_forwarder_main.cc',
+        'pipe_notifier.cc',
         'socket.cc',
         'thread.cc',
       ],
