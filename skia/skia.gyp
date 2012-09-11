@@ -8,6 +8,14 @@
       'target_name': 'skia',
       'type': '<(component)',
       'variables': {
+        'conditions': [
+          ['OS== "ios"', {
+            'skia_support_gpu': 0,
+          }, {
+            'skia_support_gpu': 1,
+          }],
+        ],
+
         'optimize': 'max',
 
         # These two set the paths so we can include skia/gyp/core.gypi
@@ -18,12 +26,9 @@
       'includes': [
         '../third_party/skia/gyp/core.gypi',
         '../third_party/skia/gyp/effects.gypi',
-        '../third_party/skia/gyp/gpu.gypi',
       ],
 
       'sources': [
-        '<@(gr_sources)',
-        '<@(skgr_sources)',
         # this should likely be moved into src/utils in skia
         '../third_party/skia/src/core/SkFlate.cpp',
 
@@ -195,15 +200,12 @@
         '../third_party/skia/include/config',
         '../third_party/skia/include/core',
         '../third_party/skia/include/effects',
-        '../third_party/skia/include/gpu',
-        '../third_party/skia/include/gpu/gl',
         '../third_party/skia/include/images',
         '../third_party/skia/include/pdf',
         '../third_party/skia/include/pipe',
         '../third_party/skia/include/ports',
         '../third_party/skia/include/utils',
         '../third_party/skia/src/core',
-        '../third_party/skia/src/gpu',
         '../third_party/skia/src/image',
         '../third_party/skia/src/sfnt',
         '../third_party/skia/src/utils',
@@ -243,6 +245,24 @@
         '../third_party/skia/include/core/SkTypes.h',
       ],
       'conditions': [
+        ['skia_support_gpu != 0', {
+          'includes': [
+            '../third_party/skia/gyp/gpu.gypi',
+          ],
+          'sources': [
+            '<@(gr_sources)',
+            '<@(skgr_sources)',
+          ],
+          'include_dirs': [
+            '../third_party/skia/include/gpu',
+            '../third_party/skia/include/gpu/gl',
+            '../third_party/skia/src/gpu',
+          ],
+        }, {  # skia_support_gpu == 0
+          'defines': [
+            'SK_SUPPORT_GPU=0',
+          ],
+        }],
         ['order_profiling != 0', {
           'target_conditions' : [
             ['_toolset=="target"', {
@@ -272,7 +292,7 @@
         
         # For POSIX platforms, prefer the Mutex implementation provided by Skia
         # since it does not generate static initializers.
-        [ 'OS == "android" or OS == "linux" or OS == "mac"', {
+        [ 'OS == "android" or OS == "linux" or OS == "mac" or OS == "ios"', {
           'defines+': [
             'SK_USE_POSIX_THREADS',
           ],
@@ -413,12 +433,32 @@
           ],
         }],
         [ 'OS == "ios"', {
+          'defines': [
+            'SK_BUILD_FOR_IOS',
+            'SK_USE_MAC_CORE_TEXT',
+          ],
+          'include_dirs': [
+            '../third_party/skia/include/utils/ios',
+            '../third_party/skia/include/utils/mac',
+          ],
+          'dependencies': [
+            'skia_opts_ios',
+          ],
+          'dependencies!': [
+            'skia_opts',
+            '../third_party/sfntly/sfntly.gyp:sfntly',
+          ],
+          'sources': [
+            # This file is used on both iOS and Mac, so it should be removed
+            #  from the ios and mac conditions and moved into the main sources
+            #  list.
+            '../third_party/skia/src/utils/mac/SkStream_mac.cpp',
+          ],
           'sources/': [
-            # iOS does not require most of skia and only needs a single file.
-            # Rather than creating a separate top-level target, simply exclude
-            # all files except for the one that is needed.
-            ['exclude', '.*'],
-            ['include', '^ext/google_logging\\.cc$'],
+            ['exclude', '/pdf/'],
+            ['exclude', '^ext/vector_platform_device_skia\\.'],
+            ['exclude', 'opts_check_SSE2\\.cpp$'],
+            ['exclude', 'SkFontHost_tables\\.cpp$',],
           ],
         }],
         [ 'OS == "mac"', {
@@ -490,15 +530,12 @@
             ],
           },
         }],
-        ['OS != "ios"', {
-
-          'dependencies': [
-            'skia_opts',
-            '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-            '../third_party/sfntly/sfntly.gyp:sfntly',
-            '../third_party/zlib/zlib.gyp:zlib',
-          ],
-        }],
+      ],
+      'dependencies': [
+        'skia_opts',
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '../third_party/sfntly/sfntly.gyp:sfntly',
+        '../third_party/zlib/zlib.gyp:zlib',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -549,6 +586,16 @@
           }],
         ],
       },
+      'target_conditions': [
+        # Pull in specific Mac files for iOS (which have been filtered out
+        # by file name rules).
+        [ 'OS == "ios"', {
+          'sources/': [
+            ['include', 'SkFontHost_mac\\.cpp$',],
+            ['include', 'SkStream_mac\\.cpp$',],
+          ],
+        }],
+      ],
     },
 
     # Due to an unfortunate intersection of lameness between gcc and gyp,
@@ -755,5 +802,35 @@
         'ext/image_operations_bench.cc',
       ],
     },
+  ],
+  'conditions': [
+    ['OS=="ios"', {
+      'targets': [
+        # The main skia_opts target does not currently work on iOS because the
+        # target architecture on iOS is determined at compile time rather than
+        # gyp time (simulator builds are x86, device builds are arm).  As a
+        # temporary measure, this is a separate opts target for iOS-only, using
+        # the _none.cpp files to avoid architecture-dependent implementations.
+        {
+          'target_name': 'skia_opts_ios',
+          'type': 'static_library',
+          'include_dirs': [
+            '..',
+            'config',
+            '../third_party/skia/include/config',
+            '../third_party/skia/include/core',
+            '../third_party/skia/include/effects',
+            '../third_party/skia/include/images',
+            '../third_party/skia/include/utils',
+            '../third_party/skia/src/core',
+          ],
+          'sources': [
+            '../third_party/skia/src/opts/SkBitmapProcState_opts_none.cpp',
+            '../third_party/skia/src/opts/SkBlitRow_opts_none.cpp',
+            '../third_party/skia/src/opts/SkUtils_opts_none.cpp',
+          ],
+        },
+      ],
+    }],
   ],
 }

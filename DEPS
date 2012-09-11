@@ -456,7 +456,6 @@ deps_os = {
     "src/third_party/safe_browsing/testing": None,
     "src/third_party/scons-2.0.1": None,
     "src/third_party/sfntly/cpp/src": None,
-    "src/third_party/skia/src": None,
     "src/third_party/smhasher/src": None,
     "src/third_party/snappy/src": None,
     "src/third_party/swig/Lib": None,
