@@ -73,3 +73,24 @@ IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAuraTest, ClickClose) {
   EXPECT_EQ(1,
             static_cast<int>(browser::GetBrowserCount(browser()->profile())));
 }
+
+// Ensure that closing a maximized app with Ctrl-W does not crash the
+// application.  crbug.com/147635
+IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAuraTest, KeyboardClose) {
+  aura::RootWindow* root_window = GetRootWindow();
+  aura::test::EventGenerator eg(root_window);
+
+  // Base browser and app browser.
+  EXPECT_EQ(2u, browser::GetBrowserCount(browser()->profile()));
+
+  // Send Control-W.
+  content::WindowedNotificationObserver signal(
+      chrome::NOTIFICATION_BROWSER_CLOSED,
+      content::Source<Browser>(app_browser()));
+  eg.PressKey(ui::VKEY_W, ui::EF_CONTROL_DOWN);
+  eg.ReleaseKey(ui::VKEY_W, ui::EF_CONTROL_DOWN);
+  signal.Wait();
+
+  // App browser is closed.
+  EXPECT_EQ(1u, browser::GetBrowserCount(browser()->profile()));
+}

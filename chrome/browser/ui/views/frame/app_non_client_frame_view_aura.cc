@@ -113,10 +113,10 @@ class AppNonClientFrameViewAura::ControlView
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE {
     if (sender == close_button_) {
-      owner_->Close();
+      owner_->frame()->Close();
     } else if (sender == restore_button_) {
       restore_button_->SetState(views::CustomButton::BS_NORMAL);
-      owner_->Restore();
+      owner_->frame()->Restore();
     }
   }
 
@@ -143,14 +143,36 @@ class AppNonClientFrameViewAura::ControlView
   DISALLOW_COPY_AND_ASSIGN(ControlView);
 };
 
+// Observer to detect when the browser frame widget closes so we can clean
+// up our ControlView. Because we can be closed via a keyboard shortcut we
+// are not guaranteed to run AppNonClientFrameView's Close() or Restore().
+class AppNonClientFrameViewAura::FrameObserver : public views::WidgetObserver {
+ public:
+  explicit FrameObserver(AppNonClientFrameViewAura* owner) : owner_(owner) {}
+  virtual ~FrameObserver() {}
+
+  // views::WidgetObserver:
+  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE {
+    owner_->CloseControlWidget();
+  }
+
+ private:
+  AppNonClientFrameViewAura* owner_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameObserver);
+};
+
 AppNonClientFrameViewAura::AppNonClientFrameViewAura(
     BrowserFrame* frame, BrowserView* browser_view)
     : BrowserNonClientFrameView(frame, browser_view),
       control_view_(new ControlView(this)),
-      control_widget_(NULL) {
+      control_widget_(NULL),
+      frame_observer_(new FrameObserver(this)) {
   // This FrameView is always maximized so we don't want the window to have
   // resize borders.
   frame->GetNativeView()->set_hit_test_bounds_override_inner(gfx::Insets());
+  // Watch for frame close so we can clean up the control widget.
+  frame->AddObserver(frame_observer_.get());
   set_background(views::Background::CreateSolidBackground(SK_ColorBLACK));
   // Create the controls.
   control_widget_ = new views::Widget;
@@ -167,8 +189,7 @@ AppNonClientFrameViewAura::AppNonClientFrameViewAura(
 }
 
 AppNonClientFrameViewAura::~AppNonClientFrameViewAura() {
-  if (control_widget_)
-    control_widget_->Close();
+  frame()->RemoveObserver(frame_observer_.get());
 }
 
 gfx::Rect AppNonClientFrameViewAura::GetBoundsForClientView() const {
@@ -229,18 +250,9 @@ gfx::Rect AppNonClientFrameViewAura::GetControlBounds() const {
       preferred.width(), preferred.height());
 }
 
-void AppNonClientFrameViewAura::Close() {
+void AppNonClientFrameViewAura::CloseControlWidget() {
   if (control_widget_) {
     control_widget_->Close();
     control_widget_ = NULL;
   }
-  frame()->Close();
-}
-
-void AppNonClientFrameViewAura::Restore() {
-  if (control_widget_) {
-    control_widget_->Close();
-    control_widget_ = NULL;
-  }
-  frame()->Restore();
 }
