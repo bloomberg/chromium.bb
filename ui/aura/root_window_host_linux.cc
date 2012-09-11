@@ -711,13 +711,13 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
         bool size_changed = bounds_.size() != bounds.size();
         bool origin_changed = bounds_.origin() != bounds.origin();
         bounds_ = bounds;
-        // Update barrier and mouse location when the root window has
-        // moved/resized.
-        if (pointer_barriers_.get() && (size_changed || origin_changed)) {
+        // Always update barrier and mouse location because |bounds_| might
+        // have already been updated in |SetBounds|.
+        if (pointer_barriers_.get()) {
           UnConfineCursor();
           RootWindow* root = delegate_->AsRootWindow();
           client::ScreenPositionClient* client =
-            client::GetScreenPositionClient(root);
+              client::GetScreenPositionClient(root);
           if (client) {
             gfx::Point p = gfx::Screen::GetCursorScreenPoint();
             client->ConvertPointFromScreen(root, &p);
