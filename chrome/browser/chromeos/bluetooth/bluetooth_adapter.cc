@@ -64,7 +64,7 @@ void BluetoothAdapter::RemoveObserver(Observer* observer) {
 }
 
 bool BluetoothAdapter::IsPresent() const {
-  return !object_path_.value().empty();
+  return !object_path_.value().empty() && !address_.empty();
 }
 
 bool BluetoothAdapter::IsPowered() const {
@@ -191,21 +191,15 @@ void BluetoothAdapter::AdapterRemoved(const dbus::ObjectPath& adapter_path) {
 }
 
 void BluetoothAdapter::ChangeAdapter(const dbus::ObjectPath& adapter_path) {
-  if (adapter_path == object_path_)
-    return;
-
-  // Determine whether this is a change of adapter or gaining an adapter,
-  // remember for later so we can send the right notification.
-  const bool new_adapter = object_path_.value().empty();
-  if (new_adapter) {
+  if (object_path_.value().empty()) {
     DVLOG(1) << "Adapter path initialized to " << adapter_path.value();
-  } else {
+  } else if (object_path_.value() != adapter_path.value()) {
     DVLOG(1) << "Adapter path changed from " << object_path_.value()
              << " to " << adapter_path.value();
 
-    // Invalidate the devices list, since the property update does not
-    // remove them.
-    ClearDevices();
+    RemoveAdapter();
+  } else {
+    DVLOG(1) << "Adapter address updated";
   }
 
   object_path_ = adapter_path;
@@ -218,18 +212,23 @@ void BluetoothAdapter::ChangeAdapter(const dbus::ObjectPath& adapter_path) {
   address_ = properties->address.value();
   name_ = properties->name.value();
 
+  // Delay announcing a new adapter until we have an address.
+  if (address_.empty()) {
+    DVLOG(1) << "Adapter address not yet known";
+    return;
+  }
+
   PoweredChanged(properties->powered.value());
   DiscoveringChanged(properties->discovering.value());
   DevicesChanged(properties->devices.value());
 
-  // Notify observers if we did not have an adapter before, the case of
-  // moving from one to another is hidden from layers above.
-  if (new_adapter)
-    FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                      AdapterPresentChanged(this, true));
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                    AdapterPresentChanged(this, true));
 }
 
 void BluetoothAdapter::RemoveAdapter() {
+  const bool adapter_was_present = IsPresent();
+
   DVLOG(1) << "Adapter lost.";
   PoweredChanged(false);
   DiscoveringChanged(false);
@@ -239,8 +238,9 @@ void BluetoothAdapter::RemoveAdapter() {
   address_.clear();
   name_.clear();
 
-  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                    AdapterPresentChanged(this, false));
+  if (adapter_was_present)
+    FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                      AdapterPresentChanged(this, false));
 }
 
 void BluetoothAdapter::OnSetPowered(const base::Closure& callback,
@@ -335,7 +335,7 @@ void BluetoothAdapter::AdapterPropertyChanged(
     DevicesChanged(properties->devices.value());
 
   } else if (property_name == properties->address.name()) {
-    address_ = properties->address.value();
+    ChangeAdapter(object_path_);
 
   } else if (property_name == properties->name.name()) {
     name_ = properties->name.value();

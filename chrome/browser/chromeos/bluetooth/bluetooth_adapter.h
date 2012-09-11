@@ -104,7 +104,8 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter>,
   const std::string& name() const { return name_; }
 
   // Indicates whether the adapter is actually present on the system, for
-  // the default adapter this indicates whether any adapter is present.
+  // the default adapter this indicates whether any adapter is present. An
+  // adapter is only considered present if the address has been obtained.
   virtual bool IsPresent() const;
 
   // Indicates whether the adapter radio is powered.
