@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chrome_browser_main_android.h"
 
-#include "base/android/jni_android.h"
-#include "chrome/browser/android/chrome_jni_registrar.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "net/android/network_change_notifier_factory.h"
@@ -20,11 +18,6 @@ ChromeBrowserMainPartsAndroid::~ChromeBrowserMainPartsAndroid() {
 }
 
 void ChromeBrowserMainPartsAndroid::PreEarlyInitialization() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  DCHECK(env);
-
-  chrome::android::RegisterJni(env);
-
   net::NetworkChangeNotifier::SetFactory(
       new net::android::NetworkChangeNotifierFactory());
 

@@ -43,4 +43,8 @@ bool GetUserDesktop(FilePath* result) {
   return false;
 }
 
+bool ProcessNeedsProfileDir(const std::string& process_type) {
+  return true;
+}
+
 }  // namespace chrome

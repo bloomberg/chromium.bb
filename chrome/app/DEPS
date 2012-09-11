@@ -7,6 +7,7 @@ include_rules = [
   "+chrome/utility/chrome_content_utility_client.h",
   "+content/app",  # TODO(joi): Remove once content API in place.
   "+content/public/app",
+  "+content/public/browser/browser_main_runner.h",
   "+content/public/browser/render_process_host.h",
   "+grit",  # For generated headers
   "+media/base",  # For initializing media library.
