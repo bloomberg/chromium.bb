@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
@@ -32,6 +34,7 @@
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -48,6 +51,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/extensions/extension.h"
@@ -69,6 +73,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/common/page_transition_types.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -113,6 +118,14 @@ const char kAdBlockCrxId[] = "dojnnbeimaimaojcialkkgajdnefpgcn";
 
 const FilePath::CharType kGoodCrxManifestName[] =
     FILE_PATH_LITERAL("good_update_manifest.xml");
+
+const char* kURLs[] = {
+  chrome::kChromeUINewTabURL,
+  chrome::kChromeUIAboutURL,
+  chrome::kChromeUICreditsURL,
+  chrome::kChromeUIPolicyURL,
+  chrome::kChromeUIVersionURL,
+};
 
 // Filters requests to the hosts in |urls| and redirects them to the test data
 // dir through URLRequestMockHTTPJobs.
@@ -297,6 +310,7 @@ int CountPlugins() {
 class PolicyTest : public InProcessBrowserTest {
  protected:
   PolicyTest() {}
+  virtual ~PolicyTest() {}
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     EXPECT_CALL(provider_, IsInitializationComplete())
@@ -1098,5 +1112,151 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DisableScreenshotsFile) {
   ASSERT_EQ(CountScreenshots(), screenshot_count + 1);
 }
 #endif
+
+namespace {
+
+bool IsNonSwitchArgument(const std::string& s) {
+  return s.empty() || s[0] != '-';
+}
+
+}  // namespace
+
+// Similar to PolicyTest but allows setting policies before the browser is
+// created. Each test parameter is a method that sets up the early policies
+// and stores the expected startup URLs in |expected_urls_|.
+class RestoreOnStartupPolicyTest
+    : public PolicyTest,
+      public testing::WithParamInterface<
+          void (RestoreOnStartupPolicyTest::*)(void)> {
+ public:
+  RestoreOnStartupPolicyTest() {}
+  virtual ~RestoreOnStartupPolicyTest() {}
+
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    PolicyTest::SetUpInProcessBrowserTestFixture();
+    // Set early policies now, before the browser is created.
+    (this->*(GetParam()))();
+
+    // Remove the non-switch arguments, so that session restore kicks in for
+    // these tests.
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    CommandLine::StringVector argv = command_line->argv();
+    argv.erase(std::remove_if(++argv.begin(), argv.end(), IsNonSwitchArgument),
+               argv.end());
+    command_line->InitFromArgv(argv);
+    ASSERT_TRUE(std::equal(argv.begin(), argv.end(),
+                           command_line->argv().begin()));
+  }
+
+  void HomepageIsNotNTP() {
+    // Verifies that policy can set the startup pages to the homepage, when
+    // the homepage is not the NTP.
+    PolicyMap policies;
+    policies.Set(
+        key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+        base::Value::CreateIntegerValue(
+            SessionStartupPref::kPrefValueHomePage));
+    policies.Set(
+        key::kHomepageIsNewTabPage, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+        base::Value::CreateBooleanValue(false));
+    policies.Set(
+        key::kHomepageLocation, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+        base::Value::CreateStringValue(kURLs[1]));
+    provider_.UpdateChromePolicy(policies);
+
+    expected_urls_.push_back(GURL(kURLs[1]));
+  }
+
+  void HomepageIsNTP() {
+    // Verifies that policy can set the startup pages to the homepage, when
+    // the homepage is the NTP.
+    PolicyMap policies;
+    policies.Set(
+        key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+        base::Value::CreateIntegerValue(
+            SessionStartupPref::kPrefValueHomePage));
+    policies.Set(
+        key::kHomepageIsNewTabPage, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+        base::Value::CreateBooleanValue(true));
+    provider_.UpdateChromePolicy(policies);
+
+    expected_urls_.push_back(GURL(kURLs[0]));
+  }
+
+  void ListOfURLs() {
+    // Verifies that policy can set the startup pages to a list of URLs.
+    base::ListValue urls;
+    for (size_t i = 0; i < arraysize(kURLs); ++i) {
+      urls.Append(base::Value::CreateStringValue(kURLs[i]));
+      expected_urls_.push_back(GURL(kURLs[i]));
+    }
+    PolicyMap policies;
+    policies.Set(
+        key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+        base::Value::CreateIntegerValue(SessionStartupPref::kPrefValueURLs));
+    policies.Set(
+        key::kRestoreOnStartupURLs, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+        urls.DeepCopy());
+    provider_.UpdateChromePolicy(policies);
+  }
+
+  void NTP() {
+    // Verifies that policy can set the startup page to the NTP.
+    PolicyMap policies;
+    policies.Set(
+        key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+        base::Value::CreateIntegerValue(SessionStartupPref::kPrefValueNewTab));
+    provider_.UpdateChromePolicy(policies);
+    expected_urls_.push_back(GURL(kURLs[0]));
+  }
+
+  void Last() {
+    // Verifies that policy can set the startup pages to the last session.
+    PolicyMap policies;
+    policies.Set(
+        key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+        base::Value::CreateIntegerValue(SessionStartupPref::kPrefValueLast));
+    provider_.UpdateChromePolicy(policies);
+    // This should restore the tabs opened at PRE_RunTest below.
+    for (size_t i = 0; i < arraysize(kURLs); ++i)
+      expected_urls_.push_back(GURL(kURLs[i]));
+  }
+
+  std::vector<GURL> expected_urls_;
+};
+
+IN_PROC_BROWSER_TEST_P(RestoreOnStartupPolicyTest, PRE_RunTest) {
+  // Open some tabs to verify if they are restored after the browser restarts.
+  // Most policy settings override this, except kPrefValueLast which enforces
+  // a restore.
+  ui_test_utils::NavigateToURL(browser(), GURL(kURLs[0]));
+  for (size_t i = 1; i < arraysize(kURLs); ++i) {
+    content::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
+    chrome::AddSelectedTabWithURL(browser(), GURL(kURLs[i]),
+                                  content::PAGE_TRANSITION_LINK);
+    observer.Wait();
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(RestoreOnStartupPolicyTest, RunTest) {
+  TabStripModel* model = browser()->tab_strip_model();
+  int size = static_cast<int>(expected_urls_.size());
+  EXPECT_EQ(size, model->count());
+  for (int i = 0; i < size && i < model->count(); ++i) {
+    EXPECT_EQ(expected_urls_[i],
+              model->GetTabContentsAt(i)->web_contents()->GetURL());
+  }
+}
+
+INSTANTIATE_TEST_CASE_P(
+    RestoreOnStartupPolicyTestInstance,
+    RestoreOnStartupPolicyTest,
+    testing::Values(&RestoreOnStartupPolicyTest::HomepageIsNotNTP,
+                    &RestoreOnStartupPolicyTest::HomepageIsNTP,
+                    &RestoreOnStartupPolicyTest::ListOfURLs,
+                    &RestoreOnStartupPolicyTest::NTP,
+                    &RestoreOnStartupPolicyTest::Last));
 
 }  // namespace policy

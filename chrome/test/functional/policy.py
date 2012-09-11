@@ -78,44 +78,6 @@ class PolicyTest(policy_base.PolicyTestBase):
     self.assertFalse(fails, msg='%d of %d policies failed.\n%s' %
                      (len(fails), total, '\n'.join(fails)))
 
-  def testStartupOptionsURLs(self):
-    """Verify that user cannot modify the startup page options if "Open the
-    following URLs" is set by a policy.
-    """
-    policy = {
-      'RestoreOnStartup': 4,
-      'RestoreOnStartupURLs': ['http://chromium.org']
-    }
-    self.SetUserPolicy(policy)
-    # Verify startup option
-    self.assertEquals(4, self.GetPrefsInfo().Prefs(pyauto.kRestoreOnStartup))
-    self.assertRaises(
-        pyauto.JSONInterfaceError,
-        lambda: self.SetPrefs(pyauto.kRestoreOnStartup, 1))
-
-  def testStartupOptionsHomepage(self):
-    """Verify that user cannot modify the startup page options if the
-    deprecated "Open the homepage" option is set by a policy.
-    """
-    policy = {
-      'RestoreOnStartup': 0,
-      'HomepageLocation': 'http://chromium.org',
-      'HomepageIsNewTabPage': False,
-    }
-    self.SetUserPolicy(policy)
-    self.assertEquals(4, self.GetPrefsInfo().Prefs(pyauto.kRestoreOnStartup))
-    self.assertRaises(
-        pyauto.JSONInterfaceError,
-        lambda: self.SetPrefs(pyauto.kRestoreOnStartup, 1))
-    # Verify URLs to open on startup
-    self.assertEquals(
-        ['http://chromium.org'],
-        self.GetPrefsInfo().Prefs(pyauto.kURLsToRestoreOnStartup))
-    self.assertRaises(
-        pyauto.JSONInterfaceError,
-        lambda: self.SetPrefs(pyauto.kURLsToRestoreOnStartup,
-                              ['http://www.google.com']))
-
   def testHomePageOptions(self):
     """Verify that we cannot modify Homepage URL."""
     policy = {

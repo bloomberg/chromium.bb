@@ -644,9 +644,6 @@
       'policy_prefs_ui',
       # crbug.com/118054
       '-policy.PolicyTest.testApplicationLocaleValue',
-      # This tests the value "0" for the RestoreOnStartup policy, which is not
-      # supported on ChromeOS.
-      '-policy.PolicyTest.testStartupOptionsHomepage',
     ],
   },
 
