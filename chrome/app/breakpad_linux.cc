@@ -376,6 +376,38 @@ size_t WriteLog(const char* buf, size_t nbytes) {
 #endif
 }
 
+#if defined(OS_ANDROID)
+// Android's native crash handler outputs a diagnostic tombstone to the device
+// log. By returning false from the HandlerCallbacks, breakpad will reinstall
+// the previous (i.e. native) signal handlers before returning from its own
+// handler. A Chrome build fingerprint is written to the log, so that the
+// specific build of Chrome and the location of the archived Chrome symbols can
+// be determined directly from it.
+bool FinalizeCrashDoneAndroid() {
+  base::android::BuildInfo* android_build_info =
+      base::android::BuildInfo::GetInstance();
+
+  __android_log_write(ANDROID_LOG_WARN, kGoogleBreakpad,
+                      "### ### ### ### ### ### ### ### ### ### ### ### ###");
+  __android_log_write(ANDROID_LOG_WARN, kGoogleBreakpad,
+                      "Chrome build fingerprint:");
+  __android_log_write(ANDROID_LOG_WARN, kGoogleBreakpad,
+                      android_build_info->package_version_name());
+  __android_log_write(ANDROID_LOG_WARN, kGoogleBreakpad,
+                      android_build_info->package_version_code());
+  __android_log_write(ANDROID_LOG_WARN, kGoogleBreakpad,
+                      CHROME_SYMBOLS_ID);
+  __android_log_write(ANDROID_LOG_WARN, kGoogleBreakpad,
+                      "### ### ### ### ### ### ### ### ### ### ### ### ###");
+  return false;
+}
+
+bool CrashDoneNonBrowserAndroid(const MinidumpDescriptor& minidump,
+                                void* context,
+                                bool succeeded) {
+  return FinalizeCrashDoneAndroid();
+}
+#endif
 
 bool CrashDone(const MinidumpDescriptor& minidump,
                const bool upload,
@@ -411,7 +443,11 @@ bool CrashDone(const MinidumpDescriptor& minidump,
   info.oom_size = base::g_oom_size;
   info.pid = 0;
   HandleCrashDump(info);
+#if defined(OS_ANDROID)
+  return FinalizeCrashDoneAndroid();
+#else
   return true;
+#endif
 }
 
 // Wrapper function, do not add more code here.
@@ -578,7 +614,14 @@ bool NonBrowserCrashHandler(const void* crash_context,
     WriteLog(errmsg, sizeof(errmsg)-1);
   }
 
+#if defined(OS_ANDROID)
+  // When false is returned, breakpad will continue to its minidump generator
+  // and then to the HandlerCallback, which, in this case, is
+  // CrashDoneNonBrowserAndroid().
+  return false;
+#else
   return true;
+#endif
 }
 
 void EnableNonBrowserCrashDumping() {
@@ -586,10 +629,16 @@ void EnableNonBrowserCrashDumping() {
   g_is_crash_reporter_enabled = true;
   // We deliberately leak this object.
   DCHECK(!g_breakpad);
+
+  ExceptionHandler::MinidumpCallback crash_done_callback = NULL;
+#if defined(OS_ANDROID)
+  crash_done_callback = CrashDoneNonBrowserAndroid;
+#endif
+
   g_breakpad = new ExceptionHandler(
       MinidumpDescriptor("/tmp"),  // Unused but needed or Breakpad will assert.
       NULL,
-      NULL,
+      crash_done_callback,
       reinterpret_cast<void*>(fd),  // Param passed to the crash handler.
       true,
       -1);
