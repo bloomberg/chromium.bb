@@ -18,14 +18,8 @@
     <script src="../shared/js/parse_html_subset.js"></script>
     <script src="ntp_android.js"></script>
     <script>
-      var MOCK = document.location.host != "newtab";
-      if (MOCK) {
+      if (document.location.host != "newtab") {
         document.write('<script src="mockdata.js"><\/script>');
-        var templateData = {
-            "title":"New Tab",
-            "mostvisited":"Most Visited",
-            "remotetabs":"Open Tabs"
-        };
       }
     </script>
   </head>

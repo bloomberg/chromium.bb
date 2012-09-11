@@ -592,8 +592,7 @@ cr.define('ntp', function() {
 
     cell.setAttribute(CONTEXT_MENU_URL_KEY, item.url);
 
-    var iconUrl = MOCK ?
-        touchIconURI : 'chrome://touch-icon/size/64/' + item.url;
+    var iconUrl = item.icon || 'chrome://touch-icon/size/64/' + item.url;
     var icon = createDiv('icon', iconUrl);
     trackImageLoad(iconUrl);
     cell.appendChild(icon);
@@ -629,8 +628,6 @@ cr.define('ntp', function() {
     var thumbnailCell = createDiv('thumbnail-cell');
     var thumbnailContainer = createDiv('thumbnail-container');
     var backgroundUrl = item.thumbnailUrl || 'chrome://thumb/' + item.url;
-    if (MOCK)
-      backgroundUrl = thumbnailURI;
     if (backgroundUrl == 'chrome://thumb/chrome://welcome/') {
       // Ideally, it would be nice to use the URL as is.  However, as of now
       // theme support has been removed from Chrome.  Instead, load the image
@@ -688,7 +685,7 @@ cr.define('ntp', function() {
     if (item.folder) {
       faviconBox.classList.add('folder');
     } else {
-      var iconUrl = MOCK ? item.icon : 'chrome://touch-icon/' + item.url;
+      var iconUrl = item.icon || 'chrome://touch-icon/' + item.url;
       var faviconIcon = createDiv('favicon-icon');
       faviconIcon.style.backgroundImage = 'url(' + iconUrl + ')';
       trackImageLoad(iconUrl);
@@ -811,7 +808,7 @@ cr.define('ntp', function() {
     var listItem = createDiv('list-item');
     addActiveTouchListener(listItem, ACTIVE_LIST_ITEM_CSS_CLASS);
     listItem.setAttribute(CONTEXT_MENU_URL_KEY, item.url);
-    var iconUrl = MOCK ? item.icon : 'chrome://touch-icon/size/64/' + item.url;
+    var iconUrl = item.icon || 'chrome://touch-icon/size/64/' + item.url;
     listItem.appendChild(createDiv('icon', iconUrl));
     trackImageLoad(iconUrl);
     var title = createElement('span', {
