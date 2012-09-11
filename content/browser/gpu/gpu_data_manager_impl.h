@@ -91,6 +91,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
   friend struct DefaultSingletonTraits<GpuDataManagerImpl>;
 
   FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest, GpuSideBlacklisting);
+  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest, GpuSideExceptions);
   FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest, BlacklistCard);
   FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest, GpuInfoUpdate);
   FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest,
@@ -136,6 +137,10 @@ class CONTENT_EXPORT GpuDataManagerImpl
   // Current card force-blacklisted due to GPU crashes, or disabled through
   // the --disable-gpu commandline switch.
   bool card_blacklisted_;
+
+  // We disable histogram stuff in testing, especially in unit tests because
+  // they cause random failures.
+  bool update_histograms_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuDataManagerImpl);
 };

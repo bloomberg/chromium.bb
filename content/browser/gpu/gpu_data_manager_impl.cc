@@ -49,7 +49,8 @@ GpuDataManagerImpl::GpuDataManagerImpl()
       preliminary_gpu_feature_type_(content::GPU_FEATURE_TYPE_UNKNOWN),
       observer_list_(new GpuDataManagerObserverList),
       software_rendering_(false),
-      card_blacklisted_(false) {
+      card_blacklisted_(false),
+      update_histograms_(true) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableAcceleratedCompositing)) {
     command_line->AppendSwitch(switches::kDisableAccelerated2dCanvas);
@@ -64,6 +65,10 @@ void GpuDataManagerImpl::Initialize(
     const std::string& gpu_blacklist_json) {
   content::GPUInfo gpu_info;
   gpu_info_collector::CollectPreliminaryGraphicsInfo(&gpu_info);
+#if defined(ARCH_CPU_X86_FAMILY)
+  if (!gpu_info.gpu.vendor_id || !gpu_info.gpu.device_id)
+    gpu_info.finalized = true;
+#endif
 
   Initialize(browser_version_string, gpu_blacklist_json, gpu_info);
 }
@@ -79,6 +84,9 @@ void GpuDataManagerImpl::Initialize(
     base::AutoLock auto_lock(gpu_info_lock_);
     gpu_info_ = empty_gpu_info;
   }
+
+  // This function is for testing only, so disable histograms.
+  update_histograms_ = false;
 
   if (!gpu_blacklist_json.empty()) {
     CHECK(!browser_version_string.empty());
@@ -121,17 +129,14 @@ void GpuDataManagerImpl::UpdateGpuInfo(const content::GPUInfo& gpu_info) {
   if (gpu_blacklist_.get()) {
     GpuFeatureType feature_type = gpu_blacklist_->DetermineGpuFeatureType(
         GpuBlacklist::kOsAny, NULL, gpu_info);
-    gpu_util::UpdateStats(gpu_blacklist_.get(), feature_type);
+    if (update_histograms_)
+      gpu_util::UpdateStats(gpu_blacklist_.get(), feature_type);
     UpdateBlacklistedFeatures(feature_type);
   }
 
   {
     base::AutoLock auto_lock(gpu_info_lock_);
     gpu_info_ = gpu_info;
-#if defined(ARCH_CPU_X86_FAMILY)
-    if (!gpu_info.gpu.vendor_id || !gpu_info.gpu.device_id)
-      gpu_info_.finalized = true;
-#endif
     complete_gpu_info_already_requested_ =
         complete_gpu_info_already_requested_ || gpu_info_.finalized;
   }

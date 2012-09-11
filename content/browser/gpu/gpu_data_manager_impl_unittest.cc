@@ -69,24 +69,91 @@ TEST_F(GpuDataManagerImplTest, GpuSideBlacklisting) {
   EXPECT_EQ(0, manager->GetBlacklistedFeatures());
   EXPECT_TRUE(manager->GpuAccessAllowed());
 
-  manager->UpdateBlacklistedFeatures(
-      content::GPU_FEATURE_TYPE_WEBGL);
-  manager->UpdatePreliminaryBlacklistedFeatures();
+  const std::string blacklist_json =
+      "{\n"
+      "  \"name\": \"gpu blacklist\",\n"
+      "  \"version\": \"0.1\",\n"
+      "  \"entries\": [\n"
+      "    {\n"
+      "      \"id\": 1,\n"
+      "      \"blacklist\": [\n"
+      "        \"webgl\"\n"
+      "      ]\n"
+      "    },\n"
+      "    {\n"
+      "      \"id\": 2,\n"
+      "      \"gl_renderer\": {\n"
+      "        \"op\": \"contains\",\n"
+      "        \"value\": \"GeForce\"\n"
+      "      },\n"
+      "      \"blacklist\": [\n"
+      "        \"accelerated_2d_canvas\"\n"
+      "      ]\n"
+      "    }\n"
+      "  ]\n"
+      "}";
+
+  content::GPUInfo gpu_info;
+  gpu_info.gpu.vendor_id = 0x10de;
+  gpu_info.gpu.device_id = 0x0640;
+  manager->Initialize("0", blacklist_json, gpu_info);
+
   EXPECT_TRUE(manager->GpuAccessAllowed());
   EXPECT_EQ(content::GPU_FEATURE_TYPE_WEBGL,
             manager->GetBlacklistedFeatures());
 
-  manager->UpdateBlacklistedFeatures(
-      content::GPU_FEATURE_TYPE_WEBGL);
-  EXPECT_TRUE(manager->GpuAccessAllowed());
-  EXPECT_EQ(content::GPU_FEATURE_TYPE_WEBGL,
-            manager->GetBlacklistedFeatures());
-
-  manager->UpdateBlacklistedFeatures(
-      content::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS);
-  EXPECT_EQ(content::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS,
-            manager->GetBlacklistedFeatures());
+  gpu_info.gl_renderer = "NVIDIA GeForce GT 120";
+  manager->UpdateGpuInfo(gpu_info);
   EXPECT_FALSE(manager->GpuAccessAllowed());
+  EXPECT_EQ(content::GPU_FEATURE_TYPE_WEBGL |
+            content::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS,
+            manager->GetBlacklistedFeatures());
+
+  delete manager;
+}
+
+TEST_F(GpuDataManagerImplTest, GpuSideExceptions) {
+  GpuDataManagerImpl* manager = new GpuDataManagerImpl();
+  ASSERT_TRUE(manager);
+  EXPECT_EQ(0, manager->GetBlacklistedFeatures());
+  EXPECT_TRUE(manager->GpuAccessAllowed());
+
+  const std::string blacklist_json =
+      "{\n"
+      "  \"name\": \"gpu blacklist\",\n"
+      "  \"version\": \"0.1\",\n"
+      "  \"entries\": [\n"
+      "    {\n"
+      "      \"id\": 1,\n"
+      "      \"exceptions\": [\n"
+      "        {\n"
+      "          \"gl_renderer\": {\n"
+      "            \"op\": \"contains\",\n"
+      "            \"value\": \"GeForce\"\n"
+      "          }\n"
+      "        }\n"
+      "      ],\n"
+      "      \"blacklist\": [\n"
+      "        \"webgl\"\n"
+      "      ]\n"
+      "    }\n"
+      "  ]\n"
+      "}";
+
+  content::GPUInfo gpu_info;
+  gpu_info.gpu.vendor_id = 0x10de;
+  gpu_info.gpu.device_id = 0x0640;
+  manager->Initialize("0", blacklist_json, gpu_info);
+
+  EXPECT_TRUE(manager->GpuAccessAllowed());
+  EXPECT_EQ(content::GPU_FEATURE_TYPE_WEBGL,
+            manager->GetBlacklistedFeatures());
+
+  // Now assue gpu process launches and full GPU info is collected.
+  gpu_info.gl_renderer = "NVIDIA GeForce GT 120";
+  manager->UpdateGpuInfo(gpu_info);
+  EXPECT_TRUE(manager->GpuAccessAllowed());
+  EXPECT_EQ(0, manager->GetBlacklistedFeatures());
 
   delete manager;
 }
