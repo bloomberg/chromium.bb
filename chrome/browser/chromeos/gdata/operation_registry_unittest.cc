@@ -38,7 +38,7 @@ class MockUploadOperation : public MockOperation {
   explicit MockUploadOperation(OperationRegistry* registry)
       : MockOperation(registry,
                       OperationRegistry::OPERATION_UPLOAD,
-                      FilePath("/dummy/upload")) {}
+                      FilePath(FILE_PATH_LITERAL("/dummy/upload"))) {}
 };
 
 class MockDownloadOperation : public MockOperation {
@@ -46,7 +46,7 @@ class MockDownloadOperation : public MockOperation {
   explicit MockDownloadOperation(OperationRegistry* registry)
       : MockOperation(registry,
                       OperationRegistry::OPERATION_DOWNLOAD,
-                      FilePath("/dummy/download")) {}
+                      FilePath(FILE_PATH_LITERAL("/dummy/download"))) {}
 };
 
 class MockOtherOperation : public MockOperation {
@@ -54,7 +54,7 @@ class MockOtherOperation : public MockOperation {
   explicit MockOtherOperation(OperationRegistry* registry)
       : MockOperation(registry,
                       OperationRegistry::OPERATION_OTHER,
-                      FilePath("/dummy/other")) {}
+                      FilePath(FILE_PATH_LITERAL("/dummy/other"))) {}
 };
 
 class TestObserver : public OperationRegistry::Observer {
