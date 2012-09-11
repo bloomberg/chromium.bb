@@ -205,6 +205,49 @@
    fun:RootWindowHostLinux
    fun:aura::RootWindowHost::Create
 }
+# leak in OSMesa used to run compositor_unittests in bots.
+{
+   bug_148477_a
+   Heapcheck:Leak
+   ...
+   fun:gfx::GLContextOSMesa::MakeCurrent
+   ...
+   fun:webkit::gpu::WebGraphicsContext3DInProcessImpl::*
+}
+{
+   bug_148477_b
+   Heapcheck:Leak
+   ...
+   fun:webkit::gpu::WebGraphicsContext3DInProcessImpl::compileShader
+   fun:WebCore::ProgramBindingBase::loadShader
+   fun:WebCore::ProgramBindingBase::init
+   fun:WebCore::ProgramBinding::ProgramBinding
+   ...
+   fun:WebCore::CCSingleThreadProxy::commitAndComposite
+   fun:WebCore::CCSingleThreadProxy::compositeImmediately
+   fun:WebCore::CCLayerTreeHost::composite
+   fun:WebKit::WebLayerTreeViewImpl::composite
+}
+{
+   bug_148477_c
+   Heapcheck:Leak
+   ...
+   fun:webkit::gpu::WebGraphicsContext3DInProcessImpl::linkProgram
+   fun:WebCore::ProgramBindingBase::link
+   fun:WebCore::ProgramBinding::initialize
+   ...
+   fun:WebCore::CCRendererGL::drawQuad
+   fun:WebCore::CCDirectRenderer::drawRenderPass
+   fun:WebCore::CCDirectRenderer::drawFrame
+   fun:WebCore::CCLayerTreeHostImpl::drawLayers
+   fun:WebCore::CCSingleThreadProxy::doComposite
+   fun:WebCore::CCSingleThreadProxy::commitAndComposite
+   fun:WebCore::CCSingleThreadProxy::compositeImmediately
+   fun:WebCore::CCLayerTreeHost::composite
+   fun:WebKit::WebLayerTreeViewImpl::composite
+   fun:ui::Compositor::Draw
+}
+
 
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
