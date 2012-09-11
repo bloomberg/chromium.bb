@@ -697,12 +697,9 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
     return 0;
   }
 
-  // TODO(pkasting): This "single_process vs. single-process" design is
-  // terrible UI.  Instead, there should be some sort of signal flag on the
-  // command line, with all subsequent arguments passed through to the
-  // underlying browser.
   if (command_line->HasSwitch(kSingleProcessTestsFlag) ||
-      command_line->HasSwitch(kSingleProcessTestsAndChromeFlag) ||
+      (command_line->HasSwitch(kSingleProcessTestsAndChromeFlag) &&
+       command_line->HasSwitch(kGTestFilterFlag)) ||
       command_line->HasSwitch(kGTestListTestsFlag) ||
       command_line->HasSwitch(kGTestHelpFlag)) {
 #if defined(OS_WIN)
@@ -729,8 +726,8 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
       "IMPORTANT DEBUGGING NOTE: each test is run inside its own process.\n"
       "For debugging a test inside a debugger, use the\n"
       "--gtest_filter=<your_test_name> flag along with either\n"
-      "--single_process (to run all tests in one launcher/browser process) or\n"
-      "--single-process (to do the above, and also run Chrome in single-\n"
+      "--single_process (to run the test in one launcher/browser process) or\n"
+      "--single-process (to do the above, and also run Chrome in single-"
       "process mode).\n");
 
   testing::InitGoogleTest(&argc, argv);
