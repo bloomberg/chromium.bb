@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This comment is only here because changes to resources are not picked up
+without changes to the corresponding grd file. fb9 -->
+<grit latest_public_release="0" current_release="1">
+  <outputs>
+    <output filename="grit/renderer_resources.h" type="rc_header" context="default_100_percent">
+      <emit emit_type='prepend'></emit>
+    </output>
+    <output filename="grit/renderer_resources_map.cc" type="resource_map_source" context="default_100_percent" />
+    <output filename="grit/renderer_resources_map.h" type="resource_map_header" context="default_100_percent" />
+    <output filename="renderer_resources_100_percent.pak" type="data_package" context="default_100_percent" />
+    <output filename="renderer_resources_200_percent.pak" type="data_package" context="default_200_percent" />
+    <output filename="renderer_resources.rc" type="rc_all" context="default_100_percent" />
+  </outputs>
+  <release seq="1">
+    <includes>
+      <if expr="pp_ifdef('android')">
+        <include name="IDR_MOBILE_YOUTUBE_PLUGIN_HTML" file="mobile_youtube_plugin.html" flattenhtml="true" type="BINDATA" />
+      </if>
+      <include name="IDR_BLOCKED_PLUGIN_HTML" file="blocked_plugin.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_CLICK_TO_PLAY_PLUGIN_HTML" file="click_to_play_plugin.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_DISABLED_PLUGIN_HTML" file="disabled_plugin.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_ERROR_APP_HTML" file="error_app.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_EVENT_BINDINGS_JS" file="extensions\event.js" type="BINDATA" />
+      <include name="IDR_EXTENSION_APITEST_JS" file="extensions\apitest.js" type="BINDATA" />
+      <include name="IDR_GREASEMONKEY_API_JS" file="extensions\greasemonkey_api.js" type="BINDATA" />
+      <include name="IDR_SEARCHBOX_API" file="extensions\searchbox_api.js" type="BINDATA" />
+      <include name="IDR_JSON_SCHEMA_JS" file="extensions\json_schema.js" type="BINDATA" />
+      <include name="IDR_MISCELLANEOUS_BINDINGS_JS" file="extensions\miscellaneous_bindings.js" type="BINDATA" />
+      <include name="IDR_NET_ERROR_HTML" file="neterror.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_SAD_PLUGIN" file="sadplugin.png" type="BINDATA" />
+      <include name="IDR_SCHEMA_GENERATED_BINDINGS_JS" file="extensions\schema_generated_bindings.js" type="BINDATA" />
+
+      <!-- Libraries. -->
+      <include name="IDR_LAST_ERROR_JS" file="extensions\last_error.js" type="BINDATA" />
+      <include name="IDR_SCHEMA_UTILS_JS" file="extensions\schema_utils.js" type="BINDATA" />
+      <include name="IDR_SEND_REQUEST_JS" file="extensions\send_request.js" type="BINDATA" />
+      <include name="IDR_SET_ICON_JS" file="extensions\set_icon.js" type="BINDATA" />
+      <include name="IDR_UTILS_JS" file="extensions\utils.js" type="BINDATA" />
+
+      <if expr="pp_ifdef('enable_extensions')">
+        <!-- Custom bindings for extension APIs. -->
+        <include name="IDR_APP_CUSTOM_BINDINGS_JS" file="extensions\app_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_APP_RUNTIME_CUSTOM_BINDINGS_JS" file="extensions\app_runtime_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_APP_WINDOW_CUSTOM_BINDINGS_JS" file="extensions\app_window_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_BROWSER_ACTION_CUSTOM_BINDINGS_JS" file="extensions\browser_action_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_BROWSER_TAG_JS" file="extensions\browser_tag.js" type="BINDATA" />
+        <include name="IDR_CONTENT_SETTINGS_CUSTOM_BINDINGS_JS" file="extensions\content_settings_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_CONTEXT_MENUS_CUSTOM_BINDINGS_JS" file="extensions\context_menus_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_DECLARATIVE_WEBREQUEST_CUSTOM_BINDINGS_JS" file="extensions\declarative_webrequest_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_DEVTOOLS_CUSTOM_BINDINGS_JS" file="extensions\devtools_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_EXPERIMENTAL_BLUETOOTH_CUSTOM_BINDINGS_JS" file="extensions\experimental.bluetooth_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_EXPERIMENTAL_MEDIA_GALLERIES_CUSTOM_BINDINGS_JS" file="extensions\experimental.media_galleries_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_EXPERIMENTAL_OFFSCREENTABS_CUSTOM_BINDINGS_JS" file="extensions\experimental.offscreenTabs_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_EXPERIMENTAL_USB_CUSTOM_BINDINGS_JS" file="extensions\experimental.usb_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_EXTENSION_CUSTOM_BINDINGS_JS" file="extensions\extension_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_FILE_BROWSER_HANDLER_CUSTOM_BINDINGS_JS" file="extensions\file_browser_handler_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_FILE_BROWSER_PRIVATE_CUSTOM_BINDINGS_JS" file="extensions\file_browser_private_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_FILE_SYSTEM_CUSTOM_BINDINGS_JS" file="extensions\file_system_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_I18N_CUSTOM_BINDINGS_JS" file="extensions\i18n_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_INPUT_IME_CUSTOM_BINDINGS_JS" file="extensions\input.ime_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_MEDIA_GALLERIES_CUSTOM_BINDINGS_JS" file="extensions\media_galleries_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_OMNIBOX_CUSTOM_BINDINGS_JS" file="extensions\omnibox_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_PAGE_ACTIONS_CUSTOM_BINDINGS_JS" file="extensions\page_actions_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_PAGE_ACTION_CUSTOM_BINDINGS_JS" file="extensions\page_action_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_PAGE_CAPTURE_CUSTOM_BINDINGS_JS" file="extensions\page_capture_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_RUNTIME_CUSTOM_BINDINGS_JS" file="extensions\runtime_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_STORAGE_CUSTOM_BINDINGS_JS" file="extensions\storage_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_TABS_CUSTOM_BINDINGS_JS" file="extensions\tabs_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_TTS_CUSTOM_BINDINGS_JS" file="extensions\tts_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_TTS_ENGINE_CUSTOM_BINDINGS_JS" file="extensions\tts_engine_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_TYPES_CUSTOM_BINDINGS_JS" file="extensions\types_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_WEB_REQUEST_CUSTOM_BINDINGS_JS" file="extensions\web_request_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_WEB_REQUEST_INTERNAL_CUSTOM_BINDINGS_JS" file="extensions\web_request_internal_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_WEBSTORE_CUSTOM_BINDINGS_JS" file="extensions\webstore_custom_bindings.js" type="BINDATA" />
+
+        <!-- Platform app support. -->
+        <include name="IDR_PLATFORM_APP_CSS" file="extensions\platform_app.css" type="BINDATA" />
+        <include name="IDR_PLATFORM_APP_JS" file="extensions\platform_app.js" type="BINDATA" />
+        <include name="IDR_INJECT_APP_TITLEBAR_JS" file="extensions\inject_app_titlebar.js" type="BINDATA" />
+      </if>
+    </includes>
+  </release>
+</grit>

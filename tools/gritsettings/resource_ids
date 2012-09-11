@@ -34,8 +34,9 @@
   "chrome/common/common_resources.grd": {
     "includes": [2500],
   },
-  "chrome/renderer/renderer_resources.grd": {
+  "chrome/renderer/resources/renderer_resources.grd": {
     "includes": [3500],
+    "structures": [3700],
   },
   "net/base/net_resources.grd": {
     "includes": [4000],

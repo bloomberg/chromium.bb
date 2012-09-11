@@ -104,7 +104,7 @@
         {
           'action_name': 'renderer_resources',
           'variables': {
-            'grit_grd_file': 'renderer/renderer_resources.grd',
+            'grit_grd_file': 'renderer/resources/renderer_resources.grd',
           },
           'includes': [ '../build/grit_action.gypi' ],
         },

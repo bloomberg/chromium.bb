@@ -7,7 +7,6 @@
     'pak_inputs': [
       '<(grit_out_dir)/browser_resources.pak',
       '<(grit_out_dir)/common_resources.pak',
-      '<(grit_out_dir)/renderer_resources.pak',
       '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak',
       '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
       '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.pak',
