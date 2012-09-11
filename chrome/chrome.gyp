@@ -1090,14 +1090,9 @@
             'package_name': 'chrome',
             'java_in_dir': '../chrome/android/java',
           },
-          'includes': [
-            '../build/java.gypi',
-          ],
+          'includes': [ '../build/java.gypi' ],
         },
-      ], # 'targets'
-      'includes': [
-        'chrome_android.gypi',
-      ]}, # 'includes'
+      ]}, # 'targets'
     ],  # OS=="android"
   ],  # 'conditions'
 }

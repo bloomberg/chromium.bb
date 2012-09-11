@@ -16,7 +16,7 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
   ChromeMainDelegate();
   virtual ~ChromeMainDelegate();
 
- protected:
+ private:
   // content::ContentMainDelegate implementation:
   virtual bool BasicStartupComplete(int* exit_code) OVERRIDE;
   virtual void PreSandboxStartup() OVERRIDE;
