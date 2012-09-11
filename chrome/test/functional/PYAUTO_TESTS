@@ -69,6 +69,12 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
+      # crbug.com/148544
+      '-downloads',
+      '-infobars.InfobarTest.testMultipleDownloadsInfobar',
+      '-instant.InstantTest.testInstantDoesNotDownloadPDFFile',
+      '-instant.InstantTest.testInstantDoesNotDownloadZipFile',
+      '-prefs.PrefsTest.testDownloadDirPref',
       # crbug.com/123396
       '-fullscreen_mouselock.FullscreenMouselockTest.testPatternsForFSAndML',
       # crbug.com/132665
