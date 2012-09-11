@@ -158,21 +158,7 @@ Panel::Panel(const std::string& app_name,
 
 Panel::~Panel() {
   // Invoked by native panel destructor. Do not access native_panel_ here.
-
-  // Remove shutdown prevention.
-  // TODO(jennb): remove guard after refactor
-  if (extension_window_controller_.get())
-    browser::EndKeepAlive();
-}
-
-void Panel::Initialize(const gfx::Rect& bounds, Browser* browser) {
-  DCHECK(!initialized_);
-  DCHECK(!panel_strip_);  // Cannot be added to a strip until fully created.
-  DCHECK_EQ(EXPANDED, expansion_state_);
-  DCHECK(!bounds.IsEmpty());
-  initialized_ = true;
-  full_size_ = bounds.size();
-  native_panel_ = CreateNativePanel(browser, this, bounds);
+  browser::EndKeepAlive();  // Remove shutdown prevention.
 }
 
 void Panel::Initialize(Profile* profile, const GURL& url,
@@ -241,14 +227,6 @@ void Panel::OnNativePanelClosed() {
 
 PanelManager* Panel::manager() const {
   return PanelManager::GetInstance();
-}
-
-Browser* Panel::browser() const {
-  return NULL;
-}
-
-BrowserWindow* Panel::browser_window() const {
-  return NULL;
 }
 
 CommandUpdater* Panel::command_updater() {
@@ -509,10 +487,6 @@ int Panel::TitleOnlyHeight() const {
   return native_panel_->TitleOnlyHeight();
 }
 
-void Panel::EnsureFullyVisible() {
-  native_panel_->EnsurePanelFullyVisible();
-}
-
 bool Panel::IsMaximized() const {
   // Size of panels is managed by PanelManager, they are never 'zoomed'.
   return false;
@@ -685,8 +659,7 @@ void Panel::OnActiveStateChanged(bool active) {
     panel_strip_->OnPanelActiveStateChanged(this);
 
   // Send extension event about window becoming active.
-  // TODO(jennb): remove extension_window_controller_ guard after refactor.
-  if (active && extension_window_controller_.get()) {
+  if (active) {
     ExtensionService* service =
         extensions::ExtensionSystem::Get(profile())->extension_service();
     if (service) {

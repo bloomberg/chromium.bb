@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/panels/native_panel_cocoa.h"
+#include "chrome/browser/ui/panels/native_panel.h"
 #include "ui/gfx/rect.h"
 
 class Panel;
@@ -16,9 +16,7 @@ class Panel;
 // An implememtation of the native panel in Cocoa.
 // Bridges between C++ and the Cocoa NSWindow. Cross-platform code will
 // interact with this object when it needs to manipulate the window.
-// TODO(jennb): This class can be removed after the panel refactor once
-// it's safe for PanelWindowController to use PanelCocoa directly.
-class PanelCocoa : public NativePanelCocoa {
+class PanelCocoa : public NativePanel {
  public:
   PanelCocoa(Panel* panel, const gfx::Rect& bounds);
   virtual ~PanelCocoa();
@@ -37,21 +35,15 @@ class PanelCocoa : public NativePanelCocoa {
   virtual gfx::NativeWindow GetNativePanelHandle() OVERRIDE;
   virtual void UpdatePanelTitleBar() OVERRIDE;
   virtual void UpdatePanelLoadingAnimations(bool should_animate) OVERRIDE;
-  virtual FindBar* CreatePanelFindBar() OVERRIDE;
   virtual void NotifyPanelOnUserChangedTheme() OVERRIDE;
   virtual void PanelCut() OVERRIDE;
   virtual void PanelCopy() OVERRIDE;
   virtual void PanelPaste() OVERRIDE;
   virtual void DrawAttention(bool draw_attention) OVERRIDE;
   virtual bool IsDrawingAttention() const OVERRIDE;
-  virtual bool PreHandlePanelKeyboardEvent(
-      const content::NativeWebKeyboardEvent& event,
-      bool* is_keyboard_shortcut) OVERRIDE;
   virtual void HandlePanelKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void FullScreenModeChanged(bool is_full_screen) OVERRIDE;
-  virtual Browser* GetPanelBrowser() const OVERRIDE;
-  virtual void EnsurePanelFullyVisible() OVERRIDE;
   virtual void SetPanelAlwaysOnTop(bool on_top) OVERRIDE;
   virtual void EnableResizeByMouse(bool enable) OVERRIDE;
   virtual void UpdatePanelMinimizeRestoreButtonVisibility() OVERRIDE;
@@ -70,9 +62,8 @@ class PanelCocoa : public NativePanelCocoa {
 
   virtual NativePanelTesting* CreateNativePanelTesting() OVERRIDE;
 
-  // Overridden from NativePanelCocoa.
-  virtual Panel* panel() const OVERRIDE;
-  virtual void DidCloseNativeWindow() OVERRIDE;
+  Panel* panel() const;
+  void DidCloseNativeWindow();
 
  private:
   friend class CocoaNativePanelTesting;

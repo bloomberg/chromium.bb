@@ -84,8 +84,6 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
   void WaitForWindowSizeAvailable(Panel* panel);
   void WaitForBoundsAnimationFinished(Panel* panel);
 
-  void CreateTestTabContents(Browser* browser);
-
   scoped_refptr<extensions::Extension> CreateExtension(
       const FilePath::StringType& path,
       extensions::Extension::Location location,

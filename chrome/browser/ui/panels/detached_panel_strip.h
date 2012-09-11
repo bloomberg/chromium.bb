@@ -12,7 +12,6 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 
-class Browser;
 class PanelManager;
 
 // This class manages a group of free-floating panels.

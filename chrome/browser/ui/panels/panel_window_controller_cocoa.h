@@ -14,15 +14,13 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
-#import "chrome/browser/ui/cocoa/browser_command_executor.h"
 #import "chrome/browser/ui/cocoa/chrome_browser_window.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/tracking_area.h"
 #include "chrome/browser/ui/panels/panel.h"
 
-@class FindBarCocoaController;
-class NativePanelCocoa;
+class PanelCocoa;
 @class PanelTitlebarViewCocoa;
 
 @interface PanelWindowCocoaImpl : ChromeBrowserWindow {
@@ -31,11 +29,10 @@ class NativePanelCocoa;
 
 @interface PanelWindowControllerCocoa : NSWindowController
                                             <NSWindowDelegate,
-                                             NSAnimationDelegate,
-                                             BrowserCommandExecutor> {
+                                             NSAnimationDelegate> {
  @private
   IBOutlet PanelTitlebarViewCocoa* titlebar_view_;
-  scoped_ptr<NativePanelCocoa> windowShim_;
+  scoped_ptr<PanelCocoa> windowShim_;
   scoped_nsobject<NSString> pendingWindowTitle_;
   scoped_nsobject<TabContentsController> contentsController_;
   NSViewAnimation* boundsAnimation_;  // Lifetime controlled manually, needs
@@ -54,7 +51,7 @@ class NativePanelCocoa;
 }
 
 // Load the window nib and do any Cocoa-specific initialization.
-- (id)initWithPanel:(NativePanelCocoa*)window;
+- (id)initWithPanel:(PanelCocoa*)window;
 
 - (ui::ThemeProvider*)themeProvider;
 - (ThemedWindowStyle)themedWindowStyle;
@@ -76,10 +73,6 @@ class NativePanelCocoa;
 - (void)updateIcon;
 - (void)updateThrobber:(BOOL)shouldSpin;
 - (void)updateTitleBarMinimizeRestoreButtonVisibility;
-
-// Adds the FindBar controller's view to this Panel. Must only be
-// called once per PanelWindowControllerCocoa.
-- (void)addFindBar:(FindBarCocoaController*)findBarCocoaController;
 
 // Initiate the closing of the panel, starting from the platform-independent
 // layer. This will take care of PanelManager, other panels and close the
@@ -114,11 +107,6 @@ class NativePanelCocoa;
 // Invoked when user clicks on the titlebar. Attempts to flip the
 // Minimized/Restored states.
 - (void)onTitlebarMouseClicked:(int)modifierFlags;
-
-// Executes the command in the context of the current browser.
-// |command| is an integer value containing one of the constants defined in the
-// "chrome/app/chrome_command_ids.h" file.
-- (void)executeCommand:(int)command;
 
 // NSAnimationDelegate method, invoked when bounds animation is finished.
 - (void)animationDidEnd:(NSAnimation*)animation;

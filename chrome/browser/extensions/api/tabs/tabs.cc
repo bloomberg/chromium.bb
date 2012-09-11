@@ -576,8 +576,7 @@ bool CreateWindowFunction::RunImpl() {
   }
 
 #if !defined(USE_ASH)
-  if (window_type == Browser::TYPE_PANEL &&
-      PanelManager::UseBrowserlessPanels()) {
+  if (window_type == Browser::TYPE_PANEL) {
     std::string title =
         web_app::GenerateApplicationNameFromExtensionId(extension_id);
     // Note: Panels ignore all but the first url provided.
@@ -595,7 +594,6 @@ bool CreateWindowFunction::RunImpl() {
             GetExtension()));
     return true;
   }
-  // else fall through to create BrowserWindow
 #endif
 
   // Create a new BrowserWindow.

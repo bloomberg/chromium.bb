@@ -55,16 +55,12 @@ class PanelGtk : public NativePanel,
   virtual gfx::NativeWindow GetNativePanelHandle() OVERRIDE;
   virtual void UpdatePanelTitleBar() OVERRIDE;
   virtual void UpdatePanelLoadingAnimations(bool should_animate) OVERRIDE;
-  virtual FindBar* CreatePanelFindBar() OVERRIDE;
   virtual void NotifyPanelOnUserChangedTheme() OVERRIDE;
   virtual void PanelCut() OVERRIDE;
   virtual void PanelCopy() OVERRIDE;
   virtual void PanelPaste() OVERRIDE;
   virtual void DrawAttention(bool draw_attention) OVERRIDE;
   virtual bool IsDrawingAttention() const OVERRIDE;
-  virtual bool PreHandlePanelKeyboardEvent(
-      const content::NativeWebKeyboardEvent& event,
-      bool* is_keyboard_shortcut) OVERRIDE;
   virtual void HandlePanelKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void FullScreenModeChanged(bool is_full_screen) OVERRIDE;
@@ -73,14 +69,12 @@ class PanelGtk : public NativePanel,
       Panel::ExpansionState new_state) OVERRIDE;
   virtual void AttachWebContents(content::WebContents* contents) OVERRIDE;
   virtual void DetachWebContents(content::WebContents* contents) OVERRIDE;
-  virtual Browser* GetPanelBrowser() const OVERRIDE;
   // These sizes are in screen coordinates.
   virtual gfx::Size WindowSizeFromContentSize(
       const gfx::Size& content_size) const OVERRIDE;
   virtual gfx::Size ContentSizeFromWindowSize(
       const gfx::Size& window_size) const OVERRIDE;
   virtual int TitleOnlyHeight() const OVERRIDE;
-  virtual void EnsurePanelFullyVisible() OVERRIDE;
   virtual void SetPanelAlwaysOnTop(bool on_top) OVERRIDE;
   virtual void EnableResizeByMouse(bool enable) OVERRIDE;
   virtual void UpdatePanelMinimizeRestoreButtonVisibility() OVERRIDE;

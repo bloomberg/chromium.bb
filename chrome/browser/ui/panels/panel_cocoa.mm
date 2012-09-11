@@ -156,11 +156,6 @@ void PanelCocoa::UpdatePanelLoadingAnimations(bool should_animate) {
   [controller_ updateThrobber:should_animate];
 }
 
-FindBar* PanelCocoa::CreatePanelFindBar() {
-  NOTREACHED();  // legacy API from browser window. N/A for refactored panels.
-  return NULL;
-}
-
 void PanelCocoa::NotifyPanelOnUserChangedTheme() {
   NOTIMPLEMENTED();
 }
@@ -203,12 +198,6 @@ bool PanelCocoa::IsDrawingAttention() const {
   return [titlebar isDrawingAttention];
 }
 
-bool PanelCocoa::PreHandlePanelKeyboardEvent(
-    const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) {
-  // No need to prehandle as no keys are reserved.
-  return false;
-}
-
 void PanelCocoa::HandlePanelKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
   if (event.skip_in_browser || event.type == NativeWebKeyboardEvent::Char)
@@ -223,15 +212,6 @@ void PanelCocoa::HandlePanelKeyboardEvent(
 void PanelCocoa::FullScreenModeChanged(
     bool is_full_screen) {
   [controller_ fullScreenModeChanged:is_full_screen];
-}
-
-Browser* PanelCocoa::GetPanelBrowser() const {
-  NOTREACHED();  // legacy API from BrowserWindow. N/A for refactored panels.
-  return NULL;
-}
-
-void PanelCocoa::EnsurePanelFullyVisible() {
-  [controller_ ensureFullyVisible];
 }
 
 void PanelCocoa::SetPanelAlwaysOnTop(bool on_top) {

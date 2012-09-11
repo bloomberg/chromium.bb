@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/panels/panel_browser_frame_view.h"
-#include "chrome/browser/ui/panels/panel_browser_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 
 #if defined(USE_ASH)
@@ -17,10 +15,6 @@ namespace chrome {
 
 BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
     BrowserFrame* frame, BrowserView* browser_view) {
-  if (browser_view->IsPanel()) {
-    return new PanelBrowserFrameView(
-        frame, static_cast<PanelBrowserView*>(browser_view));
-  }
 
 #if defined(USE_ASH)
   // If this is an app window and it's maximized, use the special frame_view.

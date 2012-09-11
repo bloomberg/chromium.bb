@@ -15,8 +15,6 @@
 #include "chrome/browser/ui/panels/panel_strip.h"
 #include "ui/gfx/rect.h"
 
-class Browser;
-class BrowserWindow;
 class DetachedPanelStrip;
 class DockedPanelStrip;
 class GURL;
@@ -39,10 +37,6 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
   // Returns true if panels should be used for the extension.
   static bool ShouldUsePanels(const std::string& extension_id);
 
-  // Returns true if using browserless panels. False if using old panels.
-  // TODO(jennb): Delete after refactor.
-  static bool UseBrowserlessPanels();
-
   // Returns the default top-left position for a detached panel.
   gfx::Point GetDefaultDetachedPanelOrigin();
 
@@ -59,7 +53,6 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
                      const GURL& url,
                      const gfx::Rect& requested_bounds,
                      CreateMode mode);
-  Panel* CreatePanel(Browser* browser);  // legacy
 
   // Close all panels (asynchronous). Panels will be removed after closing.
   void CloseAll();
@@ -99,11 +92,6 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
 
   // Brings up or down the titlebars for all minimized panels.
   void BringUpOrDownTitlebars(bool bring_up);
-
-  // Returns the next browser window which could be either panel window or
-  // tabbed window, to switch to if the given panel is going to be deactivated.
-  // Returns NULL if such window cannot be found.
-  BrowserWindow* GetNextBrowserWindowToActivate(Browser* current_browser) const;
 
   int num_panels() const;
   std::vector<Panel*> panels() const;
@@ -177,14 +165,6 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
 
   PanelManager();
   virtual ~PanelManager();
-
-  // Combined CreatePanel() logic until we can delete legacy CreatePanel().
-  Panel* CreatePanel(Browser* browser,
-                     const std::string& app_name,
-                     Profile* profile,
-                     const GURL& url,
-                     const gfx::Rect& requested_bounds,
-                     CreateMode mode);
 
   // Overridden from DisplaySettingsProvider::DisplayAreaObserver:
   virtual void OnDisplayAreaChanged(const gfx::Rect& display_area) OVERRIDE;

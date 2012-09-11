@@ -930,11 +930,6 @@ const char kNotifyCloudPrintTokenExpired[]  = "notify-cp-token-expired";
 // Autoconfig (PAC) script.
 const char kNumPacThreads[]                 = "num-pac-threads";
 
-// Refactored (browserless) Panels are on by default in dev/canary/trunk.
-// Use this flag to revert to using the old-style (pre-refactor) Panels.
-// Flag will be removed after refactor is complete.
-const char kOldPanels[] = "old-panels";
-
 // Controls whether to use the fancy new scoring (takes into account
 // word breaks, does better balancing of topicality, recency, etc.) for
 // HistoryQuickProvider.

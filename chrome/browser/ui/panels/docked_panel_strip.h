@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/panels/panel_mouse_watcher_observer.h"
 #include "ui/gfx/rect.h"
 
-class Browser;
 class PanelManager;
 
 // This class manages a group of panels displayed in a horizontal strip,

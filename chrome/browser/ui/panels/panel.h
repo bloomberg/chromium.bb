@@ -18,8 +18,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/rect.h"
 
-class Browser;
-class BrowserWindow;
 class GURL;
 class NativePanel;
 class PanelHost;
@@ -85,12 +83,12 @@ class Panel : public BaseWindow,
   }
   const std::string extension_id() const;
 
-  virtual CommandUpdater* command_updater();
-  virtual Profile* profile() const;
+  CommandUpdater* command_updater();
+  Profile* profile() const;
 
   // Returns web contents of the panel, if any. There may be none if web
   // contents have not been added to the panel yet.
-  virtual content::WebContents* GetWebContents() const;
+  content::WebContents* GetWebContents() const;
 
   void SetExpansionState(ExpansionState new_expansion_state);
 
@@ -144,12 +142,6 @@ class Panel : public BaseWindow,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Construct a native panel BrowserWindow implementation for the specified
-  // |browser|. (legacy)
-  static NativePanel* CreateNativePanel(Browser* browser,
-                                        Panel* panel,
-                                        const gfx::Rect& bounds);
-
   // Construct a native panel implementation.
   static NativePanel* CreateNativePanel(Panel* panel,
                                         const gfx::Rect& bounds);
@@ -169,10 +161,6 @@ class Panel : public BaseWindow,
 
   // Asynchronous completion of panel close request.
   void OnNativePanelClosed();
-
-  // Legacy accessors.
-  virtual Browser* browser() const;
-  virtual BrowserWindow* browser_window() const;
 
   // May be NULL if:
   // * panel is newly created and has not been positioned yet.
@@ -205,14 +193,12 @@ class Panel : public BaseWindow,
   // Panel must be initialized to be "fully created" and ready for use.
   // Only called by PanelManager.
   bool initialized() const { return initialized_; }
-  virtual void Initialize(const gfx::Rect& bounds, Browser* browser);  // legacy
-  virtual void Initialize(Profile* profile, const GURL& url,
-                          const gfx::Rect& bounds);
+  void Initialize(Profile* profile, const GURL& url, const gfx::Rect& bounds);
 
-  // This is different from BrowserWindow::SetBounds():
+  // This is different from BaseWindow::SetBounds():
   // * SetPanelBounds() is only called by PanelManager to manage its position.
-  // * SetBounds() is called by the API to try to change the bounds, which is
-  //   not allowed for Panel.
+  // * SetBounds() is called by the API to try to change the bounds, which may
+  //   only change the size for Panel.
   void SetPanelBounds(const gfx::Rect& bounds);
 
   // Updates the panel bounds instantly without any animation.
@@ -280,11 +266,11 @@ class Panel : public BaseWindow,
   void OnPanelEndUserResizing();
 
   // Gives beforeunload handlers the chance to cancel the close.
-  virtual bool ShouldCloseWindow();
+  bool ShouldCloseWindow();
 
   // Invoked when the window containing us is closing. Performs the necessary
   // cleanup.
-  virtual void OnWindowClosing();
+  void OnWindowClosing();
 
   // Executes a command if it's enabled.
   // Returns true if the command is executed.
@@ -294,7 +280,7 @@ class Panel : public BaseWindow,
   string16 GetWindowTitle() const;
 
   // Gets the Favicon of the web contents.
-  virtual gfx::Image GetCurrentPageIcon() const;
+  gfx::Image GetCurrentPageIcon() const;
 
   // Updates the title bar to display the current title and icon.
   void UpdateTitleBar();
@@ -316,7 +302,6 @@ class Panel : public BaseWindow,
  private:
   friend class PanelManager;
   friend class PanelBrowserTest;
-  friend class OldPanelBrowserTest;
 
   enum MaxSizePolicy {
     // Default maximum size is proportional to the work area.
@@ -373,7 +358,7 @@ class Panel : public BaseWindow,
   bool in_preview_mode_;
 
   // Platform specifc implementation for panels.  It'd be one of
-  // PanelBrowserWindowGtk/PanelBrowserView/PanelBrowserWindowCocoa.
+  // PanelGtk/PanelView/PanelCocoa.
   NativePanel* native_panel_;  // Weak, owns us.
 
   AttentionMode attention_mode_;

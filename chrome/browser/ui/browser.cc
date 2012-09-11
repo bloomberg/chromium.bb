@@ -123,8 +123,6 @@
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "chrome/browser/ui/media_stream_infobar_delegate.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
-#include "chrome/browser/ui/panels/panel.h"
-#include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/search/search_delegate.h"
 #include "chrome/browser/ui/search/search_model.h"
@@ -240,16 +238,7 @@ const char kPrivacyDashboardUrl[] = "https://www.google.com/dashboard";
 // How long we wait before updating the browser chrome while loading a page.
 const int kUIUpdateCoalescingTimeMS = 200;
 
-bool AllowPanels(const std::string& app_name) {
-  return PanelManager::ShouldUsePanels(
-      web_app::GetExtensionIdFromApplicationName(app_name));
-}
-
 BrowserWindow* CreateBrowserWindow(Browser* browser) {
-#if !defined(USE_ASH)
-  if (browser->is_type_panel())
-    return PanelManager::GetInstance()->CreatePanel(browser)->browser_window();
-#endif
   return BrowserWindow::CreateBrowserWindow(browser);
 }
 
@@ -316,9 +305,6 @@ Browser::CreateParams Browser::CreateParams::CreateForApp(
     Profile* profile) {
   DCHECK(type != TYPE_TABBED);
   DCHECK(!app_name.empty());
-
-  if (type == TYPE_PANEL && !AllowPanels(app_name))
-    type = TYPE_POPUP;
 
   CreateParams params(type, profile);
   params.app_name = app_name;
@@ -1446,8 +1432,7 @@ void Browser::OnStartDownload(WebContents* source,
   // Don't show the animation for "Save file" downloads.
   // For non-theme extensions, we don't show the download animation.
   // Show animation in same window as the download shelf. Download shelf
-  // may not be in the same window that initiated the download, e.g.
-  // Panels.
+  // may not be in the same window that initiated the download.
   // Don't show the animation if the selected tab is not visible (i.e. the
   // window is minimized, we're in a unit test, etc.).
   WebContents* shelf_tab = chrome::GetActiveWebContents(shelf->browser());
@@ -1834,15 +1819,8 @@ void Browser::Observe(int type,
                 details)->extension;
         for (int i = tab_strip_model_->count() - 1; i >= 0; --i) {
           WebContents* tc = chrome::GetTabContentsAt(this, i)->web_contents();
-          bool close_tab_contents =
-              tc->GetURL().SchemeIs(chrome::kExtensionScheme) &&
-              tc->GetURL().host() == extension->id();
-          // We want to close all panels originated by the unloaded extension.
-          close_tab_contents = close_tab_contents ||
-              (type_ == TYPE_PANEL &&
-               (web_app::GetExtensionIdFromApplicationName(app_name_) ==
-                extension->id()));
-          if (close_tab_contents)
+          if (tc->GetURL().SchemeIs(chrome::kExtensionScheme) &&
+              tc->GetURL().host() == extension->id())
             chrome::CloseWebContents(this, tc);
         }
       }

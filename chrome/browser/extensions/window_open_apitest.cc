@@ -208,8 +208,6 @@ class WindowOpenPanelTest : public ExtensionApiTest {
 #define MAYBE_WindowOpenPanel WindowOpenPanel
 #endif
 IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, MAYBE_WindowOpenPanel) {
-  if (!PanelManager::UseBrowserlessPanels())
-    return;
   ASSERT_TRUE(RunExtensionTest("window_open/panel")) << message_;
 }
 
@@ -221,24 +219,18 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, MAYBE_WindowOpenPanel) {
 #define MAYBE_WindowOpenPanelDetached WindowOpenPanelDetached
 #endif
 IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, MAYBE_WindowOpenPanelDetached) {
-  if (!PanelManager::UseBrowserlessPanels())
-    return;
   ASSERT_TRUE(RunExtensionTest("window_open/panel_detached")) << message_;
 }
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
 // Focus test fails if there is no window manager on Linux.
 IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, WindowOpenFocus) {
-  if (!PanelManager::UseBrowserlessPanels())
-    return;
   ASSERT_TRUE(RunExtensionTest("window_open/focus")) << message_;
 }
 #endif
 
 IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest,
                        CloseNonExtensionPanelsOnUninstall) {
-  if (!PanelManager::UseBrowserlessPanels())
-    return;
 #if defined(USE_ASH)
   // On Ash, new panel windows open as popup windows instead.
   int num_popups = 4;
@@ -278,9 +270,15 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest,
 
   UninstallExtension(extension->id());
 
-  // Wait for one tab and one popup in non-extension domain to stay open.
+  // Wait for the tabs and popups in non-extension domain to stay open.
   // Expect everything else, including panels, to close.
-  num_popups = 1;
+#if defined(USE_ASH)
+  // On Ash, new panel windows open as popup windows instead, so there are 2
+  // extension domain popups that will close (instead of 1 popup on non-Ash).
+  num_popups -= 2;
+#else
+  num_popups -= 1;
+#endif
   WaitForTabsAndPopups(browser(), 1, num_popups, 0);
 }
 
@@ -292,9 +290,6 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest,
 #define MAYBE_WindowOpenFromPanel WindowOpenFromPanel
 #endif
 IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, MAYBE_WindowOpenFromPanel) {
-  if (!PanelManager::UseBrowserlessPanels())
-    return;
-
   ASSERT_TRUE(StartTestServer());
 
   // Load the extension that will open a panel which then calls window.open.

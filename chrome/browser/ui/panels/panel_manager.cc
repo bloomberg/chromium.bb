@@ -9,12 +9,8 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/panels/detached_panel_strip.h"
 #include "chrome/browser/ui/panels/docked_panel_strip.h"
-#include "chrome/browser/ui/panels/old_panel.h"
 #include "chrome/browser/ui/panels/panel_drag_controller.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #include "chrome/browser/ui/panels/panel_resize_controller.h"
@@ -98,14 +94,6 @@ bool PanelManager::ShouldUsePanels(const std::string& extension_id) {
   return true;
 }
 
-// static
-bool PanelManager::UseBrowserlessPanels() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kOldPanels))
-    return false;
-
-  return chrome::VersionInfo::GetChannel() <= chrome::VersionInfo::CHANNEL_DEV;
-}
-
 PanelManager::PanelManager()
     : panel_mouse_watcher_(PanelMouseWatcher::Create()),
       auto_sizing_enabled_(true) {
@@ -159,21 +147,7 @@ int PanelManager::GetMaxPanelHeight() const {
   return display_area_.height() * kPanelMaxHeightFactor;
 }
 
-Panel* PanelManager::CreatePanel(Browser* browser) {
-  return CreatePanel(browser, "", NULL, GURL(),
-                     browser->override_bounds(), CREATE_AS_DOCKED);
-}
-
 Panel* PanelManager::CreatePanel(const std::string& app_name,
-                                 Profile* profile,
-                                 const GURL& url,
-                                 const gfx::Rect& requested_bounds,
-                                 CreateMode mode) {
-  return CreatePanel(NULL, app_name, profile, url, requested_bounds, mode);
-}
-
-Panel* PanelManager::CreatePanel(Browser* browser,
-                                 const std::string& app_name,
                                  Profile* profile,
                                  const GURL& url,
                                  const gfx::Rect& requested_bounds,
@@ -217,15 +191,8 @@ Panel* PanelManager::CreatePanel(Browser* browser,
   }
 
   // Create the panel.
-  Panel* panel;
-  if (browser) {
-    // Legacy panel. Delete after refactor.
-    panel = new OldPanel(browser, min_size, max_size);
-    panel->Initialize(bounds, browser);
-  } else {
-    panel = new Panel(app_name, min_size, max_size);
-    panel->Initialize(profile, url, bounds);
-  }
+  Panel* panel = new Panel(app_name, min_size, max_size);
+  panel->Initialize(profile, url, bounds);
 
   // Auto resizable feature is enabled only if no initial size is requested.
   if (auto_sizing_enabled() && requested_bounds.width() == 0 &&
@@ -343,20 +310,6 @@ bool PanelManager::ShouldBringUpTitlebars(int mouse_x, int mouse_y) const {
 
 void PanelManager::BringUpOrDownTitlebars(bool bring_up) {
   docked_strip_->BringUpOrDownTitlebars(bring_up);
-}
-
-BrowserWindow* PanelManager::GetNextBrowserWindowToActivate(
-    Browser* current_browser) const {
-  // Find the last active browser window that is not minimized.
-  BrowserList::const_reverse_iterator iter = BrowserList::begin_last_active();
-  BrowserList::const_reverse_iterator end = BrowserList::end_last_active();
-  for (; (iter != end); ++iter) {
-    Browser* browser = *iter;
-    if (current_browser != browser && !browser->window()->IsMinimized())
-      return browser->window();
-  }
-
-  return NULL;
 }
 
 void PanelManager::CloseAll() {

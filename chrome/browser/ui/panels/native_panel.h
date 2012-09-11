@@ -8,8 +8,6 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "ui/gfx/native_widget_types.h"
 
-class Browser;
-class FindBar;
 class NativePanelTesting;
 
 namespace content {
@@ -22,22 +20,12 @@ class Rect;
 }  // namespace gfx
 
 // An interface for a class that implements platform-specific behavior for panel
-// windows. We use this interface for two reasons:
-// 1. We don't want to use BrowserWindow as the interface between shared panel
-//    code and platform-specific code. BrowserWindow has a lot of methods, most
-//    of which we don't use and simply stub out with NOTIMPLEMENTED().
-// 2. We need some additional methods that BrowserWindow doesn't provide, such
-//    as MinimizePanel() and RestorePanel().
-// Note that even though we don't use BrowserWindow directly, Windows and GTK+
-// still use the BrowserWindow interface as part of their implementation so we
-// use Panel in all the method names to avoid collisions.
+// windows to provide additional methods not found in BaseWindow.
 class NativePanel {
   friend class BasePanelBrowserTest;  // for CreateNativePanelTesting
   friend class Panel;
   friend class PanelBrowserWindow;
   friend class PanelBrowserTest;
-  friend class OldBasePanelBrowserTest;  // for CreateNativePanelTesting
-  friend class OldPanelBrowserTest;
 
  protected:
   virtual ~NativePanel() {}
@@ -55,8 +43,6 @@ class NativePanel {
   virtual gfx::NativeWindow GetNativePanelHandle() = 0;
   virtual void UpdatePanelTitleBar() = 0;
   virtual void UpdatePanelLoadingAnimations(bool should_animate) = 0;
-  virtual void ShowTaskManagerForPanel() {}  // legacy
-  virtual FindBar* CreatePanelFindBar() = 0;  // legacy
   virtual void NotifyPanelOnUserChangedTheme() = 0;
   virtual void PanelWebContentsFocused(content::WebContents* contents) {}
   virtual void PanelCut() = 0;
@@ -64,20 +50,13 @@ class NativePanel {
   virtual void PanelPaste() = 0;
   virtual void DrawAttention(bool draw_attention) = 0;
   virtual bool IsDrawingAttention() const = 0;
-  virtual bool PreHandlePanelKeyboardEvent(
-      const content::NativeWebKeyboardEvent& event,
-      bool* is_keyboard_shortcut) = 0;
   virtual void HandlePanelKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) = 0;
   virtual void FullScreenModeChanged(bool is_full_screen) = 0;
   virtual void PanelExpansionStateChanging(Panel::ExpansionState old_state,
                                            Panel::ExpansionState new_state) = 0;
-  // TODO(jennb): Make these new methods pure virtual after panel refactor.
-  virtual void AttachWebContents(content::WebContents* contents) {}
-  virtual void DetachWebContents(content::WebContents* contents) {}
-
-  virtual Browser* GetPanelBrowser() const = 0;  // legacy
-  virtual void DestroyPanelBrowser() {}  // legacy
+  virtual void AttachWebContents(content::WebContents* contents) = 0;
+  virtual void DetachWebContents(content::WebContents* contents) = 0;
 
   // Returns the exterior size of the panel window given the client content
   // size and vice versa.
@@ -87,10 +66,6 @@ class NativePanel {
       const gfx::Size& window_size) const = 0;
 
   virtual int TitleOnlyHeight() const = 0;
-
-  // Brings the panel to the top of the z-order without activating it. This
-  // will make sure that the panel is not obscured by other top-most windows.
-  virtual void EnsurePanelFullyVisible() = 0;
 
   // Sets whether the panel window is always on top.
   virtual void SetPanelAlwaysOnTop(bool on_top) = 0;

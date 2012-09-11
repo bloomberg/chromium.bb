@@ -264,7 +264,7 @@ void PanelGtk::Init() {
 
   // TODO(jennb): add GlobalMenuBar after refactoring out Browser.
 
-  // The window container draws the custom browser frame.
+  // The window container draws the custom window frame.
   window_container_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
   gtk_widget_set_name(window_container_, "chrome-custom-frame-border");
   gtk_widget_set_app_paintable(window_container_, TRUE);
@@ -673,7 +673,7 @@ gboolean PanelGtk::OnButtonPressEvent(GtkWidget* widget,
 }
 
 void PanelGtk::ActiveWindowChanged(GdkWindow* active_window) {
-  // Do nothing if we're in the process of closing the browser window.
+  // Do nothing if we're in the process of closing the panel window.
   if (!window_)
     return;
 
@@ -856,10 +856,6 @@ void PanelGtk::LoadingAnimationCallback() {
   titlebar_->UpdateThrobber(panel_->GetWebContents());
 }
 
-FindBar* PanelGtk::CreatePanelFindBar() {
-  return NULL;  // legacy
-}
-
 void PanelGtk::NotifyPanelOnUserChangedTheme() {
   titlebar_->UpdateTextColor();
   InvalidateWindow();
@@ -896,13 +892,6 @@ void PanelGtk::DrawAttention(bool draw_attention) {
 
 bool PanelGtk::IsDrawingAttention() const {
   return is_drawing_attention_;
-}
-
-bool PanelGtk::PreHandlePanelKeyboardEvent(
-    const NativeWebKeyboardEvent& event,
-    bool* is_keyboard_shortcut) {
-  // No need to prehandle as no keys are reserved.
-  return false;
 }
 
 void PanelGtk::HandlePanelKeyboardEvent(
@@ -943,10 +932,6 @@ void PanelGtk::DetachWebContents(content::WebContents* contents) {
   }
 }
 
-Browser* PanelGtk::GetPanelBrowser() const {
-  return NULL;  // legacy
-}
-
 gfx::Size PanelGtk::WindowSizeFromContentSize(
     const gfx::Size& content_size) const {
   gfx::Size& frame_size = GetFrameSize();
@@ -965,10 +950,6 @@ int PanelGtk::TitleOnlyHeight() const {
   GtkAllocation allocation;
   gtk_widget_get_allocation(titlebar_->widget(), &allocation);
   return allocation.height;
-}
-
-void PanelGtk::EnsurePanelFullyVisible() {
-  gtk_window_present(window_);
 }
 
 void PanelGtk::SetPanelAlwaysOnTop(bool on_top) {

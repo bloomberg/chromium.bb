@@ -126,9 +126,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeTabContentsChanges) {
 #define MAYBE_NoticePanelChanges NoticePanelChanges
 #endif
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_NoticePanelChanges) {
-  if (!PanelManager::UseBrowserlessPanels())
-    return;
-
   EXPECT_EQ(0, model()->ResourceCount());
 
   // Show the task manager. This populates the model, and helps with debugging

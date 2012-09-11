@@ -304,11 +304,6 @@ void PanelView::UpdatePanelLoadingAnimations(bool should_animate) {
   GetFrameView()->UpdateThrobber();
 }
 
-FindBar* PanelView::CreatePanelFindBar() {
-  NOTREACHED();  // legacy API from browser window. N/A for refactored panels.
-  return NULL;
-}
-
 void PanelView::NotifyPanelOnUserChangedTheme() {
   GetFrameView()->SchedulePaint();
 }
@@ -348,12 +343,6 @@ bool PanelView::IsDrawingAttention() const {
   return is_drawing_attention_;
 }
 
-bool PanelView::PreHandlePanelKeyboardEvent(
-    const content::NativeWebKeyboardEvent& event,
-    bool* is_keyboard_shortcut) {
-  return false;
-}
-
 void PanelView::HandlePanelKeyboardEvent(
     const content::NativeWebKeyboardEvent& event) {
   views::FocusManager* focus_manager = GetFocusManager();
@@ -375,15 +364,6 @@ void PanelView::FullScreenModeChanged(bool is_full_screen) {
   } else {
     ShowPanelInactive();
   }
-}
-
-Browser* PanelView::GetPanelBrowser() const {
-  NOTREACHED();  // legacy API from BrowserWindow. N/A for refactored panels.
-  return NULL;
-}
-
-void PanelView::EnsurePanelFullyVisible() {
-  // This method is going to be removed.
 }
 
 void PanelView::SetPanelAlwaysOnTop(bool on_top) {

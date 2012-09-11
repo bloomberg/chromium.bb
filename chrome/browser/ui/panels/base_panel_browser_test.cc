@@ -13,13 +13,11 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/browser/ui/panels/test_panel_active_state_observer.h"
 #include "chrome/browser/ui/panels/test_panel_mouse_watcher.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -37,7 +35,6 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #include "chrome/browser/ui/cocoa/run_loop_testing.h"
 #endif
 
@@ -194,9 +191,6 @@ const FilePath::CharType* BasePanelBrowserTest::kTestDir =
 BasePanelBrowserTest::BasePanelBrowserTest()
     : InProcessBrowserTest(),
       mock_display_settings_enabled_(true) {
-#if defined(OS_MACOSX)
-  FindBarBridge::disable_animations_during_testing_ = true;
-#endif
 }
 
 BasePanelBrowserTest::~BasePanelBrowserTest() {
@@ -301,7 +295,7 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
   // Opening panels on a Mac causes NSWindowController of the Panel window
   // to be autoreleased. We need a pool drained after it's done so the test
   // can close correctly. The NSWindowController of the Panel window controls
-  // lifetime of the Browser object so we want to release it as soon as
+  // lifetime of the Panel object so we want to release it as soon as
   // possible. In real Chrome, this is done by message pump.
   // On non-Mac platform, this is an empty class.
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
@@ -401,12 +395,6 @@ Panel* BasePanelBrowserTest::CreateDetachedPanel(const std::string& name,
 NativePanelTesting* BasePanelBrowserTest::CreateNativePanelTesting(
     Panel* panel) {
   return panel->native_panel()->CreateNativePanelTesting();
-}
-
-void BasePanelBrowserTest::CreateTestTabContents(Browser* browser) {
-  TabContents* tab_contents = TabContents::Factory::CreateTabContents(
-      WebContentsTester::CreateTestWebContents(browser->profile(), NULL));
-  chrome::AddTab(browser, tab_contents, content::PAGE_TRANSITION_LINK);
 }
 
 scoped_refptr<Extension> BasePanelBrowserTest::CreateExtension(

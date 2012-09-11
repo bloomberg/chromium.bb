@@ -17,16 +17,15 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#import "chrome/browser/ui/cocoa/browser_command_executor.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/event_utils.h"
-#import "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
-#import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
 #import "chrome/browser/ui/cocoa/menu_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/favicon_util_mac.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/throbber_view.h"
-#include "chrome/browser/ui/panels/native_panel_cocoa.h"
 #include "chrome/browser/ui/panels/panel_bounds_animation.h"
+#include "chrome/browser/ui/panels/panel_cocoa.h"
 #include "chrome/browser/ui/panels/panel_constants.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
@@ -414,9 +413,26 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
 }
 @end
 
+// ChromeEventProcessingWindow expects its controller to implement the
+// BrowserCommandExecutor protocol.
+@interface PanelWindowControllerCocoa (InternalAPI) <BrowserCommandExecutor>
+
+// BrowserCommandExecutor methods.
+- (void)executeCommand:(int)command;
+
+@end
+
+@implementation PanelWindowControllerCocoa (InternalAPI)
+
+// This gets called whenever a browser-specific keyboard shortcut is performed
+// in the Panel window. We simply swallow all those events.
+- (void)executeCommand:(int)command {}
+
+@end
+
 @implementation PanelWindowControllerCocoa
 
-- (id)initWithPanel:(NativePanelCocoa*)window {
+- (id)initWithPanel:(PanelCocoa*)window {
   NSString* nibpath =
       [base::mac::FrameworkBundle() pathForResource:@"Panel" ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
@@ -592,15 +608,6 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
   [titlebar_view_ setRestoreButtonVisibility:panel->CanRestore()];
 }
 
-- (void)addFindBar:(FindBarCocoaController*)findBarCocoaController {
-  NSView* contentView = [[self window] contentView];
-  [contentView addSubview:[findBarCocoaController view]];
-
-  CGFloat maxY = NSMaxY([contentView frame]);
-  CGFloat maxWidth = NSWidth([contentView frame]);
-  [findBarCocoaController positionFindBarViewAtMaxY:maxY maxWidth:maxWidth];
-}
-
 - (void)webContentsInserted:(WebContents*)contents {
   [contentsController_ changeWebContents:contents];
   DCHECK(![[contentsController_ view] isHidden]);
@@ -627,27 +634,16 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
   if (action == @selector(commandDispatch:) ||
       action == @selector(commandDispatchUsingKeyModifiers:)) {
     NSInteger tag = [item tag];
-    CommandUpdater* command_updater =
-        windowShim_->panel()->command_updater();
+    CommandUpdater* command_updater = windowShim_->panel()->command_updater();
     if (command_updater->SupportsCommand(tag)) {
       enable = command_updater->IsCommandEnabled(tag);
-      // Disable commands that do not apply to Panels.
-      switch (tag) {
-        case IDC_CLOSE_TAB:
-        case IDC_FULLSCREEN:
-        case IDC_PRESENTATION_MODE:
-        case IDC_SHOW_SYNC_SETUP:
-          enable = NO;
-          break;
-        default:
-          // Special handling for the contents of the Text Encoding submenu. On
-          // Mac OS, instead of enabling/disabling the top-level menu item, we
-          // enable/disable the submenu's contents (per Apple's HIG).
-          EncodingMenuController encoding_controller;
-          if (encoding_controller.DoesCommandBelongToEncodingMenu(tag)) {
-            enable &= command_updater->IsCommandEnabled(IDC_ENCODING_MENU) ?
-                YES : NO;
-          }
+      // Special handling for the contents of the Text Encoding submenu. On
+      // Mac OS, instead of enabling/disabling the top-level menu item, we
+      // enable/disable the submenu's contents (per Apple's HIG).
+      EncodingMenuController encoding_controller;
+      if (encoding_controller.DoesCommandBelongToEncodingMenu(tag)) {
+        enable &= command_updater->IsCommandEnabled(IDC_ENCODING_MENU) ?
+            YES : NO;
       }
     }
   }
@@ -674,10 +670,6 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
           event, [event modifierFlags]);
   windowShim_->panel()->ExecuteCommandWithDisposition(
       [sender tag], disposition);
-}
-
-- (void)executeCommand:(int)command {
-  windowShim_->panel()->ExecuteCommandIfEnabled(command);
 }
 
 // Handler for the custom Close button.
@@ -736,7 +728,7 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
   [self terminateBoundsAnimation];
   windowShim_->DidCloseNativeWindow();
   // Call |-autorelease| after a zero-length delay to avoid deadlock from
-  // code in the current run loop that waits on BROWSER_CLOSED notification.
+  // code in the current run loop that waits on PANEL_CLOSED notification.
   // The notification is sent when this object is freed, but this object
   // cannot be freed until the current run loop completes.
   [self performSelector:@selector(autorelease)

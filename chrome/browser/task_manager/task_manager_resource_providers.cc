@@ -624,9 +624,6 @@ TaskManager::Resource* TaskManagerPanelResourceProvider::GetResource(
 }
 
 void TaskManagerPanelResourceProvider::StartUpdating() {
-  if (!PanelManager::UseBrowserlessPanels())
-    return;
-
   DCHECK(!updating_);
   updating_ = true;
 
@@ -643,9 +640,6 @@ void TaskManagerPanelResourceProvider::StartUpdating() {
 }
 
 void TaskManagerPanelResourceProvider::StopUpdating() {
-  if (!PanelManager::UseBrowserlessPanels())
-    return;
-
   DCHECK(updating_);
   updating_ = false;
 

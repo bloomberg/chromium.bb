@@ -41,7 +41,6 @@ class InfoBarTabHelper;
 class InstantLoader;
 class NavigationMetricsRecorder;
 class OffscreenTabContentsCreator;
-class OldBasePanelBrowserTest;
 class OmniboxSearchHint;
 class PanelHost;
 class PasswordManager;
@@ -165,7 +164,6 @@ class TabContents : public content::WebContentsObserver {
     friend class GeolocationPermissionContextTests;
     friend class InfoBarControllerContentsCreator;
     friend class InstantLoader;
-    friend class OldBasePanelBrowserTest;
     friend class OffscreenTabContentsCreator;
     friend class PanelHost;
     friend class prerender::PrerenderContents;

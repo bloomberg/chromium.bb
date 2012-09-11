@@ -402,16 +402,6 @@ void Navigate(NavigateParams* params) {
             params->window_bounds);
   }
 
-  // Adjust disposition for the navigation happending in the sad page of the
-  // panel window.
-  if (params->source_contents &&
-      params->source_contents->web_contents()->IsCrashed() &&
-      params->disposition == CURRENT_TAB &&
-      params->browser &&
-      params->browser->is_type_panel()) {
-    params->disposition = NEW_FOREGROUND_TAB;
-  }
-
   params->browser = GetBrowserForDisposition(params);
 
   if (!params->browser)

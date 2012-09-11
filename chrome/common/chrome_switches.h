@@ -249,7 +249,6 @@ extern const char kNoStartupWindow[];
 extern const char kNotifyCloudPrintTokenExpired[];
 extern const char kNtpAppInstallHint[];
 extern const char kNumPacThreads[];
-extern const char kOldPanels[];
 extern const char kOmniboxHistoryQuickProviderNewScoring[];
 extern const char kOmniboxHistoryQuickProviderNewScoringEnabled[];
 extern const char kOmniboxHistoryQuickProviderNewScoringDisabled[];
