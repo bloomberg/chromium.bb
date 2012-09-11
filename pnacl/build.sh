@@ -2872,7 +2872,7 @@ libs-support-newlib-crt1() {
 libs-support-bitcode() {
   local libmode=$1
   local build_dir="${TC_BUILD}/libs-support-bitcode"
-  local cc_cmd="${PNACL_CC_NEUTRAL}"
+  local cc_cmd="${PNACL_CC_NEUTRAL} -Wall -Werror"
 
   mkdir -p "${build_dir}"
   spushd "${PNACL_SUPPORT}/bitcode"
@@ -2917,7 +2917,7 @@ libs-support-native() {
   local label="LIBS-SUPPORT (${arch})"
   mkdir -p "${destdir}"
 
-  local flags="--pnacl-allow-native --pnacl-allow-translate"
+  local flags="--pnacl-allow-native --pnacl-allow-translate -Wall -Werror"
   local cc_cmd="${PNACL_CC_NEUTRAL} -arch ${arch} ${flags}"
 
   spushd "${PNACL_SUPPORT}"
@@ -2964,7 +2964,7 @@ dummy-irt-shim() {
   local label="DUMMY-IRT-SHIM (${arch})"
   mkdir -p "${destdir}"
 
-  local flags="--pnacl-allow-native --pnacl-allow-translate"
+  local flags="--pnacl-allow-native --pnacl-allow-translate -Wall -Werror"
   local cc_cmd="${PNACL_CC_NEUTRAL} -arch ${arch} ${flags}"
 
   spushd "${PNACL_SUPPORT}"
