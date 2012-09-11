@@ -7,55 +7,47 @@
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stringize_macros.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
-// TODO(joi): Include a src-internal file that defines the official
-// keys for official builds, something like: #include
-// "google_apis/internal/official_google_api_keys.h"
+#include "google_apis/internal/google_chrome_api_keys.h"
 #endif
 
 #if !defined(GOOGLE_API_KEY)
-// TODO(joi): This should be blank here, with the official key
-// provided in official builds.
+// TODO(joi): Make this blank once it is set via include.gypi.
 #define GOOGLE_API_KEY "abcNOTREALKEYxyz"
 #endif
 
 #if !defined(GOOGLE_CLIENT_ID_MAIN)
-// TODO(joi): This should be blank here, but provided in official
-// builds.
+// TODO(joi): Make this blank once it is set via include.gypi.
 #define GOOGLE_CLIENT_ID_MAIN "77185425430.apps.googleusercontent.com"
 #endif
 
 #if !defined(GOOGLE_CLIENT_SECRET_MAIN)
-// TODO(joi): This should be blank here, but provided in official
-// builds.
+// TODO(joi): Make this blank once it is set via include.gypi.
 #define GOOGLE_CLIENT_SECRET_MAIN "OTJgUOQcT7lO7GsGZq2G4IlT"
 #endif
 
 #if !defined(GOOGLE_CLIENT_ID_CLOUD_PRINT)
-// TODO(joi): This should be blank here, but provided in official
-// builds.
+// TODO(joi): Make this blank once it is set via include.gypi.
 #define GOOGLE_CLIENT_ID_CLOUD_PRINT "551556820943.apps.googleusercontent.com"
 #endif
 
 #if !defined(GOOGLE_CLIENT_SECRET_CLOUD_PRINT)
-// TODO(joi): This should be blank here, but provided in official
-// builds.
+// TODO(joi): Make this blank once it is set via include.gypi.
 #define GOOGLE_CLIENT_SECRET_CLOUD_PRINT "u3/mp8CgLFxh4uiX1855/MHe"
 #endif
 
 #if !defined(GOOGLE_CLIENT_ID_REMOTING)
-// TODO(joi): This should be blank here, but provided in official
-// builds.
+// TODO(joi): Make this blank once it is set via include.gypi.
 #define GOOGLE_CLIENT_ID_REMOTING \
   "440925447803-avn2sj1kc099s0r7v62je5s339mu0am1.apps.googleusercontent.com"
 #endif
 
 #if !defined(GOOGLE_CLIENT_SECRET_REMOTING)
-// TODO(joi): This should be blank here, but provided in official
-// builds.
+// TODO(joi): Make this blank once it is set via include.gypi.
 #define GOOGLE_CLIENT_SECRET_REMOTING "Bgur6DFiOMM1h8x-AQpuTQlK"
 #endif
 
@@ -188,10 +180,17 @@ class APIKeyCache {
                                        CommandLine* command_line) {
     std::string key_value = baked_in_value;
     std::string temp;
-    if (environment->GetVar(environment_variable_name, &temp))
+    if (environment->GetVar(environment_variable_name, &temp)) {
       key_value = temp;
-    if (command_line_switch && command_line->HasSwitch(command_line_switch))
+      LOG(INFO) << "Overriding API key " << environment_variable_name
+                << " with value " << key_value << " from environment variable.";
+    }
+
+    if (command_line_switch && command_line->HasSwitch(command_line_switch)) {
       key_value = command_line->GetSwitchValueASCII(command_line_switch);
+      LOG(INFO) << "Overriding API key " << environment_variable_name
+                << " with value " << key_value << " from command-line switch.";
+    }
 
     if (key_value.size() == 0) {
 #if defined(GOOGLE_CHROME_BUILD)
@@ -199,30 +198,15 @@ class APIKeyCache {
       // default keys themselves, which will have an empty default.
       CHECK(default_if_unset.size() == 0);
 #endif
+      LOG(INFO) << "Using default value \"" << default_if_unset
+                << "\" for API key " << environment_variable_name;
       key_value = default_if_unset;
     }
 
-    return key_value;
-  }
+    // This should remain a debug-only log.
+    DVLOG(1) << "API key " << environment_variable_name << "=" << key_value;
 
-  // If |default_value| itself is not empty, any empty strings in
-  // |array| (which has |array_count| items) will be replaced with a
-  // copy of the default value.
-  static void ReplaceEmptyItemsWithDefaultValue(
-      const std::string& default_value,
-      std::string* array,
-      size_t array_count) {
-    if (default_value.size() > 0) {
-      for (size_t i = 0; i < array_count; ++i) {
-        if (array[i].size() == 0) {
-#if defined(GOOGLE_CHROME_BUILD)
-          // None of these should be empty in official builds.
-          CHECK(false);
-#endif
-          array[i] = default_value;
-        }
-      }
-    }
+    return key_value;
   }
 
   std::string api_key_;
