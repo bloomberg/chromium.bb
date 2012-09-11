@@ -67,6 +67,7 @@ void wl_event_source_check(struct wl_event_source *source);
 
 
 int wl_event_loop_dispatch(struct wl_event_loop *loop, int timeout);
+void wl_event_loop_dispatch_idle(struct wl_event_loop *loop);
 struct wl_event_source *wl_event_loop_add_idle(struct wl_event_loop *loop,
 					       wl_event_loop_idle_func_t func,
 					       void *data);

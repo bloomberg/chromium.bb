@@ -378,8 +378,8 @@ post_dispatch_check(struct wl_event_loop *loop)
 	return n;
 }
 
-static void
-dispatch_idle_sources(struct wl_event_loop *loop)
+WL_EXPORT void
+wl_event_loop_dispatch_idle(struct wl_event_loop *loop)
 {
 	struct wl_event_source_idle *source;
 
@@ -398,7 +398,7 @@ wl_event_loop_dispatch(struct wl_event_loop *loop, int timeout)
 	struct wl_event_source *source;
 	int i, count, n;
 
-	dispatch_idle_sources(loop);
+	wl_event_loop_dispatch_idle(loop);
 
 	count = epoll_wait(loop->epoll_fd, ep, ARRAY_LENGTH(ep), timeout);
 	if (count < 0)
