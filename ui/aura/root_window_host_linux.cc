@@ -38,6 +38,10 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/chromeos/chromeos_version.h"
+#endif
+
 using std::max;
 using std::min;
 
@@ -755,22 +759,26 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
         case ui::ET_TOUCH_PRESSED:
         case ui::ET_TOUCH_RELEASED: {
           ui::TouchEvent touchev(xev);
+#if defined(OS_CHROMEOS)
           // X maps the touch-surface to the size of the X root-window. In
           // multi-monitor setup, the X root-window size is a combination of
           // both the monitor sizes. So it is necessary to remap the location of
           // the event from the X root-window to the X host-window for the aura
           // root-window.
-          touchev.CalibrateLocation(x_root_bounds_.size(), bounds_.size());
-          if (!bounds_.Contains(touchev.location())) {
-            // This might still be in the bezel region.
-            gfx::Rect expanded(bounds_);
-            expanded.Inset(-kXRootWindowPaddingLeft,
-                           -kXRootWindowPaddingTop,
-                           -kXRootWindowPaddingRight,
-                           -kXRootWindowPaddingBottom);
-            if (!expanded.Contains(touchev.location()))
-              break;
+          if (base::chromeos::IsRunningOnChromeOS()) {
+            touchev.CalibrateLocation(x_root_bounds_.size(), bounds_.size());
+            if (!bounds_.Contains(touchev.location())) {
+              // This might still be in the bezel region.
+              gfx::Rect expanded(bounds_);
+              expanded.Inset(-kXRootWindowPaddingLeft,
+                             -kXRootWindowPaddingTop,
+                             -kXRootWindowPaddingRight,
+                             -kXRootWindowPaddingBottom);
+              if (!expanded.Contains(touchev.location()))
+                break;
+            }
           }
+#endif  // defined(OS_CHROMEOS)
           delegate_->OnHostTouchEvent(&touchev);
           break;
         }
