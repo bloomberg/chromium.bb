@@ -57,10 +57,12 @@
 #include <malloc.h>
 #elif defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
+#if !defined(OS_IOS)
 #include "base/mach_ipc_mac.h"
 #include "base/system_monitor/system_monitor.h"
 #include "content/browser/mach_broker_mac.h"
 #include "content/common/sandbox_init_mac.h"
+#endif  // !OS_IOS
 #endif  // OS_WIN
 
 #if defined(OS_POSIX)
@@ -110,7 +112,7 @@ base::LazyInstance<ContentUtilityClient>
 
 static CAppModule _Module;
 
-#elif defined(OS_MACOSX)
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
 
 // Completes the Mach IPC handshake by sending this process' task port to the
 // parent process.  The parent is listening on the Mach port given by
@@ -187,6 +189,7 @@ void CommonSubprocessInit(const std::string& process_type) {
 
 static base::ProcessId GetBrowserPid(const CommandLine& command_line) {
   base::ProcessId browser_pid = base::GetCurrentProcId();
+#if !defined(OS_IOS)
   if (command_line.HasSwitch(switches::kProcessChannelID)) {
 #if defined(OS_WIN) || defined(OS_MACOSX)
     std::string channel_name =
@@ -214,6 +217,7 @@ static base::ProcessId GetBrowserPid(const CommandLine& command_line) {
             base::GetParentProcessId(base::GetCurrentProcId()));
 #endif
   }
+#endif  // !OS_IOS
   return browser_pid;
 }
 
@@ -342,6 +346,7 @@ int RunZygote(const MainFunctionParams& main_function_params,
 }
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 
+#if !defined(OS_IOS)
 // Run the FooMain() for a given process type.
 // If |process_type| is empty, runs BrowserMain().
 // Returns the exit code for this process.
@@ -394,6 +399,7 @@ int RunNamedProcessTypeMain(
   NOTREACHED() << "Unknown process type: " << process_type;
   return 1;
 }
+#endif  // !OS_IOS
 
 class ContentMainRunnerImpl : public ContentMainRunner {
  public:
@@ -472,7 +478,7 @@ static void ReleaseFreeMemoryThunk() {
     //   stack trace when crashing.
     // - The ipc_fd is passed through the Java service.
     // Thus, these are all disabled.
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
     // Set C library locale to make sure CommandLine can parse argument values
     // in correct encoding.
     setlocale(LC_ALL, "");
@@ -482,7 +488,13 @@ static void ReleaseFreeMemoryThunk() {
     base::GlobalDescriptors* g_fds = base::GlobalDescriptors::GetInstance();
     g_fds->Set(kPrimaryIPCChannel,
                kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor);
-#endif
+
+    // The exit manager is in charge of calling the dtors of singleton objects.
+    // On Android, AtExitManager is set up when library is loaded.
+    // On iOS, it's set up in main(), which can't call directly through to here.
+    exit_manager_.reset(new base::AtExitManager);
+
+#endif  // !OS_ANDROID && !OS_IOS
 
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
     g_fds->Set(kCrashDumpSignal,
@@ -496,12 +508,6 @@ static void ReleaseFreeMemoryThunk() {
 
     base::EnableTerminationOnHeapCorruption();
     base::EnableTerminationOnOutOfMemory();
-
-    // On Android, AtExitManager is set up when library is loaded.
-#if !defined(OS_ANDROID)
-    // The exit manager is in charge of calling the dtors of singleton objects.
-    exit_manager_.reset(new base::AtExitManager);
-#endif
 
 #if defined(OS_MACOSX)
     // We need this pool for all the objects created before we get to the
@@ -543,7 +549,7 @@ static void ReleaseFreeMemoryThunk() {
           command_line.GetSwitchValueASCII(switches::kTraceStartup));
     }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
     // We need to allocate the IO Ports before the Sandbox is initialized or
     // the first instance of SystemMonitor is created.
     // It's important not to allocate the ports for processes which don't
@@ -615,7 +621,7 @@ static void ReleaseFreeMemoryThunk() {
 
 #if defined(OS_WIN)
     CHECK(InitializeSandbox(sandbox_info));
-#elif defined(OS_MACOSX)
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
     if (process_type == switches::kRendererProcess ||
         process_type == switches::kPpapiPluginProcess ||
         (delegate && delegate->DelaySandboxInitialization(process_type))) {
@@ -629,7 +635,7 @@ static void ReleaseFreeMemoryThunk() {
     if (delegate)
       delegate->SandboxInitialized(process_type);
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !defined(OS_IOS)
     SetProcessTitleFromCommandLine(argv);
 #endif
 
@@ -651,7 +657,11 @@ static void ReleaseFreeMemoryThunk() {
     main_params.autorelease_pool = autorelease_pool_.get();
 #endif
 
+#if !defined(OS_IOS)
     return RunNamedProcessTypeMain(process_type, main_params, delegate_);
+#else
+    return 1;
+#endif
   }
 
   virtual void Shutdown() OVERRIDE {
