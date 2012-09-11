@@ -115,7 +115,7 @@ class TestGitCl(TestCase):
       ((['git', 'log', '--pretty=format:%s%n%n%b', 'master...'],), 'foo'),
       ((['git', 'config', 'user.email'],), 'me@example.com'),
       ((['git', 'diff', '--no-ext-diff', '--stat', '--find-copies-harder',
-         'master...'],),
+         '-l100000', 'master...'],),
        '+dat'),
       ((['git', 'log', '--pretty=format:%s\n\n%b', 'master..'],), 'desc\n'),
     ]
@@ -193,7 +193,7 @@ class TestGitCl(TestCase):
   def _dcommit_calls_3(cls):
     return [
       ((['git', 'diff', '--no-ext-diff', '--stat', '--find-copies-harder',
-         'refs/remotes/origin/master', 'refs/heads/working'],),
+         '-l100000', 'refs/remotes/origin/master', 'refs/heads/working'],),
        (' PRESUBMIT.py |    2 +-\n'
         ' 1 files changed, 1 insertions(+), 1 deletions(-)\n')),
       (('About to commit; enter to confirm.',), None),
@@ -354,7 +354,7 @@ class TestGitCl(TestCase):
         ((['git', 'log', '--pretty=format:%s%n%n%b', 'master...'],), 'foo'),
         ((['git', 'config', 'user.email'],), 'me@example.com'),
         ((['git', 'diff', '--no-ext-diff', '--stat', '--find-copies-harder',
-           'master...'],),
+           '-l100000', 'master...'],),
          '+dat'),
         ]
 

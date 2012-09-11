@@ -143,8 +143,8 @@ def print_stats(args):
   if 'GIT_EXTERNAL_DIFF' in env:
     del env['GIT_EXTERNAL_DIFF']
   return subprocess2.call(
-      ['git', 'diff', '--no-ext-diff', '--stat', '--find-copies-harder'] + args,
-      env=env)
+      ['git', 'diff', '--no-ext-diff', '--stat', '--find-copies-harder',
+        '-l100000'] + args, env=env)
 
 
 class Settings(object):
