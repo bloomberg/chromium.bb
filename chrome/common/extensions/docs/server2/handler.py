@@ -329,6 +329,10 @@ class Handler(webapp.RequestHandler):
 
   def get(self):
     path = self.request.path
+    if path == '/favicon.ico' or path == '/robots.txt':
+      self.response.set_status(404)
+      return
+
     if self._RedirectSpecialCases(path):
       return
 
