@@ -2994,7 +2994,7 @@ int main(int argc, char *argv[])
 	int32_t idle_time = 300;
 	int32_t xserver = 0;
 	int32_t help = 0;
-	char *socket_name = NULL;
+	char *socket_name = "wayland-0";
 	char *config_file;
 
 	const struct config_key shell_config_keys[] = {
@@ -3088,6 +3088,8 @@ int main(int argc, char *argv[])
 	ec->option_idle_time = idle_time;
 	ec->idle_time = idle_time;
 
+	setenv("WAYLAND_DISPLAY", socket_name, 1);
+
 	module_init = NULL;
 	if (xserver)
 		module_init = load_module("xwayland.so", "module_init");
@@ -3095,9 +3097,6 @@ int main(int argc, char *argv[])
 		ret = EXIT_FAILURE;
 		goto out;
 	}
-
-	if (socket_name)
-		setenv("WAYLAND_DISPLAY", socket_name, 1);
 
 	if (!shell)
 		shell = "desktop-shell.so";
