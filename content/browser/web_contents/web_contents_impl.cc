@@ -71,6 +71,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/layout.h"
+#include "ui/base/touch/touch_device_win.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
@@ -527,11 +528,12 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       command_line.HasSwitch(switches::kEnableCssShaders);
   prefs.css_variables_enabled =
       command_line.HasSwitch(switches::kEnableCssVariables);
-  prefs.device_supports_touch =
-      ui::GetDisplayLayout() == ui::LAYOUT_TOUCH;
 #if defined(USE_AURA) && defined(USE_X11)
   prefs.device_supports_touch |=
       ui::TouchFactory::GetInstance()->IsTouchDevicePresent();
+#endif
+#if defined(OS_WIN)
+  prefs.device_supports_touch = ui::IsTouchDevicePresent();
 #endif
 #if defined(OS_ANDROID)
   prefs.device_supports_mouse = false;

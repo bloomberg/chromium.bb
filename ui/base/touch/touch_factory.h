@@ -98,7 +98,7 @@ class UI_EXPORT TouchFactory {
     SetCursorVisible(false, false);
   }
 
-  // Requirement for Signleton
+  // Requirement for Singleton
   friend struct DefaultSingletonTraits<TouchFactory>;
 
   // The default cursor is hidden after startup, and when the mouse pointer is
