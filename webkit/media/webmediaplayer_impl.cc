@@ -840,7 +840,6 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
     // NetworkStateFormatError instead of calling OnPipelineError(), I believe
     // this block can be deleted. Should look into it! (crbug.com/126070)
     case media::PIPELINE_ERROR_INITIALIZATION_FAILED:
-    case media::PIPELINE_ERROR_REQUIRED_FILTER_MISSING:
     case media::PIPELINE_ERROR_COULD_NOT_RENDER:
     case media::PIPELINE_ERROR_URL_NOT_FOUND:
     case media::DEMUXER_ERROR_COULD_NOT_OPEN:
