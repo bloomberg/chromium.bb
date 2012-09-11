@@ -1006,6 +1006,10 @@ const char kDriveModel[] = "DriveModel";
 const char kExperimentalFeaturesEnabled[] = "ExperimentalFeaturesEnabled";
 const char kIdLabel[] = "IdLabel";
 const char kIdUuid[] = "IdUuid";
+const char kVendorId[] = "VendorId";
+const char kVendorName[] = "VendorName";
+const char kProductId[] = "ProductId";
+const char kProductName[] = "ProductName";
 const char kNativePath[] = "NativePath";
 
 // Enum values.
