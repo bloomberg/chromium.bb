@@ -140,6 +140,8 @@ AC_CHECK_FUNCS([geteuid getuid link memmove memset mkstemp strchr strrchr strtol
 
 dnl AC_CHECK_FUNCS doesn't check for header files.
 dnl posix_fadvise() may be not available in older libc.
+fc_saved_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS $WARN_CFLAGS -Werror"
 AC_MSG_CHECKING([for posix_fadvise])
 AC_LINK_IFELSE([AC_LANG_SOURCE([[
 	#include <fcntl.h>
@@ -150,6 +152,7 @@ AC_LINK_IFELSE([AC_LANG_SOURCE([[
 		AC_MSG_RESULT([yes])
 		AC_DEFINE([HAVE_POSIX_FADVISE], [1], [Define to 1 if you have the `posix_fadvise' function.])
 	],[AC_MSG_RESULT([no])])
+CFLAGS="$fc_saved_CFLAGS"
 
 #
 if test "x$ac_cv_func_fstatvfs" = "xyes"; then
