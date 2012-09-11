@@ -14,8 +14,10 @@ NPObjectProxyTest::NPObjectProxyTest(NPP id, NPNetscapeFuncs *host_functions)
 }
 
 NPError NPObjectProxyTest::SetWindow(NPWindow* pNPWindow) {
+#if !defined(OS_MACOSX)
   if (pNPWindow->window == NULL)
     return NPERR_NO_ERROR;
+#endif
 
   NPIdentifier document_id = HostFunctions()->getstringidentifier("document");
   NPIdentifier create_text_node_id = HostFunctions()->getstringidentifier("createTextNode");

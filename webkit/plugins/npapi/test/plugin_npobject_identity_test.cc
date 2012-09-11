@@ -50,8 +50,10 @@ NPObjectIdentityTest::NPObjectIdentityTest(NPP id,
 }
 
 NPError NPObjectIdentityTest::SetWindow(NPWindow* pNPWindow) {
+#if !defined(OS_MACOSX)
   if (pNPWindow->window == NULL)
     return NPERR_NO_ERROR;
+#endif
 
   NPIdentifier are_these_the_same_id = HostFunctions()->getstringidentifier(
       "areTheseTheSame");

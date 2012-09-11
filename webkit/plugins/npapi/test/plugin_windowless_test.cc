@@ -8,10 +8,7 @@
 #include "webkit/plugins/npapi/test/plugin_windowless_test.h"
 #include "webkit/plugins/npapi/test/plugin_client.h"
 
-#if defined(OS_MACOSX)
-#include <ApplicationServices/ApplicationServices.h>
-#include <Carbon/Carbon.h>
-#elif defined(TOOLKIT_GTK)
+#if defined(TOOLKIT_GTK)
 #include <gdk/gdkx.h>
 #endif
 
@@ -36,7 +33,8 @@ static bool IsPaintEvent(NPEvent* np_event) {
 #if defined(OS_WIN)
   return WM_PAINT == np_event->event;
 #elif defined(OS_MACOSX)
-  return np_event->what == updateEvt;
+  NPCocoaEvent* cocoa_event = reinterpret_cast<NPCocoaEvent*>(np_event);
+  return cocoa_event->type == NPCocoaEventDrawRect;
 #elif defined(TOOLKIT_GTK)
   return np_event->type == GraphicsExpose;
 #else
@@ -49,7 +47,8 @@ static bool IsMouseUpEvent(NPEvent* np_event) {
 #if defined(OS_WIN)
   return WM_LBUTTONUP == np_event->event;
 #elif defined(OS_MACOSX)
-  return np_event->what == mouseUp;
+  NPCocoaEvent* cocoa_event = reinterpret_cast<NPCocoaEvent*>(np_event);
+  return cocoa_event->type == NPCocoaEventMouseUp;
 #else
   NOTIMPLEMENTED();
   return false;
@@ -58,7 +57,9 @@ static bool IsMouseUpEvent(NPEvent* np_event) {
 
 #if defined(OS_MACOSX)
 static bool IsWindowActivationEvent(NPEvent* np_event) {
-  return np_event->what == activateEvt;
+  NPCocoaEvent* cocoa_event = reinterpret_cast<NPCocoaEvent*>(np_event);
+  return cocoa_event->type == NPCocoaEventWindowFocusChanged &&
+         cocoa_event->data.focus.hasFocus;
 }
 #endif
 

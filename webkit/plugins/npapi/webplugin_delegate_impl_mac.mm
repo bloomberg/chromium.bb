@@ -322,16 +322,11 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
   instance()->plugin_lib()->PreventLibraryUnload();
 
 #ifndef NP_NO_CARBON
-  if (instance()->event_model() == NPEventModelCarbon) {
-    // Carbon is no longer supported, but the test plugin has not yet been
-    // updated; allow the test plugin to continue, but kill any other plugin
-    // that tries to use Carbon.
-    // TODO(stuartmorgan): Remove all Carbon support once crbug.com/134359 is
-    // fixed.
-    const WebPluginInfo& plugin_info = instance_->plugin_lib()->plugin_info();
-    if (plugin_info.name != ASCIIToUTF16("Chromium NPAPI Test Plugin"))
-      return false;
+  // Carbon is no longer supported.
+  if (instance()->event_model() == NPEventModelCarbon)
+    return false;
 
+  if (instance()->event_model() == NPEventModelCarbon) {
     // Create a stand-in for the browser window so that the plugin will have
     // a non-NULL WindowRef to which it can refer.
     CarbonPluginWindowTracker* window_tracker =

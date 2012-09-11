@@ -17,8 +17,10 @@ DeletePluginInStreamTest::DeletePluginInStreamTest(NPP id, NPNetscapeFuncs *host
 }
 
 NPError DeletePluginInStreamTest::SetWindow(NPWindow* pNPWindow) {
+#if !defined(OS_MACOSX)
   if (pNPWindow->window == NULL)
     return NPERR_NO_ERROR;
+#endif
 
   if (!test_started_) {
     std::string url = "self_delete_plugin_stream.html";

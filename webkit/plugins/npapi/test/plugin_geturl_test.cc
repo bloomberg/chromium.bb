@@ -82,8 +82,10 @@ NPError PluginGetURLTest::New(uint16 mode, int16 argc, const char* argn[],
 }
 
 NPError PluginGetURLTest::SetWindow(NPWindow* pNPWindow) {
+#if !defined(OS_MACOSX)
   if (pNPWindow->window == NULL)
     return NPERR_NO_ERROR;
+#endif
 
   if (!tests_started_) {
     tests_started_ = true;

@@ -23,8 +23,10 @@ ExecuteJavascriptOpenPopupWithPluginTest::
 
 int16 ExecuteJavascriptOpenPopupWithPluginTest::SetWindow(
     NPWindow* window) {
+#if !defined(OS_MACOSX)
   if (window->window == NULL)
     return NPERR_NO_ERROR;
+#endif
 
   if (!popup_window_test_started_) {
     popup_window_test_started_ = true;
@@ -44,8 +46,10 @@ ExecuteJavascriptPopupWindowTargetPluginTest::
 
 int16 ExecuteJavascriptPopupWindowTargetPluginTest::SetWindow(
     NPWindow* window) {
+#if !defined(OS_MACOSX)
   if (window->window == NULL)
     return NPERR_NO_ERROR;
+#endif
 
   if (!test_completed_) {
     if (CheckWindow(window)) {

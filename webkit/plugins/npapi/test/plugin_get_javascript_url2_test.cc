@@ -29,8 +29,10 @@ ExecuteGetJavascriptUrl2Test::ExecuteGetJavascriptUrl2Test(
 }
 
 NPError ExecuteGetJavascriptUrl2Test::SetWindow(NPWindow* pNPWindow) {
+#if !defined(OS_MACOSX)
   if (pNPWindow->window == NULL)
     return NPERR_NO_ERROR;
+#endif
 
   if (!test_started_) {
     std::string url = SELF_URL;

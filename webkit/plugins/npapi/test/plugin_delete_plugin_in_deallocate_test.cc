@@ -70,8 +70,10 @@ DeletePluginInDeallocateTest::DeletePluginInDeallocateTest(
 }
 
 NPError DeletePluginInDeallocateTest::SetWindow(NPWindow* pNPWindow) {
+#if !defined(OS_MACOSX)
   if (pNPWindow->window == NULL)
     return NPERR_NO_ERROR;
+#endif
 
   // Ensure that we run the test once, even if SetWindow is called again.
   if (test_started_)
