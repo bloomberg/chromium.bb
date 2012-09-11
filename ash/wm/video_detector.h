@@ -30,7 +30,7 @@ namespace ash {
 class ASH_EXPORT VideoDetectorObserver {
  public:
   // Invoked periodically while a video is being played onscreen.
-  virtual void OnVideoDetected() = 0;
+  virtual void OnVideoDetected(bool is_fullscreen) = 0;
 
  protected:
   virtual ~VideoDetectorObserver() {}

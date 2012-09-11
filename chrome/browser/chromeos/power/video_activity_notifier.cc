@@ -25,13 +25,12 @@ VideoActivityNotifier::~VideoActivityNotifier() {
   ash::Shell::GetInstance()->video_detector()->RemoveObserver(this);
 }
 
-void VideoActivityNotifier::OnVideoDetected() {
+void VideoActivityNotifier::OnVideoDetected(bool is_fullscreen) {
   base::TimeTicks now = base::TimeTicks::Now();
-  // InSeconds() truncates rather than rounding, so it's fine for this
-  // comparison.
   if (last_notify_time_.is_null() ||
       (now - last_notify_time_).InSeconds() >= kNotifyIntervalSec) {
-    DBusThreadManager::Get()->GetPowerManagerClient()->NotifyVideoActivity(now);
+    DBusThreadManager::Get()->GetPowerManagerClient()->
+        NotifyVideoActivity(now, is_fullscreen);
     last_notify_time_ = now;
   }
 }
