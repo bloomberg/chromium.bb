@@ -5,7 +5,9 @@
     <span class="subdued">{{?prefix}}{{prefix}}{{:}}chrome.{{api.name}}{{/}}.</span>{{name}}<span class="subdued">.addListener</span>(function({{#parameters}}{{+partials.parameter_item}}{{^last}}, {{/}}{{/}})<span class="subdued"> {...}</span>);
   </div>
   <div class="description">
-    <p>{{{description}}}</p>
+    {{?description}}<p>
+      {{{description}}}
+    </p>{{/description}}
     {{?supportsRules}}
       <p>See <a href="events.html#method-Event-addRules"><code>chrome.events.Event.addRules()</code></a>.</p>
     {{/supportsRules}}

@@ -62,8 +62,7 @@ class IntegrationTest(unittest.TestCase):
         failures.append('Error rendering samples page with language %s: %s' %
             (lang, e))
 
-  def testAllPublicTemplates(self):
-    logging.getLogger().setLevel(logging.ERROR)
+  def _RunPublicTemplatesTest(self):
     base_path = os.path.join(BASE_PATH,
                              'docs',
                              'server2',
@@ -100,6 +99,15 @@ class IntegrationTest(unittest.TestCase):
     if failures:
       self.fail('\n'.join(failures))
 
+  def testAllPublicTemplates(self):
+    logging.getLogger().setLevel(logging.ERROR)
+    logging_error = logging.error
+    try:
+      logging.error = self.fail
+      self._RunPublicTemplatesTest()
+    finally:
+      logging.error = logging_error
+
   def testNonexistentFile(self):
     logging.getLogger().setLevel(logging.CRITICAL)
     request = _MockRequest('extensions/junk.html')
@@ -115,11 +123,16 @@ class IntegrationTest(unittest.TestCase):
   def testCron(self):
     if EXPLICIT_TEST_FILES is not None:
       return
-    request = _MockRequest('/cron/trunk')
-    response = _MockResponse()
-    Handler(request, response, local_path=BASE_PATH).get()
-    self.assertEqual(200, response.status)
-    self.assertEqual('Success', response.out.getvalue())
+    logging_error = logging.error
+    try:
+      logging.error = self.fail
+      request = _MockRequest('/cron/trunk')
+      response = _MockResponse()
+      Handler(request, response, local_path=BASE_PATH).get()
+      self.assertEqual(200, response.status)
+      self.assertEqual('Success', response.out.getvalue())
+    finally:
+      logging.error = logging_error
 
 if __name__ == '__main__':
   parser = optparse.OptionParser()

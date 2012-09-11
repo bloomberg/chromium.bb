@@ -1,8 +1,10 @@
 {{?link}}
 {{+partials.ref_link}}
 {{/}}
+{{?choices}}
 {{#choices}}
 {{+partials.variable_type}}{{^@.last}} or {{/}}
+{{/}}
 {{/}}
 {{?array}}
 array of {{+partials.variable_type}}

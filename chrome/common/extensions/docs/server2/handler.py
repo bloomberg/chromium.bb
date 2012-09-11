@@ -206,6 +206,8 @@ class Handler(webapp.RequestHandler):
   def _Render(self, files, channel):
     original_response = self.response
     for f in files:
+      if f.endswith('404.html'):
+        continue
       path = channel + f.split(PUBLIC_TEMPLATE_PATH)[-1]
       self.request = _MockRequest(path)
       self.response = _MockResponse()

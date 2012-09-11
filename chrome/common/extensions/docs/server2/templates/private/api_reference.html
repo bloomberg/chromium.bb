@@ -31,6 +31,8 @@
   <h2>Sample {{title}} that use chrome.{{api.name}}</h2>
   {{#samples_list}}
     <li><strong><a href="samples.html#{{id}}">{{name}}</a></strong> &ndash;
-    {{description}}</li>
+    {{?description}}
+    {{description}}
+    {{/description}}</li>
   {{/samples_list}}
 {{/samples_list}}

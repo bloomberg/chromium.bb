@@ -13,11 +13,22 @@
         <h1 class="page_title">chrome.{{api.name}}</h1>
         {{?api.permissions.dev}}{{+partials.warning_dev}}{{/}}
         {{?api.permissions.beta}}{{+partials.warning_beta}}{{/}}
-        {{+partials.table_of_contents toc:intro.toc
+        {{?intro.toc}}
+        {{+partials.table_of_contents toc_items:intro.toc
+                                      has_toc:true
+                                      api:api
                                       samples_list:api.samples.apps
                                       title:apps_title}}
+        {{:intro.toc}}
+        {{+partials.table_of_contents has_toc:false
+                                      api:api
+                                      samples_list:api.samples.apps
+                                      title:apps_title}}
+        {{/intro.toc}}
 {{- This is unindented because it contains <pre> tags -}}
+{{?intro}}
 {{+intro.intro is_apps:true}}
+{{/intro}}
         {{+partials.api_reference samples_list:api.samples.apps
                                   title:apps_title}}
       </div>

@@ -3,8 +3,12 @@
   <h4>{{name}}</h4>
   <div>
     <dt>{{+partials.type_name}}</dt>
-    <dd>{{{description}}}</dd>
+    {{?description}}<dd>
+      {{{description}}}
+    </dd>{{/description}}
+    {{?properties}}
     <dd><dl>{{#properties}}{{^additional_properties}}{{+partials.property}}{{/}}{{/}}</dl></dd>
+    {{/properties}}
     {{?functions}}
     <a name={{type.name}}-methods></a>
     <dd><h3>Methods of {{type.name}}</h3>

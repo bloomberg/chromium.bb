@@ -55,7 +55,9 @@ class _IntroParser(HTMLParser):
       self._current_heading['title'] += data
 
 class IntroDataSource(object):
-
+  """This class fetches the intros for a given API. From this intro, a table
+  of contents dictionary is created, which contains the headings in the intro.
+  """
   class Factory(object):
     def __init__(self, cache_factory, base_paths):
       self._cache = cache_factory.Create(self._MakeIntroDict,
@@ -75,9 +77,6 @@ class IntroDataSource(object):
     def Create(self):
       return IntroDataSource(self._cache, self._base_paths)
 
-  """This class fetches the intros for a given API. From this intro, a table
-  of contents dictionary is created, which contains the headings in the intro.
-  """
   def __init__(self, cache, base_paths):
     self._cache = cache
     self._base_paths = base_paths

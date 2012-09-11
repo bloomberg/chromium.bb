@@ -1,5 +1,6 @@
 <div>
   {{+partials.property}}
+  {{?properties}}
   <dd>
     <dl>
       {{#properties}}
@@ -7,4 +8,5 @@
       {{/}}
     </dl>
   </dd>
+  {{/properties}}
 </div>

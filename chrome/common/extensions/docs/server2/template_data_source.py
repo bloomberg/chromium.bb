@@ -108,7 +108,7 @@ class TemplateDataSource(object):
     if not template:
       return ''
       # TODO error handling
-    return template.render({
+    render_data = template.render({
       'api_list': self._api_list_data_source,
       'apis': self._api_data_source,
       'branchInfo': self._branch_info,
@@ -120,7 +120,11 @@ class TemplateDataSource(object):
       'extensions_title': 'Extensions',
       'true': True,
       'false': False
-    }).text
+    })
+    if render_data.errors:
+      logging.error('Handlebar error(s) rendering %s:\n%s' %
+          (template_name, '  \n'.join(render_data.errors)))
+    return render_data.text
 
   def __getitem__(self, key):
     return self.get(key)
