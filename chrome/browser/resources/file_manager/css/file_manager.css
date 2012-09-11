@@ -1367,11 +1367,18 @@ div.shade[fadein] {
 }
 
 body[ash] .dialog-title,
-body[type='full-page'] [invisibleif='full-page'],
-body:not([type='full-page']) [visibleif='full-page'],
-body:not([type='saveas-file']) [visibleif='saveas-file'],
-body:not([type='saveas-file']):not([type='full-page'])
-    [visibleif='saveas-file full-page'] {
+
+body[type='folder'] [invisibleif~='folder'],
+body[type='saveas-file'] [invisibleif~='saveas-file'],
+body[type='open-file'] [invisibleif~='open-file'],
+body[type='open-multi-file'] [invisibleif~='open-multi-file'],
+body[type='full-page'] [invisibleif~='full-page'],
+
+body[type='folder'] [visibleif]:not([visibleif~='folder']),
+body[type='saveas-file'] [visibleif]:not([visibleif~='saveas-file']),
+body[type='open-file'] [visibleif]:not([visibleif~='open-file']),
+body[type='open-multi-file'] [visibleif]:not([visibleif~='open-multi-file']),
+body[type='full-page'] [visibleif]:not([visibleif~='full-page']) {
   display: none;
 }
 
