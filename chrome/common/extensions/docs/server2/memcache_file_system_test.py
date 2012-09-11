@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import os
+import sys
 import unittest
 
 import object_store
@@ -42,7 +43,9 @@ class _FakeFileSystem(FileSystem):
 class MemcacheFileSystemTest(unittest.TestCase):
   def setUp(self):
     self._object_store = InMemoryObjectStore('')
-    self._local_fs = LocalFileSystem(os.path.join('test_data', 'file_system'))
+    self._local_fs = LocalFileSystem(os.path.join(sys.path[0],
+                                                  'test_data',
+                                                  'file_system'))
 
   def _SetReadCacheItem(self, key, value, stat):
     self._object_store.Set(key, (value, stat), object_store.FILE_SYSTEM_READ)

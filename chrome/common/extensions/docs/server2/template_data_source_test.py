@@ -5,6 +5,7 @@
 
 import json
 import os
+import sys
 import unittest
 
 from in_memory_object_store import InMemoryObjectStore
@@ -28,7 +29,9 @@ class _FakeFactory(object):
 
 class TemplateDataSourceTest(unittest.TestCase):
   def setUp(self):
-    self._base_path = os.path.join('test_data', 'template_data_source')
+    self._base_path = os.path.join(sys.path[0],
+                                   'test_data',
+                                   'template_data_source')
     self._fake_api_data_source_factory = _FakeFactory()
     self._fake_api_list_data_source_factory = _FakeFactory()
     self._fake_intro_data_source_factory = _FakeFactory()

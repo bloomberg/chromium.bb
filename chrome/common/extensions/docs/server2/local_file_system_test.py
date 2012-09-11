@@ -4,13 +4,15 @@
 # found in the LICENSE file.
 
 import os
+import sys
 import unittest
 
 from local_file_system import LocalFileSystem
 
 class LocalFileSystemTest(unittest.TestCase):
   def setUp(self):
-    self._file_system = LocalFileSystem(os.path.join('test_data',
+    self._file_system = LocalFileSystem(os.path.join(sys.path[0],
+                                                     'test_data',
                                                      'file_system'))
 
   def testReadFiles(self):

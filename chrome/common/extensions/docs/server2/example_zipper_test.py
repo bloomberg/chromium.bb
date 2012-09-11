@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import os
+import sys
 import unittest
 
 from compiled_file_system import CompiledFileSystem
@@ -15,8 +16,9 @@ from memcache_file_system import MemcacheFileSystem
 class ExampleZipperTest(unittest.TestCase):
   def setUp(self):
     object_store = InMemoryObjectStore('')
-    self._file_system = MemcacheFileSystem(LocalFileSystem('test_data'),
-                                           object_store)
+    self._file_system = MemcacheFileSystem(
+        LocalFileSystem(os.path.join(sys.path[0], 'test_data')),
+        object_store)
     self._example_zipper = ExampleZipper(
         self._file_system,
         CompiledFileSystem.Factory(self._file_system, object_store),

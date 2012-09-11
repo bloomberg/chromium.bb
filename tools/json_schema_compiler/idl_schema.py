@@ -20,11 +20,16 @@ import schema_util
 
 # idl_parser expects to be able to import certain files in its directory,
 # so let's set things up the way it wants.
-idl_generators_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                  os.pardir, os.pardir, 'ppapi', 'generators')
-if idl_generators_path not in sys.path:
-  sys.path.insert(0, idl_generators_path)
-import idl_parser
+_idl_generators_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                    os.pardir, os.pardir, 'ppapi', 'generators')
+if _idl_generators_path in sys.path:
+  import idl_parser
+else:
+  sys.path.insert(0, _idl_generators_path)
+  try:
+    import idl_parser
+  finally:
+    sys.path.pop(0)
 
 def ProcessComment(comment):
   '''

@@ -3,17 +3,20 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
+import sys
+import unittest
+
 from in_memory_object_store import InMemoryObjectStore
 from branch_utility import BranchUtility
 from fake_url_fetcher import FakeUrlFetcher
-import unittest
 
 class BranchUtilityTest(unittest.TestCase):
   def setUp(self):
     self._branch_util = BranchUtility(
-        'branch_utility/first.json',
+        os.path.join('branch_utility', 'first.json'),
         { 'extensions': 'stable', 'apps': 'trunk' },
-        FakeUrlFetcher('test_data'),
+        FakeUrlFetcher(os.path.join(sys.path[0], 'test_data')),
         InMemoryObjectStore(''))
 
   def testSplitChannelNameFromPath(self):

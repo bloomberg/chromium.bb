@@ -5,6 +5,7 @@
 
 import json
 import os
+import sys
 import unittest
 
 from appengine_blobstore import AppEngineBlobstore
@@ -17,8 +18,10 @@ import url_constants
 
 class GithubFileSystemTest(unittest.TestCase):
   def setUp(self):
-    ConfigureFakeFetchers('.')
-    self._base_path = os.path.join('test_data', 'github_file_system')
+    ConfigureFakeFetchers(sys.path[0])
+    self._base_path = os.path.join(sys.path[0],
+                                   'test_data',
+                                   'github_file_system')
     self._file_system = GithubFileSystem(
         AppEngineUrlFetcher(url_constants.GITHUB_URL),
         InMemoryObjectStore('github'),

@@ -5,13 +5,16 @@
 
 import json
 import os
+import sys
 import unittest
 
 from samples_data_source import SamplesDataSource
 
 class SamplesDataSourceTest(unittest.TestCase):
   def setUp(self):
-    self._base_path = os.path.join('test_data', 'samples_data_source')
+    self._base_path = os.path.join(sys.path[0],
+                                   'test_data',
+                                   'samples_data_source')
 
   def _ReadLocalFile(self, filename):
     with open(os.path.join(self._base_path, filename), 'r') as f:

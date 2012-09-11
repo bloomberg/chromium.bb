@@ -5,6 +5,7 @@
 
 import json
 import os
+import sys
 import unittest
 
 from docs_server_utils import GetLinkToRefType
@@ -23,7 +24,7 @@ def _GetType(dict_, name):
 
 class DictGeneratorTest(unittest.TestCase):
   def setUp(self):
-    self._base_path = os.path.join('test_data', 'test_json')
+    self._base_path = os.path.join(sys.path[0], 'test_data', 'test_json')
 
   def _ReadLocalFile(self, filename):
     with open(os.path.join(self._base_path, filename), 'r') as f:

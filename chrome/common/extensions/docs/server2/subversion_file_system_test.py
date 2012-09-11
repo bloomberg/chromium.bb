@@ -5,6 +5,7 @@
 
 import json
 import os
+import sys
 import unittest
 
 from fake_url_fetcher import FakeUrlFetcher
@@ -12,7 +13,7 @@ from subversion_file_system import SubversionFileSystem
 
 class SubversionFileSystemTest(unittest.TestCase):
   def setUp(self):
-    self._base_path = os.path.join('test_data', 'file_system')
+    self._base_path = os.path.join(sys.path[0], 'test_data', 'file_system')
     fetcher = FakeUrlFetcher(self._base_path)
     self._file_system = SubversionFileSystem(fetcher, fetcher)
 
