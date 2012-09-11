@@ -6,6 +6,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/ash_switches.h"
+#include "ash/display/multi_display_manager.h"
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/shell.h"
@@ -19,6 +20,7 @@
 #include "base/command_line.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_windows.h"
@@ -158,6 +160,10 @@ class SystemGestureEventFilterTest : public AshTestBase {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         ::switches::kEnableBezelTouch);
     test::AshTestBase::SetUp();
+    // Enable brightness key.
+    static_cast<internal::MultiDisplayManager*>(
+        aura::Env::GetInstance()->display_manager())->
+        EnableInternalDisplayForTest();
   }
 
  private:

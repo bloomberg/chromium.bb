@@ -38,6 +38,7 @@
 #include "ash/wm/workspace/snap_sizer.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
@@ -714,7 +715,13 @@ bool AcceleratorController::PerformAction(int action,
 
 void AcceleratorController::SetBrightnessControlDelegate(
     scoped_ptr<BrightnessControlDelegate> brightness_control_delegate) {
-  brightness_control_delegate_.swap(brightness_control_delegate);
+  internal::MultiDisplayManager* display_manager =
+      static_cast<internal::MultiDisplayManager*>(
+          aura::Env::GetInstance()->display_manager());
+  // Install brightness control delegate only when internal
+  // display exists.
+  if (display_manager->HasInternalDisplay())
+    brightness_control_delegate_.swap(brightness_control_delegate);
 }
 
 void AcceleratorController::SetImeControlDelegate(

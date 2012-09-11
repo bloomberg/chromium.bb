@@ -95,6 +95,10 @@ void MultiDisplayManager::InitInternalDisplayInfo() {
 #endif
 }
 
+bool MultiDisplayManager::HasInternalDisplay() const {
+  return internal_display_id_ != gfx::Display::kInvalidDisplayID;
+}
+
 bool MultiDisplayManager::UpdateWorkAreaOfDisplayNearestWindow(
     const aura::Window* window,
     const gfx::Insets& insets) {
@@ -354,10 +358,12 @@ void MultiDisplayManager::AddDisplayFromSpec(const std::string& spec) {
   displays_.push_back(display);
 }
 
-void MultiDisplayManager::SetInternalDisplayIdForTest(int64 id) {
-  internal_display_id_ = id;
+int64 MultiDisplayManager::EnableInternalDisplayForTest() {
+  const int64 kInternalDisplayIdForTest = 9999;
+  internal_display_id_ = kInternalDisplayIdForTest;
   internal_display_.reset(new gfx::Display(internal_display_id_,
                                            gfx::Rect(800, 600)));
+  return kInternalDisplayIdForTest;
 }
 
 }  // namespace internal

@@ -238,12 +238,12 @@ TEST_F(MultiDisplayManagerTest, MAYBE_TestDeviceScaleOnlyChange) {
 }
 
 TEST_F(MultiDisplayManagerTest, MAYBE_TestNativeDisplaysChanged) {
-  const int64 internal_display_id = 99999;
+  const int64 internal_display_id =
+      display_manager()->EnableInternalDisplayForTest();
   const gfx::Display native_display(internal_display_id,
                                     gfx::Rect(0, 0, 500, 500));
 
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
-  display_manager()->SetInternalDisplayIdForTest(internal_display_id);
   std::string default_bounds =
       display_manager()->GetDisplayAt(0)->bounds().ToString();
 

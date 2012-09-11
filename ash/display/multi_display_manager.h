@@ -22,6 +22,10 @@ class Rect;
 }
 
 namespace ash {
+namespace test {
+class AcceleratorControllerTest;
+class SystemGestureEventFilterTest;
+}
 namespace internal {
 
 // MultiDisplayManager maintains the current display configurations,
@@ -44,6 +48,9 @@ class ASH_EXPORT MultiDisplayManager : public aura::DisplayManager,
   // Detects the internal display's ID, and stores gfx::Display
   // in the cache, if any.
   void InitInternalDisplayInfo();
+
+  // True if there is an internal display.
+  bool HasInternalDisplay() const;
 
   bool UpdateWorkAreaOfDisplayNearestWindow(const aura::Window* window,
                                             const gfx::Insets& insets);
@@ -77,6 +84,9 @@ class ASH_EXPORT MultiDisplayManager : public aura::DisplayManager,
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, ConvertPoint);
   FRIEND_TEST_ALL_PREFIXES(MultiDisplayManagerTest, TestNativeDisplaysChanged);
+  friend class test::AcceleratorControllerTest;
+  friend class test::SystemGestureEventFilterTest;
+
   typedef std::vector<gfx::Display> Displays;
 
   void Init();
@@ -88,7 +98,9 @@ class ASH_EXPORT MultiDisplayManager : public aura::DisplayManager,
   // the format of |spec|.
   void AddDisplayFromSpec(const std::string& spec);
 
-  void SetInternalDisplayIdForTest(int64 id);
+  // Enables internal display and returns the display Id for the internal
+  // display.
+  int64 EnableInternalDisplayForTest();
 
   Displays displays_;
 

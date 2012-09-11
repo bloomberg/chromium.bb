@@ -5,6 +5,7 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/caps_lock_delegate.h"
+#include "ash/display/multi_display_manager.h"
 #include "ash/ime_control_delegate.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
@@ -16,6 +17,7 @@
 #include "ash/test/test_shell_delegate.h"
 #include "ash/volume_control_delegate.h"
 #include "ash/wm/window_util.h"
+#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
@@ -311,7 +313,17 @@ class AcceleratorControllerTest : public AshTestBase {
   AcceleratorControllerTest() {};
   virtual ~AcceleratorControllerTest() {};
 
+ protected:
+  void EnableInternalDisplay() {
+    static_cast<internal::MultiDisplayManager*>(
+        aura::Env::GetInstance()->display_manager())->
+        EnableInternalDisplayForTest();
+  }
+
   static AcceleratorController* GetController();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AcceleratorControllerTest);
 };
 
 AcceleratorController* AcceleratorControllerTest::GetController() {
@@ -701,6 +713,18 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   // Brightness
   const ui::Accelerator f6(ui::VKEY_F6, ui::EF_NONE);
   const ui::Accelerator f7(ui::VKEY_F7, ui::EF_NONE);
+  {
+    EXPECT_FALSE(GetController()->Process(f6));
+    EXPECT_FALSE(GetController()->Process(f7));
+    DummyBrightnessControlDelegate* delegate =
+        new DummyBrightnessControlDelegate(true);
+    GetController()->SetBrightnessControlDelegate(
+        scoped_ptr<BrightnessControlDelegate>(delegate).Pass());
+    EXPECT_FALSE(GetController()->Process(f6));
+    EXPECT_FALSE(GetController()->Process(f7));
+  }
+  // Enable internal display.
+  EnableInternalDisplay();
   {
     EXPECT_FALSE(GetController()->Process(f6));
     EXPECT_FALSE(GetController()->Process(f7));
