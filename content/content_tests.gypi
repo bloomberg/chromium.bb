@@ -864,8 +864,14 @@
           'target_name': 'content_shell_test_apk',
           'type': 'none',
           'dependencies': [
-            'content_shell_apk',
+            'content_java',
             'content_javatests',
+            'content_shell_apk',
+            '../base/base.gyp:base_java',
+            '../base/base.gyp:base_java_test_support',
+            '../media/media.gyp:media_java',
+            '../media/media.gyp:media_test_support',
+            '../net/net.gyp:net_java',
             '../net/net.gyp:net_javatests',
             '../tools/android/forwarder/forwarder.gyp:forwarder',
           ],
@@ -873,11 +879,11 @@
             {
               'action_name': 'content_shell_test_generate_apk',
               'inputs': [
-                '<(PRODUCT_DIR)/lib.java/chromium_base_javatests.jar',
-                '<(PRODUCT_DIR)/lib.java/chromium_content_javatests.jar',
-                '<(PRODUCT_DIR)/lib.java/chromium_net_javatests.jar',
+                '../build/android/ant/common.xml',
+                '../build/android/ant/sdk-targets.xml',
                 '<(DEPTH)/content/shell/android/javatests/content_shell_test_apk.xml',
                 '<(DEPTH)/content/shell/android/javatests/AndroidManifest.xml',
+                '>@(input_jars_paths)',
                 '<!@(find <(DEPTH)/content/shell/android/javatests/ -name "*.java")'
               ],
               'outputs': [
@@ -892,6 +898,7 @@
                 '-DANDROID_SDK_TOOLS=<(android_sdk_tools)',
                 '-DANDROID_SDK_VERSION=<(android_sdk_version)',
                 '-DANDROID_GDBSERVER=<(android_gdbserver)',
+                '-DINPUT_JARS_PATHS=>(input_jars_paths)',
                 '-buildfile',
                 '<(DEPTH)/content/shell/android/javatests/content_shell_test_apk.xml',
               ]

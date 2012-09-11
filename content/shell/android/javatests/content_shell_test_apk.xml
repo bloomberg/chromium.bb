@@ -23,13 +23,7 @@
   <property name="asset.absolute.dir" location="${out.dir}/assets" />
 
   <path id="out.dex.jar.input.ref">
-    <pathelement location="${PRODUCT_DIR}/lib.java/chromium_base.jar"/>
-    <pathelement location="${PRODUCT_DIR}/lib.java/chromium_base_javatests.jar"/>
-    <pathelement location="${PRODUCT_DIR}/lib.java/chromium_content.jar"/>
-    <pathelement location="${PRODUCT_DIR}/lib.java/chromium_content_javatests.jar"/>
-    <pathelement location="${PRODUCT_DIR}/lib.java/chromium_media.jar"/>
-    <pathelement location="${PRODUCT_DIR}/lib.java/chromium_net.jar"/>
-    <pathelement location="${PRODUCT_DIR}/lib.java/chromium_net_javatests.jar"/>
+    <filelist files="${INPUT_JARS_PATHS}"/>
     <pathelement location="${PRODUCT_DIR}/content_shell/classes"/>
   </path>
   <property name="java.compilerargs" value="-classpath ${toString:out.dex.jar.input.ref}"/>

@@ -596,6 +596,12 @@
         {
           'target_name': 'content_shell_apk',
           'type': 'none',
+          'dependencies': [
+            'content_java',
+            '../base/base.gyp:base_java',
+            '../media/media.gyp:media_java',
+            '../net/net.gyp:net_java',
+          ],
           'actions': [
             {
               'action_name': 'copy_and_strip_so',
@@ -614,12 +620,11 @@
               'inputs': [
                 'shell/android/java/content_shell_apk.xml',
                 'shell/android/java/AndroidManifest.xml',
+                '../build/android/ant/common.xml',
+                '../build/android/ant/sdk-targets.xml',
                 '<!@(find shell/android/java -name "*.java")',
                 '<!@(find shell/android/res -name "*")',
-                '<(PRODUCT_DIR)/lib.java/chromium_base.jar',
-                '<(PRODUCT_DIR)/lib.java/chromium_content.jar',
-                '<(PRODUCT_DIR)/lib.java/chromium_media.jar',
-                '<(PRODUCT_DIR)/lib.java/chromium_net.jar',
+                '>@(input_jars_paths)',
                 '<(PRODUCT_DIR)/content_shell/assets/content_shell.pak',
                 '<(PRODUCT_DIR)/content_shell/libs/<(android_app_abi)/libcontent_shell_content_view.so',
               ],
@@ -643,11 +648,9 @@
                 '-DANDROID_SDK_VERSION=<(android_sdk_version)',
                 '-DANDROID_GDBSERVER=<(android_gdbserver)',
                 '-DCONFIGURATION_NAME=<(CONFIGURATION_NAME)',
+                '-DINPUT_JARS_PATHS=>(input_jars_paths)',
                 '-buildfile',
                 'shell/android/java/content_shell_apk.xml',
-              ],
-              'dependencies': [
-                'content_java',
               ],
             }
           ],
