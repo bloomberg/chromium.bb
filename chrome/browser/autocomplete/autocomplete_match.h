@@ -144,6 +144,12 @@ struct AutocompleteMatch {
                                        int style,
                                        ACMatchClassifications* classifications);
 
+  // Returns a new vector of classifications containing the merged contents of
+  // |classifications1| and |classifications2|.
+  static ACMatchClassifications MergeClassifications(
+      const ACMatchClassifications& classifications1,
+      const ACMatchClassifications& classifications2);
+
   // Converts classifications to and from a serialized string representation
   // (using comma-separated integers to sequentially list positions and styles).
   static std::string ClassificationsToString(

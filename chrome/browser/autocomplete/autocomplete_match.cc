@@ -19,6 +19,16 @@
 #include "content/public/common/url_constants.h"
 #include "grit/theme_resources.h"
 
+namespace {
+
+bool IsTrivialClassification(const ACMatchClassifications& classifications) {
+  return classifications.empty() ||
+      ((classifications.size() == 1) &&
+       (classifications.back().style == ACMatchClassification::NONE));
+}
+
+}  // namespace
+
 // AutocompleteMatch ----------------------------------------------------------
 
 // static
@@ -230,6 +240,37 @@ void AutocompleteMatch::ClassifyLocationInString(
   if (after_match < overall_length) {
     classification->push_back(ACMatchClassification(after_match, style));
   }
+}
+
+// static
+AutocompleteMatch::ACMatchClassifications
+    AutocompleteMatch::MergeClassifications(
+    const ACMatchClassifications& classifications1,
+    const ACMatchClassifications& classifications2) {
+  // We must return the empty vector only if both inputs are truly empty.
+  // The result of merging an empty vector with a single (0, NONE)
+  // classification is the latter one-entry vector.
+  if (IsTrivialClassification(classifications1))
+    return classifications2.empty() ? classifications1 : classifications2;
+  if (IsTrivialClassification(classifications2))
+    return classifications1;
+
+  ACMatchClassifications output;
+  for (ACMatchClassifications::const_iterator i = classifications1.begin(),
+       j = classifications2.begin(); i != classifications1.end();) {
+    AutocompleteMatch::AddLastClassificationIfNecessary(&output,
+        std::max(i->offset, j->offset), i->style | j->style);
+    const size_t next_i_offset = (i + 1) == classifications1.end() ?
+        static_cast<size_t>(-1) : (i + 1)->offset;
+    const size_t next_j_offset = (j + 1) == classifications2.end() ?
+        static_cast<size_t>(-1) : (j + 1)->offset;
+    if (next_i_offset >= next_j_offset)
+      ++j;
+    if (next_j_offset >= next_i_offset)
+      ++i;
+  }
+
+  return output;
 }
 
 // static

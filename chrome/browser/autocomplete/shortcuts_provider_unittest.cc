@@ -506,7 +506,10 @@ TEST_F(ShortcutsProviderTest, ClassifyAllMatchesInString) {
   // Extra parens in the next line hack around C++03's "most vexing parse".
   class ClassifyTest classify_test5((string16()), ACMatchClassifications());
   ACMatchClassifications spans_j = classify_test5.RunTest(ASCIIToUTF16("man"));
-  ASSERT_EQ(0U, spans_j.size());
+  ASSERT_EQ(1U, spans_j.size());
+  EXPECT_EQ(0U, spans_j.front().offset);
+  EXPECT_EQ(AutocompleteMatch::ACMatchClassification::NONE,
+      spans_j.front().style);
 
   // Matches which end at beginning of classification merge properly.
   matches.clear();
