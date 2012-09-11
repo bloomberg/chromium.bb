@@ -3091,8 +3091,7 @@ int main(int argc, char *argv[])
 
 	module_init = NULL;
 	if (xserver)
-		module_init = load_module("xwayland.so",
-					  "weston_xserver_init",
+		module_init = load_module("xwayland.so", "module_init",
 					  &xserver_module);
 	if (module_init && module_init(ec) < 0) {
 		ret = EXIT_FAILURE;
@@ -3104,7 +3103,7 @@ int main(int argc, char *argv[])
 
 	if (!shell)
 		shell = "desktop-shell.so";
-	module_init = load_module(shell, "shell_init", &shell_module);
+	module_init = load_module(shell, "module_init", &shell_module);
 	if (!module_init || module_init(ec) < 0) {
 		ret = EXIT_FAILURE;
 		goto out;

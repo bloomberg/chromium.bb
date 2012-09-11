@@ -770,9 +770,6 @@ weston_client_launch(struct weston_compositor *compositor,
 void
 weston_watch_process(struct weston_process *process);
 
-int
-weston_xserver_init(struct weston_compositor *compositor);
-
 struct weston_surface_animation;
 typedef	void (*weston_surface_animation_done_func_t)(struct weston_surface_animation *animation, void *data);
 
@@ -794,10 +791,6 @@ weston_surface_set_color(struct weston_surface *surface,
 void
 weston_surface_destroy(struct weston_surface *surface);
 
-struct weston_compositor *
-backend_init(struct wl_display *display, int argc, char *argv[],
-	     const char *config_file);
-
 int
 weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode);
 
@@ -805,5 +798,12 @@ int
 gles2_renderer_init(struct weston_compositor *ec);
 void
 gles2_renderer_destroy(struct weston_compositor *ec);
+
+struct weston_compositor *
+backend_init(struct wl_display *display, int argc, char *argv[],
+	    const char *config_file);
+
+int
+module_init(struct weston_compositor *compositor);
 
 #endif

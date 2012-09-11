@@ -530,18 +530,15 @@ tablet_shell_destroy(struct wl_listener *listener, void *data)
 	free(shell);
 }
 
-void
-shell_init(struct weston_compositor *compositor);
-
-WL_EXPORT void
-shell_init(struct weston_compositor *compositor)
+WL_EXPORT int
+module_init(struct weston_compositor *compositor)
 {
 	struct tablet_shell *shell;
 	struct wl_event_loop *loop;
 
 	shell = malloc(sizeof *shell);
 	if (shell == NULL)
-		return;
+		return -1;
 
 	memset(shell, 0, sizeof *shell);
 	shell->compositor = compositor;
@@ -583,4 +580,6 @@ shell_init(struct weston_compositor *compositor)
 	launch_ux_daemon(shell);
 
 	tablet_shell_set_state(shell, STATE_STARTING);
+
+	return 0;
 }

@@ -3691,11 +3691,8 @@ shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
 	}
 }
 
-int
-shell_init(struct weston_compositor *ec);
-
 WL_EXPORT int
-shell_init(struct weston_compositor *ec)
+module_init(struct weston_compositor *ec)
 {
 	struct weston_seat *seat;
 	struct desktop_shell *shell;
