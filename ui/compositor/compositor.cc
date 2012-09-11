@@ -15,7 +15,6 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositor.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorOutputSurface.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/compositor_switches.h"
@@ -179,18 +178,20 @@ Compositor::~Compositor() {
 
 void Compositor::Initialize(bool use_thread) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
+  WebKit::WebCompositorSupport* compositor_support =
+      WebKit::Platform::current()->compositorSupport();
   // These settings must be applied before we initialize the compositor.
-  WebKit::WebCompositor::setPartialSwapEnabled(
+  compositor_support->setPartialSwapEnabled(
       command_line->HasSwitch(switches::kUIEnablePartialSwap));
-  WebKit::WebCompositor::setPerTilePaintingEnabled(
+  compositor_support->setPerTilePaintingEnabled(
       command_line->HasSwitch(switches::kUIEnablePerTilePainting));
   if (use_thread)
     g_compositor_thread = new webkit_glue::WebThreadImpl("Browser Compositor");
-  WebKit::WebCompositor::initialize(g_compositor_thread);
+  compositor_support->initialize(g_compositor_thread);
 }
 
 void Compositor::Terminate() {
-  WebKit::WebCompositor::shutdown();
+  WebKit::Platform::current()->compositorSupport()->shutdown();
   if (g_compositor_thread) {
     delete g_compositor_thread;
     g_compositor_thread = NULL;
