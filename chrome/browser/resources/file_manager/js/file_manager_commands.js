@@ -21,10 +21,11 @@ CommandUtil.getCommandRoot = function(event, rootsList) {
 
 /**
  * @param {Event} event Command event for which to retrieve root type.
+ * @param {cr.ui.List} rootsList Root list to extract root node.
  * @return {string} Found root.
  */
-CommandUtil.getCommandRootType = function(event) {
-  var root = CommandUtil.getCommandRoot(event);
+CommandUtil.getCommandRootType = function(event, rootsList) {
+  var root = CommandUtil.getCommandRoot(event, rootsList);
 
   return root && PathUtil.getRootType(root.fullPath);
 };
@@ -84,8 +85,8 @@ Commands.unmountCommand = {
       fileManager.unmountVolume(PathUtil.getRootPath(root.fullPath));
     }
   },
-  canExecute: function(event) {
-    var rootType = CommandUtil.getCommandRootType(event);
+  canExecute: function(event, rootsList) {
+    var rootType = CommandUtil.getCommandRootType(event, rootsList);
 
     event.canExecute = (rootType == RootType.ARCHIVE ||
                         rootType == RootType.REMOVABLE);
@@ -106,9 +107,9 @@ Commands.formatCommand = {
           chrome.fileBrowserPrivate.formatDevice.bind(null, url));
     }
   },
-  canExecute: function(event) {
-    event.canExecute =
-        (CommandUtil.getCommandRootType(event) == RootType.REMOVABLE);
+  canExecute: function(event, rootsList) {
+    event.canExecute = (CommandUtil.getCommandRootType(event, rootsList) ==
+                        RootType.REMOVABLE);
   }
 };
 
@@ -124,8 +125,9 @@ Commands.importCommand = {
           '#' + PathUtil.getRootPath(root.fullPath)});
     }
   },
-  canExecute: function(event) {
-    event.canExecute = (this.getCommandRootType(event) != RootType.GDATA);
+  canExecute: function(event, rootsList) {
+    event.canExecute =
+        (CommandUtil.getCommandRootType(event, rootsList) != RootType.GDATA);
   }
 };
 
