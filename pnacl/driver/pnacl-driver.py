@@ -57,6 +57,7 @@ EXTRA_ENV = {
   'BIAS_ARM'    : '-D__arm__ -D__ARM_ARCH_7A__ -D__ARMEL__',
   'BIAS_X8632'  : '-D__i386__ -D__i386 -D__i686 -D__i686__ -D__pentium4__',
   'BIAS_X8664'  : '-D__amd64__ -D__amd64 -D__x86_64__ -D__x86_64 -D__core2__',
+  'FRONTEND_TRIPLE' : 'le32-unknown-nacl',
 
   'OPT_LEVEL'   : '0',
   'CC_FLAGS'    : '-O${OPT_LEVEL} -fno-common ${PTHREAD ? -pthread} ' +
@@ -66,7 +67,7 @@ EXTRA_ENV = {
                   # as some uses of asm are borderline legit, e.g.
                   # <prototype> asm("<function-name>");
                   '${NO_ASM ? -Dasm=ASM_FORBIDDEN -D__asm__=ASM_FORBIDDEN} ' +
-                  '-ccc-host-triple le32-unknown-nacl',
+                  '-ccc-host-triple ${FRONTEND_TRIPLE}',
 
 
   'ISYSTEM'        : '${ISYSTEM_USER} ${STDINC ? ${ISYSTEM_BUILTIN}}',
@@ -205,6 +206,7 @@ CustomPatterns = [
   ( '--driver=(.+)',             "env.set('CC', pathtools.normalize($0))\n"),
   ( '--pnacl-allow-native',      "env.set('ALLOW_NATIVE', '1')"),
   ( '--pnacl-allow-translate',   "env.set('ALLOW_TRANSLATE', '1')"),
+  ( '--pnacl-frontend-triple=(.+)',   "env.set('FRONTEND_TRIPLE', $0)"),
 ]
 
 GCCPatterns = [
@@ -328,6 +330,8 @@ GCCPatterns = [
   ( '(--fatal-warnings)',     ""),
   ( '(-meabi=.*)',            ""),
   ( '(-mfpu=.*)',             ""),
+
+  ( '(-mfloat-abi=.+)',       AddCCFlag),
 
   # GCC diagnostic mode triggers
   ( '(-print-.*)',            "env.set('DIAGNOSTIC', '1')"),
