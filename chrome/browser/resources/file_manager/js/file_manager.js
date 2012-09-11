@@ -63,23 +63,6 @@ FileManager.prototype = {
   // Private variables and helper functions.
 
   /**
-   * Location of the FAQ about the downloads directory.
-   */
-  var DOWNLOADS_FAQ_URL =
-      'http://support.google.com/chromeos/bin/answer.py?answer=1061547';
-
-  /**
-   * Location of the FAQ about Google Drive.
-   */
-  var GOOGLE_DRIVE_FAQ_URL =
-      'https://support.google.com/chromeos/?p=filemanager_drive';
-
-  /**
-   * Location of the Chromebook information page.
-   */
-  var CHROMEBOOK_INFO_URL = 'http://google.com/chromebook';
-
-  /**
    * Location of the page to buy more storage for Google Drive.
    */
   FileManager.GOOGLE_DRIVE_BUY_STORAGE =
@@ -411,6 +394,10 @@ FileManager.prototype = {
 
     this.initFileList_();
     this.initDialogs_();
+    this.bannersController_ =
+        new FileListBannerController(this.directoryModel_, this.document_);
+    this.bannersController_.addEventListener('relayout',
+                                             this.onResize_.bind(this));
 
     window.addEventListener('popstate', this.onPopState_.bind(this));
     window.addEventListener('unload', this.onUnload_.bind(this));
@@ -631,6 +618,9 @@ FileManager.prototype = {
       // Prevent opening an URL by dropping it onto the page.
       e.preventDefault();
     });
+
+    this.dialogDom_.addEventListener('click',
+                                     this.onExternalLinkClick_.bind(this));
     // Cache nodes we'll be manipulating.
     this.previewThumbnails_ =
         this.dialogDom_.querySelector('.preview-thumbnails');
@@ -895,10 +885,9 @@ FileManager.prototype = {
       vm.mountGData(function() {}, function() {});
     };
 
-    var learnMore = create(panel, 'div', 'learn-more plain-link',
+    var learnMore = create(panel, 'a', 'learn-more plain-link',
                            str('GDATA_LEARN_MORE'));
-    learnMore.onclick = this.onExternalLinkClick_.bind(this,
-        GOOGLE_DRIVE_ERROR_HELP_URL);
+    learnMore.href = GOOGLE_DRIVE_ERROR_HELP_URL;
   };
 
   FileManager.prototype.onDataModelSplice_ = function(event) {
@@ -2343,11 +2332,20 @@ FileManager.prototype = {
     return this.directoryModel_.getCurrentRootType() === RootType.GDATA;
   };
 
-  FileManager.prototype.onExternalLinkClick_ = function(url) {
-    chrome.tabs.create({url: url});
+  /**
+   * Overrides default handling for clicks on hyperlinks.
+   * Opens them in a separate tab and if it's an open/save dialog
+   * closes it.
+   * @param {Event} event Click event.
+   */
+  FileManager.prototype.onExternalLinkClick_ = function(event) {
+    if (event.target.tagName != 'A' || !event.target.href)
+      return;
+    chrome.tabs.create({url: event.target.href});
     if (this.dialogType_ != FileManager.DialogType.FULL_PAGE) {
       this.onCancel_();
     }
+    event.preventDefault();
   };
 
   /**
@@ -2429,11 +2427,6 @@ FileManager.prototype = {
 
       self.directoryModel_.setGDataEnabled(self.isGDataEnabled());
       self.directoryModel_.setOffline(!network.online);
-
-      if (self.isGDataEnabled())
-        self.setupGDataWelcome_();
-      else
-        self.cleanupGDataWelcome_();
 
       if (gdata.cellularDisabled)
         self.syncButton.setAttribute('checked', '');
@@ -2832,93 +2825,6 @@ FileManager.prototype = {
   };
 
   /**
-   * Show or hide the "Low disk space" warning.
-   * @param {boolean} show True if the box need to be shown.
-   */
-  FileManager.prototype.showLowDownloadsSpaceWarning_ = function(show) {
-    var box = this.dialogDom_.querySelector('.downloads-warning');
-
-    if (box.hidden == !show) return;
-
-    if (show) {
-      var html = util.htmlUnescape(str('DOWNLOADS_DIRECTORY_WARNING'));
-      box.innerHTML = html;
-      var link = box.querySelector('a');
-      link.addEventListener('click',
-          this.onExternalLinkClick_.bind(this, DOWNLOADS_FAQ_URL));
-    } else {
-      box.innerHTML = '';
-    }
-
-    box.hidden = !show;
-    this.requestResize_(100);
-  };
-
-  /**
-   * Show or hide the "Low Google Drive space" warning.
-   * @param {boolean} show True if the box need to be shown.
-   * @param {object} sizeStats Size statistics.
-   */
-  FileManager.prototype.showLowGDriveSpaceWarning_ = function(show, sizeStats) {
-    var box = this.dialogDom_.querySelector('.gdrive-space-warning');
-
-    // If the warning was dismissed before, this key stores the quota value
-    // (as of the moment of dismissal).
-    // If the warning was never dismissed or was reset this key stores 0.
-    var WARNING_DISMISSED_KEY = 'gdriveSpaceWarningDismissed';
-    var dismissed = parseInt(localStorage[WARNING_DISMISSED_KEY] || '0');
-
-    if (dismissed) {
-      if (dismissed == sizeStats.totalSizeKB &&  // Quota had not changed
-          sizeStats.remainingSizeKB / sizeStats.totalSizeKB < 0.15) {
-        // Since the last dismissal decision the quota has not changed AND
-        // the user did not free up significant space. Obey the dismissal.
-        show = false;
-      } else {
-        // Forget the dismissal. Warning will be shown again.
-        localStorage[WARNING_DISMISSED_KEY] = 0;
-      }
-    }
-
-    // Avoid showing two banners.
-    // TODO(kaznacheev): Unify the low space warning and the promo header.
-    if (show) this.cleanupGDataWelcome_();
-
-    if (box.hidden == !show) return;
-
-    box.textContent = '';
-    if (show) {
-      var icon = this.document_.createElement('div');
-      icon.className = 'gdrive-icon';
-      box.appendChild(icon);
-
-      var text = this.document_.createElement('div');
-      text.className = 'gdrive-text';
-      text.textContent = strf('GDATA_SPACE_AVAILABLE_LONG',
-          util.bytesToSi(sizeStats.remainingSizeKB * 1024));
-      box.appendChild(text);
-
-      var link = this.document_.createElement('div');
-      link.className = 'plain-link';
-      link.textContent = str('GDATA_BUY_MORE_SPACE_LINK');
-      link.addEventListener('click',
-          this.onExternalLinkClick_.bind(this, GOOGLE_DRIVE_BUY_STORAGE));
-      box.appendChild(link);
-
-      var close = this.document_.createElement('div');
-      close.className = 'cr-dialog-close';
-      box.appendChild(close);
-      close.addEventListener('click', function(total) {
-        localStorage[WARNING_DISMISSED_KEY] = total;
-        box.hidden = true;
-      }.bind(this, sizeStats.totalSizeKB));
-    }
-
-    box.hidden = !show;
-    this.requestResize_(100);
-  };
-
-  /**
    * Update the location in the address bar.
    *
    * @param {boolean} replace True if the history state should be replaced,
@@ -2971,7 +2877,6 @@ FileManager.prototype = {
     this.updateSearchBoxOnDirChange_();
 
     this.updateLocation_(event.initial, this.getCurrentDirectory());
-    this.checkFreeSpace_(this.getCurrentDirectory());
 
     if (this.closeOnUnmount_ && !event.initial &&
           PathUtil.getRootPath(event.previousDirEntry.fullPath) !=
@@ -3711,67 +3616,6 @@ FileManager.prototype = {
   };
 
   /**
-   * Start or stop monitoring free space depending on the new value of current
-   * directory path. In case the space is low shows a warning box.
-   * @param {string} currentPath New path to the current directory.
-   */
-  FileManager.prototype.checkFreeSpace_ = function(currentPath) {
-    var scheduleCheck = function(timeout, root, threshold) {
-      if (this.checkFreeSpaceTimer_) {
-        clearTimeout(this.checkFreeSpaceTimer_);
-        this.checkFreeSpaceTimer_ = null;
-      }
-
-      if (timeout) {
-        this.checkFreeSpaceTimer_ = setTimeout(
-            doCheck, timeout, root, threshold);
-      }
-    }.bind(this);
-
-    var doCheck = function(root, threshold) {
-      // Remember our invocation timer, because getSizeStats is long and
-      // asynchronous call.
-      var selfTimer = this.checkFreeSpaceTimer_;
-
-      chrome.fileBrowserPrivate.getSizeStats(
-          util.makeFilesystemUrl(root),
-          function(sizeStats) {
-            // If new check started while we were in async getSizeStats call,
-            // then we shouldn't do anything.
-            if (selfTimer != this.checkFreeSpaceTimer_) return;
-
-            // sizeStats is undefined, if some error occurs.
-            var ratio = (sizeStats && sizeStats.totalSizeKB > 0) ?
-                sizeStats.remainingSizeKB / sizeStats.totalSizeKB : 1;
-
-            var lowDiskSpace = ratio < threshold;
-
-            if (root == RootDirectory.DOWNLOADS)
-              this.showLowDownloadsSpaceWarning_(lowDiskSpace);
-            else
-              this.showLowGDriveSpaceWarning_(lowDiskSpace, sizeStats);
-
-            // If disk space is low, check it more often. User can delete files
-            // manually and we should not bother her with warning in this case.
-            scheduleCheck(lowDiskSpace ? 1000 * 5 : 1000 * 30, root, threshold);
-          }.bind(this));
-    }.bind(this);
-
-    // TODO(kaznacheev): Unify the two low space warning.
-    var root = PathUtil.getRootPath(currentPath);
-    if (root === RootDirectory.DOWNLOADS) {
-      scheduleCheck(500, root, 0.2);
-    } else if (root === RootDirectory.GDATA) {
-      scheduleCheck(500, root, 0.1);
-    } else {
-      scheduleCheck(0);
-
-      this.showLowDownloadsSpaceWarning_(false);
-      this.showLowGDriveSpaceWarning_(false);
-    }
-  };
-
-  /**
    * Handler invoked on preference setting in gdata context menu.
    * @param {String} pref  The preference to alter.
    * @param {boolean} inverted Invert the value if true.
@@ -3839,181 +3683,6 @@ FileManager.prototype = {
     };
 
     customSplitter.decorate(splitterElement);
-  };
-
-  FileManager.prototype.setupGDataWelcome_ = function() {
-    if (this.gdataWelcomeHandler_)
-      return;
-    this.gdataWelcomeHandler_ = this.createGDataWelcomeHandler_();
-    if (this.gdataWelcomeHandler_) {
-      this.directoryModel_.addEventListener('scan-completed',
-          this.gdataWelcomeHandler_);
-      this.directoryModel_.addEventListener('rescan-completed',
-          this.gdataWelcomeHandler_);
-    }
-  };
-
-  FileManager.prototype.cleanupGDataWelcome_ = function() {
-    this.showGDataWelcome_('none');
-
-    if (this.gdataWelcomeHandler_) {
-      this.directoryModel_.removeEventListener('scan-completed',
-          this.gdataWelcomeHandler_);
-      this.directoryModel_.removeEventListener('rescan-completed',
-          this.gdataWelcomeHandler_);
-      this.gdataWelcomeHandler_ = null;
-    }
-  };
-
-  FileManager.prototype.showGDataWelcome_ = function(type) {
-    if (this.dialogContainer_.getAttribute('gdrive-welcome') != type) {
-      this.dialogContainer_.setAttribute('gdrive-welcome', type);
-      this.requestResize_(200);  // Resize only after the animation is done.
-    }
-  };
-
-  FileManager.prototype.createGDataWelcomeHandler_ = function() {
-    var board = str('CHROMEOS_RELEASE_BOARD');
-    // It is 'canary' or 'beta' for the other channels.
-    var releaseChannel = str('BROWSER_VERSION_MODIFIER') == '';
-    var new_welcome = board.match(/^(stumpy|lumpy)/i) && releaseChannel;
-
-    var WELCOME_HEADER_COUNTER_KEY = 'gdataWelcomeHeaderCounter';
-    var WELCOME_HEADER_COUNTER_LIMIT = 5;
-
-    function getHeaderCounter() {
-      return parseInt(localStorage[WELCOME_HEADER_COUNTER_KEY] || '0');
-    }
-
-    if (getHeaderCounter() >= WELCOME_HEADER_COUNTER_LIMIT)
-      return null;
-
-    function createDiv(className, parent) {
-      var div = parent.ownerDocument.createElement('div');
-      div.className = className;
-      parent.appendChild(div);
-      return div;
-    }
-
-    var self = this;
-
-    function showBanner(type, messageId) {
-      self.showGDataWelcome_(type);
-
-      var container = self.dialogDom_.querySelector('.gdrive-welcome.' + type);
-      if (container.firstElementChild)
-        return;  // Do not re-create.
-
-      var wrapper = createDiv('gdrive-welcome-wrapper', container);
-      createDiv('gdrive-welcome-icon', wrapper);
-
-      var close = createDiv('cr-dialog-close', wrapper);
-      close.addEventListener('click', closeBanner);
-
-      var message = createDiv('gdrive-welcome-message', wrapper);
-
-      var title = createDiv('gdrive-welcome-title', message);
-
-      var text = createDiv('gdrive-welcome-text', message);
-      text.innerHTML = str(messageId);
-
-      var links = createDiv('gdrive-welcome-links', message);
-
-      var more;
-      if (new_welcome) {
-        title.textContent = str('GDATA_WELCOME_TITLE_ALTERNATIVE');
-        more = self.document_.createElement('a');
-        more.className = 'gdata-welcome-button gdata-welcome-start';
-        more.textContent = str('GDATA_WELCOME_GET_STARTED');
-        more.addEventListener('click',
-            self.onExternalLinkClick_.bind(self, CHROMEBOOK_INFO_URL));
-      } else {
-        title.textContent = str('GDATA_WELCOME_TITLE');
-        more = self.document_.createElement('div');
-        more.className = 'plain-link';
-        more.textContent = str('GDATA_LEARN_MORE');
-        more.addEventListener('click',
-            self.onExternalLinkClick_.bind(self, GOOGLE_DRIVE_FAQ_URL));
-      }
-      links.appendChild(more);
-
-      var dismiss;
-      if (new_welcome) {
-        dismiss = self.document_.createElement('a');
-        dismiss.className = 'gdata-welcome-button';
-      } else {
-        dismiss = self.document_.createElement('div');
-        dismiss.className = 'plain-link';
-      }
-      dismiss.classList.add('gdrive-welcome-dismiss');
-      dismiss.textContent = str('GDATA_WELCOME_DISMISS');
-      dismiss.addEventListener('click', closeBanner);
-      links.appendChild(dismiss);
-    }
-
-    var previousDirWasOnGData = false;
-
-    function maybeShowBanner() {
-      if (!self.isOnGData()) {
-        self.showGDataWelcome_('none');
-        previousDirWasOnGData = false;
-        return;
-      }
-
-      if (!self.dialogContainer_.hasAttribute('gdrive-welcome-style')) {
-        self.dialogContainer_.setAttribute('gdrive-welcome-style', true);
-        var style = self.document_.createElement('link');
-        style.rel = 'stylesheet';
-        style.href = 'css/gdrive_welcome.css';
-        self.document_.head.appendChild(style);
-        style.onload = function() { maybeShowBanner() };
-        return;
-      }
-
-      var counter = getHeaderCounter();
-
-      if (self.directoryModel_.getFileList().length == 0 && counter == 0) {
-        // Only show the full page banner if the header banner was never shown.
-        // Do not increment the counter.
-        // The timeout below is required because sometimes another
-        // 'rescan-completed' event arrives shortly with non-empty file list.
-        setTimeout(function() {
-          if (self.isOnGData() &&
-              self.dialogContainer_.getAttribute('gdrive-welcome') != 'header')
-            showBanner('page', 'GDATA_WELCOME_TEXT_LONG');
-        }, 2000);
-      } else if (counter < WELCOME_HEADER_COUNTER_LIMIT) {
-        // We do not want to increment the counter when the user navigates
-        // between different directories on GDrive, but we increment the counter
-        // once anyway to prevent the full page banner from showing.
-        if (!previousDirWasOnGData || counter == 0)
-          localStorage[WELCOME_HEADER_COUNTER_KEY] = ++counter;
-        showBanner('header', 'GDATA_WELCOME_TEXT_SHORT');
-      } else {
-        closeBanner();
-      }
-      previousDirWasOnGData = true;
-    }
-
-    function closeBanner() {
-      self.cleanupGDataWelcome_();
-      // Stop showing the welcome banner.
-      localStorage[WELCOME_HEADER_COUNTER_KEY] = WELCOME_HEADER_COUNTER_LIMIT;
-    }
-
-    function checkSpaceAndShowBanner() {
-      if (new_welcome && self.isOnGData())
-        chrome.fileBrowserPrivate.getSizeStats(self.getCurrentDirectoryURL(),
-           function(result) {
-             if (result.totalSizeKB >= 100 * 1024 * 1024)  // Already >= 100 GB.
-               new_welcome = false;
-             maybeShowBanner();
-           });
-      else
-        maybeShowBanner();
-    }
-
-    return checkSpaceAndShowBanner;
   };
 
   /**

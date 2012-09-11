@@ -55,6 +55,7 @@
 //<include src="directory_contents.js">
 //<include src="directory_model.js"/>
 //<include src="file_copy_manager_wrapper.js"/>
+//<include src="drive_banners.js" />
 //<include src="file_manager.js"/>
 //<include src="file_manager_pyauto.js"/>
 //<include src="file_tasks.js"/>

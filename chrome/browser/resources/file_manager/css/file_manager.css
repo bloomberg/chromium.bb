@@ -1363,6 +1363,7 @@ div.shade[fadein] {
 .plain-link {
   color: rgb(17, 85, 204);
   cursor: pointer;
+  text-decoration: none;
 }
 
 body[ash] .dialog-title,
