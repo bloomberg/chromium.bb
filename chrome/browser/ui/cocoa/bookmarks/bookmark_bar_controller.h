@@ -396,6 +396,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 - (BookmarkButton*)buttonForDroppingOnAtPoint:(NSPoint)point;
 - (BOOL)isEventAnExitEvent:(NSEvent*)event;
 - (BOOL)shrinkOrHideView:(NSView*)view forMaxX:(CGFloat)maxViewX;
+- (void)unhighlightBookmark:(const BookmarkNode*)node;
 
 // The following are for testing purposes only and are not used internally.
 - (NSMenu *)menuForFolderNode:(const BookmarkNode*)node;
