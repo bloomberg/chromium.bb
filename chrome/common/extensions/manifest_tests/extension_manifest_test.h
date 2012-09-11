@@ -137,9 +137,9 @@ class ExtensionManifestTest : public testing::Test {
 
   bool enable_apps_;
 
-  // Force the manifest tests to run as though it were dev channel, since
-  // several tests rely on manifest features being available that aren't
-  // on stable/beta.
+  // Force the manifest tests to run as though they are on trunk, since several
+  // tests rely on manifest features being available that aren't on
+  // stable/beta.
   //
   // These objects nest, so if a test wants to explicitly test the behaviour
   // on stable or beta, declare it inside that test.

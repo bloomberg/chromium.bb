@@ -14,6 +14,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
+#include "chrome/common/extensions/features/feature.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/mock_host_resolver.h"
@@ -23,11 +24,17 @@
 using extensions::Extension;
 
 class ScriptBadgeApiTest : public ExtensionApiTest {
+ public:
+  ScriptBadgeApiTest() : trunk_(chrome::VersionInfo::CHANNEL_UNKNOWN) {}
+
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableScriptBadges);
   }
+
+ private:
+  extensions::Feature::ScopedCurrentChannel trunk_;
 };
 
 IN_PROC_BROWSER_TEST_F(ScriptBadgeApiTest, Basics) {

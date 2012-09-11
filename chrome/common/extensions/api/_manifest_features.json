@@ -204,7 +204,7 @@
     "min_manifest_version": 2
   },
   "script_badge": {
-    "channel": "dev",
+    "channel": "trunk",
     "extension_types": ["extension"]
   },
   "signature": {

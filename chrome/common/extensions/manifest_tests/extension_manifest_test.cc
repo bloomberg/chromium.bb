@@ -18,7 +18,8 @@ using extensions::Extension;
 
 ExtensionManifestTest::ExtensionManifestTest()
     : enable_apps_(true),
-      current_channel_(chrome::VersionInfo::CHANNEL_DEV) {}
+      // UNKNOWN == trunk.
+      current_channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {}
 
 // static
 DictionaryValue* ExtensionManifestTest::LoadManifestFile(
