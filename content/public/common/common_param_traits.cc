@@ -251,6 +251,8 @@ void ParamTraits<webkit_base::DataElement>::Write(
     default: {
       DCHECK(p.type() == webkit_base::DataElement::TYPE_BLOB);
       WriteParam(m, p.url());
+      WriteParam(m, p.offset());
+      WriteParam(m, p.length());
       break;
     }
   }
@@ -305,9 +307,14 @@ bool ParamTraits<webkit_base::DataElement>::Read(
     default: {
       DCHECK(type == webkit_base::DataElement::TYPE_BLOB);
       GURL blob_url;
+      uint64 offset, length;
       if (!ReadParam(m, iter, &blob_url))
         return false;
-      r->SetToBlobUrl(blob_url);
+      if (!ReadParam(m, iter, &offset))
+        return false;
+      if (!ReadParam(m, iter, &length))
+        return false;
+      r->SetToBlobUrlRange(blob_url, offset, length);
       break;
     }
   }
