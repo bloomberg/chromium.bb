@@ -1547,3 +1547,35 @@
    fun:KioskModeIdleLogoutTest_CheckObserversBeforeUserLogin_Test
    fun:testing::internal::TestFactoryImpl::CreateTest
 }
+{
+   bug_147755_a
+   Heapcheck:Leak
+   ...
+   fun:PluginFinder::GetPluginInstaller
+   fun:PluginPrefs::EnablePluginIfPossibleCallback
+}
+{
+   bug_147755_b
+   Heapcheck:Leak
+   ...
+   fun:ASCIIToUTF16
+   fun:PluginPrefsTest_UnifiedPepperFlashState_Test::TestBody
+}
+{
+   bug_147756_a
+   Heapcheck:Leak
+   fun:Workspace2
+   fun:ash::internal::WorkspaceManager2::CreateWorkspace
+   fun:WorkspaceManager2
+   fun:WorkspaceController
+   fun:ash::internal::RootWindowController::InitLayoutManagers
+   fun:ash::Shell::InitRootWindowController
+   fun:ash::Shell::Init
+}
+{
+   bug_147756_b
+   Heapcheck:Leak
+   fun:ash::::CreateContainersInRootWindow
+   fun:ash::internal::RootWindowController::CreateContainers
+   fun:ash::Shell::Init
+}
