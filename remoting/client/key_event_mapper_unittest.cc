@@ -19,25 +19,9 @@ using protocol::InputStub;
 using protocol::KeyEvent;
 using protocol::MockInputStub;
 
-MATCHER_P2(EqualsVkeyEvent, keycode, pressed, "") {
-  return arg.keycode() == keycode && arg.pressed() == pressed;
-}
-
 MATCHER_P2(EqualsUsbEvent, usb_keycode, pressed, "") {
   return arg.usb_keycode() == static_cast<uint32>(usb_keycode) &&
          arg.pressed() == pressed;
-}
-
-static KeyEvent NewVkeyEvent(int keycode, bool pressed) {
-  KeyEvent event;
-  event.set_keycode(keycode);
-  event.set_pressed(pressed);
-  return event;
-}
-
-static void PressAndReleaseVkey(InputStub* input_stub, int keycode) {
-  input_stub->InjectKeyEvent(NewVkeyEvent(keycode, true));
-  input_stub->InjectKeyEvent(NewVkeyEvent(keycode, false));
 }
 
 static KeyEvent NewUsbEvent(uint32 usb_keycode, bool pressed) {
@@ -71,15 +55,15 @@ TEST(KeyEventMapperTest, NoMappingOrTrapping) {
       EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(i, false)));
     }
 
-    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsVkeyEvent(3, true)));
-    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsVkeyEvent(3, false)));
+    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(3, true)));
+    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(3, false)));
   }
 
   InjectTestSequence(&event_mapper);
-  PressAndReleaseVkey(&event_mapper, 3);
+  PressAndReleaseUsb(&event_mapper, 3);
 }
 
-// Verify that USB keys are remapped at most once, and VKEYs are not mapped.
+// Verify that USB keys are remapped at most once.
 TEST(KeyEventMapperTest, RemapKeys) {
   MockInputStub mock_stub;
   KeyEventMapper event_mapper(&mock_stub);
@@ -100,20 +84,16 @@ TEST(KeyEventMapperTest, RemapKeys) {
     EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(3, false)));
     EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(3, true)));
     EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(3, false)));
-
-    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsVkeyEvent(3, true)));
-    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsVkeyEvent(3, false)));
   }
 
   InjectTestSequence(&event_mapper);
-  PressAndReleaseVkey(&event_mapper, 3);
 }
 
 static void HandleTrappedKey(MockInputStub* stub, uint32 keycode, bool down) {
   stub->InjectKeyEvent(NewUsbEvent(keycode, down));
 }
 
-// Verify that USB keys are trapped, not remapped, and VKEYs are not trapped.
+// Verify that trapped and mapped USB keys are trapped but not remapped.
 TEST(KeyEventMapperTest, TrapKeys) {
   MockInputStub mock_stub;
   MockInputStub trap_stub;
@@ -141,13 +121,9 @@ TEST(KeyEventMapperTest, TrapKeys) {
     EXPECT_CALL(trap_stub, InjectKeyEvent(EqualsUsbEvent(4, false)));
     EXPECT_CALL(trap_stub, InjectKeyEvent(EqualsUsbEvent(5, true)));
     EXPECT_CALL(trap_stub, InjectKeyEvent(EqualsUsbEvent(5, false)));
-
-    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsVkeyEvent(3, true)));
-    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsVkeyEvent(3, false)));
   }
 
   InjectTestSequence(&event_mapper);
-  PressAndReleaseVkey(&event_mapper, 3);
 }
 
 }  // namespace remoting

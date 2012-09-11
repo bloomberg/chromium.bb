@@ -44,10 +44,7 @@ bool PepperInputHandler::HandleInputEvent(const pp::InputEvent& event) {
     case PP_INPUTEVENT_TYPE_KEYUP: {
       pp::KeyboardInputEvent pp_key_event(event);
       protocol::KeyEvent key_event;
-      key_event.set_keycode(pp_key_event.GetKeyCode());
-      uint32 keycode = GetUsbKeyCode(pp_key_event);
-      if (keycode != 0)
-        key_event.set_usb_keycode(keycode);
+      key_event.set_usb_keycode(GetUsbKeyCode(pp_key_event));
       key_event.set_pressed(event.GetType() == PP_INPUTEVENT_TYPE_KEYDOWN);
       input_stub_->InjectKeyEvent(key_event);
       return true;

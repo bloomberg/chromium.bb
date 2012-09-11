@@ -19,8 +19,9 @@ namespace remoting {
 using protocol::MockInputStub;
 using protocol::InputEventTracker;
 
-MATCHER_P2(EqualsKeyEvent, keycode, pressed, "") {
-  return arg.keycode() == keycode && arg.pressed() == pressed;
+MATCHER_P2(EqualsUsbEvent, usb_keycode, pressed, "") {
+  return arg.usb_keycode() == (unsigned int)usb_keycode &&
+         arg.pressed() == pressed;
 }
 
 static protocol::MouseEvent MouseMoveEvent(int x, int y) {
@@ -30,9 +31,9 @@ static protocol::MouseEvent MouseMoveEvent(int x, int y) {
   return event;
 }
 
-static protocol::KeyEvent KeyEvent(int keycode, bool pressed) {
+static protocol::KeyEvent UsbKeyEvent(int usb_keycode, bool pressed) {
   protocol::KeyEvent event;
-  event.set_keycode(keycode);
+  event.set_usb_keycode(usb_keycode);
   event.set_pressed(pressed);
   return event;
 }
@@ -109,9 +110,9 @@ TEST(RemoteInputFilterTest, LocalActivityReleasesAll) {
 
   // Use release of a key as a proxy for InputEventTracker::ReleaseAll()
   // having been called, rather than mocking it.
-  EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsKeyEvent(0, true)));
-  EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsKeyEvent(0, false)));
-  input_filter.InjectKeyEvent(KeyEvent(0, true));
+  EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(0, true)));
+  EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(0, false)));
+  input_filter.InjectKeyEvent(UsbKeyEvent(0, true));
 
   for (int i = 0; i < 10; ++i) {
     input_filter.InjectMouseEvent(MouseMoveEvent(0, 0));

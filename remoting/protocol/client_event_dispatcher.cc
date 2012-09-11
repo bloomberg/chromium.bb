@@ -30,7 +30,7 @@ void ClientEventDispatcher::OnInitialized() {
 }
 
 void ClientEventDispatcher::InjectKeyEvent(const KeyEvent& event) {
-  DCHECK(event.has_keycode() || event.has_usb_keycode());
+  DCHECK(event.has_usb_keycode());
   DCHECK(event.has_pressed());
   EventMessage message;
   message.set_sequence_number(base::Time::Now().ToInternalValue());

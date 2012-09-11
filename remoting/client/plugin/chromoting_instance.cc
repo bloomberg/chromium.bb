@@ -299,8 +299,6 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
     protocol::KeyEvent event;
     event.set_usb_keycode(usb_keycode);
     event.set_pressed(is_pressed);
-    // Even though new hosts will ignore keycode, it's a required field.
-    event.set_keycode(0);
     InjectKeyEvent(event);
   } else if (method == "remapKey") {
     int from_keycode = 0;

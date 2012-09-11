@@ -24,7 +24,7 @@ bool InputEventTracker::IsKeyPressed(uint32 usb_keycode) const {
 }
 
 int InputEventTracker::PressedKeyCount() const {
-  return pressed_keys_.size() + pressed_vkeys_.size();
+  return pressed_keys_.size();
 }
 
 void InputEventTracker::ReleaseAll() {
@@ -36,15 +36,6 @@ void InputEventTracker::ReleaseAll() {
     input_stub_->InjectKeyEvent(event);
   }
   pressed_keys_.clear();
-
-  std::set<int>::iterator j;
-  for (j = pressed_vkeys_.begin(); j != pressed_vkeys_.end(); ++j) {
-    KeyEvent event;
-    event.set_pressed(false);
-    event.set_keycode(*j);
-    input_stub_->InjectKeyEvent(event);
-  }
-  pressed_vkeys_.clear();
 
   for (int i = MouseEvent::BUTTON_UNDEFINED + 1;
        i < MouseEvent::BUTTON_MAX; ++i) {
@@ -71,12 +62,6 @@ void InputEventTracker::InjectKeyEvent(const KeyEvent& event) {
         pressed_keys_.insert(event.usb_keycode());
       } else {
         pressed_keys_.erase(event.usb_keycode());
-      }
-    } else if (event.has_keycode()) {
-      if (event.pressed()) {
-        pressed_vkeys_.insert(event.keycode());
-      } else {
-        pressed_vkeys_.erase(event.keycode());
       }
     }
   }

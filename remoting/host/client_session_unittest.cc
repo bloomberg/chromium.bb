@@ -116,8 +116,9 @@ TEST_F(ClientSessionTest, ClipboardStubFilter) {
   connection_->clipboard_stub()->InjectClipboardEvent(clipboard_event3);
 }
 
-MATCHER_P2(EqualsKeyEvent, keycode, pressed, "") {
-  return arg.keycode() == keycode && arg.pressed() == pressed;
+MATCHER_P2(EqualsUsbEvent, usb_keycode, pressed, "") {
+  return arg.usb_keycode() == (unsigned int)usb_keycode &&
+         arg.pressed() == pressed;
 }
 
 MATCHER_P2(EqualsMouseEvent, x, y, "") {
@@ -131,19 +132,19 @@ MATCHER_P2(EqualsMouseButtonEvent, button, down, "") {
 TEST_F(ClientSessionTest, InputStubFilter) {
   protocol::KeyEvent key_event1;
   key_event1.set_pressed(true);
-  key_event1.set_keycode(1);
+  key_event1.set_usb_keycode(1);
 
   protocol::KeyEvent key_event2_down;
   key_event2_down.set_pressed(true);
-  key_event2_down.set_keycode(2);
+  key_event2_down.set_usb_keycode(2);
 
   protocol::KeyEvent key_event2_up;
   key_event2_up.set_pressed(false);
-  key_event2_up.set_keycode(2);
+  key_event2_up.set_usb_keycode(2);
 
   protocol::KeyEvent key_event3;
   key_event3.set_pressed(true);
-  key_event3.set_keycode(3);
+  key_event3.set_usb_keycode(3);
 
   protocol::MouseEvent mouse_event1;
   mouse_event1.set_x(100);
@@ -160,8 +161,8 @@ TEST_F(ClientSessionTest, InputStubFilter) {
   InSequence s;
   EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
   EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_));
-  EXPECT_CALL(host_input_stub_, InjectKeyEvent(EqualsKeyEvent(2, true)));
-  EXPECT_CALL(host_input_stub_, InjectKeyEvent(EqualsKeyEvent(2, false)));
+  EXPECT_CALL(host_input_stub_, InjectKeyEvent(EqualsUsbEvent(2, true)));
+  EXPECT_CALL(host_input_stub_, InjectKeyEvent(EqualsUsbEvent(2, false)));
   EXPECT_CALL(host_input_stub_, InjectMouseEvent(EqualsMouseEvent(200, 201)));
   EXPECT_CALL(session_event_handler_, OnSessionClosed(_));
 
@@ -220,11 +221,11 @@ TEST_F(ClientSessionTest, LocalInputTest) {
 TEST_F(ClientSessionTest, RestoreEventState) {
   protocol::KeyEvent key1;
   key1.set_pressed(true);
-  key1.set_keycode(1);
+  key1.set_usb_keycode(1);
 
   protocol::KeyEvent key2;
   key2.set_pressed(true);
-  key2.set_keycode(2);
+  key2.set_usb_keycode(2);
 
   protocol::MouseEvent mousedown;
   mousedown.set_button(protocol::MouseEvent::BUTTON_LEFT);
@@ -233,12 +234,12 @@ TEST_F(ClientSessionTest, RestoreEventState) {
   InSequence s;
   EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
   EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_));
-  EXPECT_CALL(host_input_stub_, InjectKeyEvent(EqualsKeyEvent(1, true)));
-  EXPECT_CALL(host_input_stub_, InjectKeyEvent(EqualsKeyEvent(2, true)));
+  EXPECT_CALL(host_input_stub_, InjectKeyEvent(EqualsUsbEvent(1, true)));
+  EXPECT_CALL(host_input_stub_, InjectKeyEvent(EqualsUsbEvent(2, true)));
   EXPECT_CALL(host_input_stub_, InjectMouseEvent(EqualsMouseButtonEvent(
       protocol::MouseEvent::BUTTON_LEFT, true)));
-  EXPECT_CALL(host_input_stub_, InjectKeyEvent(EqualsKeyEvent(1, false)));
-  EXPECT_CALL(host_input_stub_, InjectKeyEvent(EqualsKeyEvent(2, false)));
+  EXPECT_CALL(host_input_stub_, InjectKeyEvent(EqualsUsbEvent(1, false)));
+  EXPECT_CALL(host_input_stub_, InjectKeyEvent(EqualsUsbEvent(2, false)));
   EXPECT_CALL(host_input_stub_, InjectMouseEvent(EqualsMouseButtonEvent(
       protocol::MouseEvent::BUTTON_LEFT, false)));
   EXPECT_CALL(session_event_handler_, OnSessionClosed(_));

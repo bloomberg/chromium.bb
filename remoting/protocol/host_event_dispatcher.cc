@@ -38,8 +38,7 @@ void HostEventDispatcher::OnMessageReceived(
 
   if (message->has_key_event()) {
     const KeyEvent& event = message->key_event();
-    if ((event.has_keycode() || event.has_usb_keycode()) &&
-        event.has_pressed()) {
+    if (event.has_usb_keycode() && event.has_pressed()) {
       input_stub_->InjectKeyEvent(event);
     } else {
       LOG(WARNING) << "Received invalid key event.";

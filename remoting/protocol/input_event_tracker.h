@@ -40,8 +40,6 @@ class InputEventTracker : public InputStub {
  private:
   protocol::InputStub* input_stub_;
 
-  // TODO(wez): Remove this member when we stop supporting VKEY based clients.
-  std::set<int> pressed_vkeys_;
   std::set<uint32> pressed_keys_;
 
   SkIPoint mouse_pos_;

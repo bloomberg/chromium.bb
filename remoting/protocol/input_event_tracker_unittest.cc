@@ -19,10 +19,6 @@ namespace protocol {
 static const MouseEvent::MouseButton BUTTON_LEFT = MouseEvent::BUTTON_LEFT;
 static const MouseEvent::MouseButton BUTTON_RIGHT = MouseEvent::BUTTON_RIGHT;
 
-MATCHER_P2(EqualsVkeyEvent, keycode, pressed, "") {
-  return arg.keycode() == keycode && arg.pressed() == pressed;
-}
-
 MATCHER_P2(EqualsUsbEvent, usb_keycode, pressed, "") {
   return arg.usb_keycode() == static_cast<uint32>(usb_keycode) &&
          arg.pressed() == pressed;
@@ -31,18 +27,6 @@ MATCHER_P2(EqualsUsbEvent, usb_keycode, pressed, "") {
 MATCHER_P4(EqualsMouseEvent, x, y, button, down, "") {
   return arg.x() == x && arg.y() == y && arg.button() == button &&
          arg.button_down() == down;
-}
-
-static KeyEvent NewVkeyEvent(int keycode, bool pressed) {
-  KeyEvent event;
-  event.set_keycode(keycode);
-  event.set_pressed(pressed);
-  return event;
-}
-
-static void PressAndReleaseVkey(InputStub* input_stub, int keycode) {
-  input_stub->InjectKeyEvent(NewVkeyEvent(keycode, true));
-  input_stub->InjectKeyEvent(NewVkeyEvent(keycode, false));
 }
 
 static KeyEvent NewUsbEvent(uint32 usb_keycode, bool pressed) {
@@ -56,15 +40,6 @@ static void PressAndReleaseUsb(InputStub* input_stub,
                                uint32 usb_keycode) {
   input_stub->InjectKeyEvent(NewUsbEvent(usb_keycode, true));
   input_stub->InjectKeyEvent(NewUsbEvent(usb_keycode, false));
-}
-
-static KeyEvent NewVkeyUsbEvent(int keycode, int usb_keycode,
-                                          bool pressed) {
-  KeyEvent event;
-  event.set_keycode(keycode);
-  event.set_usb_keycode(usb_keycode);
-  event.set_pressed(pressed);
-  return event;
 }
 
 static MouseEvent NewMouseEvent(int x, int y,
@@ -150,8 +125,8 @@ TEST(InputEventTrackerTest, ReleaseAllKeys) {
   input_tracker.ReleaseAll();
 }
 
-// Verify that we track both VK- and USB-based key events correctly.
-TEST(InputEventTrackerTest, TrackVkeyAndUsb) {
+// Verify that we track both USB-based key events correctly.
+TEST(InputEventTrackerTest, TrackUsbKeyEvents) {
   MockInputStub mock_stub;
   InputEventTracker input_tracker(&mock_stub);
   ExpectationSet injects;
@@ -160,10 +135,6 @@ TEST(InputEventTrackerTest, TrackVkeyAndUsb) {
     InSequence s;
 
     injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(3, true)));
-    injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsVkeyEvent(1, true)));
-    injects += EXPECT_CALL(mock_stub,
-        InjectKeyEvent(EqualsVkeyEvent(1, false)));
-    injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsVkeyEvent(4, true)));
     injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(6, true)));
     injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(7, true)));
     injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(5, true)));
@@ -174,8 +145,6 @@ TEST(InputEventTrackerTest, TrackVkeyAndUsb) {
 
   EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(3, false)))
       .After(injects);
-  EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsVkeyEvent(4, false)))
-      .After(injects);
   EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(6, false)))
       .After(injects);
   EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(7, false)))
@@ -184,22 +153,19 @@ TEST(InputEventTrackerTest, TrackVkeyAndUsb) {
       .After(injects);
 
   input_tracker.InjectKeyEvent(NewUsbEvent(3, true));
-  PressAndReleaseVkey(&input_tracker, 1);
-  input_tracker.InjectKeyEvent(NewVkeyEvent(4, true));
-  input_tracker.InjectKeyEvent(NewVkeyUsbEvent(5, 6, true));
-  input_tracker.InjectKeyEvent(NewVkeyUsbEvent(5, 7, true));
-  input_tracker.InjectKeyEvent(NewVkeyUsbEvent(6, 5, true));
-  input_tracker.InjectKeyEvent(NewVkeyUsbEvent(7, 5, true));
+  input_tracker.InjectKeyEvent(NewUsbEvent(6, true));
+  input_tracker.InjectKeyEvent(NewUsbEvent(7, true));
+  input_tracker.InjectKeyEvent(NewUsbEvent(5, true));
+  input_tracker.InjectKeyEvent(NewUsbEvent(5, true));
   PressAndReleaseUsb(&input_tracker, 2);
 
   EXPECT_FALSE(input_tracker.IsKeyPressed(1));
   EXPECT_FALSE(input_tracker.IsKeyPressed(2));
   EXPECT_TRUE(input_tracker.IsKeyPressed(3));
-  EXPECT_FALSE(input_tracker.IsKeyPressed(4)); // 4 was a VKEY.
   EXPECT_TRUE(input_tracker.IsKeyPressed(5));
   EXPECT_TRUE(input_tracker.IsKeyPressed(6));
   EXPECT_TRUE(input_tracker.IsKeyPressed(7));
-  EXPECT_EQ(5, input_tracker.PressedKeyCount());
+  EXPECT_EQ(4, input_tracker.PressedKeyCount());
 
   input_tracker.ReleaseAll();
 }
@@ -216,15 +182,12 @@ TEST(InputEventTrackerTest, InvalidEventsNotTracked) {
     injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(3, true)));
     injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(1, true)));
     injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(1, false)));
-    injects += EXPECT_CALL(mock_stub, InjectKeyEvent(_)).Times(3);
-    injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsVkeyEvent(4, true)));
+    injects += EXPECT_CALL(mock_stub, InjectKeyEvent(_)).Times(2);
     injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(2, true)));
     injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(2, false)));
   }
 
   EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(3, false)))
-      .After(injects);
-  EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsVkeyEvent(4, false)))
       .After(injects);
 
   input_tracker.InjectKeyEvent(NewUsbEvent(3, true));
@@ -235,21 +198,15 @@ TEST(InputEventTrackerTest, InvalidEventsNotTracked) {
   input_tracker.InjectKeyEvent(invalid_event1);
 
   KeyEvent invalid_event2;
-  invalid_event2.set_keycode(5);
+  invalid_event2.set_usb_keycode(6);
   input_tracker.InjectKeyEvent(invalid_event2);
 
-  KeyEvent invalid_event3;
-  invalid_event3.set_usb_keycode(6);
-  input_tracker.InjectKeyEvent(invalid_event3);
-
-  input_tracker.InjectKeyEvent(NewVkeyEvent(4, true));
   PressAndReleaseUsb(&input_tracker, 2);
 
   EXPECT_FALSE(input_tracker.IsKeyPressed(1));
   EXPECT_FALSE(input_tracker.IsKeyPressed(2));
   EXPECT_TRUE(input_tracker.IsKeyPressed(3));
-  EXPECT_FALSE(input_tracker.IsKeyPressed(4)); // Injected as VKEY.
-  EXPECT_EQ(2, input_tracker.PressedKeyCount());
+  EXPECT_EQ(1, input_tracker.PressedKeyCount());
 
   input_tracker.ReleaseAll();
 }

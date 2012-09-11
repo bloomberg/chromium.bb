@@ -49,7 +49,6 @@ class EventExecutorWin : public EventExecutor {
   virtual void OnSessionFinished() OVERRIDE;
 
  private:
-  HKL GetForegroundKeyboardLayout();
   void HandleKey(const KeyEvent& event);
   void HandleMouse(const MouseEvent& event);
 
@@ -131,64 +130,28 @@ void EventExecutorWin::OnSessionFinished() {
   clipboard_->Stop();
 }
 
-HKL EventExecutorWin::GetForegroundKeyboardLayout() {
-  HKL layout = 0;
-
-  // Can return NULL if a window is losing focus.
-  HWND foreground = GetForegroundWindow();
-  if (foreground) {
-    // Can return 0 if the window no longer exists.
-    DWORD thread_id = GetWindowThreadProcessId(foreground, 0);
-    if (thread_id) {
-      // Can return 0 if the thread no longer exists, or if we're
-      // running on Windows Vista and the window is a command-prompt.
-      layout = GetKeyboardLayout(thread_id);
-    }
-  }
-
-  // If we couldn't determine a layout then use the system default.
-  if (!layout) {
-    SystemParametersInfo(SPI_GETDEFAULTINPUTLANG, 0, &layout, 0);
-  }
-
-  return layout;
-}
-
 void EventExecutorWin::HandleKey(const KeyEvent& event) {
   // HostEventDispatcher should filter events missing the pressed field.
   DCHECK(event.has_pressed());
+  DCHECK(event.has_usb_keycode());
 
   // Reset the system idle suspend timeout.
   SetThreadExecutionState(ES_SYSTEM_REQUIRED);
-
-  // The mapping between scancodes and VKEY values depends on the foreground
-  // window's current keyboard layout.
-  HKL layout = GetForegroundKeyboardLayout();
 
   // Populate the a Windows INPUT structure for the event.
   INPUT input;
   memset(&input, 0, sizeof(input));
   input.type = INPUT_KEYBOARD;
   input.ki.time = 0;
-  input.ki.dwFlags = event.pressed() ? 0 : KEYEVENTF_KEYUP;
+  input.ki.dwFlags = KEYEVENTF_SCANCODE;
+  if (!event.pressed())
+    input.ki.dwFlags |= KEYEVENTF_KEYUP;
 
-  int scancode = kInvalidKeycode;
-  if (event.has_usb_keycode()) {
-    // If the event contains a USB-style code, map to a Windows scancode, and
-    // set a flag to have Windows look up the corresponding VK code.
-    input.ki.dwFlags |= KEYEVENTF_SCANCODE;
-    scancode = UsbKeycodeToNativeKeycode(event.usb_keycode());
-    VLOG(3) << "Converting USB keycode: " << std::hex << event.usb_keycode()
-            << " to scancode: " << scancode << std::dec;
-  } else {
-    // If the event provides only a VKEY then use it, and map to the scancode.
-    input.ki.wVk = event.keycode();
-    scancode = MapVirtualKeyEx(event.keycode(), MAPVK_VK_TO_VSC_EX, layout);
-    VLOG(3) << "Converting VKEY: " << std::hex << event.keycode()
-            << " to scancode: " << scancode << std::dec;
-  }
+  int scancode = UsbKeycodeToNativeKeycode(event.usb_keycode());
+  VLOG(3) << "Converting USB keycode: " << std::hex << event.usb_keycode()
+          << " to scancode: " << scancode << std::dec;
 
-  // Ignore events with no VK- or USB-keycode, or which can't be mapped.
+  // Ignore events which can't be mapped.
   if (scancode == kInvalidKeycode)
     return;
 
