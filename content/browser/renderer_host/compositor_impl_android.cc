@@ -11,7 +11,8 @@
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositor.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorSupport.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorOutputSurface.h"
 
 namespace {
@@ -69,11 +70,12 @@ Compositor* Compositor::Create() {
 
 // static
 void Compositor::Initialize() {
-  WebKit::WebCompositor::initialize(NULL);
+  WebKit::Platform::current()->compositorSupport()->initialize(NULL);
 }
 
-CompositorImpl::CompositorImpl()
-    : root_layer_(WebKit::WebLayer::create()) {
+CompositorImpl::CompositorImpl() {
+  root_layer_.reset(
+      WebKit::Platform::current()->compositorSupport()->createLayer());
 }
 
 CompositorImpl::~CompositorImpl() {
@@ -96,7 +98,10 @@ void CompositorImpl::SetWindowSurface(ANativeWindow* window) {
     context_.reset(GraphicsContext::CreateForUI(window));
     WebKit::WebLayerTreeView::Settings settings;
     settings.refreshRate = 60.0;
-    host_.reset(WebKit::WebLayerTreeView::create(this, *root_layer_, settings));
+    WebKit::WebCompositorSupport* compositor_support =
+        WebKit::Platform::current()->compositorSupport();
+    host_.reset(
+        compositor_support->createLayerTreeView(this, *root_layer_, settings));
     host_->setVisible(true);
     host_->setSurfaceReady();
   } else {
