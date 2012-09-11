@@ -366,19 +366,24 @@ bool RootWindowController::IsInMaximizedMode() const {
 
 void RootWindowController::MoveWindowsTo(aura::RootWindow* dst) {
   aura::Window* focused = dst->GetFocusManager()->GetFocusedWindow();
+  aura::WindowTracker tracker;
+  if (focused)
+    tracker.Add(focused);
   aura::client::ActivationClient* activation_client =
       aura::client::GetActivationClient(dst);
   aura::Window* active = activation_client->GetActiveWindow();
+  if (active && focused != active)
+    tracker.Add(active);
   // Deactivate the window to close menu / bubble windows.
   activation_client->DeactivateWindow(active);
   // Release capture if any.
   aura::client::GetCaptureClient(root_window_.get())->
       SetCapture(NULL);
-  aura::WindowTracker tracker;
-  if (focused)
-    tracker.Add(focused);
-  if (active && focused != active)
-    tracker.Add(active);
+  // Clear the focused window if any. This is necessary because a
+  // window may be deleted when losing focus (fullscreen flash for
+  // example).  If the focused window is still alive after move, it'll
+  // be re-focused below.
+  dst->GetFocusManager()->SetFocusedWindow(NULL, NULL);
 
   ReparentAllWindows(root_window_.get(), dst);
 

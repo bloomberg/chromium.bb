@@ -9,9 +9,13 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/env.h"
+#include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
+#include "ui/aura/test/test_window_delegate.h"
+#include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -36,6 +40,27 @@ class TestDelegate : public views::WidgetDelegateView {
  private:
   bool system_modal_;
   DISALLOW_COPY_AND_ASSIGN(TestDelegate);
+};
+
+class DeleteOnBlurDelegate : public aura::test::TestWindowDelegate {
+ public:
+  DeleteOnBlurDelegate() : window_(NULL) {}
+  virtual ~DeleteOnBlurDelegate() {}
+
+  void set_window(aura::Window* window) { window_ = window; }
+
+  // aura::test::TestWindowDelegate overrides:
+  virtual bool CanFocus() OVERRIDE {
+    return true;
+  }
+  virtual void OnBlur() OVERRIDE {
+    delete window_;
+  }
+
+ private:
+  aura::Window* window_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeleteOnBlurDelegate);
 };
 
 views::Widget* CreateTestWidget(const gfx::Rect& bounds) {
@@ -101,7 +126,21 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
             fullscreen->GetNativeView()->GetBoundsInRootWindow().ToString());
 #endif
 
+  // Make sure a window that will delete itself when losing focus
+  // will not crash.
+  aura::WindowTracker tracker;
+  DeleteOnBlurDelegate delete_on_blur_delegate;
+  aura::Window* d2 = aura::test::CreateTestWindowWithDelegate(
+      &delete_on_blur_delegate, 0, gfx::Rect(50, 50, 100, 100), NULL);
+  delete_on_blur_delegate.set_window(d2);
+  root_windows[0]->GetFocusManager()->SetFocusedWindow(
+      d2, NULL);
+  tracker.Add(d2);
+
   UpdateDisplay("600x600");
+
+  // d2 must have been deleted.
+  EXPECT_FALSE(tracker.Contains(d2));
 
   EXPECT_EQ(root_windows[0], normal->GetNativeView()->GetRootWindow());
   EXPECT_EQ("50,10 100x100", normal->GetWindowBoundsInScreen().ToString());
