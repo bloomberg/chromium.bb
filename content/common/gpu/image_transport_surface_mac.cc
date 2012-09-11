@@ -168,7 +168,8 @@ bool IOSurfaceImageTransportSurface::DeferDraws() {
   // IOSurface in use by an earlier SwapBuffers. If a Swap is pending, abort
   // processing of the command by returning true and unschedule until the Swap
   // Ack arrives.
-  DCHECK(!did_unschedule_);
+  if(did_unschedule_)
+    return true;  // Still unscheduled, so just return true.
   if (is_swap_buffers_pending_) {
     did_unschedule_ = true;
     helper_->SetScheduled(false);
