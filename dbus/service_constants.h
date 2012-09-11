@@ -121,6 +121,7 @@ const char kSessionManagerRetrieveUserPolicy[] = "RetrieveUserPolicy";
 const char kSessionManagerRetrieveSessionState[] = "RetrieveSessionState";
 const char kSessionManagerStartSessionService[] = "StartSessionService";
 const char kSessionManagerStopSessionService[] = "StopSessionService";
+const char kSessionManagerStartDeviceWipe[] = "StartDeviceWipe";
 const char kSessionManagerLockScreen[] = "LockScreen";
 const char kSessionManagerHandleLockScreenShown[] = "HandleLockScreenShown";
 const char kSessionManagerUnlockScreen[] = "UnlockScreen";
