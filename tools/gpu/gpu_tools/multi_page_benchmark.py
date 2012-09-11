@@ -222,9 +222,16 @@ class MultiPageBenchmarkUnitTest(unittest.TestCase):
         rows.append(row)
 
     assert chrome_remote_control.browser_options.options_for_unittests
-
     options = (
       chrome_remote_control.browser_options.options_for_unittests.Copy())
+    temp_parser = options.CreateParser()
+    benchmark.AddOptions(temp_parser)
+    defaults = temp_parser.get_default_values()
+    for k, v in defaults.__dict__.items():
+      if hasattr(options, k):
+        continue
+      setattr(options, k, v)
+
     benchmark.CustomizeBrowserOptions(options)
     possible_browser = chrome_remote_control.FindBrowser(options)
     with possible_browser.Create() as browser:
