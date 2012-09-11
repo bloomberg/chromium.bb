@@ -14,8 +14,8 @@
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/event_disposition.h"
+#include "chrome/browser/extensions/extension_icon_image.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller.h"
 #include "chrome/browser/ui/browser.h"
@@ -94,7 +94,7 @@ const extensions::Extension* GetExtensionByURL(Profile* profile,
 // SearchBuildResult is an app list SearchResult built from an
 // AutocompleteMatch.
 class SearchBuilderResult : public app_list::SearchResult,
-                            public ImageLoadingTracker::Observer {
+                            public extensions::IconImage::Observer {
  public:
   SearchBuilderResult(Profile* profile,
                       const AutocompleteMatch& match)
@@ -126,15 +126,15 @@ class SearchBuilderResult : public app_list::SearchResult,
   }
 
   void LoadExtensionIcon(const extensions::Extension* extension) {
-    tracker_.reset(new ImageLoadingTracker(this));
-    // TODO(xiyuan): Fix this for HD.
-    tracker_->LoadImage(extension,
-                        extension->GetIconResource(
-                            extension_misc::EXTENSION_ICON_SMALL,
-                            ExtensionIconSet::MATCH_BIGGER),
-                        gfx::Size(extension_misc::EXTENSION_ICON_SMALL,
-                                  extension_misc::EXTENSION_ICON_SMALL),
-                        ImageLoadingTracker::DONT_CACHE);
+    const gfx::ImageSkia default_icon = profile_->GetExtensionService()->
+        GetOmniboxPopupIcon(extension->id()).AsImageSkia();
+    icon_.reset(new extensions::IconImage(
+        extension,
+        extension->icons(),
+        extension_misc::EXTENSION_ICON_SMALL,
+        default_icon,
+        this));
+    SetIcon(icon_->image_skia());
   }
 
   void UpdateTitleAndDetails() {
@@ -153,22 +153,16 @@ class SearchBuilderResult : public app_list::SearchResult,
     set_details_tags(details_tags);
   }
 
-  // Overridden from ImageLoadingTracker::Observer:
-  virtual void OnImageLoaded(const gfx::Image& image,
-                             const std::string& extension_id,
-                             int tracker_index) OVERRIDE {
-    if (!image.IsEmpty()) {
-      SetIcon(*image.ToSkBitmap());
-      return;
-    }
-
-    SetIcon(profile_->GetExtensionService()->GetOmniboxPopupIcon(extension_id).
-        AsImageSkia());
+  // Overridden from extensions::IconImage::Observer:
+  virtual void OnExtensionIconImageChanged(
+      extensions::IconImage* image) OVERRIDE {
+    DCHECK_EQ(icon_.get(), image);
+    SetIcon(icon_->image_skia());
   }
 
   Profile* profile_;
   AutocompleteMatch match_;
-  scoped_ptr<ImageLoadingTracker> tracker_;
+  scoped_ptr<extensions::IconImage> icon_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchBuilderResult);
 };
