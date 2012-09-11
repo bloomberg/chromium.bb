@@ -1,8 +1,0 @@
-# Fails to complete under Valgrind. See http://crbug.com/136351
-# TODO(bruening): would be nice to have a ChromeOS platform to have
-# ChromeOS-specific exclude files.
-IPCSyncChannelTest.SendAfterClose
-IPCSyncChannelTest.RestrictedDispatch
-
-# http://crbug.com/139659 - maybe related to http://crbug.com/136351?
-IPCSyncChannelTest.RestrictedDispatchDeadlock
