@@ -313,6 +313,8 @@
         'widget/child_window_message_processor.h',
         'widget/default_theme_provider.cc',
         'widget/default_theme_provider.h',
+        'widget/desktop_capture_client.cc',
+        'widget/desktop_capture_client.h',
         'widget/desktop_native_widget_aura.cc',
         'widget/desktop_native_widget_aura.h',
         'widget/desktop_native_widget_helper_aura.cc',

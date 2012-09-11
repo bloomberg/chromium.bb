@@ -4,8 +4,10 @@
 
 #include "ui/views/widget/desktop_native_widget_aura.h"
 
+#include "ui/aura/root_window_host.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
+#include "ui/compositor/layer.h"
 #include "ui/views/widget/desktop_root_window_host.h"
 
 namespace views {
@@ -68,11 +70,11 @@ Widget* DesktopNativeWidgetAura::GetTopLevelWidget() {
 }
 
 const ui::Compositor* DesktopNativeWidgetAura::GetCompositor() const {
-  return NULL;
+  return window_->layer()->GetCompositor();
 }
 
 ui::Compositor* DesktopNativeWidgetAura::GetCompositor() {
-  return NULL;
+  return window_->layer()->GetCompositor();
 }
 
 void DesktopNativeWidgetAura::CalculateOffsetToAncestorWithLayer(
@@ -157,7 +159,7 @@ gfx::Rect DesktopNativeWidgetAura::GetWindowBoundsInScreen() const {
 }
 
 gfx::Rect DesktopNativeWidgetAura::GetClientAreaBoundsInScreen() const {
-  return gfx::Rect(100, 100);
+  return desktop_root_window_host_->GetClientAreaBoundsInScreen();
 }
 
 gfx::Rect DesktopNativeWidgetAura::GetRestoredBounds() const {
@@ -183,15 +185,19 @@ void DesktopNativeWidgetAura::SetShape(gfx::NativeRegion shape) {
 }
 
 void DesktopNativeWidgetAura::Close() {
+  desktop_root_window_host_->Close();
 }
 
 void DesktopNativeWidgetAura::CloseNow() {
+  desktop_root_window_host_->CloseNow();
 }
 
 void DesktopNativeWidgetAura::Show() {
+  desktop_root_window_host_->AsRootWindowHost()->Show();
 }
 
 void DesktopNativeWidgetAura::Hide() {
+  desktop_root_window_host_->AsRootWindowHost()->Hide();
 }
 
 void DesktopNativeWidgetAura::ShowMaximizedWithBounds(
@@ -203,7 +209,7 @@ void DesktopNativeWidgetAura::ShowWithWindowState(ui::WindowShowState state) {
 }
 
 bool DesktopNativeWidgetAura::IsVisible() const {
-  return false;
+  return desktop_root_window_host_->IsVisible();
 }
 
 void DesktopNativeWidgetAura::Activate() {
@@ -263,6 +269,8 @@ void DesktopNativeWidgetAura::RunShellDrag(View* view,
 }
 
 void DesktopNativeWidgetAura::SchedulePaintInRect(const gfx::Rect& rect) {
+  if (window_)
+    window_->SchedulePaintInRect(rect);
 }
 
 void DesktopNativeWidgetAura::SetCursor(gfx::NativeCursor cursor) {
@@ -369,7 +377,23 @@ ui::EventResult DesktopNativeWidgetAura::OnKeyEvent(ui::KeyEvent* event) {
 }
 
 ui::EventResult DesktopNativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
-  return ui::ER_UNHANDLED;
+  DCHECK(window_->IsVisible());
+  if (event->type() == ui::ET_MOUSEWHEEL) {
+    return native_widget_delegate_->OnMouseEvent(*event) ?
+        ui::ER_HANDLED : ui::ER_UNHANDLED;
+  }
+
+  if (event->type() == ui::ET_SCROLL) {
+    if (native_widget_delegate_->OnMouseEvent(*event))
+      return ui::ER_HANDLED;
+
+    // Convert unprocessed scroll events into wheel events.
+    ui::MouseWheelEvent mwe(*static_cast<ui::ScrollEvent*>(event));
+    return native_widget_delegate_->OnMouseEvent(mwe) ?
+        ui::ER_HANDLED : ui::ER_UNHANDLED;
+  }
+  return native_widget_delegate_->OnMouseEvent(*event) ?
+      ui::ER_HANDLED : ui::ER_UNHANDLED;
 }
 
 ui::TouchStatus DesktopNativeWidgetAura::OnTouchEvent(ui::TouchEvent* event) {
