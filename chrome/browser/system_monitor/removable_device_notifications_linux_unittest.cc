@@ -68,7 +68,7 @@ const TestDeviceData kTestDeviceData[] = {
    MediaStorageUtil::FIXED_MASS_STORAGE},
 };
 
-bool GetDeviceInfo(const FilePath& device_path, std::string* id,
+void GetDeviceInfo(const FilePath& device_path, std::string* id,
                    string16* name, bool* removable) {
   for (size_t i = 0; i < arraysize(kTestDeviceData); i++) {
     if (device_path.value() == kTestDeviceData[i].device_path) {
@@ -82,10 +82,10 @@ bool GetDeviceInfo(const FilePath& device_path, std::string* id,
           (type == MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM) ||
           (type == MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM);
       }
-      return true;
+      return;
     }
   }
-  return false;
+  NOTREACHED();
 }
 
 std::string GetDeviceId(const std::string& device) {

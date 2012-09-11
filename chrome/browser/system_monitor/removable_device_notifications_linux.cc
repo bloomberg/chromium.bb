@@ -148,32 +148,45 @@ std::string MakeDeviceUniqueId(struct udev_device* device) {
                             serial_short.c_str());
 }
 
+// Records GetDeviceInfo result, to see how often we fail to get device details.
+void RecordGetDeviceInfoResult(bool result) {
+  UMA_HISTOGRAM_BOOLEAN("MediaDeviceNotification.UdevRequestSuccess", result);
+}
+
 // Get the device information using udev library.
 // On success, returns true and fill in |unique_id|, |name|, and |removable|.
-bool GetDeviceInfo(const FilePath& device_path, std::string* unique_id,
+void GetDeviceInfo(const FilePath& device_path, std::string* unique_id,
                    string16* name, bool* removable) {
   DCHECK(!device_path.empty());
 
   ScopedUdevObject udev_obj(udev_new());
-  if (!udev_obj.get())
-    return false;
+  if (!udev_obj.get()) {
+    RecordGetDeviceInfoResult(false);
+    return;
+  }
 
   struct stat device_stat;
-  if (stat(device_path.value().c_str(), &device_stat) < 0)
-    return false;
+  if (stat(device_path.value().c_str(), &device_stat) < 0) {
+    RecordGetDeviceInfoResult(false);
+    return;
+  }
 
   char device_type;
-  if (S_ISCHR(device_stat.st_mode))
+  if (S_ISCHR(device_stat.st_mode)) {
     device_type = 'c';
-  else if (S_ISBLK(device_stat.st_mode))
+  } else if (S_ISBLK(device_stat.st_mode)) {
     device_type = 'b';
-  else
-    return false;  // Not a supported type.
+  } else {
+    RecordGetDeviceInfoResult(false);
+    return;  // Not a supported type.
+  }
 
   ScopedUdevDeviceObject device(
       udev_device_new_from_devnum(udev_obj, device_type, device_stat.st_rdev));
-  if (!device.get())
-    return false;
+  if (!device.get()) {
+    RecordGetDeviceInfoResult(false);
+    return;
+  }
 
   // Construct a device name using label or manufacturer (vendor and model)
   // details.
@@ -184,27 +197,19 @@ bool GetDeviceInfo(const FilePath& device_path, std::string* unique_id,
     if (device_label.empty()) {
       // Format: VendorInfo ModelInfo
       // E.g.: KnCompany Model2010
-      std::string vendor_name = GetUdevDevicePropertyValue(device, kVendor);
+      device_label = GetUdevDevicePropertyValue(device, kVendor);
       std::string model_name = GetUdevDevicePropertyValue(device, kModel);
-      if (vendor_name.empty() && model_name.empty())
-        return false;
-
-      if (vendor_name.empty())
+      if (device_label.empty())
         device_label = model_name;
-      else if (model_name.empty())
-        device_label = vendor_name;
-      else
-        device_label = vendor_name + kSpaceDelim + model_name;
+      else if (!model_name.empty())
+        device_label += kSpaceDelim + model_name;
     }
-
     if (IsStringUTF8(device_label))
       *name = UTF8ToUTF16(device_label);
   }
 
   if (unique_id) {
     *unique_id = MakeDeviceUniqueId(device);
-    if (unique_id->empty())
-      return false;
   }
 
   if (removable) {
@@ -221,7 +226,7 @@ bool GetDeviceInfo(const FilePath& device_path, std::string* unique_id,
     }
     *removable = (value && atoi(value) == 1);
   }
-  return true;
+  RecordGetDeviceInfoResult(true);
 }
 
 }  // namespace
@@ -463,22 +468,14 @@ void RemovableDeviceNotificationsLinux::AddNewMount(
   std::string unique_id;
   string16 name;
   bool removable;
-  bool result = get_device_info_func_(mount_device, &unique_id, &name,
-                                      &removable);
+  get_device_info_func_(mount_device, &unique_id, &name, &removable);
 
-  // Keep track of GetDeviceInfo result, to see how often we fail to get device
-  // details.
-  UMA_HISTOGRAM_BOOLEAN("MediaDeviceNotification.device_info_available",
-                        result);
-  if (!result)
-    return;
 
   // Keep track of device uuid, to see how often we receive empty values.
-  UMA_HISTOGRAM_BOOLEAN("MediaDeviceNotification.device_uuid_available",
+  UMA_HISTOGRAM_BOOLEAN("MediaDeviceNotification.DeviceUUIDAvailable",
                         !unique_id.empty());
-  UMA_HISTOGRAM_BOOLEAN("MediaDeviceNotification.device_name_available",
+  UMA_HISTOGRAM_BOOLEAN("MediaDeviceNotification.DeviceNameAvailable",
                         !name.empty());
-
   if (unique_id.empty() || name.empty())
     return;
 

@@ -27,9 +27,9 @@
 
 class FilePath;
 
-// Gets device information given a |device_path|. On success, returns true and
-// fills in |unique_id|, |name|, and |removable|.
-typedef bool (*GetDeviceInfoFunc)(const FilePath& device_path,
+// Gets device information given a |device_path|. On success, fills in
+// |unique_id|, |name|, and |removable|.
+typedef void (*GetDeviceInfoFunc)(const FilePath& device_path,
                                   std::string* unique_id, string16* name,
                                   bool* removable);
 
