@@ -141,6 +141,9 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
                        int theme_frame_id,
                        const gfx::ImageSkia* theme_frame_overlay);
 
+  // Adjust frame operations for left / right maximized modes.
+  int AdjustFrameHitCodeForMaximizedModes(int hit_code);
+
   // Returns true if there is exactly one visible, normal-type window using
   // a header painted by this class, in which case we should paint a transparent
   // window header.

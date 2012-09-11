@@ -6,6 +6,8 @@
 
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
+#include "ash/wm/property_util.h"
+#include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -112,6 +114,7 @@ WindowResizer::Details::Details(aura::Window* window,
                                 int window_component)
   : window(window),
     initial_bounds(window->bounds()),
+    restore_bounds(gfx::Rect()),
     initial_location_in_parent(location),
     initial_opacity(window->layer()->opacity()),
     window_component(window_component),
@@ -121,6 +124,10 @@ WindowResizer::Details::Details(aura::Window* window,
     size_change_direction(
         GetSizeChangeDirectionForWindowComponent(window_component)),
     is_resizable(bounds_change != kBoundsChangeDirection_None) {
+  if (wm::IsWindowNormal(window) &&
+      GetRestoreBoundsInScreen(window) &&
+      window_component == HTCAPTION)
+    restore_bounds = *GetRestoreBoundsInScreen(window);
 }
 
 WindowResizer::Details::~Details() {
@@ -174,6 +181,17 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
   // repositioning the window when the minimize size is reached.
   gfx::Size size = GetSizeForDrag(details, &delta_x, &delta_y);
   gfx::Point origin = GetOriginForDrag(details, delta_x, delta_y);
+
+  // When we might want to reposition a window which is also restored to its
+  // previous size, to keep the cursor within the dragged window.
+  if (!details.restore_bounds.IsEmpty() &&
+      details.bounds_change & kBoundsChange_Repositions) {
+    // However - it is not desirable to change the origin if the window would
+    // be still hit by the cursor.
+    if (details.initial_location_in_parent.x() >
+            details.initial_bounds.x() + details.restore_bounds.width())
+      origin.set_x(location.x() - details.restore_bounds.width() / 2);
+  }
 
   gfx::Rect new_bounds(origin, size);
   // Update bottom edge to stay in the work area when we are resizing
@@ -229,6 +247,8 @@ gfx::Size WindowResizer::GetSizeForDrag(const Details& details,
     gfx::Size min_size = details.window->delegate()->GetMinimumSize();
     size.SetSize(GetWidthForDrag(details, min_size.width(), delta_x),
                  GetHeightForDrag(details, min_size.height(), delta_y));
+  } else if (!details.restore_bounds.IsEmpty()) {
+    size = details.restore_bounds.size();
   }
   return size;
 }

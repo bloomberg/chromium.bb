@@ -553,9 +553,12 @@ MaximizeBubbleFrameState
   gfx::Rect screen = gfx::Screen::GetDisplayMatching(bounds).work_area();
   if (bounds.width() < (screen.width() * kMinSnapSizePercent) / 100)
     return FRAME_STATE_NONE;
+  // We might still have a horizontally filled window at this point which we
+  // treat as no special state.
+  if (bounds.y() != screen.y() || bounds.height() != screen.height())
+    return FRAME_STATE_NONE;
+
   // We have to be in a maximize mode at this point.
-  DCHECK(bounds.y() == screen.y());
-  DCHECK(bounds.height() >= screen.height());
   if (bounds.x() == screen.x())
     return FRAME_STATE_SNAP_LEFT;
   if (bounds.right() == screen.right())
