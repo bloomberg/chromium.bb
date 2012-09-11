@@ -142,9 +142,6 @@ class AutocompleteController : public AutocompleteProviderListener {
                            RedundantKeywordsIgnoredInResult);
   FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest, UpdateAssistedQueryStats);
 
-  friend class SearchProviderTest;
-  FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, UpdateKeywordDescriptions);
-
   // Updates |result_| to reflect the current provider state.  Resets timers and
   // fires notifications as necessary.  |is_synchronous_pass| is true only when
   // Start() is calling this to get the synchronous result.

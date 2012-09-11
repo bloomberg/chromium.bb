@@ -666,15 +666,8 @@ TEST_F(SearchProviderTest, UpdateKeywordDescriptions) {
   AddSearchToHistory(keyword_t_url_, ASCIIToUTF16("term2"), 1);
   profile_.BlockUntilHistoryProcessesPendingRequests();
 
-  ACProviders providers;
-  SearchProvider* provider = provider_.release();
-  providers.push_back(provider);
-
-  AutocompleteController controller(&profile_, NULL, 0);
-  controller.providers_.swap(providers);
-  controller.search_provider_ = provider;
-  provider->set_listener(&controller);
-
+  AutocompleteController controller(&profile_, NULL,
+      AutocompleteProvider::TYPE_SEARCH);
   controller.Start(ASCIIToUTF16("k t"), string16(), false, false, true,
                    AutocompleteInput::ALL_MATCHES);
   const AutocompleteResult& result = controller.result();
