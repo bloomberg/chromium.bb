@@ -2968,14 +2968,14 @@ dummy-irt-shim() {
   local cc_cmd="${PNACL_CC_NEUTRAL} -arch ${arch} ${flags}"
 
   spushd "${PNACL_SUPPORT}"
-  StepBanner "${label}" "Install dummy libpnacl_irt_shim.a"
+  StepBanner "${label}" "Install libpnacl_irt_shim_dummy.a"
   local tmpdir="${TC_BUILD}/dummy-irt-shim"
   rm -rf "${tmpdir}"
   mkdir -p "${tmpdir}"
   ${cc_cmd} -c dummy_shim_entry.c -o "${tmpdir}"/dummy_shim_entry.o
   spopd
 
-  ${PNACL_AR} rc "${destdir}"/libpnacl_irt_shim.a "${tmpdir}"/*.o
+  ${PNACL_AR} rc "${destdir}"/libpnacl_irt_shim_dummy.a "${tmpdir}"/*.o
 }
 
 #########################################################################

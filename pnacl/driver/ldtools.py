@@ -218,6 +218,9 @@ def FindLib(arg, searchdirs, static_only, acceptable_types):
       searchnames.append(name.replace('.so', '.pso'))
     if '.pso' in name:
       searchnames.append(name.replace('.pso', '.so'))
+    # If the real IRT shim is not found, fall back to the dummy shim
+    if name == 'libpnacl_irt_shim.a':
+      searchnames.append('libpnacl_irt_shim_dummy.a')
   else:
     # -lfoo
     if static_only:

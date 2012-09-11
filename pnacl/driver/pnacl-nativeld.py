@@ -263,6 +263,10 @@ def MakeSelUniversalScriptForLD(ld_flags,
   # Create a mapping for each input file and add it to the command line.
   for f in files_to_map:
     basename = pathtools.basename(f)
+    # If we are using the dummy shim, map it with the filename of the real
+    # shim, so the baked-in commandline will work
+    if basename == 'libpnacl_irt_shim_dummy.a':
+       basename = 'libpnacl_irt_shim.a'
     script.append('reverse_service_add_manifest_mapping files/%s %s' %
                   (basename, f))
 
