@@ -406,7 +406,8 @@ class ExtensionService
   void OnExtensionInstalled(
       const extensions::Extension* extension,
       bool from_webstore,
-      const syncer::StringOrdinal& page_ordinal);
+      const syncer::StringOrdinal& page_ordinal,
+      bool has_requirement_errors);
 
   // Initializes the |extension|'s active permission set and disables the
   // extension if the privilege level has increased (e.g., due to an upgrade).

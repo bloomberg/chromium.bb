@@ -512,6 +512,8 @@
         'browser/extensions/platform_app_launcher.h',
         'browser/extensions/process_map.cc',
         'browser/extensions/process_map.h',
+        'browser/extensions/requirements_checker.cc',
+        'browser/extensions/requirements_checker.h',
         'browser/extensions/sandboxed_unpacker.cc',
         'browser/extensions/sandboxed_unpacker.h',
         'browser/extensions/script_badge_controller.cc',

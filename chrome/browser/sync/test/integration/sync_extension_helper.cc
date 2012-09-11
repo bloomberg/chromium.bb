@@ -71,7 +71,8 @@ std::string SyncExtensionHelper::InstallExtension(
     return "";
   }
   profile->GetExtensionService()->OnExtensionInstalled(
-      extension, extension->UpdatesFromGallery(), syncer::StringOrdinal());
+      extension, extension->UpdatesFromGallery(), syncer::StringOrdinal(),
+      false /* no requirement errors */);
   return extension->id();
 }
 

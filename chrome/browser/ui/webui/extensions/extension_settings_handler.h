@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
+#include "chrome/browser/extensions/requirements_checker.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_observer.h"
@@ -55,11 +56,13 @@ struct ExtensionPage {
 };
 
 // Extension Settings UI handler.
-class ExtensionSettingsHandler : public content::WebUIMessageHandler,
-                                 public content::NotificationObserver,
-                                 public content::WebContentsObserver,
-                                 public ui::SelectFileDialog::Listener,
-                                 public ExtensionUninstallDialog::Delegate {
+class ExtensionSettingsHandler
+    : public content::WebUIMessageHandler,
+      public content::NotificationObserver,
+      public content::WebContentsObserver,
+      public ui::SelectFileDialog::Listener,
+      public ExtensionUninstallDialog::Delegate,
+      public base::SupportsWeakPtr<ExtensionSettingsHandler>{
  public:
   ExtensionSettingsHandler();
   virtual ~ExtensionSettingsHandler();
@@ -175,6 +178,10 @@ class ExtensionSettingsHandler : public content::WebUIMessageHandler,
   // Helper to inspect an ExtensionHost after it has been loaded.
   void InspectExtensionHost(extensions::ExtensionHost* host);
 
+  // Callback for RequirementsChecker.
+  void OnRequirementsChecked(std::string extension_id,
+                             std::vector<std::string> requirement_errors);
+
   // Our model.  Outlives us since it's owned by our containing profile.
   ExtensionService* extension_service_;
 
@@ -216,6 +223,11 @@ class ExtensionSettingsHandler : public content::WebUIMessageHandler,
 
   PrefChangeRegistrar pref_registrar_;
   PrefChangeRegistrar local_state_pref_registrar_;
+
+  // This will not be empty when a requirements check is in progress. Doing
+  // another Check() before the previous one is complete will cause the first
+  // one to abort.
+  scoped_ptr<extensions::RequirementsChecker> requirements_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSettingsHandler);
 };
