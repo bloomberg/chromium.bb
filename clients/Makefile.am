@@ -48,6 +48,7 @@ terminal = weston-terminal
 clients_programs =				\
 	flower					\
 	image					\
+	cliptest				\
 	dnd					\
 	smoke					\
 	resizor					\
@@ -87,6 +88,10 @@ weston_terminal_LDADD = $(toolkit_libs) -lutil
 
 image_SOURCES = image.c
 image_LDADD = $(toolkit_libs)
+
+cliptest_SOURCES = cliptest.c
+cliptest_CPPFLAGS = $(AM_CPPFLAGS) $(PIXMAN_CFLAGS)
+cliptest_LDADD = $(toolkit_libs) $(PIXMAN_LIBS)
 
 dnd_SOURCES = dnd.c
 dnd_LDADD = $(toolkit_libs)
