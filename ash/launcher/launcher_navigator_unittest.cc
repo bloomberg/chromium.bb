@@ -59,27 +59,26 @@ TEST_F(LauncherNavigatorTest, BasicCycle) {
   LauncherItemType types[] = {
     TYPE_APP_SHORTCUT, TYPE_TABBED, TYPE_TABBED, TYPE_TABBED,
   };
-  // LauncherModel automatically adds BROWSER_SHORTCUT item at the
-  // beginning, so '2' refers the first TYPE_TABBED item.
-  SetupMockLauncherModel(types, arraysize(types), 2);
+  // LauncherModel automatically adds BROWSER_SHORTCUT and APP_LIST items at the
+  // beginning, so '3' refers the first TYPE_TABBED item.
+  SetupMockLauncherModel(types, arraysize(types), 3);
 
-  EXPECT_EQ(3, GetNextActivatedItemIndex(model(), CYCLE_FORWARD));
+  EXPECT_EQ(4, GetNextActivatedItemIndex(model(), CYCLE_FORWARD));
 
   // Fourth one.  It will skip the APP_SHORTCUT at the beginning of the list and
   // the APP_LIST item which is automatically added at the end of items.
-  EXPECT_EQ(4, GetNextActivatedItemIndex(model(), CYCLE_BACKWARD));
+  EXPECT_EQ(5, GetNextActivatedItemIndex(model(), CYCLE_BACKWARD));
 }
 
 TEST_F(LauncherNavigatorTest, WrapToBeginning) {
   LauncherItemType types[] = {
     TYPE_APP_SHORTCUT, TYPE_TABBED, TYPE_TABBED, TYPE_TABBED,
   };
-  SetupMockLauncherModel(types, arraysize(types), 4);
+  SetupMockLauncherModel(types, arraysize(types), 5);
 
-  // Second one.  It skips the APP_LIST item at the end of the list,
-  // wraps to the beginning, and skips BROWSER_SHORTCUT and APP_SHORTCUT
-  // at the beginning of the list.
-  EXPECT_EQ(2, GetNextActivatedItemIndex(model(), CYCLE_FORWARD));
+  // Second one.  It starts at the end, wraps to the beginning, and skips
+  // APP_LIST, BROWSER_SHORTCUT and APP_SHORTCUT at the beginning of the list.
+  EXPECT_EQ(3, GetNextActivatedItemIndex(model(), CYCLE_FORWARD));
 }
 
 TEST_F(LauncherNavigatorTest, Empty) {
@@ -90,7 +89,7 @@ TEST_F(LauncherNavigatorTest, Empty) {
 
 TEST_F(LauncherNavigatorTest, SingleEntry) {
   LauncherItemType type = TYPE_TABBED;
-  SetupMockLauncherModel(&type, 1, 1);
+  SetupMockLauncherModel(&type, 1, 2);
 
   // If there's only one item there and it is already active, there's no item
   // to be activated next.
@@ -106,8 +105,8 @@ TEST_F(LauncherNavigatorTest, NoActive) {
   SetupMockLauncherModel(types, arraysize(types), -1);
 
   // If there are no active status, pick the first running item as a fallback.
-  EXPECT_EQ(1, GetNextActivatedItemIndex(model(), CYCLE_FORWARD));
-  EXPECT_EQ(1, GetNextActivatedItemIndex(model(), CYCLE_BACKWARD));
+  EXPECT_EQ(2, GetNextActivatedItemIndex(model(), CYCLE_FORWARD));
+  EXPECT_EQ(2, GetNextActivatedItemIndex(model(), CYCLE_BACKWARD));
 }
 
 }  // namespace ash

@@ -140,65 +140,69 @@ TEST(LauncherModel, AddIndices) {
   // Two initial items should have different ids.
   EXPECT_NE(model.items()[0].id, model.items()[1].id);
 
+  // Items come after the browser.
+  int browser = 1;
+  ASSERT_EQ(ash::TYPE_BROWSER_SHORTCUT, model.items()[browser].type);
+
   // Tabbed items should be after shortcut.
   LauncherItem item;
   int tabbed_index1 = model.Add(item);
-  EXPECT_EQ(1, tabbed_index1);
+  EXPECT_EQ(browser + 1, tabbed_index1);
 
   // Add another tabbed item, it should follow first.
   int tabbed_index2 = model.Add(item);
-  EXPECT_EQ(2, tabbed_index2);
+  EXPECT_EQ(browser + 2, tabbed_index2);
 
   // APP_SHORTCUT preceed browsers.
   item.type = TYPE_APP_SHORTCUT;
   int app_shortcut_index1 = model.Add(item);
-  EXPECT_EQ(1, app_shortcut_index1);
+  EXPECT_EQ(browser + 1, app_shortcut_index1);
 
   item.type = TYPE_APP_SHORTCUT;
   int app_shortcut_index2 = model.Add(item);
-  EXPECT_EQ(2, app_shortcut_index2);
+  EXPECT_EQ(browser + 2, app_shortcut_index2);
 
   // Check that AddAt() figures out the correct indexes for app shortcuts.
   item.type = TYPE_APP_SHORTCUT;
   int app_shortcut_index3 = model.AddAt(0, item);
-  EXPECT_EQ(1, app_shortcut_index3);
+  EXPECT_EQ(browser + 1, app_shortcut_index3);
 
   item.type = TYPE_APP_SHORTCUT;
   int app_shortcut_index4 = model.AddAt(5, item);
-  EXPECT_EQ(4, app_shortcut_index4);
+  EXPECT_EQ(browser + 4, app_shortcut_index4);
 
   item.type = TYPE_APP_SHORTCUT;
   int app_shortcut_index5 = model.AddAt(2, item);
-  EXPECT_EQ(2, app_shortcut_index5);
+  EXPECT_EQ(browser + 1, app_shortcut_index5);
 
   // Check that AddAt() figures out the correct indexes for tabs and panels.
   item.type = TYPE_TABBED;
   int tabbed_index3 = model.AddAt(2, item);
-  EXPECT_EQ(6, tabbed_index3);
+  EXPECT_EQ(browser + 6, tabbed_index3);
 
   item.type = TYPE_APP_PANEL;
   int app_panel_index1 = model.AddAt(2, item);
-  EXPECT_EQ(6, app_panel_index1);
+  EXPECT_EQ(browser + 6, app_panel_index1);
 
   item.type = TYPE_TABBED;
   int tabbed_index4 = model.AddAt(11, item);
-  EXPECT_EQ(10, tabbed_index4);
+  EXPECT_EQ(browser + 10, tabbed_index4);
 
   item.type = TYPE_APP_PANEL;
   int app_panel_index2 = model.AddAt(12, item);
-  EXPECT_EQ(11, app_panel_index2);
+  EXPECT_EQ(browser + 11, app_panel_index2);
 
   item.type = TYPE_TABBED;
   int tabbed_index5 = model.AddAt(7, item);
-  EXPECT_EQ(7, tabbed_index5);
+  EXPECT_EQ(browser + 6, tabbed_index5);
 
   item.type = TYPE_APP_PANEL;
   int app_panel_index3 = model.AddAt(8, item);
-  EXPECT_EQ(8, app_panel_index3);
+  EXPECT_EQ(browser + 7, app_panel_index3);
 
-  // Browser shortcut and app list should still be first and last, respectively.
-  EXPECT_EQ(TYPE_BROWSER_SHORTCUT, model.items()[0].type);
-  EXPECT_EQ(TYPE_APP_LIST, model.items()[model.item_count() - 1].type);
+  // Browser shortcut and app list should still be first and second.
+  EXPECT_EQ(TYPE_BROWSER_SHORTCUT, model.items()[1].type);
+  EXPECT_EQ(TYPE_APP_LIST, model.items()[0].type);
 }
 
 }  // namespace ash

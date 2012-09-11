@@ -28,6 +28,10 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
+namespace {
+const int kExpectedAppIndex = 2;
+}
+
 namespace ash {
 namespace test {
 
@@ -253,28 +257,38 @@ class LauncherViewTest : public AshTestBase {
 
   void CheckModelIDs(
       const std::vector<std::pair<LauncherID, views::View*> >& id_map) {
-    ASSERT_EQ(static_cast<int>(id_map.size()), test_api_->GetButtonCount());
-    ASSERT_EQ(id_map.size(), model_->items().size());
-    for (size_t i = 0; i < id_map.size(); ++i) {
-      EXPECT_EQ(id_map[i].first, model_->items()[i].id);
-      EXPECT_EQ(id_map[i].second, test_api_->GetButton(i));
+    size_t map_index = 0;
+    for (size_t model_index = 0;
+         model_index < model_->items().size();
+         ++model_index) {
+      ash::LauncherItem item = model_->items()[model_index];
+//      if (item.type == ash::TYPE_APP_LIST)
+//        continue;
+      ash::LauncherID id = item.id;
+      EXPECT_EQ(id_map[map_index].first, id);
+      EXPECT_EQ(id_map[map_index].second, GetButtonByID(id));
+      ++map_index;
     }
+    ASSERT_EQ(map_index, id_map.size());
   }
 
   views::View* SimulateDrag(internal::LauncherButtonHost::Pointer pointer,
                             int button_index,
                             int destination_index) {
+    // Add kExpectedAppIndex to each button index to allow default icons.
     internal::LauncherButtonHost* button_host = launcher_view_.get();
 
     // Mouse down.
-    views::View* button = test_api_->GetButton(button_index);
+    views::View* button =
+        test_api_->GetButton(kExpectedAppIndex + button_index);
     ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED,
                                button->bounds().origin(),
                                button->bounds().origin(), 0);
     button_host->PointerPressedOnButton(button, pointer, click_event);
 
     // Drag.
-    views::View* destination = test_api_->GetButton(destination_index);
+    views::View* destination =
+        test_api_->GetButton(kExpectedAppIndex + destination_index);
     ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED,
                               destination->bounds().origin(),
                               destination->bounds().origin(), 0);
@@ -286,16 +300,18 @@ class LauncherViewTest : public AshTestBase {
       std::vector<std::pair<LauncherID, views::View*> >* id_map) {
     // Initialize |id_map| with the automatically-created launcher buttons.
     for (size_t i = 0; i < model_->items().size(); ++i) {
-      id_map->push_back(std::make_pair(model_->items()[i].id,
-                                       test_api_->GetButton(i)));
+      internal::LauncherButton* button = test_api_->GetButton(i);
+//      if (!button)
+//        continue;
+
+      id_map->push_back(std::make_pair(model_->items()[i].id, button));
     }
     ASSERT_NO_FATAL_FAILURE(CheckModelIDs(*id_map));
 
     // Add 5 app launcher buttons for testing.
-    for (int i = 1; i <= 5; ++i) {
+    for (int i = 0; i < 5; ++i) {
       LauncherID id = AddAppShortcut();
-      id_map->insert(id_map->begin() + i,
-                     std::make_pair(id, test_api_->GetButton(i)));
+      id_map->push_back(std::make_pair(id, GetButtonByID(id)));
     }
     ASSERT_NO_FATAL_FAILURE(CheckModelIDs(*id_map));
   }
@@ -426,7 +442,7 @@ TEST_F(LauncherViewTest, AddButtonQuickly) {
   test_api_->RunMessageLoopUntilAnimationsDone();
 
   // Verifies non-overflow buttons are visible.
-  for (int i = 0; i <= test_api_->GetLastVisibleIndex(); ++i) {
+  for (int i = 1; i <= test_api_->GetLastVisibleIndex(); ++i) {
     internal::LauncherButton* button = test_api_->GetButton(i);
     EXPECT_TRUE(button->visible()) << "button index=" << i;
     EXPECT_EQ(1.0f, button->layer()->opacity()) << "button index=" << i;
@@ -443,31 +459,34 @@ TEST_F(LauncherViewTest, ModelChangesWhileDragging) {
 
   // Dragging changes model order.
   views::View* dragged_button = SimulateDrag(
-      internal::LauncherButtonHost::MOUSE, 1, 3);
-  std::rotate(id_map.begin() + 1, id_map.begin() + 2, id_map.begin() + 4);
+      internal::LauncherButtonHost::MOUSE, 0, 2);
+  std::rotate(id_map.begin() + kExpectedAppIndex,
+              id_map.begin() + kExpectedAppIndex + 1,
+              id_map.begin() + kExpectedAppIndex + 3);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 
   // Cancelling the drag operation restores previous order.
   button_host->PointerReleasedOnButton(dragged_button,
                                        internal::LauncherButtonHost::MOUSE,
                                        true);
-  std::rotate(id_map.begin() + 1, id_map.begin() + 3, id_map.begin() + 4);
+  std::rotate(id_map.begin() + kExpectedAppIndex,
+              id_map.begin() + kExpectedAppIndex + 2,
+              id_map.begin() + kExpectedAppIndex + 3);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 
   // Deleting an item keeps the remaining intact.
-  dragged_button = SimulateDrag(internal::LauncherButtonHost::MOUSE, 1, 3);
-  model_->RemoveItemAt(3);
-  id_map.erase(id_map.begin() + 3);
+  dragged_button = SimulateDrag(internal::LauncherButtonHost::MOUSE, 0, 2);
+  model_->RemoveItemAt(kExpectedAppIndex + 1);
+  id_map.erase(id_map.begin() + kExpectedAppIndex + 1);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
   button_host->PointerReleasedOnButton(dragged_button,
                                        internal::LauncherButtonHost::MOUSE,
                                        false);
 
   // Adding a launcher item cancels the drag and respects the order.
-  dragged_button = SimulateDrag(internal::LauncherButtonHost::MOUSE, 1, 3);
+  dragged_button = SimulateDrag(internal::LauncherButtonHost::MOUSE, 0, 2);
   LauncherID new_id = AddAppShortcut();
-  id_map.insert(id_map.begin() + 5,
-                std::make_pair(new_id, test_api_->GetButton(5)));
+  id_map.push_back(std::make_pair(new_id, GetButtonByID(new_id)));
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
   button_host->PointerReleasedOnButton(dragged_button,
                                        internal::LauncherButtonHost::MOUSE,
@@ -483,13 +502,14 @@ TEST_F(LauncherViewTest, SimultaneousDrag) {
 
   // Start a mouse drag.
   views::View* dragged_button_mouse = SimulateDrag(
-      internal::LauncherButtonHost::MOUSE, 1, 3);
-  std::rotate(id_map.begin() + 1, id_map.begin() + 2, id_map.begin() + 4);
+      internal::LauncherButtonHost::MOUSE, 0, 2);
+  std::rotate(id_map.begin() + kExpectedAppIndex,
+              id_map.begin() + kExpectedAppIndex + 1,
+              id_map.begin() + kExpectedAppIndex + 3);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
-
   // Attempt a touch drag before the mouse drag finishes.
   views::View* dragged_button_touch = SimulateDrag(
-      internal::LauncherButtonHost::TOUCH, 4, 2);
+      internal::LauncherButtonHost::TOUCH, 3, 1);
 
   // Nothing changes since 2nd drag is ignored.
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
@@ -502,13 +522,15 @@ TEST_F(LauncherViewTest, SimultaneousDrag) {
 
   // Now start a touch drag.
   dragged_button_touch = SimulateDrag(
-      internal::LauncherButtonHost::TOUCH, 4, 2);
-  std::rotate(id_map.begin() + 3, id_map.begin() + 4, id_map.begin() + 5);
+      internal::LauncherButtonHost::TOUCH, 3, 1);
+  std::rotate(id_map.begin() + kExpectedAppIndex + 2,
+              id_map.begin() + kExpectedAppIndex + 3,
+              id_map.begin() + kExpectedAppIndex + 4);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 
   // And attempt a mouse drag before the touch drag finishes.
   dragged_button_mouse = SimulateDrag(
-      internal::LauncherButtonHost::MOUSE, 1, 3);
+      internal::LauncherButtonHost::MOUSE, 0, 1);
 
   // Nothing changes since 2nd drag is ignored.
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
@@ -609,8 +631,11 @@ TEST_F(LauncherViewTest, ShouldHideTooltipTest) {
   LauncherID tab_button_id = AddTabbedBrowser();
 
   // The tooltip shouldn't hide if the mouse is on normal buttons.
-  for (int i = 0; i < test_api_->GetButtonCount() - 1; i++) {
+  for (int i = 0; i < test_api_->GetButtonCount(); i++) {
     internal::LauncherButton* button = test_api_->GetButton(i);
+    if (!button)
+      continue;
+
     EXPECT_FALSE(launcher_view_->ShouldHideTooltip(
         button->GetMirroredBounds().CenterPoint()))
         << "LauncherView tries to hide on button " << i;
@@ -630,8 +655,12 @@ TEST_F(LauncherViewTest, ShouldHideTooltipTest) {
 
   // The tooltip should hide if it's outside of all buttons.
   gfx::Rect all_area;
-  for (int i = 0; i < test_api_->GetButtonCount() - 1; i++) {
-    all_area = all_area.Union(test_api_->GetButton(i)->GetMirroredBounds());
+  for (int i = 0; i < test_api_->GetButtonCount(); i++) {
+    internal::LauncherButton* button = test_api_->GetButton(i);
+    if (!button)
+      continue;
+
+    all_area = all_area.Union(button->GetMirroredBounds());
   }
   all_area = all_area.Union(
       launcher_view_->GetAppListButtonView()->GetMirroredBounds());
@@ -653,8 +682,11 @@ TEST_F(LauncherViewTest, ShouldHideTooltipWithAppListWindowTest) {
   ASSERT_TRUE(Shell::GetInstance()->GetAppListWindow());
 
   // The tooltip shouldn't hide if the mouse is on normal buttons.
-  for (int i = 0; i < test_api_->GetButtonCount() - 1; i++) {
+  for (int i = 1; i < test_api_->GetButtonCount(); i++) {
     internal::LauncherButton* button = test_api_->GetButton(i);
+    if (!button)
+      continue;
+
     EXPECT_FALSE(launcher_view_->ShouldHideTooltip(
         button->GetMirroredBounds().CenterPoint()))
         << "LauncherView tries to hide on button " << i;

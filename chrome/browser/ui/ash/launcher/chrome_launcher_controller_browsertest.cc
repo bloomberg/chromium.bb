@@ -105,8 +105,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, LaunchUnpinned) {
   ShellWindow* window = CreateShellWindow(extension);
   ++item_count;
   ASSERT_EQ(item_count, launcher->model()->item_count());
-  ash::LauncherItem item =
-      launcher->model()->items()[launcher->model()->item_count() - 2];
+  ash::LauncherItem item = launcher->model()->items()[item_count - 1];
   EXPECT_EQ(ash::TYPE_PLATFORM_APP, item.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
   CloseShellWindow(window);
@@ -160,8 +159,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, PinRunning) {
   ShellWindow* window = CreateShellWindow(extension);
   ++item_count;
   ASSERT_EQ(item_count, launcher->model()->item_count());
-  ash::LauncherItem item =
-      launcher->model()->items()[launcher->model()->item_count() - 2];
+  ash::LauncherItem item = launcher->model()->items()[item_count - 1];
   ash::LauncherID id = item.id;
   EXPECT_EQ(ash::TYPE_PLATFORM_APP, item.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
@@ -256,8 +254,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MultipleWindows) {
   ShellWindow* window1 = CreateShellWindow(extension);
   ++item_count;
   ASSERT_EQ(item_count, launcher->model()->item_count());
-  ash::LauncherItem item =
-      launcher->model()->items()[launcher->model()->item_count() - 2];
+  ash::LauncherItem item = launcher->model()->items()[item_count - 1];
   ash::LauncherID item_id = item.id;
   EXPECT_EQ(ash::TYPE_PLATFORM_APP, item.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
@@ -292,8 +289,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MultipleApps) {
   ShellWindow* window1 = CreateShellWindow(extension1);
   ++item_count;
   ASSERT_EQ(item_count, launcher->model()->item_count());
-  ash::LauncherItem item1 =
-      launcher->model()->items()[launcher->model()->item_count() - 2];
+  ash::LauncherItem item1 = launcher->model()->items()[item_count - 1];
   ash::LauncherID item_id1 = item1.id;
   EXPECT_EQ(ash::TYPE_PLATFORM_APP, item1.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
@@ -303,8 +299,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MultipleApps) {
   ShellWindow* window2 = CreateShellWindow(extension2);
   ++item_count;
   ASSERT_EQ(item_count, launcher->model()->item_count());
-  ash::LauncherItem item2 =
-      launcher->model()->items()[launcher->model()->item_count() - 2];
+  ash::LauncherItem item2 = launcher->model()->items()[item_count - 1];
   ash::LauncherID item_id2 = item2.id;
   EXPECT_EQ(ash::TYPE_PLATFORM_APP, item2.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item2.status);
@@ -337,8 +332,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, WindowActivation) {
   ShellWindow* window1 = CreateShellWindow(extension1);
   ++item_count;
   ASSERT_EQ(item_count, launcher->model()->item_count());
-  ash::LauncherItem item1 =
-      launcher->model()->items()[launcher->model()->item_count() - 2];
+  ash::LauncherItem item1 = launcher->model()->items()[item_count - 1];
   ash::LauncherID item_id1 = item1.id;
   EXPECT_EQ(ash::TYPE_PLATFORM_APP, item1.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
@@ -348,8 +342,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, WindowActivation) {
   ShellWindow* window2 = CreateShellWindow(extension2);
   ++item_count;
   ASSERT_EQ(item_count, launcher->model()->item_count());
-  ash::LauncherItem item2 =
-      launcher->model()->items()[launcher->model()->item_count() - 2];
+  ash::LauncherItem item2 = launcher->model()->items()[item_count - 1];
   ash::LauncherID item_id2 = item2.id;
   EXPECT_EQ(ash::TYPE_PLATFORM_APP, item2.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item2.status);
@@ -421,8 +414,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, BrowserActivation) {
   CreateShellWindow(extension1);
   ++item_count;
   ASSERT_EQ(item_count, launcher->model()->item_count());
-  ash::LauncherItem item1 =
-      launcher->model()->items()[launcher->model()->item_count() - 2];
+  ash::LauncherItem item1 = launcher->model()->items()[item_count - 1];
   ash::LauncherID item_id1 = item1.id;
   EXPECT_EQ(ash::TYPE_PLATFORM_APP, item1.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);

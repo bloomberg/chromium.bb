@@ -53,6 +53,9 @@ class PanelLayoutManagerTest : public ash::test::AshTestBase {
     ash::test::TestLauncherDelegate* launcher_delegate =
         ash::test::TestLauncherDelegate::instance();
     launcher_delegate->AddLauncherItem(window);
+    PanelLayoutManager* manager =
+        static_cast<PanelLayoutManager*>(GetPanelContainer()->layout_manager());
+    manager->Relayout();
     return window;
   }
 
