@@ -123,6 +123,7 @@ void ImageTransportHelper::SendAcceleratedSurfaceBuffersSwapped(
                        "width", surface_->GetSize().width());
   params.surface_id = stub_->surface_id();
   params.route_id = route_id_;
+  params.size = surface_->GetSize();
 #if defined(OS_MACOSX)
   params.window = handle_;
 #endif
@@ -268,9 +269,6 @@ bool PassThroughImageTransportSurface::SwapBuffers() {
     // SwapBuffers message.
     GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
     params.surface_handle = 0;
-#if defined(OS_WIN)
-    params.size = GetSize();
-#endif
     helper_->SendAcceleratedSurfaceBuffersSwapped(params);
 
     helper_->SetScheduled(false);

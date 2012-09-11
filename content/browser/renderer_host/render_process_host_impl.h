@@ -20,6 +20,10 @@
 
 class CommandLine;
 
+namespace gfx {
+class Size;
+}
+
 namespace content {
 class GpuMessageFilter;
 class RendererMainThread;
@@ -196,6 +200,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void OnCompositorSurfaceBuffersSwappedNoHost(int32 surface_id,
                                                uint64 surface_handle,
                                                int32 route_id,
+                                               const gfx::Size& size,
                                                int32 gpu_process_host_id);
 
   // Generates a command line to be used to spawn a renderer and appends the

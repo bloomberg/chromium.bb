@@ -197,7 +197,6 @@ void PbufferImageTransportSurface::SendBuffersSwapped() {
   params.surface_handle = reinterpret_cast<int64>(GetShareHandle());
   CHECK(params.surface_handle);
 
-  params.size = GetSize();
   helper_->SendAcceleratedSurfaceBuffersSwapped(params);
 
   DCHECK(!is_swap_buffers_pending_);

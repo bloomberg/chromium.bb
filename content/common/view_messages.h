@@ -2165,10 +2165,11 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_AcceleratedSurfaceBuffersSwapped,
 // This message is synthesized by GpuProcessHost to pass through a swap message
 // to the RenderWidgetHelper. This allows GetBackingStore to block for either a
 // software or GPU frame.
-IPC_MESSAGE_ROUTED4(ViewHostMsg_CompositorSurfaceBuffersSwapped,
+IPC_MESSAGE_ROUTED5(ViewHostMsg_CompositorSurfaceBuffersSwapped,
                     int32 /* surface id */,
                     uint64 /* surface_handle */,
                     int32 /* route_id */,
+                    gfx::Size /* size */,
                     int32 /* gpu_process_host_id */)
 
 // Opens a file asynchronously. The response returns a file descriptor

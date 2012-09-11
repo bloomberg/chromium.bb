@@ -18,6 +18,19 @@
 
 namespace {
 
+// IOSurface dimensions will be rounded up to a multiple of this value in order
+// to reduce memory thrashing during resize. This must be a power of 2.
+const uint32 kIOSurfaceDimensionRoundup = 64;
+
+int RoundUpSurfaceDimension(int number) {
+  DCHECK(number >= 0);
+  // Cast into unsigned space for portable bitwise ops.
+  uint32 unsigned_number = static_cast<uint32>(number);
+  uint32 roundup_sub_1 = kIOSurfaceDimensionRoundup - 1;
+  unsigned_number = (unsigned_number + roundup_sub_1) & ~roundup_sub_1;
+  return static_cast<int>(unsigned_number);
+}
+
 // We are backed by an offscreen surface for the purposes of creating
 // a context, but use FBOs to render to texture backed IOSurface
 class IOSurfaceImageTransportSurface : public gfx::NoOpGLSurfaceCGL,
@@ -70,6 +83,7 @@ class IOSurfaceImageTransportSurface : public gfx::NoOpGLSurfaceCGL,
   gfx::GLContext* context_;
 
   gfx::Size size_;
+  gfx::Size rounded_size_;
 
   // Whether or not we've successfully made the surface current once.
   bool made_current_;
@@ -271,6 +285,10 @@ void IOSurfaceImageTransportSurface::OnResizeViewACK() {
 }
 
 void IOSurfaceImageTransportSurface::OnResize(gfx::Size size) {
+  // This trace event is used in gpu_feature_browsertest.cc - the test will need
+  // to be updated if this event is changed or moved.
+  TRACE_EVENT2("gpu", "IOSurfaceImageTransportSurface::OnResize",
+               "width", size.width(), "height", size.height());
   // Caching |context_| from OnMakeCurrent. It should still be current.
   DCHECK(context_->IsCurrent(this));
 
@@ -297,9 +315,25 @@ void IOSurfaceImageTransportSurface::UnrefIOSurface() {
 }
 
 void IOSurfaceImageTransportSurface::CreateIOSurface() {
+  gfx::Size new_rounded_size(RoundUpSurfaceDimension(size_.width()),
+                             RoundUpSurfaceDimension(size_.height()));
+
+  // Only recreate surface when the rounded up size has changed.
+  if (io_surface_.get() && new_rounded_size == rounded_size_)
+    return;
+
+  // This trace event is used in gpu_feature_browsertest.cc - the test will need
+  // to be updated if this event is changed or moved.
+  TRACE_EVENT2("gpu", "IOSurfaceImageTransportSurface::CreateIOSurface",
+               "width", new_rounded_size.width(),
+               "height", new_rounded_size.height());
+
+  rounded_size_ = new_rounded_size;
+
   GLint previous_texture_id = 0;
   glGetIntegerv(GL_TEXTURE_BINDING_RECTANGLE_ARB, &previous_texture_id);
 
+  // Free the old IO Surface first to reduce memory fragmentation.
   UnrefIOSurface();
 
   glGenFramebuffersEXT(1, &fbo_id_);
@@ -333,10 +367,10 @@ void IOSurfaceImageTransportSurface::CreateIOSurface() {
                                              &kCFTypeDictionaryValueCallBacks));
   AddIntegerValue(properties,
                   io_surface_support->GetKIOSurfaceWidth(),
-                  size_.width());
+                  rounded_size_.width());
   AddIntegerValue(properties,
                   io_surface_support->GetKIOSurfaceHeight(),
-                  size_.height());
+                  rounded_size_.height());
   AddIntegerValue(properties,
                   io_surface_support->GetKIOSurfaceBytesPerElement(), 4);
   AddBooleanValue(properties,
@@ -345,6 +379,7 @@ void IOSurfaceImageTransportSurface::CreateIOSurface() {
   // synchronizing with the browser process because they are
   // ultimately reference counted by the operating system.
   io_surface_.reset(io_surface_support->IOSurfaceCreate(properties));
+  io_surface_handle_ = io_surface_support->IOSurfaceGetID(io_surface_);
 
   // Don't think we need to identify a plane.
   GLuint plane = 0;
@@ -353,8 +388,8 @@ void IOSurfaceImageTransportSurface::CreateIOSurface() {
           static_cast<CGLContextObj>(context_->GetHandle()),
           target,
           GL_RGBA,
-          size_.width(),
-          size_.height(),
+          rounded_size_.width(),
+          rounded_size_.height(),
           GL_BGRA,
           GL_UNSIGNED_INT_8_8_8_8_REV,
           io_surface_.get(),
@@ -365,7 +400,6 @@ void IOSurfaceImageTransportSurface::CreateIOSurface() {
     return;
   }
 
-  io_surface_handle_ = io_surface_support->IOSurfaceGetID(io_surface_);
   glFlush();
 
   glBindTexture(target, previous_texture_id);

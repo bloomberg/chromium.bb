@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/threading/platform_thread.h"
+#include "content/common/content_constants_internal.h"
 #include "content/public/browser/browser_thread.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ui/gfx/rect.h"
@@ -271,7 +272,9 @@ CompositingIOSurfaceMac::~CompositingIOSurfaceMac() {
   UnrefIOSurface();
 }
 
-void CompositingIOSurfaceMac::SetIOSurface(uint64 io_surface_handle) {
+void CompositingIOSurfaceMac::SetIOSurface(uint64 io_surface_handle,
+                                           const gfx::Size& size) {
+  pixel_io_surface_size_ = size;
   CGLSetCurrentContext(cglContext_);
   MapIOSurfaceToTexture(io_surface_handle);
   CGLSetCurrentContext(0);
@@ -475,15 +478,16 @@ bool CompositingIOSurfaceMac::MapIOSurfaceToTexture(
   }
 
   io_surface_handle_ = io_surface_handle;
-  pixel_io_surface_size_.SetSize(
+
+  // Actual IOSurface size is rounded up to reduce reallocations during window
+  // resize. Get the actual size to properly map the texture.
+  gfx::Size rounded_size(
       io_surface_support_->IOSurfaceGetWidth(io_surface_),
       io_surface_support_->IOSurfaceGetHeight(io_surface_));
 
   // TODO(thakis): Keep track of the view size over IPC. At the moment,
   // the correct view units are computed on first paint.
   io_surface_size_ = pixel_io_surface_size_;
-
-  quad_.set_size(pixel_io_surface_size_, pixel_io_surface_size_);
 
   GLenum target = GL_TEXTURE_RECTANGLE_ARB;
   glGenTextures(1, &texture_);
@@ -495,8 +499,8 @@ bool CompositingIOSurfaceMac::MapIOSurfaceToTexture(
       cglContext_,
       target,
       GL_RGBA,
-      pixel_io_surface_size_.width(),
-      pixel_io_surface_size_.height(),
+      rounded_size.width(),
+      rounded_size.height(),
       GL_BGRA,
       GL_UNSIGNED_INT_8_8_8_8_REV,
       io_surface_.get(),

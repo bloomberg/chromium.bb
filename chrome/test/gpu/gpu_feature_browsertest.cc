@@ -6,9 +6,11 @@
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/stringprintf.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/version.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -116,9 +118,6 @@ class GpuFeatureTest : public InProcessBrowserTest {
       return;
 #endif
 
-    using trace_analyzer::Query;
-    using trace_analyzer::TraceAnalyzer;
-
     ASSERT_TRUE(tracing::BeginTracing(trace_categories_));
 
     // Have to use a new tab for the blacklist to work.
@@ -142,6 +141,21 @@ class GpuFeatureTest : public InProcessBrowserTest {
                                       Query::String("SwapBuffers"), &events),
                 size_t(0));
     }
+  }
+
+  // Trigger a resize of the chrome window, and use tracing to wait for the
+  // given |wait_event|.
+  void ResizeAndWaitForEvent(const gfx::Rect& new_bounds,
+                             const char* trace_categories,
+                             const char* wait_category,
+                             const char* wait_event) {
+    ASSERT_TRUE(tracing::BeginTracingWithWatch(trace_categories, wait_category,
+                                               wait_event, 1));
+    browser()->window()->SetBounds(new_bounds);
+    ASSERT_TRUE(tracing::WaitForWatchEvent(base::TimeDelta()));
+    ASSERT_TRUE(tracing::EndTracing(&trace_events_json_));
+    analyzer_.reset(TraceAnalyzer::Create(trace_events_json_));
+    analyzer_->AssociateBeginEndEvents();
   }
 
  protected:
@@ -423,5 +437,61 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, RafNoDamage) {
     fprintf(stderr, "\n\nTRACE JSON:\n\n%s\n\n", trace_events_json_.c_str());
   }
 }
+
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(GpuFeatureTest, IOSurfaceReuse) {
+  if (!IOSurfaceSupport::Initialize())
+    return;
+
+  const FilePath url(FILE_PATH_LITERAL("feature_compositing_static.html"));
+  FilePath test_path = gpu_test_dir_.Append(url);
+  ASSERT_TRUE(file_util::PathExists(test_path))
+      << "Missing test file: " << test_path.value();
+
+  ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(test_path));
+
+  gfx::Rect bounds = browser()->window()->GetBounds();
+  gfx::Rect new_bounds = bounds;
+
+  TraceEventVector events;
+  const char* create_event = "IOSurfaceImageTransportSurface::CreateIOSurface";
+  const char* resize_event = "IOSurfaceImageTransportSurface::OnResize";
+  Query find_creates = Query::MatchBeginName(create_event);
+  Query find_resizes = Query::MatchBeginName(resize_event);
+
+  // Skip the first resize event in case it's flaky:
+  int w_start = bounds.width() + 1;
+  new_bounds.set_width(w_start);
+  ASSERT_NO_FATAL_FAILURE(
+      ResizeAndWaitForEvent(new_bounds, "gpu", "gpu", resize_event));
+  ++w_start;
+
+  // A few edge cases for a roundup value of 64. The test will resize by these
+  // values one at a time and expect exactly one actual CreateIOSurface, because
+  // the offset range in this offsets array is 64.
+  int offsets[] = { 1, 2, 30, 63, 64 };
+
+  int num_creates = 0;
+  for (int i = 0; i < static_cast<int>(arraysize(offsets)); ++i) {
+    new_bounds.set_width(w_start + offsets[i]);
+    ASSERT_NO_FATAL_FAILURE(
+        ResizeAndWaitForEvent(new_bounds, "gpu", "gpu", resize_event));
+    int this_num_creates = analyzer_->FindEvents(find_creates, &events);
+    num_creates += this_num_creates;
+
+    // For debugging failures, print out the width and height of each resize:
+    analyzer_->FindEvents(find_resizes, &events);
+    for (size_t j = 0; j < events.size(); ++j) {
+      LOG(INFO) <<
+          base::StringPrintf(
+              "%d (resize offset %d): IOSurface subset %dx%d; Creates %d",
+              i, offsets[i], events[j]->GetKnownArgAsInt("width"),
+              events[j]->GetKnownArgAsInt("height"), this_num_creates);
+    }
+  }
+
+  EXPECT_EQ(1, num_creates);
+}
+#endif
 
 }  // namespace anonymous

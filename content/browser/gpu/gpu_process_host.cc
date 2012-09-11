@@ -657,6 +657,7 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
       params.surface_id,
       params.surface_handle,
       params.route_id,
+      params.size,
       host_id_));
 }
 #endif  // OS_MACOSX
