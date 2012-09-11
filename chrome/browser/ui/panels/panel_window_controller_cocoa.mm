@@ -651,13 +651,10 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
 }
 
 // Called when the user picks a menu or toolbar item when this window is key.
-// Calls through to the panel object to execute the command. This assumes that
-// the command is supported and doesn't check, otherwise it would have been
-// disabled in the UI in validateUserInterfaceItem:.
+// Calls through to the panel object to execute the command.
 - (void)commandDispatch:(id)sender {
   DCHECK(sender);
-  windowShim_->panel()->ExecuteCommandWithDisposition([sender tag],
-                                                      CURRENT_TAB);
+  windowShim_->panel()->ExecuteCommandIfEnabled([sender tag]);
 }
 
 // Same as |-commandDispatch:|, but executes commands using a disposition

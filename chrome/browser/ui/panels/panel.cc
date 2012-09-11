@@ -555,11 +555,12 @@ void Panel::EnableWebContentsAutoResize(content::WebContents* web_contents) {
 
 void Panel::ExecuteCommandWithDisposition(int id,
                                           WindowOpenDisposition disposition) {
+  DCHECK(command_updater_.IsCommandEnabled(id)) << "Invalid/disabled command "
+                                                << id;
+
   if (!GetWebContents())
     return;
 
-  DCHECK(command_updater_.IsCommandEnabled(id)) << "Invalid/disabled command "
-                                                << id;
   switch (id) {
     // Navigation
     case IDC_RELOAD:
