@@ -126,12 +126,6 @@ cr.define('ntp', function() {
     appsPages: undefined,
 
     /**
-     * The Suggestions page.
-     * @type {!Element|undefined}
-     */
-    suggestionsPage: undefined,
-
-    /**
      * The Most Visited page.
      * @type {!Element|undefined}
      */
@@ -313,11 +307,6 @@ cr.define('ntp', function() {
       if (typeof ntp.RecentlyClosedPage != 'undefined' &&
           page instanceof ntp.RecentlyClosedPage) {
         this.recentlyClosedPage = page;
-      }
-
-      if (typeof ntp.SuggestionsPage != 'undefined' &&
-          page instanceof ntp.SuggestionsPage) {
-        this.suggestionsPage = page;
       }
 
       // Make a deep copy of the dot template to add a new one.
@@ -561,10 +550,6 @@ cr.define('ntp', function() {
           if (this.recentlyClosedPage)
             this.cardSlider.selectCardByValue(this.recentlyClosedPage);
           break;
-        case loadTimeData.getInteger('suggestions_page_id'):
-          if (this.suggestionsPage)
-            this.cardSlider.selectCardByValue(this.suggestionsPage);
-          break;
       }
     },
 
@@ -605,8 +590,6 @@ cr.define('ntp', function() {
         } else if (page.classList.contains('recently-closed-page')) {
           this.setShownPage_(
               loadTimeData.getInteger('recently_closed_page_id'), 0);
-        } else if (page.classList.contains('suggestions-page')) {
-          this.setShownPage_(loadTimeData.getInteger('suggestions_page_id'), 0);
         } else {
           console.error('unknown page selected');
         }
@@ -1036,10 +1019,6 @@ cr.define('ntp', function() {
     cr.dispatchSimpleEvent(document, 'sectionready', true, true);
   }
 
-  function setSuggestionsPages(data, hasBlacklistedUrls) {
-    newTabView.suggestionsPage.data = data;
-  }
-
   function getThumbnailUrl(url) {
     return 'chrome://thumb/' + url;
   }
@@ -1153,7 +1132,6 @@ cr.define('ntp', function() {
     setBookmarkBarAttached: setBookmarkBarAttached,
     setForeignSessions: setForeignSessions,
     setMostVisitedPages: setMostVisitedPages,
-    setSuggestionsPages: setSuggestionsPages,
     setRecentlyClosedTabs: setRecentlyClosedTabs,
     showNotification: showNotification,
     themeChanged: themeChanged,
