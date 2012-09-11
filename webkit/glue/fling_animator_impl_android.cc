@@ -47,7 +47,8 @@ void FlingAnimatorImpl::startFling(const WebKit::WebFloatPoint& velocity,
 
   JNIEnv* env = AttachCurrentThread();
   env->CallVoidMethod(java_scroller_.obj(), fling_method_id_, 0, 0,
-                      (int) -velocity.x, (int) -velocity.y,
+                      static_cast<int>(velocity.x),
+                      static_cast<int>(velocity.y),
                       range.x, range.x + range.width,
                       range.y, range.y + range.height, 0, 0);
   CheckException(env);
