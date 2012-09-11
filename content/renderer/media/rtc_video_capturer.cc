@@ -83,8 +83,9 @@ void RtcVideoCapturer::OnFrameCaptured(
   frame.height = buf.height;
   frame.fourcc = cricket::FOURCC_I420;
   frame.data_size = buf.buffer_size;
-  // media::VideoCapture::VideoFrameBuffer time is in nanoseconds.
-  frame.elapsed_time = (buf.timestamp - start_time_).InMicroseconds() * 1000;
+  // cricket::CapturedFrame time is in nanoseconds.
+  frame.elapsed_time = (buf.timestamp - start_time_).InMicroseconds() *
+      base::Time::kNanosecondsPerMicrosecond;
   frame.time_stamp = frame.elapsed_time;
   frame.data = buf.memory_pointer;
   frame.pixel_height = 1;
