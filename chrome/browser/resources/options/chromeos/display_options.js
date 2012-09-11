@@ -145,7 +145,7 @@ cr.define('options', function() {
       // Prefer the closer one if both edges are close enough.
       if (startDiff < SNAP_DISTANCE_PX && startDiff < endDiff)
         return basePoint;
-      else if (endDiff < SNAP_DISTANCE)
+      else if (endDiff < SNAP_DISTANCE_PX)
         return basePoint + baseWidth - width;
 
       return point;
