@@ -579,12 +579,15 @@ void GDataWapiFeedLoader::OnGetDocuments(
     ui_state->num_fetched_documents = num_accumulated_entries;
     ui_state->feed_fetching_elapsed_time = base::TimeTicks::Now() - start_time;
 
+    // |params| will be passed to the callback and thus nulled. Extract the
+    // pointer so we can use it bellow.
+    LoadFeedParams* params_ptr = params.get();
     // Kick off the remaining part of the feeds.
     drive_service_->GetDocuments(
         next_feed_url,
-        params->start_changestamp,
-        params->search_query,
-        params->directory_resource_id,
+        params_ptr->start_changestamp,
+        params_ptr->search_query,
+        params_ptr->directory_resource_id,
         base::Bind(&GDataWapiFeedLoader::OnGetDocuments,
                    weak_ptr_factory_.GetWeakPtr(),
                    base::Passed(&params),
