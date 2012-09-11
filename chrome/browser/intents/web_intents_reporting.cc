@@ -44,7 +44,6 @@ TypeId ToTypeId(const string16& type) {
 // Records the number of services installed at the time the picker
 // is shown to the user. Drops the size into one of several buckets.
 void RecordInstalledServiceCount(const UMABucket bucket, size_t installed) {
-  DCHECK(installed >= 0);
   if (installed == 0) {
     UMA_HISTOGRAM_ENUMERATION("WebIntents.Service.NumInstalled.0.v0",
         bucket, kMaxActionTypeHistogramValue);
