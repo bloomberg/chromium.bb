@@ -12,6 +12,9 @@ import util
 
 class FirstPaintTimeBenchmark(multi_page_benchmark.MultiPageBenchmark):
   def MeasurePage(self, page, tab):
+    if tab.browser.is_content_shell:
+      return {"first_paint_secs": "unsupported"}
+
     tab.runtime.Execute("""
         window.__rafFired = false;
         window.webkitRequestAnimationFrame(function() {
@@ -22,7 +25,8 @@ class FirstPaintTimeBenchmark(multi_page_benchmark.MultiPageBenchmark):
         lambda: tab.runtime.Evaluate('window.__rafFired'), 60)
 
     first_paint_secs = tab.runtime.Evaluate(
-      'chrome.loadTimes().firstPaintTime - chrome.loadTimes().startLoadTime')
+      'window.chrome.loadTimes().firstPaintTime - ' +
+      'window.chrome.loadTimes().startLoadTime')
 
     return {
         "first_paint_secs": util.RoundTo3DecimalPlaces(first_paint_secs)

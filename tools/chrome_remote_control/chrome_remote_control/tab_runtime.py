@@ -21,14 +21,14 @@ class TabRuntime(object):
     pass
 
   def Execute(self, expr, timeout=60):
-    """Executes expr
+    """Executes expr in javascript. Does not return the result.
 
     If the expression failed to evaluate, EvaluateException will be raised.
     """
     self.Evaluate(expr + "; 0;", timeout=60);
 
   def Evaluate(self, expr, timeout=60):
-    """Evalutes expr and returns the JSONized result.
+    """Evalutes expr in javascript and returns the JSONized result.
 
     Consider using Execute for cases where the result of the expression is not
     needed.

@@ -9,7 +9,6 @@ import browser_options
 class BrowserTest(unittest.TestCase):
   def testBasic(self):
     options = browser_options.options_for_unittests
-    options.browser_to_use = browser_finder.ALL_BROWSER_TYPES
     browser_to_create = browser_finder.FindBrowser(options)
     if not browser_to_create:
       raise Exception('No browser found, cannot continue test.')
@@ -24,7 +23,6 @@ class BrowserTest(unittest.TestCase):
     # create a chrome.Interval namespace. This tests whether the command line is
     # being set.
     options = browser_options.options_for_unittests
-    options.browser_to_use = browser_finder.ALL_BROWSER_TYPES
     testJS = ("window.chrome.gpuBenchmarking !== undefined ||" +
              "chrome.Interval !== undefined")
 

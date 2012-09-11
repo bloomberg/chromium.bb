@@ -4,13 +4,12 @@
 import os
 import sys
 
-"""This library is a thin wrapper around adb."""
+"""Brings in Chrome Android's android_commands module, which itself is a
+thin(ish) wrapper around adb."""
 
-# Implementation note: This is currently a thin wrapper around Android's default
-# build scripts, located in chrome/build/android. Because we want
-# chrome_remote_control to run without having a full download of chrome, this
-# wrapper serves to audit and control our dependency on this external folder, so
-# that when we go to make this code standalone, we can quickly do the change.
+# This is currently a thin wrapper around Chrome Android's
+# build scripts, located in chrome/build/android. This file exists mainly to
+# deal with locating the module.
 
 # Get build/android scripts into our path.
 sys.path.append(
@@ -20,11 +19,13 @@ sys.path.append(
 try:
   from pylib import android_commands as real_android_commands
   from pylib import cmd_helper as real_cmd_helper
+  from pylib import forwarder
+  from pylib import valgrind_tools
 except:
   real_android_commands = None
 
 def IsAndroidSupported():
-  return real_android_commands
+  return real_android_commands != None
 
 def GetAttachedDevices():
   """Returns a list of attached, online android devices.
@@ -116,3 +117,51 @@ class ADBCommands(object):
 
   def IsRootEnabled(self):
     return self._adb.IsRootEnabled()
+
+def HasForwarder(adb):
+  return adb.FileExistsOnDevice(forwarder.Forwarder._FORWARDER_PATH)
+
+def HowToInstallForwarder():
+  return "adb push out/$BUILD_TYPE/forwarder %s" % (
+    forwarder.Forwarder._FORWARDER_PATH)
+
+class Forwarder(object):
+  def __init__(self, adb, host_port):
+    assert HasForwarder(adb)
+
+    port_pairs = [(0, host_port), ]
+    tool = valgrind_tools.BaseTool()
+
+    self._host_port = host_port
+
+    # Currently, Forarder requires that ../out/Debug/forwarder exists,
+    # in case it needs to push it to the device. However, to get to here,
+    # android_browser_finder has ensured that device HasForwarder, above.
+    #
+    # Therefore, here, we just need to instantiate the forwarder, no push
+    # needed.
+    #
+    # To do this, we monkey patch adb.PushIfNeeded to a noop.
+    #
+    # TODO(nduca): Fix build.android.pylib.Forwarder to not need this.
+    real_push_if_needed = adb._adb.PushIfNeeded
+    def FakePush(local_path, device_path):
+      assert adb.FileExistsOnDevice(device_path)
+    try:
+      adb._adb.PushIfNeeded = FakePush
+      self._forwarder = forwarder.Forwarder(
+        adb._adb, port_pairs,
+        tool, "localhost", "unused")
+    finally:
+      adb._adb.PushIfNeeded = real_push_if_needed
+    self._device_port = self._forwarder.DevicePortForHostPort(self._host_port)
+
+  @property
+  def url(self):
+    assert self._forwarder
+    return "http://localhost:%i" % self._device_port
+
+  def Close(self):
+    if self._forwarder:
+      self._forwarder.Close()
+      self._forwarder = None

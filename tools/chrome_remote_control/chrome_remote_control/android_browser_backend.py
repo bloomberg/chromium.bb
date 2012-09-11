@@ -9,6 +9,7 @@ import tempfile
 import urllib2
 import json
 
+import adb_commands
 import browser_backend
 import browser_finder
 import inspector_backend
@@ -118,3 +119,8 @@ class AndroidBrowserBackend(browser_backend.BrowserBackend):
   def IsBrowserRunning(self):
     pids = self._adb.ExtractPid(self._package)
     return len(pids) != 0
+
+  def CreateForwarder(self, host_port):
+    return adb_commands.Forwarder(self._adb, host_port)
+
+

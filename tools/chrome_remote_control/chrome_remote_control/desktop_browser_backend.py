@@ -92,3 +92,18 @@ class DesktopBrowserBackend(browser_backend.BrowserBackend):
     if self._devnull:
       self._devnull.close()
       self._devnull = None
+
+  def CreateForwarder(self, host_port):
+    return DoNothingForwarder(host_port)
+
+class DoNothingForwarder(object):
+  def __init__(self, host_port):
+    self._host_port = host_port
+
+  @property
+  def url(self):
+    assert self._host_port
+    return "http://localhost:%i" % self._host_port
+
+  def Close(self):
+    self._host_port = None

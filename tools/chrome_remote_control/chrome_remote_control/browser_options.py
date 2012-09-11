@@ -4,6 +4,7 @@
 import optparse
 import sys
 import shlex
+import logging
 
 import browser_finder
 
@@ -62,6 +63,13 @@ class BrowserOptions(optparse.Values):
         help="When possible, will display the stdout of the process")
     parser.add_option_group(group)
 
+    # Debugging options
+    group = optparse.OptionGroup(parser, "When things go wrong")
+    group.add_option(
+      '-v', '--verbose', action='count', dest="verbosity",
+      help='Increase verbosity level (repeat as needed)')
+    parser.add_option_group(group)
+
     real_parse = parser.parse_args
     def ParseArgs(args=None):
       defaults = parser.get_default_values()
@@ -70,6 +78,14 @@ class BrowserOptions(optparse.Values):
           continue
         self.__dict__[k] = v
       ret = real_parse(args, self)
+
+      if self.verbosity >= 2:
+        logging.basicConfig(level=logging.DEBUG)
+      elif self.verbosity:
+        logging.basicConfig(level=logging.INFO)
+      else:
+        logging.basicConfig(level=logging.WARNING)
+
       if self.browser_executable and not self.browser_type:
         self.browser_type = 'exact'
       if not self.browser_executable and not self.browser_type:

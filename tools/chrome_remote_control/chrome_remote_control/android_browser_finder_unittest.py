@@ -63,6 +63,9 @@ class ADBCommandsModuleStub(object):
   def GetAttachedDevices(self):
     return self.attached_devices
 
+  def HasForwarder(self, adb):
+    return True
+
 class AndroidBrowserFinderTest(unittest.TestCase):
   def test_no_adb(self):
     options = browser_options.BrowserOptions()

@@ -7,10 +7,27 @@ import multi_page_benchmark
 class ScrollingBenchmarkUnitTest(
   multi_page_benchmark.MultiPageBenchmarkUnitTest):
 
-  def testBasicFunctionality(self):
+  def testScrollingWithGpuBenchmarkingExtension(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('scrollable_page.html')
 
     benchmark = scrolling_benchmark.ScrollingBenchmark()
+    rows = self.RunBenchmark(benchmark, ps)
+
+    self.assertEqual(0, len(benchmark.page_failures))
+
+    header = rows[0]
+    results = rows[1:]
+    self.assertEqual(['url', 'dropped_percent', 'mean_frame_time_ms'],
+                     header)
+    self.assertEqual(1, len(results))
+    self.assertTrue('scrollable_page.html' in results[0][0])
+
+  def testScrollingWithoutGpuBenchmarkingExtension(self):
+    ps = self.CreatePageSetFromFileInUnittestDataDir('scrollable_page.html')
+
+    benchmark = scrolling_benchmark.ScrollingBenchmark()
+    benchmark.use_gpu_bencharking_extension = False
+
     rows = self.RunBenchmark(benchmark, ps)
 
     self.assertEqual(0, len(benchmark.page_failures))

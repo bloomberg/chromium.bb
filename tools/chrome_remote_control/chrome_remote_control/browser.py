@@ -9,6 +9,7 @@ import json
 import tab
 
 import browser_finder
+import temporary_http_server
 
 class Browser(object):
   """A running browser instance that can be controled in a limited way.
@@ -31,6 +32,11 @@ class Browser(object):
     self.Close()
 
   @property
+  def is_content_shell(self):
+    """Returns whether this browser is a content shell, only."""
+    return self._backend.is_content_shell
+
+  @property
   def num_tabs(self):
     return self._backend.num_tabs
 
@@ -42,3 +48,6 @@ class Browser(object):
 
   def Close(self):
     self._backend.Close()
+
+  def CreateTemporaryHTTPServer(self, path):
+    return temporary_http_server.TemporaryHTTPServer(self._backend, path)

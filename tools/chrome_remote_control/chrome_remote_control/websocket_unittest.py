@@ -5,5 +5,5 @@ import unittest
 import websocket
 
 class TestWebSocket(unittest.TestCase):
-  def test_exports(self):
+  def testExports(self):
     self.assertNotEqual(websocket.create_connection, None)

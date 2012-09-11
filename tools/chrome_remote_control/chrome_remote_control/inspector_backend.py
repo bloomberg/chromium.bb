@@ -76,6 +76,8 @@ class InspectorBackend(object):
           except:
             import traceback
             traceback.print_exc()
+        else:
+          logging.debug("Unhandled inspector mesage: %s", data)
         continue
 
       if res["id"] != req["id"]:

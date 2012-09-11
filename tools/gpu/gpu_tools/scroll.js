@@ -122,7 +122,7 @@
   RafRenderingStats.prototype.get = function() {
     var results = {};
     results.numAnimationFrames = this.frameTimes_.length - 1;
-    results.numFramesSentToScreen = results.numFramesSentToScreen;
+    results.numFramesSentToScreen = results.numAnimationFrames;
     results.droppedFrameCount = this.getDroppedFrameCount_(this.frameTimes_);
     results.totalTimeInSeconds = (
         this.frameTimes_[this.frameTimes_.length - 1] -
@@ -189,7 +189,8 @@
 
   ScrollTest.prototype.startPass_ = function() {
     this.element_.scrollTop = 0;
-    if (window.chrome && chrome.gpuBenchmarking)
+    if (window.chrome && chrome.gpuBenchmarking &&
+        chrome.gpuBenchmarking.renderingStats)
       this.renderingStats_ = new GpuBenchmarkingRenderingStats();
     else
       this.renderingStats_ = new RafRenderingStats();

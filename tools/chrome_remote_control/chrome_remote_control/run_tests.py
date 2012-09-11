@@ -91,21 +91,11 @@ def Main(args, start_dir, top_level_dir):
   default_options.browser_type = 'any'
 
   parser = default_options.CreateParser("run_tests [options] [test names]")
-  parser.add_option(
-      '-v', '--verbose', action='count', dest="verbosity",
-      help='Increase verbosity level (repeat as needed)')
   parser.add_option('--repeat-count', dest='run_test_repeat_count',
                     type='int', default=1,
                     help="Repeats each a provided number of times.")
 
   _, args = parser.parse_args(args)
-
-  if default_options.verbosity >= 2:
-    logging.basicConfig(level=logging.DEBUG)
-  elif default_options.verbosity:
-    logging.basicConfig(level=logging.INFO)
-  else:
-    logging.basicConfig(level=logging.WARNING)
 
   import browser_finder
   if browser_finder.FindBrowser(default_options) == None:

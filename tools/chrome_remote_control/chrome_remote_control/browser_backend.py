@@ -54,4 +54,5 @@ class BrowserBackend(object):
 
   def ConnectToNthTab(self, index):
     ib = inspector_backend.InspectorBackend(self, self._ListTabs()[index])
-    return tab.Tab(ib)
+    return tab.Tab(self, ib)
+

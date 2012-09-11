@@ -29,6 +29,10 @@ def _CalcScrollResults(rendering_stats):
       }
 
 class ScrollingBenchmark(multi_page_benchmark.MultiPageBenchmark):
+  def __init__(self):
+    super(ScrollingBenchmark, self).__init__()
+    self.use_gpu_bencharking_extension = True
+
   def ScrollPageFully(self, tab):
     scroll_js_path = os.path.join(os.path.dirname(__file__), 'scroll.js')
     scroll_js = open(scroll_js_path, 'r').read()
@@ -48,12 +52,13 @@ class ScrollingBenchmark(multi_page_benchmark.MultiPageBenchmark):
 
     rendering_stats = tab.runtime.Evaluate('window.__scrollTestResult')
 
-    if rendering_stats["numFramesSentToScreen"] == 0:
-      raise scrolling_benchmark.DidNotScrollException()
+    if not (rendering_stats["numFramesSentToScreen"] > 0):
+      raise DidNotScrollException()
     return rendering_stats
 
   def CustomizeBrowserOptions(self, options):
-    options.extra_browser_args.append('--enable-gpu-benchmarking')
+    if self.use_gpu_bencharking_extension:
+      options.extra_browser_args.append('--enable-gpu-benchmarking')
 
   def MeasurePage(self, page, tab):
     rendering_stats = self.ScrollPageFully(tab)
