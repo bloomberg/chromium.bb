@@ -82,7 +82,9 @@ void RtcVideoCaptureDelegate::OnDeviceInfoReceived(
 void RtcVideoCaptureDelegate::OnBufferReadyOnCaptureThread(
     media::VideoCapture* capture,
     scoped_refptr<media::VideoCapture::VideoFrameBuffer> buf) {
-  captured_callback_.Run(*buf);
+  if (!captured_callback_.is_null()) {
+    captured_callback_.Run(*buf);
+  }
   capture->FeedBuffer(buf);
 }
 
