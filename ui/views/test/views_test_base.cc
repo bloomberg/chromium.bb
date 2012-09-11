@@ -5,6 +5,7 @@
 #include "ui/views/test/views_test_base.h"
 
 #include "base/run_loop.h"
+#include "ui/base/clipboard/clipboard.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
@@ -37,6 +38,8 @@ void ViewsTestBase::SetUp() {
 }
 
 void ViewsTestBase::TearDown() {
+  ui::Clipboard::DestroyClipboardForCurrentThread();
+
   // Flush the message loop because we have pending release tasks
   // and these tasks if un-executed would upset Valgrind.
   RunPendingMessages();
