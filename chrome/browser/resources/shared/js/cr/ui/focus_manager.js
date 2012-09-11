@@ -74,7 +74,7 @@ cr.define('cr.ui', function() {
 
               // Skip nodes that cannot receive focus. FILTER_SKIP does not
               // cause this node's children also to be skipped.
-              if (node.tabIndex < 0)
+              if (node.disabled || node.tabIndex < 0)
                 return NodeFilter.FILTER_SKIP;
 
               // Accept nodes that are non-hidden and focusable.
