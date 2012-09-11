@@ -576,19 +576,19 @@ FileManager.prototype = {
 
     for (i = 0; i < inputs.length; i++) {
       cr.ui.contextMenuHandler.setContextMenu(inputs[i], this.textContextMenu_);
-      FileManager.registerInputCommands_(inputs[i]);
+      this.registerInputCommands_(inputs[i]);
     }
 
     cr.ui.contextMenuHandler.setContextMenu(this.renameInput_,
         this.textContextMenu_);
-    FileManager.registerInputCommands_(this.renameInput_);
+    this.registerInputCommands_(this.renameInput_);
   };
 
   /**
    * Registers cut, copy, paste and delete commands on input element.
    * @param {Node} node Text input element to register on.
    */
-  FileManager.registerInputCommands_ = function(node) {
+  FileManager.prototype.registerInputCommands_ = function(node) {
     var defaultCommand = Commands.defaultCommand;
     CommandUtil.registerCommand(node, 'cut', defaultCommand, this.document_);
     CommandUtil.registerCommand(node, 'copy', defaultCommand, this.document_);
