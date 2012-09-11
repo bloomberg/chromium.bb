@@ -66,7 +66,7 @@ DEFINE_WINDOW_PROPERTY_KEY(float,
 namespace {
 
 const int kDefaultAnimationDurationForMenuMS = 150;
-const int kLayerAnimationsForMinimizeDurationMS = 350;
+const int kLayerAnimationsForMinimizeDurationMS = 200;
 
 // Durations for the cross-fade animation, in milliseconds.
 const float kCrossFadeDurationMinMs = 100.f;
@@ -675,7 +675,7 @@ class CrossFadeObserver : public ui::CompositorObserver,
 namespace {
 
 // Duration of cross fades when workspace2 is enabled.
-const int kWorkspaceCrossFadeDurationMs = 333;
+const int kWorkspaceCrossFadeDurationMs = 200;
 
 // Scales for workspaces above/below current workspace.
 const float kWorkspaceScaleAbove = 1.1f;
@@ -688,12 +688,12 @@ const int kPauseTimeMS = 0;
 }  // namespace
 
 // Amount of time for animating a workspace in or out.
-const int kWorkspaceSwitchTimeMS = 333 + kPauseTimeMS;
+const int kWorkspaceSwitchTimeMS = 200 + kPauseTimeMS;
 
 namespace {
 
 // Brightness for the non-active workspace.
-const float kWorkspaceBrightness = -.05f;
+const float kWorkspaceBrightness = -.33f;
 
 enum WorkspaceScaleType {
   WORKSPACE_SCALE_ABOVE,
@@ -1000,11 +1000,11 @@ void AnimateBetweenWorkspaces(aura::Window* old_window,
                               WorkspaceType new_type,
                               bool is_restoring_maximized_window) {
   uint32 common_animate_types = 0;
-  if (!(new_type == WORKSPACE_MAXIMIZED && old_type == WORKSPACE_MAXIMIZED))
-    common_animate_types |= WORKSPACE_ANIMATE_BRIGHTNESS;
   if (animate_old) {
     // When switching to the desktop the old window lifts off.
-    uint32 animate_types = common_animate_types;
+    uint32 animate_types = 0;
+    if (!(new_type == WORKSPACE_MAXIMIZED && old_type == WORKSPACE_MAXIMIZED))
+      animate_types |= WORKSPACE_ANIMATE_BRIGHTNESS;
     if ((new_type == WORKSPACE_DESKTOP || old_type == WORKSPACE_MAXIMIZED) &&
         !is_restoring_maximized_window)
       animate_types |= WORKSPACE_ANIMATE_OPACITY;
@@ -1019,13 +1019,16 @@ void AnimateBetweenWorkspaces(aura::Window* old_window,
 
   // Switching from the desktop to a maximized animates down.
   uint32 animate_types = common_animate_types;
+  if (!(new_type == WORKSPACE_MAXIMIZED && old_type == WORKSPACE_MAXIMIZED) &&
+      !is_restoring_maximized_window)
+    animate_types |= WORKSPACE_ANIMATE_BRIGHTNESS;
   if (old_type == WORKSPACE_DESKTOP)
     animate_types |= WORKSPACE_ANIMATE_OPACITY;
   AnimateWorkspaceInImpl(
       new_window,
       old_type == WORKSPACE_DESKTOP ?
           WORKSPACE_ANIMATE_DOWN : WORKSPACE_ANIMATE_UP,
-      common_animate_types,
+      animate_types,
       ui::Tween::EASE_OUT);
 }
 
