@@ -181,6 +181,14 @@ void TimeView::UpdateTimeFormat() {
 }
 
 void TimeView::UpdateTextInternal(const base::Time& now) {
+  // Just in case |now| is null, do NOT update time; otherwise, it will
+  // crash icu code by calling into base::TimeFormatTimeOfDayWithHourClockType,
+  // see details in crbug.com/147570.
+  if (now.is_null()) {
+    LOG(ERROR) << "Received null value from base::Time |now| in argument";
+    return;
+  }
+
   string16 current_time = base::TimeFormatTimeOfDayWithHourClockType(
       now, hour_type_, base::kDropAmPm);
   label_->SetText(current_time);
