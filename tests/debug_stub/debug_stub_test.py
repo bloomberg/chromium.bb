@@ -389,7 +389,7 @@ class DebugStubTest(unittest.TestCase):
       self.assertEquals(reply, 'W02')
 
   # Single-step and check IP corresponds to debugger_test:test_single_step
-  def CheckSingleStep(self, connection, step_command, stop_reply):
+  def CheckSingleStep(self, connection, step_command, thread_id):
     if ARCH == 'x86-32':
       instruction_sizes = [1, 2, 3, 6]
     elif ARCH == 'x86-64':
@@ -401,7 +401,8 @@ class DebugStubTest(unittest.TestCase):
 
     for size in instruction_sizes:
       reply = connection.RspRequest(step_command)
-      self.assertEqual(reply, stop_reply)
+      AssertReplySignal(reply, NACL_SIGTRAP)
+      self.assertEquals(ParseThreadStopReply(reply)['thread_id'], thread_id)
       ip += size
       regs = DecodeRegs(connection.RspRequest('g'))
       self.assertEqual(regs[IP_REG[ARCH]], ip)
@@ -409,30 +410,27 @@ class DebugStubTest(unittest.TestCase):
       self.assertEqual(regs['eflags'] & X86_TRAP_FLAG, 0)
 
   def test_single_step(self):
-    if sys.platform == 'darwin':
-      # TODO(mseaborn): Make this work on Mac OS X (and enable it) by
-      # removing this test's use of the int3 instruction.
-      return
     if ARCH == 'arm':
       # Skip this test because single-stepping is not supported on ARM.
       # TODO(eaeltsin):
       #   http://code.google.com/p/nativeclient/issues/detail?id=2911
       return
     with LaunchDebugStub('test_single_step') as connection:
-      # Continue, test we stopped on int3.
+      # We expect test_single_step() to stop at a HLT instruction.
       reply = connection.RspRequest('c')
-      AssertReplySignal(reply, NACL_SIGTRAP)
+      AssertReplySignal(reply, NACL_SIGSEGV)
+      tid = ParseThreadStopReply(reply)['thread_id']
+      # Skip past the single-byte HLT instruction.
+      regs = DecodeRegs(connection.RspRequest('g'))
+      regs[IP_REG[ARCH]] += 1
+      AssertEquals(connection.RspRequest('G' + EncodeRegs(regs)), 'OK')
 
-      self.CheckSingleStep(connection, 's', reply)
+      self.CheckSingleStep(connection, 's', tid)
       # Check that we can continue after single-stepping.
       reply = connection.RspRequest('c')
       self.assertEquals(reply, 'W00')
 
   def test_vCont(self):
-    if sys.platform == 'darwin':
-      # TODO(mseaborn): Make this work on Mac OS X (and enable it) by
-      # removing this test's use of the int3 instruction.
-      return
     # Basically repeat test_single_step, but using vCont commands.
     if ARCH == 'arm':
       # Skip this test because single-stepping is not supported on ARM.
@@ -444,13 +442,18 @@ class DebugStubTest(unittest.TestCase):
       reply = connection.RspRequest('vCont?')
       self.assertEqual(reply, 'vCont;s;S;c;C')
 
-      # Continue using vCont, test we stopped on int3.
-      # Get signalled thread id.
+      # Continue using vCont.
+      # We expect test_single_step() to stop at a HLT instruction.
       reply = connection.RspRequest('vCont;c')
-      AssertReplySignal(reply, NACL_SIGTRAP)
+      AssertReplySignal(reply, NACL_SIGSEGV)
+      # Get signalled thread id.
       tid = ParseThreadStopReply(reply)['thread_id']
+      # Skip past the single-byte HLT instruction.
+      regs = DecodeRegs(connection.RspRequest('g'))
+      regs[IP_REG[ARCH]] += 1
+      AssertEquals(connection.RspRequest('G' + EncodeRegs(regs)), 'OK')
 
-      self.CheckSingleStep(connection, 'vCont;s:%x' % tid, reply)
+      self.CheckSingleStep(connection, 'vCont;s:%x' % tid, tid)
 
       # Single step one thread and continue all others.
       reply = connection.RspRequest('vCont;s:%x;c' % tid)

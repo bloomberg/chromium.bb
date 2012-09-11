@@ -131,7 +131,7 @@ void test_single_step() {
    */
 #if defined(__i386__)
   __asm__(
-      ".byte 0xcc\n"                                /* int3 */
+      ".byte 0xf4\n"                                /* hlt */
       ".byte 0x53\n"                                /* push %ebx */
       ".byte 0x39, 0xd8\n"                          /* cmp  %ebx,%eax */
       ".byte 0x83, 0xeb, 0x01\n"                    /* sub  $0x1,%ebx */
@@ -139,7 +139,7 @@ void test_single_step() {
       ".byte 0x5b\n");                              /* pop  %ebx */
 #elif defined(__x86_64__)
   __asm__(
-      ".byte 0xcc\n"                                /* int3 */
+      ".byte 0xf4\n"                                /* hlt */
       ".byte 0x53\n"                                /* push %rbx */
       ".byte 0x48, 0x39, 0xd8\n"                    /* cmp  %rbx,%rax */
       ".byte 0x48, 0x83, 0xeb, 0x01\n"              /* sub  $0x1,%rbx */
