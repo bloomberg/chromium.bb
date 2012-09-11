@@ -12,7 +12,11 @@ try:
   import google.appengine.api.files as files
   import google.appengine.api.memcache as memcache
   import google.appengine.api.urlfetch as urlfetch
+  # Default to a 5 minute cache timeout.
+  CACHE_TIMEOUT = 300
 except ImportError:
+  # Cache for one second because zero means cache forever.
+  CACHE_TIMEOUT = 1
   import re
   from StringIO import StringIO
 

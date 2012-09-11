@@ -141,4 +141,3 @@ if __name__ == '__main__':
     server.serve_forever()
   finally:
     server.socket.close()
-    shutil.rmtree(os.path.join(sys.argv[0].rsplit(os.sep, 1)[0], 'third_party'))

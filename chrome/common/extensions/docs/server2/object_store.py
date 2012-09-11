@@ -2,10 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from appengine_wrappers import CACHE_TIMEOUT
 from future import Future
-
-# Default to a 5 minute cache timeout.
-CACHE_TIMEOUT = 300
 
 BRANCH_UTILITY            = 'BranchUtility'
 FILE_SYSTEM_CACHE         = 'CompiledFileSystem'

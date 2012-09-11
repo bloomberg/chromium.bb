@@ -4,8 +4,9 @@
 
 import time
 
+from appengine_wrappers import CACHE_TIMEOUT
 from future import Future
-from object_store import ObjectStore, CACHE_TIMEOUT
+from object_store import ObjectStore
 from memcache_object_store import MemcacheObjectStore
 
 class _CacheEntry(object):
