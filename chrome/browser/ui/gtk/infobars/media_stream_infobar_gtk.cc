@@ -44,7 +44,7 @@ void MediaStreamInfoBarGtk::Init() {
     message_id = IDS_MEDIA_CAPTURE_AUDIO_ONLY;
 
   string16 security_origin = UTF8ToUTF16(
-      GetDelegate()->GetSecurityOrigin().spec());
+      GetDelegate()->GetSecurityOriginSpec());
   string16 text(l10n_util::GetStringFUTF16(message_id,
                                            security_origin, &offset));
 

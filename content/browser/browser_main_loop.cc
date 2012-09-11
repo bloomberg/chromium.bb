@@ -26,9 +26,7 @@
 #include "content/browser/in_process_webkit/webkit_thread.h"
 #include "content/browser/net/browser_online_state_observer.h"
 #include "content/browser/plugin_service_impl.h"
-#include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
-#include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "content/browser/trace_controller_impl.h"
@@ -343,13 +341,8 @@ void BrowserMainLoop::MainMessageLoopStart() {
   }
 
   online_state_observer_.reset(new BrowserOnlineStateObserver);
-  scoped_refptr<media_stream::AudioInputDeviceManager>
-      audio_input_device_manager(
-          new media_stream::AudioInputDeviceManager(audio_manager_.get()));
-  scoped_refptr<media_stream::VideoCaptureManager> video_capture_manager(
-      new media_stream::VideoCaptureManager());
-  media_stream_manager_.reset(new media_stream::MediaStreamManager(
-      audio_input_device_manager, video_capture_manager));
+  media_stream_manager_.reset(
+      new media_stream::MediaStreamManager(audio_manager_.get()));
 
   // Prior to any processing happening on the io thread, we create the
   // plugin service as it is predominantly used from the io thread,

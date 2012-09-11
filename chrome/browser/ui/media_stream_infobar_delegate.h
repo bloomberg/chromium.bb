@@ -39,7 +39,7 @@ class MediaStreamInfoBarDelegate : public InfoBarDelegate {
 
   // Returns the security origin (e.g. "www.html5rocks.com") at the origin
   // of this request.
-  const GURL& GetSecurityOrigin() const;
+  const std::string& GetSecurityOriginSpec() const;
 
   void set_selected_audio_device(const std::string& device_id) {
     selected_audio_device_ = device_id;
@@ -56,6 +56,11 @@ class MediaStreamInfoBarDelegate : public InfoBarDelegate {
     return selected_video_device_;
   }
   bool always_allow() const { return always_allow_; }
+
+  // These determine whether all audio (or video) devices can be auto-accepted
+  // in the future should the user accept them this time.
+  bool IsSafeToAlwaysAllowAudio() const;
+  bool IsSafeToAlwaysAllowVideo() const;
 
   // Callbacks to handle accepting devices or denying the request.
   void Accept();

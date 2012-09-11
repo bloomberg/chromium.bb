@@ -20,7 +20,7 @@
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
-#include "media/audio/audio_device_name.h"
+#include "content/public/common/media_stream_request.h"
 
 namespace media {
 class AudioManager;
@@ -30,9 +30,7 @@ namespace media_stream {
 
 class AudioInputDeviceManagerEventHandler;
 
-class CONTENT_EXPORT AudioInputDeviceManager
-    : public base::RefCountedThreadSafe<AudioInputDeviceManager>,
-      public MediaStreamProvider {
+class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
  public:
   // Calling Start() with this kFakeOpenSessionId will open the default device,
   // even though Open() has not been called. This is used to be able to use the
@@ -57,9 +55,7 @@ class CONTENT_EXPORT AudioInputDeviceManager
 
  private:
   typedef std::map<int, AudioInputDeviceManagerEventHandler*> EventHandlerMap;
-  typedef std::map<int, media::AudioDeviceName> AudioInputDeviceMap;
-
-  friend class base::RefCountedThreadSafe<AudioInputDeviceManager>;
+  typedef std::map<int, StreamDeviceInfo> StreamDeviceMap;
   virtual ~AudioInputDeviceManager();
 
   // Enumerates audio input devices on media stream device thread.
@@ -74,10 +70,10 @@ class CONTENT_EXPORT AudioInputDeviceManager
   void DevicesEnumeratedOnIOThread(StreamDeviceInfoArray* devices);
   // Callback used by OpenOnDeviceThread(), called with the session_id
   // referencing the opened device on IO thread.
-  void OpenedOnIOThread(int session_id);
+  void OpenedOnIOThread(content::MediaStreamDeviceType type, int session_id);
   // Callback used by CloseOnDeviceThread(), called with the session_id
   // referencing the closed device on IO thread.
-  void ClosedOnIOThread(int session_id);
+  void ClosedOnIOThread(content::MediaStreamDeviceType type, int session_id);
 
   // Verifies that the calling thread is media stream device thread.
   bool IsOnDeviceThread() const;
@@ -88,8 +84,8 @@ class CONTENT_EXPORT AudioInputDeviceManager
   EventHandlerMap event_handlers_;
 
   // Only accessed from media stream device thread.
-  AudioInputDeviceMap devices_;
-  media::AudioManager* audio_manager_;
+  StreamDeviceMap devices_;
+  media::AudioManager* const audio_manager_;
 
   // The message loop of media stream device thread that this object runs on.
   scoped_refptr<base::MessageLoopProxy> device_loop_;

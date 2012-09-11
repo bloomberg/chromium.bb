@@ -134,10 +134,10 @@ void DoDeviceRequest(const MediaStreamDeviceSettingsRequest& request,
 
 bool IsRequestReadyForView(
     media_stream::MediaStreamDeviceSettingsRequest* request) {
-  if ((request->options.audio && request->devices_full.count(
-          content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE) == 0) ||
-      (request->options.video && request->devices_full.count(
-          content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE) == 0)) {
+  if ((content::IsAudioMediaType(request->options.audio_type) &&
+       request->devices_full.count(request->options.audio_type) == 0) ||
+      (content::IsVideoMediaType(request->options.video_type) &&
+       request->devices_full.count(request->options.video_type) == 0)) {
     return false;
   }
 

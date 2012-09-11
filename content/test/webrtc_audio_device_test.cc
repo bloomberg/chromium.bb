@@ -12,12 +12,10 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "base/win/scoped_com_initializer.h"
-#include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/audio_input_renderer_host.h"
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/mock_media_observer.h"
-#include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_paths.h"
@@ -137,14 +135,8 @@ void WebRTCAudioDeviceTest::SetUp() {
 
   // Create our own AudioManager and MediaStreamManager.
   audio_manager_.reset(media::AudioManager::Create());
-
-  scoped_refptr<media_stream::AudioInputDeviceManager>
-      audio_input_device_manager(new media_stream::AudioInputDeviceManager(
-          audio_manager_.get()));
-  scoped_refptr<media_stream::VideoCaptureManager> video_capture_manager(
-      new media_stream::VideoCaptureManager());
-  media_stream_manager_.reset(new media_stream::MediaStreamManager(
-      audio_input_device_manager, video_capture_manager));
+  media_stream_manager_.reset(
+      new media_stream::MediaStreamManager(audio_manager_.get()));
 
   // Construct the resource context on the UI thread.
   resource_context_.reset(new MockResourceContext);

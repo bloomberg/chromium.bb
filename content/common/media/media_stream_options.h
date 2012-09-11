@@ -13,22 +13,23 @@
 
 namespace media_stream {
 
+typedef content::MediaStreamDeviceType MediaStreamType;
+
 // StreamOptions is a Chromium representation of WebKit's
 // WebUserMediaRequest Options. It describes the components
 // in a request for a new media stream.
 struct CONTENT_EXPORT StreamOptions {
-  StreamOptions() : audio(false), video(false) {}
-  StreamOptions(bool audio, bool video)
-      : audio(audio), video(video) {}
+  StreamOptions();
+  // TODO(miu): Remove the 2-bools ctor in later clean-up CL.
+  StreamOptions(bool user_audio, bool user_video);
+  StreamOptions(MediaStreamType audio_type, MediaStreamType video_type);
 
-  // True if the stream shall contain an audio input stream.
-  bool audio;
+  // If not NO_SERVICE, the stream shall contain an audio input stream.
+  MediaStreamType audio_type;
 
-  // True if the stream shall contain a video input stream.
-  bool video;
+  // If not NO_SERVICE, the stream shall contain a video input stream.
+  MediaStreamType video_type;
 };
-
-typedef content::MediaStreamDeviceType MediaStreamType;
 
 // StreamDeviceInfo describes information about a device.
 struct CONTENT_EXPORT StreamDeviceInfo {

@@ -6,6 +6,16 @@
 
 namespace content {
 
+bool IsAudioMediaType(MediaStreamDeviceType type) {
+  return (type == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
+          type == content::MEDIA_TAB_AUDIO_CAPTURE);
+}
+
+bool IsVideoMediaType(MediaStreamDeviceType type) {
+  return (type == content::MEDIA_DEVICE_VIDEO_CAPTURE ||
+          type == content::MEDIA_TAB_VIDEO_CAPTURE);
+}
+
 MediaStreamDevice::MediaStreamDevice(
     MediaStreamDeviceType type,
     const std::string& device_id,

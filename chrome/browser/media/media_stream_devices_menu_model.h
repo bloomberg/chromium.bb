@@ -21,13 +21,6 @@ class MediaStreamDevicesMenuModel : public ui::SimpleMenuModel,
   explicit MediaStreamDevicesMenuModel(MediaStreamInfoBarDelegate* delegate);
   virtual ~MediaStreamDevicesMenuModel();
 
-  // Returns the |device_id| for the selected device of type |type|. Returns
-  // true if a selected device of the requested |type| was found, and false if
-  // none was found, in which case |device_id| remains untouched.
-  bool GetSelectedDeviceId(
-      content::MediaStreamDeviceType type,
-      std::string* device_id) const;
-
   // ui::SimpleMenuModel::Delegate implementation:
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;

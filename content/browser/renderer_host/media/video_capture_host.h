@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 //
 // VideoCaptureHost serves video capture related messages from
-// VideCaptureMessageFilter which lives inside the render process.
+// VideoCaptureMessageFilter which lives inside the render process.
 //
 // This class is owned by BrowserRenderProcessHost, and instantiated on UI
 // thread, but all other operations and method calls happen on IO thread.
@@ -81,8 +81,8 @@ class CONTENT_EXPORT VideoCaptureHost
 
   // IPC message: Start capture on the VideoCaptureDevice referenced by
   // VideoCaptureParams::session_id. |device_id| is an id created by
-  // VideCaptureMessageFilter to identify a session
-  // between a VideCaptureMessageFilter and a VideoCaptureHost.
+  // VideoCaptureMessageFilter to identify a session
+  // between a VideoCaptureMessageFilter and a VideoCaptureHost.
   void OnStartCapture(int device_id,
                       const media::VideoCaptureParams& params);
   void OnControllerAdded(

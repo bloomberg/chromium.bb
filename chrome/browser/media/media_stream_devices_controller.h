@@ -9,7 +9,6 @@
 
 #include "content/public/browser/web_contents_delegate.h"
 
-class GURL;
 class Profile;
 
 class MediaStreamDevicesController {
@@ -29,25 +28,36 @@ class MediaStreamDevicesController {
   // Public methods to be called by MediaStreamInfoBarDelegate;
   bool has_audio() const { return has_audio_; }
   bool has_video() const { return has_video_; }
+  const std::string& GetSecurityOriginSpec() const;
   content::MediaStreamDevices GetAudioDevices() const;
   content::MediaStreamDevices GetVideoDevices() const;
-  const GURL& GetSecurityOrigin() const;
+  bool IsSafeToAlwaysAllowAudio() const;
+  bool IsSafeToAlwaysAllowVideo() const;
   void Accept(const std::string& audio_id,
               const std::string& video_id,
               bool always_allow);
   void Deny();
 
  private:
-  // Finds a device in the current request with the specified |id| and |type|,
-  // adds it to the |devices| array and also return the name of the device.
-  void AddDeviceWithId(content::MediaStreamDeviceType type,
-                       const std::string& id,
-                       content::MediaStreamDevices* devices,
-                       std::string* device_name);
+  // Used by the various helper methods below to filter an operation on devices
+  // of a particular type.
+  typedef bool (*FilterByDeviceTypeFunc)(content::MediaStreamDeviceType);
+
+  // Returns true if a secure scheme is being used by the origin AND only
+  // devices of the given physical |device_type| are present in the subset of
+  // devices selected by the |is_included| function.
+  bool IsSafeToAlwaysAllow(FilterByDeviceTypeFunc is_included,
+                           content::MediaStreamDeviceType device_type) const;
 
   // Returns true if the media section in content settings is set to
   // |CONTENT_SETTING_BLOCK|, otherwise returns false.
   bool IsMediaDeviceBlocked();
+
+  // NOTE on AlwaysAllowOrigin functionality: The rules only apply to physical
+  // capture devices, and not tab mirroring (or other "virtual device" types).
+  // Virtual devices are always denied an AlwaysAllowOrigin status because they
+  // refer to internal objects whose "IDs" might be re-used for different
+  // objects across browser sessions.
 
   // Returns true if request's origin is from internal objects like
   // chrome://URLs, otherwise returns false.
@@ -68,6 +78,17 @@ class MediaStreamDevicesController {
                                 const std::string& name);
 
   std::string GetFirstDeviceId(content::MediaStreamDeviceType type);
+
+  // Copies all devices passing the |is_included| predicate to the given output
+  // container.
+  void FindSubsetOfDevices(FilterByDeviceTypeFunc is_included,
+                           content::MediaStreamDevices* out) const;
+
+  // Finds the first device with the given |device_id| within the subset of
+  // devices passing the |is_included| predicate, or return NULL.
+  const content::MediaStreamDevice* FindFirstDeviceWithIdInSubset(
+      FilterByDeviceTypeFunc is_included,
+      const std::string& device_id) const;
 
   bool has_audio_;
   bool has_video_;

@@ -11,6 +11,7 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager_event_handler.h"
+#include "content/public/common/media_stream_request.h"
 #include "media/audio/audio_manager_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,7 +38,7 @@ class MockAudioInputDeviceManagerListener
 
   virtual void DevicesEnumerated(MediaStreamType service_type,
                                  const StreamDeviceInfoArray& devices) {
-    if (service_type != content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE)
+    if (service_type != content::MEDIA_DEVICE_AUDIO_CAPTURE)
       return;
 
     devices_ = devices;
@@ -144,12 +145,10 @@ TEST_F(AudioInputDeviceManagerTest, OpenAndCloseDevice) {
 
     // Expected mock call with expected return value.
     EXPECT_CALL(*audio_input_listener_,
-                Opened(content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE,
-                       session_id))
+                Opened(content::MEDIA_DEVICE_AUDIO_CAPTURE, session_id))
         .Times(1);
     EXPECT_CALL(*audio_input_listener_,
-                Closed(content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE,
-                       session_id))
+                Closed(content::MEDIA_DEVICE_AUDIO_CAPTURE, session_id))
         .Times(1);
 
     // Waits for the callback.
@@ -179,8 +178,7 @@ TEST_F(AudioInputDeviceManagerTest, OpenMultipleDevices) {
 
     // Expected mock call with expected returned value.
     EXPECT_CALL(*audio_input_listener_,
-                Opened(content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE,
-                       session_id[index]))
+                Opened(content::MEDIA_DEVICE_AUDIO_CAPTURE, session_id[index]))
         .Times(1);
 
     // Waits for the callback.
@@ -198,8 +196,7 @@ TEST_F(AudioInputDeviceManagerTest, OpenMultipleDevices) {
     // Closes the devices.
     manager_->Close(session_id[i]);
     EXPECT_CALL(*audio_input_listener_,
-                Closed(content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE,
-                       session_id[i]))
+                Closed(content::MEDIA_DEVICE_AUDIO_CAPTURE, session_id[i]))
         .Times(1);
 
     // Waits for the callback.
@@ -213,15 +210,14 @@ TEST_F(AudioInputDeviceManagerTest, OpenNotExistingDevice) {
     return;
   InSequence s;
 
-  MediaStreamType stream_type = content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE;
+  MediaStreamType stream_type = content::MEDIA_DEVICE_AUDIO_CAPTURE;
   std::string device_name("device_doesnt_exist");
   std::string device_id("id_doesnt_exist");
   StreamDeviceInfo dummy_device(stream_type, device_name, device_id, false);
 
   int session_id = manager_->Open(dummy_device);
   EXPECT_CALL(*audio_input_listener_,
-              Opened(content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE,
-                     session_id))
+              Opened(content::MEDIA_DEVICE_AUDIO_CAPTURE, session_id))
       .Times(1);
 
   // Waits for the callback.
@@ -248,20 +244,16 @@ TEST_F(AudioInputDeviceManagerTest, OpenDeviceTwice) {
   // Expected mock calls with expected returned values.
   EXPECT_NE(first_session_id, second_session_id);
   EXPECT_CALL(*audio_input_listener_,
-              Opened(content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE,
-                     first_session_id))
+              Opened(content::MEDIA_DEVICE_AUDIO_CAPTURE, first_session_id))
       .Times(1);
   EXPECT_CALL(*audio_input_listener_,
-              Opened(content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE,
-                     second_session_id))
+              Opened(content::MEDIA_DEVICE_AUDIO_CAPTURE, second_session_id))
       .Times(1);
   EXPECT_CALL(*audio_input_listener_,
-              Closed(content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE,
-                     first_session_id))
+              Closed(content::MEDIA_DEVICE_AUDIO_CAPTURE, first_session_id))
       .Times(1);
   EXPECT_CALL(*audio_input_listener_,
-              Closed(content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE,
-                     second_session_id))
+              Closed(content::MEDIA_DEVICE_AUDIO_CAPTURE, second_session_id))
       .Times(1);
 
   // Waits for the callback.
@@ -295,8 +287,7 @@ TEST_F(AudioInputDeviceManagerTest, StartAndStopSession) {
     // stopped the device before calling close.
     session_id[index] = manager_->Open(*iter);
     EXPECT_CALL(*audio_input_listener_,
-                Opened(content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE,
-                       session_id[index]))
+                Opened(content::MEDIA_DEVICE_AUDIO_CAPTURE, session_id[index]))
         .Times(1);
     message_loop_->RunAllPending();
 
@@ -309,8 +300,7 @@ TEST_F(AudioInputDeviceManagerTest, StartAndStopSession) {
     manager_->Stop(session_id[index]);
     manager_->Close(session_id[index]);
     EXPECT_CALL(*audio_input_listener_,
-                Closed(content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE,
-                       session_id[index]))
+                Closed(content::MEDIA_DEVICE_AUDIO_CAPTURE, session_id[index]))
         .Times(1);
     message_loop_->RunAllPending();
   }
@@ -342,8 +332,7 @@ TEST_F(AudioInputDeviceManagerTest, CloseWithoutStopSession) {
     // Calls Open()/Start()/Close() for each device.
     session_id[index] = manager_->Open(*iter);
     EXPECT_CALL(*audio_input_listener_,
-                Opened(content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE,
-                       session_id[index]))
+                Opened(content::MEDIA_DEVICE_AUDIO_CAPTURE, session_id[index]))
         .Times(1);
     message_loop_->RunAllPending();
 
@@ -360,8 +349,7 @@ TEST_F(AudioInputDeviceManagerTest, CloseWithoutStopSession) {
                 DeviceStopped(session_id[index]))
         .Times(1);
     EXPECT_CALL(*audio_input_listener_,
-                Closed(content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE,
-                       session_id[index]))
+                Closed(content::MEDIA_DEVICE_AUDIO_CAPTURE, session_id[index]))
         .Times(1);
     message_loop_->RunAllPending();
   }
@@ -391,12 +379,10 @@ TEST_F(AudioInputDeviceManagerTest, StartDeviceTwice) {
   int second_session_id = manager_->Open(*iter);
   EXPECT_NE(first_session_id, second_session_id);
   EXPECT_CALL(*audio_input_listener_,
-              Opened(content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE,
-                     first_session_id))
+              Opened(content::MEDIA_DEVICE_AUDIO_CAPTURE, first_session_id))
       .Times(1);
   EXPECT_CALL(*audio_input_listener_,
-              Opened(content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE,
-                     second_session_id))
+              Opened(content::MEDIA_DEVICE_AUDIO_CAPTURE, second_session_id))
       .Times(1);
   message_loop_->RunAllPending();
 
@@ -418,12 +404,10 @@ TEST_F(AudioInputDeviceManagerTest, StartDeviceTwice) {
   manager_->Close(first_session_id);
   manager_->Close(second_session_id);
   EXPECT_CALL(*audio_input_listener_,
-              Closed(content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE,
-                     first_session_id))
+              Closed(content::MEDIA_DEVICE_AUDIO_CAPTURE, first_session_id))
       .Times(1);
   EXPECT_CALL(*audio_input_listener_,
-              Closed(content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE,
-                     second_session_id))
+              Closed(content::MEDIA_DEVICE_AUDIO_CAPTURE, second_session_id))
       .Times(1);
   message_loop_->RunAllPending();
 }
@@ -444,8 +428,7 @@ TEST_F(AudioInputDeviceManagerTest, StartInvalidSession) {
       audio_input_listener_->devices_.begin();
   int session_id = manager_->Open(*iter);
   EXPECT_CALL(*audio_input_listener_,
-              Opened(content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE,
-                     session_id))
+              Opened(content::MEDIA_DEVICE_AUDIO_CAPTURE, session_id))
       .Times(1);
   message_loop_->RunAllPending();
 
@@ -460,8 +443,7 @@ TEST_F(AudioInputDeviceManagerTest, StartInvalidSession) {
 
   manager_->Close(session_id);
   EXPECT_CALL(*audio_input_listener_,
-              Closed(content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE,
-                     session_id))
+              Closed(content::MEDIA_DEVICE_AUDIO_CAPTURE, session_id))
       .Times(1);
   message_loop_->RunAllPending();
 }
@@ -483,8 +465,7 @@ TEST_F(AudioInputDeviceManagerTest, StartSessionTwice) {
       audio_input_listener_->devices_.begin();
   int session_id = manager_->Open(*iter);
   EXPECT_CALL(*audio_input_listener_,
-              Opened(content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE,
-                     session_id))
+              Opened(content::MEDIA_DEVICE_AUDIO_CAPTURE, session_id))
       .Times(1);
   message_loop_->RunAllPending();
 
@@ -505,8 +486,7 @@ TEST_F(AudioInputDeviceManagerTest, StartSessionTwice) {
   manager_->Stop(session_id);
   manager_->Close(session_id);
   EXPECT_CALL(*audio_input_listener_,
-              Closed(content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE,
-                     session_id))
+              Closed(content::MEDIA_DEVICE_AUDIO_CAPTURE, session_id))
       .Times(1);
   message_loop_->RunAllPending();
 }

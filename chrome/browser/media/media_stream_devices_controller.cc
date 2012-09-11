@@ -12,26 +12,11 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/common/media_stream_request.h"
 
 using content::BrowserThread;
 
 namespace {
-
-// A predicate that checks if a StreamDeviceInfo object has the same ID as the
-// device ID specified at construction.
-class DeviceIdEquals {
- public:
-  explicit DeviceIdEquals(const std::string& device_id)
-      : device_id_(device_id) {
-  }
-
-  bool operator() (const content::MediaStreamDevice& device) {
-    return device.device_id == device_id_;
-  }
-
- private:
-  std::string device_id_;
-};
 
 // A predicate that checks if a StreamDeviceInfo object has the same device
 // name as the device name specified at construction.
@@ -49,14 +34,6 @@ class DeviceNameEquals {
   std::string device_name_;
 };
 
-// Whether |request| contains any device of given |type|.
-bool HasDevice(const content::MediaStreamRequest& request,
-               content::MediaStreamDeviceType type) {
-  content::MediaStreamDeviceMap::const_iterator device_it =
-      request.devices.find(type);
-  return device_it != request.devices.end() && !device_it->second.empty();
-}
-
 const char kAudioKey[] = "audio";
 const char kVideoKey[] = "video";
 
@@ -66,13 +43,20 @@ MediaStreamDevicesController::MediaStreamDevicesController(
     Profile* profile,
     const content::MediaStreamRequest* request,
     const content::MediaResponseCallback& callback)
-    : profile_(profile),
+    : has_audio_(false),
+      has_video_(false),
+      profile_(profile),
       request_(*request),
       callback_(callback) {
-  has_audio_ =
-      HasDevice(request_, content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE);
-  has_video_ =
-      HasDevice(request_, content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE);
+  for (content::MediaStreamDeviceMap::const_iterator it =
+           request_.devices.begin();
+       it != request_.devices.end(); ++it) {
+    if (content::IsAudioMediaType(it->first)) {
+      has_audio_ |= !it->second.empty();
+    } else if (content::IsVideoMediaType(it->first)) {
+      has_video_ |= !it->second.empty();
+    }
+  }
 }
 
 MediaStreamDevicesController::~MediaStreamDevicesController() {}
@@ -118,47 +102,62 @@ bool MediaStreamDevicesController::DismissInfoBarAndTakeActionOnSettings() {
 
 content::MediaStreamDevices
 MediaStreamDevicesController::GetAudioDevices() const {
-  if (!has_audio_)
-    return content::MediaStreamDevices();
-
-  content::MediaStreamDeviceMap::const_iterator it =
-      request_.devices.find(content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE);
-  DCHECK(it != request_.devices.end());
-  return it->second;
+  content::MediaStreamDevices all_audio_devices;
+  if (has_audio_)
+    FindSubsetOfDevices(&content::IsAudioMediaType, &all_audio_devices);
+  return all_audio_devices;
 }
 
 content::MediaStreamDevices
 MediaStreamDevicesController::GetVideoDevices() const {
-  if (!has_video_)
-    return content::MediaStreamDevices();
-
-  content::MediaStreamDeviceMap::const_iterator it =
-      request_.devices.find(content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE);
-  DCHECK(it != request_.devices.end());
-  return it->second;
+  content::MediaStreamDevices all_video_devices;
+  if (has_video_)
+    FindSubsetOfDevices(&content::IsVideoMediaType, &all_video_devices);
+  return all_video_devices;
 }
 
-const GURL& MediaStreamDevicesController::GetSecurityOrigin() const {
-  return request_.security_origin;
+const std::string& MediaStreamDevicesController::GetSecurityOriginSpec() const {
+  return request_.security_origin.spec();
+}
+
+bool MediaStreamDevicesController::IsSafeToAlwaysAllowAudio() const {
+  return IsSafeToAlwaysAllow(
+      &content::IsAudioMediaType, content::MEDIA_DEVICE_AUDIO_CAPTURE);
+}
+
+bool MediaStreamDevicesController::IsSafeToAlwaysAllowVideo() const {
+  return IsSafeToAlwaysAllow(
+      &content::IsVideoMediaType, content::MEDIA_DEVICE_VIDEO_CAPTURE);
 }
 
 void MediaStreamDevicesController::Accept(const std::string& audio_id,
                                           const std::string& video_id,
                                           bool always_allow) {
   content::MediaStreamDevices devices;
-  std::string audio_device, video_device;
-  if (has_audio_) {
-    AddDeviceWithId(content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE,
-                    audio_id, &devices, &audio_device);
+  std::string audio_device_name, video_device_name;
+
+  const content::MediaStreamDevice* const audio_device =
+      FindFirstDeviceWithIdInSubset(&content::IsAudioMediaType, audio_id);
+  if (audio_device) {
+    if (audio_device->type != content::MEDIA_DEVICE_AUDIO_CAPTURE)
+      always_allow = false;  // Override for virtual audio device type.
+    devices.push_back(*audio_device);
+    audio_device_name = audio_device->name;
   }
-  if (has_video_) {
-    AddDeviceWithId(content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE,
-                    video_id, &devices, &video_device);
+
+  const content::MediaStreamDevice* const video_device =
+      FindFirstDeviceWithIdInSubset(&content::IsVideoMediaType, video_id);
+  if (video_device) {
+    if (video_device->type != content::MEDIA_DEVICE_VIDEO_CAPTURE)
+      always_allow = false;  // Override for virtual video device type.
+    devices.push_back(*video_device);
+    video_device_name = video_device->name;
   }
+
   DCHECK(!devices.empty());
 
   if (always_allow)
-    AlwaysAllowOriginAndDevices(audio_device, video_device);
+    AlwaysAllowOriginAndDevices(audio_device_name, video_device_name);
 
   callback_.Run(devices);
 }
@@ -167,24 +166,26 @@ void MediaStreamDevicesController::Deny() {
   callback_.Run(content::MediaStreamDevices());
 }
 
-void MediaStreamDevicesController::AddDeviceWithId(
-    content::MediaStreamDeviceType type,
-    const std::string& id,
-    content::MediaStreamDevices* devices,
-    std::string* device_name) {
-  DCHECK(devices);
-  content::MediaStreamDeviceMap::const_iterator device_it =
-      request_.devices.find(type);
-  if (device_it == request_.devices.end())
-    return;
+bool MediaStreamDevicesController::IsSafeToAlwaysAllow(
+    FilterByDeviceTypeFunc is_included,
+    content::MediaStreamDeviceType device_type) const {
+  DCHECK(device_type == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
+         device_type == content::MEDIA_DEVICE_VIDEO_CAPTURE);
 
-  content::MediaStreamDevices::const_iterator it = std::find_if(
-      device_it->second.begin(), device_it->second.end(), DeviceIdEquals(id));
-  if (it == device_it->second.end())
-    return;
+  if (!request_.security_origin.SchemeIsSecure())
+    return false;
 
-  devices->push_back(*it);
-  *device_name = it->name;
+  // If non-physical devices are available for the choosing, then it's not safe.
+  bool safe_devices_found = false;
+  for (content::MediaStreamDeviceMap::const_iterator it =
+           request_.devices.begin();
+       it != request_.devices.end(); ++it) {
+    if (it->first != device_type && is_included(it->first))
+      return false;
+    safe_devices_found = true;
+  }
+
+  return safe_devices_found;
 }
 
 bool MediaStreamDevicesController::ShouldAlwaysAllowOrigin() {
@@ -231,14 +232,10 @@ void MediaStreamDevicesController::GetAlwaysAllowedDevices(
   // If the request is from internal objects like chrome://URLs, use the first
   // devices on the lists.
   if (ShouldAlwaysAllowOrigin()) {
-    if (has_audio_) {
-      *audio_id =
-          GetFirstDeviceId(content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE);
-    }
-    if (has_video_) {
-      *video_id =
-          GetFirstDeviceId(content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE);
-    }
+    if (has_audio_)
+      *audio_id = GetFirstDeviceId(content::MEDIA_DEVICE_AUDIO_CAPTURE);
+    if (has_video_)
+      *video_id = GetFirstDeviceId(content::MEDIA_DEVICE_VIDEO_CAPTURE);
     return;
   }
 
@@ -267,14 +264,12 @@ void MediaStreamDevicesController::GetAlwaysAllowedDevices(
   value_dict->GetString(kAudioKey, &audio_name);
   value_dict->GetString(kVideoKey, &video_name);
 
-  if (has_audio_ && !audio_name.empty()) {
-    *audio_id = GetDeviceIdByName(
-        content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE, audio_name);
-  }
-  if (has_video_ && !video_name.empty()) {
-    *video_id = GetDeviceIdByName(
-        content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE, video_name);
-  }
+  if (has_audio_ && !audio_name.empty())
+    *audio_id = GetDeviceIdByName(content::MEDIA_DEVICE_AUDIO_CAPTURE,
+                                  audio_name);
+  if (has_video_ && !video_name.empty())
+    *video_id = GetDeviceIdByName(content::MEDIA_DEVICE_VIDEO_CAPTURE,
+                                  video_name);
 }
 
 std::string MediaStreamDevicesController::GetDeviceIdByName(
@@ -302,4 +297,34 @@ std::string MediaStreamDevicesController::GetFirstDeviceId(
     return device_it->second.begin()->device_id;
 
   return std::string();
+}
+
+void MediaStreamDevicesController::FindSubsetOfDevices(
+    FilterByDeviceTypeFunc is_included,
+    content::MediaStreamDevices* out) const {
+  for (content::MediaStreamDeviceMap::const_iterator it =
+           request_.devices.begin();
+       it != request_.devices.end(); ++it) {
+    if (is_included(it->first))
+      out->insert(out->end(), it->second.begin(), it->second.end());
+  }
+}
+
+const content::MediaStreamDevice*
+MediaStreamDevicesController::FindFirstDeviceWithIdInSubset(
+    FilterByDeviceTypeFunc is_included,
+    const std::string& device_id) const {
+  for (content::MediaStreamDeviceMap::const_iterator it =
+           request_.devices.begin();
+       it != request_.devices.end(); ++it) {
+    if (!is_included(it->first)) continue;
+    for (content::MediaStreamDevices::const_iterator device_it =
+             it->second.begin();
+         device_it != it->second.end(); ++device_it) {
+      const content::MediaStreamDevice& candidate = *device_it;
+      if (candidate.device_id == device_id)
+        return &candidate;
+    }
+  }
+  return NULL;
 }

@@ -54,6 +54,11 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
                         int page_request_id,
                         const StreamOptions& components,
                         const GURL& security_origin);
+  void OnGenerateStreamForDevice(int render_view_id,
+                                 int page_request_id,
+                                 const StreamOptions& components,
+                                 const std::string& device_id,
+                                 const GURL& security_origin);
   void OnCancelGenerateStream(int render_view_id,
                               int page_request_id);
   void OnStopGeneratedStream(int render_view_id, const std::string& label);

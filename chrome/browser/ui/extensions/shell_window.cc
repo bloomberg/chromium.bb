@@ -39,6 +39,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_intents_dispatcher.h"
+#include "content/public/common/media_stream_request.h"
 #include "content/public/common/renderer_preferences.h"
 
 using content::BrowserThread;
@@ -190,19 +191,26 @@ void ShellWindow::RequestMediaAccessPermission(
     const content::MediaResponseCallback& callback) {
   content::MediaStreamDevices devices;
 
-  content::MediaStreamDeviceMap::const_iterator iter =
-      request->devices.find(content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE);
-  if (iter != request->devices.end() &&
-      extension()->HasAPIPermission(APIPermission::kAudioCapture) &&
-      !iter->second.empty()) {
-    devices.push_back(iter->second[0]);
-  }
-
-  iter = request->devices.find(content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE);
-  if (iter != request->devices.end() &&
-      extension()->HasAPIPermission(APIPermission::kVideoCapture) &&
-      !iter->second.empty()) {
-    devices.push_back(iter->second[0]);
+  // Auto-accept the first audio device and the first video device from the
+  // request when the appropriate API permissions exist.
+  bool accepted_an_audio_device = false;
+  bool accepted_a_video_device = false;
+  for (content::MediaStreamDeviceMap::const_iterator it =
+           request->devices.begin();
+       it != request->devices.end(); ++it) {
+    if (!accepted_an_audio_device &&
+        content::IsAudioMediaType(it->first) &&
+        extension()->HasAPIPermission(APIPermission::kAudioCapture) &&
+        !it->second.empty()) {
+      devices.push_back(it->second.front());
+      accepted_an_audio_device = true;
+    } else if (!accepted_a_video_device &&
+               content::IsVideoMediaType(it->first) &&
+               extension()->HasAPIPermission(APIPermission::kVideoCapture) &&
+               !it->second.empty()) {
+      devices.push_back(it->second.front());
+      accepted_a_video_device = true;
+    }
   }
 
   callback.Run(devices);
@@ -453,4 +461,3 @@ void ShellWindow::SaveWindowPosition()
   gfx::Rect bounds = native_window_->GetBounds();
   cache->SaveGeometry(extension()->id(), window_key_, bounds);
 }
-

@@ -81,6 +81,24 @@ void MediaStreamDispatcher::GenerateStream(
                                              security_origin));
 }
 
+void MediaStreamDispatcher::GenerateStreamForDevice(
+    int request_id,
+    const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
+    media_stream::StreamOptions components,
+    const std::string& device_id,
+    const GURL& security_origin) {
+  DCHECK(main_loop_->BelongsToCurrentThread());
+  DVLOG(1) << "MediaStreamDispatcher::GenerateStreamForDevice("
+           << request_id << ")";
+
+  requests_.push_back(Request(event_handler, request_id, next_ipc_id_));
+  Send(new MediaStreamHostMsg_GenerateStreamForDevice(routing_id(),
+                                                      next_ipc_id_++,
+                                                      components,
+                                                      device_id,
+                                                      security_origin));
+}
+
 void MediaStreamDispatcher::CancelGenerateStream(int request_id) {
   DCHECK(main_loop_->BelongsToCurrentThread());
   DVLOG(1) << "MediaStreamDispatcher::CancelGenerateStream"
@@ -117,16 +135,15 @@ void MediaStreamDispatcher::EnumerateDevices(
     media_stream::MediaStreamType type,
     const GURL& security_origin) {
   DCHECK(main_loop_->BelongsToCurrentThread());
-  DCHECK(type == content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE ||
-         type == content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE);
+  DCHECK(type == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
+         type == content::MEDIA_DEVICE_VIDEO_CAPTURE);
   DVLOG(1) << "MediaStreamDispatcher::EnumerateDevices("
            << request_id << ")";
 
   EnumerationState* state =
-      (type == content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE ?
+      (type == content::MEDIA_DEVICE_AUDIO_CAPTURE ?
        &audio_enumeration_state_ : &video_enumeration_state_);
-  state->requests.push_back(
-      EnumerationRequest(event_handler, request_id));
+  state->requests.push_back(EnumerationRequest(event_handler, request_id));
 
   if (state->cached_devices.get()) {
     event_handler->OnDevicesEnumerated(
@@ -365,11 +382,12 @@ void MediaStreamDispatcher::OnDeviceOpened(
     if (request.ipc_request == request_id) {
       Stream new_stream;
       new_stream.handler = request.handler;
-      if (device_info.stream_type ==
-              content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE) {
+      if (content::IsAudioMediaType(device_info.stream_type)) {
+        new_stream.audio_array.push_back(device_info);
+      } else if (content::IsVideoMediaType(device_info.stream_type)) {
         new_stream.video_array.push_back(device_info);
       } else {
-        new_stream.audio_array.push_back(device_info);
+        NOTREACHED();
       }
       label_stream_map_[label] = new_stream;
       if (request.handler) {

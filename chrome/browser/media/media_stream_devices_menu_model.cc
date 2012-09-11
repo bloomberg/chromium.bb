@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/media_stream_infobar_delegate.h"
@@ -17,20 +18,19 @@ MediaStreamDevicesMenuModel::MediaStreamDevicesMenuModel(
     MediaStreamInfoBarDelegate* delegate)
     : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
       media_stream_delegate_(delegate) {
-  bool audio = delegate->HasAudio() && !delegate->GetAudioDevices().empty();
-  bool video = delegate->HasVideo() && !delegate->GetVideoDevices().empty();
-  if (video) {
+  if (delegate->HasVideo()) {
     AddDevices(delegate->GetVideoDevices());
-    if (audio)
+    if (delegate->HasAudio())
       AddSeparator(ui::NORMAL_SEPARATOR);
   }
-  if (audio) {
+  if (delegate->HasAudio()) {
     AddDevices(delegate->GetAudioDevices());
   }
 
-  // Show "always allow" option only for the secure connection.
-  if (delegate->GetSecurityOrigin().SchemeIsSecure())
-    AddAlwaysAllowOption(audio, video);
+  // Show "always allow" option when auto-accepting would be safe in the future.
+  AddAlwaysAllowOption(
+      delegate->HasAudio() && delegate->IsSafeToAlwaysAllowAudio(),
+      delegate->HasVideo() && delegate->IsSafeToAlwaysAllowVideo());
 }
 
 MediaStreamDevicesMenuModel::~MediaStreamDevicesMenuModel() {
@@ -66,10 +66,13 @@ void MediaStreamDevicesMenuModel::ExecuteCommand(int command_id) {
 
   CommandMap::const_iterator it = commands_.find(command_id);
   DCHECK(it != commands_.end());
-  if (it->second.type == content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE)
+  if (content::IsAudioMediaType(it->second.type)) {
     media_stream_delegate_->set_selected_audio_device(it->second.device_id);
-  else
+  } else if (content::IsVideoMediaType(it->second.type)) {
     media_stream_delegate_->set_selected_video_device(it->second.device_id);
+  } else {
+    NOTREACHED();
+  }
 }
 
 void MediaStreamDevicesMenuModel::AddDevices(
@@ -77,9 +80,15 @@ void MediaStreamDevicesMenuModel::AddDevices(
   for (size_t i = 0; i < devices.size(); ++i) {
     int command_id = commands_.size();
     commands_.insert(std::make_pair(command_id, devices[i]));
-    int message_id = (devices[i].type ==
-        content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE) ?
-        IDS_MEDIA_CAPTURE_AUDIO : IDS_MEDIA_CAPTURE_VIDEO;
+    int message_id;
+    if (content::IsAudioMediaType(devices[i].type)) {
+      message_id = IDS_MEDIA_CAPTURE_AUDIO;
+    } else if (content::IsVideoMediaType(devices[i].type)) {
+      message_id = IDS_MEDIA_CAPTURE_VIDEO;
+    } else {
+      NOTIMPLEMENTED();
+      continue;
+    }
     AddCheckItem(command_id,
                  l10n_util::GetStringFUTF16(message_id,
                                             UTF8ToUTF16(devices[i].name)));
@@ -87,6 +96,9 @@ void MediaStreamDevicesMenuModel::AddDevices(
 }
 
 void MediaStreamDevicesMenuModel::AddAlwaysAllowOption(bool audio, bool video) {
+  if (!audio && !video)
+    return;
+
   int command_id = IDC_MEDIA_STREAM_DEVICE_ALWAYS_ALLOW;
   int message_id = IDS_MEDIA_CAPTURE_ALWAYS_ALLOW_AUDIO_AND_VIDEO;
   if (audio && !video)

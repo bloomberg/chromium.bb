@@ -67,8 +67,7 @@ class MediaStreamDeviceSettingsTest
     media_stream::StreamDeviceInfoArray audio_device_array(1);
     media_stream::StreamDeviceInfo dummy_audio_device;
     dummy_audio_device.name = "Microphone";
-    dummy_audio_device.stream_type =
-        content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE;
+    dummy_audio_device.stream_type = content::MEDIA_DEVICE_AUDIO_CAPTURE;
     dummy_audio_device.session_id = 1;
     audio_device_array[0] = dummy_audio_device;
     device_settings_->AvailableDevices(label,
@@ -81,8 +80,7 @@ class MediaStreamDeviceSettingsTest
     media_stream::StreamDeviceInfoArray video_device_array(1);
     media_stream::StreamDeviceInfo dummy_video_device;
     dummy_video_device.name = "camera";
-    dummy_video_device.stream_type =
-        content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE;
+    dummy_video_device.stream_type = content::MEDIA_DEVICE_VIDEO_CAPTURE;
     dummy_video_device.session_id = 1;
     video_device_array[0] = dummy_video_device;
     device_settings_->AvailableDevices(label,

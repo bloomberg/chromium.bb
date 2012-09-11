@@ -17,7 +17,8 @@ namespace media_stream {
 // success and error for a request.
 class CONTENT_EXPORT MediaStreamRequester {
  public:
-  // Called as a reply of a successful call to GenerateStream.
+  // Called as a reply of a successful call to GenerateStream or
+  // GenerateStreamForDevice.
   virtual void StreamGenerated(const std::string& label,
                                const StreamDeviceInfoArray& audio_devices,
                                const StreamDeviceInfoArray& video_devices) = 0;

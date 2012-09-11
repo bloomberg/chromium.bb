@@ -130,7 +130,7 @@ InfoBar* MediaStreamInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   else if (!delegate->HasVideo())
     messageId = IDS_MEDIA_CAPTURE_AUDIO_ONLY;
 
-  string16 securityOrigin = UTF8ToUTF16(delegate->GetSecurityOrigin().spec());
+  string16 securityOrigin = UTF8ToUTF16(delegate->GetSecurityOriginSpec());
   NSString* text = l10n_util::GetNSStringF(messageId, securityOrigin);
   [label1_ setStringValue:text];
 

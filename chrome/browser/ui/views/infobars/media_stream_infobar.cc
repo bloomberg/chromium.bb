@@ -70,7 +70,7 @@ void MediaStreamInfoBar::ViewHierarchyChanged(bool is_add,
       message_id = IDS_MEDIA_CAPTURE_AUDIO_ONLY;
 
     label_ = CreateLabel(l10n_util::GetStringFUTF16(message_id,
-        UTF8ToUTF16(GetDelegate()->GetSecurityOrigin().spec())));
+        UTF8ToUTF16(GetDelegate()->GetSecurityOriginSpec())));
     AddChildView(label_);
 
     allow_button_ = CreateTextButton(this,

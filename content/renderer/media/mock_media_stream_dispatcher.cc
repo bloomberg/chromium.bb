@@ -5,6 +5,7 @@
 #include "content/renderer/media/mock_media_stream_dispatcher.h"
 
 #include "base/stringprintf.h"
+#include "content/public/common/media_stream_request.h"
 
 MockMediaStreamDispatcher::MockMediaStreamDispatcher()
     : MediaStreamDispatcher(NULL),
@@ -25,19 +26,49 @@ void MockMediaStreamDispatcher::GenerateStream(
   audio_array_.clear();
   video_array_.clear();
 
-  if (components.audio) {
+  if (content::IsAudioMediaType(components.audio_type)) {
     media_stream::StreamDeviceInfo audio;
-    audio.device_id= "audio_device_id";
-    audio.name ="audio microphone";
-    audio.stream_type = content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE;
+    audio.device_id = "audio_device_id";
+    audio.name = "microphone";
+    audio.stream_type = components.audio_type;
     audio.session_id = request_id;
     audio_array_.push_back(audio);
   }
-  if (components.video) {
+  if (content::IsVideoMediaType(components.video_type)) {
     media_stream::StreamDeviceInfo video;
-    video.device_id= "video_device_id";
-    video.name ="usb video camera";
-    video.stream_type = content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE;
+    video.device_id = "video_device_id";
+    video.name = "usb video camera";
+    video.stream_type = components.video_type;
+    video.session_id = request_id;
+    video_array_.push_back(video);
+  }
+}
+
+void MockMediaStreamDispatcher::GenerateStreamForDevice(
+    int request_id,
+    const base::WeakPtr<MediaStreamDispatcherEventHandler>&,
+    media_stream::StreamOptions components,
+    const std::string& device_id,
+    const GURL&) {
+  request_id_ = request_id;
+
+  stream_label_ = StringPrintf("%s%d","local_stream",request_id);
+  audio_array_.clear();
+  video_array_.clear();
+
+  if (content::IsAudioMediaType(components.audio_type)) {
+    media_stream::StreamDeviceInfo audio;
+    audio.device_id = device_id;
+    audio.name = "Tab Audio Capture";
+    audio.stream_type = components.audio_type;
+    audio.session_id = request_id;
+    audio_array_.push_back(audio);
+  }
+  if (content::IsVideoMediaType(components.video_type)) {
+    media_stream::StreamDeviceInfo video;
+    video.device_id = device_id;
+    video.name = "Tab Video Capture";
+    video.stream_type = components.video_type;
     video.session_id = request_id;
     video_array_.push_back(video);
   }

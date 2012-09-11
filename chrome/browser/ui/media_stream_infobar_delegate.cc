@@ -46,8 +46,16 @@ content::MediaStreamDevices
   return controller_->GetVideoDevices();
 }
 
-const GURL& MediaStreamInfoBarDelegate::GetSecurityOrigin() const {
-  return controller_->GetSecurityOrigin();
+const std::string& MediaStreamInfoBarDelegate::GetSecurityOriginSpec() const {
+  return controller_->GetSecurityOriginSpec();
+}
+
+bool MediaStreamInfoBarDelegate::IsSafeToAlwaysAllowAudio() const {
+  return controller_->IsSafeToAlwaysAllowAudio();
+}
+
+bool MediaStreamInfoBarDelegate::IsSafeToAlwaysAllowVideo() const {
+  return controller_->IsSafeToAlwaysAllowVideo();
 }
 
 void MediaStreamInfoBarDelegate::Accept() {

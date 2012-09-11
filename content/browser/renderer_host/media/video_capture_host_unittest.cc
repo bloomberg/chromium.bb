@@ -13,7 +13,6 @@
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_host.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
@@ -212,14 +211,8 @@ class VideoCaptureHostTest : public testing::Test {
 
     // Create our own MediaStreamManager.
     audio_manager_.reset(media::AudioManager::Create());
-    scoped_refptr<media_stream::AudioInputDeviceManager>
-        audio_input_device_manager(
-            new media_stream::AudioInputDeviceManager(audio_manager_.get()));
-    scoped_refptr<media_stream::VideoCaptureManager> video_capture_manager(
-        new media_stream::VideoCaptureManager());
-    media_stream_manager_.reset(new media_stream::MediaStreamManager(
-        audio_input_device_manager, video_capture_manager));
-
+    media_stream_manager_.reset(
+        new media_stream::MediaStreamManager(audio_manager_.get()));
 #ifndef TEST_REAL_CAPTURE_DEVICE
     media_stream_manager_->UseFakeDevice();
 #endif
@@ -249,8 +242,8 @@ class VideoCaptureHostTest : public testing::Test {
     // We need to continue running message_loop_ to complete all destructions.
     message_loop_->RunAllPending();
 
-    // Delete the IO message loop to delete the device thread,
-    // AudioInputDeviceManager and VideoCaptureManager.
+    // Delete the IO message loop.  This will cause the MediaStreamManager to be
+    // notified so it will stop its device thread and device managers.
     message_loop_.reset();
   }
 

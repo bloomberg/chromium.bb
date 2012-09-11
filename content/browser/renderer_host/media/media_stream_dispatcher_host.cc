@@ -125,6 +125,8 @@ bool MediaStreamDispatcherHost::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(MediaStreamDispatcherHost, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(MediaStreamHostMsg_GenerateStream, OnGenerateStream)
+    IPC_MESSAGE_HANDLER(MediaStreamHostMsg_GenerateStreamForDevice,
+                        OnGenerateStreamForDevice)
     IPC_MESSAGE_HANDLER(MediaStreamHostMsg_CancelGenerateStream,
                         OnCancelGenerateStream)
     IPC_MESSAGE_HANDLER(MediaStreamHostMsg_StopGeneratedStream,
@@ -164,15 +166,39 @@ void MediaStreamDispatcherHost::OnGenerateStream(
     const GURL& security_origin) {
   DVLOG(1) << "MediaStreamDispatcherHost::OnGenerateStream("
            << render_view_id << ", "
-           << page_request_id << ", [ "
-           << (components.audio ? "audio " : "")
-           << (components.video ? "video " : "")
-           << "], "
+           << page_request_id << ", ["
+           << " audio:" << components.audio_type
+           << " video:" << components.video_type
+           << " ], "
            << security_origin.spec() << ")";
 
   std::string label;
   GetManager()->GenerateStream(this, render_process_id_, render_view_id,
                                components, security_origin, &label);
+  DCHECK(!label.empty());
+  streams_[label] = StreamRequest(render_view_id, page_request_id);
+}
+
+void MediaStreamDispatcherHost::OnGenerateStreamForDevice(
+    int render_view_id,
+    int page_request_id,
+    const media_stream::StreamOptions& components,
+    const std::string& device_id,
+    const GURL& security_origin) {
+  DVLOG(1) << "MediaStreamDispatcherHost::OnGenerateStreamForDevice("
+           << render_view_id << ", "
+           << page_request_id << ", ["
+           << " audio:" << components.audio_type
+           << " video:" << components.video_type
+           << " ], "
+           << device_id << ", "
+           << security_origin.spec() << ")";
+  DCHECK(!device_id.empty());
+
+  std::string label;
+  GetManager()->GenerateStreamForDevice(
+      this, render_process_id_, render_view_id,
+      components, device_id, security_origin, &label);
   DCHECK(!label.empty());
   streams_[label] = StreamRequest(render_view_id, page_request_id);
 }

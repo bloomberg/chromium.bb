@@ -19,8 +19,8 @@
 IPC_ENUM_TRAITS(media_stream::MediaStreamType)
 
 IPC_STRUCT_TRAITS_BEGIN(media_stream::StreamOptions)
-  IPC_STRUCT_TRAITS_MEMBER(audio)
-  IPC_STRUCT_TRAITS_MEMBER(video)
+  IPC_STRUCT_TRAITS_MEMBER(audio_type)
+  IPC_STRUCT_TRAITS_MEMBER(video_type)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(media_stream::StreamDeviceInfo)
@@ -82,10 +82,18 @@ IPC_MESSAGE_ROUTED1(MediaStreamMsg_DeviceOpenFailed,
 IPC_MESSAGE_CONTROL4(MediaStreamHostMsg_GenerateStream,
                      int /* render view id */,
                      int /* request id */,
-                     media_stream::StreamOptions /* options */,
+                     media_stream::StreamOptions /* components */,
                      GURL /* security origin */)
 
-// Request to cancel the request for a new  media stream.
+// Request a new media stream for a specific device.
+IPC_MESSAGE_CONTROL5(MediaStreamHostMsg_GenerateStreamForDevice,
+                     int /* render view id */,
+                     int /* request id */,
+                     media_stream::StreamOptions /* components */,
+                     std::string /* device_id */,
+                     GURL /* security origin */)
+
+// Request to cancel the request for a new media stream.
 IPC_MESSAGE_CONTROL2(MediaStreamHostMsg_CancelGenerateStream,
                      int /* render view id */,
                      int /* request id */)

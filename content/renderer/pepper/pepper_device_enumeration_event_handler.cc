@@ -94,14 +94,14 @@ PepperDeviceEnumerationEventHandler::FromPepperDeviceType(
     PP_DeviceType_Dev type) {
   switch (type) {
     case PP_DEVICETYPE_DEV_INVALID:
-      return MEDIA_STREAM_DEVICE_TYPE_NO_SERVICE;
+      return MEDIA_NO_SERVICE;
     case PP_DEVICETYPE_DEV_AUDIOCAPTURE:
-      return MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE;
+      return MEDIA_DEVICE_AUDIO_CAPTURE;
     case PP_DEVICETYPE_DEV_VIDEOCAPTURE:
-      return MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE;
+      return MEDIA_DEVICE_VIDEO_CAPTURE;
     default:
       NOTREACHED();
-      return MEDIA_STREAM_DEVICE_TYPE_NO_SERVICE;
+      return MEDIA_NO_SERVICE;
   }
 }
 
@@ -109,11 +109,11 @@ PepperDeviceEnumerationEventHandler::FromPepperDeviceType(
 PP_DeviceType_Dev PepperDeviceEnumerationEventHandler::FromMediaStreamType(
     media_stream::MediaStreamType type) {
   switch (type) {
-    case MEDIA_STREAM_DEVICE_TYPE_NO_SERVICE:
+    case MEDIA_NO_SERVICE:
       return PP_DEVICETYPE_DEV_INVALID;
-    case MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE:
+    case MEDIA_DEVICE_AUDIO_CAPTURE:
       return PP_DEVICETYPE_DEV_AUDIOCAPTURE;
-    case MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE:
+    case MEDIA_DEVICE_VIDEO_CAPTURE:
       return PP_DEVICETYPE_DEV_VIDEOCAPTURE;
     default:
       NOTREACHED();

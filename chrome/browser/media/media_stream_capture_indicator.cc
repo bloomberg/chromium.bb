@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
+#include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
@@ -19,6 +20,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/media_stream_request.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -402,14 +404,14 @@ void MediaStreamCaptureIndicator::AddCaptureDeviceTab(
   bool video = false;
   content::MediaStreamDevices::const_iterator dev = devices.begin();
   for (; dev != devices.end(); ++dev) {
-    DCHECK(dev->type == content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE ||
-           dev->type == content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE);
-    if (dev->type == content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE) {
+    if (content::IsAudioMediaType(dev->type)) {
       ++iter->audio_ref_count;
       audio = true;
-    } else {
+    } else if (content::IsVideoMediaType(dev->type)) {
       ++iter->video_ref_count;
       video = true;
+    } else {
+      NOTIMPLEMENTED();
     }
   }
 
@@ -429,12 +431,13 @@ void MediaStreamCaptureIndicator::RemoveCaptureDeviceTab(
   if (iter != tabs_.end()) {
     content::MediaStreamDevices::const_iterator dev = devices.begin();
     for (; dev != devices.end(); ++dev) {
-      DCHECK(dev->type == content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE ||
-             dev->type == content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE);
-      if (dev->type == content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE)
+      if (content::IsAudioMediaType(dev->type)) {
         --iter->audio_ref_count;
-      else
+      } else if (content::IsVideoMediaType(dev->type)) {
         --iter->video_ref_count;
+      } else {
+        NOTIMPLEMENTED();
+      }
 
       DCHECK_GE(iter->audio_ref_count, 0);
       DCHECK_GE(iter->video_ref_count, 0);

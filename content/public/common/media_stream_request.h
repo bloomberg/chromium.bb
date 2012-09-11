@@ -17,11 +17,23 @@ namespace content {
 
 // Types of media streams.
 enum MediaStreamDeviceType {
-  MEDIA_STREAM_DEVICE_TYPE_NO_SERVICE = 0,
-  MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE,
-  MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE,
-  NUM_MEDIA_STREAM_DEVICE_TYPES
+  MEDIA_NO_SERVICE = 0,
+
+  // A device provided by the operating system (e.g., webcam input).
+  MEDIA_DEVICE_AUDIO_CAPTURE,
+  MEDIA_DEVICE_VIDEO_CAPTURE,
+
+  // Mirroring of a browser tab.
+  MEDIA_TAB_AUDIO_CAPTURE,
+  MEDIA_TAB_VIDEO_CAPTURE,
+
+  NUM_MEDIA_TYPES
 };
+
+// Convenience predicates to determine whether the given type represents some
+// audio or some video device.
+CONTENT_EXPORT bool IsAudioMediaType(MediaStreamDeviceType type);
+CONTENT_EXPORT bool IsVideoMediaType(MediaStreamDeviceType type);
 
 // TODO(xians): Change the structs to classes.
 // Represents one device in a request for media stream(s).

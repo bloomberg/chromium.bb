@@ -37,12 +37,21 @@ class CONTENT_EXPORT MediaStreamDispatcher
   virtual ~MediaStreamDispatcher();
 
   // Request a new media stream to be created.
-  // This can be used either of WebKit or a plugin.
+  // This can be used either by WebKit or a plugin.
   // Note: The event_handler must be valid for as long as the stream exists.
   virtual void GenerateStream(
       int request_id,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
       media_stream::StreamOptions components,
+      const GURL& security_origin);
+
+  // Like GenerateStream above, except use the device specified by |device_id|
+  // rather than allow the user to choose one.
+  virtual void GenerateStreamForDevice(
+      int request_id,
+      const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
+      media_stream::StreamOptions components,
+      const std::string& device_id,
       const GURL& security_origin);
 
   // Cancel the request for a new media stream to be created.
@@ -84,6 +93,7 @@ class CONTENT_EXPORT MediaStreamDispatcher
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, BasicStream);
+  FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, BasicStreamForDevice);
   FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, BasicVideoDevice);
   FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, TestFailure);
   FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, CancelGenerateStream);
@@ -155,7 +165,8 @@ class CONTENT_EXPORT MediaStreamDispatcher
   EnumerationState audio_enumeration_state_;
   EnumerationState video_enumeration_state_;
 
-  // List of calls made to GenerateStream that has not yet completed.
+  // List of calls made to GenerateStream/GenerateStreamForDevice that has not
+  // yet completed.
   typedef std::list<Request> RequestList;
   RequestList requests_;
 
