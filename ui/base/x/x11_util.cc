@@ -453,6 +453,28 @@ XcursorImage* SkBitmapToXcursorImage(const SkBitmap* bitmap,
 }
 #endif
 
+void HideHostCursor() {
+  CR_DEFINE_STATIC_LOCAL(XScopedCursor, invisible_cursor,
+                         (CreateInvisibleCursor(), ui::GetXDisplay()));
+  XDefineCursor(ui::GetXDisplay(), DefaultRootWindow(ui::GetXDisplay()),
+                invisible_cursor.get());
+}
+
+::Cursor CreateInvisibleCursor() {
+  Display* xdisplay = ui::GetXDisplay();
+  ::Cursor invisible_cursor;
+  char nodata[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+  XColor black;
+  black.red = black.green = black.blue = 0;
+  Pixmap blank = XCreateBitmapFromData(xdisplay,
+                                       DefaultRootWindow(xdisplay),
+                                       nodata, 8, 8);
+  invisible_cursor = XCreatePixmapCursor(xdisplay, blank, blank,
+                                         &black, &black, 0, 0);
+  XFreePixmap(xdisplay, blank);
+  return invisible_cursor;
+}
+
 XID GetX11RootWindow() {
   return DefaultRootWindow(GetXDisplay());
 }
@@ -1350,6 +1372,25 @@ void InitXKeyEventForTesting(EventType type,
 
 XScopedString::~XScopedString() {
   XFree(string_);
+}
+
+XScopedCursor::XScopedCursor(::Cursor cursor, Display* display)
+    : cursor_(cursor),
+      display_(display) {
+}
+
+XScopedCursor::~XScopedCursor() {
+  reset(0U);
+}
+
+::Cursor XScopedCursor::get() const {
+  return cursor_;
+}
+
+void XScopedCursor::reset(::Cursor cursor) {
+  if (cursor_)
+    XFreeCursor(display_, cursor_);
+  cursor_ = cursor;
 }
 
 // ----------------------------------------------------------------------------

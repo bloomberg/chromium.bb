@@ -37,6 +37,9 @@ class TestVisibleClient : public aura::client::CursorClient {
     return visible_;
   }
 
+  virtual void SetDeviceScaleFactor(float scale_factor) OVERRIDE {
+  }
+
  private:
   bool visible_;
 };

@@ -24,6 +24,7 @@ namespace {
 
 const char* kRootWindowHostWinKey = "__AURA_ROOT_WINDOW_HOST_WIN__";
 
+// TODO(mazda): Move the cursor code to ui/base/cursor/cursor_loader_win.{cc,h}.
 const wchar_t* GetCursorId(gfx::NativeCursor native_cursor) {
   switch (native_cursor.native_type()) {
     case ui::kCursorNull:

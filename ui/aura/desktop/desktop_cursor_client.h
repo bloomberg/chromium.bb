@@ -24,6 +24,7 @@ class AURA_EXPORT DesktopCursorClient : public client::CursorClient {
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
   virtual void ShowCursor(bool show) OVERRIDE;
   virtual bool IsCursorVisible() const OVERRIDE;
+  virtual void SetDeviceScaleFactor(float device_scale_factor) OVERRIDE;
 
  private:
   aura::RootWindow* root_window_;

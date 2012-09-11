@@ -62,7 +62,6 @@ int DragDropController::StartDragAndDrop(const ui::OSExchangeData& data,
                                          int operation) {
   DCHECK(!IsDragDropInProgress());
 
-  drag_cursor_ = ui::kCursorPointer;
   drag_drop_tracker_.reset(new DragDropTracker(root_window));
 
   drag_data_ = &data;
@@ -128,7 +127,6 @@ void DragDropController::DragUpdate(aura::Window* target,
         cursor = ui::kCursorAlias;
       else if (op & ui::DragDropTypes::DRAG_MOVE)
         cursor = ui::kCursorMove;
-      drag_cursor_ = cursor;
       ash::Shell::GetInstance()->cursor_manager()->SetCursor(cursor);
     }
   }
@@ -145,7 +143,6 @@ void DragDropController::DragUpdate(aura::Window* target,
 
 void DragDropController::Drop(aura::Window* target,
                               const ui::LocatedEvent& event) {
-  drag_cursor_ = ui::kCursorPointer;
   ash::Shell::GetInstance()->cursor_manager()->SetCursor(ui::kCursorPointer);
   aura::client::DragDropDelegate* delegate = NULL;
 
@@ -175,7 +172,6 @@ void DragDropController::Drop(aura::Window* target,
 }
 
 void DragDropController::DragCancel() {
-  drag_cursor_ = ui::kCursorPointer;
   ash::Shell::GetInstance()->cursor_manager()->SetCursor(ui::kCursorPointer);
 
   // |drag_window_| can be NULL if we have just started the drag and have not
@@ -195,10 +191,6 @@ void DragDropController::DragCancel() {
 
 bool DragDropController::IsDragDropInProgress() {
   return !!drag_drop_tracker_.get();
-}
-
-gfx::NativeCursor DragDropController::GetDragCursor() {
-  return drag_cursor_;
 }
 
 bool DragDropController::PreHandleKeyEvent(aura::Window* target,

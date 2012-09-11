@@ -17,8 +17,8 @@
 #include "base/message_pump_aurax11.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
-#include "grit/ui_resources.h"
 #include "ui/aura/client/capture_client.h"
+#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/user_action_client.h"
 #include "ui/aura/env.h"
@@ -26,7 +26,6 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/events/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/touch/touch_factory.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/view_prop.h"
@@ -34,8 +33,6 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/codec/png_codec.h"
-#include "ui/gfx/image/image.h"
-#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
 
 #if defined(OS_CHROMEOS)
@@ -52,8 +49,6 @@ namespace {
 // Standard Linux mouse buttons for going back and forward.
 const int kBackMouseButton = 8;
 const int kForwardMouseButton = 9;
-
-const int kAnimatedCursorFrameDelayMs = 25;
 
 // These are the same values that are used to calibrate touch events in
 // |CalibrateTouchCoordinates| (in ui/base/x/events_x.cc).
@@ -122,75 +117,6 @@ void CheckXEventForConsistency(XEvent* xevent) {
     CHECK_EQ(slave_event.mods.effective, xievent->mods.effective);
   }
 #endif  // defined(USE_XI2_MT) && !defined(NDEBUG)
-}
-
-// Returns X font cursor shape from an Aura cursor.
-int CursorShapeFromNative(gfx::NativeCursor native_cursor) {
-  switch (native_cursor.native_type()) {
-    case ui::kCursorMiddlePanning:
-      return XC_fleur;
-    case ui::kCursorEastPanning:
-      return XC_sb_right_arrow;
-    case ui::kCursorNorthPanning:
-      return XC_sb_up_arrow;
-    case ui::kCursorNorthEastPanning:
-      return XC_top_right_corner;
-    case ui::kCursorNorthWestPanning:
-      return XC_top_left_corner;
-    case ui::kCursorSouthPanning:
-      return XC_sb_down_arrow;
-    case ui::kCursorSouthEastPanning:
-      return XC_bottom_right_corner;
-    case ui::kCursorSouthWestPanning:
-      return XC_bottom_left_corner;
-    case ui::kCursorWestPanning:
-      return XC_sb_left_arrow;
-    case ui::kCursorNone:
-      // TODO(jamescook): Need cursors for these.  crbug.com/111650
-      return XC_left_ptr;
-
-    case ui::kCursorNull:
-    case ui::kCursorPointer:
-    case ui::kCursorNoDrop:
-    case ui::kCursorNotAllowed:
-    case ui::kCursorCopy:
-    case ui::kCursorMove:
-    case ui::kCursorEastResize:
-    case ui::kCursorNorthResize:
-    case ui::kCursorSouthResize:
-    case ui::kCursorWestResize:
-    case ui::kCursorNorthEastResize:
-    case ui::kCursorNorthWestResize:
-    case ui::kCursorSouthWestResize:
-    case ui::kCursorSouthEastResize:
-    case ui::kCursorIBeam:
-    case ui::kCursorAlias:
-    case ui::kCursorCell:
-    case ui::kCursorContextMenu:
-    case ui::kCursorCross:
-    case ui::kCursorHelp:
-    case ui::kCursorWait:
-    case ui::kCursorNorthSouthResize:
-    case ui::kCursorEastWestResize:
-    case ui::kCursorNorthEastSouthWestResize:
-    case ui::kCursorNorthWestSouthEastResize:
-    case ui::kCursorProgress:
-    case ui::kCursorColumnResize:
-    case ui::kCursorRowResize:
-    case ui::kCursorVerticalText:
-    case ui::kCursorZoomIn:
-    case ui::kCursorZoomOut:
-    case ui::kCursorGrab:
-    case ui::kCursorGrabbing:
-      NOTREACHED() << "Cursor (" << native_cursor.native_type() << ") should "
-                   << "have an image asset.";
-      return XC_left_ptr;
-    case ui::kCursorCustom:
-      NOTREACHED();
-      return XC_left_ptr;
-  }
-  NOTREACHED();
-  return XC_left_ptr;
 }
 
 // Coalesce all pending motion events (touch or mouse) that are at the top of
@@ -354,200 +280,6 @@ bool ShouldSendCharEventForKeyboardCode(ui::KeyboardCode keycode) {
 
 }  // namespace
 
-// A utility class that provides X Cursor for NativeCursors for which we have
-// image resources.
-class RootWindowHostLinux::ImageCursors {
- public:
-  ImageCursors() : scale_factor_(0.0) {
-  }
-
-  void Reload(float scale_factor) {
-    if (scale_factor_ == scale_factor)
-      return;
-    scale_factor_ = scale_factor;
-    UnloadAll();
-    // The cursor's hot points are defined in chromeos cursor images at:
-    // http://folder/kuscher/projects/Chrome_OS/Pointers/focuspoint
-    LoadImageCursor(ui::kCursorNull, IDR_AURA_CURSOR_PTR,
-                    gfx::Point(4, 4), gfx::Point(8, 9));
-    LoadImageCursor(ui::kCursorPointer, IDR_AURA_CURSOR_PTR,
-                    gfx::Point(4, 4), gfx::Point(8, 9));
-    LoadImageCursor(ui::kCursorNoDrop, IDR_AURA_CURSOR_NO_DROP,
-                    gfx::Point(4, 4), gfx::Point(8, 9));
-    LoadImageCursor(ui::kCursorNotAllowed, IDR_AURA_CURSOR_NO_DROP,
-                    gfx::Point(4, 4), gfx::Point(8, 9));
-    LoadImageCursor(ui::kCursorCopy, IDR_AURA_CURSOR_COPY,
-                    gfx::Point(4, 4), gfx::Point(8, 9));
-    LoadImageCursor(ui::kCursorHand, IDR_AURA_CURSOR_HAND,
-                    gfx::Point(9, 4), gfx::Point(19, 8));
-    LoadImageCursor(ui::kCursorMove, IDR_AURA_CURSOR_MOVE,
-                    gfx::Point(11, 11), gfx::Point(23, 23));
-    LoadImageCursor(ui::kCursorNorthEastResize,
-                    IDR_AURA_CURSOR_NORTH_EAST_RESIZE,
-                    gfx::Point(12, 11), gfx::Point(25, 23));
-    LoadImageCursor(ui::kCursorSouthWestResize,
-                    IDR_AURA_CURSOR_SOUTH_WEST_RESIZE,
-                    gfx::Point(12, 11), gfx::Point(25, 23));
-    LoadImageCursor(ui::kCursorSouthEastResize,
-                    IDR_AURA_CURSOR_SOUTH_EAST_RESIZE,
-                    gfx::Point(11, 11), gfx::Point(24, 23));
-    LoadImageCursor(ui::kCursorNorthWestResize,
-                    IDR_AURA_CURSOR_NORTH_WEST_RESIZE,
-                    gfx::Point(11, 11), gfx::Point(24, 23));
-    LoadImageCursor(ui::kCursorNorthResize, IDR_AURA_CURSOR_NORTH_RESIZE,
-                    gfx::Point(11, 12), gfx::Point(23, 23));
-    LoadImageCursor(ui::kCursorSouthResize, IDR_AURA_CURSOR_SOUTH_RESIZE,
-                    gfx::Point(11, 12), gfx::Point(23, 23));
-    LoadImageCursor(ui::kCursorEastResize, IDR_AURA_CURSOR_EAST_RESIZE,
-                    gfx::Point(12, 11), gfx::Point(25, 23));
-    LoadImageCursor(ui::kCursorWestResize, IDR_AURA_CURSOR_WEST_RESIZE,
-                    gfx::Point(12, 11), gfx::Point(25, 23));
-    LoadImageCursor(ui::kCursorIBeam, IDR_AURA_CURSOR_IBEAM,
-                    gfx::Point(12, 12), gfx::Point(24, 25));
-    LoadImageCursor(ui::kCursorAlias, IDR_AURA_CURSOR_ALIAS,
-                    gfx::Point(8, 6), gfx::Point(15, 11));
-    LoadImageCursor(ui::kCursorCell, IDR_AURA_CURSOR_CELL,
-                    gfx::Point(11, 11), gfx::Point(24, 23));
-    LoadImageCursor(ui::kCursorContextMenu, IDR_AURA_CURSOR_CONTEXT_MENU,
-                    gfx::Point(4, 4), gfx::Point(8, 9));
-    LoadImageCursor(ui::kCursorCross, IDR_AURA_CURSOR_CROSSHAIR,
-                    gfx::Point(12, 12), gfx::Point(25, 23));
-    LoadImageCursor(ui::kCursorHelp, IDR_AURA_CURSOR_HELP,
-                    gfx::Point(4, 4), gfx::Point(8, 9));
-    LoadImageCursor(ui::kCursorVerticalText, IDR_AURA_CURSOR_XTERM_HORIZ,
-                    gfx::Point(12, 11), gfx::Point(26, 23));
-    LoadImageCursor(ui::kCursorZoomIn, IDR_AURA_CURSOR_ZOOM_IN,
-                    gfx::Point(10, 10), gfx::Point(20, 20));
-    LoadImageCursor(ui::kCursorZoomOut, IDR_AURA_CURSOR_ZOOM_OUT,
-                    gfx::Point(10, 10), gfx::Point(20, 20));
-    LoadImageCursor(ui::kCursorRowResize, IDR_AURA_CURSOR_ROW_RESIZE,
-                    gfx::Point(11, 12), gfx::Point(23, 23));
-    LoadImageCursor(ui::kCursorColumnResize, IDR_AURA_CURSOR_COL_RESIZE,
-                    gfx::Point(12, 11), gfx::Point(25, 23));
-    LoadImageCursor(ui::kCursorEastWestResize, IDR_AURA_CURSOR_EAST_WEST_RESIZE,
-                    gfx::Point(12, 11), gfx::Point(25, 23));
-    LoadImageCursor(ui::kCursorNorthSouthResize,
-                    IDR_AURA_CURSOR_NORTH_SOUTH_RESIZE,
-                    gfx::Point(11, 12), gfx::Point(23, 23));
-    LoadImageCursor(ui::kCursorNorthEastSouthWestResize,
-                    IDR_AURA_CURSOR_NORTH_EAST_SOUTH_WEST_RESIZE,
-                    gfx::Point(12, 11), gfx::Point(25, 23));
-    LoadImageCursor(ui::kCursorNorthWestSouthEastResize,
-                    IDR_AURA_CURSOR_NORTH_WEST_SOUTH_EAST_RESIZE,
-                    gfx::Point(11, 11), gfx::Point(24, 23));
-    LoadImageCursor(ui::kCursorGrab, IDR_AURA_CURSOR_GRAB,
-                    gfx::Point(8, 5), gfx::Point(16, 10));
-    LoadImageCursor(ui::kCursorGrabbing, IDR_AURA_CURSOR_GRABBING,
-                    gfx::Point(9, 9), gfx::Point(18, 18));
-    LoadAnimatedCursor(ui::kCursorWait, IDR_THROBBER, 7, 7);
-    LoadAnimatedCursor(ui::kCursorProgress, IDR_THROBBER, 7, 7);
-  }
-
-  ~ImageCursors() {
-    UnloadAll();
-  }
-
-  void UnloadAll() {
-    for (std::map<int, Cursor>::const_iterator it = cursors_.begin();
-        it != cursors_.end(); ++it)
-      ui::UnrefCustomXCursor(it->second);
-
-    // Free animated cursors and images.
-    for (AnimatedCursorMap::iterator it = animated_cursors_.begin();
-        it != animated_cursors_.end(); ++it) {
-      XcursorImagesDestroy(it->second.second);  // also frees individual frames.
-      XFreeCursor(ui::GetXDisplay(), it->second.first);
-    }
-  }
-
-  // Returns true if we have an image resource loaded for the |native_cursor|.
-  bool IsImageCursor(gfx::NativeCursor native_cursor) {
-    int type = native_cursor.native_type();
-    return cursors_.find(type) != cursors_.end() ||
-        animated_cursors_.find(type) != animated_cursors_.end();
-  }
-
-  // Gets the X Cursor corresponding to the |native_cursor|.
-  ::Cursor ImageCursorFromNative(gfx::NativeCursor native_cursor) {
-    int type = native_cursor.native_type();
-    if (animated_cursors_.find(type) != animated_cursors_.end())
-      return animated_cursors_[type].first;
-    DCHECK(cursors_.find(type) != cursors_.end());
-    return cursors_[type];
-  }
-
- private:
-  // Creates an X Cursor from an image resource and puts it in the cursor map.
-  void LoadImageCursor(int id,
-                       int resource_id,
-                       const gfx::Point& hot_1x,
-                       const gfx::Point& hot_2x) {
-    const gfx::ImageSkia* image =
-        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
-    const gfx::ImageSkiaRep& image_rep = image->GetRepresentation(
-        ui::GetScaleFactorFromScale(scale_factor_));
-    const gfx::Point& hot = (scale_factor_ == 1) ? hot_1x : hot_2x;
-    XcursorImage* x_image =
-        ui::SkBitmapToXcursorImage(&image_rep.sk_bitmap(), hot);
-    cursors_[id] = ui::CreateReffedCustomXCursor(x_image);
-    // |bitmap| is owned by the resource bundle. So we do not need to free it.
-  }
-
-  // Creates an animated X Cursor from an image resource and puts it in the
-  // cursor map. The image is assumed to be a concatenation of animation frames.
-  // Also, each frame is assumed to be square (width == height)
-  void LoadAnimatedCursor(int id, int resource_id, int hot_x, int hot_y) {
-    const gfx::ImageSkia* image =
-        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
-    const gfx::ImageSkiaRep& image_rep = image->GetRepresentation(
-        ui::GetScaleFactorFromScale(scale_factor_));
-    const SkBitmap bitmap = image_rep.sk_bitmap();
-    DCHECK_EQ(bitmap.config(), SkBitmap::kARGB_8888_Config);
-    int frame_width = bitmap.height();
-    int frame_height = frame_width;
-    int total_width = bitmap.width();
-    DCHECK_EQ(total_width % frame_width, 0);
-    int frame_count = total_width / frame_width;
-    DCHECK_GT(frame_count, 0);
-    XcursorImages* x_images = XcursorImagesCreate(frame_count);
-    x_images->nimage = frame_count;
-    bitmap.lockPixels();
-    unsigned int* pixels = bitmap.getAddr32(0, 0);
-    // Create each frame.
-    for (int i = 0; i < frame_count; ++i) {
-      XcursorImage* x_image = XcursorImageCreate(frame_width, frame_height);
-      for (int j = 0; j < frame_height; ++j) {
-        // Copy j'th row of i'th frame.
-        memcpy(x_image->pixels + j * frame_width,
-               pixels + i * frame_width + j * total_width,
-               frame_width * 4);
-      }
-      x_image->xhot = hot_x * scale_factor_;
-      x_image->yhot = hot_y * scale_factor_;
-      x_image->delay = kAnimatedCursorFrameDelayMs;
-      x_images->images[i] = x_image;
-    }
-    bitmap.unlockPixels();
-
-    animated_cursors_[id] = std::make_pair(
-        XcursorImagesLoadCursor(ui::GetXDisplay(), x_images), x_images);
-    // |bitmap| is owned by the resource bundle. So we do not need to free it.
-  }
-
-  // A map to hold all image cursors. It maps the cursor ID to the X Cursor.
-  std::map<int, Cursor> cursors_;
-
-  // A map to hold all animated cursors. It maps the cursor ID to the pair of
-  // the X Cursor and the corresponding XcursorImages. We need a pointer to the
-  // images so that we can free them on destruction.
-  typedef std::map<int, std::pair<Cursor, XcursorImages*> > AnimatedCursorMap;
-  AnimatedCursorMap animated_cursors_;
-
-  float scale_factor_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImageCursors);
-};
-
 RootWindowHostLinux::RootWindowHostLinux(RootWindowHostDelegate* delegate,
                                          const gfx::Rect& bounds)
     : delegate_(delegate),
@@ -560,7 +292,6 @@ RootWindowHostLinux::RootWindowHostLinux(RootWindowHostDelegate* delegate,
       bounds_(bounds),
       focus_when_shown_(false),
       pointer_barriers_(NULL),
-      image_cursors_(new ImageCursors),
       atom_cache_(xdisplay_, kAtomsToCache) {
   XSetWindowAttributes swa;
   memset(&swa, 0, sizeof(swa));
@@ -598,18 +329,7 @@ RootWindowHostLinux::RootWindowHostLinux(RootWindowHostDelegate* delegate,
   XGetWindowAttributes(xdisplay_, x_root_window_, &attrs);
   x_root_bounds_.SetRect(attrs.x, attrs.y, attrs.width, attrs.height);
 
-  // Initialize invisible cursor.
-  char nodata[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-  XColor black;
-  black.red = black.green = black.blue = 0;
-  Pixmap blank = XCreateBitmapFromData(xdisplay_, xwindow_,
-                                       nodata, 8, 8);
-  invisible_cursor_ = XCreatePixmapCursor(xdisplay_, blank, blank,
-                                          &black, &black, 0, 0);
-  XFreePixmap(xdisplay_, blank);
-
-  if (RootWindow::hide_host_cursor())
-    XDefineCursor(xdisplay_, x_root_window_, invisible_cursor_);
+  invisible_cursor_ = ui::CreateInvisibleCursor();
 
   // TODO(erg): We currently only request window deletion events. We also
   // should listen for activation events and anything else that GTK+ listens
@@ -652,9 +372,6 @@ RootWindowHostLinux::~RootWindowHostLinux() {
 
   XDestroyWindow(xdisplay_, xwindow_);
 
-  // Clears XCursorCache.
-  ui::GetXCursor(ui::kCursorClearXCursorCache);
-
   XFreeCursor(xdisplay_, invisible_cursor_);
 }
 
@@ -664,6 +381,11 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
   CheckXEventForConsistency(xev);
 
   switch (xev->type) {
+    case EnterNotify: {
+      ui::MouseEvent mouseenter_event(xev);
+      delegate_->OnHostMouseEvent(&mouseenter_event);
+      break;
+    }
     case Expose:
       delegate_->AsRootWindow()->ScheduleFullDraw();
       break;
@@ -915,9 +637,6 @@ gfx::AcceleratedWidget RootWindowHostLinux::GetAcceleratedWidget() {
 }
 
 void RootWindowHostLinux::Show() {
-  // The device scale factor is now accessible, so load cursors now.
-  image_cursors_->Reload(delegate_->GetDeviceScaleFactor());
-
   if (!window_mapped_) {
     // Before we map the window, set size hints. Otherwise, some window managers
     // will ignore toplevel XMoveWindow commands.
@@ -1006,7 +725,7 @@ void RootWindowHostLinux::ShowCursor(bool show) {
   if (show == cursor_shown_)
     return;
   cursor_shown_ = show;
-  SetCursorInternal(show ? current_cursor_ : ui::kCursorNone);
+  SetCursorInternal(show ? current_cursor_ : invisible_cursor_);
 }
 
 bool RootWindowHostLinux::QueryMouseLocation(gfx::Point* location_return) {
@@ -1173,7 +892,6 @@ void RootWindowHostLinux::PostNativeEvent(
 
 void RootWindowHostLinux::OnDeviceScaleFactorChanged(
     float device_scale_factor) {
-  image_cursors_->Reload(device_scale_factor);
 }
 
 void RootWindowHostLinux::PrepareForShutdown() {
@@ -1188,22 +906,7 @@ bool RootWindowHostLinux::IsWindowManagerPresent() {
 }
 
 void RootWindowHostLinux::SetCursorInternal(gfx::NativeCursor cursor) {
-  // At times the cursor on the RootWindow is set before it is displayed. So
-  // make sure the image-cursors are initialized properly before setting it.
-  image_cursors_->Reload(delegate_->GetDeviceScaleFactor());
-
-  ::Cursor xcursor;
-  if (image_cursors_->IsImageCursor(cursor))
-    xcursor = image_cursors_->ImageCursorFromNative(cursor);
-  else if (cursor == ui::kCursorNone)
-    xcursor =  invisible_cursor_;
-  else if (cursor == ui::kCursorCustom)
-    xcursor = cursor.platform();
-  else if (delegate_->GetDeviceScaleFactor() == 1.0)
-    xcursor = ui::GetXCursor(CursorShapeFromNative(cursor));
-  else
-    xcursor = image_cursors_->ImageCursorFromNative(ui::kCursorPointer);
-  XDefineCursor(xdisplay_, xwindow_, xcursor);
+  XDefineCursor(xdisplay_, xwindow_, cursor.platform());
 }
 
 // static

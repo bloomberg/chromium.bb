@@ -6,6 +6,7 @@
 
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/cursor_client.h"
+#include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
@@ -86,9 +87,17 @@ size_t CompoundEventFilter::GetFilterCount() const {
 // CompoundEventFilter, private:
 
 void CompoundEventFilter::UpdateCursor(Window* target, ui::MouseEvent* event) {
-  client::CursorClient* client =
-      client::GetCursorClient(target->GetRootWindow());
-  if (client) {
+  // If drag and drop is in progress, let the drag drop client set the cursor
+  // instead of setting the cursor here.
+  aura::RootWindow* root_window = target->GetRootWindow();
+  client::DragDropClient* drag_drop_client =
+      client::GetDragDropClient(root_window);
+  if (drag_drop_client && drag_drop_client->IsDragDropInProgress())
+    return;
+
+  client::CursorClient* cursor_client =
+      client::GetCursorClient(root_window);
+  if (cursor_client) {
     gfx::NativeCursor cursor = target->GetCursor(event->location());
     if (event->flags() & ui::EF_IS_NON_CLIENT) {
       int window_component =
@@ -96,7 +105,9 @@ void CompoundEventFilter::UpdateCursor(Window* target, ui::MouseEvent* event) {
       cursor = CursorForWindowComponent(window_component);
     }
 
-    client->SetCursor(cursor);
+    cursor_client->SetCursor(cursor);
+    cursor_client->SetDeviceScaleFactor(
+        root_window->AsRootWindowHostDelegate()->GetDeviceScaleFactor());
   }
 }
 
@@ -181,7 +192,11 @@ ui::EventResult CompoundEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   // It should also update the cursor for clicking and wheels for ChromeOS boot.
   // When ChromeOS is booted, it hides the mouse cursor but immediate mouse
   // operation will show the cursor.
-  if (event->type() == ui::ET_MOUSE_MOVED ||
+  // We also update the cursor for mouse enter in case a mouse cursor is sent to
+  // outside of the root window and moved back for some reasons (e.g. running on
+  // on Desktop for testing, or a bug in pointer barrier).
+  if (event->type() == ui::ET_MOUSE_ENTERED ||
+      event->type() == ui::ET_MOUSE_MOVED ||
       event->type() == ui::ET_MOUSE_PRESSED ||
       event->type() == ui::ET_MOUSEWHEEL) {
     SetCursorVisibilityOnEvent(window, event, true);

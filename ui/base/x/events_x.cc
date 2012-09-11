@@ -775,6 +775,10 @@ base::TimeDelta EventTimeFromNative(const base::NativeEvent& native_event) {
     case MotionNotify:
       return base::TimeDelta::FromMilliseconds(native_event->xmotion.time);
       break;
+    case EnterNotify:
+    case LeaveNotify:
+      return base::TimeDelta::FromMilliseconds(native_event->xcrossing.time);
+      break;
     case GenericEvent: {
       double start, end;
       if (GetGestureTimes(native_event, &start, &end)) {

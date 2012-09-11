@@ -24,6 +24,9 @@ class AURA_EXPORT CursorClient {
   // Gets whether the cursor is visible.
   virtual bool IsCursorVisible() const = 0;
 
+  // Sets the device scale factor of the cursor.
+  virtual void SetDeviceScaleFactor(float device_scale_factor) = 0;
+
  protected:
   virtual ~CursorClient() {}
 };

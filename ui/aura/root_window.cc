@@ -15,7 +15,7 @@
 #include "ui/aura/aura_switches.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/capture_client.h"
-#include "ui/aura/client/drag_drop_client.h"
+#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/event_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/display_manager.h"
@@ -109,8 +109,6 @@ void CompositorLock::CancelLock() {
   root_window_->UnlockCompositor();
   root_window_ = NULL;
 }
-
-bool RootWindow::hide_host_cursor_ = false;
 
 RootWindow::CreateParams::CreateParams(const gfx::Rect& a_initial_bounds)
     : initial_bounds(a_initial_bounds),
@@ -246,11 +244,6 @@ gfx::Point RootWindow::GetHostOrigin() const {
 }
 
 void RootWindow::SetCursor(gfx::NativeCursor cursor) {
-  // If a drag is in progress, the DragDropClient should override the cursor.
-  client::DragDropClient* dnd_client = client::GetDragDropClient(this);
-  if (dnd_client && dnd_client->IsDragDropInProgress())
-    cursor = dnd_client->GetDragCursor();
-
   last_cursor_ = cursor;
   // A lot of code seems to depend on NULL cursors actually showing an arrow,
   // so just pass everything along to the host.
@@ -529,11 +522,20 @@ void RootWindow::OnCompositingAborted(ui::Compositor*) {
 
 void RootWindow::OnDeviceScaleFactorChanged(
     float device_scale_factor) {
-  if (cursor_shown_)
+  const bool cursor_is_in_bounds =
+      GetBoundsInScreen().Contains(Env::GetInstance()->last_mouse_location());
+  if (cursor_is_in_bounds && cursor_shown_)
     ShowCursor(false);
   host_->OnDeviceScaleFactorChanged(device_scale_factor);
   Window::OnDeviceScaleFactorChanged(device_scale_factor);
-  if (cursor_shown_)
+  // Update the device scale factor of the cursor client only when the last
+  // mouse location is on this root window.
+  if (cursor_is_in_bounds) {
+    client::CursorClient* cursor_client = client::GetCursorClient(this);
+    if (cursor_client)
+      cursor_client->SetDeviceScaleFactor(device_scale_factor);
+  }
+  if (cursor_is_in_bounds && cursor_shown_)
     ShowCursor(true);
 }
 

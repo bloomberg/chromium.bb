@@ -97,6 +97,12 @@ UI_EXPORT XcursorImage* SkBitmapToXcursorImage(const SkBitmap* bitmap,
                                                const gfx::Point& hotspot);
 #endif
 
+// Hides the host cursor.
+UI_EXPORT void HideHostCursor();
+
+// Returns an invisible cursor.
+UI_EXPORT ::Cursor CreateInvisibleCursor();
+
 // These functions do not cache their results --------------------------
 
 // Get the X window id for the default root window
@@ -317,6 +323,24 @@ class UI_EXPORT XScopedString {
   char* string_;
 
   DISALLOW_COPY_AND_ASSIGN(XScopedString);
+};
+
+// Keeps track of a cursor returned by an X function and makes sure it's
+// XFreeCursor'd.
+class UI_EXPORT XScopedCursor {
+ public:
+  // Keeps track of |cursor| created with |display|.
+  XScopedCursor(::Cursor cursor, Display* display);
+  ~XScopedCursor();
+
+  ::Cursor get() const;
+  void reset(::Cursor cursor);
+
+ private:
+  ::Cursor cursor_;
+  Display* display_;
+
+  DISALLOW_COPY_AND_ASSIGN(XScopedCursor);
 };
 
 }  // namespace ui

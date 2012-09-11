@@ -7,12 +7,14 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace ash {
 class CursorDelegate;
+class ImageCursors;
 
 // This class controls the visibility and the type of the cursor.
 // The cursor type can be locked so that the type stays the same
@@ -33,11 +35,15 @@ class CursorManager : public aura::client::CursorClient {
   // Shows or hides the cursor.
   bool cursor_visible() const { return cursor_visible_; }
 
+  // Overridden from aura::client::CursorClient:
   virtual void SetCursor(gfx::NativeCursor) OVERRIDE;
   virtual void ShowCursor(bool show) OVERRIDE;
   virtual bool IsCursorVisible() const OVERRIDE;
+  virtual void SetDeviceScaleFactor(float device_scale_factor) OVERRIDE;
 
  private:
+  void SetCursorInternal(gfx::NativeCursor cursor);
+
   CursorDelegate* delegate_;
 
   // Number of times LockCursor() has been invoked without a corresponding
@@ -53,6 +59,11 @@ class CursorManager : public aura::client::CursorClient {
 
   // Is cursor visible?
   bool cursor_visible_;
+
+  // The cursor currently set.
+  gfx::NativeCursor current_cursor_;
+
+  scoped_ptr<ImageCursors> image_cursors_;
 
   DISALLOW_COPY_AND_ASSIGN(CursorManager);
 };

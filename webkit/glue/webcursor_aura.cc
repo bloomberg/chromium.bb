@@ -99,7 +99,7 @@ gfx::NativeCursor WebCursor::GetNativeCursor() {
     case WebCursorInfo::TypeGrabbing:
       return ui::kCursorGrabbing;
     case WebCursorInfo::TypeCustom: {
-      ui::Cursor cursor;
+      ui::Cursor cursor(ui::kCursorCustom);
       cursor.SetPlatformCursor(GetPlatformCursor());
       return cursor;
     }

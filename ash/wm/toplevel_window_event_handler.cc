@@ -14,6 +14,7 @@
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -276,7 +277,10 @@ aura::client::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(
         root_window, source->parent(), &drag_location);
   }
   CreateScopedWindowResizer(source, drag_location, HTCAPTION);
-  source->GetRootWindow()->SetCursor(ui::kCursorPointer);
+  aura::client::CursorClient* cursor_client =
+      aura::client::GetCursorClient(root_window);
+  if (cursor_client)
+    cursor_client->SetCursor(ui::kCursorPointer);
 #if !defined(OS_MACOSX)
   MessageLoopForUI* loop = MessageLoopForUI::current();
   MessageLoop::ScopedNestableTaskAllower allow_nested(loop);

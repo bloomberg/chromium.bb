@@ -27,4 +27,8 @@ bool DesktopCursorClient::IsCursorVisible() const {
   return root_window_->cursor_shown();
 }
 
+void DesktopCursorClient::SetDeviceScaleFactor(float device_scale_factor) {
+  // TODO(ben|erg): Use the device scale factor set here for the cursor.
+}
+
 }  // namespace aura

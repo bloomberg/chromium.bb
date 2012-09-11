@@ -8,17 +8,20 @@ namespace ui {
 
 Cursor::Cursor()
     : native_type_(0),
-      platform_cursor_(0) {
+      platform_cursor_(0),
+      device_scale_factor_(0.0f) {
 }
 
 Cursor::Cursor(int type)
     : native_type_(type),
-      platform_cursor_(0) {
+      platform_cursor_(0),
+      device_scale_factor_(0.0f) {
 }
 
 Cursor::Cursor(const Cursor& cursor)
     : native_type_(cursor.native_type_),
-      platform_cursor_(cursor.platform_cursor_) {
+      platform_cursor_(cursor.platform_cursor_),
+      device_scale_factor_(cursor.device_scale_factor_) {
   if (native_type_ == kCursorCustom)
     RefCustomCursor();
 }
@@ -29,22 +32,23 @@ Cursor::~Cursor() {
 }
 
 void Cursor::SetPlatformCursor(const PlatformCursor& platform) {
-  if (platform_cursor_)
+  if (native_type_ == kCursorCustom)
     UnrefCustomCursor();
-  native_type_ = kCursorCustom;
   platform_cursor_ = platform;
-  RefCustomCursor();
+  if (native_type_ == kCursorCustom)
+    RefCustomCursor();
 }
 
 void Cursor::Assign(const Cursor& cursor) {
   if (*this == cursor)
     return;
   native_type_ = cursor.native_type_;
-  if (platform_cursor_)
+  if (native_type_ == kCursorCustom)
     UnrefCustomCursor();
   platform_cursor_ = cursor.platform_cursor_;
-  if (platform_cursor_)
+  if (native_type_ == kCursorCustom)
     RefCustomCursor();
+  device_scale_factor_ = cursor.device_scale_factor_;
 }
 
 }  // namespace ui

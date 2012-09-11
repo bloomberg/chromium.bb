@@ -274,6 +274,8 @@
         'wm/gestures/system_pinch_handler.h',
         'wm/gestures/two_finger_drag_handler.cc',
         'wm/gestures/two_finger_drag_handler.h',
+        'wm/image_cursors.cc',
+        'wm/image_cursors.h',
         'wm/image_grid.cc',
         'wm/image_grid.h',
         'wm/maximize_bubble_controller.cc',

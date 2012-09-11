@@ -153,6 +153,8 @@ bool MouseCursorEventFilter::WarpMouseCursorIfNecessary(
   if (dst_root->bounds().Contains(point_in_dst_screen)) {
     DCHECK_NE(dst_root, current_root);
     dst_root->MoveCursorTo(point_in_dst_screen);
+    ash::Shell::GetInstance()->cursor_manager()->SetDeviceScaleFactor(
+        dst_root->AsRootWindowHostDelegate()->GetDeviceScaleFactor());
     return true;
   }
   return false;

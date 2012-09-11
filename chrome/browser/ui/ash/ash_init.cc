@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/ash/ime_controller_chromeos.h"
 #include "chrome/browser/ui/ash/keyboard_brightness_controller_chromeos.h"
 #include "chrome/browser/ui/ash/volume_controller_chromeos.h"
+#include "ui/base/x/x11_util.h"
 #endif
 
 
@@ -48,14 +49,18 @@ void OpenAsh() {
       switches::kAuraHostWindowUseFullscreen);
 
 #if defined(OS_CHROMEOS)
-  if (base::chromeos::IsRunningOnChromeOS())
+  if (base::chromeos::IsRunningOnChromeOS()) {
     use_fullscreen = true;
+    // Hides the cursor outside of the Aura root window. The cursor will be
+    // drawn within the Aura root window, and it'll remain hidden after the
+    // Aura window is closed.
+    ui::HideHostCursor();
+  }
 #endif
 
   if (use_fullscreen) {
     aura::DisplayManager::set_use_fullscreen_host_window(true);
 #if defined(OS_CHROMEOS)
-    aura::RootWindow::set_hide_host_cursor(true);
     // Hide the mouse cursor completely at boot.
     if (!chromeos::UserManager::Get()->IsUserLoggedIn())
       ash::Shell::set_initially_hide_cursor(true);
