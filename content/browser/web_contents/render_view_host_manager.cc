@@ -242,7 +242,11 @@ void RenderViewHostManager::DidNavigateMainFrame(
 
 void RenderViewHostManager::DidUpdateFrameTree(
     RenderViewHost* render_view_host) {
-  CHECK_EQ(render_view_host, current_host());
+  // TODO(nasko): This used to be a CHECK_EQ, but it causes more crashes than
+  // expected. Changing to if statement and the root cause will be tracked by
+  // http://crbug.com/147613.
+  if (render_view_host != current_host())
+    return;
 
   RenderViewHostImpl* render_view_host_impl = static_cast<RenderViewHostImpl*>(
       render_view_host);
