@@ -13,3 +13,5 @@ desktop-shell-protocol.c
 desktop-shell-server-protocol.h
 text-protocol.c
 text-server-protocol.h
+workspaces-protocol.c
+workspaces-server-protocol.h
