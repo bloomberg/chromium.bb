@@ -313,6 +313,9 @@ MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
       Profile::FromBrowserContext(rvh->GetProcess()->GetBrowserContext());
   MediaGalleriesPreferences* preferences =
       MediaGalleriesPreferencesFactory::GetForProfile(profile);
+
+  if (!ContainsKey(extension_hosts_map_, profile))
+    AddAttachedMediaDeviceGalleries(preferences);
   MediaGalleryPrefIdSet galleries =
       preferences->GalleriesForExtension(*extension);
   ExtensionGalleriesHost* extension_host =
@@ -336,8 +339,24 @@ MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
                                              preferences->known_galleries());
 }
 
-// TODO(vandebo) We also need to listen for the attach event and add newly
-// attached media devices to MediaGalleriesPreferences.
+void MediaFileSystemRegistry::OnRemovableStorageAttached(
+    const std::string& id, const string16& name,
+    const FilePath::StringType& location) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!MediaStorageUtil::IsMediaDevice(id))
+    return;
+
+  for (ExtensionGalleriesHostMap::iterator profile_it =
+           extension_hosts_map_.begin();
+       profile_it != extension_hosts_map_.end();
+       ++profile_it) {
+    MediaGalleriesPreferences* preferences =
+        MediaGalleriesPreferencesFactory::GetForProfile(profile_it->first);
+    preferences->AddGallery(id, name, FilePath(), false /*not user added*/);
+  }
+}
+
 void MediaFileSystemRegistry::OnRemovableStorageDetached(
     const std::string& id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -394,8 +413,6 @@ MediaFileSystemRegistry::MediaFileSystemRegistry() {
   SystemMonitor* system_monitor = SystemMonitor::Get();
   if (system_monitor)
     system_monitor->AddDevicesChangedObserver(this);
-  // TODO(vandebo) We should add all the currently attached media devices
-  // to MediaGalleriesPreferences here.
 }
 
 MediaFileSystemRegistry::~MediaFileSystemRegistry() {
@@ -403,6 +420,24 @@ MediaFileSystemRegistry::~MediaFileSystemRegistry() {
   SystemMonitor* system_monitor = SystemMonitor::Get();
   if (system_monitor)
     system_monitor->RemoveDevicesChangedObserver(this);
+}
+
+void MediaFileSystemRegistry::AddAttachedMediaDeviceGalleries(
+    MediaGalleriesPreferences* preferences) {
+  // SystemMonitor may be NULL in unit tests.
+  SystemMonitor* system_monitor = SystemMonitor::Get();
+  if (!system_monitor)
+    return;
+
+  std::vector<SystemMonitor::RemovableStorageInfo> existing_devices =
+      system_monitor->GetAttachedRemovableStorage();
+  for (size_t i = 0; i < existing_devices.size(); i++) {
+    if (!MediaStorageUtil::IsMediaDevice(existing_devices[i].device_id))
+      continue;
+    preferences->AddGallery(existing_devices[i].device_id,
+                            existing_devices[i].name, FilePath(),
+                            false /*not user added*/);
+  }
 }
 
 void MediaFileSystemRegistry::OnExtensionGalleriesHostEmpty(

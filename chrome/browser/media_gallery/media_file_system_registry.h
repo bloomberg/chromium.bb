@@ -36,6 +36,7 @@ class IsolatedContext;
 namespace chrome {
 
 class ExtensionGalleriesHost;
+class MediaGalleriesPreferences;
 
 class MediaFileSystemRegistry
     : public base::SystemMonitor::DevicesChangedObserver {
@@ -56,6 +57,9 @@ class MediaFileSystemRegistry
       const extensions::Extension* extension);
 
   // base::SystemMonitor::DevicesChangedObserver implementation.
+  virtual void OnRemovableStorageAttached(
+      const std::string& id, const string16& name,
+      const FilePath::StringType& location) OVERRIDE;
   virtual void OnRemovableStorageDetached(const std::string& id) OVERRIDE;
 
  private:
@@ -70,6 +74,10 @@ class MediaFileSystemRegistry
   // Obtain an instance of this class via GetInstance().
   MediaFileSystemRegistry();
   virtual ~MediaFileSystemRegistry();
+
+  // Register all the media devices found in system monitor as auto-detected
+  // galleries for the passed |preferences|.
+  void AddAttachedMediaDeviceGalleries(MediaGalleriesPreferences* preferences);
 
   void OnExtensionGalleriesHostEmpty(Profile* profile,
                                      const std::string& extension_id);
