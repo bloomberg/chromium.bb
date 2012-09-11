@@ -41,7 +41,10 @@ IPC_STRUCT_END()
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryOpen_Params)
   // The response should have these ids.
   IPC_STRUCT_MEMBER(int32, thread_id)
+  // Identifier of the request
   IPC_STRUCT_MEMBER(int32, response_id)
+  // Identifier for database callbacks
+  IPC_STRUCT_MEMBER(int32, database_response_id)
   // The origin doing the initiating.
   IPC_STRUCT_MEMBER(string16, origin)
   // The name of the database.
@@ -330,6 +333,10 @@ IPC_SYNC_MESSAGE_CONTROL3_1(IndexedDBHostMsg_CursorDelete,
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_FactoryGetDatabaseNames,
                      IndexedDBHostMsg_FactoryGetDatabaseNames_Params)
 
+// TODO(jsbell): Remove this once WK90411 rolls.
+// WebIDBFactory::open() message.
+IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_FactoryOpenLegacy,
+                     IndexedDBHostMsg_FactoryOpen_Params)
 // WebIDBFactory::open() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_FactoryOpen,
                      IndexedDBHostMsg_FactoryOpen_Params)
@@ -399,6 +406,7 @@ IPC_SYNC_MESSAGE_CONTROL4_2(IndexedDBHostMsg_DatabaseTransaction,
                             int32, /* idb_transaction_id */
                             WebKit::WebExceptionCode /* ec */)
 
+// TODO(jsbell): Remove once WK90411 has rolled.
 // WebIDBDatabase::open() message.
 IPC_MESSAGE_CONTROL3(IndexedDBHostMsg_DatabaseOpen,
                      int32, /* idb_database_id */

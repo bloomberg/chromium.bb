@@ -86,6 +86,8 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
   // below.
   void OnIDBFactoryGetDatabaseNames(
       const IndexedDBHostMsg_FactoryGetDatabaseNames_Params& p);
+  void OnIDBFactoryOpenLegacy(
+      const IndexedDBHostMsg_FactoryOpen_Params& p);
   void OnIDBFactoryOpen(const IndexedDBHostMsg_FactoryOpen_Params& p);
 
   void OnIDBFactoryDeleteDatabase(

@@ -149,6 +149,7 @@ void RendererWebIDBDatabaseImpl::close() {
   dispatcher->RequestIDBDatabaseClose(idb_database_id_);
 }
 
+// TODO(jsbell): Remove once WK90411 has rolled.
 void RendererWebIDBDatabaseImpl::open(WebIDBDatabaseCallbacks* callbacks) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();

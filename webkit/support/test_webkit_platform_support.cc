@@ -348,6 +348,7 @@ class TestWebIDBFactory : public WebKit::WebIDBFactory {
                                dataDir.isEmpty() ? data_dir_ : dataDir);
   }
 
+  // TODO(jsbell): Remove this overload when WK94011 rolls.
   virtual void open(const WebString& name,
                     long long version,
                     WebKit::WebIDBCallbacks* callbacks,
@@ -355,6 +356,17 @@ class TestWebIDBFactory : public WebKit::WebIDBFactory {
                     WebKit::WebFrame* frame,
                     const WebString& dataDir) {
     factory_->open(name, version, callbacks, origin, frame,
+                   dataDir.isEmpty() ? data_dir_ : dataDir);
+  }
+
+  virtual void open(const WebString& name,
+                    long long version,
+                    WebKit::WebIDBCallbacks* callbacks,
+                    WebKit::WebIDBDatabaseCallbacks* databaseCallbacks,
+                    const WebKit::WebSecurityOrigin& origin,
+                    WebKit::WebFrame* frame,
+                    const WebString& dataDir) {
+    factory_->open(name, version, callbacks, databaseCallbacks, origin, frame,
                    dataDir.isEmpty() ? data_dir_ : dataDir);
   }
 

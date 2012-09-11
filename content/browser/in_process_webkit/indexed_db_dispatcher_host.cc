@@ -139,6 +139,8 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message,
       IPC_MESSAGE_HANDLER(IndexedDBHostMsg_FactoryGetDatabaseNames,
                           OnIDBFactoryGetDatabaseNames)
       IPC_MESSAGE_HANDLER(IndexedDBHostMsg_FactoryOpen, OnIDBFactoryOpen)
+      IPC_MESSAGE_HANDLER(IndexedDBHostMsg_FactoryOpenLegacy,
+                          OnIDBFactoryOpenLegacy)
       IPC_MESSAGE_HANDLER(IndexedDBHostMsg_FactoryDeleteDatabase,
                           OnIDBFactoryDeleteDatabase)
       IPC_MESSAGE_UNHANDLED(handled = false)
@@ -222,6 +224,28 @@ void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
       webkit_glue::FilePathToWebString(indexed_db_path));
 }
 
+// TODO(jsbell): Remove once WK90411 has rolled.
+void IndexedDBDispatcherHost::OnIDBFactoryOpenLegacy(
+    const IndexedDBHostMsg_FactoryOpen_Params& params) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
+  FilePath indexed_db_path = indexed_db_context_->data_path();
+
+  GURL origin_url = DatabaseUtil::GetOriginFromIdentifier(params.origin);
+  WebSecurityOrigin origin(
+      WebSecurityOrigin::createFromDatabaseIdentifier(params.origin));
+
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
+
+  // TODO(dgrogan): Don't let a non-existing database be opened (and therefore
+  // created) if this origin is already over quota.
+  Context()->GetIDBFactory()->open(
+      params.name,
+      params.version,
+      new IndexedDBCallbacksDatabase(this, params.thread_id,
+                                     params.response_id, origin_url),
+      origin, NULL, webkit_glue::FilePathToWebString(indexed_db_path));
+}
+
 void IndexedDBDispatcherHost::OnIDBFactoryOpen(
     const IndexedDBHostMsg_FactoryOpen_Params& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
@@ -240,6 +264,8 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
       params.version,
       new IndexedDBCallbacksDatabase(this, params.thread_id,
                                      params.response_id, origin_url),
+      new IndexedDBDatabaseCallbacks(this, params.thread_id,
+                                     params.database_response_id),
       origin, NULL, webkit_glue::FilePathToWebString(indexed_db_path));
 }
 
@@ -453,6 +479,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnTransaction(
                              database_url_map_[idb_database_id]);
 }
 
+// TODO(jsbell): Remove once WK90411 has rolled.
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnOpen(
     int32 idb_database_id, int32 thread_id, int32 response_id) {
   WebIDBDatabase* database = parent_->GetOrTerminateProcess(
