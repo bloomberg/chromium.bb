@@ -8,6 +8,7 @@
 #include <X11/Xlib.h>
 #endif
 
+#include <cmath>
 #include <cstring>
 
 #include "ui/base/keycodes/keyboard_code_conversion.h"
@@ -35,6 +36,17 @@ base::NativeEvent CopyNativeEvent(const base::NativeEvent& event) {
       "Don't know how to copy base::NativeEvent for this platform";
   return NULL;
 #endif
+}
+
+gfx::Point CalibratePoint(const gfx::Point& point,
+                          const gfx::Size& from,
+                          const gfx::Size& to) {
+  float calibrated_x =
+      static_cast<float>(point.x()) * to.width() / from.width();
+  float calibrated_y =
+      static_cast<float>(point.y()) * to.height() / from.height();
+  return gfx::Point(static_cast<int>(floorf(calibrated_x + 0.5f)),
+                    static_cast<int>(floorf(calibrated_y + 0.5f)));
 }
 
 }  // namespace
@@ -289,6 +301,11 @@ TouchEvent::TouchEvent(EventType type,
 }
 
 TouchEvent::~TouchEvent() {
+}
+
+void TouchEvent::CalibrateLocation(const gfx::Size& from, const gfx::Size& to) {
+  location_ = CalibratePoint(location_, from, to);
+  root_location_ = CalibratePoint(root_location_, from, to);
 }
 
 void TouchEvent::UpdateForRootTransform(const Transform& root_transform) {

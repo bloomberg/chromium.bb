@@ -29,23 +29,6 @@ int GetXInputOpCode() {
   return xi_opcode;
 }
 
-// Starts listening to the XI_HierarchyChanged, XI_KeyPress, and XI_KeyRelease
-// events.
-void SelectXInputEvents() {
-  XIEventMask evmask;
-  unsigned char mask[XIMaskLen(XI_LASTEVENT)] = {};
-  XISetMask(mask, XI_HierarchyChanged);
-  XISetMask(mask, XI_KeyPress);
-  XISetMask(mask, XI_KeyRelease);
-
-  evmask.deviceid = XIAllDevices;
-  evmask.mask_len = sizeof(mask);
-  evmask.mask = mask;
-
-  Display* display = ui::GetXDisplay();
-  XISelectEvents(display, ui::GetX11RootWindow(), &evmask, 1);
-}
-
 // Checks the |event| and asynchronously sets the XKB layout when necessary.
 void HandleHierarchyChangedEvent(
     XIHierarchyEvent* event,
@@ -90,7 +73,6 @@ XInputHierarchyChangedEventListener::GetInstance() {
 XInputHierarchyChangedEventListener::XInputHierarchyChangedEventListener()
     : stopped_(false),
       xiopcode_(GetXInputOpCode()) {
-  SelectXInputEvents();
   Init();
 }
 

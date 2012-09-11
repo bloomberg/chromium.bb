@@ -90,6 +90,9 @@ class RootWindowHostLinux : public RootWindowHost,
   // The bounds of |xwindow_|.
   gfx::Rect bounds_;
 
+  // The bounds of |x_root_window_|.
+  gfx::Rect x_root_bounds_;
+
   // True if the window should be focused when the window is shown.
   bool focus_when_shown_;
 
