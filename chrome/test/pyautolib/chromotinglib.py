@@ -95,7 +95,7 @@ class ChromotingMixIn(object):
 
   def _GetHelper(self):
     """Get chromoting_helper.py."""
-    return os.path.join('chrome', 'test', 'pyautolib', 'chromoting_helper.py')
+    return os.path.join(os.path.dirname(__file__), 'chromoting_helper.py')
 
   def InstallHostDaemon(self):
     """Installs the host daemon."""

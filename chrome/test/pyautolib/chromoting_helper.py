@@ -57,10 +57,8 @@ class ChromotingHelperMac(ChromotingHelper):
     os.seteuid(0)
     key_chain = '/Library/Keychains/ChromotingTest'
     password = '1111'
-    key = os.path.join(current_dir, 'chrome', 'test',
-                       'pyautolib', 'chromoting_key.p12')
-    cert = os.path.join(current_dir, 'chrome', 'test',
-                        'pyautolib', 'chromoting_cert.p12')
+    key = os.path.join(os.path.dirname(__file__), 'chromoting_key.p12')
+    cert = os.path.join(os.path.dirname(__file__), 'chromoting_cert.p12')
     subprocess.call(['security', 'delete-keychain', key_chain])
     subprocess.call(['security', 'create-keychain', '-p',
                      password, key_chain])
@@ -126,8 +124,7 @@ class ChromotingHelperMac(ChromotingHelper):
     mock_pref_pane = os.path.join(pref_pane_dir, 'mock_pref_pane')
     pref_pane = os.path.join(pref_pane_dir,
                              'org.chromium.chromoting.prefPane')
-    mock_pref_pane_python = os.path.join(os.getcwd(), 'chrome', 'test',
-                                         'functional', 'chromoting',
+    mock_pref_pane_python = os.path.join(os.path.dirname(__file__),
                                          'mock_pref_pane.py')
 
     # When the symlink from real pref pane to mock pref pane exists,
