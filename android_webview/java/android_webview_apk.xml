@@ -20,12 +20,7 @@
   <property name="asset.absolute.dir" location="${out.dir}/assets"/>
 
   <path id="out.dex.jar.input.ref">
-    <fileset file="${out.dir}/java/libs/chromium_base.jar"/>
-    <fileset file="${out.dir}/java/libs/chromium_chrome.jar"/>
-    <fileset file="${out.dir}/java/libs/chromium_content.jar"/>
-    <fileset file="${out.dir}/java/libs/chromium_media.jar"/>
-    <fileset file="${out.dir}/java/libs/chromium_net.jar"/>
-    <fileset file="${out.dir}/java/libs/chromium_web_contents_delegate_android.jar"/>
+    <filelist files="${INPUT_JARS_PATHS}"/>
   </path>
   <property name="java.compilerargs" value="-classpath ${toString:out.dex.jar.input.ref}"/>
 
