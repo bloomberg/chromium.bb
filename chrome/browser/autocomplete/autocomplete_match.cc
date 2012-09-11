@@ -438,14 +438,15 @@ void AutocompleteMatch::ValidateClassifications(
   size_t last_offset = classifications[0].offset;
   for (ACMatchClassifications::const_iterator i(classifications.begin() + 1);
        i != classifications.end(); ++i) {
+    const char* provider_name = provider ? provider->GetName() : "None";
     DCHECK_GT(i->offset, last_offset)
         << " Classification for \"" << text << "\" with offset of " << i->offset
         << " is unsorted in relation to last offset of " << last_offset
-        << ". Provider: " << (provider ? provider->name() : "None") << ".";
+        << ". Provider: " << provider_name << ".";
     DCHECK_LT(i->offset, text.length())
         << " Classification of [" << i->offset << "," << text.length()
         << "] is out of bounds for \"" << text << "\". Provider: "
-        << (provider ? provider->name() : "None") << ".";
+        << provider_name << ".";
     last_offset = i->offset;
   }
 }

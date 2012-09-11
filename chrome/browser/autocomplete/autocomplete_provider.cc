@@ -24,42 +24,77 @@ const size_t AutocompleteProvider::kMaxMatches = 3;
 AutocompleteProvider::AutocompleteProvider(
     AutocompleteProviderListener* listener,
     Profile* profile,
-    const char* name)
+    Type type)
     : profile_(profile),
       listener_(listener),
       done_(true),
-      name_(name) {
+      type_(type) {
+}
+
+// static
+const char* AutocompleteProvider::TypeToString(Type type) {
+  switch (type) {
+    case TYPE_BUILTIN:
+      return "Builtin";
+    case TYPE_EXTENSION_APP:
+      return "ExtensionApp";
+    case TYPE_HISTORY_CONTENTS:
+      return "HistoryContents";
+    case TYPE_HISTORY_QUICK:
+      return "HistoryQuick";
+    case TYPE_HISTORY_URL:
+      return "HistoryURL";
+    case TYPE_KEYWORD:
+      return "Keyword";
+    case TYPE_SEARCH:
+      return "Search";
+    case TYPE_SHORTCUTS:
+      return "Shortcuts";
+    case TYPE_ZERO_SUGGEST:
+      return "ZeroSuggest";
+    default:
+      NOTREACHED() << "Unhandled AutocompleteProvider::Type " << type;
+      return "Unknown";
+  }
 }
 
 void AutocompleteProvider::Stop(bool clear_cached_results) {
   done_ = true;
 }
 
+const char* AutocompleteProvider::GetName() const {
+  return TypeToString(type_);
+}
+
 metrics::OmniboxEventProto_ProviderType AutocompleteProvider::
     AsOmniboxEventProviderType() const {
-  if (name_ == "HistoryURL")
-    return metrics::OmniboxEventProto::HISTORY_URL;
-  if (name_ == "HistoryContents")
-    return metrics::OmniboxEventProto::HISTORY_CONTENTS;
-  if (name_ == "HistoryQuick")
-    return metrics::OmniboxEventProto::HISTORY_QUICK;
-  if (name_ == "Search")
-    return metrics::OmniboxEventProto::SEARCH;
-  if (name_ == "Keyword")
-    return metrics::OmniboxEventProto::KEYWORD;
-  if (name_ == "Builtin")
-    return metrics::OmniboxEventProto::BUILTIN;
-  if (name_ == "Shortcuts")
-    return metrics::OmniboxEventProto::SHORTCUTS;
-  if (name_ == "ExtensionApps")
-    return metrics::OmniboxEventProto::EXTENSION_APPS;
-
-  NOTREACHED();
-  return metrics::OmniboxEventProto::UNKNOWN_PROVIDER;
+  switch (type_) {
+    case TYPE_BUILTIN:
+      return metrics::OmniboxEventProto::BUILTIN;
+    case TYPE_EXTENSION_APP:
+      return metrics::OmniboxEventProto::EXTENSION_APPS;
+    case TYPE_HISTORY_CONTENTS:
+      return metrics::OmniboxEventProto::HISTORY_CONTENTS;
+    case TYPE_HISTORY_QUICK:
+      return metrics::OmniboxEventProto::HISTORY_QUICK;
+    case TYPE_HISTORY_URL:
+      return metrics::OmniboxEventProto::HISTORY_URL;
+    case TYPE_KEYWORD:
+      return metrics::OmniboxEventProto::KEYWORD;
+    case TYPE_SEARCH:
+      return metrics::OmniboxEventProto::SEARCH;
+    case TYPE_SHORTCUTS:
+      return metrics::OmniboxEventProto::SHORTCUTS;
+    case TYPE_ZERO_SUGGEST:
+      // TODO: Add to OmniboxEventProto::ProviderType.
+    default:
+      NOTREACHED() << "Unhandled AutocompleteProvider::Type " << type_;
+      return metrics::OmniboxEventProto::UNKNOWN_PROVIDER;
+  }
 }
 
 void AutocompleteProvider::DeleteMatch(const AutocompleteMatch& match) {
-  DLOG(WARNING) << "The AutocompleteProvider '" << name_
+  DLOG(WARNING) << "The AutocompleteProvider '" << GetName()
                 << "' has not implemented DeleteMatch.";
 }
 

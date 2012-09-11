@@ -51,7 +51,8 @@ HistoryContentsProvider::HistoryContentsProvider(
     AutocompleteProviderListener* listener,
     Profile* profile,
     bool body_only)
-    : HistoryProvider(listener, profile, "HistoryContents"),
+    : HistoryProvider(listener, profile,
+          AutocompleteProvider::TYPE_HISTORY_CONTENTS),
       star_title_count_(0),
       star_contents_count_(0),
       title_count_(0),

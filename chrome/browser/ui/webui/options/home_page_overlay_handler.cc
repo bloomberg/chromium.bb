@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/values.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
@@ -32,7 +33,8 @@ void HomePageOverlayHandler::RegisterMessages() {
 
 void HomePageOverlayHandler::InitializeHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
-  autocomplete_controller_.reset(new AutocompleteController(profile, this));
+  autocomplete_controller_.reset(new AutocompleteController(profile, this,
+      AutocompleteClassifier::kDefaultOmniboxProviders));
 }
 
 void HomePageOverlayHandler::GetLocalizedValues(

@@ -32,7 +32,8 @@ ZeroSuggestProvider::ZeroSuggestProvider(
   AutocompleteProviderListener* listener,
   Profile* profile,
   const std::string& url_prefix)
-    : AutocompleteProvider(listener, profile, "ZeroSuggest"),
+    : AutocompleteProvider(listener, profile,
+          AutocompleteProvider::TYPE_ZERO_SUGGEST),
       url_prefix_(url_prefix),
       template_url_service_(TemplateURLServiceFactory::GetForProfile(profile)) {
 }

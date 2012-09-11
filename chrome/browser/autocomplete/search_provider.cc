@@ -121,7 +121,8 @@ bool SearchProvider::query_suggest_immediately_ = false;
 
 SearchProvider::SearchProvider(AutocompleteProviderListener* listener,
                                Profile* profile)
-    : AutocompleteProvider(listener, profile, "Search"),
+    : AutocompleteProvider(listener, profile,
+          AutocompleteProvider::TYPE_SEARCH),
       providers_(TemplateURLServiceFactory::GetForProfile(profile)),
       suggest_results_pending_(0),
       suggest_field_trial_group_number_(

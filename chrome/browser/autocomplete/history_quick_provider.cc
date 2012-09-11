@@ -46,7 +46,8 @@ bool HistoryQuickProvider::disabled_ = false;
 HistoryQuickProvider::HistoryQuickProvider(
     AutocompleteProviderListener* listener,
     Profile* profile)
-    : HistoryProvider(listener, profile, "HistoryQuick"),
+    : HistoryProvider(listener, profile,
+          AutocompleteProvider::TYPE_HISTORY_QUICK),
       languages_(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)),
       reorder_for_inlining_(false) {
   enum InliningOption {

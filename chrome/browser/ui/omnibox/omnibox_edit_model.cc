@@ -16,6 +16,7 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_log.h"
+#include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/extension_app_provider.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/autocomplete/search_provider.h"
@@ -84,7 +85,8 @@ OmniboxEditModel::OmniboxEditModel(OmniboxView* view,
                                    OmniboxEditController* controller,
                                    Profile* profile)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
-        autocomplete_controller_(new AutocompleteController(profile, this))),
+        autocomplete_controller_(new AutocompleteController(profile, this,
+            AutocompleteClassifier::kDefaultOmniboxProviders))),
       view_(view),
       popup_(NULL),
       controller_(controller),
@@ -526,10 +528,11 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
         base::TimeTicks::Now() - time_user_first_modified_omnibox_,
         0,  // inline autocomplete length; possibly set later
         result());
-    DCHECK(user_input_in_progress_ || match.provider->name() == "ZeroSuggest")
+    DCHECK(user_input_in_progress_ ||
+           match.provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST)
         << "We didn't get here through the expected series of calls. "
         << "time_user_first_modified_omnibox_ is not set correctly and other "
-        << "things may be wrong. Match provider: " << match.provider->name();
+        << "things may be wrong. Match provider: " << match.provider->GetName();
     if (index != OmniboxPopupModel::kNoMatch)
       log.selected_index = index;
     else if (!has_temporary_text_)

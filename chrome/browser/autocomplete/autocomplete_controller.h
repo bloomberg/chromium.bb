@@ -46,23 +46,12 @@ class AutocompleteController : public AutocompleteProviderListener {
   // Used to indicate an index that is not selected in a call to Update().
   static const int kNoItemSelected;
 
-  // Normally, you will call the first constructor.  Unit tests can use the
-  // second to set the providers to some known testing providers.  The default
-  // providers will be overridden and the controller will take ownership of the
-  // providers, Release()ing them on destruction.
+  // |provider_types| is a bitmap containing AutocompleteProvider::Type values
+  // that will (potentially, depending on platform, flags, etc.) be
+  // instantiated.
   AutocompleteController(Profile* profile,
-                         AutocompleteControllerDelegate* delegate);
-#ifdef UNIT_TEST
-  AutocompleteController(const ACProviders& providers, Profile* profile)
-      : delegate_(NULL),
-        providers_(providers),
-        keyword_provider_(NULL),
-        search_provider_(NULL),
-        done_(true),
-        in_start_(false),
-        profile_(profile) {
-  }
-#endif
+                         AutocompleteControllerDelegate* delegate,
+                         int provider_types);
   ~AutocompleteController();
 
   // Starts an autocomplete query, which continues until all providers are
@@ -128,14 +117,6 @@ class AutocompleteController : public AutocompleteProviderListener {
   // the popup to ensure it's not showing an out-of-date query.
   void ExpireCopiedEntries();
 
-#ifdef UNIT_TEST
-  void set_search_provider(SearchProvider* provider) {
-    search_provider_ = provider;
-  }
-  void set_keyword_provider(KeywordProvider* provider) {
-    keyword_provider_ = provider;
-  }
-#endif
   SearchProvider* search_provider() const { return search_provider_; }
   KeywordProvider* keyword_provider() const { return keyword_provider_; }
 
@@ -160,6 +141,9 @@ class AutocompleteController : public AutocompleteProviderListener {
   FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest,
                            RedundantKeywordsIgnoredInResult);
   FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest, UpdateAssistedQueryStats);
+
+  friend class SearchProviderTest;
+  FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, UpdateKeywordDescriptions);
 
   // Updates |result_| to reflect the current provider state.  Resets timers and
   // fires notifications as necessary.  |is_synchronous_pass| is true only when

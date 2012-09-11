@@ -933,7 +933,7 @@ void MetricsLog::RecordOmniboxOpenedURL(const AutocompleteLog& log) {
          i != log.result.end(); ++i) {
       OPEN_ELEMENT_FOR_SCOPE("autocompleteitem");
       if (i->provider)
-        WriteAttribute("provider", i->provider->name());
+        WriteAttribute("provider", i->provider->GetName());
       const std::string result_type(AutocompleteMatch::TypeToString(i->type));
       if (!result_type.empty())
         WriteAttribute("resulttype", result_type);

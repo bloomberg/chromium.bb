@@ -50,7 +50,8 @@ class RemoveMatchPredicate {
 
 ShortcutsProvider::ShortcutsProvider(AutocompleteProviderListener* listener,
                                      Profile* profile)
-    : AutocompleteProvider(listener, profile, "Shortcuts"),
+    : AutocompleteProvider(listener, profile,
+          AutocompleteProvider::TYPE_SHORTCUTS),
       languages_(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)),
       initialized_(false) {
   scoped_refptr<history::ShortcutsBackend> backend =

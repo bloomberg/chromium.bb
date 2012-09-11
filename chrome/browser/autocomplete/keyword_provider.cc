@@ -45,7 +45,8 @@ class KeywordProvider::ScopedEndExtensionKeywordMode {
 
 KeywordProvider::KeywordProvider(AutocompleteProviderListener* listener,
                                  Profile* profile)
-    : AutocompleteProvider(listener, profile, "Keyword"),
+    : AutocompleteProvider(listener, profile,
+          AutocompleteProvider::TYPE_KEYWORD),
       model_(NULL),
       current_input_id_(0) {
   // Extension suggestions always come from the original profile, since that's
@@ -63,7 +64,7 @@ KeywordProvider::KeywordProvider(AutocompleteProviderListener* listener,
 
 KeywordProvider::KeywordProvider(AutocompleteProviderListener* listener,
                                  TemplateURLService* model)
-    : AutocompleteProvider(listener, NULL, "Keyword"),
+    : AutocompleteProvider(listener, NULL, AutocompleteProvider::TYPE_KEYWORD),
       model_(model),
       current_input_id_(0) {
 }

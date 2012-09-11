@@ -11,6 +11,7 @@
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/values.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
@@ -19,7 +20,8 @@
 #include "content/public/browser/web_ui.h"
 
 OmniboxUIHandler::OmniboxUIHandler(Profile* profile ) {
-  controller_.reset(new AutocompleteController(profile, this));
+  controller_.reset(new AutocompleteController(profile, this,
+      AutocompleteClassifier::kDefaultOmniboxProviders));
 }
 
 OmniboxUIHandler::~OmniboxUIHandler() {}
@@ -77,7 +79,8 @@ void OmniboxUIHandler::OnResultChanged(bool default_match_changed) {
   // Fill results from each individual provider as well.
   for (ACProviders::const_iterator it(controller_->providers()->begin());
        it != controller_->providers()->end(); ++it) {
-    AddResultToDictionary(std::string("results_by_provider.") + (*it)->name(),
+    AddResultToDictionary(
+        std::string("results_by_provider.") + (*it)->GetName(),
         (*it)->matches().begin(), (*it)->matches().end(), &result_to_output);
   }
   // Add done; send the results.
@@ -95,7 +98,8 @@ void OmniboxUIHandler::AddResultToDictionary(const std::string& prefix,
   for (; it != end; ++it, ++i) {
     std::string item_prefix(prefix + StringPrintf(".item_%d", i));
     if (it->provider != NULL) {
-      output->SetString(item_prefix + ".provider_name", it->provider->name());
+      output->SetString(item_prefix + ".provider_name",
+                        it->provider->GetName());
       output->SetBoolean(item_prefix + ".provider_done", it->provider->done());
     }
     output->SetInteger(item_prefix + ".relevance", it->relevance);

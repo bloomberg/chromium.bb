@@ -18,6 +18,11 @@ class Profile;
 
 class AutocompleteClassifier : public ProfileKeyedService {
  public:
+  // Bitmap of AutocompleteProvider::Type values describing the default set of
+  // providers queried for the omnibox.  Intended to be passed to
+  // AutocompleteController().
+  static const int kDefaultOmniboxProviders;
+
   explicit AutocompleteClassifier(Profile* profile);
   virtual ~AutocompleteClassifier();
 

@@ -20,7 +20,7 @@ class HistoryProvider : public AutocompleteProvider {
  protected:
   HistoryProvider(AutocompleteProviderListener* listener,
                   Profile* profile,
-                  const char* name);
+                  AutocompleteProvider::Type type);
   virtual ~HistoryProvider();
 
   // Fixes up user URL input to make it more possible to match against.  Among

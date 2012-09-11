@@ -25,7 +25,8 @@
 ExtensionAppProvider::ExtensionAppProvider(
     AutocompleteProviderListener* listener,
     Profile* profile)
-    : AutocompleteProvider(listener, profile, "ExtensionApps") {
+    : AutocompleteProvider(listener, profile,
+          AutocompleteProvider::TYPE_EXTENSION_APP) {
   // Notifications of extensions loading and unloading always come from the
   // non-incognito profile, but we need to see them regardless, as the incognito
   // windows can be affected.
@@ -77,8 +78,7 @@ AutocompleteMatch ExtensionAppProvider::CreateAutocompleteMatch(
     size_t url_match_index) {
   // TODO(finnur): Figure out what type to return here, might want to have
   // the extension icon/a generic icon show up in the Omnibox.
-  AutocompleteMatch match(this, 0, false,
-                          AutocompleteMatch::EXTENSION_APP);
+  AutocompleteMatch match(this, 0, false, AutocompleteMatch::EXTENSION_APP);
   match.fill_into_edit =
       app.should_match_against_launch_url ? app.launch_url : input.text();
   match.destination_url = GURL(app.launch_url);

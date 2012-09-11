@@ -19,7 +19,6 @@ class SearchResult;
 class AppListController;
 class AutocompleteController;
 class AutocompleteResult;
-class ExtensionAppProvider;
 class Profile;
 
 // SearchBuilder creates app list search results via AutoCompleteController.
@@ -62,10 +61,6 @@ class SearchBuilder : public AutocompleteControllerDelegate {
 
   // The controller of the app list. Owned by the app list delegate.
   AppListController* list_controller_;
-
-  // ExtensionAppProvider used for apps only mode. If apps only mode becomes the
-  // only mode, remove the AutocompleteController above. Otherwise, remove this.
-  scoped_refptr<ExtensionAppProvider> apps_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchBuilder);
 };

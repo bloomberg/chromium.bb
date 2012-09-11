@@ -142,7 +142,8 @@ class HistoryURLProvider : public HistoryProvider {
   HistoryURLProvider(AutocompleteProviderListener* listener,
                      Profile* profile,
                      const std::string& languages)
-    : HistoryProvider(listener, profile, "History"),
+    : HistoryProvider(listener, profile,
+          AutocompleteProvider::TYPE_HISTORY_URL),
       params_(NULL),
       languages_(languages) {}
 #endif

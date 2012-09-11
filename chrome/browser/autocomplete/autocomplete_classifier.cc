@@ -8,10 +8,24 @@
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "googleurl/src/gurl.h"
 
+// static
+const int AutocompleteClassifier::kDefaultOmniboxProviders =
+    AutocompleteProvider::TYPE_BUILTIN |
+    AutocompleteProvider::TYPE_EXTENSION_APP |
+    AutocompleteProvider::TYPE_HISTORY_CONTENTS |
+    AutocompleteProvider::TYPE_HISTORY_QUICK |
+    AutocompleteProvider::TYPE_HISTORY_URL |
+    AutocompleteProvider::TYPE_KEYWORD |
+    AutocompleteProvider::TYPE_SEARCH |
+    AutocompleteProvider::TYPE_SHORTCUTS |
+    AutocompleteProvider::TYPE_ZERO_SUGGEST;
+
 AutocompleteClassifier::AutocompleteClassifier(Profile* profile)
-    : controller_(new AutocompleteController(profile, NULL)),
+    : controller_(new AutocompleteController(profile, NULL,
+                                             kDefaultOmniboxProviders)),
       inside_classify_(false) {
 }
 

@@ -19,8 +19,8 @@
 
 HistoryProvider::HistoryProvider(AutocompleteProviderListener* listener,
                                  Profile* profile,
-                                 const char* name)
-    : AutocompleteProvider(listener, profile, name),
+                                 AutocompleteProvider::Type type)
+    : AutocompleteProvider(listener, profile, type),
       always_prevent_inline_autocomplete_(false) {
 }
 

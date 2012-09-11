@@ -669,9 +669,12 @@ TEST_F(SearchProviderTest, UpdateKeywordDescriptions) {
   ACProviders providers;
   SearchProvider* provider = provider_.release();
   providers.push_back(provider);
-  AutocompleteController controller(providers, &profile_);
-  controller.set_search_provider(provider);
+
+  AutocompleteController controller(&profile_, NULL, 0);
+  controller.providers_.swap(providers);
+  controller.search_provider_ = provider;
   provider->set_listener(&controller);
+
   controller.Start(ASCIIToUTF16("k t"), string16(), false, false, true,
                    AutocompleteInput::ALL_MATCHES);
   const AutocompleteResult& result = controller.result();

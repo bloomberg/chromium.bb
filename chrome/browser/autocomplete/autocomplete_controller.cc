@@ -76,43 +76,59 @@ const int AutocompleteController::kNoItemSelected = -1;
 
 AutocompleteController::AutocompleteController(
     Profile* profile,
-    AutocompleteControllerDelegate* delegate)
+    AutocompleteControllerDelegate* delegate,
+    int provider_types)
     : delegate_(delegate),
       keyword_provider_(NULL),
+      search_provider_(NULL),
       zero_suggest_provider_(NULL),
       done_(true),
       in_start_(false),
       in_zero_suggest_(false),
       profile_(profile) {
-  search_provider_ = new SearchProvider(this, profile);
-  providers_.push_back(search_provider_);
-#if !defined(OS_ANDROID)
-  // History quick provider is enabled on all platforms other than Android.
-  bool hqp_enabled = true;
-  providers_.push_back(new HistoryQuickProvider(this, profile));
-  // Search provider/"tab to search" is enabled on all platforms other than
-  // Android.
-  keyword_provider_ = new KeywordProvider(this, profile);
-  providers_.push_back(keyword_provider_);
-#else
-  // TODO(mrossetti): Remove the following and permanently modify the
-  // HistoryURLProvider to not search titles once HQP is turned on permanently.
+  bool use_hqp = !!(provider_types & AutocompleteProvider::TYPE_HISTORY_QUICK);
+  // TODO(mrossetti): Permanently modify the HistoryURLProvider to not search
+  // titles once HQP is turned on permanently.
+  // History quick provider can be used on all platforms other than Android.
   // TODO(jcivelli): Enable the History Quick Provider and figure out why it
   // reports the wrong results for some pages.
-  bool hqp_enabled = false;
-#endif  // !OS_ANDROID
-  providers_.push_back(new HistoryURLProvider(this, profile));
-  providers_.push_back(new ShortcutsProvider(this, profile));
-  providers_.push_back(new HistoryContentsProvider(this, profile, hqp_enabled));
-  providers_.push_back(new BuiltinProvider(this, profile));
-  providers_.push_back(new ExtensionAppProvider(this, profile));
-  // Create ZeroSuggest if its switch is present.
+#if defined(OS_ANDROID)
+  use_hqp = false;
+#endif
+
+  if (provider_types & AutocompleteProvider::TYPE_BUILTIN)
+    providers_.push_back(new BuiltinProvider(this, profile));
+  if (provider_types & AutocompleteProvider::TYPE_EXTENSION_APP)
+    providers_.push_back(new ExtensionAppProvider(this, profile));
+  if (provider_types & AutocompleteProvider::TYPE_HISTORY_CONTENTS)
+    providers_.push_back(new HistoryContentsProvider(this, profile, use_hqp));
+  if (use_hqp)
+    providers_.push_back(new HistoryQuickProvider(this, profile));
+  if (provider_types & AutocompleteProvider::TYPE_HISTORY_URL)
+    providers_.push_back(new HistoryURLProvider(this, profile));
+  // Search provider/"tab to search" can be used on all platforms other than
+  // Android.
+#if !defined(OS_ANDROID)
+  if (provider_types & AutocompleteProvider::TYPE_KEYWORD) {
+    keyword_provider_ = new KeywordProvider(this, profile);
+    providers_.push_back(keyword_provider_);
+  }
+#endif
+  if (provider_types & AutocompleteProvider::TYPE_SEARCH) {
+    search_provider_ = new SearchProvider(this, profile);
+    providers_.push_back(search_provider_);
+  }
+  if (provider_types & AutocompleteProvider::TYPE_SHORTCUTS)
+    providers_.push_back(new ShortcutsProvider(this, profile));
+
   CommandLine* cl = CommandLine::ForCurrentProcess();
-  if (cl->HasSwitch(switches::kExperimentalZeroSuggestURLPrefix)) {
+  if ((provider_types & AutocompleteProvider::TYPE_ZERO_SUGGEST) &&
+      cl->HasSwitch(switches::kExperimentalZeroSuggestURLPrefix)) {
     zero_suggest_provider_ = new ZeroSuggestProvider(this, profile,
         cl->GetSwitchValueASCII(switches::kExperimentalZeroSuggestURLPrefix));
     providers_.push_back(zero_suggest_provider_);
   }
+
   for (ACProviders::iterator i(providers_.begin()); i != providers_.end(); ++i)
     (*i)->AddRef();
 }
@@ -393,8 +409,9 @@ void AutocompleteController::UpdateKeywordDescriptions(
   string16 last_keyword;
   for (AutocompleteResult::iterator i(result->begin()); i != result->end();
        ++i) {
-    if ((i->provider == keyword_provider_ && !i->keyword.empty()) ||
-        (i->provider == search_provider_ &&
+    if ((i->provider->type() == AutocompleteProvider::TYPE_KEYWORD &&
+         !i->keyword.empty()) ||
+        (i->provider->type() == AutocompleteProvider::TYPE_SEARCH &&
          AutocompleteMatch::IsSearchType(i->type))) {
       i->description.clear();
       i->description_class.clear();

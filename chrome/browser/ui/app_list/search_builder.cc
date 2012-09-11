@@ -7,11 +7,12 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
-#include "chrome/browser/autocomplete/extension_app_provider.h"
 #include "chrome/browser/event_disposition.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
@@ -188,47 +189,29 @@ SearchBuilder::SearchBuilder(
   search_box_->SetIcon(*ui::ResourceBundle::GetSharedInstance().
       GetImageSkiaNamed(IDR_OMNIBOX_SEARCH));
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          app_list::switches::kAppListShowAppsOnly)) {
-    // ExtensionAppProvider is a synchronous provider and does not really need a
-    // listener.
-    apps_provider_ = new ExtensionAppProvider(NULL, profile);
-  } else {
-    controller_.reset(new AutocompleteController(profile, this));
-  }
+  // TODO(xiyuan): Consider requesting fewer providers in the non-apps-only
+  // case.
+  int providers =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          app_list::switches::kAppListShowAppsOnly) ?
+      AutocompleteProvider::TYPE_EXTENSION_APP :
+      AutocompleteClassifier::kDefaultOmniboxProviders;
+  controller_.reset(new AutocompleteController(profile, this, providers));
 }
 
 SearchBuilder::~SearchBuilder() {
 }
 
 void SearchBuilder::StartSearch() {
-  const string16& user_text = search_box_->text();
-
-  if (controller_.get()) {
-    // Omnibox features such as keyword selection/accepting and instant query
-    // are not implemented.
-    // TODO(xiyuan): Figure out the features that need to support here.
-    controller_->Start(user_text, string16(), false, false, true,
-        AutocompleteInput::ALL_MATCHES);
-  } else {
-    AutocompleteInput input(user_text, string16(), false, false, true,
-        AutocompleteInput::ALL_MATCHES);
-    apps_provider_->Start(input, false);
-
-    // ExtensionAppProvider is a synchronous provider and results are ready
-    // after returning from Start.
-    AutocompleteResult ac_result;
-    ac_result.AppendMatches(apps_provider_->matches());
-    ac_result.SortAndCull(input);
-    PopulateFromACResult(ac_result);
-  }
+  // Omnibox features such as keyword selection/accepting and instant query
+  // are not implemented.
+  // TODO(xiyuan): Figure out the features that need to support here.
+  controller_->Start(search_box_->text(), string16(), false, false, true,
+      AutocompleteInput::ALL_MATCHES);
 }
 
 void SearchBuilder::StopSearch() {
-  if (controller_.get())
-    controller_->Stop(true);
-  else
-    apps_provider_->Stop(true);
+  controller_->Stop(true);
 }
 
 void SearchBuilder::OpenResult(const app_list::SearchResult& result,

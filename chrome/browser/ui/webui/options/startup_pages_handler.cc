@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/string_number_conversions.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
@@ -91,7 +92,8 @@ void StartupPagesHandler::InitializeHandler() {
   pref_change_registrar_.Init(profile->GetPrefs());
   pref_change_registrar_.Add(prefs::kURLsToRestoreOnStartup, this);
 
-  autocomplete_controller_.reset(new AutocompleteController(profile, this));
+  autocomplete_controller_.reset(new AutocompleteController(profile, this,
+      AutocompleteClassifier::kDefaultOmniboxProviders));
 }
 
 void StartupPagesHandler::InitializePage() {

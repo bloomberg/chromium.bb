@@ -173,10 +173,25 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 class AutocompleteProvider
     : public base::RefCountedThreadSafe<AutocompleteProvider> {
  public:
+  // Different AutocompleteProvider implementations.
+  enum Type {
+    TYPE_BUILTIN          = 1 << 0,
+    TYPE_EXTENSION_APP    = 1 << 1,
+    TYPE_HISTORY_CONTENTS = 1 << 2,
+    TYPE_HISTORY_QUICK    = 1 << 3,
+    TYPE_HISTORY_URL      = 1 << 4,
+    TYPE_KEYWORD          = 1 << 5,
+    TYPE_SEARCH           = 1 << 6,
+    TYPE_SHORTCUTS        = 1 << 7,
+    TYPE_ZERO_SUGGEST     = 1 << 8,
+  };
 
   AutocompleteProvider(AutocompleteProviderListener* listener,
                        Profile* profile,
-                       const char* name);
+                       Type type);
+
+  // Returns a string describing a particular AutocompleteProvider type.
+  static const char* TypeToString(Type type);
 
   // Called to start an autocomplete query.  The provider is responsible for
   // tracking its matches for this query and whether it is done processing the
@@ -208,10 +223,15 @@ class AutocompleteProvider
   // Returns whether the provider is done processing the query.
   bool done() const { return done_; }
 
-  // Returns the name of this provider.
-  const std::string& name() const { return name_; }
+  // Returns this provider's type.
+  Type type() const { return type_; }
+
+  // Returns a string describing this provider's type.
+  const char* GetName() const;
 
   // Returns the enum equivalent to the name of this provider.
+  // TODO(derat): Make metrics use AutocompleteProvider::Type directly, or at
+  // least move this method to the metrics directory.
   metrics::OmniboxEventProto_ProviderType AsOmniboxEventProviderType() const;
 
   // Called to delete a match and the backing data that produced it.  This
@@ -265,8 +285,7 @@ class AutocompleteProvider
   ACMatches matches_;
   bool done_;
 
-  // The name of this provider.  Used for logging.
-  std::string name_;
+  Type type_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutocompleteProvider);

@@ -229,7 +229,8 @@ HistoryURLProviderParams::~HistoryURLProviderParams() {
 
 HistoryURLProvider::HistoryURLProvider(AutocompleteProviderListener* listener,
                                        Profile* profile)
-    : HistoryProvider(listener, profile, "HistoryURL"),
+    : HistoryProvider(listener, profile,
+          AutocompleteProvider::TYPE_HISTORY_URL),
       params_(NULL) {
 }
 
