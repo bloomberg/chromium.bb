@@ -74,11 +74,18 @@ const char* const kTestServerIframeTimeoutPath =
 // applied to them independently.
 
 // A mock URL for the CaptivePortalService's |test_url|.  When behind a captive
-// portal, this URL return a mock login page.  When connected to the Internet,
+// portal, this URL returns a mock login page.  When connected to the Internet,
 // it returns a 204 response.  Uses the name of the login file so that reloading
 // it will not request a different URL.
 const char* const kMockCaptivePortalTestUrl =
     "http://mock.captive.portal.test/login.html";
+
+// Another mock URL for the CaptivePortalService's |test_url|.  When behind a
+// captive portal, this URL returns a 511 status code and an HTML page that
+// redirect to the above URL.  When connected to the Internet, it returns a 204
+// response.
+const char* const kMockCaptivePortal511Url =
+    "http://mock.captive.portal.511/page511.html";
 
 // When behind a captive portal, this URL hangs without committing until a call
 // to URLRequestTimeoutOnDemandJob::FailJobs.  When that function is called,
@@ -382,6 +389,8 @@ void URLRequestMockCaptivePortalJobFactory::AddUrlHandlersOnIOThread() {
   net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
   filter->AddUrlHandler(GURL(kMockCaptivePortalTestUrl),
                         URLRequestMockCaptivePortalJobFactory::Factory);
+  filter->AddUrlHandler(GURL(kMockCaptivePortal511Url),
+                        URLRequestMockCaptivePortalJobFactory::Factory);
   filter->AddUrlHandler(GURL(kMockHttpsUrl),
                         URLRequestMockCaptivePortalJobFactory::Factory);
   filter->AddUrlHandler(GURL(kMockHttpsUrl2),
@@ -430,17 +439,25 @@ net::URLRequestJob* URLRequestMockCaptivePortalJobFactory::Factory(
         root_http.Append(FILE_PATH_LITERAL("title2.html")));
   } else {
     // The URL should be the captive portal test URL.
-    EXPECT_EQ(GURL(kMockCaptivePortalTestUrl), request->url());
+    EXPECT_TRUE(GURL(kMockCaptivePortalTestUrl) == request->url() ||
+                GURL(kMockCaptivePortal511Url) == request->url());
 
     if (behind_captive_portal_) {
-      // Prior to logging in to the portal, HTTP requests go to the login page.
+      // Prior to logging in to the portal, the HTTP test URLs are intercepted
+      // by the captive portal.
+      if (GURL(kMockCaptivePortal511Url) == request->url()) {
+        return new URLRequestMockHTTPJob(
+            request,
+            network_delegate,
+            root_http.Append(FILE_PATH_LITERAL("captive_portal/page511.html")));
+      }
       return new URLRequestMockHTTPJob(
           request,
           network_delegate,
           root_http.Append(FILE_PATH_LITERAL("captive_portal/login.html")));
     }
 
-    // After logging in to the portal, the test URL returns a 204 response.
+    // After logging in to the portal, the test URLs return a 204 response.
     return new URLRequestMockHTTPJob(
         request,
         network_delegate,
@@ -849,11 +866,18 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   // on URLRequestTimeoutOnDemandJob::WaitForJobs having been called.
   void SlowLoadBehindCaptivePortal(Browser* browser, bool expect_login_tab);
 
-  // Same as above, but accepts a URL parameter.  |hanging_url| should either
-  // be kMockHttpsUrl or redirect to kMockHttpsUrl.
+  // Same as above, but takes extra parameters.
+  //
+  // |hanging_url| should either be kMockHttpsUrl or redirect to kMockHttpsUrl.
+  //
+  // |expected_portal_checks| and |expected_login_tab_navigations| allow
+  // client-side redirects to be tested.  |expected_login_tab_navigations| is
+  // ignored when |expect_open_login_tab| is false.
   void SlowLoadBehindCaptivePortal(Browser* browser,
                                    bool expect_open_login_tab,
-                                   const GURL& hanging_url);
+                                   const GURL& hanging_url,
+                                   int expected_portal_checks,
+                                   int expected_login_tab_navigations);
 
   // Just like SlowLoadBehindCaptivePortal, except the navigated tab has
   // a connection timeout rather having its time trigger, and the function
@@ -1123,13 +1147,18 @@ void CaptivePortalBrowserTest::SlowLoadBehindCaptivePortal(
     bool expect_open_login_tab) {
   SlowLoadBehindCaptivePortal(browser,
                               expect_open_login_tab,
-                              GURL(kMockHttpsUrl));
+                              GURL(kMockHttpsUrl),
+                              1,
+                              1);
 }
 
 void CaptivePortalBrowserTest::SlowLoadBehindCaptivePortal(
     Browser* browser,
     bool expect_open_login_tab,
-    const GURL& hanging_url) {
+    const GURL& hanging_url,
+    int expected_portal_checks,
+    int expected_login_tab_navigations) {
+  ASSERT_GE(expected_portal_checks, 1);
   // Calling this on a tab that's waiting for a load to manually be timed out
   // will result in a hang.
   ASSERT_FALSE(chrome::GetActiveWebContents(browser)->IsLoading());
@@ -1157,16 +1186,19 @@ void CaptivePortalBrowserTest::SlowLoadBehindCaptivePortal(
                                               hanging_url,
                                               CURRENT_TAB,
                                               ui_test_utils::BROWSER_TEST_NONE);
-  portal_observer.WaitForResults(1);
+  portal_observer.WaitForResults(expected_portal_checks);
 
   if (expect_open_login_tab) {
-    navigation_observer.WaitForNavigations(1);
+    ASSERT_GE(expected_login_tab_navigations, 1);
+
+    navigation_observer.WaitForNavigations(expected_login_tab_navigations);
 
     ASSERT_EQ(initial_tab_count + 1, browser->tab_count());
     EXPECT_EQ(initial_tab_count, browser->active_index());
 
-    EXPECT_EQ(1, navigation_observer.NumNavigationsForTab(
-                     chrome::GetWebContentsAt(browser, initial_tab_count)));
+    EXPECT_EQ(expected_login_tab_navigations,
+              navigation_observer.NumNavigationsForTab(
+                  chrome::GetWebContentsAt(browser, initial_tab_count)));
     EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE,
               GetStateOfTabReloader(chrome::GetTabContentsAt(browser, 1)));
     EXPECT_TRUE(IsLoginTab(chrome::GetTabContentsAt(browser, 1)));
@@ -1185,7 +1217,7 @@ void CaptivePortalBrowserTest::SlowLoadBehindCaptivePortal(
   EXPECT_EQ(expected_broken_tabs, NumBrokenTabs());
   EXPECT_EQ(RESULT_BEHIND_CAPTIVE_PORTAL,
             portal_observer.captive_portal_result());
-  EXPECT_EQ(1, portal_observer.num_results_received());
+  EXPECT_EQ(expected_portal_checks, portal_observer.num_results_received());
   EXPECT_FALSE(CheckPending(browser));
 
   EXPECT_EQ(CaptivePortalTabReloader::STATE_BROKEN_BY_PORTAL,
@@ -1448,7 +1480,7 @@ void CaptivePortalBrowserTest::RunNavigateLoadingTabToTimeoutTest(
   URLRequestMockCaptivePortalJobFactory::SetBehindCaptivePortal(true);
 
   // Go to the first hanging url.
-  SlowLoadBehindCaptivePortal(browser, true, hanging_url);
+  SlowLoadBehindCaptivePortal(browser, true, hanging_url, 1, 1);
 
   // Abandon the request.
   URLRequestTimeoutOnDemandJob::WaitForJobs(1);
@@ -2035,7 +2067,9 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, HttpToHttpsRedirectLogin) {
   SlowLoadBehindCaptivePortal(
       browser(),
       true,
-      test_server()->GetURL(CreateServerRedirect(kMockHttpsUrl)));
+      test_server()->GetURL(CreateServerRedirect(kMockHttpsUrl)),
+      1,
+      1);
   Login(browser(), 1, 0);
   FailLoadsAfterLogin(browser(), 1);
 }
@@ -2058,6 +2092,15 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, HttpsToHttpRedirect) {
       2);
 }
 
+// Tests the 511 response code, along with an HTML redirect to a login page.
+IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, Status511) {
+  SetUpCaptivePortalService(browser()->profile(),
+                            GURL(kMockCaptivePortal511Url));
+  SlowLoadBehindCaptivePortal(browser(), true, GURL(kMockHttpsUrl), 2, 2);
+  Login(browser(), 1, 0);
+  FailLoadsAfterLogin(browser(), 1);
+}
+
 // HSTS redirects an HTTP request to HTTPS, and the request then times out.
 // A captive portal is then detected, and a login tab opened, before logging
 // in.
@@ -2074,7 +2117,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, HstsLogin) {
                  make_scoped_refptr(browser()->profile()->GetRequestContext()),
                  http_timeout_url.host()));
 
-  SlowLoadBehindCaptivePortal(browser(), true, http_timeout_url);
+  SlowLoadBehindCaptivePortal(browser(), true, http_timeout_url, 1, 1);
   Login(browser(), 1, 0);
   FailLoadsAfterLogin(browser(), 1);
 }

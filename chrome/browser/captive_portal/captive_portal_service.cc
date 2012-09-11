@@ -424,7 +424,13 @@ Result CaptivePortalService::GetCaptivePortalResultFromResponse(
     return RESULT_NO_RESPONSE;
   }
 
-  // Non-2xx/3xx HTTP responses may also indicate server errors.
+  // A 511 response (Network Authentication Required) means that the user needs
+  // to login to whatever server issued the response.
+  // See:  http://tools.ietf.org/html/rfc6585
+  if (response_code == 511)
+    return RESULT_BEHIND_CAPTIVE_PORTAL;
+
+  // Other non-2xx/3xx HTTP responses may indicate server errors.
   if (response_code >= 400 || response_code < 200)
     return RESULT_NO_RESPONSE;
 

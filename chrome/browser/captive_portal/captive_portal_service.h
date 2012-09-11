@@ -32,7 +32,7 @@ enum Result {
   // The URL request received a network or HTTP error, or a non-HTTP response.
   RESULT_NO_RESPONSE,
   // The URL request apparently encountered a captive portal.  It received a
-  // a valid HTTP response with a 2xx or 3xx status code, other than a 204.
+  // a valid HTTP response with a 2xx, 3xx, or 511 status code, other than 204.
   RESULT_BEHIND_CAPTIVE_PORTAL,
   RESULT_COUNT
 };

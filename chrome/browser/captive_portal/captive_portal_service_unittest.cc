@@ -345,29 +345,25 @@ class CaptivePortalServiceTest : public testing::Test {
   scoped_ptr<TestCaptivePortalService> service_;
 };
 
-// Test when connected to the Internet and get the expected 204 response.
-TEST_F(CaptivePortalServiceTest, CaptivePortalInternetConnected) {
+// Test that the CaptivePortalService returns the expected result codes in
+// response to a variety of probe results.
+TEST_F(CaptivePortalServiceTest, CaptivePortalResultCodes) {
   Initialize(CaptivePortalService::SKIP_OS_CHECK_FOR_TESTING);
   RunTest(RESULT_INTERNET_CONNECTED, net::OK, 204, 0, NULL);
-}
 
-// Test when there's a connection to the Internet, but the server returns a 5xx
-// error.
-TEST_F(CaptivePortalServiceTest, CaptivePortalServiceDown) {
-  Initialize(CaptivePortalService::SKIP_OS_CHECK_FOR_TESTING);
+  // The server may return an HTTP error when it's acting up.
   RunTest(RESULT_NO_RESPONSE, net::OK, 500, 0, NULL);
-}
 
-// Test when there's a network error.
-TEST_F(CaptivePortalServiceTest, CaptivePortalNetError) {
-  Initialize(CaptivePortalService::SKIP_OS_CHECK_FOR_TESTING);
+  // Generic network error case.
   RunTest(RESULT_NO_RESPONSE, net::ERR_TIMED_OUT, -1, 0, NULL);
-}
 
-// Test when behind a captive portal.
-TEST_F(CaptivePortalServiceTest, CaptivePortalBehindCaptivePortal) {
-  Initialize(CaptivePortalService::SKIP_OS_CHECK_FOR_TESTING);
+  // In the general captive portal case, the portal will return a page with a
+  // 200 status.
   RunTest(RESULT_BEHIND_CAPTIVE_PORTAL, net::OK, 200, 0, NULL);
+
+  // Some captive portals return 511 instead, to advertise their captive
+  // portal-ness.
+  RunTest(RESULT_BEHIND_CAPTIVE_PORTAL, net::OK, 511, 0, NULL);
 }
 
 // Verify that an observer doesn't get messages from the wrong profile.
@@ -379,20 +375,6 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalTwoProfiles) {
 
   RunTest(RESULT_INTERNET_CONNECTED, net::OK, 204, 0, NULL);
   EXPECT_EQ(0, observer2.num_results_received());
-}
-
-// Test receiving two results in a row, with no timeout.
-TEST_F(CaptivePortalServiceTest, CaptivePortalTwoResults) {
-  Initialize(CaptivePortalService::SKIP_OS_CHECK_FOR_TESTING);
-  CaptivePortalObserver observer(profile(), service());
-
-  RunTest(RESULT_BEHIND_CAPTIVE_PORTAL, net::OK, 200, 0, NULL);
-  EXPECT_EQ(RESULT_BEHIND_CAPTIVE_PORTAL, observer.captive_portal_result());
-  EXPECT_EQ(1, observer.num_results_received());
-
-  RunTest(RESULT_INTERNET_CONNECTED, net::OK, 204, 0, NULL);
-  EXPECT_EQ(RESULT_INTERNET_CONNECTED, observer.captive_portal_result());
-  EXPECT_EQ(2, observer.num_results_received());
 }
 
 // Checks exponential backoff when the Internet is connected.
