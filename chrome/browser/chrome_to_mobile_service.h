@@ -103,7 +103,11 @@ class ChromeToMobileService : public ProfileKeyedService,
     string16 title;
     FilePath snapshot;
     std::string snapshot_id;
+    std::string snapshot_content;
     JobType type;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(JobData);
   };
 
   // Returns whether Chrome To Mobile is enabled (gated on the Action Box UI).
@@ -185,17 +189,18 @@ class ChromeToMobileService : public ProfileKeyedService,
   // Alert the observer of failure or generate MHTML with an observer callback.
   void SnapshotFileCreated(base::WeakPtr<Observer> observer,
                            SessionID::id_type browser_id,
-                           const FilePath& path,
-                           bool success);
+                           const FilePath& path);
 
-  // Create a cloud print job submission request for a URL or snapshot.
-  net::URLFetcher* CreateRequest();
+  // Handle the attempted reading of the snapshot file for job submission.
+  // Send valid snapshot contents if available, or log an error.
+  void SnapshotFileRead(base::WeakPtr<Observer> observer,
+                        scoped_ptr<JobData> data);
 
   // Initialize cloud print URLFetcher requests.
   void InitRequest(net::URLFetcher* request);
 
   // Submit a cloud print job request with the requisite data.
-  void SendRequest(net::URLFetcher* request, const JobData& data);
+  void SendJobRequest(base::WeakPtr<Observer> observer, const JobData& data);
 
   // Send the OAuth2AccessTokenFetcher request.
   // Virtual for unit test mocking.
