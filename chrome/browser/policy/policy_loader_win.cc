@@ -419,11 +419,13 @@ base::ListValue* ReadComponentListValue(HKEY hive,
     } else {
       DWORD reg_type;
       key.ReadValue(name.c_str(), NULL, NULL, &reg_type);
-      value = ReadComponentSimpleValue(&key, name, reg_type, type);
+      if (reg_type != REG_NONE)
+        value = ReadComponentSimpleValue(&key, name, reg_type, type);
     }
-    if (!value)
+    if (value)
+      list->Append(value);
+    else
       break;
-    list->Append(value);
   }
   return list;
 }
