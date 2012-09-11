@@ -218,15 +218,17 @@ FilePath CrosMountPointProvider::GetPathForPermissionsCheck(
 
 fileapi::FileSystemOperation* CrosMountPointProvider::CreateFileSystemOperation(
     const fileapi::FileSystemURL& url,
-    fileapi::FileSystemContext* context) const {
+    fileapi::FileSystemContext* context,
+    base::PlatformFileError* error_code) const {
   if (url.type() == fileapi::kFileSystemTypeDrive) {
     base::AutoLock locker(mount_point_map_lock_);
     RemoteProxyMap::const_iterator found = remote_proxy_map_.find(
         url.filesystem_id());
-    // TODO(kinuko): we should handle not-found case gracefully.
-    // http://crbug.com/141617
     if (found != remote_proxy_map_.end()) {
       return new chromeos::RemoteFileSystemOperation(found->second);
+    } else {
+      *error_code = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+      return NULL;
     }
   }
 

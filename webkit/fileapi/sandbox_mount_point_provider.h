@@ -96,7 +96,8 @@ class FILEAPI_EXPORT SandboxMountPointProvider
       const OVERRIDE;
   virtual FileSystemOperation* CreateFileSystemOperation(
       const FileSystemURL& url,
-      FileSystemContext* context) const OVERRIDE;
+      FileSystemContext* context,
+      base::PlatformFileError* error_code) const OVERRIDE;
   virtual webkit_blob::FileStreamReader* CreateFileStreamReader(
       const FileSystemURL& url,
       int64 offset,

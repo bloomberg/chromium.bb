@@ -62,7 +62,8 @@ class FILEAPI_EXPORT CrosMountPointProvider
       const OVERRIDE;
   virtual fileapi::FileSystemOperation* CreateFileSystemOperation(
       const fileapi::FileSystemURL& url,
-      fileapi::FileSystemContext* context) const OVERRIDE;
+      fileapi::FileSystemContext* context,
+      base::PlatformFileError* error_code) const OVERRIDE;
   virtual webkit_blob::FileStreamReader* CreateFileStreamReader(
       const fileapi::FileSystemURL& path,
       int64 offset,

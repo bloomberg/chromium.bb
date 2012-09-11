@@ -77,12 +77,14 @@ class FILEAPI_EXPORT FileSystemMountPointProvider {
 
   // Returns a new instance of the specialized FileSystemOperation for this
   // mount point based on the given triplet of |origin_url|, |file_system_type|
-  // and |virtual_path|.
+  // and |virtual_path|. On failure to create a file system operation, set
+  // |error_code| correspondingly.
   // This method is usually dispatched by
   // FileSystemContext::CreateFileSystemOperation.
   virtual FileSystemOperation* CreateFileSystemOperation(
       const FileSystemURL& url,
-      FileSystemContext* context) const = 0;
+      FileSystemContext* context,
+      base::PlatformFileError* error_code) const = 0;
 
   // Creates a new file stream reader for a given filesystem URL |url| with an
   // offset |offset|.

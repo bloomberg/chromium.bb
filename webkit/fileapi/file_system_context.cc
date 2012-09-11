@@ -216,9 +216,13 @@ FileSystemOperation* FileSystemContext::CreateFileSystemOperation(
     return NULL;
   }
 
+  PlatformFileError fs_error = base::PLATFORM_FILE_OK;
+  FileSystemOperation* operation =
+      mount_point_provider->CreateFileSystemOperation(url, this, &fs_error);
+
   if (error_code)
-    *error_code = base::PLATFORM_FILE_OK;
-  return mount_point_provider->CreateFileSystemOperation(url, this);
+    *error_code = fs_error;
+  return operation;
 }
 
 webkit_blob::FileStreamReader* FileSystemContext::CreateFileStreamReader(

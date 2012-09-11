@@ -448,7 +448,8 @@ FilePath SandboxMountPointProvider::GetPathForPermissionsCheck(
 
 FileSystemOperation* SandboxMountPointProvider::CreateFileSystemOperation(
     const FileSystemURL& url,
-    FileSystemContext* context) const {
+    FileSystemContext* context,
+    base::PlatformFileError* error_code) const {
   scoped_ptr<FileSystemOperationContext> operation_context(
       new FileSystemOperationContext(context));
 

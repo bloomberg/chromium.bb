@@ -123,7 +123,8 @@ FilePath TestMountPointProvider::GetPathForPermissionsCheck(
 
 FileSystemOperation* TestMountPointProvider::CreateFileSystemOperation(
     const FileSystemURL& url,
-    FileSystemContext* context) const {
+    FileSystemContext* context,
+    base::PlatformFileError* error_code) const {
   scoped_ptr<FileSystemOperationContext> operation_context(
       new FileSystemOperationContext(context));
   operation_context->set_update_observers(observers_);
