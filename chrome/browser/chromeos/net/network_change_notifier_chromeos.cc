@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/dns/dns_config_service_posix.h"
 
 using content::BrowserThread;
 
@@ -25,6 +26,27 @@ bool IsOnline(chromeos::ConnectionState state) {
 }
 
 namespace chromeos {
+
+class NetworkChangeNotifierChromeos::DnsConfigServiceChromeos
+    : public net::internal::DnsConfigServicePosix {
+ public:
+  DnsConfigServiceChromeos() {}
+
+  virtual ~DnsConfigServiceChromeos() {}
+
+  // net::DnsConfigServicePosix:
+  virtual bool StartWatching() OVERRIDE {
+    // Notifications from NetworkLibrary are sent to
+    // NetworkChangeNotifierChromeos.
+    return true;
+  }
+
+  void OnNetworkChange() {
+    InvalidateConfig();
+    InvalidateHosts();
+    ReadNow();
+  }
+};
 
 NetworkChangeNotifierChromeos::NetworkChangeNotifierChromeos()
     : has_active_network_(false),
@@ -48,11 +70,17 @@ void NetworkChangeNotifierChromeos::Init() {
 
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
 
+  dns_config_service_.reset(new DnsConfigServiceChromeos());
+  dns_config_service_->WatchConfig(
+      base::Bind(NetworkChangeNotifier::SetDnsConfig));
+
   UpdateNetworkState(network_library);
 }
 
 void NetworkChangeNotifierChromeos::Shutdown() {
   weak_factory_.InvalidateWeakPtrs();
+
+  dns_config_service_.reset();
 
   if (!chromeos::CrosLibrary::Get())
     return;
@@ -127,6 +155,8 @@ void NetworkChangeNotifierChromeos::UpdateNetworkState(
       service_path_ = network->service_path();
       ip_address_ = network->ip_address();
     }
+    // TODO(szym): detect user DNS changes. http://crbug.com/148394
+    dns_config_service_->OnNetworkChange();
     UpdateConnectivityState(network);
     // If there is an active network, add observer to track its changes.
     if (network)

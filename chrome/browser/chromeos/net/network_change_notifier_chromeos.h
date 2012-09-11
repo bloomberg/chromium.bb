@@ -36,6 +36,8 @@ class NetworkChangeNotifierChromeos
  private:
   friend class OnlineStatusReportThreadTask;
 
+  class DnsConfigServiceChromeos;
+
   // PowerManagerClient::Observer overrides.
   virtual void PowerChanged(const PowerSupplyStatus& status) OVERRIDE;
 
@@ -83,6 +85,8 @@ class NetworkChangeNotifierChromeos
   std::string service_path_;
   // Current active network's IP address.
   std::string ip_address_;
+
+  scoped_ptr<DnsConfigServiceChromeos> dns_config_service_;
 
   base::WeakPtrFactory<NetworkChangeNotifierChromeos> weak_factory_;
 
