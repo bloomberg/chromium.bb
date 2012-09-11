@@ -155,8 +155,16 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SHUTDOWN" file="ash/status_shutdown.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER" file="ash/status_shutdown_h.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SMS" file="ash/status_sms.png" />
+
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_UPDATE" file="ash/status_update.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_UPDATE_GREEN" file="ash/status_update_green.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_UPDATE_ORANGE" file="ash/status_update_orange.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_UPDATE_RED" file="ash/status_update_red.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_UPDATE_DARK" file="ash/status_update_dark.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_UPDATE_DARK_GREEN" file="ash/status_update_dark_green.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_UPDATE_DARK_ORANGE" file="ash/status_update_dark_orange.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_UPDATE_DARK_RED" file="ash/status_update_dark_red.png" />
+
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_VOLUME_LEVELS" file="ash/status_volume_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_VOLUME_MUTE" file="ash/status_volume_mute.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_DISABLED" file="ash/status_wifi_disabled.png" />
