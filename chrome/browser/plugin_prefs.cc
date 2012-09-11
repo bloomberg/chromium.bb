@@ -8,23 +8,18 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/singleton.h"
-#include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "base/version.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/plugin_installer.h"
 #include "chrome/browser/plugin_prefs_factory.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -42,51 +37,57 @@ using content::PluginService;
 
 namespace {
 
-// Default state for a plug-in (not state of the default plug-in!).
-// Accessed only on the UI thread.
-base::LazyInstance<std::map<FilePath, bool> > g_default_plugin_state =
-    LAZY_INSTANCE_INITIALIZER;
-
-class CallbackBarrier : public base::RefCountedThreadSafe<CallbackBarrier> {
- public:
-  explicit CallbackBarrier(const base::Callback<void(bool)>& callback)
-      : callback_(callback),
-        outstanding_callbacks_(0),
-        did_enable_(true) {
-    DCHECK(!callback_.is_null());
-  }
-
-  base::Callback<void(bool)> CreateCallback() {
-    outstanding_callbacks_++;
-    return base::Bind(&CallbackBarrier::MaybeRunCallback, this);
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<CallbackBarrier>;
-
-  ~CallbackBarrier() {
-    DCHECK(callback_.is_null());
-  }
-
-  void MaybeRunCallback(bool did_enable) {
-    DCHECK_GT(outstanding_callbacks_, 0);
-    did_enable_ = did_enable_ && did_enable;
-    if (--outstanding_callbacks_ == 0) {
-      callback_.Run(did_enable_);
-      callback_.Reset();
-    }
-  }
-
-  base::Callback<void(bool)> callback_;
-  int outstanding_callbacks_;
-  bool did_enable_;
-};
+// How long to wait to save the plugin enabled information, which might need to
+// go to disk.
+const int64 kPluginUpdateDelayMs = 60 * 1000;
 
 }  // namespace
 
-// How long to wait to save the plugin enabled information, which might need to
-// go to disk.
-#define kPluginUpdateDelayMs (60 * 1000)
+PluginPrefs::PluginState::PluginState() {
+}
+
+PluginPrefs::PluginState::~PluginState() {
+}
+
+bool PluginPrefs::PluginState::Get(const FilePath& plugin,
+                                   bool* enabled) const {
+  FilePath key = ConvertMapKey(plugin);
+  std::map<FilePath, bool>::const_iterator iter = state_.find(key);
+  if (iter != state_.end()) {
+    *enabled = iter->second;
+    return true;
+  }
+  return false;
+}
+
+void PluginPrefs::PluginState::Set(const FilePath& plugin, bool enabled) {
+  state_[ConvertMapKey(plugin)] = enabled;
+}
+
+void PluginPrefs::PluginState::SetIgnorePseudoKey(const FilePath& plugin,
+                                                  bool enabled) {
+  FilePath key = ConvertMapKey(plugin);
+  if (key == plugin)
+    state_[key] = enabled;
+}
+
+FilePath PluginPrefs::PluginState::ConvertMapKey(const FilePath& plugin) const {
+  // Keep the state of component-updated and bundled Pepper Flash in sync.
+  if (plugin.BaseName().value() == chrome::kPepperFlashPluginFilename) {
+    FilePath component_updated_pepper_flash_dir;
+    if (PathService::Get(chrome::DIR_COMPONENT_UPDATED_PEPPER_FLASH_PLUGIN,
+                         &component_updated_pepper_flash_dir) &&
+        component_updated_pepper_flash_dir.IsParent(plugin)) {
+      FilePath bundled_pepper_flash;
+      if (PathService::Get(chrome::FILE_PEPPER_FLASH_PLUGIN,
+                           &bundled_pepper_flash)) {
+        return bundled_pepper_flash;
+      }
+    }
+  }
+
+  return plugin;
+}
 
 // static
 scoped_refptr<PluginPrefs> PluginPrefs::GetForProfile(Profile* profile) {
@@ -136,7 +137,7 @@ void PluginPrefs::EnablePluginGroupInternal(
     PluginInstaller* installer = finder->GetPluginInstaller(plugins[i]);
     if (group_name != installer->name())
       continue;
-    plugin_state_[plugins[i].path] = enabled;
+    plugin_state_.Set(plugins[i].path, enabled);
   }
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -192,7 +193,7 @@ void PluginPrefs::EnablePluginInternal(
   {
     // Set the desired state for the plug-in.
     base::AutoLock auto_lock(lock_);
-    plugin_state_[path] = enabled;
+    plugin_state_.Set(path, enabled);
   }
 
   string16 group_name;
@@ -228,24 +229,6 @@ void PluginPrefs::EnablePluginInternal(
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       base::Bind(&PluginPrefs::NotifyPluginStatusChanged, this));
   callback.Run(true);
-}
-
-// static
-void PluginPrefs::EnablePluginGlobally(
-    bool enable,
-    const FilePath& file_path,
-    const base::Callback<void(bool)>& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  g_default_plugin_state.Get()[file_path] = enable;
-  std::vector<Profile*> profiles =
-      g_browser_process->profile_manager()->GetLoadedProfiles();
-  scoped_refptr<CallbackBarrier> barrier = new CallbackBarrier(callback);
-  for (std::vector<Profile*>::iterator it = profiles.begin();
-       it != profiles.end(); ++it) {
-    PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(*it);
-    DCHECK(plugin_prefs);
-    plugin_prefs->EnablePlugin(enable, file_path, barrier->CreateCallback());
-  }
 }
 
 PluginPrefs::PolicyStatus PluginPrefs::PolicyStatusForPlugin(
@@ -289,10 +272,9 @@ bool PluginPrefs::IsPluginEnabled(const webkit::WebPluginInfo& plugin) const {
 
   base::AutoLock auto_lock(lock_);
   // Check user preferences for the plug-in.
-  std::map<FilePath, bool>::const_iterator plugin_it =
-      plugin_state_.find(plugin.path);
-  if (plugin_it != plugin_state_.end())
-    return plugin_it->second;
+  bool plugin_enabled = false;
+  if (plugin_state_.Get(plugin.path, &plugin_enabled))
+    return plugin_enabled;
 
   // Check user preferences for the plug-in group.
   std::map<string16, bool>::const_iterator group_it(
@@ -485,7 +467,7 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
               pepper_flash_node = plugin;
           }
 
-          plugin_state_[plugin_path] = enabled;
+          plugin_state_.SetIgnorePseudoKey(plugin_path, enabled);
         } else if (!enabled && plugin->GetString("name", &group_name)) {
           // Don't disable this group if it's for the pdf or nacl plugins and
           // we just forced it on.
@@ -503,7 +485,7 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
       if (npapi_flash_enabled && pepper_flash_node) {
         DCHECK(migrate_to_pepper_flash);
         pepper_flash_node->SetBoolean("enabled", true);
-        plugin_state_[pepper_flash] = true;
+        plugin_state_.Set(pepper_flash, true);
       }
     } else {
       // If the saved plugin list is empty, then the call to UpdatePreferences()
@@ -555,8 +537,7 @@ void PluginPrefs::ShutdownOnUIThread() {
   registrar_.RemoveAll();
 }
 
-PluginPrefs::PluginPrefs() : plugin_state_(g_default_plugin_state.Get()),
-                             profile_(NULL),
+PluginPrefs::PluginPrefs() : profile_(NULL),
                              prefs_(NULL),
                              plugin_list_(NULL) {
 }
@@ -619,9 +600,7 @@ void PluginPrefs::OnUpdatePreferences(
     summary->SetString("name", plugins[i].name);
     summary->SetString("version", plugins[i].version);
     bool enabled = true;
-    std::map<FilePath, bool>::iterator it = plugin_state_.find(plugins[i].path);
-    if (it != plugin_state_.end())
-      enabled = it->second;
+    plugin_state_.Get(plugins[i].path, &enabled);
     summary->SetBoolean("enabled", enabled);
     plugins_list->Append(summary);
 

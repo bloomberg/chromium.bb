@@ -69,8 +69,11 @@ enum {
 
   DIR_DEFAULT_APPS,             // Directory where installer places .crx files
                                 // to be installed when chrome is first run.
-  DIR_PEPPER_FLASH_PLUGIN,      // Directory to the Pepper Flash plugin,
+  DIR_PEPPER_FLASH_PLUGIN,      // Directory to the bundled Pepper Flash plugin,
                                 // containing the plugin and the manifest.
+  DIR_COMPONENT_UPDATED_PEPPER_FLASH_PLUGIN,  // Base directory of the Pepper
+                                              // Flash plugins downloaded by the
+                                              // component updater.
   FILE_RESOURCE_MODULE,         // Full path and filename of the module that
                                 // contains embedded resources (version,
                                 // strings, images, etc.).
@@ -85,7 +88,8 @@ enum {
   FILE_FLASH_PLUGIN_EXISTING,   // Full path to the internal Flash plugin file.
                                 // Querying this path will fail if the file
                                 // doesn't exist.
-  FILE_PEPPER_FLASH_PLUGIN,     // Full path to the Pepper Flash plugin file.
+  FILE_PEPPER_FLASH_PLUGIN,     // Full path to the bundled Pepper Flash plugin
+                                // file.
   FILE_PDF_PLUGIN,              // Full path to the internal PDF plugin file.
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

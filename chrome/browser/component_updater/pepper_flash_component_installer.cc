@@ -70,10 +70,6 @@ const char kPepperFlashArch[] =
     "???";
 #endif
 
-// The Pepper Flash plugins are in a directory with this name.
-const FilePath::CharType kPepperFlashBaseDirectory[] =
-    FILE_PATH_LITERAL("PepperFlash");
-
 // If we don't have a Pepper Flash component, this is the version we claim.
 const char kNullVersion[] = "0.0.0.0";
 
@@ -81,8 +77,8 @@ const char kNullVersion[] = "0.0.0.0";
 // <profile>\AppData\Local\Google\Chrome\User Data\PepperFlash\.
 FilePath GetPepperFlashBaseDirectory() {
   FilePath result;
-  PathService::Get(chrome::DIR_USER_DATA, &result);
-  return result.Append(kPepperFlashBaseDirectory);
+  PathService::Get(chrome::DIR_COMPONENT_UPDATED_PEPPER_FLASH_PLUGIN, &result);
+  return result;
 }
 
 // Pepper Flash plugins have the version encoded in the path itself
@@ -165,27 +161,13 @@ bool MakePepperFlashPluginInfo(const FilePath& flash_path,
   return true;
 }
 
-void CanEnablePluginCallbackDoNothing(bool dummy) {
-  // Ignore the state-change check result.
-}
-
-// If it is a |fresh_install| we enable or disable it by default in some
-// configurations. See IsPepperFlashEnabledByDefault() for more information.
 void RegisterPepperFlashWithChrome(const FilePath& path,
-                                   const Version& version,
-                                   bool fresh_install) {
+                                   const Version& version) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   content::PepperPluginInfo plugin_info;
   if (!MakePepperFlashPluginInfo(path, version, true, &plugin_info))
     return;
-  bool enable_by_default = IsPepperFlashEnabledByDefault();
-  if (fresh_install)
-    PluginPrefs::EnablePluginGlobally(
-        enable_by_default,
-        plugin_info.path,
-        base::Bind(&CanEnablePluginCallbackDoNothing));
-
-  bool add_to_front = enable_by_default;
+  bool add_to_front = IsPepperFlashEnabledByDefault();
   PluginService::GetInstance()->RegisterInternalPlugin(
       plugin_info.ToWebPluginInfo(), add_to_front);
   PluginService::GetInstance()->RefreshPlugins();
@@ -273,7 +255,7 @@ bool PepperFlashComponentInstaller::Install(base::DictionaryValue* manifest,
   path = path.Append(chrome::kPepperFlashPluginFilename);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&RegisterPepperFlashWithChrome, path, version, true));
+      base::Bind(&RegisterPepperFlashWithChrome, path, version));
   return true;
 }
 
@@ -348,7 +330,7 @@ void StartPepperFlashUpdateRegistration(ComponentUpdateService* cus) {
     if (file_util::PathExists(path)) {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          base::Bind(&RegisterPepperFlashWithChrome, path, version, false));
+          base::Bind(&RegisterPepperFlashWithChrome, path, version));
     } else {
       version = Version(kNullVersion);
     }

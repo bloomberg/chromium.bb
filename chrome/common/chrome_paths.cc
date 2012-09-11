@@ -31,6 +31,10 @@ const FilePath::CharType kInternalFlashPluginFileName[] =
     FILE_PATH_LITERAL("libgcflashplayer.so");
 #endif
 
+// The Pepper Flash plugins are in a directory with this name.
+const FilePath::CharType kPepperFlashBaseDirectory[] =
+    FILE_PATH_LITERAL("PepperFlash");
+
 // File name of the internal PDF plugin on different platforms.
 const FilePath::CharType kInternalPDFPluginFileName[] =
 #if defined(OS_WIN)
@@ -242,7 +246,12 @@ bool PathProvider(int key, FilePath* result) {
     case chrome::DIR_PEPPER_FLASH_PLUGIN:
       if (!GetInternalPluginsDirectory(&cur))
         return false;
-      cur = cur.Append(FILE_PATH_LITERAL("PepperFlash"));
+      cur = cur.Append(kPepperFlashBaseDirectory);
+      break;
+    case chrome::DIR_COMPONENT_UPDATED_PEPPER_FLASH_PLUGIN:
+      if (!PathService::Get(chrome::DIR_USER_DATA, &cur))
+        return false;
+      cur = cur.Append(kPepperFlashBaseDirectory);
       break;
     case chrome::FILE_LOCAL_STATE:
       if (!PathService::Get(chrome::DIR_USER_DATA, &cur))

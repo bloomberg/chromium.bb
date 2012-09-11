@@ -74,15 +74,6 @@ class PluginPrefs : public RefcountedProfileKeyedService,
   void EnablePlugin(bool enable, const FilePath& file_path,
                     const base::Callback<void(bool)>& callback);
 
-  // Enables or disables a plug-in in all profiles, and calls |callback|
-  // afterwards. This sets a default for profiles which are created later as
-  // well.
-  // If the plug-in state in a profile cannot be changed because of a policy,
-  // it will be silently ignored.
-  // This method should only be called on the UI thread.
-  static void EnablePluginGlobally(bool enable, const FilePath& file_path,
-                                   const base::Callback<void(bool)>& callback);
-
   // Returns whether there is a policy enabling or disabling plug-ins of the
   // given name.
   PolicyStatus PolicyStatusForPlugin(const string16& name) const;
@@ -103,6 +94,28 @@ class PluginPrefs : public RefcountedProfileKeyedService,
  private:
   friend class base::RefCountedThreadSafe<PluginPrefs>;
   friend class PluginPrefsTest;
+
+  // PluginState stores a mapping from plugin path to enable/disable state. We
+  // don't simply use a std::map, because we would like to keep the state of
+  // some plugins in sync with each other.
+  class PluginState {
+   public:
+    PluginState();
+    ~PluginState();
+
+    // Returns whether |plugin| is found. If |plugin| cannot be found,
+    // |*enabled| won't be touched.
+    bool Get(const FilePath& plugin, bool* enabled) const;
+    void Set(const FilePath& plugin, bool enabled);
+    // It is similar to Set(), except that it does nothing if |plugin| needs to
+    // be converted to a different key.
+    void SetIgnorePseudoKey(const FilePath& plugin, bool enabled);
+
+   private:
+    FilePath ConvertMapKey(const FilePath& plugin) const;
+
+    std::map<FilePath, bool> state_;
+  };
 
   virtual ~PluginPrefs();
 
@@ -166,7 +179,7 @@ class PluginPrefs : public RefcountedProfileKeyedService,
   // Guards access to the following data structures.
   mutable base::Lock lock_;
 
-  std::map<FilePath, bool> plugin_state_;
+  PluginState plugin_state_;
   std::map<string16, bool> plugin_group_state_;
 
   std::set<string16> policy_disabled_plugin_patterns_;
