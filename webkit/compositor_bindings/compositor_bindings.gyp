@@ -109,6 +109,8 @@
           'sources': [
             '<@(webkit_compositor_bindings_sources)',
             'stubs/public/WebTransformationMatrix.h',
+            'webcore_convert.cc',
+            'webcore_convert.h',
           ],
           'conditions': [
             ['component=="shared_library"', {

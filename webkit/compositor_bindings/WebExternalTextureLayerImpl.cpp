@@ -8,6 +8,7 @@
 #include "CCTextureUpdateQueue.h"
 #include "TextureLayerChromium.h"
 #include "WebLayerImpl.h"
+#include "webcore_convert.h"
 #include <public/WebExternalTextureLayerClient.h>
 #include <public/WebFloatRect.h>
 #include <public/WebSize.h>
@@ -55,7 +56,7 @@ void WebExternalTextureLayerImpl::setFlipped(bool flipped)
 
 void WebExternalTextureLayerImpl::setUVRect(const WebFloatRect& rect)
 {
-    static_cast<TextureLayerChromium*>(m_layer->layer())->setUVRect(rect);
+    static_cast<TextureLayerChromium*>(m_layer->layer())->setUVRect(convert(rect));
 }
 
 void WebExternalTextureLayerImpl::setOpaque(bool opaque)
@@ -87,7 +88,7 @@ public:
 
     virtual void appendCopy(unsigned sourceTexture, unsigned destinationTexture, WebSize size) OVERRIDE
     {
-        TextureCopier::Parameters copy = { sourceTexture, destinationTexture, size };
+        TextureCopier::Parameters copy = { sourceTexture, destinationTexture, convert(size) };
         m_queue.appendCopy(copy);
     }
 

@@ -6,6 +6,9 @@
 
 #include "WebToCCInputHandlerAdapter.h"
 
+#include "IntPoint.h"
+#include "IntSize.h"
+#include "webcore_convert.h"
 #include <public/WebInputHandlerClient.h>
 
 #define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, webcore_name) \
@@ -46,12 +49,12 @@ public:
 
     virtual ScrollStatus scrollBegin(WebPoint point, ScrollInputType type) OVERRIDE
     {
-        return static_cast<WebInputHandlerClient::ScrollStatus>(m_client->scrollBegin(point, static_cast<WebCore::CCInputHandlerClient::ScrollInputType>(type)));
+        return static_cast<WebInputHandlerClient::ScrollStatus>(m_client->scrollBegin(convert(point), static_cast<WebCore::CCInputHandlerClient::ScrollInputType>(type)));
     }
 
     virtual void scrollBy(WebPoint point, WebSize offset) OVERRIDE
     {
-        m_client->scrollBy(point, offset);
+        m_client->scrollBy(convert(point), convert(offset));
     }
 
     virtual void scrollEnd() OVERRIDE
@@ -66,7 +69,7 @@ public:
 
     virtual void pinchGestureUpdate(float magnifyDelta, WebPoint anchor) OVERRIDE
     {
-        m_client->pinchGestureUpdate(magnifyDelta, anchor);
+        m_client->pinchGestureUpdate(magnifyDelta, convert(anchor));
     }
 
     virtual void pinchGestureEnd() OVERRIDE
@@ -80,7 +83,7 @@ public:
                                          double startTime,
                                          double duration) OVERRIDE
     {
-        m_client->startPageScaleAnimation(targetPosition, anchorPoint, pageScale, startTime, duration);
+        m_client->startPageScaleAnimation(convert(targetPosition), anchorPoint, pageScale, startTime, duration);
     }
 
     virtual void scheduleAnimation() OVERRIDE

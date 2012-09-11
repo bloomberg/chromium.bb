@@ -7,6 +7,7 @@
 
 #include "IOSurfaceLayerChromium.h"
 #include "WebLayerImpl.h"
+#include "webcore_convert.h"
 
 using WebCore::IOSurfaceLayerChromium;
 
@@ -29,7 +30,7 @@ WebIOSurfaceLayerImpl::~WebIOSurfaceLayerImpl()
 
 void WebIOSurfaceLayerImpl::setIOSurfaceProperties(unsigned ioSurfaceId, WebSize size)
 {
-    static_cast<IOSurfaceLayerChromium*>(m_layer->layer())->setIOSurfaceProperties(ioSurfaceId, size);
+    static_cast<IOSurfaceLayerChromium*>(m_layer->layer())->setIOSurfaceProperties(ioSurfaceId, convert(size));
 }
 
 WebLayer* WebIOSurfaceLayerImpl::layer()
