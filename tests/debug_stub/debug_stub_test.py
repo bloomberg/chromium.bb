@@ -600,15 +600,22 @@ class DebugStubBreakpointTest(unittest.TestCase):
 
 class DebugStubThreadSuspensionTest(unittest.TestCase):
 
-  def SkipBreakpoint(self, connection):
-    # On x86, int3 breakpoint instructions are skipped automatically,
-    # so we only need to intervene to skip the breakpoint on ARM.
-    if ARCH == 'arm':
+  def SkipBreakpoint(self, connection, stop_reply):
+    # Skip past the faulting instruction in debugger_test.c's
+    # breakpoint() function.
+    regs = DecodeRegs(connection.RspRequest('g'))
+    if ARCH in ('x86-32', 'x86-64'):
+      AssertReplySignal(stop_reply, NACL_SIGSEGV)
+      # Skip past the single-byte HLT instruction.
+      regs[IP_REG[ARCH]] += 1
+    elif ARCH == 'arm':
+      AssertReplySignal(stop_reply, NACL_SIGTRAP)
       bundle_size = 16
-      regs = DecodeRegs(connection.RspRequest('g'))
       assert regs['r15'] % bundle_size == 0, regs['r15']
       regs['r15'] += bundle_size
-      AssertEquals(connection.RspRequest('G' + EncodeRegs(regs)), 'OK')
+    else:
+      raise AssertionError('Unknown architecture')
+    AssertEquals(connection.RspRequest('G' + EncodeRegs(regs)), 'OK')
 
   def WaitForTestThreadsToStart(self, connection, symbols):
     # Wait until:
@@ -617,18 +624,13 @@ class DebugStubThreadSuspensionTest(unittest.TestCase):
     old_value = ReadUint32(connection, symbols['g_main_thread_var'])
     while True:
       reply = connection.RspRequest('c')
-      AssertReplySignal(reply, NACL_SIGTRAP)
-      self.SkipBreakpoint(connection)
+      self.SkipBreakpoint(connection, reply)
       child_thread_id = ParseThreadStopReply(reply)['thread_id']
       if ReadUint32(connection, symbols['g_main_thread_var']) != old_value:
         break
     return child_thread_id
 
   def test_continuing_thread_with_others_suspended(self):
-    if sys.platform == 'darwin':
-      # TODO(mseaborn): Make this work on Mac OS X (and enable it) by
-      # removing this test's use of the int3 instruction.
-      return
     with LaunchDebugStub('test_suspending_threads') as connection:
       symbols = GetSymbols()
       child_thread_id = self.WaitForTestThreadsToStart(connection, symbols)
@@ -639,8 +641,7 @@ class DebugStubThreadSuspensionTest(unittest.TestCase):
         main_thread_val = ReadUint32(connection, symbols['g_main_thread_var'])
         child_thread_val = ReadUint32(connection, symbols['g_child_thread_var'])
         reply = connection.RspRequest('vCont;c:%x' % child_thread_id)
-        AssertReplySignal(reply, NACL_SIGTRAP)
-        self.SkipBreakpoint(connection)
+        self.SkipBreakpoint(connection, reply)
         self.assertEquals(ParseThreadStopReply(reply)['thread_id'],
                           child_thread_id)
         # The main thread should not be allowed to run, so should not
@@ -655,10 +656,6 @@ class DebugStubThreadSuspensionTest(unittest.TestCase):
             child_thread_val)
 
   def test_single_stepping_thread_with_others_suspended(self):
-    if sys.platform == 'darwin':
-      # TODO(mseaborn): Make this work on Mac OS X (and enable it) by
-      # removing this test's use of the int3 instruction.
-      return
     with LaunchDebugStub('test_suspending_threads') as connection:
       symbols = GetSymbols()
       child_thread_id = self.WaitForTestThreadsToStart(connection, symbols)
@@ -670,8 +667,14 @@ class DebugStubThreadSuspensionTest(unittest.TestCase):
         child_thread_val = ReadUint32(connection, symbols['g_child_thread_var'])
         while True:
           reply = connection.RspRequest('vCont;s:%x' % child_thread_id)
-          AssertReplySignal(reply, NACL_SIGTRAP)
-          self.SkipBreakpoint(connection)
+          if (ARCH in ('x86-32', 'x86-64') and
+              ParseThreadStopReply(reply)['signal'] == NACL_SIGTRAP):
+            # We single-stepped through an instruction without
+            # otherwise faulting.  We did not hit the breakpoint, so
+            # there is nothing to do.
+            pass
+          else:
+            self.SkipBreakpoint(connection, reply)
           self.assertEquals(ParseThreadStopReply(reply)['thread_id'],
                             child_thread_id)
           # The main thread should not be allowed to run, so should not

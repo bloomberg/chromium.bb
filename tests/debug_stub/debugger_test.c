@@ -166,7 +166,8 @@ void test_interrupt() {
 
 void breakpoint(void) {
 #if defined(__i386__) || defined(__x86_64__)
-  __asm__("int3");
+  /* We avoid using int3 because of a Mac OS X kernel bug. */
+  __asm__("hlt");
 #elif defined(__arm__)
   /*
    * Arrange the breakpoint so that the test can skip over it by
