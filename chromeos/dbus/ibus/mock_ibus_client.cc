@@ -30,4 +30,12 @@ void MockIBusClient::RegisterComponent(
     register_component_handler_.Run(ibus_component, callback, error_callback);
 }
 
+void MockIBusClient::SetGlobalEngine(const std::string& engine_name,
+                                     const ErrorCallback& error_callback) {
+}
+
+void MockIBusClient::Exit(ExitOption option,
+                          const ErrorCallback& error_callback) {
+}
+
 }  // namespace chromeos

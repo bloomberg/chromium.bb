@@ -30,6 +30,10 @@ class IBusInputContextClient;
 // callbacks.
 class CHROMEOS_EXPORT IBusClient {
  public:
+  enum ExitOption {
+    RESTART_IBUS_DAEMON,
+    SHUT_DOWN_IBUS_DAEMON
+  };
   typedef base::Callback<void(const dbus::ObjectPath&)>
       CreateInputContextCallback;
   typedef base::Callback<void()> RegisterComponentCallback;
@@ -51,6 +55,17 @@ class CHROMEOS_EXPORT IBusClient {
       const ibus::IBusComponent& ibus_component,
       const RegisterComponentCallback& callback,
       const ErrorCallback& error_callback) = 0;
+
+  // Requests the ibus-daemon to set global engine. If failed, |error_callback|
+  // is called.
+  virtual void SetGlobalEngine(const std::string& engine_name,
+                               const ErrorCallback& error_callback) = 0;
+
+  // Requests the ibus-daemon to exit daemon process. If |option| is
+  // RESTART_IBUS_DAEMON, ibus-daemon will be relaunched. If |option| is
+  // SHUT_DOWN_IBUS_DAEMON, ibus-daemon will not be relaunched. The
+  // |error_callback| is called if an error occures.
+  virtual void Exit(ExitOption option, const ErrorCallback& error_callback) = 0;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().

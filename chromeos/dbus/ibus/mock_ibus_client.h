@@ -35,6 +35,14 @@ class MockIBusClient : public IBusClient {
                                  const RegisterComponentCallback& callback,
                                  const ErrorCallback& error_callback) OVERRIDE;
 
+  // IBusClient override.
+  virtual void SetGlobalEngine(const std::string& engine_name,
+                               const ErrorCallback& error_callback) OVERRIDE;
+
+  // IBusClient override.
+  virtual void Exit(ExitOption option,
+                    const ErrorCallback& error_callback) OVERRIDE;
+
   // Function handler for CreateInputContext. The CreateInputContext function
   // invokes |create_input_context_handler_| unless it's not null.
   void set_create_input_context_handler(

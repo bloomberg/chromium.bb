@@ -24,6 +24,8 @@ namespace chromeos {
 
 namespace {
 const char kClientName[] = "chrome";
+const char kEngineName[] = "engine";
+const bool kRestartFlag = true;
 }  // namespace
 
 class MockCreateInputContextCallback {
@@ -31,7 +33,7 @@ class MockCreateInputContextCallback {
   MOCK_METHOD1(Run, void(const dbus::ObjectPath& object_path));
 };
 
-class MockCreateInputContextErrorCallback {
+class MockErrorCallback {
  public:
   MOCK_METHOD0(Run, void());
 };
@@ -67,6 +69,62 @@ class IBusClientTest : public testing::Test {
     EXPECT_EQ(kClientName, client_name);
     EXPECT_FALSE(reader.HasMoreData());
 
+    message_loop_.PostTask(FROM_HERE, base::Bind(error_callback,
+                                                 error_response_));
+  }
+
+  // Handles SetGlobalEngine method call.
+  void OnSetGlobalEngine(
+      dbus::MethodCall* method_call,
+      int timeout_ms,
+      const dbus::ObjectProxy::ResponseCallback& callback,
+      const dbus::ObjectProxy::ErrorCallback& error_callback) {
+    dbus::MessageReader reader(method_call);
+    std::string engine_name;
+    EXPECT_TRUE(reader.PopString(&engine_name));
+    EXPECT_EQ(kEngineName, engine_name);
+    EXPECT_FALSE(reader.HasMoreData());
+    message_loop_.PostTask(FROM_HERE, base::Bind(callback, response_));
+  }
+
+  // Handles fail case of SetGlobalEngine method call.
+  void OnSetGlobalEngineFail(
+      dbus::MethodCall* method_call,
+      int timeout_ms,
+      const dbus::ObjectProxy::ResponseCallback& callback,
+      const dbus::ObjectProxy::ErrorCallback& error_callback) {
+    dbus::MessageReader reader(method_call);
+    std::string engine_name;
+    EXPECT_TRUE(reader.PopString(&engine_name));
+    EXPECT_EQ(kEngineName, engine_name);
+    EXPECT_FALSE(reader.HasMoreData());
+    message_loop_.PostTask(FROM_HERE, base::Bind(error_callback,
+                                                 error_response_));
+  }
+
+  // Handles Exit method call.
+  void OnExit(dbus::MethodCall* method_call,
+              int timeout_ms,
+              const dbus::ObjectProxy::ResponseCallback& callback,
+              const dbus::ObjectProxy::ErrorCallback& error_callback) {
+    dbus::MessageReader reader(method_call);
+    bool restart = false;
+    EXPECT_TRUE(reader.PopBool(&restart));
+    EXPECT_EQ(kRestartFlag, restart);
+    EXPECT_FALSE(reader.HasMoreData());
+    message_loop_.PostTask(FROM_HERE, base::Bind(callback, response_));
+  }
+
+  // Handles fail case of Exit method call.
+  void OnExitFail(dbus::MethodCall* method_call,
+                  int timeout_ms,
+                  const dbus::ObjectProxy::ResponseCallback& callback,
+                  const dbus::ObjectProxy::ErrorCallback& error_callback) {
+    dbus::MessageReader reader(method_call);
+    bool restart = false;
+    EXPECT_TRUE(reader.PopBool(&restart));
+    EXPECT_EQ(kRestartFlag, restart);
+    EXPECT_FALSE(reader.HasMoreData());
     message_loop_.PostTask(FROM_HERE, base::Bind(error_callback,
                                                  error_response_));
   }
@@ -114,7 +172,7 @@ TEST_F(IBusClientTest, CreateInputContextTest) {
       .WillOnce(Invoke(this, &IBusClientTest::OnCreateInputContext));
   MockCreateInputContextCallback callback;
   EXPECT_CALL(callback, Run(kInputContextObjectPath));
-  MockCreateInputContextErrorCallback error_callback;
+  MockErrorCallback error_callback;
   EXPECT_CALL(error_callback, Run()).Times(0);
 
   // Create response.
@@ -128,7 +186,7 @@ TEST_F(IBusClientTest, CreateInputContextTest) {
       kClientName,
       base::Bind(&MockCreateInputContextCallback::Run,
                  base::Unretained(&callback)),
-      base::Bind(&MockCreateInputContextErrorCallback::Run,
+      base::Bind(&MockErrorCallback::Run,
                  base::Unretained(&error_callback)));
 
   // Run the message loop.
@@ -141,7 +199,7 @@ TEST_F(IBusClientTest, CreateInputContext_NullResponseFail) {
       .WillOnce(Invoke(this, &IBusClientTest::OnCreateInputContext));
   MockCreateInputContextCallback callback;
   EXPECT_CALL(callback, Run(_)).Times(0);
-  MockCreateInputContextErrorCallback error_callback;
+  MockErrorCallback error_callback;
   EXPECT_CALL(error_callback, Run());
 
   // Set NULL response.
@@ -152,7 +210,7 @@ TEST_F(IBusClientTest, CreateInputContext_NullResponseFail) {
       kClientName,
       base::Bind(&MockCreateInputContextCallback::Run,
                  base::Unretained(&callback)),
-      base::Bind(&MockCreateInputContextErrorCallback::Run,
+      base::Bind(&MockErrorCallback::Run,
                  base::Unretained(&error_callback)));
 
   // Run the message loop.
@@ -165,7 +223,7 @@ TEST_F(IBusClientTest, CreateInputContext_InvalidResponseFail) {
       .WillOnce(Invoke(this, &IBusClientTest::OnCreateInputContext));
   MockCreateInputContextCallback callback;
   EXPECT_CALL(callback, Run(_)).Times(0);
-  MockCreateInputContextErrorCallback error_callback;
+  MockErrorCallback error_callback;
   EXPECT_CALL(error_callback, Run());
 
   // Create invalid(empty) response.
@@ -177,7 +235,7 @@ TEST_F(IBusClientTest, CreateInputContext_InvalidResponseFail) {
       kClientName,
       base::Bind(&MockCreateInputContextCallback::Run,
                  base::Unretained(&callback)),
-      base::Bind(&MockCreateInputContextErrorCallback::Run,
+      base::Bind(&MockErrorCallback::Run,
                  base::Unretained(&error_callback)));
 
   // Run the message loop.
@@ -190,7 +248,7 @@ TEST_F(IBusClientTest, CreateInputContext_MethodCallFail) {
       .WillOnce(Invoke(this, &IBusClientTest::OnCreateInputContextFail));
   MockCreateInputContextCallback callback;
   EXPECT_CALL(callback, Run(_)).Times(0);
-  MockCreateInputContextErrorCallback error_callback;
+  MockErrorCallback error_callback;
   EXPECT_CALL(error_callback, Run());
 
   // The error response is not used in CreateInputContext.
@@ -201,7 +259,149 @@ TEST_F(IBusClientTest, CreateInputContext_MethodCallFail) {
       kClientName,
       base::Bind(&MockCreateInputContextCallback::Run,
                  base::Unretained(&callback)),
-      base::Bind(&MockCreateInputContextErrorCallback::Run,
+      base::Bind(&MockErrorCallback::Run,
+                 base::Unretained(&error_callback)));
+
+  // Run the message loop.
+  message_loop_.RunAllPending();
+}
+
+TEST_F(IBusClientTest, SetGlobalEngineTest) {
+  // Set expectations
+  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+      .WillOnce(Invoke(this, &IBusClientTest::OnSetGlobalEngine));
+  MockErrorCallback error_callback;
+  EXPECT_CALL(error_callback, Run()).Times(0);
+
+  // Create empty response.
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  response_ = response.get();
+
+  // The error response is not used in SetGLobalEngine.
+  error_response_ = NULL;
+
+  // Call CreateInputContext.
+  client_->SetGlobalEngine(
+      kEngineName,
+      base::Bind(&MockErrorCallback::Run,
+                 base::Unretained(&error_callback)));
+
+  // Run the message loop.
+  message_loop_.RunAllPending();
+}
+
+TEST_F(IBusClientTest, SetGlobalEngineTest_InvalidResponse) {
+  // Set expectations
+  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+      .WillOnce(Invoke(this, &IBusClientTest::OnSetGlobalEngineFail));
+  MockErrorCallback error_callback;
+  EXPECT_CALL(error_callback, Run());
+
+  // Set invlaid response.
+  response_ = NULL;
+
+  // The error response is not used in SetGLobalEngine.
+  error_response_ = NULL;
+
+  // Call CreateInputContext.
+  client_->SetGlobalEngine(
+      kEngineName,
+      base::Bind(&MockErrorCallback::Run,
+                 base::Unretained(&error_callback)));
+
+  // Run the message loop.
+  message_loop_.RunAllPending();
+}
+
+TEST_F(IBusClientTest, SetGlobalEngineTest_MethodCallFail) {
+  // Set expectations
+  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+      .WillOnce(Invoke(this, &IBusClientTest::OnSetGlobalEngineFail));
+  MockErrorCallback error_callback;
+  EXPECT_CALL(error_callback, Run());
+
+  // Create empty response.
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  response_ = response.get();
+
+  // The error response is not used in SetGLobalEngine.
+  error_response_ = NULL;
+
+  // Call CreateInputContext.
+  client_->SetGlobalEngine(
+      kEngineName,
+      base::Bind(&MockErrorCallback::Run,
+                 base::Unretained(&error_callback)));
+
+  // Run the message loop.
+  message_loop_.RunAllPending();
+}
+
+TEST_F(IBusClientTest, ExitTest) {
+  // Set expectations
+  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+      .WillOnce(Invoke(this, &IBusClientTest::OnExit));
+  MockErrorCallback error_callback;
+  EXPECT_CALL(error_callback, Run()).Times(0);
+
+  // Create empty response.
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  response_ = response.get();
+
+  // The error response is not used in SetGLobalEngine.
+  error_response_ = NULL;
+
+  // Call CreateInputContext.
+  client_->Exit(
+      IBusClient::RESTART_IBUS_DAEMON,
+      base::Bind(&MockErrorCallback::Run,
+                 base::Unretained(&error_callback)));
+
+  // Run the message loop.
+  message_loop_.RunAllPending();
+}
+
+TEST_F(IBusClientTest, ExitTest_InvalidResponse) {
+  // Set expectations
+  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+      .WillOnce(Invoke(this, &IBusClientTest::OnExit));
+  MockErrorCallback error_callback;
+  EXPECT_CALL(error_callback, Run());
+
+  // Set invlaid response.
+  response_ = NULL;
+
+  // The error response is not used in SetGLobalEngine.
+  error_response_ = NULL;
+
+  // Call CreateInputContext.
+  client_->Exit(
+      IBusClient::RESTART_IBUS_DAEMON,
+      base::Bind(&MockErrorCallback::Run,
+                 base::Unretained(&error_callback)));
+
+  // Run the message loop.
+  message_loop_.RunAllPending();
+}
+
+TEST_F(IBusClientTest, ExitTest_MethodCallFail) {
+  // Set expectations
+  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+      .WillOnce(Invoke(this, &IBusClientTest::OnExitFail));
+  MockErrorCallback error_callback;
+  EXPECT_CALL(error_callback, Run());
+
+  // Create empty response.
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  response_ = response.get();
+
+  // The error response is not used in SetGLobalEngine.
+  error_response_ = NULL;
+
+  // Call CreateInputContext.
+  client_->Exit(
+      IBusClient::RESTART_IBUS_DAEMON,
+      base::Bind(&MockErrorCallback::Run,
                  base::Unretained(&error_callback)));
 
   // Run the message loop.

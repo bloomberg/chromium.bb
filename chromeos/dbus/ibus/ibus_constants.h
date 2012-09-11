@@ -16,6 +16,8 @@ const char kServicePath[] = "/org/freedesktop/IBus";
 const char kServiceInterface[] = "org.freedesktop.IBus";
 const char kCreateInputContextMethod[] = "CreateInputContext";
 const char kRegisterComponentMethod[] = "RegisterComponent";
+const char kSetGlobalEngineMethod[] = "SetGlobalEngine";
+const char kExitMethod[] = "Exit";
 }  // namespace bus
 
 namespace input_context {

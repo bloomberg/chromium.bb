@@ -46,7 +46,7 @@ class IBusClientImpl : public IBusClient {
                    weak_ptr_factory_.GetWeakPtr(),
                    callback,
                    error_callback),
-        base::Bind(&IBusClientImpl::OnCreateInputContextFail,
+        base::Bind(&IBusClientImpl::OnDBusMethodCallFail,
                    weak_ptr_factory_.GetWeakPtr(),
                    error_callback));
   }
@@ -69,7 +69,45 @@ class IBusClientImpl : public IBusClient {
                    weak_ptr_factory_.GetWeakPtr(),
                    callback,
                    error_callback),
-        base::Bind(&IBusClientImpl::OnRegisterComponentFail,
+        base::Bind(&IBusClientImpl::OnDBusMethodCallFail,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   error_callback));
+  }
+
+  // IBusClient override.
+  virtual void SetGlobalEngine(const std::string& engine_name,
+                               const ErrorCallback& error_callback) OVERRIDE {
+    DCHECK(!error_callback.is_null());
+    dbus::MethodCall method_call(ibus::bus::kServiceInterface,
+                                 ibus::bus::kSetGlobalEngineMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(engine_name);
+    proxy_->CallMethodWithErrorCallback(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&IBusClientImpl::OnSetGlobalEngine,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   error_callback),
+        base::Bind(&IBusClientImpl::OnDBusMethodCallFail,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   error_callback));
+  }
+
+  // IBusClient override.
+  virtual void Exit(ExitOption option,
+                    const ErrorCallback& error_callback) OVERRIDE {
+    DCHECK(!error_callback.is_null());
+    dbus::MethodCall method_call(ibus::bus::kServiceInterface,
+                                 ibus::bus::kExitMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendBool(option == RESTART_IBUS_DAEMON);
+    proxy_->CallMethodWithErrorCallback(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&IBusClientImpl::OnExit,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   error_callback),
+        base::Bind(&IBusClientImpl::OnDBusMethodCallFail,
                    weak_ptr_factory_.GetWeakPtr(),
                    error_callback));
   }
@@ -95,12 +133,6 @@ class IBusClientImpl : public IBusClient {
     callback.Run(object_path);
   }
 
-  // Handles error response of CreateInputContext method calls.
-  void OnCreateInputContextFail(const ErrorCallback& error_callback,
-                                dbus::ErrorResponse* response) {
-    error_callback.Run();
-  }
-
   // Handles responses of RegisterComponent method calls.
   void OnRegisterComponent(const RegisterComponentCallback& callback,
                            const ErrorCallback& error_callback,
@@ -113,9 +145,29 @@ class IBusClientImpl : public IBusClient {
     callback.Run();
   }
 
+  // Handles responses of RegisterComponent method calls.
+  void OnSetGlobalEngine(const ErrorCallback& error_callback,
+                         dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Response is NULL.";
+      error_callback.Run();
+      return;
+    }
+  }
+
+  // Handles responses of RegisterComponent method calls.
+  void OnExit(const ErrorCallback& error_callback,
+              dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Response is NULL.";
+      error_callback.Run();
+      return;
+    }
+  }
+
   // Handles error response of RegisterComponent method call.
-  void OnRegisterComponentFail(const ErrorCallback& error_callback,
-                               dbus::ErrorResponse* response) {
+  void OnDBusMethodCallFail(const ErrorCallback& error_callback,
+                            dbus::ErrorResponse* response) {
     error_callback.Run();
   }
 
@@ -140,6 +192,12 @@ class IBusClientStubImpl : public IBusClient {
       const ibus::IBusComponent& ibus_component,
       const RegisterComponentCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE {}
+
+  virtual void SetGlobalEngine(const std::string& engine_name,
+                               const ErrorCallback& error_callback) OVERRIDE {}
+
+  virtual void Exit(ExitOption option,
+                    const ErrorCallback& error_callback) OVERRIDE {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IBusClientStubImpl);
