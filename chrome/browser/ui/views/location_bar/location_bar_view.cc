@@ -158,9 +158,9 @@ static const int kSelectedKeywordBackgroundImages[] = {
 
 // TODO(gbillock): replace these with web-intents images when available.
 static const int kWIBubbleBackgroundImages[] = {
-  IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_L,
-  IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_C,
-  IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_R,
+  IDR_OMNIBOX_WI_BUBBLE_BACKGROUND_L,
+  IDR_OMNIBOX_WI_BUBBLE_BACKGROUND_C,
+  IDR_OMNIBOX_WI_BUBBLE_BACKGROUND_R,
 };
 
 #if defined(USE_AURA)
