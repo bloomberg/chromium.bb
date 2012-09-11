@@ -6,6 +6,7 @@
 #define WebVideoLayerImpl_h
 
 #include <public/WebVideoLayer.h>
+#include <wtf/OwnPtr.h>
 
 namespace WebKit {
 class WebLayerImpl;

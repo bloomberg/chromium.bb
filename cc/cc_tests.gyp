@@ -73,6 +73,8 @@
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
         '../testing/gmock.gyp:gmock',
+        '../webkit/support/webkit_support.gyp:webkit_support',
+        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'sources': [
         'test/run_all_unittests.cc',
@@ -80,12 +82,7 @@
       'conditions': [
         ['use_libcc_for_compositor==1 and component!="shared_library"', {
           'dependencies': [
-            '../skia/skia.gyp:skia',
-            # We have to depend on WTF directly to pick up the correct defines for WTF headers - for instance USE_SYSTEM_MALLOC.
             '../third_party/WebKit/Source/WTF/WTF.gyp/WTF.gyp:wtf',
-            '../third_party/WebKit/Source/Platform/Platform.gyp/Platform.gyp:webkit_platform',
-            '../webkit/support/webkit_support.gyp:webkit_support',
-            'cc.gyp:cc',
             'cc_test_support',
           ],
           'defines': [
@@ -105,7 +102,7 @@
     },
   ],
   'conditions': [
-    ['use_libcc_for_compositor==1 and component!="shared_library"', {
+    ['use_libcc_for_compositor==1', {
       'targets': [
         {
           'target_name': 'cc_test_support',
@@ -118,6 +115,7 @@
             'test',
             '.',
             '..',
+            '../third_party/WebKit/Source/Platform/chromium',
           ],
           'dependencies': [
             '../ui/gl/gl.gyp:gl',
@@ -125,7 +123,7 @@
             '../testing/gmock.gyp:gmock',
             '../skia/skia.gyp:skia',
             '../third_party/WebKit/Source/WTF/WTF.gyp/WTF.gyp:wtf',
-            '../third_party/WebKit/Source/Platform/Platform.gyp/Platform.gyp:webkit_platform',
+            '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit_wtf_support',
           ],
           'sources': [
             '<@(cc_tests_support_files)',

@@ -7,6 +7,7 @@
 
 #include "TextureLayerChromiumClient.h"
 #include <public/WebExternalTextureLayer.h>
+#include <wtf/OwnPtr.h>
 
 namespace WebKit {
 

@@ -47,8 +47,6 @@
         'webkit_src_dir': '../../third_party/WebKit',
       }],
     ],
-
-
   },
   'targets': [
     {
@@ -56,7 +54,6 @@
       'type': 'static_library',
       'dependencies': [
         '../../skia/skia.gyp:skia',
-        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'sources': [
         'web_compositor_support_impl.cc',
@@ -74,7 +71,7 @@
           ],
           'dependencies': [
             'webkit_compositor_bindings',
-            '../../third_party/WebKit/Source/WTF/WTF.gyp/WTF.gyp:wtf',
+            '<(webkit_src_dir)/Source/WTF/WTF.gyp/WTF.gyp:wtf',
           ],
           'defines': [
             'USE_LIBCC_FOR_COMPOSITOR',
@@ -93,32 +90,22 @@
             '../../base/base.gyp:base',
             '../../cc/cc.gyp:cc',
             '../../skia/skia.gyp:skia',
-            '../../third_party/WebKit/Source/Platform/Platform.gyp/Platform.gyp:webkit_platform',
             # We have to depend on WTF directly to pick up the correct defines for WTF headers - for instance USE_SYSTEM_MALLOC.
-            '../../third_party/WebKit/Source/WTF/WTF.gyp/WTF.gyp:wtf',
-          ],
-          'defines': [
-            'WEBKIT_IMPLEMENTATION=1',
+            '<(webkit_src_dir)/Source/WTF/WTF.gyp/WTF.gyp:wtf',
           ],
           'include_dirs': [
             '../../cc',
             '../../cc/stubs',
-            'stubs',
-            '../../third_party/WebKit/Source/WebKit/chromium/public',
+            '<(webkit_src_dir)/Source/Platform/chromium',
           ],
           'sources': [
             '<@(webkit_compositor_bindings_sources)',
-            'stubs/public/WebTransformationMatrix.h',
             'webcore_convert.cc',
             'webcore_convert.h',
           ],
-          'conditions': [
-            ['component=="shared_library"', {
-              'defines': [
-                'WEBKIT_DLL',
-              ],
-            }],
-          ]
+          'defines': [
+            'USE_LIBCC_FOR_COMPOSITOR',
+          ],
         },
       ],
     }],

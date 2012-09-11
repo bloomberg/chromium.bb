@@ -209,6 +209,13 @@
       'VideoLayerChromium.cpp',
       'VideoLayerChromium.h',
     ],
+    'conditions': [
+      ['inside_chromium_build==0', {
+        'webkit_src_dir': '../../../..',
+      },{
+        'webkit_src_dir': '../third_party/WebKit',
+      }],
+    ],
   },
   'targets': [
     {
@@ -220,17 +227,18 @@
             '<(DEPTH)/base/base.gyp:base',
             '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
             '<(DEPTH)/skia/skia.gyp:skia',
-            '<(DEPTH)/third_party/WebKit/Source/Platform/Platform.gyp/Platform.gyp:webkit_platform',
-            # We have to depend on WTF directly to pick up the correct defines for WTF headers - for instance USE_SYSTEM_MALLOC.
-            '<(DEPTH)/third_party/WebKit/Source/WTF/WTF.gyp/WTF.gyp:wtf',
             '<(DEPTH)/ui/gl/gl.gyp:gl',
             '<(DEPTH)/ui/ui.gyp:ui',
+            '<(webkit_src_dir)/Source/WTF/WTF.gyp/WTF.gyp:wtf',
+            '<(webkit_src_dir)/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore_platform_geometry',
+            '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit_wtf_support',
           ],
           'defines': [
             'WTF_USE_ACCELERATED_COMPOSITING=1',
           ],
           'include_dirs': [
             'stubs',
+            '<(webkit_src_dir)/Source/Platform/chromium',
           ],
           'sources': [
             '<@(cc_source_files)',
