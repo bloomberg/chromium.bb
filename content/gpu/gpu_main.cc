@@ -158,7 +158,7 @@ int GpuMain(const content::MainFunctionParams& parameters) {
 #endif
 
     if (do_init_sandbox) {
-      content::InitializeSandbox();
+      gpu_info.sandboxed = content::InitializeSandbox();
     }
   }
 #endif
@@ -171,8 +171,10 @@ int GpuMain(const content::MainFunctionParams& parameters) {
     // content.
     sandbox::TargetServices* target_services =
         parameters.sandbox_info->target_services;
-    if (target_services)
+    if (target_services) {
       target_services->LowerToken();
+      gpu_info.sandboxed = true;
+    }
   }
 #endif
 

@@ -19,7 +19,8 @@ GPUInfo::GPUInfo()
       amd_switchable(false),
       can_lose_context(false),
       gpu_accessible(true),
-      software_rendering(false) {
+      software_rendering(false),
+      sandboxed(false) {
 }
 
 GPUInfo::~GPUInfo() { }

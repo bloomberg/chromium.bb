@@ -122,6 +122,9 @@ DictionaryValue* GpuInfoAsDictionaryValue() {
       "Initialization time",
       base::Int64ToString(gpu_info.initialization_time.InMilliseconds())));
   basic_info->Append(NewDescriptionValuePair(
+      "Sandboxed",
+      Value::CreateBooleanValue(gpu_info.sandboxed)));
+  basic_info->Append(NewDescriptionValuePair(
       "GPU0", GPUDeviceToString(gpu_info.gpu)));
   for (size_t i = 0; i < gpu_info.secondary_gpus.size(); ++i) {
     basic_info->Append(NewDescriptionValuePair(

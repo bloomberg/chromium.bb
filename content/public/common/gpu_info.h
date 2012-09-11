@@ -104,6 +104,9 @@ struct CONTENT_EXPORT GPUInfo {
 
   bool software_rendering;
 
+  // Whether the gpu process is running in a sandbox.
+  bool sandboxed;
+
 #if defined(OS_WIN)
   // The information returned by the DirectX Diagnostics Tool.
   DxDiagNode dx_diagnostics;
