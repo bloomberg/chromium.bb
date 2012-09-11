@@ -30,10 +30,47 @@ cr.define('ntp', function() {
      * @private
      */
     activate_: function() {
+      ntp.getCardSlider().selectCard(this.nextCardIndex_(), true);
+    },
+
+    /**
+     * Calculate the index of the card that this button will switch to.
+     * @private
+     */
+    nextCardIndex_: function() {
       var cardSlider = ntp.getCardSlider();
       var index = cardSlider.currentCard + this.direction_;
       var numCards = cardSlider.cardCount - 1;
-      cardSlider.selectCard(Math.max(0, Math.min(index, numCards)), true);
+      return Math.max(0, Math.min(index, numCards));
+    },
+
+    /**
+     * Update the accessible label attribute of this button, based on the
+     * current position in the card slider and the names of the cards.
+     * @param {NodeList} dots The dot elements which display the names of the
+     *     cards.
+     */
+    updateButtonAccessibleLabel: function(dots) {
+      var currentIndex = ntp.getCardSlider().currentCard;
+      var nextCardIndex = this.nextCardIndex_();
+      if (nextCardIndex == currentIndex) {
+        this.setAttribute('aria-label', '');  // No next card.
+        return;
+      }
+
+      var currentDot = dots[currentIndex];
+      var nextDot = dots[nextCardIndex];
+      if (!currentDot || !nextDot) {
+        this.setAttribute('aria-label', '');  // Dots not initialised yet.
+        return;
+      }
+
+      var currentPageTitle = currentDot.displayTitle;
+      var nextPageTitle = nextDot.displayTitle;
+      var msgName = (currentPageTitle == nextPageTitle) ?
+          'page_switcher_same_title' : 'page_switcher_change_title';
+      var ariaLabel = loadTimeData.getStringF(msgName, nextPageTitle);
+      this.setAttribute('aria-label', ariaLabel);
     },
 
     shouldAcceptDrag: function(e) {

@@ -550,7 +550,8 @@ cr.define('ntp', function() {
 
     /**
      * Adjusts the size and position of the page switchers according to the
-     * layout of the current card.
+     * layout of the current card, and updates the aria-label attributes of
+     * the page switchers.
      */
     updatePageSwitchers: function() {
       if (!this.pageSwitcherStart || !this.pageSwitcherEnd)
@@ -583,6 +584,10 @@ cr.define('ntp', function() {
       pageSwitcherRight.style.top = offsetTop;
       pageSwitcherLeft.style.paddingBottom = offsetTop;
       pageSwitcherRight.style.paddingBottom = offsetTop;
+
+      // Update the aria-label attributes of the two page switchers.
+      this.pageSwitcherStart.updateButtonAccessibleLabel(this.dotList.dots);
+      this.pageSwitcherEnd.updateButtonAccessibleLabel(this.dotList.dots);
     },
 
     /**
