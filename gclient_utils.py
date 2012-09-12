@@ -752,9 +752,6 @@ def UpgradeToHttps(url):
   # Do not automatically upgrade http to https if a port number is provided.
   if parsed[0] == 'http' and not re.match(r'^.+?\:\d+$', parsed[1]):
     parsed[0] = 'https'
-  # Until GAE supports SNI, manually convert the url.
-  if parsed[1] == 'codereview.chromium.org':
-    parsed[1] = 'chromiumcodereview.appspot.com'
   return urlparse.urlunparse(parsed)
 
 
