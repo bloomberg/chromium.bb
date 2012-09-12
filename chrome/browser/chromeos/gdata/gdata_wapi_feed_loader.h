@@ -228,6 +228,11 @@ class GDataWapiFeedLoader {
       GDataErrorCode status,
       scoped_ptr<base::Value> data);
 
+  // Callback for handling results of feed parse.
+  void OnParseFeed(scoped_ptr<LoadFeedParams> params,
+                   base::TimeTicks start_time,
+                   scoped_ptr<DocumentFeed>* current_feed);
+
   // Callback for handling response from |DriveAPIService::GetChanglist|.
   // Invokes |callback| when done.
   // |callback| must not be null.
