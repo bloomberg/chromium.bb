@@ -23,13 +23,13 @@ bool IsEasyOffStoreInstallEnabled() {
 }
 
 bool IsActionBoxEnabled() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableActionBox);
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableActionBox);
 }
 
 bool IsExtensionsInActionBoxEnabled() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  return !command_line->HasSwitch(switches::kDisableActionBox) &&
+  return command_line->HasSwitch(switches::kEnableActionBox) &&
          command_line->HasSwitch(switches::kEnableExtensionsInActionBox);
 }
 

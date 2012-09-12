@@ -238,9 +238,6 @@ const char kDiagnostics[]                   = "diagnostics";
 // device, useful when using remote desktop or machines without sound cards.
 // This is temporary until we fix the underlying problem.
 
-// Disables the Action Box toolbar UI.
-const char kDisableActionBox[]              = "disable-action-box";
-
 // Disables the experimental asynchronous DNS client.
 const char kDisableAsyncDns[]               = "disable-async-dns";
 
@@ -442,6 +439,9 @@ const char kDnsPrefetchDisable[]            = "dns-prefetch-disable";
 // logging to be enabled to really do anything). Used by developers and test
 // scripts.
 const char kDumpHistogramsOnExit[]          = "dump-histograms-on-exit";
+
+// Enables the Action Box toolbar UI.
+const char kEnableActionBox[]               = "enable-action-box";
 
 // Enables the experimental asynchronous DNS client.
 const char kEnableAsyncDns[]                = "enable-async-dns";
