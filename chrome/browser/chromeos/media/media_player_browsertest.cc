@@ -33,7 +33,7 @@ class MediaPlayerBrowserTest : public InProcessBrowserTest {
   }
 
   bool IsPlayerVisible() {
-    return IsBrowserVisible(MediaPlayer::GetInstance()->mediaplayer_browser_);
+    return IsBrowserVisible(MediaPlayer::GetInstance()->GetBrowser());
   }
 };
 
