@@ -25,7 +25,7 @@ FlingAnimatorImpl::FlingAnimatorImpl()
   DCHECK(tmp.obj());
   java_scroller_.Reset(tmp);
 
-  fling_method_id_ = GetMethodID(env, cls, "fling", "(IIIIIIIIII)V");
+  fling_method_id_ = GetMethodID(env, cls, "fling", "(IIIIIIII)V");
   abort_method_id_ = GetMethodID(env, cls, "abortAnimation", "()V");
   compute_method_id_ = GetMethodID(env, cls, "computeScrollOffset", "()Z");
   getX_method_id_ = GetMethodID(env, cls, "getCurrX", "()I");
@@ -37,8 +37,12 @@ FlingAnimatorImpl::~FlingAnimatorImpl()
 }
 
 void FlingAnimatorImpl::startFling(const WebKit::WebFloatPoint& velocity,
-                                   const WebKit::WebRect& range)
+                                   const WebKit::WebRect& /* range */)
 {
+  // Ignore "range" as it's always empty -- see http://webkit.org/b/96403
+  // Instead, use the largest possible bounds for minX/maxX/minY/maxY. The
+  // compositor will ignore any attempt to scroll beyond the end of the page.
+
   DCHECK(velocity.x || velocity.y);
   if (is_active_)
     cancelFling();
@@ -46,11 +50,11 @@ void FlingAnimatorImpl::startFling(const WebKit::WebFloatPoint& velocity,
   is_active_ = true;
 
   JNIEnv* env = AttachCurrentThread();
+
   env->CallVoidMethod(java_scroller_.obj(), fling_method_id_, 0, 0,
                       static_cast<int>(velocity.x),
                       static_cast<int>(velocity.y),
-                      range.x, range.x + range.width,
-                      range.y, range.y + range.height, 0, 0);
+                      INT_MIN, INT_MAX, INT_MIN, INT_MAX);
   CheckException(env);
 }
 
