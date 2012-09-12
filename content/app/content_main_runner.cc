@@ -20,6 +20,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/profiler/alternate_timer.h"
+#include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "content/browser/browser_main.h"
@@ -94,6 +95,58 @@ extern int ZygoteMain(const MainFunctionParams&,
                       ZygoteForkDelegate* forkdelegate);
 }  // namespace content
 #endif
+
+namespace {
+#if defined(OS_WIN)
+// In order to have Theme support, we need to connect to the theme service.
+// This needs to be done before we lock down the process. Officially this
+// can be done with OpenThemeData() but it fails unless you pass a valid
+// window at least the first time. Interestingly, the very act of creating a
+// window also sets the connection to the theme service.
+void EnableThemeSupportOnAllWindowStations() {
+  HDESK desktop_handle = ::OpenInputDesktop(0, FALSE, READ_CONTROL);
+  if (desktop_handle) {
+    // This means we are running in an input desktop, which implies WinSta0.
+    ::CloseDesktop(desktop_handle);
+    return;
+  }
+
+  HWINSTA current_station = ::GetProcessWindowStation();
+  DCHECK(current_station);
+
+  HWINSTA winsta0 = ::OpenWindowStationA("WinSta0", FALSE, GENERIC_READ);
+  if (!winsta0 || !::SetProcessWindowStation(winsta0)) {
+    // Could not set the alternate window station. There is a possibility
+    // that the theme wont be correctly initialized.
+    NOTREACHED() << "Unable to switch to WinSta0, we: "<< ::GetLastError();
+  }
+
+  HWND window = ::CreateWindowExW(0, L"Static", L"", WS_POPUP | WS_DISABLED,
+                                  CW_USEDEFAULT, 0, 0, 0,  HWND_MESSAGE, NULL,
+                                  ::GetModuleHandleA(NULL), NULL);
+  if (!window) {
+    DLOG(WARNING) << "failed to enable theme support";
+  } else {
+    ::DestroyWindow(window);
+    window = NULL;
+  }
+
+  // Revert the window station.
+  if (!::SetProcessWindowStation(current_station)) {
+    // We failed to switch back to the secure window station. This might
+    // confuse the process enough that we should kill it now.
+    LOG(FATAL) << "Failed to restore alternate window station";
+  }
+
+  if (!::CloseWindowStation(winsta0)) {
+    // We might be leaking a winsta0 handle.  This is a security risk, but
+    // since we allow fail over to no desktop protection in low memory
+    // condition, this is not a big risk.
+    NOTREACHED();
+  }
+}
+#endif  // defined(OS_WIN)
+}  // namespace
 
 namespace content {
 
@@ -563,6 +616,9 @@ static void ReleaseFreeMemoryThunk() {
       SendTaskPortToParentProcess();
     }
 #elif defined(OS_WIN)
+    // This must be done early enough since some helper functions like
+    // IsTouchEnanbled, needed to load resources, may call into the theme dll.
+    EnableThemeSupportOnAllWindowStations();
 #if defined(ENABLE_HIDPI)
     ui::EnableHighDPISupport();
 #endif
