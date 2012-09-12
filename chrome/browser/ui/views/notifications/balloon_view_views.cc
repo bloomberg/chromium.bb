@@ -54,23 +54,18 @@ const int kTopMargin = 2;
 const int kBottomMargin = 0;
 const int kLeftMargin = 4;
 const int kRightMargin = 4;
-const int kShelfBorderTopOverlap = 0;
 
-// Properties of the dismiss button.
-const int kDismissButtonWidth = 14;
-const int kDismissButtonHeight = 14;
-const int kDismissButtonTopMargin = 6;
-const int kDismissButtonRightMargin = 6;
+// Margin between various shelf buttons/label and the shelf border.
+const int kShelfMargin = 2;
 
-// Properties of the options menu.
-const int kOptionsButtonWidth = 21;
-const int kOptionsButtonHeight = 14;
-const int kOptionsButtonTopMargin = 5;
-const int kOptionsButtonRightMargin = 4;
+// Spacing between the options and close buttons.
+const int kOptionsDismissSpacing = 4;
 
-// Properties of the origin label.
-const int kLabelLeftMargin = 10;
-const int kLabelTopMargin = 6;
+// Spacing between the options button and label text.
+const int kLabelOptionsSpacing = 4;
+
+// Margin between shelf border and title label.
+const int kLabelLeftMargin = 6;
 
 // Size of the drop shadow.  The shadow is provided by BubbleBorder,
 // not this class.
@@ -81,10 +76,6 @@ const int kBottomShadowWidth = 6;
 
 // Optional animation.
 const bool kAnimateEnabled = true;
-
-// The shelf height for the system default font size.  It is scaled
-// with changes in the default font size.
-const int kDefaultShelfHeight = 22;
 
 // Menu commands
 const int kRevokePermissionCommand = 0;
@@ -278,40 +269,38 @@ void BalloonViewImpl::AnimationProgressed(const ui::Animation* animation) {
 }
 
 gfx::Rect BalloonViewImpl::GetCloseButtonBounds() const {
-  return gfx::Rect(
-      width() - kDismissButtonWidth -
-          kDismissButtonRightMargin - kRightShadowWidth,
-      kDismissButtonTopMargin,
-      kDismissButtonWidth,
-      kDismissButtonHeight);
+  gfx::Rect bounds(GetContentsBounds());
+  bounds.set_height(GetShelfHeight());
+  const gfx::Size& pref_size(close_button_->GetPreferredSize());
+  bounds.Inset(bounds.width() - kShelfMargin - pref_size.width(), 0,
+      kShelfMargin, 0);
+  return bounds.Center(pref_size);
 }
 
 gfx::Rect BalloonViewImpl::GetOptionsButtonBounds() const {
-  gfx::Rect close_rect = GetCloseButtonBounds();
-
-  return gfx::Rect(
-      close_rect.x() - kOptionsButtonWidth - kOptionsButtonRightMargin,
-      kOptionsButtonTopMargin,
-      kOptionsButtonWidth,
-      kOptionsButtonHeight);
+  gfx::Rect bounds(GetContentsBounds());
+  bounds.set_height(GetShelfHeight());
+  const gfx::Size& pref_size(options_menu_button_->GetPreferredSize());
+  bounds.set_x(GetCloseButtonBounds().x() - kOptionsDismissSpacing -
+      pref_size.width());
+  bounds.set_width(pref_size.width());
+  return bounds.Center(pref_size);
 }
 
 gfx::Rect BalloonViewImpl::GetLabelBounds() const {
-  return gfx::Rect(
-      kLeftShadowWidth + kLabelLeftMargin,
-      kLabelTopMargin,
-      std::max(0, width() - kOptionsButtonWidth -
-               kRightMargin),
-      kOptionsButtonHeight);
+  gfx::Rect bounds(GetContentsBounds());
+  bounds.set_height(GetShelfHeight());
+  gfx::Size pref_size(source_label_->GetPreferredSize());
+  bounds.Inset(kLabelLeftMargin, 0, bounds.width() -
+      GetOptionsButtonBounds().x() + kLabelOptionsSpacing, 0);
+  pref_size.set_width(bounds.width());
+  return bounds.Center(pref_size);
 }
 
 void BalloonViewImpl::Show(Balloon* balloon) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   balloon_ = balloon;
-
-  SetBounds(balloon_->GetPosition().x(), balloon_->GetPosition().y(),
-            GetTotalWidth(), GetTotalHeight());
 
   const string16 source_label_text = l10n_util::GetStringFUTF16(
       IDS_NOTIFICATION_BALLOON_SOURCE_LABEL,
@@ -401,6 +390,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   source_label_->SetBackgroundColor(kControlBarBackgroundColor);
   source_label_->SetEnabledColor(kControlBarTextColor);
   source_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  source_label_->SetElideBehavior(views::Label::ELIDE_AT_END);
   source_label_->SetBoundsRect(GetLabelBounds());
 
   SizeContentsWindow();
@@ -475,7 +465,11 @@ gfx::Point BalloonViewImpl::GetContentsOffset() const {
 
 int BalloonViewImpl::GetShelfHeight() const {
   // TODO(johnnyg): add scaling here.
-  return kDefaultShelfHeight;
+  int max_button_height = std::max(std::max(
+      close_button_->GetPreferredSize().height(),
+      options_menu_button_->GetPreferredSize().height()),
+      source_label_->GetPreferredSize().height());
+  return max_button_height + kShelfMargin * 2;
 }
 
 int BalloonViewImpl::GetBalloonFrameHeight() const {
@@ -483,14 +477,14 @@ int BalloonViewImpl::GetBalloonFrameHeight() const {
 }
 
 int BalloonViewImpl::GetTotalWidth() const {
-  return balloon_->content_size().width()
-      + kLeftMargin + kRightMargin + kLeftShadowWidth + kRightShadowWidth;
+  return balloon_->content_size().width() +
+      kLeftMargin + kRightMargin + kLeftShadowWidth + kRightShadowWidth;
 }
 
 int BalloonViewImpl::GetTotalHeight() const {
-  return balloon_->content_size().height()
-      + kTopMargin + kBottomMargin + kTopShadowWidth + kBottomShadowWidth
-      + GetShelfHeight();
+  return balloon_->content_size().height() +
+      kTopMargin + kBottomMargin + kTopShadowWidth + kBottomShadowWidth +
+      GetShelfHeight();
 }
 
 gfx::Rect BalloonViewImpl::GetContentsRectangle() const {
@@ -521,7 +515,7 @@ void BalloonViewImpl::OnPaint(gfx::Canvas* canvas) {
 
   // Draw a 1-pixel gray line between the content and the menu bar.
   int line_width = GetTotalWidth() - kLeftMargin - kRightMargin;
-  canvas->FillRect(gfx::Rect(kLeftMargin, 1 + GetShelfHeight(), line_width, 1),
+  canvas->FillRect(gfx::Rect(kLeftMargin, rect.bottom(), line_width, 1),
                    kControlBarSeparatorLineColor);
   View::OnPaint(canvas);
   OnPaintBorder(canvas);
