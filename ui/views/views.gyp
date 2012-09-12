@@ -313,6 +313,8 @@
         'widget/child_window_message_processor.h',
         'widget/default_theme_provider.cc',
         'widget/default_theme_provider.h',
+        'widget/desktop_capture_client.cc',
+        'widget/desktop_capture_client.h',
         'widget/desktop_native_widget_aura.cc',
         'widget/desktop_native_widget_aura.h',
         'widget/desktop_native_widget_helper_aura.cc',
@@ -422,33 +424,32 @@
               'sources/': [
                 ['include', 'widget/desktop_root_window_host_win.cc'],
                 ['include', 'widget/desktop_root_window_host_win.h'],
+                ['include', 'widget/desktop_capture_client.cc'],
+                ['include', 'widget/desktop_capture_client.h'],
               ],
             }],
           ],
         }],
-        ['chromeos==1', {
+        ['chromeos==1 or use_aura==0', {
           'sources!': [
             'widget/desktop_root_window_host.h',
             'widget/desktop_root_window_host_linux.cc',
             'widget/desktop_root_window_host_linux.h',
             'widget/desktop_native_widget_aura.cc',
             'widget/desktop_native_widget_aura.h',
+            'widget/desktop_root_window_host_win.cc',
+            'widget/desktop_root_window_host_win.h',
+            'widget/desktop_capture_client.cc',
+            'widget/desktop_capture_client.h',
+          ],
+          'sources/': [
+            ['exclude', 'widget/desktop_root_window_host_win.cc'],
+            ['exclude', 'widget/desktop_root_window_host_win.h'],
           ],
         }],
         ['use_aura==0', {
           'sources!': [
             'widget/tooltip_manager_views.cc',
-            'widget/desktop_root_window_host.h',
-            'widget/desktop_root_window_host_linux.cc',
-            'widget/desktop_root_window_host_linux.h',
-            'widget/desktop_root_window_host_win.cc',
-            'widget/desktop_root_window_host_win.h',
-            'widget/desktop_native_widget_aura.cc',
-            'widget/desktop_native_widget_aura.h',
-          ],
-          'sources/': [
-            ['exclude', 'widget/desktop_root_window_host_win.cc'],
-            ['exclude', 'widget/desktop_root_window_host_win.h'],
           ],
         }],
         ['use_aura==0 and OS=="win"', {
