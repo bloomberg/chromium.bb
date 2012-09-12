@@ -448,10 +448,12 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     const bool default_download_to_drive = gdata::util::IsUnderDriveMountPoint(
         download_default_directory_.GetValue());
     if (pref_name)
-      UMA_HISTOGRAM_BOOLEAN("FileBrowser.DownloadDestination.IsDrive.Changed",
+      UMA_HISTOGRAM_BOOLEAN(
+          "FileBrowser.DownloadDestination.IsGoogleDrive.Changed",
           default_download_to_drive);
     else
-      UMA_HISTOGRAM_BOOLEAN("FileBrowser.DownloadDestination.IsDrive.Started",
+      UMA_HISTOGRAM_BOOLEAN(
+          "FileBrowser.DownloadDestination.IsGoogleDrive.Started",
           default_download_to_drive);
   }
 
