@@ -213,9 +213,6 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   // download completes, we will rename the file to |target_path_|.
   virtual const FilePath& GetTargetFilePath() const = 0;
 
-  // |GetTargetFilePath().BaseName()|
-  virtual FilePath GetTargetName() const = 0;
-
   // If the download forced a path rather than requesting name determination,
   // return the path requested.
   virtual const FilePath& GetForcedFilePath() const = 0;

@@ -97,7 +97,6 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   virtual const std::string& GetETag() const OVERRIDE;
   virtual const FilePath& GetFullPath() const OVERRIDE;
   virtual const FilePath& GetTargetFilePath() const OVERRIDE;
-  virtual FilePath GetTargetName() const OVERRIDE;
   virtual const FilePath& GetForcedFilePath() const OVERRIDE;
   virtual FilePath GetUserVerifiedFilePath() const OVERRIDE;
   virtual FilePath GetFileNameToReportUser() const OVERRIDE;

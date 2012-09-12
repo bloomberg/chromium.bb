@@ -57,7 +57,6 @@ class MockDownloadItem : public DownloadItem {
   MOCK_CONST_METHOD0(GetETag, const std::string&());
   MOCK_CONST_METHOD0(GetFullPath, const FilePath&());
   MOCK_CONST_METHOD0(GetTargetFilePath, const FilePath&());
-  MOCK_CONST_METHOD0(GetTargetName, FilePath());
   MOCK_CONST_METHOD0(GetForcedFilePath, const FilePath&());
   MOCK_CONST_METHOD0(GetUserVerifiedFilePath, FilePath());
   MOCK_CONST_METHOD0(GetFileNameToReportUser, FilePath());

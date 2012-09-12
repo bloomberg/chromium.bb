@@ -135,7 +135,6 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_CONST_METHOD0(GetDangerType, content::DownloadDangerType());
   MOCK_CONST_METHOD0(IsDangerous, bool());
   MOCK_METHOD0(GetAutoOpened, bool());
-  MOCK_CONST_METHOD0(GetTargetName, FilePath());
   MOCK_CONST_METHOD0(GetForcedFilePath, const FilePath&());
   MOCK_CONST_METHOD0(HasUserGesture, bool());
   MOCK_CONST_METHOD0(GetTransitionType, content::PageTransition());

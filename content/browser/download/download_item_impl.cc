@@ -567,10 +567,6 @@ const FilePath& DownloadItemImpl::GetTargetFilePath() const {
   return target_path_;
 }
 
-FilePath DownloadItemImpl::GetTargetName() const {
-  return target_path_.BaseName();
-}
-
 const FilePath& DownloadItemImpl::GetForcedFilePath() const {
   // TODO(asanka): Get rid of GetForcedFilePath(). We should instead just
   // require that clients respect GetTargetFilePath() if it is already set.
@@ -1066,7 +1062,7 @@ void DownloadItemImpl::OnDownloadCompleting() {
   VLOG(20) << __FUNCTION__ << "()"
            << " needs rename = " << NeedsRename()
            << " " << DebugString(true);
-  DCHECK(!GetTargetName().empty());
+  DCHECK(!GetTargetFilePath().empty());
   DCHECK_NE(DANGEROUS, GetSafetyState());
 
   if (NeedsRename()) {
