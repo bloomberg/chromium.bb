@@ -1,0 +1,3 @@
+ROLE_SYSTEM_DOCUMENT name='' READONLY FOCUSABLE
+    IA2_ROLE_SECTION name='Focusable div' FOCUSABLE
+        ROLE_SYSTEM_TEXT name='Focusable div' READONLY

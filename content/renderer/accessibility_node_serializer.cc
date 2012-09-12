@@ -75,6 +75,8 @@ AccessibilityNodeData::Role ConvertRole(WebKit::WebAccessibilityRole role) {
       return AccessibilityNodeData::ROLE_BUSY_INDICATOR;
     case WebKit::WebAccessibilityRoleButton:
       return AccessibilityNodeData::ROLE_BUTTON;
+    case WebKit::WebAccessibilityRoleCanvas:
+      return AccessibilityNodeData::ROLE_CANVAS;
     case WebKit::WebAccessibilityRoleCell:
       return AccessibilityNodeData::ROLE_CELL;
     case WebKit::WebAccessibilityRoleCheckBox:
@@ -95,6 +97,8 @@ AccessibilityNodeData::Role ConvertRole(WebKit::WebAccessibilityRole role) {
       return AccessibilityNodeData::ROLE_DIRECTORY;
     case WebKit::WebAccessibilityRoleDisclosureTriangle:
       return AccessibilityNodeData::ROLE_DISCLOSURE_TRIANGLE;
+    case WebKit::WebAccessibilityRoleDiv:
+      return AccessibilityNodeData::ROLE_DIV;
     case WebKit::WebAccessibilityRoleDocument:
       return AccessibilityNodeData::ROLE_DOCUMENT;
     case WebKit::WebAccessibilityRoleDocumentArticle:
@@ -111,6 +115,8 @@ AccessibilityNodeData::Role ConvertRole(WebKit::WebAccessibilityRole role) {
       return AccessibilityNodeData::ROLE_EDITABLE_TEXT;
     case WebKit::WebAccessibilityRoleFooter:
       return AccessibilityNodeData::ROLE_FOOTER;
+    case WebKit::WebAccessibilityRoleForm:
+      return AccessibilityNodeData::ROLE_FORM;
     case WebKit::WebAccessibilityRoleGrid:
       return AccessibilityNodeData::ROLE_GRID;
     case WebKit::WebAccessibilityRoleGroup:
@@ -121,6 +127,8 @@ AccessibilityNodeData::Role ConvertRole(WebKit::WebAccessibilityRole role) {
       return AccessibilityNodeData::ROLE_HEADING;
     case WebKit::WebAccessibilityRoleHelpTag:
       return AccessibilityNodeData::ROLE_HELP_TAG;
+    case WebKit::WebAccessibilityRoleHorizontalRule:
+      return AccessibilityNodeData::ROLE_HORIZONTAL_RULE;
     case WebKit::WebAccessibilityRoleIgnored:
       return AccessibilityNodeData::ROLE_IGNORED;
     case WebKit::WebAccessibilityRoleImage:
@@ -131,6 +139,8 @@ AccessibilityNodeData::Role ConvertRole(WebKit::WebAccessibilityRole role) {
       return AccessibilityNodeData::ROLE_IMAGE_MAP_LINK;
     case WebKit::WebAccessibilityRoleIncrementor:
       return AccessibilityNodeData::ROLE_INCREMENTOR;
+    case WebKit::WebAccessibilityRoleLabel:
+      return AccessibilityNodeData::ROLE_LABEL;
     case WebKit::WebAccessibilityRoleLandmarkApplication:
       return AccessibilityNodeData::ROLE_LANDMARK_APPLICATION;
     case WebKit::WebAccessibilityRoleLandmarkBanner:
@@ -173,8 +183,12 @@ AccessibilityNodeData::Role ConvertRole(WebKit::WebAccessibilityRole role) {
       return AccessibilityNodeData::ROLE_MENU_LIST_POPUP;
     case WebKit::WebAccessibilityRoleOutline:
       return AccessibilityNodeData::ROLE_OUTLINE;
+    case WebKit::WebAccessibilityRoleParagraph:
+      return AccessibilityNodeData::ROLE_PARAGRAPH;
     case WebKit::WebAccessibilityRolePopUpButton:
       return AccessibilityNodeData::ROLE_POPUP_BUTTON;
+    case WebKit::WebAccessibilityRolePresentational:
+      return AccessibilityNodeData::ROLE_PRESENTATIONAL;
     case WebKit::WebAccessibilityRoleProgressIndicator:
       return AccessibilityNodeData::ROLE_PROGRESS_INDICATOR;
     case WebKit::WebAccessibilityRoleRadioButton:
@@ -199,6 +213,10 @@ AccessibilityNodeData::Role ConvertRole(WebKit::WebAccessibilityRole role) {
       return AccessibilityNodeData::ROLE_SLIDER;
     case WebKit::WebAccessibilityRoleSliderThumb:
       return AccessibilityNodeData::ROLE_SLIDER_THUMB;
+    case WebKit::WebAccessibilityRoleSpinButton:
+      return AccessibilityNodeData::ROLE_SPIN_BUTTON;
+    case WebKit::WebAccessibilityRoleSpinButtonPart:
+      return AccessibilityNodeData::ROLE_SPIN_BUTTON_PART;
     case WebKit::WebAccessibilityRoleSplitGroup:
       return AccessibilityNodeData::ROLE_SPLIT_GROUP;
     case WebKit::WebAccessibilityRoleSplitter:
@@ -223,6 +241,8 @@ AccessibilityNodeData::Role ConvertRole(WebKit::WebAccessibilityRole role) {
       return AccessibilityNodeData::ROLE_TEXTAREA;
     case WebKit::WebAccessibilityRoleTextField:
       return AccessibilityNodeData::ROLE_TEXT_FIELD;
+    case WebKit::WebAccessibilityRoleToggleButton:
+      return AccessibilityNodeData::ROLE_TOGGLE_BUTTON;
     case WebKit::WebAccessibilityRoleToolbar:
       return AccessibilityNodeData::ROLE_TOOLBAR;
     case WebKit::WebAccessibilityRoleTreeGrid:
@@ -377,6 +397,9 @@ void SerializeAccessibilityNode(
   if (dst->role == dst->ROLE_LISTBOX_OPTION && src.isSelectedOptionActive())
     dst->state |= (1 << AccessibilityNodeData::STATE_FOCUSED);
 
+  if (src.canvasHasFallbackContent())
+    dst->role = AccessibilityNodeData::ROLE_CANVAS_WITH_FALLBACK_CONTENT;
+
   WebNode node = src.node();
   bool is_iframe = false;
 
@@ -477,7 +500,8 @@ void SerializeAccessibilityNode(
 
   if (dst->role == dst->ROLE_PROGRESS_INDICATOR ||
       dst->role == dst->ROLE_SCROLLBAR ||
-      dst->role == dst->ROLE_SLIDER) {
+      dst->role == dst->ROLE_SLIDER ||
+      dst->role == dst->ROLE_SPIN_BUTTON) {
     dst->float_attributes[dst->ATTR_VALUE_FOR_RANGE] = src.valueForRange();
     dst->float_attributes[dst->ATTR_MAX_VALUE_FOR_RANGE] =
         src.minValueForRange();

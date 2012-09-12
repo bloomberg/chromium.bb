@@ -244,6 +244,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityButtonNameCalc) {
   RunTest(FILE_PATH_LITERAL("button-name-calc.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityCanvas) {
+  RunTest(FILE_PATH_LITERAL("canvas.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        AccessibilityCheckboxNameCalc) {
   RunTest(FILE_PATH_LITERAL("checkbox-name-calc.html"));
@@ -258,6 +262,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
     AccessibilityContenteditableDescendants
 #endif
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityDiv) {
+  RunTest(FILE_PATH_LITERAL("div.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        MAYBE_AccessibilityContenteditableDescendants) {
   RunTest(FILE_PATH_LITERAL("contenteditable-descendants.html"));
@@ -267,13 +275,37 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityFooter) {
   RunTest(FILE_PATH_LITERAL("footer.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityForm) {
+  RunTest(FILE_PATH_LITERAL("form.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityHR) {
+  RunTest(FILE_PATH_LITERAL("hr.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        AccessibilityInputTextNameCalc) {
   RunTest(FILE_PATH_LITERAL("input-text-name-calc.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityLabel) {
+  RunTest(FILE_PATH_LITERAL("label.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityListMarkers) {
   RunTest(FILE_PATH_LITERAL("list-markers.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityP) {
+  RunTest(FILE_PATH_LITERAL("p.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilitySpinButton) {
+  RunTest(FILE_PATH_LITERAL("spinbutton.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityToggleButton) {
+  RunTest(FILE_PATH_LITERAL("togglebutton.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityUl) {

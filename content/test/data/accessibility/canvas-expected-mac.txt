@@ -1,0 +1,7 @@
+AXWebArea subrole=(null) title='' value=''
+    AXGroup subrole=(null) title='' value=''
+        AXImage subrole=(null) title='' value=''
+            AXStaticText subrole=(null) title='' value=''
+        AXGroup subrole=(null) title='' value=''
+            AXLink subrole=(null) title='' value=''
+                AXStaticText subrole=(null) title='' value=''
