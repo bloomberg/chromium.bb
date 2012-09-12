@@ -442,7 +442,8 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, RafNoDamage) {
   }
 }
 
-#if defined(OS_MACOSX)
+// Disable this test under ASAN <http://crbug.com/148633>.
+#if defined(OS_MACOSX) && !defined(ADDRESS_SANITIZER)
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, IOSurfaceReuse) {
   if (!IOSurfaceSupport::Initialize())
     return;
