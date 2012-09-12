@@ -420,6 +420,7 @@ SkBitmap CCRenderSurfaceFilters::apply(const WebKit::WebFilterOperations& filter
             paint.setImageFilter(zoomFilter.get());
             canvas->saveLayer(0, &paint);
             canvas->drawBitmap(state.source(), 0, 0);
+            canvas->restore();
             break;
         }
         case WebKit::WebFilterOperation::FilterTypeBrightness:
