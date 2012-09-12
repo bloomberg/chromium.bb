@@ -56,6 +56,13 @@ class BrowserMainRunnerImpl : public content::BrowserMainRunner {
       content::RenderProcessHost::set_run_renderer_in_process(true);
 #endif  // !defined(OS_IOS)
 
+#if defined(OS_WIN)
+    if (parameters.command_line.HasSwitch(
+            switches::kEnableTextServiceFramework)) {
+      base::win::SetForceToUseTsf();
+    }
+#endif  // OS_WIN
+
     base::StatisticsRecorder::Initialize();
 
     notification_service_.reset(new NotificationServiceImpl);

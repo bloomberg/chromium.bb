@@ -181,7 +181,6 @@ extern const char kEnableSpdyFlowControl[];
 extern const char kEnableStackedTabStrip[];
 extern const char kEnableSuggestionsTabPage[];
 extern const char kEnableTabGroupsContextMenu[];
-extern const char kEnableTextServiceFramework[];
 extern const char kEnableWatchdog[];
 extern const char kEnableWebSocketOverSpdy[];
 extern const char kEventPageIdleTime[];

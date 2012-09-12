@@ -644,10 +644,6 @@ const char kDisableSyncTabs[]               = "disable-sync-tabs";
 // Enables context menu for selecting groups of tabs.
 const char kEnableTabGroupsContextMenu[]    = "enable-tab-groups-context-menu";
 
-// Enable Text Service Framework(TSF) for text inputting instead of IMM32. This
-// flag is ignored on Metro environment.
-const char kEnableTextServiceFramework[] = "enable-text-service-framework";
-
 // Spawns threads to watch for excessive delays in specified message loops.
 // User should set breakpoints on Alarm() to examine problematic thread.
 //

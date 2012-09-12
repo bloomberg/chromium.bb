@@ -290,6 +290,10 @@ const char kDisableFullScreen[]             = "disable-fullscreen";
 // Enable the JavaScript Pointer Lock API.
 const char kEnablePointerLock[]             = "enable-pointer-lock";
 
+// Enable Text Service Framework(TSF) for text inputting instead of IMM32. This
+// flag is ignored on Metro environment.
+const char kEnableTextServiceFramework[] = "enable-text-service-framework";
+
 // Enables the GPU benchmarking extension
 const char kEnableGpuBenchmarking[]         = "enable-gpu-benchmarking";
 
