@@ -17,7 +17,7 @@
 #include "webkit/fileapi/task_runner_bound_observer_list.h"
 
 #if defined(SUPPORT_MEDIA_FILESYSTEM)
-#include "webkit/fileapi/media/media_device_interface_impl.h"
+#include "webkit/fileapi/media/media_device_delegate.h"
 #endif
 
 namespace fileapi {
@@ -39,12 +39,12 @@ class FILEAPI_EXPORT_PRIVATE FileSystemOperationContext {
   int64 allowed_bytes_growth() const { return allowed_bytes_growth_; }
 
 #if defined(SUPPORT_MEDIA_FILESYSTEM)
-  void set_media_device(MediaDeviceInterfaceImpl* media_device) {
-    media_device_ = media_device;
+  void set_media_device_delegate(MediaDeviceDelegate* delegate) {
+    media_device_delegate_ = delegate;
   }
 
-  MediaDeviceInterfaceImpl* media_device() const {
-    return media_device_.get();
+  MediaDeviceDelegate* media_device_delegate() const {
+    return media_device_delegate_.get();
   }
 #endif
 
@@ -93,7 +93,7 @@ class FILEAPI_EXPORT_PRIVATE FileSystemOperationContext {
 
 #if defined(SUPPORT_MEDIA_FILESYSTEM)
   // Store the current media device.
-  scoped_refptr<MediaDeviceInterfaceImpl> media_device_;
+  scoped_refptr<MediaDeviceDelegate> media_device_delegate_;
 #endif
 };
 

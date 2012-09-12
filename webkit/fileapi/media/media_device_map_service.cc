@@ -4,26 +4,44 @@
 
 #include "webkit/fileapi/media/media_device_map_service.h"
 
+#include <string>
 #include <utility>
 
+#include "base/stl_util.h"
 #include "webkit/fileapi/isolated_context.h"
+#include "webkit/fileapi/media/media_device_delegate.h"
 
 namespace fileapi {
-
-using base::SequencedTaskRunner;
 
 // static
 MediaDeviceMapService* MediaDeviceMapService::GetInstance() {
   return Singleton<MediaDeviceMapService>::get();
 }
 
-MediaDeviceInterfaceImpl* MediaDeviceMapService::CreateOrGetMediaDevice(
-    const std::string& filesystem_id,
-    SequencedTaskRunner* media_task_runner) {
-  DCHECK(media_task_runner);
+void MediaDeviceMapService::AddDelegate(
+    const FilePath::StringType& device_location,
+    scoped_refptr<MediaDeviceDelegate> delegate) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(delegate.get());
+  DCHECK(!device_location.empty());
 
-  base::AutoLock lock(media_device_map_lock_);
+  if (ContainsKey(delegate_map_, device_location))
+    return;
 
+  delegate_map_[device_location] = delegate;
+}
+
+void MediaDeviceMapService::RemoveDelegate(
+    const FilePath::StringType& device_location) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DelegateMap::iterator it = delegate_map_.find(device_location);
+  DCHECK(it != delegate_map_.end());
+  delegate_map_.erase(it);
+}
+
+MediaDeviceDelegate* MediaDeviceMapService::GetMediaDeviceDelegate(
+    const std::string& filesystem_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   FilePath device_path;
   if (!IsolatedContext::GetInstance()->GetRegisteredPath(filesystem_id,
                                                          &device_path)) {
@@ -33,27 +51,17 @@ MediaDeviceInterfaceImpl* MediaDeviceMapService::CreateOrGetMediaDevice(
   FilePath::StringType device_location = device_path.value();
   DCHECK(!device_location.empty());
 
-  MediaDeviceMap::const_iterator it = media_device_map_.find(device_location);
-  if (it == media_device_map_.end()) {
-    media_device_map_.insert(std::make_pair(
-        device_location, new MediaDeviceInterfaceImpl(device_location,
-                                                      media_task_runner)));
-  }
-  return media_device_map_[device_location].get();
-}
-
-void MediaDeviceMapService::RemoveMediaDevice(
-    const std::string& device_location) {
-  base::AutoLock lock(media_device_map_lock_);
-  MediaDeviceMap::iterator it = media_device_map_.find(device_location);
-  if (it != media_device_map_.end())
-    media_device_map_.erase(it);
+  DelegateMap::const_iterator it = delegate_map_.find(device_location);
+  DCHECK(it != delegate_map_.end());
+  return it->second.get();
 }
 
 MediaDeviceMapService::MediaDeviceMapService() {
+  // This object is constructed on UI Thread but the member functions are
+  // accessed on IO thread. Therefore, detach from current thread.
+  thread_checker_.DetachFromThread();
 }
 
-MediaDeviceMapService::~MediaDeviceMapService() {
-}
+MediaDeviceMapService::~MediaDeviceMapService() {}
 
 }  // namespace fileapi

@@ -108,12 +108,9 @@
           'sources': [
             'media/device_media_file_util.cc',
             'media/device_media_file_util.h',
-            'media/media_device_interface.h',
-            'media/media_device_interface_impl.h',
+            'media/media_device_delegate.h',
             'media/media_device_map_service.cc',
             'media/media_device_map_service.h',
-            'media/mtp_device_interface_impl_linux.cc',
-            'media/mtp_device_interface_impl_linux.h',
           ],
         }],
         ['chromeos==1', {

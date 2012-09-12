@@ -10,47 +10,51 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
-#include "base/synchronization/lock.h"
-#include "webkit/fileapi/media/media_device_interface_impl.h"
-
-namespace base {
-class SequencedTaskRunner;
-}
+#include "base/threading/thread_checker.h"
+#include "webkit/fileapi/fileapi_export.h"
 
 namespace fileapi {
 
-// Helper class to manage media device interfaces.
+class MediaDeviceDelegate;
+
+// Helper class to manage media device delegates which can communicate with mtp
+// devices to complete media file system operations.
 class FILEAPI_EXPORT MediaDeviceMapService {
  public:
   static MediaDeviceMapService* GetInstance();
 
-  // Create or get media device interface associated with |filesystem_id|.
-  // Return NULL if the |filesystem_id| is no longer valid (e.g. because the
-  // corresponding device is detached etc). This function is called on IO
-  // thread.
-  MediaDeviceInterfaceImpl* CreateOrGetMediaDevice(
-      const std::string& filesystem_id,
-      base::SequencedTaskRunner* media_task_runner);
+  // Adds the media device delegate for the given |device_location|. Called on
+  // IO thread.
+  void AddDelegate(const FilePath::StringType& device_location,
+                   scoped_refptr<MediaDeviceDelegate> delegate);
 
-  // This function is called on UI thread.
-  void RemoveMediaDevice(const FilePath::StringType& device_location);
+  // Removes the media device delegate for the given |device_location| if
+  // exists. Called on IO thread.
+  void RemoveDelegate(const FilePath::StringType& device_location);
+
+  // Gets the media device delegate associated with |filesystem_id|.
+  // Return NULL if the |filesystem_id| is no longer valid (e.g. because the
+  // corresponding device is detached etc). Called on IO thread.
+  MediaDeviceDelegate* GetMediaDeviceDelegate(const std::string& filesystem_id);
 
  private:
   friend struct DefaultSingletonTraits<MediaDeviceMapService>;
 
-  typedef scoped_refptr<MediaDeviceInterfaceImpl> MediaDeviceRefPtr;
-  typedef std::map<FilePath::StringType, MediaDeviceRefPtr> MediaDeviceMap;
+  typedef scoped_refptr<MediaDeviceDelegate> MediaDeviceDelegateObj;
+
+  // Mapping of device_location and MediaDeviceDelegate object.
+  typedef std::map<FilePath::StringType, MediaDeviceDelegateObj> DelegateMap;
 
   // Get access to this class using GetInstance() method.
   MediaDeviceMapService();
   ~MediaDeviceMapService();
 
-  base::Lock media_device_map_lock_;
+  // Stores a map of attached mtp device delegates.
+  DelegateMap delegate_map_;
 
-  // Store a map of attached mtp devices.
-  // Key: Device location.
-  // Value: MtpDeviceInterface.
-  MediaDeviceMap media_device_map_;
+  // Stores a |thread_checker_| object to verify all methods of this class are
+  // called on same thread.
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaDeviceMapService);
 };

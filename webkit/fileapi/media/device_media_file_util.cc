@@ -11,7 +11,6 @@
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/media/filtering_file_enumerator.h"
-#include "webkit/fileapi/media/media_device_interface_impl.h"
 #include "webkit/fileapi/media/media_device_map_service.h"
 #include "webkit/fileapi/media/media_path_filter.h"
 
@@ -65,10 +64,9 @@ PlatformFileError DeviceMediaFileUtil::GetFileInfo(
     const FileSystemURL& url,
     PlatformFileInfo* file_info,
     FilePath* platform_path) {
-  if (!context->media_device())
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+  DCHECK(context->media_device_delegate());
   PlatformFileError error =
-      context->media_device()->GetFileInfo(url.path(), file_info);
+      context->media_device_delegate()->GetFileInfo(url.path(), file_info);
   if (error != base::PLATFORM_FILE_OK)
     return error;
 
@@ -83,11 +81,11 @@ DeviceMediaFileUtil::CreateFileEnumerator(
     FileSystemOperationContext* context,
     const FileSystemURL& url,
     bool recursive) {
-  if (!context->media_device())
-    return new FileSystemFileUtil::EmptyFileEnumerator();
+  DCHECK(context->media_device_delegate());
   return new FilteringFileEnumerator(
       make_scoped_ptr(
-          context->media_device()->CreateFileEnumerator(url.path(), recursive)),
+          context->media_device_delegate()->CreateFileEnumerator(url.path(),
+                                                                 recursive)),
       context->media_path_filter());
 }
 
@@ -103,25 +101,20 @@ PlatformFileError DeviceMediaFileUtil::Touch(
     const FileSystemURL& url,
     const base::Time& last_access_time,
     const base::Time& last_modified_time) {
-  if (!context->media_device())
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
-  return context->media_device()->Touch(url.path(), last_access_time,
-                                        last_modified_time);
+  return base::PLATFORM_FILE_ERROR_FAILED;
 }
 
 PlatformFileError DeviceMediaFileUtil::Truncate(
     FileSystemOperationContext* context,
     const FileSystemURL& url,
     int64 length) {
-  return base::PLATFORM_FILE_ERROR_SECURITY;
+  return base::PLATFORM_FILE_ERROR_FAILED;
 }
 
 bool DeviceMediaFileUtil::IsDirectoryEmpty(
     FileSystemOperationContext* context,
     const FileSystemURL& url) {
-  if (!context->media_device())
-    return false;
-
+  DCHECK(context->media_device_delegate());
   scoped_ptr<AbstractFileEnumerator> enumerator(
       CreateFileEnumerator(context, url, false));
   FilePath path;
@@ -169,9 +162,7 @@ base::PlatformFileError DeviceMediaFileUtil::CreateSnapshotFile(
   DCHECK(file_info);
   DCHECK(local_path);
   DCHECK(snapshot_policy);
-
-  if (!context->media_device())
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+  DCHECK(context->media_device_delegate());
 
   // We return a temporary file as a snapshot.
   *snapshot_policy = FileSystemFileUtil::kSnapshotFileTemporary;
@@ -195,8 +186,7 @@ base::PlatformFileError DeviceMediaFileUtil::CreateSnapshotFile(
                  << isolated_media_file_system_dir_path.value();
     return base::PLATFORM_FILE_ERROR_FAILED;
   }
-
-  return context->media_device()->CreateSnapshotFile(
+  return context->media_device_delegate()->CreateSnapshotFile(
       url.path(), *local_path, file_info);
 }
 
