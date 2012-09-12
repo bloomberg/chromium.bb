@@ -352,7 +352,7 @@ Gallery.prototype.checkActivity_ = function() {
 */
 Gallery.prototype.onUserAction_ = function() {
   this.closeShareMenu_();
-  this.checkActivity_();
+  this.inactivityWatcher_.startActivity();
 };
 
 /**
@@ -375,20 +375,34 @@ Gallery.prototype.setCurrentMode_ = function(mode) {
 /**
  * Mode toggle event handler.
  * @param {function} opt_callback Callback.
+ * @param {Event} opt_event Event that caused this call.
  * @private
  */
-Gallery.prototype.toggleMode_ = function(opt_callback) {
+Gallery.prototype.toggleMode_ = function(opt_callback, opt_event) {
+  if (this.changingMode_) // Do not re-enter while changing the mode.
+    return;
+
+  if (opt_event)
+    this.onUserAction_();
+
+  this.changingMode_ = true;
+
+  var onModeChanged = function() {
+    this.changingMode_ = false;
+    if (opt_callback) opt_callback();
+  }.bind(this);
+
   if (this.currentMode_ == this.slideMode_) {
     this.mosaicMode_.enter();  // This may change the viewport.
     this.slideMode_.leave(this.mosaicMode_.getSelectedTileRect(),
         function() {
           this.setCurrentMode_(this.mosaicMode_);
-          if (opt_callback) opt_callback();
+          onModeChanged();
         }.bind(this));
   } else {
     this.slideMode_.enter(this.mosaicMode_.getSelectedTileRect(),
         this.setCurrentMode_.bind(this, this.slideMode_),
-        opt_callback);
+        onModeChanged);
   }
 };
 
@@ -397,6 +411,8 @@ Gallery.prototype.toggleMode_ = function(opt_callback) {
  * @private
  */
 Gallery.prototype.onDelete_ = function() {
+  this.onUserAction_();
+
   // Clone the sorted selected indexes array.
   var indexesToRemove = this.selectionModel_.selectedIndexes.slice();
   if (!indexesToRemove.length)
@@ -531,12 +547,13 @@ Gallery.prototype.onKeyDown_ = function(event) {
       break;
 
     case 'U+004D':  // 'm' switches between Slide and Mosaic mode.
-      this.toggleMode_();
+      this.toggleMode_(null, event);
       break;
 
 
     case 'U+0056':  // 'v'
-      this.slideMode_.toggleSlideshow_(SlideMode.SLIDESHOW_INTERVAL_FIRST);
+      this.slideMode_.toggleSlideshow(
+          SlideMode.SLIDESHOW_INTERVAL_FIRST, event);
       return;
 
     case 'U+007F':  // Delete

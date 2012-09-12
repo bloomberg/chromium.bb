@@ -11507,6 +11507,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_GALLERY_SLIDESHOW" desc="In the Gallery, the title on the button that starts the slide show.">
         Slideshow
       </message>
+      <message name="IDS_FILE_BROWSER_GALLERY_SLIDESHOW_PAUSED" desc="In the Gallery, the message shown when the slideshow is paused.">
+        Paused. Press "Esc" to exit, any other key to resume.
+      </message>
       <message name="IDS_FILE_BROWSER_GALLERY_DELETE" desc="In the Gallery, the title on the button that deletes selected images.">
         Delete
       </message>

@@ -499,8 +499,16 @@ ImageView.prototype.changeUrl = function(newUrl) {
 ImageView.prototype.unload = function(zoomToRect) {
   if (zoomToRect) {
     this.setTransform(this.screenImage_, this.createZoomEffect(zoomToRect));
-    setTimeout(this.unload.bind(this), ImageView.ANIMATION_WAIT_INTERVAL + 100);
+    this.unloadTimer_ = setTimeout(function() {
+        this.unloadTimer_ = null;
+        this.unload(null /* force unload */);
+      }.bind(this),
+      ImageView.ANIMATION_WAIT_INTERVAL + 100);
     return;
+  }
+  if (this.unloadTimer_) {
+    clearTimeout(this.unloadTimer_);
+    this.unloadTimer_ = null;
   }
   this.container_.textContent = '';
   this.contentCanvas_ = null;
@@ -634,7 +642,10 @@ ImageView.prototype.replace = function(
     this.setTransform(newScreenImage);
     if (oldScreenImage) {
       ImageUtil.setAttribute(oldScreenImage, 'fade', true);
-      this.setTransform(oldScreenImage, opt_effect.getReverse());
+      if (opt_effect.getReverse)
+        this.setTransform(oldScreenImage, opt_effect.getReverse());
+      else
+        console.error('Cannot revert an effect.');
       setTimeout(function() {
         oldScreenImage.parentNode.removeChild(oldScreenImage);
       }, ImageView.ANIMATION_WAIT_INTERVAL);

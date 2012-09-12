@@ -173,7 +173,7 @@ body {
   width: 100%;
 }
 
-.gallery[tools] > .toolbar {
+.gallery[tools]:not([slideshow]) > .toolbar {
   -webkit-transform: translate(0, 0);
   opacity: 1;
   pointer-events: auto;
@@ -196,6 +196,7 @@ body {
 }
 
 .gallery .arrow-box .arrow {
+  opacity: 0;
   pointer-events: none;
 }
 
@@ -204,8 +205,9 @@ body {
   pointer-events: none;
 }
 
-.gallery[tools] .arrow-box[active] .arrow {
+.gallery[tools]:not([slideshow]) .arrow-box[active] .arrow {
   cursor: pointer;
+  opacity: 1;
   pointer-events: auto;
 }
 

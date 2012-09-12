@@ -172,7 +172,7 @@ SlideMode.prototype.initDom_ = function() {
   this.slideShowButton_ = util.createChild(this.toolbar_, 'button slideshow');
   this.slideShowButton_.title = this.displayStringFunction_('slideshow');
   this.slideShowButton_.addEventListener('click',
-      this.toggleSlideshow_.bind(this, SlideMode.SLIDESHOW_INTERVAL_FIRST));
+      this.toggleSlideshow.bind(this, SlideMode.SLIDESHOW_INTERVAL_FIRST));
 
   // Editor.
 
@@ -241,12 +241,23 @@ SlideMode.prototype.enter = function(
     if (loadCallback) loadCallback();
   }.bind(this);
 
+  // The latest |leave| call might have left the image animating. Remove it.
+  this.unloadImage_();
+
   if (this.getItemCount_() == 0) {
     this.displayedIndex_ = -1;
     //TODO(kaznacheev) Show this message in the grid mode too.
     this.showErrorBanner_('NO_IMAGES');
     loadDone();
   } else {
+    // Remember the selection if it is empty or multiple. It will be restored
+    // in |leave| if the user did not changing the selection manually.
+    var currentSelection = this.selectionModel_.selectedIndexes;
+    if (currentSelection.length == 1)
+      this.savedSelection_ = null;
+    else
+      this.savedSelection_ = currentSelection;
+
     // Ensure valid single selection.
     // Note that the SlideMode object is not listening to selection change yet.
     this.select(Math.max(0, this.getSelectedIndex()));
@@ -288,6 +299,8 @@ SlideMode.prototype.leave = function(zoomToRect, callback) {
       this.dataModel_.removeEventListener('splice', this.onSpliceBound_);
       this.ribbon_.disable();
       this.active_ = false;
+      if (this.savedSelection_)
+        this.selectionModel_.selectedIndexes = this.savedSelection_;
       if (zoomToRect)
         setTimeout(callback, ImageView.ANIMATION_WAIT_INTERVAL);
       else
@@ -301,6 +314,7 @@ SlideMode.prototype.leave = function(zoomToRect, callback) {
     this.commitItem_(commitDone);
   }
 };
+
 
 /**
  * Execute an action when the editor is not busy.
@@ -358,6 +372,10 @@ SlideMode.prototype.onSelection_ = function() {
   if (this.selectionModel_.selectedIndexes.length == 0)
     return;  // Temporary empty selection.
 
+  // Forget the saved selection if the user changed the selection manually.
+  if (!this.isSlideshowOn_())
+    this.savedSelection_ = null;
+
   if (this.getSelectedIndex() == this.displayedIndex_)
     return;  // Do not reselect.
 
@@ -372,8 +390,7 @@ SlideMode.prototype.onSelection_ = function() {
  */
 SlideMode.prototype.select = function(index, opt_slideHint) {
   this.slideHint_ = opt_slideHint;
-  this.selectionModel_.unselectAll();
-  this.selectionModel_.setIndexSelected(index, true);
+  this.selectionModel_.selectedIndex = index;
   this.selectionModel_.leadIndex = index;
 };
 
@@ -469,6 +486,9 @@ SlideMode.prototype.unloadImage_ = function(zoomToRect) {
 SlideMode.prototype.onSplice_ = function(event) {
   ImageUtil.setAttribute(this.arrowBox_, 'active', this.getItemCount_() > 1);
 
+  // Splice invalidates saved indices, drop the saved selection.
+  this.savedSelection_ = null;
+
   if (event.removed.length != 1)
     return;
 
@@ -501,10 +521,25 @@ SlideMode.prototype.onSplice_ = function(event) {
  * @private
  */
 SlideMode.prototype.getNextSelectedIndex_ = function(direction) {
-  var index = this.getSelectedIndex() + (direction > 0 ? 1 : -1);
-  if (index == -1) return this.getItemCount_() - 1;
-  if (index == this.getItemCount_()) return 0;
-  return index;
+  function advance(index, limit) {
+    index += (direction > 0 ? 1 : -1);
+    if (index < 0)
+      return limit - 1;
+    if (index == limit)
+      return 0;
+    return index;
+  }
+
+  // If the saved selection is multiple the Slideshow should cycle through
+  // the saved selection.
+  if (this.isSlideshowOn_() &&
+      this.savedSelection_ && this.savedSelection_.length > 1) {
+    var pos = advance(this.savedSelection_.indexOf(this.getSelectedIndex()),
+        this.savedSelection_.length);
+    return this.savedSelection_[pos];
+  } else {
+    return advance(this.getSelectedIndex(), this.getItemCount_());
+  }
 };
 
 /**
@@ -686,10 +721,20 @@ SlideMode.prototype.onClick_ = function() {
  * @return {boolean} True if handled.
  */
 SlideMode.prototype.onKeyDown = function(event) {
+  var keyID = util.getKeyModifiers(event) + event.keyIdentifier;
+
+  if (this.isSlideshowOn_()) {
+    if (keyID == 'U+001B')  // Escape exits the slideshow.
+      this.toggleSlideshow(0 /* interval ignored */, event);
+    else  // Any other key pauses/resumes the slideshow.
+      this.toggleSlideshowPause_();
+    return true;
+  }
+
   if (this.isEditing() && this.editor_.onKeyDown(event))
     return true;
 
-  switch (util.getKeyModifiers(event) + event.keyIdentifier) {
+  switch (keyID) {
     case 'U+0020':  // Space toggles the video playback.
       if (this.isShowingVideo_()) {
         this.mediaControls_.togglePlayStateWithFeedback();
@@ -890,7 +935,7 @@ SlideMode.prototype.isSlideshowOn_ = function() {
  */
 SlideMode.prototype.stopSlideshow_ = function() {
   if (this.isSlideshowOn_())
-    this.toggleSlideshow_();
+    this.toggleSlideshow();
 };
 
 /**
@@ -898,17 +943,19 @@ SlideMode.prototype.stopSlideshow_ = function() {
  *
  * @param {number} opt_interval First interval in ms.
  * @param {Event} opt_event Event.
- * @private
  */
-
-SlideMode.prototype.toggleSlideshow_ = function(opt_interval, opt_event) {
+SlideMode.prototype.toggleSlideshow = function(opt_interval, opt_event) {
   if (opt_event)  // Caused by user action, notify the Gallery.
     cr.dispatchSimpleEvent(this, 'useraction');
 
   if (!this.active_) {
-    // Enter the slide mode. Show the first image for the full interval.
-    this.toggleMode_(
-        this.toggleSlideshow_.bind(this, SlideMode.SLIDESHOW_INTERVAL));
+    // We are in the Mosaic mode. Toggle the mode but remember to return.
+    this.toggleMode_(function() {
+      this.leaveAfterSlideshow_ = true;
+      if (this.isSlideshowOn_())
+        console.error('Invalid slideshow state');
+      this.toggleSlideshow(SlideMode.SLIDESHOW_INTERVAL);
+    }.bind(this));
     return;
   }
 
@@ -919,11 +966,37 @@ SlideMode.prototype.toggleSlideshow_ = function(opt_interval, opt_event) {
 
   if (this.isSlideshowOn_()) {
     this.scheduleNextSlide_(opt_interval);
+    Gallery.getFileBrowserPrivate().isFullscreen(function(fullscreen) {
+      this.fullscreenBeforeSlideshow_ = fullscreen;
+      if (!fullscreen)
+        Gallery.toggleFullscreen();
+    }.bind(this));
   } else {
-    if (this.slideShowTimeout_) {
-      clearInterval(this.slideShowTimeout_);
-      this.slideShowTimeout_ = null;
+    this.pauseSlideshow_();
+    Gallery.getFileBrowserPrivate().isFullscreen(function(fullscreen) {
+      // Do not restore fullscreen if we exited fullscreen while in slideshow.
+      if (!this.fullscreenBeforeSlideshow_ && fullscreen)
+        Gallery.toggleFullscreen();
+    }.bind(this));
+    if (this.leaveAfterSlideshow_) {
+      this.leaveAfterSlideshow_ = false;
+      this.toggleMode_();
     }
+  }
+};
+
+/**
+ * Pause/resume the slideshow.
+ * @private
+ */
+SlideMode.prototype.toggleSlideshowPause_ = function() {
+  // We cannot rely this.slideShowTimeout_ value as it can be null
+  // even when not paused.
+  if (this.slideShowPaused_)
+    this.scheduleNextSlide_(SlideMode.SLIDESHOW_INTERVAL_FIRST);
+  else {
+    this.pauseSlideshow_();
+    this.prompt_.show('slideshow_paused', 3000);
   }
 };
 
@@ -932,6 +1005,7 @@ SlideMode.prototype.toggleSlideshow_ = function(opt_interval, opt_event) {
  * @private
  */
 SlideMode.prototype.scheduleNextSlide_ = function(opt_interval) {
+  this.slideShowPaused_ = false;
   if (this.slideShowTimeout_)
     clearTimeout(this.slideShowTimeout_);
 
@@ -940,6 +1014,18 @@ SlideMode.prototype.scheduleNextSlide_ = function(opt_interval) {
         this.selectNext(1);
       }.bind(this),
       opt_interval || SlideMode.SLIDESHOW_INTERVAL);
+};
+
+/**
+ * Pause the slideshow.
+ * @private
+ */
+SlideMode.prototype.pauseSlideshow_ = function() {
+  this.slideShowPaused_ = true;
+  if (this.slideShowTimeout_) {
+    clearTimeout(this.slideShowTimeout_);
+    this.slideShowTimeout_ = null;
+  }
 };
 
 /**

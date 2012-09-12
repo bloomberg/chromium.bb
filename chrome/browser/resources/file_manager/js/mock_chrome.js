@@ -536,6 +536,8 @@ chrome.fileBrowserPrivate = {
       GALLERY_MOSAIC: 'Mosaic view',
       GALLERY_SLIDE: 'Slide view',
       GALLERY_SLIDESHOW: 'Slideshow',
+      GALLERY_SLIDESHOW_PAUSED:
+          'Paused. Press "Esc" to exit, any other key to resume.',
       GALLERY_DELETE: 'Delete',
 
       GALLERY_OK_LABEL: 'OK',
