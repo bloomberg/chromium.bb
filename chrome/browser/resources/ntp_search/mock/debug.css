@@ -15,9 +15,7 @@
 }
 
 #ntp5 .tile-page-scrollbar,
-#ntp5 .top-margin,
-#ntp5 #page-switcher-start,
-#ntp5 #page-switcher-end {
+#ntp5 .top-margin {
   display: none;
 }
 

@@ -428,24 +428,6 @@ cr.define('ntp', function() {
     positionNotification_: function() {
     },
 
-    /**
-     * Scrolls the page in response to an mousewheel event, although the event
-     * may have been triggered on a different element. Return true if the
-     * event triggered scrolling, and false otherwise.
-     * This is called explicitly, which allows a consistent experience whether
-     * the user scrolls on the page or on the page switcher, because this
-     * function provides a common conversion factor between wheel delta and
-     * scroll delta.
-     * @param {Event} e The mousewheel event.
-     */
-    handleMouseWheel: function(e) {
-      if (e.wheelDeltaY == 0)
-        return false;
-
-      this.content_.scrollTop -= e.wheelDeltaY / 3;
-      return true;
-    },
-
     // #########################################################################
     // Extended Chrome Instant
     // #########################################################################

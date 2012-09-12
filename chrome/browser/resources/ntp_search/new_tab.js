@@ -5,8 +5,8 @@
 /**
  * @fileoverview New tab page
  * This is the main code for the new tab page used by touch-enabled Chrome
- * browsers. NewTabView manages page list, dot list, switcher buttons and
- * handles apps pages callbacks from backend.
+ * browsers. NewTabView manages page list and dot list and handles apps pages
+ * callbacks from backend.
  *
  * Note that you need to have AppLauncherHandler in your WebUI to use this code.
 */
@@ -73,17 +73,9 @@ cr.define('ntp', function() {
    * @constructor
    */
   function NewTabView() {
-    var pageSwitcherStart = null;
-    var pageSwitcherEnd = null;
-    if (loadTimeData.getValue('showApps')) {
-      pageSwitcherStart = getRequiredElement('page-switcher-start');
-      pageSwitcherEnd = getRequiredElement('page-switcher-end');
-    }
     this.initialize(getRequiredElement('page-list'),
                     getRequiredElement('dot-list'),
-                    getRequiredElement('card-slider-frame'),
-                    // TODO(pedrosimonetti): Remove page switchers.
-                    pageSwitcherStart, pageSwitcherEnd);
+                    getRequiredElement('card-slider-frame'));
   }
 
   NewTabView.prototype = {
@@ -136,13 +128,6 @@ cr.define('ntp', function() {
     dotList: undefined,
 
     /**
-     * The left and right paging buttons.
-     * @type {!Element|undefined}
-     */
-    pageSwitcherStart: undefined,
-    pageSwitcherEnd: undefined,
-
-    /**
      * The type of page that is currently shown. The value is a numerical ID.
      * @type {number}
      */
@@ -175,26 +160,13 @@ cr.define('ntp', function() {
      * @param {!Element} dotList An UL element to host nav dots. Each dot
      *     represents a page.
      * @param {!Element} cardSliderFrame The card slider frame that hosts
-     *     pageList and switcher buttons.
-     * @param {!Element|undefined} opt_pageSwitcherStart Optional start page
-     *     switcher button.
-     * @param {!Element|undefined} opt_pageSwitcherEnd Optional end page
-     *     switcher button.
+     *     pageList.
      */
-    initialize: function(pageList, dotList, cardSliderFrame,
-                         opt_pageSwitcherStart, opt_pageSwitcherEnd) {
+    initialize: function(pageList, dotList, cardSliderFrame) {
       this.pageList = pageList;
 
       this.dotList = dotList;
       cr.ui.decorate(this.dotList, ntp.DotList);
-
-      this.pageSwitcherStart = opt_pageSwitcherStart;
-      if (this.pageSwitcherStart)
-        ntp.initializePageSwitcher(this.pageSwitcherStart);
-
-      this.pageSwitcherEnd = opt_pageSwitcherEnd;
-      if (this.pageSwitcherEnd)
-        ntp.initializePageSwitcher(this.pageSwitcherEnd);
 
       this.shownPage = loadTimeData.getInteger('shown_page_type');
       this.shownPageIndex = loadTimeData.getInteger('shown_page_index');
@@ -224,18 +196,7 @@ cr.define('ntp', function() {
       this.cardSlider = new cr.ui.CardSlider(this.sliderFrame, this.pageList,
           this.sliderFrame.offsetWidth);
 
-      // Handle mousewheel events anywhere in the card slider, so that wheel
-      // events on the page switchers will still scroll the page.
-      // This listener must be added before the card slider is initialized,
-      // because it needs to be called before the card slider's handler.
       var cardSlider = this.cardSlider;
-      cardSliderFrame.addEventListener('mousewheel', function(e) {
-        if (cardSlider.currentCardValue.handleMouseWheel(e)) {
-          e.preventDefault();  // Prevent default scroll behavior.
-          e.stopImmediatePropagation();  // Prevent horizontal card flipping.
-        }
-      });
-
       this.cardSlider.initialize(
           loadTimeData.getBoolean('isSwipeTrackingFromScrollEventsEnabled'));
 
@@ -533,13 +494,6 @@ cr.define('ntp', function() {
     },
 
     /**
-     * Adjusts the size and position of the page switchers according to the
-     * layout of the current card. TODO(pedrosimonetti): Delete.
-     */
-    updatePageSwitchers: function() {
-    },
-
-    /**
      * Returns the index of the given apps page.
      * @param {AppsPage} page The AppsPage we wish to find.
      * @return {number} The index of |page| or -1 if it is not in the
@@ -579,7 +533,6 @@ cr.define('ntp', function() {
       if (curDot)
         curDot.classList.remove('selected');
       page.navigationDot.classList.add('selected');
-      this.updatePageSwitchers();
     },
 
     /**
@@ -596,8 +549,7 @@ cr.define('ntp', function() {
     },
 
     /**
-     * Listen for card additions to update the page switchers or the current
-     * card accordingly.
+     * Listen for card additions to update the current card accordingly.
      * @param {Event} e A card removed or added event.
      */
     onCardAdded_: function(e) {
@@ -608,8 +560,7 @@ cr.define('ntp', function() {
     },
 
     /**
-     * Listen for card removals to update the page switchers or the current card
-     * accordingly.
+     * Listen for card removals to update the current card accordingly.
      * @param {Event} e A card removed or added event.
      */
     onCardRemoved_: function(e) {
@@ -627,7 +578,6 @@ cr.define('ntp', function() {
 
       // Without repositioning there were issues - http://crbug.com/133457.
       this.cardSlider.repositionFrame();
-      this.updatePageSwitchers();
     },
 
     /**
@@ -636,7 +586,6 @@ cr.define('ntp', function() {
      */
     onWindowResize_: function(e) {
       this.cardSlider.resize(this.sliderFrame.offsetWidth);
-      this.updatePageSwitchers();
     },
 
     /**
