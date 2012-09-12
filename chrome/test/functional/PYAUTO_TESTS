@@ -55,7 +55,6 @@
       'ntp',
       'omnibox',
       'passwords',
-      'policy',
       'policy_prefs_ui',
       'prefs',
       'prefs_ui',
@@ -183,7 +182,6 @@
       # Keychain popups make autofill/password tests difficult: crbug.com/49378
       '-passwords',
       # crbug.com/130094
-      '-policy',
       '-policy_prefs_ui.PolicyPrefsUITest.testToggleUserPolicyTogglesBanner',
       '-policy_prefs_ui.PolicyPrefsUITest.testUserPoliciesShowBanner',
       # crbug.com/69619
@@ -278,9 +276,8 @@
       # Multi-profile doesn't apply to chromeos yet.
       '-multiprofile',
       '-ntp.NTPTest.testDifferentProfileNotAppearInMostVisited',
-      # These require a custom setup on ChromeOS and have their own suite for
-      # this platform.
-      '-policy',
+      # This requires a custom setup on ChromeOS and has its own suite for
+      # that platform.
       '-policy_prefs_ui',
       # You cannot adjust the downloads directory on ChromeOS.
       '-prefs.PrefsTest.testDownloadDirPref',
@@ -644,7 +641,6 @@
       'chromeos_device_policy',
       'chromeos_onc',
       'chromeos_retail_mode',
-      'policy',
       'policy_prefs_ui',
     ],
   },
@@ -744,7 +740,6 @@
       '-gtalk.test_basic',
       '-infobars',
       '-multiprofile',
-      '-policy',
       '-prefs',
       '-prefs_ui',
       '-apptest',

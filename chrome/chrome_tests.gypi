@@ -2923,6 +2923,7 @@
         'browser/performance_monitor/performance_monitor_browsertest.cc',
         'browser/policy/device_management_service_browsertest.cc',
         'browser/policy/policy_browsertest.cc',
+        'browser/policy/policy_prefs_browsertest.cc',
         'browser/popup_blocker_browsertest.cc',
         'browser/prefs/pref_service_browsertest.cc',
         'browser/prerender/prefetch_browsertest.cc',
