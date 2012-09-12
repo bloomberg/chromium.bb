@@ -153,7 +153,7 @@ AvatarMenuButton* BrowserFrame::GetAvatarMenuButton() {
   return browser_frame_view_->avatar_button();
 }
 
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) || defined(USE_AURA)
 bool BrowserFrame::ShouldLeaveOffsetNearTopBorder() {
   return !IsMaximized();
 }
