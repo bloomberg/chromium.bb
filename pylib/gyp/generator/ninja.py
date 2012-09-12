@@ -1180,7 +1180,12 @@ class NinjaWriter:
     rule_name += '.' + name
     rule_name = re.sub('[^a-zA-Z0-9_]', '_', rule_name)
 
-    description = re.sub('[^ a-zA-Z0-9_]', '_', description)
+    # Remove variable references, but not if they refer to the magic rule
+    # variables.  This is not quite right, as it also protects these for
+    # actions, not just for rules where they are valid. Good enough.
+    protect = [ '${root}', '${dirname}', '${source}', '${ext}', '${name}' ]
+    protect = '(?!' + '|'.join(map(re.escape, protect)) + ')'
+    description = re.sub(protect + r'\$', '_', description)
 
     # gyp dictates that commands are run from the base directory.
     # cd into the directory before running, and adjust paths in

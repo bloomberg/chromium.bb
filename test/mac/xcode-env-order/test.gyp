@@ -87,7 +87,7 @@
       'rules': [
         {
           'rule_name': 'brace_rule',
-          'message': 'Rule copy braces ${PRODUCT_NAME} ${FOO}',
+          'message': 'Rule braces ${PRODUCT_NAME} ${FOO} <(RULE_INPUT_NAME)',
           'extension': 'ext1',
           'inputs': [ '${SOURCE_ROOT}/main.c' ],
           'outputs': [ '<(PRODUCT_DIR)/rule-copy-brace.txt' ],
@@ -96,7 +96,7 @@
         },
         {
           'rule_name': 'paren_rule',
-          'message': 'Rule copy parens $(PRODUCT_NAME) $(FOO)',
+          'message': 'Rule parens $(PRODUCT_NAME) $(FOO) <(RULE_INPUT_NAME)',
           'extension': 'ext2',
           'inputs': [ '$(SOURCE_ROOT)/main.c' ],
           'outputs': [ '<(PRODUCT_DIR)/rule-copy-paren.txt' ],
