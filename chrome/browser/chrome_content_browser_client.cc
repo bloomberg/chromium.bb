@@ -125,6 +125,10 @@
 #include "chrome/browser/crash_handler_host_linux.h"
 #endif
 
+#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
+#endif
+
 #if defined(USE_NSS)
 #include "chrome/browser/ui/crypto_module_password_dialog.h"
 #endif
@@ -1113,6 +1117,12 @@ void ChromeContentBrowserClient::AllowCertificateError(
       return;
     }
   }
+
+#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+  TabContents* tab_contents = TabContents::FromWebContents(tab);
+  if (tab_contents)
+    tab_contents->captive_portal_tab_helper()->OnSSLCertError(ssl_info);
+#endif
 
   // Otherwise, display an SSL blocking page.
   new SSLBlockingPage(tab, cert_error, ssl_info, request_url, overridable,

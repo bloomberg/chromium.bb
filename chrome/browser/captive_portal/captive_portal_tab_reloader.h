@@ -19,6 +19,10 @@ namespace content {
 class WebContents;
 }
 
+namespace net {
+class SSLInfo;
+}
+
 namespace captive_portal {
 
 // Keeps track of whether a tab has encountered a navigation error caused by a
@@ -26,11 +30,12 @@ namespace captive_portal {
 // have been broken or be taking longer due to a captive portal.  All methods
 // may only be called on the UI thread.
 //
-// Only supports SSL main frames which time out in response to captive portals,
-// since these make for a particularly bad user experience.  Non-SSL requests
-// are intercepted by captive portals, which take users to the login page.  SSL
-// requests, however, are generally silently blackholed.  They then take a
-// while to timeout, and will timeout again when refreshed.
+// Only supports SSL main frames which end at error pages as a result of
+// captive portals, since these make for a particularly bad user experience.
+// Non-SSL requests are intercepted by captive portals, which take users to the
+// login page.  SSL requests, however, may be silently blackholed, or result
+// in a variety of error pages, and will continue to do so if a user tries to
+// reload them.
 class CaptivePortalTabReloader {
  public:
   enum State {
@@ -40,10 +45,12 @@ class CaptivePortalTabReloader {
     // portal test will be requested.
     STATE_TIMER_RUNNING,
     // The tab may have been broken by a captive portal.  A tab switches to
-    // this state either on an ERR_CONNECTION_TIMEOUT of an SSL page or when
-    // an SSL request takes too long to commit.  The tab will remain in this
-    // state until the current load succeeds, a new provisional load starts,
-    // or it gets a captive portal result.
+    // this state either on a main frame SSL error that may be caused by a
+    // captive portal, or when an SSL request takes too long to commit.  The
+    // tab will remain in this state until the current load succeeds, a new
+    // provisional load starts, it gets a captive portal result, or the load
+    // fails with error that indicates the page was not broken by a captive
+    // portal.
     STATE_MAYBE_BROKEN_BY_PORTAL,
     // The TabHelper switches to this state from STATE_MAYBE_BROKEN_BY_PORTAL in
     // response to a RESULT_BEHIND_CAPTIVE_PORTAL.  The tab will remain in this
@@ -101,10 +108,15 @@ class CaptivePortalTabReloader {
   // Called whenever a captive portal test completes.
   virtual void OnCaptivePortalResults(Result previous_result, Result result);
 
+  // Called on certificate errors, which often indicate a captive portal.
+  void OnSSLCertError(const net::SSLInfo& ssl_info);
+
  protected:
   // The following functions are used only when testing:
 
   State state() const { return state_; }
+
+  content::WebContents* web_contents() { return web_contents_; }
 
   void set_slow_ssl_load_time(base::TimeDelta slow_ssl_load_time) {
     slow_ssl_load_time_ = slow_ssl_load_time;

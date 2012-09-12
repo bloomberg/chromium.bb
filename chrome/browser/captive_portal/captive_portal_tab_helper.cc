@@ -22,6 +22,7 @@
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
+#include "net/base/ssl_info.h"
 
 namespace captive_portal {
 
@@ -180,6 +181,10 @@ void CaptivePortalTabHelper::Observe(
     default:
       NOTREACHED();
   }
+}
+
+void CaptivePortalTabHelper::OnSSLCertError(const net::SSLInfo& ssl_info) {
+  tab_reloader_->OnSSLCertError(ssl_info);
 }
 
 bool CaptivePortalTabHelper::IsLoginTab() const {

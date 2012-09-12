@@ -10,7 +10,6 @@
 #include "chrome/browser/autofill/autofill_external_delegate.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/automation/automation_tab_helper.h"
-#include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -59,6 +58,10 @@
 #include "chrome/common/thumbnail_support.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+
+#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
+#endif
 
 using content::WebContents;
 

@@ -13,7 +13,6 @@
 #include "base/string_number_conversions.h"
 #include "base/test/test_file_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/captive_portal/captive_portal_service.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -49,6 +48,10 @@
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #elif defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
+#endif
+
+#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#include "chrome/browser/captive_portal/captive_portal_service.h"
 #endif
 
 namespace {

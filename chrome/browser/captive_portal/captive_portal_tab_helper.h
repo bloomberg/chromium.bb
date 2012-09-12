@@ -18,6 +18,10 @@
 class GURL;
 class Profile;
 
+namespace net {
+class SSLInfo;
+}
+
 namespace captive_portal {
 
 class CaptivePortalLoginDetector;
@@ -86,6 +90,9 @@ class CaptivePortalTabHelper : public content::WebContentsObserver,
       int type,
       const content::NotificationSource& source,
       const content::NotificationDetails& details) OVERRIDE;
+
+  // Called when a certificate interstitial error page is about to be shown.
+  void OnSSLCertError(const net::SSLInfo& ssl_info);
 
   // A "Login Tab" is a tab that was originally at a captive portal login
   // page.  This is set to false when a captive portal is no longer detected.

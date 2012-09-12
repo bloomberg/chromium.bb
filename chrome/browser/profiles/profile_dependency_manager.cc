@@ -11,7 +11,6 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/captive_portal/captive_portal_service_factory.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/download/download_service_factory.h"
@@ -58,6 +57,10 @@
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 #include "chrome/browser/user_style_sheet_watcher_factory.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
+
+#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#include "chrome/browser/captive_portal/captive_portal_service_factory.h"
+#endif
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/managed_mode_policy_provider_factory.h"
