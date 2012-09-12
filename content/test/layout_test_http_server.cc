@@ -23,10 +23,8 @@ bool PrepareCommandLine(CommandLine* cmd_line) {
   if (!PathService::Get(base::DIR_SOURCE_ROOT, &src_path))
     return false;
 
-  FilePath python_runtime;
-  if (!GetPythonRunTime(&python_runtime))
+  if (!GetPythonCommand(cmd_line))
     return false;
-  cmd_line->SetProgram(python_runtime);
 
   FilePath script_path(src_path);
   script_path = script_path.AppendASCII("third_party");
