@@ -281,14 +281,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
         dbus::ObjectProxy::EmptyResponseCallback());
   }
 
-  virtual void NotifyScreenLockCompleted() OVERRIDE {
-    SimpleMethodCallToPowerManager(power_manager::kScreenIsLockedMethod);
-  }
-
-  virtual void NotifyScreenUnlockCompleted() OVERRIDE {
-    SimpleMethodCallToPowerManager(power_manager::kScreenIsUnlockedMethod);
-  }
-
  private:
   // Called when a dbus signal is initially connected.
   void SignalConnected(const std::string& interface_name,
@@ -608,9 +600,6 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
       int overrides,
       const PowerStateRequestIdCallback& callback) OVERRIDE {}
   virtual void SetIsProjecting(bool is_projecting) OVERRIDE {}
-
-  virtual void NotifyScreenLockCompleted() OVERRIDE {}
-  virtual void NotifyScreenUnlockCompleted() OVERRIDE {}
 
  private:
   void Update() {

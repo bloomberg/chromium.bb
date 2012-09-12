@@ -20,6 +20,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_power_manager_client.h"
+#include "chromeos/dbus/mock_session_manager_client.h"
 #include "content/public/browser/notification_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -88,11 +89,13 @@ namespace chromeos {
 
 class ScreenLockerTest : public CrosInProcessBrowserTest {
  public:
-  ScreenLockerTest() : mock_power_manager_client_(NULL) {
+  ScreenLockerTest() : mock_power_manager_client_(NULL),
+                       mock_session_manager_client_(NULL) {
   }
 
  protected:
   MockPowerManagerClient* mock_power_manager_client_;
+  MockSessionManagerClient* mock_session_manager_client_;
 
   void LockScreen(test::ScreenLockerTester* tester) {
     ScreenLocker::Show();
@@ -115,11 +118,13 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
     CrosInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
     mock_power_manager_client_ = static_cast<MockPowerManagerClient*>(
         DBusThreadManager::Get()->GetPowerManagerClient());
+    mock_session_manager_client_ = static_cast<MockSessionManagerClient*>(
+        DBusThreadManager::Get()->GetSessionManagerClient());
     cros_mock_->InitStatusAreaMocks();
     EXPECT_CALL(*mock_power_manager_client_, AddObserver(_))
         .Times(1)
         .RetiresOnSaturation();
-    EXPECT_CALL(*mock_power_manager_client_, NotifyScreenUnlockCompleted())
+    EXPECT_CALL(*mock_session_manager_client_, NotifyLockScreenDismissed())
         .Times(1)
         .RetiresOnSaturation();
     // Expectations for the status are on the screen lock window.
@@ -141,7 +146,7 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
-  EXPECT_CALL(*mock_power_manager_client_, NotifyScreenLockCompleted())
+  EXPECT_CALL(*mock_session_manager_client_, NotifyLockScreenShown())
       .Times(1)
       .RetiresOnSaturation();
   ScreenLocker::Show();
@@ -178,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
 }
 
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
-  EXPECT_CALL(*mock_power_manager_client_, NotifyScreenLockCompleted())
+  EXPECT_CALL(*mock_session_manager_client_, NotifyLockScreenShown())
       .Times(1)
       .RetiresOnSaturation();
   scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
@@ -215,7 +220,7 @@ void UnlockKeyPress(views::Widget* widget) {
 }
 
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestShowTwice) {
-  EXPECT_CALL(*mock_power_manager_client_, NotifyScreenLockCompleted())
+  EXPECT_CALL(*mock_session_manager_client_, NotifyLockScreenShown())
       .Times(2)
       .RetiresOnSaturation();
   scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
@@ -237,7 +242,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestShowTwice) {
 // TODO(flackr): Find out why the RenderView isn't getting the escape press
 // and re-enable this test (currently this test is flaky).
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, DISABLED_TestEscape) {
-  EXPECT_CALL(*mock_power_manager_client_, NotifyScreenLockCompleted())
+  EXPECT_CALL(*mock_session_manager_client_, NotifyLockScreenShown())
       .Times(1)
       .RetiresOnSaturation();
   scoped_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
