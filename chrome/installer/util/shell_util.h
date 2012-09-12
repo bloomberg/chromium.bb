@@ -424,16 +424,6 @@ class ShellUtil {
                                    int icon_index,
                                    uint32 options);
 
-  // Verify that a shortcut exists with the expected information.
-  // |exe_path| The shortcut's exe.
-  // |shortcut| The path to the shortcut.
-  // |description| The shortcut's description.
-  // |icon_index| The icon's index in the exe.
-  static VerifyShortcutStatus VerifyChromeShortcut(const string16& exe_path,
-                                                   const string16& shortcut,
-                                                   const string16& description,
-                                                   int icon_index);
-
   // Sets |suffix| to the base 32 encoding of the md5 hash of this user's sid
   // preceded by a dot.
   // This is guaranteed to be unique on the machine and 27 characters long

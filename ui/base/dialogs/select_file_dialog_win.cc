@@ -23,6 +23,7 @@
 #include "base/win/metro.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
+#include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
 #include "grit/ui_strings.h"
 #include "ui/base/dialogs/base_shell_dialog_win.h"
@@ -699,7 +700,7 @@ bool SelectFileDialogImpl::RunSelectFolderDialog(const std::wstring& title,
 
       // According to MSDN, win2000 will not resolve shortcuts, so we do it
       // ourself.
-      file_util::ResolveShortcut(*path, path, NULL);
+      base::win::ResolveShortcut(*path, path, NULL);
     }
     CoTaskMemFree(list);
   }

@@ -7,6 +7,8 @@
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/utf_string_conversions.h"
+#include "base/test/test_shortcut_win.h"
+#include "base/win/shortcut.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
@@ -25,10 +27,10 @@ using content::BrowserThread;
 
 namespace {
 
-ShellUtil::VerifyShortcutStatus VerifyProfileShortcut(
+base::win::VerifyShortcutStatus VerifyProfileShortcut(
     const string16& profile_name) {
   FilePath exe_path;
-  CHECK(PathService::Get(base::FILE_EXE, &exe_path));
+  EXPECT_TRUE(PathService::Get(base::FILE_EXE, &exe_path));
 
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
 
@@ -41,9 +43,13 @@ ShellUtil::VerifyShortcutStatus VerifyProfileShortcut(
                                    &shortcut_name);
   shortcut_path = shortcut_path.Append(shortcut_name);
 
-  return ShellUtil::VerifyChromeShortcut(
-          exe_path.value(), shortcut_path.value(), dist->GetAppDescription(),
-          0);
+  // TODO(hallielaine): With this new struct method for VerifyShortcut you can
+  // now test more properties like: arguments, icon, icon_index, and app_id.
+  base::win::ShortcutProperties expected_properties;
+  expected_properties.set_target(exe_path);
+  expected_properties.set_description(dist->GetAppDescription());
+  expected_properties.set_dual_mode(false);
+  return base::win::VerifyShortcut(shortcut_path, expected_properties);
 }
 
 }  // namespace
@@ -94,7 +100,7 @@ class ProfileShortcutManagerTest : public testing::Test {
           profile_path);
       MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
       MessageLoop::current()->Run();
-      EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_FAILURE_UNEXPECTED,
+      EXPECT_EQ(base::win::VERIFY_SHORTCUT_FAILURE_FILE_NOT_FOUND,
                 VerifyProfileShortcut(profile_name));
       ASSERT_FALSE(file_util::PathExists(profile_path.Append(
           FILE_PATH_LITERAL("Google Profile.ico"))));
@@ -102,7 +108,7 @@ class ProfileShortcutManagerTest : public testing::Test {
   }
 
   void SetupDefaultProfileShortcut() {
-    EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_FAILURE_UNEXPECTED,
+    EXPECT_EQ(base::win::VERIFY_SHORTCUT_FAILURE_FILE_NOT_FOUND,
               VerifyProfileShortcut(profile_name_));
     // A non-badged shortcut for chrome is automatically created with the
     // first profile (for the case when the user deletes their only
@@ -113,15 +119,15 @@ class ProfileShortcutManagerTest : public testing::Test {
     MessageLoop::current()->Run();
     // We now have 1 profile, so we expect a new shortcut with no profile
     // information.
-    EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_SUCCESS,
+    EXPECT_EQ(base::win::VERIFY_SHORTCUT_SUCCESS,
               VerifyProfileShortcut(string16()));
   }
 
   void SetupAndCreateTwoShortcuts() {
     ASSERT_EQ(0, profile_manager_->profile_info_cache()->GetNumberOfProfiles());
-    EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_FAILURE_UNEXPECTED,
+    EXPECT_EQ(base::win::VERIFY_SHORTCUT_FAILURE_FILE_NOT_FOUND,
               VerifyProfileShortcut(profile_name_));
-    EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_FAILURE_UNEXPECTED,
+    EXPECT_EQ(base::win::VERIFY_SHORTCUT_FAILURE_FILE_NOT_FOUND,
               VerifyProfileShortcut(second_profile_name_));
 
     profile_manager_->profile_info_cache()->AddProfileToCache(
@@ -132,9 +138,9 @@ class ProfileShortcutManagerTest : public testing::Test {
         CreateProfileShortcut(second_dest_path_);
     MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     MessageLoop::current()->Run();
-    EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_SUCCESS,
+    EXPECT_EQ(base::win::VERIFY_SHORTCUT_SUCCESS,
               VerifyProfileShortcut(profile_name_));
-    EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_SUCCESS,
+    EXPECT_EQ(base::win::VERIFY_SHORTCUT_SUCCESS,
               VerifyProfileShortcut(second_profile_name_));
   }
 
@@ -162,7 +168,7 @@ TEST_F(ProfileShortcutManagerTest, DesktopShortcutsCreate) {
 
   // We now have 2 profiles, so we expect a new shortcut with profile
   // information for this 2nd profile.
-  EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_SUCCESS,
+  EXPECT_EQ(base::win::VERIFY_SHORTCUT_SUCCESS,
             VerifyProfileShortcut(second_profile_name_));
   ASSERT_TRUE(file_util::PathExists(second_dest_path_.Append(
       FILE_PATH_LITERAL("Google Profile.ico"))));
@@ -173,7 +179,7 @@ TEST_F(ProfileShortcutManagerTest, DesktopShortcutsUpdate) {
     return;
   ProfileShortcutManagerTest::SetupDefaultProfileShortcut();
 
-  EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_FAILURE_UNEXPECTED,
+  EXPECT_EQ(base::win::VERIFY_SHORTCUT_FAILURE_FILE_NOT_FOUND,
             VerifyProfileShortcut(second_profile_name_));
 
   profile_manager_->profile_info_cache()->AddProfileToCache(
@@ -182,7 +188,7 @@ TEST_F(ProfileShortcutManagerTest, DesktopShortcutsUpdate) {
       CreateProfileShortcut(second_dest_path_);
   MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   MessageLoop::current()->Run();
-  EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_SUCCESS,
+  EXPECT_EQ(base::win::VERIFY_SHORTCUT_SUCCESS,
             VerifyProfileShortcut(second_profile_name_));
 
   // Cause an update in ProfileShortcutManager by modifying the profile info
@@ -194,9 +200,9 @@ TEST_F(ProfileShortcutManagerTest, DesktopShortcutsUpdate) {
       new_profile_name);
   MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   MessageLoop::current()->Run();
-  EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_FAILURE_UNEXPECTED,
+  EXPECT_EQ(base::win::VERIFY_SHORTCUT_FAILURE_FILE_NOT_FOUND,
             VerifyProfileShortcut(second_profile_name_));
-  EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_SUCCESS,
+  EXPECT_EQ(base::win::VERIFY_SHORTCUT_SUCCESS,
             VerifyProfileShortcut(new_profile_name));
 }
 
@@ -210,15 +216,15 @@ TEST_F(ProfileShortcutManagerTest, DesktopShortcutsDeleteSecondToLast) {
       second_dest_path_);
   MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   MessageLoop::current()->Run();
-  EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_FAILURE_UNEXPECTED,
+  EXPECT_EQ(base::win::VERIFY_SHORTCUT_FAILURE_FILE_NOT_FOUND,
             VerifyProfileShortcut(second_profile_name_));
 
   // Verify that the profile name has been removed from the remaining shortcut
-  EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_SUCCESS,
+  EXPECT_EQ(base::win::VERIFY_SHORTCUT_SUCCESS,
             VerifyProfileShortcut(string16()));
   // Verify that an additional shortcut, with the default profile's name does
   // not exist
-  EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_FAILURE_UNEXPECTED,
+  EXPECT_EQ(base::win::VERIFY_SHORTCUT_FAILURE_FILE_NOT_FOUND,
             VerifyProfileShortcut(profile_name_));
 }
 
@@ -234,11 +240,11 @@ TEST_F(ProfileShortcutManagerTest, DesktopShortcutsCreateSecond) {
   MessageLoop::current()->Run();
 
   // Verify that a default shortcut exists (no profile name/avatar)
-  EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_SUCCESS,
+  EXPECT_EQ(base::win::VERIFY_SHORTCUT_SUCCESS,
             VerifyProfileShortcut(string16()));
   // Verify that an additional shortcut, with the default profile's name does
   // not exist
-  EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_FAILURE_UNEXPECTED,
+  EXPECT_EQ(base::win::VERIFY_SHORTCUT_FAILURE_FILE_NOT_FOUND,
             VerifyProfileShortcut(profile_name_));
 
   // Create a second profile and shortcut
@@ -248,14 +254,14 @@ TEST_F(ProfileShortcutManagerTest, DesktopShortcutsCreateSecond) {
       CreateProfileShortcut(second_dest_path_);
   MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   MessageLoop::current()->Run();
-  EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_SUCCESS,
+  EXPECT_EQ(base::win::VERIFY_SHORTCUT_SUCCESS,
             VerifyProfileShortcut(second_profile_name_));
 
   // Verify that the original shortcut received the profile's name
-  EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_SUCCESS,
+  EXPECT_EQ(base::win::VERIFY_SHORTCUT_SUCCESS,
             VerifyProfileShortcut(profile_name_));
   // Verify that a default shortcut no longer exists
-  EXPECT_EQ(ShellUtil::VERIFY_SHORTCUT_FAILURE_UNEXPECTED,
+  EXPECT_EQ(base::win::VERIFY_SHORTCUT_FAILURE_FILE_NOT_FOUND,
             VerifyProfileShortcut(string16()));
 }
 
