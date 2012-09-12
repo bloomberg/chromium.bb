@@ -134,7 +134,7 @@ def MakeChangeId(unusable=False):
       will explicitly fail on.  This is primarily used for internal ids,
       as a fallback when a Change-Id could not be parsed.
   """
-  s = "%x" % (random.randint(0, 2**160),)
+  s = "%x" % (random.randint(0, 2 ** 160),)
   s = s.rjust(40, '0')
   if unusable:
     return 'Fake-ID %s' % s
@@ -412,7 +412,7 @@ class GitRepoPatch(object):
   # same pool).
   _STRICT_VALID_CHANGE_ID_RE = re.compile(r'^I[0-9a-fA-F]{40}$')
   _GIT_CHANGE_ID_RE = re.compile(r'^Change-Id:[\t ]*(\w+)\s*$',
-                                 re.I|re.MULTILINE)
+                                 re.I | re.MULTILINE)
   _PALADIN_DEPENDENCY_RE = re.compile(r'^CQ-DEPEND=(.*)$', re.MULTILINE)
 
   def __init__(self, project_url, project, ref, tracking_branch, remote,
@@ -561,8 +561,15 @@ class GitRepoPatch(object):
     lines = lines.output.splitlines()
     return dict(line.split('\t', 1)[::-1] for line in lines)
 
-  def _CherryPick(self, git_repo, trivial=False, inflight=False):
+  def CherryPick(self, git_repo, trivial=False, inflight=False,
+                 leave_dirty=False):
     """Attempts to cherry-pick the given rev into branch.
+
+    Arguments:
+      git_repo: The git repository to operate upon.
+      trivial: Only allow trivial merges when applying change.
+      inflight: If true, changes are already applied in this branch.
+      leave_dirty: If True, if a CherryPick fails leaves partial commit behind.
 
     Raises:
       A ApplyPatchException if the request couldn't be handled.
@@ -574,8 +581,7 @@ class GitRepoPatch(object):
       cmd += ['--strategy', 'resolve', '-X', 'trivial']
     cmd.append(self.sha1)
 
-    reset_target = 'HEAD'
-
+    reset_target = None if leave_dirty else 'HEAD'
     try:
       cros_build_lib.RunGitCommand(git_repo, cmd)
       reset_target = None
@@ -622,7 +628,7 @@ class GitRepoPatch(object):
       # Note that a trivial conflict means the tree is unmodified; thus
       # no need for cleanup prior to this invocation.
       reset_target = None
-      self._CherryPick(git_repo, trivial=False, inflight=inflight)
+      self.CherryPick(git_repo, trivial=False, inflight=inflight)
       # Since it succeeded, we need to rewind.
       reset_target = 'HEAD^'
 
@@ -665,7 +671,7 @@ class GitRepoPatch(object):
 
     do_checkout = True
     try:
-      self._CherryPick(git_repo, trivial=trivial, inflight=inflight)
+      self.CherryPick(git_repo, trivial=trivial, inflight=inflight)
       do_checkout = False
       return
     except ApplyPatchException:
@@ -674,7 +680,7 @@ class GitRepoPatch(object):
       cros_build_lib.RunGitCommand(
           git_repo, ['checkout', '-f', '--detach', upstream])
 
-      self._CherryPick(git_repo, trivial=trivial, inflight=False)
+      self.CherryPick(git_repo, trivial=trivial, inflight=False)
       # Making it here means that it was an inflight issue; throw the original.
       raise
     finally:
@@ -977,16 +983,21 @@ class LocalPatch(GitRepoPatch):
 
     return new_sha1
 
-  def Upload(self, push_url, remote_ref, dryrun=False):
+  def Upload(self, push_url, remote_ref, carbon_copy=True, dryrun=False):
     """Upload the patch to a remote git branch.
 
     Arguments:
       push_url: Which url to push to.
       remote_ref: The ref on the remote host to push to.
+      carbon_copy: Use a carbon_copy of the local commit.
       dryrun: Do the git push with --dry-run
     """
-    carbon_copy = self._GetCarbonCopy()
-    cmd = ['push', push_url, '%s:%s' % (carbon_copy, remote_ref)]
+    if carbon_copy:
+      ref_to_upload = self._GetCarbonCopy()
+    else:
+      ref_to_upload = self.sha1
+
+    cmd = ['push', push_url, '%s:%s' % (ref_to_upload, remote_ref)]
     if dryrun:
       cmd.append('--dry-run')
 
