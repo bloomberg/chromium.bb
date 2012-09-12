@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/file_path.h"
+#include "chrome/browser/chromeos/gdata/drive_file_formats.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
@@ -29,9 +30,11 @@ struct FeedToFileResourceMapUmaStats {
   ~FeedToFileResourceMapUmaStats();
 
   typedef std::map<DriveEntryKind, int> EntryKindToCountMap;
+  typedef std::map<DriveFileFormat, int> FileFormatToCountMap;
   int num_regular_files;
   int num_hosted_documents;
   EntryKindToCountMap num_files_with_entry_kind;
+  FileFormatToCountMap num_files_with_file_format;
 };
 
 // GDataWapiFeedProcessor is used to process feeds from WAPI (codename for

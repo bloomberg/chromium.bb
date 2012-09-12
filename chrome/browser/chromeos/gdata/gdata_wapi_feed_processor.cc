@@ -82,6 +82,17 @@ void GDataWapiFeedProcessor::UpdateFileCountUmaHistograms(
           "Drive.EntryKind", kind, ENTRY_KIND_MAX_VALUE);
     }
   }
+  for (FeedToFileResourceMapUmaStats::FileFormatToCountMap::const_iterator
+           iter = uma_stats.num_files_with_file_format.begin();
+       iter != uma_stats.num_files_with_file_format.end();
+       ++iter) {
+    const DriveFileFormat format = iter->first;
+    const int count = iter->second;
+    for (int i = 0; i < count; ++i) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Drive.FileFormat", format, FILE_FORMAT_MAX_VALUE);
+    }
+  }
 }
 
 void GDataWapiFeedProcessor::ApplyFeedFromFileUrlMap(
@@ -250,6 +261,7 @@ DriveFileError GDataWapiFeedProcessor::FeedToFileResourceMap(
   uma_stats->num_regular_files = 0;
   uma_stats->num_hosted_documents = 0;
   uma_stats->num_files_with_entry_kind.clear();
+  uma_stats->num_files_with_file_format.clear();
   for (size_t i = 0; i < feed_list.size(); ++i) {
     const DocumentFeed* feed = feed_list[i];
 
@@ -277,10 +289,15 @@ DriveFileError GDataWapiFeedProcessor::FeedToFileResourceMap(
       // Count the number of files.
       DriveFile* as_file = entry->AsDriveFile();
       if (as_file) {
-        if (as_file->is_hosted_document())
+        if (as_file->is_hosted_document()) {
           ++uma_stats->num_hosted_documents;
-        else
+        } else {
           ++uma_stats->num_regular_files;
+          const FilePath::StringType extension =
+              FilePath(as_file->base_name()).Extension();
+          const DriveFileFormat format = GetDriveFileFormat(extension);
+          ++uma_stats->num_files_with_file_format[format];
+        }
         ++uma_stats->num_files_with_entry_kind[as_file->kind()];
       }
 

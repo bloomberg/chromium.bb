@@ -1112,6 +1112,7 @@
         'browser/chromeos/gdata/drive_api_parser_unittest.cc',
         'browser/chromeos/gdata/drive_cache_metadata_unittest.cc',
         'browser/chromeos/gdata/drive_cache_unittest.cc',
+        'browser/chromeos/gdata/drive_file_formats_unittest.cc',
         'browser/chromeos/gdata/drive_file_system_unittest.cc',
         'browser/chromeos/gdata/drive_file_system_util_unittest.cc',
         'browser/chromeos/gdata/drive_resource_metadata_unittest.cc',
