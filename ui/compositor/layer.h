@@ -375,7 +375,7 @@ class COMPOSITOR_EXPORT Layer
 
   LayerDelegate* delegate_;
 
-  scoped_ptr<LayerAnimator> animator_;
+  scoped_refptr<LayerAnimator> animator_;
 
   // Ownership of the layer is held through one of the strongly typed layer
   // pointers, depending on which sort of layer this is.

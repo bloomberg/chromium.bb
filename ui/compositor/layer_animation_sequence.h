@@ -36,9 +36,9 @@ class COMPOSITOR_EXPORT LayerAnimationSequence {
 
   // Updates the delegate to the appropriate value for |elapsed|, which is in
   // the range [0, Duration()].  If the animation is not aborted, it is
-  // guaranteed that Animate will be called with elapsed = Duration().
-  // Returns true if a redraw is required.
-  bool Progress(base::TimeDelta elapsed, LayerAnimationDelegate* delegate);
+  // guaranteed that Animate will be called with elapsed = Duration(). Requests
+  // a redraw if it is required.
+  void Progress(base::TimeDelta elapsed, LayerAnimationDelegate* delegate);
 
   // Sets the target value to the value that would have been set had
   // the sequence completed. Does nothing if the sequence is cyclic.

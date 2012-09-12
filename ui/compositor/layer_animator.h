@@ -34,8 +34,14 @@ class Transform;
 // When a property of layer needs to be changed it is set by way of
 // LayerAnimator. This enables LayerAnimator to animate property changes.
 // NB: during many tests, set_disable_animations_for_test is used and causes
-// all animations to complete immediately.
-class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
+// all animations to complete immediately. The layer animation is ref counted
+// so that if its owning layer is deleted (and the owning layer is only other
+// class that should ever hold a ref ptr to a LayerAnimator), the animator can
+// ensure that it is not disposed of until it finishes executing. It does this
+// by holding a reference to itself for the duration of methods for which it
+// must guarantee that |this| is valid.
+class COMPOSITOR_EXPORT LayerAnimator
+    : public AnimationContainerElement, public base::RefCounted<LayerAnimator> {
  public:
   enum PreemptionStrategy {
     IMMEDIATELY_SET_NEW_TARGET,
@@ -46,7 +52,6 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
   };
 
   explicit LayerAnimator(base::TimeDelta transition_duration);
-  virtual ~LayerAnimator();
 
   // No implicit animations when properties are set.
   static LayerAnimator* CreateDefaultAnimator();
@@ -79,7 +84,9 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
   float GetTargetGrayscale() const;
 
   // Sets the layer animation delegate the animator is associated with. The
-  // animator does not own the delegate.
+  // animator does not own the delegate. The layer animator expects a non-NULL
+  // delegate for most of its operations, so do not call any methods without
+  // a valid delegate installed.
   void SetDelegate(LayerAnimationDelegate* delegate);
 
   // Sets the animation preemption strategy. This determines the behaviour if
@@ -174,26 +181,21 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
   }
 
  protected:
+  virtual ~LayerAnimator();
+
   LayerAnimationDelegate* delegate() { return delegate_; }
   const LayerAnimationDelegate* delegate() const { return delegate_; }
 
   // Virtual for testing.
-  virtual bool ProgressAnimation(LayerAnimationSequence* sequence,
+  virtual void ProgressAnimation(LayerAnimationSequence* sequence,
                                  base::TimeDelta delta);
 
   // Returns true if the sequence is owned by this animator.
   bool HasAnimation(LayerAnimationSequence* sequence) const;
 
  private:
+  friend class base::RefCounted<LayerAnimator>;
   friend class ScopedLayerAnimationSettings;
-
-  class DestroyedTracker;
-
-  // Used by FinishAnimation() to indicate if this has been destroyed.
-  enum DestroyedType {
-    DESTROYED,
-    NOT_DESTROYED,
-  };
 
   // We need to keep track of the start time of every running animation.
   struct RunningAnimation {
@@ -224,8 +226,7 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
       LayerAnimationSequence* sequence) WARN_UNUSED_RESULT;
 
   // Progresses to the end of the sequence before removing it.
-  DestroyedType FinishAnimation(
-      LayerAnimationSequence* sequence) WARN_UNUSED_RESULT;
+  void FinishAnimation(LayerAnimationSequence* sequence);
 
   // Finishes any running animation with zero duration.
   void FinishAnyAnimationWithZeroDuration();
@@ -282,6 +283,10 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
   // animation mode if set.
   base::TimeDelta GetTransitionDuration() const;
 
+  // Clears the animation queues and notifies any running animations that they
+  // have been aborted.
+  void ClearAnimationsInternal();
+
   // This is the queue of animations to run.
   AnimationQueue animation_queue_;
 
@@ -322,8 +327,6 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
   // Observers are notified when layer animations end, are scheduled or are
   // aborted.
   ObserverList<LayerAnimationObserver> observers_;
-
-  scoped_refptr<DestroyedTracker> destroyed_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerAnimator);
 };

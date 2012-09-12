@@ -31,12 +31,12 @@ LayerAnimationSequence::~LayerAnimationSequence() {
                     DetachedFromSequence(this, true));
 }
 
-bool LayerAnimationSequence::Progress(base::TimeDelta elapsed,
+void LayerAnimationSequence::Progress(base::TimeDelta elapsed,
                                       LayerAnimationDelegate* delegate) {
   bool redraw_required = false;
 
   if (elements_.empty())
-    return redraw_required;
+    return;
 
   if (is_cyclic_ && duration_ > base::TimeDelta()) {
     // If delta = elapsed - last_start_ is huge, we can skip ahead by complete
@@ -69,13 +69,16 @@ bool LayerAnimationSequence::Progress(base::TimeDelta elapsed,
       redraw_required = true;
   }
 
+  // Since the delegate may be deleted due to the notifications below, it is
+  // important that we schedule a draw before sending them.
+  if (redraw_required)
+    delegate->ScheduleDrawForAnimation();
+
   if (!is_cyclic_ && elapsed == duration_) {
     last_element_ = 0;
     last_start_ = base::TimeDelta::FromMilliseconds(0);
     NotifyEnded();
   }
-
-  return redraw_required;
 }
 
 void LayerAnimationSequence::GetTargetValue(
