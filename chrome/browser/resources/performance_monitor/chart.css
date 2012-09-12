@@ -3,8 +3,8 @@
  * found in the LICENSE file. */
 
 #choose-block {
-  -webkit-box-orient: horizontal;
-  background: #eee;
+  -webkit-box-orient: vertical;
+  background: rgb(238, 238, 255);
   display: -webkit-box;
 }
 
@@ -19,12 +19,74 @@
 #charts,
 .chart {
   height: 500px;
-  width: 900px;
+  margin-left: 1.5em;
+  margin-top: 1.5em;
+  min-width: 800px;
+  width: 80%;
 }
 
-div.event-label {
-  background: white;
+.event-label {
+  background: #eee;
   border: 1px solid;
-  font: 0.6em;
+  font-family: Arial, sans-serif;
+  font-size: 0.7em;
   position: absolute;
+}
+
+/* Three levels of label for lefthand control navigation.*/
+.tab-label {
+  font: 1.4em bold;
+  margin-bottom: .5em;
+  margin-top: 1em;
+}
+
+.category-label {
+  font: 1.1em bold;
+  margin-top: .3em;
+}
+
+.detail-label {
+  font: 1em;
+}
+
+.detail-checkbox,
+.radio {
+  margin-left: 18px;
+}
+
+.color-icon {
+  height: 1em;
+  min-height: 1em;
+  min-width: 1em;
+  opacity: 0.7;
+  visibility: hidden;
+  width: 1em;
+}
+
+.horizontal-box {
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+}
+
+button {
+  -webkit-padding-end: 10px;
+  -webkit-padding-start: 10px;
+  background-color: buttonface;
+  background-image: -webkit-linear-gradient(#EDEDED, #EDEDED 38%, #DEDEDE);
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 2px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08),
+      inset 0 1px 2px rgba(255, 255, 255, 0.75);
+  color: #444;
+  font: inherit;
+  height: 1.5em;
+  margin: 0 1px 0 0;
+  min-width: 4em;
+  text-shadow: #F0F0F0 0 1px 0;
+}
+
+button:active {
+  background-image: -webkit-linear-gradient(#e7e7e7, #e7e7e7 38%, #d7d7d7);
+  box-shadow: none;
+  text-shadow: none;
 }

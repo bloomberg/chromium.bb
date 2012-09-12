@@ -14,32 +14,52 @@ as of 6/2012. -->
     <link rel="stylesheet" type="text/css" href="chart.css">
   </head>
   <body>
-    <div id="choose-block">
-      <div id="choose-metrics">
-        <h2>Choose Metrics</h2>
+    <div class="horizontal-box">
+      <div id="choose-block">
+        <div id="choose-time-range-header" class="tab-label">
+          Time Range
+        </div>
+        <div class="category-label">Time Resolution</div>
+        <div id="choose-time-range">
+        </div>
+        <div class="category-label">Back/Forward by Half-Ranges</div>
+        <div class="horizontal-box">
+          <button id="back-time" title="Back">&lt;&lt;</button>
+          <div class="spacer"></div>
+          <button id="forward-time" title="Forward">&gt;&gt;</button>
+        </div>
+  
+        <div id="choose-metrics-header" class="tab-label">
+          Metrics to Display
+        </div>
+        <div id="choose-metrics">
+        </div>
+  
+        <div id="choose-events-header" class="tab-label">
+          Events to Display
+        </div>
+        <div id="choose-events">
+        </div>
       </div>
-      <div id="choose-events">
-        <h2>Choose Events</h2>
-      </div>
-      <div class="spacer"></div>
-      <div id="choose-time-range">
-        <h2>Choose Time Range</h2>
-      </div>
-    </div>
-    <div id="charts"></div>
-    <div id="templates" hidden>
-      <div id="label-template" class="event-label"></div>
-      <div id="checkbox-template" class="checkbox">
-        <label>
-          <input type="checkbox"></input>
-          <span>Change this label</span>
-        </label>
-      </div>
-      <div id="radio-template" class="radio">
-        <label>
-          <input type="radio" name="time-range">
-          <span>Change this label</span>
-        </label>
+  
+      <div id="charts"></div>
+      <div id="templates" hidden>
+        <div id="label-template" class="event-label"></div>
+        <div id="category-label-template" class="category-label"></div>
+        <div id="detail-checkbox-template" class="detail-checkbox">
+          <div class="horizontal-box">
+            <input type="checkbox"></input>
+            <div class="detail-label">Change this label</div>
+            <div class="spacer"></div>
+            <div class="color-icon"></div>
+          </div>
+        </div>
+        <div id="radio-template" class="radio">
+          <div class="horizontal-box">
+            <input type="radio" name="time-range"/>
+            <span>Change this label</span>
+          </div>
+        </div>
       </div>
     </div>
     <script src="chrome://resources/js/cr.js"></script>
