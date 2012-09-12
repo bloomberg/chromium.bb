@@ -1,0 +1,88 @@
+{
+   "encoding": "UTF-8",
+   "entry": {
+      "app$edited": {
+         "$t": "2011-12-14T00:41:08.287Z",
+         "xmlns$app": "http://www.w3.org/2007/app"
+      },
+      "author": [ {
+         "email": {
+            "$t": "entry_tester@testing.com"
+         },
+         "name": {
+            "$t": "entry_tester"
+         }
+      } ],
+      "category": [ {
+         "label": "viewed",
+         "scheme": "http://schemas.google.com/g/2005/labels",
+         "term": "http://schemas.google.com/g/2005/labels#viewed"
+      }, {
+         "label": "folder",
+         "scheme": "http://schemas.google.com/g/2005#kind",
+         "term": "http://schemas.google.com/docs/2007#folder"
+      } ],
+      "content": {
+         "src": "https://1_folder_content_url",
+         "type": "application/atom+xml;type=feed"
+      },
+      "docs$writersCanInvite": {
+         "value": "true"
+      },
+      "gd$etag": "\"HhMOFgcNHSt7ImBr\"",
+      "gd$feedLink": [ {
+         "href": "https://1_folder_feed_linkurl",
+         "rel": "http://schemas.google.com/acl/2007#accessControlList"
+      } ],
+      "gd$lastModifiedBy": {
+         "email": {
+            "$t": "tester@testing.com"
+         },
+         "name": {
+            "$t": "tester"
+         }
+      },
+      "gd$lastViewed": {
+         "$t": "2011-11-02T04:37:38.469Z"
+      },
+      "gd$quotaBytesUsed": {
+         "$t": "0"
+      },
+      "gd$resourceId": {
+         "$t": "folder:sub_dir_folder_resource_id"
+      },
+      "id": {
+         "$t": "https://sub_dir_folder_resource_id"
+      },
+      "link": [ {
+         "href": "https://2_folder_alternate_link",
+         "rel": "alternate",
+         "type": "text/html"
+      }, {
+         "href": "https://2_folder_resumable_create_media_link",
+         "rel": "http://schemas.google.com/g/2005#resumable-create-media",
+         "type": "application/atom+xml"
+      }, {
+         "href": "https://dir2_sub_self_link/folder:sub_dir_folder_resource_id",
+         "rel": "self",
+         "type": "application/atom+xml"
+      }, {
+         "href": "https://dir_1_self_link/folder:1_folder_resource_id",
+         "rel": "http://schemas.google.com/docs/2007#parent",
+         "type": "application/atom+xml"
+      }, {
+         "href": "https://dir2_sub_self_link/folder:sub_dir_folder_resource_id",
+         "rel": "edit",
+         "type": "application/atom+xml"
+      } ],
+      "published": {
+         "$t": "2010-11-07T05:03:54.719Z"
+      },
+      "title": {
+         "$t": "Sub Directory Folder"
+      },
+      "updated": {
+         "$t": "2011-04-01T18:34:08.234Z"
+      }
+   }
+}

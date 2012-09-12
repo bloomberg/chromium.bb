@@ -59,6 +59,24 @@ TEST(DriveFileSystemUtilTest, EscapeUnescapeCacheFileName) {
   EXPECT_EQ(kUnescapedFileName, UnescapeCacheFileName(kEscapedFileName));
 }
 
+TEST(DriveFileSystemUtilTest, EscapeUtf8FileName) {
+  EXPECT_EQ("", EscapeUtf8FileName(""));
+  EXPECT_EQ("foo", EscapeUtf8FileName("foo"));
+  EXPECT_EQ("foo\xE2\x88\x95zzz", EscapeUtf8FileName("foo/zzz"));
+  EXPECT_EQ("\xE2\x88\x95\xE2\x88\x95\xE2\x88\x95", EscapeUtf8FileName("///"));
+}
+
+TEST(DriveFileSystemUtilTest, ExtractResourceIdFromUrl) {
+  EXPECT_EQ("file:2_file_resource_id", ExtractResourceIdFromUrl(
+      GURL("https://file1_link_self/file:2_file_resource_id")));
+  // %3A should be unescaped.
+  EXPECT_EQ("file:2_file_resource_id", ExtractResourceIdFromUrl(
+      GURL("https://file1_link_self/file%3A2_file_resource_id")));
+
+  // The resource ID cannot be extracted, hence empty.
+  EXPECT_EQ("", ExtractResourceIdFromUrl(GURL("https://www.example.com/")));
+}
+
 TEST(DriveFileSystemUtilTest, ParseCacheFilePath) {
   std::string resource_id, md5, extra_extension;
   ParseCacheFilePath(

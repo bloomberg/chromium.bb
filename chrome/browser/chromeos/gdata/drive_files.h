@@ -72,10 +72,6 @@ class DriveEntry {
   // DriveEntryProto.
   void ToProtoFull(DriveEntryProto* proto) const;
 
-  // Escapes forward slashes from file names with magic unicode character
-  // \u2215 pretty much looks the same in UI.
-  static std::string EscapeUtf8FileName(const std::string& input);
-
   // Return the parent of this entry. NULL for root.
   DriveDirectory* parent() const { return parent_; }
   const base::PlatformFileInfo& file_info() const { return file_info_; }

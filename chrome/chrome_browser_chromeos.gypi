@@ -228,6 +228,8 @@
         'browser/chromeos/external_protocol_dialog.h',
         'browser/chromeos/gdata/auth_service.cc',
         'browser/chromeos/gdata/auth_service.h',
+        'browser/chromeos/gdata/document_entry_conversion.cc',
+        'browser/chromeos/gdata/document_entry_conversion.h',
         'browser/chromeos/gdata/drive_api_operations.cc',
         'browser/chromeos/gdata/drive_api_operations.h',
         'browser/chromeos/gdata/drive_api_parser.cc',

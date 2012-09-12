@@ -9,23 +9,12 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
+#include "chrome/browser/chromeos/gdata/drive_file_system_util.h"
 #include "chrome/browser/chromeos/gdata/drive_resource_metadata.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
 #include "net/base/escape.h"
 
 namespace gdata {
-namespace {
-
-const char kSlash[] = "/";
-const char kEscapedSlash[] = "\xE2\x88\x95";
-
-// Extracts resource_id out of edit url.
-std::string ExtractResourceId(const GURL& url) {
-  return net::UnescapeURLComponent(url.ExtractFileName(),
-                                   net::UnescapeRule::URL_SPECIAL_CHARS);
-}
-
-}  // namespace
 
 // DriveEntry class.
 
@@ -56,6 +45,8 @@ void DriveEntry::InitFromDocumentEntry(const DocumentEntry& doc) {
   // SetBaseNameFromTitle() must be called after |title_| is set.
   SetBaseNameFromTitle();
 
+  // TODO(satorux): The last modified and the last accessed time shouldn't
+  // be treated as the same thing: crbug.com/148434
   file_info_.last_modified = doc.updated_time();
   file_info_.last_accessed = doc.updated_time();
   file_info_.creation_time = doc.published_time();
@@ -70,7 +61,7 @@ void DriveEntry::InitFromDocumentEntry(const DocumentEntry& doc) {
 
   const Link* parent_link = doc.GetLinkByType(Link::LINK_PARENT);
   if (parent_link)
-    parent_resource_id_ = ExtractResourceId(parent_link->href());
+    parent_resource_id_ = util::ExtractResourceIdFromUrl(parent_link->href());
 }
 
 const DriveFile* DriveEntry::AsDriveFileConst() const {
@@ -97,16 +88,7 @@ void DriveEntry::SetParent(DriveDirectory* parent) {
 }
 
 void DriveEntry::SetBaseNameFromTitle() {
-  base_name_ = EscapeUtf8FileName(title_);
-}
-
-// static
-std::string DriveEntry::EscapeUtf8FileName(const std::string& input) {
-  std::string output;
-  if (ReplaceChars(input, kSlash, std::string(kEscapedSlash), &output))
-    return output;
-
-  return input;
+  base_name_ = util::EscapeUtf8FileName(title_);
 }
 
 // DriveFile class implementation.
@@ -127,7 +109,7 @@ DriveFile* DriveFile::AsDriveFile() {
 
 void DriveFile::SetBaseNameFromTitle() {
   if (is_hosted_document_) {
-    base_name_ = EscapeUtf8FileName(title_ + document_extension_);
+    base_name_ = util::EscapeUtf8FileName(title_ + document_extension_);
   } else {
     DriveEntry::SetBaseNameFromTitle();
   }

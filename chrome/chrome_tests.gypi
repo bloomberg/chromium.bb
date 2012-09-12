@@ -1106,6 +1106,7 @@
         'browser/chromeos/dbus/proxy_resolution_service_provider_unittest.cc',
         'browser/chromeos/extensions/file_browser_notifications_unittest.cc',
         'browser/chromeos/external_metrics_unittest.cc',
+        'browser/chromeos/gdata/document_entry_conversion_unittest.cc',
         'browser/chromeos/gdata/drive_api_parser_unittest.cc',
         'browser/chromeos/gdata/drive_cache_metadata_unittest.cc',
         'browser/chromeos/gdata/drive_cache_unittest.cc',

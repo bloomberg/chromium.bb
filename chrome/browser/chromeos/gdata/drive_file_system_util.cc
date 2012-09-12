@@ -45,6 +45,9 @@ const FilePath::CharType* kDriveMountPointPathComponents[] = {
   "/", "special", "drive"
 };
 
+const char kSlash[] = "/";
+const char kEscapedSlash[] = "\xE2\x88\x95";
+
 const int kReadOnlyFilePermissions = base::PLATFORM_FILE_OPEN |
                                      base::PLATFORM_FILE_READ |
                                      base::PLATFORM_FILE_EXCLUSIVE_READ |
@@ -325,6 +328,19 @@ std::string UnescapeCacheFileName(const std::string& filename) {
     unescaped.push_back(c);
   }
   return unescaped;
+}
+
+std::string EscapeUtf8FileName(const std::string& input) {
+  std::string output;
+  if (ReplaceChars(input, kSlash, std::string(kEscapedSlash), &output))
+    return output;
+
+  return input;
+}
+
+std::string ExtractResourceIdFromUrl(const GURL& url) {
+  return net::UnescapeURLComponent(url.ExtractFileName(),
+                                   net::UnescapeRule::URL_SPECIAL_CHARS);
 }
 
 void ParseCacheFilePath(const FilePath& path,

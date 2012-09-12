@@ -88,6 +88,9 @@ message DriveEntryProto {
   // https://developers.google.com/google-apps/documents-list/
   optional string upload_url = 8;
   optional DriveEntryKind kind = 10;
+  // This field is used for processing the feeds from the server. Deleted
+  // entries won't be stored in the metadata storage.
+  optional bool deleted = 11;
 
   // File specific information, such as MD5.
   optional DriveFileSpecificInfo file_specific_info = 9;

@@ -77,6 +77,13 @@ std::string EscapeCacheFileName(const std::string& filename);
 // This is the inverse of EscapeCacheFileName.
 std::string UnescapeCacheFileName(const std::string& filename);
 
+// Escapes forward slashes from file names with magic unicode character
+// \u2215 pretty much looks the same in UI.
+std::string EscapeUtf8FileName(const std::string& input);
+
+// Extracts resource_id out of edit url.
+std::string ExtractResourceIdFromUrl(const GURL& url);
+
 // Extracts resource_id, md5, and extra_extension from cache path.
 // Case 1: Pinned and outgoing symlinks only have resource_id.
 // Example: path="/user/GCache/v1/pinned/pdf:a1b2" =>
