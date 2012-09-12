@@ -29,7 +29,7 @@
     # Use consistent strings across all platforms.
     # These values must match host/plugin/constants.h
     'host_plugin_mime_type': 'application/vnd.chromium.remoting-host',
-    'host_plugin_description': '<!(python <(version_py_path) -f <(branding_path) -t "@HOST_PLUGIN_FILE_DESCRIPTION@")',
+    'host_plugin_description': '<!(python <(version_py_path) -f <(branding_path) -t "@HOST_PLUGIN_DESCRIPTION@")',
     'host_plugin_name': '<!(python <(version_py_path) -f <(branding_path) -t "@HOST_PLUGIN_FILE_NAME@")',
 
     'conditions': [
@@ -204,7 +204,7 @@
           'ENABLE_REMOTING_AUDIO',
         ],
       }],
-      ['remoting_multi_process == 1', {
+      ['remoting_multi_process != 0', {
         'defines': [
           'REMOTING_MULTI_PROCESS',
         ],
@@ -307,7 +307,7 @@
           ],
           'variables': {
             'host_name': '<!(python <(version_py_path) -f <(branding_path) -t "@HOST_PLUGIN_FILE_NAME@")',
-            'host_service_name': '<!(python <(version_py_path) -f <(branding_path) -t "@HOST_SERVICE_FILE_NAME@")',
+            'host_service_name': '<!(python <(version_py_path) -f <(branding_path) -t "@DAEMON_FILE_NAME@")',
             'host_uninstaller_name': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_UNINSTALLER_NAME@")',
             'bundle_prefix': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_UNINSTALLER_BUNDLE_PREFIX@")',
           },
@@ -537,7 +537,7 @@
             'remoting_version_resources',
           ],
           'sources': [
-            '<(SHARED_INTERMEDIATE_DIR)/remoting/elevated_controller_version.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_controller_version.rc',
             'host/branding.cc',
             'host/branding.h',
             'host/pin_hash.cc',
@@ -584,7 +584,7 @@
             'remoting_version_resources',
           ],
           'sources': [
-            '<(SHARED_INTERMEDIATE_DIR)/remoting/host_service_version.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_daemon_version.rc',
             'base/scoped_sc_handle_win.h',
             'host/branding.cc',
             'host/branding.h',
@@ -650,10 +650,11 @@
             ],
           },
           'sources': [
-            'host/plugin/host_plugin.ver',
-            'host/remoting_me2me_host.ver',
-            'host/win/elevated_controller.ver',
-            'host/win/host_service.ver',
+            'host/plugin/remoting_host_plugin.ver',
+            'host/remoting_desktop.ver',
+            'host/remoting_host_me2me.ver',
+            'host/win/remoting_controller.ver',
+            'host/win/remoting_daemon.ver',
           ],
           'rules': [
             {
@@ -714,8 +715,24 @@
           ],
           'wix_defines' : [
             '-dBranding=<(branding)',
+            '-dRemotingMultiProcess=<(remoting_multi_process)',
+          ],
+          'wix_inputs' : [
+            '<(PRODUCT_DIR)/remoting_host_controller.exe',
+            '<(PRODUCT_DIR)/remoting_me2me_host.exe',
+            '<(PRODUCT_DIR)/remoting_service.exe',
+            '<(sas_dll_path)/sas.dll',
+            'resources/chromoting.ico',
           ],
           'conditions': [
+            ['remoting_multi_process != 0', {
+              'dependencies': [
+                'remoting_desktop',
+              ],
+              'wix_inputs' : [
+                '<(PRODUCT_DIR)/remoting_desktop.exe',
+              ],
+            }],
             ['buildtype == "Official"', {
               'wix_defines': [
                 '-dOfficialBuild=1',
@@ -727,11 +744,7 @@
               'rule_name': 'candle_and_light',
               'extension': 'wxs',
               'inputs': [
-                '<(PRODUCT_DIR)/remoting_host_controller.exe',
-                '<(PRODUCT_DIR)/remoting_me2me_host.exe',
-                '<(PRODUCT_DIR)/remoting_service.exe',
-                '<(sas_dll_path)/sas.dll',
-                'resources/chromoting.ico',
+                '<@(_wix_inputs)',
                 'tools/candle_and_light.py',
               ],
               'outputs': [
@@ -801,6 +814,60 @@
         },  # end of target 'remoting_host_installation_unittest'
       ],  # end of 'targets'
     }],  # '<(wix_path) != ""'
+
+    ['remoting_multi_process != 0', {
+      'targets': [
+        {
+          'target_name': 'remoting_desktop',
+          'type': 'executable',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'dependencies': [
+            'remoting_base',
+            'remoting_breakpad',
+            'remoting_host',
+            'remoting_version_resources',
+            '../base/base.gyp:base',
+            '../ipc/ipc.gyp:ipc',
+          ],
+          'sources': [
+            'host/branding.cc',
+            'host/branding.h',
+            'host/desktop_process.cc',
+            'host/desktop_process.h',
+            'host/host_ui.rc',
+            'host/usage_stats_consent.h',
+            'host/usage_stats_consent_win.cc',
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_desktop_version.rc',
+          ],
+          'link_settings': {
+            'libraries': [
+              '-lcomctl32.lib',
+            ],
+          },
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'AdditionalOptions': [
+                "\"/manifestdependency:type='win32' "
+                    "name='Microsoft.Windows.Common-Controls' "
+                    "version='6.0.0.0' "
+                    "processorArchitecture='*' "
+                    "publicKeyToken='6595b64144ccf1df' language='*'\"",
+              ],
+              'conditions': [
+                ['buildtype == "Official" and remoting_multi_process != 0', {
+                  'AdditionalOptions': [
+                    "\"/MANIFESTUAC:level='requireAdministrator' "
+                        "uiAccess='true'\"",
+                  ],
+                }],
+              ],
+              # 2 == /SUBSYSTEM:WINDOWS
+              'SubSystem': '2',
+            },
+          },
+        },  # end of target 'remoting_desktop'
+      ],
+    }],  # 'remoting_multi_process != 0'
 
   ],  # end of 'conditions'
 
@@ -1001,7 +1068,7 @@
             '<(INTERMEDIATE_DIR)',
           ],
           'sources': [
-            '<(SHARED_INTERMEDIATE_DIR)/remoting/host_plugin_version.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_host_plugin_version.rc',
             'host/host_ui.rc',
             'host/plugin/host_plugin.def',
           ],
@@ -1491,7 +1558,7 @@
           ],
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/remoting/host/remoting_host_messages.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_me2me_host_version.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_host_me2me_version.rc',
             'host/host_ui.rc',
           ],
           'link_settings': {
@@ -1509,7 +1576,7 @@
                     "publicKeyToken='6595b64144ccf1df' language='*'\"",
               ],
               'conditions': [
-                ['buildtype == "Official"', {
+                ['buildtype == "Official" and remoting_multi_process == 0', {
                   'AdditionalOptions': [
                     "\"/MANIFESTUAC:level='requireAdministrator' "
                         "uiAccess='true'\"",

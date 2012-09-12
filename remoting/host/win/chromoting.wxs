@@ -135,7 +135,7 @@
     </Directory>
 
     <DirectoryRef Id="binaries" FileSource="$(var.FileSource)">
-      <Component Id="sas.dll" Guid="*">
+      <Component Id="sas" Guid="*">
         <File Id="sas.dll"
               DiskId="1"
               Name="sas.dll"
@@ -143,7 +143,17 @@
               Vital="yes"/>
       </Component>
 
-      <Component Id="remoting_service" Guid="*">
+      <?if $(var.RemotingMultiProcess) != 0 ?>
+        <Component Id="remoting_desktop" Guid="*">
+          <File Id="remoting_desktop.exe"
+                DiskId="1"
+                KeyPath="yes"
+                Name="remoting_desktop.exe"
+                Vital="yes"/>
+        </Component>
+      <?endif?>
+
+      <Component Id="remoting_daemon" Guid="*">
         <File Id="remoting_service.exe"
               DiskId="1"
               KeyPath="yes"
@@ -169,7 +179,7 @@
                         Wait="yes" />
       </Component>
 
-      <Component Id="remoting_me2me_host" Guid="*">
+      <Component Id="remoting_host" Guid="*">
         <File Id="remoting_me2me_host.exe"
               DiskId="1"
               Name="remoting_me2me_host.exe"
@@ -209,7 +219,7 @@
         </Component>
       <?endif?>
 
-      <Component Id="service_controller" Guid="*">
+      <Component Id="remoting_controller" Guid="*">
         <File Id="$(var.ControllerBinary)"
               DiskId="1"
               Name="$(var.ControllerBinary)"
@@ -409,10 +419,13 @@
       <?ifdef OfficialBuild ?>
         <ComponentRef Id="omaha_registration"/>
       <?endif?>
-      <ComponentRef Id="remoting_me2me_host"/>
-      <ComponentRef Id="remoting_service"/>
-      <ComponentRef Id="sas.dll"/>
-      <ComponentRef Id="service_controller"/>
+      <ComponentRef Id="remoting_controller"/>
+      <ComponentRef Id="remoting_daemon"/>
+      <?if $(var.RemotingMultiProcess) != 0 ?>
+        <ComponentRef Id="remoting_desktop"/>
+      <?endif?>
+      <ComponentRef Id="remoting_host"/>
+      <ComponentRef Id="sas"/>
     </Feature>
 
     <!-- Set the icon shown in Add/Remove Programs. -->
