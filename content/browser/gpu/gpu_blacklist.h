@@ -41,6 +41,16 @@ class CONTENT_EXPORT GpuBlacklist {
     kAllOs
   };
 
+  struct Decision {
+    content::GpuFeatureType blacklisted_features;
+    content::GpuSwitchingOption gpu_switching;
+
+    Decision()
+        : blacklisted_features(content::GPU_FEATURE_TYPE_UNKNOWN),
+          gpu_switching(content::GPU_SWITCHING_AUTOMATIC) {
+    }
+  };
+
   GpuBlacklist();
   virtual ~GpuBlacklist();
 
@@ -52,28 +62,20 @@ class CONTENT_EXPORT GpuBlacklist {
                         OsFilter os_filter);
 
   // Collects system information and combines them with gpu_info and blacklist
-  // information to determine gpu feature flags.
+  // information to make the blacklist decision.
   // If os is kOsAny, use the current OS; if os_version is null, use the
   // current OS version.
-  content::GpuFeatureType DetermineGpuFeatureType(
+  Decision MakeBlacklistDecision(
       OsType os, Version* os_version, const content::GPUInfo& gpu_info);
 
-  // Collects the active entries that set the "feature" flag from the last
-  // DetermineGpuFeatureType() call.  This tells which entries are responsible
-  // for raising a certain flag, i.e, for blacklisting a certain feature.
-  // Examples of "feature":
-  //   GPU_FEATURE_TYPE_ALL - any of the supported features;
-  //   GPU_FEATURE_TYPE_WEBGL - a single feature;
-  //   GPU_FEATURE_TYPE_WEBGL | GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING
-  //       - two features.
+  // Collects the active entries from the last MakeBlacklistDecision() call.
   // If disabled set to true, return entries that are disabled; otherwise,
   // return enabled entries.
-  void GetGpuFeatureTypeEntries(content::GpuFeatureType feature,
-                                std::vector<uint32>& entry_ids,
-                                bool disabled) const;
+  void GetDecisionEntries(std::vector<uint32>& entry_ids,
+                          bool disabled) const;
 
   // Returns the description and bugs from active entries from the last
-  // DetermineGpuFeatureType() call.
+  // MakeBlacklistDecision() call.
   //
   // Each problems has:
   // {
@@ -249,6 +251,9 @@ class CONTENT_EXPORT GpuBlacklist {
     // Returns the GpuFeatureType.
     content::GpuFeatureType GetGpuFeatureType() const;
 
+    // Returns the GpuSwitchingOption.
+    content::GpuSwitchingOption GetGpuSwitchingOption() const;
+
     // Returns true if an unknown field is encountered.
     bool contains_unknown_fields() const {
       return contains_unknown_fields_;
@@ -327,6 +332,8 @@ class CONTENT_EXPORT GpuBlacklist {
     bool SetBlacklistedFeatures(
         const std::vector<std::string>& blacklisted_features);
 
+    bool SetGpuSwitchingOption(const std::string& switching_string);
+
     void AddException(ScopedGpuBlacklistEntry exception);
 
     static MultiGpuStyle StringToMultiGpuStyle(const std::string& style);
@@ -352,7 +359,7 @@ class CONTENT_EXPORT GpuBlacklist {
     scoped_ptr<FloatInfo> perf_graphics_info_;
     scoped_ptr<FloatInfo> perf_gaming_info_;
     scoped_ptr<FloatInfo> perf_overall_info_;
-    content::GpuFeatureType feature_type_;
+    Decision decision_;
     std::vector<ScopedGpuBlacklistEntry> exceptions_;
     bool contains_unknown_fields_;
     bool contains_unknown_features_;
@@ -386,8 +393,8 @@ class CONTENT_EXPORT GpuBlacklist {
   scoped_ptr<Version> browser_version_;
 
   // This records all the blacklist entries that are appliable to the current
-  // user machine.  It is updated everytime DetermineGpuFeatureType() is
-  // called and is used later by GetGpuFeatureTypeEntries().
+  // user machine.  It is updated everytime MakeBlacklistDecision() is
+  // called and is used later by GetDecisionEntries().
   std::vector<ScopedGpuBlacklistEntry> active_entries_;
 
   uint32 max_entry_id_;

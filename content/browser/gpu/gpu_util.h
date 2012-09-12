@@ -27,6 +27,11 @@ CONTENT_EXPORT content::GpuFeatureType StringToGpuFeatureType(
 CONTENT_EXPORT std::string GpuFeatureTypeToString(
     content::GpuFeatureType feature);
 
+// Maps string to GpuSwitchingOption; returns GPU_SWITCHING_UNKNOWN if an
+// unknown name is input (case-sensitive).
+CONTENT_EXPORT content::GpuSwitchingOption StringToGpuSwitchingOption(
+    const std::string& switching_string);
+
 // Send UMA histograms about the enabled features.
 CONTENT_EXPORT void UpdateStats(
     const GpuBlacklist* blacklist, uint32 blacklisted_features);

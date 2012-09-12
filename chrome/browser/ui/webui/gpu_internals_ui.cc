@@ -340,7 +340,26 @@ Value* GetFeatureStatus() {
       feature_status_list->Append(
           NewStatusValue(kGpuFeatureInfo[i].name.c_str(), status.c_str()));
     }
-
+    content::GPUInfo gpu_info = GpuDataManager::GetInstance()->GetGPUInfo();
+    if (gpu_info.secondary_gpus.size() > 0 ||
+        gpu_info.optimus || gpu_info.amd_switchable) {
+      std::string gpu_switching;
+      switch (GpuDataManager::GetInstance()->GetGpuSwitchingOption()) {
+        case content::GPU_SWITCHING_AUTOMATIC:
+          gpu_switching = "gpu_switching_automatic";
+          break;
+        case content::GPU_SWITCHING_FORCE_DISCRETE:
+          gpu_switching = "gpu_switching_force_discrete";
+          break;
+        case content::GPU_SWITCHING_FORCE_INTEGRATED:
+          gpu_switching = "gpu_switching_force_integrated";
+          break;
+        default:
+          break;
+      }
+      feature_status_list->Append(
+          NewStatusValue("gpu_switching", gpu_switching.c_str()));
+    }
     status->Set("featureStatus", feature_status_list);
   }
 

@@ -17,6 +17,7 @@
 #include "content/public/common/gpu_info.h"
 
 using content::GpuFeatureType;
+using content::GpuSwitchingOption;
 
 namespace {
 
@@ -553,25 +554,32 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
 
   if (top_level) {
     const ListValue* blacklist_value = NULL;
-    if (!value->GetList("blacklist", &blacklist_value)) {
-      LOG(WARNING) << "Malformed blacklist entry " << entry->id();
-      return NULL;
-    }
-    std::vector<std::string> blacklist;
-    for (size_t i = 0; i < blacklist_value->GetSize(); ++i) {
-      std::string feature;
-      if (blacklist_value->GetString(i, &feature)) {
-        blacklist.push_back(feature);
-      } else {
+    if (value->GetList("blacklist", &blacklist_value)) {
+      std::vector<std::string> blacklist;
+      for (size_t i = 0; i < blacklist_value->GetSize(); ++i) {
+        std::string feature;
+        if (blacklist_value->GetString(i, &feature)) {
+          blacklist.push_back(feature);
+        } else {
+          LOG(WARNING) << "Malformed blacklist entry " << entry->id();
+          return NULL;
+        }
+      }
+      if (!entry->SetBlacklistedFeatures(blacklist)) {
         LOG(WARNING) << "Malformed blacklist entry " << entry->id();
         return NULL;
       }
+      dictionary_entry_count++;
     }
-    if (!entry->SetBlacklistedFeatures(blacklist)) {
-      LOG(WARNING) << "Malformed blacklist entry " << entry->id();
-      return NULL;
+
+    std::string switching_value;
+    if (value->GetString("gpu_switching", &switching_value)) {
+      if (!entry->SetGpuSwitchingOption(switching_value)) {
+        LOG(WARNING) << "Malformed gpu_switching entry " << entry->id();
+        return NULL;
+      }
+      dictionary_entry_count++;
     }
-    dictionary_entry_count++;
   }
 
   if (top_level) {
@@ -618,7 +626,6 @@ GpuBlacklist::GpuBlacklistEntry::GpuBlacklistEntry()
       vendor_id_(0),
       multi_gpu_style_(kMultiGpuStyleNone),
       multi_gpu_category_(kMultiGpuCategoryPrimary),
-      feature_type_(content::GPU_FEATURE_TYPE_UNKNOWN),
       contains_unknown_fields_(false),
       contains_unknown_features_(false) {
 }
@@ -779,7 +786,17 @@ bool GpuBlacklist::GpuBlacklistEntry::SetBlacklistedFeatures(
         break;
     }
   }
-  feature_type_ = static_cast<GpuFeatureType>(feature_type);
+  decision_.blacklisted_features = static_cast<GpuFeatureType>(feature_type);
+  return true;
+}
+
+bool GpuBlacklist::GpuBlacklistEntry::SetGpuSwitchingOption(
+    const std::string& switching_string) {
+  GpuSwitchingOption switching = gpu_util::StringToGpuSwitchingOption(
+      switching_string);
+  if (switching == content::GPU_SWITCHING_UNKNOWN)
+    return false;
+  decision_.gpu_switching = switching;
   return true;
 }
 
@@ -913,7 +930,12 @@ bool GpuBlacklist::GpuBlacklistEntry::disabled() const {
 }
 
 GpuFeatureType GpuBlacklist::GpuBlacklistEntry::GetGpuFeatureType() const {
-  return feature_type_;
+  return decision_.blacklisted_features;
+}
+
+GpuSwitchingOption
+GpuBlacklist::GpuBlacklistEntry::GetGpuSwitchingOption() const {
+  return decision_.gpu_switching;
 }
 
 GpuBlacklist::GpuBlacklist()
@@ -1008,12 +1030,13 @@ bool GpuBlacklist::LoadGpuBlacklist(
   return true;
 }
 
-GpuFeatureType GpuBlacklist::DetermineGpuFeatureType(
+GpuBlacklist::Decision GpuBlacklist::MakeBlacklistDecision(
     GpuBlacklist::OsType os,
     Version* os_version,
     const content::GPUInfo& gpu_info) {
   active_entries_.clear();
   int type = 0;
+  GpuSwitchingOption switching = content::GPU_SWITCHING_AUTOMATIC;
 
   if (os == kOsAny)
     os = GetOsType();
@@ -1030,22 +1053,26 @@ GpuFeatureType GpuBlacklist::DetermineGpuFeatureType(
 
   for (size_t i = 0; i < blacklist_.size(); ++i) {
     if (blacklist_[i]->Contains(os, *os_version, gpu_info)) {
-      if (!blacklist_[i]->disabled())
+      if (!blacklist_[i]->disabled()) {
         type |= blacklist_[i]->GetGpuFeatureType();
+        if (blacklist_[i]->GetGpuSwitchingOption() !=
+                content::GPU_SWITCHING_AUTOMATIC)
+          switching = blacklist_[i]->GetGpuSwitchingOption();
+      }
       active_entries_.push_back(blacklist_[i]);
     }
   }
-  return static_cast<GpuFeatureType>(type);
+  Decision decision;
+  decision.blacklisted_features = static_cast<GpuFeatureType>(type);
+  decision.gpu_switching = switching;
+  return decision;
 }
 
-void GpuBlacklist::GetGpuFeatureTypeEntries(
-    content::GpuFeatureType feature,
-    std::vector<uint32>& entry_ids,
-    bool disabled) const {
+void GpuBlacklist::GetDecisionEntries(
+    std::vector<uint32>& entry_ids, bool disabled) const {
   entry_ids.clear();
   for (size_t i = 0; i < active_entries_.size(); ++i) {
-    if (((feature & active_entries_[i]->GetGpuFeatureType()) != 0) &&
-        disabled == active_entries_[i]->disabled())
+    if (disabled == active_entries_[i]->disabled())
       entry_ids.push_back(active_entries_[i]->id());
   }
 }

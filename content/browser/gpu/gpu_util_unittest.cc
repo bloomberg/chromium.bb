@@ -85,3 +85,16 @@ TEST(GpuUtilsTest, GpuFeatureTypeToString) {
               content::GPU_FEATURE_TYPE_ALL)).c_str(),
       "all");
 }
+
+TEST(GpuUtilsTest, GpuSwitchingOptionFromString) {
+  // Test StringToGpuSwitchingOption.
+  EXPECT_EQ(gpu_util::StringToGpuSwitchingOption("automatic"),
+            content::GPU_SWITCHING_AUTOMATIC);
+  EXPECT_EQ(gpu_util::StringToGpuSwitchingOption("force_discrete"),
+            content::GPU_SWITCHING_FORCE_DISCRETE);
+  EXPECT_EQ(gpu_util::StringToGpuSwitchingOption("force_integrated"),
+            content::GPU_SWITCHING_FORCE_INTEGRATED);
+  EXPECT_EQ(gpu_util::StringToGpuSwitchingOption("xxx"),
+            content::GPU_SWITCHING_UNKNOWN);
+}
+

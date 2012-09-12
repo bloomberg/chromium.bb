@@ -15,6 +15,7 @@
 #include "content/public/common/content_switches.h"
 
 using content::GpuFeatureType;
+using content::GpuSwitchingOption;
 
 namespace {
 
@@ -28,6 +29,11 @@ const char kGpuFeatureNameTextureSharing[] = "texture_sharing";
 const char kGpuFeatureNameAcceleratedVideoDecode[] = "accelerated_video_decode";
 const char kGpuFeatureNameAll[] = "all";
 const char kGpuFeatureNameUnknown[] = "unknown";
+
+const char kGpuSwitchingNameAutomatic[] = "automatic";
+const char kGpuSwitchingNameForceIntegrated[] = "force_integrated";
+const char kGpuSwitchingNameForceDiscrete[] = "force_discrete";
+const char kGpuSwitchingNameUnknown[] = "unknown";
 
 enum GpuFeatureStatus {
     kGpuFeatureEnabled = 0,
@@ -87,21 +93,21 @@ namespace gpu_util {
 GpuFeatureType StringToGpuFeatureType(const std::string& feature_string) {
   if (feature_string == kGpuFeatureNameAccelerated2dCanvas)
     return content::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS;
-  else if (feature_string == kGpuFeatureNameAcceleratedCompositing)
+  if (feature_string == kGpuFeatureNameAcceleratedCompositing)
     return content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING;
-  else if (feature_string == kGpuFeatureNameWebgl)
+  if (feature_string == kGpuFeatureNameWebgl)
     return content::GPU_FEATURE_TYPE_WEBGL;
-  else if (feature_string == kGpuFeatureNameMultisampling)
+  if (feature_string == kGpuFeatureNameMultisampling)
     return content::GPU_FEATURE_TYPE_MULTISAMPLING;
-  else if (feature_string == kGpuFeatureNameFlash3d)
+  if (feature_string == kGpuFeatureNameFlash3d)
     return content::GPU_FEATURE_TYPE_FLASH3D;
-  else if (feature_string == kGpuFeatureNameFlashStage3d)
+  if (feature_string == kGpuFeatureNameFlashStage3d)
     return content::GPU_FEATURE_TYPE_FLASH_STAGE3D;
-  else if (feature_string == kGpuFeatureNameTextureSharing)
+  if (feature_string == kGpuFeatureNameTextureSharing)
     return content::GPU_FEATURE_TYPE_TEXTURE_SHARING;
-  else if (feature_string == kGpuFeatureNameAcceleratedVideoDecode)
+  if (feature_string == kGpuFeatureNameAcceleratedVideoDecode)
     return content::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE;
-  else if (feature_string == kGpuFeatureNameAll)
+  if (feature_string == kGpuFeatureNameAll)
     return content::GPU_FEATURE_TYPE_ALL;
   return content::GPU_FEATURE_TYPE_UNKNOWN;
 }
@@ -133,6 +139,17 @@ std::string GpuFeatureTypeToString(GpuFeatureType type) {
   return JoinString(matches, ',');
 }
 
+GpuSwitchingOption StringToGpuSwitchingOption(
+    const std::string& switching_string) {
+  if (switching_string == kGpuSwitchingNameAutomatic)
+    return content::GPU_SWITCHING_AUTOMATIC;
+  if (switching_string == kGpuSwitchingNameForceIntegrated)
+    return content::GPU_SWITCHING_FORCE_INTEGRATED;
+  if (switching_string == kGpuSwitchingNameForceDiscrete)
+    return content::GPU_SWITCHING_FORCE_DISCRETE;
+  return content::GPU_SWITCHING_UNKNOWN;
+}
+
 void UpdateStats(const GpuBlacklist* blacklist,
                  uint32 blacklisted_features) {
   uint32 max_entry_id = blacklist->max_entry_id();
@@ -148,8 +165,7 @@ void UpdateStats(const GpuBlacklist* blacklist,
         0, max_entry_id + 1);
   } else {
     std::vector<uint32> flag_entries;
-    blacklist->GetGpuFeatureTypeEntries(
-        content::GPU_FEATURE_TYPE_ALL, flag_entries, disabled);
+    blacklist->GetDecisionEntries(flag_entries, disabled);
     DCHECK_GT(flag_entries.size(), 0u);
     for (size_t i = 0; i < flag_entries.size(); ++i) {
       UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
@@ -161,8 +177,7 @@ void UpdateStats(const GpuBlacklist* blacklist,
   // us to understand the impact of an entry before enable it.
   std::vector<uint32> flag_disabled_entries;
   disabled = true;
-  blacklist->GetGpuFeatureTypeEntries(
-      content::GPU_FEATURE_TYPE_ALL, flag_disabled_entries, disabled);
+  blacklist->GetDecisionEntries(flag_disabled_entries, disabled);
   for (size_t i = 0; i < flag_disabled_entries.size(); ++i) {
     UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerDisabledEntry",
         flag_disabled_entries[i], max_entry_id + 1);

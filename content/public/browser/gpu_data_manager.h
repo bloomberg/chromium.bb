@@ -42,6 +42,8 @@ class GpuDataManager {
 
   virtual GpuFeatureType GetBlacklistedFeatures() const = 0;
 
+  virtual GpuSwitchingOption GetGpuSwitchingOption() const = 0;
+
   // Returns the reasons for the latest run of blacklisting decisions.
   // For the structure of returned value, see documentation for
   // GpuBlacklist::GetBlacklistedReasons().

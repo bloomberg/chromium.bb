@@ -32,6 +32,7 @@
 using content::BrowserThread;
 using content::GpuDataManagerObserver;
 using content::GpuFeatureType;
+using content::GpuSwitchingOption;
 
 // static
 content::GpuDataManager* content::GpuDataManager::GetInstance() {
@@ -47,6 +48,7 @@ GpuDataManagerImpl::GpuDataManagerImpl()
     : complete_gpu_info_already_requested_(false),
       gpu_feature_type_(content::GPU_FEATURE_TYPE_UNKNOWN),
       preliminary_gpu_feature_type_(content::GPU_FEATURE_TYPE_UNKNOWN),
+      gpu_switching_(content::GPU_SWITCHING_AUTOMATIC),
       observer_list_(new GpuDataManagerObserverList),
       software_rendering_(false),
       card_blacklisted_(false),
@@ -127,11 +129,15 @@ void GpuDataManagerImpl::UpdateGpuInfo(const content::GPUInfo& gpu_info) {
   content::GetContentClient()->SetGpuInfo(gpu_info);
 
   if (gpu_blacklist_.get()) {
-    GpuFeatureType feature_type = gpu_blacklist_->DetermineGpuFeatureType(
-        GpuBlacklist::kOsAny, NULL, gpu_info);
-    if (update_histograms_)
-      gpu_util::UpdateStats(gpu_blacklist_.get(), feature_type);
-    UpdateBlacklistedFeatures(feature_type);
+    GpuBlacklist::Decision decision =
+        gpu_blacklist_->MakeBlacklistDecision(
+            GpuBlacklist::kOsAny, NULL, gpu_info);
+    if (update_histograms_) {
+      gpu_util::UpdateStats(gpu_blacklist_.get(),
+                            decision.blacklisted_features);
+    }
+    UpdateBlacklistedFeatures(decision.blacklisted_features);
+    gpu_switching_ = decision.gpu_switching;
   }
 
   {
@@ -197,6 +203,10 @@ GpuFeatureType GpuDataManagerImpl::GetBlacklistedFeatures() const {
   }
 
   return gpu_feature_type_;
+}
+
+GpuSwitchingOption GpuDataManagerImpl::GetGpuSwitchingOption() const {
+  return gpu_switching_;
 }
 
 base::ListValue* GpuDataManagerImpl::GetBlacklistReasons() const {

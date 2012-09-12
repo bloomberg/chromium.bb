@@ -38,6 +38,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
       const std::string& gpu_blacklist_json,
       const content::GPUInfo& gpu_info) OVERRIDE;
   virtual content::GpuFeatureType GetBlacklistedFeatures() const OVERRIDE;
+  virtual content::GpuSwitchingOption GetGpuSwitchingOption() const OVERRIDE;
   virtual base::ListValue* GetBlacklistReasons() const OVERRIDE;
   virtual std::string GetBlacklistVersion() const OVERRIDE;
   virtual content::GPUInfo GetGPUInfo() const OVERRIDE;
@@ -119,6 +120,8 @@ class CONTENT_EXPORT GpuDataManagerImpl
 
   content::GpuFeatureType gpu_feature_type_;
   content::GpuFeatureType preliminary_gpu_feature_type_;
+
+  content::GpuSwitchingOption gpu_switching_;
 
   content::GPUInfo gpu_info_;
   mutable base::Lock gpu_info_lock_;
