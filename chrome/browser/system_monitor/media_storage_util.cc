@@ -130,23 +130,19 @@ void MediaStorageUtil::IsDeviceAttached(const std::string& device_id,
     return;
   }
 
-  switch (type) {
-    case MTP_OR_PTP:  // Fall through.
-    case REMOVABLE_MASS_STORAGE_WITH_DCIM: // Fall through.
-    case REMOVABLE_MASS_STORAGE_NO_DCIM:
-      // We should be able to find removable storage in SystemMonitor.
-      callback.Run(!FindRemovableStorageLocationById(device_id).empty());
-      break;
-    case FIXED_MASS_STORAGE:
-      // For this type, the unique_id is the path.
-      BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                              base::Bind(&ValidatePathOnFileThread,
-                                         FilePath::FromUTF8Unsafe(unique_id),
-                                         callback));
-      break;
+  if (type == FIXED_MASS_STORAGE) {
+    // For this type, the unique_id is the path.
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                            base::Bind(&ValidatePathOnFileThread,
+                                       FilePath::FromUTF8Unsafe(unique_id),
+                                       callback));
+  } else {
+    DCHECK(type == MTP_OR_PTP ||
+           type == REMOVABLE_MASS_STORAGE_WITH_DCIM ||
+           type == REMOVABLE_MASS_STORAGE_NO_DCIM);
+    // We should be able to find removable storage in SystemMonitor.
+    callback.Run(!FindRemovableStorageLocationById(device_id).empty());
   }
-  NOTREACHED();
-  callback.Run(false);
 }
 
 // static
@@ -169,20 +165,15 @@ FilePath MediaStorageUtil::FindDevicePathById(const std::string& device_id) {
   if (!CrackDeviceId(device_id, &type, &unique_id))
     return FilePath();
 
-  switch (type) {
-    case MTP_OR_PTP:
-      // TODO(kmadhusu) We may want to return the MTP device location here.
-      return FilePath();
-    case REMOVABLE_MASS_STORAGE_WITH_DCIM:  // Fall through.
-    case REMOVABLE_MASS_STORAGE_NO_DCIM:
-      return FilePath(FindRemovableStorageLocationById(device_id));
-    case FIXED_MASS_STORAGE:
-      // For this type, the unique_id is the path.
-      return FilePath::FromUTF8Unsafe(unique_id);
+  if (type == FIXED_MASS_STORAGE) {
+    // For this type, the unique_id is the path.
+    return FilePath::FromUTF8Unsafe(unique_id);
   }
 
-  NOTREACHED();
-  return FilePath();
+  DCHECK(type == MTP_OR_PTP ||
+         type == REMOVABLE_MASS_STORAGE_WITH_DCIM ||
+         type == REMOVABLE_MASS_STORAGE_NO_DCIM);
+  return FilePath(FindRemovableStorageLocationById(device_id));
 }
 
 // static
