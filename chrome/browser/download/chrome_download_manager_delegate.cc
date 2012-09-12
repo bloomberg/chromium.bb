@@ -29,6 +29,7 @@
 #include "chrome/browser/extensions/api/downloads/downloads_api.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -389,9 +390,16 @@ bool ChromeDownloadManagerDelegate::ShouldOpenDownload(DownloadItem* item) {
 
 bool ChromeDownloadManagerDelegate::ShouldOpenWithWebIntents(
     const DownloadItem* item) {
-  if (!item->GetWebContents() || !item->GetWebContents()->GetDelegate())
+  if (!web_intents::IsWebIntentsEnabledForProfile(profile_))
     return false;
+
+  if ((item->GetWebContents() && !item->GetWebContents()->GetDelegate()) &&
+      !web_intents::GetBrowserForBackgroundWebIntentDelivery(profile_)) {
+    return false;
+  }
   if (!item->GetForcedFilePath().empty())
+    return false;
+  if (item->GetTargetDisposition() == DownloadItem::TARGET_DISPOSITION_PROMPT)
     return false;
 
   std::string mime_type = item->GetMimeType();
@@ -460,10 +468,17 @@ void ChromeDownloadManagerDelegate::OpenWithWebIntent(
       content::WebIntentsDispatcher::Create(intent_data);
   dispatcher->RegisterReplyNotification(
       base::Bind(&OnWebIntentDispatchCompleted, item->GetFullPath()));
-  // TODO(gbillock): try to get this to be able to delegate to the Browser
-  // object directly, passing a NULL WebContents?
-  item->GetWebContents()->GetDelegate()->WebIntentDispatch(
-      item->GetWebContents(), dispatcher);
+
+  content::WebContentsDelegate* delegate = NULL;
+#if !defined(OS_ANDROID)
+  if (item->GetWebContents() && item->GetWebContents()->GetDelegate()) {
+    delegate = item->GetWebContents()->GetDelegate();
+  } else {
+    delegate = web_intents::GetBrowserForBackgroundWebIntentDelivery(profile_);
+  }
+#endif  // !defined(OS_ANDROID)
+  DCHECK(delegate);
+  delegate->WebIntentDispatch(NULL, dispatcher);
 }
 
 bool ChromeDownloadManagerDelegate::GenerateFileHash() {

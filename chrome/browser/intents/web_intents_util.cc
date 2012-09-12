@@ -57,10 +57,14 @@ bool IsWebIntentsEnabledForProfile(Profile* profile) {
 }
 
 Browser* GetBrowserForBackgroundWebIntentDelivery(Profile* profile) {
+#if defined(OS_ANDROID)
+  return NULL;
+#else
   Browser* browser = BrowserList::GetLastActive();
   if (browser && profile && browser->profile() != profile)
     return NULL;
   return browser;
+#endif  // defined(OS_ANDROID)
 }
 
 bool IsRecognizedAction(const string16& action) {
