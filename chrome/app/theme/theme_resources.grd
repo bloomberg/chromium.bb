@@ -69,12 +69,12 @@
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_PLUGINS" file="blocked_plugins.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_POPUPS" file="blocked_popups.png" />
       <structure type="chrome_scaled_image" name="IDR_BOOKMARKS_FAVICON" file="common/favicon_bookmarks.png" />
-      <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_CHEVRONS" file="chevron.png" />
+      <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_CHEVRONS" file="common/chevron.png" />
       <if expr="is_macosx">
         <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_FOLDER" file="bookmark_bar_folder_mac.png" />
       </if>
       <if expr="not is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_FOLDER" file="bookmark_bar_folder.png" />
+        <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_FOLDER" file="common/bookmark_bar_folder.png" />
       </if>
       <if expr="pp_ifdef('chromeos')">
         <structure type="chrome_scaled_image" name="IDR_BRIGHTNESS_BUBBLE_ICON" file="brightness_icon.png" />
