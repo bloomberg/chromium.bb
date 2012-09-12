@@ -244,7 +244,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityButtonNameCalc) {
   RunTest(FILE_PATH_LITERAL("button-name-calc.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityCanvas) {
+// TODO(dmazzoni): rebaseline and enable after this WebKit change is rolled:
+// https://bugs.webkit.org/show_bug.cgi?id=96323
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       DISABLED_AccessibilityCanvas) {
   RunTest(FILE_PATH_LITERAL("canvas.html"));
 }
 
@@ -304,7 +307,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilitySpinButton) {
   RunTest(FILE_PATH_LITERAL("spinbutton.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityToggleButton) {
+// TODO(dmazzoni): rebaseline and enable after this WebKit change is rolled:
+// https://bugs.webkit.org/show_bug.cgi?id=96323
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       DISABLED_AccessibilityToggleButton) {
   RunTest(FILE_PATH_LITERAL("togglebutton.html"));
 }
 
