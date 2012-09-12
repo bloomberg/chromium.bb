@@ -20,9 +20,19 @@ using content::BrowserThread;
 
 namespace {
 
-// This was the default location service url for Chrome versions 14 and earlier
-// but is no longer supported.
-const char* kOldDefaultNetworkProviderUrl = "https://www.google.com/loc/json";
+bool IsUnsupportedNetworkProviderUrl(const GURL& url) {
+  const std::string& spec = url.spec();
+
+  // Unsupported after Chrome v14.
+  if (spec == "https://www.google.com/loc/json")
+    return true;
+
+  // Unsupported after Chrome v22.
+  if (spec == "https://maps.googleapis.com/maps/api/browserlocation/json")
+    return true;
+
+  return false;
+}
 
 // Loads access tokens and other necessary data on the UI thread, and
 // calls back to the originator on the originating threaad.
@@ -53,7 +63,7 @@ class TokenLoadingJob : public base::RefCountedThreadSafe<TokenLoadingJob> {
                                 prefs::kGeolocationAccessToken);
     DictionaryValue* token_dictionary = update.Get();
 
-    bool has_old_network_provider_url = false;
+    std::vector<std::string> providers_to_remove;
     // The dictionary value could be NULL if the pref has never been set.
     if (token_dictionary != NULL) {
       for (DictionaryValue::key_iterator it = token_dictionary->begin_keys();
@@ -61,16 +71,17 @@ class TokenLoadingJob : public base::RefCountedThreadSafe<TokenLoadingJob> {
         GURL url(*it);
         if (!url.is_valid())
           continue;
-        if (url.spec() == kOldDefaultNetworkProviderUrl) {
-          has_old_network_provider_url = true;
+        if (IsUnsupportedNetworkProviderUrl(url)) {
+          providers_to_remove.push_back(*it);
           continue;
         }
         token_dictionary->GetStringWithoutPathExpansion(
             *it, &access_token_set_[url]);
       }
-      if (has_old_network_provider_url)
+      for (size_t i = 0; i < providers_to_remove.size(); ++i) {
         token_dictionary->RemoveWithoutPathExpansion(
-            kOldDefaultNetworkProviderUrl, NULL);
+            providers_to_remove[i], NULL);
+      }
     }
 
     system_request_context_ = g_browser_process->system_request_context();

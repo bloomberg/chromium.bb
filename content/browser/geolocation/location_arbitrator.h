@@ -44,6 +44,8 @@ class CONTENT_EXPORT GeolocationArbitrator
 
   static GeolocationArbitrator* Create(GeolocationObserver* observer);
 
+  static GURL DefaultNetworkProviderURL();
+
   // See more details in geolocation_provider.
   void StartProviders(const GeolocationObserverOptions& options);
   void StopProviders();
