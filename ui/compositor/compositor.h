@@ -224,11 +224,6 @@ class COMPOSITOR_EXPORT Compositor
  private:
   friend class base::RefCounted<Compositor>;
 
-  // When reading back pixel data we often get RGBA rather than BGRA pixels and
-  // and the image often needs to be flipped vertically.
-  static void SwizzleRGBAToBGRAAndFlip(unsigned char* pixels,
-                                       const gfx::Size& image_size);
-
   // Notifies the compositor that compositing is complete.
   void NotifyEnd();
 

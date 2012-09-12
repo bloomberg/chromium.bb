@@ -259,12 +259,8 @@ bool Compositor::ReadPixels(SkBitmap* bitmap,
   bitmap->allocPixels();
   SkAutoLockPixels lock_image(*bitmap);
   unsigned char* pixels = static_cast<unsigned char*>(bitmap->getPixels());
-  if (host_->compositeAndReadback(
-          pixels, gfx::Rect(new_origin, bounds_in_pixel.size()))) {
-    SwizzleRGBAToBGRAAndFlip(pixels, bounds_in_pixel.size());
-    return true;
-  }
-  return false;
+  return host_->compositeAndReadback(
+          pixels, gfx::Rect(new_origin, bounds_in_pixel.size()));
 }
 
 void Compositor::SetScaleAndSize(float scale, const gfx::Size& size_in_pixel) {
@@ -418,29 +414,6 @@ void Compositor::didCompleteSwapBuffers() {
 void Compositor::scheduleComposite() {
   if (!disable_schedule_composite_)
     ScheduleDraw();
-}
-
-void Compositor::SwizzleRGBAToBGRAAndFlip(unsigned char* pixels,
-                                          const gfx::Size& image_size) {
-  // Swizzle from RGBA to BGRA
-  size_t bitmap_size = 4 * image_size.width() * image_size.height();
-  for (size_t i = 0; i < bitmap_size; i += 4)
-    std::swap(pixels[i], pixels[i + 2]);
-
-  // Vertical flip to transform from GL co-ords
-  size_t row_size = 4 * image_size.width();
-  scoped_array<unsigned char> tmp_row(new unsigned char[row_size]);
-  for (int row = 0; row < image_size.height() / 2; row++) {
-    memcpy(tmp_row.get(),
-           &pixels[row * row_size],
-           row_size);
-    memcpy(&pixels[row * row_size],
-           &pixels[bitmap_size - (row + 1) * row_size],
-           row_size);
-    memcpy(&pixels[bitmap_size - (row + 1) * row_size],
-           tmp_row.get(),
-           row_size);
-  }
 }
 
 void Compositor::NotifyEnd() {
