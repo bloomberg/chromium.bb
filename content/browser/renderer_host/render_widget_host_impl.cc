@@ -784,9 +784,6 @@ void RenderWidgetHostImpl::SimulateTouchGestureWithMouse(
             x, y, 0);
         event.data.scrollUpdate.deltaX = dx;
         event.data.scrollUpdate.deltaY = dy;
-        // TODO(rbyers): deltaX/deltaY fields going away. crbug.com/143237
-        event.deltaX = dx;
-        event.deltaY = dy;
         ForwardGestureEvent(event);
       }
       if (mouse_event.type == WebInputEvent::MouseUp) {
@@ -823,7 +820,6 @@ void RenderWidgetHostImpl::SimulateTouchGestureWithMouse(
             WebInputEvent::GesturePinchUpdate, mouse_event.timeStampSeconds,
             startX, startY, 0);
         event.data.pinchUpdate.scale = dx;
-        event.deltaX = dx;
         ForwardGestureEvent(event);
       }
       if (mouse_event.type == WebInputEvent::MouseUp) {

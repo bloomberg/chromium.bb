@@ -383,8 +383,6 @@ class RenderWidgetHostTest : public testing::Test {
   void SimulateGestureScrollUpdateEvent(float dX, float dY, int modifiers) {
     WebGestureEvent gesture_event;
     gesture_event.type = WebInputEvent::GestureScrollUpdate;
-    gesture_event.deltaX = dX;
-    gesture_event.deltaY = dY;
     gesture_event.data.scrollUpdate.deltaX = dX;
     gesture_event.data.scrollUpdate.deltaY = dY;
     gesture_event.modifiers = modifiers;
@@ -395,8 +393,6 @@ class RenderWidgetHostTest : public testing::Test {
   void SimulateGestureFlingStartEvent(float velocityX, float velocityY) {
     WebGestureEvent gesture_event;
     gesture_event.type = WebInputEvent::GestureFlingStart;
-    gesture_event.deltaX = velocityX;
-    gesture_event.deltaY = velocityY;
     gesture_event.data.flingStart.velocityX = velocityX;
     gesture_event.data.flingStart.velocityY = velocityY;
     host_->ForwardGestureEvent(gesture_event);

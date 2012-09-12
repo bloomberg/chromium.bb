@@ -326,7 +326,6 @@ WebKit::WebGestureEvent CreateWebGestureEvent(HWND hwnd,
   gesture_event.y = client_point.y;
   gesture_event.globalX = screen_point.x;
   gesture_event.globalY = screen_point.y;
-  gesture_event.boundingBox = gesture.details().bounding_box();
   gesture_event.modifiers =
       (base::win::IsShiftPressed() ? WebKit::WebGestureEvent::ShiftKey : 0)
       | (base::win::IsCtrlPressed() ? WebKit::WebGestureEvent::ControlKey : 0)
@@ -340,27 +339,19 @@ WebKit::WebGestureEvent CreateWebGestureEvent(HWND hwnd,
           gesture.details().bounding_box().width();
       gesture_event.data.tap.height =
           gesture.details().bounding_box().height();
-      // TODO(rbyers): Stop setting old fields once webkit is updated.
-      // crbug.com/143237
-      gesture_event.deltaX = gesture.details().tap_count();
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
       gesture_event.data.scrollUpdate.deltaX = gesture.details().scroll_x();
       gesture_event.data.scrollUpdate.deltaY = gesture.details().scroll_y();
-      gesture_event.deltaX = gesture.details().scroll_x();
-      gesture_event.deltaY = gesture.details().scroll_y();
       break;
     case ui::ET_GESTURE_PINCH_UPDATE:
       gesture_event.data.pinchUpdate.scale = gesture.details().scale();
-      gesture_event.deltaX = gesture.details().scale();
       break;
     case ui::ET_SCROLL_FLING_START:
       gesture_event.data.flingStart.velocityX = gesture.details().velocity_x();
       gesture_event.data.flingStart.velocityY = gesture.details().velocity_y();
       gesture_event.data.flingStart.sourceDevice =
           WebKit::WebGestureEvent::Touchscreen;
-      gesture_event.deltaX = gesture.details().velocity_x();
-      gesture_event.deltaY = gesture.details().velocity_y();
       break;
     case ui::ET_GESTURE_LONG_PRESS:
       gesture_event.data.longPress.width =

@@ -337,9 +337,6 @@ void ContentViewCoreImpl::SingleTap(JNIEnv* env, jobject obj, jlong time_ms,
     int touchPadding = GetTouchPadding();
     event.data.tap.width = touchPadding;
     event.data.tap.height = touchPadding;
-    // TODO(rbyers): Stop setting boundingBox, crbug.com/143237
-    event.boundingBox = WebKit::WebRect(x - touchPadding, y - touchPadding,
-                                        2 * touchPadding, 2 * touchPadding);
   }
 
   if (GetRenderWidgetHostViewAndroid())
@@ -367,9 +364,6 @@ void ContentViewCoreImpl::LongPress(JNIEnv* env, jobject obj, jlong time_ms,
     int touchPadding = GetTouchPadding();
     event.data.longPress.width = touchPadding;
     event.data.longPress.height = touchPadding;
-    // TODO(rbyers): Stop setting boundingBox, crbug.com/143237
-    event.boundingBox = WebKit::WebRect(x - touchPadding, y - touchPadding,
-                                        2 * touchPadding, 2 * touchPadding);
   }
 
   if (GetRenderWidgetHostViewAndroid())
