@@ -847,7 +847,7 @@ int main(int  argc,
     goto done;
   }
   if (enable_debug_stub) {
-    if (!NaClDebugInit(nap)) {
+    if (!NaClDebugInit(nap, NACL_INVALID_SOCKET)) {
       goto done;
     }
   }

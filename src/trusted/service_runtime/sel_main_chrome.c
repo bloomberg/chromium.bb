@@ -8,6 +8,7 @@
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_io.h"
+#include "native_client/src/include/portability_sockets.h"
 
 #if NACL_OSX
 #include <crt_externs.h>
@@ -50,6 +51,9 @@ struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void) {
   args->initial_ipc_desc = NULL;
   args->enable_exception_handling = 0;
   args->enable_debug_stub = 0;
+#if NACL_LINUX || NACL_OSX
+  args->debug_stub_server_bound_socket_fd = NACL_INVALID_SOCKET;
+#endif
   args->create_memory_object_func = NULL;
   args->validation_cache = NULL;
 #if NACL_WINDOWS
@@ -332,9 +336,15 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
   }
 
   if (args->enable_debug_stub) {
-    if (!NaClDebugInit(nap)) {
+#if NACL_LINUX || NACL_OSX
+    if (!NaClDebugInit(nap, args->debug_stub_server_bound_socket_fd)) {
       goto done;
     }
+#else
+    if (!NaClDebugInit(nap, NACL_INVALID_SOCKET)) {
+      goto done;
+    }
+#endif
   }
 
   free(args);

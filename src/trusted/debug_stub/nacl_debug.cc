@@ -65,15 +65,17 @@ using gdb_rsp::Target;
 static Target *g_target = NULL;
 
 void WINAPI NaClStubThread(void *thread_arg) {
-  UNREFERENCED_PARAMETER(thread_arg);
-
-  const char *addr = "127.0.0.1:4014";
-  SocketBinding *socket_binding = SocketBinding::Bind(addr);
+  SocketBinding *socket_binding = static_cast<SocketBinding*>(thread_arg);
   if (socket_binding == NULL) {
-    NaClLog(LOG_ERROR, "NaClStubThread: Failed to bind TCP port '%s'\n",
-            addr);
-    return;
+    const char *addr = "127.0.0.1:4014";
+    socket_binding = SocketBinding::Bind(addr);
+    if (socket_binding == NULL) {
+      NaClLog(LOG_ERROR, "NaClStubThread: Failed to bind TCP port '%s'\n",
+              addr);
+      return;
+    }
   }
+
   while (1) {
     // Wait for a connection.
     nacl::scoped_ptr<ITransport> trans(socket_binding->AcceptConnection());
@@ -114,7 +116,8 @@ static const struct NaClDebugCallbacks debug_callbacks = {
  * This function is implemented for the service runtime.  The service runtime
  * declares the function so it does not need to be declared in our header.
  */
-int NaClDebugInit(struct NaClApp *nap) {
+int NaClDebugInit(struct NaClApp *nap,
+                  NaClSocketHandle debug_stub_server_bound_socket_fd) {
   if (!NaClFaultedThreadQueueEnable(nap)) {
     NaClLog(LOG_ERROR, "NaClDebugInit: Failed to initialize fault handling\n");
     return 0;
@@ -131,7 +134,12 @@ int NaClDebugInit(struct NaClApp *nap) {
   CHECK(thread != NULL);
 
   NaClLog(LOG_WARNING, "nacl_debug(%d) : Debugging started.\n", __LINE__);
-  CHECK(NaClThreadCtor(thread, NaClStubThread, NULL, NACL_KERN_STACK_SIZE));
+  SocketBinding *socket_binding = NULL;
+  if (debug_stub_server_bound_socket_fd != NACL_INVALID_SOCKET) {
+    socket_binding = new SocketBinding(debug_stub_server_bound_socket_fd);
+  }
+  CHECK(NaClThreadCtor(thread, NaClStubThread, socket_binding,
+                       NACL_KERN_STACK_SIZE));
 
   return 1;
 }

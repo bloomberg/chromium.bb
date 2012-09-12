@@ -51,6 +51,15 @@ struct NaClChromeMainArgs {
   /* Whether to enable NaCl's built-in GDB RSP debug stub.  Boolean. */
   int enable_debug_stub;
 
+#if NACL_LINUX || NACL_OSX
+  /*
+   * Server socket that will be used by debug stub to accept connections
+   * from NaCl GDB.  This socket descriptor has already had bind() and listen()
+   * called on it.  Optional; may be -1.
+   */
+  int debug_stub_server_bound_socket_fd;
+#endif
+
   /*
    * Callback to use for creating shared memory objects.  Optional;
    * may be NULL.

@@ -4,24 +4,11 @@
  * found in the LICENSE file.
  */
 
-#if !NACL_WINDOWS
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <sys/select.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <unistd.h>
-
-// Define some interfaces that Windows provides but Unix does not
-// provide so that we can use them on all OSes.
-#define closesocket close
-#define INVALID_SOCKET (-1)
-#endif
-
 #include <stdlib.h>
 #include <string.h>
 #include <string>
 
+#include "native_client/src/include/portability_sockets.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/debug_stub/platform.h"
 #include "native_client/src/trusted/debug_stub/transport.h"
@@ -40,12 +27,12 @@ class Transport : public ITransport {
     handle_ = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   }
 
-  explicit Transport(SocketHandle s) {
+  explicit Transport(NaClSocketHandle s) {
     handle_ = s;
   }
 
   ~Transport() {
-    if (handle_ != INVALID_SOCKET) closesocket(handle_);
+    if (handle_ != NACL_INVALID_SOCKET) NaClCloseSocket(handle_);
   }
 
   // Read from this transport, return a negative value if there is an error
@@ -95,7 +82,7 @@ class Transport : public ITransport {
   }
 
  protected:
-  SocketHandle handle_;
+  NaClSocketHandle handle_;
 };
 
 // Convert string in the form of [addr][:port] where addr is a
@@ -140,7 +127,7 @@ static bool StringToIPv4(const std::string &instr, uint32_t *addr,
       struct hostent *host = gethostbyname(addrstr.data());
 
       // Check that we found an IPv4 host
-      if ((NULL == host) || (AF_INET != host->h_addrtype))  return false;
+      if ((NULL == host) || (AF_INET != host->h_addrtype)) return false;
 
       // Make sure the IP list isn't empty.
       if (0 == host->h_addr_list[0]) return false;
@@ -173,13 +160,13 @@ static bool BuildSockAddr(const char *addr, struct sockaddr_in *sockaddr) {
   return StringToIPv4(addrstr, pip, pport);
 }
 
-SocketBinding::SocketBinding(SocketHandle socket_handle)
+SocketBinding::SocketBinding(NaClSocketHandle socket_handle)
     : socket_handle_(socket_handle) {
 }
 
 SocketBinding *SocketBinding::Bind(const char *addr) {
-  SocketHandle socket_handle = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-  if (socket_handle == INVALID_SOCKET) {
+  NaClSocketHandle socket_handle = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+  if (socket_handle == NACL_INVALID_SOCKET) {
     NaClLog(LOG_ERROR, "Failed to create socket.\n");
     return NULL;
   }
@@ -217,8 +204,8 @@ SocketBinding *SocketBinding::Bind(const char *addr) {
 }
 
 ITransport *SocketBinding::AcceptConnection() {
-  SocketHandle socket = ::accept(socket_handle_, NULL, 0);
-  if (socket != INVALID_SOCKET)
+  NaClSocketHandle socket = ::accept(socket_handle_, NULL, 0);
+  if (socket != NACL_INVALID_SOCKET)
     return new Transport(socket);
   return NULL;
 }
