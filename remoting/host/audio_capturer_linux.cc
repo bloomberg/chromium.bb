@@ -37,6 +37,20 @@ const int kCapturingPeriodMs = 40;
 #define F_SETPIPE_SZ 1031
 #endif  // defined(F_SETPIPE_SZ)
 
+const int IsPacketOfSilence(const std::string& data) {
+  const int64* int_buf = reinterpret_cast<const int64*>(data.data());
+  for (size_t i = 0; i < data.size() / sizeof(int64); i++) {
+    if (int_buf[i] != 0)
+      return false;
+  }
+  for (size_t i = data.size() - data.size() % sizeof(int64);
+       i < data.size(); i++) {
+    if (data.data()[i] != 0)
+      return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 AudioCapturerLinux::AudioCapturerLinux(const FilePath& pipe_name) {
@@ -139,15 +153,19 @@ void AudioCapturerLinux::DoCapture() {
                           incomplete_samples_bytes);
   data.resize(pos - incomplete_samples_bytes);
 
-  if (!callback_.is_null()) {
-    scoped_ptr<AudioPacket> packet(new AudioPacket());
-    packet->add_data(data);
-    packet->set_encoding(AudioPacket::ENCODING_RAW);
-    packet->set_sampling_rate(kSamplingRate);
-    packet->set_bytes_per_sample(AudioPacket::BYTES_PER_SAMPLE_2);
-    packet->set_channels(AudioPacket::CHANNELS_STEREO);
-    callback_.Run(packet.Pass());
-  }
+  if (callback_.is_null())
+    return;
+
+  if (IsPacketOfSilence(data))
+    return;
+
+  scoped_ptr<AudioPacket> packet(new AudioPacket());
+  packet->add_data(data);
+  packet->set_encoding(AudioPacket::ENCODING_RAW);
+  packet->set_sampling_rate(kSamplingRate);
+  packet->set_bytes_per_sample(AudioPacket::BYTES_PER_SAMPLE_2);
+  packet->set_channels(AudioPacket::CHANNELS_STEREO);
+  callback_.Run(packet.Pass());
 }
 
 void AudioCapturerLinux::WaitForPipeReadable() {
