@@ -72,8 +72,6 @@ class ContentViewClient {
                                                           jobject obj);
 
   // Called by ContentView:
-  void OnInternalPageLoadRequest(WebContents* source,
-                                 const GURL& url);
   void OnPageStarted(const GURL& url);
   void OnPageFinished(const GURL& url);
   void OnLoadStarted();

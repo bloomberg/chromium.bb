@@ -197,8 +197,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   void SendGestureEvent(WebKit::WebInputEvent::Type type, long time_ms,
                         int x, int y);
 
-  void PostLoadUrl(const GURL& url);
-
   struct JavaObject;
   JavaObject* java_object_;
 

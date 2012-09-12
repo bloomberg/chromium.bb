@@ -523,12 +523,7 @@ int ContentViewCoreImpl::GetNativeImeAdapter(JNIEnv* env, jobject obj) {
 void ContentViewCoreImpl::LoadUrl(
     NavigationController::LoadURLParams& params) {
   web_contents()->GetController().LoadURLWithParams(params);
-  PostLoadUrl(params.url);
-}
-
-void ContentViewCoreImpl::PostLoadUrl(const GURL& url) {
   tab_crashed_ = false;
-  // TODO(tedchoc): Update the content view client of the page load request.
 }
 
 // ----------------------------------------------------------------------------

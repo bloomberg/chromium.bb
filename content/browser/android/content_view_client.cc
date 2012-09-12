@@ -48,11 +48,6 @@ ContentViewClient* ContentViewClient::CreateNativeContentViewClient(
   return new ContentViewClient(env, obj);
 }
 
-void ContentViewClient::OnInternalPageLoadRequest(
-    WebContents* source, const GURL& url) {
-}
-
-
 void ContentViewClient::OnPageStarted(const GURL& url) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = weak_java_client_.get(env);
