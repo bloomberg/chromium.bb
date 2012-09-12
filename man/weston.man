@@ -100,8 +100,8 @@ Append log messages to the file
 .I file.log
 instead of writing them to stderr.
 .TP
-\fB\-\-module\fR=\fImodule.so\fR
-Load a generic plugin module \fImodule.so\fR. Only used by the test
+\fB\-\-modules\fR=\fImodule1.so,module2.so\fR
+Load the comma-separated list of modules. Only used by the test
 suite. The file is searched for in
 .IR "__weston_modules_dir__" ,
 or you can pass an absolute path.

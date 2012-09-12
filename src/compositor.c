@@ -2871,6 +2871,13 @@ load_module(const char *name, const char *entrypoint)
 	else
 		snprintf(path, sizeof path, "%s", name);
 
+	module = dlopen(path, RTLD_NOW | RTLD_NOLOAD);
+	if (module) {
+		weston_log("Module '%s' already loaded\n", path);
+		dlclose(module);
+		return NULL;
+	}
+
 	weston_log("Loading module '%s'\n", path);
 	module = dlopen(path, RTLD_NOW);
 	if (!module) {
@@ -2885,6 +2892,32 @@ load_module(const char *name, const char *entrypoint)
 	}
 
 	return init;
+}
+
+static int
+load_modules(struct weston_compositor *ec, const char *modules)
+{
+	const char *p, *end;
+	char buffer[256];
+	int (*module_init)(struct weston_compositor *ec);
+
+	if (modules == NULL)
+		return 0;
+
+	p = modules;
+	while (*p) {
+		end = strchrnul(p, ',');
+		snprintf(buffer, sizeof buffer, "%.*s", (int) (end - p), p);
+		module_init = load_module(buffer, "module_init");
+		if (module_init)
+			module_init(ec);
+		p = end;
+		while (*p == ',')
+			p++;
+
+	}
+
+	return 0;
 }
 
 static const char xdg_error_message[] =
@@ -2945,8 +2978,7 @@ usage(int error_code)
 		"\t\t\t\tx11-backend.so or wayland-backend.so\n"
 		"  -S, --socket=NAME\tName of socket to listen on\n"
 		"  -i, --idle-time=SECS\tIdle time in seconds\n"
-		"  --xserver\t\tEnable X server integration\n"
-		"  --module\t\tLoad the specified module\n"
+		"  --modules\t\tLoad the comma-separated list of modules\n"
 		"  --log==FILE\t\tLog to the given file\n"
 		"  -h, --help\t\tThis help message\n\n");
 
@@ -2982,36 +3014,32 @@ int main(int argc, char *argv[])
 	struct wl_event_source *signals[4];
 	struct wl_event_loop *loop;
 	struct sigaction segv_action;
-	int (*module_init)(struct weston_compositor *ec);
 	struct weston_compositor
 		*(*backend_init)(struct wl_display *display,
 				 int argc, char *argv[], const char *config_file);
 	int i;
 	char *backend = NULL;
-	char *shell = NULL;
-	char *module = NULL;
+	const char *modules = "desktop-shell.so", *option_modules = NULL;
 	char *log = NULL;
 	int32_t idle_time = 300;
-	int32_t xserver = 0;
 	int32_t help = 0;
 	char *socket_name = "wayland-0";
 	char *config_file;
 
-	const struct config_key shell_config_keys[] = {
-		{ "type", CONFIG_KEY_STRING, &shell },
+	const struct config_key core_config_keys[] = {
+		{ "modules", CONFIG_KEY_STRING, &modules },
 	};
 
 	const struct config_section cs[] = {
-		{ "shell",
-		  shell_config_keys, ARRAY_LENGTH(shell_config_keys) },
+		{ "core",
+		  core_config_keys, ARRAY_LENGTH(core_config_keys) },
 	};
 
 	const struct weston_option core_options[] = {
 		{ WESTON_OPTION_STRING, "backend", 'B', &backend },
 		{ WESTON_OPTION_STRING, "socket", 'S', &socket_name },
 		{ WESTON_OPTION_INTEGER, "idle-time", 'i', &idle_time },
-		{ WESTON_OPTION_BOOLEAN, "xserver", 0, &xserver },
-		{ WESTON_OPTION_STRING, "module", 0, &module },
+		{ WESTON_OPTION_STRING, "modules", 0, &option_modules },
 		{ WESTON_OPTION_STRING, "log", 0, &log },
 		{ WESTON_OPTION_BOOLEAN, "help", 'h', &help },
 	};
@@ -3058,7 +3086,7 @@ int main(int argc, char *argv[])
 	}
 
 	config_file = config_file_path("weston.ini");
-	parse_config_file(config_file, cs, ARRAY_LENGTH(cs), shell);
+	parse_config_file(config_file, cs, ARRAY_LENGTH(cs), NULL);
 
 	backend_init = load_module(backend, "backend_init");
 	if (!backend_init)
@@ -3090,30 +3118,10 @@ int main(int argc, char *argv[])
 
 	setenv("WAYLAND_DISPLAY", socket_name, 1);
 
-	module_init = NULL;
-	if (xserver)
-		module_init = load_module("xwayland.so", "module_init");
-	if (module_init && module_init(ec) < 0) {
-		ret = EXIT_FAILURE;
+	if (load_modules(ec, modules) < 0)
 		goto out;
-	}
-
-	if (!shell)
-		shell = "desktop-shell.so";
-	module_init = load_module(shell, "module_init");
-	if (!module_init || module_init(ec) < 0) {
-		ret = EXIT_FAILURE;
+	if (load_modules(ec, option_modules) < 0)
 		goto out;
-	}
-
-
-	module_init = NULL;
-	if (module)
-		module_init = load_module(module, "module_init");
-	if (module_init && module_init(ec) < 0) {
-		ret = EXIT_FAILURE;
-		goto out;
-	}
 
 	if (wl_display_add_socket(display, socket_name)) {
 		weston_log("fatal: failed to add socket: %m\n");
