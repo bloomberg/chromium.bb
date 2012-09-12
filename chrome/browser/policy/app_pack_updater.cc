@@ -287,7 +287,8 @@ void AppPackUpdater::BlockingCheckCacheInternal(
     enumerator.GetFindInfo(&info);
     std::string basename = path.BaseName().value();
 
-    if (FileEnumerator::IsDirectory(info) || FileEnumerator::IsLink(info)) {
+    if (FileEnumerator::IsDirectory(info) ||
+        file_util::IsLink(FileEnumerator::GetFilename(info))) {
       LOG(ERROR) << "Erasing bad file in AppPack directory: " << basename;
       file_util::Delete(path, true /* recursive */);
       continue;

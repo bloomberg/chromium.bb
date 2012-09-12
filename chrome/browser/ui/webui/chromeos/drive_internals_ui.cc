@@ -62,7 +62,8 @@ void GetGCacheContents(const FilePath& root_path,
     enumerator.GetFindInfo(&find_info);
     int64 size = FileEnumerator::GetFilesize(find_info);
     const bool is_directory = FileEnumerator::IsDirectory(find_info);
-    const bool is_symbolic_link = FileEnumerator::IsLink(find_info);
+    const bool is_symbolic_link =
+        file_util::IsLink(FileEnumerator::GetFilename(find_info));
     const base::Time last_modified =
         FileEnumerator::GetLastModifiedTime(find_info);
 
