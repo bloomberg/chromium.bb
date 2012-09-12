@@ -5,7 +5,8 @@
 # found in the LICENSE file.
 
 ME2ME_HOST="/Library/PrivilegedHelperTools/org.chromium.chromoting.me2me_host.app"
-UNINSTALLER="/Applications/Chrome Remote Desktop Host Uninstaller.app"
+UNINSTALLER_CHROME="/Applications/Chrome Remote Desktop Host Uninstaller.app"
+UNINSTALLER_CHROMIUM="/Applications/Chromoting Host Uninstaller.app"
 PREFPANE="/Library/PreferencePanes/org.chromium.chromoting.prefPane"
 KEYSTONE="/Library/Google/GoogleSoftwareUpdate/GoogleSoftwareUpdate.bundle"
 
@@ -16,11 +17,16 @@ set -e -u
 function print_plist_version {
   local name="${1}"
   local file="${2}"
-  set `PlistBuddy -c 'Print CFBundleVersion' "${file}/${INFO_PLIST}"`
-  echo "${name} version = ${1}"
+  if [[ -e "${file}/${INFO_PLIST}" ]]; then
+    set `PlistBuddy -c 'Print CFBundleVersion' "${file}/${INFO_PLIST}"`
+    echo "${name}: version = ${1}"
+  else
+    echo "${name}: plist doesn't exist"
+  fi
 }
 
 print_plist_version "Me2me host" "${ME2ME_HOST}"
-print_plist_version "Uninstaller" "${UNINSTALLER}"
+print_plist_version "Chrome Remote Desktop Host Uninstaller" "${UNINSTALLER_CHROME}"
+print_plist_version "Chromoting Host Uninstaller" "${UNINSTALLER_CHROMIUM}"
 print_plist_version "PreferencePane" "${PREFPANE}"
 print_plist_version "Keystone" "${KEYSTONE}"
