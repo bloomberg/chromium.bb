@@ -24,6 +24,7 @@ import sys
 
 import trace_inputs
 import run_test_from_archive
+from run_test_from_archive import get_flavor
 
 # Used by process_input().
 NO_INFO, STATS_ONLY, WITH_HASH = range(56, 59)
@@ -85,19 +86,6 @@ def cleanup_path(x):
   if x:
     x += '/'
   return x
-
-
-def get_flavor():
-  """Returns the system default flavor. Copied from gyp/pylib/gyp/common.py."""
-  flavors = {
-    'cygwin': 'win',
-    'win32': 'win',
-    'darwin': 'mac',
-    'sunos5': 'solaris',
-    'freebsd7': 'freebsd',
-    'freebsd8': 'freebsd',
-  }
-  return flavors.get(sys.platform, 'linux')
 
 
 def default_blacklist(f):
@@ -1047,13 +1035,18 @@ class Flattenable(object):
     out = cls()
     for member in out.MEMBERS:
       if member in data:
-        value = data.pop(member)
-        setattr(out, member, value)
+        # Access to a protected member XXX of a client class
+        # pylint: disable=W0212
+        out._load_member(member, data.pop(member))
     if data:
       raise ValueError(
           'Found unexpected entry %s while constructing an object %s' %
             (data, cls.__name__), data, cls.__name__)
     return out
+
+  def _load_member(self, member, value):
+    """Loads a member into self."""
+    setattr(self, member, value)
 
   @classmethod
   def load_file(cls, filename):
@@ -1079,9 +1072,12 @@ class Result(Flattenable):
   MEMBERS = (
     'command',
     'files',
+    'os',
     'read_only',
     'relative_cwd',
   )
+
+  os = get_flavor()
 
   def __init__(self):
     super(Result, self).__init__()
@@ -1104,6 +1100,14 @@ class Result(Flattenable):
     if read_only is not None:
       self.read_only = read_only
     self.relative_cwd = relative_cwd
+
+  def _load_member(self, member, value):
+    if member == 'os':
+      if value != self.os:
+        raise run_test_from_archive.ConfigError(
+            'The .results file was created on another platform')
+    else:
+      super(Result, self)._load_member(member, value)
 
   def __str__(self):
     out = '%s(\n' % self.__class__.__name__
@@ -1756,7 +1760,10 @@ def main(argv):
     return CMDhelp(argv)
   try:
     return command(argv[1:])
-  except (ExecutionError, run_test_from_archive.MappingError), e:
+  except (
+      ExecutionError,
+      run_test_from_archive.MappingError,
+      run_test_from_archive.ConfigError) as e:
     sys.stderr.write('\nError: ')
     sys.stderr.write(str(e))
     sys.stderr.write('\n')

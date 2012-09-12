@@ -42,6 +42,19 @@ class MappingError(OSError):
   pass
 
 
+def get_flavor():
+  """Returns the system default flavor. Copied from gyp/pylib/gyp/common.py."""
+  flavors = {
+    'cygwin': 'win',
+    'win32': 'win',
+    'darwin': 'mac',
+    'sunos5': 'solaris',
+    'freebsd7': 'freebsd',
+    'freebsd8': 'freebsd',
+  }
+  return flavors.get(sys.platform, 'linux')
+
+
 def os_link(source, link_name):
   """Add support for os.link() on Windows."""
   if sys.platform == 'win32':
@@ -238,6 +251,12 @@ def load_manifest(content):
     elif key == 'relative_cwd':
       if not isinstance(value, basestring):
         raise ConfigError('Expected string, got %r' % value)
+
+    elif key == 'os':
+      if value != get_flavor():
+        raise ConfigError(
+            'Expected \'os\' to be \'%s\' but got \'%s\'' %
+            (get_flavor(), value))
 
     else:
       raise ConfigError('Unknown key %s' % subkey)

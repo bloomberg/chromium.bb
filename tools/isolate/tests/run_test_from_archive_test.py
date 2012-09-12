@@ -35,6 +35,7 @@ class RunTestFromArchiveTest(unittest.TestCase):
         }
       },
       u'includes': [u'0123456789abcdef0123456789abcdef01234567'],
+      u'os': run_test_from_archive.get_flavor(),
       u'read_only': False,
       u'relative_cwd': u'somewhere_else'
     }
@@ -56,6 +57,22 @@ class RunTestFromArchiveTest(unittest.TestCase):
     except run_test_from_archive.ConfigError:
       pass
 
+  def test_load_manifest_os_only(self):
+    data = {
+      u'os': run_test_from_archive.get_flavor(),
+    }
+    m = run_test_from_archive.load_manifest(json.dumps(data))
+    self.assertEquals(data, m)
+
+  def test_load_manifest_os_bad(self):
+    data = {
+      u'os': 'foo',
+    }
+    try:
+      run_test_from_archive.load_manifest(json.dumps(data))
+      self.fail()
+    except run_test_from_archive.ConfigError:
+      pass
 
 
 if __name__ == '__main__':

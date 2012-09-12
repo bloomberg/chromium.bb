@@ -38,6 +38,7 @@ class Isolate(unittest.TestCase):
     expected = {
       'command': [],
       'files': {},
+      'os': isolate.get_flavor(),
     }
     self.assertEquals(expected, isolate.Result.load(values).flatten())
 
@@ -50,6 +51,7 @@ class Isolate(unittest.TestCase):
     expected = {
       'command': 'maybe',
       'files': {'foo': 42},
+      'os': isolate.get_flavor(),
       'read_only': 2,
     }
     self.assertEquals(expected, isolate.Result.load(values).flatten())
@@ -142,6 +144,7 @@ class Isolate(unittest.TestCase):
             'size': self._size('isolate.py'),
           },
         },
+        'os': isolate.get_flavor(),
         'relative_cwd': os.path.join('tests', 'isolate'),
       }
       if sys.platform == 'win32':

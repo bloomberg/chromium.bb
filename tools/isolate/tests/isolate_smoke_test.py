@@ -234,6 +234,7 @@ class IsolateModeBase(IsolateBase):
     """Verifies self.result contains the expected data."""
     expected = {
       u'files': self._gen_files(read_only, empty_file),
+      u'os': isolate.get_flavor(),
       u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
     }
     if read_only is not None:
