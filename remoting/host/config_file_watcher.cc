@@ -4,6 +4,8 @@
 
 #include "remoting/host/config_file_watcher.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path_watcher.h"
@@ -50,6 +52,7 @@ class ConfigFileWatcherImpl
   // Reads the configuration file and passes it to the delegate.
   void ReloadConfig();
 
+  std::string config_;
   FilePath config_path_;
 
   scoped_ptr<base::DelayTimer<ConfigFileWatcherImpl> > config_updated_timer_;
@@ -177,10 +180,14 @@ void ConfigFileWatcherImpl::ReloadConfig() {
     return;
   }
 
-  main_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&ConfigFileWatcher::Delegate::OnConfigUpdated, delegate_,
-                 config));
+  // Post an updated configuration only if it has actually changed.
+  if (config_ != config) {
+    config_ = config;
+    main_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&ConfigFileWatcher::Delegate::OnConfigUpdated, delegate_,
+                   config_));
+  }
 }
 
 }  // namespace remoting
