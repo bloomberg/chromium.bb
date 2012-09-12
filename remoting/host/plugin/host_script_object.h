@@ -324,6 +324,7 @@ class HostNPScriptObject : public HostStatusObserver {
   base::Lock ui_strings_lock_;
 
   base::WaitableEvent disconnected_event_;
+  base::WaitableEvent stopped_event_;
 
   base::Lock nat_policy_lock_;
 

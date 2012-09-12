@@ -95,6 +95,7 @@ HostNPScriptObject::HostNPScriptObject(
           new PluginThreadTaskRunner(plugin_thread_delegate)),
       failed_login_attempts_(0),
       disconnected_event_(true, false),
+      stopped_event_(true, false),
       nat_traversal_enabled_(false),
       policy_received_(false),
       daemon_controller_(DaemonController::Create()),
@@ -126,7 +127,11 @@ HostNPScriptObject::~HostNPScriptObject() {
     // here because |host_context_| needs to be stopped on the plugin
     // thread, but the plugin thread may not exist after the instance
     // is destroyed.
+    disconnected_event_.Reset();
     DisconnectInternal();
+
+    // |disconnected_event_| is signalled when the host is completely stopped.
+    disconnected_event_.Wait();
 
     // UI needs to be shut down on the UI thread before we destroy the
     // host context (because it depends on the context object), but
@@ -138,10 +143,11 @@ HostNPScriptObject::~HostNPScriptObject() {
     // Release the context's TaskRunner references for the threads, so they can
     // exit when no objects need them.
     host_context_->ReleaseTaskRunners();
+    desktop_environment_.reset();
 
-    // |disconnected_event_| is signalled when the last reference to the plugin
+    // |stopped_event_| is signalled when the last reference to the plugin
     // thread is dropped.
-    disconnected_event_.Wait();
+    stopped_event_.Wait();
 
     // Stop all threads.
     host_context_.reset();
@@ -157,7 +163,7 @@ bool HostNPScriptObject::Init() {
   host_context_.reset(new ChromotingHostContext(new AutoThreadTaskRunner(
       plugin_task_runner_,
       base::Bind(&base::WaitableEvent::Signal,
-                 base::Unretained(&disconnected_event_)))));
+                 base::Unretained(&stopped_event_)))));
   if (!host_context_->Start()) {
     host_context_.reset();
     return false;
@@ -892,12 +898,13 @@ void HostNPScriptObject::DisconnectInternal() {
 
   switch (state_) {
     case kDisconnected:
+      disconnected_event_.Signal();
       return;
 
     case kStarting:
-      desktop_environment_.reset();
       SetState(kDisconnecting);
       SetState(kDisconnected);
+      disconnected_event_.Signal();
       return;
 
     case kDisconnecting:
@@ -926,7 +933,7 @@ void HostNPScriptObject::DisconnectInternal() {
 void HostNPScriptObject::OnShutdownFinished() {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
-  desktop_environment_.reset();
+  disconnected_event_.Signal();
 }
 
 void HostNPScriptObject::OnPolicyUpdate(
