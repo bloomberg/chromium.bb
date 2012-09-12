@@ -352,31 +352,6 @@
         'srtp_test_rand_gen',
         'srtp_test_env',
       ],
-      'actions': [{
-        'action_name': 'help',
-        'inputs': ['""'],
-        'outputs': ['""'],
-        'action': [
-          'python', '-c',
-          'print "Please run srtp tests on the target, for example, on linux"; \
-	         print "    rdbx_driver"; \
-	         print "    srtp_driver"; \
-	         print "    roc_driver"; \
-	         print "    replay_driver"; \
-	         print "    rtpw"; \
-	         print "    srtp_test_aes_calc \
-                      000102030405060708090a0b0c0d0e0f \
-                      00112233445566778899aabbccddeeff "; \
-           print "    (srtp_test_aes_calc output should be \
-                      69c4e0d86a7b0430d8cdb78070b4c55a)"; \
-	         print "    srtp_test_cipher_driver -v"; \
-	         print "    srtp_test_datatypes_driver -v"; \
-	         print "    srtp_test_stat_driver"; \
-	         print "    srtp_test_sha1_driver -v"; \
-	         print "    srtp_test_kernel_driver -v"; \
-	         print "    srtp_test_rand_gen -n 256"; \
-           print "";' ],
-      }],
     },
   ], # targets
 }
