@@ -603,14 +603,6 @@
             '../media/media.gyp:media_java',
             '../net/net.gyp:net_java',
           ],
-          'variables': {
-            'package_name': 'content_shell',
-            'apk_name': 'ContentShell',
-            'java_in_dir': 'shell/android/java',
-            'resource_dir': 'shell/android/res',
-            'native_libs_paths': ['<(PRODUCT_DIR)/content_shell/libs/<(android_app_abi)/libcontent_shell_content_view.so'],
-            'additional_input_paths': ['<(PRODUCT_DIR)/content_shell/assets/content_shell.pak'],
-          },
           'actions': [
             {
               'action_name': 'copy_and_strip_so',
@@ -624,8 +616,45 @@
                 '<@(_outputs)',
               ],
             },
+            {
+              'action_name': 'content_shell_apk',
+              'inputs': [
+                'shell/android/java/content_shell_apk.xml',
+                'shell/android/java/AndroidManifest.xml',
+                '../build/android/ant/common.xml',
+                '../build/android/ant/sdk-targets.xml',
+                '<!@(find shell/android/java -name "*.java")',
+                '<!@(find shell/android/res -name "*")',
+                '>@(input_jars_paths)',
+                '<(PRODUCT_DIR)/content_shell/assets/content_shell.pak',
+                '<(PRODUCT_DIR)/content_shell/libs/<(android_app_abi)/libcontent_shell_content_view.so',
+              ],
+              'outputs': [
+                # Awkwardly, we build a Debug APK even when gyp is in
+                # Release mode.  I don't think it matters (e.g. we're
+                # probably happy to not codesign) but naming should be
+                # fixed.
+                '<(PRODUCT_DIR)/content_shell/ContentShell-debug.apk',
+              ],
+              'action': [
+                # Pass the build type to ant. Currently it only assumes
+                # debug mode in java. Release mode will break the current
+                # workflow.
+                'ant',
+                '-DPRODUCT_DIR=<(ant_build_out)',
+                '-DAPP_ABI=<(android_app_abi)',
+                '-DANDROID_SDK=<(android_sdk)',
+                '-DANDROID_SDK_ROOT=<(android_sdk_root)',
+                '-DANDROID_SDK_TOOLS=<(android_sdk_tools)',
+                '-DANDROID_SDK_VERSION=<(android_sdk_version)',
+                '-DANDROID_GDBSERVER=<(android_gdbserver)',
+                '-DCONFIGURATION_NAME=<(CONFIGURATION_NAME)',
+                '-DINPUT_JARS_PATHS=>(input_jars_paths)',
+                '-buildfile',
+                'shell/android/java/content_shell_apk.xml',
+              ],
+            }
           ],
-          'includes': [ '../build/java_apk.gypi' ],
         },
       ],
     }],  # OS=="android"
