@@ -444,12 +444,18 @@ void ExtensionInstallPrompt::LoadImageIfNeeded() {
 }
 
 void ExtensionInstallPrompt::FetchOAuthIssueAdviceIfNeeded() {
-  const Extension::OAuth2Info& oauth2_info = extension_->oauth2_info();
-  if (prompt_.GetOAuthIssueCount() != 0U ||
-      oauth2_info.client_id.empty() ||
-      oauth2_info.scopes.empty() ||
+  // |extension_| may be NULL, e.g. in the bundle install case.
+  if (!extension_ ||
       prompt_type_ == BUNDLE_INSTALL_PROMPT ||
-      prompt_type_ == INLINE_INSTALL_PROMPT) {
+      prompt_type_ == INLINE_INSTALL_PROMPT ||
+      prompt_.GetOAuthIssueCount() != 0U) {
+    ShowConfirmation();
+    return;
+  }
+
+  const Extension::OAuth2Info& oauth2_info = extension_->oauth2_info();
+  if (oauth2_info.client_id.empty() ||
+      oauth2_info.scopes.empty()) {
     ShowConfirmation();
     return;
   }
