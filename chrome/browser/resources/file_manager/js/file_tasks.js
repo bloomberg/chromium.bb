@@ -131,11 +131,11 @@ FileTasks.prototype.processTasks_ = function(tasks) {
       this.defaultTask_ = task;
     }
   }
-  if (!this.defaultTask_ && tasks.length > 0) {
+  if (!this.defaultTask_ && this.tasks_.length > 0) {
     // If we haven't picked a default task yet, then just pick the first one.
     // This is not the preferred way we want to pick this, but better this than
     // no default at all if the C++ code didn't set one.
-    this.defaultTask_ = tasks[0];
+    this.defaultTask_ = this.tasks_[0];
   }
 };
 
