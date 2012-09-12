@@ -5981,13 +5981,6 @@
    fun:_ZN11PluginPrefs30EnablePluginIfPossibleCallbackEbRK8FilePathRKN4base8CallbackIFvbEEEP12PluginFinder
 }
 {
-   bug_148475
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN7testing8internal24CmpHelperFloatingPointEQIfEENS_15AssertionResultEPKcS4_T_S5_
-   fun:_ZN2ui12_GLOBAL__N_143LayerAnimationElementTest_PauseElement_Test8TestBodyEv
-}
-{
    bug_148637_a
    Memcheck:Unaddressable
    ...

@@ -8,7 +8,9 @@ namespace ui {
 
 TestLayerAnimationDelegate::TestLayerAnimationDelegate()
     : opacity_(1.0f),
-      visibility_(true) {
+      visibility_(true),
+      brightness_(0.0f),
+      grayscale_(0.0f) {
 }
 
 TestLayerAnimationDelegate::TestLayerAnimationDelegate(
