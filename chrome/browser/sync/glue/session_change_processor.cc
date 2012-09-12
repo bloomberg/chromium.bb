@@ -181,14 +181,14 @@ void SessionChangeProcessor::Observe(
     case chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED: {
       extensions::TabHelper* extension_tab_helper =
           content::Source<extensions::TabHelper>(source).ptr();
-      if (!extension_tab_helper ||
-          extension_tab_helper->web_contents()->GetBrowserContext() !=
+      if (extension_tab_helper->web_contents()->GetBrowserContext() !=
               profile_) {
         return;
       }
       if (extension_tab_helper->extension_app()) {
-        modified_tabs.push_back(extension_tab_helper->tab_contents()->
-            synced_tab_delegate());
+        TabContents* tab_contents =
+            TabContents::FromWebContents(extension_tab_helper->web_contents());
+        modified_tabs.push_back(tab_contents->synced_tab_delegate());
       }
       DVLOG(1) << "Received TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED "
                << "for profile " << profile_;

@@ -138,7 +138,7 @@ TabContents::TabContents(WebContents* contents)
 #endif
   constrained_window_tab_helper_.reset(new ConstrainedWindowTabHelper(this));
   core_tab_helper_.reset(new CoreTabHelper(contents));
-  extension_tab_helper_.reset(new extensions::TabHelper(this));
+  extensions::TabHelper::CreateForWebContents(contents);
   favicon_tab_helper_.reset(new FaviconTabHelper(contents));
   find_tab_helper_.reset(new FindTabHelper(contents));
   history_tab_helper_.reset(new HistoryTabHelper(contents));
@@ -222,13 +222,7 @@ TabContents::~TabContents() {
 
 TabContents* TabContents::Clone() {
   WebContents* new_web_contents = web_contents()->Clone();
-  TabContents* new_tab_contents = new TabContents(new_web_contents);
-
-  // TODO(avi): Can we generalize this so that knowledge of the functionings of
-  // the tab helpers isn't required here?
-  new_tab_contents->extension_tab_helper()->CopyStateFrom(
-      *extension_tab_helper_.get());
-  return new_tab_contents;
+  return new TabContents(new_web_contents);
 }
 
 // static

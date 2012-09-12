@@ -624,8 +624,8 @@ void LocationBarViewMac::RefreshPageActionDecorations() {
   }
 
   std::vector<ExtensionAction*> new_page_actions =
-      tab_contents->extension_tab_helper()->location_bar_controller()->
-          GetCurrentActions();
+      extensions::TabHelper::FromWebContents(tab_contents->web_contents())->
+          location_bar_controller()->GetCurrentActions();
 
   if (new_page_actions != page_actions_) {
     page_actions_.swap(new_page_actions);

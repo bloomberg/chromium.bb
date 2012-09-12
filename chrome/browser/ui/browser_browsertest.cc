@@ -800,7 +800,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TabClosingWhenRemovingExtension) {
 
   TabContents* app_contents = chrome::TabContentsFactory(
       browser()->profile(), NULL, MSG_ROUTING_NONE, NULL);
-  app_contents->extension_tab_helper()->SetExtensionApp(extension_app);
+  extensions::TabHelper* extensions_tab_helper =
+      extensions::TabHelper::FromWebContents(app_contents->web_contents());
+  extensions_tab_helper->SetExtensionApp(extension_app);
 
   model->AddTabContents(app_contents, 0, content::PageTransitionFromInt(0),
                         TabStripModel::ADD_NONE);
@@ -919,7 +921,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
   ui_test_utils::NavigateToURL(browser(), url);
   TabContents* app_contents = chrome::TabContentsFactory(
       browser()->profile(), NULL, MSG_ROUTING_NONE, NULL);
-  app_contents->extension_tab_helper()->SetExtensionApp(extension_app);
+  extensions::TabHelper* extensions_tab_helper =
+      extensions::TabHelper::FromWebContents(app_contents->web_contents());
+  extensions_tab_helper->SetExtensionApp(extension_app);
   model->AddTabContents(app_contents, 0, content::PageTransitionFromInt(0),
                         TabStripModel::ADD_NONE);
   model->SetTabPinned(0, true);
@@ -975,8 +979,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
       new_model->GetTabContentsAt(2)->web_contents()->GetURL());
 
   EXPECT_TRUE(
-      new_model->GetTabContentsAt(0)->extension_tab_helper()->extension_app() ==
-          extension_app);
+      extensions::TabHelper::FromWebContents(
+          new_model->GetTabContentsAt(0)->web_contents())->
+              extension_app() == extension_app);
 }
 #endif  // !defined(OS_CHROMEOS)
 
@@ -1007,10 +1012,11 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
                                        NEW_WINDOW));
   ASSERT_TRUE(app_window);
 
-  // Apps launched in a window from the NTP do not have extension_app set in
-  // tab contents.
-  TabContents* tab_contents = TabContents::FromWebContents(app_window);
-  EXPECT_FALSE(tab_contents->extension_tab_helper()->extension_app());
+  // Apps launched in a window from the NTP have an extensions tab helper but
+  // do not have extension_app set in it.
+  ASSERT_TRUE(extensions::TabHelper::FromWebContents(app_window));
+  EXPECT_FALSE(
+      extensions::TabHelper::FromWebContents(app_window)->extension_app());
   EXPECT_EQ(extension_app->GetFullLaunchURL(), app_window->GetURL());
 
   // The launch should have created a new browser.

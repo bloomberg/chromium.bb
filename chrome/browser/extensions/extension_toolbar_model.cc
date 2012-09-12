@@ -121,8 +121,8 @@ ExtensionToolbarModel::Action ExtensionToolbarModel::ExecuteBrowserAction(
   if (!browser_action->GetIsVisible(tab_id))
     return ACTION_NONE;
 
-  tab_contents->extension_tab_helper()->active_tab_permission_manager()->
-      GrantIfRequested(extension);
+  extensions::TabHelper::FromWebContents(tab_contents->web_contents())->
+      active_tab_permission_manager()->GrantIfRequested(extension);
 
   if (browser_action->HasPopup(tab_id)) {
     if (popup_url_out)

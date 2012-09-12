@@ -333,7 +333,7 @@ void TabRendererGtk::UpdateData(WebContents* contents,
     data_.crashed = contents->IsCrashed();
 
     SkBitmap* app_icon =
-        tab_contents->extension_tab_helper()->GetExtensionAppIcon();
+        extensions::TabHelper::FromWebContents(contents)->GetExtensionAppIcon();
     if (app_icon) {
       data_.favicon = *app_icon;
     } else {

@@ -122,6 +122,10 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
                                        const FilePath& plugin_path,
                                        bool is_hung) {}
 
+  // Invoked when WebContents::Clone() was used to clone a WebContents.
+  virtual void DidCloneToNewWebContents(WebContents* old_web_contents,
+                                        WebContents* new_web_contents) {}
+
   // Invoked when the WebContents is being destroyed. Gives subclasses a chance
   // to cleanup. At the time this is invoked |web_contents()| returns NULL.
   // It is safe to delete 'this' from here.

@@ -612,11 +612,14 @@ void SessionService::Observe(int type,
           SessionTabHelper::FromWebContents(web_contents);
       SetTabWindow(session_tab_helper->window_id(),
                    session_tab_helper->session_id());
-      if (tab->extension_tab_helper()->extension_app()) {
+      extensions::TabHelper* extensions_tab_helper =
+          extensions::TabHelper::FromWebContents(web_contents);
+      if (extensions_tab_helper &&
+          extensions_tab_helper->extension_app()) {
         SetTabExtensionAppID(
             session_tab_helper->window_id(),
             session_tab_helper->session_id(),
-            tab->extension_tab_helper()->extension_app()->id());
+            extensions_tab_helper->extension_app()->id());
       }
 
       // Record the association between the SessionStorageNamespace and the
@@ -724,8 +727,10 @@ void SessionService::Observe(int type,
     case chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED: {
       extensions::TabHelper* extension_tab_helper =
           content::Source<extensions::TabHelper>(source).ptr();
-      if (extension_tab_helper->tab_contents()->profile() != profile())
+      if (extension_tab_helper->web_contents()->GetBrowserContext() !=
+              profile()) {
         return;
+      }
       if (extension_tab_helper->extension_app()) {
         SessionTabHelper* session_tab_helper =
             SessionTabHelper::FromWebContents(
@@ -1326,11 +1331,13 @@ void SessionService::BuildCommandsForTab(
     commands->push_back(CreatePinnedStateCommand(session_id, true));
   }
 
-  if (tab->extension_tab_helper()->extension_app()) {
+  extensions::TabHelper* extensions_tab_helper =
+      extensions::TabHelper::FromWebContents(tab->web_contents());
+  if (extensions_tab_helper->extension_app()) {
     commands->push_back(
         CreateSetTabExtensionAppIDCommand(
             kCommandSetExtensionAppID, session_id.id(),
-            tab->extension_tab_helper()->extension_app()->id()));
+            extensions_tab_helper->extension_app()->id()));
   }
 
   const std::string& ua_override = tab->web_contents()->GetUserAgentOverride();

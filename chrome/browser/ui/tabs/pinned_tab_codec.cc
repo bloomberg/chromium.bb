@@ -52,22 +52,22 @@ static void EncodePinnedTab(TabStripModel* model,
                             ListValue* values) {
   scoped_ptr<DictionaryValue> value(new DictionaryValue());
 
-  TabContents* tab_contents = model->GetTabContentsAt(index);
+  content::WebContents* web_contents =
+      model->GetTabContentsAt(index)->web_contents();
   if (model->IsAppTab(index)) {
     const extensions::Extension* extension =
-        tab_contents->extension_tab_helper()->extension_app();
+        extensions::TabHelper::FromWebContents(web_contents)->extension_app();
     DCHECK(extension);
     value->SetString(kAppID, extension->id());
-    // For apps we use the launch url. We do this for the following reason:
-    // . the user is effectively restarting the app, so that returning them to
-    //   the app's launch page seems closest to what they expect.
+    // For apps we use the launch url. We do this because the user is
+    // effectively restarting the app, so returning them to the app's launch
+    // page seems closest to what they expect.
     value->SetString(kURL, extension->GetFullLaunchURL().spec());
     values->Append(value.release());
   } else {
-    NavigationEntry* entry =
-        tab_contents->web_contents()->GetController().GetActiveEntry();
-    if (!entry && tab_contents->web_contents()->GetController().GetEntryCount())
-      entry = tab_contents->web_contents()->GetController().GetEntryAtIndex(0);
+    NavigationEntry* entry = web_contents->GetController().GetActiveEntry();
+    if (!entry && web_contents->GetController().GetEntryCount())
+      entry = web_contents->GetController().GetEntryAtIndex(0);
     if (entry) {
       value->SetString(kURL, entry->GetURL().spec());
       values->Append(value.release());

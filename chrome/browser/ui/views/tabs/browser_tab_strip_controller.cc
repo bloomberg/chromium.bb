@@ -526,7 +526,7 @@ void BrowserTabStripController::SetTabRendererDataFromModel(
   data->show_icon = tab_contents->favicon_tab_helper()->ShouldDisplayFavicon();
   data->mini = model_->IsMiniTab(model_index);
   data->blocked = model_->IsTabBlocked(model_index);
-  data->app = tab_contents->extension_tab_helper()->is_app();
+  data->app = extensions::TabHelper::FromWebContents(contents)->is_app();
   data->mode = browser_->search_model()->mode().mode;
   // Get current gradient background animation to paint.
   data->gradient_background_opacity = browser_->search_delegate()->

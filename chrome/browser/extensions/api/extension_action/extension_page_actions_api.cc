@@ -99,7 +99,8 @@ bool PageActionsFunction::SetPageActionEnabled(bool enable) {
       tab_id, enable ? ExtensionAction::ACTIVE : ExtensionAction::INVISIBLE);
   page_action->SetTitle(tab_id, title);
   page_action->SetIconIndex(tab_id, icon_id);
-  contents->extension_tab_helper()->location_bar_controller()->NotifyChange();
+  extensions::TabHelper::FromWebContents(contents->web_contents())->
+      location_bar_controller()->NotifyChange();
 
   return true;
 }

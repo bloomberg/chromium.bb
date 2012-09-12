@@ -1418,13 +1418,15 @@ private:
 // A helper routine for creating an NSImageView to hold the favicon or app icon
 // for |contents|.
 - (NSImageView*)iconImageViewForContents:(TabContents*)contents {
-  BOOL isApp = contents->extension_tab_helper()->is_app();
+  extensions::TabHelper* extensions_tab_helper =
+      extensions::TabHelper::FromWebContents(contents->web_contents());
+  BOOL isApp = extensions_tab_helper->is_app();
   NSImage* image = nil;
   // Favicons come from the renderer, and the renderer draws everything in the
   // system color space.
   CGColorSpaceRef colorSpace = base::mac::GetSystemColorSpace();
   if (isApp) {
-    SkBitmap* icon = contents->extension_tab_helper()->GetExtensionAppIcon();
+    SkBitmap* icon = extensions_tab_helper->GetExtensionAppIcon();
     if (icon)
       image = gfx::SkBitmapToNSImageWithColorSpace(*icon, colorSpace);
   } else {

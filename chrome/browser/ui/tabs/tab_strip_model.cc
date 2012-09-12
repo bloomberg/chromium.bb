@@ -120,8 +120,9 @@ void TabStripModel::InsertTabContentsAt(int index,
                                         int add_types) {
   bool active = add_types & ADD_ACTIVE;
   // Force app tabs to be pinned.
-  bool pin =
-      contents->extension_tab_helper()->is_app() || add_types & ADD_PINNED;
+  extensions::TabHelper* extensions_tab_helper =
+      extensions::TabHelper::FromWebContents(contents->web_contents());
+  bool pin = extensions_tab_helper->is_app() || add_types & ADD_PINNED;
   index = ConstrainInsertionIndex(index, pin);
 
   // In tab dragging situations, if the last tab in the window was detached
@@ -565,8 +566,8 @@ bool TabStripModel::IsMiniTab(int index) const {
 }
 
 bool TabStripModel::IsAppTab(int index) const {
-  TabContents* contents = GetTabContentsAt(index);
-  return contents && contents->extension_tab_helper()->is_app();
+  WebContents* contents = GetTabContentsAt(index)->web_contents();
+  return contents && extensions::TabHelper::FromWebContents(contents)->is_app();
 }
 
 bool TabStripModel::IsTabBlocked(int index) const {
@@ -999,7 +1000,8 @@ void TabStripModel::Observe(int type,
       // Iterate backwards as we may remove items while iterating.
       for (int i = count() - 1; i >= 0; i--) {
         TabContents* contents = GetTabContentsAt(i);
-        if (contents->extension_tab_helper()->extension_app() == extension) {
+        if (extensions::TabHelper::FromWebContents(contents->web_contents())->
+              extension_app() == extension) {
           // The extension an app tab was created from has been nuked. Delete
           // the WebContents. Deleting a WebContents results in a notification
           // of type NOTIFICATION_WEB_CONTENTS_DESTROYED; we do the necessary

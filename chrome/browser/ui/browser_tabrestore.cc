@@ -57,7 +57,8 @@ content::WebContents* AddRestoredTab(
       chrome::GetActiveWebContents(browser),
       session_storage_namespace_map);
   WebContents* new_tab = tab_contents->web_contents();
-  tab_contents->extension_tab_helper()->SetExtensionAppById(extension_app_id);
+  extensions::TabHelper::FromWebContents(new_tab)->
+      SetExtensionAppById(extension_app_id);
   std::vector<NavigationEntry*> entries;
   TabNavigation::CreateNavigationEntriesFromTabNavigations(
       browser->profile(), navigations, &entries);
@@ -118,8 +119,9 @@ void ReplaceRestoredTab(
       MSG_ROUTING_NONE,
       GetActiveWebContents(browser),
       session_storage_namespace_map);
-  tab_contents->extension_tab_helper()->SetExtensionAppById(extension_app_id);
   WebContents* replacement = tab_contents->web_contents();
+  extensions::TabHelper::FromWebContents(replacement)->
+      SetExtensionAppById(extension_app_id);
   replacement->SetUserAgentOverride(user_agent_override);
   std::vector<NavigationEntry*> entries;
   TabNavigation::CreateNavigationEntriesFromTabNavigations(
