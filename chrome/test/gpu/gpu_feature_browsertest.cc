@@ -145,17 +145,21 @@ class GpuFeatureTest : public InProcessBrowserTest {
 
   // Trigger a resize of the chrome window, and use tracing to wait for the
   // given |wait_event|.
-  void ResizeAndWaitForEvent(const gfx::Rect& new_bounds,
-                             const char* trace_categories,
-                             const char* wait_category,
-                             const char* wait_event) {
-    ASSERT_TRUE(tracing::BeginTracingWithWatch(trace_categories, wait_category,
-                                               wait_event, 1));
+  bool ResizeAndWait(const gfx::Rect& new_bounds,
+                     const char* trace_categories,
+                     const char* wait_category,
+                     const char* wait_event) {
+    if (!tracing::BeginTracingWithWatch(trace_categories, wait_category,
+                                        wait_event, 1))
+      return false;
     browser()->window()->SetBounds(new_bounds);
-    ASSERT_TRUE(tracing::WaitForWatchEvent(base::TimeDelta()));
-    ASSERT_TRUE(tracing::EndTracing(&trace_events_json_));
+    if (!tracing::WaitForWatchEvent(base::TimeDelta()))
+      return false;
+    if (!tracing::EndTracing(&trace_events_json_))
+      return false;
     analyzer_.reset(TraceAnalyzer::Create(trace_events_json_));
     analyzer_->AssociateBeginEndEvents();
+    return true;
   }
 
  protected:
@@ -457,14 +461,29 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, IOSurfaceReuse) {
   const char* create_event = "IOSurfaceImageTransportSurface::CreateIOSurface";
   const char* resize_event = "IOSurfaceImageTransportSurface::OnResize";
   Query find_creates = Query::MatchBeginName(create_event);
-  Query find_resizes = Query::MatchBeginName(resize_event);
+  Query find_resizes = Query::MatchBeginName(resize_event) &&
+                       Query::EventHasNumberArg("width");
 
   // Skip the first resize event in case it's flaky:
-  int w_start = bounds.width() + 1;
-  new_bounds.set_width(w_start);
-  ASSERT_NO_FATAL_FAILURE(
-      ResizeAndWaitForEvent(new_bounds, "gpu", "gpu", resize_event));
-  ++w_start;
+  int w_start = bounds.width();
+  new_bounds.set_width(++w_start);
+  ASSERT_TRUE(ResizeAndWait(new_bounds, "gpu", "gpu", resize_event));
+
+  // Remember starting IOSurface width, because it may not match the window
+  // resolution -- it may be twice the resolution if this is a retina display.
+  new_bounds.set_width(++w_start);
+  ASSERT_TRUE(ResizeAndWait(new_bounds, "gpu", "gpu", resize_event));
+  ASSERT_GT(analyzer_->FindEvents(find_resizes, &events), 0u);
+  int surface_w_start = events[events.size() - 1]->GetKnownArgAsInt("width");
+
+  // Increase width by one and compare change in IOSurface width to determine
+  // the expected pixel scale of the IOSurface compared to the window.
+  new_bounds.set_width(++w_start);
+  ASSERT_TRUE(ResizeAndWait(new_bounds, "gpu", "gpu", resize_event));
+  ASSERT_GT(analyzer_->FindEvents(find_resizes, &events), 0u);
+  int surface_w_end = events[events.size() - 1]->GetKnownArgAsInt("width");
+
+  int surface_pixels_per_window_pixel = surface_w_end - surface_w_start;
 
   // A few edge cases for a roundup value of 64. The test will resize by these
   // values one at a time and expect exactly one actual CreateIOSurface, because
@@ -474,8 +493,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, IOSurfaceReuse) {
   int num_creates = 0;
   for (int i = 0; i < static_cast<int>(arraysize(offsets)); ++i) {
     new_bounds.set_width(w_start + offsets[i]);
-    ASSERT_NO_FATAL_FAILURE(
-        ResizeAndWaitForEvent(new_bounds, "gpu", "gpu", resize_event));
+    ASSERT_TRUE(ResizeAndWait(new_bounds, "gpu", "gpu", resize_event));
     int this_num_creates = analyzer_->FindEvents(find_creates, &events);
     num_creates += this_num_creates;
 
@@ -490,7 +508,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, IOSurfaceReuse) {
     }
   }
 
-  EXPECT_EQ(1, num_creates);
+  EXPECT_EQ(surface_pixels_per_window_pixel, num_creates);
 }
 #endif
 
