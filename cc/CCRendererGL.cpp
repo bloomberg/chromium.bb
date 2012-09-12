@@ -40,7 +40,6 @@
 #include <string>
 #include <vector>
 #include <wtf/CurrentTime.h>
-#include <wtf/MainThread.h>
 
 using namespace std;
 using WebKit::WebGraphicsContext3D;

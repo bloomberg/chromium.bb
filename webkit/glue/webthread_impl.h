@@ -52,8 +52,9 @@ class WebThreadImpl : public WebThreadBase {
 
 class WebThreadImplForMessageLoop : public WebThreadBase {
  public:
-  explicit WebThreadImplForMessageLoop(base::MessageLoopProxy* message_loop);
-  virtual ~WebThreadImplForMessageLoop();
+  WEBKIT_GLUE_EXPORT explicit WebThreadImplForMessageLoop(
+      base::MessageLoopProxy* message_loop);
+  WEBKIT_GLUE_EXPORT virtual ~WebThreadImplForMessageLoop();
 
   virtual void postTask(Task* task);
   virtual void postDelayedTask(Task* task, long long delay_ms);

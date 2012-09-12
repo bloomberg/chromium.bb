@@ -15,4 +15,9 @@ include_rules = [
 # TODO(jamesr): Resolve these
   "+third_party/WebKit/Source/WebCore/platform/graphics/UnitBezier.h",
   "+third_party/WebKit/Source/WebCore/platform/graphics/gpu/TilingData.h",
+# TODO(jamesr): We depend on these things just to do test setup. We should be
+# able to run unit tests without these dependencies.
+  "+third_party/WebKit/Source/Platform/chromium/public/Platform.h",
+  "+webkit/compositor_bindings/web_compositor_support_impl.h",
+  "+webkit/glue/webthread_impl.h"
 ]

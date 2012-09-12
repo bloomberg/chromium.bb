@@ -78,7 +78,10 @@ public:
     FakeCCTimeSource()
         : m_active(false)
         , m_nextTickTime(0)
-        , m_client(0) { }
+        , m_client(0)
+    {
+        turnOffVerifier();
+    }
 
     virtual ~FakeCCTimeSource() { }
 

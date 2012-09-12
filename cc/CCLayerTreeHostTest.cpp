@@ -23,7 +23,6 @@
 #include <public/Platform.h>
 #include <public/WebLayerScrollClient.h>
 #include <public/WebSize.h>
-#include <wtf/MainThread.h>
 #include <wtf/OwnArrayPtr.h>
 
 using namespace WebCore;
@@ -1080,11 +1079,9 @@ public:
         postSetNeedsRedrawToMainThread();
     }
 
-    static void requestStartPageScaleAnimation(void* self)
+    void requestStartPageScaleAnimation()
     {
-        CCLayerTreeHostTestStartPageScaleAnimation* test = static_cast<CCLayerTreeHostTestStartPageScaleAnimation*>(self);
-        if (test->layerTreeHost())
-            test->layerTreeHost()->startPageScaleAnimation(IntSize(), false, 1.25, 0);
+        layerTreeHost()->startPageScaleAnimation(IntSize(), false, 1.25, 0);
     }
 
     virtual void drawLayersOnCCThread(CCLayerTreeHostImpl* impl) OVERRIDE
@@ -1095,7 +1092,7 @@ public:
 
         // We request animation only once.
         if (!m_animationRequested) {
-            callOnMainThread(CCLayerTreeHostTestStartPageScaleAnimation::requestStartPageScaleAnimation, this);
+            m_mainThreadProxy->postTask(createCCThreadTask(this, &CCLayerTreeHostTestStartPageScaleAnimation::requestStartPageScaleAnimation));
             m_animationRequested = true;
         }
     }

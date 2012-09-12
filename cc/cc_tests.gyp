@@ -73,16 +73,16 @@
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
         '../testing/gmock.gyp:gmock',
-        '../webkit/support/webkit_support.gyp:webkit_support',
-        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'sources': [
         'test/run_all_unittests.cc',
       ],
       'conditions': [
-        ['use_libcc_for_compositor==1 and component!="shared_library"', {
+        ['use_libcc_for_compositor==1', {
           'dependencies': [
             '../third_party/WebKit/Source/WTF/WTF.gyp/WTF.gyp:wtf',
+            '../skia/skia.gyp:skia',
+            'cc.gyp:cc',
             'cc_test_support',
           ],
           'defines': [
@@ -93,6 +93,7 @@
             'stubs',
             'test',
             '.',
+            '../third_party/WebKit/Source/Platform/chromium',
           ],
           'sources': [
             '<@(cc_tests_source_files)',
@@ -124,6 +125,9 @@
             '../skia/skia.gyp:skia',
             '../third_party/WebKit/Source/WTF/WTF.gyp/WTF.gyp:wtf',
             '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit_wtf_support',
+            '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+            '../webkit/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
+            '../webkit/support/webkit_support.gyp:glue',
           ],
           'sources': [
             '<@(cc_tests_support_files)',

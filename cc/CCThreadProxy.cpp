@@ -19,7 +19,6 @@
 #include "TraceEvent.h"
 #include <public/WebSharedGraphicsContext3D.h>
 #include <wtf/CurrentTime.h>
-#include <wtf/MainThread.h>
 
 using namespace WTF;
 

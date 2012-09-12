@@ -7,7 +7,6 @@
 #include "CCProxy.h"
 
 #include "CCThreadTask.h"
-#include <wtf/MainThread.h>
 
 using namespace WTF;
 

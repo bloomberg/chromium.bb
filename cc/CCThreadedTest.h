@@ -50,7 +50,6 @@ public:
 
 class TimeoutTask;
 class BeginTask;
-class EndTestTask;
 
 class MockCCLayerTreeHostClient : public WebCore::CCLayerTreeHostClient {
 };
@@ -87,7 +86,6 @@ public:
     void timeout();
 
     void clearTimeout() { m_timeoutTask = 0; }
-    void clearEndTestTask() { m_endTestTask = 0; }
 
     WebCore::CCLayerTreeHost* layerTreeHost() { return m_layerTreeHost.get(); }
 
@@ -98,19 +96,18 @@ protected:
 
     virtual void scheduleComposite();
 
-    static void onEndTest(void* self);
+    void realEndTest();
 
-    static void dispatchSetNeedsAnimate(void* self);
-    static void dispatchAddInstantAnimation(void* self);
-    static void dispatchAddAnimation(void* self);
-    static void dispatchSetNeedsAnimateAndCommit(void* self);
-    static void dispatchSetNeedsCommit(void* self);
-    static void dispatchAcquireLayerTextures(void* self);
-    static void dispatchSetNeedsRedraw(void* self);
-    static void dispatchSetVisible(void* self);
-    static void dispatchSetInvisible(void* self);
-    static void dispatchComposite(void* self);
-    static void dispatchDidAddAnimation(void* self);
+    void dispatchSetNeedsAnimate();
+    void dispatchAddInstantAnimation();
+    void dispatchAddAnimation();
+    void dispatchSetNeedsAnimateAndCommit();
+    void dispatchSetNeedsCommit();
+    void dispatchAcquireLayerTextures();
+    void dispatchSetNeedsRedraw();
+    void dispatchSetVisible(bool);
+    void dispatchComposite();
+    void dispatchDidAddAnimation();
 
     virtual void runTest(bool threaded);
     WebKit::WebThread* webThread() const { return m_webThread.get(); }
@@ -118,6 +115,9 @@ protected:
     WebCore::CCLayerTreeSettings m_settings;
     OwnPtr<MockCCLayerTreeHostClient> m_client;
     OwnPtr<WebCore::CCLayerTreeHost> m_layerTreeHost;
+
+protected:
+    RefPtr<WebCore::CCScopedThreadProxy> m_mainThreadProxy;
 
 private:
     bool m_beginning;
@@ -128,10 +128,8 @@ private:
     bool m_started;
 
     OwnPtr<WebKit::WebThread> m_webThread;
-    RefPtr<WebCore::CCScopedThreadProxy> m_mainThreadProxy;
     TimeoutTask* m_timeoutTask;
     BeginTask* m_beginTask;
-    EndTestTask* m_endTestTask;
 };
 
 class CCThreadedTestThreadOnly : public CCThreadedTest {
