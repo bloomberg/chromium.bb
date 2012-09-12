@@ -302,11 +302,26 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
                                const gfx::ImageSkia* theme_frame_overlay) {
   if (previous_theme_frame_id_ != 0 &&
       previous_theme_frame_id_ != theme_frame_id) {
-    crossfade_animation_.reset(new ui::SlideAnimation(this));
-    crossfade_theme_frame_id_ = previous_theme_frame_id_;
-    crossfade_opacity_ = previous_opacity_;
-    crossfade_animation_->SetSlideDuration(kActivationCrossfadeDurationMs);
-    crossfade_animation_->Show();
+    aura::Window* parent = frame_->GetNativeWindow()->parent();
+    // Don't animate the header if the parent (a workspace) is already
+    // animating. Doing so results in continually painting during the animation
+    // and gives a slower frame rate.
+    // TODO(sky): expose a better way to determine this rather than assuming
+    // the parent is a workspace.
+    bool parent_animating = parent &&
+        (parent->layer()->GetAnimator()->IsAnimatingProperty(
+            ui::LayerAnimationElement::OPACITY) ||
+         parent->layer()->GetAnimator()->IsAnimatingProperty(
+             ui::LayerAnimationElement::VISIBILITY));
+    if (!parent_animating) {
+      crossfade_animation_.reset(new ui::SlideAnimation(this));
+      crossfade_theme_frame_id_ = previous_theme_frame_id_;
+      crossfade_opacity_ = previous_opacity_;
+      crossfade_animation_->SetSlideDuration(kActivationCrossfadeDurationMs);
+      crossfade_animation_->Show();
+    } else {
+      crossfade_animation_.reset();
+    }
   }
 
   int opacity =
