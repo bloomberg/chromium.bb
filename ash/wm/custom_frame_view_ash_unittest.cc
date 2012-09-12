@@ -608,5 +608,32 @@ TEST_F(CustomFrameViewAshTest, MaximizeLeftMaximizeRestore) {
   EXPECT_EQ(NULL, window->GetProperty(aura::client::kRestoreBoundsKey));
 }
 
+// Test that minimizing the window per keyboard closes the maximize bubble.
+TEST_F(CustomFrameViewAshTest, MinimizePerKeyClosesBubble) {
+  views::Widget* widget = CreateWidget();
+  aura::Window* window = widget->GetNativeWindow();
+  widget->SetBounds(gfx::Rect(10, 10, 100, 100));
+  CustomFrameViewAsh* frame = custom_frame_view_ash(widget);
+  CustomFrameViewAsh::TestApi test(frame);
+  ash::FrameMaximizeButton* maximize_button = test.maximize_button();
+
+  gfx::Point button_pos = maximize_button->GetBoundsInScreen().CenterPoint();
+  gfx::Point off_pos(button_pos.x() + 100, button_pos.y() + 100);
+
+  aura::test::EventGenerator generator(window->GetRootWindow(), off_pos);
+  generator.MoveMouseTo(off_pos);
+  EXPECT_FALSE(maximize_button->maximizer());
+
+  // Move the mouse cursor over the maximize button.
+  generator.MoveMouseTo(button_pos);
+  EXPECT_TRUE(maximize_button->maximizer());
+
+  // We simulate the keystroke by calling minimizeWindow directly.
+  wm::MinimizeWindow(window);
+
+  EXPECT_TRUE(ash::wm::IsWindowMinimized(window));
+  EXPECT_FALSE(maximize_button->maximizer());
+}
+
 }  // namespace internal
 }  // namespace ash

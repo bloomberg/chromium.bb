@@ -181,6 +181,12 @@ void FrameMaximizeButton::OnWindowBoundsChanged(
   Cancel(false);
 }
 
+void FrameMaximizeButton::OnWindowPropertyChanged(aura::Window* window,
+                                                  const void* key,
+                                                  intptr_t old) {
+  Cancel(false);
+}
+
 void FrameMaximizeButton::OnWindowDestroying(aura::Window* window) {
   maximizer_.reset();
   if (window_) {
