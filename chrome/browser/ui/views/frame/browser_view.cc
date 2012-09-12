@@ -2405,6 +2405,11 @@ void BrowserView::UpdateAcceleratorMetrics(
   if (command_id == IDC_HELP_PAGE_VIA_KEYBOARD && key_code == ui::VKEY_F1)
     content::RecordAction(UserMetricsAction("ShowHelpTabViaF1"));
 
+  if (command_id == IDC_BOOKMARK_PAGE)
+    UMA_HISTOGRAM_ENUMERATION("Bookmarks.EntryPoint",
+                              bookmark_utils::ENTRY_POINT_ACCELERATOR,
+                              bookmark_utils::ENTRY_POINT_LIMIT);
+
 #if defined(OS_CHROMEOS)
   // Collect information about the relative popularity of various accelerators
   // on Chrome OS.

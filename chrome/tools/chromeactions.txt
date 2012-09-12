@@ -155,6 +155,7 @@
 0x65add1afd150b840	BlockedPluginInfobar.Shown.Shockwave
 0x0ef80834f3e539cc	BlockedPluginInfobar.Shown.WindowsMediaPlayer
 0x114c3050111d8b8d	Bold
+0x084d04c506da33c4	BookmarkAdded
 0x02f476e54c6d58bd	BookmarkBarFolder_CtxMenu
 0x3012b56b98c28823	BookmarkBarFolder_DragEnd
 0xe71c0ba72ca2f331	BookmarkBarFolder_DragStart

@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 
+#include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
@@ -58,12 +60,19 @@ bool StarView::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 void StarView::OnMouseReleased(const ui::MouseEvent& event) {
-  if (event.IsOnlyLeftMouseButton() && HitTestPoint(event.location()))
+  if (event.IsOnlyLeftMouseButton() && HitTestPoint(event.location())) {
+    UMA_HISTOGRAM_ENUMERATION("Bookmarks.EntryPoint",
+                              bookmark_utils::ENTRY_POINT_STAR_MOUSE,
+                              bookmark_utils::ENTRY_POINT_LIMIT);
     command_updater_->ExecuteCommand(IDC_BOOKMARK_PAGE);
+  }
 }
 
 ui::EventResult StarView::OnGestureEvent(const ui::GestureEvent& event) {
   if (event.type() == ui::ET_GESTURE_TAP) {
+    UMA_HISTOGRAM_ENUMERATION("Bookmarks.EntryPoint",
+                              bookmark_utils::ENTRY_POINT_STAR_GESTURE,
+                              bookmark_utils::ENTRY_POINT_LIMIT);
     command_updater_->ExecuteCommand(IDC_BOOKMARK_PAGE);
     return ui::ER_CONSUMED;
   }
@@ -73,6 +82,9 @@ ui::EventResult StarView::OnGestureEvent(const ui::GestureEvent& event) {
 bool StarView::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.key_code() == ui::VKEY_SPACE ||
       event.key_code() == ui::VKEY_RETURN) {
+    UMA_HISTOGRAM_ENUMERATION("Bookmarks.EntryPoint",
+                              bookmark_utils::ENTRY_POINT_STAR_KEY,
+                              bookmark_utils::ENTRY_POINT_LIMIT);
     command_updater_->ExecuteCommand(IDC_BOOKMARK_PAGE);
     return true;
   }
