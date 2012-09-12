@@ -5,6 +5,7 @@
 #ifndef WEBKIT_FILEAPI_FILE_OBSERVERS_H_
 #define WEBKIT_FILEAPI_FILE_OBSERVERS_H_
 
+#include "base/basictypes.h"
 #include "webkit/fileapi/fileapi_export.h"
 
 // TODO(kinuko): Split this file into per-observer multiple files.
@@ -28,11 +29,15 @@ class FileSystemURL;
 // sandboxed files (where usage is tracked).
 class FILEAPI_EXPORT FileUpdateObserver {
  public:
+  FileUpdateObserver() {}
   virtual ~FileUpdateObserver() {}
 
   virtual void OnStartUpdate(const FileSystemURL& url) = 0;
   virtual void OnUpdate(const FileSystemURL& url, int64 delta) = 0;
   virtual void OnEndUpdate(const FileSystemURL& url) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FileUpdateObserver);
 };
 
 // An abstract interface to observe file access.
@@ -41,9 +46,13 @@ class FILEAPI_EXPORT FileUpdateObserver {
 // is recursive or not)
 class FILEAPI_EXPORT FileAccessObserver {
  public:
+  FileAccessObserver() {}
   virtual ~FileAccessObserver() {}
 
   virtual void OnAccess(const FileSystemURL& url) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FileAccessObserver);
 };
 
 // An abstract interface to observe file changes.
@@ -53,6 +62,7 @@ class FILEAPI_EXPORT FileAccessObserver {
 // by the local sandbox file system.
 class FILEAPI_EXPORT FileChangeObserver {
  public:
+  FileChangeObserver() {}
   virtual ~FileChangeObserver() {}
 
   virtual void OnCreateFile(const FileSystemURL& url) = 0;
@@ -63,6 +73,9 @@ class FILEAPI_EXPORT FileChangeObserver {
 
   virtual void OnCreateDirectory(const FileSystemURL& url) = 0;
   virtual void OnRemoveDirectory(const FileSystemURL& url) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FileChangeObserver);
 };
 
 }  // namespace fileapi

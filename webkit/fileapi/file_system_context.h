@@ -39,6 +39,7 @@ class FileSystemQuotaUtil;
 class FileSystemTaskRunners;
 class FileSystemURL;
 class IsolatedMountPointProvider;
+class LocalFileSyncStatus;
 class SandboxMountPointProvider;
 
 struct DefaultContextDeleter;
@@ -150,6 +151,8 @@ class FILEAPI_EXPORT FileSystemContext
 
   FileSystemTaskRunners* task_runners() { return task_runners_.get(); }
 
+  LocalFileSyncStatus* sync_status() { return sync_status_.get(); }
+
  private:
   friend struct DefaultContextDeleter;
   friend class base::DeleteHelper<FileSystemContext>;
@@ -170,6 +173,9 @@ class FILEAPI_EXPORT FileSystemContext
 
   // Registered mount point providers.
   std::map<FileSystemType, FileSystemMountPointProvider*> provider_map_;
+
+  // Keeps track of the writing/syncing status.
+  scoped_ptr<LocalFileSyncStatus> sync_status_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(FileSystemContext);
 };

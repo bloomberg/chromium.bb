@@ -18,6 +18,7 @@
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/isolated_mount_point_provider.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
+#include "webkit/fileapi/syncable/local_file_sync_status.h"
 #include "webkit/fileapi/test_mount_point_provider.h"
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/special_storage_policy.h"
@@ -62,7 +63,8 @@ FileSystemContext::FileSystemContext(
               task_runners_->file_task_runner(),
               profile_path,
               options)),
-      isolated_provider_(new IsolatedMountPointProvider(profile_path)) {
+      isolated_provider_(new IsolatedMountPointProvider(profile_path)),
+      sync_status_(new LocalFileSyncStatus) {
   DCHECK(task_runners_.get());
 
   if (quota_manager_proxy) {
