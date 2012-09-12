@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_WIN_SESSION_EVENT_EXECUTOR_H_
-#define REMOTING_HOST_WIN_SESSION_EVENT_EXECUTOR_H_
+#ifndef REMOTING_HOST_SESSION_EVENT_EXECUTOR_WIN_H_
+#define REMOTING_HOST_SESSION_EVENT_EXECUTOR_WIN_H_
 
 #include <set>
 
@@ -29,9 +29,9 @@ class SessionEventExecutorWin : public EventExecutor {
   ~SessionEventExecutorWin();
 
   // EventExecutor implementation.
-  virtual void Start(
+  virtual void OnSessionStarted(
       scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
-  virtual void StopAndDelete() OVERRIDE;
+  virtual void OnSessionFinished() OVERRIDE;
 
   // protocol::ClipboardStub implementation.
   virtual void InjectClipboardEvent(
@@ -66,4 +66,4 @@ class SessionEventExecutorWin : public EventExecutor {
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_WIN_SESSION_EVENT_EXECUTOR_H_
+#endif  // REMOTING_HOST_SESSION_EVENT_EXECUTOR_WIN_H_
