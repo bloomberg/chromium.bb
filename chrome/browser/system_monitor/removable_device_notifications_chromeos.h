@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// chromeos::MediaDeviceNotifications listens for mount point changes and
-// notifies the SystemMonitor about the addition and deletion of media devices.
+// chromeos::RemovableDeviceNotificationsCros listens for mount point changes
+// and notifies the SystemMonitor about the addition and deletion of media
+// devices.
 
-#ifndef CHROME_BROWSER_SYSTEM_MONITOR_MEDIA_DEVICE_NOTIFICATIONS_CHROMEOS_H_
-#define CHROME_BROWSER_SYSTEM_MONITOR_MEDIA_DEVICE_NOTIFICATIONS_CHROMEOS_H_
+#ifndef CHROME_BROWSER_SYSTEM_MONITOR_REMOVABLE_DEVICE_NOTIFICATIONS_CHROMEOS_H_
+#define CHROME_BROWSER_SYSTEM_MONITOR_REMOVABLE_DEVICE_NOTIFICATIONS_CHROMEOS_H_
 
 #if !defined(OS_CHROMEOS)
 #error "Should only be used on ChromeOS."
@@ -23,11 +24,11 @@
 
 namespace chromeos {
 
-class MediaDeviceNotifications
-    : public base::RefCountedThreadSafe<MediaDeviceNotifications>,
+class RemovableDeviceNotificationsCros
+    : public base::RefCountedThreadSafe<RemovableDeviceNotificationsCros>,
       public disks::DiskMountManager::Observer {
  public:
-  MediaDeviceNotifications();
+  RemovableDeviceNotificationsCros();
 
   virtual void DiskChanged(disks::DiskMountManagerEventType event,
                            const disks::DiskMountManager::Disk* disk) OVERRIDE;
@@ -39,13 +40,13 @@ class MediaDeviceNotifications
       const disks::DiskMountManager::MountPointInfo& mount_info) OVERRIDE;
 
  private:
-  friend class base::RefCountedThreadSafe<MediaDeviceNotifications>;
+  friend class base::RefCountedThreadSafe<RemovableDeviceNotificationsCros>;
 
   // Mapping of mount points to mount device IDs.
   typedef std::map<std::string, std::string> MountMap;
 
   // Private to avoid code deleting the object.
-  virtual ~MediaDeviceNotifications();
+  virtual ~RemovableDeviceNotificationsCros();
 
   // Checks existing mount points map for media devices. For each mount point,
   // call CheckMountedPathOnFileThread() below.
@@ -57,17 +58,19 @@ class MediaDeviceNotifications
       const disks::DiskMountManager::MountPointInfo& mount_info);
 
   // Adds the mount point in |mount_info| to |mount_map_| and send a media
-  // device attach notification.
+  // device attach notification. |has_dcim| is true if the attached device has
+  // a DCIM folder.
   void AddMountedPathOnUIThread(
-      const disks::DiskMountManager::MountPointInfo& mount_info);
+      const disks::DiskMountManager::MountPointInfo& mount_info,
+      bool has_dcim);
 
   // Mapping of relevant mount points and their corresponding mount devices.
   // Only accessed on the UI thread.
   MountMap mount_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaDeviceNotifications);
+  DISALLOW_COPY_AND_ASSIGN(RemovableDeviceNotificationsCros);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_SYSTEM_MONITOR_MEDIA_DEVICE_NOTIFICATIONS_CHROMEOS_H_
+#endif  // CHROME_BROWSER_SYSTEM_MONITOR_REMOVABLE_DEVICE_NOTIFICATIONS_CHROMEOS_H_

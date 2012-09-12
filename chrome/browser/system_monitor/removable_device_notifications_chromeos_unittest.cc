@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// chromeos::MediaDeviceNotifications unit tests.
+// chromeos::RemovableDeviceNotificationsCros unit tests.
 
-#include "chrome/browser/system_monitor/media_device_notifications_chromeos.h"
+#include "chrome/browser/system_monitor/removable_device_notifications_chromeos.h"
 
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -39,13 +39,13 @@ std::string GetDCIMDeviceId(const std::string& unique_id) {
       chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM, unique_id);
 }
 
-class MediaDeviceNotificationsTest : public testing::Test {
+class RemovableDeviceNotificationsCrosTest : public testing::Test {
  public:
-  MediaDeviceNotificationsTest()
+  RemovableDeviceNotificationsCrosTest()
       : ui_thread_(BrowserThread::UI, &ui_loop_),
         file_thread_(BrowserThread::FILE) {
   }
-  virtual ~MediaDeviceNotificationsTest() {}
+  virtual ~RemovableDeviceNotificationsCrosTest() {}
 
  protected:
   virtual void SetUp() {
@@ -62,7 +62,7 @@ class MediaDeviceNotificationsTest : public testing::Test {
     disk_mount_manager_mock_->SetupDefaultReplies();
 
     // Initialize the test subject.
-    notifications_ = new MediaDeviceNotifications();
+    notifications_ = new RemovableDeviceNotificationsCros();
   }
 
   virtual void TearDown() {
@@ -141,19 +141,19 @@ class MediaDeviceNotificationsTest : public testing::Test {
   // Temporary directory for created test data.
   ScopedTempDir scoped_temp_dir_;
 
-  // Objects that talks with MediaDeviceNotifications.
+  // Objects that talks with RemovableDeviceNotificationsCros.
   base::SystemMonitor system_monitor_;
   scoped_ptr<base::MockDevicesChangedObserver> mock_devices_changed_observer_;
   // Owned by DiskMountManager.
   disks::MockDiskMountManager* disk_mount_manager_mock_;
 
-  scoped_refptr<MediaDeviceNotifications> notifications_;
+  scoped_refptr<RemovableDeviceNotificationsCros> notifications_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaDeviceNotificationsTest);
+  DISALLOW_COPY_AND_ASSIGN(RemovableDeviceNotificationsCrosTest);
 };
 
 // Simple test case where we attach and detach a media device.
-TEST_F(MediaDeviceNotificationsTest, BasicAttachDetach) {
+TEST_F(RemovableDeviceNotificationsCrosTest, BasicAttachDetach) {
   testing::Sequence mock_sequence;
   FilePath mount_path1 = CreateMountPoint(kMountPointA, true);
   ASSERT_FALSE(mount_path1.empty());
@@ -195,8 +195,8 @@ TEST_F(MediaDeviceNotificationsTest, BasicAttachDetach) {
   UnmountDevice(MOUNT_ERROR_NONE, mount_info2);
 }
 
-// Only mount points with DCIM directories are recognized.
-TEST_F(MediaDeviceNotificationsTest, DCIM) {
+// Removable mass storage devices with no dcim folder are also recognized.
+TEST_F(RemovableDeviceNotificationsCrosTest, NoDCIM) {
   testing::Sequence mock_sequence;
   FilePath mount_path = CreateMountPoint(kMountPointA, false);
   const std::string kUniqueId = "FFFF-FFFF";
@@ -205,12 +205,16 @@ TEST_F(MediaDeviceNotificationsTest, DCIM) {
                                               mount_path.value(),
                                               MOUNT_TYPE_DEVICE,
                                               disks::MOUNT_CONDITION_NONE);
-  EXPECT_CALL(observer(), OnRemovableStorageAttached(_, _, _)).Times(0);
+  const std::string device_id = chrome::MediaStorageUtil::MakeDeviceId(
+      chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM, kUniqueId);
+  EXPECT_CALL(observer(),
+              OnRemovableStorageAttached(device_id, ASCIIToUTF16(kDevice1Name),
+                                         mount_path.value())).Times(1);
   MountDevice(MOUNT_ERROR_NONE, mount_info, kUniqueId);
 }
 
 // Non device mounts and mount errors are ignored.
-TEST_F(MediaDeviceNotificationsTest, Ignore) {
+TEST_F(RemovableDeviceNotificationsCrosTest, Ignore) {
   testing::Sequence mock_sequence;
   FilePath mount_path = CreateMountPoint(kMountPointA, true);
   const std::string kUniqueId = "FFFF-FFFF";

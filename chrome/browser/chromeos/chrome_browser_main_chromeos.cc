@@ -66,7 +66,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/token_service_factory.h"
-#include "chrome/browser/system_monitor/media_device_notifications_chromeos.h"
+#include "chrome/browser/system_monitor/removable_device_notifications_chromeos.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -464,7 +464,8 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
     power_state_override_.reset(new chromeos::PowerStateOverride());
 
-  media_device_notifications_ = new chromeos::MediaDeviceNotifications();
+  removable_device_notifications_ =
+      new chromeos::RemovableDeviceNotificationsCros();
 
   ChromeBrowserMainPartsLinux::PostProfileInit();
 }
