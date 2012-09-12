@@ -1482,7 +1482,7 @@ bool Segment::Init(IMkvWriter* ptr_writer) {
 }
 
 bool Segment::Finalize() {
-  if (!WriteFramesAll())
+  if (WriteFramesAll() < 0)
     return false;
 
   if (mode_ == kFile) {
@@ -1740,7 +1740,7 @@ bool Segment::AddFrame(const uint8* frame,
   }
 
   // Write any audio frames left.
-  if (!WriteFramesAll())
+  if (WriteFramesAll() < 0)
     return false;
 
   if (cluster_list_size_ < 1)
@@ -2054,46 +2054,48 @@ bool Segment::QueueFrame(Frame* frame) {
   return true;
 }
 
-bool Segment::WriteFramesAll() {
-  if (frames_) {
-    if (cluster_list_size_ < 1)
-      return false;
+int Segment::WriteFramesAll() {
+  if (frames_ == NULL)
+    return 0;
 
-    Cluster* const cluster = cluster_list_[cluster_list_size_-1];
+  if (cluster_list_size_ < 1)
+    return -1;
 
-    if (!cluster)
-      return false;
+  Cluster* const cluster = cluster_list_[cluster_list_size_-1];
 
-    const uint64 timecode_scale = segment_info_.timecode_scale();
+  if (!cluster)
+    return -1;
 
-    for (int32 i = 0; i < frames_size_; ++i) {
-      Frame*& frame = frames_[i];
-      const uint64 frame_timestamp = frame->timestamp();  // ns
-      const uint64 frame_timecode = frame_timestamp / timecode_scale;
+  const uint64 timecode_scale = segment_info_.timecode_scale();
 
-      if (!cluster->AddFrame(frame->frame(),
-                             frame->length(),
-                             frame->track_number(),
-                             frame_timecode,
-                             frame->is_key()))
-        return false;
+  for (int32 i = 0; i < frames_size_; ++i) {
+    Frame*& frame = frames_[i];
+    const uint64 frame_timestamp = frame->timestamp();  // ns
+    const uint64 frame_timecode = frame_timestamp / timecode_scale;
 
-      if (new_cuepoint_ && cues_track_ == frame->track_number()) {
-        if (!AddCuePoint(frame_timestamp))
-          return false;
-      }
+    if (!cluster->AddFrame(frame->frame(),
+                           frame->length(),
+                           frame->track_number(),
+                           frame_timecode,
+                           frame->is_key()))
+      return -1;
 
-      if (frame_timestamp > last_timestamp_)
-        last_timestamp_ = frame_timestamp;
-
-      delete frame;
-      frame = NULL;
+    if (new_cuepoint_ && cues_track_ == frame->track_number()) {
+      if (!AddCuePoint(frame_timestamp))
+        return -1;
     }
 
-    frames_size_ = 0;
+    if (frame_timestamp > last_timestamp_)
+      last_timestamp_ = frame_timestamp;
+
+    delete frame;
+    frame = NULL;
   }
 
-  return true;
+  const int result = frames_size_;
+  frames_size_ = 0;
+
+  return result;
 }
 
 bool Segment::WriteFramesLessThan(uint64 timestamp) {

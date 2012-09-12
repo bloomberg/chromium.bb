@@ -773,9 +773,9 @@ class Segment {
   // Adds the frame to our frame array.
   bool QueueFrame(Frame* frame);
 
-  // Output all frames that are queued. Returns true on success and if there
-  // are no frames queued.
-  bool WriteFramesAll();
+  // Output all frames that are queued. Returns -1 on error, otherwise
+  // it returns the number of frames written.
+  int WriteFramesAll();
 
   // Output all frames that are queued that have an end time that is less
   // then |timestamp|. Returns true on success and if there are no frames
