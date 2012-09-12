@@ -484,14 +484,16 @@ void Shell::Init() {
   // Force Layout
   root_window_controller->root_window_layout()->OnWindowResized();
 
+  display_controller_->InitSecondaryDisplays();
+
   // It needs to be created after OnWindowResized has been called, otherwise the
-  // widget will not paint when restoring after a browser crash.
+  // widget will not paint when restoring after a browser crash.  Also it needs
+  // to be created after InitSecondaryDisplays() to initialize the wallpapers in
+  // the correct size.
   user_wallpaper_delegate_->InitializeWallpaper();
 
   power_button_controller_.reset(new PowerButtonController);
   AddShellObserver(power_button_controller_.get());
-
-  display_controller_->InitSecondaryDisplays();
 
   if (initially_hide_cursor_)
     cursor_manager_.ShowCursor(false);
