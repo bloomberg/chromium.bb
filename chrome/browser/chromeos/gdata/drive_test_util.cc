@@ -136,22 +136,19 @@ void CopyResultsFromGetEntryInfoPairCallback(
   *out_result = result.Pass();
 }
 
-// Returns the absolute path for a test file stored under
-// chrome/test/data/chromeos/gdata.
-FilePath GetTestFilePath(const FilePath::StringType& base_name) {
+FilePath GetTestFilePath(const std::string& relative_path) {
   FilePath path;
   std::string error;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.AppendASCII("chromeos")
-      .AppendASCII("gdata")
-      .AppendASCII(base_name.c_str());
+      .Append(FilePath::FromUTF8Unsafe(relative_path));
   EXPECT_TRUE(file_util::PathExists(path)) <<
       "Couldn't find " << path.value();
   return path;
 }
 
-base::Value* LoadJSONFile(const std::string& base_name) {
-  FilePath path = GetTestFilePath(base_name);
+base::Value* LoadJSONFile(const std::string& relative_path) {
+  FilePath path = GetTestFilePath(relative_path);
 
   std::string error;
   JSONFileValueSerializer serializer(path);
@@ -161,12 +158,12 @@ base::Value* LoadJSONFile(const std::string& base_name) {
   return value;
 }
 
-void LoadChangeFeed(const std::string& filename,
+void LoadChangeFeed(const std::string& relative_path,
                     DriveFileSystem* file_system,
                     int64 start_changestamp,
                     int64 root_feed_changestamp) {
   std::string error;
-  scoped_ptr<Value> document(test_util::LoadJSONFile(filename));
+  scoped_ptr<Value> document(test_util::LoadJSONFile(relative_path));
   ASSERT_TRUE(document.get());
   ASSERT_TRUE(document->GetType() == Value::TYPE_DICTIONARY);
   scoped_ptr<DocumentFeed> document_feed(

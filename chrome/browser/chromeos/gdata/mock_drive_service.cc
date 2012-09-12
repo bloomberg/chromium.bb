@@ -12,6 +12,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "base/platform_file.h"
+#include "chrome/browser/chromeos/gdata/drive_test_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -19,27 +20,6 @@ using ::testing::_;
 using ::testing::Invoke;
 
 namespace gdata {
-
-namespace {
-
-static Value* LoadJSONFile(const std::string& filename) {
-  FilePath path;
-  std::string error;
-  PathService::Get(chrome::DIR_TEST_DATA, &path);
-  path = path.AppendASCII("chromeos")
-      .AppendASCII("gdata")
-      .AppendASCII(filename.c_str());
-  EXPECT_TRUE(file_util::PathExists(path)) <<
-      "Couldn't find " << path.value();
-
-  JSONFileValueSerializer serializer(path);
-  Value* value = serializer.Deserialize(NULL, &error);
-  EXPECT_TRUE(value) <<
-      "Parse error " << path.value() << ": " << error;
-  return value;
-}
-
-}  // namespace
 
 MockDriveService::MockDriveService() {
   ON_CALL(*this, Authenticate(_))
@@ -69,16 +49,18 @@ MockDriveService::MockDriveService() {
       .WillByDefault(Invoke(this, &MockDriveService::DownloadFileStub));
 
   // Fill in the default values for mock feeds.
-  account_metadata_.reset(LoadJSONFile("account_metadata.json"));
-  feed_data_.reset(LoadJSONFile("basic_feed.json"));
-  directory_data_.reset(LoadJSONFile("new_folder_entry.json"));
+  account_metadata_.reset(
+      test_util::LoadJSONFile("gdata/account_metadata.json"));
+  feed_data_.reset(test_util::LoadJSONFile("gdata/basic_feed.json"));
+  directory_data_.reset(
+      test_util::LoadJSONFile("gdata/new_folder_entry.json"));
 }
 
 MockDriveService::~MockDriveService() {}
 
 void MockDriveService::set_search_result(
     const std::string& search_result_feed) {
-  search_result_.reset(LoadJSONFile(search_result_feed));
+  search_result_.reset(test_util::LoadJSONFile(search_result_feed));
 }
 
 void MockDriveService::AuthenticateStub(

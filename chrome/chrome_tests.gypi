@@ -2719,6 +2719,8 @@
         'browser/chromeos/extensions/file_browser_notifications_browsertest.cc',
         'browser/chromeos/extensions/file_browser_private_apitest.cc',
         'browser/chromeos/extensions/info_private_apitest.cc',
+        'browser/chromeos/gdata/drive_test_util.cc',
+        'browser/chromeos/gdata/drive_test_util.h',
         'browser/chromeos/gdata/gdata_contacts_service_browsertest.cc',
         'browser/chromeos/gdata/gdata_wapi_service_browsertest.cc',
         'browser/chromeos/gdata/mock_drive_service.cc',

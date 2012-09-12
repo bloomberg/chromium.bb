@@ -100,15 +100,18 @@ void CopyResultsFromGetEntryInfoPairCallback(
     scoped_ptr<EntryInfoPairResult> result);
 
 // Returns the absolute path for a test file stored under
-// chrome/test/data/chromeos/gdata.
-FilePath GetTestFilePath(const FilePath::StringType& base_name);
+// chrome/test/data/chromeos.
+FilePath GetTestFilePath(const std::string& relative_path);
 
-// Loads a test JSON file as a base::Value.
+// Loads a test JSON file as a base::Value, from a test file stored under
+// chrome/test/data/chromeos.
+//
 // The caller should delete the returned object.
-base::Value* LoadJSONFile(const std::string& base_name);
+base::Value* LoadJSONFile(const std::string& relative_path);
 
-// Loads a test json file as root ("/drive") element.
-void LoadChangeFeed(const std::string& filename,
+// Loads a test json file as root ("/drive") element from a test file stored
+// under chrome/test/data/chromeos.
+void LoadChangeFeed(const std::string& relative_path,
                     DriveFileSystem* file_system,
                     int64 start_changestamp,
                     int64 root_feed_changestamp);

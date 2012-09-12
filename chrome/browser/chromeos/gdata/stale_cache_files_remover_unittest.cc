@@ -161,7 +161,7 @@ class StaleCacheFilesRemoverTest : public testing::Test {
 };
 
 TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
-  FilePath dummy_file = test_util::GetTestFilePath("root_feed.json");
+  FilePath dummy_file = test_util::GetTestFilePath("gdata/root_feed.json");
   std::string resource_id("pdf:1a2b3c");
   std::string md5("abcdef0123456789");
 
@@ -209,7 +209,7 @@ TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
   EXPECT_FALSE(entry_proto.get());
 
   // Load a root feed.
-  LoadRootFeedDocument("root_feed.json");
+  LoadRootFeedDocument("gdata/root_feed.json");
 
   // Wait for StaleCacheFilesRemover to finish cleaning up the stale file.
   test_util::RunBlockingPoolTask();

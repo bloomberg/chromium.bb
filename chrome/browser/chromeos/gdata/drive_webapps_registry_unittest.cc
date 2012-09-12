@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
+
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/json/json_file_value_serializer.h"
@@ -11,7 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/gdata/drive_api_parser.h"
-#include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
+#include "chrome/browser/chromeos/gdata/drive_test_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/test/test_browser_thread.h"
@@ -27,25 +29,6 @@ class DriveWebAppsRegistryTest : public testing::Test {
  protected:
   DriveWebAppsRegistryTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_) {
-  }
-
-  static Value* LoadJSONFile(const std::string& prefix,
-                             const std::string& filename) {
-    FilePath path;
-    std::string error;
-    // Test files for this unit test are located in
-    // src/chrome/test/data/chromeos/gdata/*
-    PathService::Get(chrome::DIR_TEST_DATA, &path);
-    path = path.AppendASCII("chromeos").AppendASCII(prefix)
-           .AppendASCII(filename);
-    EXPECT_TRUE(file_util::PathExists(path)) <<
-        "Couldn't find " << path.value();
-
-    JSONFileValueSerializer serializer(path);
-    Value* value = serializer.Deserialize(NULL, &error);
-    EXPECT_TRUE(value) <<
-        "Parse error " << path.value() << ": " << error;
-    return value;
   }
 
   bool VerifyApp(const ScopedVector<DriveWebAppInfo>& list,
@@ -92,7 +75,8 @@ class DriveWebAppsRegistryTest : public testing::Test {
 };
 
 TEST_F(DriveWebAppsRegistryTest, LoadAndFindWebApps) {
-  scoped_ptr<Value> document(LoadJSONFile("gdata", "account_metadata.json"));
+  scoped_ptr<Value> document(
+      test_util::LoadJSONFile("gdata/account_metadata.json"));
   ASSERT_TRUE(document.get());
   ASSERT_TRUE(document->GetType() == Value::TYPE_DICTIONARY);
   DictionaryValue* entry_value;
@@ -140,7 +124,7 @@ TEST_F(DriveWebAppsRegistryTest, LoadAndFindWebApps) {
 }
 
 TEST_F(DriveWebAppsRegistryTest, LoadAndFindDriveWebApps) {
-  scoped_ptr<Value> document(LoadJSONFile("drive", "applist.json"));
+  scoped_ptr<Value> document(test_util::LoadJSONFile("drive/applist.json"));
   ASSERT_TRUE(document.get());
   ASSERT_TRUE(document->GetType() == Value::TYPE_DICTIONARY);
 

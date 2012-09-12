@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
+
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/json/json_file_value_serializer.h"
@@ -10,7 +12,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
+#include "chrome/browser/chromeos/gdata/drive_test_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,25 +26,6 @@ namespace gdata {
 
 class GDataWAPIParserTest : public testing::Test {
  protected:
-  static Value* LoadJSONFile(const std::string& filename) {
-    FilePath path;
-    std::string error;
-    // Test files for this unit test are located in
-    // src/chrome/test/data/chromeos/gdata/*
-    PathService::Get(chrome::DIR_TEST_DATA, &path);
-    path = path.AppendASCII("chromeos")
-        .AppendASCII("gdata")
-        .AppendASCII(filename.c_str());
-    EXPECT_TRUE(file_util::PathExists(path)) <<
-        "Couldn't find " << path.value();
-
-    JSONFileValueSerializer serializer(path);
-    Value* value = serializer.Deserialize(NULL, &error);
-    EXPECT_TRUE(value) <<
-        "Parse error " << path.value() << ": " << error;
-    return value;
-  }
-
   static DocumentEntry* LoadDocumentEntryFromXml(const std::string& filename) {
     FilePath path;
     std::string error;
@@ -73,7 +56,7 @@ class GDataWAPIParserTest : public testing::Test {
 // Test document feed parsing.
 TEST_F(GDataWAPIParserTest, DocumentFeedJsonParser) {
   std::string error;
-  scoped_ptr<Value> document(LoadJSONFile("basic_feed.json"));
+  scoped_ptr<Value> document(test_util::LoadJSONFile("gdata/basic_feed.json"));
   ASSERT_TRUE(document.get());
   ASSERT_EQ(Value::TYPE_DICTIONARY, document->GetType());
   scoped_ptr<DocumentFeed> feed(DocumentFeed::ExtractAndParse(*document));
@@ -283,7 +266,8 @@ TEST_F(GDataWAPIParserTest, DocumentEntryXmlParser) {
 }
 
 TEST_F(GDataWAPIParserTest, AccountMetadataFeedParser) {
-  scoped_ptr<Value> document(LoadJSONFile("account_metadata.json"));
+  scoped_ptr<Value> document(
+      test_util::LoadJSONFile("gdata/account_metadata.json"));
   ASSERT_TRUE(document.get());
   ASSERT_EQ(Value::TYPE_DICTIONARY, document->GetType());
   DictionaryValue* entry_value = NULL;

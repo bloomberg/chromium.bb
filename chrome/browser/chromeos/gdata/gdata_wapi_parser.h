@@ -525,8 +525,6 @@ class DocumentFeed : public FeedEntry {
   //   "feed": { ... },   // This function will extract this and parse.
   //   "version": "1.0"
   // }
-  //
-  // The caller should delete the returned object.
   static scoped_ptr<DocumentFeed> ExtractAndParse(const base::Value& value);
 
   // Creates feed from parsed JSON Value.  You should call this
