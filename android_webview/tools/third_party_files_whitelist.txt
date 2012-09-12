@@ -213,12 +213,6 @@ remoting/branding_Chrome
 # String 'copyright' used in resources.
 remoting/branding_Chromium
 # String 'copyright' used in project file.
-remoting/host/installer/mac/ChromotingHost.packproj
-# String 'copyright' used in project file.
-remoting/host/installer/mac/ChromotingHostService.packproj
-# String 'copyright' used in project file.
-remoting/host/installer/mac/ChromotingHostUninstaller.packproj
-# String 'copyright' used in project file.
 remoting/host/installer/mac/uninstaller/remoting_uninstaller-Info.plist
 # String 'copyright' used in project file.
 remoting/host/me2me_preference_pane-Info.plist

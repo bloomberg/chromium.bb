@@ -18,12 +18,6 @@ set -e -u
 ME="$(basename "${0}")"
 readonly ME
 
-# Choose which installer package to use:
-# 'true' to use Iceberg, 'false' to use Packages.
-# TODO(garykac) Switch completely to Packages so we can sign for 10.8.
-# (crbug.com/127267)
-USE_ICEBERG=false
-
 declare -a g_cleanup_dirs
 
 setup() {
@@ -50,21 +44,12 @@ setup() {
   #  * Chromoting Host Service package
   #  * Chromoting Host Uninstaller package
   #  * Keystone package (GoogleSoftwareUpdate - for Official builds only)
-  if $USE_ICEBERG ; then
-    PKGPROJ_HOST='ChromotingHost.packproj'
-    PKGPROJ_HOST_SERVICE='ChromotingHostService.packproj'
-    PKGPROJ_HOST_UNINSTALLER='ChromotingHostUninstaller.packproj'
+  PKGPROJ_HOST='ChromotingHost.pkgproj'
+  PKGPROJ_HOST_SERVICE='ChromotingHostService.pkgproj'
+  PKGPROJ_HOST_UNINSTALLER='ChromotingHostUninstaller.pkgproj'
 
-    # Final (user-visible) mpkg name.
-    PKG_FINAL="${HOST_PKG}.mpkg"
-  else
-    PKGPROJ_HOST='ChromotingHost.pkgproj'
-    PKGPROJ_HOST_SERVICE='ChromotingHostService.pkgproj'
-    PKGPROJ_HOST_UNINSTALLER='ChromotingHostUninstaller.pkgproj'
-
-    # Final (user-visible) pkg name.
-    PKG_FINAL="${HOST_PKG}.pkg"
-  fi
+  # Final (user-visible) pkg name.
+  PKG_FINAL="${HOST_PKG}.pkg"
 
   DMG_FILE_NAME="${DMG_FILE_NAME}.dmg"
 
@@ -158,11 +143,7 @@ sign_installer() {
 build_package() {
   local pkg="${1}"
   echo "Building .pkg from ${pkg}"
-  if $USE_ICEBERG ; then
-    freeze "${pkg}"
-  else
-    packagesbuild -v "${pkg}"
-  fi
+  packagesbuild -v "${pkg}"
 }
 
 build_packages() {
