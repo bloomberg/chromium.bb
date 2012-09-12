@@ -293,10 +293,12 @@ void Preferences::InitUserPrefs(PrefService* prefs) {
   mouse_sensitivity_.Init(prefs::kMouseSensitivity, prefs, this);
   touchpad_sensitivity_.Init(prefs::kTouchpadSensitivity, prefs, this);
   use_24hour_clock_.Init(prefs::kUse24HourClock, prefs, this);
-  disable_gdata_.Init(prefs::kDisableGData, prefs, this);
-  disable_gdata_over_cellular_.Init(prefs::kDisableGDataOverCellular,
+  disable_drive_.Init(prefs::kDisableGData, prefs, this);
+  disable_drive_over_cellular_.Init(prefs::kDisableGDataOverCellular,
                                    prefs, this);
-  disable_gdata_hosted_files_.Init(prefs::kDisableGDataHostedFiles,
+  disable_drive_hosted_files_.Init(prefs::kDisableGDataHostedFiles,
+                                   prefs, this);
+  download_default_directory_.Init(prefs::kDownloadDefaultDirectory,
                                    prefs, this);
   primary_mouse_button_right_.Init(prefs::kPrimaryMouseButtonRight,
                                    prefs, this);
@@ -442,6 +444,16 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     else
       UMA_HISTOGRAM_BOOLEAN("Mouse.PrimaryButtonRight.Started", right);
   }
+  if (!pref_name || *pref_name == prefs::kDownloadDefaultDirectory) {
+    const bool default_download_to_drive = gdata::util::IsUnderDriveMountPoint(
+        download_default_directory_.GetValue());
+    if (pref_name)
+      UMA_HISTOGRAM_BOOLEAN("FileBrowser.DownloadDestination.IsDrive.Changed",
+          default_download_to_drive);
+    else
+      UMA_HISTOGRAM_BOOLEAN("FileBrowser.DownloadDestination.IsDrive.Started",
+          default_download_to_drive);
+  }
 
   if (!pref_name || *pref_name == prefs::kLanguagePreferredLanguages) {
     // Unlike kLanguagePreloadEngines and some other input method
@@ -581,10 +593,9 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
   // Change the download directory to the default value if a GData directory is
   // selected and GData is disabled.
   if (!pref_name || *pref_name == prefs::kDisableGData) {
-    if (disable_gdata_.GetValue()) {
-      const FilePath download_path =
-          prefs_->GetFilePath(prefs::kDownloadDefaultDirectory);
-      if (gdata::util::IsUnderDriveMountPoint(download_path)) {
+    if (disable_drive_.GetValue()) {
+      if (gdata::util::IsUnderDriveMountPoint(
+          download_default_directory_.GetValue())) {
         prefs_->SetFilePath(prefs::kDownloadDefaultDirectory,
                             download_util::GetDefaultDownloadDirectory());
       }

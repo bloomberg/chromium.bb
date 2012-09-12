@@ -107,9 +107,10 @@ class Preferences : public content::NotificationObserver {
   IntegerPrefMember touchpad_sensitivity_;
   BooleanPrefMember primary_mouse_button_right_;
   BooleanPrefMember use_24hour_clock_;
-  BooleanPrefMember disable_gdata_;
-  BooleanPrefMember disable_gdata_over_cellular_;
-  BooleanPrefMember disable_gdata_hosted_files_;
+  BooleanPrefMember disable_drive_;
+  BooleanPrefMember disable_drive_over_cellular_;
+  BooleanPrefMember disable_drive_hosted_files_;
+  FilePathPrefMember download_default_directory_;
 
   // Input method preferences.
   StringPrefMember preferred_languages_;

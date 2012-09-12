@@ -6,6 +6,7 @@
 
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -55,6 +56,7 @@ class MyMockInputMethodManager : public input_method::MockInputMethodManager {
 TEST(PreferencesTest, TestUpdatePrefOnBrowserScreenDetails) {
   TestingPrefService prefs;
   Preferences::RegisterUserPrefs(&prefs);
+  DownloadPrefs::RegisterUserPrefs(&prefs);
 
   StringPrefMember previous;
   previous.Init(prefs::kLanguagePreviousInputMethod, &prefs, NULL);
