@@ -1661,81 +1661,8 @@ bool Segment::AddFrame(const uint8* frame,
   }
 
   if (new_cluster_) {
-    const int32 new_size = cluster_list_size_ + 1;
-
-    if (new_size > cluster_list_capacity_) {
-      // Add more clusters.
-      const int32 new_capacity =
-          (!cluster_list_capacity_) ? 2 : cluster_list_capacity_ * 2;
-
-      if (new_capacity < 1)
-        return false;
-
-      Cluster** const clusters =
-          new (std::nothrow) Cluster*[new_capacity];  // NOLINT
-      if (!clusters)
-        return false;
-
-      for (int32 i = 0; i < cluster_list_size_; ++i) {
-        clusters[i] = cluster_list_[i];
-      }
-
-      delete [] cluster_list_;
-
-      cluster_list_ = clusters;
-      cluster_list_capacity_ = new_capacity;
-    }
-
-    if (!WriteFramesLessThan(timestamp))
+    if (!MakeNewCluster(timestamp))
       return false;
-
-    if (mode_ == kFile) {
-      if (cluster_list_size_ > 0) {
-        // Update old cluster's size
-        Cluster* const old_cluster = cluster_list_[cluster_list_size_-1];
-
-        if (!old_cluster || !old_cluster->Finalize())
-          return false;
-      }
-
-      if (output_cues_)
-        new_cuepoint_ = true;
-    }
-
-    if (chunking_ && cluster_list_size_ > 0) {
-      chunk_writer_cluster_->Close();
-      chunk_count_++;
-
-      if (!UpdateChunkName("chk", &chunk_name_))
-        return false;
-      if (!chunk_writer_cluster_->Open(chunk_name_))
-        return false;
-    }
-
-    uint64 audio_timecode = 0;
-    uint64 timecode = timestamp / segment_info_.timecode_scale();
-    if (frames_size_ > 0) {
-      audio_timecode =
-          frames_[0]->timestamp() / segment_info_.timecode_scale();
-
-      // Update the cluster's timecode to match the first audio frame.
-      if (audio_timecode < timecode)
-        timecode = audio_timecode;
-    }
-
-    cluster_list_[cluster_list_size_] =
-        new (std::nothrow) Cluster(timecode, MaxOffset());  // NOLINT
-
-    if (!cluster_list_[cluster_list_size_])
-      return false;
-
-    const bool cluster_init_ok =
-        cluster_list_[cluster_list_size_]->Init(writer_cluster_);
-
-    if (!cluster_init_ok)
-      return false;
-
-    cluster_list_size_ = new_size;
     new_cluster_ = false;
   }
 
@@ -1917,6 +1844,81 @@ bool Segment::WriteSegmentHeader() {
 
   header_written_ = true;
 
+  return true;
+}
+
+bool Segment::MakeNewCluster(uint64 frame_timestamp_ns) {
+  const int32 new_size = cluster_list_size_ + 1;
+
+  if (new_size > cluster_list_capacity_) {
+    // Add more clusters.
+    const int32 new_capacity =
+        (cluster_list_capacity_ <= 0) ? 1 : cluster_list_capacity_ * 2;
+    Cluster** const clusters =
+        new (std::nothrow) Cluster*[new_capacity];  // NOLINT
+    if (!clusters)
+      return false;
+
+    for (int32 i = 0; i < cluster_list_size_; ++i) {
+      clusters[i] = cluster_list_[i];
+    }
+
+    delete [] cluster_list_;
+
+    cluster_list_ = clusters;
+    cluster_list_capacity_ = new_capacity;
+  }
+
+  if (!WriteFramesLessThan(frame_timestamp_ns))
+    return false;
+
+  if (mode_ == kFile) {
+    if (cluster_list_size_ > 0) {
+      // Update old cluster's size
+      Cluster* const old_cluster = cluster_list_[cluster_list_size_ - 1];
+
+      if (!old_cluster || !old_cluster->Finalize())
+        return false;
+    }
+
+    if (output_cues_)
+      new_cuepoint_ = true;
+  }
+
+  if (chunking_ && cluster_list_size_ > 0) {
+    chunk_writer_cluster_->Close();
+    chunk_count_++;
+
+    if (!UpdateChunkName("chk", &chunk_name_))
+      return false;
+    if (!chunk_writer_cluster_->Open(chunk_name_))
+      return false;
+  }
+
+  const uint64 timecode_scale = segment_info_.timecode_scale();
+  const uint64 frame_timecode = frame_timestamp_ns / timecode_scale;
+
+  uint64 cluster_timecode = frame_timecode;
+
+  if (frames_size_ > 0) {
+    const Frame* const f = frames_[0];  // earliest queued frame
+    const uint64 ns = f->timestamp();
+    const uint64 tc = ns / timecode_scale;
+
+    if (tc < cluster_timecode)
+      cluster_timecode = tc;
+  }
+
+  Cluster*& cluster = cluster_list_[cluster_list_size_];
+  const int64 offset = MaxOffset();
+  cluster = new (std::nothrow) Cluster(cluster_timecode, offset);  // NOLINT
+  if (!cluster)
+    return false;
+
+  if (!cluster->Init(writer_cluster_))
+    return false;
+
+  cluster_list_size_ = new_size;
   return true;
 }
 

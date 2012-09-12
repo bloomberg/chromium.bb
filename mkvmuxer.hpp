@@ -786,6 +786,10 @@ class Segment {
   // and Tracks element to |writer_|.
   bool WriteSegmentHeader();
 
+  // Create a new cluster, using the earlier of the first enqueued
+  // frame, or the indicated time. Returns true on success.
+  bool MakeNewCluster(uint64 timestamp_ns);
+
   // WebM elements
   Cues cues_;
   SeekHead seek_head_;
