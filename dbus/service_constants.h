@@ -174,8 +174,6 @@ const char kGetIdleTime[] = "GetIdleTime";
 const char kRequestIdleNotification[] = "RequestIdleNotification";
 const char kRequestRestartMethod[] = "RequestRestart";
 const char kRequestShutdownMethod[] = "RequestShutdown";
-const char kScreenIsLockedMethod[] = "ScreenIsLocked";
-const char kScreenIsUnlockedMethod[] = "ScreenIsUnlocked";
 const char kGetPowerSupplyPropertiesMethod[] = "GetPowerSupplyProperties";
 const char kStateOverrideRequest[] = "StateOverrideRequest";
 const char kGetPowerAccumulationMethod[] = "GetPowerAccumulation";
@@ -224,8 +222,6 @@ const char kRequestLockScreenSignal[] = "RequestLockScreen";
 const char kRequestRestartSignal[] = "RequestRestart";
 const char kRequestShutdownSignal[] = "RequestShutdown";
 const char kRequestUnlockScreenSignal[] = "RequestUnlockScreen";
-const char kScreenIsLockedSignal[] = "ScreenIsLocked";
-const char kScreenIsUnlockedSignal[] = "ScreenIsUnlocked";
 }  // namespace power_manager
 
 namespace chromeos {
