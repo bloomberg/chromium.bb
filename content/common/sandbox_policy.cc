@@ -25,7 +25,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/sandbox_init.h"
-#include "sandbox/win/src/process_mitigations.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/sandbox_nt_util.h"
 #include "sandbox/win/src/win_utils.h"
@@ -726,28 +725,6 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     base::LaunchProcess(*cmd_line, base::LaunchOptions(), &process);
     g_broker_services->AddTargetPeer(process);
     return process;
-  }
-
-  uint64 mitigations = MITIGATION_RELOCATE_IMAGE |
-                       MITIGATION_RELOCATE_IMAGE_REQUIRED |
-                       MITIGATION_HEAP_TERMINATE |
-                       MITIGATION_BOTTOM_UP_ASLR |
-                       MITIGATION_HIGH_ENTROPY_ASLR;
-  // TODO(jschuh): Make NaCl work with DEP and SEHOP policy.
-  if (type != content::PROCESS_TYPE_NACL_LOADER) {
-    mitigations |= MITIGATION_DEP |
-                   MITIGATION_DEP_NO_ATL_THUNK |
-                   MITIGATION_SEHOP;
-  }
-  if (policy->SetProcessMitigations(mitigations) != sandbox::SBOX_ALL_OK)
-    return 0;
-
-  mitigations = MITIGATION_STRICT_HANDLE_CHECKS |
-                MITIGATION_EXTENSION_DLL_DISABLE |
-                MITIGATION_DLL_SEARCH_ORDER;
-  if (policy->SetDelayedProcessMitigations(mitigations) !=
-      sandbox::SBOX_ALL_OK) {
-    return 0;
   }
 
   if (type == content::PROCESS_TYPE_PLUGIN) {

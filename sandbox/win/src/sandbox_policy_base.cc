@@ -15,7 +15,6 @@
 #include "sandbox/win/src/handle_policy.h"
 #include "sandbox/win/src/job.h"
 #include "sandbox/win/src/interception.h"
-#include "sandbox/win/src/process_mitigations.h"
 #include "sandbox/win/src/named_pipe_dispatcher.h"
 #include "sandbox/win/src/named_pipe_policy.h"
 #include "sandbox/win/src/policy_broker.h"
@@ -54,7 +53,6 @@ sandbox::PolicyGlobal* MakeBrokerPolicyMemory() {
 namespace sandbox {
 
 SANDBOX_INTERCEPT IntegrityLevel g_shared_delayed_integrity_level;
-SANDBOX_INTERCEPT MitigationFlags g_shared_delayed_mitigations;
 
 // Initializes static members.
 HWINSTA PolicyBase::alternate_winstation_handle_ = NULL;
@@ -72,8 +70,6 @@ PolicyBase::PolicyBase()
       relaxed_interceptions_(true),
       integrity_level_(INTEGRITY_LEVEL_LAST),
       delayed_integrity_level_(INTEGRITY_LEVEL_LAST),
-      mitigations_(0),
-      delayed_mitigations_(0),
       policy_maker_(NULL),
       policy_(NULL) {
   ::InitializeCriticalSection(&lock_);
@@ -280,30 +276,6 @@ ResultCode PolicyBase::SetCapability(const wchar_t* sid) {
   return SBOX_ALL_OK;
 }
 
-ResultCode PolicyBase::SetProcessMitigations(
-    MitigationFlags flags) {
-  if (!CanSetProcessMitigationsPreStartup(flags))
-    return SBOX_ERROR_BAD_PARAMS;
-  mitigations_ = flags;
-  return SBOX_ALL_OK;
-}
-
-MitigationFlags PolicyBase::GetProcessMitigations() {
-  return mitigations_;
-}
-
-ResultCode PolicyBase::SetDelayedProcessMitigations(
-    MitigationFlags flags) {
-  if (!CanSetProcessMitigationsPostStartup(flags))
-    return SBOX_ERROR_BAD_PARAMS;
-  delayed_mitigations_ = flags;
-  return SBOX_ALL_OK;
-}
-
-MitigationFlags PolicyBase::GetDelayedProcessMitigations() {
-  return delayed_mitigations_;
-}
-
 void PolicyBase::SetStrictInterceptions() {
   relaxed_interceptions_ = false;
 }
@@ -478,11 +450,6 @@ bool PolicyBase::AddTarget(TargetProcess* target) {
   if (NULL != policy_)
     policy_maker_->Done();
 
-  if (!ApplyProcessMitigationsToSuspendedProcess(target->Process(),
-                                                 mitigations_)) {
-    return false;
-  }
-
   if (!SetupAllInterceptions(target))
     return false;
 
@@ -499,19 +466,6 @@ bool PolicyBase::AddTarget(TargetProcess* target) {
                        &g_shared_delayed_integrity_level,
                        sizeof(g_shared_delayed_integrity_level));
   g_shared_delayed_integrity_level = INTEGRITY_LEVEL_LAST;
-  if (SBOX_ALL_OK != ret)
-    return false;
-
-  // Add in delayed mitigations and pseudo-mitigations enforced at startup.
-  g_shared_delayed_mitigations = delayed_mitigations_ |
-      FilterPostStartupProcessMitigations(mitigations_);
-  if (!CanSetProcessMitigationsPostStartup(g_shared_delayed_mitigations))
-    return false;
-
-  ret = target->TransferVariable("g_shared_delayed_mitigations",
-                                 &g_shared_delayed_mitigations,
-                                 sizeof(g_shared_delayed_mitigations));
-  g_shared_delayed_mitigations = 0;
   if (SBOX_ALL_OK != ret)
     return false;
 

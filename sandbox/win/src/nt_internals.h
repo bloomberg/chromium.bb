@@ -4,8 +4,8 @@
 
 // This file holds definitions related to the ntdll API.
 
-#ifndef SANDBOX_WIN_SRC_NT_INTERNALS_H__
-#define SANDBOX_WIN_SRC_NT_INTERNALS_H__
+#ifndef SANDBOX_SRC_NT_INTERNALS_H__
+#define SANDBOX_SRC_NT_INTERNALS_H__
 
 #include <windows.h>
 
@@ -292,8 +292,7 @@ typedef NTSTATUS (WINAPI *NtSetInformationThreadFunction) (
 
 // Partial definition only:
 typedef enum _PROCESSINFOCLASS {
-  ProcessBasicInformation = 0,
-  ProcessExecuteFlags = 0x22
+  ProcessBasicInformation = 0
 } PROCESSINFOCLASS;
 
 typedef PVOID PPEB;
@@ -314,12 +313,6 @@ typedef NTSTATUS (WINAPI *NtQueryInformationProcessFunction)(
   OUT PVOID ProcessInformation,
   IN ULONG ProcessInformationLength,
   OUT PULONG ReturnLength OPTIONAL);
-
-typedef NTSTATUS (WINAPI *NtSetInformationProcessFunction)(
-  HANDLE ProcessHandle,
-  IN PROCESSINFOCLASS ProcessInformationClass,
-  IN PVOID ProcessInformation,
-  IN ULONG ProcessInformationLength);
 
 typedef NTSTATUS (WINAPI *NtOpenThreadTokenFunction) (
   IN HANDLE ThreadHandle,
@@ -615,5 +608,4 @@ typedef VOID (WINAPI *RtlInitUnicodeStringFunction) (
   IN OUT PUNICODE_STRING DestinationString,
   IN PCWSTR SourceString);
 
-#endif  // SANDBOX_WIN_SRC_NT_INTERNALS_H__
-
+#endif  // SANDBOX_SRC_NT_INTERNALS_H__
