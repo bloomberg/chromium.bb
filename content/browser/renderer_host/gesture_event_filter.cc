@@ -145,11 +145,25 @@ bool GestureEventFilter::ShouldForwardForTapDeferral(
       coalesced_gesture_events_.push_back(gesture_event);
       return ShouldHandleEventNow();
     case WebInputEvent::GestureTapDown:
+      // GestureTapDown is always paired with either a Tap or TapCancel, so
+      // it should be impossible to have more than one outstanding at a time.
+      DCHECK_EQ(deferred_tap_down_event_.type, WebInputEvent::Undefined);
       deferred_tap_down_event_ = gesture_event;
       send_gtd_timer_.Start(FROM_HERE,
           base::TimeDelta::FromMilliseconds(maximum_tap_gap_time_ms_),
           this,
           &GestureEventFilter::SendGestureTapDownNow);
+      return false;
+    case WebInputEvent::GestureTapCancel:
+      if (deferred_tap_down_event_.type == WebInputEvent::Undefined) {
+        // The TapDown has already been put in the queue, must send the
+        // corresponding TapCancel as well.
+        coalesced_gesture_events_.push_back(gesture_event);
+        return ShouldHandleEventNow();
+      }
+      // Cancelling a deferred TapDown, just drop them on the floor.
+      send_gtd_timer_.Stop();
+      deferred_tap_down_event_.type = WebInputEvent::Undefined;
       return false;
     case WebInputEvent::GestureTap:
       send_gtd_timer_.Stop();
@@ -215,6 +229,10 @@ bool GestureEventFilter::ShouldHandleEventNow() {
 }
 
 void GestureEventFilter::SendGestureTapDownNow() {
+  // We must not have already sent the deferred TapDown (if we did, we would
+  // have stopped the timer, which prevents this task from running - even if
+  // it's time had already elapsed).
+  DCHECK_EQ(deferred_tap_down_event_.type, WebInputEvent::GestureTapDown);
   coalesced_gesture_events_.push_back(deferred_tap_down_event_);
   if (ShouldHandleEventNow()) {
       render_widget_host_->ForwardGestureEventImmediately(

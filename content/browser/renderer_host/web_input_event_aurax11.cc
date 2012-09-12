@@ -355,6 +355,9 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
     case ui::ET_GESTURE_TAP_DOWN:
       gesture_event.type = WebKit::WebInputEvent::GestureTapDown;
       break;
+    case ui::ET_GESTURE_TAP_CANCEL:
+      gesture_event.type = WebKit::WebInputEvent::GestureTapCancel;
+      break;
     case ui::ET_GESTURE_DOUBLE_TAP:
       gesture_event.type = WebKit::WebInputEvent::GestureDoubleTap;
       break;
@@ -402,7 +405,6 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
     case ui::ET_GESTURE_BEGIN:
     case ui::ET_GESTURE_END:
     case ui::ET_GESTURE_MULTIFINGER_SWIPE:
-    case ui::ET_GESTURE_TAP_CANCEL:
       gesture_event.type = WebKit::WebInputEvent::Undefined;
       break;
     default:

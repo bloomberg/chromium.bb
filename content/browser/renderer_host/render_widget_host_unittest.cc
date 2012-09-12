@@ -1066,7 +1066,7 @@ TEST_F(RenderWidgetHostTest, DeferredGestureTapDownOnlyOnce) {
             host_->GestureEventLastQueueEvent().type);
 }
 
-// Test that scroll events during the deferral internal drop the GestureTapDown.
+// Test that scroll events during the deferral interval drop the GestureTapDown.
 TEST_F(RenderWidgetHostTest, DeferredGestureTapDownAnulledOnScroll) {
   process_->sink().ClearMessages();
 
@@ -1089,6 +1089,54 @@ TEST_F(RenderWidgetHostTest, DeferredGestureTapDownAnulledOnScroll) {
 
   // If the deferral timer incorrectly fired, it will send an extra message.
   EXPECT_EQ(1U, process_->sink().message_count());
+}
+
+// Test that a tap cancel event during the deferral interval drops the
+// GestureTapDown.
+TEST_F(RenderWidgetHostTest, DeferredGestureTapDownAnulledOnTapCancel) {
+  process_->sink().ClearMessages();
+
+  // Set some sort of short deferral timeout
+  host_->set_maximum_tap_gap_time_ms(5);
+
+  SimulateGestureEvent(WebInputEvent::GestureTapDown);
+  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+
+  SimulateGestureEvent(WebInputEvent::GestureTapCancel);
+  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, MessageLoop::QuitClosure(), TimeDelta::FromMilliseconds(10));
+  MessageLoop::current()->Run();
+
+  // If the deferral timer incorrectly fired, it will send an extra message.
+  EXPECT_EQ(0U, process_->sink().message_count());
+}
+
+// Test that if a GestureTapDown gets sent, any corresponding GestureTapCancel
+// is also sent.
+TEST_F(RenderWidgetHostTest, DeferredGestureTapDownTapCancel) {
+  process_->sink().ClearMessages();
+
+  // Set some sort of short deferral timeout
+  host_->set_maximum_tap_gap_time_ms(5);
+
+  SimulateGestureEvent(WebInputEvent::GestureTapDown);
+  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, MessageLoop::QuitClosure(), TimeDelta::FromMilliseconds(10));
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+
+  SimulateGestureEvent(WebInputEvent::GestureTapCancel);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(2U, host_->GestureEventLastQueueEventSize());
 }
 
 // Test that a GestureScrollEnd | GestureFlingStart are deferred during the
