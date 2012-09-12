@@ -48,3 +48,6 @@ SyncNewNonFrontendDataTypeControllerTest.StartAfterSyncShutdown
 DesktopNotificationServiceTest.SettingsForSchemes
 TemplateURLFetcherTest.*
 
+# times out on the bot.
+# http://crbug.com/148644
+GAIAInfoUpdateServiceTest.DownloadSuccess
