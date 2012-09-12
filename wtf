@@ -64,7 +64,7 @@ def main():
   root, entries = gclient_utils.GetGClientRootAndEntries()
 
   # which entries map to a git repos?
-  raw = [k for k, v in entries.items() if not re.search('svn', v)]
+  raw = [k for k, v in entries.items() if v and not re.search('svn', v)]
   raw.sort()
 
   # We want to use the full path for testing, but we want to use the relative
