@@ -2,6 +2,7 @@
   "name": "__MSG_PRODUCT_NAME__",
   "version": "FULL_APP_VERSION",
   "description": "__MSG_PRODUCT_DESCRIPTION__",
+  "manifest_version": 2,
   "default_locale": "en",
   "app": {
     "launch": {
@@ -21,7 +22,7 @@
       "js": [ "cs_oauth2_trampoline.js" ]
     }
   ],
-  "content_security_policy": "default-src 'self'; script-src 'self' https://*.talkgadget.google.com 'unsafe-eval'; style-src 'self' https://fonts.googleapis.com; img-src 'self' https://*.talkgadget.google.com; font-src *; connect-src 'self' https://accounts.google.com https://www.googleapis.com https://*.talkgadget.google.com https://relay.google.com",
+  "content_security_policy": "default-src 'self'; script-src 'self' https://*.talkgadget.google.com; style-src 'self' https://fonts.googleapis.com; img-src 'self' https://*.talkgadget.google.com; font-src *; connect-src 'self' https://accounts.google.com https://www.googleapis.com https://*.talkgadget.google.com https://relay.google.com",
   "permissions": [
     "https://accounts.google.com/*",
     "https://www.googleapis.com/chromoting/*",
