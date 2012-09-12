@@ -57,9 +57,9 @@ class EventExecutorMac : public EventExecutor {
   virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
 
   // EventExecutor interface.
-  virtual void OnSessionStarted(
+  virtual void Start(
       scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
-  virtual void OnSessionFinished() OVERRIDE;
+  virtual void StopAndDelete() OVERRIDE;
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -214,12 +214,12 @@ void EventExecutorMac::InjectMouseEvent(const MouseEvent& event) {
   }
 }
 
-void EventExecutorMac::OnSessionStarted(
+void EventExecutorMac::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&EventExecutorMac::OnSessionStarted,
+        base::Bind(&EventExecutorMac::Start,
                    base::Unretained(this),
                    base::Passed(&client_clipboard)));
     return;
@@ -228,16 +228,17 @@ void EventExecutorMac::OnSessionStarted(
   clipboard_->Start(client_clipboard.Pass());
 }
 
-void EventExecutorMac::OnSessionFinished() {
+void EventExecutorMac::StopAndDelete() {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&EventExecutorMac::OnSessionFinished,
+        base::Bind(&EventExecutorMac::StopAndDelete,
                    base::Unretained(this)));
     return;
   }
 
   clipboard_->Stop();
+  delete this;
 }
 
 }  // namespace

@@ -19,7 +19,7 @@
 #include "remoting/base/auth_token_util.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
-#include "remoting/host/desktop_environment.h"
+#include "remoting/host/desktop_environment_factory.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_event_logger.h"
 #include "remoting/host/host_key_pair.h"
@@ -93,6 +93,7 @@ HostNPScriptObject::HostNPScriptObject(
       np_thread_id_(base::PlatformThread::CurrentId()),
       plugin_task_runner_(
           new PluginThreadTaskRunner(plugin_thread_delegate)),
+      desktop_environment_factory_(new DesktopEnvironmentFactory()),
       failed_login_attempts_(0),
       disconnected_event_(true, false),
       stopped_event_(true, false),
@@ -143,7 +144,6 @@ HostNPScriptObject::~HostNPScriptObject() {
     // Release the context's TaskRunner references for the threads, so they can
     // exit when no objects need them.
     host_context_->ReleaseTaskRunners();
-    desktop_environment_.reset();
 
     // |stopped_event_| is signalled when the last reference to the plugin
     // thread is dropped.
@@ -517,43 +517,22 @@ void HostNPScriptObject::ReadPolicyAndConnect(const std::string& uid,
   // Only proceed to FinishConnect() if at least one policy update has been
   // received.
   if (policy_received_) {
-    FinishConnectMainThread(uid, auth_token, auth_service);
+    FinishConnect(uid, auth_token, auth_service);
   } else {
     // Otherwise, create the policy watcher, and thunk the connect.
     pending_connect_ =
-        base::Bind(&HostNPScriptObject::FinishConnectMainThread,
+        base::Bind(&HostNPScriptObject::FinishConnect,
                    base::Unretained(this), uid, auth_token, auth_service);
   }
 }
 
-void HostNPScriptObject::FinishConnectMainThread(
-    const std::string& uid,
-    const std::string& auth_token,
-    const std::string& auth_service) {
-  if (!host_context_->capture_task_runner()->BelongsToCurrentThread()) {
-    host_context_->capture_task_runner()->PostTask(FROM_HERE, base::Bind(
-        &HostNPScriptObject::FinishConnectMainThread, base::Unretained(this),
-        uid, auth_token, auth_service));
-    return;
-  }
-
-  // DesktopEnvironment must be initialized on the capture thread.
-  //
-  // TODO(sergeyu): Fix DesktopEnvironment so that it can be created
-  // on either the UI or the network thread so that we can avoid
-  // jumping to the main thread here.
-  desktop_environment_ = DesktopEnvironment::Create(host_context_.get());
-
-  FinishConnectNetworkThread(uid, auth_token, auth_service);
-}
-
-void HostNPScriptObject::FinishConnectNetworkThread(
+void HostNPScriptObject::FinishConnect(
     const std::string& uid,
     const std::string& auth_token,
     const std::string& auth_service) {
   if (!host_context_->network_task_runner()->BelongsToCurrentThread()) {
     host_context_->network_task_runner()->PostTask(FROM_HERE, base::Bind(
-        &HostNPScriptObject::FinishConnectNetworkThread, base::Unretained(this),
+        &HostNPScriptObject::FinishConnect, base::Unretained(this),
         uid, auth_token, auth_service));
     return;
   }
@@ -566,12 +545,6 @@ void HostNPScriptObject::FinishConnectNetworkThread(
   // Check the host domain policy.
   if (!required_host_domain_.empty() &&
       !EndsWith(uid, std::string("@") + required_host_domain_, false)) {
-    SetState(kError);
-    return;
-  }
-
-  // Verify that DesktopEnvironment has been created.
-  if (desktop_environment_.get() == NULL) {
     SetState(kError);
     return;
   }
@@ -609,7 +582,8 @@ void HostNPScriptObject::FinishConnectNetworkThread(
 
   // Create the Host.
   host_ = new ChromotingHost(
-      host_context_.get(), signal_strategy_.get(), desktop_environment_.get(),
+      host_context_.get(), signal_strategy_.get(),
+      desktop_environment_factory_.get(),
       CreateHostSessionManager(network_settings,
                                host_context_->url_request_context_getter()));
   host_->AddStatusObserver(this);

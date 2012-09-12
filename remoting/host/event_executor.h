@@ -28,11 +28,11 @@ class EventExecutor : public protocol::ClipboardStub,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
   // Initialises any objects needed to execute events.
-  virtual void OnSessionStarted(
+  virtual void Start(
       scoped_ptr<protocol::ClipboardStub> client_clipboard) = 0;
 
-  // Destroys any objects constructed by Start().
-  virtual void OnSessionFinished() = 0;
+  // Destroys any objects constructed by Start() and deletes |this|.
+  virtual void StopAndDelete() = 0;
 };
 
 }  // namespace remoting
