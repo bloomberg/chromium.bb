@@ -7,6 +7,7 @@ import buildbot_common
 import optparse
 import os
 import sys
+from buildbot_common import ErrorExit
 from make_rules import MakeRules, SetVar, GenerateCleanRules, GenerateNMFRules
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -17,19 +18,14 @@ SRC_DIR = os.path.dirname(SDK_DIR)
 OUT_DIR = os.path.join(SRC_DIR, 'out')
 PPAPI_DIR = os.path.join(SRC_DIR, 'ppapi')
 
+use_gyp = False
+
 # Add SDK make tools scripts to the python path.
 sys.path.append(os.path.join(SDK_SRC_DIR, 'tools'))
 import getos
 
-
-def ErrorExit(text):
-  ErrorMsgFunc(text)
-  sys.exit(1)
-
-
 def Replace(text, replacements):
-  for key in replacements:
-    val = replacements[key]
+  for key, val in replacements.items():
     if val is not None:
       text = text.replace(key, val)
   return text
@@ -314,8 +310,7 @@ def AddMakeBat(pepperdir, makepath):
 
   makepath = os.path.abspath(makepath)
   if not makepath.startswith(pepperdir):
-    buildbot_common.ErrorExit('Make.bat not relative to Pepper directory: ' +
-                              makepath)
+    ErrorExit('Make.bat not relative to Pepper directory: ' + makepath)
 
   makeexe = os.path.abspath(os.path.join(pepperdir, 'tools'))
   relpath = os.path.relpath(makeexe, makepath)
@@ -402,6 +397,8 @@ def LoadProject(filename, toolchains):
       break
   if not match:
     return None
+
+  desc['FILENAME'] = filename
   return desc
 
 
@@ -432,20 +429,42 @@ def ProcessProject(srcroot, dstroot, desc, toolchains):
     header_out_dir = os.path.join(dstroot, headers_set['DEST'])
     FindAndCopyFiles(headers, srcroot, srcdirs, header_out_dir)
 
-  if IsNexe(desc):
-    template = os.path.join(SCRIPT_DIR, 'template.mk')
-  else:
-    template = os.path.join(SCRIPT_DIR, 'library.mk')
-
-  tools = []
-  for tool in desc['TOOLS']:
-    if tool in toolchains:
-      tools.append(tool)
-
-  # Add Makefile and make.bat
-  repdict = GenerateReplacements(desc, tools)
   make_path = os.path.join(out_dir, 'Makefile')
-  WriteReplaced(template, make_path, repdict)
+
+  if use_gyp:
+    # Process the dsc file to produce gyp input
+    dsc = desc['FILENAME']
+    dsc2gyp = os.path.join(SDK_SRC_DIR, 'build_tools/dsc2gyp.py')
+    gypfile = os.path.join(OUT_DIR, 'tmp', name, name + '.gyp')
+    buildbot_common.Run([sys.executable, dsc2gyp, dsc, '-o', gypfile],
+                        cwd=out_dir)
+
+    # Run gyp on the generated gyp file
+    if sys.platform == 'win32':
+      generator = 'msvs'
+    else:
+      generator = os.path.join(SCRIPT_DIR, "make_simple.py")
+    gyp = os.path.join(SDK_SRC_DIR, '..', '..', 'tools', 'gyp', 'gyp')
+    if sys.platform == 'win32':
+      gyp += '.bat'
+    buildbot_common.Run([gyp, '-Gstandalone', '--format',  generator,
+                        '--toplevel-dir=.', gypfile], cwd=out_dir)
+
+  if sys.platform == 'win32' or not use_gyp:
+    if IsNexe(desc):
+      template = os.path.join(SCRIPT_DIR, 'template.mk')
+    else:
+      template = os.path.join(SCRIPT_DIR, 'library.mk')
+
+    tools = []
+    for tool in desc['TOOLS']:
+      if tool in toolchains:
+        tools.append(tool)
+
+
+    # Add Makefile and make.bat
+    repdict = GenerateReplacements(desc, tools)
+    WriteReplaced(template, make_path, repdict)
 
   outdir = os.path.dirname(os.path.abspath(make_path))
   pepperdir = os.path.dirname(os.path.dirname(outdir))
@@ -530,6 +549,7 @@ def main(argv):
     for dest, projects in master_projects.iteritems():
       master_out = os.path.join(options.dstroot, dest, 'Makefile')
       GenerateMasterMakefile(master_in, master_out, projects)
+
   return 0
 
 

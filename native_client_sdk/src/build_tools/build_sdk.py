@@ -60,6 +60,9 @@ MAKE = 'nacl_sdk/make_3_81/make.exe'
 CYGTAR = os.path.join(NACL_DIR, 'build', 'cygtar.py')
 
 
+options = None
+
+
 def BuildOutputDir(*paths):
   return os.path.join(OUT_DIR, *paths)
 
@@ -85,6 +88,7 @@ def GetPNaClToolchain(os_platform, arch):
     arch = 'x86_64'
   tcname = 'naclsdk_pnacl_%s_%s.tgz' % (os_platform, arch)
   return os.path.join(tcdir, tcname)
+
 
 def GetScons():
   if sys.platform in ['cygwin', 'win32']:
@@ -229,6 +233,22 @@ def BuildStepUntarToolchains(pepperdir, platform, arch, toolchains):
     pnacldir = os.path.join(pepperdir, 'toolchain', tcname + '_pnacl')
     buildbot_common.Move(tmpdir, pnacldir)
 
+  if options.gyp and sys.platform not in ['cygwin', 'win32']:
+    # If the gyp options is specified we install a toolchain
+    # wrapper so that gyp can switch toolchains via a commandline
+    # option.
+    compiler_dir = os.path.join(pepperdir, 'toolchain', tcname, 'bin')
+    wrapper = os.path.join(SDK_SRC_DIR, 'tools', 'compiler-wrapper.py')
+    buildbot_common.MakeDir(compiler_dir)
+    buildbot_common.CopyFile(wrapper, compiler_dir)
+
+    os.symlink('compiler-wrapper.py',
+               os.path.join(compiler_dir, 'i686-nacl-g++'))
+    os.symlink('compiler-wrapper.py',
+               os.path.join(compiler_dir, 'i686-nacl-gcc'))
+    os.symlink('compiler-wrapper.py',
+               os.path.join(compiler_dir, 'i686-nacl-ar'))
+
 
 HEADER_MAP = {
   'newlib': {
@@ -333,7 +353,7 @@ def InstallHeaders(tc_dst_inc, pepper_ver, tc_name):
           os.path.join(tc_dst_inc, 'KHR'))
 
   # Copy the lib files
-  buildbot_common.CopyDir(os.path.join(PPAPI_DIR, 'lib'), 
+  buildbot_common.CopyDir(os.path.join(PPAPI_DIR, 'lib'),
           os.path.join(tc_dst_inc, 'ppapi'))
 
 
@@ -462,8 +482,8 @@ def BuildStepCopyExamples(pepperdir, toolchains, build_experimental):
     buildbot_common.MakeDir(os.path.join(libdir, '%s_%s_host' % (plat, arch)))
     for config in ['Debug', 'Release']:
       buildbot_common.MakeDir(os.path.join(libdir, '%s_%s_host' % (plat, arch),
-			      config))
-    
+                              config))
+
 
   srcdir = os.path.join(pepperdir, 'src')
   buildbot_common.RemoveDir(srcdir)
@@ -509,7 +529,7 @@ def GetWindowsEnvironment():
 
     def __getitem__(self, key):
       return self.env[key]
-    
+
     def SetEnv(self, key, value):
       self.env[key] = value
 
@@ -742,15 +762,21 @@ def main(args):
       action='store_true', dest='skip_tar', default=False)
   parser.add_option('--archive', help='Force the archive step.',
       action='store_true', dest='archive', default=False)
+  parser.add_option('--gyp',
+      help='Use gyp to build examples/libraries/Makefiles.',
+      action='store_true')
   parser.add_option('--release', help='PPAPI release version.',
       dest='release', default=None)
   parser.add_option('--experimental',
       help='build experimental examples and libraries', action='store_true',
       dest='build_experimental', default=False)
 
+  global options
   options, args = parser.parse_args(args[1:])
   platform = getos.GetPlatform()
   arch = 'x86'
+
+  generate_make.use_gyp = options.gyp
 
   builder_name = os.getenv('BUILDBOT_BUILDERNAME','')
   if builder_name.find('pnacl') >= 0 and builder_name.find('sdk') >= 0:
