@@ -825,10 +825,14 @@ void OmniboxViewMac::CopyToPasteboard(NSPasteboard* pb) {
   string16 text = base::SysNSStringToUTF16(
       [[field_ stringValue] substringWithRange:selection]);
 
+  // Copy the URL unless this is the search URL and it's being replaced by the
+  // Extended Instant API.
   GURL url;
   bool write_url = false;
-  model()->AdjustTextForCopy(selection.location, IsSelectAll(), &text, &url,
-                            &write_url);
+  if (!ShouldEnableCopyURL()) {
+    model()->AdjustTextForCopy(selection.location, IsSelectAll(), &text, &url,
+                               &write_url);
+  }
 
   NSString* nstext = base::SysUTF16ToNSString(text);
   [pb declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:nil];
@@ -838,6 +842,21 @@ void OmniboxViewMac::CopyToPasteboard(NSPasteboard* pb) {
     [pb declareURLPasteboardWithAdditionalTypes:[NSArray array] owner:nil];
     [pb setDataForURL:base::SysUTF8ToNSString(url.spec()) title:nstext];
   }
+}
+
+void OmniboxViewMac::CopyURLToPasteboard(NSPasteboard* pb) {
+  DCHECK(CanCopy());
+  DCHECK(ShouldEnableCopyURL());
+
+  string16 text = toolbar_model()->GetText(false);
+  GURL url = toolbar_model()->GetURL();
+
+  NSString* nstext = base::SysUTF16ToNSString(text);
+  [pb declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:nil];
+  [pb setString:nstext forType:NSStringPboardType];
+
+  [pb declareURLPasteboardWithAdditionalTypes:[NSArray array] owner:nil];
+  [pb setDataForURL:base::SysUTF8ToNSString(url.spec()) title:nstext];
 }
 
 void OmniboxViewMac::OnPaste() {
@@ -870,6 +889,15 @@ void OmniboxViewMac::OnPaste() {
     [editor replaceCharactersInRange:selectedRange withString:s];
     [editor didChangeText];
   }
+}
+
+// TODO(dominich): Move to OmniboxView base class? Currently this is defined on
+// the AutocompleteTextFieldObserver but the logic is shared between all
+// platforms. Some refactor might be necessary to simplify this. Or at least
+// this method could call the OmniboxView version.
+bool OmniboxViewMac::ShouldEnableCopyURL() {
+  return !model()->user_input_in_progress() &&
+      toolbar_model()->WouldReplaceSearchURLWithSearchTerms();
 }
 
 bool OmniboxViewMac::CanPasteAndGo() {

@@ -179,6 +179,7 @@ class OmniboxViewGtk : public OmniboxView,
                        GdkDragContext*);
   CHROMEGTK_CALLBACK_0(OmniboxViewGtk, void, HandleBackSpace);
   CHROMEGTK_CALLBACK_0(OmniboxViewGtk, void, HandleCopyClipboard);
+  CHROMEGTK_CALLBACK_0(OmniboxViewGtk, void, HandleCopyURLClipboard);
   CHROMEGTK_CALLBACK_0(OmniboxViewGtk, void, HandleCutClipboard);
   CHROMEGTK_CALLBACK_0(OmniboxViewGtk, void, HandlePasteClipboard);
   CHROMEGTK_CALLBACK_1(OmniboxViewGtk, gboolean, HandleExposeEvent,

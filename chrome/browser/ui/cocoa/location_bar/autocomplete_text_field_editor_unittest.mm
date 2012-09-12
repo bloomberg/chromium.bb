@@ -202,6 +202,14 @@ TEST_F(AutocompleteTextFieldEditorObserverTest, Copy) {
   [editor_ copy:nil];
 }
 
+// Test that -copyURL: is correctly delegated to the observer.
+TEST_F(AutocompleteTextFieldEditorObserverTest, CopyURL) {
+  EXPECT_CALL(field_observer_, CanCopy()).WillOnce(Return(true));
+  EXPECT_CALL(field_observer_,
+              CopyURLToPasteboard(A<NSPasteboard*>())).Times(1);
+  [editor_ copyURL:nil];
+}
+
 // Test that -cut: is correctly delegated to the observer and clears
 // the text field.
 TEST_F(AutocompleteTextFieldEditorObserverTest, Cut) {
@@ -234,18 +242,17 @@ TEST_F(AutocompleteTextFieldEditorObserverTest, PasteAndGo) {
 
 // Test that the menu is constructed correctly when CanPasteAndGo().
 TEST_F(AutocompleteTextFieldEditorObserverTest, CanPasteAndGoMenu) {
-  EXPECT_CALL(field_observer_, CanPasteAndGo())
-      .WillOnce(Return(true));
-  EXPECT_CALL(field_observer_, GetPasteActionStringId())
-      .WillOnce(Return(IDS_PASTE_AND_GO));
+  EXPECT_CALL(field_observer_, GetPasteActionStringId()).
+      WillOnce(Return(IDS_PASTE_AND_GO));
 
   NSMenu* menu = [editor_ menuForEvent:nil];
   NSArray* items = [menu itemArray];
-  ASSERT_EQ([items count], 6U);
+  ASSERT_EQ([items count], 7U);
   // TODO(shess): Check the titles, too?
   NSUInteger i = 0;  // Use an index to make future changes easier.
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(cut:));
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(copy:));
+  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(copyURL:));
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(paste:));
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(pasteAndGo:));
   EXPECT_TRUE([[items objectAtIndex:i++] isSeparatorItem]);
@@ -257,17 +264,19 @@ TEST_F(AutocompleteTextFieldEditorObserverTest, CanPasteAndGoMenu) {
 
 // Test that the menu is constructed correctly when !CanPasteAndGo().
 TEST_F(AutocompleteTextFieldEditorObserverTest, CannotPasteAndGoMenu) {
-  EXPECT_CALL(field_observer_, CanPasteAndGo())
-      .WillOnce(Return(false));
+  EXPECT_CALL(field_observer_, GetPasteActionStringId()).
+      WillOnce(Return(IDS_PASTE_AND_GO));
 
   NSMenu* menu = [editor_ menuForEvent:nil];
   NSArray* items = [menu itemArray];
-  ASSERT_EQ([items count], 5U);
+  ASSERT_EQ([items count], 7U);
   // TODO(shess): Check the titles, too?
   NSUInteger i = 0;  // Use an index to make future changes easier.
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(cut:));
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(copy:));
+  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(copyURL:));
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(paste:));
+  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(pasteAndGo:));
   EXPECT_TRUE([[items objectAtIndex:i++] isSeparatorItem]);
 
   EXPECT_EQ([[items objectAtIndex:i] action], @selector(commandDispatch:));
@@ -281,11 +290,8 @@ TEST_F(AutocompleteTextFieldEditorObserverTest, CanPasteAndGoMenuNotEditable) {
   [field_ setEditable:NO];
   [editor_ setEditable:NO];
 
-  // Never call these when not editable.
-  EXPECT_CALL(field_observer_, CanPasteAndGo())
-      .Times(0);
-  EXPECT_CALL(field_observer_, GetPasteActionStringId())
-      .Times(0);
+  // Never call this when not editable.
+  EXPECT_CALL(field_observer_, GetPasteActionStringId()).Times(0);
 
   NSMenu* menu = [editor_ menuForEvent:nil];
   NSArray* items = [menu itemArray];
@@ -295,6 +301,101 @@ TEST_F(AutocompleteTextFieldEditorObserverTest, CanPasteAndGoMenuNotEditable) {
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(cut:));
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(copy:));
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(paste:));
+}
+
+// Test that the menu is constructed correctly when ShouldEnableCopyURL()
+// returns true.
+TEST_F(AutocompleteTextFieldEditorObserverTest, ShouldEnableCopyURLMenu) {
+  EXPECT_CALL(field_observer_, GetPasteActionStringId()).
+      WillOnce(Return(IDS_PASTE_AND_GO));
+
+  NSMenu* menu = [editor_ menuForEvent:nil];
+  NSArray* items = [menu itemArray];
+  ASSERT_EQ([items count], 7U);
+  // TODO(shess): Check the titles, too?
+  NSUInteger i = 0;  // Use an index to make future changes easier.
+  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(cut:));
+  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(copy:));
+  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(copyURL:));
+  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(paste:));
+  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(pasteAndGo:));
+  EXPECT_TRUE([[items objectAtIndex:i++] isSeparatorItem]);
+
+  EXPECT_EQ([[items objectAtIndex:i] action], @selector(commandDispatch:));
+  EXPECT_EQ([[items objectAtIndex:i] tag], IDC_EDIT_SEARCH_ENGINES);
+}
+
+// Test that the menu validation works as expected when CanPasteAndGo().
+TEST_F(AutocompleteTextFieldEditorObserverTest, CanPasteAndGoValidate) {
+  EXPECT_CALL(field_observer_, GetPasteActionStringId())
+      .WillOnce(Return(IDS_PASTE_AND_GO));
+  EXPECT_CALL(field_observer_, CanPasteAndGo()).WillOnce(Return(true));
+
+  NSMenu* menu = [editor_ menuForEvent:nil];
+  NSArray* items = [menu itemArray];
+  ASSERT_EQ([items count], 7U);
+  for (NSUInteger i = 0; i < [items count]; ++i) {
+    NSMenuItem* item = [items objectAtIndex:i];
+    if ([item action] == @selector(pasteAndGo:)) {
+      EXPECT_TRUE([editor_ validateMenuItem:item]);
+      break;
+    }
+  }
+}
+
+// Test that the menu validation works as expected when !CanPasteAndGo().
+TEST_F(AutocompleteTextFieldEditorObserverTest, CannotPasteAndGoValidate) {
+  EXPECT_CALL(field_observer_, GetPasteActionStringId())
+      .WillOnce(Return(IDS_PASTE_AND_GO));
+  EXPECT_CALL(field_observer_, CanPasteAndGo()).WillOnce(Return(false));
+
+  NSMenu* menu = [editor_ menuForEvent:nil];
+  NSArray* items = [menu itemArray];
+  ASSERT_EQ([items count], 7U);
+  for (NSUInteger i = 0; i < [items count]; ++i) {
+    NSMenuItem* item = [items objectAtIndex:i];
+    if ([item action] == @selector(pasteAndGo:)) {
+      EXPECT_FALSE([editor_ validateMenuItem:item]);
+      break;
+    }
+  }
+}
+
+// Test that the menu validation works as expected when ShouldEnableCopyURL().
+TEST_F(AutocompleteTextFieldEditorObserverTest, ShouldEnableCopyURLValidate) {
+  EXPECT_CALL(field_observer_, GetPasteActionStringId())
+      .WillOnce(Return(IDS_PASTE_AND_GO));
+  EXPECT_CALL(field_observer_, ShouldEnableCopyURL()).WillOnce(Return(true));
+
+  NSMenu* menu = [editor_ menuForEvent:nil];
+  NSArray* items = [menu itemArray];
+  ASSERT_EQ([items count], 7U);
+  for (NSUInteger i = 0; i < [items count]; ++i) {
+    NSMenuItem* item = [items objectAtIndex:i];
+    if ([item action] == @selector(copyURL:)) {
+      EXPECT_TRUE([editor_ validateMenuItem:item]);
+      break;
+    }
+  }
+}
+
+// Test that the menu validation works as expected when !ShouldEnableCopyURL().
+TEST_F(AutocompleteTextFieldEditorObserverTest,
+       ShouldNotEnableCopyURLValidate) {
+  EXPECT_CALL(field_observer_, GetPasteActionStringId())
+      .WillOnce(Return(IDS_PASTE_AND_GO));
+  EXPECT_CALL(field_observer_, ShouldEnableCopyURL()).WillOnce(Return(false));
+
+  NSMenu* menu = [editor_ menuForEvent:nil];
+  NSArray* items = [menu itemArray];
+  ASSERT_EQ([items count], 7U);
+  for (NSUInteger i = 0; i < [items count]; ++i) {
+    NSMenuItem* item = [items objectAtIndex:i];
+    if ([item action] == @selector(copyURL:)) {
+      EXPECT_FALSE([editor_ validateMenuItem:item]);
+      break;
+    }
+  }
 }
 
 }  // namespace

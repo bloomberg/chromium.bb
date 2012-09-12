@@ -167,6 +167,9 @@ class OmniboxViewViews
   // Returns the selected text.
   string16 GetSelectedText() const;
 
+  // Copy the URL instead of the text in the textfield into clipboard.
+  void CopyURL();
+
   views::Textfield* textfield_;
 
   // When true, the location bar view is read only and also is has a slightly

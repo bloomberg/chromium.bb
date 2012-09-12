@@ -6773,6 +6773,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Omnibox -->
       <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_COPY_URL" desc="The copy url menu option in context menu">
+          Copy URL
+        </message>
         <message name="IDS_PASTE_AND_GO" desc="The text label of the Paste And Go menu item when the clipboard contains a URL">
           Pa&amp;ste and go
         </message>
@@ -6781,6 +6784,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_COPY_URL" desc="In Title Case: The copy url menu option in context menu">
+          Copy URL
+        </message>
         <message name="IDS_PASTE_AND_GO" desc="In Title Case: The text label of the Paste And Go menu item when the clipboard contains a URL">
           Pa&amp;ste and Go
         </message>
@@ -13201,6 +13207,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
         </message>
         <message name="IDS_COPY_MAC" desc="The Mac menu item for copy in the edit menu.">
           Copy
+        </message>
+        <message name="IDS_COPY_URL_MAC" desc="The Mac menu item for copy url in the context menu.">
+          Copy URL
         </message>
         <message name="IDS_PASTE_MAC" desc="The Mac menu item for paste in the edit menu.">
           Paste

@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
+#include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
@@ -144,6 +145,33 @@ void ClipboardSelectionCleared(GtkClipboard* clipboard,
                               gtk_text_buffer_get_selection_bound(buffer),
                               &insert);
   }
+}
+
+// Returns the |menu| item whose label matches |label|.
+guint GetPopupMenuIndexForStockLabel(const char* label, GtkMenu* menu) {
+  GList* list = gtk_container_get_children(GTK_CONTAINER(menu));
+  guint index = 1;
+  for (GList* item = list; item != NULL; item = item->next, ++index) {
+    if (GTK_IS_IMAGE_MENU_ITEM(item->data)) {
+      gboolean is_stock = gtk_image_menu_item_get_use_stock(
+          GTK_IMAGE_MENU_ITEM(item->data));
+      if (is_stock) {
+        std::string menu_item_label =
+            gtk_menu_item_get_label(GTK_MENU_ITEM(item->data));
+        if (menu_item_label == label)
+          break;
+      }
+    }
+  }
+  g_list_free(list);
+  return index;
+}
+
+// Writes the |url| and |text| to the primary clipboard.
+void DoWriteToClipboard(const GURL& url, const string16& text) {
+  BookmarkNodeData data;
+  data.ReadFromTuple(url, text);
+  data.WriteToClipboard(NULL);
 }
 
 }  // namespace
@@ -1257,39 +1285,46 @@ void OmniboxViewGtk::HandlePopulatePopup(GtkWidget* sender, GtkMenu* menu) {
       command_updater()->IsCommandEnabled(IDC_EDIT_SEARCH_ENGINES));
   gtk_widget_show(search_engine_menuitem);
 
-  // Detect the Paste menu item by searching for the one that
-  // uses the stock Paste label (i.e. gtk-paste).
-  string16 stock_paste_label(UTF8ToUTF16(GTK_STOCK_PASTE));
-  GList* list = gtk_container_get_children(GTK_CONTAINER(menu));
-  guint index = 1;
-  for (GList* item = list; item != NULL; item = item->next, ++index) {
-    if (GTK_IS_IMAGE_MENU_ITEM(item->data)) {
-      gboolean is_stock = gtk_image_menu_item_get_use_stock(
-          GTK_IMAGE_MENU_ITEM(item->data));
-      if (is_stock) {
-        string16 menu_item_label
-            (UTF8ToUTF16(gtk_menu_item_get_label(GTK_MENU_ITEM(item->data))));
-        if (menu_item_label == stock_paste_label) {
-          break;
-        }
-      }
-    }
-  }
-  g_list_free(list);
-
-  // If we don't find the stock Paste menu item,
-  // the Paste and Go item will be appended at the end of the popup menu.
   GtkClipboard* x_clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
   gchar* text = gtk_clipboard_wait_for_text(x_clipboard);
   sanitized_text_for_paste_and_go_ = text ?
       StripJavascriptSchemas(CollapseWhitespace(UTF8ToUTF16(text), true)) :
       string16();
   g_free(text);
+
+  // Copy URL menu item.
+  if (chrome::search::IsInstantExtendedAPIEnabled(browser_->profile())) {
+    GtkWidget* copy_url_menuitem = gtk_menu_item_new_with_mnemonic(
+        ui::ConvertAcceleratorsFromWindowsStyle(
+            l10n_util::GetStringUTF8(IDS_COPY_URL)).c_str());
+
+    // Detect the Paste and Copy menu items by searching for the ones that use
+    // the stock labels (i.e. GTK_STOCK_PASTE and GTK_STOCK_COPY).
+
+    // If we don't find the stock Copy menu item, the Copy URL item will be
+    // appended at the end of the popup menu.
+    gtk_menu_shell_insert(GTK_MENU_SHELL(menu), copy_url_menuitem,
+                          GetPopupMenuIndexForStockLabel(GTK_STOCK_COPY, menu));
+    g_signal_connect(copy_url_menuitem, "activate",
+                     G_CALLBACK(HandleCopyURLClipboardThunk), this);
+    gtk_widget_set_sensitive(
+        copy_url_menuitem,
+        toolbar_model()->WouldReplaceSearchURLWithSearchTerms() &&
+            !model()->user_input_in_progress());
+    gtk_widget_show(copy_url_menuitem);
+  }
+
+ // Paste and Go menu item.
   GtkWidget* paste_go_menuitem = gtk_menu_item_new_with_mnemonic(
       ui::ConvertAcceleratorsFromWindowsStyle(l10n_util::GetStringUTF8(
           model()->IsPasteAndSearch(sanitized_text_for_paste_and_go_) ?
               IDS_PASTE_AND_SEARCH : IDS_PASTE_AND_GO)).c_str());
-  gtk_menu_shell_insert(GTK_MENU_SHELL(menu), paste_go_menuitem, index);
+
+  // If we don't find the stock Paste menu item, the Paste and Go item will be
+  // appended at the end of the popup menu.
+  gtk_menu_shell_insert(GTK_MENU_SHELL(menu), paste_go_menuitem,
+                        GetPopupMenuIndexForStockLabel(GTK_STOCK_PASTE, menu));
+
   g_signal_connect(paste_go_menuitem, "activate",
                    G_CALLBACK(HandlePasteAndGoThunk), this);
   gtk_widget_set_sensitive(paste_go_menuitem,
@@ -1577,6 +1612,11 @@ void OmniboxViewGtk::HandleCopyClipboard(GtkWidget* sender) {
   HandleCopyOrCutClipboard(true);
 }
 
+void OmniboxViewGtk::HandleCopyURLClipboard(GtkWidget* sender) {
+  DoWriteToClipboard(toolbar_model()->GetURL(),
+                     toolbar_model()->GetText(false));
+}
+
 void OmniboxViewGtk::HandleCutClipboard(GtkWidget* sender) {
   HandleCopyOrCutClipboard(false);
 }
@@ -1593,8 +1633,6 @@ void OmniboxViewGtk::HandleCopyOrCutClipboard(bool copy) {
 
   GtkClipboard* clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
   DCHECK(clipboard);
-  if (!clipboard)
-    return;
 
   CharRange selection = GetSelection();
   GURL url;
@@ -1603,10 +1641,10 @@ void OmniboxViewGtk::HandleCopyOrCutClipboard(bool copy) {
   model()->AdjustTextForCopy(selection.selection_min(), IsSelectAll(), &text,
                             &url, &write_url);
 
+  // TODO(dominich): On other platforms we write |text| to the clipboard
+  // irregardless of |write_url|. Is this correct?
   if (write_url) {
-    BookmarkNodeData data;
-    data.ReadFromTuple(url, text);
-    data.WriteToClipboard(NULL);
+    DoWriteToClipboard(url, text);
 
     // Stop propagating the signal.
     static guint copy_signal_id =

@@ -88,7 +88,9 @@ struct BookmarkNodeData {
   // Creates a single-bookmark DragData from url/title pair.
   bool ReadFromTuple(const GURL& url, const string16& title);
 
-  // Writes elements to the clipboard.
+  // Writes elements to the clipboard. If |profile| is not NULL, this will write
+  // the profile path to the pickled data. A NULL |profile| indicates that the
+  // data is not associated with a particular profile.
   void WriteToClipboard(Profile* profile) const;
 
   // Reads bookmarks from the general copy/paste clipboard. Prefers data

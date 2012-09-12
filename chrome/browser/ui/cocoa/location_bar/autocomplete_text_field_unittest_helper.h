@@ -38,6 +38,7 @@ class MockAutocompleteTextFieldObserver : public AutocompleteTextFieldObserver {
   MOCK_METHOD1(OnControlKeyChanged, void(bool pressed));
   MOCK_METHOD0(CanCopy, bool());
   MOCK_METHOD1(CopyToPasteboard, void(NSPasteboard* pboard));
+  MOCK_METHOD1(CopyURLToPasteboard, void(NSPasteboard* pboard));
   MOCK_METHOD0(OnPaste, void());
   MOCK_METHOD0(CanPasteAndGo, bool());
   MOCK_METHOD0(GetPasteActionStringId, int());
@@ -52,6 +53,7 @@ class MockAutocompleteTextFieldObserver : public AutocompleteTextFieldObserver {
   MOCK_METHOD1(OnDoCommandBySelector, bool(SEL cmd));
   MOCK_METHOD1(OnSetFocus, void(bool control_down));
   MOCK_METHOD0(OnKillFocus, void());
+  MOCK_METHOD0(ShouldEnableCopyURL, bool());
 };
 
 #endif  // CHROME_BROWSER_UI_COCOA_AUTOCOMPLETE_TEXT_FIELD_UNITTEST_HELPER_H_

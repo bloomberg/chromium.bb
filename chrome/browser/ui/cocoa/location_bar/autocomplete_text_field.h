@@ -48,6 +48,14 @@ class AutocompleteTextFieldObserver {
   // Called when the user does a copy or drag.
   virtual void CopyToPasteboard(NSPasteboard* pboard) = 0;
 
+  // Clears |pboard| and adds the current URL. Specifically used when the user
+  // explicitly requests to copy the URL in cases where extended instant has
+  // overridden the URL with the search terms.
+  virtual void CopyURLToPasteboard(NSPasteboard* pboard) = 0;
+
+  // Returns true if the Copy to URL option should be available.
+  virtual bool ShouldEnableCopyURL() = 0;
+
   // Returns true if the current clipboard text supports paste and go
   // (or paste and search).
   virtual bool CanPasteAndGo() = 0;

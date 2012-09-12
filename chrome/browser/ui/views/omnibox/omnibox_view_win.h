@@ -387,6 +387,10 @@ class OmniboxViewWin
   // Common implementation for performing a drop on the edit view.
   int OnPerformDropImpl(const ui::DropTargetEvent& event, bool in_drag);
 
+  // Whether to show the menu item for copying the URL.
+  bool ShouldEnableCopyURL() const;
+  void CopyURL();
+
   // Handle of RichEdit dll.
   static HMODULE loaded_library_module_;
 

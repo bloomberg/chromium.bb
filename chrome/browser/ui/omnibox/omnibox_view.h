@@ -245,6 +245,7 @@ class OmniboxView {
 
   OmniboxEditController* controller() { return controller_; }
   ToolbarModel* toolbar_model() { return toolbar_model_; }
+  const ToolbarModel* toolbar_model() const { return toolbar_model_; }
 
  private:
   // |model_| can be NULL in tests.
