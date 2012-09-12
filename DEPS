@@ -100,6 +100,8 @@ deps = {
     (Var("googlecode_url") % "grit-i18n") + "/trunk@67",
 
   "src/tools/gyp":
+    # DO NOT ROLL GYP. The next gyp roll needs some tricks to work.
+    # Talk to thakis@ for details. (I'll try to get this fixed by friday.)
     (Var("googlecode_url") % "gyp") + "/trunk@1492",
 
   "src/v8":
