@@ -1011,6 +1011,8 @@ TEST_F(RenderWidgetHostTest, DeferredGestureTapDown) {
 
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(WebInputEvent::GestureTapDown,
+            host_->GestureEventLastQueueEvent().type);
 }
 
 // Test that GestureTapDown events are sent immediately on GestureTap.
@@ -1027,6 +1029,8 @@ TEST_F(RenderWidgetHostTest, DeferredGestureTapDownSentOnTap) {
   SimulateGestureEvent(WebInputEvent::GestureTap);
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_EQ(2U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(WebInputEvent::GestureTap,
+            host_->GestureEventLastQueueEvent().type);
 
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE, MessageLoop::QuitClosure(), TimeDelta::FromMilliseconds(10));
@@ -1034,6 +1038,36 @@ TEST_F(RenderWidgetHostTest, DeferredGestureTapDownSentOnTap) {
 
   // If the deferral timer incorrectly fired, it sent an extra message.
   EXPECT_EQ(1U, process_->sink().message_count());
+}
+
+// Test that only a single GestureTapDown event is sent when tap occurs after
+// the timeout.
+TEST_F(RenderWidgetHostTest, DeferredGestureTapDownOnlyOnce) {
+  process_->sink().ClearMessages();
+
+  // Set some sort of short deferral timeout
+  host_->set_maximum_tap_gap_time_ms(5);
+
+  SimulateGestureEvent(WebInputEvent::GestureTapDown);
+  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
+
+  // Wait long enough for the timeout and verify it fired.
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, MessageLoop::QuitClosure(), TimeDelta::FromMilliseconds(10));
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(WebInputEvent::GestureTapDown,
+            host_->GestureEventLastQueueEvent().type);
+
+  // Now send the tap gesture and verify we didn't get an extra TapDown.
+  SimulateGestureEvent(WebInputEvent::GestureTap);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_EQ(2U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(WebInputEvent::GestureTap,
+            host_->GestureEventLastQueueEvent().type);
 }
 
 // Test that scroll events during the deferral internal drop the GestureTapDown.
@@ -1050,6 +1084,8 @@ TEST_F(RenderWidgetHostTest, DeferredGestureTapDownAnulledOnScroll) {
   SimulateGestureEvent(WebInputEvent::GestureScrollBegin);
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_EQ(1U, host_->GestureEventLastQueueEventSize());
+  EXPECT_EQ(WebInputEvent::GestureScrollBegin,
+            host_->GestureEventLastQueueEvent().type);
 
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE, MessageLoop::QuitClosure(), TimeDelta::FromMilliseconds(10));

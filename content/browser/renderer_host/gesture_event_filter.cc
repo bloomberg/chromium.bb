@@ -153,16 +153,21 @@ bool GestureEventFilter::ShouldForwardForTapDeferral(
       return false;
     case WebInputEvent::GestureTap:
       send_gtd_timer_.Stop();
-      coalesced_gesture_events_.push_back(deferred_tap_down_event_);
-      if (ShouldHandleEventNow()) {
+      if (deferred_tap_down_event_.type != WebInputEvent::Undefined) {
+        coalesced_gesture_events_.push_back(deferred_tap_down_event_);
+        if (ShouldHandleEventNow())
           render_widget_host_->ForwardGestureEventImmediately(
               deferred_tap_down_event_);
+        deferred_tap_down_event_.type = WebInputEvent::Undefined;
+        coalesced_gesture_events_.push_back(gesture_event);
+        return false;
       }
       coalesced_gesture_events_.push_back(gesture_event);
-      return false;
+      return ShouldHandleEventNow();
     case WebInputEvent::GestureScrollBegin:
     case WebInputEvent::GesturePinchBegin:
       send_gtd_timer_.Stop();
+      deferred_tap_down_event_.type = WebInputEvent::Undefined;
       coalesced_gesture_events_.push_back(gesture_event);
       return ShouldHandleEventNow();
     case WebInputEvent::GestureScrollUpdate:
@@ -181,6 +186,7 @@ void GestureEventFilter::Reset() {
   fling_in_progress_ = false;
   scrolling_in_progress_ = false;
   coalesced_gesture_events_.clear();
+  deferred_tap_down_event_.type = WebInputEvent::Undefined;
   debouncing_deferral_queue_.clear();
   send_gtd_timer_.Stop();
   debounce_deferring_timer_.Stop();
@@ -214,6 +220,7 @@ void GestureEventFilter::SendGestureTapDownNow() {
       render_widget_host_->ForwardGestureEventImmediately(
           deferred_tap_down_event_);
   }
+  deferred_tap_down_event_.type = WebInputEvent::Undefined;
 }
 
 void GestureEventFilter::SendScrollEndingEventsNow() {
