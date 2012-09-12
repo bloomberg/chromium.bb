@@ -15,7 +15,7 @@
  */
 
 #undef  PTHREAD_KEYS_MAX
-#define PTHREAD_KEYS_MAX        2
+#define PTHREAD_KEYS_MAX        16
 
 #define NC_TSD_NO_MORE_KEYS     irt_tsd_no_more_keys()
 static void irt_tsd_no_more_keys(void) {
