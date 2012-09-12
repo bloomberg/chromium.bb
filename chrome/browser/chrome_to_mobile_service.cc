@@ -257,7 +257,6 @@ void ChromeToMobileService::SendToMobile(const base::DictionaryValue* mobile,
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (access_token_.empty()) {
     // Enqueue this task to perform after obtaining an access token.
-    // TODO(msw): Do not leak the |mobile| DictionaryValue DeepCopy.
     task_queue_.push(base::Bind(&ChromeToMobileService::SendToMobile,
         weak_ptr_factory_.GetWeakPtr(), base::Owned(mobile->DeepCopy()),
         snapshot, browser, observer));
