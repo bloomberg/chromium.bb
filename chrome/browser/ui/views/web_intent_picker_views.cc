@@ -908,6 +908,7 @@ void WebIntentPickerViews::ButtonPressed(views::Button* sender,
 
 void WebIntentPickerViews::WindowClosing() {
   delegate_->OnClosing();
+  delegate_->OnPickerClosed();
 }
 
 void WebIntentPickerViews::DeleteDelegate() {
