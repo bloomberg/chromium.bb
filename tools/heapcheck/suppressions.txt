@@ -1604,8 +1604,3 @@
    fun:ASCIIToUTF16
    fun:PluginPrefsTest_UnifiedPepperFlashState_Test::TestBody
 }
-{
-   bug_148589
-   Heapcheck:Leak
-   fun:ui::Clipboard::GetForCurrentThread
-}
