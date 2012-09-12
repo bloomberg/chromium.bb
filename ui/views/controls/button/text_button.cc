@@ -291,6 +291,8 @@ void TextButtonBase::SetIsDefault(bool is_default) {
 }
 
 void TextButtonBase::SetText(const string16& text) {
+  if (text == text_)
+    return;
   text_ = text;
   SetAccessibleName(text);
   UpdateTextSize();

@@ -149,6 +149,8 @@ void Textfield::SetTextInputType(ui::TextInputType type) {
 }
 
 void Textfield::SetText(const string16& text) {
+  if (text == text_)
+    return;
   text_ = text;
   if (native_wrapper_)
     native_wrapper_->UpdateText();
