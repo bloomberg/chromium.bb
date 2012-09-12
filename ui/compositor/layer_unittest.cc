@@ -374,6 +374,7 @@ class TestCompositorObserver : public CompositorObserver {
 #define MAYBE_DrawTree DISABLED_DrawTree
 #define MAYBE_Hierarchy DISABLED_Hierarchy
 #define MAYBE_HierarchyNoTexture DISABLED_HierarchyNoTexture
+#define MAYBE_DrawPixels DISABLED_DrawPixels
 #define MAYBE_SetRootLayer DISABLED_SetRootLayer
 #define MAYBE_CompositorObservers DISABLED_CompositorObservers
 #define MAYBE_ModifyHierarchy DISABLED_ModifyHierarchy
@@ -387,6 +388,7 @@ class TestCompositorObserver : public CompositorObserver {
 #define MAYBE_DrawTree DrawTree
 #define MAYBE_Hierarchy Hierarchy
 #define MAYBE_HierarchyNoTexture HierarchyNoTexture
+#define MAYBE_DrawPixels DrawPixels
 #define MAYBE_SetRootLayer SetRootLayer
 #define MAYBE_CompositorObservers CompositorObservers
 #define MAYBE_ModifyHierarchy ModifyHierarchy
@@ -802,7 +804,7 @@ TEST_F(LayerWithNullDelegateTest, SetBoundsSchedulesPaint) {
 
 // Checks that pixels are actually drawn to the screen with a read back.
 // Currently disabled on all platforms, see http://crbug.com/148709.
-TEST_F(LayerWithRealCompositorTest, DISABLED_DrawPixels) {
+TEST_F(LayerWithRealCompositorTest, MAYBE_DrawPixels) {
   scoped_ptr<Layer> layer(CreateColorLayer(SK_ColorRED,
                                            gfx::Rect(0, 0, 500, 500)));
   scoped_ptr<Layer> layer2(CreateColorLayer(SK_ColorBLUE,

@@ -249,18 +249,12 @@ bool Compositor::ReadPixels(SkBitmap* bitmap,
   if (bounds_in_pixel.right() > size().width() ||
       bounds_in_pixel.bottom() > size().height())
     return false;
-  // Convert to OpenGL coordinates.
-  gfx::Point new_origin(
-      bounds_in_pixel.x(),
-      size().height() - bounds_in_pixel.height() - bounds_in_pixel.y());
-
   bitmap->setConfig(SkBitmap::kARGB_8888_Config,
                     bounds_in_pixel.width(), bounds_in_pixel.height());
   bitmap->allocPixels();
   SkAutoLockPixels lock_image(*bitmap);
   unsigned char* pixels = static_cast<unsigned char*>(bitmap->getPixels());
-  return host_->compositeAndReadback(
-          pixels, gfx::Rect(new_origin, bounds_in_pixel.size()));
+  return host_->compositeAndReadback(pixels, bounds_in_pixel);
 }
 
 void Compositor::SetScaleAndSize(float scale, const gfx::Size& size_in_pixel) {
