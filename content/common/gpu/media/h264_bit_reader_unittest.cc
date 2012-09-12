@@ -41,15 +41,6 @@ TEST(H264BitReaderTest, ReadStreamWithoutEscapeAndTrailingZeroBytes) {
   EXPECT_FALSE(reader.HasMoreRBSPData());
 }
 
-TEST(H264BitReaderTest, EmptyStream) {
-  H264BitReader reader;
-  const unsigned char rbsp[] = {0x80, 0x00, 0x00};
-
-  EXPECT_FALSE(reader.Initialize(rbsp, 0));
-  EXPECT_FALSE(reader.Initialize(rbsp, 1));
-  EXPECT_FALSE(reader.Initialize(rbsp, sizeof(rbsp)));
-}
-
 TEST(H264BitReaderTest, SingleByteStream) {
   H264BitReader reader;
   const unsigned char rbsp[] = {0x18};
@@ -77,72 +68,5 @@ TEST(H264BitReaderTest, StopBitOccupyFullByte) {
   EXPECT_TRUE(reader.ReadBits(8, &dummy));
   EXPECT_EQ(dummy, 0xab);
   EXPECT_EQ(reader.NumBitsLeft(), 8);
-  EXPECT_FALSE(reader.HasMoreRBSPData());
-}
-
-TEST(H264BitReaderTest, ReadFailure) {
-  H264BitReader reader;
-  const unsigned char rbsp[] = {0x18};
-  int dummy = 0;
-
-  EXPECT_TRUE(reader.Initialize(rbsp, 1));
-  EXPECT_FALSE(reader.ReadBits(5, &dummy));
-}
-
-TEST(H264BitReaderTest, MalformedStream) {
-  const unsigned char rbsp[] = {0x00, 0x00, 0x03, 0x00, 0x00};
-  H264BitReader reader;
-
-  EXPECT_FALSE(reader.Initialize(rbsp, 1));
-  EXPECT_FALSE(reader.Initialize(rbsp, sizeof(rbsp)));
-}
-
-TEST(H264BitReaderTest, EscapeSequence) {
-  H264BitReader reader;
-  const unsigned char rbsp[] =
-      {0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x03, 0x03, 0x00, 0x00, 0x03};
-  int dummy = 0;
-
-  EXPECT_TRUE(reader.Initialize(rbsp, sizeof(rbsp)));
-
-  EXPECT_TRUE(reader.ReadBits(8, &dummy));
-  EXPECT_EQ(dummy, 0x00);
-  EXPECT_EQ(reader.NumBitsLeft(), 80);
-  EXPECT_TRUE(reader.HasMoreRBSPData());
-
-  EXPECT_TRUE(reader.ReadBits(24, &dummy));
-  EXPECT_EQ(dummy, 0x00);
-  EXPECT_EQ(reader.NumBitsLeft(), 48);
-  EXPECT_TRUE(reader.HasMoreRBSPData());
-
-  EXPECT_TRUE(reader.ReadBits(15, &dummy));
-  EXPECT_EQ(dummy, 0x01);
-  EXPECT_EQ(reader.NumBitsLeft(), 25);
-  EXPECT_FALSE(reader.HasMoreRBSPData());
-}
-
-TEST(H264BitReaderTest, NonEscapeFollowedByStopBit) {
-  H264BitReader reader;
-  const unsigned char rbsp[] = {0x00, 0x00, 0x07, 0x00, 0x00, 0x00, 0x00};
-  int dummy = 0;
-
-  EXPECT_TRUE(reader.Initialize(rbsp, sizeof(rbsp)));
-  EXPECT_TRUE(reader.ReadBits(23, &dummy));
-  EXPECT_EQ(dummy, 0x03);
-  EXPECT_EQ(reader.NumBitsLeft(), 33);
-  EXPECT_FALSE(reader.HasMoreRBSPData());
-}
-
-TEST(H264BitReaderTest, TrailingZero) {
-  H264BitReader reader;
-  const unsigned char rbsp[] = {0x01, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00};
-  int dummy = 0;
-
-  EXPECT_TRUE(reader.Initialize(rbsp, sizeof(rbsp)));
-  EXPECT_TRUE(reader.ReadBits(8, &dummy));
-  EXPECT_EQ(dummy, 0x01);
-  EXPECT_TRUE(reader.HasMoreRBSPData());
-  EXPECT_TRUE(reader.ReadBits(15, &dummy));
-  EXPECT_EQ(dummy, 0x01);
   EXPECT_FALSE(reader.HasMoreRBSPData());
 }
