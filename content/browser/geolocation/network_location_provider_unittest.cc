@@ -273,13 +273,14 @@ class GeolocationNetworkProviderTest : public testing::Test {
     const std::string& upload_data = request.upload_data();
     ASSERT_FALSE(upload_data.empty());
     std::string json_parse_error_msg;
-    base::Value* parsed_json = base::JSONReader::ReadAndReturnError(
-        upload_data,
-        base::JSON_PARSE_RFC,
-        NULL,
-        &json_parse_error_msg);
+    scoped_ptr<base::Value> parsed_json(
+        base::JSONReader::ReadAndReturnError(
+            upload_data,
+            base::JSON_PARSE_RFC,
+            NULL,
+            &json_parse_error_msg));
     EXPECT_TRUE(json_parse_error_msg.empty());
-    ASSERT_TRUE(parsed_json != NULL);
+    ASSERT_TRUE(parsed_json.get() != NULL);
 
     const base::DictionaryValue* request_json;
     ASSERT_TRUE(parsed_json->GetAsDictionary(&request_json));
