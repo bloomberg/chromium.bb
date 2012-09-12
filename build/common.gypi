@@ -63,6 +63,9 @@
     # The system root for cross-compiles. Default: none.
     'sysroot%': '',
 
+    # Version of the mac sdk to use.
+    'mac_sdk%': '10.6',
+
     # NOTE: end adapted from them chrome common.gypi file for arm
 
     # Doing this in a sub-dict so that it can be referred to below.
@@ -568,8 +571,8 @@
             ['nacl_standalone==1', {
               # If part of the Chromium build, use the Chromium default.
               # Otherwise, when building standalone, use this.
-              'MACOSX_DEPLOYMENT_TARGET': '10.5', # -mmacosx-version-min=10.5
-              'SDKROOT': 'macosx10.5',            # -isysroot
+              'MACOSX_DEPLOYMENT_TARGET': '<(mac_sdk)', # -mmacosx-version-min
+              'SDKROOT': 'macosx<(mac_sdk)',            # -isysroot
             }],
           ],
         },
