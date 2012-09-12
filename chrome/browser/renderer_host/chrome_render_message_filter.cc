@@ -167,6 +167,10 @@ void ChromeRenderMessageFilter::OverrideThreadForMessage(
   }
 }
 
+net::HostResolver* ChromeRenderMessageFilter::GetHostResolver() {
+  return request_context_->GetURLRequestContext()->host_resolver();
+}
+
 #if !defined(DISABLE_NACL)
 void ChromeRenderMessageFilter::OnLaunchNaCl(const GURL& manifest_url,
                                              int socket_count,

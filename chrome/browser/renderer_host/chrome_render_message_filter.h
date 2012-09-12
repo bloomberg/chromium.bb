@@ -22,6 +22,7 @@ class ExtensionInfoMap;
 class GURL;
 
 namespace net {
+class HostResolver;
 class URLRequestContextGetter;
 }
 
@@ -68,6 +69,7 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
 
   int render_process_id() { return render_process_id_; }
   bool off_the_record() { return off_the_record_; }
+  net::HostResolver* GetHostResolver();
 
  private:
   friend class content::BrowserThread;
