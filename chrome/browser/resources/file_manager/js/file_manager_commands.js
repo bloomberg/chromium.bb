@@ -149,7 +149,7 @@ Commands.newFolderCommand = {
  */
 Commands.deleteFileCommand = {
   execute: function(event, fileManager) {
-    fileManager.deleteEntries(fileManager.selection.entries);
+    fileManager.deleteSelection();
   },
   canExecute: function(event, fileManager) {
     event.canExecute = !fileManager.isOnReadonlyDirectory() &&

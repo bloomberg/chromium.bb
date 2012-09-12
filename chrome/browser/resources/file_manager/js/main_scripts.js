@@ -47,6 +47,7 @@
 //<include src="../../shared/js/cr/ui/menu_button.js"/>
 //<include src="../../shared/js/cr/ui/context_menu_handler.js"/>
 //<include src="combobutton.js"/>
+//<include src="commandbutton.js"/>
 //
 //<include src="path_util.js"/>
 //<include src="util.js"/>

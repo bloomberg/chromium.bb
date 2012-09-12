@@ -2489,7 +2489,7 @@ FileManager.prototype = {
         this.directoryModel_.getCurrentDirEntry().toURL();
   };
 
-  FileManager.prototype.deleteSelection = function(entries) {
+  FileManager.prototype.deleteSelection = function() {
     this.butterBar_.initiateDelete(this.selection.entries);
   };
 
