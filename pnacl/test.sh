@@ -20,8 +20,6 @@
 #@          pic
 #@          sbtc
 #@          glibc
-#@          browser
-#@          browser-glibc
 #@
 #@      For example: test.sh test-x86-32-glibc
 #@
@@ -204,17 +202,6 @@ scons-tests () {
   fi
 }
 
-browser-tests() {
-  local arch="$1"
-  local extra="$2"
-  # This calls out to the other buildbot test script. We should have
-  # buildbot_toolchain_arm_untrusted.sh use the same tests directly.
-  # TODO(jvoung): remove these when unified.
-  Run ${OTHER_TEST_SCRIPT} browser-tests \
-    "${arch}" \
-    "--mode=opt-host,nacl,nacl_irt_test ${extra} -j${PNACL_CONCURRENCY}"
-}
-
 test-arm()        { scons-tests arm newlib "$@" ; }
 test-x86-32()     { scons-tests x86-32 newlib "$@" ; }
 test-x86-64()     { scons-tests x86-64 newlib "$@" ; }
@@ -239,14 +226,6 @@ test-x86-64-glibc() { scons-tests x86-64 glibc "$@" ; }
 test-arm-sbtc-glibc()    { scons-tests arm sbtc-glibc "$@" ; }
 test-x86-32-sbtc-glibc() { scons-tests x86-32 sbtc-glibc "$@" ; }
 test-x86-64-sbtc-glibc() { scons-tests x86-64 sbtc-glibc "$@" ; }
-
-test-arm-browser()    { browser-tests "arm" "" ; }
-test-x86-32-browser() { browser-tests "x86-32" "" ; }
-test-x86-64-browser() { browser-tests "x86-64" "" ; }
-
-test-arm-browser-glibc() { browser-tests "arm" "--nacl_glibc" ; }
-test-x86-32-browser-glibc() { browser-tests "x86-32" "--nacl_glibc" ; }
-test-x86-64-browser-glibc() { browser-tests "x86-64" "--nacl_glibc" ; }
 
 #@
 #@ test-all  - Run arm, x86-32, and x86-64 tests. (all should pass)
