@@ -27,6 +27,7 @@ namespace internal {
 
 namespace {
 const int kIconPaddingLeft = 5;
+const int kPopupDetailLabelExtraLeftMargin = 8;
 const int kPaddingAroundButtons = 5;
 
 const int kBarImagesActive[] = {
@@ -184,7 +185,7 @@ void HoverHighlightView::AddIconAndLabel(const gfx::ImageSkia& image,
                                          const string16& text,
                                          gfx::Font::FontStyle style) {
   SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kHorizontal, 0, 3, kIconPaddingLeft));
+      views::BoxLayout::kHorizontal, 0, 3, kTrayPopupPaddingBetweenItems));
   views::ImageView* image_view =
       new FixedSizedImageView(kTrayPopupDetailsIconWidth, 0);
   image_view->SetImage(image);
@@ -204,7 +205,7 @@ void HoverHighlightView::AddLabel(const string16& text,
   SetLayoutManager(new views::FillLayout());
   text_label_ = new views::Label(text);
   text_label_->set_border(views::Border::CreateEmptyBorder(
-      5, kTrayPopupDetailsIconWidth + kIconPaddingLeft, 5, 0));
+      5, kTrayPopupPaddingHorizontal + kPopupDetailLabelExtraLeftMargin, 5, 0));
   text_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   text_label_->SetFont(text_label_->font().DeriveFont(0, style));
   text_label_->SetDisabledColor(SkColorSetARGB(127, 0, 0, 0));
@@ -566,6 +567,9 @@ void SpecialPopupRow::SetTextLabel(int string_id, ViewClickListener* listener) {
       *rb.GetImageNamed(IDR_AURA_UBER_TRAY_LESS).ToImageSkia(),
       rb.GetLocalizedString(string_id),
       gfx::Font::BOLD);
+
+  container->set_border(views::Border::CreateEmptyBorder(0,
+      kTrayPopupPaddingHorizontal, 0, 0));
 
   container->SetAccessibleName(
       rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_PREVIOUS_MENU));

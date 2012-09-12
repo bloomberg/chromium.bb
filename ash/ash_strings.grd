@@ -262,9 +262,6 @@ Press Ctrl+Alt+Z to cancel.
       <message name="IDS_ASH_STATUS_TRAY_LOCALE_REVERT_MESSAGE" desc="Link to revert a change.">
         Change back to "<ph name="FROM_LOCALE">$1<ex>Italian</ex></ph>" (requires restart)
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_AIRPLANE_MODE" desc="The label used in the network dialog to turn on airplane mode.">
-        Airplane mode
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_ENABLE_WIFI" desc="The label used for the item to enable wifi.">
         Enable Wi-Fi
       </message>

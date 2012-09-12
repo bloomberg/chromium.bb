@@ -372,7 +372,7 @@ class NetworkListDetailedView : public NetworkDetailedView,
                 gfx::Font::BOLD : gfx::Font::NORMAL);
         scroll_content()->AddChildViewAt(container, i);
         container->set_border(views::Border::CreateEmptyBorder(0,
-            kTrayPopupDetailsIconWidth, 0, 0));
+            kTrayPopupPaddingHorizontal, 0, 0));
         needs_relayout = true;
       } else {
         container = it->second;
@@ -435,6 +435,9 @@ class NetworkListDetailedView : public NetworkDetailedView,
       container->AddIconAndLabel(info.image,
           info.description,
           gfx::Font::NORMAL);
+      container->set_border(views::Border::CreateEmptyBorder(0,
+          kTrayPopupPaddingHorizontal, 0, 0));
+
     } else {
       container->AddLabel(ui::ResourceBundle::GetSharedInstance().
           GetLocalizedString(IDS_ASH_STATUS_TRAY_NETWORK_WIFI_DISABLED),
@@ -442,8 +445,6 @@ class NetworkListDetailedView : public NetworkDetailedView,
       AddChildView(container);
     }
 
-    container->set_border(views::Border::CreateEmptyBorder(0,
-        kTrayPopupDetailsIconWidth, 0, 0));
     scroll_content()->AddChildViewAt(container, 0);
     scroll_content()->SizeToPreferredSize();
     static_cast<views::View*>(scroller())->Layout();
@@ -529,18 +530,6 @@ class NetworkListDetailedView : public NetworkDetailedView,
       other_mobile_->SetEnabled(delegate->GetMobileEnabled());
 
     turn_on_wifi_->parent()->Layout();
-  }
-
-  void AppendAirplaneModeEntry() {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    HoverHighlightView* container = new HoverHighlightView(this);
-    container->set_fixed_height(kTrayPopupItemHeight);
-    container->AddIconAndLabel(
-        *rb.GetImageNamed(IDR_AURA_UBER_TRAY_NETWORK_AIRPLANE).ToImageSkia(),
-        rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_AIRPLANE_MODE),
-        gfx::Font::NORMAL);
-    AddChildView(container);
-    airplane_ = container;
   }
 
   // Adds a settings entry when logged in, and an entry for changing proxy

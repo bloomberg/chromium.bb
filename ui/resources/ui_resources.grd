@@ -143,7 +143,6 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOCKSCREEN" file="ash/status_lockscreen.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOCKSCREEN_HOVER" file="ash/status_lockscreen_h.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_MORE" file="ash/status_more.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_AIRPLANE" file="ash/status_network_airplane.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_DATA_LOW" file="ash/status_data_low.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_DATA_NONE" file="ash/status_data_none.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_FAILED" file="ash/status_network_failed.png" />
