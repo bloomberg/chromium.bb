@@ -17,7 +17,7 @@ import sys
 
 def main(argv):
   if len(argv) < 2:
-    print "Usage: check_sdk_patch.py path_to_windows_8_sdk"
+    print "Usage: check_sdk_patch.py path_to_windows_8_sdk [dummy_output_file]"
     return 1
 
   # Look for asyncinfo.h
@@ -29,12 +29,17 @@ def main(argv):
     return 2
   else:
     if 'enum class' in open(async_info_path).read():
-      print ("\nERROR: You are using an unpatched Windows 8 SDK. Please see "
-             "instructions at\nhttp://www.chromium.org/developers/how-tos/"
+      print ("\nERROR: You are using an unpatched Windows 8 SDK located at %s."
+             "\nPlease see instructions at"
+             "\nhttp://www.chromium.org/developers/how-tos/"
              "build-instructions-windows\nfor how to apply the patch to build "
-             "with VS2010.\n")
+             "with VS2010.\n" % argv[1])
       return 3
     else:
+      if len(argv) > 2:
+        with open(argv[2], 'w') as dummy_file:
+          dummy_file.write('Windows 8 SDK has been patched!')
+
       # Patched Windows 8 SDK found.
       return 0
 

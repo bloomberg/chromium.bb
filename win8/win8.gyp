@@ -14,6 +14,7 @@
       'type': 'none',
       'variables': {
         'check_sdk_script': '<(DEPTH)/chrome/tools/build/win/check_sdk_patch.py',
+        'output_path': '<(INTERMEDIATE_DIR)/check_sdk_patch',
       },
       'actions': [
         {
@@ -25,9 +26,13 @@
           'outputs': [
             # This keeps the ninja build happy and provides a slightly helpful
             # error messge if the sdk is missing.
-            'check_sdk_patch',
+            '<(output_path)'
           ],
-          'action': ['python', '<(check_sdk_script)', '<(windows_sdk_path)'],
+          'action': ['python',
+                     '<(check_sdk_script)',
+                     '<(windows_sdk_path)',
+                     '<(output_path)',
+                     ],
         },
       ],
     },
