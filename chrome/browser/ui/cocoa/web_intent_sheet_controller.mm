@@ -672,7 +672,7 @@ const CGFloat kAddButtonWidth = 128.0;
 }
 @end
 
-@implementation WebIntentPickerSheetController;
+@implementation WebIntentPickerSheetController
 
 - (id)initWithPicker:(WebIntentPickerCocoa*)picker {
   // Use an arbitrary height because it will reflect the size of the content.
@@ -696,11 +696,9 @@ const CGFloat kAddButtonWidth = 128.0;
 
     flipView_.reset([[WebIntentsContentView alloc] init]);
     [flipView_ setAutoresizingMask:NSViewMinYMargin];
-    [[[self window] contentView] setSubviews:
-        [NSArray arrayWithObject:flipView_]];
+    [[[self window] contentView] setSubviews:@[flipView_]];
 
     [self performLayoutWithModel:model_];
-    [[self window] makeFirstResponder:self];
   }
   return self;
 }
@@ -715,15 +713,6 @@ const CGFloat kAddButtonWidth = 128.0;
 - (void)chooseAnotherService:(id)sender {
   if (picker_)
     picker_->OnChooseAnotherService();
-}
-
-// Handle keyDown events, specifically ESC.
-- (void)keyDown:(NSEvent*)event {
-  // Check for escape key.
-  if ([[event charactersIgnoringModifiers] isEqualToString:@"\e"])
-    [self cancelOperation:self];
-  else
-    [super keyDown:event];
 }
 
 - (void)sheetDidEnd:(NSWindow*)sheet
@@ -862,6 +851,7 @@ const CGFloat kAddButtonWidth = 128.0;
         [[HoverCloseButton alloc] initWithFrame:buttonFrame]);
     [closeButton_ setTarget:self];
     [closeButton_ setAction:@selector(cancelOperation:)];
+    [[closeButton_ cell] setKeyEquivalent:@"\e"];
   }
   [subviews addObject:closeButton_];
 }

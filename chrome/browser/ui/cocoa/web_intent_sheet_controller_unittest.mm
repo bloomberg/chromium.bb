@@ -45,9 +45,6 @@ class WebIntentPickerSheetControllerTest : public CocoaTest {
   void CheckWindow(size_t row_count) {
     NSArray* flip_views = [[window_ contentView] subviews];
 
-    // Check for proper firstResponder.
-    ASSERT_EQ(controller_, [window_ firstResponder]);
-
     // Expect 1 subview - the flip view.
     ASSERT_EQ(1U, [flip_views count]);
 
