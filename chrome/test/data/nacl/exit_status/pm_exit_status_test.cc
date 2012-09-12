@@ -19,7 +19,6 @@
 
 #include <sys/nacl_syscalls.h>
 
-#include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/var.h"

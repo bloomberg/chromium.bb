@@ -117,7 +117,15 @@ function RPCWrapper() {
   // Performs a URL-encoded RPC call, given a function name and a dictionary
   // (actually just an object - it's a JS idiom) of parameters.
   function rpcCall(name, params) {
-    if (this_.rpc_available) {
+    if (window.domAutomationController !== undefined) {
+      // Running as a Chrome browser_test.
+      var msg = {type: name};
+      for (var pname in params) {
+        msg[pname] = params[pname];
+      }
+      domAutomationController.setAutomationId(0);
+      domAutomationController.send(JSON.stringify(msg));
+    } else if (this_.rpc_available) {
       // Construct the URL for the RPC request.
       var args = [];
       for (var pname in params) {

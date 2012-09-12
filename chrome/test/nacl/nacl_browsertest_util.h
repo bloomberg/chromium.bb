@@ -73,7 +73,7 @@ class NaClBrowserTestBase : public InProcessBrowserTest {
 
   // Map a file relative to the variant directory to a URL served by the test
   // web server.
-  GURL TestURL(const FilePath::StringType& test_file);
+  GURL TestURL(const FilePath::StringType& url_fragment);
 
   // Load a URL and listen to automation events with a given handler.
   // Returns true if the test glue function correctly.  (The handler should
@@ -83,6 +83,15 @@ class NaClBrowserTestBase : public InProcessBrowserTest {
   // Run a simple test that checks that a nexe loads correctly.  Useful for
   // setting up other tests, such as checking that UMA data was logged.
   void RunLoadTest(const FilePath::StringType& test_file);
+
+  // Run a test that was originally written to use NaCl's integration testing
+  // jig. These tests were originally driven by NaCl's SCons build in the
+  // nacl_integration test stage on the Chrome waterfall. Changes in the
+  // boundaries between the Chrome and NaCl repos have resulted in many of
+  // these tests having a stronger affinity with the Chrome repo. This method
+  // provides a compatibility layer to simplify turning nacl_integration tests
+  // into browser tests.
+  void RunNaClIntegrationTest(const FilePath::StringType& url_fragment);
 
  private:
   bool StartTestServer();

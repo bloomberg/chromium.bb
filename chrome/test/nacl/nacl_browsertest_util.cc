@@ -96,6 +96,66 @@ MessageResponse LoadTestMessageHandler::HandleStructuredMessage(
   }
 }
 
+// A message handler for nacl_integration tests ported to be browser_tests.
+// nacl_integration tests report to their test jig using a series of RPC calls
+// that are encoded as URL requests. When these tests run as browser_tests,
+// they make the same RPC requests, but use the automation channel instead of
+// URL requests. This message handler decodes and responds to these requests.
+class NaClIntegrationMessageHandler : public StructuredMessageHandler {
+ public:
+  NaClIntegrationMessageHandler();
+
+  void Log(const std::string& message);
+
+  virtual MessageResponse HandleStructuredMessage(
+      const std::string& type,
+      base::DictionaryValue* msg) OVERRIDE;
+
+  bool test_passed() const {
+    return test_passed_;
+  }
+
+ private:
+  bool test_passed_;
+
+  DISALLOW_COPY_AND_ASSIGN(NaClIntegrationMessageHandler);
+};
+
+NaClIntegrationMessageHandler::NaClIntegrationMessageHandler()
+    : test_passed_(false) {
+}
+
+void NaClIntegrationMessageHandler::Log(const std::string& message) {
+  // TODO(ncbray) better logging.
+  LOG(INFO) << "|||| " << message;
+}
+
+MessageResponse NaClIntegrationMessageHandler::HandleStructuredMessage(
+    const std::string& type,
+    DictionaryValue* msg) {
+  if (type == "TestLog") {
+    std::string message;
+    if (!msg->GetString("message", &message))
+      return MissingField(type, "message");
+    Log(message);
+    return CONTINUE;
+  } else if (type == "Shutdown") {
+    std::string message;
+    if (!msg->GetString("message", &message))
+      return MissingField(type, "message");
+    if (!msg->GetBoolean("passed", &test_passed_))
+      return MissingField(type, "passed");
+    Log(message);
+    return DONE;
+  } else if (type == "Ping") {
+    return CONTINUE;
+  } else if (type == "JavaScriptIsAlive") {
+    return CONTINUE;
+  } else {
+    return InternalError("Unknown message type: " + type);
+  }
+}
+
 // NaCl browser tests serve files out of the build directory because nexes and
 // pexes are artifacts of the build.  To keep things tidy, all test data is kept
 // in a subdirectory.  Several variants of a test may be run, for example when
@@ -136,13 +196,10 @@ void NaClBrowserTestBase::SetUpInProcessBrowserTestFixture() {
   ASSERT_TRUE(StartTestServer()) << "Cannot start test server.";
 }
 
-GURL NaClBrowserTestBase::TestURL(const FilePath::StringType& test_file) {
-  FilePath real_path = test_server_->document_root().Append(test_file);
-  EXPECT_TRUE(file_util::PathExists(real_path)) << real_path.value();
-
-  FilePath url_path = FilePath(FILE_PATH_LITERAL("files"));
-  url_path = url_path.Append(test_file);
-  return test_server_->GetURL(url_path.MaybeAsASCII());
+GURL NaClBrowserTestBase::TestURL(const FilePath::StringType& url_fragment) {
+  FilePath expanded_url = FilePath(FILE_PATH_LITERAL("files"));
+  expanded_url = expanded_url.Append(url_fragment);
+  return test_server_->GetURL(expanded_url.MaybeAsASCII());
 }
 
 bool NaClBrowserTestBase::RunJavascriptTest(const GURL& url,
@@ -157,6 +214,14 @@ bool NaClBrowserTestBase::RunJavascriptTest(const GURL& url,
 void NaClBrowserTestBase::RunLoadTest(const FilePath::StringType& test_file) {
   LoadTestMessageHandler handler;
   bool ok = RunJavascriptTest(TestURL(test_file), &handler);
+  ASSERT_TRUE(ok) << handler.error_message();
+  ASSERT_TRUE(handler.test_passed()) << "Test failed.";
+}
+
+void NaClBrowserTestBase::RunNaClIntegrationTest(
+    const FilePath::StringType& url_fragment) {
+  NaClIntegrationMessageHandler handler;
+  bool ok = RunJavascriptTest(TestURL(url_fragment), &handler);
   ASSERT_TRUE(ok) << handler.error_message();
   ASSERT_TRUE(handler.test_passed()) << "Test failed.";
 }
