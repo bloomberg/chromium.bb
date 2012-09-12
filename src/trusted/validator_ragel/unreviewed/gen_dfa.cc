@@ -5,6 +5,7 @@
  */
 
 #include <assert.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>
 #include <libgen.h>
@@ -19,7 +20,6 @@
 #include <map>
 #include <set>
 #include <string>
-#include <tuple>
 #include <vector>
 
 #include "native_client/src/include/portability.h"
@@ -108,7 +108,7 @@ const char* const kVersionHelp = "%s %s\n"
 "Use of this source code is governed by a BSD-style license that can be\n"
 "found in the LICENSE file.\n";
 
-enum class Actions {
+enum Actions {
   kVexPrefix,
   kInstructionName,
   kOpcode,
@@ -149,75 +149,6 @@ bool enabled(Actions action) {
 
 std::map<std::string, size_t> instruction_names;
 
-static const std::set<std::string> all_instruction_flags = {
-  /* Parsing flags. */
-  "branch_hint",
-  "condrep",
-  "lock",
-  "no_memory_access",
-  "norex",
-  "norexw",
-  "rep",
-
-  /* CPUID flags. */
-  "CPUFeature_3DNOW",
-  "CPUFeature_3DPRFTCH",
-  "CPUFeature_AES",
-  "CPUFeature_AESAVX",
-  "CPUFeature_ALTMOVCR8",
-  "CPUFeature_AVX",
-  "CPUFeature_BMI1",
-  "CPUFeature_CLFLUSH",
-  "CPUFeature_CLMUL",
-  "CPUFeature_CLMULAVX",
-  "CPUFeature_CMOV",
-  "CPUFeature_CMOVx87",
-  "CPUFeature_CX16",
-  "CPUFeature_CX8",
-  "CPUFeature_E3DNOW",
-  "CPUFeature_EMMX",
-  "CPUFeature_EMMXSSE",
-  "CPUFeature_F16C",
-  "CPUFeature_FMA",
-  "CPUFeature_FMA4",
-  "CPUFeature_FXSR",
-  "CPUFeature_LAHF",
-  "CPUFeature_LWP",
-  "CPUFeature_LZCNT",
-  "CPUFeature_MMX",
-  "CPUFeature_MON",
-  "CPUFeature_MOVBE",
-  "CPUFeature_MSR",
-  "CPUFeature_POPCNT",
-  "CPUFeature_SEP",
-  "CPUFeature_SFENCE",
-  "CPUFeature_SKINIT",
-  "CPUFeature_SSE",
-  "CPUFeature_SSE2",
-  "CPUFeature_SSE3",
-  "CPUFeature_SSE41",
-  "CPUFeature_SSE42",
-  "CPUFeature_SSE4A",
-  "CPUFeature_SSSE3",
-  "CPUFeature_SVM",
-  "CPUFeature_SYSCALL",
-  "CPUFeature_TBM",
-  "CPUFeature_TSC",
-  "CPUFeature_TSCP",
-  "CPUFeature_TZCNT",
-  "CPUFeature_x87",
-  "CPUFeature_XOP",
-
-  /* Flags for enabling/disabling based on architecture and validity.  */
-  "ia32",
-  "amd64",
-  "nacl-ia32-forbidden",
-  "nacl-amd64-forbidden",
-  "nacl-forbidden",
-  "nacl-amd64-zero-extends",
-  "nacl-amd64-modifiable"
-};
-
 class extract_operand;
 class MarkedInstruction;
 class Instruction {
@@ -238,9 +169,80 @@ class Instruction {
 
  private:
   static void check_flag_valid(const std::string& flag) {
-    if (all_instruction_flags.find(flag) == all_instruction_flags.end()) {
-      fprintf(stderr, "%s: unknown flag: '%s'\n",
-              short_program_name, flag.c_str());
+    static const char* all_instruction_flags[] = {
+      /* Parsing flags. */
+      "branch_hint",
+      "condrep",
+      "lock",
+      "no_memory_access",
+      "norex",
+      "norexw",
+      "rep",
+
+      /* CPUID flags. */
+      "CPUFeature_3DNOW",
+      "CPUFeature_3DPRFTCH",
+      "CPUFeature_AES",
+      "CPUFeature_AESAVX",
+      "CPUFeature_ALTMOVCR8",
+      "CPUFeature_AVX",
+      "CPUFeature_BMI1",
+      "CPUFeature_CLFLUSH",
+      "CPUFeature_CLMUL",
+      "CPUFeature_CLMULAVX",
+      "CPUFeature_CMOV",
+      "CPUFeature_CMOVx87",
+      "CPUFeature_CX16",
+      "CPUFeature_CX8",
+      "CPUFeature_E3DNOW",
+      "CPUFeature_EMMX",
+      "CPUFeature_EMMXSSE",
+      "CPUFeature_F16C",
+      "CPUFeature_FMA",
+      "CPUFeature_FMA4",
+      "CPUFeature_FXSR",
+      "CPUFeature_LAHF",
+      "CPUFeature_LWP",
+      "CPUFeature_LZCNT",
+      "CPUFeature_MMX",
+      "CPUFeature_MON",
+      "CPUFeature_MOVBE",
+      "CPUFeature_MSR",
+      "CPUFeature_POPCNT",
+      "CPUFeature_SEP",
+      "CPUFeature_SFENCE",
+      "CPUFeature_SKINIT",
+      "CPUFeature_SSE",
+      "CPUFeature_SSE2",
+      "CPUFeature_SSE3",
+      "CPUFeature_SSE41",
+      "CPUFeature_SSE42",
+      "CPUFeature_SSE4A",
+      "CPUFeature_SSSE3",
+      "CPUFeature_SVM",
+      "CPUFeature_SYSCALL",
+      "CPUFeature_TBM",
+      "CPUFeature_TSC",
+      "CPUFeature_TSCP",
+      "CPUFeature_TZCNT",
+      "CPUFeature_x87",
+      "CPUFeature_XOP",
+
+       /* Flags for enabling/disabling based on architecture and validity.  */
+       "ia32",
+       "amd64",
+       "nacl-ia32-forbidden",
+       "nacl-amd64-forbidden",
+       "nacl-forbidden",
+       "nacl-amd64-zero-extends",
+       "nacl-amd64-modifiable"
+    };
+    if (find_if(all_instruction_flags,
+                all_instruction_flags + arraysize(all_instruction_flags),
+                bind1st(std::equal_to<std::string>(), flag)) ==
+                     all_instruction_flags + arraysize(all_instruction_flags)) {
+      fprintf(stderr, "%s: unknown flag: '%s'\n", short_program_name,
+              flag.c_str());
       exit(1);
     }
   }
@@ -333,129 +335,143 @@ std::string read_file(const char* filename) {
   return file_content;
 }
 
-bool is_eol(char c) {
-  return c == '\n';
-}
-
-bool is_whitespace(char c) {
-  return c == ' ' || c == '\t';
-}
-
 /* Advances the iterator till the next comma or line end, splits the traversed
  * text by whitespace and returns it.  Respects quoted text.
  */
 std::vector<std::string> split_till_comma(
     std::string::const_iterator* it_out,
     const std::string::const_iterator& line_end) {
-  std::vector<std::string> ret;
+  std::vector<std::string> result;
   std::string::const_iterator& it = *it_out;
-  std::string str;
+  std::string part;
 
   for (; it != line_end; ++it) {
-    if (is_whitespace(*it)) {
-      if (!str.empty()) {
-        ret.push_back(str);
-        str.clear();
+    if (*it == ' ' || *it == '\t') {
+      if (!part.empty()) {
+        result.push_back(part);
+        part.clear();
       }
-      it = std::find_if_not(it, line_end, is_whitespace);
+      continue;
     }
     if (*it == ',') {
       break;
     }
     if (*it != '"') {
-      str.push_back(*it);
+      part.push_back(*it);
       continue;
     }
 
     for (++it; *it != '"'; ++it) {
       if (it == line_end) {
         fprintf(stderr, "%s: quoted text reaches end of line: %s\n",
-                short_program_name, str.c_str());
+                short_program_name, part.c_str());
         exit(1);
       }
-      str.push_back(*it);
+      part.push_back(*it);
     }
   }
-  ret.push_back(str);
-  return ret;
+  result.push_back(part);
+  return result;
 }
 
-struct extract_operand {
-  Instruction* instruction;
-  const std::vector<std::string>& operation;
-
-  extract_operand(Instruction* i, const std::vector<std::string>& o)
-    : instruction(i), operation(o) {
-  }
-
-  void operator()(const std::string& str) {
-    Instruction::Operand operand;
-    switch (str[0]) {
-      case '\'':
-        operand = {str[1], str.substr(2), true, false, false, false};
-        break;
-      case '=':
-        operand = {str[1], str.substr(2), true, true, false, false};
-        break;
-      case '!':
-        operand = {str[1], str.substr(2), true, false, true, false};
-        break;
-      case '&':
-        operand = {str[1], str.substr(2), true, true, true, false};
-        break;
-      default:
-        if (&str == &*operation.rbegin())
-          if (operation.size() <= 3)
-            operand = {str[0], str.substr(1), true, true, true, false};
-          else
-            operand = {str[0], str.substr(1), true, false, true, false};
-        else
-          operand = {str[0], str.substr(1), true, true, false, false};
-    }
-    if (*(operand.size.rbegin()) == '*')
-      operand.size.resize(operand.size.length() - 1);
-    instruction->operands.push_back(operand);
-  }
-};
+/* find_end_of_line looks for the end of line or the end of file (whichever
+   comes first).  */
+std::string::const_iterator find_end_of_line(std::string::const_iterator it,
+                                             std::string::const_iterator eof) {
+  while (it != eof && *it != '\n')
+    ++it;
+  return it;
+}
 
 /* parse_instructions parses the given *.def file and adds instruction
    definitions to the instructions vector and their names to instruction_names
    map.
 
-   Note: it only accepts flags listed in all_instruction_flags.  */
+   Note: it only accepts flags listed in check_flag_valid.  */
 void parse_instructions(const char* filename) {
   const std::string file_content = read_file(filename);
   std::string::const_iterator it = file_content.begin();
+
   while (it != file_content.end()) {
-    it = std::find_if_not(it, file_content.end(), is_eol);
-    if (it == file_content.end()) {
-      return;
+    while (find_end_of_line(it, file_content.end()) == it) {
+      if (it == file_content.end())
+        return;
+      it++;
     }
     /* If line starts with '#' then it's a comment. */
     if (*it == '#') {
-      it = std::find_if(it, file_content.end(), is_eol);
+      it = find_end_of_line(it, file_content.end());
     } else {
-      /* Note: initialization list makes sure flags are toggled to zero.  */
-      Instruction instruction { };
-      std::string::const_iterator line_end = std::find_if(it,
-                                                          file_content.end(),
-                                                          is_eol);
+      Instruction instruction;
+      std::string::const_iterator line_end = find_end_of_line(it,
+                                                              file_content.
+                                                                end());
       std::vector<std::string> operation = split_till_comma(&it, line_end);
       /* Line with just whitespaces is ignored.  */
       if (operation.size() != 0) {
-        for_each(operation.rbegin(),
-                 operation.rend() - 1,
-                 extract_operand(&instruction, operation));
+        /* First word is operation name, other words are operands.  */
+        for (std::vector<std::string>::reverse_iterator string =
+               operation.rbegin(); string != operation.rend() - 1; ++string) {
+          Instruction::Operand operand;
+          operand.enabled  = true;
+          operand.implicit = false;
+          switch (string->at(0)) {
+            case '\'':
+              operand.source = string->at(1);
+              operand.size   = string->substr(2);
+              operand.read   = false;
+              operand.write  = false;
+              break;
+            case '=':
+              operand.source = string->at(1);
+              operand.size   = string->substr(2);
+              operand.read   = true;
+              operand.write  = false;
+              break;
+            case '!':
+              operand.source = string->at(1);
+              operand.size   = string->substr(2);
+              operand.read   = false;
+              operand.write  = true;
+              break;
+            case '&':
+              operand.source = string->at(1);
+              operand.size   = string->substr(2);
+              operand.read   = true;
+              operand.write  = true;
+              break;
+            default:
+              operand.source = string->at(0);
+              operand.size   = string->substr(1);
+              if (string == operation.rbegin()) {
+                if (operation.size() <= 3) {
+                  operand.read   = true;
+                  operand.write  = true;
+                } else {
+                  operand.read   = false;
+                  operand.write  = true;
+                }
+              } else {
+                operand.read   = true;
+                operand.write  = false;
+              }
+          }
+          if (*(operand.size.rbegin()) == '*') {
+            operand.size.resize(operand.size.length() - 1);
+            operand.implicit = true;
+          }
+          instruction.operands.push_back(operand);
+        }
         bool enabled_instruction = true;
         if (*it == ',') {
           ++it;
-          if (it == line_end)
-            line_end = std::find_if(++it, file_content.end(), is_eol);
+          if (it == line_end) line_end = find_end_of_line(++it,
+                                                          file_content.end());
           instruction.opcodes = split_till_comma(&it, line_end);
           if (*it == ',') {
             ++it;
-            if (it == line_end)
-              line_end = std::find_if(++it, file_content.end(), is_eol);
+            if (it == line_end) line_end = find_end_of_line(++it,
+                                                            file_content.end());
             const std::vector<std::string>& flags = split_till_comma(&it,
                                                                      line_end);
             for (std::vector<std::string>::const_iterator flag = flags.begin();
@@ -464,11 +480,11 @@ void parse_instructions(const char* filename) {
             if ((instruction.has_flag("ia32") && !ia32_mode) ||
                 (instruction.has_flag("amd64") && ia32_mode) ||
                 (instruction.has_flag("nacl-ia32-forbidden") &&
-                 ia32_mode && !enabled(Actions::kNaClForbidden)) ||
+                 ia32_mode && !enabled(kNaClForbidden)) ||
                 (instruction.has_flag("nacl-amd64-forbidden") &&
-                 !ia32_mode && !enabled(Actions::kNaClForbidden)) ||
+                 !ia32_mode && !enabled(kNaClForbidden)) ||
                 (instruction.has_flag("nacl-forbidden") &&
-                 !enabled(Actions::kNaClForbidden)))
+                 !enabled(kNaClForbidden)))
               enabled_instruction = false;
           }
         }
@@ -477,17 +493,18 @@ void parse_instructions(const char* filename) {
           instructions.push_back(instruction);
         }
       }
-      it = std::find_if(it, file_content.end(), is_eol);
+      if (find_end_of_line(it, file_content.end()) != it) {
+        fprintf(stderr, "%s: definition files must have three columns",
+                short_program_name);
+        exit(1);
+      }
     }
   }
 }
 
-const std::string& select_name(
-    const std::map<std::string, size_t>::value_type& p) {
-  return p.first;
-}
-
-bool compare_names(const std::string& x, const std::string& y) {
+/* Helper comparison function: shorter strings are smaller, otherwise compare
+   strinfs lexicographically.  */
+bool print_consts_compare_names(const std::string& x, const std::string& y) {
   return (x.size() > y.size()) || ((x.size() == y.size()) && x < y);
 }
 
@@ -496,12 +513,13 @@ bool compare_names(const std::string& x, const std::string& y) {
     • adjusts offsets in instruction_names map.
     • prints index_registers array in -consts.c (if needed).  */
 void print_consts(void)  {
-  if (enabled(Actions::kInstructionName)) {
+  if (enabled(kInstructionName)) {
     std::vector<std::string> names;
-    std::transform(instruction_names.begin(), instruction_names.end(),
-                   std::back_inserter(names),
-                   select_name);
-    std::sort(names.begin(), names.end(), compare_names);
+    for (std::map<std::string, size_t>::iterator instruction_name =
+           instruction_names.begin();
+         instruction_name != instruction_names.end(); ++instruction_name)
+      names.push_back(instruction_name->first);
+    std::sort(names.begin(), names.end(), print_consts_compare_names);
     for (std::vector<std::string>::const_iterator name = names.begin();
          name != names.end(); ++name)
       if (instruction_names[*name] == 0)
@@ -514,9 +532,10 @@ void print_consts(void)  {
     size_t offset = 0;
     for (std::map<std::string, size_t>::iterator pair =
            instruction_names.begin(); pair != instruction_names.end(); ++pair)
-      if (pair->second != 1)
-        pair->second = offset,
+      if (pair->second != 1) {
+        pair->second = offset;
         offset += pair->first.length() + 1;
+      }
     for (std::vector<std::string>::const_iterator name = names.begin();
          name != names.end(); ++name) {
       size_t offset = instruction_names[*name];
@@ -544,7 +563,7 @@ void print_consts(void)  {
       }
     fprintf(const_file, " */\n};\n");
   }
-  if (enabled(Actions::kParseOperands)) {
+  if (enabled(kParseOperands)) {
     fprintf(const_file, "static const uint8_t index_registers[] = {\n"
 "  REG_RAX, REG_RCX, REG_RDX, REG_RBX,\n"
 "  REG_RIZ, REG_RBP, REG_RSI, REG_RDI,\n"
@@ -588,6 +607,7 @@ class MarkedInstruction : public Instruction {
     bool x : 1;
     bool r : 1;
     bool w : 1;
+    RexType(bool b_, bool x_, bool r_, bool w_) : b(b_), x(x_), r(r_), w(w_) { }
   };
  private:
   std::multiset<std::string> required_prefixes;
@@ -601,7 +621,7 @@ class MarkedInstruction : public Instruction {
       Instruction(instruction_),
       required_prefixes(),
       optional_prefixes(),
-      rex { false, false, false, false },
+      rex(false, false, false, false),
       opcode_in_modrm(false),
       opcode_in_imm(false),
       fwait(false) {
@@ -667,20 +687,24 @@ class MarkedInstruction : public Instruction {
         break;
       }
     /* Some 'opcodes' include prefixes, move them there.  */
-    static const std::set<std::string> opcode_prefixes = {
-      "0x66", "data16",
-      "0xf0", "lock",
-      "0xf2", "repnz",
-      "0xf3", "repz",
-      "rexw", "fwait"
-    };
-    while (opcode_prefixes.find(*opcodes.begin()) != opcode_prefixes.end()) {
-      if ((*opcodes.begin()) == "rexw")
+    for (;;) {
+      if ((*opcodes.begin()) == "rexw") {
         rex.w = true;
-      else if ((*opcodes.begin()) == "fwait")
+      } else if ((*opcodes.begin()) == "fwait") {
         fwait = true;
-      else if ((*opcodes.begin()) != "rexw")
+      } else {
+        static const char* prefix_bytes[] = {
+          "0x66", "data16",
+          "0xf0", "lock",
+          "0xf2", "repnz",
+          "0xf3", "repz",
+        };
+        if (find_if(prefix_bytes, prefix_bytes + arraysize(prefix_bytes),
+                    bind1st(std::equal_to<std::string>(), *opcodes.begin())) ==
+                                         prefix_bytes + arraysize(prefix_bytes))
+          break;
         required_prefixes.insert(*opcodes.begin());
+      }
       opcodes.erase(opcodes.begin());
     }
   }
@@ -833,6 +857,17 @@ bool mod_reg_is_used(const MarkedInstruction& instruction) {
   return false;
 }
 
+/* memory_capable_operand returns true if “source” uses field “r/m” in
+ * “ModR/M byte” and must be extended by “X” and/or “B” bits in REX/VEX prefix.
+ */
+bool memory_capable_operand(char source) {
+  if (source == 'E' || source == 'M' || source == 'N' ||
+      source == 'Q' || source == 'R' || source == 'U' || source == 'W')
+    return true;
+  else
+    return false;
+}
+
 /* mod_rm_is_used returns true if the instruction includes operands which is
    encoded in field “r/m” in “ModR/M byte” and must be extended by “X” and/or
    “B” bits in REX/VEX prefix.  */
@@ -842,8 +877,7 @@ bool mod_rm_is_used(const MarkedInstruction& instruction) {
   for (std::vector<MarkedInstruction::Operand>::const_iterator operand =
          operands.begin(); operand != operands.end(); ++operand) {
     const char source = operand->source;
-    if (source == 'E' || source == 'M' || source == 'N' ||
-        source == 'Q' || source == 'R' || source == 'U' || source == 'W')
+    if (memory_capable_operand(source))
       return true;
   }
   return false;
@@ -915,9 +949,10 @@ void print_legacy_prefixes(const MarkedInstruction& instruction) {
           delimiter = " | ";
           char delimiter = '(';
           for (std::vector<std::string>::const_iterator prefix =
-                 permutations.begin(); prefix != permutations.end(); ++prefix)
-            fprintf(out_file, "%c%s", delimiter, prefix->c_str()),
+                 permutations.begin(); prefix != permutations.end(); ++prefix) {
+            fprintf(out_file, "%c%s", delimiter, prefix->c_str());
             delimiter = ' ';
+          }
           fprintf(out_file, ")");
         } while (next_permutation(permutations.begin(), permutations.end()));
       }
@@ -1013,54 +1048,50 @@ void print_vex_opcode(const MarkedInstruction& instruction) {
         third_byte.replace(it, it + strlen(symbolic_names[name]), "XXXX");
         break;
       }
-  static const std::set<char> third_byte_check[] {
-    { '0', '1', 'x', 'X', 'W' },
-    { '.' },
-    { '0', '1', 'x', 'X' },
-    { '0', '1', 'x', 'X' },
-    { '0', '1', 'x', 'X' },
-    { '0', '1', 'x', 'X' },
-    { '.' },
-    { '0', '1', 'x', 'X' },
-    { '.' },
-    { '0', '1' },
-    { '0', '1' }
+  static const char* third_byte_check[] = {
+    "01xXW", ".", "01xX", "01xX", "01xX", "01xX", ".", "01xX", ".", "01", "01"
   };
-  bool third_byte_ok = (arraysize(third_byte_check) == third_byte.length());
-  if (third_byte_ok)
-    for (size_t set = 0; set < arraysize(third_byte_check); ++set)
-      if (third_byte_check[set].find(third_byte[set]) ==
-                                                  third_byte_check[set].end()) {
+  if (bool third_byte_ok = arraysize(third_byte_check) == third_byte.length()) {
+    for (size_t set = 0; set < arraysize(third_byte_check); ++set) {
+      if (!strchr(third_byte_check[set], third_byte[set])) {
         third_byte_ok = false;
         break;
       }
-  if (third_byte_ok) {
-    if (ia32_mode && third_byte[2] == 'X')
-      third_byte[2] = '1';
-    print_third_byte_of_vex(instruction, third_byte);
-    if (enabled(Actions::kVexPrefix))
-      fprintf(out_file, " @vex_prefix3");
-    if (c5_ok) {
-      fprintf(out_file, ") | (0xc5 ");
-      if (!ia32_mode && rex.r)
-        third_byte[0] = 'X';
-      else
-        third_byte[0] = '1';
-      print_third_byte_of_vex(instruction, third_byte);
-      if (enabled(Actions::kVexPrefix))
-        fprintf(out_file, " @vex_prefix_short");
-      fprintf(out_file, "))");
     }
-    for (std::vector<std::string>::const_iterator opcode = opcodes.begin() + 3;
-         opcode != opcodes.end(); ++opcode)
-      if (opcode->find('/') == opcode->npos)
-        fprintf(out_file, " %s", opcode->c_str());
-      else
-        break;
-    fprintf(out_file, ")");
+    if (third_byte_ok) {
+      if (ia32_mode && third_byte[2] == 'X')
+        third_byte[2] = '1';
+      print_third_byte_of_vex(instruction, third_byte);
+      if (enabled(kVexPrefix))
+        fprintf(out_file, " @vex_prefix3");
+      if (c5_ok) {
+        fprintf(out_file, ") | (0xc5 ");
+        if (!ia32_mode && rex.r)
+          third_byte[0] = 'X';
+        else
+          third_byte[0] = '1';
+        print_third_byte_of_vex(instruction, third_byte);
+        if (enabled(kVexPrefix))
+          fprintf(out_file, " @vex_prefix_short");
+        fprintf(out_file, "))");
+      }
+      for (std::vector<std::string>::const_iterator opcode =
+             opcodes.begin() + 3; opcode != opcodes.end(); ++opcode)
+        if (opcode->find('/') == opcode->npos)
+          fprintf(out_file, " %s", opcode->c_str());
+        else
+          break;
+      fprintf(out_file, ")");
+    } else {
+      fprintf(stderr, "%s: error - third byte of VEX/XOP command "
+                      "is unparseable (%s) in instruction “%s”",
+              short_program_name, third_byte.c_str(),
+              instruction.get_name().c_str());
+      exit(1);
+    }
   } else {
     fprintf(stderr, "%s: error - third byte of VEX/XOP command "
-                    "is unparseable (%s) in instruction “%s”",
+                    "is too long (%s) in instruction “%s”",
             short_program_name, third_byte.c_str(),
             instruction.get_name().c_str());
     exit(1);
@@ -1091,18 +1122,19 @@ void print_opcode_nomodrm(const MarkedInstruction& instruction) {
     char delimiter = '(';
     for (std::vector<std::string>::const_iterator opcode = opcodes.begin();
          opcode != opcodes.end(); ++opcode)
-      if (opcode->find('/') == opcode->npos)
-        fprintf(out_file, "%c%s", delimiter, opcode->c_str()),
+      if (opcode->find('/') == opcode->npos) {
+        fprintf(out_file, "%c%s", delimiter, opcode->c_str());
         delimiter = ' ';
-      else
+      } else {
         break;
+      }
     fprintf(out_file, ")");
   }
-  if (enabled(Actions::kOpcode))
+  if (enabled(kOpcode))
     fprintf(out_file, " >begin_opcode");
   const std::vector<MarkedInstruction::Operand>& operands =
     instruction.get_operands();
-  if (enabled(Actions::kParseOperands)) {
+  if (enabled(kParseOperands)) {
     size_t operand_index = 0;
     for (std::vector<MarkedInstruction::Operand>::const_iterator operand =
            operands.begin(); operand != operands.end(); ++operand) {
@@ -1114,7 +1146,7 @@ void print_opcode_nomodrm(const MarkedInstruction& instruction) {
           fprintf(out_file, " @operand%" NACL_PRIuS "_from_opcode",
                   operand_index);
       }
-      if (operand->enabled || enabled(Actions::kParseOperandPositions))
+      if (operand->enabled || enabled(kParseOperandPositions))
         ++operand_index;
     }
   }
@@ -1158,7 +1190,7 @@ void print_opcode_recognition(const MarkedInstruction& instruction,
       if ((*opcode) != "/" && opcode->find('/') != opcode->npos)
         fprintf(out_file, "opcode_%s", opcode->c_str() + 1);
   }
-  if (enabled(Actions::kOpcode))
+  if (enabled(kOpcode))
     fprintf(out_file, " @end_opcode");
   const std::multiset<std::string>& required_prefixes =
     instruction.get_required_prefixes();
@@ -1183,14 +1215,14 @@ void print_opcode_recognition(const MarkedInstruction& instruction,
       fprintf(out_file, " @not_repz_prefix");
       break;
     }
-  if (enabled(Actions::kInstructionName))
+  if (enabled(kInstructionName))
     fprintf(out_file, " @instruction_%s",
             c_identifier(instruction.get_name()).c_str());
   else if (instruction.get_opcode_in_imm())
     fprintf(out_file, " @last_byte_is_not_immediate");
   else if (instruction.has_flag("nacl-amd64-modifiable") &&
-           enabled(Actions::kParseOperands) &&
-           !enabled(Actions::kParseOperandPositions))
+           enabled(kParseOperands) &&
+           !enabled(kParseOperandPositions))
     fprintf(out_file, " @modifiable_instruction");
   const std::set<std::string>& flags = instruction.get_flags();
   for (std::set<std::string>::const_iterator flag = flags.begin();
@@ -1199,53 +1231,54 @@ void print_opcode_recognition(const MarkedInstruction& instruction,
       fprintf(out_file, " @%s", flag->c_str());
   const std::vector<MarkedInstruction::Operand>& operands =
     instruction.get_operands();
-  if (enabled(Actions::kParseOperands)) {
-    if (enabled(Actions::kParseOperandPositions))
+  if (enabled(kParseOperands)) {
+    if (enabled(kParseOperandPositions))
       fprintf(out_file, " @operands_count_is_%" NACL_PRIuS, operands.size());
     int operand_index = 0;
     for (std::vector<MarkedInstruction::Operand>::const_iterator operand =
            operands.begin(); operand != operands.end(); ++operand) {
       if (operand->enabled)
-        if (enabled(Actions::kParseOperandPositions) ||
-            (((operand->source != 'E') && (operand->source != 'M') &&
-              (operand->source != 'N') && (operand->source != 'Q') &&
-              (operand->source != 'R') && (operand->source != 'U') &&
-              (operand->source != 'W')) || !memory_access))
+        if (enabled(kParseOperandPositions) ||
+            !memory_capable_operand(operand->source) ||
+            !memory_access)
           fprintf(out_file, " @operand%d_%s", operand_index,
                   operand->size.c_str());
-      static const std::map<char, const char*> operand_type {
-        { '1',  "one"                   },
-        { 'a',  "rax"                   },
-        { 'c',  "rcx"                   },
-        { 'd',  "rdx"                   },
-        { 'i',  "second_immediate"      },
-        { 'o',  "port_dx"               },
-        { 't',  "st"                    },
-        { 'x',  "ds_rbx"                },
-        { 'B',  "from_vex"              },
-        { 'H',  "from_vex"              },
-        { 'I',  "immediate"             },
-        { 'O',  "absolute_disp"         },
-        { 'X',  "ds_rsi"                },
-        { 'Y',  "es_rdi"                }
+      static const struct { char source; const char* type; } operand_types[] = {
+        { '1', "one"              },
+        { 'a', "rax"              },
+        { 'c', "rcx"              },
+        { 'd', "rdx"              },
+        { 'i', "second_immediate" },
+        { 'o', "port_dx"          },
+        { 't', "st"               },
+        { 'x', "ds_rbx"           },
+        { 'B', "from_vex"         },
+        { 'H', "from_vex"         },
+        { 'I', "immediate"        },
+        { 'O', "absolute_disp"    },
+        { 'X', "ds_rsi"           },
+        { 'Y', "es_rdi"           }
       };
-      const std::map<char, const char*>::const_iterator it =
-        operand_type.find(operand->source);
-      if (it != operand_type.end()) {
+      size_t n = 0;
+      while (n < sizeof(operand_types)/sizeof(operand_types[0]) &&
+             operand_types[n].source != operand->source)
+        ++n;
+      if (n == sizeof(operand_types)/sizeof(operand_types[0])) {
         if (operand->enabled)
-          fprintf(out_file, " @operand%d_%s", operand_index, it->second),
-          ++operand_index;
-      } else if (operand->enabled) {
-        if (enabled(Actions::kParseOperandPositions) ||
-            (((operand->source != 'E') && (operand->source != 'M') &&
-              (operand->source != 'N') && (operand->source != 'Q') &&
-              (operand->source != 'R') && (operand->source != 'U') &&
-              (operand->source != 'W')) || !memory_access))
-          ++operand_index;
+          if (enabled(kParseOperandPositions) ||
+              !memory_capable_operand(operand->source) ||
+              !memory_access)
+            ++operand_index;
+        continue;
+      }
+      if (operand->enabled) {
+        fprintf(out_file, " @operand%d_%s", operand_index,
+                operand_types[n].type);
+        ++operand_index;
       }
     }
   }
-  if (enabled(Actions::kParseOperandsStates)) {
+  if (enabled(kParseOperandsStates)) {
     size_t operand_index = 0;
     for (std::vector<MarkedInstruction::Operand>::const_iterator
            operand = operands.begin(); operand != operands.end(); ++operand) {
@@ -1262,7 +1295,7 @@ void print_opcode_recognition(const MarkedInstruction& instruction,
           else
             fprintf(out_file, " @operand%" NACL_PRIuS "_unused", operand_index);
       }
-      if (operand->enabled || enabled(Actions::kParseOperandPositions))
+      if (operand->enabled || enabled(kParseOperandPositions))
         ++operand_index;
     }
   }
@@ -1280,58 +1313,61 @@ void print_immediate_arguments(const MarkedInstruction& instruction) {
   size_t operand_index = 0;
   for (std::vector<MarkedInstruction::Operand>::const_iterator
          operand = operands.begin(); operand != operands.end(); ++operand)
-    if (operand->enabled || enabled(Actions::kParseOperandPositions))
+    if (operand->enabled || enabled(kParseOperandPositions))
       ++operand_index;
   for (std::vector<MarkedInstruction::Operand>::const_reverse_iterator
          operand = operands.rbegin(); operand != operands.rend(); ++operand) {
     if (operand->source == 'i') {
-      if (operand->size == "8bit")
+      if (operand->size == "8bit") {
         fprintf(out_file, " imm8n2");
-      else if (operand->size == "16bit")
+      } else if (operand->size == "16bit") {
         fprintf(out_file, " imm16n2");
-      else
+      } else {
         fprintf(stderr, "%s: error - can not determine immediate size: %c%s",
-                short_program_name, operand->source, operand->size.c_str()),
+                short_program_name, operand->source, operand->size.c_str());
         exit(1);
+      }
     } else if (operand->source == 'I') {
-      if (operand->size == "2bit")
+      if (operand->size == "2bit") {
         fprintf(out_file, " imm2");
-      else if (operand->size == "8bit")
+      } else if (operand->size == "8bit") {
         fprintf(out_file, " imm8");
-      else if (operand->size == "16bit")
+      } else if (operand->size == "16bit") {
         fprintf(out_file, " imm16");
-      else if (operand->size == "32bit")
+      } else if (operand->size == "32bit") {
         fprintf(out_file, " imm32");
-      else if (operand->size == "64bit")
+      } else if (operand->size == "64bit") {
         fprintf(out_file, " imm64");
-      else
+      } else {
         fprintf(stderr, "%s: error - can not determine immediate size: %c%s",
-                short_program_name, operand->source, operand->size.c_str()),
+                short_program_name, operand->source, operand->size.c_str());
         exit(1);
+      }
     } else if (operand->source == 'J') {
-      if (operand->size == "8bit")
+      if (operand->size == "8bit") {
         fprintf(out_file, " rel8");
-      else if (operand->size == "16bit")
+      } else if (operand->size == "16bit") {
         fprintf(out_file, " rel16");
-      else if (operand->size == "32bit")
+      } else if (operand->size == "32bit") {
         fprintf(out_file, " rel32");
-      else
+      } else {
         fprintf(stderr, "%s: error - can not determine immediate size: %c%s",
-                short_program_name, operand->source, operand->size.c_str()),
+                short_program_name, operand->source, operand->size.c_str());
         exit(1);
+      }
     } else if (operand->source == 'L') {
       if (operands.size() == 4) {
         fprintf(out_file, " b_%cxxx_0000", ia32_mode ? '0' : 'x');
-        if (!enabled(Actions::kInstructionName))
+        if (!enabled(kInstructionName))
           fprintf(out_file, " @last_byte_is_not_immediate");
       }
-      if (operand->enabled && enabled(Actions::kParseOperands))
+      if (operand->enabled && enabled(kParseOperands))
         fprintf(out_file, " @operand%" NACL_PRIuS "_from_is4",
                 operand_index - 1);
     } else if (operand->source == 'O') {
       fprintf(out_file, ia32_mode ? " disp32" : " disp64");
     }
-    if (operand->enabled || enabled(Actions::kParseOperandPositions))
+    if (operand->enabled || enabled(kParseOperandPositions))
       --operand_index;
   }
   const std::multiset<std::string>& required_prefixes =
@@ -1361,8 +1397,8 @@ void print_immediate_arguments(const MarkedInstruction& instruction) {
    to the name of action (e.g.: @process_1_operand_zero_extends).  */
 void print_instruction_end_actions(const MarkedInstruction& instruction,
                                    bool memory_access) {
-  if (enabled(Actions::kParseOperands)) {
-    if (!enabled(Actions::kParseOperandPositions)) {
+  if (enabled(kParseOperands)) {
+    if (!enabled(kParseOperandPositions)) {
       int operands_count = 0;
       bool zero_extends = false;
       const std::vector<MarkedInstruction::Operand>& operands =
@@ -1370,10 +1406,7 @@ void print_instruction_end_actions(const MarkedInstruction& instruction,
       for (std::vector<MarkedInstruction::Operand>::const_iterator operand =
              operands.begin(); operand != operands.end(); ++operand)
         if (operand->enabled &&
-            (((operand->source != 'E') && (operand->source != 'M') &&
-              (operand->source != 'N') && (operand->source != 'Q') &&
-              (operand->source != 'R') && (operand->source != 'U') &&
-              (operand->source != 'W')) ||
+            (!memory_capable_operand(operand->source) ||
              !memory_access)) {
           ++operands_count;
           if (operand->size == "32bit" &&
@@ -1405,12 +1438,13 @@ void print_one_size_definition_nomodrm(const MarkedInstruction& instruction) {
   print_legacy_prefixes(instruction);
   print_rex_prefix(instruction);
   print_opcode_nomodrm(instruction);
-  if (instruction.get_opcode_in_imm())
-    print_immediate_opcode(instruction),
+  if (instruction.get_opcode_in_imm()) {
+    print_immediate_opcode(instruction);
     print_opcode_recognition(instruction, false);
-  else
-    print_opcode_recognition(instruction, false),
+  } else {
+    print_opcode_recognition(instruction, false);
     print_immediate_arguments(instruction);
+  }
   if (opcodes[0] == "(0x90|0x91|0x92|0x93|0x94|0x95|0x96|0x97)")
     fprintf(out_file, ") - (0x90|0x48 0x90))");
   print_instruction_end_actions(instruction, false);
@@ -1437,45 +1471,53 @@ void print_one_size_definition_modrm_register(
   if (!adjusted_instruction.get_opcode_in_imm())
     print_opcode_recognition(adjusted_instruction, false);
   fprintf(out_file, " modrm_registers");
-  if (enabled(Actions::kParseOperands)) {
+  if (enabled(kParseOperands)) {
     size_t operand_index = 0;
     const std::vector<MarkedInstruction::Operand>& operands =
       adjusted_instruction.get_operands();
     for (std::vector<MarkedInstruction::Operand>::const_iterator operand =
            operands.begin(); operand != operands.end(); ++operand) {
-      static const std::map<char, const char*> operand_type {
-        { 'C', "reg"       },
-        { 'D', "reg"       },
-        { 'E', "rm"        },
-        { 'G', "reg"       },
-        { 'M', "rm"        },
-        { 'N', "rm"        },
-        { 'P', "reg"       },
-        { 'Q', "rm"        },
-        { 'R', "rm"        },
-        { 'S', "reg_norex" },
-        { 'U', "rm"        },
-        { 'V', "reg"       },
-        { 'W', "rm"        }
-      };
-      if (operand->enabled) {
-        const std::map<char, const char*>::const_iterator it =
-          operand_type.find(operand->source);
-        if (it != operand_type.end())
-          fprintf(out_file, " @operand%" NACL_PRIuS "_from_modrm_%s",
-                  operand_index, it->second);
+      const char* operand_type;
+      switch (operand->source) {
+        case 'C':
+        case 'D':
+        case 'G':
+        case 'P':
+        case 'V':
+          operand_type = "reg";
+          break;
+        case 'S':
+          operand_type = "reg_norex";
+          break;
+        case 'E':
+        case 'M':
+        case 'N':
+        case 'Q':
+        case 'R':
+        case 'U':
+        case 'W':
+           operand_type = "rm";
+           break;
+        default:
+          if (operand->enabled || enabled(kParseOperandPositions))
+            ++operand_index;
+          continue;
       }
-      if (operand->enabled || enabled(Actions::kParseOperandPositions))
+      if (operand->enabled)
+        fprintf(out_file, " @operand%" NACL_PRIuS "_from_modrm_%s",
+                operand_index, operand_type);
+      if (operand->enabled || enabled(kParseOperandPositions))
         ++operand_index;
     }
   }
   if (adjusted_instruction.get_opcode_in_modrm())
     fprintf(out_file, ")");
-  if (adjusted_instruction.get_opcode_in_imm())
-    print_immediate_opcode(adjusted_instruction),
+  if (adjusted_instruction.get_opcode_in_imm()) {
+    print_immediate_opcode(adjusted_instruction);
     print_opcode_recognition(adjusted_instruction, false);
-  else
+  } else {
     print_immediate_arguments(adjusted_instruction);
+  }
   print_instruction_end_actions(adjusted_instruction, false);
 }
 
@@ -1491,23 +1533,22 @@ void print_one_size_definition_modrm_register(
    extend opcode.  These two cases are never combined.  */
 void print_one_size_definition_modrm_memory(
     const MarkedInstruction& instruction) {
-  typedef std::tuple<const char*, bool, bool> T;
-  static const T modes[] = {
-    T { " operand_disp",                false,  true    },
-    T { " operand_rip",                 false,  false   },
-    T { " single_register_memory",      false,  true    },
-    T { " operand_sib_pure_index",      true,   false   },
-    T { " operand_sib_base_index",      true,   true    }
-   };
-  for (size_t mode = 0; mode < arraysize(modes); ++mode) {
+  static const struct { const char* mode; bool rex_x; bool rex_b; } modes[] = {
+    { " operand_disp",           false, true  },
+    { " operand_rip",            false, false },
+    { " single_register_memory", false, true  },
+    { " operand_sib_pure_index", true,  false },
+    { " operand_sib_base_index", true,  true  }
+  };
+  for (size_t mode = 0; mode < sizeof(modes)/sizeof(modes[0]); ++mode) {
     print_operator_delimiter();
     MarkedInstruction adjusted_instruction = instruction;
     if (mod_reg_is_used(adjusted_instruction))
       adjusted_instruction = adjusted_instruction.set_rex_r();
     if (mod_rm_is_used(adjusted_instruction)) {
-      if (std::get<1>(modes[mode]))
+      if (modes[mode].rex_x)
         adjusted_instruction = adjusted_instruction.set_rex_x();
-      if (std::get<2>(modes[mode]))
+      if (modes[mode].rex_b)
         adjusted_instruction = adjusted_instruction.set_rex_b();
     }
     print_legacy_prefixes(adjusted_instruction);
@@ -1519,55 +1560,61 @@ void print_one_size_definition_modrm_memory(
       fprintf(out_file, " any");
     else
       fprintf(out_file, " (any");
-    if (enabled(Actions::kParseOperands)) {
+    if (enabled(kParseOperands)) {
       size_t operand_index = 0;
-    const std::vector<MarkedInstruction::Operand>& operands =
-      adjusted_instruction.get_operands();
-    for (std::vector<MarkedInstruction::Operand>::const_iterator operand =
-           operands.begin(); operand != operands.end(); ++operand) {
-      static const std::map<char, const char*> operand_type {
-        { 'C',  "from_modrm_reg"        },
-        { 'D',  "from_modrm_reg"        },
-        { 'E',  "rm"                    },
-        { 'G',  "from_modrm_reg"        },
-        { 'M',  "rm"                    },
-        { 'N',  "rm"                    },
-        { 'P',  "from_modrm_reg"        },
-        { 'Q',  "rm"                    },
-        { 'R',  "rm"                    },
-        { 'S',  "from_modrm_reg_norex"  },
-        { 'U',  "rm"                    },
-        { 'V',  "from_modrm_reg"        },
-        { 'W',  "rm"                    }
-      };
-      if (operand->enabled) {
-        const std::map<char, const char*>::const_iterator it =
-          operand_type.find(operand->source);
-        if (it != operand_type.end()) {
-          if (strcmp(it->second, "rm") != 0 ||
-                enabled(Actions::kParseOperandPositions)) {
-              fprintf(out_file, " @operand%" NACL_PRIuS "_%s", operand_index,
-                      it->second);
+      const std::vector<MarkedInstruction::Operand>& operands =
+        adjusted_instruction.get_operands();
+      for (std::vector<MarkedInstruction::Operand>::const_iterator operand =
+             operands.begin(); operand != operands.end(); ++operand) {
+        const char* operand_type;
+        switch (operand->source) {
+          case 'C':
+          case 'D':
+          case 'G':
+          case 'P':
+          case 'V':
+            operand_type = "from_modrm_reg";
+            break;
+          case 'S':
+            operand_type = "from_modrm_reg_norex";
+            break;
+          case 'E':
+          case 'M':
+          case 'N':
+          case 'Q':
+          case 'R':
+          case 'U':
+          case 'W':
+            operand_type = "rm";
+            break;
+          default:
+            if (operand->enabled || enabled(kParseOperandPositions))
               ++operand_index;
-            }
-          } else {
+            continue;
+        }
+        if (operand->enabled) {
+          if (strcmp(operand_type, "rm") != 0 ||
+              enabled(kParseOperandPositions)) {
+            fprintf(out_file, " @operand%" NACL_PRIuS "_%s", operand_index,
+                    operand_type);
             ++operand_index;
           }
-        } else if (enabled(Actions::kParseOperandPositions)) {
+        } else if (enabled(kParseOperandPositions)) {
           ++operand_index;
         }
       }
     }
-    fprintf(out_file, " . any* &%s", std::get<0>(modes[mode]));
-    if (enabled(Actions::kCheckAccess) &&
+    fprintf(out_file, " . any* &%s", modes[mode].mode);
+    if (enabled(kCheckAccess) &&
         !adjusted_instruction.has_flag("no_memory_access"))
       fprintf(out_file, " @check_access");
     fprintf(out_file, ")");
-    if (adjusted_instruction.get_opcode_in_imm())
-      print_immediate_opcode(adjusted_instruction),
+    if (adjusted_instruction.get_opcode_in_imm()) {
+      print_immediate_opcode(adjusted_instruction);
       print_opcode_recognition(adjusted_instruction, true);
-    else
+    } else {
       print_immediate_arguments(adjusted_instruction);
+    }
     print_instruction_end_actions(adjusted_instruction, true);
   }
 }
@@ -1584,159 +1631,153 @@ MarkedInstruction expand_sizes(const MarkedInstruction& instruction,
     instruction.get_operands();
   for (std::vector<MarkedInstruction::Operand>::iterator operand =
          operands.begin(); operand != operands.end(); ++operand) {
-    static const std::map<std::pair<char, std::string>,
-                          std::pair<const char*, const char*> >
-        operand_sizes = {
-      { { ' ',  "",     },      { "xmm",                "128bit"            } },
-      { { ' ',  "2"     },      { "2bit",               (const char *)NULL  } },
-      { { ' ',  "7"     },      { "x87",                (const char *)NULL  } },
-      { { ' ',  "b"     },      { "8bit",               "8bit"              } },
-      { { ' ',  "d"     },      { "32bit",              "32bit"             } },
-      { { ' ',  "do"    },      { "ymm",                "256bit"            } },
-      { { ' ',  "dq"    },      { "xmm",                "128bit"            } },
-      { { ' ',  "fq"    },      { "ymm",                "256bit"            } },
-      { { ' ',  "o"     },      { "xmm",                "128bit"            } },
-      { { ' ',  "p"     },      { (const char *)NULL,   "farptr"            } },
-      { { ' ',  "pb"    },      { "mmx_xmm",            "mmx_xmm"           } },
-      { { ' ',  "pd"    },      { "mmx_xmm",            "mmx_xmm"           } },
-      { { ' ',  "pdw"   },      { "mmx_xmm",            "mmx_xmm"           } },
-      { { ' ',  "pdwx"  },      { "ymm",                "256bit"            } },
-      { { ' ',  "pdx"   },      { "ymm",                "256bit"            } },
-      { { ' ',  "ph"    },      { "mmx_xmm",            "mmx_xmm"           } },
-      { { ' ',  "phx"   },      { "ymm",                "256bit"            } },
-      { { ' ',  "pi"    },      { "mmx_xmm",            "mmx_xmm"           } },
-      { { ' ',  "pix"   },      { "ymm",                "256bit"            } },
-      { { ' ',  "pj"    },      { "mmx_xmm",            "mmx_xmm"           } },
-      { { ' ',  "pjx"   },      { "ymm",                "256bit"            } },
-      { { ' ',  "pk"    },      { "mmx_xmm",            "mmx_xmm"           } },
-      { { ' ',  "pkx"   },      { "ymm",                "256bit"            } },
-      { { ' ',  "pq"    },      { "mmx_xmm",            "mmx_xmm"           } },
-      { { ' ',  "pqw"   },      { "mmx_xmm",            "mmx_xmm"           } },
-      { { ' ',  "pqwx"  },      { "ymm",                "256bit"            } },
-      { { ' ',  "pqx"   },      { "ymm",                "256bit"            } },
-      { { ' ',  "ps"    },      { "mmx_xmm",            "mmx_xmm"           } },
-      { { ' ',  "psx"   },      { "ymm",                "256bit"            } },
-      { { ' ',  "pw"    },      { "mmx_xmm",            "mmx_xmm"           } },
-      { { ' ',  "pwx"   },      { "ymm",                "256bit"            } },
-      { { ' ',  "q"     },      { "64bit",              "64bit"             } },
-      { { 'N',  "q"     },      { "mmx",                "64bit"             } },
-      { { 'P',  "q"     },      { "mmx",                "64bit"             } },
-      { { 'Q',  "q"     },      { "mmx",                "64bit"             } },
-      { { 'U',  "q"     },      { "xmm",                "64bit"             } },
-      { { 'V',  "q"     },      { "xmm",                "64bit"             } },
-      { { 'W',  "q"     },      { "xmm",                "64bit"             } },
-      { { ' ',  "r"     },      { "regsize",            "regsize"           } },
-      { { 'C',  "r"     },      { "creg",               (const char *)NULL  } },
-      { { 'D',  "r"     },      { "dreg",               (const char *)NULL  } },
-      { { ' ',  "s"     },      { (const char *)NULL,   "selector"          } },
-      { { ' ',  "sb"    },      { (const char *)NULL,   "x87_bcd"           } },
-      { { ' ',  "sd"    },      { (const char *)NULL,   "float64bit"        } },
-      { { 'H',  "sd"    },      { "xmm",                "float64bit"        } },
-      { { 'L',  "sd"    },      { "xmm",                "float64bit"        } },
-      { { 'U',  "sd"    },      { "xmm",                "float64bit"        } },
-      { { 'V',  "sd"    },      { "xmm",                "float64bit"        } },
-      { { 'W',  "sd"    },      { "xmm",                "float64bit"        } },
-      { { ' ',  "se"    },      { (const char *)NULL,   "x87_env"           } },
-      { { ' ',  "si"    },      { (const char *)NULL,   "x87_32bit"         } },
-      { { ' ',  "sq"    },      { (const char *)NULL,   "x87_64bit"         } },
-      { { ' ',  "sr"    },      { (const char *)NULL,   "x87_state"         } },
-      { { ' ',  "ss"    },      { (const char *)NULL,   "float32bit"        } },
-      { { 'H',  "ss"    },      { "xmm",                "float32bit"        } },
-      { { 'L',  "ss"    },      { "xmm",                "float32bit"        } },
-      { { 'U',  "ss"    },      { "xmm",                "float32bit"        } },
-      { { 'V',  "ss"    },      { "xmm",                "float32bit"        } },
-      { { 'W',  "ss"    },      { "xmm",                "float32bit"        } },
-      { { ' ',  "st"    },      { (const char *)NULL,   "float80bit"        } },
-      { { ' ',  "sw"    },      { (const char *)NULL,   "x87_16bit"         } },
-      { { ' ',  "sx"    },      { (const char *)NULL,   "x87_mmx_xmm_state" } },
-      { { ' ',  "w"     },      { "16bit",              "16bit"             } },
-      { { 'S',  "w"     },      { "segreg",             (const char *)NULL  } },
-      { { ' ',  "x"     },      { "ymm",                "256bit"            } },
+    struct { const char source, *size, *register_size, *memory_size; }
+                                                             operand_sizes[] = {
+      /* 8/16/32/64bits: mostly GP registers.  */
+      { ' ', "b",    "8bit",    "8bit"       },
+        /* Sw is segment register. */
+      { 'S', "w",    "segreg",  NULL         },
+      { ' ', "w",    "16bit",   "16bit"      },
+      { ' ', "d",    "32bit",   "32bit"      },
+        /* q may be %rXX, %mmX or %xmmX.  */
+      { 'N', "q",    "mmx",     "64bit"      },
+      { 'P', "q",    "mmx",     "64bit"      },
+      { 'Q', "q",    "mmx",     "64bit"      },
+      { 'U', "q",    "xmm",     "64bit"      },
+      { 'V', "q",    "xmm",     "64bit"      },
+      { 'W', "q",    "xmm",     "64bit"      },
+      { ' ', "q",    "64bit",   "64bit"      },
+      /* GP registers & memory/control registers/debug registers.  */
+        /* Control registers.  */
+      { 'C', "r",    "creg",    NULL         },
+        /* Debug registers.    */
+      { 'D', "r",    "dreg",    NULL         },
+        /* Test registers.    */
+      { 'T', "r",    "treg",    NULL         },
+        /* 32bit register in ia32 mode, 64bit register in amd64 mode.  */
+      { ' ', "r",    "regsize", "regsize"    },
+      /* XMM registers/128bit memory.  */
+      { ' ', "",     "xmm",     "128bit"     },
+      { ' ', "o",    "xmm",     "128bit"     },
+      { ' ', "dq",   "xmm",     "128bit"     },
+      /* YMM registers/256bit memory.  */
+      { ' ', "do",   "ymm",     "256bit"     },
+      { ' ', "fq",   "ymm",     "256bit"     },
+      { ' ', "pdwx", "ymm",     "256bit"     },
+      { ' ', "pdx",  "ymm",     "256bit"     },
+      { ' ', "phx",  "ymm",     "256bit"     },
+      { ' ', "pix",  "ymm",     "256bit"     },
+      { ' ', "pjx",  "ymm",     "256bit"     },
+      { ' ', "pkx",  "ymm",     "256bit"     },
+      { ' ', "pqwx", "ymm",     "256bit"     },
+      { ' ', "pqx",  "ymm",     "256bit"     },
+      { ' ', "psx",  "ymm",     "256bit"     },
+      { ' ', "pwdx", "ymm",     "256bit"     },
+      { ' ', "pwx",  "ymm",     "256bit"     },
+      { ' ', "x",    "ymm",     "256bit"     },
+      /* MMX/XXM registers, 64bit/128bit in memory.  */
+#define MMX_XMM_registers(size)                                               \
+      { 'a', size,   "xmm",     NULL         }, /* %xmm0 */                   \
+      { 'H', size,   "xmm",     NULL         },                               \
+      { 'L', size,   "xmm",     NULL         },                               \
+      { 'M', size,   NULL,      "128bit"     },                               \
+      { 'N', size,   "mmx",     NULL         },                               \
+      { 'P', size,   "mmx",     NULL         },                               \
+      { 'Q', size,   "mmx",     "64bit"      },                               \
+      { 'U', size,   "xmm",     NULL         },                               \
+      { 'V', size,   "xmm",     NULL         },                               \
+      { 'W', size,   "xmm",     "128bit"     }
+      MMX_XMM_registers("pb"),
+      MMX_XMM_registers("pd"),
+      MMX_XMM_registers("pdw"),
+      MMX_XMM_registers("ph"),
+      MMX_XMM_registers("phi"),
+      MMX_XMM_registers("pi"),
+      MMX_XMM_registers("pj"),
+      MMX_XMM_registers("pk"),
+      MMX_XMM_registers("pq"),
+      MMX_XMM_registers("pqw"),
+      MMX_XMM_registers("ps"),
+      MMX_XMM_registers("pw"),
+      /* XMM registers, floating point operands in memory.  */
+      { 'H', "sd",   "xmm",     "float64bit" },
+      { 'L', "sd",   "xmm",     "float64bit" },
+      { 'U', "sd",   "xmm",     "float64bit" },
+      { 'V', "sd",   "xmm",     "float64bit" },
+      { 'W', "sd",   "xmm",     "float64bit" },
+      { ' ', "sd",   NULL,      "float64bit" },
+      { 'H', "ss",   "xmm",     "float32bit" },
+      { 'L', "ss",   "xmm",     "float32bit" },
+      { 'U', "ss",   "xmm",     "float32bit" },
+      { 'V', "ss",   "xmm",     "float32bit" },
+      { 'W', "ss",   "xmm",     "float32bit" },
+      { ' ', "ss",   NULL,      "float32bit" },
+      /* 2bit immediate.  */
+      { ' ', "2",    "2bit",    NULL         },
+      /* x87 register.  */
+      { ' ', "7",    "x87",     NULL         },
+      /* Various structures in memory.  */
+      { ' ', "p",    NULL,      "farptr"     },
+      { ' ', "s",    NULL,      "selector"   },
+      { ' ', "sb",   NULL,      "x87_bcd"    },
+      { ' ', "se",   NULL,      "x87_env"    },
+      { ' ', "si",   NULL,      "x87_32bit"  },
+      { ' ', "sq",   NULL,      "x87_64bit"  },
+      { ' ', "sr",   NULL,      "x87_state"  },
+      { ' ', "st",   NULL,      "float80bit" },
+      { ' ', "sw",   NULL,      "x87_16bit"  },
+      { ' ', "sx", NULL, "x87_mmx_xmm_state" }
     };
-    std::map<std::pair<char, std::string>,
-             std::pair<const char*, const char*> >::const_iterator it =
-      operand_sizes.find(make_pair(operand->source, operand->size));
-    if (it == operand_sizes.end())
-      it = operand_sizes.find(make_pair(' ', operand->size));
-    if (it != operand_sizes.end()) {
+    size_t n = 0;
+    for (n = 0; n < sizeof(operand_sizes)/sizeof(operand_sizes[0]); ++n)
+      if ((operand_sizes[n].source == operand->source ||
+           operand_sizes[n].source == ' ') &&
+           operand_sizes[n].size == operand->size)
+        break;
+    if (n != sizeof(operand_sizes)/sizeof(operand_sizes[0])) {
+      const char* register_size = operand_sizes[n].register_size;
+      const char* memory_size = operand_sizes[n].memory_size;
       bool memory_or_register = operand->source == 'E' ||
                                 operand->source == 'Q' ||
                                 operand->source == 'W';
+      bool always_memory = operand->source == 'M';
       bool memory_operand = memory_access &&
-                            (memory_or_register || operand->source == 'M');
-      const char* operand_size = memory_operand ?
-                                   it->second.second : /* Memory size.   */
-                                   it->second.first;   /* Register size. */
+                            (memory_or_register || always_memory);
+      const char* operand_size = memory_operand ? memory_size : register_size;
       bool memory_ne_register = memory_or_register &&
-                                it->second.second != it->second.first;
+                                strcmp(memory_size, register_size) != 0;
+      operand->size = operand_size;
       if (operand_size != NULL) {
-        if (strcmp(operand_size, "mmx_xmm") == 0) {
-          static const std::map<char,
-                                std::pair<const char*, const char*> >
-              mmx_xmm_sizes = {
-            { 'a', { "xmm",              (const char *)NULL } }, /* %xmm0 */
-            { 'H', { "xmm",              (const char *)NULL } },
-            { 'L', { "xmm",              (const char *)NULL } },
-            { 'M', { (const char *)NULL, "128bit"           } },
-            { 'N', { "mmx",              (const char *)NULL } },
-            { 'P', { "mmx",              (const char *)NULL } },
-            { 'Q', { "mmx",              "64bit"            } },
-            { 'U', { "xmm",              (const char *)NULL } },
-            { 'V', { "xmm",              (const char *)NULL } },
-            { 'W', { "xmm",              "128bit"           } }
-          };
-          const std::map<char,
-                         std::pair<const char*, const char*> >::const_iterator
-            it_mmx_xmm = mmx_xmm_sizes.find(operand->source);
-          if (it_mmx_xmm != end(mmx_xmm_sizes))
-            operand_size = memory_operand ?
-                             it_mmx_xmm->second.second : /* Memory size.   */
-                             it_mmx_xmm->second.first,   /* Register size.  */
-            memory_ne_register = memory_or_register &&
-                                 it_mmx_xmm->second.second !=
-                                                       it_mmx_xmm->second.first;
-          else
-            fprintf(stderr,
-                    "%s: error - can not determine operand size: %c%s",
-                    short_program_name, operand->source, operand->size.c_str()),
-            exit(1);
-        }
-      }
-      if (operand_size != NULL) {
-        operand->size = operand_size;
-        if ((!enabled(Actions::kParseImmediateOperands) &&
+        if ((!enabled(kParseImmediateOperands) &&
              (operand->source == 'I' || operand->source == 'i')) ||
-            (!enabled(Actions::kParseRelativeOperands) &&
+            (!enabled(kParseRelativeOperands) &&
               (operand->source == 'J' || operand->source == 'O')) ||
-            (!enabled(Actions::kParseX87Operands) &&
+            (!enabled(kParseX87Operands) &&
               (strncmp(operand_size, "x87", 3) == 0 ||
-               ((strncmp(operand_size, "float", 5) == 0) &&
-                !it->second.first))) ||
-            (!enabled(Actions::kParseMMXOperands) &&
+               ((strncmp(operand_size, "float", 5) == 0) && !register_size))) ||
+            (!enabled(kParseMMXOperands) &&
               (strcmp(operand_size, "mmx") == 0 ||
-              (strcmp(operand_size, "64bit") == 0 && it->second.first &&
-               (strcmp(it->second.first, "mmx") == 0 ||
-                strcmp(it->second.first, "mmx_xmm") == 0)))) ||
-           (!enabled(Actions::kParseXMMOperands) &&
+              (strcmp(operand_size, "64bit") == 0 && register_size &&
+               strcmp(register_size, "mmx") == 0))) ||
+            (!enabled(kParseXMMOperands) &&
               (strcmp(operand_size, "xmm") == 0 ||
               ((strcmp(operand_size, "32bit") == 0 ||
                 strcmp(operand_size, "64bit") == 0 ||
-                strcmp(operand_size, "128bit") == 0) && it->second.first &&
-                (strcmp(it->second.first, "xmm") == 0 ||
-                 strcmp(it->second.first, "mmx_xmm") == 0)) ||
-               (strncmp(operand_size, "float", 5) == 0 &&
-                it->second.first &&
-                strcmp(it->second.first, "xmm") == 0))) ||
-            (!enabled(Actions::kParseYMMOperands) &&
+                strcmp(operand_size, "128bit") == 0) && register_size &&
+                strcmp(register_size, "xmm") == 0) ||
+              (strncmp(operand_size, "float", 5) == 0 && register_size &&
+               strcmp(register_size, "xmm") == 0))) ||
+            (!enabled(kParseYMMOperands) &&
               (strcmp(operand_size, "ymm") == 0 ||
-              (strcmp(operand_size, "256bit") == 0 && it->second.first &&
-               strcmp(it->second.first, "ymm") == 0))) ||
-            (!enabled(Actions::kParseNonWriteRegisters) &&
-              !operand->write))
+              (strcmp(operand_size, "256bit") == 0 && register_size &&
+               strcmp(register_size, "ymm") == 0))) ||
+            (!enabled(kParseNonWriteRegisters) &&
+              !operand->write)) {
           operand->enabled = false;
-        else if (enabled(Actions::kParseOperands) && memory_or_register)
-          opcode_in_modrm |= memory_ne_register,
+        } else if (enabled(kParseOperands) && memory_or_register) {
+          opcode_in_modrm |= memory_ne_register;
           memory_operands |= memory_operand;
+        }
       } else {
         fprintf(stderr, "%s: error - can not determine operand size: %c%s",
                 short_program_name, operand->source, operand->size.c_str());
@@ -1767,37 +1808,46 @@ void print_one_size_definition(const MarkedInstruction& instruction) {
   /* 64bit commands are not supported in ia32 mode.  */
   if (ia32_mode && instruction.get_rex().w) return;
 
+  bool modrm_register_only = false;
   bool modrm_memory = false;
   bool modrm_register = false;
   char operand_source = ' ';
   const std::vector<MarkedInstruction::Operand>& operands =
     instruction.get_operands();
   for (std::vector<MarkedInstruction::Operand>::const_iterator operand =
-         operands.begin(); operand != operands.end(); ++operand) {
-    static const std::map<char, std::pair<bool, bool> > operand_map {
-      { 'E',    {true,  true}   },
-      { 'M',    {true,  false}  },
-      { 'N',    {false, true}   },
-      { 'Q',    {true,  true}   },
-      { 'R',    {false, true}   },
-      { 'U',    {false, true}   },
-      { 'W',    {true,  true}   }
-    };
-    const std::map<char, std::pair<bool, bool> >::const_iterator it =
-      operand_map.find(operand->source);
-    if (it != operand_map.end()) {
-      if ((modrm_memory || modrm_register) &&
-          ((modrm_memory != it->second.first) ||
-           (modrm_register != it->second.second)))
-        fprintf(stderr,
-                "%s: error - conflicting operand sources: '%c' and '%c'",
-                short_program_name, operand_source, operand->source),
-        exit(1);
-      modrm_memory = it->second.first;
-      modrm_register = it->second.second;
-      operand_source = operand->source;
+         operands.begin(); operand != operands.end(); ++operand)
+    switch (operand->source) {
+      case 'E':
+      case 'Q':
+      case 'W':
+        modrm_register = true;
+        /* Fallthrough.  */
+      case 'M':
+        /* Two different operands can not use “r/m” field in “ModR/M” byte.  */
+        if (modrm_memory) {
+          fprintf(stderr,
+                  "%s: error - conflicting operand sources: '%c' and '%c'",
+                  short_program_name, operand_source, operand->source);
+          exit(1);
+        }
+        modrm_memory = true;
+        operand_source = operand->source;
+        break;
+      case 'N':
+      case 'R':
+      case 'U':
+        /* Two different operands can not use “reg” field in “ModR/M” byte.  */
+        if (modrm_register_only) {
+          fprintf(stderr,
+                  "%s: error - conflicting operand sources: '%c' and '%c'",
+                  short_program_name, operand_source, operand->source);
+          exit(1);
+        }
+        modrm_register_only = true;
+        modrm_register = true;
+        operand_source = operand->source;
+        break;
     }
-  }
   if (modrm_memory || modrm_register) {
     if (modrm_memory) {
       MarkedInstruction instruction_with_expanded_sizes =
@@ -1868,7 +1918,7 @@ void print_instruction_vyz(const MarkedInstruction& instruction) {
       print_instruction_px(instruction.clear_rex_w());
       MarkedInstruction instruction_w = instruction.set_rex_w();
       print_instruction_px(instruction_w);
-      if (enabled(Actions::kNaClForbidden))
+      if (enabled(kNaClForbidden))
         print_instruction_px(instruction_w.add_requred_prefix("data16"));
       return;
     }
@@ -1942,17 +1992,6 @@ void print_one_instruction_definition(void) {
   }
 }
 
-struct compare_action {
-  const char* action;
-
-  explicit compare_action(const char* y) : action(y) {
-  }
-
-  bool operator()(const char* x) const {
-    return !strcmp(x, action);
-  }
-};
-
 } // namespace
 
 int main(int argc, char* argv[]) {
@@ -1982,11 +2021,14 @@ int main(int argc, char* argv[]) {
         for (char* action_to_disable = strtok(optarg, ",");
              action_to_disable;
              action_to_disable = strtok(NULL, ",")) {
-          compare_action compare_with_action_to_disable(action_to_disable);
-          const char** action_number = std::find_if(
-            kDisablableActionsList,
-            kDisablableActionsList + arraysize(kDisablableActionsList),
-            compare_with_action_to_disable);
+          const char** action_number;
+          for (action_number = kDisablableActionsList;
+               action_number !=
+                     kDisablableActionsList + arraysize(kDisablableActionsList);
+               ++action_number) {
+            if (strcmp(*action_number, action_to_disable) == 0)
+              break;
+          }
           if (action_number !=
               kDisablableActionsList + arraysize(kDisablableActionsList)) {
             disabled_actions[action_number - kDisablableActionsList] = true;
@@ -2037,8 +2079,8 @@ int main(int argc, char* argv[]) {
             short_program_name, out_file_name, strerror(errno));
     return 1;
   } else if ((out_file_name || const_file_name) &&
-             (enabled(Actions::kInstructionName) ||
-              enabled(Actions::kParseOperands))) {
+             (enabled(kInstructionName) ||
+              enabled(kParseOperands))) {
     size_t const_name_len = 0;
     size_t current_dir_name_len = strlen(current_dir_name);
     if (out_file_name && !const_file_name) {
@@ -2076,8 +2118,8 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  if (enabled(Actions::kInstructionName) ||
-      enabled(Actions::kParseOperands)) {
+  if (enabled(kInstructionName) ||
+      enabled(kParseOperands)) {
     print_consts();
 
     if (out_file == const_file) {
@@ -2100,7 +2142,7 @@ int main(int argc, char* argv[]) {
 "");
   }
 
-  if (enabled(Actions::kInstructionName)) {
+  if (enabled(kInstructionName)) {
     print_name_actions();
   }
 

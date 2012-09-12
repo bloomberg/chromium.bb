@@ -77,43 +77,43 @@ struct ValidateState {
 };
 
 Bool ProcessError(const uint8_t *begin, const uint8_t *end,
-                  uint32_t validation_error, void *userdata) {
+                  uint32_t error_code, void *userdata) {
   size_t offset = begin - (((struct ValidateState *)userdata)->offset);
   UNREFERENCED_PARAMETER(end);
 
-  if (validation_error & UNRECOGNIZED_INSTRUCTION)
+  if (error_code & UNRECOGNIZED_INSTRUCTION)
     printf("offset 0x%"NACL_PRIxS": DFA error in validator\n", offset);
-  if (validation_error & DIRECT_JUMP_OUT_OF_RANGE)
+  if (error_code & DIRECT_JUMP_OUT_OF_RANGE)
     printf("offset 0x%"NACL_PRIxS": direct jump out of range\n", offset);
-  if (validation_error & CPUID_UNSUPPORTED_INSTRUCTION)
+  if (error_code & CPUID_UNSUPPORTED_INSTRUCTION)
     printf("offset 0x%"NACL_PRIxS": required CPU feature not found\n", offset);
-  if (validation_error & FORBIDDEN_BASE_REGISTER)
+  if (error_code & FORBIDDEN_BASE_REGISTER)
     printf("offset 0x%"NACL_PRIxS": improper memory address - bad base\n",
                                                                         offset);
-  if (validation_error & UNRESTRICTED_INDEX_REGISTER)
+  if (error_code & UNRESTRICTED_INDEX_REGISTER)
     printf("offset 0x%"NACL_PRIxS": improper memory address - bad base\n",
                                                                         offset);
-  if (validation_error & RESTRICTED_RBP_UNPROCESSED)
+  if ((error_code & BAD_RSP_RBP_PROCESSING_MASK) == RESTRICTED_RBP_UNPROCESSED)
     printf("offset 0x%"NACL_PRIxS": improper %%rbp sandboxing\n", offset);
-  if (validation_error & UNRESTRICTED_RBP_PROCESSED)
+  if ((error_code & BAD_RSP_RBP_PROCESSING_MASK) == UNRESTRICTED_RBP_PROCESSED)
     printf("offset 0x%"NACL_PRIxS": improper %%rbp sandboxing\n", offset);
-  if (validation_error & RESTRICTED_RSP_UNPROCESSED)
+  if ((error_code & BAD_RSP_RBP_PROCESSING_MASK) == RESTRICTED_RSP_UNPROCESSED)
     printf("offset 0x%"NACL_PRIxS": improper %%rsp sandboxing\n", offset);
-  if (validation_error & UNRESTRICTED_RSP_PROCESSED)
+  if ((error_code & BAD_RSP_RBP_PROCESSING_MASK) == UNRESTRICTED_RSP_PROCESSED)
     printf("offset 0x%"NACL_PRIxS": improper %%rsp sandboxing\n", offset);
-  if (validation_error & R15_MODIFIED)
+  if (error_code & R15_MODIFIED)
     printf("offset 0x%"NACL_PRIxS": error - %%r15 is changed\n", offset);
-  if (validation_error & BPL_MODIFIED)
+  if (error_code & BPL_MODIFIED)
     printf("offset 0x%"NACL_PRIxS": error - %%bpl or %%bp is changed\n",
                                                                         offset);
-  if (validation_error & SPL_MODIFIED)
+  if (error_code & SPL_MODIFIED)
     printf("offset 0x%"NACL_PRIxS": error - %%spl or %%sp is changed\n",
                                                                         offset);
-  if (validation_error & BAD_CALL_ALIGNMENT)
+  if (error_code & BAD_CALL_ALIGNMENT)
     printf("offset 0x%"NACL_PRIxS": warning - bad call alignment\n", offset);
-  if (validation_error & BAD_JUMP_TARGET)
+  if (error_code & BAD_JUMP_TARGET)
     printf("bad jump to around 0x%"NACL_PRIxS"\n", offset);
-  if (validation_error & (VALIDATION_ERRORS_MASK | BAD_JUMP_TARGET))
+  if (error_code & (VALIDATION_ERRORS_MASK | BAD_JUMP_TARGET))
     return FALSE;
   else
     return TRUE;
