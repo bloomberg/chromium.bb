@@ -934,6 +934,20 @@ DirectoryModel.prototype.selectEntry = function(name) {
 };
 
 /**
+ * @param {Array.<string>} urls Array of URLs.
+ */
+DirectoryModel.prototype.selectUrls = function(urls) {
+  var fileList = this.getFileList();
+  this.fileListSelection_.beginChange();
+  this.fileListSelection_.unselectAll();
+  for (var i = 0; i < fileList.length; i++) {
+    if (urls.indexOf(fileList.item(i).toURL()) >= 0)
+      this.fileListSelection_.setIndexSelected(i, true);
+  }
+  this.fileListSelection_.endChange();
+};
+
+/**
  * @param {number} index Index of file.
  */
 DirectoryModel.prototype.selectIndex = function(index) {

@@ -8,10 +8,12 @@
  * @param {Array.<string>} urls List of file urls.
  * @param {Array.<string>=} opt_mimeTypes List of MIME types for each
  *     of the files.
+ * @param {object} opt_params File manager load parameters.
  */
-function FileTasks(fileManager, urls, opt_mimeTypes) {
+function FileTasks(fileManager, urls, opt_mimeTypes, opt_params) {
   this.fileManager_ = fileManager;
   this.urls_ = urls;
+  this.params_ = opt_params;
   this.tasks_ = null;
   this.defaultTask_ = null;
 
@@ -297,7 +299,7 @@ FileTasks.prototype.executeInternalTask_ = function(id, urls) {
   }
 
   if (id == 'gallery') {
-    this.openGallery_(urls);
+    this.openGallery(urls);
     return;
   }
 
@@ -360,48 +362,38 @@ FileTasks.prototype.mountArchives_ = function(urls) {
 };
 
 /**
- * Opens provided urls in the gallery.
- * @param {Array.<string>} urls List of all the urls that will be shown in
- *     the gallery.
- * @private
+ * Open the Gallery.
+ * @param {Array.<string>} urls List of selected urls.
  */
-FileTasks.prototype.openGallery_ = function(urls) {
+FileTasks.prototype.openGallery = function(urls) {
   var fm = this.fileManager_;
-  var singleSelection = urls.length == 1;
 
-  var selectedUrl;
-  if (singleSelection && FileType.isImage(urls[0])) {
-    // Single image item selected. Pass to the Gallery as a selected.
-    selectedUrl = urls[0];
-    // Pass along every image and video in the directory so that it shows up
-    // in the ribbon.
-    // We do not do that if a single video is selected because the UI is
-    // cleaner without the ribbon.
-    urls = fm.getAllUrlsInCurrentDirectory().filter(FileType.isImageOrVideo);
-  } else {
-    // Pass just the selected items, select the first entry.
-    selectedUrl = urls[0];
-  }
+  var allUrls =
+      fm.getAllUrlsInCurrentDirectory().filter(FileType.isImageOrVideo);
 
   var galleryFrame = fm.document_.createElement('iframe');
   galleryFrame.className = 'overlay-pane';
   galleryFrame.scrolling = 'no';
   galleryFrame.setAttribute('webkitallowfullscreen', true);
 
-  var dirPath = fm.getCurrentDirectory();
-  // Push a temporary state which will be replaced every time an individual
-  // item is selected in the Gallery.
-  fm.updateLocation_(false /*push*/, dirPath);
+  if (this.params_ && this.params_.gallery) {
+    // Remove the Gallery state from the location, we do not need it any more.
+    util.updateLocation(
+        true /* replace */, null /* keep path */, '' /* remove search. */);
+  }
 
-  var getShareActions = function(urls, callback) {
-    this.getExternals(callback);
-  }.bind(this);
+  // Push a temporary state which will be replaced every time the selection
+  // changes in the Gallery and popped when the Gallery is closed.
+  util.updateLocation(false /*push*/);
+
+  function onClose(selectedUrls) {
+    fm.directoryModel_.selectUrls(selectedUrls);
+    history.back(1);  // This will restore document.title.
+  }
 
   galleryFrame.onload = function() {
     fm.show_();
     galleryFrame.contentWindow.ImageUtil.metrics = metrics;
-    galleryFrame.contentWindow.FileType = FileType;
-    galleryFrame.contentWindow.util = util;
 
     var readonly = fm.isOnReadonlyDirectory();
     var currentDir = fm.directoryModel_.getCurrentDirEntry();
@@ -413,26 +405,18 @@ FileTasks.prototype.openGallery_ = function(urls) {
           fm.directoryModel_.getCurrentRootName();
     }
 
-    var gallerySelection;
     var context = {
       // We show the root label in readonly warning (e.g. archive name).
       readonlyDirName: readonlyDirName,
+      curDirEntry: currentDir,
       saveDirEntry: readonly ? downloadsDir : currentDir,
       metadataCache: fm.metadataCache_,
-      getShareActions: getShareActions,
-      onNameChange: function(name) {
-        fm.document_.title = gallerySelection = name;
-        fm.updateLocation_(true /*replace*/, dirPath + '/' + name);
-      },
-      onClose: function() {
-        if (singleSelection)
-          fm.directoryModel_.selectEntry(gallerySelection);
-        history.back(1);
-      },
-      displayStringFunction: loadTimeData.getStringF.bind(loadTimeData)
+      pageState: this.params_,
+      onClose: onClose,
+      displayStringFunction: strf
     };
-    galleryFrame.contentWindow.Gallery.open(context, urls, selectedUrl);
-  };
+    galleryFrame.contentWindow.Gallery.open(context, allUrls, urls);
+  }.bind(this);
 
   galleryFrame.src = 'gallery.html';
   fm.openFilePopup_(galleryFrame, fm.updateTitle_.bind(fm));
@@ -505,26 +489,6 @@ FileTasks.prototype.updateMenuItem_ = function() {
 };
 
 /**
- * Returns a list of external tasks (i.e. not defined in file manager).
- * @param {function(Array.<Object>)} callback The callback.
- * @private
- */
-FileTasks.prototype.getExternals_ = function(callback) {
-  var externals = [];
-  var id = util.getExtensionId();
-  for (var index = 0; index < this.tasks_.length; index++) {
-    var task = this.tasks_[index];
-    var task_parts = task.taskId.split('|');
-    if (task_parts[0] != id) {
-      // Add callback, so gallery can execute the task.
-      task.execute = this.execute_.bind(this, task.taskId);
-      externals.push(task);
-    }
-  }
-  callback(externals);
-};
-
-/**
  * Creates combobutton item based on task.
  * @param {Object} task Task to convert.
  * @param {string=} opt_title Title.
@@ -588,5 +552,4 @@ FileTasks.decorate('display');
 FileTasks.decorate('updateMenuItem');
 FileTasks.decorate('execute');
 FileTasks.decorate('executeDefault');
-FileTasks.decorate('getExternals');
 

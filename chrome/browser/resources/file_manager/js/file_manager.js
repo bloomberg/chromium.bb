@@ -1310,9 +1310,21 @@ FileManager.prototype = {
       var foundLeaf = true;
       function onResolve(baseName, leafName, exists) {
         if (!exists || leafName == '') {
-          // Non-existent file or a directory. Remove the shade immediately.
+          // Non-existent file or a directory.
           foundLeaf = false;
-          self.show_();
+          if (self.params_.gallery) {
+            // Reloading while the Gallery is open with empty or multiple
+            // selection. Open the Gallery when the directory is scanned.
+            var listener = function() {
+              self.directoryModel_.removeEventListener(
+                  'scan-completed', listener);
+              new FileTasks(self, [], null /* mime types */, self.params_).
+                  openGallery([]);
+            };
+            self.directoryModel_.addEventListener('scan-completed', listener);
+          } else {
+            self.show_();  // Remove the shade immediately.
+          }
         }
       }
 
@@ -1322,8 +1334,8 @@ FileManager.prototype = {
         if (foundLeaf) {
           // TODO(kaznacheev): use |makeFIlesystemUrl| instead of
           // self.selection.
-          var tasks = new FileTasks(self,
-                                    [self.selection.urls[0]]);
+          var tasks = new FileTasks(self, [self.selection.urls[0]],
+              null /* mime types */, self.params_);
           // There are 3 ways we can get here:
           // 1. Invoked from file_manager_util::ViewFile. This can only
           //    happen for 'gallery' and 'mount-archive' actions.
@@ -1336,7 +1348,6 @@ FileManager.prototype = {
             tasks.execute(util.getExtensionId() + '|mount-archive');
           } else {
             self.show_();
-            return;
           }
         }
       }
@@ -2755,24 +2766,6 @@ FileManager.prototype = {
   };
 
   /**
-   * Update the location in the address bar.
-   *
-   * @param {boolean} replace True if the history state should be replaced,
-   *                          false if pushed.
-   * @param {string} path Path to be put in the address bar after the hash.
-   */
-  FileManager.prototype.updateLocation_ = function(replace, path) {
-    var location = document.location.origin + document.location.pathname + '#' +
-                   encodeURI(path);
-    //TODO(kaznacheev): Fix replaceState for component extensions. Currently it
-    //does not replace the content of the address bar.
-    if (replace)
-      history.replaceState(undefined, path, location);
-    else
-      history.pushState(undefined, path, location);
-  },
-
-  /**
    * Update the tab title.
    */
   FileManager.prototype.updateTitle_ = function() {
@@ -2806,7 +2799,7 @@ FileManager.prototype = {
     this.updateColumnModel_();
     this.updateSearchBoxOnDirChange_();
 
-    this.updateLocation_(event.initial, this.getCurrentDirectory());
+    util.updateLocation(event.initial, this.getCurrentDirectory());
 
     if (this.closeOnUnmount_ && !event.initial &&
           PathUtil.getRootPath(event.previousDirEntry.fullPath) !=

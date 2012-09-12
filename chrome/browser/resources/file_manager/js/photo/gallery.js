@@ -3,8 +3,16 @@
 // found in the LICENSE file.
 
 document.addEventListener('DOMContentLoaded', function() {
-  if (document.location.hash)  // File path passed after the #.
-    Gallery.openStandalone(decodeURI(document.location.hash.substr(1)));
+  if (!location.hash)
+    return;
+
+  var pageState;
+  if (location.search) {
+    try {
+      pageState = JSON.parse(location.search.substr(1));
+    } catch (ignore) {}
+  }
+  Gallery.openStandalone(decodeURI(location.hash.substr(1)), pageState);
 });
 
 /**
@@ -46,25 +54,25 @@ function Gallery(context) {
  * Create and initialize a Gallery object based on a context.
  *
  * @param {Object} context Gallery context.
- * @param {Array.<string>} urls Array of image urls.
- * @param {string} selectedUrl Selected url.
- * @param {boolean} opt_mosaic True if open in the mosaic view.
+ * @param {Array.<string>} urls Array of urls.
+ * @param {Array.<string>} selectedUrls Array of selected urls.
  */
-Gallery.open = function(context, urls, selectedUrl, opt_mosaic) {
+Gallery.open = function(context, urls, selectedUrls) {
   Gallery.instance = new Gallery(context);
-  Gallery.instance.load(urls, selectedUrl, opt_mosaic);
+  Gallery.instance.load(urls, selectedUrls);
 };
 
 /**
  * Create a Gallery object in a tab.
  * @param {string} path File system path to a selected file.
+ * @param {object} pageState Page state object.
  */
-Gallery.openStandalone = function(path) {
+Gallery.openStandalone = function(path, pageState) {
   ImageUtil.metrics = metrics;
 
   var currentDir;
   var urls = [];
-  var selectedUrl;
+  var selectedUrls = [];
 
   Gallery.getFileBrowserPrivate().requestLocalFileSystem(function(filesystem) {
     // If the path points to the directory scan it.
@@ -88,21 +96,13 @@ Gallery.openStandalone = function(path) {
         var url = entry.toURL();
         urls.push(url);
         if (entry.fullPath == path)
-          selectedUrl = url;
+          selectedUrls = [url];
       }
     });
   }
 
-  function onNameChange(name) {
-    window.top.document.title = name || currentDir.name;
-
-    var newPath = currentDir.fullPath + '/' + name;
-    var location = document.location.origin + document.location.pathname +
-                   '#' + encodeURI(newPath);
-    history.replaceState(undefined, newPath, location);
-  }
-
   function onClose() {
+    // Exiting to the Files app seems arbitrary. Consider closing the tab.
     document.location = 'main.html?' +
         JSON.stringify({defaultPath: document.location.hash.substr(1)});
   }
@@ -113,13 +113,14 @@ Gallery.openStandalone = function(path) {
       loadTimeData.data = strings;
       var context = {
         readonlyDirName: null,
+        curDirEntry: currentDir,
         saveDirEntry: currentDir,
         metadataCache: MetadataCache.createFull(),
-        onNameChange: onNameChange,
+        pageState: pageState,
         onClose: onClose,
         displayStringFunction: strf
       };
-      Gallery.open(context, urls, selectedUrl, !selectedUrl);
+      Gallery.open(context, urls, selectedUrls);
     });
   }
 };
@@ -243,10 +244,9 @@ Gallery.prototype.initDom_ = function() {
  * Load the content.
  *
  * @param {Array.<string>} urls Array of urls.
- * @param {string} selectedUrl Selected url.
- * @param {boolean} opt_mosaic True if open in the mosaic view.
+ * @param {Array.<string>} selectedUrls Array of selected urls.
  */
-Gallery.prototype.load = function(urls, selectedUrl, opt_mosaic) {
+Gallery.prototype.load = function(urls, selectedUrls) {
   var items = [];
   for (var index = 0; index < urls.length; ++index) {
     items.push(new Gallery.Item(urls[index]));
@@ -255,13 +255,20 @@ Gallery.prototype.load = function(urls, selectedUrl, opt_mosaic) {
 
   this.selectionModel_.adjustLength(this.dataModel_.length);
 
-  var selectedIndex = urls.indexOf(selectedUrl);
-  if (selectedIndex >= 0)
-    this.selectionModel_.setIndexSelected(selectedIndex, true);
-  else
+  for (var i = 0; i != selectedUrls.length; i++) {
+    var selectedIndex = urls.indexOf(selectedUrls[i]);
+    if (selectedIndex >= 0)
+      this.selectionModel_.setIndexSelected(selectedIndex, true);
+    else
+      console.error('Cannot select ' + selectedUrls[i]);
+  }
+
+  if (this.selectionModel_.selectedIndexes.length == 0)
     this.onSelection_();
 
-  if (opt_mosaic) {
+  if (selectedUrls.length != 1 ||
+      (this.context_.pageState &&
+          this.context_.pageState.gallery == 'mosaic')) {
     this.setCurrentMode_(this.mosaicMode_);
     this.mosaicMode_.init();
   } else {
@@ -286,7 +293,7 @@ Gallery.prototype.close_ = function() {
     if (this.originalFullscreen_ != fullscreen) {
       Gallery.toggleFullscreen();
     }
-    this.context_.onClose();
+    this.context_.onClose(this.getSelectedUrls());
   }.bind(this));
 };
 
@@ -362,6 +369,7 @@ Gallery.prototype.setCurrentMode_ = function(mode) {
       mode == this.slideMode_ ? this.mosaicMode_ : this.slideMode_;
   this.modeButton_.title = this.displayStringFunction_(oppositeMode.getName());
   this.container_.setAttribute('mode', this.currentMode_.getName());
+  this.updateSelectionAndState_();
 };
 
 /**
@@ -450,6 +458,15 @@ Gallery.prototype.getSelectedItems = function() {
 };
 
 /**
+ * @return {Array.<string>} Array of currently selected urls.
+ */
+Gallery.prototype.getSelectedUrls = function() {
+  return this.selectionModel_.selectedIndexes.map(function(index) {
+    return this.dataModel_.item(index).getUrl();
+  }.bind(this));
+};
+
+/**
  * @return {Gallery.Item} Current single selection.
  */
 Gallery.prototype.getSingleSelectedItem = function() {
@@ -464,7 +481,7 @@ Gallery.prototype.getSingleSelectedItem = function() {
   * @private
   */
 Gallery.prototype.onSelection_ = function() {
-  this.updateFilename_();
+  this.updateSelectionAndState_();
   this.updateShareMenu_();
 };
 
@@ -485,7 +502,7 @@ Gallery.prototype.onContentChange_ = function(event) {
   var index = this.dataModel_.indexOf(event.item);
   if (index != this.selectionModel_.selectedIndex)
     console.error('Content changed for unselected item');
-  this.updateFilename_();
+  this.updateSelectionAndState_();
 };
 
 /**
@@ -532,11 +549,11 @@ Gallery.prototype.onKeyDown_ = function(event) {
 // Name box and rename support.
 
 /**
- * Update the displayed current item file name.
+ * Update the UI related to the selected item and the persistent state.
  *
  * @private
  */
-Gallery.prototype.updateFilename_ = function() {
+Gallery.prototype.updateSelectionAndState_ = function() {
   var displayName = '';
   var fullName = '';
 
@@ -549,7 +566,11 @@ Gallery.prototype.updateFilename_ = function() {
         this.displayStringFunction_('ITEMS_SELECTED', selectedItems.length);
   }
 
-  this.context_.onNameChange(fullName);
+  window.top.document.title = fullName || this.context_.curDirEntry.name;
+
+  util.updateLocation(true /*replace*/,
+      this.context_.curDirEntry.fullPath + '/' + fullName,
+      {gallery: (this.currentMode_ == this.mosaicMode_ ? 'mosaic' : 'slide')});
 
   this.filenameEdit_.value = displayName;
   this.filenameText_.textContent = displayName;
@@ -569,6 +590,7 @@ Gallery.prototype.onFilenameClick_ = function() {
     return;
 
   ImageUtil.setAttribute(this.filenameSpacer_, 'renaming', true);
+  this.filenameEdit_.originalValue = this.filenameEdit_.value;
   setTimeout(this.filenameEdit_.select.bind(this.filenameEdit_), 0);
   this.inactivityWatcher_.startActivity();
 };
@@ -617,7 +639,7 @@ Gallery.prototype.onFilenameEditBlur_ = function() {
 Gallery.prototype.onFilenameEditKeydown_ = function() {
   switch (event.keyCode) {
     case 27:  // Escape
-      this.updateFilename_();
+      this.filenameEdit_.value = this.filenameEdit_.originalValue;
       this.filenameEdit_.blur();
       break;
 
@@ -679,8 +701,7 @@ Gallery.prototype.toggleShare_ = function() {
  * @private.
  */
 Gallery.prototype.updateShareMenu_ = function() {
-  var urls =
-      this.getSelectedItems().map(function(item) { return item.getUrl() });
+  var urls = this.getSelectedUrls();
 
   var internalId = util.getExtensionId();
   function isShareAction(task) {

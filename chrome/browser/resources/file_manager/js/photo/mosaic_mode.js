@@ -131,9 +131,9 @@ Mosaic.prototype.init = function() {
   for (var i = 0; i != this.dataModel_.length; i++)
     this.tiles_.push(new Mosaic.Tile(this, this.dataModel_.item(i)));
 
-  var tile = this.getSelectedTile();
-  if (tile)
-    tile.select(true);
+  this.selectionModel_.selectedIndexes.forEach(function(index) {
+    this.tiles_[index].select(true);
+  }.bind(this));
 
   this.loadTiles_(this.tiles_);
 

@@ -666,6 +666,43 @@ util.createChild = function(parent, opt_className, opt_tag) {
 };
 
 /**
+ * Update the top window location search query and hash.
+ *
+ * @param {boolean} replace True if the history state should be replaced,
+ *                          false if pushed.
+ * @param {string} path Path to be put in the address bar after the hash.
+ *   If null the hash is left unchanged.
+ * @param {string|object} opt_param Search parameter. Used directly if string,
+ *   stringified if object. If omitted the search query is left unchanged.
+ */
+util.updateLocation = function(replace, path, opt_param) {
+  var location = window.top.document.location;
+  var history = window.top.history;
+
+  var search;
+  if (typeof opt_param == 'string')
+    search = opt_param;
+  else if (typeof opt_param == 'object')
+    search = '?' + JSON.stringify(opt_param);
+  else
+    search = location.search;
+
+  var hash;
+  if (path)
+    hash = '#' + encodeURI(path);
+  else
+    hash = location.hash;
+
+  var newLocation = location.origin + location.pathname + search + hash;
+  //TODO(kaznacheev): Fix replaceState for component extensions. Currently it
+  //does not replace the content of the address bar.
+  if (replace)
+    history.replaceState(undefined, path, newLocation);
+  else
+    history.pushState(undefined, path, newLocation);
+};
+
+/**
  * Return a translated string.
  *
  * Wrapper function to make dealing with translated strings more concise.

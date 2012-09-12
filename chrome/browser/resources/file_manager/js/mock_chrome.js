@@ -655,8 +655,8 @@ chrome.fileBrowserPrivate = {
       MANY_DIRECTORIES_SELECTED: '$1 folders selected',
       MANY_ENTRIES_SELECTED: '$1 items selected, $2',
 
-      CONFIRM_DELETE_ONE: 'Are you sure you want to delete "$1"?',
-      CONFIRM_DELETE_SOME: 'Are you sure you want to delete $1 items?',
+      DELETED_MESSAGE: 'Deleted $1',
+      DELETED_MESSAGE_PLURAL: 'Deleted $1 items',
 
       UNKNOWN_FILESYSTEM_WARNING: 'This device cannot be opened because its' +
           ' filesystem was not recognized.',
