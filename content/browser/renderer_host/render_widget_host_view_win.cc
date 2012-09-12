@@ -1085,7 +1085,6 @@ void RenderWidgetHostViewWin::InsertText(const string16& text) {
     NOTREACHED();
     return;
   }
-  DCHECK(text_input_type_ != ui::TEXT_INPUT_TYPE_NONE);
   if (render_widget_host_)
     render_widget_host_->ImeConfirmComposition(text);
 }
