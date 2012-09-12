@@ -3922,8 +3922,6 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF6StringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
-   fun:_ZN7WebCore23v8StringToWebCoreStringEN2v86HandleINS0_6StringEEE
-   fun:_ZN7WebCore22v8ValueToWebCoreStringEN2v86HandleINS0_5ValueEEE
    fun:_ZN7WebCore15toWebCoreStringEN2v86HandleINS0_5ValueEEE
 }
 {
@@ -4435,8 +4433,7 @@
    fun:_ZN2v88internal16RegExpStackScopeC1EPNS0_7IsolateE
    fun:_ZN2v88internal26NativeRegExpMacroAssembler7ExecuteEPNS0_4CodeEPNS0_6String*
    fun:_ZN2v88internal26NativeRegExpMacroAssembler5MatchENS0_6HandleINS0_4CodeEEENS2_INS0_6StringEEEPiiiPNS0_7IsolateE
-   fun:_ZN2v88internal10RegExpImpl*IrregexpExec*ENS0_6HandleINS0_8JSRegExpEEENS2_INS0_6StringEEEiNS0_6VectorIiEE
-   fun:_ZN2v88internal10RegExpImpl12IrregexpExecENS0_6HandleINS0_8JSRegExpEEENS2_INS0_6StringEEEiNS2_INS0_7JSArrayEEE
+   fun:_ZN2v88internal10RegExpImpl*IrregexpExec*ENS0_6HandleINS0_8JSRegExpEEENS2_INS0_6StringEEEiPii
 }
 {
    bug_108624
@@ -5473,8 +5470,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF12AtomicStringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
-   fun:_ZN7WebCore29v8StringToAtomicWebCoreStringEN2v86HandleINS0_6StringEEE
-   fun:_ZN7WebCore28v8ValueToAtomicWebCoreStringEN2v86HandleINS0_5ValueEEE
+   fun:_ZN7WebCore21toWebCoreAtomicStringEN2v86HandleINS0_5ValueEEE
    fun:_ZN7WebCore23WorkerContextV8InternalL24addEventListenerCallbackERKN2v89ArgumentsE
    fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
    fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
@@ -5592,9 +5588,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF6StringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
-   fun:_ZN7WebCore23v8StringToWebCoreStringEN2v86HandleINS0_6StringEEE
-   fun:_ZN7WebCore22v8ValueToWebCoreStringEN2v86HandleINS0_5ValueEEE
-   fun:_ZNK7WebCore10Dictionary3getERKN3WTF6StringERS2_
+   fun:_ZN7WebCore15toWebCoreStringEN2v86HandleINS0_5ValueEEE
    fun:_ZN7WebCore6V8Blob19constructorCallbackERKN2v89ArgumentsE
    fun:_ZN2v88internalL19HandleApiCallHelperILb1EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
    fun:_ZN2v88internalL30Builtin_HandleApiCallConstructENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
@@ -5992,6 +5986,39 @@
    ...
    fun:_ZN7testing8internal24CmpHelperFloatingPointEQIfEENS_15AssertionResultEPKcS4_T_S5_
    fun:_ZN2ui12_GLOBAL__N_143LayerAnimationElementTest_PauseElement_Test8TestBodyEv
+}
+{
+   bug_148637_a
+   Memcheck:Unaddressable
+   ...
+   fun:_ZN9SkPathRef6EditorC1EP12SkAutoTUnrefIS_Eii
+   fun:_ZN6SkPath10incReserveEj
+   fun:_ZN7WebCoreL23setPathFromConvexPointsEP6SkPathmPKNS_10FloatPointE
+   fun:_ZN7WebCore15GraphicsContext17drawConvexPolygonEmPKNS_10FloatPointEb
+}
+{
+   bug_148637_b
+   Memcheck:Unaddressable
+   fun:_Z13sk_atomic_incPi
+   fun:_ZNK8SkRefCnt3refEv
+   fun:_ZN9SkPathRef11CreateEmptyEv
+   fun:_ZN6SkPathC1Ev
+   fun:_ZN11SkClipStack3RecC1EiRK6SkRectN8SkRegion2OpEb
+   fun:_ZN11SkClipStack11clipDevRectERK6SkRectN8SkRegion2OpEb
+   fun:_ZN8SkCanvas8clipRectERK6SkRectN8SkRegion2OpEb
+   fun:_ZN7WebCore15GraphicsContext4clipERKNS_9FloatRectE
+   fun:_ZN7WebCore15GraphicsContext4clipERKNS_7IntRectE
+}
+{
+   bug_148640
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7content21RenderProcessHostImplC1EPNS_14BrowserContextEPNS_20StoragePartitionImplEb
+   fun:_ZN16SiteInstanceImpl10GetProcessEv
+   fun:_ZN7content18RenderViewHostImplC1EPNS_12SiteInstanceEPNS_22RenderViewHostDelegateEPNS_24RenderWidgetHostDelegateEibPNS_23SessionStorageNamespaceE
+   fun:_ZN20InterstitialPageImpl20CreateRenderViewHostEv
+   fun:_ZN20InterstitialPageImpl4ShowEv
+   fun:_ZN14captive_portal28MockInterstitialPageDelegateC1EPN7content11WebContentsE
 }
 
 #-----------------------------------------------------------------------
