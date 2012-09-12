@@ -20,7 +20,7 @@
   <property name="asset.absolute.dir" location="${out.dir}/assets" />
 
   <path id="out.dex.jar.input.ref">
-    <filelist files="${INPUT_JARS_PATHS}"/>
+    <fileset dir="${PRODUCT_DIR}/android_webview_test/java/libs"/>
   </path>
   <property name="java.compilerargs" value="-classpath ${toString:out.dex.jar.input.ref}"/>
 
@@ -41,7 +41,7 @@
       <fileset dir="${out.dir}/classes" includes="**/*.class"/>
       <zipfileset
          includes="**/*.class"
-         src="${PRODUCT_DIR}/lib.java/chromium_android_webview_javatests.jar"/>
+         src="${PRODUCT_DIR}/android_webview/java/libs/chromium_android_webview_javatests.jar"/>
     </jar>
 
   </target>
