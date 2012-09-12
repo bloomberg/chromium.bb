@@ -471,6 +471,7 @@ incremental = _config(
   uprev=False,
   overlays=constants.PUBLIC_OVERLAYS,
   prebuilts=False,
+  description='Incremental Builds',
 )
 
 # This builds with more source available.
@@ -502,6 +503,7 @@ full.add_config('chromiumos-sdk',
 _config.add_raw_config('refresh-packages',
   boards=['x86-generic', 'arm-generic'],
   build_type=constants.REFRESH_PACKAGES_TYPE,
+  description='Check upstream Gentoo for package updates',
 )
 
 incremental.add_config('x86-generic-incremental',
@@ -554,7 +556,10 @@ chromium_pfq = _config(
 
 # TODO(davidjames): Convert this to an external config once the unified master
 # logic is ready.
-internal_chromium_pfq = internal.derive(chromium_pfq)
+internal_chromium_pfq = internal.derive(
+  chromium_pfq,
+  description='Preflight Chromium Build (internal)',
+)
 
 internal_chromium_pfq.add_config('x86-generic-chromium-pfq',
   boards=['x86-generic'],
@@ -590,6 +595,7 @@ chrome_pfq = internal_chromium_pfq.derive(
   hw_tests_num=1,
   hw_tests_pool=constants.HWTEST_CHROME_PFQ_POOL,
   hw_tests_timeout=90*60,
+  description='Preflight Chrome build (internal)',
 )
 
 chrome_pfq.add_config('alex-chrome-pfq',
@@ -667,7 +673,7 @@ _toolchain = \
                 gcc_githash='gcc.gnu.org/branches/google/main',
                 trybot_list=False,
                 use_sdk=False,
-                description='Toolchain',)
+                description='Test upstream google gcc (main branch)',)
 
 _toolchain.add_config('x86-generic-toolchain',
   boards=['x86-generic', 'amd64-host'],
@@ -682,7 +688,7 @@ _toolchain_minor = \
                 gcc_githash='gcc.gnu.org/branches/google/gcc-4_7-mobile',
                 trybot_list=False,
                 use_sdk=False,
-                description='Toolchain',)
+                description='Test upstream google gcc (4.7.x)',)
 
 _toolchain_minor.add_config('x86-generic-toolchain_minor',
   boards=['x86-generic', 'amd64-host'],
@@ -725,10 +731,14 @@ internal_paladin = internal.derive(paladin,
   overlays=constants.BOTH_OVERLAYS,
   vm_tests=None,
   hw_tests_pool=constants.HWTEST_PALADIN_POOL,
+  description=paladin['description'] + ' (internal)',
 )
 
-internal_incremental = internal.derive(incremental,
-                                       overlays=constants.BOTH_OVERLAYS)
+internal_incremental = internal.derive(
+  incremental,
+  overlays=constants.BOTH_OVERLAYS,
+  description='Incremental Builds (internal)',
+)
 
 internal_pfq_branch.add_config('x86-alex-pre-flight-branch',
   master=True,
@@ -814,6 +824,7 @@ _internal_toolchain = _toolchain.derive(internal, official,
   use_lkgm=True,
   useflags=['chrome_internal'],
   build_tests=True,
+  description=_toolchain['description'] + ' (internal)',
 )
 
 _internal_toolchain.add_config('x86-alex-toolchain',
@@ -857,7 +868,7 @@ _release = full.derive(official, internal,
   vm_tests=constants.FULL_AU_TEST_TYPE,
   upload_hw_test_artifacts=True,
   trybot_list=True,
-  description="Release Builds",
+  description="Release Builds (canary) (internal)",
 )
 
 _release.add_config('x86-mario-release',
@@ -946,6 +957,7 @@ _arm_release.add_config('daisy-release',
 _factory_release = _release.derive(
   prebuilts=False,
   upload_hw_test_artifacts=False,
+  description='Factory Builds',
 )
 
 _firmware_release = _release.derive(
@@ -955,6 +967,7 @@ _firmware_release = _release.derive(
   vm_tests=None,
   prebuilts=False,
   upload_hw_test_artifacts=False,
+  description='Firmware Builds',
 )
 
 # This is an example firmware branch configuration for x86.
