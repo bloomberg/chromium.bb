@@ -3036,6 +3036,9 @@ void RenderViewImpl::PopulateDocumentStateFromPending(
 
   document_state->set_referrer_policy(params.referrer.policy);
   document_state->set_is_overriding_user_agent(params.is_overriding_user_agent);
+  document_state->set_must_reset_scroll_and_scale_state(
+      params.navigation_type ==
+          ViewMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL);
 }
 
 NavigationState* RenderViewImpl::CreateNavigationStateFromPending() {
@@ -3247,6 +3250,11 @@ void RenderViewImpl::didCommitProvisionalLoad(WebFrame* frame,
 
   if (document_state->commit_load_time().is_null())
     document_state->set_commit_load_time(Time::Now());
+
+  if (document_state->must_reset_scroll_and_scale_state()) {
+    webview()->resetScrollAndScaleState();
+    document_state->set_must_reset_scroll_and_scale_state(false);
+  }
 
   if (is_new_navigation) {
     // When we perform a new navigation, we need to update the last committed

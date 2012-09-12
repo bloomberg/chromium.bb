@@ -197,6 +197,15 @@ class DocumentState : public WebKit::WebDataSource::ExtraData {
     is_overriding_user_agent_ = state;
   }
 
+  // True if we have to reset the scroll and scale state of the page
+  // after the provisional load has been committed.
+  bool must_reset_scroll_and_scale_state() const {
+    return must_reset_scroll_and_scale_state_;
+  }
+  void set_must_reset_scroll_and_scale_state(bool state) {
+    must_reset_scroll_and_scale_state_ = state;
+  }
+
   void set_was_prefetcher(bool value) { was_prefetcher_ = value; }
   bool was_prefetcher() const { return was_prefetcher_; }
 
@@ -279,6 +288,7 @@ class DocumentState : public WebKit::WebDataSource::ExtraData {
   bool use_error_page_;
 
   bool is_overriding_user_agent_;
+  bool must_reset_scroll_and_scale_state_;
 
   // A prefetcher is a page that contains link rel=prefetch elements.
   bool was_prefetcher_;
