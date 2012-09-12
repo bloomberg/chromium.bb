@@ -65,11 +65,12 @@ ExtensionPopup::ExtensionPopup(
     Browser* browser,
     extensions::ExtensionHost* host,
     views::View* anchor_view,
-    views::BubbleBorder::ArrowLocation arrow_location)
+    views::BubbleBorder::ArrowLocation arrow_location,
+    ShowAction show_action)
     : BubbleDelegateView(anchor_view, arrow_location),
       extension_host_(host),
-      inspect_with_devtools_(false),
       close_bubble_factory_(this) {
+  inspect_with_devtools_ = show_action == SHOW_AND_INSPECT;
   // Adjust the margin so that contents fit better.
   const int margin = views::BubbleBorder::GetCornerRadius() / 2;
   set_margins(gfx::Insets(margin, margin, margin, margin));
@@ -176,12 +177,13 @@ ExtensionPopup* ExtensionPopup::ShowPopup(
     const GURL& url,
     Browser* browser,
     views::View* anchor_view,
-    views::BubbleBorder::ArrowLocation arrow_location) {
+    views::BubbleBorder::ArrowLocation arrow_location,
+    ShowAction show_action) {
   ExtensionProcessManager* manager =
       browser->profile()->GetExtensionProcessManager();
   extensions::ExtensionHost* host = manager->CreatePopupHost(url, browser);
   ExtensionPopup* popup = new ExtensionPopup(browser, host, anchor_view,
-      arrow_location);
+      arrow_location, show_action);
   views::BubbleDelegateView::CreateBubble(popup);
 
 #if defined(USE_ASH)

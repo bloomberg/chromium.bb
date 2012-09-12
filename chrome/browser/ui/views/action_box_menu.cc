@@ -81,6 +81,9 @@ views::Background* ActionBoxMenu::CreateMenuBackground() {
   return views::Background::CreateSolidBackground(background_color);
 }
 
+void ActionBoxMenu::InspectPopup(ExtensionAction* action) {
+}
+
 int ActionBoxMenu::GetCurrentTabId() const {
   return 0;
 }

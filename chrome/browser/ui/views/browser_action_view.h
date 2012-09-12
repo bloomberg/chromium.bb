@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "content/public/browser/notification_observer.h"
 #include "ui/views/context_menu_controller.h"
@@ -40,7 +41,8 @@ class BrowserActionView : public views::View {
  public:
   // Need DragController here because BrowserActionView could be
   // dragged/dropped.
-  class Delegate : public views::DragController {
+  class Delegate : public views::DragController,
+                   public ExtensionContextMenuModel::PopupDelegate {
    public:
     // Returns the current tab's ID, or -1 if there is no current tab.
     virtual int GetCurrentTabId() const = 0;

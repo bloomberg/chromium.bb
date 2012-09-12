@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/views/browser_action_view.h"
 #include "chrome/browser/ui/views/extensions/browser_action_overflow_menu_controller.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
+#include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "content/public/browser/notification_observer.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/tween.h"
@@ -20,7 +21,6 @@
 #include "ui/views/widget/widget_observer.h"
 
 class BrowserActionButton;
-class ExtensionPopup;
 
 namespace ui {
 class SlideAnimation;
@@ -192,6 +192,7 @@ class BrowserActionsContainer
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
 
   // Overridden from BrowserActionView::Delegate:
+  virtual void InspectPopup(ExtensionAction* action) OVERRIDE;
   virtual int GetCurrentTabId() const OVERRIDE;
   virtual void OnBrowserActionExecuted(BrowserActionButton* button) OVERRIDE;
   virtual void OnBrowserActionVisibilityChanged() OVERRIDE;
@@ -297,7 +298,8 @@ class BrowserActionsContainer
   bool ShouldDisplayBrowserAction(const extensions::Extension* extension);
 
   // Show a popup.
-  void ShowPopup(BrowserActionButton* button, const GURL& popup_url);
+  void ShowPopup(BrowserActionButton* button,
+                 ExtensionPopup::ShowAction show_action);
 
   // The vector of browser actions (icons/image buttons for each action). Note
   // that not every BrowserAction in the ToolbarModel will necessarily be in

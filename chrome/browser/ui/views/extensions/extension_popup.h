@@ -20,6 +20,11 @@ class ExtensionPopup : public views::BubbleDelegateView,
                        public content::NotificationObserver,
                        public views::WidgetFocusChangeListener {
  public:
+  enum ShowAction {
+    SHOW,
+    SHOW_AND_INSPECT
+  };
+
   virtual ~ExtensionPopup();
 
   // Create and show a popup with |url| positioned adjacent to |anchor_view|.
@@ -36,7 +41,8 @@ class ExtensionPopup : public views::BubbleDelegateView,
       const GURL& url,
       Browser* browser,
       views::View* anchor_view,
-      views::BubbleBorder::ArrowLocation arrow_location);
+      views::BubbleBorder::ArrowLocation arrow_location,
+      ShowAction show_action);
 
   extensions::ExtensionHost* host() const { return extension_host_.get(); }
 
@@ -65,7 +71,8 @@ class ExtensionPopup : public views::BubbleDelegateView,
   ExtensionPopup(Browser* browser,
                  extensions::ExtensionHost* host,
                  views::View* anchor_view,
-                 views::BubbleBorder::ArrowLocation arrow_location);
+                 views::BubbleBorder::ArrowLocation arrow_location,
+                 ShowAction show_action);
 
   // Show the bubble, focus on its content, and register listeners.
   void ShowBubble();

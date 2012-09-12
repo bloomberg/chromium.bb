@@ -195,7 +195,7 @@ void BrowserActionButton::ShowContextMenuForView(View* source,
 
   // Reconstructs the menu every time because the menu's contents are dynamic.
   scoped_refptr<ExtensionContextMenuModel> context_menu_contents_(
-      new ExtensionContextMenuModel(extension(), browser_));
+      new ExtensionContextMenuModel(extension(), browser_, delegate_));
   views::MenuModelAdapter menu_model_adapter(context_menu_contents_.get());
   menu_runner_.reset(new views::MenuRunner(menu_model_adapter.CreateMenu()));
 

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -30,6 +31,7 @@ class MenuRunner;
 // given PageAction and notify the extension when the icon is clicked.
 class PageActionImageView : public views::ImageView,
                             public ImageLoadingTracker::Observer,
+                            public ExtensionContextMenuModel::PopupDelegate,
                             public views::WidgetObserver,
                             public views::ContextMenuController,
                             public content::NotificationObserver,
@@ -59,6 +61,9 @@ class PageActionImageView : public views::ImageView,
                              const std::string& extension_id,
                              int index) OVERRIDE;
 
+  // Overridden from ExtensionContextMenuModel::Delegate
+  virtual void InspectPopup(ExtensionAction* action) OVERRIDE;
+
   // Overridden from views::WidgetObserver:
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
 
@@ -81,14 +86,15 @@ class PageActionImageView : public views::ImageView,
   void UpdateVisibility(content::WebContents* contents, const GURL& url);
 
   // Either notify listeners or show a popup depending on the page action.
-  void ExecuteAction(int button);
+  void ExecuteAction(ExtensionPopup::ShowAction show_action);
 
  private:
   // Overridden from ExtensionAction::IconAnimation::Observer:
   virtual void OnIconChanged() OVERRIDE;
 
   // Shows the popup, with the given URL.
-  void ShowPopupWithURL(const GURL& popup_url);
+  void ShowPopupWithURL(const GURL& popup_url,
+                        ExtensionPopup::ShowAction show_action);
 
   // Hides the active popup, if there is one.
   void HidePopup();

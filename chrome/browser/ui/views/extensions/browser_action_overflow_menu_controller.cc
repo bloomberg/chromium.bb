@@ -109,7 +109,7 @@ bool BrowserActionOverflowMenuController::ShowContextMenu(
     return false;
 
   scoped_refptr<ExtensionContextMenuModel> context_menu_contents =
-      new ExtensionContextMenuModel(extension, browser_);
+      new ExtensionContextMenuModel(extension, browser_, owner_);
   views::MenuModelAdapter context_menu_model_adapter(
       context_menu_contents.get());
   views::MenuRunner context_menu_runner(

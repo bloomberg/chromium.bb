@@ -43,6 +43,7 @@ class ActionBoxMenu : public views::MenuDelegate,
   virtual views::Background* CreateMenuBackground() OVERRIDE;
 
   // Overridden from BrowserActionView::Delegate and DragController overrides:
+  virtual void InspectPopup(ExtensionAction* button) OVERRIDE;
   virtual int GetCurrentTabId() const OVERRIDE;
   virtual void OnBrowserActionExecuted(BrowserActionButton* button) OVERRIDE;
   virtual void OnBrowserActionVisibilityChanged() OVERRIDE;
