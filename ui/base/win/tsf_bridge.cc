@@ -104,32 +104,39 @@ class TsfBridgeDelegate : public TsfBridge {
   virtual bool EnableIME() OVERRIDE {
     DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
     DCHECK(IsInitialized());
-    if (SUCCEEDED(thread_manager_->SetFocus(document_manager_))) {
-      return true;
-    }
-    return false;
+
+    // Since EnableIME and DisableIME are designed to be a swap operation of
+    // |document_manager_| and |disabled_document_manager_|, do nothing unless
+    // the current focused document manager is |disabled_document_manager_|.
+    // In other words, ITfThreadMgr::SetFocus should be called if and only if
+    // TsfBridge actually has TSF input focus. Otherwise, TSF input focus will
+    // be inconsistent with Win32 input focus.
+    if (!IsFocused(disabled_document_manager_))
+      return false;
+
+    return SUCCEEDED(thread_manager_->SetFocus(document_manager_));
   }
 
   // TsfBridge override.
   virtual bool DisableIME() OVERRIDE {
     DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
     DCHECK(IsInitialized());
-    if (SUCCEEDED(thread_manager_->SetFocus(disabled_document_manager_))) {
-      return true;
-    }
-    return false;
+
+    // Do nothing unless the current focused document manager is
+    // |document_manager_|. See the comment in EnableIME.
+    if (!IsFocused(document_manager_))
+      return false;
+
+    return SUCCEEDED(thread_manager_->SetFocus(disabled_document_manager_));
   }
 
   // TsfBridge override.
   virtual bool CancelComposition() OVERRIDE {
     DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
     DCHECK(IsInitialized());
-    // If current focused document manager is not |document_manager_|, do
+    // If the current focused document manager is not |document_manager_|, do
     // nothing here.
-    base::win::ScopedComPtr<ITfDocumentMgr> focused_document_mangaer;
-    if (FAILED(thread_manager_->GetFocus(focused_document_mangaer.Receive())))
-      return false;
-    if (!focused_document_mangaer.IsSameObject(document_manager_))
+    if (!IsFocused(document_manager_))
       return false;
 
     base::win::ScopedComPtr<ITfContext> context;
@@ -291,6 +298,14 @@ class TsfBridgeDelegate : public TsfBridge {
     }
 
     return true;
+  }
+
+  // Returns true if |document_manager| is the focused document manager.
+  bool IsFocused(base::win::ScopedComPtr<ITfDocumentMgr> document_manager) {
+    base::win::ScopedComPtr<ITfDocumentMgr> focused_document_mangaer;
+    if (FAILED(thread_manager_->GetFocus(focused_document_mangaer.Receive())))
+      return false;
+    return focused_document_mangaer.IsSameObject(document_manager);
   }
 
   // Returns true if already initialized.
