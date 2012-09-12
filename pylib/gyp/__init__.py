@@ -12,6 +12,7 @@ import re
 import shlex
 import sys
 import traceback
+from gyp.common import GypError
 
 # Default debug modes for GYP
 debug = {}
@@ -42,13 +43,6 @@ def FindBuildFiles():
     if file.endswith(extension):
       build_files.append(file)
   return build_files
-
-
-class GypError(Exception):
-  """Error class representing an error, which is to be presented
-  to the user.  The main entry point will catch and display this.
-  """
-  pass
 
 
 def Load(build_files, format, default_variables={},
