@@ -523,6 +523,7 @@
         'wm/workspace/workspace_event_handler_test_helper.cc',
         'wm/workspace/workspace_event_handler_test_helper.h',
         'wm/workspace/workspace_event_handler_unittest.cc',
+        'wm/workspace/workspace_layout_manager2_unittest.cc',
         'wm/workspace/workspace_manager_unittest.cc',
         'wm/workspace/workspace_manager2_unittest.cc',
         'wm/workspace/workspace_window_resizer_unittest.cc',

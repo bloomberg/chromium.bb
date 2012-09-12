@@ -120,9 +120,21 @@ void WorkspaceLayoutManager2::OnWindowPropertyChanged(Window* window,
         !WorkspaceManager2::IsMaximizedState(old_state)) {
       SetRestoreBoundsInParent(window, window->bounds());
     }
+    // When restoring from a minimized state, we want to restore to the
+    // previous (maybe L/R maximized) state. Since we do also want to keep the
+    // restore rectangle, we set the restore rectangle to the rectangle we want
+    // to restore to and restore it after we switched so that it is preserved.
+    gfx::Rect restore;
+    if (old_state == ui::SHOW_STATE_MINIMIZED &&
+        (new_state == ui::SHOW_STATE_NORMAL ||
+         new_state == ui::SHOW_STATE_DEFAULT) &&
+        GetRestoreBoundsInScreen(window)) {
+      restore = *GetRestoreBoundsInScreen(window);
+      SetRestoreBoundsInScreen(window, window->bounds());
+    }
 
     // If maximizing or restoring, clone the layer. WorkspaceManager will use it
-    // (and take overship of it) when animating. Ideally we could use that of
+    // (and take ownership of it) when animating. Ideally we could use that of
     // BaseLayoutManager, but that proves problematic. In particular when
     // restoring we need to animate on top of the workspace animating in.
     ui::Layer* cloned_layer = NULL;
@@ -136,6 +148,10 @@ void WorkspaceLayoutManager2::OnWindowPropertyChanged(Window* window,
     }
     UpdateBoundsFromShowState(window);
     ShowStateChanged(window, old_state, cloned_layer);
+
+    // Set the restore rectangle to the previously set restore rectangle.
+    if (!restore.IsEmpty())
+      SetRestoreBoundsInScreen(window, restore);
   }
 
   if (key == aura::client::kAlwaysOnTopKey &&
