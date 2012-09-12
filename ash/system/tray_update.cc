@@ -33,9 +33,32 @@ const int kUpdateNaggingTimeSeconds = 24 * 60 * 60;
 // How long should the nag reminder be displayed?
 const int kShowUpdateNaggerForSeconds = 15;
 
+int DecideResource(ash::UpdateObserver::UpdateSeverity severity, bool dark) {
+  switch (severity) {
+    case ash::UpdateObserver::UPDATE_NORMAL:
+      return dark ? IDR_AURA_UBER_TRAY_UPDATE_DARK:
+                    IDR_AURA_UBER_TRAY_UPDATE;
+
+    case ash::UpdateObserver::UPDATE_LOW_GREEN:
+      return dark ? IDR_AURA_UBER_TRAY_UPDATE_DARK_GREEN :
+                    IDR_AURA_UBER_TRAY_UPDATE_GREEN;
+
+    case ash::UpdateObserver::UPDATE_HIGH_ORANGE:
+      return dark ? IDR_AURA_UBER_TRAY_UPDATE_DARK_ORANGE :
+                    IDR_AURA_UBER_TRAY_UPDATE_ORANGE;
+
+    case ash::UpdateObserver::UPDATE_SEVERE_RED:
+      return dark ? IDR_AURA_UBER_TRAY_UPDATE_DARK_RED :
+                    IDR_AURA_UBER_TRAY_UPDATE_RED;
+  }
+
+  NOTREACHED() << "Unknown update severity level.";
+  return 0;
+}
+
 class UpdateView : public ash::internal::ActionableView {
  public:
-  UpdateView() {
+  explicit UpdateView(ash::UpdateObserver::UpdateSeverity severity) {
     SetLayoutManager(new
         views::BoxLayout(views::BoxLayout::kHorizontal,
         ash::kTrayPopupPaddingHorizontal, 0,
@@ -44,7 +67,7 @@ class UpdateView : public ash::internal::ActionableView {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     views::ImageView* image =
         new ash::internal::FixedSizedImageView(0, ash::kTrayPopupItemHeight);
-    image->SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_UPDATE_DARK).
+    image->SetImage(bundle.GetImageNamed(DecideResource(severity, true)).
         ToImageSkia());
 
     AddChildView(image);
@@ -123,7 +146,8 @@ class UpdateNagger : public ui::LayerAnimationObserver {
 }  // namespace tray
 
 TrayUpdate::TrayUpdate()
-    : TrayImageItem(IDR_AURA_UBER_TRAY_UPDATE) {
+    : TrayImageItem(IDR_AURA_UBER_TRAY_UPDATE),
+      severity_(UpdateObserver::UPDATE_NORMAL) {
 }
 
 TrayUpdate::~TrayUpdate() {}
@@ -135,7 +159,7 @@ bool TrayUpdate::GetInitialVisibility() {
 views::View* TrayUpdate::CreateDefaultView(user::LoginStatus status) {
   if (!Shell::GetInstance()->tray_delegate()->SystemShouldUpgrade())
     return NULL;
-  return new UpdateView;
+  return new UpdateView(severity_);
 }
 
 views::View* TrayUpdate::CreateDetailedView(user::LoginStatus status) {
@@ -152,7 +176,9 @@ void TrayUpdate::DestroyDetailedView() {
   }
 }
 
-void TrayUpdate::OnUpdateRecommended() {
+void TrayUpdate::OnUpdateRecommended(UpdateObserver::UpdateSeverity severity) {
+  severity_ = severity;
+  SetImageFromResourceId(DecideResource(severity_, false));
   tray_view()->SetVisible(true);
   if (!Shell::GetInstance()->shelf()->IsVisible() && !nagger_.get()) {
     // The shelf is not visible, and there is no nagger scheduled.

@@ -1017,9 +1017,31 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                        const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
       case chrome::NOTIFICATION_UPGRADE_RECOMMENDED: {
+        UpgradeDetector* detector =
+            content::Source<UpgradeDetector>(source).ptr();
+        ash::UpdateObserver::UpdateSeverity severity =
+            ash::UpdateObserver::UPDATE_NORMAL;
+        switch (detector->upgrade_notification_stage()) {
+          case UpgradeDetector::UPGRADE_ANNOYANCE_SEVERE:
+            severity = ash::UpdateObserver::UPDATE_SEVERE_RED;
+            break;
+
+          case UpgradeDetector::UPGRADE_ANNOYANCE_HIGH:
+            severity = ash::UpdateObserver::UPDATE_HIGH_ORANGE;
+            break;
+
+          case UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED:
+            severity = ash::UpdateObserver::UPDATE_LOW_GREEN;
+            break;
+
+          case UpgradeDetector::UPGRADE_ANNOYANCE_LOW:
+          default:
+            severity = ash::UpdateObserver::UPDATE_NORMAL;
+            break;
+        }
         ash::UpdateObserver* observer = tray_->update_observer();
         if (observer)
-          observer->OnUpdateRecommended();
+          observer->OnUpdateRecommended(severity);
         break;
       }
       case chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED: {

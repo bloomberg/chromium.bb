@@ -75,6 +75,10 @@ class UpgradeDetector {
   // within the wrench menu.
   int GetIconResourceID(UpgradeNotificationIconType type);
 
+  UpgradeNotificationAnnoyanceLevel upgrade_notification_stage() const {
+    return upgrade_notification_stage_;
+  }
+
  protected:
   UpgradeDetector();
 

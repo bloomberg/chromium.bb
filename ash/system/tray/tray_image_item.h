@@ -23,6 +23,9 @@ class TrayImageItem : public SystemTrayItem {
 
   views::View* tray_view();
 
+  // Changes the icon of the tray-view to the specified resource.
+  void SetImageFromResourceId(int resource_id);
+
  protected:
   virtual bool GetInitialVisibility() = 0;
 

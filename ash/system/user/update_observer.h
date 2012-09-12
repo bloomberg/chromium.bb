@@ -11,9 +11,16 @@ namespace ash {
 
 class ASH_EXPORT UpdateObserver {
  public:
+  enum UpdateSeverity {
+    UPDATE_NORMAL,
+    UPDATE_LOW_GREEN,
+    UPDATE_HIGH_ORANGE,
+    UPDATE_SEVERE_RED,
+  };
+
   virtual ~UpdateObserver() {}
 
-  virtual void OnUpdateRecommended() = 0;
+  virtual void OnUpdateRecommended(UpdateSeverity severity) = 0;
 };
 
 }  // namespace ash

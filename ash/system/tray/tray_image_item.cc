@@ -25,6 +25,14 @@ views::View* TrayImageItem::tray_view() {
   return tray_view_;
 }
 
+void TrayImageItem::SetImageFromResourceId(int resource_id) {
+  resource_id_ = resource_id;
+  if (!tray_view_)
+    return;
+  tray_view_->image_view()->SetImage(ui::ResourceBundle::GetSharedInstance().
+      GetImageNamed(resource_id_).ToImageSkia());
+}
+
 views::View* TrayImageItem::CreateTrayView(user::LoginStatus status) {
   CHECK(tray_view_ == NULL);
   tray_view_ = new TrayItemView;
