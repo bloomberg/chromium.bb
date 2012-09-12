@@ -471,10 +471,6 @@ void WrenchMenuModel::Build() {
   AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
 #if defined(OS_WIN)
   if (base::win::IsMetroProcess()) {
-    // Metro mode.
-    AddSeparator(ui::SPACING_SEPARATOR);
-    AddItemWithStringId(IDC_WIN8_DESKTOP_RESTART, IDS_WIN8_DESKTOP_RESTART);
-    AddSeparator(ui::SPACING_SEPARATOR);
     // In Metro, we only show the New Window options if there isn't already
     // a window of the requested type (incognito or not) that is available.
     if (browser_->profile()->IsOffTheRecord()) {
@@ -487,12 +483,6 @@ void WrenchMenuModel::Build() {
       AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
     }
   } else {
-    // Desktop mode.
-    if (base::win::GetVersion() > base::win::VERSION_WIN7) {
-      AddSeparator(ui::SPACING_SEPARATOR);
-      AddItemWithStringId(IDC_WIN8_METRO_RESTART, IDS_WIN8_METRO_RESTART);
-      AddSeparator(ui::SPACING_SEPARATOR);
-    }
     AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
     AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
   }
@@ -511,6 +501,20 @@ void WrenchMenuModel::Build() {
   bookmark_sub_menu_model_.reset(new BookmarkSubMenuModel(this, browser_));
   AddSubMenuWithStringId(IDC_BOOKMARKS_MENU, IDS_BOOKMARKS_MENU,
                          bookmark_sub_menu_model_.get());
+
+#if defined(OS_WIN)
+  if (base::win::IsMetroProcess()) {
+    // Metro mode, add the 'Relaunch Chrome in desktop mode'.
+    AddSeparator(ui::SPACING_SEPARATOR);
+    AddItemWithStringId(IDC_WIN8_DESKTOP_RESTART, IDS_WIN8_DESKTOP_RESTART);
+    AddSeparator(ui::SPACING_SEPARATOR);
+  } else if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    // In Windows 8 desktop, add the 'Relaunch Chrome in Windows 8 mode'.
+    AddSeparator(ui::SPACING_SEPARATOR);
+    AddItemWithStringId(IDC_WIN8_METRO_RESTART, IDS_WIN8_METRO_RESTART);
+    AddSeparator(ui::SPACING_SEPARATOR);
+  }
+#endif
 
   // Append the full menu including separators. The final separator only gets
   // appended when this is a touch menu - otherwise it would get added twice.

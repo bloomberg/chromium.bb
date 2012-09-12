@@ -17678,11 +17678,11 @@ Battery full
     </message>
 	<message name="IDS_WIN8_DESKTOP_RESTART"
              desc="Text for the menu item to restart chrome in desktop. Aplies to Windows 8 only">
-      Restart Chrome in desktop mode
+      Relaunch Chrome in desktop mode
     </message>
 	<message name="IDS_WIN8_METRO_RESTART"
              desc="Text for the menu item to restart chrome in metro. Aplies to Windows 8 only">
-      Restart Chrome in Windows 8 mode
+      Relaunch Chrome in Windows 8 mode
     </message>
 
     <!-- Media Galleries. -->
