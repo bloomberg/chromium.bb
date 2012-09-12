@@ -183,7 +183,8 @@ bool AudioCapturer::IsSupported() {
 scoped_ptr<AudioCapturer> AudioCapturer::Create() {
   CommandLine* cl = CommandLine::ForCurrentProcess();
   FilePath path = cl->GetSwitchValuePath(kAudioPipeOptionName);
-  DCHECK(!path.empty());
+  if (path.empty())
+    return scoped_ptr<AudioCapturer>();
   return scoped_ptr<AudioCapturer>(new AudioCapturerLinux(path));
 }
 
