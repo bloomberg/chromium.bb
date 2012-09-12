@@ -66,11 +66,11 @@ void GDataWapiFeedProcessor::UpdateFileCountUmaHistograms(
     const FeedToFileResourceMapUmaStats& uma_stats) const {
   const int num_total_files =
       uma_stats.num_hosted_documents + uma_stats.num_regular_files;
-  UMA_HISTOGRAM_COUNTS("GData.NumberOfRegularFiles",
+  UMA_HISTOGRAM_COUNTS("Drive.NumberOfRegularFiles",
                        uma_stats.num_regular_files);
-  UMA_HISTOGRAM_COUNTS("GData.NumberOfHostedDocuments",
+  UMA_HISTOGRAM_COUNTS("Drive.NumberOfHostedDocuments",
                        uma_stats.num_hosted_documents);
-  UMA_HISTOGRAM_COUNTS("GData.NumberOfTotalFiles", num_total_files);
+  UMA_HISTOGRAM_COUNTS("Drive.NumberOfTotalFiles", num_total_files);
   for (FeedToFileResourceMapUmaStats::EntryKindToCountMap::const_iterator iter =
            uma_stats.num_files_with_entry_kind.begin();
        iter != uma_stats.num_files_with_entry_kind.end();

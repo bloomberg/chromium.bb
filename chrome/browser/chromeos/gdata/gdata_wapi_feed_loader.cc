@@ -511,7 +511,7 @@ void GDataWapiFeedLoader::OnGetDocuments(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (params->feed_list.empty()) {
-    UMA_HISTOGRAM_TIMES("Gdata.InitialFeedLoadTime",
+    UMA_HISTOGRAM_TIMES("Drive.InitialFeedLoadTime",
                         base::TimeTicks::Now() - start_time);
   }
 
@@ -599,7 +599,7 @@ void GDataWapiFeedLoader::OnGetDocuments(
   FOR_EACH_OBSERVER(Observer, observers_,
                     OnDocumentFeedFetched(num_accumulated_entries));
 
-  UMA_HISTOGRAM_TIMES("Gdata.EntireFeedLoadTime",
+  UMA_HISTOGRAM_TIMES("Drive.EntireFeedLoadTime",
                       base::TimeTicks::Now() - start_time);
 
   // Run the callback so the client can process the retrieved feeds.
