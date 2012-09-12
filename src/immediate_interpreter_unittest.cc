@@ -3487,4 +3487,54 @@ TEST(ImmediateInterpreterTest, ScrollResetTapTest) {
       EXPECT_EQ(kIdl, ii.tap_to_click_state_);
   }
 }
+
+TEST(ImmediateInterpreterTest, BasicButtonTest) {
+  ImmediateInterpreter ii(NULL, NULL, NULL);
+
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    96.085106,  // right edge
+    57.492310,  // bottom edge
+    1,  // pixels/TP width
+    1,  // pixels/TP height
+    25.4,  // screen DPI x
+    25.4,  // screen DPI y
+    2,  // max fingers
+    3,  // max touch
+    0,  // t5r2
+    1,  // semi-mt
+    1  // is button pad
+  };
+
+  HardwareState hardware_states[] = {
+    // time, buttons down, finger count, touch count, finger states pointer
+    { 0.1, 0, 0, 0, NULL },
+    { 0.3, GESTURES_BUTTON_LEFT, 0, 0, NULL },   // delay left button down
+    { 0.5, GESTURES_BUTTON_LEFT, 0, 0, NULL },
+    { 0.9, 0, 0, 0, NULL },                      // left button up
+    { 1.1, GESTURES_BUTTON_RIGHT, 0, 0, NULL },  // not delay right button down
+    { 1.3, GESTURES_BUTTON_RIGHT, 0, 0, NULL },
+    { 1.5, 0, 0, 0, NULL },                      // right button up
+  };
+
+  ii.SetHardwareProperties(hwprops);
+
+  for (size_t idx = 0; idx < arraysize(hardware_states); ++idx) {
+    Gesture* gs = ii.SyncInterpret(&hardware_states[idx], NULL);
+    if (idx < 2 || idx == 5) {
+      EXPECT_EQ(NULL, gs);
+    } else {
+      EXPECT_EQ(kGestureTypeButtonsChange, gs->type);
+      if (idx == 2)
+        EXPECT_EQ(GESTURES_BUTTON_LEFT, gs->details.buttons.down);
+      else if (idx == 3)
+        EXPECT_EQ(GESTURES_BUTTON_LEFT, gs->details.buttons.up);
+      else if (idx == 4)
+        EXPECT_EQ(GESTURES_BUTTON_RIGHT, gs->details.buttons.down);
+      else if (idx == 6)
+        EXPECT_EQ(GESTURES_BUTTON_RIGHT, gs->details.buttons.up);
+    }
+  }
+}
 }  // namespace gestures

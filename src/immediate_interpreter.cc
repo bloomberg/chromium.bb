@@ -1402,7 +1402,7 @@ int ImmediateInterpreter::EvaluateButtonType(
   }
   int num_pointing = pointing_.size();
   if (num_pointing <= 1)
-    return GESTURES_BUTTON_LEFT;
+    return hwstate.buttons_down;
   if (current_gesture_type_ == kGestureTypeScroll)
     return GESTURES_BUTTON_RIGHT;
   if (num_pointing == 3 && three_finger_click_enable_.val_)
@@ -1507,7 +1507,7 @@ bool ImmediateInterpreter::PointInLiftoffBrush(const FingerState& fs) const {
 }
 
 void ImmediateInterpreter::UpdateButtons(const HardwareState& hwstate) {
-  // Current hardware will only ever send a physical left-button down.
+  // TODO(miletus): To distinguish between left/right buttons down
   bool prev_button_down = prev_state_.buttons_down;
   bool button_down = hwstate.buttons_down;
   if (!prev_button_down && !button_down)
@@ -1516,12 +1516,13 @@ void ImmediateInterpreter::UpdateButtons(const HardwareState& hwstate) {
   bool phys_up_edge = !button_down && prev_button_down;
 
   if (phys_down_edge) {
-    button_type_ = GESTURES_BUTTON_LEFT;
     sent_button_down_ = false;
     button_down_timeout_ = hwstate.timestamp + button_evaluation_timeout_.val_;
   }
   if (!sent_button_down_) {
     button_type_ = EvaluateButtonType(hwstate);
+    if (button_type_ == 0)
+      Err("button type = 0?\n");
     // We send non-left buttons immediately, but delay left in case future
     // packets indicate non-left button.
     if (button_type_ != GESTURES_BUTTON_LEFT ||
