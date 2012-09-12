@@ -69,6 +69,29 @@ struct NaClAppThread *GetOnlyThread(struct NaClApp *nap) {
   return found_thread;
 }
 
+struct NaClSignalContext *StartGuestWithSharedMemory(
+    struct NaClApp *nap) {
+  char arg_string[32];
+  char *args[] = {"prog_name", arg_string};
+  uint32_t mmap_addr;
+  struct NaClSignalContext *expected_regs;
+
+  /*
+   * Allocate some space in untrusted address space.  We pass the
+   * address to the guest program so that we can share data with it.
+   */
+  mmap_addr = NaClCommonSysMmapIntern(
+      nap, NULL, sizeof(*expected_regs),
+      NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
+      NACL_ABI_MAP_PRIVATE | NACL_ABI_MAP_ANONYMOUS,
+      -1, 0);
+  SNPRINTF(arg_string, sizeof(arg_string), "0x%x", (unsigned int) mmap_addr);
+  expected_regs = (struct NaClSignalContext *) NaClUserToSys(nap, mmap_addr);
+
+  CHECK(NaClCreateMainThread(nap, NACL_ARRAY_SIZE(args), args, NULL));
+  return expected_regs;
+}
+
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
 
 /*
@@ -136,18 +159,50 @@ void TestSingleStepping(struct NaClAppThread *natp) {
 # error Unsupported architecture
 #endif
 
-int main(int argc, char **argv) {
-  struct NaClApp app;
-  struct NaClApp *nap = &app;
-  struct GioMemoryFileSnapshot gio_file;
-  char arg_string[32];
-  char *args[] = {"prog_name", arg_string};
-  uint32_t mmap_addr;
-  struct NaClSignalContext *expected_regs;
+void TestReceivingFault(struct NaClApp *nap) {
+  struct NaClSignalContext *expected_regs = StartGuestWithSharedMemory(nap);
   struct NaClSignalContext regs;
   struct NaClAppThread *natp;
   int signal = 0;
   int dummy_signal;
+
+  WaitForThreadToFault(nap);
+  NaClUntrustedThreadsSuspendAll(nap, /* save_registers= */ 1);
+  natp = GetOnlyThread(nap);
+  ASSERT_EQ(NaClAppThreadUnblockIfFaulted(natp, &signal), 1);
+  /*
+   * TODO(mseaborn): Move ExceptionToSignal() out of debug_stub and
+   * enable this check on Windows too.
+   */
+  if (!NACL_WINDOWS) {
+    ASSERT_EQ(signal, kBreakInstructionSignal);
+  }
+
+  /* Check that faulted_thread_count is updated correctly. */
+  ASSERT_EQ(nap->faulted_thread_count, 0);
+  /*
+   * Check that NaClAppThreadUnblockIfFaulted() returns false when
+   * called on a thread that is not blocked.
+   */
+  ASSERT_EQ(NaClAppThreadUnblockIfFaulted(natp, &dummy_signal), 0);
+
+  NaClAppThreadGetSuspendedRegisters(natp, &regs);
+  RegsAssertEqual(&regs, expected_regs);
+
+  /* Skip over the instruction that faulted. */
+  regs.prog_ctr += kBreakInstructionSize;
+  NaClAppThreadSetSuspendedRegisters(natp, &regs);
+
+  TestSingleStepping(natp);
+
+  NaClUntrustedThreadsResumeAll(nap);
+  CHECK(NaClWaitForMainThreadToExit(nap) == 0);
+}
+
+int main(int argc, char **argv) {
+  struct NaClApp app;
+  struct NaClApp *nap = &app;
+  struct GioMemoryFileSnapshot gio_file;
 
   NaClDebugExceptionHandlerStandaloneHandleArgs(argc, argv);
   NaClHandleBootstrapArgs(&argc, &argv);
@@ -181,51 +236,7 @@ int main(int argc, char **argv) {
 #endif
   CHECK(NaClFaultedThreadQueueEnable(nap));
 
-  /*
-   * Allocate some space in untrusted address space.  We pass the
-   * address to the guest program so that we can share data with it.
-   */
-  mmap_addr = NaClCommonSysMmapIntern(
-      nap, NULL, sizeof(*expected_regs),
-      NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
-      NACL_ABI_MAP_PRIVATE | NACL_ABI_MAP_ANONYMOUS,
-      -1, 0);
-  SNPRINTF(arg_string, sizeof(arg_string), "0x%x", (unsigned int) mmap_addr);
-  expected_regs = (struct NaClSignalContext *) NaClUserToSys(nap, mmap_addr);
-
-  CHECK(NaClCreateMainThread(nap, NACL_ARRAY_SIZE(args), args, NULL));
-
-  WaitForThreadToFault(nap);
-  NaClUntrustedThreadsSuspendAll(nap, /* save_registers= */ 1);
-  natp = GetOnlyThread(nap);
-  ASSERT_EQ(NaClAppThreadUnblockIfFaulted(natp, &signal), 1);
-  /*
-   * TODO(mseaborn): Move ExceptionToSignal() out of debug_stub and
-   * enable this check on Windows too.
-   */
-  if (!NACL_WINDOWS) {
-    ASSERT_EQ(signal, kBreakInstructionSignal);
-  }
-
-  /* Check that faulted_thread_count is updated correctly. */
-  ASSERT_EQ(nap->faulted_thread_count, 0);
-  /*
-   * Check that NaClAppThreadUnblockIfFaulted() returns false when
-   * called on a thread that is not blocked.
-   */
-  ASSERT_EQ(NaClAppThreadUnblockIfFaulted(natp, &dummy_signal), 0);
-
-  NaClAppThreadGetSuspendedRegisters(natp, &regs);
-  RegsAssertEqual(&regs, expected_regs);
-
-  /* Skip over the instruction that faulted. */
-  regs.prog_ctr += kBreakInstructionSize;
-  NaClAppThreadSetSuspendedRegisters(natp, &regs);
-
-  TestSingleStepping(natp);
-
-  NaClUntrustedThreadsResumeAll(nap);
-  CHECK(NaClWaitForMainThreadToExit(nap) == 0);
+  TestReceivingFault(nap);
 
   /*
    * Avoid calling exit() because it runs process-global destructors
