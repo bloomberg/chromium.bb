@@ -120,9 +120,11 @@ remoting.WcsLoader.prototype.start_ = function(token, onReady, onError) {
       onError(error);
     };
     var onValidateOk = function() {
-      // We can reach the authentication server and validate the token, so our
-      // best guess is that there's something wrong with the talkgadget service.
-      onValidateError(remoting.Error.SERVICE_UNAVAILABLE);
+      // We can reach the authentication server and validate the token. Either
+      // there's something wrong with the talkgadget service, or there is a
+      // cookie problem. Only the cookie problem can be fixed by the user, so
+      // suggest that fix.
+      onValidateError(remoting.Error.AUTHENTICATION_FAILED);
     }
     remoting.oauth2.validateToken(token, onValidateOk, onValidateError);
   }
