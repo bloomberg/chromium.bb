@@ -85,6 +85,7 @@ message OmniboxEventProto {
     BUILTIN = 6;           // Built-in URLs, such as chrome://version
     SHORTCUTS = 7;         // Recently selected omnibox suggestions
     EXTENSION_APPS = 8;    // Custom suggestions from extensions and/or apps
+    CONTACT = 9;           // The user's contacts
   }
 
   // The result set displayed on the completion popup
@@ -114,6 +115,7 @@ message OmniboxEventProto {
       SEARCH_OTHER_ENGINE = 10;   // A search with a non-default engine
       EXTENSION_APP = 11;         // An Extension App with a title/url that
                                   // contains the input
+      CONTACT = 12;               // One of the user's contacts
     };
     optional ResultType result_type = 2;
 

@@ -121,6 +121,8 @@ OmniboxEventProto::Suggestion::ResultType AsOmniboxEventResultType(
       return OmniboxEventProto::Suggestion::SEARCH_OTHER_ENGINE;
     case AutocompleteMatch::EXTENSION_APP:
       return OmniboxEventProto::Suggestion::EXTENSION_APP;
+    case AutocompleteMatch::CONTACT:
+      return OmniboxEventProto::Suggestion::CONTACT;
     default:
       NOTREACHED();
       return OmniboxEventProto::Suggestion::UNKNOWN_RESULT_TYPE;

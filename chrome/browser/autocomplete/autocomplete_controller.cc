@@ -33,6 +33,11 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/autocomplete/contact_provider_chromeos.h"
+#include "chrome/browser/chromeos/contacts/contact_manager.h"
+#endif
+
 namespace {
 
 // Converts the given type to an integer based on the AQS specification.
@@ -98,6 +103,11 @@ AutocompleteController::AutocompleteController(
 
   if (provider_types & AutocompleteProvider::TYPE_BUILTIN)
     providers_.push_back(new BuiltinProvider(this, profile));
+#if defined(OS_CHROMEOS)
+  if (provider_types & AutocompleteProvider::TYPE_CONTACT)
+    providers_.push_back(new ContactProvider(this, profile,
+        contacts::ContactManager::GetInstance()->GetWeakPtr()));
+#endif
   if (provider_types & AutocompleteProvider::TYPE_EXTENSION_APP)
     providers_.push_back(new ExtensionAppProvider(this, profile));
   if (provider_types & AutocompleteProvider::TYPE_HISTORY_CONTENTS)

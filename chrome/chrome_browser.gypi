@@ -172,6 +172,8 @@
         'browser/autocomplete/autocomplete_result.h',
         'browser/autocomplete/builtin_provider.cc',
         'browser/autocomplete/builtin_provider.h',
+        'browser/autocomplete/contact_provider_chromeos.cc',
+        'browser/autocomplete/contact_provider_chromeos.h',
         'browser/autocomplete/extension_app_provider.cc',
         'browser/autocomplete/extension_app_provider.h',
         'browser/autocomplete/history_contents_provider.cc',
