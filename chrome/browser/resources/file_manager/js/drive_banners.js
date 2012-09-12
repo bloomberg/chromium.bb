@@ -5,11 +5,13 @@
 /**
  * Responsible for showing banners in the file list.
  * @param {DirectoryModel} directoryModel The model.
+ * @param {VolumeManager} volumeManager The manager.
  * @param {DOMDocument} document HTML document.
  * @constructor
  */
-function FileListBannerController(directoryModel, document) {
+function FileListBannerController(directoryModel, volumeManager, document) {
   this.directoryModel_ = directoryModel;
+  this.volumeManager_ = volumeManager;
   this.document_ = document;
   this.driveEnabled_ = false;
 
@@ -23,6 +25,10 @@ function FileListBannerController(directoryModel, document) {
   this.directoryModel_.addEventListener('rescan-completed', handler);
   this.directoryModel_.addEventListener('directory-changed',
       this.onDirectoryChanged_.bind(this));
+
+  this.unmountedPanel_ = this.document_.querySelector('#unmounted-panel');
+  this.volumeManager_.addEventListener('gdata-status-changed',
+        this.updateGDataUnmountedPanel_.bind(this));
 }
 
 /**
@@ -63,6 +69,12 @@ var GOOGLE_DRIVE_BUY_STORAGE =
  */
 var DOWNLOADS_FAQ_URL =
     'http://support.google.com/chromeos/bin/answer.py?answer=1061547';
+
+/**
+ * Location of the help page about connecting to Google Drive.
+ */
+var GOOGLE_DRIVE_ERROR_HELP_URL =
+    'https://support.google.com/chromeos/?p=filemanager_driveerror';
 
 /**
  * @return {number} How many times the Drive Welcome header banner has shown.
@@ -368,6 +380,10 @@ FileListBannerController.prototype.onDirectoryChanged_ = function(event) {
 
   if (!this.isOnGData())
     this.cleanupGDataWelcome_();
+
+  this.updateGDataUnmountedPanel_();
+  if (this.isOnGData())
+      this.unmountedPanel_.classList.remove('retry-enabled');
 };
 
 /**
@@ -412,5 +428,68 @@ FileListBannerController.prototype.showLowDownloadsSpaceWarning_ =
 
   box.hidden = !show;
   this.requestRelayout_(100);
+};
+
+/**
+ * Creates contents for the GDATA unmounted panel.
+ * @private
+ */
+FileListBannerController.prototype.ensureGDataUnmountedPanelInitialized_ =
+    function() {
+  var panel = this.unmountedPanel_;
+  if (panel.firstElementChild)
+    return;
+
+  function create(parent, tag, className, opt_textContent) {
+    var div = panel.ownerDocument.createElement(tag);
+    div.className = className;
+    div.textContent = opt_textContent || '';
+    parent.appendChild(div);
+    return div;
+  }
+
+  var loading = create(panel, 'div', 'loading', str('GDATA_LOADING'));
+  var spinnerBox = create(loading, 'div', 'spinner-box');
+  create(spinnerBox, 'div', 'spinner');
+  var progress = create(panel, 'div', 'progress');
+  chrome.fileBrowserPrivate.onDocumentFeedFetched.addListener(
+      function(fileCount) {
+        progress.textContent = strf('GDATA_LOADING_PROGRESS', fileCount);
+      });
+
+  create(panel, 'div', 'error', str('GDATA_CANNOT_REACH'));
+
+  var retryButton = create(panel, 'button', 'retry', str('GDATA_RETRY'));
+  retryButton.hidden = true;
+  var vm = this.volumeManager_;
+  retryButton.onclick = function() {
+    vm.mountGData(function() {}, function() {});
+  };
+
+  var learnMore = create(panel, 'a', 'learn-more plain-link',
+                         str('GDATA_LEARN_MORE'));
+  learnMore.href = GOOGLE_DRIVE_ERROR_HELP_URL;
+};
+
+/**
+ * Shows the panel when current directory is GDATA and it's unmounted.
+ * Hides it otherwise. The pannel shows spinner if GDATA is mounting or
+ * an error message if it failed.
+ * @private
+ */
+FileListBannerController.prototype.updateGDataUnmountedPanel_ = function() {
+  var node = this.document_.querySelector('.dialog-container');
+  if (this.isOnGData()) {
+    var status = this.volumeManager_.getGDataStatus();
+    if (status == VolumeManager.GDataStatus.MOUNTING ||
+        status == VolumeManager.GDataStatus.ERROR) {
+      this.ensureGDataUnmountedPanelInitialized_();
+    }
+    if (status == VolumeManager.GDataStatus.ERROR)
+      this.unmountedPanel_.classList.add('retry-enabled');
+    node.setAttribute('gdata', status);
+  } else {
+    node.removeAttribute('gdata');
+  }
 };
 

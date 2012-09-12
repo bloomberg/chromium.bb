@@ -75,12 +75,6 @@ FileManager.prototype = {
       'https://support.google.com/chromeos/?p=filemanager_drivehelp';
 
   /**
-   * Location of the help page about connecting to Google Drive.
-   */
-  var GOOGLE_DRIVE_ERROR_HELP_URL =
-      'https://support.google.com/chromeos/?p=filemanager_driveerror';
-
-  /**
    * Maximum amount of thumbnails in the preview pane.
    */
   var MAX_PREVIEW_THUMBNAIL_COUNT = 4;
@@ -394,8 +388,8 @@ FileManager.prototype = {
 
     this.initFileList_();
     this.initDialogs_();
-    this.bannersController_ =
-        new FileListBannerController(this.directoryModel_, this.document_);
+    this.bannersController_ = new FileListBannerController(
+        this.directoryModel_, this.volumeManager_, this.document_);
     this.bannersController_.addEventListener('relayout',
                                              this.onResize_.bind(this));
 
@@ -637,7 +631,6 @@ FileManager.prototype = {
     this.grid_ = this.dialogDom_.querySelector('.thumbnail-grid');
     this.spinner_ = this.dialogDom_.querySelector('#spinner-with-text');
     this.showSpinner_(false);
-    this.unmountedPanel_ = this.dialogDom_.querySelector('#unmounted-panel');
 
     this.breadcrumbs_ = new BreadcrumbsController(
          this.dialogDom_.querySelector('#dir-breadcrumbs'));
@@ -795,9 +788,6 @@ FileManager.prototype = {
 
     this.textSearchState_ = {text: '', date: new Date()};
 
-    this.volumeManager_.addEventListener('gdata-status-changed',
-        this.updateGDataUnmountedPanel_.bind(this));
-
     this.closeOnUnmount_ = this.params_.mountTriggered;
 
     if (this.closeOnUnmount_) {
@@ -828,66 +818,6 @@ FileManager.prototype = {
 
     // TODO(dgozman): add "Add a drive" item.
     this.rootsList_.dataModel = this.directoryModel_.getRootsList();
-  };
-
-  /**
-   * Shows the panel when current directory is GDATA and it's unmounted.
-   * Hides it otherwise. The pannel shows spinner if GDATA is mounting or
-   * an error message if it failed.
-   */
-  FileManager.prototype.updateGDataUnmountedPanel_ = function() {
-    var node = this.dialogContainer_;
-    if (this.isOnGData()) {
-      var status = this.volumeManager_.getGDataStatus();
-      if (status == VolumeManager.GDataStatus.MOUNTING ||
-          status == VolumeManager.GDataStatus.ERROR) {
-        this.ensureGDataUnmountedPanelInitialized_();
-      }
-      if (status == VolumeManager.GDataStatus.ERROR)
-        this.unmountedPanel_.classList.add('retry-enabled');
-      node.setAttribute('gdata', status);
-    } else {
-      node.removeAttribute('gdata');
-    }
-  };
-
-  /**
-   * Creates contents for the GDATA unmounted panel.
-   */
-  FileManager.prototype.ensureGDataUnmountedPanelInitialized_ = function() {
-    var panel = this.unmountedPanel_;
-    if (panel.firstElementChild)
-      return;
-
-    function create(parent, tag, className, opt_textContent) {
-      var div = panel.ownerDocument.createElement(tag);
-      div.className = className;
-      div.textContent = opt_textContent || '';
-      parent.appendChild(div);
-      return div;
-    }
-
-    var loading = create(panel, 'div', 'loading', str('GDATA_LOADING'));
-    var spinnerBox = create(loading, 'div', 'spinner-box');
-    create(spinnerBox, 'div', 'spinner');
-    var progress = create(panel, 'div', 'progress');
-    chrome.fileBrowserPrivate.onDocumentFeedFetched.addListener(
-        function(fileCount) {
-          progress.textContent = strf('GDATA_LOADING_PROGRESS', fileCount);
-        });
-
-    create(panel, 'div', 'error', str('GDATA_CANNOT_REACH'));
-
-    var retryButton = create(panel, 'button', 'retry', str('GDATA_RETRY'));
-    retryButton.hidden = true;
-    var vm = this.volumeManager_;
-    retryButton.onclick = function() {
-      vm.mountGData(function() {}, function() {});
-    };
-
-    var learnMore = create(panel, 'a', 'learn-more plain-link',
-                           str('GDATA_LEARN_MORE'));
-    learnMore.href = GOOGLE_DRIVE_ERROR_HELP_URL;
   };
 
   FileManager.prototype.onDataModelSplice_ = function(event) {
@@ -2885,9 +2815,6 @@ FileManager.prototype = {
     }
 
     this.updateTitle_();
-    this.updateGDataUnmountedPanel_();
-    if (this.isOnGData())
-      this.unmountedPanel_.classList.remove('retry-enabled');
   };
 
   FileManager.prototype.findListItemForEvent_ = function(event) {
