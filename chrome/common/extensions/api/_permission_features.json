@@ -18,7 +18,7 @@
     "extension_types": ["platform_app"]
   },
   "app.window": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["platform_app"]
   },
   "appNotifications": {
