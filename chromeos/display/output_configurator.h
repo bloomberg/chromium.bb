@@ -10,6 +10,7 @@
 #include "base/observer_list.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/timer.h"
 #include "chromeos/chromeos_export.h"
 
 // Forward declarations for Xlib and Xrandr.
@@ -108,6 +109,10 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   OutputState output_state_;
 
   ObserverList<Observer> observers_;
+
+  // The timer to delay sending the notification of OnDisplayChanged(). See also
+  // the comments in Dispatch().
+  scoped_ptr<base::OneShotTimer<OutputConfigurator> > notification_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputConfigurator);
 };

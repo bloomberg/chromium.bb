@@ -22,6 +22,7 @@
 #include "base/message_pump_aurax11.h"
 #include "base/metrics/histogram.h"
 #include "base/perftimer.h"
+#include "base/time.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 
@@ -41,6 +42,9 @@ const unsigned int kHighDensityDIPThreshold = 160;
 // Prefixes for the built-in displays.
 const char kInternal_LVDS[] = "LVDS";
 const char kInternal_eDP[] = "eDP";
+
+// The delay to wait NotifyOnDisplayChanged().  See the comment in Dispatch().
+const int kNotificationTimerDelayMs = 500;
 
 // Gap between screens so cursor at bottom of active display doesn't partially
 // appear on top of inactive display. Higher numbers guard against larger
@@ -741,11 +745,6 @@ bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
 
   XRRFreeScreenResources(screen);
   XUngrabServer(display);
-
-  MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&OutputConfigurator::NotifyOnDisplayChanged,
-                            base::Unretained(this)));
-
   return true;
 }
 
@@ -800,6 +799,22 @@ bool OutputConfigurator::Dispatch(const base::NativeEvent& event) {
     }
     // Ignore the case of RR_UnkownConnection.
   }
+
+  // Sets the timer for NotifyOnDisplayChanged().  When an output state change
+  // is issued, several notifications chould arrive and NotifyOnDisplayChanged()
+  // should be called once for the last one.  The timer could lead at most a few
+  // handreds milliseconds of delay for the notification, but it would be
+  // unrecognizable for users.
+  if (notification_timer_.get()) {
+    notification_timer_->Reset();
+  } else {
+    notification_timer_.reset(new base::OneShotTimer<OutputConfigurator>());
+    notification_timer_->Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kNotificationTimerDelayMs),
+        this,
+        &OutputConfigurator::NotifyOnDisplayChanged);
+  }
   return true;
 }
 
@@ -817,6 +832,7 @@ bool OutputConfigurator::IsInternalOutputName(const std::string& name) {
 }
 
 void OutputConfigurator::NotifyOnDisplayChanged() {
+  notification_timer_.reset();
   FOR_EACH_OBSERVER(Observer, observers_, OnDisplayModeChanged());
 }
 

@@ -202,7 +202,8 @@ void OutputConfiguratorAnimation::StartFadeInAnimation() {
 }
 
 void OutputConfiguratorAnimation::OnDisplayModeChanged() {
-  StartFadeInAnimation();
+  if (!hiding_layers_.empty())
+    StartFadeInAnimation();
 }
 
 void OutputConfiguratorAnimation::ClearHidingLayers() {
