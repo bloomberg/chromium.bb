@@ -54,8 +54,6 @@ void Label::SetFont(const gfx::Font& font) {
 }
 
 void Label::SetText(const string16& text) {
-  if (text == text_)
-    return;
   text_ = text;
   text_size_valid_ = false;
   is_email_ = false;
