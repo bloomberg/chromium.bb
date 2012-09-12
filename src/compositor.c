@@ -847,7 +847,6 @@ surface_accumulate_damage(struct weston_surface *surface,
 					  surface->geometry.y - surface->plane->y);
 	}
 
-	pixman_region32_subtract(&surface->damage, &surface->damage, opaque);
 	pixman_region32_union(&surface->plane->damage,
 			      &surface->plane->damage, &surface->damage);
 	empty_region(&surface->damage);
