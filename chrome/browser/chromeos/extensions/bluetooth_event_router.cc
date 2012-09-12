@@ -81,11 +81,23 @@ void ExtensionBluetoothEventRouter::SetSendDiscoveryEvents(bool should_send) {
   if (should_send && !send_discovery_events_) {
     for (DeviceList::const_iterator i = discovered_devices_.begin();
         i != discovered_devices_.end(); ++i) {
-      DispatchDeviceEvent(**i);
+      DispatchDeviceEvent(extensions::event_names::kBluetoothOnDeviceDiscovered,
+                          **i);
     }
   }
 
   send_discovery_events_ = should_send;
+}
+
+void ExtensionBluetoothEventRouter::DispatchDeviceEvent(
+    const char* event_name, const experimental_bluetooth::Device& device) {
+  scoped_ptr<ListValue> args(new ListValue());
+  args->Append(device.ToValue().release());
+  profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
+      event_name,
+      args.Pass(),
+      NULL,
+      GURL());
 }
 
 void ExtensionBluetoothEventRouter::AdapterPresentChanged(
@@ -138,14 +150,15 @@ void ExtensionBluetoothEventRouter::DeviceAdded(
   }
 
   experimental_bluetooth::Device* extension_device =
-    new experimental_bluetooth::Device();
+      new experimental_bluetooth::Device();
   experimental_bluetooth::BluetoothDeviceToApiDevice(*device, extension_device);
   discovered_devices_.push_back(extension_device);
 
   if (!send_discovery_events_)
     return;
 
-  DispatchDeviceEvent(*extension_device);
+  DispatchDeviceEvent(extensions::event_names::kBluetoothOnDeviceDiscovered,
+                      *extension_device);
 }
 
 void ExtensionBluetoothEventRouter::DispatchBooleanValueEvent(
@@ -154,17 +167,6 @@ void ExtensionBluetoothEventRouter::DispatchBooleanValueEvent(
   args->Append(Value::CreateBooleanValue(value));
   profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
       event_name, args.Pass(), NULL, GURL());
-}
-
-void ExtensionBluetoothEventRouter::DispatchDeviceEvent(
-    const experimental_bluetooth::Device& device) {
-  scoped_ptr<ListValue> args(new ListValue());
-  args->Append(device.ToValue().release());
-  profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
-      extensions::event_names::kBluetoothOnDeviceDiscovered,
-      args.Pass(),
-      NULL,
-      GURL());
 }
 
 }  // namespace chromeos

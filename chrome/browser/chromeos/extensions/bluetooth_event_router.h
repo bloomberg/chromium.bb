@@ -47,6 +47,11 @@ class ExtensionBluetoothEventRouter
   // Sets whether or not DeviceAdded events will be dispatched to extensions.
   void SetSendDiscoveryEvents(bool should_send);
 
+  // Dispatch an event that takes a device as a parameter to all renderers.
+  void DispatchDeviceEvent(
+      const char* event_name,
+      const extensions::api::experimental_bluetooth::Device& device);
+
   // Override from chromeos::BluetoothAdapter::Observer
   virtual void AdapterPresentChanged(chromeos::BluetoothAdapter* adapter,
                                      bool present) OVERRIDE;
@@ -63,8 +68,6 @@ class ExtensionBluetoothEventRouter
   }
  private:
   void DispatchBooleanValueEvent(const char* event_name, bool value);
-  void DispatchDeviceEvent(
-      const extensions::api::experimental_bluetooth::Device& device);
 
   bool send_discovery_events_;
   bool responsible_for_discovery_;

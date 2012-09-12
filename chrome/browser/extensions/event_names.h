@@ -69,6 +69,7 @@ extern const char kOnOffscreenTabUpdated[];
 // Bluetooth.
 extern const char kBluetoothOnAvailabilityChanged[];
 extern const char kBluetoothOnDeviceDiscovered[];
+extern const char kBluetoothOnDeviceSearchResult[];
 extern const char kBluetoothOnDiscoveringChanged[];
 extern const char kBluetoothOnPowerChanged[];
 #endif

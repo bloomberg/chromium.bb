@@ -201,8 +201,8 @@ class BluetoothDevice : public BluetoothDeviceClient::Observer,
   typedef base::Callback<void(bool)> ProvidesServiceCallback;
 
   // Indicates whether this device provides the given service.
-  void ProvidesServiceWithName(const std::string& name,
-                               const ProvidesServiceCallback& callback);
+  virtual void ProvidesServiceWithName(const std::string& name,
+                                       const ProvidesServiceCallback& callback);
 
   // Indicates whether the device is currently pairing and expecting a
   // PIN Code to be returned.

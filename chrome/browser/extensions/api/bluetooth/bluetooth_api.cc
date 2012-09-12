@@ -11,6 +11,7 @@
 #include <string>
 
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api_utils.h"
+#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/experimental_bluetooth.h"
@@ -99,14 +100,23 @@ bool BluetoothGetNameFunction::RunImpl() {
 BluetoothGetDevicesFunction::BluetoothGetDevicesFunction()
     : callbacks_pending_(0) {}
 
-void BluetoothGetDevicesFunction::AddDeviceIfTrueCallback(
-    ListValue* list,
+void BluetoothGetDevicesFunction::DispatchDeviceSearchResult(
+    const chromeos::BluetoothDevice& device) {
+  experimental_bluetooth::Device extension_device;
+  experimental_bluetooth::BluetoothDeviceToApiDevice(device, &extension_device);
+  GetEventRouter(profile())->DispatchDeviceEvent(
+      extensions::event_names::kBluetoothOnDeviceSearchResult,
+      extension_device);
+}
+
+void BluetoothGetDevicesFunction::ProvidesServiceCallback(
     const chromeos::BluetoothDevice* device,
-    bool shouldAdd) {
+    bool providesService) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  if (shouldAdd)
-    list->Append(experimental_bluetooth::BluetoothDeviceToValue(*device));
+  CHECK(device);
+  if (providesService)
+    DispatchDeviceSearchResult(*device);
 
   callbacks_pending_--;
   if (callbacks_pending_ == -1)
@@ -129,9 +139,6 @@ bool BluetoothGetDevicesFunction::RunImpl() {
     }
   }
 
-  ListValue* matches = new ListValue;
-  SetResult(matches);
-
   CHECK_EQ(0, callbacks_pending_);
 
   chromeos::BluetoothAdapter::DeviceList devices =
@@ -139,21 +146,21 @@ bool BluetoothGetDevicesFunction::RunImpl() {
   for (chromeos::BluetoothAdapter::DeviceList::iterator i = devices.begin();
       i != devices.end(); ++i) {
     chromeos::BluetoothDevice* device = *i;
+    CHECK(device);
 
     if (!uuid.empty() && !(device->ProvidesServiceWithUUID(uuid)))
       continue;
 
     if (options.name.get() == NULL) {
-      matches->Append(experimental_bluetooth::BluetoothDeviceToValue(*device));
+      DispatchDeviceSearchResult(*device);
       continue;
     }
 
     callbacks_pending_++;
     device->ProvidesServiceWithName(
         *(options.name),
-        base::Bind(&BluetoothGetDevicesFunction::AddDeviceIfTrueCallback,
+        base::Bind(&BluetoothGetDevicesFunction::ProvidesServiceCallback,
                    this,
-                   matches,
                    device));
   }
   callbacks_pending_--;

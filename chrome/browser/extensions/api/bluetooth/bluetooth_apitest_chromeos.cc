@@ -90,7 +90,6 @@ class BluetoothApiTest : public PlatformAppApiTest {
 };
 
 // This is the canonical UUID for the short UUID 0010.
-static const char kCanonicalUuid[] = "00000010-0000-1000-8000-00805f9b34fb";
 static const char kOutOfBandPairingDataHash[] = "0123456789ABCDEh";
 static const char kOutOfBandPairingDataRandomizer[] = "0123456789ABCDEr";
 
@@ -108,11 +107,18 @@ static bool CallClosure(const base::Closure& callback) {
   return true;
 }
 
-static bool CallOutOfBandPairingDataCallback(
+static void CallOutOfBandPairingDataCallback(
       const chromeos::BluetoothAdapter::BluetoothOutOfBandPairingDataCallback&
-          callback) {
+          callback,
+      const chromeos::BluetoothAdapter::ErrorCallback& error_callback) {
   callback.Run(GetOutOfBandPairingData());
-  return true;
+}
+
+template <bool Value>
+static void CallProvidesServiceCallback(
+      const std::string& name,
+      const chromeos::BluetoothDevice::ProvidesServiceCallback& callback) {
+  callback.Run(Value);
 }
 
 }  // namespace
@@ -163,84 +169,10 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetName) {
   expectStringResult(kName, get_name);
 }
 
-IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevices) {
-  chromeos::BluetoothAdapter::ConstDeviceList devices;
-  devices.push_back(device1_.get());
-  devices.push_back(device2_.get());
-
-  EXPECT_CALL(*device1_, ProvidesServiceWithUUID(kCanonicalUuid))
-      .WillOnce(testing::Return(false));
-  EXPECT_CALL(*device2_, ProvidesServiceWithUUID(kCanonicalUuid))
-      .WillOnce(testing::Return(true));
-
-  EXPECT_CALL(*mock_adapter_, GetDevices())
-      .WillOnce(testing::Return(devices));
-
-  scoped_refptr<api::BluetoothGetDevicesFunction> get_devices;
-
-  get_devices = setupFunction(new api::BluetoothGetDevicesFunction);
-  scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-        get_devices,
-        "[{\"uuid\":\"0010\"}]",
-        browser()));
-
-  ASSERT_EQ(base::Value::TYPE_LIST, result->GetType());
-  base::ListValue* list;
-  ASSERT_TRUE(result->GetAsList(&list));
-
-  EXPECT_EQ(1u, list->GetSize());
-  base::Value* device_value;
-  EXPECT_TRUE(list->Get(0, &device_value));
-  EXPECT_EQ(base::Value::TYPE_DICTIONARY, device_value->GetType());
-  base::DictionaryValue* device;
-  ASSERT_TRUE(device_value->GetAsDictionary(&device));
-
-  std::string name;
-  ASSERT_TRUE(device->GetString("name", &name));
-  EXPECT_EQ("d2", name);
-  std::string address;
-  ASSERT_TRUE(device->GetString("address", &address));
-  EXPECT_EQ("21:22:23:24:25:26", address);
-  bool paired;
-  ASSERT_TRUE(device->GetBoolean("paired", &paired));
-  EXPECT_FALSE(paired);
-  bool bonded;
-  ASSERT_TRUE(device->GetBoolean("bonded", &bonded));
-  EXPECT_TRUE(bonded);
-  bool connected;
-  ASSERT_TRUE(device->GetBoolean("connected", &connected));
-  EXPECT_FALSE(connected);
-
-  // Try again with no options
-  testing::Mock::VerifyAndClearExpectations(mock_adapter_);
-  EXPECT_CALL(*mock_adapter_, GetDevices())
-      .WillOnce(testing::Return(devices));
-
-  get_devices = setupFunction(new api::BluetoothGetDevicesFunction);
-  result.reset(
-      utils::RunFunctionAndReturnSingleResult(get_devices, "[{}]", browser()));
-
-  ASSERT_EQ(base::Value::TYPE_LIST, result->GetType());
-  ASSERT_TRUE(result->GetAsList(&list));
-
-  EXPECT_EQ(2u, list->GetSize());
-
-  // Try again with an error
-  testing::Mock::VerifyAndClearExpectations(mock_adapter_);
-
-  get_devices = setupFunction(new api::BluetoothGetDevicesFunction);
-  std::string error(
-      utils::RunFunctionAndReturnError(get_devices,
-                                       "[{\"uuid\":\"foo\"}]",
-                                       browser()));
-  EXPECT_FALSE(error.empty());
-}
-
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetLocalOutOfBandPairingData) {
   EXPECT_CALL(*mock_adapter_,
-              ReadLocalOutOfBandPairingData(
-                  testing::Truly(CallOutOfBandPairingDataCallback),
-                  testing::_));
+              ReadLocalOutOfBandPairingData(testing::_, testing::_))
+      .WillOnce(testing::Invoke(CallOutOfBandPairingDataCallback));
 
   scoped_refptr<api::BluetoothGetLocalOutOfBandPairingDataFunction>
       get_oob_function(setupFunction(
@@ -439,6 +371,72 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Events) {
   event_router()->AdapterDiscoveringChanged(mock_adapter_, true);
   event_router()->AdapterDiscoveringChanged(mock_adapter_, false);
 
+  listener.Reply("go");
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevices) {
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+
+  chromeos::BluetoothAdapter::ConstDeviceList devices;
+  devices.push_back(device1_.get());
+  devices.push_back(device2_.get());
+
+  EXPECT_CALL(*device1_, ProvidesServiceWithUUID(testing::_))
+      .WillOnce(testing::Return(false));
+  EXPECT_CALL(*device1_, ProvidesServiceWithName(testing::_, testing::_))
+      .WillOnce(testing::Invoke(CallProvidesServiceCallback<true>));
+
+  EXPECT_CALL(*device2_, ProvidesServiceWithUUID(testing::_))
+      .WillOnce(testing::Return(true));
+  EXPECT_CALL(*device2_, ProvidesServiceWithName(testing::_, testing::_))
+      .WillOnce(testing::Invoke(CallProvidesServiceCallback<false>));
+
+  EXPECT_CALL(*mock_adapter_, GetDevices())
+      .Times(3)
+      .WillRepeatedly(testing::Return(devices));
+
+  // Load and wait for setup
+  ExtensionTestMessageListener listener("ready", true);
+  const extensions::Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("bluetooth"));
+  GURL page_url = extension->GetResourceURL("test_getdevices.html");
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  listener.Reply("go");
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevicesConcurrently) {
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+
+  chromeos::BluetoothAdapter::ConstDeviceList devices;
+  devices.push_back(device1_.get());
+
+  // Save the callback to delay execution so that we can force the calls to
+  // happen concurrently.  This will be called after the listener is satisfied.
+  chromeos::BluetoothDevice::ProvidesServiceCallback callback;
+  EXPECT_CALL(*device1_, ProvidesServiceWithName(testing::_, testing::_))
+      .WillOnce(testing::SaveArg<1>(&callback));
+
+  EXPECT_CALL(*mock_adapter_, GetDevices())
+      .WillOnce(testing::Return(devices));
+
+  // Load and wait for setup
+  ExtensionTestMessageListener listener("ready", true);
+  const extensions::Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("bluetooth"));
+  GURL page_url =
+      extension->GetResourceURL("test_getdevices_concurrently.html");
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  callback.Run(false);
   listener.Reply("go");
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
