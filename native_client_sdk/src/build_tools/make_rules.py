@@ -91,6 +91,11 @@ SO_LINK_RULES = {
   'Release': '<TAB>$(<LINK>) -o $@ $^ <MACH> -shared $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tcname>/<config> <LIBLIST>',
 }
 
+LINUX_SO_LINK_RULES = {
+  'Debug': '<TAB>$(<LINK>) -o $@ $^ -g <MACH> -shared $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<tcname>/<config> <LIBLIST>',
+  'Release': '<TAB>$(<LINK>) -o $@ $^ <MACH> -shared $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<tcname>/<config> <LIBLIST>',
+}
+
 PEXE_TRANSLATE_RULE = """
 <tc>/<config>/<proj>_x86_32.nexe : <tc>/<config>/<proj>.pexe
 <TAB>$(TRANSLATE) -arch x86-32 $< -o $@
@@ -170,7 +175,7 @@ LINUX_TOOL = {
   'MAIN': '<tc>/<config>/lib<proj>.so',
   'NMFMAIN': '<tc>/<config>/lib<proj>.so',
   'SO': '<tc>/<config>/lib<proj>.so',
-  'LIB': '$(NACL_SDK_ROOT)/lib/linux_<ARCH>_host/<config>/lib<proj>.a',
+  'LIB': '$(NACL_SDK_ROOT)/lib/linux_host/<config>/lib<proj>.a',
 }
 
 NACL_TOOL = {
@@ -278,7 +283,7 @@ BUILD_RULES = {
     'CC': SO_CC_RULES,
     'CXX': SO_CC_RULES,
     'NMF' : NMF_EMPTY,
-    'MAIN': SO_LINK_RULES,
+    'MAIN': LINUX_SO_LINK_RULES,
     'LIB': POSIX_LIB_RULES,
     'SO': None,
     'TOOL': LINUX_TOOL
