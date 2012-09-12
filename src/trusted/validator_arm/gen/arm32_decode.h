@@ -35,88 +35,88 @@ class Arm32DecoderState : DecoderState {
   // instruction.
 
   inline const ClassDecoder& decode_ARMv7(
-      const Instruction insn) const;
+      const Instruction inst) const;
 
   inline const ClassDecoder& decode_branch_branch_with_link_and_block_data_transfer(
-      const Instruction insn) const;
+      const Instruction inst) const;
 
   inline const ClassDecoder& decode_coprocessor_instructions_and_supervisor_call(
-      const Instruction insn) const;
+      const Instruction inst) const;
 
   inline const ClassDecoder& decode_data_processing_and_miscellaneous_instructions(
-      const Instruction insn) const;
+      const Instruction inst) const;
 
   inline const ClassDecoder& decode_data_processing_immediate(
-      const Instruction insn) const;
+      const Instruction inst) const;
 
   inline const ClassDecoder& decode_data_processing_register(
-      const Instruction insn) const;
+      const Instruction inst) const;
 
   inline const ClassDecoder& decode_data_processing_register_shifted_register(
-      const Instruction insn) const;
+      const Instruction inst) const;
 
   inline const ClassDecoder& decode_extension_register_load_store_instructions(
-      const Instruction insn) const;
+      const Instruction inst) const;
 
   inline const ClassDecoder& decode_extra_load_store_instructions(
-      const Instruction insn) const;
+      const Instruction inst) const;
 
   inline const ClassDecoder& decode_floating_point_data_processing_instructions(
-      const Instruction insn) const;
+      const Instruction inst) const;
 
   inline const ClassDecoder& decode_halfword_multiply_and_multiply_accumulate(
-      const Instruction insn) const;
+      const Instruction inst) const;
 
   inline const ClassDecoder& decode_load_store_word_and_unsigned_byte(
-      const Instruction insn) const;
+      const Instruction inst) const;
 
   inline const ClassDecoder& decode_load_store_word_and_unsigned_byte_str_or_push(
-      const Instruction insn) const;
+      const Instruction inst) const;
 
   inline const ClassDecoder& decode_media_instructions(
-      const Instruction insn) const;
+      const Instruction inst) const;
 
   inline const ClassDecoder& decode_memory_hints_advanced_simd_instructions_and_miscellaneous_instructions(
-      const Instruction insn) const;
+      const Instruction inst) const;
 
   inline const ClassDecoder& decode_miscellaneous_instructions(
-      const Instruction insn) const;
+      const Instruction inst) const;
 
   inline const ClassDecoder& decode_msr_immediate_and_hints(
-      const Instruction insn) const;
+      const Instruction inst) const;
 
   inline const ClassDecoder& decode_multiply_and_multiply_accumulate(
-      const Instruction insn) const;
+      const Instruction inst) const;
 
   inline const ClassDecoder& decode_other_floating_point_data_processing_instructions(
-      const Instruction insn) const;
+      const Instruction inst) const;
 
   inline const ClassDecoder& decode_packing_unpacking_saturation_and_reversal(
-      const Instruction insn) const;
+      const Instruction inst) const;
 
   inline const ClassDecoder& decode_parallel_addition_and_subtraction_signed(
-      const Instruction insn) const;
+      const Instruction inst) const;
 
   inline const ClassDecoder& decode_parallel_addition_and_subtraction_unsigned(
-      const Instruction insn) const;
+      const Instruction inst) const;
 
   inline const ClassDecoder& decode_saturating_addition_and_subtraction(
-      const Instruction insn) const;
+      const Instruction inst) const;
 
   inline const ClassDecoder& decode_signed_multiply_signed_and_unsigned_divide(
-      const Instruction insn) const;
+      const Instruction inst) const;
 
   inline const ClassDecoder& decode_synchronization_primitives(
-      const Instruction insn) const;
+      const Instruction inst) const;
 
   inline const ClassDecoder& decode_transfer_between_arm_core_and_extension_register_8_16_and_32_bit(
-      const Instruction insn) const;
+      const Instruction inst) const;
 
   inline const ClassDecoder& decode_transfer_between_arm_core_and_extension_registers_64_bit(
-      const Instruction insn) const;
+      const Instruction inst) const;
 
   inline const ClassDecoder& decode_unconditional_instructions(
-      const Instruction insn) const;
+      const Instruction inst) const;
 
   // The following fields define the set of class decoders
   // that can be returned by the API function "decode". They

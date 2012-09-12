@@ -20,6 +20,10 @@ namespace nacl_arm_dec {
 // Used to describe whether an instruction is safe, and if not, what the issue
 // is.  Only instructions that MAY_BE_SAFE should be allowed in untrusted code,
 // and even those may be rejected by the validator.
+//
+// Note: The enumerated values are used in dgen_core.py (see class
+// SafetyAction).  Be sure to update values in that class if this list
+// changes, so that the two stay in sync.
 enum SafetyLevel {
   // The initial value of uninitialized SafetyLevels -- treat as unsafe.
   UNKNOWN = 0,

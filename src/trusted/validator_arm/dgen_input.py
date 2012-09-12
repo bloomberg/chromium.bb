@@ -14,20 +14,35 @@ and comment parsing):
 table_file ::= classdef* table+ eof ;
 
 action         ::= decoder_action | decoder_method | '"'
-action_arch    ::= 'arch' ':' word
-action_option  ::= action_rule |
-                   action_pattern |
-                   action_safety |
-                   action_arch |
-                   action_other
+action_arch    ::= 'arch' ':=' word
+action_option  ::= (action_rule |
+                    action_pattern |
+                    action_safety |
+                    action_arch |
+                    action_other) ';'
 action_options_deprecated ::= (id (word (rule_restrict id?)?)?)?
-action_other   ::= word ':' bit_expr
-action_pattern ::= 'pattern' ':' word rule_restrict?
-action_safety  ::= 'safety' ':' safety_check ('&' safety_check)*
-action_rule    ::= 'rule' ':' id
+action_other   ::= word ':=' bit_expr
+action_pattern ::= 'pattern' ':=' word rule_restrict?
+action_safety  ::= 'safety' ':=' safety_check ('&' safety_check)*
+action_rule    ::= 'rule' ':=' id
 arch           ::= '(' word+ ')'
 bit_check      ::= column '=' bitpattern
-bit_expr        ::= bit_check
+bit_expr       ::= bit_expr1 ('if' bit_expr 'else' bit_expr)?  # conditional
+bit_expr1      ::= bit_expr2 (('&' bit_expr2)* | ('|' bit_expr2)*)?
+bit_expr2      ::= bit_expr3 (('<' | '<=' | '==' | '!=' | '>=' | '>')
+                              bit_expr3)?                      # comparisons
+bit_expr3      ::= bit_expr4 |                                 # add ops
+                   bit_expr3 (('+' bit_expr4) | ('-' bit_expr4))?
+bit_expr4      ::= bit_expr5 |                                 # mul ops
+                   bit_expr4 (('*' bit_expr5) |
+                              ('/' bit_expr5) |
+                              ('mod' bit_expr5))?
+bit_expr5      ::= bit_expr6 ('=' bitpattern)?                 # bit check
+bit_expr6      ::= bit_expr7 (':' bit_expr7)*                  # concat
+bit_expr7      ::= bit_expr8 |
+                   bit_expr7 ('(' int (':' int)? ')')?         # bit range
+bit_expr8      ::= int | id | bit_check | bit_set | '(' bit_expr ')'
+bit_set        ::= '{' (bit_expr (',' bit_expr)*)? '}'
 bitpattern     ::= word | negated_word
 citation       ::= '(' word+ ')'
 column         ::= id '(' int (':' int)? ')'
@@ -42,15 +57,15 @@ footer         ::= '+' '-' '-'
 header         ::= "|" column+
 int            ::= word     (where word is a sequence of digits)
 id             ::= word     (where word is sequence of letters, digits and _)
+negated_word   ::= '~' word
 parenthesized_exp ::= '(' (word | punctuation)+ ')'
 pat_row        ::= pattern+ action
 pattern        ::= bitpattern | '-' | '"'
 row            ::= '|' (pat_row | default_row)
 rule_restrict  ::= ('&' bitpattern)* ('&' 'other' ':' id)?
-safety_check   ::= id | bit_check
+safety_check   ::= id | bit_expr1 ('=>' id)?     # note: single id only at end.
 table          ::= table_desc header row+ footer
 table_desc     ::= '+' '-' '-' id citation?
-negated_word   ::= '~' word
 
 Note that action_options_deprecated is deprecated, and one should generate
 a sequence of action_option's. For action_options_depcrected, the interpretation
@@ -81,6 +96,21 @@ class Token(object):
 
   def __repr__(self):
     return 'Token(%s, "%s")' % (self.kind, self.value)
+
+# Predefined names corresponding to predefined bit expressions.
+_PREDEFINED_CONSTS = {
+    # Register Names.
+    # TODO(karl): These constants are arm32 specific. We will need to
+    # fix this when implementing arm64.
+    'NZCV': dgen_core.Literal(16),  # defines conditions registers.
+    'None': dgen_core.Literal(32),
+    'Pc': dgen_core.Literal(15),
+    'Ln': dgen_core.Literal(14),
+    'Sp': dgen_core.Literal(13),
+    # Boolean values.
+    'true': dgen_core.BoolValue(True),
+    'false': dgen_core.BoolValue(False)
+    }
 
 class Parser(object):
   """Parses a set of tables from the input file."""
@@ -113,11 +143,12 @@ class Parser(object):
     # Reserved words allowed. Must be ordered such that if p1 != p2 are in
     # the list, and p1.startswith(p2), then p1 must appear before p2.
     self._reserved = ['class', 'else', 'pattern', 'safety', 'rule',
-                      'arch', 'other']
+                      'arch', 'other', 'mod', 'if']
     # Punctuation allowed. Must be ordered such that if p1 != p2 are in
     # the list, and p1.startswith(p2), then p1 must appear before p2.
-    self._punctuation = ['=>', '->', '-', '+', '(', ')', '=', ':', '"',
-                         '|', '~', '&', '{', '}', ',']
+    self._punctuation = ['=>', '->', '-', '+', '(', ')', '==', ':=', '"',
+                         '|', '~', '&', '{', '}', ',', ';', '=',':',
+                         '>=', '>', '<=', '<', '!=', '*', '/']
 
   #-------- Recursive descent parse functions corresponding to grammar above.
 
@@ -134,17 +165,17 @@ class Parser(object):
       self._unexpected("Row doesn't define an action")
 
   def _action_arch(self, context):
-    """action_arch    ::= 'arch' ':' arch
+    """action_arch    ::= 'arch' ':=' arch
 
        Adds architecture to context."""
     self._read_token('arch')
-    self._read_token(':')
+    self._read_token(':=')
     if not context.define('arch', self._read_token('word').value, False):
       self._unexpected('arch: multiple definitions')
 
   def _action_option(self, context):
-    """action_option  ::= action_rule | action_pattern |
-                          action_safety | action_arch
+    """action_option  ::= (action_rule | action_pattern |
+                           action_safety | action_arch) ';'
 
        Returns the specified architecture, or None if other option.
        """
@@ -160,36 +191,37 @@ class Parser(object):
       self._action_other(context)
     else:
       self._unexpected("Expected action option but not found")
+    self._read_token(';')
 
   def _action_other(self, context):
-    """action_other   ::= 'word' ':' bit_expr
+    """action_other   ::= 'word' ':=' bit_expr
 
        Recognizes other actions not currently implemented.
        """
     name = self._read_token('word').value
-    self._read_token(':')
+    self._read_token(':=')
     if not context.define(name, self._bit_expr(context), False):
       raise Exception('%s: multiple definitions.' % name)
 
   def _action_pattern(self, context):
-    """action_pattern ::= 'pattern' ':' bitpattern rule_restrict?
+    """action_pattern ::= 'pattern' ':=' bitpattern rule_restrict?
 
        Adds pattern/parse constraints to the context.
        """
     self._read_token('pattern')
-    self._read_token(':')
+    self._read_token(':=')
     if not context.define('pattern', self._bitpattern32(), False):
       raise Exception('pattern: multiple definitions.')
     if self._next_token().kind == '&':
       self._rule_restrict(context)
 
   def _action_safety(self, context):
-    """action_safety  ::= 'safety' ':' safety_check ('&' safety_check)*
+    """action_safety  ::= 'safety' ':=' safety_check ('&' safety_check)*
 
        Adds safety constraints to the context.
        """
     self._read_token('safety')
-    self._read_token(':')
+    self._read_token(':=')
     checks = [ self._safety_check(context) ]
     while self._next_token().kind == '&':
       self._read_token('&')
@@ -198,12 +230,12 @@ class Parser(object):
       raise Exception('safety: multiple definitions')
 
   def _action_rule(self, context):
-    """action_rule    ::= 'rule' ':' id
+    """action_rule    ::= 'rule' ':=' id
 
        Adds rule name to the context.
        """
     self._read_token('rule')
-    self._read_token(':')
+    self._read_token(':=')
     if not context.define('rule', self._id(), False):
       raise Exception('rule: multiple definitions')
 
@@ -223,15 +255,140 @@ class Parser(object):
       if not column:
         self._unexpected("Can't find column definition for %s" % name)
       self._read_token('=')
-    pattern = self._bitpattern()
-    return dgen_core.BitPattern.parse_catch(pattern, column)
+    else:
+      self._unexpected("didn't find bit pattern check")
+    pattern = dgen_core.BitPattern.parse(self._bitpattern(), column)
+    if not pattern:
+      self._unexpected("bit pattern check malformed")
+    return pattern
 
   def _bit_expr(self, context):
-    """bit_expr        ::= bit_check
+    """bit_expr ::= bit_expr1 ('if' bit_expr 'else' bit_expr)?"""
+    test = self._bit_expr1(context)
+    if not self._next_token().kind == 'if': return test
+    self._read_token('if')
+    then_value = self._bit_expr(context)
+    self._read_token('else')
+    else_value = self._bit_expr(context)
+    return dgen_core.IfThenElse(test, then_value, else_value)
 
-       Defines possible bit expressions associated with actions.
-       """
-    return self._bit_check(context)
+  def _bit_expr1(self, context):
+    """bit_expr1 ::= bit_expr2 (('&' bit_expr2)* | ('|' bit_expr2)*)"""
+    value = self._bit_expr2(context)
+    if self._next_token().kind == '&':
+      args = [value]
+      while self._next_token().kind == '&':
+        self._read_token('&')
+        args.append(self._bit_expr2(context))
+      value = dgen_core.AndExp(args)
+    elif self._next_token().kind == '|':
+      args = [value]
+      while self._next_token().kind == '|':
+        self._read_token('|')
+        args.append(self._bit_expr2(context))
+      value = dgen_core.OrExp(args)
+    return value
+
+  def _bit_expr2(self, context):
+    """bit_expr2 ::= bit_expr3 (('<' | '<=' | '==' | '!=' | '>=' | '>')
+                                bit_expr3)? """
+    value = self._bit_expr3(context)
+    for op in ['<', '<=', '==', '!=', '>=', '>']:
+      if self._next_token().kind == op:
+        self._read_token(op)
+        return dgen_core.CompareExp(op, value, self._bit_expr3(context))
+    return value
+
+  def _bit_expr3(self, context):
+    """bit_expr3 ::= bit_expr4 |
+                     bit_expr3 (('+' bit_expr4) | ('-' bit_expr4))?"""
+    value = self._bit_expr4(context)
+    while self._next_token().kind in ['+', '-']:
+      op = self._read_token().value
+      value = dgen_core.AddOp(op, value, self._bit_expr4(context))
+    return value
+
+  def _bit_expr4(self, context):
+    """bit_expr4 ::= bit_expr5 |
+                     bit_expr4 (('*' bit_expr5) |
+                                ('/' bit_expr5) |
+                                ('mod' bit_expr5))?"""
+    value = self._bit_expr5(context)
+    while self._next_token().kind in ['*', '/', 'mod']:
+      op = self._read_token().value
+      value = dgen_core.MulOp(op, value, self._bit_expr5(context))
+    return value
+
+  def _bit_expr5(self, context):
+    """bit_expr5 ::= bit_expr6 ('=' bitpattern)"""
+    bits = self._bit_expr6(context)
+    if self._next_token().kind != '=': return bits
+    self._read_token('=')
+    bitpat = self._bitpattern()
+    pattern = dgen_core.BitPattern.parse_catch(bitpat, bits)
+    if not pattern:
+      self._unexpected('Pattern mismatch in %s = %s' % (bits, bitpat))
+    else:
+      return pattern
+
+  def _bit_expr6(self, context):
+    """bit_expr6 ::= bit_expr7 (':' bit_expr7)*"""
+    value = self._bit_expr7(context)
+    if self._next_token().kind != ':': return value
+    values = [ value ]
+    while self._next_token().kind == ':':
+      self._read_token(':')
+      values.append(self._bit_expr7(context))
+    return dgen_core.Concat(values)
+
+  def _bit_expr7(self, context):
+    """bit_expr7 ::= bit_expr8 |
+                     bit_expr7 ('(' int (':' int)? ')')?"""
+    value = self._bit_expr8(context)
+    while self._next_token().kind == '(':
+      self._read_token('(')
+      hi_bit = self._int()
+      lo_bit = hi_bit
+      if self._next_token().kind == ':':
+        self._read_token(':')
+        lo_bit = self._int()
+      self._read_token(')')
+      value = dgen_core.BitField(value, hi_bit, lo_bit)
+    return value
+
+  def _bit_expr8(self, context):
+    """bit_expr8 ::= int | id | bit_check | bit_set | '(' bit_expr ')'"""
+    if self._is_int():
+      return dgen_core.Literal(self._int())
+    elif self._is_bit_check():
+      return self._bit_check(context)
+    elif self._next_token().kind == '{':
+      return self._bit_set(context)
+    elif self._next_token().kind == '(':
+      self._read_token('(')
+      value = self._bit_expr(context)
+      self._read_token(')')
+      return dgen_core.ParenthesizedExp(value)
+    else:
+      name = self._id()
+      value = context.find(name)
+      if not value:
+        value = _PREDEFINED_CONSTS.get(name)
+        if not value:
+          self._unexpected("Can't find definition for %s" % name)
+      return dgen_core.IdRef(name, value)
+
+  def _bit_set(self, context):
+    """bit_set        ::= '{' (bit_expr (',' bit_expr)*)? '}'"""
+    values = []
+    self._read_token('{')
+    if not self._next_token().kind == '}':
+      values.append(self._bit_expr(context))
+      while self._next_token().kind == ',':
+        self._read_token(',')
+        values.append(self._bit_expr(context))
+    self._read_token('}')
+    return dgen_core.BitSet(values)
 
   def _bitpattern(self):
     """ bitpattern     ::= 'word' | negated_word """
@@ -340,12 +497,12 @@ class Parser(object):
     self._read_token('{')
     field = self._column()
     fields.append(field)
-    self._field_define(field, context)
+    self._field_define(field, field.name().name(), context)
     while self._next_token().kind == ',':
       self._read_token(',')
       field = self._column()
+      self._field_define(field, field.name().name(), context)
       fields.append(field)
-      self._field_define(field, context)
     self._read_token('}')
     return fields
 
@@ -367,12 +524,11 @@ class Parser(object):
 
     Int is a sequence of digits. Returns the corresponding integer.
     """
-    word = self._read_token('word').value
-    m = re.match(r'^([0-9]+)$', word)
-    if m:
-      return int(word)
+    if self._is_int():
+      return int(self._read_token('word').value)
     else:
-      self._unexpected('integer expected but found "%s"' % word)
+      self._unexpected(
+          'integer expected but found "%s"' % self._next_token())
 
   def _id(self):
     """ id ::= word
@@ -385,6 +541,14 @@ class Parser(object):
     if not m:
       self._unexpected('"%s" is not a valid identifier' % ident)
     return ident
+
+  def _named_value(self, context):
+    """named_value    ::= id ':=' bit_expr."""
+    name = self._id()
+    self._read_token(':=')
+    value = self._bit_expr(context)
+    self._field_define(value, name, context)
+    return value
 
   def _negated_word(self):
     """ negated_word ::= '~' 'word' """
@@ -473,15 +637,22 @@ class Parser(object):
       else:
         restrictions.add(self._bitpattern32())
 
-  def _safety_check(self, st):
-    """safety_check   ::= id | bit_check
+  def _safety_check(self, context):
+    """safety_check   ::= id | bit_expr ('=>' id)?
 
        Parses safety check and returns it.
        """
-    if self._is_bit_check():
-      return self._bit_check(st)
+    if self._is_name_semicolon():
+      # This is a special case where we are picking up a instruction
+      # tester suffix.
+      check = self._id()
     else:
-      return self._id()
+      check = self._bit_expr1(context)
+      if self._next_token().kind == '=>':
+        self._read_token('=>')
+        name = self._id()
+        check = dgen_core.SafetyAction(check, name)
+    return check
 
   def _table(self, decoder):
     """ table ::= table_desc header row+ footer """
@@ -514,13 +685,13 @@ class Parser(object):
   def _is_action_option(self):
     """Returns true if the input matches an action_option.
 
-       Note: We assume that checking for a word, followed by a label,
+       Note: We assume that checking for a word, followed by an assignment
        is sufficient.
        """
     matches = False
     if self._next_token().kind in ['pattern', 'rule', 'safety', 'arch', 'word']:
       token = self._read_token()
-      if self._next_token().kind == ':':
+      if self._next_token().kind == ':=':
         matches = True
       self._pushback_token(token)
     return matches
@@ -530,11 +701,27 @@ class Parser(object):
 
        Assumes that if a column if found, it must be a bit check.
        """
-    return self._is_column() or self._is_name_equals()
+    return self._is_column_equals() or self._is_name_equals()
 
   def _is_column(self):
     """Returns true if input defines a column (pattern name).
 
+       column         ::= id '(' int (':' int)? ')'
+       """
+    (tokens, matches) = self._is_column_tokens()
+    self._pushback_tokens(tokens)
+    return matches
+
+  def _is_column_equals(self):
+    """ """
+    (tokens, matches) = self._is_column_tokens()
+    if self._next_token().kind != '=':
+      matches = False
+    self._pushback_tokens(tokens)
+    return matches
+
+  def _is_column_tokens(self):
+    """Collects the sequence of tokens defining:
        column         ::= id '(' int (':' int)? ')'
        """
     # Try to match sequence of tokens, saving tokens as processed
@@ -552,17 +739,28 @@ class Parser(object):
               tokens.append(self._read_token('word'))
           if self._next_token().kind == ')':
             matches = True
+    return (tokens, matches)
 
-    # Put back all tokens checked, and then return result.
-    while tokens:
-      self._pushback_token(tokens.pop())
-    return matches
+  def _is_int(self):
+    """Tests if an integer occurs next."""
+    if self._next_token().kind != 'word': return False
+    word = self._next_token().value
+    return re.match(r'^([0-9]+)$', word)
 
   def _is_name_equals(self):
     matches = False
     if self._next_token().kind == 'word':
       token = self._read_token('word')
       if self._next_token().kind == '=':
+        matches = True
+      self._pushback_token(token)
+    return matches
+
+  def _is_name_semicolon(self):
+    matches = False
+    if self._next_token().kind == 'word':
+      token = self._read_token('word')
+      if self._next_token().kind == ';':
         matches = True
       self._pushback_token(token)
     return matches
@@ -574,12 +772,12 @@ class Parser(object):
     column = self._column()
     if not table.add_column(column):
       self._unexpected('In table %s, column %s is repeated' %
-                       (table.name, column.name))
+                       (table.name, column.name()))
 
-  def _field_define(self, column, context):
+  def _field_define(self, column, col_name, context):
     """Install column into the context."""
-    if not context.define(column.name,  column):
-      raise Exception('column %s: multiple definitions' % column.name)
+    if not context.define(col_name,  column):
+      raise Exception('column %s: multiple definitions' % col_name)
 
   def _read_id_or_none(self, read_id):
     if self._next_token().kind in ['|', '+', '(']:
@@ -663,6 +861,11 @@ class Parser(object):
       self._token = token
     else:
       self.token = token
+
+  def _pushback_tokens(self, tokens):
+    """Puts back the reversed list of tokens on to the input stream."""
+    while tokens:
+      self._pushback_token(tokens.pop())
 
   def _read_line(self):
     """Reads the next line of input, and returns it. Otherwise None."""

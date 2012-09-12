@@ -37,6 +37,12 @@ import dgen_output
 """The current command line arguments to use"""
 _cl_args = {}
 
+NEWLINE_STR="""
+"""
+
+COMMENTED_NEWLINE_STR="""
+//"""
+
 # Defines the header for decoder.h
 H_HEADER="""%(FILE_HEADER)s
 
@@ -74,7 +80,7 @@ DECODER_DECLARE_METHOD_COMMENTS="""
 
 DECODER_DECLARE_METHOD="""
   inline const ClassDecoder& decode_%(table_name)s(
-      const Instruction insn) const;
+      const Instruction inst) const;
 """
 
 DECODER_DECLARE_FIELD_COMMENTS="""
@@ -158,7 +164,7 @@ METHOD_HEADER="""
 // Implementation of table: %(table_name)s.
 // Specified by: %(citation)s
 const ClassDecoder& %(decoder_name)s::decode_%(table_name)s(
-     const Instruction insn) const
+     const Instruction inst) const
 {"""
 
 METHOD_HEADER_TRACE="""
@@ -180,7 +186,7 @@ METHOD_DISPATCH_CLASS_DECODER="""
     return %(decoder)s_instance_;"""
 
 METHOD_DISPATCH_SUBMETHOD="""
-    return decode_%(subtable_name)s(insn);"""
+    return decode_%(subtable_name)s(inst);"""
 
 METHOD_DISPATCH_CLOSE="""
   }
@@ -193,13 +199,13 @@ METHOD_FOOTER="""
 """
 
 DECODER_METHOD_HEADER="""
-const ClassDecoder& %(decoder_name)s::decode(const Instruction insn) const {"""
+const ClassDecoder& %(decoder_name)s::decode(const Instruction inst) const {"""
 
 DECODER_METHOD_TRACE="""
-  fprintf(stderr, "Parsing %%08x\\n", insn.Bits());"""
+  fprintf(stderr, "Parsing %%08x\\n", inst.Bits());"""
 
 DECODER_METHOD_FOOTER="""
-  return decode_%(entry_table_name)s(insn);
+  return decode_%(entry_table_name)s(inst);
 }
 """
 
@@ -269,7 +275,7 @@ def _generate_methods(decoder, values, out):
     # Add message to stop compilation warnings if this table
     # doesn't require subtables to select a class decoder.
     if not table.methods():
-      out.write("\n  UNREFERENCED_PARAMETER(insn);")
+      out.write("\n  UNREFERENCED_PARAMETER(inst);")
 
     count = 0
     for row in opt_rows:
@@ -286,12 +292,12 @@ def _generate_methods(decoder, values, out):
       # tested against the corresponding expected bits. Hence, the
       # above example is converted to:
       #
-      #    ((insn & 0x0F000000) != 0x0C000000) &&
-      #    ((insn & 0x0000000F) != 0x00000005)
+      #    ((inst & 0x0F000000) != 0x0C000000) &&
+      #    ((inst & 0x0000000F) != 0x00000005)
       out.write(METHOD_DISPATCH_BEGIN %
-                row.patterns[0].to_c_expr('insn.Bits()'))
+                row.patterns[0].to_commented_bool())
       for p in row.patterns[1:]:
-        out.write(METHOD_DISPATCH_CONTINUE % p.to_c_expr('insn.Bits()'))
+        out.write(METHOD_DISPATCH_CONTINUE % p.to_commented_bool())
       out.write(METHOD_DISPATCH_END)
       if _cl_args.get('trace') == 'True':
           out.write(METHOD_DISPATCH_TRACE % count)

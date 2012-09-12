@@ -641,61 +641,61 @@ class NamedArm32DecoderState : nacl_arm_dec::DecoderState {
   // the class decoder that should be used to decode the particular
   // instruction.
   inline const NamedClassDecoder& decode_ARMv7(
-      const nacl_arm_dec::Instruction insn) const;
+      const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_branch_branch_with_link_and_block_data_transfer(
-      const nacl_arm_dec::Instruction insn) const;
+      const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_coprocessor_instructions_and_supervisor_call(
-      const nacl_arm_dec::Instruction insn) const;
+      const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_data_processing_and_miscellaneous_instructions(
-      const nacl_arm_dec::Instruction insn) const;
+      const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_data_processing_immediate(
-      const nacl_arm_dec::Instruction insn) const;
+      const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_data_processing_register(
-      const nacl_arm_dec::Instruction insn) const;
+      const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_data_processing_register_shifted_register(
-      const nacl_arm_dec::Instruction insn) const;
+      const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_extension_register_load_store_instructions(
-      const nacl_arm_dec::Instruction insn) const;
+      const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_extra_load_store_instructions(
-      const nacl_arm_dec::Instruction insn) const;
+      const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_floating_point_data_processing_instructions(
-      const nacl_arm_dec::Instruction insn) const;
+      const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_halfword_multiply_and_multiply_accumulate(
-      const nacl_arm_dec::Instruction insn) const;
+      const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_load_store_word_and_unsigned_byte(
-      const nacl_arm_dec::Instruction insn) const;
+      const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_load_store_word_and_unsigned_byte_str_or_push(
-      const nacl_arm_dec::Instruction insn) const;
+      const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_media_instructions(
-      const nacl_arm_dec::Instruction insn) const;
+      const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_memory_hints_advanced_simd_instructions_and_miscellaneous_instructions(
-      const nacl_arm_dec::Instruction insn) const;
+      const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_miscellaneous_instructions(
-      const nacl_arm_dec::Instruction insn) const;
+      const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_msr_immediate_and_hints(
-      const nacl_arm_dec::Instruction insn) const;
+      const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_multiply_and_multiply_accumulate(
-      const nacl_arm_dec::Instruction insn) const;
+      const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_other_floating_point_data_processing_instructions(
-      const nacl_arm_dec::Instruction insn) const;
+      const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_packing_unpacking_saturation_and_reversal(
-      const nacl_arm_dec::Instruction insn) const;
+      const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_parallel_addition_and_subtraction_signed(
-      const nacl_arm_dec::Instruction insn) const;
+      const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_parallel_addition_and_subtraction_unsigned(
-      const nacl_arm_dec::Instruction insn) const;
+      const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_saturating_addition_and_subtraction(
-      const nacl_arm_dec::Instruction insn) const;
+      const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_signed_multiply_signed_and_unsigned_divide(
-      const nacl_arm_dec::Instruction insn) const;
+      const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_synchronization_primitives(
-      const nacl_arm_dec::Instruction insn) const;
+      const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_transfer_between_arm_core_and_extension_register_8_16_and_32_bit(
-      const nacl_arm_dec::Instruction insn) const;
+      const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_transfer_between_arm_core_and_extension_registers_64_bit(
-      const nacl_arm_dec::Instruction insn) const;
+      const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_unconditional_instructions(
-      const nacl_arm_dec::Instruction insn) const;
+      const nacl_arm_dec::Instruction inst) const;
   // Defines default action if parse tables don't define what action
   // to take.
   const NotImplementedNamed not_implemented_;

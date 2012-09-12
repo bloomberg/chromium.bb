@@ -101,6 +101,32 @@
 #         are not Pc (R15).
 
 ##############################################################
+# The following define common entries for each (action) row.
+#
+# base: The register used as the base for the effective address
+#       for reads and writes.
+# target: The register use to compute an indirect branch,
+#       if defined (defaults to None).
+# defs: The set of registers defined. (missing implies {}).
+# imm_defs: The set of registers that are set through
+#       immediate indexed addressing writeback, where the
+#       immediate value is "small". (missing implies {}).
+# immediate: True if the instruction does a read/write
+#       as "base + immediate". (missing implies false).
+# pool_head: Defines instruction to start a literal pool.
+#       (missing implies false).
+# relative: Defines if the instruction is a direct relative
+#       branch (R15 + constant offset). (missing implies false.)
+# relative_offset: Defines the constant offset used in a direct
+#       relative branch.
+# safety: How safety is defined for the class.
+# uses: The set of registers  used. (missing imlies {})
+#
+# TODO(karl): How do we model class decoder virtuals clear_bits
+#    and sets_Z_if_bits_clear.
+##############################################################
+
+##############################################################
 # The following defines a class decoder hierarchy used to select the
 # appropriate tester. We want to add class hierarchy information for
 # classes that want their tester to be defined on a superclass.
@@ -172,17 +198,24 @@ class UnpredictableUncondDecoder : UnsafeUncondDecoder
                               extra_load_store_instructions_unpriviledged
                               cccc0000xx1xxxxxxxxxxxxx11x1xxxx
 | 1      ~10xx0     -        ->data_processing_immediate
-| "      10000      -        = Unary1RegisterImmediateOp => Defs12To15 # MOVW A8-194
-                               rule: Mov_Rule_96_A2_P194
-                               pattern: cccc00110000iiiiddddIIIIIIIIIIII
-                               safety: RegsNotPc
-                               arch: v6T2
-| "      10100      -        = Unary1RegisterImmediateOp => Defs12To15 # MOVT A8-200
-                               { Rd(15:12) }
-                               rule: Mov_Rule_99_A1_P200
-                               pattern: cccc00110100iiiiddddIIIIIIIIIIII
-                               safety: Rd=~1111
-                               arch: v6T2
+| "      10000      -        = Unary1RegisterImmediateOp => Defs12To15
+                               { cond(31:28), S(20), imm4(19:16),
+                                 Rd(15:12), imm12(11:0) }
+                               imm := imm4:imm12;
+                               safety := Rd=1111 => UNPREDICTABLE;
+                               defs := { Rd , NZCV if S else None };
+                               pattern := cccc00110000iiiiddddIIIIIIIIIIII;
+                               rule := Mov_Rule_96_A2_P194;
+                               arch := v6T2;
+| "      10100      -        = Unary1RegisterImmediateOp => Defs12To15
+                               { cond(31:28), S(20), imm4(19:16),
+                                 Rd(15:12), imm12(11:0) }
+                               imm := imm4:imm12;
+                               safety := Rd=1111 => UNPREDICTABLE;
+                               defs := { Rd , NZCV if S else None };
+                               pattern := cccc00110100iiiiddddIIIIIIIIIIII;
+                               rule := Mov_Rule_99_A1_P200;
+                               arch := v6T2;
 | "      10x10      -        ->msr_immediate_and_hints
 +--
 
