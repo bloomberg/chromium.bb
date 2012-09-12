@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/gdata/document_entry_conversion.h"
 
 #include "base/file_path.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/drive_test_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
@@ -14,11 +15,12 @@
 namespace gdata {
 
 TEST(DocumentEntryConversionTest, ConvertDocumentEntryToDriveEntryProto_File) {
-  base::Value* value = test_util::LoadJSONFile("file_entry.json");
-  ASSERT_TRUE(value);
+  scoped_ptr<base::Value> value(test_util::LoadJSONFile("file_entry.json"));
+  ASSERT_TRUE(value.get());
 
-  DocumentEntry* document_entry = DocumentEntry::ExtractAndParse(*value);
-  ASSERT_TRUE(document_entry);
+  scoped_ptr<DocumentEntry> document_entry(
+      DocumentEntry::ExtractAndParse(*value));
+  ASSERT_TRUE(document_entry.get());
 
   DriveEntryProto entry_proto =
       ConvertDocumentEntryToDriveEntryProto(*document_entry);
@@ -71,11 +73,13 @@ TEST(DocumentEntryConversionTest, ConvertDocumentEntryToDriveEntryProto_File) {
 
 TEST(DocumentEntryConversionTest,
      ConvertDocumentEntryToDriveEntryProto_HostedDocument) {
-  base::Value* value = test_util::LoadJSONFile("hosted_document_entry.json");
-  ASSERT_TRUE(value);
+  scoped_ptr<base::Value> value(
+      test_util::LoadJSONFile("hosted_document_entry.json"));
+  ASSERT_TRUE(value.get());
 
-  DocumentEntry* document_entry = DocumentEntry::ExtractAndParse(*value);
-  ASSERT_TRUE(document_entry);
+  scoped_ptr<DocumentEntry> document_entry(
+      DocumentEntry::ExtractAndParse(*value));
+  ASSERT_TRUE(document_entry.get());
 
   DriveEntryProto entry_proto =
       ConvertDocumentEntryToDriveEntryProto(*document_entry);
@@ -137,11 +141,13 @@ TEST(DocumentEntryConversionTest,
 
 TEST(DocumentEntryConversionTest,
      ConvertDocumentEntryToDriveEntryProto_Directory) {
-  base::Value* value = test_util::LoadJSONFile("directory_entry.json");
-  ASSERT_TRUE(value);
+  scoped_ptr<base::Value> value(
+      test_util::LoadJSONFile("directory_entry.json"));
+  ASSERT_TRUE(value.get());
 
-  DocumentEntry* document_entry = DocumentEntry::ExtractAndParse(*value);
-  ASSERT_TRUE(document_entry);
+  scoped_ptr<DocumentEntry> document_entry(
+      DocumentEntry::ExtractAndParse(*value));
+  ASSERT_TRUE(document_entry.get());
 
   DriveEntryProto entry_proto =
       ConvertDocumentEntryToDriveEntryProto(*document_entry);
@@ -198,12 +204,13 @@ TEST(DocumentEntryConversionTest,
 
 TEST(DocumentEntryConversionTest,
      ConvertDocumentEntryToDriveEntryProto_DeletedHostedDocument) {
-  base::Value* value = test_util::LoadJSONFile(
-      "deleted_hosted_document_entry.json");
-  ASSERT_TRUE(value);
+  scoped_ptr<base::Value> value(
+      test_util::LoadJSONFile("deleted_hosted_document_entry.json"));
+  ASSERT_TRUE(value.get());
 
-  DocumentEntry* document_entry = DocumentEntry::ExtractAndParse(*value);
-  ASSERT_TRUE(document_entry);
+  scoped_ptr<DocumentEntry> document_entry(
+      DocumentEntry::ExtractAndParse(*value));
+  ASSERT_TRUE(document_entry.get());
 
   DriveEntryProto entry_proto =
       ConvertDocumentEntryToDriveEntryProto(*document_entry);

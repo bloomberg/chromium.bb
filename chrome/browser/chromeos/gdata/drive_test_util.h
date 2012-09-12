@@ -104,6 +104,7 @@ void CopyResultsFromGetEntryInfoPairCallback(
 FilePath GetTestFilePath(const FilePath::StringType& base_name);
 
 // Loads a test JSON file as a base::Value.
+// The caller should delete the returned object.
 base::Value* LoadJSONFile(const std::string& base_name);
 
 // Loads a test json file as root ("/drive") element.

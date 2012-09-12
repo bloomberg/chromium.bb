@@ -350,6 +350,8 @@ class DocumentEntry : public FeedEntry {
   //   "entry": { ... },   // This function will extract this and parse.
   //   "version": "1.0"
   // }
+  //
+  // The caller should delete the returned object.
   static DocumentEntry* ExtractAndParse(const base::Value& value);
 
   // Creates document entry from parsed JSON Value.  You should call
@@ -523,6 +525,8 @@ class DocumentFeed : public FeedEntry {
   //   "feed": { ... },   // This function will extract this and parse.
   //   "version": "1.0"
   // }
+  //
+  // The caller should delete the returned object.
   static scoped_ptr<DocumentFeed> ExtractAndParse(const base::Value& value);
 
   // Creates feed from parsed JSON Value.  You should call this
