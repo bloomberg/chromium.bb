@@ -50,12 +50,6 @@ cr.define('ntp', function() {
   var shouldShowLoginBubble = false;
 
   /**
-   * The 'other-sessions-menu-button' element.
-   * @type {!Element|undefined}
-   */
-  var otherSessionsButton;
-
-  /**
    * The time in milliseconds for most transitions.  This should match what's
    * in new_tab.css.  Unfortunately there's no better way to try to time
    * something to occur until after a transition has completed.
@@ -88,8 +82,6 @@ cr.define('ntp', function() {
     this.initialize(getRequiredElement('page-list'),
                     getRequiredElement('dot-list'),
                     getRequiredElement('card-slider-frame'),
-                    // TODO(pedrosimonetti): Remove the Trash component.
-                    getRequiredElement('trash'),
                     // TODO(pedrosimonetti): Remove page switchers.
                     pageSwitcherStart, pageSwitcherEnd);
   }
@@ -151,14 +143,6 @@ cr.define('ntp', function() {
     pageSwitcherEnd: undefined,
 
     /**
-     * The 'trash' element.  Note that technically this is unnecessary,
-     * JavaScript creates the object for us based on the id.  But I don't want
-     * to rely on the ID being the same, and JSCompiler doesn't know about it.
-     * @type {!Element|undefined}
-     */
-    trash: undefined,
-
-    /**
      * The type of page that is currently shown. The value is a numerical ID.
      * @type {number}
      */
@@ -192,22 +176,17 @@ cr.define('ntp', function() {
      *     represents a page.
      * @param {!Element} cardSliderFrame The card slider frame that hosts
      *     pageList and switcher buttons.
-     * @param {!Element|undefined} opt_trash Optional trash element.
      * @param {!Element|undefined} opt_pageSwitcherStart Optional start page
      *     switcher button.
      * @param {!Element|undefined} opt_pageSwitcherEnd Optional end page
      *     switcher button.
      */
-    initialize: function(pageList, dotList, cardSliderFrame, opt_trash,
+    initialize: function(pageList, dotList, cardSliderFrame,
                          opt_pageSwitcherStart, opt_pageSwitcherEnd) {
       this.pageList = pageList;
 
       this.dotList = dotList;
       cr.ui.decorate(this.dotList, ntp.DotList);
-
-      this.trash = opt_trash;
-      if (this.trash)
-        new ntp.Trash(this.trash);
 
       this.pageSwitcherStart = opt_pageSwitcherStart;
       if (this.pageSwitcherStart)
@@ -735,12 +714,6 @@ cr.define('ntp', function() {
     notificationContainer.addEventListener(
         'webkitTransitionEnd', onNotificationTransitionEnd);
 
-    if (loadTimeData.getBoolean('showOtherSessionsMenu')) {
-      otherSessionsButton = getRequiredElement('other-sessions-menu-button');
-      cr.ui.decorate(otherSessionsButton, ntp.OtherSessionsMenuButton);
-      otherSessionsButton.initialize(loadTimeData.getBoolean('isUserSignedIn'));
-    }
-
     var mostVisited = new ntp.MostVisitedPage();
     newTabView.appendTilePage(mostVisited,
                               loadTimeData.getString('mostvisited'));
@@ -750,12 +723,6 @@ cr.define('ntp', function() {
     newTabView.appendTilePage(recentlyClosed,
                               loadTimeData.getString('recentlyclosed'));
     chrome.send('getRecentlyClosedTabs');
-
-    var webStoreLink = loadTimeData.getString('webStoreLink');
-    var url = appendParam(webStoreLink, 'utm_source', 'chrome-ntp-launcher');
-    $('chrome-web-store-link').href = url;
-    $('chrome-web-store-link').addEventListener('click',
-        onChromeWebStoreButtonClick);
 
     if (loadTimeData.getString('login_status_message')) {
       loginBubble = new cr.ui.Bubble;
@@ -808,17 +775,6 @@ cr.define('ntp', function() {
       cr.dispatchSimpleEvent(document, 'ntpLoaded', true, true);
       document.documentElement.classList.remove('starting-up');
     });
-  }
-
-  /**
-   * Launches the chrome web store app with the chrome-ntp-launcher
-   * source.
-   * @param {Event} e The click event.
-   */
-  function onChromeWebStoreButtonClick(e) {
-    chrome.send('recordAppLaunchByURL',
-                [encodeURIComponent(this.href),
-                 ntp.APP_LAUNCH.NTP_WEBSTORE_FOOTER]);
   }
 
   /*
@@ -1058,8 +1014,6 @@ cr.define('ntp', function() {
     } else if (loginBubble) {
       loginBubble.reposition();
     }
-    if (otherSessionsButton)
-      otherSessionsButton.updateSignInState(isUserSignedIn);
   }
 
   /**
@@ -1096,8 +1050,8 @@ cr.define('ntp', function() {
   }
 
   function setForeignSessions(sessionList, isTabSyncEnabled) {
-    if (otherSessionsButton)
-      otherSessionsButton.setForeignSessions(sessionList, isTabSyncEnabled);
+    // TODO(jeremycho): Support this once the Devices page is implemented.
+    console.warn('setForeignSessions not implemented.');
   }
 
   function getAppsCallback() {

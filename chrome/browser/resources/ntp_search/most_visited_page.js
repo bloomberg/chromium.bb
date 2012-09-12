@@ -144,8 +144,7 @@ cr.define('ntp', function() {
     },
 
     /**
-     * Returns whether this element can be 'removed' from chrome (i.e. whether
-     * the user can drag it onto the trash and expect something to happen).
+     * Returns whether this element can be 'removed' from chrome.
      * @return {boolean} True, since most visited pages can always be
      *     blacklisted.
      */
