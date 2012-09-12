@@ -11,6 +11,7 @@
 #include "sandbox/win/src/handle_closer_agent.h"
 #include "sandbox/win/src/handle_interception.h"
 #include "sandbox/win/src/ipc_tags.h"
+#include "sandbox/win/src/process_mitigations.h"
 #include "sandbox/win/src/restricted_token_utils.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/sandbox_types.h"
@@ -61,6 +62,7 @@ namespace sandbox {
 
 SANDBOX_INTERCEPT IntegrityLevel g_shared_delayed_integrity_level =
     INTEGRITY_LEVEL_LAST;
+SANDBOX_INTERCEPT MitigationFlags g_shared_delayed_mitigations = 0;
 
 TargetServicesBase::TargetServicesBase() {
 }
@@ -86,6 +88,10 @@ void TargetServicesBase::LowerToken() {
     ::TerminateProcess(::GetCurrentProcess(), SBOX_FATAL_CACHEDISABLE);
   if (!CloseOpenHandles())
     ::TerminateProcess(::GetCurrentProcess(), SBOX_FATAL_CLOSEHANDLES);
+  // Enabling mitigations must happen last otherwise handle closing breaks
+  if (g_shared_delayed_mitigations &&
+      !ApplyProcessMitigationsToCurrentProcess(g_shared_delayed_mitigations))
+    ::TerminateProcess(::GetCurrentProcess(), SBOX_FATAL_MITIGATION);
 }
 
 ProcessState* TargetServicesBase::GetState() {

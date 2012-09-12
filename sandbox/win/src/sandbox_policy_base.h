@@ -52,6 +52,11 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
       IntegrityLevel integrity_level) OVERRIDE;
   virtual ResultCode SetAppContainer(const wchar_t* sid) OVERRIDE;
   virtual ResultCode SetCapability(const wchar_t* sid) OVERRIDE;
+  virtual ResultCode SetProcessMitigations(MitigationFlags flags) OVERRIDE;
+  virtual MitigationFlags GetProcessMitigations() OVERRIDE;
+  virtual ResultCode SetDelayedProcessMitigations(
+      MitigationFlags flags) OVERRIDE;
+  virtual MitigationFlags GetDelayedProcessMitigations() OVERRIDE;
   virtual void SetStrictInterceptions() OVERRIDE;
   virtual ResultCode AddRule(SubSystem subsystem, Semantics semantics,
                              const wchar_t* pattern) OVERRIDE;
@@ -120,6 +125,8 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
   bool relaxed_interceptions_;
   IntegrityLevel integrity_level_;
   IntegrityLevel delayed_integrity_level_;
+  MitigationFlags mitigations_;
+  MitigationFlags delayed_mitigations_;
   // The array of objects that will answer IPC calls.
   Dispatcher* ipc_targets_[IPC_LAST_TAG];
   // Object in charge of generating the low level policy.

@@ -164,6 +164,22 @@ class TargetPolicy {
   // Sets a capability to be enabled for the sandboxed process' AppContainer.
   virtual ResultCode SetCapability(const wchar_t* sid) = 0;
 
+  // Sets the mitigations enabled when the process is created. Most of these
+  // are implemented as attributes passed via STARTUPINFOEX. So they take
+  // effect before any thread in the target executes. The declaration of
+  // MitigationFlags is followed by a detailed description of each flag.
+  virtual ResultCode SetProcessMitigations(MitigationFlags flags) = 0;
+
+  // Returns the currently set mitigation flags.
+  virtual MitigationFlags GetProcessMitigations() = 0;
+
+  // Sets process mitigation flags that don't take effect before the call to
+  // LowerToken().
+  virtual ResultCode SetDelayedProcessMitigations(MitigationFlags flags) = 0;
+
+  // Returns the currently set delayed mitigation flags.
+  virtual MitigationFlags GetDelayedProcessMitigations() = 0;
+
   // Sets the interceptions to operate in strict mode. By default, interceptions
   // are performed in "relaxed" mode, where if something inside NTDLL.DLL is
   // already patched we attempt to intercept it anyway. Setting interceptions
