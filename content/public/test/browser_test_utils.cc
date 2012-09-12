@@ -514,9 +514,10 @@ bool TestWebSocketServer::Start(const FilePath& root_directory) {
 CommandLine* TestWebSocketServer::CreatePythonCommandLine() {
   // Note: Python's first argument must be the script; do not append CommandLine
   // switches, as they would precede the script path and break this CommandLine.
-  FilePath path;
-  CHECK(GetPythonRunTime(&path));
-  return new CommandLine(path);
+  CommandLine* cmd_line = new CommandLine(CommandLine::NO_PROGRAM);
+  // TODO(phajdan.jr): Instead of CHECKing, return a boolean indicating success.
+  CHECK(GetPythonCommand(cmd_line));
+  return cmd_line;
 }
 
 void TestWebSocketServer::SetPythonPath() {

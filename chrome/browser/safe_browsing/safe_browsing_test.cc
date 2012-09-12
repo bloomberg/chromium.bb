@@ -144,12 +144,9 @@ class SafeBrowsingTestServer {
     pyproto_code_dir = pyproto_code_dir.Append(FILE_PATH_LITERAL("google"));
     AppendToPythonPath(pyproto_code_dir);
 
-    FilePath python_runtime;
-    EXPECT_TRUE(GetPythonRunTime(&python_runtime));
-    CommandLine cmd_line(python_runtime);
-    // Make python stdout and stderr unbuffered, to prevent incomplete stderr on
-    // win bots, and also fix mixed up ordering of stdout and stderr.
-    cmd_line.AppendSwitch("-u");
+    CommandLine cmd_line(CommandLine::NO_PROGRAM);
+    EXPECT_TRUE(GetPythonCommand(&cmd_line));
+
     FilePath datafile = testserver_path.Append(datafile_);
     cmd_line.AppendArgPath(testserver);
     cmd_line.AppendArg(base::StringPrintf("--port=%d", kPort_));
