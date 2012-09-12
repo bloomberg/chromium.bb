@@ -146,7 +146,7 @@ void MediaDeviceNotifications::AddMountedPathOnUIThread(
     return;
 
   // Keep track of device uuid, to see how often we receive empty uuid values.
-  UMA_HISTOGRAM_BOOLEAN("MediaDeviceNotification.device_uuid_available",
+  UMA_HISTOGRAM_BOOLEAN("MediaDeviceNotification.DeviceUUIDAvailable",
                         !unique_id.empty());
   if (unique_id.empty())
     return;
