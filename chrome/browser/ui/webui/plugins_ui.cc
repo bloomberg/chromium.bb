@@ -494,7 +494,7 @@ PluginsUI::PluginsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 base::RefCountedMemory* PluginsUI::GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor) {
   return ResourceBundle::GetSharedInstance().
-      LoadDataResourceBytes(IDR_PLUGIN, scale_factor);
+      LoadDataResourceBytes(IDR_PLUGINS_FAVICON, scale_factor);
 }
 
 // static

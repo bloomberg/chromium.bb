@@ -34,7 +34,7 @@ TaskManagerNotificationResource::TaskManagerNotificationResource(
     : balloon_host_(balloon_host) {
   if (!default_icon_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    default_icon_ = rb.GetImageSkiaNamed(IDR_PLUGIN);
+    default_icon_ = rb.GetImageSkiaNamed(IDR_PLUGINS_FAVICON);
   }
   process_handle_ =
       balloon_host_->web_contents()->GetRenderProcessHost()->GetHandle();

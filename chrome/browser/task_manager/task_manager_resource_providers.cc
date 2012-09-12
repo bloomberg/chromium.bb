@@ -743,7 +743,7 @@ TaskManagerBackgroundContentsResource::TaskManagerBackgroundContentsResource(
   // TODO(atwilson): Use the favicon when that's available.
   if (!default_icon_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    default_icon_ = rb.GetImageSkiaNamed(IDR_PLUGIN);
+    default_icon_ = rb.GetImageSkiaNamed(IDR_PLUGINS_FAVICON);
   }
   // Ensure that the string has the appropriate direction markers (see comment
   // in TaskManagerTabContentsResource::GetTitle()).
@@ -996,7 +996,7 @@ TaskManagerChildProcessResource::TaskManagerChildProcessResource(
   pid_ = base::GetProcId(handle);
   if (!default_icon_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    default_icon_ = rb.GetImageSkiaNamed(IDR_PLUGIN);
+    default_icon_ = rb.GetImageSkiaNamed(IDR_PLUGINS_FAVICON);
     // TODO(jabdelmalek): use different icon for web workers.
   }
 }
@@ -1309,7 +1309,7 @@ TaskManagerExtensionProcessResource::TaskManagerExtensionProcessResource(
     : render_view_host_(render_view_host) {
   if (!default_icon_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    default_icon_ = rb.GetImageSkiaNamed(IDR_PLUGIN);
+    default_icon_ = rb.GetImageSkiaNamed(IDR_PLUGINS_FAVICON);
   }
   process_handle_ = render_view_host_->GetProcess()->GetHandle();
   unique_process_id_ = render_view_host->GetProcess()->GetID();

@@ -169,7 +169,7 @@ FlagsUI::FlagsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 base::RefCountedMemory* FlagsUI::GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor) {
   return ResourceBundle::GetSharedInstance().
-      LoadDataResourceBytes(IDR_FLAGS, scale_factor);
+      LoadDataResourceBytes(IDR_FLAGS_FAVICON, scale_factor);
 }
 
 // static

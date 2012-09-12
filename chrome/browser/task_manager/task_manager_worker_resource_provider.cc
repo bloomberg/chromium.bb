@@ -110,7 +110,7 @@ string16 TaskManagerSharedWorkerResource::GetProfileName() const {
 gfx::ImageSkia TaskManagerSharedWorkerResource::GetIcon() const {
   if (!default_icon_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    default_icon_ = rb.GetImageSkiaNamed(IDR_PLUGIN);
+    default_icon_ = rb.GetImageSkiaNamed(IDR_PLUGINS_FAVICON);
     // TODO(jabdelmalek): use different icon for web workers.
   }
   return *default_icon_;

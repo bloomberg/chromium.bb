@@ -68,7 +68,7 @@
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_NOTIFICATION" file="blocked_notifications.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_PLUGINS" file="blocked_plugins.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_POPUPS" file="blocked_popups.png" />
-      <structure type="chrome_scaled_image" name="IDR_BOOKMARKS_FAVICON" file="bookmarks_favicon.png" />
+      <structure type="chrome_scaled_image" name="IDR_BOOKMARKS_FAVICON" file="common/favicon_bookmarks.png" />
       <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_CHEVRONS" file="chevron.png" />
       <if expr="is_macosx">
         <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_FOLDER" file="bookmark_bar_folder_mac.png" />
@@ -102,7 +102,7 @@
       <structure type="chrome_scaled_image" name="IDR_CLOSE_BUTTON_MASK" file="close_button_mask.png" />
       <if expr="is_win">
         <structure type="chrome_scaled_image" name="IDR_CONFLICT_BADGE" file="conflict_badge.png" />
-        <structure type="chrome_scaled_image" name="IDR_CONFLICT_FAVICON" file="about_conflicts_favicon.png" />
+        <structure type="chrome_scaled_image" name="IDR_CONFLICT_FAVICON" file="common/favicon_conflicts.png" />
         <structure type="chrome_scaled_image" name="IDR_CONFLICT_MENU" file="conflict_menu.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_CONSTRAINED_BOTTOM_CENTER_V" file="constrained_bottom_center_v.png" />
@@ -156,7 +156,7 @@
       <structure type="chrome_scaled_image" name="IDR_DOCK_HIGH" file="dock_tab_high.png" />
       <structure type="chrome_scaled_image" name="IDR_DOCK_MAX" file="dock_tab_max.png" />
       <structure type="chrome_scaled_image" name="IDR_DOCK_WIDE" file="dock_tab_wide.png" />
-      <structure type="chrome_scaled_image" name="IDR_DOWNLOADS_FAVICON" file="downloads_favicon.png" />
+      <structure type="chrome_scaled_image" name="IDR_DOWNLOADS_FAVICON" file="common/favicon_downloads.png" />
       <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_ANIMATION_BEGIN" file="download_animation_begin.png" />
       <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_BUTTON_CENTER_BOTTOM" file="download_button_center_bottom.png" />
       <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_BUTTON_CENTER_BOTTOM_H" file="download_button_center_bottom_hover.png" />
@@ -223,7 +223,7 @@
         <structure type="chrome_scaled_image" name="IDR_ENROLL_FAILURE" file="enroll_failure.png" />
         <structure type="chrome_scaled_image" name="IDR_ENROLL_SUCCESS" file="enroll_success.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_EXTENSIONS_FAVICON" file="plugin.png" />
+      <structure type="chrome_scaled_image" name="IDR_EXTENSIONS_FAVICON" file="common/favicon_extensions.png" />
       <structure type="chrome_scaled_image" name="IDR_EXTENSIONS_RATING_STAR_HALF_LEFT" file="extensions_rating_star_half_left.png" />
       <structure type="chrome_scaled_image" name="IDR_EXTENSIONS_RATING_STAR_HALF_RIGHT" file="extensions_rating_star_half_right.png" />
       <structure type="chrome_scaled_image" name="IDR_EXTENSIONS_RATING_STAR_OFF" file="extensions_rating_star_off.png" />
@@ -252,7 +252,7 @@
       <structure type="chrome_scaled_image" name="IDR_FIND_DLG_LEFT_BACKGROUND" file="find_dlg_left_bg.png" />
       <structure type="chrome_scaled_image" name="IDR_FIND_DLG_MIDDLE_BACKGROUND" file="find_dlg_middle_bg.png" />
       <structure type="chrome_scaled_image" name="IDR_FIND_DLG_RIGHT_BACKGROUND" file="find_dlg_right_bg.png" />
-      <structure type="chrome_scaled_image" name="IDR_FLAGS" file="flags.png" />
+      <structure type="chrome_scaled_image" name="IDR_FLAGS_FAVICON" file="common/favicon_flags.png" />
       <if expr="not pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_FORWARD" file="forward.png" />
         <structure type="chrome_scaled_image" name="IDR_FORWARD_D" file="forward_disabled.png" />
@@ -277,7 +277,7 @@
         <structure type="chrome_scaled_image" name="IDR_GUEST_ICON" file="guest_icon.png" />
         <structure type="chrome_scaled_image" name="IDR_HELP_MENU" file="help_16.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_HISTORY_FAVICON" file="history_favicon.png" />
+      <structure type="chrome_scaled_image" name="IDR_HISTORY_FAVICON" file="common/favicon_history.png" />
       <if expr="not pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_HOME" file="home.png" />
       </if>
@@ -551,7 +551,7 @@
       <structure type="chrome_scaled_image" name="IDR_PANEL_RESTORE" file="panel_restore.png" />
       <structure type="chrome_scaled_image" name="IDR_PANEL_RESTORE_C" file="panel_restore_click.png" />
       <structure type="chrome_scaled_image" name="IDR_PANEL_RESTORE_H" file="panel_restore_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_PLUGIN" file="plugin.png" />
+      <structure type="chrome_scaled_image" name="IDR_PLUGINS_FAVICON" file="common/favicon_extensions.png" />
       <structure type="chrome_scaled_image" name="IDR_PRERENDER" file="prerender_succeed_icon.png" />
       <if expr="not pp_ifdef('_google_chrome')">
         <structure type="chrome_scaled_image" name="IDR_PRODUCT_LOGO" file="chromium/product_logo.png" />
@@ -645,13 +645,13 @@
         <structure type="chrome_scaled_image" name="IDR_RELOAD_DIMMED" file="common/browser_reload_normal.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_RESTORE_BUTTON_MASK" file="restore_button_mask.png" />
-      <structure type="chrome_scaled_image" name="IDR_SAD_FAVICON" file="sadfavicon.png" />
+      <structure type="chrome_scaled_image" name="IDR_SAD_FAVICON" file="common/favicon_sad_tab.png" />
       <structure type="chrome_scaled_image" name="IDR_SAD_TAB" file="sadtab.png" />
       <structure type="chrome_scaled_image" name="IDR_SAFEBROWSING_WARNING" file="safebrowsing_warning.png" />
       <structure type="chrome_scaled_image" name="IDR_SEARCH_ENGINE_CHANGE_ALERT" file="protector_search_alert.png" />
       <structure type="chrome_scaled_image" name="IDR_SEARCH_ENGINE_CHANGE_BADGE" file="protector_search_badge.png" />
       <structure type="chrome_scaled_image" name="IDR_SEARCH_ENGINE_CHANGE_MENU" file="protector_search_menu.png" />
-      <structure type="chrome_scaled_image" name="IDR_SETTINGS_FAVICON" file="settings_favicon.png" />
+      <structure type="chrome_scaled_image" name="IDR_SETTINGS_FAVICON" file="common/favicon_settings.png" />
       <structure type="chrome_scaled_image" name="IDR_SIDETABS_NEW_TAB" file="sidetabs_new_tab.png" />
       <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_MIC_EMPTY" file="common/speech_input_mic_empty.png" />
       <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_MIC_FULL" file="common/speech_input_mic_full.png" />
