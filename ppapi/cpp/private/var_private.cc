@@ -29,12 +29,11 @@ VarPrivate::VarPrivate(const InstanceHandle& instance,
   if (has_interface<PPB_Var_Deprecated>()) {
     var_ = get_interface<PPB_Var_Deprecated>()->CreateObject(
         instance.pp_instance(), object->GetClass(), object);
-    needs_release_ = true;
   } else {
     var_.type = PP_VARTYPE_NULL;
     var_.padding = 0;
-    needs_release_ = false;
   }
+  is_managed_ = true;
 }
 
 ScriptableObject* VarPrivate::AsScriptableObject() const {

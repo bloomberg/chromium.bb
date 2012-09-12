@@ -30,11 +30,11 @@ VarArrayBuffer::VarArrayBuffer(const Var& var) : Var(var) {
 VarArrayBuffer::VarArrayBuffer(uint32_t size_in_bytes) {
   if (has_interface<PPB_VarArrayBuffer_1_0>()) {
     var_ = get_interface<PPB_VarArrayBuffer_1_0>()->Create(size_in_bytes);
-    needs_release_ = true;
   } else {
     PP_NOTREACHED();
     var_ = PP_MakeNull();
   }
+  is_managed_ = true;
 }
 
 pp::VarArrayBuffer& VarArrayBuffer::operator=(const VarArrayBuffer& other) {

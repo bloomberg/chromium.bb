@@ -70,6 +70,10 @@ int32_t WebSocket::ReceiveMessage(Var* message,
   if (!has_interface<PPB_WebSocket_1_0>())
     return PP_ERROR_BADRESOURCE;
 
+  // Initialize |message| to release old internal PP_Var of reused |message|.
+  if (message)
+    *message = Var();
+
   return get_interface<PPB_WebSocket_1_0>()->ReceiveMessage(
       pp_resource(), const_cast<PP_Var*>(&message->pp_var()),
       callback.pp_completion_callback());

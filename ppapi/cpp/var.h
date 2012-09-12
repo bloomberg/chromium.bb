@@ -57,7 +57,7 @@ class Var {
   /// the reference count will not normally be incremented for you.
   Var(PassRef, PP_Var var) {
     var_ = var;
-    needs_release_ = true;
+    is_managed_ = true;
   }
 
   struct DontManage {};
@@ -72,7 +72,7 @@ class Var {
   /// @param[in] var A <code>Var</code>.
   Var(DontManage, PP_Var var) {
     var_ = var;
-    needs_release_ = false;
+    is_managed_ = false;
   }
 
   /// A constructor for copying a <code>Var</code>.
@@ -211,7 +211,7 @@ class Var {
   PP_Var Detach() {
     PP_Var ret = var_;
     var_ = PP_MakeUndefined();
-    needs_release_ = false;
+    is_managed_ = true;
     return ret;
   }
 
@@ -280,7 +280,10 @@ class Var {
 
  protected:
   PP_Var var_;
-  bool needs_release_;
+
+  // |is_managed_| indicates if the instance manages |var_|.
+  // You need to check if |var_| is refcounted to call Release().
+  bool is_managed_;
 
  private:
   // Prevent an arbitrary pointer argument from being implicitly converted to

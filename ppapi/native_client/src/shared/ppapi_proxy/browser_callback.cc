@@ -89,6 +89,7 @@ void RunRemoteCallback(void* user_data, int32_t result) {
     read_buffer_size = kMaxReturnVarSize;
     read_buffer.reset(
         Serialize(&remote_callback->read_var, 1, &read_buffer_size));
+    PPBVarInterface()->Release(remote_callback->read_var);
   }
 
   NaClSrpcError srpc_result =
