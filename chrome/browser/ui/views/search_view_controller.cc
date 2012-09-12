@@ -142,11 +142,17 @@ class NTPViewLayoutManager : public views::LayoutManager {
     gfx::Size preferred_size = logo_view_->GetPreferredSize();
     logo_view_->SetBounds(
         (host->width() - preferred_size.width()) / 2,
-        chrome::search::kOmniboxYPosition - 20 - preferred_size.height(),
+        chrome::search::kLogoYPosition,
         preferred_size.width(),
         preferred_size.height());
 
-    const int kContentTop = chrome::search::kOmniboxYPosition + 50;
+    // Note: Next would be the Omnibox layout.  That is done in
+    // |ToolbarView::LayoutForSearch| however.
+
+    const int kContentTop = logo_view_->bounds().bottom() +
+        chrome::search::kLogoBottomGap +
+        chrome::search::kNTPOmniboxHeight +
+        chrome::search::kOmniboxBottomGap;
     content_view_->SetBounds(0,
                              kContentTop,
                              host->width(),
@@ -298,6 +304,22 @@ void SearchViewController::ModeChanged(const chrome::search::Mode& old_mode,
   }
 }
 
+gfx::Rect SearchViewController::GetNTPOmniboxBounds(views::View* destination) {
+  if (!is_ntp_state(state_))
+    return gfx::Rect();
+
+  const float kNTPPageWidthRatio = 0.73f;
+  int omnibox_width = kNTPPageWidthRatio * ntp_container_->bounds().width();
+  int omnibox_x = (ntp_container_->bounds().width() - omnibox_width) / 2;
+  gfx::Point omnibox_origin(omnibox_x,
+                            GetLogoView()->bounds().bottom() +
+                                chrome::search::kLogoBottomGap);
+  views::View::ConvertPointToTarget(ntp_container_, destination,
+                                    &omnibox_origin);
+  return gfx::Rect(omnibox_origin.x(), omnibox_origin.y(),
+                   omnibox_width, chrome::search::kNTPOmniboxHeight);
+}
+
 void SearchViewController::OnImplicitAnimationsCompleted() {
   DCHECK_EQ(STATE_NTP_ANIMATING, state_);
   state_ = STATE_SUGGESTIONS;
@@ -313,6 +335,11 @@ void SearchViewController::OnImplicitAnimationsCompleted() {
     omnibox_popup_parent_->child_at(0)->Layout();
 }
 
+// static
+bool SearchViewController::is_ntp_state(State state) {
+  return state == STATE_NTP || state == STATE_NTP_LOADING;
+}
+
 void SearchViewController::UpdateState() {
   if (!search_model()) {
     DestroyViews();
@@ -323,12 +350,16 @@ void SearchViewController::UpdateState() {
     case chrome::search::Mode::MODE_DEFAULT:
       break;
 
+    case chrome::search::Mode::MODE_NTP_LOADING:
+      new_state = STATE_NTP_LOADING;
+      break;
+
     case chrome::search::Mode::MODE_NTP:
       new_state = STATE_NTP;
       break;
 
     case chrome::search::Mode::MODE_SEARCH_SUGGESTIONS:
-      if (search_model()->mode().animate && state_ == STATE_NTP)
+      if (search_model()->mode().animate && is_ntp_state(state_))
         new_state = STATE_NTP_ANIMATING;
       else if (omnibox_popup_parent_->is_child_visible())
         new_state = STATE_SUGGESTIONS;
@@ -351,6 +382,7 @@ void SearchViewController::SetState(State state) {
       DestroyViews();
       break;
 
+    case STATE_NTP_LOADING:
     case STATE_NTP:
       DestroyViews();
       CreateViews(state);
@@ -362,7 +394,7 @@ void SearchViewController::SetState(State state) {
 
     case STATE_NTP_ANIMATING:
       // Should only animate from the ntp.
-      DCHECK_EQ(STATE_NTP, old_state);
+      DCHECK(is_ntp_state(old_state));
       StartAnimation();
       break;
 
@@ -490,6 +522,17 @@ void SearchViewController::CreateViews(State state) {
     ntp_container_->SetVisible(false);
     MaybeHideOverlay();
   }
+
+  // When loading, the |content_view_| needs to be invisible, but the web
+  // contents that backs it needs to think it is visible so the back-end
+  // renderer continues to draw.  Once drawing is complete, we'll receive
+  // a state change to |STATE_NTP| and make the view itself visible.
+  if (state == STATE_NTP_LOADING) {
+    content_view_->SetVisible(false);
+    content_view_->web_contents()->WasShown();
+  } else {
+    content_view_->SetVisible(true);
+  }
 }
 
 views::View* SearchViewController::GetLogoView() const {
@@ -521,6 +564,7 @@ void SearchViewController::DestroyViews() {
   ntp_container_->RemoveChildView(content_view_);
   if (content_view_->web_contents())
     content_view_->web_contents()->GetNativeView()->layer()->SetOpacity(1.0f);
+  content_view_->SetVisible(true);
   contents_container_->SetActive(content_view_);
   contents_container_->SetOverlay(NULL);
 

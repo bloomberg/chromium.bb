@@ -69,6 +69,8 @@
 #endif
 
 #if defined(USE_AURA)
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/search_view_controller.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #endif
@@ -402,9 +404,27 @@ gfx::ImageSkia ToolbarView::GetAppMenuIcon(
 }
 
 void ToolbarView::LayoutForSearch() {
-  if (chrome::search::IsInstantExtendedAPIEnabled(browser_->profile()) &&
-      browser_->search_model()->mode().is_ntp())
-    LayoutLocationBarNTP();
+  if (!(chrome::search::IsInstantExtendedAPIEnabled(browser_->profile()) &&
+        browser_->search_model()->mode().is_ntp()))
+    return;
+
+#if defined(USE_AURA)
+  const BrowserView* browser_view =
+      static_cast<BrowserView*>(browser_->window());
+  if (!browser_view)
+    return;
+
+  gfx::Rect location_container_bounds =
+      browser_view->search_view_controller()->GetNTPOmniboxBounds(
+          location_bar_container_->parent());
+  if (location_container_bounds.width() == 0)
+    return;
+
+  location_bar_container_->SetInToolbar(false);
+  location_container_bounds.set_height(
+      location_bar_container_->GetPreferredSize().height());
+  location_bar_container_->SetBoundsRect(location_container_bounds);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -948,65 +968,6 @@ void ToolbarView::UpdateAppMenuState() {
   app_menu_->SetHoverIcon(GetAppMenuIcon(views::CustomButton::BS_HOT));
   app_menu_->SetPushedIcon(GetAppMenuIcon(views::CustomButton::BS_PUSHED));
   SchedulePaint();
-}
-
-void ToolbarView::LayoutLocationBarNTP() {
-  // TODO(kuan): this likely needs to cancel animations.
-
-  WebContents* contents = chrome::GetActiveWebContents(browser_);
-#if defined(USE_AURA)
-  // Under aura we can't use WebContentsView::GetContainerBounds since it is
-  // affected by any animations that scale the window (such as during startup).
-  // Instead we convert coordinates using aura::Window.
-  aura::Window* contents_view = contents && contents->GetView() ?
-      contents->GetView()->GetNativeView() : NULL;
-  if (!contents_view)
-    return;
-
-  aura::Window* browser_window = GetWidget()->GetNativeView();
-  // BrowserWindow may not contain contents during startup on the lock screen.
-  if (!browser_window || !browser_window->Contains(contents_view))
-    return;
-
-  gfx::Size contents_size(contents_view->bounds().size());
-  gfx::Rect location_rect = chrome::search::GetNTPOmniboxBounds(contents_size);
-  if (location_rect.width() == 0)
-    return;
-
-  gfx::Point location_container_origin;
-  aura::Window::ConvertPointToTarget(
-      contents_view, browser_window, &location_container_origin);
-  views::View::ConvertPointFromWidget(location_bar_container_->parent(),
-                                      &location_container_origin);
-  location_container_origin =
-      location_container_origin.Add(location_rect.origin());
-#else
-  // Get screen bounds of web contents page.
-  gfx::Rect web_rect_in_screen;
-  if (contents && contents->GetView())
-    contents->GetView()->GetContainerBounds(&web_rect_in_screen);
-  // No need to layout NTP location bar if there's no web contents page yet.
-  if (web_rect_in_screen.IsEmpty())
-    return;
-
-  gfx::Rect location_rect = chrome::search::GetNTPOmniboxBounds(
-      web_rect_in_screen.size());
-  if (location_rect.width() == 0)
-    return;
-
-  gfx::Point location_container_origin(
-      web_rect_in_screen.x() + location_rect.x(),
-      web_rect_in_screen.y() + location_rect.y());
-  views::View::ConvertPointFromScreen(location_bar_container_->parent(),
-                                      &location_container_origin);
-#endif
-
-  location_bar_container_->SetInToolbar(false);
-  location_bar_container_->SetBounds(
-      location_container_origin.x(),
-      location_container_origin.y(),
-      location_rect.width(),
-      location_bar_container_->GetPreferredSize().height());
 }
 
 void ToolbarView::SetLocationBarContainerBounds(

@@ -9,8 +9,6 @@
 
 namespace gfx {
 class Font;
-class Rect;
-class Size;
 }
 
 namespace chrome {
@@ -35,17 +33,24 @@ extern const SkColor kSearchBackgroundColor;
 extern const SkColor kSuggestBackgroundColor;
 
 // Font size use in the omnibox for non-NTP pages.
+// See the comments in browser_defaults on kAutocompleteEditFontPixelSize.
 extern const int kOmniboxFontSize;
 
-// Y-coordinate of the omnibox when over the page.
-extern const int kOmniboxYPosition;
+// Y-coordinate of the logo relative to its container.
+extern const int kLogoYPosition;
 
-// Initial height of the search results.
+// Gap between bottom of the logo and the top of the omnibox.
+extern const int kLogoBottomGap;
+
+// Default height of omnibox on NTP page.  This is an initial default, actual
+// value varies with font size.  See |GetNTPOmniboxHeight| below.
+extern const int kNTPOmniboxHeight;
+
+// Gap between bottom of the omnibox and the top of the content area.
+extern const int kOmniboxBottomGap;
+
+// Initial height of the search results, relative to top of the NTP overlay.
 extern const int kSearchResultsHeight;
-
-// Get location of NTP omnibox in |web_contents_size|.  A height of 0 is
-// returned, it is platform-specific.
-gfx::Rect GetNTPOmniboxBounds(const gfx::Size& web_contents_size);
 
 // Returns the derived |font| for NTP omnibox use.
 gfx::Font GetNTPOmniboxFont(const gfx::Font& font);

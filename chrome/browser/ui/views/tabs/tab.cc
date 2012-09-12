@@ -523,6 +523,7 @@ gfx::ImageSkia* Tab::GetTabBackgroundImage(
     return tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
 
   switch (mode) {
+    case chrome::search::Mode::MODE_NTP_LOADING:
     case chrome::search::Mode::MODE_NTP:
       return tp->GetImageSkiaNamed(IDR_THEME_NTP_BACKGROUND);
 

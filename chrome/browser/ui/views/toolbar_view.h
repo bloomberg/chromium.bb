@@ -211,9 +211,6 @@ class ToolbarView : public views::AccessiblePaneView,
   // unacknowledged background pages in the system.
   gfx::ImageSkia GetBackgroundPageBadge();
 
-  // Layout the location bar for the Extended Instant NTP.
-  void LayoutLocationBarNTP();
-
   // Sets the bounds of the LocationBarContainer. |bounds| is in the coordinates
   // of |this|.
   void SetLocationBarContainerBounds(const gfx::Rect& bounds);

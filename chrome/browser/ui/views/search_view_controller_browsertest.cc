@@ -46,7 +46,11 @@ class SearchViewControllerTest : public InProcessBrowserTest {
   }
 
   bool controller_state_is_ntp() {
-    return controller()->state() == SearchViewController::STATE_NTP;
+#if defined(USE_AURA)
+    return SearchViewController::is_ntp_state(controller()->state());
+#else
+    return false;
+#endif  // USE_AURA
   }
 
  private:

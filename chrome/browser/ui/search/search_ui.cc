@@ -5,39 +5,29 @@
 #include "chrome/browser/ui/search/search_ui.h"
 
 #include "ui/gfx/font.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/size.h"
+
+namespace {
+
+const int kNTPOmniboxFontSize = 18;
+
+}  // namespace
 
 namespace chrome {
 namespace search {
 
 const SkColor kNTPBackgroundColor = SkColorSetRGB(0xF5, 0xF5, 0xF5);
 const SkColor kNTPPlaceholderTextColor = SkColorSetRGB(0xBB, 0xBB, 0xBB);
-const SkColor kOmniboxBackgroundColor =
-    SkColorSetARGB(128, 255, 255, 255);
-const SkColor kResultsSeparatorColor = SkColorSetRGB(217, 217, 217);
+const SkColor kOmniboxBackgroundColor = SkColorSetARGB(0x80, 0xFF, 0xFF, 0xFF);
+const SkColor kResultsSeparatorColor = SkColorSetRGB(0xD9, 0xD9, 0xD9);
 const SkColor kSearchBackgroundColor = SK_ColorWHITE;
 const SkColor kSuggestBackgroundColor = SkColorSetRGB(0xEF, 0xEF, 0xEF);
 
-const int kNTPOmniboxFontSize = 18;
-const int kNTPOmniboxHeight = 40;
-// See the comments in browser_defaults on kAutocompleteEditFontPixelSize.
 const int kOmniboxFontSize = 16;
-// Relative to top of ContentsContainer.
-const int kOmniboxYPosition = 310;
-// Relative to top of WebView in search overlay.
-const int kOmniboxYOffset = -50;
+const int kLogoYPosition = 200;
+const int kLogoBottomGap = 20;
+const int kNTPOmniboxHeight = 40;
+const int kOmniboxBottomGap = 4;
 const int kSearchResultsHeight = 122;
-
-gfx::Rect GetNTPOmniboxBounds(const gfx::Size& web_contents_size) {
-  const double kNTPPageWidthRatio = 0.73f;
-  if (web_contents_size.IsEmpty())
-    return gfx::Rect();
-  int width = static_cast<int>(kNTPPageWidthRatio *
-                               static_cast<double>(web_contents_size.width()));
-  int x = (web_contents_size.width() - width) / 2;
-  return gfx::Rect(x, kOmniboxYOffset, width, 0);
-}
 
 gfx::Font GetNTPOmniboxFont(const gfx::Font& font) {
   return font.DeriveFont(kNTPOmniboxFontSize - font.GetFontSize());

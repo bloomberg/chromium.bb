@@ -46,6 +46,9 @@ struct Mode {
     // The default state means anything but the following states.
     MODE_DEFAULT,
 
+    // On the NTP page but the NTP web contents are not yet rendered.
+    MODE_NTP_LOADING,
+
     // On the NTP page and the NTP is ready to be displayed.
     MODE_NTP,
 
@@ -72,7 +75,7 @@ struct Mode {
   }
 
   bool is_ntp() const {
-    return mode == MODE_NTP;
+    return mode == MODE_NTP || mode == MODE_NTP_LOADING;
   }
 
   bool is_search() const {
