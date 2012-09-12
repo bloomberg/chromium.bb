@@ -16,11 +16,13 @@ class SSLConfigServiceManager {
  public:
   // Create an instance of the SSLConfigServiceManager. The lifetime of the
   // PrefService objects must be longer than that of the manager. Get SSL
-  // preferences from local_state object.
+  // preferences from local_state object.  The user_prefs may be NULL if this
+  // SSLConfigServiceManager is not associated with a profile.
   static SSLConfigServiceManager* CreateDefaultManager(
-      PrefService* local_state);
+      PrefService* local_state,
+      PrefService* user_prefs);
 
-  static void RegisterPrefs(PrefService* prefs);
+  static void RegisterPrefs(PrefService* local_state);
 
   virtual ~SSLConfigServiceManager() {}
 

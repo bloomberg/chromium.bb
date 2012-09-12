@@ -346,7 +346,7 @@ void ProfileImpl::DoFinalInit(bool is_new_profile) {
 
   PrefService* local_state = g_browser_process->local_state();
   ssl_config_service_manager_.reset(
-      SSLConfigServiceManager::CreateDefaultManager(local_state));
+      SSLConfigServiceManager::CreateDefaultManager(local_state, prefs));
 
   // Initialize the BackgroundModeManager - this has to be done here before
   // InitExtensions() is called because it relies on receiving notifications

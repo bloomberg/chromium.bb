@@ -359,7 +359,7 @@ IOThread::IOThread(
   ChromeNetworkDelegate::InitializeReferrersEnabled(&system_enable_referrers_,
                                                     local_state);
   ssl_config_service_manager_.reset(
-      SSLConfigServiceManager::CreateDefaultManager(local_state));
+      SSLConfigServiceManager::CreateDefaultManager(local_state, NULL));
 
   BrowserThread::SetDelegate(BrowserThread::IO, this);
 }
