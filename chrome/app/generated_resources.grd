@@ -6588,6 +6588,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_3G_NOTIFICATION_MESSAGE" desc="Text of the 3G data notification telling that 3G data is enabled.">
           Google Chrome will use mobile data if you're not connected to another network.
         </message>
+        
+        <!-- Natural scroll Notifications -->
+        <message name="IDS_NATURAL_SCROLL_NOTIFICATION_MESSAGE" desc="Text of the natural scroll notification saying that natural scroll is now default.">
+          Scrolling just changed directions! Simple scrolling lets you use your touchpad the same way you use a touch screen. You can always change it back in settings.
+        </message>        
 
         <!-- about:system strings -->
         <message name="IDS_ABOUT_SYS_TITLE" desc="about:system page title">
