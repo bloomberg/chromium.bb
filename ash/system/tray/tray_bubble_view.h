@@ -99,6 +99,9 @@ class TrayBubbleView : public views::BubbleDelegateView {
   // Called when the host is destroyed.
   void reset_host() { host_ = NULL; }
 
+  void set_gesture_dragging(bool dragging) { is_gesture_dragging_ = dragging; }
+  bool is_gesture_dragging() const { return is_gesture_dragging_; }
+
   // Overridden from views::WidgetDelegate.
   virtual bool CanActivate() const OVERRIDE;
   virtual views::NonClientFrameView* CreateNonClientFrameView(
@@ -132,6 +135,7 @@ class TrayBubbleView : public views::BubbleDelegateView {
  private:
   InitParams params_;
   Host* host_;
+  bool is_gesture_dragging_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayBubbleView);
 };

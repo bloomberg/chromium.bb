@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/wm/gestures/tray_gesture_handler.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/shelf_types.h"
 #include "ui/aura/window.h"
@@ -44,7 +45,14 @@ bool ShelfGestureHandler::ProcessGestureEvent(const ui::GestureEvent& event) {
     return false;
 
   if (event.type() == ui::ET_GESTURE_SCROLL_UPDATE) {
-    shelf->UpdateGestureDrag(event);
+    if (tray_handler_.get()) {
+      if (!tray_handler_->UpdateGestureDrag(event))
+        tray_handler_.reset();
+    } else if (shelf->UpdateGestureDrag(event) ==
+        ShelfLayoutManager::DRAG_TRAY) {
+      tray_handler_.reset(new TrayGestureHandler());
+    }
+
     return true;
   }
 
@@ -52,6 +60,11 @@ bool ShelfGestureHandler::ProcessGestureEvent(const ui::GestureEvent& event) {
 
   if (event.type() == ui::ET_GESTURE_SCROLL_END ||
       event.type() == ui::ET_SCROLL_FLING_START) {
+    if (tray_handler_.get()) {
+      tray_handler_->CompleteGestureDrag(event);
+      tray_handler_.reset();
+    }
+
     shelf->CompleteGestureDrag(event);
     return true;
   }

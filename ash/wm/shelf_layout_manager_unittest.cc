@@ -658,6 +658,47 @@ TEST_F(ShelfLayoutManagerTest, GestureDrag) {
             shelf->launcher_widget()->GetWindowBoundsInScreen().ToString());
 }
 
+TEST_F(ShelfLayoutManagerTest, GestureRevealsTrayBubble) {
+  ShelfLayoutManager* shelf = GetShelfLayoutManager();
+  shelf->LayoutShelf();
+
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  SystemTray* tray = Shell::GetInstance()->system_tray();
+
+  // First, make sure the shelf is visible.
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  EXPECT_FALSE(tray->HasSystemBubble());
+
+  // Now, drag up on the tray to show the bubble.
+  gfx::Point start = shelf->status()->GetWindowBoundsInScreen().CenterPoint();
+  gfx::Point end(start.x(), start.y() - 100);
+  generator.GestureScrollSequence(start, end,
+      base::TimeDelta::FromMilliseconds(10), 1);
+  EXPECT_TRUE(tray->HasSystemBubble());
+  tray->CloseBubbleForTest();
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(tray->HasSystemBubble());
+
+  // Drag again, but only a small amount, and slowly. The bubble should not be
+  // visible.
+  end.set_y(start.y() - 30);
+  generator.GestureScrollSequence(start, end,
+      base::TimeDelta::FromMilliseconds(500), 100);
+  EXPECT_FALSE(tray->HasSystemBubble());
+
+  // Now, hide the shelf.
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+
+  // Start a drag from the bezel, and drag up to show both the shelf and the
+  // tray bubble.
+  start.set_y(start.y() + 100);
+  end.set_y(start.y() - 400);
+  generator.GestureScrollSequence(start, end,
+      base::TimeDelta::FromMilliseconds(10), 1);
+  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
+  EXPECT_TRUE(tray->HasSystemBubble());
+}
+
 TEST_F(ShelfLayoutManagerTest, ShelfFlickerOnTrayActivation) {
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
 

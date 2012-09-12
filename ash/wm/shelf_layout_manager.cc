@@ -346,11 +346,28 @@ void ShelfLayoutManager::StartGestureDrag(const ui::GestureEvent& gesture) {
   UpdateShelfBackground(internal::BackgroundAnimator::CHANGE_ANIMATE);
 }
 
-void ShelfLayoutManager::UpdateGestureDrag(const ui::GestureEvent& gesture) {
+ShelfLayoutManager::DragState ShelfLayoutManager::UpdateGestureDrag(
+    const ui::GestureEvent& gesture) {
   bool horizontal = alignment() == SHELF_ALIGNMENT_BOTTOM;
   gesture_drag_amount_ += horizontal ? gesture.details().scroll_y() :
                                        gesture.details().scroll_x();
   LayoutShelf();
+
+  // Start reveling the status menu when:
+  //   - dragging up on an already visible shelf
+  //   - dragging up on a hidden shelf, but it is currently completely visible.
+  if (horizontal && gesture.details().scroll_y() < 0) {
+    int min_height = 0;
+    if (gesture_drag_auto_hide_state_ == AUTO_HIDE_HIDDEN && launcher_widget())
+      min_height = launcher_widget()->GetContentsView()->
+          GetPreferredSize().height();
+
+    if (min_height < launcher_widget()->GetWindowBoundsInScreen().height() &&
+        gesture.root_location().x() >= status_->GetWindowBoundsInScreen().x())
+      return DRAG_TRAY;
+  }
+
+  return DRAG_SHELF;
 }
 
 void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {
@@ -685,10 +702,12 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
   bool horizontal = alignment() == SHELF_ALIGNMENT_BOTTOM;
   int resistance_free_region = 0;
 
-  if (gesture_drag_auto_hide_state_ == AUTO_HIDE_HIDDEN) {
-    // If the shelf was hidden when the drag started, then allow the drag some
-    // resistance-free region at first to make sure the shelf sticks with the
-    // finger until the shelf is visible.
+  if (gesture_drag_auto_hide_state_ == AUTO_HIDE_HIDDEN &&
+      visibility_state() == AUTO_HIDE && auto_hide_state() != AUTO_HIDE_SHOWN) {
+    // If the shelf was hidden when the drag started (and the state hasn't
+    // changed since then, e.g. because the tray-menu was shown because of the
+    // drag), then allow the drag some resistance-free region at first to make
+    // sure the shelf sticks with the finger until the shelf is visible.
     resistance_free_region += horizontal ?
         target_bounds->launcher_bounds_in_root.height() :
         target_bounds->launcher_bounds_in_root.width();

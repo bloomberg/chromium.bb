@@ -235,6 +235,62 @@ class TrayBubbleBorder : public views::BubbleBorder {
   DISALLOW_COPY_AND_ASSIGN(TrayBubbleBorder);
 };
 
+// Custom frame-view for the bubble. It overrides the following behaviour of the
+// standard BubbleFrameView:
+//   - Sets the minimum size to an empty box.
+class TrayBubbleFrameView : public views::BubbleFrameView {
+ public:
+  TrayBubbleFrameView(const gfx::Insets& margins, TrayBubbleBorder* border)
+      : views::BubbleFrameView(margins, border) {
+  }
+
+  virtual ~TrayBubbleFrameView() {}
+
+  virtual gfx::Size GetMinimumSize() OVERRIDE {
+    return gfx::Size();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TrayBubbleFrameView);
+};
+
+// Custom layout for the bubble-view. Does the default box-layout if there is
+// enough height. Otherwise, makes sure the bottom rows are visible.
+class BottomAlignedBoxLayout : public views::BoxLayout {
+ public:
+  explicit BottomAlignedBoxLayout(internal::TrayBubbleView* bubble_view)
+      : views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0),
+        bubble_view_(bubble_view) {
+  }
+
+  virtual ~BottomAlignedBoxLayout() {}
+
+ private:
+  virtual void Layout(views::View* host) OVERRIDE {
+    if (host->height() >= host->GetPreferredSize().height() ||
+        !bubble_view_->is_gesture_dragging()) {
+      views::BoxLayout::Layout(host);
+      return;
+    }
+
+    int consumed_height = 0;
+    for (int i = host->child_count() - 1;
+        i >= 0 && consumed_height < host->height(); --i) {
+      views::View* child = host->child_at(i);
+      if (!child->visible())
+        continue;
+      gfx::Size size = child->GetPreferredSize();
+      child->SetBounds(0, host->height() - consumed_height - size.height(),
+          host->width(), size.height());
+      consumed_height += size.height();
+    }
+  }
+
+  internal::TrayBubbleView* bubble_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(BottomAlignedBoxLayout);
+};
+
 }  // namespace
 
 namespace internal {
@@ -283,7 +339,8 @@ TrayBubbleView::TrayBubbleView(
     Host* host)
     : views::BubbleDelegateView(anchor, arrow_location),
       params_(init_params),
-      host_(host) {
+      host_(host),
+      is_gesture_dragging_(false) {
   set_margins(gfx::Insets());
   set_parent_window(Shell::GetContainer(
       anchor->GetWidget()->GetNativeWindow()->GetRootWindow(),
@@ -312,8 +369,7 @@ void TrayBubbleView::SetMaxHeight(int height) {
 }
 
 void TrayBubbleView::Init() {
-  views::BoxLayout* layout =
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
+  views::BoxLayout* layout = new BottomAlignedBoxLayout(this);
   layout->set_spread_blank_space(true);
   SetLayoutManager(layout);
   set_background(NULL);
@@ -365,8 +421,9 @@ gfx::Rect TrayBubbleView::GetAnchorRect() {
 
 gfx::Rect TrayBubbleView::GetBubbleBounds() {
   // Same as BubbleDelegateView implementation, but don't try mirroring.
+  gfx::Size use_size = is_gesture_dragging_ ? size() : GetPreferredSize();
   return GetBubbleFrameView()->GetUpdatedWindowBounds(
-      GetAnchorRect(), GetPreferredSize(), false /*try_mirroring_arrow*/);
+      GetAnchorRect(), use_size, false /*try_mirroring_arrow*/);
 }
 
 bool TrayBubbleView::CanActivate() const {
@@ -380,7 +437,7 @@ views::NonClientFrameView* TrayBubbleView::CreateNonClientFrameView(
   TrayBubbleBorder* bubble_border = new TrayBubbleBorder(
       this, anchor_view(),
       arrow_location(), params_.arrow_offset, params_.arrow_color);
-  return new views::BubbleFrameView(margins(), bubble_border);
+  return new TrayBubbleFrameView(margins(), bubble_border);
 }
 
 gfx::Size TrayBubbleView::GetPreferredSize() {

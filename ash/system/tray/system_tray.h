@@ -41,6 +41,7 @@ class SystemTrayItem;
 namespace internal {
 class SystemTrayBubble;
 class SystemTrayContainer;
+class TrayGestureHandler;
 }
 
 // There are different methods for creating bubble views.
@@ -161,6 +162,7 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView {
 
  private:
   friend class internal::SystemTrayBubble;
+  friend class internal::TrayGestureHandler;
 
   // Resets |bubble_| and clears any related state.
   void DestroyBubble();
