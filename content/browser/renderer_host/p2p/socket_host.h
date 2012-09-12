@@ -18,7 +18,7 @@ class CONTENT_EXPORT P2PSocketHost {
  public:
   // Creates P2PSocketHost of the specific type.
   static P2PSocketHost* Create(IPC::Sender* message_sender,
-                               int routing_id, int id, P2PSocketType type);
+                               int id, P2PSocketType type);
 
   virtual ~P2PSocketHost();
 
@@ -68,7 +68,7 @@ class CONTENT_EXPORT P2PSocketHost {
   // see crbug.com/91495 .
   static const int kMaxSendBufferSize = 256 * 1024;
 
-  P2PSocketHost(IPC::Sender* message_sender, int routing_id, int id);
+  P2PSocketHost(IPC::Sender* message_sender, int id);
 
   // Verifies that the packet |data| has a valid STUN header. In case
   // of success stores type of the message in |type|.
@@ -77,7 +77,6 @@ class CONTENT_EXPORT P2PSocketHost {
   static bool IsRequestOrResponse(StunMessageType type);
 
   IPC::Sender* message_sender_;
-  int routing_id_;
   int id_;
   State state_;
 

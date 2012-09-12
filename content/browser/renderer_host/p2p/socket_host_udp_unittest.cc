@@ -139,7 +139,7 @@ class P2PSocketHostUdpTest : public testing::Test {
         MatchMessage(static_cast<uint32>(P2PMsg_OnSocketCreated::ID))))
         .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
 
-    socket_host_.reset(new P2PSocketHostUdp(&sender_, 0, 0));
+    socket_host_.reset(new P2PSocketHostUdp(&sender_, 0));
     socket_ = new FakeDatagramServerSocket(&sent_packets_);
     socket_host_->socket_.reset(socket_);
 

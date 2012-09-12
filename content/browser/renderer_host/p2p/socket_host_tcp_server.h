@@ -26,7 +26,7 @@ namespace content {
 
 class CONTENT_EXPORT P2PSocketHostTcpServer : public P2PSocketHost {
  public:
-  P2PSocketHostTcpServer(IPC::Sender* message_sender, int routing_id, int id);
+  P2PSocketHostTcpServer(IPC::Sender* message_sender, int id);
   virtual ~P2PSocketHostTcpServer();
 
   // P2PSocketHost overrides.

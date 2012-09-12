@@ -384,10 +384,6 @@ void MediaStreamImpl::FrameWillClose(WebKit::WebFrame* frame) {
   }
 }
 
-void MediaStreamImpl::OnSocketDispatcherDestroyed() {
-  CleanupPeerConnectionFactory();
-}
-
 void MediaStreamImpl::InitializeWorkerThread(talk_base::Thread** thread,
                                              base::WaitableEvent* event) {
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
@@ -442,7 +438,6 @@ bool MediaStreamImpl::EnsurePeerConnectionFactory() {
           base::Unretained(this),
           &event));
     event.Wait();
-    p2p_socket_dispatcher_->AddDestructionObserver(this);
   }
 
   if (!socket_factory_.get()) {
@@ -482,7 +477,6 @@ void MediaStreamImpl::CleanupPeerConnectionFactory() {
     } else {
       NOTREACHED() << "Worker thread not running.";
     }
-    p2p_socket_dispatcher_->RemoveDestructionObserver(this);
   }
 }
 

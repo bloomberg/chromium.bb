@@ -54,7 +54,8 @@ class MediaStreamImplTest : public ::testing::Test {
   void SetUp() {
     // Create our test object.
     ms_dispatcher_.reset(new MockMediaStreamDispatcher());
-    p2p_socket_dispatcher_.reset(new content::P2PSocketDispatcher(NULL));
+    p2p_socket_dispatcher_ = new content::P2PSocketDispatcher(
+        loop_.message_loop_proxy());
     scoped_refptr<VideoCaptureImplManager> vc_manager(
         new VideoCaptureImplManager());
     MockMediaStreamDependencyFactory* dependency_factory =
@@ -109,7 +110,7 @@ class MediaStreamImplTest : public ::testing::Test {
  protected:
   MessageLoop loop_;
   scoped_ptr<MockMediaStreamDispatcher> ms_dispatcher_;
-  scoped_ptr<content::P2PSocketDispatcher> p2p_socket_dispatcher_;
+  scoped_refptr<content::P2PSocketDispatcher> p2p_socket_dispatcher_;
   scoped_ptr<MediaStreamImplUnderTest> ms_impl_;
 };
 

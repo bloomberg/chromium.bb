@@ -53,7 +53,7 @@ void P2PHostAddressRequest::DoSendRequest(const std::string& host_name,
   request_id_ = dispatcher_->RegisterHostAddressRequest(this);
   registered_ = true;
   dispatcher_->SendP2PMessage(
-      new P2PHostMsg_GetHostAddress(0, host_name, request_id_));
+      new P2PHostMsg_GetHostAddress(host_name, request_id_));
 }
 
 void P2PHostAddressRequest::DoUnregister() {

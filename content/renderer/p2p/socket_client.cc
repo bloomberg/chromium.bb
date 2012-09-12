@@ -40,7 +40,7 @@ void P2PSocketClient::Init(
   delegate_ = delegate;
   socket_id_ = dispatcher_->RegisterClient(this);
   dispatcher_->SendP2PMessage(new P2PHostMsg_CreateSocket(
-      0, type, socket_id_, local_address, remote_address));
+      type, socket_id_, local_address, remote_address));
 }
 
 void P2PSocketClient::Send(const net::IPEndPoint& address,
@@ -54,8 +54,7 @@ void P2PSocketClient::Send(const net::IPEndPoint& address,
   // Can send data only when the socket is open.
   DCHECK(state_ == STATE_OPEN || state_ == STATE_ERROR);
   if (state_ == STATE_OPEN) {
-    dispatcher_->SendP2PMessage(
-        new P2PHostMsg_Send(0, socket_id_, address, data));
+    dispatcher_->SendP2PMessage(new P2PHostMsg_Send(socket_id_, address, data));
   }
 }
 
@@ -72,7 +71,7 @@ void P2PSocketClient::DoClose() {
   if (dispatcher_) {
     if (state_ == STATE_OPEN || state_ == STATE_OPENING ||
         state_ == STATE_ERROR) {
-      dispatcher_->SendP2PMessage(new P2PHostMsg_DestroySocket(0, socket_id_));
+      dispatcher_->SendP2PMessage(new P2PHostMsg_DestroySocket(socket_id_));
     }
     dispatcher_->UnregisterClient(socket_id_);
   }
@@ -110,7 +109,7 @@ void P2PSocketClient::OnIncomingTcpConnection(const net::IPEndPoint& address) {
   new_client->delegate_message_loop_ = delegate_message_loop_;
 
   dispatcher_->SendP2PMessage(new P2PHostMsg_AcceptIncomingTcpConnection(
-      0, socket_id_, address, new_client->socket_id_));
+      socket_id_, address, new_client->socket_id_));
 
   delegate_message_loop_->PostTask(
       FROM_HERE, base::Bind(&P2PSocketClient::DeliverOnIncomingTcpConnection,

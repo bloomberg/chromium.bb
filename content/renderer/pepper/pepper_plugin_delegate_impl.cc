@@ -1290,7 +1290,7 @@ bool PepperPluginDelegateImpl::AddNetworkListObserver(
     webkit_glue::NetworkListObserver* observer) {
 #if defined(ENABLE_WEBRTC)
   P2PSocketDispatcher* socket_dispatcher =
-      render_view_->p2p_socket_dispatcher();
+      RenderThreadImpl::current()->p2p_socket_dispatcher();
   if (!socket_dispatcher) {
     return false;
   }
@@ -1305,7 +1305,7 @@ void PepperPluginDelegateImpl::RemoveNetworkListObserver(
     webkit_glue::NetworkListObserver* observer) {
 #if defined(ENABLE_WEBRTC)
   P2PSocketDispatcher* socket_dispatcher =
-      render_view_->p2p_socket_dispatcher();
+      RenderThreadImpl::current()->p2p_socket_dispatcher();
   if (socket_dispatcher)
     socket_dispatcher->RemoveNetworkListObserver(observer);
 #endif

@@ -18,9 +18,8 @@ const int kPacketHeaderSize = sizeof(uint16);
 
 namespace content {
 
-P2PSocketHostTcp::P2PSocketHostTcp(IPC::Sender* message_sender,
-                                   int routing_id, int id)
-    : P2PSocketHost(message_sender, routing_id, id),
+P2PSocketHostTcp::P2PSocketHostTcp(IPC::Sender* message_sender, int id)
+    : P2PSocketHost(message_sender, id),
       connected_(false) {
 }
 
@@ -72,7 +71,7 @@ void P2PSocketHostTcp::OnError() {
 
   if (state_ == STATE_UNINITIALIZED || state_ == STATE_CONNECTING ||
       state_ == STATE_OPEN) {
-    message_sender_->Send(new P2PMsg_OnError(routing_id_, id_));
+    message_sender_->Send(new P2PMsg_OnError(id_));
   }
 
   state_ = STATE_ERROR;
@@ -102,7 +101,7 @@ void P2PSocketHostTcp::OnConnected(int result) {
 
   VLOG(1) << "Local address: " << address.ToString();
   state_ = STATE_OPEN;
-  message_sender_->Send(new P2PMsg_OnSocketCreated(routing_id_, id_, address));
+  message_sender_->Send(new P2PMsg_OnSocketCreated(id_, address));
   DoRead();
 }
 
@@ -150,8 +149,7 @@ void P2PSocketHostTcp::OnPacket(std::vector<char>& data) {
     }
   }
 
-  message_sender_->Send(new P2PMsg_OnDataReceived(routing_id_, id_,
-                                                  remote_address_, data));
+  message_sender_->Send(new P2PMsg_OnDataReceived(id_, remote_address_, data));
 }
 
 void P2PSocketHostTcp::DidCompleteRead(int result) {

@@ -16,7 +16,7 @@
 //  P2PSocketDispatcherHost  <--------->  P2PSocketDispatcher
 //
 // P2PSocketDispatcher receives and dispatches messages on the
-// renderer thread.
+// IO thread.
 
 #ifndef CONTENT_RENDERER_P2P_SOCKET_DISPATCHER_H_
 #define CONTENT_RENDERER_P2P_SOCKET_DISPATCHER_H_
@@ -30,7 +30,7 @@
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "content/common/p2p_sockets.h"
-#include "content/public/renderer/render_view_observer.h"
+#include "ipc/ipc_channel_proxy.h"
 #include "net/base/net_util.h"
 
 class RenderViewImpl;
@@ -52,22 +52,10 @@ namespace content {
 class P2PHostAddressRequest;
 class P2PSocketClient;
 
-// Callback interface that allows the implementor to be notified before a
-// P2PSocketDispatcher is destroyed.
-// P2PSocketDispatcher requires that all NetworkListObservers are
-// unregistered when SocketDispatcherGone is called.
-class P2PSocketDispatcherDestructionObserver {
+class CONTENT_EXPORT P2PSocketDispatcher
+    : public IPC::ChannelProxy::MessageFilter {
  public:
-  virtual void OnSocketDispatcherDestroyed() = 0;
-
- protected:
-  virtual ~P2PSocketDispatcherDestructionObserver() {}
-};
-
-class CONTENT_EXPORT P2PSocketDispatcher : public content::RenderViewObserver {
- public:
-  explicit P2PSocketDispatcher(RenderViewImpl* render_view);
-  virtual ~P2PSocketDispatcher();
+  P2PSocketDispatcher(base::MessageLoopProxy* ipc_message_loop);
 
   // Add a new network list observer. Each observer is called
   // immidiately after it is registered and then later whenever
@@ -81,18 +69,23 @@ class CONTENT_EXPORT P2PSocketDispatcher : public content::RenderViewObserver {
   void RemoveNetworkListObserver(
       webkit_glue::NetworkListObserver* network_list_observer);
 
-  void AddDestructionObserver(P2PSocketDispatcherDestructionObserver* observer);
-  void RemoveDestructionObserver(
-      P2PSocketDispatcherDestructionObserver* observer);
-
-  // RenderViewObserver overrides.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+ protected:
+  virtual ~P2PSocketDispatcher();
 
  private:
   friend class P2PHostAddressRequest;
   friend class P2PSocketClient;
-  class AsyncMessageSender;
 
+  // Send a message asynchronously.
+  virtual void Send(IPC::Message* message);
+
+  // IPC::ChannelProxy::MessageFilter override. Called on IO thread.
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
+  virtual void OnFilterRemoved() OVERRIDE;
+  virtual void OnChannelClosing() OVERRIDE;
+
+  // Returns the IO message loop.
   base::MessageLoopProxy* message_loop();
 
   // Called by P2PSocketClient.
@@ -125,9 +118,7 @@ class CONTENT_EXPORT P2PSocketDispatcher : public content::RenderViewObserver {
   scoped_refptr<ObserverListThreadSafe<webkit_glue::NetworkListObserver> >
       network_list_observers_;
 
-  scoped_refptr<AsyncMessageSender> async_message_sender_;
-
-  ObserverList<P2PSocketDispatcherDestructionObserver> destruction_observer_;
+  IPC::Channel* channel_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketDispatcher);
 };

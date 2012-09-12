@@ -30,9 +30,8 @@ P2PSocketHostUdp::PendingPacket::PendingPacket(
 P2PSocketHostUdp::PendingPacket::~PendingPacket() {
 }
 
-P2PSocketHostUdp::P2PSocketHostUdp(IPC::Sender* message_sender,
-                                   int routing_id, int id)
-    : P2PSocketHost(message_sender, routing_id, id),
+P2PSocketHostUdp::P2PSocketHostUdp(IPC::Sender* message_sender, int id)
+    : P2PSocketHost(message_sender, id),
       socket_(new net::UDPServerSocket(NULL, net::NetLog::Source())),
       send_queue_bytes_(0),
       send_pending_(false) {
@@ -68,7 +67,7 @@ bool P2PSocketHostUdp::Init(const net::IPEndPoint& local_address,
 
   state_ = STATE_OPEN;
 
-  message_sender_->Send(new P2PMsg_OnSocketCreated(routing_id_, id_, address));
+  message_sender_->Send(new P2PMsg_OnSocketCreated(id_, address));
 
   recv_buffer_ = new net::IOBuffer(kReadBufferSize);
   DoRead();
@@ -81,7 +80,7 @@ void P2PSocketHostUdp::OnError() {
   send_queue_.clear();
 
   if (state_ == STATE_UNINITIALIZED || state_ == STATE_OPEN)
-    message_sender_->Send(new P2PMsg_OnError(routing_id_, id_));
+    message_sender_->Send(new P2PMsg_OnError(id_));
 
   state_ = STATE_ERROR;
 }
@@ -122,8 +121,7 @@ void P2PSocketHostUdp::DidCompleteRead(int result) {
       }
     }
 
-    message_sender_->Send(new P2PMsg_OnDataReceived(routing_id_, id_,
-                                                    recv_address_, data));
+    message_sender_->Send(new P2PMsg_OnDataReceived(id_, recv_address_, data));
   } else if (result < 0 && result != net::ERR_IO_PENDING) {
     LOG(ERROR) << "Error when reading from UDP socket: " << result;
     OnError();

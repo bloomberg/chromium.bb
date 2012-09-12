@@ -59,6 +59,7 @@ class ForwardingMessageFilter;
 namespace content {
 class AudioRendererMixerManager;
 class MediaStreamCenter;
+class P2PSocketDispatcher;
 class RenderProcessObserver;
 
 namespace old {
@@ -205,6 +206,11 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   WebKit::WebMediaStreamCenter* CreateMediaStreamCenter(
       WebKit::WebMediaStreamCenterClient* client);
 
+  // Current P2PSocketDispatcher. Set to NULL if P2P API is disabled.
+  content::P2PSocketDispatcher* p2p_socket_dispatcher() {
+    return p2p_socket_dispatcher_.get();
+  }
+
   VideoCaptureImplManager* video_capture_impl_manager() const {
     return vc_manager_.get();
   }
@@ -316,6 +322,9 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   scoped_refptr<AudioInputMessageFilter> audio_input_message_filter_;
   scoped_refptr<AudioMessageFilter> audio_message_filter_;
   scoped_refptr<DevToolsAgentFilter> devtools_agent_message_filter_;
+
+  // Dispatches all P2P sockets.
+  scoped_refptr<content::P2PSocketDispatcher> p2p_socket_dispatcher_;
 
   // Used on multiple threads.
   scoped_refptr<VideoCaptureImplManager> vc_manager_;

@@ -98,7 +98,6 @@ class WebUIBindings;
 namespace content {
 class DocumentState;
 class NavigationState;
-class P2PSocketDispatcher;
 class RenderViewObserver;
 class RenderViewTest;
 class RendererAccessibility;
@@ -255,11 +254,6 @@ class RenderViewImpl : public RenderWidget,
 
   MediaStreamDispatcher* media_stream_dispatcher() {
     return media_stream_dispatcher_;
-  }
-
-  // Current P2PSocketDispatcher. Set to NULL if P2P API is disabled.
-  content::P2PSocketDispatcher* p2p_socket_dispatcher() {
-    return p2p_socket_dispatcher_;
   }
 
   MouseLockDispatcher* mouse_lock_dispatcher() {
@@ -1389,9 +1383,6 @@ class RenderViewImpl : public RenderWidget,
 
   // MediaStreamImpl attached to this view; lazily initialized.
   MediaStreamImpl* media_stream_impl_;
-
-  // Dispatches all P2P socket used by the renderer.
-  content::P2PSocketDispatcher* p2p_socket_dispatcher_;
 
   DevToolsAgent* devtools_agent_;
 

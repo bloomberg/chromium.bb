@@ -65,6 +65,7 @@
 #include "content/renderer/media/media_stream_center.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/video_capture_message_filter.h"
+#include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/plugin_channel_host.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -307,6 +308,11 @@ void RenderThreadImpl::Init() {
   db_message_filter_ = new DBMessageFilter();
   AddFilter(db_message_filter_.get());
 
+#if defined(ENABLE_WEBRTC)
+  p2p_socket_dispatcher_ = new content::P2PSocketDispatcher(
+      GetIOMessageLoopProxy());
+  AddFilter(p2p_socket_dispatcher_);
+#endif  // defined(ENABLE_WEBRTC)
   vc_manager_ = new VideoCaptureImplManager();
   AddFilter(vc_manager_->video_capture_message_filter());
 
@@ -880,11 +886,11 @@ void RenderThreadImpl::ReleaseCachedFonts() {
 
 bool RenderThreadImpl::IsWebFrameValid(WebKit::WebFrame* web_frame) {
   if (!web_frame)
-    return false; // We must be shutting down.
+    return false;  // We must be shutting down.
 
   RenderViewImpl* render_view = RenderViewImpl::FromWebView(web_frame->view());
   if (!render_view)
-    return false; // We must be shutting down.
+    return false;  // We must be shutting down.
 
   return true;
 }

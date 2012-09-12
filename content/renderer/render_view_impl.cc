@@ -85,7 +85,6 @@
 #include "content/renderer/media/renderer_gpu_video_decoder_factories.h"
 #include "content/renderer/mhtml_generator.h"
 #include "content/renderer/notification_provider.h"
-#include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/plugin_channel_host.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
@@ -606,7 +605,6 @@ RenderViewImpl::RenderViewImpl(
       device_orientation_dispatcher_(NULL),
       media_stream_dispatcher_(NULL),
       media_stream_impl_(NULL),
-      p2p_socket_dispatcher_(NULL),
       devtools_agent_(NULL),
       accessibility_mode_(AccessibilityModeOff),
       renderer_accessibility_(NULL),
@@ -701,8 +699,6 @@ RenderViewImpl::RenderViewImpl(
   host_window_ = parent_hwnd;
 
 #if defined(ENABLE_WEBRTC)
-  if (!p2p_socket_dispatcher_)
-    p2p_socket_dispatcher_ = new content::P2PSocketDispatcher(this);
   if (!media_stream_dispatcher_)
     media_stream_dispatcher_ = new MediaStreamDispatcher(this);
 #endif
@@ -3836,9 +3832,6 @@ void RenderViewImpl::EnsureMediaStreamImpl() {
     return;
 
 #if defined(ENABLE_WEBRTC)
-  if (!p2p_socket_dispatcher_)
-    p2p_socket_dispatcher_ = new content::P2PSocketDispatcher(this);
-
   if (!media_stream_dispatcher_)
     media_stream_dispatcher_ = new MediaStreamDispatcher(this);
 
@@ -3848,7 +3841,7 @@ void RenderViewImpl::EnsureMediaStreamImpl() {
     media_stream_impl_ = new MediaStreamImpl(
         this,
         media_stream_dispatcher_,
-        p2p_socket_dispatcher_,
+        RenderThreadImpl::current()->p2p_socket_dispatcher(),
         RenderThreadImpl::current()->video_capture_impl_manager(),
         factory);
   }

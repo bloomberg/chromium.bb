@@ -26,7 +26,7 @@ class P2PSocketHostTcpTest : public testing::Test {
         MatchMessage(static_cast<uint32>(P2PMsg_OnSocketCreated::ID))))
         .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
 
-    socket_host_.reset(new P2PSocketHostTcp(&sender_, 0, 0));
+    socket_host_.reset(new P2PSocketHostTcp(&sender_, 0));
     socket_ = new FakeSocket(&sent_data_);
     socket_->SetLocalAddress(ParseAddress(kTestLocalIpAddress, kTestPort1));
     socket_host_->socket_.reset(socket_);
