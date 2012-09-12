@@ -3341,14 +3341,15 @@ TEST_F(SyncerTest, DirectoryCommitTest) {
   }
 }
 
-TEST_F(SyncerTest, TestClientCommand) {
+TEST_F(SyncerTest, TestClientCommandDuringUpdate) {
   using sync_pb::ClientCommand;
 
-  ClientCommand* command = mock_server_->GetNextClientCommand();
+  ClientCommand* command = new ClientCommand();
   command->set_set_sync_poll_interval(8);
   command->set_set_sync_long_poll_interval(800);
   command->set_sessions_commit_delay_seconds(3141);
   mock_server_->AddUpdateDirectory(1, 0, "in_root", 1, 1);
+  mock_server_->SetGUClientCommand(command);
   SyncShareNudge();
 
   EXPECT_TRUE(TimeDelta::FromSeconds(8) ==
@@ -3358,11 +3359,46 @@ TEST_F(SyncerTest, TestClientCommand) {
   EXPECT_TRUE(TimeDelta::FromSeconds(3141) ==
               last_sessions_commit_delay_seconds_);
 
-  command = mock_server_->GetNextClientCommand();
+  command = new ClientCommand();
   command->set_set_sync_poll_interval(180);
   command->set_set_sync_long_poll_interval(190);
   command->set_sessions_commit_delay_seconds(2718);
   mock_server_->AddUpdateDirectory(1, 0, "in_root", 1, 1);
+  mock_server_->SetGUClientCommand(command);
+  SyncShareNudge();
+
+  EXPECT_TRUE(TimeDelta::FromSeconds(180) ==
+              last_short_poll_interval_received_);
+  EXPECT_TRUE(TimeDelta::FromSeconds(190) ==
+              last_long_poll_interval_received_);
+  EXPECT_TRUE(TimeDelta::FromSeconds(2718) ==
+              last_sessions_commit_delay_seconds_);
+}
+
+TEST_F(SyncerTest, TestClientCommandDuringCommit) {
+  using sync_pb::ClientCommand;
+
+  ClientCommand* command = new ClientCommand();
+  command->set_set_sync_poll_interval(8);
+  command->set_set_sync_long_poll_interval(800);
+  command->set_sessions_commit_delay_seconds(3141);
+  CreateUnsyncedDirectory("X", "id_X");
+  mock_server_->SetCommitClientCommand(command);
+  SyncShareNudge();
+
+  EXPECT_TRUE(TimeDelta::FromSeconds(8) ==
+              last_short_poll_interval_received_);
+  EXPECT_TRUE(TimeDelta::FromSeconds(800) ==
+              last_long_poll_interval_received_);
+  EXPECT_TRUE(TimeDelta::FromSeconds(3141) ==
+              last_sessions_commit_delay_seconds_);
+
+  command = new ClientCommand();
+  command->set_set_sync_poll_interval(180);
+  command->set_set_sync_long_poll_interval(190);
+  command->set_sessions_commit_delay_seconds(2718);
+  CreateUnsyncedDirectory("Y", "id_Y");
+  mock_server_->SetCommitClientCommand(command);
   SyncShareNudge();
 
   EXPECT_TRUE(TimeDelta::FromSeconds(180) ==

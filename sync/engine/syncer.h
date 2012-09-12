@@ -27,7 +27,6 @@ class MutableEntry;
 enum SyncerStep {
   SYNCER_BEGIN,
   DOWNLOAD_UPDATES,
-  PROCESS_CLIENT_COMMAND,
   VERIFY_UPDATES,
   PROCESS_UPDATES,
   STORE_TIMESTAMPS,
@@ -66,9 +65,6 @@ class Syncer {
                          SyncerStep last_step);
 
  private:
-  // Implements the PROCESS_CLIENT_COMMAND syncer step.
-  void ProcessClientCommand(sessions::SyncSession* session);
-
   bool early_exit_requested_;
   base::Lock early_exit_requested_lock_;
 

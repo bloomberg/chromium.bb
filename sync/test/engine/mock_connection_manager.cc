@@ -48,7 +48,8 @@ MockConnectionManager::MockConnectionManager(syncable::Directory* directory)
       throttling_(false),
       fail_with_auth_invalid_(false),
       fail_non_periodic_get_updates_(false),
-      client_command_(NULL),
+      gu_client_command_(NULL),
+      commit_client_command_(NULL),
       next_position_in_parent_(2),
       use_legacy_bookmarks_protocol_(false),
       num_get_updates_requests_(0) {
@@ -143,9 +144,6 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
     EXPECT_TRUE(false) << "Unknown/unsupported ClientToServerMessage";
     return false;
   }
-  if (client_command_.get()) {
-    response.mutable_client_command()->CopyFrom(*client_command_.get());
-  }
 
   {
     base::AutoLock lock(response_code_override_lock_);
@@ -210,10 +208,14 @@ sync_pb::SyncEntity* MockConnectionManager::AddUpdateDirectory(
                             sync_ts);
 }
 
-sync_pb::ClientCommand* MockConnectionManager::GetNextClientCommand() {
-  if (!client_command_.get())
-    client_command_.reset(new sync_pb::ClientCommand());
-  return client_command_.get();
+void MockConnectionManager::SetGUClientCommand(
+    sync_pb::ClientCommand* command) {
+  gu_client_command_.reset(command);
+}
+
+void MockConnectionManager::SetCommitClientCommand(
+    sync_pb::ClientCommand* command) {
+  commit_client_command_.reset(command);
 }
 
 sync_pb::SyncEntity* MockConnectionManager::AddUpdateBookmark(
@@ -453,6 +455,10 @@ void MockConnectionManager::ProcessGetUpdates(
     response->mutable_get_updates()->set_encryption_key(keystore_key_);
 
   update_queue_.pop_front();
+
+  if (gu_client_command_.get()) {
+    response->mutable_client_command()->CopyFrom(*gu_client_command_.get());
+  }
 }
 
 void MockConnectionManager::SetKeystoreKey(const std::string& key) {
@@ -524,6 +530,11 @@ void MockConnectionManager::ProcessCommit(
     }
   }
   commit_responses_.push_back(new CommitResponse(*commit_response));
+
+  if (commit_client_command_.get()) {
+    response_buffer->mutable_client_command()->CopyFrom(
+        *commit_client_command_.get());
+  }
 }
 
 sync_pb::SyncEntity* MockConnectionManager::AddUpdateDirectory(

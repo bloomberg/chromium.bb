@@ -54,7 +54,6 @@ const char* SyncerStepToString(const SyncerStep step)
   switch (step) {
     ENUM_CASE(SYNCER_BEGIN);
     ENUM_CASE(DOWNLOAD_UPDATES);
-    ENUM_CASE(PROCESS_CLIENT_COMMAND);
     ENUM_CASE(VERIFY_UPDATES);
     ENUM_CASE(PROCESS_UPDATES);
     ENUM_CASE(STORE_TIMESTAMPS);
@@ -118,11 +117,6 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         DownloadUpdatesCommand download_updates(kCreateMobileBookmarksFolder);
         session->mutable_status_controller()->set_last_download_updates_result(
             download_updates.Execute(session));
-        next_step = PROCESS_CLIENT_COMMAND;
-        break;
-      }
-      case PROCESS_CLIENT_COMMAND: {
-        ProcessClientCommand(session);
         next_step = VERIFY_UPDATES;
         break;
       }
@@ -235,33 +229,6 @@ void Syncer::SyncShare(sessions::SyncSession* session,
       break;
     }
     current_step = next_step;
-  }
-}
-
-void Syncer::ProcessClientCommand(sessions::SyncSession* session) {
-  const sync_pb::ClientToServerResponse& response =
-      session->status_controller().updates_response();
-  if (!response.has_client_command())
-    return;
-  const ClientCommand& command = response.client_command();
-
-  // The server limits the number of items a client can commit in one batch.
-  if (command.has_max_commit_batch_size()) {
-    session->context()->set_max_commit_batch_size(
-        command.max_commit_batch_size());
-  }
-  if (command.has_set_sync_long_poll_interval()) {
-    session->delegate()->OnReceivedLongPollIntervalUpdate(
-        TimeDelta::FromSeconds(command.set_sync_long_poll_interval()));
-  }
-  if (command.has_set_sync_poll_interval()) {
-    session->delegate()->OnReceivedShortPollIntervalUpdate(
-        TimeDelta::FromSeconds(command.set_sync_poll_interval()));
-  }
-
-  if (command.has_sessions_commit_delay_seconds()) {
-    session->delegate()->OnReceivedSessionsCommitDelay(
-        TimeDelta::FromSeconds(command.sessions_commit_delay_seconds()));
   }
 }
 

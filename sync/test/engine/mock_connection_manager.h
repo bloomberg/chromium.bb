@@ -129,7 +129,9 @@ class MockConnectionManager : public ServerConnectionManager {
   // Simple inspectors.
   bool client_stuck() const { return client_stuck_; }
 
-  sync_pb::ClientCommand* GetNextClientCommand();
+  // warning: These take ownership of their input.
+  void SetGUClientCommand(sync_pb::ClientCommand* command);
+  void SetCommitClientCommand(sync_pb::ClientCommand* command);
 
   const std::vector<syncable::Id>& committed_ids() const {
     return committed_ids_;
@@ -326,7 +328,8 @@ class MockConnectionManager : public ServerConnectionManager {
   // True if we are only accepting GetUpdatesCallerInfo::PERIODIC requests.
   bool fail_non_periodic_get_updates_;
 
-  scoped_ptr<sync_pb::ClientCommand> client_command_;
+  scoped_ptr<sync_pb::ClientCommand> gu_client_command_;
+  scoped_ptr<sync_pb::ClientCommand> commit_client_command_;
 
   // The next value to use for the position_in_parent property.
   int64 next_position_in_parent_;

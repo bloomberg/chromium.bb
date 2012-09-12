@@ -405,6 +405,31 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
   // Inform the delegate of the error we got.
   session->delegate()->OnSyncProtocolError(session->TakeSnapshot());
 
+  // Update our state for any other commands we've received.
+  if (response->has_client_command()) {
+    const sync_pb::ClientCommand& command = response->client_command();
+    if (command.has_max_commit_batch_size()) {
+      session->context()->set_max_commit_batch_size(
+          command.max_commit_batch_size());
+    }
+
+    if (command.has_set_sync_long_poll_interval()) {
+      session->delegate()->OnReceivedLongPollIntervalUpdate(
+          base::TimeDelta::FromSeconds(command.set_sync_long_poll_interval()));
+    }
+
+    if (command.has_set_sync_poll_interval()) {
+      session->delegate()->OnReceivedShortPollIntervalUpdate(
+          base::TimeDelta::FromSeconds(command.set_sync_poll_interval()));
+    }
+
+    if (command.has_sessions_commit_delay_seconds()) {
+      session->delegate()->OnReceivedSessionsCommitDelay(
+          base::TimeDelta::FromSeconds(
+              command.sessions_commit_delay_seconds()));
+    }
+  }
+
   // Now do any special handling for the error type and decide on the return
   // value.
   switch (sync_protocol_error.error_type) {
