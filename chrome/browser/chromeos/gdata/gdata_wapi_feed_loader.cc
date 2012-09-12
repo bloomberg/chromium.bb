@@ -685,9 +685,11 @@ void GDataWapiFeedLoader::OnGetChangelist(
     ui_state->feed_fetching_elapsed_time = base::TimeTicks::Now() - start_time;
 
     // Kick off the remaining part of the feeds.
+    // Extract the pointer so we can use it bellow.
+    LoadFeedParams* params_ptr = params.get();
     drive_service_->GetDocuments(
         current_feed->next_link(),
-        params->start_changestamp,
+        params_ptr->start_changestamp,
         std::string(),  // No search query.
         std::string(),  // No directory resource ID.
         base::Bind(&GDataWapiFeedLoader::OnGetChangelist,
