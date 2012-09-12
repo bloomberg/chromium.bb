@@ -143,6 +143,7 @@ class RawCheckout(CheckoutBase):
     """Ignores svn properties."""
     post_processors = post_processors or self.post_processors or []
     for p in patches:
+      logging.debug('Applying %s' % p.filename)
       try:
         stdout = ''
         filename = os.path.join(self.project_path, p.filename)
@@ -301,6 +302,7 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
   def apply_patch(self, patches, post_processors=None):
     post_processors = post_processors or self.post_processors or []
     for p in patches:
+      logging.debug('Applying %s' % p.filename)
       try:
         # It is important to use credentials=False otherwise credentials could
         # leak in the error message. Credentials are not necessary here for the
@@ -507,6 +509,7 @@ class GitCheckoutBase(CheckoutBase):
           ['checkout', '-b', self.working_branch,
             '%s/%s' % (self.remote, self.remote_branch), '--quiet'])
     for index, p in enumerate(patches):
+      logging.debug('Applying %s' % p.filename)
       try:
         stdout = ''
         if p.is_delete:

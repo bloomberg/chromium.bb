@@ -503,11 +503,13 @@ class PatchSet(object):
       File move are first.
       Deletes are last.
       """
-      if p.source_filename:
-        return (p.is_delete, p.source_filename_utf8, p.filename_utf8)
-      else:
-        # tuple are always greater than string, abuse that fact.
-        return (p.is_delete, (p.filename_utf8,), p.filename_utf8)
+      # The bool is necessary because None < 'string' but the reverse is needed.
+      return (
+          p.is_delete,
+          # False is before True, so files *with* a source file will be first.
+          not bool(p.source_filename),
+          p.source_filename_utf8,
+          p.filename_utf8)
 
     self.patches = sorted(patches, key=key)
 
