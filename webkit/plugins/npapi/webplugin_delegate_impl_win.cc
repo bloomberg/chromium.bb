@@ -1515,8 +1515,6 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
   // exceptions, such as IME, where it sometimes returns true.
   ret = true;
 
-// TODO(jam): do we need this for Aura?
-#if !defined(USE_AURA)
   if (np_event.event == WM_MOUSEMOVE) {
     current_windowless_cursor_.InitFromExternalCursor(GetCursor());
     // Snag a reference to the current cursor ASAP in case the plugin modified
@@ -1524,7 +1522,6 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
     // as someone might be setting the cursor in the main process as well.
     current_windowless_cursor_.GetCursorInfo(cursor_info);
   }
-#endif
 
   handle_event_depth_--;
 

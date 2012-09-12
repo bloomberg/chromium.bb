@@ -71,6 +71,13 @@ class WEBKIT_GLUE_EXPORT WebCursor {
   // Returns a native cursor representing the current WebCursor instance.
   gfx::NativeCursor GetNativeCursor();
 
+#if defined(OS_WIN)
+  // Initialize this from the given Windows cursor. The caller must ensure that
+  // the HCURSOR remains valid by not invoking the DestroyCursor/DestroyIcon
+  // APIs on it.
+  void InitFromExternalCursor(HCURSOR handle);
+#endif
+
 #if defined(USE_AURA)
   const ui::PlatformCursor GetPlatformCursor();
 
@@ -80,11 +87,6 @@ class WEBKIT_GLUE_EXPORT WebCursor {
   // The ownership of the HCURSOR (does not apply to external cursors) remains
   // with the WebCursor instance.
   HCURSOR GetCursor(HINSTANCE module_handle);
-
-  // Initialize this from the given Windows cursor. The caller must ensure that
-  // the HCURSOR remains valid by not invoking the DestroyCursor/DestroyIcon
-  // APIs on it.
-  void InitFromExternalCursor(HCURSOR handle);
 
 #elif defined(TOOLKIT_GTK)
   // Return the stock GdkCursorType for this cursor, or GDK_CURSOR_IS_PIXMAP
@@ -147,14 +149,17 @@ class WEBKIT_GLUE_EXPORT WebCursor {
   gfx::Size custom_size_;
   std::vector<char> custom_data_;
 
+#if defined(OS_WIN)
+  // An externally generated HCURSOR. We assume that it remains valid, i.e we
+  // don't attempt to copy the HCURSOR.
+  HCURSOR external_cursor_;
+#endif
+
 #if defined(USE_AURA) && defined(USE_X11)
   // Only used for custom cursors.
   ui::PlatformCursor platform_cursor_;
   float scale_factor_;
 #elif defined(OS_WIN)
-  // An externally generated HCURSOR. We assume that it remains valid, i.e we
-  // don't attempt to copy the HCURSOR.
-  HCURSOR external_cursor_;
   // A custom cursor created from custom bitmap data by Webkit.
   HCURSOR custom_cursor_;
 #elif defined(TOOLKIT_GTK)

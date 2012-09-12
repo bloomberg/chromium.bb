@@ -16,11 +16,17 @@ static const int kMaxCursorDimension = 1024;
 
 WebCursor::WebCursor()
     : type_(WebCursorInfo::TypePointer) {
+#if defined(OS_WIN)
+  external_cursor_ = NULL;
+#endif
   InitPlatformData();
 }
 
 WebCursor::WebCursor(const WebCursorInfo& cursor_info)
     : type_(WebCursorInfo::TypePointer) {
+#if defined(OS_WIN)
+  external_cursor_ = NULL;
+#endif
   InitPlatformData();
   InitFromCursorInfo(cursor_info);
 }
@@ -46,7 +52,7 @@ const WebCursor& WebCursor::operator=(const WebCursor& other) {
 void WebCursor::InitFromCursorInfo(const WebCursorInfo& cursor_info) {
   Clear();
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   if (cursor_info.externalHandle) {
     InitFromExternalCursor(cursor_info.externalHandle);
     return;
@@ -65,7 +71,7 @@ void WebCursor::GetCursorInfo(WebCursorInfo* cursor_info) const {
   cursor_info->hotSpot = hotspot_;
   ImageFromCustomData(&cursor_info->customImage);
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   cursor_info->externalHandle = external_cursor_;
 #endif
 }
@@ -146,6 +152,45 @@ bool WebCursor::IsEqual(const WebCursor& other) const {
          custom_size_ == other.custom_size_ &&
          custom_data_ == other.custom_data_;
 }
+
+#if defined(OS_WIN)
+
+static WebCursorInfo::Type ToCursorType(HCURSOR cursor) {
+  static struct {
+    HCURSOR cursor;
+    WebCursorInfo::Type type;
+  } kStandardCursors[] = {
+    { LoadCursor(NULL, IDC_ARROW),       WebCursorInfo::TypePointer },
+    { LoadCursor(NULL, IDC_CROSS),       WebCursorInfo::TypeCross },
+    { LoadCursor(NULL, IDC_HAND),        WebCursorInfo::TypeHand },
+    { LoadCursor(NULL, IDC_IBEAM),       WebCursorInfo::TypeIBeam },
+    { LoadCursor(NULL, IDC_WAIT),        WebCursorInfo::TypeWait },
+    { LoadCursor(NULL, IDC_HELP),        WebCursorInfo::TypeHelp },
+    { LoadCursor(NULL, IDC_SIZENESW),    WebCursorInfo::TypeNorthEastResize },
+    { LoadCursor(NULL, IDC_SIZENWSE),    WebCursorInfo::TypeNorthWestResize },
+    { LoadCursor(NULL, IDC_SIZENS),      WebCursorInfo::TypeNorthSouthResize },
+    { LoadCursor(NULL, IDC_SIZEWE),      WebCursorInfo::TypeEastWestResize },
+    { LoadCursor(NULL, IDC_SIZEALL),     WebCursorInfo::TypeMove },
+    { LoadCursor(NULL, IDC_APPSTARTING), WebCursorInfo::TypeProgress },
+    { LoadCursor(NULL, IDC_NO),          WebCursorInfo::TypeNotAllowed },
+  };
+  for (int i = 0; i < arraysize(kStandardCursors); ++i) {
+    if (cursor == kStandardCursors[i].cursor)
+      return kStandardCursors[i].type;
+  }
+  return WebCursorInfo::TypeCustom;
+}
+
+void WebCursor::InitFromExternalCursor(HCURSOR cursor) {
+  WebCursorInfo::Type cursor_type = ToCursorType(cursor);
+
+  InitFromCursorInfo(WebCursorInfo(cursor_type));
+
+  if (cursor_type == WebCursorInfo::TypeCustom)
+    external_cursor_ = cursor;
+}
+
+#endif  // defined(OS_WIN)
 
 void WebCursor::Clear() {
   type_ = WebCursorInfo::TypePointer;
