@@ -1,0 +1,13 @@
+{
+  "name": "Echo Native Message",
+  "version": "1.0",
+  "manifest_version": 2,
+  "description": "Send a message to a native application.",
+  "icons": {
+    "128": "icon-128.png"
+  },
+  "browser_action": {
+    "default_icon": "icon-19.png",
+    "default_popup": "popup.html"
+  }
+}
