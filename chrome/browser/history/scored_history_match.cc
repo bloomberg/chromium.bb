@@ -97,19 +97,18 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
 
   // We can inline autocomplete a result if:
   //  1) there is only one search term
-  //  2) AND EITHER:
-  //    2a) the first match starts at the beginning of the candidate URL, OR
-  //    2b) the candidate URL starts with one of the standard URL prefixes with
-  //        the URL match immediately following that prefix.
+  //  2) AND the match begins immediately after one of the prefixes in
+  //     URLPrefix such as http://www and https:// (note that one of these
+  //     is the empty prefix, for cases where the user has typed the scheme)
   //  3) AND the search string does not end in whitespace (making it look to
   //     the IMUI as though there is a single search term when actually there
   //     is a second, empty term).
-  can_inline = !url_matches.empty() &&
-      terms.size() == 1 &&
-      (url_matches[0].offset == 0 ||
-       URLPrefix::IsURLPrefix(url.substr(0, url_matches[0].offset))) &&
-      !IsWhitespace(*(lower_string.rbegin()));
-  match_in_scheme = can_inline && url_matches[0].offset == 0;
+  // |best_prefix| stores the inlineable prefix computed in clause (2) or
+  // NULL if no such prefix exists.  (The URL is not inlineable.)
+  const URLPrefix* best_prefix = (!url_matches.empty() && (terms.size() == 1)) ?
+      URLPrefix::BestURLPrefix(UTF8ToUTF16(gurl.spec()), terms[0]) : NULL;
+  can_inline = (best_prefix != NULL) && !IsWhitespace(*(lower_string.rbegin()));
+  match_in_scheme = can_inline && best_prefix->prefix.empty();
 
   // Determine if the associated URLs is referenced by any bookmarks.
   float bookmark_boost =

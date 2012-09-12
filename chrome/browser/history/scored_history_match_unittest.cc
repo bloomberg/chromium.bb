@@ -125,6 +125,65 @@ TEST_F(ScoredHistoryMatchTest, Scoring) {
   EXPECT_LT(scored_i.raw_score, 1400);
 }
 
+TEST_F(ScoredHistoryMatchTest, Inlining) {
+  // We use NowFromSystemTime() because MakeURLRow uses the same function
+  // to calculate last visit time when building a row.
+  base::Time now = base::Time::NowFromSystemTime();
+  RowWordStarts word_starts;
+
+  {
+    URLRow row(MakeURLRow("http://www.google.com", "abcdef", 3, 30, 1));
+    ScoredHistoryMatch scored_a(row, ASCIIToUTF16("g"), Make1Term("g"),
+                                word_starts, now, NULL);
+    EXPECT_TRUE(scored_a.can_inline);
+    EXPECT_FALSE(scored_a.match_in_scheme);
+    ScoredHistoryMatch scored_b(row, ASCIIToUTF16("w"), Make1Term("w"),
+                                word_starts, now, NULL);
+    EXPECT_TRUE(scored_b.can_inline);
+    EXPECT_FALSE(scored_b.match_in_scheme);
+    ScoredHistoryMatch scored_c(row, ASCIIToUTF16("h"), Make1Term("h"),
+                                word_starts, now, NULL);
+    EXPECT_TRUE(scored_c.can_inline);
+    EXPECT_TRUE(scored_c.match_in_scheme);
+    ScoredHistoryMatch scored_d(row, ASCIIToUTF16("o"), Make1Term("o"),
+                                word_starts, now, NULL);
+    EXPECT_FALSE(scored_d.can_inline);
+    EXPECT_FALSE(scored_d.match_in_scheme);
+  }
+
+  {
+    URLRow row(MakeURLRow("http://teams.foo.com", "abcdef", 3, 30, 1));
+    ScoredHistoryMatch scored_a(row, ASCIIToUTF16("t"), Make1Term("t"),
+                                word_starts, now, NULL);
+    EXPECT_TRUE(scored_a.can_inline);
+    EXPECT_FALSE(scored_a.match_in_scheme);
+    ScoredHistoryMatch scored_b(row, ASCIIToUTF16("f"), Make1Term("f"),
+                                word_starts, now, NULL);
+    EXPECT_FALSE(scored_b.can_inline);
+    EXPECT_FALSE(scored_b.match_in_scheme);
+    ScoredHistoryMatch scored_c(row, ASCIIToUTF16("o"), Make1Term("o"),
+                                word_starts, now, NULL);
+    EXPECT_FALSE(scored_c.can_inline);
+    EXPECT_FALSE(scored_c.match_in_scheme);
+  }
+
+  {
+    URLRow row(MakeURLRow("https://www.testing.com", "abcdef", 3, 30, 1));
+    ScoredHistoryMatch scored_a(row, ASCIIToUTF16("t"), Make1Term("t"),
+                                word_starts, now, NULL);
+    EXPECT_TRUE(scored_a.can_inline);
+    EXPECT_FALSE(scored_a.match_in_scheme);
+    ScoredHistoryMatch scored_b(row, ASCIIToUTF16("h"), Make1Term("h"),
+                                word_starts, now, NULL);
+    EXPECT_TRUE(scored_b.can_inline);
+    EXPECT_TRUE(scored_b.match_in_scheme);
+    ScoredHistoryMatch scored_c(row, ASCIIToUTF16("w"), Make1Term("w"),
+                                word_starts, now, NULL);
+    EXPECT_TRUE(scored_c.can_inline);
+    EXPECT_FALSE(scored_c.match_in_scheme);
+  }
+}
+
 class BookmarkServiceMock : public BookmarkService {
  public:
   BookmarkServiceMock(const GURL& url);
