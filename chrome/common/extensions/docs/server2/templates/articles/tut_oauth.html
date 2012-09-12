@@ -194,10 +194,10 @@ function onAuthorized() {
   xhr.onreadystatechange = function(data) {
     callback(xhr, data);
   };
+  xhr.open(method, url + '?' + stringify(params), true);
   xhr.setRequestHeader('GData-Version', '3.0');
   xhr.setRequestHeader('Content-Type', 'application/atom+xml');
   xhr.setRequestHeader('Authorization', oauth.getAuthorizationHeader(url, method, params));
-  xhr.open(method, url + '?' + stringify(params), true);
 
   xhr.send('Data to send');
 };
