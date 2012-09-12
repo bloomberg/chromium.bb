@@ -8,6 +8,7 @@
 
 #include "CCAnimationCurve.h"
 #include "TraceEvent.h"
+#include "base/string_util.h"
 #include <cmath>
 #include <wtf/Assertions.h>
 #include <wtf/StdLibExtras.h>
@@ -75,7 +76,7 @@ void CCActiveAnimation::setRunState(RunState runState, double monotonicTime)
         return;
 
     char nameBuffer[256];
-    snprintf(nameBuffer, sizeof(nameBuffer), "%s-%d%s", s_targetPropertyNames[m_targetProperty], m_group, m_isControllingInstance ? "(impl)" : "");
+    base::snprintf(nameBuffer, sizeof(nameBuffer), "%s-%d%s", s_targetPropertyNames[m_targetProperty], m_group, m_isControllingInstance ? "(impl)" : "");
 
     bool isWaitingToStart = m_runState == WaitingForNextTick
         || m_runState == WaitingForTargetAvailability
@@ -100,7 +101,7 @@ void CCActiveAnimation::setRunState(RunState runState, double monotonicTime)
         TRACE_EVENT_ASYNC_END0("cc", "CCActiveAnimation", this);
 
     char stateBuffer[256];
-    snprintf(stateBuffer, sizeof(stateBuffer), "%s->%s", oldRunStateName, newRunStateName);
+    base::snprintf(stateBuffer, sizeof(stateBuffer), "%s->%s", oldRunStateName, newRunStateName);
 
     TRACE_EVENT_INSTANT2("cc", "CCLayerAnimationController::setRunState", "Name", TRACE_STR_COPY(nameBuffer), "State", TRACE_STR_COPY(stateBuffer));
 }
