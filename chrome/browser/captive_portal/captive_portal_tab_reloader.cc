@@ -23,6 +23,22 @@ namespace {
 // portal check.
 const int kDefaultSlowSSLTimeSeconds = 30;
 
+// Returns true if an SSL request resulting in |error| may indicate a captive
+// portal.
+bool SslNetErrorMayImplyCaptivePortal(int error) {
+  // May be returned when a captive portal silently blocks an SSL request.
+  if (error == net::ERR_CONNECTION_TIMED_OUT)
+    return true;
+
+  // May be returned when a captive portal lets SSL requests connect, but
+  // disconnects Chrome after Chrome starts SSL negotiation, or sends an
+  // HTTP response.
+  if (error == net::ERR_SSL_PROTOCOL_ERROR)
+    return true;
+
+  return false;
+}
+
 }  // namespace
 
 CaptivePortalTabReloader::CaptivePortalTabReloader(
@@ -64,8 +80,9 @@ void CaptivePortalTabReloader::OnLoadCommitted(int net_error) {
   if (state_ == STATE_NONE)
     return;
 
-  // If there's no timeout error, reset the state.
-  if (net_error != net::ERR_CONNECTION_TIMED_OUT) {
+  // If |net_error| is not an error code that could indicate there's a captive
+  // portal, reset the state.
+  if (!SslNetErrorMayImplyCaptivePortal(net_error)) {
     // TODO(mmenke):  If the new URL is the same as the old broken URL, and the
     //                request succeeds, should probably trigger another
     //                captive portal check.
@@ -73,10 +90,8 @@ void CaptivePortalTabReloader::OnLoadCommitted(int net_error) {
     return;
   }
 
-  // The page timed out before the timer triggered.  This is not terribly
-  // likely, but if it does happen, the tab may have been broken by a captive
-  // portal.  Go ahead and try to detect a portal now, rather than waiting for
-  // the timer.
+  // The page returned an error out before the timer triggered.  Go ahead and
+  // try to detect a portal now, rather than waiting for the timer.
   if (state_ == STATE_TIMER_RUNNING) {
     OnSlowSSLConnect();
     return;

@@ -315,6 +315,73 @@ TEST_F(CaptivePortalTabReloaderTest, TimeoutFast) {
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE, tab_reloader().state());
 }
 
+// An SSL protocol error triggers a captive portal check behind a captive
+// portal.  The user then logs in.
+TEST_F(CaptivePortalTabReloaderTest, SSLProtocolError) {
+  tab_reloader().OnLoadStart(true);
+
+  // The error page commits, which should trigger a captive portal check,
+  // since the timer's still running.
+  EXPECT_CALL(tab_reloader(), CheckForCaptivePortal()).Times(1);
+  tab_reloader().OnLoadCommitted(net::ERR_SSL_PROTOCOL_ERROR);
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_MAYBE_BROKEN_BY_PORTAL,
+            tab_reloader().state());
+
+  // The captive portal service detects a captive portal.  The TabReloader
+  // should try and create a new login tab in response.
+  EXPECT_CALL(tab_reloader(), MaybeOpenCaptivePortalLoginTab()).Times(1);
+  tab_reloader().OnCaptivePortalResults(RESULT_INTERNET_CONNECTED,
+                                        RESULT_BEHIND_CAPTIVE_PORTAL);
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_BROKEN_BY_PORTAL,
+            tab_reloader().state());
+  EXPECT_FALSE(tab_reloader().TimerRunning());
+
+  // The user logs on from another tab, and a captive portal check is triggered.
+  EXPECT_CALL(tab_reloader(), ReloadTab()).Times(1);
+  tab_reloader().OnCaptivePortalResults(RESULT_BEHIND_CAPTIVE_PORTAL,
+                                        RESULT_INTERNET_CONNECTED);
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE, tab_reloader().state());
+}
+
+// An SSL protocol error triggers a captive portal check behind a captive
+// portal.  The user logs in before the results from the captive portal check
+// completes.
+TEST_F(CaptivePortalTabReloaderTest, SSLProtocolErrorFastLogin) {
+  tab_reloader().OnLoadStart(true);
+
+  // The error page commits, which should trigger a captive portal check,
+  // since the timer's still running.
+  EXPECT_CALL(tab_reloader(), CheckForCaptivePortal()).Times(1);
+  tab_reloader().OnLoadCommitted(net::ERR_SSL_PROTOCOL_ERROR);
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_MAYBE_BROKEN_BY_PORTAL,
+            tab_reloader().state());
+
+  // The user has logged in from another tab.  The tab automatically reloads.
+  EXPECT_CALL(tab_reloader(), ReloadTab()).Times(1);
+  tab_reloader().OnCaptivePortalResults(RESULT_BEHIND_CAPTIVE_PORTAL,
+                                        RESULT_INTERNET_CONNECTED);
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE, tab_reloader().state());
+}
+
+// An SSL protocol error triggers a captive portal check behind a captive
+// portal.  The user logs in before the results from the captive portal check
+// completes.  This case is probably not too likely, but should be handled.
+TEST_F(CaptivePortalTabReloaderTest, SSLProtocolErrorAlreadyLoggedIn) {
+  tab_reloader().OnLoadStart(true);
+
+  // The user logs in from another tab before the tab errors out.
+  tab_reloader().OnCaptivePortalResults(RESULT_BEHIND_CAPTIVE_PORTAL,
+                                        RESULT_INTERNET_CONNECTED);
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_NEEDS_RELOAD,
+            tab_reloader().state());
+
+  // The error page commits, which should trigger a reload.
+  EXPECT_CALL(tab_reloader(), ReloadTab()).Times(1);
+  tab_reloader().OnLoadCommitted(net::ERR_SSL_PROTOCOL_ERROR);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE, tab_reloader().state());
+}
+
 // Simulate the case that a user has already logged in before the tab receives a
 // captive portal result, but a RESULT_BEHIND_CAPTIVE_PORTAL was received
 // before the tab started loading.
