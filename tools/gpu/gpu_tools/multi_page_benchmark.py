@@ -214,6 +214,10 @@ class MultiPageBenchmarkUnitTest(unittest.TestCase):
     ps.pages.append(page)
     return ps
 
+  def CustomizeOptionsForTest(self, options):
+    """Override to customize default options."""
+    pass
+
   def RunBenchmark(self, benchmark, ps):
     """Runs a benchmark against a pageset, returning the rows its outputs."""
     rows = []
@@ -233,6 +237,7 @@ class MultiPageBenchmarkUnitTest(unittest.TestCase):
       setattr(options, k, v)
 
     benchmark.CustomizeBrowserOptions(options)
+    self.CustomizeOptionsForTest(options)
     possible_browser = chrome_remote_control.FindBrowser(options)
     with possible_browser.Create() as browser:
       with browser.CreateTemporaryHTTPServer(self.unittest_data_dir) as server:
