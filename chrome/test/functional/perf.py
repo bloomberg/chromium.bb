@@ -256,7 +256,7 @@ class BasePerfTest(pyauto.PyUITest):
     return timer.timeit(number=1) * 1000  # Convert seconds to milliseconds.
 
   def _OutputPerfForStandaloneGraphing(self, graph_name, description, value,
-                                       units, units_x):
+                                       units, units_x, is_stacked):
     """Outputs perf measurement data to a local folder to be graphed.
 
     This function only applies to Chrome desktop, and assumes that environment
@@ -280,6 +280,8 @@ class BasePerfTest(pyauto.PyUITest):
           with the performance measurements, such as 'iteration' if the x values
           are iteration numbers.  If this argument is specified, then the
           |value| argument must be a list of (x, y) tuples.
+      is_stacked: True to draw a "stacked" graph.  First-come values are
+          stacked at bottom by default.
     """
     revision_num_file = os.path.join(self._local_perf_dir, 'last_revision.dat')
     if os.path.exists(revision_num_file):
@@ -347,6 +349,13 @@ class BasePerfTest(pyauto.PyUITest):
         'traces': { description: [str(value), str(0.0)] }
       }
 
+    if is_stacked:
+      new_line['stack'] = True
+      if 'stack_order' not in new_line:
+        new_line['stack_order'] = []
+      if description not in new_line['stack_order']:
+        new_line['stack_order'].append(description)
+
     if seen_key in self._seen_graph_lines:
       # Update results for the most recent revision.
       existing_lines[0] = new_line
@@ -364,7 +373,7 @@ class BasePerfTest(pyauto.PyUITest):
       f.write(str(revision))
 
   def _OutputPerfGraphValue(self, description, value, units,
-                            graph_name, units_x=None):
+                            graph_name, units_x=None, is_stacked=False):
     """Outputs a performance value to have it graphed on the performance bots.
 
     The output format differs, depending on whether the current platform is
@@ -395,6 +404,8 @@ class BasePerfTest(pyauto.PyUITest):
           with the performance measurements, such as 'iteration' if the x values
           are iteration numbers.  If this argument is specified, then the
           |value| argument must be a list of (x, y) tuples.
+      is_stacked: True to draw a "stacked" graph.  First-come values are
+          stacked at bottom by default.
     """
     if (isinstance(value, list) and value[0] is not None and
         isinstance(value[0], tuple)):
@@ -426,6 +437,8 @@ class BasePerfTest(pyauto.PyUITest):
                                         self._PERF_OUTPUT_MARKER_POST)
         sys.stdout.flush()
     else:
+      # TODO(dmikurube): Support stacked graphs in PrintPerfResult.
+      # See http://crbug.com/122119.
       if units_x:
         pyauto_utils.PrintPerfResult(graph_name, description, value,
                                      units + ' ' + units_x)
@@ -434,7 +447,7 @@ class BasePerfTest(pyauto.PyUITest):
 
       if self._local_perf_dir:
         self._OutputPerfForStandaloneGraphing(
-            graph_name, description, value, units, units_x)
+            graph_name, description, value, units, units_x, is_stacked)
 
   def _OutputEventForStandaloneGraphing(self, description, event_list):
     """Outputs event information to a local folder to be graphed.

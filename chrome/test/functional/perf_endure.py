@@ -45,6 +45,179 @@ class NotSupportedEnvironmentError(RuntimeError):
   pass
 
 
+class DeepMemoryProfiler(object):
+  """Controls Deep Memory Profiler (dmprof) for endurance tests."""
+  DEEP_MEMORY_PROFILE = False
+  DEEP_MEMORY_PROFILE_SAVE = False
+
+  _DMPROF_DIR_PATH = os.path.join(
+      os.path.dirname(__file__), os.pardir, os.pardir, os.pardir,
+      'tools', 'deep_memory_profiler')
+  _DMPROF_SCRIPT_PATH = os.path.join(_DMPROF_DIR_PATH, 'dmprof')
+
+  def __init__(self):
+    self._enabled = self.GetEnvironmentVariable(
+        'DEEP_MEMORY_PROFILE', bool, self.DEEP_MEMORY_PROFILE)
+    self._save = self.GetEnvironmentVariable(
+        'DEEP_MEMORY_PROFILE_SAVE', bool, self.DEEP_MEMORY_PROFILE_SAVE)
+    self._json_file = None
+    self._last_json_filename = ''
+    self._proc = None
+    self._last_time = -1.0
+
+  def __nonzero__(self):
+    return self._enabled
+
+  @staticmethod
+  def GetEnvironmentVariable(env_name, converter, default):
+    """Returns a converted environment variable for Deep Memory Profiler.
+
+    Args:
+      env_name: A string name of an environment variable.
+      converter: A function taking a string to convert an environment variable.
+      default: A value used if the environment variable is not specified.
+
+    Returns:
+      A value converted from the environment variable with 'converter'.
+    """
+    return converter(os.environ.get(env_name, default))
+
+  def SetUp(self, is_linux):
+    """Sets up Deep Memory Profiler settings for a Chrome process.
+
+    It sets environment variables and makes a working directory.
+    """
+    if not self._enabled:
+      return
+
+    if not is_linux:
+      raise NotSupportedEnvironmentError(
+          'Deep Memory Profiler is not supported in this environment (OS).')
+    dir_prefix = 'endure.%s.' % datetime.today().strftime('%Y%m%d.%H%M%S')
+    self._tempdir = tempfile.mkdtemp(prefix=dir_prefix)
+    os.environ['HEAPPROFILE'] = os.path.join(self._tempdir, 'endure')
+    os.environ['HEAP_PROFILE_MMAP'] = '1'
+    os.environ['DEEP_HEAP_PROFILE'] = '1'
+
+  def TearDown(self):
+    """Tear down Deep Memory Profiler settings for the Chrome process.
+
+    It removes the environment variables and the temporary directory.
+    Call it after Chrome finishes.  Chrome may dump last files at the end.
+    """
+    if not self._enabled:
+      return
+
+    del os.environ['DEEP_HEAP_PROFILE']
+    del os.environ['HEAP_PROFILE_MMAP']
+    del os.environ['HEAPPROFILE']
+    if not self._save and self._tempdir:
+      pyauto_utils.RemovePath(self._tempdir)
+
+  def LogFirstMessage(self):
+    """Logs first messages."""
+    if not self._enabled:
+      return
+
+    logging.info('Running with the Deep Memory Profiler.')
+    if self._save:
+      logging.info('  Dumped files won\'t be cleaned.')
+    else:
+      logging.info('  Dumped files will be cleaned up after every test.')
+
+  def StartProfiler(self, proc_info, is_last):
+    """Starts Deep Memory Profiler in background."""
+    if not self._enabled:
+      return
+
+    logging.info('  Profiling with the Deep Memory Profiler...')
+
+    # Wait for a running dmprof process for last _GetPerformanceStat call to
+    # cover last dump files.
+    if is_last:
+      logging.info('    Waiting for the last dmprof.')
+      self._WaitForDeepMemoryProfiler()
+
+    if self._proc and self._proc.poll() is None:
+      logging.info('    Last dmprof is still running.')
+    else:
+      if self._json_file:
+        self._last_json_filename = self._json_file.name
+        self._json_file.close()
+        self._json_file = None
+      first_dump = ''
+      last_dump = ''
+      for filename in sorted(os.listdir(self._tempdir)):
+        if re.match('^endure.%05d.\d+.heap$' % proc_info['tab_pid'],
+                    filename):
+          logging.info('    Profiled dump file: %s' % filename)
+          last_dump = filename
+          if not first_dump:
+            first_dump = filename
+      if first_dump:
+        logging.info('    First dump file: %s' % first_dump)
+        matched = re.match('^endure.\d+.(\d+).heap$', last_dump)
+        last_sequence_id = matched.group(1)
+        self._json_file = open(
+            os.path.join(self._tempdir,
+                         'endure.%05d.%s.json' % (proc_info['tab_pid'],
+                                                  last_sequence_id)), 'w+')
+        self._proc = subprocess.Popen(
+            '%s json %s' % (self._DMPROF_SCRIPT_PATH,
+                            os.path.join(self._tempdir, first_dump)),
+            shell=True, stdout=self._json_file)
+        # Wait only when it is the last profiling.  dmprof may take long time.
+        if is_last:
+          self._WaitForDeepMemoryProfiler()
+      else:
+        logging.info('    No dump files.')
+
+  def ParseResultAndOutputPerfGraphValues(
+      self, webapp_name, test_description, output_perf_graph_value):
+    """Parses Deep Memory Profiler result, and outputs perf graph values."""
+    if not self._enabled:
+      return
+
+    results = {}
+    if self._last_json_filename:
+      json_data = {}
+      with open(self._last_json_filename) as json_f:
+        json_data = json.load(json_f)
+      if json_data['version'] == 'JSON_DEEP_1':
+        results = json_data['snapshots']
+      elif json_data['version'] == 'JSON_DEEP_2':
+        results = json_data['policies']['l2']['snapshots']
+    if results and results[-1]['second'] > self._last_time:
+      started = False
+      for legend in json_data['policies']['l2']['legends']:
+        if legend == 'FROM_HERE_FOR_TOTAL':
+          started = True
+        elif legend == 'UNTIL_HERE_FOR_TOTAL':
+          break
+        elif started:
+          output_perf_graph_value(
+              legend.encode('utf-8'), [
+                  (int(round(snapshot['second'])), snapshot[legend] / 1024)
+                  for snapshot in results
+                  if snapshot['second'] > self._last_time],
+              'KB',
+              graph_name='%s%s-DMP' % (webapp_name, test_description),
+              units_x='seconds', is_stacked=True)
+      self._last_time = results[-1]['second']
+
+  def _WaitForDeepMemoryProfiler(self):
+    """Waits for the Deep Memory Profiler to finish if running."""
+    if not self._enabled or not self._proc:
+      return
+
+    self._proc.wait()
+    self._proc = None
+    if self._json_file:
+      self._last_json_filename = self._json_file.name
+      self._json_file.close()
+      self._json_file = None
+
+
 class ChromeEndureBaseTest(perf.BasePerfTest):
   """Implements common functionality for all Chrome Endure tests.
 
@@ -55,14 +228,6 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
   _GET_PERF_STATS_INTERVAL = 60 * 5  # Measure perf stats every 5 minutes.
   # TODO(dennisjeffrey): Do we still need to tolerate errors?
   _ERROR_COUNT_THRESHOLD = 50  # Number of ChromeDriver errors to tolerate.
-  _DEEP_MEMORY_PROFILE = False
-  _DEEP_MEMORY_PROFILE_SAVE = False
-
-  _DMPROF_DIR_PATH = os.path.join(
-      os.path.dirname(__file__), os.pardir, os.pardir, os.pardir,
-      'tools', 'deep_memory_profiler')
-
-  _DMPROF_SCRIPT_PATH = os.path.join(_DMPROF_DIR_PATH, 'dmprof')
 
   def setUp(self):
     # The Web Page Replay environment variables must be parsed before
@@ -70,18 +235,9 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     self._ParseReplayEnv()
     # The environment variables for the Deep Memory Profiler must be set
     # before perf.BasePerfTest.setUp() to inherit them to Chrome.
-    self._deep_memory_profile = self._GetDeepMemoryProfileEnv(
-        'DEEP_MEMORY_PROFILE', bool, self._DEEP_MEMORY_PROFILE)
-
-    if self._deep_memory_profile:
-      if not self.IsLinux():
-        raise NotSupportedEnvironmentError(
-            'Deep Memory Profiler is not supported in this environment (OS).')
-      dir_prefix = 'endure.%s.' % datetime.today().strftime('%Y%m%d.%H%M%S')
-      self._deep_tempdir = tempfile.mkdtemp(prefix=dir_prefix)
-      os.environ['HEAPPROFILE'] = os.path.join(self._deep_tempdir, 'endure')
-      os.environ['HEAP_PROFILE_MMAP'] = 'True'
-      os.environ['DEEP_HEAP_PROFILE'] = 'True'
+    self._dmprof = DeepMemoryProfiler()
+    if self._dmprof:
+      self._dmprof.SetUp(self.IsLinux())
 
     perf.BasePerfTest.setUp(self)
 
@@ -90,18 +246,12 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     self._get_perf_stats_interval = int(
         os.environ.get('PERF_STATS_INTERVAL', self._GET_PERF_STATS_INTERVAL))
 
-    self._deep_memory_profile_save = self._GetDeepMemoryProfileEnv(
-        'DEEP_MEMORY_PROFILE_SAVE', bool, self._DEEP_MEMORY_PROFILE_SAVE)
-
     logging.info('Running test for %d seconds.', self._test_length_sec)
     logging.info('Gathering perf stats every %d seconds.',
                  self._get_perf_stats_interval)
-    if self._deep_memory_profile:
-      logging.info('Running with the Deep Memory Profiler.')
-      if self._deep_memory_profile_save:
-        logging.info('  Dumped files won\'t be cleaned.')
-      else:
-        logging.info('  Dumped files will be cleaned up after every test.')
+
+    if self._dmprof:
+      self._dmprof.LogFirstMessage()
 
     # Set up a remote inspector client associated with tab 0.
     logging.info('Setting up connection to remote inspector...')
@@ -112,31 +262,21 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     self._test_start_time = 0
     self._num_errors = 0
     self._events_to_output = []
-    self._deep_memory_profile_json_file = None
-    self._deep_memory_profile_last_json_filename = ''
-    self._deep_memory_profile_proc = None
     self._StartReplayServerIfNecessary()
 
   def tearDown(self):
     logging.info('Terminating connection to remote inspector...')
     self._remote_inspector_client.Stop()
     logging.info('Connection to remote inspector terminated.')
-    if self._deep_memory_profile:
-      del os.environ['DEEP_HEAP_PROFILE']
-      del os.environ['HEAP_PROFILE_MMAP']
-      del os.environ['HEAPPROFILE']
 
     # Must be done at end of this function except for post-cleaning after
     # Chrome finishes.
     perf.BasePerfTest.tearDown(self)
 
-    # Remove the temporary directory after Chrome finishes in tearDown.
-    if (self._deep_memory_profile and
-        not self._deep_memory_profile_save and
-        self._deep_tempdir):
-      pyauto_utils.RemovePath(self._deep_tempdir)
     # Must be done after perf.BasePerfTest.tearDown()
     self._StopReplayServerIfNecessary()
+    if self._dmprof:
+      self._dmprof.TearDown()
 
   def _GetArchiveName(self):
     """Return the Web Page Replay archive name that corresponds to a test.
@@ -180,30 +320,6 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
               'Skipping Web Page Replay since archive file %sdoes not exist.',
               self._archive_path + ' ' if self._archive_path else '')
 
-  def _GetDeepMemoryProfileEnv(self, env_name, converter, default):
-    """Returns a converted environment variable for the Deep Memory Profiler.
-
-    Args:
-      env_name: A string name of an environment variable.
-      converter: A function taking a string to convert an environment variable.
-      default: A value used if the environment variable is not specified.
-
-    Returns:
-      A value converted from the environment variable with 'converter'.
-    """
-    return converter(os.environ.get(env_name, default))
-
-  def _WaitForDeepMemoryProfiler(self):
-    """Waits for the Deep Memory Profiler to finish if running."""
-    if self._deep_memory_profile and self._deep_memory_profile_proc:
-      self._deep_memory_profile_proc.wait()
-      self._deep_memory_profile_proc = None
-      if self._deep_memory_profile_json_file:
-        self._deep_memory_profile_last_json_filename = (
-            self._deep_memory_profile_json_file.name)
-        self._deep_memory_profile_json_file.close()
-        self._deep_memory_profile_json_file = None
-
   def ExtraChromeFlags(self):
     """Ensures Chrome is launched with custom flags.
 
@@ -212,8 +328,8 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     """
     # The same with setUp, but need to fetch the environment variable since
     # ExtraChromeFlags is called before setUp.
-    deep_memory_profile = self._GetDeepMemoryProfileEnv(
-        'DEEP_MEMORY_PROFILE', bool, self._DEEP_MEMORY_PROFILE)
+    deep_memory_profile = DeepMemoryProfiler.GetEnvironmentVariable(
+        'DEEP_MEMORY_PROFILE', bool, DeepMemoryProfiler.DEEP_MEMORY_PROFILE)
 
     # Ensure Chrome enables remote debugging on port 9222.  This is required to
     # interact with Chrome's remote inspector.
@@ -268,7 +384,7 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     self._num_errors = 0
     self._test_start_time = time.time()
     last_perf_stats_time = time.time()
-    if self._deep_memory_profile:
+    if self._dmprof:
       self.HeapProfilerDump('renderer', 'Chrome Endure (first)')
     self._GetPerformanceStats(
         webapp_name, test_description, tab_title_substring)
@@ -287,7 +403,7 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
 
       if time.time() - last_perf_stats_time >= self._get_perf_stats_interval:
         last_perf_stats_time = time.time()
-        if self._deep_memory_profile:
+        if self._dmprof:
           self.HeapProfilerDump('renderer', 'Chrome Endure')
         self._GetPerformanceStats(
             webapp_name, test_description, tab_title_substring)
@@ -317,7 +433,7 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
 
     self._remote_inspector_client.StopTimelineEventMonitoring()
 
-    if self._deep_memory_profile:
+    if self._dmprof:
       self.HeapProfilerDump('renderer', 'Chrome Endure (last)')
     self._GetPerformanceStats(
         webapp_name, test_description, tab_title_substring, is_last=True)
@@ -398,53 +514,8 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     memory_counts = self._remote_inspector_client.GetMemoryObjectCounts()
     proc_info = self._GetProcessInfo(tab_title_substring)
 
-    # Run Deep Memory Profiler in background.
-    if self._deep_memory_profile:
-      logging.info('  Profiling with the Deep Memory Profiler...')
-
-      # Wait for a running dmprof process for last _GetPerformanceStat call to
-      # cover last dump files.
-      if is_last:
-        logging.info('    Waiting for the last dmprof.')
-        self._WaitForDeepMemoryProfiler()
-
-      if (self._deep_memory_profile_proc and
-          self._deep_memory_profile_proc.poll() is None):
-        logging.info('    Last dmprof is still running.')
-      else:
-        if self._deep_memory_profile_json_file:
-          self._deep_memory_profile_last_json_filename = (
-              self._deep_memory_profile_json_file.name)
-          self._deep_memory_profile_json_file.close()
-          self._deep_memory_profile_json_file = None
-        first_dump = ''
-        last_dump = ''
-        for filename in sorted(os.listdir(self._deep_tempdir)):
-          if re.match('^endure.%05d.\d+.heap$' % proc_info['tab_pid'],
-                      filename):
-            logging.info('    Profiled dump file: %s' % filename)
-            last_dump = filename
-            if not first_dump:
-              first_dump = filename
-        if first_dump:
-          logging.info('    First dump file: %s' % first_dump)
-          matched= re.match('^endure.\d+.(\d+).heap$', last_dump)
-          last_sequence_id = matched.group(1)
-          self._deep_memory_profile_json_file = open(
-              os.path.join(self._deep_tempdir,
-                           'endure.%05d.%s.json' % (proc_info['tab_pid'],
-                                                    last_sequence_id)), 'w+')
-          self._deep_memory_profile_proc = subprocess.Popen(
-              '%s json %s' % (self._DMPROF_SCRIPT_PATH,
-                              os.path.join(self._deep_tempdir, first_dump)),
-              shell=True, stdout=self._deep_memory_profile_json_file)
-          # Don't wait for the new process since dmprof may take long time.
-
-          if is_last:
-            self._WaitForDeepMemoryProfiler()
-
-        else:
-          logging.info('    No dump files.')
+    if self._dmprof:
+      self._dmprof.StartProfiler(proc_info, is_last)
 
     # DOM node count.
     dom_node_count = memory_counts['DOMNodeCount']
@@ -490,27 +561,9 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
         graph_name='%s%s-V8MemAllocated' % (webapp_name, test_description),
         units_x='seconds')
 
-    # Deep Memory Profiler result.
-    if self._deep_memory_profile:
-      deep_memory_profile_results = {}
-      if self._deep_memory_profile_last_json_filename:
-        json_data = {}
-        with open(self._deep_memory_profile_last_json_filename) as json_f:
-          json_data = json.load(json_f)
-        if json_data['version'] == 'JSON_DEEP_1':
-          deep_memory_profile_results = json_data['snapshots']
-        elif json_data['version'] == 'JSON_DEEP_2':
-          deep_memory_profile_results = json_data['policies']['l0']['snapshots']
-      if deep_memory_profile_results:
-        self._OutputPerfGraphValue(
-            'DMP-TCMallocUsed', [
-                (snapshot['second'], snapshot['tc-used-all'] / 1024.0)
-                for snapshot in deep_memory_profile_results],
-            'KB',
-            graph_name='%s%s-DMP-TCUsed' % (webapp_name, test_description),
-            units_x='seconds')
-      # TODO(dmikurube): Output graph values (for multi-lined graphs), here.
-      # 'deep_memory_profile_results' is the value to be output.
+    if self._dmprof:
+      self._dmprof.ParseResultAndOutputPerfGraphValues(
+          webapp_name, test_description, self._OutputPerfGraphValue)
 
     logging.info('  Total DOM node count: %d nodes' % dom_node_count)
     logging.info('  Event listener count: %d listeners' % event_listener_count)
