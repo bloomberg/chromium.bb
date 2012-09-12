@@ -12,6 +12,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/events/event.h"
+#include "ui/base/events/event_functions.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/screen.h"
@@ -80,6 +81,11 @@ ui::EventResult WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event) {
     case ui::ET_MOUSE_EXITED:
       break;
     case ui::ET_MOUSE_PRESSED: {
+      // Maximize behavior is implemented as post-target handling so the target
+      // can cancel it.
+      if (ui::EventCanceledDefaultHandling(*event))
+        return ToplevelWindowEventHandler::OnMouseEvent(event);
+
       if (event->flags() & ui::EF_IS_DOUBLE_CLICK &&
           target->delegate()->GetNonClientComponent(event->location()) ==
           HTCAPTION) {

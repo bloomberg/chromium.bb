@@ -295,7 +295,6 @@ void RootWindowController::CreateContainersInRootWindow(
   if (!internal::WorkspaceController::IsWorkspace2Enabled()) {
     default_container_handler_.reset(
         new ToplevelWindowEventHandler(default_container));
-    default_container->AddPreTargetHandler(default_container_handler_.get());
   }
   SetChildWindowVisibilityChangesAnimated(default_container);
   SetUsesScreenCoordinates(default_container);
@@ -306,8 +305,6 @@ void RootWindowController::CreateContainersInRootWindow(
       non_lock_screen_containers);
   always_on_top_container_handler_.reset(
       new ToplevelWindowEventHandler(always_on_top_container));
-  always_on_top_container->AddPreTargetHandler(
-      always_on_top_container_handler_.get());
   SetChildWindowVisibilityChangesAnimated(always_on_top_container);
   SetUsesScreenCoordinates(always_on_top_container);
 
@@ -333,7 +330,6 @@ void RootWindowController::CreateContainersInRootWindow(
       non_lock_screen_containers);
   modal_container_handler_.reset(
       new ToplevelWindowEventHandler(modal_container));
-  modal_container->AddPreTargetHandler(modal_container_handler_.get());
   modal_container->SetLayoutManager(
       new internal::SystemModalContainerLayoutManager(modal_container));
   SetChildWindowVisibilityChangesAnimated(modal_container);
@@ -362,8 +358,6 @@ void RootWindowController::CreateContainersInRootWindow(
       lock_screen_containers);
   lock_modal_container_handler_.reset(
       new ToplevelWindowEventHandler(lock_modal_container));
-  lock_modal_container->AddPreTargetHandler(
-      lock_modal_container_handler_.get());
   lock_modal_container->SetLayoutManager(
       new internal::SystemModalContainerLayoutManager(lock_modal_container));
   SetChildWindowVisibilityChangesAnimated(lock_modal_container);

@@ -74,17 +74,24 @@ class ASH_EXPORT ToplevelWindowEventHandler
   // Finishes the drag.
   void CompleteDrag(DragCompletionStatus status, int event_flags);
 
+  ui::EventResult HandleMousePressed(aura::Window* target,
+                                     ui::MouseEvent* event);
+  ui::EventResult HandleMouseReleased(aura::Window* target,
+                                      ui::MouseEvent* event);
+
   // Called during a drag to resize/position the window.
   // The return value is returned by OnMouseEvent() above.
-  bool HandleDrag(aura::Window* target, ui::LocatedEvent* event);
+  ui::EventResult HandleDrag(aura::Window* target, ui::LocatedEvent* event);
 
   // Called during mouse moves to update window resize shadows.
   // Return value is returned by OnMouseEvent() above.
-  bool HandleMouseMoved(aura::Window* target, ui::LocatedEvent* event);
+  ui::EventResult HandleMouseMoved(aura::Window* target,
+                                   ui::LocatedEvent* event);
 
   // Called for mouse exits to hide window resize shadows.
   // Return value is returned by OnMouseEvent() above.
-  bool HandleMouseExited(aura::Window* target, ui::LocatedEvent* event);
+  ui::EventResult HandleMouseExited(aura::Window* target,
+                                    ui::LocatedEvent* event);
 
   // Invoked from ScopedWindowResizer if the window is destroyed.
   void ResizerWindowDestroyed();
