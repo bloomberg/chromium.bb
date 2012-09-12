@@ -200,13 +200,7 @@ IN_PROC_BROWSER_TEST_F(MediaLayoutTest, VideoAutoplayTest) {
   RunLayoutTest("video-autoplay.html");
 }
 
-// Broke after a large WebKit roll - http://crbug.com/148525
-#if defined(OS_MACOSX)
-#define MAYBE_VideoLoopTest DISABLED_VideoLoopTest
-#else
-#define MAYBE_VideoLoopTest VideoLoopTest
-#endif
-IN_PROC_BROWSER_TEST_F(MediaLayoutTest, MAYBE_VideoLoopTest) {
+IN_PROC_BROWSER_TEST_F(MediaLayoutTest, VideoLoopTest) {
   RunLayoutTest("video-loop.html");
 }
 
