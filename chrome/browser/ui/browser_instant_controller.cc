@@ -78,33 +78,34 @@ bool BrowserInstantController::OpenInstant(WindowOpenDisposition disposition) {
 // BrowserInstantController, InstantControllerDelegate implementation:
 
 void BrowserInstantController::ShowInstant() {
+  // Call ShowInstant() first, before WasShown(), so that the preview is added
+  // to the window hierarchy before it's painted. http://crbug.com/145568
   TabContents* preview = instant_->GetPreviewContents();
-  preview->web_contents()->WasShown();
   browser_->window()->ShowInstant(preview);
+
+  // TODO(beng): Investigate if we can avoid this and instead rely on the
+  //             visibility of the WebContentsView.
+  preview->web_contents()->WasShown();
+  chrome::GetActiveWebContents(browser_)->WasHidden();
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN,
       content::Source<InstantController>(instant()),
       content::NotificationService::NoDetails());
-
-  // TODO(beng): Investigate if we can avoid this and instead rely on the
-  //             visibility of the WebContentsView.
-  chrome::GetActiveWebContents(browser_)->WasHidden();
 }
 
 void BrowserInstantController::HideInstant() {
+  browser_->window()->HideInstant();
+
   if (chrome::GetActiveWebContents(browser_))
     chrome::GetActiveWebContents(browser_)->WasShown();
-
-  browser_->window()->HideInstant();
+  if (TabContents* preview = instant_->GetPreviewContents())
+    preview->web_contents()->WasHidden();
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_INSTANT_CONTROLLER_HIDDEN,
       content::Source<InstantController>(instant()),
       content::NotificationService::NoDetails());
-
-  if (TabContents* preview = instant_->GetPreviewContents())
-    preview->web_contents()->WasHidden();
 }
 
 void BrowserInstantController::CommitInstant(TabContents* preview) {
