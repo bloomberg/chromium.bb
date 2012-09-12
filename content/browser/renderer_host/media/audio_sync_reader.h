@@ -24,13 +24,14 @@ class SharedMemory;
 class AudioSyncReader : public media::AudioOutputController::SyncReader {
  public:
   AudioSyncReader(base::SharedMemory* shared_memory,
-                  const media::AudioParameters& params);
+                  const media::AudioParameters& params,
+                  int input_channels);
 
   virtual ~AudioSyncReader();
 
   // media::AudioOutputController::SyncReader implementations.
   virtual void UpdatePendingBytes(uint32 bytes) OVERRIDE;
-  virtual int Read(media::AudioBus* audio_bus) OVERRIDE;
+  virtual int Read(media::AudioBus* source, media::AudioBus* dest) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual bool DataReady() OVERRIDE;
 
@@ -46,6 +47,9 @@ class AudioSyncReader : public media::AudioOutputController::SyncReader {
   base::SharedMemory* shared_memory_;
   base::Time previous_call_time_;
 
+  // Number of input channels for synchronized I/O.
+  int input_channels_;
+
   // Socket for transmitting audio data.
   scoped_ptr<base::CancelableSyncSocket> socket_;
 
@@ -54,7 +58,10 @@ class AudioSyncReader : public media::AudioOutputController::SyncReader {
   scoped_ptr<base::CancelableSyncSocket> foreign_socket_;
 
   // Shared memory wrapper used for transferring audio data to Read() callers.
-  scoped_ptr<media::AudioBus> audio_bus_;
+  scoped_ptr<media::AudioBus> output_bus_;
+
+  // Shared memory wrapper used for transferring audio data from Read() callers.
+  scoped_ptr<media::AudioBus> input_bus_;
 
   // Maximum amount of audio data which can be transferred in one Read() call.
   int packet_size_;

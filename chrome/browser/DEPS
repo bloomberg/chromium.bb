@@ -10,6 +10,7 @@ include_rules = [
   "+google_update",
   "+grit",  # For generated headers
   "+installer_util_strings",  # For generated headers
+  "+media/base",  # For media switches
   "+policy",  # For generated headers and source
   "+ppapi/c",  # For various types.
   "+ppapi/proxy",

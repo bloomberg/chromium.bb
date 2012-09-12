@@ -152,7 +152,7 @@ bool PepperPlatformAudioOutputImpl::Initialize(
 void PepperPlatformAudioOutputImpl::InitializeOnIOThread(
     const media::AudioParameters& params) {
   stream_id_ = ipc_->AddDelegate(this);
-  ipc_->CreateStream(stream_id_, params);
+  ipc_->CreateStream(stream_id_, params, 0);
 }
 
 void PepperPlatformAudioOutputImpl::StartPlaybackOnIOThread() {

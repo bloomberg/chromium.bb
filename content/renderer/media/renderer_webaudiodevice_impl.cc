@@ -4,8 +4,10 @@
 
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "content/renderer/media/audio_device_factory.h"
+#include "media/base/media_switches.h"
 
 using content::AudioDeviceFactory;
 using WebKit::WebAudioDevice;
@@ -17,7 +19,17 @@ RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
     : is_running_(false),
       client_callback_(callback) {
   audio_device_ = AudioDeviceFactory::NewOutputDevice();
-  audio_device_->Initialize(params, this);
+
+  // TODO(crogers): remove once we properly handle input device selection.
+  // https://code.google.com/p/chromium/issues/detail?id=147327
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableWebAudioInput)) {
+    // TODO(crogers): support more than hard-coded stereo:
+    // https://code.google.com/p/chromium/issues/detail?id=147326
+    audio_device_->InitializeIO(params, 2, this);
+  } else {
+    audio_device_->Initialize(params, this);
+  }
 }
 
 RendererWebAudioDeviceImpl::~RendererWebAudioDeviceImpl() {
@@ -42,20 +54,35 @@ double RendererWebAudioDeviceImpl::sampleRate() {
   return 44100.0;
 }
 
-int RendererWebAudioDeviceImpl::Render(media::AudioBus* audio_bus,
+int RendererWebAudioDeviceImpl::Render(media::AudioBus* dest,
                                        int audio_delay_milliseconds) {
-  // Make the client callback to get rendered audio.
+  RenderIO(NULL, dest, audio_delay_milliseconds);
+  return dest->frames();
+}
+
+void RendererWebAudioDeviceImpl::RenderIO(media::AudioBus* source,
+                                          media::AudioBus* dest,
+                                          int audio_delay_milliseconds) {
+  // Make the client callback for an I/O cycle.
   DCHECK(client_callback_);
   if (client_callback_) {
-    // Wrap the pointers using WebVector.
-    WebVector<float*> web_audio_data(
-        static_cast<size_t>(audio_bus->channels()));
-    for (int i = 0; i < audio_bus->channels(); ++i)
-      web_audio_data[i] = audio_bus->channel(i);
+    // Wrap the input pointers using WebVector.
+    size_t input_channels =
+        source ? static_cast<size_t>(source->channels()) : 0;
+    WebVector<float*> web_audio_input_data(input_channels);
+    for (size_t i = 0; i < input_channels; ++i)
+      web_audio_input_data[i] = source->channel(i);
 
-    client_callback_->render(web_audio_data, audio_bus->frames());
+    // Wrap the output pointers using WebVector.
+    WebVector<float*> web_audio_data(
+        static_cast<size_t>(dest->channels()));
+    for (int i = 0; i < dest->channels(); ++i)
+      web_audio_data[i] = dest->channel(i);
+
+    client_callback_->render(web_audio_input_data,
+                             web_audio_data,
+                             dest->frames());
   }
-  return audio_bus->frames();
 }
 
 void RendererWebAudioDeviceImpl::OnRenderError() {

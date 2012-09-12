@@ -207,7 +207,7 @@ class AudioRendererHostTest : public testing::Test {
 
     // Send a create stream message to the audio output stream and wait until
     // we receive the created message.
-    host_->OnCreateStream(kStreamId, params);
+    host_->OnCreateStream(kStreamId, params, 0);
     message_loop_->Run();
   }
 

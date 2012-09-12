@@ -122,7 +122,9 @@ class CONTENT_EXPORT AudioRendererHost
   // Creates an audio output stream with the specified format. If this call is
   // successful this object would keep an internal entry of the stream for the
   // required properties.
-  void OnCreateStream(int stream_id, const media::AudioParameters& params);
+  void OnCreateStream(int stream_id,
+                      const media::AudioParameters& params,
+                      int input_channels);
 
   // Play the audio stream referenced by |stream_id|.
   void OnPlayStream(int stream_id);

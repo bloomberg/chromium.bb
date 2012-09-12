@@ -24,8 +24,13 @@ class RendererWebAudioDeviceImpl
   virtual double sampleRate();
 
   // AudioRendererSink::RenderCallback implementation.
-  virtual int Render(media::AudioBus* audio_bus,
+  virtual int Render(media::AudioBus* dest,
                      int audio_delay_milliseconds) OVERRIDE;
+
+  virtual void RenderIO(media::AudioBus* source,
+                        media::AudioBus* dest,
+                        int audio_delay_milliseconds) OVERRIDE;
+
   virtual void OnRenderError() OVERRIDE;
 
  private:

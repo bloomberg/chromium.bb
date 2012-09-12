@@ -21,6 +21,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
+#include "media/base/media_switches.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_switches.h"
@@ -914,6 +915,13 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_DISABLE_WEBSITE_SETTINGS_DESCRIPTION,
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kDisableWebsiteSettings),
+  },
+  {
+    "enable-webaudio-input",
+    IDS_FLAGS_ENABLE_WEBAUDIO_INPUT_NAME,
+    IDS_FLAGS_ENABLE_WEBAUDIO_INPUT_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableWebAudioInput),
   },
   {
     "enable-contacts",

@@ -18,6 +18,7 @@
 
 using content::BrowserMessageFilter;
 using content::BrowserThread;
+using media::AudioBus;
 
 AudioRendererHost::AudioEntry::AudioEntry()
     : stream_id(0),
@@ -194,7 +195,7 @@ bool AudioRendererHost::OnMessageReceived(const IPC::Message& message,
 }
 
 void AudioRendererHost::OnCreateStream(
-    int stream_id, const media::AudioParameters& params) {
+    int stream_id, const media::AudioParameters& params, int input_channels) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(LookupById(stream_id) == NULL);
 
@@ -204,11 +205,28 @@ void AudioRendererHost::OnCreateStream(
   DCHECK_LE(buffer_size,
             static_cast<uint32>(media::limits::kMaxPacketSizeInBytes));
 
+  DCHECK_GE(input_channels, 0);
+  DCHECK_LT(input_channels, media::limits::kMaxChannels);
+
+  // Calculate output and input memory size.
+  int output_memory_size = AudioBus::CalculateMemorySize(audio_params);
+  DCHECK_GT(output_memory_size, 0);
+
+  int frames = audio_params.frames_per_buffer();
+  int input_memory_size =
+      AudioBus::CalculateMemorySize(input_channels, frames);
+
+  DCHECK_GE(input_memory_size, 0);
+
   scoped_ptr<AudioEntry> entry(new AudioEntry());
 
   // Create the shared memory and share with the renderer process.
+  // For synchronized I/O (if input_channels > 0) then we allocate
+  // extra memory after the output data for the input data.
+  uint32 io_buffer_size = output_memory_size + input_memory_size;
+
   uint32 shared_memory_size =
-      media::TotalSharedMemorySizeInBytes(buffer_size);
+      media::TotalSharedMemorySizeInBytes(io_buffer_size);
   if (!entry->shared_memory.CreateAndMapAnonymous(shared_memory_size)) {
     // If creation of shared memory failed then send an error message.
     SendErrorMessage(stream_id);
@@ -217,7 +235,7 @@ void AudioRendererHost::OnCreateStream(
 
   // Create sync reader and try to initialize it.
   scoped_ptr<AudioSyncReader> reader(
-      new AudioSyncReader(&entry->shared_memory, params));
+      new AudioSyncReader(&entry->shared_memory, params, input_channels));
 
   if (!reader->Init()) {
     SendErrorMessage(stream_id);
