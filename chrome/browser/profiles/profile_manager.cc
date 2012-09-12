@@ -979,10 +979,6 @@ bool ProfileManager::IsMultipleProfilesEnabled() {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles))
     return false;
 #endif
-#if defined(OS_WIN)
-  if (base::win::IsMetroProcess())
-    return false;
-#endif
   return !ManagedMode::IsInManagedMode();
 }
 
