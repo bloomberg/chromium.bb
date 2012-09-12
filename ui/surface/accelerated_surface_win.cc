@@ -707,6 +707,7 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
     return;
   }
 
+#if !defined(USE_AURA)
   // If the window is a different size than the swap chain that is being
   // presented then drop the frame.
   RECT window_rect;
@@ -720,6 +721,7 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
                  "windowheight", window_rect.bottom);
     return;
   }
+#endif
 
   // Round up size so the swap chain is not continuously resized with the
   // surface, which could lead to memory fragmentation.

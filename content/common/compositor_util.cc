@@ -12,6 +12,11 @@
 namespace content {
 
 bool IsThreadedCompositingEnabled() {
+#if defined(OS_WIN) && defined(USE_AURA)
+  // We always want compositing on Aura Windows.
+  return true;
+#endif
+
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kEnableThreadedCompositing) &&
       !command_line.HasSwitch(switches::kDisableThreadedCompositing))
@@ -25,6 +30,11 @@ bool IsThreadedCompositingEnabled() {
 }
 
 bool IsForceCompositingModeEnabled() {
+#if defined(OS_WIN) && defined(USE_AURA)
+  // We always want compositing on Aura Windows.
+  return true;
+#endif
+
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kForceCompositingMode) &&
       !command_line.HasSwitch(switches::kDisableForceCompositingMode))
