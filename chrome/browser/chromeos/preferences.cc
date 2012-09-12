@@ -84,7 +84,7 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
                              false,
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kNaturalScroll,
-                             false,
+                             true,
                              PrefService::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kPrimaryMouseButtonRight,
                              false,
