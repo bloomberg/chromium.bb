@@ -528,7 +528,7 @@ void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
   encrypt_everything_ = false;
   encrypted_types_ = syncer::SyncEncryptionHandler::SensitiveTypes();
   passphrase_required_reason_ = syncer::REASON_PASSPHRASE_NOT_REQUIRED;
-  last_auth_error_ = GoogleServiceAuthError::None();
+  last_auth_error_ = AuthError::None();
 
   if (sync_global_error_.get()) {
     GlobalErrorServiceFactory::GetForProfile(profile_)->RemoveGlobalError(
@@ -840,8 +840,7 @@ void ProfileSyncService::OnExperimentsChanged(
   current_experiments = experiments;
 }
 
-void ProfileSyncService::UpdateAuthErrorState(
-    const GoogleServiceAuthError& error) {
+void ProfileSyncService::UpdateAuthErrorState(const AuthError& error) {
   is_auth_in_progress_ = false;
   last_auth_error_ = error;
 
@@ -851,22 +850,21 @@ void ProfileSyncService::UpdateAuthErrorState(
 
 namespace {
 
-GoogleServiceAuthError ConnectionStatusToAuthError(
+AuthError ConnectionStatusToAuthError(
     syncer::ConnectionStatus status) {
   switch (status) {
     case syncer::CONNECTION_OK:
-      return GoogleServiceAuthError::None();
+      return AuthError::None();
       break;
     case syncer::CONNECTION_AUTH_ERROR:
-      return GoogleServiceAuthError(
-          GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+      return AuthError(AuthError::INVALID_GAIA_CREDENTIALS);
       break;
     case syncer::CONNECTION_SERVER_ERROR:
-      return GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED);
+      return AuthError(AuthError::CONNECTION_FAILED);
       break;
     default:
       NOTREACHED();
-      return GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED);
+      return AuthError(AuthError::CONNECTION_FAILED);
   }
 }
 
@@ -878,8 +876,7 @@ void ProfileSyncService::OnConnectionStatusChange(
 }
 
 void ProfileSyncService::OnStopSyncingPermanently() {
-  UpdateAuthErrorState(
-      GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
+  UpdateAuthErrorState(AuthError(AuthError::SERVICE_UNAVAILABLE));
   sync_prefs_.SetStartSuppressed(true);
   DisableForUser();
 }
@@ -1141,7 +1138,7 @@ bool ProfileSyncService::QueryDetailedSyncStatus(
   }
 }
 
-const GoogleServiceAuthError& ProfileSyncService::GetAuthError() const {
+const AuthError& ProfileSyncService::GetAuthError() const {
   return last_auth_error_;
 }
 
@@ -1639,7 +1636,7 @@ void ProfileSyncService::Observe(int type,
       RefreshSpareBootstrapToken(successful->password);
 #endif
       if (!sync_initialized() ||
-          GetAuthError().state() != GoogleServiceAuthError::NONE) {
+          GetAuthError().state() != AuthError::NONE) {
         // Track the fact that we're still waiting for auth to complete.
         is_auth_in_progress_ = true;
       }
@@ -1657,8 +1654,7 @@ void ProfileSyncService::Observe(int type,
         // network). It's possible the token we do have is also invalid, but in
         // that case we should already have (or can expect) an auth error sent
         // from the sync backend.
-        GoogleServiceAuthError error(
-            GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+        AuthError error(AuthError::INVALID_GAIA_CREDENTIALS);
         UpdateAuthErrorState(error);
       }
       break;
