@@ -115,6 +115,8 @@ bool DeviceController::Start(const std::string& adb_unix_socket) {
   KillAllListeners();
   CleanUpDeadListeners();
   kickstart_adb_socket_.Close();
+
+  return true;
 }
 
 }  // namespace forwarder
