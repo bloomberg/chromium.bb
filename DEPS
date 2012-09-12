@@ -258,7 +258,7 @@ deps = {
     "/trunk/deps/third_party/speex@149334",
 
   "src/third_party/yasm/source/patched-yasm":
-    "/trunk/deps/third_party/yasm/patched-yasm@154697",
+    "/trunk/deps/third_party/yasm/patched-yasm@154708",
 
   "src/third_party/libjpeg_turbo":
     "/trunk/deps/third_party/libjpeg_turbo@149334",
@@ -285,7 +285,7 @@ deps = {
         "/trunk/jsoncpp/src/lib_json@" + Var("jsoncpp_revision"),
 
   "src/third_party/libyuv":
-    (Var("googlecode_url") % "libyuv") + "/trunk@344",
+    (Var("googlecode_url") % "libyuv") + "/trunk@347",
 
   "src/third_party/mozc/session":
     (Var("googlecode_url") % "mozc") + "/trunk/src/session@83",
@@ -374,7 +374,7 @@ deps_os = {
 
     # Dependencies used by libjpeg-turbo
     "src/third_party/yasm/binaries":
-      "/trunk/deps/third_party/yasm/binaries@74228",
+      "/trunk/deps/third_party/yasm/binaries@154708",
 
     # Binary level profile guided optimizations. This points to the
     # latest release binaries for the toolchain.
