@@ -941,6 +941,7 @@ void DownloadItemImpl::MarkAsComplete() {
 
 void DownloadItemImpl::SetIsPersisted() {
   is_persisted_ = true;
+  UpdateObservers();
 }
 
 void DownloadItemImpl::SetDbHandle(int64 handle) {

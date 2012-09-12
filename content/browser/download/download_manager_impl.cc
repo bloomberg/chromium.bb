@@ -1020,11 +1020,6 @@ void DownloadManagerImpl::SavePageDownloadFinished(
   if (download->IsPersisted()) {
     if (delegate_)
       delegate_->UpdateItemInPersistentStore(download);
-    if (download->IsComplete())
-      content::NotificationService::current()->Notify(
-          content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
-          content::Source<DownloadManager>(this),
-          content::Details<DownloadItem>(download));
   }
 }
 
