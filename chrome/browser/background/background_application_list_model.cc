@@ -277,8 +277,10 @@ bool BackgroundApplicationListModel::IsBackgroundApp(
   // 2) It is a hosted app, and has a background contents registered or in the
   //    manifest.
 
-  // Not a background app if we don't have the background permission.
-  if (!extension.HasAPIPermission(APIPermission::kBackground))
+  // Not a background app if we don't have the background permission or
+  // the push messaging permission
+  if (!extension.HasAPIPermission(APIPermission::kBackground) &&
+      !extension.HasAPIPermission(APIPermission::kPushMessaging) )
     return false;
 
   // Extensions and packaged apps with background permission are always treated
