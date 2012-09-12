@@ -2345,7 +2345,7 @@
    fun:-[NSView _invalidateGStatesForTree]
    fun:-[NSView(NSInternal) _setHidden:setNeedsDisplay:]
    fun:-[NSView _setHidden:]
-   fun:_ZN*23RenderWidgetHostViewMac17MovePluginWindowsERKSt6vectorIN6webkit5npapi17WebPluginGeometry*
+   fun:_ZN*23RenderWidgetHostViewMac17MovePluginWindows*
    fun:_ZN*27RenderWidgetHostViewMacTest24AddAcceleratedPluginViewEii
    fun:_ZN*53RenderWidgetHostViewMacTest_FocusAcceleratedView_Test8TestBodyEv
 }

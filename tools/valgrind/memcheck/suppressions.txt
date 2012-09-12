@@ -6013,6 +6013,12 @@
    fun:_ZN7testing8internal24CmpHelperFloatingPointEQIfEENS_15AssertionResultEPKcS4_T_S5_
    fun:_ZN2ui12_GLOBAL__N_143LayerAnimationElementTest_PauseElement_Test8TestBodyEv
 }
+{
+   bug_148589
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN2ui9Clipboard19GetForCurrentThreadEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations

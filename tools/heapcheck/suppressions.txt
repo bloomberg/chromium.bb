@@ -1622,3 +1622,8 @@
    fun:ash::internal::RootWindowController::CreateContainers
    fun:ash::Shell::Init
 }
+{
+   bug_148589
+   Heapcheck:Leak
+   fun:ui::Clipboard::GetForCurrentThread
+}
