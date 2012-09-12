@@ -45,6 +45,12 @@ const char kCUPSPrinterStateOpt[] = "printer-state";
 const char kCUPSPrintServerURLs[] = "print_server_urls";
 const char kCUPSUpdateTimeoutMs[] = "update_timeout_ms";
 const char kCUPSNotifyDelete[] = "notify_delete";
+const char kCUPSSupportedMimeTipes[] = "supported_mime_types";
+
+// Default mime types supported by CUPS
+// http://www.cups.org/articles.php?L205+TFAQ+Q
+const char kCUPSDefaultSupportedTypes[] =
+    "application/pdf,application/postscript,image/jpeg,image/png,image/gif";
 
 // Default port for IPP print servers.
 const int kDefaultIPPServerPort = 631;
@@ -169,6 +175,7 @@ class PrintSystemCUPS : public PrintSystem {
   bool printer_enum_succeeded_;
   bool notify_delete_;
   http_encryption_t cups_encryption_;
+  std::string supported_mime_types_;
 };
 
 class PrintServerWatcherCUPS
@@ -413,7 +420,8 @@ PrintSystemCUPS::PrintSystemCUPS(const DictionaryValue* print_system_settings)
       initialized_(false),
       printer_enum_succeeded_(false),
       notify_delete_(true),
-      cups_encryption_(HTTP_ENCRYPT_NEVER) {
+      cups_encryption_(HTTP_ENCRYPT_NEVER),
+      supported_mime_types_(kCUPSDefaultSupportedTypes) {
   if (print_system_settings) {
     int timeout;
     if (print_system_settings->GetInteger(kCUPSUpdateTimeoutMs, &timeout))
@@ -427,6 +435,10 @@ PrintSystemCUPS::PrintSystemCUPS(const DictionaryValue* print_system_settings)
     bool notify_delete = true;
     if (print_system_settings->GetBoolean(kCUPSNotifyDelete, &notify_delete))
       notify_delete_ = notify_delete;
+
+    std::string types;
+    if (print_system_settings->GetString(kCUPSSupportedMimeTipes, &types))
+      supported_mime_types_ = types;
   }
 
   InitPrintBackends(print_system_settings);
@@ -712,11 +724,7 @@ PrintSystem::JobSpooler* PrintSystemCUPS::CreateJobSpooler() {
 }
 
 std::string PrintSystemCUPS::GetSupportedMimeTypes() {
-  // Since we hand off the document to the CUPS server directly, list some types
-  // that we know CUPS supports (http://www.cups.org/articles.php?L205+TFAQ+Q)
-  // TODO(sanjeevr): Determine this dynamically (http://crbug.com/73240).
-  return
-      "application/pdf,application/postscript,image/jpeg,image/png,image/gif";
+  return supported_mime_types_;
 }
 
 std::string PrintSystem::GenerateProxyId() {
