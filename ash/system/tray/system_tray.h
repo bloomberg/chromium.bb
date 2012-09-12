@@ -95,8 +95,9 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView {
   // Temporarily hides/unhides the notification bubble.
   void SetHideNotifications(bool hidden);
 
-  // Returns true if the system bubble is visible.
-  bool IsSystemBubbleVisible() const;
+  // Returns true if there is a system bubble (already visible or in the process
+  // of being created).
+  bool HasSystemBubble() const;
 
   // Returns true if any bubble is visible.
   bool IsAnyBubbleVisible() const;

@@ -303,7 +303,6 @@ void SystemTrayBubble::InitView(views::View* anchor,
   }
   bubble_view_ = TrayBubbleView::Create(anchor, this, init_params);
 
-
   CreateItemViews(login_status);
 
   DCHECK(bubble_widget_ == NULL);

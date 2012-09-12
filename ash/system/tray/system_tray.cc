@@ -231,8 +231,8 @@ void SystemTray::SetHideNotifications(bool hide_notifications) {
   hide_notifications_ = hide_notifications;
 }
 
-bool SystemTray::IsSystemBubbleVisible() const {
-  return (bubble_.get() && bubble_->IsVisible());
+bool SystemTray::HasSystemBubble() const {
+  return bubble_.get() != NULL;
 }
 
 bool SystemTray::IsAnyBubbleVisible() const {
@@ -335,6 +335,11 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
       init_params.arrow_color = kBackgroundColor;
     }
     init_params.arrow_offset = arrow_offset;
+    // |bubble_->InitView()| shows and activates the status tray popup, which
+    // can trigger the shelf to hide (if auto-hide is turned on). So it is
+    // necessary to update the desired launcher visibility before showing the
+    // status bubble.
+    UpdateShouldShowLauncher();
     bubble_->InitView(anchor, init_params, delegate->GetUserLoginStatus());
   }
   // Save height of default view for creating detailed views directly.

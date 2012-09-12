@@ -4,6 +4,8 @@
 
 #include "ash/wm/shelf_layout_manager.h"
 
+#include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_table.h"
 #include "ash/focus_cycler.h"
 #include "ash/launcher/launcher.h"
 #include "ash/screen_ash.h"
@@ -44,6 +46,27 @@ ShelfLayoutManager* GetShelfLayoutManager() {
       internal::kShellWindowId_LauncherContainer);
   return static_cast<ShelfLayoutManager*>(window->layout_manager());
 }
+
+class ShelfLayoutObserverTest : public ShelfLayoutManager::Observer {
+ public:
+  ShelfLayoutObserverTest()
+      : changed_auto_hide_state_(false) {
+  }
+
+  virtual ~ShelfLayoutObserverTest() {}
+
+  bool changed_auto_hide_state() const { return changed_auto_hide_state_; }
+
+ private:
+  virtual void OnAutoHideStateChanged(
+      ShelfLayoutManager::AutoHideState new_state) OVERRIDE {
+    changed_auto_hide_state_ = true;
+  }
+
+  bool changed_auto_hide_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShelfLayoutObserverTest);
+};
 
 }  // namespace
 
@@ -633,6 +656,38 @@ TEST_F(ShelfLayoutManagerTest, GestureDrag) {
   EXPECT_EQ(bounds_noshelf.ToString(), window->bounds().ToString());
   EXPECT_EQ(shelf_hidden.ToString(),
             shelf->launcher_widget()->GetWindowBoundsInScreen().ToString());
+}
+
+TEST_F(ShelfLayoutManagerTest, ShelfFlickerOnTrayActivation) {
+  ShelfLayoutManager* shelf = GetShelfLayoutManager();
+
+  // Turn on auto-hide for the shelf.
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+
+  // Focus the system tray. That should make the shelf visible again.
+  Shell::GetInstance()->accelerator_controller()->PerformAction(
+      FOCUS_SYSTEM_TRAY, ui::Accelerator());
+  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_SHOWN, shelf->auto_hide_state());
+  EXPECT_FALSE(Shell::GetInstance()->system_tray()->HasSystemBubble());
+
+  // Now activate the tray (using the keyboard, instead of using the mouse to
+  // make sure the mouse does not alter the auto-hide state in the shelf).
+  // This should not trigger any auto-hide state change in the shelf.
+  ShelfLayoutObserverTest observer;
+  shelf->AddObserver(&observer);
+
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  generator.PressKey(ui::VKEY_SPACE, 0);
+  generator.ReleaseKey(ui::VKEY_SPACE, 0);
+  EXPECT_TRUE(Shell::GetInstance()->system_tray()->HasSystemBubble());
+  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_SHOWN, shelf->auto_hide_state());
+  EXPECT_FALSE(observer.changed_auto_hide_state());
+
+  shelf->RemoveObserver(&observer);
 }
 
 }  // namespace internal
