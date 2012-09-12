@@ -174,6 +174,20 @@ const int kNewtabBarRoundness = 5;
 // Returned from BrowserView::GetClassName.
 const char BrowserView::kViewClassName[] = "browser/ui/views/BrowserView";
 
+namespace {
+
+bool ShouldSaveOrRestoreWindowPos() {
+#if defined(OS_WIN) && !defined(USE_AURA)
+  // In Windows 8 metro mode the window is always maximized (without the
+  // WS_MAXIMIZE) style.
+  if (base::win::IsMetroProcess())
+    return false;
+#endif
+  return true;
+}
+
+}  // namespace
+
 ///////////////////////////////////////////////////////////////////////////////
 // BookmarkExtensionBackground, private:
 // This object serves as the views::Background object which is used to layout
@@ -1598,10 +1612,9 @@ void BrowserView::SaveWindowPlacement(const gfx::Rect& bounds,
   // If IsFullscreen() is true, we've just changed into fullscreen mode, and
   // we're catching the going-into-fullscreen sizing and positioning calls,
   // which we want to ignore.
-#if defined(OS_WIN) && !defined(USE_AURA)
-  if (base::win::IsMetroProcess())
+  if (!ShouldSaveOrRestoreWindowPos())
     return;
-#endif
+
   if (!IsFullscreen() && chrome::ShouldSaveWindowPlacement(browser_.get())) {
     WidgetDelegate::SaveWindowPlacement(bounds, show_state);
     chrome::SaveWindowPlacement(browser_.get(), bounds, show_state);
@@ -1611,6 +1624,8 @@ void BrowserView::SaveWindowPlacement(const gfx::Rect& bounds,
 bool BrowserView::GetSavedWindowPlacement(
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const {
+  if (!ShouldSaveOrRestoreWindowPos())
+    return false;
   *bounds = chrome::GetSavedWindowBounds(browser_.get());
   *show_state = chrome::GetSavedWindowShowState(browser_.get());
 
