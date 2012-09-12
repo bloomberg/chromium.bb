@@ -5987,26 +5987,6 @@
    fun:_ZN11PluginPrefs30EnablePluginIfPossibleCallbackEbRK8FilePathRKN4base8CallbackIFvbEEEP12PluginFinder
 }
 {
-   bug_147756_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3ash8internal10Workspace2C1EPNS0_17WorkspaceManager2EPN4aura6WindowEb
-   fun:_ZN3ash8internal17WorkspaceManager215CreateWorkspaceEb
-   fun:_ZN3ash8internal17WorkspaceManager2C1EPN4aura6WindowE
-   fun:_ZN3ash8internal19WorkspaceControllerC1EPN4aura6WindowE
-   fun:_ZN3ash8internal20RootWindowController18InitLayoutManagersEv
-   fun:_ZN3ash5Shell24InitRootWindowControllerEPNS_8internal20RootWindowControllerE
-   fun:_ZN3ash5Shell4InitEv
-}
-{
-   bug_147756_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3ash*CreateContainersInRootWindowEPN4aura10RootWindowE
-   fun:_ZN3ash8internal20RootWindowController16CreateContainersEv
-   fun:_ZN3ash5Shell4InitEv
-}
-{
    bug_148475
    Memcheck:Uninitialized
    ...

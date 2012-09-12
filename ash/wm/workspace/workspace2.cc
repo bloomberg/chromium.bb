@@ -31,7 +31,7 @@ Workspace2::Workspace2(WorkspaceManager2* manager,
   window_->layer()->SetMasksToBounds(true);
   window_->Hide();
   window_->SetParent(parent);
-  window_->AddPreTargetHandler(event_handler_);
+  window_->AddPreTargetHandler(event_handler_.get());
   window_->SetProperty(internal::kUsesScreenCoordinatesKey, true);
 }
 
@@ -47,7 +47,6 @@ aura::Window* Workspace2::ReleaseWindow() {
   window_->SetEventFilter(NULL);
   aura::Window* window = window_;
   window_ = NULL;
-  event_handler_ = NULL;
   return window;
 }
 

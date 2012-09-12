@@ -1605,24 +1605,6 @@
    fun:PluginPrefsTest_UnifiedPepperFlashState_Test::TestBody
 }
 {
-   bug_147756_a
-   Heapcheck:Leak
-   fun:Workspace2
-   fun:ash::internal::WorkspaceManager2::CreateWorkspace
-   fun:WorkspaceManager2
-   fun:WorkspaceController
-   fun:ash::internal::RootWindowController::InitLayoutManagers
-   fun:ash::Shell::InitRootWindowController
-   fun:ash::Shell::Init
-}
-{
-   bug_147756_b
-   Heapcheck:Leak
-   fun:ash::::CreateContainersInRootWindow
-   fun:ash::internal::RootWindowController::CreateContainers
-   fun:ash::Shell::Init
-}
-{
    bug_148589
    Heapcheck:Leak
    fun:ui::Clipboard::GetForCurrentThread

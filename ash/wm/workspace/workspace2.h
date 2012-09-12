@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace aura {
 class Window;
@@ -60,8 +61,7 @@ class ASH_EXPORT Workspace2 {
   // Our Window, owned by |parent| passed to the constructor.
   aura::Window* window_;
 
-  // Owned by |window_|.
-  WorkspaceEventHandler* event_handler_;
+  scoped_ptr<WorkspaceEventHandler> event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(Workspace2);
 };

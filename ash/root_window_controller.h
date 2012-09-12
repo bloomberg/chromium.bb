@@ -21,6 +21,7 @@ class RootWindowEventFilter;
 }  // namespace aura
 
 namespace ash {
+class ToplevelWindowEventHandler;
 namespace internal {
 
 class EventClientImpl;
@@ -75,6 +76,10 @@ class RootWindowController {
   void MoveWindowsTo(aura::RootWindow* dest);
 
  private:
+  // Creates each of the special window containers that holds windows of various
+  // types in the shell UI.
+  void CreateContainersInRootWindow(aura::RootWindow* root_window);
+
   scoped_ptr<aura::RootWindow> root_window_;
   internal::RootWindowLayoutManager* root_window_layout_;
 
@@ -82,6 +87,12 @@ class RootWindowController {
   scoped_ptr<internal::EventClientImpl> event_client_;
   scoped_ptr<internal::ScreenDimmer> screen_dimmer_;
   scoped_ptr<internal::WorkspaceController> workspace_controller_;
+
+  // We need to own event handlers for various containers.
+  scoped_ptr<ToplevelWindowEventHandler> default_container_handler_;
+  scoped_ptr<ToplevelWindowEventHandler> always_on_top_container_handler_;
+  scoped_ptr<ToplevelWindowEventHandler> modal_container_handler_;
+  scoped_ptr<ToplevelWindowEventHandler> lock_modal_container_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowController);
 };
