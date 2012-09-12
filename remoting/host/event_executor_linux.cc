@@ -48,9 +48,9 @@ class EventExecutorLinux : public EventExecutor {
   virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
 
   // EventExecutor interface.
-  virtual void OnSessionStarted(
+  virtual void Start(
       scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
-  virtual void OnSessionFinished() OVERRIDE;
+  virtual void StopAndDelete() OVERRIDE;
 
  private:
   // |mode| is one of the AutoRepeatModeOn, AutoRepeatModeOff,
@@ -261,13 +261,13 @@ void EventExecutorLinux::InjectMouseEvent(const MouseEvent& event) {
   XFlush(display_);
 }
 
-void EventExecutorLinux::OnSessionStarted(
+void EventExecutorLinux::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   return;
 }
 
-void EventExecutorLinux::OnSessionFinished() {
-  return;
+void EventExecutorLinux::StopAndDelete() {
+  delete this;
 }
 
 }  // namespace

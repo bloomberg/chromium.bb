@@ -12,9 +12,7 @@
 #include "base/observer_list.h"
 #include "base/threading/thread.h"
 #include "net/base/backoff_entry.h"
-#include "remoting/codec/video_encoder.h"
 #include "remoting/host/client_session.h"
-#include "remoting/host/desktop_environment.h"
 #include "remoting/host/host_key_pair.h"
 #include "remoting/host/host_status_observer.h"
 #include "remoting/host/mouse_move_observer.h"
@@ -31,13 +29,8 @@ class SessionConfig;
 class CandidateSessionConfig;
 }  // namespace protocol
 
-class AudioEncoder;
-class AudioScheduler;
 class ChromotingHostContext;
-class DesktopEnvironment;
-class Encoder;
-class ScreenRecorder;
-class VideoFrameCapturer;
+class DesktopEnvironmentFactory;
 
 // A class to implement the functionality of a host process.
 //
@@ -69,10 +62,11 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
  public:
   // The caller must ensure that |context|, |signal_strategy| and
   // |environment| out-live the host.
-  ChromotingHost(ChromotingHostContext* context,
-                 SignalStrategy* signal_strategy,
-                 DesktopEnvironment* environment,
-                 scoped_ptr<protocol::SessionManager> session_manager);
+  ChromotingHost(
+      ChromotingHostContext* context,
+      SignalStrategy* signal_strategy,
+      DesktopEnvironmentFactory* desktop_environment_factory,
+      scoped_ptr<protocol::SessionManager> session_manager);
 
   // Asynchronously start the host process.
   //
@@ -154,7 +148,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   friend class base::RefCountedThreadSafe<ChromotingHost>;
   friend class ChromotingHostTest;
 
-  typedef std::vector<ClientSession*> ClientList;
+  typedef std::vector<scoped_refptr<ClientSession> > ClientList;
 
   enum State {
     kInitial,
@@ -163,21 +157,12 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
     kStopped,
   };
 
-  // Creates encoder for the specified configuration.
-  static VideoEncoder* CreateVideoEncoder(
-      const protocol::SessionConfig& config);
-
-  // Creates an audio encoder for the specified configuration.
-  static scoped_ptr<AudioEncoder> CreateAudioEncoder(
-      const protocol::SessionConfig& config);
-
   virtual ~ChromotingHost();
 
-  void StopScreenRecorder();
-  void StopAudioScheduler();
-  void OnRecorderStopped();
+  // Called when a client session is stopped completely.
+  void OnClientStopped();
 
-  // Called from Shutdown() or OnScreenRecorderStopped() to finish shutdown.
+  // Called from Shutdown() to finish shutdown.
   void ShutdownFinish();
 
   // Unless specified otherwise all members of this class must be
@@ -185,7 +170,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   // Parameters specified when the host was created.
   ChromotingHostContext* context_;
-  DesktopEnvironment* desktop_environment_;
+  DesktopEnvironmentFactory* desktop_environment_factory_;
   scoped_ptr<protocol::SessionManager> session_manager_;
 
   // Connection objects.
@@ -197,15 +182,10 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // The connections to remote clients.
   ClientList clients_;
 
-  // Schedulers for audio and video capture.
-  // TODO(sergeyu): Do we need to have one set of schedulers per client?
-  scoped_refptr<ScreenRecorder> recorder_;
-  scoped_refptr<AudioScheduler> audio_scheduler_;
-
-  // Number of screen recorders and audio schedulers that are currently being
-  // stopped. Used to delay shutdown if one or more recorders/schedulers are
-  // asynchronously shutting down.
-  int stopping_recorders_;
+  // The number of allocated |ClientSession| objects. |clients_count_| can be
+  // greater than |clients_.size()| because it also includes the objects that
+  // are about to be deleted.
+  int clients_count_;
 
   // Tracks the internal state of the host.
   State state_;

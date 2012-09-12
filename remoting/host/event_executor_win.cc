@@ -44,9 +44,9 @@ class EventExecutorWin : public EventExecutor {
   virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
 
   // EventExecutor interface.
-  virtual void OnSessionStarted(
+  virtual void Start(
       scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
-  virtual void OnSessionFinished() OVERRIDE;
+  virtual void StopAndDelete() OVERRIDE;
 
  private:
   void HandleKey(const KeyEvent& event);
@@ -104,12 +104,12 @@ void EventExecutorWin::InjectMouseEvent(const MouseEvent& event) {
   HandleMouse(event);
 }
 
-void EventExecutorWin::OnSessionStarted(
+void EventExecutorWin::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   if (!ui_task_runner_->BelongsToCurrentThread()) {
     ui_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&EventExecutorWin::OnSessionStarted,
+        base::Bind(&EventExecutorWin::Start,
                    base::Unretained(this),
                    base::Passed(&client_clipboard)));
     return;
@@ -118,16 +118,17 @@ void EventExecutorWin::OnSessionStarted(
   clipboard_->Start(client_clipboard.Pass());
 }
 
-void EventExecutorWin::OnSessionFinished() {
+void EventExecutorWin::StopAndDelete() {
   if (!ui_task_runner_->BelongsToCurrentThread()) {
     ui_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&EventExecutorWin::OnSessionFinished,
+        base::Bind(&EventExecutorWin::StopAndDelete,
                    base::Unretained(this)));
     return;
   }
 
   clipboard_->Stop();
+  delete this;
 }
 
 void EventExecutorWin::HandleKey(const KeyEvent& event) {

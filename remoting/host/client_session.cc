@@ -7,6 +7,16 @@
 #include <algorithm>
 
 #include "base/message_loop_proxy.h"
+#include "remoting/codec/audio_encoder.h"
+#include "remoting/codec/audio_encoder_speex.h"
+#include "remoting/codec/audio_encoder_verbatim.h"
+#include "remoting/codec/video_encoder.h"
+#include "remoting/codec/video_encoder_row_based.h"
+#include "remoting/codec/video_encoder_vp8.h"
+#include "remoting/host/audio_scheduler.h"
+#include "remoting/host/desktop_environment.h"
+#include "remoting/host/event_executor.h"
+#include "remoting/host/screen_recorder.h"
 #include "remoting/host/video_frame_capturer.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
@@ -17,26 +27,32 @@ namespace remoting {
 
 ClientSession::ClientSession(
     EventHandler* event_handler,
+    scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
     scoped_ptr<protocol::ConnectionToClient> connection,
-    protocol::ClipboardStub* host_clipboard_stub,
-    protocol::InputStub* host_input_stub,
-    VideoFrameCapturer* capturer,
+    scoped_ptr<DesktopEnvironment> desktop_environment,
     const base::TimeDelta& max_duration)
     : event_handler_(event_handler),
       connection_(connection.Pass()),
+      desktop_environment_(desktop_environment.Pass()),
       client_jid_(connection_->session()->jid()),
-      host_clipboard_stub_(host_clipboard_stub),
-      host_input_stub_(host_input_stub),
+      host_clipboard_stub_(desktop_environment_->event_executor()),
+      host_input_stub_(desktop_environment_->event_executor()),
       input_tracker_(host_input_stub_),
       remote_input_filter_(&input_tracker_),
-      mouse_clamping_filter_(capturer, &remote_input_filter_),
+      mouse_clamping_filter_(desktop_environment_->video_capturer(),
+                             &remote_input_filter_),
       disable_input_filter_(&mouse_clamping_filter_),
       disable_clipboard_filter_(clipboard_echo_filter_.host_filter()),
       auth_input_filter_(&disable_input_filter_),
       auth_clipboard_filter_(&disable_clipboard_filter_),
       client_clipboard_factory_(clipboard_echo_filter_.client_filter()),
-      capturer_(capturer),
-      max_duration_(max_duration) {
+      max_duration_(max_duration),
+      capture_task_runner_(capture_task_runner),
+      encode_task_runner_(encode_task_runner),
+      network_task_runner_(network_task_runner),
+      active_recorders_(0) {
   connection_->SetEventHandler(this);
 
   // TODO(sergeyu): Currently ConnectionToClient expects stubs to be
@@ -50,9 +66,6 @@ ClientSession::ClientSession(
   // |auth_*_filter_|'s states reflect whether the session is authenticated.
   auth_input_filter_.set_enabled(false);
   auth_clipboard_filter_.set_enabled(false);
-}
-
-ClientSession::~ClientSession() {
 }
 
 void ClientSession::NotifyClientDimensions(
@@ -98,6 +111,34 @@ void ClientSession::OnConnectionChannelsConnected(
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(connection_.get(), connection);
   SetDisableInputs(false);
+
+  // Create a ScreenRecorder, passing the message loops that it should run on.
+  VideoEncoder* video_encoder =
+      CreateVideoEncoder(connection_->session()->config());
+  video_recorder_ = new ScreenRecorder(capture_task_runner_,
+                                       encode_task_runner_,
+                                       network_task_runner_,
+                                       desktop_environment_->video_capturer(),
+                                       video_encoder);
+  ++active_recorders_;
+
+  if (connection_->session()->config().is_audio_enabled()) {
+    scoped_ptr<AudioEncoder> audio_encoder =
+        CreateAudioEncoder(connection_->session()->config());
+    audio_scheduler_ = new AudioScheduler(
+        capture_task_runner_,
+        network_task_runner_,
+        desktop_environment_->audio_capturer(),
+        audio_encoder.Pass(),
+        connection_->audio_stub());
+    ++active_recorders_;
+  }
+
+  // Start the session.
+  video_recorder_->AddConnection(connection_.get());
+  video_recorder_->Start();
+  desktop_environment_->Start(CreateClipboardProxy());
+
   event_handler_->OnSessionChannelsConnected(this);
 }
 
@@ -127,6 +168,10 @@ void ClientSession::OnSequenceNumberUpdated(
     protocol::ConnectionToClient* connection, int64 sequence_number) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(connection_.get(), connection);
+
+  if (video_recorder_.get())
+    video_recorder_->UpdateSequenceNumber(sequence_number);
+
   event_handler_->OnSessionSequenceNumber(this, sequence_number);
 }
 
@@ -149,6 +194,27 @@ void ClientSession::Disconnect() {
   connection_->Disconnect();
 }
 
+void ClientSession::Stop(const base::Closure& done_task) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(done_task_.is_null());
+
+  done_task_ = done_task;
+  if (audio_scheduler_.get()) {
+    audio_scheduler_->OnClientDisconnected();
+    audio_scheduler_->Stop(base::Bind(&ClientSession::OnRecorderStopped, this));
+    audio_scheduler_ = NULL;
+  }
+
+  if (video_recorder_.get()) {
+    video_recorder_->RemoveConnection(connection_.get());
+    video_recorder_->Stop(base::Bind(&ClientSession::OnRecorderStopped, this));
+    video_recorder_ = NULL;
+  }
+
+  if (!active_recorders_)
+    done_task_.Run();
+}
+
 void ClientSession::LocalMouseMoved(const SkIPoint& mouse_pos) {
   DCHECK(CalledOnValidThread());
   remote_input_filter_.LocalMouseMoved(mouse_pos);
@@ -164,6 +230,12 @@ void ClientSession::SetDisableInputs(bool disable_inputs) {
   disable_clipboard_filter_.set_enabled(!disable_inputs);
 }
 
+ClientSession::~ClientSession() {
+  DCHECK(!active_recorders_);
+  DCHECK(audio_scheduler_.get() == NULL);
+  DCHECK(video_recorder_.get() == NULL);
+}
+
 scoped_ptr<protocol::ClipboardStub> ClientSession::CreateClipboardProxy() {
   DCHECK(CalledOnValidThread());
 
@@ -171,6 +243,60 @@ scoped_ptr<protocol::ClipboardStub> ClientSession::CreateClipboardProxy() {
       new protocol::ClipboardThreadProxy(
           client_clipboard_factory_.GetWeakPtr(),
           base::MessageLoopProxy::current()));
+}
+
+void ClientSession::OnRecorderStopped() {
+  if (!network_task_runner_->BelongsToCurrentThread()) {
+    network_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&ClientSession::OnRecorderStopped, this));
+    return;
+  }
+
+  DCHECK(!done_task_.is_null());
+
+  --active_recorders_;
+  DCHECK_GE(active_recorders_, 0);
+
+  if (!active_recorders_)
+    done_task_.Run();
+}
+
+// TODO(sergeyu): Move this to SessionManager?
+// static
+VideoEncoder* ClientSession::CreateVideoEncoder(
+    const protocol::SessionConfig& config) {
+  const protocol::ChannelConfig& video_config = config.video_config();
+
+  if (video_config.codec == protocol::ChannelConfig::CODEC_VERBATIM) {
+    return VideoEncoderRowBased::CreateVerbatimEncoder();
+  } else if (video_config.codec == protocol::ChannelConfig::CODEC_ZIP) {
+    return VideoEncoderRowBased::CreateZlibEncoder();
+  } else if (video_config.codec == protocol::ChannelConfig::CODEC_VP8) {
+    return new remoting::VideoEncoderVp8();
+  }
+
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
+// static
+scoped_ptr<AudioEncoder> ClientSession::CreateAudioEncoder(
+    const protocol::SessionConfig& config) {
+  const protocol::ChannelConfig& audio_config = config.audio_config();
+
+  if (audio_config.codec == protocol::ChannelConfig::CODEC_VERBATIM) {
+    return scoped_ptr<AudioEncoder>(new AudioEncoderVerbatim());
+  } else if (audio_config.codec == protocol::ChannelConfig::CODEC_SPEEX) {
+    return scoped_ptr<AudioEncoder>(new AudioEncoderSpeex());
+  }
+
+  NOTIMPLEMENTED();
+  return scoped_ptr<AudioEncoder>(NULL);
+}
+
+// static
+void ClientSessionTraits::Destruct(const ClientSession* client) {
+  client->network_task_runner_->DeleteSoon(FROM_HERE, client);
 }
 
 }  // namespace remoting

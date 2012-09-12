@@ -100,8 +100,7 @@ class ScreenRecorderTest : public testing::Test {
     EXPECT_CALL(*session_, SetEventHandler(_));
     EXPECT_CALL(*session_, Close())
         .Times(AnyNumber());
-    connection_.reset(new MockConnectionToClient(
-        session_, &host_stub_, &event_executor_));
+    connection_.reset(new MockConnectionToClient(session_, &host_stub_));
     connection_->SetEventHandler(&handler_);
 
     record_ = new ScreenRecorder(
@@ -122,7 +121,6 @@ class ScreenRecorderTest : public testing::Test {
 
   MockConnectionToClientEventHandler handler_;
   MockHostStub host_stub_;
-  MockEventExecutor event_executor_;
   MockSession* session_;  // Owned by |connection_|.
   scoped_ptr<MockConnectionToClient> connection_;
 
