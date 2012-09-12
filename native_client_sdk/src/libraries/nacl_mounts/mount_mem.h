@@ -10,7 +10,7 @@
 
 #include "nacl_mounts/mount.h"
 
-class MountMem : public MountFactory<MountMem, Mount> {
+class MountMem : public Mount {
  protected:
   MountMem();
 
@@ -45,7 +45,7 @@ private:
   INOList_t inos_;
   size_t max_ino_;
 
-  template <class M, class P> friend class MountFactory;
+  friend class Mount;
   DISALLOW_COPY_AND_ASSIGN(MountMem);
 };
 

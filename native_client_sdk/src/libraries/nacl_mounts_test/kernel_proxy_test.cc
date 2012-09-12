@@ -122,7 +122,7 @@ TEST(KernelProxy, MemMountIO) {
 
 StringMap_t g_StringMap;
 
-class MountMockInit : public MountFactory<MountMockInit, MountMem> {
+class MountMockInit : public MountMem {
  public:
   bool Init(int dev, StringMap_t& args) {
     g_StringMap = args;
@@ -135,7 +135,7 @@ class MountMockInit : public MountFactory<MountMockInit, MountMem> {
 class KernelProxyMountMock : public KernelProxy {
   void Init() {
     KernelProxy::Init();
-    factories_["initfs"] = MountMockInit::Create;
+    factories_["initfs"] = MountMockInit::Create<MountMockInit>;
   }
 };
 

@@ -43,6 +43,9 @@ class Mount : public RefObject {
   virtual void Destroy();
 
  public:
+  template <class M>
+  static Mount* Create(int dev, StringMap_t& args);
+
   // All paths are expected to containing a leading "/"
   virtual void AcquireNode(MountNode* node);
   virtual void ReleaseNode(MountNode* node);
@@ -73,24 +76,20 @@ class Mount : public RefObject {
   void Acquire() { RefObject::Acquire(); }
   bool Release() { return RefObject::Release(); }
 
-  template <class M, class P> friend class MountFactory;
   DISALLOW_COPY_AND_ASSIGN(Mount);
 };
 
 
-template<class C, class P> class MountFactory : public P {
- public:
-  static Mount* Create(int dev, StringMap_t& args) {
-    Mount* mnt = new C();
-    if (mnt->Init(dev, args) == false) {
-      delete mnt;
-      return NULL;
-    }
-    return mnt;
+template <class M>
+/*static*/
+Mount* Mount::Create(int dev, StringMap_t& args) {
+  Mount* mnt = new M();
+  if (mnt->Init(dev, args) == false) {
+    delete mnt;
+    return NULL;
   }
+  return mnt;
+}
 
- protected:
-  MountFactory(): P() {}
-};
 
 #endif  // LIBRARIES_NACL_MOUNTS_MOUNT_H_

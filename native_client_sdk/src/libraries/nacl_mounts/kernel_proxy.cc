@@ -37,13 +37,13 @@ void KernelProxy::Init() {
   cwd_ = "/";
   dev_ = 1;
 
-  factories_["memfs"] = MountMem::Create;
+  factories_["memfs"] = MountMem::Create<MountMem>;
   // TODO(binji): implement MountURL
   //factories_["urlfs"] = MountURL::Create;
 
   // Create memory mount at root
   StringMap_t smap;
-  mounts_["/"] = MountMem::Create(dev_++, smap);
+  mounts_["/"] = MountMem::Create<MountMem>(dev_++, smap);
 }
 
 
