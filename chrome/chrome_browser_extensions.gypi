@@ -193,6 +193,8 @@
         'browser/extensions/api/management/management_api_constants.h',
         'browser/extensions/api/media_galleries/media_galleries_api.cc',
         'browser/extensions/api/media_galleries/media_galleries_api.h',
+        'browser/extensions/api/media_galleries_private/media_galleries_private_event_router.cc',
+        'browser/extensions/api/media_galleries_private/media_galleries_private_event_router.h',
         'browser/extensions/api/messaging/message_service.cc',
         'browser/extensions/api/messaging/message_service.h',
         'browser/extensions/api/metrics/metrics.cc',

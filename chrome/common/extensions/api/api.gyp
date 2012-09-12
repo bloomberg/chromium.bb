@@ -56,6 +56,7 @@
           'experimental_usb.idl',
           'file_system.idl',
           'media_galleries.idl',
+          'media_galleries_private.idl',
           'rtc_private.idl',
           'serial.idl',
           'socket.idl',

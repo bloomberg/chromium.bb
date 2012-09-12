@@ -1,0 +1,13 @@
+{
+  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDNzZvGtkEvkk7lITue7YFWlQmgd24t/F75YkuLlUrU1u977dwzyjCpPkfpvF51gaRbMD/YD+ZxEN/zlVcoJlkJy4APvPo4pZKHcH0HPQ8MNc2u6Z82/EkJiAgGVjjwbWjrLuKYePdUYEGCCl+37mMRaNKKfSSeb9jkfyLJHjsp/QIDAQAB",
+  "name": "media_galleries_private_api_attach_detach",
+  "version": "1.0",
+  "manifest_version": 2,
+  "description": "Test that makes sure mediaGalleriesPrivate attach / detach events are properly raised.",
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  },
+  "permissions": [ "mediaGalleriesPrivate" ]
+}

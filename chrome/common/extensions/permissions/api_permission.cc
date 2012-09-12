@@ -263,6 +263,8 @@ void APIPermissionInfo::RegisterAllPermissions(
       kFlagCannotBeOptional },
     { APIPermission::kWebstorePrivate, "webstorePrivate",
       kFlagCannotBeOptional },
+    { APIPermission::kMediaGalleriesPrivate, "mediaGalleriesPrivate",
+      kFlagCannotBeOptional },
 
     // Full url access permissions.
     { APIPermission::kProxy, "proxy",

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Defines the Chrome Extensions Media Galleries API functions for accessing
-// user's media files, as specified in the extension API JSON.
+// user's media files, as specified in the extension API IDL.
 
 #ifndef CHROME_BROWSER_EXTENSIONS_API_MEDIA_GALLERIES_MEDIA_GALLERIES_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_MEDIA_GALLERIES_MEDIA_GALLERIES_API_H_

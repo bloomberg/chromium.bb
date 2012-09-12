@@ -183,6 +183,15 @@
     "channel": "stable",
     "extension_types": [ "platform_app" ]
   },
+  // TODO(thestig) Remove this after M23.
+  "mediaGalleriesPrivate": {
+    "channel": "stable",
+    "extension_types": [ "platform_app" ],
+    "whitelist": [
+      "ebpbnabdhheoknfklmpddcdijjkmklkp",
+      "ejegoaikibpmikoejfephaneibodccma"
+    ]
+  },
   "mediaPlayerPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"],

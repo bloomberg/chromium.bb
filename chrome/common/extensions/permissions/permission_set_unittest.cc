@@ -82,7 +82,7 @@ static bool Contains(const std::vector<string16>& warnings,
   return IndexOf(warnings, warning) != warnings.size();
 }
 
-} // namespace
+}  // namespace
 
 namespace extensions {
 
@@ -710,6 +710,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kFileBrowserPrivate);
   skip.insert(APIPermission::kInputMethodPrivate);
   skip.insert(APIPermission::kManagedModePrivate);
+  skip.insert(APIPermission::kMediaGalleriesPrivate);
   skip.insert(APIPermission::kMediaPlayerPrivate);
   skip.insert(APIPermission::kMetricsPrivate);
   skip.insert(APIPermission::kRtcPrivate);
@@ -1188,8 +1189,8 @@ TEST(PermissionsTest, HasLessHostPrivilegesThan) {
       URLPattern(URLPattern::SCHEME_HTTP, "http://*.google.com.hk/*"));
   set2 = new PermissionSet(empty_perms, elist2, slist2);
   EXPECT_TRUE(set1->HasLessHostPrivilegesThan(set2.get()));
-  //TODO(jstritar): Does not match subdomains properly. http://crbug.com/65337
-  //EXPECT_FALSE(set2->HasLessHostPrivilegesThan(set1.get()));
+  // TODO(jstritar): Does not match subdomains properly. http://crbug.com/65337
+  // EXPECT_FALSE(set2->HasLessHostPrivilegesThan(set1.get()));
 
   // Test that different domains count as different hosts.
   elist2.ClearPatterns();

@@ -2794,6 +2794,7 @@
         'browser/extensions/api/management/management_apitest.cc',
         'browser/extensions/api/management/management_browsertest.cc',
         'browser/extensions/api/media_galleries/media_galleries_apitest.cc',
+        'browser/extensions/api/media_galleries_private/media_galleries_private_apitest.cc',
         'browser/extensions/api/metrics/metrics_apitest.cc',
         'browser/extensions/api/offscreen_tabs/offscreen_tabs_apitest.cc',
         'browser/extensions/api/omnibox/omnibox_apitest.cc',
