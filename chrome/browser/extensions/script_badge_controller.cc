@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/sessions/session_id.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -56,7 +57,7 @@ void ScriptBadgeController::GetAttentionFor(
   // extension is merely asking for permission to run:
   // http://crbug.com/133142
   // TODO(avi): Make IdForTab return -1 for non-tabs.
-  if (TabContents::FromWebContents(web_contents())) {
+  if (SessionTabHelper::FromWebContents(web_contents())) {
     script_badge->SetAppearance(SessionID::IdForTab(web_contents()),
                                 ExtensionAction::WANTS_ATTENTION);
   }
@@ -251,7 +252,7 @@ bool ScriptBadgeController::MarkExtensionExecuting(
     return false;
 
   // TODO(avi): Make IdForTab return -1 for non-tabs.
-  if (!TabContents::FromWebContents(web_contents()))
+  if (!SessionTabHelper::FromWebContents(web_contents()))
     return true;
   script_badge->SetAppearance(SessionID::IdForTab(web_contents()),
                               ExtensionAction::ACTIVE);

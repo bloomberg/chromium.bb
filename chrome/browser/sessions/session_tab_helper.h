@@ -7,14 +7,17 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/sessions/session_id.h"
+#include "chrome/browser/tab_contents/web_contents_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
 
 // This class keeps the extension API's windowID up-to-date with the current
 // window of the tab.
-class SessionTabHelper : public content::WebContentsObserver {
+class SessionTabHelper : public content::WebContentsObserver,
+                         public WebContentsUserData<SessionTabHelper> {
  public:
   explicit SessionTabHelper(content::WebContents* contents);
   virtual ~SessionTabHelper();
+  static int kUserDataKey;
 
   // Returns the identifier used by session restore for this tab.
   const SessionID& session_id() const { return session_id_; }

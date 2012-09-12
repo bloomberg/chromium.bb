@@ -165,9 +165,10 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
     // the applescript runtime calls tabs in AppleScriptWindow and this
     // particular tab is never returned.
     tabContents_ = aTabContent;
+    SessionTabHelper* session_tab_helper =
+        SessionTabHelper::FromWebContents(tabContents_->web_contents());
     scoped_nsobject<NSNumber> numID(
-        [[NSNumber alloc]
-            initWithInt:tabContents_->session_tab_helper()->session_id().id()]);
+        [[NSNumber alloc] initWithInt:session_tab_helper->session_id().id()]);
     [self setUniqueID:numID];
   }
   return self;
@@ -179,9 +180,10 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
   // the applescript runtime calls tabs in AppleScriptWindow and this
   // particular tab is never returned.
   tabContents_ = aTabContent;
+  SessionTabHelper* session_tab_helper =
+      SessionTabHelper::FromWebContents(tabContents_->web_contents());
   scoped_nsobject<NSNumber> numID(
-      [[NSNumber alloc]
-          initWithInt:tabContents_->session_tab_helper()->session_id().id()]);
+      [[NSNumber alloc] initWithInt:session_tab_helper->session_id().id()]);
   [self setUniqueID:numID];
 
   if ([self tempURL])

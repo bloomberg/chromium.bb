@@ -5,7 +5,6 @@
 #include "chrome/browser/sessions/session_id.h"
 
 #include "chrome/browser/sessions/session_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 
 static SessionID::id_type next_id = 1;
 
@@ -16,16 +15,12 @@ SessionID::SessionID() {
 SessionID::id_type SessionID::IdForTab(const content::WebContents* tab) {
   // Explicitly crash if this isn't a tab. This is temporary during refactoring
   // and will go away soon.
-  return tab ? TabContents::FromWebContents(tab)->
-                   session_tab_helper()->session_id().id()
-             : -1;
+  return tab ? SessionTabHelper::FromWebContents(tab)->session_id().id() : -1;
 }
 
 SessionID::id_type SessionID::IdForWindowContainingTab(
     const content::WebContents* tab) {
   // Explicitly crash if this isn't a tab. This is temporary during refactoring
   // and will go away soon.
-  return tab ? TabContents::FromWebContents(tab)->
-                   session_tab_helper()->window_id().id()
-             : -1;
+  return tab ? SessionTabHelper::FromWebContents(tab)->window_id().id() : -1;
 }

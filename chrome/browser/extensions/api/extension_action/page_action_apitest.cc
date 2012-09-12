@@ -46,8 +46,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageAction) {
   }
 
   // Test that we received the changes.
-  int tab_id = chrome::GetActiveTabContents(browser())->session_tab_helper()->
-      session_id().id();
+  int tab_id = SessionTabHelper::FromWebContents(
+      chrome::GetActiveWebContents(browser()))->session_id().id();
   ExtensionAction* action = extension->page_action();
   ASSERT_TRUE(action);
   EXPECT_EQ("Modified", action->GetTitle(tab_id));
@@ -72,8 +72,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageAction) {
   }
 
   // Test that we received the changes.
-  tab_id = chrome::GetActiveTabContents(browser())->session_tab_helper()->
-      session_id().id();
+  tab_id = SessionTabHelper::FromWebContents(
+      chrome::GetActiveWebContents(browser()))->session_id().id();
   EXPECT_FALSE(action->GetIcon(tab_id).IsEmpty());
 }
 

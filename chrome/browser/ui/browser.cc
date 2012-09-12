@@ -1005,7 +1005,9 @@ void Browser::TabInsertedAt(TabContents* contents,
                             int index,
                             bool foreground) {
   SetAsDelegate(contents->web_contents(), this);
-  contents->session_tab_helper()->SetWindowID(session_id());
+  SessionTabHelper* session_tab_helper =
+      SessionTabHelper::FromWebContents(contents->web_contents());
+  session_tab_helper->SetWindowID(session_id());
 
   SyncHistoryWithTabs(index);
 
@@ -1161,10 +1163,11 @@ void Browser::TabPinnedStateChanged(TabContents* contents, int index) {
   SessionService* session_service =
       SessionServiceFactory::GetForProfileIfExisting(profile());
   if (session_service) {
+    SessionTabHelper* session_tab_helper =
+        SessionTabHelper::FromWebContents(contents->web_contents());
     session_service->SetPinnedState(
         session_id(),
-        chrome::GetTabContentsAt(this, index)->session_tab_helper()->
-            session_id(),
+        session_tab_helper->session_id(),
         tab_strip_model_->IsTabPinned(index));
   }
 }
@@ -2051,13 +2054,15 @@ void Browser::SyncHistoryWithTabs(int index) {
       SessionServiceFactory::GetForProfileIfExisting(profile());
   if (session_service) {
     for (int i = index; i < tab_count(); ++i) {
-      TabContents* tab = chrome::GetTabContentsAt(this, i);
-      if (tab) {
+      WebContents* web_contents = chrome::GetWebContentsAt(this, i);
+      if (web_contents) {
+        SessionTabHelper* session_tab_helper =
+            SessionTabHelper::FromWebContents(web_contents);
         session_service->SetTabIndexInWindow(
-            session_id(), tab->session_tab_helper()->session_id(), i);
+            session_id(), session_tab_helper->session_id(), i);
         session_service->SetPinnedState(
             session_id(),
-            tab->session_tab_helper()->session_id(),
+            session_tab_helper->session_id(),
             tab_strip_model_->IsTabPinned(i));
       }
     }

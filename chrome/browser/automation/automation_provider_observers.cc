@@ -819,9 +819,10 @@ void BrowserOpenedNotificationObserver::Observe(
     // Only send the result if the loaded tab is in the new window.
     NavigationController* controller =
         content::Source<NavigationController>(source).ptr();
-    TabContents* tab =
-        TabContents::FromWebContents(controller->GetWebContents());
-    int window_id = tab ? tab->session_tab_helper()->window_id().id() : -1;
+    SessionTabHelper* session_tab_helper =
+        SessionTabHelper::FromWebContents(controller->GetWebContents());
+    int window_id = session_tab_helper ? session_tab_helper->window_id().id()
+                                       : -1;
     if (window_id == new_window_id_) {
       if (use_json_interface_) {
         AutomationJSONReply(automation_,
@@ -2084,11 +2085,11 @@ void AppLaunchObserver::Observe(int type,
   }
 
   DCHECK_EQ(content::NOTIFICATION_LOAD_STOP, type);
-  TabContents* tab = TabContents::FromWebContents(
+  SessionTabHelper* session_tab_helper = SessionTabHelper::FromWebContents(
       content::Source<NavigationController>(source)->GetWebContents());
   if ((launch_container_ == extension_misc::LAUNCH_TAB) ||
-      (tab &&
-          (tab->session_tab_helper()->window_id().id() == new_window_id_))) {
+      (session_tab_helper &&
+          (session_tab_helper->window_id().id() == new_window_id_))) {
     if (automation_) {
       AutomationJSONReply(automation_,
                           reply_message_.release()).SendSuccess(NULL);
@@ -2734,9 +2735,10 @@ void BrowserOpenedWithNewProfileNotificationObserver::Observe(
     // Only send the result if the loaded tab is in the new window.
     NavigationController* controller =
         content::Source<NavigationController>(source).ptr();
-    TabContents* tab =
-        TabContents::FromWebContents(controller->GetWebContents());
-    int window_id = tab ? tab->session_tab_helper()->window_id().id() : -1;
+    SessionTabHelper* session_tab_helper =
+        SessionTabHelper::FromWebContents(controller->GetWebContents());
+    int window_id = session_tab_helper ? session_tab_helper->window_id().id()
+                                       : -1;
     if (window_id == new_window_id_) {
       if (automation_) {
         AutomationJSONReply(automation_, reply_message_.release())
@@ -2842,9 +2844,10 @@ void BrowserOpenedWithExistingProfileNotificationObserver::Observe(
     // Only consider if the loaded tab is in the new window.
     NavigationController* controller =
         content::Source<NavigationController>(source).ptr();
-    TabContents* tab = TabContents::FromWebContents(
-        controller->GetWebContents());
-    int window_id = tab ? tab->session_tab_helper()->window_id().id() : -1;
+    SessionTabHelper* session_tab_helper =
+        SessionTabHelper::FromWebContents(controller->GetWebContents());
+    int window_id = session_tab_helper ? session_tab_helper->window_id().id()
+                                       : -1;
     if (window_id == new_window_id_ && --num_loads_ == 0) {
       if (automation_) {
         AutomationJSONReply(automation_, reply_message_.release())

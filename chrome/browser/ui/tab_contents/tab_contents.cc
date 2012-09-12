@@ -109,9 +109,10 @@ TabContents::TabContents(WebContents* contents)
                         new TabContentsUserData(this));
 
   // Create the tab helpers.
-  // session_tab_helper because it sets up the tab ID, and other helpers may
-  // rely on that.
-  session_tab_helper_.reset(new SessionTabHelper(contents));
+
+  // SessionTabHelper comes first because it sets up the tab ID, and other
+  // helpers may rely on that.
+  SessionTabHelper::CreateForWebContents(contents);
 
   autocomplete_history_manager_.reset(new AutocompleteHistoryManager(contents));
   autofill_delegate_.reset(new TabAutofillManagerDelegate(this));

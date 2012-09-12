@@ -5429,17 +5429,20 @@ void TestingAutomationProvider::GetIndicesFromTab(
   }
   int id = id_or_handle;
   if (has_handle) {
-    TabContents* tab = TabContents::FromWebContents(
-        tab_tracker_->GetResource(id_or_handle)->GetWebContents());
-    id = tab->session_tab_helper()->session_id().id();
+    SessionTabHelper* session_tab_helper =
+        SessionTabHelper::FromWebContents(
+            tab_tracker_->GetResource(id_or_handle)->GetWebContents());
+    id = session_tab_helper->session_id().id();
   }
   BrowserList::const_iterator iter = BrowserList::begin();
   int browser_index = 0;
   for (; iter != BrowserList::end(); ++iter, ++browser_index) {
     Browser* browser = *iter;
     for (int tab_index = 0; tab_index < browser->tab_count(); ++tab_index) {
-      TabContents* tab = chrome::GetTabContentsAt(browser, tab_index);
-      if (tab->session_tab_helper()->session_id().id() == id) {
+      WebContents* tab = chrome::GetWebContentsAt(browser, tab_index);
+      SessionTabHelper* session_tab_helper =
+          SessionTabHelper::FromWebContents(tab);
+      if (session_tab_helper->session_id().id() == id) {
         DictionaryValue dict;
         dict.SetInteger("windex", browser_index);
         dict.SetInteger("tab_index", tab_index);
@@ -6082,8 +6085,8 @@ void TestingAutomationProvider::GetTabIds(
   for (; iter != BrowserList::end(); ++iter) {
     Browser* browser = *iter;
     for (int i = 0; i < browser->tab_count(); ++i) {
-      int id = chrome::GetTabContentsAt(browser, i)->session_tab_helper()->
-          session_id().id();
+      int id = SessionTabHelper::FromWebContents(
+          chrome::GetWebContentsAt(browser, i))->session_id().id();
       id_list->Append(Value::CreateIntegerValue(id));
     }
   }
@@ -6154,8 +6157,10 @@ void TestingAutomationProvider::IsTabIdValid(
   for (; iter != BrowserList::end(); ++iter) {
     Browser* browser = *iter;
     for (int i = 0; i < browser->tab_count(); ++i) {
-      TabContents* tab = chrome::GetTabContentsAt(browser, i);
-      if (tab->session_tab_helper()->session_id().id() == id) {
+      WebContents* tab = chrome::GetWebContentsAt(browser, i);
+      SessionTabHelper* session_tab_helper =
+          SessionTabHelper::FromWebContents(tab);
+      if (session_tab_helper->session_id().id() == id) {
         is_valid = true;
         break;
       }

@@ -847,11 +847,11 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
 }
 
 - (int)currentTabId {
-  TabContents* selected_tab = chrome::GetActiveTabContents(browser_);
-  if (!selected_tab)
+  content::WebContents* active_tab = chrome::GetActiveWebContents(browser_);
+  if (!active_tab)
     return -1;
 
-  return selected_tab->session_tab_helper()->session_id().id();
+  return SessionTabHelper::FromWebContents(active_tab)->session_id().id();
 }
 
 #pragma mark -

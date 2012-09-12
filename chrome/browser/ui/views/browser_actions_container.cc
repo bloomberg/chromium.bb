@@ -462,8 +462,11 @@ void BrowserActionsContainer::InspectPopup(ExtensionAction* action) {
 }
 
 int BrowserActionsContainer::GetCurrentTabId() const {
-  TabContents* tab = chrome::GetActiveTabContents(browser_);
-  return tab ? tab->session_tab_helper()->session_id().id() : -1;
+  content::WebContents* active_tab = chrome::GetActiveWebContents(browser_);
+  if (!active_tab)
+    return -1;
+
+  return SessionTabHelper::FromWebContents(active_tab)->session_id().id();
 }
 
 void BrowserActionsContainer::OnBrowserActionExecuted(

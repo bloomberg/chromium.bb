@@ -112,8 +112,8 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageAction) {
 
   // Make sure it appears and is the right one.
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
-  int tab_id = chrome::GetActiveTabContents(browser())->session_tab_helper()->
-      session_id().id();
+  int tab_id = SessionTabHelper::FromWebContents(
+      chrome::GetActiveWebContents(browser()))->session_id().id();
   ExtensionAction* action = extension->page_action();
   ASSERT_TRUE(action);
   EXPECT_EQ("Make this page red", action->GetTitle(tab_id));

@@ -426,8 +426,9 @@ void DevToolsWindow::UpdateFrontendAttachedState() {
 
 void DevToolsWindow::AddDevToolsExtensionsToClient() {
   if (inspected_tab_) {
-    base::FundamentalValue tabId(
-        inspected_tab_->session_tab_helper()->session_id().id());
+    SessionTabHelper* session_tab_helper =
+        SessionTabHelper::FromWebContents(inspected_tab_->web_contents());
+    base::FundamentalValue tabId(session_tab_helper->session_id().id());
     CallClientFunction("WebInspector.setInspectedTabId", &tabId);
   }
   ListValue results;

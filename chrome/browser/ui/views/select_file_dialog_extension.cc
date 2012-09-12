@@ -302,7 +302,9 @@ void SelectFileDialogExtension::SelectFileImpl(
   // possible. If there is no tab contents use a tab_id of 0. A dialog without
   // an associated tab contents will be shown fully screen; only one at a time
   // is allowed in this state.
-  int32 tab_id = tab ? tab->session_tab_helper()->session_id().id() : 0;
+  int32 tab_id = tab ? SessionTabHelper::FromWebContents(tab->web_contents())->
+                           session_id().id()
+                     : 0;
   if (PendingExists(tab_id)) {
     DLOG(WARNING) << "Pending dialog exists with id " << tab_id;
     return;

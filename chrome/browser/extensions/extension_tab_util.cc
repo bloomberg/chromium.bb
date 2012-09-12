@@ -51,7 +51,7 @@ int ExtensionTabUtil::GetWindowIdOfTabStripModel(
 
 int ExtensionTabUtil::GetTabId(const WebContents* web_contents) {
   // TODO(avi): Make IdForTab return -1 for non-tabs.
-  if (!TabContents::FromWebContents(web_contents))
+  if (!SessionTabHelper::FromWebContents(web_contents))
     return -1;
   return SessionID::IdForTab(web_contents);
 }
@@ -62,7 +62,7 @@ std::string ExtensionTabUtil::GetTabStatusText(bool is_loading) {
 
 int ExtensionTabUtil::GetWindowIdOfTab(const WebContents* web_contents) {
   // TODO(avi): Make IdForWindowContainingTab return -1 for non-tabs.
-  if (!TabContents::FromWebContents(web_contents))
+  if (!SessionTabHelper::FromWebContents(web_contents))
     return -1;
   return SessionID::IdForWindowContainingTab(web_contents);
 }

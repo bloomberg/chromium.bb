@@ -409,9 +409,10 @@ bool SendErrorIfModalDialogActive(AutomationProvider* provider,
 }
 
 AutomationId GetIdForTab(const TabContents* tab) {
-  return AutomationId(
-      AutomationId::kTypeTab,
-      base::IntToString(tab->session_tab_helper()->session_id().id()));
+  SessionTabHelper* session_tab_helper =
+      SessionTabHelper::FromWebContents(tab->web_contents());
+  return AutomationId(AutomationId::kTypeTab,
+                      base::IntToString(session_tab_helper->session_id().id()));
 }
 
 AutomationId GetIdForExtensionView(
@@ -458,9 +459,10 @@ bool GetTabForId(const AutomationId& id, WebContents** tab) {
     Browser* browser = *iter;
     for (int tab_index = 0; tab_index < browser->tab_count(); ++tab_index) {
       TabContents* tab_contents = chrome::GetTabContentsAt(browser, tab_index);
+      SessionTabHelper* session_tab_helper =
+          SessionTabHelper::FromWebContents(tab_contents->web_contents());
       if (base::IntToString(
-              tab_contents->session_tab_helper()->session_id().id()) ==
-                  id.id()) {
+              session_tab_helper->session_id().id()) == id.id()) {
         *tab = tab_contents->web_contents();
         return true;
       }
@@ -468,8 +470,11 @@ bool GetTabForId(const AutomationId& id, WebContents** tab) {
         TabContents* preview_tab_contents =
             preview_controller->GetPrintPreviewForTab(tab_contents);
         if (preview_tab_contents) {
+          SessionTabHelper* preview_session_tab_helper =
+              SessionTabHelper::FromWebContents(
+                  preview_tab_contents->web_contents());
           std::string preview_id = base::IntToString(
-              preview_tab_contents->session_tab_helper()->session_id().id());
+              preview_session_tab_helper->session_id().id());
           if (preview_id == id.id()) {
             *tab = preview_tab_contents->web_contents();
             return true;

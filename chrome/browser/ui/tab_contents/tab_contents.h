@@ -52,7 +52,6 @@ class PrefsTabHelper;
 class Profile;
 class SadTabHelper;
 class SearchEngineTabHelper;
-class SessionTabHelper;
 class ShellWindow;
 class SnapshotTabHelper;
 class TabAutofillManagerDelegate;
@@ -280,14 +279,6 @@ class TabContents : public content::WebContentsObserver {
     return search_tab_helper_.get();
   }
 
-  SessionTabHelper* session_tab_helper() {
-    return session_tab_helper_.get();
-  }
-
-  const SessionTabHelper* session_tab_helper() const {
-    return session_tab_helper_.get();
-  }
-
   SnapshotTabHelper* snapshot_tab_helper() {
     return snapshot_tab_helper_.get();
   }
@@ -374,7 +365,6 @@ class TabContents : public content::WebContentsObserver {
   scoped_ptr<SadTabHelper> sad_tab_helper_;
   scoped_ptr<SearchEngineTabHelper> search_engine_tab_helper_;
   scoped_ptr<chrome::search::SearchTabHelper> search_tab_helper_;
-  scoped_ptr<SessionTabHelper> session_tab_helper_;
   scoped_ptr<SnapshotTabHelper> snapshot_tab_helper_;
   scoped_ptr<TabContentsSSLHelper> ssl_helper_;
   scoped_ptr<browser_sync::SyncedTabDelegate> synced_tab_delegate_;

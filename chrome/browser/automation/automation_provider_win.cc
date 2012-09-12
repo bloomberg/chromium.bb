@@ -209,11 +209,12 @@ void AutomationProvider::CreateExternalTab(
 
   if (AddExternalTab(external_tab_container)) {
     WebContents* web_contents = external_tab_container->GetWebContents();
+    SessionTabHelper* session_tab_helper =
+        SessionTabHelper::FromWebContents(web_contents);
     *tab_handle = external_tab_container->GetTabHandle();
     *tab_container_window = external_tab_container->GetExternalTabNativeView();
     *tab_window = web_contents->GetNativeView();
-    *session_id = external_tab_container->GetTabContents()->
-        session_tab_helper()->session_id().id();
+    *session_id = session_tab_helper->session_id().id();
   } else {
     external_tab_container->Uninitialize();
   }
@@ -347,12 +348,13 @@ void AutomationProvider::ConnectExternalTab(
     external_tab_container->Reinitialize(this,
                                          automation_resource_message_filter_,
                                          parent_window);
-    WebContents* tab_contents = external_tab_container->GetWebContents();
+    WebContents* web_contents = external_tab_container->GetWebContents();
+    SessionTabHelper* session_tab_helper =
+        SessionTabHelper::FromWebContents(web_contents);
     *tab_handle = external_tab_container->GetTabHandle();
     *tab_container_window = external_tab_container->GetExternalTabNativeView();
-    *tab_window = tab_contents->GetNativeView();
-    *session_id = external_tab_container->GetTabContents()->
-        session_tab_helper()->session_id().id();
+    *tab_window = web_contents->GetNativeView();
+    *session_id = session_tab_helper->session_id().id();
   } else {
     external_tab_container->Uninitialize();
   }
