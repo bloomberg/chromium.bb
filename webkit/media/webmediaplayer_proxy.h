@@ -14,7 +14,6 @@
 #include "media/base/decryptor_client.h"
 #include "media/base/pipeline.h"
 #include "media/filters/chunk_demuxer.h"
-#include "media/filters/chunk_demuxer_client.h"
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "webkit/media/buffered_data_source.h"
 #include "webkit/media/skcanvas_video_renderer.h"
@@ -42,7 +41,6 @@ class WebMediaPlayerImpl;
 // the render thread that WebMediaPlayerImpl is running on.
 class WebMediaPlayerProxy
     : public base::RefCountedThreadSafe<WebMediaPlayerProxy>,
-      public media::ChunkDemuxerClient,
       public media::DecryptorClient {
  public:
   WebMediaPlayerProxy(const scoped_refptr<base::MessageLoopProxy>& render_loop,
@@ -73,27 +71,6 @@ class WebMediaPlayerProxy
 
   void AbortDataSource();
 
-  // ChunkDemuxerClient implementation.
-  virtual void DemuxerOpened(media::ChunkDemuxer* demuxer) OVERRIDE;
-  virtual void DemuxerClosed() OVERRIDE;
-  virtual void DemuxerNeedKey(scoped_array<uint8> init_data,
-                              int init_data_size) OVERRIDE;
-
-  // Methods for Demuxer communication.
-  void DemuxerStartWaitingForSeek();
-  void DemuxerCancelPendingSeek();
-  media::ChunkDemuxer::Status DemuxerAddId(const std::string& id,
-                                           const std::string& type,
-                                           std::vector<std::string>& codecs);
-  void DemuxerRemoveId(const std::string& id);
-  media::Ranges<base::TimeDelta> DemuxerBufferedRange(const std::string& id);
-  bool DemuxerAppend(const std::string& id, const uint8* data, size_t length);
-  void DemuxerAbort(const std::string& id);
-  void DemuxerSetDuration(base::TimeDelta duration);
-  void DemuxerEndOfStream(media::PipelineStatus status);
-  void DemuxerShutdown();
-  bool DemuxerSetTimestampOffset(const std::string& id, base::TimeDelta offset);
-
   // DecryptorClient implementation.
   virtual void KeyAdded(const std::string& key_system,
                         const std::string& session_id) OVERRIDE;
@@ -117,9 +94,6 @@ class WebMediaPlayerProxy
 
   // Invoke |webmediaplayer_| to perform a repaint.
   void RepaintTask();
-
-  void DemuxerOpenedTask(const scoped_refptr<media::ChunkDemuxer>& demuxer);
-  void DemuxerClosedTask();
 
   // Notify |webmediaplayer_| that a key has been added.
   void KeyAddedTask(const std::string& key_system,
@@ -154,8 +128,6 @@ class WebMediaPlayerProxy
 
   base::Lock lock_;
   int outstanding_repaints_;
-
-  scoped_refptr<media::ChunkDemuxer> chunk_demuxer_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebMediaPlayerProxy);
 };

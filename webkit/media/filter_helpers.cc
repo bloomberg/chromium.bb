@@ -59,21 +59,15 @@ bool BuildMediaStreamCollection(const WebKit::WebURL& url,
   return true;
 }
 
-bool BuildMediaSourceCollection(
-    const WebKit::WebURL& url,
-    const WebKit::WebURL& media_source_url,
-    media::ChunkDemuxerClient* client,
+void BuildMediaSourceCollection(
+    const scoped_refptr<media::ChunkDemuxer>& demuxer,
     media::MessageLoopFactory* message_loop_factory,
     media::FilterCollection* filter_collection,
     media::Decryptor* decryptor) {
-  if (media_source_url.isEmpty() || url != media_source_url)
-    return false;
-
-  filter_collection->SetDemuxer(new media::ChunkDemuxer(client));
-
+  DCHECK(demuxer);
+  filter_collection->SetDemuxer(demuxer);
   AddDefaultDecodersToCollection(message_loop_factory, filter_collection,
                                  decryptor);
-  return true;
 }
 
 void BuildDefaultCollection(

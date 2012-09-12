@@ -75,6 +75,7 @@ class WebFrame;
 
 namespace media {
 class AudioRendererSink;
+class ChunkDemuxer;
 class MediaLog;
 }
 
@@ -344,6 +345,8 @@ class WebMediaPlayerImpl
   ProxyDecryptor decryptor_;
 
   bool starting_;
+
+  scoped_refptr<media::ChunkDemuxer> chunk_demuxer_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };
