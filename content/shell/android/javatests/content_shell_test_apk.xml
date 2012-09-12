@@ -14,7 +14,7 @@
 
   <property name="target.abi" value="${APP_ABI}"/>
   <property name="out.dir" location="${PRODUCT_DIR}/content_shell_test"/>
-  <property name="resource.absolute.dir" value="../res"/>
+  <property name="resource.absolute.dir" value="${RESOURCE_DIR}"/>
   <property name="gen.absolute.dir" value="${out.dir}/gen"/>
   <path id="native.libs.gdbserver">
     <fileset file="${android.gdbserver}"/>

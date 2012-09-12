@@ -876,35 +876,13 @@
             '../net/net.gyp:net_javatests',
             '../tools/android/forwarder/forwarder.gyp:forwarder',
           ],
-          'actions': [
-            {
-              'action_name': 'content_shell_test_generate_apk',
-              'inputs': [
-                '../build/android/ant/common.xml',
-                '../build/android/ant/sdk-targets.xml',
-                '<(DEPTH)/content/shell/android/javatests/content_shell_test_apk.xml',
-                '<(DEPTH)/content/shell/android/javatests/AndroidManifest.xml',
-                '>@(input_jars_paths)',
-                '<!@(find <(DEPTH)/content/shell/android/javatests/ -name "*.java")'
-              ],
-              'outputs': [
-                '<(PRODUCT_DIR)/content_shell_test/ContentShellTest-debug.apk',
-              ],
-              'action': [
-                'ant',
-                '-DPRODUCT_DIR=<(ant_build_out)',
-                '-DAPP_ABI=<(android_app_abi)',
-                '-DANDROID_SDK=<(android_sdk)',
-                '-DANDROID_SDK_ROOT=<(android_sdk_root)',
-                '-DANDROID_SDK_TOOLS=<(android_sdk_tools)',
-                '-DANDROID_SDK_VERSION=<(android_sdk_version)',
-                '-DANDROID_GDBSERVER=<(android_gdbserver)',
-                '-DINPUT_JARS_PATHS=>(input_jars_paths)',
-                '-buildfile',
-                '<(DEPTH)/content/shell/android/javatests/content_shell_test_apk.xml',
-              ]
-            }
-          ],
+          'variables': {
+            'package_name': 'content_shell_test',
+            'apk_name': 'ContentShellTest',
+            'java_in_dir': 'shell/android/javatests',
+            'resource_dir': 'shell/android/res',
+          },
+          'includes': [ '../build/java_apk.gypi' ],
         },
       ],
     }],
