@@ -647,6 +647,7 @@ const char kRefreshFunction[] = "Refresh";
 const char kReceiveByteCountProperty[] = "ReceiveByteCount";
 const char kTransmitByteCountProperty[] = "TransmitByteCount";
 const char kLinkMonitorResponseTimeProperty[] = "LinkMonitorResponseTime";
+const char kSupportedCarriersProperty[] = "Cellular.SupportedCarriers";
 
 // Manager property names.
 const char kDefaultServiceProperty[] = "DefaultService";
