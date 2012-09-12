@@ -99,6 +99,37 @@ void NaClUntrustedThreadResume(struct NaClAppThread *natp) {
 
 void NaClAppThreadGetSuspendedRegistersInternal(
     struct NaClAppThread *natp, struct NaClSignalContext *regs) {
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
+  /*
+   * We might have suspended the thread while it is returning to
+   * untrusted code via NaClSwitchRemainingRegsViaECX().  This is
+   * particularly likely for a faulted thread that has been resumed
+   * and suspended again without ever being unblocked by
+   * NaClAppThreadUnblockIfFaulted().
+   *
+   * In this situation, we must undo the register state modifications
+   * made by NaClAppThreadSetSuspendedRegistersInternal().
+   */
+  struct NaClAppThreadSuspendedRegisters *state = natp->suspended_registers;
+  uint32_t eip = state->context.uts.ts32.__eip;
+  if (eip >= (uintptr_t) NaClSwitchRemainingRegsViaECX &&
+      eip < (uintptr_t) NaClSwitchRemainingRegsAsmEnd) {
+    state->context.uts.ts32.__eip = natp->tls_values.new_prog_ctr;
+    state->context.uts.ts32.__ecx = natp->tls_values.new_ecx;
+    /*
+     * It is sometimes necessary to restore the following registers
+     * too, depending on how far we are through
+     * NaClSwitchRemainingRegsViaECX().
+     */
+    state->context.uts.ts32.__cs = natp->user.cs;
+    state->context.uts.ts32.__ds = natp->user.ds;
+    state->context.uts.ts32.__es = natp->user.es;
+    state->context.uts.ts32.__fs = natp->user.fs;
+    state->context.uts.ts32.__gs = natp->user.gs;
+    state->context.uts.ts32.__ss = natp->user.ss;
+  }
+#endif
+
   NaClSignalContextFromMacThreadState(regs,
                                       &natp->suspended_registers->context);
 }

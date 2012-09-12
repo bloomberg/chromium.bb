@@ -11,6 +11,7 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
 #include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
@@ -69,6 +70,21 @@ struct NaClAppThread *GetOnlyThread(struct NaClApp *nap) {
   return found_thread;
 }
 
+/*
+ * This spins until any previous NaClAppThread has exited to the point
+ * where it is removed from the thread array, so that it will not be
+ * encountered by a subsequent call to GetOnlyThread().  This is
+ * necessary because the threads hosting NaClAppThreads are unjoined.
+ */
+static void WaitForThreadToExitFully(struct NaClApp *nap) {
+  int done;
+  do {
+    NaClXMutexLock(&nap->threads_mu);
+    done = (nap->num_threads == 0);
+    NaClXMutexUnlock(&nap->threads_mu);
+  } while (!done);
+}
+
 struct NaClSignalContext *StartGuestWithSharedMemory(
     struct NaClApp *nap) {
   char arg_string[32];
@@ -87,6 +103,8 @@ struct NaClSignalContext *StartGuestWithSharedMemory(
       -1, 0);
   SNPRINTF(arg_string, sizeof(arg_string), "0x%x", (unsigned int) mmap_addr);
   expected_regs = (struct NaClSignalContext *) NaClUserToSys(nap, mmap_addr);
+
+  WaitForThreadToExitFully(nap);
 
   CHECK(NaClCreateMainThread(nap, NACL_ARRAY_SIZE(args), args, NULL));
   return expected_regs;
@@ -199,6 +217,63 @@ void TestReceivingFault(struct NaClApp *nap) {
   CHECK(NaClWaitForMainThreadToExit(nap) == 0);
 }
 
+/*
+ * This is a test for a bug that occurred only on Mac OS X on x86-32.
+ * If we modify the registers of a suspended thread on x86-32 Mac, we
+ * force the thread to return to untrusted code via the special
+ * trusted routine NaClSwitchRemainingRegsViaECX().  If we later
+ * suspend the thread while it is still executing this routine, we
+ * need to return the untrusted register state that the routine is
+ * attempting to restore -- we test that here.
+ *
+ * Suspending a thread while it is still blocked by a fault is the
+ * easiest way to test this, since this allows us to test suspension
+ * while the thread is at the start of
+ * NaClSwitchRemainingRegsViaECX().  This is also how the debug stub
+ * runs into this problem.
+ */
+void TestGettingRegistersInMacSwitchRemainingRegs(struct NaClApp *nap) {
+  struct NaClSignalContext *expected_regs = StartGuestWithSharedMemory(nap);
+  struct NaClSignalContext regs;
+  struct NaClAppThread *natp;
+  int signal;
+
+  WaitForThreadToFault(nap);
+  NaClUntrustedThreadsSuspendAll(nap, /* save_registers= */ 1);
+  natp = GetOnlyThread(nap);
+  NaClAppThreadGetSuspendedRegisters(natp, &regs);
+  RegsAssertEqual(&regs, expected_regs);
+  /*
+   * On Mac OS X on x86-32, this changes the underlying Mac thread's
+   * state so that the thread will execute
+   * NaClSwitchRemainingRegsViaECX().
+   */
+  NaClAppThreadSetSuspendedRegisters(natp, &regs);
+
+  /*
+   * Resume the thread without unblocking it and then re-suspend it.
+   * This causes osx/thread_suspension.c to re-fetch the register
+   * state from the Mac kernel.
+   */
+  NaClUntrustedThreadsResumeAll(nap);
+  NaClUntrustedThreadsSuspendAll(nap, /* save_registers= */ 1);
+  ASSERT_EQ(GetOnlyThread(nap), natp);
+
+  /* We should get the same register state as before. */
+  NaClAppThreadGetSuspendedRegisters(natp, &regs);
+  RegsAssertEqual(&regs, expected_regs);
+
+  /*
+   * Clean up:  Skip over the instruction that faulted and let the
+   * thread run to completion.
+   */
+  regs.prog_ctr += kBreakInstructionSize;
+  NaClAppThreadSetSuspendedRegisters(natp, &regs);
+  ASSERT_EQ(NaClAppThreadUnblockIfFaulted(natp, &signal), 1);
+  NaClUntrustedThreadsResumeAll(nap);
+  CHECK(NaClWaitForMainThreadToExit(nap) == 0);
+}
+
 int main(int argc, char **argv) {
   struct NaClApp app;
   struct NaClApp *nap = &app;
@@ -236,7 +311,11 @@ int main(int argc, char **argv) {
 #endif
   CHECK(NaClFaultedThreadQueueEnable(nap));
 
+  printf("Running TestReceivingFault...\n");
   TestReceivingFault(nap);
+
+  printf("Running TestGettingRegistersInMacSwitchRemainingRegs...\n");
+  TestGettingRegistersInMacSwitchRemainingRegs(nap);
 
   /*
    * Avoid calling exit() because it runs process-global destructors
