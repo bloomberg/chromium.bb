@@ -4,6 +4,8 @@
 
 #include "chrome/browser/history/select_favicon_frames.h"
 
+#include <set>
+
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/image/image.h"
@@ -17,14 +19,6 @@ void SizesFromBitmaps(const std::vector<SkBitmap>& bitmaps,
                       std::vector<gfx::Size>* sizes) {
   for (size_t i = 0; i < bitmaps.size(); ++i)
     sizes->push_back(gfx::Size(bitmaps[i].width(), bitmaps[i].height()));
-}
-
-// Return gfx::Size vector with the pixel sizes of |bitmap_id_sizes|.
-void SizesFromFaviconBitmapIDSizes(
-    const std::vector<history::FaviconBitmapIDSize>& bitmap_id_sizes,
-    std::vector<gfx::Size>* sizes) {
-  for (size_t i = 0; i < bitmap_id_sizes.size(); ++i)
-    sizes->push_back(bitmap_id_sizes[i].pixel_size);
 }
 
 size_t BiggestCandidate(const std::vector<gfx::Size>& candidate_sizes) {
@@ -265,32 +259,26 @@ gfx::ImageSkia SelectFaviconFrames(
   return multi_image;
 }
 
-void SelectFaviconBitmapIDs(
-    const std::vector<history::FaviconBitmapIDSize>& bitmap_id_sizes,
+void SelectFaviconFrameIndices(
+    const std::vector<gfx::Size>& frame_pixel_sizes,
     const std::vector<ui::ScaleFactor>& scale_factors,
     int desired_size,
-    std::vector<history::FaviconBitmapID>* filtered_favicon_bitmap_ids,
+    std::vector<size_t>* best_indices,
     float* match_score) {
-  std::vector<gfx::Size> candidate_sizes;
-  SizesFromFaviconBitmapIDSizes(bitmap_id_sizes, &candidate_sizes);
-
   std::vector<SelectionResult> results;
-  GetCandidateIndicesWithBestScores(candidate_sizes, scale_factors,
+  GetCandidateIndicesWithBestScores(frame_pixel_sizes, scale_factors,
       desired_size, match_score, &results);
 
-  std::set<history::FaviconBitmapID> already_added;
+  std::set<size_t> already_added;
   for (size_t i = 0; i < results.size(); ++i) {
-    const SelectionResult& result = results[i];
-    history::FaviconBitmapID bitmap_id =
-        bitmap_id_sizes[result.index].bitmap_id;
-
+    size_t index = results[i].index;
     // GetCandidateIndicesWithBestScores() will return duplicate indices if the
-    // bitmap data for a |bitmap_id| should be used for multiple scale factors.
-    // Remove duplicates here such that |filtered_favicon_bitmap_ids| contains
+    // bitmap data with |frame_pixel_sizes[index]| should be used for multiple
+    // scale factors. Remove duplicates here such that |best_indices| contains
     // no duplicates.
-    if (already_added.find(bitmap_id) == already_added.end()) {
-      already_added.insert(bitmap_id);
-      filtered_favicon_bitmap_ids->push_back(bitmap_id);
+    if (already_added.find(index) == already_added.end()) {
+      already_added.insert(index);
+      best_indices->push_back(index);
     }
   }
 }

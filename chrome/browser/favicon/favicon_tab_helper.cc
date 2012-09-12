@@ -9,7 +9,6 @@
 #include "chrome/browser/favicon/favicon_util.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/history/select_favicon_frames.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -196,17 +195,10 @@ void FaviconTabHelper::OnDidDownloadFavicon(
     bool errored,
     int requested_size,
     const std::vector<SkBitmap>& bitmaps) {
-  float score = 0;
-  // TODO: Possibly do bitmap selection in FaviconHandler, so that it can score
-  // favicons better.
-  std::vector<ui::ScaleFactor> scale_factors;
-  scale_factors = ui::GetSupportedScaleFactors();
-  gfx::Image favicon(SelectFaviconFrames(
-      bitmaps, scale_factors, requested_size, &score));
   favicon_handler_->OnDidDownloadFavicon(
-      id, image_url, errored, favicon, score);
+      id, image_url, errored, requested_size, bitmaps);
   if (touch_icon_handler_.get()) {
     touch_icon_handler_->OnDidDownloadFavicon(
-        id, image_url, errored, favicon, score);
+        id, image_url, errored, requested_size, bitmaps);
   }
 }

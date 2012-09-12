@@ -112,11 +112,14 @@ class FaviconHandler {
   // history / download service.
   void ProcessCurrentUrl();
 
+  // Message handler for IconHostMsg_DidDownloadFavicon. Called when the icon
+  // at |image_url| has been downloaded.
+  // |bitmaps| is a list of all the frames of the icon at |image_url|.
   void OnDidDownloadFavicon(int id,
                             const GURL& image_url,
                             bool errored,
-                            const gfx::Image& image,
-                            float score);
+                            int requested_size,
+                            const std::vector<SkBitmap>& bitmaps);
 
   // For testing.
   const std::deque<FaviconURL>& image_urls() const { return image_urls_; }
@@ -244,11 +247,6 @@ class FaviconHandler {
   void UpdateFavicon(content::NavigationEntry* entry,
       const std::vector<history::FaviconBitmapResult>& favicon_bitmap_results);
   void UpdateFavicon(content::NavigationEntry* entry, const gfx::Image* image);
-
-  // If the image is not already at its preferred size, scales the image such
-  // that either the width and/or height == gfx::kFaviconSize. Does nothing if
-  // the image is empty.
-  gfx::Image ResizeFaviconIfNeeded(const gfx::Image& image);
 
   void FetchFaviconInternal();
 

@@ -91,6 +91,7 @@ class FaviconTabHelper : public content::WebContentsObserver,
       const content::FrameNavigateParams& params) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
+  // Message handler for IconHostMsg_DidDownloadFavicon.
   void OnDidDownloadFavicon(int id,
                             const GURL& image_url,
                             bool errored,

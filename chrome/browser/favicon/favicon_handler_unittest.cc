@@ -191,8 +191,34 @@ class TestFaviconHandlerDelegate : public FaviconHandlerDelegate {
   WebContents* tab_contents_;  // weak
 };
 
+// This class provides a callback for FaviconHandler::DownloadImage() and
+// provides an accessor to test the pixel size of the downloaded bitmap.
+class BitmapDownloader {
+ public:
+  BitmapDownloader() {
+  }
+
+  ~BitmapDownloader() {
+  }
+
+  void OnBitmapDownloaded(int id, bool error, const SkBitmap& bitmap) {
+    downloaded_bitmap_size_ = gfx::Size(bitmap.width(), bitmap.height());
+  }
+
+  const gfx::Size& downloaded_bitmap_size() {
+    return downloaded_bitmap_size_;
+  }
+
+ private:
+  // The size of the downloaded bitmap.
+  gfx::Size downloaded_bitmap_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(BitmapDownloader);
+};
+
 // This class is used to catch the FaviconHandler's download and history
-// request, and also provide the methods to access the FaviconHandler internal.
+// request, and also provide the methods to access the FaviconHandler
+// internals.
 class TestFaviconHandler : public FaviconHandler {
  public:
   TestFaviconHandler(const GURL& page_url,
@@ -316,16 +342,40 @@ void HistoryRequestHandler::InvokeCallback() {
 
 void DownloadHandler::InvokeCallback() {
   SkBitmap bitmap;
-  int bitmap_size = (download_->image_size > 0) ?
+  const int kRequestedSize = gfx::kFaviconSize;
+  int downloaded_size = (download_->image_size > 0) ?
       download_->image_size : gfx::kFaviconSize;
-  FillDataToBitmap(bitmap_size, bitmap_size, &bitmap);
-  gfx::Image image(bitmap);
+  FillDataToBitmap(downloaded_size, downloaded_size, &bitmap);
+  std::vector<SkBitmap> bitmaps;
+  bitmaps.push_back(bitmap);
   favicon_helper_->OnDidDownloadFavicon(
-      download_->download_id, download_->image_url, failed_, image,
-      download_->image_size == gfx::kFaviconSize);
+      download_->download_id, download_->image_url, failed_,
+      kRequestedSize, bitmaps);
 }
 
 class FaviconHandlerTest : public ChromeRenderViewHostTestHarness {
+ public:
+  FaviconHandlerTest() {
+  }
+
+  virtual ~FaviconHandlerTest() {
+  }
+
+  virtual void SetUp() {
+    // The score computed by SelectFaviconFrames() is dependent on the supported
+    // scale factors of the platform. It is used for determining the goodness of
+    // a downloaded bitmap in FaviconHandler::OnDidDownloadFavicon().
+    // Force the values of the scale factors so that the tests produce the same
+    // results on all platforms.
+    std::vector<ui::ScaleFactor> scale_factors;
+    scale_factors.push_back(ui::SCALE_FACTOR_100P);
+    ui::test::SetSupportedScaleFactors(scale_factors);
+
+    ChromeRenderViewHostTestHarness::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FaviconHandlerTest);
 };
 
 TEST_F(FaviconHandlerTest, GetFaviconFromHistory) {
@@ -923,6 +973,40 @@ TEST_F(FaviconHandlerTest, FirstFavicon) {
   EXPECT_FALSE(handler.GetEntry()->GetFavicon().image.IsEmpty());
   EXPECT_EQ(gfx::kFaviconSize,
             handler.GetEntry()->GetFavicon().image.ToSkBitmap()->width());
+}
+
+// Test that DownloadImage() returns an unresized bitmap.
+TEST_F(FaviconHandlerTest, DownloadImage) {
+  const GURL page_url("http://www.google.com");
+  const GURL icon_url("http://www.google.com/favicon");
+
+  TestFaviconHandlerDelegate delegate(contents());
+  Profile* profile = Profile::FromBrowserContext(
+      contents()->GetBrowserContext());
+  TestFaviconHandler handler(page_url, profile,
+                             &delegate, FaviconHandler::FAVICON);
+
+  BitmapDownloader downloader;
+  FaviconTabHelper::ImageDownloadCallback callback = base::Bind(
+      &BitmapDownloader::OnBitmapDownloaded, base::Unretained(&downloader));
+
+  handler.DownloadImage(icon_url, gfx::kFaviconSize, history::FAVICON,
+                        callback);
+
+  DownloadHandler* download_handler = handler.download_handler();
+  ASSERT_TRUE(download_handler->HasDownload());
+  EXPECT_EQ(icon_url, download_handler->GetImageUrl());
+
+  // Set the downloaded bitmap size to something different than the requested
+  // size of gfx::kFaviconSize;
+  const int kLargeSize = gfx::kFaviconSize * 2;
+  download_handler->SetImageSize(kLargeSize);
+  download_handler->InvokeCallback();
+
+  // Check that the callback was invoked with the unresized bitmap.
+  const gfx::Size& downloaded_bitmap_size = downloader.downloaded_bitmap_size();
+  EXPECT_EQ(kLargeSize, downloaded_bitmap_size.width());
+  EXPECT_EQ(kLargeSize, downloaded_bitmap_size.height());
 }
 
 }  // namespace.

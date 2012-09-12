@@ -2240,17 +2240,27 @@ bool HistoryBackend::GetFaviconBitmapResultsForBestMatch(
     thumbnail_db_->GetFaviconBitmapIDSizes(candidate_favicon_ids[i],
                                            &bitmap_id_sizes);
 
-    std::vector<FaviconBitmapID> candidate_bitmap_ids;
+    // Build vector of gfx::Size from |bitmap_id_sizes|.
+    std::vector<gfx::Size> sizes;
+    for (size_t j = 0; j < bitmap_id_sizes.size(); ++j)
+      sizes.push_back(bitmap_id_sizes[j].pixel_size);
+
+    std::vector<size_t> candidate_bitmap_indices;
     float score = 0;
-    SelectFaviconBitmapIDs(bitmap_id_sizes,
-                           desired_scale_factors,
-                           desired_size_in_dip,
-                           &candidate_bitmap_ids,
-                           &score);
+    SelectFaviconFrameIndices(sizes,
+                              desired_scale_factors,
+                              desired_size_in_dip,
+                              &candidate_bitmap_indices,
+                              &score);
     if (score > highest_score) {
-      best_favicon_id = candidate_favicon_ids[i],
-      best_bitmap_ids.swap(candidate_bitmap_ids);
       highest_score = score;
+      best_favicon_id = candidate_favicon_ids[i],
+      best_bitmap_ids.clear();
+      for (size_t j = 0; j < candidate_bitmap_indices.size(); ++j) {
+        size_t candidate_index = candidate_bitmap_indices[j];
+        best_bitmap_ids.push_back(
+            bitmap_id_sizes[candidate_index].bitmap_id);
+      }
     }
   }
 

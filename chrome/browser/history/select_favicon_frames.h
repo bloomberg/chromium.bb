@@ -7,13 +7,13 @@
 
 #include <vector>
 
-#include "chrome/browser/history/history_types.h"
 #include "ui/base/layout.h"
 
 class SkBitmap;
 
 namespace gfx {
 class ImageSkia;
+class Size;
 }
 
 // Score which is smaller than the minimum score returned by
@@ -35,22 +35,20 @@ gfx::ImageSkia SelectFaviconFrames(
     int desired_size,
     float* score);
 
-// Takes a list of all history::FaviconBitmapIDSize for a favicon and returns
-// the FaviconBitmapIDs (in |filtered_favicon_bitmap_ids|) whose bitmap data
-// should be fetched in order to create an ImageSkia that's |desired_size| x
-// |desired_size| DIP big.
-// If |desired_size| is 0, the FaviconBitmapID with the largest size is
-// returned. If score is non-NULL, it receives a score between 0 (bad) and
-// 1 (good) that describes how well |filtered_favicon_bitmap_ids| will
-// produce an image at |desired_size| for |scale_factors|. The score is
-// arbitrary, but it's best for exact size matches, and gets worse the
-// more resampling needs to happen.
+// Takes a list of the pixel sizes of a favicon's favicon bitmaps and returns
+// the indices of the best sizes to use to create an ImageSkia that's
+// |desired_size| x |desired_size| DIP big. If |desired_size| is 0, the index
+// of the largest size is returned. If score is non-NULL, it receives a score
+// between 0 (bad) and 1 (good) that describes how well the bitmap data with
+// the sizes at |best_indices| will produce an image of |desired_size| DIP for
+// |scale_factors|. The score is arbitrary, but it's best for exact size
+// matches, and gets worse the more resampling needs to happen.
 // TODO(pkotwicz): Remove need to pass in |scale_factors|.
-void SelectFaviconBitmapIDs(
-    const std::vector<history::FaviconBitmapIDSize>& bitmap_id_sizes,
+void SelectFaviconFrameIndices(
+    const std::vector<gfx::Size>& frame_pixel_sizes,
     const std::vector<ui::ScaleFactor>& scale_factors,
     int desired_size,
-    std::vector<history::FaviconBitmapID>* filtered_favicon_bitmap_ids,
+    std::vector<size_t>* best_indices,
     float* score);
 
 #endif  // CHROME_BROWSER_HISTORY_SELECT_FAVICON_FRAMES_H_
