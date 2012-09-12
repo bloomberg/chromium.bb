@@ -43,7 +43,7 @@ function AudioPlayer(container) {
   createChild('title-button collapse').addEventListener(
       'click', this.onExpandCollapse_.bind(this));
 
-  this.audioControls_ = new AudioControls(
+  this.audioControls_ = new FullWindowAudioControls(
       createChild(), this.advance_.bind(this), this.onError_.bind(this));
 
   this.audioControls_.attachMedia(createChild('', 'audio'));
@@ -56,6 +56,16 @@ function AudioPlayer(container) {
         strings['AUDIO_PLAYER_DEFAULT_ARTIST'];
   }.bind(this));
 }
+
+/**
+ * Key in the local storage for the list of track urls.
+ */
+AudioPlayer.PLAYLIST_KEY = 'audioPlaylist';
+
+/**
+ * Key in the local storage for the number of the current track.
+ */
+AudioPlayer.TRACK_KEY = 'audioTrack';
 
 /**
  * Initial load method (static).
@@ -71,7 +81,10 @@ AudioPlayer.load = function() {
     function getPlaylist() {
       chrome.mediaPlayerPrivate.getPlaylist(player.load.bind(player));
     }
-    getPlaylist();
+    if (document.location.hash) // The window is reloading, restore the state.
+      player.load(null);
+    else
+      getPlaylist();
     chrome.mediaPlayerPrivate.onPlaylistChanged.addListener(getPlaylist);
   });
 };
@@ -81,6 +94,24 @@ AudioPlayer.load = function() {
  * @param {Playlist} playlist Playlist object passed via mediaPlayerPrivate.
  */
 AudioPlayer.prototype.load = function(playlist) {
+  if (!playlist || !playlist.items.length) {
+    // playlist is null if the window is being reloaded.
+    // playlist is empty if ChromeOS has restarted with the Audio Player open.
+    // Restore the playlist from the local storage. Restore the player state
+    // encoded in the page location.
+    try {
+      playlist = {
+        items: JSON.parse(localStorage[AudioPlayer.PLAYLIST_KEY]),
+        position: Number(localStorage[AudioPlayer.TRACK_KEY]),
+        restore: true
+      };
+    } catch (ignore) {}
+  } else {
+    // Remember the playlist for the restart.
+    localStorage[AudioPlayer.PLAYLIST_KEY] = JSON.stringify(playlist.items);
+    localStorage[AudioPlayer.TRACK_KEY] = playlist.position;
+  }
+
   this.playlistGeneration_++;
 
   this.audioControls_.pause();
@@ -92,7 +123,7 @@ AudioPlayer.prototype.load = function(playlist) {
   this.invalidTracks_ = {};
   this.cancelAutoAdvance_();
 
-  if (this.urls_.length == 1)
+  if (this.urls_.length <= 1)
     this.container_.classList.add('single-track');
   else
     this.container_.classList.remove('single-track');
@@ -105,6 +136,9 @@ AudioPlayer.prototype.load = function(playlist) {
   this.trackListItems_ = [];
   this.trackStackItems_ = [];
 
+  if (this.urls_.length == 0)
+    return;
+
   for (var i = 0; i != this.urls_.length; i++) {
     var url = this.urls_[i];
     var onClick = this.select_.bind(this, i);
@@ -114,7 +148,7 @@ AudioPlayer.prototype.load = function(playlist) {
         new AudioPlayer.TrackInfo(this.trackStack_, url, onClick));
   }
 
-  this.select_(playlist.position);
+  this.select_(playlist.position, playlist.restore);
 
   // This class will be removed if at least one track has art.
   this.container_.classList.add('noart');
@@ -154,26 +188,27 @@ AudioPlayer.prototype.displayMetadata_ = function(track, metadata, opt_error) {
 /**
  * Select a new track to play.
  * @param {number} newTrack New track number.
+ * @param {boolean} opt_restoreState True if restoring the play state from URL.
  * @private
  */
-AudioPlayer.prototype.select_ = function(newTrack) {
+AudioPlayer.prototype.select_ = function(newTrack, opt_restoreState) {
   if (this.currentTrack_ == newTrack) return;
 
   this.changeSelectionInList_(this.currentTrack_, newTrack);
   this.changeSelectionInStack_(this.currentTrack_, newTrack);
 
   this.currentTrack_ = newTrack;
+  localStorage[AudioPlayer.TRACK_KEY] = this.currentTrack_;
+
   this.scrollToCurrent_(false);
 
   var url = this.urls_[this.currentTrack_];
   this.fetchMetadata_(url, function(metadata) {
-    var media = this.audioControls_.getMedia();
     // Do not try no stream when offline.
-    media.src =
+    var src =
         (navigator.onLine && metadata.streaming && metadata.streaming.url) ||
         url;
-    media.load();
-    this.audioControls_.play();
+    this.audioControls_.load(src, opt_restoreState);
   }.bind(this));
 };
 
@@ -447,4 +482,49 @@ AudioPlayer.TrackInfo.prototype.setMetadata = function(
   this.title_.textContent = metadata.media.title || this.getDefaultTitle();
   this.artist_.textContent =
       error || metadata.media.artist || this.getDefaultArtist();
+};
+
+/**
+ * Audio controls specific for the Audio Player.
+ *
+ * @param {HTMLElement} container Parent container.
+ * @param {function(boolean)} advanceTrack Parameter: true=forward.
+ * @param {function} onError Error handler.
+ * @constructor
+ */
+function FullWindowAudioControls(container, advanceTrack, onError) {
+  AudioControls.apply(this, arguments);
+}
+
+FullWindowAudioControls.prototype = { __proto__: AudioControls.prototype };
+
+/**
+ * Enable play state restore from the location hash.
+ * @param {string} src Source URL.
+ * @param {boolean} restore True if need to restore the play state.
+ */
+FullWindowAudioControls.prototype.load = function(src, restore) {
+  this.media_.src = src;
+  this.media_.load();
+  this.restoreWhenLoaded_ = restore;
+};
+
+/**
+ * Save the current play state in the location hash so that it survives
+ * the page reload.
+ */
+FullWindowAudioControls.prototype.onPlayStateChanged = function() {
+  this.encodeStateIntoLocation();
+};
+
+/**
+ * Restore the Save the play state from the location hash.
+ */
+FullWindowAudioControls.prototype.restorePlayState = function() {
+  if (this.restoreWhenLoaded_) {
+    this.restoreWhenLoaded_ = false;  // This should only work once.
+    if (this.decodeStateFromLocation())
+      return;
+  }
+  this.play();
 };

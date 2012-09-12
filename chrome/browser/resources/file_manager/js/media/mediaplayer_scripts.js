@@ -9,6 +9,6 @@
 // with a copyright comment anyway.
 
 //<include src="../file_type.js"/>
-//<include src="audio_player.js"/>
 //<include src="media_controls.js"/>
+//<include src="audio_player.js"/>
 //<include src="../metadata/metadata_cache.js"/>

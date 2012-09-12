@@ -12,12 +12,16 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
 #include "net/url_request/url_request_job.h"
 #include "ui/gfx/screen.h"
 
@@ -26,7 +30,7 @@ using content::UserMetricsAction;
 
 static const char* kMediaPlayerAppName = "mediaplayer";
 static const int kPopupRight = 20;
-static const int kPopupBottom = 50;
+static const int kPopupBottom = 80;
 static const int kPopupWidth = 280;
 
 // Set the initial height to the minimum possible height. Keep the constants
@@ -62,10 +66,11 @@ MediaPlayer* MediaPlayer::GetInstance() {
 }
 
 void MediaPlayer::SetWindowHeight(int content_height) {
-  if (mediaplayer_browser_ != NULL) {
+  Browser* browser = GetBrowser();
+  if (browser != NULL) {
     int window_height = content_height + kTitleHeight;
-    gfx::Rect bounds = mediaplayer_browser_->window()->GetBounds();
-    mediaplayer_browser_->window()->SetBounds(gfx::Rect(
+    gfx::Rect bounds = browser->window()->GetBounds();
+    browser->window()->SetBounds(gfx::Rect(
         bounds.x(),
         std::max(0, bounds.bottom() - window_height),
         bounds.width(),
@@ -74,8 +79,9 @@ void MediaPlayer::SetWindowHeight(int content_height) {
 }
 
 void MediaPlayer::CloseWindow() {
-  if (mediaplayer_browser_ != NULL) {
-    mediaplayer_browser_->window()->Close();
+  Browser* browser = GetBrowser();
+  if (browser != NULL) {
+    browser->window()->Close();
   }
 }
 
@@ -98,16 +104,6 @@ void MediaPlayer::SetPlaylistPosition(int position) {
   current_position_ = position;
 }
 
-void MediaPlayer::Observe(int type,
-                          const content::NotificationSource& source,
-                          const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_BROWSER_CLOSED);
-  registrar_.Remove(this, chrome::NOTIFICATION_BROWSER_CLOSED, source);
-
-  if (content::Source<Browser>(source).ptr() == mediaplayer_browser_)
-    mediaplayer_browser_ = NULL;
-}
-
 void MediaPlayer::NotifyPlaylistChanged() {
   ExtensionMediaPlayerEventRouter::GetInstance()->NotifyPlaylistChanged();
 }
@@ -120,37 +116,49 @@ void MediaPlayer::PopupMediaPlayer() {
                    base::Unretained(this) /*this class is a singleton*/));
     return;
   }
-  if (mediaplayer_browser_) {  // Already opened.
-    mediaplayer_browser_->window()->Show();
-    return;
+
+  Browser* browser = GetBrowser();
+  if (!browser) {
+    const gfx::Size screen = gfx::Screen::GetPrimaryDisplay().size();
+    const gfx::Rect bounds(screen.width() - kPopupRight - kPopupWidth,
+                           screen.height() - kPopupBottom - kPopupHeight,
+                           kPopupWidth,
+                           kPopupHeight);
+
+    Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+    browser = new Browser(
+        Browser::CreateParams::CreateForApp(Browser::TYPE_PANEL,
+                                            kMediaPlayerAppName,
+                                            bounds,
+                                            profile));
+
+    chrome::AddSelectedTabWithURL(browser, GetMediaPlayerUrl(),
+                                  content::PAGE_TRANSITION_LINK);
   }
-
-  const gfx::Size screen = gfx::Screen::GetPrimaryDisplay().size();
-  const gfx::Rect bounds(screen.width() - kPopupRight - kPopupWidth,
-                         screen.height() - kPopupBottom - kPopupHeight,
-                         kPopupWidth,
-                         kPopupHeight);
-
-  Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
-  mediaplayer_browser_ = new Browser(
-      Browser::CreateParams::CreateForApp(Browser::TYPE_PANEL,
-                                          kMediaPlayerAppName,
-                                          bounds,
-                                          profile));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_BROWSER_CLOSED,
-                 content::Source<Browser>(mediaplayer_browser_));
-
-  chrome::AddSelectedTabWithURL(mediaplayer_browser_, GetMediaPlayerUrl(),
-                                content::PAGE_TRANSITION_LINK);
-  mediaplayer_browser_->window()->Show();
+  browser->window()->Show();
 }
 
-GURL MediaPlayer::GetMediaPlayerUrl() const {
+GURL MediaPlayer::GetMediaPlayerUrl() {
   return file_manager_util::GetMediaPlayerUrl();
 }
 
+Browser* MediaPlayer::GetBrowser() {
+  for (BrowserList::const_iterator browser_iterator = BrowserList::begin();
+       browser_iterator != BrowserList::end(); ++browser_iterator) {
+    Browser* browser = *browser_iterator;
+    TabStripModel* tab_strip = browser->tab_strip_model();
+    for (int idx = 0; idx < tab_strip->count(); idx++) {
+      content::WebContents* web_contents =
+          tab_strip->GetTabContentsAt(idx)->web_contents();
+      const GURL& url = web_contents->GetURL();
+      GURL base_url(url.GetOrigin().spec() + url.path().substr(1));
+      if (base_url == GetMediaPlayerUrl())
+        return browser;
+    }
+  }
+  return NULL;
+}
+
 MediaPlayer::MediaPlayer()
-    : current_position_(0),
-      mediaplayer_browser_(NULL) {
+    : current_position_(0) {
 };

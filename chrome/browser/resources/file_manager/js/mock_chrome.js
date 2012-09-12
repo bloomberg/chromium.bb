@@ -813,6 +813,10 @@ chrome.mediaPlayerPrivate = {
 
   onTogglePlayState: new MockEventSource(),
 
+  onNextTrack: new MockEventSource(),
+
+  onPrevTrack: new MockEventSource(),
+
   play: function(urls, position) {
     this.playlist_ = { items: urls, position: position };
 

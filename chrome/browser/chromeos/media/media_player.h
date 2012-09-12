@@ -7,12 +7,7 @@
 
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 
 template <typename T> struct DefaultSingletonTraits;
 
@@ -21,7 +16,7 @@ class FilePath;
 class GURL;
 class Profile;
 
-class MediaPlayer : public content::NotificationObserver {
+class MediaPlayer {
  public:
   typedef std::vector<GURL> UrlVector;
 
@@ -59,11 +54,6 @@ class MediaPlayer : public content::NotificationObserver {
   // called from the mediaplayer itself for example.
   void NotifyPlaylistChanged();
 
-  // Used to detect when the mediaplayer is closed.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   // Getter for the singleton.
   static MediaPlayer* GetInstance();
 
@@ -75,19 +65,12 @@ class MediaPlayer : public content::NotificationObserver {
   // The position into the current_playlist_ of the currently playing item.
   int current_position_;
 
-  bool pending_playback_request_;
-
   MediaPlayer();
 
-  GURL GetMediaPlayerUrl() const;
+  static GURL GetMediaPlayerUrl();
 
-  // Browser containing the Mediaplayer.  Used to force closes. This is
-  // created by the PopupMediaplayer call, and is NULLed out when the window
-  // is closed.
-  Browser* mediaplayer_browser_;
-
-  // Used to register for events on the windows, like to listen for closes.
-  content::NotificationRegistrar registrar_;
+  // Browser containing the Mediaplayer.
+  static Browser* GetBrowser();
 
   friend class MediaPlayerBrowserTest;
   DISALLOW_COPY_AND_ASSIGN(MediaPlayer);

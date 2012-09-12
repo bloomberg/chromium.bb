@@ -384,6 +384,9 @@ MediaControls.prototype.onMediaDuration_ = function() {
 
   if (this.progressSlider_.setValueToStringFunction)
     this.progressSlider_.setValueToStringFunction(valueToString);
+
+  if (this.media_.seekable)
+    this.restorePlayState();
 };
 
 /**
@@ -417,8 +420,59 @@ MediaControls.prototype.onMediaComplete = function() {};
 
 /**
  * Called when play/pause state is changed or on playback progress.
+ * This is the right moment to save the play state.
  */
 MediaControls.prototype.onPlayStateChanged = function() {};
+
+/**
+ * Restore play state. Base implementation is empty.
+ */
+MediaControls.prototype.restorePlayState = function() {};
+
+/**
+ * Encode current play/pause status and the current time into the page URL.
+ */
+MediaControls.prototype.encodeStateIntoLocation = function() {
+  if (!this.media_.duration)
+    return;
+
+  var playState = JSON.stringify({
+      play: this.isPlaying(),
+      time: this.media_.currentTime
+    });
+
+  var newLocation = document.location.origin + document.location.pathname +
+      document.location.search + '#' + playState;
+
+  history.replaceState(undefined, playState, newLocation);
+};
+
+/**
+ * Decode current play/pause status and the current time from the page URL.
+ * @return {boolean} True if decode succeeded.
+ */
+MediaControls.prototype.decodeStateFromLocation = function() {
+  var hash = document.location.hash.substring(1);
+  if (hash) {
+    try {
+      var playState = JSON.parse(hash);
+      if (!('time' in playState))
+        return false;
+
+      this.media_.currentTime = playState.time;
+
+      if (playState.play)
+        this.play();
+      else
+        this.pause();
+
+      return true;
+    } catch (e) {
+      console.warn('Cannot decode play state');
+    }
+  }
+  return false;
+};
 
 /**
  * Create a customized slider control.
@@ -940,16 +994,6 @@ VideoControls.prototype.togglePlayStateWithFeedback = function() {
 };
 
 /**
- * 'durationchange' handler.
- * @private
- */
-VideoControls.prototype.onMediaDuration_ = function() {
-  MediaControls.prototype.onMediaDuration_.apply(this, arguments);
-  if (this.media_.duration && this.media_.seekable)
-    this.resumePosition();
-};
-
-/**
  * Toggle play/pause state.
  */
 VideoControls.prototype.togglePlayState = function() {
@@ -983,7 +1027,7 @@ VideoControls.prototype.savePosition = function() {
 /**
  * Resume the playback position saved in the persistent storage.
  */
-VideoControls.prototype.resumePosition = function() {
+VideoControls.prototype.restorePlayState = function() {
   if (this.media_.duration >= VideoControls.RESUME_THRESHOLD) {
     var position = this.resumePositions_.getValue(this.media_.src);
     if (position)

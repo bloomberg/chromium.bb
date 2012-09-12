@@ -51,33 +51,16 @@ FullWindowVideoControls.prototype = { __proto__: VideoControls.prototype };
  * the page reload.
  */
 FullWindowVideoControls.prototype.onPlayStateChanged = function() {
-  if (!this.getMedia().duration)
-    return;
-
-  var playState = (this.isPlaying() ? 'play' : 'pause') + '=' +
-      this.getMedia().currentTime.toFixed(2);
-
-  var newLocation = document.location.origin + document.location.pathname +
-      document.location.search + '#' + playState;
-
-  history.replaceState(undefined, playState, newLocation);
+  this.encodeStateIntoLocation();
 };
 
 /**
- * Resume the play state after the video is loaded.
+ * Restore the play state after the video is loaded.
  */
-FullWindowVideoControls.prototype.resumePosition = function() {
-  var video = this.getMedia();
-
-  var playState = document.location.hash.substring(1);
-  if (playState) {
-    var parts = playState.split('=');
-    video.currentTime = parseFloat(parts[1]);
-    if (parts[0] != 'pause')
-      video.play();
-  } else {
-    VideoControls.prototype.resumePosition.apply(this, arguments);
-    video.play();
+FullWindowVideoControls.prototype.restorePlayState = function() {
+  if (!this.decodeStateFromLocation()) {
+    VideoControls.prototype.restorePlayState.apply(this, arguments);
+    this.play();
   }
 };
 
