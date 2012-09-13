@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/gdata/mock_directory_change_observer.h"
 #include "chrome/browser/chromeos/gdata/mock_drive_cache_observer.h"
 #include "chrome/browser/chromeos/gdata/mock_drive_service.h"
+#include "chrome/browser/chromeos/gdata/mock_drive_uploader.h"
 #include "chrome/browser/chromeos/gdata/mock_drive_web_apps_registry.h"
 #include "chrome/browser/chromeos/gdata/mock_free_disk_space_getter.h"
 #include "chrome/common/chrome_paths.h"
@@ -90,12 +91,32 @@ ACTION_P2(MockGetDocumentEntry, status, value) {
 // DriveUploaderInterface::UploadExistingFile().
 ACTION_P4(MockUploadExistingFile,
           error, drive_path, local_file_path, document_entry) {
-  scoped_ptr<UploadFileInfo> upload_file_info(new UploadFileInfo);
-  upload_file_info->drive_path = drive_path;
-  upload_file_info->file_path = local_file_path;
-  upload_file_info->entry.reset(document_entry);
+  scoped_ptr<DocumentEntry> scoped_document_entry(document_entry);
   base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-      base::Bind(arg5, error, base::Passed(&upload_file_info)));
+      base::Bind(arg5,
+                 error,
+                 drive_path,
+                 local_file_path,
+                 base::Passed(&scoped_document_entry)));
+
+  const int kUploadId = 123;
+  return kUploadId;
+}
+
+// Action used to set mock expectations for
+// DriveUploaderInterface::UploadNewFile().
+ACTION(MockUploadNewFile) {
+  scoped_ptr<base::Value> value(
+      test_util::LoadJSONFile("gdata/uploaded_file.json"));
+  scoped_ptr<DocumentEntry> document_entry(
+      DocumentEntry::ExtractAndParse(*value));
+
+  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+      base::Bind(arg7,
+                 DRIVE_FILE_OK,
+                 arg1,
+                 arg2,
+                 base::Passed(&document_entry)));
 
   const int kUploadId = 123;
   return kUploadId;
@@ -120,47 +141,6 @@ int CountFiles(const DriveEntryProtoVector& entries) {
 }
 
 }  // namespace
-
-class MockDriveUploader : public DriveUploaderInterface {
- public:
-  virtual ~MockDriveUploader() {}
-  // This function is not mockable by gmock.
-  virtual int UploadNewFile(
-      scoped_ptr<UploadFileInfo> upload_file_info) OVERRIDE {
-    // Set a document entry for an uploaded file.
-    // Used for TransferFileFromLocalToRemote_RegularFile test.
-    scoped_ptr<base::Value> value(
-        test_util::LoadJSONFile("gdata/uploaded_file.json"));
-    scoped_ptr<DocumentEntry> document_entry(
-        DocumentEntry::ExtractAndParse(*value));
-    upload_file_info->entry = document_entry.Pass();
-
-    // Run the completion callback.
-    const UploadFileInfo::UploadCompletionCallback callback =
-        upload_file_info->completion_callback;
-    if (!callback.is_null())
-      callback.Run(DRIVE_FILE_OK, upload_file_info.Pass());
-
-    const int kUploadId = 123;
-    return kUploadId;
-  }
-
-  // This function is not mockable by gmock.
-  virtual int StreamExistingFile(
-      scoped_ptr<UploadFileInfo> upload_file_info) OVERRIDE { return 0; }
-
-  MOCK_METHOD6(UploadExistingFile,
-               int(const GURL& upload_location,
-               const FilePath& drive_file_path,
-               const FilePath& local_file_path,
-               int64 file_size,
-               const std::string& content_type,
-               const UploadFileInfo::UploadCompletionCallback& callback));
-
-  MOCK_METHOD2(UpdateUpload, void(int upload_id,
-                                  content::DownloadItem* download));
-  MOCK_CONST_METHOD1(GetUploadedBytes, int64(int upload_id));
-};
 
 class DriveFileSystemTest : public testing::Test {
  protected:
@@ -1239,6 +1219,14 @@ TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_RegularFile) {
   // Confirm that the remote file does not exist.
   const FilePath remote_dest_file_path(FILE_PATH_LITERAL("drive/remote.txt"));
   EXPECT_FALSE(EntryExists(remote_dest_file_path));
+
+  scoped_ptr<base::Value> value(
+      test_util::LoadJSONFile("gdata/document_to_download.json"));
+  scoped_ptr<DocumentEntry> document_entry(
+      DocumentEntry::ExtractAndParse(*value));
+
+  EXPECT_CALL(*mock_uploader_, UploadNewFile(_, _, _, _, _, _, _, _))
+      .WillOnce(MockUploadNewFile());
 
   // Transfer the local file to Drive.
   file_system_->TransferFileFromLocalToRemote(
@@ -2374,8 +2362,8 @@ TEST_F(DriveFileSystemTest, UpdateFileByResourceId_PersistentFile) {
       GURL("https://file_link_resumable_edit_media/"),
       kFilePath,
       dirty_cache_file_path,
-      kDummyCacheContent.size(),  // The size after modification must be used.
       "audio/mpeg",
+      kDummyCacheContent.size(),  // The size after modification must be used.
       _))  // callback
       .WillOnce(MockUploadExistingFile(
           DRIVE_FILE_OK,

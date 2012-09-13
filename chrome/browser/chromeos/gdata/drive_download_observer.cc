@@ -8,14 +8,14 @@
 
 #include "base/callback.h"
 #include "base/file_util.h"
+#include "base/string_number_conversions.h"
 #include "base/supports_user_data.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_util.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "chrome/browser/chromeos/gdata/drive_system_service.h"
-#include "chrome/browser/chromeos/gdata/drive_upload_file_info.h"
-#include "chrome/browser/chromeos/gdata/drive_uploader.h"
+#include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
 #include "chrome/browser/download/download_completion_blocker.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -438,8 +438,8 @@ void DriveDownloadObserver::UploadDownloadItem(DownloadItem* download) {
   download->SetUserData(&kUploadingKey,
                             new UploadingUserData(drive_uploader_));
 
-  // Create UploadFileInfo structure for the download item.
-  CreateUploadFileInfo(download);
+  // Create UploaderParams structure for the download item.
+  CreateUploaderParams(download);
 }
 
 void DriveDownloadObserver::UpdateUpload(DownloadItem* download) {
@@ -468,65 +468,64 @@ bool DriveDownloadObserver::ShouldUpload(DownloadItem* download) {
          (GetUploadingUserData(download) == NULL);
 }
 
-void DriveDownloadObserver::CreateUploadFileInfo(DownloadItem* download) {
+void DriveDownloadObserver::CreateUploaderParams(DownloadItem* download) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  scoped_ptr<UploadFileInfo> upload_file_info(new UploadFileInfo());
+  scoped_ptr<UploaderParams> uploader_params(new UploaderParams());
 
   // GetFullPath will be a temporary location if we're streaming.
-  upload_file_info->file_path = download->GetFullPath();
-  upload_file_info->file_size = download->GetReceivedBytes();
+  uploader_params->file_path = download->GetFullPath();
+  uploader_params->file_size = download->GetReceivedBytes();
 
   // Extract the final path from DownloadItem.
-  upload_file_info->drive_path = GetDrivePath(download);
+  uploader_params->drive_path = GetDrivePath(download);
 
   // Use the file name as the title.
-  upload_file_info->title = upload_file_info->drive_path.BaseName().value();
-  upload_file_info->content_type = download->GetMimeType();
+  uploader_params->title = uploader_params->drive_path.BaseName().value();
+  uploader_params->content_type = download->GetMimeType();
   // GData api handles -1 as unknown file length.
-  upload_file_info->content_length = download->AllDataSaved() ?
-                                     download->GetReceivedBytes() : -1;
+  uploader_params->content_length = download->AllDataSaved() ?
+                                    download->GetReceivedBytes() : -1;
 
-  upload_file_info->all_bytes_present = download->AllDataSaved();
+  uploader_params->all_bytes_present = download->AllDataSaved();
 
-  upload_file_info->completion_callback =
+  uploader_params->completion_callback =
       base::Bind(&DriveDownloadObserver::OnUploadComplete,
                  weak_ptr_factory_.GetWeakPtr(),
                  download->GetId());
 
   // First check if |path| already exists. If so, we'll be overwriting an
   // existing file.
-  const FilePath path = upload_file_info->drive_path;
+  const FilePath path = uploader_params->drive_path;
   file_system_->GetEntryInfoByPath(
       path,
       base::Bind(
-          &DriveDownloadObserver::CreateUploadFileInfoAfterCheckExistence,
+          &DriveDownloadObserver::CreateUploaderParamsAfterCheckExistence,
           weak_ptr_factory_.GetWeakPtr(),
           download->GetId(),
-          base::Passed(&upload_file_info)));
+          base::Passed(&uploader_params)));
 }
 
-void DriveDownloadObserver::CreateUploadFileInfoAfterCheckExistence(
+void DriveDownloadObserver::CreateUploaderParamsAfterCheckExistence(
     int32 download_id,
-    scoped_ptr<UploadFileInfo> upload_file_info,
+    scoped_ptr<UploaderParams> uploader_params,
     DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(upload_file_info.get());
+  DCHECK(uploader_params.get());
 
   if (entry_proto.get()) {
     // Make sure this isn't a directory.
     if (entry_proto->file_info().is_directory()) {
       DVLOG(1) << "Filename conflicts with existing directory: "
-               << upload_file_info->title;
+               << uploader_params->title;
       return;
     }
 
     // An entry already exists at the target path, so overwrite the existing
     // file.
-    upload_file_info->initial_upload_location =
-        GURL(entry_proto->upload_url());
-    upload_file_info->title = "";
+    uploader_params->upload_location = GURL(entry_proto->upload_url());
+    uploader_params->title = "";
 
     // Look up the DownloadItem for the |download_id|.
     DownloadMap::iterator iter = pending_downloads_.find(download_id);
@@ -543,48 +542,47 @@ void DriveDownloadObserver::CreateUploadFileInfoAfterCheckExistence(
     upload_data->set_md5(entry_proto->file_specific_info().file_md5());
     upload_data->set_overwrite(true);
 
-    StartUpload(download_id, upload_file_info.Pass());
+    StartUpload(download_id, uploader_params.Pass());
   } else {
     // No file exists at the target path, so upload as a new file.
 
     // Get the DriveDirectory proto for the upload directory, then extract the
     // initial upload URL in OnReadDirectoryByPath().
-    const FilePath upload_dir = upload_file_info->drive_path.DirName();
+    const FilePath upload_dir = uploader_params->drive_path.DirName();
     file_system_->GetEntryInfoByPath(
         upload_dir,
         base::Bind(
-            &DriveDownloadObserver::CreateUploadFileInfoAfterCheckTargetDir,
+            &DriveDownloadObserver::CreateUploaderParamsAfterCheckTargetDir,
             weak_ptr_factory_.GetWeakPtr(),
             download_id,
-            base::Passed(&upload_file_info)));
+            base::Passed(&uploader_params)));
   }
 }
 
-void DriveDownloadObserver::CreateUploadFileInfoAfterCheckTargetDir(
+void DriveDownloadObserver::CreateUploaderParamsAfterCheckTargetDir(
     int32 download_id,
-    scoped_ptr<UploadFileInfo> upload_file_info,
+    scoped_ptr<UploaderParams> uploader_params,
     DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(upload_file_info.get());
+  DCHECK(uploader_params.get());
 
   if (entry_proto.get()) {
     // TODO(hshi): if the upload directory is no longer valid, use the root
     // directory instead.
-    upload_file_info->initial_upload_location =
-        GURL(entry_proto->upload_url());
+    uploader_params->upload_location = GURL(entry_proto->upload_url());
   } else {
-    upload_file_info->initial_upload_location = GURL();
+    uploader_params->upload_location = GURL();
   }
 
-  StartUpload(download_id, upload_file_info.Pass());
+  StartUpload(download_id, uploader_params.Pass());
 }
 
 void DriveDownloadObserver::StartUpload(
     int32 download_id,
-    scoped_ptr<UploadFileInfo> upload_file_info) {
+    scoped_ptr<UploaderParams> uploader_params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(upload_file_info.get());
+  DCHECK(uploader_params.get());
 
   // Look up the DownloadItem for the |download_id|.
   DownloadMap::iterator iter = pending_downloads_.find(download_id);
@@ -597,16 +595,30 @@ void DriveDownloadObserver::StartUpload(
 
   UploadingUserData* upload_data = GetUploadingUserData(download_item);
   DCHECK(upload_data);
-  upload_data->set_virtual_dir_path(upload_file_info->drive_path.DirName());
+  upload_data->set_virtual_dir_path(uploader_params->drive_path.DirName());
 
   // Start upload and save the upload id for future reference.
   if (upload_data->is_overwrite()) {
     const int upload_id =
-        drive_uploader_->StreamExistingFile(upload_file_info.Pass());
+        drive_uploader_->StreamExistingFile(
+            uploader_params->upload_location,
+            uploader_params->drive_path,
+            uploader_params->file_path,
+            uploader_params->content_type,
+            uploader_params->content_length,
+            uploader_params->file_size,
+            uploader_params->completion_callback);
     upload_data->set_upload_id(upload_id);
   } else {
     const int upload_id =
-        drive_uploader_->UploadNewFile(upload_file_info.Pass());
+        drive_uploader_->UploadNewFile(uploader_params->upload_location,
+                                       uploader_params->drive_path,
+                                       uploader_params->file_path,
+                                       uploader_params->title,
+                                       uploader_params->content_type,
+                                       uploader_params->content_length,
+                                       uploader_params->file_size,
+                                       uploader_params->completion_callback);
     upload_data->set_upload_id(upload_id);
   }
 }
@@ -614,10 +626,11 @@ void DriveDownloadObserver::StartUpload(
 void DriveDownloadObserver::OnUploadComplete(
     int32 download_id,
     DriveFileError error,
-    scoped_ptr<UploadFileInfo> upload_file_info) {
+    const FilePath& drive_path,
+    const FilePath& file_path,
+    scoped_ptr<DocumentEntry> document_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(upload_file_info.get());
-  DCHECK(upload_file_info->entry.get());
+  DCHECK(document_entry.get());
 
   // Look up the DownloadItem for the |download_id|.
   DownloadMap::iterator iter = pending_downloads_.find(download_id);
@@ -634,7 +647,7 @@ void DriveDownloadObserver::OnUploadComplete(
   // Take ownership of the DocumentEntry from UploadFileInfo. This is used by
   // DriveFileSystem::AddUploadedFile() to add the entry to DriveCache after the
   // upload completes.
-  upload_data->set_entry(upload_file_info->entry.Pass());
+  upload_data->set_entry(document_entry.Pass());
 
   // Allow the download item to complete.
   upload_data->CompleteDownload();
@@ -673,6 +686,27 @@ void DriveDownloadObserver::MoveFileToDriveCache(DownloadItem* download) {
                                   DriveCache::FILE_OPERATION_MOVE,
                                   base::Bind(&base::DoNothing));
   }
+}
+
+DriveDownloadObserver::UploaderParams::UploaderParams()
+    : file_size(0),
+      content_length(-1),
+      all_bytes_present(false) {
+}
+
+DriveDownloadObserver::UploaderParams::~UploaderParams() {
+}
+
+// Useful for printf debugging.
+std::string DriveDownloadObserver::UploaderParams::DebugString() const {
+  return "title=[" + title +
+         "], file_path=[" + file_path.value() +
+         "], content_type=[" + content_type +
+         "], content_length=[" + base::UintToString(content_length) +
+         "], upload_location=[" + upload_location.possibly_invalid_spec() +
+         "], drive_path=[" + drive_path.value() +
+         "], all_bytes_present=[" + (all_bytes_present ?  "true" : "false") +
+         "]";
 }
 
 }  // namespace gdata

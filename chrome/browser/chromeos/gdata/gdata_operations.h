@@ -8,8 +8,9 @@
 #include <string>
 #include <vector>
 
+#include "chrome/browser/chromeos/gdata/drive_upload_mode.h"
 #include "chrome/browser/google_apis/operations_base.h"
-#include "chrome/browser/chromeos/gdata/drive_upload_file_info.h"
+#include "net/base/io_buffer.h"
 
 namespace gdata {
 

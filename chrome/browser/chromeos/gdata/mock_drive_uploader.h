@@ -15,25 +15,31 @@ class MockDriveUploader : public DriveUploaderInterface {
  public:
   MockDriveUploader();
   virtual ~MockDriveUploader();
-  // This function is not mockable by gmock.
-  virtual int UploadNewFile(
-      scoped_ptr<UploadFileInfo> upload_file_info) OVERRIDE {
-    const int kUploadId = 123;
-    return kUploadId;
-  }
 
-  // This function is not mockable by gmock.
-  virtual int StreamExistingFile(
-      scoped_ptr<UploadFileInfo> upload_file_info) OVERRIDE { return 0; }
-
+  MOCK_METHOD8(UploadNewFile,
+               int(const GURL& upload_location,
+                   const FilePath& gdata_file_path,
+                   const FilePath& local_file_path,
+                   const std::string& title,
+                   const std::string& content_type,
+                   int64 content_length,
+                   int64 file_size,
+                   const UploadCompletionCallback& callback));
+  MOCK_METHOD7(StreamExistingFile,
+               int(const GURL& upload_location,
+                   const FilePath& gdata_file_path,
+                   const FilePath& local_file_path,
+                   const std::string& content_type,
+                   int64 content_length,
+                   int64 file_size,
+                   const UploadCompletionCallback& callback));
   MOCK_METHOD6(UploadExistingFile,
                int(const GURL& upload_location,
-               const FilePath& drive_file_path,
-               const FilePath& local_file_path,
-               int64 file_size,
-               const std::string& content_type,
-               const UploadFileInfo::UploadCompletionCallback& callback));
-
+                   const FilePath& gdata_file_path,
+                   const FilePath& local_file_path,
+                   const std::string& content_type,
+                   int64 file_size,
+                   const UploadCompletionCallback& callback));
   MOCK_METHOD2(UpdateUpload, void(int upload_id,
                                   content::DownloadItem* download));
   MOCK_CONST_METHOD1(GetUploadedBytes, int64(int upload_id));

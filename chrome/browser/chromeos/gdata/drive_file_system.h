@@ -32,7 +32,6 @@ class DriveResourceMetadata;
 class DriveServiceInterface;
 class DriveUploaderInterface;
 class DriveWebAppsRegistryInterface;
-struct UploadFileInfo;
 
 // The production implementation of DriveFileSystemInterface.
 class DriveFileSystem : public DriveFileSystemInterface,
@@ -610,7 +609,9 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // completed file transfer.
   void OnTransferCompleted(const FileOperationCallback& callback,
                            DriveFileError error,
-                           scoped_ptr<UploadFileInfo> upload_file_info);
+                           const FilePath& drive_path,
+                           const FilePath& file_path,
+                           scoped_ptr<DocumentEntry> document_entry);
 
   // Kicks off file upload once it receives |file_size| and |content_type|.
   void StartFileUploadOnUIThread(const StartFileUploadParams& params,
@@ -746,7 +747,9 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // |callback| must not be null.
   void OnUpdatedFileUploaded(const FileOperationCallback& callback,
                              DriveFileError error,
-                             scoped_ptr<UploadFileInfo> upload_file_info);
+                             const FilePath& gdata_path,
+                             const FilePath& file_path,
+                             scoped_ptr<DocumentEntry> document_entry);
 
   // The following functions are used to forward calls to asynchronous public
   // member functions to UI thread.

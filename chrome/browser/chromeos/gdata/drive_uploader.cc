@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/chromeos/gdata/drive_service_interface.h"
-#include "chrome/browser/chromeos/gdata/drive_upload_file_info.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
@@ -39,18 +39,33 @@ DriveUploader::DriveUploader(DriveServiceInterface* drive_service)
 DriveUploader::~DriveUploader() {
 }
 
-int DriveUploader::UploadNewFile(scoped_ptr<UploadFileInfo> upload_file_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(upload_file_info.get());
-  DCHECK_EQ(upload_file_info->upload_id, -1);
-  DCHECK(!upload_file_info->file_path.empty());
-  DCHECK(!upload_file_info->drive_path.empty());
-  DCHECK(!upload_file_info->title.empty());
-  DCHECK(!upload_file_info->content_type.empty());
-  DCHECK(!upload_file_info->initial_upload_location.is_empty());
-  DCHECK_EQ(UPLOAD_INVALID, upload_file_info->upload_mode);
+int DriveUploader::UploadNewFile(
+    const GURL& upload_location,
+    const FilePath& drive_file_path,
+    const FilePath& local_file_path,
+    const std::string& title,
+    const std::string& content_type,
+    int64 content_length,
+    int64 file_size,
+    const UploadCompletionCallback& callback) {
+   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+   DCHECK(!upload_location.is_empty());
+   DCHECK(!drive_file_path.empty());
+   DCHECK(!local_file_path.empty());
+   DCHECK(!title.empty());
+   DCHECK(!content_type.empty());
 
+  scoped_ptr<UploadFileInfo> upload_file_info(new UploadFileInfo);
   upload_file_info->upload_mode = UPLOAD_NEW_FILE;
+  upload_file_info->initial_upload_location = upload_location;
+  upload_file_info->drive_path = drive_file_path;
+  upload_file_info->file_path = local_file_path;
+  upload_file_info->title = title;
+  upload_file_info->content_type = content_type;
+  upload_file_info->content_length = content_length;
+  upload_file_info->file_size = file_size;
+  upload_file_info->all_bytes_present = content_length == file_size;
+  upload_file_info->completion_callback = callback;
 
   // When uploading a new file, we should retry file open as the file may
   // not yet be ready. See comments in OpenCompletionCallback.
@@ -61,18 +76,29 @@ int DriveUploader::UploadNewFile(scoped_ptr<UploadFileInfo> upload_file_info) {
 }
 
 int DriveUploader::StreamExistingFile(
-    scoped_ptr<UploadFileInfo> upload_file_info) {
+    const GURL& upload_location,
+    const FilePath& drive_file_path,
+    const FilePath& local_file_path,
+    const std::string& content_type,
+    int64 content_length,
+    int64 file_size,
+    const UploadCompletionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(upload_file_info.get());
-  DCHECK_EQ(upload_file_info->upload_id, -1);
-  DCHECK(!upload_file_info->file_path.empty());
-  DCHECK(!upload_file_info->drive_path.empty());
-  DCHECK(upload_file_info->title.empty());
-  DCHECK(!upload_file_info->content_type.empty());
-  DCHECK(!upload_file_info->initial_upload_location.is_empty());
-  DCHECK_EQ(UPLOAD_INVALID, upload_file_info->upload_mode);
+  DCHECK(!upload_location.is_empty());
+  DCHECK(!drive_file_path.empty());
+  DCHECK(!local_file_path.empty());
+  DCHECK(!content_type.empty());
 
+  scoped_ptr<UploadFileInfo> upload_file_info(new UploadFileInfo);
   upload_file_info->upload_mode = UPLOAD_EXISTING_FILE;
+  upload_file_info->initial_upload_location = upload_location;
+  upload_file_info->drive_path = drive_file_path;
+  upload_file_info->file_path = local_file_path;
+  upload_file_info->content_type = content_type;
+  upload_file_info->content_length = content_length;
+  upload_file_info->file_size = file_size;
+  upload_file_info->all_bytes_present = content_length == file_size;
+  upload_file_info->completion_callback = callback;
 
   // When uploading a new file, we should retry file open as the file may
   // not yet be ready. See comments in OpenCompletionCallback.
@@ -94,7 +120,6 @@ int DriveUploader::StartUploadFile(
 
   // Add upload_file_info to our internal map and take ownership.
   pending_uploads_[upload_id] = upload_file_info.release();
-
   UploadFileInfo* info = GetUploadFileInfo(upload_id);
   DVLOG(1) << "Uploading file: " << info->DebugString();
 
@@ -114,24 +139,25 @@ int DriveUploader::UploadExistingFile(
     const GURL& upload_location,
     const FilePath& drive_file_path,
     const FilePath& local_file_path,
-    int64 file_size,
     const std::string& content_type,
-    const UploadFileInfo::UploadCompletionCallback& callback) {
+    int64 file_size,
+    const UploadCompletionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!upload_location.is_empty());
+  DCHECK(!drive_file_path.empty());
   DCHECK(!local_file_path.empty());
   DCHECK(!content_type.empty());
 
   scoped_ptr<UploadFileInfo> upload_file_info(new UploadFileInfo);
   upload_file_info->upload_mode = UPLOAD_EXISTING_FILE;
   upload_file_info->initial_upload_location = upload_location;
+  upload_file_info->drive_path = drive_file_path;
   upload_file_info->file_path = local_file_path;
-  upload_file_info->file_size = file_size;
   upload_file_info->content_type = content_type;
-  upload_file_info->completion_callback = callback;
-  upload_file_info->drive_path = drive_file_path,
   upload_file_info->content_length = file_size;
+  upload_file_info->file_size = file_size;
   upload_file_info->all_bytes_present = true;
+  upload_file_info->completion_callback = callback;
 
   // When uploading an updated file, we should not retry file open as the
   // file should already be present by definition.
@@ -199,7 +225,8 @@ int64 DriveUploader::GetUploadedBytes(int upload_id) const {
   return upload_info ? upload_info->start_range : 0;
 }
 
-UploadFileInfo* DriveUploader::GetUploadFileInfo(int upload_id) const {
+DriveUploader::UploadFileInfo* DriveUploader::GetUploadFileInfo(
+    int upload_id) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   UploadFileInfoMap::const_iterator it = pending_uploads_.find(upload_id);
@@ -426,7 +453,9 @@ void DriveUploader::OnResumeUploadResponseReceived(
     if (!upload_file_info->completion_callback.is_null()) {
       upload_file_info->completion_callback.Run(
           DRIVE_FILE_OK,
-          scoped_ptr<UploadFileInfo>(upload_file_info));
+          upload_file_info->drive_path,
+          upload_file_info->file_path,
+          upload_file_info->entry.Pass());
     }
     return;
   }
@@ -447,8 +476,7 @@ void DriveUploader::OnResumeUploadResponseReceived(
     UploadFailed(
         scoped_ptr<UploadFileInfo>(upload_file_info),
         response.code == HTTP_FORBIDDEN ?
-            DRIVE_FILE_ERROR_NO_SPACE :
-            DRIVE_FILE_ERROR_ABORT);
+            DRIVE_FILE_ERROR_NO_SPACE : DRIVE_FILE_ERROR_ABORT);
     return;
   }
 
@@ -469,15 +497,57 @@ void DriveUploader::UploadFailed(scoped_ptr<UploadFileInfo> upload_file_info,
   LOG(ERROR) << "Upload failed " << upload_file_info->DebugString();
   // This is subtle but we should take the callback reference before
   // calling upload_file_info.Pass(). Otherwise, it'll crash.
-  const UploadFileInfo::UploadCompletionCallback& callback =
+  const UploadCompletionCallback& callback =
       upload_file_info->completion_callback;
   if (!callback.is_null())
-    callback.Run(error, upload_file_info.Pass());
+    callback.Run(error,
+        upload_file_info->drive_path,
+        upload_file_info->file_path,
+        upload_file_info->entry.Pass());
 }
 
 void DriveUploader::RemoveUpload(int upload_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   pending_uploads_.erase(upload_id);
+}
+
+DriveUploader::UploadFileInfo::UploadFileInfo()
+    : upload_id(-1),
+      file_size(0),
+      content_length(0),
+      upload_mode(UPLOAD_INVALID),
+      file_stream(NULL),
+      buf_len(0),
+      start_range(0),
+      end_range(-1),
+      all_bytes_present(false),
+      upload_paused(false),
+      should_retry_file_open(false),
+      num_file_open_tries(0) {
+}
+
+DriveUploader::UploadFileInfo::~UploadFileInfo() {
+  // The file stream is closed by the destructor asynchronously.
+  if (file_stream) {
+    delete file_stream;
+    file_stream = NULL;
+  }
+}
+
+int64 DriveUploader::UploadFileInfo::SizeRemaining() const {
+  DCHECK(file_size > end_range);
+  // Note that uploaded_bytes = end_range + 1;
+  return file_size - end_range - 1;
+}
+
+std::string DriveUploader::UploadFileInfo::DebugString() const {
+  return "title=[" + title +
+         "], file_path=[" + file_path.value() +
+         "], content_type=[" + content_type +
+         "], content_length=[" + base::UintToString(content_length) +
+         "], file_size=[" + base::UintToString(file_size) +
+         "], drive_path=[" + drive_path.value() +
+         "]";
 }
 
 }  // namespace gdata

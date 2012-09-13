@@ -11,7 +11,9 @@
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
+#include "chrome/browser/chromeos/gdata/drive_uploader.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
+#include "googleurl/src/gurl.h"
 
 class Profile;
 
@@ -21,7 +23,6 @@ class DocumentEntry;
 class DriveEntryProto;
 class DriveFileSystemInterface;
 class DriveUploader;
-struct UploadFileInfo;
 
 // Observes downloads to temporary local drive folder. Schedules these
 // downloads for upload to drive service.
@@ -84,6 +85,33 @@ class DriveDownloadObserver : public content::DownloadManager::Observer,
                                        FilePath* drive_tmp_download_path);
 
  private:
+  // Structure containing arguments required to process uploading.
+  // For internal use, to avoid passing all of the parameters every time
+  // separately.
+  struct UploaderParams {
+    UploaderParams();
+    ~UploaderParams();
+
+    // Useful for printf debugging.
+    std::string DebugString() const;
+
+    FilePath file_path; // The path of the file to be uploaded.
+    int64 file_size; // The last known size of the file.
+
+    // TODO(zelirag, achuith): Make this string16.
+    std::string title; // Title to be used for file to be uploaded.
+    std::string content_type; // Content-Type of file.
+    int64 content_length; // Header Content-Length.
+    GURL upload_location; // Initial upload location for the file.
+
+    // Final path in gdata. Looks like /special/drive/MyFolder/MyFile.
+    FilePath drive_path;
+    bool all_bytes_present; // Whether all bytes of this file are present.
+
+    // Callback to be invoked once the upload has completed.
+    UploadCompletionCallback completion_callback;
+  };
+
   // DownloadManager overrides.
   virtual void ManagerGoingDown(content::DownloadManager* manager) OVERRIDE;
   virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;
@@ -109,40 +137,42 @@ class DriveDownloadObserver : public content::DownloadManager::Observer,
   // Checks if this DownloadItem should be uploaded.
   bool ShouldUpload(content::DownloadItem* download);
 
-  // Creates UploadFileInfo and initializes it using DownloadItem*.
-  void CreateUploadFileInfo(content::DownloadItem* download);
+  // Creates UploaderParams and initializes it using DownloadItem*.
+  void CreateUploaderParams(content::DownloadItem* download);
 
   // Callback for checking if the file already exists.  If so, the file is
   // overwritten, and StartUpload() to actually start the upload.  If not, the
   // directory is queried to determine where to store the file.
-  void CreateUploadFileInfoAfterCheckExistence(
+  void CreateUploaderParamsAfterCheckExistence(
     int32 download_id,
-    scoped_ptr<UploadFileInfo> upload_file_info,
+    scoped_ptr<UploaderParams> upload_params,
     DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto);
 
   // Callback for handling results of DriveFileSystem::GetEntryInfoByPath()
-  // initiated by CreateUploadFileInfoAfterCheckExistence(). This callback
+  // initiated by CreateUploadParamsAfterCheckExistence(). This callback
   // reads the directory entry to determine the upload path, then calls
   // StartUpload() to actually start the upload.
-  void CreateUploadFileInfoAfterCheckTargetDir(
+  void CreateUploaderParamsAfterCheckTargetDir(
       int32 download_id,
-      scoped_ptr<UploadFileInfo> upload_file_info,
+      scoped_ptr<UploaderParams> upload_params,
       DriveFileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Starts the upload.
   void StartUpload(int32 download_id,
-                   scoped_ptr<UploadFileInfo> upload_file_info);
+                   scoped_ptr<UploaderParams> upload_params);
 
   // Callback invoked by DriveUploader when the upload associated with
   // |download_id| has completed. |error| indicated whether the
   // call was successful. This function takes ownership of DocumentEntry from
-  // |upload_file_info| for use by MoveFileToDriveCache(). It also invokes the
+  // for use by MoveFileToDriveCache(). It also invokes the
   // MaybeCompleteDownload() method on the DownloadItem to allow it to complete.
   void OnUploadComplete(int32 download_id,
                         DriveFileError error,
-                        scoped_ptr<UploadFileInfo> upload_file_info);
+                        const FilePath& drive_path,
+                        const FilePath& file_path,
+                        scoped_ptr<DocumentEntry> document_entry);
 
   // Moves the downloaded file to drive cache.
   // Must be called after DriveDownloadObserver receives COMPLETE notification.
