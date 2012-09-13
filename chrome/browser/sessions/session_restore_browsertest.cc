@@ -42,6 +42,13 @@
 
 class SessionRestoreTest : public InProcessBrowserTest {
  protected:
+#if defined(OS_CHROMEOS)
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    // TODO(nkostylev): Investigate if we can remove this switch.
+    command_line->AppendSwitch(switches::kCreateBrowserOnStartupForTests);
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+  }
+#endif
 
   virtual void SetUpOnMainThread() OVERRIDE {
     SessionStartupPref pref(SessionStartupPref::LAST);

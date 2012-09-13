@@ -53,6 +53,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -1207,6 +1208,14 @@ class RestoreOnStartupPolicyTest
  public:
   RestoreOnStartupPolicyTest() {}
   virtual ~RestoreOnStartupPolicyTest() {}
+
+#if defined(OS_CHROMEOS)
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    // TODO(nkostylev): Investigate if we can remove this switch.
+    command_line->AppendSwitch(switches::kCreateBrowserOnStartupForTests);
+    PolicyTest::SetUpCommandLine(command_line);
+  }
+#endif
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     PolicyTest::SetUpInProcessBrowserTestFixture();

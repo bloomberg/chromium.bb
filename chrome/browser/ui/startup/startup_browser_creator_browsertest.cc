@@ -51,6 +51,10 @@ class StartupBrowserCreatorTest : public ExtensionBrowserTest {
     command_line->AppendSwitch(switches::kEnablePanels);
     command_line->AppendSwitchASCII(switches::kHomePage,
                                     chrome::kAboutBlankURL);
+#if defined(OS_CHROMEOS)
+    // TODO(nkostylev): Investigate if we can remove this switch.
+    command_line->AppendSwitch(switches::kCreateBrowserOnStartupForTests);
+#endif
   }
 
   // Helper functions return void so that we can ASSERT*().

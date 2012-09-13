@@ -110,9 +110,13 @@ const bool kPasswordEchoEnabled = false;
 #endif
 
 #if defined(OS_CHROMEOS)
-const bool kAppRestoreSession = true;
+// On Chrome OS we're initializing into new user session with only
+// Getting started guide shown as an app window (session restore is skipped).
+// In all other cases (existing user) we're initializing to empty desktop
+// if session restore is empty. http://crbug.com/141718
+const bool kAlwaysCreateTabbedBrowserOnSessionRestore = false;
 #else
-const bool kAppRestoreSession = false;
+const bool kAlwaysCreateTabbedBrowserOnSessionRestore = true;
 #endif
 
 bool bookmarks_enabled = true;

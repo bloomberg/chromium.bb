@@ -341,8 +341,7 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
   // Special case is when app switches are passed but we do want to restore
   // session. In that case open app window + focus it after session is restored.
   content::WebContents* app_contents = NULL;
-  if (OpenApplicationWindow(profile, &app_contents) &&
-      !browser_defaults::kAppRestoreSession) {
+  if (OpenApplicationWindow(profile, &app_contents)) {
     RecordLaunchModeHistogram(LM_AS_WEBAPP);
   } else {
     RecordLaunchModeHistogram(urls_to_open.empty() ?
@@ -352,22 +351,11 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
     // affecting browser startup have been detected.
     CheckPreferencesBackup(profile);
 
-    // Watch for |app_contents| closing since ProcessLaunchURLs might run a
-    // synchronous session restore which has a nested message loop and could
-    // close |app_contents|.
-    WebContentsCloseObserver app_contents_observer;
-    if (browser_defaults::kAppRestoreSession && app_contents)
-      app_contents_observer.SetContents(app_contents);
-
     ProcessLaunchURLs(process_startup, urls_to_open);
 
     // If this is an app launch, but we didn't open an app window, it may
     // be an app tab.
     OpenApplicationTab(profile);
-
-    // In case of app mode + session restore we want to focus that app.
-    if (app_contents_observer.contents())
-      app_contents_observer.contents()->GetView()->SetInitialFocus();
 
     if (process_startup) {
       if (browser_defaults::kOSSupportsOtherBrowsers &&
@@ -615,8 +603,13 @@ bool StartupBrowserCreatorImpl::ProcessStartupURLs(
       return false;
     }
 
-    uint32 restore_behavior = SessionRestore::SYNCHRONOUS |
-                              SessionRestore::ALWAYS_CREATE_TABBED_BROWSER;
+    uint32 restore_behavior = SessionRestore::SYNCHRONOUS;
+    if (browser_defaults::kAlwaysCreateTabbedBrowserOnSessionRestore ||
+        CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kCreateBrowserOnStartupForTests)) {
+      restore_behavior |= SessionRestore::ALWAYS_CREATE_TABBED_BROWSER;
+    }
+
 #if defined(OS_MACOSX)
     // On Mac, when restoring a session with no windows, suppress the creation
     // of a new window in the case where the system is launching Chrome via a

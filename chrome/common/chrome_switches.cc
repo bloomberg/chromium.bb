@@ -215,6 +215,14 @@ const char kCrashOnHangThreads[]            = "crash-on-hang-threads";
 //                          other threads are not responsive.
 const char kCrashOnLive[]                   = "crash-on-live";
 
+// Some platforms like ChromeOS default to empty desktop.
+// Browser tests may need to add this switch so that at least one browser
+// instance is created on startup.
+// TODO(nkostylev): Investigate if this switch could be removed.
+// (http://crbug.com/148675)
+const char kCreateBrowserOnStartupForTests[] =
+    "create-browser-on-startup-for-tests";
+
 // Path to the inspector files on disk (allows reloading of devtool files
 // without having to restart the browser).
 const char kDebugDevToolsFrontend[]         = "debug-devtools-frontend";
