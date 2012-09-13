@@ -74,6 +74,25 @@ const char kNoUserGestureError[] =
     "This method can only be called in response to user gesture, such as a "
     "mouse click or key press.";
 
+// Converts file extensions to a ui::SelectFileDialog::FileTypeInfo.
+ui::SelectFileDialog::FileTypeInfo ConvertExtensionsToFileTypeInfo(
+    const std::vector<std::string>& extensions) {
+  ui::SelectFileDialog::FileTypeInfo file_type_info;
+
+  for (size_t i = 0; i < extensions.size(); ++i) {
+    FilePath::StringType allowed_extension =
+        FilePath::FromUTF8Unsafe(extensions[i]).value();
+
+    // FileTypeInfo takes a nested vector like [["htm", "html"], ["txt"]] to
+    // group equivalent extensions, but we don't use this feature here.
+    std::vector<FilePath::StringType> inner_vector;
+    inner_vector.push_back(allowed_extension);
+    file_type_info.extensions.push_back(inner_vector);
+  }
+
+  return file_type_info;
+}
+
 // File selector implementation.
 // When |SelectFile| is invoked, it will show save as dialog and listen for user
 // action. When user selects the file (or closes the dialog), the function's
@@ -94,10 +113,14 @@ class FileSelectorImpl : public FileSelector,
  protected:
   // file_handler::FileSelectr overrides.
   // Shows save as dialog with suggested name in window bound to |browser|.
+  // |allowed_extensions| specifies the file extensions allowed to be shown,
+  // and selected. Extensions should not include '.'.
+  //
   // After this method is called, the selector implementation should not be
   // deleted by the caller. It will delete itself after it receives response
   // from SelectFielDialog.
   virtual void SelectFile(const FilePath& suggested_name,
+                          const std::vector<std::string>& allowed_extensions,
                           Browser* browser,
                           FileHandlerSelectFileFunction* function) OVERRIDE;
 
@@ -114,9 +137,14 @@ class FileSelectorImpl : public FileSelector,
   // select a file path. The initial selected file name in the dialog will be
   // set to |suggested_name|. The dialog will be bound to the tab active in
   // |browser|.
+  // |allowed_extensions| specifies the file extensions allowed to be shown,
+  // and selected. Extensions should not include '.'.
+  //
   // Returns boolean indicating whether the dialog has been successfully shown
   // to the user.
-  bool StartSelectFile(const FilePath& suggested_name, Browser* browser);
+  bool StartSelectFile(const FilePath& suggested_name,
+                       const std::vector<std::string>& allowed_extensions,
+                       Browser* browser);
 
   // Reacts to the user action reported by the dialog and notifies |function_|
   // about file selection result (by calling |OnFilePathSelected()|).
@@ -145,14 +173,16 @@ FileSelectorImpl::~FileSelectorImpl() {
     SendResponse(false, FilePath());
 }
 
-void FileSelectorImpl::SelectFile(const FilePath& suggested_name,
-                                  Browser* browser,
-                                  FileHandlerSelectFileFunction* function) {
+void FileSelectorImpl::SelectFile(
+    const FilePath& suggested_name,
+    const std::vector<std::string>& allowed_extensions,
+    Browser* browser,
+    FileHandlerSelectFileFunction* function) {
   // We will hold reference to the function until it is notified of selection
   // result.
   function_ = function;
 
-  if (!StartSelectFile(suggested_name, browser)) {
+  if (!StartSelectFile(suggested_name, allowed_extensions, browser)) {
     // If the dialog wasn't launched, let's asynchronously report failure to the
     // function.
     base::MessageLoopProxy::current()->PostTask(FROM_HERE,
@@ -161,8 +191,10 @@ void FileSelectorImpl::SelectFile(const FilePath& suggested_name,
   }
 }
 
-bool FileSelectorImpl::StartSelectFile(const FilePath& suggested_name,
-                                       Browser* browser) {
+bool FileSelectorImpl::StartSelectFile(
+    const FilePath& suggested_name,
+    const std::vector<std::string>& allowed_extensions,
+    Browser* browser) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!dialog_.get());
   DCHECK(browser);
@@ -177,11 +209,17 @@ bool FileSelectorImpl::StartSelectFile(const FilePath& suggested_name,
   dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(tab_contents->web_contents()));
 
+  // Convert |allowed_extensions| to ui::SelectFileDialog::FileTypeInfo.
+  ui::SelectFileDialog::FileTypeInfo allowed_file_info =
+      ConvertExtensionsToFileTypeInfo(allowed_extensions);
+
   dialog_->SelectFile(ui::SelectFileDialog::SELECT_SAVEAS_FILE,
-      string16() /* dialog title*/, suggested_name,
-      NULL /* allowed file types */, 0 /* file type index */,
-      std::string() /* default file extension */,
-      browser->window()->GetNativeWindow(), NULL /* params */);
+                      string16() /* dialog title*/,
+                      suggested_name,
+                      &allowed_file_info,
+                      0 /* file type index */,
+                      std::string() /* default file extension */,
+                      browser->window()->GetNativeWindow(), NULL /* params */);
 
   return dialog_->IsRunning(browser->window()->GetNativeWindow());
 }
@@ -268,6 +306,9 @@ bool FileHandlerSelectFileFunction::RunImpl() {
   scoped_ptr<SelectFile::Params> params(SelectFile::Params::Create(*args_));
 
   FilePath suggested_name(params->selection_params.suggested_name);
+  std::vector<std::string> allowed_extensions;
+  if (params->selection_params.allowed_file_extensions.get())
+    allowed_extensions = *params->selection_params.allowed_file_extensions;
 
   if (!user_gesture() && user_gesture_check_enabled_) {
     error_ = kNoUserGestureError;
@@ -276,6 +317,7 @@ bool FileHandlerSelectFileFunction::RunImpl() {
 
   FileSelector* file_selector = file_selector_factory_->CreateFileSelector();
   file_selector->SelectFile(suggested_name.BaseName(),
+                            allowed_extensions,
                             GetCurrentBrowser(),
                             this);
   return true;

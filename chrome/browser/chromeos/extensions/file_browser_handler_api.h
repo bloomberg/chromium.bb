@@ -35,6 +35,10 @@ class FileSelector {
   // Once the selection is made it should asynchronously call
   // |function_->OnFilePathSelected| with the selection information.
   // User should be initially suggested to select file named |suggested_name|.
+  // |allowed_extensions| specifies the file extensions allowed to be shown,
+  // and selected. Extensions should not include '.'. This spec comes from
+  // ui::SelectFileDialog() which takes extensions without '.'.
+  //
   // Selection UI should be displayed using |browser|. |browser| should outlive
   // the interface implementation.
   // |function| if the extension function that called the method and needs to
@@ -45,6 +49,7 @@ class FileSelector {
   // The interface implementation should delete itself after the extension
   // function is notified of file selection result.
   virtual void SelectFile(const FilePath& suggested_name,
+                          const std::vector<std::string>& allowed_extensions,
                           Browser* browser,
                           FileHandlerSelectFileFunction* function) = 0;
 };

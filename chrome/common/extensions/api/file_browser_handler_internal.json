@@ -44,8 +44,14 @@
               "suggestedName": {
                   "type": "string",
                   "description": "Suggested name for the new file."
+              },
+              "allowedFileExtensions": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "optional": true,
+                  "description": "List of file extensions that the selected file can have. The list is also used to specify what files to be shown in the select file dialog. Files with the listed extensions are only shown in the dialog. Extensions should not include the leading '.'. Example: ['jpg', 'png']"
               }
-            } 
+            }
           },
           {
             "name": "callback",
