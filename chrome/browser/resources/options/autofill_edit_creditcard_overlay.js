@@ -152,8 +152,8 @@ cr.define('options', function() {
      * @private
      */
     setInputFields_: function(creditCard) {
-      $('name-on-card').value = creditCard['nameOnCard'];
-      $('credit-card-number').value = creditCard['creditCardNumber'];
+      $('name-on-card').value = creditCard.nameOnCard;
+      $('credit-card-number').value = creditCard.creditCardNumber;
 
       // The options for the year select control may be out-dated at this point,
       // e.g. the user opened the options page before midnight on New Year's Eve
@@ -161,10 +161,10 @@ cr.define('options', function() {
       // reload the select options just to be safe.
       this.setDefaultSelectOptions_();
 
-      var idx = parseInt(creditCard['expirationMonth'], 10);
+      var idx = parseInt(creditCard.expirationMonth, 10);
       $('expiration-month').selectedIndex = idx - 1;
 
-      expYear = creditCard['expirationYear'];
+      expYear = creditCard.expirationYear;
       var date = new Date();
       var year = parseInt(date.getFullYear());
       for (var i = 0; i < 10; ++i) {
@@ -182,7 +182,7 @@ cr.define('options', function() {
     loadCreditCard_: function(creditCard) {
       this.setInputFields_(creditCard);
       this.inputFieldChanged_();
-      this.guid_ = creditCard['guid'];
+      this.guid_ = creditCard.guid;
     },
   };
 

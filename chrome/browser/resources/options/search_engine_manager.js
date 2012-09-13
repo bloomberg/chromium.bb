@@ -78,7 +78,7 @@ cr.define('options', function() {
       this.defaultsList_.dataModel = new ArrayDataModel(defaultEngines);
 
       otherEngines = otherEngines.map(function(x) {
-        return [x, x['name'].toLocaleLowerCase()];
+        return [x, x.name.toLocaleLowerCase()];
       }).sort(function(a, b) {
         return a[1].localeCompare(b[1]);
       }).map(function(x) {

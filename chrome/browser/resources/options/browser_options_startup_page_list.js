@@ -45,26 +45,25 @@ cr.define('options.browser_options', function() {
 
       var pageInfo = this.pageInfo_;
 
-      if (pageInfo['modelIndex'] == '-1') {
+      if (pageInfo.modelIndex == '-1') {
         this.isPlaceholder = true;
-        pageInfo['title'] = loadTimeData.getString('startupAddLabel');
-        pageInfo['url'] = '';
+        pageInfo.title = loadTimeData.getString('startupAddLabel');
+        pageInfo.url = '';
       }
 
       var titleEl = this.ownerDocument.createElement('div');
       titleEl.className = 'title';
       titleEl.classList.add('favicon-cell');
       titleEl.classList.add('weakrtl');
-      titleEl.textContent = pageInfo['title'];
+      titleEl.textContent = pageInfo.title;
       if (!this.isPlaceholder) {
-        titleEl.style.backgroundImage = url('chrome://favicon/' +
-                                            pageInfo['url']);
-        titleEl.title = pageInfo['tooltip'];
+        titleEl.style.backgroundImage = url('chrome://favicon/' + pageInfo.url);
+        titleEl.title = pageInfo.tooltip;
       }
 
       this.contentElement.appendChild(titleEl);
 
-      var urlEl = this.createEditableTextCell(pageInfo['url']);
+      var urlEl = this.createEditableTextCell(pageInfo.url);
       urlEl.className = 'url';
       urlEl.classList.add('weakrtl');
       this.contentElement.appendChild(urlEl);
@@ -95,7 +94,7 @@ cr.define('options.browser_options', function() {
 
     /** @inheritDoc */
     get hasBeenEdited() {
-      return this.urlField_.value != this.pageInfo_['url'];
+      return this.urlField_.value != this.pageInfo_.url;
     },
 
     /**
@@ -108,7 +107,7 @@ cr.define('options.browser_options', function() {
       if (this.isPlaceholder)
         chrome.send('addStartupPage', [url]);
       else
-        chrome.send('editStartupPage', [this.pageInfo_['modelIndex'], url]);
+        chrome.send('editStartupPage', [this.pageInfo_.modelIndex, url]);
     },
   };
 

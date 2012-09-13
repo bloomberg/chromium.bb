@@ -195,8 +195,8 @@ cr.define('options', function() {
 
       var details = loadTimeData.getValue('autofillCountryData')[countryCode];
       var postal = $('postal-code-label');
-      postal.textContent = details['postalCodeLabel'];
-      $('state-label').textContent = details['stateLabel'];
+      postal.textContent = details.postalCodeLabel;
+      $('state-label').textContent = details.stateLabel;
 
       // Also update the 'Ok' button as needed.
       this.inputFieldChanged_();
@@ -216,7 +216,7 @@ cr.define('options', function() {
       for (var countryCode in countryData) {
         var country = {
           countryCode: countryCode,
-          name: countryData[countryCode]['name']
+          name: countryData[countryCode].name
         };
         countries.push(country);
       }
@@ -233,7 +233,7 @@ cr.define('options', function() {
       };
       var defaultCountry = {
         countryCode: defaultCountryCode,
-        name: countryData[defaultCountryCode]['name']
+        name: countryData[defaultCountryCode].name
       };
       var separator = {
         countryCode: '',
@@ -278,7 +278,7 @@ cr.define('options', function() {
     loadAddress_: function(address) {
       this.setInputFields_(address);
       this.inputFieldChanged_();
-      this.guid = address['guid'];
+      this.guid = address.guid;
     },
 
     /**
@@ -286,16 +286,16 @@ cr.define('options', function() {
      * @private
      */
     setInputFields_: function(address) {
-      this.setMultiValueList_('full-name-list', address['fullName']);
-      $('company-name').value = address['companyName'];
-      $('addr-line-1').value = address['addrLine1'];
-      $('addr-line-2').value = address['addrLine2'];
-      $('city').value = address['city'];
-      $('state').value = address['state'];
-      $('postal-code').value = address['postalCode'];
-      $('country').value = address['country'];
-      this.setMultiValueList_('phone-list', address['phone']);
-      this.setMultiValueList_('email-list', address['email']);
+      this.setMultiValueList_('full-name-list', address.fullName);
+      $('company-name').value = address.companyName;
+      $('addr-line-1').value = address.addrLine1;
+      $('addr-line-2').value = address.addrLine2;
+      $('city').value = address.city;
+      $('state').value = address.state;
+      $('postal-code').value = address.postalCode;
+      $('country').value = address.country;
+      this.setMultiValueList_('phone-list', address.phone);
+      this.setMultiValueList_('email-list', address.email);
 
       this.countryChanged_();
     },

@@ -73,19 +73,19 @@ cr.define('options.search_engines', function() {
 
       var engine = this.searchEngine_;
 
-      if (engine['modelIndex'] == '-1') {
+      if (engine.modelIndex == '-1') {
         this.isPlaceholder = true;
-        engine['name'] = '';
-        engine['keyword'] = '';
-        engine['url'] = '';
+        engine.name = '';
+        engine.keyword = '';
+        engine.url = '';
       }
 
       this.currentlyValid_ = !this.isPlaceholder;
 
-      if (engine['default'])
+      if (engine.default)
         this.classList.add('default');
 
-      this.deletable = engine['canBeRemoved'];
+      this.deletable = engine.canBeRemoved;
 
       // Construct the name column.
       var nameColEl = this.ownerDocument.createElement('div');
@@ -97,22 +97,22 @@ cr.define('options.search_engines', function() {
       var faviconDivEl = this.ownerDocument.createElement('div');
       faviconDivEl.className = 'favicon';
       var imgEl = this.ownerDocument.createElement('img');
-      imgEl.src = 'chrome://favicon/iconurl/' + engine['iconURL'];
+      imgEl.src = 'chrome://favicon/iconurl/' + engine.iconURL;
       faviconDivEl.appendChild(imgEl);
       nameColEl.appendChild(faviconDivEl);
 
-      var nameEl = this.createEditableTextCell(engine['displayName']);
+      var nameEl = this.createEditableTextCell(engine.displayName);
       nameEl.classList.add('weakrtl');
       nameColEl.appendChild(nameEl);
 
       // Then the keyword column.
-      var keywordEl = this.createEditableTextCell(engine['keyword']);
+      var keywordEl = this.createEditableTextCell(engine.keyword);
       keywordEl.className = 'keyword-column';
       keywordEl.classList.add('weakrtl');
       this.contentElement.appendChild(keywordEl);
 
       // And the URL column.
-      var urlEl = this.createEditableTextCell(engine['url']);
+      var urlEl = this.createEditableTextCell(engine.url);
       var urlWithButtonEl = this.ownerDocument.createElement('div');
       urlWithButtonEl.appendChild(urlEl);
       urlWithButtonEl.className = 'url-column';
@@ -120,13 +120,13 @@ cr.define('options.search_engines', function() {
       this.contentElement.appendChild(urlWithButtonEl);
       // Add the Make Default button. Temporary until drag-and-drop re-ordering
       // is implemented. When this is removed, remove the extra div above.
-      if (engine['canBeDefault']) {
+      if (engine.canBeDefault) {
         var makeDefaultButtonEl = this.ownerDocument.createElement('button');
         makeDefaultButtonEl.className = 'custom-appearance list-inline-button';
         makeDefaultButtonEl.textContent =
             loadTimeData.getString('makeDefaultSearchEngineButton');
         makeDefaultButtonEl.onclick = function(e) {
-          chrome.send('managerSetDefaultSearchEngine', [engine['modelIndex']]);
+          chrome.send('managerSetDefaultSearchEngine', [engine.modelIndex]);
         };
         // Don't select the row when clicking the button.
         makeDefaultButtonEl.onmousedown = function(e) {
@@ -138,11 +138,11 @@ cr.define('options.search_engines', function() {
       // Do final adjustment to the input fields.
       this.nameField_ = nameEl.querySelector('input');
       // The editable field uses the raw name, not the display name.
-      this.nameField_.value = engine['name'];
+      this.nameField_.value = engine.name;
       this.keywordField_ = keywordEl.querySelector('input');
       this.urlField_ = urlEl.querySelector('input');
 
-      if (engine['urlLocked'])
+      if (engine.urlLocked)
         this.urlField_.disabled = true;
 
       if (this.isPlaceholder) {
@@ -160,7 +160,7 @@ cr.define('options.search_engines', function() {
       }
 
       // Listen for edit events.
-      if (engine['canBeEdited']) {
+      if (engine.canBeEdited) {
         this.addEventListener('edit', this.onEditStarted_.bind(this));
         this.addEventListener('canceledit', this.onEditCancelled_.bind(this));
         this.addEventListener('commitedit', this.onEditCommitted_.bind(this));
@@ -177,9 +177,9 @@ cr.define('options.search_engines', function() {
     /** @inheritDoc */
     get hasBeenEdited() {
       var engine = this.searchEngine_;
-      return this.nameField_.value != engine['name'] ||
-             this.keywordField_.value != engine['keyword'] ||
-             this.urlField_.value != engine['url'];
+      return this.nameField_.value != engine.name ||
+             this.keywordField_.value != engine.keyword ||
+             this.urlField_.value != engine.url;
     },
 
     /**
@@ -188,7 +188,7 @@ cr.define('options.search_engines', function() {
      * @private
      */
     onEditStarted_: function(e) {
-      var editIndex = this.searchEngine_['modelIndex'];
+      var editIndex = this.searchEngine_.modelIndex;
       chrome.send('editSearchEngine', [String(editIndex)]);
       this.startFieldValidation_();
     },
@@ -213,7 +213,7 @@ cr.define('options.search_engines', function() {
 
       // The name field has been automatically set to match the display name,
       // but it should use the raw name instead.
-      this.nameField_.value = this.searchEngine_['name'];
+      this.nameField_.value = this.searchEngine_.name;
       this.currentlyValid_ = !this.isPlaceholder;
     },
 
@@ -236,7 +236,7 @@ cr.define('options.search_engines', function() {
     startFieldValidation_: function() {
       this.waitingForValidation_ = true;
       var args = this.getInputFieldValues_();
-      args.push(this.searchEngine_['modelIndex']);
+      args.push(this.searchEngine_.modelIndex);
       chrome.send('checkSearchEngineInfoValidity', args);
     },
 
@@ -285,7 +285,7 @@ cr.define('options.search_engines', function() {
 
     /** @inheritDoc */
     deleteItemAtIndex: function(index) {
-      var modelIndex = this.dataModel.item(index)['modelIndex'];
+      var modelIndex = this.dataModel.item(index).modelIndex;
       chrome.send('removeSearchEngine', [String(modelIndex)]);
     },
 
@@ -301,7 +301,7 @@ cr.define('options.search_engines', function() {
       if (!currentSelection)
         return;
       var listItem = this.getListItem(currentSelection);
-      if (listItem.editing && currentSelection['modelIndex'] == modelIndex)
+      if (listItem.editing && currentSelection.modelIndex == modelIndex)
         listItem.validationComplete(validity);
     },
   };

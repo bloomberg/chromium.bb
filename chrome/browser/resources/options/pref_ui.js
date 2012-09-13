@@ -22,12 +22,12 @@ cr.define('options', function() {
     if (el.disabled && (Object.keys(el.disabledReasons).length == 0)) {
       // The element has been previously disabled without a reason, so we add
       // one to keep it disabled.
-      el.disabledReasons['other'] = true;
+      el.disabledReasons.other = true;
     }
     if (!el.disabled) {
       // If the element is not disabled, there should be no reason, except for
       // 'other'.
-      delete el.disabledReasons['other'];
+      delete el.disabledReasons.other;
       if (Object.keys(el.disabledReasons).length > 0)
         console.error('Element is not disabled but should be');
     }

@@ -44,7 +44,7 @@ cr.define('options', function() {
             this.getAttribute('pref'),
             function(event) {
               if (event.value) {
-                var controlledBy = event.value['controlledBy'];
+                var controlledBy = event.value.controlledBy;
                 self.controlledBy = controlledBy ? controlledBy : null;
               }
             });

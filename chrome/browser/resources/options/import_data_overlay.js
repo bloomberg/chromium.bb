@@ -143,7 +143,7 @@ cr.define('options', function() {
         this.setControlsSensitive_(true);
         for (var i = 0; i < browserCount; i++) {
           var browser = browsers[i];
-          var option = new Option(browser['name'], browser['index']);
+          var option = new Option(browser.name, browser.index);
           browserSelect.appendChild(option);
         }
 

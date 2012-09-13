@@ -129,8 +129,8 @@ cr.define('options', function() {
       this.clear();
 
       for (var i = 0; i < nodesData.length; ++i) {
-        var subnodes = nodesData[i]['subnodes'];
-        delete nodesData[i]['subnodes'];
+        var subnodes = nodesData[i].subnodes;
+        delete nodesData[i].subnodes;
 
         var item = new CertificateTreeFolder(nodesData[i]);
         this.addAt(item, i);

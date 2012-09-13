@@ -181,13 +181,13 @@ cr.define('options.contentSettings', function() {
         }
       }
 
-      return this.dataItem['displayPattern'];
+      return this.dataItem.displayPattern;
     },
     set pattern(pattern) {
       if (!this.editable)
         console.error('Tried to change uneditable pattern');
 
-      this.dataItem['displayPattern'] = pattern;
+      this.dataItem.displayPattern = pattern;
     },
 
     /**
@@ -196,10 +196,10 @@ cr.define('options.contentSettings', function() {
      * @type {string}
      */
     get setting() {
-      return this.dataItem['setting'];
+      return this.dataItem.setting;
     },
     set setting(setting) {
-      this.dataItem['setting'] = setting;
+      this.dataItem.setting = setting;
     },
 
     /**
@@ -220,7 +220,7 @@ cr.define('options.contentSettings', function() {
       else if (setting == 'default')
         return '';
 
-      console.error('Unknown setting: [' + setting + ']');
+      console.error('Unknown setting: . + setting + ');
       return '';
     },
 
@@ -511,9 +511,9 @@ cr.define('options.contentSettings', function() {
       var dataItem = listItem.dataItem;
       var args = [listItem.contentType];
       if (listItem.contentType == 'location')
-        args.push(dataItem['origin'], dataItem['embeddingOrigin']);
+        args.push(dataItem.origin, dataItem.embeddingOrigin);
       else if (listItem.contentType == 'notifications')
-        args.push(dataItem['origin'], dataItem['setting']);
+        args.push(dataItem.origin, dataItem.setting);
       else
         args.push(listItem.mode, listItem.pattern);
 
