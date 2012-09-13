@@ -67,9 +67,6 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_ICON_APPLIST_PUSHED" file="ash/launcher_applist_pressed.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_INCOGNITO_BROWSER" file="ash/launcher_incognito_browser.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_INCOGNITO_BROWSER_PANEL" file="ash/launcher_incognito_browser_panel.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_NEW_BROWSER" file="ash/new_browser.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_NEW_BROWSER_HOT" file="ash/new_browser_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_NEW_BROWSER_PUSHED" file="ash/new_browser_pressed.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_OVERFLOW" file="ash/launcher_overflow.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE" file="ash/launcher_underline_active.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_UNDERLINE_HOVER" file="ash/launcher_underline_hover.png" />
@@ -267,9 +264,6 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_RIGHT_RESTORE_H" file="cros/window_position_right_hover_restore.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_RIGHT_RESTORE_P" file="cros/window_position_right_pressed_restore.png" />
         
-        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CLOSE_ICON" file="aura/slab_close.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_ZOOM_ICON" file="aura/slab_zoom.png" />
-
       </if>
       <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_BADGE_CENTER" file="browser_action_badge_center.png" />
       <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_BADGE_LEFT" file="browser_action_badge_left.png" />
@@ -405,19 +399,12 @@
         <structure type="chrome_scaled_image" name="IDR_RADIO_DISABLED_ON" file="linux-radio-disabled-on.png" />
         <structure type="chrome_scaled_image" name="IDR_RADIO_OFF" file="linux-radio-off.png" />
         <structure type="chrome_scaled_image" name="IDR_RADIO_ON" file="linux-radio-on.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_CORNER" file="cros/aura_scrollbar_base_normal_edge.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_CORNER_H" file="cros/aura_scrollbar_base_hover_edge.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_CENTER" file="cros/aura_scrollbar_base_horizontal_normal_center.png" />
+ 
         <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_CENTER_H" file="cros/aura_scrollbar_base_horizontal_hover_center.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_LEFT" file="cros/aura_scrollbar_base_horizontal_normal_left.png" />
         <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_LEFT_H" file="cros/aura_scrollbar_base_horizontal_hover_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_RIGHT" file="cros/aura_scrollbar_base_horizontal_normal_right.png" />
         <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_RIGHT_H" file="cros/aura_scrollbar_base_horizontal_hover_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_VERTICAL_BOTTOM" file="cros/aura_scrollbar_base_vertical_normal_bottom.png" />
         <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_VERTICAL_BOTTOM_H" file="cros/aura_scrollbar_base_vertical_hover_bottom.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_VERTICAL_CENTER" file="cros/aura_scrollbar_base_vertical_normal_center.png" />
         <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_VERTICAL_CENTER_H" file="cros/aura_scrollbar_base_vertical_hover_center.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_VERTICAL_TOP" file="cros/aura_scrollbar_base_vertical_normal_top.png" />
         <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_VERTICAL_TOP_H" file="cros/aura_scrollbar_base_vertical_hover_top.png" />
         <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_HORIZONTAL_CENTER" file="cros/aura_scrollbar_thumb_horizontal_normal_center.png" />
         <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_HORIZONTAL_CENTER_H" file="cros/aura_scrollbar_thumb_horizontal_hover_center.png" />
