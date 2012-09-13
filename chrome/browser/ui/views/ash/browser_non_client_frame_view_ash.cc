@@ -444,9 +444,6 @@ int BrowserNonClientFrameViewAsh::NonClientTopBorderHeight(
 }
 
 bool BrowserNonClientFrameViewAsh::UseShortHeader() const {
-  // Window at top of screen -> short header
-  if (frame()->GetWindowBoundsInScreen().y() == 0)
-    return true;
   // Restored browser -> tall header
   // Maximized browser -> short header
   // App window -> tall header

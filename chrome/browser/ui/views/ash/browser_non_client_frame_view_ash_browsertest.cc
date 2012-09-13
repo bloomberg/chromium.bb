@@ -23,9 +23,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, UseShortHeader) {
   // Restored window uses tall header.
   widget->SetBounds(gfx::Rect(10, 10, 300, 300));
   EXPECT_FALSE(frame_view->UseShortHeader());
-  // Window at top of screen uses short header.
+  // Window at top of screen uses normal header.
   widget->SetBounds(gfx::Rect(10, 0, 300, 300));
-  EXPECT_TRUE(frame_view->UseShortHeader());
+  EXPECT_FALSE(frame_view->UseShortHeader());
   // Maximized window uses short header.
   widget->Maximize();
   EXPECT_TRUE(frame_view->UseShortHeader());
