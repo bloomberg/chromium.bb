@@ -216,6 +216,16 @@ Commands.gdataClearCacheCommand = {
 };
 
 /**
+ * Opens drive.google.com.
+ */
+Commands.gdataGoToDriveCommand = {
+  execute: function() {
+    window.open(FileManager.GOOGLE_DRIVE_ROOT, 'gdata-root');
+  },
+  canExecute: CommandUtil.canExecuteOnGDataOnly
+};
+
+/**
  * Displays open with dialog for current selection.
  */
 Commands.openWithCommand = {

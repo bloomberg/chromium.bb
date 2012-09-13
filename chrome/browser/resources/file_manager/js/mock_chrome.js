@@ -575,6 +575,7 @@ chrome.fileBrowserPrivate = {
       GDATA_WAITING_FOR_SPACE_INFO: 'Waiting for space info...',
       GDATA_FAILED_SPACE_INFO: 'Failed to retrieve space info',
       GDATA_BUY_MORE_SPACE: 'Buy more storage...',
+      GDATA_VISIT_DRIVE_GOOGLE_COM: 'Go to drive.google.com...',
       GDATA_SPACE_AVAILABLE: '$1 left',
 
       GDATA_BUY_MORE_SPACE_LINK: 'Buy more storage',

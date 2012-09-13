@@ -11914,6 +11914,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_GDATA_BUY_MORE_SPACE" desc="Menu item, offering user to buy more space on Google Drive">
         Buy more storage...
       </message>
+      <message name="IDS_FILE_BROWSER_GDATA_VISIT_DRIVE_GOOGLE_COM" desc="Menu item, redirecting user to drive.google.com">
+        Go to drive.google.com...
+      </message>
       <message name="IDS_FILE_BROWSER_GDATA_SPACE_AVAILABLE_LONG" desc="Text showing space left on Google Drive">
         Google Drive space left: <ph name="SPACE_AVAILABLE">$1<ex>400 MB</ex></ph>.
       </message>

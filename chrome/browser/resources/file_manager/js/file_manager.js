@@ -74,6 +74,11 @@ FileManager.prototype = {
   FileManager.GOOGLE_DRIVE_HELP =
       'https://support.google.com/chromeos/?p=filemanager_drivehelp';
 
+ /**
+   * Location of Google Drive specific help.
+   */
+  FileManager.GOOGLE_DRIVE_ROOT = 'https://drive.google.com';
+
   /**
    * Maximum amount of thumbnails in the preview pane.
    */
@@ -558,6 +563,9 @@ FileManager.prototype = {
 
     CommandUtil.registerCommand(doc, 'gdata-clear-local-cache',
         Commands.gdataClearCacheCommand, this);
+
+    CommandUtil.registerCommand(doc, 'gdata-go-to-drive',
+        Commands.gdataGoToDriveCommand, this);
 
     CommandUtil.registerCommand(doc, 'paste',
         Commands.pasteFileCommand, doc, this.fileTransferController_);
