@@ -25,7 +25,8 @@
     }
   ],
   "web_accessible_resources": [
-    "chromevox/injected/api.js"
+    "chromevox/injected/api.js",
+    "chromevox/injected/api_util.js"
   ],
   "default_locale": "en"
 }
