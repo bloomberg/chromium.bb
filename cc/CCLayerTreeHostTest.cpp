@@ -1371,7 +1371,8 @@ private:
     RefPtr<ContentLayerChromium> m_childLayer;
 };
 
-TEST_F(CCLayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers, runMultiThread)
+// Test is flaky - http://crbug.com/148490
+TEST_F(CCLayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers, DISABLED_runMultiThread)
 {
     runTest(true);
 }
