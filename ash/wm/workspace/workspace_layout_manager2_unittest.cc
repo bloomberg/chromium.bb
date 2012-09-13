@@ -23,19 +23,6 @@ class WorkspaceLayoutManager2Test : public test::AshTestBase {
   WorkspaceLayoutManager2Test() {}
   virtual ~WorkspaceLayoutManager2Test() {}
 
-  virtual void SetUp() OVERRIDE {
-    test::AshTestBase::SetUp();
-    Shell::GetInstance()->SetDisplayWorkAreaInsets(
-        Shell::GetPrimaryRootWindow(),
-        gfx::Insets(1, 2, 3, 4));
-    Shell::GetPrimaryRootWindow()->SetHostSize(gfx::Size(800, 600));
-    aura::Window* default_container = Shell::GetContainer(
-        Shell::GetPrimaryRootWindow(),
-        internal::kShellWindowId_DefaultContainer);
-    default_container->SetLayoutManager(new internal::BaseLayoutManager(
-        Shell::GetPrimaryRootWindow()));
-  }
-
   aura::Window* CreateTestWindow(const gfx::Rect& bounds) {
     return aura::test::CreateTestWindowWithBounds(bounds, NULL);
   }
@@ -56,6 +43,20 @@ TEST_F(WorkspaceLayoutManager2Test, RestoreFromMinimizeKeepsRestore) {
   wm::RestoreWindow(window.get());
   EXPECT_EQ("0,0 100x100", GetRestoreBoundsInScreen(window.get())->ToString());
   EXPECT_EQ("10,15 25x35", window.get()->bounds().ToString());
+}
+
+// Verifies when a window is maximized all descendant windows have a size.
+TEST_F(WorkspaceLayoutManager2Test, ChildBoundsResetOnMaximize) {
+  scoped_ptr<aura::Window> window(
+      CreateTestWindow(gfx::Rect(10, 20, 30, 40)));
+  window->Show();
+  ash::wm::ActivateWindow(window.get());
+  scoped_ptr<aura::Window> child_window(
+      aura::test::CreateTestWindowWithBounds(gfx::Rect(5, 6, 7, 8),
+                                             window.get()));
+  child_window->Show();
+  ash::wm::MaximizeWindow(window.get());
+  EXPECT_EQ("5,6 7x8", child_window->bounds().ToString());
 }
 
 }  // namespace

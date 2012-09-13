@@ -29,6 +29,32 @@ using aura::Window;
 namespace ash {
 namespace internal {
 
+namespace {
+
+typedef std::map<const aura::Window*, gfx::Rect> BoundsMap;
+
+// Adds an entry from |window| to its bounds and recursively invokes this for
+// all children.
+void BuildWindowBoundsMap(const aura::Window* window, BoundsMap* bounds_map) {
+  (*bounds_map)[window] = window->bounds();
+  for (size_t i = 0; i < window->children().size(); ++i)
+    BuildWindowBoundsMap(window->children()[i], bounds_map);
+}
+
+// Resets |window|s bounds from |bounds_map| if currently empty. Recusively
+// invokes this for all children.
+void ResetBoundsIfNecessary(const BoundsMap& bounds_map, aura::Window* window) {
+  if (window->bounds().IsEmpty() && window->GetTargetBounds().IsEmpty()) {
+    BoundsMap::const_iterator i = bounds_map.find(window);
+    if (i != bounds_map.end())
+      window->SetBounds(i->second);
+  }
+  for (size_t i = 0; i < window->children().size(); ++i)
+    ResetBoundsIfNecessary(bounds_map, window->children()[i]);
+}
+
+}  // namespace
+
 WorkspaceLayoutManager2::WorkspaceLayoutManager2(Workspace2* workspace)
     : root_window_(workspace->window()->GetRootWindow()),
       workspace_(workspace),
@@ -138,15 +164,26 @@ void WorkspaceLayoutManager2::OnWindowPropertyChanged(Window* window,
     // BaseLayoutManager, but that proves problematic. In particular when
     // restoring we need to animate on top of the workspace animating in.
     ui::Layer* cloned_layer = NULL;
+    BoundsMap bounds_map;
     if (wm::IsActiveWindow(window) &&
         ((WorkspaceManager2::IsMaximizedState(new_state) &&
           wm::IsWindowStateNormal(old_state)) ||
          (!WorkspaceManager2::IsMaximizedState(new_state) &&
           WorkspaceManager2::IsMaximizedState(old_state) &&
           new_state != ui::SHOW_STATE_MINIMIZED))) {
+      BuildWindowBoundsMap(window, &bounds_map);
       cloned_layer = wm::RecreateWindowLayers(window, false);
     }
     UpdateBoundsFromShowState(window);
+
+    if (cloned_layer) {
+      // Even though we just set the bounds not all descendants may have valid
+      // bounds. For example, constrained windows don't resize with the parent.
+      // Ensure that all windows that had a bounds before we cloned the layer
+      // have a bounds now.
+      ResetBoundsIfNecessary(bounds_map, window);
+    }
+
     ShowStateChanged(window, old_state, cloned_layer);
 
     // Set the restore rectangle to the previously set restore rectangle.
