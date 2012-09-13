@@ -204,13 +204,15 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   //    Destination State accessors --------------------------------------------
 
   // Full path to the downloaded or downloading file. This is the path to the
-  // physical file, if one exists. Can be empty if the in-progress path hasn't
-  // been determined yet.
+  // physical file, if one exists. It should be considered a hint; changes to
+  // this value and renames of the file on disk are not atomic with each other.
+  // May be empty if the in-progress path hasn't been determined yet.
   virtual const FilePath& GetFullPath() const = 0;
 
   // Target path of an in-progress download. We may be downloading to a
-  // temporary or intermediate file (specified by |current_path_|.  Once the
-  // download completes, we will rename the file to |target_path_|.
+  // temporary or intermediate file (specified by GetFullPath()); this is the
+  // name we will use once the download completes.
+  // May be empty if the target path hasn't yet been determined.
   virtual const FilePath& GetTargetFilePath() const = 0;
 
   // If the download forced a path rather than requesting name determination,
