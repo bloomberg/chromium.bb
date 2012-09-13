@@ -6,7 +6,9 @@
 
 #include <map>
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_bounds_animation.h"
 #include "chrome/browser/ui/panels/panel_frame_view.h"
@@ -21,7 +23,9 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN) && !defined(USE_ASH) && !defined(USE_AURA)
+#include "ui/base/win/shell.h"
 #include "base/win/windows_version.h"
+#include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/panels/taskbar_window_thumbnailer_win.h"
 #endif
 
@@ -196,6 +200,13 @@ PanelView::PanelView(Panel* panel, const gfx::Rect& bounds)
     focus_manager->RegisterAccelerator(
         iter->first, ui::AcceleratorManager::kNormalPriority, this);
   }
+
+#if defined(OS_WIN) && !defined(USE_ASH) && !defined(USE_AURA)
+  ui::win::SetAppIdForWindow(
+      ShellIntegration::GetAppModelIdForProfile(UTF8ToWide(panel->app_name()),
+                                                panel->profile()->GetPath()),
+      window_->GetNativeWindow());
+#endif
 }
 
 PanelView::~PanelView() {
