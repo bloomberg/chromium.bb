@@ -44,8 +44,13 @@ class BrowserFrameAura::WindowPropertyWatcher : public aura::WindowObserver {
 
     // Allow the frame to be replaced when maximizing an app.
     if (browser_frame_->non_client_view() &&
-        browser_frame_aura_->browser_view()->browser()->is_app())
-      browser_frame_->non_client_view()->UpdateFrame();
+        browser_frame_aura_->browser_view()->browser()->is_app()) {
+      // Defer frame layout when replacing the frame. Layout will occur when the
+      // window's bounds are updated. The window maximize/restore animations
+      // clone the window's layers and rely on the subsequent layout to set
+      // the layer sizes.
+      browser_frame_->non_client_view()->UpdateFrame(false);
+    }
   }
 
   virtual void OnWindowBoundsChanged(aura::Window* window,
@@ -84,14 +89,6 @@ BrowserFrameAura::BrowserFrameAura(BrowserFrame* browser_frame,
     ash::SetPersistsAcrossAllWorkspaces(
         GetNativeWindow(),
         ash::WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_NO);
-  }
-  // HACK: Don't animate app windows. They delete and rebuild their frame on
-  // maximize, which breaks the layer animations. We probably shouldn't rebuild
-  // the frame view on this transition.
-  // TODO(jamescook): Fix app window animation.  http://crbug.com/131293
-  if (browser_view->browser()->is_app()) {
-    Window* window = GetNativeWindow();
-    window->SetProperty(aura::client::kAnimationsDisabledKey, true);
   }
 #endif
 }

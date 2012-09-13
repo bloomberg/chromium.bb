@@ -747,7 +747,8 @@ void NativeWidgetWin::HandleClientSizeChanged(const gfx::Size& new_size) {
 }
 
 void NativeWidgetWin::HandleFrameChanged() {
-  GetWidget()->non_client_view()->UpdateFrame();
+  // Replace the frame and layout the contents.
+  GetWidget()->non_client_view()->UpdateFrame(true);
 }
 
 void NativeWidgetWin::HandleNativeFocus(HWND last_focused_window) {
