@@ -74,11 +74,13 @@ bool FindCommonTasks(Profile* profile,
                      const std::vector<GURL>& files_list,
                      std::set<const FileBrowserHandler*>* common_tasks);
 
-// Find the default task for a file whose url is |url|. (The default task is the
-// task that is assigned to file browser task button by default).
-bool GetDefaultTask(Profile* profile,
-                    const GURL& url,
-                    const FileBrowserHandler** handler);
+// Finds a task for a file whose URL is |url|.
+// Returns default task if one is defined (The default task is the task that is
+// assigned to file browser task button by default). If default task is not
+// found, tries to match the url with one of the builtin tasks.
+bool GetTaskForURL(Profile* profile,
+                   const GURL& url,
+                   const FileBrowserHandler** handler);
 
 // Used for returning success or failure from task executions.
 typedef base::Callback<void(bool)> FileTaskFinishedCallback;

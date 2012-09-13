@@ -530,7 +530,7 @@ bool ExecuteDefaultHandler(Profile* profile, const FilePath& path) {
     return false;
 
   const FileBrowserHandler* handler;
-  if (!file_handler_util::GetDefaultTask(profile, url, &handler))
+  if (!file_handler_util::GetTaskForURL(profile, url, &handler))
     return false;
 
   std::string extension_id = handler->extension_id();
