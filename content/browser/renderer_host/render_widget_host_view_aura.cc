@@ -278,7 +278,18 @@ void RenderWidgetHostViewAura::InitAsFullscreen(
   window_->Init(ui::LAYER_TEXTURED);
   window_->SetName("RenderWidgetHostViewAura");
   window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  window_->SetParent(NULL);
+  aura::Window* parent = NULL;
+  if (reference_host_view) {
+    aura::Window* reference_window =
+        static_cast<RenderWidgetHostViewAura*>(reference_host_view)->window_;
+    gfx::Display display =
+        gfx::Screen::GetDisplayNearestWindow(reference_window);
+    aura::client::StackingClient* stacking_client =
+        aura::client::GetStackingClient();
+    if (stacking_client)
+      parent = stacking_client->GetDefaultParent(window_, display.bounds());
+  }
+  window_->SetParent(parent);
   Show();
   Focus();
 }
