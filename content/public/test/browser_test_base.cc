@@ -10,7 +10,6 @@
 #include "base/process_util.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
-#include "sandbox/win/src/dep.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"

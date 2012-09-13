@@ -10,7 +10,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/win/windows_version.h"
-#include "sandbox/win/src/dep.h"
+#include "sandbox/win/src/process_mitigations.h"
 #include "sandbox/win/src/sandbox_factory.h"
 
 namespace {
@@ -37,12 +37,13 @@ namespace content {
 
 void InitializeSandboxInfo(sandbox::SandboxInterfaceInfo* info) {
   info->broker_services = sandbox::SandboxFactory::GetBrokerServices();
-  if (!info->broker_services)
+  if (!info->broker_services) {
     info->target_services = sandbox::SandboxFactory::GetTargetServices();
-
-  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
-    // Enforces strong DEP support. Vista uses the NXCOMPAT flag in the exe.
-    sandbox::SetCurrentProcessDEP(sandbox::DEP_ENABLED);
+  } else {
+    // Ensure the proper mitigations are enforced for the browser process.
+    sandbox::ApplyProcessMitigationsToCurrentProcess(
+        sandbox::MITIGATION_DEP |
+        sandbox::MITIGATION_DEP_NO_ATL_THUNK);
   }
 }
 
