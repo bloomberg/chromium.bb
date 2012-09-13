@@ -116,9 +116,6 @@ const char kDisableFlashStage3d[]           = "disable-flash-stage3d";
 // Suppresses support for the Geolocation javascript API.
 const char kDisableGeolocation[]            = "disable-geolocation";
 
-// Disable Gesture Tap Highlight
-const char kDisableGestureTapHighlight[]    = "disable-gesture-tap-highlight";
-
 // Disable GL multisampling.
 const char kDisableGLMultisampling[]        = "disable-gl-multisampling";
 
@@ -293,6 +290,9 @@ const char kEnablePointerLock[]             = "enable-pointer-lock";
 // Enable Text Service Framework(TSF) for text inputting instead of IMM32. This
 // flag is ignored on Metro environment.
 const char kEnableTextServicesFramework[] = "enable-text-services-framework";
+
+// Enable Gesture Tap Highlight
+const char kEnableGestureTapHighlight[]    = "enable-gesture-tap-highlight";
 
 // Enables the GPU benchmarking extension
 const char kEnableGpuBenchmarking[]         = "enable-gpu-benchmarking";

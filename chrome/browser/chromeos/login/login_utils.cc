@@ -762,6 +762,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ::switches::kEnablePartialSwap,
       ::switches::kEnableUIReleaseFrontSurface,
       ::switches::kEnablePinch,
+      ::switches::kEnableGestureTapHighlight,
       ::switches::kEnableSmoothScrolling,
       ::switches::kEnableThreadedCompositing,
       ::switches::kEnableTouchCalibration,

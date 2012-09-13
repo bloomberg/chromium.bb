@@ -455,6 +455,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableSyncAppNotifications)
   },
   {
+    "enable-gesture-tap-highlight",
+    IDS_FLAGS_ENABLE_GESTURE_TAP_HIGHLIGHTING_NAME,
+    IDS_FLAGS_ENABLE_GESTURE_TAP_HIGHLIGHTING_DESCRIPTION,
+    kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableGestureTapHighlight)
+  },
+  {
     "enable-smooth-scrolling",  // FLAGS:RECORD_UMA
     IDS_FLAGS_ENABLE_SMOOTH_SCROLLING_NAME,
     IDS_FLAGS_ENABLE_SMOOTH_SCROLLING_DESCRIPTION,

@@ -5865,6 +5865,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_INSTANT_EXTENDED_API_DESCRIPTION" desc="Description for the flag to enable the Instant extended API.">
         Enable the Instant extended API.
       </message>
+      <message name="IDS_FLAGS_ENABLE_GESTURE_TAP_HIGHLIGHTING_NAME" desc="Title for the flag to turn on gesture tap highlighting">
+        Gesture Tap Highlighting
+      </message>
+      <message name="IDS_FLAGS_ENABLE_GESTURE_TAP_HIGHLIGHTING_DESCRIPTION" desc="Description for the flag to turn on gesture tap highlighting">
+        Enable the experimental gesture tap highlight implementation.
+      </message>
       <message name="IDS_FLAGS_ENABLE_SMOOTH_SCROLLING_NAME" desc="Title for the flag to turn on smooth scrolling">
         Smooth Scrolling
       </message>

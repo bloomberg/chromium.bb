@@ -92,7 +92,7 @@ WebPreferences::WebPreferences()
       deferred_2d_canvas_enabled(false),
       accelerated_painting_enabled(false),
       accelerated_filters_enabled(false),
-      gesture_tap_highlight_enabled(true),
+      gesture_tap_highlight_enabled(false),
       accelerated_plugins_enabled(false),
       memory_info_enabled(false),
       fullscreen_enabled(false),
