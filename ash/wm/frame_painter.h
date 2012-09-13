@@ -108,8 +108,9 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
                      const gfx::Font& title_font);
 
   // Performs layout for the header based on whether we want the shorter
-  // |maximized_layout| appearance.
-  void LayoutHeader(views::NonClientFrameView* view, bool maximized_layout);
+  // appearance. |shorter_layout| is typically used for maximized windows, but
+  // not always.
+  void LayoutHeader(views::NonClientFrameView* view, bool shorter_layout);
 
   // aura::WindowObserver overrides:
   virtual void OnWindowPropertyChanged(aura::Window* window,

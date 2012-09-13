@@ -470,10 +470,10 @@ void FramePainter::PaintTitleBar(views::NonClientFrameView* view,
 }
 
 void FramePainter::LayoutHeader(views::NonClientFrameView* view,
-                                bool maximized_layout) {
-  // The maximized layout uses shorter buttons.
-  if (maximized_layout &&
-      internal::WorkspaceController::IsWorkspace2Enabled()) {
+                                bool shorter_layout) {
+  // The new assets only make sense if the window is actually maximized.
+  if (internal::WorkspaceController::IsWorkspace2Enabled() &&
+      shorter_layout && frame_->IsMaximized()) {
     SetButtonImages(close_button_,
                     IDR_AURA_WINDOW_MAXIMIZED_CLOSE2,
                     IDR_AURA_WINDOW_MAXIMIZED_CLOSE2_H,
@@ -486,7 +486,7 @@ void FramePainter::LayoutHeader(views::NonClientFrameView* view,
                     IDR_AURA_WINDOW_MAXIMIZED_RESTORE2,
                     IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_H,
                     IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_P);
-  } else if (maximized_layout) {
+  } else if (shorter_layout) {
     SetButtonImages(close_button_,
                     IDR_AURA_WINDOW_MAXIMIZED_CLOSE,
                     IDR_AURA_WINDOW_MAXIMIZED_CLOSE_H,
