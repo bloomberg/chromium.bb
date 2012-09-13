@@ -668,6 +668,18 @@ x86_generic_full.add_config('x86-pineview-full',
   boards=['x86-pineview'],
 )
 
+full.add_config('x86-mario-full',
+  boards=['x86-mario'],
+)
+
+full.add_config('x86-alex-full',
+  boards=['x86-alex'],
+)
+
+full.add_config('stumpy-full',
+  boards=['stumpy'],
+)
+
 _toolchain = \
     full.derive(latest_toolchain=True, prebuilts=False,
                 gcc_githash='gcc.gnu.org/branches/google/main',
