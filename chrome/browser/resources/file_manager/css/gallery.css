@@ -275,7 +275,6 @@ body {
 .gallery .filename-spacer > * {
   -webkit-transition: top linear 180ms;
   background-color: transparent;
-  height: 21px;
   left: 10px;
   overflow: hidden;
   position: absolute;
@@ -288,10 +287,12 @@ body {
 }
 
 .gallery .filename-spacer .namebox {
+  height: 22px;
   top: 15px;
 }
 
 .gallery[editing] .filename-spacer .namebox {
+  height: 21px;
   top: 5px;
 }
 
@@ -300,7 +301,7 @@ body {
 }
 
 .gallery[editing] .filename-spacer .options {
-  top: 27px;
+  top: 28px;
 }
 
 .gallery .filename-spacer[renaming] .namebox div,
@@ -329,12 +330,10 @@ body {
   width: 100%;
 }
 
-.gallery .filename-spacer .namebox div {
-  padding: 1px 3px 0 3px;
-}
-
+.gallery .filename-spacer .namebox div,
 .gallery .filename-spacer .namebox input {
-  padding: 0 3px 0 2px;
+  padding-left: 3px;
+  padding-right: 3px;
 }
 
 .gallery .filename-spacer .namebox div:hover {
@@ -345,8 +344,6 @@ body {
 .gallery .filename-spacer .namebox input:focus,
 .gallery .filename-spacer .namebox input:focus:hover {
   background-color: white;
-  border-bottom: 1px solid white;
-  border-right: 1px solid white;
   color: black;
 }
 
