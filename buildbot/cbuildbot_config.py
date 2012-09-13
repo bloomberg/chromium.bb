@@ -707,8 +707,7 @@ incremental.add_config('x86-generic-asan',
   boards=['x86-generic'],
   chroot_replace=True,
   profile='asan',
-  trybot_list=True,
-  description='Build with Address Sanitizer',
+  description='Build with Address Sanitizer (Clang)',
 )
 
 incremental.add_config('amd64-generic-asan',
@@ -716,8 +715,7 @@ incremental.add_config('amd64-generic-asan',
   boards=['amd64-generic'],
   chroot_replace=True,
   profile='asan',
-  trybot_list=True,
-  description='Build with Address Sanitizer',
+  description='Build with Address Sanitizer (Clang)',
 )
 
 #
