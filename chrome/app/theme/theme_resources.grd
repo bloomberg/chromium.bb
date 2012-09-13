@@ -747,19 +747,15 @@
       <if expr="not pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_TAB_ALPHA_LEFT" file="tab_alpha_left.png" />
         <structure type="chrome_scaled_image" name="IDR_TAB_ALPHA_RIGHT" file="tab_alpha_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE" file="tab_close.png" />
-        <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE_H" file="tab_close_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE_MASK" file="tab_close_mask.png" />
-        <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE_P" file="tab_close_pressed.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_TAB_ALPHA_LEFT" file="common/tab_alpha_left.png" />
         <structure type="chrome_scaled_image" name="IDR_TAB_ALPHA_RIGHT" file="common/tab_alpha_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE" file="common/tab_close_normal.png" />
-        <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE_H" file="common/tab_close_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE_MASK" file="common/tab_close_mask.png" />
-        <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE_P" file="common/tab_close_pressed.png" />
       </if>
+      <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE" file="common/tab_close_normal.png" />
+      <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE_H" file="common/tab_close_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE_MASK" file="common/tab_close_mask.png" />
+      <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE_P" file="common/tab_close_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_TAB_DROP_DOWN" file="tab_drop_down.png" />
       <structure type="chrome_scaled_image" name="IDR_TAB_DROP_UP" file="tab_drop_up.png" />
       <if expr="not pp_ifdef('toolkit_views')">
