@@ -366,6 +366,8 @@ void RenderWidgetHostViewAura::MovePluginWindows(
     const gfx::Point& scroll_offset,
     const std::vector<webkit::npapi::WebPluginGeometry>& plugin_window_moves) {
 #if defined(OS_WIN)
+  // We need to clip the rectangle to the tab's viewport, otherwise we will draw
+  // over the browser UI.
   HWND parent = window_->GetRootWindow()->GetAcceleratedWidget();
   gfx::Rect view_bounds = window_->GetBoundsInRootWindow();
   std::vector<webkit::npapi::WebPluginGeometry> moves = plugin_window_moves;
@@ -1265,6 +1267,10 @@ void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
 }
 
 void RenderWidgetHostViewAura::OnWindowDestroying() {
+#if defined(OS_WIN)
+  HWND parent = window_->GetRootWindow()->GetAcceleratedWidget();
+  DetachPluginsHelper(parent);
+#endif
 }
 
 void RenderWidgetHostViewAura::OnWindowDestroyed() {

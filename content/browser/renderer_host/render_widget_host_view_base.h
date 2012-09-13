@@ -79,6 +79,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   static void PaintPluginWindowsHelper(
       HWND parent,
       const gfx::Rect& damaged_screen_rect);
+
+  // Needs to be called before the HWND backing the view goes away to avoid
+  // crashes in Windowed plugins.
+  static void DetachPluginsHelper(HWND parent);
 #endif
 
   // Whether this view is a popup and what kind of popup it is (select,

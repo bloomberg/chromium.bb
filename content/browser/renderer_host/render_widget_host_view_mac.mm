@@ -1227,7 +1227,7 @@ void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
   // plugin windows.
   if (params.window == gfx::kNullPluginWindow) {
     NOTIMPLEMENTED();
-      AckPendingSwapBuffers();
+    AckPendingSwapBuffers();
   } else {
     // Deprecated accelerated plugin code path.
     AcceleratedPluginView* view = ViewForPluginWindowHandle(params.window);
