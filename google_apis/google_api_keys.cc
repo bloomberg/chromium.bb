@@ -11,43 +11,47 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/stringize_macros.h"
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if defined(GOOGLE_CHROME_BUILD) || defined(USE_OFFICIAL_GOOGLE_API_KEYS)
 #include "google_apis/internal/google_chrome_api_keys.h"
 #endif
 
+// Used to indicate an unset key/id/secret.  This works better with
+// various unit tests than leaving the token empty.
+#define DUMMY_API_TOKEN "dummytoken"
+
 #if !defined(GOOGLE_API_KEY)
-// TODO(joi): Make this blank once it is set via include.gypi.
-#define GOOGLE_API_KEY "abcNOTREALKEYxyz"
+#define GOOGLE_API_KEY DUMMY_API_TOKEN
 #endif
 
 #if !defined(GOOGLE_CLIENT_ID_MAIN)
-// TODO(joi): Make this blank once it is set via include.gypi.
+// TODO(joi): Use DUMMY_API_TOKEN here once folks on chromium-dev have
+// had a couple of days to update their include.gypi.
 #define GOOGLE_CLIENT_ID_MAIN "77185425430.apps.googleusercontent.com"
 #endif
 
 #if !defined(GOOGLE_CLIENT_SECRET_MAIN)
-// TODO(joi): Make this blank once it is set via include.gypi.
+// TODO(joi): As above.
 #define GOOGLE_CLIENT_SECRET_MAIN "OTJgUOQcT7lO7GsGZq2G4IlT"
 #endif
 
 #if !defined(GOOGLE_CLIENT_ID_CLOUD_PRINT)
-// TODO(joi): Make this blank once it is set via include.gypi.
+// TODO(joi): As above.
 #define GOOGLE_CLIENT_ID_CLOUD_PRINT "551556820943.apps.googleusercontent.com"
 #endif
 
 #if !defined(GOOGLE_CLIENT_SECRET_CLOUD_PRINT)
-// TODO(joi): Make this blank once it is set via include.gypi.
+// TODO(joi): As above.
 #define GOOGLE_CLIENT_SECRET_CLOUD_PRINT "u3/mp8CgLFxh4uiX1855/MHe"
 #endif
 
 #if !defined(GOOGLE_CLIENT_ID_REMOTING)
-// TODO(joi): Make this blank once it is set via include.gypi.
+// TODO(joi): As above.
 #define GOOGLE_CLIENT_ID_REMOTING \
   "440925447803-avn2sj1kc099s0r7v62je5s339mu0am1.apps.googleusercontent.com"
 #endif
 
 #if !defined(GOOGLE_CLIENT_SECRET_REMOTING)
-// TODO(joi): Make this blank once it is set via include.gypi.
+// TODO(joi): As above.
 #define GOOGLE_CLIENT_SECRET_REMOTING "Bgur6DFiOMM1h8x-AQpuTQlK"
 #endif
 
