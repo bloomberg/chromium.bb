@@ -82,11 +82,6 @@ div.sidebar-splitter {
   display: -webkit-box;
 }
 
-#category-container[hidden],
-#custom-container[hidden] {
-  display: none;
-}
-
 #custom-container {
   background-color: #FFF;
   margin: 10px;
@@ -121,12 +116,22 @@ div.sidebar-splitter {
   width: 128px;
 }
 
+/* The width and height of img tag need to be set here. Otherwise, an incorrect
+ * image size may be used during layout. Some images may be misaligned as a
+ * result. See http://code.google.com/p/chromium/issues/detail?id=148480 for
+ * screen shot.
+ */
+.image-picker img {
+  height: 80px;
+  width: 128px;
+}
+
 .image-picker [selected][lead] {
   border: 2px solid rgb(0, 102, 204);
   padding: 1px;
 }
 
-.wallpaper-attr {
+#wallpaper-attribute {
   -webkit-box-orient: vertical;
   display: -webkit-box;
 }
@@ -149,6 +154,11 @@ div.sidebar-splitter {
   -webkit-box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   height: 80px;
   width: 128px;
+}
+
+/* [hidden] does display:none, but its priority is too low. */
+[hidden] {
+  display: none !important;
 }
 
 /* The butter bar styles are copied from file_manager.css. We will revisit

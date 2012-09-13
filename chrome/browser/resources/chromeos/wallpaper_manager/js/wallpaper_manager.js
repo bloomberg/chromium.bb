@@ -210,8 +210,10 @@ function WallpaperManager(dialogDom) {
       $('author-name').textContent = selectedItem.author;
       $('author-website').textContent = $('author-website').href =
           selectedItem.authorWebsite;
+      $('wallpaper-attribute').hidden = false;
       return;
     }
+    $('wallpaper-attribute').hidden = true;
     $('author-name').textContent = '';
     $('author-website').textContent = $('author-website').href = '';
   };
