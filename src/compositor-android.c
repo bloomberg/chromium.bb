@@ -476,10 +476,10 @@ android_compositor_create(struct wl_display *display, int argc, char *argv[],
 	if (android_init_egl(compositor, output) < 0)
 		goto err_output;
 
+	android_compositor_add_output(compositor, output);
+
 	if (gles2_renderer_init(&compositor->base) < 0)
 		goto err_egl;
-
-	android_compositor_add_output(compositor, output);
 
 	compositor->seat = android_seat_create(compositor);
 	if (!compositor->seat)
