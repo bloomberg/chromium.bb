@@ -60,6 +60,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_client.h"
 #include "googleurl/src/gurl.h"
+#include "ui/gfx/favicon_size.h"
 #include "ui/web_dialogs/constrained_web_dialog_ui.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
@@ -488,12 +489,33 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
       if (bitmap.get() && bitmap->size()) {
         history::FaviconBitmapResult bitmap_result;
         bitmap_result.bitmap_data = bitmap;
+        // Leave |bitmap_result|'s icon URL as the default of GURL().
         bitmap_result.icon_type = history::FAVICON;
         favicon_bitmap_results.push_back(bitmap_result);
+
+        // Assume that |bitmap| is |gfx::kFaviconSize| x |gfx::kFaviconSize|
+        // DIP.
+        float scale = ui::GetScaleFactorScale(scale_factors[i]);
+        int edge_pixel_size =
+            static_cast<int>(gfx::kFaviconSize * scale + 0.5f);
+        bitmap_result.pixel_size = gfx::Size(edge_pixel_size, edge_pixel_size);
       }
     }
+
+    // Populate IconURLSizesMap such that the requirement that all the icon URLs
+    // in |favicon_bitmap_results| be present in |icon_url_sizes| holds.
+    // Populate the favicon sizes with the pixel sizes of the bitmaps available
+    // for |url|.
+    history::IconURLSizesMap icon_url_sizes;
+    for (size_t i = 0; i < favicon_bitmap_results.size(); ++i) {
+      const history::FaviconBitmapResult& bitmap_result =
+          favicon_bitmap_results[i];
+      const GURL& icon_url = bitmap_result.icon_url;
+      icon_url_sizes[icon_url].push_back(bitmap_result.pixel_size);
+    }
+
     request->ForwardResultAsync(request->handle(), favicon_bitmap_results,
-                                history::IconURLSizesMap());
+                                icon_url_sizes);
   }
 }
 

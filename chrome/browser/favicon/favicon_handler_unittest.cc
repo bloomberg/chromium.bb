@@ -54,7 +54,8 @@ void SetFaviconBitmapResult(
   history::FaviconBitmapResult bitmap_result;
   bitmap_result.expired = expired;
   bitmap_result.bitmap_data = data;
-  bitmap_result.pixel_size = gfx::Size();
+  // Use a pixel size other than (0,0) as (0,0) has a special meaning.
+  bitmap_result.pixel_size = gfx::Size(gfx::kFaviconSize, gfx::kFaviconSize);
   bitmap_result.icon_type = icon_type;
   bitmap_result.icon_url = icon_url;
 
@@ -339,8 +340,20 @@ class TestFaviconHandler : public FaviconHandler {
 namespace {
 
 void HistoryRequestHandler::InvokeCallback() {
-  if (!callback_.is_null())
-    callback_.Run(0, history_results_, history::IconURLSizesMap());
+  if (!callback_.is_null()) {
+    history::IconURLSizesMap icon_url_sizes;
+    // Build IconURLSizesMap such that the requirement that all the icon URLs
+    // in |history_results_| be present in |icon_url_sizes| holds.
+    // Add the pixel size for each of |history_results_| to |icon_url_sizes|
+    // as empty favicon sizes has a special meaning.
+    for (size_t i = 0; i < history_results_.size(); ++i) {
+      const history::FaviconBitmapResult& bitmap_result = history_results_[i];
+      const GURL& icon_url = bitmap_result.icon_url;
+      icon_url_sizes[icon_url].push_back(bitmap_result.pixel_size);
+    }
+
+    callback_.Run(0, history_results_, icon_url_sizes);
+  }
 }
 
 void DownloadHandler::InvokeCallback() {

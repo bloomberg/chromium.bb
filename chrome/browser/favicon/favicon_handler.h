@@ -272,11 +272,11 @@ class FaviconHandler {
   // See "Favicon Details" in tab_contents.cc for more details.
   bool got_favicon_from_history_;
 
-  // Whether the favicon is out of date. If true, it means history knows about
-  // the favicon, but we need to download the favicon because the icon has
-  // expired.
-  // See "Favicon Details" in tab_contents.cc for more details.
-  bool favicon_expired_;
+  // Whether the favicon is out of date or the favicon data in
+  // |history_results_| is known to be incomplete. If true, it means history
+  // knows about the favicon, but we need to download the favicon because the
+  // icon has expired or the data in the database is incomplete.
+  bool favicon_expired_or_incomplete_;
 
   // Requests to the renderer to download favicons.
   typedef std::map<int, DownloadRequest> DownloadRequests;

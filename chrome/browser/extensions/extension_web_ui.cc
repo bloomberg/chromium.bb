@@ -123,6 +123,7 @@ class ExtensionWebUIImageLoadingTracker : public ImageLoadingTracker::Observer {
   // deleted.
   void ForwardResult(const gfx::Image& icon) {
     std::vector<history::FaviconBitmapResult> favicon_bitmap_results;
+    history::IconURLSizesMap icon_url_sizes;
     SkBitmap icon_bitmap = icon.AsBitmap();
     if (!icon_bitmap.empty()) {
       scoped_refptr<base::RefCountedBytes> icon_data(
@@ -133,16 +134,22 @@ class ExtensionWebUIImageLoadingTracker : public ImageLoadingTracker::Observer {
         bitmap_result.bitmap_data = icon_data;
         bitmap_result.pixel_size = gfx::Size(icon_bitmap.width(),
                                              icon_bitmap.height());
+        // Leave |bitmap_result|'s icon URL as the default of GURL().
         bitmap_result.icon_type = history::FAVICON;
 
         favicon_bitmap_results.push_back(bitmap_result);
+
+        // Build IconURLSizesMap such that the requirement that all the icon
+        // URLs in |favicon_bitmap_results| be present in |icon_url_sizes|
+        // holds. Set the favicon sizes to the pixel size of |icon_bitmap|.
+        icon_url_sizes[GURL()].push_back(bitmap_result.pixel_size);
       } else {
         NOTREACHED() << "Could not encode extension favicon";
       }
     }
 
     request_->ForwardResultAsync(request_->handle(), favicon_bitmap_results,
-                                 history::IconURLSizesMap());
+                                 icon_url_sizes);
     delete this;
   }
 
