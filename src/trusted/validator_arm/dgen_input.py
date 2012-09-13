@@ -29,21 +29,23 @@ arch           ::= '(' word+ ')'
 bit_check      ::= column '=' bitpattern
 bit_expr       ::= bit_expr1 ('if' bit_expr 'else' bit_expr)?  # conditional
 bit_expr1      ::= bit_expr2 (('&' bit_expr2)* | ('|' bit_expr2)*)?
-bit_expr2      ::= bit_expr3 (('<' | '<=' | '==' | '!=' | '>=' | '>')
-                              bit_expr3)?                      # comparisons
-bit_expr3      ::= bit_expr4 |                                 # add ops
-                   bit_expr3 (('+' bit_expr4) | ('-' bit_expr4))?
-bit_expr4      ::= bit_expr5 |                                 # mul ops
-                   bit_expr4 (('*' bit_expr5) |
-                              ('/' bit_expr5) |
-                              ('mod' bit_expr5))?
-bit_expr5      ::= bit_expr6 ('=' bitpattern)?                 # bit check
-bit_expr6      ::= bit_expr7 (':' bit_expr7)*                  # concat
-bit_expr7      ::= bit_expr8 |
-                   bit_expr7 ('(' int (':' int)? ')')?         # bit range
-bit_expr8      ::= int | id | bit_check | bit_set | '(' bit_expr ')'
+bit_expr2      ::= bit_expr3 | 'not' bit_expr2
+bit_expr3      ::= bit_expr4 ('in' 'bitset'? bit_set)?
+bit_expr4      ::= bit_expr5 (('<' | '<=' | '==' | '!=' | '>=' | '>')
+                              bit_expr5)?                      # comparisons
+bit_expr5      ::= bit_expr6 |                                 # add ops
+                   bit_expr5 (('+' bit_expr6) | ('-' bit_expr6))?
+bit_expr6      ::= bit_expr7 |                                 # mul ops
+                   bit_expr6 (('*' bit_expr7) |
+                              ('/' bit_expr7) |
+                              ('mod' bit_expr7))?
+bit_expr7      ::= bit_expr8 ('=' bitpattern)?                 # bit check
+bit_expr8      ::= bit_expr9 (':' bit_expr9)*                  # concat
+bit_expr9      ::= bit_expr10 | bit_expr9 ('(' int (':' int)? ')')?  # bit range
+bit_expr10     ::= int | id | bit_check | bit_set | '(' bit_expr ')' | call
 bit_set        ::= '{' (bit_expr (',' bit_expr)*)? '}'
 bitpattern     ::= word | negated_word
+call           ::= word '(' (bit_expr (',' bit_expr)*)? ')'
 citation       ::= '(' word+ ')'
 column         ::= id '(' int (':' int)? ')'
 classdef       ::= 'class' word ':' word
@@ -112,12 +114,26 @@ _PREDEFINED_CONSTS = {
     'false': dgen_core.BoolValue(False)
     }
 
+# When true, catch all bugs when parsing and report line.
+_CATCH_EXCEPTIONS = True
+
 class Parser(object):
   """Parses a set of tables from the input file."""
 
   def parse(self, input):
     self.input = input             # The remaining input to parse
     decoder = dgen_core.Decoder()  # The generated decoder of parse tables.
+    if _CATCH_EXCEPTIONS:
+      try:
+        return self._parse(decoder)
+      except Exception as e:
+        self._unexpected(e)
+      except:
+        self._unexpected("Unknow problem.")
+    else:
+      return self._parse(decoder)
+
+  def _parse(self, decoder):
     # Read the class definitions while there.
     while self._next_token().kind == 'class':
       self._classdef(decoder)
@@ -143,7 +159,7 @@ class Parser(object):
     # Reserved words allowed. Must be ordered such that if p1 != p2 are in
     # the list, and p1.startswith(p2), then p1 must appear before p2.
     self._reserved = ['class', 'else', 'pattern', 'safety', 'rule',
-                      'arch', 'other', 'mod', 'if']
+                      'arch', 'other', 'mod', 'if', 'not', 'in', 'bitset']
     # Punctuation allowed. Must be ordered such that if p1 != p2 are in
     # the list, and p1.startswith(p2), then p1 must appear before p2.
     self._punctuation = ['=>', '->', '-', '+', '(', ')', '==', ':=', '"',
@@ -227,7 +243,7 @@ class Parser(object):
       self._read_token('&')
       checks.append(self._safety_check(context))
     if not context.define('safety', checks, False):
-      raise Exception('safety: multiple definitions')
+      self._unexpected('safety: multiple definitions')
 
   def _action_rule(self, context):
     """action_rule    ::= 'rule' ':=' id
@@ -290,38 +306,60 @@ class Parser(object):
     return value
 
   def _bit_expr2(self, context):
-    """bit_expr2 ::= bit_expr3 (('<' | '<=' | '==' | '!=' | '>=' | '>')
-                                bit_expr3)? """
-    value = self._bit_expr3(context)
+    """bit_expr2 ::= bit_expr3 | 'not' bit_expr2"""
+    if self._next_token().kind == 'not':
+      self._read_token('not')
+      return dgen_core.NegatedTest(self._bit_expr2(context))
+    return self._bit_expr3(context)
+
+  def _bit_expr3(self, context):
+    """bit_expr3 ::= bit_expr4 ('in' 'bitset'? bit_set)?"""
+    value = self._bit_expr4(context)
+    if not self._next_token().kind == 'in': return value
+    self._read_token('in')
+    is_bitset = False
+    if self._next_token().kind == 'bitset':
+      self._read_token('bitset')
+      is_bitset = True
+    bitset = self._bit_set(context)
+    if is_bitset:
+      return dgen_core.InBitSet(value, bitset)
+    else:
+      return dgen_core.InUintSet(value, bitset)
+
+  def _bit_expr4(self, context):
+    """bit_expr4 ::= bit_expr5 (('<' | '<=' | '==' | '!=' | '>=' | '>')
+                                bit_expr5)? """
+    value = self._bit_expr5(context)
     for op in ['<', '<=', '==', '!=', '>=', '>']:
       if self._next_token().kind == op:
         self._read_token(op)
-        return dgen_core.CompareExp(op, value, self._bit_expr3(context))
-    return value
-
-  def _bit_expr3(self, context):
-    """bit_expr3 ::= bit_expr4 |
-                     bit_expr3 (('+' bit_expr4) | ('-' bit_expr4))?"""
-    value = self._bit_expr4(context)
-    while self._next_token().kind in ['+', '-']:
-      op = self._read_token().value
-      value = dgen_core.AddOp(op, value, self._bit_expr4(context))
-    return value
-
-  def _bit_expr4(self, context):
-    """bit_expr4 ::= bit_expr5 |
-                     bit_expr4 (('*' bit_expr5) |
-                                ('/' bit_expr5) |
-                                ('mod' bit_expr5))?"""
-    value = self._bit_expr5(context)
-    while self._next_token().kind in ['*', '/', 'mod']:
-      op = self._read_token().value
-      value = dgen_core.MulOp(op, value, self._bit_expr5(context))
+        return dgen_core.CompareExp(op, value, self._bit_expr5(context))
     return value
 
   def _bit_expr5(self, context):
-    """bit_expr5 ::= bit_expr6 ('=' bitpattern)"""
-    bits = self._bit_expr6(context)
+    """bit_expr5 ::= bit_expr6 |
+                     bit_expr5 (('+' bit_expr6) | ('-' bit_expr6))?"""
+    value = self._bit_expr6(context)
+    while self._next_token().kind in ['+', '-']:
+      op = self._read_token().value
+      value = dgen_core.AddOp(op, value, self._bit_expr6(context))
+    return value
+
+  def _bit_expr6(self, context):
+    """bit_expr6 ::= bit_expr7 |
+                     bit_expr6 (('*' bit_expr7) |
+                                ('/' bit_expr7) |
+                                ('mod' bit_expr7))?"""
+    value = self._bit_expr7(context)
+    while self._next_token().kind in ['*', '/', 'mod']:
+      op = self._read_token().value
+      value = dgen_core.MulOp(op, value, self._bit_expr7(context))
+    return value
+
+  def _bit_expr7(self, context):
+    """bit_expr7 ::= bit_expr8 ('=' bitpattern)"""
+    bits = self._bit_expr8(context)
     if self._next_token().kind != '=': return bits
     self._read_token('=')
     bitpat = self._bitpattern()
@@ -331,20 +369,20 @@ class Parser(object):
     else:
       return pattern
 
-  def _bit_expr6(self, context):
-    """bit_expr6 ::= bit_expr7 (':' bit_expr7)*"""
-    value = self._bit_expr7(context)
+  def _bit_expr8(self, context):
+    """bit_expr8 ::= bit_expr9 (':' bit_expr9)*"""
+    value = self._bit_expr9(context)
     if self._next_token().kind != ':': return value
     values = [ value ]
     while self._next_token().kind == ':':
       self._read_token(':')
-      values.append(self._bit_expr7(context))
+      values.append(self._bit_expr9(context))
     return dgen_core.Concat(values)
 
-  def _bit_expr7(self, context):
-    """bit_expr7 ::= bit_expr8 |
-                     bit_expr7 ('(' int (':' int)? ')')?"""
-    value = self._bit_expr8(context)
+  def _bit_expr9(self, context):
+    """bit_expr9 ::= bit_expr10 |
+                     bit_expr9 ('(' int (':' int)? ')')?"""
+    value = self._bit_expr10(context)
     while self._next_token().kind == '(':
       self._read_token('(')
       hi_bit = self._int()
@@ -356,8 +394,10 @@ class Parser(object):
       value = dgen_core.BitField(value, hi_bit, lo_bit)
     return value
 
-  def _bit_expr8(self, context):
-    """bit_expr8 ::= int | id | bit_check | bit_set | '(' bit_expr ')'"""
+  def _bit_expr10(self, context):
+    """bit_expr10 ::= int | id | bit_check | bit_set | '(' bit_expr ')' |
+                      call
+    """
     if self._is_int():
       return dgen_core.Literal(self._int())
     elif self._is_bit_check():
@@ -369,6 +409,10 @@ class Parser(object):
       value = self._bit_expr(context)
       self._read_token(')')
       return dgen_core.ParenthesizedExp(value)
+    elif (self._is_name_paren() and not self._is_column()):
+      # Note: we defer input like "foo(2)" to being a (bit field) column.
+      # If you want to recognize "foo(2)" as a function call, write 'foo((2))'
+      return self._call(context)
     else:
       name = self._id()
       value = context.find(name)
@@ -404,6 +448,18 @@ class Parser(object):
     elif len(pattern) != 32:
       self._unexpected("Bit pattern  %s length != 32" % pattern)
     return pattern
+
+  def _call(self, context):
+    """call ::= word '(' (bit_expr (',' bit_expr)*)? ')'"""
+    name = self._read_token('word').value
+    args = []
+    self._read_token('(')
+    while self._next_token().kind != ')':
+      if args:
+        self._read_token(',')
+      args.append(self._bit_expr(context))
+    self._read_token(')')
+    return dgen_core.FunctionCall(name, args)
 
   def _citation(self):
     """ citation ::= '(' word+ ')' """
@@ -731,11 +787,11 @@ class Parser(object):
       tokens.append(self._read_token('word'))
       if self._next_token().kind == '(':
         tokens.append(self._read_token('('))
-        if self._next_token().kind == 'word':
+        if self._is_int():
           tokens.append(self._read_token('word'))
           if self._next_token().kind == ':':
             tokens.append(self._read_token(':'))
-            if self._next_token().kind == 'word':
+            if self._is_int():
               tokens.append(self._read_token('word'))
           if self._next_token().kind == ')':
             matches = True
@@ -748,6 +804,7 @@ class Parser(object):
     return re.match(r'^([0-9]+)$', word)
 
   def _is_name_equals(self):
+    """Returns true if input begins with 'name='."""
     matches = False
     if self._next_token().kind == 'word':
       token = self._read_token('word')
@@ -756,7 +813,18 @@ class Parser(object):
       self._pushback_token(token)
     return matches
 
+  def _is_name_paren(self):
+    """Returns true if input begins with 'name('."""
+    matches = False
+    if self._next_token().kind == 'word':
+      token = self._read_token('word')
+      if self._next_token().kind == '(':
+        matches = True
+      self._pushback_token(token)
+    return matches
+
   def _is_name_semicolon(self):
+    """Returns true if input begins with 'name:'."""
     matches = False
     if self._next_token().kind == 'word':
       token = self._read_token('word')

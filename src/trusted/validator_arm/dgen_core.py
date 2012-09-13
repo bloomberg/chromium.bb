@@ -230,7 +230,7 @@ _NEGATED_COMPARE_OP = {
 class CompareExp(BitExpr):
   """Models the comparison of two values."""
 
-  def __init_(self, op, arg1, arg2):
+  def __init__(self, op, arg1, arg2):
     if not _NEGATED_COMPARE_OP.get(op):
       raise Exception("Unknown compare operator: %s" % op)
     self._op = op
@@ -247,9 +247,9 @@ class CompareExp(BitExpr):
                       self._args[0], self._args[1])
 
   def to_bool(self, options={}):
-    return '((%s) %s (%s))' % (self._args[0].to_bool(options),
+    return '((%s) %s (%s))' % (self._args[0].to_uint32(options),
                                self._op,
-                               self._args[1].to_bool(options))
+                               self._args[1].to_uint32(options))
 
   def to_register(self, options={}):
     raise Exception("to_register not defined for %s" % self)
@@ -386,6 +386,9 @@ class BitSet(BitExpr):
   def __init__(self, values):
     self._values = values
 
+  def args(self):
+    return self._values[:]
+
   def to_register_list(self, options={}):
     code = 'RegisterList()'
     for value in self._values:
@@ -397,6 +400,119 @@ class BitSet(BitExpr):
 
   def neutral_repr(self):
     return '{%s}' % ','.join([neutral_repr(v) for v in self._values])
+
+class FunctionCall(BitExpr):
+  """Abstract class defining an (external) function call."""
+
+  def __init__(self, name, args):
+    self._name = name
+    self._args = args
+
+  def name(self):
+    return self._name
+
+  def args(self):
+    return self._args[:]
+
+  def to_bitfield(self, options={}):
+    raise Exception('to_bitfield not defined for %s' % self)
+
+  def to_bool(self, options={}):
+    return self._to_call(options)
+
+  def to_register(self, options={}):
+    return self._to_call(options)
+
+  def to_register_list(self, options={}):
+    return self._to_call(options)
+
+  def to_uint32(self, options={}):
+    return self._to_call(options)
+
+  def __repr__(self):
+    return "%s(%s)" % (self._name,
+                       ', '.join([repr(a) for a in self._args]))
+
+  def neutral_repr(self):
+    return "%s(%s)" % (self._name,
+                       ', '.join([neutral_repr(a) for a in self._args]))
+
+  def _to_call(self, options={}):
+    """Generates a call to the external function."""
+    return '%s(%s)' % (self._name,
+                       ', '.join([a.to_uint32(options) for a in self._args]))
+
+class InSet(BitExpr):
+  """Abstract class defining set containment."""
+
+  def __init__(self, value, bitset):
+    self._value = value
+    self._bitset = bitset
+
+  def value(self):
+    """Returns the value to test membership on."""
+    return self._value
+
+  def bitset(self):
+    """Returns the set of values to test membership on."""
+    return self._bitset
+
+  def to_bitfield(self, options={}):
+    raise Exception("to_bitfield not defined for %s" % self)
+
+  def to_bool(self, options={}):
+    return self._simplify().to_bool(options)
+
+  def to_register(self, options={}):
+    raise Exception("to_register not defined for %s" % self)
+
+  def to_register_list(self, options={}):
+    raise Exception("to_register_list not defined for %s" % self)
+
+  def to_uint32(self, options={}):
+    return self._simplify().to_uint32(options)
+
+  def neutral_repr(self):
+    return self._simplify().neutral_repr()
+
+  def _simplify(self):
+    """Returns the simplified or expression that implements the
+       membership tests."""
+    args = self._bitset.args()
+    if not args: return BoolValue(False)
+    if len(args) == 1: return self._simplify_test(args[0])
+    return OrExp([self._simplify_test(a) for a in args])
+
+  def _simplify_test(self, arg):
+    """Returns how to test if the value matches arg."""
+    raise Exception("InSet._simplify_test not defined for type %s" % type(self))
+
+class InUintSet(InSet):
+  """Models testing a value in a set of integers."""
+
+  def __init__(self, value, bitset):
+    Inset.__init__(self, value, bitset)
+
+  def _simplify_test(self, arg):
+    return CompareExpr("==", self._value, arg)
+
+  def repr(self):
+    return "%s in %s" % (self._value, self._bitset)
+
+class InBitSet(InSet):
+  """Models testing a value in a set of bit patterns"""
+
+  def __init__(self, value, bitset):
+    InSet.__init__(self, value, bitset)
+    # Before returning, be sure the value/bitset entries correctly
+    # correspond, by forcing construction of the simplified expression.
+    self.neutral_repr()
+
+  def _simplify_test(self, arg):
+    return BitPattern.parse(repr(arg), self._value)
+
+  def repr(self):
+    return "%s in bitset %s" % (self._value, self._bitset)
 
 class IfThenElse(BitExpr):
   """Models a conditional expression."""
@@ -582,7 +698,7 @@ class BitField(BitExpr):
     return self
 
   def to_uint32(self, options={}):
-    masked_value ="(%s & %s)" % (self._name.to_uint32(options), self.mask())
+    masked_value ="(%s & 0x%08X)" % (self._name.to_uint32(options), self.mask())
     if self._lo != 0:
       masked_value = '(%s >> %s)' % (masked_value, self._lo)
     return masked_value
@@ -803,7 +919,7 @@ class BitPattern(BitExpr):
 
         mask = mask << lo_bit
         value = value << lo_bit
-        return BitPattern(mask, value, op, column)
+        return BitPattern(mask, value, op, col)
 
     @staticmethod
     def parse_catch(pattern, column):
