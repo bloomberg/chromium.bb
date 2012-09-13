@@ -61,6 +61,7 @@
       'sources': [
         'command.cc',
         'forwarder.cc',
+        'host_controller.cc',
         'host_forwarder_main.cc',
         'pipe_notifier.cc',
         'socket.cc',

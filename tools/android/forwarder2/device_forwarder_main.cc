@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "base/command_line.h"
 #include "base/stringprintf.h"
 #include "tools/android/common/daemon.h"
@@ -36,9 +37,8 @@ int main(int argc, char** argv) {
 
   CommandLine command_line(argc, argv);
   std::string adb_socket_path = command_line.GetSwitchValueASCII("adb_sock");
-  if (adb_socket_path.empty()) {
+  if (adb_socket_path.empty())
     adb_socket_path = kDefaultAdbSocket;
-  }
   if (tools::HasHelpSwitch(command_line)) {
     tools::ShowHelp(
         argv[0],
@@ -49,9 +49,8 @@ int main(int argc, char** argv) {
             " Default is %s\n", kDefaultAdbSocket).c_str());
     return 0;
   }
-  if (!tools::HasNoSpawnDaemonSwitch(command_line)) {
+  if (!tools::HasNoSpawnDaemonSwitch(command_line))
     tools::SpawnDaemon(0);
-  }
 
   g_notifier = new forwarder2::PipeNotifier();
 
