@@ -66,6 +66,7 @@
 //<include src="media/media_util.js"/>
 //<include src="metadata/metadata_cache.js"/>
 //<include src="default_action_dialog.js"/>
+//<include src="file_manager_commands.js"/>
 // // For accurate load performance tracking place main.js should be
 // // the last include to include.
 //<include src="main.js"/>
