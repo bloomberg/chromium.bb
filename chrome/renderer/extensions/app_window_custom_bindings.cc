@@ -27,9 +27,12 @@ class DidCreateDocumentElementObserver : public content::RenderViewObserver {
   }
 
   virtual void DidCreateDocumentElement(WebKit::WebFrame* frame) OVERRIDE {
-    v8::HandleScope handle_scope;
     DCHECK(frame);
     DCHECK(dispatcher_);
+    // Don't attempt to inject the titlebar into iframes.
+    if (frame->parent())
+      return;
+    v8::HandleScope handle_scope;
     ChromeV8Context* v8_context =
         dispatcher_->v8_context_set().GetByV8Context(
             frame->mainWorldScriptContext());
