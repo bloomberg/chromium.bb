@@ -7,7 +7,9 @@
 
 #include <map>
 
+#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -47,6 +49,8 @@ class UninstallView : public views::ButtonListener,
   virtual string16 GetItemAt(int index) OVERRIDE;
 
  private:
+  typedef std::map<string16, string16> BrowsersMap;
+
   // Initializes the controls on the dialog.
   void SetupControls();
 
@@ -54,7 +58,6 @@ class UninstallView : public views::ButtonListener,
   views::Checkbox* delete_profile_;
   views::Checkbox* change_default_browser_;
   views::Combobox* browsers_combo_;
-  typedef std::map<std::wstring, std::wstring> BrowsersMap;
   scoped_ptr<BrowsersMap> browsers_;
   int& user_selection_;
   base::Closure quit_closure_;
