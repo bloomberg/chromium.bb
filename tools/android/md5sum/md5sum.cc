@@ -46,8 +46,9 @@ bool MD5Sum(const char* path, std::string* digest_string) {
 }
 
 // Returns the set of all files contained in |files|. This handles directories
-// by walking them recursively.
+// by walking them recursively. Excludes, .svn directories and file under them.
 std::set<std::string> MakeFileSet(const char** files) {
+  const std::string svn_dir_component = FILE_PATH_LITERAL("/.svn/");
   std::set<std::string> file_set;
   for (const char** file = files; *file; ++file) {
     FilePath file_path(*file);
@@ -55,8 +56,11 @@ std::set<std::string> MakeFileSet(const char** files) {
       file_util::FileEnumerator file_enumerator(
           file_path, true /* recurse */, file_util::FileEnumerator::FILES);
       for (FilePath child, empty; (child = file_enumerator.Next()) != empty; ) {
-        file_util::AbsolutePath(&child);
-        file_set.insert(child.value());
+        // If the path contains /.svn/, ignore it.
+        if (child.value().find(svn_dir_component) == std::string::npos) {
+          file_util::AbsolutePath(&child);
+          file_set.insert(child.value());
+        }
       }
     } else {
       file_set.insert(*file);
