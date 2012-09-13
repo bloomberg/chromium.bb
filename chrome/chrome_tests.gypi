@@ -1213,6 +1213,7 @@
         'browser/diagnostics/diagnostics_model_unittest.cc',
         'browser/download/chrome_download_manager_delegate_unittest.cc',
         'browser/download/download_item_model_unittest.cc',
+        'browser/download/hyperbolic_download_item_notifier_unittest.cc',
         'browser/download/download_request_infobar_delegate_unittest.cc',
         'browser/download/download_request_limiter_unittest.cc',
         'browser/download/download_path_reservation_tracker_unittest.cc',

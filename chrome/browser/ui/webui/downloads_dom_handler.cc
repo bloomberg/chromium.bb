@@ -204,17 +204,6 @@ DictionaryValue* CreateDownloadItemValue(
   return file_value;
 }
 
-// Returns true if |download_id| refers to a download that belongs to the
-// incognito download manager, if one exists.
-bool IsItemIncognito(
-    int32 download_id,
-    content::DownloadManager* manager,
-    content::DownloadManager* original_manager) {
-  // |original_manager| is only non-NULL if |manager| is incognito.
-  return (original_manager &&
-          (manager->GetDownload(download_id) != NULL));
-}
-
 // Filters out extension downloads and downloads that don't have a filename yet.
 bool IsDownloadDisplayable(const content::DownloadItem& item) {
   return (!download_crx_util::IsExtensionDownload(item) &&
@@ -227,42 +216,21 @@ bool IsDownloadDisplayable(const content::DownloadItem& item) {
 
 DownloadsDOMHandler::DownloadsDOMHandler(content::DownloadManager* dlm)
     : search_text_(),
-      download_manager_(dlm),
-      original_profile_download_manager_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(main_notifier_(dlm, this)),
       update_scheduled_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   // Create our fileicon data source.
   Profile* profile = Profile::FromBrowserContext(dlm->GetBrowserContext());
   ChromeURLDataManager::AddDataSource(profile, new FileIconSource());
 
-  // Observe the DownloadManagers.
-  download_manager_->AddObserver(this);
   if (profile->IsOffTheRecord()) {
-    original_profile_download_manager_ =
-        BrowserContext::GetDownloadManager(profile->GetOriginalProfile());
-    original_profile_download_manager_->AddObserver(this);
-  }
-
-  // Observe all the DownloadItems.
-  content::DownloadManager::DownloadVector downloads;
-  SearchDownloads(&downloads);
-  for (content::DownloadManager::DownloadVector::const_iterator
-           iter = downloads.begin();
-       iter != downloads.end(); ++iter) {
-    (*iter)->AddObserver(this);
-    observing_items_.insert(*iter);
+    original_notifier_.reset(new HyperbolicDownloadItemNotifier(
+        BrowserContext::GetDownloadManager(profile->GetOriginalProfile()),
+        this));
   }
 }
 
 DownloadsDOMHandler::~DownloadsDOMHandler() {
-  for (DownloadSet::const_iterator it = observing_items_.begin();
-       it != observing_items_.end(); ++it) {
-    (*it)->RemoveObserver(this);
-  }
-  observing_items_.clear();
-  download_manager_->RemoveObserver(this);
-  if (original_profile_download_manager_)
-    original_profile_download_manager_->RemoveObserver(this);
 }
 
 // DownloadsDOMHandler, public: -----------------------------------------------
@@ -315,49 +283,45 @@ void DownloadsDOMHandler::RegisterMessages() {
 
 void DownloadsDOMHandler::OnDownloadCreated(
     content::DownloadManager* manager, content::DownloadItem* download_item) {
-  // DownloadsDOMHandler observes all items and only chooses which downloads to
-  // display in SendCurrentDownloads() and OnDownloadUpdated() using
-  // IsDownloadDisplayable().
-  download_item->AddObserver(this);
-  observing_items_.insert(download_item);
   if (IsDownloadDisplayable(*download_item))
     ScheduleSendCurrentDownloads();
 }
 
 void DownloadsDOMHandler::OnDownloadUpdated(
+    content::DownloadManager* manager,
     content::DownloadItem* download_item) {
   if (IsDownloadDisplayable(*download_item)) {
     base::ListValue results_value;
-    results_value.Append(CreateDownloadItemValue(download_item, IsItemIncognito(
-        download_item->GetId(),
-        download_manager_,
-        original_profile_download_manager_)));
+    results_value.Append(CreateDownloadItemValue(
+        download_item,
+        (original_notifier_.get() &&
+          (manager == main_notifier_.GetManager()))));
     CallDownloadUpdated(results_value);
   }
 }
 
-void DownloadsDOMHandler::OnDownloadDestroyed(
+void DownloadsDOMHandler::OnDownloadRemoved(
+    content::DownloadManager* manager,
     content::DownloadItem* download_item) {
-  download_item->RemoveObserver(this);
-  observing_items_.erase(download_item);
+  // This relies on |download_item| being removed from DownloadManager in this
+  // MessageLoop iteration. |download_item| may not have been removed from
+  // DownloadManager when OnDownloadRemoved() is fired, so bounce off the
+  // MessageLoop to give it a chance to be removed. SendCurrentDownloads() looks
+  // at all downloads, and we do not tell it that |download_item| is being
+  // removed. If DownloadManager is ever changed to not immediately remove
+  // |download_item| from its map when OnDownloadRemoved is sent, then
+  // DownloadsDOMHandler::OnDownloadRemoved() will need to explicitly tell
+  // SendCurrentDownloads() that |download_item| was removed. A
+  // SupportsUserData::Data would be the correct way to do this.
   ScheduleSendCurrentDownloads();
-}
-
-void DownloadsDOMHandler::ManagerGoingDown(content::DownloadManager* manager) {
-  // This should never happen.  The lifetime of the DownloadsDOMHandler
-  // is tied to the tab in which downloads.html is displayed, which cannot
-  // outlive the Browser that contains it, which cannot outlive the Profile
-  // it is associated with.  If that profile is an incognito profile,
-  // it cannot outlive its original profile.  Thus this class should be
-  // destroyed before a ManagerGoingDown() notification occurs.
-  NOTREACHED();
 }
 
 void DownloadsDOMHandler::HandleGetDownloads(const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_GET_DOWNLOADS);
   search_text_ = ExtractStringValue(args);
   SendCurrentDownloads();
-  download_manager_->CheckForHistoryFilesRemoval();
+  if (main_notifier_.GetManager())
+    main_notifier_.GetManager()->CheckForHistoryFilesRemoval();
 }
 
 void DownloadsDOMHandler::HandleOpenFile(const base::ListValue* args) {
@@ -430,19 +394,22 @@ void DownloadsDOMHandler::HandleCancel(const base::ListValue* args) {
 
 void DownloadsDOMHandler::HandleClearAll(const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_CLEAR_ALL);
-  download_manager_->RemoveAllDownloads();
+  if (main_notifier_.GetManager())
+    main_notifier_.GetManager()->RemoveAllDownloads();
 
-  // If this is an incognito downloader, clear All should clear main download
-  // manager as well.
-  if (original_profile_download_manager_)
-    original_profile_download_manager_->RemoveAllDownloads();
+  // If this is an incognito downloads page, clear All should clear main
+  // download manager as well.
+  if (original_notifier_.get() && original_notifier_->GetManager())
+    original_notifier_->GetManager()->RemoveAllDownloads();
 }
 
 void DownloadsDOMHandler::HandleOpenDownloadsFolder(
     const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_OPEN_FOLDER);
-  platform_util::OpenItem(
-      DownloadPrefs::FromDownloadManager(download_manager_)->DownloadPath());
+  if (main_notifier_.GetManager()) {
+    platform_util::OpenItem(DownloadPrefs::FromDownloadManager(
+        main_notifier_.GetManager())->DownloadPath());
+  }
 }
 
 // DownloadsDOMHandler, private: ----------------------------------------------
@@ -469,10 +436,14 @@ void DownloadsDOMHandler::SendCurrentDownloads() {
   for (content::DownloadManager::DownloadVector::const_iterator
            iter = downloads.begin();
        iter != downloads.end(); ++iter) {
-    if (IsDownloadDisplayable(**iter))
-      results_value.Append(CreateDownloadItemValue(*iter, IsItemIncognito(
-          (*iter)->GetId(), download_manager_,
-          original_profile_download_manager_)));
+    if (IsDownloadDisplayable(**iter)) {
+      results_value.Append(CreateDownloadItemValue(
+          *iter,
+          (original_notifier_.get() &&
+           main_notifier_.GetManager() &&
+           (main_notifier_.GetManager()->GetDownload((*iter)->GetId()) ==
+            *iter))));
+    }
     if (results_value.GetSize() == kMaxDownloads)
       break;
   }
@@ -481,10 +452,10 @@ void DownloadsDOMHandler::SendCurrentDownloads() {
 
 void DownloadsDOMHandler::SearchDownloads(
     content::DownloadManager::DownloadVector* downloads) {
-  download_manager_->SearchDownloads(search_text_, downloads);
-  if (original_profile_download_manager_)
-    original_profile_download_manager_->SearchDownloads(
-        search_text_, downloads);
+  if (main_notifier_.GetManager())
+    main_notifier_.GetManager()->SearchDownloads(search_text_, downloads);
+  if (original_notifier_.get() && original_notifier_->GetManager())
+    original_notifier_->GetManager()->SearchDownloads(search_text_, downloads);
 }
 
 void DownloadsDOMHandler::ShowDangerPrompt(
@@ -500,8 +471,11 @@ void DownloadsDOMHandler::ShowDangerPrompt(
 }
 
 void DownloadsDOMHandler::DangerPromptAccepted(int download_id) {
-  content::DownloadItem* item = download_manager_->GetActiveDownloadItem(
-      download_id);
+  content::DownloadItem* item = NULL;
+  if (main_notifier_.GetManager())
+    item = main_notifier_.GetManager()->GetDownload(download_id);
+  if (original_notifier_.get() && original_notifier_->GetManager())
+    item = original_notifier_->GetManager()->GetDownload(download_id);
   if (!item)
     return;
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_SAVE_DANGEROUS);
@@ -510,13 +484,15 @@ void DownloadsDOMHandler::DangerPromptAccepted(int download_id) {
 
 content::DownloadItem* DownloadsDOMHandler::GetDownloadByValue(
     const base::ListValue* args) {
-  int id = -1;
-  if (!ExtractIntegerValue(args, &id))
+  int download_id = -1;
+  if (!ExtractIntegerValue(args, &download_id))
     return NULL;
-  content::DownloadItem* download_item = download_manager_->GetDownload(id);
-  if (!download_item && original_profile_download_manager_)
-    download_item = original_profile_download_manager_->GetDownload(id);
-  return download_item;
+  content::DownloadItem* item = NULL;
+  if (main_notifier_.GetManager())
+    item = main_notifier_.GetManager()->GetDownload(download_id);
+  if (original_notifier_.get() && original_notifier_->GetManager())
+    item = original_notifier_->GetManager()->GetDownload(download_id);
+  return item;
 }
 
 content::WebContents* DownloadsDOMHandler::GetWebUIWebContents() {

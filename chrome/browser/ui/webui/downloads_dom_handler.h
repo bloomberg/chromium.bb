@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/download/hyperbolic_download_item_notifier.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -25,8 +26,7 @@ class WebContents;
 // The handler for Javascript messages related to the "downloads" view,
 // also observes changes to the download manager.
 class DownloadsDOMHandler : public content::WebUIMessageHandler,
-                            public content::DownloadManager::Observer,
-                            public content::DownloadItem::Observer {
+                            public HyperbolicDownloadItemNotifier::Observer {
  public:
   explicit DownloadsDOMHandler(content::DownloadManager* dlm);
   virtual ~DownloadsDOMHandler();
@@ -36,16 +36,16 @@ class DownloadsDOMHandler : public content::WebUIMessageHandler,
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
-  // content::DownloadItem::Observer interface
+  // HyperbolicDownloadItemNotifier::Observer interface
+  virtual void OnDownloadCreated(
+      content::DownloadManager* manager,
+      content::DownloadItem* download_item) OVERRIDE;
   virtual void OnDownloadUpdated(
+      content::DownloadManager* manager,
       content::DownloadItem* download_item) OVERRIDE;
-  virtual void OnDownloadDestroyed(
+  virtual void OnDownloadRemoved(
+      content::DownloadManager* manager,
       content::DownloadItem* download_item) OVERRIDE;
-
-  // content::DownloadManager::Observer interface
-  virtual void OnDownloadCreated(content::DownloadManager* manager,
-                                 content::DownloadItem* download_item) OVERRIDE;
-  virtual void ManagerGoingDown(content::DownloadManager* manager) OVERRIDE;
 
   // Callback for the "onPageLoaded" message.
   void OnPageLoaded(const base::ListValue* args);
@@ -111,9 +111,6 @@ class DownloadsDOMHandler : public content::WebUIMessageHandler,
   // |search_text_|.
   void SearchDownloads(content::DownloadManager::DownloadVector* downloads);
 
-  // Clears all download items and their observers.
-  void ClearDownloadItems();
-
   // Displays a native prompt asking the user for confirmation after accepting
   // the dangerous download specified by |dangerous|. The function returns
   // immediately, and will invoke DangerPromptAccepted() asynchronously if the
@@ -132,17 +129,12 @@ class DownloadsDOMHandler : public content::WebUIMessageHandler,
   // Current search text.
   string16 search_text_;
 
-  // Keeps track of all items that this is observing so that RemoveObserver will
-  // be called for all of them.
-  DownloadSet observing_items_;
+  // Notifies OnDownload*() and provides safe access to the DownloadManager.
+  HyperbolicDownloadItemNotifier main_notifier_;
 
-  // Our model
-  content::DownloadManager* download_manager_;
-
-  // If |download_manager_| belongs to an incognito profile then this
-  // is the DownloadManager for the original profile; otherwise, this is
-  // NULL.
-  content::DownloadManager* original_profile_download_manager_;
+  // If |main_notifier_| observes an incognito profile, then this observes the
+  // DownloadManager for the original profile; otherwise, this is NULL.
+  scoped_ptr<HyperbolicDownloadItemNotifier> original_notifier_;
 
   // Whether a call to SendCurrentDownloads() is currently scheduled.
   bool update_scheduled_;

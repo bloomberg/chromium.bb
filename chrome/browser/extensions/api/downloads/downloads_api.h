@@ -13,6 +13,7 @@
 #include "base/memory/singleton.h"
 #include "base/string16.h"
 #include "base/values.h"
+#include "chrome/browser/download/hyperbolic_download_item_notifier.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_item.h"
@@ -212,22 +213,23 @@ class DownloadsGetFileIconFunction : public AsyncExtensionFunction {
 
 // Observes a single DownloadManager and many DownloadItems and dispatches
 // onCreated and onErased events.
-class ExtensionDownloadsEventRouter : public content::DownloadManager::Observer,
-                                      public content::DownloadItem::Observer {
+class ExtensionDownloadsEventRouter
+  : public HyperbolicDownloadItemNotifier::Observer {
  public:
   explicit ExtensionDownloadsEventRouter(
       Profile* profile, content::DownloadManager* manager);
   virtual ~ExtensionDownloadsEventRouter();
 
-  // content::DownloadManager::Observer
-  virtual void OnDownloadCreated(content::DownloadManager* manager,
-                                 content::DownloadItem* download_item) OVERRIDE;
-  virtual void ManagerGoingDown(content::DownloadManager* manager) OVERRIDE;
-
-  // content::DownloadItem::Observer
-  virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadRemoved(content::DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadDestroyed(content::DownloadItem* download) OVERRIDE;
+  // HyperbolicDownloadItemNotifier::Observer interface
+  virtual void OnDownloadCreated(
+      content::DownloadManager* manager,
+      content::DownloadItem* download_item) OVERRIDE;
+  virtual void OnDownloadUpdated(
+      content::DownloadManager* manager,
+      content::DownloadItem* download_item) OVERRIDE;
+  virtual void OnDownloadRemoved(
+      content::DownloadManager* manager,
+      content::DownloadItem* download_item) OVERRIDE;
 
   // Used for testing.
   struct DownloadsNotificationSource {
@@ -236,24 +238,10 @@ class ExtensionDownloadsEventRouter : public content::DownloadManager::Observer,
   };
 
  private:
-  struct OnChangedStat {
-    OnChangedStat();
-    ~OnChangedStat();
-    int fires;
-    int total;
-  };
-
-  typedef std::map<int, content::DownloadItem*> ItemMap;
-  typedef std::map<int, base::DictionaryValue*> ItemJsonMap;
-  typedef std::map<int, OnChangedStat*> OnChangedStatMap;
-
   void DispatchEvent(const char* event_name, base::Value* json_arg);
 
   Profile* profile_;
-  content::DownloadManager* manager_;
-  ItemMap downloads_;
-  ItemJsonMap item_jsons_;
-  OnChangedStatMap on_changed_stats_;
+  HyperbolicDownloadItemNotifier notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDownloadsEventRouter);
 };
