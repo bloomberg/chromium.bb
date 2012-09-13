@@ -18,6 +18,10 @@ TEST_F(ExtensionManifestTest, PlatformApps) {
       LoadAndExpectSuccess("init_valid_platform_app.json");
   EXPECT_TRUE(extension->is_storage_isolated());
 
+  extension =
+      LoadAndExpectSuccess("init_valid_platform_app_no_manifest_version.json");
+  EXPECT_EQ(2, extension->manifest_version());
+
   Testcase error_testcases[] = {
     Testcase("init_invalid_platform_app_2.json",
         errors::kBackgroundRequiredForPlatformApps),

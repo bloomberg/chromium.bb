@@ -1,7 +1,6 @@
 {
   "name": "Platform app hosts",
   "version": "1.0",
-  "manifest_version": 2,
   "app": {
     "background": {
       "scripts": ["doesnt_exist.js"]

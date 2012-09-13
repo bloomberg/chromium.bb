@@ -1,7 +1,6 @@
 {
   "name": "cpuinfo",
   "version": "1.0",
-  "manifest_version": 2,
   "description": "Test systeminfo.cpu API",
   "permissions": ["experimental"],
   "app": {

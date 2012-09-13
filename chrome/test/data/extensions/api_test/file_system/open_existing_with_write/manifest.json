@@ -1,7 +1,6 @@
 {
   "name": "chrome.fileSystem open existing file with write",
   "version": "0.1",
-  "manifest_version": 2,
   "description": "Test for chrome.fileSystem.chooseFile opening existing file.",
   "app": {
     "background": {

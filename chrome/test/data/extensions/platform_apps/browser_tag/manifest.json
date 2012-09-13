@@ -1,9 +1,7 @@
 {
   "name": "Platform App Test: <browser>",
   "version": "1",
-  "manifest_version": 2,
   "permissions": [
-    "app.window",
     "browserTag"
   ],
   "app": {

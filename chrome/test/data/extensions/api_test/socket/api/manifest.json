@@ -1,7 +1,6 @@
 {
   "name": "chrome.socket",
   "version": "0.1",
-  "manifest_version": 2,
   "description": "end-to-end browser test for chrome.socket API",
   "app": {
     "background": {

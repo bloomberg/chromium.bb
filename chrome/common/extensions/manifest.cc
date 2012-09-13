@@ -145,7 +145,9 @@ bool Manifest::Equals(const Manifest* other) const {
 }
 
 int Manifest::GetManifestVersion() const {
-  int manifest_version = 1;  // default to version 1 if no version is specified
+  // Platform apps were launched after manifest version 2 was the preferred
+  // version, so they default to that.
+  int manifest_version = type_ == Extension::TYPE_PLATFORM_APP ? 2 : 1;
   value_->GetInteger(keys::kManifestVersion, &manifest_version);
   return manifest_version;
 }

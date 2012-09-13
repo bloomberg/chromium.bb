@@ -1,6 +1,5 @@
 {
   "name": "App Shell",
-  "manifest_version": 2,
   "version": "1.0",
   "app": {
     "background": {
