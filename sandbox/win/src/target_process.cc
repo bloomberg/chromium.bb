@@ -35,27 +35,6 @@ void CopyPolicyToTarget(const void* source, size_t size, void* dest) {
   }
 }
 
-// Reserve a random range at the bottom of the address space in the target
-// process to prevent predictable alocations at low addresses.
-void PoisonLowerAddressRange(HANDLE process) {
-  unsigned int limit;
-  rand_s(&limit);
-  char* ptr = 0;
-  const size_t kMask64k = 0xFFFF;
-  // Random range (512k-16.5mb) in 64k steps.
-  const char* end = ptr + ((((limit % 16384) + 512) * 1024) & ~kMask64k);
-  while (ptr < end) {
-    MEMORY_BASIC_INFORMATION memory_info;
-    if (!::VirtualQueryEx(process, ptr, &memory_info, sizeof(memory_info)))
-      break;
-    size_t size = std::min((memory_info.RegionSize + kMask64k) & ~kMask64k,
-                           static_cast<SIZE_T>(end - ptr));
-    if (ptr && memory_info.State == MEM_FREE)
-      ::VirtualAllocEx(process, ptr, size, MEM_RESERVE, PAGE_NOACCESS);
-    ptr += size;
-  }
-}
-
 }
 
 namespace sandbox {
@@ -167,8 +146,6 @@ DWORD TargetProcess::Create(const wchar_t* exe_path,
     return ::GetLastError();
   }
   lockdown_token_.Close();
-
-  PoisonLowerAddressRange(process_info.process_handle());
 
   DWORD win_result = ERROR_SUCCESS;
 

@@ -43,6 +43,8 @@ enum ResultCode {
   SBOX_ERROR_INVALID_CAPABILITY = 15,
   // There is a failure initializing the AppContainer.
   SBOX_ERROR_CANNOT_INIT_APPCONTAINER = 16,
+  // Initializing or updating ProcThreadAttributes failed.
+  SBOX_ERROR_PROC_THREAD_ATTRIBUTES = 17,
   // Placeholder for last item of the enum.
   SBOX_ERROR_LAST
 };
@@ -54,7 +56,8 @@ enum TerminationCodes {
   SBOX_FATAL_DROPTOKEN = 7007,       // Could not lower the token.
   SBOX_FATAL_FLUSHANDLES = 7008,     // Failed to flush registry handles.
   SBOX_FATAL_CACHEDISABLE = 7009,    // Failed to forbid HCKU caching.
-  SBOX_FATAL_CLOSEHANDLES = 7010     // Failed to close pending handles.
+  SBOX_FATAL_CLOSEHANDLES = 7010,    // Failed to close pending handles.
+  SBOX_FATAL_MITIGATION = 7011       // Could not set the mitigation policy.
 };
 
 class BrokerServices;

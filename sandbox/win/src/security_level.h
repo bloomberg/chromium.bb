@@ -122,6 +122,76 @@ enum JobLevel {
   JOB_UNPROTECTED
 };
 
+// These flags correspond to various process-level mitigations (eg. ASLR and
+// DEP). Most are implemented via UpdateProcThreadAttribute() plus flags for
+// the PROC_THREAD_ATTRIBUTE_MITIGATION_POLICY attribute argument; documented
+// here: http://msdn.microsoft.com/en-us/library/windows/desktop/ms686880
+// Some mitigations are implemented directly by the sandbox or emulated to
+// the greatest extent possible when not directly supported by the OS.
+// Flags that are unsupported for the target OS will be silently ignored.
+// Flags that are invalid for their application (pre or post startup) will
+// return SBOX_ERROR_BAD_PARAMS.
+typedef uint64 MitigationFlags;
+
+// Permanently enables DEP for the target process. Corresponds to
+// PROCESS_CREATION_MITIGATION_POLICY_DEP_ENABLE.
+const MitigationFlags MITIGATION_DEP                              = 0x00000001;
+
+// Permanently Disables ATL thunk emulation when DEP is enabled. Valid
+// only when MITIGATION_DEP is passed. Corresponds to not passing
+// PROCESS_CREATION_MITIGATION_POLICY_DEP_ATL_THUNK_ENABLE.
+const MitigationFlags MITIGATION_DEP_NO_ATL_THUNK                 = 0x00000002;
+
+// Enables Structured exception handling override prevention. Must be
+// enabled prior to process start. Corresponds to
+// PROCESS_CREATION_MITIGATION_POLICY_SEHOP_ENABLE.
+const MitigationFlags MITIGATION_SEHOP                            = 0x00000004;
+
+// Forces ASLR on all images in the child process. Corresponds to
+// PROCESS_CREATION_MITIGATION_POLICY_FORCE_RELOCATE_IMAGES_ALWAYS_ON .
+const MitigationFlags MITIGATION_RELOCATE_IMAGE                   = 0x00000008;
+
+// Refuses to load DLLs that cannot support ASLR. Corresponds to
+// PROCESS_CREATION_MITIGATION_POLICY_FORCE_RELOCATE_IMAGES_ALWAYS_ON_REQ_RELOCS.
+const MitigationFlags MITIGATION_RELOCATE_IMAGE_REQUIRED          = 0x00000010;
+
+// Terminates the process on Windows heap corruption. Coresponds to
+// PROCESS_CREATION_MITIGATION_POLICY_HEAP_TERMINATE_ALWAYS_ON.
+const MitigationFlags MITIGATION_HEAP_TERMINATE                   = 0x00000020;
+
+// Sets a random lower bound as the minimum user address. Must be
+// enabled prior to process start. On 32-bit processes this is
+// emulated to a much smaller degree. Corresponds to
+// PROCESS_CREATION_MITIGATION_POLICY_BOTTOM_UP_ASLR_ALWAYS_ON.
+const MitigationFlags MITIGATION_BOTTOM_UP_ASLR                   = 0x00000040;
+
+// Increases the randomness range of bottom-up ASLR to up to 1TB. Must be
+// enabled prior to process start and with MITIGATION_BOTTOM_UP_ASLR.
+// Corresponds to
+// PROCESS_CREATION_MITIGATION_POLICY_HIGH_ENTROPY_ASLR_ALWAYS_ON
+const MitigationFlags MITIGATION_HIGH_ENTROPY_ASLR                = 0x00000080;
+
+// Immediately raises an exception on a bad handle reference. Must be
+// enabled after startup. Corresponds to
+// PROCESS_CREATION_MITIGATION_POLICY_STRICT_HANDLE_CHECKS_ALWAYS_ON.
+const MitigationFlags MITIGATION_STRICT_HANDLE_CHECKS             = 0x00000100;
+
+// Prevents the process from making Win32k calls. Must be enabled after
+// startup. Corresponds to
+// PROCESS_CREATION_MITIGATION_POLICY_WIN32K_SYSTEM_CALL_DISABLE_ALWAYS_ON.
+const MitigationFlags MITIGATION_WIN32K_DISABLE                   = 0x00000200;
+
+// Disables common DLL injection methods (e.g. window hooks and
+// App_InitDLLs). Corresponds to
+// PROCESS_CREATION_MITIGATION_POLICY_EXTENSION_POINT_DISABLE_ALWAYS_ON.
+const MitigationFlags MITIGATION_EXTENSION_DLL_DISABLE            = 0x00000400;
+
+// Sets the DLL search order to LOAD_LIBRARY_SEARCH_DEFAULT_DIRS. Additional
+// directories can be added via the Windows AddDllDirectory() function.
+// http://msdn.microsoft.com/en-us/library/windows/desktop/hh310515
+// Must be enabled after startup.
+const MitigationFlags MITIGATION_DLL_SEARCH_ORDER        = 0x00000001ULL << 32;
+
 }  // namespace sandbox
 
 #endif  // SANDBOX_SRC_SECURITY_LEVEL_H_

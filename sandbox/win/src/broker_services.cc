@@ -12,6 +12,7 @@
 #include "base/win/startup_information.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/app_container.h"
+#include "sandbox/win/src/process_mitigations.h"
 #include "sandbox/win/src/sandbox_policy_base.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/target_process.h"
@@ -320,12 +321,36 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
         const_cast<wchar_t*>(desktop.c_str());
   }
 
-  const AppContainerAttributes* app_container = policy_base->GetAppContainer();
-  if (app_container) {
-    startup_info.InitializeProcThreadAttributeList(1);
-    result = app_container->ShareForStartup(&startup_info);
-    if (SBOX_ALL_OK != result)
-      return result;
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+    int attribute_count = 0;
+    const AppContainerAttributes* app_container =
+        policy_base->GetAppContainer();
+    if (app_container)
+      ++attribute_count;
+
+    DWORD64 mitigations;
+    size_t mitigations_size;
+    ConvertProcessMitigationsToPolicy(policy->GetProcessMitigations(),
+                                      &mitigations, &mitigations_size);
+    if (mitigations)
+      ++attribute_count;
+
+    if (!startup_info.InitializeProcThreadAttributeList(attribute_count))
+      return SBOX_ERROR_PROC_THREAD_ATTRIBUTES;
+
+    if (app_container) {
+      result = app_container->ShareForStartup(&startup_info);
+      if (SBOX_ALL_OK != result)
+        return result;
+    }
+
+    if (mitigations) {
+      if (!startup_info.UpdateProcThreadAttribute(
+               PROC_THREAD_ATTRIBUTE_MITIGATION_POLICY, &mitigations,
+               mitigations_size)) {
+        return SBOX_ERROR_PROC_THREAD_ATTRIBUTES;
+      }
+    }
   }
 
   // Construct the thread pool here in case it is expensive.
