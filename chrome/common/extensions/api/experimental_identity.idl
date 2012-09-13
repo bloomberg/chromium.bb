@@ -4,13 +4,12 @@
 
 namespace experimental.identity {
 
-  [inline_doc] dictionary TokenDetails {
-    // Whether to prompt the user to log in or grant scope permissions (if they
-    // have not already done so). Default is false.
+  [inline_doc] dictionary TokenOptions {
+    // Whether to get auth token in interactive mode. Default is false.
     boolean? interactive;
   };
 
-  [inline_doc] dictionary WebAuthFlowDetails {
+  [inline_doc] dictionary WebAuthFlowOptions {
     // The URL that initiates the auth flow.
     DOMString url;
 
