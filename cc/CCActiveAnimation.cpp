@@ -8,6 +8,9 @@
 
 #include "CCAnimationCurve.h"
 #include "TraceEvent.h"
+#ifdef LOG
+#undef LOG
+#endif
 #include "base/string_util.h"
 #include <cmath>
 #include <wtf/Assertions.h>

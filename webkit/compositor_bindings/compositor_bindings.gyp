@@ -40,13 +40,6 @@
       'WebTransformAnimationCurveImpl.cpp',
       'WebTransformAnimationCurveImpl.h',
     ],
-    'conditions': [
-      ['inside_chromium_build==0', {
-        'webkit_src_dir': '../../../../..',
-      },{
-        'webkit_src_dir': '../../third_party/WebKit',
-      }],
-    ],
   },
   'targets': [
     {
@@ -59,6 +52,9 @@
         'web_compositor_support_impl.cc',
         'web_compositor_support_impl.h',
       ],
+      'includes': [
+        '../../cc/cc.gypi',
+      ],
       'include_dirs': [
         '../..',
         '<(SHARED_INTERMEDIATE_DIR)/webkit',
@@ -68,7 +64,7 @@
         ['use_libcc_for_compositor==1', {
           'include_dirs': [
             '../../cc',
-            '../../cc/stubs',
+            '<@(cc_stubs_dirs)',
           ],
           'dependencies': [
             'webkit_compositor_bindings',
@@ -87,6 +83,9 @@
         {
           'target_name': 'webkit_compositor_bindings',
           'type': 'static_library',
+          'includes': [
+            '../../cc/cc.gypi',
+          ],
           'dependencies': [
             '../../base/base.gyp:base',
             '../../cc/cc.gyp:cc',
@@ -96,7 +95,7 @@
           ],
           'include_dirs': [
             '../../cc',
-            '../../cc/stubs',
+            '<@(cc_stubs_dirs)',
             '<(webkit_src_dir)/Source/Platform/chromium',
           ],
           'sources': [

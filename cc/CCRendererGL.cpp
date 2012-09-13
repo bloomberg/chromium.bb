@@ -33,6 +33,7 @@
 #undef LOG
 #endif
 #include "base/string_split.h"
+#include "base/string_util.h"
 #include <public/WebGraphicsContext3D.h>
 #include <public/WebSharedGraphicsContext3D.h>
 #include <public/WebVideoFrame.h>

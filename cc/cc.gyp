@@ -209,18 +209,14 @@
       'VideoLayerChromium.cpp',
       'VideoLayerChromium.h',
     ],
-    'conditions': [
-      ['inside_chromium_build==0', {
-        'webkit_src_dir': '../../../..',
-      },{
-        'webkit_src_dir': '../third_party/WebKit',
-      }],
-    ],
   },
   'targets': [
     {
       'target_name': 'cc',
       'type': 'static_library',
+      'includes': [
+        'cc.gypi',
+      ],
       'conditions': [
         ['use_libcc_for_compositor==1', {
           'dependencies': [
@@ -237,8 +233,8 @@
             'WTF_USE_ACCELERATED_COMPOSITING=1',
           ],
           'include_dirs': [
-            'stubs',
             '<(webkit_src_dir)/Source/Platform/chromium',
+            '<@(cc_stubs_dirs)',
           ],
           'sources': [
             '<@(cc_source_files)',
