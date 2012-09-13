@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/simple_message_box.h"
 
 #include "chrome/common/startup_metric_utils.h"
+#include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/message_box_win.h"
 
 namespace chrome {
@@ -14,6 +15,9 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
                                 const string16& message,
                                 MessageBoxType type) {
   startup_metric_utils::SetNonBrowserUIDisplayed();
+
+  if (!parent)
+    parent = ui::GetWindowToParentTo(true);
 
   UINT flags = MB_SETFOREGROUND;
   flags |= ((type == MESSAGE_BOX_TYPE_QUESTION) ? MB_YESNO : MB_OK);
