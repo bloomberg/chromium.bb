@@ -15,16 +15,6 @@ extern const char kClientLoginToOAuth2Url[];
 // omitted. The default value is "www.google.com".
 extern const char kGaiaHost[];
 
-// Specifies the backend server used for OAuth authentication requests.
-// The https:// prefix and the trailing slash should be
-// omitted. The default value is "www.google.com".
-extern const char kGaiaOAuthHost[];
-
-// Specifies the path prefix for GAIA OAuth URLs. It should be used
-// for testing in cases where authentication path prefix differs from the one
-// used in production.
-extern const char kGaiaOAuthUrlPath[];
-
 // Specifies the path prefix for GAIA authentication URL. It should be used
 // for testing in cases where authentication path prefix differs from the one
 // used in production.

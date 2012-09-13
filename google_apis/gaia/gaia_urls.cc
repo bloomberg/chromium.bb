@@ -12,10 +12,6 @@ namespace {
 
 // Gaia service constants
 const char kDefaultGaiaBaseUrl[] = "accounts.google.com";
-
-// Gaia service constants
-const char kDefaultGaiaOAuthBaseUrl[] = "www.google.com";
-
 const char kCaptchaUrlPrefixSuffix[] = "/";
 const char kClientLoginUrlSuffix[] = "/ClientLogin";
 const char kServiceLoginUrlSuffix[] = "/ServiceLogin";
@@ -32,7 +28,7 @@ const char kOAuthRevokeTokenUrlSuffix[] = "/AuthSubRevokeToken";
 // Federated login constants
 const char kDefaultFederatedLoginHost[] = "www.google.com";
 const char kDefaultFederatedLoginPath[] = "/accounts";
-const char kGetOAuthTokenUrlSuffix[] = "/o8/GetOAuthToken";
+const char kGetOAuthTokenUrlSuffix[] = "/o/oauth/GetOAuthToken/";
 
 const char kClientLoginToOAuth2Url[] =
     "https://accounts.google.com/o/oauth2/programmatic_auth";
@@ -86,29 +82,7 @@ GaiaUrls::GaiaUrls() {
   get_user_info_url_ = gaia_url_base + kGetUserInfoUrlSuffix;
   token_auth_url_ = gaia_url_base + kTokenAuthUrlSuffix;
   merge_session_url_ = gaia_url_base + kMergeSessionUrlSuffix;
-
-  // Federated login is not part of Gaia and has its own endpoints.
-  std::string oauth_host_base;
-  GetSwitchValueWithDefault(switches::kGaiaOAuthHost,
-                            kDefaultFederatedLoginHost,
-                            &oauth_host_base);
-
-  std::string gaia_oauth_url_base = "https://"+oauth_host_base;
-  if (command_line->HasSwitch(switches::kGaiaOAuthUrlPath)) {
-    std::string path =
-        command_line->GetSwitchValueASCII(switches::kGaiaOAuthUrlPath);
-    if (!path.empty()) {
-      if (path[0] != '/')
-        gaia_oauth_url_base.append("/");
-
-      gaia_oauth_url_base.append(path);
-    }
-  } else {
-    gaia_oauth_url_base.append(kDefaultFederatedLoginPath);
-  }
-  get_oauth_token_url_ = gaia_oauth_url_base +
-                         kGetOAuthTokenUrlSuffix;
-
+  get_oauth_token_url_ = gaia_url_base + kGetOAuthTokenUrlSuffix;
   oauth_get_access_token_url_ = gaia_url_base +
                                 kOAuthGetAccessTokenUrlSuffix;
   oauth_wrap_bridge_url_ = gaia_url_base + kOAuthWrapBridgeUrlSuffix;
