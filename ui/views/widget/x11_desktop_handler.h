@@ -11,7 +11,7 @@
 
 #include "base/message_loop.h"
 #include "ui/aura/env_observer.h"
-#include "ui/aura/x11_atom_cache.h"
+#include "ui/base/x/x11_atom_cache.h"
 #include "ui/views/views_export.h"
 
 template <typename T> struct DefaultSingletonTraits;
@@ -59,7 +59,7 @@ class VIEWS_EXPORT X11DesktopHandler : public MessageLoop::Dispatcher,
   // The native root window.
   ::Window x_root_window_;
 
-  aura::X11AtomCache atom_cache_;
+  ui::X11AtomCache atom_cache_;
 
   // Global focus/activation managers.
   scoped_ptr<aura::FocusManager> focus_manager_;

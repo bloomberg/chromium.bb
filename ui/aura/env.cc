@@ -115,7 +115,7 @@ MessageLoop::Dispatcher* Env::GetDispatcher() {
 // Env, private:
 
 void Env::Init() {
-#if defined(OS_WIN)
+#if !defined(USE_X11)
   dispatcher_.reset(CreateDispatcher());
 #endif
 #if defined(USE_X11)

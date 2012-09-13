@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "ui/aura/event_filter.h"
-#include "ui/aura/x11_atom_cache.h"
+#include "ui/base/x/x11_atom_cache.h"
 #include "ui/views/views_export.h"
 
 namespace aura {
@@ -64,7 +64,7 @@ class VIEWS_EXPORT X11WindowEventFilter : public aura::EventFilter {
   // The native root window.
   ::Window x_root_window_;
 
-  aura::X11AtomCache atom_cache_;
+  ui::X11AtomCache atom_cache_;
 
   // True if |xwindow_| is the current _NET_ACTIVE_WINDOW.
   bool is_active_;

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_X11_ATOM_CACHE_H_
-#define UI_AURA_X11_ATOM_CACHE_H_
+#ifndef UI_BASE_X_X11_ATOM_CACHE_H_
+#define UI_BASE_X_X11_ATOM_CACHE_H_
 
 #include "base/basictypes.h"
-#include "ui/aura/aura_export.h"
+#include "ui/base/ui_export.h"
 
 #include <X11/Xlib.h>
 
@@ -16,12 +16,13 @@
 // Get rid of a macro from Xlib.h that conflicts with Aura's RootWindow class.
 #undef RootWindow
 
-namespace aura {
+namespace ui {
 
 // Pre-caches all Atoms on first use to minimize roundtrips to the X11
-// server. Assumes that we only have a single X11 display,
-// base::MessagePumpX::GetDefaultXDisplay().
-class AURA_EXPORT X11AtomCache {
+// server. By default, GetAtom() will CHECK() that atoms accessed through
+// GetAtom() were passed to the constructor, but this behaviour can be changed
+// with allow_uncached_atoms().
+class UI_EXPORT X11AtomCache {
  public:
   // Preinterns the NULL terminated list of string |to_cache_ on |xdisplay|.
   X11AtomCache(Display* xdisplay, const char** to_cache);
@@ -30,14 +31,20 @@ class AURA_EXPORT X11AtomCache {
   // Returns the pre-interned Atom without having to go to the x server.
   ::Atom GetAtom(const char*) const;
 
+  // When an Atom isn't in the list of items we've cached, we should look it
+  // up, cache it locally, and then return the result.
+  void allow_uncached_atoms() { uncached_atoms_allowed_ = true; }
+
  private:
   Display* xdisplay_;
 
-  std::map<std::string, ::Atom> cached_atoms_;
+  bool uncached_atoms_allowed_;
+
+  mutable std::map<std::string, ::Atom> cached_atoms_;
 
   DISALLOW_COPY_AND_ASSIGN(X11AtomCache);
 };
 
-}  // namespace aura
+}  // namespace ui
 
-#endif  // UI_AURA_ATOM_CACHE_H_
+#endif  // UI_BASE_X_X11_ATOM_CACHE_H_

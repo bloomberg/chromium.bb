@@ -26,7 +26,7 @@ namespace internal {
 class DisplayChangeObserverX11;
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(USE_X11)
 // Creates a platform-specific native event dispatcher.
 MessageLoop::Dispatcher* CreateDispatcher();
 #endif
@@ -100,7 +100,7 @@ class AURA_EXPORT Env {
   void NotifyWindowInitialized(Window* window);
 
   ObserverList<EnvObserver> observers_;
-#if defined(OS_WIN)
+#if !defined(USE_X11)
   scoped_ptr<MessageLoop::Dispatcher> dispatcher_;
 #endif
 

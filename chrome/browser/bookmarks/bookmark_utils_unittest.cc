@@ -21,6 +21,10 @@ class BookmarkUtilsTest : public ::testing::Test {
   virtual void TearDown() OVERRIDE {
     ui::Clipboard::DestroyClipboardForCurrentThread();
   }
+
+ private:
+  // Clipboard requires a message loop.
+  MessageLoopForUI loop;
 };
 
 TEST_F(BookmarkUtilsTest, GetBookmarksContainingText) {
@@ -127,9 +131,6 @@ TEST_F(BookmarkUtilsTest, DoesBookmarkContainText) {
 
 #if !defined(OS_MACOSX)
 TEST_F(BookmarkUtilsTest, CopyPaste) {
-  // Clipboard requires a message loop.
-  MessageLoopForUI loop;
-
   BookmarkModel model(NULL);
   const BookmarkNode* node = model.AddURL(model.other_node(),
                                           0,

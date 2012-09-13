@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/x11_atom_cache.h"
+#include "ui/base/x/x11_atom_cache.h"
 
 #include <X11/Xatom.h>
 
 #include "base/message_pump_aurax11.h"
 #include "base/memory/scoped_ptr.h"
 
-namespace aura {
+namespace ui {
 
 X11AtomCache::X11AtomCache(Display* xdisplay, const char** to_cache)
-    : xdisplay_(xdisplay) {
+    : xdisplay_(xdisplay),
+      uncached_atoms_allowed_(false) {
   int cache_count = 0;
   for (const char** i = to_cache; *i != NULL; i++)
     cache_count++;
@@ -20,7 +21,7 @@ X11AtomCache::X11AtomCache(Display* xdisplay, const char** to_cache)
   scoped_array< ::Atom> cached_atoms(new ::Atom[cache_count]);
 
   // Grab all the atoms we need now to minimize roundtrips to the X11 server.
-  XInternAtoms(base::MessagePumpAuraX11::GetDefaultXDisplay(),
+  XInternAtoms(xdisplay_,
                const_cast<char**>(to_cache), cache_count, False,
                cached_atoms.get());
 
@@ -32,8 +33,15 @@ X11AtomCache::~X11AtomCache() {}
 
 ::Atom X11AtomCache::GetAtom(const char* name) const {
   std::map<std::string, ::Atom>::const_iterator it = cached_atoms_.find(name);
+
+  if (uncached_atoms_allowed_ && it == cached_atoms_.end()) {
+    ::Atom atom = XInternAtom(xdisplay_, name, false);
+    cached_atoms_.insert(std::make_pair(name, atom));
+    return atom;
+  }
+
   CHECK(it != cached_atoms_.end());
   return it->second;
 }
 
-}  // namespace aura
+}  // namespace ui
