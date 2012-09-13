@@ -31,8 +31,6 @@ const char kNoTabError[] = "No tab with id: *.";
 const char kNoPageActionError[] =
     "This extension has no page action specified.";
 const char kUrlNotActiveError[] = "This url is no longer active: *.";
-const char kIconIndexOutOfBounds[] = "Page action icon index out of bounds.";
-const char kNoIconSpecified[] = "Page action has no icons to show.";
 }
 
 PageActionsFunction::PageActionsFunction() {
@@ -53,26 +51,14 @@ bool PageActionsFunction::SetPageActionEnabled(bool enable) {
   EXTENSION_FUNCTION_VALIDATE(action->GetString(keys::kUrlKey, &url));
 
   std::string title;
-  int icon_id = 0;
   if (enable) {
-    // Both of those are optional.
     if (action->HasKey(keys::kTitleKey))
       EXTENSION_FUNCTION_VALIDATE(action->GetString(keys::kTitleKey, &title));
-    if (action->HasKey(keys::kIconIdKey)) {
-      EXTENSION_FUNCTION_VALIDATE(action->GetInteger(keys::kIconIdKey,
-                                                     &icon_id));
-    }
   }
 
   ExtensionAction* page_action = GetExtension()->page_action();
   if (!page_action) {
     error_ = kNoPageActionError;
-    return false;
-  }
-
-  if (icon_id < 0 ||
-      static_cast<size_t>(icon_id) >= page_action->icon_paths()->size()) {
-    error_ = (icon_id == 0) ? kNoIconSpecified : kIconIndexOutOfBounds;
     return false;
   }
 
@@ -98,7 +84,6 @@ bool PageActionsFunction::SetPageActionEnabled(bool enable) {
   page_action->SetAppearance(
       tab_id, enable ? ExtensionAction::ACTIVE : ExtensionAction::INVISIBLE);
   page_action->SetTitle(tab_id, title);
-  page_action->SetIconIndex(tab_id, icon_id);
   extensions::TabHelper::FromWebContents(contents->web_contents())->
       location_bar_controller()->NotifyChange();
 

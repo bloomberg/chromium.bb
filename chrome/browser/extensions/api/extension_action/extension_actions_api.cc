@@ -42,7 +42,6 @@ const char kAppearanceStorageKey[] = "appearance";
 const char kNoExtensionActionError[] =
     "This extension has no action specified.";
 const char kNoTabError[] = "No tab with id: *.";
-const char kIconIndexOutOfBounds[] = "Page action icon index out of bounds.";
 
 struct IconRepresentationInfo {
   // Size as a string that will be used to retrieve representation value from
@@ -440,8 +439,8 @@ bool ExtensionActionHideFunction::RunExtensionAction() {
 bool ExtensionActionSetIconFunction::RunExtensionAction() {
   // setIcon can take a variant argument: either a dictionary of canvas
   // ImageData, or an icon index.
-  int icon_index;
   base::DictionaryValue* canvas_set = NULL;
+  int icon_index;
   if (details_->GetDictionary("imageData", &canvas_set)) {
     gfx::ImageSkia icon;
     // Extract icon representations from the ImageDataSet dictionary.
@@ -459,18 +458,8 @@ bool ExtensionActionSetIconFunction::RunExtensionAction() {
 
     extension_action_->SetIcon(tab_id_, gfx::Image(icon));
   } else if (details_->GetInteger("iconIndex", &icon_index)) {
-    // If --enable-script-badges is on there might legitimately be an iconIndex
-    // set. Until we decide what to do with that, ignore.
-    if (!GetExtension()->page_action())
-      return true;
-    if (icon_index < 0 ||
-        static_cast<size_t>(icon_index) >=
-            extension_action_->icon_paths()->size()) {
-      error_ = kIconIndexOutOfBounds;
-      return false;
-    }
-    extension_action_->SetIcon(tab_id_, gfx::Image());
-    extension_action_->SetIconIndex(tab_id_, icon_index);
+    // Obsolete argument: ignore it.
+    return true;
   } else {
     EXTENSION_FUNCTION_VALIDATE(false);
   }

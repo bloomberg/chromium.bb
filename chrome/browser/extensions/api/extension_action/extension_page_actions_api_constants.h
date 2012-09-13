@@ -13,7 +13,6 @@ namespace extension_page_actions_api_constants {
 extern const char kTabIdKey[];
 extern const char kUrlKey[];
 extern const char kTitleKey[];
-extern const char kIconIdKey[];
 extern const char kButtonKey[];
 
 };  // namespace extension_page_actions_api_constants

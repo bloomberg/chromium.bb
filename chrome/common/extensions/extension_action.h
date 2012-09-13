@@ -133,10 +133,6 @@ class ExtensionAction {
   std::string id() const { return id_; }
   void set_id(const std::string& id) { id_ = id; }
 
-  // static icon paths from manifest -- only used with legacy page actions API.
-  std::vector<std::string>* icon_paths() { return &icon_paths_; }
-  const std::vector<std::string>* icon_paths() const { return &icon_paths_; }
-
   bool has_changed() const { return has_changed_; }
   void set_has_changed(bool value) { has_changed_ = value; }
 
@@ -164,13 +160,11 @@ class ExtensionAction {
   // Setting the default icon using a path clears the bitmap and vice-versa.
 
   // Since ExtensionAction, living in common/, can't interact with the browser
-  // to load images, the UI code needs to load the images for each path.  For
-  // each path in default_icon_path() and icon_paths(), load the image there
-  // using an ImageLoadingTracker and call CacheIcon(path, image) with the
-  // result.
+  // to load images, the UI code needs to load the icon. Load the image there
+  // using an ImageLoadingTracker and call CacheIcon(image) with the result.
   //
   // If an image is cached redundantly, the first load will be used.
-  void CacheIcon(const std::string& path, const gfx::Image& icon);
+  void CacheIcon(const gfx::Image& icon);
 
   // Set this action's icon bitmap on a specific tab.
   void SetIcon(int tab_id, const gfx::Image& image);
@@ -183,16 +177,6 @@ class ExtensionAction {
 
   // Gets the icon that has been set using |SetIcon| for the tab.
   gfx::ImageSkia GetExplicitlySetIcon(int tab_id) const;
-
-  // Set this action's icon index for a specific tab.  For use with
-  // icon_paths(), only used in page actions.
-  void SetIconIndex(int tab_id, int index);
-
-  // Get this action's icon index for a tab, or the default if no icon index
-  // was set.
-  int GetIconIndex(int tab_id) const {
-    return GetValue(&icon_index_, tab_id);
-  }
 
   // Non-tab-specific icon path. This is used to support the default_icon key of
   // page and browser actions.
@@ -310,7 +294,6 @@ class ExtensionAction {
   std::map<int, GURL> popup_url_;
   std::map<int, std::string> title_;
   std::map<int, gfx::ImageSkia> icon_;
-  std::map<int, int> icon_index_;  // index into icon_paths_
   std::map<int, std::string> badge_text_;
   std::map<int, SkColor> badge_background_color_;
   std::map<int, SkColor> badge_text_color_;
@@ -329,12 +312,8 @@ class ExtensionAction {
   // needed for compat with an older version of the page actions API.
   std::string id_;
 
-  // A list of paths to icons this action might show. This is needed to support
-  // the legacy setIcon({iconIndex:...} method of the page actions API.
-  std::vector<std::string> icon_paths_;
-
   // Saves the arguments from CacheIcon() calls.
-  std::map<std::string, gfx::ImageSkia> path_to_icon_cache_;
+  scoped_ptr<gfx::ImageSkia> cached_icon_;
 
   // True if the ExtensionAction's settings have changed from what was
   // specified in the manifest.

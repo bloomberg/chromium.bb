@@ -248,7 +248,6 @@ scoped_ptr<ExtensionAction> ExtensionAction::CopyForTest() const {
   copy->popup_url_ = popup_url_;
   copy->title_ = title_;
   copy->icon_ = icon_;
-  copy->icon_index_ = icon_index_;
   copy->badge_text_ = badge_text_;
   copy->badge_background_color_ = badge_background_color_;
   copy->badge_text_color_ = badge_text_color_;
@@ -256,7 +255,6 @@ scoped_ptr<ExtensionAction> ExtensionAction::CopyForTest() const {
   copy->icon_animation_ = icon_animation_;
   copy->default_icon_path_ = default_icon_path_;
   copy->id_ = id_;
-  copy->icon_paths_ = icon_paths_;
   return copy.Pass();
 }
 
@@ -277,10 +275,9 @@ GURL ExtensionAction::GetPopupUrl(int tab_id) const {
   return GetValue(&popup_url_, tab_id);
 }
 
-void ExtensionAction::CacheIcon(const std::string& path,
-                                const gfx::Image& icon) {
+void ExtensionAction::CacheIcon(const gfx::Image& icon) {
   if (!icon.IsEmpty())
-    path_to_icon_cache_.insert(std::make_pair(path, *icon.ToImageSkia()));
+    cached_icon_.reset(new gfx::ImageSkia(*icon.ToImageSkia()));
 }
 
 void ExtensionAction::SetIcon(int tab_id, const gfx::Image& image) {
@@ -291,21 +288,8 @@ gfx::Image ExtensionAction::GetIcon(int tab_id) const {
   // Check if a specific icon is set for this tab.
   gfx::ImageSkia icon = GetExplicitlySetIcon(tab_id);
   if (icon.isNull()) {
-    // Need to find an icon from a path.
-    const std::string* path = NULL;
-    // Check if one of the elements of icon_path() was selected.
-    int icon_index = GetIconIndex(tab_id);
-    if (icon_index >= 0) {
-      path = &icon_paths()->at(icon_index);
-    } else {
-      // Otherwise, use the default icon.
-      path = &default_icon_path();
-    }
-
-    std::map<std::string, gfx::ImageSkia>::const_iterator cached_icon =
-        path_to_icon_cache_.find(*path);
-    if (cached_icon != path_to_icon_cache_.end()) {
-      icon = cached_icon->second;
+    if (cached_icon_.get()) {
+      icon = *cached_icon_;
     } else {
       icon = *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_EXTENSIONS_FAVICON);
@@ -320,14 +304,6 @@ gfx::Image ExtensionAction::GetIcon(int tab_id) const {
 
 gfx::ImageSkia ExtensionAction::GetExplicitlySetIcon(int tab_id) const {
   return GetValue(&icon_, tab_id);
-}
-
-void ExtensionAction::SetIconIndex(int tab_id, int index) {
-  if (static_cast<size_t>(index) >= icon_paths_.size()) {
-    NOTREACHED();
-    return;
-  }
-  SetValue(&icon_index_, tab_id, index);
 }
 
 bool ExtensionAction::SetAppearance(int tab_id, Appearance new_appearance) {
@@ -351,7 +327,6 @@ void ExtensionAction::ClearAllValuesForTab(int tab_id) {
   popup_url_.erase(tab_id);
   title_.erase(tab_id);
   icon_.erase(tab_id);
-  icon_index_.erase(tab_id);
   badge_text_.erase(tab_id);
   badge_text_color_.erase(tab_id);
   badge_background_color_.erase(tab_id);

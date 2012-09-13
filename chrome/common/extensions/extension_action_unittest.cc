@@ -74,7 +74,7 @@ TEST_F(ExtensionActionTest, Icon) {
   action.set_default_icon_path("the_default.png");
   ASSERT_TRUE(ImagesAreEqual(puzzle_piece, action.GetIcon(1)))
       << "Still returns the puzzle piece because the image isn't loaded yet.";
-  action.CacheIcon("the_default.png", icon2);
+  action.CacheIcon(icon2);
   ASSERT_TRUE(ImagesAreEqual(icon2, action.GetIcon(1)));
 
   action.SetIcon(ExtensionAction::kDefaultTabId, icon1);
@@ -84,32 +84,6 @@ TEST_F(ExtensionActionTest, Icon) {
   action.SetIcon(100, icon2);
   ASSERT_TRUE(ImagesAreEqual(icon1, action.GetIcon(1)));
   ASSERT_TRUE(ImagesAreEqual(icon2, action.GetIcon(100)));
-}
-
-TEST_F(ExtensionActionTest, IconIndex) {
-  gfx::Image icon1 = LoadIcon("icon1.png");
-  gfx::Image icon2 = LoadIcon("icon2.png");
-  gfx::Image puzzle_piece =
-      ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          IDR_EXTENSIONS_FAVICON);
-
-  ASSERT_EQ(-1, action.GetIconIndex(1));
-  action.icon_paths()->push_back("foo.png");
-  action.icon_paths()->push_back("bar.png");
-  action.SetIconIndex(ExtensionAction::kDefaultTabId, 1);
-  ASSERT_EQ(1, action.GetIconIndex(1));
-  ASSERT_EQ(1, action.GetIconIndex(100));
-  ASSERT_TRUE(ImagesAreEqual(puzzle_piece, action.GetIcon(100)))
-      << "Non-loaded icon gets the puzzle piece.";
-  action.CacheIcon("bar.png", icon1);
-  ASSERT_TRUE(ImagesAreEqual(icon1, action.GetIcon(100)));
-
-  action.SetIconIndex(100, 0);
-  ASSERT_EQ(0, action.GetIconIndex(100));
-  ASSERT_EQ(1, action.GetIconIndex(1));
-  action.ClearAllValuesForTab(100);
-  ASSERT_EQ(1, action.GetIconIndex(100));
-  ASSERT_EQ(1, action.GetIconIndex(1));
 }
 
 TEST_F(ExtensionActionTest, Visibility) {

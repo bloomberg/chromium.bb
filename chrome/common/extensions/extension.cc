@@ -810,6 +810,8 @@ scoped_ptr<ExtensionAction> Extension::LoadExtensionActionHelper(
                         ExtensionAction::ACTIVE : ExtensionAction::INVISIBLE);
 
   if (manifest_version_ == 1) {
+    // kPageActionIcons is obsolete, and used by very few extensions. Continue
+    // loading it, but only take the first icon as the default_icon path.
     const ListValue* icons = NULL;
     if (extension_action->HasKey(keys::kPageActionIcons) &&
         extension_action->GetList(keys::kPageActionIcons, &icons)) {
@@ -821,7 +823,8 @@ scoped_ptr<ExtensionAction> Extension::LoadExtensionActionHelper(
           return scoped_ptr<ExtensionAction>();
         }
 
-        result->icon_paths()->push_back(path);
+        result->set_default_icon_path(path);
+        break;
       }
     }
 
@@ -3199,20 +3202,14 @@ std::set<FilePath> Extension::GetBrowserImages() const {
 
   // Page action icons.
   if (page_action()) {
-    std::vector<std::string>* icon_paths = page_action()->icon_paths();
-    for (std::vector<std::string>::iterator iter = icon_paths->begin();
-         iter != icon_paths->end(); ++iter) {
-      image_paths.insert(FilePath::FromWStringHack(UTF8ToWide(*iter)));
-    }
+    image_paths.insert(FilePath::FromWStringHack(UTF8ToWide(
+        page_action()->default_icon_path())));
   }
 
   // Browser action icons.
   if (browser_action()) {
-    std::vector<std::string>* icon_paths = browser_action()->icon_paths();
-    for (std::vector<std::string>::iterator iter = icon_paths->begin();
-         iter != icon_paths->end(); ++iter) {
-      image_paths.insert(FilePath::FromWStringHack(UTF8ToWide(*iter)));
-    }
+    image_paths.insert(FilePath::FromWStringHack(UTF8ToWide(
+        browser_action()->default_icon_path())));
   }
 
   return image_paths;

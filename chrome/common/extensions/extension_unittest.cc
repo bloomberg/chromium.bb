@@ -222,7 +222,6 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   const std::string id("MyExtensionActionId");
   const std::string name("MyExtensionActionName");
   std::string img1("image1.png");
-  std::string img2("image2.png");
 
   action = LoadAction("page_action.json");
   ASSERT_TRUE(NULL != action.get());
@@ -230,9 +229,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
 
   // No title, so fall back to name.
   ASSERT_EQ(name, action->GetTitle(1));
-  ASSERT_EQ(2u, action->icon_paths()->size());
-  ASSERT_EQ(img1, (*action->icon_paths())[0]);
-  ASSERT_EQ(img2, (*action->icon_paths())[1]);
+  ASSERT_EQ(img1, action->default_icon_path());
 
   // Same test with explicitly set type.
   action = LoadAction("page_action_type.json");
@@ -259,7 +256,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   action = LoadAction("page_action_new_format.json");
   ASSERT_TRUE(action.get());
   ASSERT_EQ(kTitle, action->GetTitle(1));
-  ASSERT_EQ(0u, action->icon_paths()->size());
+  ASSERT_FALSE(action->default_icon_path().empty());
 
   // Invalid title should give an error even with a valid name.
   LoadActionAndExpectError("page_action_invalid_title.json",

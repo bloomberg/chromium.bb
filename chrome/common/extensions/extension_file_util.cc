@@ -323,24 +323,20 @@ bool ValidateExtension(const Extension* extension,
   // Validate icon location and icon file size for page actions.
   ExtensionAction* page_action = extension->page_action();
   if (page_action) {
-    std::vector<std::string> icon_paths(*page_action->icon_paths());
-    if (!page_action->default_icon_path().empty())
-      icon_paths.push_back(page_action->default_icon_path());
-    for (std::vector<std::string>::iterator iter = icon_paths.begin();
-         iter != icon_paths.end(); ++iter) {
-      const FilePath path = extension->GetResource(*iter).GetFilePath();
-      if (!ValidateFilePath(path)) {
+    std::string path = page_action->default_icon_path();
+    if (!path.empty()) {
+      const FilePath file_path = extension->GetResource(path).GetFilePath();
+      if (!ValidateFilePath(file_path)) {
         *error =
             l10n_util::GetStringFUTF8(
                 IDS_EXTENSION_LOAD_ICON_FOR_PAGE_ACTION_FAILED,
-                UTF8ToUTF16(*iter));
+                UTF8ToUTF16(path));
         return false;
       }
     }
   }
 
   // Validate icon location and icon file size for browser actions.
-  // Note: browser actions don't use the icon_paths().
   ExtensionAction* browser_action = extension->browser_action();
   if (browser_action) {
     std::string path = browser_action->default_icon_path();

@@ -17,7 +17,7 @@ TEST_F(ExtensionManifestTest, PageActionManifestVersion2) {
   ASSERT_TRUE(extension->page_action());
 
   EXPECT_EQ("", extension->page_action()->id());
-  EXPECT_EQ(0u, extension->page_action()->icon_paths()->size());
+  EXPECT_TRUE(extension->page_action()->default_icon_path().empty());
   EXPECT_EQ("", extension->page_action()->GetTitle(
       ExtensionAction::kDefaultTabId));
   EXPECT_FALSE(extension->page_action()->HasPopup(

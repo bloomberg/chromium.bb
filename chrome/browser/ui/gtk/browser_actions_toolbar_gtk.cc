@@ -222,8 +222,7 @@ class BrowserActionButton : public content::NotificationObserver,
   void OnImageLoaded(const gfx::Image& image,
                      const std::string& extension_id,
                      int index) OVERRIDE {
-    extension_->browser_action()->CacheIcon(
-        extension_->browser_action()->default_icon_path(), image);
+    extension_->browser_action()->CacheIcon(image);
     UpdateState();
   }
 

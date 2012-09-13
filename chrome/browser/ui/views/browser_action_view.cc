@@ -216,7 +216,7 @@ void BrowserActionButton::ShowContextMenuForView(View* source,
 void BrowserActionButton::OnImageLoaded(const gfx::Image& image,
                                         const std::string& extension_id,
                                         int index) {
-  browser_action_->CacheIcon(browser_action_->default_icon_path(), image);
+  browser_action_->CacheIcon(image);
 
   // Call back to UpdateState() because a more specific icon might have been set
   // while the load was outstanding.

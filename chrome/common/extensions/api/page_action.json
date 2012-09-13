@@ -115,7 +115,7 @@
               "iconIndex": {
                 "type": "integer",
                 "minimum": 0,
-                "description": "<b>Deprecated.</b> The zero-based index into the <b>icons</b> vector specified in the manifest.",
+                "description": "<b>Deprecated.</b> This argument is ignored.",
                 "optional": true
               }
             }

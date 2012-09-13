@@ -68,7 +68,7 @@ class ExtensionImageTrackerBridge : public content::NotificationObserver,
   void OnImageLoaded(const gfx::Image& image,
                      const std::string& extension_id,
                      int index) OVERRIDE {
-    browser_action_->CacheIcon(browser_action_->default_icon_path(), image);
+    browser_action_->CacheIcon(image);
     [owner_ updateState];
   }
 

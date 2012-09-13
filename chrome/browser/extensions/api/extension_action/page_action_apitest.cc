@@ -180,31 +180,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OldPageActions) {
         browser()->profile(), *extension->page_action(), tab_id, "", 1);
     EXPECT_TRUE(catcher.GetNextResult());
   }
-
-  // Set icon by its index.
-  {
-    int tab_id =
-        ExtensionTabUtil::GetTabId(chrome::GetActiveWebContents(browser()));
-
-    // Set some icon so we can verify it gets cleaned up by setIconIndex.
-    extension->page_action()->SetIcon(tab_id, CreateNonEmptyImage());
-    ASSERT_FALSE(
-        extension->page_action()->GetExplicitlySetIcon(tab_id).isNull());
-
-    // Currently, icon index should be set to 0.
-    ASSERT_EQ(0, extension->page_action()->GetIconIndex(tab_id));
-
-    ResultCatcher catcher;
-    ui_test_utils::NavigateToURL(browser(),
-        GURL(extension->GetResourceURL("set_icon_index.html")));
-    ASSERT_TRUE(catcher.GetNextResult());
-
-    // Check new value of icon index is as expected.
-    EXPECT_EQ(1, extension->page_action()->GetIconIndex(tab_id));
-    // Explicitly set icon should have been reset.
-    ASSERT_TRUE(
-        extension->page_action()->GetExplicitlySetIcon(tab_id).isNull());
-  }
 }
 
 // Tests popups in page actions.

@@ -9,7 +9,6 @@ namespace extension_page_actions_api_constants {
 const char kTabIdKey[] = "tabId";
 const char kUrlKey[] = "url";
 const char kTitleKey[] = "title";
-const char kIconIdKey[] = "iconId";
 const char kButtonKey[] = "button";
 
 }  // namespace extension_page_actions_api_constants

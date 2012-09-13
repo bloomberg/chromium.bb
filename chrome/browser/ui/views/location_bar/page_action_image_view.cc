@@ -55,15 +55,9 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
       GetExtensionById(page_action->extension_id(), false);
   DCHECK(extension);
 
-  // Load all the icons declared in the manifest. This is the contents of the
-  // icons array, plus the default_icon property, if any.
-  std::vector<std::string> icon_paths(*page_action->icon_paths());
-  if (!page_action_->default_icon_path().empty())
-    icon_paths.push_back(page_action_->default_icon_path());
-
-  for (std::vector<std::string>::iterator i(icon_paths.begin());
-       i != icon_paths.end(); ++i) {
-    tracker_.LoadImage(extension, extension->GetResource(*i),
+  std::string path = page_action_->default_icon_path();
+  if (!path.empty()) {
+    tracker_.LoadImage(extension, extension->GetResource(path),
                        gfx::Size(Extension::kPageActionIconMaxSize,
                                  Extension::kPageActionIconMaxSize),
                        ImageLoadingTracker::DONT_CACHE);
@@ -197,19 +191,7 @@ bool PageActionImageView::OnKeyPressed(const ui::KeyEvent& event) {
 void PageActionImageView::OnImageLoaded(const gfx::Image& image,
                                         const std::string& extension_id,
                                         int index) {
-  // We loaded icons()->size() icons, plus one extra if the page action had
-  // a default icon.
-  int total_icons = static_cast<int>(page_action_->icon_paths()->size());
-  if (!page_action_->default_icon_path().empty())
-    total_icons++;
-  DCHECK(index < total_icons);
-
-  // Map the index of the loaded image back to its name. If we ever get an
-  // index greater than the number of icons, it must be the default icon.
-  if (index < static_cast<int>(page_action_->icon_paths()->size()))
-    page_action_->CacheIcon(page_action_->icon_paths()->at(index), image);
-  else
-    page_action_->CacheIcon(page_action_->default_icon_path(), image);
+  page_action_->CacheIcon(image);
 
   // During object construction owner_ will be NULL.
   TabContents* tab_contents = owner_ ? owner_->GetTabContents() : NULL;
