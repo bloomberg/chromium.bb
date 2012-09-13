@@ -92,21 +92,11 @@ struct timezone {
  * r with gcc, run: "echo | gcc -E -dM -"
  */
 #if defined(_M_X64) || defined(__x86_64__)
-#define NACL_ARCH_CPU_X86_FAMILY 1
-#define NACL_ARCH_CPU_X86_64 1
-#define NACL_ARCH_CPU_64_BITS 1
 #define NACL_HOST_WORDSIZE 64
 #elif defined(_M_IX86) || defined(__i386__)
-#define NACL_ARCH_CPU_X86_FAMILY 1
-#define NACL_ARCH_CPU_X86 1
-#define NACL_ARCH_CPU_32_BITS 1
 #define NACL_HOST_WORDSIZE 32
 #elif defined(__ARMEL__)
-#define NACL_ARCH_CPU_ARM_FAMILY 1
-#define NACL_ARCH_CPU_ARMEL 1
-#define NACL_ARCH_CPU_32_BITS 1
 #define NACL_HOST_WORDSIZE 32
-#define NACL_WCHAR_T_IS_UNSIGNED 1
 #elif defined(__pnacl__)
 #define NACL_HOST_WORDSIZE 32
 #else
