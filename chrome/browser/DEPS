@@ -26,14 +26,38 @@ include_rules = [
   "+sync/notifier",  # Sync invalidation API files.
   "+sync/protocol",  # Sync protobuf files.
   "+third_party/cros_system_api",
+  "+xib_localizers", # For generated mac localization helpers
+
+  # TODO(stuartmorgan): Remove these by refactoring necessary code out of
+  # webkit/. See crbug.com/146251
+  # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
+  "+webkit/appcache",
+  "+webkit/blob",
   "+webkit/database",
-  "+webkit/dom_storage",  # Defines an ENABLE_NEW_DOM_STORAGE_BACKEND flag.
+  "+webkit/dom_storage",
+  "+webkit/fileapi",
   "+webkit/forms",  # Defines some types that are marshalled over IPC.
-  "+webkit/glue",  # Defines some types that are marshalled over IPC.
   "+webkit/plugins",  # Defines some types that are marshalled over IPC.
   "+webkit/quota",
   "+webkit/user_agent",
-  "+xib_localizers", # For generated mac localization helpers
+  # webkit/glue files are listed individually since they aren't conceptually
+  # grouped like the other webkit/ files, and can therefore be tackled one at
+  # a time.
+  "+webkit/glue/glue_serialize.h",
+  "+webkit/glue/image_decoder.h",
+  "+webkit/glue/image_resource_fetcher.h",
+  "+webkit/glue/resource_loader_bridge.h",
+  "+webkit/glue/resource_type.h",
+  "+webkit/glue/web_intent_data.h",
+  "+webkit/glue/web_intent_reply_data.h",
+  "+webkit/glue/web_intent_service_data.h",
+  "+webkit/glue/webcursor.h",
+  "+webkit/glue/webdropdata.h",
+  "+webkit/glue/webkit_glue.h",
+  "+webkit/glue/webmenuitem.h",
+  "+webkit/glue/webpreferences.h",
+  "+webkit/glue/window_open_disposition.h",
+  # DO NOT ADD ANY MORE ITEMS TO THE ABOVE LIST!
 
   # TODO(jam): Need to remove all these and use only content/public. BUG=98716
   # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!

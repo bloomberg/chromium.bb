@@ -36,12 +36,6 @@ include_rules = [
   # Allow inclusion of WebKit API files.
   "+third_party/WebKit/Source/Platform/chromium",
   "+third_party/WebKit/Source/WebKit/chromium",
-  "+webkit/appcache",
-  "+webkit/blob",
-  "+webkit/chromeos/fileapi",
-  "+webkit/database",
-  "+webkit/fileapi",
-  "+webkit/quota",
 
   # Allow inclusion of third-party code:
   "+third_party/hunspell",

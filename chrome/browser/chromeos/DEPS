@@ -3,4 +3,5 @@ include_rules = [
   "+dbus",
   "+media/base/media_switches.h",  # For media command line switches.
   "+third_party/mozc",
+  "+webkit/chromeos/fileapi",
 ]

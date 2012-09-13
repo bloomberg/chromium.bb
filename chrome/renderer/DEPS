@@ -11,13 +11,16 @@ include_rules = [
   "+ppapi/shared_impl",
   "+sandbox/win/src",
   "+skia",
+
   "+webkit/extensions",
+  "+webkit/fileapi",
   "+webkit/forms",  # Defines some types that are marshalled over IPC.
   "+webkit/glue",
   "+webkit/glue/plugins",
   "+webkit/gpu",
   "+webkit/media",
   "+webkit/plugins",
+
   "+third_party/cld/encodings/compact_lang_det/win",
   "+third_party/npapi/bindings",
   "+third_party/smhasher",
