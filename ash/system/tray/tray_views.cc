@@ -327,6 +327,7 @@ TrayPopupTextButton::TrayPopupTextButton(views::ButtonListener* listener,
                                          const string16& text)
     : views::TextButton(listener, text),
       hover_(false),
+      paint_border_(true),
       hover_bg_(views::Background::CreateSolidBackground(SkColorSetARGB(
              10, 0, 0, 0))),
       hover_border_(views::Border::CreateSolidBorder(1, kButtonStrokeColor)) {
@@ -364,7 +365,7 @@ void TrayPopupTextButton::OnPaintBackground(gfx::Canvas* canvas) {
 void TrayPopupTextButton::OnPaintBorder(gfx::Canvas* canvas) {
   if (hover_)
     hover_border_->Paint(*this, canvas);
-  else
+  else if (paint_border_)
     views::TextButton::OnPaintBorder(canvas);
 }
 
@@ -397,6 +398,22 @@ void TrayPopupTextButtonContainer::AddTextButton(TrayPopupTextButton* button) {
         kButtonStrokeColor));
   }
   AddChildView(button);
+}
+
+void TrayPopupTextButtonContainer::Layout() {
+  // Do not draw border for the left most visible button.
+  bool found_first_visible = false;
+  for (int i = 0; i < child_count(); ++i) {
+    TrayPopupTextButton* button =
+        static_cast<TrayPopupTextButton*>(child_at(i));
+    if (!found_first_visible && button->visible()) {
+      button->set_paint_border(false);
+      found_first_visible = true;
+    } else if (button->visible()) {
+      button->set_paint_border(true);
+    }
+  }
+  views::View::Layout();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
