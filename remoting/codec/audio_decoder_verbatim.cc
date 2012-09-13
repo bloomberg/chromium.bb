@@ -22,7 +22,9 @@ scoped_ptr<AudioPacket> AudioDecoderVerbatim::Decode(
       (packet->data_size() != 1) ||
       (packet->sampling_rate() == AudioPacket::SAMPLING_RATE_INVALID) ||
       (packet->bytes_per_sample() != AudioPacket::BYTES_PER_SAMPLE_2) ||
-      (packet->channels() != AudioPacket::CHANNELS_STEREO)) {
+      (packet->channels() != AudioPacket::CHANNELS_STEREO) ||
+      (packet->data(0).size() %
+       (AudioPacket::CHANNELS_STEREO * AudioPacket::BYTES_PER_SAMPLE_2) != 0)) {
     LOG(WARNING) << "Verbatim decoder received an invalid packet.";
     return scoped_ptr<AudioPacket>();
   }

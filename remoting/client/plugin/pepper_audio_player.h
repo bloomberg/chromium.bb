@@ -48,17 +48,18 @@ class PepperAudioPlayer : public AudioPlayer {
   // The count of sample frames per channel in an audio buffer.
   uint32_t samples_per_frame_;
 
-  // Protects |queued_packets_| and |bytes_consumed_|.
-  // This is necessary to prevent races,
-  // because Pepper will callback on a separate thread.
+  bool start_failed_;
+
+  // Protects |queued_packets_|, |queued_samples_ and |bytes_consumed_|. This is
+  // necessary to prevent races, because Pepper will call the  callback on a
+  // separate thread.
   base::Lock lock_;
 
   AudioPacketQueue queued_packets_;
+  int queued_samples_;
 
   // The number of bytes from |queued_packets_| that have been consumed.
   size_t bytes_consumed_;
-
-  bool start_failed_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperAudioPlayer);
 };
