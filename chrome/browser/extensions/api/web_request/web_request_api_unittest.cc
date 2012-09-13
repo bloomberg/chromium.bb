@@ -7,21 +7,26 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
+#include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/extensions/api/web_request/upload_data_presenter.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_constants.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
@@ -31,12 +36,20 @@
 #include "net/base/capturing_net_log.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/net_util.h"
+#include "net/base/upload_data.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace helpers = extension_web_request_api_helpers;
 namespace keys = extension_web_request_api_constants;
 
+using base::BinaryValue;
+using base::DictionaryValue;
+using base::ListValue;
+using base::StringValue;
+using base::Value;
+using chrome::VersionInfo;
+using extensions::Feature;
 using helpers::CalculateOnAuthRequiredDelta;
 using helpers::CalculateOnBeforeRequestDelta;
 using helpers::CalculateOnBeforeSendHeadersDelta;
@@ -73,6 +86,22 @@ template <typename Collection, typename Key>
 bool Contains(const Collection& collection, const Key& key) {
   return std::find(collection.begin(), collection.end(), key) !=
       collection.end();
+}
+
+// Parses the JSON data attached to the |message| and tries to return it.
+// |param| must outlive |out|. Returns NULL on failure.
+void GetPartOfMessageArguments(IPC::Message* message,
+                               const DictionaryValue** out,
+                               ExtensionMsg_MessageInvoke::Param* param) {
+  ASSERT_EQ(ExtensionMsg_MessageInvoke::ID, message->type());
+  ASSERT_TRUE(ExtensionMsg_MessageInvoke::Read(message, param));
+  ASSERT_GE(param->c.GetSize(), 2u);
+  const Value* value = NULL;
+  ASSERT_TRUE(param->c.Get(1, &value));
+  const ListValue* list = NULL;
+  ASSERT_TRUE(value->GetAsList(&list));
+  ASSERT_EQ(1u, list->GetSize());
+  ASSERT_TRUE(list->GetDictionary(0, out));
 }
 
 }  // namespace
@@ -135,6 +164,13 @@ class ExtensionWebRequestTest : public testing::Test {
     context_->set_network_delegate(network_delegate_.get());
     context_->Init();
   }
+
+  // Fires a URLRequest with the specified |method|, |content_type| and three
+  // elements of upload data: bytes_1, a dummy empty file, bytes_2.
+  void FireURLRequestWithData(const std::string& method,
+                              const char* content_type,
+                              const std::vector<char>& bytes_1,
+                              const std::vector<char>& bytes_2);
 
   MessageLoopForIO message_loop_;
   content::TestBrowserThread ui_thread_;
@@ -401,7 +437,229 @@ TEST_F(ExtensionWebRequestTest, SimulateChancelWhileBlocked) {
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
       &profile_, extension_id, kEventName + "/1");
   ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
-        &profile_, extension_id, kEventName2 + "/1");
+      &profile_, extension_id, kEventName2 + "/1");
+}
+
+namespace {
+
+// Create the numerical representation of |values|, strings passed as
+// extraInfoSpec by the event handler. Returns true on success, otherwise false.
+bool GenerateInfoSpec(const std::string& values, int* result) {
+  // Create a ListValue of strings.
+  std::vector<std::string> split_values;
+  base::ListValue list_value;
+  size_t num_values = Tokenize(values, ",", &split_values);
+  for (size_t i = 0; i < num_values ; ++i)
+    list_value.Append(new base::StringValue(split_values[i]));
+  return ExtensionWebRequestEventRouter::ExtraInfoSpec::InitFromValue(
+      list_value, result);
+}
+
+}  // namespace
+
+void ExtensionWebRequestTest::FireURLRequestWithData(
+    const std::string& method,
+    const char* content_type,
+    const std::vector<char>& bytes_1,
+    const std::vector<char>& bytes_2) {
+  // The request URL can be arbitrary but must have an HTTP or HTTPS scheme.
+  GURL request_url("http://www.example.com");
+  net::URLRequest request(request_url, &delegate_, context_.get());
+  request.set_method(method);
+  if (content_type != NULL)
+    request.SetExtraRequestHeaderByName(net::HttpRequestHeaders::kContentType,
+                                        content_type,
+                                        true /* overwrite */);
+  request.AppendBytesToUpload(&(bytes_1[0]), bytes_1.size());
+  net::UploadData* data = request.get_upload_mutable();
+  data->AppendFileRange(::FilePath(), 0, 0, base::Time());
+  request.AppendBytesToUpload(&(bytes_2[0]), bytes_2.size());
+  ipc_sender_.PushTask(base::Bind(&base::DoNothing));
+  request.Start();
+}
+
+TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
+  // We verify that URLRequest body is accessible to OnBeforeRequest listeners.
+  // These testing steps are repeated twice in a row:
+  // 1. Register an extension requesting "requestBody" in ExtraInfoSpec and
+  //    file a POST URLRequest with a multipart-encoded form. See it getting
+  //    parsed.
+  // 2. Do the same, but without requesting "requestBody". Nothing should be
+  //    parsed.
+  // 3. With "requestBody", fire a POST URLRequest which is not a parseable
+  //    HTML form. Raw data should be returned.
+  // 4. Do the same, but with a PUT method. Result should be the same.
+  // Each of these steps is done once as if the channel was DEV or CANARY,
+  // and once as if it was BETA or STABLE. It is checked that parsed data is
+  // available on DEV/CANARY but not on BETA/STABLE.
+  const std::string kMethodPost("POST");
+  const std::string kMethodPut("PUT");
+
+  // Input.
+  const char kPlainBlock1[] = "abcd\n";
+  const size_t kPlainBlock1Length = sizeof(kPlainBlock1) - 1;
+  std::vector<char> plain_1(kPlainBlock1, kPlainBlock1 + kPlainBlock1Length);
+  const char kPlainBlock2[] = "1234\n";
+  const size_t kPlainBlock2Length = sizeof(kPlainBlock2) - 1;
+  std::vector<char> plain_2(kPlainBlock2, kPlainBlock2 + kPlainBlock2Length);
+#define kBoundary "THIS_IS_A_BOUNDARY"
+  const char kFormBlock1[] = "--" kBoundary "\r\n"
+      "Content-Disposition: form-data; name=\"A\"\r\n"
+      "\r\n"
+      "test text\r\n"
+      "--" kBoundary "\r\n"
+      "Content-Disposition: form-data; name=\"B\"; filename=\"\"\r\n"
+      "Content-Type: application/octet-stream\r\n"
+      "\r\n";
+  std::vector<char> form_1(kFormBlock1, kFormBlock1 + sizeof(kFormBlock1) - 1);
+  const char kFormBlock2[] = "\r\n"
+      "--" kBoundary "\r\n"
+      "Content-Disposition: form-data; name=\"C\"\r\n"
+      "\r\n"
+      "test password\r\n"
+      "--" kBoundary "--";
+  std::vector<char> form_2(kFormBlock2, kFormBlock2 + sizeof(kFormBlock2) - 1);
+
+  // Expected output.
+  // Paths to look for in returned dictionaries.
+  const std::string kBodyPath(keys::kRequestBodyKey);
+  const std::string kFormDataPath(
+      kBodyPath + "." + keys::kRequestBodyFormDataKey);
+  const std::string kRawPath(kBodyPath + "." + keys::kRequestBodyRawKey);
+  const std::string kErrorPath(kBodyPath + "." + keys::kRequestBodyErrorKey);
+  const std::string* const kPath[] = {
+    &kFormDataPath,
+    &kBodyPath,
+    &kRawPath,
+    &kRawPath
+  };
+  // Contents of formData.
+  const char kFormData[] =
+      "{\"A\":[\"test text\"],\"B\":[\"\"],\"C\":[\"test password\"]}";
+  scoped_ptr<const Value> form_data(base::JSONReader::Read(kFormData));
+  ASSERT_TRUE(form_data.get() != NULL);
+  ASSERT_TRUE(form_data->GetType() == Value::TYPE_DICTIONARY);
+  // Contents of raw.
+  ListValue raw;
+  extensions::RawDataPresenter::AppendResultWithKey(
+      &raw,
+      keys::kRequestBodyRawBytesKey,
+      BinaryValue::CreateWithCopiedBuffer(kPlainBlock1, kPlainBlock1Length));
+  extensions::RawDataPresenter::AppendResultWithKey(
+      &raw,
+      keys::kRequestBodyRawFileKey,
+      Value::CreateStringValue(""));
+  extensions::RawDataPresenter::AppendResultWithKey(
+      &raw,
+      keys::kRequestBodyRawBytesKey,
+      BinaryValue::CreateWithCopiedBuffer(kPlainBlock2, kPlainBlock2Length));
+  // Summary.
+  const Value* const kExpected[] = {
+    form_data.get(),
+    NULL,
+    &raw,
+    &raw,
+    NULL, NULL, NULL, NULL  // These are for the disabled cases.
+  };
+  // Header.
+  const char kMultipart[] = "multipart/form-data; boundary=" kBoundary;
+#undef kBoundary
+
+  // Set up a dummy extension name.
+  const std::string kEventName(keys::kOnBeforeRequest);
+  ExtensionWebRequestEventRouter::RequestFilter filter;
+  std::string extension_id("1");
+  const std::string string_spec_post("blocking,requestBody");
+  const std::string string_spec_no_post("blocking");
+  int extra_info_spec_empty = 0;
+  int extra_info_spec_body = 0;
+  base::WeakPtrFactory<TestIPCSender> ipc_sender_factory(&ipc_sender_);
+
+  // All the tests are done twice, once with the release channel pretending to
+  // be one of DEV/CANARY, once BETA/STABLE. Hence two passes.
+  for (int pass = 0; pass < 2; ++pass) {
+    {
+      Feature::ScopedCurrentChannel sc(
+          pass > 0 ? VersionInfo::CHANNEL_BETA : VersionInfo::CHANNEL_CANARY);
+
+      // Part 1.
+      // Subscribe to OnBeforeRequest with requestBody requirement.
+      ASSERT_TRUE(GenerateInfoSpec(string_spec_post, &extra_info_spec_body));
+      ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
+          &profile_, extension_id, extension_id, kEventName, kEventName + "/1",
+          filter, extra_info_spec_body, ipc_sender_factory.GetWeakPtr());
+
+      FireURLRequestWithData(kMethodPost, kMultipart, form_1, form_2);
+
+      MessageLoop::current()->RunAllPending();
+      // We inspect the result in the message list of |ipc_sender_| later.
+
+      ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+          &profile_, extension_id, kEventName + "/1");
+    }
+
+    {
+      Feature::ScopedCurrentChannel sc(
+          pass > 0 ? VersionInfo::CHANNEL_STABLE : VersionInfo::CHANNEL_DEV);
+
+      // Part 2.
+      // Now subscribe to OnBeforeRequest *without* the requestBody requirement.
+      ASSERT_TRUE(
+          GenerateInfoSpec(string_spec_no_post, &extra_info_spec_empty));
+      ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
+          &profile_, extension_id, extension_id, kEventName, kEventName + "/1",
+          filter, extra_info_spec_empty, ipc_sender_factory.GetWeakPtr());
+
+      FireURLRequestWithData(kMethodPost, kMultipart, form_1, form_2);
+
+      ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+          &profile_, extension_id, kEventName + "/1");
+    }
+
+    {
+      Feature::ScopedCurrentChannel sc(
+          pass > 0 ? VersionInfo::CHANNEL_STABLE : VersionInfo::CHANNEL_DEV);
+
+      // Subscribe to OnBeforeRequest with requestBody requirement.
+      ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
+          &profile_, extension_id, extension_id, kEventName, kEventName + "/1",
+          filter, extra_info_spec_body, ipc_sender_factory.GetWeakPtr());
+
+      // Part 3.
+      // Now send a POST request with body which is not parseable as a form.
+      FireURLRequestWithData(kMethodPost, NULL /*no header*/, plain_1, plain_2);
+
+      // Part 4.
+      // Now send a PUT request with the same body as above.
+      FireURLRequestWithData(kMethodPut, NULL /*no header*/, plain_1, plain_2);
+
+      MessageLoop::current()->RunAllPending();
+
+      // Clean-up.
+      ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+          &profile_, extension_id, kEventName + "/1");
+    }
+  }
+
+  IPC::Message* message = NULL;
+  TestIPCSender::SentMessages::const_iterator i = ipc_sender_.sent_begin();
+  for (size_t test = 0; test < arraysize(kExpected); ++test) {
+    EXPECT_NE(i, ipc_sender_.sent_end());
+    message = (i++)->get();
+    const DictionaryValue* details;
+    ExtensionMsg_MessageInvoke::Param param;
+    GetPartOfMessageArguments(message, &details, &param);
+    ASSERT_TRUE(details != NULL);
+    const Value* result = NULL;
+    EXPECT_EQ(
+        kExpected[test] != NULL,
+        details->Get(*(kPath[test % arraysize(kPath)]), &result));
+    if (kExpected[test] != NULL) {
+      EXPECT_TRUE(kExpected[test]->Equals(result));
+    }
+  }
+
+  EXPECT_EQ(i, ipc_sender_.sent_end());
 }
 
 struct HeaderModificationTest_Header {
@@ -624,16 +882,8 @@ namespace {
 
 void TestInitFromValue(const std::string& values, bool expected_return_code,
                        int expected_extra_info_spec) {
-  // Create a ListValue of strings.
-  std::vector<std::string> split_values;
-  scoped_ptr<base::ListValue> list_value(new base::ListValue());
-  size_t num_values = Tokenize(values, ",", &split_values);
-  for (size_t i = 0; i < num_values ; ++i)
-    list_value->Append(new base::StringValue(split_values[i]));
   int actual_info_spec;
-  bool actual_return_code =
-      ExtensionWebRequestEventRouter::ExtraInfoSpec::InitFromValue(
-          *list_value, &actual_info_spec);
+  bool actual_return_code = GenerateInfoSpec(values, &actual_info_spec);
   EXPECT_EQ(expected_return_code, actual_return_code);
   if (expected_return_code)
     EXPECT_EQ(expected_extra_info_spec, actual_info_spec);
@@ -660,6 +910,20 @@ TEST_F(ExtensionWebRequestTest, InitFromValue) {
       "asyncBlocking",
       true,
       ExtensionWebRequestEventRouter::ExtraInfoSpec::ASYNC_BLOCKING);
+  {
+    Feature::ScopedCurrentChannel sc(VersionInfo::CHANNEL_BETA);
+    TestInitFromValue(
+        "requestBody",
+        true,
+        0);
+  }
+  {
+    Feature::ScopedCurrentChannel sc(VersionInfo::CHANNEL_DEV);
+    TestInitFromValue(
+        "requestBody",
+        true,
+        ExtensionWebRequestEventRouter::ExtraInfoSpec::REQUEST_BODY);
+  }
 
   // Multiple valid values are bitwise-or'ed.
   TestInitFromValue(
@@ -1639,4 +1903,3 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnAuthRequiredResponses) {
   EXPECT_TRUE(ContainsKey(conflicting_extensions, "extid2"));
   EXPECT_EQ(3u, capturing_net_log.GetSize());
 }
-

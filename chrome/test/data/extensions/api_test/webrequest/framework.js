@@ -268,7 +268,7 @@ function initListeners(filter, extraInfoSpec) {
   chrome.webRequest.onBeforeRequest.addListener(
       function(details) {
     return captureEvent("onBeforeRequest", details);
-  }, filter, intersect(extraInfoSpec, ["blocking"]));
+  }, filter, intersect(extraInfoSpec, ["blocking", "requestBody"]));
   chrome.webRequest.onBeforeSendHeaders.addListener(
       function(details) {
     return captureEvent("onBeforeSendHeaders", details);

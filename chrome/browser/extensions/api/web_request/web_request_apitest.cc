@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/features/feature.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -23,6 +24,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
 using content::WebContents;
+using extensions::Feature;
 
 namespace {
 
@@ -227,4 +229,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        WebRequestDeclarativePermissionSplit2) {
   // Test split without incognito permission.
   RunPermissionTest("split", false, false, "redirected1", "");
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, PostData) {
+  // Request body access is only enabled on dev (and canary).
+  Feature::ScopedCurrentChannel sc(chrome::VersionInfo::CHANNEL_DEV);
+  ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_post.html")) <<
+      message_;
 }

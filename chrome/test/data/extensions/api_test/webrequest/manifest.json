@@ -9,6 +9,10 @@
     "simpleLoad/a.html",
     "complexLoad/a.html",
     "complexLoad/b.html",
-    "does_not_exist.html"
+    "does_not_exist.html",
+    "requestBody/multipart.html",
+    "requestBody/no-enctype.html",
+    "requestBody/plaintext.html",
+    "requestBody/urlencoded.html"
   ]
 }

@@ -87,6 +87,23 @@
             }
           }
         }
+      },
+      {
+        "id": "UploadData",
+        "type": "object",
+        "properties": {
+          "bytes": {
+            "type": "any",
+            "optional": true,
+            "description": "An ArrayBuffer with a copy of the data."
+          },
+          "file": {
+            "type": "string",
+            "optional": true,
+            "description": "A string with the file's path and name."
+          }
+        },
+        "description": "Contains data uploaded in a URL request."
       }
     ],
     "functions": [
@@ -114,6 +131,30 @@
               "method": {"type": "string", "description": "Standard HTTP method."},
               "frameId": {"type": "integer", "description": "The value 0 indicates that the request happens in the main frame; a positive value indicates the ID of a subframe in which the request happens. If the document of a (sub-)frame is loaded (<code>type</code> is <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code> indicates the ID of this frame, not the ID of the outer frame. Frame IDs are unique within a tab."},
               "parentFrameId": {"type": "integer", "description": "ID of frame that wraps the frame which sent the request. Set to -1 if no parent frame exists."},
+              "requestBody": {
+                "type": "object",
+                "optional": true,
+                "description": "Experimental feature, only available in DEV or CANARY channels. Container for request body data. Only provided if extraInfoSpec contains 'requestBody'. Currently only request body elements containing byte data or files are reported.",
+                "properties": {
+                  "error": {"type": "string", "optional": true, "description": "Errors when obtaining request body data."},
+                  "formData": {
+                    "type": "object",
+                    "optional": true,
+                    "description": "If the request method is POST and the body is a sequence of key-value pairs encoded in UTF8, encoded as either multipart/form-data, or application/x-www-form-urlencoded, this dictionary is present and for each key contains the list of all values for that key. If the data is of another media type, or if it is malformed, the dictionary is not present. An example value of this dictionary is {'key': ['value1', 'value2']}.",
+                    "properties": {},
+                    "additionalProperties": {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    }
+                  },
+                  "raw" : {
+                    "type": "array",
+                    "optional": true,
+                    "items": {"$ref": "UploadData"},
+                    "description": "If the request method is PUT or POST, and the body is not already parsed in formData, then the unparsed request body elements are contained in this array."
+                  }
+                }
+              },
               "tabId": {"type": "integer", "description": "The ID of the tab in which the request takes place. Set to -1 if the request isn't related to a tab."},
               "type": {"type": "string", "enum": ["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "xmlhttprequest", "other"], "description": "How the requested resource will be used."},
               "timeStamp": {"type": "number", "description": "The time when this signal is triggered, in milliseconds since the epoch."}
@@ -133,7 +174,7 @@
             "description": "Array of extra information that should be passed to the listener function.",
             "items": {
               "type": "string",
-              "enum": ["blocking"]
+              "enum": ["blocking", "requestBody"]
             }
           }
         ],

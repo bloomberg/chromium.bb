@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rule.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rules_registry.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api_helpers.h"
+#include "chrome/browser/extensions/api/web_request/upload_data_presenter.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_constants.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/browser/extensions/api/web_request/web_request_time_tracker.h"
@@ -36,6 +37,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -46,14 +48,21 @@
 #include "grit/generated_resources.h"
 #include "net/base/auth.h"
 #include "net/base/net_errors.h"
+#include "net/base/upload_data.h"
+#include "net/base/upload_element.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using base::DictionaryValue;
+using base::ListValue;
+using base::StringValue;
+using chrome::VersionInfo;
 using content::BrowserMessageFilter;
 using content::BrowserThread;
 using content::ResourceRequestInfo;
 using extensions::Extension;
+using extensions::Feature;
 
 using extensions::web_navigation_api_helpers::GetFrameId;
 
@@ -64,7 +73,7 @@ namespace web_request = extensions::api::web_request;
 namespace {
 
 // List of all the webRequest events.
-static const char* const kWebRequestEvents[] = {
+const char* const kWebRequestEvents[] = {
   keys::kOnBeforeRedirect,
   keys::kOnBeforeRequest,
   keys::kOnBeforeSendHeaders,
@@ -77,6 +86,12 @@ static const char* const kWebRequestEvents[] = {
 };
 
 #define ARRAYEND(array) (array + arraysize(array))
+
+// Access to request body (crbug.com/91191/) is currently only enabled in dev
+// and canary channels.
+bool IsWebRequestBodyDataAccessEnabled() {
+  return Feature::GetCurrentChannel() <= VersionInfo::CHANNEL_DEV;
+}
 
 bool IsWebRequestEvent(const std::string& event_name) {
   return std::find(kWebRequestEvents, ARRAYEND(kWebRequestEvents),
@@ -156,6 +171,44 @@ void ExtractRequestInfo(net::URLRequest* request, DictionaryValue* out) {
   out->SetInteger(keys::kTabIdKey, tab_id);
   out->SetString(keys::kTypeKey, helpers::ResourceTypeToString(resource_type));
   out->SetDouble(keys::kTimeStampKey, base::Time::Now().ToDoubleT() * 1000);
+}
+
+// Extracts the body from |request| and writes the data into |out|.
+void ExtractRequestInfoBody(const net::URLRequest* request,
+                            DictionaryValue* out) {
+  if (request->method() != "POST" && request->method() != "PUT")
+    return;  // Need to exit without "out->Set(keys::kRequestBodyKey, ...);" .
+
+  DictionaryValue* requestBody = new DictionaryValue();
+  out->Set(keys::kRequestBodyKey, requestBody);
+
+  // Get the data presenters, ordered by how specific they are.
+  extensions::ParsedDataPresenter parsed_data_presenter(request);
+  extensions::RawDataPresenter raw_data_presenter;
+  extensions::UploadDataPresenter* const presenters[] = {
+    &parsed_data_presenter,    // 1: any parseable forms? (Specific to forms.)
+    &raw_data_presenter        // 2: any data at all? (Non-specific.)
+  };
+  // Keys for the results of the corresponding presenters.
+  static const char* const kKeys[] = {
+    keys::kRequestBodyFormDataKey,
+    keys::kRequestBodyRawKey
+  };
+
+  const std::vector<net::UploadElement>* elements =
+      request->get_upload()->elements();
+  bool some_succeeded = false;
+  for (size_t i = 0; !some_succeeded && i < arraysize(presenters); ++i) {
+    std::vector<net::UploadElement>::const_iterator element;
+    for (element = elements->begin(); element != elements->end(); ++element)
+      presenters[i]->FeedNext(*element);
+    if (presenters[i]->Succeeded()) {
+      requestBody->Set(kKeys[i], presenters[i]->Result().release());
+      some_succeeded = true;
+    }
+  }
+  if (!some_succeeded)
+    requestBody->SetString(keys::kRequestBodyErrorKey, "Unknown error.");
 }
 
 // Converts a HttpHeaders dictionary to a |name|, |value| pair. Returns
@@ -406,6 +459,9 @@ bool ExtensionWebRequestEventRouter::ExtraInfoSpec::InitFromValue(
       *extra_info_spec |= BLOCKING;
     else if (str == "asyncBlocking")
       *extra_info_spec |= ASYNC_BLOCKING;
+    else if (str == "requestBody")
+      *extra_info_spec |=
+          IsWebRequestBodyDataAccessEnabled() ? REQUEST_BODY : 0;
     else
       return false;
 
@@ -496,6 +552,8 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
     ListValue args;
     DictionaryValue* dict = new DictionaryValue();
     ExtractRequestInfo(request, dict);
+    if (extra_info_spec & ExtraInfoSpec::REQUEST_BODY)
+      ExtractRequestInfoBody(request, dict);
     args.Append(dict);
 
     initialize_blocked_requests |=

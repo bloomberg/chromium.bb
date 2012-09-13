@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/api/web_request/web_request_permissions.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/url_pattern_set.h"
 #include "ipc/ipc_sender.h"
 #include "net/base/completion_callback.h"
@@ -99,6 +100,7 @@ class ExtensionWebRequestEventRouter
       RESPONSE_HEADERS = 1<<1,
       BLOCKING = 1<<2,
       ASYNC_BLOCKING = 1<<3,
+      REQUEST_BODY = 1<<4,
     };
 
     static bool InitFromValue(const base::ListValue& value,

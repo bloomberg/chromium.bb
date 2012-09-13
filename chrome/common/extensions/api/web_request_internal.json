@@ -26,7 +26,7 @@
             "description": "Array of extra information that should be passed to the listener function.",
             "items": {
               "type": "string",
-              "enum": ["requestHeaders", "responseHeaders", "blocking", "asyncBlocking"]
+              "enum": ["requestHeaders", "responseHeaders", "blocking", "asyncBlocking", "requestBody"]
             }
           },
           {"type": "string", "name": "eventName"},
