@@ -68,7 +68,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "2.10",
+  "version": "2.11",
   "entries": [
     {
       "id": 1,
@@ -666,6 +666,26 @@
       ],
       "blacklist": [
         "accelerated_video_decode"
+      ]
+    },
+    {
+      "id": 49,
+      "description": "NVidia GeForce GT 650M can cause the system to hang with flash 3D.",
+      "cr_bugs": [140175],
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": "between",
+          "number": "10.8.0",
+          "number2": "10.8.1"
+        }
+      },
+      "multi_gpu_style": "optimus",
+      "vendor_id": "0x10de",
+      "device_id": ["0x0fd5"],
+      "blacklist": [
+        "flash_3d",
+        "flash_stage3d"
       ]
     }
   ]
