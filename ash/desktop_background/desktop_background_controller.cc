@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/threading/worker_pool.h"
+#include "grit/ui_resources.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"

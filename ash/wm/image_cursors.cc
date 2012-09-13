@@ -8,7 +8,6 @@
 #include "ui/base/cursor/cursor_loader.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/gfx/point.h"
-#include "grit/ash_resources.h"
 #include "grit/ui_resources.h"
 
 namespace {

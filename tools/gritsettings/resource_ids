@@ -54,9 +54,6 @@
   "ui/resources/ui_resources.grd": {
     "structures": [6000],
   },
-  "ash/resources/ash_resources.grd": {
-    "structures": [6200],
-  },
   "chrome/app/theme/theme_resources.grd": {
     "includes": [6500],
     "structures": [7000],
