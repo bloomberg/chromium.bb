@@ -9,11 +9,13 @@
 namespace ui {
 
 void Cursor::RefCustomCursor() {
-  ui::RefCustomXCursor(platform_cursor_);
+  if (platform_cursor_)
+    ui::RefCustomXCursor(platform_cursor_);
 }
 
 void Cursor::UnrefCustomCursor() {
-  ui::UnrefCustomXCursor(platform_cursor_);
+  if (platform_cursor_)
+    ui::UnrefCustomXCursor(platform_cursor_);
 }
 
 }  // namespace ui

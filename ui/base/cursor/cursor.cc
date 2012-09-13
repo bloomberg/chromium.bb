@@ -42,9 +42,9 @@ void Cursor::SetPlatformCursor(const PlatformCursor& platform) {
 void Cursor::Assign(const Cursor& cursor) {
   if (*this == cursor)
     return;
-  native_type_ = cursor.native_type_;
   if (native_type_ == kCursorCustom)
     UnrefCustomCursor();
+  native_type_ = cursor.native_type_;
   platform_cursor_ = cursor.platform_cursor_;
   if (native_type_ == kCursorCustom)
     RefCustomCursor();
