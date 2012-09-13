@@ -90,22 +90,19 @@ FaviconService::Handle FaviconService::GetFavicon(
   return request->handle();
 }
 
-FaviconService::Handle FaviconService::UpdateFaviconMappingAndFetch(
+FaviconService::Handle FaviconService::UpdateFaviconMappingsAndFetch(
     const GURL& page_url,
-    const GURL& icon_url,
-    history::IconType icon_type,
+    const std::vector<GURL>& icon_urls,
+    int icon_types,
+    int desired_size_in_dip,
+    const std::vector<ui::ScaleFactor>& desired_scale_factors,
     CancelableRequestConsumerBase* consumer,
     const FaviconResultsCallback& callback) {
   GetFaviconRequest* request = new GetFaviconRequest(callback);
   AddRequest(request, consumer);
   if (history_service_) {
-    std::vector<GURL> icon_urls;
-    icon_urls.push_back(icon_url);
-    // TODO(pkotwicz): Pass in |desired_size_in_dip| and |desired_scale_factors|
-    // from FaviconHandler.
     history_service_->UpdateFaviconMappingsAndFetch(request, page_url,
-        icon_urls, icon_type, gfx::kFaviconSize,
-        ui::GetSupportedScaleFactors());
+        icon_urls, icon_types, desired_size_in_dip, desired_scale_factors);
   } else {
     ForwardEmptyResultAsync(request);
   }
@@ -193,25 +190,60 @@ void FaviconService::SetImportedFavicons(
     history_service_->SetImportedFavicons(favicon_usage);
 }
 
-void FaviconService::SetFavicon(const GURL& page_url,
-                                const GURL& icon_url,
-                                const std::vector<unsigned char>& image_data,
-                                history::IconType icon_type) {
+void FaviconService::MergeFavicon(
+    const GURL& page_url,
+    const GURL& icon_url,
+    history::IconType icon_type,
+    scoped_refptr<base::RefCountedMemory> bitmap_data,
+    const gfx::Size& pixel_size) {
   if (history_service_) {
-    // TODO(pkotwicz): Pass in the real pixel size of |image_data|.
-    history::FaviconBitmapData bitmap_data_element;
-    bitmap_data_element.bitmap_data = new base::RefCountedBytes(image_data);
-    bitmap_data_element.pixel_size = gfx::Size();
-    bitmap_data_element.icon_url = icon_url;
-    std::vector<history::FaviconBitmapData> favicon_bitmap_data;
-    favicon_bitmap_data.push_back(bitmap_data_element);
-    history::FaviconSizes favicon_sizes;
-    favicon_sizes.push_back(gfx::Size());
-    history::IconURLSizesMap icon_url_sizes;
-    icon_url_sizes[icon_url] = favicon_sizes;
-    history_service_->SetFavicons(page_url, icon_type,
-        favicon_bitmap_data, icon_url_sizes);
+    history_service_->MergeFavicon(page_url, icon_url, icon_type, bitmap_data,
+                                   pixel_size);
   }
+}
+
+void FaviconService::SetFavicons(
+    const GURL& page_url,
+    const GURL& icon_url,
+    history::IconType icon_type,
+    const gfx::Image& image) {
+  if (!history_service_)
+    return;
+
+  gfx::ImageSkia image_skia = image.AsImageSkia();
+  image_skia.EnsureRepsForSupportedScaleFactors();
+  const std::vector<gfx::ImageSkiaRep>& image_reps = image_skia.image_reps();
+  std::vector<history::FaviconBitmapData> favicon_bitmap_data;
+  history::FaviconSizes favicon_sizes;
+  for (size_t i = 0; i < image_reps.size(); ++i) {
+    scoped_refptr<base::RefCountedBytes> bitmap_data(
+        new base::RefCountedBytes());
+    if (gfx::PNGCodec::EncodeBGRASkBitmap(image_reps[i].sk_bitmap(),
+                                          false,
+                                          &bitmap_data->data())) {
+      gfx::Size pixel_size(image_reps[i].pixel_width(),
+                           image_reps[i].pixel_height());
+      history::FaviconBitmapData bitmap_data_element;
+      bitmap_data_element.bitmap_data = bitmap_data;
+      bitmap_data_element.pixel_size = pixel_size;
+      bitmap_data_element.icon_url = icon_url;
+
+      favicon_bitmap_data.push_back(bitmap_data_element);
+
+      // Construct favicon sizes from a guess at what the HTML 5 'sizes'
+      // attribute in the link tag is.
+      // TODO(pkotwicz): Plumb the HTML 5 sizes attribute to FaviconHandler.
+      favicon_sizes.push_back(pixel_size);
+    }
+  }
+
+  // TODO(pkotwicz): Tell the database about all the icon URLs associated
+  // with |page_url|.
+  history::IconURLSizesMap icon_url_sizes;
+  icon_url_sizes[icon_url] = favicon_sizes;
+
+  history_service_->SetFavicons(page_url, icon_type, favicon_bitmap_data,
+      icon_url_sizes);
 }
 
 FaviconService::~FaviconService() {

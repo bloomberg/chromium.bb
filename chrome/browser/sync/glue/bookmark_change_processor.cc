@@ -25,6 +25,7 @@
 #include "sync/internal_api/public/write_node.h"
 #include "sync/internal_api/public/write_transaction.h"
 #include "sync/syncable/entry.h"  // TODO(tim): Investigating bug 121587.
+#include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image_util.h"
 
 using content::BrowserThread;
@@ -642,10 +643,18 @@ void BookmarkChangeProcessor::ApplyBookmarkFavicon(
 
   history->AddPageNoVisitForBookmark(bookmark_node->url(),
                                      bookmark_node->GetTitle());
-  favicon_service->SetFavicon(bookmark_node->url(),
-                              fake_icon_url,
-                              icon_bytes_vector,
-                              history::FAVICON);
+  // The client may have cached the favicon at 2x. Use MergeFavicon() as not to
+  // overwrite the cached 2x favicon bitmap. Sync favicons are always
+  // gfx::kFaviconSize in width and height. Store the favicon into history
+  // as such.
+  scoped_refptr<base::RefCountedMemory> bitmap_data(
+      new base::RefCountedBytes(icon_bytes_vector));
+  gfx::Size pixel_size(gfx::kFaviconSize, gfx::kFaviconSize);
+  favicon_service->MergeFavicon(bookmark_node->url(),
+                                fake_icon_url,
+                                history::FAVICON,
+                                bitmap_data,
+                                pixel_size);
 }
 
 // static

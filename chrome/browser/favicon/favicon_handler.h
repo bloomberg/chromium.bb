@@ -155,10 +155,11 @@ class FaviconHandler {
       CancelableRequestConsumerBase* consumer,
       const FaviconService::FaviconResultsCallback& callback);
 
-  virtual void SetHistoryFavicon(const GURL& page_url,
-                                 const GURL& icon_url,
-                                 const std::vector<unsigned char>& image_data,
-                                 history::IconType icon_type);
+  virtual void SetHistoryFavicons(
+      const GURL& page_url,
+      const GURL& icon_url,
+      history::IconType icon_type,
+      const gfx::Image& image);
 
   virtual FaviconService* GetFaviconService();
 

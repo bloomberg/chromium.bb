@@ -113,12 +113,8 @@ void FaviconTabHelper::SaveFavicon() {
       favicon.image.IsEmpty()) {
     return;
   }
-  std::vector<unsigned char> image_data;
-  // TODO: Save all representations.
-  gfx::PNGCodec::EncodeBGRASkBitmap(
-      favicon.image.AsBitmap(), false, &image_data);
-  service->SetFavicon(
-      entry->GetURL(), favicon.url, image_data, history::FAVICON);
+  service->SetFavicons(entry->GetURL(), favicon.url, history::FAVICON,
+                       favicon.image);
 }
 
 int FaviconTabHelper::DownloadImage(const GURL& image_url,

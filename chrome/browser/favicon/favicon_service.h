@@ -85,11 +85,11 @@ class FaviconService : public CancelableRequestProvider,
   //    The third argument is a map of the icon URLs mapped to |page_url| to
   //    the sizes at which the favicon is available from the web.
   // b) If the callback is called as a result of GetFavicon() or
-  //    UpdateFaviconMappingAndFetch():
-  //    The third argument is a map with a single element with the passed in
-  //    |icon_url| to the vector of sizes of the favicon bitmaps at that URL. If
-  //    |icon_url| is not known to the history backend, an empty map is
-  //    returned.
+  //    UpdateFaviconMappingsAndFetch():
+  //    The third argument is a map of the subset of |icon_urls| known to the
+  //    history backend to a vector of sizes of the favicon bitmaps at each
+  //    URL. If none of |icon_urls| are known to the history backend, an empty
+  //    map is returned.
   // See history_types.h for more information about IconURLSizesMap.
   typedef base::Callback<
       void(Handle,  // handle
@@ -127,16 +127,33 @@ class FaviconService : public CancelableRequestProvider,
                     CancelableRequestConsumerBase* consumer,
                     const FaviconResultsCallback& callback);
 
-  // Fetches the |icon_type| of favicon at |icon_url|, sending the results to
-  // the given |callback|. If the favicon has previously been set via
-  // SetFavicon(), then the favicon URL for |page_url| and all redirects is set
-  // to |icon_url|. If the favicon has not been set, the database is not
-  // updated.
-  Handle UpdateFaviconMappingAndFetch(const GURL& page_url,
-                                      const GURL& icon_url,
-                                      history::IconType icon_type,
-                                      CancelableRequestConsumerBase* consumer,
-                                      const FaviconResultsCallback& callback);
+  // Set the favicon mappings to |page_url| for |icon_types| in the history
+  // database.
+  // Sample |icon_urls|:
+  //  { ICON_URL1 -> TOUCH_ICON, known to the database,
+  //    ICON_URL2 -> TOUCH_ICON, not known to the database,
+  //    ICON_URL3 -> TOUCH_PRECOMPOSED_ICON, known to the database }
+  // The new mappings are computed from |icon_urls| with these rules:
+  // 1) Any urls in |icon_urls| which are not already known to the database are
+  //    rejected.
+  //    Sample new mappings to |page_url|: { ICON_URL1, ICON_URL3 }
+  // 2) If |icon_types| has multiple types, the mappings are only set for the
+  //    largest icon type.
+  //    Sample new mappings to |page_url|: { ICON_URL3 }
+  // |icon_types| can only have multiple IconTypes if
+  // |icon_types| == TOUCH_ICON | TOUCH_PRECOMPOSED_ICON.
+  // The favicon bitmaps which most closely match |desired_size_in_dip|
+  // and |desired_scale_factors| from the favicons which were just mapped
+  // to |page_url| are returned. If |desired_size_in_dip| is 0, the
+  // largest favicon bitmap is returned.
+  Handle UpdateFaviconMappingsAndFetch(
+      const GURL& page_url,
+      const std::vector<GURL>& icon_urls,
+      int icon_types,
+      int desired_size_in_dip,
+      const std::vector<ui::ScaleFactor>& desired_scale_factors,
+      CancelableRequestConsumerBase* consumer,
+      const FaviconResultsCallback& callback);
 
   // Requests the favicons of any of |icon_types| whose pixel sizes most
   // closely match |desired_size_in_dip| and desired scale factors for a web
@@ -184,11 +201,42 @@ class FaviconService : public CancelableRequestProvider,
   void SetImportedFavicons(
       const std::vector<history::ImportedFaviconUsage>& favicon_usage);
 
-  // Sets the favicon for a page.
-  void SetFavicon(const GURL& page_url,
-                  const GURL& icon_url,
-                  const std::vector<unsigned char>& image_data,
-                  history::IconType icon_type);
+  // Set the favicon for |page_url| for |icon_type| in the thumbnail database.
+  // Unlike SetFavicons(), this method will not delete preexisting bitmap data
+  // which is associated to |page_url| if at all possible. Use this method if
+  // the favicon bitmaps for any of ui::GetSupportedScaleFactors() are not
+  // known. If a favicon bitmap at |icon_url| with |pixel_size| is already in
+  // the database:
+  //   The favicon bitmap for |icon_url| will be updated with |bitmap_data|.
+  // If a favicon bitmap at |icon_url| with |pixel_size| is not in the database:
+  //   A new favicon bitmap (and favicon if necessary) will be created. The
+  //   favicon sizes for |icon_url| will be set to the default favicon sizes to
+  //   indicate that the favicon sizes are no longer known.
+  //   Arbitrary favicons and favicon bitmaps associated to |page_url| and
+  //   |icon_url| may be deleted in order to maintain the restriction for the
+  //   max favicons per page, and max favicon bitmaps per icon URL.
+  // TODO(pkotwicz): Remove once no longer required by sync.
+  void MergeFavicon(const GURL& page_url,
+                    const GURL& icon_url,
+                    history::IconType icon_type,
+                    scoped_refptr<base::RefCountedMemory> bitmap_data,
+                    const gfx::Size& pixel_size);
+
+  // Set the favicon for |page_url| for |icon_type| in the thumbnail database.
+  // |icon_url| is the single favicon to map to |page_url|. Mappings from
+  // |page_url| to favicons at different icon URLs will be deleted.
+  // A favicon bitmap is added for each image rep in |image|. Any preexisting
+  // bitmap data for |icon_url| is deleted. It is important that |image|
+  // contains image reps for all of ui::GetSupportedScaleFactors(). Use
+  // MergeFavicon() if it does not.
+  // TODO(pkotwicz): Save unresized favicon bitmaps to the database.
+  // TODO(pkotwicz): Support adding favicons for multiple icon URLs to the
+  // thumbnail database.
+  void SetFavicons(
+      const GURL& page_url,
+      const GURL& icon_url,
+      history::IconType icon_type,
+      const gfx::Image& image);
 
  private:
   HistoryService* history_service_;

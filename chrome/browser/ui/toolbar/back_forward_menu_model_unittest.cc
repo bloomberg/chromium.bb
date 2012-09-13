@@ -515,8 +515,6 @@ TEST_F(BackFwdMenuModelTest, FaviconLoadTest) {
   back_model.SetMenuModelDelegate(&favicon_delegate);
 
   SkBitmap new_icon_bitmap(CreateBitmap(SK_ColorRED));
-  std::vector<unsigned char> icon_data;
-  gfx::PNGCodec::EncodeBGRASkBitmap(new_icon_bitmap, false, &icon_data);
 
   GURL url1 = GURL("http://www.a.com/1");
   GURL url2 = GURL("http://www.a.com/2");
@@ -531,8 +529,8 @@ TEST_F(BackFwdMenuModelTest, FaviconLoadTest) {
       profile(), Profile::EXPLICIT_ACCESS)->AddPage(
           url1, history::SOURCE_BROWSED);
   FaviconServiceFactory::GetForProfile(
-      profile(), Profile::EXPLICIT_ACCESS)->SetFavicon(
-          url1, url1_favicon, icon_data, history::FAVICON);
+      profile(), Profile::EXPLICIT_ACCESS)->SetFavicons(
+          url1, url1_favicon, history::FAVICON, gfx::Image(new_icon_bitmap));
 
   // Will return the current icon (default) but start an anync call
   // to retrieve the favicon from the favicon service.

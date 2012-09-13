@@ -249,11 +249,8 @@ void FaviconHandler::SetFavicon(
     const GURL& icon_url,
     const gfx::Image& image,
     history::IconType icon_type) {
-  if (GetFaviconService() && ShouldSaveFavicon(url)) {
-    std::vector<unsigned char> image_data;
-    if (gfx::PNGEncodedDataFromImage(image, &image_data))
-      SetHistoryFavicon(url, icon_url, image_data, icon_type);
-  }
+  if (GetFaviconService() && ShouldSaveFavicon(url))
+    SetHistoryFavicons(url, icon_url, icon_type, image);
 
   if (UrlMatches(url, url_) && icon_type == history::FAVICON) {
     NavigationEntry* entry = GetEntry();
@@ -424,8 +421,13 @@ void FaviconHandler::UpdateFaviconMappingAndFetch(
     history::IconType icon_type,
     CancelableRequestConsumerBase* consumer,
     const FaviconService::FaviconResultsCallback& callback) {
-  GetFaviconService()->UpdateFaviconMappingAndFetch(page_url, icon_url,
-      icon_type, consumer, callback);
+  // TODO(pkotwicz): pass in all of |image_urls_| to
+  // UpdateFaviconMappingsAndFetch().
+  std::vector<GURL> icon_urls;
+  icon_urls.push_back(icon_url);
+  GetFaviconService()->UpdateFaviconMappingsAndFetch(page_url, icon_urls,
+      icon_type, preferred_icon_size(), ui::GetSupportedScaleFactors(),
+      consumer, callback);
 }
 
 void FaviconHandler::GetFavicon(
@@ -448,12 +450,11 @@ void FaviconHandler::GetFaviconForURL(
       ui::GetSupportedScaleFactors(), callback);
 }
 
-void FaviconHandler::SetHistoryFavicon(
-    const GURL& page_url,
-    const GURL& icon_url,
-    const std::vector<unsigned char>& image_data,
-    history::IconType icon_type) {
-  GetFaviconService()->SetFavicon(page_url, icon_url, image_data, icon_type);
+void FaviconHandler::SetHistoryFavicons(const GURL& page_url,
+                                        const GURL& icon_url,
+                                        history::IconType icon_type,
+                                        const gfx::Image& image) {
+  GetFaviconService()->SetFavicons(page_url, icon_url, icon_type, image);
 }
 
 bool FaviconHandler::ShouldSaveFavicon(const GURL& url) {

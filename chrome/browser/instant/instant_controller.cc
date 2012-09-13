@@ -345,14 +345,8 @@ TabContents* InstantController::ReleasePreviewContents(InstantCommitType type) {
         preview->profile(), Profile::EXPLICIT_ACCESS);
     if (favicon_service && entry->GetFavicon().valid &&
         entry->GetFavicon().image.IsEmpty()) {
-      std::vector<unsigned char> image_data;
-      // TODO: Add all variants once the history service supports it.
-      gfx::PNGCodec::EncodeBGRASkBitmap(
-          entry->GetFavicon().image.AsBitmap(), false, &image_data);
-      favicon_service->SetFavicon(entry->GetURL(),
-                                  entry->GetFavicon().url,
-                                  image_data,
-                                  history::FAVICON);
+      favicon_service->SetFavicons(entry->GetURL(), entry->GetFavicon().url,
+          history::FAVICON, entry->GetFavicon().image);
     }
   }
 

@@ -300,12 +300,15 @@ class TestFaviconHandler : public FaviconHandler {
     return download_id_;
   }
 
-  virtual void SetHistoryFavicon(const GURL& page_url,
-                                 const GURL& icon_url,
-                                 const std::vector<unsigned char>& bitmap_data,
-                                 history::IconType icon_type) OVERRIDE {
+  virtual void SetHistoryFavicons(const GURL& page_url,
+                                  const GURL& icon_url,
+                                  history::IconType icon_type,
+                                  const gfx::Image& image) OVERRIDE {
+    std::vector<unsigned char> bitmap_data;
+    if (!image.IsEmpty())
+      bitmap_data = *image.ToImagePNG();
     history_handler_.reset(new HistoryRequestHandler(
-        page_url, icon_url,icon_type, bitmap_data,
+        page_url, icon_url, icon_type, bitmap_data,
         FaviconService::FaviconResultsCallback()));
   }
 
