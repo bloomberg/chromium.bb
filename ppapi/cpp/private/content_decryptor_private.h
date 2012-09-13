@@ -28,15 +28,15 @@ class ContentDecryptor_Private {
   // TODO(tomfinegan): This could be optimized to pass pp::Var instead of
   // strings. The change would allow the CDM wrapper to reuse vars when
   // replying to the browser.
-  virtual bool GenerateKeyRequest(const std::string& key_system,
+  virtual void GenerateKeyRequest(const std::string& key_system,
                                   pp::VarArrayBuffer init_data) = 0;
-  virtual bool AddKey(const std::string& session_id,
+  virtual void AddKey(const std::string& session_id,
                       pp::VarArrayBuffer key,
                       pp::VarArrayBuffer init_data) = 0;
-  virtual bool CancelKeyRequest(const std::string& session_id) = 0;
-  virtual bool Decrypt(pp::Buffer_Dev encrypted_buffer,
+  virtual void CancelKeyRequest(const std::string& session_id) = 0;
+  virtual void Decrypt(pp::Buffer_Dev encrypted_buffer,
                        const PP_EncryptedBlockInfo& encrypted_block_info) = 0;
-  virtual bool DecryptAndDecode(
+  virtual void DecryptAndDecode(
       pp::Buffer_Dev encrypted_buffer,
       const PP_EncryptedBlockInfo& encrypted_block_info) = 0;
 

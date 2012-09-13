@@ -23,106 +23,101 @@ namespace {
 static const char kPPPContentDecryptorInterface[] =
     PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE;
 
-PP_Bool GenerateKeyRequest(PP_Instance instance,
-                           PP_Var key_system_arg,
-                           PP_Var init_data_arg) {
+void GenerateKeyRequest(PP_Instance instance,
+                        PP_Var key_system_arg,
+                        PP_Var init_data_arg) {
   void* object =
       Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
   if (!object)
-    return PP_FALSE;
+    return;
 
   pp::Var key_system_var(pp::PASS_REF, key_system_arg);
   if (key_system_var.is_string() == false)
-    return PP_FALSE;
+    return;
 
   pp::Var init_data_var(pp::PASS_REF, init_data_arg);
   if (init_data_var.is_array_buffer() == false)
-    return PP_FALSE;
+    return;
   pp::VarArrayBuffer init_data_array_buffer(init_data_var);
 
-  return PP_FromBool(
-      static_cast<ContentDecryptor_Private*>(object)->GenerateKeyRequest(
-          key_system_var.AsString(),
-          init_data_array_buffer));
+  static_cast<ContentDecryptor_Private*>(object)->GenerateKeyRequest(
+      key_system_var.AsString(),
+      init_data_array_buffer);
 }
 
-PP_Bool AddKey(PP_Instance instance,
-               PP_Var session_id_arg,
-               PP_Var key_arg,
-               PP_Var init_data_arg) {
+void AddKey(PP_Instance instance,
+            PP_Var session_id_arg,
+            PP_Var key_arg,
+            PP_Var init_data_arg) {
   void* object =
       Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
   if (!object)
-    return PP_FALSE;
+    return;
 
   pp::Var session_id_var(pp::PASS_REF, session_id_arg);
   if (session_id_var.is_string() == false)
-    return PP_FALSE;
+    return;
 
   pp::Var key_var(pp::PASS_REF, key_arg);
   if (key_var.is_array_buffer() == false)
-    return PP_FALSE;
+    return;
   pp::VarArrayBuffer key(key_var);
 
   pp::Var init_data_var(pp::PASS_REF, init_data_arg);
   if (init_data_var.is_array_buffer() == false)
-    return PP_FALSE;
+    return;
   pp::VarArrayBuffer init_data(init_data_var);
 
-  return PP_FromBool(
-      static_cast<ContentDecryptor_Private*>(object)->AddKey(
-          session_id_var.AsString(),
-          key,
-          init_data));
+
+  static_cast<ContentDecryptor_Private*>(object)->AddKey(
+      session_id_var.AsString(),
+      key,
+      init_data);
 }
 
-PP_Bool CancelKeyRequest(PP_Instance instance,
-                         PP_Var session_id_arg) {
+void CancelKeyRequest(PP_Instance instance, PP_Var session_id_arg) {
   void* object =
       Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
   if (!object)
-    return PP_FALSE;
+    return;
 
   pp::Var session_id_var(pp::PASS_REF, session_id_arg);
   if (session_id_var.is_string() == false)
-    return PP_FALSE;
+    return;
 
-  return PP_FromBool(
-      static_cast<ContentDecryptor_Private*>(object)->
-          CancelKeyRequest(session_id_var.AsString()));
+  static_cast<ContentDecryptor_Private*>(object)->CancelKeyRequest(
+      session_id_var.AsString());
 }
 
 
-PP_Bool Decrypt(PP_Instance instance,
-                PP_Resource encrypted_resource,
-                const PP_EncryptedBlockInfo* encrypted_block_info) {
+void Decrypt(PP_Instance instance,
+             PP_Resource encrypted_resource,
+             const PP_EncryptedBlockInfo* encrypted_block_info) {
   void* object =
       Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
   if (!object)
-    return PP_FALSE;
+    return;
 
   pp::Buffer_Dev encrypted_block(pp::PassRef(), encrypted_resource);
 
-  return PP_FromBool(
-      static_cast<ContentDecryptor_Private*>(object)->Decrypt(
-          encrypted_block,
-          *encrypted_block_info));
+  static_cast<ContentDecryptor_Private*>(object)->Decrypt(
+      encrypted_block,
+      *encrypted_block_info);
 }
 
-PP_Bool DecryptAndDecode(PP_Instance instance,
-                         PP_Resource encrypted_resource,
-                         const PP_EncryptedBlockInfo* encrypted_block_info) {
+void DecryptAndDecode(PP_Instance instance,
+                      PP_Resource encrypted_resource,
+                      const PP_EncryptedBlockInfo* encrypted_block_info) {
   void* object =
       Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
   if (!object)
-    return PP_FALSE;
+    return;
 
   pp::Buffer_Dev encrypted_block(pp::PassRef(), encrypted_resource);
 
-  return PP_FromBool(
-      static_cast<ContentDecryptor_Private*>(object)->DecryptAndDecode(
-          encrypted_block,
-          *encrypted_block_info));
+  static_cast<ContentDecryptor_Private*>(object)->DecryptAndDecode(
+      encrypted_block,
+      *encrypted_block_info);
 }
 
 const PPP_ContentDecryptor_Private ppp_content_decryptor = {

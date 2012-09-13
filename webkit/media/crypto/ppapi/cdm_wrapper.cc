@@ -72,16 +72,16 @@ class CdmWrapper : public pp::Instance,
   // return false if the call was not forwarded to the CDM and should return
   // true otherwise. Once the call reaches the CDM, the call result/status
   // should be reported through the PPB_ContentDecryptor_Private interface.
-  virtual bool GenerateKeyRequest(const std::string& key_system,
+  virtual void GenerateKeyRequest(const std::string& key_system,
                                   pp::VarArrayBuffer init_data) OVERRIDE;
-  virtual bool AddKey(const std::string& session_id,
+  virtual void AddKey(const std::string& session_id,
                       pp::VarArrayBuffer key,
                       pp::VarArrayBuffer init_data) OVERRIDE;
-  virtual bool CancelKeyRequest(const std::string& session_id) OVERRIDE;
-  virtual bool Decrypt(
+  virtual void CancelKeyRequest(const std::string& session_id) OVERRIDE;
+  virtual void Decrypt(
       pp::Buffer_Dev encrypted_buffer,
       const PP_EncryptedBlockInfo& encrypted_block_info) OVERRIDE;
-  virtual bool DecryptAndDecode(
+  virtual void DecryptAndDecode(
       pp::Buffer_Dev encrypted_buffer,
       const PP_EncryptedBlockInfo& encrypted_block_info) OVERRIDE;
 
@@ -120,14 +120,14 @@ CdmWrapper::~CdmWrapper() {
     DestroyCdmInstance(cdm_);
 }
 
-bool CdmWrapper::GenerateKeyRequest(const std::string& key_system,
+void CdmWrapper::GenerateKeyRequest(const std::string& key_system,
                                     pp::VarArrayBuffer init_data) {
   PP_DCHECK(!key_system.empty());
 
   if (!cdm_) {
     cdm_ = CreateCdmInstance();
     if (!cdm_)
-      return false;
+      return;
   }
 
   cdm::KeyMessage key_request;
@@ -141,7 +141,7 @@ bool CdmWrapper::GenerateKeyRequest(const std::string& key_system,
       key_request.message_size == 0) {
     CallOnMain(callback_factory_.NewCallback(&CdmWrapper::KeyError,
                                              std::string()));
-    return true;
+    return;
   }
 
   // TODO(xhwang): Remove unnecessary CallOnMain calls here and below once we
@@ -153,11 +153,9 @@ bool CdmWrapper::GenerateKeyRequest(const std::string& key_system,
   key_system_ = key_system;
   CallOnMain(callback_factory_.NewCallback(&CdmWrapper::KeyMessage,
                                            key_request));
-
-  return true;
 }
 
-bool CdmWrapper::AddKey(const std::string& session_id,
+void CdmWrapper::AddKey(const std::string& session_id,
                         pp::VarArrayBuffer key,
                         pp::VarArrayBuffer init_data) {
   const uint8_t* key_ptr = reinterpret_cast<const uint8_t*>(key.Map());
@@ -167,7 +165,7 @@ bool CdmWrapper::AddKey(const std::string& session_id,
   int init_data_size = init_data.ByteLength();
 
   if (!key_ptr || key_size <= 0 || !init_data_ptr || init_data_size <= 0)
-    return false;
+    return;
 
   PP_DCHECK(cdm_);
   cdm::Status status = cdm_->AddKey(session_id.data(), session_id.size(),
@@ -177,29 +175,23 @@ bool CdmWrapper::AddKey(const std::string& session_id,
   if (status != cdm::kSuccess) {
     CallOnMain(callback_factory_.NewCallback(&CdmWrapper::KeyError,
                                              session_id));
-    return true;
+    return;
   }
 
   CallOnMain(callback_factory_.NewCallback(&CdmWrapper::KeyAdded, session_id));
-  return true;
 }
 
-bool CdmWrapper::CancelKeyRequest(const std::string& session_id) {
+void CdmWrapper::CancelKeyRequest(const std::string& session_id) {
   PP_DCHECK(cdm_);
-
   cdm::Status status = cdm_->CancelKeyRequest(session_id.data(),
                                               session_id.size());
-
   if (status != cdm::kSuccess) {
     CallOnMain(callback_factory_.NewCallback(&CdmWrapper::KeyError,
                                              session_id));
-    return true;
   }
-
-  return true;
 }
 
-bool CdmWrapper::Decrypt(pp::Buffer_Dev encrypted_buffer,
+void CdmWrapper::Decrypt(pp::Buffer_Dev encrypted_buffer,
                          const PP_EncryptedBlockInfo& encrypted_block_info) {
   PP_DCHECK(!encrypted_buffer.is_null());
   PP_DCHECK(cdm_);
@@ -233,13 +225,11 @@ bool CdmWrapper::Decrypt(pp::Buffer_Dev encrypted_buffer,
       status,
       output_buffer,
       encrypted_block_info.tracking_info));
-  return true;
 }
 
-bool CdmWrapper::DecryptAndDecode(
+void CdmWrapper::DecryptAndDecode(
     pp::Buffer_Dev encrypted_buffer,
     const PP_EncryptedBlockInfo& encrypted_block_info) {
-  return false;
 }
 
 pp::Buffer_Dev CdmWrapper::MakeBufferResource(const uint8_t* data,

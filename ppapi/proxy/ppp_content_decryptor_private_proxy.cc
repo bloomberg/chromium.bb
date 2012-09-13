@@ -91,68 +91,68 @@ PP_Bool AddRefResourceForPlugin(HostDispatcher* dispatcher,
   return PP_TRUE;
 }
 
-PP_Bool GenerateKeyRequest(PP_Instance instance,
-                           PP_Var key_system,
-                           PP_Var init_data) {
+void GenerateKeyRequest(PP_Instance instance,
+                        PP_Var key_system,
+                        PP_Var init_data) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher) {
     NOTREACHED();
-    return PP_FALSE;
+    return;
   }
 
-  return PP_FromBool(dispatcher->Send(
+  dispatcher->Send(
       new PpapiMsg_PPPContentDecryptor_GenerateKeyRequest(
           API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
           instance,
           SerializedVarSendInput(dispatcher, key_system),
-          SerializedVarSendInput(dispatcher, init_data))));
+          SerializedVarSendInput(dispatcher, init_data)));
 }
 
-PP_Bool AddKey(PP_Instance instance,
-               PP_Var session_id,
-               PP_Var key,
-               PP_Var init_data) {
+void AddKey(PP_Instance instance,
+            PP_Var session_id,
+            PP_Var key,
+            PP_Var init_data) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher) {
     NOTREACHED();
-    return PP_FALSE;
+    return;
   }
 
-  return PP_FromBool(dispatcher->Send(
+  dispatcher->Send(
       new PpapiMsg_PPPContentDecryptor_AddKey(
           API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
           instance,
           SerializedVarSendInput(dispatcher, session_id),
           SerializedVarSendInput(dispatcher, key),
-          SerializedVarSendInput(dispatcher, init_data))));
+          SerializedVarSendInput(dispatcher, init_data)));
 }
 
-PP_Bool CancelKeyRequest(PP_Instance instance, PP_Var session_id) {
+void CancelKeyRequest(PP_Instance instance, PP_Var session_id) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher) {
     NOTREACHED();
-    return PP_FALSE;
+    return;
   }
 
-  return PP_FromBool(dispatcher->Send(
+  dispatcher->Send(
       new PpapiMsg_PPPContentDecryptor_CancelKeyRequest(
           API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
           instance,
-          SerializedVarSendInput(dispatcher, session_id))));
+          SerializedVarSendInput(dispatcher, session_id)));
 }
 
-PP_Bool Decrypt(PP_Instance instance,
+void Decrypt(PP_Instance instance,
                 PP_Resource encrypted_block,
                 const PP_EncryptedBlockInfo* encrypted_block_info) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher) {
     NOTREACHED();
-    return PP_FALSE;
+    return;
   }
 
   if (!AddRefResourceForPlugin(dispatcher, encrypted_block)) {
     NOTREACHED();
-    return PP_FALSE;
+    return;
   }
 
   HostResource host_resource;
@@ -160,13 +160,13 @@ PP_Bool Decrypt(PP_Instance instance,
 
   uint32_t size = 0;
   if (DescribeHostBufferResource(encrypted_block, &size) == PP_FALSE)
-    return PP_FALSE;
+    return;
 
   base::SharedMemoryHandle handle;
   if (ShareHostBufferResourceToPlugin(dispatcher,
                                       encrypted_block,
                                       &handle) == PP_FALSE)
-    return PP_FALSE;
+    return;
 
   PPPDecryptor_Buffer buffer;
   buffer.resource = host_resource;
@@ -175,28 +175,28 @@ PP_Bool Decrypt(PP_Instance instance,
 
   std::string serialized_block_info;
   if (!SerializeBlockInfo(*encrypted_block_info, &serialized_block_info))
-    return PP_FALSE;
+    return;
 
-  return PP_FromBool(dispatcher->Send(
+  dispatcher->Send(
       new PpapiMsg_PPPContentDecryptor_Decrypt(
           API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
           instance,
           buffer,
-          serialized_block_info)));
+          serialized_block_info));
 }
 
-PP_Bool DecryptAndDecode(PP_Instance instance,
-                         PP_Resource encrypted_block,
-                         const PP_EncryptedBlockInfo* encrypted_block_info) {
+void DecryptAndDecode(PP_Instance instance,
+                      PP_Resource encrypted_block,
+                      const PP_EncryptedBlockInfo* encrypted_block_info) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher) {
     NOTREACHED();
-    return PP_FALSE;
+    return;
   }
 
   if (!AddRefResourceForPlugin(dispatcher, encrypted_block)) {
     NOTREACHED();
-    return PP_FALSE;
+    return;
   }
 
   HostResource host_resource;
@@ -204,13 +204,13 @@ PP_Bool DecryptAndDecode(PP_Instance instance,
 
   uint32_t size = 0;
   if (DescribeHostBufferResource(encrypted_block, &size) == PP_FALSE)
-    return PP_FALSE;
+    return;
 
   base::SharedMemoryHandle handle;
   if (ShareHostBufferResourceToPlugin(dispatcher,
                                       encrypted_block,
                                       &handle) == PP_FALSE)
-    return PP_FALSE;
+    return;
 
   PPPDecryptor_Buffer buffer;
   buffer.resource = host_resource;
@@ -219,14 +219,14 @@ PP_Bool DecryptAndDecode(PP_Instance instance,
 
   std::string serialized_block_info;
   if (!SerializeBlockInfo(*encrypted_block_info, &serialized_block_info))
-    return PP_FALSE;
+    return;
 
-  return PP_FromBool(dispatcher->Send(
+  dispatcher->Send(
       new PpapiMsg_PPPContentDecryptor_DecryptAndDecode(
           API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
           instance,
           buffer,
-          serialized_block_info)));
+          serialized_block_info));
 }
 
 static const PPP_ContentDecryptor_Private content_decryptor_interface = {

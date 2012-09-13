@@ -4,7 +4,7 @@
  */
 
 /* From private/ppp_content_decryptor_private.idl,
- *   modified Tue Aug 28 09:32:44 2012.
+ *   modified Mon Sep 10 20:05:13 2012.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPP_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -59,15 +59,10 @@ struct PPP_ContentDecryptor_Private_0_1 {
    * @param[in] init_data A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_ARRAYBUFFER</code> containing container specific
    * initialization data.
-   *
-   * @return <code>PP_TRUE</code> if this call was forwarded to the CDM
-   * successfully, <code>PP_FALSE</code> otherwise. Once the call reaches the
-   * CDM, the call result/status should be reported through the
-   * <code>PPB_ContentDecryptor_Private</code> interface.
    */
-  PP_Bool (*GenerateKeyRequest)(PP_Instance instance,
-                                struct PP_Var key_system,
-                                struct PP_Var init_data);
+  void (*GenerateKeyRequest)(PP_Instance instance,
+                             struct PP_Var key_system,
+                             struct PP_Var init_data);
   /**
    * Provides a key or license to the decryptor for decrypting media data.
    *
@@ -89,28 +84,18 @@ struct PPP_ContentDecryptor_Private_0_1 {
    * @param[in] init_data A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_ARRAYBUFFER</code> containing container specific
    * initialization data.
-   *
-   * @return <code>PP_TRUE</code> if this call was forwarded to the CDM
-   * successfully, <code>PP_FALSE</code> otherwise. Once the call reaches the
-   * CDM, the call result/status should be reported through the
-   * <code>PPB_ContentDecryptor_Private</code> interface.
    */
-  PP_Bool (*AddKey)(PP_Instance instance,
-                    struct PP_Var session_id,
-                    struct PP_Var key,
-                    struct PP_Var init_data);
+  void (*AddKey)(PP_Instance instance,
+                 struct PP_Var session_id,
+                 struct PP_Var key,
+                 struct PP_Var init_data);
   /**
    * Cancels a pending key request for the specified session ID.
    *
    * @param[in] session_id A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_STRING</code> containing the session ID.
-   *
-   * @return <code>PP_TRUE</code> if this call was forwarded to the CDM
-   * successfully, <code>PP_FALSE</code> otherwise. Once the call reaches the
-   * CDM, the call result/status should be reported through the
-   * <code>PPB_ContentDecryptor_Private</code> interface.
    */
-  PP_Bool (*CancelKeyRequest)(PP_Instance instance, struct PP_Var session_id);
+  void (*CancelKeyRequest)(PP_Instance instance, struct PP_Var session_id);
   /**
    * Decrypts the block and returns the unencrypted block via
    * <code>DeliverBlock()</code> on the
@@ -124,16 +109,10 @@ struct PPP_ContentDecryptor_Private_0_1 {
    * @param[in] encrypted_block_info A <code>PP_EncryptedBlockInfo</code> that
    * contains all auxiliary information needed for decryption of the
    * <code>encrypted_block</code>.
-   *
-   * @return <code>PP_TRUE</code> if this call was forwarded to the CDM
-   * successfully, <code>PP_FALSE</code> otherwise. Once the call reaches the
-   * CDM, the call result/status should be reported through the
-   * <code>PPB_ContentDecryptor_Private</code> interface.
    */
-  PP_Bool (*Decrypt)(
-      PP_Instance instance,
-      PP_Resource encrypted_block,
-      const struct PP_EncryptedBlockInfo* encrypted_block_info);
+  void (*Decrypt)(PP_Instance instance,
+                  PP_Resource encrypted_block,
+                  const struct PP_EncryptedBlockInfo* encrypted_block_info);
   /**
    * Decrypts the block, decodes it, and returns the unencrypted uncompressed
    * (decoded) media to the browser via the
@@ -150,13 +129,8 @@ struct PPP_ContentDecryptor_Private_0_1 {
    * @param[in] encrypted_block_info A <code>PP_EncryptedBlockInfo</code> that
    * contains all auxiliary information needed for decryption of the
    * <code>encrypted_block</code>.
-   *
-   * @return <code>PP_TRUE</code> if this call was forwarded to the CDM
-   * successfully, <code>PP_FALSE</code> otherwise. Once the call reaches the
-   * CDM, the call result/status should be reported through the
-   * <code>PPB_ContentDecryptor_Private</code> interface.
    */
-  PP_Bool (*DecryptAndDecode)(
+  void (*DecryptAndDecode)(
       PP_Instance instance,
       PP_Resource encrypted_block,
       const struct PP_EncryptedBlockInfo* encrypted_block_info);

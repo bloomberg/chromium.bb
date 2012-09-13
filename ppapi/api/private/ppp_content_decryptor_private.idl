@@ -36,13 +36,8 @@ interface PPP_ContentDecryptor_Private {
    * @param[in] init_data A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_ARRAYBUFFER</code> containing container specific
    * initialization data.
-   *
-   * @return <code>PP_TRUE</code> if this call was forwarded to the CDM
-   * successfully, <code>PP_FALSE</code> otherwise. Once the call reaches the
-   * CDM, the call result/status should be reported through the
-   * <code>PPB_ContentDecryptor_Private</code> interface.
    */
-  PP_Bool GenerateKeyRequest(
+  void GenerateKeyRequest(
       [in] PP_Instance instance,
       [in] PP_Var key_system,
       [in] PP_Var init_data);
@@ -68,13 +63,8 @@ interface PPP_ContentDecryptor_Private {
    * @param[in] init_data A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_ARRAYBUFFER</code> containing container specific
    * initialization data.
-   *
-   * @return <code>PP_TRUE</code> if this call was forwarded to the CDM
-   * successfully, <code>PP_FALSE</code> otherwise. Once the call reaches the
-   * CDM, the call result/status should be reported through the
-   * <code>PPB_ContentDecryptor_Private</code> interface.
    */
-  PP_Bool AddKey(
+  void AddKey(
       [in] PP_Instance instance,
       [in] PP_Var session_id,
       [in] PP_Var key,
@@ -85,13 +75,8 @@ interface PPP_ContentDecryptor_Private {
    *
    * @param[in] session_id A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_STRING</code> containing the session ID.
-   *
-   * @return <code>PP_TRUE</code> if this call was forwarded to the CDM
-   * successfully, <code>PP_FALSE</code> otherwise. Once the call reaches the
-   * CDM, the call result/status should be reported through the
-   * <code>PPB_ContentDecryptor_Private</code> interface.
    */
-  PP_Bool CancelKeyRequest(
+  void CancelKeyRequest(
       [in] PP_Instance instance,
       [in] PP_Var session_id);
 
@@ -108,13 +93,8 @@ interface PPP_ContentDecryptor_Private {
    * @param[in] encrypted_block_info A <code>PP_EncryptedBlockInfo</code> that
    * contains all auxiliary information needed for decryption of the
    * <code>encrypted_block</code>.
-   *
-   * @return <code>PP_TRUE</code> if this call was forwarded to the CDM
-   * successfully, <code>PP_FALSE</code> otherwise. Once the call reaches the
-   * CDM, the call result/status should be reported through the
-   * <code>PPB_ContentDecryptor_Private</code> interface.
    */
-  PP_Bool Decrypt(
+  void Decrypt(
       [in] PP_Instance instance,
       [in] PP_Resource encrypted_block,
       [in] PP_EncryptedBlockInfo encrypted_block_info);
@@ -135,13 +115,8 @@ interface PPP_ContentDecryptor_Private {
    * @param[in] encrypted_block_info A <code>PP_EncryptedBlockInfo</code> that
    * contains all auxiliary information needed for decryption of the
    * <code>encrypted_block</code>.
-   *
-   * @return <code>PP_TRUE</code> if this call was forwarded to the CDM
-   * successfully, <code>PP_FALSE</code> otherwise. Once the call reaches the
-   * CDM, the call result/status should be reported through the
-   * <code>PPB_ContentDecryptor_Private</code> interface.
    */
-  PP_Bool DecryptAndDecode(
+  void DecryptAndDecode(
       [in] PP_Instance instance,
       [in] PP_Resource encrypted_block,
       [in] PP_EncryptedBlockInfo encrypted_block_info);
