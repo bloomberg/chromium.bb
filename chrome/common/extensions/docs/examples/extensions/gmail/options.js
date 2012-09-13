@@ -24,7 +24,8 @@ function getBackgroundPage(callback) {
 }
 
 function save() {
-  localStorage.customDomain = customDomainsTextbox.value;
+  localStorage.customDomain =
+      customDomainsTextbox.value.replace(/^\/?(.*?)\/?$/, '$1');
   markClean();
   getBackgroundPage(function(backgroundPage) {
     backgroundPage.startRequest({

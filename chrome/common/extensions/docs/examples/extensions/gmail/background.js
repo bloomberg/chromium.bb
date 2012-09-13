@@ -7,15 +7,14 @@
 var instanceId = 'gmc' + parseInt(Date.now() * Math.random(), 10);
 var animationFrames = 36;
 var animationSpeed = 10; // ms
-var canvas;
-var canvasContext;
-var loggedInImage;
+var canvas = document.getElementById('canvas');
+var loggedInImage = document.getElementById('logged_in');
+var canvasContext = canvas.getContext('2d');
 var pollIntervalMin = 5;  // 5 minutes
 var pollIntervalMax = 60;  // 1 hour
 var requestFailureCount = 0;  // used for exponential backoff
 var requestTimeout = 1000 * 2;  // 2 seconds
 var rotation = 0;
-var unreadCount = -1;
 var loadingAnimation = new LoadingAnimation();
 
 // Legacy support for pre-event-pages.
@@ -25,7 +24,7 @@ var requestTimerId;
 function getGmailUrl() {
   var url = "https://mail.google.com/";
   if (localStorage.customDomain)
-    url += localStorage.customDomain + "/";
+    url += localStorage.customDomain + '/';
   else
     url += "mail/"
   return url;
@@ -91,15 +90,8 @@ LoadingAnimation.prototype.stop = function() {
   this.timerId_ = 0;
 }
 
-function init() {
-  canvas = document.getElementById('canvas');
-  loggedInImage = document.getElementById('logged_in');
-  canvasContext = canvas.getContext('2d');
-  updateIcon();
-}
-
 function updateIcon() {
-  if (unreadCount == -1) {
+  if (!localStorage.hasOwnProperty('unreadCount')) {
     chrome.browserAction.setIcon({path:"gmail_not_logged_in.png"});
     chrome.browserAction.setBadgeBackgroundColor({color:[190, 190, 190, 230]});
     chrome.browserAction.setBadgeText({text:"?"});
@@ -107,7 +99,7 @@ function updateIcon() {
     chrome.browserAction.setIcon({path: "gmail_logged_in.png"});
     chrome.browserAction.setBadgeBackgroundColor({color:[208, 0, 24, 255]});
     chrome.browserAction.setBadgeText({
-      text: unreadCount != "0" ? unreadCount : ""
+      text: localStorage.unreadCount != "0" ? localStorage.unreadCount : ""
     });
   }
 }
@@ -117,6 +109,7 @@ function scheduleRequest() {
   var exponent = Math.pow(2, requestFailureCount);
   var multiplier = Math.max(randomness * exponent, 1);
   var delay = Math.min(multiplier * pollIntervalMin, pollIntervalMax);
+  console.log('Scheduling for: ' + delay);
 
   if (oldChromeVersion) {
     if (requestTimerId) {
@@ -149,7 +142,7 @@ function startRequest(params) {
     },
     function() {
       stopLoadingAnimation();
-      unreadCount = -1;
+      delete localStorage.unreadCount;
       updateIcon();
       doCallback();
     }
@@ -179,7 +172,7 @@ function getInboxCount(onSuccess, onError) {
   }
 
   try {
-    xhr.onreadystatechange = function(){
+    xhr.onreadystatechange = function() {
       if (xhr.readyState != 4)
         return;
 
@@ -218,8 +211,8 @@ function gmailNSResolver(prefix) {
 }
 
 function updateUnreadCount(count) {
-  var changed = unreadCount != count;
-  unreadCount = count;
+  var changed = localStorage.unreadCount != count;
+  localStorage.unreadCount = count;
   updateIcon();
   if (changed)
     animateFlip();
@@ -238,11 +231,7 @@ function animateFlip() {
     setTimeout(animateFlip, animationSpeed);
   } else {
     rotation = 0;
-    drawIconAtRotation();
-    chrome.browserAction.setBadgeText({
-      text: unreadCount != "0" ? unreadCount : ""
-    });
-    chrome.browserAction.setBadgeBackgroundColor({color:[208, 0, 24, 255]});
+    updateIcon();
   }
 }
 
@@ -263,35 +252,37 @@ function drawIconAtRotation() {
 }
 
 function goToInbox() {
+  console.log('Going to inbox...');
   chrome.tabs.getAllInWindow(undefined, function(tabs) {
     for (var i = 0, tab; tab = tabs[i]; i++) {
       if (tab.url && isGmailUrl(tab.url)) {
+        console.log('Found Gmail tab: ' + tab.url + '. ' +
+                    'Focusing and refreshing count...');
         chrome.tabs.update(tab.id, {selected: true});
         startRequest({scheduleRequest:false, showLoadingAnimation:false});
         return;
       }
     }
+    console.log('Could not find Gmail tab. Creating one...');
     chrome.tabs.create({url: getGmailUrl()});
   });
 }
-
-document.addEventListener('DOMContentLoaded', init);
 
 function onInit() {
   startRequest({scheduleRequest:true, showLoadingAnimation:true});
 }
 
-if (oldChromeVersion) {
-  onInit();
-} else {
-  chrome.runtime.onInstalled.addListener(onInit);
-}
-
 function onAlarm() {
   startRequest({scheduleRequest:true, showLoadingAnimation:false});
 }
-if (!oldChromeVersion)
+
+if (oldChromeVersion) {
+  updateIcon();
+  onInit();
+} else {
+  chrome.runtime.onInstalled.addListener(onInit);
   chrome.alarms.onAlarm.addListener(onAlarm);
+}
 
 var filters = {
   // TODO(aa): Cannot use urlPrefix because all the url fields lack the protocol
@@ -301,6 +292,8 @@ var filters = {
 
 chrome.webNavigation.onDOMContentLoaded.addListener(function(changeInfo) {
   if (changeInfo.url && isGmailUrl(changeInfo.url)) {
+    console.log('Recognized Gmail navigation to: ' + changeInfo.url + '.' +
+                'Refreshing count...');
     startRequest({scheduleRequest:false, showLoadingAnimation:false});
   }
 }, filters);
