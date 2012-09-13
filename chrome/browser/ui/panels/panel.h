@@ -241,7 +241,6 @@ class Panel : public BaseWindow,
 
   // Whether the panel window is always on top.
   void SetAlwaysOnTop(bool on_top);
-  bool always_on_top() const { return always_on_top_; }
 
   // Sets whether the panel is shown in preview mode. When the panel is
   // being dragged, it is in preview mode.
@@ -347,9 +346,6 @@ class Panel : public BaseWindow,
 
   // True if this panel auto resizes based on content.
   bool auto_resizable_;
-
-  // True if this panel should always stay on top of other windows.
-  bool always_on_top_;
 
   // True if this panel is in preview mode. When in preview mode, panel bounds
   // should not be affected by layout refresh. This is currently used by drag

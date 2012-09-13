@@ -36,6 +36,7 @@ NativePanel* Panel::CreateNativePanel(Panel* panel, const gfx::Rect& bounds) {
 PanelCocoa::PanelCocoa(Panel* panel, const gfx::Rect& bounds)
     : panel_(panel),
       bounds_(bounds),
+      always_on_top_(false),
       is_shown_(false),
       attention_request_id_(0) {
   controller_ = [[PanelWindowControllerCocoa alloc] initWithPanel:this];
@@ -214,7 +215,14 @@ void PanelCocoa::FullScreenModeChanged(
   [controller_ fullScreenModeChanged:is_full_screen];
 }
 
+bool PanelCocoa::IsPanelAlwaysOnTop() const {
+  return always_on_top_;
+}
+
 void PanelCocoa::SetPanelAlwaysOnTop(bool on_top) {
+  if (always_on_top_ == on_top)
+    return;
+  always_on_top_ = on_top;
   [controller_ updateWindowLevel];
 }
 

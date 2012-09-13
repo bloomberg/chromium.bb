@@ -202,6 +202,7 @@ NativePanel* Panel::CreateNativePanel(Panel* panel, const gfx::Rect& bounds) {
 PanelGtk::PanelGtk(Panel* panel, const gfx::Rect& bounds)
     : panel_(panel),
       bounds_(bounds),
+      always_on_top_(false),
       is_shown_(false),
       paint_state_(PAINT_AS_INACTIVE),
       is_drawing_attention_(false),
@@ -952,7 +953,15 @@ int PanelGtk::TitleOnlyHeight() const {
   return allocation.height;
 }
 
+bool PanelGtk::IsPanelAlwaysOnTop() const {
+  return always_on_top_;
+}
+
 void PanelGtk::SetPanelAlwaysOnTop(bool on_top) {
+  if (always_on_top_ == on_top)
+    return;
+  always_on_top_ = on_top;
+
   gtk_window_set_keep_above(window_, on_top);
 
   // Do not show an icon in the task bar for always-on-top windows.

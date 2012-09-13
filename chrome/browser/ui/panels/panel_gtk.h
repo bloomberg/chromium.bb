@@ -75,6 +75,7 @@ class PanelGtk : public NativePanel,
   virtual gfx::Size ContentSizeFromWindowSize(
       const gfx::Size& window_size) const OVERRIDE;
   virtual int TitleOnlyHeight() const OVERRIDE;
+  virtual bool IsPanelAlwaysOnTop() const OVERRIDE;
   virtual void SetPanelAlwaysOnTop(bool on_top) OVERRIDE;
   virtual void EnableResizeByMouse(bool enable) OVERRIDE;
   virtual void UpdatePanelMinimizeRestoreButtonVisibility() OVERRIDE;
@@ -156,6 +157,9 @@ class PanelGtk : public NativePanel,
 
   scoped_ptr<Panel> panel_;
   gfx::Rect bounds_;
+
+  // True if the panel should always stay on top of other windows.
+  bool always_on_top_;
 
   // True after panel has been shown.
   bool is_shown_;

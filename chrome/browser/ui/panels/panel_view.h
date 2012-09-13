@@ -55,6 +55,7 @@ class PanelView : public NativePanel,
   virtual void HandlePanelKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void FullScreenModeChanged(bool is_full_screen) OVERRIDE;
+  virtual bool IsPanelAlwaysOnTop() const OVERRIDE;
   virtual void SetPanelAlwaysOnTop(bool on_top) OVERRIDE;
   virtual void EnableResizeByMouse(bool enable) OVERRIDE;
   virtual void UpdatePanelMinimizeRestoreButtonVisibility() OVERRIDE;
@@ -154,6 +155,9 @@ class PanelView : public NativePanel,
 
   // The view hosting the web contents.
   views::WebView* web_view_;
+
+  // True if the panel should always stay on top of other windows.
+  bool always_on_top_;
 
   // Is the panel receiving the focus?
   bool focused_;

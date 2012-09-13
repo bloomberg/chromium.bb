@@ -67,7 +67,8 @@ class NativePanel {
 
   virtual int TitleOnlyHeight() const = 0;
 
-  // Sets whether the panel window is always on top.
+  // Gets or sets whether the panel window is always on top.
+  virtual bool IsPanelAlwaysOnTop() const = 0;
   virtual void SetPanelAlwaysOnTop(bool on_top) = 0;
 
   // Enables resizing by dragging edges/corners.

@@ -280,9 +280,9 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_CheckDockedPanelProperties) {
   EXPECT_EQ(Panel::TITLE_ONLY, panel2->expansion_state());
   EXPECT_EQ(Panel::MINIMIZED, panel3->expansion_state());
 
-  EXPECT_TRUE(panel1->always_on_top());
-  EXPECT_TRUE(panel2->always_on_top());
-  EXPECT_TRUE(panel3->always_on_top());
+  EXPECT_TRUE(panel1->IsAlwaysOnTop());
+  EXPECT_TRUE(panel2->IsAlwaysOnTop());
+  EXPECT_TRUE(panel3->IsAlwaysOnTop());
 
   EXPECT_TRUE(panel1_testing->IsButtonVisible(panel::CLOSE_BUTTON));
   EXPECT_TRUE(panel2_testing->IsButtonVisible(panel::CLOSE_BUTTON));

@@ -163,11 +163,19 @@ NativePanel* Panel::CreateNativePanel(Panel* panel, const gfx::Rect& bounds) {
   return new PanelView(panel, bounds);
 }
 
+// The panel window has to be created as always-on-top. We cannot create it
+// as non-always-on-top and then change it to always-on-top because Windows
+// system might deny making a window always-on-top if the application is not
+// a foreground application. In addition, we do not know if the panel should
+// be created as always-on-top at its creation time. To solve this issue,
+// always_on_top_ is default to true because we can always change from
+// always-on-top to not always-on-top but not the other way around.
 PanelView::PanelView(Panel* panel, const gfx::Rect& bounds)
     : panel_(panel),
       bounds_(bounds),
       window_(NULL),
       web_view_(NULL),
+      always_on_top_(true),
       focused_(false),
       mouse_pressed_(false),
       mouse_dragging_state_(NO_DRAGGING),
@@ -377,7 +385,15 @@ void PanelView::FullScreenModeChanged(bool is_full_screen) {
   }
 }
 
+bool PanelView::IsPanelAlwaysOnTop() const {
+  return always_on_top_;
+}
+
 void PanelView::SetPanelAlwaysOnTop(bool on_top) {
+  if (always_on_top_ == on_top)
+    return;
+  always_on_top_ = on_top;
+
   window_->SetAlwaysOnTop(on_top);
   window_->non_client_view()->Layout();
   window_->client_view()->Layout();

@@ -29,7 +29,7 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, CheckDetachedPanelProperties) {
   EXPECT_TRUE(detached_strip->HasPanel(panel));
 
   EXPECT_EQ(bounds, panel->GetBounds());
-  EXPECT_FALSE(panel->always_on_top());
+  EXPECT_FALSE(panel->IsAlwaysOnTop());
 
   EXPECT_TRUE(panel_testing->IsButtonVisible(panel::CLOSE_BUTTON));
   EXPECT_FALSE(panel_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));

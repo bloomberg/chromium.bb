@@ -44,6 +44,7 @@ class PanelCocoa : public NativePanel {
   virtual void HandlePanelKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void FullScreenModeChanged(bool is_full_screen) OVERRIDE;
+  virtual bool IsPanelAlwaysOnTop() const OVERRIDE;
   virtual void SetPanelAlwaysOnTop(bool on_top) OVERRIDE;
   virtual void EnableResizeByMouse(bool enable) OVERRIDE;
   virtual void UpdatePanelMinimizeRestoreButtonVisibility() OVERRIDE;
@@ -89,6 +90,9 @@ class PanelCocoa : public NativePanel {
   // top-left of the primary screen. They have to be converted to Cocoa
   // screen coordinates before calling Cocoa API.
   gfx::Rect bounds_;
+
+  // True if the panel should always stay on top of other windows.
+  bool always_on_top_;
 
   bool is_shown_;  // Panel is hidden on creation, Show() changes that forever.
   NSInteger attention_request_id_;  // identifier from requestUserAttention.

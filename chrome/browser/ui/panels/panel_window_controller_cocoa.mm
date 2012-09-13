@@ -970,7 +970,7 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
   // Make sure we don't draw on top of a window in full screen mode.
   Panel* panel = windowShim_->panel();
   if (panel->manager()->display_settings_provider()->is_full_screen() ||
-      !panel->always_on_top()) {
+      !panel->IsAlwaysOnTop()) {
     [[self window] setLevel:NSNormalWindowLevel];
     return;
   }

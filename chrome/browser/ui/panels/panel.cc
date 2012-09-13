@@ -148,7 +148,6 @@ Panel::Panel(const std::string& app_name,
       max_size_(max_size),
       max_size_policy_(DEFAULT_MAX_SIZE),
       auto_resizable_(false),
-      always_on_top_(false),
       in_preview_mode_(false),
       native_panel_(NULL),
       attention_mode_(USE_PANEL_ATTENTION),
@@ -358,9 +357,6 @@ void Panel::HandleKeyboardEvent(const content::NativeWebKeyboardEvent& event) {
 }
 
 void Panel::SetAlwaysOnTop(bool on_top) {
-  if (always_on_top_ == on_top)
-    return;
-  always_on_top_ = on_top;
   native_panel_->SetPanelAlwaysOnTop(on_top);
 }
 
@@ -464,7 +460,7 @@ void Panel::FlashFrame(bool draw_attention) {
 }
 
 bool Panel::IsAlwaysOnTop() const {
-  return always_on_top_;
+  return native_panel_->IsPanelAlwaysOnTop();
 }
 
 gfx::NativeWindow Panel::GetNativeWindow() {
