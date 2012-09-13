@@ -6164,6 +6164,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_CSS_REGIONS_DESCRIPTION" desc="Description for the flag to enable CSS Regions.">
         Enable CSS Regions.
       </message>
+      <message name="IDS_FLAGS_CSS_SHADERS_NAME" desc="Name for the flag to enable CSS Shaders.">
+        Enable CSS Shaders.
+      </message>
+      <message name="IDS_FLAGS_CSS_SHADERS_DESCRIPTION" desc="Description for the flag to enable CSS Shaders.">
+        Enable filter effects on DOM elements using custom GLSL shaders. More info at https://dvcs.w3.org/hg/FXTF/raw-file/tip/filters/index.html#feCustomElement.
+      </message>
       <message name="IDS_FLAGS_CSS_VARIABLES_NAME" desc="Name for the flag to enable CSS Variables.">
         Enable CSS Variables.
       </message>

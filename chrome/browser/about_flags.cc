@@ -629,6 +629,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableCssRegions)
   },
   {
+    "enable-css-shaders",
+    IDS_FLAGS_CSS_SHADERS_NAME,
+    IDS_FLAGS_CSS_SHADERS_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableCssShaders)
+  },
+  {
     "enable-css-variables",
     IDS_FLAGS_CSS_VARIABLES_NAME,
     IDS_FLAGS_CSS_VARIABLES_DESCRIPTION,
