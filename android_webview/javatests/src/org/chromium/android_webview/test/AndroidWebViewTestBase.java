@@ -174,4 +174,14 @@ public class AndroidWebViewTestBase
             }
         });
     }
+
+    protected ContentSettings getContentSettingsOnUiThread(
+            final ContentViewCore contentViewCore) throws Throwable {
+        return runTestOnUiThreadAndGetResult(new Callable<ContentSettings>() {
+            @Override
+            public ContentSettings call() throws Exception {
+                return contentViewCore.getContentSettings();
+            }
+        });
+    }
 }
