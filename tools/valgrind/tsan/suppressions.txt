@@ -959,15 +959,7 @@
   bug_137973_b
   ThreadSanitizer:Race
   fun:media::Pipeline::SetState
-  fun:media::Pipeline::TearDownPipeline
   fun:media::Pipeline::StopTask
-  fun:base::internal::RunnableAdapter::Run
-}
-{
-  bug_137973_c
-  ThreadSanitizer:Race
-  fun:media::Pipeline::SetState
-  fun:media::Pipeline::TeardownStateTransitionTask
   fun:base::internal::RunnableAdapter::Run
 }
 {
