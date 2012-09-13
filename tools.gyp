@@ -89,7 +89,7 @@
               'description': 'Untar pnacl',
               'inputs': [
                  '<(DEPTH)/native_client/build/cygtar.py',
-                 '<(DEPTH)/native_client/toolchain/.tars/naclsdk_pnacl_<(OS)_x86_32.tgz',
+                 '<(DEPTH)/native_client/toolchain/.tars/naclsdk_pnacl_<(OS)_x86.tgz',
               ],
               'outputs': ['<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_pnacl/stamp.untar'],
               'action': [
@@ -99,7 +99,7 @@
                 '--tmp', '<(SHARED_INTERMEDIATE_DIR)/untar',
                 '--sdk', '<(SHARED_INTERMEDIATE_DIR)/sdk',
                 '--os', '<(OS)',
-                '<(DEPTH)/native_client/toolchain/.tars/naclsdk_pnacl_<(OS)_x86_32.tgz',
+                '<(DEPTH)/native_client/toolchain/.tars/naclsdk_pnacl_<(OS)_x86.tgz',
               ],
             },
           ]

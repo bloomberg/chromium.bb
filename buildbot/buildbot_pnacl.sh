@@ -419,7 +419,7 @@ mode-buildbot-arm() {
   gyp-arm-build
 
   # Sanity check
-  scons-stage-noirt "arm" "" "run_hello_world_test"
+  scons-stage-noirt "arm" "-j8" "run_hello_world_test"
 
   # Don't run the rest of the tests on qemu, only build them.
   # QEMU is too flaky for the main waterfall
