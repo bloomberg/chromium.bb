@@ -14,14 +14,24 @@ include_rules = [
   #
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
+
+  # Can go once ProfileSyncService is converted.
   "!chrome/browser/profiles/profile.h",
-  "!chrome/browser/profiles/profile_dependency_manager.h",
+
+  # Moving to api
   "!chrome/browser/profiles/profile_keyed_service.h",
+
+  # Will go when PersonalDataManagerFactory moves to c/b/configuration.
+  "!chrome/browser/profiles/profile_dependency_manager.h",
   "!chrome/browser/profiles/profile_keyed_service_factory.h",
+
+  # Needs abstract base.
   "!chrome/browser/sync/profile_sync_service.h",
   "!chrome/browser/sync/profile_sync_service_factory.h",
   "!chrome/browser/sync/profile_sync_service_observer.h",
+
   "!chrome/browser/ui/tab_contents/tab_contents.h",
+
   # Do not add to the list of temporarily-allowed dependencies above,
   # and please do not introduce more #includes of these files.
 

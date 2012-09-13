@@ -19,6 +19,7 @@
 #include "base/values.h"
 
 namespace content {
+class BrowserContext;
 class NotificationObserver;
 }
 
@@ -32,8 +33,8 @@ class TabContents;
 
 class PrefServiceBase {
  public:
-  // Retrieves a PrefServiceBase for the given profile.
-  static PrefServiceBase* ForProfile(Profile* profile);
+  // Retrieves a PrefServiceBase for the given context.
+  static PrefServiceBase* ForContext(content::BrowserContext* context);
 
   virtual ~PrefServiceBase() {}
 

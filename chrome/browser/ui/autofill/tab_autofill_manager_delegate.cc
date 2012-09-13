@@ -24,6 +24,15 @@ TabAutofillManagerDelegate::TabAutofillManagerDelegate(TabContents* tab)
   DCHECK(tab_);
 }
 
+content::BrowserContext* TabAutofillManagerDelegate::GetBrowserContext() const {
+  return tab_->profile();
+}
+
+content::BrowserContext*
+TabAutofillManagerDelegate::GetOriginalBrowserContext() const {
+  return tab_->profile()->GetOriginalProfile();
+}
+
 InfoBarService* TabAutofillManagerDelegate::GetInfoBarService() {
   return tab_->infobar_tab_helper();
 }

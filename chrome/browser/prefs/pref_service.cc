@@ -37,6 +37,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
 
 namespace {
@@ -114,8 +115,8 @@ class ReadErrorHandler : public PersistentPrefStore::ReadErrorDelegate {
 
 }  // namespace
 
-PrefServiceBase* PrefServiceBase::ForProfile(Profile* profile) {
-  return profile->GetPrefs();
+PrefServiceBase* PrefServiceBase::ForContext(BrowserContext* context) {
+  return static_cast<Profile*>(context)->GetPrefs();
 }
 
 // static

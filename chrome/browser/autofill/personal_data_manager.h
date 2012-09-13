@@ -27,11 +27,14 @@
 class AutofillMetrics;
 class FormStructure;
 class PersonalDataManagerObserver;
-class Profile;
 
 namespace autofill_helper {
 void SetProfiles(int, std::vector<AutofillProfile>*);
 void SetCreditCards(int, std::vector<CreditCard>*);
+}
+
+namespace content {
+class BrowserContext;
 }
 
 // Handles loading and saving Autofill profile information to the web database.
@@ -220,8 +223,8 @@ class PersonalDataManager
   const AutofillMetrics* metric_logger() const;
   void set_metric_logger(const AutofillMetrics* metric_logger);
 
-  // The profile hosting this PersonalDataManager.
-  Profile* profile_;
+  // The browser context this PersonalDataManager is in.
+  content::BrowserContext* browser_context_;
 
   // True if personal data has been loaded from the web database.
   bool is_data_loaded_;
@@ -251,7 +254,7 @@ class PersonalDataManager
 
  private:
   // Kicks off asynchronous loading of profiles and credit cards.
-  void Init(Profile* profile);
+  void Init(content::BrowserContext* context);
 
   // For logging UMA metrics. Overridden by metrics tests.
   scoped_ptr<const AutofillMetrics> metric_logger_;

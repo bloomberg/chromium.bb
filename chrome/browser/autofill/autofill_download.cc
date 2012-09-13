@@ -16,13 +16,15 @@
 #include "chrome/browser/autofill/autofill_xml_parser.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/api/prefs/pref_service_base.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/browser_context.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlparser.h"
+
+using content::BrowserContext;
 
 namespace {
 const char kAutofillQueryServerRequestUrl[] =
@@ -45,9 +47,9 @@ struct AutofillDownloadManager::FormRequestData {
   AutofillRequestType request_type;
 };
 
-AutofillDownloadManager::AutofillDownloadManager(Profile* profile,
+AutofillDownloadManager::AutofillDownloadManager(BrowserContext* context,
                                                  Observer* observer)
-    : profile_(profile),
+    : browser_context_(context),
       observer_(observer),
       max_form_cache_size_(kMaxFormCacheSize),
       next_query_request_(base::Time::Now()),
@@ -56,7 +58,7 @@ AutofillDownloadManager::AutofillDownloadManager(Profile* profile,
       negative_upload_rate_(0),
       fetcher_id_for_unittest_(0) {
   DCHECK(observer_);
-  PrefServiceBase* preferences = PrefServiceBase::ForProfile(profile_);
+  PrefServiceBase* preferences = PrefServiceBase::ForContext(browser_context_);
   positive_upload_rate_ =
       preferences->GetDouble(prefs::kAutofillPositiveUploadRate);
   negative_upload_rate_ =
@@ -143,7 +145,7 @@ void AutofillDownloadManager::SetPositiveUploadRate(double rate) {
   positive_upload_rate_ = rate;
   DCHECK_GE(rate, 0.0);
   DCHECK_LE(rate, 1.0);
-  PrefServiceBase* preferences = PrefServiceBase::ForProfile(profile_);
+  PrefServiceBase* preferences = PrefServiceBase::ForContext(browser_context_);
   preferences->SetDouble(prefs::kAutofillPositiveUploadRate, rate);
 }
 
@@ -153,14 +155,15 @@ void AutofillDownloadManager::SetNegativeUploadRate(double rate) {
   negative_upload_rate_ = rate;
   DCHECK_GE(rate, 0.0);
   DCHECK_LE(rate, 1.0);
-  PrefServiceBase* preferences = PrefServiceBase::ForProfile(profile_);
+  PrefServiceBase* preferences = PrefServiceBase::ForContext(browser_context_);
   preferences->SetDouble(prefs::kAutofillNegativeUploadRate, rate);
 }
 
 bool AutofillDownloadManager::StartRequest(
     const std::string& form_xml,
     const FormRequestData& request_data) {
-  net::URLRequestContextGetter* request_context = profile_->GetRequestContext();
+  net::URLRequestContextGetter* request_context =
+      browser_context_->GetRequestContext();
   DCHECK(request_context);
   std::string request_url;
   if (request_data.request_type == AutofillDownloadManager::REQUEST_QUERY)

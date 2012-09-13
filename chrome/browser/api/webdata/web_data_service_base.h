@@ -8,8 +8,6 @@
 #include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
 #include "content/public/browser/notification_source.h"
 
-class Profile;
-
 // Base for WebDataService class hierarchy.
 class WebDataServiceBase {
  public:

@@ -46,6 +46,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -179,7 +180,7 @@ AutofillManager::AutofillManager(autofill::AutofillManagerDelegate* delegate,
       manager_delegate_(delegate),
       tab_contents_(tab_contents),
       personal_data_(NULL),
-      download_manager_(tab_contents->profile(), this),
+      download_manager_(delegate->GetBrowserContext(), this),
       disable_download_manager_requests_(false),
       metric_logger_(new AutofillMetrics),
       has_logged_autofill_enabled_(false),
@@ -192,7 +193,7 @@ AutofillManager::AutofillManager(autofill::AutofillManagerDelegate* delegate,
       external_delegate_(NULL) {
   // |personal_data_| is NULL when using test-enabled WebContents.
   personal_data_ = PersonalDataManagerFactory::GetForProfile(
-      tab_contents->profile()->GetOriginalProfile());
+      tab_contents_->profile()->GetOriginalProfile());
   RegisterWithSyncService();
   registrar_.Init(manager_delegate_->GetPrefs());
   registrar_.Add(prefs::kPasswordGenerationEnabled, this);

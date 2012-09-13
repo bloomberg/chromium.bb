@@ -13,6 +13,10 @@
 #include "chrome/browser/api/webdata/web_data_service_consumer.h"
 #include "content/public/browser/web_contents_observer.h"
 
+namespace content {
+class BrowserContext;
+}
+
 namespace webkit {
 namespace forms {
 struct FormData;
@@ -20,7 +24,6 @@ struct FormData;
 }
 
 class AutofillExternalDelegate;
-class Profile;
 
 // Per-tab Autocomplete history manager. Handles receiving form data
 // from the renderer and the storing and retrieving of form data
@@ -66,7 +69,7 @@ class AutocompleteHistoryManager : public content::WebContentsObserver,
 
   // For tests.
   AutocompleteHistoryManager(content::WebContents* web_contents,
-                             Profile* profile,
+                             content::BrowserContext* context,
                              scoped_ptr<AutofillWebDataService> wds);
 
   void SendSuggestions(const std::vector<string16>* suggestions);
@@ -78,7 +81,7 @@ class AutocompleteHistoryManager : public content::WebContentsObserver,
   }
 
  private:
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
   scoped_ptr<AutofillWebDataService> autofill_data_;
 
   BooleanPrefMember autofill_enabled_;

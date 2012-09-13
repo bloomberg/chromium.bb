@@ -9,6 +9,10 @@ namespace autofill {
 class PasswordGenerator;
 }
 
+namespace content {
+class BrowserContext;
+}
+
 namespace gfx {
 class Rect;
 }
@@ -35,6 +39,13 @@ namespace autofill {
 class AutofillManagerDelegate {
  public:
   virtual ~AutofillManagerDelegate() {}
+
+  // Gets the BrowserContext the AutofillManager is in.
+  virtual content::BrowserContext* GetBrowserContext() const = 0;
+
+  // Gets the BrowserContext the AutofillManager is in, or if in an
+  // incognito mode, the associated (original) BrowserContext.
+  virtual content::BrowserContext* GetOriginalBrowserContext() const = 0;
 
   // Gets the infobar service associated with the delegate.
   virtual InfoBarService* GetInfoBarService() = 0;

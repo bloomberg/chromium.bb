@@ -12,14 +12,15 @@
 #include "chrome/browser/api/prefs/pref_service_base.h"
 #include "chrome/browser/autofill/autofill_external_delegate.h"
 #include "chrome/browser/autofill/credit_card.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "webkit/forms/form_data.h"
 
 using base::StringPiece16;
+using content::BrowserContext;
 using content::WebContents;
 using webkit::forms::FormData;
 using webkit::forms::FormField;
@@ -113,11 +114,12 @@ AutocompleteHistoryManager::AutocompleteHistoryManager(
       pending_query_handle_(0),
       query_id_(0),
       external_delegate_(NULL) {
-  profile_ = Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  browser_context_ = web_contents->GetBrowserContext();
   // May be NULL in unit tests.
-  autofill_data_ = AutofillWebDataService::ForContext(profile_);
-  autofill_enabled_.Init(
-      prefs::kAutofillEnabled, PrefServiceBase::ForProfile(profile_), NULL);
+  autofill_data_ = AutofillWebDataService::ForContext(browser_context_);
+  autofill_enabled_.Init(prefs::kAutofillEnabled,
+                         PrefServiceBase::ForContext(browser_context_),
+                         NULL);
 }
 
 AutocompleteHistoryManager::~AutocompleteHistoryManager() {
@@ -192,7 +194,7 @@ void AutocompleteHistoryManager::OnFormSubmitted(const FormData& form) {
   if (!*autofill_enabled_)
     return;
 
-  if (profile_->IsOffTheRecord())
+  if (browser_context_->IsOffTheRecord())
     return;
 
   // Don't save data that was submitted through JavaScript.
@@ -235,16 +237,17 @@ void AutocompleteHistoryManager::SetExternalDelegate(
 
 AutocompleteHistoryManager::AutocompleteHistoryManager(
     WebContents* web_contents,
-    Profile* profile,
+    BrowserContext* browser_context,
     scoped_ptr<AutofillWebDataService> awd)
     : content::WebContentsObserver(web_contents),
-      profile_(profile),
+      browser_context_(browser_context),
       autofill_data_(awd.Pass()),
       pending_query_handle_(0),
       query_id_(0),
       external_delegate_(NULL) {
-  autofill_enabled_.Init(
-      prefs::kAutofillEnabled, PrefServiceBase::ForProfile(profile_), NULL);
+  autofill_enabled_.Init(prefs::kAutofillEnabled,
+                         PrefServiceBase::ForContext(browser_context_),
+                         NULL);
 }
 
 void AutocompleteHistoryManager::CancelPendingQuery() {

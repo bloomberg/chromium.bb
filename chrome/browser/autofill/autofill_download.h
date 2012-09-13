@@ -20,7 +20,10 @@
 
 class AutofillMetrics;
 class FormStructure;
-class Profile;
+
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 namespace net {
 class URLFetcher;
@@ -58,7 +61,8 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
   };
 
   // |observer| - observer to notify on successful completion or error.
-  AutofillDownloadManager(Profile* profile, Observer* observer);
+  AutofillDownloadManager(content::BrowserContext* context,
+                          Observer* observer);
   virtual ~AutofillDownloadManager();
 
   // Starts a query request to Autofill servers. The observer is called with the
@@ -124,9 +128,10 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
   void SetPositiveUploadRate(double rate);
   void SetNegativeUploadRate(double rate);
 
-  // Profile for preference storage.  The pointer value is const, so this can
-  // only be set in the constructor.  Must not be null.
-  Profile* const profile_;  // WEAK
+  // The pointer value is const, so this can only be set in the
+  // constructor.  Must not be null.
+  content::BrowserContext* const browser_context_;  // WEAK
+
   // The observer to notify when server predictions are successfully received.
   // The pointer value is const, so this can only be set in the constructor.
   // Must not be null.
