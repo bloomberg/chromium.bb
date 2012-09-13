@@ -60,19 +60,6 @@ class SBProtocolManagerFactory {
 };
 
 class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestBackOffTimes);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestChunkStrings);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestGetHashUrl);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest,
-                           TestGetHashBackOffTimes);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest,
-                           TestSafeBrowsingHitUrl);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest,
-                           TestMalwareDetailsUrl);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestNextChunkUrl);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestUpdateUrl);
-  friend class SafeBrowsingServiceTest;
-
  public:
   virtual ~SafeBrowsingProtocolManager();
 
@@ -192,6 +179,18 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
       bool disable_auto_update);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestBackOffTimes);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestChunkStrings);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestGetHashUrl);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest,
+                           TestGetHashBackOffTimes);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest,
+                           TestSafeBrowsingHitUrl);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest,
+                           TestMalwareDetailsUrl);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestNextChunkUrl);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestUpdateUrl);
+  friend class SafeBrowsingServiceTest;
   friend class SBProtocolManagerFactoryImpl;
 
   // Internal API for fetching information from the SafeBrowsing servers. The
