@@ -312,6 +312,7 @@ class ChromotingHostTest : public testing::Test {
   void ReleaseUiTaskRunner() {
     it2me_host_user_interface_.reset();
     ui_task_runner_ = NULL;
+    host_ = NULL;
   }
 
   void QuitMainMessageLoop() {
@@ -569,6 +570,9 @@ TEST_F(ChromotingHostTest, IncomingSessionDeclined) {
       protocol::SessionManager::ACCEPT;
   host_->OnIncomingSession(session1_, &response);
   EXPECT_EQ(protocol::SessionManager::DECLINE, response);
+
+  ShutdownHost();
+  message_loop_.Run();
 }
 
 TEST_F(ChromotingHostTest, IncomingSessionIncompatible) {
@@ -586,7 +590,8 @@ TEST_F(ChromotingHostTest, IncomingSessionIncompatible) {
   host_->OnIncomingSession(session_unowned1_.get(), &response);
   EXPECT_EQ(protocol::SessionManager::INCOMPATIBLE, response);
 
-  host_->Shutdown(base::Bind(&DoNothing));
+  ShutdownHost();
+  message_loop_.Run();
 }
 
 TEST_F(ChromotingHostTest, IncomingSessionAccepted) {
@@ -608,7 +613,8 @@ TEST_F(ChromotingHostTest, IncomingSessionAccepted) {
   host_->OnIncomingSession(session_unowned1_.release(), &response);
   EXPECT_EQ(protocol::SessionManager::ACCEPT, response);
 
-  host_->Shutdown(base::Bind(&DoNothing));
+  ShutdownHost();
+  message_loop_.Run();
 }
 
 TEST_F(ChromotingHostTest, IncomingSessionOverload) {
@@ -633,7 +639,8 @@ TEST_F(ChromotingHostTest, IncomingSessionOverload) {
   host_->OnIncomingSession(session_unowned2_.get(), &response);
   EXPECT_EQ(protocol::SessionManager::OVERLOAD, response);
 
-  host_->Shutdown(base::Bind(&DoNothing));
+  ShutdownHost();
+  message_loop_.Run();
 }
 
 TEST_F(ChromotingHostTest, OnSessionRouteChange) {
