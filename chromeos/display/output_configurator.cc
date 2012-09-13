@@ -689,6 +689,12 @@ bool OutputConfigurator::ScreenPowerSet(bool power_on, bool all_displays) {
       if (power_on) {
         mode = (STATE_DUAL_MIRROR == output_state_) ?
             outputs[i].mirror_mode : outputs[i].native_mode;
+      } else if (connected_output_count_ > 1 && !all_displays &&
+                 STATE_DUAL_MIRROR != output_state_ && outputs[i].is_internal) {
+        // Workaround for crbug.com/148365: leave internal display in native
+        // mode so user can move cursor (and hence windows) onto internal
+        // display even when dimmed
+        mode = outputs[i].native_mode;
       }
       crtc = GetNextCrtcAfter(display, screen, output, crtc);
 
