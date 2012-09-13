@@ -109,30 +109,6 @@ ContentSetting ContentSettingFromString(const std::string& name) {
   return CONTENT_SETTING_DEFAULT;
 }
 
-std::string GeolocationExceptionToString(
-    const ContentSettingsPattern& origin,
-    const ContentSettingsPattern& embedding_origin) {
-  if (origin == embedding_origin)
-    return origin.ToString();
-
-  // TODO(estade): the page needs to use CSS to indent the string.
-  std::string indent(" ");
-
-  if (embedding_origin == ContentSettingsPattern::Wildcard()) {
-    // NOTE: As long as the user cannot add/edit entries from the exceptions
-    // dialog, it's impossible to actually have a non-default setting for some
-    // origin "embedded on any other site", so this row will never appear.  If
-    // we add the ability to add/edit exceptions, we'll need to decide when to
-    // display this and how "removing" it will function.
-    return indent +
-        l10n_util::GetStringUTF8(IDS_EXCEPTIONS_GEOLOCATION_EMBEDDED_ANY_OTHER);
-  }
-
-  return indent + l10n_util::GetStringFUTF8(
-      IDS_EXCEPTIONS_GEOLOCATION_EMBEDDED_ON_HOST,
-      UTF8ToUTF16(embedding_origin.ToString()));
-}
-
 // Create a DictionaryValue* that will act as a data source for a single row
 // in a HostContentSettingsMap-controlled exceptions table (e.g., cookies).
 // Ownership of the pointer is passed to the caller.
@@ -155,8 +131,6 @@ DictionaryValue* GetGeolocationExceptionForPage(
     const ContentSettingsPattern& embedding_origin,
     ContentSetting setting) {
   DictionaryValue* exception = new DictionaryValue();
-  exception->SetString(kDisplayPattern,
-                       GeolocationExceptionToString(origin, embedding_origin));
   exception->SetString(kSetting, ContentSettingToString(setting));
   exception->SetString(kOrigin, origin.ToString());
   exception->SetString(kEmbeddingOrigin, embedding_origin.ToString());
@@ -367,6 +341,7 @@ void ContentSettingsHandler::GetLocalizedValues(
     { "manage_handlers", IDS_HANDLERS_MANAGE },
     { "exceptionPatternHeader", IDS_EXCEPTIONS_PATTERN_HEADER },
     { "exceptionBehaviorHeader", IDS_EXCEPTIONS_ACTION_HEADER },
+    { "embeddedOnHost", IDS_EXCEPTIONS_GEOLOCATION_EMBEDDED_ON_HOST },
     // Cookies filter.
     { "cookies_tab_label", IDS_COOKIES_TAB_LABEL },
     { "cookies_header", IDS_COOKIES_HEADER },

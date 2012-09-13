@@ -82,3 +82,7 @@ list div[role='listitem'][managedby='extension'] .close-button {
   background-size: 16px;
   opacity: 1;
 }
+
+.sublabel {
+  -webkit-margin-start: 2em;
+}

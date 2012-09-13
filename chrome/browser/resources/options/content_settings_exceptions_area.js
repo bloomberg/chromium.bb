@@ -90,6 +90,16 @@ cr.define('options.contentSettings', function() {
         select.appendChild(optionBlock);
       }
 
+      if (this.contentType == 'location') {
+        if (this.dataItem.origin !== this.dataItem.embeddingOrigin) {
+          this.patternLabel.classList.add('sublabel');
+        } else if (this.setting == 'default') {
+          // Items that don't have their own settings (parents of 'embedded on'
+          // items) aren't deletable.
+          this.deletable = false;
+        }
+      }
+
       this.contentElement.appendChild(select);
       select.className = 'exception-setting';
       if (this.pattern)
@@ -162,9 +172,21 @@ cr.define('options.contentSettings', function() {
      * @type {string}
      */
     get pattern() {
+      if (this.contentType == 'location') {
+        if (this.dataItem.embeddingOrigin === this.dataItem.origin) {
+          return this.dataItem.origin;
+        } else {
+          return loadTimeData.getStringF('embeddedOnHost',
+                                         this.dataItem.embeddingOrigin);
+        }
+      }
+
       return this.dataItem['displayPattern'];
     },
     set pattern(pattern) {
+      if (!this.editable)
+        console.error('Tried to change uneditable pattern');
+
       this.dataItem['displayPattern'] = pattern;
     },
 
@@ -195,6 +217,11 @@ cr.define('options.contentSettings', function() {
         return loadTimeData.getString('askException');
       else if (setting == 'session')
         return loadTimeData.getString('sessionException');
+      else if (setting == 'default')
+        return '';
+
+      console.error('Unknown setting: [' + setting + ']');
+      return '';
     },
 
     /**
@@ -384,8 +411,6 @@ cr.define('options.contentSettings', function() {
       }
 
       this.mode = this.getAttribute('mode');
-
-      var exceptionList = this;
 
       // Whether the exceptions in this list allow an 'Ask every time' option.
       this.enableAskOption = this.contentType == 'plugins' ||
