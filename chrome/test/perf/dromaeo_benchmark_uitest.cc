@@ -216,7 +216,7 @@ TEST_F(DromaeoReferenceTest, DOMCoreAttrPerf) {
   RunTest("dom-attr");
 }
 
-TEST_F(DromaeoReferenceTest, DOMCoreModifyPerf) {
+TEST_F(DromaeoReferenceTest, MAYBE_DOMCoreModifyPerf) {
   RunTest("dom-modify");
 }
 
