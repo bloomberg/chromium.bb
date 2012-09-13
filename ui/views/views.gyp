@@ -303,6 +303,8 @@
         'view_model.h',
         'view_model_utils.cc',
         'view_model_utils.h',
+        'views_switches.cc',
+        'views_switches.h',
         'view_text_utils.cc',
         'view_text_utils.h',
         'view_win.cc',

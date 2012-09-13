@@ -170,6 +170,7 @@
             '../ui/base/strings/ui_strings.gyp:ui_strings',
             '../ui/views/controls/webview/webview.gyp:webview',
             '../ui/views/views.gyp:views',
+            '../ui/views/views.gyp:test_support_views',
             '../ui/ui.gyp:ui_resources',
           ],
           'sources/': [

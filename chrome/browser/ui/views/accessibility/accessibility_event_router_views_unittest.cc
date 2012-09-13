@@ -18,7 +18,7 @@
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/views_delegate.h"
+#include "ui/views/test/test_views_delegate.h"
 #include "ui/views/widget/native_widget.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
@@ -30,63 +30,16 @@
 
 #if defined(TOOLKIT_VIEWS)
 
-class AccessibilityViewsDelegate : public views::ViewsDelegate {
+class AccessibilityViewsDelegate : public views::TestViewsDelegate {
  public:
   AccessibilityViewsDelegate() {}
   virtual ~AccessibilityViewsDelegate() {}
 
-  // Overridden from views::ViewsDelegate:
-  virtual void SaveWindowPlacement(const views::Widget* window,
-                                   const std::string& window_name,
-                                   const gfx::Rect& bounds,
-                                   ui::WindowShowState show_state) OVERRIDE {
-  }
-  virtual bool GetSavedWindowPlacement(
-      const std::string& window_name,
-      gfx::Rect* bounds,
-      ui::WindowShowState* show_state) const OVERRIDE {
-    return false;
-  }
+  // Overridden from views::TestViewsDelegate:
   virtual void NotifyAccessibilityEvent(
       views::View* view, ui::AccessibilityTypes::Event event_type) OVERRIDE {
     AccessibilityEventRouterViews::GetInstance()->HandleAccessibilityEvent(
         view, event_type);
-  }
-  virtual void NotifyMenuItemFocused(const string16& menu_name,
-                                     const string16& menu_item_name,
-                                     int item_index,
-                                     int item_count,
-                                     bool has_submenu) OVERRIDE {}
-#if defined(OS_WIN)
-  virtual HICON GetDefaultWindowIcon() const OVERRIDE {
-    return NULL;
-  }
-#endif
-  virtual views::NonClientFrameView* CreateDefaultNonClientFrameView(
-      views::Widget* widget) OVERRIDE {
-    return NULL;
-  }
-  virtual bool UseTransparentWindows() const OVERRIDE {
-    return false;
-  }
-  virtual void AddRef() OVERRIDE {}
-  virtual void ReleaseRef() OVERRIDE {}
-
-  virtual int GetDispositionForEvent(int event_flags) OVERRIDE {
-    return 0;
-  }
-
-#if defined(USE_AURA)
-  virtual views::NativeWidgetHelperAura* CreateNativeWidgetHelper(
-      views::NativeWidgetAura* native_widget) OVERRIDE {
-    return NULL;
-  }
-#endif
-
-  virtual content::WebContents* CreateWebContents(
-      content::BrowserContext* browser_context,
-      content::SiteInstance* site_instance) OVERRIDE {
-    return NULL;
   }
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityViewsDelegate);

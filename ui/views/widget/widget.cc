@@ -48,6 +48,26 @@ void BuildRootLayers(View* view, std::vector<ui::Layer*>* layers) {
   }
 }
 
+// Create a native widget implementation.
+// First, use the supplied one if non-NULL.
+// Second, ask the delegate.
+// Finally, make a default one.
+NativeWidget* CreateNativeWidget(NativeWidget* native_widget,
+                                 internal::NativeWidgetDelegate* delegate,
+                                 gfx::NativeView parent) {
+  if (!native_widget) {
+    if (ViewsDelegate::views_delegate) {
+      native_widget =
+          ViewsDelegate::views_delegate->CreateNativeWidget(delegate, parent);
+    }
+    if (!native_widget) {
+      native_widget =
+          internal::NativeWidgetPrivate::CreateNativeWidget(delegate);
+    }
+  }
+  return native_widget;
+}
+
 }  // namespace
 
 // This class is used to keep track of the event a Widget is processing, and
@@ -309,9 +329,9 @@ void Widget::Init(const InitParams& params) {
   widget_delegate_ = params.delegate ?
       params.delegate : new DefaultWidgetDelegate(this, params);
   ownership_ = params.ownership;
-  native_widget_ = params.native_widget ?
-      params.native_widget->AsNativeWidgetPrivate() :
-      internal::NativeWidgetPrivate::CreateNativeWidget(this);
+  native_widget_ =
+      CreateNativeWidget(params.native_widget, this, params.GetParent())->
+          AsNativeWidgetPrivate();
   GetRootView();
   default_theme_provider_.reset(new DefaultThemeProvider);
   if (params.type == InitParams::TYPE_MENU) {

@@ -4,6 +4,7 @@
 
 #include "content/shell/shell.h"
 
+#include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/desktop/desktop_screen.h"
 #include "ui/aura/desktop/desktop_stacking_client.h"
@@ -24,7 +25,9 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
-#include "ui/views/views_delegate.h"
+#include "ui/views/test/test_views_delegate.h"
+#include "ui/views/views_switches.h"
+#include "ui/views/widget/desktop_native_widget_aura.h"
 #include "ui/views/widget/desktop_native_widget_helper_aura.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -33,14 +36,10 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #endif
 
-namespace views {
 // ViewDelegate implementation for aura content shell
-class ShellViewsDelegateAura : public ViewsDelegate {
+class ShellViewsDelegateAura : public views::TestViewsDelegate {
  public:
-  ShellViewsDelegateAura()
-    : use_transparent_windows_(false) {
-    DCHECK(!ViewsDelegate::views_delegate);
-    ViewsDelegate::views_delegate = this;
+  ShellViewsDelegateAura() : use_transparent_windows_(false) {
   }
 
   virtual ~ShellViewsDelegateAura() {
@@ -51,56 +50,13 @@ class ShellViewsDelegateAura : public ViewsDelegate {
     use_transparent_windows_ = transparent;
   }
 
-  // Overridden from ViewsDelegate:
-  virtual void SaveWindowPlacement(const Widget* window,
-                                   const std::string& window_name,
-                                   const gfx::Rect& bounds,
-                                   ui::WindowShowState show_state) OVERRIDE {
-  }
-
-  virtual bool GetSavedWindowPlacement(
-      const std::string& window_name,
-      gfx::Rect* bounds,
-      ui::WindowShowState* show_state) const OVERRIDE {
-    return false;
-  }
-
-  virtual void NotifyAccessibilityEvent(
-      View* view, ui::AccessibilityTypes::Event event_type) OVERRIDE {}
-
-  virtual void NotifyMenuItemFocused(const string16& menu_name,
-                                     const string16& menu_item_name,
-                                     int item_index,
-                                     int item_count,
-                                     bool has_submenu) OVERRIDE {}
-#if defined(OS_WIN)
-  virtual HICON GetDefaultWindowIcon() const OVERRIDE {
-    return NULL;
-  }
-#endif
-  virtual NonClientFrameView* CreateDefaultNonClientFrameView(
-      Widget* widget) OVERRIDE {
-    return NULL;
-  }
+  // Overridden from views::TestViewsDelegate:
   virtual bool UseTransparentWindows() const OVERRIDE {
     return use_transparent_windows_;
   }
-  virtual void AddRef() OVERRIDE {}
-  virtual void ReleaseRef() OVERRIDE {}
-
-  virtual int GetDispositionForEvent(int event_flags) OVERRIDE {
-    return 0;
-  }
-
   virtual views::NativeWidgetHelperAura* CreateNativeWidgetHelper(
       views::NativeWidgetAura* native_widget) OVERRIDE {
     return new views::DesktopNativeWidgetHelperAura(native_widget);
-  }
-
-  virtual content::WebContents* CreateWebContents(
-      content::BrowserContext* browser_context,
-      content::SiteInstance* site_instance) OVERRIDE {
-    return NULL;
   }
 
  private:
@@ -108,6 +64,9 @@ class ShellViewsDelegateAura : public ViewsDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(ShellViewsDelegateAura);
 };
+
+// TODO(beng): This stuff should NOT be in the views namespace!
+namespace views {
 
 // Maintain the UI controls and web view for content shell
 class ShellWindowDelegateView : public WidgetDelegateView,
@@ -313,10 +272,9 @@ class ShellWindowDelegateView : public WidgetDelegateView,
 
 }  // namespace views
 
-namespace content {
-
 using views::ShellWindowDelegateView;
-using views::ShellViewsDelegateAura;
+
+namespace content {
 
 aura::client::StackingClient* Shell::stacking_client_ = NULL;
 views::ViewsDelegate* Shell::views_delegate_ = NULL;

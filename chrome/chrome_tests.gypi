@@ -581,6 +581,7 @@
         ['toolkit_views==1', {
           'dependencies': [
             '../ui/views/views.gyp:views',
+            '../ui/views/views.gyp:test_support_views',
           ],
         }],
         ['chromeos==1', {

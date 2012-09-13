@@ -211,10 +211,6 @@ void ShowExamplesWindowWithContent(Operation operation,
     Widget::InitParams params;
     params.delegate = new ExamplesWindowContents(operation, browser_context);
     params.bounds = gfx::Rect(0, 0, 850, 300);
-#if defined(USE_AURA) && !defined(OS_CHROMEOS)
-    if (CommandLine::ForCurrentProcess()->HasSwitch("win-aura"))
-      params.native_widget = new DesktopNativeWidgetAura(widget);
-#endif
     widget->Init(params);
     widget->Show();
   }

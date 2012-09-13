@@ -16,7 +16,6 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/test/test_views_delegate.h"
-#include "ui/views/views_delegate.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -24,82 +23,6 @@ namespace {
 
 const int kTopMenuBaseId = 100;
 const int kSubMenuBaseId = 200;
-
-// ViewsDelegate::GetDispositionForEvent() is used by views::MenuModelAdapter.
-class TestViewsDelegate : public views::ViewsDelegate {
- public:
-  TestViewsDelegate() {
-  }
-
-  ~TestViewsDelegate() {
-  }
-
-  // views::ViewsDelegate implementation
-  virtual void SaveWindowPlacement(const views::Widget* widget,
-                                   const std::string& window_name,
-                                   const gfx::Rect& bounds,
-                                   ui::WindowShowState show_state) OVERRIDE {
-  }
-
-  virtual bool GetSavedWindowPlacement(
-      const std::string& window_name,
-      gfx::Rect* bounds,
-      ui::WindowShowState* show_state) const OVERRIDE {
-    return false;
-  }
-
-  virtual void NotifyAccessibilityEvent(
-      views::View* view, ui::AccessibilityTypes::Event event_type) OVERRIDE {
-  }
-
-  virtual void NotifyMenuItemFocused(const string16& menu_name,
-                                     const string16& menu_item_name,
-                                     int item_index,
-                                     int item_count,
-                                     bool has_submenu) OVERRIDE {
-  }
-
-#if defined(OS_WIN)
-  virtual HICON GetDefaultWindowIcon() const OVERRIDE {
-    return NULL;
-  }
-#endif
-  virtual views::NonClientFrameView* CreateDefaultNonClientFrameView(
-      views::Widget* widget) OVERRIDE {
-    return NULL;
-  }
-
-  virtual bool UseTransparentWindows() const OVERRIDE {
-    return false;
-  }
-
-  virtual void AddRef() OVERRIDE {
-  }
-
-  virtual void ReleaseRef() OVERRIDE {
-  }
-
-  // Converts views::Event::flags to a WindowOpenDisposition.
-  virtual int GetDispositionForEvent(int event_flags) OVERRIDE {
-    return 0;
-  }
-
-#if defined(USE_AURA)
-  virtual views::NativeWidgetHelperAura* CreateNativeWidgetHelper(
-      views::NativeWidgetAura* native_widget) OVERRIDE {
-    return NULL;
-  }
-#endif
-
-  content::WebContents* CreateWebContents(
-      content::BrowserContext* browser_context,
-      content::SiteInstance* site_instance) OVERRIDE {
-    return NULL;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestViewsDelegate);
-};
 
 // Implement most of the ui::MenuModel pure virtual methods for subclasses
 //
@@ -380,7 +303,7 @@ class MenuModelAdapterTest : public ViewEventTestBase,
   }
 
   views::ViewsDelegate* old_views_delegate_;
-  TestViewsDelegate views_delegate_;
+  views::TestViewsDelegate views_delegate_;
 
   views::MenuButton* button_;
   TopMenuModel top_menu_model_;
