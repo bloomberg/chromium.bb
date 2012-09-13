@@ -30,7 +30,7 @@ function WallpaperManager(dialogDom) {
   /**
    * Base URL of the manifest file.
    */
-  /** @const */ var ManifestBaseURL = 'http://commondatastorage.googleapis.' +
+  /** @const */ var ManifestBaseURL = 'https://commondatastorage.googleapis.' +
       'com/chromeos-wallpaper-public/manifest_';
 
   /**

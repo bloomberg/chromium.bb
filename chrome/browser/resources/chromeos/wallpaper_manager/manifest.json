@@ -13,7 +13,8 @@
     "tabs",
     "webRequest",
     "http://lh5.ggpht.com/",
-    "http://*.googleapis.com/"
+    "https://commondatastorage.googleapis.com/",
+    "https://storage.googleapis.com/"
   ],
   "content_security_policy":
     "default-src:none; object-src 'none'; script-src 'self'"
