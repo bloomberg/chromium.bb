@@ -649,7 +649,7 @@ class NinjaWriter:
         inputs = [self.GypPathToNinja(i, env) for i in inputs]
         outputs = [self.GypPathToNinja(o, env) for o in outputs]
         extra_bindings.append(('unique_name',
-            re.sub('[^a-zA-Z0-9_]', '_', outputs[0])))
+            hashlib.md5(outputs[0]).hexdigest()))
         self.ninja.build(outputs, rule_name, self.GypPathToNinja(source),
                          implicit=inputs,
                          order_only=prebuild,
