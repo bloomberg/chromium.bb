@@ -349,6 +349,19 @@ void BrowserFrameWin::SetFullscreen(bool fullscreen) {
   views::NativeWidgetWin::SetFullscreen(fullscreen);
 }
 
+void BrowserFrameWin::Activate() {
+  // In Windows 8 metro mode we have only one window visible at any given time.
+  // The Activate code path is typically called when a new browser window is
+  // being activated. In metro we need to ensure that the window currently
+  // being displayed is hidden and the new window being activated becomes
+  // visible. This is achieved by calling Show.
+  if (base::win::IsMetroProcess()) {
+    Show();
+  } else {
+    views::NativeWidgetWin::Activate();
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserFrameWin, NativeBrowserFrame implementation:
