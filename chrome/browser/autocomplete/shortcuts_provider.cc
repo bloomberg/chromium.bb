@@ -238,6 +238,13 @@ ACMatchClassifications ShortcutsProvider::ClassifyAllMatchesInString(
   DCHECK(!find_text.empty());
   DCHECK(!find_words.empty());
 
+  // The code below assumes |text| is nonempty and therefore the resulting
+  // classification vector should always be nonempty as well.  Returning early
+  // if |text| is empty assures we'll return the (correct) empty vector rather
+  // than a vector with a single (0, NONE) match.
+  if (text.empty())
+    return original_class;
+
   // First check whether |text| begins with |find_text| and mark that whole
   // section as a match if so.
   string16 text_lowercase(base::i18n::ToLower(text));

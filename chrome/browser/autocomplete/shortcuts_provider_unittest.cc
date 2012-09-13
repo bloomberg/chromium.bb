@@ -501,15 +501,12 @@ TEST_F(ShortcutsProviderTest, ClassifyAllMatchesInString) {
   EXPECT_EQ(17U, spans_i[4].offset);
   EXPECT_EQ(ACMatchClassification::URL, spans_i[4].style);
 
-  // Some web sites do not have a description, so second and third parameters in
-  // ClassifyAllMatchesInString could be empty.
+  // Some web sites do not have a description.  If the string being searched is
+  // empty, the classifications must also be empty: http://crbug.com/148647
   // Extra parens in the next line hack around C++03's "most vexing parse".
   class ClassifyTest classify_test5((string16()), ACMatchClassifications());
   ACMatchClassifications spans_j = classify_test5.RunTest(ASCIIToUTF16("man"));
-  ASSERT_EQ(1U, spans_j.size());
-  EXPECT_EQ(0U, spans_j.front().offset);
-  EXPECT_EQ(AutocompleteMatch::ACMatchClassification::NONE,
-      spans_j.front().style);
+  ASSERT_EQ(0U, spans_j.size());
 
   // Matches which end at beginning of classification merge properly.
   matches.clear();
@@ -557,7 +554,6 @@ TEST_F(ShortcutsProviderTest, ClassifyAllMatchesInString) {
             spans_l[2].style);
   EXPECT_EQ(11U, spans_l[3].offset);
   EXPECT_EQ(ACMatchClassification::NONE, spans_l[3].style);
-
 }
 
 TEST_F(ShortcutsProviderTest, CalculateScore) {
