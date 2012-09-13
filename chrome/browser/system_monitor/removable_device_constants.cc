@@ -9,6 +9,10 @@ namespace chrome {
 const char kFSUniqueIdPrefix[] = "UUID:";
 const char kVendorModelSerialPrefix[] = "VendorModelSerial:";
 
+#if defined(OS_CHROMEOS)
+const char kVendorModelVolumeStoragePrefix[] = "VendorModelVolumeStorage:";
+#endif
+
 const char kNonSpaceDelim[] = ":";
 const char kSpaceDelim[] = " ";
 

@@ -8,6 +8,7 @@
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
+#include "base/stringprintf.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/mtp/media_transfer_protocol_manager.h"
@@ -25,9 +26,37 @@ namespace {
 // Device root path constant.
 const char kRootPath[] = "/";
 
-// Helper function to get device id from storage name.
-std::string GetDeviceIdFromStorageName(const std::string& storage_name) {
-  std::string unique_id(chrome::kFSUniqueIdPrefix + storage_name);
+// Returns the storage identifier of the device from the given |storage_name|.
+// E.g. If the |storage_name| is "usb:2,2:65537", the storage identifier is
+// "65537".
+std::string GetStorageIdFromStorageName(const std::string& storage_name) {
+  std::vector<std::string> name_parts;
+  base::SplitString(storage_name, ':', &name_parts);
+  return name_parts.size() == 3 ? name_parts[2] : std::string();
+}
+
+// Returns a unique device id from the given |storage_info|.
+std::string GetDeviceIdFromStorageInfo(const MtpStorageInfo& storage_info) {
+  const std::string storage_id =
+      GetStorageIdFromStorageName(storage_info.storage_name());
+  if (storage_id.empty())
+    return std::string();
+
+  // Some devices have multiple data stores. Therefore, include storage id as
+  // part of unique id along with vendor, model and volume information.
+  const std::string vendor_id = base::UintToString(storage_info.vendor_id());
+  const std::string model_id = base::UintToString(storage_info.product_id());
+  const std::string& volume_id = storage_info.volume_identifier();
+  std::string unique_id = base::StringPrintf(
+      "%s%s%s%s%s%s%s%s",
+      chrome::kVendorModelVolumeStoragePrefix,
+      vendor_id.c_str(),
+      chrome::kNonSpaceDelim,
+      model_id.c_str(),
+      chrome::kNonSpaceDelim,
+      volume_id.c_str(),
+      chrome::kNonSpaceDelim,
+      storage_id.c_str());
   return MediaStorageUtil::MakeDeviceId(MediaStorageUtil::MTP_OR_PTP,
                                         unique_id);
 }
@@ -64,7 +93,7 @@ void GetStorageInfo(const std::string& storage_name,
     return;
 
   if (id)
-    *id = GetDeviceIdFromStorageName(storage_name);
+    *id = GetDeviceIdFromStorageInfo(*storage_info);
 
   if (label)
     *label = GetDeviceLabelFromStorageInfo(*storage_info);
