@@ -111,7 +111,23 @@ bool UtilityProcessHostImpl::StartProcess() {
   if (channel_id.empty())
     return false;
 
-  FilePath exe_path = ChildProcessHost::GetChildPath(child_flags_);
+  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  int child_flags = child_flags_;
+
+#if defined(OS_POSIX)
+  bool has_cmd_prefix = browser_command_line.HasSwitch(
+      switches::kUtilityCmdPrefix);
+
+  // When running under gdb, forking /proc/self/exe ends up forking the gdb
+  // executable instead of Chromium. It is almost safe to assume that no
+  // updates will happen while a developer is running with
+  // |switches::kUtilityCmdPrefix|. See ChildProcessHost::GetChildPath() for
+  // a similar case with Valgrind.
+  if (has_cmd_prefix)
+    child_flags = ChildProcessHost::CHILD_NORMAL;
+#endif
+
+  FilePath exe_path = ChildProcessHost::GetChildPath(child_flags);
   if (exe_path.empty()) {
     NOTREACHED() << "Unable to get utility process binary name.";
     return false;
@@ -125,7 +141,6 @@ bool UtilityProcessHostImpl::StartProcess() {
       content::GetContentClient()->browser()->GetApplicationLocale();
   cmd_line->AppendSwitchASCII(switches::kLang, locale);
 
-  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   if (browser_command_line.HasSwitch(switches::kChromeFrame))
     cmd_line->AppendSwitch(switches::kChromeFrame);
   if (no_sandbox_ || browser_command_line.HasSwitch(switches::kNoSandbox))
@@ -136,8 +151,6 @@ bool UtilityProcessHostImpl::StartProcess() {
 #if defined(OS_POSIX)
   // TODO(port): Sandbox this on Linux.  Also, zygote this to work with
   // Linux updating.
-  bool has_cmd_prefix = browser_command_line.HasSwitch(
-      switches::kUtilityCmdPrefix);
   if (has_cmd_prefix) {
     // launch the utility child process with some prefix (usually "xterm -e gdb
     // --args").
