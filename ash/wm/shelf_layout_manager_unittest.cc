@@ -731,5 +731,57 @@ TEST_F(ShelfLayoutManagerTest, ShelfFlickerOnTrayActivation) {
   shelf->RemoveObserver(&observer);
 }
 
+TEST_F(ShelfLayoutManagerTest, WorkAreaChangeWorkspace) {
+  // Make sure the shelf is always visible.
+  ShelfLayoutManager* shelf = GetShelfLayoutManager();
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  shelf->LayoutShelf();
+
+  views::Widget* widget_one = new views::Widget;
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  params.bounds = gfx::Rect(0, 0, 200, 200);
+  widget_one->Init(params);
+  widget_one->Show();
+  widget_one->Maximize();
+
+  views::Widget* widget_two = new views::Widget;
+  widget_two->Init(params);
+  widget_two->Show();
+  widget_two->Maximize();
+  widget_two->Activate();
+
+  // Both windows are maximized. They should be of the same size.
+  EXPECT_EQ(widget_one->GetNativeWindow()->bounds().ToString(),
+            widget_two->GetNativeWindow()->bounds().ToString());
+
+  // Now hide the shelf.
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+
+  // The active maximized window will get resized to the new work area. However,
+  // the inactive window should not get resized.
+  EXPECT_NE(widget_one->GetNativeWindow()->bounds().ToString(),
+            widget_two->GetNativeWindow()->bounds().ToString());
+
+  // Activate the first window. Now, both windows should be of the same size
+  // again.
+  widget_one->Activate();
+  EXPECT_EQ(widget_one->GetNativeWindow()->bounds().ToString(),
+            widget_two->GetNativeWindow()->bounds().ToString());
+
+  // Now show the shelf.
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+
+  // The active maximized window will get resized to the new work area. However,
+  // the inactive window should not get resized.
+  EXPECT_NE(widget_one->GetNativeWindow()->bounds().ToString(),
+            widget_two->GetNativeWindow()->bounds().ToString());
+
+  // Activate the first window. Now, both windows should be of the same size
+  // again.
+  widget_two->Activate();
+  EXPECT_EQ(widget_one->GetNativeWindow()->bounds().ToString(),
+            widget_two->GetNativeWindow()->bounds().ToString());
+}
+
 }  // namespace internal
 }  // namespace ash

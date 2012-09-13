@@ -24,6 +24,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/widget/widget.h"
 
 using aura::Window;
 
@@ -879,7 +880,6 @@ TEST_F(WorkspaceManager2Test, DontMoveOnSwitch) {
   generator.MoveMouseTo(0, 0);
 
   scoped_ptr<Window> w1(CreateTestWindow());
-  const gfx::Rect w1_bounds(0, 1, 101, 102);
   ShelfLayoutManager* shelf = Shell::GetInstance()->shelf();
   const gfx::Rect touches_shelf_bounds(
       0, shelf->GetIdealBounds().y() - 10, 101, 102);
@@ -898,6 +898,40 @@ TEST_F(WorkspaceManager2Test, DontMoveOnSwitch) {
   // Switch to w1.
   wm::ActivateWindow(w1.get());
   EXPECT_EQ(touches_shelf_bounds.ToString(), w1->bounds().ToString());
+}
+
+// Verifies that windows that are completely offscreen move when switching
+// workspaces.
+TEST_F(WorkspaceManager2Test, MoveOnSwitch) {
+  aura::test::EventGenerator generator(
+      Shell::GetPrimaryRootWindow(), gfx::Point());
+  generator.MoveMouseTo(0, 0);
+
+  scoped_ptr<Window> w1(CreateTestWindow());
+  ShelfLayoutManager* shelf = Shell::GetInstance()->shelf();
+  const gfx::Rect w1_bounds(0, shelf->GetIdealBounds().y(), 100, 200);
+  // Move |w1| so that the top edge is the same as the top edge of the shelf.
+  w1->SetBounds(w1_bounds);
+  w1->Show();
+  wm::ActivateWindow(w1.get());
+  EXPECT_EQ(w1_bounds.ToString(), w1->bounds().ToString());
+
+  // Create another window and maximize it.
+  scoped_ptr<Window> w2(CreateTestWindow());
+  w2->SetBounds(gfx::Rect(10, 11, 250, 251));
+  w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  w2->Show();
+  wm::ActivateWindow(w2.get());
+
+  // Increase the size of the shelf. This would make |w1| fall completely out of
+  // the display work area.
+  gfx::Size size = shelf->status()->GetWindowBoundsInScreen().size();
+  size.Enlarge(0, 30);
+  shelf->status()->SetSize(size);
+
+  // Switch to w1. The window should have moved.
+  wm::ActivateWindow(w1.get());
+  EXPECT_NE(w1_bounds.ToString(), w1->bounds().ToString());
 }
 
 // Verifies Focus() works in a window that isn't in the active workspace.

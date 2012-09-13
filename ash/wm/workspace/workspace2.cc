@@ -9,6 +9,7 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_event_handler.h"
+#include "ash/wm/workspace/workspace_layout_manager2.h"
 #include "ash/wm/workspace/workspace_manager2.h"
 #include "ui/aura/window.h"
 
@@ -21,7 +22,8 @@ Workspace2::Workspace2(WorkspaceManager2* manager,
     : is_maximized_(is_maximized),
       workspace_manager_(manager),
       window_(new aura::Window(NULL)),
-      event_handler_(new WorkspaceEventHandler(window_)) {
+      event_handler_(new WorkspaceEventHandler(window_)),
+      workspace_layout_manager_(NULL) {
   window_->SetProperty(internal::kChildWindowVisibilityChangesAnimatedKey,
                        true);
   window_->set_id(kShellWindowId_WorkspaceContainer);
@@ -32,6 +34,11 @@ Workspace2::Workspace2(WorkspaceManager2* manager,
   window_->Hide();
   window_->SetParent(parent);
   window_->SetProperty(internal::kUsesScreenCoordinatesKey, true);
+
+  // The layout-manager cannot be created in the initializer list since it
+  // depends on the window to have been initialized.
+  workspace_layout_manager_ = new WorkspaceLayoutManager2(this);
+  window_->SetLayoutManager(workspace_layout_manager_);
 }
 
 Workspace2::~Workspace2() {

@@ -95,7 +95,7 @@ void WorkspaceLayoutManager2::SetChildBounds(
 
 void WorkspaceLayoutManager2::OnRootWindowResized(const aura::RootWindow* root,
                                                   const gfx::Size& old_size) {
-  AdjustWindowSizesForScreenChange();
+  AdjustWindowSizesForScreenChange(ADJUST_WINDOW_SCREEN_SIZE_CHANGED);
 }
 
 void WorkspaceLayoutManager2::OnDisplayWorkAreaInsetsChanged() {
@@ -103,7 +103,7 @@ void WorkspaceLayoutManager2::OnDisplayWorkAreaInsetsChanged() {
     const gfx::Rect work_area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(
                                   workspace_->window()->parent()));
     if (work_area != work_area_)
-      AdjustWindowSizesForScreenChange();
+      AdjustWindowSizesForScreenChange(ADJUST_WINDOW_DISPLAY_INSETS_CHANGED);
   }
 }
 
@@ -198,7 +198,8 @@ void WorkspaceLayoutManager2::ShowStateChanged(
   }
 }
 
-void WorkspaceLayoutManager2::AdjustWindowSizesForScreenChange() {
+void WorkspaceLayoutManager2::AdjustWindowSizesForScreenChange(
+    AdjustWindowReason reason) {
   work_area_ = ScreenAsh::GetDisplayWorkAreaBoundsInParent(
       workspace_->window()->parent());
   // If a user plugs an external display into a laptop running Aura the
@@ -209,15 +210,42 @@ void WorkspaceLayoutManager2::AdjustWindowSizesForScreenChange() {
   for (WindowSet::const_iterator it = windows_.begin();
        it != windows_.end();
        ++it) {
-    AdjustWindowSizeForScreenChange(*it);
+    AdjustWindowSizeForScreenChange(*it, reason);
   }
 }
 
-void WorkspaceLayoutManager2::AdjustWindowSizeForScreenChange(Window* window) {
+void WorkspaceLayoutManager2::AdjustWindowSizeForScreenChange(
+    Window* window,
+    AdjustWindowReason reason) {
   if (!SetMaximizedOrFullscreenBounds(window)) {
-    // The work area may be smaller than the full screen.  Put as much of the
-    // window as possible within the display area.
-    window->SetBounds(window->bounds().AdjustToFit(work_area_));
+    if (reason == ADJUST_WINDOW_SCREEN_SIZE_CHANGED) {
+      // The work area may be smaller than the full screen.  Put as much of the
+      // window as possible within the display area.
+      window->SetBounds(window->bounds().AdjustToFit(work_area_));
+    } else if (reason == ADJUST_WINDOW_DISPLAY_INSETS_CHANGED) {
+      // If the window is completely outside the display work area, then move it
+      // enough to be visible again.
+      const int kMinAreaVisible = 10;
+      gfx::Rect bounds = window->bounds();
+      if (!work_area_.Intersects(bounds)) {
+        int y_offset = 0;
+        if (work_area_.bottom() < bounds.y()) {
+          y_offset = work_area_.bottom() - bounds.y() - kMinAreaVisible;
+        } else if (bounds.bottom() < work_area_.y()) {
+          y_offset = work_area_.y() - bounds.bottom() + kMinAreaVisible;
+        }
+
+        int x_offset = 0;
+        if (work_area_.right() < bounds.x()) {
+          x_offset = work_area_.right() - bounds.x() - kMinAreaVisible;
+        } else if (bounds.right() < work_area_.x()) {
+          x_offset = work_area_.x() - bounds.right() + kMinAreaVisible;
+        }
+
+        bounds.Offset(x_offset, y_offset);
+        window->SetBounds(bounds);
+      }
+    }
   }
 }
 

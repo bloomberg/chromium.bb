@@ -252,6 +252,11 @@ void WorkspaceManager2::SetActiveWorkspace(Workspace2* workspace,
   Workspace2* last_active = active_workspace_;
   active_workspace_ = workspace;
 
+  // The display work-area may have changed while |workspace| was not the active
+  // workspace. Give it a chance to adjust its state for the new work-area.
+  active_workspace_->workspace_layout_manager()->
+      OnDisplayWorkAreaInsetsChanged();
+
   const bool is_unminimizing_maximized_window =
       unminimizing_workspace_ && unminimizing_workspace_ == active_workspace_ &&
       active_workspace_->is_maximized();
@@ -314,9 +319,7 @@ WorkspaceManager2::FindWorkspace(Workspace2* workspace)  {
 }
 
 Workspace2* WorkspaceManager2::CreateWorkspace(bool maximized) {
-  Workspace2* workspace = new Workspace2(this, contents_view_, maximized);
-  workspace->window()->SetLayoutManager(new WorkspaceLayoutManager2(workspace));
-  return workspace;
+  return new Workspace2(this, contents_view_, maximized);
 }
 
 void WorkspaceManager2::MoveWorkspaceToPendingOrDelete(

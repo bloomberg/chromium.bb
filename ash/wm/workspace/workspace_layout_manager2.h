@@ -80,11 +80,23 @@ class ASH_EXPORT WorkspaceLayoutManager2
                         ui::WindowShowState last_show_state,
                         ui::Layer* cloned_layer);
 
-  // Adjusts the sizes of the windows during a screen change.
-  void AdjustWindowSizesForScreenChange();
+  enum AdjustWindowReason {
+    ADJUST_WINDOW_SCREEN_SIZE_CHANGED,
+    ADJUST_WINDOW_DISPLAY_INSETS_CHANGED
+  };
 
-  // Adjusts the sizes of the specific window in respond to a screen change.
-  void AdjustWindowSizeForScreenChange(aura::Window* window);
+  // Adjusts the sizes of the windows during a screen change. If this is called
+  // for a screen size change (i.e. |reason| is
+  // ADJUST_WINDOW_SCREEN_SIZE_CHANGED), the non-maximized/non-fullscreen
+  // windows are readjusted to make sure the window is completely within the
+  // display region. Otherwise, it makes sure at least some parts of the window
+  // is on display.
+  void AdjustWindowSizesForScreenChange(AdjustWindowReason reason);
+
+  // Adjusts the sizes of the specific window in respond to a screen change or
+  // display-area size change.
+  void AdjustWindowSizeForScreenChange(aura::Window* window,
+                                       AdjustWindowReason reason);
 
   // Updates the bounds of the window from a show state change.
   void UpdateBoundsFromShowState(aura::Window* window);

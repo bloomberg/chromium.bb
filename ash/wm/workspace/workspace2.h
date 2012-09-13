@@ -23,6 +23,7 @@ namespace ash {
 namespace internal {
 
 class WorkspaceEventHandler;
+class WorkspaceLayoutManager2;
 class WorkspaceManager2;
 
 // Workspace is used to maintain either a single maximized windows (including
@@ -42,6 +43,16 @@ class ASH_EXPORT Workspace2 {
 
   aura::Window* window() { return window_; }
 
+  const WorkspaceLayoutManager2* workspace_layout_manager() const {
+    return workspace_layout_manager_;
+  }
+  WorkspaceLayoutManager2* workspace_layout_manager() {
+    return workspace_layout_manager_;
+  }
+
+  const WorkspaceManager2* workspace_manager() const {
+    return workspace_manager_;
+  }
   WorkspaceManager2* workspace_manager() { return workspace_manager_; }
 
   // Returns true if the Workspace should be moved to pending. This is true
@@ -62,6 +73,8 @@ class ASH_EXPORT Workspace2 {
   aura::Window* window_;
 
   scoped_ptr<WorkspaceEventHandler> event_handler_;
+
+  WorkspaceLayoutManager2* workspace_layout_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(Workspace2);
 };
