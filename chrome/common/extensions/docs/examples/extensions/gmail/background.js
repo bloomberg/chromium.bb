@@ -299,3 +299,14 @@ chrome.webNavigation.onDOMContentLoaded.addListener(function(changeInfo) {
 }, filters);
 
 chrome.browserAction.onClicked.addListener(goToInbox);
+
+// This hack is needed because Chrome 22 does not persist browserAction icon
+// state, and also doesn't expose onStartup. So the icon always starts out in
+// wrong state. We don't actually need onStartup, we just use it as a clue
+// that we're in a version of Chrome that has this problem.
+if (!chrome.runtime.onStartup) {
+  chrome.windows.onCreated.addListener(function() {
+    console.log('Window created... updating icon.');
+    updateIcon();
+  });
+}
