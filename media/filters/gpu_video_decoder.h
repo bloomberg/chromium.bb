@@ -70,7 +70,6 @@ class MEDIA_EXPORT GpuVideoDecoder
   virtual void Reset(const base::Closure& closure) OVERRIDE;
   virtual void Stop(const base::Closure& closure) OVERRIDE;
   virtual bool HasAlpha() const OVERRIDE;
-  virtual void PrepareForShutdownHack() OVERRIDE;
 
   // VideoDecodeAccelerator::Client implementation.
   virtual void NotifyInitializeDone() OVERRIDE;
@@ -214,10 +213,6 @@ class MEDIA_EXPORT GpuVideoDecoder
   std::list<scoped_refptr<VideoFrame> > ready_video_frames_;
   int64 next_picture_buffer_id_;
   int64 next_bitstream_buffer_id_;
-
-  // Indicates PrepareForShutdownHack()'s been called.  Makes further calls to
-  // this class not require the render thread's loop to be processing.
-  bool shutting_down_;
 
   // Indicates decoding error occurred.
   bool error_occured_;

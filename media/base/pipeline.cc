@@ -724,11 +724,6 @@ void Pipeline::StopTask(const base::Closure& stop_cb) {
     return;
   }
 
-  // TODO(scherkus): Remove after pipeline state machine refactoring has some
-  // time to bake http://crbug.com/110228
-  if (video_renderer_)
-    video_renderer_->PrepareForShutdownHack();
-
   SetState(kStopping);
   pending_callbacks_.reset();
   stop_cb_ = stop_cb;

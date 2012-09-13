@@ -39,7 +39,6 @@ class CONTENT_EXPORT CaptureVideoDecoder
   virtual void Read(const ReadCB& read_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
   virtual void Stop(const base::Closure& closure) OVERRIDE;
-  virtual void PrepareForShutdownHack() OVERRIDE;
 
   // VideoCapture::EventHandler implementation.
   virtual void OnStarted(media::VideoCapture* capture) OVERRIDE;
@@ -94,7 +93,6 @@ class CONTENT_EXPORT CaptureVideoDecoder
   gfx::Size natural_size_;
   DecoderState state_;
   bool got_first_frame_;
-  bool shutting_down_;
   ReadCB read_cb_;
   base::Closure pending_stop_cb_;
   media::StatisticsCB statistics_cb_;

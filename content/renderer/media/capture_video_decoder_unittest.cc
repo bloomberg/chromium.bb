@@ -217,12 +217,12 @@ TEST_F(CaptureVideoDecoderTest, ReadAndShutdown) {
   // teardown the pipeline) even when there's no input frame.
   Initialize();
 
-  EXPECT_CALL(*this, FrameReady(media::VideoDecoder::kOk,
-                                HasSize(0, 0))).Times(2);
+  EXPECT_CALL(*this, FrameReady(media::VideoDecoder::kOk, HasSize(0, 0)));
   decoder_->Read(read_cb_);
-  decoder_->PrepareForShutdownHack();
+  Stop();
+
+  // Any read after stopping should be immediately satisfied.
+  EXPECT_CALL(*this, FrameReady(media::VideoDecoder::kOk, HasSize(0, 0)));
   decoder_->Read(read_cb_);
   message_loop_->RunAllPending();
-
-  Stop();
 }

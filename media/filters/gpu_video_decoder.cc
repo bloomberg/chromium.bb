@@ -56,7 +56,6 @@ GpuVideoDecoder::GpuVideoDecoder(
       decoder_texture_target_(0),
       next_picture_buffer_id_(0),
       next_bitstream_buffer_id_(0),
-      shutting_down_(false),
       error_occured_(false) {
   DCHECK(!message_loop_factory_cb_.is_null());
   DCHECK(factories_);
@@ -86,14 +85,7 @@ void GpuVideoDecoder::Reset(const base::Closure& closure)  {
   if (!pending_read_cb_.is_null())
     EnqueueFrameAndTriggerFrameDelivery(VideoFrame::CreateEmptyFrame());
 
-  if (shutting_down_) {
-    // Immediately fire the callback instead of waiting for the reset to
-    // complete (which will happen after PipelineImpl::Stop() completes).
-    gvd_loop_proxy_->PostTask(FROM_HERE, closure);
-  } else {
-    pending_reset_cb_ = closure;
-  }
-
+  pending_reset_cb_ = closure;
   vda_loop_proxy_->PostTask(FROM_HERE, base::Bind(
       &VideoDecodeAccelerator::Reset, weak_vda_));
 }
@@ -307,15 +299,6 @@ void GpuVideoDecoder::GetBufferData(int32 id, base::TimeDelta* timestamp,
 
 bool GpuVideoDecoder::HasAlpha() const {
   return true;
-}
-
-void GpuVideoDecoder::PrepareForShutdownHack() {
-  if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
-    gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        &GpuVideoDecoder::PrepareForShutdownHack, this));
-    return;
-  }
-  shutting_down_ = true;
 }
 
 void GpuVideoDecoder::NotifyInitializeDone() {

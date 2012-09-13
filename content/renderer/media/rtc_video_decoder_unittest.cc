@@ -195,11 +195,9 @@ class RTCVideoDecoderTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    EXPECT_CALL(*video_track_, RemoveRenderer(decoder_.get()));
-    decoder_->Stop(media::NewExpectedClosure());
-
-    message_loop_.RunAllPending();
-    EXPECT_EQ(RTCVideoDecoder::kStopped, decoder_->state_);
+    if (decoder_->state_ == RTCVideoDecoder::kStopped)
+      return;
+    Stop();
   }
 
   void InitializeDecoderSuccessfully() {
@@ -208,6 +206,14 @@ class RTCVideoDecoderTest : public testing::Test {
     decoder_->Initialize(
         NULL, NewExpectedStatusCB(PIPELINE_OK), NewStatisticsCB());
     message_loop_.RunAllPending();
+  }
+
+  void Stop() {
+    EXPECT_CALL(*video_track_, RemoveRenderer(decoder_.get()));
+    decoder_->Stop(media::NewExpectedClosure());
+
+    message_loop_.RunAllPending();
+    EXPECT_EQ(RTCVideoDecoder::kStopped, decoder_->state_);
   }
 
   StatisticsCB NewStatisticsCB() {
@@ -307,12 +313,13 @@ TEST_F(RTCVideoDecoderTest, ReadAndShutdown) {
   InitializeDecoderSuccessfully();
 
   EXPECT_CALL(*this, FrameReady(media::VideoDecoder::kOk,
-                                scoped_refptr<media::VideoFrame>())).Times(2);
+                                scoped_refptr<media::VideoFrame>()));
   decoder_->Read(read_cb_);
-  EXPECT_FALSE(decoder_->shutting_down_);
-  decoder_->PrepareForShutdownHack();
-  EXPECT_TRUE(decoder_->shutting_down_);
-  decoder_->Read(read_cb_);
+  Stop();
 
+  // Any read after stopping should be immediately satisfied.
+  EXPECT_CALL(*this, FrameReady(media::VideoDecoder::kOk,
+                                scoped_refptr<media::VideoFrame>()));
+  decoder_->Read(read_cb_);
   message_loop_.RunAllPending();
 }
