@@ -11,6 +11,7 @@
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/plugin_finder.h"
 #include "chrome/browser/plugin_installer.h"
 #include "chrome/browser/plugin_prefs.h"
@@ -37,6 +38,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "webkit/plugins/npapi/plugin_group.h"
+
+#if defined(OS_WIN)
+#include "base/win/metro.h"
+#endif
 
 using content::InterstitialPage;
 using content::OpenURLParams;
@@ -341,12 +346,24 @@ string16 PDFUnsupportedFeatureInfoBarDelegate::GetButtonLabel(
 }
 
 string16 PDFUnsupportedFeatureInfoBarDelegate::GetMessageText() const {
+#if defined(OS_WIN)
+  if (base::win::IsMetroProcess()) {
+    return l10n_util::GetStringUTF16(
+        IDS_PDF_INFOBAR_QUESTION_READER_METRO_MODE);
+  }
+#endif
   return l10n_util::GetStringUTF16(reader_installed_ ?
       IDS_PDF_INFOBAR_QUESTION_READER_INSTALLED :
       IDS_PDF_INFOBAR_QUESTION_READER_NOT_INSTALLED);
 }
 
 bool PDFUnsupportedFeatureInfoBarDelegate::OnYes() {
+#if defined(OS_WIN)
+  if (base::win::IsMetroProcess()) {
+    browser::AttemptRestartWithModeSwitch();
+    return true;
+  }
+#endif
   if (!reader_installed_) {
     content::RecordAction(UserMetricsAction("PDF_InstallReaderInfoBarOK"));
     OpenReaderUpdateURL(tab_contents_->web_contents());
