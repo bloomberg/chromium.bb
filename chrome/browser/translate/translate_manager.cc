@@ -46,6 +46,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "google_apis/google_api_keys.h"
 #include "grit/browser_resources.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -168,6 +169,17 @@ const char* const kLanguageListFetchURL =
     "https://translate.googleapis.com/translate_a/l?client=chrome&cb=sl&hl=%s";
 const int kMaxRetryLanguageListFetch = 5;
 const int kTranslateScriptExpirationDelayDays = 1;
+
+void AddApiKeyToUrl(GURL* url) {
+  std::string api_key = google_apis::GetAPIKey();
+  std::string query(url->query());
+  if (!query.empty())
+    query += "&";
+  query += "key=" + net::EscapeQueryParamValue(api_key, true);
+  GURL::Replacements replacements;
+  replacements.SetQueryStr(query);
+  *url = url->ReplaceComponents(replacements);
+}
 
 }  // namespace
 
@@ -663,27 +675,31 @@ void TranslateManager::RevertTranslation(WebContents* web_contents) {
 
 void TranslateManager::ReportLanguageDetectionError(WebContents* web_contents) {
   UMA_HISTOGRAM_COUNTS("Translate.ReportLanguageDetectionError", 1);
-  GURL page_url = web_contents->GetController().GetActiveEntry()->GetURL();
-  // Report option should be disabled for secure URLs.
-  DCHECK(!page_url.SchemeIsSecure());
-  std::string report_error_url(kReportLanguageDetectionErrorURL);
-  report_error_url += "?client=cr&action=langidc&u=";
-  report_error_url += net::EscapeUrlEncodedData(page_url.spec(), true);
-  report_error_url += "&sl=";
-
-  TranslateTabHelper* helper =
-      TabContents::FromWebContents(web_contents)->translate_tab_helper();
-  report_error_url += helper->language_state().original_language();
-  report_error_url += "&hl=";
-  report_error_url +=
-      GetLanguageCode(g_browser_process->GetApplicationLocale());
-  // Open that URL in a new tab so that the user can tell us more.
+  // We'll open the URL in a new tab so that the user can tell us more.
   Browser* browser = browser::FindBrowserWithWebContents(web_contents);
   if (!browser) {
     NOTREACHED();
     return;
   }
-  chrome::AddSelectedTabWithURL(browser, GURL(report_error_url),
+
+  GURL page_url = web_contents->GetController().GetActiveEntry()->GetURL();
+  // Report option should be disabled for secure URLs.
+  DCHECK(!page_url.SchemeIsSecure());
+  std::string report_error_url_str(kReportLanguageDetectionErrorURL);
+  report_error_url_str += "?client=cr&action=langidc&u=";
+  report_error_url_str += net::EscapeUrlEncodedData(page_url.spec(), true);
+  report_error_url_str += "&sl=";
+
+  TranslateTabHelper* helper =
+      TabContents::FromWebContents(web_contents)->translate_tab_helper();
+  report_error_url_str += helper->language_state().original_language();
+  report_error_url_str += "&hl=";
+  report_error_url_str +=
+      GetLanguageCode(g_browser_process->GetApplicationLocale());
+
+  GURL report_error_url(report_error_url_str);
+  AddApiKeyToUrl(&report_error_url);
+  chrome::AddSelectedTabWithURL(browser, report_error_url,
                                 content::PAGE_TRANSITION_AUTO_BOOKMARK);
 }
 
@@ -811,11 +827,13 @@ void TranslateManager::FetchLanguageListFromTranslateServer(
     return;
   }
 
-  std::string language_list_fetch_url = base::StringPrintf(
-      kLanguageListFetchURL,
-      GetLanguageCode(g_browser_process->GetApplicationLocale()).c_str());
+  GURL language_list_fetch_url = GURL(
+      base::StringPrintf(
+          kLanguageListFetchURL,
+          GetLanguageCode(g_browser_process->GetApplicationLocale()).c_str()));
+  AddApiKeyToUrl(&language_list_fetch_url);
   language_list_request_pending_.reset(net::URLFetcher::Create(
-      1, GURL(language_list_fetch_url), net::URLFetcher::GET, this));
+      1, language_list_fetch_url, net::URLFetcher::GET, this));
   language_list_request_pending_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                                                net::LOAD_DO_NOT_SAVE_COOKIES);
   language_list_request_pending_->SetRequestContext(
@@ -833,11 +851,12 @@ void TranslateManager::RequestTranslateScript() {
   if (translate_script_request_pending_.get() != NULL)
     return;
 
-  std::string translate_script_url = base::StringPrintf(
+  GURL translate_script_url = GURL(base::StringPrintf(
       kTranslateScriptURL,
-      GetLanguageCode(g_browser_process->GetApplicationLocale()).c_str());
+      GetLanguageCode(g_browser_process->GetApplicationLocale()).c_str()));
+  AddApiKeyToUrl(&translate_script_url);
   translate_script_request_pending_.reset(net::URLFetcher::Create(
-      0, GURL(translate_script_url), net::URLFetcher::GET, this));
+      0, translate_script_url, net::URLFetcher::GET, this));
   translate_script_request_pending_->SetLoadFlags(
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);
   translate_script_request_pending_->SetRequestContext(
