@@ -580,7 +580,7 @@ void HostNPScriptObject::FinishConnect(
     network_settings.max_port = NetworkSettings::kDefaultMaxPort;
   }
 
-  // Create the Host.
+  // Create the host.
   host_ = new ChromotingHost(
       host_context_.get(), signal_strategy_.get(),
       desktop_environment_factory_.get(),
@@ -589,17 +589,30 @@ void HostNPScriptObject::FinishConnect(
   host_->AddStatusObserver(this);
   log_to_server_.reset(
       new LogToServer(host_, ServerLogEntry::IT2ME, signal_strategy_.get()));
-  base::Closure disconnect_callback = base::Bind(
-      &ChromotingHost::Shutdown, base::Unretained(host_.get()),
-      base::Closure());
-  it2me_host_user_interface_->Start(host_.get(), disconnect_callback);
-  host_event_logger_ = HostEventLogger::Create(host_, kApplicationName);
 
+  // Disable audio by default.
+  // TODO(sergeyu): Add UI to enable it.
+  scoped_ptr<protocol::CandidateSessionConfig> protocol_config =
+      protocol::CandidateSessionConfig::CreateDefault();
+  protocol::CandidateSessionConfig::DisableAudioChannel(protocol_config.get());
+  host_->set_protocol_config(protocol_config.Pass());
+
+  // Provide localization strings to the host.
   {
     base::AutoLock auto_lock(ui_strings_lock_);
     host_->SetUiStrings(ui_strings_);
   }
 
+  // Create user interface.
+  base::Closure disconnect_callback = base::Bind(
+      &ChromotingHost::Shutdown, base::Unretained(host_.get()),
+      base::Closure());
+  it2me_host_user_interface_->Start(host_.get(), disconnect_callback);
+
+  // Create event logger.
+  host_event_logger_ = HostEventLogger::Create(host_, kApplicationName);
+
+  // Connect signaling and start the host.
   signal_strategy_->Connect();
   host_->Start(uid);
 

@@ -283,7 +283,7 @@ class SimpleHost : public HeartbeatSender::Listener {
     }
 
     if (protocol_config_.get()) {
-      host_->set_protocol_config(protocol_config_.release());
+      host_->set_protocol_config(protocol_config_.Pass());
     }
 
     if (is_it2me_) {

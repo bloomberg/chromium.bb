@@ -76,11 +76,8 @@ ChromotingHost::ChromotingHost(
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
   if (!desktop_environment_factory_->SupportsAudioCapture()) {
-    // Disable audio by replacing our list of supported audio configurations
-    // with the NONE config.
-    protocol_config_->mutable_audio_configs()->clear();
-    protocol_config_->mutable_audio_configs()->push_back(
-        protocol::ChannelConfig());
+    protocol::CandidateSessionConfig::DisableAudioChannel(
+        protocol_config_.get());
   }
 }
 
@@ -320,11 +317,11 @@ void ChromotingHost::OnIncomingSession(
 }
 
 void ChromotingHost::set_protocol_config(
-    protocol::CandidateSessionConfig* config) {
+    scoped_ptr<protocol::CandidateSessionConfig> config) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
-  DCHECK(config);
+  DCHECK(config.get());
   DCHECK_EQ(state_, kInitial);
-  protocol_config_.reset(config);
+  protocol_config_ = config.Pass();
 }
 
 void ChromotingHost::OnLocalMouseMoved(const SkIPoint& new_pos) {

@@ -581,8 +581,6 @@ TEST_F(ChromotingHostTest, IncomingSessionIncompatible) {
       empty_candidate_config_.get()));
   EXPECT_CALL(host_status_observer_, OnShutdown());
 
-  host_->set_protocol_config(
-      protocol::CandidateSessionConfig::CreateDefault().release());
   host_->Start(xmpp_login_);
 
   protocol::SessionManager::IncomingSessionResponse response =
@@ -604,8 +602,6 @@ TEST_F(ChromotingHostTest, IncomingSessionAccepted) {
   EXPECT_CALL(host_status_observer_, OnAccessDenied(_));
   EXPECT_CALL(host_status_observer_, OnShutdown());
 
-  host_->set_protocol_config(
-      protocol::CandidateSessionConfig::CreateDefault().release());
   host_->Start(xmpp_login_);
 
   protocol::SessionManager::IncomingSessionResponse response =
@@ -627,8 +623,6 @@ TEST_F(ChromotingHostTest, IncomingSessionOverload) {
   EXPECT_CALL(host_status_observer_, OnAccessDenied(_));
   EXPECT_CALL(host_status_observer_, OnShutdown());
 
-  host_->set_protocol_config(
-      protocol::CandidateSessionConfig::CreateDefault().release());
   host_->Start(xmpp_login_);
 
   protocol::SessionManager::IncomingSessionResponse response =

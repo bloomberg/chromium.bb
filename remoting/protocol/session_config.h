@@ -36,8 +36,11 @@ struct ChannelConfig {
     CODEC_SPEEX,
   };
 
-  // The constructor that creates a config with transport field set to
-  // TRANSPORT_NONE which indicates that corresponding channel is disabled.
+  // Creates a config with transport field set to TRANSPORT_NONE which indicates
+  // that corresponding channel is disabled.
+  static ChannelConfig None();
+
+  // Default constructor. Equivalent to None().
   ChannelConfig();
 
   // Creates a channel config with the specified parameters.
@@ -150,8 +153,8 @@ class CandidateSessionConfig {
       const SessionConfig& config);
   static scoped_ptr<CandidateSessionConfig> CreateDefault();
 
-  // Helper method that modifies |config| to enable audio support.
-  static void EnableAudioChannel(CandidateSessionConfig* config);
+  // Helper method that modifies |config| to disable audio support.
+  static void DisableAudioChannel(CandidateSessionConfig* config);
 
  private:
   CandidateSessionConfig();

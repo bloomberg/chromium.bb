@@ -11,6 +11,10 @@ namespace protocol {
 
 const int kDefaultStreamVersion = 2;
 
+ChannelConfig ChannelConfig::None() {
+  return ChannelConfig();
+}
+
 ChannelConfig::ChannelConfig()
     : transport(TRANSPORT_NONE),
       version(0),
@@ -31,6 +35,7 @@ bool ChannelConfig::operator==(const ChannelConfig& b) const {
 }
 
 SessionConfig::SessionConfig() {
+
 }
 
 // static
@@ -190,34 +195,27 @@ scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateDefault() {
                     ChannelConfig::CODEC_VP8));
 
   // Audio channel.
-  result->mutable_audio_configs()->push_back(ChannelConfig());
-#if defined(ENABLE_REMOTING_AUDIO)
-  EnableAudioChannel(result.get());
-#endif  // defined(ENABLE_REMOTING_AUDIO)
+  result->mutable_audio_configs()->push_back(
+      ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
+                    kDefaultStreamVersion,
+                    ChannelConfig::CODEC_SPEEX));
+  result->mutable_audio_configs()->push_back(
+      ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
+                    kDefaultStreamVersion,
+                    ChannelConfig::CODEC_SPEEX));
+  result->mutable_audio_configs()->push_back(
+      ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
+                    kDefaultStreamVersion,
+                    ChannelConfig::CODEC_VERBATIM));
+  result->mutable_audio_configs()->push_back(ChannelConfig::None());
 
   return result.Pass();
 }
 
 // static
-void CandidateSessionConfig::EnableAudioChannel(
+void CandidateSessionConfig::DisableAudioChannel(
   CandidateSessionConfig* config) {
   config->mutable_audio_configs()->clear();
-  config->mutable_audio_configs()->push_back(
-      ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
-                    kDefaultStreamVersion,
-                    ChannelConfig::CODEC_SPEEX));
-  config->mutable_audio_configs()->push_back(
-      ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
-                    kDefaultStreamVersion,
-                    ChannelConfig::CODEC_SPEEX));
-  config->mutable_audio_configs()->push_back(
-      ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
-                    kDefaultStreamVersion,
-                    ChannelConfig::CODEC_VERBATIM));
-  config->mutable_audio_configs()->push_back(
-      ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
-                    kDefaultStreamVersion,
-                    ChannelConfig::CODEC_VERBATIM));
   config->mutable_audio_configs()->push_back(ChannelConfig());
 }
 

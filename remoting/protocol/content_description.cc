@@ -214,9 +214,8 @@ bool ContentDescription::ParseChannelConfigs(
     child = child->NextNamed(tag);
   }
   if (optional && configs->empty()) {
-      // If there's no mention of the tag, implicitly assume
-      // TRANSPORT_NONE for the channel.
-      configs->push_back(ChannelConfig());
+      // If there's no mention of the tag, implicitly assume disabled channel.
+      configs->push_back(ChannelConfig::None());
   }
   return true;
 }

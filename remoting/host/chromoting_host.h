@@ -125,9 +125,8 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // MouseMoveObserver interface.
   virtual void OnLocalMouseMoved(const SkIPoint& new_pos) OVERRIDE;
 
-  // Sets desired configuration for the protocol. Ownership of the
-  // |config| is transferred to the object. Must be called before Start().
-  void set_protocol_config(protocol::CandidateSessionConfig* config);
+  // Sets desired configuration for the protocol. Must be called before Start().
+  void set_protocol_config(scoped_ptr<protocol::CandidateSessionConfig> config);
 
   // Pause or unpause the session. While the session is paused, remote input
   // is ignored. Can be called from any thread.
