@@ -266,9 +266,6 @@ class RenderViewImpl : public RenderWidget,
   }
 #endif
 
-  WebKit::WebPeerConnection00Handler* CreatePeerConnectionHandlerJsep(
-      WebKit::WebPeerConnection00HandlerClient* client);
-
   // Functions to add and remove observers for this object.
   void AddObserver(content::RenderViewObserver* observer);
   void RemoveObserver(content::RenderViewObserver* observer);

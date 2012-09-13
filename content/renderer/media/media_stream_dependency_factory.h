@@ -9,17 +9,18 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/threading/thread.h"
 #include "content/common/content_export.h"
+#include "content/renderer/p2p/socket_dispatcher.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
+
+namespace base {
+class WaitableEvent;
+}
 
 namespace content {
 class IpcNetworkManager;
 class IpcPacketSocketFactory;
-class P2PSocketDispatcher;
-}
-
-namespace cricket {
-class PortAllocator;
 }
 
 namespace talk_base {
@@ -30,35 +31,54 @@ class Thread;
 
 namespace webrtc {
 class PeerConnection;
-class VideoCaptureModule;
 }
 
-class VideoCaptureImplManager;
-class WebRtcAudioDeviceImpl;
+namespace WebKit {
+class WebMediaStreamDescriptor;
+class WebPeerConnection00Handler;
+class WebPeerConnection00HandlerClient;
+}
 
-// Object factory for MediaStreamImpl and PeerConnectionHandler.
-class CONTENT_EXPORT MediaStreamDependencyFactory {
+class WebRtcAudioDeviceImpl;
+class VideoCaptureImplManager;
+
+// Object factory for RTC MediaStreams and RTC PeerConnections.
+class CONTENT_EXPORT MediaStreamDependencyFactory
+    : NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
-  explicit MediaStreamDependencyFactory(VideoCaptureImplManager* vc_manager);
+  MediaStreamDependencyFactory(
+      VideoCaptureImplManager* vc_manager,
+      content::P2PSocketDispatcher* p2p_socket_dispatcher);
   virtual ~MediaStreamDependencyFactory();
 
-  // Creates and deletes |pc_factory_|, which in turn is used for
-  // creating PeerConnection objects.
-  virtual bool CreatePeerConnectionFactory(
-      talk_base::Thread* worker_thread,
-      talk_base::Thread* signaling_thread,
-      content::P2PSocketDispatcher* socket_dispatcher,
-      talk_base::NetworkManager* network_manager,
-      talk_base::PacketSocketFactory* socket_factory);
-  virtual void ReleasePeerConnectionFactory();
-  virtual bool PeerConnectionFactoryCreated();
+  // Create a a PeerConnectionHandlerJsep object that implements the
+  // WebKit WebPeerConnection00Handler interface.
+  WebKit::WebPeerConnection00Handler* CreatePeerConnectionHandlerJsep(
+      WebKit::WebPeerConnection00HandlerClient* client);
 
-  // Asks the PeerConnection factory to create a PeerConnection object.
+  // Creates a libjingle representation of a MediaStream and stores
+  // it in the extra data field of |description|
+  bool CreateNativeLocalMediaStream(
+      WebKit::WebMediaStreamDescriptor* description);
+
+  // Asks the libjingle PeerConnection factory to create a libjingle
+  // PeerConnection object.
   // The PeerConnection object is owned by PeerConnectionHandler.
   virtual talk_base::scoped_refptr<webrtc::PeerConnectionInterface>
       CreatePeerConnection(const std::string& config,
                            webrtc::PeerConnectionObserver* observer);
 
+  // Creates a libjingle representation of a Session description.
+  virtual webrtc::SessionDescriptionInterface* CreateSessionDescription(
+      const std::string& sdp);
+
+  // Creates a libjingle representation of an ice candidate.
+  virtual webrtc::IceCandidateInterface* CreateIceCandidate(
+      const std::string& sdp_mid,
+      int sdp_mline_index,
+      const std::string& sdp);
+
+ protected:
   // Asks the PeerConnection factory to create a Local MediaStream object.
   virtual talk_base::scoped_refptr<webrtc::LocalMediaStreamInterface>
       CreateLocalMediaStream(const std::string& label);
@@ -73,19 +93,43 @@ class CONTENT_EXPORT MediaStreamDependencyFactory {
       CreateLocalAudioTrack(const std::string& label,
                             webrtc::AudioDeviceModule* audio_device);
 
-  virtual webrtc::SessionDescriptionInterface* CreateSessionDescription(
-      const std::string& sdp);
-  virtual webrtc::IceCandidateInterface* CreateIceCandidate(
-      const std::string& sdp_mid,
-      int sdp_mline_index,
-      const std::string& sdp);
-
+  virtual bool EnsurePeerConnectionFactory();
   virtual void SetAudioDeviceSessionId(int session_id);
 
  private:
+  // Creates and deletes |pc_factory_|, which in turn is used for
+  // creating PeerConnection objects.
+  bool CreatePeerConnectionFactory(
+      talk_base::Thread* worker_thread,
+      talk_base::Thread* signaling_thread,
+      content::P2PSocketDispatcher* socket_dispatcher,
+      talk_base::NetworkManager* network_manager,
+      talk_base::PacketSocketFactory* socket_factory);
+  bool PeerConnectionFactoryCreated();
+
+  void InitializeWorkerThread(talk_base::Thread** thread,
+                              base::WaitableEvent* event);
+
+  void CreateIpcNetworkManagerOnWorkerThread(base::WaitableEvent* event);
+  void DeleteIpcNetworkManager();
+  void CleanupPeerConnectionFactory();
+
+  // We own network_manager_, must be deleted on the worker thread.
+  // The network manager uses |p2p_socket_dispatcher_|.
+  content::IpcNetworkManager* network_manager_;
+  scoped_ptr<content::IpcPacketSocketFactory> socket_factory_;
+
   talk_base::scoped_refptr<webrtc::PeerConnectionFactoryInterface> pc_factory_;
+
   scoped_refptr<VideoCaptureImplManager> vc_manager_;
+  scoped_refptr<content::P2PSocketDispatcher> p2p_socket_dispatcher_;
   scoped_refptr<WebRtcAudioDeviceImpl> audio_device_;
+
+  // PeerConnection threads. signaling_thread_ is created from the
+  // "current" chrome thread.
+  talk_base::Thread* signaling_thread_;
+  talk_base::Thread* worker_thread_;
+  base::Thread chrome_worker_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDependencyFactory);
 };

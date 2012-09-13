@@ -32,6 +32,7 @@ class DevToolsAgentFilter;
 class DomStorageDispatcher;
 class GpuChannelHost;
 class IndexedDBDispatcher;
+class MediaStreamDependencyFactory;
 class RendererWebKitPlatformSupportImpl;
 class SkBitmap;
 class VideoCaptureImplManager;
@@ -201,10 +202,15 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
     return audio_message_filter_.get();
   }
 
+
+
   // Creates the embedder implementation of WebMediaStreamCenter.
   // The resulting object is owned by WebKit and deleted by WebKit at tear-down.
   WebKit::WebMediaStreamCenter* CreateMediaStreamCenter(
       WebKit::WebMediaStreamCenterClient* client);
+
+  // Returns a factory used for creating RTC PeerConnection objects.
+  MediaStreamDependencyFactory* GetMediaStreamDependencyFactory();
 
   // Current P2PSocketDispatcher. Set to NULL if P2P API is disabled.
   content::P2PSocketDispatcher* p2p_socket_dispatcher() {
@@ -322,6 +328,8 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   scoped_refptr<AudioInputMessageFilter> audio_input_message_filter_;
   scoped_refptr<AudioMessageFilter> audio_message_filter_;
   scoped_refptr<DevToolsAgentFilter> devtools_agent_message_filter_;
+
+  scoped_ptr<MediaStreamDependencyFactory> media_stream_factory_;
 
   // Dispatches all P2P sockets.
   scoped_refptr<content::P2PSocketDispatcher> p2p_socket_dispatcher_;

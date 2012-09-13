@@ -27,6 +27,7 @@
 #include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/hyphenator/hyphenator.h"
 #include "content/renderer/media/audio_hardware.h"
+#include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -676,13 +677,17 @@ void RendererWebKitPlatformSupportImpl::GetPlugins(
 WebPeerConnection00Handler*
 RendererWebKitPlatformSupportImpl::createPeerConnection00Handler(
     WebPeerConnection00HandlerClient* client) {
-  WebFrame* web_frame = WebFrame::frameForCurrentContext();
-  if (!web_frame)
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  DCHECK(render_thread);
+  if (!render_thread)
     return NULL;
-  RenderViewImpl* render_view = RenderViewImpl::FromWebView(web_frame->view());
-  if (!render_view)
-    return NULL;
-  return render_view->CreatePeerConnectionHandlerJsep(client);
+#if defined(ENABLE_WEBRTC)
+  MediaStreamDependencyFactory* rtc_dependency_factory =
+      render_thread->GetMediaStreamDependencyFactory();
+  return rtc_dependency_factory->CreatePeerConnectionHandlerJsep(client);
+#else
+  return NULL;
+#endif  // defined(ENABLE_WEBRTC)
 }
 
 //------------------------------------------------------------------------------

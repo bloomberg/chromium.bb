@@ -839,14 +839,6 @@ RenderViewImpl* RenderViewImpl::Create(
       accessibility_mode);
 }
 
-WebPeerConnection00Handler* RenderViewImpl::CreatePeerConnectionHandlerJsep(
-    WebPeerConnection00HandlerClient* client) {
-  EnsureMediaStreamImpl();
-  if (!media_stream_impl_)
-    return NULL;
-  return media_stream_impl_->CreatePeerConnectionHandlerJsep(client);
-}
-
 void RenderViewImpl::AddObserver(RenderViewObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -3836,14 +3828,11 @@ void RenderViewImpl::EnsureMediaStreamImpl() {
     media_stream_dispatcher_ = new MediaStreamDispatcher(this);
 
   if (!media_stream_impl_) {
-    MediaStreamDependencyFactory* factory = new MediaStreamDependencyFactory(
-        RenderThreadImpl::current()->video_capture_impl_manager());
     media_stream_impl_ = new MediaStreamImpl(
         this,
         media_stream_dispatcher_,
-        RenderThreadImpl::current()->p2p_socket_dispatcher(),
         RenderThreadImpl::current()->video_capture_impl_manager(),
-        factory);
+        RenderThreadImpl::current()->GetMediaStreamDependencyFactory());
   }
 #endif
 }

@@ -245,30 +245,16 @@ class MockIceCandidate : public IceCandidateInterface {
 
 }  // namespace webrtc
 
-MockMediaStreamDependencyFactory::MockMediaStreamDependencyFactory(
-    VideoCaptureImplManager* vc_manager)
-    : MediaStreamDependencyFactory(vc_manager),
+MockMediaStreamDependencyFactory::MockMediaStreamDependencyFactory()
+    : MediaStreamDependencyFactory(NULL, NULL),
       mock_pc_factory_created_(false) {
 }
 
 MockMediaStreamDependencyFactory::~MockMediaStreamDependencyFactory() {}
 
-bool MockMediaStreamDependencyFactory::CreatePeerConnectionFactory(
-    talk_base::Thread* worker_thread,
-    talk_base::Thread* signaling_thread,
-    content::P2PSocketDispatcher* socket_dispatcher,
-    talk_base::NetworkManager* network_manager,
-    talk_base::PacketSocketFactory* socket_factory) {
+bool MockMediaStreamDependencyFactory::EnsurePeerConnectionFactory() {
   mock_pc_factory_created_ = true;
   return true;
-}
-
-void MockMediaStreamDependencyFactory::ReleasePeerConnectionFactory() {
-  mock_pc_factory_created_ = false;
-}
-
-bool MockMediaStreamDependencyFactory::PeerConnectionFactoryCreated() {
-  return mock_pc_factory_created_;
 }
 
 talk_base::scoped_refptr<webrtc::PeerConnectionInterface>
@@ -282,6 +268,7 @@ MockMediaStreamDependencyFactory::CreatePeerConnection(
 talk_base::scoped_refptr<webrtc::LocalMediaStreamInterface>
 MockMediaStreamDependencyFactory::CreateLocalMediaStream(
     const std::string& label) {
+  DCHECK(mock_pc_factory_created_);
   talk_base::scoped_refptr<webrtc::LocalMediaStreamInterface> stream(
       new talk_base::RefCountedObject<webrtc::MockLocalMediaStream>(label));
   return stream;
@@ -291,6 +278,7 @@ talk_base::scoped_refptr<webrtc::LocalVideoTrackInterface>
 MockMediaStreamDependencyFactory::CreateLocalVideoTrack(
     const std::string& label,
     int video_session_id) {
+  DCHECK(mock_pc_factory_created_);
   talk_base::scoped_refptr<webrtc::LocalVideoTrackInterface> track(
       new talk_base::RefCountedObject<webrtc::MockLocalVideoTrack>(label));
   return track;
@@ -300,6 +288,7 @@ talk_base::scoped_refptr<webrtc::LocalAudioTrackInterface>
 MockMediaStreamDependencyFactory::CreateLocalAudioTrack(
     const std::string& label,
     webrtc::AudioDeviceModule* audio_device) {
+  DCHECK(mock_pc_factory_created_);
   talk_base::scoped_refptr<webrtc::LocalAudioTrackInterface> track(
       new talk_base::RefCountedObject<webrtc::MockLocalAudioTrack>(label));
   return track;

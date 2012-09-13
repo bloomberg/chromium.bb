@@ -14,12 +14,15 @@ namespace WebKit {
 class WebMediaStreamCenterClient;
 }
 
+class MediaStreamDependencyFactory;
+
 namespace content {
 
 class CONTENT_EXPORT MediaStreamCenter
     : NON_EXPORTED_BASE(public WebKit::WebMediaStreamCenter) {
  public:
-  explicit MediaStreamCenter(WebKit::WebMediaStreamCenterClient*);
+  MediaStreamCenter(WebKit::WebMediaStreamCenterClient* client,
+                    MediaStreamDependencyFactory* factory);
 
   virtual void queryMediaStreamSources(
       const WebKit::WebMediaStreamSourcesRequest& request) OVERRIDE;
@@ -45,6 +48,10 @@ class CONTENT_EXPORT MediaStreamCenter
       const WebKit::WebSessionDescriptionDescriptor& description) OVERRIDE;
 
  private:
+  // |rtc_factory_| is a weak pointer and is owned by the RenderThreadImpl.
+  // It is valid as long as  RenderThreadImpl exist.
+  MediaStreamDependencyFactory* rtc_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(MediaStreamCenter);
 };
 

@@ -10,8 +10,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "content/renderer/media/media_stream_impl.h"
 #include "content/renderer/media/media_stream_extra_data.h"
+#include "content/renderer/media/media_stream_dependency_factory.h"
+#include "content/renderer/media/media_stream_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/libjingle/source/talk/app/webrtc/jsep.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebICECandidateDescriptor.h"
@@ -83,7 +84,10 @@ static webrtc::MediaStreamTrackInterface* GetNativeMediaStreamTrack(
   return NULL;
 }
 
-MediaStreamCenter::MediaStreamCenter(WebKit::WebMediaStreamCenterClient*) {}
+MediaStreamCenter::MediaStreamCenter(WebKit::WebMediaStreamCenterClient* client,
+                                     MediaStreamDependencyFactory* factory)
+    : rtc_factory_(factory) {
+}
 
 void MediaStreamCenter::queryMediaStreamSources(
     const WebKit::WebMediaStreamSourcesRequest& request) {
@@ -126,15 +130,9 @@ void MediaStreamCenter::didStopLocalMediaStream(
 
 void MediaStreamCenter::didCreateMediaStream(
     WebKit::WebMediaStreamDescriptor& stream) {
-  WebKit::WebFrame* web_frame = WebKit::WebFrame::frameForCurrentContext();
-  if (!web_frame)
+  if (!rtc_factory_)
     return;
-  MediaStreamImpl* ms_impl = GetMediaStreamImpl(web_frame);
-  if (ms_impl) {
-    ms_impl->CreateMediaStream(web_frame, &stream);
-    return;
-  }
-  NOTREACHED();
+  rtc_factory_->CreateNativeLocalMediaStream(&stream);
 }
 
 WebKit::WebString MediaStreamCenter::constructSDP(

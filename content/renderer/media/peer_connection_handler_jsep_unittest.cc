@@ -43,12 +43,8 @@ class PeerConnectionHandlerJsepTest : public ::testing::Test {
   void SetUp() {
     mock_client_.reset(new WebKit::MockWebPeerConnection00HandlerClient());
     mock_dependency_factory_.reset(
-        new MockMediaStreamDependencyFactory(NULL));
-    mock_dependency_factory_->CreatePeerConnectionFactory(NULL,
-                                                          NULL,
-                                                          NULL,
-                                                          NULL,
-                                                          NULL);
+        new MockMediaStreamDependencyFactory());
+    mock_dependency_factory_->EnsurePeerConnectionFactory();
     pc_handler_.reset(
         new PeerConnectionHandlerJsepUnderTest(mock_client_.get(),
                                                mock_dependency_factory_.get()));

@@ -66,20 +66,13 @@ class MockLocalAudioTrack : public LocalAudioTrackInterface {
 
 }  //  namespace webrtc
 
-// A mock factory for creating different objects for MediaStreamImpl.
+// A mock factory for creating different objects for
+// RTC MediaStreams and PeerConnections.
 class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
  public:
-  MockMediaStreamDependencyFactory(VideoCaptureImplManager* vc_manager);
+  MockMediaStreamDependencyFactory();
   virtual ~MockMediaStreamDependencyFactory();
 
-  virtual bool CreatePeerConnectionFactory(
-      talk_base::Thread* worker_thread,
-      talk_base::Thread* signaling_thread,
-      content::P2PSocketDispatcher* socket_dispatcher,
-      talk_base::NetworkManager* network_manager,
-      talk_base::PacketSocketFactory* socket_factory) OVERRIDE;
-  virtual void ReleasePeerConnectionFactory() OVERRIDE;
-  virtual bool PeerConnectionFactoryCreated() OVERRIDE;
   virtual talk_base::scoped_refptr<webrtc::PeerConnectionInterface>
       CreatePeerConnection(
           const std::string& config,
@@ -100,6 +93,8 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
       const std::string& sdp_mid,
       int sdp_mline_index,
       const std::string& sdp) OVERRIDE;
+
+  virtual bool EnsurePeerConnectionFactory() OVERRIDE;
   virtual void SetAudioDeviceSessionId(int session_id) OVERRIDE;
 
  private:

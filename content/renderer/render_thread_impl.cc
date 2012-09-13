@@ -63,6 +63,7 @@
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
 #include "content/renderer/media/media_stream_center.h"
+#include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/video_capture_message_filter.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
@@ -1094,9 +1095,21 @@ WebKit::WebMediaStreamCenter* RenderThreadImpl::CreateMediaStreamCenter(
     WebKit::WebMediaStreamCenterClient* client) {
 #if defined(ENABLE_WEBRTC)
   if (!media_stream_center_)
-    media_stream_center_ = new content::MediaStreamCenter(client);
+    media_stream_center_ = new content::MediaStreamCenter(
+        client, GetMediaStreamDependencyFactory());
 #endif
   return media_stream_center_;
+}
+
+MediaStreamDependencyFactory*
+RenderThreadImpl::GetMediaStreamDependencyFactory() {
+#if defined(ENABLE_WEBRTC)
+  if (!media_stream_factory_.get()) {
+    media_stream_factory_.reset(new MediaStreamDependencyFactory(
+        vc_manager_, p2p_socket_dispatcher_));
+  }
+#endif
+  return media_stream_factory_.get();
 }
 
 GpuChannelHost* RenderThreadImpl::GetGpuChannel() {
