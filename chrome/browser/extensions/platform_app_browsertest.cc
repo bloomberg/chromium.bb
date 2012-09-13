@@ -9,7 +9,12 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/automation/automation_util.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
+#include "chrome/browser/extensions/app_restore_service_factory.h"
+#include "chrome/browser/extensions/app_restore_service.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/extensions/extension_prefs.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
 #include "chrome/browser/extensions/platform_app_launcher.h"
@@ -22,6 +27,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_intents_dispatcher.h"
+#include "content/public/test/test_utils.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/web_intent_data.h"
 
@@ -567,6 +573,36 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ShellWindowRestorePosition) {
   // Wait for javascript to verify that the third window got the restored size
   // and explicitly specified coordinates.
   ASSERT_TRUE(done3_listener.WaitUntilSatisfied());
+}
+
+// Tests that a running app is recorded in the preferences as such.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, RunningAppsAreRecorded) {
+  content::WindowedNotificationObserver extension_suspended(
+      chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+      content::NotificationService::AllSources());
+
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("platform_apps/restart_test"));
+  ASSERT_TRUE(extension);
+  ExtensionService* extension_service =
+      ExtensionSystem::Get(browser()->profile())->extension_service();
+  ExtensionPrefs* extension_prefs = extension_service->extension_prefs();
+
+  // App is running.
+  ASSERT_TRUE(extension_prefs->IsExtensionRunning(extension->id()));
+
+  // Wait for the extension to get suspended.
+  extension_suspended.Wait();
+
+  // App isn't running because it got suspended.
+  ASSERT_FALSE(extension_prefs->IsExtensionRunning(extension->id()));
+
+  // Pretend that the app is supposed to be running.
+  extension_prefs->SetExtensionRunning(extension->id(), true);
+
+  ExtensionTestMessageListener restart_listener("onRestarted", false);
+  AppRestoreServiceFactory::GetForProfile(browser()->profile())->RestoreApps();
+  restart_listener.WaitUntilSatisfied();
 }
 
 }  // namespace extensions

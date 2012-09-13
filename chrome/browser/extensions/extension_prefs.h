@@ -289,6 +289,13 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   const DictionaryValue* GetFilteredEvents(
       const std::string& extension_id) const;
 
+  // Records whether or not this extension is currently running.
+  void SetExtensionRunning(const std::string& extension_id, bool is_running);
+
+  // Returns whether or not this extension is marked as running. This is used to
+  // restart apps across browser restarts.
+  bool IsExtensionRunning(const std::string& extension_id);
+
   // Controls the omnibox default suggestion as set by the extension.
   ExtensionOmniboxSuggestion GetOmniboxDefaultSuggestion(
       const std::string& extension_id);
