@@ -20,6 +20,9 @@ def Main(args):
     # "%gs:4" is allowed but all other uses of %gs are suspect.
     register = '%gs'
     regex = re.compile(register + r'(?!:0x4\b)')
+  elif arch == 'x86-64':
+    # Nothing to check.
+    return
   elif arch.startswith('arm'):
     if arch == 'arm-gcc':
       objdump_flags = ['-d']
@@ -47,6 +50,9 @@ def Main(args):
       print 'These never happen if -mtls-use-call is used in the compilation.'
       print 'Check that all libraries used in the IRT were compiled that way.'
       sys.exit(1)
+  if proc.wait() != 0:
+    print 'Command failed: %s' % objdump_args
+    sys.exit(1)
 
 
 if __name__ == '__main__':
