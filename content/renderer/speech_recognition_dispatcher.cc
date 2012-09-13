@@ -59,11 +59,6 @@ void SpeechRecognitionDispatcher::start(
   DCHECK(!recognizer_client_ || recognizer_client_ == recognizer_client);
   recognizer_client_ = recognizer_client;
 
-  // TODO(primiano): Should return false in order to communicate the failure
-  // and let WebKit throw an exception (need a hans@ patch to do that).
-  if (HandleExists(handle))
-    return;
-
   SpeechRecognitionHostMsg_StartRequest_Params msg_params;
   for (size_t i = 0; i < params.grammars().size(); ++i) {
     const WebSpeechGrammar& grammar = params.grammars()[i];
@@ -133,6 +128,8 @@ static WebSpeechRecognizerClient::ErrorCode WebKitErrorCode(
       return WebSpeechRecognizerClient::AudioCaptureError;
     case content::SPEECH_RECOGNITION_ERROR_NETWORK:
       return WebSpeechRecognizerClient::NetworkError;
+    case content::SPEECH_RECOGNITION_ERROR_NOT_ALLOWED:
+      return WebSpeechRecognizerClient::NotAllowedError;
     case content::SPEECH_RECOGNITION_ERROR_NO_SPEECH:
       return WebSpeechRecognizerClient::NoSpeechError;
     case content::SPEECH_RECOGNITION_ERROR_NO_MATCH:

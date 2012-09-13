@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/speech/google_one_shot_remote_engine.h"
 #include "content/browser/speech/google_streaming_remote_engine.h"
 #include "content/browser/speech/speech_recognition_engine.h"
@@ -17,13 +18,13 @@
 #include "content/public/browser/speech_recognition_manager_delegate.h"
 #include "content/public/browser/speech_recognition_session_config.h"
 #include "content/public/browser/speech_recognition_session_context.h"
+#include "content/public/common/speech_recognition_error.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "media/audio/audio_manager.h"
 
 using base::Callback;
 using content::BrowserMainLoop;
 using content::BrowserThread;
-using content::SpeechRecognitionError;
 using content::SpeechRecognitionEventListener;
 using content::SpeechRecognitionManager;
 using content::SpeechRecognitionResult;
@@ -50,12 +51,90 @@ void ShowAudioInputSettingsOnFileThread() {
 
 namespace speech {
 
+class SpeechRecognitionManagerImpl::PermissionRequest
+    : public media_stream::MediaStreamRequester {
+ public:
+  PermissionRequest(int session_id,
+                    const base::Callback<void(bool is_allowed)>& callback)
+      : session_id_(session_id),
+        callback_(callback),
+        started_(false) {
+  }
+
+  virtual ~PermissionRequest() {
+    if (started_)
+      Abort();
+  }
+
+  void Start(int render_process_id, int render_view_id, const GURL& origin) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    started_ = true;
+    BrowserMainLoop::GetMediaStreamManager()->GenerateStream(
+        this,
+        render_process_id,
+        render_view_id,
+        media_stream::StreamOptions(/*audio=*/true, /*video=*/false),
+        origin,
+        &label_);
+  }
+
+  void Abort() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    started_ = false;
+    BrowserMainLoop::GetMediaStreamManager()->CancelGenerateStream(label_);
+  }
+
+  int Session() const { return session_id_; }
+
+  // MediaStreamRequester methods.
+  virtual void StreamGenerated(
+      const std::string& label,
+      const media_stream::StreamDeviceInfoArray& audio_devices,
+      const media_stream::StreamDeviceInfoArray& video_devices) OVERRIDE {
+    // TODO(hans): One day it would be nice to actually use the generated stream
+    // but right now we only use it to request permission, and then we dump it.
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    started_ = false;
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&media_stream::MediaStreamManager::StopGeneratedStream,
+                   base::Unretained(BrowserMainLoop::GetMediaStreamManager()),
+                   label));
+    callback_.Run(true);
+  }
+
+  virtual void StreamGenerationFailed(const std::string& label) OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    started_ = false;
+    callback_.Run(false);
+  }
+
+  // The callbacks below are ignored.
+  virtual void AudioDeviceFailed(const std::string& label,
+                                 int index) OVERRIDE {}
+  virtual void VideoDeviceFailed(const std::string& label,
+                                 int index) OVERRIDE {}
+  virtual void DevicesEnumerated(
+      const std::string& label,
+      const media_stream::StreamDeviceInfoArray& devices) OVERRIDE {}
+  virtual void DeviceOpened(
+      const std::string& label,
+      const media_stream::StreamDeviceInfo& device_info) OVERRIDE {}
+
+ private:
+  int session_id_;
+  base::Callback<void(bool is_allowed)> callback_;
+  std::string label_;
+  bool started_;
+};
+
 SpeechRecognitionManagerImpl* SpeechRecognitionManagerImpl::GetInstance() {
   return g_speech_recognition_manager_impl;
 }
 
 SpeechRecognitionManagerImpl::SpeechRecognitionManagerImpl()
-    : session_id_capturing_audio_(kSessionIDInvalid),
+    : primary_session_id_(kSessionIDInvalid),
       last_session_id_(kSessionIDInvalid),
       is_dispatching_event_(false),
       delegate_(content::GetContentClient()->browser()->
@@ -124,28 +203,59 @@ void SpeechRecognitionManagerImpl::StartSession(int session_id) {
     return;
 
   // If there is another active session, abort that.
-  if (session_id_capturing_audio_ != kSessionIDInvalid &&
-      session_id_capturing_audio_ != session_id) {
-    AbortSession(session_id_capturing_audio_);
+  if (primary_session_id_ != kSessionIDInvalid &&
+      primary_session_id_ != session_id) {
+    AbortSession(primary_session_id_);
   }
 
-  if (delegate_.get())
+  primary_session_id_ = session_id;
+
+  if (delegate_.get()) {
     delegate_->CheckRecognitionIsAllowed(
         session_id,
         base::Bind(&SpeechRecognitionManagerImpl::RecognitionAllowedCallback,
-                   weak_factory_.GetWeakPtr()));
+                   weak_factory_.GetWeakPtr(),
+                   session_id));
+  }
 }
 
 void SpeechRecognitionManagerImpl::RecognitionAllowedCallback(int session_id,
+                                                              bool ask_user,
                                                               bool is_allowed) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(SessionExists(session_id));
+  if (!SessionExists(session_id))
+    return;
+
+  if (ask_user) {
+    const SpeechRecognitionSessionContext& context =
+        GetSessionContext(session_id);
+
+    permission_request_.reset(new PermissionRequest(
+        session_id,
+        base::Bind(&SpeechRecognitionManagerImpl::RecognitionAllowedCallback,
+                   weak_factory_.GetWeakPtr(),
+                   session_id,
+                   false)));
+
+    permission_request_->Start(context.render_process_id,
+                               context.render_view_id,
+                               GURL(context.context_name));
+
+    return;
+  }
+
+  permission_request_.reset();
+
   if (is_allowed) {
     MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(&SpeechRecognitionManagerImpl::DispatchEvent,
                    weak_factory_.GetWeakPtr(), session_id, EVENT_START));
   } else {
-    sessions_.erase(session_id);
+    OnRecognitionError(session_id, content::SpeechRecognitionError(
+        content::SPEECH_RECOGNITION_ERROR_NOT_ALLOWED));
+    MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(&SpeechRecognitionManagerImpl::DispatchEvent,
+                   weak_factory_.GetWeakPtr(), session_id, EVENT_ABORT));
   }
 }
 
@@ -153,6 +263,12 @@ void SpeechRecognitionManagerImpl::AbortSession(int session_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!SessionExists(session_id))
     return;
+
+  if (permission_request_.get() &&
+      permission_request_->Session() == session_id) {
+    DCHECK(permission_request_.get());
+    permission_request_->Abort();
+  }
 
   MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&SpeechRecognitionManagerImpl::DispatchEvent,
@@ -163,6 +279,12 @@ void SpeechRecognitionManagerImpl::StopAudioCaptureForSession(int session_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!SessionExists(session_id))
     return;
+
+  if (permission_request_.get() &&
+      permission_request_->Session() == session_id) {
+    DCHECK(permission_request_.get());
+    permission_request_->Abort();
+  }
 
   MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&SpeechRecognitionManagerImpl::DispatchEvent,
@@ -179,7 +301,7 @@ void SpeechRecognitionManagerImpl::OnRecognitionStart(int session_id) {
   if (!SessionExists(session_id))
     return;
 
-  DCHECK_EQ(session_id_capturing_audio_, session_id);
+  DCHECK_EQ(primary_session_id_, session_id);
   if (SpeechRecognitionEventListener* delegate_listener = GetDelegateListener())
     delegate_listener->OnRecognitionStart(session_id);
   if (SpeechRecognitionEventListener* listener = GetListener(session_id))
@@ -191,7 +313,7 @@ void SpeechRecognitionManagerImpl::OnAudioStart(int session_id) {
   if (!SessionExists(session_id))
     return;
 
-  DCHECK_EQ(session_id_capturing_audio_, session_id);
+  DCHECK_EQ(primary_session_id_, session_id);
   if (SpeechRecognitionEventListener* delegate_listener = GetDelegateListener())
     delegate_listener->OnAudioStart(session_id);
   if (SpeechRecognitionEventListener* listener = GetListener(session_id))
@@ -204,7 +326,7 @@ void SpeechRecognitionManagerImpl::OnEnvironmentEstimationComplete(
   if (!SessionExists(session_id))
     return;
 
-  DCHECK_EQ(session_id_capturing_audio_, session_id);
+  DCHECK_EQ(primary_session_id_, session_id);
   if (SpeechRecognitionEventListener* delegate_listener = GetDelegateListener())
     delegate_listener->OnEnvironmentEstimationComplete(session_id);
   if (SpeechRecognitionEventListener* listener = GetListener(session_id))
@@ -216,7 +338,7 @@ void SpeechRecognitionManagerImpl::OnSoundStart(int session_id) {
   if (!SessionExists(session_id))
     return;
 
-  DCHECK_EQ(session_id_capturing_audio_, session_id);
+  DCHECK_EQ(primary_session_id_, session_id);
   if (SpeechRecognitionEventListener* delegate_listener = GetDelegateListener())
     delegate_listener->OnSoundStart(session_id);
   if (SpeechRecognitionEventListener* listener = GetListener(session_id))
@@ -396,9 +518,11 @@ void SpeechRecognitionManagerImpl::ExecuteTransitionAndGetNextState(
         case EVENT_START:
           return SessionStart(session);
         case EVENT_ABORT:
+          return SessionAbort(session);
         case EVENT_RECOGNITION_ENDED:
           return SessionDelete(session);
         case EVENT_STOP_CAPTURE:
+          return SessionStopAudioCapture(session);
         case EVENT_AUDIO_ENDED:
           return;
       }
@@ -448,33 +572,33 @@ SpeechRecognitionManagerImpl::GetSessionState(int session_id) const {
 //  - Are guaranteed to be not reentrant (themselves and each other);
 
 void SpeechRecognitionManagerImpl::SessionStart(const Session& session) {
-  session_id_capturing_audio_ = session.id;
+  DCHECK_EQ(primary_session_id_, session.id);
   session.recognizer->StartRecognition();
 }
 
 void SpeechRecognitionManagerImpl::SessionAbort(const Session& session) {
-  if (session_id_capturing_audio_ == session.id)
-    session_id_capturing_audio_ = kSessionIDInvalid;
-  DCHECK(session.recognizer.get() && session.recognizer->IsActive());
+  if (primary_session_id_ == session.id)
+    primary_session_id_ = kSessionIDInvalid;
+  DCHECK(session.recognizer.get());
   session.recognizer->AbortRecognition();
 }
 
 void SpeechRecognitionManagerImpl::SessionStopAudioCapture(
     const Session& session) {
-  DCHECK(session.recognizer.get() && session.recognizer->IsCapturingAudio());
+  DCHECK(session.recognizer.get());
   session.recognizer->StopAudioCapture();
 }
 
 void SpeechRecognitionManagerImpl::ResetCapturingSessionId(
     const Session& session) {
-  DCHECK_EQ(session_id_capturing_audio_, session.id);
-  session_id_capturing_audio_ = kSessionIDInvalid;
+  DCHECK_EQ(primary_session_id_, session.id);
+  primary_session_id_ = kSessionIDInvalid;
 }
 
 void SpeechRecognitionManagerImpl::SessionDelete(const Session& session) {
   DCHECK(session.recognizer == NULL || !session.recognizer->IsActive());
-  if (session_id_capturing_audio_ == session.id)
-    session_id_capturing_audio_ = kSessionIDInvalid;
+  if (primary_session_id_ == session.id)
+    primary_session_id_ = kSessionIDInvalid;
   sessions_.erase(session.id);
 }
 

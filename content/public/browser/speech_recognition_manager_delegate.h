@@ -28,7 +28,7 @@ class SpeechRecognitionManagerDelegate {
   // Checks (asynchronously) if current setup allows speech recognition.
   virtual void CheckRecognitionIsAllowed(
       int session_id,
-      base::Callback<void(int session_id, bool is_allowed)> callback) = 0;
+      base::Callback<void(bool ask_user, bool is_allowed)> callback) = 0;
 
   // Checks whether the delegate is interested (returning a non NULL ptr) or not
   // (returning NULL) in receiving a copy of all sessions events.

@@ -255,12 +255,13 @@ SpeechRecognizer::ExecuteTransitionAndGetNextState(
         // TODO(primiano): restore UNREACHABLE_CONDITION on EVENT_ABORT and
         // EVENT_STOP_CAPTURE below once speech input extensions are fixed.
         case EVENT_ABORT:
-          return DoNothing(event_args);
+          return AbortSilently(event_args);
         case EVENT_START:
           return StartRecording(event_args);
-        case EVENT_STOP_CAPTURE:  // Corner cases related to queued messages
-        case EVENT_AUDIO_DATA:    // being lately dispatched.
-        case EVENT_ENGINE_RESULT:
+        case EVENT_STOP_CAPTURE:
+          return AbortSilently(event_args);
+        case EVENT_AUDIO_DATA:     // Corner cases related to queued messages
+        case EVENT_ENGINE_RESULT:  // being lately dispatched.
         case EVENT_ENGINE_ERROR:
         case EVENT_AUDIO_ERROR:
           return DoNothing(event_args);

@@ -16,6 +16,8 @@ enum SpeechRecognitionErrorCode {
   SPEECH_RECOGNITION_ERROR_AUDIO,
   // There was a network error.
   SPEECH_RECOGNITION_ERROR_NETWORK,
+  // Not allowed for privacy or security reasons.
+  SPEECH_RECOGNITION_ERROR_NOT_ALLOWED,
   // No speech heard before timeout.
   SPEECH_RECOGNITION_ERROR_NO_SPEECH,
   // Speech was heard, but could not be interpreted.

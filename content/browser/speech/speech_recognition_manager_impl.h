@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/renderer_host/media/media_stream_requester.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
 #include "content/public/browser/speech_recognition_manager.h"
 #include "content/public/browser/speech_recognition_session_config.h"
@@ -23,6 +24,10 @@ class BrowserMainLoop;
 class SpeechRecognitionManagerDelegate;
 }
 
+namespace media_stream {
+class MediaStreamManager;
+}
+
 namespace speech {
 
 class SpeechRecognizer;
@@ -30,13 +35,12 @@ class SpeechRecognizer;
 // This is the manager for speech recognition. It is a single instance in
 // the browser process and can serve several requests. Each recognition request
 // corresponds to a session, initiated via |CreateSession|.
-// In every moment the manager has at most one session capturing audio, which
-// is identified by |session_id_capturing_audio_|. However, multiple sessions
-// can live in parallel in respect of the aforementioned constraint, i.e. while
-// waiting for results.
-// This class does not handle user interface objects (bubbles, tray icon).
-// Those are managed by the delegate, which receives a copy of all sessions
-// events.
+//
+// In any moment, the manager has a single session known as the primary session,
+// |primary_session_id_|.
+// This is the session that is capturing audio, waiting for user permission,
+// etc. There may also be other, non-primary, sessions living in parallel that
+// are waiting for results but not recording audio.
 //
 // The SpeechRecognitionManager has the following responsibilities:
 //  - Handles requests received from various render views and makes sure only
@@ -130,7 +134,9 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
 
   // Callback issued by the SpeechRecognitionManagerDelegate for reporting
   // asynchronously the result of the CheckRecognitionIsAllowed call.
-  void RecognitionAllowedCallback(int session_id, bool is_allowed);
+  void RecognitionAllowedCallback(int session_id,
+                                  bool ask_user,
+                                  bool is_allowed);
 
   // Entry point for pushing any external event into the session handling FSM.
   void DispatchEvent(int session_id, FSMEvent event);
@@ -159,7 +165,7 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
 
   typedef std::map<int, Session> SessionsTable;
   SessionsTable sessions_;
-  int session_id_capturing_audio_;
+  int primary_session_id_;
   int last_session_id_;
   bool is_dispatching_event_;
   scoped_ptr<content::SpeechRecognitionManagerDelegate> delegate_;
@@ -168,6 +174,9 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
   // about this class being destroyed in the meanwhile (due to browser shutdown)
   // since tasks pending on a destroyed WeakPtr are automatically discarded.
   base::WeakPtrFactory<SpeechRecognitionManagerImpl> weak_factory_;
+
+  class PermissionRequest;
+  scoped_ptr<PermissionRequest> permission_request_;
 };
 
 }  // namespace speech
