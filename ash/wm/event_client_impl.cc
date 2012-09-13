@@ -27,10 +27,14 @@ bool EventClientImpl::CanProcessEventsWithinSubtree(
     aura::Window* lock_screen_containers = Shell::GetContainer(
         root_window_,
         kShellWindowId_LockScreenContainersContainer);
+    aura::Window* lock_background_containers = Shell::GetContainer(
+        root_window_,
+        kShellWindowId_LockScreenBackgroundContainer);
     aura::Window* lock_screen_related_containers = Shell::GetContainer(
         root_window_,
         kShellWindowId_LockScreenRelatedContainersContainer);
     return lock_screen_containers->Contains(window) ||
+        lock_background_containers->Contains(window) ||
         lock_screen_related_containers->Contains(window);
   }
   return true;
