@@ -305,7 +305,6 @@ void CCThreadProxy::didLoseContextOnImplThread()
 {
     ASSERT(isImplThread());
     TRACE_EVENT0("cc", "CCThreadProxy::didLoseContextOnImplThread");
-    m_currentTextureUpdateControllerOnImplThread.clear();
     m_schedulerOnImplThread->didLoseContext();
 }
 

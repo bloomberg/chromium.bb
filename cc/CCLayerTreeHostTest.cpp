@@ -2756,9 +2756,9 @@ public:
     }
     virtual void getQueryObjectuivEXT(WebGLId, GC3Denum pname, GC3Duint* params)
     {
-        // Context is lost. Result will never be available.
+        // Context is lost. We need to behave as if result is available.
         if (pname == Extensions3DChromium::QUERY_RESULT_AVAILABLE_EXT)
-            *params = 0;
+            *params = 1;
     }
 
 private:
