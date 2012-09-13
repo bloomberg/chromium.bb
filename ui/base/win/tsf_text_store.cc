@@ -71,7 +71,7 @@ STDMETHODIMP TsfTextStore::QueryInterface(REFIID iid, void** result) {
 STDMETHODIMP TsfTextStore::AdviseSink(REFIID iid, IUnknown* unknown,
                                       DWORD mask) {
   if (!IsEqualGUID(iid, IID_ITextStoreACPSink))
-    return TS_E_NOOBJECT;
+    return E_INVALIDARG;
   if (text_store_acp_sink_) {
     if (text_store_acp_sink_.IsSameObject(unknown)) {
       text_store_acp_sink_mask_ = mask;
@@ -81,7 +81,7 @@ STDMETHODIMP TsfTextStore::AdviseSink(REFIID iid, IUnknown* unknown,
     }
   }
   if (FAILED(text_store_acp_sink_.QueryFrom(unknown)))
-    return E_NOINTERFACE;
+    return E_UNEXPECTED;
   text_store_acp_sink_mask_ = mask;
 
   return S_OK;
@@ -112,6 +112,8 @@ STDMETHODIMP TsfTextStore::GetACPFromPoint(
     DWORD flags,
     LONG* acp) {
   NOTIMPLEMENTED();
+  if (view_cookie != kViewCookie)
+    return E_INVALIDARG;
   return E_NOTIMPL;
 }
 
@@ -152,6 +154,8 @@ STDMETHODIMP TsfTextStore::GetFormattedText(LONG acp_start, LONG acp_end,
 
 STDMETHODIMP TsfTextStore::GetScreenExt(TsViewCookie view_cookie, RECT* rect) {
   NOTIMPLEMENTED();
+  if (view_cookie != kViewCookie)
+    return E_INVALIDARG;
   if (!rect)
     return E_INVALIDARG;
   SetRect(rect, 0, 0, 0, 0);
@@ -205,6 +209,8 @@ STDMETHODIMP TsfTextStore::GetText(LONG acp_start,
   if (!text_buffer && text_buffer_size != 0)
     return E_INVALIDARG;
   if (!run_info_buffer && run_info_buffer_size != 0)
+    return E_INVALIDARG;
+  if (!next_acp)
     return E_INVALIDARG;
   if (!HasReadLock())
     return TF_E_NOLOCK;
@@ -261,7 +267,7 @@ STDMETHODIMP TsfTextStore::GetTextExt(TsViewCookie view_cookie,
 
   if (start_pos == end_pos) {
     // According to MSDN document, if |acp_start| and |acp_end| are equal it is
-    // OK to just return TS_E_INVALIDARG.
+    // OK to just return E_INVALIDARG.
     // http://msdn.microsoft.com/en-us/library/ms538435
     // But when using Pinin IME of Windows 8, this method is called with the
     // equal values of |acp_start| and |acp_end|. So we handle this condition.
@@ -379,21 +385,23 @@ STDMETHODIMP TsfTextStore::QueryInsert(
     ULONG text_size,
     LONG* acp_result_start,
     LONG* acp_result_end) {
+  if (!acp_result_start || !acp_result_end)
+    return E_INVALIDARG;
   if (!((static_cast<LONG>(committed_size_) <= acp_test_start) &&
         (acp_test_start <= acp_test_end) &&
         (acp_test_end <= static_cast<LONG>(string_buffer_.size())))) {
     return E_INVALIDARG;
   }
-  if (acp_result_start)
-    *acp_result_start = acp_test_start;
-  if (acp_result_end)
-    *acp_result_end = acp_test_start + text_size;
+  *acp_result_start = acp_test_start;
+  *acp_result_end = acp_test_start + text_size;
   return S_OK;
 }
 
 STDMETHODIMP TsfTextStore::QueryInsertEmbedded(const GUID* service,
                                                const FORMATETC* format,
                                                BOOL* insertable) {
+  if (!format)
+    return E_INVALIDARG;
   // We don't support any embedded objects.
   if (insertable)
     *insertable = FALSE;
@@ -538,7 +546,7 @@ STDMETHODIMP TsfTextStore::RetrieveRequestedAttrs(
     ULONG attribute_buffer_size,
     TS_ATTRVAL* attribute_buffer,
     ULONG* attribute_buffer_copied) {
-  if (attribute_buffer_copied == NULL)
+  if (!attribute_buffer_copied)
     return E_INVALIDARG;
   // We don't support any document attributes.
   attribute_buffer_copied = 0;
@@ -583,14 +591,18 @@ STDMETHODIMP TsfTextStore::SetText(DWORD flags,
   selection.acpEnd = acp_end;
   selection.style.ase = TS_AE_NONE;
   selection.style.fInterimChar = 0;
-  if (SetSelection(1, &selection) != S_OK)
-    return E_UNEXPECTED;
+
+  HRESULT ret;
+  ret = SetSelection(1, &selection);
+  if (ret != S_OK)
+    return ret;
 
   TS_TEXTCHANGE change;
-  if (InsertTextAtSelection(0, text_buffer, text_buffer_size,
-                            &acp_start, &acp_end, &change) != S_OK) {
-    return E_UNEXPECTED;
-  }
+  ret = InsertTextAtSelection(0, text_buffer, text_buffer_size,
+                              &acp_start, &acp_end, &change);
+  if (ret != S_OK)
+    return ret;
+
   if (text_change)
     *text_change = change;
 
