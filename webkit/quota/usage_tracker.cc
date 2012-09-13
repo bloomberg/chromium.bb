@@ -521,6 +521,8 @@ void ClientUsageTracker::NoopHostUsageCallback(
 }
 
 bool ClientUsageTracker::IsStorageUnlimited(const GURL& origin) const {
+  if (type_ == kStorageTypeSyncable)
+    return false;
   return special_storage_policy_.get() &&
          special_storage_policy_->IsStorageUnlimited(origin);
 }

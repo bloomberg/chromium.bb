@@ -183,10 +183,7 @@ class QuotaManager : public QuotaTaskObserver,
 
   void GetStatistics(std::map<std::string, std::string>* statistics);
 
-  bool IsStorageUnlimited(const GURL& origin) const {
-    return special_storage_policy_.get() &&
-           special_storage_policy_->IsStorageUnlimited(origin);
-  }
+  bool IsStorageUnlimited(const GURL& origin, StorageType type) const;
 
   bool IsInstalledApp(const GURL& origin) const {
     return special_storage_policy_.get() &&
@@ -209,6 +206,9 @@ class QuotaManager : public QuotaTaskObserver,
 
   static const int kEvictionIntervalInMilliSeconds;
 
+  // This is kept non-const so that test code can change the value.
+  static int64 kSyncableStorageDefaultHostQuota;
+
  protected:
   virtual ~QuotaManager();
 
@@ -226,6 +226,7 @@ class QuotaManager : public QuotaTaskObserver,
   class UsageAndQuotaDispatcherTask;
   class UsageAndQuotaDispatcherTaskForTemporary;
   class UsageAndQuotaDispatcherTaskForPersistent;
+  class UsageAndQuotaDispatcherTaskForSyncable;
   class UsageAndQuotaDispatcherTaskForTemporaryGlobal;
 
   class OriginDataDeleter;
@@ -378,6 +379,7 @@ class QuotaManager : public QuotaTaskObserver,
 
   scoped_ptr<UsageTracker> temporary_usage_tracker_;
   scoped_ptr<UsageTracker> persistent_usage_tracker_;
+  scoped_ptr<UsageTracker> syncable_usage_tracker_;
   // TODO(michaeln): Need a way to clear the cache, drop and
   // reinstantiate the trackers when they're not handling requests.
 

@@ -30,6 +30,7 @@ namespace quota {
 // For shorter names.
 const StorageType kTemp = kStorageTypeTemporary;
 const StorageType kPerm = kStorageTypePersistent;
+const StorageType kSync = kStorageTypeSyncable;
 
 const int kAllClients = QuotaClient::kAllClientsMask;
 

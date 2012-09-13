@@ -30,6 +30,7 @@ const char kTemporaryName[] = "Temporary";
 const char kIsolatedName[] = "Isolated";
 const char kExternalName[] = "External";
 const char kTestName[] = "Test";
+const char kSyncableName[] = "Syncable";
 
 // TODO(ericu): Consider removing support for '\', even on Windows, if possible.
 // There's a lot of test code that will need reworking, and we may have trouble
@@ -99,12 +100,7 @@ GURL GetFileSystemRootURI(const GURL& origin_url, FileSystemType type) {
     url += (kTestDir + 1);  // We don't want the leading slash.
     return GURL(url + "/");
   // Internal types are always pointed via isolated or external URLs.
-  case kFileSystemTypeDeviceMedia:
-  case kFileSystemTypeDragged:
-  case kFileSystemTypeDrive:
-  case kFileSystemTypeNativeLocal:
-  case kFileSystemTypeNativeMedia:
-  case kFileSystemTypeUnknown:
+  default:
     NOTREACHED();
   }
   NOTREACHED();
@@ -125,9 +121,12 @@ FileSystemType QuotaStorageTypeToFileSystemType(
       return kFileSystemTypeTemporary;
     case quota::kStorageTypePersistent:
       return kFileSystemTypePersistent;
-    default:
+    case quota::kStorageTypeSyncable:
+      return kFileSystemTypeSyncable;
+    case quota::kStorageTypeUnknown:
       return kFileSystemTypeUnknown;
   }
+  return kFileSystemTypeUnknown;
 }
 
 quota::StorageType FileSystemTypeToQuotaStorageType(FileSystemType type) {
@@ -136,6 +135,8 @@ quota::StorageType FileSystemTypeToQuotaStorageType(FileSystemType type) {
       return quota::kStorageTypeTemporary;
     case kFileSystemTypePersistent:
       return quota::kStorageTypePersistent;
+    case kFileSystemTypeSyncable:
+      return quota::kStorageTypeSyncable;
     default:
       return quota::kStorageTypeUnknown;
   }
@@ -178,6 +179,8 @@ std::string GetFileSystemTypeString(FileSystemType type) {
       return fileapi::kIsolatedName;
     case kFileSystemTypeTest:
       return fileapi::kTestName;
+    case kFileSystemTypeSyncable:
+      return fileapi::kSyncableName;
     case kFileSystemTypeUnknown:
     default:
       return std::string();

@@ -319,7 +319,9 @@ const FilePath::CharType
 
 // static
 bool SandboxMountPointProvider::CanHandleType(FileSystemType type) {
-  return type == kFileSystemTypeTemporary || type == kFileSystemTypePersistent;
+  return type == kFileSystemTypeTemporary ||
+         type == kFileSystemTypePersistent ||
+         type == kFileSystemTypeSyncable;
 }
 
 SandboxMountPointProvider::SandboxMountPointProvider(
@@ -407,7 +409,7 @@ SandboxMountPointProvider::GetFileSystemRootPathOnFileThread(
 
 bool SandboxMountPointProvider::IsAccessAllowed(const FileSystemURL& url) {
   FileSystemType type = url.type();
-  if (type != kFileSystemTypeTemporary && type != kFileSystemTypePersistent)
+  if (!CanHandleType(type))
     return false;
   // We essentially depend on quota to do our access controls, so here
   // we only check if the requested scheme is allowed or not.
@@ -565,12 +567,15 @@ void SandboxMountPointProvider::GetOriginsForTypeOnFileThread(
     if (enumerator->HasFileSystemType(type))
       origins->insert(origin);
   }
-  if (type == kFileSystemTypeTemporary) {
-    UMA_HISTOGRAM_COUNTS(kTemporaryOriginsCountLabel,
-                         origins->size());
-  } else {
-    UMA_HISTOGRAM_COUNTS(kPersistentOriginsCountLabel,
-                         origins->size());
+  switch (type) {
+    case kFileSystemTypeTemporary:
+      UMA_HISTOGRAM_COUNTS(kTemporaryOriginsCountLabel, origins->size());
+      break;
+    case kFileSystemTypePersistent:
+      UMA_HISTOGRAM_COUNTS(kPersistentOriginsCountLabel, origins->size());
+      break;
+    default:
+      break;
   }
 }
 
@@ -633,8 +638,7 @@ int64 SandboxMountPointProvider::GetOriginUsageOnFileThread(
 
 void SandboxMountPointProvider::InvalidateUsageCache(
     const GURL& origin_url, fileapi::FileSystemType type) {
-  DCHECK(type == kFileSystemTypeTemporary ||
-         type == kFileSystemTypePersistent);
+  DCHECK(CanHandleType(type));
   FilePath usage_file_path = GetUsageCachePathForOriginAndType(
       origin_url, type);
   FileSystemUsageCache::IncrementDirty(usage_file_path);

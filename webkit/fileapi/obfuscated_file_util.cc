@@ -96,6 +96,7 @@ const FilePath::CharType kLegacyDataDirectory[] = FILE_PATH_LITERAL("Legacy");
 
 const FilePath::CharType kTemporaryDirectoryName[] = FILE_PATH_LITERAL("t");
 const FilePath::CharType kPersistentDirectoryName[] = FILE_PATH_LITERAL("p");
+const FilePath::CharType kSyncableDirectoryName[] = FILE_PATH_LITERAL("s");
 
 }  // namespace
 
@@ -947,27 +948,33 @@ bool ObfuscatedFileUtil::DeleteDirectoryForOriginAndType(
   DCHECK_EQ(origin_path.value(),
             GetDirectoryForOrigin(origin, false, NULL).value());
 
-  // Delete the origin directory if the deleted one was the last remaining
-  // type for the origin, i.e. if the *other* type doesn't exist.
-  FileSystemType other_type = kFileSystemTypeUnknown;
-  if (type == kFileSystemTypeTemporary)
-    other_type = kFileSystemTypePersistent;
-  else if (type == kFileSystemTypePersistent)
-    other_type = kFileSystemTypeTemporary;
-  else
-    NOTREACHED();
+  // At this point we are sure we had successfully deleted the origin/type
+  // directory (i.e. we're ready to just return true).
 
-  if (!file_util::DirectoryExists(
-          origin_path.Append(GetDirectoryNameForType(other_type)))) {
-    InitOriginDatabase(false);
-    if (origin_database_.get())
-      origin_database_->RemovePathForOrigin(GetOriginIdentifierFromURL(origin));
-    if (!file_util::Delete(origin_path, true /* recursive */))
-      return false;
+  // See if we have other directories in this origin directory.
+  std::vector<FileSystemType> other_types;
+  if (type != kFileSystemTypeTemporary)
+    other_types.push_back(kFileSystemTypeTemporary);
+  if (type != kFileSystemTypePersistent)
+    other_types.push_back(kFileSystemTypePersistent);
+  if (type != kFileSystemTypeSyncable)
+    other_types.push_back(kFileSystemTypeSyncable);
+
+  for (size_t i = 0; i < other_types.size(); ++i) {
+    if (file_util::DirectoryExists(
+            origin_path.Append(GetDirectoryNameForType(other_types[i])))) {
+      // Other type's directory exists; just return true here.
+      return true;
+    }
   }
 
-  // At this point we are sure we had successfully deleted the origin/type
-  // directory, so just returning true here.
+  // No other directories seem exist. Try deleting the entire origin directory.
+  InitOriginDatabase(false);
+  if (origin_database_.get())
+    origin_database_->RemovePathForOrigin(GetOriginIdentifierFromURL(origin));
+  if (!file_util::Delete(origin_path, true /* recursive */))
+    return false;
+
   return true;
 }
 
@@ -1051,6 +1058,8 @@ FilePath::StringType ObfuscatedFileUtil::GetDirectoryNameForType(
       return kTemporaryDirectoryName;
     case kFileSystemTypePersistent:
       return kPersistentDirectoryName;
+    case kFileSystemTypeSyncable:
+      return kSyncableDirectoryName;
     case kFileSystemTypeUnknown:
     default:
       return FilePath::StringType();

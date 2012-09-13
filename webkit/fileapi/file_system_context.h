@@ -109,11 +109,22 @@ class FILEAPI_EXPORT FileSystemContext
       DeleteFileSystemCallback;
 
   // Opens the filesystem for the given |origin_url| and |type|, and dispatches
-  // the DidOpenFileSystem callback of the given |dispatcher|.
+  // |callback| on completion.
   // If |create| is true this may actually set up a filesystem instance
   // (e.g. by creating the root directory or initializing the database
   // entry etc).
   void OpenFileSystem(
+      const GURL& origin_url,
+      FileSystemType type,
+      bool create,
+      const OpenFileSystemCallback& callback);
+
+  // Opens a syncable filesystem for the given |origin_url|.
+  // The file system is internally mounted as an external file system at the
+  // given |mount_name|.
+  // Currently only kFileSystemTypeSyncable type is supported.
+  void OpenSyncableFileSystem(
+      const std::string& mount_name,
       const GURL& origin_url,
       FileSystemType type,
       bool create,

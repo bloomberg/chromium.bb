@@ -16,6 +16,7 @@
 #include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/isolated_mount_point_provider.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/fileapi/syncable/local_file_sync_status.h"
@@ -89,6 +90,9 @@ bool FileSystemContext::DeleteDataForOriginOnFileThread(
        base::PLATFORM_FILE_OK) &&
       (sandbox_provider()->DeleteOriginDataOnFileThread(
           this, quota_manager_proxy(), origin_url, kFileSystemTypePersistent) ==
+       base::PLATFORM_FILE_OK) &&
+      (sandbox_provider()->DeleteOriginDataOnFileThread(
+          this, quota_manager_proxy(), origin_url, kFileSystemTypeSyncable) ==
        base::PLATFORM_FILE_OK);
 }
 
@@ -115,6 +119,7 @@ FileSystemMountPointProvider* FileSystemContext::GetMountPointProvider(
   switch (type) {
     case kFileSystemTypeTemporary:
     case kFileSystemTypePersistent:
+    case kFileSystemTypeSyncable:
       return sandbox_provider_.get();
     case kFileSystemTypeExternal:
     case kFileSystemTypeDrive:
@@ -184,6 +189,35 @@ void FileSystemContext::OpenFileSystem(
   GURL root_url = GetFileSystemRootURI(origin_url, type);
   std::string name = GetFileSystemName(origin_url, type);
 
+  mount_point_provider->ValidateFileSystemRoot(
+      origin_url, type, create,
+      base::Bind(&DidOpenFileSystem, callback, root_url, name));
+}
+
+void FileSystemContext::OpenSyncableFileSystem(
+    const std::string& mount_name,
+    const GURL& origin_url,
+    FileSystemType type,
+    bool create,
+    const OpenFileSystemCallback& callback) {
+  DCHECK(!callback.is_null());
+
+  DCHECK(type == kFileSystemTypeSyncable);
+  IsolatedContext::GetInstance()->RegisterExternalFileSystem(
+      mount_name,
+      kFileSystemTypeSyncable,
+      FilePath());
+
+  std::string root = GetFileSystemRootURI(
+      origin_url, kFileSystemTypeExternal).spec();
+  root.append(mount_name);
+  root.append("/");
+  GURL root_url = GURL(root);
+  std::string name = GetFileSystemName(origin_url, kFileSystemTypeSyncable);
+
+  FileSystemMountPointProvider* mount_point_provider =
+      GetMountPointProvider(type);
+  DCHECK(mount_point_provider);
   mount_point_provider->ValidateFileSystemRoot(
       origin_url, type, create,
       base::Bind(&DidOpenFileSystem, callback, root_url, name));

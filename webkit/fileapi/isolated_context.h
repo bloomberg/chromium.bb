@@ -133,7 +133,6 @@ class FILEAPI_EXPORT IsolatedContext {
                                         const FilePath& path,
                                         std::string* register_name);
 
-#if defined(OS_CHROMEOS)
   // Registers a new named external filesystem.
   // The |path| is registered as the root path of the mount point which
   // is identified by a URL "filesystem:.../external/mount_name".
@@ -154,7 +153,6 @@ class FILEAPI_EXPORT IsolatedContext {
 
   // Returns a set of FilePath (of <mount_name, path>) registered as external.
   std::vector<FileInfo> GetExternalMountPoints() const;
-#endif
 
   // Revokes the filesystem |filesystem_id|.
   // Returns false if the |filesystem_id| is not (no longer) registered.

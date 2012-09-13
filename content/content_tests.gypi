@@ -431,6 +431,7 @@
         '../webkit/fileapi/syncable/file_change_unittest.cc',
         '../webkit/fileapi/syncable/local_file_change_tracker_unittest.cc',
         '../webkit/fileapi/syncable/local_file_sync_status_unittest.cc',
+        '../webkit/fileapi/syncable/syncable_file_system_unittest.cc',
         '../webkit/fileapi/test_file_set.cc',
         '../webkit/fileapi/test_file_set.h',
         '../webkit/fileapi/webfilewriter_base_unittest.cc',

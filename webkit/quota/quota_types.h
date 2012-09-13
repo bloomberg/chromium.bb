@@ -21,6 +21,7 @@ namespace quota {
 enum StorageType {
   kStorageTypeTemporary,
   kStorageTypePersistent,
+  kStorageTypeSyncable,
   kStorageTypeUnknown,
 };
 

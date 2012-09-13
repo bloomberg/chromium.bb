@@ -17,9 +17,12 @@ std::string StorageTypeToString(quota::StorageType type) {
       return "temporary";
     case quota::kStorageTypePersistent:
       return "persistent";
-    default:
+    case quota::kStorageTypeSyncable:
+      return "syncable";
+    case quota::kStorageTypeUnknown:
       return "unknown";
   }
+  return "unknown";
 }
 
 }  // anonymous namespace

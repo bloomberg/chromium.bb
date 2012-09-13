@@ -237,7 +237,7 @@ void QuotaDispatcherHost::OnRequestStorageQuota(
     const GURL& origin,
     StorageType type,
     int64 requested_size) {
-  if (quota_manager_->IsStorageUnlimited(origin)) {
+  if (quota_manager_->IsStorageUnlimited(origin, type)) {
     // If the origin is marked 'unlimited' we always just return ok.
     Send(new QuotaMsg_DidGrantStorageQuota(request_id, requested_size));
     return;

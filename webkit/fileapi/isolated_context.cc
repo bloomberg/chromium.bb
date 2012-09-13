@@ -245,7 +245,6 @@ std::string IsolatedContext::RegisterFileSystemForPath(
   return filesystem_id;
 }
 
-#if defined(OS_CHROMEOS)
 bool IsolatedContext::RegisterExternalFileSystem(const std::string& mount_name,
                                                  FileSystemType type,
                                                  const FilePath& path) {
@@ -270,7 +269,6 @@ IsolatedContext::GetExternalMountPoints() const {
   }
   return files;
 }
-#endif
 
 bool IsolatedContext::RevokeFileSystem(const std::string& filesystem_id) {
   base::AutoLock locker(lock_);

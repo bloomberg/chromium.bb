@@ -162,6 +162,11 @@ const int QuotaManager::kThresholdOfErrorsToBeBlacklisted = 3;
 const int QuotaManager::kEvictionIntervalInMilliSeconds =
     30 * kMinutesInMilliSeconds;
 
+// Heuristics: assuming average cloud server allows a few Gigs storage
+// on the server side and the storage needs to be shared for user data
+// and by multiple apps.
+int64 QuotaManager::kSyncableStorageDefaultHostQuota = 500 * kMBytes;
+
 // Callback translators.
 void CallGetUsageAndQuotaCallback(
     const QuotaManager::GetUsageAndQuotaCallback& callback,
@@ -411,12 +416,15 @@ class QuotaManager::GetUsageInfoTask : public QuotaTask {
 
  protected:
   virtual void Run() OVERRIDE {
-    remaining_trackers_ = 2;
+    remaining_trackers_ = 3;
     // This will populate cached hosts and usage info.
     manager()->GetUsageTracker(kStorageTypeTemporary)->GetGlobalUsage(
         base::Bind(&GetUsageInfoTask::DidGetGlobalUsage,
                    weak_factory_.GetWeakPtr()));
     manager()->GetUsageTracker(kStorageTypePersistent)->GetGlobalUsage(
+        base::Bind(&GetUsageInfoTask::DidGetGlobalUsage,
+                   weak_factory_.GetWeakPtr()));
+    manager()->GetUsageTracker(kStorageTypeSyncable)->GetGlobalUsage(
         base::Bind(&GetUsageInfoTask::DidGetGlobalUsage,
                    weak_factory_.GetWeakPtr()));
   }
@@ -517,6 +525,29 @@ class QuotaManager::UsageAndQuotaDispatcherTaskForPersistent
   }
 };
 
+class QuotaManager::UsageAndQuotaDispatcherTaskForSyncable
+    : public QuotaManager::UsageAndQuotaDispatcherTask {
+ public:
+  UsageAndQuotaDispatcherTaskForSyncable(
+      QuotaManager* manager, const HostAndType& host_and_type)
+      : UsageAndQuotaDispatcherTask(manager, host_and_type) {}
+
+ protected:
+  virtual void RunBody() OVERRIDE {
+    manager()->GetUsageTracker(type())->GetHostUsage(
+        host(), NewWaitableHostUsageCallback());
+  }
+
+  virtual void DispatchCallbacks() OVERRIDE {
+    // TODO(kinuko): We should reflect the backend's actual quota instead
+    // of returning a fixed default value.
+    CallCallbacksAndClear(quota_status(),
+                          host_usage(), host_usage(),
+                          kSyncableStorageDefaultHostQuota,
+                          available_space());
+  }
+};
+
 class QuotaManager::UsageAndQuotaDispatcherTaskForTemporaryGlobal
     : public QuotaManager::UsageAndQuotaDispatcherTask {
  public:
@@ -555,6 +586,9 @@ QuotaManager::UsageAndQuotaDispatcherTask::Create(
           manager, host_and_type);
     case kStorageTypePersistent:
       return new UsageAndQuotaDispatcherTaskForPersistent(
+          manager, host_and_type);
+    case kStorageTypeSyncable:
+      return new UsageAndQuotaDispatcherTaskForSyncable(
           manager, host_and_type);
     default:
       NOTREACHED();
@@ -864,7 +898,7 @@ void QuotaManager::GetUsageAndQuota(
   GetUsageAndQuotaInternal(
       origin, type, false /* global */,
       base::Bind(&CallGetUsageAndQuotaCallback, callback,
-                 IsStorageUnlimited(origin), IsInstalledApp(origin)));
+                 IsStorageUnlimited(origin, type), IsInstalledApp(origin)));
 }
 
 void QuotaManager::NotifyStorageAccessed(
@@ -1063,6 +1097,16 @@ void QuotaManager::GetStatistics(
   }
 }
 
+bool QuotaManager::IsStorageUnlimited(const GURL& origin,
+                                      StorageType type) const {
+  // For syncable storage we should always enforce quota (since the
+  // quota must be capped by the server limit).
+  if (type == kStorageTypeSyncable)
+    return false;
+  return special_storage_policy_.get() &&
+          special_storage_policy_->IsStorageUnlimited(origin);
+}
+
 void QuotaManager::GetOriginsModifiedSince(StorageType type,
                                            base::Time modified_since,
                                            const GetOriginsCallback& callback) {
@@ -1134,6 +1178,9 @@ void QuotaManager::LazyInitialize() {
   persistent_usage_tracker_.reset(
       new UsageTracker(clients_, kStorageTypePersistent,
                        special_storage_policy_));
+  syncable_usage_tracker_.reset(
+      new UsageTracker(clients_, kStorageTypeSyncable,
+                       special_storage_policy_));
 
   int64* temporary_quota_override = new int64(-1);
   int64* desired_available_space = new int64(-1);
@@ -1159,6 +1206,8 @@ UsageTracker* QuotaManager::GetUsageTracker(StorageType type) const {
       return temporary_usage_tracker_.get();
     case kStorageTypePersistent:
       return persistent_usage_tracker_.get();
+    case kStorageTypeSyncable:
+      return syncable_usage_tracker_.get();
     default:
       NOTREACHED();
   }
