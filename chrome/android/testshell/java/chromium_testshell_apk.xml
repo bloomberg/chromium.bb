@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright (c) 2012 The Chromium Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can be
+  found in the LICENSE file.
+-->
+<project name="ChromiumTestShell" default="debug" basedir=".">
+  <description>
+    Building ChromiumTestShell.apk
+  </description>
+  <import file="../../../../build/android/ant/common.xml"/>
+
+  <property-value name="target.abi" value="${APP_ABI}"/>
+
+  <!-- Root directory for output -->
+  <property-location name="out.dir" location="${PRODUCT_DIR}/chromium_testshell"
+      check-exists="false"/>
+  <property name="resource.absolute.dir" value="res"/>
+  <property name="gen.absolute.dir" value="${out.dir}/gen"/>
+
+  <!-- Standard directory for chromium_*.jars -->
+  <property-value name="lib.java.dir" value="${PRODUCT_DIR}/lib.java"/>
+  <path id="native.libs.gdbserver">
+    <fileset file="${android.gdbserver}"/>
+  </path>
+  <!-- Specify directory for libchromiumtestshell.so so that it can be packaged by aapt -->
+  <property name="native.libs.absolute.dir" location="${out.dir}/libs"/>
+  <!-- Specify assets dir, this allows both mmm and SDK builds to use same pak files.  -->
+  <property-location name="asset.absolute.dir" location="${PRODUCT_DIR}/../assets/chrome"/>
+
+  <property name="version.code" value="16"/>
+  <property name="version.name" value="0.1 Developer Build"/>
+
+  <path id="out.dex.jar.input.ref">
+    <pathelement location="${lib.java.dir}/chromium_base.jar"/>
+    <pathelement location="${lib.java.dir}/chromium_content.jar"/>
+    <pathelement location="${lib.java.dir}/chromium_media.jar"/>
+    <pathelement location="${lib.java.dir}/chromium_net.jar"/>
+    <pathelement location="${lib.java.dir}/chromium_chrome.jar"/>
+    <pathelement location="${lib.java.dir}/chromium_web_contents_delegate_android.jar"/>
+  </path>
+
+  <!-- We expect PRODUCT_DIR to be set like the gyp var (e.g. $ROOT/out/Debug) -->
+  <fail message="PRODUCT_DIR env var not set?">
+    <condition>
+      <not>
+        <isset property="PRODUCT_DIR"/>
+      </not>
+    </condition>
+  </fail>
+
+  <target name="-post-compile">
+    <!--
+      Copy gdbserver to main libs directory if building debug.
+      TODO(jrg): for now, Chrome on Android always builds native code
+      as Release and java/ant as Debug, which means we always install
+      gdbserver.  Resolve this discrepancy, possibly by making this
+      Release Official build java/ant as Release.
+    -->
+    <if>
+      <condition>
+        <equals arg1="${build.target}" arg2="debug"/>
+      </condition>
+      <then>
+        <echo message="Copying gdbserver to the apk to enable native debugging" />
+        <copy todir="${out.dir}/libs/${target.abi}">
+          <path refid="native.libs.gdbserver"/>
+        </copy>
+      </then>
+    </if>
+  </target>
+
+  <!-- Classpath for javac -->
+  <path id="javac.custom.classpath">
+    <path refid="out.dex.jar.input.ref"/>
+  </path>
+
+  <import file="../../../../build/android/ant/sdk-targets.xml"/>
+  <import file="${sdk.dir}/tools/ant/build.xml"/>
+</project>
+
