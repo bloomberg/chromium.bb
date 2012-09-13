@@ -38,20 +38,14 @@ class TsfBridge {
   // Destroys the thread local instance.
   virtual void Shutdown() = 0;
 
-  // Enables the IME.
-  // Returns false if an error occures.
-  virtual bool EnableIME() = 0;
-
-  // Diables the IME.
-  // Returns false if an error occures.
-  virtual bool DisableIME() = 0;
+  // Handles TextInputTypeChanged event. RWHVW is responsible for calling this
+  // handler whenever renderer's input text type is changed. Does nothing
+  // unless |client| is focused.
+  virtual void OnTextInputTypeChanged(TextInputClient* client) = 0;
 
   // Cancels the ongoing composition if exists.
   // Returns false if an error occures.
   virtual bool CancelComposition() = 0;
-
-  // Associates |window| with document manager.
-  virtual bool AssociateFocus(HWND window) = 0;
 
   // Sets currently focused TextInputClient.
   // Caller must free |client|.

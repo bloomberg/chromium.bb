@@ -11,6 +11,7 @@
 #include "base/threading/thread_local_storage.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"
+#include "ui/base/ime/text_input_client.h"
 #include "ui/base/win/tsf_bridge.h"
 #include "ui/base/win/tsf_text_store.h"
 
@@ -101,33 +102,21 @@ class TsfBridgeDelegate : public TsfBridge {
   }
 
   // TsfBridge override.
-  virtual bool EnableIME() OVERRIDE {
+  virtual void OnTextInputTypeChanged(TextInputClient* client) OVERRIDE {
     DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
     DCHECK(IsInitialized());
 
-    // Since EnableIME and DisableIME are designed to be a swap operation of
-    // |document_manager_| and |disabled_document_manager_|, do nothing unless
-    // the current focused document manager is |disabled_document_manager_|.
-    // In other words, ITfThreadMgr::SetFocus should be called if and only if
-    // TsfBridge actually has TSF input focus. Otherwise, TSF input focus will
-    // be inconsistent with Win32 input focus.
-    if (!IsFocused(disabled_document_manager_))
-      return false;
+    if (client != client_) {
+      // Called from not focusing client. Do nothing.
+      return;
+    }
 
-    return SUCCEEDED(thread_manager_->SetFocus(document_manager_));
-  }
-
-  // TsfBridge override.
-  virtual bool DisableIME() OVERRIDE {
-    DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
-    DCHECK(IsInitialized());
-
-    // Do nothing unless the current focused document manager is
-    // |document_manager_|. See the comment in EnableIME.
-    if (!IsFocused(document_manager_))
-      return false;
-
-    return SUCCEEDED(thread_manager_->SetFocus(disabled_document_manager_));
+    DCHECK(client_);
+    const TextInputType type = client_->GetTextInputType();
+    const bool is_ime_enabled =
+        type != TEXT_INPUT_TYPE_NONE && type != TEXT_INPUT_TYPE_PASSWORD;
+    thread_manager_->SetFocus(
+        is_ime_enabled ? document_manager_ : disabled_document_manager_);
   }
 
   // TsfBridge override.
@@ -156,17 +145,6 @@ class TsfBridgeDelegate : public TsfBridge {
   }
 
   // TsfBridge override.
-  virtual bool AssociateFocus(HWND window) {
-    DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
-    DCHECK(IsInitialized());
-    base::win::ScopedComPtr<ITfDocumentMgr> previous_manager;
-    return SUCCEEDED(thread_manager_->AssociateFocus(
-        window,
-        document_manager_,
-        previous_manager.Receive()));
-  }
-
-  // TsfBridge override.
   virtual void SetFocusedClient(HWND focused_window,
                                 TextInputClient* client) OVERRIDE {
     DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
@@ -174,14 +152,19 @@ class TsfBridgeDelegate : public TsfBridge {
     DCHECK(IsInitialized());
     client_ = client;
     text_store_->get()->SetFocusedTextInputClient(focused_window, client);
+
+    // Synchronize text input type state.
+    OnTextInputTypeChanged(client);
   }
 
   // TsfBridge override.
   virtual void RemoveFocusedClient(TextInputClient* client) OVERRIDE {
     DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
     DCHECK(IsInitialized());
-    if (client_ == client)
+    if (client_ == client) {
+      client_ = NULL;
       text_store_->get()->SetFocusedTextInputClient(NULL, NULL);
+    }
   }
 
  private:

@@ -1252,8 +1252,6 @@ LRESULT RenderWidgetHostViewWin::OnCreate(CREATESTRUCT* create_struct) {
   else
     SetToGestureMode();
 
-  if (base::win::IsTsfAwareRequired())
-    ui::TsfBridge::GetInstance()->AssociateFocus(m_hWnd);
   UpdateIMEState();
 
   return 0;
@@ -3046,19 +3044,15 @@ LRESULT RenderWidgetHostViewWin::OnQueryCharPosition(
 }
 
 void RenderWidgetHostViewWin::UpdateIMEState() {
+  if (base::win::IsTsfAwareRequired()) {
+    ui::TsfBridge::GetInstance()->OnTextInputTypeChanged(this);
+    return;
+  }
   if (text_input_type_ != ui::TEXT_INPUT_TYPE_NONE &&
       text_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD) {
-    if (base::win::IsTsfAwareRequired()) {
-      ui::TsfBridge::GetInstance()->EnableIME();
-    } else {
-      ime_input_.EnableIME(m_hWnd);
-    }
+    ime_input_.EnableIME(m_hWnd);
   } else {
-    if (base::win::IsTsfAwareRequired()) {
-      ui::TsfBridge::GetInstance()->DisableIME();
-    } else {
-      ime_input_.DisableIME(m_hWnd);
-    }
+    ime_input_.DisableIME(m_hWnd);
   }
 }
 
