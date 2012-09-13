@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/instant/instant_loader.h"
@@ -19,11 +17,9 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
-#include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -57,17 +53,40 @@ class InstantTest : public InProcessBrowserTest {
     browser()->profile()->GetPrefs()->SetBoolean(prefs::kInstantEnabled, true);
   }
 
-  OmniboxView* omnibox() const {
-    return browser()->window()->GetLocationBar()->GetLocationEntry();
-  }
-
-  InstantController* instant() const {
+  InstantController* instant() {
     return browser()->instant_controller()->instant();
   }
 
-  void WaitFor(chrome::NotificationType notification_type) const {
+  OmniboxView* omnibox() {
+    return browser()->window()->GetLocationBar()->GetLocationEntry();
+  }
+
+  void FocusOmnibox() {
+    // If the omnibox already has focus, just notify Instant.
+    if (omnibox()->model()->has_focus())
+      instant()->OnAutocompleteGotFocus();
+    else
+      browser()->window()->GetLocationBar()->FocusLocation(false);
+  }
+
+  void FocusOmniboxAndWaitForInstantSupport() {
     content::WindowedNotificationObserver observer(
-        notification_type, content::NotificationService::AllSources());
+        chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED,
+        content::NotificationService::AllSources());
+    FocusOmnibox();
+    observer.Wait();
+  }
+
+  void SetOmniboxText(const std::string& text) {
+    FocusOmnibox();
+    omnibox()->SetUserText(ASCIIToUTF16(text));
+  }
+
+  void SetOmniboxTextAndWaitForInstantToShow(const std::string& text) {
+    content::WindowedNotificationObserver observer(
+        chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN,
+        content::NotificationService::AllSources());
+    SetOmniboxText(text);
     observer.Wait();
   }
 
@@ -77,21 +96,21 @@ class InstantTest : public InProcessBrowserTest {
 
   bool GetBoolFromJS(content::RenderViewHost* rvh,
                      const std::string& script,
-                     bool* result) const WARN_UNUSED_RESULT {
+                     bool* result) WARN_UNUSED_RESULT {
     return content::ExecuteJavaScriptAndExtractBool(
         rvh, std::wstring(), WrapScript(script), result);
   }
 
   bool GetIntFromJS(content::RenderViewHost* rvh,
                     const std::string& script,
-                    int* result) const WARN_UNUSED_RESULT {
+                    int* result) WARN_UNUSED_RESULT {
     return content::ExecuteJavaScriptAndExtractInt(
         rvh, std::wstring(), WrapScript(script), result);
   }
 
   bool GetStringFromJS(content::RenderViewHost* rvh,
                        const std::string& script,
-                       std::string* result) const WARN_UNUSED_RESULT {
+                       std::string* result) WARN_UNUSED_RESULT {
     return content::ExecuteJavaScriptAndExtractString(
         rvh, std::wstring(), WrapScript(script), result);
   }
@@ -107,18 +126,13 @@ class InstantTest : public InProcessBrowserTest {
            GetIntFromJS(rvh, "height", &height_);
   }
 
-  bool ExecuteScript(const std::string& script) const WARN_UNUSED_RESULT {
+  bool ExecuteScript(const std::string& script) WARN_UNUSED_RESULT {
     return content::ExecuteJavaScript(
         instant()->GetPreviewContents()->web_contents()->GetRenderViewHost(),
         std::wstring(), ASCIIToWide(script));
   }
 
-  void SetOmniboxText(const std::string& text) const {
-    omnibox()->SetUserText(ASCIIToUTF16(text));
-  }
-
-  bool CheckVisibilityIs(TabContents* tab,
-                         bool expected) const WARN_UNUSED_RESULT {
+  bool CheckVisibilityIs(TabContents* tab, bool expected) WARN_UNUSED_RESULT {
     bool actual = !expected;  // Purposely start with a mis-match.
     // We can only use ASSERT_*() in a method that returns void, hence this
     // convoluted check.
@@ -138,33 +152,30 @@ class InstantTest : public InProcessBrowserTest {
 };
 
 // Test that Instant is preloaded when the omnibox is focused.
-#if defined(OS_LINUX) && defined(NDEBUG)
-// Flakily fails in Release builds - http://crbug.com/146419
-#define MAYBE_OmniboxFocusLoadsInstant DISABLED_OmniboxFocusLoadsInstant
-#else
-#define MAYBE_OmniboxFocusLoadsInstant OmniboxFocusLoadsInstant
-#endif
-IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_OmniboxFocusLoadsInstant) {
+IN_PROC_BROWSER_TEST_F(InstantTest, OmniboxFocusLoadsInstant) {
   // The omnibox gets focus before the test begins. At this time, there's no
   // InstantController (which is only created in SetupInstant() below), so no
   // preloading has happened yet.
   ASSERT_NO_FATAL_FAILURE(SetupInstant("instant.html"));
   EXPECT_FALSE(instant()->GetPreviewContents());
 
-  // Explicitly unfocus and refocus the omnibox. Since an InstantController now
-  // exists, it will preload Instant.
+  // Explicitly unfocus the omnibox.
   EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
-  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
 
-  browser()->window()->GetLocationBar()->FocusLocation(false);
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
+  EXPECT_FALSE(omnibox()->model()->has_focus());
+
+  // Refocus the omnibox. The InstantController should've preloaded Instant.
+  FocusOmniboxAndWaitForInstantSupport();
+
   EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
+  EXPECT_TRUE(omnibox()->model()->has_focus());
 
   TabContents* preview_tab = instant()->GetPreviewContents();
   EXPECT_TRUE(preview_tab);
 
   // Check that the page supports Instant, but it isn't showing.
-  WaitFor(chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED);
   EXPECT_TRUE(instant()->loader()->supports_instant());
   EXPECT_FALSE(instant()->IsCurrent());
   EXPECT_FALSE(instant()->is_showing());
@@ -178,31 +189,24 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_OmniboxFocusLoadsInstant) {
   ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
 
-  browser()->window()->GetLocationBar()->FocusLocation(false);
+  FocusOmnibox();
   EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
 
   EXPECT_EQ(preview_tab, instant()->GetPreviewContents());
 
   // Doing a search should also use the same preloaded page.
-  SetOmniboxText("query");
-  WaitFor(chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN);
+  SetOmniboxTextAndWaitForInstantToShow("query");
   EXPECT_TRUE(instant()->is_showing());
   EXPECT_EQ(preview_tab, instant()->GetPreviewContents());
 }
 
-#if defined(OS_LINUX) && defined(NDEBUG)
-// Flakily fails in Release builds - http://crbug.com/146419
-#define MAYBE_OnChangeEvent DISABLED_OnChangeEvent
-#else
-#define MAYBE_OnChangeEvent OnChangeEvent
-#endif
 // Test that the onchange event is dispatched upon typing in the omnibox.
-IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_OnChangeEvent) {
+IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant("instant.html"));
+  FocusOmniboxAndWaitForInstantSupport();
 
   // Typing "query" into the omnibox causes the first onchange event.
-  SetOmniboxText("query");
-  WaitFor(chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN);
+  SetOmniboxTextAndWaitForInstantToShow("query");
 
   // The page suggested "query suggestion" is inline autocompleted into the
   // omnibox, causing the second onchange event.
@@ -218,17 +222,11 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_OnChangeEvent) {
   EXPECT_EQ(3, onchangecalls_);
 }
 
-#if defined(OS_LINUX) && defined(NDEBUG)
-// Flakily fails in Release builds - http://crbug.com/146419
-#define MAYBE_OnSubmitEvent DISABLED_OnSubmitEvent
-#else
-#define MAYBE_OnSubmitEvent OnSubmitEvent
-#endif
 // Test that the onsubmit event is dispatched upon pressing Enter.
-IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_OnSubmitEvent) {
+IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant("instant.html"));
-  SetOmniboxText("search");
-  WaitFor(chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN);
+  FocusOmniboxAndWaitForInstantSupport();
+  SetOmniboxTextAndWaitForInstantToShow("search");
 
   // Stash a reference to the preview, so we can refer to it after commit.
   TabContents* preview_tab = instant()->GetPreviewContents();
@@ -285,19 +283,10 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_OnSubmitEvent) {
 }
 
 // Test that the oncancel event is dispatched upon clicking on the preview.
-#if defined(OS_WIN)
-// Fails frequently on the win_rel tryserver.  crbug.com/145754
-#define MAYBE_OnCancelEvent DISABLED_OnCancelEvent
-#elif defined(OS_LINUX) && defined(NDEBUG)
-// Flakily fails in Release builds - http://crbug.com/146419
-#define MAYBE_OnCancelEvent DISABLED_OnCancelEvent
-#else
-#define MAYBE_OnCancelEvent OnCancelEvent
-#endif
-IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_OnCancelEvent) {
+IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant("instant.html"));
-  SetOmniboxText("search");
-  WaitFor(chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN);
+  EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  SetOmniboxTextAndWaitForInstantToShow("search");
 
   // Stash a reference to the preview, so we can refer to it after commit.
   TabContents* preview_tab = instant()->GetPreviewContents();
@@ -317,7 +306,6 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_OnCancelEvent) {
             omnibox()->model()->PermanentURL().spec());
 
   // Commit the search by clicking on the preview.
-  EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
 
   // After the commit, Instant should not be showing.
@@ -360,41 +348,31 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnResizeEvent) {
 
   // This makes Instant load the preview, along with an initial onresize() (see
   // SearchBoxExtension::PageSupportsInstant() for why).
-  instant()->OnAutocompleteGotFocus();
-  WaitFor(chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED);
+  FocusOmniboxAndWaitForInstantSupport();
 
-  EXPECT_TRUE(instant()->GetPreviewContents());
   EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
   EXPECT_EQ(1, onresizecalls_);
   EXPECT_EQ(0, height_);
 
   // Type a query into the omnibox. This should cause an onresize() event, with
   // a valid (non-zero) height.
-  SetOmniboxText("search");
-  WaitFor(chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN);
+  SetOmniboxTextAndWaitForInstantToShow("search");
 
   EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
   EXPECT_EQ(2, onresizecalls_);
   EXPECT_LT(0, height_);
 }
 
-#if defined(OS_LINUX) && defined(NDEBUG)
-// Flakily fails in Release builds - http://crbug.com/146419
-#define MAYBE_SuggestionIsCompletedNow DISABLED_SuggestionIsCompletedNow
-#else
-#define MAYBE_SuggestionIsCompletedNow SuggestionIsCompletedNow
-#endif
 // Test that the INSTANT_COMPLETE_NOW behavior works as expected.
-IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_SuggestionIsCompletedNow) {
+IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsCompletedNow) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant("instant.html"));
-  instant()->OnAutocompleteGotFocus();
-  WaitFor(chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED);
+  FocusOmniboxAndWaitForInstantSupport();
 
-  // Tell the JS to request for the given behavior.
+  // Tell the JS to request the given behavior.
   EXPECT_TRUE(ExecuteScript("behavior = 'now'"));
 
-  SetOmniboxText("query");
-  WaitFor(chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN);
+  // Type a query, causing the hardcoded "query suggestion" to be returned.
+  SetOmniboxTextAndWaitForInstantToShow("query");
 
   // Get what's showing in the omnibox, and what's highlighted.
   string16 text = omnibox()->GetText();
@@ -408,19 +386,26 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_SuggestionIsCompletedNow) {
   EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
 }
 
+#if defined(OS_MACOSX)
 // The "delayed" completion behavior is not implemented on the Mac. Strange.
-#if !defined(OS_MACOSX)
+#define MAYBE_SuggestionIsCompletedDelayed DISABLED_SuggestionIsCompletedDelayed
+#else
+#define MAYBE_SuggestionIsCompletedDelayed SuggestionIsCompletedDelayed
+#endif
 // Test that the INSTANT_COMPLETE_DELAYED behavior works as expected.
-IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsCompletedDelayed) {
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_SuggestionIsCompletedDelayed) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant("instant.html"));
-  instant()->OnAutocompleteGotFocus();
-  WaitFor(chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED);
+  FocusOmniboxAndWaitForInstantSupport();
 
-  // Tell the JS to request for the given behavior.
+  // Tell the JS to request the given behavior.
   EXPECT_TRUE(ExecuteScript("behavior = 'delayed'"));
 
-  SetOmniboxText("query");
-  WaitFor(chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN);
+  // Type a query, causing the hardcoded "query suggestion" to be returned.
+  SetOmniboxTextAndWaitForInstantToShow("query");
+
+  content::WindowedNotificationObserver instant_updated_observer(
+      chrome::NOTIFICATION_INSTANT_CONTROLLER_UPDATED,
+      content::NotificationService::AllSources());
 
   // Get what's showing in the omnibox, and what's highlighted.
   string16 text = omnibox()->GetText();
@@ -434,7 +419,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsCompletedDelayed) {
   EXPECT_EQ(ASCIIToUTF16(" suggestion"), omnibox()->GetInstantSuggestion());
 
   // Wait for the animation to complete, which causes the omnibox to update.
-  WaitFor(chrome::NOTIFICATION_INSTANT_CONTROLLER_UPDATED);
+  instant_updated_observer.Wait();
 
   text = omnibox()->GetText();
   omnibox()->GetSelectionBounds(&start, &end);
@@ -445,19 +430,17 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsCompletedDelayed) {
   EXPECT_EQ(ASCIIToUTF16(" suggestion"), text.substr(start, end - start));
   EXPECT_EQ(ASCIIToUTF16(""), omnibox()->GetInstantSuggestion());
 }
-#endif
 
 // Test that the INSTANT_COMPLETE_NEVER behavior works as expected.
 IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsCompletedNever) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant("instant.html"));
-  instant()->OnAutocompleteGotFocus();
-  WaitFor(chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED);
+  FocusOmniboxAndWaitForInstantSupport();
 
-  // Tell the JS to request for the given behavior.
+  // Tell the JS to request the given behavior.
   EXPECT_TRUE(ExecuteScript("behavior = 'never'"));
 
-  SetOmniboxText("query");
-  WaitFor(chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN);
+  // Type a query, causing the hardcoded "query suggestion" to be returned.
+  SetOmniboxTextAndWaitForInstantToShow("query");
 
   // Get what's showing in the omnibox, and what's highlighted.
   string16 text = omnibox()->GetText();
@@ -474,88 +457,68 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsCompletedNever) {
 // Test that a valid suggestion is accepted.
 IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsValidObject) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant("instant.html"));
-  instant()->OnAutocompleteGotFocus();
-  WaitFor(chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED);
+  FocusOmniboxAndWaitForInstantSupport();
 
   // Tell the JS to use the given suggestion.
   EXPECT_TRUE(ExecuteScript("suggestion = [ { value: 'query completion' } ]"));
 
-  SetOmniboxText("query");
-  WaitFor(chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN);
-
+  // Type a query, causing "query completion" to be returned as the suggestion.
+  SetOmniboxTextAndWaitForInstantToShow("query");
   EXPECT_EQ(ASCIIToUTF16("query completion"), omnibox()->GetText());
 }
 
-#if defined(OS_LINUX) && defined(NDEBUG)
-// Flakily fails in Release builds - http://crbug.com/146419
-#define MAYBE_SuggestionIsInvalidObject DISABLED_SuggestionIsInvalidObject
-#else
-#define MAYBE_SuggestionIsInvalidObject SuggestionIsInvalidObject
-#endif
 // Test that an invalid suggestion is rejected.
-IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_SuggestionIsInvalidObject) {
+IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsInvalidObject) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant("instant.html"));
-  instant()->OnAutocompleteGotFocus();
-  WaitFor(chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED);
+  FocusOmniboxAndWaitForInstantSupport();
 
-  // Tell the JS to use the given suggestion.
+  // Tell the JS to use an object in an invalid format.
   EXPECT_TRUE(ExecuteScript("suggestion = { value: 'query completion' }"));
 
-  SetOmniboxText("query");
-  WaitFor(chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN);
-
+  // Type a query, but expect no suggestion.
+  SetOmniboxTextAndWaitForInstantToShow("query");
   EXPECT_EQ(ASCIIToUTF16("query"), omnibox()->GetText());
 }
 
 // Test that various forms of empty suggestions are rejected.
 IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionIsEmpty) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant("instant.html"));
-  instant()->OnAutocompleteGotFocus();
-  WaitFor(chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED);
+  FocusOmniboxAndWaitForInstantSupport();
 
   EXPECT_TRUE(ExecuteScript("suggestion = {}"));
-  SetOmniboxText("query1");
-  WaitFor(chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN);
-  EXPECT_EQ(ASCIIToUTF16("query1"), omnibox()->GetText());
+  SetOmniboxTextAndWaitForInstantToShow("query");
+  EXPECT_EQ(ASCIIToUTF16("query"), omnibox()->GetText());
 
   instant()->Hide();
 
   EXPECT_TRUE(ExecuteScript("suggestion = []"));
-  SetOmniboxText("query2");
-  WaitFor(chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN);
-  EXPECT_EQ(ASCIIToUTF16("query2"), omnibox()->GetText());
+  SetOmniboxTextAndWaitForInstantToShow("query sugg");
+  EXPECT_EQ(ASCIIToUTF16("query sugg"), omnibox()->GetText());
 
   instant()->Hide();
 
   EXPECT_TRUE(ExecuteScript("suggestion = [{}]"));
-  SetOmniboxText("query3");
-  WaitFor(chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN);
-  EXPECT_EQ(ASCIIToUTF16("query3"), omnibox()->GetText());
+  SetOmniboxTextAndWaitForInstantToShow("query suggest");
+  EXPECT_EQ(ASCIIToUTF16("query suggest"), omnibox()->GetText());
 }
 
 // Test that Instant doesn't process URLs.
 IN_PROC_BROWSER_TEST_F(InstantTest, RejectsURLs) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant("instant.html"));
+  FocusOmniboxAndWaitForInstantSupport();
 
   // Note that we are not actually navigating to these URLs yet. We are just
   // typing them into the omnibox (without pressing Enter) and checking that
   // Instant doesn't try to process them.
   SetOmniboxText(chrome::kChromeUICrashURL);
-  EXPECT_FALSE(instant()->GetPreviewContents());
   EXPECT_FALSE(instant()->IsCurrent());
   EXPECT_FALSE(instant()->is_showing());
 
-  // Let's try again after creating the preview.
-  instant()->OnAutocompleteGotFocus();
-  WaitFor(chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED);
-
   SetOmniboxText(chrome::kChromeUIHangURL);
-  EXPECT_TRUE(instant()->GetPreviewContents());
   EXPECT_FALSE(instant()->IsCurrent());
   EXPECT_FALSE(instant()->is_showing());
 
   SetOmniboxText(chrome::kChromeUIKillURL);
-  EXPECT_TRUE(instant()->GetPreviewContents());
   EXPECT_FALSE(instant()->IsCurrent());
   EXPECT_FALSE(instant()->is_showing());
 
@@ -581,72 +544,62 @@ IN_PROC_BROWSER_TEST_F(InstantTest, IntranetPathLooksLikeSearch) {
 // Test that transitions between searches and non-searches work as expected.
 IN_PROC_BROWSER_TEST_F(InstantTest, TransitionsBetweenSearchAndURL) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant("instant.html"));
+  FocusOmniboxAndWaitForInstantSupport();
 
-  // Type a search, but without waiting for the page to load, type a URL.
+  // Type a search, and immediately a URL, without waiting for Instant to show.
   SetOmniboxText("query");
   SetOmniboxText("http://monstrous/nightmare");
 
-  // Wait for the page to load.
-  WaitFor(chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED);
-  EXPECT_TRUE(instant()->GetPreviewContents());
+  // The page should only have been told about the search, not the URL.
+  EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
   EXPECT_FALSE(instant()->IsCurrent());
   EXPECT_FALSE(instant()->is_showing());
-  EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
   EXPECT_EQ(1, onchangecalls_);
   EXPECT_EQ("query", value_);
 
   // Type a search. Instant should show.
-  SetOmniboxText("search");
-  WaitFor(chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN);
-  EXPECT_TRUE(instant()->GetPreviewContents());
+  SetOmniboxTextAndWaitForInstantToShow("search");
+  EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
   EXPECT_TRUE(instant()->IsCurrent());
   EXPECT_TRUE(instant()->is_showing());
-  EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
   EXPECT_EQ(2, onchangecalls_);
 
   // Type another URL. The preview should be hidden.
   SetOmniboxText("http://terrible/terror");
-  EXPECT_TRUE(instant()->GetPreviewContents());
+  EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
   EXPECT_FALSE(instant()->IsCurrent());
   EXPECT_FALSE(instant()->is_showing());
-  EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
   EXPECT_EQ(2, onchangecalls_);
 
   // Type the same search as before. The preview should show, but no onchange()
-  // is sent, since query hasn't changed.
-  SetOmniboxText("search");
-  EXPECT_TRUE(instant()->GetPreviewContents());
+  // is sent, since the query hasn't changed.
+  SetOmniboxTextAndWaitForInstantToShow("search");
+  EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
   EXPECT_TRUE(instant()->IsCurrent());
   EXPECT_TRUE(instant()->is_showing());
-  EXPECT_TRUE(UpdateSearchState(instant()->GetPreviewContents()));
   EXPECT_EQ(2, onchangecalls_);
 }
 
-#if defined(OS_LINUX) && defined(NDEBUG)
-// Flakily fails in Release builds - http://crbug.com/146419
-#define MAYBE_DoesNotCommitURLs DISABLED_DoesNotCommitURLs
-#else
-#define MAYBE_DoesNotCommitURLs DoesNotCommitURLs
-#endif
 // Test that Instant can't be fooled into committing a URL.
-IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_DoesNotCommitURLs) {
+IN_PROC_BROWSER_TEST_F(InstantTest, DoesNotCommitURLsOne) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant("instant.html"));
   EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
-  // Type a URL. No Instant.
+  // Type a URL. The Instant preview shouldn't be showing.
   SetOmniboxText("http://deadly/nadder");
-  EXPECT_FALSE(instant()->GetPreviewContents());
+  EXPECT_FALSE(instant()->IsCurrent());
+  EXPECT_FALSE(instant()->is_showing());
 
   // Unfocus and refocus the omnibox.
   ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
-  browser()->window()->GetLocationBar()->FocusLocation(false);
+  FocusOmnibox();
 
-  // The omnibox text hasn't changed, but the preview should've preloaded due
-  // to the omnibox getting focus. It still shouldn't be showing.
-  EXPECT_EQ(ASCIIToUTF16("http://deadly/nadder"), omnibox()->GetText());
   TabContents* preview_tab = instant()->GetPreviewContents();
   EXPECT_TRUE(preview_tab);
+
+  // The omnibox text hasn't changed, so Instant still shouldn't be showing.
+  EXPECT_EQ(ASCIIToUTF16("http://deadly/nadder"), omnibox()->GetText());
   EXPECT_FALSE(instant()->IsCurrent());
   EXPECT_FALSE(instant()->is_showing());
 
@@ -660,16 +613,22 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_DoesNotCommitURLs) {
   EXPECT_EQ(preview_tab, instant()->GetPreviewContents());
   EXPECT_FALSE(instant()->IsCurrent());
   EXPECT_FALSE(instant()->is_showing());
+}
 
-  // Let's try again, using a slightly different approach.
+// Test that Instant can't be fooled into committing a URL.
+IN_PROC_BROWSER_TEST_F(InstantTest, DoesNotCommitURLsTwo) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant("instant.html"));
+  FocusOmniboxAndWaitForInstantSupport();
 
   // Type a query. This causes the preview to be shown.
-  browser()->window()->GetLocationBar()->FocusLocation(false);
-  SetOmniboxText("query");
-  WaitFor(chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN);
+  SetOmniboxTextAndWaitForInstantToShow("query");
+
+  TabContents* preview_tab = instant()->GetPreviewContents();
+  EXPECT_TRUE(preview_tab);
 
   // Type a URL. This causes the preview to be hidden.
   SetOmniboxText("http://hideous/zippleback");
+  EXPECT_FALSE(instant()->IsCurrent());
   EXPECT_FALSE(instant()->is_showing());
 
   // Pretend the omnibox got focus. It already had focus, so we are just trying
@@ -678,7 +637,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_DoesNotCommitURLs) {
 
   // Commit the URL. As before, check that Instant wasn't committed.
   browser()->window()->GetLocationBar()->AcceptInput();
-  EXPECT_EQ(active_tab, chrome::GetActiveTabContents(browser()));
+  TabContents* active_tab = chrome::GetActiveTabContents(browser());
   EXPECT_NE(preview_tab, active_tab);
   EXPECT_EQ(ASCIIToUTF16("hideous/zippleback"), omnibox()->GetText());
 
@@ -688,22 +647,13 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_DoesNotCommitURLs) {
   EXPECT_FALSE(instant()->is_showing());
 }
 
-#if defined(OS_LINUX) && defined(NDEBUG)
-// Flakily fails in Release builds - http://crbug.com/146419
-#define MAYBE_NonInstantSearchProvider DISABLED_NonInstantSearchProvider
-#else
-#define MAYBE_NonInstantSearchProvider NonInstantSearchProvider
-#endif
 // Test that a non-Instant search provider shows no previews.
-IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_NonInstantSearchProvider) {
+IN_PROC_BROWSER_TEST_F(InstantTest, NonInstantSearchProvider) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant("empty.html"));
 
-  // Type a query. Instant will load the search provider.
-  SetOmniboxText("query");
-  EXPECT_TRUE(instant()->GetPreviewContents());
-
-  // When the response comes back, Instant will destroy the non-Instant page.
-  WaitFor(chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED);
+  // Focus the omnibox. When the support determination response comes back,
+  // Instant will destroy the non-Instant page.
+  FocusOmniboxAndWaitForInstantSupport();
   EXPECT_FALSE(instant()->GetPreviewContents());
 }
 
@@ -715,15 +665,13 @@ IN_PROC_BROWSER_TEST_F(InstantTest, NoCrashOnBlockedJS) {
 
   // Wait for notification that the Instant API has been determined. As long as
   // we get the notification we're good (the renderer didn't crash).
-  instant()->OnAutocompleteGotFocus();
-  WaitFor(chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED);
+  FocusOmniboxAndWaitForInstantSupport();
 }
 
 // Test that the preview and active tab's visibility states are set correctly.
 IN_PROC_BROWSER_TEST_F(InstantTest, PageVisibility) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant("instant.html"));
-  instant()->OnAutocompleteGotFocus();
-  WaitFor(chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED);
+  FocusOmniboxAndWaitForInstantSupport();
 
   TabContents* active_tab = chrome::GetActiveTabContents(browser());
   TabContents* preview_tab = instant()->GetPreviewContents();
@@ -733,8 +681,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, PageVisibility) {
   EXPECT_TRUE(CheckVisibilityIs(preview_tab, false));
 
   // Type a query and wait for Instant to show.
-  SetOmniboxText("search");
-  WaitFor(chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN);
+  SetOmniboxTextAndWaitForInstantToShow("query");
   EXPECT_TRUE(CheckVisibilityIs(active_tab, false));
   EXPECT_TRUE(CheckVisibilityIs(preview_tab, true));
 
@@ -744,7 +691,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, PageVisibility) {
   EXPECT_TRUE(CheckVisibilityIs(preview_tab, false));
 
   // Typing a query should show the preview again.
-  SetOmniboxText("search");
+  SetOmniboxTextAndWaitForInstantToShow("query");
   EXPECT_TRUE(CheckVisibilityIs(active_tab, false));
   EXPECT_TRUE(CheckVisibilityIs(preview_tab, true));
 
@@ -756,22 +703,33 @@ IN_PROC_BROWSER_TEST_F(InstantTest, PageVisibility) {
 
 // Test that the task manager identifies Instant's preview tab correctly.
 IN_PROC_BROWSER_TEST_F(InstantTest, TaskManagerPrefix) {
-  // The browser starts with one new tab, so the task manager should have two
-  // rows initially, one for the browser process and one for tab's renderer.
+  // The browser starts with a new tab, so there's just one renderer initially.
   TaskManagerModel* task_manager = TaskManager::GetInstance()->model();
   task_manager->StartUpdating();
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
 
-  ASSERT_NO_FATAL_FAILURE(SetupInstant("instant.html"));
-  instant()->OnAutocompleteGotFocus();
-  WaitFor(chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED);
-
-  // Now there should be three rows, the third being the Instant preview.
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
   string16 prefix = l10n_util::GetStringFUTF16(
       IDS_TASK_MANAGER_INSTANT_PREVIEW_PREFIX, string16());
-  string16 title = task_manager->GetResourceTitle(2);
-  EXPECT_TRUE(StartsWith(title, prefix, true)) << title << " vs " << prefix;
+
+  // There should be no Instant preview yet.
+  for (int i = 0; i < task_manager->ResourceCount(); ++i) {
+    string16 title = task_manager->GetResourceTitle(i);
+    EXPECT_FALSE(StartsWith(title, prefix, true)) << title << " vs " << prefix;
+  }
+
+  ASSERT_NO_FATAL_FAILURE(SetupInstant("instant.html"));
+  FocusOmnibox();
+
+  // Now there should be two renderers, the second being the Instant preview.
+  TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
+
+  int instant_previews = 0;
+  for (int i = 0; i < task_manager->ResourceCount(); ++i) {
+    string16 title = task_manager->GetResourceTitle(i);
+    if (StartsWith(title, prefix, true))
+      ++instant_previews;
+  }
+  EXPECT_EQ(1, instant_previews);
 }
 
 void HistoryQueryDone(base::RunLoop* run_loop,
@@ -793,17 +751,10 @@ void KeywordQueryDone(base::RunLoop* run_loop,
   run_loop->Quit();
 }
 
-#if defined(OS_LINUX) && defined(NDEBUG)
-// Flakily fails in Release builds - http://crbug.com/146419
-#define MAYBE_History DISABLED_History
-#else
-#define MAYBE_History History
-#endif
 // Test that the Instant page load is not added to history.
-IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_History) {
+IN_PROC_BROWSER_TEST_F(InstantTest, History) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant("instant.html"));
-  instant()->OnAutocompleteGotFocus();
-  WaitFor(chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED);
+  FocusOmniboxAndWaitForInstantSupport();
 
   const TemplateURL* template_url = TemplateURLServiceFactory::GetForProfile(
       browser()->profile())->GetDefaultSearchProvider();
@@ -820,8 +771,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_History) {
   ui_test_utils::WaitForHistoryToLoad(history);
 
   // Perform a search.
-  SetOmniboxText("search");
-  WaitFor(chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN);
+  SetOmniboxTextAndWaitForInstantToShow("search");
   EXPECT_EQ(instant_url, instant()->loader()->instant_url());
 
   // Commit the search.
@@ -855,14 +805,9 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_History) {
   EXPECT_EQ(ASCIIToUTF16("search"), queries[0]);
 }
 
-// On Windows, the call to NewEmptyWindow() fails the "GetBackingStore called
-// while hidden" DCHECK(). It's not clear why; maybe because the active tab is
-// in a hidden state when the Instant preview is showing, and somebody's trying
-// to get its backing store?
-#if !defined(OS_WIN)
-
-#if defined(OS_LINUX) && defined(NDEBUG)
-// Flakily fails in Release builds - http://crbug.com/146419
+#if defined(OS_WIN)
+// On Windows, NewEmptyWindow() fails the "GetBackingStore called while hidden"
+// CHECK(). TODO(sreeram): Fix it.
 #define MAYBE_NewWindowDismissesInstant DISABLED_NewWindowDismissesInstant
 #else
 #define MAYBE_NewWindowDismissesInstant NewWindowDismissesInstant
@@ -870,53 +815,48 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_History) {
 // Test that creating a new window hides any currently showing Instant preview.
 IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_NewWindowDismissesInstant) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant("instant.html"));
-  instant()->OnAutocompleteGotFocus();
-  WaitFor(chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED);
-
   EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
-  SetOmniboxText("search");
-  WaitFor(chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN);
-  EXPECT_TRUE(instant()->GetPreviewContents());
+  SetOmniboxTextAndWaitForInstantToShow("search");
+
+  Browser* previous_window = browser();
   EXPECT_TRUE(instant()->IsCurrent());
   EXPECT_TRUE(instant()->is_showing());
 
-  content::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver instant_hidden_observer(
       chrome::NOTIFICATION_INSTANT_CONTROLLER_HIDDEN,
       content::NotificationService::AllSources());
   chrome::NewEmptyWindow(browser()->profile());
-  observer.Wait();
-  EXPECT_TRUE(instant()->GetPreviewContents());
+  instant_hidden_observer.Wait();
+
+  // Even though we just created a new Browser object (for the new window), the
+  // browser() accessor should still give us the first window's Browser object.
+  EXPECT_EQ(previous_window, browser());
   EXPECT_FALSE(instant()->IsCurrent());
   EXPECT_FALSE(instant()->is_showing());
 }
-#endif
 
-// Tests that:
+// Test that:
 // - Instant loader is recreated on OnStaleLoader call when it is hidden.
 // - Instant loader is not recreated on OnStaleLoader call when it is visible.
-// - Instant loader will be recreated when omnibox loses focus after the timer
-//    has stopped.
+// - Instant loader is recreated when omnibox loses focus after the timer stops.
 IN_PROC_BROWSER_TEST_F(InstantTest, InstantLoaderRefresh) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant("instant.html"));
-  instant()->OnAutocompleteGotFocus();
-  WaitFor(chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED);
+  FocusOmniboxAndWaitForInstantSupport();
 
-  // Instant is not showing, so a refresh should create a new preview contents.
+  // Instant is not showing, so OnstaleLoader() should recreate the preview.
   EXPECT_TRUE(instant()->loader()->supports_instant());
   instant()->OnStaleLoader();
   EXPECT_FALSE(instant()->loader()->supports_instant());
-  WaitFor(chrome::NOTIFICATION_INSTANT_SUPPORT_DETERMINED);
 
   // Show Instant.
-  SetOmniboxText("query");
-  WaitFor(chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN);
+  SetOmniboxTextAndWaitForInstantToShow("query");
 
-  // Refresh the loader, the preview contents should remain the same.
+  // Instant is showing, so OnStaleLoader() shouldn't kill the preview.
+  instant()->stale_loader_timer_.Stop();
   instant()->OnStaleLoader();
   EXPECT_TRUE(instant()->is_showing());
 
-  instant()->stale_loader_timer_.Stop();
-  // The refresh should happen once the omnibox loses focus.
+  // The preview should be recreated once the omnibox loses focus.
   EXPECT_TRUE(instant()->loader()->supports_instant());
   instant()->OnAutocompleteLostFocus(NULL);
   EXPECT_FALSE(instant()->loader()->supports_instant());
