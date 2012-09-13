@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/system/drm_settings.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/power_manager_settings.h"
@@ -397,6 +398,13 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
       UMA_HISTOGRAM_BOOLEAN("Touchpad.TapToClick.Changed", enabled);
     else
       UMA_HISTOGRAM_BOOLEAN("Touchpad.TapToClick.Started", enabled);
+
+    // Save owner preference in local state to use on login screen.
+    if (chromeos::UserManager::Get()->IsCurrentUserOwner()) {
+      PrefService* prefs = g_browser_process->local_state();
+      if (prefs->GetBoolean(prefs::kOwnerTapToClickEnabled) != enabled)
+        prefs->SetBoolean(prefs::kOwnerTapToClickEnabled, enabled);
+    }
   }
   if (!pref_name || *pref_name == prefs::kEnableTouchpadThreeFingerClick) {
     const bool enabled = three_finger_click_enabled_.GetValue();
@@ -443,6 +451,13 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
       UMA_HISTOGRAM_BOOLEAN("Mouse.PrimaryButtonRight.Changed", right);
     else
       UMA_HISTOGRAM_BOOLEAN("Mouse.PrimaryButtonRight.Started", right);
+
+    // Save owner preference in local state to use on login screen.
+    if (chromeos::UserManager::Get()->IsCurrentUserOwner()) {
+      PrefService* prefs = g_browser_process->local_state();
+      if (prefs->GetBoolean(prefs::kOwnerPrimaryMouseButtonRight) != right)
+        prefs->SetBoolean(prefs::kOwnerPrimaryMouseButtonRight, right);
+    }
   }
   if (!pref_name || *pref_name == prefs::kDownloadDefaultDirectory) {
     const bool default_download_to_drive = gdata::util::IsUnderDriveMountPoint(

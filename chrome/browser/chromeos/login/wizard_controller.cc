@@ -402,6 +402,8 @@ void WizardController::RegisterPrefs(PrefService* local_state) {
                                      false,
                                      PrefService::UNSYNCABLE_PREF);
   }
+  local_state->RegisterBooleanPref(prefs::kOwnerPrimaryMouseButtonRight, false);
+  local_state->RegisterBooleanPref(prefs::kOwnerTapToClickEnabled, true);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

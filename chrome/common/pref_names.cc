@@ -1802,6 +1802,12 @@ const char kAudioCaptureAllowed[] = "hardware.audio_capture_enabled";
 
 // A dictionary that maps usernames to wallpaper properties.
 const char kUsersWallpaperInfo[] = "user_wallpaper_info";
+
+// Copy of owner swap mouse buttons option to use on login screen.
+const char kOwnerPrimaryMouseButtonRight[] = "owner.mouse.primary_right";
+
+// Copy of owner tap-to-click option to use on login screen.
+const char kOwnerTapToClickEnabled[] = "owner.touchpad.enable_tap_to_click";
 #endif
 
 // Whether there is a Flash version installed that supports clearing LSO data.

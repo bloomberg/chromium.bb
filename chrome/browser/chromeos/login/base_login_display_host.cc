@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/login/webui_login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/mobile_config.h"
+#include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/policy/auto_enrollment_client.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -468,15 +469,22 @@ void ShowLoginWizard(const std::string& first_screen_name,
   if (g_browser_process && g_browser_process->local_state()) {
     const std::string locale = g_browser_process->GetApplicationLocale();
     // If the preferred keyboard for the login screen has been saved, use it.
+    PrefService* prefs = g_browser_process->local_state();
     std::string initial_input_method_id =
-        g_browser_process->local_state()->GetString(
-            chromeos::language_prefs::kPreferredKeyboardLayout);
+        prefs->GetString(chromeos::language_prefs::kPreferredKeyboardLayout);
     if (initial_input_method_id.empty()) {
       // If kPreferredKeyboardLayout is not specified, use the hardware layout.
       initial_input_method_id =
           manager->GetInputMethodUtil()->GetHardwareInputMethodId();
     }
     manager->EnableLayouts(locale, initial_input_method_id);
+
+    // Apply owner preferences for tap-to-click and mouse buttons swap for
+    // login screen.
+    system::mouse_settings::SetPrimaryButtonRight(
+        prefs->GetBoolean(prefs::kOwnerPrimaryMouseButtonRight));
+    system::touchpad_settings::SetTapToClick(
+        prefs->GetBoolean(prefs::kOwnerTapToClickEnabled));
   }
 
   gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(size));
