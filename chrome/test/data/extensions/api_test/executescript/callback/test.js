@@ -112,10 +112,10 @@ chrome.test.getConfig(function(config) {
 
       function executeCallbackObjWithNumericFieldsShouldSucceed() {
         var scriptDetails = {}
-        scriptDetails.code = 'var obj = {1: 1, 2: "a", "foo": "bar"}; obj;';
+        scriptDetails.code = 'var obj = {1: 1, "2": "a", "foo": "bar"}; obj;';
         chrome.tabs.executeScript(tabId, scriptDetails, function(scriptVal) {
           chrome.tabs.get(tabId, chrome.test.callbackPass(function(tab) {
-            chrome.test.assertEq({'foo': 'bar'}, scriptVal[0]);
+            chrome.test.assertEq({'foo': 'bar', 1: 1, '2': 'a'}, scriptVal[0]);
           }));
         });
       },

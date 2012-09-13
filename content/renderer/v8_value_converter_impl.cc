@@ -303,7 +303,7 @@ Value* V8ValueConverterImpl::FromV8Object(
     scope.reset(new v8::Context::Scope(val->CreationContext()));
 
   scoped_ptr<DictionaryValue> result(new DictionaryValue());
-  v8::Handle<v8::Array> property_names(val->GetPropertyNames());
+  v8::Handle<v8::Array> property_names(val->GetOwnPropertyNames());
 
   if (unique_set)
     unique_set->insert(val->GetIdentityHash());
@@ -311,13 +311,13 @@ Value* V8ValueConverterImpl::FromV8Object(
   for (uint32 i = 0; i < property_names->Length(); ++i) {
     v8::Handle<v8::Value> key(property_names->Get(i));
 
-    // base::DictionaryValue can only have string properties.
-    if (!key->IsString())
+    // Extend this test to cover more types as necessary and if sensible.
+    if (!key->IsString() &&
+        !key->IsNumber()) {
+      NOTREACHED() << "Key \"" << *v8::String::AsciiValue(key) << "\" "
+                      "is neither a string nor a number";
       continue;
-
-    // Ensure that the property actually exists.
-    if (!val->HasRealNamedProperty(key->ToString()))
-      continue;
+    }
 
     // Skip all callbacks: crbug.com/139933
     if (val->HasRealNamedCallbackProperty(key->ToString()))

@@ -432,6 +432,39 @@ TEST_F(V8ValueConverterImplTest, ObjectWithInternalFieldsGetters) {
   EXPECT_EQ(1u, result->size());
 }
 
+TEST_F(V8ValueConverterImplTest, WeirdProperties) {
+  v8::Context::Scope context_scope(context_);
+  v8::HandleScope handle_scope;
+
+  const char* source = "(function() {"
+      "return {"
+        "1: 'foo',"
+        "'2': 'bar',"
+        "true: 'baz',"
+        "false: 'qux',"
+        "null: 'quux',"
+        "undefined: 'oops'"
+      "};"
+      "})();";
+
+  v8::Handle<v8::Script> script(v8::Script::New(v8::String::New(source)));
+  v8::Handle<v8::Object> object = script->Run().As<v8::Object>();
+  ASSERT_FALSE(object.IsEmpty());
+
+  V8ValueConverterImpl converter;
+  scoped_ptr<Value> actual(converter.FromV8Value(object, context_));
+
+  DictionaryValue expected;
+  expected.SetString("1", "foo");
+  expected.SetString("2", "bar");
+  expected.SetString("true", "baz");
+  expected.SetString("false", "qux");
+  expected.SetString("null", "quux");
+  expected.SetString("undefined", "oops");
+
+  EXPECT_TRUE(expected.Equals(actual.get()));
+}
+
 TEST_F(V8ValueConverterImplTest, ArrayGetters) {
   v8::Context::Scope context_scope(context_);
   v8::HandleScope handle_scope;
