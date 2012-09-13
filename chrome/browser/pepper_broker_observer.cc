@@ -13,6 +13,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
 #include "grit/generated_resources.h"
@@ -122,6 +123,8 @@ string16 PepperBrokerInfoBarDelegate::GetButtonLabel(
 }
 
 bool PepperBrokerInfoBarDelegate::Accept() {
+  content::RecordAction(
+      content::UserMetricsAction("PPAPI.BrokerInfobarClickedAllow"));
   callback_.Run(true);
   callback_ = base::Callback<void(bool)>();
   content_settings_->SetContentSetting(
@@ -133,6 +136,8 @@ bool PepperBrokerInfoBarDelegate::Accept() {
 }
 
 bool PepperBrokerInfoBarDelegate::Cancel() {
+  content::RecordAction(
+      content::UserMetricsAction("PPAPI.BrokerInfobarClickedDeny"));
   callback_.Run(false);
   callback_ = base::Callback<void(bool)>();
   return true;
@@ -191,14 +196,21 @@ bool PepperBrokerObserver::RequestPpapiBrokerPermission(
                                           std::string());
   switch (setting) {
     case CONTENT_SETTING_ALLOW: {
+      content::RecordAction(
+          content::UserMetricsAction("PPAPI.BrokerSettingAllow"));
       callback.Run(true);
       break;
     }
     case CONTENT_SETTING_BLOCK: {
+      content::RecordAction(
+          content::UserMetricsAction("PPAPI.BrokerSettingDeny"));
       callback.Run(false);
       break;
     }
     case CONTENT_SETTING_ASK: {
+      content::RecordAction(
+          content::UserMetricsAction("PPAPI.BrokerInfobarDisplayed"));
+
       InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();
       std::string languages =
           profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
