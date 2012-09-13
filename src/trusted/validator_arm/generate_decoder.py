@@ -76,9 +76,11 @@ def main(argv):
 
     print "cl args = %s" % cl_args
 
-    # Strip off tables.
+    # Report arguments not understood.
     if remaining_args:
-      tables = remaining_args
+      for arg in remaining_args:
+        print "Don't understand '%s'" % arg
+      sys.exit(1)
 
     # Read in the decoder tables.
     print "Decoder Generator reading ", table_filename
@@ -103,7 +105,8 @@ def main(argv):
     if output_filename.endswith('tests.cc'):
       dgen_test_output.generate_tests_cc(decoder,
                                          decoder_name,
-                                         f, cl_args, tables)
+                                         f, cl_args,
+                                         cl_args.get('table'))
     elif output_filename.endswith('named_classes.h'):
       dgen_test_output.generate_named_classes_h(
           decoder, decoder_name, _localize_filename(output_filename),
