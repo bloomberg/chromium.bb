@@ -2,11 +2,4 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hi">
 <translation id="IDS_WEB_FONT_FAMILY">Noto Sans UI,Mangal,Lohit Hindi,sans-serif</translation>
-<translation id="IDS_LOCALE_GTKRC"> # gtkrc.hi
-gtk-font-name="Noto Sans UI,Mangal,Lohit Hindi,sans-serif, 10"
-style "OverrideTooltipFontStyle" = "TooltipStyle" {
-  font_name = "Noto Sans UI,Mangal,Lohit Hindi,sans-serif, 10"
-}
-widget "gtk-tooltip*" style "OverrideTooltipFontStyle"
-</translation>
 </translationbundle>

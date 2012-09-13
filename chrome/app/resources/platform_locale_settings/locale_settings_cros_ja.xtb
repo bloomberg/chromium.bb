@@ -7,13 +7,6 @@
   <translation id="IDS_FIXED_FONT_FAMILY">MotoyaG04GothicMono</translation>
   <translation id="IDS_SERIF_FONT_FAMILY">MotoyaG04Mincho</translation>
   <translation id="IDS_SANS_SERIF_FONT_FAMILY">MotoyaG04Gothic</translation>
-  <translation id="IDS_LOCALE_GTKRC"> # gtkrc.ja
-gtk-font-name="MotoyaG04Gothic 10"
-style "OverrideTooltipFontStyle" = "TooltipStyle" {
-  font_name = "MotoyaG04Gothic 10"
-}
-widget "gtk-tooltip*" style "OverrideTooltipFontStyle"
-  </translation>
 </if>
 <if expr="not pp_ifdef('_google_chrome')">
   <translation id="IDS_STANDARD_FONT_FAMILY">IPAPGothic</translation>
@@ -21,13 +14,6 @@ widget "gtk-tooltip*" style "OverrideTooltipFontStyle"
   <translation id="IDS_FIXED_FONT_FAMILY">IPAGothic</translation>
   <translation id="IDS_SERIF_FONT_FAMILY">IPAPMincho</translation>
   <translation id="IDS_SANS_SERIF_FONT_FAMILY">IPAPGothic</translation>
-  <translation id="IDS_LOCALE_GTKRC"> # gtkrc.ja
-gtk-font-name="IPAPGothic 10"
-style "OverrideTooltipFontStyle" = "TooltipStyle" {
-  font_name = "IPAPGothic 10"
-}
-widget "gtk-tooltip*" style "OverrideTooltipFontStyle"
-  </translation>
 </if>
 <translation id="IDS_MINIMUM_FONT_SIZE">10</translation>
 <translation id="IDS_MINIMUM_LOGICAL_FONT_SIZE">10</translation>

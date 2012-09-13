@@ -9,13 +9,4 @@
 <translation id="IDS_SANS_SERIF_FONT_FAMILY">Droid Sans Fallback</translation>
 <translation id="IDS_MINIMUM_FONT_SIZE">12</translation>
 <translation id="IDS_MINIMUM_LOGICAL_FONT_SIZE">12</translation>
-<!-- TODO(jungshik): Change Song ASC to Droid Sans Fallback once we fix
-     bug 14691 -->
-<translation id="IDS_LOCALE_GTKRC"> # gtkrc.zh-CN
-gtk-font-name="Noto Sans UI,Song ASC,sans-serif, 10"
-style "OverrideTooltipFontStyle" = "TooltipStyle" {
-  font_name = "Noto Sans UI,Song ASC,sans-serif, 10"
-}
-widget "gtk-tooltip*" style "OverrideTooltipFontStyle"
-</translation>
 </translationbundle>

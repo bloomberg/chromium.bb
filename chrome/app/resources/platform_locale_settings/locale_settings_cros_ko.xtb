@@ -9,11 +9,4 @@
 <translation id="IDS_SANS_SERIF_FONT_FAMILY">NanumGothic</translation>
 <translation id="IDS_MINIMUM_FONT_SIZE">10</translation>
 <translation id="IDS_MINIMUM_LOGICAL_FONT_SIZE">10</translation>
-<translation id="IDS_LOCALE_GTKRC"> # gtkrc.ko
-gtk-font-name="Noto Sans UI,NanumGothic,sans-serif, 10"
-style "OverrideTooltipFontStyle" = "TooltipStyle" {
-  font_name = "Noto Sans UI,NanumGothic,sans-serif, 10"
-}
-widget "gtk-tooltip*" style "OverrideTooltipFontStyle"
-</translation>
 </translationbundle>

@@ -326,10 +326,6 @@
         6
       </message>
 
-      <!-- Locale-specific GTK resource information. -->
-      <message name="IDS_LOCALE_GTKRC" use_name_for_id="true">
-      </message>
-
     </messages>
   </release>
 </grit>
