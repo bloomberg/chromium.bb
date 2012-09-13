@@ -410,6 +410,14 @@ void BrowserToolbarGtk::Observe(int type,
     is_wrench_menu_model_valid_ = false;
     gtk_widget_queue_draw(wrench_menu_button_->widget());
   } else if (type == content::NOTIFICATION_ZOOM_LEVEL_CHANGED) {
+    // Since BrowserToolbarGtk create a new |wrench_menu_model_| in
+    // RebuildWrenchMenu(), the ordering of the observers of
+    // NOTIFICATION_ZOOM_LEVEL_CHANGED can change, and result in subtle bugs
+    // like http://crbug.com/118823. Rather than depending on the ordering
+    // of the notification observers, always update the WrenchMenuModel before
+    // updating the WrenchMenu.
+    wrench_menu_model_->UpdateZoomControls();
+
     // If our zoom level changed, we need to tell the menu to update its state,
     // since the menu could still be open.
     wrench_menu_->UpdateMenu();
