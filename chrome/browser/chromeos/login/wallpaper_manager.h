@@ -41,6 +41,10 @@ struct WallpaperInfo {
 
 class UserImage;
 
+// File path suffices of resized small or large wallpaper.
+extern const char kSmallWallpaperSuffix[];
+extern const char kLargeWallpaperSuffix[];
+
 // This class maintains wallpapers for users who have logged into this Chrome
 // OS device.
 class WallpaperManager: public system::TimezoneSettings::Observer,
@@ -99,6 +103,15 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // Resizes |wallpaper| to a resolution which is nearest to |preferred_width|
+  // and |preferred_height| while maintaining aspect ratio. And saves the
+  // resized wallpaper to |path|.
+  void ResizeAndSaveWallpaper(const UserImage& wallpaper,
+                              const FilePath& path,
+                              ash::WallpaperLayout layout,
+                              int preferred_width,
+                              int preferred_height);
 
   // Starts a one shot timer which calls BatchUpdateWallpaper at next midnight.
   // Cancel any previous timer if any.
@@ -230,15 +243,6 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // to PNG completes.
   void OnWallpaperEncoded(const FilePath& path,
                           scoped_refptr<base::RefCountedBytes> data);
-
-  // Resizes |wallpaper| to a resolution which is nearest to |preferred_width|
-  // and |preferred_height| while maintaining aspect ratio. And saves the
-  // resized wallpaper to |path|.
-  void ResizeAndSaveCustomWallpaper(const UserImage& wallpaper,
-                                    const FilePath& path,
-                                    ash::WallpaperLayout layout,
-                                    int preferred_width,
-                                    int preferred_height);
 
   // Record data for User Metrics Analysis.
   void RecordUma(User::WallpaperType type, int index);

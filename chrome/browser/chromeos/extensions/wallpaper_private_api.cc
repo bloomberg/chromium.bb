@@ -179,6 +179,16 @@ void WallpaperSetWallpaperFunction::SaveToFile() {
         BrowserThread::UI, FROM_HERE,
         base::Bind(&WallpaperSetWallpaperFunction::SetDecodedWallpaper,
                    this));
+    chromeos::UserImage wallpaper(wallpaper_);
+
+    // Generates and saves small resolution wallpaper. Uses CENTER_CROPPED to
+    // maintain the aspect ratio after resize.
+    chromeos::WallpaperManager::Get()->ResizeAndSaveWallpaper(
+        wallpaper,
+        file_path.InsertBeforeExtension(chromeos::kSmallWallpaperSuffix),
+        ash::CENTER_CROPPED,
+        ash::kSmallWallpaperMaxWidth,
+        ash::kSmallWallpaperMaxHeight);
   } else {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,

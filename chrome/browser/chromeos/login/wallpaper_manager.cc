@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
@@ -74,9 +73,6 @@ const char kNewWallpaperTypeNodeName[] = "type";
 
 // TODO(bshe): Address the file extension issue. All custom wallpapers should be
 // jpeg files.
-// File path suffices of resized small or large custom wallpaper.
-const char kSmallCustomWallpaperSuffix[] = "_small";
-const char kLargeCustomWallpaperSuffix[] = "_large";
 // File path suffix of the original custom wallpaper.
 const char kOriginalCustomWallpaperSuffix[] = "_wallpaper.png";
 
@@ -98,6 +94,9 @@ int RoundPositive(double x) {
 }  // namespace
 
 namespace chromeos {
+
+const char kSmallWallpaperSuffix[] = "_small";
+const char kLargeWallpaperSuffix[] = "_large";
 
 static WallpaperManager* g_wallpaper_manager = NULL;
 
@@ -210,7 +209,8 @@ FilePath WallpaperManager::GetOriginalWallpaperPathForUser(
 FilePath WallpaperManager::GetWallpaperPathForUser(const std::string& username,
                                                    bool is_small) {
   const char* suffix = is_small ?
-      kSmallCustomWallpaperSuffix : kLargeCustomWallpaperSuffix;
+      kSmallWallpaperSuffix : kLargeWallpaperSuffix;
+
   // TODO(bshe): Remove file extension completely. It is not used and can be
   // misleading. For example, the file extension below should be ".jpg", since
   // the user wallpaper files contain JPEG data.
@@ -350,6 +350,59 @@ void WallpaperManager::Observe(int type,
     default:
       NOTREACHED() << "Unexpected notification " << type;
   }
+}
+
+void WallpaperManager::ResizeAndSaveWallpaper(const UserImage& wallpaper,
+                                              const FilePath& path,
+                                              ash::WallpaperLayout layout,
+                                              int preferred_width,
+                                              int preferred_height) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  int width = wallpaper.image().width();
+  int height = wallpaper.image().height();
+  int resized_width;
+  int resized_height;
+
+  if (layout == ash::CENTER_CROPPED) {
+    // Do not resize custom wallpaper if it is smaller than preferred size.
+    if (!(width > preferred_width && height > preferred_height))
+      return;
+
+    double horizontal_ratio = static_cast<double>(preferred_width) / width;
+    double vertical_ratio = static_cast<double>(preferred_height) / height;
+    if (vertical_ratio > horizontal_ratio) {
+      resized_width =
+          RoundPositive(static_cast<double>(width) * vertical_ratio);
+      resized_height = preferred_height;
+    } else {
+      resized_width = preferred_width;
+      resized_height =
+          RoundPositive(static_cast<double>(height) * horizontal_ratio);
+    }
+  } else if (layout == ash::STRETCH) {
+    resized_width = preferred_width;
+    resized_height = preferred_height;
+  } else {
+    // TODO(bshe): Generates cropped custom wallpaper for CENTER layout.
+    if (file_util::PathExists(path))
+      file_util::Delete(path, false);
+    return;
+  }
+
+  gfx::ImageSkia resized_image = gfx::ImageSkiaOperations::CreateResizedImage(
+      wallpaper.image(),
+      skia::ImageOperations::RESIZE_LANCZOS3,
+      gfx::Size(resized_width, resized_height));
+
+  scoped_refptr<base::RefCountedBytes> data = new base::RefCountedBytes();
+  // Uses simple png encoder to encode image on worker pool. So we do not block
+  // chrome shutdown on image encoding.
+  SimpleJpegEncoder* jpeg_encoder = new SimpleJpegEncoder(
+      data, *(resized_image.bitmap()));
+  jpeg_encoder->Run(
+      base::Bind(&WallpaperManager::OnWallpaperEncoded,
+                 weak_factory_.GetWeakPtr(),
+                 path));
 }
 
 void WallpaperManager::RestartTimer() {
@@ -716,6 +769,12 @@ void WallpaperManager::LoadWallpaper(const std::string& email,
   FilePath wallpaper_path;
   if (info.type == User::ONLINE) {
     std::string file_name = GURL(info.file).ExtractFileName();
+    ash::WallpaperResolution resolution = ash::Shell::GetInstance()->
+      desktop_background_controller()->GetAppropriateResolution();
+    if (resolution == ash::SMALL) {
+      file_name = FilePath(file_name).InsertBeforeExtension(
+          kSmallWallpaperSuffix).value();
+    }
     CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS, &wallpaper_dir));
     wallpaper_path = wallpaper_dir.Append(file_name);
   } else {
@@ -1003,65 +1062,12 @@ void WallpaperManager::SaveCustomWallpaper(const std::string& email,
   SaveWallpaperInternal(path, reinterpret_cast<char*>(&*image_data.begin()),
                         image_data.size());
 
-  ResizeAndSaveCustomWallpaper(wallpaper, small_wallpaper_path, layout,
-                               ash::kSmallWallpaperMaxWidth,
-                               ash::kSmallWallpaperMaxHeight);
-  ResizeAndSaveCustomWallpaper(wallpaper, large_wallpaper_path, layout,
-                               ash::kLargeWallpaperMaxWidth,
-                               ash::kLargeWallpaperMaxHeight);
-}
-
-void WallpaperManager::ResizeAndSaveCustomWallpaper(const UserImage& wallpaper,
-                                                    const FilePath& path,
-                                                    ash::WallpaperLayout layout,
-                                                    int preferred_width,
-                                                    int preferred_height) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  int width = wallpaper.image().width();
-  int height = wallpaper.image().height();
-  int resized_width;
-  int resized_height;
-
-  if (layout == ash::CENTER_CROPPED) {
-    // Do not resize custom wallpaper if it is smaller than preferred size.
-    if (!(width > preferred_width && height > preferred_height))
-      return;
-
-    double horizontal_ratio = static_cast<double>(preferred_width) / width;
-    double vertical_ratio = static_cast<double>(preferred_height) / height;
-    if (vertical_ratio > horizontal_ratio) {
-      resized_width =
-          RoundPositive(static_cast<double>(width) * vertical_ratio);
-      resized_height = preferred_height;
-    } else {
-      resized_width = preferred_width;
-      resized_height =
-          RoundPositive(static_cast<double>(height) * horizontal_ratio);
-    }
-  } else if (layout == ash::STRETCH) {
-    resized_width = preferred_width;
-    resized_height = preferred_height;
-  } else {
-    // TODO(bshe): Generates cropped custom wallpaper for CENTER layout.
-    if (file_util::PathExists(path))
-      file_util::Delete(path, false);
-    return;
-  }
-
-  gfx::ImageSkia resized_image = gfx::ImageSkiaOperations::CreateResizedImage(
-      wallpaper.image(),
-      skia::ImageOperations::RESIZE_LANCZOS3,
-      gfx::Size(resized_width, resized_height));
-
-  scoped_refptr<base::RefCountedBytes> data = new base::RefCountedBytes();
-  // Uses simple png encoder to encode image on worker pool. So we do not block
-  // chrome shutdown on image encoding.
-  SimpleJpegEncoder* jpeg_encoder = new SimpleJpegEncoder(
-      data, *(resized_image.bitmap()));
-  jpeg_encoder->Run(
-      base::Bind(&WallpaperManager::OnWallpaperEncoded,
-                 weak_factory_.GetWeakPtr(),
-                 path));
+  ResizeAndSaveWallpaper(wallpaper, small_wallpaper_path, layout,
+                         ash::kSmallWallpaperMaxWidth,
+                         ash::kSmallWallpaperMaxHeight);
+  ResizeAndSaveWallpaper(wallpaper, large_wallpaper_path, layout,
+                         ash::kLargeWallpaperMaxWidth,
+                         ash::kLargeWallpaperMaxHeight);
 }
 
 void WallpaperManager::RecordUma(User::WallpaperType type, int index) {
