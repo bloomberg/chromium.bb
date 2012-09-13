@@ -14,6 +14,7 @@ var ContentSettingsExceptionsArea =
     options.contentSettings.ContentSettingsExceptionsArea;
 var CookiesView = options.CookiesView;
 var CookiesViewApp = options.CookiesViewApp;
+var DoNotTrackConfirmOverlay = options.DoNotTrackConfirmOverlay;
 var FontSettings = options.FontSettings;
 var HandlerOptions = options.HandlerOptions;
 var HomePageOverlay = options.HomePageOverlay;
@@ -84,6 +85,8 @@ function load() {
                               ContentSettings.getInstance(),
                               [$('privacyContentSettingsButton'),
                                $('show-app-cookies-button')]);
+  OptionsPage.registerOverlay(DoNotTrackConfirmOverlay.getInstance(),
+                              BrowserOptions.getInstance());
   OptionsPage.registerOverlay(FontSettings.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('fontSettingsCustomizeFontsButton')]);

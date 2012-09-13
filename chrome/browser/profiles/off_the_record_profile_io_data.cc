@@ -14,7 +14,6 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/about_protocol_handler.h"
 #include "chrome/browser/net/chrome_net_log.h"
-#include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -144,8 +143,6 @@ void OffTheRecordProfileIOData::Handle::LazyInitialize() const {
   // Set initialized_ to true at the beginning in case any of the objects
   // below try to get the ResourceContext pointer.
   initialized_ = true;
-  ChromeNetworkDelegate::InitializeReferrersEnabled(
-      io_data_->enable_referrers(), profile_->GetPrefs());
 #if defined(ENABLE_SAFE_BROWSING)
   io_data_->safe_browsing_enabled()->Init(prefs::kSafeBrowsingEnabled,
       profile_->GetPrefs(), NULL);

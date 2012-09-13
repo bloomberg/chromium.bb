@@ -1001,6 +1001,9 @@ const char kEnableHyperlinkAuditing[] = "enable_a_ping";
 // Whether to enable sending referrers.
 const char kEnableReferrers[] = "enable_referrers";
 
+// Whether to send the DNT header.
+const char kEnableDoNotTrack[] = "enable_do_not_track";
+
 // Boolean to enable reporting memory info to page.
 const char kEnableMemoryInfo[] = "enable_memory_info";
 

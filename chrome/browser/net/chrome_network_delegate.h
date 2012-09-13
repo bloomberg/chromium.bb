@@ -36,10 +36,11 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
  public:
   // If |profile| is NULL, events will be broadcasted to all profiles,
   // otherwise they will only be sent to the specified profile.
-  // |enable_referrers| should be initialized on the UI thread (see below)
-  // beforehand. This object's owner is responsible for cleaning it up at
-  // shutdown. If |cookie_settings| is NULL, all cookies are enabled,
-  // otherwise, the settings are enforced on all observed network requests.
+  // |enable_referrers| and |enable_do_not_track| should be initialized on the
+  // UI thread (see below) beforehand. This object's owner is responsible for
+  // cleaning it up at shutdown. |enable_do_not_track| can be NULL.
+  // If |cookie_settings| is NULL, all cookies are enabled, otherwise, the
+  // settings are enforced on all observed network requests.
   ChromeNetworkDelegate(
       extensions::EventRouterForwarder* event_router,
       ExtensionInfoMap* extension_info_map,
@@ -48,6 +49,7 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
       void* profile,
       CookieSettings* cookie_settings,
       BooleanPrefMember* enable_referrers,
+      BooleanPrefMember* enable_do_not_track,
       chrome_browser_net::LoadTimeStats* load_time_stats);
   virtual ~ChromeNetworkDelegate();
 
@@ -55,10 +57,12 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   // instances of this object.
   static void NeverThrottleRequests();
 
-  // Binds |enable_referrers| to |pref_service| and moves it to the IO thread.
+  // Binds the pref members to |pref_service| and moves them to the IO thread.
+  // |enable_do_not_track| can be NULL.
   // This method should be called on the UI thread.
-  static void InitializeReferrersEnabled(BooleanPrefMember* enable_referrers,
-                                         PrefService* pref_service);
+  static void InitializePrefsOnUIThread(BooleanPrefMember* enable_referrers,
+                                        BooleanPrefMember* enable_do_not_track,
+                                        PrefService* pref_service);
 
   // When called, all file:// URLs will now be accessible.  If this is not
   // called, then some platforms restrict access to file:// paths.
@@ -119,6 +123,7 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
 
   // Weak, owned by our owner.
   BooleanPrefMember* enable_referrers_;
+  BooleanPrefMember* enable_do_not_track_;
 
   // Weak, owned by our owner.
   const policy::URLBlacklistManager* url_blacklist_manager_;

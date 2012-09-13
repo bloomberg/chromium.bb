@@ -159,7 +159,7 @@ class ExtensionWebRequestTest : public testing::Test {
     network_delegate_.reset(new ChromeNetworkDelegate(
         event_router_.get(), NULL, NULL, NULL, &profile_,
         CookieSettings::Factory::GetForProfile(&profile_), &enable_referrers_,
-        NULL));
+        NULL, NULL));
     context_.reset(new TestURLRequestContext(true));
     context_->set_network_delegate(network_delegate_.get());
     context_->Init();
@@ -703,7 +703,7 @@ class ExtensionWebRequestHeaderModificationTest :
     network_delegate_.reset(new ChromeNetworkDelegate(
         event_router_.get(), NULL, NULL, NULL, &profile_,
         CookieSettings::Factory::GetForProfile(&profile_), &enable_referrers_,
-        NULL));
+        NULL, NULL));
     context_.reset(new TestURLRequestContext(true));
     host_resolver_.reset(new net::MockHostResolver());
     host_resolver_->rules()->AddSimulatedFailure("doesnotexist");

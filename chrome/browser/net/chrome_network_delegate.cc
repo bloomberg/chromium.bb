@@ -69,6 +69,8 @@ bool ChromeNetworkDelegate::g_never_throttle_requests_ = false;
 
 namespace {
 
+const char kDNTHeader[] = "DNT";
+
 // If the |request| failed due to problems with a proxy, forward the error to
 // the proxy extension API.
 void ForwardProxyErrors(net::URLRequest* request,
@@ -143,12 +145,14 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
     void* profile,
     CookieSettings* cookie_settings,
     BooleanPrefMember* enable_referrers,
+    BooleanPrefMember* enable_do_not_track,
     chrome_browser_net::LoadTimeStats* load_time_stats)
     : event_router_(event_router),
       profile_(profile),
       cookie_settings_(cookie_settings),
       extension_info_map_(extension_info_map),
       enable_referrers_(enable_referrers),
+      enable_do_not_track_(enable_do_not_track),
       url_blacklist_manager_(url_blacklist_manager),
       managed_mode_url_filter_(managed_mode_url_filter),
       load_time_stats_(load_time_stats) {
@@ -165,12 +169,17 @@ void ChromeNetworkDelegate::NeverThrottleRequests() {
 }
 
 // static
-void ChromeNetworkDelegate::InitializeReferrersEnabled(
+void ChromeNetworkDelegate::InitializePrefsOnUIThread(
     BooleanPrefMember* enable_referrers,
+    BooleanPrefMember* enable_do_not_track,
     PrefService* pref_service) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   enable_referrers->Init(prefs::kEnableReferrers, pref_service, NULL);
   enable_referrers->MoveToThread(BrowserThread::IO);
+  if (enable_do_not_track) {
+    enable_do_not_track->Init(prefs::kEnableDoNotTrack, pref_service, NULL);
+    enable_do_not_track->MoveToThread(BrowserThread::IO);
+  }
 }
 
 // static
@@ -209,6 +218,8 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
 
   if (!enable_referrers_->GetValue())
     request->set_referrer(std::string());
+  if (enable_do_not_track_ && enable_do_not_track_->GetValue())
+    request->SetExtraRequestHeaderByName(kDNTHeader, "1", true /* override */);
   return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRequest(
       profile_, extension_info_map_.get(), request, callback, new_url);
 }

@@ -181,6 +181,13 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
     { "displayOptions",
       IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_BUTTON_LABEL },
 #endif
+    { "doNotTrack", IDS_OPTIONS_ENABLE_DO_NOT_TRACK },
+    { "doNotTrackConfirmMessage", IDS_OPTIONS_ENABLE_DO_NOT_TRACK_BUBBLE_TEXT },
+    { "doNotTrackConfirmTitle", IDS_OPTIONS_ENABLE_DO_NOT_TRACK_BUBBLE_TITLE },
+    { "doNotTrackConfirmEnable",
+       IDS_OPTIONS_ENABLE_DO_NOT_TRACK_BUBBLE_ENABLE },
+    { "doNotTrackConfirmDisable",
+       IDS_OPTIONS_ENABLE_DO_NOT_TRACK_BUBBLE_DISABLE },
     { "downloadLocationAskForSaveLocation",
       IDS_OPTIONS_DOWNLOADLOCATION_ASKFORSAVELOCATION },
     { "downloadLocationBrowseTitle",

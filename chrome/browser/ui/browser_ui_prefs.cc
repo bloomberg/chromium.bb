@@ -141,6 +141,9 @@ void RegisterBrowserUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kImportSavedPasswords,
                              true,
                              PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kEnableDoNotTrack,
+                             false,
+                             PrefService::SYNCABLE_PREF);
 
   // Dictionaries to keep track of default tasks in the file browser.
   prefs->RegisterDictionaryPref(prefs::kDefaultTasksByMimeType,

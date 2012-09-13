@@ -14,7 +14,6 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/about_protocol_handler.h"
 #include "chrome/browser/net/chrome_net_log.h"
-#include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/clear_on_exit_policy.h"
 #include "chrome/browser/net/connect_interceptor.h"
 #include "chrome/browser/net/http_server_properties_manager.h"
@@ -273,8 +272,6 @@ void ProfileImplIOData::Handle::LazyInitialize() const {
   PrefService* pref_service = profile_->GetPrefs();
   io_data_->set_http_server_properties_manager(
       new chrome_browser_net::HttpServerPropertiesManager(pref_service));
-  ChromeNetworkDelegate::InitializeReferrersEnabled(
-      io_data_->enable_referrers(), pref_service);
   io_data_->session_startup_pref()->Init(
       prefs::kRestoreOnStartup, pref_service, NULL);
   io_data_->session_startup_pref()->MoveToThread(BrowserThread::IO);

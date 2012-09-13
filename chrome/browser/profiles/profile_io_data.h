@@ -228,10 +228,6 @@ class ProfileIOData {
   // Called when the profile is destroyed.
   void ShutdownOnUIThread();
 
-  BooleanPrefMember* enable_referrers() const {
-    return &enable_referrers_;
-  }
-
   ChromeURLDataManagerBackend* chrome_url_data_manager_backend() const {
     return chrome_url_data_manager_backend_.get();
   }
@@ -360,6 +356,7 @@ class ProfileIOData {
 
   // Member variables which are pointed to by the various context objects.
   mutable BooleanPrefMember enable_referrers_;
+  mutable BooleanPrefMember enable_do_not_track_;
   mutable BooleanPrefMember safe_browsing_enabled_;
   mutable BooleanPrefMember printing_enabled_;
   // TODO(marja): Remove session_startup_pref_ if no longer needed.

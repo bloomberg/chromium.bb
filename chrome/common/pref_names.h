@@ -349,6 +349,7 @@ extern const char kPinnedTabs[];
 extern const char kDisable3DAPIs[];
 extern const char kEnableHyperlinkAuditing[];
 extern const char kEnableReferrers[];
+extern const char kEnableDoNotTrack[];
 
 extern const char kImportBookmarks[];
 extern const char kImportHistory[];

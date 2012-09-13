@@ -11254,6 +11254,21 @@ The following application will be launched if you accept this request:
       <message name="IDS_OPTIONS_ENABLE_LOGGING" desc="The label of the checkbox to enable/disable crash and user metrics logging">
         Automatically send usage statistics and crash reports to Google
       </message>
+      <message name="IDS_OPTIONS_ENABLE_DO_NOT_TRACK" desc="The label of the checkbox to enable/disable sending the 'Do Not track' header">
+        Send a ‘Do Not Track’ request with your browsing traffic
+      </message>
+      <message name="IDS_OPTIONS_ENABLE_DO_NOT_TRACK_BUBBLE_TEXT" desc="The text of a confirmation dialog that confirms that the user want to send the 'Do Not Track' header">
+        This feature is currently under development.
+      </message>
+      <message name="IDS_OPTIONS_ENABLE_DO_NOT_TRACK_BUBBLE_TITLE" desc="The title of a confirmation dialog that confirms that the user want to send the 'Do Not Track' header">
+        Do Not Track
+      </message>
+      <message name="IDS_OPTIONS_ENABLE_DO_NOT_TRACK_BUBBLE_ENABLE" desc="The label of a button that enables sending the 'Do Not Track' header">
+        OK
+      </message>
+      <message name="IDS_OPTIONS_ENABLE_DO_NOT_TRACK_BUBBLE_DISABLE" desc="The label of a button that disables sending the 'Do Not Track' header">
+        Cancel
+      </message>
       <if expr="is_win">
         <message name="IDS_WINDOWS8_PRIVACY_HANDLING_INFO" desc="The text which describes how user data is handled differently in Windows8">
           Your data is handled differently in Windows 8.

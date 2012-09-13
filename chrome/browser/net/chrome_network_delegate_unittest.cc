@@ -31,7 +31,8 @@ class ChromeNetworkDelegateTest : public testing::Test {
 
   scoped_ptr<ChromeNetworkDelegate> CreateNetworkDelegate() {
     return scoped_ptr<ChromeNetworkDelegate>(new ChromeNetworkDelegate(
-        forwarder_.get(), NULL, NULL, NULL, NULL, NULL, &pref_member_, NULL));
+        forwarder_.get(), NULL, NULL, NULL, NULL, NULL, &pref_member_, NULL,
+        NULL));
   }
 
   // Implementation moved here for access to private bits.

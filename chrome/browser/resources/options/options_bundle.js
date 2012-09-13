@@ -74,6 +74,7 @@
 <include src="cookies_list.js"></include>
 <include src="cookies_view.js"></include>
 <include src="cookies_view_app.js"></include>
+<include src="do_not_track_confirm_overlay.js"></include>
 <include src="font_settings.js"></include>
 <include src="handler_options.js"></include>
 <include src="handler_options_list.js"></include>

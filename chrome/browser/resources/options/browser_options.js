@@ -282,6 +282,13 @@ cr.define('options', function() {
               [String(event.target.checked)]);
         };
       }
+      $('do-not-track-enabled').customChangeHandler = function(event) {
+        if (this.checked) {
+          OptionsPage.showPageByName('doNotTrackConfirm', false);
+          return true;
+        }
+        return false;
+      };
 
       // Bluetooth (CrOS only).
       if (cr.isChromeOS) {

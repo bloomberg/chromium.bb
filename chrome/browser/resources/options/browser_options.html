@@ -89,7 +89,7 @@
         <input id="sensitivity-range" type="range" min="1" max="5"
             pref="settings.mouse.sensitivity2" class="touch-slider">
       </div>
-      <div id="no-pointing-devices" i18n-content="noPointingDevices" 
+      <div id="no-pointing-devices" i18n-content="noPointingDevices"
           class="settings-row" hidden>
       </div>
       <div class="settings-row">
@@ -268,6 +268,13 @@
         </label>
       </div>
 </if>  <!-- pp_ifdef('_google_chrome') -->
+      <div class="checkbox">
+        <label>
+          <input id="do-not-track-enabled" pref="enable_do_not_track"
+              metric="Options_DoNotTrackCheckbox" type="checkbox">
+          <span i18n-content="doNotTrack"></span>
+        </label>
+      </div>
     </div>
   </section>
 <if expr="pp_ifdef('chromeos')">
@@ -424,13 +431,13 @@
 <if expr="pp_ifdef('chromeos')">
       <div class="checkbox" guest-visibility="disabled">
         <label>
-          <input type="checkbox" 
-          pref="gdata.disabled" 
-          metric="Options_DisableGData">
+          <input type="checkbox"
+              pref="gdata.disabled"
+              metric="Options_DisableGData">
           <span i18n-content="disableGData"></span>
         </label>
-      </div>  
-</if>    
+      </div>
+</if>
 <if expr="not pp_ifdef('chromeos')">
       <div id="auto-open-file-types-section" hidden>
         <div id="auto-open-file-types-container">
@@ -480,7 +487,7 @@
     <h3 i18n-content="advancedSectionTitleCloudPrint"></h3>
     <div>
       <div>
-        <span i18n-content="cloudPrintChromeosOptionLabel"></span> 
+        <span i18n-content="cloudPrintChromeosOptionLabel"></span>
         <a target="_blank" i18n-content="learnMore"
             i18n-values="href:cloudPrintLearnMoreURL"></a>
       </div>

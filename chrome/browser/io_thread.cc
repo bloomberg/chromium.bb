@@ -356,8 +356,10 @@ IOThread::IOThread(
   gssapi_library_name_ = local_state->GetString(prefs::kGSSAPILibraryName);
   pref_proxy_config_tracker_.reset(
       ProxyServiceFactory::CreatePrefProxyConfigTracker(local_state));
-  ChromeNetworkDelegate::InitializeReferrersEnabled(&system_enable_referrers_,
-                                                    local_state);
+  ChromeNetworkDelegate::InitializePrefsOnUIThread(
+      &system_enable_referrers_,
+      NULL,
+      local_state);
   ssl_config_service_manager_.reset(
       SSLConfigServiceManager::CreateDefaultManager(local_state, NULL));
 
@@ -431,6 +433,7 @@ void IOThread::Init() {
       NULL,
       NULL,
       &system_enable_referrers_,
+      NULL,
       NULL);
   if (command_line.HasSwitch(switches::kDisableExtensionsHttpThrottling))
     network_delegate->NeverThrottleRequests();
