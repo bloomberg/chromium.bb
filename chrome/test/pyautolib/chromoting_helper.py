@@ -42,6 +42,7 @@ class ChromotingHelperMac(ChromotingHelper):
 
     # Change the working dir to the dir that has the host zip file
     current_dir = os.getcwd()
+    pyautolib_dir = os.path.dirname(os.path.abspath(__file__))
     os.chdir(bin_dir)
     host_dir = 'remoting-me2me-host-mac'
     output_dir = os.path.join(host_dir, 'output')
@@ -57,10 +58,8 @@ class ChromotingHelperMac(ChromotingHelper):
     os.seteuid(0)
     key_chain = '/Library/Keychains/ChromotingTest'
     password = '1111'
-    key = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                       'chromoting_key.p12')
-    cert = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                        'chromoting_cert.p12')
+    key = os.path.join(pyautolib_dir, 'chromoting_key.p12')
+    cert = os.path.join(pyautolib_dir, 'chromoting_cert.p12')
     subprocess.call(['security', 'delete-keychain', key_chain])
     subprocess.call(['security', 'create-keychain', '-p',
                      password, key_chain])
