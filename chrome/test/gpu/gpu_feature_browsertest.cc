@@ -130,16 +130,14 @@ class GpuFeatureTest : public InProcessBrowserTest {
     TraceEventVector events;
 
     if (expectations & EXPECT_NO_GPU_SWAP_BUFFERS) {
-      EXPECT_EQ(analyzer_->FindEvents(Query::EventName() ==
-                                      Query::String("SwapBuffers"), &events),
-                size_t(0));
+      EXPECT_EQ(analyzer_->FindEvents(Query::EventNameIs("SwapBuffers"),
+                                      &events), size_t(0));
     }
 
     // Check for swap buffers if expected:
     if (expectations & EXPECT_GPU_SWAP_BUFFERS) {
-      EXPECT_GT(analyzer_->FindEvents(Query::EventName() ==
-                                      Query::String("SwapBuffers"), &events),
-                size_t(0));
+      EXPECT_GT(analyzer_->FindEvents(Query::EventNameIs("SwapBuffers"),
+                                      &events), size_t(0));
     }
   }
 
@@ -415,9 +413,9 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, RafNoDamage) {
 
   // Search for matching name on begin event or async_begin event (any begin).
   Query query_raf =
-      (Query::EventPhase() == Query::Phase(TRACE_EVENT_PHASE_BEGIN) ||
-       Query::EventPhase() == Query::Phase(TRACE_EVENT_PHASE_ASYNC_BEGIN)) &&
-      Query::EventName() == Query::String("___RafWithNoDamage___");
+      (Query::EventPhaseIs(TRACE_EVENT_PHASE_BEGIN) ||
+       Query::EventPhaseIs(TRACE_EVENT_PHASE_ASYNC_BEGIN)) &&
+      Query::EventNameIs("___RafWithNoDamage___");
   TraceEventVector events;
   size_t num_events = analyzer_->FindEvents(query_raf, &events);
 

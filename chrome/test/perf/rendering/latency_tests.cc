@@ -112,8 +112,7 @@ class LatencyTest
       public ::testing::WithParamInterface<int> {
  public:
   explicit LatencyTest(LatencyTestMode mode) :
-      query_instant_(Query::EventPhase() ==
-                     Query::Phase(TRACE_EVENT_PHASE_INSTANT)),
+      query_instant_(Query::EventPhaseIs(TRACE_EVENT_PHASE_INSTANT)),
       // These queries are initialized in RunTest.
       query_begin_swaps_(Query::Bool(false)),
       query_end_swaps_(Query::Bool(false)),
@@ -280,33 +279,33 @@ void LatencyTest::RunTest(const std::vector<int>& behaviors) {
   // Construct queries for searching trace events via TraceAnalyzer.
   if (use_gpu_) {
     query_begin_swaps_ = query_instant_ &&
-        Query::EventName() == Query::String("SwapBuffersLatency") &&
+        Query::EventNameIs("SwapBuffersLatency") &&
         Query::EventArg("width") != Query::Int(kWebGLCanvasWidth);
     query_end_swaps_ = query_instant_ &&
-        Query::EventName() == Query::String("CompositorSwapBuffersComplete");
+        Query::EventNameIs("CompositorSwapBuffersComplete");
   } else if (mode_ == kSoftware) {
     // Software updates need to have x=0 and y=0 to contain the input color.
     query_begin_swaps_ = query_instant_ &&
-        Query::EventName() == Query::String("UpdateRect") &&
+        Query::EventNameIs("UpdateRect") &&
         Query::EventArg("x+y") == Query::Int(0);
     query_end_swaps_ = query_instant_ &&
-        Query::EventName() == Query::String("UpdateRectComplete") &&
+        Query::EventNameIs("UpdateRectComplete") &&
         Query::EventArg("x+y") == Query::Int(0);
   }
   query_inputs_ = query_instant_ &&
-      Query::EventName() == Query::String("MouseEventBegin");
+      Query::EventNameIs("MouseEventBegin");
   query_blits_ = query_instant_ &&
-      Query::EventName() == Query::String("DoBlit") &&
+      Query::EventNameIs("DoBlit") &&
       Query::EventArg("width") == Query::Int(kWebGLCanvasWidth);
   query_clears_ = query_instant_ &&
-      Query::EventName() == Query::String("DoClear") &&
+      Query::EventNameIs("DoClear") &&
       Query::EventArg("green") == Query::Int(kClearColorGreen);
   Query query_width_swaps = Query::Bool(false);
   if (use_gpu_) {
     query_width_swaps = query_begin_swaps_;
   } else if (mode_ == kSoftware) {
     query_width_swaps = query_instant_ &&
-        Query::EventName() == Query::String("UpdateRectWidth") &&
+        Query::EventNameIs("UpdateRectWidth") &&
         Query::EventArg("width") > Query::Int(kWebGLCanvasWidth);
   }
 
@@ -334,7 +333,7 @@ void LatencyTest::RunTest(const std::vector<int>& behaviors) {
 
   // Get width of tab so that we know the limit of x coordinates for the
   // injected mouse inputs.
-  const TraceEvent* swap_event = analyzer_->FindOneEvent(query_width_swaps);
+  const TraceEvent* swap_event = analyzer_->FindFirstOf(query_width_swaps);
   ASSERT_TRUE(swap_event);
   tab_width_ = swap_event->GetKnownArgAsInt("width");
   // Keep printf output clean by limiting input coords to three digits:
@@ -372,12 +371,11 @@ void LatencyTest::RunTest(const std::vector<int>& behaviors) {
     if (mode_ == kWebGLThread) {
       // Print vsync info when in threaded mode.
       Query query_vsync =
-          Query::EventName() ==
-              Query::String("CCThreadProxy::onVSyncParametersChanged") &&
+          Query::EventNameIs("CCThreadProxy::onVSyncParametersChanged") &&
           Query::EventHasNumberArg("monotonicTimebase") &&
           Query::EventHasNumberArg("intervalInSeconds");
 
-      const TraceEvent* vsync_info = analyzer_->FindOneEvent(query_vsync);
+      const TraceEvent* vsync_info = analyzer_->FindFirstOf(query_vsync);
       if (vsync_info) {
         double timebase = vsync_info->GetKnownArgAsDouble("monotonicTimebase");
         double interval = vsync_info->GetKnownArgAsDouble("intervalInSeconds");

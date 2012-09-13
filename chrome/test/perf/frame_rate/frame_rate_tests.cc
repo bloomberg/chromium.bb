@@ -125,8 +125,8 @@ class FrameRateTest
     scoped_ptr<TraceAnalyzer> analyzer(TraceAnalyzer::Create(json_events));
 
     gfx::GLImplementation gl_impl = gfx::kGLImplementationNone;
-    const trace_analyzer::TraceEvent* gpu_event = analyzer->FindOneEvent(
-        Query::EventName() == Query::String("SwapBuffers") &&
+    const trace_analyzer::TraceEvent* gpu_event = analyzer->FindFirstOf(
+        Query::EventNameIs("SwapBuffers") &&
         Query::EventHasNumberArg("GLImpl"));
     if (gpu_event)
       gl_impl = static_cast<gfx::GLImplementation>(
