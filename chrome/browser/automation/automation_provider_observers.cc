@@ -1427,15 +1427,39 @@ AllDownloadsCompleteObserver::AllDownloadsCompleteObserver(
       return;
     }
   }
-  download_manager_->AddObserver(this);  // Will call initial ModelChanged().
+  download_manager_->AddObserver(this);
+  DownloadManager::DownloadVector all_items;
+  download_manager->GetAllDownloads(&all_items);
+  for (DownloadManager::DownloadVector::const_iterator
+       it = all_items.begin(); it != all_items.end(); ++it) {
+    OnDownloadCreated(download_manager_, *it);
+  }
+  ReplyIfNecessary();
 }
 
-AllDownloadsCompleteObserver::~AllDownloadsCompleteObserver() {}
+AllDownloadsCompleteObserver::~AllDownloadsCompleteObserver() {
+  if (download_manager_) {
+    download_manager_->RemoveObserver(this);
+    download_manager_ = NULL;
+  }
+  for (std::set<DownloadItem*>::const_iterator it = pending_downloads_.begin();
+       it != pending_downloads_.end(); ++it) {
+    (*it)->RemoveObserver(this);
+  }
+  pending_downloads_.clear();
+}
 
+void AllDownloadsCompleteObserver::ManagerGoingDown(DownloadManager* manager) {
+  DCHECK_EQ(manager, download_manager_);
+  download_manager_->RemoveObserver(this);
+  download_manager_ = NULL;
+}
 
 void AllDownloadsCompleteObserver::OnDownloadCreated(
     DownloadManager* manager, DownloadItem* item) {
-  if (pre_download_ids_.find(item->GetId()) == pre_download_ids_.end()) {
+  // This method is also called in the c-tor for previously existing items.
+  if (pre_download_ids_.find(item->GetId()) == pre_download_ids_.end() &&
+      item->GetState() == DownloadItem::IN_PROGRESS) {
     item->AddObserver(this);
     pending_downloads_.insert(item);
   }

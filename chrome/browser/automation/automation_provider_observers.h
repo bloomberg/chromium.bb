@@ -1103,6 +1103,7 @@ class AllDownloadsCompleteObserver
   // content::DownloadManager::Observer.
   virtual void OnDownloadCreated(
       content::DownloadManager* manager, content::DownloadItem* item) OVERRIDE;
+  virtual void ManagerGoingDown(content::DownloadManager* manager) OVERRIDE;
 
   // content::DownloadItem::Observer.
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
