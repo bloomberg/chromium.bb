@@ -1655,6 +1655,7 @@
         'browser/sync/test_profile_sync_service.h',
         'browser/system_monitor/media_device_notifications_utils_unittest.cc',
         'browser/system_monitor/media_storage_util_unittest.cc',
+        'browser/system_monitor/media_transfer_protocol_device_observer_chromeos_unittest.cc',
         'browser/system_monitor/removable_device_notifications_chromeos_unittest.cc',
         'browser/system_monitor/removable_device_notifications_linux_unittest.cc',
         'browser/system_monitor/removable_device_notifications_window_win_unittest.cc',

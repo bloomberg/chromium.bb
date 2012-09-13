@@ -66,6 +66,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/token_service_factory.h"
+#include "chrome/browser/system_monitor/media_transfer_protocol_device_observer_chromeos.h"
 #include "chrome/browser/system_monitor/removable_device_notifications_chromeos.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -458,6 +459,8 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // Initialize the brightness observer so that we'll display an onscreen
   // indication of brightness changes during login.
   brightness_observer_.reset(new chromeos::BrightnessObserver());
+  media_transfer_protocol_device_observer_.reset(
+      new chromeos::mtp::MediaTransferProtocolDeviceObserverCros());
   output_observer_.reset(new chromeos::OutputObserver());
   resume_observer_.reset(new chromeos::ResumeObserver());
   screen_lock_observer_.reset(new chromeos::ScreenLockObserver());
@@ -540,6 +543,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   screen_lock_observer_.reset();
   resume_observer_.reset();
   brightness_observer_.reset();
+  media_transfer_protocol_device_observer_.reset();
   output_observer_.reset();
 
   // The XInput2 event listener needs to be shut down earlier than when

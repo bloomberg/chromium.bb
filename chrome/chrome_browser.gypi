@@ -1894,6 +1894,8 @@
         'browser/sync/user_selectable_sync_type.h',
         'browser/system_monitor/media_device_notifications_utils.cc',
         'browser/system_monitor/media_device_notifications_utils.h',
+        'browser/system_monitor/media_transfer_protocol_device_observer_chromeos.cc',
+        'browser/system_monitor/media_transfer_protocol_device_observer_chromeos.h',
         'browser/system_monitor/removable_device_constants.cc',
         'browser/system_monitor/removable_device_constants.h',
         'browser/system_monitor/media_storage_util.cc',
@@ -2225,6 +2227,8 @@
             ['exclude', 'browser/speech/extension_api/tts_extension_api_chromeos.cc'],
             ['exclude', 'browser/system_monitor/media_device_notifications_chromeos.cc'],
             ['exclude', 'browser/system_monitor/media_device_notifications_chromeos.h'],
+            ['exclude', 'browser/system_monitor/media_transfer_protocol_device_observer_chromeos.cc'],
+            ['exclude', 'browser/system_monitor/media_transfer_protocol_device_observer_chromeos.h'],
           ],
         }, {  # chromeos==1
           'dependencies': [
