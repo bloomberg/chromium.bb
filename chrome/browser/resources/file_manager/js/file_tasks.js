@@ -119,12 +119,6 @@ FileTasks.prototype.processTasks_ = function(tasks) {
       } else if (task_parts[1] == 'install-crx') {
         task.iconType = 'generic';
         task.title = loadTimeData.getString('INSTALL_CRX');
-      } else if (task_parts[1] == 'send-to-drive') {
-        if (!this.fileManager_.fileTransferController_ ||
-            this.fileManager_.isOnGData())
-          continue;
-        task.iconType = 'drive';
-        task.title = loadTimeData.getString('SEND_TO_DRIVE');
       }
     }
 
@@ -309,22 +303,6 @@ FileTasks.prototype.executeInternalTask_ = function(id, urls) {
       if (!success)
         console.error('chrome.fileBrowserPrivate.viewFiles failed', urls);
     });
-    return;
-  }
-
-  if (id == 'send-to-drive') {
-    var files = urls.map(function(url) {
-      return util.extractFilePath(url) || '';
-    }).join('\n');
-    var operationInfo = {
-      isCut: false,
-      isOnGData: false,
-      sourceDir: null,
-      directories: '',
-      files: files
-    };
-    this.fileManager_.copyManager_.paste(
-        operationInfo, RootDirectory.GDATA, true);
     return;
   }
 };
