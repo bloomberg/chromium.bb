@@ -39,17 +39,9 @@ class AudioDecodeScheduler : public protocol::AudioStub {
                                   const base::Closure& done) OVERRIDE;
 
  private:
-  // Called on the audio decoder thread.
-  void DecodePacket(scoped_ptr<AudioPacket> packet, const base::Closure& done);
+  class Core;
 
-  // Called on the main thread.
-  void ProcessDecodedPacket(scoped_ptr<AudioPacket> packet,
-                            const base::Closure& done);
-
-  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> audio_decode_task_runner_;
-  scoped_ptr<AudioDecoder> decoder_;
-  scoped_ptr<AudioPlayer> audio_player_;
+  scoped_refptr<Core> core_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDecodeScheduler);
 };
