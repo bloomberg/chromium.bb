@@ -6,8 +6,6 @@
 
 #import "chrome/browser/ui/cocoa/location_bar/image_decoration.h"
 
-#import "chrome/browser/ui/cocoa/image_utils.h"
-
 ImageDecoration::ImageDecoration() {
 }
 
@@ -50,5 +48,6 @@ void ImageDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
                 fromRect:NSZeroRect  // Entire image
                operation:NSCompositeSourceOver
                 fraction:1.0
-            neverFlipped:YES];
+          respectFlipped:YES
+                   hints:nil];
 }

@@ -11,7 +11,6 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_action_context_menu.h"
-#import "chrome/browser/ui/cocoa/image_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -285,7 +284,8 @@ class ExtensionImageTrackerBridge : public content::NotificationObserver,
                  fromRect:NSZeroRect
                 operation:NSCompositeSourceOver
                  fraction:1.0
-             neverFlipped:YES];
+           respectFlipped:YES
+                    hints:nil];
 
   bounds.origin.y += kBrowserActionBadgeOriginYOffset;
   [[self cell] drawBadgeWithinFrame:bounds];
@@ -320,7 +320,8 @@ class ExtensionImageTrackerBridge : public content::NotificationObserver,
                 fromRect:NSZeroRect
                operation:NSCompositeSourceOver
                 fraction:1.0
-            neverFlipped:YES];
+          respectFlipped:YES
+                   hints:nil];
 
   cellFrame.origin.y += kBrowserActionBadgeOriginYOffset;
   [self drawBadgeWithinFrame:cellFrame];

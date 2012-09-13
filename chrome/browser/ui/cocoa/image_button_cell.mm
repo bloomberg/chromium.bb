@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #import "chrome/browser/themes/theme_service.h"
-#import "chrome/browser/ui/cocoa/image_utils.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "ui/gfx/image/image.h"
 
@@ -76,7 +75,8 @@ const CGFloat kImageNoFocusAlpha = 0.65;
            fromRect:NSZeroRect
           operation:NSCompositeSourceOver
            fraction:alpha
-       neverFlipped:YES];
+     respectFlipped:YES
+              hints:nil];
 
   if (overlayImageID_) {
     NSImage* overlayImage = [self imageForID:overlayImageID_
@@ -91,7 +91,8 @@ const CGFloat kImageNoFocusAlpha = 0.65;
                     fromRect:NSZeroRect
                    operation:NSCompositeSourceOver
                     fraction:1.0
-                neverFlipped:YES];
+              respectFlipped:YES
+                       hints:nil];
   }
 }
 

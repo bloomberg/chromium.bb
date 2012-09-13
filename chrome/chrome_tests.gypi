@@ -1772,7 +1772,6 @@
         'browser/ui/cocoa/hyperlink_button_cell_unittest.mm',
         'browser/ui/cocoa/hyperlink_text_view_unittest.mm',
         'browser/ui/cocoa/image_button_cell_unittest.mm',
-        'browser/ui/cocoa/image_utils_unittest.mm',
         'browser/ui/cocoa/info_bubble_view_unittest.mm',
         'browser/ui/cocoa/info_bubble_window_unittest.mm',
         'browser/ui/cocoa/infobars/infobar_container_controller_unittest.mm',

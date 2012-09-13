@@ -8,7 +8,6 @@
 #import "base/memory/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_controller.h"
-#import "chrome/browser/ui/cocoa/image_utils.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 

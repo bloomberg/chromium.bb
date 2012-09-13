@@ -6,7 +6,6 @@
 
 #import "base/logging.h"
 #include "base/sys_string_conversions.h"
-#import "chrome/browser/ui/cocoa/image_utils.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_icon_decoration.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/font.h"

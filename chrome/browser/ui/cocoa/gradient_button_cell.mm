@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #import "base/memory/scoped_nsobject.h"
 #import "chrome/browser/themes/theme_service.h"
-#import "chrome/browser/ui/cocoa/image_utils.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "grit/theme_resources.h"
@@ -603,7 +602,8 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
                     fromRect:imageRect
                    operation:NSCompositeSourceOver
                     fraction:[self isEnabled] ? 1.0 : 0.5
-                neverFlipped:YES];
+              respectFlipped:YES
+                       hints:nil];
     if (isTemplate && color) {
       [color set];
       NSRectFillUsingOperation(cellFrame, NSCompositeSourceAtop);
@@ -623,7 +623,8 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
                      fromRect:imageRect
                     operation:NSCompositeSourceOver
                      fraction:[self isEnabled] ? 1.0 : 0.5
-                 neverFlipped:YES];
+               respectFlipped:YES
+                        hints:nil];
   }
 }
 

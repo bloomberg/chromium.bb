@@ -9,7 +9,6 @@
 #include "chrome/browser/download/download_util.h"
 #import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/download/background_theme.h"
-#import "chrome/browser/ui/cocoa/image_utils.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
@@ -555,7 +554,8 @@ using content::DownloadItem;
                   fromRect:NSZeroRect
                  operation:NSCompositeSourceOver
                   fraction:[self isEnabled] ? 1.0 : 0.5
-              neverFlipped:YES];
+            respectFlipped:YES
+                     hints:nil];
 
   // Separator between button and popup parts
   CGFloat lx = NSMaxX(cellFrame) - kDropdownAreaWidth + 0.5;

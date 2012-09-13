@@ -512,8 +512,6 @@
         'browser/ui/cocoa/hyperlink_text_view.mm',
         'browser/ui/cocoa/image_button_cell.h',
         'browser/ui/cocoa/image_button_cell.mm',
-        'browser/ui/cocoa/image_utils.h',
-        'browser/ui/cocoa/image_utils.mm',
         'browser/ui/cocoa/importer/import_lock_dialog_cocoa.mm',
         'browser/ui/cocoa/importer/import_progress_dialog_cocoa.h',
         'browser/ui/cocoa/importer/import_progress_dialog_cocoa.mm',

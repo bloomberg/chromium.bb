@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
-#import "chrome/browser/ui/cocoa/image_utils.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"

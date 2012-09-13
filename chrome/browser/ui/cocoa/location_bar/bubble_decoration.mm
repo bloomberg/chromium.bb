@@ -7,7 +7,6 @@
 #import "chrome/browser/ui/cocoa/location_bar/bubble_decoration.h"
 
 #include "base/logging.h"
-#import "chrome/browser/ui/cocoa/image_utils.h"
 
 namespace {
 
@@ -117,7 +116,8 @@ void BubbleDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
               fromRect:NSZeroRect  // Entire image
              operation:NSCompositeSourceOver
               fraction:1.0
-          neverFlipped:YES];
+        respectFlipped:YES
+                 hints:nil];
   } else {
     imageRect.size = NSZeroSize;
   }

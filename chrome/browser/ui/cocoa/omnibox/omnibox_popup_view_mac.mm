@@ -10,7 +10,6 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
-#include "chrome/browser/ui/cocoa/image_utils.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
@@ -556,7 +555,8 @@ void OmniboxPopupViewMac::OpenURLForRow(int row, bool force_background) {
              fromRect:NSZeroRect  // Entire image
             operation:NSCompositeSourceOver
              fraction:1.0
-         neverFlipped:YES];
+       respectFlipped:YES
+                hints:nil];
   }
 
   // Adjust the title position to be lined up under the field's text.

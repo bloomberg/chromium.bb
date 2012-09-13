@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
-#import "chrome/browser/ui/cocoa/image_utils.h"
 #include "grit/theme_resources.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -139,7 +138,8 @@ void KeywordHintDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
             fromRect:NSZeroRect  // Entire image
            operation:NSCompositeSourceOver
             fraction:1.0
-        neverFlipped:YES];
+      respectFlipped:YES
+               hints:nil];
   frame.origin.x += NSWidth(image_rect);
   frame.size.width -= NSWidth(image_rect);
 

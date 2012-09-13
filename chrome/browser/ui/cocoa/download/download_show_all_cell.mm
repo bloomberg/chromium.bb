@@ -6,7 +6,6 @@
 
 #import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/download/background_theme.h"
-#import "chrome/browser/ui/cocoa/image_utils.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "grit/theme_resources.h"
 
@@ -162,7 +161,8 @@ const CGFloat kOuterStrokeWidth = 1;
                   fromRect:NSZeroRect
                  operation:NSCompositeSourceOver
                   fraction:[self isEnabled] ? 1.0 : 0.5
-              neverFlipped:YES];
+            respectFlipped:YES
+                     hints:nil];
 }
 
 - (NSRect)imageRectForBounds:(NSRect)cellFrame {
