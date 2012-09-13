@@ -55,6 +55,9 @@
     'base': {
       'filepath': '^base/',
     },
+    'base_allocator': {
+      'filepath': '^base/allocator',
+    },
     'base_memory': {
       'filepath': '^base/memory',
     },
@@ -117,6 +120,9 @@
     'cookie_monster': {
       'filepath': 'net/cookies/|'\
         'chrome/browser/net/sqlite_persistent_cookie_store',
+    },
+    'deep_memory_profiler': {
+      'filepath': 'tools/(deep_memory_profiler|find_runtime_symbols)',
     },
     'disk_cache': {
       'filepath': 'net/disk_cache/|http_cache',
@@ -317,6 +323,9 @@
     'task_manager': {
       'filepath': 'task_manager'
     },
+    'tcmalloc': {
+      'filepath': 'third_party/tcmalloc'
+    },
     'tests': {
       'filepath': 'apitest|unittest|browsertest|uitest|chrome/test/',
     },
@@ -429,6 +438,7 @@
     'automation': ['kkania@chromium.org',
                    'robertshield@chromium.org'],
     'base': ['erikwright+watch@chromium.org'],
+    'base_allocator': ['dmikurube+memory@chromium.org'],
     'base_memory': ['gavinp+memory@chromium.org'],
     'browser_chromeos': ['davemoore+watch@chromium.org',
                          'stevenjb+watch@chromium.org',
@@ -454,6 +464,7 @@
                 'darin-cc@chromium.org'],
     'cookie_monster': ['erikwright@chromium.org', 'rkn@chromium.org',
                        'wtc@chromium.org'],
+    'deep_memory_profiler': ['dmikurube+memory@chromium.org'],
     'disk_cache': ['gavinp+disk@chromium.org'],
     'dns': ['mmenke@chromium.org'],
     'download': ['rdsmith+dwatch@chromium.org'],
@@ -531,6 +542,7 @@
     'tab_contents': ['avi@chromium.org',
                      'creis+watch@chromium.org', 'ajwong+watch@chromium.org'],
     'task_manager': ['yoshiki+watch@chromium.org'],
+    'tcmalloc': ['dmikurube+memory@chromium.org'],
     'tests': [],
     'textinput': ['penghuang+watch@chromium.org',
                   'suzhe@chromium.org',
