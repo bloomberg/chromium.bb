@@ -3238,8 +3238,8 @@ driver-install() {
   # On Linux we ship a fat toolchain with 2 sets of binaries defaulting to
   # x86-32 (mostly because of the 32 bit chrome bots). So the default
   # bin dir is 32, and the bin64 driver runs the 64 bit binaries
-  if [[ ${HOST_ARCH_X8664} && ${BUILD_PLATFORM_LINUX} && \
-        ${libmode} == "newlib" ]]; then
+  if ${HOST_ARCH_X8664} && ${BUILD_PLATFORM_LINUX} && \
+        [[ ${libmode} == "newlib" ]]; then
     bindir="bin64"
   fi
   # This directory (the ${INSTALL_ROOT}/${libmode} part)
