@@ -287,7 +287,7 @@ tc-test-bot() {
   # Build the un-sandboxed toolchain
   echo "@@@BUILD_STEP compile_toolchain@@@"
   ${PNACL_BUILD} clean
-  ${PNACL_BUILD} all
+  HOST_ARCH=x86_32 ${PNACL_BUILD} all
 
   # run the torture tests. the "trybot" phases take care of prerequisites
   # for both test sets

@@ -70,6 +70,11 @@ tc-compile-toolchain() {
   # Size sanity check
   local byte_size=$(wc -c < pnacl-toolchain.tgz)
   local max_size=$((1024 * 1024 * ${ACCEPTABLE_TOOLCHAIN_SIZE_MB}))
+  if ${build_fat}; then
+    # Allow an extra 33% tarball size for fat toolchains
+    max_size=$((1024 * 1024 * ${ACCEPTABLE_TOOLCHAIN_SIZE_MB} * 4 / 3))
+  fi
+
   if [[ ${byte_size} -gt ${max_size} ]] ; then
       echo "ERROR: toolchain tarball is too large: ${byte_size} > ${max_size}"
       handle-error
