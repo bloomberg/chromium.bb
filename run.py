@@ -31,7 +31,6 @@ run.py options:
   --loader=<path>        Path to sel_ldr
   Default: Uses whichever sel_ldr already exists. Otherwise, builds opt version.
 
-  --irt=full             Use full IRT
   --irt=core             Use Core IRT
   --irt=none             Don't use IRT
   --irt=<path>           Path to IRT nexe
@@ -244,8 +243,6 @@ def FindOrBuildIRT(allow_build = True):
   if env.force_irt:
     if env.force_irt == 'none':
       return None
-    elif env.force_irt == 'full':
-      flavors = ['irt']
     elif env.force_irt == 'core':
       flavors = ['irt_core']
     else:
@@ -254,7 +251,7 @@ def FindOrBuildIRT(allow_build = True):
         Fatal('IRT not found: %s' % irt)
       return irt
   else:
-    flavors = ['irt','irt_core']
+    flavors = ['irt_core']
 
   irt_paths = []
   for flavor in flavors:
