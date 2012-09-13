@@ -95,6 +95,7 @@ def SetupLinuxEnvironment(context):
 
 def SetupMacEnvironment(context):
   SetupGypDefines(context)
+  context.SetEnv('GYP_GENERATORS', 'ninja')
 
 
 def SetupContextVars(context):
@@ -129,9 +130,8 @@ def CommandGypBuild(context):
                           '-j%d' % context['max_jobs'], 'V=1',
                           'BUILDTYPE=' + context['gyp_mode']])
   elif context.Mac():
-    Command(context, cmd=['xcodebuild', '-project', 'build/all.xcodeproj',
-                          '-parallelizeTargets',
-                          '-configuration', context['gyp_mode']])
+    Command(context, cmd=[
+        'ninja', '-k', '0', '-C', '../out/' + context['gyp_mode']])
   else:
     raise Exception('Unknown platform')
 

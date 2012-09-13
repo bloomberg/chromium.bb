@@ -106,22 +106,6 @@
     'variables': {
       'target_base': 'none',
     },
-    'conditions': [
-      ['OS=="linux" and nacl_standalone==1', {
-        'link_settings': {
-          'libraries': [
-            '-lstdc++',
-          ],
-        },
-      }],
-      ['OS=="mac" and nacl_standalone==1', {
-        'link_settings': {
-          'libraries': [
-            '$(SDKROOT)/usr/lib/libstdc++.dylib',
-          ],
-        },
-      }],
-    ],
     'target_conditions': [
       ['OS=="linux" or OS=="mac"', {
         'cflags': [
