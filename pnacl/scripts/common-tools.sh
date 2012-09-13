@@ -67,9 +67,10 @@ elif [ "${BUILD_PLATFORM}" == "darwin" ] ; then
   BUILD_PLATFORM=mac
   BUILD_PLATFORM_MAC=true
   SCONS_BUILD_PLATFORM=mac
-  # force 32 bit host because build is also 32 bit on mac (no 64bit nacl)
-  HOST_ARCH=${HOST_ARCH:-x86_32}
-  BUILD_ARCH=${BUILD_ARCH:-x86_32}
+  # On mac, uname -m is a lie. We always do 64 bit host builds, on
+  # 64 bit build machines
+  HOST_ARCH=${HOST_ARCH:-x86_64}
+  BUILD_ARCH=${BUILD_ARCH:-x86_64}
   EXEC_EXT=
   SO_PREFIX=lib
   SO_EXT=.dylib

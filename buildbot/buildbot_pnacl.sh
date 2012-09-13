@@ -562,7 +562,7 @@ mode-buildbot-tc-x8632-linux() {
 mode-buildbot-tc-x8632-mac() {
   local is_try=$1
   FAIL_FAST=false
-  TOOLCHAIN_LABEL=pnacl_mac_x86_32
+  TOOLCHAIN_LABEL=pnacl_mac_x86
   # We can't test ARM because we do not have QEMU for Mac.
   # We can't test X86-64 because NaCl X86-64 Mac support is not in good shape.
   tc-build-all ${TOOLCHAIN_LABEL} ${is_try} false false
