@@ -21,16 +21,21 @@ class SessionID {
   SessionID();
   ~SessionID() {}
 
-  // This value is immutable for a given tab. It will be unique across Chrome
-  // within the current session, but may be re-used across sessions. Returns -1
-  // for NULL, and will never return -1 for a valid tab.
+  // If the specified WebContents has a SessionTabHelper (probably because it
+  // was used as the contents of a tab), returns a tab id. This value is
+  // immutable for a given tab. It will be unique across Chrome within the
+  // current session, but may be re-used across sessions. Returns -1
+  // for a NULL WebContents or if the WebContents has no SessionTabHelper.
   static id_type IdForTab(const content::WebContents* tab);
 
-  // If the tab has ever been attached to a window, this is the value of
-  // Browser::session_id().id() for some Browser object. Returns -1 for NULL, or
-  // another value that's not equal to any Browser's id for a tab that has never
-  // been attached to a window. IdForWindowContainingTab() returns the old
-  // window for a tab that's currently being dragged between windows.
+  // If the specified WebContents has a SessionTabHelper (probably because it
+  // was used as the contents of a tab), and has ever been attached to a Browser
+  // window, returns Browser::session_id().id() for that Browser. If the tab is
+  // being dragged between Browser windows, returns the old window's id value.
+  // If the WebContents has a SessionTabHelper but has never been attached to a
+  // Browser window, returns an id value that is different from that of any
+  // Browser. Returns -1 for a NULL WebContents or if the WebContents has no
+  // SessionTabHelper.
   static id_type IdForWindowContainingTab(const content::WebContents* tab);
 
   // Returns the underlying id.

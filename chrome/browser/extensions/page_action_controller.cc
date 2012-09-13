@@ -10,7 +10,6 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/sessions/session_id.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -95,12 +94,10 @@ void PageActionController::DidNavigateMainFrame(
   if (current_actions.empty())
     return;
 
-  // TODO(avi): Make IdForTab return -1 for non-tabs.
-  if (SessionTabHelper::FromWebContents(web_contents()))
-    for (size_t i = 0; i < current_actions.size(); ++i) {
-      current_actions[i]->ClearAllValuesForTab(
-          SessionID::IdForTab(web_contents()));
-    }
+  for (size_t i = 0; i < current_actions.size(); ++i) {
+    current_actions[i]->ClearAllValuesForTab(
+        SessionID::IdForTab(web_contents()));
+  }
 
   NotifyChange();
 }
