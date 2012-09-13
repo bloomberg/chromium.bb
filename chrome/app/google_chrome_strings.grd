@@ -267,10 +267,18 @@ Chrome supports. -->
       <message name="IDS_FR_CUSTOMIZE_DEFAULT_BROWSER" desc="Default browser checkbox label">
         Make Google Chrome the default browser
       </message>
-      <message name="IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE"
-               desc="Title for the hard-coded thumbnail that represents the Google Chrome Welcome page.  This is used on the NTP when there aren't enough thumbnails to show.">
-        Welcome to Google Chrome
-      </message>
+      <if expr="pp_ifdef('ios')">
+        <message name="IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE"
+                 desc="Title for the hard-coded thumbnail that represents the Google Chrome Welcome page.  This is used on the NTP when there aren't enough thumbnails to show. [Length: 14em]">
+          Welcome
+        </message>
+      </if>
+      <if expr="not pp_ifdef('ios')">
+        <message name="IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE"
+                 desc="Title for the hard-coded thumbnail that represents the Google Chrome Welcome page.  This is used on the NTP when there aren't enough thumbnails to show.">
+          Welcome to Google Chrome
+        </message>
+      </if>
       <message name="IDS_NTP4_INTRO_MESSAGE" desc="Message explaning the navigation bar at the bottom of the new NTP.">
         Chrome's New Tab page has been remodeled. Switch between sections by clicking these labels. Chrome will remember your preference for next time.
       </message>
@@ -601,6 +609,16 @@ For Google Chrome, processes used to display diagnostics information (such as th
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_UPGRADE_UPDATING" desc="Status label: Updating Chrome OS">
           Updating your device...
+        </message>
+      </if>
+
+      <!-- iOS Upgrade available info bar-->
+      <if expr="pp_ifdef('ios')">
+        <message name="IDS_UPGRADE_AVAILABLE" desc="Text to inform the user of the presence of a new version of the application">
+          Chrome just got better! A new version is available.
+        </message>
+        <message name="IDS_UPGRADE_AVAILABLE_BUTTON" desc="Diplayed on a button the user can use to upgrade the a more recent version of the application. [Length: 10em]">
+          Update
         </message>
       </if>
 

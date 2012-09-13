@@ -3030,12 +3030,12 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <message name="IDS_CERT_ERROR_EXTRA_INFO_TITLE" desc="The title for the extra information section displayed when a page contains a certificate error">
         Help me understand
       </message>
-      <if expr="pp_ifdef('android')">
+      <if expr="pp_ifdef('android') or pp_ifdef('ios')">
         <message name="IDS_CERT_ERROR_EXTRA_INFO_1" desc="Mobile: 1st paragraph of extra information for any certificate error">
           When you connect to a secure website, the server hosting that site presents your browser with something called a "certificate" to verify its identity. This certificate contains identity information, such as the address of the website, which is verified by a third party that your mobile device trusts. By checking that the address in the certificate matches the address of the website, it is possible to verify that you are securely communicating with the website you intended, and not a third party (such as an attacker on your network).
         </message>
       </if>
-      <if expr="not pp_ifdef('android')">
+      <if expr="not pp_ifdef('android') and not pp_ifdef('ios')">
         <message name="IDS_CERT_ERROR_EXTRA_INFO_1" desc="1st paragraph of extra information for any certificate error">
           When you connect to a secure website, the server hosting that site presents your browser with something called a "certificate" to verify its identity. This certificate contains identity information, such as the address of the website, which is verified by a third party that your computer trusts. By checking that the address in the certificate matches the address of the website, it is possible to verify that you are securely communicating with the website you intended, and not a third party (such as an attacker on your network).
         </message>
@@ -3073,7 +3073,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <message name="IDS_CERT_ERROR_AUTHORITY_INVALID_TITLE" desc="Title for an X509 certificate with an invalid authority">
         The site's security certificate is not trusted!
       </message>
-      <if expr="pp_ifdef('android')">
+      <if expr="pp_ifdef('android') or pp_ifdef('ios')">
         <message name="IDS_CERT_ERROR_AUTHORITY_INVALID_EXTRA_INFO_2" desc="Mobile: 2nd paragraph of extra information for a X509 certificate with an invalid authority">
           In this case, the certificate has not been verified by a third party that your mobile device trusts. Anyone can create a certificate claiming to be whatever website they choose, which is why it must be verified by a trusted third party. Without that verification, the identity information in the certificate is meaningless. It is therefore not possible to verify that you are communicating with <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph> instead of an attacker who generated his own certificate claiming to be <ph name="DOMAIN2">&lt;strong&gt;$2<ex>paypal.com</ex>&lt;/strong&gt;</ph>. You should not proceed past this point.
         </message>
@@ -3081,7 +3081,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           If, however, you work in an organization that generates its own certificates, and you are trying to connect to an internal website of that organization using such a certificate, you may be able to solve this problem securely. You can import your organization's root certificate as a "root certificate", and then certificates issued or verified by your organization will be trusted and you will not see this error next time you try to connect to an internal website. Contact your organization's help staff for assistance in adding a new root certificate to your mobile device.
         </message>
       </if>
-      <if expr="not pp_ifdef('android')">
+      <if expr="not pp_ifdef('android') and not pp_ifdef('ios')">
         <message name="IDS_CERT_ERROR_AUTHORITY_INVALID_EXTRA_INFO_2" desc="2nd paragraph of extra information for a X509 certificate with an invalid authority">
           In this case, the certificate has not been verified by a third party that your computer trusts. Anyone can create a certificate claiming to be whatever website they choose, which is why it must be verified by a trusted third party. Without that verification, the identity information in the certificate is meaningless. It is therefore not possible to verify that you are communicating with <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph> instead of an attacker who generated his own certificate claiming to be <ph name="DOMAIN2">&lt;strong&gt;$2<ex>paypal.com</ex>&lt;/strong&gt;</ph>. You should not proceed past this point.
         </message>
@@ -6800,6 +6800,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OMNIBOX_EXTENSION_KEYWORD_TEXT" desc="Text shown in the search button at the front of the omnibox when the user has selected an extension keyword">
         <ph name="EXTENSION_NAME">$1<ex>Google Talk</ex></ph>
       </message>
+      <if expr="pp_ifdef('ios')">
+        <message name="IDS_OMNIBOX_EMPTY_HINT" desc="The text displayed in the omnibox when it is empty.">
+          Search or type URL
+        </message>
+      </if>
 
       <!-- Native Frame menu -->
       <message name="IDS_ALWAYS_ON_TOP" desc="The optional menu in native frame windows for setting the window to be always on top">
@@ -8175,17 +8180,17 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
           Other Bookmarks
         </message>
       </if>
-      <if expr="not pp_ifdef('android') and pp_ifdef('use_titlecase')">
+      <if expr="not pp_ifdef('android') and not pp_ifdef('ios') and pp_ifdef('use_titlecase')">
         <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the bookmarks bar folder">
           Bookmarks Bar
         </message>
       </if>
-      <if expr="not pp_ifdef('android') and not pp_ifdef('use_titlecase')">
+      <if expr="not pp_ifdef('android') and not pp_ifdef('ios') and not pp_ifdef('use_titlecase')">
         <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Name shown in the tree for the bookmarks bar folder">
           Bookmarks bar
         </message>
       </if>
-      <if expr="pp_ifdef('android')">
+      <if expr="pp_ifdef('android') or pp_ifdef('ios')">
         <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Mobile: Name shown in the tree for the desktop bookmarks folder">
           Desktop bookmarks
         </message>
@@ -8199,6 +8204,20 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_BOOKMARK_FOLDER_EDITOR_WINDOW_TITLE_NEW" desc="Window title of editor for new bookmark folders">
         New folder
       </message>
+      <if expr="pp_ifdef('ios')">
+        <message name="IDS_BOOKMARK_FOLDER_CHOOSER_TITLE" desc="Title of the window the bookmark folder chooser is in.">
+          Choose Folder
+        </message>
+        <message name="IDS_BOOKMARK_ADD_EDITOR_TITLE" desc="Title of the window the bookmark editor is in when adding a bookmark. [Length: 10em]">
+          Add Bookmark
+        </message>
+        <message name="IDS_BOOKMARK_NEW_FOLDER_BUTTON_TITLE" desc="Title for button to create a new folder in Bookmarks [Length: 14em]">
+          New Folder
+        </message>
+        <message name="IDS_BOOKMARK_FOLDER_EDITOR_TITLE" desc="Title of the window the bookmark folder editor is in.">
+          Edit Folder
+        </message>
+      </if>
 
       <!-- bookmark info bubble messages -->
       <message name="IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED" desc="Title of the bubble after bookmarking something">
@@ -8515,7 +8534,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_ERRORPAGES_SUMMARY_FILE_ACCESS_DENIED" desc="Summary in the error page when we can't open a file.">
         The file at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;<ex>http://www.google.com/</ex></ph> is not readable.  It may have been removed, moved, or file permissions may be preventing access.
       </message>
-      <if expr="pp_ifdef('android')">
+      <if expr="pp_ifdef('android') or pp_ifdef('ios')">
         <message name="IDS_ERRORPAGES_SUMMARY_NETWORK_ACCESS_DENIED" desc="Mobile: Summary in the error page when we're not being allowed to access the network.">
           <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
           is having trouble accessing the network.
@@ -8546,7 +8565,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
           </ph>
         </message>
       </if>
-      <if expr="not pp_ifdef('android')">
+      <if expr="not pp_ifdef('android') and not pp_ifdef('ios')">
         <message name="IDS_ERRORPAGES_SUMMARY_NETWORK_ACCESS_DENIED" desc="Summary in the error page when we're not being allowed to access the network.">
           <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
           is having trouble accessing the network.
@@ -8635,7 +8654,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         If the problem persists, try clearing the cache.  In some cases, this
         can also be a symptom of hardware starting to fail.
       </message>
-      <if expr="pp_ifdef('android')">
+      <if expr="pp_ifdef('android') or pp_ifdef('ios')">
         <message name="IDS_ERRORPAGES_SUMMARY_NETWORK_IO_SUSPENDED" desc="Mobile: Summary in the error page when a page load failed due to the mobile device entering sleep/suspend mode.">
           Unable to load the webpage because your mobile device entered sleep or
           hibernate mode.  When this happens, network connections are shut
@@ -8643,7 +8662,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
           resolve this.
         </message>
       </if>
-      <if expr="not pp_ifdef('android')">
+      <if expr="not pp_ifdef('android') and not pp_ifdef('ios')">
         <message name="IDS_ERRORPAGES_SUMMARY_NETWORK_IO_SUSPENDED" desc="Summary in the error page when a page load failed due to the computer entering sleep/suspend mode.">
           Unable to load the webpage because your computer entered sleep or
           hibernate mode.  When this happens, network connections are shut
@@ -8654,7 +8673,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_ERRORPAGES_SUMMARY_NOT_FOUND" desc="Summary in the error page when the server returns a 404.">
         No webpage was found for the web address: <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph>
       </message>
-      <if expr="pp_ifdef('android')">
+      <if expr="pp_ifdef('android') or pp_ifdef('ios')">
         <message name="IDS_ERRORPAGES_SUMMARY_TOO_MANY_REDIRECTS" desc="Mobile: Summary in the error page when there are too many URL redirects.">
           The webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph> has resulted in
           too many redirects.  Clearing your cookies for this site or allowing third-party cookies may fix the problem.  If
@@ -8662,7 +8681,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
           mobile device.
         </message>
       </if>
-      <if expr="not pp_ifdef('android')">
+      <if expr="not pp_ifdef('android') and not pp_ifdef('ios')">
         <message name="IDS_ERRORPAGES_SUMMARY_TOO_MANY_REDIRECTS" desc="Summary in the error page when there are too many URL redirects.">
           The webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph> has resulted in
           too many redirects.  Clearing your cookies for this site or allowing third-party cookies may fix the problem.  If
@@ -8896,6 +8915,28 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         <ph name="ORGANIZATION">$1<ex>Paypal Inc.</ex></ph> [<ph name="COUNTRY">$2<ex>US</ex></ph>]
       </message>
 
+      <!-- iOS specific error page messages -->
+      <if expr="pp_ifdef('ios')">
+        <message name="IDS_ERRORPAGES_HEADING_DOWNLOAD_FILE_TYPE_ERROR" desc="A one-line title for error message to tell user that the requested type of file cannot be downloaded. [Length: 20em]">
+          Download Failed
+        </message>
+        <message name="IDS_ERRORPAGES_SUMMARY_DOWNLOAD_FILE_TYPE_ERROR" desc="A short error message to tell user that the requested type of file cannot be downloaded. [Length: 40em]">
+          Chrome cannot download this file.
+        </message>
+        <message name="IDS_ERRORPAGES_DETAILS_DOWNLOAD_FILE_TYPE_ERROR" desc="A short message to tell user that the file type is unknown. [Length: 20em]">
+          Unknown File Type.
+        </message>
+        <message name="IDS_ERRORPAGES_HEADING_UNSUPPORTED_SCHEME_ERROR" desc="Header error message to tell user that the requested URI Scheme is not supported [Length: 20em]">
+          Chrome cannot open this URL.
+        </message>
+        <message name="IDS_ERRORPAGES_SUMMARY_UNSUPPORTED_SCHEME_ERROR" desc="Summary error message to tell user that the requested URI Scheme is not supported [Length: 40em]">
+          The requested URI Scheme is not supported.
+        </message>
+        <message name="IDS_ERRORPAGES_DETAILS_UNSUPPORTED_SCHEME_ERROR" desc="Details error message to tell user that the requested URI Scheme is not supported [Length: 20em]">
+          Unsupported URL.
+        </message>
+      </if>
+
       <!-- Page Information Window -->
       <message name="IDS_PAGEINFO_WINDOW_TITLE" desc="Title of the page info window.">
         Security Information
@@ -8988,6 +9029,11 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_PAGE_INFO_SITE_INFO_TITLE" desc="The name of the site information section.">
         Site information
       </message>
+      <if expr="pp_ifdef('ios')">
+        <message name="IDS_PAGE_INFO_SECURITY_BUTTON_ACCESSIBILITY_LABEL" desc="The accessibility text for the page security info button">
+          Page Security Info
+        </message>
+      </if>
 
       <!-- Critical Notification Bubble -->
       <message name="IDS_CRITICAL_NOTIFICATION_HEADLINE" desc="The headline for the critical notification">
@@ -9836,12 +9882,12 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_OPTIONS_PROXIES_LABEL" desc="The info label for the 'Proxy settings' button">
         Set up a proxy to connect to the network.
       </message>
-      <if expr="pp_ifdef('android')">
+      <if expr="pp_ifdef('android') or pp_ifdef('ios')">
         <message name="IDS_OPTIONS_SYSTEM_PROXIES_LABEL" desc="Mobile: The info label for the 'Proxy settings' button when managed by the system.">
           <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is using your mobile device's system proxy settings to connect to the network.
         </message>
       </if>
-      <if expr="not pp_ifdef('android')">
+      <if expr="not pp_ifdef('android') and not pp_ifdef('ios')">
         <message name="IDS_OPTIONS_SYSTEM_PROXIES_LABEL" desc="The info label for the 'Proxy settings' button when managed by the system.">
           <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is using your computer's system proxy settings to connect to the network.
         </message>
@@ -10025,18 +10071,28 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       </message>
 
       <!-- Auto-login infobar -->
-      <message name="IDS_AUTOLOGIN_INFOBAR_MESSAGE" desc="The string shown in the infobar explaining that they can press one button to auto-login instead of entering their user name and password.">
-        Sign in to this site as: <ph name="EMAIL_ADDRESS">$1</ph>
-      </message>
-      <message name="IDS_AUTOLOGIN_INFOBAR_OK_BUTTON" desc="The string used in the infobar button that the user presses to perform the auto-login.">
-        Sign in
-      </message>
-      <if expr="not pp_ifdef('android')">
+      <if expr="pp_ifdef('ios')">
+        <message name="IDS_AUTOLOGIN_INFOBAR_MESSAGE" desc="The string shown in the infobar explaining that they can press one button to auto-login instead of entering their user name and password. [length: 60em]">
+          Automatic sign-in is available <ph name="EMAIL_ADDRESS">$1</ph>
+        </message>
+        <message name="IDS_AUTOLOGIN_INFOBAR_OK_BUTTON" desc="The string used in the infobar button that the user presses to perform the auto-login. [length: 10em]">
+          Login
+        </message>
+      </if>
+      <if expr="not pp_ifdef('ios')">
+        <message name="IDS_AUTOLOGIN_INFOBAR_MESSAGE" desc="The string shown in the infobar explaining that they can press one button to auto-login instead of entering their user name and password.">
+          Sign in to this site as: <ph name="EMAIL_ADDRESS">$1</ph>
+        </message>
+        <message name="IDS_AUTOLOGIN_INFOBAR_OK_BUTTON" desc="The string used in the infobar button that the user presses to perform the auto-login.">
+          Sign in
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android') and not pp_ifdef('ios')">
         <message name="IDS_AUTOLOGIN_INFOBAR_CANCEL_BUTTON" desc="The string used in the infobar button that the user presses to never see this infobar again.">
           Never offer to sign me in
         </message>
       </if>
-      <if expr="pp_ifdef('android')">
+      <if expr="pp_ifdef('android') or pp_ifdef('ios')">
         <message name="IDS_AUTOLOGIN_INFOBAR_CANCEL_BUTTON" desc="Mobile: The string used in the autologin infobar button that the user presses to close the infobar without logging in.">
           Cancel
         </message>
@@ -12240,6 +12296,17 @@ Some features may be unavailable.  Please check that the profile exists and you 
         </message>
         <message name="IDS_BOOKMARK_MANAGER_BOOKMARK_ALL_TABS" desc="Title of the window the bookmark all tabs dialog.">
           Bookmark All Tabs
+        </message>
+      </if>
+      <if expr="pp_ifdef('ios')">
+        <message name="IDS_BOOKMARK_MANAGER_FOLDER_SECTION" desc="The label for the folder section when editing or creating bookmarks on a phone.">
+          In Folder:
+        </message>
+        <message name="IDS_BOOKMARK_MANAGER_FOLDER_TITLE" desc="The label for the folder selector field when editing or creating bookmarks.">
+          Folder
+        </message>
+        <message name="IDS_BOOKMARK_MANAGER_REMOVE_TITLE" desc="The label for the remove button when editing bookmarks.">
+          Remove
         </message>
       </if>
       <message name="IDS_BOOKMARKS_MENU" desc="The title of the bookmarks menu in the wrench menu and in the mac menu bar">
@@ -17821,6 +17888,16 @@ Battery full
       </message>
       <message name="IDS_DIAGNOSTICS_FIX_GATEWAY_CONNECTION" desc="Recommendation for fixing gateway connection to the internet.">
         <ph name="BEGIN_BOLD">&lt;b&gt;</ph>Recommendation: <ph name="END_BOLD">&lt;/b&gt;</ph>Ensure that you have chosen the right gateway and that your gateway is configured correctly.
+      </message>
+    </if>
+
+    <!-- iOS Chrome to Device strings-->
+    <if expr="pp_ifdef('ios')">
+      <message name="IDS_CHROME_TO_DEVICE_PRINT_TO_PHONE" desc="The message indicating print-to-phone jobs are now available. [Length: 30em]">
+        Your document is ready to view.
+      </message>
+      <message name="IDS_CHROME_TO_DEVICE_SNAPSHOTS" desc="The message indicating snapshot jobs are now available. [Length: 30em]">
+        Your page is available to view.
       </message>
     </if>
 

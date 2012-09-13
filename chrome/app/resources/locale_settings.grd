@@ -343,7 +343,7 @@
       <message name="IDS_CHROME_WELCOME_URL" translateable="false">
         http://www.google.com/chrome/intl/[GRITLANGCODE]/welcome.html
       </message>
-      <if expr="pp_ifdef('android')">
+      <if expr="pp_ifdef('android') or pp_ifdef('ios')">
         <message name="IDS_MOBILE_WELCOME_URL" translateable="false">
           chrome://welcome
         </message>
