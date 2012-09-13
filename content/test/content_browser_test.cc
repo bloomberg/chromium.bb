@@ -77,6 +77,12 @@ void ContentBrowserTest::SetUp() {
                                  subprocess_path);
 #endif
 
+  // NOTE: should be kept in sync with
+  // chrome/browser/resources/software_rendering_list.json
+#if !defined(OS_WIN) && !defined(OS_CHROMEOS)
+  command_line->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
+#endif
+
   BrowserTestBase::SetUp();
 }
 
