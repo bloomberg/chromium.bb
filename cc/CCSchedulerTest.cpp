@@ -23,13 +23,10 @@ public:
     void reset()
     {
         m_actions.clear();
-        m_hasMoreResourceUpdates = false;
         m_drawWillHappen = true;
         m_swapWillHappenIfDrawHappens = true;
         m_numDraws = 0;
     }
-
-    void setHasMoreResourceUpdates(bool b) { m_hasMoreResourceUpdates = b; }
 
     int numDraws() const { return m_numDraws; }
     int numActions() const { return static_cast<int>(m_actions.size()); }
@@ -42,8 +39,6 @@ public:
                 return true;
         return false;
     }
-
-    virtual bool hasMoreResourceUpdates() const OVERRIDE { return m_hasMoreResourceUpdates; }
 
     virtual void scheduledActionBeginFrame() OVERRIDE { m_actions.push_back("scheduledActionBeginFrame"); }
     virtual CCScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapIfPossible() OVERRIDE
@@ -91,9 +86,9 @@ TEST(CCSchedulerTest, RequestCommit)
     EXPECT_FALSE(timeSource->active());
     client.reset();
 
-    // Since, hasMoreResourceUpdates is set to false,
+    // Since, hasResourceUpdates is false,
     // beginFrameComplete should commit
-    scheduler->beginFrameComplete();
+    scheduler->beginFrameComplete(false);
     EXPECT_EQ(1, client.numActions());
     EXPECT_STREQ("scheduledActionCommit", client.action(0));
     EXPECT_TRUE(timeSource->active());
@@ -128,9 +123,9 @@ TEST(CCSchedulerTest, RequestCommitAfterBeginFrame)
     // Now setNeedsCommit again. Calling here means we need a second frame.
     scheduler->setNeedsCommit();
 
-    // Since, hasMoreResourceUpdates is set to false, and another commit is
+    // Since, hasResourceUpdates is false, and another commit is
     // needed, beginFrameComplete should commit, then begin another frame.
-    scheduler->beginFrameComplete();
+    scheduler->beginFrameComplete(false);
     EXPECT_EQ(1, client.numActions());
     EXPECT_STREQ("scheduledActionCommit", client.action(0));
     client.reset();
@@ -164,7 +159,7 @@ TEST(CCSchedulerTest, TextureAcquisitionCollision)
     EXPECT_FALSE(timeSource->active());
 
     // Trigger the commit
-    scheduler->beginFrameComplete();
+    scheduler->beginFrameComplete(false);
     EXPECT_TRUE(timeSource->active());
     client.reset();
 
@@ -193,7 +188,7 @@ TEST(CCSchedulerTest, VisibilitySwitchWithTextureAcquisition)
     scheduler->setCanDraw(true);
 
     scheduler->setNeedsCommit();
-    scheduler->beginFrameComplete();
+    scheduler->beginFrameComplete(false);
     scheduler->setMainThreadNeedsLayerTextures();
     client.reset();
     // Verify that pending texture acquisition fires when visibility
@@ -365,7 +360,7 @@ TEST(CCSchedulerTest, RequestCommitInsideDraw)
     EXPECT_FALSE(timeSource->active());
     EXPECT_EQ(1, client.numDraws());
     EXPECT_TRUE(scheduler->commitPending());
-    scheduler->beginFrameComplete();
+    scheduler->beginFrameComplete(false);
 
     timeSource->tick();
     EXPECT_EQ(2, client.numDraws());
