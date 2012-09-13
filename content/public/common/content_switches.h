@@ -104,7 +104,7 @@ extern const char kEnableFastback[];
 CONTENT_EXPORT extern const char kEnableFixedLayout[];
 CONTENT_EXPORT extern const char kDisableFullScreen[];
 extern const char kEnablePointerLock[];
-CONTENT_EXPORT extern const char kEnableTextServiceFramework[];
+CONTENT_EXPORT extern const char kEnableTextServicesFramework[];
 extern const char kEnableGpuBenchmarking[];
 CONTENT_EXPORT extern const char kEnableLogging[];
 extern const char kDisableMediaSource[];

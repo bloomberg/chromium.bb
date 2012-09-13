@@ -58,7 +58,7 @@ class BrowserMainRunnerImpl : public content::BrowserMainRunner {
 
 #if defined(OS_WIN)
     if (parameters.command_line.HasSwitch(
-            switches::kEnableTextServiceFramework)) {
+            switches::kEnableTextServicesFramework)) {
       base::win::SetForceToUseTsf();
     }
 #endif  // OS_WIN
