@@ -84,6 +84,7 @@
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/first_run_bubble.h"
+#include "ui/base/native_theme/native_theme.h"
 #endif
 
 #if defined(USE_AURA)
@@ -948,8 +949,24 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
     canvas->FillRect(bounds, color);
   }
 
-  if (show_focus_rect_ && HasFocus()) {
+  // If |show_focus_rect_| is false but search mode is |NTP|, we still show
+  // focus rect.
+  bool is_search_ntp = search_model_ && search_model_->mode().is_ntp();
+  bool show_focus_rect = show_focus_rect_ || is_search_ntp;
+  if (show_focus_rect && HasFocus()) {
     gfx::Rect r = location_entry_view_->bounds();
+
+    if (is_search_ntp) {
+      r.Inset(0, 0, 1, 0);
+      // To draw focus border with system highlight color, specifically call
+      // |DrawDashedRect|, because default |DrawFocusRect| draws a dashed rect
+      // with gray color.
+      canvas->DrawDashedRect(r,
+          ui::NativeTheme::instance()->GetSystemColor(
+              ui::NativeTheme::kColorId_FocusedBorderColor));
+      return;
+    }
+
     // TODO(jamescook): Is this still needed?
 #if defined(OS_WIN)
     r.Inset(-1,  -1);
