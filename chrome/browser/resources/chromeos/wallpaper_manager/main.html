@@ -29,6 +29,7 @@ found in the LICENSE file.
     <script src="../../shared/js/cr/ui/list_selection_controller.js"></script>
     <script src="../../shared/js/cr/ui/list.js"></script>
     <script src="../../shared/js/cr/ui/grid.js"></script>
+    <script src="js/butter_bar.js"></script>
     <script src="js/wallpaper_images_grid.js"></script>
     <script src="js/wallpaper_manager.js"></script>
     <script src="js/window_state_manager.js"></script>
@@ -72,6 +73,17 @@ found in the LICENSE file.
         <div i18n-content="previewLabel"></div>
         <img id="preview">
       </div>
+    </div>
+  </div>
+  <div id="butter-bar-container">
+    <div id="butter-bar">
+      <div class="content">
+        <div class="butter-message"></div>
+        <div class="progress-bar" hidden>
+          <div class="progress-track"></div>
+        </div>
+      </div>
+      <div class="actions" hidden></div>
     </div>
   </div>
 </body>

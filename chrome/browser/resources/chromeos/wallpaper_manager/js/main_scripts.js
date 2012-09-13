@@ -17,6 +17,7 @@
 //<include src="../../../shared/js/cr/ui/list_selection_controller.js"/>
 //<include src="../../../shared/js/cr/ui/list.js"/>
 //<include src="../../../shared/js/cr/ui/grid.js"/>
+//<include src="butter_bar.js"/>
 //<include src="wallpaper_images_grid.js"/>
 //<include src="wallpaper_manager.js"/>
 //<include src="window_state_manager.js"/>

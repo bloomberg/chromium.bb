@@ -17,7 +17,7 @@ function WallpaperManager(dialogDom) {
   this.dialogDom_ = dialogDom;
   this.document_ = dialogDom.ownerDocument;
   this.selectedCategory = null;
-  this.currentButter_ = null;
+  this.butterBar_ = new ButterBar(this.dialogDom_);
   this.customWallpaperData_ = null;
   this.fetchManifest_();
   this.initDom_();
@@ -71,7 +71,7 @@ function WallpaperManager(dialogDom) {
     try {
       this.manifest_ = JSON.parse(response);
     } catch (e) {
-      // TODO(bshe): Shows an error butter bar to notify json parse exception.
+      this.butterBar_.showError_('Failed to parse manifest.');
       this.manifest_ = {};
     }
   };
@@ -88,12 +88,15 @@ function WallpaperManager(dialogDom) {
     // components may want to use it (i.e. screen saver).
     if (xhr.status === 200) {
       this.parseManifest_(xhr.responseText);
-    } else if (xhr.status === 404) {
+    } else {
       // Fall back to en locale if current locale is not supported.
       xhr.open('GET', ManifestBaseURL + 'en.json', false);
       xhr.send(null);
       if (xhr.status === 200) {
         this.parseManifest_(xhr.responseText);
+      } else {
+        this.manifest_ = {};
+        this.butterBar_.showError_('Failed to download manifest.');
       }
     }
 
@@ -177,14 +180,17 @@ function WallpaperManager(dialogDom) {
     this.wallpaperRequest_.open('GET', wallpaperURL, true);
     this.wallpaperRequest_.responseType = 'arraybuffer';
     this.wallpaperRequest_.send(null);
+    this.butterBar_.setRequest(this.wallpaperRequest_);
     var self = this;
     this.wallpaperRequest_.addEventListener('load', function(e) {
-      //TODO(bshe): Add error handling code.
       if (self.wallpaperRequest_.status === 200) {
         var image = self.wallpaperRequest_.response;
         chrome.wallpaperPrivate.setWallpaper(image,
                                              selectedItem.layout,
                                              wallpaperURL);
+      } else {
+        // Displays the error text in butter bar.
+        self.butterBar_.showError_(self.wallpaperRequest_.statusText);
       }
       self.wallpaperRequest_ = null;
     });
