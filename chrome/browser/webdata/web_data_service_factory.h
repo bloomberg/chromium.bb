@@ -36,7 +36,7 @@ class WebDataServiceFactory : public RefcountedProfileKeyedServiceFactory {
   // |ProfileKeyedBaseFactory| methods:
   virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
   virtual scoped_refptr<RefcountedProfileKeyedService> BuildServiceInstanceFor(
-        Profile* profile) const OVERRIDE;
+      Profile* profile) const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 };
 

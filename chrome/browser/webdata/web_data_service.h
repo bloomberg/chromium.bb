@@ -19,7 +19,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/synchronization/lock.h"
-#include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
+#include "chrome/browser/api/webdata/autofill_web_data_service.h"
+#include "chrome/browser/api/webdata/web_data_results.h"
+#include "chrome/browser/api/webdata/web_data_service_base.h"
+#include "chrome/browser/api/webdata/web_data_service_consumer.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/browser/webdata/keyword_table.h"
@@ -28,9 +31,7 @@
 
 class AutocompleteSyncableService;
 class AutofillChange;
-class AutofillProfile;
 class AutofillProfileSyncableService;
-class CreditCard;
 struct DefaultWebIntentService;
 class GURL;
 #if defined(OS_WIN)
@@ -43,12 +44,6 @@ class WebDatabase;
 
 namespace base {
 class Thread;
-}
-
-namespace webkit {
-namespace forms {
-struct FormField;
-}
 }
 
 namespace webkit_glue {
@@ -70,28 +65,6 @@ struct WebIntentServiceData;
 // WebDataService results
 //
 ////////////////////////////////////////////////////////////////////////////////
-
-//
-// Result types
-//
-typedef enum {
-  BOOL_RESULT = 1,             // WDResult<bool>
-  KEYWORDS_RESULT,             // WDResult<WDKeywordsResult>
-  INT64_RESULT,                // WDResult<int64>
-#if defined(OS_WIN)
-  PASSWORD_IE7_RESULT,         // WDResult<IE7PasswordInfo>
-#endif
-  WEB_APP_IMAGES,              // WDResult<WDAppImagesResult>
-  TOKEN_RESULT,                // WDResult<std::vector<std::string>>
-  AUTOFILL_VALUE_RESULT,       // WDResult<std::vector<string16>>
-  AUTOFILL_CHANGES,            // WDResult<std::vector<AutofillChange>>
-  AUTOFILL_PROFILE_RESULT,     // WDResult<AutofillProfile>
-  AUTOFILL_PROFILES_RESULT,    // WDResult<std::vector<AutofillProfile*>>
-  AUTOFILL_CREDITCARD_RESULT,  // WDResult<CreditCard>
-  AUTOFILL_CREDITCARDS_RESULT, // WDResult<std::vector<CreditCard*>>
-  WEB_INTENTS_RESULT,          // WDResult<std::vector<WebIntentServiceData>>
-  WEB_INTENTS_DEFAULTS_RESULT, // WDResult<std::vector<DefaultWebIntentService>>
-} WDResultType;
 
 typedef std::vector<AutofillChange> AutofillChangeList;
 
@@ -125,70 +98,13 @@ struct WDKeywordsResult {
   bool did_default_search_provider_change;
 };
 
-//
-// The top level class for a result.
-//
-class WDTypedResult {
- public:
-  virtual ~WDTypedResult() {}
-
-  // Return the result type.
-  WDResultType GetType() const {
-    return type_;
-  }
-
- protected:
-  explicit WDTypedResult(WDResultType type) : type_(type) {
-  }
-
- private:
-  WDResultType type_;
-  DISALLOW_COPY_AND_ASSIGN(WDTypedResult);
-};
-
-// A result containing one specific pointer or literal value.
-template <class T> class WDResult : public WDTypedResult {
- public:
-
-  WDResult(WDResultType type, const T& v) : WDTypedResult(type), value_(v) {
-  }
-
-  virtual ~WDResult() {
-  }
-
-  // Return a single value result.
-  T GetValue() const {
-    return value_;
-  }
-
- private:
-  T value_;
-
-  DISALLOW_COPY_AND_ASSIGN(WDResult);
-};
-
-template <class T> class WDObjectResult : public WDTypedResult {
- public:
-  explicit WDObjectResult(WDResultType type) : WDTypedResult(type) {
-  }
-
-  T* GetValue() const {
-    return &value_;
-  }
-
- private:
-  // mutable to keep GetValue() const.
-  mutable T value_;
-  DISALLOW_COPY_AND_ASSIGN(WDObjectResult);
-};
-
 class WebDataServiceConsumer;
 
-class WebDataService : public RefcountedProfileKeyedService {
+class WebDataService
+    : public WebDataServiceBase,
+      public AutofillWebData,
+      public RefcountedProfileKeyedService {
  public:
-  // All requests return an opaque handle of the following type.
-  typedef int Handle;
-
   //////////////////////////////////////////////////////////////////////////////
   //
   // Internal requests
@@ -291,6 +207,10 @@ class WebDataService : public RefcountedProfileKeyedService {
 
   WebDataService();
 
+  // WebDataServiceBase implementation.
+  virtual void CancelRequest(Handle h) OVERRIDE;
+  virtual content::NotificationSource GetNotificationSource() OVERRIDE;
+
   // Notifies listeners on the UI thread that multiple changes have been made to
   // to Autofill records of the database.
   // NOTE: This method is intended to be called from the DB thread.  It
@@ -313,10 +233,6 @@ class WebDataService : public RefcountedProfileKeyedService {
   // Unloads the database without actually shutting down the service.  This can
   // be used to temporarily reduce the browser process' memory footprint.
   void UnloadDatabase();
-
-  // Cancel any pending request. You need to call this method if your
-  // WebDataServiceConsumer is about to be deleted.
-  void CancelRequest(Handle h);
 
   virtual bool IsDatabaseLoaded();
   virtual WebDatabase* GetDatabase();
@@ -457,66 +373,35 @@ class WebDataService : public RefcountedProfileKeyedService {
   //
   //////////////////////////////////////////////////////////////////////////////
 
-  // Schedules a task to add form fields to the web database.
+  // AutofillWebData implementation.
   virtual void AddFormFields(
-      const std::vector<webkit::forms::FormField>& fields);
-
-  // Initiates the request for a vector of values which have been entered in
-  // form input fields named |name|.  The method OnWebDataServiceRequestDone of
-  // |consumer| gets called back when the request is finished, with the vector
-  // included in the argument |result|.
-  Handle GetFormValuesForElementName(const string16& name,
-                                     const string16& prefix,
-                                     int limit,
-                                     WebDataServiceConsumer* consumer);
-
-  // Removes form elements recorded for Autocomplete from the database.
-  void RemoveFormElementsAddedBetween(const base::Time& delete_begin,
-                                      const base::Time& delete_end);
-  void RemoveExpiredFormElements();
-  void RemoveFormValueForElementName(const string16& name,
-                                     const string16& value);
-
-  // Schedules a task to add an Autofill profile to the web database.
-  void AddAutofillProfile(const AutofillProfile& profile);
-
-  // Schedules a task to update an Autofill profile in the web database.
-  void UpdateAutofillProfile(const AutofillProfile& profile);
-
-  // Schedules a task to remove an Autofill profile from the web database.
-  // |guid| is the identifer of the profile to remove.
-  void RemoveAutofillProfile(const std::string& guid);
-
-  // Initiates the request for all Autofill profiles.  The method
-  // OnWebDataServiceRequestDone of |consumer| gets called when the request is
-  // finished, with the profiles included in the argument |result|.  The
-  // consumer owns the profiles.
-  Handle GetAutofillProfiles(WebDataServiceConsumer* consumer);
-
-  // Remove "trashed" profile guids from the web database and optionally send
-  // notifications to tell Sync that the items have been removed.
-  void EmptyMigrationTrash(bool notify_sync);
-
-  // Schedules a task to add credit card to the web database.
-  void AddCreditCard(const CreditCard& credit_card);
-
-  // Schedules a task to update credit card in the web database.
-  void UpdateCreditCard(const CreditCard& credit_card);
-
-  // Schedules a task to remove a credit card from the web database.
-  // |guid| is identifer of the credit card to remove.
-  void RemoveCreditCard(const std::string& guid);
-
-  // Initiates the request for all credit cards.  The method
-  // OnWebDataServiceRequestDone of |consumer| gets called when the request is
-  // finished, with the credit cards included in the argument |result|.  The
-  // consumer owns the credit cards.
-  Handle GetCreditCards(WebDataServiceConsumer* consumer);
+      const std::vector<webkit::forms::FormField>& fields) OVERRIDE;
+  virtual Handle GetFormValuesForElementName(
+      const string16& name,
+      const string16& prefix,
+      int limit,
+      WebDataServiceConsumer* consumer) OVERRIDE;
+  virtual void RemoveExpiredFormElements() OVERRIDE;
+  virtual void RemoveFormValueForElementName(const string16& name,
+                                             const string16& value) OVERRIDE;
+  virtual void AddAutofillProfile(const AutofillProfile& profile) OVERRIDE;
+  virtual void UpdateAutofillProfile(const AutofillProfile& profile) OVERRIDE;
+  virtual void RemoveAutofillProfile(const std::string& guid) OVERRIDE;
+  virtual Handle GetAutofillProfiles(WebDataServiceConsumer* consumer) OVERRIDE;
+  virtual void EmptyMigrationTrash(bool notify_sync) OVERRIDE;
+  virtual void AddCreditCard(const CreditCard& credit_card) OVERRIDE;
+  virtual void UpdateCreditCard(const CreditCard& credit_card) OVERRIDE;
+  virtual void RemoveCreditCard(const std::string& guid) OVERRIDE;
+  virtual Handle GetCreditCards(WebDataServiceConsumer* consumer) OVERRIDE;
 
   // Removes Autofill records from the database.
   void RemoveAutofillProfilesAndCreditCardsModifiedBetween(
       const base::Time& delete_begin,
       const base::Time& delete_end);
+
+  // Removes form elements recorded for Autocomplete from the database.
+  void RemoveFormElementsAddedBetween(const base::Time& delete_begin,
+                                      const base::Time& delete_end);
 
   // Returns the syncable service for Autofill addresses and credit cards stored
   // in this table. The returned service is owned by |this| object.
@@ -723,28 +608,6 @@ class WebDataService : public RefcountedProfileKeyedService {
   MessageLoop* main_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDataService);
-};
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// WebDataServiceConsumer.
-//
-// All requests to the web data service are asynchronous. When the request has
-// been performed, the data consumer is notified using the following interface.
-//
-////////////////////////////////////////////////////////////////////////////////
-
-class WebDataServiceConsumer {
- public:
-
-  // Called when a request is done. h uniquely identifies the request.
-  // result can be NULL, if no result is expected or if the database could
-  // not be opened. The result object is destroyed after this call.
-  virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,
-                                           const WDTypedResult* result) = 0;
-
- protected:
-  virtual ~WebDataServiceConsumer() {}
 };
 
 #endif  // CHROME_BROWSER_WEBDATA_WEB_DATA_SERVICE_H__

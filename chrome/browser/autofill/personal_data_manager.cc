@@ -23,9 +23,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/webdata/autofill_entry.h"
-#include "chrome/browser/webdata/web_data_service.h"
-#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -127,7 +124,7 @@ PersonalDataManager::~PersonalDataManager() {
 }
 
 void PersonalDataManager::OnWebDataServiceRequestDone(
-    WebDataService::Handle h,
+    WebDataServiceBase::Handle h,
     const WDTypedResult* result) {
   DCHECK(pending_profiles_query_ || pending_creditcards_query_);
 
@@ -172,11 +169,10 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
     if (sync_service && (!sync_service->HasSyncSetupCompleted() ||
                          !PrefServiceBase::ForProfile(profile_)->GetBoolean(
                              prefs::kSyncAutofill))) {
-      scoped_refptr<WebDataService> web_data_service =
-          WebDataServiceFactory::GetForProfile(profile_,
-                                               Profile::EXPLICIT_ACCESS);
-      if (web_data_service)
-        web_data_service->RemoveExpiredFormElements();
+      scoped_ptr<AutofillWebDataService> service(
+          AutofillWebDataService::ForContext(profile_));
+      if (service.get())
+        service->RemoveExpiredFormElements();
     }
   }
 }
@@ -201,9 +197,9 @@ void PersonalDataManager::OnStateChanged() {
   if (!profile_ || profile_->IsOffTheRecord())
     return;
 
-  scoped_refptr<WebDataService> web_data_service =
-      WebDataServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
-  if (!web_data_service.get()) {
+  scoped_ptr<AutofillWebDataService> autofill_data(
+      AutofillWebDataService::ForContext(profile_));
+  if (!autofill_data.get()) {
     NOTREACHED();
     return;
   }
@@ -214,7 +210,7 @@ void PersonalDataManager::OnStateChanged() {
     return;
 
   if (sync_service->ShouldPushChanges()) {
-    web_data_service->EmptyMigrationTrash(true);
+    autofill_data->EmptyMigrationTrash(true);
     sync_service->RemoveObserver(this);
   }
 }
@@ -229,12 +225,15 @@ void PersonalDataManager::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
   DCHECK_EQ(type, chrome::NOTIFICATION_AUTOFILL_MULTIPLE_CHANGED);
-  scoped_refptr<WebDataService> web_data_service =
-      content::Source<WebDataService>(source).ptr();
 
-  DCHECK(web_data_service.get() &&
-         web_data_service.get() == WebDataServiceFactory::GetForProfile(
-             profile_, Profile::EXPLICIT_ACCESS).get());
+  if (DCHECK_IS_ON()) {
+    scoped_ptr<AutofillWebDataService> autofill_data(
+        AutofillWebDataService::ForContext(profile_));
+
+    DCHECK(autofill_data.get() &&
+           autofill_data->GetNotificationSource() == source);
+  }
+
   Refresh();
 }
 
@@ -367,9 +366,9 @@ void PersonalDataManager::AddProfile(const AutofillProfile& profile) {
   if (FindByGUID<AutofillProfile>(web_profiles_, profile.guid()))
     return;
 
-  scoped_refptr<WebDataService> wds = WebDataServiceFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS);
-  if (!wds.get())
+  scoped_ptr<AutofillWebDataService> autofill_data(
+      AutofillWebDataService::ForContext(profile_));
+  if (!autofill_data.get())
     return;
 
   // Don't add a duplicate.
@@ -377,7 +376,7 @@ void PersonalDataManager::AddProfile(const AutofillProfile& profile) {
     return;
 
   // Add the new profile to the web database.
-  wds->AddAutofillProfile(profile);
+  autofill_data->AddAutofillProfile(profile);
 
   // Refresh our local cache and send notifications to observers.
   Refresh();
@@ -395,13 +394,13 @@ void PersonalDataManager::UpdateProfile(const AutofillProfile& profile) {
     return;
   }
 
-  scoped_refptr<WebDataService> wds = WebDataServiceFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS);
-  if (!wds.get())
+  scoped_ptr<AutofillWebDataService> autofill_data(
+      AutofillWebDataService::ForContext(profile_));
+  if (!autofill_data.get())
     return;
 
   // Make the update.
-  wds->UpdateAutofillProfile(profile);
+  autofill_data->UpdateAutofillProfile(profile);
 
   // Refresh our local cache and send notifications to observers.
   Refresh();
@@ -414,13 +413,13 @@ void PersonalDataManager::RemoveProfile(const std::string& guid) {
   if (!FindByGUID<AutofillProfile>(web_profiles_, guid))
     return;
 
-  scoped_refptr<WebDataService> wds = WebDataServiceFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS);
-  if (!wds.get())
+  scoped_ptr<AutofillWebDataService> autofill_data(
+      AutofillWebDataService::ForContext(profile_));
+  if (!autofill_data.get())
     return;
 
   // Remove the profile.
-  wds->RemoveAutofillProfile(guid);
+  autofill_data->RemoveAutofillProfile(guid);
 
   // Refresh our local cache and send notifications to observers.
   Refresh();
@@ -446,9 +445,9 @@ void PersonalDataManager::AddCreditCard(const CreditCard& credit_card) {
   if (FindByGUID<CreditCard>(credit_cards_, credit_card.guid()))
     return;
 
-  scoped_refptr<WebDataService> wds = WebDataServiceFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS);
-  if (!wds.get())
+  scoped_ptr<AutofillWebDataService> autofill_data(
+      AutofillWebDataService::ForContext(profile_));
+  if (!autofill_data.get())
     return;
 
   // Don't add a duplicate.
@@ -456,7 +455,7 @@ void PersonalDataManager::AddCreditCard(const CreditCard& credit_card) {
     return;
 
   // Add the new credit card to the web database.
-  wds->AddCreditCard(credit_card);
+  autofill_data->AddCreditCard(credit_card);
 
   // Refresh our local cache and send notifications to observers.
   Refresh();
@@ -474,13 +473,13 @@ void PersonalDataManager::UpdateCreditCard(const CreditCard& credit_card) {
     return;
   }
 
-  scoped_refptr<WebDataService> wds = WebDataServiceFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS);
-  if (!wds.get())
+  scoped_ptr<AutofillWebDataService> autofill_data(
+      AutofillWebDataService::ForContext(profile_));
+  if (!autofill_data.get())
     return;
 
   // Make the update.
-  wds->UpdateCreditCard(credit_card);
+  autofill_data->UpdateCreditCard(credit_card);
 
   // Refresh our local cache and send notifications to observers.
   Refresh();
@@ -493,13 +492,13 @@ void PersonalDataManager::RemoveCreditCard(const std::string& guid) {
   if (!FindByGUID<CreditCard>(credit_cards_, guid))
     return;
 
-  scoped_refptr<WebDataService> wds = WebDataServiceFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS);
-  if (!wds.get())
+  scoped_ptr<AutofillWebDataService> autofill_data(
+      AutofillWebDataService::ForContext(profile_));
+  if (!autofill_data.get())
     return;
 
   // Remove the credit card.
-  wds->RemoveCreditCard(guid);
+  autofill_data->RemoveCreditCard(guid);
 
   // Refresh our local cache and send notifications to observers.
   Refresh();
@@ -583,9 +582,9 @@ void PersonalDataManager::Init(Profile* profile) {
   metric_logger_->LogIsAutofillEnabledAtStartup(IsAutofillEnabled());
 
   // WebDataService may not be available in tests.
-  scoped_refptr<WebDataService> web_data_service =
-      WebDataServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
-  if (!web_data_service.get())
+  scoped_ptr<AutofillWebDataService> autofill_data(
+      AutofillWebDataService::ForContext(profile_));
+  if (!autofill_data.get())
     return;
 
   LoadProfiles();
@@ -594,7 +593,7 @@ void PersonalDataManager::Init(Profile* profile) {
   notification_registrar_.Add(
       this,
       chrome::NOTIFICATION_AUTOFILL_MULTIPLE_CHANGED,
-      content::Source<WebDataService>(web_data_service));
+      autofill_data->GetNotificationSource());
 }
 
 bool PersonalDataManager::IsAutofillEnabled() const {
@@ -679,9 +678,9 @@ void PersonalDataManager::SetProfiles(std::vector<AutofillProfile>* profiles) {
       address_of<AutofillProfile>);
   AutofillProfile::AdjustInferredLabels(&profile_pointers);
 
-  scoped_refptr<WebDataService> wds = WebDataServiceFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS);
-  if (!wds.get())
+  scoped_ptr<AutofillWebDataService> autofill_data(
+      AutofillWebDataService::ForContext(profile_));
+  if (!autofill_data.get())
     return;
 
   // Any profiles that are not in the new profile list should be removed from
@@ -690,14 +689,14 @@ void PersonalDataManager::SetProfiles(std::vector<AutofillProfile>* profiles) {
            web_profiles_.begin();
        iter != web_profiles_.end(); ++iter) {
     if (!FindByGUID<AutofillProfile>(*profiles, (*iter)->guid()))
-      wds->RemoveAutofillProfile((*iter)->guid());
+      autofill_data->RemoveAutofillProfile((*iter)->guid());
   }
 
   // Update the web database with the existing profiles.
   for (std::vector<AutofillProfile>::iterator iter = profiles->begin();
        iter != profiles->end(); ++iter) {
     if (FindByGUID<AutofillProfile>(web_profiles_, iter->guid()))
-      wds->UpdateAutofillProfile(*iter);
+      autofill_data->UpdateAutofillProfile(*iter);
   }
 
   // Add the new profiles to the web database.  Don't add a duplicate.
@@ -705,7 +704,7 @@ void PersonalDataManager::SetProfiles(std::vector<AutofillProfile>* profiles) {
        iter != profiles->end(); ++iter) {
     if (!FindByGUID<AutofillProfile>(web_profiles_, iter->guid()) &&
         !FindByContents(web_profiles_, *iter))
-      wds->AddAutofillProfile(*iter);
+      autofill_data->AddAutofillProfile(*iter);
   }
 
   // Copy in the new profiles.
@@ -731,9 +730,9 @@ void PersonalDataManager::SetCreditCards(
           std::mem_fun_ref(&CreditCard::IsEmpty)),
       credit_cards->end());
 
-  scoped_refptr<WebDataService> wds = WebDataServiceFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS);
-  if (!wds.get())
+  scoped_ptr<AutofillWebDataService> autofill_data(
+      AutofillWebDataService::ForContext(profile_));
+  if (!autofill_data.get())
     return;
 
   // Any credit cards that are not in the new credit card list should be
@@ -741,14 +740,14 @@ void PersonalDataManager::SetCreditCards(
   for (std::vector<CreditCard*>::const_iterator iter = credit_cards_.begin();
        iter != credit_cards_.end(); ++iter) {
     if (!FindByGUID<CreditCard>(*credit_cards, (*iter)->guid()))
-      wds->RemoveCreditCard((*iter)->guid());
+      autofill_data->RemoveCreditCard((*iter)->guid());
   }
 
   // Update the web database with the existing credit cards.
   for (std::vector<CreditCard>::iterator iter = credit_cards->begin();
        iter != credit_cards->end(); ++iter) {
     if (FindByGUID<CreditCard>(credit_cards_, iter->guid()))
-      wds->UpdateCreditCard(*iter);
+      autofill_data->UpdateCreditCard(*iter);
   }
 
   // Add the new credit cards to the web database.  Don't add a duplicate.
@@ -756,7 +755,7 @@ void PersonalDataManager::SetCreditCards(
        iter != credit_cards->end(); ++iter) {
     if (!FindByGUID<CreditCard>(credit_cards_, iter->guid()) &&
         !FindByContents(credit_cards_, *iter))
-      wds->AddCreditCard(*iter);
+      autofill_data->AddCreditCard(*iter);
   }
 
   // Copy in the new credit cards.
@@ -771,16 +770,16 @@ void PersonalDataManager::SetCreditCards(
 }
 
 void PersonalDataManager::LoadProfiles() {
-  scoped_refptr<WebDataService> web_data_service =
-      WebDataServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
-  if (!web_data_service.get()) {
+  scoped_ptr<AutofillWebDataService> autofill_data(
+      AutofillWebDataService::ForContext(profile_));
+  if (!autofill_data.get()) {
     NOTREACHED();
     return;
   }
 
   CancelPendingQuery(&pending_profiles_query_);
 
-  pending_profiles_query_ = web_data_service->GetAutofillProfiles(this);
+  pending_profiles_query_ = autofill_data->GetAutofillProfiles(this);
 }
 
 // Win and Linux implementations do nothing.  Mac implementation fills in the
@@ -791,19 +790,19 @@ void PersonalDataManager::LoadAuxiliaryProfiles() const {
 #endif
 
 void PersonalDataManager::LoadCreditCards() {
-  scoped_refptr<WebDataService> web_data_service =
-      WebDataServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
-  if (!web_data_service.get()) {
+  scoped_ptr<AutofillWebDataService> autofill_data(
+      AutofillWebDataService::ForContext(profile_));
+  if (!autofill_data.get()) {
     NOTREACHED();
     return;
   }
 
   CancelPendingQuery(&pending_creditcards_query_);
 
-  pending_creditcards_query_ = web_data_service->GetCreditCards(this);
+  pending_creditcards_query_ = autofill_data->GetCreditCards(this);
 }
 
-void PersonalDataManager::ReceiveLoadedProfiles(WebDataService::Handle h,
+void PersonalDataManager::ReceiveLoadedProfiles(WebDataServiceBase::Handle h,
                                                 const WDTypedResult* result) {
   DCHECK_EQ(pending_profiles_query_, h);
 
@@ -824,7 +823,7 @@ void PersonalDataManager::ReceiveLoadedProfiles(WebDataService::Handle h,
 }
 
 void PersonalDataManager::ReceiveLoadedCreditCards(
-    WebDataService::Handle h, const WDTypedResult* result) {
+    WebDataServiceBase::Handle h, const WDTypedResult* result) {
   DCHECK_EQ(pending_creditcards_query_, h);
 
   pending_creditcards_query_ = 0;
@@ -840,16 +839,16 @@ void PersonalDataManager::ReceiveLoadedCreditCards(
   }
 }
 
-void PersonalDataManager::CancelPendingQuery(WebDataService::Handle* handle) {
+void PersonalDataManager::CancelPendingQuery(
+    WebDataServiceBase::Handle* handle) {
   if (*handle) {
-    scoped_refptr<WebDataService> web_data_service =
-        WebDataServiceFactory::GetForProfile(profile_,
-                                             Profile::EXPLICIT_ACCESS);
-    if (!web_data_service.get()) {
+    scoped_ptr<AutofillWebDataService> autofill_data(
+        AutofillWebDataService::ForContext(profile_));
+    if (!autofill_data.get()) {
       NOTREACHED();
       return;
     }
-    web_data_service->CancelRequest(*handle);
+    autofill_data->CancelRequest(*handle);
   }
   *handle = 0;
 }
@@ -913,9 +912,9 @@ void PersonalDataManager::EmptyMigrationTrash() {
   if (!profile_ || profile_->IsOffTheRecord())
     return;
 
-  scoped_refptr<WebDataService> web_data_service =
-      WebDataServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
-  if (!web_data_service.get()) {
+  scoped_ptr<AutofillWebDataService> autofill_data(
+      AutofillWebDataService::ForContext(profile_));
+  if (!autofill_data.get()) {
     NOTREACHED();
     return;
   }
@@ -926,9 +925,9 @@ void PersonalDataManager::EmptyMigrationTrash() {
     return;
 
   if (!sync_service->HasSyncSetupCompleted()) {
-    web_data_service->EmptyMigrationTrash(false);
+    autofill_data->EmptyMigrationTrash(false);
   } else if (sync_service->ShouldPushChanges()) {
-    web_data_service->EmptyMigrationTrash(true);
+    autofill_data->EmptyMigrationTrash(true);
   } else {
     // Install ourself as a listener so we can empty the trash once the
     // sync service becomes available.

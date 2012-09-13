@@ -13,7 +13,6 @@
 #include "chrome/browser/autofill/autofill_external_delegate.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/render_view_host.h"
@@ -116,8 +115,7 @@ AutocompleteHistoryManager::AutocompleteHistoryManager(
       external_delegate_(NULL) {
   profile_ = Profile::FromBrowserContext(web_contents->GetBrowserContext());
   // May be NULL in unit tests.
-  web_data_service_ = WebDataServiceFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS);
+  autofill_data_ = AutofillWebDataService::ForContext(profile_);
   autofill_enabled_.Init(
       prefs::kAutofillEnabled, PrefServiceBase::ForProfile(profile_), NULL);
 }
@@ -138,7 +136,7 @@ bool AutocompleteHistoryManager::OnMessageReceived(
 }
 
 void AutocompleteHistoryManager::OnWebDataServiceRequestDone(
-    WebDataService::Handle h,
+    WebDataServiceBase::Handle h,
     const WDTypedResult* result) {
   DCHECK(pending_query_handle_);
   pending_query_handle_ = 0;
@@ -184,8 +182,8 @@ void AutocompleteHistoryManager::OnGetAutocompleteSuggestions(
     return;
   }
 
-  if (web_data_service_.get()) {
-    pending_query_handle_ = web_data_service_->GetFormValuesForElementName(
+  if (autofill_data_.get()) {
+    pending_query_handle_ = autofill_data_->GetFormValuesForElementName(
         name, prefix, kMaxAutocompleteMenuItems, this);
   }
 }
@@ -220,14 +218,14 @@ void AutocompleteHistoryManager::OnFormSubmitted(const FormData& form) {
     }
   }
 
-  if (!values.empty() && web_data_service_.get())
-    web_data_service_->AddFormFields(values);
+  if (!values.empty() && autofill_data_.get())
+    autofill_data_->AddFormFields(values);
 }
 
 void AutocompleteHistoryManager::OnRemoveAutocompleteEntry(
     const string16& name, const string16& value) {
-  if (web_data_service_.get())
-    web_data_service_->RemoveFormValueForElementName(name, value);
+  if (autofill_data_.get())
+    autofill_data_->RemoveFormValueForElementName(name, value);
 }
 
 void AutocompleteHistoryManager::SetExternalDelegate(
@@ -238,10 +236,10 @@ void AutocompleteHistoryManager::SetExternalDelegate(
 AutocompleteHistoryManager::AutocompleteHistoryManager(
     WebContents* web_contents,
     Profile* profile,
-    WebDataService* wds)
+    scoped_ptr<AutofillWebDataService> awd)
     : content::WebContentsObserver(web_contents),
       profile_(profile),
-      web_data_service_(wds),
+      autofill_data_(awd.Pass()),
       pending_query_handle_(0),
       query_id_(0),
       external_delegate_(NULL) {
@@ -252,8 +250,8 @@ AutocompleteHistoryManager::AutocompleteHistoryManager(
 void AutocompleteHistoryManager::CancelPendingQuery() {
   if (pending_query_handle_) {
     SendSuggestions(NULL);
-    if (web_data_service_.get())
-      web_data_service_->CancelRequest(pending_query_handle_);
+    if (autofill_data_.get())
+      autofill_data_->CancelRequest(pending_query_handle_);
     pending_query_handle_ = 0;
   }
 }

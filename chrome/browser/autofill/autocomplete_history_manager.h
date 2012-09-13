@@ -9,7 +9,8 @@
 
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/api/prefs/pref_member.h"
-#include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/browser/api/webdata/autofill_web_data_service.h"
+#include "chrome/browser/api/webdata/web_data_service_consumer.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace webkit {
@@ -21,8 +22,9 @@ struct FormData;
 class AutofillExternalDelegate;
 class Profile;
 
-// Per-tab Autocomplete history manager. Handles receiving form data from the
-// renderer and the storing and retrieving of form data through WebDataService.
+// Per-tab Autocomplete history manager. Handles receiving form data
+// from the renderer and the storing and retrieving of form data
+// through WebDataServiceBase.
 class AutocompleteHistoryManager : public content::WebContentsObserver,
                                    public WebDataServiceConsumer {
  public:
@@ -34,7 +36,7 @@ class AutocompleteHistoryManager : public content::WebContentsObserver,
 
   // WebDataServiceConsumer implementation.
   virtual void OnWebDataServiceRequestDone(
-      WebDataService::Handle h,
+      WebDataServiceBase::Handle h,
       const WDTypedResult* result) OVERRIDE;
 
   // Pass-through functions that are called by AutofillManager, after it has
@@ -65,7 +67,7 @@ class AutocompleteHistoryManager : public content::WebContentsObserver,
   // For tests.
   AutocompleteHistoryManager(content::WebContents* web_contents,
                              Profile* profile,
-                             WebDataService* wds);
+                             scoped_ptr<AutofillWebDataService> wds);
 
   void SendSuggestions(const std::vector<string16>* suggestions);
   void CancelPendingQuery();
@@ -77,14 +79,14 @@ class AutocompleteHistoryManager : public content::WebContentsObserver,
 
  private:
   Profile* profile_;
-  scoped_refptr<WebDataService> web_data_service_;
+  scoped_ptr<AutofillWebDataService> autofill_data_;
 
   BooleanPrefMember autofill_enabled_;
 
-  // When the manager makes a request from WebDataService, the database is
+  // When the manager makes a request from WebDataServiceBase, the database is
   // queried on another thread, we record the query handle until we get called
   // back.  We also store the autofill results so we can send them together.
-  WebDataService::Handle pending_query_handle_;
+  WebDataServiceBase::Handle pending_query_handle_;
   int query_id_;
   std::vector<string16> autofill_values_;
   std::vector<string16> autofill_labels_;

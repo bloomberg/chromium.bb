@@ -26,6 +26,9 @@
 include_rules = [
   "-chrome/browser",
   "+chrome/browser/api",
+
+  # TODO(joi): Get rid of this.
+  "!chrome/browser/profiles/refcounted_profile_keyed_service.h",
 ]
 
 specific_include_rules = {

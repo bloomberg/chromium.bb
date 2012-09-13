@@ -22,9 +22,6 @@ include_rules = [
   "!chrome/browser/sync/profile_sync_service_factory.h",
   "!chrome/browser/sync/profile_sync_service_observer.h",
   "!chrome/browser/ui/tab_contents/tab_contents.h",
-  "!chrome/browser/webdata/autofill_entry.h",
-  "!chrome/browser/webdata/web_data_service.h",
-  "!chrome/browser/webdata/web_data_service_factory.h",
   # Do not add to the list of temporarily-allowed dependencies above,
   # and please do not introduce more #includes of these files.
 
@@ -41,11 +38,20 @@ specific_include_rules = {
     "!chrome/browser/password_manager/encryptor.h",
     "!chrome/browser/translate/translate_infobar_delegate.h",
     "!chrome/browser/translate/translate_manager.h",
+    "!chrome/browser/webdata/autofill_web_data_service_impl.h",
+    "!chrome/browser/webdata/web_data_service.h",
+    "!chrome/browser/webdata/web_data_service_factory.h",
     "!chrome/browser/ui/autofill/tab_autofill_manager_delegate.h",
     "!chrome/browser/ui/browser.h",
     "!chrome/browser/ui/browser_tabstrip.h",
     "!chrome/browser/ui/browser_window.h",
     "!chrome/browser/ui/tab_contents/tab_autofill_manager_delegate.h",
     "!chrome/browser/ui/tab_contents/test_tab_contents.h",
-  ]
+  ],
+
+  # TODO(joi): Get rid of the need for this, e.g. by moving
+  # PersonalDataManagerFactory to chrome/browser/configuration.
+  'personal_data_manager_factory\.cc': [
+    "!chrome/browser/webdata/web_data_service_factory.h",
+  ],
 }

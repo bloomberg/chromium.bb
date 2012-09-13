@@ -10,6 +10,7 @@
 #include "chrome/browser/autofill/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/test_autofill_external_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/webdata/autofill_web_data_service_impl.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -44,8 +45,12 @@ class AutocompleteHistoryManagerTest : public ChromeRenderViewHostTestHarness {
   virtual void SetUp() {
     ChromeRenderViewHostTestHarness::SetUp();
     web_data_service_ = new MockWebDataService();
-    autocomplete_manager_.reset(new AutocompleteHistoryManager(
-        contents(), &profile_, web_data_service_));
+    autocomplete_manager_.reset(
+        new AutocompleteHistoryManager(
+            contents(),
+            &profile_,
+            scoped_ptr<AutofillWebDataService>(
+                new AutofillWebDataServiceImpl(web_data_service_))));
   }
 
   content::TestBrowserThread ui_thread_;
@@ -168,10 +173,11 @@ class MockAutofillExternalDelegate : public TestAutofillExternalDelegate {
 
 class AutocompleteHistoryManagerStubSend : public AutocompleteHistoryManager {
  public:
-  explicit AutocompleteHistoryManagerStubSend(WebContents* web_contents,
-                                              Profile* profile,
-                                              WebDataService* wds)
-      : AutocompleteHistoryManager(web_contents, profile, wds) {}
+  explicit AutocompleteHistoryManagerStubSend(
+      WebContents* web_contents,
+      Profile* profile,
+      scoped_ptr<AutofillWebDataService> wds)
+      : AutocompleteHistoryManager(web_contents, profile, wds.Pass()) {}
 
   // Intentionally swallow the message.
   virtual bool Send(IPC::Message* message) { delete message; return true; }
@@ -184,7 +190,9 @@ TEST_F(AutocompleteHistoryManagerTest, ExternalDelegate) {
   // Local version with a stubbed out Send()
   AutocompleteHistoryManagerStubSend autocomplete_history_manager(
       contents(),
-      &profile_, web_data_service_);
+      &profile_,
+      scoped_ptr<AutofillWebDataService>(
+          new AutofillWebDataServiceImpl(web_data_service_)));
 
   MockAutofillExternalDelegate external_delegate(
       TabContents::FromWebContents(contents()));
