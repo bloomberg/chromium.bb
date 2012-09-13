@@ -1141,7 +1141,7 @@ void DriveFileSystem::MoveOnUIThreadAfterGetEntryInfoPair(
 }
 
 void DriveFileSystem::MoveEntryFromRootDirectory(
-    const FilePath& dir_path,
+    const FilePath& directory_path,
     const FileOperationCallback& callback,
     DriveFileError error,
     const FilePath& file_path) {
@@ -1150,14 +1150,15 @@ void DriveFileSystem::MoveEntryFromRootDirectory(
   DCHECK_EQ(kDriveRootDirectory, file_path.DirName().value());
 
   // Return if there is an error or |dir_path| is the root directory.
-  if (error != DRIVE_FILE_OK || dir_path == FilePath(kDriveRootDirectory)) {
+  if (error != DRIVE_FILE_OK ||
+      directory_path == FilePath(kDriveRootDirectory)) {
     callback.Run(error);
     return;
   }
 
   resource_metadata_->GetEntryInfoPairByPaths(
       file_path,
-      dir_path,
+      directory_path,
       base::Bind(
           &DriveFileSystem::MoveEntryFromRootDirectoryAfterGetEntryInfoPair,
           ui_weak_ptr_,
@@ -1806,7 +1807,7 @@ void DriveFileSystem::GetEntryInfoByPathOnUIThreadAfterGetEntry(
 }
 
 void DriveFileSystem::ReadDirectoryByPath(
-    const FilePath& file_path,
+    const FilePath& directory_path,
     const ReadDirectoryWithSettingCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -1815,12 +1816,12 @@ void DriveFileSystem::ReadDirectoryByPath(
   RunTaskOnUIThread(
       base::Bind(&DriveFileSystem::ReadDirectoryByPathOnUIThread,
                  ui_weak_ptr_,
-                 file_path,
+                 directory_path,
                  CreateRelayCallback(callback)));
 }
 
 void DriveFileSystem::ReadDirectoryByPathOnUIThread(
-    const FilePath& file_path,
+    const FilePath& directory_path,
     const ReadDirectoryWithSettingCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -1828,12 +1829,12 @@ void DriveFileSystem::ReadDirectoryByPathOnUIThread(
   LoadFeedIfNeeded(
       base::Bind(&DriveFileSystem::ReadDirectoryByPathOnUIThreadAfterLoad,
                  ui_weak_ptr_,
-                 file_path,
+                 directory_path,
                  callback));
 }
 
 void DriveFileSystem::ReadDirectoryByPathOnUIThreadAfterLoad(
-    const FilePath& file_path,
+    const FilePath& directory_path,
     const ReadDirectoryWithSettingCallback& callback,
     DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1847,7 +1848,7 @@ void DriveFileSystem::ReadDirectoryByPathOnUIThreadAfterLoad(
   }
 
   resource_metadata_->ReadDirectoryByPath(
-      file_path,
+      directory_path,
       base::Bind(&DriveFileSystem::ReadDirectoryByPathOnUIThreadAfterRead,
                  ui_weak_ptr_,
                  callback));
@@ -1871,37 +1872,37 @@ void DriveFileSystem::ReadDirectoryByPathOnUIThreadAfterRead(
   callback.Run(DRIVE_FILE_OK, hide_hosted_docs_, entries.Pass());
 }
 
-void DriveFileSystem::RequestDirectoryRefresh(const FilePath& file_path) {
+void DriveFileSystem::RequestDirectoryRefresh(const FilePath& directory_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   RunTaskOnUIThread(
       base::Bind(&DriveFileSystem::RequestDirectoryRefreshOnUIThread,
                  ui_weak_ptr_,
-                 file_path));
+                 directory_path));
 }
 
 void DriveFileSystem::RequestDirectoryRefreshOnUIThread(
-    const FilePath& file_path) {
+    const FilePath& directory_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Make sure the destination directory exists.
   resource_metadata_->GetEntryInfoByPath(
-      file_path,
+      directory_path,
       base::Bind(
           &DriveFileSystem::RequestDirectoryRefreshOnUIThreadAfterGetEntryInfo,
           ui_weak_ptr_,
-          file_path));
+          directory_path));
 }
 
 void DriveFileSystem::RequestDirectoryRefreshOnUIThreadAfterGetEntryInfo(
-    const FilePath& file_path,
+    const FilePath& directory_path,
     DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != DRIVE_FILE_OK ||
       !entry_proto->file_info().is_directory()) {
-    LOG(ERROR) << "Directory entry not found: " << file_path.value();
+    LOG(ERROR) << "Directory entry not found: " << directory_path.value();
     return;
   }
 
@@ -1910,7 +1911,7 @@ void DriveFileSystem::RequestDirectoryRefreshOnUIThreadAfterGetEntryInfo(
       entry_proto->resource_id(),
       base::Bind(&DriveFileSystem::OnRequestDirectoryRefresh,
                  ui_weak_ptr_,
-                 file_path));
+                 directory_path));
 }
 
 void DriveFileSystem::OnRequestDirectoryRefresh(
@@ -2532,7 +2533,7 @@ void DriveFileSystem::RenameEntryLocally(
 
 void DriveFileSystem::MoveEntryToDirectory(
     const FilePath& file_path,
-    const FilePath& dir_path,
+    const FilePath& directory_path,
     const FileMoveCallback& callback,
     GDataErrorCode status,
     const GURL& /* document_url */) {
@@ -2545,7 +2546,7 @@ void DriveFileSystem::MoveEntryToDirectory(
     return;
   }
 
-  resource_metadata_->MoveEntryToDirectory(file_path, dir_path, callback);
+  resource_metadata_->MoveEntryToDirectory(file_path, directory_path, callback);
 }
 
 void DriveFileSystem::NotifyAndRunFileMoveCallback(

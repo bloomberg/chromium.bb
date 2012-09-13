@@ -107,10 +107,10 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const FilePath& file_path,
       const GetEntryInfoCallback& callback) OVERRIDE;
   virtual void ReadDirectoryByPath(
-      const FilePath& file_path,
+      const FilePath& directory_path,
       const ReadDirectoryWithSettingCallback& callback) OVERRIDE;
   virtual void RequestDirectoryRefresh(
-      const FilePath& file_path) OVERRIDE;
+      const FilePath& directory_path) OVERRIDE;
   virtual void GetAvailableSpace(
       const GetAvailableSpaceCallback& callback) OVERRIDE;
   virtual void AddUploadedFile(UploadMode upload_mode,
@@ -426,7 +426,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   //
   // Can be called from UI thread. |callback| is run on the calling thread.
   // |callback| must not be null.
-  void MoveEntryFromRootDirectory(const FilePath& dir_path,
+  void MoveEntryFromRootDirectory(const FilePath& directory_path,
                                   const FileOperationCallback& callback,
                                   DriveFileError error,
                                   const FilePath& file_path);
@@ -496,7 +496,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void ContinueCreateDirectory(
       const CreateDirectoryParams& params,
       DriveFileError error,
-      const FilePath& moved_file_path);
+      const FilePath& moved_directory_path);
 
   // Callback for handling file downloading requests.
   void OnFileDownloaded(const GetFileFromCacheParams& params,
@@ -537,7 +537,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // |dir_path| and calls |callback| asynchronously.
   // |callback| must not be null.
   void MoveEntryToDirectory(const FilePath& file_path,
-                            const FilePath& dir_path,
+                            const FilePath& directory_path,
                             const FileMoveCallback& callback,
                             GDataErrorCode status,
                             const GURL& document_url);
@@ -687,7 +687,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // 2) Called when an entry is found.
   // |callback| must not be null.
   void ReadDirectoryByPathOnUIThreadAfterLoad(
-      const FilePath& file_path,
+      const FilePath& directory_path,
       const ReadDirectoryWithSettingCallback& callback,
       DriveFileError error);
   void ReadDirectoryByPathOnUIThreadAfterRead(
