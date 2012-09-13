@@ -351,16 +351,16 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest, ChooseService) {
   AddWebIntentService(kAction1, kServiceURL2);
   AddCWSExtensionServiceEmpty(kAction1);
 
+  webkit_glue::WebIntentData intent;
+  intent.action = kAction1;
+  intent.type = kType1;
+  IntentsDispatcherMock dispatcher(intent);
+  controller_->SetIntentsDispatcher(&dispatcher);
+
   controller_->ShowDialog(kAction1, kType1);
   picker_.Wait();
   EXPECT_EQ(2, picker_.num_installed_services_);
   EXPECT_EQ(0, picker_.num_icons_changed_);
-
-  webkit_glue::WebIntentData intent;
-  intent.action = ASCIIToUTF16("a");
-  intent.type = ASCIIToUTF16("b");
-  IntentsDispatcherMock dispatcher(intent);
-  controller_->SetIntentsDispatcher(&dispatcher);
 
   OnServiceChosen(kServiceURL2,
                   webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW);
@@ -383,6 +383,12 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   AddWebIntentService(kAction1, kServiceURL2);
   AddCWSExtensionServiceWithResult(kDummyExtensionId, kAction1, kType1);
 
+  webkit_glue::WebIntentData intent;
+  intent.action = kAction1;
+  intent.type = kType1;
+  IntentsDispatcherMock dispatcher(intent);
+  controller_->SetIntentsDispatcher(&dispatcher);
+
   controller_->ShowDialog(kAction1, kType1);
   picker_.Wait();
   EXPECT_EQ(2, picker_.num_installed_services_);
@@ -394,6 +400,12 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest, OpenCancelOpen) {
   AddWebIntentService(kAction1, kServiceURL1);
   AddWebIntentService(kAction1, kServiceURL2);
   AddCWSExtensionServiceEmpty(kAction1);
+
+  webkit_glue::WebIntentData intent;
+  intent.action = kAction1;
+  intent.type = kType1;
+  IntentsDispatcherMock dispatcher(intent);
+  controller_->SetIntentsDispatcher(&dispatcher);
 
   controller_->ShowDialog(kAction1, kType1);
   picker_.Wait();
@@ -417,15 +429,15 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   ASSERT_EQ(2, browser()->tab_count());
   EXPECT_EQ(original, chrome::GetActiveWebContents(browser())->GetURL());
 
+  webkit_glue::WebIntentData intent;
+  intent.action = kAction1;
+  intent.type = kType1;
+  IntentsDispatcherMock dispatcher(intent);
+  controller_->SetIntentsDispatcher(&dispatcher);
+
   controller_->ShowDialog(kAction1, kType1);
   picker_.Wait();
   EXPECT_EQ(1, picker_.num_installed_services_);
-
-  webkit_glue::WebIntentData intent;
-  intent.action = ASCIIToUTF16("a");
-  intent.type = ASCIIToUTF16("b");
-  IntentsDispatcherMock dispatcher(intent);
-  controller_->SetIntentsDispatcher(&dispatcher);
 
   OnServiceChosen(kServiceURL1,
                   webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW);
@@ -460,6 +472,12 @@ class WebIntentPickerControllerIncognitoBrowserTest
 
 IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerIncognitoBrowserTest,
                        ShowDialogShouldntCrash) {
+  webkit_glue::WebIntentData intent;
+  intent.action = kAction1;
+  intent.type = kType1;
+  IntentsDispatcherMock dispatcher(intent);
+  controller_->SetIntentsDispatcher(&dispatcher);
+
   controller_->ShowDialog(kAction1, kType1);
   // This should do nothing for now.
   EXPECT_EQ(0, pending_async_count());
@@ -470,14 +488,14 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   const char extension_id[] = "ooodacpbmglpoagccnepcbfhfhpdgddn";
   AddCWSExtensionServiceWithResult(extension_id, kAction1, kType2);
 
-  controller_->ShowDialog(kAction1, kType2);
-  picker_.Wait();
-
   webkit_glue::WebIntentData intent;
   intent.action = kAction1;
   intent.type = kType2;
   IntentsDispatcherMock dispatcher(intent);
   controller_->SetIntentsDispatcher(&dispatcher);
+
+  controller_->ShowDialog(kAction1, kType2);
+  picker_.Wait();
 
   ASSERT_EQ(1, browser()->tab_count());
   OnExtensionInstallRequested(extension_id);
@@ -500,14 +518,14 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   const char extension_id[] = "nnhendkbgefomfgdlnmfhhmihihlljpi";
   AddCWSExtensionServiceWithResult(extension_id, kAction1, kType2);
 
-  controller_->ShowDialog(kAction1, kType2);
-  picker_.Wait();
-
   webkit_glue::WebIntentData intent;
   intent.action = kAction1;
   intent.type = kType2;
   IntentsDispatcherMock dispatcher(intent);
   controller_->SetIntentsDispatcher(&dispatcher);
+
+  controller_->ShowDialog(kAction1, kType2);
+  picker_.Wait();
 
   OnExtensionInstallRequested(extension_id);
   picker_.Wait();
@@ -530,14 +548,15 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   // Install a target service for the explicit intent.
   const char extension_id[] = "ooodacpbmglpoagccnepcbfhfhpdgddn";
   AddCWSExtensionServiceWithResult(extension_id, kAction1, kType2);
-  controller_->ShowDialog(kAction1, kType2);
-  picker_.Wait();
 
   webkit_glue::WebIntentData intent;
   intent.action = kAction1;
   intent.type = kType2;
   IntentsDispatcherMock dispatcher(intent);
   controller_->SetIntentsDispatcher(&dispatcher);
+
+  controller_->ShowDialog(kAction1, kType2);
+  picker_.Wait();
 
   OnExtensionInstallRequested(extension_id);
   picker_.Wait();

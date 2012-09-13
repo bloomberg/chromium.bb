@@ -232,6 +232,14 @@ class WebIntentPickerController
   // Closes the currently active picker.
   void ClosePicker();
 
+  // Re-starts the process of showing the dialog, suppressing any default
+  // queries. Called on the user clicking Use-Another-Service.
+  void ReshowDialog();
+
+  // Delegate for ShowDialog and ReshowDialog. Starts all the data queries for
+  // loading the picker model and showing the dialog.
+  void ShowDialog(bool suppress_defaults);
+
   WebIntentPickerState dialog_state_;  // Current state of the dialog.
 
   // A weak pointer to the tab contents that the picker is displayed on.

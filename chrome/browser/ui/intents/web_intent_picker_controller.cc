@@ -197,61 +197,67 @@ void WebIntentPickerController::SetIntentsDispatcher(
 // TODO(smckay): rename this "StartActivity".
 void WebIntentPickerController::ShowDialog(const string16& action,
                                            const string16& type) {
+  ShowDialog(false);
+}
+
+void WebIntentPickerController::ReshowDialog() {
+  ShowDialog(true);
+}
+
+void WebIntentPickerController::ShowDialog(bool suppress_defaults) {
   web_intents::RecordIntentDispatched(uma_bucket_);
+
+  DCHECK(intents_dispatcher_);
 
   // Only show a picker once.
   // TODO(gbillock): There's a hole potentially admitting multiple
   // in-flight dispatches since we don't create the picker
   // in this method, but only after calling the registry.
   if (picker_shown_) {
-    if (intents_dispatcher_) {
-      intents_dispatcher_->SendReplyMessage(
-          webkit_glue::WEB_INTENT_REPLY_FAILURE,
-          ASCIIToUTF16("Simultaneous intent invocation."));
-    }
+    intents_dispatcher_->SendReplyMessage(
+        webkit_glue::WEB_INTENT_REPLY_FAILURE,
+        ASCIIToUTF16("Simultaneous intent invocation."));
     return;
   }
 
   // TODO(binji): Figure out what to do when intents are invoked from incognito
   // mode.
   if (tab_contents_->profile()->IsOffTheRecord()) {
-    if (intents_dispatcher_) {
-      intents_dispatcher_->SendReplyMessage(
-          webkit_glue::WEB_INTENT_REPLY_FAILURE, string16());
-    }
+    intents_dispatcher_->SendReplyMessage(
+        webkit_glue::WEB_INTENT_REPLY_FAILURE, string16());
     return;
   }
 
   picker_model_->Clear();
-  picker_model_->set_action(action);
-  picker_model_->set_type(type);
+  picker_model_->set_action(intents_dispatcher_->GetIntent().action);
+  picker_model_->set_type(intents_dispatcher_->GetIntent().type);
 
   // If the intent is explicit, skip showing the picker.
-  if (intents_dispatcher_) {
-    const GURL& service = intents_dispatcher_->GetIntent().service;
-    if (service.is_valid()) {
-      // TODO(gbillock): When we can parse pages for the intent tag,
-      // take out this requirement that explicit intents dispatch to
-      // extension urls.
-      if (!service.SchemeIs(chrome::kExtensionScheme)) {
-        intents_dispatcher_->SendReplyMessage(
-            webkit_glue::WEB_INTENT_REPLY_FAILURE, ASCIIToUTF16(
-                "Only extension urls are supported for explicit invocation"));
-        return;
-      }
-
-      // Get services from the registry to verify a registered extension
-      // page for this action/type if it is permitted to be dispatched. (Also
-      // required to find disposition set by service.)
-      pending_async_count_++;
-      GetWebIntentsRegistry(tab_contents_)->GetIntentServices(
-          action, type,
-          base::Bind(
-              &WebIntentPickerController::
-                  OnWebIntentServicesAvailableForExplicitIntent,
-              weak_ptr_factory_.GetWeakPtr()));
+  const GURL& service = intents_dispatcher_->GetIntent().service;
+  // TODO(gbillock): Decide whether to honor the default suppression flag
+  // here or suppress the control for explicit intents.
+  if (service.is_valid() && !suppress_defaults) {
+    // TODO(gbillock): When we can parse pages for the intent tag,
+    // take out this requirement that explicit intents dispatch to
+    // extension urls.
+    if (!service.SchemeIs(chrome::kExtensionScheme)) {
+      intents_dispatcher_->SendReplyMessage(
+          webkit_glue::WEB_INTENT_REPLY_FAILURE, ASCIIToUTF16(
+              "Only extension urls are supported for explicit invocation"));
       return;
     }
+
+    // Get services from the registry to verify a registered extension
+    // page for this action/type if it is permitted to be dispatched. (Also
+    // required to find disposition set by service.)
+    pending_async_count_++;
+    GetWebIntentsRegistry(tab_contents_)->GetIntentServices(
+        picker_model_->action(), picker_model_->type(),
+        base::Bind(
+            &WebIntentPickerController::
+            OnWebIntentServicesAvailableForExplicitIntent,
+            weak_ptr_factory_.GetWeakPtr()));
+    return;
   }
 
   // As soon as the dialog is requested, block all input events
@@ -262,16 +268,16 @@ void WebIntentPickerController::ShowDialog(const string16& action,
   pending_async_count_++;
   pending_registry_calls_count_++;
   GetWebIntentsRegistry(tab_contents_)->GetIntentServices(
-      action, type,
+      picker_model_->action(), picker_model_->type(),
           base::Bind(&WebIntentPickerController::OnWebIntentServicesAvailable,
               weak_ptr_factory_.GetWeakPtr()));
 
   GURL invoking_url = tab_contents_->web_contents()->GetURL();
-  if (invoking_url.is_valid()) {
+  if (invoking_url.is_valid() && !suppress_defaults) {
     pending_async_count_++;
     pending_registry_calls_count_++;
     GetWebIntentsRegistry(tab_contents_)->GetDefaultIntentService(
-        action, type, invoking_url,
+        picker_model_->action(), picker_model_->type(), invoking_url,
         base::Bind(&WebIntentPickerController::OnWebIntentDefaultsAvailable,
                    weak_ptr_factory_.GetWeakPtr()));
   }
@@ -910,9 +916,9 @@ void WebIntentPickerController::LocationBarPickerToolClicked() {
     // Re-open the other tab and activate the picker.
     client_browser->window()->Activate();
     client_browser->tab_strip_model()->ActivateTabAt(client_index, true);
-    // TODO(gbillock): better call? we want to re-activate the picker, which was
-    // potentially just open.
-    client_tab->web_intent_picker_controller()->CreatePicker();
+    // The picker has been Reset() when the new tab is created; need to fully
+    // reload.
+    client_tab->web_intent_picker_controller()->ReshowDialog();
   }
   // TODO(gbillock): figure out what we ought to do in this case. Probably
   // nothing? Refresh the location bar?
