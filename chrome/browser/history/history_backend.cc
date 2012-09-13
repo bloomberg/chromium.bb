@@ -1842,6 +1842,8 @@ void HistoryBackend::MergeFavicon(
     history::IconType icon_type,
     scoped_refptr<base::RefCountedMemory> bitmap_data,
     const gfx::Size& pixel_size) {
+  bool favicon_bitmap_added_or_removed = false;
+
   FaviconID favicon_id =
       thumbnail_db_->GetFaviconIDForFaviconURL(icon_url, icon_type, NULL);
   if (favicon_id) {
@@ -1865,8 +1867,10 @@ void HistoryBackend::MergeFavicon(
        // |kMaxFaviconBitmapsPerIconURL|.
        std::vector<FaviconBitmapIDSize> bitmap_id_sizes;
        thumbnail_db_->GetFaviconBitmapIDSizes(favicon_id, &bitmap_id_sizes);
-       if (bitmap_id_sizes.size() == kMaxFaviconBitmapsPerIconURL)
+       if (bitmap_id_sizes.size() == kMaxFaviconBitmapsPerIconURL) {
          thumbnail_db_->DeleteFaviconBitmap(bitmap_id_sizes[0].bitmap_id);
+         favicon_bitmap_added_or_removed = true;
+       }
     }
 
     FaviconBitmapData bitmap_data_element;
@@ -1875,7 +1879,9 @@ void HistoryBackend::MergeFavicon(
     bitmap_data_element.icon_url = icon_url;
     std::vector<FaviconBitmapData> favicon_bitmap_data;
     favicon_bitmap_data.push_back(bitmap_data_element);
-    SetFaviconBitmaps(favicon_id, favicon_bitmap_data);
+    bool favicon_bitmap_added = false;
+    SetFaviconBitmaps(favicon_id, favicon_bitmap_data, &favicon_bitmap_added);
+    favicon_bitmap_added_or_removed |= favicon_bitmap_added;
   } else {
     // |icon_url| is not known to the thumbnail database. Add a favicon with
     // the bitmap data.
@@ -1885,6 +1891,7 @@ void HistoryBackend::MergeFavicon(
                                            bitmap_data,
                                            base::Time::Now(),
                                            pixel_size);
+    favicon_bitmap_added_or_removed = true;
   }
 
   // Check if |favicon_id| is already mapped to |page_url| for |icon_type|.
@@ -1898,6 +1905,7 @@ void HistoryBackend::MergeFavicon(
     }
   }
 
+  bool mappings_changed = false;
   if (!already_mapped) {
     // |favicon_id| is not mapped to |page_url|. Build list of all the
     // FaviconIDs which should be mapped to |page_url| for |icon_type|.
@@ -1912,9 +1920,19 @@ void HistoryBackend::MergeFavicon(
 
     // Add mapping to |favicon_id|.
     favicon_ids.push_back(favicon_id);
-
-    SetFaviconMappingsForPageAndRedirects(page_url, icon_type, favicon_ids);
+    mappings_changed =
+        SetFaviconMappingsForPageAndRedirects(page_url, icon_type, favicon_ids);
   }
+
+  // Send notification to the UI if icon mappings, favicons, or favicon bitmaps
+  // were added or removed. Favicon addition and removal is not tracked as
+  // adding or removing a favicon will always be accompanied by an update in
+  // icon mappings.
+  // TODO(pkotwicz): Investigate if notifications should be sent when a favicon
+  // bitmap has been updated but not added or removed.
+  if (mappings_changed || favicon_bitmap_added_or_removed)
+    SendFaviconChangedNotificationForPageAndRedirects(page_url);
+  ScheduleCommit();
 }
 
 void HistoryBackend::SetFavicons(
@@ -1936,25 +1954,45 @@ void HistoryBackend::SetFavicons(
     grouped_by_icon_url[icon_url].push_back(favicon_bitmap_data[i]);
   }
 
+  bool favicon_bitmap_added_or_removed = false;
+
   std::vector<FaviconID> icon_ids;
   for (IconURLSizesMap::const_iterator it = icon_url_sizes.begin();
        it != icon_url_sizes.end(); ++it) {
     const GURL& icon_url = it->first;
     FaviconID icon_id =
         thumbnail_db_->GetFaviconIDForFaviconURL(icon_url, icon_type, NULL);
-    if (icon_id)
-      SetFaviconSizes(icon_id, it->second);
-    else
+    if (icon_id) {
+      bool favicon_bitmap_removed = false;
+      SetFaviconSizes(icon_id, it->second, &favicon_bitmap_removed);
+      favicon_bitmap_added_or_removed |= favicon_bitmap_removed;
+    } else {
       icon_id = thumbnail_db_->AddFavicon(icon_url, icon_type, it->second);
+    }
     icon_ids.push_back(icon_id);
 
     BitmapDataByIconURL::iterator grouped_by_icon_url_it =
         grouped_by_icon_url.find(icon_url);
-    if (grouped_by_icon_url_it != grouped_by_icon_url.end())
-      SetFaviconBitmaps(icon_id, grouped_by_icon_url_it->second);
+    if (grouped_by_icon_url_it != grouped_by_icon_url.end()) {
+      bool favicon_bitmap_added = false;
+      SetFaviconBitmaps(icon_id, grouped_by_icon_url_it->second,
+                        &favicon_bitmap_added);
+      favicon_bitmap_added_or_removed |= favicon_bitmap_added;
+    }
   }
 
-  SetFaviconMappingsForPageAndRedirects(page_url, icon_type, icon_ids);
+  bool mappings_changed =
+      SetFaviconMappingsForPageAndRedirects(page_url, icon_type, icon_ids);
+
+  // Send notification to the UI if icon mappings, favicons, or favicon bitmaps
+  // were added or removed. Favicon addition and removal is not tracked as
+  // adding or removing a favicon will always be accompanied by an update in
+  // icon mappings.
+  // TODO(pkotwicz): Investigate if notifications should be sent when a favicon
+  // bitmap has been updated but not added or removed.
+  if (mappings_changed || favicon_bitmap_added_or_removed)
+    SendFaviconChangedNotificationForPageAndRedirects(page_url);
+  ScheduleCommit();
 }
 
 void HistoryBackend::SetFaviconsOutOfDateForPage(const GURL& page_url) {
@@ -2095,8 +2133,13 @@ void HistoryBackend::UpdateFaviconMappingsAndFetchImpl(
   }
 
   if (page_url && !favicon_ids.empty()) {
-    SetFaviconMappingsForPageAndRedirects(*page_url, selected_icon_type,
-                                          favicon_ids);
+    bool mappings_updated =
+        SetFaviconMappingsForPageAndRedirects(*page_url, selected_icon_type,
+                                              favicon_ids);
+    if (mappings_updated) {
+      SendFaviconChangedNotificationForPageAndRedirects(*page_url);
+      ScheduleCommit();
+    }
   }
 
   std::vector<FaviconBitmapResult> favicon_bitmap_results;
@@ -2111,7 +2154,10 @@ void HistoryBackend::UpdateFaviconMappingsAndFetchImpl(
 
 void HistoryBackend::SetFaviconBitmaps(
     FaviconID icon_id,
-    const std::vector<FaviconBitmapData>& favicon_bitmap_data) {
+    const std::vector<FaviconBitmapData>& favicon_bitmap_data,
+    bool* favicon_bitmap_added) {
+  *favicon_bitmap_added = false;
+
   std::vector<FaviconBitmapIDSize> bitmap_id_sizes;
   thumbnail_db_->GetFaviconBitmapIDSizes(icon_id, &bitmap_id_sizes);
 
@@ -2132,6 +2178,7 @@ void HistoryBackend::SetFaviconBitmaps(
     } else {
       thumbnail_db_->AddFaviconBitmap(icon_id, bitmap_data_element.bitmap_data,
           base::Time::Now(), bitmap_data_element.pixel_size);
+      *favicon_bitmap_added = true;
     }
   }
 }
@@ -2168,7 +2215,10 @@ bool HistoryBackend::ValidateSetFaviconsParams(
 
 void HistoryBackend::SetFaviconSizes(
     FaviconID icon_id,
-    const FaviconSizes& favicon_sizes) {
+    const FaviconSizes& favicon_sizes,
+    bool* favicon_bitmap_removed) {
+  *favicon_bitmap_removed = false;
+
   std::vector<FaviconBitmapIDSize> bitmap_id_sizes;
   thumbnail_db_->GetFaviconBitmapIDSizes(icon_id, &bitmap_id_sizes);
 
@@ -2177,8 +2227,10 @@ void HistoryBackend::SetFaviconSizes(
     const gfx::Size& pixel_size = bitmap_id_sizes[i].pixel_size;
     FaviconSizes::const_iterator sizes_it = std::find(favicon_sizes.begin(),
         favicon_sizes.end(), pixel_size);
-    if (sizes_it == favicon_sizes.end())
+    if (sizes_it == favicon_sizes.end()) {
       thumbnail_db_->DeleteFaviconBitmap(bitmap_id_sizes[i].bitmap_id);
+      *favicon_bitmap_removed = true;
+    }
   }
 
   thumbnail_db_->SetFaviconSizes(icon_id, favicon_sizes);
@@ -2309,47 +2361,26 @@ bool HistoryBackend::BuildIconURLSizesMap(
   return true;
 }
 
-void HistoryBackend::SetFaviconMappingsForPageAndRedirects(
+bool HistoryBackend::SetFaviconMappingsForPageAndRedirects(
     const GURL& page_url,
     IconType icon_type,
     const std::vector<FaviconID>& icon_ids) {
   if (!thumbnail_db_.get())
-    return;
+    return false;
 
   // Find all the pages whose favicons we should set, we want to set it for
   // all the pages in the redirect chain if it redirected.
-  history::RedirectList dummy_list;
-  history::RedirectList* redirects;
-  RedirectCache::iterator iter = recent_redirects_.Get(page_url);
-  if (iter != recent_redirects_.end()) {
-    redirects = &iter->second;
+  history::RedirectList redirects;
+  GetCachedRecentRedirects(page_url, &redirects);
 
-    // This redirect chain should have the destination URL as the last item.
-    DCHECK(!redirects->empty());
-    DCHECK(redirects->back() == page_url);
-  } else {
-    // No redirect chain stored, make up one containing the URL we want to we
-    // can use the same logic below.
-    dummy_list.push_back(page_url);
-    redirects = &dummy_list;
-  }
-
-  std::set<GURL> favicons_changed;
+  bool mappings_changed = false;
 
   // Save page <-> favicon associations.
-  for (history::RedirectList::const_iterator i(redirects->begin());
-       i != redirects->end(); ++i) {
-    if (SetFaviconMappingsForPage(*i, icon_type, icon_ids))
-      favicons_changed.insert(*i);
+  for (history::RedirectList::const_iterator i(redirects.begin());
+       i != redirects.end(); ++i) {
+    mappings_changed |= SetFaviconMappingsForPage(*i, icon_type, icon_ids);
   }
-
-  // Send the notification about the changed favicons.
-  FaviconChangeDetails* changed_details = new FaviconChangeDetails;
-  changed_details->urls.swap(favicons_changed);
-  BroadcastNotifications(chrome::NOTIFICATION_FAVICON_CHANGED,
-                         changed_details);
-
-  ScheduleCommit();
+  return mappings_changed;
 }
 
 bool HistoryBackend::SetFaviconMappingsForPage(
@@ -2400,11 +2431,40 @@ bool HistoryBackend::SetFaviconMappingsForPage(
     }
   }
 
-  for (size_t i = 0; i < unmapped_icon_ids.size(); ++i ) {
+  for (size_t i = 0; i < unmapped_icon_ids.size(); ++i) {
     thumbnail_db_->AddIconMapping(page_url, unmapped_icon_ids[i]);
     mappings_changed = true;
   }
   return mappings_changed;
+}
+
+void HistoryBackend::GetCachedRecentRedirects(
+    const GURL& page_url,
+    history::RedirectList* redirect_list) {
+  RedirectCache::iterator iter = recent_redirects_.Get(page_url);
+  if (iter != recent_redirects_.end()) {
+    *redirect_list = iter->second;
+
+    // The redirect chain should have the destination URL as the last item.
+    DCHECK(!redirect_list->empty());
+    DCHECK(redirect_list->back() == page_url);
+  } else {
+    // No known redirects, construct mock redirect chain containing |page_url|.
+    redirect_list->push_back(page_url);
+  }
+}
+
+void HistoryBackend::SendFaviconChangedNotificationForPageAndRedirects(
+    const GURL& page_url) {
+  history::RedirectList redirect_list;
+  GetCachedRecentRedirects(page_url, &redirect_list);
+
+  FaviconChangeDetails* changed_details = new FaviconChangeDetails;
+  for (size_t i = 0; i < redirect_list.size(); ++i)
+    changed_details->urls.insert(redirect_list[i]);
+
+  BroadcastNotifications(chrome::NOTIFICATION_FAVICON_CHANGED,
+                         changed_details);
 }
 
 void HistoryBackend::Commit() {

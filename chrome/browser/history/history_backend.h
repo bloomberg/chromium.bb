@@ -231,7 +231,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // given RedirectList. For example, if we have the redirect list A -> B -> C,
   // then calling this function with url=C would fill redirects with {B, A}.
   bool GetMostRecentRedirectsTo(const GURL& url,
-                                      history::RedirectList* redirects);
+                                history::RedirectList* redirects);
 
   // Thumbnails ----------------------------------------------------------------
 
@@ -648,9 +648,12 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // For each entry in |favicon_bitmap_data|, if a favicon bitmap already
   // exists at the entry's pixel size, replace the favicon bitmap's data with
   // the entry's bitmap data. Otherwise add a new favicon bitmap.
+  // |favicon_bitmap_added| is set to true if the function has added a favicon
+  // bitmap.
   void SetFaviconBitmaps(
       FaviconID icon_id,
-      const std::vector<FaviconBitmapData>& favicon_bitmap_data);
+      const std::vector<FaviconBitmapData>& favicon_bitmap_data,
+      bool* favicon_bitmap_added);
 
   // Returns true if |favicon_bitmap_data| and |icon_url_sizes| passed to
   // SetFavicons() are valid.
@@ -672,7 +675,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // detailed description of FaviconSizes.
   // Deletes any favicon bitmaps currently mapped to |icon_id| whose pixel
   // sizes are not contained in |favicon_sizes|.
-  void SetFaviconSizes(FaviconID icon_id, const FaviconSizes& favicon_sizes);
+  // |favicon_bitmap_removed| is set to true if the function removed a favicon
+  // bitmap.
+  void SetFaviconSizes(FaviconID icon_id,
+                       const FaviconSizes& favicon_sizes,
+                       bool* favicon_bitmap_removed);
 
   // Returns true if there are favicons for |page_url| and one of the types in
   // |icon_types|.
@@ -721,8 +728,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                             IconURLSizesMap* icon_url_sizes);
 
   // Maps the favicon ids in |icon_ids| to |page_url| (and all redirects)
-  // for |icon_type|. This will also broadcast notifications as necessary.
-  void SetFaviconMappingsForPageAndRedirects(
+  // for |icon_type|.
+  // Returns true if the mappings for the page or any of its redirects were
+  // changed.
+  bool SetFaviconMappingsForPageAndRedirects(
       const GURL& page_url,
       IconType icon_type,
       const std::vector<FaviconID>& icon_ids);
@@ -732,6 +741,16 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   bool SetFaviconMappingsForPage(const GURL& page_url,
                                  IconType icon_type,
                                  const std::vector<FaviconID>& icon_ids);
+
+  // Returns all the page URLs in the redirect chain for |page_url|. If there
+  // are no known redirects for |page_url|, returns a vector with |page_url|.
+  void GetCachedRecentRedirects(const GURL& page_url,
+                                history::RedirectList* redirect_list);
+
+  // Send notification that the favicon has changed for |page_url| and all its
+  // redirects.
+  void SendFaviconChangedNotificationForPageAndRedirects(
+      const GURL& page_url);
 
   // Generic stuff -------------------------------------------------------------
 
