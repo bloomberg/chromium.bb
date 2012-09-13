@@ -10,6 +10,13 @@
       '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_200_percent.pak',
       '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources_200_percent.pak',
     ],
+    'conditions': [
+      ['use_aura==1', {
+        'pak_inputs': [
+          '<(SHARED_INTERMEDIATE_DIR)/ash/ash_resources/ash_resources_200_percent.pak',
+        ],
+      }],
+    ],
   },
   'inputs': [
     '<(repack_path)',

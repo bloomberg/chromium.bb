@@ -9,7 +9,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/property_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "grit/ui_resources.h"
+#include "grit/ash_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/hit_test.h"

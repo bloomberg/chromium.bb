@@ -4,7 +4,7 @@
 
 #include "ash/wm/frame_painter.h"
 #include "ash/wm/panel_frame_view.h"
-#include "grit/ui_resources.h"
+#include "grit/ash_resources.h"
 #include "grit/ui_strings.h"  // Accessibility names
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/base/animation/throb_animation.h"

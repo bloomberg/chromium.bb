@@ -6,7 +6,7 @@
 
 #include "ash/wm/frame_painter.h"
 #include "ash/wm/workspace/frame_maximize_button.h"
-#include "grit/ui_resources.h"
+#include "grit/ash_resources.h"
 #include "grit/ui_strings.h"  // Accessibility names
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"

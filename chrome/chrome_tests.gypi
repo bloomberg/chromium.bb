@@ -2141,6 +2141,9 @@
           'sources': [
             'browser/ui/app_list/apps_model_builder_unittest.cc',
           ],
+          'dependencies': [
+            '../ash/ash.gyp:ash_resources',
+          ],
         }],
         ['use_aura==1', {
           'dependencies': [

@@ -8,8 +8,8 @@
 
 #include "ash/launcher/launcher_button_host.h"
 #include "ash/launcher/launcher_types.h"
+#include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
-#include "grit/ui_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"

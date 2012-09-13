@@ -301,6 +301,11 @@
         },
       ],
       'conditions': [
+        ['use_aura==1', {
+          'dependencies': [
+             '<(DEPTH)/ash/ash.gyp:ash_resources',
+          ],
+        }],
         ['OS != "mac"', {
           # Copy pak files to the product directory. These files will be picked
           # up by the following installer scripts:

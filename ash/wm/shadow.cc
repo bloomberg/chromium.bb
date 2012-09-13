@@ -5,7 +5,7 @@
 #include "ash/wm/shadow.h"
 
 #include "ash/wm/image_grid.h"
-#include "grit/ui_resources.h"
+#include "grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 

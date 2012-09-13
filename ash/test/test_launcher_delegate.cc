@@ -7,7 +7,7 @@
 #include "ash/launcher/launcher_model.h"
 #include "ash/wm/window_util.h"
 #include "base/utf_string_conversions.h"
-#include "grit/ui_resources.h"
+#include "grit/ash_resources.h"
 #include "ui/aura/window.h"
 
 namespace ash {

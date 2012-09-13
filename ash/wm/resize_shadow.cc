@@ -6,7 +6,7 @@
 
 #include "ash/wm/image_grid.h"
 #include "base/time.h"
-#include "grit/ui_resources.h"
+#include "grit/ash_resources.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"

@@ -10,7 +10,7 @@
 #include "ash/wm/window_animations.h"
 #include "ash/wm/workspace/workspace_event_handler.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
-#include "grit/ui_resources.h"
+#include "grit/ash_resources.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/root_window.h"
