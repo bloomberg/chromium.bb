@@ -33,6 +33,12 @@ const int kAnimationDurationMs = 200;
 // Offset in pixels to animation away/towards the launcher.
 const int kAnimationOffset = 8;
 
+// Duration for snap back animation after over-scroll in milliseconds.
+const int kSnapBackAnimationDurationMs = 100;
+
+// The maximum shift in pixels when over-scroll happens.
+const int kMaxOverScrollShift = 48;
+
 ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
 }
@@ -85,8 +91,10 @@ gfx::Rect OffsetTowardsShelf(const gfx::Rect& rect) {
 AppListController::AppListController()
     : pagination_model_(new app_list::PaginationModel),
       is_visible_(false),
-      view_(NULL) {
+      view_(NULL),
+      should_snap_back_(false) {
   Shell::GetInstance()->AddShellObserver(this);
+  pagination_model_->AddObserver(this);
 }
 
 AppListController::~AppListController() {
@@ -96,6 +104,7 @@ AppListController::~AppListController() {
     view_->GetWidget()->CloseNow();
 
   Shell::GetInstance()->RemoveShellObserver(this);
+  pagination_model_->RemoveObserver(this);
 }
 
 void AppListController::SetVisible(bool visible) {
@@ -181,6 +190,7 @@ void AppListController::ScheduleAnimation() {
   gfx::Rect target_bounds;
   if (is_visible_) {
     target_bounds = layer->bounds();
+    view_bounds_ = target_bounds;
     layer->SetBounds(OffsetTowardsShelf(layer->bounds()));
   } else {
     target_bounds = OffsetTowardsShelf(layer->bounds());
@@ -220,8 +230,10 @@ void AppListController::ProcessLocatedEvent(aura::Window* target,
 }
 
 void AppListController::UpdateBounds() {
-  if (view_ && is_visible_)
+  if (view_ && is_visible_) {
     view_->UpdateBounds();
+    view_bounds_ = view_->GetWidget()->GetNativeView()->bounds();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -304,6 +316,47 @@ void AppListController::OnShelfAlignmentChanged() {
 
 void AppListController::OnLauncherIconPositionsChanged() {
   UpdateBounds();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// AppListController, PaginationModelObserver implementation:
+
+void AppListController::TotalPagesChanged() {
+}
+
+void AppListController::SelectedPageChanged(int old_selected,
+                                            int new_selected) {
+}
+
+void AppListController::TransitionChanged() {
+  // |view_| could be NULL when app list is closed with a running transition.
+  if (!view_)
+    return;
+
+  const app_list::PaginationModel::Transition& transition =
+      pagination_model_->transition();
+  if (pagination_model_->is_valid_page(transition.target_page))
+    return;
+
+  if (pagination_model_->scrolling()) {
+    const int current_page = pagination_model_->selected_page();
+    const int dir = transition.target_page > current_page ? -1 : 1;
+
+    const double progress = 1.0 - pow(1.0 - transition.progress, 4);
+    const int shift = kMaxOverScrollShift * progress * dir;
+
+    gfx::Rect shifted(view_bounds_);
+    shifted.set_x(shifted.x() + shift);
+    view_->GetWidget()->SetBounds(shifted);
+    should_snap_back_ = true;
+  } else if (should_snap_back_) {
+    should_snap_back_ = false;
+    ui::Layer* layer = GetLayer(view_->GetWidget());
+    ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
+    animation.SetTransitionDuration(
+        base::TimeDelta::FromMilliseconds(kSnapBackAnimationDurationMs));
+    layer->SetBounds(view_bounds_);
+  }
 }
 
 }  // namespace internal

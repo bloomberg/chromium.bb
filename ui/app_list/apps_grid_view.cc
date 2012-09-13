@@ -25,13 +25,6 @@ const int kPagePadding = 40;
 const int kPreferredTileWidth = 88;
 const int kPreferredTileHeight = 98;
 
-// Max extra column padding space in pixels for invalid page transition.
-const int kMaxExtraColPaddingForInvalidTransition = 15;
-
-// Extra column padding space in pixels of first column for invalid page
-// transition.
-const int kBaseExtraColPaddingForInvalidTransition = 50;
-
 }  // namespace
 
 namespace app_list {
@@ -132,10 +125,7 @@ void AppsGridView::Layout() {
   // Transition to right means negative offset.
   const int dir = transition.target_page > current_page ? -1 : 1;
   const int transition_offset = is_valid ?
-      transition.progress * page_width * dir :
-      transition.progress * kMaxExtraColPaddingForInvalidTransition * dir;
-  const int base_transition_offset = is_valid ? 0 :
-      transition.progress * kBaseExtraColPaddingForInvalidTransition * dir;
+      transition.progress * page_width * dir : 0;
 
   const int first_visible_index = current_page * tiles_per_page();
   const int last_visible_index = (current_page + 1) * tiles_per_page() - 1;
@@ -156,7 +146,6 @@ void AppsGridView::Layout() {
         x_offset += transition_offset;
     } else {
       const int col = i % cols_;
-      x_offset += base_transition_offset;
       if (transition_offset > 0)
         x_offset += transition_offset * col;
       else
@@ -342,7 +331,12 @@ void AppsGridView::SelectedPageChanged(int old_selected, int new_selected) {
 }
 
 void AppsGridView::TransitionChanged() {
-  Layout();
+  // Update layout for valid page transition only since over-scroll no longer
+  // animates app icons.
+  const PaginationModel::Transition& transition =
+      pagination_model_->transition();
+  if (pagination_model_->is_valid_page(transition.target_page))
+    Layout();
 }
 
 }  // namespace app_list

@@ -15,6 +15,7 @@ PaginationModel::PaginationModel()
     : total_pages_(-1),
       selected_page_(-1),
       transition_(-1, 0),
+      scrolling_(false),
       pending_selected_page_(-1),
       transition_duration_ms_(0) {
 }
@@ -100,6 +101,7 @@ void PaginationModel::SetTransitionDuration(int duration_ms) {
 }
 
 void PaginationModel::StartScroll() {
+  scrolling_ = true;
   // Cancels current transition animation (if any).
   transition_animation_.reset();
 }
@@ -131,6 +133,8 @@ void PaginationModel::UpdateScroll(double delta) {
 }
 
 void PaginationModel::EndScroll(bool cancel) {
+  scrolling_ = false;
+
   if (!has_transition())
     return;
 

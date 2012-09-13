@@ -80,6 +80,7 @@ class APP_LIST_EXPORT PaginationModel : public ui::AnimationDelegate {
   int total_pages() const { return total_pages_; }
   int selected_page() const { return selected_page_; }
   const Transition& transition() const { return transition_; }
+  bool scrolling() const { return scrolling_; }
 
   bool is_valid_page(int page) const {
     return page >= 0 && page < total_pages_;
@@ -117,6 +118,8 @@ class APP_LIST_EXPORT PaginationModel : public ui::AnimationDelegate {
   int selected_page_;
 
   Transition transition_;
+
+  bool scrolling_;  // Whether a scroll is in progress.
 
   // Pending selected page when SelectedPage is called during a transition. If
   // multiple SelectPage is called while a transition is in progress, only the
