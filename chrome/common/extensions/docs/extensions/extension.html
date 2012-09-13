@@ -218,6 +218,8 @@
               <li>
                 <a href="#method-connect">connect</a>
               </li><li>
+                <a href="#method-connectNative">connectNative</a>
+              </li><li>
                 <a href="#method-getBackgroundPage">getBackgroundPage</a>
               </li><li>
                 <a href="#method-getURL">getURL</a>
@@ -229,6 +231,8 @@
                 <a href="#method-isAllowedIncognitoAccess">isAllowedIncognitoAccess</a>
               </li><li>
                 <a href="#method-sendMessage">sendMessage</a>
+              </li><li>
+                <a href="#method-sendNativeMessage">sendNativeMessage</a>
               </li><li>
                 <a href="#method-setUpdateUrlData">setUpdateUrlData</a>
               </li>
@@ -530,6 +534,97 @@ For details, see
               </em>
           </dt>
           <dd>Port through which messages can be sent and received with the extension. The port's <a href="extension.html#type-Port">onDisconnect</a> event is fired if extension does not exist. </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div>
+                </dl>
+                <!-- CALLBACK -->
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-connectNative"></a> <!-- method-anchor -->
+              <h4>connectNative</h4>
+              <div class="summary"><span>extension.Port</span>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.extension.connectNative</span>(<span class="null"><span>string</span>
+                      <var><span>appName</span></var></span><span class="null"><span>, </span><span>object</span>
+                      <var><span>data</span></var></span>)</div>
+              <div class="description">
+                <p>Attempts to connect a native app.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>appName</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The name of the registered app to connect to.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>data</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The object that will be passed to the registered native app.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <h4>Returns</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="extension.html#type-extension.Port">extension.Port</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Port through which messages can be sent and received with the app.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -1111,6 +1206,135 @@ For details, see
               </em>
           </dt>
           <dd>The JSON response object sent by the handler of the message. If an error occurs while connecting to the extension, the callback will be called with no arguments and <a href="extension.html#property-lastError">chrome.extension.lastError</a> will be set to the error message.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                    </div>
+                  </dl>
+                  </div>
+                </div>
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-sendNativeMessage"></a> <!-- method-anchor -->
+              <h4>sendNativeMessage</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.extension.sendNativeMessage</span>(<span class="null"><span>string</span>
+                      <var><span>registeredNativeApp</span></var></span><span class="null"><span>, </span><span>object</span>
+                      <var><span>data</span></var></span><span class="optional"><span>, </span><span>function</span>
+                      <var><span>callback</span></var></span>)</div>
+              <div class="description">
+                <p>Send a single message to a registered native application.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>registeredNativeApp</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The name of the registered native app.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>data</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The object that will be passed to the registered native app.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>callback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Called with the response from the native app.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <div>
+                  <div>
+                  <h4>Callback function</h4>
+                  <p>
+                    If you specify the <em>callback</em> parameter, it should
+                    specify a function that looks like this:
+                  </p>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <pre>function(<span>object nativeResponse</span>) <span class="subdued">{...}</span>;</pre>
+                  <dl>
+                    <div>
+                      <div>
+          <dt>
+            <var>nativeResponse</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Whatever the native app responds with.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
