@@ -3,6 +3,19 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'conditions': [
+      # For ARM, turn off SSE2.
+      # For x86, turn off SSE2 for non-CrOS *nix Chrome builds.
+      ['disable_sse2==1 or target_arch=="arm" or \
+        (branding=="Chrome" and target_arch=="ia32" and \
+         os_posix==1 and OS!="mac" and chromeos==0)', {
+        'qcms_use_sse': 0,
+      }, {
+        'qcms_use_sse': 1,
+      }],
+    ],
+  },
   'targets': [
     {
       'target_name': 'qcms',
@@ -30,13 +43,10 @@
       # removed on next roll.
       'msvs_disabled_warnings': [ 4018 ],
       'conditions': [
-        [ 'target_arch != "arm" and OS in ["linux", "freebsd", "openbsd", "solaris"]', {
-          'cflags': [
-            '-msse',
-            '-msse2',
+        [ 'qcms_use_sse==1', {
+          'defines': [
+            'SSE2_ENABLE',
           ],
-        }],
-        [ 'target_arch != "arm"', {
           'sources': [
             'src/transform-sse1.c',
             'src/transform-sse2.c',

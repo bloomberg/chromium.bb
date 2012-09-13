@@ -707,6 +707,23 @@ index 9a6562b..1f4e72b 100644
  
  	/* don't precache if we do not have the TRC curves */
  	if (!profile->redTRC || !profile->greenTRC || !profile->blueTRC)
+@@ -1224,14 +1224,14 @@
+                 	return NULL;
+             	}
+ 		if (precache) {
+-#ifdef X86
++#if defined(SSE2_ENABLE) && defined(X86)
+ 		    if (sse_version_available() >= 2) {
+ 			    if (in_type == QCMS_DATA_RGB_8)
+ 				    transform->transform_fn = qcms_transform_data_rgb_out_lut_sse2;
+ 			    else
+ 				    transform->transform_fn = qcms_transform_data_rgba_out_lut_sse2;
+ 
+-#if !(defined(_MSC_VER) && defined(_M_AMD64))
++#if defined(SSE2_ENABLE) && !(defined(_MSC_VER) && defined(_M_AMD64))
+                     /* Microsoft Compiler for x64 doesn't support MMX.
+                      * SSE code uses MMX so that we disable on x64 */
+ 		    } else
 @@ -1262,7 +1329,17 @@ __attribute__((__force_align_arg_pointer__))
  #endif
  void qcms_transform_data(qcms_transform *transform, void *src, void *dest, size_t length)

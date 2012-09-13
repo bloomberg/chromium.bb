@@ -26,3 +26,5 @@ google.patch contains the following modifications. Apply with
  - Applied upstream patch for sanitizing gamma table:
    - Expanded gamma clamp range to allow 1.0.
  - Do not short-circuit bogus profile check for A2B0 or B2A0 unless v4 enabled.
+ - Only reference code from transform-sse1.c and transform-sse2.c when SSE is
+   enabled.
