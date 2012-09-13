@@ -49,18 +49,18 @@ MockDriveService::MockDriveService() {
       .WillByDefault(Invoke(this, &MockDriveService::DownloadFileStub));
 
   // Fill in the default values for mock feeds.
-  account_metadata_.reset(
-      test_util::LoadJSONFile("gdata/account_metadata.json"));
-  feed_data_.reset(test_util::LoadJSONFile("gdata/basic_feed.json"));
-  directory_data_.reset(
-      test_util::LoadJSONFile("gdata/new_folder_entry.json"));
+  account_metadata_ =
+      test_util::LoadJSONFile("gdata/account_metadata.json");
+  feed_data_ = test_util::LoadJSONFile("gdata/basic_feed.json");
+  directory_data_ =
+      test_util::LoadJSONFile("gdata/new_folder_entry.json");
 }
 
 MockDriveService::~MockDriveService() {}
 
 void MockDriveService::set_search_result(
     const std::string& search_result_feed) {
-  search_result_.reset(test_util::LoadJSONFile(search_result_feed));
+  search_result_ = test_util::LoadJSONFile(search_result_feed);
 }
 
 void MockDriveService::AuthenticateStub(

@@ -15,8 +15,8 @@
 namespace gdata {
 
 TEST(DocumentEntryConversionTest, ConvertDocumentEntryToDriveEntryProto_File) {
-  scoped_ptr<base::Value> value(
-      test_util::LoadJSONFile("gdata/file_entry.json"));
+  scoped_ptr<base::Value> value =
+      test_util::LoadJSONFile("gdata/file_entry.json");
   ASSERT_TRUE(value.get());
 
   scoped_ptr<DocumentEntry> document_entry(
@@ -74,8 +74,8 @@ TEST(DocumentEntryConversionTest, ConvertDocumentEntryToDriveEntryProto_File) {
 
 TEST(DocumentEntryConversionTest,
      ConvertDocumentEntryToDriveEntryProto_HostedDocument) {
-  scoped_ptr<base::Value> value(
-      test_util::LoadJSONFile("gdata/hosted_document_entry.json"));
+  scoped_ptr<base::Value> value =
+      test_util::LoadJSONFile("gdata/hosted_document_entry.json");
   ASSERT_TRUE(value.get());
 
   scoped_ptr<DocumentEntry> document_entry(
@@ -142,8 +142,8 @@ TEST(DocumentEntryConversionTest,
 
 TEST(DocumentEntryConversionTest,
      ConvertDocumentEntryToDriveEntryProto_Directory) {
-  scoped_ptr<base::Value> value(
-      test_util::LoadJSONFile("gdata/directory_entry.json"));
+  scoped_ptr<base::Value> value =
+      test_util::LoadJSONFile("gdata/directory_entry.json");
   ASSERT_TRUE(value.get());
 
   scoped_ptr<DocumentEntry> document_entry(
@@ -205,8 +205,8 @@ TEST(DocumentEntryConversionTest,
 
 TEST(DocumentEntryConversionTest,
      ConvertDocumentEntryToDriveEntryProto_DeletedHostedDocument) {
-  scoped_ptr<base::Value> value(
-      test_util::LoadJSONFile("gdata/deleted_hosted_document_entry.json"));
+  scoped_ptr<base::Value> value =
+      test_util::LoadJSONFile("gdata/deleted_hosted_document_entry.json");
   ASSERT_TRUE(value.get());
 
   scoped_ptr<DocumentEntry> document_entry(

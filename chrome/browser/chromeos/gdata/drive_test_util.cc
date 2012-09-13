@@ -147,15 +147,15 @@ FilePath GetTestFilePath(const std::string& relative_path) {
   return path;
 }
 
-base::Value* LoadJSONFile(const std::string& relative_path) {
+scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path) {
   FilePath path = GetTestFilePath(relative_path);
 
   std::string error;
   JSONFileValueSerializer serializer(path);
-  base::Value* value = serializer.Deserialize(NULL, &error);
-  EXPECT_TRUE(value) <<
+  scoped_ptr<base::Value> value(serializer.Deserialize(NULL, &error));
+  EXPECT_TRUE(value.get()) <<
       "Parse error " << path.value() << ": " << error;
-  return value;
+  return value.Pass();
 }
 
 void LoadChangeFeed(const std::string& relative_path,
@@ -163,7 +163,7 @@ void LoadChangeFeed(const std::string& relative_path,
                     int64 start_changestamp,
                     int64 root_feed_changestamp) {
   std::string error;
-  scoped_ptr<Value> document(test_util::LoadJSONFile(relative_path));
+  scoped_ptr<Value> document = test_util::LoadJSONFile(relative_path);
   ASSERT_TRUE(document.get());
   ASSERT_TRUE(document->GetType() == Value::TYPE_DICTIONARY);
   scoped_ptr<DocumentFeed> document_feed(

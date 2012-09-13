@@ -105,9 +105,7 @@ FilePath GetTestFilePath(const std::string& relative_path);
 
 // Loads a test JSON file as a base::Value, from a test file stored under
 // chrome/test/data/chromeos.
-//
-// The caller should delete the returned object.
-base::Value* LoadJSONFile(const std::string& relative_path);
+scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path);
 
 // Loads a test json file as root ("/drive") element from a test file stored
 // under chrome/test/data/chromeos.

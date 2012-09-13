@@ -56,7 +56,8 @@ class GDataWAPIParserTest : public testing::Test {
 // Test document feed parsing.
 TEST_F(GDataWAPIParserTest, DocumentFeedJsonParser) {
   std::string error;
-  scoped_ptr<Value> document(test_util::LoadJSONFile("gdata/basic_feed.json"));
+  scoped_ptr<Value> document =
+      test_util::LoadJSONFile("gdata/basic_feed.json");
   ASSERT_TRUE(document.get());
   ASSERT_EQ(Value::TYPE_DICTIONARY, document->GetType());
   scoped_ptr<DocumentFeed> feed(DocumentFeed::ExtractAndParse(*document));
@@ -266,8 +267,8 @@ TEST_F(GDataWAPIParserTest, DocumentEntryXmlParser) {
 }
 
 TEST_F(GDataWAPIParserTest, AccountMetadataFeedParser) {
-  scoped_ptr<Value> document(
-      test_util::LoadJSONFile("gdata/account_metadata.json"));
+  scoped_ptr<Value> document =
+      test_util::LoadJSONFile("gdata/account_metadata.json");
   ASSERT_TRUE(document.get());
   ASSERT_EQ(Value::TYPE_DICTIONARY, document->GetType());
   DictionaryValue* entry_value = NULL;
