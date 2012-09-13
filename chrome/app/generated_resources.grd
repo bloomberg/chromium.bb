@@ -8209,9 +8209,14 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
           Bookmarks bar
         </message>
       </if>
-      <if expr="pp_ifdef('android') or pp_ifdef('ios')">
+      <if expr="pp_ifdef('android')">
         <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Mobile: Name shown in the tree for the desktop bookmarks folder">
           Desktop bookmarks
+        </message>
+      </if>
+      <if expr="pp_ifdef('ios')">
+        <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Mobile: Name shown in the tree for the desktop bookmarks folder">
+          Desktop Bookmarks
         </message>
       </if>
       <message name="IDS_BOOKMARK_EDITOR_NEW_FOLDER_NAME" desc="Name for newly created groups">
