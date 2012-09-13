@@ -41,12 +41,19 @@ cr.define('print_preview', function() {
     this.metrics_ = new print_preview.Metrics();
 
     /**
+     * Application state.
+     * @type {!print_preview.AppState}
+     * @private
+     */
+    this.appState_ = new print_preview.AppState();
+
+    /**
      * Data store which holds print destinations.
      * @type {!print_preview.DestinationStore}
      * @private
      */
     this.destinationStore_ = new print_preview.DestinationStore(
-        this.nativeLayer_);
+        this.nativeLayer_, this.appState_);
 
     /**
      * Storage of the print ticket used to create the print job.
@@ -54,7 +61,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.printTicketStore_ = new print_preview.PrintTicketStore(
-        this.destinationStore_);
+        this.destinationStore_, this.appState_);
 
     /**
      * Holds the print and cancel buttons and renders some document statistics.
@@ -390,9 +397,6 @@ cr.define('print_preview', function() {
           this.destinationStore_.selectedDestination.capabilities) {
         assert(this.printTicketStore_.isTicketValid(),
                'Trying to print with invalid ticket');
-        this.nativeLayer_.startSaveDestinationAndTicket(
-            this.destinationStore_.selectedDestination,
-            this.printTicketStore_);
         this.nativeLayer_.startPrint(
             this.destinationStore_.selectedDestination,
             this.printTicketStore_,
@@ -439,22 +443,19 @@ cr.define('print_preview', function() {
                  this.uiState_);
       this.uiState_ = PrintPreview.UiState_.READY;
 
-      this.isInKioskAutoPrintMode_ =
-          event.initialSettings.isInKioskAutoPrintMode;
-      this.destinationStore_.setInitialDestinationId(
-          event.initialSettings.initialDestinationId,
-          event.initialSettings.isLocalDestination);
-      document.title = event.initialSettings.documentTitle;
-      this.printTicketStore_.initialize(
-          event.initialSettings.isDocumentModifiable,
-          event.initialSettings.documentTitle,
-          event.initialSettings.isDuplexEnabled,
-          event.initialSettings.isHeaderFooterEnabled,
-          event.initialSettings.marginsType,
-          event.initialSettings.customMargins,
-          event.initialSettings.thousandsDelimeter,
-          event.initialSettings.decimalDelimeter,
-          event.initialSettings.unitType);
+      var settings = event.initialSettings;
+      this.isInKioskAutoPrintMode_ = settings.isInKioskAutoPrintMode;
+      document.title = settings.documentTitle;
+
+      // The following components must be initialized in this order.
+      this.appState_.init(settings.serializedAppStateStr);
+      this.printTicketStore_.init(
+          settings.isDocumentModifiable,
+          settings.documentTitle,
+          settings.thousandsDelimeter,
+          settings.decimalDelimeter,
+          settings.unitType);
+      this.destinationStore_.init(settings.systemDefaultDestinationId);
     },
 
     /**
@@ -798,6 +799,7 @@ cr.define('print_preview', function() {
 <include src="data/size.js"/>
 <include src="data/capabilities_holder.js"/>
 <include src="data/user_info.js"/>
+<include src="data/app_state.js"/>
 
 <include src="data/ticket_items/ticket_item.js"/>
 

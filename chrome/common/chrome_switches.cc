@@ -1047,9 +1047,6 @@ const char kPrerenderModeSwitchValuePrefetchOnly[] = "prefetch_only";
 // Enable conversion from vector to raster for any page.
 const char kPrintRaster[]              = "print-raster";
 
-// Disable saving the printer and settings between sessions.
-const char kPrintSettingsReset[]       = "print-settings-reset";
-
 // Outputs the product version information and quit. Used as an internal api to
 // detect the installed version of Chrome on Linux.
 const char kProductVersion[]                = "product-version";

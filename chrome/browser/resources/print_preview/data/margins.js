@@ -30,6 +30,20 @@ cr.define('print_preview', function() {
         left;
   };
 
+  /**
+   * Parses a margins object from the given serialized state.
+   * @param {Object} state Serialized representation of the margins created by
+   *     the {@code serialize} method.
+   * @return {!print_preview.Margins} New margins instance.
+   */
+  Margins.parse = function(state) {
+    return new print_preview.Margins(
+        state[print_preview.ticket_items.CustomMargins.Orientation.TOP],
+        state[print_preview.ticket_items.CustomMargins.Orientation.RIGHT],
+        state[print_preview.ticket_items.CustomMargins.Orientation.BOTTOM],
+        state[print_preview.ticket_items.CustomMargins.Orientation.LEFT]);
+  };
+
   Margins.prototype = {
     /**
      * @param {!print_preview.ticket_items.CustomMargins.Orientation}
@@ -48,10 +62,7 @@ cr.define('print_preview', function() {
      *     modification made to the specified margin.
      */
     set: function(orientation, value) {
-      var newValue = {};
-      for (var o in this.value_) {
-        newValue[o] = this.value_[o];
-      }
+      var newValue = this.clone_();
       newValue[orientation] = value;
       return new Margins(
           newValue[print_preview.ticket_items.CustomMargins.Orientation.TOP],
@@ -75,6 +86,23 @@ cr.define('print_preview', function() {
         }
       }
       return true;
+    },
+
+    /** @return {Object} A serialized representation of the margins. */
+    serialize: function() {
+      return this.clone_();
+    },
+
+    /**
+     * @return {Object} Cloned state of the margins.
+     * @private
+     */
+    clone_: function() {
+      var clone = {};
+      for (var o in this.value_) {
+        clone[o] = this.value_[o];
+      }
+      return clone;
     }
   };
 

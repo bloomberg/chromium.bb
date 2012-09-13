@@ -107,11 +107,8 @@ PrintPreviewWebUITest.prototype = {
       1 /*unitType*/,
       true /*isDocumentModifiable*/,
       'title' /*documentTitle*/,
-      0 /*marginsType*/,
-      null /*customMargins*/,
-      true /*isDuplexEnabled*/,
-      false /*isHeaderFooterEnabled*/,
-      'FooDevice' /*initialDestinationId*/);
+      'FooDevice' /*systemDefaultDestinationId*/,
+      null /*serializedAppStateStr*/);
     this.localDestinationInfos_ = [
       { printerName: 'FooName', deviceName: 'FooDevice' },
       { printerName: 'BarName', deviceName: 'BarDevice' }
@@ -262,7 +259,7 @@ TEST_F('PrintPreviewWebUITest',
        function() {
   // Add PDF printer.
   this.initialSettings_.isDocumentModifiable_ = false;
-  this.initialSettings_.initialDestinationId_ = 'Save as PDF';
+  this.initialSettings_.systemDefaultDestinationId_ = 'Save as PDF';
   this.localDestinationInfos_.push(
       {printerName: 'Save as PDF', deviceName: 'Save as PDF'});
 
@@ -558,7 +555,7 @@ TEST_F('PrintPreviewWebUITest',
 });
 
 // Test that the color settings are set according to the printer capabilities.
-TEST_F('PrintPreviewWebUITest', 'TestColorSettings', function() {
+TEST_F('PrintPreviewWebUITest', 'TestColorSettingsTrue', function() {
   var initialSettingsSetEvent =
       new cr.Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
   initialSettingsSetEvent.initialSettings = this.initialSettings_;
@@ -577,7 +574,7 @@ TEST_F('PrintPreviewWebUITest', 'TestColorSettings', function() {
     'printerId': 'FooDevice',
     'disableColorOption': false,
     'setColorAsDefault': true,
-    'disableCopiesOption': true,
+    'disableCopiesOption': false,
     'disableLandscapeOption': true,
     'printerDefaultDuplexValue': 0
   };
@@ -591,44 +588,50 @@ TEST_F('PrintPreviewWebUITest', 'TestColorSettings', function() {
       'color-settings-bw-option')[0];
   expectTrue(colorOption.checked);
   expectFalse(bwOption.checked);
+});
+
+//Test that the color settings are set according to the printer capabilities.
+TEST_F('PrintPreviewWebUITest', 'TestColorSettingsFalse', function() {
+  var initialSettingsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
+  initialSettingsSetEvent.initialSettings = this.initialSettings_;
+  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
+
+  var localDestsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
+  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
+  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
+
+  checkSectionVisible($('color-settings'), true);
 
   var capsSetEvent =
       new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
   capsSetEvent.settingsInfo = {
     'printerId': 'FooDevice',
-    'disableColorOption': false,
+    'disableColorOption': true,
     'setColorAsDefault': false,
     'disableCopiesOption': false,
-    'disableLandscapeOption': false,
+    'disableLandscapeOption': true,
     'printerDefaultDuplexValue': 0
   };
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
-  checkSectionVisible($('color-settings'), true);
+  checkSectionVisible($('color-settings'), false);
+
+  var colorOption = $('color-settings').getElementsByClassName(
+      'color-settings-color-option')[0];
+  var bwOption = $('color-settings').getElementsByClassName(
+      'color-settings-bw-option')[0];
   expectFalse(colorOption.checked);
   expectTrue(bwOption.checked);
 });
 
 // Test to verify that duplex settings are set according to the printer
 // capabilities.
-TEST_F('PrintPreviewWebUITest', 'TestDuplexSettings', function() {
+TEST_F('PrintPreviewWebUITest', 'TestDuplexSettingsTrue', function() {
   var initialSettingsSetEvent =
       new cr.Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
-  // Need to override test defaults for the initial settings, because initial
-  // duplex value needs to be unspecified.
-  initialSettingsSetEvent.initialSettings =
-      new print_preview.NativeInitialSettings(
-          false /*isInKioskAutoPrintMode*/,
-          ',' /*thousandsDelimeter*/,
-          '.' /*decimalDelimeter*/,
-          1 /*unitType*/,
-          true /*isDocumentModifiable*/,
-          'title' /*documentTitle*/,
-          0 /*marginsType*/,
-          null /*customMargins*/,
-          null /*isDuplexEnabled*/,
-          false /*isHeaderFooterEnabled*/,
-          'FooDevice' /*initialDestinationId*/);
+  initialSettingsSetEvent.initialSettings = this.initialSettings_;
   this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
 
   var localDestsSetEvent =
@@ -656,40 +659,39 @@ TEST_F('PrintPreviewWebUITest', 'TestDuplexSettings', function() {
   checkSectionVisible(otherOptionsDiv, true);
   expectFalse(duplexDiv.hidden);
   expectFalse(duplexCheckbox.checked);
+});
 
-  // If the printer default duplex value is UNKNOWN_DUPLEX_MODE, hide the
-  // two sided option.
+//Test to verify that duplex settings are set according to the printer
+//capabilities.
+TEST_F('PrintPreviewWebUITest', 'TestDuplexSettingsFalse', function() {
+  var initialSettingsSetEvent =
+     new cr.Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
+  initialSettingsSetEvent.initialSettings = this.initialSettings_;
+  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
+
+  var localDestsSetEvent =
+     new cr.Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
+  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
+  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
+
+  var otherOptionsDiv = $('other-options-settings');
+  var duplexDiv = otherOptionsDiv.querySelector('.duplex-container');
+
   var capsSetEvent =
-      new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
+     new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
   capsSetEvent.settingsInfo = {
-    'printerId': 'FooDevice',
-    'disableColorOption': false,
-    'setColorAsDefault': false,
-    'disableCopiesOption': false,
-    'disableLandscapeOption': false,
-    'printerDefaultDuplexValue': -1
+   'printerId': 'FooDevice',
+   'disableColorOption': false,
+   'setColorAsDefault': true,
+   'disableCopiesOption': false,
+   'disableLandscapeOption': true,
+   'printerDefaultDuplexValue': -1,
+   'setDuplexAsDefault': false
   };
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
   checkSectionVisible(otherOptionsDiv, true);
   expectTrue(duplexDiv.hidden);
-
-  var capsSetEvent =
-      new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-  capsSetEvent.settingsInfo = {
-    'printerId': 'FooDevice',
-    'disableColorOption': false,
-    'setColorAsDefault': false,
-    'disableCopiesOption': false,
-    'disableLandscapeOption': false,
-    'printerDefaultDuplexValue': 1,
-    'setDuplexAsDefault': true
-  };
-  this.nativeLayer_.dispatchEvent(capsSetEvent);
-
-  checkSectionVisible(otherOptionsDiv, true);
-  expectFalse(duplexDiv.hidden);
-  expectTrue(duplexCheckbox.checked);
 });
 
 // Test that changing the selected printer updates the preview.

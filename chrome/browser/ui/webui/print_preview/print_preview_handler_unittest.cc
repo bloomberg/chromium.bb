@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_handler.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
-#include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/web_contents.h"
@@ -57,7 +56,6 @@ class PrintPreviewHandlerTest : public BrowserWithTestWindowTest {
 
   virtual void TearDown() OVERRIDE {
     DeletePrintPreviewTab();
-    ClearStickySettings();
 
     BrowserWithTestWindowTest::TearDown();
   }
@@ -87,40 +85,6 @@ class PrintPreviewHandlerTest : public BrowserWithTestWindowTest {
     // Deleting TabContents* to avoid warings from pref_notifier_impl.cc
     // after the test ends.
     delete preview_tab_;
-  }
-
-  void CheckCustomMargins(const double margin_top,
-                          const double margin_right,
-                          const double margin_bottom,
-                          const double margin_left) {
-    printing::PageSizeMargins* margins =
-        PrintPreviewHandler::GetStickySettings()->
-            page_size_margins_.get();
-    EXPECT_EQ(margin_top, margins->margin_top);
-    EXPECT_EQ(margin_right, margins->margin_right);
-    EXPECT_EQ(margin_bottom, margins->margin_bottom);
-    EXPECT_EQ(margin_left, margins->margin_left);
-  }
-
-  // Checking that sticky settings were saved according to expectations.
-  void CheckStickySettings(printing::ColorModels color_model,
-                           printing::MarginType margin_type,
-                           bool margins_saved,
-                           const double margin_top,
-                           const double margin_right,
-                           const double margin_bottom,
-                           const double margin_left) {
-    printing::StickySettings* sticky_settings =
-        PrintPreviewHandler::GetStickySettings();
-    EXPECT_EQ(color_model, sticky_settings->color_model());
-    EXPECT_EQ(margin_type, sticky_settings->margins_type_);
-
-    if (margins_saved) {
-      ASSERT_TRUE(sticky_settings->page_size_margins_.get());
-      CheckCustomMargins(margin_top, margin_right, margin_bottom, margin_left);
-    } else {
-      ASSERT_FALSE(sticky_settings->page_size_margins_.get());
-    }
   }
 
   void RequestPrintWithDefaultMargins() {
@@ -168,113 +132,6 @@ class PrintPreviewHandlerTest : public BrowserWithTestWindowTest {
   PrintPreviewUI* preview_ui_;
 
  private:
-  void ClearStickySettings() {
-    PrintPreviewHandler::GetStickySettings()->margins_type_ =
-        printing::DEFAULT_MARGINS;
-    PrintPreviewHandler::GetStickySettings()->page_size_margins_.reset();
-  }
 
   TabContents* preview_tab_;
 };
-
-// Tests that margin settings are saved correctly when printing with custom
-// margins selected.
-TEST_F(PrintPreviewHandlerTest, StickyMarginsCustom) {
-  const double kMarginTop = 25.5;
-  const double kMarginRight = 26.5;
-  const double kMarginBottom = 27.5;
-  const double kMarginLeft = 28.5;
-  RequestPrintWithCustomMargins(
-      kMarginTop, kMarginRight, kMarginBottom, kMarginLeft);
-  EXPECT_EQ(1, browser()->tab_count());
-
-  // Checking that sticky settings were saved correctly.
-  CheckStickySettings(printing::COLOR, printing::CUSTOM_MARGINS, true,
-                      kMarginTop, kMarginRight, kMarginBottom, kMarginLeft);
-}
-
-// Tests that margin settings are saved correctly when printing with default
-// margins selected.
-TEST_F(PrintPreviewHandlerTest, StickyMarginsDefault) {
-  RequestPrintWithDefaultMargins();
-  EXPECT_EQ(1, browser()->tab_count());
-
-  // Checking that sticky settings were saved correctly.
-  CheckStickySettings(
-      printing::COLOR, printing::DEFAULT_MARGINS, false, 0, 0, 0, 0);
-}
-
-// Tests that margin settings are saved correctly when printing with custom
-// margins selected and then again with default margins selected.
-TEST_F(PrintPreviewHandlerTest, StickyMarginsCustomThenDefault) {
-  const double kMarginTop = 125.5;
-  const double kMarginRight = 126.5;
-  const double kMarginBottom = 127.5;
-  const double kMarginLeft = 128.5;
-  RequestPrintWithCustomMargins(
-      kMarginTop, kMarginRight, kMarginBottom, kMarginLeft);
-  EXPECT_EQ(1, browser()->tab_count());
-  DeletePrintPreviewTab();
-  CheckStickySettings(printing::COLOR, printing::CUSTOM_MARGINS, true,
-                      kMarginTop, kMarginRight, kMarginBottom, kMarginLeft);
-
-  OpenPrintPreviewTab();
-  RequestPrintWithDefaultMargins();
-
-  // Checking that sticky settings were saved correctly.
-  CheckStickySettings(printing::COLOR, printing::DEFAULT_MARGINS, true,
-                      kMarginTop, kMarginRight, kMarginBottom, kMarginLeft);
-}
-
-// Tests that margin settings are retrieved correctly after printing with custom
-// margins.
-TEST_F(PrintPreviewHandlerTest, GetLastUsedMarginSettingsCustom) {
-  const double kMarginTop = 125.5;
-  const double kMarginRight = 126.5;
-  const double kMarginBottom = 127.5;
-  const double kMarginLeft = 128.5;
-  RequestPrintWithCustomMargins(
-      kMarginTop, kMarginRight, kMarginBottom, kMarginLeft);
-  base::DictionaryValue initial_settings;
-  PrintPreviewHandler::GetStickySettings()->
-      GetLastUsedMarginSettings(&initial_settings);
-  int margins_type;
-  EXPECT_TRUE(initial_settings.GetInteger(printing::kSettingMarginsType,
-                                          &margins_type));
-  EXPECT_EQ(margins_type, printing::CUSTOM_MARGINS);
-  double margin_value;
-  EXPECT_TRUE(initial_settings.GetDouble(printing::kSettingMarginTop,
-                                         &margin_value));
-  EXPECT_EQ(kMarginTop, margin_value);
-  EXPECT_TRUE(initial_settings.GetDouble(printing::kSettingMarginRight,
-                                         &margin_value));
-  EXPECT_EQ(kMarginRight, margin_value);
-  EXPECT_TRUE(initial_settings.GetDouble(printing::kSettingMarginBottom,
-                                         &margin_value));
-  EXPECT_EQ(kMarginBottom, margin_value);
-  EXPECT_TRUE(initial_settings.GetDouble(printing::kSettingMarginLeft,
-                                         &margin_value));
-  EXPECT_EQ(kMarginLeft, margin_value);
-}
-
-// Tests that margin settings are retrieved correctly after printing with
-// default margins.
-TEST_F(PrintPreviewHandlerTest, GetLastUsedMarginSettingsDefault) {
-  RequestPrintWithDefaultMargins();
-  base::DictionaryValue initial_settings;
-  PrintPreviewHandler::GetStickySettings()->
-      GetLastUsedMarginSettings(&initial_settings);
-  int margins_type;
-  EXPECT_TRUE(initial_settings.GetInteger(printing::kSettingMarginsType,
-                                          &margins_type));
-  EXPECT_EQ(margins_type, printing::DEFAULT_MARGINS);
-  double margin_value;
-  EXPECT_FALSE(initial_settings.GetDouble(printing::kSettingMarginTop,
-                                          &margin_value));
-  EXPECT_FALSE(initial_settings.GetDouble(printing::kSettingMarginRight,
-                                          &margin_value));
-  EXPECT_FALSE(initial_settings.GetDouble(printing::kSettingMarginBottom,
-                                          &margin_value));
-  EXPECT_FALSE(initial_settings.GetDouble(printing::kSettingMarginLeft,
-                                          &margin_value));
-}

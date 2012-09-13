@@ -35,7 +35,7 @@ cr.define('print_preview', function() {
      * @param {!print_preview.Metrics.Bucket} bucket Bucket to increment.
      */
     increment: function(bucket) {
-      chrome.send('reportDestinationEvent', bucket);
+      chrome.send('reportDestinationEvent', [bucket]);
     }
   };
 

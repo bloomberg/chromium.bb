@@ -225,13 +225,6 @@ const Experiment kExperiments[] = {
 #endif
     SINGLE_VALUE_TYPE(switches::kEnableCloudPrintProxy)
   },
-  {
-    "print-setting-reset",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_PRINT_SETTING_RESET_NAME,
-    IDS_FLAGS_PRINT_SETTING_RESET_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kPrintSettingsReset)
-  },
 #if defined(OS_WIN)
   {
     "print-raster",

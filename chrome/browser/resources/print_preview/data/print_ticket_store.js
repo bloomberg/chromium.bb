@@ -17,10 +17,11 @@ cr.define('print_preview', function() {
    * against the document.
    * @param {!print_preview.DestinationStore} destinationStore Used to
    *     understand which printer is selected.
+   * @param {!print_preview.AppState} appState Print preview application state.
    * @constructor
    * @extends {cr.EventTarget}
    */
-  function PrintTicketStore(destinationStore) {
+  function PrintTicketStore(destinationStore, appState) {
     cr.EventTarget.call(this);
 
     /**
@@ -29,6 +30,13 @@ cr.define('print_preview', function() {
      * @private
      */
     this.destinationStore_ = destinationStore;
+
+    /**
+     * App state used to persist and load ticket values.
+     * @type {!print_preview.AppState}
+     * @private
+     */
+    this.appState_ = appState;
 
     // Create the document info with some initial settings. Actual
     // page-related information won't be set until preview generation occurs,
@@ -251,23 +259,14 @@ cr.define('print_preview', function() {
      * @param {boolean} isDocumentModifiable Whether the document to print is
      *     modifiable (i.e. can be re-flowed by Chromium).
      * @param {string} documentTitle Title of the document to print.
-     * @param {?boolean} isDuplexEnabled Previous duplex setting.
-     * @param {?boolean} isHeaderFooterEnabled Previous header-footer setting.
-     * @param {print_preview.ticket_items.MarginsType.Value} marginsType
-     *     Previous margins type.
-     * @param {print_preview.Margins} customMargins Previous custom margins.
      * @param {string} thousandsDelimeter Delimeter of the thousands place.
      * @param {string} decimalDelimeter Delimeter of the decimal point.
      * @param {!print_preview.MeasurementSystem.UnitType} unitType Type of unit
      *     of the local measurement system.
      */
-    initialize: function(
+    init: function(
         isDocumentModifiable,
         documentTitle,
-        isDuplexEnabled,
-        isHeaderFooterEnabled,
-        marginsType,
-        customMargins,
         thousandsDelimeter,
         decimalDelimeter,
         unitType) {
@@ -278,14 +277,13 @@ cr.define('print_preview', function() {
           thousandsDelimeter, decimalDelimeter, unitType);
 
       // Initialize ticket with user's previous values.
-      this.duplex_.updateValue(isDuplexEnabled);
-      this.headerFooter_.updateValue(isHeaderFooterEnabled);
-      if (marginsType != null) {
-        this.marginsType_.updateValue(marginsType);
-      }
-      if (customMargins != null) {
-        this.customMargins_.updateValue(customMargins);
-      }
+      this.marginsType_.updateValue(this.appState_.marginsType);
+      this.customMargins_.updateValue(this.appState_.customMargins);
+      this.color_.updateValue(this.appState_.isColorEnabled);
+      this.duplex_.updateValue(this.appState_.isDuplexEnabled);
+      this.headerFooter_.updateValue(this.appState_.isHeaderFooterEnabled);
+      this.landscape_.updateValue(this.appState_.isLandscapeEnabled);
+      this.collate_.updateValue(this.appState_.isCollateEnabled);
     },
 
     /** @return {boolean} Whether the ticket store has the copies capability. */
@@ -348,6 +346,7 @@ cr.define('print_preview', function() {
     updateCollate: function(isCollateEnabled) {
       if (this.collate_.getValue() != isCollateEnabled) {
         this.collate_.updateValue(isCollateEnabled);
+        this.appState_.persistIsCollateEnabled(isCollateEnabled);
         cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.TICKET_CHANGE);
       }
     },
@@ -372,6 +371,7 @@ cr.define('print_preview', function() {
     updateColor: function(isColorEnabled) {
       if (this.color_.getValue() != isColorEnabled) {
         this.color_.updateValue(isColorEnabled);
+        this.appState_.persistIsColorEnabled(isColorEnabled);
         cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.TICKET_CHANGE);
       }
     },
@@ -395,6 +395,7 @@ cr.define('print_preview', function() {
     updateHeaderFooter: function(isHeaderFooterEnabled) {
       if (this.headerFooter_.getValue() != isHeaderFooterEnabled) {
         this.headerFooter_.updateValue(isHeaderFooterEnabled);
+        this.appState_.persistIsHeaderFooterEnabled(isHeaderFooterEnabled);
         cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.TICKET_CHANGE);
       }
     },
@@ -426,6 +427,10 @@ cr.define('print_preview', function() {
         this.marginsType_.updateValue(
             print_preview.ticket_items.MarginsType.Value.DEFAULT);
         this.customMargins_.updateValue(null);
+        this.appState_.persistMarginsType(
+            print_preview.ticket_items.MarginsType.Value.DEFAULT);
+        this.appState_.persistCustomMargins(null);
+        this.appState_.persistIsLandscapeEnabled(isLandscapeEnabled);
         cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.TICKET_CHANGE);
       }
     },
@@ -449,6 +454,7 @@ cr.define('print_preview', function() {
     updateDuplex: function(isDuplexEnabled) {
       if (this.duplex_.getValue() != isDuplexEnabled) {
         this.duplex_.updateValue(isDuplexEnabled);
+        this.appState_.persistIsDuplexEnabled(isDuplexEnabled);
         cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.TICKET_CHANGE);
       }
     },
@@ -475,11 +481,13 @@ cr.define('print_preview', function() {
     updateMarginsType: function(marginsType) {
       if (this.marginsType_.getValue() != marginsType) {
         this.marginsType_.updateValue(marginsType);
+        this.appState_.persistMarginsType(marginsType);
         if (marginsType ==
             print_preview.ticket_items.MarginsType.Value.CUSTOM) {
           // If CUSTOM, set the value of the custom margins so that it won't be
           // overridden by the default value.
           this.customMargins_.updateValue(this.customMargins_.getValue());
+          this.appState_.persistCustomMargins(this.customMargins_.getValue());
         }
         cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.TICKET_CHANGE);
       }
@@ -517,6 +525,7 @@ cr.define('print_preview', function() {
       if (!this.isCustomMarginsValid() ||
           !margins.equals(this.getCustomMargins())) {
         this.customMargins_.updateValue(margins);
+        this.appState_.persistCustomMargins(margins);
         cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.TICKET_CHANGE);
       }
     },
@@ -530,6 +539,7 @@ cr.define('print_preview', function() {
     updateCustomMargin: function(orientation, value) {
       if (this.customMargins_.getValue().get(orientation) != value) {
         this.customMargins_.updateMargin(orientation, value);
+        this.appState_.persistCustomMargins(this.customMargins_.getValue());
         cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.TICKET_CHANGE);
       }
     },
@@ -635,12 +645,14 @@ cr.define('print_preview', function() {
         cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.INITIALIZE);
       } else {
         // Reset user selection for certain ticket items.
-        this.duplex_.updateValue(null);
         this.customMargins_.updateValue(null);
+        this.appState_.persistCustomMargins(null);
 
         if (this.marginsType_.getValue() ==
             print_preview.ticket_items.MarginsType.Value.CUSTOM) {
           this.marginsType_.updateValue(
+              print_preview.ticket_items.MarginsType.Value.DEFAULT);
+          this.appState_.persistMarginsType(
               print_preview.ticket_items.MarginsType.Value.DEFAULT);
         }
         cr.dispatchSimpleEvent(

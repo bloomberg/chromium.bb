@@ -102,7 +102,7 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     updateValue: function(value) {
-      var margins = /** @type {!InputMargins} */ (value);
+      var margins = /** @type {!print_preview.Margins} */ (value);
       if (margins != null) {
         margins = new print_preview.Margins(
             Math.round(margins.get(CustomMargins.Orientation.TOP)),

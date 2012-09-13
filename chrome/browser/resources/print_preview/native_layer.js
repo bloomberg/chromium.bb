@@ -198,25 +198,6 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Persists the selected destination and print ticket for the next print
-     * session.
-     * @param {!print_preview.Destination} destination Destination to save.
-     * @param {!print_preview.PrintTicketStore} printTicketStore Used for
-     *     generating the serialized print ticket to persist.
-     */
-    startSaveDestinationAndTicket: function(destination, printTicketStore) {
-      // TODO(rltoscano): Implement a comprehensive serialization process.
-      var printPreviewSerializedState = {
-        'version': print_preview.NativeLayer.SERIALIZED_STATE_VERSION_,
-        'isLocalDestination':
-            destination.type == print_preview.Destination.Type.LOCAL
-      };
-      chrome.send(
-          'saveLastPrinter',
-          [destination.id, JSON.stringify(printPreviewSerializedState)]);
-    },
-
-    /**
      * Requests that the document be printed.
      * @param {!print_preview.Destination} destination Destination to print to.
      * @param {!print_preview.PrintTicketStore} printTicketStore Used to get the
@@ -340,45 +321,12 @@ cr.define('print_preview', function() {
      * @param {!Object} initialSettings Object containing all initial settings.
      */
     onSetInitialSettings_: function(initialSettings) {
-      // TODO(rltoscano): Use initialSettings['cloudPrintData'] to prepopulate
-      // destination and initial print ticket.
       var numberFormatSymbols =
           print_preview.MeasurementSystem.parseNumberFormat(
               initialSettings['numberFormat']);
       var unitType = print_preview.MeasurementSystem.UnitType.IMPERIAL;
       if (initialSettings['measurementSystem'] != null) {
         unitType = initialSettings['measurementSystem'];
-      }
-      var measurementSystem = new print_preview.MeasurementSystem(
-          numberFormatSymbols[0],
-          numberFormatSymbols[1],
-          unitType);
-
-      var customMargins = null;
-      if (initialSettings.hasOwnProperty('marginTop') &&
-          initialSettings.hasOwnProperty('marginRight') &&
-          initialSettings.hasOwnProperty('marginBottom') &&
-          initialSettings.hasOwnProperty('marginLeft')) {
-        customMargins = new print_preview.Margins(
-            initialSettings['marginTop'] || 0,
-            initialSettings['marginRight'] || 0,
-            initialSettings['marginBottom'] || 0,
-            initialSettings['marginLeft'] || 0);
-      }
-
-      var marginsType = null;
-      if (initialSettings.hasOwnProperty('marginsType')) {
-        marginsType = initialSettings['marginsType'];
-      }
-
-      // TODO(rltoscano): Replace this loading of serialized state with a
-      // comprehensive version.
-      var serializedPrintPreviewState =
-          JSON.parse(initialSettings['cloudPrintData'] || '{}');
-      var isLocalDestination = true;
-      if (serializedPrintPreviewState &&
-          serializedPrintPreviewState.version == 1) {
-        isLocalDestination = serializedPrintPreviewState.isLocalDestination;
       }
 
       var nativeInitialSettings = new print_preview.NativeInitialSettings(
@@ -388,12 +336,8 @@ cr.define('print_preview', function() {
           unitType,
           initialSettings['previewModifiable'] || false,
           initialSettings['initiatorTabTitle'] || '',
-          marginsType,
-          customMargins,
-          initialSettings['duplex'] || false,
-          initialSettings['headerFooterEnabled'] || false,
           initialSettings['printerName'] || null,
-          isLocalDestination);
+          initialSettings['appState'] || null);
 
       var initialSettingsSetEvent = new cr.Event(
           NativeLayer.EventType.INITIAL_SETTINGS_SET);
@@ -619,16 +563,9 @@ cr.define('print_preview', function() {
    * @param {boolean} isDocumentModifiable Whether the document to print is
    *     modifiable.
    * @param {string} documentTitle Title of the document.
-   * @param {print_preview.ticket_items.MarginsType.Value} marginsType Initial
-   *     margins type.
-   * @param {print_preview.Margins} customMargins Initial custom margins.
-   * @param {boolean} isDuplexEnabled Whether duplexing is initially enabled.
-   * @param {boolean} isHeaderFooterEnabled Whether the header-footer is
-   *     initially enabled.
-   * @param {?string} initialDestinationId ID of the destination to initially
-   *     select.
-   * @param {boolean} isLocalDestination Whether the initial destination is
-   *     local.
+   * @param {?string} systemDefaultDestinationId ID of the system default
+   *     destination.
+   * @param {?string} serializedAppStateStr Serialized app state.
    * @constructor
    */
   function NativeInitialSettings(
@@ -638,12 +575,8 @@ cr.define('print_preview', function() {
       unitType,
       isDocumentModifiable,
       documentTitle,
-      marginsType,
-      customMargins,
-      isDuplexEnabled,
-      isHeaderFooterEnabled,
-      initialDestinationId,
-      isLocalDestination) {
+      systemDefaultDestinationId,
+      serializedAppStateStr) {
 
     /**
      * Whether the print preview should be in auto-print mode.
@@ -688,46 +621,18 @@ cr.define('print_preview', function() {
     this.documentTitle_ = documentTitle;
 
     /**
-     * Initial margins type.
-     * @type {print_preview.ticket_items.MarginsType.Value}
-     * @private
-     */
-    this.marginsType_ = marginsType;
-
-    /**
-     * Initial custom margins.
-     * @type {print_preview.Margins}
-     * @private
-     */
-    this.customMargins_ = customMargins;
-
-    /**
-     * Whether duplexing is initially enabled.
-     * @type {boolean}
-     * @private
-     */
-    this.isDuplexEnabled_ = isDuplexEnabled;
-
-    /**
-     * Whether the header-footer is initially enabled.
-     * @type {boolean}
-     * @private
-     */
-    this.isHeaderFooterEnabled_ = isHeaderFooterEnabled;
-
-    /**
-     * ID of the initially selected destination.
+     * ID of the system default destination.
      * @type {?string}
      * @private
      */
-    this.initialDestinationId_ = initialDestinationId;
+    this.systemDefaultDestinationId_ = systemDefaultDestinationId;
 
     /**
-     * Whether the initial destination is local.
-     * @type {boolean}
+     * Serialized app state.
+     * @type {?string}
      * @private
      */
-    this.isLocalDestination_ = isLocalDestination;
+    this.serializedAppStateStr_ = serializedAppStateStr;
   };
 
   NativeInitialSettings.prototype = {
@@ -766,37 +671,14 @@ cr.define('print_preview', function() {
       return this.documentTitle_;
     },
 
-    /**
-     * @return {print_preview.ticket_items.MarginsType.Value} Initial margins
-     *     type or {@code null} if not initially set.
-     */
-    get marginsType() {
-      return this.marginsType_;
+    /** @return {?string} ID of the system default destination. */
+    get systemDefaultDestinationId() {
+      return this.systemDefaultDestinationId_;
     },
 
-    /** @return {print_preview.Margins} Initial custom margins. */
-    get customMargins() {
-      return this.customMargins_;
-    },
-
-    /** @return {boolean} Whether duplexing is initially enabled. */
-    get isDuplexEnabled() {
-      return this.isDuplexEnabled_;
-    },
-
-    /** @return {boolean} Whether the header-footer is initially enabled. */
-    get isHeaderFooterEnabled() {
-      return this.isHeaderFooterEnabled_;
-    },
-
-    /** @return {?string} ID of the initially selected destination. */
-    get initialDestinationId() {
-      return this.initialDestinationId_;
-    },
-
-    /** @return {boolean} Whether the initial destination is local. */
-    get isLocalDestination() {
-      return this.isLocalDestination_;
+    /** @return {?string} Serialized app state. */
+    get serializedAppStateStr() {
+      return this.serializedAppStateStr_;
     }
   };
 

@@ -77,14 +77,6 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // TODO(abodenha@chromium.org) See http://crbug.com/136843
   // PrintSystemTaskProxy should not need to be a friend.
   friend class PrintSystemTaskProxy;
-  FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest, StickyMarginsCustom);
-  FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest, StickyMarginsDefault);
-  FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest,
-                           StickyMarginsCustomThenDefault);
-  FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest,
-                           GetLastUsedMarginSettingsCustom);
-  FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest,
-                           GetLastUsedMarginSettingsDefault);
 
   TabContents* preview_tab_contents() const;
   content::WebContents* preview_web_contents() const;
@@ -110,11 +102,9 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // Handles the request to cancel the pending print request. |args| is unused.
   void HandleCancelPendingPrintRequest(const base::ListValue* args);
 
-  // Handles a request to back up data about the last used cloud print
-  // printer.
-  // First element of |args| is the printer name.
-  // Second element of |args| is the current cloud print data JSON.
-  void HandleSaveLastPrinter(const base::ListValue* args);
+  // Handles a request to store data that the web ui wishes to persist.
+  // First element of |args| is the data to persist.
+  void HandleSaveAppState(const base::ListValue* args);
 
   // Gets the printer capabilities. First element of |args| is the printer name.
   void HandleGetPrinterCapabilities(const base::ListValue* args);

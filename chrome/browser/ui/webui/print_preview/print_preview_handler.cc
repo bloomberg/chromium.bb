@@ -128,7 +128,7 @@ void ReportPrintDestinationHistogram(enum PrintDestinationBuckets event) {
 }
 
 // Name of a dictionary field holding cloud print related data;
-const char kCloudPrintData[] = "cloudPrintData";
+const char kAppState[] = "appState";
 // Name of a dictionary field holding the initiator tab title.
 const char kInitiatorTabTitle[] = "initiatorTabTitle";
 // Name of a dictionary field holding the measurement system according to the
@@ -236,7 +236,6 @@ void PrintToPdfCallbackWithCheck(Metafile* metafile,
 
 static base::LazyInstance<printing::StickySettings> sticky_settings =
     LAZY_INSTANCE_INITIALIZER;
-
 }  // namespace
 
 // static
@@ -293,8 +292,8 @@ void PrintPreviewHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("cancelPendingPrintRequest",
       base::Bind(&PrintPreviewHandler::HandleCancelPendingPrintRequest,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("saveLastPrinter",
-      base::Bind(&PrintPreviewHandler::HandleSaveLastPrinter,
+  web_ui()->RegisterMessageCallback("saveAppState",
+      base::Bind(&PrintPreviewHandler::HandleSaveAppState,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("getInitialSettings",
       base::Bind(&PrintPreviewHandler::HandleGetInitialSettings,
@@ -417,11 +416,6 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   if (!settings.get())
     return;
 
-  // Storing last used settings.
-  printing::StickySettings* sticky_settings = GetStickySettings();
-  sticky_settings->Store(*settings);
-  sticky_settings->SaveInPrefs(Profile::FromBrowserContext(
-      preview_web_contents()->GetBrowserContext())->GetPrefs());
   // Never try to add headers/footers here. It's already in the generated PDF.
   settings->SetBoolean(printing::kSettingHeaderFooterEnabled, false);
 
@@ -531,13 +525,13 @@ void PrintPreviewHandler::HandleCancelPendingPrintRequest(
   chrome::ShowPrintErrorDialog(parent);
 }
 
-void PrintPreviewHandler::HandleSaveLastPrinter(const ListValue* args) {
+void PrintPreviewHandler::HandleSaveAppState(const ListValue* args) {
   std::string data_to_save;
+  printing::StickySettings* sticky_settings = GetStickySettings();
   if (args->GetString(0, &data_to_save) && !data_to_save.empty())
-    GetStickySettings()->StorePrinterName(data_to_save);
-
-  if (args->GetString(1, &data_to_save) && !data_to_save.empty())
-    GetStickySettings()->StoreCloudPrintData(data_to_save);
+    sticky_settings->StoreAppState(data_to_save);
+  sticky_settings->SaveInPrefs(Profile::FromBrowserContext(
+      preview_web_contents()->GetBrowserContext())->GetPrefs());
 }
 
 void PrintPreviewHandler::HandleGetPrinterCapabilities(const ListValue* args) {
@@ -680,23 +674,13 @@ void PrintPreviewHandler::GetNumberFormatAndMeasurementSystem(
 }
 
 void PrintPreviewHandler::HandleGetInitialSettings(const ListValue* /*args*/) {
-  printing::StickySettings* sticky_settings = GetStickySettings();
-  sticky_settings->RestoreFromPrefs(Profile::FromBrowserContext(
-      preview_web_contents()->GetBrowserContext())->GetPrefs());
-  if (sticky_settings->printer_name()) {
-    std::string cloud_print_data;
-    if (sticky_settings->printer_cloud_print_data())
-      cloud_print_data = *sticky_settings->printer_cloud_print_data();
-    SendInitialSettings(*sticky_settings->printer_name(), cloud_print_data);
-  } else {
-    scoped_refptr<PrintSystemTaskProxy> task =
-        new PrintSystemTaskProxy(AsWeakPtr(),
-                                 print_backend_.get(),
-                                 has_logged_printers_count_);
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&PrintSystemTaskProxy::GetDefaultPrinter, task.get()));
-  }
+  scoped_refptr<PrintSystemTaskProxy> task =
+      new PrintSystemTaskProxy(AsWeakPtr(),
+                                print_backend_.get(),
+                                has_logged_printers_count_);
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&PrintSystemTaskProxy::GetDefaultPrinter, task.get()));
   SendCloudPrintEnabled();
 }
 
@@ -725,12 +709,12 @@ void PrintPreviewHandler::SendInitialSettings(
                               print_preview_ui->source_is_modifiable());
   initial_settings.SetString(printing::kSettingPrinterName,
                              default_printer);
-  initial_settings.SetString(kCloudPrintData, cloud_print_data);
-  initial_settings.SetBoolean(printing::kSettingHeaderFooterEnabled,
-                              GetStickySettings()->headers_footers());
-  initial_settings.SetInteger(printing::kSettingDuplexMode,
-                              GetStickySettings()->duplex_mode());
-
+  printing::StickySettings* sticky_settings = GetStickySettings();
+  sticky_settings->RestoreFromPrefs(Profile::FromBrowserContext(
+      preview_web_contents()->GetBrowserContext())->GetPrefs());
+  if (sticky_settings->printer_app_state())
+    initial_settings.SetString(kAppState,
+                               *sticky_settings->printer_app_state());
 
 #if defined(OS_MACOSX)
   bool kiosk_mode = false;  // No kiosk mode on Mac yet.
@@ -742,7 +726,6 @@ void PrintPreviewHandler::SendInitialSettings(
   initial_settings.SetBoolean(kPrintAutomaticallyInKioskMode, kiosk_mode);
 
   if (print_preview_ui->source_is_modifiable()) {
-    GetStickySettings()->GetLastUsedMarginSettings(&initial_settings);
     GetNumberFormatAndMeasurementSystem(&initial_settings);
   }
   web_ui()->CallJavascriptFunction("setInitialSettings", initial_settings);
@@ -867,14 +850,17 @@ void PrintPreviewHandler::SelectFile(const FilePath& default_filename) {
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("pdf"));
 
   // Initializing save_path_ if it is not already initialized.
-  if (!GetStickySettings()->save_path()) {
+  printing::StickySettings* sticky_settings = GetStickySettings();
+  if (!sticky_settings->save_path()) {
     // Allowing IO operation temporarily. It is ok to do so here because
     // the select file dialog performs IO anyway in order to display the
     // folders and also it is modal.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
     FilePath file_path;
     PathService::Get(chrome::DIR_USER_DOCUMENTS, &file_path);
-    GetStickySettings()->StoreSavePath(file_path);
+    sticky_settings->StoreSavePath(file_path);
+    sticky_settings->SaveInPrefs(Profile::FromBrowserContext(
+        preview_web_contents()->GetBrowserContext())->GetPrefs());
   }
 
   select_file_dialog_ = ui::SelectFileDialog::Create(

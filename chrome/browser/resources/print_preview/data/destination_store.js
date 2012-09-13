@@ -10,10 +10,11 @@ cr.define('print_preview', function() {
    * store changes.
    * @param {!print_preview.NativeLayer} nativeLayer Used to fetch local print
    *     destinations.
+   * @param {!print_preview.AppState} appState Application state.
    * @constructor
    * @extends {cr.EventTarget}
    */
-  function DestinationStore(nativeLayer) {
+  function DestinationStore(nativeLayer, appState) {
     cr.EventTarget.call(this);
 
     /**
@@ -24,6 +25,13 @@ cr.define('print_preview', function() {
     this.nativeLayer_ = nativeLayer;
 
     /**
+     * Used to load and persist the selected destination.
+     * @type {!print_preview.AppState}
+     * @private
+     */
+    this.appState_ = appState;
+
+    /**
      * Internal backing store for the data store.
      * @type {!Array.<!print_preview.Destination>}
      * @private
@@ -31,7 +39,7 @@ cr.define('print_preview', function() {
     this.destinations_ = [];
 
     /**
-     * Cache used for constant lookup of destinations.
+     * Cache used for constant lookup of destinations by ID.
      * @type {object.<string, !print_preview.Destination>}
      * @private
      */
@@ -212,20 +220,24 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Sets the initially selected destination. If any inserted destinations
-     * match this ID, that destination will be automatically selected. This
-     * occurs only once for every time this setter is called or if the store is
-     * cleared.
-     * @param {?string} initialDestinationId ID of the destination that should
-     *     be selected automatically when added to the store or {@code null} if
-     *     the first destination that is inserted should be selected.
-     * @param {boolean} isLocalDestination Whether the initial destination is
-     *     local.
+     * Initializes the destination store. Sets the initially selected
+     * destination. If any inserted destinations match this ID, that destination
+     * will be automatically selected. This method must be called after the
+     * print_preview.AppState has been initialized.
+     * @param {?string} systemDefaultDestinationId ID of the system default
+     *     destination.
+     * @private
      */
-    setInitialDestinationId: function(
-        initialDestinationId, isLocalDestination) {
-      this.initialDestinationId_ = initialDestinationId;
-      this.isInitialDestinationLocal_ = isLocalDestination;
+    init: function(systemDefaultDestinationId) {
+      if (this.appState_.selectedDestinationId) {
+        this.initialDestinationId_ = this.appState_.selectedDestinationId;
+        this.isInitialDestinationLocal_ =
+            this.appState_.isSelectedDestinationLocal;
+      } else {
+        this.initialDestinationId_ = systemDefaultDestinationId;
+        this.isInitialDestinationLocal_ = true;
+      }
+
       this.isInAutoSelectMode_ = true;
       if (this.initialDestinationId_ == null) {
         assert(this.destinations_.length > 0,
@@ -235,9 +247,9 @@ cr.define('print_preview', function() {
         var candidate = this.destinationMap_[this.initialDestinationId_];
         if (candidate != null) {
           this.selectDestination(candidate);
-        } else if (!cr.isChromeOS && isLocalDestination) {
+        } else if (!cr.isChromeOS && this.isInitialDestinationLocal_) {
           this.nativeLayer_.startGetLocalDestinationCapabilities(
-              initialDestinationId);
+              this.initialDestinationId_);
         }
       }
     },
@@ -289,6 +301,7 @@ cr.define('print_preview', function() {
         this.cloudPrintInterface_.updatePrinterTosAcceptance(destination.id,
                                                              true);
       }
+      this.appState_.persistSelectedDestination(this.selectedDestination_);
       cr.dispatchSimpleEvent(
           this, DestinationStore.EventType.DESTINATION_SELECT);
       if (destination.capabilities == null) {
@@ -496,13 +509,12 @@ cr.define('print_preview', function() {
       var capabilities = print_preview.LocalCapabilitiesParser.parse(
             event.settingsInfo);
       if (destination) {
-        destination.capabilities = capabilities;
-        if (this.selectedDestination_ &&
-            this.selectedDestination_.id == destinationId) {
-          cr.dispatchSimpleEvent(this,
-                                 DestinationStore.EventType.
-                                     SELECTED_DESTINATION_CAPABILITIES_READY);
+        // In case there were multiple capabilities request for this local
+        // destination, just ignore the later ones.
+        if (destination.capabilities != null) {
+          return;
         }
+        destination.capabilities = capabilities;
       } else {
         // TODO(rltoscano): This makes the assumption that the "deviceName" is
         // the same as "printerName". We should include the "printerName" in the
@@ -511,6 +523,12 @@ cr.define('print_preview', function() {
             {deviceName: destinationId, printerName: destinationId});
         destination.capabilities = capabilities;
         this.insertDestination(destination);
+      }
+      if (this.selectedDestination_ &&
+          this.selectedDestination_.id == destinationId) {
+        cr.dispatchSimpleEvent(this,
+                               DestinationStore.EventType.
+                                   SELECTED_DESTINATION_CAPABILITIES_READY);
       }
     },
 
