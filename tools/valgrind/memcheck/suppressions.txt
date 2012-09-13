@@ -2785,23 +2785,6 @@
    obj:*
 }
 {
-   bug_74383a
-   Memcheck:Uninitialized
-   fun:gtk_widget_set_size_request
-   fun:_ZN15StatusBubbleGtk22UpdateLabelSizeRequestEv
-   fun:_ZN15StatusBubbleGtk19AnimationProgressedEPKN2ui9AnimationE
-   fun:_ZN2ui15LinearAnimation4StepEN4base9TimeTicksE
-   fun:_ZN2ui18AnimationContainer3RunEv
-}
-{
-   bug_74383b
-   Memcheck:Uninitialized
-   fun:gtk_widget_set_usize_internal
-   fun:_ZN15StatusBubbleGtk22UpdateLabelSizeRequestEv
-   ...
-   fun:_ZN2ui18AnimationContainer3RunEv
-}
-{
    bug_75019
    Memcheck:Leak
    fun:_Znw*
