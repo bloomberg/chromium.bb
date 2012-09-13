@@ -23,10 +23,10 @@ For example:</p>
 
 <p>
 Proxy settings are defined in a
-<a href="#type-proxy.ProxyConfig"><code>ProxyConfig</code></a> object. Depending on
+<a href="#type-ProxyConfig"><code>ProxyConfig</code></a> object. Depending on
 Chrome's proxy settings, the settings may contain
-<a href="#type-proxy.ProxyRules"><code>ProxyRules</code></a> or a <a
-  href="#type-proxy.PacScript"><code>PacScript</code></a>.
+<a href="#type-ProxyRules"><code>ProxyRules</code></a> or a <a
+  href="#type-PacScript"><code>PacScript</code></a>.
 </p>
 
 <h3 id="proxy_modes">Proxy modes</h3>
@@ -51,15 +51,15 @@ values:
   <dt><code>pac_script</code></dt>
   <dd>In <code>pac_script</code> mode the proxy configuration is determined by
   a PAC script that is either retrieved from the URL specified in the
-  <a href="#type-proxy.PacScript"><code>PacScript</code></a> object or
+  <a href="#type-PacScript"><code>PacScript</code></a> object or
   taken literally from the <code>data</code> element specified in the
-  <a href="#type-proxy.PacScript"><code>PacScript</code></a> object.
+  <a href="#type-PacScript"><code>PacScript</code></a> object.
   Besides this, this mode allows no further parameters in the
   <code>ProxyConfig</code> object.</dd>
 
   <dt><code>fixed_servers</code></dt>
   <dd>In <code>fixed_servers</code> mode the proxy configuration is codified in
-  a <a href="#type-proxy.ProxyRules><code>ProxyRules"><code>ProxyRules</code></a>
+  a <a href="#type-ProxyRules><code>ProxyRules"><code>ProxyRules</code></a>
   object. Its structure is described in <a href="#proxy_rules">Proxy rules</a>.
   Besides this, the <code>fixed_servers</code> mode allows no further parameters
   in the <code>ProxyConfig</code> object.</dd>
@@ -77,7 +77,7 @@ values:
 <h3 id="proxy_rules">Proxy rules</h3>
 
 <p>
-The <a href="#type-proxy.ProxyRules"><code>ProxyRules</code></a> object can contain
+The <a href="#type-ProxyRules"><code>ProxyRules</code></a> object can contain
 either a <code>singleProxy</code> attribute or a subset of
 <code>proxyForHttp</code>, <code>proxyForHttps</code>, <code>proxyForFtp</code>,
 and <code>fallbackProxy</code>.
@@ -98,7 +98,7 @@ proxy server.
 
 <p>
 A proxy server is configured in a
-<a href="#type-proxy.ProxyServer"><code>ProxyServer</code></a> object. The connection
+<a href="#type-ProxyServer"><code>ProxyServer</code></a> object. The connection
 to the proxy server (defined by the <code>host</code> attribute) uses the
 protocol defined in the <code>scheme</code> attribute. If no <code>scheme</code>
 is specified, the proxy connection defaults to <code>http</code>.
@@ -106,7 +106,7 @@ is specified, the proxy connection defaults to <code>http</code>.
 
 <p>
 If no <code>port</code> is defined in a
-<a href="#type-proxy.ProxyServer"><code>ProxyServer</code></a> object, the port is
+<a href="#type-ProxyServer"><code>ProxyServer</code></a> object, the port is
 derived from the scheme. The default ports are:
 <table>
   <tr><th>Scheme</th><th>Port</th></tr>

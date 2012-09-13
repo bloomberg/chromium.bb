@@ -184,14 +184,14 @@ depends on the specific event type as well as the content of
 <code>'blocking'</code> (only allowed for specific events), the callback
 function is handled synchronously. That means that the request is blocked until
 the callback function returns. In this case, the callback can return a <a
-  href="#type-webRequest.BlockingResponse">BlockingResponse</a> that determines the further
+  href="#type-BlockingResponse">BlockingResponse</a> that determines the further
 life cycle of the request. Depending on the context, this response allows
 cancelling or redirecting a request (<code>onBeforeRequest</code>), cancelling a
 request or modifying headers (<code>onBeforeSendHeaders</code>,
 <code>onHeadersReceived</code>), or providing authentication credentials
 (<code>onAuthRequired</code>).</p>
 
-<p>The <a href="#type-webRequest.RequestFilter">RequestFilter</a>
+<p>The <a href="#type-RequestFilter">RequestFilter</a>
 <code>filter</code> allows limiting the requests for which events are
 triggered in various dimensions:
 <dl>
@@ -202,7 +202,7 @@ triggered in various dimensions:
   <dd>Request types such as <code>main_frame</code> (a document that is loaded
   for a top-level frame), <code>sub_frame</code> (a document that is loaded for
   an embedded frame), and <code>image</code> (an image on a web site).
-  See <a href="#type-webRequest.RequestFilter">RequestFilter</a>.</dd>
+  See <a href="#type-RequestFilter">RequestFilter</a>.</dd>
   <dt>Tab ID</dt>
   <dd>The identifier for one tab.</dd>
   <dt>Window ID</dt>
