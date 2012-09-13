@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
@@ -16,6 +17,36 @@
 #include "net/base/net_errors.h"
 
 namespace content {
+
+// Detects an arbitrary change on a download item.
+// TODO: Rewrite other observers to use this (or be replaced by it).
+class DownloadUpdatedObserver : public DownloadItem::Observer {
+ public:
+  typedef base::Callback<bool(DownloadItem*)> EventFilter;
+
+  // The filter passed may be called multiple times, even after it
+  // returns true.
+  DownloadUpdatedObserver(DownloadItem* item, EventFilter filter);
+  virtual ~DownloadUpdatedObserver();
+
+  // Returns when either the event has been seen (at least once since
+  // object construction) or the item is destroyed.  Return value indicates
+  // if the wait ended because the item was seen (true) or the object
+  // destroyed (false).
+  bool WaitForEvent();
+
+ private:
+  // DownloadItem::Observer
+  virtual void OnDownloadUpdated(DownloadItem* item) OVERRIDE;
+  virtual void OnDownloadDestroyed(DownloadItem* item) OVERRIDE;
+
+  DownloadItem* item_;
+  EventFilter filter_;
+  bool waiting_;
+  bool event_seen_;
+
+  DISALLOW_COPY_AND_ASSIGN(DownloadUpdatedObserver);
+};
 
 // Detects changes to the downloads after construction.
 // Finishes when one of the following happens:

@@ -197,6 +197,10 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
   DISALLOW_COPY_AND_ASSIGN(TestRenderViewContextMenu);
 };
 
+bool WasAutoOpened(DownloadItem* item) {
+  return item->GetAutoOpened();
+}
+
 }  // namespace
 
 // While an object of this class exists, it will mock out download
@@ -1562,7 +1566,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxDenyInstall) {
   EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::CANCELLED));
   EXPECT_EQ(1u, observer->NumDangerousDownloadsSeen());
 
-  // Download shelf should close. Download panel stays open on ChromeOS.
+  // Download shelf should close.
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 
   // Check that the CRX is not installed.
@@ -1595,7 +1599,12 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallDenysPermissions) {
   CheckDownloadStates(1, DownloadItem::COMPLETE);
   EXPECT_EQ(1u, observer->NumDangerousDownloadsSeen());
 
-  // Download shelf should close. Download panel stays open on ChromeOS.
+  // Download shelf should close from auto-open.
+  content::DownloadManager::DownloadVector downloads;
+  DownloadManagerForBrowser(browser())->GetAllDownloads(&downloads);
+  ASSERT_EQ(1u, downloads.size());
+  content::DownloadUpdatedObserver(
+      downloads[0], base::Bind(&WasAutoOpened)).WaitForEvent();
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 
   // Check that the extension was not installed.
@@ -1627,7 +1636,12 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallAcceptPermissions) {
   CheckDownloadStates(1, DownloadItem::COMPLETE);
   EXPECT_EQ(1u, observer->NumDangerousDownloadsSeen());
 
-  // Download shelf should close. Download panel stays open on ChromeOS.
+  // Download shelf should close from auto-open.
+  content::DownloadManager::DownloadVector downloads;
+  DownloadManagerForBrowser(browser())->GetAllDownloads(&downloads);
+  ASSERT_EQ(1u, downloads.size());
+  content::DownloadUpdatedObserver(
+      downloads[0], base::Bind(WasAutoOpened)).WaitForEvent();
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 
   // Check that the extension was installed.
@@ -1684,7 +1698,12 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxLargeTheme) {
   CheckDownloadStates(1, DownloadItem::COMPLETE);
   EXPECT_EQ(1u, observer->NumDangerousDownloadsSeen());
 
-  // Download shelf should close. Download panel stays open on ChromeOS.
+  // Download shelf should close from auto-open.
+  content::DownloadManager::DownloadVector downloads;
+  DownloadManagerForBrowser(browser())->GetAllDownloads(&downloads);
+  ASSERT_EQ(1u, downloads.size());
+  content::DownloadUpdatedObserver(
+      downloads[0], base::Bind(WasAutoOpened)).WaitForEvent();
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 
   // Check that the extension was installed.

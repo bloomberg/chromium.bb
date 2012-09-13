@@ -704,7 +704,7 @@ void ChromeDownloadManagerDelegate::Observe(
   int download_id = crx_installers_[installer];
   crx_installers_.erase(installer.get());
 
-  DownloadItem* item = download_manager_->GetActiveDownloadItem(download_id);
+  DownloadItem* item = download_manager_->GetDownload(download_id);
   if (item)
     item->DelayedDownloadOpened(installer->did_handle_successfully());
 }

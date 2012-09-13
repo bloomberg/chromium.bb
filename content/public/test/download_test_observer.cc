@@ -44,6 +44,48 @@ void DenyDangerousDownload(scoped_refptr<DownloadManager> download_manager,
 
 }  // namespace
 
+DownloadUpdatedObserver::DownloadUpdatedObserver(
+    DownloadItem* item, DownloadUpdatedObserver::EventFilter filter)
+    : item_(item),
+      filter_(filter),
+      waiting_(false),
+      event_seen_(false) {
+  item->AddObserver(this);
+}
+
+DownloadUpdatedObserver::~DownloadUpdatedObserver() {
+  if (item_)
+    item_->RemoveObserver(this);
+}
+
+bool DownloadUpdatedObserver::WaitForEvent() {
+  if (item_ && filter_.Run(item_))
+    event_seen_ = true;
+  if (event_seen_)
+    return true;
+
+  waiting_ = true;
+  RunMessageLoop();
+  waiting_ = false;
+  return event_seen_;
+}
+
+void DownloadUpdatedObserver::OnDownloadUpdated(DownloadItem* item) {
+  DCHECK_EQ(item_, item);
+  if (filter_.Run(item_))
+    event_seen_ = true;
+  if (waiting_ && event_seen_)
+    MessageLoopForUI::current()->Quit();
+}
+
+void DownloadUpdatedObserver::OnDownloadDestroyed(DownloadItem* item) {
+  DCHECK_EQ(item_, item);
+  item_->RemoveObserver(this);
+  item_ = NULL;
+  if (waiting_)
+    MessageLoopForUI::current()->Quit();
+}
+
 DownloadTestObserver::DownloadTestObserver(
     DownloadManager* download_manager,
     size_t wait_count,
