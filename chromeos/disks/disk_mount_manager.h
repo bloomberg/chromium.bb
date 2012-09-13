@@ -53,6 +53,10 @@ class CHROMEOS_EXPORT DiskMountManager {
          const std::string& file_path,
          const std::string& device_label,
          const std::string& drive_label,
+         const std::string& vendor_id,
+         const std::string& vendor_name,
+         const std::string& product_id,
+         const std::string& product_name,
          const std::string& fs_uuid,
          const std::string& system_path_prefix,
          DeviceType device_type,
@@ -86,6 +90,18 @@ class CHROMEOS_EXPORT DiskMountManager {
     // If disk is a parent, then its label, else parents label.
     // (e.g. "TransMemory")
     const std::string& drive_label() const { return drive_label_; }
+
+    // Vendor ID of the device (e.g. "18d1").
+    const std::string& vendor_id() const { return vendor_id_; }
+
+    // Vendor name of the device (e.g. "Google Inc.").
+    const std::string& vendor_name() const { return vendor_name_; }
+
+    // Product ID of the device (e.g. "4e11").
+    const std::string& product_id() const { return product_id_; }
+
+    // Product name of the device (e.g. "Nexus One").
+    const std::string& product_name() const { return product_name_; }
 
     // Returns the file system uuid string.
     const std::string& fs_uuid() const { return fs_uuid_; }
@@ -130,6 +146,10 @@ class CHROMEOS_EXPORT DiskMountManager {
     std::string file_path_;
     std::string device_label_;
     std::string drive_label_;
+    std::string vendor_id_;
+    std::string vendor_name_;
+    std::string product_id_;
+    std::string product_name_;
     std::string fs_uuid_;
     std::string system_path_prefix_;
     DeviceType device_type_;

@@ -27,6 +27,10 @@ const char* kTestMountPath = "/media/foofoo";
 const char* kTestFilePath = "/this/file/path";
 const char* kTestDeviceLabel = "A label";
 const char* kTestDriveLabel = "Another label";
+const char* kTestVendorId = "0123";
+const char* kTestVendorName = "A vendor";
+const char* kTestProductId = "abcd";
+const char* kTestProductName = "A product";
 const char* kTestUuid = "FFFF-FFFF";
 
 }  // namespace
@@ -69,6 +73,10 @@ void MockDiskMountManager::NotifyDeviceInsertEvents() {
       std::string(kTestFilePath),
       std::string(),
       std::string(kTestDriveLabel),
+      std::string(kTestVendorId),
+      std::string(kTestVendorName),
+      std::string(kTestProductId),
+      std::string(kTestProductName),
       std::string(kTestUuid),
       std::string(kTestSystemPathPrefix),
       DEVICE_TYPE_USB,
@@ -100,6 +108,10 @@ void MockDiskMountManager::NotifyDeviceInsertEvents() {
       std::string(kTestFilePath),
       std::string(kTestDeviceLabel),
       std::string(kTestDriveLabel),
+      std::string(kTestVendorId),
+      std::string(kTestVendorName),
+      std::string(kTestProductId),
+      std::string(kTestProductName),
       std::string(kTestUuid),
       std::string(kTestSystemPathPrefix),
       DEVICE_TYPE_MOBILE,
@@ -124,6 +136,10 @@ void MockDiskMountManager::NotifyDeviceRemoveEvents() {
       std::string(kTestFilePath),
       std::string(kTestDeviceLabel),
       std::string(kTestDriveLabel),
+      std::string(kTestVendorId),
+      std::string(kTestVendorName),
+      std::string(kTestProductId),
+      std::string(kTestProductName),
       std::string(kTestUuid),
       std::string(kTestSystemPathPrefix),
       DEVICE_TYPE_SD,
@@ -173,6 +189,10 @@ void MockDiskMountManager::CreateDiskEntryForMountDevice(
                                           std::string(),  // file_path
                                           std::string(),  // device_label
                                           std::string(),  // drive_label
+                                          std::string(),  // vendor_id
+                                          std::string(),  // vendor_name
+                                          std::string(),  // product_id
+                                          std::string(),  // product_name
                                           device_id,  // fs_uuid
                                           std::string(),  // system_path_prefix
                                           DEVICE_TYPE_USB,  // device_type

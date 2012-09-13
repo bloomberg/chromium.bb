@@ -95,6 +95,18 @@ class DiskInfo {
   // Disk label.
   const std::string& label() const { return label_; }
 
+  // Vendor ID of the device (e.g. "18d1").
+  const std::string& vendor_id() const { return vendor_id_; }
+
+  // Vendor name of the device (e.g. "Google Inc.").
+  const std::string& vendor_name() const { return vendor_name_; }
+
+  // Product ID of the device (e.g. "4e11").
+  const std::string& product_id() const { return product_id_; }
+
+  // Product name of the device (e.g. "Nexus One").
+  const std::string& product_name() const { return product_name_; }
+
   // Disk model. (e.g. "TransMemory")
   const std::string& drive_label() const { return drive_model_; }
 
@@ -125,6 +137,10 @@ class DiskInfo {
 
   std::string file_path_;
   std::string label_;
+  std::string vendor_id_;
+  std::string vendor_name_;
+  std::string product_id_;
+  std::string product_name_;
   std::string drive_model_;
   DeviceType device_type_;
   uint64 total_size_in_bytes_;

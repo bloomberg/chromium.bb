@@ -502,6 +502,22 @@ DiskInfo::~DiskInfo() {
 //     variant       bool false
 //   }
 //   dict entry {
+//     string "VendorId"
+//     variant       string "18d1"
+//   }
+//   dict entry {
+//     string "VendorName"
+//     variant       string "Google Inc."
+//   }
+//   dict entry {
+//     string "ProductId"
+//     variant       string "4e11"
+//   }
+//   dict entry {
+//     string "ProductName"
+//     variant       string "Nexus One"
+//   }
+//   dict entry {
 //     string "DriveModel"
 //     variant       string "TransMemory"
 //   }
@@ -549,6 +565,10 @@ void DiskInfo::InitializeFromResponse(dbus::Response* response) {
                &on_boot_device_);
   MaybePopString(properties[cros_disks::kNativePath], &system_path_);
   MaybePopString(properties[cros_disks::kDeviceFile], &file_path_);
+  MaybePopString(properties[cros_disks::kVendorId], &vendor_id_);
+  MaybePopString(properties[cros_disks::kVendorName], &vendor_name_);
+  MaybePopString(properties[cros_disks::kProductId], &product_id_);
+  MaybePopString(properties[cros_disks::kProductName], &product_name_);
   MaybePopString(properties[cros_disks::kDriveModel], &drive_model_);
   MaybePopString(properties[cros_disks::kIdLabel], &label_);
   MaybePopString(properties[cros_disks::kIdUuid], &uuid_);
