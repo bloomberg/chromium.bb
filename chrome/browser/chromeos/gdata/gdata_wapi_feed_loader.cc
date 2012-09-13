@@ -186,7 +186,7 @@ LoadRootFeedParams::~LoadRootFeedParams() {
 // This is a trick to update the number of fetched documents frequently on
 // UI. Due to performance reason, we need to fetch a number of files at
 // a time. However, it'll take long time, and a user has no way to know
-// the current update state. In order to make users confortable,
+// the current update state. In order to make users comfortable,
 // we increment the number of fetched documents with more frequent but smaller
 // steps than actual fetching.
 struct GetDocumentsUiState {
@@ -258,8 +258,8 @@ void GDataWapiFeedLoader::ReloadFromServerIfNeeded(
                    local_changestamp,
                    callback));
     // Drive v2 needs a separate application list fetch operation.
-    // TODO(kochi): Application list rarely changes and do not necessarily
-    // refresed as often as files.
+    // TODO(kochi): Application list rarely changes and is not necessarily
+    // refreshed as often as files.
     drive_service_->GetApplicationInfo(
         base::Bind(&GDataWapiFeedLoader::OnGetApplicationList,
                    weak_ptr_factory_.GetWeakPtr()));

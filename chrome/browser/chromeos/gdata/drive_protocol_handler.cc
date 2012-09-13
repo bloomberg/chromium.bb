@@ -194,7 +194,7 @@ class DriveURLRequestJob : public net::URLRequestJob {
   int BytesReadCompleted();
   void RecordBytesRead(int bytes_read);
 
-  // Helper methods to fomulate and notify about response status, info and
+  // Helper methods to formulate and notify about response status, info and
   // headers.
   void NotifySuccess();
   void NotifyFailure(int);
@@ -267,7 +267,7 @@ void DriveURLRequestJob::Start() {
   // 7) If file is downloaded from Drive:
   //    7.1) Whenever net::URLFetcherCore::OnReadCompleted() receives a part
   //         of the response, it invokes
-  //         constent::URLFetcherDelegate::OnURLFetchDownloadData() if
+  //         net::URLFetcherDelegate::OnURLFetchDownloadData() if
   //         net::URLFetcherDelegate::ShouldSendDownloadData() is true.
   //    7.2) gdata::DownloadFileOperation overrides the default implementations
   //         of the following methods of net::URLFetcherDelegate:
@@ -278,7 +278,7 @@ void DriveURLRequestJob::Start() {
   //    7.3) DriveProtolHandler::OnURLFetchDownloadData (i.e. this class)
   //         is at the end of the invocation chain and actually implements the
   //         method.
-  //    7.4) Copies the formal download data into a growable-drainable dowload
+  //    7.4) Copies the formal download data into a growable-drainable download
   //         IOBuffer
   //         - IOBuffer has initial size 4096, same as buffer used in
   //           net::URLFetcherCore::OnReadCompleted.
@@ -415,8 +415,8 @@ bool DriveURLRequestJob::ReadRawData(net::IOBuffer* dest,
   // 3) Otherwise, the next ReadRawData() call will provide the response buffer,
   //    when we would repeat from step 2.
   // Note that we only notify read complete when the response buffer is all
-  // filled up or it's the last chunk of data.  During investgiation, I
-  // discovered that if i notify read complete without filling up the response
+  // filled up or it's the last chunk of data.  During investigation, I
+  // discovered that if I notify read complete without filling up the response
   // buffer, ReadRawData gets called less and less, resulting in the download
   // buffer growing bigger and bigger, which is definitely undesirable for us.
 

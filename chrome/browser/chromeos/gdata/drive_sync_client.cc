@@ -30,7 +30,7 @@ namespace {
 //    offline" checkbox on a file, and immediately cancel it in a second.
 //    It's a waste to fetch the file in this case.
 //
-// 2) For uploading, file writing via HTML5 file system API is perfomred in
+// 2) For uploading, file writing via HTML5 file system API is performed in
 //    two steps: 1) truncate a file to 0 bytes, 2) write contents. We
 //    shouldn't start uploading right after the step 1). Besides, the user
 //    may edit the same file repeatedly in a short period of time.
@@ -56,7 +56,7 @@ struct CompareTypeAndResourceId {
   const std::string resource_id;
 };
 
-// Returns true if the curernt network connection is over cellular.
+// Returns true if the current network connection is over cellular.
 bool IsConnectionTypeCellular() {
   bool is_cellular = false;
   // Use switch, not if, to allow compiler to catch future enum changes.

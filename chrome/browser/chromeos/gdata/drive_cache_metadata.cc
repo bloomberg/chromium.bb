@@ -272,7 +272,7 @@ bool CheckIfMd5Matches(
     // If the entry is pinned, it's ok for the entry to have an empty
     // MD5. This can happen if the pinned file is not fetched. MD5 for pinned
     // files are collected from files in "persistent" directory, but the
-    // persistent files do not exisit if these are not fetched yet.
+    // persistent files do not exist if these are not fetched yet.
     return true;
   } else if (md5.empty()) {
     // If the MD5 matching is not requested, don't check MD5.

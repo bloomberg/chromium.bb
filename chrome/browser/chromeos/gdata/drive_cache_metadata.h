@@ -35,7 +35,7 @@ class DriveCacheMetadata {
       base::SequencedTaskRunner* blocking_task_runner);
 
   // Creates DriveCacheMetadata instance. This uses FakeDriveCacheMetadata,
-  // which is an in-memory implmentation and faster than DriveCacheMetadataDB.
+  // which is an in-memory implementation and faster than DriveCacheMetadataDB.
   static scoped_ptr<DriveCacheMetadata> CreateDriveCacheMetadataForTesting(
       base::SequencedTaskRunner* blocking_task_runner);
 

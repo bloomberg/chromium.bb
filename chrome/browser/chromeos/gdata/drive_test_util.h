@@ -25,7 +25,7 @@ typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
 
 namespace test_util {
 
-// Runs a task posted to the blocking pool, including subquent tasks posted
+// Runs a task posted to the blocking pool, including subsequent tasks posted
 // to the UI message loop and the blocking pool.
 //
 // A task is often posted to the blocking pool with PostTaskAndReply(). In

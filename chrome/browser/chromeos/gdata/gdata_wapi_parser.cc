@@ -604,7 +604,7 @@ bool DocumentEntry::HasFieldPresent(const base::Value* value,
 // static
 void DocumentEntry::RegisterJSONConverter(
     base::JSONValueConverter<DocumentEntry>* converter) {
-  // inheritant the parent registrations.
+  // Inherit the parent registrations.
   FeedEntry::RegisterJSONConverter(
       reinterpret_cast<base::JSONValueConverter<FeedEntry>*>(converter));
   converter->RegisterStringField(

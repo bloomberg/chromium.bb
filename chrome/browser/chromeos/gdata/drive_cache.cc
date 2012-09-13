@@ -874,7 +874,7 @@ void DriveCache::Store(const std::string& resource_id,
       symlink_path,
       !symlink_path.empty());  // create symlink
 
-  // Determine search pattern for stale filenames corrresponding to resource_id,
+  // Determine search pattern for stale filenames corresponding to resource_id,
   // either "<resource_id>*" or "<resource_id>.*".
   FilePath stale_filenames_pattern;
   if (md5.empty()) {

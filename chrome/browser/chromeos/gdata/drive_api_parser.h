@@ -148,7 +148,7 @@ class AppResource {
   // If empty, application name is used instead.
   const std::string& object_type() const { return object_type_; }
 
-  // Returns whether this application suuports creating new objects.
+  // Returns whether this application supports creating new objects.
   bool supports_create() const { return supports_create_; }
 
   // Returns whether this application supports importing Google Docs.
@@ -161,7 +161,7 @@ class AppResource {
   // user's Drive.
   bool is_authorized() const { return authorized_; }
 
-  // Returns the product URL, e.g. at Chrmoe Web Store.
+  // Returns the product URL, e.g. at Chrome Web Store.
   const GURL& product_url() const { return product_url_; }
 
   // List of primary mime types supported by this WebApp. Primary status should

@@ -53,7 +53,7 @@ class DriveCacheMetadataTest : public testing::Test {
     // pinned directory. This file should be removed.
     CreateFile(persistent_directory_.AppendASCII("id_bad.md5bad"));
     // "id_symlink" is invalid, as symlink is not allowed here. This should
-    // be moreved.
+    // be removed.
     CreateSymbolicLink(FilePath::FromUTF8Unsafe(util::kSymLinkToDevNull),
                        persistent_directory_.AppendASCII("id_symlink"));
 
@@ -63,7 +63,7 @@ class DriveCacheMetadataTest : public testing::Test {
     // "id_quux" is invalid as we shouldn't have a dirty file in "tmp".
     CreateFile(tmp_directory_.AppendASCII("id_quux.local"));
     // "id_symlink_tmp" is invalid, as symlink is not allowed here. This
-    // should be moreved.
+    // should be removed.
     CreateSymbolicLink(FilePath::FromUTF8Unsafe(util::kSymLinkToDevNull),
                        tmp_directory_.AppendASCII("id_symlink_tmp"));
 

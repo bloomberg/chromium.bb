@@ -46,7 +46,7 @@ void OperationRunner::StartOperationWithRetry(
     AuthenticatedOperationInterface* operation) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // The re-authenticatation callback will run on UI thread.
+  // The re-authentication callback will run on UI thread.
   operation->SetReAuthenticateCallback(
       base::Bind(&OperationRunner::RetryOperation,
                  weak_ptr_factory_.GetWeakPtr()));

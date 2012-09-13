@@ -88,7 +88,7 @@ void DriveTaskExecutor::OnFileEntryFetched(
   DriveSystemService* system_service =
       DriveSystemServiceFactory::GetForProfile(profile());
 
-  // Here, we are only insterested in files.
+  // Here, we are only interested in files.
   if (entry_proto.get() && !entry_proto->has_file_specific_info())
     error = DRIVE_FILE_ERROR_NOT_FOUND;
 

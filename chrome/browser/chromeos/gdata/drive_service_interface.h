@@ -44,7 +44,7 @@ enum DocumentExportFormat {
 // Observer interface for DriveServiceInterface.
 class DriveServiceObserver {
  public:
-  // Triggered when the service gets ready to perform operatons.
+  // Triggered when the service gets ready to perform operations.
   virtual void OnReadyToPerformOperations() = 0;
 
  protected:
