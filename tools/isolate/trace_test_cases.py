@@ -209,17 +209,7 @@ def main():
       default=120,
       type='int',
       help='number of parallel jobs')
-  parser.add_option(
-      '-v', '--verbose',
-      action='count',
-      default=0,
-      help='Use multiple times to increase verbosity')
   options, args = parser.parse_args()
-
-  levels = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
-  logging.basicConfig(
-      level=levels[min(len(levels)-1, options.verbose)],
-      format='%(levelname)5s %(module)15s(%(lineno)3d): %(message)s')
 
   if len(args) != 1:
     parser.error(

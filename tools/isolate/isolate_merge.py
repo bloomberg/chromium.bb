@@ -11,12 +11,12 @@ condition, find the strict subset. Done.
 """
 
 import logging
-import optparse
 import sys
 
 from isolate import Configs, DEFAULT_OSES, eval_content, extract_comment
 from isolate import load_isolate_as_config, union, convert_map_to_isolate_dict
 from isolate import reduce_inputs, invert_map, print_all
+import run_test_cases
 
 
 def load_isolates(items, default_oses):
@@ -43,10 +43,8 @@ def load_isolates(items, default_oses):
 
 
 def main(args=None):
-  parser = optparse.OptionParser(
+  parser = run_test_cases.OptionParserWithLogging(
       usage='%prog <options> [file1] [file2] ...')
-  parser.add_option(
-      '-v', '--verbose', action='count', default=0, help='Use multiple times')
   parser.add_option(
       '-o', '--output', help='Output to file instead of stdout')
   parser.add_option(
@@ -54,10 +52,6 @@ def main(args=None):
       help='Inject the list of OSes, default: %default')
 
   options, args = parser.parse_args(args)
-  level = [logging.ERROR, logging.INFO, logging.DEBUG][min(2, options.verbose)]
-  logging.basicConfig(
-        level=level,
-        format='%(levelname)5s %(module)15s(%(lineno)3d):%(message)s')
 
   configs = load_isolates(args, options.os.split(','))
   data = convert_map_to_isolate_dict(

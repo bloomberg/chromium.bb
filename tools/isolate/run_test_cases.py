@@ -713,10 +713,29 @@ def run_test_cases(executable, test_cases, jobs, timeout, run_all, result_file):
   return int(bool(fail))
 
 
-class OptionParserWithTestSharding(optparse.OptionParser):
+class OptionParserWithLogging(optparse.OptionParser):
+  """Adds --verbose option."""
+  def __init__(self, verbose=0, **kwargs):
+    optparse.OptionParser.__init__(self, **kwargs)
+    self.add_option(
+        '-v', '--verbose',
+        action='count',
+        default=verbose,
+        help='Use multiple times to increase verbosity')
+
+  def parse_args(self, *args, **kwargs):
+    options, args = optparse.OptionParser.parse_args(self, *args, **kwargs)
+    levels = [logging.ERROR, logging.INFO, logging.DEBUG]
+    logging.basicConfig(
+        level=levels[min(len(levels)-1, options.verbose)],
+        format='%(levelname)5s %(module)15s(%(lineno)3d): %(message)s')
+    return options, args
+
+
+class OptionParserWithTestSharding(OptionParserWithLogging):
   """Adds automatic handling of test sharding"""
-  def __init__(self, *args, **kwargs):
-    optparse.OptionParser.__init__(self, *args, **kwargs)
+  def __init__(self, **kwargs):
+    OptionParserWithLogging.__init__(self, **kwargs)
 
     def as_digit(variable, default):
       return int(variable) if variable.isdigit() else default
@@ -735,7 +754,7 @@ class OptionParserWithTestSharding(optparse.OptionParser):
     self.add_option_group(group)
 
   def parse_args(self, *args, **kwargs):
-    options, args = optparse.OptionParser.parse_args(self, *args, **kwargs)
+    options, args = OptionParserWithLogging.parse_args(self, *args, **kwargs)
     if bool(options.shards) != bool(options.index is not None):
       self.error('Use both --index X --shards Y or none of them')
     return options, args
@@ -792,7 +811,8 @@ class OptionParserWithTestShardingAndFiltering(OptionParserWithTestSharding):
 def main(argv):
   """CLI frontend to validate arguments."""
   parser = OptionParserWithTestShardingAndFiltering(
-      usage='%prog <options> [gtest]')
+      usage='%prog <options> [gtest]',
+      verbose=int(os.environ.get('ISOLATE_DEBUG', 0)))
   parser.add_option(
       '-j', '--jobs',
       type='int',
@@ -803,11 +823,6 @@ def main(argv):
       type='int',
       default=120,
       help='Timeout for a single test case, in seconds default:%default')
-  parser.add_option(
-      '-v', '--verbose',
-      action='count',
-      default=int(os.environ.get('ISOLATE_DEBUG', 0)),
-      help='Use multiple times')
   parser.add_option(
       '--run-all',
       action='store_true',
@@ -822,11 +837,6 @@ def main(argv):
       default=os.environ.get('RUN_TEST_CASES_RESULT_FILE', ''),
       help='Override the default name of the generated .run_test_cases file')
   options, args = parser.parse_args(argv)
-
-  levels = [logging.ERROR, logging.INFO, logging.DEBUG]
-  logging.basicConfig(
-      level=levels[min(len(levels)-1, options.verbose)],
-      format='%(levelname)5s %(module)15s(%(lineno)3d): %(message)s')
 
   if len(args) != 1:
     parser.error(
