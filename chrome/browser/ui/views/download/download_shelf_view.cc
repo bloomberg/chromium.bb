@@ -308,9 +308,6 @@ void DownloadShelfView::ViewHierarchyChanged(bool is_add,
   View::ViewHierarchyChanged(is_add, parent, child);
 
   if (is_add && (child == this)) {
-    set_background(views::Background::CreateSolidBackground(
-        GetThemeProvider()->GetColor(ThemeService::COLOR_TOOLBAR)));
-
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     arrow_image_ = new views::ImageView();
     arrow_image_->SetImage(rb.GetImageSkiaNamed(IDR_DOWNLOADS_FAVICON));
@@ -319,9 +316,6 @@ void DownloadShelfView::ViewHierarchyChanged(bool is_add,
     show_all_view_ = new views::Link(
         l10n_util::GetStringUTF16(IDS_SHOW_ALL_DOWNLOADS));
     show_all_view_->set_listener(this);
-    show_all_view_->SetBackgroundColor(background()->get_color());
-    show_all_view_->SetEnabledColor(
-        GetThemeProvider()->GetColor(ThemeService::COLOR_BOOKMARK_TEXT));
     AddChildView(show_all_view_);
 
     close_button_ = new views::ImageButton(this);
@@ -333,8 +327,9 @@ void DownloadShelfView::ViewHierarchyChanged(bool is_add,
                             rb.GetImageSkiaNamed(IDR_CLOSE_BAR_P));
     close_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
-    UpdateButtonColors();
     AddChildView(close_button_);
+
+    UpdateColorsFromTheme();
 
     new_item_animation_.reset(new ui::SlideAnimation(this));
     new_item_animation_->SetSlideDuration(kNewItemAnimationDurationMs);
@@ -365,9 +360,14 @@ bool DownloadShelfView::CanFitFirstDownloadItem() {
   return item_size.width() < available_width;
 }
 
-void DownloadShelfView::UpdateButtonColors() {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  if (GetThemeProvider()) {
+void DownloadShelfView::UpdateColorsFromTheme() {
+  if (show_all_view_ && close_button_ && GetThemeProvider()) {
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    set_background(views::Background::CreateSolidBackground(
+        GetThemeProvider()->GetColor(ThemeService::COLOR_TOOLBAR)));
+    show_all_view_->SetBackgroundColor(background()->get_color());
+    show_all_view_->SetEnabledColor(
+        GetThemeProvider()->GetColor(ThemeService::COLOR_BOOKMARK_TEXT));
     close_button_->SetBackground(
         GetThemeProvider()->GetColor(ThemeService::COLOR_TAB_TEXT),
         rb.GetImageSkiaNamed(IDR_CLOSE_BAR),
@@ -376,7 +376,7 @@ void DownloadShelfView::UpdateButtonColors() {
 }
 
 void DownloadShelfView::OnThemeChanged() {
-  UpdateButtonColors();
+  UpdateColorsFromTheme();
 }
 
 void DownloadShelfView::LinkClicked(views::Link* source, int event_flags) {

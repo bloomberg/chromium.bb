@@ -118,7 +118,7 @@ class DownloadShelfView : public views::AccessiblePaneView,
   bool CanFitFirstDownloadItem();
 
   // Called on theme change.
-  void UpdateButtonColors();
+  void UpdateColorsFromTheme();
 
   // Overridden from views::View.
   virtual void OnThemeChanged() OVERRIDE;

@@ -94,6 +94,7 @@ class DownloadItemView : public views::ButtonListener,
   virtual bool GetTooltipText(const gfx::Point& p,
                               string16* tooltip) const OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void OnThemeChanged() OVERRIDE;
 
   // Overridden from views::ContextMenuController.
   virtual void ShowContextMenuForView(View* source,
@@ -147,6 +148,9 @@ class DownloadItemView : public views::ButtonListener,
 
   void LoadIcon();
   void LoadIconIfItemPathChanged();
+
+  // Update the button colors based on the current theme.
+  void UpdateColorsFromTheme();
 
   // Shows the context menu at the specified location. |point| is in the view's
   // coordinate system.

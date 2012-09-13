@@ -343,9 +343,6 @@ void DownloadItemView::Layout() {
     BodyImageSet* body_image_set =
         (mode_ == DANGEROUS_MODE) ? &dangerous_mode_body_image_set_ :
             &malicious_mode_body_image_set_;
-    dangerous_download_label_->SetEnabledColor(
-      GetThemeProvider()->GetColor(ThemeService::COLOR_BOOKMARK_TEXT));
-
     int x = kLeftPadding + body_image_set->top_left->width() +
         warning_icon_->width() + kLabelPadding;
     int y = (height() - dangerous_download_label_->height()) / 2;
@@ -360,6 +357,7 @@ void DownloadItemView::Layout() {
       x += button_size.width() + kButtonPadding;
     }
     discard_button_->SetBounds(x, y, button_size.width(), button_size.height());
+    UpdateColorsFromTheme();
   }
 }
 
@@ -532,6 +530,10 @@ void DownloadItemView::GetAccessibleState(ui::AccessibleViewState* state) {
   } else {
     state->state = ui::AccessibilityTypes::STATE_HASPOPUP;
   }
+}
+
+void DownloadItemView::OnThemeChanged() {
+  UpdateColorsFromTheme();
 }
 
 void DownloadItemView::ShowContextMenuForView(View* source,
@@ -881,6 +883,13 @@ void DownloadItemView::LoadIconIfItemPathChanged() {
     return;
 
   LoadIcon();
+}
+
+void DownloadItemView::UpdateColorsFromTheme() {
+  if (dangerous_download_label_ && GetThemeProvider()) {
+    dangerous_download_label_->SetEnabledColor(
+        GetThemeProvider()->GetColor(ThemeService::COLOR_BOOKMARK_TEXT));
+  }
 }
 
 void DownloadItemView::ShowContextMenuImpl(const gfx::Point& p,
