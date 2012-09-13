@@ -33,11 +33,13 @@ class TrayPower : public SystemTrayItem,
   TrayPower();
   virtual ~TrayPower();
 
-  // Gets battery image based on |supply_status|. If |supply_status| is
-  // uncertain about the power state, return |default_image| instead.
-  static gfx::ImageSkia GetBatteryImage(const PowerSupplyStatus& supply_status,
-                                        IconSet icon_set,
-                                        const gfx::ImageSkia& default_image);
+  // Gets the icon index in the battery icon array image based on
+  // |supply_status|.  If |supply_status| is uncertain about the power state,
+  // returns -1.
+  static int GetBatteryImageIndex(const PowerSupplyStatus& supply_status);
+
+  // Looks up the actual icon in the icon array image for |image_index|.
+  static gfx::ImageSkia GetBatteryImage(int image_index, IconSet icon_set);
 
  private:
   enum NotificationState {

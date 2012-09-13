@@ -47,14 +47,19 @@ class PowerStatusView : public views::View {
   // if true; otherwise, layout the UI items on the left side.
   bool default_view_right_align_;
 
-  // labels used only for VIEW_NOTIFICATION.
+  // Labels used only for VIEW_NOTIFICATION.
   views::Label* status_label_;
   views::Label* time_label_;
 
-  // labels used only for VIEW_DEFAULT.
+  // Labels used only for VIEW_DEFAULT.
   views::Label* time_status_label_;
 
+  // Battery status indicator icon.
   views::ImageView* icon_;
+
+  // Index of the current icon in the icon array image, or -1 if unknown.
+  int icon_image_index_;
+
   ViewType view_type_;
 
   PowerSupplyStatus supply_status_;

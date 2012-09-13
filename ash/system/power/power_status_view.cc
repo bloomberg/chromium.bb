@@ -39,6 +39,7 @@ PowerStatusView::PowerStatusView(ViewType view_type,
       time_label_(NULL),
       time_status_label_(NULL),
       icon_(NULL),
+      icon_image_index_(-1),
       view_type_(view_type) {
   if (view_type == VIEW_DEFAULT) {
     time_status_label_ = new views::Label;
@@ -179,10 +180,10 @@ void PowerStatusView::UpdateTextForNotificationView() {
   } else if (hour || min) {
     if (supply_status_.line_power_on) {
       time_label_->SetText(
-        l10n_util::GetStringFUTF16(
-            IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL,
-            base::IntToString16(hour),
-            base::IntToString16(min)));
+          l10n_util::GetStringFUTF16(
+              IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL,
+              base::IntToString16(hour),
+              base::IntToString16(min)));
     } else {
       // This is a low battery warning, which prompts user when battery
       // time left is not much (ie in minutes).
@@ -190,7 +191,7 @@ void PowerStatusView::UpdateTextForNotificationView() {
       ShellDelegate* delegate = Shell::GetInstance()->delegate();
       if (delegate) {
         time_label_->SetText(delegate->GetTimeRemainingString(
-                                 base::TimeDelta::FromMinutes(min)));
+            base::TimeDelta::FromMinutes(min)));
       } else {
         time_label_->SetText(string16());
       }
@@ -198,13 +199,18 @@ void PowerStatusView::UpdateTextForNotificationView() {
   } else {
     time_label_->SetText(string16());
   }
-
 }
 
 void PowerStatusView::UpdateIcon() {
   if (icon_) {
-    icon_->SetImage(TrayPower::GetBatteryImage(supply_status_, ICON_DARK,
-                                               icon_->GetImage()));
+    int index = TrayPower::GetBatteryImageIndex(supply_status_);
+    if (icon_image_index_ != index) {
+      icon_image_index_ = index;
+      if (icon_image_index_ != -1) {
+        icon_->SetImage(
+            TrayPower::GetBatteryImage(icon_image_index_, ICON_DARK));
+      }
+    }
     icon_->SetVisible(true);
   }
 }
