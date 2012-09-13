@@ -1251,6 +1251,12 @@ enum NotificationType {
   // if it is leaving.
   NOTIFICATION_CONTENT_BLOCKED_STATE_CHANGED,
 
+  // SearchViewController.
+  // Sent when animations initiated by search view controller complete.
+  // The source is the SearchViewController whose animation is finished.
+  // No details.
+  NOTIFICATION_SEARCH_VIEW_CONTROLLER_ANIMATION_FINISHED,
+
   // Note:-
   // Currently only Content and Chrome define and use notifications.
   // Custom notifications not belonging to Content and Chrome should start

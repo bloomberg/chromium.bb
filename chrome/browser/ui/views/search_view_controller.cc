@@ -21,7 +21,9 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_container.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/browser/ui/webui/instant_ui.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
@@ -333,6 +335,11 @@ void SearchViewController::OnImplicitAnimationsCompleted() {
   // bar's final bounds.
   if (omnibox_popup_parent_->is_child_visible())
     omnibox_popup_parent_->child_at(0)->Layout();
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_SEARCH_VIEW_CONTROLLER_ANIMATION_FINISHED,
+      content::Source<SearchViewController>(this),
+      content::NotificationService::NoDetails());
 }
 
 // static

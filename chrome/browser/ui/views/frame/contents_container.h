@@ -44,7 +44,7 @@ class ContentsContainer : public views::View {
   // Sets the preview view. This does not delete the old.
   void SetPreview(views::WebView* preview,
                   content::WebContents* preview_web_contents);
-
+  views::WebView* preview() { return preview_; }
   content::WebContents* preview_web_contents() const {
     return preview_web_contents_;
   }

@@ -20,6 +20,7 @@ class ToolbarView;
 namespace chrome {
 namespace search {
 class SearchModel;
+class SearchViewControllerTest;
 class ToolbarSearchAnimator;
 }
 }
@@ -48,7 +49,7 @@ class SearchViewController
     : public chrome::search::SearchModelObserver,
       public ui::ImplicitAnimationObserver {
   friend class internal::OmniboxPopupContainer;
-  friend class SearchViewControllerTest;
+  friend class chrome::search::SearchViewControllerTest;
 
  public:
   SearchViewController(
