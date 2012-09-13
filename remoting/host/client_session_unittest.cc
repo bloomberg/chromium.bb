@@ -68,9 +68,9 @@ class ClientSessionTest : public testing::Test {
         scoped_ptr<VideoFrameCapturer>(capturer_)));
 
     // Set up a large default screen size that won't affect most tests.
-    default_screen_size_.set(1000, 1000);
+    screen_size_.set(1000, 1000);
     EXPECT_CALL(*capturer_, size_most_recent())
-        .WillRepeatedly(ReturnRef(default_screen_size_));
+        .WillRepeatedly(ReturnRef(screen_size_));
 
     session_config_ = SessionConfig::GetDefault();
 
@@ -126,7 +126,7 @@ class ClientSessionTest : public testing::Test {
   MessageLoop message_loop_;
   scoped_refptr<AutoThreadTaskRunner> ui_task_runner_;
   MockChromotingHostContext context_;
-  SkISize default_screen_size_;
+  SkISize screen_size_;
   std::string client_jid_;
   MockHostStub host_stub_;
   MockEventExecutor* event_executor_;
@@ -324,9 +324,7 @@ TEST_F(ClientSessionTest, RestoreEventState) {
 }
 
 TEST_F(ClientSessionTest, ClampMouseEvents) {
-  SkISize screen(SkISize::Make(200, 100));
-  EXPECT_CALL(*capturer_, size_most_recent())
-      .WillRepeatedly(ReturnRef(screen));
+  screen_size_.set(200, 100);
 
   EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
   EXPECT_CALL(*event_executor_, StartPtr(_));

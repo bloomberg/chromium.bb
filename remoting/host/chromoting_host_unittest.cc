@@ -260,6 +260,11 @@ class ChromotingHostTest : public testing::Test {
     get_client(connection_index) = client;
   }
 
+  virtual void TearDown() OVERRIDE {
+    // Make sure that the host has been properly deleted.
+    DCHECK(host_.get() == NULL);
+  }
+
   // Change the session route for |client1_|.
   void ChangeSessionRoute(const std::string& channel_name,
                           const protocol::TransportRoute& route) {

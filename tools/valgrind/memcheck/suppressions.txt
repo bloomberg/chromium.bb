@@ -5953,16 +5953,6 @@
    fun:_ZN20InterstitialPageImpl4ShowEv
    fun:_ZN14captive_portal28MockInterstitialPageDelegateC1EPN7content11WebContentsE
 }
-{
-   bug_148883
-   Memcheck:Uninitialized
-   fun:_ZN8SkRegion7setRectEiiii
-   fun:_ZN8SkRegion7setRectERK7SkIRect
-   fun:_ZN8SkRegionC1ERK7SkIRect
-   fun:_ZN8SkRegion2opERKS_RK7SkIRectNS_2OpE
-   fun:_ZN8SkRegion2opERK7SkIRectNS_2OpE
-   fun:_ZN8remoting14ScreenRecorder22DoInvalidateFullScreenEv
-}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
