@@ -39,6 +39,8 @@
 
 #ntp5 #notification-container {
   bottom: inherit;
+  position: absolute;
+  top: 32px;
 }
 
 /* =========================================================================

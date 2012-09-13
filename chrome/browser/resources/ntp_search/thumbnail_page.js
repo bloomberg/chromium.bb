@@ -110,7 +110,8 @@ cr.define('ntp', function() {
       // If the thumbnail image fails to load, show the favicon and URL instead.
       // TODO(jeremycho): Move to a separate function?
       image.onerror = function() {
-        banner = self.ownerDocument.createElement('div');
+        banner = thumbnailImage.querySelector('.thumbnail-banner') ||
+            self.ownerDocument.createElement('div');
         banner.className = 'thumbnail-banner';
 
         // For now, just strip leading http://www and trailing backslash.
@@ -118,7 +119,8 @@ cr.define('ntp', function() {
         banner.textContent = dataUrl.replace(/^(http:\/\/)?(www\.)?|\/$/gi, '');
         thumbnailImage.appendChild(banner);
 
-        favicon = self.ownerDocument.createElement('div');
+        favicon = thumbnailImage.querySelector('.thumbnail-favicon') ||
+            self.ownerDocument.createElement('div');
         favicon.className = 'thumbnail-favicon';
         favicon.style.backgroundImage =
             url('chrome://favicon/size/16/' + dataUrl);
@@ -210,14 +212,38 @@ cr.define('ntp', function() {
     },
 
     /**
-     * Array of thumbnail data objects.
-     * @type {Array}
+     * Returns an array of thumbnail data objects.
+     * @return {Array} An array of thumbnail data objects.
      */
-    get data() {
+    getData: function() {
       return this.data_;
     },
-    set data(data) {
-      console.error('ThumbnailPage: data_ setter is not implemented.');
+
+    /**
+     * Sets the data that will be used to create Thumbnails.
+     * @param {Array} data The array of data.
+     */
+    setData: function(data) {
+      var maxTileCount = this.config_.maxTileCount;
+      this.data_ = data.slice(0, maxTileCount);
+
+      var dataLength = this.data_.length;
+      var tileCount = this.tileCount;
+      // Create or remove tiles if necessary.
+      if (tileCount < dataLength) {
+        this.createTiles_(dataLength - tileCount);
+      } else if (tileCount > dataLength) {
+        // TODO(jeremycho): Consider rewriting removeTile to be compatible with
+        // pages other than Apps and calling it here.
+        for (var i = 0; i < tileCount - dataLength; i++)
+          this.tiles_.pop();
+      }
+
+      // TODO(pedrosimonetti): Fix this as part of a larger restructuring of
+      // the layout/render logic.
+      if (dataLength != tileCount && this.hasBeenRendered())
+        this.renderGrid_();
+      this.updateTiles_();
     },
 
     /** @inheritDoc */

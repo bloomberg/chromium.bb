@@ -209,21 +209,10 @@ cr.define('ntp', function() {
      * TODO(pedrosimonetti): Move data handling related code to TilePage. Make
      * sure the new logic works with Apps without requiring duplicating code.
      * @param {Array} data The array of data.
-     * @type (Array}
      */
-    set data(data) {
+    setData: function(data) {
       var startTime = Date.now();
-      var maxTileCount = this.config_.maxTileCount;
-
-      // The first time data is set, create the tiles.
-      if (!this.data_) {
-        this.data_ = data.slice(0, maxTileCount);
-        this.createTiles_(this.data_.length);
-      } else {
-        this.data_ = refreshData(this.data_, data, maxTileCount);
-      }
-
-      this.updateTiles_();
+      ThumbnailPage.prototype.setData.apply(this, arguments);
       logEvent('mostVisited.layout: ' + (Date.now() - startTime));
     },
   };
@@ -242,81 +231,8 @@ cr.define('ntp', function() {
     }
   };
 
-  /**
-   * We've gotten additional Most Visited data. Update our old data with the
-   * new data. The ordering of the new data is not important, except when a
-   * page is pinned. Thus we try to minimize re-ordering.
-   * @param {Array} oldData The current Most Visited page list.
-   * @param {Array} newData The new Most Visited page list.
-   * @return {Array} The merged page list that should replace the current page
-   *     list.
-   */
-  function refreshData(oldData, newData, maxTileCount) {
-    oldData = oldData.slice(0, maxTileCount);
-    newData = newData.slice(0, maxTileCount);
-
-    // Copy over pinned sites directly.
-    for (var j = 0; j < newData.length; j++) {
-      if (newData[j].pinned) {
-        oldData[j] = newData[j];
-        // Mark the entry as 'updated' so we don't try to update again.
-        oldData[j].updated = true;
-        // Mark the newData page as 'used' so we don't try to re-use it.
-        newData[j].used = true;
-      }
-    }
-
-    // Look through old pages; if they exist in the newData list, keep them
-    // where they are.
-    for (var i = 0; i < oldData.length; i++) {
-      if (!oldData[i] || oldData[i].updated)
-        continue;
-
-      for (var j = 0; j < newData.length; j++) {
-        if (newData[j].used)
-          continue;
-
-        if (newData[j].url == oldData[i].url) {
-          // The background image and other data may have changed.
-          oldData[i] = newData[j];
-          oldData[i].updated = true;
-          newData[j].used = true;
-          break;
-        }
-      }
-    }
-
-    // Look through old pages that haven't been updated yet; replace them.
-    for (var i = 0; i < oldData.length; i++) {
-      if (oldData[i] && oldData[i].updated)
-        continue;
-
-      for (var j = 0; j < newData.length; j++) {
-        if (newData[j].used)
-          continue;
-
-        oldData[i] = newData[j];
-        oldData[i].updated = true;
-        newData[j].used = true;
-        break;
-      }
-
-      if (oldData[i] && !oldData[i].updated)
-        oldData[i] = null;
-    }
-
-    // Clear 'updated' flags so this function will work next time it's called.
-    for (var i = 0; i < maxTileCount; i++) {
-      if (oldData[i])
-        oldData[i].updated = false;
-    }
-
-    return oldData;
-  }
-
   return {
     MostVisitedPage: MostVisitedPage,
-    refreshData: refreshData,
   };
 });
 

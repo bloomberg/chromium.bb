@@ -14,7 +14,6 @@
   display: inline-block;
   height: 16px;
   padding: 0;
-  position: absolute;
   width: 16px;
   z-index: 999;
 }
@@ -40,6 +39,7 @@
 .thumbnail .close-button {
   -webkit-transition: opacity 500ms ease-in-out;
   opacity: 0;
+  position: absolute;
   right: 2px;
   top: 2px;
 }

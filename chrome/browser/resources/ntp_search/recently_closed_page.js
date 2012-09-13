@@ -139,26 +139,24 @@ cr.define('ntp', function() {
     /**
      * Sets the data that will be used to create Thumbnails.
      * @param {Array} data The array of data.
-     * @type (Array}
      */
-    set data(data) {
+    setData: function(data) {
       var startTime = Date.now();
-      var maxTileCount = this.config_.maxTileCount;
+      ThumbnailPage.prototype.setData.apply(this, arguments);
 
-      this.data_ = data.slice(0, maxTileCount);
-      var dataLength = data.length;
-      var tileCount = this.tileCount;
-      // Create new tiles if necessary.
-      // TODO(jeremycho): Verify this handles the removal of tiles, once that
-      // functionality is supported.
-      if (tileCount < dataLength)
-        this.createTiles_(dataLength - tileCount);
-
-      this.updateTiles_();
       // Only show the dot if we have recently closed tabs to display.
       var dot = this.navigationDot;
-      if (dot)
-        dot.hidden = dataLength == 0;
+      if (this.data_.length == 0) {
+        dot.hidden = true;
+        // If the last tab has been removed (by a user click) and we're still on
+        // the Recently Closed page, fall back to the first page in the dot
+        // list.
+        var cardSlider = ntp.getCardSlider();
+        if (cardSlider.currentCardValue == this)
+          cardSlider.selectCard(0, true);
+      } else {
+        dot.hidden = false;
+      }
 
       logEvent('recentlyClosed.layout: ' + (Date.now() - startTime));
     }

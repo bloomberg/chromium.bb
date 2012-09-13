@@ -305,25 +305,6 @@ cr.define('ntp', function() {
     },
 
     /**
-     * The notification content of this tile (if any, otherwise null).
-     * @type {!HTMLElement}
-     */
-    get notification() {
-      return this.content_.firstChild.id == 'notification-container' ?
-          this.content_.firstChild : null;
-    },
-    /**
-     * The notification content of this tile (if any, otherwise null).
-     * @type {!HTMLElement}
-     */
-    set notification(node) {
-      assert(node instanceof HTMLElement, '|node| isn\'t an HTMLElement!');
-      // NOTE: Implicitly removes from DOM if |node| is inside it.
-      this.content_.insertBefore(node, this.content_.firstChild);
-      this.positionNotification_();
-    },
-
-    /**
      * Removes the tilePage from the DOM and cleans up event handlers.
      */
     remove: function() {
@@ -419,13 +400,6 @@ cr.define('ntp', function() {
      * @private
      */
     handleCardDeselection_: function(e) {
-    },
-
-    /**
-     * Position the notification if there's one showing.
-     * TODO(pedrosimonetti): Fix the position of the notification.
-     */
-    positionNotification_: function() {
     },
 
     // #########################################################################
