@@ -127,7 +127,7 @@ class SyncManagerImpl : public SyncManager,
   virtual void OnEncryptionComplete() OVERRIDE;
   virtual void OnCryptographerStateChanged(
       Cryptographer* cryptographer) OVERRIDE;
-  virtual void OnPassphraseStateChanged(PassphraseState state) OVERRIDE;
+  virtual void OnPassphraseTypeChanged(PassphraseType type) OVERRIDE;
 
   // Return the currently active (validated) username for use with syncable
   // types.

@@ -293,8 +293,8 @@ DictionaryValue* ExtensionSpecificsToValue(
 DictionaryValue* NigoriSpecificsToValue(
     const sync_pb::NigoriSpecifics& proto) {
   DictionaryValue* value = new DictionaryValue();
-  SET(encrypted, EncryptedDataToValue);
-  SET_BOOL(using_explicit_passphrase);
+  SET(encryption_keybag, EncryptedDataToValue);
+  SET_BOOL(keybag_is_frozen);
   SET_BOOL(encrypt_bookmarks);
   SET_BOOL(encrypt_preferences);
   SET_BOOL(encrypt_autofill_profile);
@@ -310,6 +310,9 @@ DictionaryValue* NigoriSpecificsToValue(
   SET_BOOL(encrypt_everything);
   SET_REP(device_information, DeviceInformationToValue);
   SET_BOOL(sync_tab_favicons);
+  SET_ENUM(passphrase_type, PassphraseTypeString);
+  SET(keystore_decryptor_token, EncryptedDataToValue);
+  SET_INT64(keystore_migration_time);
   return value;
 }
 
@@ -578,7 +581,6 @@ DictionaryValue* ClientToServerMessageToValue(
   SET_BOOL(sync_problem_detected);
   return value;
 }
-
 
 #undef SET
 #undef SET_REP

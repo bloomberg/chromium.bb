@@ -31,7 +31,7 @@ enum PassphraseRequiredReason {
 
 // The different states for the encryption passphrase. These control if and how
 // the user should be prompted for a decryption passphrase.
-enum PassphraseState {
+enum PassphraseType {
   IMPLICIT_PASSPHRASE = 0,             // GAIA-based passphrase (deprecated).
   KEYSTORE_PASSPHRASE = 1,             // Keystore passphrase.
   FROZEN_IMPLICIT_PASSPHRASE = 2,      // Frozen GAIA passphrase.
@@ -112,7 +112,7 @@ class SyncEncryptionHandler {
     virtual void OnCryptographerStateChanged(Cryptographer* cryptographer) = 0;
 
     // The passprhase state has changed.
-    virtual void OnPassphraseStateChanged(PassphraseState state) = 0;
+    virtual void OnPassphraseTypeChanged(PassphraseType type) = 0;
 
    protected:
     virtual ~Observer();
@@ -160,7 +160,7 @@ class SyncEncryptionHandler {
 
   // Returns the current state of the passphrase needed to decrypt the
   // bag of encryption keys in the nigori node.
-  virtual PassphraseState GetPassphraseState() const = 0;
+  virtual PassphraseType GetPassphraseType() const = 0;
 
   // The set of types that are always encrypted.
   static ModelTypeSet SensitiveTypes();

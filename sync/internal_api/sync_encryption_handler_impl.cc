@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
+#include "base/time.h"
 #include "base/tracked_objects.h"
 #include "base/metrics/histogram.h"
 #include "sync/internal_api/public/read_node.h"
@@ -17,6 +18,7 @@
 #include "sync/internal_api/public/util/experiments.h"
 #include "sync/internal_api/public/write_node.h"
 #include "sync/internal_api/public/write_transaction.h"
+#include "sync/internal_api/public/util/sync_string_conversions.h"
 #include "sync/protocol/encryption.pb.h"
 #include "sync/protocol/nigori_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
@@ -25,17 +27,84 @@
 #include "sync/syncable/entry.h"
 #include "sync/syncable/nigori_util.h"
 #include "sync/util/cryptographer.h"
+#include "sync/util/time.h"
 
 namespace syncer {
 
 namespace {
+
 // The maximum number of times we will automatically overwrite the nigori node
 // because the encryption keys don't match (per chrome instantiation).
 // We protect ourselves against nigori rollbacks, but it's possible two
 // different clients might have contrasting view of what the nigori node state
 // should be, in which case they might ping pong (see crbug.com/119207).
 static const int kNigoriOverwriteLimit = 10;
+
+// The new passphrase state is sufficient to determine whether a nigori node
+// is migrated to support keystore encryption. In addition though, we also
+// want to verify the conditions for proper keystore encryption functionality.
+// 1. Passphrase state is set.
+// 2. Migration time is set.
+// 3. Frozen keybag is true
+// 4. If passphrase state is keystore, keystore_decryptor_token is set.
+bool IsNigoriMigratedToKeystore(const sync_pb::NigoriSpecifics& nigori) {
+  if (!nigori.has_passphrase_type())
+    return false;
+  if (!nigori.has_keystore_migration_time())
+    return false;
+  if (!nigori.keybag_is_frozen())
+    return false;
+  if (nigori.passphrase_type() ==
+          sync_pb::NigoriSpecifics::IMPLICIT_PASSPHRASE)
+    return false;
+  if (nigori.passphrase_type() ==
+          sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE &&
+      nigori.keystore_decryptor_token().blob().empty())
+    return false;
+  if (!nigori.has_keystore_migration_time())
+    return false;
+  return true;
 }
+
+PassphraseType ProtoPassphraseTypeToEnum(
+    sync_pb::NigoriSpecifics::PassphraseType type) {
+  switch(type) {
+    case sync_pb::NigoriSpecifics::IMPLICIT_PASSPHRASE:
+      return IMPLICIT_PASSPHRASE;
+    case sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE:
+      return KEYSTORE_PASSPHRASE;
+    case sync_pb::NigoriSpecifics::CUSTOM_PASSPHRASE:
+      return CUSTOM_PASSPHRASE;
+    case sync_pb::NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
+      return FROZEN_IMPLICIT_PASSPHRASE;
+    default:
+      NOTREACHED();
+      return IMPLICIT_PASSPHRASE;
+  };
+}
+
+sync_pb::NigoriSpecifics::PassphraseType
+EnumPassphraseTypeToProto(PassphraseType type) {
+  switch(type) {
+    case IMPLICIT_PASSPHRASE:
+      return sync_pb::NigoriSpecifics::IMPLICIT_PASSPHRASE;
+    case KEYSTORE_PASSPHRASE:
+      return sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE;
+    case CUSTOM_PASSPHRASE:
+      return sync_pb::NigoriSpecifics::CUSTOM_PASSPHRASE;
+    case FROZEN_IMPLICIT_PASSPHRASE:
+      return sync_pb::NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE;
+    default:
+      NOTREACHED();
+      return sync_pb::NigoriSpecifics::IMPLICIT_PASSPHRASE;;
+  };
+}
+
+bool IsExplicitPassphrase(PassphraseType type) {
+  return type == CUSTOM_PASSPHRASE || type == FROZEN_IMPLICIT_PASSPHRASE;
+}
+
+}  // namespace
 
 SyncEncryptionHandlerImpl::Vault::Vault(
     Encryptor* encryptor,
@@ -56,9 +125,10 @@ SyncEncryptionHandlerImpl::SyncEncryptionHandlerImpl(
       user_share_(user_share),
       vault_unsafe_(encryptor, SensitiveTypes()),
       encrypt_everything_(false),
-      passphrase_state_(IMPLICIT_PASSPHRASE),
+      passphrase_type_(IMPLICIT_PASSPHRASE),
       keystore_key_(restored_keystore_key_for_bootstrapping),
-      nigori_overwrite_count_(0) {
+      nigori_overwrite_count_(0),
+      migration_time_ms_(0) {
   // We only bootstrap the user provided passphrase. The keystore key is handled
   // at Init time once we're sure the nigori is downloaded.
   vault_unsafe_.cryptographer.Bootstrap(restored_key_for_bootstrapping);
@@ -130,12 +200,30 @@ void SyncEncryptionHandlerImpl::SetEncryptionPassphrase(
     return;
   }
 
-  bool nigori_has_explicit_passphrase =
-      node.GetNigoriSpecifics().using_explicit_passphrase();
-  std::string bootstrap_token;
-  sync_pb::EncryptedData pending_keys;
   Cryptographer* cryptographer =
       &UnlockVaultMutable(trans.GetWrappedTrans())->cryptographer;
+
+  // Once we've migrated to keystore, the only way to set a passphrase for
+  // encryption is to set a custom passphrase.
+  if (IsNigoriMigratedToKeystore(node.GetNigoriSpecifics())) {
+    if (!is_explicit) {
+      DCHECK(cryptographer->is_ready());
+      // The user is setting a new implicit passphrase. At this point we don't
+      // care, so drop it on the floor. This is safe because if we have a
+      // migrated nigori node, then we don't need to create an initial
+      // encryption key.
+      LOG(WARNING) << "Ignoring new implicit passphrase. Keystore migration "
+                   << "already performed.";
+      return;
+    }
+    // Will fail if we already have an explicit passphrase or we have pending
+    // keys.
+    SetCustomPassphrase(passphrase, &trans, &node);
+    return;
+  }
+
+  std::string bootstrap_token;
+  sync_pb::EncryptedData pending_keys;
   if (cryptographer->has_pending_keys())
     pending_keys = cryptographer->GetPendingKeys();
   bool success = false;
@@ -160,14 +248,20 @@ void SyncEncryptionHandlerImpl::SetEncryptionPassphrase(
   // password). If the account is using an explicit (custom) passphrase, the
   // bootstrap token will be derived from the most recently provided explicit
   // passphrase (that was able to decrypt the data).
-  if (!nigori_has_explicit_passphrase) {
+  if (!IsExplicitPassphrase(passphrase_type_)) {
     if (!cryptographer->has_pending_keys()) {
       if (cryptographer->AddKey(key_params)) {
         // Case 1 and 2. We set a new GAIA passphrase when there are no pending
         // keys (1), or overwriting an implicit passphrase with a new explicit
         // one (2) when there are no pending keys.
-        DVLOG(1) << "Setting " << (is_explicit ? "explicit" : "implicit" )
-                 << " passphrase for encryption.";
+        if (is_explicit) {
+          DVLOG(1) << "Setting explicit passphrase for encryption.";
+          passphrase_type_ = CUSTOM_PASSPHRASE;
+          FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
+                            OnPassphraseTypeChanged(passphrase_type_));
+        } else {
+          DVLOG(1) << "Setting implicit passphrase for encryption.";
+        }
         cryptographer->GetBootstrapToken(&bootstrap_token);
         success = true;
       } else {
@@ -209,7 +303,7 @@ void SyncEncryptionHandlerImpl::SetEncryptionPassphrase(
         }
       }  // is_explicit
     }  // cryptographer->has_pending_keys()
-  } else {  // nigori_has_explicit_passphrase == true
+  } else {  // IsExplicitPassphrase(passphrase_type_) == true.
     // Case 6. We do not want to override a previously set explicit passphrase,
     // so we return a failure.
     DVLOG(1) << "Failing because an explicit passphrase is already set.";
@@ -222,8 +316,7 @@ void SyncEncryptionHandlerImpl::SetEncryptionPassphrase(
       << "Successfully set encryption passphrase; updating nigori and "
          "reencrypting.";
 
-  FinishSetPassphrase(
-      success, bootstrap_token, is_explicit, &trans, &node);
+  FinishSetPassphrase(success, bootstrap_token, &trans, &node);
 }
 
 void SyncEncryptionHandlerImpl::SetDecryptionPassphrase(
@@ -244,6 +337,17 @@ void SyncEncryptionHandlerImpl::SetDecryptionPassphrase(
     return;
   }
 
+  // Once we've migrated to keystore, we're only ever decrypting keys derived
+  // from an explicit passphrase. But, for clients without a keystore key yet
+  // (either not on by default or failed to download one), we still support
+  // decrypting with a gaia passphrase, and therefore bypass the
+  // DecryptPendingKeysWithExplicitPassphrase logic.
+  if (IsNigoriMigratedToKeystore(node.GetNigoriSpecifics()) &&
+      IsExplicitPassphrase(passphrase_type_)) {
+    DecryptPendingKeysWithExplicitPassphrase(passphrase, &trans, &node);
+    return;
+  }
+
   Cryptographer* cryptographer =
       &UnlockVaultMutable(trans.GetWrappedTrans())->cryptographer;
   if (!cryptographer->has_pending_keys()) {
@@ -255,8 +359,6 @@ void SyncEncryptionHandlerImpl::SetDecryptionPassphrase(
     return;
   }
 
-  bool nigori_has_explicit_passphrase =
-      node.GetNigoriSpecifics().using_explicit_passphrase();
   std::string bootstrap_token;
   sync_pb::EncryptedData pending_keys;
   pending_keys = cryptographer->GetPendingKeys();
@@ -275,7 +377,7 @@ void SyncEncryptionHandlerImpl::SetDecryptionPassphrase(
   //    encrypted account (after changing passwords).
   // 9. The user is providing a previously set explicit passphrase to decrypt
   //    the pending keys.
-  if (!nigori_has_explicit_passphrase) {
+  if (!IsExplicitPassphrase(passphrase_type_)) {
     if (cryptographer->is_initialized()) {
       // We only want to change the default encryption key to the pending
       // one if the pending keybag already contains the current default.
@@ -362,30 +464,16 @@ void SyncEncryptionHandlerImpl::SetDecryptionPassphrase(
       << "Successfully set decryption passphrase; updating nigori and "
          "reencrypting.";
 
-  FinishSetPassphrase(success,
-                      bootstrap_token,
-                      nigori_has_explicit_passphrase,
-                      &trans,
-                      &node);
+  FinishSetPassphrase(success, bootstrap_token, &trans, &node);
 }
 
 void SyncEncryptionHandlerImpl::EnableEncryptEverything() {
   DCHECK(thread_checker_.CalledOnValidThread());
   WriteTransaction trans(FROM_HERE, user_share_);
-  ModelTypeSet* encrypted_types =
-      &UnlockVaultMutable(trans.GetWrappedTrans())->encrypted_types;
-  if (encrypt_everything_) {
-    DCHECK(encrypted_types->Equals(UserTypes()));
-    return;
-  }
   DVLOG(1) << "Enabling encrypt everything.";
-  encrypt_everything_ = true;
-  // Change |encrypted_types_| directly to avoid sending more than one
-  // notification.
-  *encrypted_types = UserTypes();
-  FOR_EACH_OBSERVER(
-      Observer, observers_,
-      OnEncryptedTypesChanged(*encrypted_types, encrypt_everything_));
+  if (encrypt_everything_)
+    return;
+  EnableEncryptEverythingImpl(trans.GetWrappedTrans());
   WriteEncryptionStateToNigori(&trans);
   if (UnlockVault(trans.GetWrappedTrans()).cryptographer.is_ready())
     ReEncryptEverything(&trans);
@@ -396,9 +484,9 @@ bool SyncEncryptionHandlerImpl::EncryptEverythingEnabled() const {
   return encrypt_everything_;
 }
 
-PassphraseState SyncEncryptionHandlerImpl::GetPassphraseState() const {
+PassphraseType SyncEncryptionHandlerImpl::GetPassphraseType() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return passphrase_state_;
+  return passphrase_type_;
 }
 
 // Note: this is called from within a syncable transaction, so we need to post
@@ -425,6 +513,7 @@ void SyncEncryptionHandlerImpl::ApplyNigoriUpdate(
 void SyncEncryptionHandlerImpl::UpdateNigoriFromEncryptedTypes(
     sync_pb::NigoriSpecifics* nigori,
     syncable::BaseTransaction* const trans) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   syncable::UpdateNigoriFromEncryptedTypes(UnlockVault(trans).encrypted_types,
                                            encrypt_everything_,
                                            nigori);
@@ -432,22 +521,46 @@ void SyncEncryptionHandlerImpl::UpdateNigoriFromEncryptedTypes(
 
 bool SyncEncryptionHandlerImpl::NeedKeystoreKey(
     syncable::BaseTransaction* const trans) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return keystore_key_.empty();
 }
 
 bool SyncEncryptionHandlerImpl::SetKeystoreKey(
     const std::string& key,
     syncable::BaseTransaction* const trans) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (!keystore_key_.empty() || key.empty())
     return false;
   keystore_key_ = key;
-
-  // TODO(zea): trigger migration if necessary.
 
   DVLOG(1) << "Keystore bootstrap token updated.";
   FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
                     OnBootstrapTokenUpdated(key,
                                             KEYSTORE_BOOTSTRAP_TOKEN));
+
+  Cryptographer* cryptographer = &UnlockVaultMutable(trans)->cryptographer;
+  syncable::Entry entry(trans, syncable::GET_BY_SERVER_TAG, kNigoriTag);
+  if (entry.good()) {
+    const sync_pb::NigoriSpecifics& nigori =
+        entry.Get(syncable::SPECIFICS).nigori();
+    if (cryptographer->has_pending_keys() &&
+        IsNigoriMigratedToKeystore(nigori) &&
+        !nigori.keystore_decryptor_token().blob().empty()) {
+      // If the nigori is already migrated and we have pending keys, we might
+      // be able to decrypt them using the keystore decryptor token.
+      DecryptPendingKeysWithKeystoreKey(keystore_key_,
+                                        nigori.keystore_decryptor_token(),
+                                        cryptographer);
+    } else if (ShouldTriggerMigration(nigori, *cryptographer)) {
+      // We call rewrite nigori to attempt to trigger migration.
+      // Need to post a task to open a new sync_api transaction.
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&SyncEncryptionHandlerImpl::RewriteNigori,
+                     weak_ptr_factory_.GetWeakPtr()));
+    }
+  }
+
   return true;
 }
 
@@ -464,6 +577,15 @@ Cryptographer* SyncEncryptionHandlerImpl::GetCryptographerUnsafe() {
 ModelTypeSet SyncEncryptionHandlerImpl::GetEncryptedTypesUnsafe() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return vault_unsafe_.encrypted_types;
+}
+
+bool SyncEncryptionHandlerImpl::MigratedToKeystore() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  ReadTransaction trans(FROM_HERE, user_share_);
+  ReadNode nigori_node(&trans);
+  if (nigori_node.InitByTagLookup(kNigoriTag) != BaseNode::INIT_OK)
+    return false;
+  return IsNigoriMigratedToKeystore(nigori_node.GetNigoriSpecifics());
 }
 
 // This function iterates over all encrypted types.  There are many scenarios in
@@ -544,36 +666,97 @@ bool SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
   DVLOG(1) << "Applying nigori node update.";
   bool nigori_types_need_update = !UpdateEncryptedTypesFromNigori(nigori,
                                                                   trans);
-  if (nigori.using_explicit_passphrase() &&
-      passphrase_state_ != CUSTOM_PASSPHRASE) {
-    passphrase_state_ = CUSTOM_PASSPHRASE;
-    FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
-                      OnPassphraseStateChanged(passphrase_state_));
+  bool is_nigori_migrated = IsNigoriMigratedToKeystore(nigori);
+  if (is_nigori_migrated) {
+    migration_time_ms_ = nigori.keystore_migration_time();
+    PassphraseType nigori_passphrase_type =
+        ProtoPassphraseTypeToEnum(nigori.passphrase_type());
+
+    // Only update the local passphrase state if it's a valid transition:
+    // - implicit -> keystore
+    // - implicit -> frozen implicit
+    // - implicit -> custom
+    // - keystore -> custom
+    // Note: frozen implicit -> custom is not technically a valid transition,
+    // but we let it through here as well in case future versions do add support
+    // for this transition.
+    if (passphrase_type_ != nigori_passphrase_type &&
+        nigori_passphrase_type != IMPLICIT_PASSPHRASE &&
+        (passphrase_type_ == IMPLICIT_PASSPHRASE ||
+         nigori_passphrase_type == CUSTOM_PASSPHRASE)) {
+      DVLOG(1) << "Changing passphrase state from "
+               << PassphraseTypeToString(passphrase_type_)
+               << " to "
+               << PassphraseTypeToString(nigori_passphrase_type);
+      passphrase_type_ = nigori_passphrase_type;
+      FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
+                        OnPassphraseTypeChanged(passphrase_type_));
+    }
+    if (passphrase_type_ == KEYSTORE_PASSPHRASE && encrypt_everything_) {
+      // This is the case where another client that didn't support keystore
+      // encryption attempted to enable full encryption. We detect it
+      // and switch the passphrase type to frozen implicit passphrase instead
+      // due to full encryption not being compatible with keystore passphrase.
+      // Because the local passphrase type will not match the nigori passphrase
+      // type, we will trigger a rewrite and subsequently a re-migration.
+      DVLOG(1) << "Changing passphrase state to FROZEN_IMPLICIT_PASSPHRASE "
+               << "due to full encryption.";
+      passphrase_type_ = FROZEN_IMPLICIT_PASSPHRASE;
+      FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
+                        OnPassphraseTypeChanged(passphrase_type_));
+    }
+  } else {
+    // It's possible that while we're waiting for migration a client that does
+    // not have keystore encryption enabled switches to a custom passphrase.
+    if (nigori.keybag_is_frozen() &&
+        passphrase_type_ != CUSTOM_PASSPHRASE) {
+      passphrase_type_ = CUSTOM_PASSPHRASE;
+      FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
+                        OnPassphraseTypeChanged(passphrase_type_));
+    }
   }
 
   Cryptographer* cryptographer = &UnlockVaultMutable(trans)->cryptographer;
   bool nigori_needs_new_keys = false;
-  if (!nigori.encrypted().blob().empty()) {
-    if (cryptographer->CanDecrypt(nigori.encrypted())) {
-      cryptographer->InstallKeys(nigori.encrypted());
-      // We only update the default passphrase if this was a new explicit
-      // passphrase. Else, since it was decryptable, it must not have been a new
-      // key.
-      if (nigori.using_explicit_passphrase())
-        cryptographer->SetDefaultKey(nigori.encrypted().key_name());
-
-      // Check if the cryptographer's keybag is newer than the nigori's
-      // keybag. If so, we need to overwrite the nigori node.
-      sync_pb::EncryptedData new_keys = nigori.encrypted();
-      if (!cryptographer->GetKeys(&new_keys))
-        NOTREACHED();
-      if (nigori.encrypted().SerializeAsString() !=
-          new_keys.SerializeAsString())
-        nigori_needs_new_keys = true;
+  if (!nigori.encryption_keybag().blob().empty()) {
+    // We only update the default key if this was a new explicit passphrase.
+    // Else, since it was decryptable, it must not have been a new key.
+    bool need_new_default_key = false;
+    if (is_nigori_migrated) {
+      need_new_default_key = IsExplicitPassphrase(
+          ProtoPassphraseTypeToEnum(nigori.passphrase_type()));
     } else {
-      cryptographer->SetPendingKeys(nigori.encrypted());
+      need_new_default_key = nigori.keybag_is_frozen();
+    }
+    if (!AttemptToInstallKeybag(nigori.encryption_keybag(),
+                                need_new_default_key,
+                                cryptographer)) {
+      // Check to see if we can decrypt the keybag using the keystore decryptor
+      // token.
+      cryptographer->SetPendingKeys(nigori.encryption_keybag());
+      if (!nigori.keystore_decryptor_token().blob().empty() &&
+          !keystore_key_.empty()) {
+        if (DecryptPendingKeysWithKeystoreKey(keystore_key_,
+                                              nigori.keystore_decryptor_token(),
+                                              cryptographer)) {
+          nigori_needs_new_keys =
+              cryptographer->KeybagIsStale(nigori.encryption_keybag());
+        } else {
+          LOG(ERROR) << "Failed to decrypt pending keys using keystore "
+                     << "bootstrap key.";
+        }
+      }
+    } else {
+      // Keybag was installed. We write back our local keybag into the nigori
+      // node if the nigori node's keybag either contains less keys or
+      // has a different default key.
+      nigori_needs_new_keys =
+          cryptographer->KeybagIsStale(nigori.encryption_keybag());
     }
   } else {
+    // The nigori node has an empty encryption keybag. Attempt to write our
+    // local encryption keys into it.
+    LOG(WARNING) << "Nigori had empty encryption keybag.";
     nigori_needs_new_keys = true;
   }
 
@@ -596,18 +779,29 @@ bool SyncEncryptionHandlerImpl::ApplyNigoriUpdateImpl(
   // Check if the current local encryption state is stricter/newer than the
   // nigori state. If so, we need to overwrite the nigori node with the local
   // state.
-  bool explicit_passphrase = passphrase_state_ == CUSTOM_PASSPHRASE;
-  if (nigori.using_explicit_passphrase() != explicit_passphrase ||
+  bool passphrase_type_matches = true;
+  if (!is_nigori_migrated) {
+    DCHECK(passphrase_type_ == CUSTOM_PASSPHRASE ||
+           passphrase_type_ == IMPLICIT_PASSPHRASE);
+    passphrase_type_matches =
+        nigori.keybag_is_frozen() == IsExplicitPassphrase(passphrase_type_);
+  } else {
+    passphrase_type_matches =
+        (ProtoPassphraseTypeToEnum(nigori.passphrase_type()) ==
+             passphrase_type_);
+  }
+  if (!passphrase_type_matches ||
       nigori.encrypt_everything() != encrypt_everything_ ||
       nigori_types_need_update ||
       nigori_needs_new_keys) {
+    DVLOG(1) << "Triggering nigori rewrite.";
     return false;
   }
   return true;
 }
 
 void SyncEncryptionHandlerImpl::RewriteNigori() {
-  DVLOG(1) << "Overwriting stale nigori node.";
+  DVLOG(1) << "Writing local encryption state into nigori.";
   DCHECK(thread_checker_.CalledOnValidThread());
   WriteTransaction trans(FROM_HERE, user_share_);
   WriteEncryptionStateToNigori(&trans);
@@ -620,38 +814,45 @@ void SyncEncryptionHandlerImpl::WriteEncryptionStateToNigori(
   // This can happen in tests that don't have nigori nodes.
   if (nigori_node.InitByTagLookup(kNigoriTag) != BaseNode::INIT_OK)
     return;
+
   sync_pb::NigoriSpecifics nigori = nigori_node.GetNigoriSpecifics();
   const Cryptographer& cryptographer =
       UnlockVault(trans->GetWrappedTrans()).cryptographer;
-  if (cryptographer.is_ready() &&
-      nigori_overwrite_count_ < kNigoriOverwriteLimit) {
-    // Does not modify the encrypted blob if the unencrypted data already
-    // matches what is about to be written.
-    sync_pb::EncryptedData original_keys = nigori.encrypted();
-    if (!cryptographer.GetKeys(nigori.mutable_encrypted()))
-      NOTREACHED();
 
-    if (nigori.encrypted().SerializeAsString() !=
-        original_keys.SerializeAsString()) {
-      // We've updated the nigori node's encryption keys. In order to prevent
-      // a possible looping of two clients constantly overwriting each other,
-      // we limit the absolute number of overwrites per client instantiation.
-      nigori_overwrite_count_++;
-      UMA_HISTOGRAM_COUNTS("Sync.AutoNigoriOverwrites",
-                           nigori_overwrite_count_);
+  // Will not do anything if we shouldn't or can't migrate. Otherwise
+  // migrates, writing the full encryption state as it does.
+  if (!AttemptToMigrateNigoriToKeystore(trans, &nigori_node)) {
+    if (cryptographer.is_ready() &&
+        nigori_overwrite_count_ < kNigoriOverwriteLimit) {
+      // Does not modify the encrypted blob if the unencrypted data already
+      // matches what is about to be written.
+      sync_pb::EncryptedData original_keys = nigori.encryption_keybag();
+      if (!cryptographer.GetKeys(nigori.mutable_encryption_keybag()))
+        NOTREACHED();
+
+      if (nigori.encryption_keybag().SerializeAsString() !=
+          original_keys.SerializeAsString()) {
+        // We've updated the nigori node's encryption keys. In order to prevent
+        // a possible looping of two clients constantly overwriting each other,
+        // we limit the absolute number of overwrites per client instantiation.
+        nigori_overwrite_count_++;
+        UMA_HISTOGRAM_COUNTS("Sync.AutoNigoriOverwrites",
+                             nigori_overwrite_count_);
+      }
+
+      // Note: we don't try to set keybag_is_frozen here since if that
+      // is lost the user can always set it again (and we don't want to clobber
+      // any migration state). The main goal at this point is to preserve
+      // the encryption keys so all data remains decryptable.
     }
+    syncable::UpdateNigoriFromEncryptedTypes(
+        UnlockVault(trans->GetWrappedTrans()).encrypted_types,
+        encrypt_everything_,
+        &nigori);
 
-    // Note: we don't try to set using_explicit_passphrase here since if that
-    // is lost the user can always set it again. The main point is to preserve
-    // the encryption keys so all data remains decryptable.
+    // If nothing has changed, this is a no-op.
+    nigori_node.SetNigoriSpecifics(nigori);
   }
-  syncable::UpdateNigoriFromEncryptedTypes(
-      UnlockVault(trans->GetWrappedTrans()).encrypted_types,
-      encrypt_everything_,
-      &nigori);
-
-  // If nothing has changed, this is a no-op.
-  nigori_node.SetNigoriSpecifics(nigori);
 }
 
 bool SyncEncryptionHandlerImpl::UpdateEncryptedTypesFromNigori(
@@ -660,16 +861,12 @@ bool SyncEncryptionHandlerImpl::UpdateEncryptedTypesFromNigori(
   DCHECK(thread_checker_.CalledOnValidThread());
   ModelTypeSet* encrypted_types = &UnlockVaultMutable(trans)->encrypted_types;
   if (nigori.encrypt_everything()) {
-    if (!encrypt_everything_) {
-      encrypt_everything_ = true;
-      *encrypted_types = UserTypes();
-      DVLOG(1) << "Enabling encrypt everything via nigori node update";
-      FOR_EACH_OBSERVER(
-          Observer, observers_,
-          OnEncryptedTypesChanged(*encrypted_types, encrypt_everything_));
-    }
+    EnableEncryptEverythingImpl(trans);
     DCHECK(encrypted_types->Equals(UserTypes()));
     return true;
+  } else if (encrypt_everything_) {
+    DCHECK(encrypted_types->Equals(UserTypes()));
+    return false;
   }
 
   ModelTypeSet nigori_encrypted_types;
@@ -696,10 +893,90 @@ bool SyncEncryptionHandlerImpl::UpdateEncryptedTypesFromNigori(
   return encrypted_types->Equals(nigori_encrypted_types);
 }
 
+void SyncEncryptionHandlerImpl::SetCustomPassphrase(
+    const std::string& passphrase,
+    WriteTransaction* trans,
+    WriteNode* nigori_node) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(IsNigoriMigratedToKeystore(nigori_node->GetNigoriSpecifics()));
+  KeyParams key_params = {"localhost", "dummy", passphrase};
+
+  if (passphrase_type_ != KEYSTORE_PASSPHRASE) {
+    DVLOG(1) << "Failing to set a custom passphrase because one has already "
+             << "been set.";
+    FinishSetPassphrase(false, "", trans, nigori_node);
+    return;
+  }
+
+  Cryptographer* cryptographer =
+      &UnlockVaultMutable(trans->GetWrappedTrans())->cryptographer;
+  if (cryptographer->has_pending_keys()) {
+    // This theoretically shouldn't happen, because the only way to have pending
+    // keys after migrating to keystore support is if a custom passphrase was
+    // set, which should update passpshrase_state_ and should be caught by the
+    // if statement above. For the sake of safety though, we check for it in
+    // case a client is misbehaving.
+    LOG(ERROR) << "Failing to set custom passphrase because of pending keys.";
+    FinishSetPassphrase(false, "", trans, nigori_node);
+    return;
+  }
+
+  std::string bootstrap_token;
+  if (cryptographer->AddKey(key_params)) {
+    DVLOG(1) << "Setting custom passphrase.";
+    cryptographer->GetBootstrapToken(&bootstrap_token);
+    passphrase_type_ = CUSTOM_PASSPHRASE;
+    FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
+                      OnPassphraseTypeChanged(passphrase_type_));
+  } else {
+    NOTREACHED() << "Failed to add key to cryptographer.";
+    return;
+  }
+  FinishSetPassphrase(true, bootstrap_token, trans, nigori_node);
+}
+
+void SyncEncryptionHandlerImpl::DecryptPendingKeysWithExplicitPassphrase(
+    const std::string& passphrase,
+    WriteTransaction* trans,
+    WriteNode* nigori_node) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(IsExplicitPassphrase(passphrase_type_));
+  KeyParams key_params = {"localhost", "dummy", passphrase};
+
+  Cryptographer* cryptographer =
+      &UnlockVaultMutable(trans->GetWrappedTrans())->cryptographer;
+  if (!cryptographer->has_pending_keys()) {
+    // Note that this *can* happen in a rare situation where data is
+    // re-encrypted on another client while a SetDecryptionPassphrase() call is
+    // in-flight on this client. It is rare enough that we choose to do nothing.
+    NOTREACHED() << "Attempt to set decryption passphrase failed because there "
+                 << "were no pending keys.";
+    return;
+  }
+
+  DCHECK(IsExplicitPassphrase(passphrase_type_));
+  bool success = false;
+  std::string bootstrap_token;
+  if (cryptographer->DecryptPendingKeys(key_params)) {
+    DVLOG(1) << "Explicit passphrase accepted for decryption.";
+    cryptographer->GetBootstrapToken(&bootstrap_token);
+    success = true;
+  } else {
+    DVLOG(1) << "Explicit passphrase failed to decrypt.";
+    success = false;
+  }
+  if (success && !keystore_key_.empty()) {
+    // Should already be part of the encryption keybag, but we add it just
+    // in case.
+    KeyParams key_params = {"localhost", "dummy", keystore_key_};
+    cryptographer->AddNonDefaultKey(key_params);
+  }
+  FinishSetPassphrase(success, bootstrap_token, trans, nigori_node);
+}
+
 void SyncEncryptionHandlerImpl::FinishSetPassphrase(
     bool success,
     const std::string& bootstrap_token,
-    bool is_explicit,
     WriteTransaction* trans,
     WriteNode* nigori_node) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -736,30 +1013,38 @@ void SyncEncryptionHandlerImpl::FinishSetPassphrase(
     }
     return;
   }
-
+  DCHECK(success);
   DCHECK(cryptographer.is_ready());
 
-  // TODO(zea): trigger migration if necessary.
-
-  sync_pb::NigoriSpecifics specifics(nigori_node->GetNigoriSpecifics());
-  // Does not modify specifics.encrypted() if the original decrypted data was
-  // the same.
-  if (!cryptographer.GetKeys(specifics.mutable_encrypted()))
-    NOTREACHED();
-  if (is_explicit && passphrase_state_ != CUSTOM_PASSPHRASE) {
-    passphrase_state_ = CUSTOM_PASSPHRASE;
-    FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
-                      OnPassphraseStateChanged(passphrase_state_));
+  // Will do nothing if we're already properly migrated or unable to migrate
+  // (in otherwords, if ShouldTriggerMigration is false).
+  // Otherwise will update the nigori node with the current migrated state,
+  // writing all encryption state as it does.
+  if (!AttemptToMigrateNigoriToKeystore(trans, nigori_node)) {
+    sync_pb::NigoriSpecifics nigori(nigori_node->GetNigoriSpecifics());
+    // Does not modify nigori.encryption_keybag() if the original decrypted
+    // data was the same.
+    if (!cryptographer.GetKeys(nigori.mutable_encryption_keybag()))
+      NOTREACHED();
+    if (IsNigoriMigratedToKeystore(nigori)) {
+      DCHECK(keystore_key_.empty() || IsExplicitPassphrase(passphrase_type_));
+      DVLOG(1) << "Leaving nigori migration state untouched after setting"
+               << " passphrase.";
+    } else {
+      nigori.set_keybag_is_frozen(
+          IsExplicitPassphrase(passphrase_type_));
+    }
+    nigori_node->SetNigoriSpecifics(nigori);
   }
-  specifics.set_using_explicit_passphrase(is_explicit);
-  nigori_node->SetNigoriSpecifics(specifics);
 
-  // Must do this after OnPassphraseStateChanged, in order to ensure the PSS
+  // Must do this after OnPassphraseTypeChanged, in order to ensure the PSS
   // checks the passphrase state after it has been set.
   FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
                     OnPassphraseAccepted());
 
   // Does nothing if everything is already encrypted.
+  // TODO(zea): If we just migrated and enabled encryption, this will be
+  // redundant. Figure out a way to not do this unnecessarily.
   ReEncryptEverything(trans);
 }
 
@@ -790,6 +1075,216 @@ const SyncEncryptionHandlerImpl::Vault& SyncEncryptionHandlerImpl::UnlockVault(
     syncable::BaseTransaction* const trans) const {
   DCHECK_EQ(user_share_->directory.get(), trans->directory());
   return vault_unsafe_;
+}
+
+bool SyncEncryptionHandlerImpl::ShouldTriggerMigration(
+    const sync_pb::NigoriSpecifics& nigori,
+    const Cryptographer& cryptographer) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  // TODO(zea): once we're willing to have the keystore key be the only
+  // encryption key, change this to !has_pending_keys(). For now, we need the
+  // cryptographer to be initialized with the current GAIA pass so that older
+  // clients (that don't have keystore support) can decrypt the keybag.
+  if (!cryptographer.is_ready())
+    return false;
+  if (IsNigoriMigratedToKeystore(nigori)) {
+    // If the nigori is already migrated but does not reflect the explicit
+    // passphrase state, remigrate. Similarly, if the nigori has an explicit
+    // passphrase but does not have full encryption, or the nigori has an
+    // implicit passphrase but does have full encryption, re-migrate.
+    // Note that this is to defend against other clients without keystore
+    // encryption enabled transitioning to states that are no longer valid.
+    if (passphrase_type_ != KEYSTORE_PASSPHRASE &&
+        nigori.passphrase_type() ==
+            sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE) {
+      return true;
+    } else if (IsExplicitPassphrase(passphrase_type_) &&
+               !encrypt_everything_) {
+      return true;
+    } else if (passphrase_type_ == KEYSTORE_PASSPHRASE &&
+               encrypt_everything_) {
+      return true;
+    } else {
+      return false;
+    }
+  } else if (keystore_key_.empty()) {
+    // If we haven't already migrated, we don't want to do anything unless
+    // a keystore key is available (so that those clients without keystore
+    // encryption enabled aren't forced into new states, e.g. frozen implicit
+    // passphrase).
+    return false;
+  }
+  return true;
+}
+
+bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
+    WriteTransaction* trans,
+    WriteNode* nigori_node) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  const sync_pb::NigoriSpecifics& old_nigori =
+      nigori_node->GetNigoriSpecifics();
+  Cryptographer* cryptographer =
+      &UnlockVaultMutable(trans->GetWrappedTrans())->cryptographer;
+
+  if (!ShouldTriggerMigration(old_nigori, *cryptographer))
+    return false;
+
+  DVLOG(1) << "Starting nigori migration to keystore support.";
+  if (migration_time_ms_ == 0)
+    migration_time_ms_ = TimeToProtoTime(base::Time::Now());
+  sync_pb::NigoriSpecifics migrated_nigori(old_nigori);
+  migrated_nigori.set_keystore_migration_time(migration_time_ms_);
+
+  PassphraseType new_passphrase_type = passphrase_type_;
+  bool new_encrypt_everything = encrypt_everything_;
+  if (encrypt_everything_ && !IsExplicitPassphrase(passphrase_type_)) {
+    DVLOG(1) << "Switching to frozen implicit passphrase due to already having "
+             << "full encryption.";
+    new_passphrase_type = FROZEN_IMPLICIT_PASSPHRASE;
+    migrated_nigori.clear_keystore_decryptor_token();
+  } else if (IsExplicitPassphrase(passphrase_type_)) {
+    DVLOG_IF(1, !encrypt_everything_) << "Enabling encrypt everything due to "
+                                      << "explicit passphrase";
+    new_encrypt_everything = true;
+    migrated_nigori.clear_keystore_decryptor_token();
+  } else {
+    DCHECK_EQ(passphrase_type_, IMPLICIT_PASSPHRASE);
+    DCHECK(!encrypt_everything_);
+    new_passphrase_type = KEYSTORE_PASSPHRASE;
+    DVLOG(1) << "Switching to keystore passphrase state.";
+  }
+  migrated_nigori.set_encrypt_everything(new_encrypt_everything);
+  migrated_nigori.set_passphrase_type(
+      EnumPassphraseTypeToProto(new_passphrase_type));
+  migrated_nigori.set_keybag_is_frozen(true);
+
+  if (!keystore_key_.empty()) {
+    KeyParams key_params = {"localhost", "dummy", keystore_key_};
+    if (!cryptographer->AddNonDefaultKey(key_params)) {
+      LOG(ERROR) << "Failed to add keystore key as non-default key.";
+      return false;
+    }
+  }
+  if (new_passphrase_type == KEYSTORE_PASSPHRASE &&
+      !GetKeystoreDecryptor(
+          *cryptographer,
+          keystore_key_,
+          migrated_nigori.mutable_keystore_decryptor_token())) {
+    LOG(ERROR) << "Failed to extract keystore decryptor token.";
+    return false;
+  }
+  if (!cryptographer->GetKeys(migrated_nigori.mutable_encryption_keybag())) {
+    LOG(ERROR) << "Failed to extract encryption keybag.";
+    return false;
+  }
+
+  DVLOG(1) << "Completing nigori migration to keystore support.";
+  nigori_node->SetNigoriSpecifics(migrated_nigori);
+  if (passphrase_type_ != new_passphrase_type) {
+    passphrase_type_ = new_passphrase_type;
+    FOR_EACH_OBSERVER(SyncEncryptionHandler::Observer, observers_,
+                      OnPassphraseTypeChanged(passphrase_type_));
+  }
+  if (new_encrypt_everything && !encrypt_everything_) {
+    EnableEncryptEverythingImpl(trans->GetWrappedTrans());
+    ReEncryptEverything(trans);
+  }
+  return true;
+}
+
+bool SyncEncryptionHandlerImpl::GetKeystoreDecryptor(
+    const Cryptographer& cryptographer,
+    const std::string& keystore_key,
+    sync_pb::EncryptedData* encrypted_blob) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!keystore_key.empty());
+  DCHECK(cryptographer.is_ready());
+  std::string serialized_nigori;
+  serialized_nigori = cryptographer.GetDefaultNigoriKey();
+  if (serialized_nigori.empty()) {
+    LOG(ERROR) << "Failed to get cryptographer bootstrap token.";
+    return false;
+  }
+  Cryptographer temp_cryptographer(cryptographer.encryptor());
+  KeyParams key_params = {"localhost", "dummy", keystore_key};
+  if (!temp_cryptographer.AddKey(key_params))
+    return false;
+  if (!temp_cryptographer.EncryptString(serialized_nigori, encrypted_blob))
+    return false;
+  return true;
+}
+
+bool SyncEncryptionHandlerImpl::AttemptToInstallKeybag(
+    const sync_pb::EncryptedData& keybag,
+    bool update_default,
+    Cryptographer* cryptographer) {
+  if (!cryptographer->CanDecrypt(keybag))
+    return false;
+  cryptographer->InstallKeys(keybag);
+  if (update_default)
+    cryptographer->SetDefaultKey(keybag.key_name());
+  return true;
+}
+
+void SyncEncryptionHandlerImpl::EnableEncryptEverythingImpl(
+    syncable::BaseTransaction* const trans) {
+  ModelTypeSet* encrypted_types = &UnlockVaultMutable(trans)->encrypted_types;
+  if (encrypt_everything_) {
+    DCHECK(encrypted_types->Equals(UserTypes()));
+    return;
+  }
+  encrypt_everything_ = true;
+  *encrypted_types = UserTypes();
+  FOR_EACH_OBSERVER(
+      Observer, observers_,
+      OnEncryptedTypesChanged(*encrypted_types, encrypt_everything_));
+}
+
+bool SyncEncryptionHandlerImpl::DecryptPendingKeysWithKeystoreKey(
+    const std::string& keystore_key,
+    const sync_pb::EncryptedData& keystore_decryptor_token,
+    Cryptographer* cryptographer) {
+  DCHECK(cryptographer->has_pending_keys());
+  if (keystore_decryptor_token.blob().empty())
+    return false;
+  Cryptographer temp_cryptographer(cryptographer->encryptor());
+  KeyParams keystore_params = {"localhost", "dummy", keystore_key_};
+  if (temp_cryptographer.AddKey(keystore_params) &&
+      temp_cryptographer.CanDecrypt(keystore_decryptor_token)) {
+    // Someone else migrated the nigori for us! How generous! Go ahead and
+    // install both the keystore key and the new default encryption key
+    // (i.e. the one provided by the keystore decryptor token) into the
+    // cryptographer.
+    // The keystore decryptor token is a keystore key encrypted blob containing
+    // the current serialized default encryption key (and as such should be
+    // able to decrypt the nigori node's encryption keybag).
+    DVLOG(1) << "Attempting to decrypt pending keys using "
+             << "keystore decryptor token.";
+    std::string serialized_nigori =
+        temp_cryptographer.DecryptToString(keystore_decryptor_token);
+    // This will decrypt the pending keys and add them if possible. The key
+    // within |serialized_nigori| will be the default after.
+    cryptographer->ImportNigoriKey(serialized_nigori);
+    // Theoretically the encryption keybag should already contain the keystore
+    // key. We explicitly add it as a safety measure.
+    cryptographer->AddNonDefaultKey(keystore_params);
+    if (cryptographer->is_ready()) {
+      std::string bootstrap_token;
+      cryptographer->GetBootstrapToken(&bootstrap_token);
+      DVLOG(1) << "Keystore decryptor token decrypted pending keys.";
+      FOR_EACH_OBSERVER(
+          SyncEncryptionHandler::Observer,
+          observers_,
+          OnBootstrapTokenUpdated(bootstrap_token,
+                                  PASSPHRASE_BOOTSTRAP_TOKEN));
+      FOR_EACH_OBSERVER(
+          SyncEncryptionHandler::Observer,
+          observers_,
+          OnCryptographerStateChanged(cryptographer));
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace browser_sync

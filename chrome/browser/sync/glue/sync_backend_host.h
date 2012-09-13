@@ -450,8 +450,8 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
 
   // Invoked when the passphrase state has changed. Caches the passphrase state
   // for later use on the UI thread.
-  void HandlePassphraseStateChangedOnFrontendLoop(
-      syncer::PassphraseState state);
+  void HandlePassphraseTypeChangedOnFrontendLoop(
+      syncer::PassphraseType state);
 
   void HandleStopSyncingPermanentlyOnFrontendLoop();
 
@@ -524,7 +524,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // in the nigori node. Updated whenever a new nigori node arrives or the user
   // manually changes their passphrase state. Cached so we can synchronously
   // check it from the UI thread.
-  syncer::PassphraseState cached_passphrase_state_;
+  syncer::PassphraseType cached_passphrase_type_;
 
   // UI-thread cache of the last SyncSessionSnapshot received from syncapi.
   syncer::sessions::SyncSessionSnapshot last_snapshot_;

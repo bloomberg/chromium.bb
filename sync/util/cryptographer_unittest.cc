@@ -183,32 +183,22 @@ TEST_F(SyncCryptographerTest, MAYBE_EncryptExportDecrypt) {
   }
 }
 
-// Crashes, Bug 55178.
-#if defined(OS_WIN)
-#define MAYBE_PackUnpack DISABLED_PackUnpack
-#else
-#define MAYBE_PackUnpack PackUnpack
-#endif
-TEST_F(SyncCryptographerTest, MAYBE_PackUnpack) {
-  Nigori nigori;
-  ASSERT_TRUE(nigori.InitByDerivation("example.com", "username", "password"));
-  std::string expected_user, expected_encryption, expected_mac;
-  ASSERT_TRUE(nigori.ExportKeys(&expected_user, &expected_encryption,
-                                &expected_mac));
+TEST_F(SyncCryptographerTest, Bootstrap) {
+  KeyParams params = {"localhost", "dummy", "dummy"};
+  cryptographer_.AddKey(params);
 
   std::string token;
-  EXPECT_TRUE(cryptographer_.PackBootstrapToken(&nigori, &token));
+  EXPECT_TRUE(cryptographer_.GetBootstrapToken(&token));
   EXPECT_TRUE(IsStringUTF8(token));
 
-  scoped_ptr<Nigori> unpacked(cryptographer_.UnpackBootstrapToken(token));
-  EXPECT_NE(static_cast<Nigori*>(NULL), unpacked.get());
+  Cryptographer other_cryptographer(&encryptor_);
+  other_cryptographer.Bootstrap(token);
+  EXPECT_TRUE(other_cryptographer.is_ready());
 
-  std::string user_key, encryption_key, mac_key;
-  ASSERT_TRUE(unpacked->ExportKeys(&user_key, &encryption_key, &mac_key));
-
-  EXPECT_EQ(expected_user, user_key);
-  EXPECT_EQ(expected_encryption, encryption_key);
-  EXPECT_EQ(expected_mac, mac_key);
+  const char secret[] = "secret";
+  sync_pb::EncryptedData encrypted;
+  EXPECT_TRUE(other_cryptographer.EncryptString(secret, &encrypted));
+  EXPECT_TRUE(cryptographer_.CanDecryptUsingDefaultKey(encrypted));
 }
 
 }  // namespace syncer

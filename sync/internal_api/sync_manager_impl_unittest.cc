@@ -699,7 +699,7 @@ class SyncEncryptionHandlerObserverMock
                void(ModelTypeSet, bool));  // NOLINT
   MOCK_METHOD0(OnEncryptionComplete, void());  // NOLINT
   MOCK_METHOD1(OnCryptographerStateChanged, void(Cryptographer*));  // NOLINT
-  MOCK_METHOD1(OnPassphraseStateChanged, void(PassphraseState));  // NOLINT
+  MOCK_METHOD1(OnPassphraseTypeChanged, void(PassphraseType));  // NOLINT
 };
 
 }  // namespace
@@ -832,7 +832,7 @@ class SyncManagerTest : public testing::Test,
     }
     if (nigori_status == WRITE_TO_NIGORI) {
       sync_pb::NigoriSpecifics nigori;
-      cryptographer->GetKeys(nigori.mutable_encrypted());
+      cryptographer->GetKeys(nigori.mutable_encryption_keybag());
       share->directory->GetNigoriHandler()->UpdateNigoriFromEncryptedTypes(
           &nigori,
           trans.GetWrappedTrans());
@@ -1362,10 +1362,10 @@ TEST_F(SyncManagerTest, RefreshEncryptionReady) {
     EXPECT_EQ(BaseNode::INIT_OK,
               node.InitByIdLookup(GetIdForDataType(NIGORI)));
     sync_pb::NigoriSpecifics nigori = node.GetNigoriSpecifics();
-    EXPECT_TRUE(nigori.has_encrypted());
+    EXPECT_TRUE(nigori.has_encryption_keybag());
     Cryptographer* cryptographer = trans.GetCryptographer();
     EXPECT_TRUE(cryptographer->is_ready());
-    EXPECT_TRUE(cryptographer->CanDecrypt(nigori.encrypted()));
+    EXPECT_TRUE(cryptographer->CanDecrypt(nigori.encryption_keybag()));
   }
 }
 
@@ -1407,10 +1407,10 @@ TEST_F(SyncManagerTest, RefreshEncryptionEmptyNigori) {
     EXPECT_EQ(BaseNode::INIT_OK,
               node.InitByIdLookup(GetIdForDataType(NIGORI)));
     sync_pb::NigoriSpecifics nigori = node.GetNigoriSpecifics();
-    EXPECT_TRUE(nigori.has_encrypted());
+    EXPECT_TRUE(nigori.has_encryption_keybag());
     Cryptographer* cryptographer = trans.GetCryptographer();
     EXPECT_TRUE(cryptographer->is_ready());
-    EXPECT_TRUE(cryptographer->CanDecrypt(nigori.encrypted()));
+    EXPECT_TRUE(cryptographer->CanDecrypt(nigori.encryption_keybag()));
   }
 }
 
@@ -1502,7 +1502,7 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
   EXPECT_CALL(encryption_observer_,
-      OnPassphraseStateChanged(CUSTOM_PASSPHRASE));
+              OnPassphraseTypeChanged(CUSTOM_PASSPHRASE));
   sync_manager_.GetEncryptionHandler()->SetEncryptionPassphrase(
       "new_passphrase", true);
   EXPECT_TRUE(EncryptEverythingEnabledForTest());
@@ -1546,7 +1546,7 @@ TEST_F(SyncManagerTest, SetInitialGaiaPass) {
       "new_passphrase",
       false);
   EXPECT_EQ(IMPLICIT_PASSPHRASE,
-            sync_manager_.GetEncryptionHandler()->GetPassphraseState());
+            sync_manager_.GetEncryptionHandler()->GetPassphraseType());
   EXPECT_FALSE(EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1555,7 +1555,7 @@ TEST_F(SyncManagerTest, SetInitialGaiaPass) {
     sync_pb::NigoriSpecifics nigori = node.GetNigoriSpecifics();
     Cryptographer* cryptographer = trans.GetCryptographer();
     EXPECT_TRUE(cryptographer->is_ready());
-    EXPECT_TRUE(cryptographer->CanDecrypt(nigori.encrypted()));
+    EXPECT_TRUE(cryptographer->CanDecrypt(nigori.encryption_keybag()));
   }
 }
 
@@ -1581,7 +1581,7 @@ TEST_F(SyncManagerTest, UpdateGaiaPass) {
       "new_passphrase",
       false);
   EXPECT_EQ(IMPLICIT_PASSPHRASE,
-            sync_manager_.GetEncryptionHandler()->GetPassphraseState());
+            sync_manager_.GetEncryptionHandler()->GetPassphraseType());
   EXPECT_FALSE(EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1626,12 +1626,12 @@ TEST_F(SyncManagerTest, SetPassphraseWithPassword) {
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
   EXPECT_CALL(encryption_observer_,
-      OnPassphraseStateChanged(CUSTOM_PASSPHRASE));
+      OnPassphraseTypeChanged(CUSTOM_PASSPHRASE));
   sync_manager_.GetEncryptionHandler()->SetEncryptionPassphrase(
       "new_passphrase",
       true);
   EXPECT_EQ(CUSTOM_PASSPHRASE,
-            sync_manager_.GetEncryptionHandler()->GetPassphraseState());
+            sync_manager_.GetEncryptionHandler()->GetPassphraseType());
   EXPECT_FALSE(EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1673,8 +1673,8 @@ TEST_F(SyncManagerTest, SupplyPendingGAIAPass) {
     WriteNode node(&trans);
     EXPECT_EQ(BaseNode::INIT_OK, node.InitByTagLookup(kNigoriTag));
     sync_pb::NigoriSpecifics nigori;
-    other_cryptographer.GetKeys(nigori.mutable_encrypted());
-    cryptographer->SetPendingKeys(nigori.encrypted());
+    other_cryptographer.GetKeys(nigori.mutable_encryption_keybag());
+    cryptographer->SetPendingKeys(nigori.encryption_keybag());
     EXPECT_TRUE(cryptographer->has_pending_keys());
     node.SetNigoriSpecifics(nigori);
   }
@@ -1685,7 +1685,7 @@ TEST_F(SyncManagerTest, SupplyPendingGAIAPass) {
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
   sync_manager_.GetEncryptionHandler()->SetDecryptionPassphrase("passphrase2");
   EXPECT_EQ(IMPLICIT_PASSPHRASE,
-            sync_manager_.GetEncryptionHandler()->GetPassphraseState());
+            sync_manager_.GetEncryptionHandler()->GetPassphraseType());
   EXPECT_FALSE(EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1721,9 +1721,9 @@ TEST_F(SyncManagerTest, SupplyPendingOldGAIAPass) {
     WriteNode node(&trans);
     EXPECT_EQ(BaseNode::INIT_OK, node.InitByTagLookup(kNigoriTag));
     sync_pb::NigoriSpecifics nigori;
-    other_cryptographer.GetKeys(nigori.mutable_encrypted());
+    other_cryptographer.GetKeys(nigori.mutable_encryption_keybag());
     node.SetNigoriSpecifics(nigori);
-    cryptographer->SetPendingKeys(nigori.encrypted());
+    cryptographer->SetPendingKeys(nigori.encryption_keybag());
 
     // other_cryptographer now contains all encryption keys, and is encrypting
     // with the newest gaia.
@@ -1742,7 +1742,7 @@ TEST_F(SyncManagerTest, SupplyPendingOldGAIAPass) {
       "new_gaia",
       false);
   EXPECT_EQ(IMPLICIT_PASSPHRASE,
-            sync_manager_.GetEncryptionHandler()->GetPassphraseState());
+            sync_manager_.GetEncryptionHandler()->GetPassphraseType());
   EXPECT_FALSE(EncryptEverythingEnabledForTest());
   testing::Mock::VerifyAndClearExpectations(&encryption_observer_);
   {
@@ -1765,7 +1765,7 @@ TEST_F(SyncManagerTest, SupplyPendingOldGAIAPass) {
       "old_gaia",
       false);
   EXPECT_EQ(IMPLICIT_PASSPHRASE,
-            sync_manager_.GetEncryptionHandler()->GetPassphraseState());
+            sync_manager_.GetEncryptionHandler()->GetPassphraseType());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     Cryptographer* cryptographer = trans.GetCryptographer();
@@ -1804,22 +1804,26 @@ TEST_F(SyncManagerTest, SupplyPendingExplicitPass) {
     WriteNode node(&trans);
     EXPECT_EQ(BaseNode::INIT_OK, node.InitByTagLookup(kNigoriTag));
     sync_pb::NigoriSpecifics nigori;
-    other_cryptographer.GetKeys(nigori.mutable_encrypted());
-    cryptographer->SetPendingKeys(nigori.encrypted());
+    other_cryptographer.GetKeys(nigori.mutable_encryption_keybag());
+    cryptographer->SetPendingKeys(nigori.encryption_keybag());
     EXPECT_TRUE(cryptographer->has_pending_keys());
-    nigori.set_using_explicit_passphrase(true);
+    nigori.set_keybag_is_frozen(true);
     node.SetNigoriSpecifics(nigori);
   }
+  EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
+  EXPECT_CALL(encryption_observer_,
+              OnPassphraseTypeChanged(CUSTOM_PASSPHRASE));
+  EXPECT_CALL(encryption_observer_, OnPassphraseRequired(_, _));
+  EXPECT_CALL(encryption_observer_, OnEncryptedTypesChanged(_, false));
+  sync_manager_.GetEncryptionHandler()->Init();
   EXPECT_CALL(encryption_observer_,
               OnBootstrapTokenUpdated(_, PASSPHRASE_BOOTSTRAP_TOKEN));
   EXPECT_CALL(encryption_observer_, OnPassphraseAccepted());
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
-  EXPECT_CALL(encryption_observer_,
-      OnPassphraseStateChanged(CUSTOM_PASSPHRASE));
   sync_manager_.GetEncryptionHandler()->SetDecryptionPassphrase("explicit");
   EXPECT_EQ(CUSTOM_PASSPHRASE,
-            sync_manager_.GetEncryptionHandler()->GetPassphraseState());
+            sync_manager_.GetEncryptionHandler()->GetPassphraseType());
   EXPECT_FALSE(EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1849,9 +1853,9 @@ TEST_F(SyncManagerTest, SupplyPendingGAIAPassUserProvided) {
     WriteNode node(&trans);
     EXPECT_EQ(BaseNode::INIT_OK, node.InitByTagLookup(kNigoriTag));
     sync_pb::NigoriSpecifics nigori;
-    other_cryptographer.GetKeys(nigori.mutable_encrypted());
+    other_cryptographer.GetKeys(nigori.mutable_encryption_keybag());
     node.SetNigoriSpecifics(nigori);
-    cryptographer->SetPendingKeys(nigori.encrypted());
+    cryptographer->SetPendingKeys(nigori.encryption_keybag());
     EXPECT_FALSE(cryptographer->is_ready());
   }
   EXPECT_CALL(encryption_observer_,
@@ -1863,7 +1867,7 @@ TEST_F(SyncManagerTest, SupplyPendingGAIAPassUserProvided) {
       "passphrase",
       false);
   EXPECT_EQ(IMPLICIT_PASSPHRASE,
-            sync_manager_.GetEncryptionHandler()->GetPassphraseState());
+            sync_manager_.GetEncryptionHandler()->GetPassphraseType());
   EXPECT_FALSE(EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1893,12 +1897,12 @@ TEST_F(SyncManagerTest, SetPassphraseWithEmptyPasswordNode) {
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
   EXPECT_CALL(encryption_observer_,
-      OnPassphraseStateChanged(CUSTOM_PASSPHRASE));
+      OnPassphraseTypeChanged(CUSTOM_PASSPHRASE));
   sync_manager_.GetEncryptionHandler()->SetEncryptionPassphrase(
       "new_passphrase",
       true);
   EXPECT_EQ(CUSTOM_PASSPHRASE,
-            sync_manager_.GetEncryptionHandler()->GetPassphraseState());
+            sync_manager_.GetEncryptionHandler()->GetPassphraseType());
   EXPECT_FALSE(EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -2120,7 +2124,7 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
   EXPECT_CALL(encryption_observer_,
-      OnPassphraseStateChanged(CUSTOM_PASSPHRASE));
+      OnPassphraseTypeChanged(CUSTOM_PASSPHRASE));
   sync_manager_.GetEncryptionHandler()->SetEncryptionPassphrase(
       "new_passphrase",
       true);
@@ -2319,12 +2323,12 @@ TEST_F(SyncManagerTest, UpdatePasswordNewPassphrase) {
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
   EXPECT_CALL(encryption_observer_,
-      OnPassphraseStateChanged(CUSTOM_PASSPHRASE));
+      OnPassphraseTypeChanged(CUSTOM_PASSPHRASE));
   sync_manager_.GetEncryptionHandler()->SetEncryptionPassphrase(
       "new_passphrase",
       true);
   EXPECT_EQ(CUSTOM_PASSPHRASE,
-            sync_manager_.GetEncryptionHandler()->GetPassphraseState());
+            sync_manager_.GetEncryptionHandler()->GetPassphraseType());
   EXPECT_TRUE(ResetUnsyncedEntry(PASSWORDS, client_tag));
 }
 

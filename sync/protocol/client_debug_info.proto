@@ -62,7 +62,7 @@ message DebugEventInfo {
     ACTIONABLE_ERROR = 8; // Client received an actionable error.
     BOOTSTRAP_TOKEN_UPDATED = 9;  // A new cryptographer bootstrap token was
                                   // generated.
-    PASSPHRASE_STATE_CHANGED = 10;  // The encryption passphrase state changed.
+    PASSPHRASE_TYPE_CHANGED = 10;  // The encryption passphrase state changed.
     KEYSTORE_TOKEN_UPDATED = 11;  // A new keystore encryption token was
                                   // persisted.
   }

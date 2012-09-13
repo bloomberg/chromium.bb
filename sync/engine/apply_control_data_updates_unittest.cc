@@ -82,7 +82,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriUpdate) {
 
   sync_pb::EntitySpecifics specifics;
   sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
-  other_cryptographer.GetKeys(nigori->mutable_encrypted());
+  other_cryptographer.GetKeys(nigori->mutable_encryption_keybag());
   nigori->set_encrypt_everything(true);
   entry_factory_->CreateUnappliedNewItem(
       ModelTypeToRootTag(NIGORI), specifics, true);
@@ -126,7 +126,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriUpdateForDisabledTypes) {
 
   sync_pb::EntitySpecifics specifics;
   sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
-  other_cryptographer.GetKeys(nigori->mutable_encrypted());
+  other_cryptographer.GetKeys(nigori->mutable_encryption_keybag());
   nigori->set_encrypt_everything(true);
   entry_factory_->CreateUnappliedNewItem(
       ModelTypeToRootTag(NIGORI), specifics, true);
@@ -194,7 +194,7 @@ TEST_F(ApplyControlDataUpdatesTest, EncryptUnsyncedChanges) {
   cryptographer->AddKey(params);
   sync_pb::EntitySpecifics specifics;
   sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
-  cryptographer->GetKeys(nigori->mutable_encrypted());
+  cryptographer->GetKeys(nigori->mutable_encryption_keybag());
   nigori->set_encrypt_everything(true);
   encrypted_types.Put(BOOKMARKS);
   entry_factory_->CreateUnappliedNewItem(
@@ -307,7 +307,7 @@ TEST_F(ApplyControlDataUpdatesTest, CannotEncryptUnsyncedChanges) {
   other_cryptographer.AddKey(params);
   sync_pb::EntitySpecifics specifics;
   sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
-  other_cryptographer.GetKeys(nigori->mutable_encrypted());
+  other_cryptographer.GetKeys(nigori->mutable_encryption_keybag());
   nigori->set_encrypt_everything(true);
   encrypted_types.Put(BOOKMARKS);
   entry_factory_->CreateUnappliedNewItem(

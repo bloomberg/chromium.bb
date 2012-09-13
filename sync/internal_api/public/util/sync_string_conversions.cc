@@ -32,15 +32,15 @@ const char* PassphraseRequiredReasonToString(
   }
 }
 
-const char* PassphraseStateToString(PassphraseState state) {
-  switch (state) {
+const char* PassphraseTypeToString(PassphraseType type) {
+  switch (type) {
     ENUM_CASE(IMPLICIT_PASSPHRASE);
     ENUM_CASE(KEYSTORE_PASSPHRASE);
     ENUM_CASE(FROZEN_IMPLICIT_PASSPHRASE);
     ENUM_CASE(CUSTOM_PASSPHRASE);
     default:
       NOTREACHED();
-      return "INVALID_PASSPHRASE_STATE";
+      return "INVALID_PASSPHRASE_TYPE";
   }
 }
 

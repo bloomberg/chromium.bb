@@ -47,10 +47,12 @@ message DeviceInformation {
 
 // Properties of nigori sync object.
 message NigoriSpecifics {
-  optional EncryptedData encrypted = 1;
-  // True if |encrypted| is encrypted using a passphrase
-  // explicitly set by the user.
-  optional bool using_explicit_passphrase = 2;
+  optional EncryptedData encryption_keybag = 1;
+  // Once keystore migration is performed, we have to freeze the keybag so that
+  // older clients (that don't support keystore encryption) do not attempt to
+  // update the keybag.
+  // Previously |using_explicit_passphrase|.
+  optional bool keybag_is_frozen = 2;
 
   // Obsolete encryption fields. These were deprecated due to legacy versions
   // that understand their usage but did not perform encryption properly.
@@ -91,8 +93,32 @@ message NigoriSpecifics {
   // User device information. Contains information about each device that has a
   // sync-enabled Chrome browser connected to the user account.
   repeated DeviceInformation device_information = 28;
-  
+
   // Enable syncing favicons as part of tab sync.
   optional bool sync_tab_favicons = 29;
+
+  // The state of the passphrase required to decrypt |encryption_keybag|.
+  enum PassphraseType {
+    // Gaia-based encryption passphrase. Deprecated.
+    IMPLICIT_PASSPHRASE = 1;
+    // Keystore key encryption passphrase. Uses |keystore_bootstrap| to
+    // decrypt |encryption_keybag|.
+    KEYSTORE_PASSPHRASE = 2;
+    // Previous Gaia-based passphrase frozen and treated as a custom passphrase.
+    FROZEN_IMPLICIT_PASSPHRASE  = 3;
+    // User provided custom passphrase.
+    CUSTOM_PASSPHRASE = 4;
+  }
+  optional PassphraseType passphrase_type = 30
+      [default = IMPLICIT_PASSPHRASE];
+
+  // The keystore decryptor token blob. Encrypted with the keystore key, and
+  // contains the encryption key used to decrypt |encryption_keybag|.
+  // Only set if passphrase_state == KEYSTORE_PASSPHRASE.
+  optional EncryptedData keystore_decryptor_token = 31;
+
+  // The time (in epoch milliseconds) at which the keystore migration was
+  // performed.
+  optional int64 keystore_migration_time = 32;
 }
 

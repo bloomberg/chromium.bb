@@ -117,9 +117,9 @@ bool ApplyNigoriUpdates(syncable::WriteTransaction* trans,
     // that passphrase as an explicit one via settings. The goal here is to
     // ensure both sets of encryption keys are preserved.
     if (cryptographer->is_ready()) {
-      cryptographer->GetKeys(server_nigori->mutable_encrypted());
-      server_nigori->set_using_explicit_passphrase(
-          nigori_node.Get(SPECIFICS).nigori().using_explicit_passphrase());
+      cryptographer->GetKeys(server_nigori->mutable_encryption_keybag());
+      server_nigori->set_keybag_is_frozen(
+          nigori_node.Get(SPECIFICS).nigori().keybag_is_frozen());
     }
     nigori_node.Put(SPECIFICS, specifics);
     DVLOG(1) << "Resolving simple conflict, merging nigori nodes: "

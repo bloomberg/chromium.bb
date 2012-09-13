@@ -60,7 +60,10 @@ class SyncEncryptionHandlerImpl
   virtual void SetDecryptionPassphrase(const std::string& passphrase) OVERRIDE;
   virtual void EnableEncryptEverything() OVERRIDE;
   virtual bool EncryptEverythingEnabled() const OVERRIDE;
-  virtual PassphraseState GetPassphraseState() const OVERRIDE;
+  virtual PassphraseType GetPassphraseType() const OVERRIDE;
+
+  // TODO(zea): provide a method for getting the time at which the nigori
+  // node was migrated.
 
   // NigoriHandler implementation.
   // Note: all methods are invoked while the caller holds a transaction.
@@ -84,6 +87,8 @@ class SyncEncryptionHandlerImpl
   Cryptographer* GetCryptographerUnsafe();
   ModelTypeSet GetEncryptedTypesUnsafe();
 
+  bool MigratedToKeystore();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(SyncEncryptionHandlerImplTest,
                            NigoriEncryptionTypes);
@@ -93,6 +98,24 @@ class SyncEncryptionHandlerImpl
                            EncryptEverythingImplicit);
   FRIEND_TEST_ALL_PREFIXES(SyncEncryptionHandlerImplTest,
                            UnknownSensitiveTypes);
+  FRIEND_TEST_ALL_PREFIXES(SyncEncryptionHandlerImplTest,
+                           GetKeystoreDecryptor);
+  FRIEND_TEST_ALL_PREFIXES(SyncEncryptionHandlerImplTest,
+                           ReceiveMigratedNigoriKeystorePass);
+  FRIEND_TEST_ALL_PREFIXES(SyncEncryptionHandlerImplTest,
+                           ReceiveUmigratedNigoriAfterMigration);
+  FRIEND_TEST_ALL_PREFIXES(SyncEncryptionHandlerImplTest,
+                           ReceiveOldMigratedNigori);
+  FRIEND_TEST_ALL_PREFIXES(SyncEncryptionHandlerImplTest,
+                           SetKeystoreAfterReceivingMigratedNigori);
+  FRIEND_TEST_ALL_PREFIXES(SyncEncryptionHandlerImplTest,
+                           SetCustomPassAfterMigration);
+  FRIEND_TEST_ALL_PREFIXES(SyncEncryptionHandlerImplTest,
+                           SetCustomPassAfterMigrationNoKeystoreKey);
+  FRIEND_TEST_ALL_PREFIXES(SyncEncryptionHandlerImplTest,
+                           SetImplicitPassAfterMigrationNoKeystoreKey);
+  FRIEND_TEST_ALL_PREFIXES(SyncEncryptionHandlerImplTest,
+                           MigrateOnEncryptEverythingKeystorePassphrase);
 
   // Container for members that require thread safety protection.  All members
   // that can be accessed from more than one thread should be held here and
@@ -140,6 +163,26 @@ class SyncEncryptionHandlerImpl
       const sync_pb::NigoriSpecifics& nigori,
       syncable::BaseTransaction* const trans);
 
+  // TODO(zea): make these public and have them replace SetEncryptionPassphrase
+  // and SetDecryptionPassphrase.
+  // Helper methods for handling passphrases once keystore migration has taken
+  // place.
+  //
+  // Sets a new custom passphrase. Should only be called if a custom passphrase
+  // is not already set.
+  // Triggers OnPassphraseAccepted on success, OnPassphraseRequired if a custom
+  // passphrase already existed.
+  void SetCustomPassphrase(const std::string& passphrase,
+                           WriteTransaction* trans,
+                           WriteNode* nigori_node);
+  // Decrypt the encryption keybag using a user provided passphrase.
+  // Should only be called if the current passphrase is a frozen implicit
+  // passphrase or a custom passphrase.
+  // Triggers OnPassphraseAccepted on success, OnPassphraseRequired on failure.
+  void DecryptPendingKeysWithExplicitPassphrase(const std::string& passphrase,
+                                                WriteTransaction* trans,
+                                                WriteNode* nigori_node);
+
   // The final step of SetEncryptionPassphrase and SetDecryptionPassphrase that
   // notifies observers of the result of the set passphrase operation, updates
   // the nigori node, and does re-encryption.
@@ -153,7 +196,6 @@ class SyncEncryptionHandlerImpl
   // |trans| and |nigori_node|: used to access data in the cryptographer.
   void FinishSetPassphrase(bool success,
                            const std::string& bootstrap_token,
-                           bool is_explicit,
                            WriteTransaction* trans,
                            WriteNode* nigori_node);
 
@@ -167,6 +209,51 @@ class SyncEncryptionHandlerImpl
   // |vault_unsafe_|.
   Vault* UnlockVaultMutable(syncable::BaseTransaction* const trans);
   const Vault& UnlockVault(syncable::BaseTransaction* const trans) const;
+
+  // Helper method for determining if migration of a nigori node should be
+  // triggered or not.
+  // Conditions for triggering migration:
+  // 1. Cryptographer has no pending keys
+  // 2. Nigori node isn't already properly migrated.
+  // 3. Keystore key is available (if we are not migrated yet).
+  // Note: if the nigori node is migrated but has an invalid state, will return
+  // true (e.g. node has KEYSTORE_PASSPHRASE, local is CUSTOM_PASSPHRASE).
+  bool ShouldTriggerMigration(const sync_pb::NigoriSpecifics& nigori,
+                              const Cryptographer& cryptographer) const;
+
+  // Performs the actual migration of the |nigori_node| to support keystore
+  // encryption iff ShouldTriggerMigration(..) returns true.
+  bool AttemptToMigrateNigoriToKeystore(WriteTransaction* trans,
+                                        WriteNode* nigori_node);
+
+  // Fill |encrypted_blob| with the keystore decryptor token if
+  // |encrypted_blob|'s contents didn't already contain the key.
+  // The keystore decryptor token is the serialized current default encryption
+  // key, encrypted with the keystore key.
+  bool GetKeystoreDecryptor(
+      const Cryptographer& cryptographer,
+      const std::string& keystore_key,
+      sync_pb::EncryptedData* encrypted_blob);
+
+  // Helper method for installing the keys encrypted in |encryption_keybag|
+  // into |cryptographer|.
+  // Returns true on success, false if we were unable to install the keybag.
+  // Will not update the default key.
+  bool AttemptToInstallKeybag(const sync_pb::EncryptedData& keybag,
+                              bool update_default,
+                              Cryptographer* cryptographer);
+
+  // Helper method for decrypting pending keys with the keystore bootstrap.
+  // If successful, the default will become the key encrypted in the keystore
+  // bootstrap, and will return true. Else will return false.
+  bool DecryptPendingKeysWithKeystoreKey(
+      const std::string& keystore_key,
+      const sync_pb::EncryptedData& keystore_bootstrap,
+      Cryptographer* cryptographer);
+
+  // Helper to enable encrypt everything, notifying observers if necessary.
+  // Will not perform re-encryption.
+  void EnableEncryptEverythingImpl(syncable::BaseTransaction* const trans);
 
   base::ThreadChecker thread_checker_;
 
@@ -188,7 +275,7 @@ class SyncEncryptionHandlerImpl
   bool encrypt_everything_;
   // The current state of the passphrase required to decrypt the encryption
   // keys stored in the nigori node.
-  PassphraseState passphrase_state_;
+  PassphraseType passphrase_type_;
 
   // The keystore key provided by the server.
   std::string keystore_key_;
@@ -197,6 +284,9 @@ class SyncEncryptionHandlerImpl
   // conflict resolver) updated the nigori's encryption keys in this chrome
   // instantiation.
   int nigori_overwrite_count_;
+
+  // The time (in ms) the nigori was migrated to support keystore encryption.
+  int64 migration_time_ms_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncEncryptionHandlerImpl);
 };

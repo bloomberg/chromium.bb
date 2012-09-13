@@ -12,7 +12,7 @@ namespace syncer {
 FakeSyncEncryptionHandler::FakeSyncEncryptionHandler()
     : encrypted_types_(SensitiveTypes()),
       encrypt_everything_(false),
-      passphrase_state_(IMPLICIT_PASSPHRASE),
+      passphrase_type_(IMPLICIT_PASSPHRASE),
       cryptographer_(&encryptor_) {
 }
 FakeSyncEncryptionHandler::~FakeSyncEncryptionHandler() {}
@@ -26,13 +26,14 @@ void FakeSyncEncryptionHandler::ApplyNigoriUpdate(
     syncable::BaseTransaction* const trans) {
   if (nigori.encrypt_everything())
     EnableEncryptEverything();
-  if (nigori.using_explicit_passphrase())
-    passphrase_state_ = CUSTOM_PASSPHRASE;
+  if (nigori.keybag_is_frozen())
+    passphrase_type_ = CUSTOM_PASSPHRASE;
 
-  if (cryptographer_.CanDecrypt(nigori.encrypted()))
-    cryptographer_.InstallKeys(nigori.encrypted());
-  else if (nigori.has_encrypted())
-    cryptographer_.SetPendingKeys(nigori.encrypted());
+  // TODO(zea): consider adding fake support for migration.
+  if (cryptographer_.CanDecrypt(nigori.encryption_keybag()))
+    cryptographer_.InstallKeys(nigori.encryption_keybag());
+  else if (nigori.has_encryption_keybag())
+    cryptographer_.SetPendingKeys(nigori.encryption_keybag());
 
   if (cryptographer_.has_pending_keys()) {
     DVLOG(1) << "OnPassPhraseRequired Sent";
@@ -93,7 +94,7 @@ void FakeSyncEncryptionHandler::SetEncryptionPassphrase(
     const std::string& passphrase,
     bool is_explicit) {
   if (is_explicit)
-    passphrase_state_ = CUSTOM_PASSPHRASE;
+    passphrase_type_ = CUSTOM_PASSPHRASE;
 }
 
 void FakeSyncEncryptionHandler::SetDecryptionPassphrase(
@@ -115,8 +116,8 @@ bool FakeSyncEncryptionHandler::EncryptEverythingEnabled() const {
   return encrypt_everything_;
 }
 
-PassphraseState FakeSyncEncryptionHandler::GetPassphraseState() const {
-  return passphrase_state_;
+PassphraseType FakeSyncEncryptionHandler::GetPassphraseType() const {
+  return passphrase_type_;
 }
 
 }  // namespace syncer

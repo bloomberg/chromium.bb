@@ -44,6 +44,9 @@ const char* GetDeviceTypeString(
 const char* GetFaviconTypeString(
     sync_pb::SessionTab::FaviconType favicon_type);
 
+const char* PassphraseTypeString(
+    sync_pb::NigoriSpecifics::PassphraseType type);
+
 }  // namespace syncer
 
 #endif  // SYNC_PROTOCOL_PROTO_ENUM_CONVERSIONS_H_

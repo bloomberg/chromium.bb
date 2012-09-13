@@ -97,16 +97,16 @@ void JsSyncEncryptionHandlerObserver::OnCryptographerStateChanged(
                 JsEventDetails(&details));
 }
 
-void JsSyncEncryptionHandlerObserver::OnPassphraseStateChanged(
-    PassphraseState state) {
+void JsSyncEncryptionHandlerObserver::OnPassphraseTypeChanged(
+    PassphraseType type) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
   DictionaryValue details;
-  details.SetString("passphraseState",
-                    PassphraseStateToString(state));
+  details.SetString("passphraseType",
+                    PassphraseTypeToString(type));
   HandleJsEvent(FROM_HERE,
-                "onPassphraseStateChanged",
+                "onPassphraseTypeChanged",
                 JsEventDetails(&details));
 }
 

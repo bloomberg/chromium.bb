@@ -37,7 +37,7 @@ class FakeSyncEncryptionHandler : public SyncEncryptionHandler,
   virtual void SetDecryptionPassphrase(const std::string& passphrase) OVERRIDE;
   virtual void EnableEncryptEverything() OVERRIDE;
   virtual bool EncryptEverythingEnabled() const OVERRIDE;
-  virtual PassphraseState GetPassphraseState() const OVERRIDE;
+  virtual PassphraseType GetPassphraseType() const OVERRIDE;
 
   // NigoriHandler implemenation.
   virtual void ApplyNigoriUpdate(
@@ -60,7 +60,7 @@ class FakeSyncEncryptionHandler : public SyncEncryptionHandler,
   ObserverList<SyncEncryptionHandler::Observer> observers_;
   ModelTypeSet encrypted_types_;
   bool encrypt_everything_;
-  PassphraseState passphrase_state_;
+  PassphraseType passphrase_type_;
 
   FakeEncryptor encryptor_;
   Cryptographer cryptographer_;

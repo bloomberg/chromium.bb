@@ -153,16 +153,16 @@ TEST_F(JsSyncEncryptionHandlerObserverTest, OnCryptographerStateChanged) {
   PumpLoop();
 }
 
-TEST_F(JsSyncEncryptionHandlerObserverTest, OnPassphraseStateChanged) {
+TEST_F(JsSyncEncryptionHandlerObserverTest, OnPassphraseTypeChanged) {
   InSequence dummy;
 
-  DictionaryValue passphrase_state_details;
-  passphrase_state_details.SetString("passphraseState", "IMPLICIT_PASSPHRASE");
+  DictionaryValue passphrase_type_details;
+  passphrase_type_details.SetString("passphraseType", "IMPLICIT_PASSPHRASE");
   EXPECT_CALL(mock_js_event_handler_,
-              HandleJsEvent("onPassphraseStateChanged",
-                            HasDetailsAsDictionary(passphrase_state_details)));
+              HandleJsEvent("onPassphraseTypeChanged",
+                            HasDetailsAsDictionary(passphrase_type_details)));
 
-  js_sync_encryption_handler_observer_.OnPassphraseStateChanged(
+  js_sync_encryption_handler_observer_.OnPassphraseTypeChanged(
       IMPLICIT_PASSPHRASE);
   PumpLoop();
 }

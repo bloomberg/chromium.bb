@@ -552,7 +552,7 @@ void SyncManagerImpl::OnCryptographerStateChanged(
   allstatus_.SetCryptoHasPendingKeys(cryptographer->has_pending_keys());
 }
 
-void SyncManagerImpl::OnPassphraseStateChanged(PassphraseState state) {
+void SyncManagerImpl::OnPassphraseTypeChanged(PassphraseType type) {
   // Does nothing.
 }
 

@@ -80,6 +80,15 @@ class Cryptographer {
   bool Encrypt(const ::google::protobuf::MessageLite& message,
                sync_pb::EncryptedData* encrypted) const;
 
+  // Encrypted |serialized| into |encrypted|. Does not overwrite |encrypted| if
+  // |message| already matches the decrypted data within |encrypted| and
+  // |encrypted| was encrypted with the current default key. This avoids
+  // unnecessarily modifying |encrypted| if the change had no practical effect.
+  // Returns true unless encryption fails or |message| isn't valid (e.g. a
+  // required field isn't set).
+  bool EncryptString(const std::string& serialized,
+                     sync_pb::EncryptedData* encrypted) const;
+
   // Decrypts |encrypted| into |message|. Returns true unless decryption fails,
   // or |message| fails to parse the decrypted data.
   bool Decrypt(const sync_pb::EncryptedData& encrypted,
@@ -96,19 +105,31 @@ class Cryptographer {
   // Creates a new Nigori instance using |params|. If successful, |params| will
   // become the default encryption key and be used for all future calls to
   // Encrypt.
+  // Will decrypt the pending keys and install them if possible (pending key
+  // will not overwrite default).
   bool AddKey(const KeyParams& params);
 
   // Same as AddKey(..), but builds the new Nigori from a previously persisted
   // bootstrap token. This can be useful when consuming a bootstrap token
   // with a cryptographer that has already been initialized.
+  // Updates the default key.
+  // Will decrypt the pending keys and install them if possible (pending key
+  // will not overwrite default).
   bool AddKeyFromBootstrapToken(const std::string restored_bootstrap_token);
+
+  // Creates a new Nigori instance using |params|. If successful, |params|
+  // will be added to the nigori keybag, but will not be the default encryption
+  // key (default_nigori_ will remain the same).
+  // Prereq: is_initialized() must be true.
+  // Will decrypt the pending keys and install them if possible (pending key
+  // will become the new default).
+  bool AddNonDefaultKey(const KeyParams& params);
 
   // Decrypts |encrypted| and uses its contents to initialize Nigori instances.
   // Returns true unless decryption of |encrypted| fails. The caller is
   // responsible for checking that CanDecrypt(encrypted) == true.
-  // Does not update the default nigori.
+  // Does not modify the default key.
   void InstallKeys(const sync_pb::EncryptedData& encrypted);
-
 
   // Makes a local copy of |encrypted| to later be decrypted by
   // DecryptPendingKeys. This should only be used if CanDecrypt(encrypted) ==
@@ -150,9 +171,19 @@ class Cryptographer {
 
   Encryptor* encryptor() const { return encryptor_; }
 
- private:
-  FRIEND_TEST_ALL_PREFIXES(SyncCryptographerTest, PackUnpack);
+  // Returns true if |keybag| is decryptable and either is a subset of nigoris_
+  // and/or has a different default key.
+  bool KeybagIsStale(const sync_pb::EncryptedData& keybag) const;
 
+  // Returns a serialized sync_pb::NigoriKey version of current default
+  // encryption key.
+  std::string GetDefaultNigoriKey() const;
+
+  // Generates a new Nigori from |serialized_nigori_key|, and if successful
+  // installs the new nigori as the default key.
+  bool ImportNigoriKey(const std::string serialized_nigori_key);
+
+ private:
   typedef std::map<std::string, linked_ptr<const Nigori> > NigoriMap;
 
   // Helper method to instantiate Nigori instances for each set of key
@@ -160,13 +191,12 @@ class Cryptographer {
   // Does not update the default nigori.
   void InstallKeyBag(const sync_pb::NigoriKeyBag& bag);
 
-  // Helper method to add a nigori as the default key.
-  bool AddKeyImpl(scoped_ptr<Nigori> nigori);
+  // Helper method to add a nigori to the keybag, optionally making it the
+  // default as well.
+  bool AddKeyImpl(scoped_ptr<Nigori> nigori, bool set_as_default);
 
-  // Functions to serialize + encrypt a Nigori object in an opaque format for
-  // persistence by sync infrastructure.
-  bool PackBootstrapToken(const Nigori* nigori, std::string* pack_into) const;
-  Nigori* UnpackBootstrapToken(const std::string& token) const;
+  // Helper to unencrypt a bootstrap token into a serialized sync_pb::NigoriKey.
+  std::string UnpackBootstrapToken(const std::string& token) const;
 
   Encryptor* const encryptor_;
 

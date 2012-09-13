@@ -58,7 +58,7 @@ class DebugInfoEventListener : public SyncManager::Observer,
   virtual void OnEncryptionComplete() OVERRIDE;
   virtual void OnCryptographerStateChanged(
       Cryptographer* cryptographer) OVERRIDE;
-  virtual void OnPassphraseStateChanged(PassphraseState state) OVERRIDE;
+  virtual void OnPassphraseTypeChanged(PassphraseType type) OVERRIDE;
 
   // Sync manager events.
   void OnNudgeFromDatatype(ModelType datatype);

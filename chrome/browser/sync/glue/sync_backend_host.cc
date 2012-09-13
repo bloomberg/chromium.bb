@@ -118,7 +118,7 @@ class SyncBackendHost::Core
   virtual void OnEncryptionComplete() OVERRIDE;
   virtual void OnCryptographerStateChanged(
       syncer::Cryptographer* cryptographer) OVERRIDE;
-  virtual void OnPassphraseStateChanged(syncer::PassphraseState state) OVERRIDE;
+  virtual void OnPassphraseTypeChanged(syncer::PassphraseType type) OVERRIDE;
 
   // syncer::InvalidationHandler implementation.
   virtual void OnInvalidatorStateChange(
@@ -329,7 +329,7 @@ SyncBackendHost::SyncBackendHost(
           content::GetUserAgent(GURL()),
           invalidator_storage),
       frontend_(NULL),
-      cached_passphrase_state_(syncer::IMPLICIT_PASSPHRASE) {
+      cached_passphrase_type_(syncer::IMPLICIT_PASSPHRASE) {
 }
 
 SyncBackendHost::SyncBackendHost(Profile* profile)
@@ -345,7 +345,7 @@ SyncBackendHost::SyncBackendHost(Profile* profile)
           content::GetUserAgent(GURL()),
           base::WeakPtr<syncer::InvalidationStateTracker>()),
       frontend_(NULL),
-      cached_passphrase_state_(syncer::IMPLICIT_PASSPHRASE) {
+      cached_passphrase_type_(syncer::IMPLICIT_PASSPHRASE) {
 }
 
 SyncBackendHost::~SyncBackendHost() {
@@ -770,8 +770,8 @@ bool SyncBackendHost::IsUsingExplicitPassphrase() {
   // TODO(zea): expose whether the custom passphrase is a frozen implicit
   // passphrase or not to provide better messaging.
   return IsNigoriEnabled() && (
-      cached_passphrase_state_ == syncer::CUSTOM_PASSPHRASE ||
-      cached_passphrase_state_ == syncer::FROZEN_IMPLICIT_PASSPHRASE);
+      cached_passphrase_type_ == syncer::CUSTOM_PASSPHRASE ||
+      cached_passphrase_type_ == syncer::FROZEN_IMPLICIT_PASSPHRASE);
 }
 
 bool SyncBackendHost::IsCryptographerReady(
@@ -1019,12 +1019,12 @@ void SyncBackendHost::Core::OnCryptographerStateChanged(
   // Do nothing.
 }
 
-void SyncBackendHost::Core::OnPassphraseStateChanged(
-    syncer::PassphraseState state) {
+void SyncBackendHost::Core::OnPassphraseTypeChanged(
+    syncer::PassphraseType type) {
   host_.Call(
       FROM_HERE,
-      &SyncBackendHost::HandlePassphraseStateChangedOnFrontendLoop,
-      state);
+      &SyncBackendHost::HandlePassphraseTypeChangedOnFrontendLoop,
+      type);
 }
 
 void SyncBackendHost::Core::OnActionableError(
@@ -1514,12 +1514,12 @@ void SyncBackendHost::NotifyEncryptionComplete() {
   frontend_->OnEncryptionComplete();
 }
 
-void SyncBackendHost::HandlePassphraseStateChangedOnFrontendLoop(
-    syncer::PassphraseState state) {
+void SyncBackendHost::HandlePassphraseTypeChangedOnFrontendLoop(
+    syncer::PassphraseType type) {
   DCHECK_EQ(MessageLoop::current(), frontend_loop_);
-  DVLOG(1) << "Passphrase state changed to "
-           << syncer::PassphraseStateToString(state);
-  cached_passphrase_state_ = state;
+  DVLOG(1) << "Passphrase type changed to "
+           << syncer::PassphraseTypeToString(type);
+  cached_passphrase_type_ = type;
 }
 
 void SyncBackendHost::HandleStopSyncingPermanentlyOnFrontendLoop() {

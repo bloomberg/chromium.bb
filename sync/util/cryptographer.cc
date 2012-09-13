@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/base64.h"
+#include "base/basictypes.h"
 #include "base/logging.h"
 #include "sync/protocol/nigori_specifics.pb.h"
 #include "sync/util/encryptor.h"
@@ -35,9 +36,11 @@ void Cryptographer::Bootstrap(const std::string& restored_bootstrap_token) {
     return;
   }
 
-  scoped_ptr<Nigori> nigori(UnpackBootstrapToken(restored_bootstrap_token));
-  if (nigori.get())
-    AddKeyImpl(nigori.Pass());
+  std::string serialized_nigori_key =
+      UnpackBootstrapToken(restored_bootstrap_token);
+  if (serialized_nigori_key.empty())
+    return;
+  ImportNigoriKey(serialized_nigori_key);
 }
 
 bool Cryptographer::CanDecrypt(const sync_pb::EncryptedData& data) const {
@@ -58,12 +61,6 @@ bool Cryptographer::Encrypt(
     LOG(ERROR) << "Cryptographer not ready, failed to encrypt.";
     return false;
   }
-  NigoriMap::const_iterator default_nigori =
-      nigoris_.find(default_nigori_name_);
-  if (default_nigori == nigoris_.end()) {
-    LOG(ERROR) << "Corrupt default key.";
-    return false;
-  }
 
   std::string serialized;
   if (!message.SerializeToString(&serialized)) {
@@ -71,12 +68,25 @@ bool Cryptographer::Encrypt(
     return false;
   }
 
+  return EncryptString(serialized, encrypted);
+}
+
+bool Cryptographer::EncryptString(
+    const std::string& serialized,
+    sync_pb::EncryptedData* encrypted) const {
   if (CanDecryptUsingDefaultKey(*encrypted)) {
     const std::string& original_serialized = DecryptToString(*encrypted);
     if (original_serialized == serialized) {
       DVLOG(2) << "Re-encryption unnecessary, encrypted data already matches.";
       return true;
     }
+  }
+
+  NigoriMap::const_iterator default_nigori =
+      nigoris_.find(default_nigori_name_);
+  if (default_nigori == nigoris_.end()) {
+    LOG(ERROR) << "Corrupt default key.";
+    return false;
   }
 
   encrypted->set_key_name(default_nigori_name_);
@@ -140,26 +150,52 @@ bool Cryptographer::AddKey(const KeyParams& params) {
     NOTREACHED();  // Invalid username or password.
     return false;
   }
-  return AddKeyImpl(nigori.Pass());
+  return AddKeyImpl(nigori.Pass(), true);
+}
+
+bool Cryptographer::AddNonDefaultKey(const KeyParams& params) {
+  DCHECK(is_initialized());
+  // Create the new Nigori and add it to the keybag.
+  scoped_ptr<Nigori> nigori(new Nigori);
+  if (!nigori->InitByDerivation(params.hostname,
+                                params.username,
+                                params.password)) {
+    NOTREACHED();  // Invalid username or password.
+    return false;
+  }
+  return AddKeyImpl(nigori.Pass(), false);
 }
 
 bool Cryptographer::AddKeyFromBootstrapToken(
     const std::string restored_bootstrap_token) {
   // Create the new Nigori and make it the default encryptor.
-  scoped_ptr<Nigori> nigori(UnpackBootstrapToken(restored_bootstrap_token));
-  if (!nigori.get())
-    return false;
-  return AddKeyImpl(nigori.Pass());
+  std::string serialized_nigori_key = UnpackBootstrapToken(
+      restored_bootstrap_token);
+  return ImportNigoriKey(serialized_nigori_key);
 }
 
-bool Cryptographer::AddKeyImpl(scoped_ptr<Nigori> initialized_nigori) {
+bool Cryptographer::AddKeyImpl(scoped_ptr<Nigori> initialized_nigori,
+                               bool set_as_default) {
   std::string name;
   if (!initialized_nigori->Permute(Nigori::Password, kNigoriKeyName, &name)) {
     NOTREACHED();
     return false;
   }
+
   nigoris_[name] = make_linked_ptr(initialized_nigori.release());
-  default_nigori_name_ = name;
+
+  // Check if the key we just added can decrypt the pending keys and add them
+  // too if so.
+  if (pending_keys_.get() && CanDecrypt(*pending_keys_)) {
+    sync_pb::NigoriKeyBag pending_bag;
+    Decrypt(*pending_keys_, &pending_bag);
+    InstallKeyBag(pending_bag);
+    SetDefaultKey(pending_keys_->key_name());
+    pending_keys_.reset();
+  }
+
+  // The just-added key takes priority over the pending keys as default.
+  if (set_as_default) SetDefaultKey(name);
   return true;
 }
 
@@ -215,34 +251,9 @@ bool Cryptographer::DecryptPendingKeys(const KeyParams& params) {
 
 bool Cryptographer::GetBootstrapToken(std::string* token) const {
   DCHECK(token);
-  if (!is_initialized())
+  std::string unencrypted_token = GetDefaultNigoriKey();
+  if (unencrypted_token.empty())
     return false;
-
-  NigoriMap::const_iterator default_nigori =
-      nigoris_.find(default_nigori_name_);
-  if (default_nigori == nigoris_.end())
-    return false;
-  return PackBootstrapToken(default_nigori->second.get(), token);
-}
-
-bool Cryptographer::PackBootstrapToken(const Nigori* nigori,
-                                       std::string* pack_into) const {
-  DCHECK(pack_into);
-  DCHECK(nigori);
-
-  sync_pb::NigoriKey key;
-  if (!nigori->ExportKeys(key.mutable_user_key(),
-                          key.mutable_encryption_key(),
-                          key.mutable_mac_key())) {
-    NOTREACHED();
-    return false;
-  }
-
-  std::string unencrypted_token;
-  if (!key.SerializeToString(&unencrypted_token)) {
-    NOTREACHED();
-    return false;
-  }
 
   std::string encrypted_token;
   if (!encryptor_->EncryptString(unencrypted_token, &encrypted_token)) {
@@ -250,43 +261,30 @@ bool Cryptographer::PackBootstrapToken(const Nigori* nigori,
     return false;
   }
 
-  if (!base::Base64Encode(encrypted_token, pack_into)) {
+  if (!base::Base64Encode(encrypted_token, token)) {
     NOTREACHED();
     return false;
   }
   return true;
 }
 
-Nigori* Cryptographer::UnpackBootstrapToken(const std::string& token) const {
+std::string Cryptographer::UnpackBootstrapToken(
+    const std::string& token) const {
   if (token.empty())
-    return NULL;
+    return "";
 
   std::string encrypted_data;
   if (!base::Base64Decode(token, &encrypted_data)) {
     DLOG(WARNING) << "Could not decode token.";
-    return NULL;
+    return "";
   }
 
   std::string unencrypted_token;
   if (!encryptor_->DecryptString(encrypted_data, &unencrypted_token)) {
     DLOG(WARNING) << "Decryption of bootstrap token failed.";
-    return NULL;
+    return "";
   }
-
-  sync_pb::NigoriKey key;
-  if (!key.ParseFromString(unencrypted_token)) {
-    DLOG(WARNING) << "Parsing of bootstrap token failed.";
-    return NULL;
-  }
-
-  scoped_ptr<Nigori> nigori(new Nigori);
-  if (!nigori->InitByImport(key.user_key(), key.encryption_key(),
-                            key.mac_key())) {
-    NOTREACHED();
-    return NULL;
-  }
-
-  return nigori.release();
+  return unencrypted_token;
 }
 
 void Cryptographer::InstallKeyBag(const sync_pb::NigoriKeyBag& bag) {
@@ -305,6 +303,61 @@ void Cryptographer::InstallKeyBag(const sync_pb::NigoriKeyBag& bag) {
       nigoris_[key.name()] = make_linked_ptr(new_nigori.release());
     }
   }
+}
+
+bool Cryptographer::KeybagIsStale(
+    const sync_pb::EncryptedData& encrypted_bag) const {
+  if (!is_ready())
+    return false;
+  if (encrypted_bag.blob().empty())
+    return true;
+  if (!CanDecrypt(encrypted_bag))
+    return false;
+  if (!CanDecryptUsingDefaultKey(encrypted_bag))
+    return true;
+  sync_pb::NigoriKeyBag bag;
+  if (!Decrypt(encrypted_bag, &bag)) {
+    LOG(ERROR) << "Failed to decrypt keybag for stale check. "
+               << "Assuming keybag is corrupted.";
+    return true;
+  }
+  if (static_cast<size_t>(bag.key_size()) < nigoris_.size())
+    return true;
+  return false;
+}
+
+std::string Cryptographer::GetDefaultNigoriKey() const {
+  if (!is_initialized())
+    return "";
+  NigoriMap::const_iterator iter = nigoris_.find(default_nigori_name_);
+  if (iter == nigoris_.end())
+    return "";
+  sync_pb::NigoriKey key;
+  if (!iter->second->ExportKeys(key.mutable_user_key(),
+                                key.mutable_encryption_key(),
+                                key.mutable_mac_key()))
+    return "";
+  return key.SerializeAsString();
+}
+
+bool Cryptographer::ImportNigoriKey(const std::string serialized_nigori_key) {
+  if (serialized_nigori_key.empty())
+    return false;
+
+  sync_pb::NigoriKey key;
+  if (!key.ParseFromString(serialized_nigori_key))
+    return false;
+
+  scoped_ptr<Nigori> nigori(new Nigori);
+  if (!nigori->InitByImport(key.user_key(), key.encryption_key(),
+                            key.mac_key())) {
+    NOTREACHED();
+    return false;
+  }
+
+  if (!AddKeyImpl(nigori.Pass(), true))
+    return false;
+  return true;
 }
 
 }  // namespace syncer

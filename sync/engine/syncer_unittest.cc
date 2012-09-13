@@ -723,13 +723,13 @@ TEST_F(SyncerTest, GetCommitIdsFiltersUnreadyEntries) {
     other_cryptographer.AddKey(other_params);
     sync_pb::EntitySpecifics specifics;
     sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
-    other_cryptographer.GetKeys(nigori->mutable_encrypted());
+    other_cryptographer.GetKeys(nigori->mutable_encryption_keybag());
     dir_maker_.encryption_handler()->EnableEncryptEverything();
     // Set up with an old passphrase, but have pending keys
     GetCryptographer(&wtrans)->AddKey(key_params);
     GetCryptographer(&wtrans)->Encrypt(bookmark,
                                     encrypted_bookmark.mutable_encrypted());
-    GetCryptographer(&wtrans)->SetPendingKeys(nigori->encrypted());
+    GetCryptographer(&wtrans)->SetPendingKeys(nigori->encryption_keybag());
 
     // In conflict but properly encrypted.
     MutableEntry A(&wtrans, GET_BY_ID, ids_.FromNumber(1));
@@ -836,9 +836,9 @@ TEST_F(SyncerTest, EncryptionAwareConflicts) {
     WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
     sync_pb::EntitySpecifics specifics;
     sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
-    other_cryptographer.GetKeys(nigori->mutable_encrypted());
+    other_cryptographer.GetKeys(nigori->mutable_encryption_keybag());
     dir_maker_.encryption_handler()->EnableEncryptEverything();
-    GetCryptographer(&wtrans)->SetPendingKeys(nigori->encrypted());
+    GetCryptographer(&wtrans)->SetPendingKeys(nigori->encryption_keybag());
     EXPECT_TRUE(GetCryptographer(&wtrans)->has_pending_keys());
   }
 
@@ -982,6 +982,7 @@ TEST_F(SyncerTest, EncryptionAwareConflicts) {
 // and encryption keys (remote is explicit). Afterwards, the encrypted types
 // should be unioned and the cryptographer should have both keys and be
 // encrypting with the remote encryption key by default.
+// TODO(zea): Test conflicts with keystore migration.
 TEST_F(SyncerTest, NigoriConflicts) {
   KeyParams local_key_params = {"localhost", "dummy", "blargle"};
   KeyParams other_key_params = {"localhost", "dummy", "foobar"};
@@ -1014,7 +1015,7 @@ TEST_F(SyncerTest, NigoriConflicts) {
         our_encrypted_specifics,
         our_encrypted_specifics.mutable_encrypted());
     GetCryptographer(&wtrans)->GetKeys(
-        nigori->mutable_encrypted());
+        nigori->mutable_encryption_keybag());
     dir_maker_.encryption_handler()->EnableEncryptEverything();
     directory()->GetNigoriHandler()->UpdateNigoriFromEncryptedTypes(
         nigori,
@@ -1031,11 +1032,11 @@ TEST_F(SyncerTest, NigoriConflicts) {
   {
     sync_pb::EntitySpecifics specifics;
     sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
-    other_cryptographer.GetKeys(nigori->mutable_encrypted());
+    other_cryptographer.GetKeys(nigori->mutable_encryption_keybag());
     nigori->set_encrypt_bookmarks(true);
     nigori->set_encrypt_preferences(true);
     nigori->set_encrypt_everything(false);
-    nigori->set_using_explicit_passphrase(true);
+    nigori->set_keybag_is_frozen(true);
     mock_server_->SetNigori(1, 20, 20, specifics);
   }
 
@@ -1059,7 +1060,7 @@ TEST_F(SyncerTest, NigoriConflicts) {
     EXPECT_TRUE(encrypted_types.Equals(
         directory()->GetNigoriHandler()->GetEncryptedTypes(&wtrans)));
     EXPECT_TRUE(dir_maker_.encryption_handler()->EncryptEverythingEnabled());
-    EXPECT_TRUE(specifics.nigori().using_explicit_passphrase());
+    EXPECT_TRUE(specifics.nigori().keybag_is_frozen());
     // Supply the pending keys. Afterwards, we should be able to decrypt both
     // our own encrypted data and data encrypted by the other cryptographer,
     // but the key provided by the other cryptographer should be the default.
@@ -1067,7 +1068,7 @@ TEST_F(SyncerTest, NigoriConflicts) {
         GetCryptographer(&wtrans)->DecryptPendingKeys(other_key_params));
     EXPECT_FALSE(GetCryptographer(&wtrans)->has_pending_keys());
     sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
-    GetCryptographer(&wtrans)->GetKeys(nigori->mutable_encrypted());
+    GetCryptographer(&wtrans)->GetKeys(nigori->mutable_encryption_keybag());
     directory()->GetNigoriHandler()->UpdateNigoriFromEncryptedTypes(
         nigori,
         &wtrans);
@@ -1097,7 +1098,7 @@ TEST_F(SyncerTest, NigoriConflicts) {
     EXPECT_TRUE(GetCryptographer(&wtrans)->
         CanDecryptUsingDefaultKey(other_encrypted_specifics.encrypted()));
     EXPECT_TRUE(nigori_entry.Get(SPECIFICS).nigori().
-        using_explicit_passphrase());
+        keybag_is_frozen());
   }
 }
 
