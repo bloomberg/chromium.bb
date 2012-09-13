@@ -10,6 +10,7 @@
 #include "chrome/browser/android/content_view_util.h"
 #include "chrome/browser/android/intent_helper.h"
 #include "chrome/browser/android/process_utils.h"
+#include "chrome/browser/android/provider/chrome_browser_provider.h"
 #include "chrome/browser/component/web_contents_delegate_android/component_jni_registrar.h"
 #include "chrome/browser/history/android/sqlite_cursor.h"
 #include "chrome/browser/ui/android/javascript_app_modal_dialog_android.h"
@@ -18,6 +19,8 @@ namespace chrome {
 namespace android {
 
 static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
+  { "ChromeBrowserProvider",
+      ChromeBrowserProvider::RegisterChromeBrowserProvider },
   { "ChromeWebContentsDelegateAndroid",
       RegisterChromeWebContentsDelegateAndroid },
   { "ContentViewUtil", RegisterContentViewUtil },

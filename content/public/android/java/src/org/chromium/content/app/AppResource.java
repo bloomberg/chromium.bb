@@ -15,6 +15,33 @@ public class AppResource {
     /** Array resource containing the official command line arguments. */
     public static int ARRAY_OFFICIAL_COMMAND_LINE;
 
+    /** Dimension defining the corner radii of the favicon color strip when creating shortcuts. */
+    public static int DIMENSION_FAVICON_COLORSTRIP_CORNER_RADII;
+
+    /** Dimension defining the height of the favicon color strip when creating shortcuts. */
+    public static int DIMENSION_FAVICON_COLORSTRIP_HEIGHT;
+
+    /** Dimension defining the padding of the favicon color strip when creating shortcuts. */
+    public static int DIMENSION_FAVICON_COLORSTRIP_PADDING;
+
+    /** Dimension defining the width of the favicon color strip when creating shortcuts. */
+    public static int DIMENSION_FAVICON_COLORSTRIP_WIDTH;
+
+    /** Dimension defining the border of the favicon fold when creating shortcuts. */
+    public static int DIMENSION_FAVICON_FOLD_BORDER;
+
+    /** Dimension defining the corner radii of the favicon fold when creating shortcuts. */
+    public static int DIMENSION_FAVICON_FOLD_CORNER_RADII;
+
+    /** Dimension defining the shadow of the favicon fold when creating shortcuts. */
+    public static int DIMENSION_FAVICON_FOLD_SHADOW;
+
+    /** Dimension defining the size of the favicon fold when creating shortcuts. */
+    public static int DIMENSION_FAVICON_FOLD_SIZE;
+
+    /** Dimension defining the size of the favicon image when creating shortcuts. */
+    public static int DIMENSION_FAVICON_SIZE;
+
     /** Dimension of the radius used in the link preview overlay. */
     public static int DIMENSION_LINK_PREVIEW_OVERLAY_RADIUS;
 
@@ -23,6 +50,12 @@ public class AppResource {
 
     /** Drawable icon resource for the Web Search button in the action bar. */
     public static int DRAWABLE_ICON_ACTION_BAR_WEB_SEARCH;
+
+    /** Drawable icon resource of the Application icon. */
+    public static int DRAWABLE_ICON_APP_ICON;
+
+    /** Drawable icon resource used for favicons by default. */
+    public static int DRAWABLE_ICON_DEFAULT_FAVICON;
 
     /** Drawable resource for the link preview popup overlay. */
     public static int DRAWABLE_LINK_PREVIEW_POPUP_OVERLAY;
@@ -71,6 +104,9 @@ public class AppResource {
 
     /** Layout of the month picker dialog. */
     public static int LAYOUT_MONTH_PICKER_DIALOG;
+
+    /** Mipmap image used as background for bookmark shortcut icons. */
+    public static int MIPMAP_BOOKMARK_SHORTCUT_BACKGROUND;
 
     /** String for the Share button in the action bar. */
     public static int STRING_ACTION_BAR_SHARE;
