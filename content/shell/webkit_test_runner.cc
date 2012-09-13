@@ -55,7 +55,7 @@ std::string DumpFramesAsText(WebFrame* frame, bool printing, bool recursive) {
   // Add header for all but the main frame. Skip emtpy frames.
   if (frame->parent() && !frame->document().documentElement().isNull()) {
     result.append("\n--------\nFrame: '");
-    result.append(frame->name().utf8().data());
+    result.append(frame->uniqueName().utf8().data());
     result.append("'\n--------\n");
   }
 
@@ -79,7 +79,7 @@ std::string DumpFrameScrollPosition(WebFrame* frame, bool recursive) {
   if (offset.width > 0 || offset.height > 0) {
     if (frame->parent()) {
       result.append(
-          base::StringPrintf("frame '%s' ", frame->name().utf8().data()));
+          base::StringPrintf("frame '%s' ", frame->uniqueName().utf8().data()));
     }
     result.append(
         base::StringPrintf("scrolled to %d,%d\n", offset.width, offset.height));

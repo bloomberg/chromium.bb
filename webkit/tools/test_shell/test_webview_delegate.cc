@@ -732,7 +732,7 @@ void TestWebViewDelegate::unableToImplementPolicyWithError(
   std::string domain = error.domain.utf8();
   printf("Policy delegate: unable to implement policy with error domain '%s', "
       "error code %d, in frame '%s'\n",
-      domain.data(), error.reason, frame->name().utf8().data());
+      domain.data(), error.reason, frame->uniqueName().utf8().data());
 }
 
 void TestWebViewDelegate::willPerformClientRedirect(
@@ -1117,7 +1117,7 @@ void TestWebViewDelegate::UpdateSessionHistory(WebFrame* frame) {
 }
 
 string16 TestWebViewDelegate::GetFrameDescription(WebFrame* webframe) {
-  std::string name = UTF16ToUTF8(webframe->name());
+  std::string name = UTF16ToUTF8(webframe->uniqueName());
 
   if (webframe == shell_->webView()->mainFrame()) {
     if (name.length())
