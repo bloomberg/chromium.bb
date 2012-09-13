@@ -4,10 +4,11 @@
 
 #include "remoting/host/event_executor.h"
 
-#include <set>
-
 #include <X11/Xlib.h>
 #include <X11/extensions/XTest.h>
+#include <X11/extensions/XInput.h>
+
+#include <set>
 
 #include "base/basictypes.h"
 #include "base/bind.h"
@@ -34,7 +35,8 @@ using protocol::MouseEvent;
 // A class to generate events on Linux.
 class EventExecutorLinux : public EventExecutor {
  public:
-  EventExecutorLinux(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  explicit EventExecutorLinux(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   virtual ~EventExecutorLinux();
 
   bool Init();
@@ -53,11 +55,20 @@ class EventExecutorLinux : public EventExecutor {
   virtual void StopAndDelete() OVERRIDE;
 
  private:
+  // Number of buttons we support.
+  // Left, Right, Middle, VScroll Up/Down, HScroll Left/Right.
+  static const int kNumPointerButtons = 7;
+
   // |mode| is one of the AutoRepeatModeOn, AutoRepeatModeOff,
   // AutoRepeatModeDefault constants defined by the XChangeKeyboardControl()
   // API.
   void SetAutoRepeatForKey(int keycode, int mode);
   void InjectScrollWheelClicks(int button, int count);
+  // Compensates for global button mappings and resets the XTest device mapping.
+  void InitMouseButtonMap();
+  int MouseButtonToX11ButtonNumber(MouseEvent::MouseButton button);
+  int HorizontalScrollWheelToX11ButtonNumber(int dx);
+  int VerticalScrollWheelToX11ButtonNumber(int dy);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
@@ -71,36 +82,9 @@ class EventExecutorLinux : public EventExecutor {
   int test_event_base_;
   int test_error_base_;
 
+  int pointer_button_map_[kNumPointerButtons];
   DISALLOW_COPY_AND_ASSIGN(EventExecutorLinux);
 };
-
-int MouseButtonToX11ButtonNumber(MouseEvent::MouseButton button) {
-  switch (button) {
-    case MouseEvent::BUTTON_LEFT:
-      return 1;
-
-    case MouseEvent::BUTTON_RIGHT:
-      return 3;
-
-    case MouseEvent::BUTTON_MIDDLE:
-      return 2;
-
-    case MouseEvent::BUTTON_UNDEFINED:
-    default:
-      return -1;
-  }
-}
-
-int HorizontalScrollWheelToX11ButtonNumber(int dx) {
-  return (dx > 0 ? 6 : 7);
-}
-
-
-int VerticalScrollWheelToX11ButtonNumber(int dy) {
-  // Positive y-values are wheel scroll-up events (button 4), negative y-values
-  // are wheel scroll-down events (button 5).
-  return (dy > 0 ? 4 : 5);
-}
 
 EventExecutorLinux::EventExecutorLinux(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
@@ -131,7 +115,7 @@ bool EventExecutorLinux::Init() {
     LOG(ERROR) << "Server does not support XTest.";
     return false;
   }
-
+  InitMouseButtonMap();
   return true;
 }
 
@@ -194,6 +178,10 @@ void EventExecutorLinux::SetAutoRepeatForKey(int keycode, int mode) {
 }
 
 void EventExecutorLinux::InjectScrollWheelClicks(int button, int count) {
+  if (button < 0) {
+    LOG(WARNING) << "Ignoring unmapped scroll wheel button";
+    return;
+  }
   for (int i = 0; i < count; i++) {
     // Generate a button-down and a button-up to simulate a wheel click.
     XTestFakeButtonEvent(display_, button, true, CurrentTime);
@@ -261,8 +249,119 @@ void EventExecutorLinux::InjectMouseEvent(const MouseEvent& event) {
   XFlush(display_);
 }
 
+void EventExecutorLinux::InitMouseButtonMap() {
+  // TODO(rmsousa): Run this on global/device mapping change events.
+
+  // Do not touch global pointer mapping, since this may affect the local user.
+  // Instead, try to work around it by reversing the mapping.
+  // Note that if a user has a global mapping that completely disables a button
+  // (by assigning 0 to it), we won't be able to inject it.
+  int num_buttons = XGetPointerMapping(display_, NULL, 0);
+  scoped_array<unsigned char> pointer_mapping(new unsigned char[num_buttons]);
+  num_buttons = XGetPointerMapping(display_, pointer_mapping.get(),
+                                   num_buttons);
+  for (int i = 0; i < kNumPointerButtons; i++) {
+    pointer_button_map_[i] = -1;
+  }
+  for (int i = 0; i < num_buttons; i++) {
+    // Reverse the mapping.
+    if (pointer_mapping[i] > 0 && pointer_mapping[i] <= kNumPointerButtons) {
+      pointer_button_map_[pointer_mapping[i] - 1] = i + 1;
+    }
+  }
+  for (int i = 0; i < kNumPointerButtons; i++) {
+    if (pointer_button_map_[i] == -1)
+      LOG(ERROR) << "Global pointer mapping does not support button " << i + 1;
+  }
+
+  int opcode, event, error;
+  if (!XQueryExtension(display_, "XInputExtension", &opcode, &event, &error)) {
+    // If XInput is not available, we're done. But it would be very unusual to
+    // have a server that supports XTest but not XInput, so log it as an error.
+    LOG(ERROR) << "X Input extension not available: " << error;
+    return;
+  }
+
+  // Make sure the XTEST XInput pointer device mapping is trivial. It should be
+  // safe to reset this mapping, as it won't affect the user's local devices.
+  // In fact, the reason why we do this is because an old gnome-settings-daemon
+  // may have mistakenly applied left-handed preferences to the XTEST device.
+  XID device_id = 0;
+  bool device_found = false;
+  int num_devices;
+  XDeviceInfo* devices;
+  devices = XListInputDevices(display_, &num_devices);
+  for (int i = 0; i < num_devices; i++) {
+    XDeviceInfo* device_info = &devices[i];
+    if (device_info->use == IsXExtensionPointer &&
+        strcmp(device_info->name, "Virtual core XTEST pointer") == 0) {
+      device_id = device_info->id;
+      device_found = true;
+      break;
+    }
+  }
+  XFreeDeviceList(devices);
+
+  if (!device_found)
+    LOG(ERROR) << "Cannot find XTest device.";
+
+  XDevice* device = XOpenDevice(display_, device_id);
+  if (!device)
+    LOG(ERROR) << "Cannot open XTest device.";
+
+  int num_device_buttons = XGetDeviceButtonMapping(display_, device, NULL, 0);
+  scoped_array<unsigned char> button_mapping(new unsigned char[num_buttons]);
+  for (int i = 0; i < num_device_buttons; i++) {
+    button_mapping[i] = i + 1;
+  }
+  error = XSetDeviceButtonMapping(display_, device, button_mapping.get(),
+                                  num_device_buttons);
+  if (error != Success)
+    LOG(ERROR) << "Failed to set XTest device button mapping: " << error;
+
+  XCloseDevice(display_, device);
+}
+
+int EventExecutorLinux::MouseButtonToX11ButtonNumber(
+    MouseEvent::MouseButton button) {
+  switch (button) {
+    case MouseEvent::BUTTON_LEFT:
+      return pointer_button_map_[0];
+
+    case MouseEvent::BUTTON_RIGHT:
+      return pointer_button_map_[2];
+
+    case MouseEvent::BUTTON_MIDDLE:
+      return pointer_button_map_[1];
+
+    case MouseEvent::BUTTON_UNDEFINED:
+    default:
+      return -1;
+  }
+}
+
+int EventExecutorLinux::HorizontalScrollWheelToX11ButtonNumber(int dx) {
+  return (dx > 0 ? pointer_button_map_[5] : pointer_button_map_[6]);
+}
+
+
+int EventExecutorLinux::VerticalScrollWheelToX11ButtonNumber(int dy) {
+  // Positive y-values are wheel scroll-up events (button 4), negative y-values
+  // are wheel scroll-down events (button 5).
+  return (dy > 0 ? pointer_button_map_[3] : pointer_button_map_[4]);
+}
+
 void EventExecutorLinux::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&EventExecutorLinux::Start,
+                   base::Unretained(this),
+                   base::Passed(&client_clipboard)));
+    return;
+  }
+  InitMouseButtonMap();
   return;
 }
 

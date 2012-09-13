@@ -1398,7 +1398,8 @@
               '-lXdamage',
               '-lXfixes',
               '-lXtst',
-              '-lXext'
+              '-lXext',
+              '-lXi'
             ],
           },
         }],
