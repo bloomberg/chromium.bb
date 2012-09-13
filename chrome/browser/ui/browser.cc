@@ -404,8 +404,12 @@ Browser::Browser(const CreateParams& params)
                              profile_->GetPrefs(), NULL);
 
   instant_controller_.reset(new chrome::BrowserInstantController(this));
+
+#if 0
+  // Disabled for M22. See http://crbug.com/144326.
   device_attached_intent_source_.reset(
       new DeviceAttachedIntentSource(this, (this)));
+#endif
 
   UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_INIT);
 
