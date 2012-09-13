@@ -56,6 +56,8 @@ ModuleSystem::NativesEnabledScope::~NativesEnabledScope() {
 // static
 bool ModuleSystem::IsPresentInCurrentContext() {
   v8::Handle<v8::Object> global(v8::Context::GetCurrent()->Global());
+  if (global.IsEmpty())
+    return false;
   v8::Handle<v8::Value> module_system =
       global->GetHiddenValue(v8::String::New(kModuleSystem));
   return !module_system.IsEmpty() && !module_system->IsUndefined();
