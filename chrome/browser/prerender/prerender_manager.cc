@@ -107,17 +107,6 @@ bool NeedMatchCompleteDummyForFinalStatus(FinalStatus final_status) {
       final_status != FINAL_STATUS_CROSS_SITE_NAVIGATION_PENDING;
 }
 
-size_t GetMaxConcurrency() {
-  return PrerenderManager::GetMode() ==
-      PrerenderManager::PRERENDER_MODE_EXPERIMENT_MULTI_PRERENDER_GROUP ? 3 : 1;
-}
-
-base::TimeDelta GetTimeToLive() {
-  return PrerenderManager::GetMode() ==
-      PrerenderManager::PRERENDER_MODE_EXPERIMENT_5MIN_TTL_GROUP ?
-      base::TimeDelta::FromMinutes(5) : base::TimeDelta::FromSeconds(30);
-}
-
 }  // namespace
 
 class PrerenderManager::OnCloseTabContentsDeleter
@@ -199,8 +188,18 @@ PrerenderManager::PrerenderManager(Profile* profile,
   // Any other checks simply make sure that the PrerenderManager is accessed on
   // the same thread that it was created on.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  config_.max_concurrency = GetMaxConcurrency();
-  config_.time_to_live = GetTimeToLive();
+
+  // Certain experiments override our default config_ values.
+  switch (PrerenderManager::GetMode()) {
+    case PrerenderManager::PRERENDER_MODE_EXPERIMENT_MULTI_PRERENDER_GROUP:
+      config_.max_concurrency = 3;
+      break;
+    case PrerenderManager::PRERENDER_MODE_EXPERIMENT_15MIN_TTL_GROUP:
+      config_.time_to_live = base::TimeDelta::FromMinutes(15);
+      break;
+    default:
+      break;
+  }
 }
 
 PrerenderManager::~PrerenderManager() {
@@ -568,11 +567,12 @@ const char* PrerenderManager::GetModeString() {
       return "_Control";
     case PRERENDER_MODE_EXPERIMENT_MULTI_PRERENDER_GROUP:
       return "_Multi";
-    case PRERENDER_MODE_EXPERIMENT_5MIN_TTL_GROUP:
-      return "_5MinTTL";
+    case PRERENDER_MODE_EXPERIMENT_15MIN_TTL_GROUP:
+      return "_15MinTTL";
     case PRERENDER_MODE_EXPERIMENT_NO_USE_GROUP:
       return "_NoUse";
     case PRERENDER_MODE_MAX:
+    default:
       NOTREACHED() << "Invalid PrerenderManager mode.";
       break;
   };
@@ -713,8 +713,9 @@ DictionaryValue* PrerenderManager::GetAsValue() const {
     enabled_note += "(Control group: Not actually prerendering) ";
   if (IsNoUseGroup())
     enabled_note += "(No-use group: Not swapping in prerendered pages) ";
-  if (GetMode() == PRERENDER_MODE_EXPERIMENT_5MIN_TTL_GROUP)
-    enabled_note += "(5 min TTL group: Extended prerender eviction to 5 mins) ";
+  if (GetMode() == PRERENDER_MODE_EXPERIMENT_15MIN_TTL_GROUP)
+    enabled_note +=
+        "(15 min TTL group: Extended prerender eviction to 15 mins) ";
   dict_value->SetString("enabled_note", enabled_note);
   return dict_value;
 }
