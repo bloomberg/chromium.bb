@@ -120,8 +120,9 @@ cr.define('options', function() {
       // If the trigger for this update was a value being selected from the
       // current list, do nothing.
       if (list.targetInput && list.selectedItem &&
-          list.selectedItem.url == list.targetInput.value)
+          list.selectedItem.url == list.targetInput.value) {
         return;
+      }
       list.suggestions = suggestions;
     },
 

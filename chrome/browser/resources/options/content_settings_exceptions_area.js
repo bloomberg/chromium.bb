@@ -220,7 +220,7 @@ cr.define('options.contentSettings', function() {
       else if (setting == 'default')
         return '';
 
-      console.error('Unknown setting: . + setting + ');
+      console.error('Unknown setting: [' + setting + ']');
       return '';
     },
 
