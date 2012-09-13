@@ -4,6 +4,7 @@
 
 #include "ash/wm/workspace/workspace_window_resizer.h"
 
+#include "ash/display/display_controller.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
@@ -779,6 +780,45 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffBottom) {
       kRootHeight - WorkspaceWindowResizer::kMinOnscreenHeight - 10;
   EXPECT_EQ("100," + base::IntToString(expected_y) + " 300x400",
             window_->bounds().ToString());
+}
+
+// Makes sure we don't allow dragging on the work area with multidisplay.
+TEST_F(WorkspaceWindowResizerTest, DontDragOffBottomWithMultiDisplay) {
+  UpdateDisplay("800x600,800x600");
+  ASSERT_EQ(2, gfx::Screen::GetNumDisplays());
+
+  Shell::GetInstance()->SetDisplayWorkAreaInsets(
+      Shell::GetPrimaryRootWindow(), gfx::Insets(0, 0, 10, 0));
+
+  // Positions the secondary display at the bottom the primary display.
+  ash::DisplayLayout display_layout(ash::DisplayLayout::BOTTOM, 0);
+  Shell::GetInstance()->display_controller()->SetDefaultDisplayLayout(
+      display_layout);
+
+  {
+    window_->SetBounds(gfx::Rect(100, 200, 300, 400));
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 400), 0);
+    int expected_y =
+        kRootHeight - WorkspaceWindowResizer::kMinOnscreenHeight - 10;
+    // When the mouse cursor is in the primary display, the window cannot move
+    // on non-work area with kMinOnscreenHeight margin.
+    EXPECT_EQ("100," + base::IntToString(expected_y) + " 300x400",
+              window_->bounds().ToString());
+  }
+
+  {
+    window_->SetBounds(gfx::Rect(100, 200, 300, 400));
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 600), 0);
+    // The window can move to the secondary display beyond non-work area of
+    // the primary display.
+    EXPECT_EQ("100,800 300x400", window_->bounds().ToString());
+  }
 }
 
 // Makes sure we don't allow dragging off the top of the work area.

@@ -433,20 +433,24 @@ void WorkspaceWindowResizer::MagneticallySnapToOtherWindows(gfx::Rect* bounds) {
 void WorkspaceWindowResizer::AdjustBoundsForMainWindow(
     gfx::Rect* bounds,
     int grid_size) {
-  // Always keep kMinOnscreenHeight on the bottom except when an extended
-  // display is available and a window is being dragged.
-  gfx::Rect work_area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(window()));
-  int max_y = work_area.bottom() - kMinOnscreenHeight;
-  if ((details_.window_component != HTCAPTION || !HasSecondaryRootWindow()) &&
-      bounds->y() > max_y) {
-    bounds->set_y(max_y);
-  }
 
-  // Don't allow dragging above the top of the display except when an extended
-  // display is available and a window is being dragged.
-  if ((details_.window_component != HTCAPTION || !HasSecondaryRootWindow()) &&
-      bounds->y() <= work_area.y()) {
-    bounds->set_y(work_area.y());
+  gfx::Point last_mouse_location_in_screen = last_mouse_location_;
+  wm::ConvertPointToScreen(window()->parent(), &last_mouse_location_in_screen);
+  gfx::Display display =
+      gfx::Screen::GetDisplayNearestPoint(last_mouse_location_in_screen);
+  gfx::Rect work_area =
+      ScreenAsh::ConvertRectFromScreen(window()->parent(), display.work_area());
+  if (details_.window_component == HTCAPTION) {
+    // Adjust the bounds to the work area where the mouse cursor is located.
+    // Always keep kMinOnscreenHeight on the bottom.
+    int max_y = work_area.bottom() - kMinOnscreenHeight;
+    if (bounds->y() > max_y) {
+      bounds->set_y(max_y);
+    } else if (bounds->y() <= work_area.y()) {
+      // Don't allow dragging above the top of the display until the mouse
+      // cursor reaches the work area above if any.
+      bounds->set_y(work_area.y());
+    }
   }
 
   if (grid_size > 0 && details_.window_component == HTCAPTION) {
