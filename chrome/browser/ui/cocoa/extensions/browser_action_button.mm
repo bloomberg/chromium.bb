@@ -36,11 +36,8 @@ NSString* const kBrowserActionButtonDraggingNotification =
 NSString* const kBrowserActionButtonDragEndNotification =
     @"BrowserActionButtonDragEndNotification";
 
-static const CGFloat kBrowserActionBadgeOriginYOffset = 5;
-
-namespace {
+const CGFloat kBrowserActionBadgeOriginYOffset = 5;
 const CGFloat kAnimationDuration = 0.2;
-}  // anonymous namespace
 
 // A helper class to bridge the asynchronous Skia bitmap loading mechanism to
 // the extension's button.
@@ -137,6 +134,12 @@ class ExtensionImageTrackerBridge : public content::NotificationObserver,
     [cell
         accessibilitySetOverrideValue:base::SysUTF8ToNSString(extension->name())
         forAttribute:NSAccessibilityDescriptionAttribute];
+    [cell setImageID:IDR_BROWSER_ACTION
+      forButtonState:image_button_cell::kDefaultState];
+    [cell setImageID:IDR_BROWSER_ACTION_H
+      forButtonState:image_button_cell::kHoverState];
+    [cell setImageID:IDR_BROWSER_ACTION_P
+      forButtonState:image_button_cell::kPressedState];
 
     [self setTitle:@""];
     [self setButtonType:NSMomentaryChangeButton];
@@ -214,8 +217,7 @@ class ExtensionImageTrackerBridge : public content::NotificationObserver,
 - (void)endDrag {
   isBeingDragged_ = NO;
   [[NSNotificationCenter defaultCenter]
-      postNotificationName:kBrowserActionButtonDragEndNotification
-                    object:self];
+      postNotificationName:kBrowserActionButtonDragEndNotification object:self];
   [[self cell] setHighlighted:NO];
 }
 
@@ -306,9 +308,20 @@ class ExtensionImageTrackerBridge : public content::NotificationObserver,
   extensionAction_->PaintBadge(&canvas, boundingRect, tabId_);
 }
 
-- (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
+- (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   gfx::ScopedNSGraphicsContextSaveGState scopedGState;
-  [super drawInteriorWithFrame:cellFrame inView:controlView];
+  [super drawWithFrame:cellFrame inView:controlView];
+  const NSSize imageSize = self.image.size;
+  const NSRect imageRect =
+      NSMakeRect(std::floor((NSWidth(cellFrame) - imageSize.width) / 2.0),
+                 std::floor((NSHeight(cellFrame) - imageSize.height) / 2.0),
+                 imageSize.width, imageSize.height);
+  [self.image drawInRect:imageRect
+                fromRect:NSZeroRect
+               operation:NSCompositeSourceOver
+                fraction:1.0
+            neverFlipped:YES];
+
   cellFrame.origin.y += kBrowserActionBadgeOriginYOffset;
   [self drawBadgeWithinFrame:cellFrame];
 }

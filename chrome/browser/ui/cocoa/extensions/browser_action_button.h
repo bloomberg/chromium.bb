@@ -9,7 +9,7 @@
 
 #import "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#import "chrome/browser/ui/cocoa/gradient_button_cell.h"
+#import "chrome/browser/ui/cocoa/image_button_cell.h"
 
 class Browser;
 class ExtensionAction;
@@ -69,7 +69,7 @@ extern NSString* const kBrowserActionButtonDragEndNotification;
 
 @end
 
-@interface BrowserActionCell : GradientButtonCell {
+@interface BrowserActionCell : ImageButtonCell {
  @private
   // The current tab ID used when drawing the cell.
   int tabId_;
