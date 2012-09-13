@@ -31,6 +31,147 @@ cr.define('cr.ui', function() {
   };
 
   /**
+   * Abstract base class that provides common functionality for implementing
+   * free-floating informational bubbles with a triangular arrow pointing at an
+   * anchor node.
+   */
+  var BubbleBase = cr.ui.define('div');
+
+  /**
+   * The horizontal distance between the tip of the arrow and the reference edge
+   * of the bubble (as specified by the arrow location).
+   * @const
+   */
+  BubbleBase.ARROW_OFFSET = 30;
+
+  BubbleBase.prototype = {
+    // Set up the prototype chain
+    __proto__: HTMLDivElement.prototype,
+
+    /**
+     * Initialization function for the cr.ui framework.
+     */
+    decorate: function() {
+      this.className = 'bubble';
+      this.innerHTML =
+          '<div class="bubble-content"></div>' +
+          '<div class="bubble-shadow"></div>' +
+          '<div class="bubble-arrow"></div>';
+      this.hidden = true;
+    },
+
+    /**
+     * Set the anchor node, i.e. the node that this bubble points at. Only
+     * available when the bubble is not being shown.
+     * @param {HTMLElement} node The new anchor node.
+     */
+    set anchorNode(node) {
+      if (!this.hidden)
+        return;
+
+      this.anchorNode_ = node;
+    },
+
+    /**
+     * Set the conent of the bubble. Only available when the bubble is not being
+     * shown.
+     * @param {HTMLElement} node The root node of the new content.
+     */
+    set content(node) {
+      if (!this.hidden)
+        return;
+
+      var bubbleContent = this.querySelector('.bubble-content');
+      bubbleContent.innerHTML = '';
+      bubbleContent.appendChild(node);
+    },
+
+    /**
+     * Set the arrow location. Only available when the bubble is not being
+     * shown.
+     * @param {cr.ui.ArrowLocation} location The new arrow location.
+     */
+    set arrowLocation(location) {
+      if (!this.hidden)
+        return;
+
+      this.arrowAtRight_ = location == ArrowLocation.TOP_END ||
+                           location == ArrowLocation.BOTTOM_END;
+      if (document.documentElement.dir == 'rtl')
+        this.arrowAtRight_ = !this.arrowAtRight_;
+      this.arrowAtTop_ = location == ArrowLocation.TOP_START ||
+                         location == ArrowLocation.TOP_END;
+    },
+
+    /**
+     * Show the bubble.
+     */
+    show: function() {
+      if (!this.hidden)
+        return;
+
+      document.body.appendChild(this);
+      this.hidden = false;
+
+      var doc = this.ownerDocument;
+      this.eventTracker_ = new EventTracker;
+      this.eventTracker_.add(doc, 'keydown', this, true);
+      this.eventTracker_.add(doc, 'mousedown', this, true);
+    },
+
+    /**
+     * Hide the bubble.
+     */
+    hide: function() {
+      if (this.hidden)
+        return;
+
+      this.hidden = true;
+      this.eventTracker_.removeAll();
+      this.parentNode.removeChild(this);
+    },
+
+    /**
+     * Handle keyboard events, dismissing the bubble if necessary.
+     * @param {Event} event The event.
+     */
+    handleEvent: function(event) {
+      // Close the bubble when the user presses <Esc>.
+      if (event.type == 'keydown' && event.keyCode == 27) {
+        this.hide();
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    },
+
+    /**
+     * Update the arrow so that it appears at the correct position.
+     * @param {Boolean} visible Whether the arrow should be visible.
+     * @param {number} The horizontal distance between the tip of the arrow and
+     * the reference edge of the bubble (as specified by the arrow location).
+     * @private
+     */
+    updateArrowPosition_: function(visible, tipOffset) {
+      var bubbleArrow = this.querySelector('.bubble-arrow');
+
+      if (visible) {
+        bubbleArrow.style.display = 'block';
+      } else {
+        bubbleArrow.style.display = 'none';
+        return;
+      }
+
+      var edgeOffset = (-bubbleArrow.clientHeight / 2) + 'px';
+      bubbleArrow.style.top = this.arrowAtTop_ ? edgeOffset : 'auto';
+      bubbleArrow.style.bottom = this.arrowAtTop_ ? 'auto' : edgeOffset;
+
+      edgeOffset = (tipOffset - bubbleArrow.clientHeight / 2) + 'px';
+      bubbleArrow.style.left = this.arrowAtRight_ ? 'auto' : edgeOffset;
+      bubbleArrow.style.right = this.arrowAtRight_ ? edgeOffset : 'auto';
+    },
+  };
+
+  /**
    * The bubble alignment specifies the horizontal position of the bubble in
    * relation to the anchor node.
    * @enum
@@ -45,105 +186,60 @@ cr.define('cr.ui', function() {
   };
 
   /**
-   * The horizontal distance between the tip of the arrow and the start or the
-   * end of the bubble (as specified by the arrow location).
-   * @const
-   */
-  var ARROW_OFFSET_X = 30;
-
-  /**
-   * The vertical distance between the tip of the arrow and the bottom or top of
-   * the bubble (as specified by the arrow location). Note, if you change this
-   * then you should also change the "top" and "bottom" values for .bubble-arrow
-   * in bubble.css.
-   * @const
-   */
-  var ARROW_OFFSET_Y = 8;
-
-  /**
-   * Bubble is a free-floating informational bubble with a triangular arrow
-   * that points at a place of interest on the page.
+   * A bubble that remains open until the user explicitly dismisses it or clicks
+   * outside the bubble after it has been shown for at least the specified
+   * amount of time (making it less likely that the user will unintentionally
+   * dismiss the bubble). The bubble repositions itself on layout changes.
    */
   var Bubble = cr.ui.define('div');
 
   Bubble.prototype = {
-    __proto__: HTMLDivElement.prototype,
+    // Set up the prototype chain
+    __proto__: BubbleBase.prototype,
 
+    /**
+     * Initialization function for the cr.ui framework.
+     */
     decorate: function() {
-      this.className = 'bubble';
-      this.innerHTML =
-          '<div class="bubble-contents"></div>' +
-          '<div class="bubble-close"></div>' +
-          '<div class="bubble-shadow"></div>' +
-          '<div class="bubble-arrow"></div>';
+      BubbleBase.prototype.decorate.call(this);
 
-      this.hidden = true;
+      var close = document.createElement('div');
+      close.className = 'bubble-close';
+      this.appendChild(close);
+
       this.handleCloseEvent = this.hide;
       this.deactivateToDismissDelay_ = 0;
       this.bubbleAlignment = BubbleAlignment.ARROW_TO_MID_ANCHOR;
     },
 
     /**
-     * Sets the child node of the bubble.
-     * @param {node} An HTML element
+     * Handler for close events triggered when the close button is clicked. By
+     * default, set to this.hide. Only available when the bubble is not being
+     * shown.
+     * @param {function} handler The new handler, a function with no parameters.
      */
-    set content(node) {
-      var bubbleContent = this.querySelector('.bubble-contents');
-      bubbleContent.innerHTML = '';
-      bubbleContent.appendChild(node);
-    },
-
-    /**
-     * Handles close event which is triggered when the close button
-     * is clicked. By default is set to this.hide.
-     * @param {function} A function with no parameters
-     */
-    set handleCloseEvent(func) {
-      this.handleCloseEvent_ = func;
-    },
-
-    /**
-     * Sets the anchor node, i.e. the node that this bubble points at.
-     * @param {HTMLElement} node The new anchor node.
-     */
-    set anchorNode(node) {
-      this.anchorNode_ = node;
-
+    set handleCloseEvent(handler) {
       if (!this.hidden)
-        this.reposition();
+        return;
+
+      this.handleCloseEvent_ = handler;
     },
 
     /**
-     * Sets the arrow location.
-     * @param {cr.ui.ArrowLocation} arrowLocation The new arrow location.
-     */
-    setArrowLocation: function(arrowLocation) {
-      this.isRight_ = arrowLocation == ArrowLocation.TOP_END ||
-                      arrowLocation == ArrowLocation.BOTTOM_END;
-      if (document.documentElement.dir == 'rtl')
-        this.isRight_ = !this.isRight_;
-      this.isTop_ = arrowLocation == ArrowLocation.TOP_START ||
-                    arrowLocation == ArrowLocation.TOP_END;
-
-      var bubbleArrow = this.querySelector('.bubble-arrow');
-      bubbleArrow.setAttribute('is-right', this.isRight_);
-      bubbleArrow.setAttribute('is-top', this.isTop_);
-
-      if (!this.hidden)
-        this.reposition();
-    },
-
-    /**
-     * Sets the bubble alignment.
+     * Set the bubble alignment. Only available when the bubble is not being
+     * shown.
      * @param {cr.ui.BubbleAlignment} alignment The new bubble alignment.
      */
     set bubbleAlignment(alignment) {
+      if (!this.hidden)
+        return;
+
       this.bubbleAlignment_ = alignment;
     },
 
     /**
-     * Sets the delay before the user is allowed to click outside the bubble
-     * to dismiss it. Using a delay makes it less likely that the user will
+     * Set the delay before the user is allowed to click outside the bubble to
+     * dismiss it. Using a delay makes it less likely that the user will
      * unintentionally dismiss the bubble.
      * @param {number} delay The delay in milliseconds.
      */
@@ -152,91 +248,73 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Hides or shows the close button.
+     * Hide or show the close button.
      * @param {Boolean} isVisible True if the close button should be visible.
      */
-    setCloseButtonVisible: function(isVisible) {
+    set closeButtonVisible(isVisible) {
       this.querySelector('.bubble-close').hidden = !isVisible;
     },
 
     /**
-     * Updates the position of the bubble. This is automatically called when
-     * the window is resized, but should also be called any time the layout
-     * may have changed.
+     * Update the position of the bubble. This is automatically called when the
+     * window is resized, but should also be called any time the layout may have
+     * changed.
      */
     reposition: function() {
       var clientRect = this.anchorNode_.getBoundingClientRect();
+      var bubbleArrow = this.querySelector('.bubble-arrow');
+      var arrowOffsetY = bubbleArrow.offsetHeight / 2;
 
       var left;
       if (this.bubbleAlignment_ ==
           BubbleAlignment.BUBBLE_EDGE_TO_ANCHOR_EDGE) {
-        left = this.isRight_ ? clientRect.right - this.clientWidth :
+        left = this.arrowAtRight_ ? clientRect.right - this.clientWidth :
             clientRect.left;
       } else {
         var anchorMid = (clientRect.left + clientRect.right) / 2;
-        left = this.isRight_ ? anchorMid - this.clientWidth + ARROW_OFFSET_X :
-            anchorMid - ARROW_OFFSET_X;
+        left = this.arrowAtRight_ ?
+            anchorMid - this.clientWidth + BubbleBase.ARROW_OFFSET :
+            anchorMid - BubbleBase.ARROW_OFFSET;
       }
-      var top = this.isTop_ ? clientRect.bottom + ARROW_OFFSET_Y :
-          clientRect.top - this.clientHeight - ARROW_OFFSET_Y;
+      var top = this.arrowAtTop_ ? clientRect.bottom + arrowOffsetY :
+          clientRect.top - this.clientHeight - arrowOffsetY;
 
       this.style.left = left + 'px';
       this.style.top = top + 'px';
+
+      this.updateArrowPosition_(true, BubbleBase.ARROW_OFFSET);
     },
 
     /**
-     * Starts showing the bubble. The bubble will show until the user clicks
-     * away or presses Escape.
+     * Show the bubble.
      */
     show: function() {
       if (!this.hidden)
         return;
 
-      document.body.appendChild(this);
-      this.hidden = false;
+      BubbleBase.prototype.show.call(this);
+
       this.reposition();
       this.showTime_ = Date.now();
-
-      this.eventTracker_ = new EventTracker;
       this.eventTracker_.add(window, 'resize', this.reposition.bind(this));
-
-      var doc = this.ownerDocument;
-      this.eventTracker_.add(doc, 'keydown', this, true);
-      this.eventTracker_.add(doc, 'mousedown', this, true);
     },
 
     /**
-     * Hides the bubble from view.
+     * Handle keyboard and mouse events, dismissing the bubble if necessary.
+     * @param {Event} event The event.
      */
-    hide: function() {
-      this.hidden = true;
-      this.eventTracker_.removeAll();
-      this.parentNode.removeChild(this);
-    },
+    handleEvent: function(event) {
+      BubbleBase.prototype.handleEvent.call(this, event);
 
-    /**
-     * Handles keydown and mousedown events, dismissing the bubble if
-     * necessary.
-     * @param {Event} e The event.
-     */
-    handleEvent: function(e) {
-      switch (e.type) {
-        case 'keydown': {
-          if (e.keyCode == 27)  // Esc
-            this.hide();
-          break;
-        }
-        case 'mousedown': {
-          if (e.target == this.querySelector('.bubble-close')) {
-            this.handleCloseEvent_();
-          } else if (!this.contains(e.target)) {
-            if (Date.now() - this.showTime_ < this.deactivateToDismissDelay_)
-              return;
-            this.hide();
-          } else {
-            return;
-          }
-          break;
+      if (event.type == 'mousedown') {
+        // Dismiss the bubble when the user clicks on the close button.
+        if (event.target == this.querySelector('.bubble-close')) {
+          this.handleCloseEvent_();
+        // Dismiss the bubble when the user clicks outside it after the
+        // specified delay has passed.
+        } else if (!this.contains(event.target) &&
+            Date.now() - this.showTime_ >= this.deactivateToDismissDelay_) {
+          this.hide();
         }
       }
     },
@@ -244,7 +322,8 @@ cr.define('cr.ui', function() {
 
   return {
     ArrowLocation: ArrowLocation,
-    Bubble: Bubble,
-    BubbleAlignment: BubbleAlignment
+    BubbleBase: BubbleBase,
+    BubbleAlignment: BubbleAlignment,
+    Bubble: Bubble
   };
 });

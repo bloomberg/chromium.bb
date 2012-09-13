@@ -676,11 +676,11 @@ cr.define('ntp', function() {
     if (loadTimeData.getString('login_status_message')) {
       loginBubble = new cr.ui.Bubble;
       loginBubble.anchorNode = $('login-container');
-      loginBubble.setArrowLocation(cr.ui.ArrowLocation.TOP_END);
+      loginBubble.arrowLocation = cr.ui.ArrowLocation.TOP_END;
       loginBubble.bubbleAlignment =
           cr.ui.BubbleAlignment.BUBBLE_EDGE_TO_ANCHOR_EDGE;
       loginBubble.deactivateToDismissDelay = 2000;
-      loginBubble.setCloseButtonVisible(false);
+      loginBubble.closeButtonVisible = false;
 
       $('login-status-advanced').onclick = function() {
         chrome.send('showAdvancedLoginUI');
