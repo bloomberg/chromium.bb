@@ -7,9 +7,9 @@
 #include "base/debug/stack_trace.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "grit/ash_resources.h"
 #include "grit/generated_resources.h"  // Accessibility names
 #include "grit/theme_resources.h"
-#include "grit/ui_resources.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"

@@ -14,7 +14,6 @@
 #include "ash/wm/window_animations.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "grit/ui_resources.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"

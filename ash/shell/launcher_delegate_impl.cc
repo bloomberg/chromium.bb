@@ -8,7 +8,7 @@
 #include "ash/shell/toplevel_window.h"
 #include "ash/shell/window_watcher.h"
 #include "ash/wm/window_util.h"
-#include "grit/ui_resources.h"
+#include "grit/ash_resources.h"
 #include "ui/aura/window.h"
 
 namespace ash {

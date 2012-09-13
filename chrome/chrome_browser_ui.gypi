@@ -2202,6 +2202,8 @@
             ['include', '^browser/ui/webui/certificate_viewer_ui.h'],
           ],
           'dependencies': [
+            # aura uses some of ash resources.
+            '../ash/ash.gyp:ash_resources',
             '../ui/aura/aura.gyp:aura',
             '../ui/compositor/compositor.gyp:compositor',
           ],

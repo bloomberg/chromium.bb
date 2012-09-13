@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "ash/launcher/launcher_button_host.h"
-#include "grit/ui_resources.h"
+#include "grit/ash_resources.h"
 #include "skia/ext/image_operations.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/animation/animation_delegate.h"

@@ -4,8 +4,8 @@
 
 #include "ash/display/secondary_display_view.h"
 
+#include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
-#include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"

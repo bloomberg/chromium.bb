@@ -6,6 +6,7 @@
 
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_item_view.h"
+#include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"

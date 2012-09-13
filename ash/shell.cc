@@ -67,7 +67,6 @@
 #include "ash/wm/workspace_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "grit/ui_resources.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/user_action_client.h"
 #include "ui/aura/display_manager.h"

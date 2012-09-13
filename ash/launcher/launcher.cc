@@ -16,7 +16,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/shelf_layout_manager.h"
-#include "grit/ui_resources.h"
+#include "grit/ash_resources.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"

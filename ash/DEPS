@@ -1,6 +1,7 @@
 include_rules = [
   "+chromeos",
   "+content/public",
+  "+grit/ash_resources.h",
   "+grit/ash_strings.h",
   "+grit/ui_resources.h",
   "+grit/ui_resources_wallpapers.h",

@@ -12,7 +12,6 @@
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/snap_sizer.h"
 #include "grit/ash_strings.h"
-#include "grit/ui_resources.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/window.h"
 #include "ui/base/events/event.h"

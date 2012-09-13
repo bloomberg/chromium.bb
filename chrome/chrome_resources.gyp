@@ -264,8 +264,6 @@
         'chrome_strings',
         'platform_locale_settings',
         'theme_resources',
-        # TODO(zork): Protect this with if use_aura==1
-        '<(DEPTH)/ash/ash_strings.gyp:ash_strings',
         '<(DEPTH)/content/content_resources.gyp:content_resources',
         '<(DEPTH)/net/net.gyp:net_resources',
         '<(DEPTH)/ui/base/strings/ui_strings.gyp:ui_strings',
@@ -301,6 +299,12 @@
         },
       ],
       'conditions': [
+        ['use_aura==1', {
+          'dependencies': [
+             '<(DEPTH)/ash/ash.gyp:ash_resources',
+             '<(DEPTH)/ash/ash_strings.gyp:ash_strings',
+          ],
+        }],
         ['OS != "mac"', {
           # Copy pak files to the product directory. These files will be picked
           # up by the following installer scripts:

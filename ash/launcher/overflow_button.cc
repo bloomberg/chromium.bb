@@ -4,8 +4,8 @@
 
 #include "ash/launcher/overflow_button.h"
 
+#include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
-#include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/animation/throb_animation.h"
