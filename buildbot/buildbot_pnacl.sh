@@ -107,7 +107,7 @@ tc-add-glibc-support() {
 tc-archive() {
   local label=$1
   echo @@@BUILD_STEP archive_toolchain@@@
-  ${UP_DOWN_LOAD} UploadArmUntrustedToolchains ${BUILDBOT_GOT_REVISION} \
+  ${UP_DOWN_LOAD} UploadPnaclToolchains ${BUILDBOT_GOT_REVISION} \
     ${label} pnacl-toolchain.tgz
 }
 
@@ -123,7 +123,7 @@ tc-archive-translator-pexes() {
 tc-archive-translator() {
   echo @@@BUILD_STEP archive_translator@@@
   ${PNACL_BUILD} translator-tarball pnacl-translator.tgz
-  ${UP_DOWN_LOAD} UploadArmUntrustedToolchains ${BUILDBOT_GOT_REVISION} \
+  ${UP_DOWN_LOAD} UploadPnaclToolchains ${BUILDBOT_GOT_REVISION} \
       pnacl_translator pnacl-translator.tgz
 }
 

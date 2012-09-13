@@ -28,14 +28,14 @@ ARCHIVED_PEXE_TRANSLATOR_REV=9326
 # test. The toolchain downloader expects this information in a specially
 # formatted file. We generate that file in this script from this information,
 # to keep all our versions in one place
+# If we roll the archived toolchain past r9725 we will also need to change
+# PNACL_ARCHIVED_FRONTEND_LABEL below to pnacl_linux_x86
 ARCHIVED_TOOLCHAIN_REV=9576
-ARCHIVED_TOOLCHAIN_HASH=0d1d0230713263feafed041c08e7b1725db9b9cf
 
 readonly PNACL_BUILD="pnacl/build.sh"
 readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
 readonly TORTURE_TEST="tools/toolchain_tester/torture_test.sh"
 readonly LLVM_TESTSUITE="pnacl/scripts/llvm-test-suite.sh"
-readonly DOWNLOAD_TOOLCHAINS="build/download_toolchains.py"
 
 # build.sh, llvm test suite and torture tests all use this value
 export PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-4}
@@ -65,19 +65,22 @@ readonly SCONS_PICK_TC="pnaclsdk_mode=custom:toolchain/${PNACL_TOOLCHAIN_LABEL}"
 export PNACL_ARCHIVED_FRONTEND_LABEL=pnacl_linux_x86_32
 
 # download-old-tc -
-# Generate a toolchain version + hash, file for the downloader, and run it.
+# Download the archived frontend toolchain, if we haven't already
 download-old-tc() {
   local dst=$1
-  local temp_rev_file="TEST_TOOL_REVISIONS"
-  echo PNACL_VERSION=${ARCHIVED_TOOLCHAIN_REV} > ${temp_rev_file}
-  # NOTE: even though we are using x86-64 host toolchains above,
-  # download_toolchains.py only knows how to download 32-bit host
-  # toolchains right now.
-  # See ${PNACL_ARCHIVED_FRONTEND_LABEL} vs ${PNACL_TOOLCHAIN_LABEL}.
-  echo NACL_TOOL_PNACL_LINUX_X86_32_HASH=${ARCHIVED_TOOLCHAIN_HASH} >> \
-    ${temp_rev_file}
-  ${DOWNLOAD_TOOLCHAINS} --no-x86 --no-arm-trusted --no-pnacl-translator \
-    --toolchain-dir=${dst} ${temp_rev_file}
+
+  if [[ -f "${dst}/${ARCHIVED_TOOLCHAIN_REV}.stamp" ]]; then
+    echo "Using existing tarball for archived frontend"
+  else
+    rm -rf "${dst}/*"
+    ${UP_DOWN_LOAD} DownloadPnaclToolchains ${ARCHIVED_TOOLCHAIN_REV} \
+      ${PNACL_ARCHIVED_FRONTEND_LABEL} \
+      ${dst}/${PNACL_ARCHIVED_FRONTEND_LABEL}.tgz
+    mkdir -p ${dst}/${PNACL_ARCHIVED_FRONTEND_LABEL}
+    tar xz -C ${dst}/${PNACL_ARCHIVED_FRONTEND_LABEL} \
+      -f ${dst}/${PNACL_ARCHIVED_FRONTEND_LABEL}.tgz
+    touch "${dst}/${ARCHIVED_TOOLCHAIN_REV}.stamp"
+  fi
 }
 
 

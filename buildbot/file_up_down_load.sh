@@ -126,8 +126,7 @@ ShowRecentArmTrustedToolchains() {
 #@ pnacl_mac_x86
 #@ pnacl_win_x86
 
-# TODO(robertm): "arm untrusted" should be renamed to pnacl
-UploadArmUntrustedToolchains() {
+UploadPnaclToolchains() {
   local rev=$1
   local label=$2
   local tarball=$3
@@ -139,17 +138,17 @@ UploadArmUntrustedToolchains() {
   UploadToolchainComponent ${rev} naclsdk_${label}.tgz ${tarball}
 }
 
-DownloadArmUntrustedToolchains() {
+DownloadPnaclToolchains() {
   local rev=$1
   local label=$2
   local tarball=$3
 
   curl -L \
-      ${URL_PREFIX}/${BASE_TOOLCHAIN_COMPONENT}/${rev}/naclsdk_${label}.tgz \
+      ${URL_PREFIX_RAW}/${BASE_TOOLCHAIN_COMPONENT}/${rev}/naclsdk_${label}.tgz\
       -o ${tarball}
 }
 
-ShowRecentArmUntrustedToolchains() {
+ShowRecentPnaclToolchains() {
   local label=$1
   local url="gs://${BASE_TOOLCHAIN_COMPONENT}/*/naclsdk_${label}.tgz"
 

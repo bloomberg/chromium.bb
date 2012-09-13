@@ -23,7 +23,7 @@ readonly LLVM_TESTSUITE_SRC=${NACL_ROOT}/pnacl/git/llvm-test-suite
 readonly LLVM_TESTSUITE_BUILD=${NACL_ROOT}/pnacl/build/llvm-test-suite
 
 readonly TC_SRC_LLVM=${NACL_ROOT}/pnacl/git/llvm
-readonly TC_BUILD_LLVM=${NACL_ROOT}/pnacl/build/llvm
+readonly TC_BUILD_LLVM=${NACL_ROOT}/pnacl/build/llvm_x86_32
 readonly PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-6}
 
 if [[ ${PNACL_TOOLCHAIN_LABEL} == "" ]]; then
