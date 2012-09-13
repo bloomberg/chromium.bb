@@ -4,8 +4,6 @@
     <output filename="grit/webkit_resources.h" type="rc_header" context="default_100_percent">
       <emit emit_type='prepend'></emit>
     </output>
-    <!-- TODO, update third_party/webkit DumpRenderTree to use *_100_percent.pak, then delete old pak file. -->
-    <output filename="webkit_resources.pak" type="data_package" context="default_100_percent" />
     <output filename="webkit_resources_100_percent.pak" type="data_package" context="default_100_percent" />
     <output filename="webkit_resources_200_percent.pak" type="data_package" context="default_200_percent" />
     <output filename="webkit_resources.rc" type="rc_all" context="default_100_percent" />
