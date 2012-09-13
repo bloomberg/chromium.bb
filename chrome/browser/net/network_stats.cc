@@ -539,8 +539,7 @@ NetworkStats::Status NetworkStats::VerifyPackets() {
   if (packets_to_send_ > successful_packets)
     status = SOME_PACKETS_NOT_VERIFIED;
 
-  if (current_test_ == START_PACKET_TEST &&
-      packets_to_send_ == kMaximumSequentialPackets &&
+  if (packets_to_send_ == kMaximumSequentialPackets &&
       successful_packets > 1) {
     base::TimeDelta total_time;
     if (packet_last_byte_read_time_ > packet_1st_byte_read_time_) {
@@ -560,11 +559,13 @@ NetworkStats::Status NetworkStats::VerifyPackets() {
         base::Histogram::kUmaTargetedHistogramFlag);
     histogram->AddTime(total_time);
 
-    int experiment_to_run = base::RandInt(1, 2);
-    if (experiment_to_run == 1)
-      next_test_ = NON_PACED_PACKET_TEST;
-    else
-      next_test_ = PACED_PACKET_TEST;
+    if (current_test_ == START_PACKET_TEST) {
+        int experiment_to_run = base::RandInt(1, 2);
+        if (experiment_to_run == 1)
+          next_test_ = NON_PACED_PACKET_TEST;
+        else
+          next_test_ = PACED_PACKET_TEST;
+    }
   }
 
   return status;
