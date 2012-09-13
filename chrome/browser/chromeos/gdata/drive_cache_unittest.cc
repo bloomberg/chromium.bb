@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/gdata/drive_cache.h"
+
 #include <algorithm>
 #include <vector>
 
@@ -10,7 +12,6 @@
 #include "base/path_service.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/gdata/drive.pb.h"
-#include "chrome/browser/chromeos/gdata/drive_cache.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system.h"
 #include "chrome/browser/chromeos/gdata/drive_file_system_util.h"
 #include "chrome/browser/chromeos/gdata/drive_test_util.h"
@@ -40,19 +41,19 @@ struct InitialCacheResource {
   DriveCache::CacheSubDirectoryType expected_sub_dir_type;
 } const initial_cache_resources[] = {
   // Cache resource in tmp dir, i.e. not pinned or dirty.
-  { "root_feed.json", "tmp:resource_id", "md5_tmp_alphanumeric",
+  { "gdata/root_feed.json", "tmp:resource_id", "md5_tmp_alphanumeric",
     test_util::TEST_CACHE_STATE_PRESENT,
     "md5_tmp_alphanumeric", DriveCache::CACHE_TYPE_TMP },
   // Cache resource in tmp dir, i.e. not pinned or dirty, with resource_id
   // containing non-alphanumeric characters, to test resource_id is escaped and
   // unescaped correctly.
-  { "subdir_feed.json", "tmp:`~!@#$%^&*()-_=+[{|]}\\;',<.>/?",
+  { "gdata/subdir_feed.json", "tmp:`~!@#$%^&*()-_=+[{|]}\\;',<.>/?",
     "md5_tmp_non_alphanumeric",
     test_util::TEST_CACHE_STATE_PRESENT,
     "md5_tmp_non_alphanumeric", DriveCache::CACHE_TYPE_TMP },
   // Cache resource that is pinned, to test a pinned file is in persistent dir
   // with a symlink in pinned dir referencing it.
-  { "directory_entry_atom.json", "pinned:existing", "md5_pinned_existing",
+  { "gdata/directory_entry_atom.json", "pinned:existing", "md5_pinned_existing",
     test_util::TEST_CACHE_STATE_PRESENT |
     test_util::TEST_CACHE_STATE_PINNED |
     test_util::TEST_CACHE_STATE_PERSISTENT,
@@ -64,14 +65,14 @@ struct InitialCacheResource {
     "md5_pinned_non_existent", DriveCache::CACHE_TYPE_TMP },
   // Cache resource that is dirty, to test a dirty file is in persistent dir
   // with a symlink in outgoing dir referencing it.
-  { "account_metadata.json", "dirty:existing", "md5_dirty_existing",
+  { "gdata/account_metadata.json", "dirty:existing", "md5_dirty_existing",
     test_util::TEST_CACHE_STATE_PRESENT |
     test_util::TEST_CACHE_STATE_DIRTY |
     test_util::TEST_CACHE_STATE_PERSISTENT,
     "local", DriveCache::CACHE_TYPE_PERSISTENT },
   // Cache resource that is pinned and dirty, to test a dirty pinned file is in
   // persistent dir with symlink in pinned and outgoing dirs referencing it.
-  { "basic_feed.json", "dirty_and_pinned:existing",
+  { "gdata/basic_feed.json", "dirty_and_pinned:existing",
     "md5_dirty_and_pinned_existing",
     test_util::TEST_CACHE_STATE_PRESENT |
     test_util::TEST_CACHE_STATE_PINNED |
@@ -205,7 +206,7 @@ class DriveCacheTest : public testing::Test {
       // Copy file from data dir to cache subdir, naming it per cache files
       // convention.
       if (test_util::ToCacheEntry(resource.cache_state).is_present()) {
-        FilePath source_path = GetTestFilePath(resource.source_file);
+        FilePath source_path = test_util::GetTestFilePath(resource.source_file);
         ASSERT_TRUE(file_util::CopyFile(source_path, dest_path));
       } else {
         dest_path = FilePath(FILE_PATH_LITERAL(kSymLinkToDevNull));
@@ -756,18 +757,6 @@ class DriveCacheTest : public testing::Test {
     return num_files_found;
   }
 
-  static FilePath GetTestFilePath(const FilePath::StringType& filename) {
-    FilePath path;
-    std::string error;
-    PathService::Get(chrome::DIR_TEST_DATA, &path);
-    path = path.AppendASCII("chromeos")
-        .AppendASCII("gdata")
-        .AppendASCII(filename.c_str());
-    EXPECT_TRUE(file_util::PathExists(path)) <<
-        "Couldn't find " << path.value();
-    return path;
-  }
-
   MessageLoopForUI message_loop_;
   // The order of the test threads is important, do not change the order.
   // See also content/browser/browser_thread_imple.cc.
@@ -823,7 +812,8 @@ TEST_F(DriveCacheTest, StoreToCacheSimple) {
   std::string md5("abcdef0123456789");
 
   // Store an existing file.
-  TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
+  TestStoreToCache(resource_id, md5,
+                   test_util::GetTestFilePath("gdata/root_feed.json"),
                    DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    DriveCache::CACHE_TYPE_TMP);
   EXPECT_EQ(1, num_callback_invocations_);
@@ -840,7 +830,8 @@ TEST_F(DriveCacheTest, StoreToCacheSimple) {
   // |md5|.
   md5 = "new_md5";
   num_callback_invocations_ = 0;
-  TestStoreToCache(resource_id, md5, GetTestFilePath("subdir_feed.json"),
+  TestStoreToCache(resource_id, md5,
+                   test_util::GetTestFilePath("gdata/subdir_feed.json"),
                    DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    DriveCache::CACHE_TYPE_TMP);
   EXPECT_EQ(1, num_callback_invocations_);
@@ -857,7 +848,8 @@ TEST_F(DriveCacheTest, GetFromCacheSimple) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   // First store a file to cache.
-  TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
+  TestStoreToCache(resource_id, md5,
+                   test_util::GetTestFilePath("gdata/root_feed.json"),
                    DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    DriveCache::CACHE_TYPE_TMP);
 
@@ -891,7 +883,8 @@ TEST_F(DriveCacheTest, RemoveFromCacheSimple) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   // First store a file to cache.
-  TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
+  TestStoreToCache(resource_id, md5,
+                   test_util::GetTestFilePath("gdata/root_feed.json"),
                    DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    DriveCache::CACHE_TYPE_TMP);
 
@@ -903,7 +896,8 @@ TEST_F(DriveCacheTest, RemoveFromCacheSimple) {
   // Repeat using non-alphanumeric characters for resource id, including '.'
   // which is an extension separator.
   resource_id = "pdf:`~!@#$%^&*()-_=+[{|]}\\;',<.>/?";
-  TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
+  TestStoreToCache(resource_id, md5,
+                   test_util::GetTestFilePath("gdata/root_feed.json"),
                    DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    DriveCache::CACHE_TYPE_TMP);
 
@@ -923,7 +917,8 @@ TEST_F(DriveCacheTest, PinAndUnpin) {
       .Times(1);
 
   // First store a file to cache.
-  TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
+  TestStoreToCache(resource_id, md5,
+                   test_util::GetTestFilePath("gdata/root_feed.json"),
                    DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    DriveCache::CACHE_TYPE_TMP);
 
@@ -1000,7 +995,8 @@ TEST_F(DriveCacheTest, StoreToCachePinned) {
 
   // Store an existing file to a previously pinned file.
   num_callback_invocations_ = 0;
-  TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
+  TestStoreToCache(resource_id, md5,
+                   test_util::GetTestFilePath("gdata/root_feed.json"),
                    DRIVE_FILE_OK,
                    test_util::TEST_CACHE_STATE_PRESENT |
                    test_util::TEST_CACHE_STATE_PINNED |
@@ -1039,7 +1035,8 @@ TEST_F(DriveCacheTest, GetFromCachePinned) {
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Store an existing file to the previously pinned non-existent file.
-  TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
+  TestStoreToCache(resource_id, md5,
+                   test_util::GetTestFilePath("gdata/root_feed.json"),
                    DRIVE_FILE_OK,
                    test_util::TEST_CACHE_STATE_PRESENT |
                    test_util::TEST_CACHE_STATE_PINNED |
@@ -1063,7 +1060,8 @@ TEST_F(DriveCacheTest, RemoveFromCachePinned) {
   EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
 
   // Store a file to cache, and pin it.
-  TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
+  TestStoreToCache(resource_id, md5,
+                   test_util::GetTestFilePath("gdata/root_feed.json"),
                    DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    DriveCache::CACHE_TYPE_TMP);
   TestPin(resource_id, md5, DRIVE_FILE_OK,
@@ -1082,7 +1080,8 @@ TEST_F(DriveCacheTest, RemoveFromCachePinned) {
   resource_id = "pdf:`~!@#$%^&*()-_=+[{|]}\\;',<.>/?";
   EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
 
-  TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
+  TestStoreToCache(resource_id, md5,
+                   test_util::GetTestFilePath("gdata/root_feed.json"),
                    DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    DriveCache::CACHE_TYPE_TMP);
   TestPin(resource_id, md5, DRIVE_FILE_OK,
@@ -1105,7 +1104,8 @@ TEST_F(DriveCacheTest, DirtyCacheSimple) {
   EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(resource_id)).Times(1);
 
   // First store a file to cache.
-  TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
+  TestStoreToCache(resource_id, md5,
+                   test_util::GetTestFilePath("gdata/root_feed.json"),
                    DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    DriveCache::CACHE_TYPE_TMP);
 
@@ -1145,7 +1145,8 @@ TEST_F(DriveCacheTest, DirtyCachePinned) {
   EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(resource_id)).Times(1);
 
   // First store a file to cache and pin it.
-  TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
+  TestStoreToCache(resource_id, md5,
+                   test_util::GetTestFilePath("gdata/root_feed.json"),
                    DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    DriveCache::CACHE_TYPE_TMP);
   TestPin(resource_id, md5, DRIVE_FILE_OK,
@@ -1196,7 +1197,8 @@ TEST_F(DriveCacheTest, PinAndUnpinDirtyCache) {
       .Times(1);
 
   // First store a file to cache and mark it as dirty.
-  TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
+  TestStoreToCache(resource_id, md5,
+                   test_util::GetTestFilePath("gdata/root_feed.json"),
                    DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    DriveCache::CACHE_TYPE_TMP);
   TestMarkDirty(resource_id, md5, DRIVE_FILE_OK,
@@ -1244,7 +1246,8 @@ TEST_F(DriveCacheTest, DirtyCacheRepetitive) {
   EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(resource_id)).Times(3);
 
   // First store a file to cache.
-  TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
+  TestStoreToCache(resource_id, md5,
+                   test_util::GetTestFilePath("gdata/root_feed.json"),
                    DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    DriveCache::CACHE_TYPE_TMP);
 
@@ -1347,7 +1350,8 @@ TEST_F(DriveCacheTest, DirtyCacheInvalid) {
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Store a file to cache.
-  TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
+  TestStoreToCache(resource_id, md5,
+                   test_util::GetTestFilePath("gdata/root_feed.json"),
                    DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    DriveCache::CACHE_TYPE_TMP);
 
@@ -1374,7 +1378,8 @@ TEST_F(DriveCacheTest, DirtyCacheInvalid) {
                 DriveCache::CACHE_TYPE_PERSISTENT);
   num_callback_invocations_ = 0;
   md5 = "new_md5";
-  TestStoreToCache(resource_id, md5, GetTestFilePath("subdir_feed.json"),
+  TestStoreToCache(resource_id, md5,
+                   test_util::GetTestFilePath("gdata/subdir_feed.json"),
                    DRIVE_FILE_ERROR_IN_USE,
                    test_util::TEST_CACHE_STATE_PRESENT |
                    test_util::TEST_CACHE_STATE_DIRTY |
@@ -1393,7 +1398,8 @@ TEST_F(DriveCacheTest, RemoveFromDirtyCache) {
   EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(resource_id)).Times(1);
 
   // Store a file to cache, pin it, mark it dirty and commit it.
-  TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
+  TestStoreToCache(resource_id, md5,
+                   test_util::GetTestFilePath("gdata/root_feed.json"),
                    DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    DriveCache::CACHE_TYPE_TMP);
   TestPin(resource_id, md5, DRIVE_FILE_OK,
@@ -1430,7 +1436,8 @@ TEST_F(DriveCacheTest, MountUnmount) {
   std::string md5("abcdef0123456789");
 
   // First store a file to cache in the tmp subdir.
-  TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
+  TestStoreToCache(resource_id, md5,
+                   test_util::GetTestFilePath("gdata/root_feed.json"),
                    DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    DriveCache::CACHE_TYPE_TMP);
 
@@ -1529,7 +1536,8 @@ TEST_F(DriveCacheTest, ClearAllOnUIThread) {
   std::string md5("abcdef0123456789");
 
   // Store an existing file.
-  TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
+  TestStoreToCache(resource_id, md5,
+                   test_util::GetTestFilePath("gdata/root_feed.json"),
                    DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
                    DriveCache::CACHE_TYPE_TMP);
   EXPECT_EQ(1, num_callback_invocations_);
@@ -1559,7 +1567,8 @@ TEST_F(DriveCacheTest, StoreToCacheNoSpace) {
   std::string md5("abcdef0123456789");
 
   // Try to store an existing file.
-  TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
+  TestStoreToCache(resource_id, md5,
+                   test_util::GetTestFilePath("gdata/root_feed.json"),
                    DRIVE_FILE_ERROR_NO_SPACE,
                    test_util::TEST_CACHE_STATE_NONE,
                    DriveCache::CACHE_TYPE_TMP);
