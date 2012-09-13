@@ -68,6 +68,7 @@
 #include "sandbox/win/src/sandbox_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/resource/resource_bundle_win.h"
 #include "ui/base/ui_base_paths.h"
 
 using content::BrowserThread;
@@ -464,6 +465,9 @@ void FakeExternalTab::Initialize() {
       NULL, LOAD_LIBRARY_AS_DATAFILE | LOAD_LIBRARY_AS_IMAGE_RESOURCE);
   DCHECK(res_mod);
   _AtlBaseModule.SetResourceInstance(res_mod);
+
+  // Point the ResourceBundle at chrome.dll.
+  ui::SetResourcesDataDLL(_AtlBaseModule.GetResourceInstance());
 
   ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
 
