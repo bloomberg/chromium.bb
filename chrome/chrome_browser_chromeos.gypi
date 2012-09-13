@@ -47,6 +47,8 @@
         '../build/linux/system.gyp:dbus-glib',
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../chromeos/chromeos.gyp:chromeos',
+        '../chromeos/chromeos.gyp:mtp_file_entry_proto',
+        '../chromeos/chromeos.gyp:mtp_storage_info_proto',
         '../content/content.gyp:content_browser',
         '../content/content.gyp:content_common',
         '../crypto/crypto.gyp:crypto',

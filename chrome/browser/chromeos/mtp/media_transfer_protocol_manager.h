@@ -8,7 +8,11 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "chromeos/dbus/media_transfer_protocol_daemon_client.h"
+
+class MtpFileEntry;
+class MtpStorageInfo;
 
 namespace chromeos {
 namespace mtp {
@@ -30,7 +34,7 @@ class MediaTransferProtocolManager {
   // A callback to handle the result of ReadDirectoryByPath/Id.
   // The first argument is a vector of file entries.
   // The second argument is true if there was an error.
-  typedef base::Callback<void(const std::vector<FileEntry>& file_entries,
+  typedef base::Callback<void(const std::vector<MtpFileEntry>& file_entries,
                               bool error)> ReadDirectoryCallback;
 
   // A callback to handle the result of ReadFileByPath/Id.
@@ -43,7 +47,7 @@ class MediaTransferProtocolManager {
   // A callback to handle the result of GetFileInfoByPath/Id.
   // The first argument is a file entry.
   // The second argument is true if there was an error.
-  typedef base::Callback<void(const FileEntry& file_entry,
+  typedef base::Callback<void(const MtpFileEntry& file_entry,
                               bool error)> GetFileInfoCallback;
 
   // Implement this interface to be notified about MTP storage
@@ -70,7 +74,7 @@ class MediaTransferProtocolManager {
 
   // On success, returns the the metadata for |storage_name|.
   // Otherwise returns NULL.
-  virtual const StorageInfo* GetStorageInfo(
+  virtual const MtpStorageInfo* GetStorageInfo(
       const std::string& storage_name) const = 0;
 
   // Opens |storage_name| in |mode| and runs |callback|.

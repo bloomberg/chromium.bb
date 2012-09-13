@@ -18,9 +18,11 @@
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 
+class MtpFileEntry;
+class MtpStorageInfo;
+
 namespace dbus {
 class Bus;
-class Response;
 }
 
 namespace chromeos {
@@ -28,137 +30,6 @@ namespace chromeos {
 // Mode to open a storage in.
 enum OpenStorageMode {
   OPEN_STORAGE_MODE_READ_ONLY,
-};
-
-// Values match libmtp values unless noted below.
-// TODO(thestig) See if we can do better than this.
-enum FileType {
-  FILE_TYPE_FOLDER = 0,
-  FILE_TYPE_JPEG = 14,
-  FILE_TYPE_JFIF = 15,
-  FILE_TYPE_TIFF = 16,
-  FILE_TYPE_BMP = 17,
-  FILE_TYPE_GIF = 18,
-  FILE_TYPE_PICT = 19,
-  FILE_TYPE_PNG = 20,
-  FILE_TYPE_WINDOWSIMAGEFORMAT = 25,
-  FILE_TYPE_JP2 = 40,
-  FILE_TYPE_JPX = 41,
-  // Truly unknown file type.
-  FILE_TYPE_UNKNOWN = 44,
-  // There's more file types to map to, but right now they are not interesting.
-  // Just assign a dummy value for now.
-  FILE_TYPE_OTHER = 9999
-};
-
-// A class to represent information about a storage sent from mtpd.
-class CHROMEOS_EXPORT StorageInfo {
- public:
-  StorageInfo();
-  StorageInfo(const std::string& storage_name, dbus::Response* response);
-  ~StorageInfo();
-
-  // Storage name. (e.g. usb:1,5:65537)
-  const std::string& storage_name() const { return storage_name_; }
-
-  // Vendor. (e.g. Kodak)
-  const std::string& vendor() const { return vendor_; }
-
-  // Vendor ID. (e.g. 0x040a)
-  uint16 vendor_id() const { return vendor_id_; }
-
-  // Product. (e.g. DC4800)
-  const std::string& product() const { return product_; }
-
-  // Vendor ID. (e.g. 0x0160)
-  uint16 product_id() const { return product_id_; }
-
-  // Device flags as defined by libmtp.
-  uint32 device_flags() const { return device_flags_; }
-
-  // Storage type as defined in libmtp. (e.g. PTP_ST_FixedROM)
-  uint16 storage_type() const { return storage_type_; }
-
-  // File system type as defined in libmtp. (e.g. PTP_FST_DCF)
-  uint16 filesystem_type() const { return filesystem_type_; }
-
-  // Access capability as defined in libmtp. (e.g. PTP_AC_ReadWrite)
-  uint16 access_capability() const { return access_capability_; }
-
-  // Max capacity in bytes.
-  uint64 max_capacity() const { return max_capacity_; }
-
-  // Free space in byte.
-  uint64 free_space_in_bytes() const { return free_space_in_bytes_; }
-
-  // Free space in number of objects.
-  uint64 free_space_in_objects() const { return free_space_in_objects_; }
-
-  // Storage description. (e.g. internal memory)
-  const std::string& storage_description() const {
-    return storage_description_;
-  }
-
-  // Volume identifier. (e.g. the serial number, should be unique)
-  const std::string& volume_identifier() const { return volume_identifier_; }
-
- private:
-  void InitializeFromResponse(dbus::Response* response);
-
-  // Device info. (A device can have multiple storages)
-  std::string vendor_;
-  uint16 vendor_id_;
-  std::string product_;
-  uint16 product_id_;
-  uint32 device_flags_;
-
-  // Storage info.
-  std::string storage_name_;
-  uint16 storage_type_;
-  uint16 filesystem_type_;
-  uint16 access_capability_;
-  uint64 max_capacity_;
-  uint64 free_space_in_bytes_;
-  uint64 free_space_in_objects_;
-  std::string storage_description_;
-  std::string volume_identifier_;
-};
-
-// A class to represent information about a file entry sent from mtpd.
-class CHROMEOS_EXPORT FileEntry {
- public:
-  FileEntry();
-  explicit FileEntry(dbus::Response* response);
-  ~FileEntry();
-
-  // ID for the file.
-  uint32 item_id() const { return item_id_; }
-
-  // ID for the file's parent.
-  uint32 parent_id() const { return parent_id_; }
-
-  // Name of the file.
-  const std::string& file_name() const { return file_name_; }
-
-  // Size of the file.
-  uint64 file_size() const { return file_size_; }
-
-  // Modification time of the file.
-  base::Time modification_date() const { return modification_date_; }
-
-  // File type.
-  FileType file_type() const { return file_type_; }
-
- private:
-  void InitializeFromResponse(dbus::Response* response);
-
-  // Storage info.
-  uint32 item_id_;
-  uint32 parent_id_;
-  std::string file_name_;
-  uint64 file_size_;
-  base::Time modification_date_;
-  FileType file_type_;
 };
 
 // A class to make the actual DBus calls for mtpd service.
@@ -176,7 +47,7 @@ class CHROMEOS_EXPORT MediaTransferProtocolDaemonClient {
 
   // A callback to handle the result of GetStorageInfo.
   // The argument is the information about the specified storage.
-  typedef base::Callback<void(const StorageInfo& storage_info)
+  typedef base::Callback<void(const MtpStorageInfo& storage_info)
                          > GetStorageInfoCallback;
 
   // A callback to handle the result of OpenStorage.
@@ -188,7 +59,7 @@ class CHROMEOS_EXPORT MediaTransferProtocolDaemonClient {
 
   // A callback to handle the result of ReadDirectoryByPath/Id.
   // The argument is a vector of file entries.
-  typedef base::Callback<void(const std::vector<FileEntry>& file_entries)
+  typedef base::Callback<void(const std::vector<MtpFileEntry>& file_entries)
                          > ReadDirectoryCallback;
 
   // A callback to handle the result of ReadFileByPath/Id.
@@ -198,7 +69,7 @@ class CHROMEOS_EXPORT MediaTransferProtocolDaemonClient {
 
   // A callback to handle the result of GetFileInfoByPath/Id.
   // The argument is a file entry.
-  typedef base::Callback<void(const FileEntry& file_entry)
+  typedef base::Callback<void(const MtpFileEntry& file_entry)
                          > GetFileInfoCallback;
 
   // A callback to handle storage attach/detach events.

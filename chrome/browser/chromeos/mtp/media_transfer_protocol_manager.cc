@@ -14,6 +14,8 @@
 #include "base/observer_list.h"
 #include "base/stl_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/mtp_file_entry.pb.h"
+#include "chromeos/dbus/mtp_storage_info.pb.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -68,7 +70,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   // MediaTransferProtocolManager override.
-  virtual const StorageInfo* GetStorageInfo(
+  virtual const MtpStorageInfo* GetStorageInfo(
       const std::string& storage_name) const OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     StorageInfoMap::const_iterator it = storage_info_map_.find(storage_name);
@@ -120,7 +122,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
       const ReadDirectoryCallback& callback) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (!ContainsKey(handles_, storage_handle)) {
-      callback.Run(std::vector<FileEntry>(), true);
+      callback.Run(std::vector<MtpFileEntry>(), true);
       return;
     }
     read_directory_callbacks_.push(callback);
@@ -140,7 +142,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
       const ReadDirectoryCallback& callback) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (!ContainsKey(handles_, storage_handle)) {
-      callback.Run(std::vector<FileEntry>(), true);
+      callback.Run(std::vector<MtpFileEntry>(), true);
       return;
     }
     read_directory_callbacks_.push(callback);
@@ -196,7 +198,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
                                  const GetFileInfoCallback& callback) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (!ContainsKey(handles_, storage_handle)) {
-      callback.Run(FileEntry(), true);
+      callback.Run(MtpFileEntry(), true);
       return;
     }
     get_file_info_callbacks_.push(callback);
@@ -214,7 +216,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
                                const GetFileInfoCallback& callback) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (!ContainsKey(handles_, storage_handle)) {
-      callback.Run(FileEntry(), true);
+      callback.Run(MtpFileEntry(), true);
       return;
     }
     get_file_info_callbacks_.push(callback);
@@ -229,7 +231,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
 
  private:
   // Map of storage names to storage info.
-  typedef std::map<std::string, StorageInfo> StorageInfoMap;
+  typedef std::map<std::string, MtpStorageInfo> StorageInfoMap;
   // Callback queues - DBus communication is in-order, thus callbacks are
   // received in the same order as the requests.
   typedef std::queue<OpenStorageCallback> OpenStorageCallbackQueue;
@@ -274,7 +276,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
     }
   }
 
-  void OnGetStorageInfo(const StorageInfo& storage_info) {
+  void OnGetStorageInfo(const MtpStorageInfo& storage_info) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     const std::string& storage_name = storage_info.storage_name();
     if (ContainsKey(storage_info_map_, storage_name)) {
@@ -328,13 +330,13 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
     close_storage_callbacks_.pop();
   }
 
-  void OnReadDirectory(const std::vector<FileEntry>& file_entries) {
+  void OnReadDirectory(const std::vector<MtpFileEntry>& file_entries) {
     read_directory_callbacks_.front().Run(file_entries, false);
     read_directory_callbacks_.pop();
   }
 
   void OnReadDirectoryError() {
-    read_directory_callbacks_.front().Run(std::vector<FileEntry>(), true);
+    read_directory_callbacks_.front().Run(std::vector<MtpFileEntry>(), true);
     read_directory_callbacks_.pop();
   }
 
@@ -348,13 +350,13 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
     read_file_callbacks_.pop();
   }
 
-  void OnGetFileInfo(const FileEntry& entry) {
+  void OnGetFileInfo(const MtpFileEntry& entry) {
     get_file_info_callbacks_.front().Run(entry, false);
     get_file_info_callbacks_.pop();
   }
 
   void OnGetFileInfoError() {
-    get_file_info_callbacks_.front().Run(FileEntry(), true);
+    get_file_info_callbacks_.front().Run(MtpFileEntry(), true);
     get_file_info_callbacks_.pop();
   }
 

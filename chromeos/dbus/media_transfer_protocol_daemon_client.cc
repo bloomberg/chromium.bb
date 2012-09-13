@@ -4,11 +4,9 @@
 
 #include "chromeos/dbus/media_transfer_protocol_daemon_client.h"
 
-#include <map>
-
 #include "base/bind.h"
-#include "base/stl_util.h"
-#include "base/stringprintf.h"
+#include "chromeos/dbus/mtp_file_entry.pb.h"
+#include "chromeos/dbus/mtp_storage_info.pb.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -18,46 +16,6 @@
 namespace chromeos {
 
 namespace {
-
-// Pops a string value when |reader| is not NULL.
-// Returns true when a value is popped, false otherwise.
-bool MaybePopString(dbus::MessageReader* reader, std::string* value) {
-  if (!reader)
-    return false;
-  return reader->PopString(value);
-}
-
-// Pops a uint16 value when |reader| is not NULL.
-// Returns true when a value is popped, false otherwise.
-bool MaybePopUint16(dbus::MessageReader* reader, uint16* value) {
-  if (!reader)
-    return false;
-  return reader->PopUint16(value);
-}
-
-// Pops a uint32 value when |reader| is not NULL.
-// Returns true when a value is popped, false otherwise.
-bool MaybePopUint32(dbus::MessageReader* reader, uint32* value) {
-  if (!reader)
-    return false;
-  return reader->PopUint32(value);
-}
-
-// Pops a uint64 value when |reader| is not NULL.
-// Returns true when a value is popped, false otherwise.
-bool MaybePopUint64(dbus::MessageReader* reader, uint64* value) {
-  if (!reader)
-    return false;
-  return reader->PopUint64(value);
-}
-
-// Pops a int64 value when |reader| is not NULL.
-// Returns true when a value is popped, false otherwise.
-bool MaybePopInt64(dbus::MessageReader* reader, int64* value) {
-  if (!reader)
-    return false;
-  return reader->PopInt64(value);
-}
 
 // The MediaTransferProtocolDaemonClient implementation.
 class MediaTransferProtocolDaemonClientImpl
@@ -296,8 +254,11 @@ class MediaTransferProtocolDaemonClientImpl
       error_callback.Run();
       return;
     }
-    StorageInfo storage_info(storage_name, response);
-    callback.Run(storage_info);
+
+    dbus::MessageReader reader(response);
+    MtpStorageInfo protobuf;
+    reader.PopArrayOfBytesAsProto(&protobuf);
+    callback.Run(protobuf);
   }
 
   // Handles the result of OpenStorage and calls |callback| or |error_callback|.
@@ -340,18 +301,12 @@ class MediaTransferProtocolDaemonClientImpl
       return;
     }
 
-    std::vector<FileEntry> file_entries;
-    dbus::MessageReader response_reader(response);
-    dbus::MessageReader array_reader(response);
-    if (!response_reader.PopArray(&array_reader)) {
-      LOG(ERROR) << "Invalid response: " << response->ToString();
-      error_callback.Run();
-      return;
-    }
-    while (array_reader.HasMoreData()) {
-      FileEntry entry(response);
-      file_entries.push_back(entry);
-    }
+    std::vector<MtpFileEntry> file_entries;
+    dbus::MessageReader reader(response);
+    MtpFileEntries entries_protobuf;
+    reader.PopArrayOfBytesAsProto(&entries_protobuf);
+    for (int i = 0; i < entries_protobuf.file_entries_size(); ++i)
+      file_entries.push_back(entries_protobuf.file_entries(i));
     callback.Run(file_entries);
   }
 
@@ -386,8 +341,10 @@ class MediaTransferProtocolDaemonClientImpl
       return;
     }
 
-    FileEntry file_entry(response);
-    callback.Run(file_entry);
+    dbus::MessageReader reader(response);
+    MtpFileEntry protobuf;
+    reader.PopArrayOfBytesAsProto(&protobuf);
+    callback.Run(protobuf);
   }
 
   // Handles MTPStorageAttached/Dettached signals and calls |handler|.
@@ -478,159 +435,6 @@ class MediaTransferProtocolDaemonClientStubImpl
 };
 
 }  // namespace
-
-////////////////////////////////////////////////////////////////////////////////
-// StorageInfo
-
-StorageInfo::StorageInfo()
-    : vendor_id_(0),
-      product_id_(0),
-      device_flags_(0),
-      storage_type_(0),
-      filesystem_type_(0),
-      access_capability_(0),
-      max_capacity_(0),
-      free_space_in_bytes_(0),
-      free_space_in_objects_(0) {
-}
-
-StorageInfo::StorageInfo(const std::string& storage_name,
-                         dbus::Response* response)
-    : vendor_id_(0),
-      product_id_(0),
-      device_flags_(0),
-      storage_name_(storage_name),
-      storage_type_(0),
-      filesystem_type_(0),
-      access_capability_(0),
-      max_capacity_(0),
-      free_space_in_bytes_(0),
-      free_space_in_objects_(0) {
-  InitializeFromResponse(response);
-}
-
-StorageInfo::~StorageInfo() {
-}
-
-// Initializes |this| from |response| given by the mtpd service.
-void StorageInfo::InitializeFromResponse(dbus::Response* response) {
-  dbus::MessageReader response_reader(response);
-  dbus::MessageReader array_reader(response);
-  if (!response_reader.PopArray(&array_reader)) {
-    LOG(ERROR) << "Invalid response: " << response->ToString();
-    return;
-  }
-  // TODO(thestig): Rework this code using Protocol Buffers. crosbug.com/22626
-  typedef std::map<std::string, dbus::MessageReader*> PropertiesMap;
-  PropertiesMap properties;
-  STLValueDeleter<PropertiesMap> properties_value_deleter(&properties);
-  while (array_reader.HasMoreData()) {
-    dbus::MessageReader* value_reader = new dbus::MessageReader(response);
-    dbus::MessageReader dict_entry_reader(response);
-    std::string key;
-    if (!array_reader.PopDictEntry(&dict_entry_reader) ||
-        !dict_entry_reader.PopString(&key) ||
-        !dict_entry_reader.PopVariant(value_reader)) {
-      LOG(ERROR) << "Invalid response: " << response->ToString();
-      return;
-    }
-    properties[key] = value_reader;
-  }
-  // TODO(thestig) Add enums for fields below as appropriate.
-  MaybePopString(properties[mtpd::kVendor], &vendor_);
-  MaybePopString(properties[mtpd::kProduct], &product_);
-  MaybePopString(properties[mtpd::kStorageDescription], &storage_description_);
-  MaybePopString(properties[mtpd::kVolumeIdentifier], &volume_identifier_);
-  MaybePopUint16(properties[mtpd::kVendorId], &vendor_id_);
-  MaybePopUint16(properties[mtpd::kProductId], &product_id_);
-  MaybePopUint16(properties[mtpd::kStorageType], &storage_type_);
-  MaybePopUint16(properties[mtpd::kFilesystemType], &filesystem_type_);
-  MaybePopUint16(properties[mtpd::kAccessCapability], &access_capability_);
-  MaybePopUint32(properties[mtpd::kDeviceFlags], &device_flags_);
-  MaybePopUint64(properties[mtpd::kMaxCapacity], &max_capacity_);
-  MaybePopUint64(properties[mtpd::kFreeSpaceInBytes], &free_space_in_bytes_);
-  MaybePopUint64(properties[mtpd::kFreeSpaceInObjects],
-                 &free_space_in_objects_);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// FileEntry
-
-FileEntry::FileEntry()
-    : item_id_(0),
-      parent_id_(0),
-      file_size_(0),
-      file_type_(FILE_TYPE_UNKNOWN) {
-}
-
-FileEntry::FileEntry(dbus::Response* response)
-    : item_id_(0),
-      parent_id_(0),
-      file_size_(0),
-      file_type_(FILE_TYPE_UNKNOWN) {
-  InitializeFromResponse(response);
-}
-
-FileEntry::~FileEntry() {
-}
-
-// Initializes |this| from |response| given by the mtpd service.
-void FileEntry::InitializeFromResponse(dbus::Response* response) {
-  dbus::MessageReader response_reader(response);
-  dbus::MessageReader array_reader(response);
-  if (!response_reader.PopArray(&array_reader)) {
-    LOG(ERROR) << "Invalid response: " << response->ToString();
-    return;
-  }
-  // TODO(thestig): Rework this code using Protocol Buffers. crosbug.com/22626
-  typedef std::map<std::string, dbus::MessageReader*> PropertiesMap;
-  PropertiesMap properties;
-  STLValueDeleter<PropertiesMap> properties_value_deleter(&properties);
-  while (array_reader.HasMoreData()) {
-    dbus::MessageReader* value_reader = new dbus::MessageReader(response);
-    dbus::MessageReader dict_entry_reader(response);
-    std::string key;
-    if (!array_reader.PopDictEntry(&dict_entry_reader) ||
-        !dict_entry_reader.PopString(&key) ||
-        !dict_entry_reader.PopVariant(value_reader)) {
-      LOG(ERROR) << "Invalid response: " << response->ToString();
-      return;
-    }
-    properties[key] = value_reader;
-  }
-
-  MaybePopString(properties[mtpd::kFileName], &file_name_);
-  MaybePopUint32(properties[mtpd::kItemId], &item_id_);
-  MaybePopUint32(properties[mtpd::kParentId], &parent_id_);
-  MaybePopUint64(properties[mtpd::kFileSize], &file_size_);
-
-  int64 modification_date = -1;
-  if (MaybePopInt64(properties[mtpd::kModificationDate], &modification_date))
-    modification_date_ = base::Time::FromTimeT(modification_date);
-
-  uint16 file_type = FILE_TYPE_OTHER;
-  if (MaybePopUint16(properties[mtpd::kFileType], &file_type)) {
-    switch (file_type) {
-      case FILE_TYPE_FOLDER:
-      case FILE_TYPE_JPEG:
-      case FILE_TYPE_JFIF:
-      case FILE_TYPE_TIFF:
-      case FILE_TYPE_BMP:
-      case FILE_TYPE_GIF:
-      case FILE_TYPE_PICT:
-      case FILE_TYPE_PNG:
-      case FILE_TYPE_WINDOWSIMAGEFORMAT:
-      case FILE_TYPE_JP2:
-      case FILE_TYPE_JPX:
-      case FILE_TYPE_UNKNOWN:
-        file_type_ = static_cast<FileType>(file_type);
-        break;
-      default:
-        file_type_ = FILE_TYPE_OTHER;
-        break;
-    }
-  }
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // MediaTransferProtocolDaemonClient
