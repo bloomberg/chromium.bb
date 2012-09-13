@@ -29,7 +29,7 @@ class PageSwitcher : public views::View,
   virtual void Layout() OVERRIDE;
 
  private:
-  void CalculateButtonWidth(int contents_width);
+  void CalculateButtonWidthAndSpacing(int contents_width);
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,

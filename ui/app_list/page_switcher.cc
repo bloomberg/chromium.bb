@@ -18,11 +18,13 @@ namespace {
 
 const int kPreferredHeight = 57;
 
-const int kButtonSpacing = 18;
+const int kMaxButtonSpacing = 18;
+const int kMinButtonSpacing = 4;
 const int kMaxButtonWidth = 68;
-const int kMinButtonWidth = 44;
+const int kMinButtonWidth = 28;
 const int kButtonHeight = 6;
 const int kButtonCornerRadius = 2;
+const int kButtonStripPadding = 20;
 
 const SkColor kHoverColor = SkColorSetRGB(0xB4, 0xB4, 0xB4);
 
@@ -124,8 +126,6 @@ namespace app_list {
 PageSwitcher::PageSwitcher(PaginationModel* model)
     : model_(model),
       buttons_(new views::View) {
-  buttons_->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kHorizontal, 0, 0, kButtonSpacing));
   AddChildView(buttons_);
 
   TotalPagesChanged();
@@ -147,7 +147,7 @@ gfx::Size PageSwitcher::GetPreferredSize() {
 void PageSwitcher::Layout() {
   gfx::Rect rect(GetContentsBounds());
 
-  CalculateButtonWidth(rect.width());
+  CalculateButtonWidthAndSpacing(rect.width());
 
   // Makes |buttons_| horizontally center and vertically fill.
   gfx::Size buttons_size(buttons_->GetPreferredSize());
@@ -158,15 +158,29 @@ void PageSwitcher::Layout() {
   buttons_->SetBoundsRect(rect.Intersect(buttons_bounds));
 }
 
-void PageSwitcher::CalculateButtonWidth(int contents_width) {
+void PageSwitcher::CalculateButtonWidthAndSpacing(int contents_width) {
   int button_count = buttons_->child_count();
   if (!button_count)
     return;
 
-  int button_width = contents_width / button_count - kButtonSpacing;
+  contents_width -= 2 * kButtonStripPadding;
+
+  int button_width = kMinButtonWidth;
+  int button_spacing = kMinButtonSpacing;
+  if (button_count > 1) {
+    button_spacing = (contents_width - button_width * button_count) /
+        (button_count - 1);
+    button_spacing = std::min(kMaxButtonSpacing,
+                              std::max(kMinButtonSpacing, button_spacing));
+  }
+
+  button_width = (contents_width - (button_count - 1) * button_spacing) /
+      button_count;
   button_width = std::min(kMaxButtonWidth,
                           std::max(kMinButtonWidth, button_width));
 
+  buttons_->SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kHorizontal, kButtonStripPadding, 0, button_spacing));
   for (int i = 0; i < button_count; ++i) {
     PageSwitcherButton* button =
         static_cast<PageSwitcherButton*>(buttons_->child_at(i));
