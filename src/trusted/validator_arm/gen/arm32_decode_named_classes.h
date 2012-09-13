@@ -1335,6 +1335,10 @@ class Defs12To15_Eor_Rule_44_A1_P94
     : public Defs12To15 {
 };
 
+class Defs12To15_Eor_Rule_45_A1_P96
+    : public Defs12To15 {
+};
+
 class Defs12To15_Lsl_Rule_88_A1_P178
     : public Defs12To15 {
 };
@@ -1413,10 +1417,6 @@ class Defs12To15_Sub_Rule_212_A1_P420
 
 class Defs12To15_Sub_Rule_213_A1_P422
     : public Defs12To15 {
-};
-
-class Defs12To15CondsDontCare_Eor_Rule_45_A1_P96
-    : public Defs12To15CondsDontCare {
 };
 
 class Defs12To15CondsDontCareMsbGeLsb_Bfi_Rule_18_A1_P48
@@ -6334,6 +6334,18 @@ class NamedDefs12To15_Eor_Rule_44_A1_P94
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15_Eor_Rule_44_A1_P94);
 };
 
+class NamedDefs12To15_Eor_Rule_45_A1_P96
+    : public NamedClassDecoder {
+ public:
+  NamedDefs12To15_Eor_Rule_45_A1_P96()
+    : NamedClassDecoder(decoder_, "Defs12To15 Eor_Rule_45_A1_P96")
+  {}
+
+ private:
+  nacl_arm_dec::Defs12To15_Eor_Rule_45_A1_P96 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15_Eor_Rule_45_A1_P96);
+};
+
 class NamedDefs12To15_Lsl_Rule_88_A1_P178
     : public NamedClassDecoder {
  public:
@@ -6572,18 +6584,6 @@ class NamedDefs12To15_Sub_Rule_213_A1_P422
  private:
   nacl_arm_dec::Defs12To15_Sub_Rule_213_A1_P422 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15_Sub_Rule_213_A1_P422);
-};
-
-class NamedDefs12To15CondsDontCare_Eor_Rule_45_A1_P96
-    : public NamedClassDecoder {
- public:
-  NamedDefs12To15CondsDontCare_Eor_Rule_45_A1_P96()
-    : NamedClassDecoder(decoder_, "Defs12To15CondsDontCare Eor_Rule_45_A1_P96")
-  {}
-
- private:
-  nacl_arm_dec::Defs12To15CondsDontCare_Eor_Rule_45_A1_P96 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15CondsDontCare_Eor_Rule_45_A1_P96);
 };
 
 class NamedDefs12To15CondsDontCareMsbGeLsb_Bfi_Rule_18_A1_P48

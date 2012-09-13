@@ -18,7 +18,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , BxBlx_instance_()
   , DataBarrier_instance_()
   , Defs12To15_instance_()
-  , Defs12To15CondsDontCare_instance_()
   , Defs12To15CondsDontCareMsbGeLsb_instance_()
   , Defs12To15CondsDontCareRdRnNotPc_instance_()
   , Defs12To15CondsDontCareRdRnNotPcBitfieldExtract_instance_()
@@ -396,28 +395,12 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_register(
      const Instruction inst) const
 {
   UNREFERENCED_PARAMETER(inst);
-  if ((inst.Bits() & 0x01E00000) == 0x00200000 /* op1(24:20)=0001x */) {
-    return Defs12To15CondsDontCare_instance_;
-  }
-
-  if ((inst.Bits() & 0x01E00000) == 0x01800000 /* op1(24:20)=1100x */) {
-    return Defs12To15_instance_;
-  }
-
-  if ((inst.Bits() & 0x00E00000) == 0x00C00000 /* op1(24:20)=x110x */) {
-    return Defs12To15_instance_;
-  }
-
-  if ((inst.Bits() & 0x01600000) == 0x00600000 /* op1(24:20)=0x11x */) {
-    return Defs12To15_instance_;
-  }
-
   if ((inst.Bits() & 0x01900000) == 0x01100000 /* op1(24:20)=10xx1 */ &&
       (inst.Bits() & 0x0000F000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx */) {
     return DontCareInst_instance_;
   }
 
-  if ((inst.Bits() & 0x01A00000) == 0x00000000 /* op1(24:20)=00x0x */) {
+  if ((inst.Bits() & 0x01A00000) == 0x01800000 /* op1(24:20)=11x0x */) {
     return Defs12To15_instance_;
   }
 
@@ -426,7 +409,7 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_register(
     return Defs12To15_instance_;
   }
 
-  if ((inst.Bits() & 0x01C00000) == 0x00800000 /* op1(24:20)=010xx */) {
+  if ((inst.Bits() & 0x01000000) == 0x00000000 /* op1(24:20)=0xxxx */) {
     return Defs12To15_instance_;
   }
 

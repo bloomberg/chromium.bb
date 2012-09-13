@@ -50,8 +50,9 @@ citation       ::= '(' word+ ')'
 column         ::= id '(' int (':' int)? ')'
 classdef       ::= 'class' word ':' word
 decoder        ::= id ('=>' id)?
-decoder_action ::= '=" decoder (fields? action_option* |
-                                action_options_deprecated arch?)
+decoder_action ::= '=" (decoder (fields? action_option* |
+                                 action_options_deprecated arch?)
+                       | '*' int action_option*)
 decoder_method ::= '->' id
 default_row    ::= 'else' ':' action
 fields         ::= '{' column (',' column)* '}'
@@ -66,7 +67,8 @@ pattern        ::= bitpattern | '-' | '"'
 row            ::= '|' (pat_row | default_row)
 rule_restrict  ::= ('&' bitpattern)* ('&' 'other' ':' id)?
 safety_check   ::= id | bit_expr1 ('=>' id)?     # note: single id only at end.
-table          ::= table_desc header row+ footer
+table          ::= table_desc table_actions header row+ footer
+table_actions  ::= ( ('*' int decoder fields? action_options*)+ footer)?
 table_desc     ::= '+' '-' '-' id citation?
 
 Note that action_options_deprecated is deprecated, and one should generate
@@ -168,13 +170,13 @@ class Parser(object):
 
   #-------- Recursive descent parse functions corresponding to grammar above.
 
-  def _action(self, last_action):
+  def _action(self, starred_actions, last_action):
     """ action ::= decoder_action | decoder_method | '"' """
     if self._next_token().kind == '"':
       self._read_token('"')
       return last_action
     if self._next_token().kind == '=':
-      return self._decoder_action()
+      return self._decoder_action(starred_actions)
     elif self._next_token().kind == '->':
       return self._decoder_method()
     else:
@@ -506,11 +508,15 @@ class Parser(object):
       else:
         return
 
-  def _decoder_action(self):
-    """decoder_action ::= '=" decoder (fields? action_option* |
-                                       action_options_deprecated arch?)
+  def _decoder_action(self, starred_actions):
+    """decoder_action ::= '=" (decoder (fields? action_option* |
+                                        action_options_deprecated arch?)
+                              | '*' int action_option*)
     """
     self._read_token('=')
+    if self._next_token().kind == '*':
+      return self._decoder_action_extend(starred_actions)
+
     (baseline, actual) = self._decoder()
     action = dgen_core.DecoderAction(baseline, actual)
     context = action.st
@@ -532,17 +538,44 @@ class Parser(object):
         context.define('arch', self._arch())
     return action
 
+  def _decoder_action_extend(self, starred_actions):
+    """'*' int action_option*
+
+       Helper function to _decoder_action."""
+    self._read_token('*')
+    index = self._int()
+    indexed_action = starred_actions.get(index)
+    if not indexed_action:
+      self._unexpected("Can't find decoder action *%s" % index)
+
+    # Create an initial copy, and define starred action as
+    # inheriting definition.
+    action = dgen_core.DecoderAction(indexed_action.baseline,
+                                     indexed_action.actual)
+    action.st.inherits(indexed_action.st)
+
+    # Recognize overriding options.
+    self._decoder_action_options(action.st)
+
+    # Install values not explicitly overridden by overriding options.
+    for key in indexed_action.st.keys():
+      action.st.define(key, indexed_action.st.find(key), fail_if_defined=False)
+
+    action.st.disinherit()
+
+    return action
+
   def _decoder_method(self):
     """ decoder_method ::= '->' id """
     self._read_token('->')
     name = self._id()
     return dgen_core.DecoderMethod(name)
 
-  def _default_row(self, table, last_action):
+  def _default_row(self, table, starred_actions, last_action):
     """ default_row ::= 'else' ':' action """
     self._read_token('else')
     self._read_token(':')
-    action = self._action(last_action)
+    action = self._action(starred_actions, last_action)
     if not table.add_default_row(action):
       self._unexpected('Unable to install row default')
     return (None, action)
@@ -626,7 +659,7 @@ class Parser(object):
     self._read_token(')')
     return words
 
-  def _pat_row(self, table, last_patterns, last_action):
+  def _pat_row(self, table, starred_actions, last_patterns, last_action):
     """ pat_row ::= pattern+ action
 
     Passed in sequence of patterns and action from last row,
@@ -648,7 +681,7 @@ class Parser(object):
         # same as last row.
         break;
 
-    action = self._action(last_action)
+    action = self._action(starred_actions, last_action)
     table.add_row(expanded_patterns, action)
     return (patterns, action)
 
@@ -665,7 +698,7 @@ class Parser(object):
       return self._read_token().value
     return self._bitpattern()
 
-  def _row(self, table, last_patterns=None, last_action=None):
+  def _row(self, table, starred_actions, last_patterns=None, last_action=None):
     """ row ::= '|' (pat_row | default_row)
 
     Passed in sequence of patterns and action from last row,
@@ -673,9 +706,9 @@ class Parser(object):
     """
     self._read_token('|')
     if self._next_token().kind == 'else':
-      return self._default_row(table, last_action)
+      return self._default_row(table, starred_actions, last_action)
     else:
-      return self._pat_row(table, last_patterns, last_action)
+      return self._pat_row(table, starred_actions, last_patterns, last_action)
 
   def _rule_restrict(self, context):
     """ rule_restrict  ::= ('&' bitpattern)* ('&' 'other' ':' id)? """
@@ -711,15 +744,39 @@ class Parser(object):
     return check
 
   def _table(self, decoder):
-    """ table ::= table_desc header row+ footer """
+    """table ::= table_desc table_actions header row+ footer"""
     table = self._table_desc()
+    starred_actions = self._table_actions()
     self._header(table)
-    (pattern, action) = self._row(table)
+    (pattern, action) = self._row(table, starred_actions)
     while not self._next_token().kind == '+':
-      (pattern, action) = self._row(table, pattern, action)
+      (pattern, action) = self._row(table, starred_actions, pattern, action)
     if not decoder.add(table):
       self._unexpected('Multiple tables with name %s' % table.name)
     self._footer()
+
+  def _table_actions(self):
+    """table_actions ::= ( ('*' int decoder fields? action_options*)+
+                           footer)?"""
+    starred_actions = {}
+    if self._next_token().kind != '*': return starred_actions
+    while self._next_token().kind == '*':
+      self._read_token('*')
+      index = self._int()
+
+      (baseline, actual) = self._decoder()
+      action = dgen_core.DecoderAction(baseline, actual)
+      context = action.st
+      if self._next_token().kind == '{':
+        fields = self._fields(context)
+        if not context.define('fields', fields, False):
+          raise Exception('multiple field definitions.')
+        self._decoder_action_options(context)
+      elif self._is_action_option():
+        self._decoder_action_options(context)
+      starred_actions[index] = action
+    self._footer()
+    return starred_actions
 
   def _table_desc(self):
     """ table_desc ::= '+' '-' '-' id citation? """

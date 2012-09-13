@@ -802,7 +802,9 @@ class SymbolTable(object):
   def find(self, name):
     value = self.dict.get(name)
     if value: return value
-    return None
+    inherits = self.dict.get('$inherits$')
+    if not inherits: return None
+    return inherits.find(name)
 
   def define(self, name, value, fail_if_defined = True):
     """Adds (name, value) pair to symbol table if not already defined.
@@ -815,6 +817,20 @@ class SymbolTable(object):
     else:
       self.dict[name] = value
       return True
+
+  def remove(self, name):
+    self.dict.pop(name)
+
+  def inherits(self, context):
+    """Adds inheriting symbol table."""
+    self.define('$inherits$', context)
+
+  def disinherit(self):
+    """Removes inheriting symbol table."""
+    self.remove('$inherits$')
+
+  def keys(self):
+    return [k for k in self.dict.keys() if k != '$inherits$']
 
   def __hash__(self):
     return hash(self.neutral_repr())

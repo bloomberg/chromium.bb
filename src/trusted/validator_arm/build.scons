@@ -271,4 +271,4 @@ for tbl in GEN_TABLES:
 
   gtest_env.AddNodeToTestSuite(decoder_test_node,
                                ['huge_tests', 'arm_decoder_tests'],
-                                'run_arm_decoder_tests')
+                                'run_arm32_decode_' + tbl + '_tests')

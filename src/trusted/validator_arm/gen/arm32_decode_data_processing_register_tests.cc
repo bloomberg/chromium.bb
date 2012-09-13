@@ -153,20 +153,22 @@ bool Binary2RegisterImmedShiftedTestTesterCase3
 // Neutral case:
 // inst(24:20)=0000x
 //    = Binary3RegisterImmedShiftedOp {'constraints': ,
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=0000x
 //    = Binary3RegisterImmedShiftedOp {constraints: ,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTesterCase4
-    : public Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS {
+    : public Binary3RegisterImmedShiftedOpTester {
  public:
   Binary3RegisterImmedShiftedOpTesterCase4(const NamedClassDecoder& decoder)
-    : Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS(decoder) {}
+    : Binary3RegisterImmedShiftedOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Binary3RegisterImmedShiftedOpTesterCase4
@@ -178,27 +180,39 @@ bool Binary3RegisterImmedShiftedOpTesterCase4
   if ((inst.Bits() & 0x01E00000) != 0x00000000 /* op1(24:20)=~0000x */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS::
+  return Binary3RegisterImmedShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Binary3RegisterImmedShiftedOpTesterCase4
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Binary3RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder));
+
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
+  return true;
 }
 
 // Neutral case:
 // inst(24:20)=0001x
 //    = Binary3RegisterImmedShiftedOp {'constraints': ,
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=0001x
 //    = Binary3RegisterImmedShiftedOp {constraints: ,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTesterCase5
-    : public Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS {
+    : public Binary3RegisterImmedShiftedOpTester {
  public:
   Binary3RegisterImmedShiftedOpTesterCase5(const NamedClassDecoder& decoder)
-    : Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS(decoder) {}
+    : Binary3RegisterImmedShiftedOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Binary3RegisterImmedShiftedOpTesterCase5
@@ -210,27 +224,39 @@ bool Binary3RegisterImmedShiftedOpTesterCase5
   if ((inst.Bits() & 0x01E00000) != 0x00200000 /* op1(24:20)=~0001x */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS::
+  return Binary3RegisterImmedShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Binary3RegisterImmedShiftedOpTesterCase5
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Binary3RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder));
+
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
+  return true;
 }
 
 // Neutral case:
 // inst(24:20)=0010x
 //    = Binary3RegisterImmedShiftedOp {'constraints': ,
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=0010x
 //    = Binary3RegisterImmedShiftedOp {constraints: ,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTesterCase6
-    : public Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS {
+    : public Binary3RegisterImmedShiftedOpTester {
  public:
   Binary3RegisterImmedShiftedOpTesterCase6(const NamedClassDecoder& decoder)
-    : Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS(decoder) {}
+    : Binary3RegisterImmedShiftedOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Binary3RegisterImmedShiftedOpTesterCase6
@@ -242,27 +268,39 @@ bool Binary3RegisterImmedShiftedOpTesterCase6
   if ((inst.Bits() & 0x01E00000) != 0x00400000 /* op1(24:20)=~0010x */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS::
+  return Binary3RegisterImmedShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Binary3RegisterImmedShiftedOpTesterCase6
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Binary3RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder));
+
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
+  return true;
 }
 
 // Neutral case:
 // inst(24:20)=0011x
 //    = Binary3RegisterImmedShiftedOp {'constraints': ,
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=0011x
 //    = Binary3RegisterImmedShiftedOp {constraints: ,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTesterCase7
-    : public Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS {
+    : public Binary3RegisterImmedShiftedOpTester {
  public:
   Binary3RegisterImmedShiftedOpTesterCase7(const NamedClassDecoder& decoder)
-    : Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS(decoder) {}
+    : Binary3RegisterImmedShiftedOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Binary3RegisterImmedShiftedOpTesterCase7
@@ -274,27 +312,39 @@ bool Binary3RegisterImmedShiftedOpTesterCase7
   if ((inst.Bits() & 0x01E00000) != 0x00600000 /* op1(24:20)=~0011x */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS::
+  return Binary3RegisterImmedShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Binary3RegisterImmedShiftedOpTesterCase7
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Binary3RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder));
+
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
+  return true;
 }
 
 // Neutral case:
 // inst(24:20)=0100x
 //    = Binary3RegisterImmedShiftedOp {'constraints': ,
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=0100x
 //    = Binary3RegisterImmedShiftedOp {constraints: ,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTesterCase8
-    : public Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS {
+    : public Binary3RegisterImmedShiftedOpTester {
  public:
   Binary3RegisterImmedShiftedOpTesterCase8(const NamedClassDecoder& decoder)
-    : Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS(decoder) {}
+    : Binary3RegisterImmedShiftedOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Binary3RegisterImmedShiftedOpTesterCase8
@@ -306,27 +356,39 @@ bool Binary3RegisterImmedShiftedOpTesterCase8
   if ((inst.Bits() & 0x01E00000) != 0x00800000 /* op1(24:20)=~0100x */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS::
+  return Binary3RegisterImmedShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Binary3RegisterImmedShiftedOpTesterCase8
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Binary3RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder));
+
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
+  return true;
 }
 
 // Neutral case:
 // inst(24:20)=0101x
 //    = Binary3RegisterImmedShiftedOp {'constraints': ,
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=0101x
 //    = Binary3RegisterImmedShiftedOp {constraints: ,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTesterCase9
-    : public Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS {
+    : public Binary3RegisterImmedShiftedOpTester {
  public:
   Binary3RegisterImmedShiftedOpTesterCase9(const NamedClassDecoder& decoder)
-    : Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS(decoder) {}
+    : Binary3RegisterImmedShiftedOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Binary3RegisterImmedShiftedOpTesterCase9
@@ -338,27 +400,39 @@ bool Binary3RegisterImmedShiftedOpTesterCase9
   if ((inst.Bits() & 0x01E00000) != 0x00A00000 /* op1(24:20)=~0101x */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS::
+  return Binary3RegisterImmedShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Binary3RegisterImmedShiftedOpTesterCase9
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Binary3RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder));
+
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
+  return true;
 }
 
 // Neutral case:
 // inst(24:20)=0110x
 //    = Binary3RegisterImmedShiftedOp {'constraints': ,
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=0110x
 //    = Binary3RegisterImmedShiftedOp {constraints: ,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTesterCase10
-    : public Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS {
+    : public Binary3RegisterImmedShiftedOpTester {
  public:
   Binary3RegisterImmedShiftedOpTesterCase10(const NamedClassDecoder& decoder)
-    : Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS(decoder) {}
+    : Binary3RegisterImmedShiftedOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Binary3RegisterImmedShiftedOpTesterCase10
@@ -370,27 +444,39 @@ bool Binary3RegisterImmedShiftedOpTesterCase10
   if ((inst.Bits() & 0x01E00000) != 0x00C00000 /* op1(24:20)=~0110x */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS::
+  return Binary3RegisterImmedShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Binary3RegisterImmedShiftedOpTesterCase10
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Binary3RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder));
+
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
+  return true;
 }
 
 // Neutral case:
 // inst(24:20)=0111x
 //    = Binary3RegisterImmedShiftedOp {'constraints': ,
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=0111x
 //    = Binary3RegisterImmedShiftedOp {constraints: ,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTesterCase11
-    : public Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS {
+    : public Binary3RegisterImmedShiftedOpTester {
  public:
   Binary3RegisterImmedShiftedOpTesterCase11(const NamedClassDecoder& decoder)
-    : Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS(decoder) {}
+    : Binary3RegisterImmedShiftedOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Binary3RegisterImmedShiftedOpTesterCase11
@@ -402,27 +488,39 @@ bool Binary3RegisterImmedShiftedOpTesterCase11
   if ((inst.Bits() & 0x01E00000) != 0x00E00000 /* op1(24:20)=~0111x */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS::
+  return Binary3RegisterImmedShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Binary3RegisterImmedShiftedOpTesterCase11
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Binary3RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder));
+
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
+  return true;
 }
 
 // Neutral case:
 // inst(24:20)=1100x
 //    = Binary3RegisterImmedShiftedOp {'constraints': ,
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=1100x
 //    = Binary3RegisterImmedShiftedOp {constraints: ,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTesterCase12
-    : public Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS {
+    : public Binary3RegisterImmedShiftedOpTester {
  public:
   Binary3RegisterImmedShiftedOpTesterCase12(const NamedClassDecoder& decoder)
-    : Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS(decoder) {}
+    : Binary3RegisterImmedShiftedOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Binary3RegisterImmedShiftedOpTesterCase12
@@ -434,27 +532,39 @@ bool Binary3RegisterImmedShiftedOpTesterCase12
   if ((inst.Bits() & 0x01E00000) != 0x01800000 /* op1(24:20)=~1100x */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS::
+  return Binary3RegisterImmedShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Binary3RegisterImmedShiftedOpTesterCase12
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Binary3RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder));
+
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
+  return true;
 }
 
 // Neutral case:
 // inst(24:20)=1101x & inst(11:7)=~00000 & inst(6:5)=00 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterImmedShiftedOp {'constraints': ,
-//     'safety': ["'NeitherImm5NotZeroNorNotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(11:7)=00000 => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=1101x & op2(11:7)=~00000 & op3(6:5)=00 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterImmedShiftedOp {constraints: ,
-//     safety: ['NeitherImm5NotZeroNorNotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, imm5(11:7)=00000 => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterImmedShiftedOpTesterCase13
-    : public Unary2RegisterImmedShiftedOpTesterNeitherImm5NotZeroNorNotRdIsPcAndS {
+    : public Unary2RegisterImmedShiftedOpTester {
  public:
   Unary2RegisterImmedShiftedOpTesterCase13(const NamedClassDecoder& decoder)
-    : Unary2RegisterImmedShiftedOpTesterNeitherImm5NotZeroNorNotRdIsPcAndS(decoder) {}
+    : Unary2RegisterImmedShiftedOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Unary2RegisterImmedShiftedOpTesterCase13
@@ -469,27 +579,40 @@ bool Unary2RegisterImmedShiftedOpTesterCase13
   if ((inst.Bits() & 0x000F0000) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Unary2RegisterImmedShiftedOpTesterNeitherImm5NotZeroNorNotRdIsPcAndS::
+  return Unary2RegisterImmedShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Unary2RegisterImmedShiftedOpTesterCase13
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Unary2RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder));
+
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((inst.Bits() & 0x00000F80) != 0x00000000 /* imm5(11:7)=00000 => UNDEFINED */);
+  EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
+  return true;
 }
 
 // Neutral case:
 // inst(24:20)=1101x & inst(11:7)=~00000 & inst(6:5)=11 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterImmedShiftedOp {'constraints': ,
-//     'safety': ["'NeitherImm5NotZeroNorNotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(11:7)=00000 => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=1101x & op2(11:7)=~00000 & op3(6:5)=11 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterImmedShiftedOp {constraints: ,
-//     safety: ['NeitherImm5NotZeroNorNotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, imm5(11:7)=00000 => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterImmedShiftedOpTesterCase14
-    : public Unary2RegisterImmedShiftedOpTesterNeitherImm5NotZeroNorNotRdIsPcAndS {
+    : public Unary2RegisterImmedShiftedOpTester {
  public:
   Unary2RegisterImmedShiftedOpTesterCase14(const NamedClassDecoder& decoder)
-    : Unary2RegisterImmedShiftedOpTesterNeitherImm5NotZeroNorNotRdIsPcAndS(decoder) {}
+    : Unary2RegisterImmedShiftedOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Unary2RegisterImmedShiftedOpTesterCase14
@@ -504,27 +627,40 @@ bool Unary2RegisterImmedShiftedOpTesterCase14
   if ((inst.Bits() & 0x000F0000) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Unary2RegisterImmedShiftedOpTesterNeitherImm5NotZeroNorNotRdIsPcAndS::
+  return Unary2RegisterImmedShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Unary2RegisterImmedShiftedOpTesterCase14
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Unary2RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder));
+
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((inst.Bits() & 0x00000F80) != 0x00000000 /* imm5(11:7)=00000 => UNDEFINED */);
+  EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
+  return true;
 }
 
 // Neutral case:
 // inst(24:20)=1101x & inst(11:7)=00000 & inst(6:5)=00 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterOp {'constraints': ,
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=1101x & op2(11:7)=00000 & op3(6:5)=00 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterOp {constraints: ,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterOpTesterCase15
-    : public Unary2RegisterOpTesterNotRdIsPcAndS {
+    : public Unary2RegisterOpTester {
  public:
   Unary2RegisterOpTesterCase15(const NamedClassDecoder& decoder)
-    : Unary2RegisterOpTesterNotRdIsPcAndS(decoder) {}
+    : Unary2RegisterOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Unary2RegisterOpTesterCase15
@@ -539,27 +675,39 @@ bool Unary2RegisterOpTesterCase15
   if ((inst.Bits() & 0x000F0000) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Unary2RegisterOpTesterNotRdIsPcAndS::
+  return Unary2RegisterOpTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Unary2RegisterOpTesterCase15
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Unary2RegisterOpTester::ApplySanityChecks(inst, decoder));
+
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
+  return true;
 }
 
 // Neutral case:
 // inst(24:20)=1101x & inst(11:7)=00000 & inst(6:5)=11 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterOp {'constraints': ,
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=1101x & op2(11:7)=00000 & op3(6:5)=11 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterOp {constraints: ,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterOpTesterCase16
-    : public Unary2RegisterOpTesterNotRdIsPcAndS {
+    : public Unary2RegisterOpTester {
  public:
   Unary2RegisterOpTesterCase16(const NamedClassDecoder& decoder)
-    : Unary2RegisterOpTesterNotRdIsPcAndS(decoder) {}
+    : Unary2RegisterOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Unary2RegisterOpTesterCase16
@@ -574,27 +722,39 @@ bool Unary2RegisterOpTesterCase16
   if ((inst.Bits() & 0x000F0000) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Unary2RegisterOpTesterNotRdIsPcAndS::
+  return Unary2RegisterOpTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Unary2RegisterOpTesterCase16
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Unary2RegisterOpTester::ApplySanityChecks(inst, decoder));
+
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
+  return true;
 }
 
 // Neutral case:
 // inst(24:20)=1101x & inst(6:5)=01 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterImmedShiftedOp {'constraints': ,
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=1101x & op3(6:5)=01 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterImmedShiftedOp {constraints: ,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterImmedShiftedOpTesterCase17
-    : public Unary2RegisterImmedShiftedOpTesterNotRdIsPcAndS {
+    : public Unary2RegisterImmedShiftedOpTester {
  public:
   Unary2RegisterImmedShiftedOpTesterCase17(const NamedClassDecoder& decoder)
-    : Unary2RegisterImmedShiftedOpTesterNotRdIsPcAndS(decoder) {}
+    : Unary2RegisterImmedShiftedOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Unary2RegisterImmedShiftedOpTesterCase17
@@ -608,27 +768,39 @@ bool Unary2RegisterImmedShiftedOpTesterCase17
   if ((inst.Bits() & 0x000F0000) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Unary2RegisterImmedShiftedOpTesterNotRdIsPcAndS::
+  return Unary2RegisterImmedShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Unary2RegisterImmedShiftedOpTesterCase17
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Unary2RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder));
+
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
+  return true;
 }
 
 // Neutral case:
 // inst(24:20)=1101x & inst(6:5)=10 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterImmedShiftedOp {'constraints': ,
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=1101x & op3(6:5)=10 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterImmedShiftedOp {constraints: ,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterImmedShiftedOpTesterCase18
-    : public Unary2RegisterImmedShiftedOpTesterNotRdIsPcAndS {
+    : public Unary2RegisterImmedShiftedOpTester {
  public:
   Unary2RegisterImmedShiftedOpTesterCase18(const NamedClassDecoder& decoder)
-    : Unary2RegisterImmedShiftedOpTesterNotRdIsPcAndS(decoder) {}
+    : Unary2RegisterImmedShiftedOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Unary2RegisterImmedShiftedOpTesterCase18
@@ -642,27 +814,39 @@ bool Unary2RegisterImmedShiftedOpTesterCase18
   if ((inst.Bits() & 0x000F0000) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Unary2RegisterImmedShiftedOpTesterNotRdIsPcAndS::
+  return Unary2RegisterImmedShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Unary2RegisterImmedShiftedOpTesterCase18
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Unary2RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder));
+
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
+  return true;
 }
 
 // Neutral case:
 // inst(24:20)=1110x
 //    = Binary3RegisterImmedShiftedOp {'constraints': ,
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=1110x
 //    = Binary3RegisterImmedShiftedOp {constraints: ,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTesterCase19
-    : public Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS {
+    : public Binary3RegisterImmedShiftedOpTester {
  public:
   Binary3RegisterImmedShiftedOpTesterCase19(const NamedClassDecoder& decoder)
-    : Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS(decoder) {}
+    : Binary3RegisterImmedShiftedOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Binary3RegisterImmedShiftedOpTesterCase19
@@ -674,27 +858,39 @@ bool Binary3RegisterImmedShiftedOpTesterCase19
   if ((inst.Bits() & 0x01E00000) != 0x01C00000 /* op1(24:20)=~1110x */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterImmedShiftedOpTesterNotRdIsPcAndS::
+  return Binary3RegisterImmedShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Binary3RegisterImmedShiftedOpTesterCase19
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Binary3RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder));
+
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
+  return true;
 }
 
 // Neutral case:
 // inst(24:20)=1111x & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterImmedShiftedOp {'constraints': ,
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representaive case:
 // op1(24:20)=1111x & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterImmedShiftedOp {constraints: ,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterImmedShiftedOpTesterCase20
-    : public Unary2RegisterImmedShiftedOpTesterNotRdIsPcAndS {
+    : public Unary2RegisterImmedShiftedOpTester {
  public:
   Unary2RegisterImmedShiftedOpTesterCase20(const NamedClassDecoder& decoder)
-    : Unary2RegisterImmedShiftedOpTesterNotRdIsPcAndS(decoder) {}
+    : Unary2RegisterImmedShiftedOpTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Unary2RegisterImmedShiftedOpTesterCase20
@@ -707,8 +903,18 @@ bool Unary2RegisterImmedShiftedOpTesterCase20
   if ((inst.Bits() & 0x000F0000) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Unary2RegisterImmedShiftedOpTesterNotRdIsPcAndS::
+  return Unary2RegisterImmedShiftedOpTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Unary2RegisterImmedShiftedOpTesterCase20
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Unary2RegisterImmedShiftedOpTester::ApplySanityChecks(inst, decoder));
+
+  EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
+  EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
+  return true;
 }
 
 // The following are derived class decoder testers for decoder actions
@@ -792,13 +998,13 @@ class Binary2RegisterImmedShiftedTestTester_Case3
 // inst(24:20)=0000x
 //    = Binary3RegisterImmedShiftedOp {'constraints': ,
 //     'rule': 'And_Rule_7_A1_P36',
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0000x
 //    = Binary3RegisterImmedShiftedOp {constraints: ,
 //     rule: And_Rule_7_A1_P36,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTester_Case4
     : public Binary3RegisterImmedShiftedOpTesterCase4 {
  public:
@@ -812,13 +1018,13 @@ class Binary3RegisterImmedShiftedOpTester_Case4
 // inst(24:20)=0001x
 //    = Binary3RegisterImmedShiftedOp {'constraints': ,
 //     'rule': 'Eor_Rule_45_A1_P96',
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0001x
 //    = Binary3RegisterImmedShiftedOp {constraints: ,
 //     rule: Eor_Rule_45_A1_P96,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTester_Case5
     : public Binary3RegisterImmedShiftedOpTesterCase5 {
  public:
@@ -832,13 +1038,13 @@ class Binary3RegisterImmedShiftedOpTester_Case5
 // inst(24:20)=0010x
 //    = Binary3RegisterImmedShiftedOp {'constraints': ,
 //     'rule': 'Sub_Rule_213_A1_P422',
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0010x
 //    = Binary3RegisterImmedShiftedOp {constraints: ,
 //     rule: Sub_Rule_213_A1_P422,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTester_Case6
     : public Binary3RegisterImmedShiftedOpTesterCase6 {
  public:
@@ -852,13 +1058,13 @@ class Binary3RegisterImmedShiftedOpTester_Case6
 // inst(24:20)=0011x
 //    = Binary3RegisterImmedShiftedOp {'constraints': ,
 //     'rule': 'Rsb_Rule_143_P286',
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0011x
 //    = Binary3RegisterImmedShiftedOp {constraints: ,
 //     rule: Rsb_Rule_143_P286,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTester_Case7
     : public Binary3RegisterImmedShiftedOpTesterCase7 {
  public:
@@ -872,13 +1078,13 @@ class Binary3RegisterImmedShiftedOpTester_Case7
 // inst(24:20)=0100x
 //    = Binary3RegisterImmedShiftedOp {'constraints': ,
 //     'rule': 'Add_Rule_6_A1_P24',
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0100x
 //    = Binary3RegisterImmedShiftedOp {constraints: ,
 //     rule: Add_Rule_6_A1_P24,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTester_Case8
     : public Binary3RegisterImmedShiftedOpTesterCase8 {
  public:
@@ -892,13 +1098,13 @@ class Binary3RegisterImmedShiftedOpTester_Case8
 // inst(24:20)=0101x
 //    = Binary3RegisterImmedShiftedOp {'constraints': ,
 //     'rule': 'Adc_Rule_2_A1_P16',
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0101x
 //    = Binary3RegisterImmedShiftedOp {constraints: ,
 //     rule: Adc_Rule_2_A1_P16,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTester_Case9
     : public Binary3RegisterImmedShiftedOpTesterCase9 {
  public:
@@ -912,13 +1118,13 @@ class Binary3RegisterImmedShiftedOpTester_Case9
 // inst(24:20)=0110x
 //    = Binary3RegisterImmedShiftedOp {'constraints': ,
 //     'rule': 'Sbc_Rule_152_A1_P304',
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0110x
 //    = Binary3RegisterImmedShiftedOp {constraints: ,
 //     rule: Sbc_Rule_152_A1_P304,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTester_Case10
     : public Binary3RegisterImmedShiftedOpTesterCase10 {
  public:
@@ -932,13 +1138,13 @@ class Binary3RegisterImmedShiftedOpTester_Case10
 // inst(24:20)=0111x
 //    = Binary3RegisterImmedShiftedOp {'constraints': ,
 //     'rule': 'Rsc_Rule_146_A1_P292',
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0111x
 //    = Binary3RegisterImmedShiftedOp {constraints: ,
 //     rule: Rsc_Rule_146_A1_P292,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTester_Case11
     : public Binary3RegisterImmedShiftedOpTesterCase11 {
  public:
@@ -952,13 +1158,13 @@ class Binary3RegisterImmedShiftedOpTester_Case11
 // inst(24:20)=1100x
 //    = Binary3RegisterImmedShiftedOp {'constraints': ,
 //     'rule': 'Orr_Rule_114_A1_P230',
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1100x
 //    = Binary3RegisterImmedShiftedOp {constraints: ,
 //     rule: Orr_Rule_114_A1_P230,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTester_Case12
     : public Binary3RegisterImmedShiftedOpTesterCase12 {
  public:
@@ -972,13 +1178,13 @@ class Binary3RegisterImmedShiftedOpTester_Case12
 // inst(24:20)=1101x & inst(11:7)=~00000 & inst(6:5)=00 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterImmedShiftedOp {'constraints': ,
 //     'rule': 'Lsl_Rule_88_A1_P178',
-//     'safety': ["'NeitherImm5NotZeroNorNotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(11:7)=00000 => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(11:7)=~00000 & op3(6:5)=00 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterImmedShiftedOp {constraints: ,
 //     rule: Lsl_Rule_88_A1_P178,
-//     safety: ['NeitherImm5NotZeroNorNotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, imm5(11:7)=00000 => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterImmedShiftedOpTester_Case13
     : public Unary2RegisterImmedShiftedOpTesterCase13 {
  public:
@@ -992,13 +1198,13 @@ class Unary2RegisterImmedShiftedOpTester_Case13
 // inst(24:20)=1101x & inst(11:7)=~00000 & inst(6:5)=11 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterImmedShiftedOp {'constraints': ,
 //     'rule': 'Ror_Rule_139_A1_P278',
-//     'safety': ["'NeitherImm5NotZeroNorNotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(11:7)=00000 => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(11:7)=~00000 & op3(6:5)=11 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterImmedShiftedOp {constraints: ,
 //     rule: Ror_Rule_139_A1_P278,
-//     safety: ['NeitherImm5NotZeroNorNotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, imm5(11:7)=00000 => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterImmedShiftedOpTester_Case14
     : public Unary2RegisterImmedShiftedOpTesterCase14 {
  public:
@@ -1012,13 +1218,13 @@ class Unary2RegisterImmedShiftedOpTester_Case14
 // inst(24:20)=1101x & inst(11:7)=00000 & inst(6:5)=00 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterOp {'constraints': ,
 //     'rule': 'Mov_Rule_97_A1_P196',
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(11:7)=00000 & op3(6:5)=00 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterOp {constraints: ,
 //     rule: Mov_Rule_97_A1_P196,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterOpTester_Case15
     : public Unary2RegisterOpTesterCase15 {
  public:
@@ -1032,13 +1238,13 @@ class Unary2RegisterOpTester_Case15
 // inst(24:20)=1101x & inst(11:7)=00000 & inst(6:5)=11 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterOp {'constraints': ,
 //     'rule': 'Rrx_Rule_141_A1_P282',
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(11:7)=00000 & op3(6:5)=11 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterOp {constraints: ,
 //     rule: Rrx_Rule_141_A1_P282,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterOpTester_Case16
     : public Unary2RegisterOpTesterCase16 {
  public:
@@ -1052,13 +1258,13 @@ class Unary2RegisterOpTester_Case16
 // inst(24:20)=1101x & inst(6:5)=01 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterImmedShiftedOp {'constraints': ,
 //     'rule': 'Lsr_Rule_90_A1_P182',
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1101x & op3(6:5)=01 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterImmedShiftedOp {constraints: ,
 //     rule: Lsr_Rule_90_A1_P182,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterImmedShiftedOpTester_Case17
     : public Unary2RegisterImmedShiftedOpTesterCase17 {
  public:
@@ -1072,13 +1278,13 @@ class Unary2RegisterImmedShiftedOpTester_Case17
 // inst(24:20)=1101x & inst(6:5)=10 & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterImmedShiftedOp {'constraints': ,
 //     'rule': 'Asr_Rule_14_A1_P40',
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1101x & op3(6:5)=10 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterImmedShiftedOp {constraints: ,
 //     rule: Asr_Rule_14_A1_P40,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterImmedShiftedOpTester_Case18
     : public Unary2RegisterImmedShiftedOpTesterCase18 {
  public:
@@ -1092,13 +1298,13 @@ class Unary2RegisterImmedShiftedOpTester_Case18
 // inst(24:20)=1110x
 //    = Binary3RegisterImmedShiftedOp {'constraints': ,
 //     'rule': 'Bic_Rule_20_A1_P52',
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1110x
 //    = Binary3RegisterImmedShiftedOp {constraints: ,
 //     rule: Bic_Rule_20_A1_P52,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Binary3RegisterImmedShiftedOpTester_Case19
     : public Binary3RegisterImmedShiftedOpTesterCase19 {
  public:
@@ -1112,13 +1318,13 @@ class Binary3RegisterImmedShiftedOpTester_Case19
 // inst(24:20)=1111x & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterImmedShiftedOp {'constraints': ,
 //     'rule': 'Mvn_Rule_107_A1_P216',
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1111x & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterImmedShiftedOp {constraints: ,
 //     rule: Mvn_Rule_107_A1_P216,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 class Unary2RegisterImmedShiftedOpTester_Case20
     : public Unary2RegisterImmedShiftedOpTesterCase20 {
  public:
@@ -1218,14 +1424,14 @@ TEST_F(Arm32DecoderStateTests,
 //    = Binary3RegisterImmedShiftedOp => Defs12To15 {'constraints': ,
 //     'pattern': 'cccc0000000unnnnddddiiiiitt0mmmm',
 //     'rule': 'And_Rule_7_A1_P36',
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0000x
 //    = Binary3RegisterImmedShiftedOp => Defs12To15 {constraints: ,
 //     pattern: cccc0000000unnnnddddiiiiitt0mmmm,
 //     rule: And_Rule_7_A1_P36,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterImmedShiftedOpTester_Case4_TestCase4) {
   Binary3RegisterImmedShiftedOpTester_Case4 baseline_tester;
@@ -1236,21 +1442,21 @@ TEST_F(Arm32DecoderStateTests,
 
 // Neutral case:
 // inst(24:20)=0001x
-//    = Binary3RegisterImmedShiftedOp => Defs12To15CondsDontCare {'constraints': ,
+//    = Binary3RegisterImmedShiftedOp => Defs12To15 {'constraints': ,
 //     'pattern': 'cccc0000001unnnnddddiiiiitt0mmmm',
 //     'rule': 'Eor_Rule_45_A1_P96',
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0001x
-//    = Binary3RegisterImmedShiftedOp => Defs12To15CondsDontCare {constraints: ,
+//    = Binary3RegisterImmedShiftedOp => Defs12To15 {constraints: ,
 //     pattern: cccc0000001unnnnddddiiiiitt0mmmm,
 //     rule: Eor_Rule_45_A1_P96,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterImmedShiftedOpTester_Case5_TestCase5) {
   Binary3RegisterImmedShiftedOpTester_Case5 baseline_tester;
-  NamedDefs12To15CondsDontCare_Eor_Rule_45_A1_P96 actual;
+  NamedDefs12To15_Eor_Rule_45_A1_P96 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc0000001unnnnddddiiiiitt0mmmm");
 }
@@ -1260,14 +1466,14 @@ TEST_F(Arm32DecoderStateTests,
 //    = Binary3RegisterImmedShiftedOp => Defs12To15 {'constraints': ,
 //     'pattern': 'cccc0000010unnnnddddiiiiitt0mmmm',
 //     'rule': 'Sub_Rule_213_A1_P422',
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0010x
 //    = Binary3RegisterImmedShiftedOp => Defs12To15 {constraints: ,
 //     pattern: cccc0000010unnnnddddiiiiitt0mmmm,
 //     rule: Sub_Rule_213_A1_P422,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterImmedShiftedOpTester_Case6_TestCase6) {
   Binary3RegisterImmedShiftedOpTester_Case6 baseline_tester;
@@ -1281,14 +1487,14 @@ TEST_F(Arm32DecoderStateTests,
 //    = Binary3RegisterImmedShiftedOp => Defs12To15 {'constraints': ,
 //     'pattern': 'cccc0000011unnnnddddiiiiitt0mmmm',
 //     'rule': 'Rsb_Rule_143_P286',
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0011x
 //    = Binary3RegisterImmedShiftedOp => Defs12To15 {constraints: ,
 //     pattern: cccc0000011unnnnddddiiiiitt0mmmm,
 //     rule: Rsb_Rule_143_P286,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterImmedShiftedOpTester_Case7_TestCase7) {
   Binary3RegisterImmedShiftedOpTester_Case7 baseline_tester;
@@ -1302,14 +1508,14 @@ TEST_F(Arm32DecoderStateTests,
 //    = Binary3RegisterImmedShiftedOp => Defs12To15 {'constraints': ,
 //     'pattern': 'cccc0000100unnnnddddiiiiitt0mmmm',
 //     'rule': 'Add_Rule_6_A1_P24',
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0100x
 //    = Binary3RegisterImmedShiftedOp => Defs12To15 {constraints: ,
 //     pattern: cccc0000100unnnnddddiiiiitt0mmmm,
 //     rule: Add_Rule_6_A1_P24,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterImmedShiftedOpTester_Case8_TestCase8) {
   Binary3RegisterImmedShiftedOpTester_Case8 baseline_tester;
@@ -1323,14 +1529,14 @@ TEST_F(Arm32DecoderStateTests,
 //    = Binary3RegisterImmedShiftedOp => Defs12To15 {'constraints': ,
 //     'pattern': 'cccc0000101unnnnddddiiiiitt0mmmm',
 //     'rule': 'Adc_Rule_2_A1_P16',
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0101x
 //    = Binary3RegisterImmedShiftedOp => Defs12To15 {constraints: ,
 //     pattern: cccc0000101unnnnddddiiiiitt0mmmm,
 //     rule: Adc_Rule_2_A1_P16,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterImmedShiftedOpTester_Case9_TestCase9) {
   Binary3RegisterImmedShiftedOpTester_Case9 baseline_tester;
@@ -1344,14 +1550,14 @@ TEST_F(Arm32DecoderStateTests,
 //    = Binary3RegisterImmedShiftedOp => Defs12To15 {'constraints': ,
 //     'pattern': 'cccc0000110unnnnddddiiiiitt0mmmm',
 //     'rule': 'Sbc_Rule_152_A1_P304',
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0110x
 //    = Binary3RegisterImmedShiftedOp => Defs12To15 {constraints: ,
 //     pattern: cccc0000110unnnnddddiiiiitt0mmmm,
 //     rule: Sbc_Rule_152_A1_P304,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterImmedShiftedOpTester_Case10_TestCase10) {
   Binary3RegisterImmedShiftedOpTester_Case10 baseline_tester;
@@ -1365,14 +1571,14 @@ TEST_F(Arm32DecoderStateTests,
 //    = Binary3RegisterImmedShiftedOp => Defs12To15 {'constraints': ,
 //     'pattern': 'cccc0000111unnnnddddiiiiitt0mmmm',
 //     'rule': 'Rsc_Rule_146_A1_P292',
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=0111x
 //    = Binary3RegisterImmedShiftedOp => Defs12To15 {constraints: ,
 //     pattern: cccc0000111unnnnddddiiiiitt0mmmm,
 //     rule: Rsc_Rule_146_A1_P292,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterImmedShiftedOpTester_Case11_TestCase11) {
   Binary3RegisterImmedShiftedOpTester_Case11 baseline_tester;
@@ -1386,14 +1592,14 @@ TEST_F(Arm32DecoderStateTests,
 //    = Binary3RegisterImmedShiftedOp => Defs12To15 {'constraints': ,
 //     'pattern': 'cccc0001100unnnnddddiiiiitt0mmmm',
 //     'rule': 'Orr_Rule_114_A1_P230',
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1100x
 //    = Binary3RegisterImmedShiftedOp => Defs12To15 {constraints: ,
 //     pattern: cccc0001100unnnnddddiiiiitt0mmmm,
 //     rule: Orr_Rule_114_A1_P230,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterImmedShiftedOpTester_Case12_TestCase12) {
   Binary3RegisterImmedShiftedOpTester_Case12 baseline_tester;
@@ -1407,14 +1613,14 @@ TEST_F(Arm32DecoderStateTests,
 //    = Unary2RegisterImmedShiftedOp => Defs12To15 {'constraints': ,
 //     'pattern': 'cccc0001101u0000ddddiiiii000mmmm',
 //     'rule': 'Lsl_Rule_88_A1_P178',
-//     'safety': ["'NeitherImm5NotZeroNorNotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(11:7)=00000 => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(11:7)=~00000 & op3(6:5)=00 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterImmedShiftedOp => Defs12To15 {constraints: ,
 //     pattern: cccc0001101u0000ddddiiiii000mmmm,
 //     rule: Lsl_Rule_88_A1_P178,
-//     safety: ['NeitherImm5NotZeroNorNotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, imm5(11:7)=00000 => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterImmedShiftedOpTester_Case13_TestCase13) {
   Unary2RegisterImmedShiftedOpTester_Case13 baseline_tester;
@@ -1428,14 +1634,14 @@ TEST_F(Arm32DecoderStateTests,
 //    = Unary2RegisterImmedShiftedOp => Defs12To15 {'constraints': ,
 //     'pattern': 'cccc0001101u0000ddddiiiii110mmmm',
 //     'rule': 'Ror_Rule_139_A1_P278',
-//     'safety': ["'NeitherImm5NotZeroNorNotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(11:7)=00000 => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(11:7)=~00000 & op3(6:5)=11 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterImmedShiftedOp => Defs12To15 {constraints: ,
 //     pattern: cccc0001101u0000ddddiiiii110mmmm,
 //     rule: Ror_Rule_139_A1_P278,
-//     safety: ['NeitherImm5NotZeroNorNotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, imm5(11:7)=00000 => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterImmedShiftedOpTester_Case14_TestCase14) {
   Unary2RegisterImmedShiftedOpTester_Case14 baseline_tester;
@@ -1449,14 +1655,14 @@ TEST_F(Arm32DecoderStateTests,
 //    = Unary2RegisterOp => Defs12To15 {'constraints': ,
 //     'pattern': 'cccc0001101u0000dddd00000000mmmm',
 //     'rule': 'Mov_Rule_97_A1_P196',
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(11:7)=00000 & op3(6:5)=00 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterOp => Defs12To15 {constraints: ,
 //     pattern: cccc0001101u0000dddd00000000mmmm,
 //     rule: Mov_Rule_97_A1_P196,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterOpTester_Case15_TestCase15) {
   Unary2RegisterOpTester_Case15 baseline_tester;
@@ -1470,14 +1676,14 @@ TEST_F(Arm32DecoderStateTests,
 //    = Unary2RegisterOp => Defs12To15 {'constraints': ,
 //     'pattern': 'cccc0001101u0000dddd00000110mmmm',
 //     'rule': 'Rrx_Rule_141_A1_P282',
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(11:7)=00000 & op3(6:5)=11 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterOp => Defs12To15 {constraints: ,
 //     pattern: cccc0001101u0000dddd00000110mmmm,
 //     rule: Rrx_Rule_141_A1_P282,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterOpTester_Case16_TestCase16) {
   Unary2RegisterOpTester_Case16 baseline_tester;
@@ -1491,14 +1697,14 @@ TEST_F(Arm32DecoderStateTests,
 //    = Unary2RegisterImmedShiftedOp => Defs12To15 {'constraints': ,
 //     'pattern': 'cccc0001101u0000ddddiiiii010mmmm',
 //     'rule': 'Lsr_Rule_90_A1_P182',
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1101x & op3(6:5)=01 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterImmedShiftedOp => Defs12To15 {constraints: ,
 //     pattern: cccc0001101u0000ddddiiiii010mmmm,
 //     rule: Lsr_Rule_90_A1_P182,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterImmedShiftedOpTester_Case17_TestCase17) {
   Unary2RegisterImmedShiftedOpTester_Case17 baseline_tester;
@@ -1512,14 +1718,14 @@ TEST_F(Arm32DecoderStateTests,
 //    = Unary2RegisterImmedShiftedOp => Defs12To15 {'constraints': ,
 //     'pattern': 'cccc0001101u0000ddddiiiii100mmmm',
 //     'rule': 'Asr_Rule_14_A1_P40',
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1101x & op3(6:5)=10 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterImmedShiftedOp => Defs12To15 {constraints: ,
 //     pattern: cccc0001101u0000ddddiiiii100mmmm,
 //     rule: Asr_Rule_14_A1_P40,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterImmedShiftedOpTester_Case18_TestCase18) {
   Unary2RegisterImmedShiftedOpTester_Case18 baseline_tester;
@@ -1533,14 +1739,14 @@ TEST_F(Arm32DecoderStateTests,
 //    = Binary3RegisterImmedShiftedOp => Defs12To15 {'constraints': ,
 //     'pattern': 'cccc0001110unnnnddddiiiiitt0mmmm',
 //     'rule': 'Bic_Rule_20_A1_P52',
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1110x
 //    = Binary3RegisterImmedShiftedOp => Defs12To15 {constraints: ,
 //     pattern: cccc0001110unnnnddddiiiiitt0mmmm,
 //     rule: Bic_Rule_20_A1_P52,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterImmedShiftedOpTester_Case19_TestCase19) {
   Binary3RegisterImmedShiftedOpTester_Case19 baseline_tester;
@@ -1554,14 +1760,14 @@ TEST_F(Arm32DecoderStateTests,
 //    = Unary2RegisterImmedShiftedOp => Defs12To15 {'constraints': ,
 //     'pattern': 'cccc0001111u0000ddddiiiiitt0mmmm',
 //     'rule': 'Mvn_Rule_107_A1_P216',
-//     'safety': ["'NotRdIsPcAndS'"]}
+//     'safety': ['(inst(15:12)=1111 && inst(20)=1) => UNDEFINED', 'inst(15:12)=1111 => FORBIDDEN_OPERANDS']}
 //
 // Representative case:
 // op1(24:20)=1111x & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = Unary2RegisterImmedShiftedOp => Defs12To15 {constraints: ,
 //     pattern: cccc0001111u0000ddddiiiiitt0mmmm,
 //     rule: Mvn_Rule_107_A1_P216,
-//     safety: ['NotRdIsPcAndS']}
+//     safety: [(Rd(15:12)=1111 && S(20)=1) => UNDEFINED, Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterImmedShiftedOpTester_Case20_TestCase20) {
   Unary2RegisterImmedShiftedOpTester_Case20 baseline_tester;

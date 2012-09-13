@@ -129,7 +129,6 @@ class Arm32DecoderState : DecoderState {
   const BxBlx BxBlx_instance_;
   const DataBarrier DataBarrier_instance_;
   const Defs12To15 Defs12To15_instance_;
-  const Defs12To15CondsDontCare Defs12To15CondsDontCare_instance_;
   const Defs12To15CondsDontCareMsbGeLsb Defs12To15CondsDontCareMsbGeLsb_instance_;
   const Defs12To15CondsDontCareRdRnNotPc Defs12To15CondsDontCareRdRnNotPc_instance_;
   const Defs12To15CondsDontCareRdRnNotPcBitfieldExtract Defs12To15CondsDontCareRdRnNotPcBitfieldExtract_instance_;

@@ -119,11 +119,23 @@
 #       branch (R15 + constant offset). (missing implies false.)
 # relative_offset: Defines the constant offset used in a direct
 #       relative branch.
-# safety: How safety is defined for the class.
+# safety: How safety is defined for the class (missing implies true).
 # uses: The set of registers  used. (missing imlies {})
 #
 # TODO(karl): How do we model class decoder virtuals clear_bits
 #    and sets_Z_if_bits_clear.
+##############################################################
+
+##############################################################
+# It should be noted that one can define a local dictionary at
+# the top of each table. The dictionary enties are prefixed by
+# "*n" which defines entry n. Each entry can be an action template.
+# These templates can then be referred to in actual rows by using
+# a "*n" in place of the action. When this is done, the action
+# inherits the corresponding action from the table's local dictionary.
+# Following the "*n" in the row, you can define additional fields.
+# If the fields were defined in the table local dictionary, it
+# overrides the field in the template.
 ##############################################################
 
 ##############################################################
@@ -191,12 +203,12 @@ class UnpredictableUncondDecoder : UnsafeUncondDecoder
 | "      ~0xx1x     1011     ->extra_load_store_instructions
 | "      "          11x1     "
 | "      0xx1x      1011     =ForbiddenCondDecoder => Forbidden
-                              extra_load_store_instructions_unpriviledged
-                              cccc0000xx1xxxxxxxxxxxxx1011xxxx
+                              pattern := cccc0000xx1xxxxxxxxxxxxx1011xxxx;
+                              rule := extra_load_store_instructions_unpriviledged;
 | "      "          11x1     =ForbiddenCondDecoder => Forbidden
                               # TODO(jfb) Same as above, but different pattern.
-                              extra_load_store_instructions_unpriviledged
-                              cccc0000xx1xxxxxxxxxxxxx11x1xxxx
+                              pattern := cccc0000xx1xxxxxxxxxxxxx11x1xxxx;
+                              rule := extra_load_store_instructions_unpriviledged;
 | 1      ~10xx0     -        ->data_processing_immediate
 | "      10000      -        = Unary1RegisterImmediateOp => Defs12To15
                                { cond(31:28), S(20), imm4(19:16),
@@ -223,114 +235,84 @@ class UnpredictableUncondDecoder : UnsafeUncondDecoder
 # in this section, since they can be used to change the value of SP,
 # and we want to allow masking to follow in the next instruction.
 +-- data_processing_register (See Section A5.2.1)
+*1 Binary3RegisterImmedShiftedOp => Defs12To15
+   { cond(31:28), S(20), Rn(19:16), Rd(15:12), imm5(11:7), type(6:5), Rm(3:0) }
+   defs := { Rd , NZCV if S else None };
+   safety := (Rd=1111 & S=1) => UNDEFINED &  # ARM
+             Rd=1111 => FORBIDDEN_OPERANDS;  # NaCl
+   uses := { Rn , Rm };
+*2 Binary2RegisterImmedShiftedTest => DontCareInst
+   { cond(31:28), S(20), Rn(19:16), imm5(11:7), type(6:5), Rm(3:0) }
+   defs := { NZCV if S else None };
+   uses := { Rn , Rm };
+*3 Unary2RegisterOp => Defs12To15
+   { cond(31:28), S(20), Rd(15:12), Rm(3:0) }
+   defs := { Rd , NZCV if S else None };
+   safety := (Rd=1111 & S=1) => UNDEFINED &  # ARM
+             Rd=1111 => FORBIDDEN_OPERANDS;  # NaCl
+   uses := { Rm };
+*4 Unary2RegisterImmedShiftedOp => Defs12To15
+   { cond(31:28), S(20), Rd(15:12), imm5(11:7), Rm(3:0) }
+   defs := { Rd , NZCV if S else None };
+   safety := (Rd=1111 & S=1) => UNDEFINED &  # ARM
+             Rd=1111 => FORBIDDEN_OPERANDS;  # NaCl
+   uses := { Rm };
++--
 | op1(24:20) op2(11:7) op3(6:5)
-| 0000x      -         -        = Binary3RegisterImmedShiftedOp
-                                     => Defs12To15
-                                     And_Rule_7_A1_P36
-                                     cccc0000000unnnnddddiiiiitt0mmmm
-                                     NotRdIsPcAndS
-| 0001x      -         -        = Binary3RegisterImmedShiftedOp
-                                     => Defs12To15CondsDontCare
-                                     Eor_Rule_45_A1_P96
-                                     cccc0000001unnnnddddiiiiitt0mmmm
-                                     NotRdIsPcAndS
-| 0010x      -         -        = Binary3RegisterImmedShiftedOp
-                                     => Defs12To15
+| 0000x      -         -        = *1 pattern := cccc0000000unnnnddddiiiiitt0mmmm;
+                                  rule := And_Rule_7_A1_P36;
+| 0001x      -         -        = *1 pattern := cccc0000001unnnnddddiiiiitt0mmmm;
+                                  rule := Eor_Rule_45_A1_P96;
+| 0010x      -         -        = *1 pattern := cccc0000010unnnnddddiiiiitt0mmmm;
 # Note: For arm, the case where Rn=SP is NOT a special case (only in thumb2).
 # Hence, parse restriction does not apply (See Sub_Rule_216_P428 in manual).
-                                     Sub_Rule_213_A1_P422
-                                     cccc0000010unnnnddddiiiiitt0mmmm
-                                     NotRdIsPcAndS
-| 0011x      -         -        = Binary3RegisterImmedShiftedOp
-                                     => Defs12To15
-                                     Rsb_Rule_143_P286
-                                     cccc0000011unnnnddddiiiiitt0mmmm
-                                     NotRdIsPcAndS
-| 0100x      -         -        = Binary3RegisterImmedShiftedOp
-                                     => Defs12To15
+                                  rule := Sub_Rule_213_A1_P422;
+| 0011x      -         -        = *1 pattern := cccc0000011unnnnddddiiiiitt0mmmm;
+                                  rule := Rsb_Rule_143_P286;
+| 0100x      -         -        = *1 pattern := cccc0000100unnnnddddiiiiitt0mmmm;
 # Note: For arm, the case where Rn=SP is NOT a special case (only in thumb2).
 # Hence, parse restriction does not apply (See Add_Rule_8_A1_P28 in manual).
-                                     Add_Rule_6_A1_P24
-                                     cccc0000100unnnnddddiiiiitt0mmmm
-                                     NotRdIsPcAndS
-| 0101x      -         -        = Binary3RegisterImmedShiftedOp
-                                     => Defs12To15
-                                     Adc_Rule_2_A1_P16
-                                     cccc0000101unnnnddddiiiiitt0mmmm
-                                     NotRdIsPcAndS
-| 0110x      -         -        = Binary3RegisterImmedShiftedOp
-                                     => Defs12To15
-                                     Sbc_Rule_152_A1_P304
-                                     cccc0000110unnnnddddiiiiitt0mmmm
-                                     NotRdIsPcAndS
-| 0111x      -         -        = Binary3RegisterImmedShiftedOp
-                                     => Defs12To15
-                                     Rsc_Rule_146_A1_P292
-                                     cccc0000111unnnnddddiiiiitt0mmmm
-                                     NotRdIsPcAndS
-| 10001      -         -        = Binary2RegisterImmedShiftedTest
-                                     => DontCareInst
-                                     Tst_Rule_231_A1_P456
-                                     cccc00010001nnnn0000iiiiitt0mmmm
-| 10011      -         -        = Binary2RegisterImmedShiftedTest
-                                     => DontCareInst
-                                     Teq_Rule_228_A1_P450
-                                     cccc00010011nnnn0000iiiiitt0mmmm
-| 10101      -         -        = Binary2RegisterImmedShiftedTest
-                                     => DontCareInst
-                                     Cmp_Rule_36_A1_P82
-                                     cccc00010101nnnn0000iiiiitt0mmmm
-| 10111      -         -        = Binary2RegisterImmedShiftedTest
-                                     => DontCareInst
-                                     Cmn_Rule_33_A1_P76
-                                     cccc00010111nnnn0000iiiiitt0mmmm
+                                  rule := Add_Rule_6_A1_P24;
+| 0101x      -         -        = *1 pattern := cccc0000101unnnnddddiiiiitt0mmmm;
+                                  rule := Adc_Rule_2_A1_P16;
+| 0110x      -         -        = *1 pattern := cccc0000110unnnnddddiiiiitt0mmmm;
+                                  rule := Sbc_Rule_152_A1_P304;
+| 0111x      -         -        = *1 pattern := cccc0000111unnnnddddiiiiitt0mmmm;
+                                  rule := Rsc_Rule_146_A1_P292;
+| 10001      -         -        = *2 pattern := cccc00010001nnnn0000iiiiitt0mmmm;
+                                  rule := Tst_Rule_231_A1_P456;
+| 10011      -         -        = *2 pattern := cccc00010011nnnn0000iiiiitt0mmmm;
+                                  rule := Teq_Rule_228_A1_P450;
+| 10101      -         -        = *2 pattern := cccc00010101nnnn0000iiiiitt0mmmm;
+                                  rule := Cmp_Rule_36_A1_P82;
+| 10111      -         -        = *2 pattern := cccc00010111nnnn0000iiiiitt0mmmm;
+                                  rule := Cmn_Rule_33_A1_P76;
 # TODO(jfb) op==10xx0 should be unreachable from here:
 #           the previous table should handle it.
-| 1100x      -         -        = Binary3RegisterImmedShiftedOp
-                                     => Defs12To15
-                                     Orr_Rule_114_A1_P230
-                                     cccc0001100unnnnddddiiiiitt0mmmm
-                                     NotRdIsPcAndS
-| 1101x      00000     00       = Unary2RegisterOp
-                                     => Defs12To15
-                                     Mov_Rule_97_A1_P196
-                                     cccc0001101u0000dddd00000000mmmm
-                                     NotRdIsPcAndS
-| "          ~00000    00       = Unary2RegisterImmedShiftedOp
-                                     => Defs12To15
-                                     Lsl_Rule_88_A1_P178
-                                     cccc0001101u0000ddddiiiii000mmmm
-                                     NeitherImm5NotZeroNorNotRdIsPcAndS
-| "          -         01       = Unary2RegisterImmedShiftedOp
-                                     => Defs12To15
-                                     Lsr_Rule_90_A1_P182
-                                     cccc0001101u0000ddddiiiii010mmmm
-                                     NotRdIsPcAndS
-| "          -         10       = Unary2RegisterImmedShiftedOp
-                                     => Defs12To15
-                                     Asr_Rule_14_A1_P40
-                                     cccc0001101u0000ddddiiiii100mmmm
-                                     NotRdIsPcAndS
-| "          00000     11       = Unary2RegisterOp
-                                     => Defs12To15
-                                     Rrx_Rule_141_A1_P282
-                                     cccc0001101u0000dddd00000110mmmm
-                                     NotRdIsPcAndS
-| "          ~00000    11       = Unary2RegisterImmedShiftedOp
-                                     => Defs12To15
-                                     Ror_Rule_139_A1_P278
-                                     cccc0001101u0000ddddiiiii110mmmm
-                                     NeitherImm5NotZeroNorNotRdIsPcAndS
-| 1110x      -         -        = Binary3RegisterImmedShiftedOp
-                                     => Defs12To15
-                                     Bic_Rule_20_A1_P52
-                                     cccc0001110unnnnddddiiiiitt0mmmm
-                                     NotRdIsPcAndS
-| 1111x      -         -        = Unary2RegisterImmedShiftedOp
-                                     => Defs12To15
-                                     Mvn_Rule_107_A1_P216
-                                     cccc0001111u0000ddddiiiiitt0mmmm
-                                     NotRdIsPcAndS
+| 1100x      -         -        = *1 pattern := cccc0001100unnnnddddiiiiitt0mmmm;
+                                  rule := Orr_Rule_114_A1_P230;
+| 1101x      00000     00       = *3 pattern := cccc0001101u0000dddd00000000mmmm;
+                                  rule := Mov_Rule_97_A1_P196;
+| "          ~00000    00       = *4 pattern := cccc0001101u0000ddddiiiii000mmmm;
+                                  rule := Lsl_Rule_88_A1_P178;
+                                  safety := (Rd=1111 & S=1) => UNDEFINED &  # ARM
+                                            imm5=00000 => UNDEFINED &
+                                            Rd=1111 => FORBIDDEN_OPERANDS;  # NaCl
+| "          -         01       = *4 pattern := cccc0001101u0000ddddiiiii010mmmm;
+                                  rule := Lsr_Rule_90_A1_P182;
+| "          -         10       = *4 pattern := cccc0001101u0000ddddiiiii100mmmm;
+                                  rule := Asr_Rule_14_A1_P40;
+| "          00000     11       = *3 pattern := cccc0001101u0000dddd00000110mmmm;
+                                  rule := Rrx_Rule_141_A1_P282;
+| "          ~00000    11       = *4 pattern := cccc0001101u0000ddddiiiii110mmmm;
+                                  rule := Ror_Rule_139_A1_P278;
+                                  safety := (Rd=1111 & S=1) => UNDEFINED &  # ARM
+                                            imm5=00000 => UNDEFINED &
+                                            Rd=1111 => FORBIDDEN_OPERANDS;  # NaCl
+| 1110x      -         -        = *1 pattern := cccc0001110unnnnddddiiiiitt0mmmm;
+                                  rule := Bic_Rule_20_A1_P52;
+| 1111x      -         -        = *4 pattern := cccc0001111u0000ddddiiiiitt0mmmm;
+                                  rule := Mvn_Rule_107_A1_P216;
 +--
 
 +-- data_processing_register_shifted_register (See Section A5.2.2)
