@@ -73,21 +73,25 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
   MockMediaStreamDependencyFactory();
   virtual ~MockMediaStreamDependencyFactory();
 
-  virtual talk_base::scoped_refptr<webrtc::PeerConnectionInterface>
-      CreatePeerConnection(
-          const std::string& config,
-          webrtc::PeerConnectionObserver* observer) OVERRIDE;
-  virtual talk_base::scoped_refptr<webrtc::LocalMediaStreamInterface>
+  virtual scoped_refptr<webrtc::PeerConnectionInterface>
+      CreatePeerConnection(const std::string& config,
+                           webrtc::PeerConnectionObserver* observer) OVERRIDE;
+  virtual scoped_refptr<webrtc::PeerConnectionInterface>
+      CreatePeerConnection(const webrtc::JsepInterface::IceServers& ice_servers,
+                           const webrtc::MediaConstraintsInterface* constraints,
+                           webrtc::PeerConnectionObserver* observer) OVERRIDE;
+  virtual scoped_refptr<webrtc::LocalMediaStreamInterface>
       CreateLocalMediaStream(const std::string& label) OVERRIDE;
-  virtual talk_base::scoped_refptr<webrtc::LocalVideoTrackInterface>
-      CreateLocalVideoTrack(
-          const std::string& label,
-          int video_session_id) OVERRIDE;
-  virtual talk_base::scoped_refptr<webrtc::LocalAudioTrackInterface>
-      CreateLocalAudioTrack(
-          const std::string& label,
-          webrtc::AudioDeviceModule* audio_device) OVERRIDE;
+  virtual scoped_refptr<webrtc::LocalVideoTrackInterface>
+      CreateLocalVideoTrack(const std::string& label,
+                            int video_session_id) OVERRIDE;
+  virtual scoped_refptr<webrtc::LocalAudioTrackInterface>
+      CreateLocalAudioTrack(const std::string& label,
+                            webrtc::AudioDeviceModule* audio_device) OVERRIDE;
   virtual webrtc::SessionDescriptionInterface* CreateSessionDescription(
+      const std::string& sdp) OVERRIDE;
+  virtual webrtc::SessionDescriptionInterface* CreateSessionDescription(
+      const std::string& type,
       const std::string& sdp) OVERRIDE;
   virtual webrtc::IceCandidateInterface* CreateIceCandidate(
       const std::string& sdp_mid,

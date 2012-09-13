@@ -43,8 +43,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamCenter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamCenterClient.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPeerConnectionHandler.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPeerConnectionHandlerClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
@@ -91,8 +89,8 @@ using WebKit::WebMediaStreamCenter;
 using WebKit::WebMediaStreamCenterClient;
 using WebKit::WebPeerConnection00Handler;
 using WebKit::WebPeerConnection00HandlerClient;
-using WebKit::WebPeerConnectionHandler;
-using WebKit::WebPeerConnectionHandlerClient;
+using WebKit::WebRTCPeerConnectionHandler;
+using WebKit::WebRTCPeerConnectionHandlerClient;
 using WebKit::WebStorageNamespace;
 using WebKit::WebString;
 using WebKit::WebURL;
@@ -685,6 +683,22 @@ RendererWebKitPlatformSupportImpl::createPeerConnection00Handler(
   MediaStreamDependencyFactory* rtc_dependency_factory =
       render_thread->GetMediaStreamDependencyFactory();
   return rtc_dependency_factory->CreatePeerConnectionHandlerJsep(client);
+#else
+  return NULL;
+#endif  // defined(ENABLE_WEBRTC)
+}
+
+WebRTCPeerConnectionHandler*
+RendererWebKitPlatformSupportImpl::createRTCPeerConnectionHandler(
+    WebRTCPeerConnectionHandlerClient* client) {
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  DCHECK(render_thread);
+  if (!render_thread)
+    return NULL;
+#if defined(ENABLE_WEBRTC)
+  MediaStreamDependencyFactory* rtc_dependency_factory =
+      render_thread->GetMediaStreamDependencyFactory();
+  return rtc_dependency_factory->CreateRTCPeerConnectionHandler(client);
 #else
   return NULL;
 #endif  // defined(ENABLE_WEBRTC)

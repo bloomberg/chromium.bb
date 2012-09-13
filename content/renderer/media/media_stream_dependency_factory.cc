@@ -10,8 +10,9 @@
 #include "base/utf_string_conversions.h"
 #include "content/renderer/media/media_stream_extra_data.h"
 #include "content/renderer/media/media_stream_source_extra_data.h"
-#include "content/renderer/media/rtc_video_capturer.h"
 #include "content/renderer/media/peer_connection_handler_jsep.h"
+#include "content/renderer/media/rtc_peer_connection_handler.h"
+#include "content/renderer/media/rtc_video_capturer.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
@@ -96,11 +97,24 @@ MediaStreamDependencyFactory::CreatePeerConnectionHandlerJsep(
   // webKitPeerConnection00.
   UpdateWebRTCMethodCount(WEBKIT_PEER_CONNECTION);
 
-  if (!EnsurePeerConnectionFactory()) {
+  if (!EnsurePeerConnectionFactory())
     return NULL;
-  }
 
   return new PeerConnectionHandlerJsep(client, this);
+}
+
+WebKit::WebRTCPeerConnectionHandler*
+MediaStreamDependencyFactory::CreateRTCPeerConnectionHandler(
+    WebKit::WebRTCPeerConnectionHandlerClient* client) {
+  // Save histogram data so we can see how much PeerConnetion is used.
+  // The histogram counts the number of calls to the JS API
+  // webKitRTCPeerConnection.
+  UpdateWebRTCMethodCount(WEBKIT_RTC_PEER_CONNECTION);
+
+  if (!EnsurePeerConnectionFactory())
+    return NULL;
+
+  return new RTCPeerConnectionHandler(client, this);
 }
 
 bool MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
@@ -115,7 +129,7 @@ bool MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
     return false;
 
   std::string label = UTF16ToUTF8(description->label());
-  talk_base::scoped_refptr<webrtc::LocalMediaStreamInterface> native_stream =
+  scoped_refptr<webrtc::LocalMediaStreamInterface> native_stream =
       CreateLocalMediaStream(label);
 
   // Add audio tracks.
@@ -133,7 +147,7 @@ bool MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
     // TODO(perkj): Refactor the creation of audio tracks to use a proper
     // interface for receiving audio input data. Currently NULL is passed since
     // the |audio_device| is the wrong class and is unused.
-    talk_base::scoped_refptr<webrtc::LocalAudioTrackInterface> audio_track(
+    scoped_refptr<webrtc::LocalAudioTrackInterface> audio_track(
         CreateLocalAudioTrack(UTF16ToUTF8(source.id()), NULL));
     native_stream->AddTrack(audio_track);
     audio_track->set_enabled(audio_components[i].isEnabled());
@@ -155,7 +169,7 @@ bool MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
       NOTIMPLEMENTED();
       continue;
     }
-    talk_base::scoped_refptr<webrtc::LocalVideoTrackInterface> video_track(
+    scoped_refptr<webrtc::LocalVideoTrackInterface> video_track(
         CreateLocalVideoTrack(UTF16ToUTF8(source.id()),
                               source_data->device_info().session_id));
     native_stream->AddTrack(video_track);
@@ -173,7 +187,7 @@ bool MediaStreamDependencyFactory::CreatePeerConnectionFactory(
     talk_base::NetworkManager* network_manager,
     talk_base::PacketSocketFactory* socket_factory) {
   if (!pc_factory_.get()) {
-    talk_base::scoped_refptr<P2PPortAllocatorFactory> pa_factory =
+    scoped_refptr<P2PPortAllocatorFactory> pa_factory =
         new talk_base::RefCountedObject<P2PPortAllocatorFactory>(
             socket_dispatcher,
             network_manager,
@@ -181,7 +195,7 @@ bool MediaStreamDependencyFactory::CreatePeerConnectionFactory(
 
     DCHECK(!audio_device_);
     audio_device_ = new WebRtcAudioDeviceImpl();
-    talk_base::scoped_refptr<webrtc::PeerConnectionFactoryInterface> factory(
+    scoped_refptr<webrtc::PeerConnectionFactoryInterface> factory(
         webrtc::CreatePeerConnectionFactory(worker_thread,
                                             signaling_thread,
                                             pa_factory.release(),
@@ -196,20 +210,29 @@ bool MediaStreamDependencyFactory::PeerConnectionFactoryCreated() {
   return pc_factory_.get() != NULL;
 }
 
-talk_base::scoped_refptr<webrtc::PeerConnectionInterface>
+scoped_refptr<webrtc::PeerConnectionInterface>
 MediaStreamDependencyFactory::CreatePeerConnection(
     const std::string& config,
     webrtc::PeerConnectionObserver* observer) {
-  return pc_factory_->CreatePeerConnection(config, observer);
+  return pc_factory_->CreatePeerConnection(config, observer).get();
 }
 
-talk_base::scoped_refptr<webrtc::LocalMediaStreamInterface>
+scoped_refptr<webrtc::PeerConnectionInterface>
+MediaStreamDependencyFactory::CreatePeerConnection(
+    const webrtc::JsepInterface::IceServers& ice_servers,
+    const webrtc::MediaConstraintsInterface* constraints,
+    webrtc::PeerConnectionObserver* observer) {
+  return pc_factory_->CreatePeerConnection(
+      ice_servers, constraints, observer).get();
+}
+
+scoped_refptr<webrtc::LocalMediaStreamInterface>
 MediaStreamDependencyFactory::CreateLocalMediaStream(
     const std::string& label) {
-  return pc_factory_->CreateLocalMediaStream(label);
+  return pc_factory_->CreateLocalMediaStream(label).get();
 }
 
-talk_base::scoped_refptr<webrtc::LocalVideoTrackInterface>
+scoped_refptr<webrtc::LocalVideoTrackInterface>
 MediaStreamDependencyFactory::CreateLocalVideoTrack(
     const std::string& label,
     int video_session_id) {
@@ -217,20 +240,25 @@ MediaStreamDependencyFactory::CreateLocalVideoTrack(
                                                     vc_manager_.get());
 
   // The video track takes ownership of |capturer|.
-  return pc_factory_->CreateLocalVideoTrack(label,
-                                            capturer);
+  return pc_factory_->CreateLocalVideoTrack(label, capturer).get();
 }
 
-talk_base::scoped_refptr<webrtc::LocalAudioTrackInterface>
+scoped_refptr<webrtc::LocalAudioTrackInterface>
 MediaStreamDependencyFactory::CreateLocalAudioTrack(
     const std::string& label,
     webrtc::AudioDeviceModule* audio_device) {
-  return pc_factory_->CreateLocalAudioTrack(label, audio_device);
+  return pc_factory_->CreateLocalAudioTrack(label, audio_device).get();
 }
 
 webrtc::SessionDescriptionInterface*
 MediaStreamDependencyFactory::CreateSessionDescription(const std::string& sdp) {
   return webrtc::CreateSessionDescription(sdp);
+}
+
+webrtc::SessionDescriptionInterface*
+MediaStreamDependencyFactory::CreateSessionDescription(const std::string& type,
+                                                       const std::string& sdp) {
+  return webrtc::CreateSessionDescription(type, sdp);
 }
 
 webrtc::IceCandidateInterface* MediaStreamDependencyFactory::CreateIceCandidate(

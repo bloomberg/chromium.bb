@@ -70,6 +70,7 @@ class MockPeerConnectionImpl : public PeerConnectionInterface {
 
   void AddRemoteStream(MediaStreamInterface* stream);
   void SetReadyState(ReadyState state) { ready_state_ = state; }
+  void SetIceState(IceState state) { ice_state_ = state; }
 
   const std::string& stream_label() const { return stream_label_; }
   bool hint_audio() const { return hint_audio_; }
@@ -80,8 +81,11 @@ class MockPeerConnectionImpl : public PeerConnectionInterface {
   const std::string& sdp_mid() const { return sdp_mid_; }
   int sdp_mline_index() const { return sdp_mline_index_; }
   const std::string& ice_sdp() const { return ice_sdp_; }
-
+  webrtc::SessionDescriptionInterface* created_session_description() const {
+    return created_sessiondescription_.get();
+  }
   static const char kDummyOffer[];
+  static const char kDummyAnswer[];
 
  protected:
   virtual ~MockPeerConnectionImpl();
@@ -95,6 +99,7 @@ class MockPeerConnectionImpl : public PeerConnectionInterface {
   talk_base::scoped_refptr<MockStreamCollection> remote_streams_;
   scoped_ptr<webrtc::SessionDescriptionInterface> local_desc_;
   scoped_ptr<webrtc::SessionDescriptionInterface> remote_desc_;
+  scoped_ptr<webrtc::SessionDescriptionInterface> created_sessiondescription_;
   bool hint_audio_;
   bool hint_video_;
   Action action_;
@@ -104,6 +109,7 @@ class MockPeerConnectionImpl : public PeerConnectionInterface {
   int sdp_mline_index_;
   std::string ice_sdp_;
   ReadyState ready_state_;
+  IceState ice_state_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPeerConnectionImpl);
 };

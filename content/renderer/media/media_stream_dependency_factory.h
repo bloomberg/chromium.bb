@@ -37,6 +37,8 @@ namespace WebKit {
 class WebMediaStreamDescriptor;
 class WebPeerConnection00Handler;
 class WebPeerConnection00HandlerClient;
+class WebRTCPeerConnectionHandler;
+class WebRTCPeerConnectionHandlerClient;
 }
 
 class WebRtcAudioDeviceImpl;
@@ -51,10 +53,15 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
       content::P2PSocketDispatcher* p2p_socket_dispatcher);
   virtual ~MediaStreamDependencyFactory();
 
-  // Create a a PeerConnectionHandlerJsep object that implements the
+  // Create a PeerConnectionHandlerJsep object that implements the
   // WebKit WebPeerConnection00Handler interface.
   WebKit::WebPeerConnection00Handler* CreatePeerConnectionHandlerJsep(
       WebKit::WebPeerConnection00HandlerClient* client);
+
+  // Create a RTCPeerConnectionHandler object that implements the
+  // WebKit WebRTCPeerConnectionHandler interface.
+  WebKit::WebRTCPeerConnectionHandler* CreateRTCPeerConnectionHandler(
+      WebKit::WebRTCPeerConnectionHandlerClient* client);
 
   // Creates a libjingle representation of a MediaStream and stores
   // it in the extra data field of |description|
@@ -64,12 +71,24 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   // Asks the libjingle PeerConnection factory to create a libjingle
   // PeerConnection object.
   // The PeerConnection object is owned by PeerConnectionHandler.
-  virtual talk_base::scoped_refptr<webrtc::PeerConnectionInterface>
+  virtual scoped_refptr<webrtc::PeerConnectionInterface>
       CreatePeerConnection(const std::string& config,
                            webrtc::PeerConnectionObserver* observer);
 
-  // Creates a libjingle representation of a Session description.
+  virtual scoped_refptr<webrtc::PeerConnectionInterface>
+      CreatePeerConnection(const webrtc::JsepInterface::IceServers& ice_servers,
+                           const webrtc::MediaConstraintsInterface* constraints,
+                           webrtc::PeerConnectionObserver* observer);
+
+  // Creates a libjingle representation of a Session description. Used by a
+  // PeerConnectionHandlerJsep instance.
   virtual webrtc::SessionDescriptionInterface* CreateSessionDescription(
+      const std::string& sdp);
+
+  // Creates a libjingle representation of a Session description. Used by a
+  // RTCPeerConnectionHandler instance.
+  virtual webrtc::SessionDescriptionInterface* CreateSessionDescription(
+      const std::string& type,
       const std::string& sdp);
 
   // Creates a libjingle representation of an ice candidate.
@@ -80,16 +99,16 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
 
  protected:
   // Asks the PeerConnection factory to create a Local MediaStream object.
-  virtual talk_base::scoped_refptr<webrtc::LocalMediaStreamInterface>
+  virtual scoped_refptr<webrtc::LocalMediaStreamInterface>
       CreateLocalMediaStream(const std::string& label);
 
   // Asks the PeerConnection factory to create a Local VideoTrack object.
-  virtual talk_base::scoped_refptr<webrtc::LocalVideoTrackInterface>
+  virtual scoped_refptr<webrtc::LocalVideoTrackInterface>
       CreateLocalVideoTrack(const std::string& label,
                             int video_session_id);
 
   // Asks the PeerConnection factory to create a Local AudioTrack object.
-  virtual talk_base::scoped_refptr<webrtc::LocalAudioTrackInterface>
+  virtual scoped_refptr<webrtc::LocalAudioTrackInterface>
       CreateLocalAudioTrack(const std::string& label,
                             webrtc::AudioDeviceModule* audio_device);
 
@@ -119,7 +138,7 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   content::IpcNetworkManager* network_manager_;
   scoped_ptr<content::IpcPacketSocketFactory> socket_factory_;
 
-  talk_base::scoped_refptr<webrtc::PeerConnectionFactoryInterface> pc_factory_;
+  scoped_refptr<webrtc::PeerConnectionFactoryInterface> pc_factory_;
 
   scoped_refptr<VideoCaptureImplManager> vc_manager_;
   scoped_refptr<content::P2PSocketDispatcher> p2p_socket_dispatcher_;

@@ -30,6 +30,8 @@ class CONTENT_EXPORT PeerConnectionHandlerBase
   virtual ~PeerConnectionHandlerBase();
 
   void AddStream(const WebKit::WebMediaStreamDescriptor& stream);
+  bool AddStream(const WebKit::WebMediaStreamDescriptor& stream,
+                 const webrtc::MediaConstraintsInterface* constraints);
   void RemoveStream(const WebKit::WebMediaStreamDescriptor& stream);
   WebKit::WebMediaStreamDescriptor CreateWebKitStreamDescriptor(
       webrtc::MediaStreamInterface* stream);

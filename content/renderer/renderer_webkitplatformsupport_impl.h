@@ -83,6 +83,8 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
                           std::vector<webkit::WebPluginInfo>* plugins) OVERRIDE;
   virtual WebKit::WebPeerConnection00Handler* createPeerConnection00Handler(
       WebKit::WebPeerConnection00HandlerClient* client) OVERRIDE;
+  virtual WebKit::WebRTCPeerConnectionHandler* createRTCPeerConnectionHandler(
+      WebKit::WebRTCPeerConnectionHandlerClient* client) OVERRIDE;
   virtual WebKit::WebMediaStreamCenter* createMediaStreamCenter(
       WebKit::WebMediaStreamCenterClient* client) OVERRIDE;
   virtual bool canHyphenate(const WebKit::WebString& locale) OVERRIDE;

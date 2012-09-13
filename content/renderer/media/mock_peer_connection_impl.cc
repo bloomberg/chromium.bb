@@ -29,15 +29,27 @@ class MockStreamCollection : public StreamCollectionInterface {
   void AddStream(MediaStreamInterface* stream) {
     streams_.push_back(stream);
   }
+  void RemoveStream(MediaStreamInterface* stream) {
+    StreamVector::iterator it = streams_.begin();
+    for (; it != streams_.end(); ++it) {
+      if (it->get() == stream) {
+        streams_.erase(it);
+        break;
+      }
+    }
+  }
 
  protected:
   virtual ~MockStreamCollection() {}
 
  private:
-  std::vector<talk_base::scoped_refptr<MediaStreamInterface> > streams_;
+  typedef std::vector<talk_base::scoped_refptr<MediaStreamInterface> >
+      StreamVector;
+  StreamVector streams_;
 };
 
 const char MockPeerConnectionImpl::kDummyOffer[] = "dummy offer";
+const char MockPeerConnectionImpl::kDummyAnswer[] = "dummy answer";
 
 MockPeerConnectionImpl::MockPeerConnectionImpl(
     MockMediaStreamDependencyFactory* factory)
@@ -48,7 +60,9 @@ MockPeerConnectionImpl::MockPeerConnectionImpl(
       hint_video_(false),
       action_(kAnswer),
       ice_options_(kOnlyRelay),
-      ready_state_(kNew) {
+      sdp_mline_index_(-1),
+      ready_state_(kNew),
+      ice_state_(kIceNew) {
 }
 
 MockPeerConnectionImpl::~MockPeerConnectionImpl() {}
@@ -82,6 +96,7 @@ void MockPeerConnectionImpl::RemoveStream(
     MediaStreamInterface* local_stream) {
   DCHECK_EQ(stream_label_, local_stream->label());
   stream_label_.clear();
+  local_streams_->RemoveStream(local_stream);
 }
 
 MockPeerConnectionImpl::ReadyState MockPeerConnectionImpl::ready_state() {
@@ -127,9 +142,7 @@ bool MockPeerConnectionImpl::SetRemoteDescription(
 
 bool MockPeerConnectionImpl::ProcessIceMessage(
     const webrtc::IceCandidateInterface* ice_candidate) {
-  sdp_mid_ = ice_candidate->sdp_mid();
-  sdp_mline_index_ = ice_candidate->sdp_mline_index();
-  return ice_candidate->ToString(&ice_sdp_);
+  return AddIceCandidate(ice_candidate);
 }
 
 const webrtc::SessionDescriptionInterface*
@@ -149,43 +162,48 @@ void MockPeerConnectionImpl::AddRemoteStream(MediaStreamInterface* stream) {
 void MockPeerConnectionImpl::CreateOffer(
     CreateSessionDescriptionObserver* observer,
     const MediaConstraintsInterface* constraints) {
-  NOTIMPLEMENTED();
+  DCHECK(observer);
+  created_sessiondescription_.reset(
+      dependency_factory_->CreateSessionDescription(kDummyOffer));
 }
 
 void MockPeerConnectionImpl::CreateAnswer(
     CreateSessionDescriptionObserver* observer,
     const MediaConstraintsInterface* constraints) {
-  NOTIMPLEMENTED();
+  DCHECK(observer);
+  created_sessiondescription_.reset(
+      dependency_factory_->CreateSessionDescription(kDummyAnswer));
 }
 
 void MockPeerConnectionImpl::SetLocalDescription(
     SetSessionDescriptionObserver* observer,
     SessionDescriptionInterface* desc) {
-  NOTIMPLEMENTED();
+  desc->ToString(&description_sdp_);
+  local_desc_.reset(desc);
 }
 
 void MockPeerConnectionImpl::SetRemoteDescription(
     SetSessionDescriptionObserver* observer,
     SessionDescriptionInterface* desc) {
-  NOTIMPLEMENTED();
+  desc->ToString(&description_sdp_);
+  remote_desc_.reset(desc);
 }
 
 bool MockPeerConnectionImpl::UpdateIce(
     const IceServers& configuration,
     const MediaConstraintsInterface* constraints) {
-  NOTIMPLEMENTED();
-  return false;
+  return true;
 }
 
 bool MockPeerConnectionImpl::AddIceCandidate(
     const IceCandidateInterface* candidate) {
-  NOTIMPLEMENTED();
-  return false;
+  sdp_mid_ = candidate->sdp_mid();
+  sdp_mline_index_ = candidate->sdp_mline_index();
+  return candidate->ToString(&ice_sdp_);
 }
 
 PeerConnectionInterface::IceState MockPeerConnectionImpl::ice_state() {
-  NOTIMPLEMENTED();
-  return kIceNew;
+  return ice_state_;
 }
 
 }  // namespace webrtc

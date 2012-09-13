@@ -39,6 +39,16 @@ void PeerConnectionHandlerBase::AddStream(
   DCHECK(native_stream);
 }
 
+bool PeerConnectionHandlerBase::AddStream(
+    const WebKit::WebMediaStreamDescriptor& stream,
+    const webrtc::MediaConstraintsInterface* constraints) {
+  webrtc::LocalMediaStreamInterface* native_stream =
+      GetLocalNativeMediaStream(stream);
+  if (!native_stream)
+    return false;
+  return native_peer_connection_->AddStream(native_stream, constraints);
+}
+
 void PeerConnectionHandlerBase::RemoveStream(
     const WebKit::WebMediaStreamDescriptor& stream) {
   webrtc::LocalMediaStreamInterface* native_stream =

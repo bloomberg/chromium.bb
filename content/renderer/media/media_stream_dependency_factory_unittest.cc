@@ -8,14 +8,15 @@
 #include "content/renderer/media/media_stream_source_extra_data.h"
 #include "content/renderer/media/mock_media_stream_dependency_factory.h"
 #include "content/renderer/media/mock_web_peer_connection_00_handler_client.h"
+#include "content/renderer/media/mock_web_rtc_peer_connection_handler_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamComponent.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamDescriptor.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamSource.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPeerConnection00Handler.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPeerConnectionHandler.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
-
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamComponent.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamDescriptor.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamSource.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebPeerConnection00Handler.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebPeerConnectionHandler.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebRTCPeerConnectionHandler.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
 
 class MediaStreamDependencyFactoryTest : public ::testing::Test {
  public:
@@ -63,12 +64,17 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
 };
 
 TEST_F(MediaStreamDependencyFactoryTest, CreatePeerConnectionHandlerJsep) {
-  // Create JSEP PeerConnection.
   WebKit::MockWebPeerConnection00HandlerClient client_jsep;
   scoped_ptr<WebKit::WebPeerConnection00Handler> pc_handler_jsep(
       dependency_factory_->CreatePeerConnectionHandlerJsep(&client_jsep));
   EXPECT_TRUE(pc_handler_jsep.get() != NULL);
-  pc_handler_jsep.reset();
+}
+
+TEST_F(MediaStreamDependencyFactoryTest, CreateRTCPeerConnectionHandler) {
+  WebKit::MockWebRTCPeerConnectionHandlerClient client_jsep;
+  scoped_ptr<WebKit::WebRTCPeerConnectionHandler> pc_handler(
+      dependency_factory_->CreateRTCPeerConnectionHandler(&client_jsep));
+  EXPECT_TRUE(pc_handler.get() != NULL);
 }
 
 TEST_F(MediaStreamDependencyFactoryTest, CreateNativeMediaStream) {
