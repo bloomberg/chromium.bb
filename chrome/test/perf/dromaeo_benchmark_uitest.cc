@@ -139,8 +139,10 @@ class DromaeoReferenceTest : public DromaeoTest {
 #if defined(OS_WIN)
 // http://crbug.com/134570 - is flaky on Win7 perf bot
 #define MAYBE_DOMCorePerf DISABLED_DOMCorePerf
+#define MAYBE_DOMCoreModifyPerf DISABLED_DOMCoreModifyPerf
 #else
 #define MAYBE_DOMCorePerf DOMCorePerf
+#define MAYBE_DOMCoreModifyPerf DOMCoreModifyPerf
 #endif
 TEST_F(DromaeoTest, MAYBE_DOMCorePerf) {
   RunTest("dom");
@@ -150,7 +152,7 @@ TEST_F(DromaeoTest, DOMCoreAttrPerf) {
   RunTest("dom-attr");
 }
 
-TEST_F(DromaeoTest, DOMCoreModifyPerf) {
+TEST_F(DromaeoTest, MAYBE_DOMCoreModifyPerf) {
   RunTest("dom-modify");
 }
 
