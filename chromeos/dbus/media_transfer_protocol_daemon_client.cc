@@ -257,7 +257,11 @@ class MediaTransferProtocolDaemonClientImpl
 
     dbus::MessageReader reader(response);
     MtpStorageInfo protobuf;
-    reader.PopArrayOfBytesAsProto(&protobuf);
+    if (!reader.PopArrayOfBytesAsProto(&protobuf)) {
+      LOG(ERROR) << "Invalid response: " << response->ToString();
+      error_callback.Run();
+      return;
+    }
     callback.Run(protobuf);
   }
 
@@ -304,7 +308,12 @@ class MediaTransferProtocolDaemonClientImpl
     std::vector<MtpFileEntry> file_entries;
     dbus::MessageReader reader(response);
     MtpFileEntries entries_protobuf;
-    reader.PopArrayOfBytesAsProto(&entries_protobuf);
+    if (!reader.PopArrayOfBytesAsProto(&entries_protobuf)) {
+      LOG(ERROR) << "Invalid response: " << response->ToString();
+      error_callback.Run();
+      return;
+    }
+
     for (int i = 0; i < entries_protobuf.file_entries_size(); ++i)
       file_entries.push_back(entries_protobuf.file_entries(i));
     callback.Run(file_entries);
@@ -343,7 +352,11 @@ class MediaTransferProtocolDaemonClientImpl
 
     dbus::MessageReader reader(response);
     MtpFileEntry protobuf;
-    reader.PopArrayOfBytesAsProto(&protobuf);
+    if (!reader.PopArrayOfBytesAsProto(&protobuf)) {
+      LOG(ERROR) << "Invalid response: " << response->ToString();
+      error_callback.Run();
+      return;
+    }
     callback.Run(protobuf);
   }
 

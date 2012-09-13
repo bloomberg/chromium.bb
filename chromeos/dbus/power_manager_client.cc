@@ -237,7 +237,11 @@ class PowerManagerClientImpl : public PowerManagerClient {
     protobuf.set_last_activity_time(last_activity_time.ToInternalValue());
     protobuf.set_is_fullscreen(is_fullscreen);
 
-    writer.AppendProtoAsArrayOfBytes(protobuf);
+    if (!writer.AppendProtoAsArrayOfBytes(protobuf)) {
+      LOG(ERROR) << "Error calling "
+                 << power_manager::kHandleVideoActivityMethod;
+      return;
+    }
     power_manager_proxy_->CallMethod(
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
@@ -261,7 +265,11 @@ class PowerManagerClientImpl : public PowerManagerClient {
     protobuf.set_disable_idle_suspend(overrides & DISABLE_IDLE_SUSPEND);
     protobuf.set_disable_lid_suspend(overrides & DISABLE_IDLE_LID_SUSPEND);
 
-    writer.AppendProtoAsArrayOfBytes(protobuf);
+    if (!writer.AppendProtoAsArrayOfBytes(protobuf)) {
+      LOG(ERROR) << "Error calling "
+                 << power_manager::kStateOverrideRequest;
+      return;
+    }
     power_manager_proxy_->CallMethod(
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
@@ -383,7 +391,12 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
     dbus::MessageReader reader(response);
     PowerSupplyProperties protobuf;
-    reader.PopArrayOfBytesAsProto(&protobuf);
+    if (!reader.PopArrayOfBytesAsProto(&protobuf)) {
+      LOG(ERROR) << "Error calling "
+                 << power_manager::kGetPowerSupplyPropertiesMethod
+                 << response->ToString();
+      return;
+    }
 
     PowerSupplyStatus status;
     status.line_power_on = protobuf.line_power_on();
