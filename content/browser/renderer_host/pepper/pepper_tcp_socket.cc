@@ -93,13 +93,19 @@ void PepperTCPSocket::ConnectWithNetAddress(
     const PP_NetAddress_Private& net_addr) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
+  net::IPAddressNumber address;
+  int port;
   if (connection_state_ != BEFORE_CONNECT ||
-      !NetAddressPrivateImpl::NetAddressToAddressList(net_addr,
-                                                      &address_list_)) {
+      !NetAddressPrivateImpl::NetAddressToIPEndPoint(net_addr,
+                                                     &address,
+                                                     &port)) {
     SendConnectACKError();
     return;
   }
 
+  // Copy the single IPEndPoint to address_list_.
+  address_list_.clear();
+  address_list_.push_back(net::IPEndPoint(address, port));
   connection_state_ = CONNECT_IN_PROGRESS;
   StartConnect(address_list_);
 }
@@ -323,11 +329,15 @@ void PepperTCPSocket::OnConnectCompleted(int result) {
         NetAddressPrivateImpl::kInvalidNetAddress;
 
     if (socket_->GetLocalAddress(&ip_end_point_local) != net::OK ||
-        !NetAddressPrivateImpl::IPEndPointToNetAddress(ip_end_point_local,
-                                                       &local_addr) ||
+        !NetAddressPrivateImpl::IPEndPointToNetAddress(
+            ip_end_point_local.address(),
+            ip_end_point_local.port(),
+            &local_addr) ||
         socket_->GetPeerAddress(&ip_end_point_remote) != net::OK ||
-        !NetAddressPrivateImpl::IPEndPointToNetAddress(ip_end_point_remote,
-                                                       &remote_addr)) {
+        !NetAddressPrivateImpl::IPEndPointToNetAddress(
+            ip_end_point_remote.address(),
+            ip_end_point_remote.port(),
+            &remote_addr)) {
       SendConnectACKError();
       connection_state_ = BEFORE_CONNECT;
     } else {

@@ -706,7 +706,7 @@ IPC_MESSAGE_ROUTED5(PpapiMsg_PPBHostResolver_ResolveACK,
                     uint32 /* host_resolver_id */,
                     bool /* succeeded */,
                     std::string /* canonical_name */,
-                    ppapi::NetAddressList /* net_address_list */)
+                    std::vector<PP_NetAddress_Private> /* net_address_list */)
 
 #if !defined(OS_NACL) && !defined(NACL_WIN64)
 // PPP_Instance_Private.

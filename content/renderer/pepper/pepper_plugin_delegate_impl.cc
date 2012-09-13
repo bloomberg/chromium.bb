@@ -1730,7 +1730,7 @@ void PepperPluginDelegateImpl::OnHostResolverResolveACK(
     uint32 host_resolver_id,
     bool succeeded,
     const std::string& canonical_name,
-    const ppapi::NetAddressList& net_address_list) {
+    const std::vector<PP_NetAddress_Private>& net_address_list) {
   ppapi::PPB_HostResolver_Shared* host_resolver =
       host_resolvers_.Lookup(host_resolver_id);
   if (host_resolver) {

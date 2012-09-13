@@ -67,6 +67,21 @@ const int kDRMIdentifierSize = (256 / 8) * 2;
 //   chrome/browser/chromeos/system/drm_settings.cc
 const char kDRMIdentifierFile[] = "Pepper DRM ID.0";
 
+void CreateNetAddressListFromAddressList(
+    const net::AddressList& list,
+    std::vector<PP_NetAddress_Private>* net_address_list) {
+  PP_NetAddress_Private address;
+  for (size_t i = 0; i < list.size(); ++i) {
+    if (!NetAddressPrivateImpl::IPEndPointToNetAddress(list[i].address(),
+                                                       list[i].port(),
+                                                       &address)) {
+      net_address_list->clear();
+      return;
+    }
+    net_address_list->push_back(address);
+  }
+}
+
 }  // namespace
 
 PepperMessageFilter::PepperMessageFilter(
@@ -615,9 +630,9 @@ void PepperMessageFilter::OnHostResolverResolveLookupFinished(
                                     bound_info.host_resolver_id);
   } else {
     const std::string& canonical_name = addresses.canonical_name();
-    scoped_ptr<ppapi::NetAddressList> net_address_list(
-        ppapi::CreateNetAddressListFromAddressList(addresses));
-    if (!net_address_list.get()) {
+    std::vector<PP_NetAddress_Private> net_address_list;
+    CreateNetAddressListFromAddressList(addresses, &net_address_list);
+    if (net_address_list.size() == 0) {
       SendHostResolverResolveACKError(bound_info.routing_id,
                                       bound_info.plugin_dispatcher_id,
                                       bound_info.host_resolver_id);
@@ -628,7 +643,7 @@ void PepperMessageFilter::OnHostResolverResolveLookupFinished(
           bound_info.host_resolver_id,
           true,
           canonical_name,
-          *net_address_list.get()));
+          net_address_list));
     }
   }
 }
@@ -643,7 +658,7 @@ bool PepperMessageFilter::SendHostResolverResolveACKError(
       host_resolver_id,
       false,
       "",
-      ppapi::NetAddressList()));
+      std::vector<PP_NetAddress_Private>()));
 }
 
 void PepperMessageFilter::OnNetworkMonitorStart(uint32 plugin_dispatcher_id) {
@@ -861,7 +876,7 @@ void PepperMessageFilter::SendNetworkList(
 
     network_copy.addresses.resize(1, NetAddressPrivateImpl::kInvalidNetAddress);
     bool result = NetAddressPrivateImpl::IPEndPointToNetAddress(
-        net::IPEndPoint(network.address, 0), &(network_copy.addresses[0]));
+        network.address, 0, &(network_copy.addresses[0]));
     DCHECK(result);
 
     // TODO(sergeyu): Currently net::NetworkInterfaceList provides

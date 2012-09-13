@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/id_map.h"
@@ -439,11 +440,12 @@ class PepperPluginDelegateImpl
                                   uint32 accepted_socket_id,
                                   const PP_NetAddress_Private& local_addr,
                                   const PP_NetAddress_Private& remote_addr);
-  void OnHostResolverResolveACK(uint32 plugin_dispatcher_id,
-                                uint32 host_resolver_id,
-                                bool succeeded,
-                                const std::string& canonical_name,
-                                const ppapi::NetAddressList& net_address_list);
+  void OnHostResolverResolveACK(
+      uint32 plugin_dispatcher_id,
+      uint32 host_resolver_id,
+      bool succeeded,
+      const std::string& canonical_name,
+      const std::vector<PP_NetAddress_Private>& net_address_list);
 
   CONTENT_EXPORT int GetRoutingID() const;
 

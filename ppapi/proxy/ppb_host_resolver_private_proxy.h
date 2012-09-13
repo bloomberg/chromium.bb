@@ -28,11 +28,12 @@ class PPB_HostResolver_Private_Proxy : public InterfaceProxy {
 
  private:
   // Browser->plugin message handlers.
-  void OnMsgResolveACK(uint32 plugin_dispatcher_id,
-                       uint32 host_resolver_id,
-                       bool succeeded,
-                       const std::string& canonical_name,
-                       const ppapi::NetAddressList& net_address_list);
+  void OnMsgResolveACK(
+      uint32 plugin_dispatcher_id,
+      uint32 host_resolver_id,
+      bool succeeded,
+      const std::string& canonical_name,
+      const std::vector<PP_NetAddress_Private>& net_address_list);
 
   DISALLOW_COPY_AND_ASSIGN(PPB_HostResolver_Private_Proxy);
 };

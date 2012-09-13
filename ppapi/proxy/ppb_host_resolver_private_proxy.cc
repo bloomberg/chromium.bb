@@ -107,7 +107,7 @@ void PPB_HostResolver_Private_Proxy::OnMsgResolveACK(
     uint32 host_resolver_id,
     bool succeeded,
     const std::string& canonical_name,
-    const ppapi::NetAddressList& net_address_list) {
+    const std::vector<PP_NetAddress_Private>& net_address_list) {
   if (!g_id_to_host_resolver) {
     NOTREACHED();
     return;

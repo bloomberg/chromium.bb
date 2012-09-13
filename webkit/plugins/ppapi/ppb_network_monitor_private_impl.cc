@@ -66,7 +66,7 @@ void PPB_NetworkMonitor_Private_Impl::OnNetworkListChanged(
     network.addresses.resize(
         1, ::ppapi::NetAddressPrivateImpl::kInvalidNetAddress);
     bool result = ::ppapi::NetAddressPrivateImpl::IPEndPointToNetAddress(
-        net::IPEndPoint(list[i].address, 0), &(network.addresses[0]));
+        list[i].address, 0, &(network.addresses[0]));
     DCHECK(result);
 
     // TODO(sergeyu): Currently net::NetworkInterfaceList provides
