@@ -107,9 +107,9 @@ readonly NEWLIB_INCLUDE_DIR="${TC_SRC_NEWLIB}/newlib/libc/include"
 
 # The location of each project. These should be absolute paths.
 readonly TC_BUILD="${PNACL_ROOT}/build"
-readonly TC_BUILD_LLVM="${TC_BUILD}/llvm"
-readonly TC_BUILD_BINUTILS="${TC_BUILD}/binutils"
-readonly TC_BUILD_GOLD="${TC_BUILD}/gold"
+readonly TC_BUILD_LLVM="${TC_BUILD}/llvm_${HOST_ARCH}"
+readonly TC_BUILD_BINUTILS="${TC_BUILD}/binutils${HOST_ARCH}"
+readonly TC_BUILD_GOLD="${TC_BUILD}/gold${HOST_ARCH}"
 readonly TC_BUILD_BINUTILS_LIBERTY="${TC_BUILD}/binutils-liberty"
 readonly TC_BUILD_NEWLIB="${TC_BUILD}/newlib"
 readonly TC_BUILD_COMPILER_RT="${TC_BUILD}/compiler_rt"
@@ -118,10 +118,11 @@ readonly TC_BUILD_GCC="${TC_BUILD}/gcc"
 readonly TIMESTAMP_FILENAME="make-timestamp"
 
 # PNaCl toolchain installation directories (absolute paths)
-readonly TOOLCHAIN_LABEL="pnacl_${BUILD_PLATFORM}_${HOST_ARCH}"
+readonly TOOLCHAIN_LABEL="${TOOLCHAIN_LABEL:-pnacl_${BUILD_PLATFORM}_x86}"
 readonly INSTALL_ROOT="${TOOLCHAIN_ROOT}/${TOOLCHAIN_LABEL}"
 
 # Top-level newlib- and glibc-specific directories
+# Should be kept in sync with driver-install function below
 readonly INSTALL_NEWLIB="${INSTALL_ROOT}/newlib"
 readonly INSTALL_GLIBC="${INSTALL_ROOT}/glibc"
 readonly INSTALL_NEWLIB_BIN="${INSTALL_NEWLIB}/bin"
@@ -153,7 +154,7 @@ readonly INSTALL_TRANSLATOR="${TOOLCHAIN_ROOT}/pnacl_translator"
 # There are also tools-x86 and tools-arm which have host binaries which
 # are not part of the toolchain but might be useful in the SDK, e.g.
 # arm sel_ldr and x86-hosted arm/mips validators.
-readonly INSTALL_HOST="${INSTALL_ROOT}/host"
+readonly INSTALL_HOST="${INSTALL_ROOT}/host_${HOST_ARCH}"
 
 # Component installation directories
 readonly LLVM_INSTALL_DIR="${INSTALL_HOST}"
@@ -260,16 +261,9 @@ CC=${CC:-gcc}
 CXX=${CXX:-g++}
 AR=${AR:-ar}
 RANLIB=${RANLIB:-ranlib}
-if ${HOST_ARCH_X8632} ; then
+
+if ${HOST_ARCH_X8632}; then
   # These are simple compiler wrappers to force 32bit builds
-  # For bots and releases we build the toolchains
-  # on the oldest system we care to support. Currently
-  # that is a 32 bit hardy. The advantage of this is that we can build
-  # the toolchain shared, reducing its size and allowing the use of
-  # plugins. You can test them on your system by setting the
-  # environment variable HOST_ARCH=x86_32 on a 64 bit system.
-  # Make sure you clean all your build dirs
-  # before switching arches.
   CC="${PNACL_ROOT}/scripts/mygcc32"
   CXX="${PNACL_ROOT}/scripts/myg++32"
 fi
@@ -640,9 +634,7 @@ build-all() {
 
   clean-logs
 
-  binutils
-  llvm
-  binutils-gold
+  build-host
 
   driver
 
@@ -655,6 +647,16 @@ build-all() {
 
   if ${PNACL_PRUNE}; then
     prune
+  fi
+}
+
+#@ Build just the host binaries
+build-host() {
+  binutils
+  llvm
+  binutils-gold
+  if ${PNACL_PRUNE}; then
+    prune-host
   fi
 }
 
@@ -1148,12 +1150,7 @@ libs-clean() {
 
 #@-------------------------------------------------------------------------
 
-#+ prune                 - Prune toolchain
-prune() {
-  StepBanner "PRUNE" "Pruning toolchain"
-  local dir_size_before=$(get_dir_size_in_mb ${INSTALL_ROOT})
-
-  SubBanner "Size before: ${INSTALL_ROOT} ${dir_size_before}MB"
+prune-host() {
   echo "stripping binaries (binutils)"
   strip "${BINUTILS_INSTALL_DIR}"/bin/*
 
@@ -1173,6 +1170,17 @@ prune() {
 
   echo "removing llvm static libs"
   rm -rf "${LLVM_INSTALL_DIR}"/lib/*.a
+
+}
+
+#+ prune                 - Prune toolchain
+prune() {
+  StepBanner "PRUNE" "Pruning toolchain"
+  local dir_size_before=$(get_dir_size_in_mb ${INSTALL_ROOT})
+
+  SubBanner "Size before: ${INSTALL_ROOT} ${dir_size_before}MB"
+
+  prune-host
 
   echo "removing .pyc files"
   rm -f "${INSTALL_NEWLIB_BIN}"/pydir/*.pyc
@@ -1221,7 +1229,7 @@ translator-tarball() {
 #+ llvm                  - Configure, build and install LLVM.
 
 llvm() {
-  StepBanner "LLVM (HOST)"
+  StepBanner "LLVM (${HOST_ARCH} HOST)"
 
   local srcdir="${TC_SRC_LLVM}"
 
@@ -1796,7 +1804,7 @@ misc-tools() {
 #+-------------------------------------------------------------------------
 #+ binutils          - Build and install binutils (cross-tools)
 binutils() {
-  StepBanner "BINUTILS (HOST)"
+  StepBanner "BINUTILS (${HOST_ARCH} HOST)"
 
   local srcdir="${TC_SRC_BINUTILS}"
 
@@ -3227,13 +3235,24 @@ driver-install-python() {
 driver-install() {
   local libmode=$1
   check-libmode ${libmode}
-  local destdir="${INSTALL_ROOT}/${libmode}/bin"
+  local bindir=bin
+  # On Linux we ship a fat toolchain with 2 sets of binaries defaulting to
+  # x86-32 (mostly because of the 32 bit chrome bots). So the default
+  # bin dir is 32, and the bin64 driver runs the 64 bit binaries
+  if [[ ${HOST_ARCH_X8664} && ${BUILD_PLATFORM_LINUX} && \
+        ${libmode} == "newlib" ]]; then
+    bindir="bin64"
+  fi
+  # This directory (the ${INSTALL_ROOT}/${libmode} part)
+  # should be kept in sync with INSTALL_NEWLIB_BIN et al.
+  local destdir="${INSTALL_ROOT}/${libmode}/${bindir}"
 
   driver-install-python "${destdir}" "pnacl-*.py" "wrapper-*.py"
 
-  # Tell the driver the library mode
+  # Tell the driver the library mode and host arch
   echo """LIBMODE=${libmode}
-HAS_FRONTEND=1""" > "${destdir}"/driver.conf
+HAS_FRONTEND=1
+HOST_ARCH=${HOST_ARCH}""" > "${destdir}"/driver.conf
 
   # On windows, copy the cygwin DLLs needed by the driver tools
   if ${BUILD_PLATFORM_WIN}; then

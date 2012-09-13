@@ -30,7 +30,7 @@ INITIAL_ENV = {
   'BUILD_ARCH'      : '${@GetBuildArch}',      # "x86_64" or "i686" or "i386"
 
   # Directories
-  'BASE_HOST'       : '${BASE}/host',
+  'BASE_HOST'       : '${BASE}/host_${HOST_ARCH}',
   'BASE_LLVM'       : '${BASE_HOST}',
   'BASE_BINUTILS'   : '${BASE_HOST}',
 

@@ -57,7 +57,7 @@ export PNACL_VERBOSE=true
 # export HOST_ARCH="x86_32"
 # TODO(pnacl-team): Figure out what to do about this.
 # Export this so that the test scripts know where to find the toolchain.
-export PNACL_TOOLCHAIN_LABEL=pnacl_linux_x86_64
+export PNACL_TOOLCHAIN_LABEL=pnacl_linux_x86
 # This picks the TC which we just built, even if scons doesn't know
 # how to find a 64-bit host toolchain.
 readonly SCONS_PICK_TC="pnaclsdk_mode=custom:toolchain/${PNACL_TOOLCHAIN_LABEL}"

@@ -54,9 +54,16 @@ tc-show-config() {
 }
 
 tc-compile-toolchain() {
+  local build_fat=$1
   echo @@@BUILD_STEP compile_toolchain@@@
   ${PNACL_BUILD} clean
-  ${PNACL_BUILD} everything
+  if ${build_fat}; then
+    HOST_ARCH=x86_32 ${PNACL_BUILD} everything
+    HOST_ARCH=x86_64 ${PNACL_BUILD} build-host
+    HOST_ARCH=x86_64 ${PNACL_BUILD} driver
+  else
+    ${PNACL_BUILD} everything
+  fi
   ${PNACL_BUILD} tarball pnacl-toolchain.tgz
   chmod a+r pnacl-toolchain.tgz
 
@@ -139,7 +146,9 @@ tc-build-all() {
   clobber
   tc-clobber ${label} ${build_translator}
   tc-show-config
-  tc-compile-toolchain
+  # For now only linux64 (which also builds the translator) builds a fat
+  # toolchain, so just use build_translator to control fat toolchain build
+  tc-compile-toolchain ${build_translator}
   tc-untar-toolchain ${label}
   if ! ${is_try} ; then
     tc-archive ${label}
@@ -536,7 +545,7 @@ tc-tests-small() {
 mode-buildbot-tc-x8664-linux() {
   local is_try=$1
   FAIL_FAST=false
-  TOOLCHAIN_LABEL=pnacl_linux_x86_64
+  TOOLCHAIN_LABEL=pnacl_linux_x86
   tc-build-all ${TOOLCHAIN_LABEL} ${is_try} true true
   tc-tests-large ${is_try}
 }
@@ -544,8 +553,9 @@ mode-buildbot-tc-x8664-linux() {
 mode-buildbot-tc-x8632-linux() {
   local is_try=$1
   FAIL_FAST=false
-  TOOLCHAIN_LABEL=pnacl_linux_x86_32
-  tc-build-all ${TOOLCHAIN_LABEL} ${is_try} false false
+  TOOLCHAIN_LABEL=pnacl_linux_x86
+  # For now, just use this bot to test a pure 32 bit build but don't upload
+  tc-build-all ${TOOLCHAIN_LABEL} true false false
   tc-tests-small "x86-32"
 }
 
