@@ -36,6 +36,7 @@ ActionBoxButtonView::ActionBoxButtonView(Browser* browser)
   SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_ACTION_BOX_BUTTON));
   SetIcon(*ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_ACTION_BOX_BUTTON));
+  set_icon_placement(ICON_CENTERED);
   set_accessibility_focusable(true);
   set_border(NULL);
 }
