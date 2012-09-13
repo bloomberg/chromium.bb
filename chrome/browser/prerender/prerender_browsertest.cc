@@ -41,10 +41,12 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -126,6 +128,78 @@ bool ShouldRenderPrerenderedPageCorrectly(FinalStatus status) {
       return false;
   }
 }
+
+// Waits for the destruction of a RenderProcessHost's IPC channel.
+// Used to make sure the PrerenderLinkManager's OnChannelClosed function has
+// been called, before checking its state.
+class ChannelDestructionWatcher {
+ public:
+  ChannelDestructionWatcher() : channel_destroyed_(false),
+                                waiting_for_channel_destruction_(false) {
+  }
+
+  ~ChannelDestructionWatcher() {
+  }
+
+  void WatchChannel(content::RenderProcessHost* host) {
+    host->GetChannel()->AddFilter(new DestructionMessageFilter(this));
+  }
+
+  void WaitForChannelClose() {
+    ASSERT_FALSE(waiting_for_channel_destruction_);
+
+    if (channel_destroyed_)
+      return;
+    waiting_for_channel_destruction_ = true;
+    content::RunMessageLoop();
+
+    EXPECT_FALSE(waiting_for_channel_destruction_);
+    EXPECT_TRUE(channel_destroyed_);
+  }
+
+ private:
+  // When destroyed, calls ChannelDestructionWatcher::OnChannelDestroyed.
+  // Ignores all messages.
+  class DestructionMessageFilter : public content::BrowserMessageFilter {
+   public:
+     explicit DestructionMessageFilter(ChannelDestructionWatcher* watcher)
+         : watcher_(watcher) {
+    }
+
+   private:
+    virtual ~DestructionMessageFilter() {
+      content::BrowserThread::PostTask(
+          content::BrowserThread::UI, FROM_HERE,
+          base::Bind(&ChannelDestructionWatcher::OnChannelDestroyed,
+                     base::Unretained(watcher_)));
+    }
+
+    virtual bool OnMessageReceived(const IPC::Message& message,
+                                   bool* message_was_ok) OVERRIDE {
+      return false;
+    }
+
+    ChannelDestructionWatcher* watcher_;
+
+    DISALLOW_COPY_AND_ASSIGN(DestructionMessageFilter);
+  };
+
+  void OnChannelDestroyed() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+    EXPECT_FALSE(channel_destroyed_);
+    channel_destroyed_ = true;
+    if (waiting_for_channel_destruction_) {
+      waiting_for_channel_destruction_ = false;
+      MessageLoop::current()->Quit();
+    }
+  }
+
+  bool channel_destroyed_;
+  bool waiting_for_channel_destruction_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChannelDestructionWatcher);
+};
 
 // PrerenderContents that stops the UI message loop on DidStopLoading().
 class TestPrerenderContents : public PrerenderContents {
@@ -779,6 +853,12 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     return prerender_link_manager;
   }
 
+  // Asserting on this can result in flaky tests.  PrerenderHandles are only
+  // removed from the PrerenderLinkManager when the prerenders are cancelled
+  // from the renderer process, or the channel for the renderer process is
+  // closed on the IO thread.  In the latter case, the code must be careful to
+  // wait for the channel to close, as it is done asynchronously after swapping
+  // out the old process.  See ChannelDestructionWatcher.
   bool IsEmptyPrerenderLinkManager() const {
     return GetPrerenderLinkManager()->IsEmpty();
   }
@@ -1040,7 +1120,13 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
 // navigation.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPage) {
   PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
+
+  ChannelDestructionWatcher channel_close_watcher;
+  channel_close_watcher.WatchChannel(
+      chrome::GetActiveWebContents(browser())->GetRenderProcessHost());
   NavigateToDestURL();
+  channel_close_watcher.WaitForChannelClose();
+
   ASSERT_TRUE(IsEmptyPrerenderLinkManager());
 }
 
@@ -1049,6 +1135,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageRemovingLink) {
   set_loader_query_and_fragment("?links_to_insert=1&links_to_remove=1");
   PrerenderTestURL("files/prerender/prerender_page.html",
                    FINAL_STATUS_CANCELLED, 1);
+  // No ChannelDestructionWatcher is needed here, since prerenders in the
+  // PrerenderLinkManager should be deleted by removing the links, rather than
+  // shutting down the renderer process.
   RemoveLinkElementsAndNavigate();
   ASSERT_TRUE(IsEmptyPrerenderLinkManager());
 }
@@ -1732,7 +1821,13 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   PrerenderTestURL("files/prerender/prerender_page.html#fragment",
                    FINAL_STATUS_USED,
                    1);
+
+  ChannelDestructionWatcher channel_close_watcher;
+  channel_close_watcher.WatchChannel(
+      chrome::GetActiveWebContents(browser())->GetRenderProcessHost());
   NavigateToDestURL();
+  channel_close_watcher.WaitForChannelClose();
+
   ASSERT_TRUE(IsEmptyPrerenderLinkManager());
 }
 
@@ -2419,9 +2514,14 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, WebNavigation) {
   ResultCatcher catcher;
 
   PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
-  NavigateToDestURL();
-  ASSERT_TRUE(IsEmptyPrerenderLinkManager());
 
+  ChannelDestructionWatcher channel_close_watcher;
+  channel_close_watcher.WatchChannel(
+      chrome::GetActiveWebContents(browser())->GetRenderProcessHost());
+  NavigateToDestURL();
+  channel_close_watcher.WaitForChannelClose();
+
+  ASSERT_TRUE(IsEmptyPrerenderLinkManager());
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
