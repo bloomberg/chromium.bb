@@ -12,6 +12,7 @@ function FileCopyManager(root) {
   this.lastDeleteId_ = 0;
   this.cancelObservers_ = [];
   this.cancelRequested_ = false;
+  this.cancelCallback_ = null;
   this.root_ = root;
   this.unloadTimeout_ = null;
 }
@@ -340,12 +341,14 @@ FileCopyManager.prototype.resetQueue_ = function() {
  */
 FileCopyManager.prototype.requestCancel = function(opt_callback) {
   this.cancelRequested_ = true;
+  if (this.cancelCallback_)
+    this.cancelCallback_();
   if (opt_callback)
     this.cancelObservers_.push(opt_callback);
 };
 
 /**
- * Perform the bookeeping required to cancel.
+ * Perform the bookkeeping required to cancel.
  * @private
  */
 FileCopyManager.prototype.doCancel_ = function() {
@@ -405,7 +408,7 @@ FileCopyManager.prototype.paste = function(clipboard, targetPath,
 
     function onEntryFound(entry) {
       // When getDirectories/getFiles finish, they call addEntry with null.
-      // We dont want to add null to our entries.
+      // We don't want to add null to our entries.
       if (entry != null) {
         results.entries.push(entry);
         added++;
@@ -611,6 +614,8 @@ FileCopyManager.prototype.serviceNextTask_ = function(
 
 /**
  * Service the next entry in a given task.
+ * TODO(olege): Refactor this method into a separate class.
+ *
  * @private
  * @param {FileManager.Task} task A task.
  * @param {Function} successCallback On success.
@@ -678,7 +683,8 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
 
   function onCopyProgress(entry, size) {
     task.updateFileCopyProgress(entry, size);
-    self.sendProgressEvent_('PROGRESS');
+    if (tast.pendingBytes > 0)
+      self.sendProgressEvent_('PROGRESS');
   }
 
   function onError(reason, data) {
@@ -805,6 +811,33 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
       var targetFileUrl = targetDirEntry.toURL() + '/' +
                           encodeURIComponent(targetRelativePath);
       var transferedBytes = 0;
+
+      function onFileTransferCompleted() {
+        self.cancelCallback_ = null;
+        chrome.fileBrowserPrivate.onFileTransfersUpdated.removeListener(
+            onFileTransfersUpdated);
+        if (chrome.extension.lastError) {
+          this.log_(
+              'Error copying ' + sourceFileUrl + ' to ' + targetFileUrl);
+          onFilesystemError({
+            code: chrome.extension.lastError.message,
+            toGDrive: task.targetOnGData,
+            sourceFileUrl: sourceFileUrl
+          });
+        } else {
+          targetDirEntry.getFile(targetRelativePath, {},
+              function(targetEntry) {
+                targetEntry.getMetadata(function(metadata) {
+                  if (metadata.size > transferedBytes)
+                    onCopyProgress(sourceEntry,
+                                   metadata.size - transferedBytes);
+                  onFilesystemCopyComplete(sourceEntry, targetEntry);
+                });
+              },
+              onFilesystemError);
+        }
+      }
+
       function onFileTransfersUpdated(statusList) {
         for (var i = 0; i < statusList.length; i++) {
           var s = statusList[i];
@@ -815,34 +848,18 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
           }
         }
       }
+
+      self.cancelCallback_ = function() {
+        self.cancelCallback_ = null;
+        chrome.fileBrowserPrivate.cancelFileTransfers([sourceFileUrl],
+                                                      function() {});
+        self.doCancel_();
+      };
+
       chrome.fileBrowserPrivate.onFileTransfersUpdated.addListener(
           onFileTransfersUpdated);
       chrome.fileBrowserPrivate.transferFile(
-        sourceFileUrl, targetFileUrl,
-        function() {
-          chrome.fileBrowserPrivate.onFileTransfersUpdated.removeListener(
-              onFileTransfersUpdated);
-          if (chrome.extension.lastError) {
-            this.log_(
-                'Error copying ' + sourceFileUrl + ' to ' + targetFileUrl);
-            onFilesystemError({
-              code: chrome.extension.lastError.message,
-              toGDrive: task.targetOnGData,
-              sourceFileUrl: sourceFileUrl
-            });
-          } else {
-            targetDirEntry.getFile(targetRelativePath, {},
-                function(targetEntry) {
-                  targetEntry.getMetadata(function(metadata) {
-                    if (metadata.size > transferedBytes)
-                      onCopyProgress(sourceEntry,
-                                     metadata.size - transferedBytes);
-                    onFilesystemCopyComplete(sourceEntry, targetEntry);
-                  });
-                },
-                onFilesystemError);
-          }
-        });
+          sourceFileUrl, targetFileUrl, onFileTransferCompleted);
       return;
     }
 
@@ -899,7 +916,7 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
  * @param {function(Entry, number)} successCallback function that will be called
  *     the copy operation finishes. It takes |targetEntry| and size of the last
  *     (not previously reported) copied chunk as parameters.
- * @param {function{string, object}} errorCallback function that will be called
+ * @param {function(string, object)} errorCallback function that will be called
  *     if an error is encountered. Takes error type and additional error data
  *     as parameters.
  */
@@ -921,7 +938,7 @@ FileCopyManager.prototype.copyEntry_ = function(sourceEntry,
 
       writer.onprogress = function(progress) {
         if (self.maybeCancel_()) {
-          // If the copy was canelled, we should abort the operation.
+          // If the copy was cancelled, we should abort the operation.
           writer.abort();
           return;
         }
