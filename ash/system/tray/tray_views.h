@@ -181,8 +181,6 @@ class TrayPopupTextButton : public views::TextButton {
   TrayPopupTextButton(views::ButtonListener* listener, const string16& text);
   virtual ~TrayPopupTextButton();
 
-  void set_paint_border(bool paint_border) { paint_border_ = paint_border; }
-
  private:
   // Overridden from views::View.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -193,7 +191,6 @@ class TrayPopupTextButton : public views::TextButton {
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
   bool hover_;
-  bool paint_border_;
   scoped_ptr<views::Background> hover_bg_;
   scoped_ptr<views::Border> hover_border_;
 
@@ -210,9 +207,6 @@ class TrayPopupTextButtonContainer : public views::View {
   void AddTextButton(TrayPopupTextButton* button);
 
   views::BoxLayout* layout() const { return layout_; }
-
-  // Overridden from views::View
-  virtual void Layout();
 
  private:
   views::BoxLayout* layout_;
