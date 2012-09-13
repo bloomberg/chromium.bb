@@ -790,6 +790,11 @@ class Segment {
   // frame, or the indicated time. Returns true on success.
   bool MakeNewCluster(uint64 timestamp_ns);
 
+  // Checks whether a new cluster needs to be created, and if so
+  // creates a new cluster. Returns false if creation of a new cluster
+  // was necessary but creation was not successful.
+  bool DoNewClusterProcessing(uint64 track_num, uint64 timestamp_ns, bool key);
+
   // WebM elements
   Cues cues_;
   SeekHead seek_head_;

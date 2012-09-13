@@ -1638,33 +1638,8 @@ bool Segment::AddFrame(const uint8* frame,
     return true;
   }
 
-  // Check to see if the muxer needs to start a new cluster.
-  if (is_key && tracks_.TrackIsVideo(track_number)) {
-    new_cluster_ = true;
-  } else if (cluster_list_size_ > 0) {
-    const Cluster* const cluster = cluster_list_[cluster_list_size_-1];
-
-    if (!cluster)
-      return false;
-
-    const uint64 cluster_ts =
-        cluster->timecode() * segment_info_.timecode_scale();
-
-    if (max_cluster_duration_ > 0 &&
-        (timestamp - cluster_ts) >= max_cluster_duration_) {
-      new_cluster_ = true;
-    } else if (max_cluster_size_ > 0 && cluster_list_size_ > 0) {
-      if (cluster->payload_size() >= max_cluster_size_) {
-        new_cluster_ = true;
-      }
-    }
-  }
-
-  if (new_cluster_) {
-    if (!MakeNewCluster(timestamp))
-      return false;
-    new_cluster_ = false;
-  }
+  if (!DoNewClusterProcessing(track_number, timestamp, is_key))
+    return false;
 
   // Write any audio frames left.
   if (WriteFramesAll() < 0)
@@ -1919,6 +1894,39 @@ bool Segment::MakeNewCluster(uint64 frame_timestamp_ns) {
     return false;
 
   cluster_list_size_ = new_size;
+  return true;
+}
+
+bool Segment::DoNewClusterProcessing(uint64 track_number,
+                                     uint64 frame_timestamp_ns,
+                                     bool is_key) {
+  // Check to see if the muxer needs to start a new cluster.
+  if (is_key && tracks_.TrackIsVideo(track_number)) {
+    new_cluster_ = true;
+  } else if (cluster_list_size_ > 0) {
+    const Cluster* const cluster = cluster_list_[cluster_list_size_ - 1];
+    if (!cluster)
+      return false;
+
+    const uint64 timecode_scale = segment_info_.timecode_scale();
+    const uint64 cluster_timestamp_ns = cluster->timecode() * timecode_scale;
+
+    if (max_cluster_duration_ > 0 &&
+        (frame_timestamp_ns - cluster_timestamp_ns) >= max_cluster_duration_) {
+      new_cluster_ = true;
+    } else if (max_cluster_size_ > 0 && cluster_list_size_ > 0) {
+      if (cluster->payload_size() >= max_cluster_size_) {
+        new_cluster_ = true;
+      }
+    }
+  }
+
+  if (new_cluster_) {
+    if (!MakeNewCluster(frame_timestamp_ns))
+      return false;
+    new_cluster_ = false;
+  }
+
   return true;
 }
 
