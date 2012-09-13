@@ -2457,3 +2457,12 @@
    fun:_ZN8remoting13DecoderTester14ReceivedPacketEPNS_11VideoPacketE
    fun:_ZN8remoting13DecoderTester20ReceivedScopedPacketE10scoped_ptrINS_11VideoPacketEE
 }
+{
+   bug_148865
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN16RenderThreadImpl4InitEv
+   fun:_ZN16RenderThreadImplC2ERKSs
+   fun:_ZN16RenderThreadImplC1ERKSs
+   fun:_ZN21WebRTCAudioDeviceTest5SetUpEv
+}
