@@ -66,9 +66,6 @@ const char kCloudPrintAuth[] = "https://www.googleapis.com/auth/cloudprint";
 const char kTypeAndroid[] = "ANDROID_CHROME_SNAPSHOT";
 const char kTypeIOS[] = "IOS_CHROME_SNAPSHOT";
 
-// The Chrome To Mobile requestor type; used by services for filtering.
-const char kChromeToMobileRequestor[] = "requestor=chrome-to-mobile";
-
 // Log a metric for the "ChromeToMobile.Service" histogram.
 void LogServiceMetric(ChromeToMobileService::Metric metric) {
   UMA_HISTOGRAM_ENUMERATION("ChromeToMobile.Service", metric,
@@ -124,13 +121,22 @@ void AddValue(const std::string& value_name,
                                           std::string(), post_data);
 }
 
-// Get the URL for cloud print device search; appends a requestor query param.
-GURL GetSearchURL(const GURL& cloud_print_url) {
-  GURL search_url = cloud_print::GetUrlForSearch(cloud_print_url);
+// Append the Chrome To Mobile client query parameter, used by cloud print.
+GURL AppendClientQueryParam(const GURL& url) {
   GURL::Replacements replacements;
-  std::string query(kChromeToMobileRequestor);
+  std::string query("client=chrome-to-mobile");
   replacements.SetQueryStr(query);
-  return search_url.ReplaceComponents(replacements);
+  return url.ReplaceComponents(replacements);
+}
+
+// Get the URL for cloud print device search with the client query param.
+GURL GetSearchURL(const GURL& cloud_print_url) {
+  return AppendClientQueryParam(cloud_print::GetUrlForSearch(cloud_print_url));
+}
+
+// Get the URL for cloud print job submission with the client query param.
+GURL GetSubmitURL(const GURL& cloud_print_url) {
+  return AppendClientQueryParam(cloud_print::GetUrlForSubmit(cloud_print_url));
 }
 
 // A callback to continue snapshot generation after creating the temp file.
@@ -521,9 +527,8 @@ void ChromeToMobileService::SendJobRequest(base::WeakPtr<Observer> observer,
   post.append("--" + bound + "--\r\n");
 
   LogMetric(data.type == SNAPSHOT ? SENDING_SNAPSHOT : SENDING_URL);
-  net::URLFetcher* request =
-      net::URLFetcher::Create(cloud_print::GetUrlForSubmit(cloud_print_url_),
-                              net::URLFetcher::POST, this);
+  net::URLFetcher* request = net::URLFetcher::Create(
+      GetSubmitURL(cloud_print_url_), net::URLFetcher::POST, this);
   url_fetchers_.push_back(request);
   InitRequest(request);
   request_observer_map_[request] = observer;
