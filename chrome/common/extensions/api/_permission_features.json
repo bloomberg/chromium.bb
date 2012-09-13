@@ -103,10 +103,6 @@
     "channel": "beta",
     "extension_types": ["extension", "packaged_app"]
   },
-  "dns": {
-    "channel": "stable",
-    "extension_types": ["platform_app"]
-  },
   "downloads": {
     "channel": "dev",
     "extension_types": [
