@@ -13,6 +13,9 @@ without changes to the corresponding grd file. fb9 -->
     <output filename="renderer_resources.rc" type="rc_all" context="default_100_percent" />
   </outputs>
   <release seq="1">
+    <structures fallback_to_low_resolution="true">
+      <structure type="chrome_scaled_image" name="IDR_SAD_PLUGIN" file="common\sadplugin.png" />
+    </structures>
     <includes>
       <if expr="pp_ifdef('android')">
         <include name="IDR_MOBILE_YOUTUBE_PLUGIN_HTML" file="mobile_youtube_plugin.html" flattenhtml="true" type="BINDATA" />
@@ -28,7 +31,6 @@ without changes to the corresponding grd file. fb9 -->
       <include name="IDR_JSON_SCHEMA_JS" file="extensions\json_schema.js" type="BINDATA" />
       <include name="IDR_MISCELLANEOUS_BINDINGS_JS" file="extensions\miscellaneous_bindings.js" type="BINDATA" />
       <include name="IDR_NET_ERROR_HTML" file="neterror.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_SAD_PLUGIN" file="sadplugin.png" type="BINDATA" />
       <include name="IDR_SCHEMA_GENERATED_BINDINGS_JS" file="extensions\schema_generated_bindings.js" type="BINDATA" />
 
       <!-- Libraries. -->
