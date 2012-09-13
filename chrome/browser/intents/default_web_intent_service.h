@@ -56,6 +56,7 @@ struct DefaultWebIntentService {
       const std::string& service_url);
   ~DefaultWebIntentService();
 
+  std::string ToString() const;
   bool operator==(const DefaultWebIntentService& other) const;
 };
 

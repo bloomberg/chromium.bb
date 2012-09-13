@@ -55,6 +55,10 @@ bool IsRecognizedAction(const string16& action);
 // if |action| is not recognized.
 ActionId ToActionId(const string16& action);
 
+// Returns true if |type1| and |type2| "match". Supports wild cards in both
+// |type1| and |type2|. Wild cards are of the form '<type>/*', '*/*', and '*'.
+bool MimeTypesMatch(const string16& type1, const string16& type2);
+
 }  // namespace web_intents
 
 #endif  // CHROME_BROWSER_INTENTS_WEB_INTENTS_UTIL_H_

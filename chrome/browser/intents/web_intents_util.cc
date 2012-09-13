@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -13,6 +14,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/common/content_switches.h"
+#include "net/base/mime_util.h"
 
 namespace web_intents {
 namespace {
@@ -75,6 +77,22 @@ bool IsRecognizedAction(const string16& action) {
 ActionId ToActionId(const string16& action) {
   const ActionMapping* mapping = FindActionMapping(action);
   return mapping != NULL ? mapping->id : ACTION_ID_CUSTOM;
+}
+
+bool MimeTypesMatch(const string16& type1, const string16& type2) {
+  // We don't have a MIME matcher that allows patterns on both sides
+  // Instead, we do two comparisons, treating each type in turn as a
+  // pattern. If either one matches, we consider this a MIME match.
+  std::string t1 = UTF16ToUTF8(type1);
+  std::string t2 = UTF16ToUTF8(type2);
+
+  // If either side is _all_ wildcard, it's a match!
+  if (t1 == "*" || t1 == "*/*" || t2 == "*" || t2 == "*/*")
+    return true;
+
+  StringToLowerASCII(&t1);
+  StringToLowerASCII(&t2);
+  return (net::MatchesMimeType(t1, t2)) || net::MatchesMimeType(t2, t1);
 }
 
 }  // namespace web_intents

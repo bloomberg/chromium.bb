@@ -20,6 +20,10 @@ ActionId ToAction(const std::string& value) {
   return web_intents::ToActionId(ASCIIToUTF16(value));
 }
 
+bool TypesMatch(const std::string& a, const std::string& b) {
+  return MimeTypesMatch(ASCIIToUTF16(a), ASCIIToUTF16(b));
+}
+
 }  // namespace
 
 TEST(WebIntentsUtilTest, IsRecognizedAction) {
@@ -47,6 +51,32 @@ TEST(WebIntentsUtilTest, ToActionId) {
   EXPECT_EQ(ACTION_ID_SHARE, ToAction(kActionShare));
   EXPECT_EQ(ACTION_ID_SUBSCRIBE, ToAction(kActionSubscribe));
   EXPECT_EQ(ACTION_ID_VIEW, ToAction(kActionView));
+}
+
+TEST(WebIntentsUtilTest, MimeTypesMatchLiteral) {
+  EXPECT_TRUE(TypesMatch("image/png", "image/png"));
+
+  EXPECT_FALSE(TypesMatch(" image/png", "image/png"));
+  EXPECT_FALSE(TypesMatch("image/png", " image/png"));
+  EXPECT_FALSE(TypesMatch("image/png ", "image/png"));
+  EXPECT_FALSE(TypesMatch("image/png", "image/png "));
+  EXPECT_FALSE(TypesMatch("image/jpg", "image/png"));
+  EXPECT_FALSE(TypesMatch("image/png", "image/jpg"));
+}
+
+TEST(WebIntentsUtilTest, MimeTypesMatchWildCards) {
+  EXPECT_TRUE(TypesMatch("*", "*"));
+  EXPECT_TRUE(TypesMatch("*", "*/*"));
+  EXPECT_TRUE(TypesMatch("*/*", "*"));
+  EXPECT_TRUE(TypesMatch("*/*", "*/*"));
+  EXPECT_TRUE(TypesMatch("*", "image/png"));
+  EXPECT_TRUE(TypesMatch("image/png", "*"));
+  EXPECT_TRUE(TypesMatch("*/*", "image/png"));
+  EXPECT_TRUE(TypesMatch("image/png", "*/*"));
+
+  EXPECT_FALSE(TypesMatch(" */*", "image/png"));
+  EXPECT_FALSE(TypesMatch("*/* ", "image/png"));
+  EXPECT_FALSE(TypesMatch("**", "image/png"));
 }
 
 }  // namepsace web_intents

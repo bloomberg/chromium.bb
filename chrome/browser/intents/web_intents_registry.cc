@@ -13,6 +13,7 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/intents/default_web_intent_service.h"
+#include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
@@ -20,6 +21,7 @@
 #include "net/base/mime_util.h"
 
 using extensions::Extension;
+using net::IsMimeType;
 
 namespace {
 
@@ -43,37 +45,13 @@ const char* kQuickOfficeViewerMimeType[] = {
 typedef base::Callback<void(const WDTypedResult* result)> ResultsHandler;
 typedef WebIntentsRegistry::IntentServiceList IntentServiceList;
 
-// Compares two mime types for equality. Supports wild cards in both
-// |type1| and |type2|. Wild cards are of the form '<type>/*' or '*'.
-bool MimeTypesAreEqual(const string16& type1, const string16& type2) {
-  // We don't have a MIME matcher that allows patterns on both sides
-  // Instead, we do two comparisons, treating each type in turn as a
-  // pattern. If either one matches, we consider this a MIME match.
-  std::string t1 = UTF16ToUTF8(type1);
-  std::string t2 = UTF16ToUTF8(type2);
-  StringToLowerASCII(&t1);
-  StringToLowerASCII(&t2);
-  if (net::MatchesMimeType(t1, t2))
-    return true;
-  return net::MatchesMimeType(t2, t1);
-}
-
-// Returns true if the passed string is a MIME type. Works by comparing string
-// prefix to the valid MIME top-level types (and the wildcard type */).
-// "*" is also accepted as a valid MIME type.
-// The passed |type_str| should have no leading or trailing whitespace.
-bool IsMimeType(const string16& type_str) {
-  return net::IsMimeType(UTF16ToUTF8(type_str));
-}
-
 // Compares two web intents type specifiers to see if there is a match.
 // First checks if both are MIME types. If so, uses MatchesMimeType.
 // If not, uses exact string equality.
 bool WebIntentsTypesMatch(const string16& type1, const string16& type2) {
-  if (IsMimeType(type1) && IsMimeType(type2))
-    return MimeTypesAreEqual(type1, type2);
-
-  return type1 == type2;
+  return (IsMimeType(UTF16ToUTF8(type1)) && IsMimeType(UTF16ToUTF8(type2)))
+      ? web_intents::MimeTypesMatch(type1, type2)
+      : type1 == type2;
 }
 
 // Adds any intent services of |extension| that match |action| to
@@ -311,13 +289,14 @@ void WebIntentsRegistry::OnWebIntentsDefaultsResultReceived(
     // Found a match. If it is better than default_service, use it.
     // Currently the metric is that if the new value is user-set,
     // prefer it. If the new value has a more specific pattern, prefer it.
-    if (default_service.user_date <= 0 && iter->user_date >= 0)
+    if (default_service.user_date <= 0 && iter->user_date >= 0) {
       default_service = *iter;
-    else if (default_service.url_pattern.match_all_urls() &&
-             !iter->url_pattern.match_all_urls())
+    } else if (default_service.url_pattern.match_all_urls() &&
+             !iter->url_pattern.match_all_urls()) {
       default_service = *iter;
-    else if (iter->url_pattern < default_service.url_pattern)
+    } else if (iter->url_pattern < default_service.url_pattern) {
       default_service = *iter;
+    }
   }
 
   // TODO(hshi): Temporary workaround for http://crbug.com/134197.
