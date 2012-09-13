@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_image.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
@@ -24,6 +25,7 @@
 #include "net/url_request/url_request_status.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
+#include "grit/platform_locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using base::BinaryValue;
@@ -35,6 +37,8 @@ bool WallpaperStringsFunction::RunImpl() {
 
 #define SET_STRING(id, idr) \
   dict->SetString(id, l10n_util::GetStringUTF16(idr))
+  SET_STRING("webFontFamily", IDS_WEB_FONT_FAMILY);
+  SET_STRING("webFontSize", IDS_WEB_FONT_SIZE);
   SET_STRING("searchTextLabel", IDS_WALLPAPER_MANAGER_SEARCH_TEXT_LABEL);
   SET_STRING("authorLabel", IDS_WALLPAPER_MANAGER_AUTHOR_LABEL);
   SET_STRING("customCategoryLabel",
@@ -54,6 +58,17 @@ bool WallpaperStringsFunction::RunImpl() {
 #undef SET_STRING
 
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(dict);
+
+  chromeos::WallpaperManager* wallpaper_manager =
+      chromeos::WallpaperManager::Get();
+  chromeos::WallpaperInfo info;
+
+  if (wallpaper_manager->GetLoggedInUserWallpaperInfo(&info)) {
+    if (info.type == chromeos::User::ONLINE)
+      dict->SetString("selectedWallpaper", info.file);
+    else if (info.type == chromeos::User::CUSTOMIZED)
+      dict->SetString("selectedWallpaper", "CUSTOM");
+  }
 
   return true;
 }

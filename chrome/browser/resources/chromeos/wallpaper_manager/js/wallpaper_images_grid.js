@@ -135,6 +135,7 @@ cr.define('wallpapers', function() {
       var index = this.dataModel.indexOf(selectedItem);
       this.inProgramSelection_ = true;
       this.selectionModel.leadIndex = index;
+      this.selectionModel.selectedIndex = index;
       this.inProgramSelection_ = false;
     },
 

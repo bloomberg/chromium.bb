@@ -112,8 +112,24 @@ function WallpaperManager(dialogDom) {
     this.initCategoriesList_();
     this.initThumbnailsGrid_();
 
-    // Selects the first category in the list as default.
-    this.categoriesList_.selectionModel.selectedIndex = 0;
+    var selectedWallpaper = str('selectedWallpaper');
+    if (selectedWallpaper == 'CUSTOM') {
+      // Custom is the last one in the categories list.
+      this.categoriesList_.selectionModel.selectedIndex =
+          this.categoriesList_.dataModel.length - 1;
+    } else {
+      // Selects the first category in the categories list of current wallpaper
+      // as the default selected category when showing wallpaper picker UI.
+      var firstCategory = 0;
+      for (var key in this.manifest_.wallpaper_list) {
+        var url = this.manifest_.wallpaper_list[key].base_url +
+            HighResolutionSuffix;
+        if (url.indexOf(selectedWallpaper) != -1) {
+          firstCategory = this.manifest_.wallpaper_list[key].categories[0];
+        }
+      }
+      this.categoriesList_.selectionModel.selectedIndex = firstCategory;
+    }
 
     $('file-selector').addEventListener(
         'change', this.onFileSelectorChanged_.bind(this));
@@ -163,13 +179,14 @@ function WallpaperManager(dialogDom) {
    */
   WallpaperManager.prototype.onThumbnailClicked_ = function() {
     var selectedItem = this.wallpaperGrid_.selectedItem;
-    if (selectedItem && selectedItem.dynamicURL &&
-        !this.wallpaperGrid_.inProgramSelection) {
-      // TODO(bshe): Only download one high resolution wallpaper from server.
-      // Resize the high resolution wallpaper to screen sized wallpaper for
-      // devices with small screen.
-      var wallpaperURL = selectedItem.baseURL + HighResolutionSuffix;
-    }
+    if (!selectedItem || !selectedItem.dynamicURL ||
+        this.wallpaperGrid_.inProgramSelection)
+      return;
+
+    // TODO(bshe): Only download one high resolution wallpaper from server.
+    // Resize the high resolution wallpaper to screen sized wallpaper for
+    // devices with small screen.
+    var wallpaperURL = selectedItem.baseURL + HighResolutionSuffix;
 
     if (this.wallpaperRequest_)
       this.wallpaperRequest_.abort();
@@ -344,6 +361,7 @@ function WallpaperManager(dialogDom) {
       this.showCustomContainer_(true);
     } else {
       this.showCustomContainer_(false);
+      var selectedItem;
       var wallpapersDataModel = new cr.ui.ArrayDataModel([]);
       for (var key in this.manifest_.wallpaper_list) {
         if (this.manifest_.wallpaper_list[key].categories.
@@ -356,9 +374,15 @@ function WallpaperManager(dialogDom) {
             authorWebsite: this.manifest_.wallpaper_list[key].author_website
           };
           wallpapersDataModel.push(wallpaperInfo);
+          var url = this.manifest_.wallpaper_list[key].base_url +
+              HighResolutionSuffix;
+          if (url == str('selectedWallpaper')) {
+            selectedItem = wallpaperInfo;
+          }
         }
       }
       this.wallpaperGrid_.dataModel = wallpapersDataModel;
+      this.wallpaperGrid_.selectedItem = selectedItem;
     }
   };
 
