@@ -211,8 +211,10 @@ void ClientSession::Stop(const base::Closure& done_task) {
     video_recorder_ = NULL;
   }
 
-  if (!active_recorders_)
+  if (!active_recorders_) {
+    connection_.reset();
     done_task_.Run();
+  }
 }
 
 void ClientSession::LocalMouseMoved(const SkIPoint& mouse_pos) {
@@ -257,8 +259,10 @@ void ClientSession::OnRecorderStopped() {
   --active_recorders_;
   DCHECK_GE(active_recorders_, 0);
 
-  if (!active_recorders_)
+  if (!active_recorders_) {
+    connection_.reset();
     done_task_.Run();
+  }
 }
 
 // TODO(sergeyu): Move this to SessionManager?
