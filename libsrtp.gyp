@@ -60,6 +60,13 @@
           'HAVE_BYTESWAP_METHODS_H',
          ],
       }],
+      ['OS=="mac"', {
+        'defines': [
+          # Use system defined types. This ensures that the correct types
+          # are being used on both 32-bit and 64-bit builds. 
+          'HAVE_UINT64_T',
+        ],
+      }],
     ],
     'direct_dependent_settings': {
       'include_dirs': [
@@ -106,6 +113,13 @@
           'defines': [
             'inline=__inline',
             'HAVE_BYTESWAP_METHODS_H',
+          ],
+        }],
+        ['OS=="mac"', {
+          'defines': [
+            # Use system defined types. This ensures that the correct types
+            # are being used on both 32-bit and 64-bit builds. 
+            'HAVE_UINT64_T',
           ],
         }],
       ],
