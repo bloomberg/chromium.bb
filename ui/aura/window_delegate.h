@@ -6,6 +6,7 @@
 #define UI_AURA_WINDOW_DELEGATE_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "ui/aura/aura_export.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/base/events/event_handler.h"
@@ -23,6 +24,7 @@ namespace ui {
 class GestureEvent;
 class KeyEvent;
 class MouseEvent;
+class Texture;
 class TouchEvent;
 }
 
@@ -93,6 +95,10 @@ class AURA_EXPORT WindowDelegate : public ui::EventHandler {
   // Called from Window::HitTest to retrieve hit test mask when HasHitTestMask
   // above returns true.
   virtual void GetHitTestMask(gfx::Path* mask) const = 0;
+
+  // Called from RecreateLayer() if the layer the window is associated with has
+  // an external texture.
+  virtual scoped_refptr<ui::Texture> CopyTexture() = 0;
 
  protected:
   virtual ~WindowDelegate() {}

@@ -832,6 +832,13 @@ void NativeWidgetAura::GetHitTestMask(gfx::Path* mask) const {
   delegate_->GetHitTestMask(mask);
 }
 
+scoped_refptr<ui::Texture> NativeWidgetAura::CopyTexture() {
+  // The layer we create doesn't have an external texture, so this should never
+  // get invoked.
+  NOTREACHED();
+  return scoped_refptr<ui::Texture>();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, ui::EventHandler implementation:
 

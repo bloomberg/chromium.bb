@@ -259,6 +259,9 @@ class GLHelper::CopyTextureToImpl {
                      const gfx::Size& dst_size,
                      unsigned char* out,
                      const base::Callback<void(bool)>& callback);
+
+  WebKit::WebGLId CopyTexture(WebGLId src_texture, const gfx::Size& size);
+
  private:
   // A single request to CopyTextureTo.
   // Thread-safety notes: the main thread creates instances of this class. The
@@ -511,6 +514,14 @@ void GLHelper::CopyTextureToImpl::CopyTextureTo(
                  base::MessageLoopProxy::current()));
 }
 
+WebKit::WebGLId GLHelper::CopyTextureToImpl::CopyTexture(
+    WebGLId src_texture,
+    const gfx::Size& size) {
+  if (!context_for_thread_)
+    return 0;
+  return ScaleTexture(src_texture, size, gfx::Rect(size), size);
+}
+
 void GLHelper::CopyTextureToImpl::ReadBackFramebuffer(
     scoped_refptr<Request> request,
     WebGraphicsContext3D* context,
@@ -650,18 +661,19 @@ void GLHelper::CopyTextureTo(WebGLId src_texture,
                              const gfx::Size& dst_size,
                              unsigned char* out,
                              const base::Callback<void(bool)>& callback) {
-  // Lazily initialize |copy_texture_to_impl_|
-  if (!copy_texture_to_impl_.get())
-    copy_texture_to_impl_.reset(new CopyTextureToImpl(context_,
-                                                      context_for_thread_,
-                                                      this));
-
+  InitCopyTextToImpl();
   copy_texture_to_impl_->CopyTextureTo(src_texture,
                                        src_size,
                                        src_subrect,
                                        dst_size,
                                        out,
                                        callback);
+}
+
+WebKit::WebGLId GLHelper::CopyTexture(WebKit::WebGLId texture,
+                                      const gfx::Size& size) {
+  InitCopyTextToImpl();
+  return copy_texture_to_impl_->CopyTexture(texture, size);
 }
 
 WebGLId GLHelper::CompileShaderFromSource(
@@ -677,6 +689,15 @@ WebGLId GLHelper::CompileShaderFromSource(
     return 0;
   }
   return shader.Detach();
+}
+
+void GLHelper::InitCopyTextToImpl() {
+  // Lazily initialize |copy_texture_to_impl_|
+  if (!copy_texture_to_impl_.get())
+    copy_texture_to_impl_.reset(new CopyTextureToImpl(context_,
+                                                      context_for_thread_,
+                                                      this));
+
 }
 
 }  // namespace content

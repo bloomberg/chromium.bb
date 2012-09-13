@@ -93,6 +93,10 @@ bool TestWindowDelegate::HasHitTestMask() const {
 void TestWindowDelegate::GetHitTestMask(gfx::Path* mask) const {
 }
 
+scoped_refptr<ui::Texture> TestWindowDelegate::CopyTexture() {
+  return scoped_refptr<ui::Texture>();
+}
+
 ui::EventResult TestWindowDelegate::OnKeyEvent(ui::KeyEvent* event) {
   return ui::ER_UNHANDLED;
 }

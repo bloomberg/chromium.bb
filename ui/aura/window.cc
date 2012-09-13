@@ -167,6 +167,8 @@ ui::Layer* Window::RecreateLayer() {
     return NULL;
 
   old_layer->set_delegate(NULL);
+  if (delegate_ && old_layer->external_texture())
+    old_layer->SetExternalTexture(delegate_->CopyTexture());
   layer_ = new ui::Layer(old_layer->type());
   layer_owner_.reset(layer_);
   layer_->SetVisible(old_layer->visible());

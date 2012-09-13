@@ -547,6 +547,13 @@ bool WebContentsViewAura::HasHitTestMask() const {
 void WebContentsViewAura::GetHitTestMask(gfx::Path* mask) const {
 }
 
+scoped_refptr<ui::Texture> WebContentsViewAura::CopyTexture() {
+  // The layer we create doesn't have an external texture, so this should never
+  // get invoked.
+  NOTREACHED();
+  return scoped_refptr<ui::Texture>();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsViewAura, ui::EventHandler implementation:
 

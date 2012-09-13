@@ -39,12 +39,19 @@ class GLHelper {
                      unsigned char* out,
                      const base::Callback<void(bool)>& callback);
 
+  // Creates a copy of the specified texture. |size| is the size of the texture.
+  WebKit::WebGLId CopyTexture(WebKit::WebGLId texture,
+                              const gfx::Size& size);
+
   // Returns the shader compiled from the source.
   WebKit::WebGLId CompileShaderFromSource(const WebKit::WGC3Dchar* source,
                                           WebKit::WGC3Denum type);
 
  private:
   class CopyTextureToImpl;
+
+  // Creates |copy_texture_to_impl_| if NULL.
+  void InitCopyTextToImpl();
 
   WebKit::WebGraphicsContext3D* context_;
   WebKit::WebGraphicsContext3D* context_for_thread_;

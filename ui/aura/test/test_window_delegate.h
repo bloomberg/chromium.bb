@@ -49,6 +49,7 @@ class TestWindowDelegate : public WindowDelegate {
   virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE;
   virtual bool HasHitTestMask() const OVERRIDE;
   virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE;
+  virtual scoped_refptr<ui::Texture> CopyTexture() OVERRIDE;
 
   // Overridden from ui::EventHandler:
   virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE;

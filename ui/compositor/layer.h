@@ -220,6 +220,7 @@ class COMPOSITOR_EXPORT Layer
   // Assigns a new external texture.  |texture| can be NULL to disable external
   // updates.
   void SetExternalTexture(ui::Texture* texture);
+  ui::Texture* external_texture() { return texture_.get(); }
 
   // Sets the layer's fill color.  May only be called for LAYER_SOLID_COLOR.
   void SetColor(SkColor color);

@@ -47,7 +47,7 @@ class ImageTransportFactoryObserver {
 // command-buffer), implementations of this also implement ui::ContextFactory.
 class ImageTransportFactory {
  public:
-  virtual ~ImageTransportFactory() { }
+  virtual ~ImageTransportFactory() {}
 
   // Initialize the global transport factory.
   static void Initialize();

@@ -369,6 +369,13 @@ bool DesktopNativeWidgetAura::HasHitTestMask() const {
 void DesktopNativeWidgetAura::GetHitTestMask(gfx::Path* mask) const {
 }
 
+scoped_refptr<ui::Texture> DesktopNativeWidgetAura::CopyTexture() {
+  // The layer we create doesn't have an external texture, so this should never
+  // get invoked.
+  NOTREACHED();
+  return scoped_refptr<ui::Texture>();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopNativeWidgetAura, ui::EventHandler implementation:
 

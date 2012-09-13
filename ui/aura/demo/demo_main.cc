@@ -64,6 +64,9 @@ class DemoWindowDelegate : public aura::WindowDelegate {
   virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE {}
   virtual bool HasHitTestMask() const OVERRIDE { return false; }
   virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE {}
+  scoped_refptr<ui::Texture> CopyTexture() {
+    return scoped_refptr<ui::Texture>();
+  }
 
   // Overridden from ui::EventHandler:
   virtual ui::EventResult OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
