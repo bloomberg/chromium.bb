@@ -29,7 +29,7 @@
 #include "ui/views/widget/widget_delegate.h"
 
 namespace {
-const int kExpectedAppIndex = 2;
+const int kExpectedAppIndex = 1;
 }
 
 namespace ash {
@@ -262,8 +262,6 @@ class LauncherViewTest : public AshTestBase {
          model_index < model_->items().size();
          ++model_index) {
       ash::LauncherItem item = model_->items()[model_index];
-//      if (item.type == ash::TYPE_APP_LIST)
-//        continue;
       ash::LauncherID id = item.id;
       EXPECT_EQ(id_map[map_index].first, id);
       EXPECT_EQ(id_map[map_index].second, GetButtonByID(id));
@@ -301,9 +299,6 @@ class LauncherViewTest : public AshTestBase {
     // Initialize |id_map| with the automatically-created launcher buttons.
     for (size_t i = 0; i < model_->items().size(); ++i) {
       internal::LauncherButton* button = test_api_->GetButton(i);
-//      if (!button)
-//        continue;
-
       id_map->push_back(std::make_pair(model_->items()[i].id, button));
     }
     ASSERT_NO_FATAL_FAILURE(CheckModelIDs(*id_map));
@@ -311,7 +306,8 @@ class LauncherViewTest : public AshTestBase {
     // Add 5 app launcher buttons for testing.
     for (int i = 0; i < 5; ++i) {
       LauncherID id = AddAppShortcut();
-      id_map->push_back(std::make_pair(id, GetButtonByID(id)));
+      id_map->insert(id_map->begin() + (kExpectedAppIndex + i),
+                     std::make_pair(id, GetButtonByID(id)));
     }
     ASSERT_NO_FATAL_FAILURE(CheckModelIDs(*id_map));
   }
@@ -442,10 +438,12 @@ TEST_F(LauncherViewTest, AddButtonQuickly) {
   test_api_->RunMessageLoopUntilAnimationsDone();
 
   // Verifies non-overflow buttons are visible.
-  for (int i = 1; i <= test_api_->GetLastVisibleIndex(); ++i) {
+  for (int i = 0; i <= test_api_->GetLastVisibleIndex(); ++i) {
     internal::LauncherButton* button = test_api_->GetButton(i);
-    EXPECT_TRUE(button->visible()) << "button index=" << i;
-    EXPECT_EQ(1.0f, button->layer()->opacity()) << "button index=" << i;
+    if (button) {
+      EXPECT_TRUE(button->visible()) << "button index=" << i;
+      EXPECT_EQ(1.0f, button->layer()->opacity()) << "button index=" << i;
+    }
   }
 }
 
@@ -486,7 +484,8 @@ TEST_F(LauncherViewTest, ModelChangesWhileDragging) {
   // Adding a launcher item cancels the drag and respects the order.
   dragged_button = SimulateDrag(internal::LauncherButtonHost::MOUSE, 0, 2);
   LauncherID new_id = AddAppShortcut();
-  id_map.push_back(std::make_pair(new_id, GetButtonByID(new_id)));
+  id_map.insert(id_map.begin() + kExpectedAppIndex + 4,
+                std::make_pair(new_id, GetButtonByID(new_id)));
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
   button_host->PointerReleasedOnButton(dragged_button,
                                        internal::LauncherButtonHost::MOUSE,

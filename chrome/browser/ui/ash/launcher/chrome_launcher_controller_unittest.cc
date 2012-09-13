@@ -28,7 +28,7 @@
 using extensions::Extension;
 
 namespace {
-const int kExpectedAppIndex = 2;
+const int kExpectedAppIndex = 1;
 }
 
 class ChromeLauncherControllerTest : public testing::Test {

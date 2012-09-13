@@ -394,9 +394,9 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
     y = primary_axis_coordinate(0, y + h + kButtonSpacing);
   }
 
-  int last_view_index = view_model_->view_size() - 1;
+  int app_list_index = view_model_->view_size() - 1;
   if (is_overflow_mode()) {
-    last_visible_index_ = last_view_index;
+    last_visible_index_ = app_list_index - 1;
     for (int i = 0; i < view_model_->view_size(); ++i) {
       view_model_->view_at(i)->SetVisible(
           i >= first_visible_index_ && i <= last_visible_index_);
@@ -419,10 +419,11 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
   last_visible_index_ = DetermineLastVisibleIndex(
       available_size - leading_inset() - kLauncherPreferredSize -
       kButtonSpacing - kLauncherPreferredSize);
-  bool show_overflow = (last_visible_index_ < last_view_index);
+  bool show_overflow = (last_visible_index_ + 1 < app_list_index);
 
   for (int i = 0; i < view_model_->view_size(); ++i) {
-    view_model_->view_at(i)->SetVisible(i <= last_visible_index_);
+    view_model_->view_at(i)->SetVisible(
+        i == app_list_index || i <= last_visible_index_);
   }
 
   overflow_button_->SetVisible(show_overflow);
@@ -437,8 +438,14 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
       y = primary_axis_coordinate(0,
           view_model_->ideal_bounds(last_visible_index_).bottom());
     }
+    gfx::Rect app_list_bounds = view_model_->ideal_bounds(app_list_index);
     bounds->overflow_bounds.set_x(x);
     bounds->overflow_bounds.set_y(y);
+    x = primary_axis_coordinate(x + kLauncherPreferredSize + kButtonSpacing, 0);
+    y = primary_axis_coordinate(0, y + kLauncherPreferredSize + kButtonSpacing);
+    app_list_bounds.set_x(x);
+    app_list_bounds.set_y(y);
+    view_model_->set_ideal_bounds(app_list_index, app_list_bounds);
   } else {
     if (overflow_bubble_.get())
       overflow_bubble_->Hide();
@@ -717,14 +724,9 @@ int LauncherView::CancelDrag(int modified_index) {
     return modified_index;
 
   // Restore previous position, tracking the position of the modified view.
-  model_->Move(drag_view_index, start_drag_index_);
-
-  // Adding a new view at end.
-  if (modified_index == view_model_->view_size())
-    return modified_index;
-
   views::View* removed_view =
       (modified_index >= 0) ? view_model_->view_at(modified_index) : NULL;
+  model_->Move(drag_view_index, start_drag_index_);
   return removed_view ? view_model_->GetIndexOfView(removed_view) : -1;
 }
 
@@ -732,9 +734,12 @@ gfx::Size LauncherView::GetPreferredSize() {
   IdealBounds ideal_bounds;
   CalculateIdealBounds(&ideal_bounds);
 
+  const int app_list_index = view_model_->view_size() - 1;
+  const int last_button_index = is_overflow_mode() ?
+      last_visible_index_ : app_list_index;
   const gfx::Rect last_button_bounds =
-      last_visible_index_  >= first_visible_index_ ?
-          view_model_->view_at(last_visible_index_)->bounds() :
+      last_button_index  >= first_visible_index_ ?
+          view_model_->view_at(last_button_index)->bounds() :
           gfx::Rect(gfx::Size(kLauncherPreferredSize,
                               kLauncherPreferredSize));
 

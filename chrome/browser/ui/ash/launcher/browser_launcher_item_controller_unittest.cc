@@ -38,7 +38,7 @@ class BrowserLauncherItemControllerContentsCreator {
 
 namespace {
 
-const int kExpectedAppIndex = 2;
+const int kExpectedAppIndex = 1;
 
 // Test implementation of AppTabHelper
 class AppTabHelperImpl : public ChromeLauncherController::AppTabHelper {

@@ -141,7 +141,7 @@ TEST(LauncherModel, AddIndices) {
   EXPECT_NE(model.items()[0].id, model.items()[1].id);
 
   // Items come after the browser.
-  int browser = 1;
+  int browser = 0;
   ASSERT_EQ(ash::TYPE_BROWSER_SHORTCUT, model.items()[browser].type);
 
   // Tabbed items should be after shortcut.
@@ -173,7 +173,7 @@ TEST(LauncherModel, AddIndices) {
 
   item.type = TYPE_APP_SHORTCUT;
   int app_shortcut_index5 = model.AddAt(2, item);
-  EXPECT_EQ(browser + 1, app_shortcut_index5);
+  EXPECT_EQ(browser + 2, app_shortcut_index5);
 
   // Check that AddAt() figures out the correct indexes for tabs and panels.
   item.type = TYPE_TABBED;
@@ -194,15 +194,15 @@ TEST(LauncherModel, AddIndices) {
 
   item.type = TYPE_TABBED;
   int tabbed_index5 = model.AddAt(7, item);
-  EXPECT_EQ(browser + 6, tabbed_index5);
+  EXPECT_EQ(browser + 7, tabbed_index5);
 
   item.type = TYPE_APP_PANEL;
   int app_panel_index3 = model.AddAt(8, item);
-  EXPECT_EQ(browser + 7, app_panel_index3);
+  EXPECT_EQ(browser + 8, app_panel_index3);
 
   // Browser shortcut and app list should still be first and second.
-  EXPECT_EQ(TYPE_BROWSER_SHORTCUT, model.items()[1].type);
-  EXPECT_EQ(TYPE_APP_LIST, model.items()[0].type);
+  EXPECT_EQ(TYPE_BROWSER_SHORTCUT, model.items()[0].type);
+  EXPECT_EQ(TYPE_APP_LIST, model.items()[model.items().size() - 1].type);
 }
 
 }  // namespace ash

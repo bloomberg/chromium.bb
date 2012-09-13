@@ -14,15 +14,15 @@ namespace {
 
 int LauncherItemTypeToWeight(LauncherItemType type) {
   switch (type) {
-    case TYPE_APP_LIST:
-      return 0;
     case TYPE_BROWSER_SHORTCUT:
-      return 1;
+      return 0;
     case TYPE_APP_SHORTCUT:
-      return 2;
+      return 1;
     case TYPE_TABBED:
     case TYPE_APP_PANEL:
     case TYPE_PLATFORM_APP:
+      return 2;
+    case TYPE_APP_LIST:
       return 3;
   }
 
@@ -45,8 +45,8 @@ LauncherModel::LauncherModel() : next_id_(1), status_(STATUS_NORMAL) {
   browser_shortcut.type = TYPE_BROWSER_SHORTCUT;
   browser_shortcut.is_incognito = false;
 
-  AddAt(0, app_list);
-  AddAt(1, browser_shortcut);
+  AddAt(0, browser_shortcut);
+  AddAt(1, app_list);
 }
 
 LauncherModel::~LauncherModel() {
