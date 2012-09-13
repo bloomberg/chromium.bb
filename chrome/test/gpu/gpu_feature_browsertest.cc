@@ -442,8 +442,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, RafNoDamage) {
   }
 }
 
-// Disable this test under ASAN <http://crbug.com/148633>.
-#if defined(OS_MACOSX) && !defined(ADDRESS_SANITIZER)
+#if defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, IOSurfaceReuse) {
   if (!IOSurfaceSupport::Initialize())
     return;
@@ -458,58 +457,59 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, IOSurfaceReuse) {
   gfx::Rect bounds = browser()->window()->GetBounds();
   gfx::Rect new_bounds = bounds;
 
-  TraceEventVector events;
   const char* create_event = "IOSurfaceImageTransportSurface::CreateIOSurface";
   const char* resize_event = "IOSurfaceImageTransportSurface::OnResize";
+  const char* draw_event = "CompositingIOSurfaceMac::DrawIOSurface";
   Query find_creates = Query::MatchBeginName(create_event);
   Query find_resizes = Query::MatchBeginName(resize_event) &&
-                       Query::EventHasNumberArg("width");
+                       Query::EventHasNumberArg("old_width") &&
+                       Query::EventHasNumberArg("new_width");
+  Query find_draws = Query::MatchBeginName(draw_event) &&
+                     Query::EventHasNumberArg("scale");
 
-  // Skip the first resize event in case it's flaky:
+  const int roundup = 64;
+  // A few resize values assuming a roundup of 64 pixels. The test will resize
+  // by these values one at a time and verify that CreateIOSurface only happens
+  // when the rounded width changes.
+  int offsets[] = { 1, roundup - 1, roundup, roundup + 1, 2*roundup};
+  int num_offsets = static_cast<int>(arraysize(offsets));
   int w_start = bounds.width();
-  new_bounds.set_width(++w_start);
-  ASSERT_TRUE(ResizeAndWait(new_bounds, "gpu", "gpu", resize_event));
 
-  // Remember starting IOSurface width, because it may not match the window
-  // resolution -- it may be twice the resolution if this is a retina display.
-  new_bounds.set_width(++w_start);
-  ASSERT_TRUE(ResizeAndWait(new_bounds, "gpu", "gpu", resize_event));
-  ASSERT_GT(analyzer_->FindEvents(find_resizes, &events), 0u);
-  int surface_w_start = events[events.size() - 1]->GetKnownArgAsInt("width");
-
-  // Increase width by one and compare change in IOSurface width to determine
-  // the expected pixel scale of the IOSurface compared to the window.
-  new_bounds.set_width(++w_start);
-  ASSERT_TRUE(ResizeAndWait(new_bounds, "gpu", "gpu", resize_event));
-  ASSERT_GT(analyzer_->FindEvents(find_resizes, &events), 0u);
-  int surface_w_end = events[events.size() - 1]->GetKnownArgAsInt("width");
-
-  int surface_pixels_per_window_pixel = surface_w_end - surface_w_start;
-
-  // A few edge cases for a roundup value of 64. The test will resize by these
-  // values one at a time and expect exactly one actual CreateIOSurface, because
-  // the offset range in this offsets array is 64.
-  int offsets[] = { 1, 2, 30, 63, 64 };
-
-  int num_creates = 0;
-  for (int i = 0; i < static_cast<int>(arraysize(offsets)); ++i) {
-    new_bounds.set_width(w_start + offsets[i]);
+  for (int offset_i = 0; offset_i < num_offsets; ++offset_i) {
+    new_bounds.set_width(w_start + offsets[offset_i]);
     ASSERT_TRUE(ResizeAndWait(new_bounds, "gpu", "gpu", resize_event));
-    int this_num_creates = analyzer_->FindEvents(find_creates, &events);
-    num_creates += this_num_creates;
 
-    // For debugging failures, print out the width and height of each resize:
-    analyzer_->FindEvents(find_resizes, &events);
-    for (size_t j = 0; j < events.size(); ++j) {
+    TraceEventVector resize_events;
+    analyzer_->FindEvents(find_resizes, &resize_events);
+    for (size_t resize_i = 0; resize_i < resize_events.size(); ++resize_i) {
+      const trace_analyzer::TraceEvent* resize = resize_events[resize_i];
+      // Was a create allowed:
+      int old_width = resize->GetKnownArgAsInt("old_width");
+      int new_width = resize->GetKnownArgAsInt("new_width");
+      bool expect_create = (old_width/roundup != new_width/roundup ||
+                            old_width == 0);
+      int expected_creates = expect_create ? 1 : 0;
+
+      // Find the create event inside this resize event (if any). This will
+      // determine if the resize triggered a reallocation of the IOSurface.
+      double begin_time = resize->timestamp;
+      double end_time = begin_time + resize->GetAbsTimeToOtherEvent();
+      Query find_this_create = find_creates &&
+          Query::EventTime() >= Query::Double(begin_time) &&
+          Query::EventTime() <= Query::Double(end_time);
+      TraceEventVector create_events;
+      int num_creates = static_cast<int>(analyzer_->FindEvents(find_this_create,
+                                                               &create_events));
+      EXPECT_EQ(expected_creates, num_creates);
+
+      // For debugging failures, print out the width and height of each resize:
       LOG(INFO) <<
           base::StringPrintf(
-              "%d (resize offset %d): IOSurface subset %dx%d; Creates %d",
-              i, offsets[i], events[j]->GetKnownArgAsInt("width"),
-              events[j]->GetKnownArgAsInt("height"), this_num_creates);
+              "%d (resize offset %d): IOSurface width %d -> %d; Creates %d "
+              "Expected %d", offset_i, offsets[offset_i],
+              old_width, new_width, num_creates, expected_creates);
     }
   }
-
-  EXPECT_EQ(surface_pixels_per_window_pixel, num_creates);
 }
 #endif
 

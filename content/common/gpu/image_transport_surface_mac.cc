@@ -289,7 +289,7 @@ void IOSurfaceImageTransportSurface::OnResize(gfx::Size size) {
   // This trace event is used in gpu_feature_browsertest.cc - the test will need
   // to be updated if this event is changed or moved.
   TRACE_EVENT2("gpu", "IOSurfaceImageTransportSurface::OnResize",
-               "width", size.width(), "height", size.height());
+               "old_width", size_.width(), "new_width", size.width());
   // Caching |context_| from OnMakeCurrent. It should still be current.
   DCHECK(context_->IsCurrent(this));
 
