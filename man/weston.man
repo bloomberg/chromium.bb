@@ -1,4 +1,4 @@
-.TH WESTON 1 "2012-08-29" "Weston __version__"
+.TH WESTON 1 "2012-09-13" "Weston __version__"
 .SH NAME
 weston \- the reference Wayland server
 .SH SYNOPSIS
@@ -22,11 +22,8 @@ under another Wayland server), it should be done with the command
 .B weston-launch
 to set up proper privileged access to devices.
 
-Weston also supports X clients by XWayland. XWayland requires a special
-X.org server to be installed. This X server will connect to a Wayland
-server as a Wayland client, and X clients will connect to the X server.
-XWayland provides backwards compatibility to X applications in a Wayland
-stack.
+Weston also supports X clients via 
+.BR XWayland ", see below."
 .
 .\" ***************************************************************
 .SH BACKENDS
@@ -68,6 +65,21 @@ Tablet shell consists of the shell plugin
 and the special client
 .B weston-tablet-shell
 which provides the basic user interface.
+.
+.\" ***************************************************************
+.SH XWAYLAND
+XWayland requires a special X.org server to be installed. This X server will
+connect to a Wayland server as a Wayland client, and X clients will connect to
+the X server. XWayland provides backwards compatibility to X applications in a
+Wayland stack.
+
+XWayland is activated by instructing
+.BR weston " to load " xwayland.so " module, see " EXAMPLES .
+Weston starts listening on a new X display socket, and exports it in the
+environment variable
+.BR DISPLAY .
+When the first X client connects, Weston launches a special X server as a
+Wayland client to handle the X client and all future X clients.
 .
 .\" ***************************************************************
 .SH OPTIONS
@@ -113,14 +125,6 @@ Weston will export
 .B WAYLAND_DISPLAY
 with this value in the environment for all child processes to allow them to
 connect to the right server automatically.
-.TP
-.B \-\-xserver
-Activate XWayland. Weston starts listening on a new X display socket, and
-exports it in the environment variable
-.BR DISPLAY .
-When the first X client connects, Weston launches a special X server as a
-Wayland client to handle the X client and all future X clients.
-.
 .SS DRM backend options:
 .TP
 \fB\-\-connector\fR=\fIconnectorid\fR
@@ -220,8 +224,10 @@ http://wayland.freedesktop.org/
 .
 .\" ***************************************************************
 .SH EXAMPLES
-.IP "Launch Weston with the DRM backend, directly on a VT"
+.IP "Launch Weston with the DRM backend on a VT"
 weston-launch
+.IP "Launch Weston with the DRM backend and XWayland support"
+weston-launch -- --modules=xwayland.so
 .IP "Launch Weston (wayland-1) nested in another Weston instance (wayland-0)"
 WAYLAND_DISPLAY=wayland-0 weston -Swayland-1
 .IP "From an X terminal, launch Weston with the x11 backend"
