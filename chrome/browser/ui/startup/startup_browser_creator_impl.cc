@@ -565,13 +565,15 @@ void StartupBrowserCreatorImpl::ProcessLaunchURLs(
   }
 
   // Session startup didn't occur, open the urls.
-
   Browser* browser = NULL;
   std::vector<GURL> adjust_urls = urls_to_open;
-  if (adjust_urls.empty())
+  if (adjust_urls.empty()) {
     AddStartupURLs(&adjust_urls);
-  else if (!command_line_.HasSwitch(switches::kOpenInNewWindow))
-    browser = browser::FindLastActiveWithProfile(profile_);
+  } else if (!command_line_.HasSwitch(switches::kOpenInNewWindow)) {
+    // Always open a list of urls in a window on the native desktop.
+    browser = browser::FindBrowserWithProfile(profile_,
+                                              chrome::HOST_DESKTOP_TYPE_NATIVE);
+  }
 
   // This will launch a browser; prevent session restore.
   in_synchronous_profile_launch = true;
