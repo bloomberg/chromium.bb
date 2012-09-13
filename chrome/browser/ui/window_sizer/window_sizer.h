@@ -148,11 +148,11 @@ class WindowSizer {
   // will be called before DetermineWindowBounds. It will return true when the
   // function was setting the bounds structure to the desired size. Otherwise
   // another algorithm should get used to determine the correct bounds.
-  bool GetBoundsIgnoringPreviousState(const gfx::Rect& specified_bounds,
-                                      gfx::Rect* bounds) const;
+  bool GetBoundsOverride(const gfx::Rect& specified_bounds,
+                         gfx::Rect* bounds) const;
 #if defined(USE_ASH)
-  bool GetBoundsIgnoringPreviousStateAsh(const gfx::Rect& specified_bounds,
-                                         gfx::Rect* bounds) const;
+  bool GetBoundsOverrideAsh(const gfx::Rect& specified_bounds,
+                            gfx::Rect* bounds_in_screen) const;
 #endif
 
   // Providers for persistent storage and monitor metrics.

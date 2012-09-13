@@ -168,7 +168,7 @@ void WindowSizer::DetermineWindowBounds(const gfx::Rect& specified_bounds,
                                         gfx::Rect* bounds) const {
   *bounds = specified_bounds;
   if (bounds->IsEmpty()) {
-    if (GetBoundsIgnoringPreviousState(specified_bounds, bounds))
+    if (GetBoundsOverride(specified_bounds, bounds))
       return;
     // See if there's saved placement information.
     if (!GetLastWindowBounds(bounds)) {
@@ -330,13 +330,13 @@ void WindowSizer::AdjustBoundsToBeVisibleOnMonitorContaining(
 #endif  // defined(OS_MACOSX)
 }
 
-bool WindowSizer::GetBoundsIgnoringPreviousState(
+bool WindowSizer::GetBoundsOverride(
     const gfx::Rect& specified_bounds,
     gfx::Rect* bounds) const {
 #if defined(USE_ASH)
   // TODO(beng): insufficient but currently necessary. http://crbug.com/133312
   if (chrome::ShouldOpenAshOnStartup())
-    return GetBoundsIgnoringPreviousStateAsh(specified_bounds, bounds);
+    return GetBoundsOverrideAsh(specified_bounds, bounds);
 #endif
   return false;
 }
