@@ -5,14 +5,13 @@
 # If this presubmit check fails or misbehaves, please complain to
 # mnissler@chromium.org, pastarmovj@chromium.org or joaodasilva@chromium.org.
 
-import itertools
-import sys
 
 def _CheckPolicyTemplatesSyntax(input_api, output_api):
   filepath = input_api.os_path.join(input_api.PresubmitLocalPath(),
                                     'policy_templates.json')
   if any(f.AbsoluteLocalPath() == filepath
          for f in input_api.AffectedFiles()):
+    import sys
     old_sys_path = sys.path
     try:
       sys.path = [input_api.PresubmitLocalPath()] + sys.path
@@ -27,10 +26,13 @@ def _CheckPolicyTemplatesSyntax(input_api, output_api):
   return []
 
 
-def _CheckPolicyTestCases(input_api, output_api):
+def _CheckPolicyPyauto(input_api, output_api):
   os_path = input_api.os_path
+  pardir = os_path.pardir
   local_path = input_api.PresubmitLocalPath()
   template_path = os_path.join(local_path, 'policy_templates.json')
+  pyauto_path = os_path.normpath(os_path.join(
+      local_path, pardir, pardir, 'test', 'functional'))
   affected_files = input_api.AffectedFiles()
   if not any(f.AbsoluteLocalPath() == template_path for f in affected_files):
     return []
@@ -48,25 +50,28 @@ def _CheckPolicyTestCases(input_api, output_api):
              for policy in template_data['policy_definitions']
              if policy['type'] == 'group' )
   subpolicies = ( policy['name'] for group in groups for policy in group )
+  import itertools
   template_policies = frozenset(itertools.chain(policies, subpolicies))
 
-  # Read list of policies in chrome/test/data/policy/policy_test_cases.json.
-  root = input_api.change.RepositoryRoot()
-  policy_test_cases_file = os_path.join(
-      root, 'chrome', 'test', 'data', 'policy', 'policy_test_cases.json')
-  test_names = input_api.json.load(open(policy_test_cases_file)).keys()
-  tested_policies = frozenset(
-      [name for name in test_names if name[:2] != '--'])
+  # Read list of policies in the pyauto test.
+  import sys
+  prev_sys_path = sys.path
+  try:
+    sys.path = [pyauto_path] + sys.path
+    from policy_test_cases import PolicyPrefsTestCases
+    pyauto_policies = frozenset(PolicyPrefsTestCases.policies.keys())
+  finally:
+    sys.path = prev_sys_path
 
   # Finally check if any policies are missing.
-  missing = template_policies - tested_policies
-  extra = tested_policies - template_policies
+  missing = template_policies - pyauto_policies
+  extra = pyauto_policies - template_policies
   error_missing = ('Policy \'%s\' was added to policy_templates.json but not '
-                   'to src/chrome/test/data/policy/policy_test_cases.json. '
+                   'to src/chrome/test/functional/policy_test_cases.py. '
                    'Please update both files.')
   error_extra = ('Policy \'%s\' is tested by '
-                 'src/chrome/test/data/policy/policy_test_cases.json but is not'
-                 ' defined in policy_templates.json. Please update both files.')
+                 'src/chrome/test/functional/policy_test_cases.py but is not '
+                 'defined in policy_templates.json. Please update both files.')
   results = []
   for policy in missing:
     results.append(output_api.PresubmitError(error_missing % policy))
@@ -78,7 +83,7 @@ def _CheckPolicyTestCases(input_api, output_api):
 def _CommonChecks(input_api, output_api):
   results = []
   results.extend(_CheckPolicyTemplatesSyntax(input_api, output_api))
-  results.extend(_CheckPolicyTestCases(input_api, output_api))
+  results.extend(_CheckPolicyPyauto(input_api, output_api))
   return results
 
 

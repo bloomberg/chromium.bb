@@ -1373,6 +1373,16 @@ class TestingAutomationProvider : public AutomationProvider,
   void CreateNewAutomationProvider(base::DictionaryValue* args,
                                    IPC::Message* reply_message);
 
+  // Gets a list of supported policies. The output is a map of policy name to
+  // its value type.
+  // Example:
+  //   input: none
+  //   output: { "ShowHomeButton": "bool",
+  //             "DefaultSearchProviderSearchURL": "str"
+  //           }
+  void GetPolicyDefinitionList(base::DictionaryValue* args,
+                               IPC::Message* reply_message);
+
   // Triggers a policy update on the platform and cloud providers, if they
   // exist. Returns after the update notifications are received.
   // Example:

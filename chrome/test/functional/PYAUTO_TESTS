@@ -55,6 +55,7 @@
       'ntp',
       'omnibox',
       'passwords',
+      'policy_prefs_ui',
       'prefs',
       'prefs_ui',
       'pyauto_webdriver',
@@ -174,6 +175,9 @@
       '-omnibox.OmniboxTest.testContentHistory',
       # Keychain popups make autofill/password tests difficult: crbug.com/49378
       '-passwords',
+      # crbug.com/130094
+      '-policy_prefs_ui.PolicyPrefsUITest.testToggleUserPolicyTogglesBanner',
+      '-policy_prefs_ui.PolicyPrefsUITest.testUserPoliciesShowBanner',
       # crbug.com/69619
       '-search_engines.SearchEnginesTest.testDiscoverSearchEngine',
       # Keychain popups make sync tests difficult on Mac.  crbug.com/49378
@@ -266,6 +270,9 @@
       # Multi-profile doesn't apply to chromeos yet.
       '-multiprofile',
       '-ntp.NTPTest.testDifferentProfileNotAppearInMostVisited',
+      # This requires a custom setup on ChromeOS and has its own suite for
+      # that platform.
+      '-policy_prefs_ui',
       # You cannot adjust the downloads directory on ChromeOS.
       '-prefs.PrefsTest.testDownloadDirPref',
 
@@ -628,6 +635,7 @@
       'chromeos_device_policy',
       'chromeos_onc',
       'chromeos_retail_mode',
+      'policy_prefs_ui',
     ],
   },
 
@@ -735,6 +743,9 @@
       '-youtube.YoutubeTest.testPlayerStatus',
       '-ntp.NTPTest.testLaunchAppFullScreen',
       '-media.media_basic_playback.MediaConstrainedNetworkPerfTest.testBasicPlaybackMatrix',
+      '-policy_prefs_ui.PolicyPrefsUITest.testNoUserPoliciesNoBanner',
+      '-policy_prefs_ui.PolicyPrefsUITest.testToggleUserPolicyTogglesBanner',
+      '-policy_prefs_ui.PolicyPrefsUITest.testUserPoliciesShowBanner',
       '-search_engines.SearchEnginesTest.testDiscoverSearchEngine',
       '-ntp.NTPTest.testUninstallApp',
       '-ntp.NTPTest.testLaunchAppWithDefaultSettings',

@@ -21,11 +21,8 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/test/browser_test_utils.h"
 #include "googleurl/src/gurl.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -43,19 +40,6 @@ using testing::Return;
 namespace policy {
 
 namespace {
-
-const char* kSettingsPages[] = {
-  "chrome://settings-frame",
-  "chrome://settings-frame/searchEngines",
-  "chrome://settings-frame/passwords",
-  "chrome://settings-frame/autofill",
-  "chrome://settings-frame/content",
-  "chrome://settings-frame/homePageOverlay",
-  "chrome://settings-frame/languages",
-#if defined(OS_CHROMEOS)
-  "chrome://settings-frame/accounts",
-#endif
-};
 
 // Contains the testing details for a single policy, loaded from
 // chrome/test/data/policy/policy_test_cases.json.
@@ -154,7 +138,7 @@ class PolicyPrefsTest : public InProcessBrowserTest {
     int error_code = -1;
     std::string error_string;
     scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
-        json, base::JSON_PARSE_RFC, &error_code, &error_string));
+        json, base::JSON_ALLOW_TRAILING_COMMAS, &error_code, &error_string));
     ASSERT_TRUE(value.get())
         << "Error parsing policy_test_cases.json: " << error_string;
     base::DictionaryValue* dict = NULL;
@@ -224,25 +208,6 @@ class PolicyPrefsTest : public InProcessBrowserTest {
     BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
   }
 
-  bool IsBannerVisible() {
-    content::WebContents* contents = chrome::GetActiveWebContents(browser());
-    bool result = false;
-    EXPECT_TRUE(content::ExecuteJavaScriptAndExtractBool(
-        contents->GetRenderViewHost(),
-        std::wstring(),
-        L"var visible = false;"
-        L"var banners = document.querySelectorAll('.page-banner');"
-        L"for (var i = 0; i < banners.length; i++) {"
-        L"  if (banners[i].parentElement.id == 'templates')"
-        L"    continue;"
-        L"  if (window.getComputedStyle(banners[i]).display != 'none')"
-        L"    visible = true;"
-        L"}"
-        L"domAutomationController.send(visible);",
-        &result));
-    return result;
-  }
-
   static std::map<std::string, PolicyTestCase*>* policy_test_cases_;
   MockConfigurationPolicyProvider provider_;
 };
@@ -297,63 +262,6 @@ IN_PROC_BROWSER_TEST_F(PolicyPrefsTest, PolicyToPrefsMapping) {
     EXPECT_FALSE(pref->IsUserModifiable());
     EXPECT_FALSE(pref->IsUserControlled());
     EXPECT_TRUE(pref->IsManaged());
-  }
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyPrefsTest, NoPoliciesNoBanner) {
-  // Verifies that the banner isn't shown in the settings UI when no policies
-  // are set.
-  for (size_t i = 0; i < arraysize(kSettingsPages); ++i) {
-    ui_test_utils::NavigateToURL(browser(), GURL(kSettingsPages[i]));
-    EXPECT_FALSE(IsBannerVisible());
-  }
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyPrefsTest, TogglePolicyTogglesBanner) {
-  // Verifies that the banner appears and disappears as policies are added and
-  // removed.
-  // |test_case| is just a particular policy that should trigger the banner
-  // on the main settings page.
-  PolicyTestCase* test_case = (*policy_test_cases_)["ShowHomeButton"];
-  ASSERT_TRUE(test_case);
-  // No banner by default.
-  ui_test_utils::NavigateToURL(browser(), GURL(kSettingsPages[0]));
-  EXPECT_FALSE(IsBannerVisible());
-  // Adding a policy makes the banner show up.
-  provider_.UpdateChromePolicy(test_case->test_policy());
-  EXPECT_TRUE(IsBannerVisible());
-  // And removing it makes the banner go away.
-  const PolicyMap kNoPolicies;
-  provider_.UpdateChromePolicy(kNoPolicies);
-  EXPECT_FALSE(IsBannerVisible());
-  // Do it again, just in case.
-  provider_.UpdateChromePolicy(test_case->test_policy());
-  EXPECT_TRUE(IsBannerVisible());
-  provider_.UpdateChromePolicy(kNoPolicies);
-  EXPECT_FALSE(IsBannerVisible());
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyPrefsTest, CheckAllPoliciesThatShowTheBanner) {
-  // Verifies that the banner appears for each policy that affects a control
-  // in the settings UI.
-  const PolicyMap kNoPolicies;
-  std::map<std::string, PolicyTestCase*>::iterator it;
-  for (it = policy_test_cases_->begin();
-       it != policy_test_cases_->end(); ++it) {
-    PolicyTestCase* test_case = it->second;
-    if (!test_case->IsSupported() || test_case->settings_pages().empty())
-      continue;
-    LOG(INFO) << "Testing policy: " << test_case->name();
-
-    const std::vector<GURL>& pages = test_case->settings_pages();
-    for (size_t i = 0; i < pages.size(); ++i) {
-      ui_test_utils::NavigateToURL(browser(), pages[i]);
-      EXPECT_FALSE(IsBannerVisible());
-      provider_.UpdateChromePolicy(test_case->test_policy());
-      EXPECT_TRUE(IsBannerVisible());
-      provider_.UpdateChromePolicy(kNoPolicies);
-      EXPECT_FALSE(IsBannerVisible());
-    }
   }
 }
 
