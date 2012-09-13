@@ -5,6 +5,7 @@
 package org.chromium.android_webview.test;
 
 import android.content.Context;
+import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.test.suitebuilder.annotation.Smoke;
 
@@ -14,8 +15,12 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.content.browser.ContentSettings;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content.browser.test.CallbackHelper;
+import org.chromium.content.browser.test.HistoryUtils;
 
 import java.util.concurrent.Callable;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A test suite for ContentSettings class. The key objective is to verify that each
@@ -85,6 +90,13 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
                 data,
                 "text/html",
                 false);
+        }
+
+        protected void loadUrlSync(String url) throws Throwable {
+            AwSettingsTest.this.loadUrlSync(
+                mContentViewCore,
+                mContentViewClient.getOnPageFinishedHelper(),
+                url);
         }
 
         private void ensureSettingHasValue(T value) throws Throwable {
@@ -298,12 +310,12 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         }
     }
 
-    class AwSettingsUserAgentTestHelper extends AwSettingsTestHelper<String> {
+    class AwSettingsUserAgentStringTestHelper extends AwSettingsTestHelper<String> {
         private final String mDefaultUa;
         private static final String DEFAULT_UA = "";
         private static final String CUSTOM_UA = "ChromeViewTest";
 
-        AwSettingsUserAgentTestHelper(
+        AwSettingsUserAgentStringTestHelper(
                 ContentViewCore contentViewCore,
                 TestAwContentsClient contentViewClient) throws Throwable {
             super(contentViewCore, contentViewClient, true);
@@ -385,14 +397,201 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         protected void doEnsureSettingHasValue(Boolean value) throws Throwable {
             // It is not permitted to access localStorage from data URLs in WebKit,
             // that is why a standalone page must be used.
-            AwSettingsTest.this.loadUrlSync(
-                mContentViewCore,
-                mContentViewClient.getOnPageFinishedHelper(),
-                UrlUtils.getTestFileUrl("webview/localStorage.html"));
+            loadUrlSync(UrlUtils.getTestFileUrl("webview/localStorage.html"));
             assertEquals(
                 value == ENABLED ? HAS_LOCAL_STORAGE : NO_LOCAL_STORAGE,
                 getTitleOnUiThread());
         }
+    }
+
+    class AwSettingsUniversalAccessFromFilesTestHelper extends AwSettingsTestHelper<Boolean> {
+        // TODO(mnaganov): Change to "Exception" once
+        // https://bugs.webkit.org/show_bug.cgi?id=43504 is fixed.
+        private static final String ACCESS_DENIED_TITLE = "undefined";
+
+        AwSettingsUniversalAccessFromFilesTestHelper(
+                ContentViewCore contentViewCore,
+                TestAwContentsClient contentViewClient) throws Throwable {
+            super(contentViewCore, contentViewClient, true);
+            mIframeContainerUrl = UrlUtils.getTestFileUrl("webview/iframe_access.html");
+            mIframeUrl = UrlUtils.getTestFileUrl("webview/hello_world.html");
+            // The value of the setting depends on the SDK version.
+            mContentSettings.setAllowUniversalAccessFromFileURLs(false);
+            // If universal access is true, the value of file access doesn't
+            // matter. While if universal access is false, having file access
+            // enabled will allow file loading.
+            mContentSettings.setAllowFileAccessFromFileURLs(false);
+        }
+
+        @Override
+        protected Boolean getAlteredValue() {
+            return ENABLED;
+        }
+
+        @Override
+        protected Boolean getInitialValue() {
+            return DISABLED;
+        }
+
+        @Override
+        protected Boolean getCurrentValue() {
+            return mContentSettings.getAllowUniversalAccessFromFileURLs();
+        }
+
+        @Override
+        protected void setCurrentValue(Boolean value) {
+            mContentSettings.setAllowUniversalAccessFromFileURLs(value);
+        }
+
+        @Override
+        protected void doEnsureSettingHasValue(Boolean value) throws Throwable {
+            loadUrlSync(mIframeContainerUrl);
+            assertEquals(
+                value == ENABLED ? mIframeUrl : ACCESS_DENIED_TITLE,
+                getTitleOnUiThread());
+        }
+
+        private final String mIframeContainerUrl;
+        private final String mIframeUrl;
+    }
+
+    class AwSettingsFileAccessFromFilesIframeTestHelper extends AwSettingsTestHelper<Boolean> {
+        // TODO(mnaganov): Change to "Exception" once
+        // https://bugs.webkit.org/show_bug.cgi?id=43504 is fixed.
+        private static final String ACCESS_DENIED_TITLE = "undefined";
+
+        AwSettingsFileAccessFromFilesIframeTestHelper(
+                ContentViewCore contentViewCore,
+                TestAwContentsClient contentViewClient) throws Throwable {
+            super(contentViewCore, contentViewClient, true);
+            mIframeContainerUrl = UrlUtils.getTestFileUrl("webview/iframe_access.html");
+            mIframeUrl = UrlUtils.getTestFileUrl("webview/hello_world.html");
+            mContentSettings.setAllowUniversalAccessFromFileURLs(false);
+            // The value of the setting depends on the SDK version.
+            mContentSettings.setAllowFileAccessFromFileURLs(false);
+        }
+
+        @Override
+        protected Boolean getAlteredValue() {
+            return ENABLED;
+        }
+
+        @Override
+        protected Boolean getInitialValue() {
+            return DISABLED;
+        }
+
+        @Override
+        protected Boolean getCurrentValue() {
+            return mContentSettings.getAllowFileAccessFromFileURLs();
+        }
+
+        @Override
+        protected void setCurrentValue(Boolean value) {
+            mContentSettings.setAllowFileAccessFromFileURLs(value);
+        }
+
+        @Override
+        protected void doEnsureSettingHasValue(Boolean value) throws Throwable {
+            loadUrlSync(mIframeContainerUrl);
+            assertEquals(
+                value == ENABLED ? mIframeUrl : ACCESS_DENIED_TITLE,
+                getTitleOnUiThread());
+        }
+
+        private final String mIframeContainerUrl;
+        private final String mIframeUrl;
+    }
+
+    class AwSettingsFileAccessFromFilesXhrTestHelper extends AwSettingsTestHelper<Boolean> {
+        private static final String ACCESS_GRANTED_TITLE = "Hello, World!";
+        private static final String ACCESS_DENIED_TITLE = "Exception";
+
+        AwSettingsFileAccessFromFilesXhrTestHelper(
+                ContentViewCore contentViewCore,
+                TestAwContentsClient contentViewClient) throws Throwable {
+            super(contentViewCore, contentViewClient, true);
+            mXhrContainerUrl = UrlUtils.getTestFileUrl("webview/xhr_access.html");
+            mContentSettings.setAllowUniversalAccessFromFileURLs(false);
+            // The value of the setting depends on the SDK version.
+            mContentSettings.setAllowFileAccessFromFileURLs(false);
+        }
+
+        @Override
+        protected Boolean getAlteredValue() {
+            return ENABLED;
+        }
+
+        @Override
+        protected Boolean getInitialValue() {
+            return DISABLED;
+        }
+
+        @Override
+        protected Boolean getCurrentValue() {
+            return mContentSettings.getAllowFileAccessFromFileURLs();
+        }
+
+        @Override
+        protected void setCurrentValue(Boolean value) {
+            mContentSettings.setAllowFileAccessFromFileURLs(value);
+        }
+
+        @Override
+        protected void doEnsureSettingHasValue(Boolean value) throws Throwable {
+            loadUrlSync(mXhrContainerUrl);
+            assertEquals(
+                value == ENABLED ? ACCESS_GRANTED_TITLE : ACCESS_DENIED_TITLE,
+                getTitleOnUiThread());
+        }
+
+        private final String mXhrContainerUrl;
+    }
+
+    class AwSettingsFileUrlAccessTestHelper extends AwSettingsTestHelper<Boolean> {
+        private static final String ACCESS_GRANTED_TITLE = "Hello, World!";
+        private static final String ACCESS_DENIED_TITLE = "about:blank";
+
+        AwSettingsFileUrlAccessTestHelper(
+                ContentViewCore contentViewCore,
+                TestAwContentsClient contentViewClient,
+                int startIndex) throws Throwable {
+            super(contentViewCore, contentViewClient, true);
+            mIndex = startIndex;
+        }
+
+        @Override
+        protected Boolean getAlteredValue() {
+            return DISABLED;
+        }
+
+        @Override
+        protected Boolean getInitialValue() {
+            return ENABLED;
+        }
+
+        @Override
+        protected Boolean getCurrentValue() {
+            return mContentSettings.getAllowFileAccess();
+        }
+
+        @Override
+        protected void setCurrentValue(Boolean value) {
+            mContentSettings.setAllowFileAccess(value);
+        }
+
+        @Override
+        protected void doEnsureSettingHasValue(Boolean value) throws Throwable {
+            // Use query parameters to avoid hitting a cached page.
+            String fileUrl = UrlUtils.getTestFileUrl("webview/hello_world.html?id=" + mIndex);
+            mIndex += 2;
+            loadUrlSync(fileUrl);
+            assertEquals(
+                value == ENABLED ? ACCESS_GRANTED_TITLE : ACCESS_DENIED_TITLE,
+                getTitleOnUiThread());
+        }
+
+        private int mIndex;
     }
 
     // The test verifies that JavaScript is disabled upon WebView
@@ -557,31 +756,132 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             new AwSettingsDefaultTextEncodingTestHelper(views.getView1(), views.getClient1()));
     }
 
+    // The test verifies that the default user agent string follows the format
+    // defined in Android CTS tests:
+    //
+    // Mozilla/5.0 (Linux;[ U;] Android <version>;[ <language>-<country>;]
+    // [<devicemodel>;] Build/<buildID>) AppleWebKit/<major>.<minor> (KHTML, like Gecko)
+    // Version/<major>.<minor>[ Mobile] Safari/<major>.<minor>
     @SmallTest
     @Feature({"Android-WebView", "Preferences"})
-    public void testUserAgentNormal() throws Throwable {
+    public void testUserAgentStringDefault() throws Throwable {
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final ContentViewCore contentView =
+                createAwTestContainerViewOnMainSync(false, contentClient).getContentViewCore();
+        ContentSettings settings = getContentSettingsOnUiThread(contentView);
+        final String actualUserAgentString = settings.getUserAgentString();
+        final String patternString =
+                "Mozilla/5\\.0 \\(Linux;( U;)? Android ([^;]+);( (\\w+)-(\\w+);)?" +
+                "\\s?(.*)\\sBuild/(.+)\\) AppleWebKit/(\\d+)\\.(\\d+) \\(KHTML, like Gecko\\) " +
+                "Version/\\d+\\.\\d+( Mobile)? Safari/(\\d+)\\.(\\d+)";
+        final Pattern userAgentExpr = Pattern.compile(patternString);
+        Matcher patternMatcher = userAgentExpr.matcher(actualUserAgentString);
+        assertTrue(String.format("User agent string did not match expected pattern. \nExpected " +
+                        "pattern:\n%s\nActual:\n%s", patternString, actualUserAgentString),
+                        patternMatcher.find());
+        // No country-language code token.
+        assertEquals(null, patternMatcher.group(3));
+        if ("REL".equals(Build.VERSION.CODENAME)) {
+            // Model is only added in release builds
+            assertEquals(Build.MODEL, patternMatcher.group(6));
+            // Release version is valid only in release builds
+            assertEquals(Build.VERSION.RELEASE, patternMatcher.group(2));
+        }
+        assertEquals(Build.ID, patternMatcher.group(7));
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
+    public void testUserAgentStringOverride() throws Throwable {
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final ContentViewCore contentView =
+                createAwTestContainerViewOnMainSync(false, contentClient).getContentViewCore();
+        ContentSettings settings = getContentSettingsOnUiThread(contentView);
+        final String defaultUserAgentString = settings.getUserAgentString();
+
+        // Check that an attempt to reset the default UA string has no effect.
+        settings.setUserAgentString(null);
+        assertEquals(defaultUserAgentString, settings.getUserAgentString());
+        settings.setUserAgentString("");
+        assertEquals(defaultUserAgentString, settings.getUserAgentString());
+
+        // Check that we can also set the default value.
+        settings.setUserAgentString(defaultUserAgentString);
+        assertEquals(defaultUserAgentString, settings.getUserAgentString());
+
+        // Set a custom UA string, verify that it can be reset back to default.
+        final String customUserAgentString = "ContentSettingsTest";
+        settings.setUserAgentString(customUserAgentString);
+        assertEquals(customUserAgentString, settings.getUserAgentString());
+        settings.setUserAgentString(null);
+        assertEquals(defaultUserAgentString, settings.getUserAgentString());
+    }
+
+    // Verify that the current UA override setting has a priority over UA
+    // overrides in navigation history entries.
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
+    public void testUserAgentStringOverrideForHistory() throws Throwable {
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final ContentViewCore contentView =
+                createAwTestContainerViewOnMainSync(false, contentClient).getContentViewCore();
+        CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
+        ContentSettings settings = getContentSettingsOnUiThread(contentView);
+        settings.setJavaScriptEnabled(true);
+        final String defaultUserAgentString = settings.getUserAgentString();
+        final String customUserAgentString = "ContentSettingsTest";
+        // We are using different page titles to make sure that we are really
+        // going back and forward between them.
+        final String pageTemplate =
+                "<html><head><title>%s</title></head>" +
+                "<body onload='document.title+=navigator.userAgent'></body>" +
+                "</html>";
+        final String page1Title = "Page1";
+        final String page2Title = "Page2";
+        final String page1 = String.format(pageTemplate, page1Title);
+        final String page2 = String.format(pageTemplate, page2Title);
+        settings.setUserAgentString(customUserAgentString);
+        loadDataSync(
+            contentView, contentClient.getOnPageFinishedHelper(), page1, "text/html", false);
+        assertEquals(page1Title + customUserAgentString, getTitleOnUiThread(contentView));
+        loadDataSync(
+            contentView, contentClient.getOnPageFinishedHelper(), page2, "text/html", false);
+        assertEquals(page2Title + customUserAgentString, getTitleOnUiThread(contentView));
+        settings.setUserAgentString(null);
+        // Must not cause any changes until the next page loading.
+        assertEquals(page2Title + customUserAgentString, getTitleOnUiThread(contentView));
+        HistoryUtils.goBackSync(getInstrumentation(), contentView, onPageFinishedHelper);
+        assertEquals(page1Title + defaultUserAgentString, getTitleOnUiThread(contentView));
+        HistoryUtils.goForwardSync(getInstrumentation(), contentView,
+                                   onPageFinishedHelper);
+        assertEquals(page2Title + defaultUserAgentString, getTitleOnUiThread(contentView));
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
+    public void testUserAgentStringNormal() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
         runPerViewSettingsTest(
-            new AwSettingsUserAgentTestHelper(views.getView0(), views.getClient0()),
-            new AwSettingsUserAgentTestHelper(views.getView1(), views.getClient1()));
+            new AwSettingsUserAgentStringTestHelper(views.getView0(), views.getClient0()),
+            new AwSettingsUserAgentStringTestHelper(views.getView1(), views.getClient1()));
     }
 
     @SmallTest
     @Feature({"Android-WebView", "Preferences"})
-    public void testUserAgentIncognito() throws Throwable {
+    public void testUserAgentStringIncognito() throws Throwable {
         ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
-            new AwSettingsUserAgentTestHelper(views.getView0(), views.getClient0()),
-            new AwSettingsUserAgentTestHelper(views.getView1(), views.getClient1()));
+            new AwSettingsUserAgentStringTestHelper(views.getView0(), views.getClient0()),
+            new AwSettingsUserAgentStringTestHelper(views.getView1(), views.getClient1()));
     }
 
     @SmallTest
     @Feature({"Android-WebView", "Preferences"})
-    public void testUserAgentBoth() throws Throwable {
+    public void testUserAgentStringBoth() throws Throwable {
         ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
         runPerViewSettingsTest(
-            new AwSettingsUserAgentTestHelper(views.getView0(), views.getClient0()),
-            new AwSettingsUserAgentTestHelper(views.getView1(), views.getClient1()));
+            new AwSettingsUserAgentStringTestHelper(views.getView0(), views.getClient0()),
+            new AwSettingsUserAgentStringTestHelper(views.getView1(), views.getClient1()));
     }
 
     @SmallTest
@@ -609,6 +909,138 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         runPerViewSettingsTest(
             new AwSettingsDomStorageEnabledTestHelper(views.getView0(), views.getClient0()),
             new AwSettingsDomStorageEnabledTestHelper(views.getView1(), views.getClient1()));
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
+    public void testUniversalAccessFromFilesNormal() throws Throwable {
+        ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
+        runPerViewSettingsTest(
+            new AwSettingsUniversalAccessFromFilesTestHelper(views.getView0(), views.getClient0()),
+            new AwSettingsUniversalAccessFromFilesTestHelper(views.getView1(), views.getClient1()));
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
+    public void testUniversalAccessFromFilesIncognito() throws Throwable {
+        ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
+        runPerViewSettingsTest(
+            new AwSettingsUniversalAccessFromFilesTestHelper(views.getView0(), views.getClient0()),
+            new AwSettingsUniversalAccessFromFilesTestHelper(views.getView1(), views.getClient1()));
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
+    public void testUniversalAccessFromFilesBoth() throws Throwable {
+        ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
+        runPerViewSettingsTest(
+            new AwSettingsUniversalAccessFromFilesTestHelper(views.getView0(), views.getClient0()),
+            new AwSettingsUniversalAccessFromFilesTestHelper(views.getView1(), views.getClient1()));
+    }
+
+    // This test verifies that local image resources can be loaded from file:
+    // URLs regardless of file access state.
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
+    public void testFileAccessFromFilesImage() throws Throwable {
+        final String imageContainerUrl = UrlUtils.getTestFileUrl("webview/image_access.html");
+        final String imageHeight = "16";
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final ContentViewCore contentView =
+                createAwTestContainerViewOnMainSync(false, contentClient).getContentViewCore();
+        ContentSettings settings = getContentSettingsOnUiThread(contentView);
+        settings.setJavaScriptEnabled(true);
+        settings.setAllowUniversalAccessFromFileURLs(false);
+        settings.setAllowFileAccessFromFileURLs(false);
+        loadUrlSync(contentView, contentClient.getOnPageFinishedHelper(), imageContainerUrl);
+        assertEquals(imageHeight, getTitleOnUiThread(contentView));
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
+    public void testFileAccessFromFilesIframeNormal() throws Throwable {
+        ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
+        runPerViewSettingsTest(
+            new AwSettingsFileAccessFromFilesIframeTestHelper(
+                views.getView0(), views.getClient0()),
+            new AwSettingsFileAccessFromFilesIframeTestHelper(
+                views.getView1(), views.getClient1()));
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
+    public void testFileAccessFromFilesIframeIncognito() throws Throwable {
+        ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
+        runPerViewSettingsTest(
+            new AwSettingsFileAccessFromFilesIframeTestHelper(
+                views.getView0(), views.getClient0()),
+            new AwSettingsFileAccessFromFilesIframeTestHelper(
+                views.getView1(), views.getClient1()));
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
+    public void testFileAccessFromFilesIframeBoth() throws Throwable {
+        ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
+        runPerViewSettingsTest(
+            new AwSettingsFileAccessFromFilesIframeTestHelper(
+                views.getView0(), views.getClient0()),
+            new AwSettingsFileAccessFromFilesIframeTestHelper(
+                views.getView1(), views.getClient1()));
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
+    public void testFileAccessFromFilesXhrNormal() throws Throwable {
+        ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
+        runPerViewSettingsTest(
+            new AwSettingsFileAccessFromFilesXhrTestHelper(views.getView0(), views.getClient0()),
+            new AwSettingsFileAccessFromFilesXhrTestHelper(views.getView1(), views.getClient1()));
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
+    public void testFileAccessFromFilesXhrIncognito() throws Throwable {
+        ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
+        runPerViewSettingsTest(
+            new AwSettingsFileAccessFromFilesXhrTestHelper(views.getView0(), views.getClient0()),
+            new AwSettingsFileAccessFromFilesXhrTestHelper(views.getView1(), views.getClient1()));
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
+    public void testFileAccessFromFilesXhrBoth() throws Throwable {
+        ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
+        runPerViewSettingsTest(
+            new AwSettingsFileAccessFromFilesXhrTestHelper(views.getView0(), views.getClient0()),
+            new AwSettingsFileAccessFromFilesXhrTestHelper(views.getView1(), views.getClient1()));
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
+    public void testFileUrlAccessNormal() throws Throwable {
+        ViewPair views = createViews(NORMAL_VIEW, NORMAL_VIEW);
+        runPerViewSettingsTest(
+            new AwSettingsFileUrlAccessTestHelper(views.getView0(), views.getClient0(), 0),
+            new AwSettingsFileUrlAccessTestHelper(views.getView1(), views.getClient1(), 1));
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
+    public void testFileUrlAccessIncognito() throws Throwable {
+        ViewPair views = createViews(INCOGNITO_VIEW, INCOGNITO_VIEW);
+        runPerViewSettingsTest(
+            new AwSettingsFileUrlAccessTestHelper(views.getView0(), views.getClient0(), 0),
+            new AwSettingsFileUrlAccessTestHelper(views.getView1(), views.getClient1(), 1));
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
+    public void testFileUrlAccessBoth() throws Throwable {
+        ViewPair views = createViews(NORMAL_VIEW, INCOGNITO_VIEW);
+        runPerViewSettingsTest(
+            new AwSettingsFileUrlAccessTestHelper(views.getView0(), views.getClient0(), 0),
+            new AwSettingsFileUrlAccessTestHelper(views.getView1(), views.getClient1(), 1));
     }
 
     class ViewPair {
