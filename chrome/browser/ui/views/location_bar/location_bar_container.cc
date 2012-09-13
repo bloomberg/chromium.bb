@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/webui/instant_ui.h"
 #include "ui/base/events/event.h"
 #include "ui/views/background.h"
-#include "ui/views/layout/fill_layout.h"
 
 namespace {
 
@@ -32,7 +31,6 @@ LocationBarContainer::LocationBarContainer(views::View* parent,
     view_parent_->set_background(
         views::Background::CreateSolidBackground(GetBackgroundColor()));
   }
-  SetLayoutManager(new views::FillLayout);
 }
 
 LocationBarContainer::~LocationBarContainer() {
@@ -65,6 +63,14 @@ std::string LocationBarContainer::GetClassName() const {
 
 gfx::Size LocationBarContainer::GetPreferredSize() {
   return location_bar_view_->GetPreferredSize();
+}
+
+void LocationBarContainer::Layout() {
+  // |location_bar_view_| fills the entire width of the container, but retains
+  // its preferred height, so that it's not resized which, if shrunk, will
+  // squish the placeholder text within a smaller vertical space.
+  location_bar_view_->SetBounds(0, 0, bounds().width(),
+      location_bar_view_->GetPreferredSize().height());
 }
 
 bool LocationBarContainer::SkipDefaultKeyEventProcessing(

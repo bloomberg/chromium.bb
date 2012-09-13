@@ -423,7 +423,17 @@ void ToolbarView::LayoutForSearch() {
   location_bar_container_->SetInToolbar(false);
   location_container_bounds.set_height(
       location_bar_container_->GetPreferredSize().height());
-  location_bar_container_->SetBoundsRect(location_container_bounds);
+
+  // If bounds of |location_bar_container_| is not contained within its
+  // parent's, adjust the former's to within the latter's.  This will clip its
+  // child |location_bar_view_| within its bounds without resizing it.
+  // Note that parent of |location_bar_container_| i.e. BrowserView can't clip
+  // its children, else it loses the 3D shadows.
+  gfx::Rect parent_rect = location_bar_container_->parent()->GetLocalBounds();
+  gfx::Rect intersect_rect = parent_rect.Intersect(location_container_bounds);
+  // If the two bounds don't intersect, set bounds of |location_bar_container_|
+  // to 0.
+  location_bar_container_->SetBoundsRect(intersect_rect);
 #endif
 }
 
@@ -978,7 +988,7 @@ void ToolbarView::SetLocationBarContainerBounds(
   // LocationBarContainer is not a child of the ToolbarView.
   gfx::Point origin(bounds.origin());
   views::View::ConvertPointToTarget(this, location_bar_container_->parent(),
-                                  &origin);
+                                    &origin);
   gfx::Rect target_bounds(origin, bounds.size());
   if (location_bar_container_->GetTargetBounds() != target_bounds) {
     location_bar_container_->SetInToolbar(true);

@@ -13,6 +13,10 @@ void LocationBarContainer::SetInToolbar(bool in_toolbar) {
   SetPaintToLayer(!in_toolbar);
   if (!in_toolbar) {
     layer()->SetFillsBoundsOpaquely(false);
+    // The LocationBarView may be taller than us (otherwise the text gets
+    // squished in weird ways).  To allow the LocationBarView to be taller yet
+    // clipped to our bounds, we explicity turn on clipping.
+    layer()->SetMasksToBounds(true);
     StackAtTop();
   }
 }
