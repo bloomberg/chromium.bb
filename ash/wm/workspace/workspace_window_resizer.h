@@ -75,6 +75,7 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WorkspaceWindowResizerTest, PhantomStyle);
+  FRIEND_TEST_ALL_PREFIXES(WorkspaceWindowResizerTest, CancelSnapPhantom);
 
   // Type of snapping.
   enum SnapType {

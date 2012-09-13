@@ -141,11 +141,13 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
 #define MAYBE_WindowDragWithMultiDisplaysRightToLeft \
   DISABLED_WindowDragWithMultiDisplaysRightToLeft
 #define MAYBE_PhantomStyle DISABLED_PhantomStyle
+#define MAYBE_CancelSnapPhantom DISABLED_CancelSnapPhantom
 #else
 #define MAYBE_WindowDragWithMultiDisplays WindowDragWithMultiDisplays
 #define MAYBE_WindowDragWithMultiDisplaysRightToLeft \
   WindowDragWithMultiDisplaysRightToLeft
 #define MAYBE_PhantomStyle PhantomStyle
+#define MAYBE_CancelSnapPhantom CancelSnapPhantom
 #endif
 
 // Assertions around attached window resize dragging from the right with 2
@@ -632,6 +634,46 @@ TEST_F(WorkspaceWindowResizerTest, MAYBE_PhantomStyle) {
     resizer->RevertDrag();
     EXPECT_EQ(root_windows[0], window_->GetRootWindow());
     EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
+  }
+}
+
+// Verifies the style of the drag phantom window is correct.
+TEST_F(WorkspaceWindowResizerTest, MAYBE_CancelSnapPhantom) {
+  UpdateDisplay("800x600,800x600");
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  ASSERT_EQ(2U, root_windows.size());
+
+  window_->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
+                             gfx::Screen::GetPrimaryDisplay());
+  EXPECT_EQ(root_windows[0], window_->GetRootWindow());
+  EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
+  {
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
+    ASSERT_TRUE(resizer.get());
+    EXPECT_FALSE(resizer->snap_phantom_window_controller_.get());
+    EXPECT_FALSE(resizer->drag_phantom_window_controller_.get());
+    EXPECT_EQ(WorkspaceWindowResizer::SNAP_NONE, resizer->snap_type_);
+
+    // The pointer is on the edge but not shared.  Both controllers should be
+    // non-NULL.
+    resizer->Drag(CalculateDragPoint(*resizer, 799, 0), 0);
+    EXPECT_TRUE(resizer->snap_phantom_window_controller_.get());
+    EXPECT_EQ(WorkspaceWindowResizer::SNAP_RIGHT_EDGE, resizer->snap_type_);
+    PhantomWindowController* controller =
+        resizer->drag_phantom_window_controller_.get();
+    ASSERT_TRUE(controller);
+    EXPECT_EQ(PhantomWindowController::STYLE_DRAGGING, controller->style());
+
+    // Move the cursor across the edge.  Now the snap phantom controller
+    // should be canceled.
+    resizer->Drag(CalculateDragPoint(*resizer, 800, 0), 0);
+    EXPECT_FALSE(resizer->snap_phantom_window_controller_.get());
+    EXPECT_EQ(WorkspaceWindowResizer::SNAP_NONE, resizer->snap_type_);
+    controller =
+        resizer->drag_phantom_window_controller_.get();
+    ASSERT_TRUE(controller);
+    EXPECT_EQ(PhantomWindowController::STYLE_DRAGGING, controller->style());
   }
 }
 

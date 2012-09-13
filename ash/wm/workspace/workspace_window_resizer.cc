@@ -157,10 +157,12 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location, int event_flags) {
 
   const bool in_original_root = (window()->GetRootWindow() == current_root);
   // Hide a phantom window for snapping if the cursor is in another root window.
-  if (in_original_root)
+  if (in_original_root) {
     UpdateSnapPhantomWindow(location_in_parent, bounds);
-  else
+  } else {
+    snap_type_ = SNAP_NONE;
     snap_phantom_window_controller_.reset();
+  }
 
   if (!attached_windows_.empty())
     LayoutAttachedWindows(bounds);
