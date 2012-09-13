@@ -274,6 +274,7 @@ VaapiH264Decoder::DecodeSurface::~DecodeSurface() {
 
   if (x_pixmap_)
     XFreePixmap(x_display_, x_pixmap_);
+  XSync(x_display_, False);  // Needed to work around buggy vdpau-driver.
 }
 
 void VaapiH264Decoder::DecodeSurface::Acquire(int32 input_id, int poc) {
