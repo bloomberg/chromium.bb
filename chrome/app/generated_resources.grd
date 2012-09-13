@@ -4624,13 +4624,23 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <message name="IDS_EXTENSION_ALERT_TITLE" desc="Titlebar of the extension notification alert">
         Confirm Changes
       </message>
+      <message name="IDS_EXTENSION_ALERT_ITEM_EXTERNAL" desc="A statement that an external extension has been newly installed. End users have no idea what an 'external' extension is, so we simply call them extensions.">
+        The extension "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has been added.
+      </message>
       <message name="IDS_EXTENSION_ALERT_ITEM_BLACKLISTED" desc="A statement that an extension has been newly blacklisted. http://www.google.com/support/chrome/bin/answer.py?hl=en&amp;answer=1210215 contains the language on which we're basing the phrasing.">
-The extension "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" was automatically removed.
-'''
+        The extension "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" was automatically removed.
       </message>
       <message name="IDS_EXTENSION_ALERT_ITEM_ORPHANED" desc="A statement that an extension formerly live in the App Store has been delisted.">
-Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>."
-'''
+        Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>."
+      </message>
+      <message name="IDS_APP_ALERT_ITEM_EXTERNAL" desc="A statement that an external packaged app has been newly installed. End users have no idea what an 'external' app is, so we simply call them apps.">
+        The app "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has been added.
+      </message>
+      <message name="IDS_APP_ALERT_ITEM_BLACKLISTED" desc="A statement that a packaged app has been newly blacklisted. http://www.google.com/support/chrome/bin/answer.py?hl=en&amp;answer=1210215 contains the language on which we're basing the phrasing.">
+        The app "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" was automatically removed.
+      </message>
+      <message name="IDS_APP_ALERT_ITEM_ORPHANED" desc="A statement that a packaged app formerly live in the App Store has been delisted.">
+        Update checks have repeatedly failed for the app "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>."
       </message>
       <message name="IDS_EXTENSION_ALERT_ITEM_OK" desc="The title of the default button acknowledging the information presented.">
         OK
@@ -4815,8 +4825,11 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       <message name="IDS_EXTENSION_PUBLIC_KEY_FAILED_TO_EXPORT" desc="Warning displayed in pack dialog when exporting a public key failed.">
         Failed to export public key.
       </message>
-      <message name="IDS_EXTENSION_CANT_DOWNGRADE_VERSION" desc="Error message when a user tries to install an extension with a lower version that a version that it already installed.">
+      <message name="IDS_EXTENSION_CANT_DOWNGRADE_VERSION" desc="Error message when a user tries to install an extension with a lower version than a version that it already installed.">
         Attempted to downgrade extension.
+      </message>
+      <message name="IDS_APP_CANT_DOWNGRADE_VERSION" desc="Error message when a user tries to install an app with a lower version than a version that it already installed.">
+        Attempted to downgrade app.
       </message>
       <message name="IDS_EXTENSION_WEBGL_NOT_SUPPORTED" desc="Error message when an extension has a requirement for WebGL that the system does not support.">
         WebGL is not supported.

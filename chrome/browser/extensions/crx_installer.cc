@@ -498,7 +498,9 @@ void CrxInstaller::CompleteInstall() {
     if (current_version.CompareTo(*(extension_->version())) > 0) {
       ReportFailureFromFileThread(
           CrxInstallerError(
-              l10n_util::GetStringUTF16(IDS_EXTENSION_CANT_DOWNGRADE_VERSION)));
+              l10n_util::GetStringUTF16(extension_->is_app() ?
+                  IDS_APP_CANT_DOWNGRADE_VERSION :
+                  IDS_EXTENSION_CANT_DOWNGRADE_VERSION)));
       return;
     }
   }

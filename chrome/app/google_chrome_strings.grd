@@ -627,13 +627,6 @@ For Google Chrome, processes used to display diagnostics information (such as th
         Add to Chrome
       </message>
 
-      <!-- Extension alerts. -->
-      <message name="IDS_EXTENSION_ALERT_ITEM_EXTERNAL" desc="A statement that an external extension has been newly installed. End users have no idea what an 'external' extension is, so we simply call them extensions. The trailing character must be a newline.">
-The extension "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has been added.
-
-'''
-      </message>
-
       <!-- Extension installed bubble -->
       <message name="IDS_EXTENSION_INSTALLED_HEADING" desc="First line in the content area of the extension installed bubble. Instructs that the extension was installed.">
         <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph> has been added to Chrome.

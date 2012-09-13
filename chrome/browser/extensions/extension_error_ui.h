@@ -79,7 +79,8 @@ class ExtensionErrorUI {
   // For a given set of extension IDs, generates appropriate text
   // describing what the user needs to know about them.
   string16 GenerateMessageSection(const extensions::ExtensionIdSet* extensions,
-                                  int template_message_id);
+                                  int extension_template_message_id,
+                                  int app_template_message_id);
 
   // Generates the message displayed in the body of the alert.
   string16 GenerateMessage();

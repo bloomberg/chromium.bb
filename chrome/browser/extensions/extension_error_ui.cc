@@ -40,28 +40,34 @@ void ExtensionErrorUI::AddOrphanedExtension(const std::string& id) {
 
 string16 ExtensionErrorUI::GenerateMessageSection(
     const ExtensionIdSet* extensions,
-    int template_message_id) {
+    int extension_template_message_id,
+    int app_template_message_id) {
   CHECK(extensions);
-  CHECK(template_message_id);
+  CHECK(extension_template_message_id);
+  CHECK(app_template_message_id);
   string16 message;
 
   for (ExtensionIdSet::const_iterator iter = extensions->begin();
        iter != extensions->end(); ++iter) {
     const extensions::Extension* e = extension_service_->GetExtensionById(*iter,
         true);
-    message += l10n_util::GetStringFUTF16(template_message_id,
-                                          UTF8ToUTF16(e->name()));
+    message += l10n_util::GetStringFUTF16(
+        e->is_app() ? app_template_message_id : extension_template_message_id,
+        UTF8ToUTF16(e->name())) + char16('\n');
   }
   return message;
 }
 
 string16 ExtensionErrorUI::GenerateMessage() {
   return GenerateMessageSection(external_extension_ids_.get(),
-                                IDS_EXTENSION_ALERT_ITEM_EXTERNAL) +
+                                IDS_EXTENSION_ALERT_ITEM_EXTERNAL,
+                                IDS_APP_ALERT_ITEM_EXTERNAL) +
          GenerateMessageSection(blacklisted_extension_ids_.get(),
-                                IDS_EXTENSION_ALERT_ITEM_BLACKLISTED) +
+                                IDS_EXTENSION_ALERT_ITEM_BLACKLISTED,
+                                IDS_APP_ALERT_ITEM_BLACKLISTED) +
          GenerateMessageSection(orphaned_extension_ids_.get(),
-                                IDS_EXTENSION_ALERT_ITEM_ORPHANED);
+                                IDS_EXTENSION_ALERT_ITEM_ORPHANED,
+                                IDS_APP_ALERT_ITEM_ORPHANED);
 }
 
 string16 ExtensionErrorUI::GetBubbleViewMessage() {
