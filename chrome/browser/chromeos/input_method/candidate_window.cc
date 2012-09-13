@@ -1216,8 +1216,8 @@ void CandidateWindowView::ResizeAndMoveParentFrame() {
   const int horizontal_offset = GetHorizontalOffset();
 
   gfx::Rect old_bounds = parent_frame_->GetClientAreaBoundsInScreen();
-  gfx::Rect screen_bounds = gfx::Screen::GetDisplayNearestWindow(
-      parent_frame_->GetNativeView()).work_area();
+  gfx::Rect screen_bounds =
+      gfx::Screen::GetDisplayMatching(cursor_location_).work_area();
   // The size.
   gfx::Rect frame_bounds = old_bounds;
   frame_bounds.set_size(GetPreferredSize());
