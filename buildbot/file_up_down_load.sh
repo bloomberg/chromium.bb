@@ -122,10 +122,9 @@ ShowRecentArmTrustedToolchains() {
 
 #@ label should be in :
 #@
-#@ pnacl_linux_x86_32
-#@ pnacl_linux_x86_64
-#@ pnacl_mac_x86_32
-#@ pnacl_win_x86_32
+#@ pnacl_linux_x86
+#@ pnacl_mac_x86
+#@ pnacl_win_x86
 
 # TODO(robertm): "arm untrusted" should be renamed to pnacl
 UploadArmUntrustedToolchains() {

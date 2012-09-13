@@ -12,10 +12,9 @@
 ######################################################################
 #
 # All directories are relative to BASE which is
-# On Linux X86-64: native_client/toolchain/pnacl_linux_x86_64/
-# On Linux X86-32: native_client/toolchain/pnacl_linux_x86_32/
-# On Mac X86-32  : native_client/toolchain/pnacl_mac_x86_32/
-# On Windows X86-32  : native_client/toolchain/pnacl_win_x86_32/
+# On Linux: native_client/toolchain/pnacl_linux_x86/
+# On Mac: native_client/toolchain/pnacl_mac_x86/
+# On Windows: native_client/toolchain/pnacl_win_x86/
 #
 ######################################################################
 

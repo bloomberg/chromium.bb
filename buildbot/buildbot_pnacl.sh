@@ -573,7 +573,7 @@ mode-buildbot-tc-x8664-win() {
   local is_try=$1
   FAIL_FAST=false
   # NOTE: this is a 64bit bot but the TC generated is 32bit
-  TOOLCHAIN_LABEL=pnacl_win_x86_32
+  TOOLCHAIN_LABEL=pnacl_win_x86
   tc-build-all ${TOOLCHAIN_LABEL} ${is_try} false false
 
   # We can't test ARM because we do not have QEMU for Win.
