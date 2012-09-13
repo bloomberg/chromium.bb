@@ -10122,7 +10122,7 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Site
       </message>
       <message name="IDS_INTENTS_SERVICE_DATA_COLUMN_HEADER" desc="Label for the Service Data column in the intents manager page.">
-        Service data
+        App data
       </message>
       <message name="IDS_INTENTS_REMOVE_INTENT_BUTTON" desc="Text on the button to remove an intent.">
         Remove intent
@@ -17312,19 +17312,19 @@ Battery full
       Complete action using:
     </message>
     <message name="IDS_FIND_MORE_INTENT_HANDLER_MESSAGE" desc="Text to show to inform the user that more intent services can be found in the web store.">
-      Find more services by visiting the Chrome Web Store.
+      Find more apps by visiting the Chrome Web Store.
     </message>
     <message name="IDS_FIND_MORE_INTENT_HANDLER_TOOLTIP" desc="Tooltip text for the web store plus button on the intent picker dialog.">
-      Find services in the Chrome Web Store
+      Find apps in the Chrome Web Store
     </message>
     <message name="IDS_INTENT_PICKER_NO_SERVICES_REGISTERED" desc="Prompt indicating to the user that there are no services registered for the given Web Intents action.">
-      No services are registered for this action.
+      No apps are registered for this action.
     </message>
     <message name="IDS_INTENT_PICKER_CHOOSE_SERVICE" desc="Prompt to the user to select one of the given services to complete a Web Intents action.">
-      Which service do you want to use?
+      Which app do you want to use?
     </message>
     <message name="IDS_INTENT_PICKER_GET_MORE_SERVICES_NONE_INSTALLED" desc="Heading in the Web Intents picker box for a section containing suggested applications from the Chrome Web Store. Displayed only if there are no installed services.">
-      You have no services installed. Here are some app suggestions from the Chrome Web Store:
+      You have no apps installed. Here are some app suggestions from the Chrome Web Store:
     </message>
     <message name="IDS_INTENT_PICKER_GET_MORE_SERVICES" desc="Heading in the Web Intents picker box for a section containing suggested applications from the Chrome Web Store">
       App suggestions from the Chrome Web Store:
@@ -17336,13 +17336,13 @@ Battery full
       Uh oh.
     </message>
     <message name="IDS_INTENT_PICKER_NO_SERVICES" desc="Prompt indicating to the user that there are neither any matching services installed locally, nor does the Chrome Web Store offer any suggestions for this action either.">
-      No services for this action are installed, and there are no service recommendations for this action in the Chrome Web Store either.
+      No apps for this action are installed, and there are no app recommendations for this action in the Chrome Web Store either.
     </message>
     <message name="IDS_INTENT_PICKER_USE_ALTERNATE_SERVICE" desc="Link text that, when clicked, allows the user to choose an alternate intent service from the picker.">
-      or use another service...
+      or use another app...
     </message>
     <message name="IDS_INTENT_PICKER_USE_ANOTHER_SERVICE" desc="Button text providing a way for the user to not use the web intents service they are on, and select a new one.">
-      Use another service
+      Use another app 
     </message>
     <message name="IDS_INTENT_PICKER_WAIT_FOR_CWS" desc="Prompt indicating to the user that Chrome is currently waiting for results from the Chrome Web Store">
       Waiting for Chrome Web Store
@@ -17353,19 +17353,19 @@ Battery full
 
     <!-- Web Intents common actions -->
     <message name="IDS_WEB_INTENTS_ACTION_SHARE" desc="Question asking the user to pick a service for the 'share' action.">
-      Which service should be used for sharing?
+      Which app should be used for sharing?
     </message>
     <message name="IDS_WEB_INTENTS_ACTION_EDIT" desc="Question asking the user to pick a service for the 'edit' action.">
-      Which service should be used for editing?
+      Which app should be used for editing?
     </message>
     <message name="IDS_WEB_INTENTS_ACTION_VIEW" desc="Question asking the user to pick a service for the 'viewing' action.">
-      Which service should be used for viewing?
+      Which app should be used for viewing?
     </message>
     <message name="IDS_WEB_INTENTS_ACTION_SUBSCRIBE" desc="Question asking the user to pick a service for the 'subscribe' action.">
-      Which service should be used for subscribing?
+      Which app should be used for subscribing?
     </message>
     <message name="IDS_WEB_INTENTS_ACTION_SAVE" desc="Question asking the user to pick a service for the 'save' action.">
-      Which service should be used for saving?
+      Which app should be used for saving?
     </message>
 
     <!-- PDF with unsupported feature Info Bar -->
