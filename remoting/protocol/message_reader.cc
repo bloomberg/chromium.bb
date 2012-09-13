@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/single_thread_task_runner.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/socket/socket.h"
@@ -88,23 +89,23 @@ void MessageReader::OnDataReceived(net::IOBuffer* data, int data_size) {
 
   // Get list of all new messages first, and then call the callback
   // for all of them.
-  std::vector<CompoundBuffer*> new_messages;
   while (true) {
     CompoundBuffer* buffer = message_decoder_.GetNextMessage();
     if (!buffer)
       break;
-    new_messages.push_back(buffer);
+    pending_messages_++;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&MessageReader::RunCallback,
+                   weak_factory_.GetWeakPtr(),
+                   base::Passed(scoped_ptr<CompoundBuffer>(buffer))));
   }
+}
 
-  pending_messages_ += new_messages.size();
-
-  for (std::vector<CompoundBuffer*>::iterator it = new_messages.begin();
-       it != new_messages.end(); ++it) {
-    message_received_callback_.Run(
-        scoped_ptr<CompoundBuffer>(*it),
-        base::Bind(&MessageReader::OnMessageDone,
-                   weak_factory_.GetWeakPtr()));
-  }
+void MessageReader::RunCallback(scoped_ptr<CompoundBuffer> message) {
+  message_received_callback_.Run(
+      message.Pass(), base::Bind(&MessageReader::OnMessageDone,
+                                 weak_factory_.GetWeakPtr()));
 }
 
 void MessageReader::OnMessageDone() {
@@ -112,8 +113,8 @@ void MessageReader::OnMessageDone() {
   pending_messages_--;
   DCHECK_GE(pending_messages_, 0);
 
-  if (!read_pending_)
-    DoRead();  // Start next read if necessary.
+  // Start next read if necessary.
+  DoRead();
 }
 
 }  // namespace protocol

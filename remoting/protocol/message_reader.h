@@ -50,6 +50,7 @@ class MessageReader : public base::NonThreadSafe {
   void OnRead(int result);
   void HandleReadResult(int result);
   void OnDataReceived(net::IOBuffer* data, int data_size);
+  void RunCallback(scoped_ptr<CompoundBuffer> message);
   void OnMessageDone();
 
   net::Socket* socket_;
