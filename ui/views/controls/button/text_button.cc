@@ -730,16 +730,13 @@ void TextButton::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
     gfx::Rect text_bounds = GetTextBounds();
     int icon_x;
     int spacing = text_.empty() ? 0 : icon_text_spacing_;
-    gfx::Insets insets = GetInsets();
     if (icon_placement_ == ICON_ON_LEFT) {
       icon_x = text_bounds.x() - icon.width() - spacing;
-    } else if (icon_placement_ == ICON_ON_RIGHT) {
+    } else {
       icon_x = text_bounds.right() + spacing;
-    } else {  // ICON_CENTERED
-      DCHECK(text_.empty());
-      icon_x = (width() - insets.width() - icon.width()) / 2 + insets.left();
     }
 
+    gfx::Insets insets = GetInsets();
     int available_height = height() - insets.height();
     int icon_y = (available_height - icon.height()) / 2 + insets.top();
 
@@ -788,7 +785,7 @@ gfx::Rect TextButton::GetTextBounds() const {
     // Make sure the icon is always fully visible.
     if (icon_placement_ == ICON_ON_LEFT) {
       bounds.Inset(extra_width, 0, 0, 0);
-    } else if (icon_placement_ == ICON_ON_RIGHT) {
+    } else {
       bounds.Inset(0, 0, extra_width, 0);
     }
   }
