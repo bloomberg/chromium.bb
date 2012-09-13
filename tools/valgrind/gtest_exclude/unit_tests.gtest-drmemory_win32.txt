@@ -52,3 +52,4 @@ TemplateURLFetcherTest.*
 # http://crbug.com/148644
 GAIAInfoUpdateServiceTest.*
 ProfileManagerTest.*
+ProfileInfoCacheTest.*
