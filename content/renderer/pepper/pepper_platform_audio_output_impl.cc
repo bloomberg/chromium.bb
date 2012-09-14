@@ -125,7 +125,7 @@ bool PepperPlatformAudioOutputImpl::Initialize(
   const int kMaxFramesForLowLatency = 2047;
 
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kEnableAudioOutputResampler)) {
+  if (!cmd_line->HasSwitch(switches::kDisableAudioOutputResampler)) {
     // Rely on AudioOutputResampler to handle any inconsistencies between the
     // hardware params required for low latency and the requested params.
     format = media::AudioParameters::AUDIO_PCM_LOW_LATENCY;

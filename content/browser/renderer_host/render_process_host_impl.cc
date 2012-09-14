@@ -741,6 +741,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableAcceleratedVideoDecode,
     switches::kDisableApplicationCache,
     switches::kDisableAudio,
+    switches::kDisableAudioOutputResampler,
     switches::kDisableBreakpad,
 #if defined(OS_MACOSX)
     switches::kDisableCompositedCoreAnimationPlugins,
@@ -773,7 +774,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableWebSockets,
     switches::kDomAutomationController,
     switches::kEnableAccessibilityLogging,
-    switches::kEnableAudioOutputResampler,
     switches::kEnableCssExclusions,
     switches::kEnableDCHECK,
     switches::kEnableEncryptedMedia,
