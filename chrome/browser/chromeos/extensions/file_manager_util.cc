@@ -478,6 +478,22 @@ void OpenFileBrowser(const FilePath& path,
   application_launch::OpenApplication(params);
 }
 
+Browser* GetBrowserForUrl(GURL target_url) {
+  for (BrowserList::const_iterator browser_iterator = BrowserList::begin();
+       browser_iterator != BrowserList::end(); ++browser_iterator) {
+    Browser* browser = *browser_iterator;
+    TabStripModel* tab_strip = browser->tab_strip_model();
+    for (int idx = 0; idx < tab_strip->count(); idx++) {
+      content::WebContents* web_contents =
+          tab_strip->GetTabContentsAt(idx)->web_contents();
+      const GURL& url = web_contents->GetURL();
+      if (url == target_url)
+        return browser;
+    }
+  }
+  return NULL;
+}
+
 void ViewRemovableDrive(const FilePath& path) {
   const int kDialogWidth = 410;
   // TODO(dgozman): remove 50, which is a title height once popup window
@@ -499,14 +515,18 @@ void ViewRemovableDrive(const FilePath& path) {
                          kDialogWidth,
                          kDialogHeight);
 
-  Browser* browser = new Browser(
-      Browser::CreateParams::CreateForApp(Browser::TYPE_POPUP,
-                                          "action_choice",
-                                          bounds,
-                                          profile));
+  Browser* browser = GetBrowserForUrl(dialog_url);
 
-  chrome::AddSelectedTabWithURL(browser, dialog_url,
-                                content::PAGE_TRANSITION_LINK);
+  if (!browser) {
+    browser = new Browser(
+        Browser::CreateParams::CreateForApp(Browser::TYPE_POPUP,
+                                            "action_choice",
+                                            bounds,
+                                            profile));
+
+    chrome::AddSelectedTabWithURL(browser, dialog_url,
+                                  content::PAGE_TRANSITION_LINK);
+  }
   browser->window()->Show();
 }
 
