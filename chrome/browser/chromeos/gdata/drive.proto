@@ -10,34 +10,6 @@ option optimize_for = LITE_RUNTIME;
 
 package gdata;
 
-// DriveEntryKind is used in DriveEntryProto for specifying the kind of a
-// Drive entry.
-//
-// kEntryKindMap in gdata_wapi_parser.cc should also be updated if you modify
-// DriveEntryKind. The compiler will catch if they are not in sync.
-enum DriveEntryKind {
-  ENTRY_KIND_UNKNOWN = 0;
-  // Special entries.
-  ENTRY_KIND_ITEM = 1;
-  ENTRY_KIND_SITE = 2;
-  // Hosted Google document.
-  ENTRY_KIND_DOCUMENT = 3;
-  ENTRY_KIND_SPREADSHEET = 4;
-  ENTRY_KIND_PRESENTATION = 5;
-  ENTRY_KIND_DRAWING = 6;
-  ENTRY_KIND_TABLE = 7;
-  // Hosted external application document.
-  ENTRY_KIND_EXTERNAL_APP = 8;
-  // Folders; collections.
-  ENTRY_KIND_FOLDER = 9;
-  // Regular files.
-  ENTRY_KIND_FILE = 10;
-  ENTRY_KIND_PDF = 11;
-
-  // This should be the last item.
-  ENTRY_KIND_MAX_VALUE = 12;
-};
-
 // Represents base::PlatformFileInfo.
 message PlatformFileInfoProto {
   optional int64 size = 1;
@@ -87,7 +59,8 @@ message DriveEntryProto {
   // used to upload a new file to that directory. See
   // https://developers.google.com/google-apps/documents-list/
   optional string upload_url = 8;
-  optional DriveEntryKind kind = 10;
+  // This stores a DriveEntryKind defined in drive_entry_kinds.h.
+  optional int32 kind = 12;
   // This field is used for processing the feeds from the server. Deleted
   // entries won't be stored in the metadata storage.
   optional bool deleted = 11;

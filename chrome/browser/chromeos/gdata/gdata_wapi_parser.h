@@ -14,7 +14,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/string_piece.h"
 #include "base/time.h"
-#include "chrome/browser/chromeos/gdata/drive.pb.h"
+#include "chrome/browser/chromeos/gdata/drive_entry_kinds.h"
 #include "googleurl/src/gurl.h"
 
 class FilePath;

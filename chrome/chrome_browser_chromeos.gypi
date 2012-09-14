@@ -244,6 +244,7 @@
         'browser/chromeos/gdata/drive_cache_metadata.h',
         'browser/chromeos/gdata/drive_download_observer.cc',
         'browser/chromeos/gdata/drive_download_observer.h',
+        'browser/chromeos/gdata/drive_entry_kinds.h',
         'browser/chromeos/gdata/drive_file_formats.cc',
         'browser/chromeos/gdata/drive_file_formats.h',
         'browser/chromeos/gdata/drive_file_system.cc',
