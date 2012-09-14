@@ -358,7 +358,6 @@ void TestingAutomationProvider::LoginAsGuest(DictionaryValue* args,
 void TestingAutomationProvider::SubmitLoginForm(DictionaryValue* args,
                                                 IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
-  VLOG(2) << "TestingAutomationProvider::StartLogin";
 
   std::string username, password;
   if (!args->GetString("username", &username) ||
@@ -377,8 +376,8 @@ void TestingAutomationProvider::SubmitLoginForm(DictionaryValue* args,
   // WebUI login.
   chromeos::WebUILoginDisplay* webui_login_display =
       static_cast<chromeos::WebUILoginDisplay*>(controller->login_display());
-  VLOG(2) << "TestingAutomationProvider::StartLogin ShowSigninScreenForCreds("
-          << username << ", " << password << ")";
+  VLOG(2) << "TestingAutomationProvider::SubmitLoginForm "
+          << "ShowSigninScreenForCreds(" << username << ", " << password << ")";
 
   webui_login_display->ShowSigninScreenForCreds(username, password);
   reply.SendSuccess(NULL);

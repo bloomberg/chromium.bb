@@ -112,13 +112,8 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
     ommitted since the broken behavior should be fixed rather than protected by
     tests.
     """
-    # TODO(nirnimesh): Remove show_user_names policy below when
-    # Login() automation can reliably handle relogin scenario.
-    # crbug.com/139166
-
     # No whitelist
-    self.SetDevicePolicy({'allow_new_users': True,
-                          'show_user_names': False})
+    self.SetDevicePolicy({'allow_new_users': True})
     self._Login(user_index=0, expect_success=True)
     self.Logout()
 
@@ -128,21 +123,18 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
     self.Logout()
 
     self.SetDevicePolicy({'allow_new_users': True,
-                          'user_whitelist': [],
-                          'show_user_names': False})
+                          'user_whitelist': []})
     self._Login(user_index=0, expect_success=True)
     self.Logout()
 
     # Populated whitelist
-    self.SetDevicePolicy({'user_whitelist': [self._usernames[0]],
-                          'show_user_names': False})
+    self.SetDevicePolicy({'user_whitelist': [self._usernames[0]]})
     self._Login(user_index=0, expect_success=True)
     self.Logout()
     self._Login(user_index=1, expect_success=False)
 
     self.SetDevicePolicy({'allow_new_users': True,
-                          'user_whitelist': [self._usernames[0]],
-                          'show_user_names': False})
+                          'user_whitelist': [self._usernames[0]]})
     self._Login(user_index=0, expect_success=True)
     self.Logout()
     self._Login(user_index=1, expect_success=True)
@@ -150,8 +142,7 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
 
     # New users not allowed, populated whitelist
     self.SetDevicePolicy({'allow_new_users': False,
-                          'user_whitelist': [self._usernames[0]],
-                          'show_user_names': False})
+                          'user_whitelist': [self._usernames[0]]})
     self._Login(user_index=0, expect_success=True)
     self.Logout()
     self._Login(user_index=1, expect_success=False)
@@ -200,10 +191,6 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
 
       self.Logout()
       self.assertEqual(timezone, self.GetTimeInfo()['timezone'])
-      # Work around until crosbug.com/139166 is fixed
-      self.ExecuteJavascriptInOOBEWebUI(
-          'Oobe.showSigninUI();'
-          'window.domAutomationController.send("ok");')
 
 
   def testTimezoneSettingWithPolicy(self):
@@ -214,10 +201,6 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
     # screen. Something like a browser restart may work, too.
     self._Login(user_index=1, expect_success=True)
     self.Logout()
-    # Work around until crosbug.com/139166 is fixed
-    self.ExecuteJavascriptInOOBEWebUI(
-        'Oobe.showSigninUI();'
-        'window.domAutomationController.send("ok");')
 
     self.assertEqual(self._timezones[0], self.GetTimeInfo()['timezone'])
 
