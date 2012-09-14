@@ -13,6 +13,7 @@
 #include "content/browser/speech/audio_buffer.h"
 #include "content/public/common/speech_recognition_error.h"
 #include "content/public/common/speech_recognition_result.h"
+#include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
@@ -198,6 +199,9 @@ void GoogleOneShotRemoteEngine::StartRecognition() {
                                                         true));
   parts.push_back("maxresults=" + base::UintToString(config_.max_hypotheses));
   parts.push_back(config_.filter_profanities ? "pfilter=2" : "pfilter=0");
+
+  std::string api_key = google_apis::GetAPIKey();
+  parts.push_back("key=" + net::EscapeQueryParamValue(api_key, true));
 
   GURL url(std::string(kDefaultSpeechRecognitionUrl) + JoinString(parts, '&'));
 
