@@ -457,12 +457,13 @@ const char kInvalidWebURLs[] =
 const char kInvalidZipHash[] =
     "Required key 'zip_hash' is missing or invalid.";
 const char kInsecureContentSecurityPolicy[] =
-    "Invalid value for 'content_security_policy': The 'script-src' and"
-    " 'object-src' directives can only whitelist secure resources. You may"
-    " include any of the following sources: \"'self'\", \"http://127.0.0.1\","
-    " \"http://localhost\", or any \"https://\" or \"chrome-extension://\""
-    " origin. For more information, see"
-    " http://developer.chrome.com/extensions/contentSecurityPolicy.html";
+    "Invalid value for 'content_security_policy': Both 'script-src' and"
+    " 'object-src' directives must be specified (either explicitly, or"
+    " implicitly via 'default-src'), and both must whitelist only secure"
+    " resources. You may include any of the following sources: \"'self'\","
+    " \"'unsafe-eval'\", \"http://127.0.0.1\", \"http://localhost\", or any"
+    " \"https://\" or \"chrome-extension://\" origin. For more information,"
+    " see http://developer.chrome.com/extensions/contentSecurityPolicy.html";
 const char kLaunchPathAndExtentAreExclusive[] =
     "The 'app.launch.local_path' and 'app.urls' keys cannot both be set.";
 const char kLaunchPathAndURLAreExclusive[] =
