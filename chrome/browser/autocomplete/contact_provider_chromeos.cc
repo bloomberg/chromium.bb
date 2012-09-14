@@ -5,6 +5,7 @@
 #include "chrome/browser/autocomplete/contact_provider_chromeos.h"
 
 #include <algorithm>
+#include <cmath>
 
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/string_search.h"
@@ -17,6 +18,17 @@
 #include "chrome/browser/profiles/profile.h"
 
 namespace {
+
+// Default affinity assigned to contacts whose |affinity| field is unset.
+// TODO(derat): Set this to something reasonable (probably 0.0) once we're
+// getting affinity for contacts.
+float kDefaultAffinity = 1.0;
+
+// Base match relevance assigned to a contact with an affinity of 0.0.
+int kBaseRelevance = 1300;
+
+// Maximum boost to relevance for a contact with an affinity of 1.0.
+int kAffinityRelevanceBoost = 200;
 
 // Returns true if |word_to_find| is a prefix of |name_to_search| and marks the
 // matching text in |classifications| (which corresponds to the contact's full
@@ -56,13 +68,15 @@ struct ContactProvider::ContactData {
   ContactData(const string16& full_name,
               const string16& given_name,
               const string16& family_name,
-              const std::string& contact_id)
+              const std::string& contact_id,
+              float affinity)
       : full_name(full_name),
         given_name(given_name),
         family_name(family_name),
         given_name_index(string16::npos),
         family_name_index(string16::npos),
-        contact_id(contact_id) {
+        contact_id(contact_id),
+        affinity(affinity) {
     base::i18n::StringSearchIgnoringCaseAndAccents(
         given_name, full_name, &given_name_index, NULL);
     base::i18n::StringSearchIgnoringCaseAndAccents(
@@ -80,6 +94,9 @@ struct ContactProvider::ContactData {
 
   // Unique ID used to look up additional contact information.
   std::string contact_id;
+
+  // Affinity between the user and this contact, in the range [0.0, 1.0].
+  float affinity;
 };
 
 ContactProvider::ContactProvider(
@@ -115,8 +132,11 @@ void ContactProvider::Start(const AutocompleteInput& input,
     }
   }
 
+  // |contacts_| is ordered by descending affinity.  Since affinity is currently
+  // the only signal used for computing relevance, we can stop after we've found
+  // kMaxMatches results.
   for (ContactDataVector::const_iterator it = contacts_.begin();
-       it != contacts_.end(); ++it)
+       it != contacts_.end() && matches_.size() < kMaxMatches; ++it)
     AddContactIfMatched(input, input_words, *it);
 }
 
@@ -133,6 +153,12 @@ ContactProvider::~ContactProvider() {
     contact_manager_->RemoveObserver(this, profile_);
 }
 
+// static
+bool ContactProvider::CompareAffinity(const ContactData& a,
+                                      const ContactData& b) {
+  return a.affinity > b.affinity;
+}
+
 void ContactProvider::RefreshContacts() {
   if (!contact_manager_.get())
     return;
@@ -141,6 +167,7 @@ void ContactProvider::RefreshContacts() {
       contact_manager_->GetAllContacts(profile_);
 
   contacts_.clear();
+  contacts_.reserve(contacts->size());
   for (contacts::ContactPointers::const_iterator it = contacts->begin();
        it != contacts->end(); ++it) {
     const contacts::Contact& contact = **it;
@@ -150,13 +177,16 @@ void ContactProvider::RefreshContacts() {
         AutocompleteMatch::SanitizeString(UTF8ToUTF16(contact.given_name()));
     string16 family_name =
         AutocompleteMatch::SanitizeString(UTF8ToUTF16(contact.family_name()));
+    float affinity =
+        contact.has_affinity() ? contact.affinity() : kDefaultAffinity;
 
     if (!full_name.empty()) {
       contacts_.push_back(
-          ContactData(
-              full_name, given_name, family_name, contact.contact_id()));
+          ContactData(full_name, given_name, family_name, contact.contact_id(),
+                      affinity));
     }
   }
+  std::sort(contacts_.begin(), contacts_.end(), CompareAffinity);
 }
 
 void ContactProvider::AddContactIfMatched(
@@ -200,8 +230,8 @@ AutocompleteMatch ContactProvider::CreateAutocompleteMatch(
   match.inline_autocomplete_offset = string16::npos;
   match.contents = contact.full_name;
   match.fill_into_edit = match.contents;
-  // TODO(derat): Implement ranking.
-  match.relevance = 1;
+  match.relevance = kBaseRelevance +
+      static_cast<int>(roundf(kAffinityRelevanceBoost * contact.affinity));
   match.RecordAdditionalInfo(kMatchContactIdKey, contact.contact_id);
   return match;
 }

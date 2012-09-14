@@ -4,12 +4,14 @@
 
 #include "chrome/browser/autocomplete/contact_provider_chromeos.h"
 
+#include <cmath>
 #include <map>
 #include <string>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/string_number_conversions.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
@@ -73,19 +75,26 @@ class ContactProviderTest : public testing::Test {
         false);  // minimal_changes
   }
 
+  // Returns the contact ID in |match|'s additional info, or an empty string if
+  // no ID is present.
+  std::string GetContactIdFromMatch(const AutocompleteMatch& match) {
+    AutocompleteMatch::AdditionalInfo::const_iterator it =
+        match.additional_info.find(ContactProvider::kMatchContactIdKey);
+    return it != match.additional_info.end() ? it->second : std::string();
+  }
+
   // Returns pointers to all of the Contact objects referenced in
   // |contact_provider_|'s current results.
   contacts::ContactPointers GetMatchedContacts() {
     contacts::ContactPointers contacts;
     const ACMatches& matches = contact_provider_->matches();
     for (size_t i = 0; i < matches.size(); ++i) {
-      std::map<std::string, std::string>::const_iterator id_it =
-          matches[i].additional_info.find(ContactProvider::kMatchContactIdKey);
-      CHECK(id_it != matches[i].additional_info.end());
-      const contacts::Contact* contact =
-          contact_manager_->GetContactById(profile_, id_it->second);
-      CHECK(contact) << "Unable to find contact with ID " << id_it->second;
-      contacts.push_back(contact);
+      const contacts::Contact* contact = contact_manager_->GetContactById(
+          profile_, GetContactIdFromMatch(matches[i]));
+      if (contact)
+        contacts.push_back(contact);
+      else
+        LOG(ERROR) << "Unable to find contact for match " << i;
     }
     return contacts;
   }
@@ -99,11 +108,13 @@ class ContactProviderTest : public testing::Test {
     StringMap contact_id_classifications;
     const ACMatches& matches = contact_provider_->matches();
     for (size_t i = 0; i < matches.size(); ++i) {
-      std::map<std::string, std::string>::const_iterator id_it =
-          matches[i].additional_info.find(ContactProvider::kMatchContactIdKey);
-      CHECK(id_it != matches[i].additional_info.end());
-      contact_id_classifications[id_it->second] =
-          AutocompleteMatch::ClassificationsToString(matches[i].contents_class);
+      std::string id = GetContactIdFromMatch(matches[i]);
+      if (id.empty()) {
+        LOG(ERROR) << "Match " << i << " lacks contact ID";
+      } else {
+        contact_id_classifications[id] = AutocompleteMatch::
+            ClassificationsToString(matches[i].contents_class);
+      }
     }
 
     std::string result;
@@ -226,4 +237,49 @@ TEST_F(ContactProviderTest, Collation) {
       contacts::test::VarContactsToString(1, contact.get()),
       contacts::test::ContactsToString(GetMatchedContacts()));
   EXPECT_EQ("0,0,6,2", GetMatchClassifications());
+}
+
+TEST_F(ContactProviderTest, Relevance) {
+  // Create more contacts than the maximum number of results that an
+  // AutocompleteProvider should return.  Give them all the same family name and
+  // ascending affinities from 0.0 to 1.0.
+  const size_t kNumContacts = AutocompleteProvider::kMaxMatches + 1;
+  const std::string kFamilyName = "Jones";
+
+  ScopedVector<contacts::Contact> contacts;
+  contacts::ContactPointers contact_pointers;
+  for (size_t i = 0; i < kNumContacts; ++i) {
+    contacts::Contact* contact = new contacts::Contact;
+    std::string id_string = base::IntToString(static_cast<int>(i));
+    InitContact(id_string, id_string, kFamilyName,
+                id_string + " " + kFamilyName, contact);
+    contact->set_affinity(static_cast<float>(i) / kNumContacts);
+    contacts.push_back(contact);
+    contact_pointers.push_back(contact);
+  }
+
+  contact_manager_->SetContacts(contact_pointers);
+  contact_manager_->NotifyObserversAboutUpdatedContacts();
+
+  // Do a search for the family name and check that the total number of results
+  // is limited as expected and that the results are ordered by descending
+  // affinity.
+  StartQuery(kFamilyName);
+  const ACMatches& matches = contact_provider_->matches();
+  ASSERT_EQ(AutocompleteProvider::kMaxMatches, matches.size());
+
+  int previous_relevance = 0;
+  for (size_t i = 0; i < matches.size(); ++i) {
+    const contacts::Contact& exp_contact =
+        *(contacts[kNumContacts - 1 - i]);
+    std::string match_id = GetContactIdFromMatch(matches[i]);
+    EXPECT_EQ(exp_contact.contact_id(), match_id)
+        << "Expected contact ID " << exp_contact.contact_id()
+        << " for match " << i << " but got " << match_id << " instead";
+    if (i > 0) {
+      EXPECT_LE(matches[i].relevance, previous_relevance)
+          << "Match " << i << " has greater relevance than previous match";
+    }
+    previous_relevance = matches[i].relevance;
+  }
 }

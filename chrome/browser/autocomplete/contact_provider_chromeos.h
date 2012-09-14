@@ -48,6 +48,9 @@ class ContactProvider : public AutocompleteProvider,
 
   virtual ~ContactProvider();
 
+  // Returns true if |a|'s affinity is greater than |b|'s affinity.
+  static bool CompareAffinity(const ContactData& a, const ContactData& b);
+
   // Updates |contacts_| to match the contacts currently reported by
   // ContactManager.
   void RefreshContacts();
@@ -65,7 +68,7 @@ class ContactProvider : public AutocompleteProvider,
 
   base::WeakPtr<contacts::ContactManagerInterface> contact_manager_;
 
-  // Contacts through which we search.
+  // Contacts through which we search, ordered by descending affinity.
   ContactDataVector contacts_;
 
   DISALLOW_COPY_AND_ASSIGN(ContactProvider);

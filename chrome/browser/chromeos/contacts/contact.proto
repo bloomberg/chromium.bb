@@ -14,7 +14,7 @@ package contacts;
 // https://developers.google.com/gdata/docs/2.0/elements#gdContactKind
 // All strings are UTF-8 with Unicode byte order marks stripped out.
 message Contact {
-  // Next ID to use: 15
+  // Next ID to use: 16
 
   // Provider-assigned unique identifier.
   optional string contact_id = 1;
@@ -25,6 +25,10 @@ message Contact {
 
   // Has the contact been deleted recently within the upstream provider?
   optional bool deleted = 3 [default = false];
+
+  // Affinity between the user and this contact, in the range [0.0, 1.0].
+  // Unset if the affinity is unknown.
+  optional float affinity = 15;
 
   // Taken from https://developers.google.com/gdata/docs/2.0/elements#gdName.
   optional string full_name = 4;
