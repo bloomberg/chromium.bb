@@ -24,6 +24,8 @@
         'android_webview_jni_registrar.h',
         'android_web_view_util.cc',
         'android_web_view_util.h',
+        'aw_http_auth_handler.cc',
+        'aw_http_auth_handler.h',
         'aw_browser_dependency_factory.cc',
         'aw_browser_dependency_factory.h',
         'aw_contents_container.h',
@@ -43,6 +45,7 @@
       'sources': [
           '../java/src/org/chromium/android_webview/AndroidWebViewUtil.java',
           '../java/src/org/chromium/android_webview/AwContents.java',
+          '../java/src/org/chromium/android_webview/AwHttpAuthHandler.java',
           '../java/src/org/chromium/android_webview/CookieManager.java',
           '../java/src/org/chromium/android_webview/InterceptedRequestData.java',
       ],

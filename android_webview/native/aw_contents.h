@@ -6,7 +6,9 @@
 #define ANDROID_WEBVIEW_NATIVE_AW_CONTENTS_H_
 
 #include <jni.h>
+#include <string>
 
+#include "base/android/scoped_java_ref.h"
 #include "base/android/jni_helper.h"
 #include "base/memory/scoped_ptr.h"
 
@@ -36,6 +38,12 @@ class AwContents {
              jobject web_contents_delegate,
              bool private_browsing);
   ~AwContents();
+
+  // |handler| is an instance of
+  // org.chromium.android_webview.AwHttpAuthHandler.
+  void onReceivedHttpAuthRequest(const base::android::JavaRef<jobject>& handler,
+                                 const std::string& host,
+                                 const std::string& realm);
 
   // Methods called from Java.
   jint GetWebContents(JNIEnv* env, jobject obj);

@@ -18,6 +18,7 @@
 #include "jni/AwContents_jni.h"
 
 using base::android::AttachCurrentThread;
+using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
@@ -102,6 +103,18 @@ void AwContents::DocumentHasImages(JNIEnv* env, jobject obj, jobject message) {
       base::Bind(&DocumentHasImagesCallback,
                  base::Owned(new ScopedJavaGlobalRef<jobject>(
                     ScopedJavaLocalRef<jobject>(env, message)))));
+}
+
+void AwContents::onReceivedHttpAuthRequest(
+    const base::android::JavaRef<jobject>& handler,
+    const std::string& host,
+    const std::string& realm) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> jhost = ConvertUTF8ToJavaString(env, host);
+  ScopedJavaLocalRef<jstring> jrealm = ConvertUTF8ToJavaString(env, realm);
+  Java_AwContents_onReceivedHttpAuthRequest(env, java_ref_.get(env).obj(),
+                                            handler.obj(), jhost.obj(),
+                                            jrealm.obj());
 }
 
 static jint Init(JNIEnv* env,

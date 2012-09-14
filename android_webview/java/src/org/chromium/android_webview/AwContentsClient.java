@@ -120,6 +120,9 @@ public abstract class AwContentsClient extends ContentViewClient {
 
     public abstract boolean onConsoleMessage(ConsoleMessage consoleMessage);
 
+    public abstract void onReceivedHttpAuthRequest(AwHttpAuthHandler handler,
+            String host, String realm);
+
     //--------------------------------------------------------------------------------------------
     //             Stuff that we ignore since it only makes sense for Chrome browser
     //--------------------------------------------------------------------------------------------

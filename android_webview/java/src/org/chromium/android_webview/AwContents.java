@@ -106,6 +106,11 @@ public class AwContents {
         message.sendToTarget();
     }
 
+    @CalledByNative
+    private void onReceivedHttpAuthRequest(AwHttpAuthHandler handler, String host, String realm) {
+        mContentsClient.onReceivedHttpAuthRequest(handler, host, realm);
+    }
+
     //--------------------------------------------------------------------------------------------
     //  Native methods
     //--------------------------------------------------------------------------------------------

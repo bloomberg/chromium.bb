@@ -9,6 +9,10 @@
 
 #include "base/lazy_instance.h"
 
+namespace content {
+class ResourceDispatcherHostLoginDelegate;
+}
+
 namespace android_webview {
 
 class AwResourceDispatcherHostDelegate
@@ -25,6 +29,13 @@ class AwResourceDispatcherHostDelegate
       int route_id,
       bool is_continuation_of_transferred_request,
       ScopedVector<content::ResourceThrottle>* throttles) OVERRIDE;
+
+  virtual bool AcceptAuthRequest(net::URLRequest* request,
+                                 net::AuthChallengeInfo* auth_info) OVERRIDE;
+
+  virtual content::ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
+      net::AuthChallengeInfo* auth_info,
+      net::URLRequest* request) OVERRIDE;
 
  private:
   friend struct base::DefaultLazyInstanceTraits<

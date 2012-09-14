@@ -8,6 +8,7 @@ import android.view.KeyEvent;
 import android.webkit.ConsoleMessage;
 
 import org.chromium.android_webview.AwContentsClient;
+import org.chromium.android_webview.AwHttpAuthHandler;
 
 /**
  * As a convience for tests that only care about specefic callbacks, this class provides
@@ -30,5 +31,10 @@ class NullContentsClient extends AwContentsClient {
     @Override
     public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
         return false;
+    }
+
+    @Override
+    public void onReceivedHttpAuthRequest(AwHttpAuthHandler handler, String host, String realm) {
+        handler.cancel();
     }
 };
