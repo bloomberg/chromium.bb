@@ -29,19 +29,19 @@ index 51f839a..af40bf8 100644
 @@ -1107,6 +1107,7 @@ HB_Bool HB_ArabicShape(HB_ShaperItem *item)
      assert(item->item.script == HB_Script_Arabic || item->item.script == HB_Script_Syriac
             || item->item.script == HB_Script_Nko);
- 
+
 +    item->shaperFlags |= HB_ShaperFlag_ForceMarksToZeroWidth;
  #ifndef NO_OPENTYPE
- 
+
      if (HB_SelectScript(item, item->item.script == HB_Script_Arabic ? arabic_features : syriac_features)) {
 diff --git a/src/harfbuzz-shaper.cpp b/src/harfbuzz-shaper.cpp
 index 7fd04a9..66f0ea6 100644
 --- a/src/harfbuzz-shaper.cpp
 +++ b/src/harfbuzz-shaper.cpp
 @@ -430,8 +430,6 @@ void HB_HeuristicSetGlyphAttributes(HB_ShaperItem *item)
- 
+
      // ### zeroWidth and justification are missing here!!!!!
- 
+
 -    assert(item->num_glyphs <= length);
 -
  //     qDebug("QScriptEngine::heuristicSetGlyphAttributes, num_glyphs=%d", item->num_glyphs);
@@ -52,13 +52,13 @@ index 7fd04a9..66f0ea6 100644
          ++glyph_pos;
      }
 -    assert(glyph_pos == item->num_glyphs);
- 
+
      // first char in a run is never (treated as) a mark
      int cStart = 0;
 @@ -1151,10 +1148,12 @@ HB_Bool HB_OpenTypeShape(HB_ShaperItem *item, const hb_uint32 *properties)
          return false;
      face->tmpLogClusters = tmpLogClusters;
- 
+
 +    const int itemLength = item->item.length;
 +    assert(itemLength > 0);
      for (int i = 0; i < face->length; ++i) {
@@ -67,12 +67,12 @@ index 7fd04a9..66f0ea6 100644
 -        face->tmpLogClusters[i] = item->log_clusters[i];
 +        face->tmpLogClusters[i] = i < itemLength ? item->log_clusters[i] : item->log_clusters[itemLength - 1];
      }
- 
+
  #ifdef OT_DEBUG
 @@ -1190,6 +1189,24 @@ HB_Bool HB_OpenTypeShape(HB_ShaperItem *item, const hb_uint32 *properties)
      return true;
  }
- 
+
 +/* See comments near the definition of HB_ShaperFlag_ForceMarksToZeroWidth for a description
 +   of why this function exists. */
 +void HB_FixupZeroWidth(HB_ShaperItem *item)
@@ -95,14 +95,14 @@ index 7fd04a9..66f0ea6 100644
  {
      HB_Face face = item->face;
 @@ -1204,6 +1221,8 @@ HB_Bool HB_OpenTypePosition(HB_ShaperItem *item, int availableGlyphs, HB_Bool do
- 
+
      if (!face->glyphs_substituted && !glyphs_positioned) {
          HB_GetGlyphAdvances(item);
 +        if (item->face->current_flags & HB_ShaperFlag_ForceMarksToZeroWidth)
 +            HB_FixupZeroWidth(item);
          return true; // nothing to do for us
      }
- 
+
 diff --git a/src/harfbuzz-shaper.h b/src/harfbuzz-shaper.h
 index ab5c07a..72c9aa3 100644
 --- a/src/harfbuzz-shaper.h
@@ -118,5 +118,29 @@ index ab5c07a..72c9aa3 100644
 +       flag causes us to zero out the advances for mark glyphs. */
 +    HB_ShaperFlag_ForceMarksToZeroWidth = 1 << 2
  } HB_ShaperFlag;
- 
- /* 
+
+ /*
+
+diff --git a/third_party/harfbuzz/contrib/harfbuzz-freetype.c b/third_party/harfbuzz
+index a2962df..f6a1e1a 100644
+--- a/third_party/harfbuzz/contrib/harfbuzz-freetype.c
++++ b/third_party/harfbuzz/contrib/harfbuzz-freetype.c
+@@ -21,7 +21,8 @@ hb_freetype_string_to_glyphs(HB_Font font,
+   if (len > *numGlyphs)
+     return 0;
+
+-  size_t i = 0, j = 0;
++  ssize_t i = 0;
++  hb_uint32 j = 0;
+   while (i < len) {
+     const uint32_t cp = utf16_to_code_point(chars, len, &i);
+     glyphs[j++] = FT_Get_Char_Index(face, cp);
+@@ -53,7 +54,7 @@ static HB_Bool
+ hb_freetype_can_render(HB_Font font, const HB_UChar16 *chars, hb_uint32 len) {
+   FT_Face face = (FT_Face)font->userData;
+
+-  size_t i = 0;
++  ssize_t i = 0;
+   while (i < len) {
+     const uint32_t cp = utf16_to_code_point(chars, len, &i);
+     if (FT_Get_Char_Index(face, cp) == 0)

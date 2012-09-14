@@ -21,7 +21,8 @@ hb_freetype_string_to_glyphs(HB_Font font,
   if (len > *numGlyphs)
     return 0;
 
-  size_t i = 0, j = 0;
+  ssize_t i = 0;
+  hb_uint32 j = 0;
   while (i < len) {
     const uint32_t cp = utf16_to_code_point(chars, len, &i);
     glyphs[j++] = FT_Get_Char_Index(face, cp);
@@ -53,7 +54,7 @@ static HB_Bool
 hb_freetype_can_render(HB_Font font, const HB_UChar16 *chars, hb_uint32 len) {
   FT_Face face = (FT_Face)font->userData;
 
-  size_t i = 0;
+  ssize_t i = 0;
   while (i < len) {
     const uint32_t cp = utf16_to_code_point(chars, len, &i);
     if (FT_Get_Char_Index(face, cp) == 0)

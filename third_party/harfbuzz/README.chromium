@@ -21,3 +21,5 @@ the checked-in copy of the source.)
 Added support for building on Android.
 
 The patch for Arabic alignment bug was added (bug 105685).
+
+Added patch for compiling with clang ARM for Android.
