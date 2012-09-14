@@ -22,15 +22,12 @@
 #include <string>
 #include <vector>
 
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 
 #ifndef NACL_TRUSTED_BUT_NOT_TCB
 #error("This file is not meant for use in the TCB")
 #endif
-
-template <typename T, size_t N>
-char (&ArraySizeHelper(T (&array)[N]))[N];
-#define arraysize(array) (sizeof(ArraySizeHelper(array)))
 
 namespace {
 
@@ -47,7 +44,7 @@ const struct option kProgramOptions[] = {
   {NULL,                0,                      NULL,   0}
 };
 
-const char kVersion[] = "12.09.08";
+const char kVersion[] = "2012.09.14";
 
 const char* const kProgramHelp = "Usage: %s [OPTION]... [FILE]...\n"
 "\n"
@@ -58,14 +55,14 @@ const char* const kProgramHelp = "Usage: %s [OPTION]... [FILE]...\n"
 "Options list:\n"
 "  -m, --mode=mode            CPU mode: ia32 for IA32, amd64 for x86-64\n"
 "  -d, --disable=action_list  disable actions from the comma-separated list\n"
-"  -o, --output=FILE          write result to FILE instead of standard output\n"
-"  -c, --const_file=FILE      wrire result of FILE instead of standard output\n"
+"  -o, --output=FILE          write DFA to FILE instead of standard output\n"
+"  -c, --const_file=FILE      write consts to FILE instead of standard output\n"
 "  -h, --help                 display this help and exit\n"
 "  -v, --version              output version information and exit\n"
 "\n"
-"Here is the full list of possible action types with short descrion of places\n"
-"where they are insered:\n"
-"  vex_prefix          triggered when VEX-encoded action is detected\n"
+"Here is the full list of possible action types with short description of\n"
+"places where they are inserted:\n"
+"  vex_prefix          triggered when VEX-encoded instruction is detected\n"
 "    @vex_prefix2        inserted after second byte of 3-byte VEX/XOP prefix\n"
 "    @vex_prefix3        inserted after third byte of 3-byte VEX/XOP prefix\n"
 "    @vex_prefix_short   inserted after second byte of two-byte VEX prefix\n"
@@ -87,11 +84,11 @@ const char* const kProgramHelp = "Usage: %s [OPTION]... [FILE]...\n"
 "                        etc) to distinguish operands, these are not captured\n"
 "                        between '>opcode_begin' and '@opcode_end'\n"
 "  parse_operands      this will grab instruction operands\n"
-"  check_access        this will check memory access (action is not\n"
-"                        generated, you need to define it in your program)\n"
+"  check_access        this will check memory access\n"
 "\n"
 "  nacl-forbidden      generate instructions forbidden for nacl\n"
 "\n"
+"  parse_operands_states     this will grab states of operands (read/write)\n"
 "  parse_nonwrite_registers  parse register operands which are only read\n"
 "                              or not touched at all\n"
 "  parse_immediate_operands  parse immediate operands\n"
@@ -100,7 +97,7 @@ const char* const kProgramHelp = "Usage: %s [OPTION]... [FILE]...\n"
 "  parse_mmx_operands        parse MMX operands\n"
 "  parse_xmm_operands        parse XMM operands\n"
 "  parse_ymm_operands        parse YMM operands\n"
-"  parse_operand_positions   produce corrent numbers of operands (required\n"
+"  parse_operand_positions   produce correct numbers of operands (required\n"
 "                              for decoding, not important for validation)\n";
 
 const char* const kVersionHelp = "%s %s\n"
@@ -108,11 +105,13 @@ const char* const kVersionHelp = "%s %s\n"
 "Use of this source code is governed by a BSD-style license that can be\n"
 "found in the LICENSE file.\n";
 
-enum Actions {
+enum Action {
   kVexPrefix,
   kInstructionName,
   kOpcode,
   kParseOperands,
+  kCheckAccess,
+  kNaClForbidden,
   kParseOperandsStates,
   kParseNonWriteRegisters,
   kParseImmediateOperands,
@@ -121,15 +120,15 @@ enum Actions {
   kParseMMXOperands,
   kParseXMMOperands,
   kParseYMMOperands,
-  kParseOperandPositions,
-  kCheckAccess,
-  kNaClForbidden
+  kParseOperandPositions
 };
 const char* kDisablableActionsList[] = {
   "vex_prefix",
   "instruction_name",
   "opcode",
   "parse_operands",
+  "check_access",
+  "nacl-forbidden",
   "parse_operands_states",
   "parse_nonwrite_registers",
   "parse_immediate_operands",
@@ -138,23 +137,19 @@ const char* kDisablableActionsList[] = {
   "parse_mmx_operands",
   "parse_xmm_operands",
   "parse_ymm_operands",
-  "parse_operand_positions",
-  "check_access",
-  "nacl-forbidden"
+  "parse_operand_positions"
 };
-bool disabled_actions[arraysize(kDisablableActionsList)];
-bool enabled(Actions action) {
+bool disabled_actions[NACL_ARRAY_SIZE(kDisablableActionsList)];
+bool enabled(Action action) {
   return !disabled_actions[static_cast<int>(action)];
 }
 
 std::map<std::string, size_t> instruction_names;
 
-class extract_operand;
-class MarkedInstruction;
 class Instruction {
  public:
   struct Operand {
-    char source;
+    char type;
     std::string size;
     bool enabled;
     bool read;
@@ -237,10 +232,11 @@ class Instruction {
        "nacl-amd64-zero-extends",
        "nacl-amd64-modifiable"
     };
-    if (find_if(all_instruction_flags,
-                all_instruction_flags + arraysize(all_instruction_flags),
-                bind1st(std::equal_to<std::string>(), flag)) ==
-                     all_instruction_flags + arraysize(all_instruction_flags)) {
+    if (find_if(
+          all_instruction_flags,
+          all_instruction_flags + NACL_ARRAY_SIZE(all_instruction_flags),
+          bind1st(std::equal_to<std::string>(), flag)) ==
+          all_instruction_flags + NACL_ARRAY_SIZE(all_instruction_flags)) {
       fprintf(stderr, "%s: unknown flag: '%s'\n", short_program_name,
               flag.c_str());
       exit(1);
@@ -252,15 +248,13 @@ class Instruction {
     flags.insert(flag);
   }
 
-  friend class extract_operand;
-  friend class MarkedInstruction;
   friend void parse_instructions(const char*);
 
  public:
   const std::string& get_name(void) const {
     return name;
   }
-  Instruction replace_name(const std::string& name) const {
+  Instruction with_name(const std::string& name) const {
     Instruction result = *this;
     result.name = name;
     return result;
@@ -268,7 +262,7 @@ class Instruction {
   const std::vector<Operand>& get_operands(void) const {
     return operands;
   }
-  Instruction replace_operands(const std::vector<Operand>& operands) const {
+  Instruction with_operands(const std::vector<Operand>& operands) const {
     Instruction result = *this;
     result.operands = operands;
     return result;
@@ -276,7 +270,7 @@ class Instruction {
   const std::vector<std::string>& get_opcodes(void) const {
     return opcodes;
   }
-  Instruction replace_opcodes(const std::vector<std::string>& opcodes) const {
+  Instruction with_opcodes(const std::vector<std::string>& opcodes) const {
     Instruction result = *this;
     result.opcodes = opcodes;
     return result;
@@ -284,13 +278,12 @@ class Instruction {
   const std::set<std::string>& get_flags(void) const {
     return flags;
   }
-  Instruction replace_flags(const std::set<std::string>& flags) const {
+  Instruction with_flags(const std::set<std::string>& flags) const {
     Instruction result = *this;
     result.flags = flags;
     return result;
   }
   bool has_flag(const std::string& flag) const {
-    check_flag_valid(flag);
     return flags.find(flag) != flags.end();
   }
 };
@@ -310,6 +303,7 @@ std::string read_file(const char* filename) {
   int file = open(filename, O_RDONLY);
   char buf[1024];
   ssize_t count;
+  bool mac_eol_found = false;
 
   if (file == -1) {
     fprintf(stderr, "%s: can not open '%s' file (%s)\n",
@@ -318,10 +312,25 @@ std::string read_file(const char* filename) {
   }
   while ((count = read(file, buf, sizeof(buf))) > 0)
     for (char* it = buf; it < buf + count ; ++it)
-      if (*it != '\r')
-        file_content.push_back(*it);
-      else
+      if (*it == '\r') {
+        /* This may be MacOS EOL, or Windows one.  Assume MacOS for now.  */
+        if (mac_eol_found)
+          file_content.push_back('\n');
+        else
+          mac_eol_found = true;
+      } else if (*it == '\n') {
+        /* '\r\n' is Windows EOL, not Mac's one.  */
+        mac_eol_found = false;
         file_content.push_back('\n');
+      } else {
+        if (mac_eol_found) {
+          file_content.push_back('\n');
+          mac_eol_found = false;
+        }
+        file_content.push_back(*it);
+      }
+  if (mac_eol_found)
+    file_content.push_back('\n');
   if (count == -1) {
     fprintf(stderr, "%s: can not read '%s' file (%s)\n",
             short_program_name, filename, strerror(errno));
@@ -370,7 +379,8 @@ std::vector<std::string> split_till_comma(
       part.push_back(*it);
     }
   }
-  result.push_back(part);
+  if (!part.empty())
+    result.push_back(part);
   return result;
 }
 
@@ -391,119 +401,117 @@ std::string::const_iterator find_end_of_line(std::string::const_iterator it,
 void parse_instructions(const char* filename) {
   const std::string file_content = read_file(filename);
   std::string::const_iterator it = file_content.begin();
+  std::string::const_iterator eof = file_content.end();
 
-  while (it != file_content.end()) {
-    while (find_end_of_line(it, file_content.end()) == it) {
-      if (it == file_content.end())
-        return;
-      it++;
+  while (it != eof) {
+    std::string::const_iterator line_end = find_end_of_line(it, eof);
+    if (it == line_end) {
+      ++it;
+      continue;
     }
     /* If line starts with '#' then it's a comment. */
     if (*it == '#') {
-      it = find_end_of_line(it, file_content.end());
-    } else {
-      Instruction instruction;
-      std::string::const_iterator line_end = find_end_of_line(it,
-                                                              file_content.
-                                                                end());
-      std::vector<std::string> operation = split_till_comma(&it, line_end);
-      /* Line with just whitespaces is ignored.  */
-      if (operation.size() != 0) {
-        /* First word is operation name, other words are operands.  */
-        for (std::vector<std::string>::reverse_iterator string =
-               operation.rbegin(); string != operation.rend() - 1; ++string) {
-          Instruction::Operand operand;
-          operand.enabled  = true;
-          operand.implicit = false;
-          switch (string->at(0)) {
-            case '\'':
-              operand.source = string->at(1);
-              operand.size   = string->substr(2);
-              operand.read   = false;
-              operand.write  = false;
-              break;
-            case '=':
-              operand.source = string->at(1);
-              operand.size   = string->substr(2);
-              operand.read   = true;
-              operand.write  = false;
-              break;
-            case '!':
-              operand.source = string->at(1);
-              operand.size   = string->substr(2);
-              operand.read   = false;
-              operand.write  = true;
-              break;
-            case '&':
-              operand.source = string->at(1);
-              operand.size   = string->substr(2);
-              operand.read   = true;
-              operand.write  = true;
-              break;
-            default:
-              operand.source = string->at(0);
-              operand.size   = string->substr(1);
-              if (string == operation.rbegin()) {
-                if (operation.size() <= 3) {
-                  operand.read   = true;
-                  operand.write  = true;
-                } else {
-                  operand.read   = false;
-                  operand.write  = true;
-                }
+      it = line_end;
+      continue;
+    }
+    Instruction instruction;
+    std::vector<std::string> operation = split_till_comma(&it, line_end);
+    /* Line with just whitespaces is ignored.  */
+    if (operation.size() != 0) {
+      /* First word is operation name, other words are operands.  */
+      for (std::vector<std::string>::reverse_iterator string =
+                 operation.rbegin(); string != operation.rend() - 1; ++string) {
+        Instruction::Operand operand;
+        operand.enabled  = true;
+        operand.implicit = false;
+        switch (string->at(0)) {
+          case '\'':
+            operand.type  = string->at(1);
+            operand.size  = string->substr(2);
+            operand.read  = false;
+            operand.write = false;
+            break;
+          case '=':
+            operand.type  = string->at(1);
+            operand.size  = string->substr(2);
+            operand.read  = true;
+            operand.write = false;
+            break;
+          case '!':
+            operand.type  = string->at(1);
+            operand.size  = string->substr(2);
+            operand.read  = false;
+            operand.write = true;
+            break;
+          case '&':
+            operand.type  = string->at(1);
+            operand.size  = string->substr(2);
+            operand.read  = true;
+            operand.write = true;
+            break;
+          default:
+            operand.type  = string->at(0);
+            operand.size  = string->substr(1);
+            if (string == operation.rbegin()) {
+              if (operation.size() <= 3) {
+                operand.read  = true;
+                operand.write = true;
               } else {
-                operand.read   = true;
-                operand.write  = false;
+                operand.read  = false;
+                operand.write = true;
               }
-          }
-          if (*(operand.size.rbegin()) == '*') {
-            operand.size.resize(operand.size.length() - 1);
-            operand.implicit = true;
-          }
-          instruction.operands.push_back(operand);
+            } else {
+              operand.read  = true;
+              operand.write = false;
+            }
+            break;
         }
-        bool enabled_instruction = true;
+        if (*(operand.size.rbegin()) == '*') {
+          operand.size.resize(operand.size.length() - 1);
+          operand.implicit = true;
+        }
+        instruction.operands.push_back(operand);
+      }
+      bool enabled_instruction = true;
+      if (*it == ',') {
+        ++it;
+        if (it == line_end) line_end = find_end_of_line(++it, eof);
+        instruction.opcodes = split_till_comma(&it, line_end);
         if (*it == ',') {
           ++it;
-          if (it == line_end) line_end = find_end_of_line(++it,
-                                                          file_content.end());
-          instruction.opcodes = split_till_comma(&it, line_end);
-          if (*it == ',') {
-            ++it;
-            if (it == line_end) line_end = find_end_of_line(++it,
-                                                            file_content.end());
-            const std::vector<std::string>& flags = split_till_comma(&it,
-                                                                     line_end);
-            for (std::vector<std::string>::const_iterator flag = flags.begin();
-                 flag != flags.end(); ++flag)
-              instruction.add_flag(*flag);
-            if ((instruction.has_flag("ia32") && !ia32_mode) ||
-                (instruction.has_flag("amd64") && ia32_mode) ||
-                (instruction.has_flag("nacl-ia32-forbidden") &&
-                 ia32_mode && !enabled(kNaClForbidden)) ||
-                (instruction.has_flag("nacl-amd64-forbidden") &&
-                 !ia32_mode && !enabled(kNaClForbidden)) ||
-                (instruction.has_flag("nacl-forbidden") &&
-                 !enabled(kNaClForbidden)))
-              enabled_instruction = false;
-          }
-        }
-        if (enabled_instruction) {
-          instruction_names[instruction.name = operation[0]] = 0;
-          instructions.push_back(instruction);
+          if (it == line_end) line_end = find_end_of_line(++it, eof);
+          const std::vector<std::string>& flags = split_till_comma(&it,
+                                                                   line_end);
+          for (std::vector<std::string>::const_iterator flag = flags.begin();
+               flag != flags.end(); ++flag)
+            instruction.add_flag(*flag);
+          if ((instruction.has_flag("ia32") && !ia32_mode) ||
+              (instruction.has_flag("amd64") && ia32_mode) ||
+              (instruction.has_flag("nacl-ia32-forbidden") &&
+               ia32_mode && !enabled(kNaClForbidden)) ||
+              (instruction.has_flag("nacl-amd64-forbidden") &&
+               !ia32_mode && !enabled(kNaClForbidden)) ||
+              (instruction.has_flag("nacl-forbidden") &&
+               !enabled(kNaClForbidden)))
+            enabled_instruction = false;
         }
       }
-      if (find_end_of_line(it, file_content.end()) != it) {
-        fprintf(stderr, "%s: definition files must have three columns",
-                short_program_name);
-        exit(1);
+      if (enabled_instruction) {
+        instruction.name = operation[0];
+        instruction_names[instruction.name] = 0;
+        instructions.push_back(instruction);
       }
+    }
+    if (find_end_of_line(it, eof) != it) {
+      fprintf(stderr, "%s: definition files must have three columns",
+              short_program_name);
+      exit(1);
     }
   }
 }
 
 /* Helper comparison function: shorter strings are smaller, otherwise compare
-   strinfs lexicographically.  */
+   strings lexicographically.  */
 bool print_consts_compare_names(const std::string& x, const std::string& y) {
   return (x.size() > y.size()) || ((x.size() == y.size()) && x < y);
 }
@@ -640,7 +648,7 @@ class MarkedInstruction : public Instruction {
     /* If register is stored in opcode we need to expand opcode now.  */
     for (std::vector<Operand>::const_iterator operand = operands.begin();
          operand != operands.end(); ++operand)
-      if (operand->source == 'r') {
+      if (operand->type == 'r') {
         std::vector<std::string>::reverse_iterator opcode = opcodes.rbegin();
         for (; opcode != opcodes.rend(); ++opcode) {
           if (opcode->find('/') == opcode->npos) {
@@ -660,7 +668,7 @@ class MarkedInstruction : public Instruction {
                 (*opcode) = "(";
                 opcode->append(saved_opcode);
                 static const char cc[] = {'9', 'a', 'b', 'c', 'd', 'e', 'f'};
-                for (size_t c = 0; c < arraysize(cc); ++c) {
+                for (size_t c = 0; c < NACL_ARRAY_SIZE(cc); ++c) {
                   opcode->push_back('|');
                   (*(saved_opcode.rbegin())) = cc[c];
                   opcode->append(saved_opcode);
@@ -699,9 +707,9 @@ class MarkedInstruction : public Instruction {
           "0xf2", "repnz",
           "0xf3", "repz",
         };
-        if (find_if(prefix_bytes, prefix_bytes + arraysize(prefix_bytes),
+        if (find_if(prefix_bytes, prefix_bytes + NACL_ARRAY_SIZE(prefix_bytes),
                     bind1st(std::equal_to<std::string>(), *opcodes.begin())) ==
-                                         prefix_bytes + arraysize(prefix_bytes))
+                                   prefix_bytes + NACL_ARRAY_SIZE(prefix_bytes))
           break;
         required_prefixes.insert(*opcodes.begin());
       }
@@ -723,8 +731,8 @@ class MarkedInstruction : public Instruction {
     opcode_in_imm(opcode_in_imm_),
     fwait(fwait_) {
   }
-  MarkedInstruction replace_name(const std::string& name) const {
-    return MarkedInstruction(Instruction::replace_name(name),
+  MarkedInstruction with_name(const std::string& name) const {
+    return MarkedInstruction(Instruction::with_name(name),
                              required_prefixes,
                              optional_prefixes,
                              rex,
@@ -732,9 +740,9 @@ class MarkedInstruction : public Instruction {
                              opcode_in_imm,
                              fwait);
   }
-  MarkedInstruction replace_operands(
+  MarkedInstruction with_operands(
       const std::vector<Operand>& operands) const {
-    return MarkedInstruction(Instruction::replace_operands(operands),
+    return MarkedInstruction(Instruction::with_operands(operands),
                              required_prefixes,
                              optional_prefixes,
                              rex,
@@ -742,9 +750,9 @@ class MarkedInstruction : public Instruction {
                              opcode_in_imm,
                              fwait);
   }
-  MarkedInstruction replace_opcodes(
+  MarkedInstruction with_opcodes(
       const std::vector<std::string>& opcodes) const {
-    return MarkedInstruction(Instruction::replace_opcodes(opcodes),
+    return MarkedInstruction(Instruction::with_opcodes(opcodes),
                              required_prefixes,
                              optional_prefixes,
                              rex,
@@ -752,8 +760,8 @@ class MarkedInstruction : public Instruction {
                              opcode_in_imm,
                              fwait);
   }
-  MarkedInstruction replace_flags(const std::set<std::string>& flags) const {
-    return MarkedInstruction(Instruction::replace_flags(flags),
+  MarkedInstruction with_flags(const std::set<std::string>& flags) const {
+    return MarkedInstruction(Instruction::with_flags(flags),
                              required_prefixes,
                              optional_prefixes,
                              rex,
@@ -846,7 +854,7 @@ bool mod_reg_is_used(const MarkedInstruction& instruction) {
     instruction.get_operands();
   for (std::vector<MarkedInstruction::Operand>::const_iterator
          operand = operands.begin(); operand != operands.end(); ++operand) {
-    const char source = operand->source;
+    const char source = operand->type;
     const std::multiset<std::string>& prefixes =
       instruction.get_required_prefixes();
     /* Control registers can use 0xf0 prefix to select %cr8…%cr15.  */
@@ -876,7 +884,7 @@ bool mod_rm_is_used(const MarkedInstruction& instruction) {
     instruction.get_operands();
   for (std::vector<MarkedInstruction::Operand>::const_iterator operand =
          operands.begin(); operand != operands.end(); ++operand) {
-    const char source = operand->source;
+    const char source = operand->type;
     if (memory_capable_operand(source))
       return true;
   }
@@ -1038,7 +1046,7 @@ void print_vex_opcode(const MarkedInstruction& instruction) {
   fprintf(out_file, " & VEX_map%s) ", opcodes[1].c_str() + 4);
   std::string third_byte = opcodes[2];
   static const char* symbolic_names[] = { "cntl", "dest", "src1", "src" };
-  for (size_t name = 0; name < arraysize(symbolic_names); ++name)
+  for (size_t name = 0; name < NACL_ARRAY_SIZE(symbolic_names); ++name)
     for (std::string::iterator it = third_byte.begin(); it != third_byte.end();
          ++it)
       if (static_cast<size_t>(third_byte.end() - it) >=
@@ -1051,8 +1059,9 @@ void print_vex_opcode(const MarkedInstruction& instruction) {
   static const char* third_byte_check[] = {
     "01xXW", ".", "01xX", "01xX", "01xX", "01xX", ".", "01xX", ".", "01", "01"
   };
-  if (bool third_byte_ok = arraysize(third_byte_check) == third_byte.length()) {
-    for (size_t set = 0; set < arraysize(third_byte_check); ++set) {
+  if (bool third_byte_ok =
+                     NACL_ARRAY_SIZE(third_byte_check) == third_byte.length()) {
+    for (size_t set = 0; set < NACL_ARRAY_SIZE(third_byte_check); ++set) {
       if (!strchr(third_byte_check[set], third_byte[set])) {
         third_byte_ok = false;
         break;
@@ -1138,7 +1147,7 @@ void print_opcode_nomodrm(const MarkedInstruction& instruction) {
     size_t operand_index = 0;
     for (std::vector<MarkedInstruction::Operand>::const_iterator operand =
            operands.begin(); operand != operands.end(); ++operand) {
-      if (operand->enabled && operand->source == 'r') {
+      if (operand->enabled && operand->type == 'r') {
         if (operand->size == "x87")
           fprintf(out_file, " @operand%" NACL_PRIuS "_from_opcode_x87",
                   operand_index);
@@ -1239,11 +1248,11 @@ void print_opcode_recognition(const MarkedInstruction& instruction,
            operands.begin(); operand != operands.end(); ++operand) {
       if (operand->enabled)
         if (enabled(kParseOperandPositions) ||
-            !memory_capable_operand(operand->source) ||
+            !memory_capable_operand(operand->type) ||
             !memory_access)
           fprintf(out_file, " @operand%d_%s", operand_index,
                   operand->size.c_str());
-      static const struct { char source; const char* type; } operand_types[] = {
+      static const struct { const char type, *dfa_type; } operand_types[] = {
         { '1', "one"              },
         { 'a', "rax"              },
         { 'c', "rcx"              },
@@ -1261,19 +1270,19 @@ void print_opcode_recognition(const MarkedInstruction& instruction,
       };
       size_t n = 0;
       while (n < sizeof(operand_types)/sizeof(operand_types[0]) &&
-             operand_types[n].source != operand->source)
+             operand_types[n].type != operand->type)
         ++n;
       if (n == sizeof(operand_types)/sizeof(operand_types[0])) {
         if (operand->enabled)
           if (enabled(kParseOperandPositions) ||
-              !memory_capable_operand(operand->source) ||
+              !memory_capable_operand(operand->type) ||
               !memory_access)
             ++operand_index;
         continue;
       }
       if (operand->enabled) {
         fprintf(out_file, " @operand%d_%s", operand_index,
-                operand_types[n].type);
+                operand_types[n].dfa_type);
         ++operand_index;
       }
     }
@@ -1317,17 +1326,17 @@ void print_immediate_arguments(const MarkedInstruction& instruction) {
       ++operand_index;
   for (std::vector<MarkedInstruction::Operand>::const_reverse_iterator
          operand = operands.rbegin(); operand != operands.rend(); ++operand) {
-    if (operand->source == 'i') {
+    if (operand->type == 'i') {
       if (operand->size == "8bit") {
         fprintf(out_file, " imm8n2");
       } else if (operand->size == "16bit") {
         fprintf(out_file, " imm16n2");
       } else {
         fprintf(stderr, "%s: error - can not determine immediate size: %c%s",
-                short_program_name, operand->source, operand->size.c_str());
+                short_program_name, operand->type, operand->size.c_str());
         exit(1);
       }
-    } else if (operand->source == 'I') {
+    } else if (operand->type == 'I') {
       if (operand->size == "2bit") {
         fprintf(out_file, " imm2");
       } else if (operand->size == "8bit") {
@@ -1340,10 +1349,10 @@ void print_immediate_arguments(const MarkedInstruction& instruction) {
         fprintf(out_file, " imm64");
       } else {
         fprintf(stderr, "%s: error - can not determine immediate size: %c%s",
-                short_program_name, operand->source, operand->size.c_str());
+                short_program_name, operand->type, operand->size.c_str());
         exit(1);
       }
-    } else if (operand->source == 'J') {
+    } else if (operand->type == 'J') {
       if (operand->size == "8bit") {
         fprintf(out_file, " rel8");
       } else if (operand->size == "16bit") {
@@ -1352,10 +1361,10 @@ void print_immediate_arguments(const MarkedInstruction& instruction) {
         fprintf(out_file, " rel32");
       } else {
         fprintf(stderr, "%s: error - can not determine immediate size: %c%s",
-                short_program_name, operand->source, operand->size.c_str());
+                short_program_name, operand->type, operand->size.c_str());
         exit(1);
       }
-    } else if (operand->source == 'L') {
+    } else if (operand->type == 'L') {
       if (operands.size() == 4) {
         fprintf(out_file, " b_%cxxx_0000", ia32_mode ? '0' : 'x');
         if (!enabled(kInstructionName))
@@ -1364,7 +1373,7 @@ void print_immediate_arguments(const MarkedInstruction& instruction) {
       if (operand->enabled && enabled(kParseOperands))
         fprintf(out_file, " @operand%" NACL_PRIuS "_from_is4",
                 operand_index - 1);
-    } else if (operand->source == 'O') {
+    } else if (operand->type == 'O') {
       fprintf(out_file, ia32_mode ? " disp32" : " disp64");
     }
     if (operand->enabled || enabled(kParseOperandPositions))
@@ -1378,7 +1387,7 @@ void print_immediate_arguments(const MarkedInstruction& instruction) {
     if (*required_prefix == "0xf0") {
       for (std::vector<MarkedInstruction::Operand>::const_iterator operand =
              operands.begin(); operand != operands.end(); ++operand)
-        if (operand->source == 'C') {
+        if (operand->type == 'C') {
           fprintf(out_file, " @not_lock_prefix%" NACL_PRIuS,
                   operand - operands.begin());
           break;
@@ -1406,7 +1415,7 @@ void print_instruction_end_actions(const MarkedInstruction& instruction,
       for (std::vector<MarkedInstruction::Operand>::const_iterator operand =
              operands.begin(); operand != operands.end(); ++operand)
         if (operand->enabled &&
-            (!memory_capable_operand(operand->source) ||
+            (!memory_capable_operand(operand->type) ||
              !memory_access)) {
           ++operands_count;
           if (operand->size == "32bit" &&
@@ -1478,7 +1487,7 @@ void print_one_size_definition_modrm_register(
     for (std::vector<MarkedInstruction::Operand>::const_iterator operand =
            operands.begin(); operand != operands.end(); ++operand) {
       const char* operand_type;
-      switch (operand->source) {
+      switch (operand->type) {
         case 'C':
         case 'D':
         case 'G':
@@ -1567,7 +1576,7 @@ void print_one_size_definition_modrm_memory(
       for (std::vector<MarkedInstruction::Operand>::const_iterator operand =
              operands.begin(); operand != operands.end(); ++operand) {
         const char* operand_type;
-        switch (operand->source) {
+        switch (operand->type) {
           case 'C':
           case 'D':
           case 'G':
@@ -1631,7 +1640,7 @@ MarkedInstruction expand_sizes(const MarkedInstruction& instruction,
     instruction.get_operands();
   for (std::vector<MarkedInstruction::Operand>::iterator operand =
          operands.begin(); operand != operands.end(); ++operand) {
-    struct { const char source, *size, *register_size, *memory_size; }
+    struct { const char type, *size, *register_size, *memory_size; }
                                                              operand_sizes[] = {
       /* 8/16/32/64bits: mostly GP registers.  */
       { ' ', "b",    "8bit",    "8bit"       },
@@ -1730,17 +1739,17 @@ MarkedInstruction expand_sizes(const MarkedInstruction& instruction,
     };
     size_t n = 0;
     for (n = 0; n < sizeof(operand_sizes)/sizeof(operand_sizes[0]); ++n)
-      if ((operand_sizes[n].source == operand->source ||
-           operand_sizes[n].source == ' ') &&
+      if ((operand_sizes[n].type == operand->type ||
+           operand_sizes[n].type == ' ') &&
            operand_sizes[n].size == operand->size)
         break;
     if (n != sizeof(operand_sizes)/sizeof(operand_sizes[0])) {
       const char* register_size = operand_sizes[n].register_size;
       const char* memory_size = operand_sizes[n].memory_size;
-      bool memory_or_register = operand->source == 'E' ||
-                                operand->source == 'Q' ||
-                                operand->source == 'W';
-      bool always_memory = operand->source == 'M';
+      bool memory_or_register = operand->type == 'E' ||
+                                operand->type == 'Q' ||
+                                operand->type == 'W';
+      bool always_memory = operand->type == 'M';
       bool memory_operand = memory_access &&
                             (memory_or_register || always_memory);
       const char* operand_size = memory_operand ? memory_size : register_size;
@@ -1749,9 +1758,9 @@ MarkedInstruction expand_sizes(const MarkedInstruction& instruction,
       operand->size = operand_size;
       if (operand_size != NULL) {
         if ((!enabled(kParseImmediateOperands) &&
-             (operand->source == 'I' || operand->source == 'i')) ||
+             (operand->type == 'I' || operand->type == 'i')) ||
             (!enabled(kParseRelativeOperands) &&
-              (operand->source == 'J' || operand->source == 'O')) ||
+              (operand->type == 'J' || operand->type == 'O')) ||
             (!enabled(kParseX87Operands) &&
               (strncmp(operand_size, "x87", 3) == 0 ||
                ((strncmp(operand_size, "float", 5) == 0) && !register_size))) ||
@@ -1780,12 +1789,12 @@ MarkedInstruction expand_sizes(const MarkedInstruction& instruction,
         }
       } else {
         fprintf(stderr, "%s: error - can not determine operand size: %c%s",
-                short_program_name, operand->source, operand->size.c_str());
+                short_program_name, operand->type, operand->size.c_str());
         exit(1);
       }
     } else {
       fprintf(stderr, "%s: error - can not determine operand size: %c%s",
-              short_program_name, operand->source, operand->size.c_str());
+              short_program_name, operand->type, operand->size.c_str());
       exit(1);
     }
   }
@@ -1793,10 +1802,10 @@ MarkedInstruction expand_sizes(const MarkedInstruction& instruction,
       !instruction.get_opcode_in_modrm() && !instruction.get_opcode_in_imm()) {
     std::vector<std::string> opcodes = instruction.get_opcodes();
     opcodes.push_back(memory_operands ? "/m" : "/r");
-    return instruction.set_opcode_in_modrm().replace_operands(operands).
-           replace_opcodes(opcodes);
+    return instruction.set_opcode_in_modrm().with_operands(operands).
+           with_opcodes(opcodes);
   } else {
-    return instruction.replace_operands(operands);
+    return instruction.with_operands(operands);
   }
 }
 
@@ -1816,7 +1825,7 @@ void print_one_size_definition(const MarkedInstruction& instruction) {
     instruction.get_operands();
   for (std::vector<MarkedInstruction::Operand>::const_iterator operand =
          operands.begin(); operand != operands.end(); ++operand)
-    switch (operand->source) {
+    switch (operand->type) {
       case 'E':
       case 'Q':
       case 'W':
@@ -1827,11 +1836,11 @@ void print_one_size_definition(const MarkedInstruction& instruction) {
         if (modrm_memory) {
           fprintf(stderr,
                   "%s: error - conflicting operand sources: '%c' and '%c'",
-                  short_program_name, operand_source, operand->source);
+                  short_program_name, operand_source, operand->type);
           exit(1);
         }
         modrm_memory = true;
-        operand_source = operand->source;
+        operand_source = operand->type;
         break;
       case 'N':
       case 'R':
@@ -1840,12 +1849,12 @@ void print_one_size_definition(const MarkedInstruction& instruction) {
         if (modrm_register_only) {
           fprintf(stderr,
                   "%s: error - conflicting operand sources: '%c' and '%c'",
-                  short_program_name, operand_source, operand->source);
+                  short_program_name, operand_source, operand->type);
           exit(1);
         }
         modrm_register_only = true;
         modrm_register = true;
-        operand_source = operand->source;
+        operand_source = operand->type;
         break;
     }
   if (modrm_memory || modrm_register) {
@@ -1888,10 +1897,10 @@ void print_instruction_px(const MarkedInstruction& instruction) {
         if (Lbit != opcode->npos) {
           opcode->at(++Lbit) = '0';
           print_one_size_definition(instruction.
-                                    replace_opcodes(opcodes).
-                                    replace_operands(operands));
+                                    with_opcodes(opcodes).
+                                    with_operands(operands));
           opcode->at(Lbit) = '1';
-          print_one_size_definition(instruction.replace_opcodes(opcodes));
+          print_one_size_definition(instruction.with_opcodes(opcodes));
           return;
         }
       }
@@ -1925,7 +1934,7 @@ void print_instruction_vyz(const MarkedInstruction& instruction) {
   for (std::vector<MarkedInstruction::Operand>::const_iterator
          operand = operands.begin(); operand != operands.end(); ++operand)
     if (operand->size == "y" ||
-        (operand->source == 'S' && operand->size == "w")) {
+        (operand->type == 'S' && operand->size == "w")) {
       print_instruction_px(instruction.clear_rex_w());
       MarkedInstruction instruction_w = instruction.set_rex_w();
       print_instruction_px(instruction.set_rex_w());
@@ -1965,7 +1974,7 @@ void print_one_instruction_definition(void) {
       for (std::vector<MarkedInstruction::Operand>::iterator operand =
            operands.begin(); operand != operands.end(); ++operand)
         if (operand->size == "") operand->size = "b";
-      print_instruction_vyz(marked_instruction.replace_operands(operands));
+      print_instruction_vyz(marked_instruction.with_operands(operands));
       std::vector<std::string> opcodes = marked_instruction.get_opcodes();
       for (std::vector<std::string>::reverse_iterator opcode = opcodes.rbegin();
            opcode != opcodes.rend(); ++opcode)
@@ -1978,14 +1987,14 @@ void print_one_instruction_definition(void) {
       for (std::vector<MarkedInstruction::Operand>::iterator
              operand = operands.begin(); operand != operands.end(); ++operand)
         if (operand->size == "") {
-          if (operand->source == 'I')
+          if (operand->type == 'I')
             operand->size = "z";
           else
             operand->size = "v";
         }
       print_instruction_vyz(marked_instruction.
-                            replace_opcodes(opcodes).
-                            replace_operands(operands));
+                            with_opcodes(opcodes).
+                            with_operands(operands));
     } else {
       print_instruction_vyz(marked_instruction);
     }
@@ -2022,15 +2031,14 @@ int main(int argc, char* argv[]) {
              action_to_disable;
              action_to_disable = strtok(NULL, ",")) {
           const char** action_number;
-          for (action_number = kDisablableActionsList;
-               action_number !=
-                     kDisablableActionsList + arraysize(kDisablableActionsList);
+          for (action_number = kDisablableActionsList; action_number !=
+               kDisablableActionsList + NACL_ARRAY_SIZE(kDisablableActionsList);
                ++action_number) {
             if (strcmp(*action_number, action_to_disable) == 0)
               break;
           }
-          if (action_number !=
-              kDisablableActionsList + arraysize(kDisablableActionsList)) {
+          if (action_number != kDisablableActionsList +
+                                      NACL_ARRAY_SIZE(kDisablableActionsList)) {
             disabled_actions[action_number - kDisablableActionsList] = true;
           } else {
             fprintf(stderr, "%s: action '%s' is unknown\n",
