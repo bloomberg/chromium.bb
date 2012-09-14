@@ -63,6 +63,30 @@ class TestOsutils(cros_test_lib.TempDirMixin, unittest.TestCase):
     # Have to manually clean up as a non-root `rm -rf` will fail.
     cros_build_lib.SudoRunCommand(['rm', '-rf', self.tempdir], print_cmd=False)
 
+  def testRmDir(self):
+    """Test that removing dirs work."""
+    path = os.path.join(self.tempdir, 'a', 'b', 'c', 'd', 'e')
+
+    self.assertRaises(EnvironmentError, osutils.RmDir, path)
+    osutils.SafeMakedirs(path)
+    osutils.RmDir(path)
+    osutils.RmDir(path, ignore_missing=True)
+    self.assertRaises(EnvironmentError, osutils.RmDir, path)
+
+    osutils.SafeMakedirs(path)
+    osutils.RmDir(path)
+    self.assertFalse(os.path.exists(path))
+
+  def testRmDirSudo(self):
+    """Test that removing dirs via sudo works."""
+    subpath = os.path.join(self.tempdir, 'a')
+    path = os.path.join(subpath, 'b', 'c', 'd', 'e')
+    self.assertTrue(osutils.SafeMakedirs(path, sudo=True))
+    self.assertRaises(OSError, osutils.RmDir, path)
+    osutils.RmDir(subpath, sudo=True)
+    self.assertRaises(cros_build_lib.RunCommandError,
+                      osutils.RmDir, subpath, sudo=True)
+
 
 if __name__ == '__main__':
   cros_build_lib.SetupBasicLogging()

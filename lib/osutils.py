@@ -107,21 +107,30 @@ def SafeMakedirs(path, mode=0775, sudo=False):
   return False
 
 
-def RmDir(path, force_sudo=False):
+def RmDir(path, ignore_missing=False, sudo=False):
   """Recursively remove a directory.
 
-  If force_sudo is False, the function will error out if the directory doesn't
-  exist.
-
   Arguments:
-    force_sudo: Remove directories as root.
+    ignore_missing: Do not error when path does not exist.
+    sudo: Remove directories as root.
   """
-  if force_sudo:
-    cros_build_lib.SudoRunCommand(['rm', '-rf', path],
-                                  debug_level=logging.DEBUG)
+  if sudo:
+    try:
+      cros_build_lib.SudoRunCommand(
+          ['rm', '-r%s' % ('f' if ignore_missing else '',), '--', path],
+          debug_level=logging.DEBUG,
+          redirect_stdout=True, redirect_stderr=True)
+    except cros_build_lib.RunCommandError, e:
+      if not ignore_missing or os.path.exists(path):
+        # If we're not ignoring the rm ENOENT equivalent, throw it;
+        # if the pathway still exists, something failed, thus throw it.
+        raise
   else:
-    shutil.rmtree(path)
-
+    try:
+      shutil.rmtree(path)
+    except EnvironmentError, e:
+      if not ignore_missing or e.errno != errno.ENOENT:
+        raise
 
 # pylint: disable=W0212,R0904,W0702
 def _TempDirSetup(self, prefix='tmp', update_env=True):
@@ -160,7 +169,7 @@ def _TempDirTearDown(self, force_sudo):
   tempdir = getattr(self, 'tempdir', None)
   try:
     if tempdir is not None:
-      RmDir(tempdir, force_sudo)
+      RmDir(tempdir, ignore_missing=True, sudo=force_sudo)
   except EnvironmentError, e:
     # Suppress ENOENT since we may be invoked
     # in a context where parallel wipes of the tempdir
