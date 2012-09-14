@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/stl_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/size.h"
@@ -315,7 +316,8 @@ class ImageRepCocoa : public ImageRep {
 class ImageStorage : public base::RefCounted<ImageStorage> {
  public:
   ImageStorage(gfx::Image::RepresentationType default_type)
-      : default_representation_type_(default_type) {
+      : default_representation_type_(default_type),
+        representations_deleter_(&representations_) {
   }
 
   gfx::Image::RepresentationType default_representation_type() {
@@ -324,14 +326,9 @@ class ImageStorage : public base::RefCounted<ImageStorage> {
   gfx::Image::RepresentationMap& representations() { return representations_; }
 
  private:
-  ~ImageStorage() {
-    for (gfx::Image::RepresentationMap::iterator it = representations_.begin();
-         it != representations_.end();
-         ++it) {
-      delete it->second;
-    }
-    representations_.clear();
-  }
+  friend class base::RefCounted<ImageStorage>;
+
+  ~ImageStorage() {}
 
   // The type of image that was passed to the constructor. This key will always
   // exist in the |representations_| map.
@@ -341,7 +338,9 @@ class ImageStorage : public base::RefCounted<ImageStorage> {
   // more for any converted representations.
   gfx::Image::RepresentationMap representations_;
 
-  friend class base::RefCounted<ImageStorage>;
+  STLValueDeleter<Image::RepresentationMap> representations_deleter_;
+
+  DISALLOW_COPY_AND_ASSIGN(ImageStorage);
 };
 
 }  // namespace internal
