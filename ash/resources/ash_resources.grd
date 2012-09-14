@@ -52,9 +52,9 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_BROWSER_PANEL" file="common/launcher_browser_panel.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_BROWSER_SHORTCUT" file="common/chromium-32.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_DIMMING" file="common/launcher_dimming.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_ICON_APPLIST" file="common/launcher_applist.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_ICON_APPLIST_HOT" file="common/launcher_applist_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_ICON_APPLIST_PUSHED" file="common/launcher_applist_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_ICON_APPLIST" file="common/status/launcher_appmenu.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_ICON_APPLIST_HOT" file="common/status/launcher_appmenu_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_ICON_APPLIST_PUSHED" file="common/status/launcher_appmenu_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_INCOGNITO_BROWSER" file="common/launcher_incognito_browser.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_INCOGNITO_BROWSER_PANEL" file="common/launcher_incognito_browser_panel.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_NEW_BROWSER" file="common/new_browser.png" />
