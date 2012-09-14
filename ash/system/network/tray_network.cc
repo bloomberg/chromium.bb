@@ -90,14 +90,16 @@ class NonActivatableSettingsBubble : public views::BubbleDelegateView {
 
 using ash::internal::TrayNetwork;
 
-int GetErrorIcon(TrayNetwork::ErrorType error_type) {
-  switch(error_type) {
+int GetMessageIcon(TrayNetwork::MessageType message_type) {
+  switch(message_type) {
     case TrayNetwork::ERROR_CONNECT_FAILED:
       return IDR_AURA_UBER_TRAY_NETWORK_FAILED;
-    case TrayNetwork::ERROR_DATA_LOW:
+    case TrayNetwork::MESSAGE_DATA_LOW:
       return IDR_AURA_UBER_TRAY_NETWORK_DATA_LOW;
-    case TrayNetwork::ERROR_DATA_NONE:
+    case TrayNetwork::MESSAGE_DATA_NONE:
       return IDR_AURA_UBER_TRAY_NETWORK_DATA_NONE;
+    case TrayNetwork::MESSAGE_DATA_PROMO:
+      return IDR_AURA_UBER_TRAY_NOTIFICATION_3G;
   }
   NOTREACHED();
   return 0;
@@ -115,30 +117,30 @@ enum ColorTheme {
   DARK,
 };
 
-class NetworkErrors {
+class NetworkMessages {
  public:
   struct Message {
     Message() : delegate(NULL) {}
     Message(NetworkTrayDelegate* in_delegate,
             const string16& in_title,
             const string16& in_message,
-            const string16& in_link_text) :
+            const std::vector<string16>& in_links) :
         delegate(in_delegate),
         title(in_title),
         message(in_message),
-        link_text(in_link_text) {}
+        links(in_links) {}
     NetworkTrayDelegate* delegate;
     string16 title;
     string16 message;
-    string16 link_text;
+    std::vector<string16> links;
   };
-  typedef std::map<TrayNetwork::ErrorType, Message> ErrorMap;
+  typedef std::map<TrayNetwork::MessageType, Message> MessageMap;
 
-  ErrorMap& messages() { return messages_; }
-  const ErrorMap& messages() const { return messages_; }
+  MessageMap& messages() { return messages_; }
+  const MessageMap& messages() const { return messages_; }
 
  private:
-  ErrorMap messages_;
+  MessageMap messages_;
 };
 
 class NetworkTrayView : public TrayItemView {
@@ -725,79 +727,88 @@ class NetworkWifiDetailedView : public NetworkDetailedView {
   DISALLOW_COPY_AND_ASSIGN(NetworkWifiDetailedView);
 };
 
-class NetworkErrorView : public views::View,
-                         public views::LinkListener {
+class NetworkMessageView : public views::View,
+                           public views::LinkListener {
  public:
-  NetworkErrorView(TrayNetwork* tray,
-                   TrayNetwork::ErrorType error_type,
-                   const NetworkErrors::Message& error)
+  NetworkMessageView(TrayNetwork* tray,
+                     TrayNetwork::MessageType message_type,
+                     const NetworkMessages::Message& network_msg)
       : tray_(tray),
-        error_type_(error_type) {
+        message_type_(message_type) {
     SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
 
-    views::Label* title = new views::Label(error.title);
-    title->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    title->SetFont(title->font().DeriveFont(0, gfx::Font::BOLD));
-    AddChildView(title);
+    if (!network_msg.title.empty()) {
+      views::Label* title = new views::Label(network_msg.title);
+      title->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+      title->SetFont(title->font().DeriveFont(0, gfx::Font::BOLD));
+      AddChildView(title);
+    }
 
-    views::Label* message = new views::Label(error.message);
-    message->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    message->SetMultiLine(true);
-    message->SizeToFit(kTrayNotificationContentsWidth);
-    AddChildView(message);
+    if (!network_msg.message.empty()) {
+      views::Label* message = new views::Label(network_msg.message);
+      message->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+      message->SetMultiLine(true);
+      message->SizeToFit(kTrayNotificationContentsWidth);
+      AddChildView(message);
+    }
 
-    if (!error.link_text.empty()) {
-      views::Link* link = new views::Link(error.link_text);
-      link->set_listener(this);
-      link->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-      link->SetMultiLine(true);
-      link->SizeToFit(kTrayNotificationContentsWidth);
-      AddChildView(link);
+    if (!network_msg.links.empty()) {
+      for (size_t i = 0; i < network_msg.links.size(); ++i) {
+        views::Link* link = new views::Link(network_msg.links[i]);
+        link->set_id(i);
+        link->set_listener(this);
+        link->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+        link->SetMultiLine(true);
+        link->SizeToFit(kTrayNotificationContentsWidth);
+        AddChildView(link);
+      }
     }
   }
 
-  virtual ~NetworkErrorView() {
+  virtual ~NetworkMessageView() {
   }
 
   // Overridden from views::LinkListener.
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE {
-    tray_->LinkClicked(error_type_);
+    tray_->LinkClicked(message_type_, source->id());
   }
 
-  TrayNetwork::ErrorType error_type() const { return error_type_; }
+  TrayNetwork::MessageType message_type() const { return message_type_; }
 
  private:
   TrayNetwork* tray_;
-  TrayNetwork::ErrorType error_type_;
+  TrayNetwork::MessageType message_type_;
 
-  DISALLOW_COPY_AND_ASSIGN(NetworkErrorView);
+  DISALLOW_COPY_AND_ASSIGN(NetworkMessageView);
 };
 
 class NetworkNotificationView : public TrayNotificationView {
  public:
   explicit NetworkNotificationView(TrayNetwork* tray)
       : TrayNotificationView(tray, 0) {
-    CreateErrorView();
-    InitView(network_error_view_);
+    CreateMessageView();
+    InitView(network_message_view_);
     SetIconImage(*ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-        GetErrorIcon(network_error_view_->error_type())));
+        GetMessageIcon(network_message_view_->message_type())));
   }
 
   // Overridden from TrayNotificationView.
   virtual void OnClose() OVERRIDE {
-    tray_network()->ClearNetworkError(network_error_view_->error_type());
+    tray_network()->ClearNetworkMessage(network_message_view_->message_type());
   }
 
   virtual void OnClickAction() OVERRIDE {
-    tray()->PopupDetailedView(0, true);
+    if (network_message_view_->message_type() !=
+        TrayNetwork::MESSAGE_DATA_PROMO)
+      tray()->PopupDetailedView(0, true);
   }
 
   void Update() {
-    CreateErrorView();
-    UpdateViewAndImage(network_error_view_,
-                       *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-                           GetErrorIcon(network_error_view_->error_type())));
+    CreateMessageView();
+    UpdateViewAndImage(network_message_view_,
+        *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            GetMessageIcon(network_message_view_->message_type())));
   }
 
  private:
@@ -805,16 +816,16 @@ class NetworkNotificationView : public TrayNotificationView {
     return static_cast<TrayNetwork*>(tray());
   }
 
-  void CreateErrorView() {
-    // Display the first (highest priority) error.
-    CHECK(!tray_network()->errors()->messages().empty());
-    NetworkErrors::ErrorMap::const_iterator iter =
-        tray_network()->errors()->messages().begin();
-    network_error_view_ =
-        new NetworkErrorView(tray_network(), iter->first, iter->second);
+  void CreateMessageView() {
+    // Display the first (highest priority) message.
+    CHECK(!tray_network()->messages()->messages().empty());
+    NetworkMessages::MessageMap::const_iterator iter =
+        tray_network()->messages()->messages().begin();
+    network_message_view_ =
+        new NetworkMessageView(tray_network(), iter->first, iter->second);
   }
 
-  tray::NetworkErrorView* network_error_view_;
+  tray::NetworkMessageView* network_message_view_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkNotificationView);
 };
@@ -826,7 +837,7 @@ TrayNetwork::TrayNetwork()
       default_(NULL),
       detailed_(NULL),
       notification_(NULL),
-      errors_(new tray::NetworkErrors()),
+      messages_(new tray::NetworkMessages()),
       request_wifi_view_(false) {
 }
 
@@ -860,8 +871,8 @@ views::View* TrayNetwork::CreateDetailedView(user::LoginStatus status) {
 
 views::View* TrayNetwork::CreateNotificationView(user::LoginStatus status) {
   CHECK(notification_ == NULL);
-  if (errors_->messages().empty())
-    return NULL;  // Error has already been cleared.
+  if (messages_->messages().empty())
+    return NULL;  // Message has already been cleared.
   notification_ = new tray::NetworkNotificationView(this);
   return notification_;
 }
@@ -898,22 +909,22 @@ void TrayNetwork::OnNetworkRefresh(const NetworkIconInfo& info) {
     detailed_->Update();
 }
 
-void TrayNetwork::SetNetworkError(NetworkTrayDelegate* delegate,
-                                  ErrorType error_type,
-                                  const string16& title,
-                                  const string16& message,
-                                  const string16& link_text) {
-  errors_->messages()[error_type] =
-      tray::NetworkErrors::Message(delegate, title, message, link_text);
+void TrayNetwork::SetNetworkMessage(NetworkTrayDelegate* delegate,
+                                   MessageType message_type,
+                                   const string16& title,
+                                   const string16& message,
+                                   const std::vector<string16>& links) {
+  messages_->messages()[message_type] =
+      tray::NetworkMessages::Message(delegate, title, message, links);
   if (notification_)
     notification_->Update();
   else
     ShowNotificationView();
 }
 
-void TrayNetwork::ClearNetworkError(ErrorType error_type) {
-  errors_->messages().erase(error_type);
-  if (errors_->messages().empty()) {
+void TrayNetwork::ClearNetworkMessage(MessageType message_type) {
+  messages_->messages().erase(message_type);
+  if (messages_->messages().empty()) {
     if (notification_)
       HideNotificationView();
     return;
@@ -931,11 +942,11 @@ void TrayNetwork::OnWillToggleWifi() {
   }
 }
 
-void TrayNetwork::LinkClicked(ErrorType error_type) {
-  tray::NetworkErrors::ErrorMap::const_iterator iter =
-      errors()->messages().find(error_type);
-  if (iter != errors()->messages().end() && iter->second.delegate)
-    iter->second.delegate->NotificationLinkClicked();
+void TrayNetwork::LinkClicked(MessageType message_type, int link_id) {
+  tray::NetworkMessages::MessageMap::const_iterator iter =
+      messages()->messages().find(message_type);
+  if (iter != messages()->messages().end() && iter->second.delegate)
+    iter->second.delegate->NotificationLinkClicked(link_id);
 }
 
 }  // namespace internal

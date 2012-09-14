@@ -6,12 +6,13 @@
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/system/network/network_observer.h"
+#include "ash/system/tray/system_tray.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/helper.h"
-#include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -117,14 +118,12 @@ namespace chromeos {
 // DataPromoNotification
 
 DataPromoNotification::DataPromoNotification()
-    : mobile_data_bubble_(NULL),
-      check_for_promo_(true),
+    : check_for_promo_(true),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 DataPromoNotification::~DataPromoNotification() {
-  if (mobile_data_bubble_)
-    mobile_data_bubble_->GetWidget()->Close();
+  CloseNotification();
 }
 
 void DataPromoNotification::RegisterPrefs(PrefService* local_state) {
@@ -135,7 +134,7 @@ void DataPromoNotification::RegisterPrefs(PrefService* local_state) {
 void DataPromoNotification::ShowOptionalMobileDataPromoNotification(
     NetworkLibrary* cros,
     views::View* host,
-    MessageBubbleLinkListener* listener) {
+    ash::NetworkTrayDelegate* listener) {
   // Display one-time notification for non-Guest users on first use
   // of Mobile Data connection or if there's a carrier deal defined
   // show that even if user has already seen generic promo.
@@ -150,6 +149,8 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification(
     const MobileConfig::Carrier* carrier = GetCarrier(cros);
     if (carrier)
       deal = GetCarrierDeal(carrier);
+    deal_info_url_.clear();
+    deal_topup_url_.clear();
     if (deal) {
       carrier_deal_promo_pref = GetCarrierDealPromoShown();
       const std::string locale = g_browser_process->GetApplicationLocale();
@@ -201,21 +202,11 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification(
     links.push_back(l10n_util::GetStringUTF16(link_message_id));
     if (!deal_info_url_.empty())
       links.push_back(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
-    mobile_data_bubble_ = new MessageBubble(
-        host,
-        views::BubbleBorder::TOP_RIGHT,
-        ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            IDR_NOTIFICATION_3G),
-        message,
-        links);
-    mobile_data_bubble_->set_link_listener(listener);
-    mobile_data_bubble_->set_parent_window(
-        ash::Shell::GetContainer(
-            ash::Shell::GetPrimaryRootWindow(),
-            ash::internal::kShellWindowId_SettingBubbleContainer));
-    views::BubbleDelegateView::CreateBubble(mobile_data_bubble_);
-    mobile_data_bubble_->Show();
-    mobile_data_bubble_->GetWidget()->AddObserver(this);
+    if (ash::Shell::GetInstance()->system_tray()->network_observer()) {
+      ash::Shell::GetInstance()->system_tray()->network_observer()->
+          SetNetworkMessage(listener, ash::NetworkObserver::MESSAGE_DATA_PROMO,
+              string16(), message, links);
+    }
 
     check_for_promo_ = false;
     SetShow3gPromoNotification(false);
@@ -225,17 +216,10 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification(
 }
 
 void DataPromoNotification::CloseNotification() {
-  if (mobile_data_bubble_)
-    mobile_data_bubble_->GetWidget()->Close();
-}
-
-void DataPromoNotification::OnWidgetClosing(views::Widget* widget) {
-  if (!mobile_data_bubble_ || mobile_data_bubble_->GetWidget() != widget)
-    return;
-
-  mobile_data_bubble_ = NULL;
-  deal_info_url_.clear();
-  deal_topup_url_.clear();
+  if (ash::Shell::GetInstance()->system_tray()->network_observer()) {
+    ash::Shell::GetInstance()->system_tray()->network_observer()->
+        ClearNetworkMessage(ash::NetworkObserver::MESSAGE_DATA_PROMO);
+  }
 }
 
 }  // namespace chromeos

@@ -48,7 +48,7 @@ namespace chromeos {
 class NetworkMessageNotification : public ash::NetworkTrayDelegate {
  public:
   NetworkMessageNotification(Profile* profile,
-                             ash::NetworkObserver::ErrorType error_type)
+                             ash::NetworkObserver::MessageType error_type)
       : error_type_(error_type) {
     std::string id;
     int icon_id = 0;
@@ -58,15 +58,18 @@ class NetworkMessageNotification : public ash::NetworkTrayDelegate {
         icon_id = IDR_NOTIFICATION_NETWORK_FAILED;
         title_ = l10n_util::GetStringUTF16(IDS_NETWORK_CONNECTION_ERROR_TITLE);
         break;
-      case ash::NetworkObserver::ERROR_DATA_LOW:
+      case ash::NetworkObserver::MESSAGE_DATA_LOW:
         id = "network_low_data.chromeos";
         icon_id = IDR_NOTIFICATION_BARS_CRITICAL;
         title_ = l10n_util::GetStringUTF16(IDS_NETWORK_LOW_DATA_TITLE);
         break;
-      case ash::NetworkObserver::ERROR_DATA_NONE:
+      case ash::NetworkObserver::MESSAGE_DATA_NONE:
         id = "network_no_data.chromeos";
         icon_id = IDR_NOTIFICATION_BARS_EMPTY;
         title_ = l10n_util::GetStringUTF16(IDS_NETWORK_OUT_OF_DATA_TITLE);
+        break;
+      case ash::NetworkObserver::MESSAGE_DATA_PROMO:
+        NOTREACHED();
         break;
     }
     DCHECK(!id.empty());
@@ -78,7 +81,7 @@ class NetworkMessageNotification : public ash::NetworkTrayDelegate {
   }
 
   // Overridden from ash::NetworkTrayDelegate:
-  virtual void NotificationLinkClicked() {
+  virtual void NotificationLinkClicked(size_t index) OVERRIDE {
     base::ListValue empty_value;
     if (!callback_.is_null())
       callback_.Run(&empty_value);
@@ -89,7 +92,7 @@ class NetworkMessageNotification : public ash::NetworkTrayDelegate {
       system_notification_->Hide();
     } else {
       ash::Shell::GetInstance()->system_tray()->network_observer()->
-          ClearNetworkError(error_type_);
+          ClearNetworkMessage(error_type_);
     }
   }
 
@@ -108,8 +111,10 @@ class NetworkMessageNotification : public ash::NetworkTrayDelegate {
       system_notification_->Show(message, link_text, callback, urgent, sticky);
     } else {
       callback_ = callback;
+      std::vector<string16> links;
+      links.push_back(link_text);
       ash::Shell::GetInstance()->system_tray()->network_observer()->
-          SetNetworkError(this, error_type_, title_, message, link_text);
+          SetNetworkMessage(this, error_type_, title_, message, links);
     }
   }
 
@@ -128,7 +133,7 @@ class NetworkMessageNotification : public ash::NetworkTrayDelegate {
  private:
   string16 title_;
   scoped_ptr<SystemNotification> system_notification_;
-  ash::NetworkObserver::ErrorType error_type_;
+  ash::NetworkObserver::MessageType error_type_;
   BalloonViewHost::MessageCallback callback_;
 };
 
@@ -139,11 +144,11 @@ NetworkMessageObserver::NetworkMessageObserver(Profile* profile) {
   notification_low_data_.reset(
       new NetworkMessageNotification(
           profile,
-          ash::NetworkObserver::ERROR_DATA_LOW));
+          ash::NetworkObserver::MESSAGE_DATA_LOW));
   notification_no_data_.reset(
       new NetworkMessageNotification(
           profile,
-          ash::NetworkObserver::ERROR_DATA_NONE));
+          ash::NetworkObserver::MESSAGE_DATA_NONE));
   NetworkLibrary* netlib = CrosLibrary::Get()->GetNetworkLibrary();
   OnNetworkManagerChanged(netlib);
   // Note that this gets added as a NetworkManagerObserver,

@@ -5,43 +5,47 @@
 #ifndef ASH_SYSTEM_NETWORK_NETWORK_OBSERVER_H
 #define ASH_SYSTEM_NETWORK_NETWORK_OBSERVER_H
 
+#include <vector>
+
 #include "base/string16.h"
 
 namespace ash {
 
 struct NetworkIconInfo;
-class NetworkTrayDelegate;
 
 class NetworkTrayDelegate {
  public:
   virtual ~NetworkTrayDelegate() {}
 
-  virtual void NotificationLinkClicked() = 0;
+  // Notifies that the |index|-th link on the notification is clicked.
+  virtual void NotificationLinkClicked(size_t index) = 0;
 };
 
 class NetworkObserver {
  public:
-  enum ErrorType {
+  enum MessageType {
     // Priority order, highest to lowest.
     ERROR_CONNECT_FAILED,
-    ERROR_DATA_NONE,
-    ERROR_DATA_LOW
+
+    MESSAGE_DATA_NONE,
+    MESSAGE_DATA_LOW,
+    MESSAGE_DATA_PROMO,
   };
 
   virtual ~NetworkObserver() {}
 
   virtual void OnNetworkRefresh(const NetworkIconInfo& info) = 0;
 
-  // Sets a network error notification. |error_type| identifies the type of
-  // error. |delegate|->NotificationLinkClicked() will be called if |link_text|
-  // is clicked (if supplied, |link_text| may be empty).
-  virtual void SetNetworkError(NetworkTrayDelegate* delegate,
-                               ErrorType error_type,
-                               const string16& title,
-                               const string16& message,
-                               const string16& link_text) = 0;
-  // Clears the error notification for |error_type|.
-  virtual void ClearNetworkError(ErrorType error_type) = 0;
+  // Sets a network message notification. |message_type| identifies the type of
+  // message. |delegate|->NotificationLinkClicked() will be called if any of the
+  // |links| are clicked (if supplied, |links| may be empty).
+  virtual void SetNetworkMessage(NetworkTrayDelegate* delegate,
+                                MessageType message_type,
+                                const string16& title,
+                                const string16& message,
+                                const std::vector<string16>& links) = 0;
+  // Clears the message notification for |message_type|.
+  virtual void ClearNetworkMessage(MessageType message_type) = 0;
 
   // Called when the user attempted to toggle Wi-Fi enable/disable.
   // NOTE: Toggling is asynchronous and subsequent calls to query the current

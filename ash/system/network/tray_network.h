@@ -15,8 +15,8 @@ namespace internal {
 namespace tray {
 class NetworkDefaultView;
 class NetworkDetailedView;
-class NetworkErrors;
-class NetworkErrorView;
+class NetworkMessages;
+class NetworkMessageView;
 class NetworkNotificationView;
 class NetworkTrayView;
 }
@@ -48,27 +48,27 @@ class TrayNetwork : public SystemTrayItem,
 
   // Overridden from NetworkObserver.
   virtual void OnNetworkRefresh(const NetworkIconInfo& info) OVERRIDE;
-  virtual void SetNetworkError(NetworkTrayDelegate* delegate,
-                               ErrorType error_type,
-                               const string16& title,
-                               const string16& message,
-                               const string16& link_text) OVERRIDE;
-  virtual void ClearNetworkError(ErrorType error_type) OVERRIDE;
+  virtual void SetNetworkMessage(NetworkTrayDelegate* delegate,
+                                 MessageType message_type,
+                                 const string16& title,
+                                 const string16& message,
+                                 const std::vector<string16>& links) OVERRIDE;
+  virtual void ClearNetworkMessage(MessageType message_type) OVERRIDE;
   virtual void OnWillToggleWifi() OVERRIDE;
 
  private:
-  friend class tray::NetworkErrorView;
+  friend class tray::NetworkMessageView;
   friend class tray::NetworkNotificationView;
 
-  void LinkClicked(ErrorType error_type);
+  void LinkClicked(MessageType message_type, int link_id);
 
-  const tray::NetworkErrors* errors() const { return errors_.get(); }
+  const tray::NetworkMessages* messages() const { return messages_.get(); }
 
   tray::NetworkTrayView* tray_;
   tray::NetworkDefaultView* default_;
   tray::NetworkDetailedView* detailed_;
   tray::NetworkNotificationView* notification_;
-  scoped_ptr<tray::NetworkErrors> errors_;
+  scoped_ptr<tray::NetworkMessages> messages_;
   bool request_wifi_view_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayNetwork);

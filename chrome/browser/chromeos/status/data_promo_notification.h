@@ -7,20 +7,21 @@
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
-#include "ui/views/widget/widget_observer.h"
 
 class PrefService;
+
+namespace ash {
+class NetworkTrayDelegate;
+}
 
 namespace views {
 class View;
 }
 
 namespace chromeos {
-class MessageBubble;
-class MessageBubbleLinkListener;
 class NetworkLibrary;
 
-class DataPromoNotification : public views::WidgetObserver {
+class DataPromoNotification {
  public:
   DataPromoNotification();
   virtual ~DataPromoNotification();
@@ -34,18 +35,12 @@ class DataPromoNotification : public views::WidgetObserver {
   void ShowOptionalMobileDataPromoNotification(
       NetworkLibrary* cros,
       views::View* host,
-      MessageBubbleLinkListener* listener);
+      ash::NetworkTrayDelegate* listener);
 
   // Closes message bubble.
   void CloseNotification();
 
  private:
-  // Overridden from views::WidgetObserver:
-  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
-
-  // Notification bubble for 3G promo.
-  MessageBubble* mobile_data_bubble_;
-
   // True if check for promo needs to be done,
   // otherwise just ignore it for current session.
   bool check_for_promo_;

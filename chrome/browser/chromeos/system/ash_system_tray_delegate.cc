@@ -158,7 +158,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public system::TimezoneSettings::Observer,
                            public BluetoothAdapter::Observer,
                            public SystemKeyEventListener::CapsLockObserver,
-                           public MessageBubbleLinkListener {
+                           public ash::NetworkTrayDelegate {
  public:
   explicit SystemTrayDelegate(ash::SystemTray* tray)
       : tray_(tray),
@@ -1202,8 +1202,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       observer->OnCapsLockChanged(enabled, search_mapped_to_caps_lock);
   }
 
-  // Overridden from MessageBubbleLinkListener
-  virtual void OnLinkActivated(size_t index) OVERRIDE {
+  // Overridden from ash::NetworkTrayDelegate
+  virtual void NotificationLinkClicked(size_t index) OVERRIDE {
     // If we have deal info URL defined that means that there're
     // 2 links in bubble. Let the user close it manually then thus giving
     // ability to navigate to second link.

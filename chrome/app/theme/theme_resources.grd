@@ -474,7 +474,6 @@
       <structure type="chrome_scaled_image" name="IDR_NEWTAB_OPTION_P" file="ntp_option_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_NEWTAB_WEBSTORE_THUMBNAIL" file="ntp_webstore_thumb.png" />
       <if expr="pp_ifdef('chromeos')">
-        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_3G" file="notification_3g.png" />
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_BARS_CRITICAL" file="notification_bars_critical.png" />
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_BARS_EMPTY" file="notification_bars_empty.png" />
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_GDATA" file="notification_gdata.png" />
