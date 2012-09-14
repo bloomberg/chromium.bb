@@ -6,52 +6,13 @@ import unittest
 
 from chrome_remote_control import browser_options
 from chrome_remote_control import desktop_browser_finder
+from chrome_remote_control.system_stub import *
 
 # This file verifies the logic for finding a browser instance on all platforms
 # at once. It does so by providing stubs for the OS/sys/subprocess primitives
 # that the underlying finding logic usually uses to locate a suitable browser.
 # We prefer this approach to having to run the same test on every platform on
 # which we want this code to work.
-
-# TODO(nduca): This code was written before we had the basic
-# FindAllAvailableBrowsers capability. We can probably clean up the individual
-# tests considerably with it now in place.
-
-class StubOSPath(object):
-  def __init__(self, stub_os):
-    self._os_stub = stub_os
-
-  def exists(self, path):
-    return path in self._os_stub.files
-
-  def join(self, *args):
-    if self._os_stub.sys.platform.startswith('win'):
-      tmp = real_os.path.join(*args)
-      return tmp.replace('/', '\\')
-    else:
-      return real_os.path.join(*args)
-
-  def dirname(self, filename):
-    return real_os.path.dirname(filename)
-
-class StubOS(object):
-  def __init__(self, sys):
-    self.sys = sys
-    self.path = StubOSPath(self)
-    self.files = []
-    self.display = ':0'
-    self.local_app_data = None
-
-  def getenv(self, name):
-    if name == 'DISPLAY':
-      return self.display
-    if name == 'LOCALAPPDATA':
-      return self.local_app_data
-    raise NotImplementedError('Unsupported getenv')
-
-class StubSys(object):
-  def __init__(self):
-    self.platform = ''
 
 class StubSubprocess(object):
   def __init__(self):
@@ -65,8 +26,8 @@ class FindTestBase(unittest.TestCase):
   def setUp(self):
     self._options = browser_options.BrowserOptions()
     self._options.chrome_root = '../../../'
-    self._sys_stub = StubSys()
-    self._os_stub = StubOS(self._sys_stub)
+    self._sys_stub = SysModuleStub()
+    self._os_stub = OSModuleStub(self._sys_stub)
     self._subprocess_stub = StubSubprocess()
 
   @property

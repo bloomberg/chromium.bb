@@ -2,12 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import fnmatch
+import functools
 import logging
 import os
 import traceback
 import unittest
 
 from chrome_remote_control import browser_options
+
+def RequiresBrowserOfType(*types):
+  def wrap(func):
+    func._requires_browser_types = types
+    return func
+  return wrap
 
 def Discover(start_dir, pattern = 'test*.py', top_level_dir = None):
   if hasattr(unittest.defaultTestLoader, 'discover'):
@@ -72,12 +79,24 @@ def DiscoverAndRunTests(dir_name, args, top_level_dir):
   suite = Discover(dir_name, '*_unittest.py', top_level_dir)
 
   def IsTestSelected(test):
-    if len(args) == 0:
-      return True
-    for name in args:
-      if str(test).find(name) != -1:
-        return True
-    return False
+    if len(args) != 0:
+      found = False
+      for name in args:
+        if name in test.id():
+          found = True
+      if not found:
+        return False
+
+    if hasattr(test, '_testMethodName'):
+      method = getattr(test, test._testMethodName)
+      if hasattr(method, '_requires_browser_types'):
+        types = method._requires_browser_types
+        if browser_options.browser_type_for_unittests not in types:
+          logging.debug('Skipping test %s because it requires %s' %
+                        (test.id(), types))
+          return False
+
+    return True
 
   filtered_suite = FilterSuite(suite, IsTestSelected)
   runner = unittest.TextTestRunner(verbosity = 2)
@@ -97,11 +116,15 @@ def Main(args, start_dir, top_level_dir):
   _, args = parser.parse_args(args)
 
   from chrome_remote_control import browser_finder
-  if browser_finder.FindBrowser(default_options) == None:
-    logging.error('No browser found. Cannot run tests.\n')
+  browser_to_create = browser_finder.FindBrowser(default_options)
+  if browser_to_create == None:
+    logging.error('No browser found of type %s. Cannot run tests.',
+                  default_options.browser_type)
+    logging.error('Re-run with --browser=list to see available browser types.')
     return 1
 
   browser_options.options_for_unittests = default_options
+  browser_options.browser_type_for_unittests = browser_to_create.browser_type
   olddir = os.getcwd()
   num_errors = 0
   try:

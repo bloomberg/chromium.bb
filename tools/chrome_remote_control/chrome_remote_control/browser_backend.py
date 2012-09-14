@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import urllib2
+import httplib
 import json
 
 from chrome_remote_control import inspector_backend
@@ -22,6 +23,10 @@ class BrowserBackend(object):
     def IsBrowserUp():
       try:
         self._ListTabs()
+      except httplib.BadStatusLine:
+        if not self.IsBrowserRunning():
+          raise BrowserGoneException()
+        return False
       except urllib2.URLError:
         if not self.IsBrowserRunning():
           raise BrowserGoneException()

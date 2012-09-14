@@ -50,7 +50,7 @@ class DesktopBrowserBackend(browser_backend.BrowserBackend):
       raise
 
   def IsBrowserRunning(self):
-    return not self._proc.poll()
+    return self._proc.poll() == None
 
   def __del__(self):
     self.Close()

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import optparse
+import os
 import sys
 import shlex
 import logging
@@ -52,6 +53,12 @@ class BrowserOptions(optparse.Values):
         dest='android_device',
         help='The android device ID to use'
              'If not specified, only 0 or 1 connected devcies are supported.')
+    group.add_option(
+        '--remote',
+        dest='cros_remote',
+        default=os.getenv('REMOTE'),
+        help='The IP address of a remote ChromeOS device to use. ' +
+             'Defaults to $REMOTE from environment variable if set.')
     parser.add_option_group(group)
 
     # Browser options

@@ -7,30 +7,10 @@ import unittest
 from chrome_remote_control import android_browser_finder
 from chrome_remote_control import browser_options
 
+from system_stub import *
+
 # adb not even found
 # android_browser_finder not returning
-
-class PopenStub(object):
-  def __init__(self, communicate_result):
-    self.communicate_result = communicate_result
-
-  def communicate(self):
-    return self.communicate_result
-
-class SubprocessStub(object):
-  def __init__(self):
-    self.Popen_hook = None
-    self.Popen_result = None
-    import subprocess as real_subprocess
-    self.PIPE = real_subprocess.PIPE
-
-  def Popen(self, *args, **kwargs):
-    assert self.Popen_hook or self.Popen_result
-    if self.Popen_hook:
-      return self.Popen_hook(*args, **kwargs)
-    else:
-      return self.Popen_result
-
 class ADBCommandsStub(object):
   def __init__(self, module, device):
     self._module = module
@@ -69,7 +49,7 @@ class AndroidBrowserFinderTest(unittest.TestCase):
   def test_no_adb(self):
     options = browser_options.BrowserOptions()
 
-    subprocess_stub = SubprocessStub()
+    subprocess_stub = SubprocessModuleStub()
     def NoADB(*args, **kargs):
       raise OSError('not found')
     subprocess_stub.Popen_hook = NoADB
@@ -80,7 +60,7 @@ class AndroidBrowserFinderTest(unittest.TestCase):
   def test_adb_no_devices(self):
     options = browser_options.BrowserOptions()
 
-    subprocess_stub = SubprocessStub()
+    subprocess_stub = SubprocessModuleStub()
     popen_stub = PopenStub(('', ''))
     subprocess_stub.Popen_result = popen_stub
 
@@ -93,7 +73,7 @@ class AndroidBrowserFinderTest(unittest.TestCase):
   def test_adb_permissions_error(self):
     options = browser_options.BrowserOptions()
 
-    subprocess_stub = SubprocessStub()
+    subprocess_stub = SubprocessModuleStub()
     popen_stub = PopenStub((
         """List of devices attached
 ????????????\tno permissions""",
@@ -126,7 +106,7 @@ class AndroidBrowserFinderTest(unittest.TestCase):
   def test_adb_two_devices(self):
     options = browser_options.BrowserOptions()
 
-    subprocess_stub = SubprocessStub()
+    subprocess_stub = SubprocessModuleStub()
     popen_stub = PopenStub(('', ''))
     subprocess_stub.Popen_result = popen_stub
     adb_commands_module_stub = ADBCommandsModuleStub()
@@ -154,7 +134,7 @@ class AndroidBrowserFinderTest(unittest.TestCase):
   def test_adb_one_device(self):
     options = browser_options.BrowserOptions()
 
-    subprocess_stub = SubprocessStub()
+    subprocess_stub = SubprocessModuleStub()
     popen_stub = PopenStub(('', ''))
     subprocess_stub.Popen_result = popen_stub
     adb_commands_module_stub = ADBCommandsModuleStub()

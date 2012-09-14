@@ -7,7 +7,7 @@ from chrome_remote_control import browser_finder
 from chrome_remote_control import browser_options
 
 class BrowserTest(unittest.TestCase):
-  def testBasic(self):
+  def testBrowserCreation(self):
     options = browser_options.options_for_unittests
     browser_to_create = browser_finder.FindBrowser(options)
     if not browser_to_create:
