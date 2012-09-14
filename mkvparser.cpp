@@ -747,9 +747,6 @@ long long Segment::CreateInstance(
     if ((total >= 0) && (available > total))
         return -1;
 
-    const long long end = (total >= 0) ? total : available;
-    //TODO: this might need to be liberalized
-
     //I would assume that in practice this loop would execute
     //exactly once, but we allow for other elements (e.g. Void)
     //to immediately follow the EBML header.  This is fine for
@@ -767,17 +764,19 @@ long long Segment::CreateInstance(
     //which a slightly different sense from "try to parse up to
     //10 EMBL elements before giving up".
 
-    while (pos < end)
+    for (;;)
     {
-        //Read ID
+        if ((total >= 0) && (pos >= total))
+            return E_FILE_FORMAT_INVALID;
 
+        //Read ID
         long len;
         long long result = GetUIntLength(pReader, pos, len);
 
         if (result)  //error, or too few available bytes
             return result;
 
-        if ((pos + len) > end)
+        if ((total >= 0) && ((pos + len) > total))
             return E_FILE_FORMAT_INVALID;
 
         if ((pos + len) > available)
@@ -798,7 +797,7 @@ long long Segment::CreateInstance(
         if (result)  //error, or too few available bytes
             return result;
 
-        if ((pos + len) > end)
+        if ((total >= 0) && ((pos + len) > total))
             return E_FILE_FORMAT_INVALID;
 
         if ((pos + len) > available)
@@ -843,14 +842,14 @@ long long Segment::CreateInstance(
         if (size == unknown_size)
             return E_FILE_FORMAT_INVALID;
 
-        if ((pos + size) > end)
+        if ((total >= 0) && ((pos + size) > total))
             return E_FILE_FORMAT_INVALID;
+
+        if ((pos + size) > available)
+            return pos + size;
 
         pos += size;  //consume payload
     }
-
-    return E_FILE_FORMAT_INVALID;  //there is no segment
-    //TODO: this might need to be liberalized.  See comments above.
 }
 
 
