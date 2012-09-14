@@ -3,8 +3,7 @@
   "version": "1.0",
   "description": "I can't has cheezburger!",
   "permissions": ["webRequest", "webRequestBlocking",
-                  "http://icanhascheezburger.files.wordpress.com/*",
-                  "http://chzmemebase.files.wordpress.com/*"],
+                  "https://i.chzbgr.com/*"],
   "background": {
     "scripts": ["loldogs.js", "background.js"]
   },
