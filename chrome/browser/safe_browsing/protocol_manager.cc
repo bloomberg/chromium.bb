@@ -20,6 +20,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/env_vars.h"
 #include "content/public/browser/browser_thread.h"
+#include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
@@ -649,6 +650,11 @@ std::string SafeBrowsingProtocolManager::ComposeUrl(
   std::string url = base::StringPrintf("%s/%s?client=%s&appver=%s&pver=2.2",
                                        prefix.c_str(), method.c_str(),
                                        client_name.c_str(), version.c_str());
+  std::string api_key = google_apis::GetAPIKey();
+  if (!api_key.empty()) {
+    base::StringAppendF(&url, "&key=%s",
+                        net::EscapeQueryParamValue(api_key, true).c_str());
+  }
   if (!additional_query.empty()) {
     DCHECK(url.find("?") != std::string::npos);
     url.append("&");
@@ -712,6 +718,11 @@ GURL SafeBrowsingProtocolManager::MalwareDetailsUrl() const {
           url_prefix_.c_str(),
           client_name_.c_str(),
           version_.c_str());
+  std::string api_key = google_apis::GetAPIKey();
+  if (!api_key.empty()) {
+    base::StringAppendF(&url, "&key=%s",
+                        net::EscapeQueryParamValue(api_key, true).c_str());
+  }
   return GURL(url);
 }
 

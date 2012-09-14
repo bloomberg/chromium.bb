@@ -4,9 +4,12 @@
 //
 
 #include "base/logging.h"
+#include "base/stringprintf.h"
 #include "base/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
+#include "google_apis/google_api_keys.h"
+#include "net/base/escape.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -17,6 +20,17 @@ static const char kAppVer[] = "1.0";
 static const char kAdditionalQuery[] = "additional_query";
 
 class SafeBrowsingProtocolManagerTest : public testing::Test {
+ protected:
+  std::string key_param_;
+
+  virtual void SetUp() {
+    std::string key = google_apis::GetAPIKey();
+    if (!key.empty()) {
+      key_param_ = base::StringPrintf(
+          "&key=%s",
+          net::EscapeQueryParamValue(key, true).c_str());
+    }
+  }
 };
 
 // Ensure that we respect section 5 of the SafeBrowsing protocol specification.
@@ -138,11 +152,11 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestGetHashUrl) {
   SafeBrowsingProtocolManager pm(NULL, kClient, NULL, kUrlPrefix, false);
   pm.version_ = kAppVer;
   EXPECT_EQ("https://prefix.com/foo/gethash?client=unittest&appver=1.0&"
-            "pver=2.2", pm.GetHashUrl().spec());
+            "pver=2.2" + key_param_, pm.GetHashUrl().spec());
 
   pm.set_additional_query(kAdditionalQuery);
   EXPECT_EQ("https://prefix.com/foo/gethash?client=unittest&appver=1.0&"
-            "pver=2.2&additional_query",
+            "pver=2.2" + key_param_ + "&additional_query",
             pm.GetHashUrl().spec());
 }
 
@@ -151,11 +165,12 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestUpdateUrl) {
   pm.version_ = kAppVer;
 
   EXPECT_EQ("https://prefix.com/foo/downloads?client=unittest&appver=1.0&"
-            "pver=2.2", pm.UpdateUrl().spec());
+            "pver=2.2" + key_param_, pm.UpdateUrl().spec());
 
   pm.set_additional_query(kAdditionalQuery);
   EXPECT_EQ("https://prefix.com/foo/downloads?client=unittest&appver=1.0&"
-            "pver=2.2&additional_query", pm.UpdateUrl().spec());
+            "pver=2.2" + key_param_ + "&additional_query",
+            pm.UpdateUrl().spec());
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestSafeBrowsingHitUrl) {
@@ -166,7 +181,8 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestSafeBrowsingHitUrl) {
   GURL page_url("http://page.url.com");
   GURL referrer_url("http://referrer.url.com");
   EXPECT_EQ("https://prefix.com/foo/report?client=unittest&appver=1.0&"
-            "pver=2.2&evts=malblhit&evtd=http%3A%2F%2Fmalicious.url.com%2F&"
+            "pver=2.2" + key_param_ +
+            "&evts=malblhit&evtd=http%3A%2F%2Fmalicious.url.com%2F&"
             "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
             "url.com%2F&evtb=1",
             pm.SafeBrowsingHitUrl(
@@ -175,7 +191,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestSafeBrowsingHitUrl) {
 
   pm.set_additional_query(kAdditionalQuery);
   EXPECT_EQ("https://prefix.com/foo/report?client=unittest&appver=1.0&"
-            "pver=2.2&additional_query&evts=phishblhit&"
+            "pver=2.2" + key_param_ + "&additional_query&evts=phishblhit&"
             "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
             "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
             "url.com%2F&evtb=0",
@@ -184,7 +200,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestSafeBrowsingHitUrl) {
                 false, SafeBrowsingService::URL_PHISHING).spec());
 
   EXPECT_EQ("https://prefix.com/foo/report?client=unittest&appver=1.0&"
-            "pver=2.2&additional_query&evts=binurlhit&"
+            "pver=2.2" + key_param_ + "&additional_query&evts=binurlhit&"
             "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
             "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
             "url.com%2F&evtb=0",
@@ -193,7 +209,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestSafeBrowsingHitUrl) {
                 false, SafeBrowsingService::BINARY_MALWARE_URL).spec());
 
   EXPECT_EQ("https://prefix.com/foo/report?client=unittest&appver=1.0&"
-            "pver=2.2&additional_query&evts=binhashhit&"
+            "pver=2.2" + key_param_ + "&additional_query&evts=binhashhit&"
             "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
             "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
             "url.com%2F&evtb=0",
@@ -202,7 +218,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestSafeBrowsingHitUrl) {
                 false, SafeBrowsingService::BINARY_MALWARE_HASH).spec());
 
   EXPECT_EQ("https://prefix.com/foo/report?client=unittest&appver=1.0&"
-            "pver=2.2&additional_query&evts=phishcsdhit&"
+            "pver=2.2" + key_param_ + "&additional_query&evts=phishcsdhit&"
             "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
             "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
             "url.com%2F&evtb=0",
@@ -217,7 +233,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestMalwareDetailsUrl) {
   pm.version_ = kAppVer;
   pm.set_additional_query(kAdditionalQuery);  // AdditionalQuery is not used.
   EXPECT_EQ("https://prefix.com/foo/clientreport/malware?"
-            "client=unittest&appver=1.0&pver=1.0",
+            "client=unittest&appver=1.0&pver=1.0" + key_param_,
             pm.MalwareDetailsUrl().spec());
 }
 
