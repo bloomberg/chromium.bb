@@ -24,6 +24,7 @@ class AwHttpAuthHandlerBase {
  public:
   static AwHttpAuthHandlerBase* Create(AwLoginDelegate* login_delegate,
                                        net::AuthChallengeInfo* auth_info);
+  virtual ~AwHttpAuthHandlerBase();
 
   // Provides an 'escape-hatch' out to Java for the browser/ layer
   // AwLoginDelegate.

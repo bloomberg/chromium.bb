@@ -26,6 +26,9 @@ AwHttpAuthHandler::AwHttpAuthHandler(
       Java_AwHttpAuthHandler_create(env, reinterpret_cast<jint>(this)));
 }
 
+AwHttpAuthHandler:: ~AwHttpAuthHandler() {
+}
+
 void AwHttpAuthHandler::Proceed(JNIEnv* env,
                                 jobject obj,
                                 jstring user,

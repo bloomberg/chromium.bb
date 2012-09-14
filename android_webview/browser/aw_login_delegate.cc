@@ -42,6 +42,9 @@ AwLoginDelegate::AwLoginDelegate(net::AuthChallengeInfo* auth_info,
                    make_scoped_refptr(this)));
 }
 
+AwLoginDelegate::~AwLoginDelegate() {
+}
+
 void AwLoginDelegate::Proceed(const string16& user,
                               const string16& password) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

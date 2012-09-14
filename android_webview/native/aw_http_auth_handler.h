@@ -31,6 +31,7 @@ class AwHttpAuthHandler : public AwHttpAuthHandlerBase {
  public:
   AwHttpAuthHandler(AwLoginDelegate* login_delegate,
                     net::AuthChallengeInfo* auth_info);
+  virtual ~AwHttpAuthHandler();
 
   // from AwHttpAuthHandler
   virtual void HandleOnUIThread(content::WebContents* web_contents) OVERRIDE;

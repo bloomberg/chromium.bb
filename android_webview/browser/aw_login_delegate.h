@@ -31,6 +31,7 @@ class AwLoginDelegate :
   virtual void OnRequestCancelled() OVERRIDE;
 
  private:
+  virtual ~AwLoginDelegate();
   void HandleHttpAuthRequestOnUIThread();
   void CancelOnIOThread();
   void ProceedOnIOThread(const string16& user, const string16& password);

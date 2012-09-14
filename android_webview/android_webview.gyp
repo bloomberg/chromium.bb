@@ -28,6 +28,7 @@
         'common/render_view_messages.h',
         'browser/aw_cookie_access_policy.cc',
         'browser/aw_cookie_access_policy.h',
+        'browser/aw_http_auth_handler_base.cc',
         'browser/aw_http_auth_handler_base.h',
         'browser/aw_login_delegate.cc',
         'browser/aw_login_delegate.h',
