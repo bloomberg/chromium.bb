@@ -569,18 +569,18 @@ void ChromeBrowserFieldTrials::SetUpInfiniteCacheFieldTrial() {
   const base::FieldTrial::Probability kDivisor = 100;
 
 #if (defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_IOS))
-  base::FieldTrial::Probability kInfiniteCacheProbability = 0;
+  base::FieldTrial::Probability infinite_cache_probability = 0;
 #else
-  base::FieldTrial::Probability kInfiniteCacheProbability = 1;
+  base::FieldTrial::Probability infinite_cache_probability = 1;
 #endif
 
   if (parsed_command_line_.HasSwitch(switches::kDisableInfiniteCache))
-    kInfiniteCacheProbability = 0;
+    infinite_cache_probability = 0;
 
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial("InfiniteCache", kDivisor,
                                                  "No", 2013, 12, 31, NULL));
   trial->UseOneTimeRandomization();
-  trial->AppendGroup("Yes", kInfiniteCacheProbability);
-  trial->AppendGroup("Control", kInfiniteCacheProbability);
+  trial->AppendGroup("Yes", infinite_cache_probability);
+  trial->AppendGroup("Control", infinite_cache_probability);
 }
