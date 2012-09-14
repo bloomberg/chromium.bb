@@ -53,6 +53,10 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/win/metro.h"
+#endif
+
 using content::NavigationController;
 using content::RenderWidgetHost;
 using content::WebContents;
@@ -786,12 +790,33 @@ class SessionRestoreImpl : public content::NotificationObserver {
           show_state = ui::SHOW_STATE_NORMAL;
           has_visible_browser = true;
         }
-
-        browser = CreateRestoredBrowser(
-            static_cast<Browser::Type>((*i)->type),
-            (*i)->bounds,
-            show_state,
-            (*i)->app_name);
+        browser = NULL;
+#if defined(OS_WIN)
+        if (base::win::IsMetroProcess()) {
+          // We don't want to add tabs to the off the record browser.
+          if (browser_ && !browser_->profile()->IsOffTheRecord()) {
+            browser = browser_;
+          } else {
+            browser = last_browser;
+            // last_browser should never be off the record either.
+            // We don't set browser higher above when browser_ is offtherecord,
+            // and CreateRestoredBrowser below, is never created offtherecord.
+            DCHECK(!browser || !browser->profile()->IsOffTheRecord());
+          }
+          // Metro should only have tabbed browsers.
+          // It never creates any non-tabbed browser, and thus should never
+          // restore non-tabbed items...
+          DCHECK(!browser || browser->is_type_tabbed());
+          DCHECK((*i)->type == Browser::TYPE_TABBED);
+        }
+#endif
+        if (!browser) {
+          browser = CreateRestoredBrowser(
+              static_cast<Browser::Type>((*i)->type),
+              (*i)->bounds,
+              show_state,
+              (*i)->app_name);
+        }
 #if defined(OS_CHROMEOS)
     chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
         "SessionRestore-CreateRestoredBrowser-End", false);
