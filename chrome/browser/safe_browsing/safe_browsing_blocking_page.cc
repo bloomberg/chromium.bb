@@ -1117,6 +1117,8 @@ void SafeBrowsingBlockingPageV2::PopulateMalwareStringDictionary(
 
   if (!CanShowMalwareDetailsOption()) {
     strings->SetBoolean(kDisplayCheckBox, false);
+    strings->SetString("confirm_text", "");
+    strings->SetString(kBoxChecked, "");
   } else {
     // Show the checkbox for sending malware details.
     strings->SetBoolean(kDisplayCheckBox, true);

@@ -624,6 +624,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageV2Test, ProceedDisabled) {
   ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_TRUE(WaitForReady());
 
+  EXPECT_EQ(VISIBLE, GetVisibility("check-report"));
   EXPECT_EQ(HIDDEN, GetVisibility("show-diagnostic-link"));
   EXPECT_EQ(HIDDEN, GetVisibility("proceed"));
   EXPECT_EQ(HIDDEN, GetVisibility("proceed-span"));
@@ -635,6 +636,36 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageV2Test, ProceedDisabled) {
   // The "proceed" command should go back instead, if proceeding is disabled.
   EXPECT_TRUE(ClickAndWaitForDetach("proceed"));
   AssertNoInterstitial(true);
+  EXPECT_EQ(
+      GURL(chrome::kAboutBlankURL),   // Back to "about:blank"
+      chrome::GetActiveWebContents(browser())->GetURL());
+}
+
+// Verifies that the reporting checkbox is hidden on non-HTTP pages.
+// TODO(mattm): Should also verify that no report is sent, but there isn't a
+// good way to do that in the current design.
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageV2Test, ReportingDisabled) {
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingReportingEnabled, true);
+
+  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
+                               net::TestServer::kLocalhost,
+                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+  GURL url = https_server.GetURL(kEmptyPage);
+  AddURLResult(url, SafeBrowsingService::URL_MALWARE);
+  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(WaitForReady());
+
+  EXPECT_EQ(HIDDEN, GetVisibility("check-report"));
+  EXPECT_EQ(HIDDEN, GetVisibility("show-diagnostic-link"));
+  EXPECT_EQ(HIDDEN, GetVisibility("proceed"));
+  EXPECT_TRUE(Click("see-more-link"));
+  EXPECT_EQ(VISIBLE, GetVisibility("show-diagnostic-link"));
+  EXPECT_EQ(VISIBLE, GetVisibility("proceed"));
+
+  EXPECT_TRUE(ClickAndWaitForDetach("back"));
+  AssertNoInterstitial(false);   // Assert the interstitial is gone
   EXPECT_EQ(
       GURL(chrome::kAboutBlankURL),   // Back to "about:blank"
       chrome::GetActiveWebContents(browser())->GetURL());
