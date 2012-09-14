@@ -55,6 +55,8 @@
 
 namespace {
 
+const char kEULASentinelFile[] = "EULA Accepted";
+
 // Helper class that performs delayed first-run tasks that need more of the
 // chrome infrastructure to be up and running before they can be attempted.
 class FirstRunDelayedTasks : public content::NotificationObserver {
@@ -171,19 +173,38 @@ bool LaunchSetupWithParam(const std::string& param,
   return (TRUE == ::GetExitCodeProcess(ph, reinterpret_cast<DWORD*>(ret_code)));
 }
 
+// Populates |path| with the path to |file| in the sentinel directory. This is
+// the application directory for user-level installs, and the default user data
+// dir for system-level installs. Returns false on error.
+bool GetSentinelFilePath(const char* file, FilePath* path) {
+  FilePath exe_path;
+  if (!PathService::Get(base::DIR_EXE, &exe_path))
+    return false;
+  if (InstallUtil::IsPerUserInstall(exe_path.value().c_str()))
+    *path = exe_path;
+  else if (!PathService::Get(chrome::DIR_USER_DATA, path))
+    return false;
+
+  *path = path->AppendASCII(file);
+  return true;
+}
+
+bool GetEULASentinelFilePath(FilePath* path) {
+  return GetSentinelFilePath(kEULASentinelFile, path);
+}
+
 // Returns true if the EULA is required but has not been accepted by this user.
 // The EULA is considered having been accepted if the user has gotten past
 // first run in the "other" environment (desktop or metro).
-bool IsEulaNotAccepted(installer::MasterPreferences* install_prefs) {
+bool IsEULANotAccepted(installer::MasterPreferences* install_prefs) {
   bool value = false;
   if (install_prefs->GetBool(installer::master_preferences::kRequireEula,
           &value) && value) {
-    // Check for a first run sentinel in the alternate user data dir.
-    FilePath alt_user_data_dir;
-    if (!PathService::Get(chrome::DIR_ALT_USER_DATA, &alt_user_data_dir) ||
-        !file_util::DirectoryExists(alt_user_data_dir) ||
-        !file_util::PathExists(alt_user_data_dir.AppendASCII(
-            first_run::internal::kSentinelFile))) {
+    FilePath eula_sentinel;
+    // Be conservative and show the EULA if the path to the sentinel can't be
+    // determined.
+    if (!GetEULASentinelFilePath(&eula_sentinel) ||
+        !file_util::PathExists(eula_sentinel)) {
       return true;
     }
   }
@@ -204,8 +225,17 @@ bool WriteEULAtoTempFile(FilePath* eula_path) {
   return good;
 }
 
+// Creates the sentinel indicating that the EULA was required and has been
+// accepted.
+bool CreateEULASentinel() {
+  FilePath eula_sentinel;
+  if (!GetEULASentinelFilePath(&eula_sentinel))
+    return false;
+  return file_util::WriteFile(eula_sentinel, "", 0) != -1;
+}
+
 void ShowPostInstallEULAIfNeeded(installer::MasterPreferences* install_prefs) {
-  if (IsEulaNotAccepted(install_prefs)) {
+  if (IsEULANotAccepted(install_prefs)) {
     // Show the post-installation EULA. This is done by setup.exe and the
     // result determines if we continue or not. We wait here until the user
     // dismisses the dialog.
@@ -222,6 +252,7 @@ void ShowPostInstallEULAIfNeeded(installer::MasterPreferences* install_prefs) {
         LOG(WARNING) << "EULA rejected. Fast exit.";
         ::ExitProcess(1);
       }
+      CreateEULASentinel();
       if (retcode == installer::EULA_ACCEPTED) {
         VLOG(1) << "EULA : no collection";
         GoogleUpdateSettings::SetCollectStatsConsent(false);
@@ -467,20 +498,7 @@ bool ImportSettings(Profile* profile,
 }
 
 bool GetFirstRunSentinelFilePath(FilePath* path) {
-  FilePath first_run_sentinel;
-
-  FilePath exe_path;
-  if (!PathService::Get(base::DIR_EXE, &exe_path))
-    return false;
-  if (InstallUtil::IsPerUserInstall(exe_path.value().c_str())) {
-    first_run_sentinel = exe_path;
-  } else {
-    if (!PathService::Get(chrome::DIR_USER_DATA, &first_run_sentinel))
-      return false;
-  }
-
-  *path = first_run_sentinel.AppendASCII(kSentinelFile);
-  return true;
+  return GetSentinelFilePath(kSentinelFile, path);
 }
 
 void SetImportPreferencesAndLaunchImport(
