@@ -37,6 +37,9 @@ cr.define('cr.ui', function() {
         menuitem.style.backgroundImage = '';
         menuitem.setAttribute('file-type-icon', item.iconType);
       }
+      if (item.bold) {
+        menuitem.style.fontWeight = 'bold';
+      }
     },
 
     /**

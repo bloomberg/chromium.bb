@@ -451,7 +451,7 @@ FileTasks.prototype.createItems_ = function() {
   var items = [];
   var title = this.defaultTask_.title + ' ' +
               loadTimeData.getString('DEFAULT_ACTION_LABEL');
-  items.push(this.createCombobuttonItem_(this.defaultTask_, title));
+  items.push(this.createCombobuttonItem_(this.defaultTask_, title, true));
 
   for (var index = 0; index < this.tasks_.length; index++) {
     var task = this.tasks_[index];
@@ -479,15 +479,18 @@ FileTasks.prototype.updateMenuItem_ = function() {
  * Creates combobutton item based on task.
  * @param {Object} task Task to convert.
  * @param {string=} opt_title Title.
+ * @param {boolean} opt_bold Make a menu item bold.
  * @return {Object} Item appendable to combobutton drop-down list.
  * @private
  */
-FileTasks.prototype.createCombobuttonItem_ = function(task, opt_title) {
+FileTasks.prototype.createCombobuttonItem_ = function(task, opt_title,
+                                                      opt_bold) {
   return {
     label: opt_title || task.title,
     iconUrl: task.iconUrl,
     iconType: task.iconType,
-    task: task
+    task: task,
+    bold: opt_bold || false
   };
 };
 
