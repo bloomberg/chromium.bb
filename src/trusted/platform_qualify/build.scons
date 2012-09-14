@@ -21,6 +21,9 @@ if env.Bit('windows'):
 elif env.Bit('mac'):
   pql_inputs += ['osx/nacl_os_qualify.c',
                  'posix/nacl_dep_qualify.c']
+elif env.Bit('android'):
+  pql_inputs += ['osx/nacl_os_qualify.c',
+                 'posix/nacl_dep_qualify.c']
 elif env.Bit('linux'):
   pql_inputs += ['linux/nacl_os_qualify.c',
                  'linux/sysv_shm_and_mmap.c',

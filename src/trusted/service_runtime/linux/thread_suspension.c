@@ -3,6 +3,9 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+#if NACL_ANDROID
+#include <linux/compiler.h>
+#endif
 
 #include <errno.h>
 #include <linux/futex.h>
@@ -19,6 +22,11 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/thread_suspension.h"
 
+#if NACL_ANDROID
+# define SYS_futex __NR_futex
+# define FUTEX_WAIT_PRIVATE FUTEX_WAIT
+# define FUTEX_WAKE_PRIVATE FUTEX_WAKE
+#endif
 
 struct NaClAppThreadSuspendedRegisters {
   struct NaClSignalContext context;

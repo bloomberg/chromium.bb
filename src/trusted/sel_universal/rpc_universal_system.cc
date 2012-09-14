@@ -6,7 +6,7 @@
 
 #include <fcntl.h>
 #include <string.h>
-#if (NACL_LINUX)
+#if (NACL_LINUX) && !(NACL_ANDROID)
 // for shmem cleanup
 #include <sys/ipc.h>
 #include <sys/shm.h>
@@ -42,7 +42,7 @@ class AddressMap {
   ~AddressMap() {
     // NOTE: you CANNOT call NaClLog - this is called too late
     // NaClLog(1, "cleanup\n");
-#if (NACL_LINUX)
+#if (NACL_LINUX) && !(NACL_ANDROID)
     typedef map<NaClDesc*, uintptr_t>::iterator IT;
     for (IT it = map_.begin(); it != map_.end(); ++it) {
       shmctl(reinterpret_cast<NaClDescSysvShm*>(it->first)->id, IPC_RMID, NULL);

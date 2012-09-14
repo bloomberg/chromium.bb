@@ -61,7 +61,7 @@ bool WouldBlock() {
 }
 
 int GetLastErrorString(char* buffer, size_t length) {
-#if NACL_LINUX
+#if NACL_LINUX and !NACL_ANDROID
   // Note some Linux distributions provide only GNU version of strerror_r().
   if (buffer == NULL || length == 0) {
     errno = ERANGE;
@@ -81,6 +81,13 @@ int GetLastErrorString(char* buffer, size_t length) {
 }
 
 static Atomic32 memory_object_count = 0;
+
+#if NACL_ANDROID
+// TODO(olonho): plain wrong, must use ashmem instead. See
+// http://code.google.com/p/nativeclient/issues/detail?id=3024.
+#define shm_open open
+#define shm_unlink unlink
+#endif
 
 static int TryShmOrTempOpen(size_t length, const char* prefix, bool use_temp) {
   if (0 == length) {

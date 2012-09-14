@@ -30,7 +30,12 @@
  */
 
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
+#if NACL_ANDROID
+  push {lr}
 
+  /* Android linker doesn't support __thread variables - use pthread API. */
+  bl  NaClTlsGetIdx
+#else
   /*
    * Load the __thread variable's offset into r3.  We're quite sure that
    * our offsets will be small and so this could fit into an immediate
@@ -56,6 +61,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
    */
   mrc  p15, 0, r0, c13, c0, 3
   ldr  r0, [r0, r3]
+#endif /* !NACL_ANDROID */
 
 #ifdef __PIC__
   ldr  r3, .L.GOT
@@ -75,7 +81,11 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
   /*
    * Store the untrusted fpscr state and load the trusted fpscr into r2.
    */
+#if NACL_ANDROID
+  fmrx ip, fpscr
+#else
   vmrs ip, fpscr
+#endif
   str ip, [r1, #NACL_THREAD_CONTEXT_OFFSET_FPSCR]
   ldr r2, [r1, #NACL_THREAD_CONTEXT_OFFSET_SYS_FPSCR]
 
@@ -83,7 +93,11 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
   ldr  sp, [r1, #NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR]
 
   /* Restore the trusted fpscr. */
+#if NACL_ANDROID
+  fmxr fpscr, r2
+#else
   vmsr fpscr, r2
+#endif
 
   bl  NaClSyscallCSegHook
 
@@ -96,7 +110,13 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
 
   NACL_HALT
 
-  .balign 4
+.balign 4
+#if NACL_ANDROID && defined(__PIC__)
+.L.GOT:
+  .word  _GLOBAL_OFFSET_TABLE_ - (.LPIC1 + 8)
+.L.nacl_user:
+  .word  nacl_user(GOT)
+#else
 #ifdef __PIC__
 .L.gNaClThreadIdxPIC:
   .word  gNaClThreadIdx(gottpoff) + (. - .LPIC0 - 8)
@@ -108,3 +128,5 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
 .L.gNaClThreadIdx:
   .word  gNaClThreadIdx(tpoff)
 #endif
+
+#endif /* !NACL_ANDROID */

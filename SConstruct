@@ -325,6 +325,9 @@ def SetUpArgumentBits(env):
     desc='Use the zero-address-based x86-64 sandbox model instead of '
       'the r15-based model.')
 
+  BitFromArgument(env, 'android', default=False,
+                  desc='Build for Android target')
+
   #########################################################################
   # EXPERIMENTAL
   # This is for generating a testing library for use within private test
@@ -338,6 +341,7 @@ def SetUpArgumentBits(env):
       and not env.Bit('bitcode')):
     raise ValueError("pnacl_generate_pexe and use_sandboxed_translator"
                         "don't make sense without bitcode")
+
 
 
 def CheckArguments():
@@ -504,7 +508,6 @@ if pre_base_env.Bit('clang'):
   werror_flags += ['-Wno-covered-switch-default']
   # Allow C++11 extensions (for "override")
   werror_flags += ['-Wno-c++11-extensions']
-
 
 # Method to make sure -pedantic, etc, are not stripped from the
 # default env, since occasionally an engineer will be tempted down the
@@ -910,7 +913,6 @@ DeclareBit('target_x86', 'Tools being built will process x86 binaries')
 # Shorthand for either arm or thumb2 versions of ARM
 DeclareBit('build_arm', 'Building binaries for the arm architecture')
 DeclareBit('target_arm', 'Tools being built will process arm binaries')
-
 
 def MakeArchSpecificEnv():
   env = pre_base_env.Clone()
@@ -2096,6 +2098,7 @@ def MakeWindowsEnv():
           ['NACL_WINDOWS', '1'],
           ['NACL_OSX', '0'],
           ['NACL_LINUX', '0'],
+          ['NACL_ANDROID', '0'],
           ['_WIN32_WINNT', '0x0501'],
           ['__STDC_LIMIT_MACROS', '1'],
           ['NOMINMAX', '1'],
@@ -2203,6 +2206,7 @@ def MakeMacEnv():
       CPPDEFINES = [['NACL_WINDOWS', '0'],
                     ['NACL_OSX', '1'],
                     ['NACL_LINUX', '0'],
+                    ['NACL_ANDROID', '0'],
                     # defining _DARWIN_C_SOURCE breaks 10.4
                     #['_DARWIN_C_SOURCE', '1'],
                     #['__STDC_LIMIT_MACROS', '1']
@@ -2253,8 +2257,9 @@ def SetupLinuxEnvArm(env):
                 )
     env.Prepend(CCFLAGS=['-march=armv7-a',
                          '-marm',   # force arm32
-                         '-isystem', jail + '/usr/include',
                          ])
+    if not env.Bit('android'):
+      env.Prepend(CCFLAGS=['-isystem', jail + '/usr/include'])
     # /usr/lib makes sense for most configuration except this one
     # No ARM compatible libs can be found there.
     # So this just makes the command lines longer and sometimes results
@@ -2280,6 +2285,7 @@ def MakeLinuxEnv():
       CPPDEFINES = [['NACL_WINDOWS', '0'],
                     ['NACL_OSX', '0'],
                     ['NACL_LINUX', '1'],
+                    ['NACL_ANDROID', '0'],
                     ['_BSD_SOURCE', '1'],
                     ['_POSIX_C_SOURCE', '199506'],
                     ['_XOPEN_SOURCE', '600'],
@@ -2337,6 +2343,86 @@ def MakeLinuxEnv():
 (linux_debug_env, linux_optimized_env) = \
     GenerateOptimizationLevels(MakeLinuxEnv())
 
+
+def MakeAndroidEnv():
+  env = MakeLinuxEnv().Clone(
+      BUILD_TYPE = '${OPTIMIZATION_LEVEL}-android',
+      BUILD_TYPE_DESCRIPTION = 'Android ${OPTIMIZATION_LEVEL} build',
+      )
+  env.FilterOut(CPPDEFINES=[['NACL_ANDROID', '0']])
+  env.Prepend(CPPDEFINES=[['NACL_ANDROID', '1']])
+  if env.Bit('android'):
+    ndk = os.environ['ANDROID_NDK_ROOT']
+    sdk = os.environ['ANDROID_SDK_ROOT']
+    tc = os.environ['ANDROID_TOOLCHAIN']
+    ndk_target = 'arm-linux-androideabi'
+    ndk_version = '4.4.3'
+    if not tc:
+      tc = '%s/toolchains/%s-%s/prebuilt/linux-x86/bin/' \
+            % (ndk, ndk_target, ndk_version)
+    if not ndk or not sdk:
+      print 'Please define ANDROID_NDK_ROOT and ANDROID_SDK_ROOT'
+      sys.exit(-1)
+    tc_prefix = '%s/%s-' % (tc, ndk_target)
+    platform_prefix = ndk + '/platforms/android-14/arch-arm'
+    stl_path =  ndk + '/sources/cxx-stl/gnu-libstdc++'
+    env.Replace(CC=tc_prefix + 'gcc',
+                CXX=tc_prefix + 'g++',
+                LD=tc_prefix + 'g++',
+                EMULATOR=sdk + '/tools/emulator',
+                ASFLAGS=[],
+                LIBPATH=['${LIB_DIR}',
+                         stl_path + '/libs/armeabi-v7a',
+                         platform_prefix + '/usr/lib',
+                         ],
+                LINKFLAGS=['-Wl,-rpath-link=' + platform_prefix + '/usr/lib',
+                           '-Wl,--fix-cortex-a8',
+                           '-Wl,--no-undefined',
+                           '-Wl,-z,noexecstack',
+                           '-Wl,--gc-sections',
+                           '-Wl,-z,nocopyreloc',
+                           '-nostdlib',
+                           #'-static',
+                           '-L%s/../lib/gcc/%s/%s' \
+                              % (tc, ndk_target, ndk_version),
+                           platform_prefix + '/usr/lib/crtbegin_dynamic.o',
+                           platform_prefix + '/usr/lib/crtend_android.o',
+                          ],
+                LIBS=['gnustl_static', # Yes, that stdc++.
+                      'supc++',
+                      'c',
+                      'm',
+                      'gcc',
+                      # Second time, to have mutual libgcc<->libc deps resolved.
+                      'c',
+                      ],
+                )
+    env.Prepend(
+        CCFLAGS=['-fPIC'],
+        LINKFLAGS=['-pie', '-Wl,-z,relro', '-Wl,-z,now', '-Wl,-z,noexecstack'],
+        )
+    env.Append(CCFLAGS=['--sysroot='+ platform_prefix,
+                        '-isystem='+ platform_prefix + '/usr/include',
+                        '-DANDROID',
+                        '-D__ANDROID__',
+                        '-funwind-tables',
+                        '-fstack-protector',
+                        '-Wno-psabi',
+                        '-march=armv7-a',
+                        '-mfloat-abi=softfp',
+                        '-mfpu=vfp',
+                        '-fno-strict-aliasing',
+                        '-finline-limit=64',
+                        # Due to bogus warnings on uintptr_t formats.
+                        '-Wno-format',
+                        ],
+               CXXFLAGS=['-I' + stl_path + '/include',
+                         '-I' + stl_path + '/libs/armeabi/include',
+                         '-std=gnu++0x',
+                         '-fno-exceptions',
+                         ],
+               )
+  return env
 
 # Do this before the site_scons/site_tools/naclsdk.py stuff to pass it along.
 pre_base_env.Append(
@@ -3250,6 +3336,15 @@ CheckArguments()
 
 SanityCheckEnvironments(environment_list)
 selected_envs = FilterEnvironments(environment_list)
+
+# TODO(olonho): how to do that properly?
+if pre_base_env.Bit('android'):
+  env = MakeAndroidEnv()
+  env['OPTIMIZATION_LEVEL'] = 'dbg'
+  env['BUILD_TYPE'] = env.subst('$BUILD_TYPE')
+  env['BUILD_DESCRIPTION'] = env.subst('$BUILD_DESCRIPTION')
+  AddDualLibrary(env)
+  selected_envs = [env, nacl_irt_env]
 
 # If we are building nacl, build nacl_irt too.  This works around it being
 # a separate mode due to the vagaries of scons when we'd really rather it

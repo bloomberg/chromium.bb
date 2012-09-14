@@ -1,13 +1,54 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2010 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <signal.h>
+#if !NACL_ANDROID || defined(__BIONIC_HAVE_UCONTEXT_T)
 #include <sys/ucontext.h>
+#endif
 
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
+
+#if NACL_ANDROID && !defined(__BIONIC_HAVE_UCONTEXT_T)
+struct sigcontext {
+        unsigned long trap_no;
+        unsigned long error_code;
+        unsigned long oldmask;
+        unsigned long arm_r0;
+        unsigned long arm_r1;
+        unsigned long arm_r2;
+        unsigned long arm_r3;
+        unsigned long arm_r4;
+        unsigned long arm_r5;
+        unsigned long arm_r6;
+        unsigned long arm_r7;
+        unsigned long arm_r8;
+        unsigned long arm_r9;
+        unsigned long arm_r10;
+        unsigned long arm_fp;
+        unsigned long arm_ip;
+        unsigned long arm_sp;
+        unsigned long arm_lr;
+        unsigned long arm_pc;
+        unsigned long arm_cpsr;
+        unsigned long fault_address;
+};
+typedef struct sigcontext mcontext_t;
+typedef unsigned long sigset_t;
+
+/* Userlevel context.  */
+typedef struct ucontext
+{
+  unsigned long uc_flags;
+  struct ucontext *uc_link;
+  stack_t uc_stack;
+  mcontext_t uc_mcontext;
+  sigset_t uc_sigmask;
+  unsigned long uc_regspace[128] __attribute__((__aligned__(8)));
+} ucontext_t;
+#endif
 
 /*
  * Fill a signal context structure from the raw platform dependent

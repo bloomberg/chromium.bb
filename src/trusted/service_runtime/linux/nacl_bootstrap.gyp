@@ -203,7 +203,7 @@
                    '<(PRODUCT_DIR)/nacl_bootstrap_raw'],
         'outputs': ['<(PRODUCT_DIR)/nacl_helper_bootstrap'],
         'message': 'Munging ELF program header',
-        'action': ['python', '<@(_inputs)', '<@(_outputs)']
+        'action': ['python', '<@(_inputs)', '2', '<@(_outputs)']
       }],
     },
   ],

@@ -4,8 +4,32 @@
  * found in the LICENSE file.
  */
 
+#if !NACL_ANDROID
 #include <link.h>
+#endif
 #include <stdlib.h>
+
+#if NACL_ANDROID
+struct link_map
+{
+    uintptr_t l_addr;
+    char * l_name;
+    uintptr_t l_ld;
+    struct link_map * l_next;
+    struct link_map * l_prev;
+};
+
+struct r_debug
+{
+    int32_t r_version;
+    struct link_map * r_map;
+    void (*r_brk)(void);
+    int32_t r_state;
+    uintptr_t r_ldbase;
+};
+
+struct r_debug _r_debug;
+#endif
 
 /*
  * If we are started by the bootstrap program rather than in the

@@ -23,13 +23,12 @@ import sys
 
 
 def Main(argv):
-  if len(argv) != 4:
-    print 'Usage: %s MUNGE-PHDR-PROGRAM INFILE OUTFILE' % argv[0]
+  if len(argv) != 5:
+    print 'Usage: %s SEGMENT MUNGE-PHDR-PROGRAM INFILE OUTFILE' % argv[0]
     return 1
-  [prog, munger, infile, outfile] = argv
+  [prog, munger, infile, segment_num, outfile] = argv
   tmpfile = outfile + '.tmp'
   shutil.copy(infile, tmpfile)
-  segment_num = '2'
   subprocess.check_call([munger, tmpfile, segment_num])
   shutil.move(tmpfile, outfile)
   return 0
