@@ -55,6 +55,7 @@ class BaseTab::TabCloseButton : public views::ImageButton {
   virtual View* GetEventHandlerForPoint(const gfx::Point& point) OVERRIDE {
     // Ignore the padding set on the button.
     gfx::Rect rect = GetContentsBounds();
+    rect.set_x(GetMirroredXForRect(rect));
 
 #if defined(USE_ASH)
     // Include the padding in hit-test for touch events.
