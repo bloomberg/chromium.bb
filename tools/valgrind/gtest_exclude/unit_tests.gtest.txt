@@ -23,3 +23,8 @@ SignedSettingsTest.StorePolicyNoPolicyData
 
 # Flaky and not very interesting under Valgrind http://crbug.com/93027
 ProcessWatcherTest.ImmediateTermination
+
+# Timing out all over the place. Disabling for now. http://crbug.com/149712
+AppNotificationManagerTest.*
+# Timing out all over the place. Disabling for now. http://crbug.com/149715
+ExtensionWebRequestTest.*

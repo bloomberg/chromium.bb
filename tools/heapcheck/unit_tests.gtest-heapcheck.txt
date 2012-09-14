@@ -35,6 +35,11 @@ SyncNewNonFrontendDataTypeControllerTest.StartAfterSyncShutdown
 # Randomly fails on the linux heapcheck bot
 HistoryQuickProviderTest.*
 
+# Timing out all over the place. Disabling for now. http://crbug.com/149712
+AppNotificationManagerTest.*
+# Timing out all over the place. Disabling for now. http://crbug.com/149715
+ExtensionWebRequestTest.*
+
 # Don't run FLAKY or FAILS tests under the heapchecker.
 # They may cause flaky leak reports and timeouts.
 *FLAKY_*
