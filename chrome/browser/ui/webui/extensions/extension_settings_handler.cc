@@ -25,7 +25,6 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
-#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/google/google_util.h"
@@ -35,7 +34,6 @@
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
-#include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -832,12 +830,8 @@ ExtensionSettingsHandler::GetInspectablePagesForExtension(
   ExtensionProcessManager* process_manager =
       extension_service_->profile()->GetExtensionProcessManager();
   GetInspectablePagesForExtensionProcess(
-      process_manager->GetRenderViewHostsForExtension(extension->id()),
-      &result);
-
-  // Get shell window views
-  GetShellWindowPagesForExtensionProfile(extension,
-      extension_service_->profile(), &result);
+      process_manager->GetRenderViewHostsForExtension(
+          extension->id()), &result);
 
   // Include a link to start the lazy background page, if applicable.
   if (extension->has_lazy_background_page() && extension_is_enabled &&
@@ -853,11 +847,8 @@ ExtensionSettingsHandler::GetInspectablePagesForExtension(
         extension_service_->profile()->GetOffTheRecordProfile()->
             GetExtensionProcessManager();
     GetInspectablePagesForExtensionProcess(
-        process_manager->GetRenderViewHostsForExtension(extension->id()),
-        &result);
-
-    GetShellWindowPagesForExtensionProfile(extension,
-        extension_service_->profile()->GetOffTheRecordProfile(), &result);
+        process_manager->GetRenderViewHostsForExtension(
+            extension->id()), &result);
 
     if (extension->has_lazy_background_page() && extension_is_enabled &&
         !process_manager->GetBackgroundHostForExtension(extension->id())) {
@@ -871,7 +862,7 @@ ExtensionSettingsHandler::GetInspectablePagesForExtension(
 
 void ExtensionSettingsHandler::GetInspectablePagesForExtensionProcess(
     const std::set<RenderViewHost*>& views,
-    std::vector<ExtensionPage>* result) {
+    std::vector<ExtensionPage> *result) {
   for (std::set<RenderViewHost*>::const_iterator iter = views.begin();
        iter != views.end(); ++iter) {
     RenderViewHost* host = *iter;
@@ -887,28 +878,6 @@ void ExtensionSettingsHandler::GetInspectablePagesForExtensionProcess(
     result->push_back(
         ExtensionPage(url, process->GetID(), host->GetRoutingID(),
                       process->GetBrowserContext()->IsOffTheRecord()));
-  }
-}
-
-void ExtensionSettingsHandler::GetShellWindowPagesForExtensionProfile(
-    const Extension* extension,
-    Profile* profile,
-    std::vector<ExtensionPage>* result) {
-  extensions::ShellWindowRegistry* registry =
-      extensions::ShellWindowRegistry::Get(profile);
-  const extensions::ShellWindowRegistry::ShellWindowSet windows =
-      registry->GetShellWindowsForApp(extension->id());
-
-  for (extensions::ShellWindowRegistry::const_iterator it = windows.begin();
-       it != windows.end(); ++it) {
-    WebContents* web_contents = (*it)->web_contents();
-    RenderViewHost* host = web_contents->GetRenderViewHost();
-    content::RenderProcessHost* process = host->GetProcess();
-
-    result->push_back(
-      ExtensionPage(web_contents->GetURL(), process->GetID(),
-                    host->GetRoutingID(),
-                    process->GetBrowserContext()->IsOffTheRecord()));
   }
 }
 

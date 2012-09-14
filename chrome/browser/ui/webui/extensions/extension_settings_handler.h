@@ -169,11 +169,7 @@ class ExtensionSettingsHandler
       const extensions::Extension* extension, bool extension_is_enabled);
   void GetInspectablePagesForExtensionProcess(
       const std::set<content::RenderViewHost*>& views,
-      std::vector<ExtensionPage>* result);
-  void GetShellWindowPagesForExtensionProfile(
-      const extensions::Extension* extension,
-      Profile* profile,
-      std::vector<ExtensionPage>* result);
+      std::vector<ExtensionPage> *result);
 
   // Returns the ExtensionUninstallDialog object for this class, creating it if
   // needed.
