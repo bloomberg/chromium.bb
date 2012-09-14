@@ -45,8 +45,7 @@ class CpuInfoProvider
   };
 
   // Platform specific implementation for querying the CPU time information
-  // for each processor. Note that the first element is the total aggregated
-  // numbers of all logic processors.
+  // for each processor.
   bool QueryCpuTimePerProcessor(std::vector<CpuTime>* times);
 };
 
