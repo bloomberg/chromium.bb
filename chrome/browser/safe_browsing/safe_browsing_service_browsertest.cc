@@ -863,7 +863,8 @@ class SafeBrowsingServiceCookieTest : public InProcessBrowserTest {
   }
 
   void ForceUpdate() {
-    sb_service_->protocol_manager_->ForceScheduleNextUpdate(0);
+    sb_service_->protocol_manager_->ForceScheduleNextUpdate(
+        base::TimeDelta::FromSeconds(0));
   }
 
   scoped_refptr<SafeBrowsingService> sb_service_;

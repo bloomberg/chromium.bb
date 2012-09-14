@@ -36,39 +36,50 @@ class SafeBrowsingProtocolManagerTest : public testing::Test {
 // Ensure that we respect section 5 of the SafeBrowsing protocol specification.
 TEST_F(SafeBrowsingProtocolManagerTest, TestBackOffTimes) {
   SafeBrowsingProtocolManager pm(NULL, kClient, NULL, kUrlPrefix, false);
-  pm.next_update_sec_ = 1800;
-  DCHECK(pm.back_off_fuzz_ >= 0.0 && pm.back_off_fuzz_ <= 1.0);
+  pm.next_update_interval_ = base::TimeDelta::FromSeconds(1800);
+  ASSERT_TRUE(pm.back_off_fuzz_ >= 0.0 && pm.back_off_fuzz_ <= 1.0);
+
+  base::TimeDelta next;
 
   // No errors received so far.
-  EXPECT_EQ(pm.GetNextUpdateTime(false), 1800 * 1000);
+  next = pm.GetNextUpdateInterval(false);
+  EXPECT_EQ(next, base::TimeDelta::FromSeconds(1800));
 
   // 1 error.
-  EXPECT_EQ(pm.GetNextUpdateTime(true), 60 * 1000);
+  next = pm.GetNextUpdateInterval(true);
+  EXPECT_EQ(next, base::TimeDelta::FromSeconds(60));
 
   // 2 errors.
-  int next_time = pm.GetNextUpdateTime(true) / (60 * 1000);  // Minutes
-  EXPECT_TRUE(next_time >= 30 && next_time <= 60);
+  next = pm.GetNextUpdateInterval(true);
+  EXPECT_TRUE(next >= base::TimeDelta::FromMinutes(30) &&
+              next <= base::TimeDelta::FromMinutes(60));
 
   // 3 errors.
-  next_time = pm.GetNextUpdateTime(true) / (60 * 1000);
-  EXPECT_TRUE(next_time >= 60 && next_time <= 120);
+  next = pm.GetNextUpdateInterval(true);
+  EXPECT_TRUE(next >= base::TimeDelta::FromMinutes(60) &&
+              next <= base::TimeDelta::FromMinutes(120));
 
   // 4 errors.
-  next_time = pm.GetNextUpdateTime(true) / (60 * 1000);
-  EXPECT_TRUE(next_time >= 120 && next_time <= 240);
+  next = pm.GetNextUpdateInterval(true);
+  EXPECT_TRUE(next >= base::TimeDelta::FromMinutes(120) &&
+              next <= base::TimeDelta::FromMinutes(240));
 
   // 5 errors.
-  next_time = pm.GetNextUpdateTime(true) / (60 * 1000);
-  EXPECT_TRUE(next_time >= 240 && next_time <= 480);
+  next = pm.GetNextUpdateInterval(true);
+  EXPECT_TRUE(next >= base::TimeDelta::FromMinutes(240) &&
+              next <= base::TimeDelta::FromMinutes(480));
 
   // 6 errors, reached max backoff.
-  EXPECT_EQ(pm.GetNextUpdateTime(true), 480 * 60 * 1000);
+  next = pm.GetNextUpdateInterval(true);
+  EXPECT_EQ(next, base::TimeDelta::FromMinutes(480));
 
   // 7 errors.
-  EXPECT_EQ(pm.GetNextUpdateTime(true), 480 * 60 * 1000);
+  next = pm.GetNextUpdateInterval(true);
+  EXPECT_EQ(next, base::TimeDelta::FromMinutes(480));
 
   // Received a successful response.
-  EXPECT_EQ(pm.GetNextUpdateTime(false), 1800 * 1000);
+  next = pm.GetNextUpdateInterval(false);
+  EXPECT_EQ(next, base::TimeDelta::FromSeconds(1800));
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestChunkStrings) {

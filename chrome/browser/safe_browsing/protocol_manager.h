@@ -89,8 +89,8 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
   virtual void GetFullHash(SafeBrowsingService::SafeBrowsingCheck* check,
                            const std::vector<SBPrefix>& prefixes);
 
-  // Forces the start of next update after |next_update_msec| in msec.
-  void ForceScheduleNextUpdate(int next_update_msec);
+  // Forces the start of next update after |interval| time.
+  void ForceScheduleNextUpdate(base::TimeDelta interval);
 
   // Scheduled update callback.
   void GetNextUpdate();
@@ -226,15 +226,16 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
   // Composes a ChunkUrl based on input string.
   GURL NextChunkUrl(const std::string& input) const;
 
-  // Returns the time (in milliseconds) for the next update request. If
-  // 'back_off' is true, the time returned will increment an error count and
-  // return the appriate next time (see ScheduleNextUpdate below).
-  int GetNextUpdateTime(bool back_off);
+  // Returns the time for the next update request. If |back_off| is true,
+  // the time returned will increment an error count and return the appriate
+  // next time (see ScheduleNextUpdate below).
+  base::TimeDelta GetNextUpdateInterval(bool back_off);
 
   // Worker function for calculating GetHash and Update backoff times (in
-  // seconds). 'Multiplier' is doubled for each consecutive error between the
-  // 2nd and 5th, and 'error_count' is incremented with each call.
-  int GetNextBackOffTime(int* error_count, int* multiplier);
+  // seconds). |multiplier| is doubled for each consecutive error between the
+  // 2nd and 5th, and |error_count| is incremented with each call.
+  base::TimeDelta GetNextBackOffInterval(int* error_count,
+                                         int* multiplier) const;
 
   // Manages our update with the next allowable update time. If 'back_off_' is
   // true, we must decrease the frequency of requests of the SafeBrowsing
@@ -305,7 +306,7 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
 
   // For managing the next earliest time to query the SafeBrowsing servers for
   // updates.
-  int next_update_sec_;
+  base::TimeDelta next_update_interval_;
   base::OneShotTimer<SafeBrowsingProtocolManager> update_timer_;
 
   // All chunk requests that need to be made.

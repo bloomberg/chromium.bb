@@ -91,7 +91,8 @@ SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
       gethash_error_count_(0),
       update_back_off_mult_(1),
       gethash_back_off_mult_(1),
-      next_update_sec_(-1),
+      next_update_interval_(base::TimeDelta::FromSeconds(
+          base::RandInt(60, kSbTimerStartIntervalSec))),
       update_state_(FIRST_REQUEST),
       chunk_pending_to_write_(false),
       update_size_(0),
@@ -103,8 +104,6 @@ SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
 
   // Set the backoff multiplier fuzz to a random value between 0 and 1.
   back_off_fuzz_ = static_cast<float>(base::RandDouble());
-  // The first update must happen between 1-5 minutes of start up.
-  next_update_sec_ = base::RandInt(60, kSbTimerStartIntervalSec);
 
   chrome::VersionInfo version_info;
   if (!version_info.is_valid() || version_info.Version().empty())
@@ -338,6 +337,8 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
         return false;
       }
 
+      base::TimeDelta next_update_interval =
+          base::TimeDelta::FromSeconds(next_update_sec);
       last_update_ = Time::Now();
 
       if (update_state_ == FIRST_REQUEST)
@@ -346,10 +347,11 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
         update_state_ = NORMAL_REQUEST;
 
       // New time for the next update.
-      if (next_update_sec > 0) {
-        next_update_sec_ = next_update_sec;
+      if (next_update_interval > base::TimeDelta()) {
+        next_update_interval_ = next_update_interval;
       } else if (update_state_ == SECOND_REQUEST) {
-        next_update_sec_ = base::RandInt(15 * 60, 45 * 60);
+        next_update_interval_ = base::TimeDelta::FromSeconds(
+            base::RandInt(15, 45));
       }
 
       // New chunks to download.
@@ -421,58 +423,57 @@ void SafeBrowsingProtocolManager::Initialize() {
 }
 
 void SafeBrowsingProtocolManager::ScheduleNextUpdate(bool back_off) {
-  DCHECK_GT(next_update_sec_, 0);
-
   if (disable_auto_update_) {
     // Unschedule any current timer.
     update_timer_.Stop();
     return;
   }
   // Reschedule with the new update.
-  const int next_update = GetNextUpdateTime(back_off);
-  ForceScheduleNextUpdate(next_update);
+  base::TimeDelta next_update_interval = GetNextUpdateInterval(back_off);
+  ForceScheduleNextUpdate(next_update_interval);
 }
 
 void SafeBrowsingProtocolManager::ForceScheduleNextUpdate(
-    const int next_update_msec) {
-  DCHECK_GE(next_update_msec, 0);
+    base::TimeDelta interval) {
+  DCHECK(interval >= base::TimeDelta());
   // Unschedule any current timer.
   update_timer_.Stop();
-  update_timer_.Start(FROM_HERE, TimeDelta::FromMilliseconds(next_update_msec),
-                      this, &SafeBrowsingProtocolManager::GetNextUpdate);
+  update_timer_.Start(FROM_HERE, interval, this,
+                      &SafeBrowsingProtocolManager::GetNextUpdate);
 }
 
 // According to section 5 of the SafeBrowsing protocol specification, we must
-// back off after a certain number of errors. We only change 'next_update_sec_'
+// back off after a certain number of errors. We only change |next_update_sec_|
 // when we receive a response from the SafeBrowsing service.
-int SafeBrowsingProtocolManager::GetNextUpdateTime(bool back_off) {
-  int next = next_update_sec_;
+base::TimeDelta SafeBrowsingProtocolManager::GetNextUpdateInterval(
+    bool back_off) {
+  DCHECK(next_update_interval_ > base::TimeDelta());
+  base::TimeDelta next = next_update_interval_;
   if (back_off) {
-    next = GetNextBackOffTime(&update_error_count_, &update_back_off_mult_);
+    next = GetNextBackOffInterval(&update_error_count_, &update_back_off_mult_);
   } else {
     // Successful response means error reset.
     update_error_count_ = 0;
     update_back_off_mult_ = 1;
   }
-  return next * 1000;  // milliseconds
+  return next;
 }
 
-int SafeBrowsingProtocolManager::GetNextBackOffTime(int* error_count,
-                                                    int* multiplier) {
+base::TimeDelta SafeBrowsingProtocolManager::GetNextBackOffInterval(
+    int* error_count, int* multiplier) const {
   DCHECK(multiplier && error_count);
   (*error_count)++;
   if (*error_count > 1 && *error_count < 6) {
-    int next = static_cast<int>(*multiplier * (1 + back_off_fuzz_) * 30 * 60);
+    base::TimeDelta next = base::TimeDelta::FromMinutes(
+        *multiplier * (1 + back_off_fuzz_) * 30);
     *multiplier *= 2;
     if (*multiplier > kSbMaxBackOff)
       *multiplier = kSbMaxBackOff;
     return next;
   }
-
   if (*error_count >= 6)
-    return 60 * 60 * 8;  // 8 hours
-
-  return 60;  // 1 minute
+    return base::TimeDelta::FromHours(8);
+  return base::TimeDelta::FromMinutes(1);
 }
 
 // This request requires getting a list of all the chunks for each list from the
@@ -631,8 +632,9 @@ std::string SafeBrowsingProtocolManager::FormatList(
 }
 
 void SafeBrowsingProtocolManager::HandleGetHashError(const Time& now) {
-  int next = GetNextBackOffTime(&gethash_error_count_, &gethash_back_off_mult_);
-  next_gethash_time_ = now + TimeDelta::FromSeconds(next);
+  base::TimeDelta next = GetNextBackOffInterval(
+      &gethash_error_count_, &gethash_back_off_mult_);
+  next_gethash_time_ = now + next;
 }
 
 void SafeBrowsingProtocolManager::UpdateFinished(bool success) {

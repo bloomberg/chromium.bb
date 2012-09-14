@@ -237,7 +237,8 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   void ForceUpdateOnIOThread() {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     ASSERT_TRUE(safe_browsing_service_);
-    safe_browsing_service_->protocol_manager_->ForceScheduleNextUpdate(0);
+    safe_browsing_service_->protocol_manager_->ForceScheduleNextUpdate(
+        base::TimeDelta::FromSeconds(0));
   }
 
   void CheckIsDatabaseReady() {
