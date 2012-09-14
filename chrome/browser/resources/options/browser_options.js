@@ -712,8 +712,10 @@ cr.define('options', function() {
      * @param {Event} event The preference change event.
      */
     onHomePageIsNtpChanged_: function(event) {
-      $('home-page-url').hidden = event.value.value;
-      $('home-page-ntp').hidden = !event.value.value;
+      if (!event.value.uncommitted) {
+        $('home-page-url').hidden = event.value.value;
+        $('home-page-ntp').hidden = !event.value.value;
+      }
     },
 
     /**
@@ -722,7 +724,8 @@ cr.define('options', function() {
      * @param {Event} event The preference change event.
      */
     onHomePageChanged_: function(event) {
-      $('home-page-url').textContent = this.stripHttp_(event.value.value);
+      if (!event.value.uncommitted)
+        $('home-page-url').textContent = this.stripHttp_(event.value.value);
     },
 
     /**

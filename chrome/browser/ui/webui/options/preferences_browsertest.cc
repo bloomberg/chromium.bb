@@ -227,7 +227,8 @@ void PreferencesBrowserTest::VerifyPref(const base::DictionaryValue* prefs,
                                         const std::string& name,
                                         const base::Value* value,
                                         const std::string& controlledBy,
-                                        bool disabled) {
+                                        bool disabled,
+                                        bool uncommitted) {
   const base::Value* pref;
   const base::DictionaryValue* dict;
   ASSERT_TRUE(prefs->GetWithoutPathExpansion(name, &pref));
@@ -243,18 +244,23 @@ void PreferencesBrowserTest::VerifyPref(const base::DictionaryValue* prefs,
     VerifyKeyValue(dict, "disabled", base::Value::CreateBooleanValue(true));
   else if (dict->HasKey("disabled"))
     VerifyKeyValue(dict, "disabled", base::Value::CreateBooleanValue(false));
+  if (uncommitted)
+    VerifyKeyValue(dict, "uncommitted", base::Value::CreateBooleanValue(true));
+  else if (dict->HasKey("uncommitted"))
+    VerifyKeyValue(dict, "uncommitted", base::Value::CreateBooleanValue(false));
 }
 
 void PreferencesBrowserTest::VerifyObservedPref(const std::string& json,
                                                 const std::string& name,
                                                 const base::Value* value,
                                                 const std::string& controlledBy,
-                                                bool disabled) {
+                                                bool disabled,
+                                                bool uncommitted) {
   scoped_ptr<base::Value> observed_value_ptr(base::JSONReader::Read(json));
   const base::DictionaryValue* observed_dict;
   ASSERT_TRUE(observed_value_ptr.get());
   ASSERT_TRUE(observed_value_ptr->GetAsDictionary(&observed_dict));
-  VerifyPref(observed_dict, name, value, controlledBy, disabled);
+  VerifyPref(observed_dict, name, value, controlledBy, disabled, uncommitted);
 }
 
 void PreferencesBrowserTest::VerifyObservedPrefs(
@@ -262,13 +268,15 @@ void PreferencesBrowserTest::VerifyObservedPrefs(
     const std::vector<std::string>& names,
     const std::vector<base::Value*>& values,
     const std::string& controlledBy,
-    bool disabled) {
+    bool disabled,
+    bool uncommitted) {
   scoped_ptr<base::Value> observed_value_ptr(base::JSONReader::Read(json));
   const base::DictionaryValue* observed_dict;
   ASSERT_TRUE(observed_value_ptr.get());
   ASSERT_TRUE(observed_value_ptr->GetAsDictionary(&observed_dict));
   for (size_t i = 0; i < names.size(); ++i)
-    VerifyPref(observed_dict, names[i], values[i], controlledBy, disabled);
+    VerifyPref(observed_dict, names[i], values[i], controlledBy, disabled,
+               uncommitted);
 }
 
 void PreferencesBrowserTest::ExpectNoCommit(const std::string& name) {
@@ -336,7 +344,7 @@ void PreferencesBrowserTest::VerifySetPref(const std::string& name,
   std::string observed_json;
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
       render_view_host_, L"", javascript.str(), &observed_json));
-  VerifyObservedPref(observed_json, name, value, "", false);
+  VerifyObservedPref(observed_json, name, value, "", false, !commit);
   VerifyAndClearExpectations();
 }
 
@@ -358,7 +366,7 @@ void PreferencesBrowserTest::VerifyClearPref(const std::string& name,
   std::string observed_json;
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
       render_view_host_, L"", javascript.str(), &observed_json));
-  VerifyObservedPref(observed_json, name, value, "recommended", false);
+  VerifyObservedPref(observed_json, name, value, "recommended", false, !commit);
   VerifyAndClearExpectations();
 }
 
@@ -372,7 +380,7 @@ void PreferencesBrowserTest::VerifyCommit(const std::string& name,
   std::string observed_json;
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
       render_view_host_, L"", javascript.str(), &observed_json));
-  VerifyObservedPref(observed_json, name, value, controlledBy, false);
+  VerifyObservedPref(observed_json, name, value, controlledBy, false, false);
 }
 
 void PreferencesBrowserTest::VerifySetCommit(const std::string& name,
@@ -400,7 +408,7 @@ void PreferencesBrowserTest::VerifyRollback(const std::string& name,
   std::string observed_json;
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
       render_view_host_, L"", javascript.str(), &observed_json));
-  VerifyObservedPref(observed_json, name, value, controlledBy, false);
+  VerifyObservedPref(observed_json, name, value, controlledBy, false, true);
   VerifyAndClearExpectations();
 }
 
@@ -468,28 +476,29 @@ IN_PROC_BROWSER_TEST_F(PreferencesBrowserTest, FetchPrefs) {
 
   // Verify notifications when default values are in effect.
   SetupJavaScriptTestEnvironment(pref_names_, &observed_json);
-  VerifyObservedPrefs(observed_json, pref_names_, default_values_, "", false);
+  VerifyObservedPrefs(observed_json, pref_names_, default_values_,
+                      "", false, false);
 
   // Verify notifications when recommended values are in effect.
   SetUserPolicies(policy_names_, non_default_values_,
                   policy::POLICY_LEVEL_RECOMMENDED);
   SetupJavaScriptTestEnvironment(pref_names_, &observed_json);
   VerifyObservedPrefs(observed_json, pref_names_, non_default_values_,
-                      "recommended", false);
+                      "recommended", false, false);
 
   // Verify notifications when mandatory values are in effect.
   SetUserPolicies(policy_names_, non_default_values_,
                   policy::POLICY_LEVEL_MANDATORY);
   SetupJavaScriptTestEnvironment(pref_names_, &observed_json);
   VerifyObservedPrefs(observed_json, pref_names_, non_default_values_,
-                      "policy", true);
+                      "policy", true, false);
 
   // Verify notifications when user-modified values are in effect.
   ClearUserPolicies();
   SetUserValues(pref_names_, non_default_values_);
   SetupJavaScriptTestEnvironment(pref_names_, &observed_json);
   VerifyObservedPrefs(observed_json, pref_names_, non_default_values_,
-                      "", false);
+                      "", false, false);
 }
 
 // Verifies that setting a user-modified pref value through the JavaScript
@@ -601,7 +610,7 @@ IN_PROC_BROWSER_TEST_F(PreferencesBrowserTest, NotificationsOnBackendChanges) {
                   policy::POLICY_LEVEL_RECOMMENDED);
   FinishObserving(&observed_json);
   VerifyObservedPrefs(observed_json, pref_names_, non_default_values_,
-                      "recommended", false);
+                      "recommended", false, false);
 
   // Verify notifications when mandatory values come into effect.
   StartObserving();
@@ -609,20 +618,21 @@ IN_PROC_BROWSER_TEST_F(PreferencesBrowserTest, NotificationsOnBackendChanges) {
                   policy::POLICY_LEVEL_MANDATORY);
   FinishObserving(&observed_json);
   VerifyObservedPrefs(observed_json, pref_names_, non_default_values_,
-                      "policy", true);
+                      "policy", true, false);
 
   // Verify notifications when default values come into effect.
   StartObserving();
   ClearUserPolicies();
   FinishObserving(&observed_json);
-  VerifyObservedPrefs(observed_json, pref_names_, default_values_, "", false);
+  VerifyObservedPrefs(observed_json, pref_names_, default_values_,
+                      "", false, false);
 
   // Verify notifications when user-modified values come into effect.
   StartObserving();
   SetUserValues(pref_names_, non_default_values_);
   FinishObserving(&observed_json);
   VerifyObservedPrefs(observed_json, pref_names_, non_default_values_,
-                      "", false);
+                      "", false, false);
 }
 
 #if defined(OS_CHROMEOS)
@@ -673,7 +683,8 @@ IN_PROC_BROWSER_TEST_F(PreferencesBrowserTest, ChromeOSDeviceFetchPrefs) {
 
   // Verify notifications when default values are in effect.
   SetupJavaScriptTestEnvironment(pref_names_, &observed_json);
-  VerifyObservedPrefs(observed_json, pref_names_, default_values_, "", true);
+  VerifyObservedPrefs(observed_json, pref_names_, default_values_,
+                      "", true, false);
 
   // Verify notifications when mandatory values are in effect.
   chromeos::CrosSettings* cros_settings = chromeos::CrosSettings::Get();
@@ -684,7 +695,7 @@ IN_PROC_BROWSER_TEST_F(PreferencesBrowserTest, ChromeOSDeviceFetchPrefs) {
   // decorated with "controlledBy: policy".
   SetupJavaScriptTestEnvironment(pref_names_, &observed_json);
   VerifyObservedPrefs(observed_json, pref_names_, decorated_non_default_values,
-                      "", true);
+                      "", true, false);
 
   DeleteValues(decorated_non_default_values);
 }
@@ -720,7 +731,8 @@ IN_PROC_BROWSER_TEST_F(PreferencesBrowserTest, ChromeOSProxyFetchPrefs) {
 
   // Verify notifications when default values are in effect.
   SetupJavaScriptTestEnvironment(pref_names_, &observed_json);
-  VerifyObservedPrefs(observed_json, pref_names_, default_values_, "", false);
+  VerifyObservedPrefs(observed_json, pref_names_, default_values_,
+                      "", false, false);
 
   // Verify notifications when user-modified values are in effect.
   Profile* profile = browser()->profile();
@@ -730,7 +742,7 @@ IN_PROC_BROWSER_TEST_F(PreferencesBrowserTest, ChromeOSProxyFetchPrefs) {
         profile, pref_names_[i], non_default_values_[i]->DeepCopy());
   SetupJavaScriptTestEnvironment(pref_names_, &observed_json);
   VerifyObservedPrefs(observed_json, pref_names_, non_default_values_,
-                      "", false);
+                      "", false, false);
 }
 
 #endif

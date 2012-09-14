@@ -206,7 +206,7 @@ cr.define('options', function() {
      * @param {*} value New preference value.
      * @private
      */
-     setPrefNoCommit_: function(name, type, value) {
+    setPrefNoCommit_: function(name, type, value) {
       var pref = this.registeredPreferences_[name];
       pref.action = 'set';
       pref.type = type;
@@ -218,6 +218,7 @@ cr.define('options', function() {
         value: value,
         recommendedValue: pref.orig.recommendedValue,
         disabled: pref.orig.disabled,
+        uncommitted: true,
       };
       this.dispatchEvent(event);
     },
@@ -241,6 +242,7 @@ cr.define('options', function() {
         controlledBy: 'recommended',
         recommendedValue: pref.orig.recommendedValue,
         disabled: pref.orig.disabled,
+        uncommitted: true,
       };
       this.dispatchEvent(event);
     },
@@ -301,6 +303,7 @@ cr.define('options', function() {
 
       var event = new cr.Event(name);
       event.value = pref.orig;
+      event.value.uncommitted = true;
       this.dispatchEvent(event);
     }
   };

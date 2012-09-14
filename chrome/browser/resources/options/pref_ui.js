@@ -60,6 +60,8 @@ cr.define('options', function() {
 
       // Listen for pref changes.
       Preferences.getInstance().addEventListener(this.pref, function(event) {
+        if (event.value.uncommitted && !self.dialogPref)
+          return;
         self.updateStateFromPref_(event);
         updateDisabledState_(self, 'notUserModifiable', event.value.disabled);
         self.controlledBy = event.value.controlledBy;
@@ -132,7 +134,7 @@ cr.define('options', function() {
 
   /**
    * Whether the associated preference is controlled by a source other than the
-   * user's setting (can be 'policy', 'extension' or 'recommended').
+   * user's setting (can be 'policy', 'extension', 'recommended' or unset).
    * @type {string}
    */
   cr.defineProperty(PrefInputElement, 'controlledBy', cr.PropertyKind.ATTR);
@@ -507,7 +509,7 @@ cr.define('options', function() {
 
   /**
    * Whether the associated preference is controlled by a source other than the
-   * user's setting (can be 'policy', 'extension' or 'recommended').
+   * user's setting (can be 'policy', 'extension', 'recommended' or unset).
    * @type {string}
    */
   cr.defineProperty(PrefButton, 'controlledBy', cr.PropertyKind.ATTR);
