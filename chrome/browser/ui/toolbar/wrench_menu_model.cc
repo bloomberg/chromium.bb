@@ -497,7 +497,6 @@ void WrenchMenuModel::Build() {
 
 #endif  // else of defined(OS_WIN)
 
-  AddItemWithStringId(IDC_PIN_TO_START_SCREEN, IDS_PIN_TO_START_SCREEN);
   bookmark_sub_menu_model_.reset(new BookmarkSubMenuModel(this, browser_));
   AddSubMenuWithStringId(IDC_BOOKMARKS_MENU, IDS_BOOKMARKS_MENU,
                          bookmark_sub_menu_model_.get());
