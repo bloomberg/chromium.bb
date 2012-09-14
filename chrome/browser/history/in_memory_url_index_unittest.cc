@@ -186,6 +186,7 @@ void InMemoryURLIndexTest::SetUp() {
   profile_.CreateBookmarkModel(true);
   profile_.BlockUntilBookmarkModelLoaded();
   profile_.BlockUntilHistoryProcessesPendingRequests();
+  profile_.BlockUntilHistoryIndexIsRefreshed();
   HistoryService* history_service =
       HistoryServiceFactory::GetForProfile(&profile_,
                                            Profile::EXPLICIT_ACCESS);
