@@ -9,18 +9,17 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "base/command_line.h"
 #include "base/eintr_wrapper.h"
 #include "base/file_path.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "remoting/proto/audio.pb.h"
+#include "remoting/host/chromoting_host_context.h"
 
 namespace remoting {
 
 namespace {
-
-const char kAudioPipeOptionName[] = "audio-pipe-name";
 
 // PulseAudio's module-pipe-sink must be configured to use the following
 // parameters for the sink we read from.
@@ -36,6 +35,12 @@ const int kCapturingPeriodMs = 40;
 // to compile this code on machines with older kernel.
 #define F_SETPIPE_SZ 1031
 #endif  // defined(F_SETPIPE_SZ)
+
+// Pipename used to capture audio stream from.
+// TODO(sergeyu): Pass this to AudioCapturerLinux constructor once we have
+// Linux-specific DesktopEnvironmentFactory
+base::LazyInstance<FilePath>::Leaky
+    g_audio_pipe_name = LAZY_INSTANCE_INITIALIZER;
 
 const int IsPacketOfSilence(const std::string& data) {
   const int64* int_buf = reinterpret_cast<const int64*>(data.data());
@@ -175,14 +180,16 @@ void AudioCapturerLinux::WaitForPipeReadable() {
       &file_descriptor_watcher_, this);
 }
 
+void AudioCapturerLinux::SetPipeName(const FilePath& pipe_name) {
+  g_audio_pipe_name.Get() = pipe_name;
+}
+
 bool AudioCapturer::IsSupported() {
-  CommandLine* cl = CommandLine::ForCurrentProcess();
-  return !cl->GetSwitchValuePath(kAudioPipeOptionName).empty();
+  return !g_audio_pipe_name.Get().empty();
 }
 
 scoped_ptr<AudioCapturer> AudioCapturer::Create() {
-  CommandLine* cl = CommandLine::ForCurrentProcess();
-  FilePath path = cl->GetSwitchValuePath(kAudioPipeOptionName);
+  FilePath path = g_audio_pipe_name.Get();
   if (path.empty())
     return scoped_ptr<AudioCapturer>();
   return scoped_ptr<AudioCapturer>(new AudioCapturerLinux(path));

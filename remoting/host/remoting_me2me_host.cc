@@ -68,9 +68,9 @@
 #include "remoting/host/curtain_mode_mac.h"
 #endif  // defined(OS_MACOSX)
 
-#if defined(OS_POSIX)
-#include <signal.h>
-#endif  // defined(OS_POSIX)
+#if defined(OS_LINUX)
+#include "remoting/host/audio_capturer_linux.h"
+#endif  // defined(OS_LINUX)
 
 // N.B. OS_WIN is defined by including src/base headers.
 #if defined(OS_WIN)
@@ -92,6 +92,10 @@ const char kDaemonIpcSwitchName[] = "daemon-pipe";
 
 // The command line switch used to get version of the daemon.
 const char kVersionSwitchName[] = "version";
+
+// The command line switch used to pass name of the pipe to capture audio on
+// linux.
+const char kAudioPipeSwitchName[] = "audio-pipe-name";
 
 const char kUnofficialOAuth2ClientId[] =
     "440925447803-2pi3v45bff6tp1rde2f7q6lgbor3o5uj.apps.googleusercontent.com";
@@ -709,8 +713,8 @@ class HostProcess
   int exit_code_;
 
 #if defined(OS_MACOSX)
-    remoting::CurtainMode curtain_;
-#endif
+  remoting::CurtainMode curtain_;
+#endif  // defined(OS_MACOSX)
 };
 
 }  // namespace remoting
@@ -758,10 +762,6 @@ int main(int argc, char** argv) {
   // single-threaded.
   net::EnableSSLServerSockets();
 
-#if defined(OS_LINUX)
-  remoting::VideoFrameCapturer::EnableXDamage(true);
-#endif
-
   // Create the main message loop and start helper threads.
   MessageLoop message_loop(MessageLoop::TYPE_UI);
   base::Closure quit_message_loop = base::Bind(&QuitMessageLoop, &message_loop);
@@ -769,6 +769,15 @@ int main(int argc, char** argv) {
       new remoting::ChromotingHostContext(
           new remoting::AutoThreadTaskRunner(message_loop.message_loop_proxy(),
                                              quit_message_loop)));
+
+#if defined(OS_LINUX)
+  // TODO(sergeyu): Pass configuration parameters to the Linux-specific version
+  // of DesktopEnvironmentFactory when we have it.
+  remoting::VideoFrameCapturer::EnableXDamage(true);
+  remoting::AudioCapturerLinux::SetPipeName(CommandLine::ForCurrentProcess()->
+      GetSwitchValuePath(kAudioPipeSwitchName));
+#endif  // defined(OS_LINUX)
+
   if (!context->Start())
     return remoting::kHostInitializationFailed;
 

@@ -18,6 +18,10 @@ namespace remoting {
 class AudioCapturerLinux : public AudioCapturer,
                            public MessageLoopForIO::Watcher {
  public:
+  // Must be called to configure the capturer before the first instance is
+  // created.
+  static void SetPipeName(const FilePath& pipe_name);
+
   explicit AudioCapturerLinux(const FilePath& pipe_name);
   virtual ~AudioCapturerLinux();
 
