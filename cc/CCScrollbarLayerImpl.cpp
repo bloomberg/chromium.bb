@@ -15,7 +15,7 @@
 using WebKit::WebRect;
 using WebKit::WebScrollbar;
 
-namespace WebCore {
+namespace cc {
 
 PassOwnPtr<CCScrollbarLayerImpl> CCScrollbarLayerImpl::create(int id)
 {

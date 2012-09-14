@@ -9,7 +9,7 @@
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 
-namespace WebCore {
+namespace cc {
 
 // This subclass wraps an existing scrollbar geometry class so that
 // another class can derive from it and override specific functions, while

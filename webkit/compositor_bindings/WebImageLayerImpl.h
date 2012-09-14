@@ -8,10 +8,6 @@
 #include <public/WebImageLayer.h>
 #include <wtf/OwnPtr.h>
 
-namespace WebCore {
-class ImageLayerChromium;
-}
-
 namespace WebKit {
 class WebLayerImpl;
 

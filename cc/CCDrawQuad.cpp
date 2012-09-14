@@ -16,7 +16,7 @@
 #include "CCYUVVideoDrawQuad.h"
 #include "IntRect.h"
 
-namespace WebCore {
+namespace cc {
 
 CCDrawQuad::CCDrawQuad(const CCSharedQuadState* sharedQuadState, Material material, const IntRect& quadRect)
     : m_sharedQuadState(sharedQuadState)

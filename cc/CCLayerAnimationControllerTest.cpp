@@ -14,7 +14,7 @@
 #include <public/WebTransformationMatrix.h>
 #include <wtf/Vector.h>
 
-using namespace WebCore;
+using namespace cc;
 using namespace WebKitTests;
 using WebKit::WebTransformationMatrix;
 

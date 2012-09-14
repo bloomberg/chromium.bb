@@ -22,7 +22,7 @@
 
 using WebKit::WebTransformationMatrix;
 
-namespace WebCore {
+namespace cc {
 
 static const int debugSurfaceBorderWidth = 2;
 static const int debugSurfaceBorderAlpha = 100;

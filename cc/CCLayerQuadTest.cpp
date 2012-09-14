@@ -8,7 +8,7 @@
 
 #include <gtest/gtest.h>
 
-using namespace WebCore;
+using namespace cc;
 
 namespace {
 

@@ -9,7 +9,7 @@
 
 #include "CCLayerQuad.h"
 
-namespace WebCore {
+namespace cc {
 
 CCLayerQuad::Edge::Edge(const FloatPoint& p, const FloatPoint& q)
 {
@@ -61,6 +61,6 @@ void CCLayerQuad::toFloatArray(float flattened[12]) const
     flattened[11] = m_bottom.z();
 }
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // USE(ACCELERATED_COMPOSITING)

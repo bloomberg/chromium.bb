@@ -23,7 +23,7 @@
 #include <gtest/gtest.h>
 #include <public/WebTransformationMatrix.h>
 
-using namespace WebCore;
+using namespace cc;
 using namespace WebKitTests;
 using WebKit::WebTransformationMatrix;
 

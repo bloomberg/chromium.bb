@@ -16,7 +16,7 @@
 #include <public/WebThread.h>
 #include <wtf/RefPtr.h>
 
-using namespace WebCore;
+using namespace cc;
 using namespace WebKit;
 using namespace WebKitTests;
 using testing::Test;
@@ -59,7 +59,7 @@ public:
 
     virtual void beginUploads() OVERRIDE;
     virtual void endUploads() OVERRIDE;
-    virtual void uploadTexture(WebCore::CCResourceProvider*, Parameters) OVERRIDE;
+    virtual void uploadTexture(cc::CCResourceProvider*, Parameters) OVERRIDE;
 
 private:
     CCTextureUpdateControllerTest* m_test;
@@ -233,7 +233,7 @@ void TextureUploaderForUploadTest::endUploads()
     m_test->onEndUploads();
 }
 
-void TextureUploaderForUploadTest::uploadTexture(WebCore::CCResourceProvider*, Parameters)
+void TextureUploaderForUploadTest::uploadTexture(cc::CCResourceProvider*, Parameters)
 {
     m_test->onUpload();
 }
@@ -518,7 +518,7 @@ TEST_F(CCTextureUpdateControllerTest, TripleUpdateFinalUpdateAllPartial)
     EXPECT_EQ(kFullUploads + kPartialUploads, m_numTotalUploads);
 }
 
-class FakeCCTextureUpdateControllerClient : public WebCore::CCTextureUpdateControllerClient {
+class FakeCCTextureUpdateControllerClient : public cc::CCTextureUpdateControllerClient {
 public:
     FakeCCTextureUpdateControllerClient() { reset(); }
     void reset() { m_completedCalled = false; }
@@ -530,9 +530,9 @@ protected:
     bool m_completedCalled;
 };
 
-class FakeCCTextureUpdateController : public WebCore::CCTextureUpdateController {
+class FakeCCTextureUpdateController : public cc::CCTextureUpdateController {
 public:
-    static PassOwnPtr<FakeCCTextureUpdateController> create(WebCore::CCTextureUpdateControllerClient* client, WebCore::CCThread* thread, PassOwnPtr<CCTextureUpdateQueue> queue, CCResourceProvider* resourceProvider, TextureCopier* copier, TextureUploader* uploader)
+    static PassOwnPtr<FakeCCTextureUpdateController> create(cc::CCTextureUpdateControllerClient* client, cc::CCThread* thread, PassOwnPtr<CCTextureUpdateQueue> queue, CCResourceProvider* resourceProvider, TextureCopier* copier, TextureUploader* uploader)
     {
         return adoptPtr(new FakeCCTextureUpdateController(client, thread, queue, resourceProvider, copier, uploader));
     }
@@ -545,8 +545,8 @@ public:
     virtual size_t updateMoreTexturesSize() const OVERRIDE { return m_updateMoreTexturesSize; }
 
 protected:
-    FakeCCTextureUpdateController(WebCore::CCTextureUpdateControllerClient* client, WebCore::CCThread* thread, PassOwnPtr<CCTextureUpdateQueue> queue, CCResourceProvider* resourceProvider, TextureCopier* copier, TextureUploader* uploader)
-        : WebCore::CCTextureUpdateController(client, thread, queue, resourceProvider, copier, uploader)
+    FakeCCTextureUpdateController(cc::CCTextureUpdateControllerClient* client, cc::CCThread* thread, PassOwnPtr<CCTextureUpdateQueue> queue, CCResourceProvider* resourceProvider, TextureCopier* copier, TextureUploader* uploader)
+        : cc::CCTextureUpdateController(client, thread, queue, resourceProvider, copier, uploader)
         , m_monotonicTimeNow(0)
         , m_updateMoreTexturesTime(0)
         , m_updateMoreTexturesSize(0) { }

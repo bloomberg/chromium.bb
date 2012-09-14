@@ -8,7 +8,7 @@
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>
 
-namespace WebCore {
+namespace cc {
 
 template<typename T>
 class CCThreadTask0 : public CCThread::Task {
@@ -300,6 +300,6 @@ PassOwnPtr<CCThread::Task> createCCThreadTask(
 
 }
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // CCThreadTask_h

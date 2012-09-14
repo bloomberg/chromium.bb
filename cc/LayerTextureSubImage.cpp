@@ -16,7 +16,7 @@
 
 using WebKit::WebGraphicsContext3D;
 
-namespace WebCore {
+namespace cc {
 
 LayerTextureSubImage::LayerTextureSubImage(bool useMapTexSubImage)
     : m_useMapTexSubImage(useMapTexSubImage)
@@ -112,6 +112,6 @@ void LayerTextureSubImage::uploadWithMapTexSubImage(const uint8_t* image, const 
     GLC(context, context->unmapTexSubImage2DCHROMIUM(pixelDest));
 }
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // USE(ACCELERATED_COMPOSITING)

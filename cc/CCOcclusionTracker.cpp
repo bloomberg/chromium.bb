@@ -17,7 +17,7 @@
 using namespace std;
 using WebKit::WebTransformationMatrix;
 
-namespace WebCore {
+namespace cc {
 
 template<typename LayerType, typename RenderSurfaceType>
 CCOcclusionTrackerBase<LayerType, RenderSurfaceType>::CCOcclusionTrackerBase(IntRect rootTargetRect, bool recordMetricsForFrame)
@@ -127,7 +127,7 @@ static inline Region transformSurfaceOpaqueRegion(const RenderSurfaceType* surfa
 
     Region transformedRegion;
 
-    Vector<IntRect> rects = region.rects();
+    Vector<WebCore::IntRect> rects = region.rects();
     for (size_t i = 0; i < rects.size(); ++i) {
         // We've already checked for clipping in the mapQuad call above, these calls should not clip anything further.
         IntRect transformedRect = enclosedIntRect(CCMathUtil::mapClippedRect(transform, FloatRect(rects[i])));
@@ -144,11 +144,11 @@ static inline void reduceOcclusion(const IntRect& affectedArea, const IntRect& e
         return;
 
     Region affectedOcclusion = intersect(occlusion, affectedArea);
-    Vector<IntRect> affectedOcclusionRects = affectedOcclusion.rects();
+    Vector<WebCore::IntRect> affectedOcclusionRects = affectedOcclusion.rects();
 
     occlusion.subtract(affectedArea);
     for (size_t j = 0; j < affectedOcclusionRects.size(); ++j) {
-        IntRect& occlusionRect = affectedOcclusionRects[j];
+        WebCore::IntRect& occlusionRect = affectedOcclusionRects[j];
 
         // Shrink the rect by expanding the non-opaque pixels outside the rect.
 
@@ -255,7 +255,7 @@ static inline void addOcclusionBehindLayer(Region& region, const LayerType* laye
     if (clipped || !visibleTransformedQuad.isRectilinear())
         return;
 
-    Vector<IntRect> contentRects = opaqueContents.rects();
+    Vector<WebCore::IntRect> contentRects = opaqueContents.rects();
     for (size_t i = 0; i < contentRects.size(); ++i) {
         // We've already checked for clipping in the mapQuad call above, these calls should not clip anything further.
         IntRect transformedRect = enclosedIntRect(CCMathUtil::mapClippedRect(transform, FloatRect(contentRects[i])));
@@ -478,5 +478,5 @@ template IntRect CCOcclusionTrackerBase<CCLayerImpl, CCRenderSurface>::unocclude
 template IntRect CCOcclusionTrackerBase<CCLayerImpl, CCRenderSurface>::layerClipRectInTarget(const CCLayerImpl*) const;
 
 
-} // namespace WebCore
+} // namespace cc
 #endif // USE(ACCELERATED_COMPOSITING)

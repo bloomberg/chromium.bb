@@ -13,7 +13,7 @@
 
 class SkCanvas;
 
-namespace WebCore {
+namespace cc {
 
 class LayerPainterChromium;
 
@@ -43,6 +43,6 @@ private:
     bool m_layerIsOpaque;
 };
 
-} // namespace WebCore
+} // namespace cc
 #endif // USE(ACCELERATED_COMPOSITING)
 #endif // SkPictureCanvasLayerTextureUpdater_h

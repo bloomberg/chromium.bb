@@ -12,7 +12,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-using namespace WebCore;
+using namespace cc;
 using ::testing::Mock;
 using ::testing::_;
 using ::testing::AtLeast;

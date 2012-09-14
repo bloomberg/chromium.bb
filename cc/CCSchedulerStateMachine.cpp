@@ -8,7 +8,7 @@
 #include "base/stringprintf.h"
 
 
-namespace WebCore {
+namespace cc {
 
 CCSchedulerStateMachine::CCSchedulerStateMachine()
     : m_commitState(COMMIT_STATE_IDLE)

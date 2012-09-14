@@ -10,7 +10,7 @@
 #include <wtf/PassOwnPtr.h>
 #include <wtf/Vector.h>
 
-namespace WebCore {
+namespace cc {
 
 struct CCAnimationEvent {
     enum Type { Started, Finished };
@@ -33,6 +33,6 @@ struct CCAnimationEvent {
 
 typedef Vector<CCAnimationEvent> CCAnimationEventsVector;
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // CCAnimationEvents_h

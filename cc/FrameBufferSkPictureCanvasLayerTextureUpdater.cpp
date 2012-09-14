@@ -19,7 +19,7 @@
 using WebKit::WebGraphicsContext3D;
 using WebKit::WebSharedGraphicsContext3D;
 
-namespace WebCore {
+namespace cc {
 
 static PassOwnPtr<SkCanvas> createAcceleratedCanvas(GrContext* grContext,
                                                     IntSize canvasSize,
@@ -115,5 +115,5 @@ void FrameBufferSkPictureCanvasLayerTextureUpdater::updateTextureRect(WebGraphic
     context->flush();
 }
 
-} // namespace WebCore
+} // namespace cc
 #endif // USE(ACCELERATED_COMPOSITING)

@@ -15,22 +15,22 @@ namespace WebKitTests {
 
 // A subclass to expose the total current occlusion.
 template<typename LayerType, typename RenderSurfaceType>
-class TestCCOcclusionTrackerBase : public WebCore::CCOcclusionTrackerBase<LayerType, RenderSurfaceType> {
+class TestCCOcclusionTrackerBase : public cc::CCOcclusionTrackerBase<LayerType, RenderSurfaceType> {
 public:
-    TestCCOcclusionTrackerBase(WebCore::IntRect screenScissorRect, bool recordMetricsForFrame = false)
-        : WebCore::CCOcclusionTrackerBase<LayerType, RenderSurfaceType>(screenScissorRect, recordMetricsForFrame)
+    TestCCOcclusionTrackerBase(cc::IntRect screenScissorRect, bool recordMetricsForFrame = false)
+        : cc::CCOcclusionTrackerBase<LayerType, RenderSurfaceType>(screenScissorRect, recordMetricsForFrame)
     {
     }
 
-    WebCore::Region occlusionInScreenSpace() const { return WebCore::CCOcclusionTrackerBase<LayerType, RenderSurfaceType>::m_stack.last().occlusionInScreen; }
-    WebCore::Region occlusionInTargetSurface() const { return WebCore::CCOcclusionTrackerBase<LayerType, RenderSurfaceType>::m_stack.last().occlusionInTarget; }
+    cc::Region occlusionInScreenSpace() const { return cc::CCOcclusionTrackerBase<LayerType, RenderSurfaceType>::m_stack.last().occlusionInScreen; }
+    cc::Region occlusionInTargetSurface() const { return cc::CCOcclusionTrackerBase<LayerType, RenderSurfaceType>::m_stack.last().occlusionInTarget; }
 
-    void setOcclusionInScreenSpace(const WebCore::Region& region) { WebCore::CCOcclusionTrackerBase<LayerType, RenderSurfaceType>::m_stack.last().occlusionInScreen = region; }
-    void setOcclusionInTargetSurface(const WebCore::Region& region) { WebCore::CCOcclusionTrackerBase<LayerType, RenderSurfaceType>::m_stack.last().occlusionInTarget = region; }
+    void setOcclusionInScreenSpace(const cc::Region& region) { cc::CCOcclusionTrackerBase<LayerType, RenderSurfaceType>::m_stack.last().occlusionInScreen = region; }
+    void setOcclusionInTargetSurface(const cc::Region& region) { cc::CCOcclusionTrackerBase<LayerType, RenderSurfaceType>::m_stack.last().occlusionInTarget = region; }
 };
 
-typedef TestCCOcclusionTrackerBase<WebCore::LayerChromium, WebCore::RenderSurfaceChromium> TestCCOcclusionTracker;
-typedef TestCCOcclusionTrackerBase<WebCore::CCLayerImpl, WebCore::CCRenderSurface> TestCCOcclusionTrackerImpl;
+typedef TestCCOcclusionTrackerBase<cc::LayerChromium, cc::RenderSurfaceChromium> TestCCOcclusionTracker;
+typedef TestCCOcclusionTrackerBase<cc::CCLayerImpl, cc::CCRenderSurface> TestCCOcclusionTrackerImpl;
 
 }
 

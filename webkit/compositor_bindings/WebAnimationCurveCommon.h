@@ -8,12 +8,12 @@
 #include <public/WebAnimationCurve.h>
 #include <wtf/Forward.h>
 
-namespace WebCore {
+namespace cc {
 class CCTimingFunction;
 }
 
 namespace WebKit {
-PassOwnPtr<WebCore::CCTimingFunction> createTimingFunction(WebAnimationCurve::TimingFunctionType);
+PassOwnPtr<cc::CCTimingFunction> createTimingFunction(WebAnimationCurve::TimingFunctionType);
 }
 
 #endif // WebAnimationCurveCommon_h

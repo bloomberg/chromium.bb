@@ -13,7 +13,7 @@
 #undef NO_ERROR
 #endif
 
-namespace WebCore {
+namespace cc {
 
 class GraphicsContext3D {
 public:
@@ -72,4 +72,3 @@ public:
 }
 
 #endif  // CC_STUBS_GRAPHICSCONTEXT3D_H_
-

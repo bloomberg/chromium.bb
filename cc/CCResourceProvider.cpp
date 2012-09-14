@@ -22,7 +22,7 @@
 
 using WebKit::WebGraphicsContext3D;
 
-namespace WebCore {
+namespace cc {
 
 static GC3Denum textureToStorageFormat(GC3Denum textureFormat)
 {

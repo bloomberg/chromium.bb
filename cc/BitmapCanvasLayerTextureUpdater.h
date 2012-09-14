@@ -12,7 +12,7 @@
 
 class SkCanvas;
 
-namespace WebCore {
+namespace cc {
 
 class LayerPainterChromium;
 
@@ -52,6 +52,6 @@ private:
     bool m_opaque;
 };
 
-} // namespace WebCore
+} // namespace cc
 #endif // USE(ACCELERATED_COMPOSITING)
 #endif // BitmapCanvasLayerTextureUpdater_h

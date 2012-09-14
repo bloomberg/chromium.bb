@@ -10,6 +10,7 @@
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 
+using namespace cc;
 using namespace WebCore;
 using namespace WebKit;
 
@@ -33,4 +34,3 @@ TEST(FakeGraphicsContext3DTest, ContextCreationShouldNotMakeCurrent)
     EXPECT_TRUE(context);
     EXPECT_EQ(0, context->makeCurrentCount());
 }
-

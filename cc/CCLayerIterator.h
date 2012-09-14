@@ -11,7 +11,7 @@
 #include <wtf/RefPtr.h>
 #include <wtf/Vector.h>
 
-namespace WebCore {
+namespace cc {
 
 // These classes provide means to iterate over the RenderSurface-Layer tree.
 
@@ -205,6 +205,6 @@ struct CCLayerIteratorActions {
     };
 };
 
-} // namespace WebCore
+} // namespace cc
 
 #endif

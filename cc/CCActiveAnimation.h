@@ -9,7 +9,7 @@
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 
-namespace WebCore {
+namespace cc {
 
 class CCAnimationCurve;
 
@@ -156,6 +156,6 @@ private:
     bool m_isControllingInstance;
 };
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // CCActiveAnimation_h

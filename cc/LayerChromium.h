@@ -29,7 +29,7 @@ class WebAnimationDelegate;
 class WebLayerScrollClient;
 }
 
-namespace WebCore {
+namespace cc {
 
 class CCActiveAnimation;
 struct CCAnimationEvent;

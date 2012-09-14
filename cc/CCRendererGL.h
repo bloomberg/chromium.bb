@@ -27,7 +27,7 @@ namespace WebKit {
 class WebGraphicsContext3D;
 }
 
-namespace WebCore {
+namespace cc {
 
 class CCScopedTexture;
 class GeometryBinding;

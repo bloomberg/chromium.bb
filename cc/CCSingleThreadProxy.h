@@ -11,7 +11,7 @@
 #include <limits>
 #include <wtf/OwnPtr.h>
 
-namespace WebCore {
+namespace cc {
 
 class CCLayerTreeHost;
 
@@ -125,6 +125,6 @@ private:
     DebugScopedSetMainThreadBlocked m_mainThreadBlocked;
 };
 
-} // namespace WebCore
+} // namespace cc
 
 #endif

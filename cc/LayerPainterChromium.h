@@ -10,7 +10,7 @@
 
 class SkCanvas;
 
-namespace WebCore {
+namespace cc {
 
 class FloatRect;
 class IntRect;
@@ -21,7 +21,6 @@ public:
     virtual void paint(SkCanvas*, const IntRect& contentRect, FloatRect& opaque) = 0;
 };
 
-} // namespace WebCore
+} // namespace cc
 #endif // USE(ACCELERATED_COMPOSITING)
 #endif // LayerPainterChromium_h
-

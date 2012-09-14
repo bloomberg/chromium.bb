@@ -12,7 +12,7 @@
 #include "TraceEvent.h"
 #include <public/WebGraphicsContext3D.h>
 
-namespace WebCore {
+namespace cc {
 
 class RateLimiter::Task : public CCThread::Task {
 public:

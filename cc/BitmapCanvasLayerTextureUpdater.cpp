@@ -13,7 +13,7 @@
 #include "PlatformColor.h"
 #include "skia/ext/platform_canvas.h"
 
-namespace WebCore {
+namespace cc {
 
 BitmapCanvasLayerTextureUpdater::Texture::Texture(BitmapCanvasLayerTextureUpdater* textureUpdater, PassOwnPtr<CCPrioritizedTexture> texture)
     : LayerTextureUpdater::Texture(texture)
@@ -85,5 +85,5 @@ void BitmapCanvasLayerTextureUpdater::setOpaque(bool opaque)
     m_opaque = opaque;
 }
 
-} // namespace WebCore
+} // namespace cc
 #endif // USE(ACCELERATED_COMPOSITING)

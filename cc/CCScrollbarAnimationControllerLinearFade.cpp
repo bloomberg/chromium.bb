@@ -8,7 +8,7 @@
 
 #include "CCScrollbarLayerImpl.h"
 
-namespace WebCore {
+namespace cc {
 
 PassOwnPtr<CCScrollbarAnimationControllerLinearFade> CCScrollbarAnimationControllerLinearFade::create(CCLayerImpl* scrollLayer, double fadeoutDelay, double fadeoutLength)
 {
@@ -74,5 +74,4 @@ float CCScrollbarAnimationControllerLinearFade::opacityAtTime(double monotonicTi
     return 0;
 }
 
-} // namespace WebCore
-
+} // namespace cc

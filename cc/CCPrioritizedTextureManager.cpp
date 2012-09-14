@@ -14,7 +14,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace cc {
 
 CCPrioritizedTextureManager::CCPrioritizedTextureManager(size_t maxMemoryLimitBytes, int, int pool)
     : m_maxMemoryLimitBytes(maxMemoryLimitBytes)
@@ -362,4 +362,4 @@ void CCPrioritizedTextureManager::assertInvariants()
 #endif
 
 
-} // namespace WebCore
+} // namespace cc

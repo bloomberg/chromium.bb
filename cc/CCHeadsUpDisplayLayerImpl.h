@@ -11,7 +11,7 @@
 
 class SkCanvas;
 
-namespace WebCore {
+namespace cc {
 
 class CCDebugRectHistory;
 class CCFontAtlas;

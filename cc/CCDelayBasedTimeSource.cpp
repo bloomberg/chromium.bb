@@ -11,7 +11,7 @@
 #include <wtf/CurrentTime.h>
 #include <wtf/MathExtras.h>
 
-namespace WebCore {
+namespace cc {
 
 namespace {
 

@@ -9,8 +9,8 @@
 #include <public/Platform.h>
 #include <public/WebThread.h>
 
-using WebCore::CCThread;
-using WebCore::CCCompletionEvent;
+using cc::CCThread;
+using cc::CCCompletionEvent;
 
 namespace WebKit {
 

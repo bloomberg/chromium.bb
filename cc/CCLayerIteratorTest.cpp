@@ -12,7 +12,7 @@
 #include <gtest/gtest.h>
 #include <public/WebTransformationMatrix.h>
 
-using namespace WebCore;
+using namespace cc;
 using WebKit::WebTransformationMatrix;
 using ::testing::Mock;
 using ::testing::_;
@@ -38,8 +38,8 @@ private:
         , m_drawsContent(true)
     {
         setBounds(IntSize(100, 100));
-        setPosition(IntPoint::zero());
-        setAnchorPoint(IntPoint::zero());
+        setPosition(IntPoint());
+        setAnchorPoint(IntPoint());
     }
 
     bool m_drawsContent;

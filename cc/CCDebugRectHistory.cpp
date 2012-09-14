@@ -12,7 +12,7 @@
 #include "CCLayerTreeHost.h"
 #include "CCMathUtil.h"
 
-namespace WebCore {
+namespace cc {
 
 CCDebugRectHistory::CCDebugRectHistory()
 {
@@ -111,6 +111,6 @@ void CCDebugRectHistory::saveOccludingRects(const Vector<IntRect>& occludingRect
         m_debugRects.append(CCDebugRect(OccludingRectType, occludingRects[i]));
 }
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // USE(ACCELERATED_COMPOSITING)

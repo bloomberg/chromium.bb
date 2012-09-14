@@ -156,7 +156,7 @@ TEST(WebTransformAnimationCurveTest, EaseTimingFunction)
     curve->add(WebTransformKeyframe(0, operations1), WebAnimationCurve::TimingFunctionTypeEase);
     curve->add(WebTransformKeyframe(1, operations2), WebAnimationCurve::TimingFunctionTypeLinear);
 
-    OwnPtr<WebCore::CCTimingFunction> timingFunction(WebCore::CCEaseTimingFunction::create());
+    OwnPtr<cc::CCTimingFunction> timingFunction(cc::CCEaseTimingFunction::create());
     for (int i = 0; i <= 4; ++i) {
         const double time = i * 0.25;
         EXPECT_FLOAT_EQ(timingFunction->getValue(time), curve->getValue(time).m41());
@@ -191,7 +191,7 @@ TEST(WebTransformAnimationCurveTest, EaseInTimingFunction)
     curve->add(WebTransformKeyframe(0, operations1), WebAnimationCurve::TimingFunctionTypeEaseIn);
     curve->add(WebTransformKeyframe(1, operations2), WebAnimationCurve::TimingFunctionTypeLinear);
 
-    OwnPtr<WebCore::CCTimingFunction> timingFunction(WebCore::CCEaseInTimingFunction::create());
+    OwnPtr<cc::CCTimingFunction> timingFunction(cc::CCEaseInTimingFunction::create());
     for (int i = 0; i <= 4; ++i) {
         const double time = i * 0.25;
         EXPECT_FLOAT_EQ(timingFunction->getValue(time), curve->getValue(time).m41());
@@ -209,7 +209,7 @@ TEST(WebTransformAnimationCurveTest, EaseOutTimingFunction)
     curve->add(WebTransformKeyframe(0, operations1), WebAnimationCurve::TimingFunctionTypeEaseOut);
     curve->add(WebTransformKeyframe(1, operations2), WebAnimationCurve::TimingFunctionTypeLinear);
 
-    OwnPtr<WebCore::CCTimingFunction> timingFunction(WebCore::CCEaseOutTimingFunction::create());
+    OwnPtr<cc::CCTimingFunction> timingFunction(cc::CCEaseOutTimingFunction::create());
     for (int i = 0; i <= 4; ++i) {
         const double time = i * 0.25;
         EXPECT_FLOAT_EQ(timingFunction->getValue(time), curve->getValue(time).m41());
@@ -227,7 +227,7 @@ TEST(WebTransformAnimationCurveTest, EaseInOutTimingFunction)
     curve->add(WebTransformKeyframe(0, operations1), WebAnimationCurve::TimingFunctionTypeEaseInOut);
     curve->add(WebTransformKeyframe(1, operations2), WebAnimationCurve::TimingFunctionTypeLinear);
 
-    OwnPtr<WebCore::CCTimingFunction> timingFunction(WebCore::CCEaseInOutTimingFunction::create());
+    OwnPtr<cc::CCTimingFunction> timingFunction(cc::CCEaseInOutTimingFunction::create());
     for (int i = 0; i <= 4; ++i) {
         const double time = i * 0.25;
         EXPECT_FLOAT_EQ(timingFunction->getValue(time), curve->getValue(time).m41());
@@ -249,7 +249,7 @@ TEST(WebTransformAnimationCurveTest, CustomBezierTimingFunction)
     curve->add(WebTransformKeyframe(0, operations1), x1, y1, x2, y2);
     curve->add(WebTransformKeyframe(1, operations2), WebAnimationCurve::TimingFunctionTypeLinear);
 
-    OwnPtr<WebCore::CCTimingFunction> timingFunction(WebCore::CCCubicBezierTimingFunction::create(x1, y1, x2, y2));
+    OwnPtr<cc::CCTimingFunction> timingFunction(cc::CCCubicBezierTimingFunction::create(x1, y1, x2, y2));
     for (int i = 0; i <= 4; ++i) {
         const double time = i * 0.25;
         EXPECT_FLOAT_EQ(timingFunction->getValue(time), curve->getValue(time).m41());
@@ -267,7 +267,7 @@ TEST(WebTransformAnimationCurveTest, DefaultTimingFunction)
     curve->add(WebTransformKeyframe(0, operations1));
     curve->add(WebTransformKeyframe(1, operations2), WebAnimationCurve::TimingFunctionTypeLinear);
 
-    OwnPtr<WebCore::CCTimingFunction> timingFunction(WebCore::CCEaseTimingFunction::create());
+    OwnPtr<cc::CCTimingFunction> timingFunction(cc::CCEaseTimingFunction::create());
     for (int i = 0; i <= 4; ++i) {
         const double time = i * 0.25;
         EXPECT_FLOAT_EQ(timingFunction->getValue(time), curve->getValue(time).m41());

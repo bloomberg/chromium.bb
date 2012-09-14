@@ -7,7 +7,7 @@
 
 class SkCanvas;
 
-namespace WebCore {
+namespace cc {
 class FloatRect;
 class IntRect;
 

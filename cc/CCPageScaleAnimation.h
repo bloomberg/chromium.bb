@@ -8,7 +8,7 @@
 #include "IntSize.h"
 #include <wtf/PassOwnPtr.h>
 
-namespace WebCore {
+namespace cc {
 
 // A small helper class that does the math for zoom animations, primarily for
 // double-tap zoom. Initialize it with starting and ending scroll/page scale
@@ -69,6 +69,6 @@ private:
     double m_duration;
 };
 
-} // namespace WebCore
+} // namespace cc
 
 #endif

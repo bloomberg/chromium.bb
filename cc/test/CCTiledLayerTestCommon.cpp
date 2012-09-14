@@ -6,7 +6,7 @@
 
 #include "CCTiledLayerTestCommon.h"
 
-using namespace WebCore;
+using namespace cc;
 
 namespace WebKitTests {
 
@@ -26,7 +26,7 @@ void FakeLayerTextureUpdater::Texture::updateRect(CCResourceProvider* resourcePr
     m_layer->updateRect();
 }
 
-void FakeLayerTextureUpdater::Texture::prepareRect(const IntRect&, WebCore::CCRenderingStats&)
+void FakeLayerTextureUpdater::Texture::prepareRect(const IntRect&, cc::CCRenderingStats&)
 {
     m_layer->prepareRect();
 }
@@ -122,17 +122,17 @@ void FakeTiledLayerChromium::setTexturePriorities(const CCPriorityCalculator& ca
     }
 }
 
-WebCore::CCPrioritizedTextureManager* FakeTiledLayerChromium::textureManager() const
+cc::CCPrioritizedTextureManager* FakeTiledLayerChromium::textureManager() const
 {
     return m_textureManager;
 }
 
-WebCore::LayerTextureUpdater* FakeTiledLayerChromium::textureUpdater() const
+cc::LayerTextureUpdater* FakeTiledLayerChromium::textureUpdater() const
 {
     return m_fakeTextureUpdater.get();
 }
 
-WebCore::IntSize FakeTiledLayerWithScaledBounds::contentBounds() const
+cc::IntSize FakeTiledLayerWithScaledBounds::contentBounds() const
 {
     return m_forcedContentBounds;
 }
@@ -142,7 +142,7 @@ bool FakeTextureUploader::isBusy()
     return false;
 }
 
-void FakeTextureUploader::uploadTexture(WebCore::CCResourceProvider* resourceProvider, Parameters upload)
+void FakeTextureUploader::uploadTexture(cc::CCResourceProvider* resourceProvider, Parameters upload)
 {
     upload.texture->updateRect(resourceProvider, upload.sourceRect, upload.destOffset);
 }

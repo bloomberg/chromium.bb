@@ -10,7 +10,7 @@
 
 #include "CCSolidColorLayerImpl.h"
 
-namespace WebCore {
+namespace cc {
 
 PassOwnPtr<CCLayerImpl> SolidColorLayerChromium::createCCLayerImpl()
 {
@@ -31,6 +31,6 @@ SolidColorLayerChromium::~SolidColorLayerChromium()
 {
 }
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // USE(ACCELERATED_COMPOSITING)

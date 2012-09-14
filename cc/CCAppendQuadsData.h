@@ -5,7 +5,7 @@
 #ifndef CCAppendQuadsData_h
 #define CCAppendQuadsData_h
 
-namespace WebCore {
+namespace cc {
 
 struct CCAppendQuadsData {
     CCAppendQuadsData()

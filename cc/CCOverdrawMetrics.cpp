@@ -19,7 +19,7 @@
 
 using WebKit::WebTransformationMatrix;
 
-namespace WebCore {
+namespace cc {
 
 CCOverdrawMetrics::CCOverdrawMetrics(bool recordMetricsForFrame)
     : m_recordMetricsForFrame(recordMetricsForFrame)
@@ -185,6 +185,6 @@ void CCOverdrawMetrics::recordMetricsInternal(MetricsType metricsType, const Lay
     }
 }
 
-} // namespace WebCore
+} // namespace cc
 
 #endif

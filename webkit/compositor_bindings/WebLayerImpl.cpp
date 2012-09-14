@@ -19,8 +19,8 @@
 #include <public/WebSize.h>
 #include <public/WebTransformationMatrix.h>
 
-using WebCore::CCActiveAnimation;
-using WebCore::LayerChromium;
+using cc::CCActiveAnimation;
+using cc::LayerChromium;
 
 namespace WebKit {
 

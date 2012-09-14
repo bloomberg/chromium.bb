@@ -12,7 +12,7 @@
 #include <wtf/Vector.h>
 
 using namespace WebKitTests;
-using namespace WebCore;
+using namespace cc;
 
 namespace {
 

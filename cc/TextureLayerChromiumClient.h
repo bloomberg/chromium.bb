@@ -9,7 +9,7 @@ namespace WebKit {
 class WebGraphicsContext3D;
 }
 
-namespace WebCore {
+namespace cc {
 class CCTextureUpdateQueue;
 
 class TextureLayerChromiumClient {

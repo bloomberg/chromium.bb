@@ -26,7 +26,7 @@ static WTFLogChannel LogCCLayerSorter = { 0x00000000, "", WTFLogChannelOff };
 #endif
 #endif
 
-namespace WebCore {
+namespace cc {
 
 inline static float perpProduct(const FloatSize& u, const FloatSize& v)
 {

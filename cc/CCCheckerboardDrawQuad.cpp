@@ -6,7 +6,7 @@
 
 #include "CCCheckerboardDrawQuad.h"
 
-namespace WebCore {
+namespace cc {
 
 PassOwnPtr<CCCheckerboardDrawQuad> CCCheckerboardDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect)
 {

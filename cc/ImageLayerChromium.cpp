@@ -12,7 +12,7 @@
 #include "LayerTextureUpdater.h"
 #include "PlatformColor.h"
 
-namespace WebCore {
+namespace cc {
 
 class ImageLayerTextureUpdater : public LayerTextureUpdater {
 public:

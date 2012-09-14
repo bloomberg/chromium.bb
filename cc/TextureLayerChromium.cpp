@@ -13,7 +13,7 @@
 #include "TextureLayerChromiumClient.h"
 #include <public/WebGraphicsContext3D.h>
 
-namespace WebCore {
+namespace cc {
 
 PassRefPtr<TextureLayerChromium> TextureLayerChromium::create(TextureLayerChromiumClient* client)
 {

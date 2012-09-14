@@ -10,7 +10,7 @@
 #include <wtf/Noncopyable.h>
 #include <wtf/OwnPtr.h>
 
-namespace WebCore {
+namespace cc {
 
 class TextureCopier;
 class TextureUploader;

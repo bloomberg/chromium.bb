@@ -6,7 +6,7 @@
 
 #include "CCDebugBorderDrawQuad.h"
 
-namespace WebCore {
+namespace cc {
 
 PassOwnPtr<CCDebugBorderDrawQuad> CCDebugBorderDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, SkColor color, int width)
 {

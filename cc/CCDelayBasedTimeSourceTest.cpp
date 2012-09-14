@@ -11,8 +11,8 @@
 #include <gtest/gtest.h>
 #include <wtf/RefPtr.h>
 
+using namespace cc;
 using namespace WTF;
-using namespace WebCore;
 using namespace WebKitTests;
 
 namespace {

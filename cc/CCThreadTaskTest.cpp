@@ -9,8 +9,8 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+using namespace cc;
 using namespace WTF;
-using namespace WebCore;
 
 namespace {
 

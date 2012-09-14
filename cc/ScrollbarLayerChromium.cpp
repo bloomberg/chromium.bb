@@ -17,7 +17,7 @@
 
 using WebKit::WebRect;
 
-namespace WebCore {
+namespace cc {
 
 PassOwnPtr<CCLayerImpl> ScrollbarLayerChromium::createCCLayerImpl()
 {

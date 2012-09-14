@@ -6,7 +6,7 @@
 
 #include "CCTexture.h"
 
-namespace WebCore {
+namespace cc {
 
 void CCTexture::setDimensions(const IntSize& size, GC3Denum format)
 {

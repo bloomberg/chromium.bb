@@ -10,11 +10,22 @@ include_rules = [
   "+third_party/WebKit/Source/WebCore/platform/graphics/IntPoint.h",
   "+third_party/WebKit/Source/WebCore/platform/graphics/IntRect.h",
   "+third_party/WebKit/Source/WebCore/platform/graphics/IntSize.h",
+  "+Source/WebCore/platform/graphics/FloatPoint.h",
+  "+Source/WebCore/platform/graphics/FloatPoint3D.h",
+  "+Source/WebCore/platform/graphics/FloatQuad.h",
+  "+Source/WebCore/platform/graphics/FloatRect.h",
+  "+Source/WebCore/platform/graphics/FloatSize.h",
+  "+Source/WebCore/platform/graphics/IntPoint.h",
+  "+Source/WebCore/platform/graphics/IntRect.h",
+  "+Source/WebCore/platform/graphics/IntSize.h",
 # http://crbug.com/144540
   "+third_party/WebKit/Source/WebCore/platform/graphics/Region.h",
+  "+Source/WebCore/platform/graphics/Region.h",
 # TODO(jamesr): Resolve these
   "+third_party/WebKit/Source/WebCore/platform/graphics/UnitBezier.h",
   "+third_party/WebKit/Source/WebCore/platform/graphics/gpu/TilingData.h",
+  "+Source/WebCore/platform/graphics/UnitBezier.h",
+  "+Source/WebCore/platform/graphics/gpu/TilingData.h",
 # TODO(jamesr): We depend on these things just to do test setup. We should be
 # able to run unit tests without these dependencies.
   "+third_party/WebKit/Source/Platform/chromium/public/Platform.h",

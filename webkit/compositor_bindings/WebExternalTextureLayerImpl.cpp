@@ -13,7 +13,7 @@
 #include <public/WebFloatRect.h>
 #include <public/WebSize.h>
 
-using namespace WebCore;
+using namespace cc;
 
 namespace WebKit {
 

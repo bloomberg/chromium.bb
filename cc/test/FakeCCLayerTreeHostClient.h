@@ -11,7 +11,7 @@
 #include "CompositorFakeWebGraphicsContext3D.h"
 #include "FakeWebCompositorOutputSurface.h"
 
-namespace WebCore {
+namespace cc {
 
 class FakeCCLayerTreeHostClient : public CCLayerTreeHostClient {
 public:

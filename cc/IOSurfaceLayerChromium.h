@@ -10,7 +10,7 @@
 
 #include "LayerChromium.h"
 
-namespace WebCore {
+namespace cc {
 
 class IOSurfaceLayerChromium : public LayerChromium {
 public:

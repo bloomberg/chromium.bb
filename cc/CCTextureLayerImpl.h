@@ -7,7 +7,7 @@
 
 #include "CCLayerImpl.h"
 
-namespace WebCore {
+namespace cc {
 
 class CCTextureLayerImpl : public CCLayerImpl {
 public:

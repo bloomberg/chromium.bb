@@ -10,7 +10,7 @@ using WebKit::WebRect;
 using WebKit::WebScrollbar;
 using WebKit::WebScrollbarThemeGeometry;
 
-namespace WebCore {
+namespace cc {
 
 CCScrollbarGeometryStub::CCScrollbarGeometryStub(PassOwnPtr<WebScrollbarThemeGeometry> geometry)
     : m_geometry(geometry)

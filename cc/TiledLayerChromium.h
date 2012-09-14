@@ -11,7 +11,7 @@
 #include "LayerChromium.h"
 #include "LayerTextureUpdater.h"
 
-namespace WebCore {
+namespace cc {
 class UpdatableTile;
 
 class TiledLayerChromium : public LayerChromium {

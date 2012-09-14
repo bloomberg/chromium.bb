@@ -17,7 +17,7 @@ namespace WebKit {
 class WebTransformationMatrix;
 }
 
-namespace WebCore {
+namespace cc {
 
 class Animation;
 class IntSize;
@@ -107,6 +107,6 @@ private:
     Vector<OwnPtr<CCActiveAnimation> > m_activeAnimations;
 };
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // CCLayerAnimationController_h

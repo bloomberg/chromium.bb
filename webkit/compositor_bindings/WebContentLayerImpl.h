@@ -10,11 +10,16 @@
 #include <public/WebContentLayer.h>
 #include <wtf/OwnPtr.h>
 
+namespace cc {
+class IntRect;
+class FloatRect;
+}
+
 namespace WebKit {
 class WebContentLayerClient;
 
 class WebContentLayerImpl : public WebContentLayer,
-                            public WebCore::ContentLayerChromiumClient {
+                            public cc::ContentLayerChromiumClient {
 public:
     explicit WebContentLayerImpl(WebContentLayerClient*);
 
@@ -30,7 +35,7 @@ protected:
     virtual ~WebContentLayerImpl();
 
     // ContentLayerChromiumClient implementation.
-    virtual void paintContents(SkCanvas*, const WebCore::IntRect& clip, WebCore::FloatRect& opaque) OVERRIDE;
+    virtual void paintContents(SkCanvas*, const cc::IntRect& clip, cc::FloatRect& opaque) OVERRIDE;
 
     OwnPtr<WebLayerImpl> m_layer;
     WebContentLayerClient* m_client;

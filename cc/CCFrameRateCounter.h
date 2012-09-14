@@ -10,7 +10,7 @@
 #include <wtf/Noncopyable.h>
 #include <wtf/PassOwnPtr.h>
 
-namespace WebCore {
+namespace cc {
 
 // This class maintains a history of timestamps, and provides functionality to
 // intelligently compute average frames per second (and standard deviation).
@@ -64,7 +64,7 @@ private:
     int m_droppedFrameCount;
 };
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // USE(ACCELERATED_COMPOSITING)
 

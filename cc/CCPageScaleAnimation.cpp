@@ -11,7 +11,7 @@
 
 #include <math.h>
 
-namespace WebCore {
+namespace cc {
 
 PassOwnPtr<CCPageScaleAnimation> CCPageScaleAnimation::create(const IntSize& scrollStart, float pageScaleStart, const IntSize& windowSize, const IntSize& contentSize, double startTime)
 {
@@ -156,4 +156,4 @@ float CCPageScaleAnimation::pageScaleAtRatio(float ratio) const
     return m_pageScaleStart * diff;
 }
 
-} // namespace WebCore
+} // namespace cc

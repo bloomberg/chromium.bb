@@ -23,7 +23,7 @@ namespace WebKit {
 class WebGraphicsContext3D;
 }
 
-namespace WebCore {
+namespace cc {
 
 class IntRect;
 class LayerTextureSubImage;

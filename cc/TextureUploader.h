@@ -7,7 +7,7 @@
 
 #include "LayerTextureUpdater.h"
 
-namespace WebCore {
+namespace cc {
 
 class TextureUploader {
 public:

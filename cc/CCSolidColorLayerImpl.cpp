@@ -15,7 +15,7 @@
 using namespace std;
 using WebKit::WebTransformationMatrix;
 
-namespace WebCore {
+namespace cc {
 
 CCSolidColorLayerImpl::CCSolidColorLayerImpl(int id)
     : CCLayerImpl(id)
@@ -44,5 +44,5 @@ void CCSolidColorLayerImpl::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData&
     }
 }
 
-} // namespace WebCore
+} // namespace cc
 #endif // USE(ACCELERATED_COMPOSITING)

@@ -11,7 +11,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace cc {
 
 PassOwnPtr<CCLayerTilingData> CCLayerTilingData::create(const IntSize& tileSize, BorderTexelOption border)
 {
@@ -34,7 +34,7 @@ void CCLayerTilingData::setTileSize(const IntSize& size)
     m_tilingData.setMaxTextureSize(size);
 }
 
-const IntSize& CCLayerTilingData::tileSize() const
+IntSize CCLayerTilingData::tileSize() const
 {
     return m_tilingData.maxTextureSize();
 }
@@ -144,6 +144,6 @@ IntSize CCLayerTilingData::bounds() const
     return m_tilingData.totalSize();
 }
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // USE(ACCELERATED_COMPOSITING)

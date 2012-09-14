@@ -9,7 +9,7 @@
 #include "IntSize.h"
 #include <wtf/PassOwnPtr.h>
 
-namespace WebCore {
+namespace cc {
 
 class CCLayerImpl;
 class CCScrollbarLayerImpl;
@@ -59,6 +59,6 @@ private:
     IntSize m_maximum;
 };
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // CCScrollbarAnimationController_h

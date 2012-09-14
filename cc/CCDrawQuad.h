@@ -7,7 +7,7 @@
 
 #include "CCSharedQuadState.h"
 
-namespace WebCore {
+namespace cc {
 
 // WARNING! All CCXYZDrawQuad classes must remain PODs (plain old data).
 // They are intended to be "serializable" by copying their raw bytes, so they

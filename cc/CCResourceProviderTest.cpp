@@ -17,7 +17,7 @@
 #include <wtf/OwnArrayPtr.h>
 #include <wtf/OwnPtr.h>
 
-using namespace WebCore;
+using namespace cc;
 using namespace WebKit;
 
 namespace {

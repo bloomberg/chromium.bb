@@ -14,7 +14,7 @@
 #include <public/WebScrollbarThemeGeometry.h>
 #include <public/WebScrollbarThemePainter.h>
 
-namespace WebCore {
+namespace cc {
 
 class Scrollbar;
 class ScrollbarThemeComposite;

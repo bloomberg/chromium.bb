@@ -16,7 +16,7 @@
 
 using WebKit::WebTransformationMatrix;
 
-namespace WebCore {
+namespace cc {
 
 PassOwnPtr<CCDamageTracker> CCDamageTracker::create()
 {
@@ -340,6 +340,6 @@ void CCDamageTracker::extendDamageForRenderSurface(CCLayerImpl* layer, FloatRect
         expandDamageRectInsideRectWithFilters(targetDamageRect, surfaceRectInTargetSpace, layer->backgroundFilters());
 }
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // USE(ACCELERATED_COMPOSITING)

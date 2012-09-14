@@ -15,7 +15,7 @@ namespace WebKit {
 class WebVideoFrame;
 }
 
-namespace WebCore {
+namespace cc {
 
 class CCLayerTreeHostImpl;
 class CCVideoLayerImpl;

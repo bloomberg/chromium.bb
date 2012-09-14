@@ -6,7 +6,7 @@
 
 #include "CCTileDrawQuad.h"
 
-namespace WebCore {
+namespace cc {
 
 PassOwnPtr<CCTileDrawQuad> CCTileDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, const IntRect& opaqueRect, unsigned resourceId, const IntPoint& textureOffset, const IntSize& textureSize, GC3Dint textureFilter, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA)
 {

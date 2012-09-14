@@ -10,7 +10,7 @@
 #include "GraphicsContext3D.h"
 #include "IntSize.h"
 
-namespace WebCore {
+namespace cc {
 
 class CCTexture {
 public:

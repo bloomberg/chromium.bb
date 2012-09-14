@@ -19,7 +19,9 @@
         'cc_stubs_dirs': ['stubs'],
       }, {
         'cc_stubs_dirs': [
+          'stubs',
           '<(SHARED_INTERMEDIATE_DIR)/webkit',
+          '<(webkit_src_dir)',
           '<(webkit_src_dir)/Source/WebCore/platform',
           '<(webkit_src_dir)/Source/WebCore/platform/animation',
           '<(webkit_src_dir)/Source/WebCore/platform/chromium',
@@ -35,4 +37,11 @@
       }],
     ],
   },
+  'conditions': [
+    ['inside_chromium_build==0', {
+      'defines': [
+        'INSIDE_WEBKIT_BUILD=1',
+      ],
+    }],
+  ],
 }

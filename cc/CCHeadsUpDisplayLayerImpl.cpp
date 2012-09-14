@@ -20,7 +20,7 @@
 #include "SkPaint.h"
 #include "skia/ext/platform_canvas.h"
 
-namespace WebCore {
+namespace cc {
 
 static inline SkPaint createPaint()
 {

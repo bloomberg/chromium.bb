@@ -6,7 +6,7 @@
 
 #include "CCSolidColorDrawQuad.h"
 
-namespace WebCore {
+namespace cc {
 
 PassOwnPtr<CCSolidColorDrawQuad> CCSolidColorDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, SkColor color)
 {

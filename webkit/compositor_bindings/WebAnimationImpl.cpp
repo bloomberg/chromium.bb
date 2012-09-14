@@ -15,7 +15,7 @@
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 
-using WebCore::CCActiveAnimation;
+using cc::CCActiveAnimation;
 
 namespace WebKit {
 
@@ -34,7 +34,7 @@ WebAnimationImpl::WebAnimationImpl(const WebAnimationCurve& webCurve, TargetProp
         groupId = nextGroupId++;
 
     WebAnimationCurve::AnimationCurveType curveType = webCurve.type();
-    OwnPtr<WebCore::CCAnimationCurve> curve;
+    OwnPtr<cc::CCAnimationCurve> curve;
     switch (curveType) {
     case WebAnimationCurve::AnimationCurveTypeFloat: {
         const WebFloatAnimationCurveImpl* floatCurveImpl = static_cast<const WebFloatAnimationCurveImpl*>(&webCurve);
@@ -47,7 +47,7 @@ WebAnimationImpl::WebAnimationImpl(const WebAnimationCurve& webCurve, TargetProp
         break;
     }
     }
-    m_animation = CCActiveAnimation::create(curve.release(), animationId, groupId, static_cast<WebCore::CCActiveAnimation::TargetProperty>(targetProperty));
+    m_animation = CCActiveAnimation::create(curve.release(), animationId, groupId, static_cast<cc::CCActiveAnimation::TargetProperty>(targetProperty));
 }
 
 WebAnimationImpl::~WebAnimationImpl()
@@ -104,9 +104,9 @@ void WebAnimationImpl::setAlternatesDirection(bool alternates)
     m_animation->setAlternatesDirection(alternates);
 }
 
-PassOwnPtr<WebCore::CCActiveAnimation> WebAnimationImpl::cloneToCCAnimation()
+PassOwnPtr<cc::CCActiveAnimation> WebAnimationImpl::cloneToCCAnimation()
 {
-    OwnPtr<WebCore::CCActiveAnimation> toReturn(m_animation->clone(WebCore::CCActiveAnimation::NonControllingInstance));
+    OwnPtr<cc::CCActiveAnimation> toReturn(m_animation->clone(cc::CCActiveAnimation::NonControllingInstance));
     toReturn->setNeedsSynchronizedStartTime(true);
     return toReturn.release();
 }

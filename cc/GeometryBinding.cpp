@@ -12,7 +12,7 @@
 #include "GraphicsContext3D.h"
 #include <public/WebGraphicsContext3D.h>
 
-namespace WebCore {
+namespace cc {
 
 GeometryBinding::GeometryBinding(WebKit::WebGraphicsContext3D* context, const FloatRect& quadVertexRect)
     : m_context(context)
@@ -56,6 +56,6 @@ void GeometryBinding::prepareForDraw()
     GLC(m_context, m_context->enableVertexAttribArray(texCoordAttribLocation()));
 }
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // USE(ACCELERATED_COMPOSITING)

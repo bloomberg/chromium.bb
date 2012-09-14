@@ -13,7 +13,7 @@
 #include "CCTextureUpdateController.h"
 #include <wtf/OwnPtr.h>
 
-namespace WebCore {
+namespace cc {
 
 class CCInputHandler;
 class CCLayerTreeHost;

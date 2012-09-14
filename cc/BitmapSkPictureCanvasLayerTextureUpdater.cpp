@@ -16,7 +16,7 @@
 #include "SkDevice.h"
 #include <wtf/CurrentTime.h>
 
-namespace WebCore {
+namespace cc {
 
 BitmapSkPictureCanvasLayerTextureUpdater::Texture::Texture(BitmapSkPictureCanvasLayerTextureUpdater* textureUpdater, PassOwnPtr<CCPrioritizedTexture> texture)
     : CanvasLayerTextureUpdater::Texture(texture)
@@ -80,5 +80,5 @@ void BitmapSkPictureCanvasLayerTextureUpdater::paintContentsRect(SkCanvas* canva
     stats.totalRasterizeTimeInSeconds += monotonicallyIncreasingTime() - rasterizeBeginTime;
 }
 
-} // namespace WebCore
+} // namespace cc
 #endif // USE(ACCELERATED_COMPOSITING)

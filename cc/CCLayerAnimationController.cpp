@@ -14,7 +14,7 @@
 
 using WebKit::WebTransformationMatrix;
 
-namespace WebCore {
+namespace cc {
 
 CCLayerAnimationController::CCLayerAnimationController(CCLayerAnimationControllerClient* client)
     : m_forceSync(false)
@@ -404,4 +404,4 @@ void CCLayerAnimationController::tickAnimations(double monotonicTime)
     }
 }
 
-} // namespace WebCore
+} // namespace cc

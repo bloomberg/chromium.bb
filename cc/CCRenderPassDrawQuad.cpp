@@ -6,7 +6,7 @@
 
 #include "CCRenderPassDrawQuad.h"
 
-namespace WebCore {
+namespace cc {
 
 PassOwnPtr<CCRenderPassDrawQuad> CCRenderPassDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, CCRenderPass::Id renderPassId, bool isReplica, const CCResourceProvider::ResourceId maskResourceId, const IntRect& contentsChangedSinceLastFrame, float maskTexCoordScaleX, float maskTexCoordScaleY, float maskTexCoordOffsetX, float maskTexCoordOffsetY)
 {

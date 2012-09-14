@@ -18,7 +18,7 @@
 #undef GL_FRAMEBUFFER_ATTACHMENT_ANGLE
 #endif
 
-namespace WebCore {
+namespace cc {
 
 class Extensions3DChromium {
 public:
@@ -52,4 +52,3 @@ public:
 }
 
 #endif  // CC_STUBS_EXTENSIONS3DCHROMIUM_H_
-

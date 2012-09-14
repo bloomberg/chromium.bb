@@ -13,7 +13,7 @@
 #include "CCRenderer.h"
 #include "CCTextureDrawQuad.h"
 
-namespace WebCore {
+namespace cc {
 
 CCTextureLayerImpl::CCTextureLayerImpl(int id)
     : CCLayerImpl(id)

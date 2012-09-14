@@ -15,17 +15,17 @@ namespace WebKit {
 class WebThread;
 
 // Implements CCThread in terms of WebThread.
-class CCThreadImpl : public WebCore::CCThread {
+class CCThreadImpl : public cc::CCThread {
 public:
     // Creates a CCThreadImpl wrapping the current thread.
-    static PassOwnPtr<WebCore::CCThread> createForCurrentThread();
+    static PassOwnPtr<cc::CCThread> createForCurrentThread();
 
     // Creates a CCThread wrapping a non-current WebThread.
-    static PassOwnPtr<WebCore::CCThread> createForDifferentThread(WebThread*);
+    static PassOwnPtr<cc::CCThread> createForDifferentThread(WebThread*);
 
     virtual ~CCThreadImpl();
-    virtual void postTask(PassOwnPtr<WebCore::CCThread::Task>);
-    virtual void postDelayedTask(PassOwnPtr<WebCore::CCThread::Task>, long long delayMs);
+    virtual void postTask(PassOwnPtr<cc::CCThread::Task>);
+    virtual void postDelayedTask(PassOwnPtr<cc::CCThread::Task>, long long delayMs);
     base::PlatformThreadId threadID() const;
 
 private:

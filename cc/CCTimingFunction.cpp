@@ -12,7 +12,7 @@ namespace {
 const double epsilon = 1e-6;
 } // namespace
 
-namespace WebCore {
+namespace cc {
 
 CCTimingFunction::CCTimingFunction()
 {
@@ -73,4 +73,4 @@ PassOwnPtr<CCTimingFunction> CCEaseInOutTimingFunction::create()
     return CCCubicBezierTimingFunction::create(0.42, 0, 0.58, 1);
 }
 
-} // namespace WebCore
+} // namespace cc

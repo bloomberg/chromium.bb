@@ -11,7 +11,7 @@
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 
-namespace WebCore {
+namespace cc {
 
 // FIXME: rename fully to CCOutputSurface.
 typedef WebKit::WebCompositorOutputSurface CCGraphicsContext;

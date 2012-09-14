@@ -15,7 +15,7 @@
 #include <public/WebTransformationMatrix.h>
 #include <wtf/Noncopyable.h>
 
-namespace WebCore {
+namespace cc {
 
 class CCDamageTracker;
 class CCQuadSink;

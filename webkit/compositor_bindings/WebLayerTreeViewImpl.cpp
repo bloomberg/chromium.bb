@@ -20,7 +20,7 @@
 #include <public/WebRenderingStats.h>
 #include <public/WebSize.h>
 
-using namespace WebCore;
+using namespace cc;
 
 namespace WebKit {
 
@@ -211,7 +211,7 @@ void WebLayerTreeViewImpl::layout()
     m_client->layout();
 }
 
-void WebLayerTreeViewImpl::applyScrollAndScale(const WebCore::IntSize& scrollDelta, float pageScale)
+void WebLayerTreeViewImpl::applyScrollAndScale(const cc::IntSize& scrollDelta, float pageScale)
 {
     m_client->applyScrollAndScale(convert(scrollDelta), pageScale);
 }

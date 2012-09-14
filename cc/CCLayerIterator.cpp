@@ -13,7 +13,7 @@
 #include "LayerChromium.h"
 #include "RenderSurfaceChromium.h"
 
-namespace WebCore {
+namespace cc {
 
 template <typename LayerType, typename LayerList, typename RenderSurfaceType, typename ActionType>
 void CCLayerIteratorActions::BackToFront::begin(CCLayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>& it)
@@ -145,6 +145,6 @@ template void CCLayerIteratorActions::FrontToBack::end(CCLayerIterator<CCLayerIm
 template void CCLayerIteratorActions::FrontToBack::begin(CCLayerIterator<CCLayerImpl, Vector<CCLayerImpl*>, CCRenderSurface, FrontToBack>&);
 template void CCLayerIteratorActions::FrontToBack::goToHighestInSubtree(CCLayerIterator<CCLayerImpl, Vector<CCLayerImpl*>, CCRenderSurface, FrontToBack>&);
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // USE(ACCELERATED_COMPOSITING)

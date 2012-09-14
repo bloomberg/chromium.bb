@@ -11,7 +11,7 @@
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>
 
-namespace WebCore {
+namespace cc {
 
 class CCThread;
 struct CCRenderingStats;

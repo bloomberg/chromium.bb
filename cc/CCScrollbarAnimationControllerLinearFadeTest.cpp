@@ -11,7 +11,7 @@
 #include <gtest/gtest.h>
 #include <wtf/OwnPtr.h>
 
-using namespace WebCore;
+using namespace cc;
 
 namespace {
 

@@ -9,7 +9,7 @@
 #include "CCTimer.h"
 #include <wtf/PassRefPtr.h>
 
-namespace WebCore {
+namespace cc {
 
 class CCThread;
 

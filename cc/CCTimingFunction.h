@@ -9,7 +9,7 @@
 #include "UnitBezier.h"
 #include <wtf/PassOwnPtr.h>
 
-namespace WebCore {
+namespace cc {
 
 // See http://www.w3.org/TR/css3-transitions/.
 class CCTimingFunction : public CCFloatAnimationCurve {
@@ -58,7 +58,6 @@ public:
     static PassOwnPtr<CCTimingFunction> create();
 };
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // CCTimingFunction_h
-

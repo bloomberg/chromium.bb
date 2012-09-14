@@ -6,7 +6,7 @@
 
 #include "CCIOSurfaceDrawQuad.h"
 
-namespace WebCore {
+namespace cc {
 
 PassOwnPtr<CCIOSurfaceDrawQuad> CCIOSurfaceDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, const IntSize& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation orientation)
 {

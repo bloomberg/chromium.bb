@@ -10,7 +10,7 @@
 
 #include "CCIOSurfaceLayerImpl.h"
 
-namespace WebCore {
+namespace cc {
 
 PassRefPtr<IOSurfaceLayerChromium> IOSurfaceLayerChromium::create()
 {

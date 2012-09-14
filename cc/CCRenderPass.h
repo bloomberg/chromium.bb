@@ -8,6 +8,7 @@
 #include "CCDrawQuad.h"
 #include "CCOcclusionTracker.h"
 #include "CCSharedQuadState.h"
+#include "FloatRect.h"
 #include "SkColor.h"
 #include <public/WebFilterOperations.h>
 #include <public/WebTransformationMatrix.h>
@@ -15,7 +16,7 @@
 #include <wtf/PassOwnPtr.h>
 #include <wtf/Vector.h>
 
-namespace WebCore {
+namespace cc {
 
 class CCLayerImpl;
 class CCRenderSurface;
@@ -103,29 +104,29 @@ protected:
     WebKit::WebFilterOperations m_backgroundFilters;
 };
 
-} // namespace WebCore
+} // namespace cc
 
 namespace WTF {
-template<> struct HashTraits<WebCore::CCRenderPass::Id> : GenericHashTraits<WebCore::CCRenderPass::Id> {
+template<> struct HashTraits<cc::CCRenderPass::Id> : GenericHashTraits<cc::CCRenderPass::Id> {
     static const bool emptyValueIsZero = false;
     static const bool needsDestruction = false;
-    static WebCore::CCRenderPass::Id emptyValue() { return WebCore::CCRenderPass::Id(0, 0); }
-    static void constructDeletedValue(WebCore::CCRenderPass::Id& slot) { slot = WebCore::CCRenderPass::Id(-1, -1); }
-    static bool isDeletedValue(WebCore::CCRenderPass::Id value) { return value.layerId == -1 && value.index == -1; }
+    static cc::CCRenderPass::Id emptyValue() { return cc::CCRenderPass::Id(0, 0); }
+    static void constructDeletedValue(cc::CCRenderPass::Id& slot) { slot = cc::CCRenderPass::Id(-1, -1); }
+    static bool isDeletedValue(cc::CCRenderPass::Id value) { return value.layerId == -1 && value.index == -1; }
 };
-template<> struct IntHash<WebCore::CCRenderPass::Id> {
-    static unsigned hash(const WebCore::CCRenderPass::Id& key) { return PairHash<int, int>::hash(std::make_pair(key.layerId, key.index)); }
-    static bool equal(const WebCore::CCRenderPass::Id& a, const WebCore::CCRenderPass::Id& b) { return a == b; }
+template<> struct IntHash<cc::CCRenderPass::Id> {
+    static unsigned hash(const cc::CCRenderPass::Id& key) { return PairHash<int, int>::hash(std::make_pair(key.layerId, key.index)); }
+    static bool equal(const cc::CCRenderPass::Id& a, const cc::CCRenderPass::Id& b) { return a == b; }
     static const bool safeToCompareToEmptyOrDeleted = true;
 };
-template<> struct DefaultHash<WebCore::CCRenderPass::Id> {
-    typedef IntHash<WebCore::CCRenderPass::Id> Hash;
+template<> struct DefaultHash<cc::CCRenderPass::Id> {
+    typedef IntHash<cc::CCRenderPass::Id> Hash;
 };
 } // namespace WTF
 
-namespace WebCore {
+namespace cc {
 typedef Vector<CCRenderPass*> CCRenderPassList;
 typedef HashMap<CCRenderPass::Id, OwnPtr<CCRenderPass> > CCRenderPassIdHashMap;
-} // namespace WebCore
+} // namespace cc
 
 #endif

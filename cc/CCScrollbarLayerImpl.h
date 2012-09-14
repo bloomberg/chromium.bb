@@ -13,7 +13,7 @@
 #include <public/WebScrollbar.h>
 #include <public/WebVector.h>
 
-namespace WebCore {
+namespace cc {
 
 class ScrollView;
 

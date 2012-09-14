@@ -12,7 +12,7 @@
 #include "LayerChromium.h"
 #include <public/WebTransformOperations.h>
 
-using namespace WebCore;
+using namespace cc;
 
 namespace {
 
@@ -75,7 +75,7 @@ float FakeFloatAnimationCurve::getValue(double now) const
     return 0;
 }
 
-PassOwnPtr<WebCore::CCAnimationCurve> FakeFloatAnimationCurve::clone() const
+PassOwnPtr<cc::CCAnimationCurve> FakeFloatAnimationCurve::clone() const
 {
     return adoptPtr(new FakeFloatAnimationCurve);
 }
@@ -99,7 +99,7 @@ WebKit::WebTransformationMatrix FakeTransformTransition::getValue(double time) c
     return WebKit::WebTransformationMatrix();
 }
 
-PassOwnPtr<WebCore::CCAnimationCurve> FakeTransformTransition::clone() const
+PassOwnPtr<cc::CCAnimationCurve> FakeTransformTransition::clone() const
 {
     return adoptPtr(new FakeTransformTransition(*this));
 }
@@ -163,37 +163,37 @@ const WebKit::WebTransformationMatrix& FakeLayerAnimationControllerClient::trans
     return m_transform;
 }
 
-PassOwnPtr<WebCore::CCAnimationCurve> FakeFloatTransition::clone() const
+PassOwnPtr<cc::CCAnimationCurve> FakeFloatTransition::clone() const
 {
     return adoptPtr(new FakeFloatTransition(*this));
 }
 
-void addOpacityTransitionToController(WebCore::CCLayerAnimationController& controller, double duration, float startOpacity, float endOpacity, bool useTimingFunction)
+void addOpacityTransitionToController(cc::CCLayerAnimationController& controller, double duration, float startOpacity, float endOpacity, bool useTimingFunction)
 {
     addOpacityTransition(controller, duration, startOpacity, endOpacity, useTimingFunction);
 }
 
-void addAnimatedTransformToController(WebCore::CCLayerAnimationController& controller, double duration, int deltaX, int deltaY)
+void addAnimatedTransformToController(cc::CCLayerAnimationController& controller, double duration, int deltaX, int deltaY)
 {
     addAnimatedTransform(controller, duration, deltaX, deltaY);
 }
 
-void addOpacityTransitionToLayer(WebCore::LayerChromium& layer, double duration, float startOpacity, float endOpacity, bool useTimingFunction)
+void addOpacityTransitionToLayer(cc::LayerChromium& layer, double duration, float startOpacity, float endOpacity, bool useTimingFunction)
 {
     addOpacityTransition(layer, duration, startOpacity, endOpacity, useTimingFunction);
 }
 
-void addOpacityTransitionToLayer(WebCore::CCLayerImpl& layer, double duration, float startOpacity, float endOpacity, bool useTimingFunction)
+void addOpacityTransitionToLayer(cc::CCLayerImpl& layer, double duration, float startOpacity, float endOpacity, bool useTimingFunction)
 {
     addOpacityTransition(*layer.layerAnimationController(), duration, startOpacity, endOpacity, useTimingFunction);
 }
 
-void addAnimatedTransformToLayer(WebCore::LayerChromium& layer, double duration, int deltaX, int deltaY)
+void addAnimatedTransformToLayer(cc::LayerChromium& layer, double duration, int deltaX, int deltaY)
 {
     addAnimatedTransform(layer, duration, deltaX, deltaY);
 }
 
-void addAnimatedTransformToLayer(WebCore::CCLayerImpl& layer, double duration, int deltaX, int deltaY)
+void addAnimatedTransformToLayer(cc::CCLayerImpl& layer, double duration, int deltaX, int deltaY)
 {
     addAnimatedTransform(*layer.layerAnimationController(), duration, deltaX, deltaY);
 }

@@ -16,7 +16,7 @@
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefPtr.h>
 
-namespace WebCore {
+namespace cc {
 
 class CCCompletionEvent;
 class CCDebugRectHistory;

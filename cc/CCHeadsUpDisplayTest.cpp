@@ -9,7 +9,7 @@
 #include "HeadsUpDisplayLayerChromium.h"
 #include "LayerChromium.h"
 
-using namespace WebCore;
+using namespace cc;
 using namespace WebKitTests;
 
 namespace {

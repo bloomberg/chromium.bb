@@ -11,7 +11,7 @@
 #include <public/Platform.h>
 #include <wtf/CurrentTime.h>
 
-namespace WebCore {
+namespace cc {
 
 const double CCFrameRateCounter::kFrameTooFast = 1.0 / 70.0; // measured in seconds
 const double CCFrameRateCounter::kFrameTooSlow = 1.0 / 12.0;
@@ -125,6 +125,6 @@ double CCFrameRateCounter::timeStampOfRecentFrame(int n)
     return m_timeStampHistory[desiredIndex];
 }
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // USE(ACCELERATED_COMPOSITING)

@@ -19,7 +19,7 @@
 
 using WebKit::WebTransformationMatrix;
 
-namespace WebCore {
+namespace cc {
 
 CCLayerImpl::CCLayerImpl(int id)
     : m_parent(0)

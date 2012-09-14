@@ -11,7 +11,7 @@
 #include "base/threading/platform_thread.h"
 #endif
 
-namespace WebCore {
+namespace cc {
 
 class CCScopedTexture : protected CCTexture {
     WTF_MAKE_NONCOPYABLE(CCScopedTexture);

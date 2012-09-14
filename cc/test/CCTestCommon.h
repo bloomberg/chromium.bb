@@ -13,8 +13,8 @@ namespace WebKitTests {
 // of this class to ensure that you start and end with a clean slate.
 class CCScopedSettings {
 public:
-    CCScopedSettings() { WebCore::CCSettings::reset(); }
-    ~CCScopedSettings() { WebCore::CCSettings::reset(); }
+    CCScopedSettings() { cc::CCSettings::reset(); }
+    ~CCScopedSettings() { cc::CCSettings::reset(); }
 };
 
 } // namespace WebKitTests

@@ -13,7 +13,7 @@
 
 static const float kAntiAliasingInflateDistance = 0.5f;
 
-namespace WebCore {
+namespace cc {
 
 class CCLayerQuad {
 public:

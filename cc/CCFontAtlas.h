@@ -15,7 +15,7 @@
 
 class SkCanvas;
 
-namespace WebCore {
+namespace cc {
 
 class Color;
 class FontDescription;
@@ -58,7 +58,7 @@ private:
     int m_fontHeight;
 };
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // USE(ACCELERATED_COMPOSITING)
 

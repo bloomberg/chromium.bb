@@ -8,7 +8,7 @@
 #include "CCLayerImpl.h"
 #include <public/WebTransformationMatrix.h>
 
-namespace WebCore {
+namespace cc {
 
 class CCSolidColorLayerImpl : public CCLayerImpl {
 public:

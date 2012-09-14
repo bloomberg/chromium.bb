@@ -10,7 +10,7 @@
 #include "CCLayerTreeHost.h"
 #include "TraceEvent.h"
 
-namespace WebCore {
+namespace cc {
 
 PassRefPtr<HeadsUpDisplayLayerChromium> HeadsUpDisplayLayerChromium::create()
 {

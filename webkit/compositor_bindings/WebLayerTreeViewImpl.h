@@ -10,7 +10,7 @@
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 
-namespace WebCore {
+namespace cc {
 class CCLayerTreeHost;
 }
 
@@ -19,7 +19,7 @@ class WebLayer;
 class WebLayerTreeViewClient;
 class WebLayerTreeViewClientAdapter;
 
-class WebLayerTreeViewImpl : public WebLayerTreeView, public WebCore::CCLayerTreeHostClient {
+class WebLayerTreeViewImpl : public WebLayerTreeView, public cc::CCLayerTreeHostClient {
 public:
     explicit WebLayerTreeViewImpl(WebLayerTreeViewClient*);
     virtual ~WebLayerTreeViewImpl();
@@ -51,15 +51,15 @@ public:
     virtual void setFontAtlas(SkBitmap, WebRect asciiToRectTable[128], int fontHeight) OVERRIDE;
     virtual void loseCompositorContext(int numTimes) OVERRIDE;
 
-    // WebCore::CCLayerTreeHostClient implementation.
+    // cc::CCLayerTreeHostClient implementation.
     virtual void willBeginFrame() OVERRIDE;
     virtual void didBeginFrame() OVERRIDE;
     virtual void animate(double monotonicFrameBeginTime) OVERRIDE;
     virtual void layout() OVERRIDE;
-    virtual void applyScrollAndScale(const WebCore::IntSize& scrollDelta, float pageScale) OVERRIDE;
+    virtual void applyScrollAndScale(const cc::IntSize& scrollDelta, float pageScale) OVERRIDE;
     virtual PassOwnPtr<WebCompositorOutputSurface> createOutputSurface() OVERRIDE;
     virtual void didRecreateOutputSurface(bool success) OVERRIDE;
-    virtual PassOwnPtr<WebCore::CCInputHandler> createInputHandler() OVERRIDE;
+    virtual PassOwnPtr<cc::CCInputHandler> createInputHandler() OVERRIDE;
     virtual void willCommit() OVERRIDE;
     virtual void didCommit() OVERRIDE;
     virtual void didCommitAndDrawFrame() OVERRIDE;
@@ -68,7 +68,7 @@ public:
 
 private:
     WebLayerTreeViewClient* m_client;
-    OwnPtr<WebCore::CCLayerTreeHost> m_layerTreeHost;
+    OwnPtr<cc::CCLayerTreeHost> m_layerTreeHost;
 };
 
 } // namespace WebKit

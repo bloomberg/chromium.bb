@@ -13,7 +13,7 @@ namespace CCLayerTestCommon {
 
 extern const char* quadString;
 
-void verifyQuadsExactlyCoverRect(const WebCore::CCQuadList&, const WebCore::IntRect&);
+void verifyQuadsExactlyCoverRect(const cc::CCQuadList&, const cc::IntRect&);
 
 } // namespace CCLayerTestCommon
 #endif // CCLayerTestCommon_h

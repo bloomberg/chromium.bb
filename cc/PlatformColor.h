@@ -10,7 +10,7 @@
 #include "SkTypes.h" 
 #include <public/WebGraphicsContext3D.h>
 
-namespace WebCore {
+namespace cc {
 
 class PlatformColor {
 public:
@@ -53,6 +53,6 @@ public:
     }
 };
 
-} // namespace WebCore
+} // namespace cc
 
 #endif

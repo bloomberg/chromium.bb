@@ -11,9 +11,9 @@
 #include <gtest/gtest.h>
 #include <wtf/OwnPtr.h>
 
-using namespace WTF;
-using namespace WebCore;
+using namespace cc;
 using namespace WebKitTests;
+using namespace WTF;
 
 namespace {
 

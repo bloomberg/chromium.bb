@@ -8,7 +8,7 @@
 #include <string>
 #include <wtf/Noncopyable.h>
 
-namespace WebCore {
+namespace cc {
 
 // The CCSchedulerStateMachine decides how to coordinate main thread activites
 // like painting/running javascript with rendering and input activities on the

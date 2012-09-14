@@ -13,7 +13,7 @@
 
 using WebKit::WebTransformationMatrix;
 
-namespace WebCore {
+namespace cc {
 
 static HomogeneousCoordinate projectHomogeneousPoint(const WebTransformationMatrix& transform, const FloatPoint& p)
 {
@@ -376,4 +376,4 @@ FloatSize CCMathUtil::projectVector(const FloatSize& source, const FloatSize& de
     return FloatSize(projectedLength * destination.width(), projectedLength * destination.height());
 }
 
-} // namespace WebCore
+} // namespace cc

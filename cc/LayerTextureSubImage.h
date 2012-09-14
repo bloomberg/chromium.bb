@@ -17,7 +17,7 @@ namespace WebKit {
 class WebGraphicsContext3D;
 }
 
-namespace WebCore {
+namespace cc {
 
 class LayerTextureSubImage {
 public:
@@ -41,6 +41,6 @@ private:
     OwnArrayPtr<uint8_t> m_subImage;
 };
 
-} // namespace WebCore
+} // namespace cc
 #endif // USE(ACCELERATED_COMPOSITING)
 #endif // LayerTextureSubImage_h

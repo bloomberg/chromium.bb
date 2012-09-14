@@ -11,7 +11,7 @@
 #include <wtf/Noncopyable.h>
 #include <wtf/OwnPtr.h>
 
-namespace WebCore {
+namespace cc {
 class CCThread;
 }
 
@@ -30,8 +30,8 @@ public:
 
 private:
     static bool s_initialized;
-    static WebCore::CCThread* s_mainThread;
-    static WebCore::CCThread* s_implThread;
+    static cc::CCThread* s_mainThread;
+    static cc::CCThread* s_implThread;
 };
 
 }

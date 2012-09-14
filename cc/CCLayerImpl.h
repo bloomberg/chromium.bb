@@ -21,7 +21,7 @@
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 
-namespace WebCore {
+namespace cc {
 
 class CCLayerSorter;
 class CCLayerTreeHostImpl;

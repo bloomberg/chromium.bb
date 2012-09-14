@@ -13,7 +13,7 @@
 
 class SkCanvas;
 
-namespace WebCore {
+namespace cc {
 
 class ContentLayerChromiumClient;
 class FloatRect;

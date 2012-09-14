@@ -21,7 +21,7 @@
 using namespace std;
 using WebKit::WebTransformationMatrix;
 
-namespace WebCore {
+namespace cc {
 
 class UpdatableTile : public CCLayerTilingData::Tile {
     WTF_MAKE_NONCOPYABLE(UpdatableTile);
@@ -144,7 +144,7 @@ void TiledLayerChromium::updateBounds()
     Region oldRegion(IntRect(IntPoint(), oldBounds));
     Region newRegion(IntRect(IntPoint(), newBounds));
     newRegion.subtract(oldRegion);
-    Vector<IntRect> rects = newRegion.rects();
+    Vector<WebCore::IntRect> rects = newRegion.rects();
     for (size_t i = 0; i < rects.size(); ++i)
         invalidateContentRect(rects[i]);
 }

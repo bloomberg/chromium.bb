@@ -21,7 +21,7 @@
 #include <gtest/gtest.h>
 #include <public/WebTransformationMatrix.h>
 
-using namespace WebCore;
+using namespace cc;
 using namespace WebKitTests;
 using namespace WTF;
 using WebKit::WebTransformationMatrix;
@@ -1471,7 +1471,7 @@ private:
 
 class UpdateTrackingTiledLayerChromium : public FakeTiledLayerChromium {
 public:
-    explicit UpdateTrackingTiledLayerChromium(WebCore::CCPrioritizedTextureManager* manager)
+    explicit UpdateTrackingTiledLayerChromium(CCPrioritizedTextureManager* manager)
         : FakeTiledLayerChromium(manager)
     {
         OwnPtr<TrackingLayerPainter> trackingLayerPainter(TrackingLayerPainter::create());
@@ -1483,7 +1483,7 @@ public:
     TrackingLayerPainter* trackingLayerPainter() const { return m_trackingLayerPainter; }
 
 protected:
-    virtual WebCore::LayerTextureUpdater* textureUpdater() const OVERRIDE { return m_layerTextureUpdater.get(); }
+    virtual LayerTextureUpdater* textureUpdater() const OVERRIDE { return m_layerTextureUpdater.get(); }
 
 private:
     TrackingLayerPainter* m_trackingLayerPainter;

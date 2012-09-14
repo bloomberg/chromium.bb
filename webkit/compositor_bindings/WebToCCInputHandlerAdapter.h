@@ -12,13 +12,13 @@
 
 namespace WebKit {
 
-class WebToCCInputHandlerAdapter : public WebCore::CCInputHandler {
+class WebToCCInputHandlerAdapter : public cc::CCInputHandler {
 public:
     static PassOwnPtr<WebToCCInputHandlerAdapter> create(PassOwnPtr<WebInputHandler>);
-    virtual ~WebToCCInputHandlerAdapter(); 
+    virtual ~WebToCCInputHandlerAdapter();
 
-    // WebCore::CCInputHandler implementation.
-    virtual void bindToClient(WebCore::CCInputHandlerClient*) OVERRIDE;
+    // cc::CCInputHandler implementation.
+    virtual void bindToClient(cc::CCInputHandlerClient*) OVERRIDE;
     virtual void animate(double monotonicTime) OVERRIDE;
 
 private:

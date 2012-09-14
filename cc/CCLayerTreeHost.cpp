@@ -32,7 +32,7 @@ namespace {
 static int numLayerTreeInstances;
 }
 
-namespace WebCore {
+namespace cc {
 
 bool CCLayerTreeHost::s_needsFilterContext = false;
 
@@ -785,4 +785,4 @@ void CCLayerTreeHost::setAnimationEventsRecursive(const CCAnimationEventsVector&
         setAnimationEventsRecursive(events, layer->children()[childIndex].get(), wallClockTime);
 }
 
-} // namespace WebCore
+} // namespace cc

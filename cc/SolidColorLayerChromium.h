@@ -10,7 +10,7 @@
 
 #include "LayerChromium.h"
 
-namespace WebCore {
+namespace cc {
 
 // A Layer that renders a solid color. The color is specified by using
 // setBackgroundColor() on the base class.
@@ -29,4 +29,3 @@ protected:
 #endif // USE(ACCELERATED_COMPOSITING)
 
 #endif
-

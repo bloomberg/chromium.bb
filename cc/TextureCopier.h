@@ -16,7 +16,7 @@ namespace WebKit {
 class WebGraphicsContext3D;
 }
 
-namespace WebCore {
+namespace cc {
 class IntSize;
 
 class TextureCopier {

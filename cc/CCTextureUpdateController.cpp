@@ -24,7 +24,7 @@ static const int textureUploadFlushPeriod = 4;
 
 } // anonymous namespace
 
-namespace WebCore {
+namespace cc {
 
 size_t CCTextureUpdateController::maxPartialTextureUpdates()
 {

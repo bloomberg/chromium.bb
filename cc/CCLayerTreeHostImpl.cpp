@@ -34,7 +34,7 @@ using WebKit::WebTransformationMatrix;
 
 namespace {
 
-void didVisibilityChange(WebCore::CCLayerTreeHostImpl* id, bool visible)
+void didVisibilityChange(cc::CCLayerTreeHostImpl* id, bool visible)
 {
     if (visible) {
         TRACE_EVENT_ASYNC_BEGIN1("webkit", "CCLayerTreeHostImpl::setVisible", id, "CCLayerTreeHostImpl", id);
@@ -46,7 +46,7 @@ void didVisibilityChange(WebCore::CCLayerTreeHostImpl* id, bool visible)
 
 } // namespace
 
-namespace WebCore {
+namespace cc {
 
 class CCLayerTreeHostImplTimeSourceAdapter : public CCTimeSourceClient {
     WTF_MAKE_NONCOPYABLE(CCLayerTreeHostImplTimeSourceAdapter);
@@ -1269,4 +1269,4 @@ void CCLayerTreeHostImpl::animateScrollbarsRecursive(CCLayerImpl* layer, double 
         animateScrollbarsRecursive(layer->children()[i].get(), monotonicTime);
 }
 
-} // namespace WebCore
+} // namespace cc

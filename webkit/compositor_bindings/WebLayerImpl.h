@@ -9,7 +9,7 @@
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 
-namespace WebCore {
+namespace cc {
 class LayerChromium;
 }
 
@@ -18,7 +18,7 @@ namespace WebKit {
 class WebLayerImpl : public WebLayer {
 public:
     WebLayerImpl();
-    explicit WebLayerImpl(PassRefPtr<WebCore::LayerChromium>);
+    explicit WebLayerImpl(PassRefPtr<cc::LayerChromium>);
     virtual ~WebLayerImpl();
 
     // WebLayer implementation.
@@ -83,10 +83,10 @@ public:
     virtual void setFixedToContainerLayer(bool) OVERRIDE;
     virtual void setScrollClient(WebLayerScrollClient*) OVERRIDE;
 
-    WebCore::LayerChromium* layer() const;
+    cc::LayerChromium* layer() const;
 
 protected:
-    RefPtr<WebCore::LayerChromium> m_layer;
+    RefPtr<cc::LayerChromium> m_layer;
 };
 
 } // namespace WebKit

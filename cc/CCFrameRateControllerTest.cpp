@@ -9,13 +9,13 @@
 #include "CCSchedulerTestCommon.h"
 #include <gtest/gtest.h>
 
-using namespace WTF;
-using namespace WebCore;
+using namespace cc;
 using namespace WebKitTests;
+using namespace WTF;
 
 namespace {
 
-class FakeCCFrameRateControllerClient : public WebCore::CCFrameRateControllerClient {
+class FakeCCFrameRateControllerClient : public cc::CCFrameRateControllerClient {
 public:
     FakeCCFrameRateControllerClient() { reset(); }
 

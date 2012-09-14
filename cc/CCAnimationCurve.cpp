@@ -6,7 +6,7 @@
 
 #include "CCAnimationCurve.h"
 
-namespace WebCore {
+namespace cc {
 
 const CCFloatAnimationCurve* CCAnimationCurve::toFloatAnimationCurve() const
 {
@@ -20,4 +20,4 @@ const CCTransformAnimationCurve* CCAnimationCurve::toTransformAnimationCurve() c
     return static_cast<const CCTransformAnimationCurve*>(this);
 }
 
-} // namespace WebCore
+} // namespace cc

@@ -14,7 +14,7 @@ using WebKit::WebRect;
 using WebKit::WebScrollbar;
 using WebKit::WebScrollbarThemeGeometry;
 
-namespace WebCore {
+namespace cc {
 
 PassOwnPtr<CCScrollbarGeometryFixedThumb> CCScrollbarGeometryFixedThumb::create(PassOwnPtr<WebScrollbarThemeGeometry> geometry)
 {

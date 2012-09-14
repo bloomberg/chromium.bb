@@ -8,7 +8,7 @@
 
 #include "FloatQuad.h"
 
-namespace WebCore {
+namespace cc {
 
 PassOwnPtr<CCSharedQuadState> CCSharedQuadState::create(const WebKit::WebTransformationMatrix& quadTransform, const IntRect& visibleContentRect, const IntRect& clippedRectInTarget, float opacity, bool opaque)
 {

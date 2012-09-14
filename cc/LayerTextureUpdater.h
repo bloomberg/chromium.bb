@@ -12,7 +12,7 @@
 #include "GraphicsTypes3D.h"
 #include <wtf/RefCounted.h>
 
-namespace WebCore {
+namespace cc {
 
 class IntRect;
 class IntSize;
@@ -63,6 +63,6 @@ public:
     virtual void setOpaque(bool) { }
 };
 
-} // namespace WebCore
+} // namespace cc
 #endif // USE(ACCELERATED_COMPOSITING)
 #endif // LayerTextureUpdater_h

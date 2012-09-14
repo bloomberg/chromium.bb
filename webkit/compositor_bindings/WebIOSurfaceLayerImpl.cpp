@@ -9,7 +9,7 @@
 #include "WebLayerImpl.h"
 #include "webcore_convert.h"
 
-using WebCore::IOSurfaceLayerChromium;
+using cc::IOSurfaceLayerChromium;
 
 namespace WebKit {
 

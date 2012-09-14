@@ -12,7 +12,7 @@
 
 class SkCanvas;
 
-namespace WebCore {
+namespace cc {
 
 class LayerPainterChromium;
 
@@ -34,6 +34,6 @@ private:
     OwnPtr<LayerPainterChromium> m_painter;
 };
 
-} // namespace WebCore
+} // namespace cc
 #endif // USE(ACCELERATED_COMPOSITING)
 #endif // CanvasLayerTextureUpdater_h

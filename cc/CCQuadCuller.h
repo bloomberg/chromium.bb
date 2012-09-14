@@ -8,7 +8,7 @@
 #include "CCQuadSink.h"
 #include "CCRenderPass.h"
 
-namespace WebCore {
+namespace cc {
 class CCLayerImpl;
 class CCRenderSurface;
 template<typename LayerType, typename SurfaceType>

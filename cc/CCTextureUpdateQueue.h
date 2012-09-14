@@ -10,7 +10,7 @@
 #include <wtf/Deque.h>
 #include <wtf/Noncopyable.h>
 
-namespace WebCore {
+namespace cc {
 
 class CCTextureUpdateQueue {
     WTF_MAKE_NONCOPYABLE(CCTextureUpdateQueue);

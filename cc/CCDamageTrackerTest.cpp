@@ -16,7 +16,7 @@
 #include <public/WebFilterOperation.h>
 #include <public/WebFilterOperations.h>
 
-using namespace WebCore;
+using namespace cc;
 using namespace WebKit;
 using namespace WTF;
 using namespace WebKitTests;

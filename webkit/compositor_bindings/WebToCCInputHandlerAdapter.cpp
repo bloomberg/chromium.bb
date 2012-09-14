@@ -11,8 +11,8 @@
 #include "webcore_convert.h"
 #include <public/WebInputHandlerClient.h>
 
-#define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, webcore_name) \
-    COMPILE_ASSERT(int(WebKit::webkit_name) == int(WebCore::webcore_name), mismatching_enums)
+#define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, cc_name) \
+    COMPILE_ASSERT(int(WebKit::webkit_name) == int(cc::cc_name), mismatching_enums)
 
 COMPILE_ASSERT_MATCHING_ENUM(WebInputHandlerClient::ScrollStatusOnMainThread, CCInputHandlerClient::ScrollOnMainThread);
 COMPILE_ASSERT_MATCHING_ENUM(WebInputHandlerClient::ScrollStatusStarted, CCInputHandlerClient::ScrollStarted);
@@ -38,7 +38,7 @@ WebToCCInputHandlerAdapter::~WebToCCInputHandlerAdapter()
 
 class WebToCCInputHandlerAdapter::ClientAdapter : public WebInputHandlerClient {
 public:
-    ClientAdapter(WebCore::CCInputHandlerClient* client)
+    ClientAdapter(cc::CCInputHandlerClient* client)
         : m_client(client)
     {
     }
@@ -49,7 +49,7 @@ public:
 
     virtual ScrollStatus scrollBegin(WebPoint point, ScrollInputType type) OVERRIDE
     {
-        return static_cast<WebInputHandlerClient::ScrollStatus>(m_client->scrollBegin(convert(point), static_cast<WebCore::CCInputHandlerClient::ScrollInputType>(type)));
+        return static_cast<WebInputHandlerClient::ScrollStatus>(m_client->scrollBegin(convert(point), static_cast<cc::CCInputHandlerClient::ScrollInputType>(type)));
     }
 
     virtual void scrollBy(WebPoint point, WebSize offset) OVERRIDE
@@ -92,11 +92,11 @@ public:
     }
 
 private:
-    WebCore::CCInputHandlerClient* m_client;
+    cc::CCInputHandlerClient* m_client;
 };
 
 
-void WebToCCInputHandlerAdapter::bindToClient(WebCore::CCInputHandlerClient* client)
+void WebToCCInputHandlerAdapter::bindToClient(cc::CCInputHandlerClient* client)
 {
     m_clientAdapter = adoptPtr(new ClientAdapter(client));
     m_handler->bindToClient(m_clientAdapter.get());
@@ -108,4 +108,3 @@ void WebToCCInputHandlerAdapter::animate(double monotonicTime)
 }
 
 }
-

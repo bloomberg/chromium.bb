@@ -47,7 +47,7 @@ static WebTransformationMatrix windowMatrix(int x, int y, int width, int height)
     return canvas;
 }
 
-namespace WebCore {
+namespace cc {
 //
 // static
 FloatRect CCDirectRenderer::quadVertexRect()

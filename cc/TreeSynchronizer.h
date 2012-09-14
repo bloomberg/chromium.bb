@@ -10,7 +10,7 @@
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 
-namespace WebCore {
+namespace cc {
 
 class CCLayerImpl;
 class CCLayerTreeHostImpl;
@@ -36,6 +36,6 @@ private:
     static void updateScrollbarLayerPointersRecursive(const RawPtrCCLayerImplMap& newLayers, LayerChromium*);
 };
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // TreeSynchronizer_h

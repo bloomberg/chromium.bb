@@ -13,7 +13,7 @@
 #include <wtf/OwnPtr.h>
 #include <wtf/Vector.h>
 
-using namespace WebCore;
+using namespace cc;
 using WebKit::WebTransformationMatrix;
 
 namespace {

@@ -9,7 +9,7 @@
 #include "CCResourceProvider.h"
 #include "CCScopedTexture.h"
 
-namespace WebCore {
+namespace cc {
 
 class CCResourceProvider;
 

@@ -19,7 +19,7 @@ const int defaultMaxFramesPending = 2;
 
 }
 
-namespace WebCore {
+namespace cc {
 
 class CCFrameRateControllerTimeSourceAdapter : public CCTimeSourceClient {
 public:

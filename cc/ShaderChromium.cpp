@@ -16,7 +16,7 @@
 
 using WebKit::WebGraphicsContext3D;
 
-namespace WebCore {
+namespace cc {
 
 namespace {
 
@@ -880,6 +880,6 @@ std::string FragmentShaderCheckerboard::getShaderString() const
     );
 }
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // USE(ACCELERATED_COMPOSITING)

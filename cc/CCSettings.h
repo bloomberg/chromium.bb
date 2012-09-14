@@ -7,7 +7,7 @@
 
 #include "IntSize.h"
 
-namespace WebCore {
+namespace cc {
 
 class CCSettings {
 public:
@@ -26,6 +26,6 @@ public:
     static void reset();
 };
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // CCSettings_h

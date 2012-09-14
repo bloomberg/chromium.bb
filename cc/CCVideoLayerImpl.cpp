@@ -21,7 +21,7 @@
 #include "NotImplemented.h"
 #include <public/WebVideoFrame.h>
 
-namespace WebCore {
+namespace cc {
 
 CCVideoLayerImpl::CCVideoLayerImpl(int id, WebKit::WebVideoFrameProvider* provider)
     : CCLayerImpl(id)

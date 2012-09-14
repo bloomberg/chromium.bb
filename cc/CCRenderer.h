@@ -12,7 +12,7 @@
 #include <wtf/Noncopyable.h>
 #include <wtf/PassRefPtr.h>
 
-namespace WebCore {
+namespace cc {
 
 class CCScopedTexture;
 class TextureCopier;

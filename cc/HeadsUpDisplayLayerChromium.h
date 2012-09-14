@@ -10,7 +10,7 @@
 #include "IntSize.h"
 #include "LayerChromium.h"
 
-namespace WebCore {
+namespace cc {
 
 class HeadsUpDisplayLayerChromium : public LayerChromium {
 public:

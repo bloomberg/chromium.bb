@@ -12,8 +12,8 @@
 #include <public/WebFilterOperation.h>
 #include <public/WebFilterOperations.h>
 
+using namespace cc;
 using namespace WebKit;
-using namespace WebCore;
 
 namespace {
 

@@ -12,7 +12,7 @@ static bool s_partialSwapEnabled = false;
 static bool s_acceleratedAnimationEnabled = false;
 } // namespace
 
-namespace WebCore {
+namespace cc {
 
 bool CCSettings::perTilePaintingEnabled() { return s_perTilePaintingEnabled; }
 void CCSettings::setPerTilePaintingEnabled(bool enabled) { s_perTilePaintingEnabled = enabled; }
@@ -30,4 +30,4 @@ void CCSettings::reset()
     s_acceleratedAnimationEnabled = false;
 }
 
-} // namespace WebCore
+} // namespace cc

@@ -12,7 +12,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace cc {
 
 CCPrioritizedTexture::CCPrioritizedTexture(CCPrioritizedTextureManager* manager, IntSize size, GC3Denum format)
     : m_size(size)
@@ -119,4 +119,4 @@ void CCPrioritizedTexture::setToSelfManagedMemoryPlaceholder(size_t bytes)
     m_bytes = bytes;
 }
 
-} // namespace WebCore
+} // namespace cc

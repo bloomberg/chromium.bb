@@ -8,7 +8,7 @@
 #include "CCDrawQuad.h"
 #include <wtf/PassOwnPtr.h>
 
-namespace WebCore {
+namespace cc {
 
 #pragma pack(push, 4)
 

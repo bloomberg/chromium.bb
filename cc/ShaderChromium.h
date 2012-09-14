@@ -14,7 +14,7 @@ namespace WebKit {
 class WebGraphicsContext3D;
 }
 
-namespace WebCore {
+namespace cc {
 
 class VertexShaderPosTex {
 public:
@@ -344,7 +344,7 @@ private:
     int m_frequencyLocation;
 };
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // USE(ACCELERATED_COMPOSITING)
 

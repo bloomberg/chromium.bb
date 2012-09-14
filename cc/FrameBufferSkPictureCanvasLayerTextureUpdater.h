@@ -17,7 +17,7 @@ class WebGraphicsContext3D;
 class WebSharedGraphicsContext3D;
 }
 
-namespace WebCore {
+namespace cc {
 
 // This class records the contentRect into an SkPicture, then uses accelerated
 // drawing to update the texture. The accelerated drawing goes to an
@@ -47,6 +47,6 @@ public:
 private:
     explicit FrameBufferSkPictureCanvasLayerTextureUpdater(PassOwnPtr<LayerPainterChromium>);
 };
-} // namespace WebCore
+} // namespace cc
 #endif // USE(ACCELERATED_COMPOSITING)
 #endif // FrameBufferSkPictureCanvasLayerTextureUpdater_h

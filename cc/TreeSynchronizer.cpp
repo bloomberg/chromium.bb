@@ -13,7 +13,7 @@
 #include "ScrollbarLayerChromium.h"
 #include <wtf/RefPtr.h>
 
-namespace WebCore {
+namespace cc {
 
 PassOwnPtr<CCLayerImpl> TreeSynchronizer::synchronizeTrees(LayerChromium* layerChromiumRoot, PassOwnPtr<CCLayerImpl> oldCCLayerImplRoot, CCLayerTreeHostImpl* hostImpl)
 {
@@ -109,4 +109,4 @@ void TreeSynchronizer::updateScrollbarLayerPointersRecursive(const RawPtrCCLayer
         ccScrollLayerImpl->setVerticalScrollbarLayer(ccScrollbarLayerImpl);
 }
 
-} // namespace WebCore
+} // namespace cc

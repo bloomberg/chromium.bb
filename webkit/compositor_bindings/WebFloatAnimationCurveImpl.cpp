@@ -21,7 +21,7 @@ WebFloatAnimationCurve* WebFloatAnimationCurve::create()
 }
 
 WebFloatAnimationCurveImpl::WebFloatAnimationCurveImpl()
-    : m_curve(WebCore::CCKeyframedFloatAnimationCurve::create())
+    : m_curve(cc::CCKeyframedFloatAnimationCurve::create())
 {
 }
 
@@ -41,12 +41,12 @@ void WebFloatAnimationCurveImpl::add(const WebFloatKeyframe& keyframe)
 
 void WebFloatAnimationCurveImpl::add(const WebFloatKeyframe& keyframe, TimingFunctionType type)
 {
-    m_curve->addKeyframe(WebCore::CCFloatKeyframe::create(keyframe.time, keyframe.value, createTimingFunction(type)));
+    m_curve->addKeyframe(cc::CCFloatKeyframe::create(keyframe.time, keyframe.value, createTimingFunction(type)));
 }
 
 void WebFloatAnimationCurveImpl::add(const WebFloatKeyframe& keyframe, double x1, double y1, double x2, double y2)
 {
-    m_curve->addKeyframe(WebCore::CCFloatKeyframe::create(keyframe.time, keyframe.value, WebCore::CCCubicBezierTimingFunction::create(x1, y1, x2, y2)));
+    m_curve->addKeyframe(cc::CCFloatKeyframe::create(keyframe.time, keyframe.value, cc::CCCubicBezierTimingFunction::create(x1, y1, x2, y2)));
 }
 
 float WebFloatAnimationCurveImpl::getValue(double time) const
@@ -54,7 +54,7 @@ float WebFloatAnimationCurveImpl::getValue(double time) const
     return m_curve->getValue(time);
 }
 
-PassOwnPtr<WebCore::CCAnimationCurve> WebFloatAnimationCurveImpl::cloneToCCAnimationCurve() const
+PassOwnPtr<cc::CCAnimationCurve> WebFloatAnimationCurveImpl::cloneToCCAnimationCurve() const
 {
     return m_curve->clone();
 }

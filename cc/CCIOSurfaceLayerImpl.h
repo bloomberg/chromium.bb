@@ -8,7 +8,7 @@
 #include "CCLayerImpl.h"
 #include "IntSize.h"
 
-namespace WebCore {
+namespace cc {
 
 class CCIOSurfaceLayerImpl : public CCLayerImpl {
 public:

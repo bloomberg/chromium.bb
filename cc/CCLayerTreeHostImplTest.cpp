@@ -34,8 +34,8 @@
 #include <public/WebVideoFrame.h>
 #include <public/WebVideoFrameProvider.h>
 
+using namespace cc;
 using namespace CCLayerTestCommon;
-using namespace WebCore;
 using namespace WebKit;
 using namespace WebKitTests;
 
@@ -2107,7 +2107,7 @@ public:
     // Unlimited texture size.
     virtual void getIntegerv(WGC3Denum pname, WGC3Dint* value)
     {
-        if (pname == WebCore::GraphicsContext3D::MAX_TEXTURE_SIZE)
+        if (pname == cc::GraphicsContext3D::MAX_TEXTURE_SIZE)
             *value = 8192;
     }
 };
@@ -2422,7 +2422,7 @@ class StrictWebGraphicsContext3DWithIOSurface : public StrictWebGraphicsContext3
 public:
     virtual WebString getString(WGC3Denum name) OVERRIDE
     {
-        if (name == WebCore::GraphicsContext3D::EXTENSIONS)
+        if (name == cc::GraphicsContext3D::EXTENSIONS)
             return WebString("GL_CHROMIUM_iosurface GL_ARB_texture_rectangle");
 
         return WebString();
@@ -2433,7 +2433,7 @@ class FakeWebGraphicsContext3DWithIOSurface : public FakeWebGraphicsContext3D {
 public:
     virtual WebString getString(WGC3Denum name) OVERRIDE
     {
-        if (name == WebCore::GraphicsContext3D::EXTENSIONS)
+        if (name == cc::GraphicsContext3D::EXTENSIONS)
             return WebString("GL_CHROMIUM_iosurface GL_ARB_texture_rectangle");
 
         return WebString();
@@ -2623,7 +2623,7 @@ public:
 
     virtual WebString getString(WGC3Denum name) OVERRIDE
     {
-        if (name == WebCore::GraphicsContext3D::EXTENSIONS)
+        if (name == cc::GraphicsContext3D::EXTENSIONS)
             return WebString("GL_CHROMIUM_iosurface GL_ARB_texture_rectangle");
 
         return WebString();

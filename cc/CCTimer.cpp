@@ -8,7 +8,7 @@
 
 #include "CCThread.h"
 
-namespace WebCore {
+namespace cc {
 
 class CCTimerTask : public CCThread::Task {
 public:
@@ -76,4 +76,4 @@ void CCTimer::stop()
     m_task = 0;
 }
 
-} // namespace WebCore
+} // namespace cc

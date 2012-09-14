@@ -8,7 +8,7 @@
 #include "ImageLayerChromium.h"
 #include "WebLayerImpl.h"
 
-using WebCore::ImageLayerChromium;
+using cc::ImageLayerChromium;
 
 namespace WebKit {
 

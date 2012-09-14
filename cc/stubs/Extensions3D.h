@@ -8,7 +8,7 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
-namespace WebCore {
+namespace cc {
 
 class Extensions3D {
 public:
@@ -23,4 +23,3 @@ public:
 
 
 #endif  // CC_STUBS_EXTENSIONS3D_H_
-

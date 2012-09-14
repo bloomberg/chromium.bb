@@ -11,7 +11,7 @@
 #include "TraceEvent.h"
 #include <public/WebGraphicsContext3D.h>
 
-namespace WebCore {
+namespace cc {
 
 #if USE(ACCELERATED_COMPOSITING)
 AcceleratedTextureCopier::AcceleratedTextureCopier(WebKit::WebGraphicsContext3D* context, bool usingBindUniforms)

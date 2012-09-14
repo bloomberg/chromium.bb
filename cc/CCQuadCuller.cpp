@@ -20,7 +20,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace cc {
 
 static const int debugTileBorderWidth = 1;
 static const int debugTileBorderAlpha = 120;
@@ -92,5 +92,5 @@ bool CCQuadCuller::append(PassOwnPtr<CCDrawQuad> passDrawQuad, CCAppendQuadsData
     return appendQuadInternal(passDrawQuad, culledRect, m_quadList, *m_occlusionTracker, m_showCullingWithDebugBorderQuads);
 }
 
-} // namespace WebCore
+} // namespace cc
 #endif // USE(ACCELERATED_COMPOSITING)

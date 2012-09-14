@@ -12,7 +12,7 @@
 #include <wtf/PassOwnPtr.h>
 #include <wtf/Vector.h>
 
-namespace WebCore {
+namespace cc {
 
 class CCKeyframe {
 public:
@@ -106,6 +106,6 @@ private:
     Vector<OwnPtr<CCTransformKeyframe> > m_keyframes;
 };
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // CCKeyframedAnimationCurve_h

@@ -8,7 +8,7 @@
 #include <public/WebTransformationMatrix.h>
 #include <wtf/PassOwnPtr.h>
 
-namespace WebCore {
+namespace cc {
 
 class CCFloatAnimationCurve;
 class CCTransformAnimationCurve;
@@ -51,6 +51,6 @@ public:
     virtual Type type() const OVERRIDE { return Transform; }
 };
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // CCAnimation_h

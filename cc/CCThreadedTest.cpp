@@ -33,7 +33,7 @@
 #include <wtf/PassRefPtr.h>
 #include <wtf/Vector.h>
 
-using namespace WebCore;
+using namespace cc;
 using namespace WebKit;
 
 namespace WebKitTests {
@@ -132,9 +132,9 @@ MockLayerTreeHostImpl::MockLayerTreeHostImpl(TestHooks* testHooks, const CCLayer
 }
 
 // Adapts CCLayerTreeHost for test. Injects MockLayerTreeHostImpl.
-class MockLayerTreeHost : public WebCore::CCLayerTreeHost {
+class MockLayerTreeHost : public cc::CCLayerTreeHost {
 public:
-    static PassOwnPtr<MockLayerTreeHost> create(TestHooks* testHooks, WebCore::CCLayerTreeHostClient* client, PassRefPtr<WebCore::LayerChromium> rootLayer, const WebCore::CCLayerTreeSettings& settings)
+    static PassOwnPtr<MockLayerTreeHost> create(TestHooks* testHooks, cc::CCLayerTreeHostClient* client, PassRefPtr<cc::LayerChromium> rootLayer, const cc::CCLayerTreeSettings& settings)
     {
         OwnPtr<MockLayerTreeHost> layerTreeHost(adoptPtr(new MockLayerTreeHost(testHooks, client, settings)));
         bool success = layerTreeHost->initialize();
@@ -149,7 +149,7 @@ public:
         return layerTreeHost.release();
     }
 
-    virtual PassOwnPtr<WebCore::CCLayerTreeHostImpl> createLayerTreeHostImpl(WebCore::CCLayerTreeHostImplClient* client)
+    virtual PassOwnPtr<cc::CCLayerTreeHostImpl> createLayerTreeHostImpl(cc::CCLayerTreeHostImplClient* client)
     {
         return MockLayerTreeHostImpl::create(m_testHooks, settings(), client);
     }
@@ -161,7 +161,7 @@ public:
     }
 
 private:
-    MockLayerTreeHost(TestHooks* testHooks, WebCore::CCLayerTreeHostClient* client, const WebCore::CCLayerTreeSettings& settings)
+    MockLayerTreeHost(TestHooks* testHooks, cc::CCLayerTreeHostClient* client, const cc::CCLayerTreeSettings& settings)
         : CCLayerTreeHost(client, settings)
         , m_testHooks(testHooks)
     {

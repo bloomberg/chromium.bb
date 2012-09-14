@@ -9,7 +9,7 @@
 
 #include "CCVideoLayerImpl.h"
 
-namespace WebCore {
+namespace cc {
 
 PassRefPtr<VideoLayerChromium> VideoLayerChromium::create(WebKit::WebVideoFrameProvider* provider)
 {
@@ -32,6 +32,6 @@ PassOwnPtr<CCLayerImpl> VideoLayerChromium::createCCLayerImpl()
     return CCVideoLayerImpl::create(m_layerId, m_provider);
 }
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // USE(ACCELERATED_COMPOSITING)

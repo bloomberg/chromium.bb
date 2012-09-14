@@ -10,7 +10,7 @@
 
 using WebKit::WebTransformationMatrix;
 
-namespace WebCore {
+namespace cc {
 
 namespace {
 
@@ -218,4 +218,4 @@ WebTransformationMatrix CCKeyframedTransformAnimationCurve::getValue(double t) c
     return m_keyframes[i+1]->value().blend(m_keyframes[i]->value(), progress);
 }
 
-} // namespace WebCore
+} // namespace cc

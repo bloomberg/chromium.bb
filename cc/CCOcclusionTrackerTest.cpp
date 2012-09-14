@@ -23,7 +23,7 @@
 #include <public/WebFilterOperations.h>
 #include <public/WebTransformationMatrix.h>
 
-using namespace WebCore;
+using namespace cc;
 using namespace WebKit;
 using namespace WebKitTests;
 

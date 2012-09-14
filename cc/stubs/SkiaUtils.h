@@ -5,9 +5,9 @@
 #ifndef CC_STUBS_SKIAUTILS_H_
 #define CC_STUBS_SKIAUTILS_H_
 
-namespace WebCore {
+namespace cc {
 
-inline SkScalar WebCoreFloatToSkScalar(float f)
+inline SkScalar CCFloatToSkScalar(float f)
 {
     return SkFloatToScalar(isfinite(f) ? f : 0);
 }

@@ -6,7 +6,7 @@
 
 #include "CCStreamVideoDrawQuad.h"
 
-namespace WebCore {
+namespace cc {
 
 PassOwnPtr<CCStreamVideoDrawQuad> CCStreamVideoDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, unsigned textureId, const WebKit::WebTransformationMatrix& matrix)
 {

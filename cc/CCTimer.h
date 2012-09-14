@@ -6,7 +6,7 @@
 #define CCTimer_h
 
 
-namespace WebCore {
+namespace cc {
 
 class CCThread;
 class CCTimerTask;
@@ -37,6 +37,6 @@ private:
     CCTimerTask* m_task; // weak pointer
 };
 
-} // namespace WebCore
+} // namespace cc
 
 #endif

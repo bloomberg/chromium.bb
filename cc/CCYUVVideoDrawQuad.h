@@ -9,7 +9,7 @@
 #include "CCVideoLayerImpl.h"
 #include <wtf/PassOwnPtr.h>
 
-namespace WebCore {
+namespace cc {
 
 class CCYUVVideoDrawQuad : public CCDrawQuad {
     WTF_MAKE_NONCOPYABLE(CCYUVVideoDrawQuad);

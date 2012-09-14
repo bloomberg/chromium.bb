@@ -20,7 +20,7 @@
 using namespace std;
 using WebKit::WebTransformationMatrix;
 
-namespace WebCore {
+namespace cc {
 
 static int s_nextLayerId = 1;
 

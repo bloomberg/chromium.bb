@@ -15,7 +15,7 @@
 #include "Region.h"
 #include <gtest/gtest.h>
 
-using namespace WebCore;
+using namespace cc;
 using namespace WebKitTests;
 
 namespace {

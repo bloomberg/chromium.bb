@@ -7,7 +7,7 @@
 
 #include "CCScrollbarAnimationController.h"
 
-namespace WebCore {
+namespace cc {
 
 class CCScrollbarAnimationControllerLinearFade : public CCScrollbarAnimationController {
 public:
@@ -34,6 +34,6 @@ private:
     double m_fadeoutLength;
 };
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // CCScrollbarAnimationControllerLinearFade_h

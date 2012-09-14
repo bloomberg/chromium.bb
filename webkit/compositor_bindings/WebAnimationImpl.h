@@ -9,7 +9,7 @@
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 
-namespace WebCore {
+namespace cc {
 class CCActiveAnimation;
 }
 
@@ -32,12 +32,11 @@ public:
     virtual bool alternatesDirection() const OVERRIDE;
     virtual void setAlternatesDirection(bool) OVERRIDE;
 
-    PassOwnPtr<WebCore::CCActiveAnimation> cloneToCCAnimation();
+    PassOwnPtr<cc::CCActiveAnimation> cloneToCCAnimation();
 private:
-    OwnPtr<WebCore::CCActiveAnimation> m_animation;
+    OwnPtr<cc::CCActiveAnimation> m_animation;
 };
 
 }
 
 #endif // WebAnimationImpl_h
-

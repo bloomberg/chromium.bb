@@ -8,7 +8,7 @@
 #include "ScrollbarLayerChromium.h"
 #include "WebLayerImpl.h"
 
-using WebCore::ScrollbarLayerChromium;
+using cc::ScrollbarLayerChromium;
 
 namespace WebKit {
 

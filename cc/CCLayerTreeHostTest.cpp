@@ -25,7 +25,7 @@
 #include <public/WebSize.h>
 #include <wtf/OwnArrayPtr.h>
 
-using namespace WebCore;
+using namespace cc;
 using namespace WebKit;
 using namespace WebKitTests;
 
@@ -2442,7 +2442,7 @@ private:
         if (m_texture.get())
             return;
         m_texture = EvictionTrackingTexture::create(CCPrioritizedTexture::create(layerTreeHost()->contentsTextureManager()));
-        m_texture->texture()->setDimensions(WebCore::IntSize(10, 10), WebCore::GraphicsContext3D::RGBA);
+        m_texture->texture()->setDimensions(IntSize(10, 10), cc::GraphicsContext3D::RGBA);
     }
 
     OwnPtr<EvictionTrackingTexture> m_texture;

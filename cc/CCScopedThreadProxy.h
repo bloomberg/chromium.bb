@@ -9,7 +9,7 @@
 #include "base/threading/platform_thread.h"
 #include <wtf/ThreadSafeRefCounted.h>
 
-namespace WebCore {
+namespace cc {
 
 // This class is a proxy used to post tasks to an target thread from any other thread. The proxy may be shut down at
 // any point from the target thread after which no more tasks posted to the proxy will run. In other words, all

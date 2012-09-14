@@ -9,7 +9,7 @@
 #include <wtf/PassOwnPtr.h>
 #include <wtf/Noncopyable.h>
 
-namespace WebCore {
+namespace cc {
 
 // CCThread provides basic infrastructure for messaging with the compositor in a
 // platform-neutral way.

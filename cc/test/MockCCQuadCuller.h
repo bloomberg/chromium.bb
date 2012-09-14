@@ -10,7 +10,7 @@
 #include "IntRect.h"
 #include <wtf/PassOwnPtr.h>
 
-namespace WebCore {
+namespace cc {
 
 class MockCCQuadCuller : public CCQuadSink {
 public:
@@ -54,5 +54,5 @@ private:
     CCSharedQuadStateList m_sharedQuadStateStorage;
 };
 
-} // namespace WebCore
+} // namespace cc
 #endif // MockCCQuadCuller_h

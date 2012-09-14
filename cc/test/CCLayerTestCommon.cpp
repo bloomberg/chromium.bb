@@ -10,7 +10,7 @@
 #include <gtest/gtest.h>
 #include <wtf/Vector.h>
 
-using namespace WebCore;
+using namespace cc;
 
 namespace CCLayerTestCommon {
 

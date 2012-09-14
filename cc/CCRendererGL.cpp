@@ -48,7 +48,7 @@ using WebKit::WebGraphicsMemoryAllocation;
 using WebKit::WebSharedGraphicsContext3D;
 using WebKit::WebTransformationMatrix;
 
-namespace WebCore {
+namespace cc {
 
 namespace {
 
@@ -1524,6 +1524,6 @@ bool CCRendererGL::isContextLost()
     return (m_context->getGraphicsResetStatusARB() != GraphicsContext3D::NO_ERROR);
 }
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // USE(ACCELERATED_COMPOSITING)

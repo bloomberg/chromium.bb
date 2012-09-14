@@ -14,7 +14,7 @@ namespace WebKit {
 class WebVideoFrameProvider;
 }
 
-namespace WebCore {
+namespace cc {
 
 class CCVideoLayerImpl;
 

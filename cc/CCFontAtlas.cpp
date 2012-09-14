@@ -12,7 +12,7 @@
 #include "SkCanvas.h"
 #include <vector>
 
-namespace WebCore {
+namespace cc {
 
 using namespace std;
 
@@ -67,6 +67,6 @@ void CCFontAtlas::drawDebugAtlas(SkCanvas* canvas, const IntPoint& destPosition)
     canvas->drawBitmapRect(m_atlas, &source, SkRect::MakeXYWH(destPosition.x(), destPosition.y(), m_atlas.width(), m_atlas.height()));
 }
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // USE(ACCELERATED_COMPOSITING)

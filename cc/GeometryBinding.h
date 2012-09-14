@@ -13,7 +13,7 @@ namespace WebKit {
 class WebGraphicsContext3D;
 }
 
-namespace WebCore {
+namespace cc {
 
 class GeometryBinding {
 public:
@@ -41,7 +41,7 @@ private:
     bool m_initialized;
 };
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // USE(ACCELERATED_COMPOSITING)
 

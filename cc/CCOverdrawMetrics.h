@@ -11,7 +11,7 @@ namespace WebKit {
 class WebTransformationMatrix;
 }
 
-namespace WebCore {
+namespace cc {
 class IntRect;
 class CCLayerTreeHost;
 class CCLayerTreeHostImpl;
@@ -92,6 +92,6 @@ private:
     float m_pixelsCulledForDrawing;
 };
 
-} // namespace WebCore
+} // namespace cc
 
 #endif

@@ -8,7 +8,7 @@
 
 #include "CCTextureUpdateQueue.h"
 
-namespace WebCore {
+namespace cc {
 
 CCTextureUpdateQueue::CCTextureUpdateQueue()
 {

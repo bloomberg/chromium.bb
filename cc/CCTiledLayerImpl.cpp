@@ -24,7 +24,7 @@
 using namespace std;
 using WebKit::WebTransformationMatrix;
 
-namespace WebCore {
+namespace cc {
 
 static const int debugTileBorderWidth = 1;
 static const int debugTileBorderAlpha = 100;
@@ -214,6 +214,6 @@ void CCTiledLayerImpl::didLoseContext()
     m_tiler->reset();
 }
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // USE(ACCELERATED_COMPOSITING)

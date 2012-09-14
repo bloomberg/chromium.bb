@@ -14,7 +14,7 @@
 
 using WebKit::WebTransformationMatrix;
 
-namespace WebCore {
+namespace cc {
 
 RenderSurfaceChromium::RenderSurfaceChromium(LayerChromium* owningLayer)
     : m_owningLayer(owningLayer)

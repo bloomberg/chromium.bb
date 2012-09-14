@@ -11,7 +11,7 @@
 #include "ContentLayerChromium.h"
 #include "SkBitmap.h"
 
-namespace WebCore {
+namespace cc {
 
 class ImageLayerTextureUpdater;
 

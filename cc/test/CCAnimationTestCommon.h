@@ -12,24 +12,24 @@
 
 #include <wtf/OwnPtr.h>
 
-namespace WebCore {
+namespace cc {
 class CCLayerImpl;
 class LayerChromium;
 }
 
 namespace WebKitTests {
 
-class FakeFloatAnimationCurve : public WebCore::CCFloatAnimationCurve {
+class FakeFloatAnimationCurve : public cc::CCFloatAnimationCurve {
 public:
     FakeFloatAnimationCurve();
     virtual ~FakeFloatAnimationCurve();
 
     virtual double duration() const OVERRIDE;
     virtual float getValue(double now) const OVERRIDE;
-    virtual PassOwnPtr<WebCore::CCAnimationCurve> clone() const OVERRIDE;
+    virtual PassOwnPtr<cc::CCAnimationCurve> clone() const OVERRIDE;
 };
 
-class FakeTransformTransition : public WebCore::CCTransformAnimationCurve {
+class FakeTransformTransition : public cc::CCTransformAnimationCurve {
 public:
     FakeTransformTransition(double duration);
     virtual ~FakeTransformTransition();
@@ -37,13 +37,13 @@ public:
     virtual double duration() const OVERRIDE;
     virtual WebKit::WebTransformationMatrix getValue(double time) const OVERRIDE;
 
-    virtual PassOwnPtr<WebCore::CCAnimationCurve> clone() const OVERRIDE;
+    virtual PassOwnPtr<cc::CCAnimationCurve> clone() const OVERRIDE;
 
 private:
     double m_duration;
 };
 
-class FakeFloatTransition : public WebCore::CCFloatAnimationCurve {
+class FakeFloatTransition : public cc::CCFloatAnimationCurve {
 public:
     FakeFloatTransition(double duration, float from, float to);
     virtual ~FakeFloatTransition();
@@ -51,7 +51,7 @@ public:
     virtual double duration() const OVERRIDE;
     virtual float getValue(double time) const OVERRIDE;
 
-    virtual PassOwnPtr<WebCore::CCAnimationCurve> clone() const OVERRIDE;
+    virtual PassOwnPtr<cc::CCAnimationCurve> clone() const OVERRIDE;
 
 private:
     double m_duration;
@@ -59,7 +59,7 @@ private:
     float m_to;
 };
 
-class FakeLayerAnimationControllerClient : public WebCore::CCLayerAnimationControllerClient {
+class FakeLayerAnimationControllerClient : public cc::CCLayerAnimationControllerClient {
 public:
     FakeLayerAnimationControllerClient();
     virtual ~FakeLayerAnimationControllerClient();
@@ -76,14 +76,14 @@ private:
     WebKit::WebTransformationMatrix m_transform;
 };
 
-void addOpacityTransitionToController(WebCore::CCLayerAnimationController&, double duration, float startOpacity, float endOpacity, bool useTimingFunction);
-void addAnimatedTransformToController(WebCore::CCLayerAnimationController&, double duration, int deltaX, int deltaY);
+void addOpacityTransitionToController(cc::CCLayerAnimationController&, double duration, float startOpacity, float endOpacity, bool useTimingFunction);
+void addAnimatedTransformToController(cc::CCLayerAnimationController&, double duration, int deltaX, int deltaY);
 
-void addOpacityTransitionToLayer(WebCore::LayerChromium&, double duration, float startOpacity, float endOpacity, bool useTimingFunction);
-void addOpacityTransitionToLayer(WebCore::CCLayerImpl&, double duration, float startOpacity, float endOpacity, bool useTimingFunction);
+void addOpacityTransitionToLayer(cc::LayerChromium&, double duration, float startOpacity, float endOpacity, bool useTimingFunction);
+void addOpacityTransitionToLayer(cc::CCLayerImpl&, double duration, float startOpacity, float endOpacity, bool useTimingFunction);
 
-void addAnimatedTransformToLayer(WebCore::LayerChromium&, double duration, int deltaX, int deltaY);
-void addAnimatedTransformToLayer(WebCore::CCLayerImpl&, double duration, int deltaX, int deltaY);
+void addAnimatedTransformToLayer(cc::LayerChromium&, double duration, int deltaX, int deltaY);
+void addAnimatedTransformToLayer(cc::CCLayerImpl&, double duration, int deltaX, int deltaY);
 
 } // namespace WebKitTests
 

@@ -5,7 +5,7 @@
 #ifndef CCRenderingStats_h
 #define CCRenderingStats_h
 
-namespace WebCore {
+namespace cc {
 
 struct CCRenderingStats {
     // FIXME: Rename these to animationFrameCount and screenFrameCount, crbug.com/138641.

@@ -11,7 +11,7 @@ namespace WebKit {
 class WebCompositorOutputSurface;
 }
 
-namespace WebCore {
+namespace cc {
 class CCInputHandler;
 class IntSize;
 

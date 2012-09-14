@@ -12,7 +12,7 @@
 #include "IntRect.h"
 #include "IntSize.h"
 
-namespace WebCore {
+namespace cc {
 
 class CCPrioritizedTextureManager;
 
@@ -116,6 +116,6 @@ private:
     CCPrioritizedTextureManager* m_manager;
 };
 
-} // WebCore
+} // namespace cc
 
 #endif

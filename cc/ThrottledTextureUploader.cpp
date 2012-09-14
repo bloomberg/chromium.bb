@@ -16,7 +16,7 @@ static const size_t maxPendingQueries = 2;
 
 } // anonymous namespace
 
-namespace WebCore {
+namespace cc {
 
 ThrottledTextureUploader::Query::Query(WebKit::WebGraphicsContext3D* context)
     : m_context(context)

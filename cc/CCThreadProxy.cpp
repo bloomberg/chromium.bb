@@ -29,7 +29,7 @@ static const double contextRecreationTickRate = 0.03;
 
 } // anonymous namespace
 
-namespace WebCore {
+namespace cc {
 
 namespace {
 
@@ -919,4 +919,4 @@ void CCThreadProxy::implSideRenderingStatsOnImplThread(CCCompletionEvent* comple
     completion->signal();
 }
 
-} // namespace WebCore
+} // namespace cc

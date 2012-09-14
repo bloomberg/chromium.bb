@@ -14,7 +14,7 @@
 
 namespace WebKitTests {
 
-class FakeCCTimeSourceClient : public WebCore::CCTimeSourceClient {
+class FakeCCTimeSourceClient : public cc::CCTimeSourceClient {
 public:
     FakeCCTimeSourceClient() { reset(); }
     void reset() { m_tickCalled = false; }
@@ -26,7 +26,7 @@ protected:
     bool m_tickCalled;
 };
 
-class FakeCCThread : public WebCore::CCThread {
+class FakeCCThread : public cc::CCThread {
 public:
     FakeCCThread() { reset(); }
     void reset()
@@ -73,7 +73,7 @@ protected:
     bool m_runPendingTaskOnOverwrite;
 };
 
-class FakeCCTimeSource : public WebCore::CCTimeSource {
+class FakeCCTimeSource : public cc::CCTimeSource {
 public:
     FakeCCTimeSource()
         : m_active(false)
@@ -85,7 +85,7 @@ public:
 
     virtual ~FakeCCTimeSource() { }
 
-    virtual void setClient(WebCore::CCTimeSourceClient* client) OVERRIDE { m_client = client; }
+    virtual void setClient(cc::CCTimeSourceClient* client) OVERRIDE { m_client = client; }
     virtual void setActive(bool b) OVERRIDE { m_active = b; }
     virtual bool active() const OVERRIDE { return m_active; }
     virtual void setTimebaseAndInterval(double timebase, double interval) OVERRIDE { }
@@ -104,12 +104,12 @@ public:
 protected:
     bool m_active;
     double m_nextTickTime;
-    WebCore::CCTimeSourceClient* m_client;
+    cc::CCTimeSourceClient* m_client;
 };
 
-class FakeCCDelayBasedTimeSource : public WebCore::CCDelayBasedTimeSource {
+class FakeCCDelayBasedTimeSource : public cc::CCDelayBasedTimeSource {
 public:
-    static PassRefPtr<FakeCCDelayBasedTimeSource> create(double interval, WebCore::CCThread* thread)
+    static PassRefPtr<FakeCCDelayBasedTimeSource> create(double interval, cc::CCThread* thread)
     {
         return adoptRef(new FakeCCDelayBasedTimeSource(interval, thread));
     }
@@ -118,16 +118,16 @@ public:
     virtual double monotonicTimeNow() const OVERRIDE { return m_monotonicTimeNow; }
 
 protected:
-    FakeCCDelayBasedTimeSource(double interval, WebCore::CCThread* thread)
+    FakeCCDelayBasedTimeSource(double interval, cc::CCThread* thread)
         : CCDelayBasedTimeSource(interval, thread)
         , m_monotonicTimeNow(0) { }
 
     double m_monotonicTimeNow;
 };
 
-class FakeCCFrameRateController : public WebCore::CCFrameRateController {
+class FakeCCFrameRateController : public cc::CCFrameRateController {
 public:
-    FakeCCFrameRateController(PassRefPtr<WebCore::CCTimeSource> timer) : WebCore::CCFrameRateController(timer) { }
+    FakeCCFrameRateController(PassRefPtr<cc::CCTimeSource> timer) : cc::CCFrameRateController(timer) { }
 
     int numFramesPending() const { return m_numFramesPending; }
 };

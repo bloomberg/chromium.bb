@@ -9,7 +9,7 @@
 #include <public/WebTransformationMatrix.h>
 #include <wtf/PassOwnPtr.h>
 
-namespace WebCore {
+namespace cc {
 
 struct CCSharedQuadState {
     int id;

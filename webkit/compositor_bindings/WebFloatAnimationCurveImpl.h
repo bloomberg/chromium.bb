@@ -9,7 +9,7 @@
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 
-namespace WebCore {
+namespace cc {
 class CCAnimationCurve;
 class CCKeyframedFloatAnimationCurve;
 }
@@ -31,10 +31,10 @@ public:
 
     virtual float getValue(double time) const OVERRIDE;
 
-    PassOwnPtr<WebCore::CCAnimationCurve> cloneToCCAnimationCurve() const;
+    PassOwnPtr<cc::CCAnimationCurve> cloneToCCAnimationCurve() const;
 
 private:
-    OwnPtr<WebCore::CCKeyframedFloatAnimationCurve> m_curve;
+    OwnPtr<cc::CCKeyframedFloatAnimationCurve> m_curve;
 };
 
 }

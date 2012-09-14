@@ -13,17 +13,17 @@
 
 namespace WebKit {
 
-PassOwnPtr<WebCore::CCTimingFunction> createTimingFunction(WebAnimationCurve::TimingFunctionType type)
+PassOwnPtr<cc::CCTimingFunction> createTimingFunction(WebAnimationCurve::TimingFunctionType type)
 {
     switch (type) {
     case WebAnimationCurve::TimingFunctionTypeEase:
-        return WebCore::CCEaseTimingFunction::create();
+        return cc::CCEaseTimingFunction::create();
     case WebAnimationCurve::TimingFunctionTypeEaseIn:
-        return WebCore::CCEaseInTimingFunction::create();
+        return cc::CCEaseInTimingFunction::create();
     case WebAnimationCurve::TimingFunctionTypeEaseOut:
-        return WebCore::CCEaseOutTimingFunction::create();
+        return cc::CCEaseOutTimingFunction::create();
     case WebAnimationCurve::TimingFunctionTypeEaseInOut:
-        return WebCore::CCEaseInOutTimingFunction::create();
+        return cc::CCEaseInOutTimingFunction::create();
     case WebAnimationCurve::TimingFunctionTypeLinear:
         return nullptr;
     }

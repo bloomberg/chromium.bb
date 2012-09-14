@@ -8,7 +8,7 @@
 #include "SolidColorLayerChromium.h"
 #include "WebLayerImpl.h"
 
-using WebCore::SolidColorLayerChromium;
+using cc::SolidColorLayerChromium;
 
 namespace WebKit {
 
@@ -38,4 +38,3 @@ void WebSolidColorLayerImpl::setBackgroundColor(WebColor color)
 }
 
 } // namespace WebKit
-

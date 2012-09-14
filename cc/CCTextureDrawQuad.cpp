@@ -6,7 +6,7 @@
 
 #include "CCTextureDrawQuad.h"
 
-namespace WebCore {
+namespace cc {
 
 PassOwnPtr<CCTextureDrawQuad> CCTextureDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, unsigned resourceId, bool premultipliedAlpha, const FloatRect& uvRect, bool flipped)
 {

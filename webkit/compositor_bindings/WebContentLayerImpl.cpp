@@ -6,6 +6,8 @@
 #include "WebContentLayerImpl.h"
 
 #include "ContentLayerChromium.h"
+#include "FloatRect.h"
+#include "IntRect.h"
 #include "SkMatrix44.h"
 #include "webcore_convert.h"
 #include <public/WebContentLayerClient.h>
@@ -14,7 +16,7 @@
 #include <public/WebRect.h>
 #include <public/WebSize.h>
 
-using namespace WebCore;
+using namespace cc;
 
 namespace WebKit {
 

@@ -18,7 +18,7 @@
 #include <public/Platform.h>
 #include <wtf/CurrentTime.h>
 
-namespace WebCore {
+namespace cc {
 
 ContentLayerPainter::ContentLayerPainter(ContentLayerChromiumClient* client)
     : m_client(client)

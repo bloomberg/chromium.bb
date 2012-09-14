@@ -7,7 +7,7 @@
 
 #include <wtf/RefCounted.h>
 
-namespace WebCore {
+namespace cc {
 
 class CCThread;
 

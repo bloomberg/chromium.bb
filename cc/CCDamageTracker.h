@@ -14,7 +14,7 @@ namespace WebKit {
 class WebFilterOperations;
 }
 
-namespace WebCore {
+namespace cc {
 
 class CCLayerImpl;
 class CCRenderSurface;
@@ -57,6 +57,6 @@ private:
     bool m_forceFullDamageNextUpdate;
 };
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // CCDamageTracker_h

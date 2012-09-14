@@ -17,7 +17,7 @@ namespace WebKit {
 class WebTransformationMatrix;
 }
 
-namespace WebCore {
+namespace cc {
 
 class CCLayerSorter {
     WTF_MAKE_NONCOPYABLE(CCLayerSorter);

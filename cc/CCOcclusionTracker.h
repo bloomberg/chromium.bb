@@ -9,7 +9,7 @@
 #include "FloatQuad.h"
 #include "Region.h"
 
-namespace WebCore {
+namespace cc {
 class CCOverdrawMetrics;
 class CCLayerImpl;
 class CCRenderSurface;

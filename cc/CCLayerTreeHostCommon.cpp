@@ -20,7 +20,7 @@
 
 using WebKit::WebTransformationMatrix;
 
-namespace WebCore {
+namespace cc {
 
 IntRect CCLayerTreeHostCommon::calculateVisibleRect(const IntRect& targetSurfaceRect, const IntRect& layerBoundRect, const WebTransformationMatrix& transform)
 {
@@ -782,7 +782,7 @@ void CCLayerTreeHostCommon::calculateDrawTransforms(LayerChromium* rootLayer, co
 
     setupRootLayerAndSurfaceForRecursion<LayerChromium, Vector<RefPtr<LayerChromium> > >(rootLayer, renderSurfaceLayerList, deviceViewportSize);
 
-    WebCore::calculateDrawTransformsInternal<LayerChromium, Vector<RefPtr<LayerChromium> >, RenderSurfaceChromium, void>(rootLayer, rootLayer, deviceScaleTransform, identityMatrix, identityMatrix,
+    cc::calculateDrawTransformsInternal<LayerChromium, Vector<RefPtr<LayerChromium> >, RenderSurfaceChromium, void>(rootLayer, rootLayer, deviceScaleTransform, identityMatrix, identityMatrix,
                                                                                                                          rootLayer->renderSurface()->contentRect(), true, 0, renderSurfaceLayerList,
                                                                                                                          rootLayer->renderSurface()->layerList(), 0, maxTextureSize, deviceScaleFactor, totalDrawableContentRect);
 }
@@ -796,7 +796,7 @@ void CCLayerTreeHostCommon::calculateDrawTransforms(CCLayerImpl* rootLayer, cons
 
     setupRootLayerAndSurfaceForRecursion<CCLayerImpl, Vector<CCLayerImpl*> >(rootLayer, renderSurfaceLayerList, deviceViewportSize);
 
-    WebCore::calculateDrawTransformsInternal<CCLayerImpl, Vector<CCLayerImpl*>, CCRenderSurface, CCLayerSorter>(rootLayer, rootLayer, deviceScaleTransform, identityMatrix, identityMatrix,
+    cc::calculateDrawTransformsInternal<CCLayerImpl, Vector<CCLayerImpl*>, CCRenderSurface, CCLayerSorter>(rootLayer, rootLayer, deviceScaleTransform, identityMatrix, identityMatrix,
                                                                                                                 rootLayer->renderSurface()->contentRect(), true, 0, renderSurfaceLayerList,
                                                                                                                 rootLayer->renderSurface()->layerList(), layerSorter, maxTextureSize, deviceScaleFactor, totalDrawableContentRect);
 }
@@ -882,4 +882,4 @@ CCLayerImpl* CCLayerTreeHostCommon::findLayerThatIsHitByPoint(const IntPoint& vi
     return foundLayer;
 }
 
-} // namespace WebCore
+} // namespace cc

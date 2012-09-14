@@ -13,7 +13,7 @@
 #include <public/WebAnimationDelegate.h>
 #include <public/WebThread.h>
 
-namespace WebCore {
+namespace cc {
 class CCLayerImpl;
 class CCLayerTreeHost;
 class CCLayerTreeHostClient;
@@ -26,13 +26,13 @@ namespace WebKitTests {
 // Used by test stubs to notify the test when something interesting happens.
 class TestHooks : public WebKit::WebAnimationDelegate {
 public:
-    virtual void beginCommitOnCCThread(WebCore::CCLayerTreeHostImpl*) { }
-    virtual void commitCompleteOnCCThread(WebCore::CCLayerTreeHostImpl*) { }
-    virtual bool prepareToDrawOnCCThread(WebCore::CCLayerTreeHostImpl*) { return true; }
-    virtual void drawLayersOnCCThread(WebCore::CCLayerTreeHostImpl*) { }
-    virtual void animateLayers(WebCore::CCLayerTreeHostImpl*, double monotonicTime) { }
-    virtual void willAnimateLayers(WebCore::CCLayerTreeHostImpl*, double monotonicTime) { }
-    virtual void applyScrollAndScale(const WebCore::IntSize&, float) { }
+    virtual void beginCommitOnCCThread(cc::CCLayerTreeHostImpl*) { }
+    virtual void commitCompleteOnCCThread(cc::CCLayerTreeHostImpl*) { }
+    virtual bool prepareToDrawOnCCThread(cc::CCLayerTreeHostImpl*) { return true; }
+    virtual void drawLayersOnCCThread(cc::CCLayerTreeHostImpl*) { }
+    virtual void animateLayers(cc::CCLayerTreeHostImpl*, double monotonicTime) { }
+    virtual void willAnimateLayers(cc::CCLayerTreeHostImpl*, double monotonicTime) { }
+    virtual void applyScrollAndScale(const cc::IntSize&, float) { }
     virtual void animate(double monotonicTime) { }
     virtual void layout() { }
     virtual void didRecreateOutputSurface(bool succeeded) { }
@@ -51,7 +51,7 @@ public:
 class TimeoutTask;
 class BeginTask;
 
-class MockCCLayerTreeHostClient : public WebCore::CCLayerTreeHostClient {
+class MockCCLayerTreeHostClient : public cc::CCLayerTreeHostClient {
 };
 
 // The CCThreadedTests runs with the main loop running. It instantiates a single MockLayerTreeHost and associated
@@ -87,12 +87,12 @@ public:
 
     void clearTimeout() { m_timeoutTask = 0; }
 
-    WebCore::CCLayerTreeHost* layerTreeHost() { return m_layerTreeHost.get(); }
+    cc::CCLayerTreeHost* layerTreeHost() { return m_layerTreeHost.get(); }
 
 protected:
     CCThreadedTest();
 
-    virtual void initializeSettings(WebCore::CCLayerTreeSettings&) { }
+    virtual void initializeSettings(cc::CCLayerTreeSettings&) { }
 
     virtual void scheduleComposite();
 
@@ -112,12 +112,12 @@ protected:
     virtual void runTest(bool threaded);
     WebKit::WebThread* webThread() const { return m_webThread.get(); }
 
-    WebCore::CCLayerTreeSettings m_settings;
+    cc::CCLayerTreeSettings m_settings;
     OwnPtr<MockCCLayerTreeHostClient> m_client;
-    OwnPtr<WebCore::CCLayerTreeHost> m_layerTreeHost;
+    OwnPtr<cc::CCLayerTreeHost> m_layerTreeHost;
 
 protected:
-    RefPtr<WebCore::CCScopedThreadProxy> m_mainThreadProxy;
+    RefPtr<cc::CCScopedThreadProxy> m_mainThreadProxy;
 
 private:
     bool m_beginning;
@@ -141,9 +141,9 @@ public:
 };
 
 // Adapts CCLayerTreeHostImpl for test. Runs real code, then invokes test hooks.
-class MockLayerTreeHostImpl : public WebCore::CCLayerTreeHostImpl {
+class MockLayerTreeHostImpl : public cc::CCLayerTreeHostImpl {
 public:
-    static PassOwnPtr<MockLayerTreeHostImpl> create(TestHooks*, const WebCore::CCLayerTreeSettings&, WebCore::CCLayerTreeHostImplClient*);
+    static PassOwnPtr<MockLayerTreeHostImpl> create(TestHooks*, const cc::CCLayerTreeSettings&, cc::CCLayerTreeHostImplClient*);
 
     virtual void beginCommit();
     virtual void commitComplete();
@@ -151,7 +151,7 @@ public:
     virtual void drawLayers(const FrameData&);
 
     // Make these public.
-    typedef Vector<WebCore::CCLayerImpl*> CCLayerList;
+    typedef Vector<cc::CCLayerImpl*> CCLayerList;
     using CCLayerTreeHostImpl::calculateRenderSurfaceLayerList;
 
 protected:
@@ -159,7 +159,7 @@ protected:
     virtual double lowFrequencyAnimationInterval() const;
 
 private:
-    MockLayerTreeHostImpl(TestHooks*, const WebCore::CCLayerTreeSettings&, WebCore::CCLayerTreeHostImplClient*);
+    MockLayerTreeHostImpl(TestHooks*, const cc::CCLayerTreeSettings&, cc::CCLayerTreeHostImplClient*);
 
     TestHooks* m_testHooks;
 };

@@ -17,7 +17,7 @@
 #include "Extensions3D.h"
 #include <public/WebGraphicsContext3D.h>
 
-namespace WebCore {
+namespace cc {
 
 CCIOSurfaceLayerImpl::CCIOSurfaceLayerImpl(int id)
     : CCLayerImpl(id)

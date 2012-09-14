@@ -6,7 +6,7 @@
 
 #include "CCScopedTexture.h"
 
-namespace WebCore {
+namespace cc {
 
 CCScopedTexture::CCScopedTexture(CCResourceProvider* resourceProvider)
     : m_resourceProvider(resourceProvider)

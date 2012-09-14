@@ -8,7 +8,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace cc {
 
 // static
 int CCPriorityCalculator::uiPriority(bool drawsToRootSurface)
@@ -69,4 +69,4 @@ int CCPriorityCalculator::priorityFromVisibility(bool visible, bool drawsToRootS
     return visible ? visiblePriority(drawsToRootSurface) : lowestPriority();
 }
 
-} // WebCore
+} // cc

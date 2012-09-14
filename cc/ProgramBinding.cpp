@@ -16,7 +16,7 @@
 
 using WebKit::WebGraphicsContext3D;
 
-namespace WebCore {
+namespace cc {
 
 ProgramBindingBase::ProgramBindingBase()
     : m_program(0)
@@ -142,6 +142,6 @@ void ProgramBindingBase::cleanupShaders(WebGraphicsContext3D* context)
     }
 }
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // USE(ACCELERATED_COMPOSITING)

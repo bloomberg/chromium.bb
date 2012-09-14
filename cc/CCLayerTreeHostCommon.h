@@ -11,7 +11,7 @@
 #include <wtf/RefPtr.h>
 #include <wtf/Vector.h>
 
-namespace WebCore {
+namespace cc {
 
 class CCLayerImpl;
 class CCLayerSorter;
@@ -80,6 +80,6 @@ LayerType* CCLayerTreeHostCommon::findLayerInSubtree(LayerType* rootLayer, int l
     return 0;
 }
 
-} // namespace WebCore
+} // namespace cc
 
 #endif

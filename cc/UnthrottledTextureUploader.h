@@ -8,7 +8,7 @@
 #include "CCResourceProvider.h"
 #include "TextureUploader.h"
 
-namespace WebCore {
+namespace cc {
 
 class UnthrottledTextureUploader : public TextureUploader {
     WTF_MAKE_NONCOPYABLE(UnthrottledTextureUploader);

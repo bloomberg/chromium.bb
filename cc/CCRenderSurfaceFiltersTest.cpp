@@ -12,7 +12,7 @@
 #include <public/WebFilterOperations.h>
 #include <wtf/RefPtr.h>
 
-using namespace WebCore;
+using namespace cc;
 using namespace WebKit;
 
 namespace {

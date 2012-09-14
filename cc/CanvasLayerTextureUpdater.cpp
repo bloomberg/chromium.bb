@@ -19,7 +19,7 @@
 #include "TraceEvent.h"
 #include <wtf/CurrentTime.h>
 
-namespace WebCore {
+namespace cc {
 
 CanvasLayerTextureUpdater::CanvasLayerTextureUpdater(PassOwnPtr<LayerPainterChromium> painter)
     : m_painter(painter)
@@ -34,12 +34,12 @@ void CanvasLayerTextureUpdater::paintContents(SkCanvas* canvas, const IntRect& c
 {
     TRACE_EVENT0("cc", "CanvasLayerTextureUpdater::paintContents");
     canvas->save();
-    canvas->translate(WebCoreFloatToSkScalar(-contentRect.x()), WebCoreFloatToSkScalar(-contentRect.y()));
+    canvas->translate(CCFloatToSkScalar(-contentRect.x()), CCFloatToSkScalar(-contentRect.y()));
 
     IntRect layerRect = contentRect;
 
     if (contentsWidthScale != 1 || contentsHeightScale != 1) {
-        canvas->scale(WebCoreFloatToSkScalar(contentsWidthScale), WebCoreFloatToSkScalar(contentsHeightScale));
+        canvas->scale(CCFloatToSkScalar(contentsWidthScale), CCFloatToSkScalar(contentsHeightScale));
 
         FloatRect rect = contentRect;
         rect.scale(1 / contentsWidthScale, 1 / contentsHeightScale);
@@ -66,5 +66,5 @@ void CanvasLayerTextureUpdater::paintContents(SkCanvas* canvas, const IntRect& c
     m_contentRect = contentRect;
 }
 
-} // namespace WebCore
+} // namespace cc
 #endif // USE(ACCELERATED_COMPOSITING)

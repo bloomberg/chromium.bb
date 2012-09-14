@@ -20,6 +20,8 @@
 #include <public/WebGraphicsContext3D.h>
 #include <wtf/MathExtras.h>
 
+using namespace cc;
+
 namespace {
 
 void getBrightnessMatrix(float amount, SkScalar matrix[20])
@@ -236,7 +238,7 @@ bool getColorMatrix(const WebKit::WebFilterOperation& op, SkScalar matrix[20])
 
 class FilterBufferState {
 public:
-    FilterBufferState(GrContext* grContext, const WebCore::FloatSize& size, unsigned textureId)
+    FilterBufferState(GrContext* grContext, const FloatSize& size, unsigned textureId)
         : m_grContext(grContext)
         , m_currentTexture(0)
     {
@@ -310,7 +312,7 @@ private:
 
 }
 
-namespace WebCore {
+namespace cc {
 
 WebKit::WebFilterOperations CCRenderSurfaceFilters::optimize(const WebKit::WebFilterOperations& filters)
 {

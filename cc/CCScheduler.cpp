@@ -8,7 +8,7 @@
 
 #include "TraceEvent.h"
 
-namespace WebCore {
+namespace cc {
 
 CCScheduler::CCScheduler(CCSchedulerClient* client, PassOwnPtr<CCFrameRateController> frameRateController)
     : m_client(client)

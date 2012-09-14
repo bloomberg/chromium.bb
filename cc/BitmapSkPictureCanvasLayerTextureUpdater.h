@@ -10,7 +10,7 @@
 #include "SkBitmap.h"
 #include "SkPictureCanvasLayerTextureUpdater.h"
 
-namespace WebCore {
+namespace cc {
 
 // This class records the contentRect into an SkPicture, then software rasterizes
 // the SkPicture into bitmaps for each tile. This implements CCSettings::perTilePainting.
@@ -40,6 +40,6 @@ public:
 private:
     explicit BitmapSkPictureCanvasLayerTextureUpdater(PassOwnPtr<LayerPainterChromium>);
 };
-} // namespace WebCore
+} // namespace cc
 #endif // USE(ACCELERATED_COMPOSITING)
 #endif // BitmapSkPictureCanvasLayerTextureUpdater_h

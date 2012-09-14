@@ -13,7 +13,7 @@
 #include "CCScrollbarAnimationControllerLinearFade.h"
 #endif
 
-namespace WebCore {
+namespace cc {
 
 #if OS(ANDROID)
 PassOwnPtr<CCScrollbarAnimationController> CCScrollbarAnimationController::create(CCLayerImpl* scrollLayer)
@@ -89,4 +89,4 @@ void CCScrollbarAnimationController::updateScrollOffsetAtTime(CCLayerImpl* scrol
     }
 }
 
-} // namespace WebCore
+} // namespace cc

@@ -16,7 +16,7 @@
 
 using namespace WTF;
 
-namespace WebCore {
+namespace cc {
 
 PassOwnPtr<CCProxy> CCSingleThreadProxy::create(CCLayerTreeHost* layerTreeHost)
 {

@@ -13,7 +13,7 @@ namespace WebKit {
 class WebGraphicsContext3D;
 }
 
-namespace WebCore {
+namespace cc {
 
 class ThrottledTextureUploader : public TextureUploader {
     WTF_MAKE_NONCOPYABLE(ThrottledTextureUploader);

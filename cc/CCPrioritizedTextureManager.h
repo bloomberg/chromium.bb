@@ -15,7 +15,7 @@
 #include <wtf/ListHashSet.h>
 #include <wtf/Vector.h>
 
-namespace WebCore {
+namespace cc {
 
 class CCPrioritizedTexture;
 class CCPriorityCalculator;
@@ -115,6 +115,6 @@ private:
     BackingVector m_tempBackingVector;
 };
 
-} // WebCore
+} // cc
 
 #endif

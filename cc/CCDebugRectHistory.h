@@ -13,7 +13,7 @@
 #include <wtf/PassOwnPtr.h>
 #include <wtf/Vector.h>
 
-namespace WebCore {
+namespace cc {
 
 class CCLayerImpl;
 struct CCLayerTreeSettings;
@@ -21,7 +21,7 @@ struct CCLayerTreeSettings;
 // There are currently six types of debug rects:
 //
 // - Paint rects (update rects): regions of a layer that needed to be re-uploaded to the
-//   texture resource; in most cases implying that WebCore had to repaint them, too.
+//   texture resource; in most cases implying that they had to be repainted, too.
 //
 // - Property-changed rects: enclosing bounds of layers that cause changes to the screen
 //   even if the layer did not change internally. (For example, if the layer's opacity or
@@ -76,7 +76,7 @@ private:
     Vector<CCDebugRect> m_debugRects;
 };
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // USE(ACCELERATED_COMPOSITING)
 

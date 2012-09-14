@@ -15,7 +15,7 @@
 
 using WebKit::WebTransformationMatrix;
 
-namespace WebCore {
+namespace cc {
 
 PassOwnPtr<CCRenderPass> CCRenderPass::create(Id id, IntRect outputRect, const WebKit::WebTransformationMatrix& transformToRootTarget)
 {
@@ -90,10 +90,10 @@ void CCRenderPass::appendQuadsToFillScreen(CCLayerImpl* rootLayer, SkColor scree
     CCSharedQuadState* sharedQuadState = quadCuller.useSharedQuadState(CCSharedQuadState::create(rootLayer->drawTransform(), rootTargetRect, rootTargetRect, opacity, opaque));
     ASSERT(rootLayer->screenSpaceTransform().isInvertible());
     WebTransformationMatrix transformToLayerSpace = rootLayer->screenSpaceTransform().inverse();
-    Vector<IntRect> fillRects = fillRegion.rects();
+    Vector<WebCore::IntRect> fillRects = fillRegion.rects();
     for (size_t i = 0; i < fillRects.size(); ++i) {
         // The root layer transform is composed of translations and scales only, no perspective, so mapping is sufficient.
-        IntRect layerRect = CCMathUtil::mapClippedRect(transformToLayerSpace, fillRects[i]);
+        IntRect layerRect = CCMathUtil::mapClippedRect(transformToLayerSpace, cc::IntRect(fillRects[i]));
         // Skip the quad culler and just append the quads directly to avoid occlusion checks.
         m_quadList.append(CCSolidColorDrawQuad::create(sharedQuadState, layerRect, screenBackgroundColor));
     }

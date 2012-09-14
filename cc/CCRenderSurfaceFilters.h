@@ -16,7 +16,7 @@ class WebFilterOperations;
 class WebGraphicsContext3D;
 }
 
-namespace WebCore {
+namespace cc {
 class FloatSize;
 
 class CCRenderSurfaceFilters {

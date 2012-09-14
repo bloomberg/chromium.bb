@@ -21,7 +21,7 @@
 #include "webkit/glue/webthread_impl.h"
 #endif
 
-using namespace WebCore;
+using namespace cc;
 
 namespace WebKit {
 

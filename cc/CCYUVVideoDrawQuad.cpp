@@ -6,7 +6,7 @@
 
 #include "CCYUVVideoDrawQuad.h"
 
-namespace WebCore {
+namespace cc {
 
 PassOwnPtr<CCYUVVideoDrawQuad> CCYUVVideoDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, const CCVideoLayerImpl::FramePlane& yPlane, const CCVideoLayerImpl::FramePlane& uPlane, const CCVideoLayerImpl::FramePlane& vPlane)
 {

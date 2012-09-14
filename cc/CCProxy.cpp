@@ -10,7 +10,7 @@
 
 using namespace WTF;
 
-namespace WebCore {
+namespace cc {
 
 namespace {
 #ifndef NDEBUG

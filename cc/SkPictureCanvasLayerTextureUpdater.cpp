@@ -13,7 +13,7 @@
 #include "SkCanvas.h"
 #include "TraceEvent.h"
 
-namespace WebCore {
+namespace cc {
 
 SkPictureCanvasLayerTextureUpdater::SkPictureCanvasLayerTextureUpdater(PassOwnPtr<LayerPainterChromium> painter)
     : CanvasLayerTextureUpdater(painter)
@@ -43,5 +43,5 @@ void SkPictureCanvasLayerTextureUpdater::setOpaque(bool opaque)
     m_layerIsOpaque = opaque;
 }
 
-} // namespace WebCore
+} // namespace cc
 #endif // USE(ACCELERATED_COMPOSITING)

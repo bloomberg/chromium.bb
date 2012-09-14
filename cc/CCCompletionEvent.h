@@ -7,7 +7,7 @@
 
 #include "base/synchronization/waitable_event.h"
 
-namespace WebCore {
+namespace cc {
 
 // Used for making blocking calls from one thread to another. Use only when
 // absolutely certain that doing-so will not lead to a deadlock.

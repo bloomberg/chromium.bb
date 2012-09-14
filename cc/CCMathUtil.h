@@ -12,7 +12,7 @@ namespace WebKit {
 class WebTransformationMatrix;
 }
 
-namespace WebCore {
+namespace cc {
 
 class IntRect;
 class FloatRect;
@@ -60,8 +60,6 @@ struct HomogeneousCoordinate {
     double w;
 };
 
-// This class contains math helper functionality that does not belong in WebCore.
-// It is possible that this functionality should be migrated to WebCore eventually.
 class CCMathUtil {
 public:
 
@@ -104,6 +102,6 @@ public:
     static FloatSize projectVector(const FloatSize& source, const FloatSize& destination);
 };
 
-} // namespace WebCore
+} // namespace cc
 
 #endif // #define CCMathUtil_h

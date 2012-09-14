@@ -8,7 +8,7 @@
 #include "CCScrollbarGeometryStub.h"
 #include "IntSize.h"
 
-namespace WebCore {
+namespace cc {
 
 // This scrollbar geometry class behaves exactly like a normal geometry except
 // it always returns a fixed thumb length. This allows a page to zoom (changing
