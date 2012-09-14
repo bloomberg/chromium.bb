@@ -21,6 +21,7 @@
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/predictors/predictor_database.h"
 #include "chrome/browser/predictors/predictor_database_factory.h"
+#include "chrome/browser/predictors/resource_prefetcher_manager.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -96,14 +97,6 @@ void RecordNavigationEvent(NavigationEvent event) {
 
 namespace predictors {
 
-ResourcePrefetchPredictor::Config::Config()
-    : max_navigation_lifetime_seconds(60),
-      max_urls_to_track(500),
-      min_url_visit_count(3),
-      max_resources_per_entry(50),
-      max_consecutive_misses(3) {
-}
-
 ResourcePrefetchPredictor::URLRequestSummary::URLRequestSummary()
     : resource_type(ResourceType::LAST_TYPE),
       was_cached(false) {
@@ -129,13 +122,14 @@ ResourcePrefetchPredictor::UrlTableCacheValue::~UrlTableCacheValue() {
 }
 
 ResourcePrefetchPredictor::ResourcePrefetchPredictor(
-    const Config& config,
+    const ResourcePrefetchPredictorConfig& config,
     Profile* profile)
     : profile_(profile),
       config_(config),
       initialization_state_(NOT_INITIALIZED),
       tables_(PredictorDatabaseFactory::GetForProfile(
-          profile)->resource_prefetch_tables()) {
+          profile)->resource_prefetch_tables()),
+      results_map_deleter_(&results_map_) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   notification_registrar_.Add(this,
@@ -146,9 +140,11 @@ ResourcePrefetchPredictor::ResourcePrefetchPredictor(
 ResourcePrefetchPredictor::~ResourcePrefetchPredictor() {
 }
 
-// static
-bool ResourcePrefetchPredictor::IsEnabled(Profile* profile) {
-  return prerender::IsSpeculativeResourcePrefetchingLearningEnabled(profile);
+void ResourcePrefetchPredictor::Shutdown() {
+  if (prefetch_manager_) {
+    prefetch_manager_->ShutdownOnUIThread();
+    prefetch_manager_ = NULL;
+  }
 }
 
 void ResourcePrefetchPredictor::LazilyInitialize() {
@@ -365,15 +361,60 @@ void ResourcePrefetchPredictor::OnMainFrameRequest(
   // New empty navigation entry.
   inflight_navigations_.insert(std::make_pair(
       request.navigation_id, std::vector<URLRequestSummary>()));
+
+  // If prefetching is enabled, and we can prefetch something, start
+  // prefetching.
+  if (!prefetch_manager_.get())
+    return;
+
+  const GURL& main_frame_url = request.navigation_id.main_frame_url;
+  const UrlTableCacheMap::const_iterator value_iter = url_table_cache_.find(
+      main_frame_url);
+  if (value_iter == url_table_cache_.end())
+    return;
+
+  const UrlTableCacheValue& value = value_iter->second;
+
+  scoped_ptr<ResourcePrefetcher::RequestVector> requests(
+      new ResourcePrefetcher::RequestVector);
+  for (UrlTableRowVector::const_iterator it = value.rows.begin();
+       it != value.rows.end(); ++it) {
+    float confidence = static_cast<float>(it->number_of_hits) /
+        (it->number_of_hits + it->number_of_misses);
+    if (confidence < config_.min_resource_confidence_to_trigger_prefetch ||
+        it->number_of_hits < config_.min_resource_hits_to_trigger_prefetch) {
+      continue;
+    }
+
+    ResourcePrefetcher::Request* req = new ResourcePrefetcher::Request(
+        it->resource_url);
+    requests->push_back(req);
+  }
+
+  if (requests->empty())
+    return;
+
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+      base::Bind(&ResourcePrefetcherManager::MaybeAddPrefetch,
+                 prefetch_manager_,
+                 request.navigation_id,
+                 base::Passed(&requests)));
 }
 
 void ResourcePrefetchPredictor::OnMainFrameResponse(
     const URLRequestSummary& response) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (initialization_state_ != INITIALIZED)
+    return;
 
   RecordNavigationEvent(NAVIGATION_EVENT_RESPONSE_STARTED);
 
-  // TODO(shishir): The prefreshing will be stopped here.
+  if (prefetch_manager_.get())
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&ResourcePrefetcherManager::MaybeRemovePrefetch,
+                   prefetch_manager_,
+                   response.navigation_id));
 }
 
 void ResourcePrefetchPredictor::OnMainFrameRedirect(
@@ -441,6 +482,16 @@ void ResourcePrefetchPredictor::CleanupAbandonedNavigations(
         (time_now - it->first.creation_time > max_navigation_age)) {
       inflight_navigations_.erase(it++);
       RecordNavigationEvent(NAVIGATION_EVENT_REQUEST_EXPIRED);
+    } else {
+      ++it;
+    }
+  }
+  for (ResultsMap::iterator it = results_map_.begin();
+       it != results_map_.end();) {
+    if (it->first.IsSameRenderer(navigation_id) ||
+        (time_now - it->first.creation_time > max_navigation_age)) {
+      delete it->second;
+      results_map_.erase(it++);
     } else {
       ++it;
     }
@@ -530,6 +581,18 @@ void ResourcePrefetchPredictor::Observe(
   }
 }
 
+void ResourcePrefetchPredictor::FinishedPrefetchForNavigation(
+    const NavigationID& navigation_id,
+    ResourcePrefetcher::RequestVector* requests) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Add the results to the results map.
+  if (!results_map_.insert(std::make_pair(navigation_id, requests)).second) {
+    DLOG(FATAL) << "Returning results for existing navigation.";
+    delete requests;
+  }
+}
+
 void ResourcePrefetchPredictor::OnHistoryAndCacheLoaded() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(initialization_state_, INITIALIZING);
@@ -579,6 +642,12 @@ void ResourcePrefetchPredictor::OnHistoryAndCacheLoaded() {
   // TODO(shishir): Maybe listen for notifications for navigation being
   // abandoned and cleanup the inflight_navigations_.
 
+  // Initialize the prefetch manager only if prefetching is enabled.
+  if (prerender::IsSpeculativeResourcePrefetchingEnabled(profile_)) {
+    prefetch_manager_ = new ResourcePrefetcherManager(
+        this, config_, profile_->GetRequestContext());
+  }
+
   initialization_state_ = INITIALIZED;
 }
 
@@ -616,7 +685,11 @@ void ResourcePrefetchPredictor::OnNavigationComplete(
   RecordNavigationEvent(NAVIGATION_EVENT_ONLOAD_TRACKED_URL);
 
   // Report any stats.
-  MaybeReportAccuracyStats(navigation_id);
+  if (prefetch_manager_.get()) {
+    MaybeReportAccuracyStats(navigation_id);
+  } else {
+    MaybeReportSimulatedAccuracyStats(navigation_id);
+  }
 
   // Update the URL table.
   const GURL& main_frame_url = navigation_id.main_frame_url;
@@ -629,6 +702,8 @@ void ResourcePrefetchPredictor::OnNavigationComplete(
 
   // Remove the navigation.
   inflight_navigations_.erase(navigation_id);
+  delete results_map_[navigation_id];
+  results_map_.erase(navigation_id);
 }
 
 void ResourcePrefetchPredictor::LearnUrlNavigation(
@@ -637,7 +712,7 @@ void ResourcePrefetchPredictor::LearnUrlNavigation(
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (url_table_cache_.find(main_frame_url) == url_table_cache_.end()) {
-    if (url_table_cache_.size() >= config_.max_urls_to_track)
+    if (static_cast<int>(url_table_cache_.size()) >= config_.max_urls_to_track)
       RemoveAnEntryFromUrlDB();
 
     url_table_cache_[main_frame_url].last_visit = base::Time::Now();
@@ -780,7 +855,7 @@ void ResourcePrefetchPredictor::RemoveAnEntryFromUrlDB() {
                  urls_to_delete));
 }
 
-void ResourcePrefetchPredictor::MaybeReportAccuracyStats(
+void ResourcePrefetchPredictor::MaybeReportSimulatedAccuracyStats(
     const NavigationID& navigation_id) const {
   const GURL& main_frame_url = navigation_id.main_frame_url;
   DCHECK(inflight_navigations_.find(navigation_id) !=
@@ -885,6 +960,130 @@ void ResourcePrefetchPredictor::ReportAccuracyHistograms(
 
 #undef RPP_PREDICTED_HISTOGRAM_PERCENTAGE
 #undef RPP_PREDICTED_HISTOGRAM_COUNTS
+}
+
+void ResourcePrefetchPredictor::MaybeReportAccuracyStats(
+    const NavigationID& navigation_id) {
+  NavigationMap::iterator nav_it = inflight_navigations_.find(navigation_id);
+  DCHECK(nav_it != inflight_navigations_.end());
+
+  ResultsMap::iterator results_it = results_map_.find(navigation_id);
+  bool have_prefetch_results = results_it != results_map_.end();
+  UMA_HISTOGRAM_BOOLEAN("ResourcePrefetchPredictor.HavePrefetchResults",
+                        have_prefetch_results);
+  if (!have_prefetch_results)
+    return;
+
+  // Annotate the results.
+  const std::vector<URLRequestSummary>& actual = nav_it->second;
+  ResourcePrefetcher::RequestVector* prefetched = results_it->second;
+
+  std::map<GURL, bool> actual_resources;
+  for (std::vector<URLRequestSummary>::const_iterator it = actual.begin();
+       it != actual.end(); ++it) {
+    actual_resources[it->resource_url] = it->was_cached;
+  }
+
+  int prefetch_cancelled = 0, prefetch_failed = 0, prefetch_not_started = 0;
+  // 'a_' -> actual, 'p_' -> predicted.
+  int p_cache_a_cache = 0, p_cache_a_network = 0, p_cache_a_notused = 0,
+      p_network_a_cache = 0, p_network_a_network = 0, p_network_a_notused = 0;
+
+  for (ResourcePrefetcher::RequestVector::iterator it = prefetched->begin();
+       it != prefetched->end(); ++it) {
+    ResourcePrefetcher::Request* req = *it;
+
+    // Set the usage states if the resource was actually used.
+    std::map<GURL, bool>::iterator actual_it = actual_resources.find(
+        req->resource_url);
+    if (actual_it != actual_resources.end()) {
+      if (actual_it->second) {
+        req->usage_status =
+            ResourcePrefetcher::Request::USAGE_STATUS_FROM_CACHE;
+      } else {
+        req->usage_status =
+            ResourcePrefetcher::Request::USAGE_STATUS_FROM_NETWORK;
+      }
+    }
+
+    switch (req->prefetch_status) {
+
+      // TODO(shishir): Add histogram for each cancellation reason.
+      case ResourcePrefetcher::Request::PREFETCH_STATUS_REDIRECTED:
+      case ResourcePrefetcher::Request::PREFETCH_STATUS_AUTH_REQUIRED:
+      case ResourcePrefetcher::Request::PREFETCH_STATUS_CERT_REQUIRED:
+      case ResourcePrefetcher::Request::PREFETCH_STATUS_CERT_ERROR:
+      case ResourcePrefetcher::Request::PREFETCH_STATUS_CANCELLED:
+        ++prefetch_cancelled;
+        break;
+
+      case ResourcePrefetcher::Request::PREFETCH_STATUS_FAILED:
+        ++prefetch_failed;
+        break;
+
+      case ResourcePrefetcher::Request::PREFETCH_STATUS_FROM_CACHE:
+        if (req->usage_status ==
+            ResourcePrefetcher::Request::USAGE_STATUS_FROM_CACHE)
+          ++p_cache_a_cache;
+        else if (req->usage_status ==
+                 ResourcePrefetcher::Request::USAGE_STATUS_FROM_NETWORK)
+          ++p_cache_a_network;
+        else
+          ++p_cache_a_notused;
+        break;
+
+      case ResourcePrefetcher::Request::PREFETCH_STATUS_FROM_NETWORK:
+          if (req->usage_status ==
+              ResourcePrefetcher::Request::USAGE_STATUS_FROM_CACHE)
+            ++p_network_a_cache;
+          else if (req->usage_status ==
+                   ResourcePrefetcher::Request::USAGE_STATUS_FROM_NETWORK)
+            ++p_network_a_network;
+          else
+            ++p_network_a_notused;
+        break;
+
+      case ResourcePrefetcher::Request::PREFETCH_STATUS_NOT_STARTED:
+        ++prefetch_not_started;
+        break;
+
+      case ResourcePrefetcher::Request::PREFETCH_STATUS_STARTED:
+        DLOG(FATAL) << "Invalid prefetch status";
+        break;
+    }
+  }
+
+  int total_prefetched = p_cache_a_cache + p_cache_a_network + p_cache_a_notused
+      + p_network_a_cache + p_network_a_network + p_network_a_notused;
+
+  UMA_HISTOGRAM_PERCENTAGE(
+      "ResourcePrefetchPredictor.PrefetchCancelled",
+      prefetch_cancelled * 100.0 / total_prefetched);
+  UMA_HISTOGRAM_PERCENTAGE(
+      "ResourcePrefetchPredictor.PrefetchFailed",
+      prefetch_failed * 100.0 / total_prefetched);
+  UMA_HISTOGRAM_PERCENTAGE(
+      "ResourcePrefetchPredictor.PrefetchFromCacheUsedFromCache",
+      p_cache_a_cache * 100.0 / total_prefetched);
+  UMA_HISTOGRAM_PERCENTAGE(
+      "ResourcePrefetchPredictor.PrefetchFromCacheUsedFromNetwork",
+      p_cache_a_network * 100.0 / total_prefetched);
+  UMA_HISTOGRAM_PERCENTAGE(
+      "ResourcePrefetchPredictor.PrefetchFromCacheNotUsed",
+      p_cache_a_notused * 100.0 / total_prefetched);
+  UMA_HISTOGRAM_PERCENTAGE(
+      "ResourcePrefetchPredictor.PrefetchFromNetworkUsedFromCache",
+      p_network_a_cache * 100.0 / total_prefetched);
+  UMA_HISTOGRAM_PERCENTAGE(
+      "ResourcePrefetchPredictor.PrefetchFromNetworkUsedFromNetwork",
+      p_network_a_network * 100.0 / total_prefetched);
+  UMA_HISTOGRAM_PERCENTAGE(
+      "ResourcePrefetchPredictor.PrefetchFromNetworkNotUsed",
+      p_network_a_notused * 100.0 / total_prefetched);
+
+  UMA_HISTOGRAM_PERCENTAGE(
+      "ResourcePrefetchPredictor.PrefetchNotStarted",
+      prefetch_not_started * 100.0 / (prefetch_not_started + total_prefetched));
 }
 
 void ResourcePrefetchPredictor::DeleteAllUrls() {

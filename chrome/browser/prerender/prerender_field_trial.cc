@@ -293,4 +293,20 @@ bool IsSpeculativeResourcePrefetchingLearningEnabled(Profile* profile) {
   return group == g_speculative_prefetching_learning_default_group_number;
 }
 
+bool IsSpeculativeResourcePrefetchingEnabled(Profile* profile) {
+  if (!profile)
+    return false;
+
+  // Check if the user has set a command line flag.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSpeculativeResourcePrefetching)) {
+    const std::string switch_value =
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kSpeculativeResourcePrefetching);
+    return switch_value == switches::kSpeculativeResourcePrefetchingEnabled;
+  }
+
+  return false;
+}
+
 }  // namespace prerender

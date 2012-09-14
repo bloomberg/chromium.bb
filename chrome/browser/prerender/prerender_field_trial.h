@@ -25,6 +25,10 @@ bool IsOmniboxEnabled(Profile* profile);
 // resource prefetching learning experiment.
 bool IsSpeculativeResourcePrefetchingLearningEnabled(Profile* profile);
 
+// Returns true iff the user has opted in or has been opted into the speculative
+// resource prefetching experiment.
+bool IsSpeculativeResourcePrefetchingEnabled(Profile* profile);
+
 }  // namespace prerender
 
 #endif  // CHROME_BROWSER_PRERENDER_PRERENDER_FIELD_TRIAL_H_

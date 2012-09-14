@@ -100,7 +100,7 @@ class ResourcePrefetchPredictorTest : public testing::Test {
   }
 
   void ResetPredictor() {
-    ResourcePrefetchPredictor::Config config;
+    ResourcePrefetchPredictorConfig config;
     config.max_urls_to_track = 3;
     config.min_url_visit_count = 2;
     config.max_resources_per_entry = 4;
