@@ -64,6 +64,7 @@ class CMTEventData {
     touchpads_.reset();
     device_to_valuators_.clear();
 
+#if defined(USE_XI2_MT)
     int count = 0;
 
     // Find all the touchpad devices.
@@ -105,6 +106,10 @@ class CMTEventData {
       Valuators valuators;
       bool is_cmt = false;
       for (int j = 0; j < info->num_classes; ++j) {
+        if (info->classes[j]->type == XIScrollClass) {
+          is_cmt = false;
+          break;
+        }
         if (info->classes[j]->type != XIValuatorClass)
           continue;
 
@@ -164,6 +169,7 @@ class CMTEventData {
     }
     if (info_list)
       XIFreeDeviceInfo(info_list);
+#endif  // defined(USE_XI2_MT)
   }
 
   bool natural_scroll_enabled() const { return natural_scroll_enabled_; }
