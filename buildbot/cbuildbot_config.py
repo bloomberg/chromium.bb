@@ -982,7 +982,10 @@ _factory_release = _release.derive(
 )
 
 _firmware_release = _release.derive(
-  images=['base'],
+  images=[],
+  packages=('virtual/chromeos-firmware',),
+  usepkg_setup_board=True,
+  usepkg_build_packages=True,
   build_tests=False,
   unittests=False,
   vm_tests=None,
