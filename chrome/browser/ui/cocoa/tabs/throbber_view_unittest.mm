@@ -19,8 +19,8 @@ class ThrobberViewTest : public CocoaTest {
  public:
   ThrobberViewTest() {
     NSRect frame = NSMakeRect(10, 10, 16, 16);
-    NSImage* image =
-        ResourceBundle::GetSharedInstance().GetNativeImageNamed(IDR_THROBBER);
+    NSImage* image = ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+        IDR_THROBBER).ToNSImage();
     view_ = [ThrobberView filmstripThrobberViewWithFrame:frame image:image];
     [[test_window() contentView] addSubview:view_];
   }

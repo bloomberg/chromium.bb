@@ -88,7 +88,7 @@ const int kInstructionLabelMaxWidth = 150;
     if (isWarmUp) {
       NSImage* volumeIcon =
           ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-              IDR_SPEECH_INPUT_MIC_EMPTY);
+              IDR_SPEECH_INPUT_MIC_EMPTY).ToNSImage();
       size = [volumeIcon size];
     }
     newHeight += size.height;

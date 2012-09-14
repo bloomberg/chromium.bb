@@ -185,7 +185,8 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
     // The sprite image consists of all the animation frames put together in one
     // horizontal/wide image. Each animation frame is square in shape within the
     // sprite.
-    NSImage* iconImage = rb.GetNativeImageNamed(IDR_SPEECH_INPUT_SPINNER);
+    NSImage* iconImage =
+        rb.GetNativeImageNamed(IDR_SPEECH_INPUT_SPINNER).ToNSImage();
     frame.size = [iconImage size];
     frame.size.width = NSHeight(frame);
     frame.origin.x = (WebIntentPicker::kWindowWidth - NSWidth(frame))/2.0;
@@ -351,7 +352,7 @@ const CGFloat kAddButtonWidth = 128.0;
 
   for (int i = 0; i < 5; ++i) {
     NSImage* nsImage = rb.GetNativeImageNamed(
-        WebIntentPicker::GetNthStarImageIdFromCWSRating(rating, i));
+        WebIntentPicker::GetNthStarImageIdFromCWSRating(rating, i)).ToNSImage();
 
     scoped_nsobject<DimmableImageView> imageView(
         [[DimmableImageView alloc] initWithFrame:imageFrame]);

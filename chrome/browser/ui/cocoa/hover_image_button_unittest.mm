@@ -36,8 +36,8 @@ class HoverImageButtonTest : public CocoaTest {
 // Test mouse events.
 TEST_F(HoverImageButtonTest, ImageSwap) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  NSImage* image = rb.GetNativeImageNamed(IDR_HOME);
-  NSImage* hover = rb.GetNativeImageNamed(IDR_BACK);
+  NSImage* image = rb.GetNativeImageNamed(IDR_HOME).ToNSImage();
+  NSImage* hover = rb.GetNativeImageNamed(IDR_BACK).ToNSImage();
   [button_ setDefaultImage:image];
   [button_ setHoverImage:hover];
 
@@ -53,7 +53,7 @@ TEST_F(HoverImageButtonTest, ImageSwap) {
 // Test mouse events.
 TEST_F(HoverImageButtonTest, Opacity) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  NSImage* image = rb.GetNativeImageNamed(IDR_HOME);
+  NSImage* image = rb.GetNativeImageNamed(IDR_HOME).ToNSImage();
   [button_ setDefaultImage:image];
   [button_ setDefaultOpacity:0.5];
   [button_ setHoverImage:image];

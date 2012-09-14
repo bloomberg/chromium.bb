@@ -18,9 +18,10 @@ class UiGfxImageTest : public CocoaTest {
 
 TEST_F(UiGfxImageTest, CheckColor) {
   gfx::Image image(gfx::test::CreateBitmap(25, 25));
-  [image lockFocus];
+  NSImage* ns_image = image.ToNSImage();
+  [ns_image lockFocus];
   NSColor* color = NSReadPixel(NSMakePoint(10, 10));
-  [image unlockFocus];
+  [ns_image unlockFocus];
 
   // SkBitmapToNSImage returns a bitmap in the calibrated color space (sRGB),
   // while NSReadPixel returns a color in the device color space. Convert back

@@ -78,7 +78,7 @@ const float kAnimateCloseDuration = 0.12;
                    forButtonState:image_button_cell::kDisabledState];
 
   if (delegate_->GetIcon()) {
-    [image_ setImage:*(delegate_->GetIcon())];
+    [image_ setImage:delegate_->GetIcon()->ToNSImage()];
   } else {
     // No icon, remove it from the view and grow the textfield to include the
     // space.

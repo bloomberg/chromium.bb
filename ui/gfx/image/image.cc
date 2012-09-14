@@ -654,12 +654,6 @@ NSImage* Image::CopyNSImage() const {
 }
 #endif
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-Image::operator NSImage*() const {
-  return ToNSImage();
-}
-#endif
-
 bool Image::HasRepresentation(RepresentationType type) const {
   return storage_.get() && storage_->representations().count(type) != 0;
 }

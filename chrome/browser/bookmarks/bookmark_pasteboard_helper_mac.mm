@@ -353,7 +353,7 @@ NSImage* DragImageForBookmark(NSImage* favicon, const string16& title) {
   // If no favicon, use a default.
   if (!favicon) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    favicon = rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON);
+    favicon = rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).ToNSImage();
   }
 
   // If no title, just use icon.

@@ -124,7 +124,7 @@ NSRange ComponentToNSRange(const url_parse::Component& component) {
 // static
 NSImage* OmniboxViewMac::ImageForResource(int resource_id) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  return rb.GetNativeImageNamed(resource_id);
+  return rb.GetNativeImageNamed(resource_id).ToNSImage();
 }
 
 OmniboxViewMac::OmniboxViewMac(OmniboxEditController* controller,

@@ -573,14 +573,16 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
       return;
 
     NSImage* iconImage =
-        ResourceBundle::GetSharedInstance().GetNativeImageNamed(IDR_THROBBER);
+        ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+            IDR_THROBBER).ToNSImage();
     icon = [ThrobberView filmstripThrobberViewWithFrame:iconFrame
                                                   image:iconImage];
   } else {
-    gfx::Image page_icon = windowShim_->panel()->GetCurrentPageIcon();
+    const gfx::Image& page_icon = windowShim_->panel()->GetCurrentPageIcon();
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     NSImage* iconImage = page_icon.IsEmpty() ?
-        rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON) : page_icon.ToNSImage();
+        rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).ToNSImage() :
+        page_icon.ToNSImage();
     NSImageView* iconView =
         [[[NSImageView alloc] initWithFrame:iconFrame] autorelease];
     [iconView setImage:iconImage];

@@ -145,13 +145,6 @@ class UI_EXPORT Image {
   NSImage* CopyNSImage() const;
 #endif
 
-  // DEPRECATED ----------------------------------------------------------------
-  // Conversion handlers. These wrap the ToType() variants.
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  operator NSImage*() const;
-#endif
-  // ---------------------------------------------------------------------------
-
   // Inspects the representations map to see if the given type exists.
   bool HasRepresentation(RepresentationType type) const;
 

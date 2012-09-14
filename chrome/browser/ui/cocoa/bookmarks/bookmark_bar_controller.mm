@@ -251,8 +251,9 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     folderImage_.reset(
-        [rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_FOLDER) retain]);
-    defaultImage_.reset([rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON) retain]);
+        rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_FOLDER).CopyNSImage());
+    defaultImage_.reset(
+        rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).CopyNSImage());
 
     // Register for theme changes, bookmark button pulsing, ...
     NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];

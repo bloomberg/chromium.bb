@@ -129,10 +129,10 @@ typedef long long CrCoreCursorType;
 namespace {
 
 NSCursor* LoadCursor(int resource_id, int hotspot_x, int hotspot_y) {
-  NSImage* cursor_image =
+  const gfx::Image& cursor_image =
       ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
-  DCHECK(cursor_image);
-  return [[[NSCursor alloc] initWithImage:cursor_image
+  DCHECK(!cursor_image.IsEmpty());
+  return [[[NSCursor alloc] initWithImage:cursor_image.ToNSImage()
                                   hotSpot:NSMakePoint(hotspot_x,
                                                       hotspot_y)] autorelease];
 }

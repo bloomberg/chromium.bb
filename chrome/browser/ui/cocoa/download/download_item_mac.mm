@@ -84,7 +84,7 @@ void DownloadItemMac::LoadIcon() {
   FilePath file = download_model_->download()->GetUserVerifiedFilePath();
   gfx::Image* icon = icon_manager->LookupIcon(file, IconLoader::ALL);
   if (icon) {
-    [item_controller_ setIcon:*icon];
+    [item_controller_ setIcon:icon->ToNSImage()];
     return;
   }
 
@@ -98,5 +98,5 @@ void DownloadItemMac::OnExtractIconComplete(IconManager::Handle handle,
                                             gfx::Image* icon) {
   if (!icon)
     return;
-  [item_controller_ setIcon:*icon];
+  [item_controller_ setIcon:icon->ToNSImage()];
 }

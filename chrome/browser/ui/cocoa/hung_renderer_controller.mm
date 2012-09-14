@@ -84,8 +84,8 @@ class WebContentsObserverBridge : public content::WebContentsObserver {
 - (void)awakeFromNib {
   // Load in the image
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  NSImage* backgroundImage = rb.GetNativeImageNamed(IDR_FROZEN_TAB_ICON);
-  DCHECK(backgroundImage);
+  NSImage* backgroundImage =
+      rb.GetNativeImageNamed(IDR_FROZEN_TAB_ICON).ToNSImage();
   [imageView_ setImage:backgroundImage];
 
   // Make the message fit.

@@ -183,8 +183,7 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
 
 - (void)awakeFromNib {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  NSImage* infoIcon = rb.GetNativeImageNamed(IDR_INFO);
-  DCHECK(infoIcon);
+  NSImage* infoIcon = rb.GetNativeImageNamed(IDR_INFO).ToNSImage();
   [infoBarIcon_ setImage:infoIcon];
 
   // Initialize the banner gradient and stroke color.
@@ -404,7 +403,8 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
   // Default icon will be the last item in the array.
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   // TODO(rsesek): Rename this resource now that it's in multiple places.
-  [icons_ addObject:rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_FOLDER)];
+  [icons_ addObject:
+      rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_FOLDER).ToNSImage()];
 
   // Create the Cocoa model.
   CookieTreeNode* root =

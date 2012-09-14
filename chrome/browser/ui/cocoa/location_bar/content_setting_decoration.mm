@@ -188,7 +188,8 @@ bool ContentSettingDecoration::UpdateFromWebContents(
     // TODO(thakis): We should use pdfs for these icons on OSX.
     // http://crbug.com/35847
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    SetImage(rb.GetNativeImageNamed(content_setting_image_model_->get_icon()));
+    SetImage(rb.GetNativeImageNamed(
+        content_setting_image_model_->get_icon()).ToNSImage());
     SetToolTip(base::SysUTF8ToNSString(
         content_setting_image_model_->get_tooltip()));
 

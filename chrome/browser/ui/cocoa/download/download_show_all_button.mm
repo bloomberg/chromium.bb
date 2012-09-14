@@ -16,8 +16,7 @@
 - (void)awakeFromNib {
   DCHECK([[self cell] isKindOfClass:[DownloadShowAllCell class]]);
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  NSImage* favicon = rb.GetNativeImageNamed(IDR_DOWNLOADS_FAVICON);
-  DCHECK(favicon);
+  NSImage* favicon = rb.GetNativeImageNamed(IDR_DOWNLOADS_FAVICON).ToNSImage();
   [self setImage:favicon];
 }
 

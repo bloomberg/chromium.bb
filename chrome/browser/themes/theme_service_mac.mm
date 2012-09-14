@@ -51,13 +51,13 @@ NSImage* ThemeService::GetNSImageNamed(int id, bool allow_default) const {
   if (theme_pack_.get()) {
     const gfx::Image* image = theme_pack_->GetImageNamed(id);
     if (image)
-      nsimage = *image;
+      nsimage = image->ToNSImage();
   }
 
   // If the theme didn't override this image then load it from the resource
   // bundle.
   if (!nsimage) {
-    nsimage = rb_.GetNativeImageNamed(id);
+    nsimage = rb_.GetNativeImageNamed(id).ToNSImage();
   }
 
   // We loaded successfully.  Cache the image.

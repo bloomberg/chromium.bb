@@ -68,7 +68,7 @@ TEST_F(BookmarkButtonCellTest, IconOnlySqueeze) {
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   scoped_nsobject<NSImage> image(
-      [rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON) retain]);
+      rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).CopyNSImage());
   EXPECT_TRUE(image.get());
 
   NSRect r = NSMakeRect(0, 0, 100, 100);

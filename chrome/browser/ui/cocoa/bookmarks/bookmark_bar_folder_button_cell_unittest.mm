@@ -35,7 +35,7 @@ TEST_F(BookmarkBarFolderButtonCellTest, FaviconPositioning) {
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   scoped_nsobject<NSImage> image(
-      [rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON) retain]);
+      rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).CopyNSImage());
   ASSERT_TRUE(image.get());
 
   scoped_nsobject<BookmarkButtonCell> cell(

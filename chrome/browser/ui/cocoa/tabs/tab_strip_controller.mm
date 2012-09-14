@@ -374,7 +374,7 @@ private:
 
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     defaultFavicon_.reset(
-        [rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON) retain]);
+        rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).CopyNSImage());
 
     [self setLeftIndentForControls:[[self class] defaultLeftIndentForControls]];
     [self setRightIndentForControls:0];
@@ -1451,14 +1451,14 @@ private:
     return;
 
   static NSImage* throbberWaitingImage =
-      [ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-          IDR_THROBBER_WAITING) retain];
+      ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+          IDR_THROBBER_WAITING).CopyNSImage();
   static NSImage* throbberLoadingImage =
-      [ResourceBundle::GetSharedInstance().GetNativeImageNamed(IDR_THROBBER)
-        retain];
+      ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+          IDR_THROBBER).CopyNSImage();
   static NSImage* sadFaviconImage =
-      [ResourceBundle::GetSharedInstance().GetNativeImageNamed(IDR_SAD_FAVICON)
-        retain];
+      ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+          IDR_SAD_FAVICON).CopyNSImage();
 
   // Take closing tabs into account.
   NSInteger index = [self indexFromModelIndex:modelIndex];

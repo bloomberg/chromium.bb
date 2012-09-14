@@ -34,8 +34,7 @@ static const CGFloat kTabHorzMargin = 13;
 - (void)awakeFromNib {
   // Load resource for image and set it.
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  NSImage* image = rb.GetNativeImageNamed(IDR_SAD_TAB);
-  DCHECK(image);
+  NSImage* image = rb.GetNativeImageNamed(IDR_SAD_TAB).ToNSImage();
   [image_ setImage:image];
 
   // Set font for title.

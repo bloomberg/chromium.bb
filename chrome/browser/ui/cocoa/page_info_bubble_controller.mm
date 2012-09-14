@@ -438,7 +438,7 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
   scoped_nsobject<NSImageView> imageView(
       [[NSImageView alloc] initWithFrame:frame]);
   [imageView setImageFrameStyle:NSImageFrameNone];
-  [imageView setImage:*model_->GetIconImage(info.icon_id)];
+  [imageView setImage:model_->GetIconImage(info.icon_id)->ToNSImage()];
   [subviews addObject:imageView.get()];
 }
 

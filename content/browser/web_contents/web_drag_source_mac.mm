@@ -457,7 +457,8 @@ void PromiseWriterHelper(const WebDropData& drop_data,
     return dragImage_;
 
   // Default to returning a generic image.
-  return content::GetContentClient()->GetNativeImageNamed(IDR_DEFAULT_FAVICON);
+  return content::GetContentClient()->GetNativeImageNamed(
+      IDR_DEFAULT_FAVICON).ToNSImage();
 }
 
 @end  // @implementation WebDragSource (Private)

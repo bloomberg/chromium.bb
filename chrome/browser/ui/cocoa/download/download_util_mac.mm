@@ -46,7 +46,7 @@ void DragDownload(const DownloadItem* download,
                                           pressure:1.0];
 
   // Run the drag operation.
-  [[view window] dragImage:*icon
+  [[view window] dragImage:icon->ToNSImage()
                         at:position
                     offset:NSZeroSize
                      event:dragEvent

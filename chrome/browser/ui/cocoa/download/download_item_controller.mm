@@ -181,9 +181,9 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
     confirmButtonTitle =
         base::SysUTF16ToNSString(downloadModel->GetWarningConfirmButtonText());
     if (downloadModel->IsMalicious())
-      alertIcon = rb.GetNativeImageNamed(IDR_SAFEBROWSING_WARNING);
+      alertIcon = rb.GetNativeImageNamed(IDR_SAFEBROWSING_WARNING).ToNSImage();
     else
-      alertIcon = rb.GetNativeImageNamed(IDR_WARNING);
+      alertIcon = rb.GetNativeImageNamed(IDR_WARNING).ToNSImage();
     DCHECK(alertIcon);
     [image_ setImage:alertIcon];
     DCHECK(dangerousWarning);

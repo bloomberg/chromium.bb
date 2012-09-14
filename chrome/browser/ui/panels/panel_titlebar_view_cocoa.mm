@@ -309,22 +309,22 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
   [self initializeImageButton:customCloseButton_
-      image: rb.GetNativeImageNamed(IDR_PANEL_CLOSE)
-      hoverImage:rb.GetNativeImageNamed(IDR_PANEL_CLOSE_H)
-      pressedImage:rb.GetNativeImageNamed(IDR_PANEL_CLOSE_C)
+      image:rb.GetNativeImageNamed(IDR_PANEL_CLOSE).ToNSImage()
+      hoverImage:rb.GetNativeImageNamed(IDR_PANEL_CLOSE_H).ToNSImage()
+      pressedImage:rb.GetNativeImageNamed(IDR_PANEL_CLOSE_C).ToNSImage()
       toolTip:l10n_util::GetNSStringWithFixup(IDS_PANEL_CLOSE_TOOLTIP)];
 
   // Iniitalize the minimize and restore buttons.
   [self initializeImageButton:minimizeButton_
-      image:rb.GetNativeImageNamed(IDR_PANEL_MINIMIZE)
-      hoverImage:rb.GetNativeImageNamed(IDR_PANEL_MINIMIZE_H)
-      pressedImage:rb.GetNativeImageNamed(IDR_PANEL_MINIMIZE_C)
+      image:rb.GetNativeImageNamed(IDR_PANEL_MINIMIZE).ToNSImage()
+      hoverImage:rb.GetNativeImageNamed(IDR_PANEL_MINIMIZE_H).ToNSImage()
+      pressedImage:rb.GetNativeImageNamed(IDR_PANEL_MINIMIZE_C).ToNSImage()
       toolTip:l10n_util::GetNSStringWithFixup(IDS_PANEL_MINIMIZE_TOOLTIP)];
 
   [self initializeImageButton:restoreButton_
-      image: rb.GetNativeImageNamed(IDR_PANEL_RESTORE)
-      hoverImage:rb.GetNativeImageNamed(IDR_PANEL_RESTORE_H)
-      pressedImage:rb.GetNativeImageNamed(IDR_PANEL_RESTORE_C)
+      image:rb.GetNativeImageNamed(IDR_PANEL_RESTORE).ToNSImage()
+      hoverImage:rb.GetNativeImageNamed(IDR_PANEL_RESTORE_H).ToNSImage()
+      pressedImage:rb.GetNativeImageNamed(IDR_PANEL_RESTORE_C).ToNSImage()
       toolTip:l10n_util::GetNSStringWithFixup(IDS_PANEL_RESTORE_TOOLTIP)];
 
   [controller_ updateTitleBarMinimizeRestoreButtonVisibility];

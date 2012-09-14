@@ -132,14 +132,14 @@ NSColor* IdentityVerifiedTextColor() {
 - (id)init {
   if ((self = [super init])) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    tabBackgroundImage_.reset(
-        [rb.GetNativeImageNamed(IDR_WEBSITE_SETTINGS_TAB_BACKGROUND) retain]);
+    tabBackgroundImage_.reset(rb.GetNativeImageNamed(
+        IDR_WEBSITE_SETTINGS_TAB_BACKGROUND).CopyNSImage());
     tabCenterImage_.reset(
-        [rb.GetNativeImageNamed(IDR_WEBSITE_SETTINGS_TAB_CENTER) retain]);
+        rb.GetNativeImageNamed(IDR_WEBSITE_SETTINGS_TAB_CENTER).CopyNSImage());
     tabLeftImage_.reset(
-        [rb.GetNativeImageNamed(IDR_WEBSITE_SETTINGS_TAB_LEFT) retain]);
+        rb.GetNativeImageNamed(IDR_WEBSITE_SETTINGS_TAB_LEFT).CopyNSImage());
     tabRightImage_.reset(
-        [rb.GetNativeImageNamed(IDR_WEBSITE_SETTINGS_TAB_RIGHT) retain]);
+        rb.GetNativeImageNamed(IDR_WEBSITE_SETTINGS_TAB_RIGHT).CopyNSImage());
   }
   return self;
 }

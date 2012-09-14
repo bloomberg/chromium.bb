@@ -950,7 +950,7 @@ void AnimateCALayerOpacityFromTo(
         new TabStripModelObserverBridge(tabStripModel_, self));
     NSImage* nsCloseIcon =
         ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-            IDR_TABPOSE_CLOSE);
+            IDR_TABPOSE_CLOSE).ToNSImage();
     closeIcon_.reset(base::mac::CopyNSImageToCGImage(nsCloseIcon));
     [self setReleasedWhenClosed:YES];
     [self setOpaque:NO];

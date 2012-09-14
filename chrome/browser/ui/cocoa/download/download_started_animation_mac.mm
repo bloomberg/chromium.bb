@@ -96,7 +96,8 @@ class DownloadAnimationWebObserver : public content::NotificationObserver {
   if ((self = [super init])) {
     // Load the image of the download arrow.
     ResourceBundle& bundle = ResourceBundle::GetSharedInstance();
-    NSImage* image = bundle.GetNativeImageNamed(IDR_DOWNLOAD_ANIMATION_BEGIN);
+    NSImage* image =
+        bundle.GetNativeImageNamed(IDR_DOWNLOAD_ANIMATION_BEGIN).ToNSImage();
 
     // Figure out the positioning in the current tab. Try to position the layer
     // against the left edge, and three times the download image's height from

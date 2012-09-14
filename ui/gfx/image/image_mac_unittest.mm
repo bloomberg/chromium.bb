@@ -160,16 +160,16 @@ TEST_F(ImageMacTest, MultiResolutionImageSkiaToNSImage) {
   EXPECT_EQ(1u, image.RepresentationCount());
   EXPECT_EQ(2u, image.ToImageSkia()->image_reps().size());
 
-  NSImage* ns_image = image;
+  NSImage* ns_image = image.ToNSImage();
   EXPECT_TRUE(ns_image);
 
   // Image size should be the same as the 1x bitmap.
   EXPECT_EQ([ns_image size].width, kWidth1x);
   EXPECT_EQ([ns_image size].height, kHeight1x);
 
-  EXPECT_EQ(2u, [[image representations] count]);
-  NSImageRep* ns_image_rep1 = [[image representations] objectAtIndex:0];
-  NSImageRep* ns_image_rep2 = [[image representations] objectAtIndex:1];
+  EXPECT_EQ(2u, [[ns_image representations] count]);
+  NSImageRep* ns_image_rep1 = [[ns_image representations] objectAtIndex:0];
+  NSImageRep* ns_image_rep2 = [[ns_image representations] objectAtIndex:1];
 
   if ([ns_image_rep1 size].width == kWidth1x) {
     EXPECT_EQ([ns_image_rep1 size].width, kWidth1x);

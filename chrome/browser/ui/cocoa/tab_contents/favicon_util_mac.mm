@@ -22,7 +22,7 @@ NSImage* FaviconForTabContents(TabContents* contents) {
   }
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  return rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON);
+  return rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).ToNSImage();
 }
 
 }  // namespace mac
