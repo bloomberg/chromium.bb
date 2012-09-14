@@ -797,8 +797,8 @@ TEST(LayerChromiumLayerTreeHostTest, destroyHostWithNonNullRootLayer)
 static bool addTestAnimation(LayerChromium* layer)
 {
     OwnPtr<CCKeyframedFloatAnimationCurve> curve(CCKeyframedFloatAnimationCurve::create());
-    curve->addKeyframe(CCFloatKeyframe::create(0, 0.3, nullptr));
-    curve->addKeyframe(CCFloatKeyframe::create(1, 0.7, nullptr));
+    curve->addKeyframe(CCFloatKeyframe::create(0, 0.3f, nullptr));
+    curve->addKeyframe(CCFloatKeyframe::create(1, 0.7f, nullptr));
     OwnPtr<CCActiveAnimation> animation(CCActiveAnimation::create(curve.release(), 0, 0, CCActiveAnimation::Opacity));
 
     return layer->addAnimation(animation.release());
