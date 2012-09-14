@@ -18,6 +18,7 @@
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/net/net.gyp:net',
+        '<(DEPTH)/printing/printing.gyp:printing',
       ],
       'sources': [
         'service_state.cc',
@@ -64,6 +65,9 @@
         'VCLinkerTool': {
           'SubSystem': '1',         # Set /SUBSYSTEM:CONSOLE
           'UACExecutionLevel': '2', # /level='requireAdministrator'
+          'AdditionalDependencies': [
+              'secur32.lib',
+          ],
         },
       },
     },

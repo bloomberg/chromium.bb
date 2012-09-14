@@ -4,7 +4,9 @@
 
 #include "cloud_print/service/win/cloud_print_service.h"
 
-#include <atlsecurity.h>
+#define SECURITY_WIN32
+#include <security.h>
+
 #include <iomanip>
 #include <iostream>
 
@@ -12,8 +14,10 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/guid.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "cloud_print/service/service_state.h"
@@ -21,9 +25,11 @@
 #include "cloud_print/service/win/chrome_launcher.h"
 #include "cloud_print/service/win/local_security_policy.h"
 #include "cloud_print/service/win/resource.h"
+#include "printing/backend/print_backend.h"
 
 namespace {
 
+const wchar_t kPrintersFileName[] = L"printers.txt";
 const wchar_t kServiceStateFileName[] = L"Service State";
 
 // The traits class for Windows Service.
@@ -70,9 +76,6 @@ void InvalidUsage() {
       std::cout << "[";
         std::cout << " -" << kInstallSwitch;
         std::cout << " -" << kUserDataDirSwitch << "=DIRECTORY";
-        std::cout << " -" << kRunAsUser << "=USERNAME";
-        std::cout << " -" << kRunAsPassword << "=PASSWORD";
-        std::cout << " [ -" << kQuietSwitch << " ]";
       std::cout << "]";
     std::cout << "]";
     std::cout << " | -" << kUninstallSwitch;
@@ -87,13 +90,9 @@ void InvalidUsage() {
   } kSwitchHelp[] = {
     { kInstallSwitch, "Installs cloud print as service." },
     { kUserDataDirSwitch, "User data directory with \"Service State\" file." },
-    { kQuietSwitch, "Fails without questions if something wrong." },
     { kUninstallSwitch, "Uninstalls service." },
     { kStartSwitch, "Starts service. May be combined with installation." },
     { kStopSwitch, "Stops service." },
-    { kRunAsUser, "Windows user to run the service in form DOMAIN\\USERNAME. "
-                  "Make sure user has access to printers." },
-    { kRunAsPassword, "Password for windows user to run the service" },
   };
 
   for (size_t i = 0; i < arraysize(kSwitchHelp); ++i) {
@@ -106,13 +105,13 @@ void InvalidUsage() {
 
 std::string GetOption(const std::string& name, const std::string& default,
                       bool secure) {
-  std::cout << "Input \'" << name << "\'";
+  std::cout << name;
   if (!default.empty()) {
     std::cout << ", press [ENTER] to keep '";
     std::cout << default;
     std::cout << "'";
   }
-  std::cout << ":";
+  std::cout << ": ";
   std::string tmp;
 
   if (secure) {
@@ -132,42 +131,31 @@ std::string GetOption(const std::string& name, const std::string& default,
   return tmp;
 }
 
-HRESULT WriteFileAsUser(const FilePath& path, const string16& user,
-                        const char* data, int size) {
-    ATL::CAccessToken token;
-    ATL::CAutoRevertImpersonation auto_revert(&token);
-    if (!user.empty()) {
-      ATL::CAccessToken thread_token;
-      if (!thread_token.OpenThreadToken(TOKEN_DUPLICATE | TOKEN_IMPERSONATE)) {
-        LOG(ERROR) << "Failed to open thread token.";
-        return HResultFromLastError();
-      }
-
-      ATL::CSid local_service;
-      if (!local_service.LoadAccount(user.c_str())) {
-        LOG(ERROR) << "Failed create SID.";
-        return HResultFromLastError();
-      }
-
-      ATL::CTokenGroups group;
-      group.Add(local_service, 0);
-
-      const ATL::CTokenGroups empty_group;
-      if (!thread_token.CreateRestrictedToken(&token, empty_group, group)) {
-        LOG(ERROR) << "Failed to create restricted token for " << user << ".";
-        return HResultFromLastError();
-      }
-
-      if (!token.Impersonate()) {
-        LOG(ERROR) << "Failed to impersonate " << user << ".";
-        return HResultFromLastError();
-      }
+bool AskUser(const std::string& request) {
+  for (;;) {
+    std::cout << request << " [Y/n]:";
+    std::string input;
+    std::getline(std::cin, input);
+    StringToLowerASCII(&input);
+    if (input.empty() || input == "y") {
+      return true;
+    } else if (input == "n") {
+      return false;
     }
-    if (file_util::WriteFile(path, data, size) != size) {
-      LOG(ERROR) << "Failed to write file " << path.value() << ".";
-      return HResultFromLastError();
-    }
-    return S_OK;
+  }
+}
+
+string16 GetCurrentUserName() {
+  ULONG size = 0;
+  string16 result;
+  ::GetUserNameEx(::NameSamCompatible, NULL, &size);
+  result.resize(size);
+  if (result.empty())
+    return result;
+  if (!::GetUserNameEx(::NameSamCompatible, &result[0], &size))
+    result.clear();
+  result.resize(size);
+  return result;
 }
 
 }  // namespace
@@ -181,13 +169,18 @@ class CloudPrintServiceModule
   DECLARE_REGISTRY_APPID_RESOURCEID(IDR_CLOUDPRINTSERVICE,
                                     "{8013FB7C-2E3E-4992-B8BD-05C0C4AB0627}")
 
+  CloudPrintServiceModule() : detect_printers_(false) {
+  }
+
   HRESULT InitializeSecurity() {
     // TODO(gene): Check if we need to call CoInitializeSecurity and provide
     // the appropriate security settings for service.
     return S_OK;
   }
 
-  HRESULT InstallService(const string16& user, const string16& password) {
+  HRESULT InstallService(const string16& user,
+                         const string16& password,
+                         const char* run_switch) {
     using namespace chrome_launcher_support;
 
     // TODO(vitalybuka): consider "lite" version if we don't want unregister
@@ -207,7 +200,7 @@ class CloudPrintServiceModule
     FilePath service_path;
     CHECK(PathService::Get(base::FILE_EXE, &service_path));
     CommandLine command_line(service_path);
-    command_line.AppendSwitch(kServiceSwitch);
+    command_line.AppendSwitch(run_switch);
     command_line.AppendSwitchPath(kUserDataDirSwitch, user_data_dir_);
 
     LocalSecurityPolicy local_security_policy;
@@ -216,7 +209,7 @@ class CloudPrintServiceModule
         LOG(WARNING) << "Setting " << kSeServiceLogonRight << " for " << user;
         if (!local_security_policy.SetPrivilege(user, kSeServiceLogonRight)) {
           LOG(ERROR) << "Failed to set" << kSeServiceLogonRight;
-          LOG(ERROR) << "Make sure you can run the service with this user.";
+          LOG(ERROR) << "Make sure you can run the service as " << user << ".";
         }
       }
     } else {
@@ -236,13 +229,16 @@ class CloudPrintServiceModule
             user.empty() ? NULL : user.c_str(),
             password.empty() ? NULL : password.c_str()));
 
-    if (!service.IsValid())
+    if (!service.IsValid()) {
+      LOG(ERROR) << "Failed to install service as " << user << ".";
       return HResultFromLastError();
+    }
 
     return S_OK;
   }
 
   HRESULT UninstallService() {
+    StopService();
     if (!Uninstall())
       return E_FAIL;
     return UpdateRegistryAppId(false);
@@ -266,9 +262,17 @@ class CloudPrintServiceModule
     if (FAILED(hr))
       return hr;
 
-    hr = StartConnector();
-    if (FAILED(hr))
-      return hr;
+    if (detect_printers_) {
+      hr = DetectPrinters();
+      if (FAILED(hr))
+        return hr;
+      // Don't run message loop and stop service.
+      return S_FALSE;
+    } else {
+      hr = StartConnector();
+      if (FAILED(hr))
+        return hr;
+    }
 
     LogEvent(_T("Service started/resumed"));
     SetServiceStatus(SERVICE_RUNNING);
@@ -295,25 +299,21 @@ class CloudPrintServiceModule
       return UninstallService();
 
     if (command_line.HasSwitch(kInstallSwitch)) {
-      if (!command_line.HasSwitch(kUserDataDirSwitch) ||
-          !command_line.HasSwitch(kRunAsUser) ||
-          !command_line.HasSwitch(kRunAsPassword)) {
+      if (!command_line.HasSwitch(kUserDataDirSwitch)) {
         InvalidUsage();
         return S_FALSE;
       }
 
-      HRESULT hr = ProcessServiceState(command_line.HasSwitch(kQuietSwitch));
+      string16 run_as_user;
+      string16 run_as_password;
+      SelectWindowsAccount(&run_as_user, &run_as_password);
+
+      HRESULT hr = SetupServiceState();
       if (FAILED(hr))
         return hr;
 
-      CommandLine::StringType run_as_user =
-          command_line.GetSwitchValueNative(kRunAsUser);
-      CommandLine::StringType run_as_password =
-          command_line.GetSwitchValueNative(kRunAsPassword);
-
-      hr = ValidateUserDataDir(run_as_user.c_str());
-
-      hr = InstallService(run_as_user.c_str(), run_as_password.c_str());
+      hr = InstallService(run_as_user.c_str(), run_as_password.c_str(),
+                          kServiceSwitch);
       if (SUCCEEDED(hr) && command_line.HasSwitch(kStartSwitch))
         return StartService();
 
@@ -323,8 +323,10 @@ class CloudPrintServiceModule
     if (command_line.HasSwitch(kStartSwitch))
       return StartService();
 
-    if (command_line.HasSwitch(kServiceSwitch)) {
+    if (command_line.HasSwitch(kServiceSwitch) ||
+        command_line.HasSwitch(kPrintersSwitch)) {
       *is_service = true;
+      detect_printers_ = command_line.HasSwitch(kPrintersSwitch);
       return S_OK;
     }
 
@@ -339,23 +341,46 @@ class CloudPrintServiceModule
     return S_FALSE;
   }
 
-  HRESULT ValidateUserDataDir(const string16& user) {
-    FilePath temp_file;
-    const char some_data[] = "1234";
-    if (!file_util::CreateTemporaryFileInDir(user_data_dir_, &temp_file))
-      return E_FAIL;
-    HRESULT hr = WriteFileAsUser(temp_file, user, some_data,
-                                 sizeof(some_data));
-    if (FAILED(hr)) {
-      LOG(ERROR) << "Failed to write user data. Make sure that account \'" <<
-          user << "\' has full access to \'" <<
-          user_data_dir_.value() << "\'.";
+  void SelectWindowsAccount(string16* run_as_user,
+                            string16* run_as_password) {
+    *run_as_user = GetCurrentUserName();
+    for (;;) {
+      std::cout << "\nPlease provide Windows account to run service.\n";
+      *run_as_user = ASCIIToWide(GetOption("Account as DOMAIN\\USERNAME",
+                                           WideToASCII(*run_as_user), false));
+      *run_as_password = ASCIIToWide(GetOption("Password", "", true));
+
+      FilePath printers_filename(user_data_dir_);
+      printers_filename = printers_filename.Append(kPrintersFileName);
+
+      file_util::Delete(printers_filename, false);
+      if (FAILED(InstallService(run_as_user->c_str(),
+                                run_as_password->c_str(),
+                                kPrintersSwitch))) {
+        continue;
+      }
+      if (FAILED(StartService())) {
+        LOG(ERROR) << "Failed to start service as " << *run_as_user << ".";
+        continue;
+      }
+      UninstallService();
+      if (!file_util::PathExists(printers_filename)) {
+        LOG(ERROR) << "Service can't create " << printers_filename.value();
+        continue;
+      }
+
+      std::string printers;
+      file_util::ReadFileToString(printers_filename, &printers);
+      std::cout << "\nPrinters available for " << run_as_user << ":\n";
+      std::cout << printers << "\n";
+      file_util::Delete(printers_filename, false);
+
+      if (AskUser("Do you want to use " + WideToASCII(*run_as_user) + "?"))
+        return;
     }
-    file_util::Delete(temp_file, false);
-    return hr;
   }
 
-  HRESULT ProcessServiceState(bool quiet) {
+  HRESULT SetupServiceState() {
     FilePath file = user_data_dir_.Append(kServiceStateFileName);
 
     for (;;) {
@@ -365,38 +390,28 @@ class CloudPrintServiceModule
       bool is_valid = file_util::ReadFileToString(file, &contents) &&
                       service_state.FromString(contents);
 
-      if (!quiet) {
-        std::cout << "\n";
-        std::cout << file.value() << ":\n";
-        std::cout << contents << "\n";
-      }
+      std::cout << "\nFile '" << file.value() << "' content:\n";
+      std::cout << contents << "\n";
 
       if (!is_valid)
         LOG(ERROR) << "Invalid file: " << file.value();
 
-      if (quiet)
-        return is_valid ? S_OK : HRESULT_FROM_WIN32(ERROR_FILE_INVALID);
-
       if (!contents.empty()) {
-        std::cout << "Do you want to use this file [y/n]:";
-        for (;;) {
-          std::string input;
-          std::getline(std::cin, input);
-          StringToLowerASCII(&input);
-          if (input == "y") {
-            return S_OK;
-          } else if (input == "n") {
-            is_valid = false;
-            break;
-          }
+        if (AskUser("Do you want to use '" + WideToASCII(file.value()) + "'")) {
+          return S_OK;
+        } else {
+          is_valid = false;
         }
       }
 
       while (!is_valid) {
+        std::cout << "\nPlease provide Cloud Print Settings.\n";
         std::string email = GetOption("email", service_state.email(), false);
         std::string password = GetOption("password", "", true);
-        std::string proxy_id = GetOption("connector_id",
-                                         service_state.proxy_id(), false);
+        std::string proxy_id = service_state.proxy_id();
+        if (proxy_id.empty())
+          proxy_id = base::GenerateGUID();
+        proxy_id = GetOption("connector_id", proxy_id, false);
         is_valid = service_state.Configure(email, password, proxy_id);
         if (is_valid) {
           std::string new_contents = service_state.ToString();
@@ -455,12 +470,32 @@ class CloudPrintServiceModule
 
   HRESULT StopService() {
     ServiceHandle service;
-    HRESULT hr = OpenService(SERVICE_STOP, &service);
+    HRESULT hr = OpenService(SERVICE_STOP | SERVICE_QUERY_STATUS, &service);
     if (FAILED(hr))
       return hr;
     SERVICE_STATUS status = {0};
     if (!::ControlService(service, SERVICE_CONTROL_STOP, &status))
       return HResultFromLastError();
+    while (::QueryServiceStatus(service, &status) &&
+           status.dwCurrentState > SERVICE_STOPPED) {
+      Sleep(500);
+    }
+    return S_OK;
+  }
+
+  HRESULT DetectPrinters() {
+    FilePath printers_filename(user_data_dir_);
+    printers_filename = printers_filename.Append(kPrintersFileName);
+    std::string printers;
+    scoped_refptr<printing::PrintBackend> backend(
+        printing::PrintBackend::CreateInstance(NULL));
+    printing::PrinterList printer_list;
+    backend->EnumeratePrinters(&printer_list);
+    for (size_t i = 0; i < printer_list.size(); ++i) {
+      printers += printer_list[i].printer_name;
+      printers += "\n";
+    }
+    file_util::WriteFile(printers_filename, printers.c_str(), printers.size());
     return S_OK;
   }
 
@@ -470,12 +505,15 @@ class CloudPrintServiceModule
   }
 
   void StopConnector() {
-    chrome_->Stop();
-    chrome_.reset();
+    if (chrome_.get()) {
+      chrome_->Stop();
+      chrome_.reset();
+    }
   }
 
   static BOOL WINAPI ConsoleCtrlHandler(DWORD type);
 
+  bool detect_printers_;
   FilePath user_data_dir_;
   scoped_ptr<ChromeLauncher> chrome_;
 };
