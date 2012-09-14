@@ -22,18 +22,18 @@ namespace gdata {
 namespace {
 
 ACTION_P(MockCreateFile, error) {
-  if (!arg2.is_null())
-    arg2.Run(error);
+  DCHECK(!arg2.is_null());
+  arg2.Run(error);
 }
 
 ACTION_P2(MockOpenFile, error, local_path) {
-  if (!arg1.is_null())
-    arg1.Run(error, local_path);
+  DCHECK(!arg1.is_null());
+  arg1.Run(error, local_path);
 }
 
 ACTION_P(MockCloseFile, error) {
-  if (!arg1.is_null())
-    arg1.Run(error);
+  DCHECK(!arg1.is_null());
+  arg1.Run(error);
 }
 
 void RecordOpenFileCallbackArguments(DriveFileError* error,

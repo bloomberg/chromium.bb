@@ -11,6 +11,19 @@ using content::BrowserThread;
 
 namespace gdata {
 
+namespace {
+
+// Emits debug log when DriveFileSystem::CloseFile() is complete.
+void EmitDebugLogForCloseFile(const FilePath& file_path,
+                              DriveFileError file_error) {
+  if (file_error != DRIVE_FILE_OK) {
+    LOG(WARNING) << "CloseFile failed: " << file_path.AsUTF8Unsafe() << ": "
+                 << file_error;
+  }
+}
+
+}  // namespace
+
 FileWriteHelper::FileWriteHelper(DriveFileSystemInterface* file_system)
     : file_system_(file_system),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
@@ -90,7 +103,8 @@ void FileWriteHelper::PrepareWritableFileAndRunAfterOpenFile(
 void FileWriteHelper::PrepareWritableFileAndRunAfterCallback(
     const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  file_system_->CloseFile(file_path, FileOperationCallback());
+  file_system_->CloseFile(file_path,
+                          base::Bind(&EmitDebugLogForCloseFile, file_path));
 }
 
 }  // namespace gdata
