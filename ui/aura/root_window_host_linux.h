@@ -22,6 +22,10 @@ class ViewProp;
 
 namespace aura {
 
+namespace internal {
+class TouchEventCalibrate;
+}
+
 class RootWindowHostLinux : public RootWindowHost,
                             public MessageLoop::Dispatcher {
  public:
@@ -100,6 +104,8 @@ class RootWindowHostLinux : public RootWindowHost,
   scoped_array<XID> pointer_barriers_;
 
   scoped_ptr<ui::ViewProp> prop_;
+
+  scoped_ptr<internal::TouchEventCalibrate> touch_calibrate_;
 
   ui::X11AtomCache atom_cache_;
 

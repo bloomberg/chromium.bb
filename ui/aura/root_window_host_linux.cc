@@ -14,6 +14,7 @@
 #include <algorithm>
 
 #include "base/command_line.h"
+#include "base/message_loop.h"
 #include "base/message_pump_aurax11.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
@@ -280,6 +281,46 @@ bool ShouldSendCharEventForKeyboardCode(ui::KeyboardCode keycode) {
 
 }  // namespace
 
+namespace internal {
+
+// A very lightweight message-pump observer that routes all the touch events to
+// the X root window so that they can be calibrated properly.
+class TouchEventCalibrate : public base::MessagePumpObserver {
+ public:
+  TouchEventCalibrate() {
+    MessageLoopForUI::current()->AddObserver(this);
+  }
+
+  virtual ~TouchEventCalibrate() {
+    MessageLoopForUI::current()->RemoveObserver(this);
+  }
+
+ private:
+  // Overridden from base::MessagePumpObserver:
+  virtual base::EventStatus WillProcessEvent(
+      const base::NativeEvent& event) OVERRIDE {
+#if defined(USE_XI2_MT)
+    if (event->type == GenericEvent &&
+        (event->xgeneric.evtype == XI_TouchBegin ||
+         event->xgeneric.evtype == XI_TouchUpdate ||
+         event->xgeneric.evtype == XI_TouchEnd)) {
+      XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(event->xcookie.data);
+      xievent->event = xievent->root;
+      xievent->event_x = xievent->root_x;
+      xievent->event_y = xievent->root_y;
+    }
+#endif
+    return base::EVENT_CONTINUE;
+  }
+
+  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE {
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(TouchEventCalibrate);
+};
+
+}  // namespace internal
+
 RootWindowHostLinux::RootWindowHostLinux(RootWindowHostDelegate* delegate,
                                          const gfx::Rect& bounds)
     : delegate_(delegate),
@@ -292,6 +333,7 @@ RootWindowHostLinux::RootWindowHostLinux(RootWindowHostDelegate* delegate,
       bounds_(bounds),
       focus_when_shown_(false),
       pointer_barriers_(NULL),
+      touch_calibrate_(new internal::TouchEventCalibrate),
       atom_cache_(xdisplay_, kAtomsToCache) {
   XSetWindowAttributes swa;
   memset(&swa, 0, sizeof(swa));
