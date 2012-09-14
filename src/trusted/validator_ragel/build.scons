@@ -106,7 +106,7 @@ if generate:
   # non-POSIX platforms (in particular it's not Windows compatible).
 
   env_gen_dfa = env.Clone()
-  env_gen_dfa.Append(CCFLAGS=['-std=c++0x', '-DNACL_TRUSTED_BUT_NOT_TCB'])
+  env_gen_dfa.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
 
   gen_dfa = env_gen_dfa.ComponentProgram(
       'gen_dfa',

@@ -44,7 +44,7 @@ const struct option kProgramOptions[] = {
   {NULL,                0,                      NULL,   0}
 };
 
-const char kVersion[] = "2012.09.14";
+const char kVersion[] = "2012.09.15";
 
 const char* const kProgramHelp = "Usage: %s [OPTION]... [FILE]...\n"
 "\n"
@@ -393,6 +393,19 @@ std::string::const_iterator find_end_of_line(std::string::const_iterator it,
   return it;
 }
 
+/* is_supported_instruction returns true if instruction is supported in a
+   current mode (some instructions are only supported in ia32 mode or x86-64
+   mode, some are excluded from validator's reduced DFA).  */
+bool is_supported_instruction(const Instruction& instruction) {
+  return ((!instruction.has_flag("ia32") || ia32_mode) &&
+          (!instruction.has_flag("amd64") || !ia32_mode) &&
+          (!instruction.has_flag("nacl-ia32-forbidden") || !ia32_mode ||
+           enabled(kNaClForbidden)) &&
+          (!instruction.has_flag("nacl-amd64-forbidden") || ia32_mode ||
+           enabled(kNaClForbidden)) &&
+          (!instruction.has_flag("nacl-forbidden") || enabled(kNaClForbidden)));
+}
+
 /* parse_instructions parses the given *.def file and adds instruction
    definitions to the instructions vector and their names to instruction_names
    map.
@@ -417,90 +430,86 @@ void parse_instructions(const char* filename) {
     Instruction instruction;
     std::vector<std::string> operation = split_till_comma(&it, line_end);
     /* Line with just whitespaces is ignored.  */
-    if (operation.size() != 0) {
-      /* First word is operation name, other words are operands.  */
-      for (std::vector<std::string>::reverse_iterator string =
-                 operation.rbegin(); string != operation.rend() - 1; ++string) {
-        Instruction::Operand operand;
-        operand.enabled  = true;
-        operand.implicit = false;
-        switch (string->at(0)) {
-          case '\'':
-            operand.type  = string->at(1);
-            operand.size  = string->substr(2);
-            operand.read  = false;
-            operand.write = false;
-            break;
-          case '=':
-            operand.type  = string->at(1);
-            operand.size  = string->substr(2);
-            operand.read  = true;
-            operand.write = false;
-            break;
-          case '!':
-            operand.type  = string->at(1);
-            operand.size  = string->substr(2);
-            operand.read  = false;
-            operand.write = true;
-            break;
-          case '&':
-            operand.type  = string->at(1);
-            operand.size  = string->substr(2);
-            operand.read  = true;
-            operand.write = true;
-            break;
-          default:
-            operand.type  = string->at(0);
-            operand.size  = string->substr(1);
-            if (string == operation.rbegin()) {
-              if (operation.size() <= 3) {
-                operand.read  = true;
-                operand.write = true;
-              } else {
-                operand.read  = false;
-                operand.write = true;
-              }
-            } else {
+    if (operation.size() == 0)
+      continue;
+    /* First word is operation name, other words are operands.  */
+    for (std::vector<std::string>::reverse_iterator string = operation.rbegin();
+         string != operation.rend() - 1; ++string) {
+      Instruction::Operand operand;
+      operand.enabled  = true;
+      operand.implicit = false;
+      /* Most times we can determine whether operand is used for reading or
+       * writing using its position and number of operands (default case in this
+       * switch).  In a few exceptions we add read/write annotations that
+       * override default behavior. All such annotations are created by hand. */
+      switch (string->at(0)) {
+        case '\'':
+          operand.type  = string->at(1);
+          operand.size  = string->substr(2);
+          operand.read  = false;
+          operand.write = false;
+          break;
+        case '=':
+          operand.type  = string->at(1);
+          operand.size  = string->substr(2);
+          operand.read  = true;
+          operand.write = false;
+          break;
+        case '!':
+          operand.type  = string->at(1);
+          operand.size  = string->substr(2);
+          operand.read  = false;
+          operand.write = true;
+          break;
+        case '&':
+          operand.type  = string->at(1);
+          operand.size  = string->substr(2);
+          operand.read  = true;
+          operand.write = true;
+          break;
+        default:
+          operand.type  = string->at(0);
+          operand.size  = string->substr(1);
+          if (string == operation.rbegin()) {
+            if (operation.size() <= 3) {
               operand.read  = true;
-              operand.write = false;
+              operand.write = true;
+            } else {
+              operand.read  = false;
+              operand.write = true;
             }
-            break;
-        }
-        if (*(operand.size.rbegin()) == '*') {
-          operand.size.resize(operand.size.length() - 1);
-          operand.implicit = true;
-        }
-        instruction.operands.push_back(operand);
+          } else {
+            operand.read  = true;
+            operand.write = false;
+          }
+          break;
       }
-      bool enabled_instruction = true;
+      if (*(operand.size.rbegin()) == '*') {
+        operand.size.resize(operand.size.length() - 1);
+        operand.implicit = true;
+      }
+      instruction.operands.push_back(operand);
+    }
+    bool enabled_instruction = true;
+    if (*it == ',') {
+      ++it;
+      if (it == line_end) line_end = find_end_of_line(++it, eof);
+      instruction.opcodes = split_till_comma(&it, line_end);
       if (*it == ',') {
         ++it;
         if (it == line_end) line_end = find_end_of_line(++it, eof);
-        instruction.opcodes = split_till_comma(&it, line_end);
-        if (*it == ',') {
-          ++it;
-          if (it == line_end) line_end = find_end_of_line(++it, eof);
-          const std::vector<std::string>& flags = split_till_comma(&it,
-                                                                   line_end);
-          for (std::vector<std::string>::const_iterator flag = flags.begin();
-               flag != flags.end(); ++flag)
-            instruction.add_flag(*flag);
-          if ((instruction.has_flag("ia32") && !ia32_mode) ||
-              (instruction.has_flag("amd64") && ia32_mode) ||
-              (instruction.has_flag("nacl-ia32-forbidden") &&
-               ia32_mode && !enabled(kNaClForbidden)) ||
-              (instruction.has_flag("nacl-amd64-forbidden") &&
-               !ia32_mode && !enabled(kNaClForbidden)) ||
-              (instruction.has_flag("nacl-forbidden") &&
-               !enabled(kNaClForbidden)))
-            enabled_instruction = false;
-        }
+        const std::vector<std::string>& flags = split_till_comma(&it, line_end);
+        for (std::vector<std::string>::const_iterator flag = flags.begin();
+             flag != flags.end(); ++flag)
+          instruction.add_flag(*flag);
+        if (!is_supported_instruction(instruction))
+          enabled_instruction = false;
       }
-      if (enabled_instruction) {
-        instruction.name = operation[0];
-        instruction_names[instruction.name] = 0;
-        instructions.push_back(instruction);
-      }
+    }
+    if (enabled_instruction) {
+      instruction.name = operation[0];
+      instruction_names[instruction.name] = 0;
+      instructions.push_back(instruction);
     }
     if (find_end_of_line(it, eof) != it) {
       fprintf(stderr, "%s: definition files must have three columns",
@@ -510,65 +519,50 @@ void parse_instructions(const char* filename) {
   }
 }
 
-/* Helper comparison function: shorter strings are smaller, otherwise compare
-   strings lexicographically.  */
-bool print_consts_compare_names(const std::string& x, const std::string& y) {
-  return (x.size() > y.size()) || ((x.size() == y.size()) && x < y);
-}
-
 /* print_consts does three things:
     • prints instruction_names array in -consts.c (if needed).
     • adjusts offsets in instruction_names map.
     • prints index_registers array in -consts.c (if needed).  */
 void print_consts(void)  {
   if (enabled(kInstructionName)) {
-    std::vector<std::string> names;
     for (std::map<std::string, size_t>::iterator instruction_name =
            instruction_names.begin();
          instruction_name != instruction_names.end(); ++instruction_name)
-      names.push_back(instruction_name->first);
-    std::sort(names.begin(), names.end(), print_consts_compare_names);
-    for (std::vector<std::string>::const_iterator name = names.begin();
-         name != names.end(); ++name)
-      if (instruction_names[*name] == 0)
-        for (size_t p = 1; p < name->length(); ++p) {
+      if (instruction_name->second == 0)
+        for (size_t p = 1; p < instruction_name->first.length(); ++p) {
           const std::map<std::string, size_t>::iterator it =
-            instruction_names.find(std::string(*name, p));
+            instruction_names.find(std::string(instruction_name->first, p));
           if (it != instruction_names.end())
             it->second = 1;
         }
     size_t offset = 0;
-    for (std::map<std::string, size_t>::iterator pair =
-           instruction_names.begin(); pair != instruction_names.end(); ++pair)
-      if (pair->second != 1) {
-        pair->second = offset;
-        offset += pair->first.length() + 1;
+    const char* delimiter = "static const char instruction_names[] = {\n  ";
+    for (std::map<std::string, size_t>::iterator instruction_name =
+           instruction_names.begin();
+         instruction_name != instruction_names.end(); ++instruction_name)
+      if (instruction_name->second != 1) {
+        fprintf(const_file, "%s", delimiter);
+        for (std::string::const_iterator c = instruction_name->first.begin();
+             c != instruction_name->first.end(); ++c)
+          fprintf(const_file, "0x%02x, ", static_cast<int>(*c));
+        fprintf(const_file, "\'\\0\',  /* ");
+        fprintf(const_file, "%s", instruction_name->first.c_str());
+        delimiter = " */\n  ";
+        instruction_name->second = offset;
+        offset += instruction_name->first.length() + 1;
       }
-    for (std::vector<std::string>::const_iterator name = names.begin();
-         name != names.end(); ++name) {
-      size_t offset = instruction_names[*name];
+    for (std::map<std::string, size_t>::iterator instruction_name =
+           instruction_names.begin();
+         instruction_name != instruction_names.end(); ++instruction_name) {
+      size_t offset = instruction_name->second;
       if (offset != 1)
-        for (size_t p = 1; p < name->length(); ++p) {
+        for (size_t p = 1; p < instruction_name->first.length(); ++p) {
           const std::map<std::string, size_t>::iterator it =
-            instruction_names.find(std::string(*name, p));
+            instruction_names.find(std::string(instruction_name->first, p));
           if ((it != instruction_names.end()) && (it->second == 1))
             it->second = offset + p;
         }
     }
-    offset = 0;
-    const char* delimiter = "static const char instruction_names[] = {\n  ";
-    for (std::map<std::string, size_t>::const_iterator pair =
-           instruction_names.begin(); pair != instruction_names.end(); ++pair)
-      if (pair->second == offset) {
-        fprintf(const_file, "%s", delimiter);
-        for (std::string::const_iterator c = pair->first.begin();
-             c != pair->first.end(); ++c)
-          fprintf(const_file, "0x%02x, ", static_cast<int>(*c));
-        fprintf(const_file, "\'\\0\',  /* ");
-        fprintf(const_file, "%s", pair->first.c_str());
-        offset += pair->first.length() + 1;
-        delimiter = " */\n  ";
-      }
     fprintf(const_file, " */\n};\n");
   }
   if (enabled(kParseOperands)) {
