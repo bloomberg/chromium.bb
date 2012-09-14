@@ -8,7 +8,7 @@
 
 cr.define('login', function() {
   // Network state constants.
-  const NET_STATE = {
+  /** @const */ var NET_STATE = {
     OFFLINE: 0,
     ONLINE: 1,
     PORTAL: 2
@@ -82,17 +82,17 @@ cr.define('login', function() {
   /**
    * Continues add user button click handling after network state has
    * been recieved.
-   * @param {Integer} state Current state of the network (see NET_STATE).
+   * @param {number} state Current state of the network (see NET_STATE).
    * @param {string} network Name of the network.
    * @param {string} reason Reason the callback was called.
-   * @param {int} last Last active network type.
+   * @param {number} last Last active network type.
    */
   HeaderBar.handleAddUser = function(state, network, reason, last) {
     if (state != NET_STATE.OFFLINE) {
       Oobe.showSigninUI();
     } else {
-      const BUBBLE_OFFSET = 8;
-      const BUBBLE_PADDING = 5;
+      /** @const */ var BUBBLE_OFFSET = 8;
+      /** @const */ var BUBBLE_PADDING = 5;
       $('bubble').showTextForElement(
           $('add-user-button'),
           localStrings.getString('addUserErrorMessage'),
@@ -104,10 +104,10 @@ cr.define('login', function() {
 
   /**
    * Observes network state, and close the bubble when network becomes online.
-   * @param {Integer} state Current state of the network (see NET_STATE).
+   * @param {number} state Current state of the network (see NET_STATE).
    * @param {string} network Name of the network.
    * @param {string} reason Reason the callback was called.
-   * @param {int} last Last active network type.
+   * @param {number} last Last active network type.
    */
   HeaderBar.bubbleWatchdog = function(state, network, reason, last) {
     if (state != NET_STATE.OFFLINE) {

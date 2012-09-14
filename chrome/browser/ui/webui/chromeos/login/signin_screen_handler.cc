@@ -163,7 +163,7 @@ class NetworkStateInformer
   bool is_online() { return state_ == ONLINE; }
 
  private:
-  enum State {OFFLINE, ONLINE, CAPTIVE_PORTAL};
+  enum State {OFFLINE, ONLINE, CAPTIVE_PORTAL, CONNECTING};
 
   bool UpdateState(chromeos::NetworkLibrary* cros);
   void UpdateStateAndNotify();
@@ -235,13 +235,16 @@ void NetworkStateInformer::OnNetworkManagerChanged(NetworkLibrary* cros) {
     if (active_network->online()) {
       new_state = ONLINE;
       new_network_id = active_network->unique_id();
+    } else if (active_network->connecting()) {
+      new_state = CONNECTING;
+      new_network_id = active_network->unique_id();
     } else if (active_network->restricted_pool()) {
       new_state = CAPTIVE_PORTAL;
     }
   }
 
-  if ((state_ != ONLINE && new_state == ONLINE) ||
-      (state_ == ONLINE && new_state == ONLINE &&
+  if ((state_ != ONLINE && (new_state == ONLINE || new_state == CONNECTING)) ||
+      (state_ == ONLINE && (new_state == ONLINE || new_state == CONNECTING) &&
        new_network_id != last_online_network_id_)) {
     if (new_state == ONLINE)
       last_online_network_id_ = new_network_id;
@@ -285,6 +288,8 @@ bool NetworkStateInformer::UpdateState(NetworkLibrary* cros) {
   if (active_network) {
     if (active_network->online())
       new_state = ONLINE;
+    else if (active_network->connecting())
+      new_state = CONNECTING;
     else if (active_network->restricted_pool())
       new_state = CAPTIVE_PORTAL;
 

@@ -1,4 +1,4 @@
- // Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,8 @@ cr.define('login', function() {
   var NET_STATE = {
     OFFLINE: 0,
     ONLINE: 1,
-    PORTAL: 2
+    PORTAL: 2,
+    CONNECTING: 3
   };
 
   // Error reasons which are passed to updateState_() method.
@@ -23,7 +24,8 @@ cr.define('login', function() {
     PROXY_CONNECTION_FAILED: 'frame error:130',
     PROXY_CONFIG_CHANGED: 'proxy changed',
     LOADING_TIMEOUT: 'loading timeout',
-    PORTAL_DETECTED: 'portal detected'
+    PORTAL_DETECTED: 'portal detected',
+    NETWORK_CHANGED: 'network changed'
   };
 
   // Frame loading errors.
@@ -41,6 +43,13 @@ cr.define('login', function() {
 
   // Link which triggers frame reload.
   /** @const */ var RELOAD_PAGE_ID = 'proxy-error-retry-link';
+
+  // Timeout used to delay first offline notification from network
+  // manager.
+  /** @const */ var OFFLINE_TIMEOUT_SEC = 5;
+
+  // Timeout used to prevent infinite connecting to a flaky network.
+  /** @const */ var CONNECTING_TIMEOUT_SEC = 60;
 
   /**
    * Creates a new offline message screen div.
@@ -71,6 +80,23 @@ cr.define('login', function() {
       cr.ui.DropDown.decorate($('offline-networks-list'));
       this.updateLocalizedContent_();
     },
+
+    /**
+     * Timer used to delay calls to updateState_ method.
+     */
+    updateStateTimer_: undefined,
+
+    /**
+     * True if updateState_ method was not called.
+     */
+    firstUpdateStateCall_: true,
+
+    /*
+     * Timer which is started when network moves to the connecting
+     * state. If it's triggered, then it's look like the network is
+     * flaky and we must show offline message.
+     */
+    connectingTimer_: undefined,
 
     /**
      * Updates localized content of the screen that is not updated via template.
@@ -143,13 +169,69 @@ cr.define('login', function() {
     },
 
     /**
+     * Clears |updateStateTimer_|.
+     * @private
+     */
+    clearUpdateStateTimer_: function() {
+      if (this.updateStateTimer_) {
+        window.clearTimeout(this.updateStateTimer_);
+        this.updateStateTimer_ = undefined;
+      }
+    },
+
+    /**
+     * Clears |connectingTimer_|.
+     * @private
+     */
+    clearConnectingTimer_: function() {
+      if (this.connectingTimer_) {
+        window.clearTimeout(this.connectingTimer_);
+        this.connectingTimer_ = undefined;
+      }
+    },
+
+    /**
      * Shows or hides offline message based on network on/offline state.
      * @param {number} state Current state of the network (see NET_STATE).
      * @param {string} network Name of the current network.
      * @param {string} reason Reason the callback was called.
      * @param {number} lastNetworkType Last active network type.
+     * @param {boolean} opt_forceUpdate Are state should be updated in any case?
      */
-    updateState_: function(state, network, reason, lastNetworkType) {
+    updateState_: function(state, network, reason, lastNetworkType,
+                           opt_forceUpdate) {
+      console.log('updateState_: state=' + state +
+                  ', network=' + network + ', reason=' + reason +
+                  ', lastNetworkType=' + lastNetworkType +
+                  ', opt_forceUpdate=' + opt_forceUpdate);
+
+      this.clearUpdateStateTimer_();
+
+      // Delay first notification about offline state.
+      if (state == NET_STATE.OFFLINE && this.firstUpdateStateCall_) {
+        this.firstUpdateStateCall_ = false;
+        this.updateStateTimer_ = window.setTimeout(
+            this.updateState_.bind(
+                this, state, network, reason, lastNetworkType, opt_forceUpdate),
+            OFFLINE_TIMEOUT_SEC * 1000);
+        return;
+      }
+      this.firstUpdateStateCall_ = false;
+
+      // Don't show or hide error screen if we're in connecting state.
+      if (state == NET_STATE.CONNECTING && !opt_forceUpdate) {
+        if (!this.connectingTimer_) {
+          // First notification about CONNECTING state.
+          this.clearConnectingTimer_();
+          this.connectingTimer_ = window.setTimeout(
+              this.updateState_.bind(
+                  this, state, network, reason, lastNetworkType, true),
+              CONNECTING_TIMEOUT_SEC * 1000);
+        }
+        return;
+      }
+      this.clearConnectingTimer_();
+
       var currentScreen = Oobe.getInstance().currentScreen;
       var offlineMessage = this;
       var isOnline = (state == NET_STATE.ONLINE);
@@ -162,6 +244,14 @@ cr.define('login', function() {
       var isShown = !offlineMessage.classList.contains('hidden') &&
           !offlineMessage.classList.contains('faded');
       var currentScreenReloaded = false;
+
+      // Reload frame if network is changed.
+      if (reason == ERROR_REASONS.NETWORK_CHANGED) {
+        if (state == NET_STATE.ONLINE && !currentScreenReloaded) {
+          currentScreen.doReload();
+          currentScreenReloaded = true;
+        }
+      }
 
       if (reason == ERROR_REASONS.PROXY_CONFIG_CHANGED && shouldOverlay &&
           !currentScreenReloaded) {
@@ -284,6 +374,11 @@ cr.define('login', function() {
             currentScreen.doReload();
             currentScreenReloaded = true;
           }
+        } else if (currentScreen.id == 'gaia-signin' && currentScreen.loading) {
+          if (!currentScreenReloaded) {
+            currentScreen.doReload();
+            currentScreenReloaded = true;
+          }
         }
       }
     },
@@ -333,19 +428,21 @@ cr.define('login', function() {
   };
 
   /**
-   * Network state callback where we decide whether to schdule a retry.
+   * Network state callback where we decide whether to schedule a retry.
    */
   ErrorMessageScreen.maybeRetry =
       function(state, network, reason, lastNetworkType) {
     console.log('ErrorMessageScreen.maybeRetry, state=' + state +
-                ', network=' + network);
+                ', network=' + network +
+                ', lastNetworkType=' + lastNetworkType);
 
     // No retry if we are not online.
     if (state != NET_STATE.ONLINE)
       return;
 
     var currentScreen = Oobe.getInstance().currentScreen;
-    if (MANAGED_SCREENS.indexOf(currentScreen.id) != -1) {
+    if (MANAGED_SCREENS.indexOf(currentScreen.id) != -1 &&
+        state != NET_STATE.CONNECTING) {
       this.updateState(NET_STATE.PORTAL, network, reason, lastNetworkType);
       // Schedules a retry.
       currentScreen.scheduleRetry();
