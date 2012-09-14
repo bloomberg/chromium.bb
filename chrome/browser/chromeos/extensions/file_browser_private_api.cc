@@ -34,6 +34,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/process_map.h"
+#include "chrome/browser/google_apis/operation_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -72,6 +73,7 @@ using content::WebContents;
 using extensions::Extension;
 using file_handler_util::FileTaskExecutor;
 using gdata::InstalledApp;
+using gdata::OperationRegistry;
 
 namespace {
 
@@ -2274,8 +2276,9 @@ ListValue* GetFileTransfersFunction::GetFileTransfersList() {
   if (!system_service)
     return NULL;
 
-  gdata::OperationProgressStatusList list =
-      system_service->drive_service()->GetProgressStatusList();
+  std::vector<gdata::OperationRegistry::ProgressStatus>
+      list = system_service->drive_service()->operation_registry()->
+      GetProgressStatusList();
   return file_manager_util::ProgressStatusVectorToListValue(
       profile_, source_url_.GetOrigin(), list);
 }
@@ -2330,6 +2333,9 @@ void CancelFileTransfersFunction::GetLocalPathsResponseOnUIThread(
     return;
   }
 
+  gdata::OperationRegistry* operation_registry =
+      system_service->drive_service()->operation_registry();
+
   scoped_ptr<ListValue> responses(new ListValue());
   for (size_t i = 0; i < files.size(); ++i) {
     DCHECK(gdata::util::IsUnderDriveMountPoint(files[i].file_path));
@@ -2337,7 +2343,7 @@ void CancelFileTransfersFunction::GetLocalPathsResponseOnUIThread(
     scoped_ptr<DictionaryValue> result(new DictionaryValue());
     result->SetBoolean(
         "canceled",
-        system_service->drive_service()->CancelForFilePath(file_path));
+        operation_registry->CancelForFilePath(file_path));
     GURL file_url;
     if (file_manager_util::ConvertFileToFileSystemUrl(profile_,
             gdata::util::GetSpecialRemoteRootPath().Append(file_path),

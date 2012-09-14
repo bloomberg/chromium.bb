@@ -16,57 +16,6 @@
 
 namespace gdata {
 
-// Unique ID to identify each operation.
-typedef int32 OperationID;
-
-// Enumeration type for indicating the direction of the operation.
-enum OperationType {
-  OPERATION_UPLOAD,
-  OPERATION_DOWNLOAD,
-  OPERATION_OTHER,
-};
-
-// Enumeration type for indicating the state of the transfer.
-enum OperationTransferState {
-  OPERATION_NOT_STARTED,
-  OPERATION_STARTED,
-  OPERATION_IN_PROGRESS,
-  OPERATION_COMPLETED,
-  OPERATION_FAILED,
-  OPERATION_SUSPENDED,
-};
-
-// Returns string representations of the operation type and state, which are
-// exposed to the private extension API as in:
-// operation.chrome/common/extensions/api/file_browser_private.json
-std::string OperationTypeToString(OperationType type);
-std::string OperationTransferStateToString(OperationTransferState state);
-
-// Structure that packs progress information of each operation.
-struct OperationProgressStatus {
-  OperationProgressStatus(OperationType type, const FilePath& file_path);
-  // For debugging
-  std::string DebugString() const;
-
-  OperationID operation_id;
-
-  // Type of the operation: upload/download.
-  OperationType operation_type;
-  // GData path of the file dealt with the current operation.
-  FilePath file_path;
-  // Current state of the transfer;
-  OperationTransferState transfer_state;
-  // The time when the operation is initiated.
-  base::Time start_time;
-  // Current fraction of progress of the operation.
-  int64 progress_current;
-  // Expected total number of bytes to be transferred in the operation.
-  // -1 if no expectation is available (yet).
-  int64 progress_total;
-};
-typedef std::vector<OperationProgressStatus> OperationProgressStatusList;
-
-
 // This class tracks all the in-flight GData operation objects and manage their
 // lifetime.
 class OperationRegistry {
@@ -74,11 +23,61 @@ class OperationRegistry {
   OperationRegistry();
   ~OperationRegistry();
 
+  // Unique ID to identify each operation.
+  typedef int32 OperationID;
+
+  // Enumeration type for indicating the direction of the operation.
+  enum OperationType {
+    OPERATION_UPLOAD,
+    OPERATION_DOWNLOAD,
+    OPERATION_OTHER,
+  };
+
+  enum OperationTransferState {
+    OPERATION_NOT_STARTED,
+    OPERATION_STARTED,
+    OPERATION_IN_PROGRESS,
+    OPERATION_COMPLETED,
+    OPERATION_FAILED,
+    OPERATION_SUSPENDED,
+  };
+
+  // Returns string representations of the operation type and state, which are
+  // exposed to the private extension API as in:
+  // operation.chrome/common/extensions/api/file_browser_private.json
+  static std::string OperationTypeToString(OperationType type);
+  static std::string OperationTransferStateToString(
+      OperationTransferState state);
+
+  // Structure that packs progress information of each operation.
+  struct ProgressStatus {
+    ProgressStatus(OperationType type, const FilePath& file_path);
+    // For debugging
+    std::string DebugString() const;
+
+    OperationID operation_id;
+
+    // Type of the operation: upload/download.
+    OperationType operation_type;
+    // GData path of the file dealt with the current operation.
+    FilePath file_path;
+    // Current state of the transfer;
+    OperationTransferState transfer_state;
+    // The time when the operation is initiated.
+    base::Time start_time;
+    // Current fraction of progress of the operation.
+    int64 progress_current;
+    // Expected total number of bytes to be transferred in the operation.
+    // -1 if no expectation is available (yet).
+    int64 progress_total;
+  };
+  typedef std::vector<ProgressStatus> ProgressStatusList;
+
   // Observer interface for listening changes in the active set of operations.
   class Observer {
    public:
     // Called when a GData operation started, made some progress, or finished.
-    virtual void OnProgressUpdate(const OperationProgressStatusList& list) = 0;
+    virtual void OnProgressUpdate(const ProgressStatusList& list) = 0;
     // Called when GData authentication failed.
     virtual void OnAuthenticationFailed() {}
    protected:
@@ -102,9 +101,7 @@ class OperationRegistry {
     void Cancel();
 
     // Retrieves the current progress status of the operation.
-    const OperationProgressStatus& progress_status() const {
-      return progress_status_;
-    }
+    const ProgressStatus& progress_status() const { return progress_status_; }
 
    protected:
     // Notifies the registry about current status.
@@ -128,7 +125,7 @@ class OperationRegistry {
     virtual void DoCancel() = 0;
 
     OperationRegistry* const registry_;
-    OperationProgressStatus progress_status_;
+    ProgressStatus progress_status_;
   };
 
   // Cancels all in-flight operations.
@@ -139,7 +136,7 @@ class OperationRegistry {
   bool CancelForFilePath(const FilePath& file_path);
 
   // Obtains the list of currently active operations.
-  OperationProgressStatusList GetProgressStatusList();
+  ProgressStatusList GetProgressStatusList();
 
   // Sets an observer. The registry do NOT own observers; before destruction
   // they need to be removed from the registry.
@@ -158,15 +155,14 @@ class OperationRegistry {
   void OnOperationProgress(OperationID operation);
   void OnOperationFinish(OperationID operation);
   void OnOperationSuspend(OperationID operation);
-  void OnOperationResume(Operation* operation,
-                         OperationProgressStatus* new_status);
+  void OnOperationResume(Operation* operation, ProgressStatus* new_status);
   void OnOperationAuthFailed();
 
   bool IsFileTransferOperation(const Operation* operation) const;
 
   // Controls the frequency of notifications, not to flood the listeners with
   // too many events.
-  bool ShouldNotifyStatusNow(const OperationProgressStatusList& list);
+  bool ShouldNotifyStatusNow(const ProgressStatusList& list);
   // Sends notifications to the observers after checking that the frequency is
   // not too high by ShouldNotifyStatusNow.
   void NotifyStatusToObservers();

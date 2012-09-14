@@ -109,7 +109,7 @@ void AuthOperation::OnGetTokenSuccess(const std::string& access_token,
                             kSuccessRatioHistogramMaxValue);
 
   callback_.Run(HTTP_SUCCESS, access_token);
-  NotifyFinish(OPERATION_COMPLETED);
+  NotifyFinish(OperationRegistry::OPERATION_COMPLETED);
 }
 
 // Callback for OAuth2AccessTokenFetcher on failure.
@@ -133,7 +133,7 @@ void AuthOperation::OnGetTokenFailure(const GoogleServiceAuthError& error) {
                               kSuccessRatioHistogramMaxValue);
     callback_.Run(HTTP_UNAUTHORIZED, std::string());
   }
-  NotifyFinish(OPERATION_FAILED);
+  NotifyFinish(OperationRegistry::OPERATION_FAILED);
 }
 
 //============================ UrlFetchOperationBase ===========================
@@ -145,9 +145,10 @@ UrlFetchOperationBase::UrlFetchOperationBase(OperationRegistry* registry)
       started_(false) {
 }
 
-UrlFetchOperationBase::UrlFetchOperationBase(OperationRegistry* registry,
-                                             OperationType type,
-                                             const FilePath& path)
+UrlFetchOperationBase::UrlFetchOperationBase(
+    OperationRegistry* registry,
+    OperationRegistry::OperationType type,
+    const FilePath& path)
     : OperationRegistry::Operation(registry, type, path),
       re_authenticate_count_(0),
       save_temp_file_(false) {
@@ -244,7 +245,7 @@ void UrlFetchOperationBase::OnProcessURLFetchResultsComplete(bool result) {
   if (result)
     NotifySuccessToOperationRegistry();
   else
-    NotifyFinish(OPERATION_FAILED);
+    NotifyFinish(OperationRegistry::OPERATION_FAILED);
 }
 
 void UrlFetchOperationBase::OnURLFetchComplete(const URLFetcher* source) {
@@ -267,7 +268,7 @@ void UrlFetchOperationBase::OnURLFetchComplete(const URLFetcher* source) {
 }
 
 void UrlFetchOperationBase::NotifySuccessToOperationRegistry() {
-  NotifyFinish(OPERATION_COMPLETED);
+  NotifyFinish(OperationRegistry::OPERATION_COMPLETED);
 }
 
 void UrlFetchOperationBase::NotifyStartToOperationRegistry() {
@@ -289,7 +290,7 @@ void UrlFetchOperationBase::OnAuthFailed(GDataErrorCode code) {
   // and notifications. Once NotifyFinish() is called, the current instance of
   // gdata operation will be deleted from the OperationRegistry and become
   // invalid.
-  NotifyFinish(OPERATION_FAILED);
+  NotifyFinish(OperationRegistry::OPERATION_FAILED);
 }
 
 std::string UrlFetchOperationBase::GetResponseHeadersAsString(

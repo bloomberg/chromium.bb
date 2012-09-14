@@ -36,7 +36,7 @@ class JsonParseTestGetDataOperation : public GetDataOperation {
   }
 
   void NotifyFailure() {
-    NotifyFinish(OPERATION_FAILED);
+    NotifyFinish(OperationRegistry::OPERATION_FAILED);
   }
 
  protected:

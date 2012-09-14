@@ -17,7 +17,8 @@ const int64 kNotificationFrequencyInMilliseconds = 1000;
 
 namespace gdata {
 
-std::string OperationTypeToString(OperationType type) {
+// static
+std::string OperationRegistry::OperationTypeToString(OperationType type) {
   switch (type) {
     case OPERATION_UPLOAD: return "upload";
     case OPERATION_DOWNLOAD: return "download";
@@ -27,7 +28,9 @@ std::string OperationTypeToString(OperationType type) {
   return "unknown_transfer_state";
 }
 
-std::string OperationTransferStateToString(OperationTransferState state) {
+// static
+std::string OperationRegistry::OperationTransferStateToString(
+    OperationTransferState state) {
   switch (state) {
     case OPERATION_NOT_STARTED: return "not_started";
     case OPERATION_STARTED: return "started";
@@ -41,8 +44,8 @@ std::string OperationTransferStateToString(OperationTransferState state) {
   return "unknown_transfer_state";
 }
 
-OperationProgressStatus::OperationProgressStatus(OperationType type,
-                                                 const FilePath& path)
+OperationRegistry::ProgressStatus::ProgressStatus(OperationType type,
+                                                       const FilePath& path)
     : operation_id(-1),
       operation_type(type),
       file_path(path),
@@ -51,7 +54,7 @@ OperationProgressStatus::OperationProgressStatus(OperationType type,
       progress_total(-1) {
 }
 
-std::string OperationProgressStatus::DebugString() const {
+std::string OperationRegistry::ProgressStatus::DebugString() const {
   std::string str;
   str += "id=";
   str += base::IntToString(operation_id);
@@ -70,12 +73,12 @@ std::string OperationProgressStatus::DebugString() const {
 
 OperationRegistry::Operation::Operation(OperationRegistry* registry)
     : registry_(registry),
-      progress_status_(OPERATION_OTHER, FilePath()) {
+      progress_status_(OperationRegistry::OPERATION_OTHER, FilePath()) {
 }
 
 OperationRegistry::Operation::Operation(OperationRegistry* registry,
-                                        OperationType type,
-                                        const FilePath& path)
+                                             OperationType type,
+                                             const FilePath& path)
     : registry_(registry),
       progress_status_(type, path) {
 }
@@ -227,7 +230,7 @@ void OperationRegistry::OnOperationFinish(OperationID id) {
 
 void OperationRegistry::OnOperationResume(
     OperationRegistry::Operation* operation,
-    OperationProgressStatus* new_status) {
+    OperationRegistry::ProgressStatus* new_status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Find the corresponding suspended task.
@@ -236,8 +239,7 @@ void OperationRegistry::OnOperationResume(
        !iter.IsAtEnd();
        iter.Advance()) {
     Operation* in_flight_operation = iter.GetCurrentValue();
-    const OperationProgressStatus& status =
-        in_flight_operation->progress_status();
+    const ProgressStatus& status = in_flight_operation->progress_status();
     if (status.transfer_state == OPERATION_SUSPENDED &&
         status.file_path == operation->progress_status().file_path) {
       suspended = in_flight_operation;
@@ -247,7 +249,7 @@ void OperationRegistry::OnOperationResume(
   DCHECK(suspended);
 
   // Copy the progress status.
-  const OperationProgressStatus& old_status = suspended->progress_status();
+  const ProgressStatus& old_status = suspended->progress_status();
   OperationID old_id = old_status.operation_id;
 
   new_status->progress_current = old_status.progress_current;
@@ -287,10 +289,11 @@ bool OperationRegistry::IsFileTransferOperation(
   return type == OPERATION_UPLOAD || type == OPERATION_DOWNLOAD;
 }
 
-OperationProgressStatusList OperationRegistry::GetProgressStatusList() {
+OperationRegistry::ProgressStatusList
+OperationRegistry::GetProgressStatusList() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  OperationProgressStatusList status_list;
+  ProgressStatusList status_list;
   for (OperationIDMap::const_iterator iter(&in_flight_operations_);
        !iter.IsAtEnd();
        iter.Advance()) {
@@ -302,7 +305,7 @@ OperationProgressStatusList OperationRegistry::GetProgressStatusList() {
 }
 
 bool OperationRegistry::ShouldNotifyStatusNow(
-    const OperationProgressStatusList& list) {
+    const ProgressStatusList& list) {
   if (!do_notification_frequency_control_)
     return true;
 
@@ -337,7 +340,7 @@ bool OperationRegistry::ShouldNotifyStatusNow(
 }
 
 void OperationRegistry::NotifyStatusToObservers() {
-  OperationProgressStatusList list(GetProgressStatusList());
+  ProgressStatusList list(GetProgressStatusList());
   if (ShouldNotifyStatusNow(list))
     FOR_EACH_OBSERVER(Observer, observer_list_, OnProgressUpdate(list));
 }

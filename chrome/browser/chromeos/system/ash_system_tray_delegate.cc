@@ -53,6 +53,7 @@
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
+#include "chrome/browser/google_apis/operation_registry.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -77,6 +78,7 @@
 
 using gdata::DriveSystemService;
 using gdata::DriveSystemServiceFactory;
+using gdata::OperationRegistry;
 
 namespace chromeos {
 
@@ -106,9 +108,10 @@ void ExtractIMEInfo(const input_method::InputMethodDescriptor& ime,
 }
 
 ash::DriveOperationStatusList GetDriveStatusList(
-    const gdata::OperationProgressStatusList& list) {
+    const std::vector<OperationRegistry::ProgressStatus>& list) {
   ash::DriveOperationStatusList results;
-  for (gdata::OperationProgressStatusList::const_iterator it = list.begin();
+  for (OperationRegistry::ProgressStatusList::const_iterator it =
+          list.begin();
        it != list.end(); ++it) {
     ash::DriveOperationStatus status;
     status.file_path = it->file_path;
@@ -149,7 +152,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public NetworkLibrary::NetworkManagerObserver,
                            public NetworkLibrary::NetworkObserver,
                            public NetworkLibrary::CellularDataPlanObserver,
-                           public gdata::DriveServiceObserver,
+                           public gdata::OperationRegistry::Observer,
                            public content::NotificationObserver,
                            public input_method::InputMethodManager::Observer,
                            public system::TimezoneSettings::Observer,
@@ -239,7 +242,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     // Stop observing gdata operations.
     DriveSystemService* system_service = FindDriveSystemService();
     if (system_service) {
-      system_service->drive_service()->RemoveObserver(this);
+      system_service->drive_service()->operation_registry()->
+          RemoveObserver(this);
     }
   }
 
@@ -445,7 +449,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (!system_service)
       return;
 
-    system_service->drive_service()->CancelForFilePath(file_path);
+    system_service->drive_service()->operation_registry()->CancelForFilePath(
+        file_path);
   }
 
   virtual void GetDriveOperationStatusList(
@@ -455,7 +460,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       return;
 
     *list = GetDriveStatusList(
-        system_service->drive_service()->GetProgressStatusList());
+        system_service->drive_service()->operation_registry()->
+            GetProgressStatusList());
   }
 
 
@@ -719,7 +725,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (!system_service)
       return;
 
-    system_service->drive_service()->AddObserver(this);
+    system_service->drive_service()->operation_registry()->AddObserver(this);
   }
 
   void UpdateClockType(PrefService* service) {
@@ -1090,9 +1096,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     NotifyRefreshIME(false);
   }
 
-  // gdata::DriveServiceObserver overrides.
+  // gdata::OperationRegistry::Observer overrides.
   virtual void OnProgressUpdate(
-      const gdata::OperationProgressStatusList& list) OVERRIDE {
+      const OperationRegistry::ProgressStatusList& list) {
     std::vector<ash::DriveOperationStatus> ui_list = GetDriveStatusList(list);
     NotifyRefreshDrive(ui_list);
 
@@ -1101,11 +1107,15 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     // raise events that will let us properly clear the uber tray state.
     if (list.size() > 0) {
       bool has_in_progress_items = false;
-      for (gdata::OperationProgressStatusList::const_iterator it = list.begin();
+      for (OperationRegistry::ProgressStatusList::const_iterator it =
+               list.begin();
           it != list.end(); ++it) {
-        if (it->transfer_state == gdata::OPERATION_STARTED ||
-            it->transfer_state == gdata::OPERATION_IN_PROGRESS ||
-            it->transfer_state == gdata::OPERATION_SUSPENDED) {
+        if (it->transfer_state ==
+                OperationRegistry::OPERATION_STARTED ||
+            it->transfer_state ==
+                OperationRegistry::OPERATION_IN_PROGRESS ||
+            it->transfer_state ==
+                OperationRegistry::OPERATION_SUSPENDED) {
           has_in_progress_items = true;
           break;
         }
@@ -1132,7 +1142,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (!system_service)
       return;
 
-    OnProgressUpdate(system_service->drive_service()->GetProgressStatusList());
+    OnProgressUpdate(system_service->drive_service()->operation_registry()->
+        GetProgressStatusList());
   }
 
   DriveSystemService* FindDriveSystemService() {

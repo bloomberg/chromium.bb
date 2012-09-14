@@ -101,7 +101,7 @@ class UrlFetchOperationBase : public AuthenticatedOperationInterface,
  protected:
   explicit UrlFetchOperationBase(OperationRegistry* registry);
   UrlFetchOperationBase(OperationRegistry* registry,
-                        OperationType type,
+                        OperationRegistry::OperationType type,
                         const FilePath& path);
   virtual ~UrlFetchOperationBase();
 

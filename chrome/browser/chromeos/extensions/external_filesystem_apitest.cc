@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/gdata/mock_drive_service.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
+#include "chrome/browser/google_apis/operation_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -204,6 +205,12 @@ class RemoteFileSystemExtensionApiTest : public ExtensionApiTest {
 
     mock_drive_service_ = new gdata::MockDriveService();
 
+    operation_registry_.reset(new gdata::OperationRegistry());
+    // FileBrowserEventRouter will add and remove itself from operation registry
+    // observer list.
+    EXPECT_CALL(*mock_drive_service_, operation_registry()).
+        WillRepeatedly(Return(operation_registry_.get()));
+
     // |mock_drive_service_| will eventually get owned by a system service.
     gdata::DriveSystemServiceFactory::set_drive_service_for_test(
         mock_drive_service_);
@@ -221,6 +228,7 @@ class RemoteFileSystemExtensionApiTest : public ExtensionApiTest {
  protected:
   ScopedTempDir test_cache_root_;
   gdata::MockDriveService* mock_drive_service_;
+  scoped_ptr<gdata::OperationRegistry> operation_registry_;
 };
 
 IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, LocalFileSystem) {

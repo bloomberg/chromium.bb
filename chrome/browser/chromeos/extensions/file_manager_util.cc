@@ -23,6 +23,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/google_apis/operation_registry.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -59,6 +60,7 @@ using content::BrowserThread;
 using content::PluginService;
 using content::UserMetricsAction;
 using file_handler_util::FileTaskExecutor;
+using gdata::OperationRegistry;
 
 #define FILEBROWSER_EXTENSON_ID "hhaomjibdihmijegdhdafkllkbggdgoj"
 const char kFileBrowserDomain[] = FILEBROWSER_EXTENSON_ID;
@@ -181,7 +183,7 @@ std::string GetDialogTypeAsString(
 DictionaryValue* ProgessStatusToDictionaryValue(
     Profile* profile,
     const GURL& origin_url,
-    const gdata::OperationProgressStatus& status) {
+    const OperationRegistry::ProgressStatus& status) {
   scoped_ptr<DictionaryValue> result(new DictionaryValue());
   GURL file_url;
   if (file_manager_util::ConvertFileToFileSystemUrl(profile,
@@ -193,9 +195,10 @@ DictionaryValue* ProgessStatusToDictionaryValue(
   }
 
   result->SetString("transferState",
-                    OperationTransferStateToString(status.transfer_state));
+      OperationRegistry::OperationTransferStateToString(
+          status.transfer_state));
   result->SetString("transferType",
-                    OperationTypeToString(status.operation_type));
+      OperationRegistry::OperationTypeToString(status.operation_type));
   result->SetInteger("processed", static_cast<int>(status.progress_current));
   result->SetInteger("total", static_cast<int>(status.progress_total));
   return result.release();
@@ -789,9 +792,11 @@ bool ShouldBeOpenedWithPdfPlugin(Profile* profile, const char* file_extension) {
 
 ListValue* ProgressStatusVectorToListValue(
     Profile* profile, const GURL& origin_url,
-    const gdata::OperationProgressStatusList& list) {
+    const std::vector<OperationRegistry::ProgressStatus>& list) {
   scoped_ptr<ListValue> result_list(new ListValue());
-  for (gdata::OperationProgressStatusList::const_iterator iter = list.begin();
+  for (std::vector<
+          OperationRegistry::ProgressStatus>::const_iterator iter =
+              list.begin();
        iter != list.end(); ++iter) {
     result_list->Append(
         ProgessStatusToDictionaryValue(profile, origin_url, *iter));

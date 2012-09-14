@@ -21,7 +21,7 @@ class MockOperation : public OperationRegistry::Operation,
                       public base::SupportsWeakPtr<MockOperation> {
  public:
   MockOperation(OperationRegistry* registry,
-                OperationType type,
+                OperationRegistry::OperationType type,
                 const FilePath& path)
       : OperationRegistry::Operation(registry, type, path) {}
 
@@ -37,7 +37,7 @@ class MockUploadOperation : public MockOperation {
  public:
   explicit MockUploadOperation(OperationRegistry* registry)
       : MockOperation(registry,
-                      OPERATION_UPLOAD,
+                      OperationRegistry::OPERATION_UPLOAD,
                       FilePath(FILE_PATH_LITERAL("/dummy/upload"))) {}
 };
 
@@ -45,7 +45,7 @@ class MockDownloadOperation : public MockOperation {
  public:
   explicit MockDownloadOperation(OperationRegistry* registry)
       : MockOperation(registry,
-                      OPERATION_DOWNLOAD,
+                      OperationRegistry::OPERATION_DOWNLOAD,
                       FilePath(FILE_PATH_LITERAL("/dummy/download"))) {}
 };
 
@@ -53,34 +53,36 @@ class MockOtherOperation : public MockOperation {
  public:
   explicit MockOtherOperation(OperationRegistry* registry)
       : MockOperation(registry,
-                      OPERATION_OTHER,
+                      OperationRegistry::OPERATION_OTHER,
                       FilePath(FILE_PATH_LITERAL("/dummy/other"))) {}
 };
 
 class TestObserver : public OperationRegistry::Observer {
  public:
   virtual void OnProgressUpdate(
-      const OperationProgressStatusList& list) OVERRIDE {
+      const std::vector<OperationRegistry::ProgressStatus>& list)
+      OVERRIDE {
     status_ = list;
   }
 
-  const OperationProgressStatusList& status() const {
+  const std::vector<OperationRegistry::ProgressStatus>& status() const {
     return status_;
   }
 
  private:
-  OperationProgressStatusList status_;
+  std::vector<OperationRegistry::ProgressStatus> status_;
 };
 
 class ProgressMatcher
-    : public ::testing::MatcherInterface<const OperationProgressStatus&> {
+    : public ::testing::MatcherInterface<
+        const OperationRegistry::ProgressStatus&> {
  public:
   ProgressMatcher(int64 expected_current, int64 expected_total)
       : expected_current_(expected_current),
         expected_total_(expected_total) {}
 
   virtual bool MatchAndExplain(
-      const OperationProgressStatus& status,
+      const OperationRegistry::ProgressStatus& status,
       testing::MatchResultListener* /* listener */) const OVERRIDE {
     return status.progress_current == expected_current_ &&
         status.progress_total == expected_total_;
@@ -101,16 +103,16 @@ class ProgressMatcher
   const int64 expected_total_;
 };
 
-testing::Matcher<const OperationProgressStatus&> Progress(
+testing::Matcher<const OperationRegistry::ProgressStatus&> Progress(
     int64 current, int64 total) {
   return testing::MakeMatcher(new ProgressMatcher(current, total));
 }
 
 }  // namespace
 
-// Pretty-prints OperationProgressStatus for testing purpose.
+// Pretty-prints ProgressStatus for testing purpose.
 std::ostream& operator<<(std::ostream& os,
-                         const OperationProgressStatus& status) {
+                         const OperationRegistry::ProgressStatus& status) {
   return os << status.DebugString();
 }
 
@@ -140,7 +142,7 @@ TEST_F(OperationRegistryTest, OneSuccess) {
   EXPECT_THAT(observer.status(), ElementsAre(Progress(0, 100)));
   op1->NotifyProgress(100, 100);
   EXPECT_THAT(observer.status(), ElementsAre(Progress(100, 100)));
-  op1->NotifyFinish(OPERATION_COMPLETED);
+  op1->NotifyFinish(OperationRegistry::OPERATION_COMPLETED);
   // Contains one "COMPLETED" notification.
   EXPECT_THAT(observer.status(), ElementsAre(Progress(100, 100)));
   // Then it is removed.
@@ -191,11 +193,11 @@ TEST_F(OperationRegistryTest, TwoSuccess) {
   op1->NotifyProgress(50, 100);
   EXPECT_THAT(observer.status(), ElementsAre(Progress(50, 100),
                                              Progress(0, 200)));
-  op1->NotifyFinish(OPERATION_COMPLETED);
+  op1->NotifyFinish(OperationRegistry::OPERATION_COMPLETED);
   EXPECT_THAT(observer.status(), ElementsAre(Progress(50, 100),
                                              Progress(0, 200)));
   EXPECT_EQ(1U, registry.GetProgressStatusList().size());
-  op2->NotifyFinish(OPERATION_COMPLETED);
+  op2->NotifyFinish(OperationRegistry::OPERATION_COMPLETED);
   EXPECT_THAT(observer.status(), ElementsAre(Progress(0, 200)));
   EXPECT_EQ(0U, registry.GetProgressStatusList().size());
   EXPECT_EQ(NULL, op1.get());  // deleted
@@ -248,7 +250,7 @@ TEST_F(OperationRegistryTest, RestartOperation) {
   op1->NotifyStart();  // restart
   EXPECT_EQ(1U, registry.GetProgressStatusList().size());
   op1->NotifyProgress(0, 200);
-  op1->NotifyFinish(OPERATION_COMPLETED);
+  op1->NotifyFinish(OperationRegistry::OPERATION_COMPLETED);
   EXPECT_EQ(0U, registry.GetProgressStatusList().size());
   EXPECT_EQ(NULL, op1.get());  // deleted
 }

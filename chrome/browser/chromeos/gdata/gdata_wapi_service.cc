@@ -74,10 +74,8 @@ GDataWapiService::GDataWapiService()
 
 GDataWapiService::~GDataWapiService() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (runner_.get()) {
-    runner_->operation_registry()->RemoveObserver(this);
+  if (runner_.get())
     runner_->auth_service()->RemoveObserver(this);
-  }
 }
 
 AuthService* GDataWapiService::auth_service_for_testing() {
@@ -98,7 +96,6 @@ void GDataWapiService::Initialize(Profile* profile) {
   runner_->Initialize();
 
   runner_->auth_service()->AddObserver(this);
-  runner_->operation_registry()->AddObserver(this);
 }
 
 void GDataWapiService::AddObserver(DriveServiceObserver* observer) {
@@ -107,6 +104,10 @@ void GDataWapiService::AddObserver(DriveServiceObserver* observer) {
 
 void GDataWapiService::RemoveObserver(DriveServiceObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+OperationRegistry* GDataWapiService::operation_registry() const {
+  return runner_->operation_registry();
 }
 
 bool GDataWapiService::CanStartOperation() const {
@@ -118,16 +119,6 @@ bool GDataWapiService::CanStartOperation() const {
 void GDataWapiService::CancelAll() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   runner_->CancelAll();
-}
-
-bool GDataWapiService::CancelForFilePath(const FilePath& file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return operation_registry()->CancelForFilePath(file_path);
-}
-
-OperationProgressStatusList GDataWapiService::GetProgressStatusList() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return operation_registry()->GetProgressStatusList();
 }
 
 void GDataWapiService::Authenticate(const AuthStatusCallback& callback) {
@@ -323,29 +314,12 @@ bool GDataWapiService::HasRefreshToken() const {
   return runner_->auth_service()->HasRefreshToken();
 }
 
-OperationRegistry* GDataWapiService::operation_registry() const {
-  return runner_->operation_registry();
-}
-
 void GDataWapiService::OnOAuth2RefreshTokenChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (CanStartOperation()) {
     FOR_EACH_OBSERVER(
         DriveServiceObserver, observers_, OnReadyToPerformOperations());
   }
-}
-
-void GDataWapiService::OnProgressUpdate(
-    const OperationProgressStatusList& list) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  FOR_EACH_OBSERVER(
-      DriveServiceObserver, observers_, OnProgressUpdate(list));
-}
-
-void GDataWapiService::OnAuthenticationFailed() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  FOR_EACH_OBSERVER(
-      DriveServiceObserver, observers_, OnAuthenticationFailed());
 }
 
 }  // namespace gdata
