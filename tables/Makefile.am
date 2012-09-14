@@ -130,8 +130,8 @@ table_files = \
 	is-chardefs6.cti \
 	is-chardefs8.cti \
 	is.ctb \
-	it-it-g1.utb \
-	it-it-g1.utb2 \
+	it-it-comp6.utb \
+	it-it-comp8.utb \
 	kannada.cti \
 	kha.ctb \
 	kn.ctb \

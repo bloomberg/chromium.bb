@@ -1,5 +1,12 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
+* Noteworthy changes in release 2.5.1
+
+** Braille Table Improvements
+   - Fix encoding problem in italian table.
+   - Rename it-it-g1.utb to it-it-comp6.utb and it-it-g1.utb2 to it-it-comp8.utb.
+ 
+
 * Noteworthy changes in release 2.5.0 (2012-9-10)
 
 This release contains a tremendous amount of work many developers.
