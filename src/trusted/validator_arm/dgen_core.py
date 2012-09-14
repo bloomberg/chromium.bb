@@ -491,13 +491,13 @@ class InUintSet(InSet):
   """Models testing a value in a set of integers."""
 
   def __init__(self, value, bitset):
-    Inset.__init__(self, value, bitset)
+    InSet.__init__(self, value, bitset)
 
   def _simplify_test(self, arg):
-    return CompareExpr("==", self._value, arg)
+    return CompareExp("==", self._value, arg)
 
-  def repr(self):
-    return "%s in %s" % (self._value, self._bitset)
+  def __repr__(self):
+    return "%s in %s" % (repr(self._value), repr(self._bitset))
 
 class InBitSet(InSet):
   """Models testing a value in a set of bit patterns"""
@@ -511,8 +511,8 @@ class InBitSet(InSet):
   def _simplify_test(self, arg):
     return BitPattern.parse(repr(arg), self._value)
 
-  def repr(self):
-    return "%s in bitset %s" % (self._value, self._bitset)
+  def __repr__(self):
+    return "%s in bitset %s" % (repr(self._value), repr(self._bitset))
 
 class IfThenElse(BitExpr):
   """Models a conditional expression."""

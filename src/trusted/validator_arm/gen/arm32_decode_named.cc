@@ -478,73 +478,73 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_data_processing_register
   UNREFERENCED_PARAMETER(inst);
   if ((inst.Bits() & 0x01F00000) == 0x01100000 /* op1(24:20)=10001 */ &&
       (inst.Bits() & 0x0000F000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx */)
-    return Binary3RegisterShiftedTest_Tst_Rule_232_A1_P458_instance_;
+    return Binary3RegisterShiftedTest_TST_register_shifted_register_A1_instance_;
 
   if ((inst.Bits() & 0x01F00000) == 0x01300000 /* op1(24:20)=10011 */ &&
       (inst.Bits() & 0x0000F000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx */)
-    return Binary3RegisterShiftedTest_Teq_Rule_229_A1_P452_instance_;
+    return Binary3RegisterShiftedTest_TEQ_register_shifted_register_A1_instance_;
 
   if ((inst.Bits() & 0x01F00000) == 0x01500000 /* op1(24:20)=10101 */ &&
       (inst.Bits() & 0x0000F000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx */)
-    return Binary3RegisterShiftedTest_Cmp_Rule_37_A1_P84_instance_;
+    return Binary3RegisterShiftedTest_CMP_register_shifted_register_A1_instance_;
 
   if ((inst.Bits() & 0x01F00000) == 0x01700000 /* op1(24:20)=10111 */ &&
       (inst.Bits() & 0x0000F000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx */)
-    return Binary3RegisterShiftedTest_Cmn_Rule_34_A1_P78_instance_;
+    return Binary3RegisterShiftedTest_CMN_register_shifted_register_A1_instance_;
 
   if ((inst.Bits() & 0x01E00000) == 0x00000000 /* op1(24:20)=0000x */)
-    return Binary4RegisterShiftedOp_And_Rule_13_A1_P38_instance_;
+    return Binary4RegisterShiftedOp_AND_register_shifted_register_A1_instance_;
 
   if ((inst.Bits() & 0x01E00000) == 0x00200000 /* op1(24:20)=0001x */)
-    return Binary4RegisterShiftedOp_Eor_Rule_46_A1_P98_instance_;
+    return Binary4RegisterShiftedOp_EOR_register_shifted_register_A1_instance_;
 
   if ((inst.Bits() & 0x01E00000) == 0x00400000 /* op1(24:20)=0010x */)
-    return Binary4RegisterShiftedOp_Sub_Rule_214_A1_P424_instance_;
+    return Binary4RegisterShiftedOp_SUB_register_shifted_register_A1_instance_;
 
   if ((inst.Bits() & 0x01E00000) == 0x00600000 /* op1(24:20)=0011x */)
-    return Binary4RegisterShiftedOp_Rsb_Rule_144_A1_P288_instance_;
+    return Binary4RegisterShiftedOp_RSB_register_shfited_register_A1_instance_;
 
   if ((inst.Bits() & 0x01E00000) == 0x00800000 /* op1(24:20)=0100x */)
-    return Binary4RegisterShiftedOp_Add_Rule_7_A1_P26_instance_;
+    return Binary4RegisterShiftedOp_ADD_register_shifted_register_A1_instance_;
 
   if ((inst.Bits() & 0x01E00000) == 0x00A00000 /* op1(24:20)=0101x */)
-    return Binary4RegisterShiftedOp_Adc_Rule_3_A1_P18_instance_;
+    return Binary4RegisterShiftedOp_ADC_register_shifted_register_A1_instance_;
 
   if ((inst.Bits() & 0x01E00000) == 0x00C00000 /* op1(24:20)=0110x */)
-    return Binary4RegisterShiftedOp_Sbc_Rule_153_A1_P306_instance_;
+    return Binary4RegisterShiftedOp_SBC_register_shifted_register_A1_instance_;
 
   if ((inst.Bits() & 0x01E00000) == 0x00E00000 /* op1(24:20)=0111x */)
-    return Binary4RegisterShiftedOp_Rsc_Rule_147_A1_P294_instance_;
+    return Binary4RegisterShiftedOp_RSC_register_shifted_register_A1_instance_;
 
   if ((inst.Bits() & 0x01E00000) == 0x01800000 /* op1(24:20)=1100x */)
-    return Binary4RegisterShiftedOp_Orr_Rule_115_A1_P212_instance_;
+    return Binary4RegisterShiftedOp_ORR_register_shifted_register_A1_instance_;
 
   if ((inst.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20)=1101x */ &&
       (inst.Bits() & 0x00000060) == 0x00000000 /* op2(6:5)=00 */ &&
       (inst.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */)
-    return Binary3RegisterOp_Lsl_Rule_89_A1_P180_instance_;
+    return Binary3RegisterOp_LSL_register_A1_instance_;
 
   if ((inst.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20)=1101x */ &&
       (inst.Bits() & 0x00000060) == 0x00000020 /* op2(6:5)=01 */ &&
       (inst.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */)
-    return Binary3RegisterOp_Lsr_Rule_91_A1_P184_instance_;
+    return Binary3RegisterOp_LSR_register_A1_instance_;
 
   if ((inst.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20)=1101x */ &&
       (inst.Bits() & 0x00000060) == 0x00000040 /* op2(6:5)=10 */ &&
       (inst.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */)
-    return Binary3RegisterOp_Asr_Rule_15_A1_P42_instance_;
+    return Binary3RegisterOp_ASR_register_A1_instance_;
 
   if ((inst.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20)=1101x */ &&
       (inst.Bits() & 0x00000060) == 0x00000060 /* op2(6:5)=11 */ &&
       (inst.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */)
-    return Binary3RegisterOp_Ror_Rule_140_A1_P280_instance_;
+    return Binary3RegisterOp_ROR_register_A1_instance_;
 
   if ((inst.Bits() & 0x01E00000) == 0x01C00000 /* op1(24:20)=1110x */)
-    return Binary4RegisterShiftedOp_Bic_Rule_21_A1_P54_instance_;
+    return Binary4RegisterShiftedOp_BIC_register_shifted_register_A1_instance_;
 
   if ((inst.Bits() & 0x01E00000) == 0x01E00000 /* op1(24:20)=1111x */ &&
       (inst.Bits() & 0x000F0000) == 0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */)
-    return Unary3RegisterShiftedOp_Mvn_Rule_108_A1_P218_instance_;
+    return Unary3RegisterShiftedOp_MVN_register_shifted_register_A1_instance_;
 
   // Catch any attempt to fall through...
   return not_implemented_;
