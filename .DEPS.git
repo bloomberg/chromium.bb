@@ -92,7 +92,7 @@ deps = {
     'src/third_party/pywebsocket/src':
         Var('git_url') + '/external/pywebsocket/src.git@411aee11bcb0bda4730835a4bc9c1907bd0665f8',
     'src/third_party/safe_browsing/testing':
-        Var('git_url') + '/external/google-safe-browsing/testing.git@5e9b7f16d2d2c52a64a1dc681cbafcc8b4e6eb54',
+        Var('git_url') + '/external/google-safe-browsing/testing.git@9d7e8064f3ca2e45891470c9b5b1dce54af6a9d6',
     'src/third_party/scons-2.0.1':
         Var('git_url') + '/native_client/src/third_party/scons-2.0.1.git@c81c95aff36392cffede13382dd5fcad25c0a603',
     'src/third_party/sfntly/cpp/src':
