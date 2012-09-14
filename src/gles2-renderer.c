@@ -612,6 +612,7 @@ draw_surface(struct weston_surface *es, struct weston_output *output,
 	pixman_region32_t repaint;
 	/* non-opaque region in surface coordinates: */
 	pixman_region32_t surface_blend;
+	pixman_region32_t *buffer_damage;
 	GLint filter;
 	int i;
 
@@ -623,8 +624,8 @@ draw_surface(struct weston_surface *es, struct weston_output *output,
 	if (!pixman_region32_not_empty(&repaint))
 		goto out;
 
-	pixman_region32_subtract(&ec->primary_plane.damage,
-				 &ec->primary_plane.damage, &repaint);
+	buffer_damage = &output->buffer_damage[output->current_buffer];
+	pixman_region32_subtract(buffer_damage, buffer_damage, &repaint);
 
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -702,7 +703,7 @@ gles2_renderer_repaint_output(struct weston_output *output,
 	struct weston_compositor *compositor = output->compositor;
 	EGLBoolean ret;
 	static int errored;
-	int32_t width, height;
+	int32_t width, height, i;
 
 	width = output->current->width +
 		output->border.left + output->border.right;
@@ -736,6 +737,14 @@ gles2_renderer_repaint_output(struct weston_output *output,
 		pixman_region32_fini(&undamaged);
 	}
 
+	for (i = 0; i < 2; i++)
+		pixman_region32_union(&output->buffer_damage[i],
+				      &output->buffer_damage[i],
+				      output_damage);
+
+	pixman_region32_union(output_damage, output_damage,
+			      &output->buffer_damage[output->current_buffer]);
+
 	repaint_surfaces(output, output_damage);
 
 	wl_signal_emit(&output->frame_signal, output);
@@ -746,6 +755,8 @@ gles2_renderer_repaint_output(struct weston_output *output,
 		weston_log("Failed in eglSwapBuffers.\n");
 		print_egl_error_state();
 	}
+
+	output->current_buffer ^= 1;
 
 }
 

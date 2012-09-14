@@ -863,7 +863,7 @@ weston_output_repaint(struct weston_output *output, uint32_t msecs)
 	struct weston_animation *animation, *next;
 	struct weston_frame_callback *cb, *cnext;
 	struct wl_list frame_callback_list;
-	pixman_region32_t opaque, output_damage, new_damage;
+	pixman_region32_t opaque, output_damage;
 
 	weston_compositor_update_drag_surfaces(ec);
 
@@ -896,21 +896,10 @@ weston_output_repaint(struct weston_output *output, uint32_t msecs)
 	pixman_region32_fini(&opaque);
 
 	pixman_region32_init(&output_damage);
-
-	pixman_region32_init(&new_damage);
-	pixman_region32_copy(&new_damage, &ec->primary_plane.damage);
-
-	pixman_region32_union(&ec->primary_plane.damage,
-			      &ec->primary_plane.damage,
-			      &output->previous_damage);
-
-	pixman_region32_intersect(&output->previous_damage,
-				  &new_damage, &output->region);
-
 	pixman_region32_intersect(&output_damage,
 				  &ec->primary_plane.damage, &output->region);
-
-	pixman_region32_fini(&new_damage);
+	pixman_region32_subtract(&ec->primary_plane.damage,
+				 &ec->primary_plane.damage, &output->region);
 
 	if (output->dirty)
 		weston_output_update_matrix(output);
@@ -2521,9 +2510,13 @@ WL_EXPORT void
 weston_output_destroy(struct weston_output *output)
 {
 	struct weston_compositor *c = output->compositor;
+	int i;
 
 	pixman_region32_fini(&output->region);
-	pixman_region32_fini(&output->previous_damage);
+
+	for (i = 0; i < 2; i++)
+		pixman_region32_fini(&output->buffer_damage[i]);
+
 	output->compositor->output_id_pool &= ~(1 << output->id);
 
 	wl_display_remove_global(c->wl_display, output->global);
@@ -2647,10 +2640,15 @@ weston_output_transform_init(struct weston_output *output, uint32_t transform)
 WL_EXPORT void
 weston_output_move(struct weston_output *output, int x, int y)
 {
+	int i;
+
 	output->x = x;
 	output->y = y;
 
-	pixman_region32_init(&output->previous_damage);
+	output->current_buffer = 0;
+	for (i = 0; i < 2; i++)
+		pixman_region32_init(&output->buffer_damage[i]);
+
 	pixman_region32_init_rect(&output->region, x, y,
 				  output->width,
 				  output->height);
