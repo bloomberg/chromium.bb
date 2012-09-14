@@ -136,16 +136,16 @@ class DriveResourceMetadata {
   const base::Time& last_serialized() const { return last_serialized_; }
   void set_last_serialized(const base::Time& time) { last_serialized_ = time; }
   // Size of serialized file system on disk in bytes.
-  const size_t serialized_size() const { return serialized_size_; }
+  size_t serialized_size() const { return serialized_size_; }
   void set_serialized_size(size_t size) { serialized_size_ = size; }
 
   // Largest change timestamp that was the source of content for the current
   // state of the root directory.
-  const int64 largest_changestamp() const { return largest_changestamp_; }
+  int64 largest_changestamp() const { return largest_changestamp_; }
   void set_largest_changestamp(int64 value) { largest_changestamp_ = value; }
 
   // The root directory content origin.
-  const ContentOrigin origin() const { return origin_; }
+  ContentOrigin origin() const { return origin_; }
   void set_origin(ContentOrigin value) { origin_ = value; }
 
   // Creates a DriveEntry from a DocumentEntry.
