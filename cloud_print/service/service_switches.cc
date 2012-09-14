@@ -7,7 +7,7 @@
 const char kChromeTypeSwitch[] = "type";
 const char kConsoleSwitch[] = "console";
 const char kInstallSwitch[] = "install";
-const char kPrintersSwitch[] = "printers";
+const char kRequirementsSwitch[] = "requirements";
 const char kServiceSwitch[] = "service";
 const char kStartSwitch[] = "start";
 const char kStopSwitch[] = "stop";

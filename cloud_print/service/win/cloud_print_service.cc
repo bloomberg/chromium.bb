@@ -29,7 +29,9 @@
 
 namespace {
 
-const wchar_t kPrintersFileName[] = L"printers.txt";
+const char kChromeIsNotAvalible[] = "\nChrome is not available\n";
+const char kChromeIsAvalible[] = "\nChrome is available\n";
+const wchar_t kRequirementsFileName[] = L"cloud_print_service_requirements.txt";
 const wchar_t kServiceStateFileName[] = L"Service State";
 
 // The traits class for Windows Service.
@@ -169,7 +171,7 @@ class CloudPrintServiceModule
   DECLARE_REGISTRY_APPID_RESOURCEID(IDR_CLOUDPRINTSERVICE,
                                     "{8013FB7C-2E3E-4992-B8BD-05C0C4AB0627}")
 
-  CloudPrintServiceModule() : detect_printers_(false) {
+  CloudPrintServiceModule() : check_requirements_(false) {
   }
 
   HRESULT InitializeSecurity() {
@@ -181,17 +183,11 @@ class CloudPrintServiceModule
   HRESULT InstallService(const string16& user,
                          const string16& password,
                          const char* run_switch) {
-    using namespace chrome_launcher_support;
-
     // TODO(vitalybuka): consider "lite" version if we don't want unregister
     // printers here.
     HRESULT hr = UninstallService();
     if (FAILED(hr))
       return hr;
-
-    if (GetChromePathForInstallationLevel(SYSTEM_LEVEL_INSTALLATION).empty()) {
-      LOG(WARNING) << "Found no Chrome installed for all users.";
-    }
 
     hr = UpdateRegistryAppId(true);
     if (FAILED(hr))
@@ -262,8 +258,8 @@ class CloudPrintServiceModule
     if (FAILED(hr))
       return hr;
 
-    if (detect_printers_) {
-      hr = DetectPrinters();
+    if (check_requirements_) {
+      hr = CheckRequirements();
       if (FAILED(hr))
         return hr;
       // Don't run message loop and stop service.
@@ -324,9 +320,9 @@ class CloudPrintServiceModule
       return StartService();
 
     if (command_line.HasSwitch(kServiceSwitch) ||
-        command_line.HasSwitch(kPrintersSwitch)) {
+        command_line.HasSwitch(kRequirementsSwitch)) {
       *is_service = true;
-      detect_printers_ = command_line.HasSwitch(kPrintersSwitch);
+      check_requirements_ = command_line.HasSwitch(kRequirementsSwitch);
       return S_OK;
     }
 
@@ -350,30 +346,42 @@ class CloudPrintServiceModule
                                            WideToASCII(*run_as_user), false));
       *run_as_password = ASCIIToWide(GetOption("Password", "", true));
 
-      FilePath printers_filename(user_data_dir_);
-      printers_filename = printers_filename.Append(kPrintersFileName);
+      FilePath requirements_filename(user_data_dir_);
+      requirements_filename =
+          requirements_filename.Append(kRequirementsFileName);
 
-      file_util::Delete(printers_filename, false);
-      if (FAILED(InstallService(run_as_user->c_str(),
-                                run_as_password->c_str(),
-                                kPrintersSwitch))) {
+      file_util::Delete(requirements_filename, false);
+      if (file_util::PathExists(requirements_filename)) {
+        LOG(ERROR) << "Unable to delete " <<
+            requirements_filename.value() << ".";
         continue;
       }
-      if (FAILED(StartService())) {
+      if (FAILED(InstallService(run_as_user->c_str(),
+                                run_as_password->c_str(),
+                                kRequirementsSwitch))) {
+        continue;
+      }
+      bool service_started = SUCCEEDED(StartService());
+      UninstallService();
+      if (!service_started) {
         LOG(ERROR) << "Failed to start service as " << *run_as_user << ".";
         continue;
       }
-      UninstallService();
-      if (!file_util::PathExists(printers_filename)) {
-        LOG(ERROR) << "Service can't create " << printers_filename.value();
+      std::string printers;
+      if (!file_util::PathExists(requirements_filename) ||
+          !file_util::ReadFileToString(requirements_filename, &printers)) {
+        LOG(ERROR) << "Service can't create " << requirements_filename.value();
         continue;
       }
 
-      std::string printers;
-      file_util::ReadFileToString(printers_filename, &printers);
-      std::cout << "\nPrinters available for " << run_as_user << ":\n";
+      if (EndsWith(printers, kChromeIsNotAvalible, true)) {
+        LOG(ERROR) << kChromeIsNotAvalible << " for " << *run_as_user << ".";
+        continue;
+      }
+
+      std::cout << "\nService requirements check result: \n";
       std::cout << printers << "\n";
-      file_util::Delete(printers_filename, false);
+      file_util::Delete(requirements_filename, false);
 
       if (AskUser("Do you want to use " + WideToASCII(*run_as_user) + "?"))
         return;
@@ -483,19 +491,24 @@ class CloudPrintServiceModule
     return S_OK;
   }
 
-  HRESULT DetectPrinters() {
-    FilePath printers_filename(user_data_dir_);
-    printers_filename = printers_filename.Append(kPrintersFileName);
-    std::string printers;
+  HRESULT CheckRequirements() {
+    FilePath requirements_filename(user_data_dir_);
+    requirements_filename = requirements_filename.Append(kRequirementsFileName);
+    std::string output;
+    output.append("Printers available for " +
+                  WideToASCII(GetCurrentUserName()) + ":\n");
     scoped_refptr<printing::PrintBackend> backend(
         printing::PrintBackend::CreateInstance(NULL));
     printing::PrinterList printer_list;
     backend->EnumeratePrinters(&printer_list);
     for (size_t i = 0; i < printer_list.size(); ++i) {
-      printers += printer_list[i].printer_name;
-      printers += "\n";
+      output += " ";
+      output += printer_list[i].printer_name;
+      output += "\n";
     }
-    file_util::WriteFile(printers_filename, printers.c_str(), printers.size());
+    FilePath chrome = chrome_launcher_support::GetAnyChromePath();
+    output.append(chrome.empty() ? kChromeIsNotAvalible : kChromeIsAvalible);
+    file_util::WriteFile(requirements_filename, output.c_str(), output.size());
     return S_OK;
   }
 
@@ -513,7 +526,7 @@ class CloudPrintServiceModule
 
   static BOOL WINAPI ConsoleCtrlHandler(DWORD type);
 
-  bool detect_printers_;
+  bool check_requirements_;
   FilePath user_data_dir_;
   scoped_ptr<ChromeLauncher> chrome_;
 };

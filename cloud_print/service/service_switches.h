@@ -8,8 +8,9 @@
 extern const char kChromeTypeSwitch[];
 extern const char kConsoleSwitch[];
 extern const char kInstallSwitch[];
-extern const char kPrintersSwitch[];
-extern const char kServiceSwitch[];extern const char kStartSwitch[];
+extern const char kRequirementsSwitch[];
+extern const char kServiceSwitch[];
+extern const char kStartSwitch[];
 extern const char kStopSwitch[];
 extern const char kUninstallSwitch[];
 extern const char kUserDataDirSwitch[];
