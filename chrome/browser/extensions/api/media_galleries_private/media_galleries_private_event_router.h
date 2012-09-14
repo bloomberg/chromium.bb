@@ -36,7 +36,7 @@ class MediaGalleriesPrivateEventRouter
   virtual void OnRemovableStorageDetached(const std::string& id) OVERRIDE;
 
   void DispatchEvent(const std::string& event_name,
-                     scoped_ptr<ListValue> event_args);
+                     scoped_ptr<base::ListValue> event_args);
 
   Profile* profile_;
 

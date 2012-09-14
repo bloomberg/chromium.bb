@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/api/media_galleries_private.h"
 
 namespace extensions {
 
@@ -21,10 +22,6 @@ namespace {
 // Events
 const char kOnAttachEventName[] = "mediaGalleriesPrivate.onDeviceAttached";
 const char kOnDetachEventName[] = "mediaGalleriesPrivate.onDeviceDetached";
-
-// Keys
-const char kDeviceNameKey[] = "deviceName";
-const char kDeviceIdKey[] = "deviceId";
 
 // Used to keep track of transient IDs for removable devices, so persistent
 // device IDs are not exposed to renderers.
@@ -84,6 +81,9 @@ TransientDeviceIds* TransientDeviceIds::GetInstance() {
 
 }  // namespace
 
+using extensions::api::media_galleries_private::DeviceAttachmentDetails;
+using extensions::api::media_galleries_private::DeviceDetachmentDetails;
+
 MediaGalleriesPrivateEventRouter::MediaGalleriesPrivateEventRouter(
     Profile* profile)
     : profile_(profile) {
@@ -112,13 +112,12 @@ void MediaGalleriesPrivateEventRouter::OnRemovableStorageAttached(
   std::string transient_id = device_ids->GetTransientIdForUniqueId(id);
   CHECK(!transient_id.empty());
 
-  DictionaryValue* dict = new DictionaryValue();
-  dict->SetString(kDeviceNameKey, UTF16ToUTF8(name));
-  dict->SetString(kDeviceIdKey, transient_id);
+  DeviceAttachmentDetails details;
+  details.device_name = UTF16ToUTF8(name);
+  details.device_id = transient_id;
 
-  scoped_ptr<ListValue> args(new ListValue());
-  args->Append(dict);
-
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  args->Append(details.ToValue().release());
   DispatchEvent(kOnAttachEventName, args.Pass());
 }
 
@@ -136,18 +135,17 @@ void MediaGalleriesPrivateEventRouter::OnRemovableStorageDetached(
   }
   CHECK(device_ids->DeviceDetached(id));
 
-  DictionaryValue* dict = new DictionaryValue();
-  dict->SetString(kDeviceIdKey, transient_id);
+  DeviceDetachmentDetails details;
+  details.device_id = transient_id;
 
-  scoped_ptr<ListValue> args(new ListValue());
-  args->Append(dict);
-
+  scoped_ptr<base::ListValue> args(new ListValue());
+  args->Append(details.ToValue().release());
   DispatchEvent(kOnDetachEventName, args.Pass());
 }
 
 void MediaGalleriesPrivateEventRouter::DispatchEvent(
     const std::string& event_name,
-    scoped_ptr<ListValue> event_args) {
+    scoped_ptr<base::ListValue> event_args) {
   EventRouter* router = profile_ ? profile_->GetExtensionEventRouter() : NULL;
   if (!router)
     return;
