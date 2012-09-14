@@ -27,6 +27,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/page_navigator.h"
+#include "google_apis/google_api_keys.h"
+#include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/x509_cert_types.h"
 #include "net/base/x509_certificate.h"
@@ -689,7 +691,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
     VLOG(2) << "Sending a request for URL: "
             << info_.download_url_chain.back();
     fetcher_.reset(net::URLFetcher::Create(0 /* ID used for testing */,
-                                           GURL(kDownloadRequestUrl),
+                                           GURL(GetDownloadRequestUrl()),
                                            net::URLFetcher::POST,
                                            this));
     fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
@@ -963,6 +965,17 @@ void DownloadProtectionService::GetCertificateWhitelistStrings(
        it != paths_to_check.end(); ++it) {
     whitelist_strings->push_back("cert/" + issuer_fp + *it);
   }
+}
+
+// static
+std::string DownloadProtectionService::GetDownloadRequestUrl() {
+  std::string url = kDownloadRequestUrl;
+  std::string api_key = google_apis::GetAPIKey();
+  if (!api_key.empty()) {
+    base::StringAppendF(&url, "?key=%s",
+                        net::EscapeQueryParamValue(api_key, true).c_str());
+  }
+  return url;
 }
 
 }  // namespace safe_browsing

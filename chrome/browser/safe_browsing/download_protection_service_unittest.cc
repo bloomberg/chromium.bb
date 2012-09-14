@@ -327,7 +327,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadFetchFailed) {
   net::FakeURLFetcherFactory factory;
   // HTTP request will fail.
   factory.SetFakeResponse(
-      DownloadProtectionService::kDownloadRequestUrl, "", false);
+      DownloadProtectionService::GetDownloadRequestUrl(), "", false);
 
   DownloadProtectionService::DownloadInfo info;
   info.local_file = FilePath(FILE_PATH_LITERAL("a.tmp"));
@@ -353,7 +353,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   net::FakeURLFetcherFactory factory;
   // Empty response means SAFE.
   factory.SetFakeResponse(
-      DownloadProtectionService::kDownloadRequestUrl,
+      DownloadProtectionService::GetDownloadRequestUrl(),
       response.SerializeAsString(),
       true);
 
@@ -377,7 +377,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   // Invalid response should be safe too.
   response.Clear();
   factory.SetFakeResponse(
-      DownloadProtectionService::kDownloadRequestUrl,
+      DownloadProtectionService::GetDownloadRequestUrl(),
       response.SerializePartialAsString(),
       true);
 
@@ -391,7 +391,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   // If the response is dangerous the result should also be marked as dangerous.
   response.set_verdict(ClientDownloadResponse::DANGEROUS);
   factory.SetFakeResponse(
-      DownloadProtectionService::kDownloadRequestUrl,
+      DownloadProtectionService::GetDownloadRequestUrl(),
       response.SerializeAsString(),
       true);
 
@@ -409,7 +409,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   // If the response is uncommon the result should also be marked as uncommon.
   response.set_verdict(ClientDownloadResponse::UNCOMMON);
   factory.SetFakeResponse(
-      DownloadProtectionService::kDownloadRequestUrl,
+      DownloadProtectionService::GetDownloadRequestUrl(),
       response.SerializeAsString(),
       true);
 
@@ -430,7 +430,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadHTTPS) {
   response.set_verdict(ClientDownloadResponse::DANGEROUS);
   net::FakeURLFetcherFactory factory;
   factory.SetFakeResponse(
-      DownloadProtectionService::kDownloadRequestUrl,
+      DownloadProtectionService::GetDownloadRequestUrl(),
       response.SerializeAsString(),
       true);
 
@@ -462,7 +462,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
   net::FakeURLFetcherFactory factory;
   // Empty response means SAFE.
   factory.SetFakeResponse(
-      DownloadProtectionService::kDownloadRequestUrl,
+      DownloadProtectionService::GetDownloadRequestUrl(),
       response.SerializeAsString(),
       true);
 
@@ -515,7 +515,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
   // dangerous.
   response.set_verdict(ClientDownloadResponse::DANGEROUS);
   factory.SetFakeResponse(
-      DownloadProtectionService::kDownloadRequestUrl,
+      DownloadProtectionService::GetDownloadRequestUrl(),
       response.SerializeAsString(),
       true);
 
@@ -566,7 +566,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientCrxDownloadSuccess) {
   net::FakeURLFetcherFactory factory;
   // Empty response means SAFE.
   factory.SetFakeResponse(
-      DownloadProtectionService::kDownloadRequestUrl,
+      DownloadProtectionService::GetDownloadRequestUrl(),
       response.SerializeAsString(),
       true);
 

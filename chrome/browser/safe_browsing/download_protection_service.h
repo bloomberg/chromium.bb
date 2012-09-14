@@ -178,6 +178,9 @@ class DownloadProtectionService {
       const net::X509Certificate& issuer,
       std::vector<std::string>* whitelist_strings);
 
+  // Returns the URL that will be used for download requests.
+  static std::string GetDownloadRequestUrl();
+
   // This pointer may be NULL if SafeBrowsing is disabled. The
   // SafeBrowsingService owns us, so we don't need to hold a reference to it.
   SafeBrowsingService* sb_service_;

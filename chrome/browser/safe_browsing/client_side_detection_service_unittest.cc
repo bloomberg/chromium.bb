@@ -101,7 +101,7 @@ class ClientSideDetectionServiceTest : public testing::Test {
   void SetClientReportPhishingResponse(std::string response_data,
                                        bool success) {
     factory_->SetFakeResponse(
-        ClientSideDetectionService::kClientReportPhishingUrl,
+        ClientSideDetectionService::GetClientReportPhishingUrl(),
         response_data, success);
   }
 

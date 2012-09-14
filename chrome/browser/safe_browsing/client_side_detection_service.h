@@ -251,6 +251,9 @@ class ClientSideDetectionService : public net::URLFetcherDelegate,
   // valid hashes in the model.
   static bool ModelHasValidHashIds(const ClientSideModel& model);
 
+  // Returns the URL that will be used for phishing requests.
+  static std::string GetClientReportPhishingUrl();
+
   // Whether the service is running or not.  When the service is not running,
   // it won't download the model nor report detected phishing URLs.
   bool enabled_;

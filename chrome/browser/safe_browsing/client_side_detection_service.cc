@@ -25,7 +25,9 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "crypto/sha2.h"
+#include "google_apis/google_api_keys.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -303,7 +305,7 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
   }
 
   net::URLFetcher* fetcher = net::URLFetcher::Create(
-      0 /* ID used for testing */, GURL(kClientReportPhishingUrl),
+      0 /* ID used for testing */, GURL(GetClientReportPhishingUrl()),
       net::URLFetcher::POST, this);
 
   // Remember which callback and URL correspond to the current fetcher object.
@@ -531,5 +533,16 @@ bool ClientSideDetectionService::ModelHasValidHashIds(
     }
   }
   return true;
+}
+
+// static
+std::string ClientSideDetectionService::GetClientReportPhishingUrl() {
+  std::string url = kClientReportPhishingUrl;
+  std::string api_key = google_apis::GetAPIKey();
+  if (!api_key.empty()) {
+    base::StringAppendF(&url, "?key=%s",
+                        net::EscapeQueryParamValue(api_key, true).c_str());
+  }
+  return url;
 }
 }  // namespace safe_browsing
