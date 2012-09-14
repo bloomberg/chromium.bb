@@ -6,12 +6,11 @@
 #define CHROME_BROWSER_UI_VIEWS_INFOBARS_INFOBAR_BACKGROUND_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/api/infobars/infobar_delegate.h"
 #include "ui/views/background.h"
 
 class InfoBarBackground : public views::Background {
  public:
-  explicit InfoBarBackground(InfoBarDelegate::Type infobar_type);
+  InfoBarBackground(SkColor top, SkColor bottom);
   virtual ~InfoBarBackground();
 
   void set_separator_color(SkColor color) { separator_color_ = color; }

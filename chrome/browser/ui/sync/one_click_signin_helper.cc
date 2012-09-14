@@ -7,10 +7,12 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/field_trial.h"
 #include "base/string_split.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/api/infobars/one_click_signin_infobar_delegate.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -26,6 +28,7 @@
 #include "chrome/browser/ui/sync/one_click_signin_histogram.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -45,28 +48,52 @@
 #include "webkit/forms/password_form.h"
 #include "webkit/forms/password_form_dom_manager.h"
 
+namespace {
+
+// Set to true if this chrome instance is in the blue-button-on-white-bar
+// experimental group.
+bool use_blue_on_white = false;
+
+// Start syncing with the given user information.
+void StartSync(content::WebContents* web_contents,
+               const std::string& session_index,
+               const std::string& email,
+               const std::string& password,
+               OneClickSigninSyncStarter::StartSyncMode start_mode) {
+  // The starter deletes itself once its done.
+  Browser* browser = browser::FindBrowserWithWebContents(web_contents);
+  new OneClickSigninSyncStarter(browser, session_index, email, password,
+                                start_mode);
+}
+
+}  // namespace
+
 // The infobar asking the user if they want to use one-click sign in.
-class OneClickLoginInfoBarDelegate : public ConfirmInfoBarDelegate {
+class OneClickInfoBarDelegateImpl : public OneClickSigninInfoBarDelegate {
  public:
-  OneClickLoginInfoBarDelegate(InfoBarTabHelper* owner,
+  OneClickInfoBarDelegateImpl(InfoBarTabHelper* owner,
                                const std::string& session_index,
                                const std::string& email,
                                const std::string& password);
-  virtual ~OneClickLoginInfoBarDelegate();
+  virtual ~OneClickInfoBarDelegateImpl();
 
  private:
-  // ConfirmInfoBarDelegate overrides.
+  // InfoBarDelegate overrides.
+  virtual InfoBarAutomationType GetInfoBarAutomationType() const OVERRIDE;
   virtual void InfoBarDismissed() OVERRIDE;
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
+
+  // ConfirmInfoBarDelegate overrides.
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
-  virtual InfoBarAutomationType GetInfoBarAutomationType() const OVERRIDE;
+  // OneClickSigninInfoBarDelegate overrides.
+  virtual void GetAlternateColors(AlternateColors* alt_colors) OVERRIDE;
 
   // Set the profile preference to turn off one-click sign in so that it won't
   // show again in this profile.
@@ -87,15 +114,15 @@ class OneClickLoginInfoBarDelegate : public ConfirmInfoBarDelegate {
   // Whether any UI controls in the infobar were pressed or not.
   bool button_pressed_;
 
-  DISALLOW_COPY_AND_ASSIGN(OneClickLoginInfoBarDelegate);
+  DISALLOW_COPY_AND_ASSIGN(OneClickInfoBarDelegateImpl);
 };
 
-OneClickLoginInfoBarDelegate::OneClickLoginInfoBarDelegate(
+OneClickInfoBarDelegateImpl::OneClickInfoBarDelegateImpl(
     InfoBarTabHelper* owner,
     const std::string& session_index,
     const std::string& email,
     const std::string& password)
-    : ConfirmInfoBarDelegate(owner),
+    : OneClickSigninInfoBarDelegate(owner),
       session_index_(session_index),
       email_(email),
       password_(password),
@@ -103,53 +130,42 @@ OneClickLoginInfoBarDelegate::OneClickLoginInfoBarDelegate(
   RecordHistogramAction(one_click_signin::HISTOGRAM_SHOWN);
 }
 
-OneClickLoginInfoBarDelegate::~OneClickLoginInfoBarDelegate() {
+OneClickInfoBarDelegateImpl::~OneClickInfoBarDelegateImpl() {
   if (!button_pressed_)
     RecordHistogramAction(one_click_signin::HISTOGRAM_IGNORED);
 }
 
-void OneClickLoginInfoBarDelegate::InfoBarDismissed() {
+InfoBarDelegate::InfoBarAutomationType
+    OneClickInfoBarDelegateImpl::GetInfoBarAutomationType() const {
+  return ONE_CLICK_LOGIN_INFOBAR;
+}
+
+void OneClickInfoBarDelegateImpl::InfoBarDismissed() {
   RecordHistogramAction(one_click_signin::HISTOGRAM_DISMISSED);
   button_pressed_ = true;
 }
 
-gfx::Image* OneClickLoginInfoBarDelegate::GetIcon() const {
+gfx::Image* OneClickInfoBarDelegateImpl::GetIcon() const {
   return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_INFOBAR_SYNC);
 }
 
-InfoBarDelegate::Type OneClickLoginInfoBarDelegate::GetInfoBarType() const {
+InfoBarDelegate::Type OneClickInfoBarDelegateImpl::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }
 
-string16 OneClickLoginInfoBarDelegate::GetMessageText() const {
+string16 OneClickInfoBarDelegateImpl::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_INFOBAR_MESSAGE);
 }
 
-string16 OneClickLoginInfoBarDelegate::GetButtonLabel(
+string16 OneClickInfoBarDelegateImpl::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16(
       (button == BUTTON_OK) ? IDS_ONE_CLICK_SIGNIN_INFOBAR_OK_BUTTON
                             : IDS_ONE_CLICK_SIGNIN_INFOBAR_CANCEL_BUTTON);
 }
 
-namespace {
-
-// Start syncing with the given user information.
-void StartSync(content::WebContents* web_contents,
-               const std::string& session_index,
-               const std::string& email,
-               const std::string& password,
-               OneClickSigninSyncStarter::StartSyncMode start_mode) {
-  // The starter deletes itself once its done.
-  Browser* browser = browser::FindBrowserWithWebContents(web_contents);
-  new OneClickSigninSyncStarter(browser, session_index, email, password,
-                                start_mode);
-}
-
-}  // namespace
-
-bool OneClickLoginInfoBarDelegate::Accept() {
+bool OneClickInfoBarDelegateImpl::Accept() {
   // User has accepted one-click sign-in for this account. Never ask again for
   // this profile.
   DisableOneClickSignIn();
@@ -162,18 +178,18 @@ bool OneClickLoginInfoBarDelegate::Accept() {
   return true;
 }
 
-bool OneClickLoginInfoBarDelegate::Cancel() {
+bool OneClickInfoBarDelegateImpl::Cancel() {
   AddEmailToOneClickRejectedList(email_);
   RecordHistogramAction(one_click_signin::HISTOGRAM_REJECTED);
   button_pressed_ = true;
   return true;
 }
 
-string16 OneClickLoginInfoBarDelegate::GetLinkText() const {
+string16 OneClickInfoBarDelegateImpl::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
-bool OneClickLoginInfoBarDelegate::LinkClicked(
+bool OneClickInfoBarDelegateImpl::LinkClicked(
     WindowOpenDisposition disposition) {
   RecordHistogramAction(one_click_signin::HISTOGRAM_LEARN_MORE);
   content::OpenURLParams params(
@@ -183,20 +199,29 @@ bool OneClickLoginInfoBarDelegate::LinkClicked(
   return false;
 }
 
+void OneClickInfoBarDelegateImpl::GetAlternateColors(
+    AlternateColors* alt_colors) {
+  if (use_blue_on_white) {
+    alt_colors->enabled = true;
+    alt_colors->infobar_bottom_color = SK_ColorWHITE;
+    alt_colors->infobar_top_color = SK_ColorWHITE;
+    alt_colors->button_text_color = SK_ColorWHITE;
+    alt_colors->button_background_color = SkColorSetRGB(71, 135, 237);
+    alt_colors->button_border_color = SkColorSetRGB(48, 121, 237);
+    return;
+  }
 
-InfoBarDelegate::InfoBarAutomationType
-    OneClickLoginInfoBarDelegate::GetInfoBarAutomationType() const {
-  return ONE_CLICK_LOGIN_INFOBAR;
+  return OneClickSigninInfoBarDelegate::GetAlternateColors(alt_colors);
 }
 
-void OneClickLoginInfoBarDelegate::DisableOneClickSignIn() {
+void OneClickInfoBarDelegateImpl::DisableOneClickSignIn() {
   PrefService* pref_service =
       TabContents::FromWebContents(owner()->GetWebContents())->
           profile()->GetPrefs();
   pref_service->SetBoolean(prefs::kReverseAutologinEnabled, false);
 }
 
-void OneClickLoginInfoBarDelegate::AddEmailToOneClickRejectedList(
+void OneClickInfoBarDelegateImpl::AddEmailToOneClickRejectedList(
     const std::string& email) {
   PrefService* pref_service =
       TabContents::FromWebContents(owner()->GetWebContents())->
@@ -206,9 +231,16 @@ void OneClickLoginInfoBarDelegate::AddEmailToOneClickRejectedList(
   updater->AppendIfNotPresent(base::Value::CreateStringValue(email));
 }
 
-void OneClickLoginInfoBarDelegate::RecordHistogramAction(int action) {
+void OneClickInfoBarDelegateImpl::RecordHistogramAction(int action) {
   UMA_HISTOGRAM_ENUMERATION("AutoLogin.Reverse", action,
                             one_click_signin::HISTOGRAM_MAX);
+}
+
+OneClickSigninHelper::OneClickSigninHelper(content::WebContents* web_contents)
+    : content::WebContentsObserver(web_contents) {
+}
+
+OneClickSigninHelper::~OneClickSigninHelper() {
 }
 
 // static
@@ -281,6 +313,21 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
 }
 
 // static
+void OneClickSigninHelper::InitializeFieldTrial() {
+  scoped_refptr<base::FieldTrial> trial(
+      base::FieldTrialList::FactoryGetFieldTrial("OneClickSignIn", 100,
+                                                 "Standard", 2013, 9, 1, NULL));
+
+  // For dev and beta, we'll give half the people the new experience.  For
+  // stable, only 1%.  These numbers are overridable on the server.
+  const bool kIsStableChannel =
+      chrome::VersionInfo::GetChannel() == chrome::VersionInfo::CHANNEL_STABLE;
+  const int kBlueOnWhiteGroup = trial->AppendGroup("BlueOnWhite",
+                                                   kIsStableChannel ? 1 : 50);
+  use_blue_on_white = trial->group() == kBlueOnWhiteGroup;
+}
+
+// static
 void OneClickSigninHelper::ShowInfoBarIfPossible(net::URLRequest* request,
                                                  int child_id,
                                                  int route_id) {
@@ -313,13 +360,6 @@ void OneClickSigninHelper::ShowInfoBarIfPossible(net::URLRequest* request,
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(&OneClickSigninHelper::ShowInfoBarUIThread, session_index,
                  email, child_id, route_id));
-}
-
-OneClickSigninHelper::OneClickSigninHelper(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {
-}
-
-OneClickSigninHelper::~OneClickSigninHelper() {
 }
 
 // static
@@ -365,8 +405,8 @@ void OneClickSigninHelper::DidStopLoading(
   TabContents* tab_contents = TabContents::FromWebContents(web_contents());
 
   tab_contents->infobar_tab_helper()->AddInfoBar(
-      new OneClickLoginInfoBarDelegate(tab_contents->infobar_tab_helper(),
-                                       session_index_, email_, password_));
+      new OneClickInfoBarDelegateImpl(tab_contents->infobar_tab_helper(),
+                                      session_index_, email_, password_));
 
   email_.clear();
   password_.clear();

@@ -22,6 +22,7 @@
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
+#include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/metrics/variations/variations_util.h"
@@ -129,6 +130,9 @@ void ChromeBrowserFieldTrials::SetupFieldTrials(bool proxy_policy_is_set) {
   SetUpSafeBrowsingInterstitialFieldTrial();
   SetUpChannelIDFieldTrial();
   SetUpInfiniteCacheFieldTrial();
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
+  OneClickSigninHelper::InitializeFieldTrial();
+#endif
 }
 
 // This is an A/B test for the maximum number of persistent connections per

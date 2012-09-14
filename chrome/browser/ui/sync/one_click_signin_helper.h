@@ -24,6 +24,9 @@ class URLRequest;
 // more about what this means.
 class OneClickSigninHelper : public content::WebContentsObserver {
  public:
+  explicit OneClickSigninHelper(content::WebContents* web_contents);
+  virtual ~OneClickSigninHelper();
+
   // Returns true if the one-click signin feature can be offered at this time.
   // It can be offered if the contents is not in an incognito window.  If
   // |check_connected| is true, then the profile is checked to see if it's
@@ -34,15 +37,15 @@ class OneClickSigninHelper : public content::WebContentsObserver {
                        const std::string& email,
                        bool check_connected);
 
+  // Initialize a finch experiment for the infobar.
+  static void InitializeFieldTrial();
+
   // Looks for the Google-Accounts-SignIn response header, and if found,
   // tries to display an infobar in the tab contents identified by the
   // child/route id.
   static void ShowInfoBarIfPossible(net::URLRequest* request,
                                     int child_id,
                                     int route_id);
-
-  explicit OneClickSigninHelper(content::WebContents* web_contents);
-  virtual ~OneClickSigninHelper();
 
  private:
   // The portion of ShowInfoBarIfPossible() that needs to run on the UI thread.

@@ -1461,6 +1461,8 @@
         'browser/ui/views/infobars/link_infobar.h',
         'browser/ui/views/infobars/media_stream_infobar.cc',
         'browser/ui/views/infobars/media_stream_infobar.h',
+        'browser/ui/views/infobars/one_click_signin_infobar.cc',
+        'browser/ui/views/infobars/one_click_signin_infobar.h',
         'browser/ui/views/infobars/translate_infobar_base.cc',
         'browser/ui/views/infobars/translate_infobar_base.h',
         'browser/ui/views/infobars/translate_message_infobar.cc',
@@ -2020,6 +2022,8 @@
             'browser/ui/sync/one_click_signin_histogram.h',
             'browser/ui/sync/one_click_signin_sync_starter.cc',
             'browser/ui/sync/one_click_signin_sync_starter.h',
+            'browser/ui/views/infobars/one_click_signin_infobar.cc',
+            'browser/ui/views/infobars/one_click_signin_infobar.h',
             'browser/ui/views/sync/one_click_signin_bubble_view.cc',
             'browser/ui/views/sync/one_click_signin_bubble_view.h',
           ]

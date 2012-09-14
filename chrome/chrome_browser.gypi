@@ -147,6 +147,8 @@
         'browser/api/infobars/infobar_service.h',
         'browser/api/infobars/link_infobar_delegate.cc',
         'browser/api/infobars/link_infobar_delegate.h',
+        'browser/api/infobars/one_click_signin_infobar_delegate.cc',
+        'browser/api/infobars/one_click_signin_infobar_delegate.h',
         'browser/api/infobars/simple_alert_infobar_delegate.cc',
         'browser/api/infobars/simple_alert_infobar_delegate.h',
         'browser/api/prefs/pref_change_registrar.cc',
@@ -2083,6 +2085,12 @@
         '<(SHARED_INTERMEDIATE_DIR)/autofill_regex_constants.cc',
       ],
       'conditions': [
+        ['enable_one_click_signin==0', {
+          'sources!': [
+            'browser/api/infobars/one_click_signin_infobar_delegate.cc',
+            'browser/api/infobars/one_click_signin_infobar_delegate.h',
+          ],
+        }],
         ['enable_extensions==1', {
           'sources': [
             # Only extension API implementations should go here.
