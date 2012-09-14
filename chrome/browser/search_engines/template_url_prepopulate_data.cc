@@ -993,10 +993,11 @@ const PrepopulatedEngine centrum_sk = {
 const PrepopulatedEngine daum = {
   L"Daum",
   L"daum.net",
-  "http://search.daum.net/favicon.ico",
+  "http://icon.daum-img.net/favicon.ico",
   "http://search.daum.net/search?q={searchTerms}",
-  "EUC-KR",
-  "http://sug.search.daum.net/search_nsuggest?mod=fxjson&q={searchTerms}",
+  "UTF-8",
+  "http://sug.search.daum.net/search_nsuggest?mod=fxjson&code=utf_in_out&"
+      "q={searchTerms}",
   NULL,
   SEARCH_ENGINE_DAUM,
   68,
@@ -3327,7 +3328,7 @@ void RegisterUserPrefs(PrefService* prefs) {
 int GetDataVersion(PrefService* prefs) {
   // Increment this if you change the above data in ways that mean users with
   // existing data should get a new version.
-  const int kCurrentDataVersion = 41;
+  const int kCurrentDataVersion = 42;
   // Allow tests to override the local version.
   return (prefs && prefs->HasPrefPath(prefs::kSearchProviderOverridesVersion)) ?
       prefs->GetInteger(prefs::kSearchProviderOverridesVersion) :
