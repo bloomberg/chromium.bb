@@ -133,6 +133,7 @@ def _GetInstanceForBranch(channel_name, local_path):
       GITHUB_FILE_SYSTEM,
       cache_factory,
       GITHUB_COMPILED_FILE_SYSTEM,
+      api_list_data_source_factory,
       EXAMPLES_PATH)
   api_data_source_factory = APIDataSource.Factory(cache_factory,
                                                   API_PATH,
@@ -329,10 +330,6 @@ class Handler(webapp.RequestHandler):
 
   def get(self):
     path = self.request.path
-    if path == '/favicon.ico' or path == '/robots.txt':
-      self.response.set_status(404)
-      return
-
     if self._RedirectSpecialCases(path):
       return
 
