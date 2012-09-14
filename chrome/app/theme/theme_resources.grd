@@ -492,24 +492,24 @@
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_WI_BUBBLE_BACKGROUND_C" file="common/web-intents_center.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_WI_BUBBLE_BACKGROUND_L" file="common/web-intents_left.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_WI_BUBBLE_BACKGROUND_R" file="common/web-intents_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EXTENSION_APP" file="omnibox_extension_app.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EXTENSION_APP_DARK" file="omnibox_extension_app_dark.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EXTENSION_APP_SELECTED" file="omnibox_extension_app_selected.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTP" file="omnibox_http.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTPS_INVALID" file="omnibox_https_invalid.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTPS_VALID" file="omnibox_https_valid.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTPS_WARNING" file="omnibox_https_warning.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTP_DARK" file="omnibox_http_dark.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTP_SELECTED" file="omnibox_http_selected.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH" file="omnibox_search.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_DARK" file="omnibox_search_dark.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_SELECTED" file="omnibox_search_selected.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_STAR" file="omnibox_star.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_STAR_DARK" file="omnibox_star_dark.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_STAR_SELECTED" file="omnibox_star_selected.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_TTS" file="omnibox_tts.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_TTS_DARK" file="omnibox_tts_dark.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_TTS_SELECTED" file="omnibox_tts_selected.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EXTENSION_APP" file="common/omnibox_extension_app.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EXTENSION_APP_DARK" file="common/omnibox_extension_app_dark.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EXTENSION_APP_SELECTED" file="common/omnibox_extension_app_selected.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTP" file="common/omnibox_http.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTPS_INVALID" file="common/omnibox_https_invalid.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTPS_VALID" file="common/omnibox_https_valid.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTPS_WARNING" file="common/omnibox_https_warning.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTP_DARK" file="common/omnibox_http_dark.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTP_SELECTED" file="common/omnibox_http_selected.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH" file="common/omnibox_search.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_DARK" file="common/omnibox_search_dark.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_SEARCH_SELECTED" file="common/omnibox_search_selected.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_STAR" file="common/omnibox_star.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_STAR_DARK" file="common/omnibox_star_dark.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_STAR_SELECTED" file="common/omnibox_star_selected.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_TTS" file="common/omnibox_tts.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_TTS_DARK" file="common/omnibox_tts_dark.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_TTS_SELECTED" file="common/omnibox_tts_selected.png" />
       <if expr="pp_ifdef('chromeos')">
         <structure type="chrome_scaled_image" name="IDR_OOBE_PROGRESS_DOT_CURRENT" file="oobe_progress_dot_current.png" />
         <structure type="chrome_scaled_image" name="IDR_OOBE_PROGRESS_DOT_EMPTY" file="oobe_progress_dot_empty.png" />
