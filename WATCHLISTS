@@ -83,6 +83,10 @@
       'filepath': 'ui/views/bubble/|'\
                   'chrome/browser/ui/views/bubble/',
     },
+    'cc': {
+      'filepath': 'cc/|'\
+                  'webkit/compositor_bindings/',
+    },
     'chrome_frame': {
       'filepath': 'chrome_frame/',
     },
@@ -449,6 +453,7 @@
     'browser_resources': ['arv@chromium.org'],
     'browsing_data': ['markusheintz@chromium.org'],
     'bubble': ['alicet@chromium.org', 'msw+watch@chromium.org'],
+    'cc': ['cc-bugs@chromium.org'],
     'chrome_frame': ['amit@chromium.org', 'grt+watch@chromium.org',
                      'robertshield@chromium.org'],
     'chrome_views': ['tfarina@chromium.org'],
