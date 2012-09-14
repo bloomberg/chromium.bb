@@ -76,6 +76,9 @@ WorkspaceLayoutManager2::~WorkspaceLayoutManager2() {
 }
 
 void WorkspaceLayoutManager2::OnWindowAddedToLayout(Window* child) {
+  // Adjust window bounds in case that the new child is out of the workspace.
+  AdjustWindowSizeForScreenChange(child, ADJUST_WINDOW_DISPLAY_INSETS_CHANGED);
+
   windows_.insert(child);
   child->AddObserver(this);
 

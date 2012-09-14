@@ -118,6 +118,22 @@ TEST_F(WorkspaceLayoutManager2Test, ChildBoundsResetOnMaximize) {
   EXPECT_EQ("5,6 7x8", child_window->bounds().ToString());
 }
 
+TEST_F(WorkspaceLayoutManager2Test, WindowShouldBeOnScreenWhenAdded) {
+  // Normal window bounds shouldn't be changed.
+  gfx::Rect window_bounds(100, 100, 200, 200);
+  scoped_ptr<aura::Window> window(CreateTestWindow(window_bounds));
+  EXPECT_EQ(window_bounds, window->bounds());
+
+  // If the window is out of the workspace, it would be moved on screen.
+  gfx::Rect root_window_bounds =
+      ash::Shell::GetInstance()->GetPrimaryRootWindow()->bounds();
+  window_bounds.Offset(root_window_bounds.width(), root_window_bounds.height());
+  ASSERT_FALSE(window_bounds.Intersects(root_window_bounds));
+  scoped_ptr<aura::Window> out_window(CreateTestWindow(window_bounds));
+  EXPECT_EQ(window_bounds.size(), out_window->bounds().size());
+  EXPECT_TRUE(out_window->bounds().Intersects(root_window_bounds));
+}
+
 }  // namespace
 
 }  // namespace ash
