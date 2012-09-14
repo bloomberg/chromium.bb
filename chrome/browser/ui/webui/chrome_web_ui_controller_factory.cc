@@ -159,8 +159,10 @@ bool NeedsExtensionWebUI(WebUI* web_ui,
 WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
                                              Profile* profile,
                                              const GURL& url) {
+#if defined(ENABLE_EXTENSIONS)
   if (NeedsExtensionWebUI(web_ui, profile, url))
     return &NewWebUI<ExtensionWebUI>;
+#endif
 
   // This will get called a lot to check all URLs, so do a quick check of other
   // schemes to filter out most URLs.
@@ -185,8 +187,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
    ***************************************************************************/
   // We must compare hosts only since some of the Web UIs append extra stuff
   // after the host name.
-  if (url.host() == chrome::kChromeUIBookmarksHost)
-    return &NewWebUI<BookmarksUI>;
   // All platform builds of Chrome will need to have a cloud printing
   // dialog as backup.  It's just that on Chrome OS, it's the only
   // print dialog.
@@ -196,14 +196,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<WebDialogUI>;
   if (url.spec() == chrome::kChromeUIConstrainedHTMLTestURL)
     return &NewWebUI<ConstrainedWebDialogUI>;
-  if (url.host() == chrome::kChromeUICrashesHost)
-    return &NewWebUI<CrashesUI>;
-  if (url.host() == chrome::kChromeUIDevToolsHost)
-    return &NewWebUI<DevToolsUI>;
-  if (url.host() == chrome::kChromeUIDialogHost)
-    return &NewWebUI<ConstrainedWebDialogUI>;
-  if (url.host() == chrome::kChromeUIFlashHost)
-    return &NewWebUI<FlashUI>;
   if (url.host() == chrome::kChromeUIGpuInternalsHost)
     return &NewWebUI<GpuInternalsUI>;
   if (url.host() == chrome::kChromeUIHistoryFrameHost)
@@ -230,8 +222,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<SyncInternalsUI>;
   if (url.host() == chrome::kChromeUISyncResourcesHost)
     return &NewWebUI<WebDialogUI>;
-  if (url.host() == chrome::kChromeUITracingHost)
-    return &NewWebUI<TracingUI>;
 
   /****************************************************************************
    * OS Specific #defines
@@ -240,44 +230,56 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host() == chrome::kChromeUIWelcomeHost)
     return &NewWebUI<WelcomeUI>;
 #else
-  // These pages are implemented with native UI elements on Android.
+  // Bookmarks are part of NTP on Android.
+  if (url.host() == chrome::kChromeUIBookmarksHost)
+    return &NewWebUI<BookmarksUI>;
+  // Crashes page not supported on Android for now.
+  if (url.host() == chrome::kChromeUICrashesHost)
+    return &NewWebUI<CrashesUI>;
+  if (url.host() == chrome::kChromeUIDevToolsHost)
+    return &NewWebUI<DevToolsUI>;
+  // Downloads list on Android uses the built-in download manager.
   if (url.host() == chrome::kChromeUIDownloadsHost)
     return &NewWebUI<DownloadsUI>;
+  if (url.host() == chrome::kChromeUIDialogHost)
+    return &NewWebUI<ConstrainedWebDialogUI>;
+  // Feedback on Android uses the built-in feedback app.
   if (url.host() == chrome::kChromeUIFeedbackHost)
     return &NewWebUI<FeedbackUI>;
-  if (url.host() == chrome::kChromeUIHelpFrameHost)
-    return &NewWebUI<HelpUI>;
-  if (url.host() == chrome::kChromeUISettingsFrameHost)
-    return &NewWebUI<options::OptionsUI>;
-  if (url.host() == chrome::kChromeUISuggestionsInternalsHost)
-    return &NewWebUI<SuggestionsInternalsUI>;
-  if (url.host() == chrome::kChromeUIUberFrameHost)
-    return &NewWebUI<UberFrameUI>;
-  if (url.host() == chrome::kChromeUIUberHost)
-    return &NewWebUI<UberUI>;
   // chrome://flags is currently unsupported on Android.
+  // TODO(satish): Enable after http://crbug.com/143146 is fixed.
   if (url.host() == chrome::kChromeUIFlagsHost)
     return &NewWebUI<FlagsUI>;
+  // Flash is not available on android.
+  if (url.host() == chrome::kChromeUIFlashHost)
+    return &NewWebUI<FlashUI>;
+  // Help is implemented with native UI elements on Android.
+  if (url.host() == chrome::kChromeUIHelpFrameHost)
+    return &NewWebUI<HelpUI>;
   // chrome://inspect isn't supported on Android. Page debugging is handled by a
   // remote devtools on the host machine, and other elements (Shared Workers,
   // extensions, etc) aren't supported.
   if (url.host() == chrome::kChromeUIInspectHost)
     return &NewWebUI<InspectUI>;
-  // Android does not support plugins for now.
-  if (url.host() == chrome::kChromeUIPluginsHost)
-    return &NewWebUI<PluginsUI>;
   // Performance monitoring page is not on Android for now.
   if (url.host() == chrome::kChromeUIPerformanceMonitorHost)
     return &NewWebUI<performance_monitor::WebUI>;
-#endif
-#if defined(ENABLE_EXTENSIONS)
-  if (url.host() == chrome::kChromeUIExtensionsFrameHost)
-    return &NewWebUI<ExtensionsUI>;
-#endif
-#if defined(ENABLE_PRINTING)
-  if (url.host() == chrome::kChromeUIPrintHost &&
-      !profile->GetPrefs()->GetBoolean(prefs::kPrintPreviewDisabled))
-    return &NewWebUI<PrintPreviewUI>;
+  // Android does not support plugins for now.
+  if (url.host() == chrome::kChromeUIPluginsHost)
+    return &NewWebUI<PluginsUI>;
+  // Settings are implemented with native UI elements on Android.
+  if (url.host() == chrome::kChromeUISettingsFrameHost)
+    return &NewWebUI<options::OptionsUI>;
+  if (url.host() == chrome::kChromeUISuggestionsInternalsHost)
+    return &NewWebUI<SuggestionsInternalsUI>;
+  if (url.host() == chrome::kChromeUITracingHost)
+    return &NewWebUI<TracingUI>;
+  // Uber frame is not used on Android.
+  if (url.host() == chrome::kChromeUIUberFrameHost)
+    return &NewWebUI<UberFrameUI>;
+  // Uber page is not used on Android.
+  if (url.host() == chrome::kChromeUIUberHost)
+    return &NewWebUI<UberUI>;
 #endif
 #if defined(OS_WIN)
   if (url.host() == chrome::kChromeUIConflictsHost)
@@ -379,6 +381,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<AboutUI>;
   }
 
+#if defined(ENABLE_EXTENSIONS)
   if (url.host() == chrome::kChromeUIExtensionActivityHost &&
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExtensionActivityUI)) {
@@ -388,6 +391,14 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       extensions::switch_utils::AreScriptBadgesEnabled()) {
     return &NewWebUI<ExtensionInfoUI>;
   }
+  if (url.host() == chrome::kChromeUIExtensionsFrameHost)
+    return &NewWebUI<ExtensionsUI>;
+#endif
+#if defined(ENABLE_PRINTING)
+  if (url.host() == chrome::kChromeUIPrintHost &&
+      !profile->GetPrefs()->GetBoolean(prefs::kPrintPreviewDisabled))
+    return &NewWebUI<PrintPreviewUI>;
+#endif
 
   return NULL;
 }
@@ -480,7 +491,9 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
   // part of the manifest.
   if (url.SchemeIs(chrome::kExtensionScheme) &&
       url.host() != extension_misc::kBookmarkManagerId) {
+#if defined(ENABLE_EXTENSIONS)
     ExtensionWebUI::GetFaviconForURL(profile, request, url);
+#endif
   } else {
     std::vector<history::FaviconBitmapResult> favicon_bitmap_results;
     for (size_t i = 0; i < scale_factors.size(); ++i) {
@@ -533,6 +546,7 @@ ChromeWebUIControllerFactory::~ChromeWebUIControllerFactory() {
 
 base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
     const GURL& page_url, ui::ScaleFactor scale_factor) const {
+#if !defined(OS_ANDROID)  // Bookmarks are part of NTP on Android.
   // The bookmark manager is a chrome extension, so we have to check for it
   // before we check for extension scheme.
   if (page_url.host() == extension_misc::kBookmarkManagerId)
@@ -543,6 +557,7 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
     NOTREACHED();
     return NULL;
   }
+#endif
 
   if (!content::GetContentClient()->HasWebUIScheme(page_url))
     return NULL;
@@ -558,15 +573,17 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
   if (page_url.host() == chrome::kChromeUIHistoryHost)
     return HistoryUI::GetFaviconResourceBytes(scale_factor);
 
+#if !defined(OS_ANDROID)
+  // Flash is not available on android.
   if (page_url.host() == chrome::kChromeUIFlashHost)
     return FlashUI::GetFaviconResourceBytes(scale_factor);
 
-#if !defined(OS_ANDROID)
   // Android uses the native download manager.
   if (page_url.host() == chrome::kChromeUIDownloadsHost)
     return DownloadsUI::GetFaviconResourceBytes(scale_factor);
 
   // chrome://flags is currently unsupported on Android.
+  // TODO(satish): Enable after http://crbug.com/143146 is fixed.
   if (page_url.host() == chrome::kChromeUIFlagsHost)
     return FlagsUI::GetFaviconResourceBytes(scale_factor);
 
