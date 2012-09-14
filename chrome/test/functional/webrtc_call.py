@@ -84,7 +84,12 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
     self.AssertNoFailures(tab_index=1)
 
   def testSimpleWebrtcJsepCall(self):
+    """Uses a draft of the PeerConnection API, using JSEP00."""
     self._SimpleWebrtcCall('webrtc_jsep_test.html')
+
+  def testSimpleWebrtcJsep01Call(self):
+    """Uses a draft of the PeerConnection API, using JSEP01."""
+    self._SimpleWebrtcCall('webrtc_jsep01_test.html')
 
   def testLocalPreview(self):
     """Brings up a local preview and ensures video is playing.

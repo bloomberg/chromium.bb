@@ -53,7 +53,7 @@ var gRemotePeerId = null;
  * We need a STUN server for some API calls.
  * @private
  */
-var STUN_SERVER = 'STUN stun.l.google.com:19302';
+var STUN_SERVER = 'stun.l.google.com:19302';
 
 // Public interface to PyAuto test.
 

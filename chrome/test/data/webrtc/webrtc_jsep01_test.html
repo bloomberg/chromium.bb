@@ -1,0 +1,26 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+  <title>WebRTC PyAuto Test</title>
+  <script type="text/javascript" src="test_functions.js"></script>
+  <script type="text/javascript" src="message_handling.js"></script>
+  <script type="text/javascript" src="getusermedia.js"></script>
+  <script type="text/javascript" src="jsep01_call.js"></script>
+  <script type="text/javascript" src="video_detector.js"></script>
+</head>
+<body>
+  <table border="0">
+    <tr>
+      <td>Local Preview</td>
+      <td>Remote Video</td>
+    </tr>
+    <tr>
+      <td><video width="320" height="240" id="local-view"
+          autoplay="autoplay"></video></td>
+      <td><video width="320" height="240" id="remote-view"
+          autoplay="autoplay"></video></td>
+      <td><canvas id="frame-buffer" style="visibility:hidden"></canvas></td>
+    </tr>
+  </table>
+</body>
+</html>

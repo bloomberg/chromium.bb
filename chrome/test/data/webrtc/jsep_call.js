@@ -49,7 +49,8 @@ function handleMessage(peerConnection, message) {
 }
 
 function createPeerConnection(stun_server) {
-  peerConnection = new webkitPeerConnection00(stun_server, iceCallback_);
+  peerConnection = new webkitPeerConnection00('STUN ' + stun_server,
+                                              iceCallback_);
   peerConnection.onaddstream = addStreamCallback_;
   peerConnection.onremovestream = removeStreamCallback_;
   return peerConnection;
