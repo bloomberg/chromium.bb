@@ -5615,6 +5615,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_PNACL_DESCRIPTION" desc="Description of the 'Enable Portable Native Client' lab.">
         Enable support for Portable Native Client.
       </message>
+      <message name="IDS_FLAGS_ENABLE_SCRIPTED_SPEECH_NAME" desc="Name of the 'Enable Scripted Speech' lab.">
+        Speech JavaScript API.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_SCRIPTED_SPEECH_DESCRIPTION" desc="Description of the 'Enable Scripted Speech' lab.">
+        Enable support for speech recognition using the Speech JavaScript API.
+      </message>
       <message name="IDS_FLAGS_DOWNLOADS_NEW_UI_NAME" desc="Name of the 'New Downloads UI' lab.">
         New Downloads UI
       </message>
