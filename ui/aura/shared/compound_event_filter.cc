@@ -149,7 +149,7 @@ ui::TouchStatus CompoundEventFilter::FilterTouchEvent(
 }
 
 void CompoundEventFilter::SetCursorVisibilityOnEvent(aura::Window* target,
-                                                     ui::LocatedEvent* event,
+                                                     ui::Event* event,
                                                      bool show) {
   if (update_cursor_visibility_ && !(event->flags() & ui::EF_IS_SYNTHESIZED)) {
     client::CursorClient* client =
@@ -179,6 +179,8 @@ ui::TouchStatus CompoundEventFilter::PreHandleTouchEvent(
 // CompoundEventFilter, ui::EventHandler implementation:
 
 ui::EventResult CompoundEventFilter::OnKeyEvent(ui::KeyEvent* event) {
+  SetCursorVisibilityOnEvent(
+      static_cast<Window*>(event->target()), event, false);
   return FilterKeyEvent(event);
 }
 
