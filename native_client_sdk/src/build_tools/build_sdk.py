@@ -80,8 +80,6 @@ def GetNewlibToolchain(platform, arch):
 
 def GetPNaClToolchain(os_platform, arch):
   tcdir = os.path.join(NACL_DIR, 'toolchain', '.tars')
-  # Always use 32-bit binaries.
-  arch = 'x86_32'
   tcname = 'naclsdk_pnacl_%s_%s.tgz' % (os_platform, arch)
   return os.path.join(tcdir, tcname)
 
