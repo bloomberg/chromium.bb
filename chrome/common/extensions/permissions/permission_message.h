@@ -48,6 +48,7 @@ class PermissionMessage {
     kDownloads,
     kFileSystemWrite,
     kMediaGalleriesAllGalleries,
+    kSerial,
     kEnumBoundary
   };
 

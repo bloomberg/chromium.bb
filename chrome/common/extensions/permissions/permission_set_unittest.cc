@@ -10,8 +10,9 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
@@ -724,9 +725,10 @@ TEST(PermissionsTest, PermissionMessages) {
   // Warned as part of host permissions.
   skip.insert(APIPermission::kDevtools);
 
-  // Platform apps. TODO(miket): must we skip?
+  // Platform apps.
   skip.insert(APIPermission::kFileSystem);
-  skip.insert(APIPermission::kSerial);
+
+  // TODO(dharcourt): crbug.com/145022
   skip.insert(APIPermission::kSocket);
 
   PermissionsInfo* info = PermissionsInfo::GetInstance();
@@ -874,6 +876,20 @@ TEST(PermissionsTest, GetWarningMessages_AudioVideo) {
   EXPECT_FALSE(Contains(warnings, "Use your microphone"));
   EXPECT_FALSE(Contains(warnings, "Use your microphone and camera"));
   EXPECT_TRUE(Contains(warnings, "Use your camera"));
+}
+
+TEST(PermissionsTest, GetWarningMessages_Serial) {
+  extensions::Feature::ScopedCurrentChannel channel(
+      chrome::VersionInfo::CHANNEL_DEV);
+  scoped_refptr<Extension> extension =
+      LoadManifest("permissions", "serial.json");
+
+  EXPECT_TRUE(extension->is_platform_app());
+  EXPECT_TRUE(extension->HasAPIPermission(APIPermission::kSerial));
+  std::vector<string16> warnings = extension->GetPermissionMessageStrings();
+  EXPECT_TRUE(Contains(warnings,
+                       "Use serial devices attached to your computer"));
+  ASSERT_EQ(1u, warnings.size());
 }
 
 TEST(PermissionsTest, GetWarningMessages_PlatformApppHosts) {
