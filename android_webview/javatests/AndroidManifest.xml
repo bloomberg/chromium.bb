@@ -11,6 +11,8 @@
          needed when building test cases. -->
     <application>
         <uses-library android:name="android.test.runner" />
+        <provider android:name="TestContentProvider"
+            android:authorities="org.chromium.android_webview.tests.TestContentProvider" />
     </application>
     <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="14" />
     <instrumentation android:name="android.test.InstrumentationTestRunner"
