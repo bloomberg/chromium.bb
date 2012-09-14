@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "chrome/browser/extensions/app_host/binaries_installer.h"
+#include "chrome/browser/extensions/app_host/update.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
 
 int main(int /* argc */, char* /* argv[] */) {
@@ -17,7 +18,6 @@ int main(int /* argc */, char* /* argv[] */) {
   CommandLine::Init(0, NULL);
 
   FilePath chrome_exe(chrome_launcher_support::GetAnyChromePath());
-
   if (chrome_exe.empty()) {
     LOG(INFO) << "No Chrome executable could be found. Let's install it.";
     HRESULT hr = app_host::InstallBinaries();
@@ -37,14 +37,15 @@ int main(int /* argc */, char* /* argv[] */) {
   CommandLine chrome_exe_command_line(chrome_exe);
   chrome_exe_command_line.AppendArguments(
       *CommandLine::ForCurrentProcess(), false);
-
-  if (base::LaunchProcess(chrome_exe_command_line,
-                          base::LaunchOptions(),
-                          NULL)) {
+  // Launch Chrome before checking for update, for faster user experience.
+  bool launch_result = base::LaunchProcess(chrome_exe_command_line,
+                                           base::LaunchOptions(), NULL);
+  if (launch_result)
     LOG(INFO) << "Delegated to Chrome executable at " << chrome_exe.value();
-    return 0;
-  } else {
+  else
     LOG(INFO) << "Failed to launch Chrome executable at " << chrome_exe.value();
-    return 1;
-  }
+
+  app_host::EnsureAppHostUpToDate();
+
+  return !launch_result;
 }
