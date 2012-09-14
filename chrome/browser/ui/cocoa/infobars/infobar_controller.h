@@ -7,7 +7,6 @@
 #include "base/memory/scoped_nsobject.h"
 
 @class AnimatableView;
-@class HoverCloseButton;
 @protocol InfoBarContainer;
 class InfoBarDelegate;
 class InfoBarService;
@@ -29,7 +28,7 @@ class InfoBarService;
   IBOutlet NSTextField* labelPlaceholder_;
   IBOutlet NSButton* okButton_;
   IBOutlet NSButton* cancelButton_;
-  IBOutlet HoverCloseButton* closeButton_;
+  IBOutlet NSButton* closeButton_;
 
   // In rare instances, it can be possible for |delegate_| to delete itself
   // while this controller is still alive.  Always check |delegate_| against

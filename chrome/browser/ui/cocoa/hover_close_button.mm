@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,19 +8,13 @@
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/animation_utils.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMKeyValueAnimation.h"
-#import "third_party/molokocacao/NSBezierPath+MCAdditions.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace  {
-const CGFloat kButtonWidth = 16;
 const CGFloat kFramesPerSecond = 16; // Determined experimentally to look good.
-const CGFloat kCircleRadius = 0.415 * kButtonWidth;
-const CGFloat kCircleHoverWhite = 0.565;
-const CGFloat kCircleClickWhite = 0.396;
-const CGFloat kXShadowAlpha = 0.75;
-const CGFloat kXShadowCircleAlpha = 0.1;
 const CGFloat kCloseAnimationDuration = 0.1;
 
 // Images that are used for all close buttons. Set up in +initialize.
@@ -45,64 +39,18 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
 // Called by |fadeOutAnimation_| when animated value changes.
 - (void)setFadeOutValue:(CGFloat)value;
 
-// Returns an autoreleased NSImage of the close button in a given state.
-+ (NSImage*)imageForBounds:(NSRect)bounds
-                     xPath:(NSBezierPath*)xPath
-                circlePath:(NSBezierPath*)circlePath
-                hoverState:(HoverState)hoverState;
-
-+ (NSBitmapImageRep*)imageRepForBounds:(NSRect)bounds
-                                 scale:(float)scale
-                                 xPath:(NSBezierPath*)xPath
-                            circlePath:(NSBezierPath*)circlePath
-                            hoverState:(HoverState)hoverState;
 @end
 
 @implementation HoverCloseButton
 
 + (void)initialize {
   if ([self class] == [HoverCloseButton class]) {
-    // Set up the paths for our images. They are centered around the origin.
-    NSRect bounds = NSMakeRect(0, 0, kButtonWidth, kButtonWidth);
-    NSBezierPath* circlePath = [NSBezierPath bezierPath];
-    [circlePath appendBezierPathWithArcWithCenter:NSZeroPoint
-                                           radius:kCircleRadius
-                                       startAngle:0.0
-                                         endAngle:365.0];
-
-    // Construct an 'x' by drawing two intersecting rectangles in the shape of a
-    // cross and then rotating the path by 45 degrees.
-    NSBezierPath* xPath = [NSBezierPath bezierPath];
-    [xPath appendBezierPathWithRect:NSMakeRect(-4.5, -1.0, 9.0, 2.0)];
-    [xPath appendBezierPathWithRect:NSMakeRect(-1.0, -4.5, 2.0, 9.0)];
-
-    NSAffineTransform* transform = [NSAffineTransform transform];
-    [transform rotateByDegrees:45.0];
-    [xPath transformUsingAffineTransform:transform];
-
-    // Move the paths into the center of the given bounds rectangle.
-    transform = [NSAffineTransform transform];
-    NSPoint xCenter = NSMakePoint(NSWidth(bounds) / 2.0,
-                                  NSHeight(bounds) / 2.0);
-    [transform translateXBy:xCenter.x yBy:xCenter.y];
-    [circlePath transformUsingAffineTransform:transform];
-    [xPath transformUsingAffineTransform:transform];
-
-    NSImage* image = [self imageForBounds:bounds
-                                    xPath:xPath
-                               circlePath:circlePath
-                               hoverState:kHoverStateNone];
-    gHoverNoneImage = [image retain];
-    image = [self imageForBounds:bounds
-                           xPath:xPath
-                      circlePath:circlePath
-                      hoverState:kHoverStateMouseOver];
-    gHoverMouseOverImage = [image retain];
-    image = [self imageForBounds:bounds
-                           xPath:xPath
-                      circlePath:circlePath
-                      hoverState:kHoverStateMouseDown];
-    gHoverMouseDownImage = [image retain];
+    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+    gHoverNoneImage = bundle.GetNativeImageNamed(IDR_TAB_CLOSE).ToNSImage();
+    gHoverMouseOverImage =
+        bundle.GetNativeImageNamed(IDR_TAB_CLOSE_H).ToNSImage();
+    gHoverMouseDownImage =
+        bundle.GetNativeImageNamed(IDR_TAB_CLOSE_P).ToNSImage();
 
     // Grab some strings that are used by all close buttons.
     gDescription = [l10n_util::GetNSStringWithFixup(IDS_ACCNAME_CLOSE) copy];
@@ -248,76 +196,6 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
   }
 
   return nil;  // Do not show the tooltip.
-}
-
-+ (NSImage*)imageForBounds:(NSRect)bounds
-                     xPath:(NSBezierPath*)xPath
-                circlePath:(NSBezierPath*)circlePath
-                hoverState:(HoverState)hoverState {
-  NSImage* image = [[[NSImage alloc] initWithSize:bounds.size] autorelease];
-  for (int scale = 1; scale <= 2; ++scale) {
-    [image addRepresentation:
-        [self imageRepForBounds:bounds
-                          scale:scale
-                          xPath:xPath
-                     circlePath:circlePath
-                     hoverState:hoverState]];
-  }
-  return image;
-}
-
-+ (NSBitmapImageRep*)imageRepForBounds:(NSRect)bounds
-                                 scale:(float)scale
-                                 xPath:(NSBezierPath*)xPath
-                            circlePath:(NSBezierPath*)circlePath
-                            hoverState:(HoverState)hoverState {
-  gfx::ScopedNSGraphicsContextSaveGState graphicsStateSaver;
-
-  NSBitmapImageRep* imageRep =
-      [[[NSBitmapImageRep alloc]
-        initWithBitmapDataPlanes:NULL
-                      pixelsWide:NSWidth(bounds) * scale
-                      pixelsHigh:NSHeight(bounds) * scale
-                   bitsPerSample:8
-                 samplesPerPixel:4
-                        hasAlpha:YES
-                        isPlanar:NO
-                  colorSpaceName:NSCalibratedRGBColorSpace
-                    bitmapFormat:0
-                     bytesPerRow:0
-                    bitsPerPixel:0] autorelease];
-  [imageRep setSize:bounds.size];
-  NSGraphicsContext* gc =
-      [NSGraphicsContext graphicsContextWithBitmapImageRep:imageRep];
-  [NSGraphicsContext setCurrentContext:gc];
-
-  [[NSColor clearColor] set];
-  NSRectFill(bounds);
-
-  // If the user is hovering over the button, a light/dark gray circle is drawn
-  // behind the 'x'.
-  if (hoverState != kHoverStateNone) {
-    // Adjust the darkness of the circle depending on whether it is being
-    // clicked.
-    CGFloat white = (hoverState == kHoverStateMouseOver) ?
-        kCircleHoverWhite : kCircleClickWhite;
-    [[NSColor colorWithCalibratedWhite:white alpha:1.0] set];
-    [circlePath fill];
-  }
-
-  [[NSColor whiteColor] set];
-  [xPath fill];
-
-  // Give the 'x' an inner shadow for depth. If the button is in a hover state
-  // (circle behind it), then adjust the shadow accordingly (not as harsh).
-  NSShadow* shadow = [[[NSShadow alloc] init] autorelease];
-  CGFloat alpha = (hoverState != kHoverStateNone) ?
-      kXShadowCircleAlpha : kXShadowAlpha;
-  [shadow setShadowColor:[NSColor colorWithCalibratedWhite:0.15 alpha:alpha]];
-  [shadow setShadowOffset:NSMakeSize(0.0, 0.0)];
-  [shadow setShadowBlurRadius:2.5];
-  [xPath fillWithInnerShadow:shadow];
-  return imageRep;
 }
 
 @end

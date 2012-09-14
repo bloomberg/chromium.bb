@@ -26,6 +26,7 @@ class FindNotificationDetails;
   IBOutlet FindBarTextField* findText_;
   IBOutlet NSButton* nextButton_;
   IBOutlet NSButton* previousButton_;
+  IBOutlet NSButton* closeButton_;
 
   // Needed to call methods on FindBarController.
   FindBarBridge* findBarBridge_;  // weak

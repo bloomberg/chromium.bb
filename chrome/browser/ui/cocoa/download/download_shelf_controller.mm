@@ -66,7 +66,7 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
 const NSTimeInterval kAutoCloseDelaySeconds = 5;
 
 // The size of the x button by default.
-const NSSize kHoverCloseButtonDefaultSize = { 16, 16 };
+const NSSize kHoverCloseButtonDefaultSize = { 18, 18 };
 
 }  // namespace
 

@@ -7,11 +7,13 @@
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
+#include "grit/ui_resources.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_text_field.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_text_field_cell.h"
+#import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
@@ -93,6 +95,15 @@ const float kRightEdgeOffset = 25;
 }
 
 - (void)awakeFromNib {
+  [[closeButton_ cell] setImageID:IDR_CLOSE_BAR
+                   forButtonState:image_button_cell::kDefaultState];
+  [[closeButton_ cell] setImageID:IDR_CLOSE_BAR_H
+                   forButtonState:image_button_cell::kHoverState];
+  [[closeButton_ cell] setImageID:IDR_CLOSE_BAR_P
+                   forButtonState:image_button_cell::kPressedState];
+  [[closeButton_ cell] setImageID:IDR_CLOSE_BAR
+                   forButtonState:image_button_cell::kDisabledState];
+
   [findBarView_ setFrame:[self hiddenFindBarFrame]];
   defaultWidth_ = NSWidth([findBarView_ frame]);
 
