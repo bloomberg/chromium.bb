@@ -88,6 +88,15 @@ class FileSystemFileUtilProxy {
       const FileSystemURL& dest_url,
       const StatusCallback& callback);
 
+  // Copies a file from local disk to the given filesystem destination.
+  // Primarily used for the Syncable filesystem type (e.g. GDrive).
+  static bool CopyInForeignFile(
+      FileSystemOperationContext* context,
+      FileSystemFileUtil* dest_util,
+      const FilePath& src_local_disk_file_path,
+      const FileSystemURL& dest_url,
+      const StatusCallback& callback);
+
   // Moves a file or a directory from |src_url| to |dest_url| by calling
   // FileSystemFileUtil's following methods on the given context's
   // task_runner.

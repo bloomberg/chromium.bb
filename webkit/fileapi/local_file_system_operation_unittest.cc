@@ -786,7 +786,6 @@ TEST_F(LocalFileSystemOperationTest, TestCopySuccessSrcDirRecursive) {
       CreateUniqueFileInDir(child_dir_path));
 
   FilePath dest_dir_path(CreateUniqueDir());
-
   operation()->Copy(URLForPath(src_dir_path), URLForPath(dest_dir_path),
                     RecordStatusCallback());
   MessageLoop::current()->RunAllPending();
@@ -802,6 +801,65 @@ TEST_F(LocalFileSystemOperationTest, TestCopySuccessSrcDirRecursive) {
   EXPECT_EQ(1, change_observer()->get_and_reset_remove_directory_count());
   EXPECT_EQ(1, change_observer()->get_and_reset_create_file_from_count());
   EXPECT_TRUE(change_observer()->HasNoChange());
+}
+
+TEST_F(LocalFileSystemOperationTest, TestCopyInForeignFileSuccess) {
+  FilePath src_local_disk_file_path;
+  file_util::CreateTemporaryFile(&src_local_disk_file_path);
+  const char test_data[] = "foo";
+  int data_size = ARRAYSIZE_UNSAFE(test_data);
+  file_util::WriteFile(src_local_disk_file_path, test_data, data_size);
+  FilePath dest_dir_path(CreateUniqueDir());
+  FilePath dest_file_path(dest_dir_path.Append(
+      src_local_disk_file_path.BaseName()));
+  FileSystemURL dest_file_url = URLForPath(dest_file_path);
+  int64 before_usage;
+  GetUsageAndQuota(&before_usage, NULL);
+
+  // Check that the file copied and corresponding usage increased.
+  operation()->CopyInForeignFile(src_local_disk_file_path,
+                                 dest_file_url,
+                                 RecordStatusCallback());
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(1, change_observer()->create_file_count());
+  EXPECT_EQ(base::PLATFORM_FILE_OK, status());
+  EXPECT_TRUE(FileExists(dest_file_path));
+  int64 after_usage;
+  GetUsageAndQuota(&after_usage, NULL);
+  EXPECT_GT(after_usage, before_usage);
+
+  // Compare contents of src and copied file.
+  char buffer[100];
+  EXPECT_EQ(data_size, file_util::ReadFile(PlatformPath(dest_file_path),
+                                           buffer, data_size));
+  for (int i = 0; i < data_size; ++i)
+    EXPECT_EQ(test_data[i], buffer[i]);
+}
+
+TEST_F(LocalFileSystemOperationTest, TestCopyInForeignFileFailureByQuota) {
+  FilePath src_local_disk_file_path;
+  file_util::CreateTemporaryFile(&src_local_disk_file_path);
+  const char test_data[] = "foo";
+  file_util::WriteFile(src_local_disk_file_path, test_data,
+                       ARRAYSIZE_UNSAFE(test_data));
+
+  FilePath dest_dir_path(CreateUniqueDir());
+  FilePath dest_file_path(dest_dir_path.Append(
+      src_local_disk_file_path.BaseName()));
+  FileSystemURL dest_file_url = URLForPath(dest_file_path);
+
+  // Set quota of 0 which should force copy to fail by quota.
+  quota_manager_proxy()->SetQuota(dest_file_url.origin(),
+                                  test_helper_.storage_type(),
+                                  static_cast<int64>(0));
+  operation()->CopyInForeignFile(src_local_disk_file_path,
+                                 dest_file_url,
+                                 RecordStatusCallback());
+  MessageLoop::current()->RunAllPending();
+
+  EXPECT_TRUE(!FileExists(dest_file_path));
+  EXPECT_EQ(0, change_observer()->create_file_count());
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE, status());
 }
 
 TEST_F(LocalFileSystemOperationTest, TestCreateFileFailure) {

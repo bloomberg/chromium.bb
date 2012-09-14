@@ -60,6 +60,9 @@ class FILEAPI_EXPORT LocalFileSystemOperation
   virtual void Copy(const FileSystemURL& src_url,
                     const FileSystemURL& dest_url,
                     const StatusCallback& callback) OVERRIDE;
+  virtual void CopyInForeignFile(const FilePath& src_local_disk_path,
+                                 const FileSystemURL& dest_url,
+                                 const StatusCallback& callback);
   virtual void Move(const FileSystemURL& src_url,
                     const FileSystemURL& dest_url,
                     const StatusCallback& callback) OVERRIDE;
@@ -170,6 +173,9 @@ class FILEAPI_EXPORT LocalFileSystemOperation
   void DoCopy(const FileSystemURL& src,
               const FileSystemURL& dest,
               const StatusCallback& callback);
+  void DoCopyInForeignFile(const FilePath& src_local_disk_file_path,
+                           const FileSystemURL& dest,
+                           const StatusCallback& callback);
   void DoMove(const FileSystemURL& src,
               const FileSystemURL& dest,
               const StatusCallback& callback);

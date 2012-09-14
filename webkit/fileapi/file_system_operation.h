@@ -259,6 +259,7 @@ class FileSystemOperation {
     kOperationCreateDirectory,
     kOperationCreateSnapshotFile,
     kOperationCopy,
+    kOperationCopyInForeignFile,
     kOperationMove,
     kOperationDirectoryExists,
     kOperationFileExists,

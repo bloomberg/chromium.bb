@@ -138,6 +138,28 @@ void LocalFileSystemOperation::Copy(const FileSystemURL& src_url,
       base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
 }
 
+void LocalFileSystemOperation::CopyInForeignFile(
+    const FilePath& src_local_disk_file_path,
+    const FileSystemURL& dest_url,
+    const StatusCallback& callback) {
+  DCHECK(SetPendingOperationType(kOperationCopyInForeignFile));
+
+  base::PlatformFileError result = SetUp(
+      dest_url, &dest_util_, SETUP_FOR_CREATE);
+  if (result != base::PLATFORM_FILE_OK) {
+    callback.Run(result);
+    delete this;
+    return;
+  }
+
+  GetUsageAndQuotaThenRunTask(
+      dest_url,
+      base::Bind(&LocalFileSystemOperation::DoCopyInForeignFile,
+                 base::Unretained(this), src_local_disk_file_path, dest_url,
+                 callback),
+      base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED));
+}
+
 void LocalFileSystemOperation::Move(const FileSystemURL& src_url,
                                     const FileSystemURL& dest_url,
                                     const StatusCallback& callback) {
@@ -543,6 +565,18 @@ void LocalFileSystemOperation::DoCopy(const FileSystemURL& src_url,
       operation_context_.get(),
       src_util_, dest_util_,
       src_url, dest_url,
+      base::Bind(&LocalFileSystemOperation::DidFinishFileOperation,
+                 base::Owned(this), callback));
+}
+
+void LocalFileSystemOperation::DoCopyInForeignFile(
+    const FilePath& src_local_disk_file_path,
+    const FileSystemURL& dest_url,
+    const StatusCallback& callback) {
+  FileSystemFileUtilProxy::CopyInForeignFile(
+      operation_context_.get(),
+      dest_util_,
+      src_local_disk_file_path, dest_url,
       base::Bind(&LocalFileSystemOperation::DidFinishFileOperation,
                  base::Owned(this), callback));
 }

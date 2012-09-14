@@ -88,9 +88,9 @@ class FILEAPI_EXPORT_PRIVATE LocalFileUtil : public FileSystemFileUtil {
       const FileSystemURL& dest_url,
       bool copy) OVERRIDE;
   virtual PlatformFileError CopyInForeignFile(
-        FileSystemOperationContext* context,
-        const FilePath& src_file_path,
-        const FileSystemURL& dest_url) OVERRIDE;
+      FileSystemOperationContext* context,
+      const FilePath& src_file_path,
+      const FileSystemURL& dest_url) OVERRIDE;
   virtual PlatformFileError DeleteFile(
       FileSystemOperationContext* context,
       const FileSystemURL& url) OVERRIDE;

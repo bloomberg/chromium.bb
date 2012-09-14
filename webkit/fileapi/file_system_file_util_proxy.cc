@@ -151,6 +151,20 @@ bool FileSystemFileUtilProxy::Copy(
 }
 
 // static
+bool FileSystemFileUtilProxy::CopyInForeignFile(
+    FileSystemOperationContext* context,
+    FileSystemFileUtil* dest_util,
+    const FilePath& src_local_disk_file_path,
+    const FileSystemURL& dest_url,
+    const StatusCallback& callback) {
+  return base::FileUtilProxy::RelayFileTask(
+      context->task_runner(), FROM_HERE,
+      Bind(&FileSystemFileUtil::CopyInForeignFile, Unretained(dest_util),
+           context, src_local_disk_file_path, dest_url),
+      callback);
+}
+
+// static
 bool FileSystemFileUtilProxy::Move(
     FileSystemOperationContext* context,
       FileSystemFileUtil* src_util,
