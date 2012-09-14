@@ -23,6 +23,7 @@ _EXCLUDED_PATHS = (
     r".*MakeFile$",
     r".+_autogen\.h$",
     r"^cc[\\\/].*",
+    r"^webkit[\\\/]compositor_bindings[\\\/].*",
     r".+[\\\/]pnacl_shim\.c$",
 )
 
