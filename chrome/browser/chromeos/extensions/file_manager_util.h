@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/file_path.h"
-#include "chrome/browser/google_apis/operation_registry.h"
+#include "chrome/browser/chromeos/gdata/drive_service_interface.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/dialogs/select_file_dialog.h"
 
@@ -91,7 +91,7 @@ bool ShouldBeOpenedWithPdfPlugin(Profile* profile, const char* file_extension);
 // Converts the vector of progress status to their JSON (Value) form.
 base::ListValue* ProgressStatusVectorToListValue(
     Profile* profile, const GURL& origin_url,
-    const std::vector<gdata::OperationRegistry::ProgressStatus>& list);
+    const gdata::OperationProgressStatusList& list);
 
 }  // namespace file_manager_util
 

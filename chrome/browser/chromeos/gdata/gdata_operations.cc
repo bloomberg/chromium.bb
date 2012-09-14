@@ -294,7 +294,7 @@ DownloadFileOperation::DownloadFileOperation(
     const FilePath& virtual_path,
     const FilePath& output_file_path)
     : UrlFetchOperationBase(registry,
-                            OperationRegistry::OPERATION_DOWNLOAD,
+                            OPERATION_DOWNLOAD,
                             virtual_path),
       download_action_callback_(download_action_callback),
       get_content_callback_(get_content_callback),
@@ -690,7 +690,7 @@ InitiateUploadOperation::InitiateUploadOperation(
     const InitiateUploadCallback& callback,
     const InitiateUploadParams& params)
     : UrlFetchOperationBase(registry,
-                            OperationRegistry::OPERATION_UPLOAD,
+                            OPERATION_UPLOAD,
                             params.virtual_path),
       callback_(callback),
       params_(params),
@@ -795,7 +795,7 @@ ResumeUploadOperation::ResumeUploadOperation(
     const ResumeUploadCallback& callback,
     const ResumeUploadParams& params)
   : UrlFetchOperationBase(registry,
-                          OperationRegistry::OPERATION_UPLOAD,
+                          OPERATION_UPLOAD,
                           params.virtual_path),
       callback_(callback),
       params_(params),
@@ -879,7 +879,7 @@ void ResumeUploadOperation::NotifyStartToOperationRegistry() {
 
 void ResumeUploadOperation::NotifySuccessToOperationRegistry() {
   if (last_chunk_completed_)
-    NotifyFinish(OperationRegistry::OPERATION_COMPLETED);
+    NotifyFinish(OPERATION_COMPLETED);
   else
     NotifySuspend();
 }
