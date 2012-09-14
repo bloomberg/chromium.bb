@@ -372,7 +372,7 @@ void ExternalProviderImpl::CreateExternalProviders(
               Extension::NO_FLAGS)));
 #endif
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
   provider_list->push_back(
       linked_ptr<ExternalProviderInterface>(
           new ExternalProviderImpl(
@@ -381,7 +381,7 @@ void ExternalProviderImpl::CreateExternalProviders(
                                      ExternalPrefLoader::NONE),
               Extension::EXTERNAL_PREF,
               Extension::EXTERNAL_PREF_DOWNLOAD,
-              Extension::NO_FLAGS)));
+              bundled_extension_creation_flags)));
 #endif
 
   provider_list->push_back(
