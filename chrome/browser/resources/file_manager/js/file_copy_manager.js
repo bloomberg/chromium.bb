@@ -683,8 +683,7 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
 
   function onCopyProgress(entry, size) {
     task.updateFileCopyProgress(entry, size);
-    if (task.pendingBytes > 0)
-      self.sendProgressEvent_('PROGRESS');
+    self.sendProgressEvent_('PROGRESS');
   }
 
   function onError(reason, data) {
@@ -851,6 +850,8 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
 
       self.cancelCallback_ = function() {
         self.cancelCallback_ = null;
+        chrome.fileBrowserPrivate.onFileTransfersUpdated.removeListener(
+            onFileTransfersUpdated);
         chrome.fileBrowserPrivate.cancelFileTransfers([sourceFileUrl],
                                                       function() {});
         self.doCancel_();
