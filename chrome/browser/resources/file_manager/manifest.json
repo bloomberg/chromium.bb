@@ -135,15 +135,36 @@
       ]
     },
     {
-      "id": "open-hosted",
+      "id": "open-hosted-generic",
       "default_title": "__MSG_HOSTED__",
       "default_icon": "images/filetype_generic.png",
       "file_filters": [
-        "filesystem:*.gdoc",
-        "filesystem:*.gsheet",
-        "filesystem:*.gslides",
         "filesystem:*.gdraw",
         "filesystem:*.gtable"
+      ]
+    },
+    {
+      "id": "open-hosted-gdoc",
+      "default_title": "__MSG_HOSTED__",
+      "default_icon": "images/filetype_generic.png",
+      "file_filters": [
+        "filesystem:*.gdoc"
+      ]
+    },
+    {
+      "id": "open-hosted-gsheet",
+      "default_title": "__MSG_HOSTED__",
+      "default_icon": "images/filetype_generic.png",
+      "file_filters": [
+        "filesystem:*.gsheet"
+      ]
+    },
+    {
+      "id": "open-hosted-gslides",
+      "default_title": "__MSG_HOSTED__",
+      "default_icon": "images/filetype_generic.png",
+      "file_filters": [
+        "filesystem:*.gslides"
       ]
     }
   ],

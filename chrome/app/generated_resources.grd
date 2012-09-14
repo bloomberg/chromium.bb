@@ -11590,6 +11590,15 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_ACTION_OPEN" desc="Title of the action to open (and possibly edit) a file.">
         Open
       </message>
+      <message name="IDS_FILE_BROWSER_ACTION_OPEN_GDOC" desc="Title of the action to open a Google Docs document.">
+        Docs
+      </message>
+      <message name="IDS_FILE_BROWSER_ACTION_OPEN_GSHEET" desc="Title of the action to open a Google Spreadsheets document.">
+        Sheets
+      </message>
+      <message name="IDS_FILE_BROWSER_ACTION_OPEN_GSLIDES" desc="Title of the action to open a Google Slides document.">
+        Slides
+      </message>
       <message name="IDS_FILE_BROWSER_ACTION_WATCH" desc="Title of the action to watch a video.">
         Watch
       </message>

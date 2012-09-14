@@ -101,12 +101,21 @@ FileTasks.prototype.processTasks_ = function(tasks) {
       } else if (task_parts[1] == 'watch') {
         task.iconType = 'video';
         task.title = loadTimeData.getString('ACTION_WATCH');
-      } else if (task_parts[1] == 'open-hosted') {
+      } else if (task_parts[1] == 'open-hosted-generic') {
         if (this.urls_.length > 1)
           task.iconType = 'generic';
         else // Use specific icon.
           task.iconType = FileType.getIcon(this.urls_[0]);
         task.title = loadTimeData.getString('ACTION_OPEN');
+      } else if (task_parts[1] == 'open-hosted-gdoc') {
+        task.iconType = 'gdoc';
+        task.title = loadTimeData.getString('ACTION_OPEN_GDOC');
+      } else if (task_parts[1] == 'open-hosted-gsheet') {
+        task.iconType = 'gsheet';
+        task.title = loadTimeData.getString('ACTION_OPEN_GSHEET');
+      } else if (task_parts[1] == 'open-hosted-gslides') {
+        task.iconType = 'gslides';
+        task.title = loadTimeData.getString('ACTION_OPEN_GSLIDES');
       } else if (task_parts[1] == 'view-pdf') {
         // Do not render this task if disabled.
         if (!loadTimeData.getBoolean('PDF_VIEW_ENABLED'))
@@ -298,7 +307,7 @@ FileTasks.prototype.executeInternalTask_ = function(id, urls) {
   }
 
   if (id == 'view-pdf' || id == 'view-in-browser' ||
-      id == 'install-crx' || id == 'open-hosted' || id == 'watch') {
+      id == 'install-crx' || id.match(/^open-hosted-/) || id == 'watch') {
     chrome.fileBrowserPrivate.viewFiles(urls, id, function(success) {
       if (!success)
         console.error('chrome.fileBrowserPrivate.viewFiles failed', urls);
