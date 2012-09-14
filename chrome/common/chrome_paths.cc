@@ -167,8 +167,16 @@ bool PathProvider(int key, FilePath* result) {
         return false;
       create_dir = true;
       break;
+    case chrome::DIR_USER_MUSIC:
+      if (!GetUserMusicDirectory(&cur))
+        return false;
+      break;
     case chrome::DIR_USER_PICTURES:
       if (!GetUserPicturesDirectory(&cur))
+        return false;
+      break;
+    case chrome::DIR_USER_VIDEOS:
+      if (!GetUserVideosDirectory(&cur))
         return false;
       break;
     case chrome::DIR_DEFAULT_DOWNLOADS_SAFE:

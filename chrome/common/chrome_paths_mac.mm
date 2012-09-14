@@ -135,8 +135,16 @@ bool GetUserDownloadsDirectory(FilePath* result) {
   return base::mac::GetUserDirectory(NSDownloadsDirectory, result);
 }
 
+bool GetUserMusicDirectory(FilePath* result) {
+  return base::mac::GetUserDirectory(NSMusicDirectory, result);
+}
+
 bool GetUserPicturesDirectory(FilePath* result) {
   return base::mac::GetUserDirectory(NSPicturesDirectory, result);
+}
+
+bool GetUserVideosDirectory(FilePath* result) {
+  return base::mac::GetUserDirectory(NSMoviesDirectory, result);
 }
 
 bool GetUserDesktop(FilePath* result) {

@@ -10,19 +10,45 @@
 #include "base/nix/xdg_util.h"
 #include "base/path_service.h"
 
-namespace {
-
-const char kDownloadsDir[] = "Downloads";
-const char kPicturesDir[] = "Pictures";
-
-}  // namespace
-
 namespace chrome {
 
 using base::nix::GetXDGDirectory;
 using base::nix::GetXDGUserDirectory;
 using base::nix::kDotConfigDir;
 using base::nix::kXdgConfigHomeEnvVar;
+
+namespace {
+
+const char kDownloadsDir[] = "Downloads";
+const char kMusicDir[] = "Music";
+const char kPicturesDir[] = "Pictures";
+const char kVideosDir[] = "Videos";
+
+// Generic function for GetUser{Music,Pictures,Video}Directory.
+bool GetUserMediaDirectory(const std::string& xdg_name,
+                           const std::string& fallback_name,
+                           FilePath* result) {
+#if defined(OS_CHROMEOS)
+  // No local media directories on CrOS.
+  return false;
+#else
+  *result = GetXDGUserDirectory(xdg_name.c_str(), fallback_name.c_str());
+
+  FilePath home = file_util::GetHomeDir();
+  if (*result != home) {
+    FilePath desktop;
+    GetUserDesktop(&desktop);
+    if (*result != desktop) {
+      return true;
+    }
+  }
+
+  *result = home.Append(fallback_name);
+  return true;
+#endif
+}
+
+}  // namespace
 
 // See http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
 // for a spec on where config files go.  The net effect for most
@@ -99,26 +125,21 @@ bool GetUserDownloadsDirectory(FilePath* result) {
 }
 
 // We respect the user's preferred pictures location, unless it is
+// ~ or their desktop directory, in which case we default to ~/Music.
+bool GetUserMusicDirectory(FilePath* result) {
+  return GetUserMediaDirectory("MUSIC", kMusicDir, result);
+}
+
+// We respect the user's preferred pictures location, unless it is
 // ~ or their desktop directory, in which case we default to ~/Pictures.
 bool GetUserPicturesDirectory(FilePath* result) {
-#if defined(OS_CHROMEOS)
-  // No local Pictures directory on CrOS.
-  return false;
-#else
-  *result = GetXDGUserDirectory("PICTURES", kPicturesDir);
+  return GetUserMediaDirectory("PICTURES", kPicturesDir, result);
+}
 
-  FilePath home = file_util::GetHomeDir();
-  if (*result != home) {
-    FilePath desktop;
-    GetUserDesktop(&desktop);
-    if (*result != desktop) {
-      return true;
-    }
-  }
-
-  *result = home.Append(kPicturesDir);
-  return true;
-#endif
+// We respect the user's preferred pictures location, unless it is
+// ~ or their desktop directory, in which case we default to ~/Videos.
+bool GetUserVideosDirectory(FilePath* result) {
+  return GetUserMediaDirectory("VIDEOS", kVideosDir, result);
 }
 
 bool GetUserDesktop(FilePath* result) {

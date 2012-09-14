@@ -33,7 +33,17 @@ bool GetUserDownloadsDirectory(FilePath* result) {
   return true;
 }
 
+bool GetUserMusicDirectory(FilePath* result) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 bool GetUserPicturesDirectory(FilePath* result) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool GetUserVideosDirectory(FilePath* result) {
   NOTIMPLEMENTED();
   return false;
 }
