@@ -569,10 +569,13 @@ void ChromeBrowserFieldTrials::SetUpInfiniteCacheFieldTrial() {
   const base::FieldTrial::Probability kDivisor = 100;
 
 #if (defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_IOS))
-  const base::FieldTrial::Probability kInfiniteCacheProbability = 0;
+  base::FieldTrial::Probability kInfiniteCacheProbability = 0;
 #else
-  const base::FieldTrial::Probability kInfiniteCacheProbability = 1;
+  base::FieldTrial::Probability kInfiniteCacheProbability = 1;
 #endif
+
+  if (parsed_command_line_.HasSwitch(switches::kDisableInfiniteCache))
+    kInfiniteCacheProbability = 0;
 
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial("InfiniteCache", kDivisor,

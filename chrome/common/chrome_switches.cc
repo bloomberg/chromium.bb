@@ -328,6 +328,9 @@ const char kDisableImprovedDownloadProtection[] =
 // need to update thumbnails.
 const char kDisableInBrowserThumbnailing[]  = "disable-in-browser-thumbnailing";
 
+// Disable the Infinite Cache.
+const char kDisableInfiniteCache[]          = "disable-infinite-cache";
+
 // Disable the internal Flash Player.
 const char kDisableInternalFlash[]          = "disable-internal-flash";
 
