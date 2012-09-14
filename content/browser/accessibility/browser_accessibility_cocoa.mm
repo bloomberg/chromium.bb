@@ -145,11 +145,11 @@ RoleMap BuildRoleMap() {
     // TODO(dtseng): we don't correctly support the attributes for these roles.
     // { AccessibilityNodeData::ROLE_SCROLLAREA,
     //    NSAccessibilityScrollAreaRole },
-    // { AccessibilityNodeData::ROLE_SCROLLBAR, NSAccessibilityScrollBarRole },
+    { AccessibilityNodeData::ROLE_SCROLLBAR, NSAccessibilityScrollBarRole },
     { AccessibilityNodeData::ROLE_SHEET, NSAccessibilitySheetRole },
     { AccessibilityNodeData::ROLE_SLIDER, NSAccessibilitySliderRole },
     { AccessibilityNodeData::ROLE_SLIDER_THUMB, NSAccessibilityGroupRole },
-    { AccessibilityNodeData::ROLE_SPIN_BUTTON, NSAccessibilityTextFieldRole },
+    { AccessibilityNodeData::ROLE_SPIN_BUTTON, NSAccessibilitySliderRole },
     { AccessibilityNodeData::ROLE_SPLITTER, NSAccessibilitySplitterRole },
     { AccessibilityNodeData::ROLE_SPLIT_GROUP, NSAccessibilitySplitGroupRole },
     { AccessibilityNodeData::ROLE_STATIC_TEXT, NSAccessibilityStaticTextRole },
@@ -269,6 +269,7 @@ NSDictionary* attributeToMethodNameMap = nil;
     { NSAccessibilityMaxValueAttribute, @"maxValue" },
     { NSAccessibilityMinValueAttribute, @"minValue" },
     { NSAccessibilityNumberOfCharactersAttribute, @"numberOfCharacters" },
+    { NSAccessibilityOrientationAttribute, @"orientation" },
     { NSAccessibilityParentAttribute, @"parent" },
     { NSAccessibilityPositionAttribute, @"position" },
     { NSAccessibilityRoleAttribute, @"role" },
@@ -282,6 +283,7 @@ NSDictionary* attributeToMethodNameMap = nil;
     { NSAccessibilityTopLevelUIElementAttribute, @"window" },
     { NSAccessibilityURLAttribute, @"url" },
     { NSAccessibilityValueAttribute, @"value" },
+    { NSAccessibilityValueDescriptionAttribute, @"valueDescription" },
     { NSAccessibilityVisibleCharacterRangeAttribute, @"visibleCharacterRange" },
     { NSAccessibilityWindowAttribute, @"window" },
     { @"AXAccessKey", @"accessKey" },
@@ -498,6 +500,20 @@ NSDictionary* attributeToMethodNameMap = nil;
   return [NSNumber numberWithFloat:floatValue];
 }
 
+- (NSString*)orientation {
+  // We present a spin button as a vertical slider, with a role description
+  // of "spin button".
+  AccessibilityNodeData::Role internal_role =
+      static_cast<AccessibilityNodeData::Role>(browserAccessibility_->role());
+  if (internal_role == AccessibilityNodeData::ROLE_SPIN_BUTTON)
+    return NSAccessibilityVerticalOrientationValue;
+
+  if (GetState(browserAccessibility_, AccessibilityNodeData::STATE_VERTICAL))
+    return NSAccessibilityVerticalOrientationValue;
+  else
+    return NSAccessibilityHorizontalOrientationValue;
+}
+
 - (NSNumber*)numberOfCharacters {
   return [NSNumber numberWithInt:browserAccessibility_->value().length()];
 }
@@ -583,9 +599,16 @@ NSDictionary* attributeToMethodNameMap = nil;
 
   AccessibilityNodeData::Role internal_role =
       static_cast<AccessibilityNodeData::Role>(browserAccessibility_->role());
-  if (internal_role == AccessibilityNodeData::ROLE_FOOTER) {
-      return base::SysUTF16ToNSString(content_client->GetLocalizedString(
-          IDS_AX_ROLE_FOOTER));
+  switch(internal_role) {
+  case AccessibilityNodeData::ROLE_FOOTER:
+    return base::SysUTF16ToNSString(content_client->GetLocalizedString(
+        IDS_AX_ROLE_FOOTER));
+  case AccessibilityNodeData::ROLE_SPIN_BUTTON:
+    // This control is similar to what VoiceOver calls a "stepper".
+    return base::SysUTF16ToNSString(content_client->GetLocalizedString(
+        IDS_AX_ROLE_STEPPER));
+  default:
+    break;
   }
 
   return NSAccessibilityRoleDescription(role, nil);
@@ -718,6 +741,13 @@ NSDictionary* attributeToMethodNameMap = nil;
   }
 
   return base::SysUTF16ToNSString(browserAccessibility_->value());
+}
+
+- (NSString*)valueDescription {
+  if (!browserAccessibility_->value().empty())
+    return base::SysUTF16ToNSString(browserAccessibility_->value());
+  else
+    return nil;
 }
 
 - (NSValue*)visibleCharacterRange {
@@ -942,6 +972,8 @@ NSDictionary* attributeToMethodNameMap = nil;
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
         NSAccessibilityMaxValueAttribute,
         NSAccessibilityMinValueAttribute,
+        NSAccessibilityOrientationAttribute,
+        NSAccessibilityValueDescriptionAttribute,
         nil]];
   }
 
