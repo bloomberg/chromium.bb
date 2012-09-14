@@ -111,8 +111,8 @@ LRESULT SystemMessageWindowWin::OnDeviceChange(UINT event_type, LPARAM data) {
       // notify the system monitor.
       DEV_BROADCAST_DEVICEINTERFACE* device_interface =
           reinterpret_cast<DEV_BROADCAST_DEVICEINTERFACE*>(data);
-      DCHECK_EQ(device_interface->dbcc_devicetype,
-                static_cast<DWORD>(DBT_DEVTYP_DEVICEINTERFACE));
+      if (device_interface->dbcc_devicetype != DBT_DEVTYP_DEVICEINTERFACE)
+        return TRUE;
       for (int i = 0; i < arraysize(kDeviceCategoryMap); ++i) {
         if (kDeviceCategoryMap[i].device_category ==
             device_interface->dbcc_classguid) {
