@@ -20,7 +20,7 @@
       }],
       ['use_ash==1', {
         'pak_inputs': [
-          '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_wallpapers.pak',
+          '<(SHARED_INTERMEDIATE_DIR)/ash/ash_resources/ash_wallpaper_resources.pak',
         ],
       }],
     ],

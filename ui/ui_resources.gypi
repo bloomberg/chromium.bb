@@ -31,26 +31,5 @@
       ],
       'includes': [ '../build/grit_target.gypi' ],
     },
-    {
-      'target_name': 'ui_resources_wallpapers',
-      'type': 'none',
-      'conditions': [
-        ['use_ash==1', {
-          'variables': {
-            'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources',
-          },
-          'actions': [
-            {
-              'action_name': 'ui_resources_wallpapers',
-              'variables': {
-                'grit_grd_file': 'resources/ui_resources_wallpapers.grd',
-              },
-              'includes': [ '../build/grit_action.gypi' ],
-            },
-          ],
-          'includes': [ '../build/grit_target.gypi' ],
-        }],
-      ],
-    },
   ],
 }

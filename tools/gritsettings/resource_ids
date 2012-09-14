@@ -48,14 +48,14 @@
   "webkit/tools/test_shell/test_shell_resources.grd": {
     "includes": [5000],
   },
-  "ui/resources/ui_resources_wallpapers.grd": {
-    "includes": [5500],
-  },
   "ui/resources/ui_resources.grd": {
-    "structures": [6000],
+    "structures": [5500],
   },
   "ash/resources/ash_resources.grd": {
-    "structures": [6200],
+    "structures": [5900],
+  },
+  "ash/resources/ash_wallpaper_resources.grd": {
+    "includes": [6300],
   },
   "chrome/app/theme/theme_resources.grd": {
     "includes": [6500],

@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "grit/ui_resources_wallpapers.h"
+#include "grit/ash_wallpaper_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grit latest_public_release="0" current_release="1">
+  <outputs>
+    <output filename="grit/ash_wallpaper_resources.h" type="rc_header">
+      <emit emit_type='prepend'></emit>
+    </output>
+    <output filename="ash_wallpaper_resources.pak" type="data_package" />
+  </outputs>
+  <release seq="1">
+    <includes>
+      <!-- Wallpapers used by Ash when building ChromiumOS. -->
+      <if expr="not pp_ifdef('_google_chrome')">
+        <include name="IDR_AURA_WALLPAPERS_ROMAINGUY_0_LARGE" file="wallpapers/large/romainguy_0.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_ROMAINGUY_0_SMALL" file="wallpapers/small/romainguy_0.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_ROMAINGUY_0_THUMB" file="wallpapers/romainguy_0_thumb.jpg" type="BINDATA" />
+      </if>
+
+      <!-- Wallpapers available to Ash when building Official ChromeOS. -->
+      <if expr="pp_ifdef('_google_chrome')">
+        <include name="IDR_AURA_WALLPAPERS_1_NATURE0_LARGE" file="google_wallpapers/large/1-nature0.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_1_NATURE0_SMALL" file="google_wallpapers/small/1-nature0.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_1_NATURE0_THUMB" file="google_wallpapers/1-nature0_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_1_NATURE1_LARGE" file="google_wallpapers/large/1-nature1.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_1_NATURE1_SMALL" file="google_wallpapers/small/1-nature1.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_1_NATURE1_THUMB" file="google_wallpapers/1-nature1_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_1_NATURE2_LARGE" file="google_wallpapers/large/1-nature2.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_1_NATURE2_SMALL" file="google_wallpapers/small/1-nature2.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_1_NATURE2_THUMB" file="google_wallpapers/1-nature2_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_1_NATURE3_LARGE" file="google_wallpapers/large/1-nature3.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_1_NATURE3_SMALL" file="google_wallpapers/small/1-nature3.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_1_NATURE3_THUMB" file="google_wallpapers/1-nature3_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_1_NATURE4_LARGE" file="google_wallpapers/large/1-nature4.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_1_NATURE4_SMALL" file="google_wallpapers/small/1-nature4.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_1_NATURE4_THUMB" file="google_wallpapers/1-nature4_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_1_NATURE5_LARGE" file="google_wallpapers/large/1-nature5.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_1_NATURE5_SMALL" file="google_wallpapers/small/1-nature5.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_1_NATURE5_THUMB" file="google_wallpapers/1-nature5_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_1_NATURE6_LARGE" file="google_wallpapers/large/1-nature6.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_1_NATURE6_SMALL" file="google_wallpapers/small/1-nature6.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_1_NATURE6_THUMB" file="google_wallpapers/1-nature6_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_1_NATURE7_LARGE" file="google_wallpapers/large/1-nature7.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_1_NATURE7_SMALL" file="google_wallpapers/small/1-nature7.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_1_NATURE7_THUMB" file="google_wallpapers/1-nature7_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE0_LARGE" file="google_wallpapers/large/2-landscape0.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE0_SMALL" file="google_wallpapers/small/2-landscape0.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE0_THUMB" file="google_wallpapers/2-landscape0_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE1_LARGE" file="google_wallpapers/large/2-landscape1.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE1_SMALL" file="google_wallpapers/small/2-landscape1.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE1_THUMB" file="google_wallpapers/2-landscape1_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE2_LARGE" file="google_wallpapers/large/2-landscape2.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE2_SMALL" file="google_wallpapers/small/2-landscape2.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE2_THUMB" file="google_wallpapers/2-landscape2_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE3_LARGE" file="google_wallpapers/large/2-landscape3.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE3_SMALL" file="google_wallpapers/small/2-landscape3.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE3_THUMB" file="google_wallpapers/2-landscape3_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE4_LARGE" file="google_wallpapers/large/2-landscape4.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE4_SMALL" file="google_wallpapers/small/2-landscape4.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE4_THUMB" file="google_wallpapers/2-landscape4_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE5_LARGE" file="google_wallpapers/large/2-landscape5.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE5_SMALL" file="google_wallpapers/small/2-landscape5.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE5_THUMB" file="google_wallpapers/2-landscape5_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE6_LARGE" file="google_wallpapers/large/2-landscape6.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE6_SMALL" file="google_wallpapers/small/2-landscape6.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE6_THUMB" file="google_wallpapers/2-landscape6_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE7_LARGE" file="google_wallpapers/large/2-landscape7.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE7_SMALL" file="google_wallpapers/small/2-landscape7.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE7_THUMB" file="google_wallpapers/2-landscape7_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE8_LARGE" file="google_wallpapers/large/2-landscape8.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE8_SMALL" file="google_wallpapers/small/2-landscape8.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE8_THUMB" file="google_wallpapers/2-landscape8_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_3_URBAN0_LARGE" file="google_wallpapers/large/3-urban0.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_3_URBAN0_SMALL" file="google_wallpapers/small/3-urban0.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_3_URBAN0_THUMB" file="google_wallpapers/3-urban0_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_3_URBAN1_LARGE" file="google_wallpapers/large/3-urban1.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_3_URBAN1_SMALL" file="google_wallpapers/small/3-urban1.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_3_URBAN1_THUMB" file="google_wallpapers/3-urban1_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_3_URBAN2_LARGE" file="google_wallpapers/large/3-urban2.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_3_URBAN2_SMALL" file="google_wallpapers/small/3-urban2.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_3_URBAN2_THUMB" file="google_wallpapers/3-urban2_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_3_URBAN3_LARGE" file="google_wallpapers/large/3-urban3.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_3_URBAN3_SMALL" file="google_wallpapers/small/3-urban3.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_3_URBAN3_THUMB" file="google_wallpapers/3-urban3_thumb.png" type="BINDATA" />
+      </if>
+
+      <!-- Wallpapers (gradients) used by Ash. -->
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT1_LARGE" file="wallpapers/large/5-gradient1.jpg" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT1_SMALL" file="wallpapers/small/5-gradient1.jpg" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT1_THUMB" file="wallpapers/5-gradient1_thumb.png" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT2_LARGE" file="wallpapers/large/5-gradient2.jpg" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT2_SMALL" file="wallpapers/small/5-gradient2.jpg" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT2_THUMB" file="wallpapers/5-gradient2_thumb.png" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT3_LARGE" file="wallpapers/large/5-gradient3.jpg" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT3_SMALL" file="wallpapers/small/5-gradient3.jpg" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT3_THUMB" file="wallpapers/5-gradient3_thumb.png" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT4_LARGE" file="wallpapers/large/5-gradient4.jpg" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT4_SMALL" file="wallpapers/small/5-gradient4.jpg" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT4_THUMB" file="wallpapers/5-gradient4_thumb.png" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT5_LARGE" file="wallpapers/large/5-gradient5.jpg" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT5_SMALL" file="wallpapers/small/5-gradient5.jpg" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT5_THUMB" file="wallpapers/5-gradient5_thumb.png" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT6_LARGE" file="wallpapers/large/5-gradient6.jpg" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT6_SMALL" file="wallpapers/small/5-gradient6.jpg" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT6_THUMB" file="wallpapers/5-gradient6_thumb.png" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT7_LARGE" file="wallpapers/large/5-gradient7.jpg" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT7_SMALL" file="wallpapers/small/5-gradient7.jpg" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT7_THUMB" file="wallpapers/5-gradient7_thumb.png" type="BINDATA" />
+    </includes>
+  </release>
+</grit>
