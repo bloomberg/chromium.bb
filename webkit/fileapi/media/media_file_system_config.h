@@ -7,7 +7,7 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
 #define SUPPORT_MEDIA_FILESYSTEM
 #endif
 

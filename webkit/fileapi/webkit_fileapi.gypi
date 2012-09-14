@@ -110,15 +110,6 @@
             '<(DEPTH)/webkit/support/setup_third_party.gyp:third_party_headers',
           ],
         }],
-        ['OS == "linux"', {
-          'sources': [
-            'media/device_media_file_util.cc',
-            'media/device_media_file_util.h',
-            'media/media_device_delegate.h',
-            'media/media_device_map_service.cc',
-            'media/media_device_map_service.h',
-          ],
-        }],
         ['chromeos==1', {
           'sources': [
             '../chromeos/fileapi/async_file_stream.h',
@@ -132,6 +123,11 @@
             '../chromeos/fileapi/remote_file_system_proxy.h',
             '../chromeos/fileapi/remote_file_stream_writer.cc',
             '../chromeos/fileapi/remote_file_stream_writer.h',
+            'media/device_media_file_util.cc',
+            'media/device_media_file_util.h',
+            'media/media_device_delegate.h',
+            'media/media_device_map_service.cc',
+            'media/media_device_map_service.h',
           ],
         }],
       ],

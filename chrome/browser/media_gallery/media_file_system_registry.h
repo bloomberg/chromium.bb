@@ -17,7 +17,9 @@
 #include "base/lazy_instance.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/system_monitor/system_monitor.h"
+#include "webkit/fileapi/media/media_file_system_config.h"
 
 class Profile;
 
@@ -37,6 +39,7 @@ namespace chrome {
 
 class ExtensionGalleriesHost;
 class MediaGalleriesPreferences;
+class ScopedMediaDeviceMapEntry;
 
 class MediaFileSystemRegistry
     : public base::SystemMonitor::DevicesChangedObserver {
@@ -56,6 +59,15 @@ class MediaFileSystemRegistry
       const content::RenderViewHost* rvh,
       const extensions::Extension* extension);
 
+#if defined(SUPPORT_MEDIA_FILESYSTEM)
+  // Registers and returns the file system id for the mtp or ptp device
+  // specified by |device_id| and |path|. Updates |entry| with the corresponding
+  // ScopedMediaDeviceMapEntry object.
+  std::string RegisterFileSystemForMtpDevice(
+      const std::string& device_id, const FilePath& path,
+      scoped_refptr<ScopedMediaDeviceMapEntry>* entry);
+#endif
+
   // base::SystemMonitor::DevicesChangedObserver implementation.
   virtual void OnRemovableStorageAttached(
       const std::string& id, const string16& name,
@@ -71,9 +83,28 @@ class MediaFileSystemRegistry
   // Map a profile and extension to the ExtensionGalleriesHost.
   typedef std::map<Profile*, ExtensionHostMap> ExtensionGalleriesHostMap;
 
+#if defined(SUPPORT_MEDIA_FILESYSTEM)
+  // Map a mtp or ptp device location to the weak pointer of
+  // ScopedMediaDeviceMapEntry.
+  typedef std::map<const FilePath::StringType,
+                   base::WeakPtr<ScopedMediaDeviceMapEntry> >
+      MTPDeviceDelegateMap;
+#endif
+
   // Obtain an instance of this class via GetInstance().
   MediaFileSystemRegistry();
   virtual ~MediaFileSystemRegistry();
+
+#if defined(SUPPORT_MEDIA_FILESYSTEM)
+  // Returns ScopedMediaDeviceMapEntry object for the given |device_location|.
+  ScopedMediaDeviceMapEntry* GetOrCreateScopedMediaDeviceMapEntry(
+      const FilePath::StringType& device_location);
+
+  // Removes the ScopedMediaDeviceMapEntry associated with the given
+  // |device_location|.
+  void RemoveScopedMediaDeviceMapEntry(
+      const FilePath::StringType& device_location);
+#endif
 
   // Register all the media devices found in system monitor as auto-detected
   // galleries for the passed |preferences|.
@@ -82,9 +113,14 @@ class MediaFileSystemRegistry
   void OnExtensionGalleriesHostEmpty(Profile* profile,
                                      const std::string& extension_id);
 
-  // Only accessed on the UI thread.  This map owns all the
+  // Only accessed on the UI thread. This map owns all the
   // ExtensionGalleriesHost objects created.
   ExtensionGalleriesHostMap extension_hosts_map_;
+
+#if defined(SUPPORT_MEDIA_FILESYSTEM)
+  // Only accessed on the UI thread.
+  MTPDeviceDelegateMap mtp_delegate_map_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(MediaFileSystemRegistry);
 };
