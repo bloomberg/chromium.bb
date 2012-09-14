@@ -40,7 +40,6 @@ class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
       unsigned short mode,
       WebKit::WebExceptionCode& ec);
   virtual void close();
-  virtual void open(WebKit::WebIDBDatabaseCallbacks*);
 
  private:
   int32 idb_database_id_;

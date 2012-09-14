@@ -27,15 +27,6 @@ class RendererWebIDBFactoryImpl : public WebKit::WebIDBFactory {
       const WebKit::WebSecurityOrigin& origin,
       WebKit::WebFrame* web_frame,
       const WebKit::WebString& data_dir);
-
-  // TODO(jsbell): Remove this overload when WK94011 rolls.
-  virtual void open(
-      const WebKit::WebString& name,
-      long long version,
-      WebKit::WebIDBCallbacks* callbacks,
-      const WebKit::WebSecurityOrigin& origin,
-      WebKit::WebFrame* web_frame,
-      const WebKit::WebString& data_dir);
   virtual void open(
       const WebKit::WebString& name,
       long long version,

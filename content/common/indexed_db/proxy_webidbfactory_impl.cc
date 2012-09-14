@@ -34,22 +34,6 @@ void RendererWebIDBFactoryImpl::getDatabaseNames(
       callbacks, origin.databaseIdentifier(), web_frame);
 }
 
-// TODO(jsbell): Remove this overload when WK90411 rolls.
-void RendererWebIDBFactoryImpl::open(
-    const WebString& name,
-    long long version,
-    WebIDBCallbacks* callbacks,
-    const WebSecurityOrigin& origin,
-    WebFrame* web_frame,
-    const WebString& data_dir) {
-  // Don't send the data_dir. We know what we want on the Browser side of
-  // things.
-  IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance();
-  dispatcher->RequestIDBFactoryOpen(
-      name, version, callbacks, origin.databaseIdentifier(), web_frame);
-}
-
 void RendererWebIDBFactoryImpl::open(
     const WebString& name,
     long long version,

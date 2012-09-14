@@ -139,8 +139,6 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message,
       IPC_MESSAGE_HANDLER(IndexedDBHostMsg_FactoryGetDatabaseNames,
                           OnIDBFactoryGetDatabaseNames)
       IPC_MESSAGE_HANDLER(IndexedDBHostMsg_FactoryOpen, OnIDBFactoryOpen)
-      IPC_MESSAGE_HANDLER(IndexedDBHostMsg_FactoryOpenLegacy,
-                          OnIDBFactoryOpenLegacy)
       IPC_MESSAGE_HANDLER(IndexedDBHostMsg_FactoryDeleteDatabase,
                           OnIDBFactoryDeleteDatabase)
       IPC_MESSAGE_UNHANDLED(handled = false)
@@ -222,28 +220,6 @@ void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
       new IndexedDBCallbacks<WebDOMStringList>(this, params.thread_id,
       params.response_id), origin, NULL,
       webkit_glue::FilePathToWebString(indexed_db_path));
-}
-
-// TODO(jsbell): Remove once WK90411 has rolled.
-void IndexedDBDispatcherHost::OnIDBFactoryOpenLegacy(
-    const IndexedDBHostMsg_FactoryOpen_Params& params) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  FilePath indexed_db_path = indexed_db_context_->data_path();
-
-  GURL origin_url = DatabaseUtil::GetOriginFromIdentifier(params.origin);
-  WebSecurityOrigin origin(
-      WebSecurityOrigin::createFromDatabaseIdentifier(params.origin));
-
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-
-  // TODO(dgrogan): Don't let a non-existing database be opened (and therefore
-  // created) if this origin is already over quota.
-  Context()->GetIDBFactory()->open(
-      params.name,
-      params.version,
-      new IndexedDBCallbacksDatabase(this, params.thread_id,
-                                     params.response_id, origin_url),
-      origin, NULL, webkit_glue::FilePathToWebString(indexed_db_path));
 }
 
 void IndexedDBDispatcherHost::OnIDBFactoryOpen(
@@ -347,7 +323,6 @@ bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseSetVersion, OnSetVersion)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseTransaction, OnTransaction)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseClose, OnClose)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseOpen, OnOpen)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDestroyed, OnDestroyed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -477,17 +452,6 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnTransaction(
   *idb_transaction_id =
       *ec ? 0 : parent_->Add(transaction, thread_id,
                              database_url_map_[idb_database_id]);
-}
-
-// TODO(jsbell): Remove once WK90411 has rolled.
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnOpen(
-    int32 idb_database_id, int32 thread_id, int32 response_id) {
-  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
-      &map_, idb_database_id);
-  if (!database)
-    return;
-  database->open(new IndexedDBDatabaseCallbacks(parent_, thread_id,
-                                                response_id));
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnClose(

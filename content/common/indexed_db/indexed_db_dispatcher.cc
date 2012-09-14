@@ -200,30 +200,6 @@ void IndexedDBDispatcher::RequestIDBCursorDelete(
     pending_callbacks_.Remove(response_id);
 }
 
-// TODO(jsbell): Remove this overload once WK90411 rolls.
-void IndexedDBDispatcher::RequestIDBFactoryOpen(
-    const string16& name,
-    int64 version,
-    WebIDBCallbacks* callbacks_ptr,
-    const string16& origin,
-    WebFrame* web_frame) {
-  ResetCursorPrefetchCaches();
-  scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
-
-  if (!CurrentWorkerId() &&
-      !ChildThread::current()->IsWebFrameValid(web_frame))
-    return;
-
-  IndexedDBHostMsg_FactoryOpen_Params params;
-  params.thread_id = CurrentWorkerId();
-  params.response_id = pending_callbacks_.Add(callbacks.release());
-  params.database_response_id = 0;  // Unused in this message.
-  params.origin = origin;
-  params.name = name;
-  params.version = version;
-  Send(new IndexedDBHostMsg_FactoryOpenLegacy(params));
-}
-
 void IndexedDBDispatcher::RequestIDBFactoryOpen(
     const string16& name,
     int64 version,
@@ -296,19 +272,6 @@ void IndexedDBDispatcher::RequestIDBDatabaseClose(int32 idb_database_id) {
   // the initial upgradeneeded event handler.
   if (pending_database_callbacks_.Lookup(idb_database_id))
     pending_database_callbacks_.Remove(idb_database_id);
-}
-
-// TODO(jsbell): Remove once WK90411 has rolled.
-void IndexedDBDispatcher::RequestIDBDatabaseOpen(
-    WebIDBDatabaseCallbacks* callbacks_ptr,
-    int32 idb_database_id) {
-  ResetCursorPrefetchCaches();
-  scoped_ptr<WebIDBDatabaseCallbacks> callbacks(callbacks_ptr);
-
-  DCHECK(!pending_database_callbacks_.Lookup(idb_database_id));
-  pending_database_callbacks_.AddWithID(callbacks.release(), idb_database_id);
-  Send(new IndexedDBHostMsg_DatabaseOpen(idb_database_id, CurrentWorkerId(),
-                                         idb_database_id));
 }
 
 void IndexedDBDispatcher::RequestIDBDatabaseSetVersion(
