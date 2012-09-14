@@ -40,6 +40,7 @@ class ServerInstance(object):
     # TODO(cduvall): bundle up all the request-scoped data into a single object.
     templates = self._template_data_source_factory.Create(request, path)
 
+    content = None
     if fnmatch(path, 'extensions/examples/*.zip'):
       content = self._example_zipper.Create(
           path[len('extensions/'):-len('.zip')])
@@ -50,7 +51,7 @@ class ServerInstance(object):
       response.headers['content-type'] = 'text/plain'
     elif path.startswith('static/'):
       content = self._FetchStaticResource(path, response)
-    else:
+    elif path.endswith('.html'):
       content = templates.Render(path)
 
     response.headers['x-frame-options'] = 'sameorigin'
