@@ -152,7 +152,6 @@ bool WorkerProcessHost::Init(int render_process_id) {
   cmd_line->AppendSwitchASCII(switches::kLang, locale);
 
   static const char* const kSwitchNames[] = {
-    switches::kWebWorkerShareProcesses,
     switches::kDisableApplicationCache,
     switches::kDisableDatabases,
     switches::kEnableLogging,

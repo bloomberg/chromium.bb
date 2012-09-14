@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/sys_info.h"
 #include "base/threading/thread.h"
 #include "content/browser/debugger/worker_devtools_manager.h"
 #include "content/browser/worker_host/worker_message_filter.h"
@@ -20,11 +19,9 @@
 #include "content/public/browser/worker_service_observer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 namespace content {
 
-const int WorkerServiceImpl::kMaxWorkerProcessesWhenSharing = 10;
 const int WorkerServiceImpl::kMaxWorkersWhenSeparate = 64;
 const int WorkerServiceImpl::kMaxWorkersPerTabWhenSeparate = 16;
 
@@ -213,22 +210,9 @@ void WorkerServiceImpl::DocumentDetached(unsigned long long document_id,
 
 bool WorkerServiceImpl::CreateWorkerFromInstance(
     WorkerProcessHost::WorkerInstance instance) {
-  // TODO(michaeln): We need to ensure that a process is working
-  // on behalf of a single browser context. The process sharing logic below
-  // does not ensure that. Consider making WorkerService a per browser context
-  // object to help with this.
-  WorkerProcessHost* worker = NULL;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kWebWorkerProcessPerCore)) {
-    worker = GetProcessToFillUpCores();
-  } else if (CommandLine::ForCurrentProcess()->HasSwitch(
-                 switches::kWebWorkerShareProcesses)) {
-    worker = GetProcessForDomain(instance.url());
-  } else {  // One process per worker.
-    if (!CanCreateWorkerProcess(instance)) {
-      queued_workers_.push_back(instance);
-      return true;
-    }
+  if (!CanCreateWorkerProcess(instance)) {
+    queued_workers_.push_back(instance);
+    return true;
   }
 
   // Check to see if this shared worker is already running (two pages may have
@@ -295,23 +279,17 @@ bool WorkerServiceImpl::CreateWorkerFromInstance(
     }
   }
 
-  if (!worker) {
-    WorkerMessageFilter* first_filter = instance.filters().begin()->first;
-    worker = new WorkerProcessHost(instance.resource_context(),
-                                   instance.partition());
-    // TODO(atwilson): This won't work if the message is from a worker process.
-    // We don't support that yet though (this message is only sent from
-    // renderers) but when we do, we'll need to add code to pass in the current
-    // worker's document set for nested workers.
-    if (!worker->Init(first_filter->render_process_id())) {
-      delete worker;
-      return false;
-    }
+  WorkerMessageFilter* first_filter = instance.filters().begin()->first;
+  WorkerProcessHost* worker = new WorkerProcessHost(
+      instance.resource_context(), instance.partition());
+  // TODO(atwilson): This won't work if the message is from a worker process.
+  // We don't support that yet though (this message is only sent from
+  // renderers) but when we do, we'll need to add code to pass in the current
+  // worker's document set for nested workers.
+  if (!worker->Init(first_filter->render_process_id())) {
+    delete worker;
+    return false;
   }
-
-  // TODO(michaeln): As written, test can fail per my earlier comment in
-  // this method, but that's a bug.
-  // DCHECK(worker->request_context() == instance.GetRequestContext());
 
   worker->CreateWorker(instance);
   FOR_EACH_OBSERVER(
@@ -320,49 +298,6 @@ bool WorkerServiceImpl::CreateWorkerFromInstance(
                     instance.worker_route_id()));
   WorkerDevToolsManager::GetInstance()->WorkerCreated(worker, instance);
   return true;
-}
-
-WorkerProcessHost* WorkerServiceImpl::GetProcessForDomain(const GURL& url) {
-  int num_processes = 0;
-  std::string domain =
-      net::RegistryControlledDomainService::GetDomainAndRegistry(url);
-  for (WorkerProcessHostIterator iter; !iter.Done(); ++iter) {
-    num_processes++;
-    for (WorkerProcessHost::Instances::const_iterator instance =
-             iter->instances().begin();
-         instance != iter->instances().end(); ++instance) {
-      if (net::RegistryControlledDomainService::GetDomainAndRegistry(
-              instance->url()) == domain) {
-        return *iter;
-      }
-    }
-  }
-
-  if (num_processes >= kMaxWorkerProcessesWhenSharing)
-    return GetLeastLoadedWorker();
-
-  return NULL;
-}
-
-WorkerProcessHost* WorkerServiceImpl::GetProcessToFillUpCores() {
-  int num_processes = 0;
-  for (WorkerProcessHostIterator iter; !iter.Done(); ++iter)
-    num_processes++;
-
-  if (num_processes >= base::SysInfo::NumberOfProcessors())
-    return GetLeastLoadedWorker();
-
-  return NULL;
-}
-
-WorkerProcessHost* WorkerServiceImpl::GetLeastLoadedWorker() {
-  WorkerProcessHost* smallest = NULL;
-  for (WorkerProcessHostIterator iter; !iter.Done(); ++iter) {
-    if (!smallest || iter->instances().size() < smallest->instances().size())
-      smallest = *iter;
-  }
-
-  return smallest;
 }
 
 bool WorkerServiceImpl::CanCreateWorkerProcess(

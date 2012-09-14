@@ -72,9 +72,6 @@ class CONTENT_EXPORT WorkerServiceImpl
       WorkerProcessHost* process,
       int worker_route_id);
 
-  // Used when multiple workers can run in the same process.
-  static const int kMaxWorkerProcessesWhenSharing;
-
   // Used when we run each worker in a separate process.
   static const int kMaxWorkersWhenSeparate;
   static const int kMaxWorkersPerTabWhenSeparate;
@@ -87,18 +84,6 @@ class CONTENT_EXPORT WorkerServiceImpl
 
   // Given a WorkerInstance, create an associated worker process.
   bool CreateWorkerFromInstance(WorkerProcessHost::WorkerInstance instance);
-
-  // Returns a WorkerProcessHost object if one exists for the given domain, or
-  // NULL if there are no such workers yet.
-  WorkerProcessHost* GetProcessForDomain(const GURL& url);
-
-  // Returns a WorkerProcessHost based on a strategy of creating one worker per
-  // core.
-  WorkerProcessHost* GetProcessToFillUpCores();
-
-  // Returns the WorkerProcessHost from the existing set that has the least
-  // number of worker instance running.
-  WorkerProcessHost* GetLeastLoadedWorker();
 
   // Checks if we can create a worker process based on the process limit when
   // we're using a strategy of one process per core.

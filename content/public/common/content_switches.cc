@@ -639,13 +639,6 @@ const char kWaitForDebuggerChildren[]       = "wait-for-debugger-children";
 // Logging.cpp in WebKit's WebCore for a list of available channels.
 const char kWebCoreLogChannels[]            = "webcore-log-channels";
 
-// Causes the worker process allocation to use as many processes as cores.
-const char kWebWorkerProcessPerCore[]       = "web-worker-process-per-core";
-
-// Causes workers to run together in one process, depending on their domains.
-// Note this is duplicated in webworkerclient_impl.cc
-const char kWebWorkerShareProcesses[]       = "web-worker-share-processes";
-
 // Causes the process to run as a worker subprocess.
 const char kWorkerProcess[]                 = "worker";
 

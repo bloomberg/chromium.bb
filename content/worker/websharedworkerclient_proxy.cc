@@ -192,15 +192,6 @@ bool WebSharedWorkerClientProxy::Send(IPC::Message* message) {
 }
 
 void WebSharedWorkerClientProxy::EnsureWorkerContextTerminates() {
-  // Avoid a worker doing a while(1) from never exiting.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kWebWorkerShareProcesses)) {
-    // Can't kill the process since there could be workers from other
-    // renderer process.
-    NOTIMPLEMENTED();
-    return;
-  }
-
   // This shuts down the process cleanly from the perspective of the browser
   // process, and avoids the crashed worker infobar from appearing to the new
   // page. It's ok to post several of theese, because the first executed task
