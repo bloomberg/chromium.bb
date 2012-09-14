@@ -292,6 +292,10 @@ drm_output_prepare_scanout_surface(struct weston_output *_output,
 	bo = gbm_bo_import(c->gbm, GBM_BO_IMPORT_WL_BUFFER,
 			   es->buffer, GBM_BO_USE_SCANOUT);
 
+	/* Unable to use the buffer for scanout */
+	if (!bo)
+		return NULL;
+
 	/* Need to verify output->region contained in surface opaque
 	 * region.  Or maybe just that format doesn't have alpha.
 	 * For now, scanout only if format is XRGB8888. */
