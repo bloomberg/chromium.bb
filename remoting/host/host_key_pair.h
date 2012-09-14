@@ -37,6 +37,9 @@ class HostKeyPair {
 
   // Make a new copy of private key. Caller will own the generated private key.
   crypto::RSAPrivateKey* CopyPrivateKey() const;
+
+  // Generates self-signed certificate using the key pair. Returns empty string
+  // if cert generation fails (e.g. it may happen when the system clock is off).
   std::string GenerateCertificate() const;
 
  private:

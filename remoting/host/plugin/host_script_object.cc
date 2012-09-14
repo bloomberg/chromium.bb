@@ -1002,10 +1002,18 @@ void HostNPScriptObject::OnReceivedSupportID(
 
   std::string host_secret = GenerateSupportHostSecret();
   std::string access_code = support_id + host_secret;
+
+  std::string local_certificate = host_key_pair_.GenerateCertificate();
+  if (local_certificate.empty()) {
+    LOG(ERROR) << "Failed to generate host certificate.";
+    SetState(kError);
+    DisconnectInternal();
+    return;
+  }
+
   scoped_ptr<protocol::AuthenticatorFactory> factory(
       new protocol::It2MeHostAuthenticatorFactory(
-          host_key_pair_.GenerateCertificate(), *host_key_pair_.private_key(),
-          access_code));
+          local_certificate, *host_key_pair_.private_key(), access_code));
   host_->SetAuthenticatorFactory(factory.Pass());
 
   {

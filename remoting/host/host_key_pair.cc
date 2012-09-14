@@ -105,6 +105,9 @@ std::string HostKeyPair::GenerateCertificate() const {
           key_.get(), "CN=chromoting",
           base::RandInt(1, std::numeric_limits<int>::max()),
           base::TimeDelta::FromDays(1));
+  if (!cert)
+    return std::string();
+
   std::string encoded;
   bool result = net::X509Certificate::GetDEREncoded(cert->os_cert_handle(),
                                                     &encoded);
