@@ -260,7 +260,8 @@ panel::Resizability Panel::CanResizeByMouse() const {
 }
 
 void Panel::SetPanelBounds(const gfx::Rect& bounds) {
-  native_panel_->SetPanelBounds(bounds);
+  if (bounds != native_panel_->GetPanelBounds())
+    native_panel_->SetPanelBounds(bounds);
 }
 
 void Panel::SetPanelBoundsInstantly(const gfx::Rect& bounds) {

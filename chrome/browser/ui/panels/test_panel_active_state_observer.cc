@@ -7,46 +7,19 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/test/test_utils.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 PanelActiveStateObserver::PanelActiveStateObserver(
     Panel* panel,
     bool expect_active)
-    : panel_(panel),
-      expect_active_(expect_active),
-      seen_(false),
-      running_(false) {
-  registrar_.Add(this, chrome::NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
-                 content::Source<Panel>(panel));
+    : TestPanelNotificationObserver(
+        chrome::NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
+        content::Source<Panel>(panel)),
+      panel_(panel),
+      expect_active_(expect_active) {
 }
 
 PanelActiveStateObserver::~PanelActiveStateObserver() {}
 
-void PanelActiveStateObserver::Wait() {
-  if (seen_ || AtExpectedState())
-    return;
-
-  running_ = true;
-  message_loop_runner_ = new content::MessageLoopRunner;
-  message_loop_runner_->Run();
-  EXPECT_TRUE(seen_);
-}
-
 bool PanelActiveStateObserver::AtExpectedState() {
   return panel_->IsActive() == expect_active_;
-}
-
-void PanelActiveStateObserver::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (!running_)
-    return;
-
-  if (AtExpectedState()) {
-    seen_ = true;
-    message_loop_runner_->Quit();
-    running_ = false;
-  }
 }

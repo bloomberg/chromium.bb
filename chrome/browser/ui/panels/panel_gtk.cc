@@ -948,9 +948,12 @@ gfx::Size PanelGtk::ContentSizeFromWindowSize(
 }
 
 int PanelGtk::TitleOnlyHeight() const {
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(titlebar_->widget(), &allocation);
-  return allocation.height;
+  gfx::Size& frame_size = GetFrameSize();
+  if (!frame_size.IsEmpty())
+    return frame_size.height() - kFrameBorderThickness;
+
+  NOTREACHED() << "Checking title height before window allocated";
+  return 0;
 }
 
 bool PanelGtk::IsPanelAlwaysOnTop() const {

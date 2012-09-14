@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/panels/docked_panel_strip.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
+#include "chrome/browser/ui/panels/test_panel_strip_squeeze_observer.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -25,7 +26,7 @@ class DockedPanelBrowserTest : public BasePanelBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, FLAKY_SqueezePanelsInDock) {
+IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, SqueezePanelsInDock) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
 
@@ -47,10 +48,8 @@ IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, FLAKY_SqueezePanelsInDock) {
   Panel* panel7 = CreateDockedPanel("7", gfx::Rect(0, 0, 200, 100));
 
   // Wait for active states to settle.
-  WaitForPanelActiveState(panel7, SHOW_AS_ACTIVE);
-
-  // Wait for the scheduled layout to run.
-  MessageLoopForUI::current()->RunAllPending();
+  PanelStripSqueezeObserver panel7_settled(docked_strip, panel7);
+  panel7_settled.Wait();
 
   // The active panel should be at full width.
   EXPECT_EQ(panel7->GetBounds().width(), panel7->GetRestoredBounds().width());
@@ -66,12 +65,11 @@ IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, FLAKY_SqueezePanelsInDock) {
 
   // Activate a different panel.
   panel2->Activate();
-
-  // Wait for active states to settle.
   WaitForPanelActiveState(panel2, SHOW_AS_ACTIVE);
 
-  // Wait for the scheduled layout to run.
-  MessageLoopForUI::current()->RunAllPending();
+  // Wait for active states to settle.
+  PanelStripSqueezeObserver panel2_settled(docked_strip, panel2);
+  panel2_settled.Wait();
 
   // The active panel should be at full width.
   EXPECT_EQ(panel2->GetBounds().width(), panel2->GetRestoredBounds().width());
@@ -87,8 +85,9 @@ IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, FLAKY_SqueezePanelsInDock) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, FLAKY_SqueezeAndThenSomeMore) {
+IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, SqueezeAndThenSomeMore) {
   PanelManager* panel_manager = PanelManager::GetInstance();
+  DockedPanelStrip* docked_strip = panel_manager->docked_strip();
 
   // Create enough docked panels to get into squeezing.
   Panel* panel1 = CreateDockedPanel("1", gfx::Rect(0, 0, 200, 100));
@@ -99,10 +98,8 @@ IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, FLAKY_SqueezeAndThenSomeMore) {
   Panel* panel6 = CreateDockedPanel("6", gfx::Rect(0, 0, 200, 100));
 
   // Wait for active states to settle.
-  WaitForPanelActiveState(panel6, SHOW_AS_ACTIVE);
-
-  // Wait for the scheduled layout to run.
-  MessageLoopForUI::current()->RunAllPending();
+  PanelStripSqueezeObserver panel6_settled(docked_strip, panel6);
+  panel6_settled.Wait();
 
   // Record current widths of some panels.
   int panel_1_width_less_squeezed = panel1->GetBounds().width();
@@ -121,10 +118,8 @@ IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, FLAKY_SqueezeAndThenSomeMore) {
   Panel* panel7 = CreateDockedPanel("7", gfx::Rect(0, 0, 200, 100));
 
   // Wait for active states to settle.
-  WaitForPanelActiveState(panel7, SHOW_AS_ACTIVE);
-
-  // Wait for the scheduled layout to run.
-  MessageLoopForUI::current()->RunAllPending();
+  PanelStripSqueezeObserver panel7_settled(docked_strip, panel7);
+  panel7_settled.Wait();
 
   // The active panel should be at full width.
   EXPECT_EQ(panel7->GetBounds().width(), panel7->GetRestoredBounds().width());
@@ -139,8 +134,9 @@ IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, FLAKY_SqueezeAndThenSomeMore) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, FLAKY_MinimizeSqueezedActive) {
+IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, MinimizeSqueezedActive) {
   PanelManager* panel_manager = PanelManager::GetInstance();
+  DockedPanelStrip* docked_strip = panel_manager->docked_strip();
 
   // Create enough docked panels to get into squeezing.
   Panel* panel1 = CreateDockedPanel("1", gfx::Rect(0, 0, 200, 100));
@@ -152,10 +148,8 @@ IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, FLAKY_MinimizeSqueezedActive) {
   Panel* panel7 = CreateDockedPanel("7", gfx::Rect(0, 0, 200, 100));
 
   // Wait for active states to settle.
-  WaitForPanelActiveState(panel7, SHOW_AS_ACTIVE);
-
-  // Wait for the scheduled layout to run.
-  MessageLoopForUI::current()->RunAllPending();
+  PanelStripSqueezeObserver panel7_settled(docked_strip, panel7);
+  panel7_settled.Wait();
 
   // The active panel should be at full width.
   EXPECT_EQ(panel7->GetBounds().width(), panel7->GetRestoredBounds().width());
@@ -171,9 +165,6 @@ IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, FLAKY_MinimizeSqueezedActive) {
   // Record the width of an inactive panel and minimize it.
   int width_of_panel3_squeezed = panel3->GetBounds().width();
   panel3->Minimize();
-
-  // Wait for any possible events.
-  MessageLoopForUI::current()->RunAllPending();
 
   // Check that this panel is still at the same width.
   EXPECT_EQ(width_of_panel3_squeezed, panel3->GetBounds().width());
@@ -196,8 +187,9 @@ IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, FLAKY_MinimizeSqueezedActive) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, FLAKY_CloseSqueezedPanels) {
+IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, CloseSqueezedPanels) {
   PanelManager* panel_manager = PanelManager::GetInstance();
+  DockedPanelStrip* docked_strip = panel_manager->docked_strip();
 
   // Create enough docked panels to get into squeezing.
   Panel* panel1 = CreateDockedPanel("1", gfx::Rect(0, 0, 200, 100));
@@ -209,10 +201,8 @@ IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, FLAKY_CloseSqueezedPanels) {
   Panel* panel7 = CreateDockedPanel("7", gfx::Rect(0, 0, 200, 100));
 
   // Wait for active states to settle.
-  WaitForPanelActiveState(panel7, SHOW_AS_ACTIVE);
-
-  // Wait for the scheduled layout to run.
-  MessageLoopForUI::current()->RunAllPending();
+  PanelStripSqueezeObserver panel7_settled(docked_strip, panel7);
+  panel7_settled.Wait();
 
   // Record current widths of some panels.
   int panel_1_orig_width = panel1->GetBounds().width();
@@ -235,10 +225,11 @@ IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, FLAKY_CloseSqueezedPanels) {
   EXPECT_LT(panel_6_orig_width, panel6->GetRestoredBounds().width());
 
   // Close one panel.
+  content::WindowedNotificationObserver signal(
+      chrome::NOTIFICATION_PANEL_STRIP_UPDATED,
+      content::NotificationService::AllSources());
   CloseWindowAndWait(panel2);
-
-  // Wait for all processing to finish.
-  MessageLoopForUI::current()->RunAllPending();
+  signal.Wait();
 
   // The widths of the remaining panels should have increased.
   EXPECT_GT(panel1->GetBounds().width(), panel_1_orig_width);
@@ -253,10 +244,13 @@ IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, FLAKY_CloseSqueezedPanels) {
   // Close several panels.
   CloseWindowAndWait(panel3);
   CloseWindowAndWait(panel5);
-  CloseWindowAndWait(panel7);
 
-  // Wait for all processing to finish.
-  MessageLoopForUI::current()->RunAllPending();
+  // Wait for strip update after last close.
+  content::WindowedNotificationObserver signal2(
+      chrome::NOTIFICATION_PANEL_STRIP_UPDATED,
+      content::NotificationService::AllSources());
+  CloseWindowAndWait(panel7);
+  signal2.Wait();
 
   // We should not have squeezing any more; all panels should be at full width.
   EXPECT_EQ(panel1->GetBounds().width(), panel1->GetRestoredBounds().width());

@@ -246,8 +246,7 @@ class PanelBrowserTest : public BasePanelBrowserTest {
   }
 };
 
-// Flaky (sometimes timeout): http://crbug.com/140971
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_CheckDockedPanelProperties) {
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CheckDockedPanelProperties) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
 
@@ -341,13 +340,60 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateBigPanel) {
   panel->Close();
 }
 
-#if defined(OS_LINUX)
-// http://crbug.com/145740
-#define MAYBE_AutoResize FLAKY_AutoResize
-#else
-#define MAYBE_AutoResize AutoResize
-#endif
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_AutoResize) {
+class WaitForStableInitialSize : public TestPanelNotificationObserver {
+ public:
+  explicit WaitForStableInitialSize(Panel* panel)
+      : TestPanelNotificationObserver(
+          chrome::NOTIFICATION_PANEL_STRIP_UPDATED,
+          content::NotificationService::AllSources()),
+        panel_(panel) {}
+  virtual ~WaitForStableInitialSize() {}
+
+ protected:
+  virtual bool AtExpectedState() OVERRIDE {
+    return panel_->GetBounds().height() > panel_->TitleOnlyHeight();
+  }
+  Panel* panel_;
+};
+
+class WaitForAutoResizeWider : public TestPanelNotificationObserver {
+ public:
+  explicit WaitForAutoResizeWider(Panel* panel)
+      : TestPanelNotificationObserver(
+          chrome::NOTIFICATION_PANEL_STRIP_UPDATED,
+          content::NotificationService::AllSources()),
+        panel_(panel),
+        initial_size_(panel->GetBounds().size()) {}
+  virtual ~WaitForAutoResizeWider() {}
+
+ protected:
+  virtual bool AtExpectedState() OVERRIDE {
+    return panel_->GetBounds().width() > initial_size_.width();
+  }
+  Panel* panel_;
+  gfx::Size initial_size_;
+};
+
+class WaitForAutoResizeNarrower : public TestPanelNotificationObserver {
+ public:
+  explicit WaitForAutoResizeNarrower(Panel* panel)
+      : TestPanelNotificationObserver(
+          chrome::NOTIFICATION_PANEL_STRIP_UPDATED,
+          content::NotificationService::AllSources()),
+        panel_(panel),
+        initial_size_(panel->GetBounds().size()) {}
+  virtual ~WaitForAutoResizeNarrower() {}
+
+ protected:
+  virtual bool AtExpectedState() OVERRIDE {
+    return panel_->GetBounds().width() < initial_size_.width();
+  }
+  Panel* panel_;
+  gfx::Size initial_size_;
+};
+
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, AutoResize) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   panel_manager->enable_auto_sizing(true);
   // Bigger space is needed by this test.
@@ -363,17 +409,12 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_AutoResize) {
 
   // Ensure panel has auto resized to original web content size.
   // The resize will update the docked panel strip.
-  content::WindowedNotificationObserver initial_resize(
-      chrome::NOTIFICATION_PANEL_STRIP_UPDATED,
-      content::NotificationService::AllSources());
-  if (panel->GetBounds().height() < panel->TitleOnlyHeight())
-    initial_resize.Wait();
+  WaitForStableInitialSize initial_resize(panel);
+  initial_resize.Wait();
+  gfx::Rect initial_bounds = panel->GetBounds();
 
   // Expand the test page. The resize will update the docked panel strip.
-  gfx::Rect initial_bounds = panel->GetBounds();
-  content::WindowedNotificationObserver enlarge(
-      chrome::NOTIFICATION_PANEL_STRIP_UPDATED,
-      content::NotificationService::AllSources());
+  WaitForAutoResizeWider enlarge(panel);
   EXPECT_TRUE(content::ExecuteJavaScript(
       panel->GetWebContents()->GetRenderViewHost(),
       std::wstring(),
@@ -384,9 +425,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_AutoResize) {
   EXPECT_EQ(bounds_on_grow.height(), initial_bounds.height());
 
   // Shrink the test page. The resize will update the docked panel strip.
-  content::WindowedNotificationObserver shrink(
-      chrome::NOTIFICATION_PANEL_STRIP_UPDATED,
-      content::NotificationService::AllSources());
+  WaitForAutoResizeNarrower shrink(panel);
   EXPECT_TRUE(content::ExecuteJavaScript(
       panel->GetWebContents()->GetRenderViewHost(),
       std::wstring(),
@@ -896,23 +935,10 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ChangeAutoHideTaskBarThickness) {
   panel->Close();
 }
 
-#if defined(OS_MACOSX)
-// This test doesn't pass on Snow Leopard (10.6), although it works just
-// fine on Lion (10.7). The problem is not having a real run loop around
-// the window close is at fault, given how window controllers in Chrome
-// autorelease themselves on a -performSelector:withObject:afterDelay:
-#define MAYBE_ActivatePanelOrTabbedWindow DISABLED_ActivatePanelOrTabbedWindow
-#else
-#define MAYBE_ActivatePanelOrTabbedWindow DISABLED_ActivatePanelOrTabbedWindow
-#endif
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivatePanelOrTabbedWindow) {
-  CreatePanelParams params1("Panel1", gfx::Rect(), SHOW_AS_ACTIVE);
-  Panel* panel1 = CreatePanelWithParams(params1);
-  CreatePanelParams params2("Panel2", gfx::Rect(), SHOW_AS_ACTIVE);
-  Panel* panel2 = CreatePanelWithParams(params2);
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ActivatePanelOrTabbedWindow) {
+  Panel* panel1 = CreatePanel("Panel1");
+  Panel* panel2 = CreatePanel("Panel2");
 
-  ASSERT_FALSE(panel1->IsActive());
-  ASSERT_TRUE(panel2->IsActive());
   // Activate main tabbed window.
   browser()->window()->Activate();
   WaitForPanelActiveState(panel2, SHOW_AS_INACTIVE);
@@ -924,9 +950,6 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivatePanelOrTabbedWindow) {
   // Activate the main tabbed window back.
   browser()->window()->Activate();
   WaitForPanelActiveState(panel2, SHOW_AS_INACTIVE);
-  // Close the main tabbed window. That should move focus back to panel.
-  chrome::CloseWindow(browser());
-  WaitForPanelActiveState(panel2, SHOW_AS_ACTIVE);
 
   // Activate another panel.
   panel1->Activate();
@@ -938,10 +961,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivatePanelOrTabbedWindow) {
   WaitForPanelActiveState(panel2, SHOW_AS_ACTIVE);
   WaitForPanelActiveState(panel1, SHOW_AS_INACTIVE);
 
-  // Close active panel, focus should move to the remaining one.
-  CloseWindowAndWait(panel2);
-  WaitForPanelActiveState(panel1, SHOW_AS_ACTIVE);
-  panel1->Close();
+  PanelManager::GetInstance()->CloseAll();
 }
 
 // TODO(jianli): To be enabled for other platforms.
@@ -955,13 +975,13 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivateDeactivateBasic) {
   Panel* panel = CreatePanel("PanelTest");
   scoped_ptr<NativePanelTesting> native_panel_testing(
       CreateNativePanelTesting(panel));
-  EXPECT_TRUE(panel->IsActive());
+
+  WaitForPanelActiveState(panel, SHOW_AS_ACTIVE);  // doublecheck active state
   EXPECT_TRUE(native_panel_testing->VerifyActiveState(true));
 
   // Deactivate the panel.
   panel->Deactivate();
   WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
-  EXPECT_FALSE(panel->IsActive());
   EXPECT_TRUE(native_panel_testing->VerifyActiveState(false));
 
   // This test does not reactivate the panel because the panel might not be
@@ -1163,7 +1183,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhenActive) {
   // Test that the attention should not be drawn if the expanded panel is in
   // focus.
   EXPECT_EQ(Panel::EXPANDED, panel->expansion_state());
-  EXPECT_TRUE(panel->IsActive());
+  WaitForPanelActiveState(panel, SHOW_AS_ACTIVE);  // doublecheck active state
   EXPECT_FALSE(panel->IsDrawingAttention());
   panel->FlashFrame(true);
   EXPECT_FALSE(panel->IsDrawingAttention());
@@ -1178,6 +1198,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionResetOnActivate) {
   // be made to draw attention.
   Panel* panel = CreatePanel("test panel1");
   Panel* panel2 = CreatePanel("test panel2");
+  WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
 
   scoped_ptr<NativePanelTesting> native_panel_testing(
       CreateNativePanelTesting(panel));
@@ -1204,6 +1225,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   // be made to draw attention.
   Panel* panel1 = CreatePanel("test panel1");
   Panel* panel2 = CreatePanel("test panel2");
+  WaitForPanelActiveState(panel1, SHOW_AS_INACTIVE);
 
   panel1->Minimize();
   EXPECT_TRUE(panel1->IsMinimized());
@@ -1229,8 +1251,12 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionResetOnClick) {
-  CreatePanelParams params("Initially Inactive", gfx::Rect(), SHOW_AS_INACTIVE);
-  Panel* panel = CreatePanelWithParams(params);
+  // Create 2 panels so we end up with an inactive panel that can
+  // be made to draw attention.
+  Panel* panel = CreatePanel("test panel1");
+  Panel* panel2 = CreatePanel("test panel2");
+  WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
+
   scoped_ptr<NativePanelTesting> native_panel_testing(
       CreateNativePanelTesting(panel));
 
@@ -1250,6 +1276,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionResetOnClick) {
   EXPECT_FALSE(native_panel_testing->VerifyDrawingAttention());
 
   panel->Close();
+  panel2->Close();
 }
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
